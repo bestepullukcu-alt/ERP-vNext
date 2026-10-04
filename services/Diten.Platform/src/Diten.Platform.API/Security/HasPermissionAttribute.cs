@@ -57,8 +57,8 @@ public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilte
                     return;
                 }
 
-                // The same record the scope was decided from (one read per request): missing, unreadable, deleted or
-                // inactive → refused.
+                // The same record the scope was decided from (one read per request): missing, deleted or inactive →
+                // refused. Unreadable never reaches here: the scope throws and the request is answered 503 (FIX2 item 3).
                 var admin = await scopeService.GetRecordAsync(ct);
                 if (admin == null || admin.IsDeleted || admin.Status != AdministratorStatus.Active)
                 {

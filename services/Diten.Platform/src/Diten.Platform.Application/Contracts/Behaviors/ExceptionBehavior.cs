@@ -28,6 +28,12 @@ public sealed class ExceptionBehavior<TRequest, TResponse> : IPipelineBehavior<T
             // until now only that lookup's failure kept it out. Rethrown by type, not by accident.
             throw;
         }
+        catch (PlatformAdministratorRecordUnavailableException)
+        {
+            // BL-521 FIX2 item 3 — an unreadable administrator record reaches the API's exception handler as itself (503
+            // with its reason code), for the same reason as the audit refusal above: never a 500/400 envelope here.
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception for request {RequestType}", typeof(TRequest).Name);

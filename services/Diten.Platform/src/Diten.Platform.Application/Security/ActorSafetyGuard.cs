@@ -22,13 +22,15 @@ public sealed class ActorSafetyGuard : IActorSafetyGuard
         _administrators = administrators;
     }
 
+    public async Task<bool> IsSelfAsync(Guid targetActorId, CancellationToken ct = default) =>
+        targetActorId == await ResolveCurrentPlatformAdministratorIdAsync(ct);
+
     public async Task<Response<NoContent>?> EnsureNotSelfAsync(
         Guid targetActorId,
         AdminSafetyAction action,
         CancellationToken ct = default)
     {
-        var currentPlatformAdministratorId = await ResolveCurrentPlatformAdministratorIdAsync(ct);
-        if (targetActorId != currentPlatformAdministratorId)
+        if (!await IsSelfAsync(targetActorId, ct))
         {
             return null;
         }
@@ -59,11 +61,14 @@ public sealed class ActorSafetyGuard : IActorSafetyGuard
             return null;
         }
 
-        // Only block when the target IS an active SuperAdmin — otherwise the count
-        // would be unchanged and there is nothing to protect against.
+        // Only block when the target IS a live, active PLATFORM administrator holding SuperAdmin — otherwise the count
+        // would be unchanged and there is nothing to protect against. BL-521 FIX2 item 5: a PartnerAdmin record with the
+        // SuperAdmin role is not one (the count leaves it out too).
         var target = await _administrators.GetByIdAsync(targetActorId, ct);
         if (target is null
+            || target.IsDeleted
             || target.Status != Domain.Enums.AdministratorStatus.Active
+            || target.ActorType != Domain.Enums.ActorType.PlatformAdmin
             || !target.Roles.Contains(Domain.Enums.AdministratorRole.SuperAdmin))
         {
             return null;
@@ -71,7 +76,8 @@ public sealed class ActorSafetyGuard : IActorSafetyGuard
 
         return Response<NoContent>.Fail(
             "At least one active Super Admin must remain in the system.",
-            409);
+            409,
+            AdminSafetyReasonCodes.LastActiveSuperAdmin);
     }
 
     public async Task<BulkSafetyResult> FilterSelfFromBulkAsync(

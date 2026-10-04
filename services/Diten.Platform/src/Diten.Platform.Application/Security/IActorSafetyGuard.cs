@@ -28,6 +28,12 @@ public interface IActorSafetyGuard
         CancellationToken ct = default);
 
     /// <summary>
+    /// The current user's own administrator record is the target (resolved the way <see cref="EnsureNotSelfAsync"/>
+    /// resolves it). BL-521 FIX2 item 5 — for the update path, which refuses only SOME self changes.
+    /// </summary>
+    Task<bool> IsSelfAsync(Guid targetActorId, CancellationToken ct = default);
+
+    /// <summary>
     /// Rule 4 — silently removes the current user id from a bulk target list.
     /// Result.EffectiveTargets contains the ids the handler should still act on;
     /// Result.SkippedSelfIds contains what was filtered out (always 0 or 1 entries).
@@ -35,4 +41,14 @@ public interface IActorSafetyGuard
     Task<BulkSafetyResult> FilterSelfFromBulkAsync(
         IReadOnlyCollection<Guid> targetActorIds,
         CancellationToken ct = default);
+}
+
+/// <summary>BL-521 FIX2 item 5 — the stable reason codes of the administrator safety refusals.</summary>
+public static class AdminSafetyReasonCodes
+{
+    /// <summary>403 — an administrator tried to change its own actor type, status or e-mail.</summary>
+    public const string SelfChangeForbidden = "PLATFORM_ADMINISTRATOR_SELF_CHANGE_FORBIDDEN";
+
+    /// <summary>409 — the change would leave no active platform administrator holding SuperAdmin.</summary>
+    public const string LastActiveSuperAdmin = "PLATFORM_ADMINISTRATOR_LAST_ACTIVE_SUPER_ADMIN";
 }

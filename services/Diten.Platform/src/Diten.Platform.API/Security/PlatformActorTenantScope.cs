@@ -15,8 +15,9 @@ namespace Diten.Platform.API.Security;
 /// <para>Rules, each fail-closed:</para>
 /// <list type="bullet">
 /// <item>no principal, or a token that is neither <c>platform_admin</c> nor <c>partner_admin</c> → none.</item>
-/// <item>no e-mail, no record, an unreadable, deleted or inactive record → none — for a <c>platform_admin</c> token too
-/// (FIX1 F7).</item>
+/// <item>no e-mail, no record, a deleted or inactive record → none — for a <c>platform_admin</c> token too (FIX1 F7).</item>
+/// <item>a record that cannot be READ → <see cref="PlatformAdministratorRecordUnavailableException"/> (503), never none and
+/// never all (FIX2 item 3).</item>
 /// <item><c>platform_admin</c> token and a live record that is not a partner record → unrestricted.</item>
 /// <item>otherwise — a <c>partner_admin</c> token, or a record that says PartnerAdmin whatever the token says (FIX1 F1)
 /// → the record's <c>AllowedTenantIds</c> (never the platform system tenant).</item>
@@ -40,9 +41,9 @@ public sealed class PlatformActorTenantScope : IPlatformActorTenantScope
     public async Task<PlatformTenantScope> GetAsync(CancellationToken ct = default) => (await ResolveOnceAsync(ct)).Scope;
 
     /// <summary>
-    /// The administrator record this request's scope was decided from (null: no principal, no e-mail, no record, or it
-    /// could not be read). The permission filter uses it for the live-record check and the first-login stamp instead of
-    /// reading the record a second time.
+    /// The administrator record this request's scope was decided from (null: no principal, no e-mail, no record; a record
+    /// that could not be read throws, as <see cref="GetAsync"/> does). The permission filter uses it for the live-record
+    /// check and the first-login stamp instead of reading the record a second time.
     /// </summary>
     public async Task<PlatformAdministrator?> GetRecordAsync(CancellationToken ct = default) => (await ResolveOnceAsync(ct)).Record;
 
@@ -107,9 +108,12 @@ public sealed class PlatformActorTenantScope : IPlatformActorTenantScope
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return null; // unreadable → none (fail closed), for a partner and a platform administrator alike
+            // FIX2 item 3 — unreadable is NO ANSWER: 503, not "none". Before, this returned null, so an outage (or a record
+            // that no longer deserializes) answered a partner with a silent 403 / empty list and filed a false
+            // PartnerTenantScopeViolation security event for every tenant it opened.
+            throw new PlatformAdministratorRecordUnavailableException(ex);
         }
     }
 

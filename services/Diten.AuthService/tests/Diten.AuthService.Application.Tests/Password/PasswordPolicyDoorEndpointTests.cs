@@ -165,7 +165,8 @@ public sealed class PasswordPolicyDoorEndpointTests : IClassFixture<PasswordPoli
         public Task<bool> IsActiveAsync(string email, CancellationToken ct) => Task.FromResult(true);
         public Task MarkLoginAcceptedAsync(string email, CancellationToken ct) => Task.CompletedTask;
         // BL-521 FIX1 F1(b) — the interface's record actor type; this host's platform user is a platform administrator.
-        public Task<string?> GetActiveActorTypeAsync(string email, CancellationToken ct) => Task.FromResult<string?>("platform_admin");
+        public Task<PlatformAdministratorRecordAnswer> GetActiveActorTypeAsync(string email, CancellationToken ct) =>
+            Task.FromResult(PlatformAdministratorRecordAnswer.ConfirmedAs("platform_admin"));
     }
 
     private sealed class TenCharactersUpperAndSpecial : ITenantLoginSettingsClient

@@ -10,7 +10,6 @@ namespace Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
 public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginCommand, Response<AuthResponse>>
 {
     private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-    private const string PlatformActorType = "platform_admin";
 
     private readonly IUserRepository _userRepository;
     private readonly IUserRoleRepository _userRoleRepository;
@@ -64,7 +63,18 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             return Response<AuthResponse>.Fail("User is inactive.", 401);
         }
 
-        if (!await _platformAdministratorStatusClient.IsActiveAsync(user.Email, ct))
+        // BL-521 FIX2 item 1 — the actor type of the token comes from the administrator's Platform RECORD, never from
+        // Auth's own copy on the user (User.PlatformActorType): that copy is written best-effort AFTER the record is saved,
+        // so a sync that fails leaves it saying platform_admin and every login would mint platform_admin for a partner.
+        // Item 3 — no answer from Platform is 503 (retry), not "inactive".
+        var record = await _platformAdministratorStatusClient.GetActiveActorTypeAsync(user.Email, ct);
+        if (record.Verdict == PlatformAdministratorRecordVerdict.Unavailable)
+        {
+            _logger.LogWarning("Platform login refused: platform administrator status unavailable. UserId={UserId}", user.Id);
+            return Response<AuthResponse>.Fail(PlatformAdministratorRecordAnswer.UnavailableMessage, 503);
+        }
+
+        if (record.Verdict != PlatformAdministratorRecordVerdict.Confirmed)
         {
             _logger.LogWarning("Platform login denied by platform administrator status. UserId={UserId} Email={Email}", user.Id, user.Email);
             return Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401);
@@ -101,7 +111,7 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        var actorType = NormalizePlatformActorType(user.PlatformActorType);
+        var actorType = record.ActorType!;
         var accessToken = _tokenService.GeneratePlatformAccessToken(
             user.Id,
             user.Email,
@@ -152,13 +162,5 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         }
 
         return roleIds;
-    }
-
-    private static string NormalizePlatformActorType(string? actorType)
-    {
-        return string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(actorType, "PartnerAdmin", StringComparison.OrdinalIgnoreCase)
-            ? "partner_admin"
-            : PlatformActorType;
     }
 }

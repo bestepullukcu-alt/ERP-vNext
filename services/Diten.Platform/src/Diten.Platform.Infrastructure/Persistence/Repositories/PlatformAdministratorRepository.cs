@@ -181,12 +181,18 @@ public sealed class PlatformAdministratorRepository
         return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
     }
 
+    /// <summary>
+    /// The live, active PLATFORM administrators holding SuperAdmin (optionally without one id). BL-521 FIX2 item 5 — a
+    /// PartnerAdmin record carrying the SuperAdmin role is not a remaining super administrator: since FIX1 its record makes
+    /// it a partner whatever its roles say, so counting it let the last real one be demoted, suspended or deleted.
+    /// </summary>
     public Task<long> CountActiveSuperAdminsAsync(Guid? excludeId = null, CancellationToken ct = default)
     {
         var filters = new List<FilterDefinition<PlatformAdministrator>>
         {
             ExecutionFilter,
             Builders<PlatformAdministrator>.Filter.Eq(x => x.Status, AdministratorStatus.Active),
+            Builders<PlatformAdministrator>.Filter.Eq(x => x.ActorType, ActorType.PlatformAdmin),
             Builders<PlatformAdministrator>.Filter.AnyEq(x => x.Roles, AdministratorRole.SuperAdmin)
         };
 

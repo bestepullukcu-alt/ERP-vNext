@@ -9,26 +9,29 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace Diten.Platform.Infrastructure.BackgroundJobs;
 
-public sealed class PlatformActorHangfireAuthorizationFilter : IDashboardAuthorizationFilter
+/// <summary>
+/// The job dashboard's door. BL-521 FIX2 item 4 — an ASYNC filter (Hangfire's <see cref="IDashboardAsyncAuthorizationFilter"/>),
+/// because the decision now reads the administrator record (<see cref="PlatformActorDashboardAuthorization.IsAuthorizedAsync"/>):
+/// the synchronous <c>IDashboardAuthorizationFilter</c> it used to be could only look at the token.
+/// </summary>
+public sealed class PlatformActorHangfireAuthorizationFilter : IDashboardAsyncAuthorizationFilter
 {
-    public bool Authorize(DashboardContext context)
+    public async Task<bool> AuthorizeAsync(DashboardContext context)
     {
         var httpContext = context.GetHttpContext();
-        if (PlatformActorDashboardAuthorization.IsAuthorized(httpContext.User))
+        if (await PlatformActorDashboardAuthorization.IsAuthorizedAsync(httpContext))
         {
             return true;
         }
 
         var authorization = httpContext.Request.Headers.Authorization.ToString();
 
-        var authenticateResult = httpContext.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme)
-            .GetAwaiter()
-            .GetResult();
+        var authenticateResult = await httpContext.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
 
         if (authenticateResult.Succeeded && authenticateResult.Principal is not null)
         {
             httpContext.User = authenticateResult.Principal;
-            var isAuthorized = PlatformActorDashboardAuthorization.IsAuthorized(authenticateResult.Principal);
+            var isAuthorized = await PlatformActorDashboardAuthorization.IsAuthorizedAsync(httpContext);
             LogAuthorizationResult(httpContext, isAuthorized, "AuthenticateAsync");
             return isAuthorized;
         }
@@ -86,7 +89,7 @@ public sealed class PlatformActorHangfireAuthorizationFilter : IDashboardAuthori
                 out _);
 
             httpContext.User = principal;
-            var isAuthorized = PlatformActorDashboardAuthorization.IsAuthorized(principal);
+            var isAuthorized = await PlatformActorDashboardAuthorization.IsAuthorizedAsync(httpContext);
             LogAuthorizationResult(httpContext, isAuthorized, "ManualJwtValidation");
             return isAuthorized;
         }

@@ -867,14 +867,20 @@ public static class DependencyInjection
     /// <see cref="IPlatformActorTenantScope"/> (the administrator record, read once per request) says this is a platform
     /// administrator. No request to read it from, or no scope service → no (fail closed).
     /// </summary>
-    internal static async Task<bool> IsConfirmedPlatformAdministratorAsync(AuthorizationHandlerContext context)
-    {
-        var http = context.Resource switch
+    internal static Task<bool> IsConfirmedPlatformAdministratorAsync(AuthorizationHandlerContext context) =>
+        IsConfirmedPlatformAdministratorAsync(context.Resource switch
         {
             Microsoft.AspNetCore.Http.HttpContext direct => direct,
             Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext filter => filter.HttpContext,
             _ => null
-        };
+        });
+
+    /// <summary>
+    /// The same decision for a request outside the authorization pipeline — the Hangfire job dashboard (BL-521 FIX2 item
+    /// 4), whose filter is not an authorization policy. One rule, two entry points: both end here.
+    /// </summary>
+    internal static async Task<bool> IsConfirmedPlatformAdministratorAsync(Microsoft.AspNetCore.Http.HttpContext? http)
+    {
         var scope = http?.RequestServices?.GetService<IPlatformActorTenantScope>();
         if (scope is null)
         {

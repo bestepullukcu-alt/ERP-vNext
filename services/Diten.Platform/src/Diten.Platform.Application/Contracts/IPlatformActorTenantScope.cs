@@ -15,14 +15,38 @@ namespace Diten.Platform.Application.Contracts;
 /// expire). Comparable: SAP limits a partner by organisational unit / company code, Oracle by data access sets — both on
 /// the server.</para>
 ///
-/// <para>⚠ FAIL CLOSED. An actor whose record cannot be read, is missing, deleted or not active, or allows no tenant may
-/// touch NONE — never "all" (FIX1 F7: this holds for a <c>platform_admin</c> token too, the same rule the permission
-/// filter already applied). Any other caller (no principal, a tenant user) may touch none either.</para>
+/// <para>⚠ FAIL CLOSED. An actor whose record is missing, deleted or not active, or allows no tenant may touch NONE —
+/// never "all" (FIX1 F7: this holds for a <c>platform_admin</c> token too, the same rule the permission filter already
+/// applied). Any other caller (no principal, a tenant user) may touch none either.</para>
+///
+/// <para>⚠ A RECORD THAT CANNOT BE READ IS NO ANSWER, NOT "NONE" (FIX2 item 3): <see cref="GetAsync"/> throws
+/// <see cref="PlatformAdministratorRecordUnavailableException"/> and the request is answered 503 — never all, and never a
+/// silent 403 / empty list with a false <c>PartnerTenantScopeViolation</c> security event for a partner who did nothing.</para>
 /// </summary>
 public interface IPlatformActorTenantScope
 {
-    /// <summary>The scope of this request's actor, read once per request.</summary>
+    /// <summary>
+    /// The scope of this request's actor, read once per request. Throws
+    /// <see cref="PlatformAdministratorRecordUnavailableException"/> when the administrator record cannot be read.
+    /// </summary>
     Task<PlatformTenantScope> GetAsync(CancellationToken ct = default);
+}
+
+/// <summary>
+/// BL-521 FIX2 item 3 — the administrator record this request's scope depends on could not be read (the store did not
+/// answer, the record does not deserialize). The request has NO answer: the API's exception handler turns this into 503
+/// (reason <see cref="ReasonCode"/>), nothing of the action runs, and no security event is written — an outage is not a
+/// partner probing a tenant. Never caught to mean "none" or "all".
+/// </summary>
+public sealed class PlatformAdministratorRecordUnavailableException : Exception
+{
+    /// <summary>The stable reason code of the 503 answer.</summary>
+    public const string ReasonCode = "PLATFORM_ADMINISTRATOR_RECORD_UNAVAILABLE";
+
+    public PlatformAdministratorRecordUnavailableException(Exception innerException)
+        : base("The platform administrator record could not be read.", innerException)
+    {
+    }
 }
 
 /// <summary>What a platform actor may touch: everything, or exactly <see cref="TenantIds"/> (possibly none).</summary>

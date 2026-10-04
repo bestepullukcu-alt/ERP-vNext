@@ -168,8 +168,13 @@ public sealed class PartnerAdminScopeHttpMongoTests
         await AssertSeesNothingAsync(host, partner);
     }
 
+    /// <summary>
+    /// FIX2 item 3 — a record that cannot be READ is no answer: 503 with its reason code on the list, the counts, an allowed
+    /// and a foreign tenant alike; the scope does not fall open, and no security event is filed (an outage is not a
+    /// partner probing a tenant). Before: a silent empty list / 404 and a false PartnerTenantScopeViolation per tenant.
+    /// </summary>
     [Fact]
-    public async Task A_partner_whose_record_cannot_be_read_sees_none()
+    public async Task A_partner_whose_record_cannot_be_read_is_answered_503_and_no_security_event_is_filed()
     {
         await using var host = await Host.StartAsync();
         var partner = await host.PartnerAsync([Host.TenantA]);
@@ -177,7 +182,41 @@ public sealed class PartnerAdminScopeHttpMongoTests
         await host.Database.GetCollection<BsonDocument>(PlatformCollections.PlatformAdministrators).UpdateOneAsync(
             new BsonDocument("NormalizedEmail", partner.Email), new BsonDocument("$set", new BsonDocument("AllowedTenantIds", "not a list")));
 
-        await AssertSeesNothingAsync(host, partner);
+        foreach (var path in new[]
+                 {
+                     "/api/admin/tenants", "/api/admin/tenants/stats",
+                     $"/api/admin/tenants/{Host.TenantA:D}", $"/api/admin/tenants/{Host.TenantB:D}"
+                 })
+        {
+            await AssertRecordUnavailableAsync(await host.SendAsync(partner, "GET", path, null), path);
+        }
+
+        Assert.Empty(await host.SecurityEventsAsync());
+    }
+
+    /// <summary>FIX2 item 3 — the same for a platform_admin token whose record cannot be read, on a platform-only door
+    /// (the PlatformAdminOnly policy reads the record): 503, nothing deleted.</summary>
+    [Fact]
+    public async Task A_platform_administrator_whose_record_cannot_be_read_is_answered_503_on_a_platform_only_door()
+    {
+        await using var host = await Host.StartAsync();
+        var admin = await host.PlatformAdminAsync();
+        await host.Database.GetCollection<BsonDocument>(PlatformCollections.PlatformAdministrators).UpdateOneAsync(
+            new BsonDocument("NormalizedEmail", admin.Email), new BsonDocument("$set", new BsonDocument("Roles", "not a list")));
+
+        await AssertRecordUnavailableAsync(
+            await host.SendAsync(admin, "DELETE", "/api/admin/tenants/bulk", $$"""{"ids":["{{Host.TenantA:D}}"]}"""), "bulk delete");
+
+        Assert.NotNull(await host.TenantDocumentAsync(Host.TenantA));
+        Assert.Empty(await host.SecurityEventsAsync());
+    }
+
+    private static async Task AssertRecordUnavailableAsync(HttpResponseMessage response, string what)
+    {
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.True(response.StatusCode == HttpStatusCode.ServiceUnavailable, $"{what}: {(int)response.StatusCode} {body}");
+        Assert.Equal(PlatformAdministratorRecordUnavailableException.ReasonCode,
+            JsonDocument.Parse(body).RootElement.GetProperty("reason_code").GetString());
     }
 
     /// <summary>FIX1 F8-2 — a deleted or a suspended partner record names no tenant (each half of the live-record rule).</summary>

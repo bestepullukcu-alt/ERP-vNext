@@ -204,7 +204,18 @@ public sealed class PlatformAuthController : CustomBaseController
             return CreateActionResultInstance(Response<AuthResponse>.Fail("Unauthorized.", 401));
         }
 
-        if (!await _platformAdministratorStatusClient.IsActiveAsync(user.Email, ct))
+        // BL-521 FIX2 item 1 — this door MINTS a platform token, so the actor type comes from the administrator's Platform
+        // RECORD (the same answer login and refresh use), never from Auth's copy on the user. Before: the copy went
+        // through NormalizeActorType, which knew only "PartnerAdmin" — the stored "partner_admin" came out as
+        // platform_admin, so a partner calling this with its own password got a platform_admin token and refresh row.
+        // Item 3 — Platform's definitive no ends the sessions; no answer (503) ends nothing.
+        var record = await _platformAdministratorStatusClient.GetActiveActorTypeAsync(user.Email, ct);
+        if (record.Verdict == PlatformAdministratorRecordVerdict.Unavailable)
+        {
+            return CreateActionResultInstance(Response<AuthResponse>.Fail(PlatformAdministratorRecordAnswer.UnavailableMessage, 503));
+        }
+
+        if (record.Verdict != PlatformAdministratorRecordVerdict.Confirmed)
         {
             await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, PlatformTenantId, ct);
             return CreateActionResultInstance(Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401));
@@ -221,7 +232,7 @@ public sealed class PlatformAuthController : CustomBaseController
         await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);
         await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, PlatformTenantId, ct);
 
-        var authResponse = await BuildPlatformAuthResponseAsync(user, request.RememberMe, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext), false, ct);
+        var authResponse = await BuildPlatformAuthResponseAsync(user, record.ActorType!, request.RememberMe, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext), false, ct);
         return CreateActionResultInstance(Response<AuthResponse>.Success(authResponse));
     }
 
@@ -286,7 +297,9 @@ public sealed class PlatformAuthController : CustomBaseController
             : null;
     }
 
-    private async Task<AuthResponse> BuildPlatformAuthResponseAsync(User user, bool rememberMe, string requestIp, string? userAgent, bool requiresPasswordChange, CancellationToken ct)
+    /// <param name="actorType">The actor type the administrator's Platform record names (BL-521 FIX2 item 1) — never
+    /// read from <c>user.PlatformActorType</c>.</param>
+    private async Task<AuthResponse> BuildPlatformAuthResponseAsync(User user, string actorType, bool rememberMe, string requestIp, string? userAgent, bool requiresPasswordChange, CancellationToken ct)
     {
         var roles = (await _userRoleRepository.GetRolesByUserAsync(user.Id, PlatformTenantId, ct))
             .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -297,7 +310,6 @@ public sealed class PlatformAuthController : CustomBaseController
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var actorType = NormalizeActorType(user.PlatformActorType ?? "platform_admin");
         var accessToken = _tokenService.GeneratePlatformAccessToken(
             user.Id,
             user.Email,
@@ -359,8 +371,16 @@ public sealed class PlatformAuthController : CustomBaseController
     private static string NormalizeEmail(string email) => (email ?? string.Empty).Trim().ToLowerInvariant();
     private static string NormalizeUserName(string userName) => (userName ?? string.Empty).Trim().ToLowerInvariant();
 
+    /// <summary>
+    /// Auth's copy of the record's actor type, written by provision / sync (Platform sends the enum name). BL-521 FIX2
+    /// item 1 — informational only: no door takes a token's actor type from this copy any more (each asks the Platform
+    /// record). Both spellings are recognised, so the copy never turns a partner into platform_admin.
+    /// </summary>
     private static string NormalizeActorType(string actorType) =>
-        string.Equals(actorType, "PartnerAdmin", StringComparison.OrdinalIgnoreCase) ? "partner_admin" : "platform_admin";
+        string.Equals(actorType, "PartnerAdmin", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(actorType, PlatformAdministratorRecordAnswer.PartnerAdminActorType, StringComparison.OrdinalIgnoreCase)
+            ? PlatformAdministratorRecordAnswer.PartnerAdminActorType
+            : PlatformAdministratorRecordAnswer.PlatformAdminActorType;
 
     private static IEnumerable<string> NormalizeRoles(IEnumerable<string>? roles)
     {

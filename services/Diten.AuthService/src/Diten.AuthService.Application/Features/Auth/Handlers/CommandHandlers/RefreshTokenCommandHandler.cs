@@ -113,8 +113,19 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             // names, not the one the old token carried: a platform administrator demoted to partner becomes partner_admin
             // at its next refresh instead of keeping platform_admin forever. No active record / unreadable → refused, the
             // same direction as the activity rule this replaces.
-            var recordActorType = await _platformAdministratorStatusClient.GetActiveActorTypeAsync(user.Email, ct);
-            if (recordActorType is null)
+            var record = await _platformAdministratorStatusClient.GetActiveActorTypeAsync(user.Email, ct);
+            if (record.Verdict == PlatformAdministratorRecordVerdict.Unavailable)
+            {
+                // BL-521 FIX2 item 3 — Platform did not answer (unreachable, 5xx, unreadable). That is not a "no": this
+                // refresh is refused with 503 and NOTHING is revoked — the old refresh token is not even rotated, so the
+                // client retries with it.
+                _logger.LogWarning(
+                    "Platform refresh refused: platform administrator status unavailable. UserId={UserId}",
+                    user.Id);
+                return Response<AuthResponse>.Fail(PlatformAdministratorRecordAnswer.UnavailableMessage, 503);
+            }
+
+            if (record.Verdict != PlatformAdministratorRecordVerdict.Confirmed)
             {
                 await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, existingToken.TenantId, ct);
                 _logger.LogWarning(
@@ -123,6 +134,8 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
                     user.Email);
                 return Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401);
             }
+
+            var recordActorType = record.ActorType!;
 
             if (!string.Equals(recordActorType, actorType, StringComparison.OrdinalIgnoreCase))
             {

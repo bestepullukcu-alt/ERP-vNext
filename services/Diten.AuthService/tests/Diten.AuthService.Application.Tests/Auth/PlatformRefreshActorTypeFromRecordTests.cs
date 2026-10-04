@@ -24,7 +24,7 @@ public sealed class PlatformRefreshActorTypeFromRecordTests
     [Fact]
     public async Task A_demoted_platform_administrator_is_refreshed_as_a_partner()
     {
-        var run = new Run(tokenActorType: "platform_admin", recordActorType: "partner_admin");
+        var run = new Run(tokenActorType: "platform_admin", PlatformAdministratorRecordAnswer.ConfirmedAs("partner_admin"));
 
         var result = await run.RefreshAsync();
 
@@ -36,7 +36,7 @@ public sealed class PlatformRefreshActorTypeFromRecordTests
     [Fact]
     public async Task A_promoted_partner_is_refreshed_as_a_platform_administrator()
     {
-        var run = new Run(tokenActorType: "partner_admin", recordActorType: "platform_admin");
+        var run = new Run(tokenActorType: "partner_admin", PlatformAdministratorRecordAnswer.ConfirmedAs("platform_admin"));
 
         var result = await run.RefreshAsync();
 
@@ -45,10 +45,11 @@ public sealed class PlatformRefreshActorTypeFromRecordTests
         Assert.Equal("platform_admin", Assert.Single(run.RefreshTokens.Created).ActorType);
     }
 
+    /// <summary>Platform's definitive no (no record, not active, unknown type): refused 401 and every session revoked.</summary>
     [Fact]
-    public async Task A_platform_actor_whose_record_cannot_be_read_or_is_inactive_is_not_refreshed()
+    public async Task A_platform_actor_whose_record_platform_refuses_is_not_refreshed_and_loses_its_sessions()
     {
-        var run = new Run(tokenActorType: "platform_admin", recordActorType: null);
+        var run = new Run(tokenActorType: "platform_admin", PlatformAdministratorRecordAnswer.Refused);
 
         var result = await run.RefreshAsync();
 
@@ -59,13 +60,33 @@ public sealed class PlatformRefreshActorTypeFromRecordTests
         Assert.True(run.RefreshTokens.RevokedAll);
     }
 
+    /// <summary>
+    /// BL-521 FIX2 item 3 — Platform gave NO answer (unreachable, 5xx, unreadable): this refresh is refused 503 and
+    /// nothing is revoked — not the sessions, not even the presented refresh token (it is not rotated), so the client can
+    /// retry with it. Before: any non-2xx reply ended every session of the administrator.
+    /// </summary>
+    [Fact]
+    public async Task A_platform_actor_whose_record_platform_cannot_answer_is_refused_503_and_keeps_its_sessions()
+    {
+        var run = new Run(tokenActorType: "platform_admin", PlatformAdministratorRecordAnswer.Unavailable);
+
+        var result = await run.RefreshAsync();
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(503, result.StatusCode);
+        Assert.Null(run.Tokens.IssuedActorType);
+        Assert.Empty(run.RefreshTokens.Created);
+        Assert.False(run.RefreshTokens.RevokedAll);
+        Assert.False(run.RefreshTokens.Rotated);
+    }
+
     private sealed class Run
     {
         private readonly User _user = new("demoted.admin@bl521.test", "hash:x", "De", "Moted", PlatformTenant);
         private readonly string _tokenActorType;
         private readonly RefreshTokenCommandHandler _handler;
 
-        public Run(string tokenActorType, string? recordActorType)
+        public Run(string tokenActorType, PlatformAdministratorRecordAnswer record)
         {
             _tokenActorType = tokenActorType;
             Tokens = new RecordingTokenService(_user.Id, tokenActorType);
@@ -82,7 +103,7 @@ public sealed class PlatformRefreshActorTypeFromRecordTests
                 new PrefixHasher(),
                 RefreshTokens,
                 new UnresolvedTenantContext(),
-                new RecordStatus(recordActorType),
+                new RecordStatus(record),
                 NullLogger<RefreshTokenCommandHandler>.Instance);
         }
 
@@ -93,12 +114,13 @@ public sealed class PlatformRefreshActorTypeFromRecordTests
             _handler.Handle(new RefreshTokenCommand("old-access-token", RawRefreshToken, "127.0.0.1", "test-agent"), CancellationToken.None);
     }
 
-    /// <summary>Platform's answer: the record's actor type when active, null when not active / not readable.</summary>
-    private sealed class RecordStatus(string? recordActorType) : IPlatformAdministratorStatusClient
+    /// <summary>Platform's answer about the record (confirmed with its actor type, refused, or no answer).</summary>
+    private sealed class RecordStatus(PlatformAdministratorRecordAnswer record) : IPlatformAdministratorStatusClient
     {
-        public Task<bool> IsActiveAsync(string email, CancellationToken ct) => Task.FromResult(recordActorType is not null);
+        public Task<bool> IsActiveAsync(string email, CancellationToken ct) =>
+            Task.FromResult(record.Verdict == PlatformAdministratorRecordVerdict.Confirmed);
         public Task MarkLoginAcceptedAsync(string email, CancellationToken ct) => Task.CompletedTask;
-        public Task<string?> GetActiveActorTypeAsync(string email, CancellationToken ct) => Task.FromResult(recordActorType);
+        public Task<PlatformAdministratorRecordAnswer> GetActiveActorTypeAsync(string email, CancellationToken ct) => Task.FromResult(record);
     }
 
     private sealed class RecordingTokenService(Guid userId, string tokenActorType) : ITokenService
@@ -129,11 +151,12 @@ public sealed class PlatformRefreshActorTypeFromRecordTests
     {
         public List<RefreshToken> Created { get; } = [];
         public bool RevokedAll { get; private set; }
+        public bool Rotated { get; private set; }
 
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) =>
             Task.FromResult<RefreshToken?>(token == RawRefreshToken ? existing : null);
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) { Created.Add(refreshToken); return Task.CompletedTask; }
-        public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => Task.CompletedTask;
+        public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) { Rotated = true; return Task.CompletedTask; }
         public Task RevokeAsync(string token, CancellationToken ct) => Task.CompletedTask;
         public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) { RevokedAll = true; return Task.CompletedTask; }
     }
