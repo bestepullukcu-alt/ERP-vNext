@@ -478,7 +478,9 @@ describe('MOD-0290 GSKU Register exposure', () => {
             .forEach((key) => expect(keys[0]).toContain(key));
         // GSKU FIX1: refusals the maker can act on, and why an approval could not be applied.
         ['ErrorParentNotApproved', 'ErrorSubmitInFlight', 'ErrorDependentIdentitiesExist', 'ErrorApprovalChanging',
-            'ErrorApprovalTemplateMissing',
+            'ErrorApprovalTemplateMissing', 'ErrorWithdrawalPending', 'ErrorReconciliationRequired',
+            'ErrorSubmissionEnded', 'ErrorDraftChanged', 'IdentityNotAppliedSelfApproval', 'IdentityStateInFlight',
+            'IdentityStateResubmitRequired', 'IdentityStateReconciliationRequired', 'IdentityStateSubmissionEnded',
             'IdentityNotAppliedParent', 'IdentityNotAppliedReference', 'IdentityNotAppliedGeneric']
             .forEach((key) => expect(keys[0]).toContain(key));
     });
@@ -496,6 +498,16 @@ describe('MOD-0290 GSKU Register exposure', () => {
         expect(quickView).not.toMatch(/style="/);
         expect(source).toContain("valueOf(detail, 'identityNotAppliedReason', 'IdentityNotAppliedReason')");
         expect(source).toContain("classList.toggle('d-none', !notAppliedText)");
+        // FIX2 item 1: every draft state is said, with what happens next.
+        expect(source).toContain("valueOf(detail, 'identitySubmitState', 'IdentitySubmitState')");
+        [['SUBMIT_IN_FLIGHT', 'IdentityStateInFlight'], ['RESUBMIT_REQUIRED', 'IdentityStateResubmitRequired'],
+            ['RECONCILIATION_REQUIRED', 'IdentityStateReconciliationRequired'], ['SUBMISSION_ENDED', 'IdentityStateSubmissionEnded']]
+            .forEach(([state, key]) => {
+                expect(source).toContain(`${state}: L.${key}`);
+                expect(l10n).toContain(`${key} = Localizer["${key}"].Value`);
+            });
+        expect(source).toContain("notApplied === 'FIRST_GSKU_IDENTITY_SELF_APPROVAL_IGNORED' ? L.IdentityNotAppliedSelfApproval");
+        expect(source).toContain("notApplied === 'REFERENCE_NOT_SELECTABLE'");
     });
 
     it('translates only an allow-listed MDM conflict code and never relays the code itself', () => {
@@ -504,7 +516,12 @@ describe('MOD-0290 GSKU Register exposure', () => {
             ['GSKU_IDENTITY_SUBMIT_IN_FLIGHT', 'ErrorSubmitInFlight'],
             ['GSKU_DEPENDENT_IDENTITIES_EXIST', 'ErrorDependentIdentitiesExist'],
             ['PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING', 'ErrorApprovalChanging'],
-            ['PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY', 'ErrorApprovalTemplateMissing']]
+            ['PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY', 'ErrorApprovalTemplateMissing'],
+            ['FIRST_GSKU_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT', 'ErrorWithdrawalPending'],
+            ['GSKU_IDENTITY_RECONCILIATION_REQUIRED', 'ErrorReconciliationRequired'],
+            ['FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED', 'ErrorReconciliationRequired'],
+            ['FIRST_GSKU_IDENTITY_SUBMISSION_ENDED', 'ErrorSubmissionEnded'],
+            ['FIRST_GSKU_IDENTITY_WORKFLOW_DRAFT_CHANGED', 'ErrorDraftChanged']]
             .forEach(([code, key]) => expect(source).toContain(`["${code}"] = "${key}"`));
         expect(source).toContain('errors = new[] { _localizer[key].Value }');
         expect(source).toMatch(/KnownFailureKeys\.TryGetValue[\s\S]*?return SafeFailure\(response\.StatusCode\);/);

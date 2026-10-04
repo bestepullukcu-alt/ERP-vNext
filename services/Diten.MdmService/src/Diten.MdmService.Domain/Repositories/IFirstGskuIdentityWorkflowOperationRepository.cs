@@ -25,8 +25,9 @@ public interface IFirstGskuIdentityWorkflowOperationRepository
     // The reason of this GSKU's latest identity operation when that one ended "approved, not applicable"; else null.
     Task<string?> LatestNotApplicableReasonAsync(Guid gskuId, CancellationToken cancellationToken = default) =>
         Task.FromResult<string?>(null);
-    // Whether an identity operation of this GSKU has not reached a final state (a submit is in flight).
-    Task<bool> HasUnfinishedOperationAsync(Guid gskuId, CancellationToken cancellationToken = default);
+    // Where this GSKU's latest identity submit stands (FIX2 item 1: FirstGskuIdentitySubmitState.Of is the rule).
+    Task<FirstGskuIdentitySubmitState> GetSubmitStateAsync(Guid gskuId, int currentGskuVersion,
+        CancellationToken cancellationToken = default);
     // The engine approved and the approval cannot be applied: revision and GSKU back to draft with their audit
     // intents, and the operation final with the reason — one transaction.
     Task<FirstGskuIdentityDecisionNotApplicableWriteResult> ApplyDecisionNotApplicableAsync(

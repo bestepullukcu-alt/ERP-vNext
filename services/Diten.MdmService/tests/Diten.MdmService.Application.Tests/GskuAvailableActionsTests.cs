@@ -93,7 +93,7 @@ public sealed class GskuAvailableActionsTests
         var actor = new Actor(Guid.NewGuid(), FirstGskuIdentityLifecyclePermissions.Update);
         IReadOnlyList<string> Pair() => (IReadOnlyList<string>)typeof(GetGskuByIdHandler)
             .GetMethod("BuildPairAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, [gsku, revision, actor, false])!;
+            .Invoke(null, [gsku, revision, actor, FirstGskuIdentitySubmitStateKind.None])!;
         Assert.Equal(["DETAILS", "EDIT"], Pair());
         revision.LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval;
         Assert.Equal(["DETAILS"], Pair());
@@ -107,30 +107,33 @@ public sealed class GskuAvailableActionsTests
         Assert.Equal(["DETAILS"], Actions(gsku, new Actor(null, FirstGskuIdentityLifecyclePermissions.Update)));
     }
 
-    // B7 (GSKU FIX1): while a submit is in flight the draft is neither editable nor submittable.
-    [Fact]
-    public void A_draft_whose_submit_is_in_flight_offers_neither_edit_nor_submit()
+    // B7 + FIX2 item 1 (changed): every draft state offers its way out — FIX1 hid both edit and submit for any
+    // unfinished submit, which froze a draft whose submit never reached the engine, or waited for reconciliation.
+    [Theory]
+    [InlineData(FirstGskuIdentitySubmitStateKind.None, true, true)]
+    [InlineData(FirstGskuIdentitySubmitStateKind.InFlight, false, false)]
+    [InlineData(FirstGskuIdentitySubmitStateKind.ResubmitRequired, true, true)]
+    [InlineData(FirstGskuIdentitySubmitStateKind.ReconciliationRequired, false, true)]
+    [InlineData(FirstGskuIdentitySubmitStateKind.Ended, true, false)]
+    public void A_drafts_actions_follow_where_its_latest_submit_stands(
+        FirstGskuIdentitySubmitStateKind submit, bool edit, bool resubmit)
     {
         var gsku = new Gsku { Id = Guid.NewGuid(), LifecycleStatus = ProductIdentityLifecycleStatus.Draft };
         var actor = new Actor(Guid.NewGuid(), "mdm.gskus.update", "mdm.gskus.submit");
 
-        var idle = Assert.IsAssignableFrom<IReadOnlyList<string>>(typeof(GetGskuByIdHandler)
+        var actions = Assert.IsAssignableFrom<IReadOnlyList<string>>(typeof(GetGskuByIdHandler)
             .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, [gsku, actor, false]));
-        var inFlight = Assert.IsAssignableFrom<IReadOnlyList<string>>(typeof(GetGskuByIdHandler)
-            .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, [gsku, actor, true]));
+            .Invoke(null, [gsku, actor, submit]));
 
-        Assert.Contains("EDIT", idle);
-        Assert.Contains("SUBMIT", idle);
-        Assert.Equal(["DETAILS"], inFlight);
+        Assert.Equal(edit, actions.Contains("EDIT"));
+        Assert.Equal(resubmit, actions.Contains("SUBMIT"));
     }
 
     private static IReadOnlyList<string> Actions(Gsku gsku, IProductIdentityLifecycleActorContext actor) =>
         Assert.IsAssignableFrom<IReadOnlyList<string>>(
             typeof(GetGskuByIdHandler)
                 .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
-                .Invoke(null, [gsku, actor, false]));
+                .Invoke(null, [gsku, actor, FirstGskuIdentitySubmitStateKind.None]));
 
     private sealed class Actor(Guid? subjectId, params string[] permissions)
         : IProductIdentityLifecycleActorContext

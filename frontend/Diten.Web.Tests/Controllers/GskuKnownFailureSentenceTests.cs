@@ -28,6 +28,10 @@ public sealed class GskuKnownFailureSentenceTests
     [InlineData("GSKU_DEPENDENT_IDENTITIES_EXIST", "ErrorDependentIdentitiesExist")]
     [InlineData("PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING", "ErrorApprovalChanging")]
     [InlineData("PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY", "ErrorApprovalTemplateMissing")]
+    [InlineData("GSKU_IDENTITY_RECONCILIATION_REQUIRED", "ErrorReconciliationRequired")]
+    [InlineData("FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", "ErrorReconciliationRequired")]
+    [InlineData("FIRST_GSKU_IDENTITY_SUBMISSION_ENDED", "ErrorSubmissionEnded")]
+    [InlineData("FIRST_GSKU_IDENTITY_WORKFLOW_DRAFT_CHANGED", "ErrorDraftChanged")]
     public async Task A_known_refusal_is_said_in_the_readers_language_and_the_code_stays_behind(string code, string key)
     {
         var result = await SubmitAgainstAsync(HttpStatusCode.Conflict, Envelope(code));
@@ -61,15 +65,14 @@ public sealed class GskuKnownFailureSentenceTests
         Assert.NotEqual("localized:ErrorParentNotApproved", Assert.Single(errors));
     }
 
-    // Shared item 14 (A1) on the GSKU screen: told the command an earlier withdrawal stands under, the proxy repeats
-    // THAT command once — and only that once.
+    // FIX2 item 8 (replaces FIX1's "repeat once with that command", which MDM always refused: the repeat carried
+    // this request's reason and comment under the earlier command, and MDM keeps what the first request said). An
+    // earlier withdrawal with another text is still under way: the requester is told so in words, nothing is resent.
     [Fact]
-    public async Task A_withdrawal_under_another_command_is_repeated_once_with_that_command()
+    public async Task A_withdrawal_pending_under_another_command_is_said_in_words_and_not_resent()
     {
-        var pending = Guid.NewGuid();
-        var wire = new ScriptedHandler(
-            (HttpStatusCode.Conflict, $"{{\"isSuccessful\":false,\"statusCode\":409,\"errors\":[\"FIRST_GSKU_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT\"],\"data\":{{\"pendingWithdrawalCommandId\":\"{pending:D}\"}}}}"),
-            (HttpStatusCode.OK, "{\"isSuccessful\":true,\"statusCode\":200,\"data\":{}}"));
+        var wire = new ScriptedHandler((HttpStatusCode.Conflict,
+            $"{{\"isSuccessful\":false,\"statusCode\":409,\"errors\":[\"FIRST_GSKU_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT\"],\"data\":{{\"pendingWithdrawalCommandId\":\"{Guid.NewGuid():D}\"}}}}"));
         var controller = Controller(wire, "mdm.gskus.withdraw", new()
         {
             ["ExpectedGskuVersion"] = "3", ["ReasonCode"] = "MAKER_CORRECTION", ["Comment"] = "",
@@ -78,28 +81,35 @@ public sealed class GskuKnownFailureSentenceTests
 
         var result = await controller.WithdrawIdentityApproval(Guid.NewGuid(), 3, "MAKER_CORRECTION", "", CancellationToken.None);
 
-        Assert.Equal(StatusCodes.Status200OK, Assert.IsType<ContentResult>(result).StatusCode);
-        Assert.Equal(2, wire.Keys.Count);
-        Assert.NotEqual(pending.ToString("D"), wire.Keys[0]);
-        Assert.Equal(pending.ToString("D"), wire.Keys[1]);
+        var (status, errors) = Read(result);
+        Assert.Equal(StatusCodes.Status409Conflict, status);
+        Assert.Equal("localized:ErrorWithdrawalPending", Assert.Single(errors));
+        Assert.Single(wire.Keys);
     }
 
+    // The same on the Global Product screen (GP's withdrawal command is derived from the version alone, so this is
+    // rare there — but a raw 409 is never what the requester sees).
     [Fact]
-    public async Task A_second_conflict_after_the_repeat_is_not_repeated_again()
+    public async Task A_global_product_withdrawal_pending_under_another_command_is_said_in_words_and_not_resent()
     {
-        var conflict = $"{{\"isSuccessful\":false,\"statusCode\":409,\"errors\":[\"FIRST_GSKU_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT\"],\"data\":{{\"pendingWithdrawalCommandId\":\"{Guid.NewGuid():D}\"}}}}";
-        var wire = new ScriptedHandler((HttpStatusCode.Conflict, conflict), (HttpStatusCode.Conflict, conflict),
-            (HttpStatusCode.OK, "{\"isSuccessful\":true,\"statusCode\":200,\"data\":{}}"));
-        var controller = Controller(wire, "mdm.gskus.withdraw", new()
+        var wire = new ScriptedHandler((HttpStatusCode.Conflict,
+            $"{{\"isSuccessful\":false,\"statusCode\":409,\"errors\":[\"PRODUCT_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT\"],\"data\":{{\"pendingWithdrawalCommandId\":\"{Guid.NewGuid():D}\"}}}}"));
+        var gateway = new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?> { ["GatewayUrl"] = "https://gateway-fixture.invalid" }).Build();
+        var controller = new GlobalProductsController(new HttpClient(wire), gateway,
+            new PrefixLocalizer<Diten.Web.SharedResource>(), new PrefixLocalizer<Diten.Web.Views.MasterDataManagement.GlobalProducts.GlobalProductsIndex>(),
+            NullLogger<GlobalProductsController>.Instance)
         {
-            ["ExpectedGskuVersion"] = "3", ["ReasonCode"] = "MAKER_CORRECTION", ["Comment"] = "",
-            ["__RequestVerificationToken"] = "synthetic-csrf"
-        });
+            ControllerContext = new ControllerContext { HttpContext = Context("mdm.global-products.withdraw",
+                new() { ["ExpectedVersion"] = "3", ["__RequestVerificationToken"] = "synthetic-csrf" }) }
+        };
 
-        var result = await controller.WithdrawIdentityApproval(Guid.NewGuid(), 3, "MAKER_CORRECTION", "", CancellationToken.None);
+        var result = await controller.WithdrawApproval(Guid.NewGuid(), 3, CancellationToken.None);
 
-        Assert.Equal(StatusCodes.Status409Conflict, Assert.IsType<ObjectResult>(result).StatusCode);
-        Assert.Equal(2, wire.Keys.Count);
+        var (status, errors) = Read(result);
+        Assert.Equal(StatusCodes.Status409Conflict, status);
+        Assert.Equal("localized:ErrorWithdrawalPending", Assert.Single(errors));
+        Assert.Single(wire.Keys);
     }
 
     private static string Envelope(string code) =>
@@ -127,6 +137,14 @@ public sealed class GskuKnownFailureSentenceTests
     {
         var gateway = new ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string, string?> { ["GatewayUrl"] = "https://gateway-fixture.invalid" }).Build();
+        return new GskusController(new HttpClient(wire), gateway,
+            new EphemeralDataProtectionProvider(), new PrefixLocalizer<Diten.Web.SharedResource>(),
+            new PrefixLocalizer<GskusIndex>(), NullLogger<GskusController>.Instance)
+        { ControllerContext = new ControllerContext { HttpContext = Context(permission, form) } };
+    }
+
+    private static DefaultHttpContext Context(string permission, Dictionary<string, StringValues> form)
+    {
         var principal = new ClaimsPrincipal(new ClaimsIdentity(
             [
                 new Claim("tenant_id", Guid.NewGuid().ToString("D")),
@@ -139,10 +157,7 @@ public sealed class GskuKnownFailureSentenceTests
         context.Request.Headers.Cookie = "access_token=synthetic-gsku-known-failure";
         context.Request.ContentType = "application/x-www-form-urlencoded";
         context.Request.Form = new FormCollection(form);
-        return new GskusController(new HttpClient(wire), gateway,
-            new EphemeralDataProtectionProvider(), new PrefixLocalizer<Diten.Web.SharedResource>(),
-            new PrefixLocalizer<GskusIndex>(), NullLogger<GskusController>.Instance)
-        { ControllerContext = new ControllerContext { HttpContext = context } };
+        return context;
     }
 
     private sealed class ScriptedHandler(params (HttpStatusCode Status, string Body)[] answers) : HttpMessageHandler

@@ -444,43 +444,19 @@ public sealed class GskusController : Controller
         string action,
         CancellationToken cancellationToken)
     {
-        // Buffered once: a withdrawal may be sent a second time (below), and a sent request disposes its content.
-        byte[] body;
-        MediaTypeHeaderValue? contentType;
-        using (payload)
+        if (!TryCreateGatewayRequest(method, targetUrl, payload, out var request))
         {
-            body = await payload.ReadAsByteArrayAsync(cancellationToken);
-            contentType = payload.Headers.ContentType;
+            payload.Dispose();
+            return UnauthorizedResult();
         }
+        request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"));
 
         try
         {
-            for (var attempt = 0; ; attempt++)
-            {
-            var content = new ByteArrayContent(body);
-            content.Headers.ContentType = contentType;
-            if (!TryCreateGatewayRequest(method, targetUrl, content, out var request))
-            {
-                content.Dispose();
-                return UnauthorizedResult();
-            }
-            request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"));
-
             using (request)
             using (var response = await _httpClient.SendAsync(request, cancellationToken))
             {
                 var responseStatus = (int)response.StatusCode;
-                // Shared item 14 (A1), as on the Global Product screen: a withdrawal refused because an earlier one
-                // stands under another command is told that command — repeating THAT command finishes it. Once, and
-                // only for a withdrawal.
-                if (responseStatus == StatusCodes.Status409Conflict && attempt == 0
-                    && action == "withdraw-identity-approval"
-                    && await PendingWithdrawalCommandAsync(response, cancellationToken) is { } pending
-                    && pending != operationId)
-                {
-                    operationId = pending;
-                    continue;
-                }
                 if (!response.IsSuccessStatusCode)
                     return await KnownOrStatusFailureAsync(response, cancellationToken);
 
@@ -491,11 +467,11 @@ public sealed class GskusController : Controller
                     return SafeFailure(HttpStatusCode.BadGateway);
                 }
 
-                var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                var body = await response.Content.ReadAsStringAsync(cancellationToken);
                 LifecycleGatewayEnvelope? envelope;
                 try
                 {
-                    envelope = JsonSerializer.Deserialize<LifecycleGatewayEnvelope>(responseBody, _jsonOptions);
+                    envelope = JsonSerializer.Deserialize<LifecycleGatewayEnvelope>(body, _jsonOptions);
                 }
                 catch (JsonException exception)
                 {
@@ -510,9 +486,8 @@ public sealed class GskusController : Controller
                 {
                     StatusCode = responseStatus,
                     ContentType = "application/json",
-                    Content = responseBody
+                    Content = body
                 };
-            }
             }
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
@@ -524,33 +499,6 @@ public sealed class GskusController : Controller
         {
             _logger.LogError(exception, "GSKU lifecycle proxy failed for {Action}.", action);
             return SafeFailure(HttpStatusCode.ServiceUnavailable);
-        }
-    }
-
-    private static async Task<Guid?> PendingWithdrawalCommandAsync(
-        HttpResponseMessage response, CancellationToken cancellationToken)
-    {
-        if (!IsJsonMediaType(response.Content.Headers.ContentType?.MediaType))
-            return null;
-        try
-        {
-            using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
-            return document.RootElement.ValueKind == JsonValueKind.Object
-                   && document.RootElement.TryGetProperty("errors", out var errors)
-                   && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() == 1
-                   && errors[0].ValueKind == JsonValueKind.String
-                   && errors[0].GetString() == "FIRST_GSKU_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT"
-                   && document.RootElement.TryGetProperty("data", out var data)
-                   && data.ValueKind == JsonValueKind.Object
-                   && data.TryGetProperty("pendingWithdrawalCommandId", out var pending)
-                   && pending.ValueKind == JsonValueKind.String
-                   && Guid.TryParse(pending.GetString(), out var command) && command != Guid.Empty
-                ? command
-                : null;
-        }
-        catch (JsonException)
-        {
-            return null;
         }
     }
 
@@ -732,6 +680,14 @@ public sealed class GskusController : Controller
         ["GSKU_DEPENDENT_IDENTITIES_EXIST"] = "ErrorDependentIdentitiesExist",
         ["PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING"] = "ErrorApprovalChanging",
         ["PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY"] = "ErrorApprovalTemplateMissing",
+        // FIX2 item 8: an earlier withdrawal of this approval, with another reason or comment, is still under way. The
+        // proxy cannot finish it with this request's text (MDM keeps what the first request said) — it says so.
+        ["FIRST_GSKU_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT"] = "ErrorWithdrawalPending",
+        // FIX2 item 1: every draft state's refusal is said, with what to do next.
+        ["GSKU_IDENTITY_RECONCILIATION_REQUIRED"] = "ErrorReconciliationRequired",
+        ["FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED"] = "ErrorReconciliationRequired",
+        ["FIRST_GSKU_IDENTITY_SUBMISSION_ENDED"] = "ErrorSubmissionEnded",
+        ["FIRST_GSKU_IDENTITY_WORKFLOW_DRAFT_CHANGED"] = "ErrorDraftChanged",
         ["FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED"] = "IdentityNotAppliedParent",
         ["REFERENCE_DATA_CONTRACT_CONFLICT"] = "IdentityNotAppliedReference",
         ["FIRST_GSKU_IDENTITY_DECISION_NOT_APPLICABLE"] = "IdentityNotAppliedGeneric"

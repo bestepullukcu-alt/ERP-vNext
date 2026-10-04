@@ -20,6 +20,10 @@ public sealed class Gsku : EntityBase, IAuditIntentAggregate
     public List<GskuChildCreationAdmission> ChildCreationAdmissions { get; set; } = [];
     public Guid? RetirementOperationId { get; set; }
     public string? RetirementOperationFingerprint { get; set; }
+    // FIX2 item 10: every identity-submit reservation touches the GSKU in the same transaction as it is written, and a
+    // draft edit reads the reservations and writes the GSKU in one transaction — so an edit and a submit that race
+    // cannot both commit (the store refuses one of them with a write conflict). The count itself is not read.
+    public int IdentitySubmitReservations { get; set; }
     public List<LocalAuditIntent> AuditIntents { get; set; } = [];
     public List<LocalAuditIntentReceipt> AuditIntentReceipts { get; set; } = [];
 }

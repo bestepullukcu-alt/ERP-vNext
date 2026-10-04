@@ -177,10 +177,11 @@ public sealed class GskuCorrectionMongoTests : IAsyncLifetime
         Assert.Equal(1, workflow.StartCalls);
     }
 
-    // Rule COR:174 (named by WP-MDM-GSKU-ACCEPT-01) + B8: a decision by the correction's own maker is not applied —
-    // it is ignored and said, the GSKU keeps its pack and its lock, and the operation waits for another approver.
+    // Rule COR:174 + B8, changed by FIX2 item 3: a decision by the correction's own maker closes the engine's approval
+    // and no other decision will come — the correction ends without being applied and the GSKU is given back (FIX1
+    // kept waiting on a closed approval with the GSKU locked for good). The pack is unchanged.
     [Fact]
-    public async Task COR_A_decision_by_the_maker_is_ignored_and_the_correction_keeps_waiting()
+    public async Task COR_A_decision_by_the_maker_ends_the_correction_unapplied_and_frees_the_gsku()
     {
         var (gsku, _) = await SeedApprovedPairAsync("GS-SELF-COR");
         var template = Guid.NewGuid(); var maker = Guid.NewGuid();
@@ -198,10 +199,10 @@ public sealed class GskuCorrectionMongoTests : IAsyncLifetime
 
         Assert.Equal(202, started.StatusCode);
         Assert.Equal(GskuCorrectionWorkflowProcessor.SelfApprovalIgnored, observed.ErrorCode);
-        Assert.NotEqual(GskuCorrectionWorkflowCheckpoint.Completed, operation!.Checkpoint);
-        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, operation.RecoveryDisposition);
+        Assert.Equal(GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired, operation!.Checkpoint);
         Assert.Equal((1m, "C62"), (stored!.PackQuantity, stored.PackUomCode));
-        Assert.NotNull(stored.ActiveLifecycleOperation);
+        Assert.Null(stored.ActiveLifecycleOperation);
+        Assert.Contains(stored.AuditIntents, x => x.Operation == ProductAuditOperation.GskuCorrectionManualReconciliationRequired);
     }
 
     // Rule COR:56 (named by WP-MDM-GSKU-ACCEPT-01): a replay is the same request only under the same workflow

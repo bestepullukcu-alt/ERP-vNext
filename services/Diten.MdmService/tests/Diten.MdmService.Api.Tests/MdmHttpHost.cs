@@ -59,6 +59,8 @@ public sealed class MdmHttpHost : IAsyncLifetime
     public FakeWorkflowEngine Engine { get; } = new();
     public FakeReferenceData References { get; } = new();
     public RecordingAuditForwarder Audit { get; } = new();
+    public FakePlatformReferenceEndpoint PlatformReference { get; } = new();
+    public string MongoConnectionString => _runner?.ConnectionString ?? throw NotStarted();
 
     public WebApplicationFactory<GskusController> Factory => _factory ?? throw NotStarted();
 
@@ -91,6 +93,11 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 ["JwtSettings__Issuer"] = Issuer,
                 ["JwtSettings__Audience"] = Audience,
                 ["PlatformRegistration__BaseUrl"] = "",
+                // The real approval-time resolver client, pointed at the in-process Platform answer.
+                ["VerifiedGskuResolver__PlatformBaseAddress"] = "http://platform.test/",
+                ["VerifiedGskuResolver__Timeout"] = "00:00:02",
+                ["VerifiedGskuResolver__CredentialIdentifier"] = "http-host-resolver",
+                ["VerifiedGskuResolver__CredentialSecret"] = Convert.ToHexString(RandomNumberGenerator.GetBytes(16)),
                 // The three GSKU flows as the tracked development settings name them (B6), with this host's approver.
                 ["FirstGskuIdentityWorkflow__Enabled"] = "true",
                 ["FirstGskuIdentityWorkflow__TemplateCode"] = "GSKU-IDENTITY",
@@ -131,8 +138,11 @@ public sealed class MdmHttpHost : IAsyncLifetime
                     services.AddSingleton<IProductIdentityWorkflowClient>(Engine);
                     services.RemoveAll<IVerifiedGskuReferenceResolver>();
                     services.AddSingleton<IVerifiedGskuReferenceResolver>(References);
-                    services.RemoveAll<IWorkflowVerifiedGskuReferenceResolver>();
-                    services.AddSingleton<IWorkflowVerifiedGskuReferenceResolver>(References);
+                    // The approval-time reference check stays the REAL client; only Platform's answer is faked.
+                    services.RemoveAll<IWorkflowVerifiedMarketServiceIdentityProvider>();
+                    services.AddSingleton<IWorkflowVerifiedMarketServiceIdentityProvider, FakeServiceIdentity>();
+                    services.AddHttpClient(nameof(Diten.MdmService.Infrastructure.ReferenceData.PlatformWorkflowVerifiedGskuResolverClient))
+                        .ConfigurePrimaryHttpMessageHandler(() => PlatformReference);
                     services.RemoveAll<IProductIdentityWorkflowTransportReadiness>();
                     services.AddSingleton<IProductIdentityWorkflowTransportReadiness, ReadyTransport>();
                     services.RemoveAll<IPlatformAuditForwarder>();
@@ -179,12 +189,16 @@ public sealed class MdmHttpHost : IAsyncLifetime
     }
 
     /// <summary>A tenant user's token as AuthService writes it (sub, actor_type, tenant_id, one claim per permission).</summary>
-    public string Token(Guid tenantId, Guid userId, params string[] permissions)
+    public string Token(Guid tenantId, Guid userId, params string[] permissions) =>
+        TokenOf("tenant_user", tenantId, userId, permissions);
+
+    /// <summary>A token of any actor type (a service, a system actor) — for the doors that must refuse them too.</summary>
+    public string TokenOf(string actorType, Guid tenantId, Guid userId, params string[] permissions)
     {
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, userId.ToString("D")),
-            new("actor_type", "tenant_user"),
+            new("actor_type", actorType),
             new("tenant_id", tenantId.ToString("D"))
         };
         claims.AddRange(permissions.Select(permission => new Claim("permission", permission)));

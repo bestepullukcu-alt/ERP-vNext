@@ -277,7 +277,10 @@ public sealed class ProductDefinitionRevisionRepository : IProductDefinitionRevi
                 ? "FIRST_GSKU_REVISION_CONCURRENCY_CONFLICT"
                 : current.LifecycleStatus != sourceStatus
                     ? "FIRST_GSKU_REVISION_STATE_CONFLICT"
-                    : "FIRST_GSKU_WORKFLOW_BINDING_CONFLICT");
+                    // FIX2 item 7: the cap is said as the cap (the processor waits), not as a binding conflict.
+                    : current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate
+                        ? "AUDIT_INTENT_CAPACITY_REACHED"
+                        : "FIRST_GSKU_WORKFLOW_BINDING_CONFLICT");
     }
 
     private string? ValidateLifecycleContract(

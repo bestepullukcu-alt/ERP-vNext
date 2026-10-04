@@ -272,8 +272,10 @@ rules as the Global Product. What differs is only their names:
 - **One approval definition per flow and tenant** (step 4, with the template code from the table). Until it exists and
   is published, a submit or a request answers 409 `PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY`, writes nothing and
   the screen says so ("the approval template for GSKUs is not set up yet") — publish it and submit again.
-- **Who decides.** A decision taken by the maker (or the requester) of the same item is ignored and logged as a warning
-  (`…_SELF_APPROVAL_IGNORED`); the item keeps waiting for another approver.
+- **Who decides.** A decision taken by the maker (or the requester) of the same item is **not applied** (FIX2): the
+  engine has closed the approval with it and no other decision will come. The GSKU identity goes back to draft with
+  the reason (`FIRST_GSKU_IDENTITY_SELF_APPROVAL_IGNORED`, shown on the screen); a correction or retirement request
+  ends unapplied and the GSKU is free again. Logged as a warning.
 - **Approved but not applicable.** When the parent Global Product is no longer approved, or a referenced unit is no
   longer valid, by the time the decision arrives, the GSKU goes back to draft with the reason; the maker sees it in the
   detail view in their language and submits again.
@@ -293,9 +295,28 @@ rules as the Global Product. What differs is only their names:
 - **A withdrawal whose requester never came back.** When an interrupted withdrawal can only be finished by its
   requester and 72 hours pass, the operation is handed to manual reconciliation and logged as an error
   (`…_WITHDRAWAL_REQUESTER_NEVER_RETURNED`) — alert on that line.
-- **Direct GSKU retirement** (`POST /api/gskus/{id}/retire`, `mdm.gskus.retire`) is system-only: the key cannot be
-  granted to a human role any more, a human caller is refused 403 `GSKU_DIRECT_RETIREMENT_SYSTEM_ONLY`, and no system
-  actor calls it today. People retire a GSKU through the retirement request.
+- **Direct GSKU retirement** (`POST /api/gskus/{id}/retire`, `mdm.gskus.retire`) is **closed for every caller**
+  (FIX2): human or not, the answer is 403 `GSKU_DIRECT_RETIREMENT_SYSTEM_ONLY`, and the key cannot be granted to a
+  human role. People retire a GSKU through the retirement request. It is opened only when a system actor is defined
+  (an inbound service identity in MDM), for that identity alone, with its own test.
+
+### 10. A GSKU draft and its submit — every state has a way out (WP-MDM-GSKU-ACCEPT-01 FIX2)
+
+| Where the latest submit stands | On the screen | Edit | Submit | Way out |
+|---|---|---|---|---|
+| on its way to the engine | "being submitted" | no | no | automatic — the worker learns what the engine holds |
+| never received by the engine | "did not reach the engine" | yes (sets the submit aside) | yes (the same submit) | the maker |
+| the engine may hold it (manual reconciliation) | "manual reconciliation — the submitter must submit again" | no | yes | **the submitter's** repeat of the same submit: it reads the engine — the start is there → it goes on; nothing there → the submit ends |
+| ended before the engine started anything | "edit the draft, then submit again" | yes | no (the same submit cannot be repeated) | the maker edits and submits |
+| the engine approved, MDM could not apply it | the reason (parent not approved, unit no longer selectable, decided by the maker) | yes | yes | the maker fixes and submits |
+
+Not covered yet (backlog, after D2): if the submitter has left, nobody else can settle a manual reconciliation — a
+separate reconciliation endpoint with its own permission (`mdm.gskus.reconcile-identity`) is planned.
+
+A correction or a retirement request gives the GSKU back (its lock) only when the engine is known to hold nothing for
+it — refused before processing, no definition (`PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY`), closed without a
+decision, decided by its maker, or its decision no longer applicable. An answer that is lost or cannot be read keeps
+the lock and the start is looked up again (an approval may exist in the Task Center).
 
 ---
 

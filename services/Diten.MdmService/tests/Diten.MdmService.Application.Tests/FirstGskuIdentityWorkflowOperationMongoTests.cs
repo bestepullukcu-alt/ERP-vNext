@@ -522,7 +522,8 @@ public sealed class FirstGskuIdentityWorkflowOperationMongoTests : IAsyncLifetim
         Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable, stored.Checkpoint);
         Assert.Equal("FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED", stored.LastFailureCode);
         Assert.Null(stored.LeaseOwner);
-        Assert.False(await repository.HasUnfinishedOperationAsync(operation.GskuId));
+        Assert.Equal(FirstGskuIdentitySubmitStateKind.None,
+            (await repository.GetSubmitStateAsync(operation.GskuId, operation.ExpectedGskuVersion + 1)).Kind);
     }
 
     [Fact]
@@ -618,21 +619,30 @@ public sealed class FirstGskuIdentityWorkflowOperationMongoTests : IAsyncLifetim
         Assert.DoesNotContain(ordinary.OperationId, listed);
     }
 
-    // B7: "is a submit in flight" for an edit.
+    // B7 + FIX2 item 1 (changed): FIX1 counted every non-final checkpoint as "unfinished" and froze the draft for good
+    // when a submit never reached the engine (AwaitingMakerReplay) or waited for reconciliation. Now each state has
+    // its own way out: in flight waits for the worker; not received → resubmit or edit; reconciliation → the
+    // submitter's repeat; ended at this version → edit. Tenant-bound.
     [Theory]
-    [InlineData(FirstGskuIdentityWorkflowCheckpoint.StartOutcomeUnknown, true)]
-    [InlineData(FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay, true)]
-    [InlineData(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired, true)]
-    [InlineData(FirstGskuIdentityWorkflowCheckpoint.Completed, false)]
-    [InlineData(FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable, false)]
-    public async Task An_unfinished_identity_operation_is_seen_for_its_gsku(
-        FirstGskuIdentityWorkflowCheckpoint checkpoint, bool unfinished)
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.StartOutcomeUnknown, false, FirstGskuIdentitySubmitStateKind.InFlight)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.WorkflowStarted, false, FirstGskuIdentitySubmitStateKind.InFlight)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay, true, FirstGskuIdentitySubmitStateKind.ResubmitRequired)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired, false, FirstGskuIdentitySubmitStateKind.ReconciliationRequired)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart, true, FirstGskuIdentitySubmitStateKind.Ended)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.Completed, false, FirstGskuIdentitySubmitStateKind.None)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable, false, FirstGskuIdentitySubmitStateKind.None)]
+    public async Task The_latest_submit_of_a_gsku_is_classified_with_its_way_out(
+        FirstGskuIdentityWorkflowCheckpoint checkpoint, bool neverStarted, FirstGskuIdentitySubmitStateKind expected)
     {
         var repository = Repository(_tenantId);
         var (operation, _) = await SeedPairAsync(checkpoint);
+        if (neverStarted)
+            await _collection.UpdateOneAsync(x => x.OperationId == operation.OperationId,
+                Builders<FirstGskuIdentityWorkflowOperation>.Update.Set(x => x.WorkflowInstanceId, null));
 
-        Assert.Equal(unfinished, await repository.HasUnfinishedOperationAsync(operation.GskuId));
-        Assert.False(await Repository(_tenantBId).HasUnfinishedOperationAsync(operation.GskuId)); // tenant-bound
+        Assert.Equal(expected, (await repository.GetSubmitStateAsync(operation.GskuId, operation.ExpectedGskuVersion)).Kind);
+        Assert.Equal(FirstGskuIdentitySubmitStateKind.None,
+            (await Repository(_tenantBId).GetSubmitStateAsync(operation.GskuId, operation.ExpectedGskuVersion)).Kind); // tenant-bound
     }
 
     // The index-shape test lives in the MDM HTTP test project (GskuIndexShapeHttpTests): it counts indexes on a

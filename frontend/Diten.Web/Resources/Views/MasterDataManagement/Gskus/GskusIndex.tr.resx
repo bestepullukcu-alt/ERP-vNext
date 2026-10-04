@@ -30,4 +30,13 @@
   <data name="IdentityNotAppliedParent" xml:space="preserve"><value>Onay verildi ancak uygulanamadı: Global Ürün artık onaylı değil. GSKU yeniden taslak — bunu düzeltip yeniden gönderin.</value></data>
   <data name="IdentityNotAppliedReference" xml:space="preserve"><value>Onay verildi ancak uygulanamadı: ambalaj birimi veya uygulanabilirliği artık seçilemiyor. GSKU yeniden taslak — geçerli bir değer seçip yeniden gönderin.</value></data>
   <data name="IdentityNotAppliedGeneric" xml:space="preserve"><value>Onay verildi ancak uygulanamadı. GSKU yeniden taslak — kontrol edip yeniden gönderin.</value></data>
+  <data name="ErrorWithdrawalPending" xml:space="preserve"><value>Bu onayın, farklı bir gerekçe ya da yorumla yapılmış önceki bir geri çekmesi hâlâ işleniyor. Geri çekmeyi öncekiyle aynı gerekçe ve yorumla tekrarlayın ya da bitmesini bekleyin.</value></data>
+  <data name="IdentityNotAppliedSelfApproval" xml:space="preserve"><value>Onay, onu gönderen kişi tarafından karara bağlandı; bu kabul edilmez. GSKU yeniden taslak — başka birinin karar vermesi için yeniden gönderin.</value></data>
+  <data name="IdentityStateInFlight" xml:space="preserve"><value>Bu GSKU onaya gönderildi ve gönderim onay motoruna ulaşmak üzere. O zamana kadar düzenlenemez; bir şey yapmanız gerekmiyor.</value></data>
+  <data name="IdentityStateResubmitRequired" xml:space="preserve"><value>Gönderim onay motoruna ulaşmadı. Yeniden gönderin ya da önce taslağı düzenleyin.</value></data>
+  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>Elle uzlaştırma gerekiyor: onay motoru bu gönderimi tutuyor olabilir. Gönderen kişi yeniden göndermeli — bu, motoru kontrol eder ve durumu çözer.</value></data>
+  <data name="IdentityStateSubmissionEnded" xml:space="preserve"><value>Son gönderim, onay motoru hiçbir şey başlatmadan sona erdi. Taslağı düzenleyin, sonra yeniden gönderin.</value></data>
+  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>Bu GSKU'nun gönderimi elle uzlaştırma gerektiriyor. Yalnız gönderen kişi yeniden göndererek çözebilir.</value></data>
+  <data name="ErrorSubmissionEnded" xml:space="preserve"><value>Bu gönderim onay motoruna ulaşmadan sona erdi ve olduğu gibi tekrarlanamaz. Taslağı düzenleyin, sonra yeniden gönderin.</value></data>
+  <data name="ErrorDraftChanged" xml:space="preserve"><value>Taslak, gönderilirken değişti. Yeniden açın ve güncel sürümü gönderin.</value></data>
 </root>

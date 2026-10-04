@@ -5,6 +5,9 @@ using System.Text;
 using Diten.MdmService.Application.Contracts.Audit;
 using Diten.MdmService.Application.Contracts.ReferenceData;
 using Diten.MdmService.Application.Contracts.Workflow;
+using System.Net;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Diten.MdmService.Api.Tests;
 
@@ -33,6 +36,7 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         public Guid? ApprovedBy { get; set; }
         public bool Cancelled { get; set; }
         public DateTimeOffset? DecidedAt { get; set; }
+        public bool ClosedWithoutDecision { get; set; }
     }
 
     private readonly ConcurrentDictionary<string, Instance> _byKey = new(StringComparer.Ordinal);
@@ -40,6 +44,24 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
 
     /// <summary>The outcome the next start answers with (once), instead of starting.</summary>
     public ProductIdentityWorkflowTransportOutcome? NextStartFails { get; set; }
+
+    /// <summary>The next start answers this (once) — after creating the instance first when <c>Created</c>, the way an
+    /// engine answers when the answer is lost or unreadable but the work was done.</summary>
+    public (ProductIdentityWorkflowTransportOutcome Outcome, string Code, bool Created)? NextStartFailure { get; set; }
+
+    /// <summary>While set, every start lookup answers this (the engine cannot say what it holds).</summary>
+    public ProductIdentityWorkflowTransportOutcome? LookupFailure { get; set; }
+
+    /// <summary>The outcome the next cancellation answers with (once), instead of cancelling.</summary>
+    public ProductIdentityWorkflowTransportOutcome? NextCancelFails { get; set; }
+
+    /// <summary>An administrator closes the approval without a decision (cancelled in the Task Center).</summary>
+    public void CloseWithoutDecision(Instance instance)
+    {
+        instance.ClosedWithoutDecision = true;
+        instance.InstanceVersion++;
+        instance.TaskVersion++;
+    }
 
     public int StartCalls;
     private long _sequence;
@@ -76,6 +98,11 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(
                 failure, "FAKE_ENGINE_START_REFUSED"));
         }
+        var scripted = NextStartFailure;
+        NextStartFailure = null;
+        if (scripted is { Created: false } refused)
+            return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(
+                refused.Outcome, refused.Code));
 
         var replay = _byKey.TryGetValue(request.IdempotencyKey, out var existing);
         var instance = existing ?? _byKey.GetOrAdd(request.IdempotencyKey, key =>
@@ -96,13 +123,18 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
             _byId[created.Id] = created;
             return created;
         });
+        if (scripted is { Created: true } lost)
+            return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(
+                lost.Outcome, lost.Code));
         return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Success(
             StartResult(instance, replay)));
     }
 
     public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>> GetStartResultAsync(
         Guid tenantId, ProductIdentityWorkflowStartResultRequest request, CancellationToken cancellationToken = default) =>
-        Task.FromResult(_byKey.TryGetValue(request.IdempotencyKey, out var instance)
+        Task.FromResult(LookupFailure is { } lookupFailure
+            ? ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(lookupFailure, "FAKE_ENGINE_LOOKUP_FAILED")
+            : _byKey.TryGetValue(request.IdempotencyKey, out var instance)
                         && instance.ObjectType == request.ExpectedObjectType
                         && instance.ObjectId == request.ExpectedObjectId
             ? ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Success(StartResult(instance, true))
@@ -115,6 +147,9 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         if (!_byId.TryGetValue(request.WorkflowInstanceId, out var instance))
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
                 ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_INSTANCE_NOT_FOUND"));
+        if (instance.ClosedWithoutDecision)
+            return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
+                ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT"));
         if (instance.ApprovedBy is not { } approver)
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
                 ProductIdentityWorkflowTransportOutcome.NonTerminal, "WORKFLOW_INSTANCE_NOT_TERMINAL"));
@@ -142,6 +177,12 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         Guid tenantId, ProductIdentityWorkflowCancellationRequest request, string delegatedUserToken,
         CancellationToken cancellationToken = default)
     {
+        if (NextCancelFails is { } cancelFailure)
+        {
+            NextCancelFails = null;
+            return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationEvidence>.Fail(
+                cancelFailure, "FAKE_ENGINE_CANCEL_FAILED"));
+        }
         if (!_byId.TryGetValue(request.WorkflowInstanceId, out var instance))
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationEvidence>.Fail(
                 ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_INSTANCE_NOT_FOUND"));
@@ -218,4 +259,69 @@ public sealed class RecordingAuditForwarder : IPlatformAuditForwarder
         Forwarded.Enqueue(request);
         return Task.CompletedTask;
     }
+}
+
+/// <summary>
+/// Platform's verified-GSKU resolve endpoint, on the wire. FIX2 item 2: the approval-time check uses the REAL resolver
+/// client (PlatformWorkflowVerifiedGskuResolverClient) against this answer, so what a retired or withdrawn value does
+/// is what production does — FIX1's test passed on a fake that returned a retired selection as a success.
+/// </summary>
+public sealed class FakePlatformReferenceEndpoint : HttpMessageHandler
+{
+    private static readonly DateTimeOffset ResolvedAt = new(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
+
+    /// <summary>Values Platform now reports as retired (no longer selectable for new use).</summary>
+    public ConcurrentDictionary<string, bool> Retired { get; } = new(StringComparer.Ordinal);
+
+    public int Calls;
+
+    /// <summary>While set, Platform answers with this status and no envelope (an outage, a refused service identity).</summary>
+    public HttpStatusCode? FailWith { get; set; }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        Interlocked.Increment(ref Calls);
+        if (FailWith is { } status)
+            return new HttpResponseMessage(status) { Content = new StringContent("platform unavailable", Encoding.UTF8, "text/plain") };
+        var body = JsonNode.Parse(await request.Content!.ReadAsStringAsync(cancellationToken))!;
+        var selections = new JsonArray();
+        foreach (var item in body["selections"]!.AsArray())
+        {
+            var set = item!["set_code"]!.GetValue<string>();
+            var value = item["value_code"]!.GetValue<string>();
+            var retired = Retired.ContainsKey(value);
+            selections.Add(new JsonObject
+            {
+                ["set_code"] = set,
+                ["value_code"] = value,
+                ["catalog_version_id"] = (set == "uom" ? "b0000000-0000-0000-0000-000000000002" : "b0000000-0000-0000-0000-000000000001"),
+                ["catalog_version_number"] = 1,
+                ["resolution_mode"] = "LATEST",
+                ["resolved_at_utc"] = ResolvedAt.ToString("O"),
+                ["is_retired"] = retired,
+                ["selectable_for_new"] = !retired
+            });
+        }
+        var envelope = new JsonObject
+        {
+            ["data"] = new JsonObject { ["selections"] = selections },
+            ["statusCode"] = 200,
+            ["isSuccessful"] = true,
+            ["errors"] = new JsonArray(),
+            ["reason_code"] = null,
+            ["correlation_id"] = null
+        };
+        return new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(envelope.ToJsonString(), Encoding.UTF8, "application/json")
+        };
+    }
+}
+
+/// <summary>The service token the resolver presents — issued here, in this process, for the test host only.</summary>
+public sealed class FakeServiceIdentity : IWorkflowVerifiedMarketServiceIdentityProvider
+{
+    public Task<WorkflowVerifiedMarketServiceIdentity> GetAsync(Guid tenantId, bool forceRefresh,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(new WorkflowVerifiedMarketServiceIdentity("http-host-service-token", DateTimeOffset.UtcNow.AddMinutes(5)));
 }

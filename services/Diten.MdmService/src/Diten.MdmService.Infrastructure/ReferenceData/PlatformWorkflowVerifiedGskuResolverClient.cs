@@ -143,9 +143,13 @@ public sealed class PlatformWorkflowVerifiedGskuResolverClient : IWorkflowVerifi
                 var values = data.GetProperty("selections");
                 if (values.ValueKind != JsonValueKind.Array || values.GetArrayLength() != 2) return Contract();
                 var selections = values.EnumerateArray().Select(ParseSelection).ToList();
-                return Trusted(selections, packApplicabilityValueCode, uomValueCode)
-                    ? VerifiedGskuReferenceResolveResult.Success(selections)
-                    : Contract();
+                if (!Trusted(selections, packApplicabilityValueCode, uomValueCode)) return Contract();
+                // A well-formed answer that says a value can no longer be chosen (retired, or withdrawn from new use)
+                // is not a broken contract: it is a fact about the value, and a caller that waits will not see it
+                // change (FIX2 item 2; the MOD-0048 case). Its own code, so callers can tell the two apart.
+                return selections.Any(item => item.IsRetired || !item.SelectableForNew)
+                    ? Fail(409, VerifiedGskuReferenceResolveResult.NotSelectable)
+                    : VerifiedGskuReferenceResolveResult.Success(selections);
             }
 
             if (root.GetProperty("isSuccessful").GetBoolean()
@@ -208,7 +212,7 @@ public sealed class PlatformWorkflowVerifiedGskuResolverClient : IWorkflowVerifi
         selections.Select(item => item.SetCode).Distinct(StringComparer.Ordinal).Count() == 2
         && selections.All(item => item.CatalogVersionId != Guid.Empty && item.CatalogVersionNumber > 0
             && item.ResolutionMode == "LATEST" && item.ResolvedAtUtc != default
-            && item.ResolvedAtUtc.Offset == TimeSpan.Zero && !item.IsRetired && item.SelectableForNew)
+            && item.ResolvedAtUtc.Offset == TimeSpan.Zero)
         && selections.Any(item => item.SetCode == "pack-applicability" && item.ValueCode == pack)
         && selections.Any(item => item.SetCode == "uom" && item.ValueCode == uom);
 

@@ -323,10 +323,20 @@ const GskusList = (function () {
         setText('oc-updated-at', formatDate(valueOf(detail, 'updatedAt', 'UpdatedAt')));
         // GSKU FIX1 (B2 b): the approval was granted and could not be applied — say why, in the reader's language.
         const notApplied = valueOf(detail, 'identityNotAppliedReason', 'IdentityNotAppliedReason');
-        const notAppliedText = !notApplied ? ''
+        // FIX2 item 1: where the latest submit stands is said first — each state with what happens next.
+        const submitState = valueOf(detail, 'identitySubmitState', 'IdentitySubmitState');
+        const submitStateText = {
+            SUBMIT_IN_FLIGHT: L.IdentityStateInFlight,
+            RESUBMIT_REQUIRED: L.IdentityStateResubmitRequired,
+            RECONCILIATION_REQUIRED: L.IdentityStateReconciliationRequired,
+            SUBMISSION_ENDED: L.IdentityStateSubmissionEnded
+        }[submitState] || '';
+        const notAppliedText = submitStateText || (!notApplied ? ''
             : notApplied === 'FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED' ? L.IdentityNotAppliedParent
-            : notApplied === 'REFERENCE_DATA_CONTRACT_CONFLICT' ? L.IdentityNotAppliedReference
-            : L.IdentityNotAppliedGeneric;
+            : notApplied === 'REFERENCE_DATA_CONTRACT_CONFLICT' || notApplied === 'REFERENCE_NOT_SELECTABLE'
+                ? L.IdentityNotAppliedReference
+            : notApplied === 'FIRST_GSKU_IDENTITY_SELF_APPROVAL_IGNORED' ? L.IdentityNotAppliedSelfApproval
+            : L.IdentityNotAppliedGeneric);
         setText('oc-identity-not-applied', notAppliedText);
         document.getElementById('oc-identity-not-applied-row')?.classList.toggle('d-none', !notAppliedText);
         const statusElement = document.getElementById('oc-status');

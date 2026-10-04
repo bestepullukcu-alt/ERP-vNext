@@ -128,13 +128,24 @@ public sealed class FirstGskuIdentityRetirementProcessor(
             }
 
             var now = timeProvider.GetUtcNow();
-            var claim = await operations.TryClaimAsync(new(
-                operation.OperationId,
-                operation.OperationFingerprint,
-                Claimable,
-                leaseOwner,
-                now.UtcTicks,
-                now.Add(leaseDuration).UtcTicks), cancellationToken);
+            var leaseUntil = now.Add(leaseDuration).UtcTicks;
+            // FIX2 item 9: the shared bounded claim — a store that does not answer is answered within half the lease,
+            // and a claim it may have written is given back.
+            var (claim, storeSilent) = await ProductIdentityWorkflowClaims.ClaimAsync(
+                _ => operations.TryClaimAsync(new(
+                    operation.OperationId,
+                    operation.OperationFingerprint,
+                    Claimable,
+                    leaseOwner,
+                    now.UtcTicks,
+                    leaseUntil), _),
+                bound => operations.ReleaseIfOwnedAsync(operation.OperationId, leaseOwner, leaseUntil, bound),
+                leaseDuration,
+                _ => { });
+            if (storeSilent)
+            {
+                return Fail(operation, ProductIdentityWorkflowClaims.StoreUnavailable, 503);
+            }
             if (claim is null)
             {
                 return Fail(operation, "FIRST_GSKU_RETIREMENT_BUSY", 409);

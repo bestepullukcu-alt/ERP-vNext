@@ -29,4 +29,13 @@
   <data name="IdentityNotAppliedParent" xml:space="preserve"><value>The approval was granted but could not be applied: the Global Product is no longer approved. The GSKU is a draft again — fix this and submit it again.</value></data>
   <data name="IdentityNotAppliedReference" xml:space="preserve"><value>The approval was granted but could not be applied: the pack unit or its applicability is no longer selectable. The GSKU is a draft again — choose a valid value and submit it again.</value></data>
   <data name="IdentityNotAppliedGeneric" xml:space="preserve"><value>The approval was granted but could not be applied. The GSKU is a draft again — check it and submit it again.</value></data>
+  <data name="ErrorWithdrawalPending" xml:space="preserve"><value>An earlier withdrawal of this approval, with a different reason or comment, is still being processed. Repeat the withdrawal with the same reason and comment as before, or wait for it to finish.</value></data>
+  <data name="IdentityNotAppliedSelfApproval" xml:space="preserve"><value>The approval was decided by the person who submitted it, which is not accepted. The GSKU is a draft again — submit it for someone else to decide.</value></data>
+  <data name="IdentityStateInFlight" xml:space="preserve"><value>This GSKU has been submitted for approval and the submission is on its way to the approval engine. It cannot be edited until then; no action is needed.</value></data>
+  <data name="IdentityStateResubmitRequired" xml:space="preserve"><value>The submission did not reach the approval engine. Submit again, or edit the draft first.</value></data>
+  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>Manual reconciliation is needed: the approval engine may hold this submission. The person who submitted it must submit again — that checks the engine and settles it.</value></data>
+  <data name="IdentityStateSubmissionEnded" xml:space="preserve"><value>The last submission ended before the approval engine started anything. Edit the draft, then submit it again.</value></data>
+  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>This GSKU's submission needs manual reconciliation. Only the person who submitted it can settle it, by submitting again.</value></data>
+  <data name="ErrorSubmissionEnded" xml:space="preserve"><value>This submission ended before it reached the approval engine and cannot be repeated as it is. Edit the draft, then submit it again.</value></data>
+  <data name="ErrorDraftChanged" xml:space="preserve"><value>The draft changed while it was being submitted. Open it again and submit the current version.</value></data>
 </root>

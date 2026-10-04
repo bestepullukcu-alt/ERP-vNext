@@ -30,4 +30,13 @@
   <data name="IdentityNotAppliedParent" xml:space="preserve"><value>审批已通过但无法应用：全球产品已不再处于批准状态。GSKU 已恢复为草稿——请修正后重新提交。</value></data>
   <data name="IdentityNotAppliedReference" xml:space="preserve"><value>审批已通过但无法应用：包装单位或其适用性已不可选。GSKU 已恢复为草稿——请选择有效值后重新提交。</value></data>
   <data name="IdentityNotAppliedGeneric" xml:space="preserve"><value>审批已通过但无法应用。GSKU 已恢复为草稿——请检查后重新提交。</value></data>
+  <data name="ErrorWithdrawalPending" xml:space="preserve"><value>此审批之前的一次撤回（原因或备注不同）仍在处理中。请使用与之前相同的原因和备注重新撤回，或等待其完成。</value></data>
+  <data name="IdentityNotAppliedSelfApproval" xml:space="preserve"><value>该审批由提交人本人作出决定，这不被接受。GSKU 已恢复为草稿——请重新提交，由其他人作出决定。</value></data>
+  <data name="IdentityStateInFlight" xml:space="preserve"><value>此 GSKU 已提交审批，提交正在送达审批引擎。在此之前无法编辑；无需任何操作。</value></data>
+  <data name="IdentityStateResubmitRequired" xml:space="preserve"><value>提交未送达审批引擎。请重新提交，或先编辑草稿。</value></data>
+  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>需要人工核对：审批引擎可能持有此次提交。提交人需重新提交——这会核查引擎并解决此问题。</value></data>
+  <data name="IdentityStateSubmissionEnded" xml:space="preserve"><value>上一次提交在审批引擎启动任何流程之前就已结束。请编辑草稿，然后重新提交。</value></data>
+  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>此 GSKU 的提交需要人工核对。只有提交人可以通过重新提交来解决。</value></data>
+  <data name="ErrorSubmissionEnded" xml:space="preserve"><value>此次提交在送达审批引擎之前已结束，无法原样重复。请编辑草稿，然后重新提交。</value></data>
+  <data name="ErrorDraftChanged" xml:space="preserve"><value>草稿在提交过程中发生了变化。请重新打开并提交当前版本。</value></data>
 </root>

@@ -86,6 +86,15 @@ public sealed class GskuCorrectionWorkflowOperationRepository(IMongoDatabase dat
             leaseOwner, updated.LeaseGeneration, updated.Checkpoint);
     }
 
+    public Task ReleaseIfOwnedAsync(Guid operationId, string leaseOwner, long leaseUntilUtcTicks,
+        CancellationToken cancellationToken = default) =>
+        rows.UpdateOneAsync(
+            Active & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.OperationId, operationId)
+            & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.LeaseOwner, leaseOwner)
+            & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.LeaseUntilUtcTicksV1, leaseUntilUtcTicks),
+            Builders<GskuCorrectionWorkflowOperation>.Update.Set(x => x.LeaseOwner, null).Set(x => x.LeaseUntilUtcTicksV1, null),
+            cancellationToken: cancellationToken);
+
     public async Task<bool> AdvanceAsync(GskuCorrectionWorkflowClaim claim,
         GskuCorrectionWorkflowMutation mutation, CancellationToken cancellationToken = default)
     {

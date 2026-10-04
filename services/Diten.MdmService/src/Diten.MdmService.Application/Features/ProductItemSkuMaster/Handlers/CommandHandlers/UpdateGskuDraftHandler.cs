@@ -29,6 +29,7 @@ public sealed class UpdateGskuDraftHandler
     private readonly IFirstGskuIdentityWorkflowOperationRepository? _identityOperations;
 
     public const string GskuSubmitInFlight = "GSKU_IDENTITY_SUBMIT_IN_FLIGHT";
+    public const string GskuReconciliationRequired = "GSKU_IDENTITY_RECONCILIATION_REQUIRED";
 
     public UpdateGskuDraftHandler(
         IGskuRepository gskus,
@@ -122,12 +123,17 @@ public sealed class UpdateGskuDraftHandler
             return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail("GSKU_NOT_FOUND", 404);
         }
 
-        // B7: while a submit is in flight the draft stays a draft until the engine has it — an edit now would let the
-        // approver approve facts that are no longer the ones on the record.
-        if (_identityOperations is not null
-            && await _identityOperations.HasUnfinishedOperationAsync(current.Id, cancellationToken))
+        // B7: while a submit is on its way (or the engine may hold it) the draft stays as submitted — an edit now would
+        // let the approver approve facts that are no longer the ones on the record. A submit the engine never received
+        // does not hold the edit (FIX2 item 1): the edit sets it aside. This is the early answer; the write repeats the
+        // check in the same transaction as the edit itself (FIX2 item 10).
+        if (_identityOperations is not null)
         {
-            return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail(GskuSubmitInFlight, 409);
+            var submit = await _identityOperations.GetSubmitStateAsync(current.Id, current.Version, cancellationToken);
+            if (submit.Kind == FirstGskuIdentitySubmitStateKind.InFlight)
+                return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail(GskuSubmitInFlight, 409);
+            if (submit.Kind == FirstGskuIdentitySubmitStateKind.ReconciliationRequired)
+                return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail(GskuReconciliationRequired, 409);
         }
 
         VerifiedGskuReferenceResolveResult resolved;

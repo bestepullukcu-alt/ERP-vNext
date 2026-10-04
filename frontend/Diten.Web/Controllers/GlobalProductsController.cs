@@ -318,15 +318,18 @@ public sealed class GlobalProductsController : Controller
                     // was lost. One exact idempotent replay is the only authoritative reconciliation.
                     if (responseStatus == StatusCodes.Status502BadGateway && attempt == 0)
                         continue;
-                    // The requester's earlier withdrawal stands under another command (MDM tells only them):
-                    // repeating THAT command is what finishes it. Once, and only for a withdrawal.
-                    if (responseStatus == StatusCodes.Status409Conflict && attempt == 0
+                    // FIX2 item 8: an earlier withdrawal of this approval, with another reason or comment, is still
+                    // under way. This request's text cannot finish it (MDM keeps what the first request said, and the
+                    // FIX1 repeat with the other command was refused for exactly that) — the requester is told so.
+                    if (responseStatus == StatusCodes.Status409Conflict
                         && mutationKind == LifecycleMutationKind.Withdraw
-                        && await PendingWithdrawalCommandAsync(response, cancellationToken) is { } pending
-                        && pending != operationId)
+                        && await PendingWithdrawalCommandAsync(response, cancellationToken) is not null)
                     {
-                        operationId = pending;
-                        continue;
+                        return StatusCode(StatusCodes.Status409Conflict, new
+                        {
+                            success = false,
+                            errors = new[] { _localizer["ErrorWithdrawalPending"].Value }
+                        });
                     }
                     return LifecycleFailure((int)response.StatusCode);
                 }

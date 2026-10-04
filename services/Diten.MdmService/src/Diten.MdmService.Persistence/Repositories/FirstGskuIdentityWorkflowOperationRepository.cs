@@ -105,10 +105,44 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         operation.CreatedAt = new DateTimeOffset(operation.CreatedAtUtcTicksV1, TimeSpan.Zero);
         operation.UpdatedAt = operation.CreatedAt;
 
+        // FIX2 item 10: the reservation and a touch of the draft it submits are one transaction. A draft edit reads the
+        // reservations and writes the draft in one transaction too, so the two cannot both commit: either the edit
+        // sees this submit (and is refused), or the submit finds the draft moved (and is refused) — never an approval
+        // started on facts the record no longer has.
         try
         {
-            await _operations.InsertOneAsync(operation, cancellationToken: cancellationToken);
+            using var session = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+            session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+            try
+            {
+                await _operations.InsertOneAsync(session, operation, cancellationToken: cancellationToken);
+                var touched = await _gskus.UpdateOneAsync(session,
+                    ActiveGskuFilter(operation.GskuId)
+                    & Builders<Gsku>.Filter.Eq(item => item.Version, operation.ExpectedGskuVersion)
+                    & Builders<Gsku>.Filter.Eq(item => item.LifecycleStatus, ProductIdentityLifecycleStatus.Draft),
+                    Builders<Gsku>.Update.Inc(item => item.IdentitySubmitReservations, 1),
+                    cancellationToken: cancellationToken);
+                if (touched.MatchedCount != 1
+                    && await _gskus.Find(session, ActiveGskuFilter(operation.GskuId)).AnyAsync(cancellationToken))
+                {
+                    // The draft moved (an edit, a submit) since it was read: this submit is of facts no longer there.
+                    await session.AbortTransactionAsync(cancellationToken);
+                    return new(false, false, null, "FIRST_GSKU_IDENTITY_WORKFLOW_DRAFT_CHANGED");
+                }
+                await session.CommitTransactionAsync(cancellationToken);
+            }
+            catch
+            {
+                if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+                throw;
+            }
             return new(true, false, operation, null);
+        }
+        catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError")
+                                               && exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
+        {
+            // A write conflict with an edit that committed first: the draft is not what this submit read.
+            return new(false, false, null, "FIRST_GSKU_IDENTITY_WORKFLOW_DRAFT_CHANGED");
         }
         catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
@@ -440,13 +474,23 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
                 .Set(item => item.LeaseUntilUtcTicksV1, null),
             cancellationToken: cancellationToken);
 
-    public async Task<bool> HasUnfinishedOperationAsync(Guid gskuId, CancellationToken cancellationToken = default) =>
-        await _operations.Find(
-                ActiveTenantFilter
-                & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.GskuId, gskuId)
-                & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Nin(item => item.Checkpoint, FinalCheckpoints))
-            .Limit(1)
-            .CountDocumentsAsync(cancellationToken) > 0;
+    public async Task<FirstGskuIdentitySubmitState> GetSubmitStateAsync(
+        Guid gskuId, int currentGskuVersion, CancellationToken cancellationToken = default) =>
+        FirstGskuIdentitySubmitState.Of(await LatestForGsku(_operations, ActiveTenantFilter, gskuId)
+            .FirstOrDefaultAsync(cancellationToken), currentGskuVersion);
+
+    // The GSKU's latest identity operation — its submits come one per draft version, the newest is the one that counts.
+    internal static IFindFluent<FirstGskuIdentityWorkflowOperation, FirstGskuIdentityWorkflowOperation> LatestForGsku(
+        IMongoCollection<FirstGskuIdentityWorkflowOperation> operations,
+        FilterDefinition<FirstGskuIdentityWorkflowOperation> tenantFilter,
+        Guid gskuId,
+        IClientSessionHandle? session = null)
+    {
+        var filter = tenantFilter & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.GskuId, gskuId);
+        return (session is null ? operations.Find(filter) : operations.Find(session, filter))
+            .SortByDescending(item => item.CreatedAtUtcTicksV1)
+            .Limit(1);
+    }
 
     public async Task<string?> LatestNotApplicableReasonAsync(Guid gskuId, CancellationToken cancellationToken = default)
     {
@@ -458,13 +502,8 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         return latest?.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable ? latest.LastFailureCode : null;
     }
 
-    private static readonly FirstGskuIdentityWorkflowCheckpoint[] FinalCheckpoints =
-    [
-        FirstGskuIdentityWorkflowCheckpoint.Completed,
-        FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
-        FirstGskuIdentityWorkflowCheckpoint.Superseded,
-        FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable
-    ];
+    public const string SelfApprovalReason = "FIRST_GSKU_IDENTITY_SELF_APPROVAL_IGNORED";
+    public const string AuditCapacityReached = "AUDIT_INTENT_CAPACITY_REACHED";
 
     public async Task<FirstGskuIdentityDecisionNotApplicableWriteResult> ApplyDecisionNotApplicableAsync(
         FirstGskuIdentityWorkflowClaim claim,
@@ -482,10 +521,14 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         if (claim.TenantId != _tenantId
             || claim.OperationId != operation.OperationId
             || claim.OperationFingerprint != operation.OperationFingerprint
-            || claim.Checkpoint != FirstGskuIdentityWorkflowCheckpoint.DecisionObserved
+            // From DecisionObserved: the engine approved and the approval cannot be applied. From AwaitingDecision
+            // (FIX2 item 3): the engine closed the approval with the maker's own decision — nothing else will come.
+            || !(claim.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.DecisionObserved
+                    && operation.DecisionKind == ProductIdentityDecisionKind.Approved
+                 || claim.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision
+                    && reasonCode == SelfApprovalReason)
             || updatedAtUtcTicks <= 0
             || !IsExactBounded(reasonCode, 128)
-            || operation.DecisionKind != ProductIdentityDecisionKind.Approved
             || revisionAuditIntent.Operation != ProductAuditOperation.ProductDefinitionRevisionIdentityDecisionNotApplicable
             || gskuAuditIntent.Operation != ProductAuditOperation.GskuIdentityDecisionNotApplicable
             || !ValidNotApplicableAudit(revisionAuditIntent, AuditAggregateType.ProductDefinitionRevision,
@@ -509,7 +552,8 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
                 & Builders<ProductDefinitionRevision>.Filter.Eq(item => item.Version, operation.ExpectedRevisionVersion + 1)
                 & Builders<ProductDefinitionRevision>.Filter.Eq(
                     item => item.LifecycleStatus, ProductIdentityLifecycleStatus.PendingIdentityApproval)
-                & ExactBindingFilter<ProductDefinitionRevision>(operation),
+                & ExactBindingFilter<ProductDefinitionRevision>(operation)
+                & Builders<ProductDefinitionRevision>.Filter.Where(item => item.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate),
                 Builders<ProductDefinitionRevision>.Update
                     .Set(item => item.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
                     .Set(item => item.UpdatedAt, new DateTimeOffset(updatedAtUtcTicks, TimeSpan.Zero))
@@ -521,7 +565,8 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
                 ActiveGskuFilter(operation.GskuId)
                 & Builders<Gsku>.Filter.Eq(item => item.Version, operation.ExpectedGskuVersion + 1)
                 & Builders<Gsku>.Filter.Eq(item => item.LifecycleStatus, ProductIdentityLifecycleStatus.PendingIdentityApproval)
-                & ExactBindingFilter<Gsku>(operation),
+                & ExactBindingFilter<Gsku>(operation)
+                & Builders<Gsku>.Filter.Where(item => item.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate),
                 Builders<Gsku>.Update
                     .Set(item => item.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
                     .Set(item => item.UpdatedAt, new DateTimeOffset(updatedAtUtcTicks, TimeSpan.Zero))
@@ -547,7 +592,13 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
             if (operationResult is not { ModifiedCount: 1 })
             {
                 await session.AbortTransactionAsync(cancellationToken);
-                return new(false, false, currentRevision, currentGsku, "FIRST_GSKU_IDENTITY_NOT_APPLICABLE_PAIR_CONFLICT");
+                // FIX2 item 7: a member at its audit-intent capacity is said as such (the writer waits for delivery),
+                // not as a pair conflict (which the processor would quarantine).
+                var atCapacity = currentRevision?.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate
+                                 || currentGsku?.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate;
+                return new(false, false, currentRevision, currentGsku, atCapacity
+                    ? AuditCapacityReached
+                    : "FIRST_GSKU_IDENTITY_NOT_APPLICABLE_PAIR_CONFLICT");
             }
             await session.CommitTransactionAsync(cancellationToken);
         }
@@ -774,14 +825,15 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         && gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
         && revision.Version == operation.ExpectedRevisionVersion + 2
         && gsku.Version == operation.WithdrawalExpectedGskuVersion + 1
-        && revision.AuditIntents.Count(intent =>
+        // FIX2 item 7: the intent, or its receipt once delivered and compacted.
+        && AuditWriteReadBack.Persisted(revision, revisionAuditIntent, intent =>
             intent.Operation == ProductAuditOperation.ProductDefinitionRevisionIdentityApprovalWithdrawn
             && intent.IdempotencyKey == commandId.ToString("D")
-            && intent.EvidenceHash == revisionAuditIntent.EvidenceHash) == 1
-        && gsku.AuditIntents.Count(intent =>
+            && intent.EvidenceHash == revisionAuditIntent.EvidenceHash)
+        && AuditWriteReadBack.Persisted(gsku, gskuAuditIntent, intent =>
             intent.Operation == ProductAuditOperation.GskuIdentityApprovalWithdrawn
             && intent.IdempotencyKey == commandId.ToString("D")
-            && intent.EvidenceHash == gskuAuditIntent.EvidenceHash) == 1;
+            && intent.EvidenceHash == gskuAuditIntent.EvidenceHash);
 
     private bool ValidWithdrawalAudit(
         LocalAuditIntent intent,
@@ -923,6 +975,14 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
                 or FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
             (FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
                 FirstGskuIdentityWorkflowCheckpoint.DecisionObserved) => true,
+            // FIX2 item 1: a submit that never reached the engine ends (the draft opens); a manual one whose start the
+            // engine does have goes on as started (the submitter's reconciling repeat, CT decision C(A)).
+            (FirstGskuIdentityWorkflowCheckpoint.StartOutcomeUnknown
+                or FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
+                or FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+                FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart) => true,
+            (FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+                FirstGskuIdentityWorkflowCheckpoint.WorkflowStarted) => true,
             _ => false
         };
 

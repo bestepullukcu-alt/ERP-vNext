@@ -74,6 +74,10 @@ public sealed class GetGskuByIdHandler
             return Response<ProductItemSkuMasterModels.GskuDetailDto>.Fail("GSKU_NOT_FOUND", 404);
         }
 
+        // FIX2 item 1: where the draft's latest submit stands decides its actions and the sentence on the screen.
+        var submit = gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft && _identityOperations is not null
+            ? await _identityOperations.GetSubmitStateAsync(gsku.Id, gsku.Version, cancellationToken)
+            : FirstGskuIdentitySubmitState.None;
         return Response<ProductItemSkuMasterModels.GskuDetailDto>.Success(new(
             gsku.Id,
             gsku.CanonicalCode,
@@ -89,17 +93,25 @@ public sealed class GetGskuByIdHandler
             gsku.Version,
             gsku.CreatedAt,
             gsku.UpdatedAt,
-            BuildPairAvailableActions(gsku, revision, _actorContext,
-                _identityOperations is not null
-                && await _identityOperations.HasUnfinishedOperationAsync(gsku.Id, cancellationToken)),
+            BuildPairAvailableActions(gsku, revision, _actorContext, submit.Kind),
             gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft && _identityOperations is not null
                 ? await _identityOperations.LatestNotApplicableReasonAsync(gsku.Id, cancellationToken)
-                : null));
+                : null,
+            SubmitStateName(submit.Kind)));
     }
+
+    internal static string? SubmitStateName(FirstGskuIdentitySubmitStateKind kind) => kind switch
+    {
+        FirstGskuIdentitySubmitStateKind.InFlight => "SUBMIT_IN_FLIGHT",
+        FirstGskuIdentitySubmitStateKind.ResubmitRequired => "RESUBMIT_REQUIRED",
+        FirstGskuIdentitySubmitStateKind.ReconciliationRequired => "RECONCILIATION_REQUIRED",
+        FirstGskuIdentitySubmitStateKind.Ended => "SUBMISSION_ENDED",
+        _ => null
+    };
 
     internal static IReadOnlyList<string> BuildPairAvailableActions(
         Gsku gsku, ProductDefinitionRevision revision, IProductIdentityLifecycleActorContext actorContext,
-        bool submitInFlight = false)
+        FirstGskuIdentitySubmitStateKind submit = FirstGskuIdentitySubmitStateKind.None)
     {
         if (gsku.ProductDefinitionRevisionId != revision.Id || gsku.TenantId != revision.TenantId
             || revision.IsDeleted || gsku.LifecycleStatus != revision.LifecycleStatus
@@ -107,23 +119,31 @@ public sealed class GetGskuByIdHandler
             || !string.Equals(System.Text.Json.JsonSerializer.Serialize(gsku.IdentityWorkflowBinding),
                 System.Text.Json.JsonSerializer.Serialize(revision.IdentityWorkflowBinding), StringComparison.Ordinal))
             return ["DETAILS"];
-        return BuildAvailableActions(gsku, actorContext, submitInFlight);
+        return BuildAvailableActions(gsku, actorContext, submit);
     }
 
     internal static IReadOnlyList<string> BuildAvailableActions(
         Gsku gsku,
         IProductIdentityLifecycleActorContext actorContext,
-        bool submitInFlight = false)
+        FirstGskuIdentitySubmitStateKind submit = FirstGskuIdentitySubmitStateKind.None)
     {
         var actions = new List<string> { "DETAILS" };
         if (gsku.IsDeleted || gsku.ActiveLifecycleOperation is not null || gsku.RetirementOperationId.HasValue
             || !actorContext.TryResolveCanonicalHumanSubject(out _))
             return actions;
-        // While a submit is in flight the pair is still a draft, but neither editable nor submittable (B7).
-        if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft && !submitInFlight)
+        // FIX2 item 1 — every draft state has a way out:
+        //   no submit / never received by the engine → edit, or submit (the same submit again);
+        //   on its way                               → neither (B7); the worker carries it on;
+        //   the engine may hold it                   → submit only: the submitter's repeat reads the engine and reconciles;
+        //   ended at this version                    → edit only: the same submit cannot be repeated, an edited one can.
+        if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft)
         {
-            if (actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Update)) actions.Add("EDIT");
-            if (actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Submit)) actions.Add("SUBMIT");
+            if (submit is FirstGskuIdentitySubmitStateKind.None or FirstGskuIdentitySubmitStateKind.ResubmitRequired
+                    or FirstGskuIdentitySubmitStateKind.Ended
+                && actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Update)) actions.Add("EDIT");
+            if (submit is FirstGskuIdentitySubmitStateKind.None or FirstGskuIdentitySubmitStateKind.ResubmitRequired
+                    or FirstGskuIdentitySubmitStateKind.ReconciliationRequired
+                && actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Submit)) actions.Add("SUBMIT");
         }
 
         if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval

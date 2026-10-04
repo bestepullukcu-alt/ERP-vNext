@@ -96,6 +96,15 @@ public sealed class FirstGskuIdentityRetirementOperationRepository
             request.LeaseOwner, updated.LeaseGeneration, updated.Checkpoint, request.LeaseUntilUtcTicks);
     }
 
+    public Task ReleaseIfOwnedAsync(Guid operationId, string leaseOwner, long leaseUntilUtcTicks,
+        CancellationToken cancellationToken = default) =>
+        _operations.UpdateOneAsync(
+            ActiveFilter & Builders<FirstGskuIdentityRetirementOperation>.Filter.Eq(x => x.OperationId, operationId)
+            & Builders<FirstGskuIdentityRetirementOperation>.Filter.Eq(x => x.LeaseOwner, leaseOwner)
+            & Builders<FirstGskuIdentityRetirementOperation>.Filter.Eq(x => x.LeaseUntilUtcTicksV1, leaseUntilUtcTicks),
+            Builders<FirstGskuIdentityRetirementOperation>.Update.Set(x => x.LeaseOwner, null).Set(x => x.LeaseUntilUtcTicksV1, null),
+            cancellationToken: cancellationToken);
+
     public async Task<bool> AdvanceAsync(
         FirstGskuIdentityRetirementClaim claim, FirstGskuIdentityRetirementMutation mutation,
         CancellationToken cancellationToken = default)

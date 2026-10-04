@@ -190,7 +190,10 @@ public static class ProductItemSkuMasterModels
         IReadOnlyList<string> AvailableActions,
         // B2 (b) (GSKU FIX1): set when the latest identity approval was granted and could not be applied — the
         // reason the pair is a draft again, for the maker to fix before submitting again.
-        string? IdentityNotAppliedReason = null);
+        string? IdentityNotAppliedReason = null,
+        // FIX2 item 1: where the draft's latest submit stands (SUBMIT_IN_FLIGHT, RESUBMIT_REQUIRED,
+        // RECONCILIATION_REQUIRED, SUBMISSION_ENDED) — the screen says what happens next for each.
+        string? IdentitySubmitState = null);
 
     public sealed record GskuCreateGlobalProductOptionDto(
         Guid Id,

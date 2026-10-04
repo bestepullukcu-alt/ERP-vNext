@@ -18,9 +18,14 @@ public sealed class GskuRepository : IGskuRepository
     private readonly IMongoCollection<Lsku> _lskus;
     private readonly IMongoCollection<FinishedGood> _finishedGoods;
     private readonly Guid _tenantId;
+    private readonly IMongoDatabase _database;
+    private readonly IMongoCollection<FirstGskuIdentityWorkflowOperation> _identityOperations;
 
     public GskuRepository(IMongoDatabase database, ITenantContext tenantContext)
     {
+        _database = database;
+        _identityOperations = database.GetCollection<FirstGskuIdentityWorkflowOperation>(
+            FirstGskuIdentityWorkflowOperationRepository.CollectionName);
         _gskus = database.GetCollection<Gsku>("mdm_gskus");
         _documents = database.GetCollection<BsonDocument>("mdm_gskus");
         _reservations = database.GetCollection<CodeReservation>("mdm_code_reservations");
@@ -385,14 +390,81 @@ public sealed class GskuRepository : IGskuRepository
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
             .Inc(x => x.Version, 1)
             .Push(x => x.AuditIntents, newIntent);
-        var updated = await _gskus.FindOneAndUpdateAsync(
-            filter,
-            update,
-            new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After },
-            cancellationToken);
-        if (updated is not null)
+        // FIX2 items 1 and 10: the draft's latest identity submit is read and the draft written in ONE transaction (the
+        // reservation touches the draft in its own), so an edit and a submit cannot both commit. A submit on its way, or
+        // one the engine may hold, keeps the draft as submitted; one the engine never received is set aside by the edit
+        // (its maker replaced it) — the edit is the way out of it, as a repeat of the same submit is.
+        Gsku? updated = null;
+        for (var attempt = 0; ; attempt++)
         {
-            return new(true, updated);
+            using var session = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+            session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+            try
+            {
+                var latest = await FirstGskuIdentityWorkflowOperationRepository.LatestForGsku(
+                        _identityOperations, IdentityOperationTenantFilter, gsku.Id, session)
+                    .FirstOrDefaultAsync(cancellationToken);
+                var state = FirstGskuIdentitySubmitState.Of(latest, expectedVersion);
+                if (state.Kind is FirstGskuIdentitySubmitStateKind.InFlight
+                    or FirstGskuIdentitySubmitStateKind.ReconciliationRequired)
+                {
+                    await session.AbortTransactionAsync(cancellationToken);
+                    return new(false, await GetByIdAsync(gsku.Id, cancellationToken),
+                        state.Kind == FirstGskuIdentitySubmitStateKind.InFlight
+                            ? SubmitInFlight
+                            : IdentityReconciliationRequired);
+                }
+                if (state.Kind == FirstGskuIdentitySubmitStateKind.ResubmitRequired)
+                {
+                    var nowTicks = DateTimeOffset.UtcNow.UtcTicks;
+                    var setAside = await _identityOperations.UpdateOneAsync(session,
+                        IdentityOperationTenantFilter
+                        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.OperationId, latest!.OperationId)
+                        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
+                            x => x.Checkpoint, FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay)
+                        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.WorkflowInstanceId, null)
+                        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.WithdrawalCommandId, null),
+                        Builders<FirstGskuIdentityWorkflowOperation>.Update
+                            .Set(x => x.Checkpoint, FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart)
+                            .Set(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.None)
+                            .Set(x => x.LastFailureCode, SubmitReplacedByEdit)
+                            .Set(x => x.NextAttemptAtUtcTicksV1, null)
+                            .Set(x => x.LeaseOwner, null)
+                            .Set(x => x.LeaseUntilUtcTicksV1, null)
+                            .Set(x => x.UpdatedAtUtcTicksV1, nowTicks)
+                            .Set(x => x.UpdatedAt, new DateTimeOffset(nowTicks, TimeSpan.Zero))
+                            .Inc(x => x.Version, 1),
+                        cancellationToken: cancellationToken);
+                    if (setAside.ModifiedCount != 1)
+                    {
+                        await session.AbortTransactionAsync(cancellationToken);
+                        return new(false, await GetByIdAsync(gsku.Id, cancellationToken), SubmitInFlight);
+                    }
+                }
+                updated = await _gskus.FindOneAndUpdateAsync(
+                    session,
+                    filter,
+                    update,
+                    new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After },
+                    cancellationToken);
+                if (updated is null)
+                {
+                    await session.AbortTransactionAsync(cancellationToken);
+                    break;
+                }
+                await session.CommitTransactionAsync(cancellationToken);
+                return new(true, updated);
+            }
+            catch (MongoException exception) when (attempt == 0 && exception.HasErrorLabel("TransientTransactionError"))
+            {
+                // A submit committed its reservation between this edit's read and its write: read again.
+                if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+            }
+            catch
+            {
+                if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+                throw;
+            }
         }
 
         var current = await GetByIdAsync(gsku.Id, cancellationToken);
@@ -809,6 +881,13 @@ public sealed class GskuRepository : IGskuRepository
     }
 
     public const string AuditCapacityReached = "AUDIT_INTENT_CAPACITY_REACHED";
+    public const string SubmitInFlight = "GSKU_IDENTITY_SUBMIT_IN_FLIGHT";
+    public const string IdentityReconciliationRequired = "GSKU_IDENTITY_RECONCILIATION_REQUIRED";
+    public const string SubmitReplacedByEdit = "FIRST_GSKU_IDENTITY_SUBMIT_REPLACED_BY_EDIT";
+
+    private FilterDefinition<FirstGskuIdentityWorkflowOperation> IdentityOperationTenantFilter =>
+        Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.TenantId, _tenantId)
+        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.IsDeleted, false);
 
     // A write the per-aggregate cap refused (intents wait for delivery to be compacted into receipts) says so — it is
     // not a conflict of the record, and a caller must not treat it as one.
@@ -962,7 +1041,8 @@ public sealed class GskuRepository : IGskuRepository
                 ? "FIRST_GSKU_CONCURRENCY_CONFLICT"
                 : current.LifecycleStatus != sourceStatus
                     ? "FIRST_GSKU_STATE_CONFLICT"
-                    : "FIRST_GSKU_WORKFLOW_BINDING_CONFLICT");
+                    // FIX2 item 7: the cap is said as the cap (the processor waits), not as a binding conflict.
+                    : CapacityOr(current, "FIRST_GSKU_WORKFLOW_BINDING_CONFLICT"));
     }
 
     private string? ValidateLifecycleContract(

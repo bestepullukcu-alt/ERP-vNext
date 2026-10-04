@@ -194,10 +194,10 @@ public sealed class GskuRetirementRequestMongoTests : IAsyncLifetime
         Assert.Equal(1, workflow.StartCalls);
     }
 
-    // Rule RRP:173 (named by WP-MDM-GSKU-ACCEPT-01) + B8: a decision by the request's own requester is not applied —
-    // ignored and said; the pair is not retired and the request keeps waiting for another approver.
+    // Rule RRP:173 + B8, changed by FIX2 item 3: a decision by the request's own requester closes the engine's approval;
+    // the request ends without being applied and the GSKU is given back (FIX1 kept it waiting, locked, for good).
     [Fact]
-    public async Task RRP_A_decision_by_the_requester_is_ignored_and_the_pair_is_not_retired()
+    public async Task RRP_A_decision_by_the_requester_ends_the_request_unapplied_and_frees_the_gsku()
     {
         var gsku = Gsku(2);
         var revision = Revision(gsku);
@@ -228,10 +228,10 @@ public sealed class GskuRetirementRequestMongoTests : IAsyncLifetime
 
         Assert.Equal(202, started.StatusCode);
         Assert.Equal(GskuRetirementRequestWorkflowProcessor.SelfApprovalIgnored, observed.ErrorCode);
-        Assert.NotEqual(GskuRetirementRequestCheckpoint.Completed, operation!.Checkpoint);
-        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, operation.RecoveryDisposition);
+        Assert.Equal(GskuRetirementRequestCheckpoint.ManualReconciliationRequired, operation!.Checkpoint);
         Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, stored!.LifecycleStatus);
         Assert.Null(stored.RetirementOperationId);
+        Assert.Null(stored.ActiveLifecycleOperation);
     }
 
     public async Task DisposeAsync()

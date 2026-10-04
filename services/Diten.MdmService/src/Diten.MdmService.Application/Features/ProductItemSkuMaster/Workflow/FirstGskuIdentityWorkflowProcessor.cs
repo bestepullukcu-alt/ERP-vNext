@@ -788,7 +788,11 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             if (operation.Checkpoint is FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
                 or FirstGskuIdentityWorkflowCheckpoint.Superseded)
             {
-                return Success(operation, true);
+                // FIX2 item 1: a submit that ended before reaching the engine cannot be repeated at the same draft
+                // version — the maker is told so (and edits the draft), not answered "done" while nothing happened.
+                return attempt.Interactive
+                    ? Fail(operation, SubmissionEnded, 409)
+                    : Success(operation, true);
             }
             if (stopWhenAwaitingDecision
                 && operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision)
@@ -800,12 +804,24 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             {
                 return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", 409);
             }
+            var reconcileStart = false;
             if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
             {
-                if (manualResumeAttempted || !CanResumeApprovalDependency(operation, delegatedUserToken))
+                // FIX2 item 1 (b) / item 6, CT decision C(A): the submitter's repeat of the same submit is the human way
+                // out of manual reconciliation for a submit that has no approval on record — it reads the engine.
+                // Only a repeat: the request that put the submit into reconciliation does not settle it itself.
+                reconcileStart = !manualResumeAttempted && attempt.Interactive
+                                 && initial.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+                                 && !operation.WorkflowInstanceId.HasValue && !operation.DecisionKind.HasValue;
+                if (!reconcileStart
+                    && (manualResumeAttempted || !CanResumeApprovalDependency(operation, delegatedUserToken)))
                 {
-                    return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", 409);
+                    return Fail(operation, ReconciliationRequired, 409);
                 }
+            }
+            if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+                && !reconcileStart)
+            {
 
                 var parent = await globalProducts.GetByIdAsync(operation.GlobalProductId, cancellationToken);
                 if (parent is null || parent.LifecycleStatus != ProductIdentityLifecycleStatus.IdentityApproved)
@@ -864,6 +880,8 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
                     await VerifyAndCompleteAsync(operation, claim, attempt, now, retryDelay, cancellationToken),
                 FirstGskuIdentityWorkflowCheckpoint.GskuDraftRestored =>
                     await ApplyRevisionRejectionAsync(operation, claim, now, cancellationToken),
+                FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired when reconcileStart =>
+                    await ReconcileStartAsync(operation, claim, attempt, now, cancellationToken),
                 FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired =>
                     await AdvanceAsync(
                         claim, FirstGskuIdentityWorkflowCheckpoint.DecisionObserved,
@@ -945,6 +963,11 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
                     ProductIdentityWorkflowCall.Start, started.Outcome, started.ErrorCode);
                 switch (fault.Kind)
                 {
+                    case ProductIdentityWorkflowFaultKind.Quarantine when RefusedBeforeProcessing(started.Outcome, started.ErrorCode):
+                        // FIX2 item 1 (b): the engine refused the start before processing it — nothing exists there.
+                        // Not a reconciliation case: the submit ends, the draft opens, the maker edits and submits again.
+                        return await AbandonAsync(claim, BoundedCode(started.ErrorCode, "FIRST_GSKU_IDENTITY_WORKFLOW_START_REFUSED"),
+                            now, cancellationToken);
                     case ProductIdentityWorkflowFaultKind.Quarantine:
                         return await QuarantineAsync(claim, started.ErrorCode, now, cancellationToken);
                     case ProductIdentityWorkflowFaultKind.MakerReplay:
@@ -1002,6 +1025,49 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             : await QuarantineAsync(claim, lookup.ErrorCode, now, cancellationToken);
     }
 
+    // An approval engine refusal of the start that it gives before processing it (a request it rejects, a tenant it
+    // will not serve this service for): nothing was started.
+    private static bool RefusedBeforeProcessing(ProductIdentityWorkflowTransportOutcome outcome, string? code) =>
+        outcome == ProductIdentityWorkflowTransportOutcome.Invalid
+            && code is not (ProductIdentityWorkflowFaultPolicy.ResponseUnreadable or ProductIdentityWorkflowFaultPolicy.ResponseInvalid)
+        || outcome == ProductIdentityWorkflowTransportOutcome.Forbidden;
+
+    private Task<bool> AbandonAsync(FirstGskuIdentityWorkflowClaim claim, string code, DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        logger.LogWarning(
+            "First GSKU identity workflow operation {OperationId} of tenant {TenantId} ended before the approval engine started anything ({ResultCode}); the draft is open again.",
+            claim.OperationId, claim.TenantId, code);
+        return operations.AdvanceAsync(claim, new(
+            FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+            ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+            LastFailureCode: code, ReleaseLease: true, ServiceFaultCount: 0), cancellationToken);
+    }
+
+    // CT decision C(A): the submitter is back on a submit in manual reconciliation that has no approval on record.
+    // What the engine knows decides: it has the start → the submit goes on (the decision is applied as usual); it has
+    // nothing under this submit's key → the submit ends and the draft opens; it cannot say → still manual (409, the
+    // screen tells the submitter to try again later).
+    private async Task<bool> ReconcileStartAsync(
+        FirstGskuIdentityWorkflowOperation operation,
+        FirstGskuIdentityWorkflowClaim claim,
+        Attempt attempt,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        var lookup = await workflowClient.GetStartResultAsync(
+            operation.TenantId,
+            new(operation.ObjectType, operation.ObjectId, operation.MakerSubjectId, operation.StartIdempotencyKey),
+            cancellationToken);
+        if (lookup.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
+            return await PersistStartedAsync(operation, claim, lookup.Value, now, cancellationToken);
+        if (lookup.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound)
+            return await AbandonAsync(claim, "FIRST_GSKU_IDENTITY_RECONCILED_NOTHING_STARTED", now, cancellationToken);
+        attempt.Answer = (ReconciliationRequired, 409);
+        await ReleaseClaimAsync(claim, operation, now);
+        return true;
+    }
+
     private async Task<bool> PersistStartedAsync(
         FirstGskuIdentityWorkflowOperation operation,
         FirstGskuIdentityWorkflowClaim claim,
@@ -1054,7 +1120,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         return result.Succeeded && ExactPendingRevision(result.Aggregate, operation)
             ? await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.RevisionPendingApplied,
                 now, releaseLease: true, cancellationToken: cancellationToken)
-            : await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+            : await LifecycleWriteFailedAsync(claim, result.ErrorCode, now, cancellationToken);
     }
 
     private async Task<bool> ApplyGskuPendingAsync(
@@ -1079,7 +1145,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         return result.Succeeded && ExactPendingGsku(result.Aggregate, operation)
             ? await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.PairPendingApplied,
                 now, releaseLease: true, cancellationToken: cancellationToken)
-            : await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+            : await LifecycleWriteFailedAsync(claim, result.ErrorCode, now, cancellationToken);
     }
 
     private async Task<bool> ObserveDecisionAsync(
@@ -1125,19 +1191,15 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         if (TryMapDecision(evidence.TerminalAction, out _)
             && Guid.TryParse(evidence.ActorUserId, out var self) && self == operation.MakerSubjectId)
         {
-            // The maker decided their own pair (B8). That is not a decision this service accepts — and not a fault
-            // of the record either: it is ignored and said, the operation keeps awaiting a decision it can use.
+            // The maker decided their own pair (B8). The engine has closed the approval with that decision and no other
+            // will come (FIX2 item 3 — FIX1's "ignore and keep waiting" left the pair pending for ever): the decision is
+            // not applicable, the pair goes back to draft in one write with the audit intent that says why, and the
+            // maker submits again for someone else to decide.
             logger.LogWarning(
-                "First GSKU identity workflow operation {OperationId} of tenant {TenantId}: the approval was decided by its own maker; the decision is ignored ({ResultCode}).",
+                "First GSKU identity workflow operation {OperationId} of tenant {TenantId}: the approval was decided by its own maker; the decision is not applied ({ResultCode}).",
                 operation.OperationId, operation.TenantId, SelfApprovalIgnored);
-            return await operations.AdvanceAsync(claim, new(
-                FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision,
-                ProductIdentityWorkflowRecoveryDisposition.Retryable,
-                now.UtcTicks,
-                now.Add(faultSettings.MaxRetryDelay).UtcTicks,
-                SelfApprovalIgnored,
-                ReleaseLease: true,
-                ServiceFaultCount: 0), cancellationToken);
+            return await DecisionNotApplicableAsync(operation, claim, SelfApprovalIgnored, now, cancellationToken,
+                decisionActor: self);
         }
         if (!TryMapDecision(evidence.TerminalAction, out var decision)
             || !Guid.TryParse(evidence.ActorUserId, out var actorId) || actorId == Guid.Empty
@@ -1201,7 +1263,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             return result.Succeeded && ExactRejectedGsku(result.Aggregate, operation)
                 ? await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.GskuDraftRestored,
                     now, releaseLease: true, cancellationToken: cancellationToken)
-                : await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+                : await LifecycleWriteFailedAsync(claim, result.ErrorCode, now, cancellationToken);
         }
 
         var approval = await RevalidateApprovalAsync(operation, cancellationToken);
@@ -1264,7 +1326,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         return result.Succeeded && ExactApprovedRevision(result.Aggregate, operation)
             ? await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.RevisionApproved,
                 now, releaseLease: true, cancellationToken: cancellationToken)
-            : await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+            : await LifecycleWriteFailedAsync(claim, result.ErrorCode, now, cancellationToken);
     }
 
     private async Task<bool> ApplyGskuApprovalAsync(
@@ -1306,7 +1368,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         return result.Succeeded && ExactApprovedGsku(result.Aggregate, operation)
             ? await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.PairApproved,
                 now, releaseLease: true, cancellationToken: cancellationToken)
-            : await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+            : await LifecycleWriteFailedAsync(claim, result.ErrorCode, now, cancellationToken);
     }
 
     private async Task<bool> ApplyRevisionRejectionAsync(
@@ -1332,7 +1394,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         return result.Succeeded && ExactRejectedRevision(result.Aggregate, operation)
             ? await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.PairDraftRestored,
                 now, releaseLease: true, cancellationToken: cancellationToken)
-            : await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+            : await LifecycleWriteFailedAsync(claim, result.ErrorCode, now, cancellationToken);
     }
 
     private async Task<bool> VerifyAndCompleteAsync(
@@ -1396,6 +1458,10 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         }
         if (!result.IsSuccessful)
         {
+            // FIX2 item 2: a value that can no longer be chosen will not come back by waiting — the approval is not
+            // applicable and the pair goes back to draft with the reason. A broken contract stays a fault.
+            if (result.FailureCode == VerifiedGskuReferenceResolveResult.NotSelectable)
+                return new(false, ApprovalFailure.NotApplicable, VerifiedGskuReferenceResolveResult.NotSelectable);
             return new(false, result.StatusCode switch
                 {
                     503 or 504 => ApprovalFailure.Transient,
@@ -1593,8 +1659,11 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             AuditAggregateType.Gsku,
             ProductAuditOperation.GskuIdentityApprovalWithdrawn,
             operation.WithdrawalExpectedGskuVersion!.Value, operation, evidence);
-        return revision.AuditIntents.Count(intent => ExactImmutableAuditIntent(intent, expectedRevision)) == 1
-            && gsku.AuditIntents.Count(intent => ExactImmutableAuditIntent(intent, expectedGsku)) == 1;
+        // FIX2 item 7: the intent, or its receipt once delivered and compacted.
+        return AuditWriteReadBack.Persisted(revision, expectedRevision,
+                   intent => ExactImmutableAuditIntent(intent, expectedRevision))
+            && AuditWriteReadBack.Persisted(gsku, expectedGsku,
+                   intent => ExactImmutableAuditIntent(intent, expectedGsku));
     }
 
     private static LocalAuditIntent CreateWithdrawalAudit(
@@ -1710,6 +1779,8 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
 
     public const string ParentNotApproved = "GSKU_PARENT_NOT_APPROVED";
     public const string SelfApprovalIgnored = "FIRST_GSKU_IDENTITY_SELF_APPROVAL_IGNORED";
+    public const string SubmissionEnded = "FIRST_GSKU_IDENTITY_SUBMISSION_ENDED";
+    public const string ReconciliationRequired = "FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED";
     public const string DecisionNotApplicableCode = "FIRST_GSKU_IDENTITY_DECISION_NOT_APPLICABLE";
     public const string WithdrawalRequesterNeverReturned = "FIRST_GSKU_IDENTITY_WITHDRAWAL_REQUESTER_NEVER_RETURNED";
 
@@ -1740,12 +1811,21 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
      * intent that says so ("the engine approved, MDM could not apply: <code>"), and the operation ends with the
      * reason — one transaction. The maker sees the reason, fixes the reference and submits again (a new operation).
      */
+    // FIX2 item 7: a lifecycle write refused because the aggregate is at its audit-intent capacity waits for delivery
+    // (the cap clears when the intents are delivered and compacted); anything else is the quarantine it was.
+    private async Task<bool> LifecycleWriteFailedAsync(
+        FirstGskuIdentityWorkflowClaim claim, string? errorCode, DateTimeOffset now, CancellationToken cancellationToken) =>
+        errorCode == "AUDIT_INTENT_CAPACITY_REACHED"
+            ? await ScheduleRetryAsync(claim, claim.Checkpoint, errorCode, now, faultSettings.MaxRetryDelay, cancellationToken)
+            : await QuarantineAsync(claim, errorCode, now, cancellationToken);
+
     private async Task<bool> DecisionNotApplicableAsync(
         FirstGskuIdentityWorkflowOperation operation,
         FirstGskuIdentityWorkflowClaim claim,
         string reasonCode,
         DateTimeOffset now,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Guid? decisionActor = null)
     {
         var code = BoundedCode(reasonCode, DecisionNotApplicableCode);
         var revision = await revisions.GetByIdAsync(operation.ProductDefinitionRevisionId, cancellationToken);
@@ -1756,10 +1836,10 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         }
         var revisionAudit = CreateNotApplicableAudit(revision!, AuditAggregateType.ProductDefinitionRevision,
             ProductAuditOperation.ProductDefinitionRevisionIdentityDecisionNotApplicable,
-            operation.ExpectedRevisionVersion + 1, operation, code, now);
+            operation.ExpectedRevisionVersion + 1, operation, code, now, decisionActor);
         var gskuAudit = CreateNotApplicableAudit(gsku!, AuditAggregateType.Gsku,
             ProductAuditOperation.GskuIdentityDecisionNotApplicable,
-            operation.ExpectedGskuVersion + 1, operation, code, now);
+            operation.ExpectedGskuVersion + 1, operation, code, now, decisionActor);
         var result = await operations.ApplyDecisionNotApplicableAsync(
             claim, operation, code, revisionAudit, gskuAudit, now.UtcTicks, cancellationToken);
         if (result.Succeeded)
@@ -1769,7 +1849,9 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
                 operation.OperationId, operation.TenantId, code);
             return true;
         }
-        return result.ErrorCode == "FIRST_GSKU_IDENTITY_NOT_APPLICABLE_PERSISTENCE_UNAVAILABLE"
+        // A store that is away and an aggregate at its audit-intent capacity (FIX2 item 7) are waited out.
+        return result.ErrorCode is "FIRST_GSKU_IDENTITY_NOT_APPLICABLE_PERSISTENCE_UNAVAILABLE"
+                or "AUDIT_INTENT_CAPACITY_REACHED"
             ? await ScheduleRetryAsync(claim, claim.Checkpoint, result.ErrorCode, now,
                 faultSettings.MaxRetryDelay, cancellationToken)
             : await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
@@ -1782,16 +1864,21 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         int expectedVersion,
         FirstGskuIdentityWorkflowOperation operation,
         string reasonCode,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        Guid? decisionActor = null)
     {
         var key = FirstGskuIdentityDecisionNotApplicable.Key(operation.OperationId);
-        var actor = operation.DecisionActorSubjectId ?? Guid.Empty;
+        var actor = decisionActor ?? operation.DecisionActorSubjectId ?? Guid.Empty;
         var canonical = string.Join('|',
             aggregate.TenantId.ToString("D"), aggregateType, aggregate.Id.ToString("D"),
             auditOperation, expectedVersion.ToString(CultureInfo.InvariantCulture),
             operation.WorkflowInstanceId?.ToString("D") ?? string.Empty,
             operation.ApprovalTaskId?.ToString("D") ?? string.Empty,
-            actor.ToString("D"), "engine-approved-mdm-could-not-apply", reasonCode);
+            actor.ToString("D"),
+            // What happened, in the evidence: the engine approved and MDM could not apply it — or the engine closed
+            // the approval with the maker's own decision, which MDM does not accept.
+            reasonCode == SelfApprovalIgnored ? "engine-closed-by-maker-not-applied" : "engine-approved-mdm-could-not-apply",
+            reasonCode);
         return new LocalAuditIntent
         {
             IntentId = DeterministicGuid($"{aggregate.TenantId:D}|{aggregateType}|{aggregate.Id:D}|{auditOperation}|{key}"),
@@ -2169,8 +2256,11 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             revision, operation.ExpectedRevisionVersion + 1, binding, evidence);
         var expectedGsku = FirstGskuIdentityLifecycleAuditIntentFactory.CreateGskuDecision(
             gsku, operation.ExpectedGskuVersion + 1, binding, evidence);
-        return revision.AuditIntents.Count(intent => ExactImmutableAuditIntent(intent, expectedRevision)) == 1
-            && gsku.AuditIntents.Count(intent => ExactImmutableAuditIntent(intent, expectedGsku)) == 1;
+        // FIX2 item 7: the intent, or its receipt once delivered and compacted.
+        return AuditWriteReadBack.Persisted(revision, expectedRevision,
+                   intent => ExactImmutableAuditIntent(intent, expectedRevision))
+            && AuditWriteReadBack.Persisted(gsku, expectedGsku,
+                   intent => ExactImmutableAuditIntent(intent, expectedGsku));
     }
 
     private static bool ExactTerminalBinding(

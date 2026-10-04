@@ -16,7 +16,7 @@ namespace Diten.MdmService.Api.Tests;
 /// retirement request), and one HTTP scenario for each of the blockers B1–B6 the unit tests already pin.
 /// </summary>
 [Collection(MdmHttpCollection.Name)]
-public sealed class GskuLifecycleHttpTests(MdmHttpHost host)
+public sealed partial class GskuLifecycleHttpTests(MdmHttpHost host)
 {
     private static readonly string[] MakerPermissions =
     [
@@ -239,20 +239,35 @@ public sealed class GskuLifecycleHttpTests(MdmHttpHost host)
     [Fact]
     public async Task B7_An_edit_while_the_submit_is_in_flight_is_refused()
     {
+        // In flight = the engine's answer to the start is lost AND the engine cannot (yet) say what it holds. (FIX2: a
+        // start the engine answered "nothing arrived" for is not in flight any more — see F1_… for that way out.)
         var product = await SeedProductAsync(ProductIdentityLifecycleStatus.IdentityApproved);
         var (gsku, version) = await CreateAsync(product);
         host.Engine.NextStartFails = ProductIdentityWorkflowTransportOutcome.Timeout;
-        var submit = await SubmitAsync(gsku, version);
-        Assert.False(submit.StatusCode is HttpStatusCode.OK, await submit.Content.ReadAsStringAsync());
-        var draft = await DetailAsync(gsku);
-        Assert.Equal(ProductIdentityLifecycleStatus.Draft, draft.Status);
+        host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Timeout;
+        try
+        {
+            var submit = await SubmitAsync(gsku, version);
+            Assert.False(submit.StatusCode is HttpStatusCode.OK, await submit.Content.ReadAsStringAsync());
+            var draft = await DetailAsync(gsku);
+            Assert.Equal(ProductIdentityLifecycleStatus.Draft, draft.Status);
+            Assert.Equal("SUBMIT_IN_FLIGHT", draft.SubmitState);
 
-        var edit = await SendAsync(HttpMethod.Put, $"/api/gskus/{gsku:D}",
-            new { expectedVersion = draft.Version, packQuantity = 7m, packUomCode = "C62" }, MakerToken());
+            var edit = await SendAsync(HttpMethod.Put, $"/api/gskus/{gsku:D}",
+                new { expectedVersion = draft.Version, packQuantity = 7m, packUomCode = "C62" }, MakerToken());
 
-        Assert.Equal(HttpStatusCode.Conflict, edit.StatusCode);
-        Assert.Equal("GSKU_IDENTITY_SUBMIT_IN_FLIGHT", Envelope.FirstError(await Envelope.ReadAsync(edit)));
-        Assert.DoesNotContain("EDIT", draft.Actions);
+            Assert.Equal(HttpStatusCode.Conflict, edit.StatusCode);
+            Assert.Equal("GSKU_IDENTITY_SUBMIT_IN_FLIGHT", Envelope.FirstError(await Envelope.ReadAsync(edit)));
+            Assert.DoesNotContain("EDIT", draft.Actions);
+        }
+        finally
+        {
+            host.Engine.LookupFailure = null;
+        }
+        // Its way out is automatic: once the engine can answer, the worker learns nothing arrived and the draft is the
+        // maker's again (resubmit or edit).
+        await CyclesUntilAsync(gsku, detail => detail.SubmitState == "RESUBMIT_REQUIRED",
+            () => host.RunAsync<FirstGskuIdentityWorkflowRecoveryRunner>(runner => runner.RunCycleAsync()));
     }
 
     // The operation store's index shape, counted on this host's throwaway mongod (moved here from the Mongo tests:
@@ -311,11 +326,12 @@ public sealed class GskuLifecycleHttpTests(MdmHttpHost host)
     private Task<HttpResponseMessage> PostAsync(string path, object body) =>
         SendAsync(HttpMethod.Post, path, body, MakerToken());
 
-    // Every write carries a fresh Idempotency-Key, as the Web proxy sends one.
-    private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, object body, string token)
+    // Every write carries a fresh Idempotency-Key unless a test repeats one, as the Web proxy does for the same submit.
+    private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, object body, string token,
+        Guid? key = null)
     {
         using var request = new HttpRequestMessage(method, path) { Content = JsonContent.Create(body) };
-        request.Headers.Add("Idempotency-Key", Guid.NewGuid().ToString("D"));
+        request.Headers.Add("Idempotency-Key", (key ?? Guid.NewGuid()).ToString("D"));
         return await host.Client(token).SendAsync(request);
     }
 
@@ -331,7 +347,9 @@ public sealed class GskuLifecycleHttpTests(MdmHttpHost host)
             data.GetProperty("packUomCode").GetString()!,
             data.GetProperty("availableActions").EnumerateArray().Select(x => x.GetString()!).ToArray(),
             data.TryGetProperty("identityNotAppliedReason", out var reason) && reason.ValueKind == JsonValueKind.String
-                ? reason.GetString() : null);
+                ? reason.GetString() : null,
+            data.TryGetProperty("identitySubmitState", out var state) && state.ValueKind == JsonValueKind.String
+                ? state.GetString() : null);
     }
 
     private async Task<(Guid Id, int Version)> ApprovedGskuAsync()
@@ -368,5 +386,6 @@ public sealed class GskuLifecycleHttpTests(MdmHttpHost host)
         decimal Quantity,
         string Uom,
         IReadOnlyList<string> Actions,
-        string? NotAppliedReason);
+        string? NotAppliedReason,
+        string? SubmitState = null);
 }

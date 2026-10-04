@@ -30,4 +30,13 @@
   <data name="IdentityNotAppliedParent" xml:space="preserve"><value>مُنحت الموافقة لكن تعذّر تطبيقها: لم يعد المنتج العالمي معتمداً. أصبح الـ GSKU مسودة مرة أخرى — صحّح ذلك وأرسله من جديد.</value></data>
   <data name="IdentityNotAppliedReference" xml:space="preserve"><value>مُنحت الموافقة لكن تعذّر تطبيقها: لم تعد وحدة التعبئة أو قابلية تطبيقها قابلة للاختيار. أصبح الـ GSKU مسودة مرة أخرى — اختر قيمة صالحة وأرسله من جديد.</value></data>
   <data name="IdentityNotAppliedGeneric" xml:space="preserve"><value>مُنحت الموافقة لكن تعذّر تطبيقها. أصبح الـ GSKU مسودة مرة أخرى — تحقّق منه وأرسله من جديد.</value></data>
+  <data name="ErrorWithdrawalPending" xml:space="preserve"><value>لا يزال يجري معالجة سحب سابق لهذه الموافقة بسبب أو تعليق مختلف. كرر السحب بنفس السبب والتعليق السابقين، أو انتظر حتى يكتمل.</value></data>
+  <data name="IdentityNotAppliedSelfApproval" xml:space="preserve"><value>تم البت في الموافقة من قِبل الشخص الذي قدّمها، وهذا غير مقبول. أصبح GSKU مسودة مرة أخرى — أعد تقديمه ليقرر شخص آخر.</value></data>
+  <data name="IdentityStateInFlight" xml:space="preserve"><value>تم تقديم GSKU هذا للموافقة والتقديم في طريقه إلى محرك الموافقات. لا يمكن تعديله حتى ذلك الحين؛ لا يلزم أي إجراء.</value></data>
+  <data name="IdentityStateResubmitRequired" xml:space="preserve"><value>لم يصل التقديم إلى محرك الموافقات. أعد التقديم، أو عدّل المسودة أولاً.</value></data>
+  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>يلزم تسوية يدوية: قد يكون محرك الموافقات محتفظًا بهذا التقديم. يجب على الشخص الذي قدّمه إعادة التقديم — فهذا يتحقق من المحرك ويحسم الأمر.</value></data>
+  <data name="IdentityStateSubmissionEnded" xml:space="preserve"><value>انتهى التقديم الأخير قبل أن يبدأ محرك الموافقات أي شيء. عدّل المسودة، ثم أعد تقديمها.</value></data>
+  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>يحتاج تقديم GSKU هذا إلى تسوية يدوية. لا يستطيع حسمها إلا الشخص الذي قدّمه، بإعادة التقديم.</value></data>
+  <data name="ErrorSubmissionEnded" xml:space="preserve"><value>انتهى هذا التقديم قبل وصوله إلى محرك الموافقات ولا يمكن تكراره كما هو. عدّل المسودة، ثم أعد تقديمها.</value></data>
+  <data name="ErrorDraftChanged" xml:space="preserve"><value>تغيّرت المسودة أثناء تقديمها. افتحها مرة أخرى وقدّم النسخة الحالية.</value></data>
 </root>
