@@ -7911,6 +7911,18 @@ saklanan tarihlerde yapıyor — çakışma kontrolünün doğruluğu ayrı öl�
 
 ---
 
+### BL-539
+
+**Onay motoru tamamlanmamış güvenilir başlatmayı kendisi bitirmiyor ya da temizlemiyor: tüketici başlatmayı terk ederse motorda karar verilemeyen bir görev kalıyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 onay motoru) · BULAN: WP-MDM-GSKU-ACCEPT-01 FIX3 ölçümü (MDM sohbeti) · KAYIT: 2026-10-04
+
+MDM bir gönderimi motorun "tamamlanmamış başlatma" (WORKFLOW_START_NOT_COMPLETED) cevabında park edip taslak düzenlenince terk edebiliyor; motor tamamlanmamış başlatmayı
+kendiliğinden bitirmiyor, temizlemiyor da: Görev Merkezi'nde karar verilemeyen bir görev kalıyor. Düzeltme: motor tarafında süresi dolan tamamlanmamış başlatmaları kapatan
+(ya da tüketicinin iptal edebildiği) bir yol; tüketiciler terk etmeden önce iptal ister. Gelecek regresyon riski: 🟢.
+
+---
+
 ### BL-538
 
 **Görev Merkezi'nden "aç" derin bağlantısı yalnız görevleri çözüyor: ABB (ve diğer sağlayıcıların) öğesi için `GET work-items/{id}` 404**
