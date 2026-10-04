@@ -8030,6 +8030,23 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-549
+
+**Yarım kalmış genel başlatma (örnek var, motor görevi yok) görevin onayını / incelemesini süresiz kilitliyor; motorda kurtarma yolu yok**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 onay motoru) · BULAN: WP-WF-ENGINE-CANDIDATES-01 D2-FIX5 bağımsız gözden geçirmesi · KAYIT: 2026-10-04
+
+Genel başlatma örneği, görevi ve anlık görüntüyü ayrı yazımlarla yazıyor (`StartWorkflowInstanceHandler.cs:~230`); ilkinden sonra çöküş görevsiz Active
+örnek bırakır. D2-FIX5 böyle bir örneği benimsemiyor (doğru: kimsenin karar veremeyeceği bir incelemeye gitmez), ama yerine bir şey de açmıyor: gönderim
+409 `REVIEW_START_FAILED`'da, onay `TaskApprovalService.cs:206-209`'da süresiz kalır. Kapat / aç yardım etmez (en son örnek hâlâ açık);
+`CancelWorkflowTaskCommand` görev ister; güvenilir iptal `TrustedConsumerClientId` ister. FIX5 öncesi de anahtar tekrarı 409 veriyordu (gerileme değil).
+Düzeltme motor tarafında: anahtar tekrarında eksik görev + anlık görüntü tamamlanır, ya da görevsiz Active örnekleri kapatan süpürme (BL-540 ile birlikte).
+Aynı kayıtta küçük not: rakip yazım bir devirse (gereksinim açık, görev açık) 1. tur yeni sahibe kalıyor (FIX3 "yeni sahip incelemeyi devralmaz"
+ilkesine aykırı; düşük). Karşılaştırma: SAP Business Workflow'da yarım kalan iş akışı SWPR ile yeniden başlatılır; Oracle BPM'de hatalı örnek
+kurtarma kuyruğuna düşer. Gelecek regresyon riski: 🟢.
+
+---
+
 ### BL-548
 
 **Test dosyalarında sır biçimli sabitler (`password=hunter2`, `user:…@` bağlantı dizgileri, AKIA / ghp_ biçimleri): dış gizli tarayıcılar ve GitHub push koruması tetiklenebilir**
