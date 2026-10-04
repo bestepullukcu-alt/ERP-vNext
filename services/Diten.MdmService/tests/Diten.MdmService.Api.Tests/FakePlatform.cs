@@ -1,3 +1,4 @@
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
@@ -37,6 +38,7 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         public bool Cancelled { get; set; }
         public DateTimeOffset? DecidedAt { get; set; }
         public bool ClosedWithoutDecision { get; set; }
+        public bool EvidenceInconsistent { get; set; }
     }
 
     private readonly ConcurrentDictionary<string, Instance> _byKey = new(StringComparer.Ordinal);
@@ -44,6 +46,9 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
 
     /// <summary>The outcome the next start answers with (once), instead of starting.</summary>
     public ProductIdentityWorkflowTransportOutcome? NextStartFails { get; set; }
+
+    /// <summary>FIX3 S3: the next start throws before it reaches the engine (a request cut off half-way).</summary>
+    public bool NextStartThrows { get; set; }
 
     /// <summary>The next start answers this (once) — after creating the instance first when <c>Created</c>, the way an
     /// engine answers when the answer is lost or unreadable but the work was done.</summary>
@@ -92,6 +97,11 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         CancellationToken cancellationToken = default)
     {
         Interlocked.Increment(ref StartCalls);
+        if (NextStartThrows)
+        {
+            NextStartThrows = false;
+            throw new IOException("the maker's request was cut off before the start was sent");
+        }
         if (NextStartFails is { } failure)
         {
             NextStartFails = null;
@@ -147,7 +157,12 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         if (!_byId.TryGetValue(request.WorkflowInstanceId, out var instance))
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
                 ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_INSTANCE_NOT_FOUND"));
+        // FIX3 E1: the engine names an approval closed without a decision with its own reason (the answer MDM now
+        // requires before sending a request back); contradictory facts keep the general "inconsistent" conflict.
         if (instance.ClosedWithoutDecision)
+            return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
+                ProductIdentityWorkflowTransportOutcome.Conflict, ProductIdentityWorkflowFaultPolicy.ClosedWithoutDecision));
+        if (instance.EvidenceInconsistent)
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
                 ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT"));
         if (instance.ApprovedBy is not { } approver)
@@ -273,6 +288,15 @@ public sealed class FakePlatformReferenceEndpoint : HttpMessageHandler
     /// <summary>Values Platform now reports as retired (no longer selectable for new use).</summary>
     public ConcurrentDictionary<string, bool> Retired { get; } = new(StringComparer.Ordinal);
 
+    /// <summary>FIX3 S9: values Platform reports as not selectable for new use, though not retired.</summary>
+    public ConcurrentDictionary<string, bool> NotSelectable { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>FIX3 (CT decision 1): from this call on (Calls counts every call), every value is not selectable.</summary>
+    public int? NotSelectableFromCall { get; set; }
+
+    /// <summary>FIX3 S6: while set, Platform answers with this status and a failure envelope naming this reason.</summary>
+    public (HttpStatusCode Status, string Reason)? FailEnvelope { get; set; }
+
     public int Calls;
 
     /// <summary>While set, Platform answers with this status and no envelope (an outage, a refused service identity).</summary>
@@ -280,9 +304,19 @@ public sealed class FakePlatformReferenceEndpoint : HttpMessageHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        Interlocked.Increment(ref Calls);
+        var call = Interlocked.Increment(ref Calls);
+        var everythingWithdrawn = NotSelectableFromCall is { } from && call >= from;
         if (FailWith is { } status)
             return new HttpResponseMessage(status) { Content = new StringContent("platform unavailable", Encoding.UTF8, "text/plain") };
+        if (FailEnvelope is { } refusal)
+            return new HttpResponseMessage(refusal.Status)
+            {
+                Content = new StringContent(new JsonObject
+                {
+                    ["data"] = null, ["statusCode"] = (int)refusal.Status, ["isSuccessful"] = false,
+                    ["errors"] = new JsonArray(refusal.Reason), ["reason_code"] = refusal.Reason, ["correlation_id"] = null
+                }.ToJsonString(), Encoding.UTF8, "application/json")
+            };
         var body = JsonNode.Parse(await request.Content!.ReadAsStringAsync(cancellationToken))!;
         var selections = new JsonArray();
         foreach (var item in body["selections"]!.AsArray())
@@ -299,7 +333,7 @@ public sealed class FakePlatformReferenceEndpoint : HttpMessageHandler
                 ["resolution_mode"] = "LATEST",
                 ["resolved_at_utc"] = ResolvedAt.ToString("O"),
                 ["is_retired"] = retired,
-                ["selectable_for_new"] = !retired
+                ["selectable_for_new"] = !retired && !NotSelectable.ContainsKey(value) && !everythingWithdrawn
             });
         }
         var envelope = new JsonObject

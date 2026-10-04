@@ -182,6 +182,8 @@ public sealed class UpdateGlobalProductDraftHandler
     {
         "GLOBAL_PRODUCT_NOT_FOUND" => 404,
         "AUDIT_INTENT_CONTRACT_INVALID" or "GLOBAL_PRODUCT_UPDATE_CONTRACT_INVALID" => 500,
+        // FIX3 S5: the edit is a transaction now; a store that cannot run it is said as such.
+        ProductIdentityStore.Unavailable => 503,
         _ => 409
     };
 

@@ -105,6 +105,20 @@ public static class ProductIdentityWorkflowFaultPolicy
     /// <summary>A failure status whose envelope names no reason.</summary>
     public const string FailureWithoutReason = "PRODUCT_WORKFLOW_FAILURE_WITHOUT_REASON";
     public const string IdentityNotGranted = "PRODUCT_WORKFLOW_IDENTITY_NOT_GRANTED";
+
+    /*
+     * FIX3 E1 (CT decision 3): the engine's terminal evidence names an approval CLOSED WITHOUT A DECISION (cancelled,
+     * timed out, closed undecided) with its own reason. Only that answer sends a request back (to draft / frees the
+     * GSKU); any other conflict (a version, a contradiction between the engine's own facts) is quarantined as before.
+     * Platform's trusted evidence endpoint does not name this case yet — it answers every such 409 with
+     * WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT — so until it does, every conflict is quarantined (safe; the screen says
+     * so in words). The Platform side is the engine lane's (reported, not done here).
+     */
+    public const string ClosedWithoutDecision = "WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION";
+
+    public static bool IsClosedWithoutDecision<T>(ProductIdentityWorkflowTransportResult<T> result) =>
+        result.Outcome == ProductIdentityWorkflowTransportOutcome.Conflict && result.Value is null
+        && result.ErrorCode == ClosedWithoutDecision;
     private const string DelegatedUserUnauthenticated = "WORKFLOW_DELEGATED_USER_UNAUTHENTICATED";
     private const string DelegatedUserForbidden = "WORKFLOW_DELEGATED_USER_FORBIDDEN";
     private const string ConsumerForbidden = "WORKFLOW_TRUSTED_CONSUMER_FORBIDDEN";

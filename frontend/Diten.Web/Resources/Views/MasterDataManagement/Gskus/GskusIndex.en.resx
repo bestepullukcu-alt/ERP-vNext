@@ -33,9 +33,15 @@
   <data name="IdentityNotAppliedSelfApproval" xml:space="preserve"><value>The approval was decided by the person who submitted it, which is not accepted. The GSKU is a draft again — submit it for someone else to decide.</value></data>
   <data name="IdentityStateInFlight" xml:space="preserve"><value>This GSKU has been submitted for approval and the submission is on its way to the approval engine. It cannot be edited until then; no action is needed.</value></data>
   <data name="IdentityStateResubmitRequired" xml:space="preserve"><value>The submission did not reach the approval engine. Submit again, or edit the draft first.</value></data>
-  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>Manual reconciliation is needed: the approval engine may hold this submission. The person who submitted it must submit again — that checks the engine and settles it.</value></data>
+  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>This submission is waiting for reconciliation. When its submitter submits again, the approval service is read again and the submission continues from where it stands; if that does not settle it, an administrator has to.</value></data>
   <data name="IdentityStateSubmissionEnded" xml:space="preserve"><value>The last submission ended before the approval engine started anything. Edit the draft, then submit it again.</value></data>
-  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>This GSKU's submission needs manual reconciliation. Only the person who submitted it can settle it, by submitting again.</value></data>
+  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>This submission is waiting for reconciliation. When its submitter submits again, the approval service is read again and the submission continues from where it stands; if that does not settle it, an administrator has to.</value></data>
   <data name="ErrorSubmissionEnded" xml:space="preserve"><value>This submission ended before it reached the approval engine and cannot be repeated as it is. Edit the draft, then submit it again.</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>The draft changed while it was being submitted. Open it again and submit the current version.</value></data>
+  <data name="ProductPickerLoadFailed" xml:space="preserve"><value>The Global Product list could not be loaded. Check your connection and try again.</value></data>
+  <data name="ProductPickerNoResults" xml:space="preserve"><value>No referenceable Global Product matches this search.</value></data>
+  <data name="ProductPickerSearching" xml:space="preserve"><value>Searching Global Products…</value></data>
+  <data name="ProductPickerLoadingMore" xml:space="preserve"><value>Loading more Global Products…</value></data>
+  <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>The approval was closed without a decision (cancelled or expired). The draft can be edited and submitted again.</value></data>
+  <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>A unit used by this GSKU was retired after the approval. The approval stands: it was applied with the values validated when it was submitted; the retired unit cannot be chosen for new records.</value></data>
 </root>

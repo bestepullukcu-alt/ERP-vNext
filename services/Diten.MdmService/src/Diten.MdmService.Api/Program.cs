@@ -172,6 +172,7 @@ builder.Services.AddScoped(sp =>
 });
 builder.Services.AddScoped<FirstGskuIdentityWorkflowProcessor>();
 builder.Services.AddScoped<FirstGskuIdentityRetirementProcessor>();
+builder.Services.AddSingleton<ProductIdentityRecoveryMetrics>();
 builder.Services.AddSingleton<FirstGskuIdentityWorkflowRecoveryRunner>();
 builder.Services.AddHostedService<FirstGskuIdentityWorkflowRecoveryWorker>();
 builder.Services.AddOptions<GskuCorrectionWorkflowOptions>()
@@ -199,7 +200,8 @@ builder.Services.AddScoped(sp =>
 {
     var options = sp.GetRequiredService<IOptions<GskuCorrectionWorkflowWorkerOptions>>().Value;
     return new GskuCorrectionExecutionConfiguration(TimeSpan.FromSeconds(options.LeaseSeconds),
-        TimeSpan.FromSeconds(options.RetryDelaySeconds));
+        TimeSpan.FromSeconds(options.RetryDelaySeconds), options.QuarantineAfterFailedAttempts,
+        TimeSpan.FromSeconds(options.MaxRetryDelaySeconds), TimeSpan.FromSeconds(options.StartSettleSeconds));
 });
 builder.Services.AddScoped<GskuCorrectionWorkflowProcessor>();
 builder.Services.AddSingleton<GskuCorrectionRecoveryRunner>();
@@ -234,7 +236,8 @@ builder.Services.AddScoped(sp =>
 {
     var options = sp.GetRequiredService<IOptions<GskuRetirementRequestWorkflowWorkerOptions>>().Value;
     return new GskuRetirementRequestExecutionConfiguration(TimeSpan.FromSeconds(options.LeaseSeconds),
-        TimeSpan.FromSeconds(options.RetryDelaySeconds));
+        TimeSpan.FromSeconds(options.RetryDelaySeconds), options.QuarantineAfterFailedAttempts,
+        TimeSpan.FromSeconds(options.MaxRetryDelaySeconds), TimeSpan.FromSeconds(options.StartSettleSeconds));
 });
 builder.Services.AddScoped<GskuRetirementRequestWorkflowProcessor>();
 builder.Services.AddSingleton<GskuRetirementRequestRecoveryRunner>();

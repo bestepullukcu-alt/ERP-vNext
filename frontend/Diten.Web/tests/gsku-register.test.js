@@ -38,7 +38,7 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
             const elements = typeof selector === 'string'
                 ? [...document.querySelectorAll(selector.replace(':selected', ':checked'))] : selector ? [selector] : [];
             const api = {
-                length: elements.length, hasClass: () => false, select2: () => api,
+                length: elements.length, hasClass: () => false, select2: () => api, data: () => undefined,
                 trigger: () => api, toggleClass: () => api, next: () => api, find: () => api,
                 val: (...args) => {
                     if (!args.length) return elements[0]?.value;
@@ -51,7 +51,8 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
         const source = fs.readFileSync(path.join(__dirname, '../wwwroot/assets/js/MasterDataManagement/Gskus/index.js'), 'utf8');
         // Test-only access to existing closure functions; shipped JS has no test hook.
         const exposed = source.replace('init: async () => {', `test: {
-            readAvailableActions, readVersion, normalizeFilters, getResetBaselineState, saveDefaultView,
+            readAvailableActions, readVersion, buildListOptions, createProductPickerOptions, fetchProductPage,
+            getErrorMessage, onListError,
             openExistingEditor, requestLifecycle, requestRetirement, submitEditor,
             setupEditor: (mode) => { editorId = '${id}'; editorGskuVersion = 3; editorRevisionVersion = 2; editorMode = mode; },
             setupTable: (table) => { dt = table; }
@@ -123,16 +124,131 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
         expect(h.reload).toHaveBeenCalled();
         expect(h.toast).toHaveBeenCalledWith('RetirementRequestedSuccess', 'warning');
     });
-    it('Save View persists normalized applied lifecycle filters and reset stays empty', async () => {
-        const h = harness();
-        expect(h.api.normalizeFilters({ lifecycleStatus: 'Draft' })).toEqual({ lifecycleStatus: 'Draft' });
-        expect(h.api.normalizeFilters({ lifecycleStatus: 'Unknown' })).toEqual({ lifecycleStatus: '' });
-        expect(h.api.getResetBaselineState().filters).toEqual({ lifecycleStatus: '' });
-        await h.api.saveDefaultView({ filters: { lifecycleStatus: 'Draft' } });
-        const payload = h.window.personalizationClient.saveView.mock.calls[0][0];
-        expect(payload.moduleKey).toBe('MasterDataManagement');
-        expect(payload.pageKey).toBe('Gskus');
-        expect(JSON.stringify(payload)).toContain('Draft');
+    // FIX3 B17: the list component owns Save View, the filter and the server wire; the register keeps its saved-view
+    // keys (existing views still load) and names only the sort keys MDM whitelists.
+    it('hands the list component the saved-view keys, the lifecycle filter and only sortable data names', () => {
+        const options = harness().api.buildListOptions();
+        expect(options.dataMode).toBe('server');
+        expect(options.ajax.url).toBe('/MasterDataManagement/Gskus/api');
+        expect(options.savedView).toMatchObject({ moduleKey: 'MasterDataManagement', pageKey: 'Gskus', saveViewColumnIndexes: [1, 2, 3, 4, 5] });
+        expect(options.filters.fields).toEqual([{ id: 'filterLifecycleStatus', key: 'lifecycleStatus', kind: 'single' }]);
+        expect(options.export).toBeUndefined();
+        const sortable = options.config.columns
+            .filter((column, index) => !options.config.columnDefs.some((def) =>
+                (def.targets === index || (def.targets === -1 && index === options.config.columns.length - 1)) && def.orderable === false))
+            .map((column) => column.data);
+        expect(sortable).toEqual(['canonicalCode', 'packQuantity', 'lifecycleStatus']);
+        expect(Object.keys(options.actions.onRowAction).sort()).toEqual(
+            ['editDraft', 'quickView', 'requestCorrection', 'requestRetirement', 'submitIdentity', 'withdrawApproval']);
+    });
+
+    describe('Global Product picker (select2 ajax transport, BL-531 contract)', () => {
+        const words = { error: 'The list could not be loaded.', failure: (r) => r?.message || 'The list could not be loaded.',
+            noResults: 'No match.', searching: 'Searching…', loadingMore: 'More…' };
+        const deferred = () => { let resolve; const promise = new Promise((r) => { resolve = r; }); return { promise, resolve }; };
+        const flush = () => new Promise((r) => setTimeout(r, 0));
+
+        it('returns a request object with abort() and maps hasMore to pagination.more', async () => {
+            const h = harness();
+            const fetchPage = vi.fn(async () => ({ ok: true, hasMore: true,
+                products: [{ id: 'p1', canonicalCode: 'GP-1', globalProductName: 'One' }] }));
+            const picker = h.api.createProductPickerOptions({ fetchPage, words });
+            const success = vi.fn();
+            const request = picker.ajax.transport({ data: { term: ' gp ', page: 2 } }, success, vi.fn());
+            expect(typeof request.abort).toBe('function');
+            expect('status' in request).toBe(false);
+            await flush();
+            expect(fetchPage).toHaveBeenCalledWith({ term: 'gp', page: 2, pageSize: 20 });
+            expect(success).toHaveBeenCalledWith({ results: [{ id: 'p1', text: 'GP-1 — One' }], pagination: { more: true } });
+            expect(picker.minimumInputLength).toBe(0);
+            expect(picker.ajax.delay).toBe(300);
+        });
+
+        it('drops a late answer and an aborted one', async () => {
+            const h = harness();
+            const first = deferred();
+            const second = deferred();
+            const pages = [first.promise, second.promise];
+            const picker = h.api.createProductPickerOptions({ fetchPage: () => pages.shift(), words });
+            const seen = [];
+            picker.ajax.transport({ data: { term: 'ol' } }, (answer) => seen.push(['old', answer]), vi.fn());
+            const latest = picker.ajax.transport({ data: { term: 'new' } }, (answer) => seen.push(['new', answer]), vi.fn());
+            second.resolve({ ok: true, hasMore: false, products: [{ id: 'n', canonicalCode: 'N', globalProductName: 'New' }] });
+            await flush();
+            first.resolve({ ok: true, hasMore: false, products: [{ id: 'o', canonicalCode: 'O', globalProductName: 'Old' }] });
+            await flush();
+            expect(seen.map(([tag]) => tag)).toEqual(['new']);
+
+            const third = deferred();
+            const aborting = h.api.createProductPickerOptions({ fetchPage: () => third.promise, words });
+            const success = vi.fn();
+            aborting.ajax.transport({ data: { term: 'x' } }, success, vi.fn()).abort();
+            third.resolve({ ok: true, hasMore: false, products: [] });
+            await flush();
+            expect(success).not.toHaveBeenCalled();
+            expect(latest).toBeTruthy();
+        });
+
+        it('turns a failed read into a sentence in the reader\'s language, never "no results"', async () => {
+            const h = harness();
+            const refused = h.api.createProductPickerOptions({
+                fetchPage: async () => ({ ok: false, status: 503, message: 'Referans verisi şu anda kullanılamıyor.' }), words });
+            const fail = vi.fn();
+            refused.ajax.transport({ data: { term: '' } }, vi.fn(), fail);
+            await flush();
+            expect(fail).toHaveBeenCalled();
+            expect(refused.language.errorLoading()).toBe('Referans verisi şu anda kullanılamıyor.');
+            expect(refused.language.errorLoading()).not.toBe(refused.language.noResults());
+
+            const broken = h.api.createProductPickerOptions({ fetchPage: async () => { throw new Error('network'); }, words });
+            broken.ajax.transport({ data: { term: '' } }, vi.fn(), vi.fn());
+            await flush();
+            expect(broken.language.errorLoading()).toBe('The list could not be loaded.');
+        });
+
+        it('pages the same-origin create-options read with search and reads hasMore', async () => {
+            const h = harness([{ status: 200, ok: true, json: async () => ({ data: {
+                globalProducts: [{ id: 'p1', canonicalCode: 'GP-1', globalProductName: 'One' }], uoms: [], hasMore: true } }) }]);
+            const page = await h.api.fetchProductPage({ term: 'asp', page: 2, pageSize: 20 });
+            expect(h.fetch.mock.calls[0][0]).toBe('/MasterDataManagement/Gskus/api/create-options?pageNumber=2&pageSize=20&search=asp');
+            expect(page).toMatchObject({ ok: true, hasMore: true });
+            expect(page.products).toHaveLength(1);
+        });
+    });
+
+    // The proxy marks a refusal whose MDM code has no sentence (`unmapped: true`): the console warns with the status only.
+    describe('unmapped refusal warning', () => {
+        const refusal = (status, body) => ({ status, ok: false, json: async () => body });
+        afterEach(() => vi.restoreAllMocks());
+
+        it('warns, with the status and never the body, when a failure is unmapped', async () => {
+            const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            const h = harness([response(detail(['DETAILS', 'SUBMIT'])),
+                refusal(409, { success: false, errors: ['Bu talep şu anda işlenemiyor.'], unmapped: true })]);
+            h.api.requestLifecycle(id, 'SUBMIT', null); await h.settle();
+            expect(warn).toHaveBeenCalledTimes(1);
+            expect(warn).toHaveBeenCalledWith('GSKU: a refusal without a sentence mapping', 409);
+            expect(h.toast).toHaveBeenLastCalledWith('Bu talep şu anda işlenemiyor.', 'error');
+        });
+
+        it('does not warn for a mapped refusal', async () => {
+            const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            const h = harness([response(detail(['DETAILS', 'SUBMIT'])),
+                refusal(409, { success: false, errors: ['Üst kimlik henüz onaylanmadı.'] })]);
+            h.api.requestLifecycle(id, 'SUBMIT', null); await h.settle();
+            expect(warn).not.toHaveBeenCalled();
+            expect(h.toast).toHaveBeenLastCalledWith('Üst kimlik henüz onaylanmadı.', 'error');
+        });
+
+        it('warns the same way for a failed list read', () => {
+            const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            const h = harness();
+            h.api.onListError.call({}, { status: 409, responseJSON: { success: false, errors: ['Sentence.'], unmapped: true } });
+            h.api.onListError.call({}, { status: 409, responseJSON: { success: false, errors: ['Sentence.'] } });
+            expect(warn).toHaveBeenCalledTimes(1);
+            expect(warn).toHaveBeenCalledWith('GSKU: a refusal without a sentence mapping', 409);
+            expect(h.toast).toHaveBeenCalledWith('Sentence.', 'error');
+        });
     });
 
     it('correction admission increments version and is reported pending only after the action fence read-back', async () => {
@@ -214,7 +330,7 @@ describe('MOD-0290 GSKU Register exposure', () => {
     it('keeps browser traffic on the same-origin proxy without credentials or generated identity', () => {
         const source = script();
         expect(source).toContain("const endpoint = '/MasterDataManagement/Gskus/api'");
-        expect(source).toContain('`${endpoint}/create-options`');
+        expect(source).toContain('`${endpoint}/create-options?');
         expect(source).not.toMatch(/localhost:5000|:5000\/api|localhost:5059|:5059\/api/);
         expect(source).not.toMatch(/document\.cookie|access_token|Authorization\s*:\s*['"`]Bearer|X-Tenant-Id/);
         expect(source).not.toMatch(/crypto\.randomUUID|uuidv?4|Guid\.NewGuid|IdempotencyKey|ReservationId|Credential/);
@@ -251,7 +367,7 @@ describe('MOD-0290 GSKU Register exposure', () => {
         expect(source).toContain('private const string ReadPermission = "mdm.gskus.read"');
         expect(source).toContain('private const string CreatePermission = "mdm.gskus.create"');
         expect(source.match(/!HasPermission\(CreatePermission\)/g).length).toBeGreaterThanOrEqual(2);
-        expect(script()).toContain('exportButtons(canCreate ? L.AddNew : null');
+        expect(script()).toContain("addNewText: canCreate ? L.AddNew : ''");
     });
 
     it('renders only exact server-owned actions and keeps unavailable mutations fail closed', () => {
@@ -266,10 +382,10 @@ describe('MOD-0290 GSKU Register exposure', () => {
         expect(browser).toContain("actions[0] !== 'DETAILS'");
         expect(browser).toContain('const actions = readAvailableActions(await fetchDetail(id))');
         expect(view).not.toMatch(/data-can-submit|data-can-retire/);
-        expect(browser).toContain("EDIT: ['js-edit-draft', 'bx bx-edit'");
-        expect(browser).toContain("WITHDRAW_APPROVAL: ['js-lifecycle-action', 'bx bx-undo'");
-        expect(browser).toContain("REQUEST_CORRECTION: ['js-request-correction', 'bx bx-revision'");
-        expect(browser).toContain("REQUEST_RETIREMENT: ['js-request-retirement', 'bx bx-archive'");
+        expect(browser).toContain("EDIT: { key: 'editDraft', className: 'js-edit-draft', icon: 'bx bx-edit'");
+        expect(browser).toContain("WITHDRAW_APPROVAL: { key: 'withdrawApproval', className: 'js-lifecycle-action', icon: 'bx bx-undo'");
+        expect(browser).toContain("REQUEST_CORRECTION: { key: 'requestCorrection', className: 'js-request-correction', icon: 'bx bx-revision'");
+        expect(browser).toContain("REQUEST_RETIREMENT: { key: 'requestRetirement', className: 'js-request-retirement', icon: 'bx bx-archive'");
         expect(browser).toContain("if (!id || !['SUBMIT', 'WITHDRAW_APPROVAL'].includes(action)) return");
         expect(browser).not.toMatch(/canSubmit|canRetire|js-retire-identity/);
         expect(browser).not.toContain("`${endpoint}/${encodeURIComponent(id)}/retire`");
@@ -397,7 +513,7 @@ describe('MOD-0290 GSKU Register exposure', () => {
         expect(source).toContain("response.status === 202 && checkpoint !== 'AwaitingDecision'");
         expect(source).toContain("response.status === 200 && checkpoint !== 'Completed'");
         expect(source).toContain("refreshedActions.includes('REQUEST_CORRECTION')");
-        expect(source).toContain("REQUEST_RETIREMENT: ['js-request-retirement'");
+        expect(source).toContain("REQUEST_RETIREMENT: { key: 'requestRetirement', className: 'js-request-retirement'");
     });
 
     it('requests retirement through the exact same-origin durable contract and fresh read-back', () => {
@@ -428,23 +544,33 @@ describe('MOD-0290 GSKU Register exposure', () => {
         expect(source).not.toMatch(/payload\?\.Errors|envelope\?\.Errors/);
     });
 
-    it('keeps server-side DataTable, skeleton, Save View and factory reset without selection surfaces', () => {
+    // FIX3 B17: the card is the shared _ListShell (shaped skeleton, v2, server data mode) and the behaviour is the list
+    // component's — no hand-copied Save View, filter or wire left in the page.
+    it('stands on the list shell and the list component without selection surfaces', () => {
         const table = read('Views/MasterDataManagement/Gskus/_DataTable.cshtml');
         const source = script();
-        expect(table).toContain('id="skeleton-loader"');
-        expect(table).toContain('data-dt-standard="v2"');
-        expect(source).toContain('serverSide: true');
-        expect(source).toContain('window.personalizationClient');
-        expect(source).toContain('dt-save-filter-btn');
-        expect(source).toContain('applySavedTableState(dt, getResetBaselineState())');
-        expect(source).toContain('class="dropdown-item dt-action-item ${className}"');
-        expect(source).toContain("filters: normalizeFilters(appliedFilters)");
-        expect(source).toContain("query.set('lifecycleStatus', appliedFilters.lifecycleStatus)");
-        expect(source).toContain('if (appliedFilters.lifecycleStatus)');
-        expect(source).not.toContain('lifecycleFilterReady');
-        expect(source).toContain("container.toggleClass('filter-selected', selected)");
+        expect(table).toContain('<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />');
+        expect(table).toContain('TableId = "dt-gskus"');
+        expect(table).toContain('DataMode = "server"');
+        expect(table).toContain('HasSelection = false');
+        expect(table).toContain('ActionsHeader = Localizer["Actions"].Value');
+        expect(source).toContain('window.DitenDataTable.createList(buildListOptions())');
+        expect(source).toContain("dataMode: 'server'");
+        expect(source).toContain('class="dropdown-item dt-action-item ${className}" data-row-action="${key}"');
+        expect(source).not.toMatch(/serverSide: true|personalizationClient|applySavedTableState|new DataTable\(/);
         expect(source).not.toMatch(/localStorage|sessionStorage|delete-record|js-edit-item|bulk-delete|bulkAction|row-checkbox/);
         expect(table).not.toMatch(/type="checkbox"|select-all|dt-checkboxes/);
+    });
+
+    it('draws nothing of the register without mdm.gskus.read (UAS-001)', () => {
+        const index = read('Views/MasterDataManagement/Gskus/Index.cshtml');
+        const gate = index.indexOf('@if (!Perms.Has("mdm.gskus.read"))');
+        expect(index).toContain('@inject Diten.Web.Services.IPermissionSnapshot Perms');
+        expect(gate).toBeGreaterThan(0);
+        expect(index.slice(gate, gate + 200)).toContain('<partial name="_AccessDenied"');
+        expect(gate).toBeLessThan(index.indexOf('<partial name="~/Views/MasterDataManagement/Gskus/_Filter.cshtml" />'));
+        expect(gate).toBeLessThan(index.indexOf('<partial name="~/Views/MasterDataManagement/Gskus/_DataTable.cshtml" />'));
+        expect(controller()).not.toMatch(/return Forbid\(\)/);
     });
 
     it('persists and resets the exact lifecycle filter in Save View', () => {
@@ -453,10 +579,9 @@ describe('MOD-0290 GSKU Register exposure', () => {
         expect(filter).toContain('id="filterLifecycleStatus"');
         ['Draft', 'PendingIdentityApproval', 'IdentityApproved', 'Retired']
             .forEach((state) => expect(filter).toContain(`value="${state}"`));
-        expect(source).toContain("let appliedFilters = { lifecycleStatus: '' }");
-        expect(source).toContain('appliedFilters = normalizeFilters(normalized.filters)');
-        expect(source).toContain('applySavedTableState(dt, getResetBaselineState())');
-        expect(source).toContain('getAppliedFilterCount()');
+        expect(source).toContain("fields: [{ id: 'filterLifecycleStatus', key: 'lifecycleStatus', kind: 'single' }]");
+        expect(source).toContain("applyBtn: 'btnFilterApply'");
+        expect(source).toContain("resetBtn: 'btnFilterReset'");
     });
 
     it('ships an identical localization key set for all seven locales', () => {
@@ -510,7 +635,9 @@ describe('MOD-0290 GSKU Register exposure', () => {
         expect(source).toContain("notApplied === 'REFERENCE_NOT_SELECTABLE'");
     });
 
-    it('translates only an allow-listed MDM conflict code and never relays the code itself', () => {
+    // FIX3 item 4 (B18): every listed code is translated at any status (FIX1/FIX2: only a single one on a 409), the
+    // rest through GskuRefusalSentences; a code without a sentence gets the status message and the unmapped flag.
+    it('translates every mapped MDM code at any status and never relays the code itself', () => {
         const source = controller();
         [['GSKU_PARENT_NOT_APPROVED', 'ErrorParentNotApproved'],
             ['GSKU_IDENTITY_SUBMIT_IN_FLIGHT', 'ErrorSubmitInFlight'],
@@ -523,7 +650,8 @@ describe('MOD-0290 GSKU Register exposure', () => {
             ['FIRST_GSKU_IDENTITY_SUBMISSION_ENDED', 'ErrorSubmissionEnded'],
             ['FIRST_GSKU_IDENTITY_WORKFLOW_DRAFT_CHANGED', 'ErrorDraftChanged']]
             .forEach(([code, key]) => expect(source).toContain(`["${code}"] = "${key}"`));
-        expect(source).toContain('errors = new[] { _localizer[key].Value }');
-        expect(source).toMatch(/KnownFailureKeys\.TryGetValue[\s\S]*?return SafeFailure\(response\.StatusCode\);/);
+        expect(source).toMatch(/KnownFailureKeys\.TryGetValue\(code, out var known\)[\s\S]*?GskuRefusalSentences\.Keys\.TryGetValue\(code, out var refusal\)/);
+        expect(source).toContain('unmapped = true');
+        expect(source).not.toMatch(/errors = new\[\] \{ code \}/);
     });
 });

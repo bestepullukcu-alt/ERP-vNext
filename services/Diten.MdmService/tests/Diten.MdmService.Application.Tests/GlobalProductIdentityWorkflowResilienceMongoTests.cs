@@ -1325,6 +1325,9 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
             OperationFingerprint = $"fingerprint-{operationId:N}",
             CreatedAtUtcTicksV1 = _clock.GetUtcNow().UtcTicks
         };
+        // FIX3 item 6: the submit's reservation now touches the DRAFT it submits (version 0) in its own transaction, as
+        // a real submit does — so the product is seeded as that draft, reserved, and only then made pending (the
+        // order of a real submit; seeding it pending first was a shortcut a real flow never takes).
         if (withPendingProduct || withDraftProduct)
         {
             await _database.GetCollection<GlobalProduct>("mdm_global_products").InsertOneAsync(new()
@@ -1334,11 +1337,20 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
                 CanonicalCode = objectRef,
                 GlobalProductName = $"Resilience {productId:N}",
                 GlobalProductNameNormalized = $"RESILIENCE {productId:N}".ToUpperInvariant(),
-                LifecycleStatus = withPendingProduct
-                    ? ProductIdentityLifecycleStatus.PendingIdentityApproval
-                    : ProductIdentityLifecycleStatus.Draft,
-                WorkflowBinding = withPendingProduct
-                    ? new ProductIdentityWorkflowBinding
+                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                Version = 0
+            });
+        }
+
+        var repository = Repository(tenantId);
+        Assert.True((await repository.ReserveAsync(operation)).Succeeded);
+        if (withPendingProduct)
+        {
+            await _database.GetCollection<GlobalProduct>("mdm_global_products").UpdateOneAsync(x => x.Id == productId,
+                Builders<GlobalProduct>.Update
+                .Set(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.PendingIdentityApproval)
+                .Set(x => x.Version, 1)
+                .Set(x => x.WorkflowBinding, new ProductIdentityWorkflowBinding
                     {
                         WorkflowInstanceId = instanceId,
                         WorkflowTemplateId = _templateId,
@@ -1353,14 +1365,8 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
                         StartIdempotencyKey = operation.StartIdempotencyKey,
                         StartRequestFingerprint = operation.OperationFingerprint,
                         SubmittedAtUtc = _clock.GetUtcNow()
-                    }
-                    : null,
-                Version = withPendingProduct ? 1 : 0
-            });
+                    }));
         }
-
-        var repository = Repository(tenantId);
-        Assert.True((await repository.ReserveAsync(operation)).Succeeded);
         Checkpoint[] path = target switch
         {
             Checkpoint.StartOutcomeUnknown => [Checkpoint.StartOutcomeUnknown],

@@ -123,9 +123,17 @@ public sealed class GskuCorrectionWorkflowOperationRepository(IMongoDatabase dat
         if (mutation.DecisionTransitionSequence.HasValue) update = update.Set(x => x.DecisionTransitionSequence, mutation.DecisionTransitionSequence);
         if (mutation.DecisionTaskStatus is not null) update = update.Set(x => x.DecisionTaskStatus, mutation.DecisionTaskStatus);
         if (mutation.DecisionInstanceStatus is not null) update = update.Set(x => x.DecisionInstanceStatus, mutation.DecisionInstanceStatus);
+        update = update.Set(x => x.FailedAttemptCount, mutation.FailedAttemptCount ?? 0);
+        if (mutation.LastStartSentAtUtcTicksV1.HasValue)
+            update = update.Set(x => x.LastStartSentAtUtcTicksV1, mutation.LastStartSentAtUtcTicksV1);
         if (mutation.ReleaseLease) update = update.Set(x => x.LeaseOwner, null).Set(x => x.LeaseUntilUtcTicksV1, null);
         return (await rows.UpdateOneAsync(filter, update, cancellationToken: cancellationToken)).ModifiedCount == 1;
     }
+
+    // FIX3 item 1 (B13): this tenant's operations waiting for a person.
+    public Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) =>
+        rows.CountDocumentsAsync(Active & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.Checkpoint, GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired),
+            cancellationToken: cancellationToken);
 
     public async Task<GskuCorrectionWorkflowRecoverablePage> DiscoverRecoverableAsync(long nowUtcTicks, int limit,
         Guid? afterOperationId = null, CancellationToken cancellationToken = default)

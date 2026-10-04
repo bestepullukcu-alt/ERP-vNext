@@ -42,8 +42,10 @@ public sealed class GskuKnownFailureSentenceTests
         Assert.DoesNotContain(code, JsonSerializer.Serialize(((ObjectResult)result).Value));
     }
 
+    // FIX3 item 4: a code with no sentence is a missing mapping — the status message is shown, the code stays behind,
+    // and the browser is told (unmapped) so that its console warns.
     [Fact]
-    public async Task An_unknown_code_stays_a_status_message()
+    public async Task An_unknown_code_stays_a_status_message_and_is_flagged()
     {
         var result = await SubmitAgainstAsync(HttpStatusCode.Conflict, Envelope("SOME_INTERNAL_DETAIL"));
 
@@ -51,18 +53,55 @@ public sealed class GskuKnownFailureSentenceTests
         Assert.Equal(StatusCodes.Status409Conflict, status);
         Assert.DoesNotContain("SOME_INTERNAL_DETAIL", Assert.Single(errors));
         Assert.DoesNotContain("ErrorParentNotApproved", errors[0]);
+        Assert.True(Unmapped(result));
     }
 
+    // FIX3 item 4 (B18): FIX1/FIX2 translated only a single known code on a 409; every status and every code is now said.
     [Theory]
-    [InlineData(HttpStatusCode.BadRequest, "{\"errors\":[\"GSKU_PARENT_NOT_APPROVED\"]}")]
-    [InlineData(HttpStatusCode.Conflict, "{\"errors\":[\"GSKU_PARENT_NOT_APPROVED\",\"OTHER\"]}")]
-    [InlineData(HttpStatusCode.Conflict, "not json")]
-    public async Task Only_a_single_known_code_on_a_conflict_is_translated(HttpStatusCode mdmStatus, string body)
+    [InlineData(HttpStatusCode.BadRequest, "GSKU_CORRECTION_REQUEST_INVALID", "refusal:RefusalInvalidRequest")]
+    [InlineData(HttpStatusCode.Forbidden, "GSKU_DIRECT_RETIREMENT_SYSTEM_ONLY", "refusal:RefusalForbidden")]
+    [InlineData(HttpStatusCode.NotFound, "GSKU_NOT_FOUND", "refusal:RefusalNotFound")]
+    [InlineData(HttpStatusCode.ServiceUnavailable, "PRODUCT_IDENTITY_WORKFLOW_STORE_UNAVAILABLE", "refusal:RefusalServiceUnavailable")]
+    [InlineData(HttpStatusCode.Conflict, "GSKU_CORRECTION_RETRY_LIMIT_REACHED", "refusal:RefusalReconciliation")]
+    [InlineData(HttpStatusCode.BadRequest, "GSKU_PARENT_NOT_APPROVED", "localized:ErrorParentNotApproved")]
+    public async Task Every_status_and_every_mapped_code_is_said_as_a_sentence(HttpStatusCode mdmStatus, string code, string sentence)
     {
-        var result = await SubmitAgainstAsync(mdmStatus, body);
+        var result = await SubmitAgainstAsync(mdmStatus, Envelope(code));
+
+        var (status, errors) = Read(result);
+        Assert.Equal((int)mdmStatus, status);
+        Assert.Equal(sentence, Assert.Single(errors));
+        Assert.False(Unmapped(result));
+        Assert.DoesNotContain(code, JsonSerializer.Serialize(((ObjectResult)result).Value));
+    }
+
+    [Fact]
+    public async Task Several_codes_are_each_said_once_and_an_unknown_one_adds_the_status_message()
+    {
+        var result = await SubmitAgainstAsync(HttpStatusCode.BadRequest,
+            "{\"errors\":[\"PACK_UOM_INVALID\",\"PACK_QUANTITY_PRECISION_INVALID\",\"OTHER_CODE\"]}");
+
+        var (_, errors) = Read(result);
+        Assert.Equal(2, errors.Length);
+        Assert.Equal("refusal:RefusalPackInvalid", errors[0]);
+        Assert.DoesNotContain("OTHER_CODE", errors[1]);
+        Assert.True(Unmapped(result));
+    }
+
+    [Fact]
+    public async Task An_unreadable_answer_stays_a_status_message()
+    {
+        var result = await SubmitAgainstAsync(HttpStatusCode.Conflict, "not json");
 
         var (_, errors) = Read(result);
         Assert.NotEqual("localized:ErrorParentNotApproved", Assert.Single(errors));
+        Assert.False(Unmapped(result));
+    }
+
+    private static bool Unmapped(IActionResult result)
+    {
+        using var document = JsonDocument.Parse(JsonSerializer.Serialize(((ObjectResult)result).Value));
+        return document.RootElement.TryGetProperty("unmapped", out var flag) && flag.GetBoolean();
     }
 
     // FIX2 item 8 (replaces FIX1's "repeat once with that command", which MDM always refused: the repeat carried
@@ -112,6 +151,32 @@ public sealed class GskuKnownFailureSentenceTests
         Assert.Single(wire.Keys);
     }
 
+    // FIX3 item 6: Global Product's in-flight rule refuses an edit while a submit is on its way, and a submit whose
+    // draft changed under it — both said in words on the Global Product screen.
+    [Theory]
+    [InlineData("GLOBAL_PRODUCT_IDENTITY_SUBMIT_IN_FLIGHT", "ErrorSubmitInFlight")]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_DRAFT_CHANGED", "ErrorDraftChanged")]
+    public async Task A_global_product_in_flight_refusal_is_said_in_words(string code, string key)
+    {
+        var wire = new ScriptedHandler((HttpStatusCode.Conflict, Envelope(code)));
+        var gateway = new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?> { ["GatewayUrl"] = "https://gateway-fixture.invalid" }).Build();
+        var controller = new GlobalProductsController(new HttpClient(wire), gateway,
+            new PrefixLocalizer<Diten.Web.SharedResource>(), new PrefixLocalizer<Diten.Web.Views.MasterDataManagement.GlobalProducts.GlobalProductsIndex>(),
+            NullLogger<GlobalProductsController>.Instance)
+        {
+            ControllerContext = new ControllerContext { HttpContext = Context("mdm.global-products.update",
+                new() { ["ExpectedVersion"] = "3", ["GlobalProductName"] = "Renamed", ["__RequestVerificationToken"] = "synthetic-csrf" }) }
+        };
+
+        var result = await controller.UpdateDraft(Guid.NewGuid(), 3, "Renamed", CancellationToken.None);
+
+        var (status, errors) = Read(result);
+        Assert.Equal(StatusCodes.Status409Conflict, status);
+        Assert.Equal($"localized:{key}", Assert.Single(errors));
+        Assert.Single(wire.Keys);
+    }
+
     private static string Envelope(string code) =>
         $"{{\"isSuccessful\":false,\"statusCode\":409,\"errors\":[\"{code}\"]}}";
 
@@ -139,7 +204,7 @@ public sealed class GskuKnownFailureSentenceTests
             new Dictionary<string, string?> { ["GatewayUrl"] = "https://gateway-fixture.invalid" }).Build();
         return new GskusController(new HttpClient(wire), gateway,
             new EphemeralDataProtectionProvider(), new PrefixLocalizer<Diten.Web.SharedResource>(),
-            new PrefixLocalizer<GskusIndex>(), NullLogger<GskusController>.Instance)
+            new PrefixLocalizer<GskusIndex>(), NullLogger<GskusController>.Instance, new PrefixLocalizer<GskuRefusals>("refusal"))
         { ControllerContext = new ControllerContext { HttpContext = Context(permission, form) } };
     }
 
@@ -175,10 +240,10 @@ public sealed class GskuKnownFailureSentenceTests
         }
     }
 
-    private sealed class PrefixLocalizer<T> : IStringLocalizer<T>
+    private sealed class PrefixLocalizer<T>(string prefix = "localized") : IStringLocalizer<T>
     {
-        public LocalizedString this[string name] => new(name, $"localized:{name}");
-        public LocalizedString this[string name, params object[] arguments] => new(name, $"localized:{name}");
+        public LocalizedString this[string name] => new(name, $"{prefix}:{name}");
+        public LocalizedString this[string name, params object[] arguments] => new(name, $"{prefix}:{name}");
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
     }
 }

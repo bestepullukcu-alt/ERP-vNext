@@ -34,9 +34,15 @@
   <data name="IdentityNotAppliedSelfApproval" xml:space="preserve"><value>Решение по согласованию принял тот же человек, который его отправил, — это не допускается. GSKU снова черновик: отправьте его повторно, чтобы решение принял другой сотрудник.</value></data>
   <data name="IdentityStateInFlight" xml:space="preserve"><value>Этот GSKU отправлен на согласование, и отправка передаётся в механизм согласования. До этого его нельзя изменить; никаких действий не требуется.</value></data>
   <data name="IdentityStateResubmitRequired" xml:space="preserve"><value>Отправка не дошла до механизма согласования. Отправьте повторно или сначала измените черновик.</value></data>
-  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>Требуется ручная сверка: механизм согласования, возможно, удерживает эту отправку. Отправивший её сотрудник должен отправить повторно — это проверит механизм и урегулирует ситуацию.</value></data>
+  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>Эта отправка ожидает сверки. Когда отправитель отправит её снова, служба утверждения будет прочитана заново и отправка продолжится с текущего места; если это не поможет, сверку должен выполнить администратор.</value></data>
   <data name="IdentityStateSubmissionEnded" xml:space="preserve"><value>Последняя отправка завершилась до того, как механизм согласования что-либо запустил. Измените черновик и отправьте его снова.</value></data>
-  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>Отправка этого GSKU требует ручной сверки. Урегулировать её может только отправивший сотрудник, отправив повторно.</value></data>
+  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>Эта отправка ожидает сверки. Когда отправитель отправит её снова, служба утверждения будет прочитана заново и отправка продолжится с текущего места; если это не поможет, сверку должен выполнить администратор.</value></data>
   <data name="ErrorSubmissionEnded" xml:space="preserve"><value>Эта отправка завершилась, не дойдя до механизма согласования, и не может быть повторена как есть. Измените черновик и отправьте его снова.</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>Черновик изменился во время отправки. Откройте его снова и отправьте текущую версию.</value></data>
+  <data name="ProductPickerLoadFailed" xml:space="preserve"><value>Не удалось загрузить список глобальных продуктов. Проверьте подключение и повторите попытку.</value></data>
+  <data name="ProductPickerNoResults" xml:space="preserve"><value>Нет доступных для ссылки глобальных продуктов, соответствующих этому поиску.</value></data>
+  <data name="ProductPickerSearching" xml:space="preserve"><value>Поиск глобальных продуктов…</value></data>
+  <data name="ProductPickerLoadingMore" xml:space="preserve"><value>Загрузка других глобальных продуктов…</value></data>
+  <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>Утверждение закрыто без решения (отменено или истекло). Черновик можно изменить и отправить снова.</value></data>
+  <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>Единица, используемая этим GSKU, была выведена из использования после утверждения. Утверждение остаётся в силе: оно применено со значениями, проверенными при отправке; выведенную единицу нельзя выбрать для новых записей.</value></data>
 </root>

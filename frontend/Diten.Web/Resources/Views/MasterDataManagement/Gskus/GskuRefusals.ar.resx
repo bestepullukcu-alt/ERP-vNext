@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalBusy" xml:space="preserve"><value>هناك عملية جارية بالفعل على هذا السجل. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="RefusalCapacity" xml:space="preserve"><value>لا يمكن لهذا السجل قبول مزيد من التغييرات حاليًا. حاول لاحقًا؛ وإذا استمر ذلك فاتصل بفريق الدعم.</value></data>
+  <data name="RefusalChangedElsewhere" xml:space="preserve"><value>تغيّر هذا السجل أثناء عملك عليه. حدّث الصفحة وحاول مرة أخرى.</value></data>
+  <data name="RefusalDependents" xml:space="preserve"><value>توجد سجلات تعتمد على هذا الـ GSKU أو يجري إنشاء سجل تحته. أوقف استخدامها أو انتظر حتى تكتمل.</value></data>
+  <data name="RefusalForbidden" xml:space="preserve"><value>ليست لديك صلاحية لتنفيذ هذا الإجراء.</value></data>
+  <data name="RefusalInternal" xml:space="preserve"><value>أوقف تعارضٌ غير متوقع هذا الإجراء؛ لم يتغيّر شيء. يرجى الاتصال بفريق الدعم.</value></data>
+  <data name="RefusalInvalidRequest" xml:space="preserve"><value>الطلب غير صالح. تحقّق من الحقول وحاول مرة أخرى.</value></data>
+  <data name="RefusalNotFound" xml:space="preserve"><value>لم يُعثر على السجل أو لا يمكنك رؤيته.</value></data>
+  <data name="RefusalNotRequester" xml:space="preserve"><value>لا يمكن سحب هذه الموافقة إلا من قِبل الشخص الذي قدّمها.</value></data>
+  <data name="RefusalPackInvalid" xml:space="preserve"><value>كمية العبوة أو وحدتها غير صالحة. صحّحهما وحاول مرة أخرى.</value></data>
+  <data name="RefusalParentNotReady" xml:space="preserve"><value>المنتج العام غير معتمد أو لم يعد من الممكن الإشارة إليه.</value></data>
+  <data name="RefusalReconciliation" xml:space="preserve"><value>ينتظر هذا الطلب مراجعة مختص ويبقى كما هو حتى ذلك الحين. يرجى الاتصال بفريق الدعم.</value></data>
+  <data name="RefusalRepeatDiffers" xml:space="preserve"><value>سبق إرسال هذا الطلب بتفاصيل مختلفة. حدّث الصفحة وابدأ من جديد.</value></data>
+  <data name="RefusalRequestEnded" xml:space="preserve"><value>انتهى الطلب دون تطبيقه. ابدأه من جديد إذا كان لا يزال مطلوبًا.</value></data>
+  <data name="RefusalResubmit" xml:space="preserve"><value>لم يصل الطلب إلى خدمة الموافقات. أرسل الطلب نفسه مرة أخرى.</value></data>
+  <data name="RefusalRetirementInProgress" xml:space="preserve"><value>يجري إيقاف استخدام هذا الـ GSKU.</value></data>
+  <data name="RefusalSelfApproval" xml:space="preserve"><value>اتخذ مقدّم الطلب نفسه القرار بشأنه، لذا لم يُطبَّق القرار.</value></data>
+  <data name="RefusalServiceUnavailable" xml:space="preserve"><value>خدمة يحتاجها هذا الإجراء غير متاحة حاليًا. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="RefusalSessionExpired" xml:space="preserve"><value>لم تقبل خدمة الموافقات جلستك. سجّل الدخول مرة أخرى وكرّر الإجراء.</value></data>
+  <data name="RefusalSetupIncomplete" xml:space="preserve"><value>إعدادات الموافقة لهذا الإجراء غير مكتملة. يرجى إبلاغ المسؤول.</value></data>
+  <data name="RefusalManualReconciliation" xml:space="preserve"><value>لا تتطابق خدمة الموافقات مع هذا السجل، ولم يحلّ تكرار الطلب ذلك. يبقى السجل كما هو حتى تتم تسويته يدويًا؛ يرجى الاتصال بالمسؤول.</value></data>
+  <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>أُغلقت الموافقة دون قرار (أُلغيت أو انتهت مدتها). يمكن تعديل المسودة وتقديمها مرة أخرى.</value></data>
+  <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>أُوقف استخدام وحدة يستخدمها هذا الـ GSKU بعد الموافقة. تظل الموافقة سارية: طُبّقت بالقيم التي تم التحقق منها عند التقديم؛ ولا يمكن اختيار الوحدة الموقوفة في سجلات جديدة.</value></data>
+</root>

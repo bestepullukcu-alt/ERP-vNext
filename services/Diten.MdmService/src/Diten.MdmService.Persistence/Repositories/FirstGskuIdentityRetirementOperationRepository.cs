@@ -164,6 +164,11 @@ public sealed class FirstGskuIdentityRetirementOperationRepository
         return new(rows, rows.Count == limit ? new(rows[^1].NextAttemptAtUtcTicksV1, rows[^1].OperationId) : null);
     }
 
+    // FIX3 item 1 (B13): this tenant's operations waiting for a person.
+    public Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(ActiveFilter & Builders<FirstGskuIdentityRetirementOperation>.Filter.Eq(x => x.Checkpoint, FirstGskuIdentityRetirementCheckpoint.ManualReconciliationRequired),
+            cancellationToken: cancellationToken);
+
     private FilterDefinition<FirstGskuIdentityRetirementOperation> ActiveFilter =>
         Builders<FirstGskuIdentityRetirementOperation>.Filter.Eq(x => x.TenantId, _tenantId)
         & Builders<FirstGskuIdentityRetirementOperation>.Filter.Eq(x => x.IsDeleted, false);

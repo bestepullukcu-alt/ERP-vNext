@@ -75,9 +75,14 @@ public sealed class GetGskuByIdHandler
         }
 
         // FIX2 item 1: where the draft's latest submit stands decides its actions and the sentence on the screen.
-        var submit = gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft && _identityOperations is not null
-            ? await _identityOperations.GetSubmitStateAsync(gsku.Id, gsku.Version, cancellationToken)
+        // FIX3 E2: a pending pair whose submit is in manual reconciliation has a way out too (the reconciling repeat).
+        var submit = gsku.LifecycleStatus is ProductIdentityLifecycleStatus.Draft
+                         or ProductIdentityLifecycleStatus.PendingIdentityApproval && _identityOperations is not null
+            ? await _identityOperations!.GetSubmitStateAsync(gsku.Id, gsku.Version, cancellationToken)
             : FirstGskuIdentitySubmitState.None;
+        if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
+            && submit.Kind != FirstGskuIdentitySubmitStateKind.ReconciliationRequired)
+            submit = FirstGskuIdentitySubmitState.None;
         return Response<ProductItemSkuMasterModels.GskuDetailDto>.Success(new(
             gsku.Id,
             gsku.CanonicalCode,
@@ -93,11 +98,15 @@ public sealed class GetGskuByIdHandler
             gsku.Version,
             gsku.CreatedAt,
             gsku.UpdatedAt,
-            BuildPairAvailableActions(gsku, revision, _actorContext, submit.Kind),
+            BuildPairAvailableActions(gsku, revision, _actorContext, submit.Kind, submit.InWithdrawal),
             gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft && _identityOperations is not null
                 ? await _identityOperations.LatestNotApplicableReasonAsync(gsku.Id, cancellationToken)
                 : null,
-            SubmitStateName(submit.Kind)));
+            SubmitStateName(submit.Kind),
+            submit.Kind == FirstGskuIdentitySubmitStateKind.ReconciliationRequired ? submit.SubmittedAtVersion : null,
+            gsku.LifecycleStatus == ProductIdentityLifecycleStatus.IdentityApproved && _identityOperations is not null
+                ? await _identityOperations.LatestApprovalNoteAsync(gsku.Id, cancellationToken)
+                : null));
     }
 
     internal static string? SubmitStateName(FirstGskuIdentitySubmitStateKind kind) => kind switch
@@ -111,8 +120,20 @@ public sealed class GetGskuByIdHandler
 
     internal static IReadOnlyList<string> BuildPairAvailableActions(
         Gsku gsku, ProductDefinitionRevision revision, IProductIdentityLifecycleActorContext actorContext,
-        FirstGskuIdentitySubmitStateKind submit = FirstGskuIdentitySubmitStateKind.None)
+        FirstGskuIdentitySubmitStateKind submit = FirstGskuIdentitySubmitStateKind.None, bool inWithdrawal = false)
     {
+        // FIX3 E2: a submit in manual reconciliation may have left the pair half-written (the revision pending, the
+        // GSKU not yet): the pair looks inconsistent, and the reconciling repeat is exactly its way out.
+        if (submit == FirstGskuIdentitySubmitStateKind.ReconciliationRequired && !inWithdrawal
+            && !gsku.IsDeleted && gsku.ActiveLifecycleOperation is null && !gsku.RetirementOperationId.HasValue
+            && gsku.LifecycleStatus is ProductIdentityLifecycleStatus.Draft or ProductIdentityLifecycleStatus.PendingIdentityApproval
+            && actorContext.TryResolveCanonicalHumanSubject(out _)
+            && actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Submit))
+        {
+            var actions = BuildAvailableActions(gsku, actorContext, submit).ToList();
+            if (!actions.Contains("SUBMIT")) actions.Add("SUBMIT");
+            return actions;
+        }
         if (gsku.ProductDefinitionRevisionId != revision.Id || gsku.TenantId != revision.TenantId
             || revision.IsDeleted || gsku.LifecycleStatus != revision.LifecycleStatus
             || revision.RetirementOperationId.HasValue

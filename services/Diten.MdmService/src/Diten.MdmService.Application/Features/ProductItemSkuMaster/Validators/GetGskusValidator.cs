@@ -11,5 +11,12 @@ public sealed class GetGskusValidator : AbstractValidator<GetGskusQuery>
         RuleFor(x => x.PageSize).InclusiveBetween(1, 100);
         RuleFor(x => x.Search).MaximumLength(100);
         RuleFor(x => x.LifecycleStatus).IsInEnum().When(x => x.LifecycleStatus.HasValue);
+        RuleFor(x => x.OrderBy)
+            .Must(orderBy => GetGskusQuery.SortableFields.ContainsKey(orderBy!))
+            .When(x => !string.IsNullOrEmpty(x.OrderBy))
+            .WithMessage("GSKU_LIST_ORDER_BY_INVALID");
+        RuleFor(x => x.OrderDir)
+            .Must(GetGskusQuery.IsKnownOrderDir)
+            .WithMessage("GSKU_LIST_ORDER_DIR_INVALID");
     }
 }

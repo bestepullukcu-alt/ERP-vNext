@@ -95,9 +95,9 @@ public sealed class GlobalProductIdentityWorkflowRecoveryWorkerMongoTests : IAsy
             CanonicalCode = "GP-WORKER",
             GlobalProductName = "Worker Product",
             GlobalProductNameNormalized = "WORKER PRODUCT",
-            LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval,
-            WorkflowBinding = binding,
-            Version = 1
+            // FIX3 item 6: seeded as the draft the submit reserves (its reservation touches it), made pending after.
+            LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+            Version = 0
         });
         var operationRepository = new GlobalProductIdentityWorkflowOperationRepository(
             _database, new Tenant(_tenantId));
@@ -122,6 +122,11 @@ public sealed class GlobalProductIdentityWorkflowRecoveryWorkerMongoTests : IAsy
             CreatedAtUtcTicksV1 = DateTimeOffset.UtcNow.UtcTicks
         };
         Assert.True((await operationRepository.ReserveAsync(operation)).Succeeded);
+        await _database.GetCollection<GlobalProduct>("mdm_global_products").UpdateOneAsync(x => x.Id == _productId,
+            Builders<GlobalProduct>.Update
+                .Set(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.PendingIdentityApproval)
+                .Set(x => x.WorkflowBinding, binding)
+                .Set(x => x.Version, 1));
         await AdvanceToAwaitingDecisionAsync(operationRepository, operation);
 
         using var services = BuildServices(new StaticWorkflowClient(new(

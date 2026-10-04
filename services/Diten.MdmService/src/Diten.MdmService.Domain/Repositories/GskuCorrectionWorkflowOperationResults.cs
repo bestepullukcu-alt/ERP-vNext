@@ -30,7 +30,10 @@ public sealed record GskuCorrectionWorkflowMutation(
     long? DecisionTransitionSequence = null,
     string? DecisionTaskStatus = null,
     string? DecisionInstanceStatus = null,
-    bool ReleaseLease = false);
+    bool ReleaseLease = false,
+    // FIX3 item 1: the streak this write records; null = the attempt did not end in a retry (the streak is over).
+    int? FailedAttemptCount = null,
+    long? LastStartSentAtUtcTicksV1 = null);
 
 public sealed record GskuCorrectionWorkflowRecoverablePage(
     IReadOnlyList<GskuCorrectionWorkflowOperation> Operations,

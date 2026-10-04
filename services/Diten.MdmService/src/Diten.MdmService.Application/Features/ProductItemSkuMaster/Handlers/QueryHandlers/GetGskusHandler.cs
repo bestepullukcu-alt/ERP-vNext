@@ -45,15 +45,18 @@ public sealed class GetGskusHandler
                 .Fail(scope.FailureCode!, scope.StatusCode);
         }
 
+        // FIX3 B17: the same validated order in both scope modes (the validator already refused an unknown key).
+        var sort = request.ResolveSort();
         var page = scope.Context!.RolloutMode == ProductLegalEntityScopeRolloutMode.Preparation
             ? await _gskus.GetPageAsync(
-                request.PageNumber, request.PageSize, search, request.LifecycleStatus, cancellationToken)
+                request.PageNumber, request.PageSize, search, request.LifecycleStatus, sort, cancellationToken)
             : await _gskus.GetEnforcedLegalEntityScopePageAsync(
                 request.PageNumber,
                 request.PageSize,
                 search,
                 referenceableOnly: false,
                 request.LifecycleStatus,
+                sort,
                 scope.Context.EffectiveCandidateLegalEntityIds,
                 scope.Context.ServerNowUtc,
                 cancellationToken);

@@ -34,9 +34,15 @@
   <data name="IdentityNotAppliedSelfApproval" xml:space="preserve"><value>تم البت في الموافقة من قِبل الشخص الذي قدّمها، وهذا غير مقبول. أصبح GSKU مسودة مرة أخرى — أعد تقديمه ليقرر شخص آخر.</value></data>
   <data name="IdentityStateInFlight" xml:space="preserve"><value>تم تقديم GSKU هذا للموافقة والتقديم في طريقه إلى محرك الموافقات. لا يمكن تعديله حتى ذلك الحين؛ لا يلزم أي إجراء.</value></data>
   <data name="IdentityStateResubmitRequired" xml:space="preserve"><value>لم يصل التقديم إلى محرك الموافقات. أعد التقديم، أو عدّل المسودة أولاً.</value></data>
-  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>يلزم تسوية يدوية: قد يكون محرك الموافقات محتفظًا بهذا التقديم. يجب على الشخص الذي قدّمه إعادة التقديم — فهذا يتحقق من المحرك ويحسم الأمر.</value></data>
+  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>ينتظر هذا التقديم التسوية. عندما يعيد مقدّمه التقديم، تُقرأ خدمة الموافقات من جديد ويتابع التقديم من حيث هو؛ وإن لم يحلّ ذلك المشكلة فيجب أن يتولاها مسؤول.</value></data>
   <data name="IdentityStateSubmissionEnded" xml:space="preserve"><value>انتهى التقديم الأخير قبل أن يبدأ محرك الموافقات أي شيء. عدّل المسودة، ثم أعد تقديمها.</value></data>
-  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>يحتاج تقديم GSKU هذا إلى تسوية يدوية. لا يستطيع حسمها إلا الشخص الذي قدّمه، بإعادة التقديم.</value></data>
+  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>ينتظر هذا التقديم التسوية. عندما يعيد مقدّمه التقديم، تُقرأ خدمة الموافقات من جديد ويتابع التقديم من حيث هو؛ وإن لم يحلّ ذلك المشكلة فيجب أن يتولاها مسؤول.</value></data>
   <data name="ErrorSubmissionEnded" xml:space="preserve"><value>انتهى هذا التقديم قبل وصوله إلى محرك الموافقات ولا يمكن تكراره كما هو. عدّل المسودة، ثم أعد تقديمها.</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>تغيّرت المسودة أثناء تقديمها. افتحها مرة أخرى وقدّم النسخة الحالية.</value></data>
+  <data name="ProductPickerLoadFailed" xml:space="preserve"><value>تعذّر تحميل قائمة المنتجات العالمية. تحقّق من اتصالك وحاول مرة أخرى.</value></data>
+  <data name="ProductPickerNoResults" xml:space="preserve"><value>لا يوجد منتج عالمي قابل للإحالة يطابق هذا البحث.</value></data>
+  <data name="ProductPickerSearching" xml:space="preserve"><value>جارٍ البحث عن المنتجات العالمية…</value></data>
+  <data name="ProductPickerLoadingMore" xml:space="preserve"><value>جارٍ تحميل المزيد من المنتجات العالمية…</value></data>
+  <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>أُغلقت الموافقة دون قرار (أُلغيت أو انتهت مدتها). يمكن تعديل المسودة وتقديمها مرة أخرى.</value></data>
+  <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>أُوقف استخدام وحدة يستخدمها هذا الـ GSKU بعد الموافقة. تظل الموافقة سارية: طُبّقت بالقيم التي تم التحقق منها عند التقديم؛ ولا يمكن اختيار الوحدة الموقوفة في سجلات جديدة.</value></data>
 </root>

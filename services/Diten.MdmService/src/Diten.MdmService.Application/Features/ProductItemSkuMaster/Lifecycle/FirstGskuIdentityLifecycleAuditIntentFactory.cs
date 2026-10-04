@@ -30,14 +30,17 @@ public static class FirstGskuIdentityLifecycleAuditIntentFactory
                 : ProductAuditOperation.ProductDefinitionRevisionIdentityRejected,
             revision.Id, expectedVersion, binding, evidence);
 
+    // FIX3 (CT decision 1): `appliedNote` — the reference retired after the approval and the decision was applied with
+    // the submit-time proof — becomes part of the evidence (absent, the evidence is exactly what it always was).
     public static LocalAuditIntent CreateGskuDecision(
         Gsku gsku, int expectedVersion,
-        FirstGskuIdentityWorkflowBinding binding, ProductIdentityWorkflowDecisionEvidence evidence) =>
+        FirstGskuIdentityWorkflowBinding binding, ProductIdentityWorkflowDecisionEvidence evidence,
+        string? appliedNote = null) =>
         CreateDecision(gsku, AuditAggregateType.Gsku,
             evidence.Decision == ProductIdentityDecisionKind.Approved
                 ? ProductAuditOperation.GskuIdentityApproved
                 : ProductAuditOperation.GskuIdentityRejected,
-            gsku.Id, expectedVersion, binding, evidence);
+            gsku.Id, expectedVersion, binding, evidence, appliedNote);
 
     private static LocalAuditIntent CreateSubmit(
         EntityBase aggregate,
@@ -68,10 +71,12 @@ public static class FirstGskuIdentityLifecycleAuditIntentFactory
         Guid aggregateId,
         int expectedVersion,
         FirstGskuIdentityWorkflowBinding binding,
-        ProductIdentityWorkflowDecisionEvidence evidence)
+        ProductIdentityWorkflowDecisionEvidence evidence,
+        string? appliedNote = null)
     {
         var operationKey = $"workflow:{evidence.WorkflowInstanceId:D}:{evidence.TransitionSequence}";
-        var facts = EncodeFacts(
+        object?[] decisionFacts =
+        [
             aggregate.TenantId.ToString("D"), aggregateId.ToString("D"),
             binding.ProductDefinitionRevisionId.ToString("D"), binding.GskuId.ToString("D"),
             evidence.Decision, evidence.WorkflowInstanceId.ToString("D"),
@@ -81,7 +86,9 @@ public static class FirstGskuIdentityLifecycleAuditIntentFactory
             evidence.DecisionActorSubjectId.ToString("D"), evidence.ReasonCode ?? string.Empty,
             evidence.DecisionAtUtc.ToString("O"),
             evidence.TransitionSequence.ToString(CultureInfo.InvariantCulture),
-            evidence.TaskStatus, evidence.InstanceStatus);
+            evidence.TaskStatus, evidence.InstanceStatus
+        ];
+        var facts = EncodeFacts(appliedNote is null ? decisionFacts : [.. decisionFacts, appliedNote]);
         return Create(aggregate, aggregateType, operation, aggregateId, expectedVersion,
             evidence.DecisionActorSubjectId, operationKey, evidence.WorkflowInstanceId.ToString("D"),
             evidence.DecisionAtUtc, facts);

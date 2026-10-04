@@ -387,8 +387,22 @@ disabled; a different hash does **not** replace the stored one.
 | `ProductIdentityWorkflowWorker:ServiceFaultMaxRetryDelaySeconds` (900), `:ServiceFaultErrorAfterAttempts` (5) | how far a waiting operation backs off, and from which attempt its waiting is logged as an error — alert on that line |
 | `FirstGskuIdentityWorkflow`, `GskuCorrectionWorkflow`, `GskuRetirementRequestWorkflow` — `:Enabled`, `:TemplateCode`, `:CandidatePrincipalIds[]` (identity also `:ReasonCode`) | the three GSKU flows (Development step 8); each needs its own published definition and its Platform entry (§4) |
 | `FirstGskuIdentityWorkflowWorker:Enabled`, `:LeaseOwner`; `GskuCorrectionWorkflowWorker:Enabled`; `GskuRetirementRequestWorkflowWorker:Enabled` | the three GSKU workers — without them a decision is never applied |
+| `GskuCorrectionWorkflowWorker:QuarantineAfterFailedAttempts` (30), `:MaxRetryDelaySeconds` (900); the same two under `GskuRetirementRequestWorkflowWorker` | a correction or retirement request that fails this many attempts in a row (each retry waits twice as long, never longer than the ceiling) goes to manual reconciliation with `*_RETRY_LIMIT_REACHED` and an error line; 0 = never |
 
 Restart MDM last. Then create and publish the definition (Development step 4) and assign the roles (step 5).
+
+### 5a. What to watch (WP-MDM-GSKU-ACCEPT-01 FIX3, B13)
+
+- Every recovery cycle of the GSKU flows writes ONE line: `{Flow} recovery cycle: tenants …, operations …, claimed …,
+  advanced …, quarantined …, waiting …, failed …, in manual reconciliation …` (Information; Warning when something was
+  quarantined or failed). Flows: `FIRST_GSKU_IDENTITY`, `GSKU_CORRECTION`, `GSKU_RETIREMENT_REQUEST`, and
+  `GSKU_PAIR_RETIREMENT` (the pair retirement has no worker of its own — it runs inside the retirement request's apply
+  step, and its count is reported by that cycle). Counts only: no tenant data, no secret.
+- An operation that ends a cycle in manual reconciliation is logged on its own (Error) with its tenant, operation id
+  and reason code.
+- The gauge `mdm.product_identity.recovery.manual_reconciliation` (meter `Diten.MdmService.ProductIdentityRecovery`,
+  tag `flow`) carries the same "in manual reconciliation" number. MDM has no metrics exporter of its own today: read
+  it with `dotnet-counters` or wire an OpenTelemetry exporter. Alert when it rises.
 
 ### 6. Not covered here — open before a live bring-up
 

@@ -147,6 +147,7 @@ public sealed class GetGskuCreateOptionsHandler
                     item.Code,
                     item.DisplayText,
                     item.SortOrder,
-                    item.MaximumDecimalPrecision)).ToList()));
+                    item.MaximumDecimalPrecision)).ToList(),
+            GskuCreateOptionsFacade.HasMorePages(request.PageNumber, request.PageSize, page.TotalCount)));
     }
 }

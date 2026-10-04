@@ -72,7 +72,8 @@ public sealed record FirstGskuIdentityWorkflowCheckpointMutation(
     // Forgets a withdrawal that did not happen (every Withdrawal* field), so the requester can ask again.
     bool ClearWithdrawal = false,
     string? WithdrawalRefusalCode = null,
-    long? WithdrawalAwaitingRequesterSinceUtcTicksV1 = null);
+    long? WithdrawalAwaitingRequesterSinceUtcTicksV1 = null,
+    string? ApprovalAppliedNote = null);
 
 public sealed record FirstGskuIdentityDecisionNotApplicableWriteResult(
     bool Succeeded,

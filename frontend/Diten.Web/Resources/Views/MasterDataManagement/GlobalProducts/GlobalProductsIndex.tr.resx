@@ -12,4 +12,6 @@
   <data name="UpdateSuccess" xml:space="preserve"><value>Global ürün taslağı güncellendi.</value></data><data name="WithdrawSuccess" xml:space="preserve"><value>Onay talebi geri çekildi ve ürün Taslak durumuna döndü.</value></data><data name="CorrectionRequestedSuccess" xml:space="preserve"><value>Düzeltme talebi onaya gönderildi.</value></data><data name="RetirementRequestedSuccess" xml:space="preserve"><value>Kullanımdan kaldırma talebi onaya gönderildi.</value></data>
   <data name="CurrentPageOnly" xml:space="preserve"><value>Yalnızca mevcut sayfa</value></data>
   <data name="ErrorWithdrawalPending" xml:space="preserve"><value>Bu onayın, farklı bir gerekçe ya da yorumla yapılmış önceki bir geri çekmesi hâlâ işleniyor. Geri çekmeyi öncekiyle aynı gerekçe ve yorumla tekrarlayın ya da bitmesini bekleyin.</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Bu ürün onaya gönderiliyor. Gönderim onay motoruna ulaşana kadar düzenlenemez.</value></data>
+  <data name="ErrorDraftChanged" xml:space="preserve"><value>Taslak, gönderilirken değişti. Yeniden açın ve güncel sürümü gönderin.</value></data>
 </root>

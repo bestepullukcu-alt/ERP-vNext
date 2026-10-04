@@ -202,7 +202,8 @@ public sealed class UpdateGskuDraftHandler
         if (!update.Succeeded || update.Gsku is null)
         {
             return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail(
-                update.ErrorCode ?? "CONCURRENCY_CONFLICT", 409);
+                update.ErrorCode ?? "CONCURRENCY_CONFLICT",
+                update.ErrorCode == ProductIdentityStore.Unavailable ? 503 : 409);
         }
 
         return await BuildVerifiedResultAsync(update.Gsku, cancellationToken);

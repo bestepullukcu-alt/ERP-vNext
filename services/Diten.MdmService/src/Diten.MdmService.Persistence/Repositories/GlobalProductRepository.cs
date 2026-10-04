@@ -16,6 +16,8 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
     private readonly IMongoCollection<BsonDocument> _globalProductDocuments;
     private readonly IMongoCollection<ProductDefinitionRevision> _revisions;
     private readonly IMongoCollection<Gsku> _gskus;
+    private readonly IMongoCollection<GlobalProductIdentityWorkflowOperation> _identityOperations;
+    private readonly IMongoClient _client;
     private readonly Guid _tenantId;
 
     public GlobalProductRepository(IMongoDatabase database, ITenantContext tenantContext)
@@ -25,6 +27,9 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         _globalProductDocuments = database.GetCollection<BsonDocument>("mdm_global_products");
         _revisions = database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions");
         _gskus = database.GetCollection<Gsku>("mdm_gskus");
+        _identityOperations = database.GetCollection<GlobalProductIdentityWorkflowOperation>(
+            GlobalProductIdentityWorkflowOperationRepository.CollectionName);
+        _client = database.Client;
         _tenantId = tenantContext.TenantId;
         EnsureIndexes();
     }
@@ -387,14 +392,113 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             .Push(x => x.AuditIntents, auditIntent);
         try
         {
-            var updated = await _globalProducts.FindOneAndUpdateAsync(
-                filter,
-                update,
-                new FindOneAndUpdateOptions<GlobalProduct> { ReturnDocument = ReturnDocument.After },
-                cancellationToken);
-            return updated is not null
-                ? new(true, updated)
-                : await ClassifyDraftUpdateFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
+            // WP-MDM-GSKU-ACCEPT-01 FIX3 item 6 — GSKU's FIX2 rule, through the shared ProductIdentitySubmitState: the
+            // product's latest identity submit is read and the draft written in ONE transaction, and the submit's
+            // reservation touches the product in its own. A submit on its way keeps the draft as submitted (before this,
+            // an edit between the engine's start and the local "pending" write won, the submit was quarantined, and the
+            // approver was left deciding facts the product no longer had). A submit the engine never received is set
+            // aside by the edit. A submit in manual reconciliation does NOT lock the draft: that is Global Product's
+            // accepted rule (the maker edits and submits anew) and it is kept.
+            for (var attempt = 0; ; attempt++)
+            {
+                using var session = await _client.StartSessionAsync(cancellationToken: cancellationToken);
+                try
+                {
+                    session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+                }
+                catch (NotSupportedException)
+                {
+                    // FIX3 S5: the driver refuses a transaction before the server is asked (a standalone mongod).
+                    return new(false, null, ProductIdentityStore.Unavailable);
+                }
+                try
+                {
+                    var draft = await _globalProducts.Find(session, filter).FirstOrDefaultAsync(cancellationToken);
+                    if (draft is not null)
+                    {
+                        var latest = await _identityOperations.Find(session,
+                                Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(x => x.TenantId, _tenantId)
+                                & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(x => x.IsDeleted, false)
+                                & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(x => x.GlobalProductId, id))
+                            .SortByDescending(x => x.ExpectedProductVersion)
+                            .ThenByDescending(x => x.CreatedAtUtcTicksV1)
+                            .Limit(1)
+                            .FirstOrDefaultAsync(cancellationToken);
+                        var state = ProductIdentitySubmitState.Of(latest, expectedVersion);
+                        if (state.Kind == ProductIdentitySubmitStateKind.InFlight)
+                        {
+                            await session.AbortTransactionAsync(cancellationToken);
+                            return new(false, await GetByIdAsync(id, cancellationToken), SubmitInFlight);
+                        }
+                        if (state.Kind == ProductIdentitySubmitStateKind.ResubmitRequired)
+                        {
+                            var nowTicks = DateTimeOffset.UtcNow.UtcTicks;
+                            var setAside = await _identityOperations.UpdateOneAsync(session,
+                                Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(x => x.TenantId, _tenantId)
+                                & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(x => x.IsDeleted, false)
+                                & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(x => x.OperationId, latest!.OperationId)
+                                & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(
+                                    x => x.Checkpoint, GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay)
+                                & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(x => x.WorkflowInstanceId, null)
+                                & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(x => x.WithdrawalCommandId, null)
+                                // FIX3 S4: never under a live lease (the maker's repeat may be starting it right now).
+                                & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Or(
+                                    Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(x => x.LeaseOwner, null),
+                                    Builders<GlobalProductIdentityWorkflowOperation>.Filter.Lte(x => x.LeaseUntilUtcTicksV1, nowTicks)),
+                                Builders<GlobalProductIdentityWorkflowOperation>.Update
+                                    .Set(x => x.Checkpoint, GlobalProductIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart)
+                                    .Set(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.None)
+                                    .Set(x => x.LastFailureCode, SubmitReplacedByEdit)
+                                    .Set(x => x.NextAttemptAtUtcTicksV1, null)
+                                    .Set(x => x.LeaseOwner, null)
+                                    .Set(x => x.LeaseUntilUtcTicksV1, null)
+                                    .Set(x => x.UpdatedAtUtcTicksV1, nowTicks)
+                                    .Set(x => x.UpdatedAt, new DateTimeOffset(nowTicks, TimeSpan.Zero))
+                                    .Inc(x => x.Version, 1),
+                                cancellationToken: cancellationToken);
+                            if (setAside.ModifiedCount != 1)
+                            {
+                                await session.AbortTransactionAsync(cancellationToken);
+                                return new(false, await GetByIdAsync(id, cancellationToken), SubmitInFlight);
+                            }
+                        }
+                    }
+                    var updated = await _globalProducts.FindOneAndUpdateAsync(
+                        session,
+                        filter,
+                        update,
+                        new FindOneAndUpdateOptions<GlobalProduct> { ReturnDocument = ReturnDocument.After },
+                        cancellationToken);
+                    if (updated is null)
+                    {
+                        await session.AbortTransactionAsync(cancellationToken);
+                        return await ClassifyDraftUpdateFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
+                    }
+                    await session.CommitTransactionAsync(cancellationToken);
+                    return new(true, updated);
+                }
+                catch (MongoException exception) when (attempt == 0 && exception.HasErrorLabel("TransientTransactionError")
+                                                       && !IsDuplicateKey(exception))
+                {
+                    // A submit committed its reservation between this edit's read and its write: read again.
+                    if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+                }
+                catch (MongoException exception) when (!IsDuplicateKey(exception))
+                {
+                    // FIX3 S5: no transaction (a standalone mongod), still conflicting, or a store that is away.
+                    if (session.IsInTransaction)
+                    {
+                        try { await session.AbortTransactionAsync(CancellationToken.None); }
+                        catch (MongoException) { /* the store is away */ }
+                    }
+                    return new(false, null, ProductIdentityStore.Unavailable);
+                }
+                catch
+                {
+                    if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+                    throw;
+                }
+            }
         }
         catch (MongoCommandException exception) when (exception.Code == 11000)
         {
@@ -406,6 +510,14 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             return new(false, await GetByIdAsync(id, cancellationToken), "GLOBAL_PRODUCT_NAME_DUPLICATE");
         }
     }
+
+    // FIX3 item 6: the edit's refusals (the same words as GSKU's, under Global Product's names).
+    public const string SubmitInFlight = "GLOBAL_PRODUCT_IDENTITY_SUBMIT_IN_FLIGHT";
+    public const string SubmitReplacedByEdit = "PRODUCT_IDENTITY_SUBMIT_REPLACED_BY_EDIT";
+
+    private static bool IsDuplicateKey(MongoException exception) =>
+        exception is MongoCommandException { Code: 11000 }
+        || exception is MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey };
 
     public async Task<GlobalProductLifecycleWriteResult> SubmitIdentityAsync(
         Guid id,

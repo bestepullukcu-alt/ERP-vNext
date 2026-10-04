@@ -79,6 +79,10 @@ public sealed class FirstGskuIdentityWorkflowOperation : EntityBase, IProductIde
     // Consecutive faults of the SERVICE chain while this operation waited (the worker's attempts only) and the first
     // of them; cleared by the first answer the chain gives again. Rules: ProductIdentityWorkflowFaultRules.
     public int ServiceFaultCount { get; set; }
+    // FIX3 (CT decision 1): set when a reference became non-selectable AFTER the revision was approved and the pair
+    // was completed with the proof validated at the first gate — written into the GSKU decision's audit evidence and
+    // shown on the screen as information.
+    public string? ApprovalAppliedNote { get; set; }
     public long? ServiceFaultSinceUtcTicksV1 { get; set; }
     // Why a withdrawal was refused for good (the approval was decided or closed first): what a repeat is told.
     public string? WithdrawalRefusalCode { get; set; }

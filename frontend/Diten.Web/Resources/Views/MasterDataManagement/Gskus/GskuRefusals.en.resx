@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalBusy" xml:space="preserve"><value>Something is already being done on this record. Try again in a moment.</value></data>
+  <data name="RefusalCapacity" xml:space="preserve"><value>This record cannot take more changes right now. Try again later; if it persists, contact support.</value></data>
+  <data name="RefusalChangedElsewhere" xml:space="preserve"><value>This record was changed while you were working on it. Refresh the page and try again.</value></data>
+  <data name="RefusalDependents" xml:space="preserve"><value>Records depend on this GSKU, or one is being created under it. Retire them or wait until they are finished.</value></data>
+  <data name="RefusalForbidden" xml:space="preserve"><value>You do not have permission for this action.</value></data>
+  <data name="RefusalInternal" xml:space="preserve"><value>An unexpected inconsistency stopped this action; nothing was changed. Please contact support.</value></data>
+  <data name="RefusalInvalidRequest" xml:space="preserve"><value>The request is not valid. Check the fields and try again.</value></data>
+  <data name="RefusalNotFound" xml:space="preserve"><value>The record was not found, or you cannot see it.</value></data>
+  <data name="RefusalNotRequester" xml:space="preserve"><value>Only the person who submitted this approval can withdraw it.</value></data>
+  <data name="RefusalPackInvalid" xml:space="preserve"><value>The pack quantity or unit is not valid. Correct them and try again.</value></data>
+  <data name="RefusalParentNotReady" xml:space="preserve"><value>The global product is not approved, or it can no longer be referenced.</value></data>
+  <data name="RefusalReconciliation" xml:space="preserve"><value>This request is waiting for a specialist's review and stays as it is until then. Please contact support.</value></data>
+  <data name="RefusalRepeatDiffers" xml:space="preserve"><value>This request was already sent with different details. Refresh the page and start again.</value></data>
+  <data name="RefusalRequestEnded" xml:space="preserve"><value>The request ended without being applied. Start it again if it is still needed.</value></data>
+  <data name="RefusalResubmit" xml:space="preserve"><value>The request did not reach the approval service. Send the same request again.</value></data>
+  <data name="RefusalRetirementInProgress" xml:space="preserve"><value>This GSKU is being retired.</value></data>
+  <data name="RefusalSelfApproval" xml:space="preserve"><value>The request was decided by its own submitter, so the decision was not applied.</value></data>
+  <data name="RefusalServiceUnavailable" xml:space="preserve"><value>A service this action needs is not available right now. Try again in a moment.</value></data>
+  <data name="RefusalSessionExpired" xml:space="preserve"><value>Your session was not accepted by the approval service. Sign in again and repeat the action.</value></data>
+  <data name="RefusalSetupIncomplete" xml:space="preserve"><value>The approval setup for this action is incomplete. Please inform your administrator.</value></data>
+  <data name="RefusalManualReconciliation" xml:space="preserve"><value>The approval service and this record do not agree, and repeating the request did not settle it. It stays as it is until someone reconciles it; please contact your administrator.</value></data>
+  <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>The approval was closed without a decision (cancelled or expired). The draft can be edited and submitted again.</value></data>
+  <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>A unit used by this GSKU was retired after the approval. The approval stands: it was applied with the values validated when it was submitted; the retired unit cannot be chosen for new records.</value></data>
+</root>

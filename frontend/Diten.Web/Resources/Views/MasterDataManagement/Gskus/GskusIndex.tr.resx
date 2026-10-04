@@ -34,9 +34,15 @@
   <data name="IdentityNotAppliedSelfApproval" xml:space="preserve"><value>Onay, onu gönderen kişi tarafından karara bağlandı; bu kabul edilmez. GSKU yeniden taslak — başka birinin karar vermesi için yeniden gönderin.</value></data>
   <data name="IdentityStateInFlight" xml:space="preserve"><value>Bu GSKU onaya gönderildi ve gönderim onay motoruna ulaşmak üzere. O zamana kadar düzenlenemez; bir şey yapmanız gerekmiyor.</value></data>
   <data name="IdentityStateResubmitRequired" xml:space="preserve"><value>Gönderim onay motoruna ulaşmadı. Yeniden gönderin ya da önce taslağı düzenleyin.</value></data>
-  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>Elle uzlaştırma gerekiyor: onay motoru bu gönderimi tutuyor olabilir. Gönderen kişi yeniden göndermeli — bu, motoru kontrol eder ve durumu çözer.</value></data>
+  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>Bu gönderim uzlaştırma bekliyor. Gönderen kişi yeniden gönderdiğinde onay servisi yeniden okunur ve gönderim kaldığı yerden sürer; bu çözmezse bir yöneticinin uzlaştırması gerekir.</value></data>
   <data name="IdentityStateSubmissionEnded" xml:space="preserve"><value>Son gönderim, onay motoru hiçbir şey başlatmadan sona erdi. Taslağı düzenleyin, sonra yeniden gönderin.</value></data>
-  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>Bu GSKU'nun gönderimi elle uzlaştırma gerektiriyor. Yalnız gönderen kişi yeniden göndererek çözebilir.</value></data>
+  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>Bu gönderim uzlaştırma bekliyor. Gönderen kişi yeniden gönderdiğinde onay servisi yeniden okunur ve gönderim kaldığı yerden sürer; bu çözmezse bir yöneticinin uzlaştırması gerekir.</value></data>
   <data name="ErrorSubmissionEnded" xml:space="preserve"><value>Bu gönderim onay motoruna ulaşmadan sona erdi ve olduğu gibi tekrarlanamaz. Taslağı düzenleyin, sonra yeniden gönderin.</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>Taslak, gönderilirken değişti. Yeniden açın ve güncel sürümü gönderin.</value></data>
+  <data name="ProductPickerLoadFailed" xml:space="preserve"><value>Global Ürün listesi yüklenemedi. Bağlantınızı kontrol edip yeniden deneyin.</value></data>
+  <data name="ProductPickerNoResults" xml:space="preserve"><value>Bu aramayla eşleşen başvurulabilir Global Ürün yok.</value></data>
+  <data name="ProductPickerSearching" xml:space="preserve"><value>Global Ürünler aranıyor…</value></data>
+  <data name="ProductPickerLoadingMore" xml:space="preserve"><value>Daha fazla Global Ürün yükleniyor…</value></data>
+  <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>Onay, karar verilmeden kapatıldı (iptal edildi ya da süresi doldu). Taslak düzenlenip yeniden gönderilebilir.</value></data>
+  <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>Bu GSKU'nun kullandığı bir birim onaydan sonra kullanımdan kaldırıldı. Onay geçerlidir: gönderim anında doğrulanan değerlerle uygulandı; kaldırılan birim yeni kayıtlarda seçilemez.</value></data>
 </root>

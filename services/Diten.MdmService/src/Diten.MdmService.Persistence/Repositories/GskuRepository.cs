@@ -158,7 +158,7 @@ public sealed class GskuRepository : IGskuRepository
             referenceableOnly, lifecycleStatus: null, effectiveCandidateLegalEntityIds, serverNowUtc,
             cancellationToken);
 
-    public async Task<GskuPage> GetEnforcedLegalEntityScopePageAsync(
+    public Task<GskuPage> GetEnforcedLegalEntityScopePageAsync(
         int pageNumber,
         int pageSize,
         string? canonicalCodeSearch,
@@ -167,7 +167,21 @@ public sealed class GskuRepository : IGskuRepository
         IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
         DateTimeOffset serverNowUtc,
         CancellationToken cancellationToken = default)
+        => GetEnforcedLegalEntityScopePageAsync(pageNumber, pageSize, canonicalCodeSearch, referenceableOnly,
+            lifecycleStatus, GskuListSort.Default, effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken);
+
+    public async Task<GskuPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        bool referenceableOnly,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(sort);
         cancellationToken.ThrowIfCancellationRequested();
         var match = new BsonDocument
         {
@@ -245,11 +259,7 @@ public sealed class GskuRepository : IGskuRepository
             effectiveCandidateLegalEntityIds,
             serverNowUtc));
         pipeline.Add(ProductLegalEntityScopeAggregation.CleanupStage("ScopeRevisions"));
-        pipeline.Add(new BsonDocument("$sort", new BsonDocument
-        {
-            { nameof(Gsku.CanonicalCode), 1 },
-            { "_id", 1 }
-        }));
+        pipeline.AddRange(ListSortStages(sort));
         pipeline.Add(new BsonDocument("$facet", new BsonDocument
         {
             { "items", new BsonArray
@@ -303,6 +313,93 @@ public sealed class GskuRepository : IGskuRepository
             .Limit(pageSize)
             .ToListAsync(cancellationToken);
         return new(items, totalCount);
+    }
+
+    // FIX3 B17: the register's own read with a whitelisted order. One aggregation for every order, because the pack
+    // quantity is stored as a decimal STRING (driver default) and only a converted key sorts it as a number.
+    public async Task<GskuPage> GetPageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(sort);
+        var match = new BsonDocument
+        {
+            { nameof(Gsku.TenantId), ProductLegalEntityScopeAggregation.GuidBson(_tenantId) },
+            { nameof(Gsku.IsDeleted), false }
+        };
+        if (lifecycleStatus.HasValue)
+        {
+            match[nameof(Gsku.LifecycleStatus)] = (int)lifecycleStatus.Value;
+        }
+        if (!string.IsNullOrWhiteSpace(canonicalCodeSearch))
+        {
+            match[nameof(Gsku.CanonicalCode)] = new BsonRegularExpression(
+                "^" + System.Text.RegularExpressions.Regex.Escape(canonicalCodeSearch));
+        }
+
+        var pipeline = new List<BsonDocument> { new("$match", match) };
+        pipeline.AddRange(ListSortStages(sort));
+        pipeline.Add(new BsonDocument("$facet", new BsonDocument
+        {
+            { "items", new BsonArray
+                {
+                    new BsonDocument("$skip", (pageNumber - 1) * pageSize),
+                    new BsonDocument("$limit", pageSize)
+                }
+            },
+            { "summary", new BsonArray { new BsonDocument("$count", "total") } }
+        }));
+
+        var result = await _documents.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync(cancellationToken);
+        var items = result?["items"].AsBsonArray
+            .Select(item => BsonSerializer.Deserialize<Gsku>(item.AsBsonDocument))
+            .ToArray() ?? [];
+        var total = result?["summary"].AsBsonArray.FirstOrDefault()?.AsBsonDocument["total"].ToInt64() ?? 0;
+        return new(items, total);
+    }
+
+    private const string PackQuantitySortKey = "__GskuPackQuantitySortKey";
+
+    // The sort stages of a register read: the chosen field in the chosen direction, then _id ascending as the stable
+    // tiebreak (two rows with the same value never swap between pages). The pack-quantity key is a temporary decimal
+    // conversion, removed again before the documents are deserialized.
+    private static IEnumerable<BsonDocument> ListSortStages(GskuListSort sort)
+    {
+        var direction = sort.Descending ? -1 : 1;
+        if (sort.Field == GskuListSortField.PackQuantity)
+        {
+            yield return new BsonDocument("$set", new BsonDocument(PackQuantitySortKey, new BsonDocument("$convert",
+                new BsonDocument
+                {
+                    { "input", "$" + nameof(Gsku.PackQuantity) },
+                    { "to", "decimal" },
+                    { "onError", BsonNull.Value },
+                    { "onNull", BsonNull.Value }
+                })));
+            yield return new BsonDocument("$sort", new BsonDocument
+            {
+                { PackQuantitySortKey, direction },
+                { "_id", 1 }
+            });
+            yield return new BsonDocument("$unset", PackQuantitySortKey);
+            yield break;
+        }
+
+        var field = sort.Field switch
+        {
+            GskuListSortField.CanonicalCode => nameof(Gsku.CanonicalCode),
+            GskuListSortField.LifecycleStatus => nameof(Gsku.LifecycleStatus),
+            _ => throw new ArgumentOutOfRangeException(nameof(sort), sort.Field, "GSKU_LIST_SORT_FIELD_UNKNOWN")
+        };
+        yield return new BsonDocument("$sort", new BsonDocument
+        {
+            { field, direction },
+            { "_id", 1 }
+        });
     }
 
     public async Task<IReadOnlyList<Guid>> FindIdsByCanonicalCodeAsync(
@@ -398,7 +495,15 @@ public sealed class GskuRepository : IGskuRepository
         for (var attempt = 0; ; attempt++)
         {
             using var session = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
-            session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+            try
+            {
+                session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+            }
+            catch (NotSupportedException)
+            {
+                // FIX3 S5: the driver refuses a transaction before the server is asked (a standalone mongod).
+                return new(false, null, ProductIdentityStore.Unavailable);
+            }
             try
             {
                 var latest = await FirstGskuIdentityWorkflowOperationRepository.LatestForGsku(
@@ -423,7 +528,12 @@ public sealed class GskuRepository : IGskuRepository
                         & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
                             x => x.Checkpoint, FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay)
                         & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.WorkflowInstanceId, null)
-                        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.WithdrawalCommandId, null),
+                        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.WithdrawalCommandId, null)
+                        // FIX3 S4: never under a live lease — the maker's own repeat may be starting it at the engine
+                        // right now (its start would land on an abandoned operation and the approval be orphaned).
+                        & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Or(
+                            Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.LeaseOwner, null),
+                            Builders<FirstGskuIdentityWorkflowOperation>.Filter.Lte(x => x.LeaseUntilUtcTicksV1, nowTicks)),
                         Builders<FirstGskuIdentityWorkflowOperation>.Update
                             .Set(x => x.Checkpoint, FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart)
                             .Set(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.None)
@@ -459,6 +569,13 @@ public sealed class GskuRepository : IGskuRepository
             {
                 // A submit committed its reservation between this edit's read and its write: read again.
                 if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+            }
+            catch (MongoException exception) when (exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
+            {
+                // FIX3 S5: no transaction (a standalone mongod), or still conflicting after the one repeat, or a store
+                // that is away — said with a code and a 503, not an uncoded 500.
+                if (session.IsInTransaction) await AbortQuietlyAsync(session);
+                return new(false, null, ProductIdentityStore.Unavailable);
             }
             catch
             {
@@ -882,6 +999,12 @@ public sealed class GskuRepository : IGskuRepository
 
     public const string AuditCapacityReached = "AUDIT_INTENT_CAPACITY_REACHED";
     public const string SubmitInFlight = "GSKU_IDENTITY_SUBMIT_IN_FLIGHT";
+
+    private static async Task AbortQuietlyAsync(IClientSessionHandle session)
+    {
+        try { await session.AbortTransactionAsync(CancellationToken.None); }
+        catch (MongoException) { /* the store is away; the transaction ends with it */ }
+    }
     public const string IdentityReconciliationRequired = "GSKU_IDENTITY_RECONCILIATION_REQUIRED";
     public const string SubmitReplacedByEdit = "FIRST_GSKU_IDENTITY_SUBMIT_REPLACED_BY_EDIT";
 

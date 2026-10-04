@@ -12,4 +12,6 @@
   <data name="UpdateSuccess" xml:space="preserve"><value>تم تحديث مسودة المنتج العام.</value></data><data name="WithdrawSuccess" xml:space="preserve"><value>تم سحب الطلب وعاد المنتج إلى حالة المسودة.</value></data><data name="CorrectionRequestedSuccess" xml:space="preserve"><value>تم إرسال طلب التصحيح للموافقة.</value></data><data name="RetirementRequestedSuccess" xml:space="preserve"><value>تم إرسال طلب الإيقاف للموافقة.</value></data>
   <data name="CurrentPageOnly" xml:space="preserve"><value>الصفحة الحالية فقط</value></data>
   <data name="ErrorWithdrawalPending" xml:space="preserve"><value>لا يزال يجري معالجة سحب سابق لهذه الموافقة بسبب أو تعليق مختلف. كرر السحب بنفس السبب والتعليق السابقين، أو انتظر حتى يكتمل.</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>يجري إرسال هذا المنتج للموافقة. لا يمكن تعديله حتى يصل الإرسال إلى محرك الموافقات.</value></data>
+  <data name="ErrorDraftChanged" xml:space="preserve"><value>تغيّرت المسودة أثناء تقديمها. افتحها مرة أخرى وقدّم النسخة الحالية.</value></data>
 </root>

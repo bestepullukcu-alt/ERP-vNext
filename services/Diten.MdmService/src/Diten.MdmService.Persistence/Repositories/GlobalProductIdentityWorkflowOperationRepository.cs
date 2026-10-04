@@ -11,6 +11,7 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
     : IGlobalProductIdentityWorkflowOperationRepository
 {
     public const string CollectionName = "mdm_global_product_identity_workflow_operations";
+    public const string DraftChanged = "PRODUCT_IDENTITY_WORKFLOW_DRAFT_CHANGED";
     private readonly IMongoCollection<GlobalProductIdentityWorkflowOperation> _operations;
     private readonly Guid _tenantId;
 
@@ -19,9 +20,14 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         ITenantContext tenantContext)
     {
         _operations = database.GetCollection<GlobalProductIdentityWorkflowOperation>(CollectionName);
+        _products = database.GetCollection<GlobalProduct>("mdm_global_products");
+        _client = database.Client;
         _tenantId = tenantContext.TenantId;
         EnsureIndexes();
     }
+
+    private readonly IMongoCollection<GlobalProduct> _products;
+    private readonly IMongoClient _client;
 
     public async Task<GlobalProductIdentityWorkflowReserveResult> ReserveAsync(
         GlobalProductIdentityWorkflowOperation operation,
@@ -88,10 +94,46 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         operation.CreatedAt = new DateTimeOffset(operation.CreatedAtUtcTicksV1, TimeSpan.Zero);
         operation.UpdatedAt = operation.CreatedAt;
 
+        // WP-MDM-GSKU-ACCEPT-01 FIX3 item 6 (GSKU's FIX2 item 10 pattern): the reservation and a touch of the draft it
+        // submits are one transaction; the draft edit reads the latest submit and writes in one transaction too, so the
+        // two cannot both commit — either the edit sees this submit (and is refused), or this submit finds the draft
+        // moved (and is refused) before any approval is started on facts the product no longer has.
         try
         {
-            await _operations.InsertOneAsync(operation, cancellationToken: cancellationToken);
+            using var session = await _client.StartSessionAsync(cancellationToken: cancellationToken);
+            session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+            try
+            {
+                await _operations.InsertOneAsync(session, operation, cancellationToken: cancellationToken);
+                var product = Builders<GlobalProduct>.Filter.Eq(item => item.TenantId, _tenantId)
+                              & Builders<GlobalProduct>.Filter.Eq(item => item.IsDeleted, false)
+                              & Builders<GlobalProduct>.Filter.Eq(item => item.Id, operation.GlobalProductId);
+                var touched = await _products.UpdateOneAsync(session,
+                    product
+                    & Builders<GlobalProduct>.Filter.Eq(item => item.Version, operation.ExpectedProductVersion)
+                    & Builders<GlobalProduct>.Filter.Eq(item => item.LifecycleStatus, ProductIdentityLifecycleStatus.Draft),
+                    Builders<GlobalProduct>.Update.Inc(item => item.IdentitySubmitReservations, 1),
+                    cancellationToken: cancellationToken);
+                if (touched.MatchedCount != 1 && await _products.Find(session, product).AnyAsync(cancellationToken))
+                {
+                    await session.AbortTransactionAsync(cancellationToken);
+                    return new(false, false, null, DraftChanged);
+                }
+                await session.CommitTransactionAsync(cancellationToken);
+            }
+            catch
+            {
+                if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+                throw;
+            }
             return new(true, false, operation, null);
+        }
+        catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError")
+                                               && exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
+        {
+            // A write conflict with an edit that committed first — or the store itself (S5): read again to say which.
+            return new(false, false, null, await ProductMovedAsync(operation, cancellationToken)
+                ? DraftChanged : ProductIdentityStore.Unavailable);
         }
         catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
@@ -109,6 +151,33 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
             return existing is not null && IsExactReplay(existing, operation)
                 ? new(true, true, existing, null)
                 : new(false, false, null, "PRODUCT_IDENTITY_WORKFLOW_IDEMPOTENCY_CONFLICT");
+        }
+        catch (MongoException exception) when (exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
+        {
+            // FIX3 S5: no transaction at all (a standalone mongod) or a store that is away.
+            return new(false, false, null, ProductIdentityStore.Unavailable);
+        }
+        catch (NotSupportedException)
+        {
+            // FIX3 S5: the driver refuses a transaction before the server is asked (a standalone mongod).
+            return new(false, false, null, ProductIdentityStore.Unavailable);
+        }
+    }
+
+    private async Task<bool> ProductMovedAsync(GlobalProductIdentityWorkflowOperation operation, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var product = await _products.Find(Builders<GlobalProduct>.Filter.Eq(item => item.TenantId, _tenantId)
+                    & Builders<GlobalProduct>.Filter.Eq(item => item.IsDeleted, false)
+                    & Builders<GlobalProduct>.Filter.Eq(item => item.Id, operation.GlobalProductId))
+                .FirstOrDefaultAsync(cancellationToken);
+            return product is not null && (product.Version != operation.ExpectedProductVersion
+                                           || product.LifecycleStatus != ProductIdentityLifecycleStatus.Draft);
+        }
+        catch (MongoException)
+        {
+            return false;
         }
     }
 

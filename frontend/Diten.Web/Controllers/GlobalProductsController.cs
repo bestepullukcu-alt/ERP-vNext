@@ -331,6 +331,18 @@ public sealed class GlobalProductsController : Controller
                             errors = new[] { _localizer["ErrorWithdrawalPending"].Value }
                         });
                     }
+                    // FIX3 item 6: the in-flight rule's two refusals are said in words (the draft is being submitted;
+                    // the draft changed before the submit could be reserved).
+                    if (responseStatus == StatusCodes.Status409Conflict
+                        && await SingleErrorCodeAsync(response, cancellationToken) is { } code
+                        && InFlightRefusalKeys.TryGetValue(code, out var refusalKey))
+                    {
+                        return StatusCode(StatusCodes.Status409Conflict, new
+                        {
+                            success = false,
+                            errors = new[] { _localizer[refusalKey].Value }
+                        });
+                    }
                     return LifecycleFailure((int)response.StatusCode);
                 }
 
@@ -383,6 +395,33 @@ public sealed class GlobalProductsController : Controller
         {
             _logger.LogError(exception, "Global Product lifecycle proxy failed.");
             return LifecycleFailure(StatusCodes.Status503ServiceUnavailable);
+        }
+    }
+
+    private static readonly IReadOnlyDictionary<string, string> InFlightRefusalKeys =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["GLOBAL_PRODUCT_IDENTITY_SUBMIT_IN_FLIGHT"] = "ErrorSubmitInFlight",
+            ["PRODUCT_IDENTITY_WORKFLOW_DRAFT_CHANGED"] = "ErrorDraftChanged"
+        };
+
+    private static async Task<string?> SingleErrorCodeAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        if (!IsJsonMediaType(response.Content.Headers.ContentType?.MediaType))
+            return null;
+        try
+        {
+            using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+            return document.RootElement.ValueKind == JsonValueKind.Object
+                   && document.RootElement.TryGetProperty("errors", out var errors)
+                   && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() == 1
+                   && errors[0].ValueKind == JsonValueKind.String
+                ? errors[0].GetString()
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
         }
     }
 

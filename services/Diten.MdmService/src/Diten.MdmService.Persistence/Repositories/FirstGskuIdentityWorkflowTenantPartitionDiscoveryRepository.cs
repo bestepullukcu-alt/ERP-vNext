@@ -14,6 +14,13 @@ public sealed class FirstGskuIdentityWorkflowTenantPartitionDiscoveryRepository
         _operations = database.GetCollection<FirstGskuIdentityWorkflowOperation>(
             FirstGskuIdentityWorkflowOperationRepository.CollectionName);
 
+    public Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(
+            Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.IsDeleted, false)
+            & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
+                item => item.Checkpoint, FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired),
+            cancellationToken: cancellationToken);
+
     public async Task<FirstGskuIdentityWorkflowTenantPartitionPage> DiscoverAsync(
         Guid? afterTenantId,
         long nowUtcTicks,

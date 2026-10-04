@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Security.Cryptography;
 using System.Text;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
@@ -12,8 +14,12 @@ public sealed class FirstGskuIdentityRetirementProcessor(
     IFirstGskuIdentityRetirementOperationRepository operations,
     IGskuRepository gskus,
     IProductDefinitionRevisionRepository revisions,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    ILogger<FirstGskuIdentityRetirementProcessor>? logger = null)
 {
+    // FIX3 S10: a lease that could not be given back is logged (FIX2 swallowed it with `_ => { }`).
+    private readonly ILogger log = (ILogger?)logger ?? NullLogger.Instance;
+
     private static readonly FirstGskuIdentityRetirementCheckpoint[] Claimable =
     [
         FirstGskuIdentityRetirementCheckpoint.Prepared,
@@ -141,7 +147,8 @@ public sealed class FirstGskuIdentityRetirementProcessor(
                     leaseUntil), _),
                 bound => operations.ReleaseIfOwnedAsync(operation.OperationId, leaseOwner, leaseUntil, bound),
                 leaseDuration,
-                _ => { });
+                exception => log.LogWarning("{Flow} {OperationId}: a claim the store did not answer could not be given back ({ExceptionType}).",
+                    "GSKU_PAIR_RETIREMENT", operation.OperationId, exception.GetType().Name));
             if (storeSilent)
             {
                 return Fail(operation, ProductIdentityWorkflowClaims.StoreUnavailable, 503);
@@ -151,7 +158,10 @@ public sealed class FirstGskuIdentityRetirementProcessor(
                 return Fail(operation, "FIRST_GSKU_RETIREMENT_BUSY", 409);
             }
 
-            var advanced = operation.Checkpoint switch
+            bool advanced;
+            try
+            {
+            advanced = operation.Checkpoint switch
             {
                 FirstGskuIdentityRetirementCheckpoint.Prepared =>
                     await CloseFenceAsync(operation, claim, now, cancellationToken),
@@ -165,8 +175,16 @@ public sealed class FirstGskuIdentityRetirementProcessor(
                     await VerifyAndCompleteAsync(operation, claim, now, cancellationToken),
                 _ => false
             };
+            }
+            catch
+            {
+                // FIX3 item 2 (B14): a step that throws gives its lease back (bounded, not under the caller's token).
+                await ReleaseAsync(operation.OperationId, leaseOwner, leaseUntil, leaseDuration);
+                throw;
+            }
             if (!advanced)
             {
+                await ReleaseAsync(operation.OperationId, leaseOwner, leaseUntil, leaseDuration);
                 return Fail(operation, "FIRST_GSKU_RETIREMENT_CONCURRENCY_CONFLICT", 409);
             }
             operation = await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken)
@@ -297,6 +315,18 @@ public sealed class FirstGskuIdentityRetirementProcessor(
             LastFailureCode: failure, ReleaseLease: true), cancellationToken);
 
     public const string DependentIdentitiesExist = "GSKU_DEPENDENT_IDENTITIES_EXIST";
+
+    private async Task ReleaseAsync(Guid operationId, string leaseOwner, long leaseUntil, TimeSpan leaseDuration)
+    {
+        using var bound = new CancellationTokenSource(ProductIdentityWorkflowClaims.Bound(leaseDuration));
+        try { await operations.ReleaseIfOwnedAsync(operationId, leaseOwner, leaseUntil, bound.Token); }
+        catch (Exception exception)
+        {
+            // Best effort: the lease runs out by itself — said, not swallowed.
+            log.LogWarning("{Flow} {OperationId}: the lease of a step that did not finish could not be given back ({ExceptionType}).",
+                "GSKU_PAIR_RETIREMENT", operationId, exception.GetType().Name);
+        }
+    }
 
     private static string DependentsCode(string blocker) =>
         blocker == "DEPENDENT_IDENTITIES_EXIST" ? DependentIdentitiesExist : blocker;

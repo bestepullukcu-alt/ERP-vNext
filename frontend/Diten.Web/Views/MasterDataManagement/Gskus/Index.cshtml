@@ -1,11 +1,24 @@
 @using Diten.Web.Views.MasterDataManagement.Gskus
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<GskusIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["GskusTitle"].Value;
     Layout = "_LayoutTenantShell";
     var canCreate = ViewData["CanCreateGsku"] as bool? == true;
     var canUseEditor = ViewData["CanUseGskuEditor"] as bool? == true;
+}
+
+@*
+    UAS-001 (FIX3 B17) — nothing of the register is drawn without mdm.gskus.read: no filter bar, no heading, no
+    skeleton, no empty table. GskusController.Index answers 403 with this surface instead of redirecting.
+
+    ⚠ Display only. MDM's [HasPermission("mdm.gskus.read")] and the proxy's own check remain the authority.
+*@
+@if (!Perms.Has("mdm.gskus.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["GskusTitle"].Value" />
+    return;
 }
 
 @* Contract marker: <partial name="_Filter" /> *@

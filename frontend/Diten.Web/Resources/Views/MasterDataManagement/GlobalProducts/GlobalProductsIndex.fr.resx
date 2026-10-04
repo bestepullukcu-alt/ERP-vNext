@@ -12,4 +12,6 @@
   <data name="UpdateSuccess" xml:space="preserve"><value>Le brouillon de produit global a été mis à jour.</value></data><data name="WithdrawSuccess" xml:space="preserve"><value>La demande a été retirée et le produit est revenu à l’état Brouillon.</value></data><data name="CorrectionRequestedSuccess" xml:space="preserve"><value>La demande de correction a été soumise pour approbation.</value></data><data name="RetirementRequestedSuccess" xml:space="preserve"><value>La demande de retrait a été soumise pour approbation.</value></data>
   <data name="CurrentPageOnly" xml:space="preserve"><value>Page actuelle uniquement</value></data>
   <data name="ErrorWithdrawalPending" xml:space="preserve"><value>Un retrait antérieur de cette approbation, avec un motif ou un commentaire différent, est toujours en cours. Répétez le retrait avec le même motif et le même commentaire qu'auparavant, ou attendez qu'il se termine.</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Ce produit est en cours de soumission pour approbation. Il ne peut pas être modifié tant que la soumission n'a pas atteint le moteur d'approbation.</value></data>
+  <data name="ErrorDraftChanged" xml:space="preserve"><value>Le brouillon a changé pendant sa soumission. Rouvrez-le et soumettez la version actuelle.</value></data>
 </root>

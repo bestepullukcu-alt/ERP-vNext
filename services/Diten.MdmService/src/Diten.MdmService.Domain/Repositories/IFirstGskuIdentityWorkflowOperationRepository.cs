@@ -20,6 +20,12 @@ public interface IFirstGskuIdentityWorkflowOperationRepository
         FirstGskuIdentityWorkflowClaim claim, FirstGskuIdentityWorkflowCheckpointMutation mutation,
         CancellationToken cancellationToken = default);
     // Gives back a lease this owner wrote at this exact expiry — for a claim whose answer never arrived.
+    // FIX3 (CT decision 1): the note of this GSKU's latest identity operation, when it completed with the submit-time
+    // proof because a reference retired after the approval; else null.
+    Task<string?> LatestApprovalNoteAsync(Guid gskuId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<string?>(null);
+    // FIX3 item 1 (B13): this tenant's operations waiting for a person (manual reconciliation), for the cycle report.
+    Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) => Task.FromResult(0L);
     Task ReleaseIfOwnedAsync(
         Guid operationId, string leaseOwner, long leaseUntilUtcTicks, CancellationToken cancellationToken = default);
     // The reason of this GSKU's latest identity operation when that one ended "approved, not applicable"; else null.

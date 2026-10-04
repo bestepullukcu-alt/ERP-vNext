@@ -141,8 +141,12 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError")
                                                && exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
         {
-            // A write conflict with an edit that committed first: the draft is not what this submit read.
-            return new(false, false, null, "FIRST_GSKU_IDENTITY_WORKFLOW_DRAFT_CHANGED");
+            // FIX3 S5: a transient abort is a write conflict with an edit that committed first — or the store itself
+            // (a primary stepping down). Read again to say which: a draft that moved is "changed", one that did not is
+            // a store that did not answer.
+            return new(false, false, null, await DraftMovedAsync(operation, cancellationToken)
+                ? "FIRST_GSKU_IDENTITY_WORKFLOW_DRAFT_CHANGED"
+                : ProductIdentityStore.Unavailable);
         }
         catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
@@ -164,6 +168,30 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
             return existing is not null && IsExactReplay(existing, operation)
                 ? new(true, true, existing, null)
                 : new(false, false, null, "FIRST_GSKU_IDENTITY_WORKFLOW_IDEMPOTENCY_CONFLICT");
+        }
+        catch (MongoException exception) when (exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
+        {
+            // FIX3 S5: no transaction at all (a standalone mongod) or a store that is away — coded, not an uncoded 500.
+            return new(false, false, null, ProductIdentityStore.Unavailable);
+        }
+        catch (NotSupportedException)
+        {
+            // FIX3 S5: the driver refuses a transaction before the server is asked (a standalone mongod).
+            return new(false, false, null, ProductIdentityStore.Unavailable);
+        }
+    }
+
+    private async Task<bool> DraftMovedAsync(FirstGskuIdentityWorkflowOperation operation, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var gsku = await _gskus.Find(ActiveGskuFilter(operation.GskuId)).FirstOrDefaultAsync(cancellationToken);
+            return gsku is not null && (gsku.Version != operation.ExpectedGskuVersion
+                                        || gsku.LifecycleStatus != ProductIdentityLifecycleStatus.Draft);
+        }
+        catch (MongoException)
+        {
+            return false;
         }
     }
 
@@ -422,6 +450,7 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         if (mutation.WithdrawalObjectRef is not null) update = update.Set(item => item.WithdrawalObjectRef, mutation.WithdrawalObjectRef);
         if (mutation.WithdrawalRefusalCode is not null) update = update.Set(item => item.WithdrawalRefusalCode, mutation.WithdrawalRefusalCode);
         if (mutation.WithdrawalAwaitingRequesterSinceUtcTicksV1.HasValue) update = update.Set(item => item.WithdrawalAwaitingRequesterSinceUtcTicksV1, mutation.WithdrawalAwaitingRequesterSinceUtcTicksV1);
+        if (mutation.ApprovalAppliedNote is not null) update = update.Set(item => item.ApprovalAppliedNote, mutation.ApprovalAppliedNote);
         if (mutation.ServiceFaultCount.HasValue)
         {
             update = update
@@ -487,8 +516,11 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         IClientSessionHandle? session = null)
     {
         var filter = tenantFilter & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.GskuId, gskuId);
+        // FIX3 S10: the latest submit is the one at the highest GSKU version (each submit is of one version, and a
+        // version is submitted at most once); creation time only breaks a tie — two writers' clocks may disagree.
         return (session is null ? operations.Find(filter) : operations.Find(session, filter))
-            .SortByDescending(item => item.CreatedAtUtcTicksV1)
+            .SortByDescending(item => item.ExpectedGskuVersion)
+            .ThenByDescending(item => item.CreatedAtUtcTicksV1)
             .Limit(1);
     }
 
@@ -502,7 +534,16 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         return latest?.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable ? latest.LastFailureCode : null;
     }
 
+    public async Task<string?> LatestApprovalNoteAsync(Guid gskuId, CancellationToken cancellationToken = default)
+    {
+        var latest = await LatestForGsku(_operations, ActiveTenantFilter, gskuId).FirstOrDefaultAsync(cancellationToken);
+        return latest?.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.Completed ? latest.ApprovalAppliedNote : null;
+    }
+
     public const string SelfApprovalReason = "FIRST_GSKU_IDENTITY_SELF_APPROVAL_IGNORED";
+    // FIX3 E1: the engine closed the approval without a decision (cancelled by an administrator or by its maker in the
+    // Task Center, or expired) — nothing will come, so the pair goes back to draft, as a correction does.
+    public const string ClosedWithoutDecisionReason = "FIRST_GSKU_IDENTITY_CLOSED_WITHOUT_DECISION";
     public const string AuditCapacityReached = "AUDIT_INTENT_CAPACITY_REACHED";
 
     public async Task<FirstGskuIdentityDecisionNotApplicableWriteResult> ApplyDecisionNotApplicableAsync(
@@ -523,10 +564,12 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
             || claim.OperationFingerprint != operation.OperationFingerprint
             // From DecisionObserved: the engine approved and the approval cannot be applied. From AwaitingDecision
             // (FIX2 item 3): the engine closed the approval with the maker's own decision — nothing else will come.
-            || !(claim.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.DecisionObserved
+            || !(claim.Checkpoint is FirstGskuIdentityWorkflowCheckpoint.DecisionObserved
+                        // FIX3 E2: the second gate too — the pair is still pending there.
+                        or FirstGskuIdentityWorkflowCheckpoint.ApprovalValidated
                     && operation.DecisionKind == ProductIdentityDecisionKind.Approved
                  || claim.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision
-                    && reasonCode == SelfApprovalReason)
+                    && reasonCode is SelfApprovalReason or ClosedWithoutDecisionReason)
             || updatedAtUtcTicks <= 0
             || !IsExactBounded(reasonCode, 128)
             || revisionAuditIntent.Operation != ProductAuditOperation.ProductDefinitionRevisionIdentityDecisionNotApplicable
@@ -852,6 +895,11 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         && !string.IsNullOrWhiteSpace(intent.EvidenceHash);
 
 
+    // FIX3 item 1 (B13): this tenant's operations waiting for a person.
+    public Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(ActiveTenantFilter & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(x => x.Checkpoint, FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired),
+            cancellationToken: cancellationToken);
+
     private FilterDefinition<FirstGskuIdentityWorkflowOperation> ActiveTenantFilter =>
         Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.TenantId, _tenantId)
         & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.IsDeleted, false);
@@ -983,6 +1031,11 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
                 FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart) => true,
             (FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
                 FirstGskuIdentityWorkflowCheckpoint.WorkflowStarted) => true,
+            // FIX3 E2: the submitter's reconciling repeat after the start puts a pending pair back to its decision;
+            // the requester's repeat of the same withdrawal reads the engine's cancellation again.
+            (FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+                FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision
+                or FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown) => true,
             _ => false
         };
 

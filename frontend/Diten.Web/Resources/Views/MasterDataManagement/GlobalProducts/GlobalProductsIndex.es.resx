@@ -12,4 +12,6 @@
   <data name="UpdateSuccess" xml:space="preserve"><value>El borrador de producto global se actualizó.</value></data><data name="WithdrawSuccess" xml:space="preserve"><value>La solicitud se retiró y el producto volvió a Borrador.</value></data><data name="CorrectionRequestedSuccess" xml:space="preserve"><value>La solicitud de corrección se envió para aprobación.</value></data><data name="RetirementRequestedSuccess" xml:space="preserve"><value>La solicitud de retirada se envió para aprobación.</value></data>
   <data name="CurrentPageOnly" xml:space="preserve"><value>Solo la página actual</value></data>
   <data name="ErrorWithdrawalPending" xml:space="preserve"><value>Una retirada anterior de esta aprobación, con un motivo o comentario distinto, todavía se está procesando. Repita la retirada con el mismo motivo y comentario que antes, o espere a que termine.</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Este producto se está enviando para aprobación. No se puede editar hasta que el envío llegue al motor de aprobación.</value></data>
+  <data name="ErrorDraftChanged" xml:space="preserve"><value>El borrador cambió mientras se enviaba. Vuelva a abrirlo y envíe la versión actual.</value></data>
 </root>

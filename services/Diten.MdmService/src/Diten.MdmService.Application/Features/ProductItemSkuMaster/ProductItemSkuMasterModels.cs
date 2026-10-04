@@ -193,7 +193,12 @@ public static class ProductItemSkuMasterModels
         string? IdentityNotAppliedReason = null,
         // FIX2 item 1: where the draft's latest submit stands (SUBMIT_IN_FLIGHT, RESUBMIT_REQUIRED,
         // RECONCILIATION_REQUIRED, SUBMISSION_ENDED) — the screen says what happens next for each.
-        string? IdentitySubmitState = null);
+        string? IdentitySubmitState = null,
+        // FIX3 E2: with RECONCILIATION_REQUIRED, the version the reconciling repeat of the submit carries.
+        int? IdentitySubmitVersion = null,
+        // FIX3 (CT decision 1): set when the pair was completed with the submit-time proof because a reference was
+        // retired after the approval — the screen says so as information.
+        string? IdentityApprovalNote = null);
 
     public sealed record GskuCreateGlobalProductOptionDto(
         Guid Id,
@@ -212,9 +217,11 @@ public static class ProductItemSkuMasterModels
         int RevisionVersion,
         IReadOnlyList<GskuCreateUomOptionDto> Uoms);
 
+    // FIX3 B17: HasMore = more referenceable products match than this page holds (the picker pages with it).
     public sealed record GskuCreateOptionsDto(
         IReadOnlyList<GskuCreateGlobalProductOptionDto> GlobalProducts,
-        IReadOnlyList<GskuCreateUomOptionDto> Uoms);
+        IReadOnlyList<GskuCreateUomOptionDto> Uoms,
+        bool HasMore = false);
 
     public sealed class CreateFinishedGoodDraftRequest
     {

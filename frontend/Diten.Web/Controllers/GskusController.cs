@@ -35,6 +35,7 @@ public sealed class GskusController : Controller
     private readonly ITimeLimitedDataProtector _formAttemptProtector;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
     private readonly IStringLocalizer<GskusIndex> _localizer;
+    private readonly IStringLocalizer<GskuRefusals> _refusals;
     private readonly ILogger<GskusController> _logger;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -47,7 +48,8 @@ public sealed class GskusController : Controller
         IDataProtectionProvider dataProtectionProvider,
         IStringLocalizer<SharedResource> sharedLocalizer,
         IStringLocalizer<GskusIndex> localizer,
-        ILogger<GskusController> logger)
+        ILogger<GskusController> logger,
+        IStringLocalizer<GskuRefusals>? refusals = null)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"]?.TrimEnd('/')
@@ -58,13 +60,20 @@ public sealed class GskusController : Controller
         _sharedLocalizer = sharedLocalizer;
         _localizer = localizer;
         _logger = logger;
+        // Resolved by DI in the application; a test that builds the controller by hand passes it or gets codes only.
+        _refusals = refusals ?? new NoRefusals();
     }
 
     [HttpGet("")]
     public IActionResult Index()
     {
+        // UAS-001 (FIX3 B17): no redirect for a signed-in reader without mdm.gskus.read. The status says 403 and the
+        // view draws the access-denied surface inside the shell — and nothing of the list (Index.cshtml checks first).
         if (!HasPermission(ReadPermission))
-            return Forbid();
+        {
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+            return View("~/Views/MasterDataManagement/Gskus/Index.cshtml");
+        }
 
         var canCreate = HasPermission(CreatePermission);
         ViewData["CanCreateGsku"] = canCreate;
@@ -270,16 +279,103 @@ public sealed class GskusController : Controller
             cancellationToken);
     }
 
+    // FIX3 B17: the list component's server request (start, length, search, orderBy, orderDir, lifecycleStatus) becomes
+    // MDM's page query, and MDM's page becomes the component's envelope { data: { items, total, filteredTotal } }.
+    // MDM returns one count (the rows matching search + filter), so total and filteredTotal are both that count.
     [HttpGet("api")]
     public Task<IActionResult> List(CancellationToken cancellationToken)
     {
         if (!HasPermission(ReadPermission))
             return Task.FromResult<IActionResult>(ForbiddenResult());
 
-        return ProxyGatewayAsync(
-            HttpMethod.Get,
-            $"{_gatewayUrl}/api/gskus{Request.QueryString}",
-            cancellationToken);
+        return ProxyListAsync($"{_gatewayUrl}/api/gskus?{BuildListQuery(Request.Query)}", cancellationToken);
+    }
+
+    internal const int MaxListPageSize = 100;
+    private const int DefaultListPageSize = 20;
+
+    internal static string BuildListQuery(IQueryCollection query)
+    {
+        var length = int.TryParse(query["length"].ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedLength)
+            && parsedLength > 0
+                ? Math.Min(parsedLength, MaxListPageSize)
+                : DefaultListPageSize;
+        var start = long.TryParse(query["start"].ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedStart)
+            && parsedStart > 0
+                ? parsedStart
+                : 0;
+        var pageNumber = (int)Math.Min(start / length + 1, int.MaxValue);
+        var parts = new List<string>
+        {
+            $"pageNumber={pageNumber.ToString(CultureInfo.InvariantCulture)}",
+            $"pageSize={length.ToString(CultureInfo.InvariantCulture)}"
+        };
+        // Passed as typed; MDM's validator is the one judge (unknown sort key or direction = 400, never a silent default).
+        foreach (var key in new[] { "search", "orderBy", "orderDir", "lifecycleStatus" })
+        {
+            var value = query[key].ToString().Trim();
+            if (value.Length > 0)
+                parts.Add($"{key}={Uri.EscapeDataString(value)}");
+        }
+        return string.Join("&", parts);
+    }
+
+    private async Task<IActionResult> ProxyListAsync(string targetUrl, CancellationToken cancellationToken)
+    {
+        if (!TryCreateGatewayRequest(HttpMethod.Get, targetUrl, content: null, out var request))
+            return UnauthorizedResult();
+
+        try
+        {
+            using (request)
+            using (var response = await _httpClient.SendAsync(request, cancellationToken))
+            {
+                if (!response.IsSuccessStatusCode)
+                    return await KnownOrStatusFailureAsync(response, cancellationToken);
+
+                using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+                var root = document.RootElement;
+                if (root.ValueKind != JsonValueKind.Object
+                    || !(root.TryGetProperty("data", out var page) || root.TryGetProperty("Data", out page))
+                    || page.ValueKind != JsonValueKind.Object
+                    || !(page.TryGetProperty("items", out var items) || page.TryGetProperty("Items", out items))
+                    || items.ValueKind != JsonValueKind.Array
+                    || !(page.TryGetProperty("totalCount", out var count) || page.TryGetProperty("TotalCount", out count))
+                    || !count.TryGetInt64(out var total)
+                    || total < 0)
+                {
+                    _logger.LogWarning("GSKU list proxy: MDM answered a page without items or totalCount.");
+                    return SafeFailure(HttpStatusCode.BadGateway);
+                }
+
+                // A ContentResult like every other GSKU proxy answer (the page re-shaped for the list component).
+                return new ContentResult
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    ContentType = "application/json",
+                    Content = JsonSerializer.Serialize(new
+                    {
+                        success = true,
+                        data = new { items = items.Clone(), total, filteredTotal = total }
+                    }, _jsonOptions)
+                };
+            }
+        }
+        catch (JsonException exception)
+        {
+            _logger.LogWarning(exception, "GSKU list proxy: MDM answered an unreadable page.");
+            return SafeFailure(HttpStatusCode.BadGateway);
+        }
+        catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogWarning(exception, "GSKU gateway proxy timed out for {TargetUrl}.", targetUrl);
+            return SafeFailure(HttpStatusCode.GatewayTimeout);
+        }
+        catch (HttpRequestException exception)
+        {
+            _logger.LogError(exception, "GSKU gateway proxy failed for {TargetUrl}.", targetUrl);
+            return SafeFailure(HttpStatusCode.ServiceUnavailable);
+        }
     }
 
     [HttpGet("api/{id:guid}")]
@@ -297,7 +393,24 @@ public sealed class GskusController : Controller
         if (!HasPermission(CreatePermission))
             return Task.FromResult<IActionResult>(ForbiddenResult());
 
-        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/gskus/create-options", cancellationToken);
+        // FIX3 B17: the product picker pages and searches — its pageNumber, pageSize and search reach MDM (they were
+        // dropped, so only MDM's first 20 products could ever be chosen). MDM validates them (pageSize 1–50).
+        return ProxyGatewayAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/gskus/create-options{BuildCreateOptionsQuery(Request.Query)}",
+            cancellationToken);
+    }
+
+    internal static string BuildCreateOptionsQuery(IQueryCollection query)
+    {
+        var parts = new List<string>();
+        foreach (var key in new[] { "pageNumber", "pageSize", "search" })
+        {
+            var value = query[key].ToString().Trim();
+            if (value.Length > 0)
+                parts.Add($"{key}={Uri.EscapeDataString(value)}");
+        }
+        return parts.Count == 0 ? string.Empty : "?" + string.Join("&", parts);
     }
 
     [HttpGet("api/{id:guid}/edit-options")]
@@ -633,7 +746,7 @@ public sealed class GskusController : Controller
             using (var response = await _httpClient.SendAsync(request, cancellationToken))
             {
                 if (!response.IsSuccessStatusCode)
-                    return SafeFailure(response.StatusCode);
+                    return await KnownOrStatusFailureAsync(response, cancellationToken);
 
                 var body = await response.Content.ReadAsStringAsync(cancellationToken);
                 return new ContentResult
@@ -693,39 +806,80 @@ public sealed class GskusController : Controller
         ["FIRST_GSKU_IDENTITY_DECISION_NOT_APPLICABLE"] = "IdentityNotAppliedGeneric"
     };
 
+    // FIX3 item 4 (B18): every refusal MDM names is said as a sentence, whatever its status (FIX1/FIX2 translated only a
+    // single known code on a 409). Several codes → each one's sentence, once. A code with no sentence is a missing
+    // mapping: the status's general sentence is shown, the code is logged here and the browser is told (unmapped) so the
+    // console warns — the raw code itself never reaches the browser.
     private async Task<IActionResult> KnownOrStatusFailureAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
-        if ((int)response.StatusCode is StatusCodes.Status409Conflict
-            && IsJsonMediaType(response.Content.Headers.ContentType?.MediaType))
+        if (!IsJsonMediaType(response.Content.Headers.ContentType?.MediaType))
+            return SafeFailure(response.StatusCode);
+        string[] codes;
+        try
         {
-            try
-            {
-                using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
-                if (document.RootElement.ValueKind == JsonValueKind.Object
-                    && (document.RootElement.TryGetProperty("errors", out var errors)
-                        || document.RootElement.TryGetProperty("Errors", out errors))
-                    && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() == 1
-                    && errors[0].ValueKind == JsonValueKind.String
-                    && KnownFailureKeys.TryGetValue(errors[0].GetString()!, out var key))
-                {
-                    return StatusCode(StatusCodes.Status409Conflict, new
-                    {
-                        success = false,
-                        errors = new[] { _localizer[key].Value }
-                    });
-                }
-            }
-            catch (JsonException)
-            {
-                // Not a readable answer: the status message below.
-            }
+            using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+            if (document.RootElement.ValueKind != JsonValueKind.Object
+                || !(document.RootElement.TryGetProperty("errors", out var errors)
+                     || document.RootElement.TryGetProperty("Errors", out errors))
+                || errors.ValueKind != JsonValueKind.Array || errors.GetArrayLength() is 0 or > 20
+                || errors.EnumerateArray().Any(item => item.ValueKind != JsonValueKind.String))
+                return SafeFailure(response.StatusCode);
+            codes = errors.EnumerateArray().Select(item => item.GetString()!).ToArray();
         }
-        return SafeFailure(response.StatusCode);
+        catch (JsonException)
+        {
+            // Not a readable answer: the status message below.
+            return SafeFailure(response.StatusCode);
+        }
+
+        var status = NormalizedStatus(response.StatusCode);
+        var sentences = new List<string>();
+        var unmapped = false;
+        foreach (var code in codes)
+        {
+            string? sentence = KnownFailureKeys.TryGetValue(code, out var known)
+                ? _localizer[known].Value
+                : GskuRefusalSentences.Keys.TryGetValue(code, out var refusal)
+                    ? _refusals[refusal].Value
+                    : null;
+            if (sentence is null)
+            {
+                unmapped = true;
+                _logger.LogWarning("GSKU proxy: MDM answered {Status} with a code that has no sentence ({ErrorCode}).",
+                    status, IsCode(code) ? code : "UNREADABLE_CODE");
+                sentence = MapStatusMessage(status);
+            }
+            if (!sentences.Contains(sentence, StringComparer.Ordinal))
+                sentences.Add(sentence);
+        }
+        return unmapped
+            ? StatusCode(status, new { success = false, errors = sentences.ToArray(), unmapped = true })
+            : StatusCode(status, new { success = false, errors = sentences.ToArray() });
+    }
+
+    private static bool IsCode(string value) => value.Length is > 0 and <= 100
+        && value.All(character => character is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_');
+
+    private sealed class NoRefusals : IStringLocalizer<GskuRefusals>
+    {
+        public LocalizedString this[string name] => new(name, name, resourceNotFound: true);
+        public LocalizedString this[string name, params object[] arguments] => this[name];
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
     }
 
     private IActionResult SafeFailure(HttpStatusCode statusCode)
     {
-        var normalizedStatus = statusCode switch
+        var normalizedStatus = NormalizedStatus(statusCode);
+        return StatusCode(normalizedStatus, new
+        {
+            success = false,
+            errors = new[] { MapStatusMessage(normalizedStatus) }
+        });
+    }
+
+    private static int NormalizedStatus(HttpStatusCode statusCode)
+    {
+        return statusCode switch
         {
             HttpStatusCode.BadRequest => StatusCodes.Status400BadRequest,
             HttpStatusCode.Unauthorized => StatusCodes.Status401Unauthorized,
@@ -736,12 +890,6 @@ public sealed class GskusController : Controller
             HttpStatusCode.GatewayTimeout => StatusCodes.Status504GatewayTimeout,
             _ => StatusCodes.Status502BadGateway
         };
-
-        return StatusCode(normalizedStatus, new
-        {
-            success = false,
-            errors = new[] { MapStatusMessage(normalizedStatus) }
-        });
     }
 
     private IActionResult ForbiddenResult() => StatusCode(StatusCodes.Status403Forbidden, new

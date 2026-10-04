@@ -23,24 +23,40 @@ public sealed record FirstGskuIdentitySubmitState(FirstGskuIdentitySubmitStateKi
 {
     public static readonly FirstGskuIdentitySubmitState None = new(FirstGskuIdentitySubmitStateKind.None, null);
 
+    // FIX3 E2: the GSKU version the submit was made at — a reconciling repeat is the SAME submit, so it carries this
+    // version, not the GSKU's current one (which moved when the pair went pending).
+    public int? SubmittedAtVersion { get; init; }
+    // FIX3 E2: the submit is in a withdrawal: its way out is the requester's repeat of that withdrawal, not a submit.
+    public bool InWithdrawal { get; init; }
+
     /// <summary>
     /// The one rule (WP-MDM-GSKU-ACCEPT-01 FIX2 item 1 — "no state without a way out"). FIX1 counted every non-final
     /// checkpoint as "unfinished", so a submit that never reached the engine, or one in manual reconciliation, froze
     /// the draft for good: edit and submit hidden, the edit refused, nothing ever moving it on.
     /// </summary>
-    public static FirstGskuIdentitySubmitState Of(FirstGskuIdentityWorkflowOperation? latest, int currentGskuVersion) =>
-        latest is null ? None : latest.Checkpoint switch
-        {
-            FirstGskuIdentityWorkflowCheckpoint.Completed or FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable => None,
-            FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart or FirstGskuIdentityWorkflowCheckpoint.Superseded =>
-                latest.ExpectedGskuVersion == currentGskuVersion
-                    ? new(FirstGskuIdentitySubmitStateKind.Ended, latest.LastFailureCode)
-                    : None,
-            FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay when latest.WithdrawalCommandId is null
-                                                                        && latest.WorkflowInstanceId is null =>
-                new(FirstGskuIdentitySubmitStateKind.ResubmitRequired, latest.LastFailureCode),
-            FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired =>
-                new(FirstGskuIdentitySubmitStateKind.ReconciliationRequired, latest.LastFailureCode),
-            _ => new(FirstGskuIdentitySubmitStateKind.InFlight, null)
-        };
+    public static FirstGskuIdentitySubmitState Of(FirstGskuIdentityWorkflowOperation? latest, int currentGskuVersion)
+    {
+        if (latest is null) return None;
+        // FIX3 item 6: the rule itself is shared with Global Product (ProductIdentitySubmitState); the kinds line up.
+        var shared = ProductIdentitySubmitState.Classify(latest.Checkpoint switch
+            {
+                FirstGskuIdentityWorkflowCheckpoint.Completed or FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable
+                    => ProductIdentitySubmitPhase.Finished,
+                FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart or FirstGskuIdentityWorkflowCheckpoint.Superseded
+                    => ProductIdentitySubmitPhase.EndedBeforeEngine,
+                FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay => ProductIdentitySubmitPhase.AwaitingMakerReplay,
+                FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired => ProductIdentitySubmitPhase.ManualReconciliation,
+                _ => ProductIdentitySubmitPhase.Underway
+            },
+            latest.ExpectedGskuVersion == currentGskuVersion,
+            latest.WithdrawalCommandId is not null || latest.WorkflowInstanceId is not null,
+            latest.LastFailureCode);
+        return shared.Kind == ProductIdentitySubmitStateKind.None
+            ? None
+            : new((FirstGskuIdentitySubmitStateKind)(int)shared.Kind, shared.Code)
+            {
+                SubmittedAtVersion = latest.ExpectedGskuVersion,
+                InWithdrawal = latest.WithdrawalCommandId is not null
+            };
+    }
 }

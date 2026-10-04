@@ -260,7 +260,8 @@ public sealed class ProductTenantProxyBindingTests
                 TenantHeaders.AddRange(tenants);
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent("{\"isSuccessful\":true,\"data\":{}}")
+                // FIX3 B17: a real page (the GSKU list proxy re-shapes MDM's page and refuses one without a count).
+                Content = new StringContent("{\"isSuccessful\":true,\"data\":{\"items\":[],\"totalCount\":0}}")
             });
         }
     }

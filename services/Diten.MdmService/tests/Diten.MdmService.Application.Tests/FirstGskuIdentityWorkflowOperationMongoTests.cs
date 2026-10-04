@@ -622,13 +622,13 @@ public sealed class FirstGskuIdentityWorkflowOperationMongoTests : IAsyncLifetim
     // B7 + FIX2 item 1 (changed): FIX1 counted every non-final checkpoint as "unfinished" and froze the draft for good
     // when a submit never reached the engine (AwaitingMakerReplay) or waited for reconciliation. Now each state has
     // its own way out: in flight waits for the worker; not received → resubmit or edit; reconciliation → the
-    // submitter's repeat; ended at this version → edit. Tenant-bound.
+    // submitter's repeat; ended at this version → edit. Tenant-bound. (BL-527, FIX3 S9: the two classifications FIX2
+    // added here — WorkflowStarted, AbandonedBeforeWorkflowStart — moved to the HTTP host's throwaway mongod,
+    // GskuFix3AddendumTests.S9_The_latest_submit_is_classified_on_the_real_store.)
     [Theory]
     [InlineData(FirstGskuIdentityWorkflowCheckpoint.StartOutcomeUnknown, false, FirstGskuIdentitySubmitStateKind.InFlight)]
-    [InlineData(FirstGskuIdentityWorkflowCheckpoint.WorkflowStarted, false, FirstGskuIdentitySubmitStateKind.InFlight)]
     [InlineData(FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay, true, FirstGskuIdentitySubmitStateKind.ResubmitRequired)]
     [InlineData(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired, false, FirstGskuIdentitySubmitStateKind.ReconciliationRequired)]
-    [InlineData(FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart, true, FirstGskuIdentitySubmitStateKind.Ended)]
     [InlineData(FirstGskuIdentityWorkflowCheckpoint.Completed, false, FirstGskuIdentitySubmitStateKind.None)]
     [InlineData(FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable, false, FirstGskuIdentitySubmitStateKind.None)]
     public async Task The_latest_submit_of_a_gsku_is_classified_with_its_way_out(

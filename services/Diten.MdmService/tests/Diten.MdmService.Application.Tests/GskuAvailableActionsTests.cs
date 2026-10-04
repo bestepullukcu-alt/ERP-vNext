@@ -93,7 +93,7 @@ public sealed class GskuAvailableActionsTests
         var actor = new Actor(Guid.NewGuid(), FirstGskuIdentityLifecyclePermissions.Update);
         IReadOnlyList<string> Pair() => (IReadOnlyList<string>)typeof(GetGskuByIdHandler)
             .GetMethod("BuildPairAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, [gsku, revision, actor, FirstGskuIdentitySubmitStateKind.None])!;
+            .Invoke(null, [gsku, revision, actor, FirstGskuIdentitySubmitStateKind.None, false])!;
         Assert.Equal(["DETAILS", "EDIT"], Pair());
         revision.LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval;
         Assert.Equal(["DETAILS"], Pair());

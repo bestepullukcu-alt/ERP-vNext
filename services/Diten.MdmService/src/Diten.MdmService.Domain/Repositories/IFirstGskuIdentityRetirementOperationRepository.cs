@@ -12,6 +12,8 @@ public interface IFirstGskuIdentityRetirementOperationRepository
         FirstGskuIdentityRetirementClaimRequest request, CancellationToken cancellationToken = default);
     // Shared item 13 (A3), extended to this flow by WP-MDM-GSKU-ACCEPT-01 FIX2 item 9: a claim the store did not answer
     // within its bound is given back if (and only if) this owner holds it with exactly that lease.
+    // FIX3 item 1 (B13): this tenant's operations waiting for a person (manual reconciliation), for the cycle report.
+    Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) => Task.FromResult(0L);
     Task ReleaseIfOwnedAsync(Guid operationId, string leaseOwner, long leaseUntilUtcTicks,
         CancellationToken cancellationToken = default) => Task.CompletedTask;
     Task<bool> AdvanceAsync(

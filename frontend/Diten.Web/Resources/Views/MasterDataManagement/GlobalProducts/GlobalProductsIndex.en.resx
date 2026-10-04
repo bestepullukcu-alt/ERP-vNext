@@ -16,4 +16,6 @@
   <data name="UpdateSuccess" xml:space="preserve"><value>The global product draft was updated.</value></data><data name="WithdrawSuccess" xml:space="preserve"><value>The approval request was withdrawn and the product returned to Draft.</value></data><data name="CorrectionRequestedSuccess" xml:space="preserve"><value>The correction request was submitted for approval.</value></data><data name="RetirementRequestedSuccess" xml:space="preserve"><value>The retirement request was submitted for approval.</value></data>
   <data name="CurrentPageOnly" xml:space="preserve"><value>Current page only</value></data>
   <data name="ErrorWithdrawalPending" xml:space="preserve"><value>An earlier withdrawal of this approval, with a different reason or comment, is still being processed. Repeat the withdrawal with the same reason and comment as before, or wait for it to finish.</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>This product is being submitted for approval. It cannot be edited until the submission has reached the approval engine.</value></data>
+  <data name="ErrorDraftChanged" xml:space="preserve"><value>The draft changed while it was being submitted. Open it again and submit the current version.</value></data>
 </root>

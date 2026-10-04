@@ -117,7 +117,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             var reserved = await operations.ReserveAsync(plan.Operation, cancellationToken);
             if (!reserved.Succeeded || reserved.Operation is null)
             {
-                return Fail(reserved.ErrorCode ?? "PRODUCT_IDENTITY_WORKFLOW_OPERATION_CONFLICT", 409);
+                return Fail(reserved.ErrorCode ?? "PRODUCT_IDENTITY_WORKFLOW_OPERATION_CONFLICT",
+                    reserved.ErrorCode == ProductIdentityStore.Unavailable ? 503 : 409);
             }
 
             operation = reserved.Operation;

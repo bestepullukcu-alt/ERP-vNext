@@ -43,6 +43,10 @@ public sealed class GskuRetirementRequestOperation : EntityBase
     public string? DecisionTaskStatus { get; set; }
     public string? DecisionInstanceStatus { get; set; }
     public long? NextAttemptAtUtcTicksV1 { get; set; }
+    // FIX3 item 1 (B13): consecutive attempts that ended in a retry; any other write sets it back to 0.
+    public int FailedAttemptCount { get; set; }
+    // FIX3 S8: when a start was last sent to the engine — "nothing arrived" is trusted only after the settle window.
+    public long? LastStartSentAtUtcTicksV1 { get; set; }
     public string? LastFailureCode { get; set; }
     public string? LeaseOwner { get; set; }
     public long? LeaseUntilUtcTicksV1 { get; set; }

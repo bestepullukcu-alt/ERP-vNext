@@ -13,14 +13,22 @@ public sealed record FirstGskuIdentityWorkflowRecoveryRunResult(
     int OperationCount,
     int CompletedCount,
     int DeferredCount,
-    int FailedCount);
+    int FailedCount)
+{
+    // FIX3 item 1 (B13): the same cycle, counted the way every GSKU flow counts it.
+    // Null for a disabled runner (no cycle ran), so that two "nothing ran" results stay equal.
+    public ProductIdentityRecoveryCycle? Cycle { get; init; }
+}
 
 public sealed class FirstGskuIdentityWorkflowRecoveryRunner(
     IServiceScopeFactory scopeFactory,
     IOptions<FirstGskuIdentityWorkflowWorkerOptions> options,
     TimeProvider timeProvider,
-    ILogger<FirstGskuIdentityWorkflowRecoveryRunner> logger)
+    ILogger<FirstGskuIdentityWorkflowRecoveryRunner> logger,
+    ProductIdentityRecoveryMetrics? metrics = null)
 {
+    public const string Flow = "FIRST_GSKU_IDENTITY";
+
     public async Task<FirstGskuIdentityWorkflowRecoveryRunResult> RunCycleAsync(
         CancellationToken cancellationToken = default)
     {
@@ -37,6 +45,7 @@ public sealed class FirstGskuIdentityWorkflowRecoveryRunner(
         var completedCount = 0;
         var deferredCount = 0;
         var failedCount = 0;
+        var cycle = new ProductIdentityRecoveryCycle();
         Guid? tenantCursor = null;
         do
         {
@@ -79,6 +88,7 @@ public sealed class FirstGskuIdentityWorkflowRecoveryRunner(
                         if (!await backgroundScope.InScopeAsync(scopeMode, operation.GlobalProductId, cancellationToken))
                         {
                             deferredCount++;
+                            cycle.NotClaimed();
                             continue;
                         }
                         try
@@ -89,6 +99,11 @@ public sealed class FirstGskuIdentityWorkflowRecoveryRunner(
                                 TimeSpan.FromSeconds(settings.LeaseSeconds),
                                 TimeSpan.FromSeconds(settings.RetryDelaySeconds),
                                 cancellationToken);
+                            var after = result.Operation?.Checkpoint;
+                            var quarantined = after == FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+                                              && operation.Checkpoint != FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired;
+                            cycle.Count(!ProductIdentityRecoveryCycle.WasNotClaimed(result.ErrorCode), quarantined,
+                                result.Succeeded || (after.HasValue && after != operation.Checkpoint));
                             if (result.Succeeded)
                             {
                                 completedCount++;
@@ -116,6 +131,8 @@ public sealed class FirstGskuIdentityWorkflowRecoveryRunner(
                         catch (Exception exception)
                         {
                             failedCount++;
+                            cycle.Failed++;
+                            cycle.Seen++;
                             logger.LogError(
                                 "First GSKU identity workflow recovery failed for tenant {TenantId} and operation {OperationId} with {ErrorCode}.",
                                 tenantId,
@@ -131,7 +148,16 @@ public sealed class FirstGskuIdentityWorkflowRecoveryRunner(
             tenantCursor = tenantPage.NextAfterTenantId;
         } while (tenantCursor.HasValue);
 
-        return new(tenantCount, operationCount, completedCount, deferredCount, failedCount);
+        await using (var countScope = scopeFactory.CreateAsyncScope())
+        {
+            cycle.InManualReconciliation = await countScope.ServiceProvider
+                .GetRequiredService<IFirstGskuIdentityWorkflowTenantPartitionDiscovery>()
+                .CountManualReconciliationAsync(cancellationToken);
+        }
+        cycle.Tenants = tenantCount;
+        cycle.Log(logger, Flow);
+        metrics?.Record(Flow, cycle.InManualReconciliation);
+        return new(tenantCount, operationCount, completedCount, deferredCount, failedCount) { Cycle = cycle };
     }
 
     private static string SanitizeErrorCode(string? value)

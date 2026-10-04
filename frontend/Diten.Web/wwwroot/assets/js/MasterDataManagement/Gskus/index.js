@@ -5,11 +5,15 @@
 'use strict';
 
 const GskusList = (function () {
+    /*
+     * FIX3 B17 — the register stands on the list component (DitenDataTable.createList, server mode): the factory owns
+     * the table, the inline filter, Save View (same moduleKey/pageKey as before, so saved views still load), the
+     * toolbar and the server wire (start/length/search/orderBy/orderDir/lifecycleStatus → the MVC proxy → MDM). This
+     * file keeps only the register's own business: renderers, the server-owned action menu, quick view, and the
+     * create / edit / correction / retirement / submit / withdraw flows.
+     */
+    let list = null;
     let dt;
-    let defaultViewRecord = null;
-    let defaultViewState = null;
-    let saveFilterArmed = false;
-    let appliedFilters = { lifecycleStatus: '' };
     let editorId = '';
     let editorGskuVersion = null;
     let editorRevisionVersion = null;
@@ -17,148 +21,29 @@ const GskusList = (function () {
     const lifecycleRequests = new Set();
     const endpoint = '/MasterDataManagement/Gskus/api';
     const tableEl = document.querySelector('.datatables-gskus');
-    const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'MasterDataManagement', pageKey: 'Gskus' };
     const saveViewColumnIndexes = [1, 2, 3, 4, 5];
-    const totalColumnCount = 7;
     const baseOrder = [[1, 'asc']];
+    // The product picker pages through MDM (create-options: pageSize 1–50); it never holds the whole catalogue.
+    const productPickerPageSize = 20;
+    const productPickerDelayMs = 300;
+    // The create form's options read needs the UoMs and only to know a product exists; the picker pages the rest.
+    const createOptionsProbeSize = 1;
     const L = window.L10n || {};
     const permissionHost = document.querySelector('[data-can-create]');
     const canCreate = permissionHost?.getAttribute('data-can-create') === 'true';
     const actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT'];
     const supportedActions = new Set(['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT']);
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
-    const emptyFilters = () => ({ lifecycleStatus: '' });
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[character]));
-    const normalizeSearch = (value) => typeof value === 'string' ? value.trim().slice(0, 200) : '';
-    const normalizeFilters = (filters) => ({
-        lifecycleStatus: ['Draft', 'PendingIdentityApproval', 'IdentityApproved', 'Retired']
-            .includes(filters?.lifecycleStatus) ? filters.lifecycleStatus : ''
-    });
+    const normalizeSearch = (value) => typeof value === 'string' ? value.trim().slice(0, 100) : '';
     const unwrapData = (payload) => payload?.data || payload?.Data || {};
     const valueOf = (source, camel, pascal) => source?.[camel] ?? source?.[pascal];
     const readVersion = (source, camel, pascal) => {
         const value = valueOf(source, camel, pascal);
         return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : NaN;
-    };
-
-    const normalizeColOrder = (order) => {
-        if (!Array.isArray(order) || order.length !== totalColumnCount) return null;
-        const normalized = order.map(Number).filter((index) =>
-            Number.isInteger(index) && index >= 0 && index < totalColumnCount);
-        return normalized.length === totalColumnCount && new Set(normalized).size === totalColumnCount
-            ? normalized
-            : null;
-    };
-    const normalizeColVis = (colVis) => {
-        if (!colVis) return null;
-        const normalized = {};
-        saveViewColumnIndexes.forEach((index, position) => {
-            const value = Array.isArray(colVis) ? (colVis[index] ?? colVis[position]) : colVis[index];
-            if (typeof value === 'boolean') normalized[index] = value;
-        });
-        return Object.keys(normalized).length ? normalized : null;
-    };
-    const defaultColVis = () => saveViewColumnIndexes.reduce((state, index) => {
-        state[index] = true;
-        return state;
-    }, {});
-    const normalizeView = (view) => ({
-        filters: normalizeFilters(view?.filters),
-        search: normalizeSearch(view?.search),
-        colVis: normalizeColVis(view?.colVis) || defaultColVis(),
-        columnOrder: normalizeColOrder(view?.columnOrder)
-            || Array.from({ length: totalColumnCount }, (_, index) => index),
-        order: Array.isArray(view?.order) ? view.order : baseOrder
-    });
-    const captureColVis = (api) => saveViewColumnIndexes.reduce((state, index) => {
-        state[index] = !!api.column(index).visible();
-        return state;
-    }, {});
-    const captureColOrder = (api) => {
-        try { return normalizeColOrder(api?.colReorder?.order?.()); } catch (error) { return null; }
-    };
-    const getSearchValue = (api) => {
-        try { return normalizeSearch(api.search()); } catch (error) { return ''; }
-    };
-    const getCurrentView = (api) => {
-        const search = getSearchValue(api);
-        return normalizeView({
-            filters: normalizeFilters(appliedFilters),
-            search,
-            colVis: captureColVis(api),
-            columnOrder: captureColOrder(api),
-            order: api.order()
-        });
-    };
-    const serializeView = (view) => JSON.stringify(normalizeView(view));
-    const getSavedViewDefinition = (view) => {
-        const definition = view?.viewDefinition ?? view?.ViewDefinition ?? {};
-        if (typeof definition !== 'string') return definition;
-        try { return JSON.parse(definition); } catch (error) { return {}; }
-    };
-    const getSavedViewId = (view) => view?.id || view?.Id || view?._id || null;
-    const loadDefaultView = async () => {
-        if (!personalizationClient?.getViews) return null;
-        try {
-            const response = await personalizationClient.getViews(
-                personalizationContext.moduleKey,
-                personalizationContext.pageKey);
-            const items = Array.isArray(response) ? response : (response?.data || response?.Data || []);
-            defaultViewRecord = items.find((item) => item?.isDefault === true || item?.IsDefault === true)
-                || items[0]
-                || null;
-            defaultViewState = defaultViewRecord ? normalizeView(getSavedViewDefinition(defaultViewRecord)) : null;
-            return defaultViewState;
-        } catch (error) {
-            if (!error?.authHandled) console.error('[Gskus SaveView] Load failed.', error);
-            return null;
-        }
-    };
-    const saveDefaultView = async (view) => {
-        if (!personalizationClient?.saveView) return null;
-        const normalized = normalizeView(view);
-        const payload = {
-            moduleKey: personalizationContext.moduleKey,
-            pageKey: personalizationContext.pageKey,
-            viewName: (defaultViewRecord?.viewName || defaultViewRecord?.ViewName || L.SaveView).trim(),
-            viewDefinition: normalized,
-            isDefault: true,
-            visibility: 'private'
-        };
-        const id = getSavedViewId(defaultViewRecord);
-        const response = id
-            ? await personalizationClient.updateView(id, payload)
-            : await personalizationClient.saveView(payload);
-        defaultViewRecord = response?.data || response?.Data || response || payload;
-        defaultViewState = normalized;
-        return normalized;
-    };
-    const setSaveFilterVisible = (visible) => {
-        document.querySelector('.dt-save-filter-btn')?.classList.toggle('d-none', !visible);
-        window.DtDefaults?.refreshButtonGroupRadii?.();
-    };
-    const getResetBaselineState = () => normalizeView({
-        filters: emptyFilters(),
-        search: '',
-        colVis: defaultColVis(),
-        columnOrder: Array.from({ length: totalColumnCount }, (_, index) => index),
-        order: baseOrder
-    });
-    const isDirtyComparedToDefault = (api) =>
-        serializeView(getCurrentView(api)) !== serializeView(defaultViewState || getResetBaselineState());
-    const applySavedTableState = (api, view) => {
-        const normalized = normalizeView(view || {});
-        if (typeof api?.colReorder?.order === 'function') api.colReorder.order(normalized.columnOrder, true);
-        saveViewColumnIndexes.forEach((index) => api.column(index).visible(normalized.colVis[index], false));
-        api.search(normalized.search);
-        api.order(normalized.order);
-        appliedFilters = normalizeFilters(normalized.filters);
-        const lifecycle = document.getElementById('filterLifecycleStatus');
-        if (lifecycle) $(lifecycle).val(appliedFilters.lifecycleStatus || null).trigger('change');
-        syncSingleFilterState(lifecycle);
     };
 
     const lifecycleMap = () => ({
@@ -187,85 +72,47 @@ const GskusList = (function () {
         error.authHandled = true;
         throw error;
     };
+    /*
+     * FIX3 (B18 companion): the proxy marks a refusal whose MDM code has no sentence yet with `unmapped: true` (the
+     * reader still gets the status's general sentence). That is a missing mapping, so the console says so — with the
+     * status only; the body is never logged.
+     */
+    const warnIfUnmapped = (payload, status) => {
+        if (payload?.unmapped === true) console.warn('GSKU: a refusal without a sentence mapping', status);
+    };
+    const statusMessage = (status) => ({
+        400: L.ErrorValidation,
+        401: L.ErrorUnauthorized,
+        403: L.ErrorForbidden,
+        404: L.ErrorNotFound,
+        409: L.ErrorConflict,
+        503: L.ErrorServiceUnavailable,
+        504: L.ErrorTimeout
+    })[status] || L.ErrorGateway;
+    const failureSentence = (payload, status) => {
+        warnIfUnmapped(payload, status);
+        const errors = payload?.errors || payload?.Errors || [];
+        if (Array.isArray(errors) && errors.find(Boolean)) return errors.find(Boolean);
+        return statusMessage(status);
+    };
     const getErrorMessage = async (response) => {
         let payload = {};
         try { payload = await response.json(); } catch (error) { }
-        const errors = payload?.errors || payload?.Errors || [];
-        if (Array.isArray(errors) && errors.find(Boolean)) return errors.find(Boolean);
-        return ({
-            400: L.ErrorValidation,
-            401: L.ErrorUnauthorized,
-            403: L.ErrorForbidden,
-            404: L.ErrorNotFound,
-            409: L.ErrorConflict,
-            503: L.ErrorServiceUnavailable,
-            504: L.ErrorTimeout
-        })[response.status] || L.ErrorGateway;
+        return failureSentence(payload, response.status);
     };
-    const buildQuery = (data) => {
-        const pageSize = Math.max(1, Math.min(Number(data.length) || 20, 100));
-        const pageNumber = Math.max(1, Math.min(
-            Math.floor((Number(data.start) || 0) / pageSize) + 1,
-            1000000));
-        const query = new URLSearchParams({ pageNumber: String(pageNumber), pageSize: String(pageSize) });
-        const search = normalizeSearch(data.search?.value);
-        if (search) query.set('search', search);
-        if (appliedFilters.lifecycleStatus) {
-            query.set('lifecycleStatus', appliedFilters.lifecycleStatus);
+    // The list's own failed read (jQuery, through the factory): the same sentence and the same unmapped warning.
+    const readXhrPayload = (xhr) => {
+        if (xhr?.responseJSON && typeof xhr.responseJSON === 'object') return xhr.responseJSON;
+        try { return JSON.parse(xhr?.responseText || '{}'); } catch (error) { return {}; }
+    };
+    const onListError = function (xhr) {
+        const status = Number(xhr?.status) || 0;
+        if (status === 401) {
+            if (!this?._retried) window.DtDefaults?.handleUnauthorized?.(this);
+            return;
         }
-        return query.toString();
-    };
-
-    const mountInlineFilter = () => {
-        const host = document.getElementById('inlineFilterHost');
-        const button = document.querySelector('.dt-filter-btn');
-        const toolbar = button?.closest('.dt-layout-row') || button?.closest('.row');
-        if (host && toolbar) {
-            toolbar.insertAdjacentElement('afterend', host);
-            host.classList.add('px-3');
-        }
-    };
-    const toggleFilter = () => {
-        const collapse = document.getElementById('inlineFilterCollapse');
-        if (collapse) bootstrap.Collapse.getOrCreateInstance(collapse, { toggle: false }).toggle();
-    };
-    const syncSingleFilterState = (select) => {
-        if (!select) return;
-        const selected = !!select.value;
-        const container = $(select).next('.select2-container');
-        container.toggleClass('filter-selected', selected);
-        container.find('.select2-selection').toggleClass('border-primary text-primary', selected);
-    };
-    const getAppliedFilterCount = () => appliedFilters.lifecycleStatus ? 1 : 0;
-    const bindFilter = () => {
-        const collapse = document.getElementById('inlineFilterCollapse');
-        const lifecycle = document.getElementById('filterLifecycleStatus');
-        const applyButton = document.getElementById('btnFilterApply');
-        if (lifecycle && !$(lifecycle).hasClass('select2-hidden-accessible')) {
-            $(lifecycle).select2({
-                dropdownParent: $(document.body),
-                dropdownCssClass: 'dt-inline-filter-dropdown',
-                width: 'element',
-                allowClear: true,
-                minimumResultsForSearch: Infinity
-            });
-        }
-        $(lifecycle).on('change', () => syncSingleFilterState(lifecycle));
-        applyButton?.addEventListener('click', () => {
-            appliedFilters = normalizeFilters({ lifecycleStatus: lifecycle?.value || '' });
-            syncSingleFilterState(lifecycle);
-            dt?.draw();
-            if (saveFilterArmed && dt) setSaveFilterVisible(isDirtyComparedToDefault(dt));
-            if (collapse) bootstrap.Collapse.getOrCreateInstance(collapse, { toggle: false }).hide();
-        });
-        document.getElementById('btnFilterReset')?.addEventListener('click', (event) => {
-            event.preventDefault();
-            if (!dt) return;
-            applySavedTableState(dt, getResetBaselineState());
-            dt.draw();
-            setSaveFilterVisible(isDirtyComparedToDefault(dt));
-        });
-        syncSingleFilterState(lifecycle);
+        if (xhr?.statusText === 'abort') return;
+        window.showToast?.(failureSentence(readXhrPayload(xhr), status), 'error');
     };
 
     const setText = (elementId, fieldValue) => {
@@ -336,7 +183,12 @@ const GskusList = (function () {
             : notApplied === 'REFERENCE_DATA_CONTRACT_CONFLICT' || notApplied === 'REFERENCE_NOT_SELECTABLE'
                 ? L.IdentityNotAppliedReference
             : notApplied === 'FIRST_GSKU_IDENTITY_SELF_APPROVAL_IGNORED' ? L.IdentityNotAppliedSelfApproval
-            : L.IdentityNotAppliedGeneric);
+            // FIX3 E1: the approval was closed without a decision — the draft is open again.
+            : notApplied === 'FIRST_GSKU_IDENTITY_CLOSED_WITHOUT_DECISION' ? L.IdentityNotAppliedClosedWithoutDecision
+            : L.IdentityNotAppliedGeneric)
+            // FIX3 (CT decision 1): approved, and a unit retired afterwards — said as information.
+            || (valueOf(detail, 'identityApprovalNote', 'IdentityApprovalNote')
+                === 'FIRST_GSKU_IDENTITY_REFERENCE_RETIRED_AFTER_APPROVAL' ? L.IdentityApprovalNoteRetiredAfterApproval : '');
         setText('oc-identity-not-applied', notAppliedText);
         document.getElementById('oc-identity-not-applied-row')?.classList.toggle('d-none', !notAppliedText);
         const statusElement = document.getElementById('oc-status');
@@ -372,20 +224,38 @@ const GskusList = (function () {
         const id = valueOf(row, 'id', 'Id');
         return `<div class="dropdown"><button type="button" class="btn btn-icon dropdown-toggle hide-arrow js-gsku-actions-toggle" data-id="${escapeHtml(id)}" aria-expanded="false" title="${escapeHtml(L.Actions)}" aria-label="${escapeHtml(L.Actions)}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><div class="dropdown-menu dropdown-menu-end m-0 js-gsku-actions-menu"></div></div>`;
     };
+    /*
+     * Each server action is a menu item the list component dispatches (`data-row-action` → actions.onRowAction): the
+     * same delegation inside the table and inside the responsive row modal. Only actions MDM returned for this row,
+     * read fresh when the menu opens, are ever drawn.
+     */
     const actionPresentation = {
-        DETAILS: ['js-quick-view', 'bx bx-show', () => L.ViewDetails],
-        EDIT: ['js-edit-draft', 'bx bx-edit', () => L.EditDraft],
-        SUBMIT: ['js-lifecycle-action', 'bx bx-send', () => L.SubmitIdentity],
-        WITHDRAW_APPROVAL: ['js-lifecycle-action', 'bx bx-undo', () => L.WithdrawApproval],
-        REQUEST_CORRECTION: ['js-request-correction', 'bx bx-revision', () => L.RequestCorrection],
-        REQUEST_RETIREMENT: ['js-request-retirement', 'bx bx-archive', () => L.RequestRetirement]
+        DETAILS: { key: 'quickView', className: 'js-quick-view', icon: 'bx bx-show', label: () => L.ViewDetails },
+        EDIT: { key: 'editDraft', className: 'js-edit-draft', icon: 'bx bx-edit', label: () => L.EditDraft },
+        SUBMIT: { key: 'submitIdentity', className: 'js-lifecycle-action', icon: 'bx bx-send', label: () => L.SubmitIdentity },
+        WITHDRAW_APPROVAL: { key: 'withdrawApproval', className: 'js-lifecycle-action', icon: 'bx bx-undo', label: () => L.WithdrawApproval },
+        REQUEST_CORRECTION: { key: 'requestCorrection', className: 'js-request-correction', icon: 'bx bx-revision', label: () => L.RequestCorrection },
+        REQUEST_RETIREMENT: { key: 'requestRetirement', className: 'js-request-retirement', icon: 'bx bx-archive', label: () => L.RequestRetirement }
     };
     const renderFreshActionMenu = (menu, id, actions) => {
         menu.innerHTML = actions.filter((action) => supportedActions.has(action)).map((action) => {
-            const [className, icon, label] = actionPresentation[action];
-            return `<a href="javascript:void(0);" class="dropdown-item dt-action-item ${className}" data-id="${escapeHtml(id)}" data-action="${action}"><i class="${icon} dt-action-icon"></i>${escapeHtml(label())}</a>`;
+            const { key, className, icon, label } = actionPresentation[action];
+            return `<a href="javascript:void(0);" class="dropdown-item dt-action-item ${className}" data-row-action="${key}" data-id="${escapeHtml(id)}" data-action="${action}"><i class="${icon} dt-action-icon"></i>${escapeHtml(label())}</a>`;
         }).join('');
     };
+    // The register's row-action handlers, by the keys above. A busy item (disabled) is never run twice.
+    const rowAction = (run) => ({ id, trigger }) => {
+        if (!id || trigger?.classList.contains('disabled')) return;
+        run(String(id), trigger);
+    };
+    const rowActionHandlers = () => ({
+        quickView: rowAction((id) => populateDetails(id)),
+        editDraft: rowAction((id, trigger) => openEdit(id, trigger)),
+        submitIdentity: rowAction((id, trigger) => requestLifecycle(id, 'SUBMIT', trigger)),
+        withdrawApproval: rowAction((id, trigger) => requestLifecycle(id, 'WITHDRAW_APPROVAL', trigger)),
+        requestCorrection: rowAction((id, trigger) => openCorrection(id, trigger)),
+        requestRetirement: rowAction((id, trigger) => requestRetirement(id, trigger))
+    });
     const loadActionMenu = async (toggle) => {
         const id = toggle?.dataset.id;
         const menu = toggle?.parentElement?.querySelector('.js-gsku-actions-menu');
@@ -404,23 +274,110 @@ const GskusList = (function () {
         }
     };
 
-    const initializeCreateSelects = () => {
-        ['#globalProductId', '#packUomCode'].forEach((selector) => {
-            const $select = $(selector);
-            if ($select.length && !$select.hasClass('select2-hidden-accessible')) {
-                $select.select2({
-                    dropdownParent: $('#offcanvasCreateEdit'),
-                    width: '100%',
-                    allowClear: true
-                });
+    /*
+     * FIX3 B17 — the Global Product picker searches and pages through MDM instead of holding one fetched list (MDM's
+     * default page of 20 used to be every product a maker could ever choose). The BL-531 transport contract:
+     *  - select2 4.0.13 needs the transport to RETURN a request object (it reads `'status' in request` on failure and
+     *    calls `abort()` when the reader types again) — without it the dropdown sits on "searching" forever;
+     *  - a late answer (an older request, or an aborted one) is dropped by a sequence counter;
+     *  - a failed read says a SENTENCE in the reader's language (errorLoading), never "no results";
+     *  - MDM's `hasMore` is select2's `pagination.more` (the next page loads on scroll).
+     * minimumInputLength 0: opening the picker asks for the first page only; typing narrows it (debounced 300 ms).
+     */
+    const createProductPickerOptions = ({ fetchPage, words = {}, pageSize = productPickerPageSize } = {}) => {
+        let sequence = 0;
+        let failure = '';
+        const failureText = (result) => (typeof words.failure === 'function' ? words.failure(result) : '') || words.error || '';
+        return {
+            minimumInputLength: 0,
+            ajax: {
+                delay: productPickerDelayMs,
+                transport: (params, success, fail) => {
+                    const mine = ++sequence;
+                    const request = { aborted: false, abort() { request.aborted = true; } };
+                    const live = () => !request.aborted && mine === sequence;
+                    const term = normalizeSearch(String(params?.data?.term ?? ''));
+                    const page = Math.max(1, Math.floor(Number(params?.data?.page) || 1));
+                    Promise.resolve()
+                        .then(() => fetchPage({ term, page, pageSize }))
+                        .then((result) => {
+                            if (!live()) return;
+                            if (!result || result.ok !== true) {
+                                failure = failureText(result || { ok: false, status: 0 });
+                                fail(result);
+                                return;
+                            }
+                            failure = '';
+                            success({
+                                results: (Array.isArray(result.products) ? result.products : []).map((item) => ({
+                                    id: String(valueOf(item, 'id', 'Id')),
+                                    text: `${valueOf(item, 'canonicalCode', 'CanonicalCode')} — ${valueOf(item, 'globalProductName', 'GlobalProductName')}`
+                                })),
+                                pagination: { more: result.hasMore === true }
+                            });
+                        })
+                        .catch((error) => {
+                            if (!live()) return;
+                            failure = failureText({ ok: false, status: 0, authHandled: !!error?.authHandled });
+                            fail(error);
+                        });
+                    return request;
+                }
+            },
+            language: {
+                errorLoading: () => failure || words.error || '',
+                noResults: () => words.noResults || '',
+                searching: () => words.searching || '',
+                loadingMore: () => words.loadingMore || ''
             }
+        };
+    };
+    const fetchProductPage = async ({ term, page, pageSize }) => {
+        const query = new URLSearchParams({ pageNumber: String(page), pageSize: String(pageSize) });
+        if (term) query.set('search', term);
+        const response = await fetch(`${endpoint}/create-options?${query.toString()}`, {
+            credentials: 'same-origin', headers: getAuthHeaders()
         });
+        if (response.status === 401) handleUnauthorized();
+        if (!response.ok) return { ok: false, status: response.status, message: await getErrorMessage(response) };
+        const data = unwrapData(await response.json());
+        const products = data.globalProducts || data.GlobalProducts;
+        if (!Array.isArray(products)) return { ok: false, status: 502, message: L.ErrorGateway };
+        return { ok: true, products, hasMore: valueOf(data, 'hasMore', 'HasMore') === true };
+    };
+    const productPickerWords = () => ({
+        error: L.ProductPickerLoadFailed,
+        failure: (result) => result?.message || L.ProductPickerLoadFailed,
+        noResults: L.ProductPickerNoResults,
+        searching: L.ProductPickerSearching,
+        loadingMore: L.ProductPickerLoadingMore
+    });
+    const initializeCreateSelects = () => {
+        const $product = $('#globalProductId');
+        if ($product.length && !$product.hasClass('select2-hidden-accessible')) {
+            $product.select2(Object.assign({
+                dropdownParent: $('#offcanvasCreateEdit'),
+                width: '100%',
+                allowClear: true,
+                placeholder: $product.data('placeholder') || ''
+            }, createProductPickerOptions({ fetchPage: fetchProductPage, words: productPickerWords() })));
+        }
+        const $uom = $('#packUomCode');
+        if ($uom.length && !$uom.hasClass('select2-hidden-accessible')) {
+            $uom.select2({
+                dropdownParent: $('#offcanvasCreateEdit'),
+                width: '100%',
+                allowClear: true
+            });
+        }
     };
     const replaceOptions = (select, options) => {
         select.replaceChildren(new Option('', ''));
         options.forEach((option) => select.add(option));
         $(select).val(null).trigger('change');
     };
+    // The UoMs (a short provider list) still come with the options read; the create read asks MDM for ONE product
+    // only — enough to know there is something to choose — and the picker pages the products itself.
     const loadCreateOptions = async (detail = null, mode = 'create') => {
         const button = document.getElementById('btnSaveGsku');
         const globalProduct = document.getElementById('globalProductId');
@@ -432,7 +389,7 @@ const GskusList = (function () {
         try {
             const optionTarget = detail
                 ? `${endpoint}/${encodeURIComponent(editorId)}/${mode === 'edit' ? 'edit-options' : 'correction-options'}`
-                : `${endpoint}/create-options`;
+                : `${endpoint}/create-options?${new URLSearchParams({ pageNumber: '1', pageSize: String(createOptionsProbeSize) })}`;
             const response = await fetch(optionTarget, {
                 credentials: 'same-origin', headers: getAuthHeaders()
             });
@@ -447,9 +404,7 @@ const GskusList = (function () {
                 || valueOf(data, 'revisionVersion', 'RevisionVersion') !== editorRevisionVersion)) {
                 throw new Error(L.LifecycleStateChanged);
             }
-            if (!detail) replaceOptions(globalProduct, products.map((item) => new Option(
-                `${valueOf(item, 'canonicalCode', 'CanonicalCode')} — ${valueOf(item, 'globalProductName', 'GlobalProductName')}`,
-                valueOf(item, 'id', 'Id'))));
+            if (!detail) replaceOptions(globalProduct, []);
             replaceOptions(uom, [...uoms]
                 .sort((left, right) => Number(valueOf(left, 'sortOrder', 'SortOrder')) - Number(valueOf(right, 'sortOrder', 'SortOrder')))
                 .map((item) => {
@@ -717,7 +672,12 @@ const GskusList = (function () {
                 if (!Number.isInteger(gskuVersion) || gskuVersion < 0) throw new Error(L.ErrorConflict);
                 const body = new FormData();
                 const suffix = action === 'SUBMIT' ? 'submit' : 'identity-approval/withdraw';
-                if (action === 'SUBMIT') body.set('ExpectedVersion', String(gskuVersion));
+                // FIX3 E2: a submit in reconciliation is repeated as the SAME submit — at the version it was made at
+                // (the GSKU's version moved when the pair went pending), so that MDM reads the engine again for it.
+                const submittedAt = readVersion(detail, 'identitySubmitVersion', 'IdentitySubmitVersion');
+                if (action === 'SUBMIT') body.set('ExpectedVersion', String(
+                    valueOf(detail, 'identitySubmitState', 'IdentitySubmitState') === 'RECONCILIATION_REQUIRED'
+                        && Number.isInteger(submittedAt) && submittedAt >= 0 ? submittedAt : gskuVersion));
                 else {
                     body.set('ExpectedGskuVersion', String(gskuVersion));
                     body.set('ReasonCode', 'REQUESTER_WITHDRAWAL');
@@ -857,56 +817,39 @@ const GskusList = (function () {
         });
     };
 
-    const initDataTable = async () => {
-        if (!tableEl || !window.DtDefaults) return;
-        const savedState = await loadDefaultView();
-        const extraButtons = {
-            filterBtn: {
-                text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
-                className: 'btn btn-icon btn-label-secondary dt-filter-btn',
-                attr: { title: L.Filter, 'aria-label': L.Filter, 'aria-controls': 'inlineFilterCollapse' },
-                action: toggleFilter
-            },
-            saveFilterBtn: {
-                text: `<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">${escapeHtml(L.SaveView)}</span>`,
-                className: 'btn btn-label-primary dt-save-filter-btn d-none',
-                attr: { title: L.SaveView, 'aria-label': L.SaveView },
-                action: async (event, api) => {
-                    try {
-                        await saveDefaultView(getCurrentView(api || dt));
-                        setSaveFilterVisible(false);
-                        window.showToast?.(L.RecordSaved, 'success');
-                    } catch (error) {
-                        if (!error?.authHandled) window.showToast?.(L.ErrorGateway, 'error');
-                    }
-                }
-            }
-        };
-        const config = window.DtDefaults.create({
-            processing: true,
-            serverSide: true,
-            stateSave: false,
+    // The createList options of the register — one place, so the wire and the saved-view keys are measurable.
+    const buildListOptions = () => ({
+        tableEl,
+        dataMode: 'server',
+        ajax: { url: endpoint, type: 'GET', headers: getAuthHeaders(), error: onListError },
+        // The quick view and every row action stay the register's own (fresh server-owned actions per row).
+        actions: { onRowAction: rowActionHandlers() },
+        toolbar: {
+            addNewText: canCreate ? L.AddNew : '',
+            onAddNew: () => openCreate(),
+            exportColumns: saveViewColumnIndexes,
+            colvisColumns: saveViewColumnIndexes
+        },
+        filters: {
+            hostId: 'inlineFilterHost',
+            collapseId: 'inlineFilterCollapse',
+            applyBtn: 'btnFilterApply',
+            resetBtn: 'btnFilterReset',
+            fields: [{ id: 'filterLifecycleStatus', key: 'lifecycleStatus', kind: 'single' }]
+        },
+        // Same keys as before the migration: every saved GSKU view still loads.
+        savedView: {
+            moduleKey: personalizationContext.moduleKey,
+            pageKey: personalizationContext.pageKey,
+            saveViewColumnIndexes,
+            defaultVisibleColumnIndexes: saveViewColumnIndexes,
+            baseOrder
+        },
+        config: {
             pageLength: 20,
-            order: savedState?.order || baseOrder,
-            search: { search: savedState?.search || '' },
             colReorder: { columns: ':gt(0):not(:last-child)' },
-            ajax: (data, callback) => {
-                fetch(`${endpoint}?${buildQuery(data)}`, { credentials: 'same-origin', headers: getAuthHeaders() })
-                    .then(async (response) => {
-                        if (response.status === 401) handleUnauthorized();
-                        if (!response.ok) throw new Error(await getErrorMessage(response));
-                        return response.json();
-                    })
-                    .then((payload) => {
-                        const page = unwrapData(payload);
-                        const count = page.totalCount || page.TotalCount || 0;
-                        callback({ data: page.items || page.Items || [], recordsTotal: count, recordsFiltered: count });
-                    })
-                    .catch((error) => {
-                        if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
-                        callback({ data: [], recordsTotal: 0, recordsFiltered: 0 });
-                    });
-            },
+            // `data` names are MDM's orderBy whitelist (canonicalCode, packQuantity, lifecycleStatus). The Global
+            // Product and the revision live on other documents: not sortable, so never sent as a sort key.
             columns: [
                 { data: 'id', name: 'control' },
                 { data: 'canonicalCode', name: 'canonicalCode' },
@@ -921,13 +864,14 @@ const GskusList = (function () {
                 { targets: 1, render: (data) => `<span class="fw-medium text-heading">${escapeHtml(data)}</span>` },
                 {
                     targets: 2,
+                    orderable: false,
                     render: (data, type, row) => {
                         const code = row.globalProductCanonicalCode || row.GlobalProductCanonicalCode || '';
                         const name = data || row.GlobalProductName || '';
                         return escapeHtml(`${code}${code && name ? ' — ' : ''}${name}`);
                     }
                 },
-                { targets: 3, render: escapeHtml },
+                { targets: 3, orderable: false, render: escapeHtml },
                 {
                     targets: 4,
                     render: (data, type, row) => escapeHtml(`${data} ${row.packUomCode || row.PackUomCode || ''}`.trim())
@@ -940,50 +884,24 @@ const GskusList = (function () {
                     className: 'cell-fit all text-end pe-3',
                     render: (data, type, row) => renderActions(row)
                 }
-            ],
-            buttons: window.DtDefaults.exportButtons(canCreate ? L.AddNew : null, {}, extraButtons, {
-                exportColumns: saveViewColumnIndexes,
-                colvisColumns: saveViewColumnIndexes
-            }),
-            initComplete: function () {
-                const api = this.api();
-                mountInlineFilter();
-                applySavedTableState(api, savedState || {});
-                document.querySelector('.add-new')?.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    openCreate();
-                });
-                setTimeout(() => { saveFilterArmed = true; }, 0);
-            },
-            drawCallback: function () { window.DtDefaults.updateVisualState(this.api(), getAppliedFilterCount()); }
-        });
-        dt = new DataTable(tableEl, config);
-        $(tableEl).on('column-reorder.dt columns-reordered.dt search.dt order.dt column-visibility.dt', () => {
-            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
-        });
+            ]
+        }
+    });
+
+    const initDataTable = async () => {
+        if (!tableEl || !window.DitenDataTable?.createList) return;
+        list = await window.DitenDataTable.createList(buildListOptions());
+        dt = list.dt;
     };
 
     const bindEvents = () => {
-        bindFilter();
         document.getElementById('btnSaveGsku')?.addEventListener('click', submitEditor);
+        // The menu itself is read fresh from MDM when it opens; its items are dispatched by the list component.
         document.addEventListener('click', (event) => {
             const menuToggle = event.target.closest('.js-gsku-actions-toggle');
-            if (menuToggle && menuToggle.closest('.datatables-gskus')) {
-                event.preventDefault();
-                loadActionMenu(menuToggle);
-                return;
-            }
-            const quickViewAction = event.target.closest('.js-quick-view');
-            const action = quickViewAction || event.target.closest('.js-edit-draft, .js-request-correction, .js-request-retirement, .js-lifecycle-action');
-            if (!action || !action.closest('.datatables-gskus') || action.classList.contains('disabled')) return;
+            if (!menuToggle || !(menuToggle.closest('.datatables-gskus') || menuToggle.closest('.modal.dtr-bs-modal'))) return;
             event.preventDefault();
-            const id = action.dataset.id;
-            const code = action.dataset.action;
-            if (code === 'EDIT') openEdit(id, action);
-            else if (code === 'REQUEST_CORRECTION') openCorrection(id, action);
-            else if (code === 'REQUEST_RETIREMENT') requestRetirement(id, action);
-            else if (code === 'SUBMIT' || code === 'WITHDRAW_APPROVAL') requestLifecycle(id, code, action);
-            else populateDetails(id);
+            loadActionMenu(menuToggle);
         });
     };
 

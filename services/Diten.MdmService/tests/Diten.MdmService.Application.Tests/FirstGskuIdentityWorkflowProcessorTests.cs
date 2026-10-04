@@ -295,7 +295,10 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
 
         Assert.False(quarantined.Succeeded);
         Assert.False(replay.Succeeded);
-        Assert.Equal("FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", replay.ErrorCode);
+        // FIX3 E2: the submitter's repeat reads the engine again (the approval was decided, the pair is pending), puts
+        // the operation back to its decision — and the evidence still names nobody: the quarantine stands, and the
+        // answer says a person has to reconcile it (FIX2 answered "reconciliation required", i.e. "submit again").
+        Assert.Equal(FirstGskuIdentityWorkflowProcessor.ManualReconciliationNeeded, replay.ErrorCode);
         Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
             replay.Operation!.Checkpoint);
         Assert.Equal(1, harness.Client.StartCalls);

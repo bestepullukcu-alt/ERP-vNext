@@ -12,4 +12,6 @@
   <data name="UpdateSuccess" xml:space="preserve"><value>全局产品草稿已更新。</value></data><data name="WithdrawSuccess" xml:space="preserve"><value>审批申请已撤回，产品已恢复为草稿。</value></data><data name="CorrectionRequestedSuccess" xml:space="preserve"><value>更正申请已提交审批。</value></data><data name="RetirementRequestedSuccess" xml:space="preserve"><value>停用申请已提交审批。</value></data>
   <data name="CurrentPageOnly" xml:space="preserve"><value>仅当前页</value></data>
   <data name="ErrorWithdrawalPending" xml:space="preserve"><value>此审批之前的一次撤回（原因或备注不同）仍在处理中。请使用与之前相同的原因和备注重新撤回，或等待其完成。</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>此产品正在提交审批。在提交到达审批引擎之前无法编辑。</value></data>
+  <data name="ErrorDraftChanged" xml:space="preserve"><value>草稿在提交过程中发生了变化。请重新打开并提交当前版本。</value></data>
 </root>

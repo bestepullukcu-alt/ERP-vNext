@@ -34,9 +34,15 @@
   <data name="IdentityNotAppliedSelfApproval" xml:space="preserve"><value>La aprobación la decidió la misma persona que la envió, lo cual no se acepta. El GSKU vuelve a ser un borrador: envíelo para que decida otra persona.</value></data>
   <data name="IdentityStateInFlight" xml:space="preserve"><value>Este GSKU se ha enviado para aprobación y el envío está en camino al motor de aprobación. No se puede editar hasta entonces; no es necesaria ninguna acción.</value></data>
   <data name="IdentityStateResubmitRequired" xml:space="preserve"><value>El envío no llegó al motor de aprobación. Vuelva a enviarlo o edite primero el borrador.</value></data>
-  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>Se necesita una conciliación manual: es posible que el motor de aprobación tenga este envío. La persona que lo envió debe volver a enviarlo; así se comprueba el motor y se resuelve.</value></data>
+  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>Este envío espera una conciliación. Cuando quien lo envió vuelve a enviarlo, se vuelve a leer el servicio de aprobación y el envío continúa desde donde está; si eso no lo resuelve, debe hacerlo un administrador.</value></data>
   <data name="IdentityStateSubmissionEnded" xml:space="preserve"><value>El último envío terminó antes de que el motor de aprobación iniciara nada. Edite el borrador y vuelva a enviarlo.</value></data>
-  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>El envío de este GSKU necesita conciliación manual. Solo la persona que lo envió puede resolverlo, volviendo a enviarlo.</value></data>
+  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>Este envío espera una conciliación. Cuando quien lo envió vuelve a enviarlo, se vuelve a leer el servicio de aprobación y el envío continúa desde donde está; si eso no lo resuelve, debe hacerlo un administrador.</value></data>
   <data name="ErrorSubmissionEnded" xml:space="preserve"><value>Este envío terminó antes de llegar al motor de aprobación y no se puede repetir tal cual. Edite el borrador y vuelva a enviarlo.</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>El borrador cambió mientras se enviaba. Vuelva a abrirlo y envíe la versión actual.</value></data>
+  <data name="ProductPickerLoadFailed" xml:space="preserve"><value>No se pudo cargar la lista de productos globales. Compruebe su conexión e inténtelo de nuevo.</value></data>
+  <data name="ProductPickerNoResults" xml:space="preserve"><value>Ningún producto global referenciable coincide con esta búsqueda.</value></data>
+  <data name="ProductPickerSearching" xml:space="preserve"><value>Buscando productos globales…</value></data>
+  <data name="ProductPickerLoadingMore" xml:space="preserve"><value>Cargando más productos globales…</value></data>
+  <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>La aprobación se cerró sin una decisión (cancelada o vencida). El borrador puede editarse y enviarse de nuevo.</value></data>
+  <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>Una unidad que usa este GSKU se retiró después de la aprobación. La aprobación sigue vigente: se aplicó con los valores validados al enviarla; la unidad retirada no puede elegirse para registros nuevos.</value></data>
 </root>

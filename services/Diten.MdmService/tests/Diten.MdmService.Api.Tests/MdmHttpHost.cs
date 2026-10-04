@@ -50,6 +50,34 @@ public sealed class MdmHttpHost : IAsyncLifetime
     private const int SharedMongoPort = 27017;
 
     private IMongoRunner? _runner;
+    private IMongoRunner? _standalone;
+    private readonly object _standaloneGate = new();
+
+    /// <summary>
+    /// FIX3 S5: a second throwaway mongod that is NOT a replica set — where a transaction cannot run, as on a
+    /// developer's plain mongod. Started on first use, never the shared server, disposed with the host.
+    /// </summary>
+    public IMongoDatabase StandaloneDatabase
+    {
+        get
+        {
+            lock (_standaloneGate)
+            {
+                _standalone ??= MongoRunner.Run(new MongoRunnerOptions
+                {
+                    BinaryDirectory = ResolveLocalMongoBinaryDirectory(),
+                    UseSingleNodeReplicaSet = false
+                });
+            }
+            if (new MongoUrl(_standalone.ConnectionString).Server.Port == SharedMongoPort)
+                throw new InvalidOperationException("The standalone throwaway mongod bound the SHARED port 27017.");
+            var settings = MongoClientSettings.FromConnectionString(_standalone.ConnectionString);
+#pragma warning disable CS0618 // the host's own Guid representation, as every client of this host uses
+            settings.GuidRepresentation = Database.Client.Settings.GuidRepresentation;
+#pragma warning restore CS0618
+            return new MongoClient(settings).GetDatabase(DatabaseName);
+        }
+    }
     private WebApplicationFactory<GskusController>? _factory;
     private string? _jwtSecret;
 
@@ -113,12 +141,22 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 ["GskuCorrectionWorkflowWorker__Enabled"] = "true",
                 ["GskuCorrectionWorkflowWorker__LeaseSeconds"] = "10",
                 ["GskuCorrectionWorkflowWorker__RetryDelaySeconds"] = "1",
+                // FIX3 item 1: retries back off (doubling); in this host never longer than 2 s.
+                ["GskuCorrectionWorkflowWorker__MaxRetryDelaySeconds"] = "2",
+                // FIX3 S8: a start's "nothing arrived" is trusted after 2 s here (the fake engine answers at once).
+                ["GskuCorrectionWorkflowWorker__StartSettleSeconds"] = "2",
                 ["GskuRetirementRequestWorkflow__Enabled"] = "true",
                 ["GskuRetirementRequestWorkflow__TemplateCode"] = "GSKU-RETIREMENT-REQUEST",
                 ["GskuRetirementRequestWorkflow__CandidatePrincipalIds__0"] = Approver.ToString("D"),
                 ["GskuRetirementRequestWorkflowWorker__Enabled"] = "true",
                 ["GskuRetirementRequestWorkflowWorker__LeaseSeconds"] = "10",
-                ["GskuRetirementRequestWorkflowWorker__RetryDelaySeconds"] = "1"
+                ["GskuRetirementRequestWorkflowWorker__RetryDelaySeconds"] = "1",
+                // FIX3 item 1: retries back off (doubling); in this host never longer than 2 s.
+                ["GskuRetirementRequestWorkflowWorker__MaxRetryDelaySeconds"] = "2",
+                // FIX3 S8: a start's "nothing arrived" is trusted after 2 s here (the fake engine answers at once).
+                ["GskuRetirementRequestWorkflowWorker__StartSettleSeconds"] = "2",
+                // FIX3 item 1: a low retry limit for the retirement request, so a test can reach it in a few cycles.
+                ["GskuRetirementRequestWorkflowWorker__QuarantineAfterFailedAttempts"] = "4"
             };
             foreach (var (key, value) in overrides)
             {
@@ -179,6 +217,12 @@ public sealed class MdmHttpHost : IAsyncLifetime
             try { await _factory.DisposeAsync(); }
             catch (Exception exception) { Console.Error.WriteLine($"[MdmHttpHost] factory disposal failed: {exception}"); }
             _factory = null;
+        }
+        if (_standalone is not null)
+        {
+            try { _standalone.Dispose(); }
+            catch (Exception exception) { Console.Error.WriteLine($"[MdmHttpHost] standalone disposal failed: {exception}"); }
+            _standalone = null;
         }
         if (_runner is not null)
         {

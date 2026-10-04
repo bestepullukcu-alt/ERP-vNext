@@ -37,6 +37,20 @@ public interface IGskuRepository
             ? GetEnforcedLegalEntityScopePageAsync(pageNumber, pageSize, canonicalCodeSearch, referenceableOnly,
                 effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken)
             : throw new NotSupportedException("GSKU_LIFECYCLE_FILTER_NOT_IMPLEMENTED");
+    // FIX3 B17: the register sorted by a whitelisted stored field, id as the stable tiebreak.
+    Task<GskuPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        bool referenceableOnly,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default) => sort == GskuListSort.Default
+            ? GetEnforcedLegalEntityScopePageAsync(pageNumber, pageSize, canonicalCodeSearch, referenceableOnly,
+                lifecycleStatus, effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken)
+            : throw new NotSupportedException("GSKU_LIST_SORT_NOT_IMPLEMENTED");
     Task<GskuPage> GetPageAsync(
         int pageNumber,
         int pageSize,
@@ -51,6 +65,15 @@ public interface IGskuRepository
         CancellationToken cancellationToken = default) => lifecycleStatus is null
             ? GetPageAsync(pageNumber, pageSize, canonicalCodeSearch, cancellationToken)
             : throw new NotSupportedException("GSKU_LIFECYCLE_FILTER_NOT_IMPLEMENTED");
+    Task<GskuPage> GetPageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        CancellationToken cancellationToken = default) => sort == GskuListSort.Default
+            ? GetPageAsync(pageNumber, pageSize, canonicalCodeSearch, lifecycleStatus, cancellationToken)
+            : throw new NotSupportedException("GSKU_LIST_SORT_NOT_IMPLEMENTED");
     Task<IReadOnlyList<Guid>> FindIdsByCanonicalCodeAsync(
         string canonicalCodeSearch,
         CancellationToken cancellationToken = default);
