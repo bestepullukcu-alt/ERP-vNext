@@ -8108,6 +8108,14 @@ yayımlama GxP açısından önemli: iki eşzamanlı yazımdan biri sessizce kay
 ek, bağımlılık, kayıt bağı) görev sürümüne bağlamıyor. Düzeltme: her depoda "okunan duruma koşullu yazım" (sürüm alanı yoksa önce alan), depo başına
 yarış testi. Karşılaştırma: SAP'de belge kilidi (enqueue), Oracle'da satır sürümü (OBJECT_VERSION_NUMBER) her yazımda zorunlu. Gelecek regresyon riski: 🟡.
 
+**İlerleme 2026-10-04 — toplantı + zaman çizelgesi kapandı (şeritte `01ed9c811`, dal @37f1261ed).** Toplantı, gündem, toplantı türü, tutanak, seri ve
+zaman çizelgesi depoları yalnız okunan sürüme yazıyor (`ReadVersionWrites`); tutanak yayımlama (tutanak + katılım + Completed) ve haftalık kayıt (hafta
++ satırlar + düzeltmeler) birer Platform işlemi; yeniden denenen işlem gövdesi okunan sürümlerden başlıyor (`ReadVersionSnapshot`; CT iki yeniden
+deneme testi ekledi, sabotaj V1–V4 kırmızı). Görev yorumları görev talebi dalında (FIX4, kabul bekliyor). AÇIK KALAN: (1) iş akışı depoları
+(`WorkflowRepositories.cs:35, 250, 375`) · (2) aynı kısmi-yazım sınıfı `AcceptTimeSuggestion`, `RequestTimesheetCorrection`, `DiscardCorrectionDraft`,
+`TimerDraftWriter`'da (birden çok belge, işlemsiz) · (3) denetim kaydı işlemin dışında yazılıyor (yazım geri alınırsa denetim satırı kalabilir) · (4)
+işlem desteklemeyen Mongo'da bu yollar 500 dönüyor (ABB'deki gibi 503 + açılış uyarısı olmalı).
+
 ---
 
 ### BL-532
