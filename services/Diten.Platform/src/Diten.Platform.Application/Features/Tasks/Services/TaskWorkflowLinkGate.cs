@@ -76,9 +76,9 @@ internal static class TaskWorkflowLinkGate
     /// </list>
     /// <para><b>Why the review first (item 6).</b> The two withdraws are not one transaction, so one may land and the other
     /// fail. A withdrawn review leaves nothing that cannot be redone: its link is KEPT, the work is the holder's to submit
-    /// again, and a new round opens under a new key (the review key names the round it replaces). A withdrawn approval
-    /// cannot be redone — its key is the task's own, so a restart would replay the cancelled instance — so it goes LAST,
-    /// and is never the half that landed when the other did not. Each link stays where it is: the one still open keeps the
+    /// again, and a new round opens under a new key (the review key names the round it replaces). A withdrawn approval asks
+    /// for a NEW decision when it is restarted (since D2-FIX5 its key, too, names the closed round it replaces), which costs
+    /// the approver's work — so it goes LAST, and is never the half that landed when the other did not. Each link stays where it is: the one still open keeps the
     /// task gated, the withdrawn review's link is what the next submission reads.</para>
     /// </summary>
     public static async Task<string?> WithdrawAsync(
@@ -147,6 +147,14 @@ internal static class TaskWorkflowLinkGate
             var fresh = await tasks.GetByIdAsync(started.Id, ct);
             if (fresh is not null && (review ? fresh.ReviewRequired : fresh.ApprovalRequired) && !IsClosed(fresh))
             {
+                // CT (D2-FIX5 acceptance): a kept REVIEW is adopted by the holder's retried submission. A kept APPROVAL has no
+                // such retry — it is started only on create and on an off-to-on edit — so the task is made to name the round it
+                // keeps; without the link the read model would say "outstanding" for good, even after the approver decided.
+                if (!review && fresh.WorkflowInstanceId is null && instanceId is { } kept)
+                {
+                    await StoreLinkAsync(started.Id, kept, review, tasks, logger, ct);
+                }
+
                 return;
             }
 
@@ -202,6 +210,22 @@ internal static class TaskWorkflowLinkGate
                     logger.LogError(
                         "The {What} {InstanceId} of deleted task {TaskId} is still open and could not be withdrawn; nothing is left to carry its link.",
                         what, instanceId, taskId);
+                    return;
+                }
+
+                // CT (D2-FIX5 acceptance): only an EMPTY link is filled. A task that already names a round — the same one, or a
+                // newer one started meanwhile — keeps it: that link is the retry signal already, and every withdraw also asks for
+                // the latest instance by object reference. Writing this older round over it would point the read model at it.
+                var held = review ? current.ReviewWorkflowInstanceId : current.WorkflowInstanceId;
+                if (held is not null)
+                {
+                    if (held != instanceId)
+                    {
+                        logger.LogInformation(
+                            "Task {TaskId} already names {What} {HeldInstanceId}; the link of {InstanceId} is not written over it.",
+                            taskId, what, held, instanceId);
+                    }
+
                     return;
                 }
 

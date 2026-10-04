@@ -155,6 +155,9 @@ public sealed partial class TaskWorkflowLinkGateTests
         Assert.Equal(ApprovalTaskStatus.WaitingApproval, f.Engine.TaskOf(round).Status);   // the requirement is still on: not withdrawn
         Assert.Empty(f.Engine.CancelCalls);
         Assert.True(f.Stored().ApprovalRequired);
+        // CT (D2-FIX5 acceptance): nothing retries an approval start, so the kept round must be named by the task — otherwise
+        // the read model says "outstanding" for good, even after the approver decided.
+        Assert.Equal(round.Id, f.Stored().WorkflowInstanceId);
     }
 
     [Fact]

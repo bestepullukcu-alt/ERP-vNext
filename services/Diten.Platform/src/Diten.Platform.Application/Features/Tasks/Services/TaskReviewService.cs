@@ -286,8 +286,8 @@ public sealed class TaskReviewService : ITaskReviewService
                     : [],
                 ReasonCode: null,
                 /*
-                 * Idempotent per ROUND, not per task — the one place review cannot copy approval, which gets at
-                 * most one instance per task and keys on the task alone.
+                 * Idempotent per ROUND, not per task. (Since D2-FIX5 approval keys the same way: its first round keeps
+                 * the task-only key, a restart after a closed round keys on that round.)
                  *
                  * A refused review sends the work back to be redone and resubmitted, so a task can legitimately
                  * need a SECOND instance. Keying on the task alone would hand the retry the refused instance back
