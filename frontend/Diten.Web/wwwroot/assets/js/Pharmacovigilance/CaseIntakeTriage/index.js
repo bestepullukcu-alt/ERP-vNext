@@ -59,9 +59,16 @@
                 setListStatus(items.length ? '' : t('NoRecords'));
                 return items;
             },
+            // BL-515: a CONTROLLED refusal (a reason code from the service) is this page's own sentence and stays here.
+            // Every other failure — session (401), permission (403), outage — is the list component's: shown in the
+            // table, in the reader's language, with a retry (`return false` hands it over).
             error: xhr => {
-                showAlert(safeMessage(tryParseJson(xhr?.responseText), xhr?.status));
+                hideLoading();
+                const body = tryParseJson(xhr?.responseText);
+                if (!hasReasonCode(body)) return false;
+                showAlert(safeMessage(body, xhr?.status));
                 setListStatus(alertEl?.textContent || t('ErrorOccurred'));
+                return true;
             },
             headers: getAuthHeaders()
         },
@@ -171,6 +178,12 @@
         }
 
         return t('ErrorOccurred');
+    }
+
+    function hasReasonCode(body) {
+        const validation = body?.validationReasonCodes || body?.ValidationReasonCodes || [];
+        return Boolean(safeCode(body?.reasonCode || body?.ReasonCode || body?.reason_code || ''))
+            || (Array.isArray(validation) && validation.map(safeCode).some(Boolean));
     }
 
     function safeCode(value) {

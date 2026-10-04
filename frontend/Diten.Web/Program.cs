@@ -17,6 +17,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// BL-517 — every log line (message, structured values, scopes; every category) keeps a URL's path and loses its query
+// string (person searches put name fragments there). Levels are unchanged; see QueryStringRedactingLoggerFactory.
+Diten.Web.Services.Http.QueryStringRedactingLoggerFactory.AddQueryStringRedaction(builder.Services);
+
 /*
  * ⚠ HEADER BUDGET RAISED FROM KESTREL'S 32 KB DEFAULT (2026-09-04).
  *

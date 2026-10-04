@@ -81,14 +81,70 @@ window.DtDefaults = (function () {
         window.location.href = loginPath + '?returnUrl=' + returnUrl;
     }
 
-    function refreshTokenAndReload(ajaxSettings) {
+    /*
+     * ══ ONE RELOAD PER PAGE AFTER A SESSION REFRESH (CT-SHELL-FIX1, item 6) ═══════════════════════════════════════════
+     *
+     * A caller with no request to retry (the library's error channel below, and every page that calls
+     * `handleUnauthorized()` bare) gets a page reload once the session refresh succeeds. If the API keeps refusing the
+     * token while /account/refresh keeps succeeding — the JWT 7.x ↔ 8.16 mismatch of 2026-07 did exactly that — every
+     * reload ends in another 401, another refresh and another reload: the page refreshes forever.
+     *
+     * So the page remembers, for a short while, that it has already reloaded for this reason (sessionStorage, keyed by
+     * path; every access inside try/catch). First time: reload. Second time: the sign-in page decides. Third time — the
+     * sign-in page sent the reader straight back, because the web tier still accepts the cookie — nothing navigates any
+     * more; `onStop` (the list's own failure state, when the caller has one) is all that happens. Without a usable
+     * storage the page cannot count, so it never reloads blind: it goes to the sign-in page.
+     */
+    var AUTH_RELOAD_GUARD_PREFIX = 'dt-defaults.auth-reload:';
+    var AUTH_RELOAD_GUARD_MS = 60000;
+
+    function authReloadDecision() {
+        var key = AUTH_RELOAD_GUARD_PREFIX + window.location.pathname;
+        var now = Date.now();
+        var previous = null;
+        try {
+            var raw = window.sessionStorage.getItem(key);
+            previous = raw ? JSON.parse(raw) : null;
+        } catch (e) {
+            return 'login';
+        }
+        if (!previous || typeof previous.at !== 'number' || now - previous.at > AUTH_RELOAD_GUARD_MS) {
+            previous = null;
+        }
+        var count = previous ? (Number(previous.count) || 1) + 1 : 1;
+        try {
+            window.sessionStorage.setItem(key, JSON.stringify({ at: previous ? previous.at : now, count: count }));
+        } catch (e) {
+            return 'login';
+        }
+        return count === 1 ? 'reload' : count === 2 ? 'login' : 'stop';
+    }
+
+    // Several callers can be waiting on the same refresh (two lists on one page, a list and a fetch). The page navigates
+    // once: the first decision to reload or to sign in is the page's; the others are not counted against it.
+    var _navigationPending = false;
+    function reloadAfterRefresh(onStop) {
+        if (_navigationPending) { return; }
+        var decision = authReloadDecision();
+        if (decision === 'reload') {
+            _navigationPending = true;
+            window.location.reload();
+        } else if (decision === 'login') {
+            _navigationPending = true;
+            redirectToLogin();
+        } else if (typeof onStop === 'function') {
+            onStop();
+        }
+    }
+
+    function refreshTokenAndReload(ajaxSettings, onStop) {
         if (_authRefreshInFlight) {
             return _authRefreshInFlight.then(function (result) {
                 if (result.success) {
                     if (ajaxSettings) {
                         retryAjax(ajaxSettings);
                     } else {
-                        window.location.reload();
+                        reloadAfterRefresh(onStop);
                     }
                 } else if (result.reauthRequired) {
                     redirectToLogin();
@@ -137,7 +193,7 @@ window.DtDefaults = (function () {
                     if (ajaxSettings) {
                         retryAjax(ajaxSettings);
                     } else {
-                        window.location.reload();
+                        reloadAfterRefresh(onStop);
                     }
                 } else {
                     promiseResolve({ success: false, reauthRequired: result.reauthRequired });
@@ -151,6 +207,240 @@ window.DtDefaults = (function () {
 
         return _authRefreshInFlight;
     }
+
+    /*
+     * ══ BL-515 — A LIST THAT COULD NOT BE LOADED SAYS SO, INSIDE THE TABLE, IN THE READER'S LANGUAGE ══════════════
+     *
+     * MEASURED in the vendored DataTables (_fnBuildAjax): when the `ajax` option is an object carrying `error`, that
+     * function REPLACES the library's own — no `xhr` event, no `_fnLog`, and the processing indicator stays on. Every
+     * list built through create() gets such an `error` below, so those lists never showed the vendor's alert box: they
+     * showed an English toast (the HTTP status, or a fixed permission sentence) over an empty table. A list
+     * whose `ajax` is a URL STRING (or one built without create()) goes through the library's own handler instead,
+     * and that one ends in `errMode`, whose default is a browser alert: "DataTables warning: table id=… - Ajax error".
+     *
+     * Now both paths end here. 401 keeps today's rule (refresh the session, then retry or go to the login page);
+     * 403 says the reader may not see this list; anything else says the list could not be loaded and offers a retry.
+     * The words come from the shared DataTable payload (_DataTableL10n.cshtml → SharedResource), English only as the
+     * last fallback. The table's own body carries the message, so it sits where the rows would have been.
+     *
+     * The failure is TABLE STATE, not a one-off paint (CT-SHELL-FIX1, items 2 and 4): it is recorded on the table's
+     * settings, every later draw (a sort, a keystroke in the search box, a page length, a column shown) paints it again
+     * instead of the library's "no records", the processing indicator is taken down even mid-draw, and the first answer
+     * that loads clears it. A CANCELLED request (item 3) is not a failure and draws nothing.
+     *
+     * ⚠ No `global.` and no bare `document` here: the cell is built from the table's own ownerDocument, which is the
+     * browser's document in a page and the sandbox's in a test (tests/dt-defaults-runs-in-a-browser.test.js).
+     */
+    var LOAD_ERROR_FALLBACK = {
+        DtLoadFailed: 'The list could not be loaded.',
+        DtLoadForbidden: 'You do not have permission to see this list.',
+        DtRetry: 'Retry'
+    };
+    // Each key read by name, so the payload's key list and what this file reads stay provably equal
+    // (tests/datatable-language-one-delivery-path.test.js).
+    var loadErrorText = function (key) {
+        var own = key === 'DtLoadFailed' ? dtText('DtLoadFailed')
+            : key === 'DtLoadForbidden' ? dtText('DtLoadForbidden')
+                : dtText('DtRetry');
+        return own || LOAD_ERROR_FALLBACK[key];
+    };
+    // The library as the rest of this file reaches it (the free `DataTable`), `window.DataTable` as the fallback.
+    var dataTableLibrary = function () {
+        return (typeof DataTable !== 'undefined' && DataTable) || window.DataTable || null;
+    };
+
+    /*
+     * ⚠ REVEALING THE TABLE IS ONE ACT, AND EVERY EXIT HAS TO PERFORM IT (2026-09-23, owner report).
+     *
+     * MEASURED: the shaped placeholder hides the table through a CSS sibling rule, so what reveals the table
+     * is REMOVING the element — hiding it is not enough. Only `initComplete` removed it, and DataTables does
+     * not call `initComplete` when the first ajax FAILS. With the golden reference pages' service down, the
+     * placeholder stayed in the DOM, the rule kept matching, and the page showed nothing at all. Before the
+     * shaped placeholder existed the same failure left an empty table on screen — so the change turned
+     * "service down" into "page down".
+     *
+     * Now the draw path, the ajax error path and the in-table failure state perform the same act. A list that still
+     * carries the old hidden block keeps falling through to the fade, exactly as before.
+     */
+    function revealTable() {
+        // `document`, never `global`: the browser has no `global` (only Node does — which is why vitest stayed green
+        // while every list page threw ReferenceError inside initComplete, 2026-09-23 14:16–15:00).
+        var shaped = document.querySelector('#skeleton-loader[data-table-skeleton]');
+        if (shaped) {
+            shaped.remove();
+            return true;
+        }
+        try { $('#skeleton-loader').fadeOut(200); } catch (e) { }
+        return false;
+    }
+
+    /*
+     * A request that was CANCELLED is not a failure (CT-SHELL-FIX1, item 3). DataTables aborts the request still in
+     * flight when a page reloads the list (vendored `__reload`: `xhr.abort()` before `_fnBuildAjax`), and jQuery 3.7.1
+     * reports that with textStatus "abort" ("canceled" when it was stopped before being sent). The next request is
+     * already on its way: drawing "could not be loaded" and taking the indicator down would lie about both.
+     *
+     * Leaving the page is the other cancellation. The browser drops the requests in flight and jQuery reports each as
+     * status 0 / "error" — by itself the same answer as a gateway that cannot be reached, which IS a failure and must
+     * keep saying so (that is why this is not the library's blunt `readyState !== 4`: it would also silence the
+     * unreachable service). So the leaving page is remembered (beforeunload / pagehide) and forgotten when it is shown
+     * again (pageshow — the back/forward cache restores the same page), and only a status-0 answer is set aside then.
+     */
+    var _pageIsLeaving = false;
+    function watchPageLeaving() {
+        try {
+            window.addEventListener('beforeunload', function () { _pageIsLeaving = true; });
+            window.addEventListener('pagehide', function () { _pageIsLeaving = true; });
+            window.addEventListener('pageshow', function (event) {
+                _pageIsLeaving = false;
+                // Only a page brought back from the back/forward cache had navigated away; the first pageshow of a
+                // load must not forget a reload this page has just asked for.
+                if (event && event.persisted) { _navigationPending = false; }
+            });
+        } catch (e) { }
+    }
+
+    function isCancelledRequest(xhr, textStatus) {
+        if (textStatus === 'abort' || textStatus === 'canceled') { return true; }
+        return _pageIsLeaving && !(xhr && xhr.status);
+    }
+
+    // A 200 answer whose body carries `error` / `sError` — the library's own definition of a server-reported failure.
+    function serverReportedError(json) {
+        return !!(json && typeof json === 'object' && (json.error || json.sError));
+    }
+
+    function tableApiFor(settings) {
+        var library = dataTableLibrary();
+        if (!settings || !library || typeof library.Api !== 'function') { return null; }
+        try { return new library.Api(settings); } catch (e) { return null; }
+    }
+
+    /*
+     * MEASURED in the vendored DataTables 2.1.8 (`_fnProcessingDisplay`): a request to HIDE the indicator is ignored while
+     * `settings.bDrawing` is set — and the server-side branch of `_fnDraw` sets it, sends the request through
+     * `_fnAjaxUpdate` and returns, leaving the end of the draw to the answer. A failed answer never finishes that draw,
+     * so `processing(false)` alone could never take a server-side list's indicator down (CT-SHELL-FIX1, item 2). The
+     * library's own end-of-draw order is applied first (bSorted, bFiltered, bDrawing = false), then the indicator goes.
+     */
+    function stopProcessing(api, settings) {
+        if (settings.bDrawing) {
+            settings.bSorted = false;
+            settings.bFiltered = false;
+            settings.bDrawing = false;
+        }
+        try { api.processing(false); } catch (e) { }
+    }
+
+    /*
+     * The failure outlives the draw that showed it (CT-SHELL-FIX1, item 4). Written outside the library's state, the row
+     * was replaced by `_emptyRow` — "no records" — the moment a client-side list redrew for a sort, a search keystroke,
+     * a page length or a column. Until a load succeeds every draw paints the failure again; the first answer that
+     * carries data (the library's `xhr` event with a body and no `error`) clears it, before that answer is drawn.
+     * The two listeners are the library's own events, bound through its API, once per table.
+     */
+    function keepLoadErrorAcrossDraws(api, settings) {
+        if (settings._dtLoadErrorWatched) { return; }
+        settings._dtLoadErrorWatched = true;
+        api.on('draw.dtLoadError', function () {
+            if (settings._dtLoadError) { paintLoadError(api, settings); }
+        });
+        api.on('xhr.dtLoadError', function (_event, _settings, json) {
+            if (json && !serverReportedError(json)) { settings._dtLoadError = null; }
+        });
+    }
+
+    function renderLoadError(settings, status) {
+        var api = tableApiFor(settings);
+        if (!api) { return false; }
+        settings._dtLoadError = { status: status === 403 ? 403 : (status || 0) };
+        keepLoadErrorAcrossDraws(api, settings);
+        stopProcessing(api, settings);
+        revealTable();
+        return paintLoadError(api, settings);
+    }
+
+    // Whether a table (its API or its settings) is showing the load failure — for a page that keeps its own notices
+    // (an "empty" banner must not say "no records" beside "could not be loaded").
+    function hasLoadError(target) {
+        var settings = target && typeof target.settings === 'function' ? target.settings()[0] : target;
+        return !!(settings && settings._dtLoadError);
+    }
+
+    function paintLoadError(api, settings) {
+        var state = settings._dtLoadError;
+        var body = null;
+        try { body = api.table().body(); } catch (e) { body = null; }
+        if (!state || !body || !body.ownerDocument) { return false; }
+
+        var forbidden = state.status === 403;
+        var columns = 1;
+        try { columns = Math.max(1, api.columns(':visible').count()); } catch (e) { }
+        var doc = body.ownerDocument;
+        var row = doc.createElement('tr');
+        var cell = doc.createElement('td');
+        cell.colSpan = columns;
+        cell.className = 'dt-empty';
+        var box = doc.createElement('div');
+        box.className = 'd-flex flex-column align-items-center gap-2 py-4 text-center';
+        box.setAttribute('role', 'alert');
+        box.setAttribute('data-dt-load-error', forbidden ? 'forbidden' : 'failed');
+        var text = doc.createElement('span');
+        text.className = 'text-body-secondary';
+        text.textContent = loadErrorText(forbidden ? 'DtLoadForbidden' : 'DtLoadFailed');
+        box.appendChild(text);
+        if (!forbidden) {
+            var retry = doc.createElement('button');
+            retry.type = 'button';
+            retry.className = 'btn btn-sm btn-label-primary';
+            retry.setAttribute('data-dt-retry', 'true');
+            retry.textContent = loadErrorText('DtRetry');
+            retry.addEventListener('click', function () { api.ajax.reload(null, false); });
+            box.appendChild(retry);
+        }
+        cell.appendChild(box);
+        row.appendChild(cell);
+        while (body.firstChild) { body.removeChild(body.firstChild); }
+        body.appendChild(row);
+        return true;
+    }
+
+    /*
+     * The library's warning channel: written to the console, never an alert box.
+     *
+     * An ajax or JSON failure that reached it (tn 7 / tn 1 — a table built without create()) is shown in the table like
+     * any other. A 200 answer whose body says `error` reaches it too — the vendored `_fnBuildAjax` reports `json.error`
+     * through `_fnLog(oSettings, 0, error)` with no technical note — and is a failed load as well (CT decision
+     * 2026-10-04, item 7: the server's error must not stay invisible). It is recognised by the answer itself
+     * (`jqXHR.responseJSON`), not by the wording. Every other warning (tn 3 re-initialisation, tn 4 unknown parameter,
+     * tn 18 column count …) is a developer's message: the console only, no English box for the reader.
+     */
+    function logInsteadOfAlert(settings, techNote, message) {
+        // eslint-disable-next-line no-console
+        console.error('[DtDefaults] DataTables warning', { techNote: techNote, message: message });
+        var xhr = settings && settings.jqXHR;
+        if (techNote === 1 || techNote === 7) {
+            var status = xhr && xhr.status ? xhr.status : 0;
+            if (status === 401) {
+                refreshTokenAndReload(null, function () { renderLoadError(settings, status); });
+                return;
+            }
+            renderLoadError(settings, status);
+            return;
+        }
+        if (techNote === undefined && serverReportedError(xhr && xhr.responseJSON)) {
+            renderLoadError(settings, 0);
+        }
+    }
+
+    function installErrMode() {
+        var library = dataTableLibrary();
+        var ext = (library && library.ext)
+            || (window.jQuery && window.jQuery.fn && window.jQuery.fn.dataTable && window.jQuery.fn.dataTable.ext);
+        if (ext) { ext.errMode = logInsteadOfAlert; }
+    }
+
+    watchPageLeaving();
 
     function retryAjax(settings) {
         if (!settings) return;
@@ -499,8 +789,33 @@ window.DtDefaults = (function () {
      * Merge user config with base defaults.
      */
     function create(userConfig) {
+        installErrMode();
         var merged = $.extend(true, {}, baseConfig, userConfig);
         var l = L();
+        // A URL string is the same request as `{ url }`; as an object it gets the error handling below (BL-515).
+        if (typeof merged.ajax === 'string') { merged.ajax = { url: merged.ajax }; }
+        /*
+         * The table this config is building — needed by the ajax error callback, whose `this` is jQuery's request
+         * settings, not the table's. It must be in hand BEFORE the first request (CT-SHELL-FIX1, item 1).
+         *
+         * MEASURED in the vendored DataTables 2.1.8: `_fnInitialise` fires `preInit` and then `_fnReDraw` → `_fnDraw`,
+         * whose FIRST act is the `aoPreDrawCallback` list (= `preDrawCallback`). Only after that does its server-side
+         * branch call `_fnAjaxUpdate` (the request) and RETURN — `aoDrawCallback` (= `drawCallback`) is not reached
+         * until the answer is drawn. So a server-side list whose first request failed had no settings here: nothing
+         * was drawn and the indicator spun forever. `preInit` runs first too, but it is an EVENT on the table node,
+         * and create() returns a config before any table exists; `preDrawCallback` is the earliest init option that
+         * sees the settings on the client-side and the server-side path alike. drawCallback / initComplete still
+         * refresh it.
+         */
+        var tableSettings = null;
+        var originalPreDrawCallback = merged.preDrawCallback;
+        merged.preDrawCallback = function (settings) {
+            tableSettings = settings || tableSettings;
+            // A page's own preDrawCallback keeps its say — returning false still cancels the draw.
+            return typeof originalPreDrawCallback === 'function'
+                ? originalPreDrawCallback.apply(this, arguments)
+                : undefined;
+        };
 
         /*
          * ── ONE LOADING LANGUAGE AT A TIME (owner report, 2026-09-21) ────────────────────────────────────
@@ -558,30 +873,7 @@ window.DtDefaults = (function () {
             delete merged.buttons;
         }
 
-        /*
-         * ⚠ REVEALING THE TABLE IS ONE ACT, AND EVERY EXIT HAS TO PERFORM IT (2026-09-23, owner report).
-         *
-         * MEASURED: the shaped placeholder hides the table through a CSS sibling rule, so what reveals the table
-         * is REMOVING the element — hiding it is not enough. Only `initComplete` removed it, and DataTables does
-         * not call `initComplete` when the first ajax FAILS. With the golden reference pages' service down, the
-         * placeholder stayed in the DOM, the rule kept matching, and the page showed nothing at all. Before the
-         * shaped placeholder existed the same failure left an empty table on screen — so the change turned
-         * "service down" into "page down".
-         *
-         * Now the draw path and the ajax error path perform the same act. A list that still carries the old
-         * hidden block keeps falling through to the fade, exactly as before.
-         */
-        var revealTable = function () {
-            // `document`, never `global`: the browser has no `global` (only Node does — which is why vitest stayed green
-            // while every list page threw ReferenceError inside initComplete, 2026-09-23 14:16–15:00).
-            var shaped = document.querySelector('#skeleton-loader[data-table-skeleton]');
-            if (shaped) {
-                shaped.remove();
-                return true;
-            }
-            try { $('#skeleton-loader').fadeOut(200); } catch (e) { }
-            return false;
-        };
+        // Revealing the table on every exit: see revealTable() above (the draw path, the error path, the failure state).
 
         // Centralized Ajax error handler (helps diagnose DataTables "Ajax error" tn/7 quickly)
         // Note: DataTables treats `ajax: { ... }` as an $.ajax config object.
@@ -590,17 +882,12 @@ window.DtDefaults = (function () {
             // A page that brings its own handler keeps it — but the placeholder is removed on failure regardless,
             // or that page would show a placeholder forever when its service is down.
             var pageAjaxError = typeof merged.ajax.error === 'function' ? merged.ajax.error : null;
-            merged.ajax.error = pageAjaxError
-                ? function (xhr, textStatus, errorThrown) { revealTable(); return pageAjaxError.call(this, xhr, textStatus, errorThrown); }
-                : function (xhr, textStatus, errorThrown) {
-                revealTable();
-
+            var defaultAjaxError = function (xhr, textStatus, errorThrown) {
                 var status = xhr && xhr.status ? xhr.status : 0;
                 var url = merged.ajax && merged.ajax.url ? merged.ajax.url : '(unknown url)';
-                var responseText = xhr && xhr.responseText ? xhr.responseText : '';
 
                 // eslint-disable-next-line no-console
-                console.error('[DtDefaults] Ajax error', { status: status, url: url, textStatus: textStatus, errorThrown: errorThrown, responseText: responseText });
+                console.error('[DtDefaults] Ajax error', { status: status, url: url, textStatus: textStatus, errorThrown: errorThrown });
 
                 if (status === 401) {
                     if (this._retried) {
@@ -610,23 +897,30 @@ window.DtDefaults = (function () {
                     return;
                 }
 
-                if (status === 403) {
-                    if (window.showToast) {
-                        window.showToast('Permission denied.', 'error');
-                    }
-                    return;
-                }
-
-                if (window.showToast) {
-                    var msg = 'DataTables Ajax error (HTTP ' + status + ')';
-                    window.showToast(msg, 'error');
-                }
+                renderLoadError(tableSettings, status);
             };
+            // A page's own handler still decides first. Returning `false` hands the failure back to the component —
+            // the way a page keeps only what is its own (a controlled-failure sentence) and gives up the rest (BL-515).
+            // A CANCELLED request is no failure at all (item 3): neither the page's handler nor the component hears of
+            // it, nothing is revealed, drawn or switched off — the request that replaced it is still running.
+            merged.ajax.error = pageAjaxError
+                ? function (xhr, textStatus, errorThrown) {
+                    if (isCancelledRequest(xhr, textStatus)) { return undefined; }
+                    revealTable();
+                    var handled = pageAjaxError.call(this, xhr, textStatus, errorThrown);
+                    return handled === false ? defaultAjaxError.call(this, xhr, textStatus, errorThrown) : handled;
+                }
+                : function (xhr, textStatus, errorThrown) {
+                    if (isCancelledRequest(xhr, textStatus)) { return undefined; }
+                    revealTable();
+                    return defaultAjaxError.call(this, xhr, textStatus, errorThrown);
+                };
         }
 
         // Auto-hide skeleton + apply class fixes
         var originalInitComplete = merged.initComplete;
         merged.initComplete = function (settings, json) {
+            tableSettings = settings || tableSettings;
             /*
              * ⚠ REMOVED, NOT HIDDEN. The CSS keeps the table out of the page for as long as this element is its
              * sibling, so taking the element away IS what reveals the table — one act, no second class to get
@@ -653,12 +947,14 @@ window.DtDefaults = (function () {
         // Redraw durumunda class fixleri tazele
         var originalDrawCallback = merged.drawCallback;
         merged.drawCallback = function (settings) {
+            tableSettings = settings || tableSettings;
             /*
              * ⚠ NOT A REVEAL EXIT. DataTables draws the table ONCE, EMPTY, before the ajax request is answered
              * (measured on 2.1.8: first drawCallback fires with the response still pending). Revealing here took
              * the shaped placeholder away at init and every list opened on the three dots instead of its shape —
              * the owner saw it the same afternoon it shipped (2026-09-23). The answer arrives through
-             * initComplete (success) or ajax.error (failure); those two are the only exits.
+             * initComplete (success) or a failure (ajax.error, or renderLoadError for the library's own error
+             * channel and a 200 answer that says `error`); those are the only exits.
              */
             applySneatClassFixes();
             if (typeof originalDrawCallback === 'function') {
@@ -1278,8 +1574,14 @@ window.DtDefaults = (function () {
 
     bindResponsiveModalTitleFix();
 
+    // Tables built without create() (a page calling `new DataTable` directly) are covered from the moment this file
+    // loads; create() installs it again in case the library arrived after this file.
+    installErrMode();
+
     return {
         create: create,
+        renderLoadError: renderLoadError,
+        hasLoadError: hasLoadError,
         exportButtons: exportButtons,
         controlledCopy: {
             build: buildControlledCopy,

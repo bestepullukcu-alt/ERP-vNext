@@ -210,7 +210,6 @@ document.addEventListener('DOMContentLoaded', function () {
 // -----------------------------------------------------------------------------
 const SearchConfig = {
   container: '#autocomplete',
-  placeholder: 'Search [CTRL + K]',
   classNames: {
     detachedContainer: 'd-flex flex-column',
     detachedFormContainer: 'd-flex align-items-center justify-content-between border-bottom',
@@ -223,6 +222,26 @@ const SearchConfig = {
     item: 'd-block'
   }
 };
+
+/*
+ * BL-520 — the search box's label in the reader's language, and the shortcut by its name on the reader's machine.
+ *
+ * main.js is a STATIC asset with no access to the resx, so the label arrives the way the palette's degraded notice
+ * already does: as an attribute the shell layout writes on <html>, localized for the request (tenant shell seven
+ * languages, platform shell two). Its `{0}` is the shortcut — ⌘K on Apple platforms, Ctrl+K elsewhere; the key
+ * handler below accepts both modifiers. With no attribute (a layout that does not carry one) the box shows the
+ * shortcut alone rather than an English word.
+ */
+function searchShortcutName(nav) {
+  const platform = (nav && ((nav.userAgentData && nav.userAgentData.platform) || nav.platform || nav.userAgent)) || '';
+  return /Mac|iPhone|iPad|iPod/i.test(platform) ? '⌘K' : 'Ctrl+K';
+}
+
+function searchPlaceholder(root, nav) {
+  const shortcut = searchShortcutName(nav);
+  const template = root && root.dataset ? root.dataset.searchPlaceholder : '';
+  return template ? template.replace('{0}', shortcut) : shortcut;
+}
 
 let searchData = {};
 
@@ -342,6 +361,7 @@ function initializeAutocomplete() {
 
   return autocomplete({
     ...SearchConfig,
+    placeholder: searchPlaceholder(document.documentElement, typeof navigator === 'undefined' ? null : navigator),
     openOnFocus: true,
     onStateChange({ state, setQuery }) {
       if (state.isOpen) {

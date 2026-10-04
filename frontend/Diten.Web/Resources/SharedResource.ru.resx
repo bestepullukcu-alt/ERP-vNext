@@ -1036,4 +1036,16 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Всё Равно Принять</value>
   </data>
+  <data name="DtLoadFailed" xml:space="preserve">
+    <value>Не удалось загрузить список.</value>
+  </data>
+  <data name="DtLoadForbidden" xml:space="preserve">
+    <value>У вас нет прав на просмотр этого списка.</value>
+  </data>
+  <data name="DtRetry" xml:space="preserve">
+    <value>Повторить</value>
+  </data>
+  <data name="ShellSearchPlaceholder" xml:space="preserve">
+    <value>Поиск ({0})</value>
+  </data>
 </root>
