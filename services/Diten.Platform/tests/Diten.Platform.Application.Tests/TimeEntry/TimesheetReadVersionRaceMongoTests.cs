@@ -153,6 +153,34 @@ public sealed class TimesheetReadVersionRaceMongoTests : TimerScenario
         Assert.Equal(before.Version, (await StoredWeekAsync(before.Id)).Version);
     }
 
+    /// <summary>CT (BL-533 acceptance): the first attempt of the save's transaction wrote the week and the row — which moved
+    /// both documents in hand to their next versions — and then hit a transient write conflict. The executor aborts and runs
+    /// the body again; that attempt must start from the versions the save READ, or its own first attempt refuses it with
+    /// 409. The save lands once: the week and the row each move by exactly one version.</summary>
+    [Fact]
+    public async Task A_save_whose_transaction_is_retried_after_a_transient_conflict_lands_once()
+    {
+        Ok(await SaveFreshAsync(CurrentWeek, Row(Monday, 60, TaskA)));
+        var before = (await StoredWeeksAsync()).Single();
+        var monday = (await StoredEntriesAsync(before.Id)).Single();
+        var rowWritesBefore = _rows.CallsTo(nameof(ITimeEntryRepository.UpdateAsync));
+        _rows.After(nameof(ITimeEntryRepository.UpdateAsync), RowCall(monday.Id, inTransaction: true), () =>
+        {
+            var conflict = new MongoException("Simulated transient write conflict (test only).");
+            conflict.AddErrorLabel("TransientTransactionError");
+            return Task.FromException(conflict);
+        });
+
+        var saved = await SaveAsync(before.Version, CurrentWeek, null, Row(Monday, 90, TaskA));
+
+        Assert.Equal(HttpStatusCode.OK, saved.Status);
+        Assert.Equal(2, _rows.CallsTo(nameof(ITimeEntryRepository.UpdateAsync)) - rowWritesBefore); // the body really ran twice
+        Assert.Equal(before.Version + 1, (await StoredWeekAsync(before.Id)).Version);
+        var row = await RowAsync(monday.Id);
+        Assert.Equal(90, row.DurationMinutes);
+        Assert.Equal(monday.Version + 1, row.Version);
+    }
+
     /// <summary>
     /// Item 2: the person corrects the 60-minute timer row to 45. After the save read the row and before its transaction
     /// began, another write made it 75 (the latest point such a write can still be seen by the correction's own read —

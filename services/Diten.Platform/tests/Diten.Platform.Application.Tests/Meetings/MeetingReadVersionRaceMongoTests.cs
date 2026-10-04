@@ -257,6 +257,39 @@ public sealed class MeetingReadVersionRaceMongoTests : IAsyncLifetime
         Assert.Equal(MeetingLifecycle.Scheduled, (await RawAsync<Meeting>(PlatformCollections.MeetingMeetings, meeting.Id)).Lifecycle);
     }
 
+    /// <summary>CT (BL-533 acceptance): the first attempt of the publish's transaction wrote the minutes — which moved the
+    /// draft in hand to the next version — and then hit a transient write conflict. The executor aborts and runs the body
+    /// again; that attempt must start from the version the publish READ, or its own first attempt refuses it with 409.</summary>
+    [Fact]
+    public async Task A_publish_whose_transaction_is_retried_after_a_transient_conflict_publishes_once()
+    {
+        var meeting = await MeetingAsync((await TypeAsync()).Id);
+        var attendee = Guid.NewGuid();
+        await _attendees.CreateAsync(new MeetingAttendee { TenantId = _harness.TenantId, MeetingId = meeting.Id, UserId = attendee });
+        var draft = await DraftAsync(meeting.Id,
+            attendance: [new MinutesAttendanceRecord { AttendeeUserId = attendee, Status = AttendanceStatus.Present }]);
+        var hook = new CallHook();
+        hook.After(nameof(IMeetingRepository.UpdateAsync), InTransaction, () => Task.FromException(TransientConflict()));
+
+        var publish = await Publish(_minutes, hook.Wrap<IMeetingRepository>(_meetings))
+            .Handle(new PublishMinutesCommand(meeting.Id, new PublishMinutesRequest(1), "race"), default);
+
+        Assert.Equal(200, publish.StatusCode);
+        Assert.Equal(2, hook.CallsTo(nameof(IMeetingRepository.UpdateAsync))); // the body really ran twice
+        var stored = await RawAsync<MeetingMinutesVersion>(PlatformCollections.MeetingMinutesVersions, draft.Id);
+        Assert.Equal(MinutesStatus.Published, stored.Status);
+        Assert.Equal(2, stored.Version);
+        Assert.Equal(AttendanceStatus.Present, (await _attendees.FindAsync(meeting.Id, attendee))!.AttendanceStatus);
+        Assert.Equal(MeetingLifecycle.Completed, (await RawAsync<Meeting>(PlatformCollections.MeetingMeetings, meeting.Id)).Lifecycle);
+    }
+
+    private static MongoException TransientConflict()
+    {
+        var conflict = new MongoException("Simulated transient write conflict (test only).");
+        conflict.AddErrorLabel("TransientTransactionError");
+        return conflict;
+    }
+
     /// <summary>Item 4(b): the meeting is cancelled after the publish read it. A cancelled meeting gets no published minutes
     /// (and never becomes Completed): 409 MEETING_CANCELLED, the minutes stay a Draft.</summary>
     [Fact]
