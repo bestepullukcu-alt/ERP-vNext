@@ -14,15 +14,17 @@ public sealed record PlatformAdministratorProvisioningRequest(
     IReadOnlyList<string> Roles,
     bool RequirePasswordChange);
 
-/// <param name="PreviousEmail">BL-521 FIX3 item 2(a) — the address Auth knows the account by (the record's address before
-/// this change); Auth finds the account by it and moves it to <paramref name="Email"/>. Null: found by Email.</param>
+/// <param name="Email">The administrator's address — only the key Auth finds the account by. BL-521 FIX4 item 1: an
+/// administrator's e-mail never changes, so Auth never moves an account to another address (FIX3's PreviousEmail is gone).</param>
+/// <param name="Status">BL-521 FIX4 item 5 — the record's status (its enum name): Auth switches the account on only for
+/// Active and otherwise leaves the account's own state alone.</param>
 public sealed record PlatformAdministratorProvisioningSyncRequest(
     string Email,
     string UserName,
     string DisplayName,
     string ActorType,
     IReadOnlyList<string> Roles,
-    string? PreviousEmail = null);
+    string Status);
 
 public sealed record PlatformAdministratorProvisioningResult(
     string? SetupUrl,

@@ -1,3 +1,5 @@
+using Diten.AuthService.Domain.Entities;
+
 namespace Diten.AuthService.Application.Common.Interfaces;
 
 public interface IPlatformAdministratorStatusClient
@@ -21,6 +23,9 @@ public interface IPlatformAdministratorStatusClient
     /// <para>FIX2 item 3 — three answers, not two, because "Platform said no" and "Platform did not answer" must not be
     /// treated alike: a definitive no ends the administrator's sessions, a missing answer only refuses this one request
     /// (503) so the user can retry. See <see cref="PlatformAdministratorRecordVerdict"/>.</para>
+    ///
+    /// <para>FIX4 item 2 — a confirmed answer also carries the record's roles, so every door converges Auth's copy of them
+    /// to the record before minting (<see cref="PlatformAdministratorRoleConvergence"/>).</para>
     /// </summary>
     Task<PlatformAdministratorRecordAnswer> GetActiveActorTypeAsync(string email, CancellationToken ct);
 }
@@ -63,10 +68,11 @@ public sealed record PlatformAdministratorRecordAnswer
     /// </summary>
     public const string UnavailableMessage = "The authentication service is temporarily unavailable. Please try again in a moment.";
 
-    private PlatformAdministratorRecordAnswer(PlatformAdministratorRecordVerdict verdict, string? actorType)
+    private PlatformAdministratorRecordAnswer(PlatformAdministratorRecordVerdict verdict, string? actorType, IReadOnlyList<string>? roles)
     {
         Verdict = verdict;
         ActorType = actorType;
+        Roles = roles;
     }
 
     public PlatformAdministratorRecordVerdict Verdict { get; }
@@ -74,13 +80,103 @@ public sealed record PlatformAdministratorRecordAnswer
     /// <summary><c>platform_admin</c> or <c>partner_admin</c> when <see cref="Verdict"/> is Confirmed; otherwise null.</summary>
     public string? ActorType { get; }
 
-    public static PlatformAdministratorRecordAnswer Refused { get; } = new(PlatformAdministratorRecordVerdict.Refused, null);
+    /// <summary>
+    /// BL-521 FIX4 item 2 — the record's roles (Platform's role names) when Confirmed and Platform sent them; null when an
+    /// older Platform did not (nothing is converged then — the answer is still a valid one about the record).
+    /// </summary>
+    public IReadOnlyList<string>? Roles { get; }
 
-    public static PlatformAdministratorRecordAnswer Unavailable { get; } = new(PlatformAdministratorRecordVerdict.Unavailable, null);
+    public static PlatformAdministratorRecordAnswer Refused { get; } = new(PlatformAdministratorRecordVerdict.Refused, null, null);
+
+    public static PlatformAdministratorRecordAnswer Unavailable { get; } = new(PlatformAdministratorRecordVerdict.Unavailable, null, null);
 
     /// <summary>A confirmed record; only the two known token actor types can be confirmed.</summary>
-    public static PlatformAdministratorRecordAnswer ConfirmedAs(string actorType) =>
+    public static PlatformAdministratorRecordAnswer ConfirmedAs(string actorType, IReadOnlyList<string>? roles = null) =>
         actorType is PlatformAdminActorType or PartnerAdminActorType
-            ? new PlatformAdministratorRecordAnswer(PlatformAdministratorRecordVerdict.Confirmed, actorType)
+            ? new PlatformAdministratorRecordAnswer(PlatformAdministratorRecordVerdict.Confirmed, actorType, roles)
             : throw new ArgumentException($"'{actorType}' is not a platform token actor type.", nameof(actorType));
+}
+
+/// <summary>
+/// BL-521 FIX4 item 2 — AUTH'S COPY OF A PLATFORM ADMINISTRATOR'S ROLES FOLLOWS THE PLATFORM RECORD. Platform writes the
+/// record and syncs Auth, but a sync can be lost (Platform's update syncs Auth before its own write; a write refused
+/// afterwards converges Auth to the record — and that can fail too), and some record changes never sync at all. So every
+/// door that mints a platform token (login, refresh, forced password change) converges the copy to the roles the record
+/// names right before minting, and the sync uses the same rule. Only the four platform roles are touched; any other role
+/// the account holds is left as it is.
+/// </summary>
+public static class PlatformAdministratorRoleConvergence
+{
+    /// <summary>The description a platform role is created with.</summary>
+    public const string RoleDescription = "Platform administrator role";
+
+    private static readonly string[] PlatformRoles = ["SuperAdmin", "BillingAdmin", "SupportAdmin", "ReadOnly"];
+
+    /// <summary>One of the four platform roles (any letter case).</summary>
+    public static bool IsPlatformRole(string role) => Canonical(role) is not null;
+
+    /// <summary>
+    /// The platform roles a record's role list stands for: known names only, canonical spelling, each once; none at all →
+    /// ReadOnly (the rule the sync always had: a platform account never ends up without a platform role).
+    /// </summary>
+    public static IReadOnlyList<string> Desired(IEnumerable<string>? recordRoles)
+    {
+        var desired = (recordRoles ?? [])
+            .Select(Canonical)
+            .OfType<string>()
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        return desired.Count == 0 ? ["ReadOnly"] : desired;
+    }
+
+    /// <summary>
+    /// Brings the account's platform roles to <see cref="Desired"/>: missing ones assigned, extra ones revoked; nothing is
+    /// written when they already match. Returns whether anything changed.
+    /// </summary>
+    public static async Task<bool> ConvergeAsync(
+        IUserRoleRepository userRoles,
+        IRoleRepository roles,
+        Guid userId,
+        Guid tenantId,
+        IEnumerable<string>? recordRoles,
+        CancellationToken ct)
+    {
+        var desired = Desired(recordRoles);
+        var current = (await userRoles.GetRolesByUserAsync(userId, tenantId, ct))
+            .Select(Canonical)
+            .OfType<string>()
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        var missing = desired.Except(current, StringComparer.Ordinal).ToList();
+        var extra = current.Except(desired, StringComparer.Ordinal).ToList();
+        if (missing.Count == 0 && extra.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var roleName in missing)
+        {
+            var role = await roles.UpsertSystemRoleAsync(roleName, roleName, RoleDescription, tenantId, ct);
+            if (!await userRoles.ExistsAsync(userId, role.Id, tenantId, ct))
+            {
+                await userRoles.AssignAsync(new UserRole(userId, role.Id, tenantId, "system"), ct);
+            }
+        }
+
+        foreach (var roleName in extra)
+        {
+            var role = await roles.GetByNameAndTenantAsync(roleName, tenantId, ct);
+            if (role is not null)
+            {
+                await userRoles.RevokeAsync(userId, role.Id, tenantId, ct);
+            }
+        }
+
+        return true;
+    }
+
+    private static string? Canonical(string? role) =>
+        string.IsNullOrWhiteSpace(role)
+            ? null
+            : PlatformRoles.FirstOrDefault(known => string.Equals(known, role.Trim(), StringComparison.OrdinalIgnoreCase));
 }

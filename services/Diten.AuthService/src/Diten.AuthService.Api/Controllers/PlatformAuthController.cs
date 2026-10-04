@@ -28,6 +28,9 @@ public sealed class PlatformAuthController : CustomBaseController
     /// <summary>BL-521 FIX3 item 4 — 401: the temporary password has expired; a password reset replaces it.</summary>
     public const string TemporaryPasswordExpiredCode = "PLATFORM_TEMPORARY_PASSWORD_EXPIRED";
 
+    /// <summary>BL-521 FIX4 item 5 — the Platform record status (its enum name) for which the sync switches the account on.</summary>
+    private const string PlatformActiveStatus = "Active";
+
     private readonly IMediator _mediator;
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
@@ -149,7 +152,7 @@ public sealed class PlatformAuthController : CustomBaseController
             await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);
         }
 
-        await SyncPlatformRolesAsync(user.Id, request.Roles, ct);
+        await PlatformAdministratorRoleConvergence.ConvergeAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, request.Roles, ct);
         await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, PlatformTenantId, ct);
         var setupDelivery = await SendSetupLinkAsync(user.Email, setupToken, ct);
 
@@ -178,14 +181,11 @@ public sealed class PlatformAuthController : CustomBaseController
             return BadRequest(new { message = "email and userName are required" });
         }
 
-        // BL-521 FIX3 item 2(a) — the account is found by the address the Platform record had BEFORE this change
-        // (PreviousEmail) and moved to the new one. Before, it was looked up by the NEW address only: changing another
-        // administrator's e-mail answered 404 here while Platform had already saved the record, so the account stayed on the
-        // old address and its next sign-in / refresh found no record — refused, every session revoked. A caller that sends
-        // no previous address (an older Platform) is looked up by its address, as before. An unknown previous address is
-        // NOT retried under the new one: whatever account already sits there is another account, never adopted.
-        var lookupEmail = string.IsNullOrWhiteSpace(request.PreviousEmail) ? normalizedEmail : NormalizeEmail(request.PreviousEmail);
-        var user = await _userRepository.GetByEmailAndTenantAsync(lookupEmail, PlatformTenantId, ct);
+        // BL-521 FIX4 item 1 — THE ADDRESS ONLY FINDS THE ACCOUNT. A platform administrator's e-mail never changes on
+        // Platform (the identity key both services match the administrator by), so this sync never moves an account to
+        // another address. FIX3's move (found by a previousEmail, then renamed) is gone; a body that still carries
+        // previousEmail is not read, and an address no account has is 404 — nothing is renamed, nothing adopted.
+        var user = await _userRepository.GetByEmailAndTenantAsync(normalizedEmail, PlatformTenantId, ct);
         if (user is null)
         {
             return NotFound(new { message = "platform user not found" });
@@ -197,27 +197,24 @@ public sealed class PlatformAuthController : CustomBaseController
             return Conflict(new { message = "username already exists" });
         }
 
-        if (!string.Equals(user.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase))
-        {
-            var emailOwner = await _userRepository.GetByEmailAndTenantAsync(normalizedEmail, PlatformTenantId, ct);
-            if (emailOwner is not null && emailOwner.Id != user.Id)
-            {
-                return Conflict(new { message = "email already exists" });
-            }
-
-            user.ChangeEmail(normalizedEmail);
-        }
-
         var (firstName, lastName) = SplitName(request.DisplayName, normalizedEmail);
         user.SetUserName(request.UserName);
         user.UpdateProfile(firstName, lastName);
-        user.Activate();
-        user.ConfirmEmail();
+
+        // FIX4 item 5 — the account's state follows the record's: an Active record switches the account on; any other
+        // status — or none, from an older Platform — leaves the account's own state alone. Before, every sync activated
+        // the account and confirmed its address, so an account disabled here came back with any administrator edit (and
+        // with FIX3's put-back). The address is confirmed only by accepting the invitation (reset-password), never here.
+        if (string.Equals(request.Status, PlatformActiveStatus, StringComparison.OrdinalIgnoreCase))
+        {
+            user.Activate();
+        }
+
         user.SetPlatformActorType(NormalizeActorType(request.ActorType));
 
-        // Roles first, the account (with its new address) LAST: a failure part-way leaves the account where Platform's
-        // record still points, and Platform's retry or put-back finds it there.
-        await SyncPlatformRolesAsync(user.Id, request.Roles, ct);
+        // FIX4 item 4 — ROLES FIRST, THE ACCOUNT LAST: if the account write then fails, the roles the record took away are
+        // already gone and the account was not switched back on — never an account re-enabled with roles it is losing.
+        await PlatformAdministratorRoleConvergence.ConvergeAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, request.Roles, ct);
 
         await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);
 
@@ -285,6 +282,12 @@ public sealed class PlatformAuthController : CustomBaseController
         if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
         {
             return CreateActionResultInstance(Response<AuthResponse>.Fail("Current password is incorrect.", 401));
+        }
+
+        // BL-521 FIX4 item 2 — as login and refresh: the roles the token will be minted with follow the record first.
+        if (record.Roles is not null)
+        {
+            await PlatformAdministratorRoleConvergence.ConvergeAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, record.Roles, ct);
         }
 
         await _passwordPolicyService.ValidateTenantPasswordAsync(PlatformTenantId, user.Id, request.NewPassword, "platform_forced_change", ct);
@@ -457,43 +460,6 @@ public sealed class PlatformAuthController : CustomBaseController
         || string.Equals(actorType, PlatformAdministratorRecordAnswer.PartnerAdminActorType, StringComparison.OrdinalIgnoreCase)
             ? PlatformAdministratorRecordAnswer.PartnerAdminActorType
             : PlatformAdministratorRecordAnswer.PlatformAdminActorType;
-
-    private static IEnumerable<string> NormalizeRoles(IEnumerable<string>? roles)
-    {
-        var normalized = (roles ?? [])
-            .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Select(x => x.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        return normalized.Length == 0 ? ["ReadOnly"] : normalized;
-    }
-
-    private async Task SyncPlatformRolesAsync(Guid userId, IEnumerable<string>? requestedRoles, CancellationToken ct)
-    {
-        var desired = NormalizeRoles(requestedRoles).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var platformRoleNames = new HashSet<string>(["SuperAdmin", "BillingAdmin", "SupportAdmin", "ReadOnly"], StringComparer.OrdinalIgnoreCase);
-        var current = (await _userRoleRepository.GetRolesByUserAsync(userId, PlatformTenantId, ct))
-            .Where(role => platformRoleNames.Contains(role))
-            .ToArray();
-
-        foreach (var roleName in desired)
-        {
-            var role = await _roleRepository.UpsertSystemRoleAsync(roleName, roleName, "Platform administrator role", PlatformTenantId, ct);
-            if (!await _userRoleRepository.ExistsAsync(userId, role.Id, PlatformTenantId, ct))
-            {
-                await _userRoleRepository.AssignAsync(new UserRole(userId, role.Id, PlatformTenantId, "system"), ct);
-            }
-        }
-
-        foreach (var roleName in current.Where(role => !desired.Contains(role)))
-        {
-            var role = await _roleRepository.GetByNameAndTenantAsync(roleName, PlatformTenantId, ct);
-            if (role is not null)
-            {
-                await _userRoleRepository.RevokeAsync(userId, role.Id, PlatformTenantId, ct);
-            }
-        }
-    }
 
     private async Task<(string? SetupUrl, bool EmailSent)> SendSetupLinkAsync(string email, string setupToken, CancellationToken ct)
     {

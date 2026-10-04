@@ -82,17 +82,6 @@ public sealed class User : EntityBase
     /// </summary>
     public bool IsInvitationPending() => MustChangePassword && !EmailConfirmed && LastLoginAt is null;
 
-    /// <summary>
-    /// BL-521 FIX3 item 2(a) — moves the account to a new address. Only the platform administrator sync calls it: the
-    /// Platform record's e-mail changed and the account must follow, or the next sign-in / refresh asks Platform about an
-    /// address it no longer has. The caller has already checked that no other account of the tenant holds the address.
-    /// </summary>
-    public void ChangeEmail(string email)
-    {
-        Email = email;
-        UpdatedAt = DateTimeOffset.UtcNow;
-    }
-
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
     public void ConfirmEmail() => EmailConfirmed = true;

@@ -185,7 +185,52 @@ public sealed class PlatformForcedPasswordChangeActorTypeTests : IClassFixture<P
         Assert.False((await UserAsync(seeded.UserId)).MustChangePassword);
     }
 
+    // ── BL-521 FIX4 ─────────────────────────────────────────────────────────────────────────────────────
+
+    /// <summary>Item 4 — a token of a platform actor TYPE but of another tenant is not a platform actor's token: refused 403
+    /// before anything is read or changed. (Sent with that tenant as its header, so the tenant resolution accepts it and only
+    /// the door's own tenant condition can refuse it.)</summary>
+    [Fact]
+    public async Task A_platform_actor_token_of_another_tenant_is_refused_403_and_changes_nothing()
+    {
+        var otherTenant = Guid.NewGuid();
+        var seeded = await SeedAsync("platform_admin", PlatformAdministratorRecordAnswer.ConfirmedAs("platform_admin"),
+            temporaryPasswordExpiresAt: DateTime.UtcNow.AddHours(1), tokenTenant: otherTenant);
+        using var client = _host.Client(seeded.AccessToken, otherTenant);
+
+        var response = await ChangeAsync(client);
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.True(response.StatusCode == HttpStatusCode.Forbidden, $"{(int)response.StatusCode}: {body}");
+        Assert.Contains(PlatformAuthController.ForcedChangeRequiresPlatformActorCode, body, StringComparison.Ordinal);
+        Assert.True(await PasswordIsStillAsync(seeded.UserId, CurrentPassword));
+        Assert.Empty(await NewRefreshRowsAsync(seeded));
+    }
+
+    /// <summary>Item 2 — as at sign-in and refresh, the roles the new token is minted with follow the RECORD: Auth's copy
+    /// (SuperAdmin) is converged to what Platform's answer names (ReadOnly) first.</summary>
+    [Fact]
+    public async Task The_forced_change_converges_the_roles_to_the_record_before_minting()
+    {
+        var seeded = await SeedAsync("platform_admin", PlatformAdministratorRecordAnswer.ConfirmedAs("platform_admin", ["ReadOnly"]),
+            temporaryPasswordExpiresAt: DateTime.UtcNow.AddHours(1), roles: ["SuperAdmin"]);
+        using var client = _host.Client(seeded.AccessToken, PlatformTenantId);
+
+        var response = await ChangeAsync(client);
+
+        Assert.True(response.StatusCode == HttpStatusCode.OK, $"{(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+        Assert.Equal(["ReadOnly"], await PlatformRolesAsync(seeded.UserId));
+    }
+
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────
+
+    private async Task<string[]> PlatformRolesAsync(Guid userId)
+    {
+        using var scope = _host.Factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<TenantContext>().SetTenant(PlatformTenantId);
+        var roles = await scope.ServiceProvider.GetRequiredService<IUserRoleRepository>().GetRolesByUserAsync(userId, PlatformTenantId, CancellationToken.None);
+        return roles.Where(PlatformAdministratorRoleConvergence.IsPlatformRole).OrderBy(r => r, StringComparer.Ordinal).ToArray();
+    }
 
     private sealed record Seeded(Guid UserId, string AccessToken, string ExistingRefreshToken);
 
@@ -201,7 +246,9 @@ public sealed class PlatformForcedPasswordChangeActorTypeTests : IClassFixture<P
         string tokenActor = "platform_admin",
         bool mustChange = true,
         DateTime? temporaryPasswordExpiresAt = null,
-        bool active = true)
+        bool active = true,
+        Guid? tokenTenant = null,
+        string[]? roles = null)
     {
         using var scope = _host.Factory.Services.CreateScope();
         var sp = scope.ServiceProvider;
@@ -222,6 +269,11 @@ public sealed class PlatformForcedPasswordChangeActorTypeTests : IClassFixture<P
 
         user = await sp.GetRequiredService<IUserRepository>().CreateAsync(user, CancellationToken.None);
         Host.Records[user.Email] = record;
+        foreach (var roleName in roles ?? [])
+        {
+            var role = await sp.GetRequiredService<IRoleRepository>().UpsertSystemRoleAsync(roleName, roleName, PlatformAdministratorRoleConvergence.RoleDescription, PlatformTenantId, CancellationToken.None);
+            await sp.GetRequiredService<IUserRoleRepository>().AssignAsync(new UserRole(user.Id, role.Id, PlatformTenantId, "bl521-fix4"), CancellationToken.None);
+        }
 
         var existing = $"existing-{Guid.NewGuid():N}";
         await sp.GetRequiredService<IRefreshTokenRepository>().CreateAsync(new RefreshToken(
@@ -231,7 +283,7 @@ public sealed class PlatformForcedPasswordChangeActorTypeTests : IClassFixture<P
         var tokens = sp.GetRequiredService<ITokenService>();
         var accessToken = tokenActor == "tenant_user"
             ? tokens.GenerateAccessToken(user, [], [], expiresInMinutes: 60)
-            : tokens.GeneratePlatformAccessToken(user.Id, user.Email, user.FirstName, user.LastName, PlatformTenantId, tokenActor, [], [], 60, mustChange);
+            : tokens.GeneratePlatformAccessToken(user.Id, user.Email, user.FirstName, user.LastName, tokenTenant ?? PlatformTenantId, tokenActor, [], [], 60, mustChange);
         return new Seeded(user.Id, accessToken, existing);
     }
 

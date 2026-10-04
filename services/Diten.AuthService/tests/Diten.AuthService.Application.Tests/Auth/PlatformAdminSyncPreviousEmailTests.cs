@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Json;
 using Diten.AuthService.Application.Common;
@@ -11,80 +12,131 @@ using Microsoft.Extensions.Options;
 namespace Diten.AuthService.Application.Tests.Auth;
 
 /// <summary>
-/// BL-521 FIX3 item 2(a) — <c>POST api/platform-auth/platform-admins/sync</c> FINDS THE ACCOUNT BY THE ADDRESS THE RECORD
-/// HAD BEFORE THE CHANGE. Before: it looked the user up by the NEW address only, so changing another administrator's e-mail
-/// answered 404 here — while Platform had already saved the record — and the account stayed on the old address: the next
-/// sign-in or refresh found no record (Platform's 404) and was refused with every session revoked; done to the last super
-/// administrator, the count kept counting someone who could no longer get in.
+/// <c>POST api/platform-auth/platform-admins/sync</c> — BL-521 FIX4.
 ///
-/// <para>Real HTTP on the production Api over a test-owned mongod (the shared acceptance host). Disposable platform users
-/// only — never the seeded admin.</para>
+/// <para>Item 1 — THE ADDRESS ONLY FINDS THE ACCOUNT; IT IS NEVER CHANGED. FIX3 moved the account to a new address
+/// (found by a <c>previousEmail</c> Platform sent); the e-mail of a platform administrator is now immutable on Platform, so
+/// the sync has nothing to move. A body that still carries <c>previousEmail</c> (a FIX3 Platform) is not read: the account
+/// is looked up by its address, and an address no account has is 404 — nothing is renamed or adopted.</para>
+///
+/// <para>Item 5 — THE ACCOUNT'S STATE FOLLOWS THE RECORD'S. The sync used to activate the account and confirm its address
+/// on every call, so an account disabled in Auth came back with any administrator edit. Now: the record is Active → the
+/// account is activated; any other status (or none, from an older Platform) leaves the account's state alone; the address
+/// is confirmed only by accepting the invitation, never here.</para>
+///
+/// <para>Item 4 — ROLES FIRST, THE ACCOUNT LAST: when the account write fails, the roles the record took away are already
+/// gone and the account was not re-enabled.</para>
+///
+/// <para>Real HTTP on the production Api over a test-owned mongod. Disposable platform users only — never the seeded
+/// admin.</para>
 /// </summary>
 [Collection("AccountKindAcceptance")]
-public sealed class PlatformAdminSyncPreviousEmailTests : IClassFixture<AccountKindAcceptance.AuthTestHost>
+public sealed class PlatformAdminSyncPreviousEmailTests : IClassFixture<PlatformAdminSyncPreviousEmailTests.Host>
 {
     private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
-    private readonly AccountKindAcceptance.AuthTestHost _host;
+    private readonly Host _host;
 
-    public PlatformAdminSyncPreviousEmailTests(AccountKindAcceptance.AuthTestHost host) => _host = host;
+    public PlatformAdminSyncPreviousEmailTests(Host host) => _host = host;
+
+    /// <summary>The account write of these addresses fails (after the roles were written) — item 4's order.</summary>
+    public sealed class Host : AccountKindAcceptance.AuthTestHost
+    {
+        public static readonly ConcurrentDictionary<string, byte> FailingAccountWrites = new(StringComparer.OrdinalIgnoreCase);
+
+        protected override void ConfigureTestServices(IServiceCollection services)
+        {
+            base.ConfigureTestServices(services);
+            var original = services.Last(d => d.ServiceType == typeof(IUserRepository));
+            services.Remove(original);
+            services.AddScoped<IUserRepository>(sp => new AccountWriteFailsFor(
+                (IUserRepository)ActivatorUtilities.CreateInstance(sp, original.ImplementationType!)));
+        }
+    }
+
+    // ── item 1 — the address is a key ───────────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task An_email_change_finds_the_account_by_its_previous_address_and_moves_it_to_the_new_one()
+    public async Task The_sync_finds_the_account_by_its_address_and_updates_it_without_touching_the_address()
+    {
+        var user = await SeedAsync();
+
+        var response = await SyncAsync(user.Email, displayName: "Renamed Account");
+
+        Assert.True(response.StatusCode == HttpStatusCode.NoContent, $"{(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+        var after = await ByIdAsync(user.Id);
+        Assert.Equal((user.Email, "Renamed"), (after!.Email, after.FirstName));
+    }
+
+    /// <summary>A FIX3 Platform's body: a new address plus the previous one. The previous address is not read; the new one
+    /// belongs to no account → 404, and the account keeps its address.</summary>
+    [Fact]
+    public async Task A_previous_address_in_the_body_is_not_read_and_no_account_is_moved()
     {
         var user = await SeedAsync();
         var moved = $"moved.{Guid.NewGuid():N}@bl521.test";
 
         var response = await SyncAsync(moved, previousEmail: user.Email);
 
-        Assert.True(response.StatusCode == HttpStatusCode.NoContent, $"{(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
-        var after = await ByIdAsync(user.Id);
-        Assert.Equal(moved, after!.Email);
-        Assert.Null(await ByEmailAsync(user.Email));
-        Assert.Equal(user.Id, (await ByEmailAsync(moved))!.Id);
-    }
-
-    [Fact]
-    public async Task The_new_address_of_another_platform_account_is_a_conflict_and_nothing_moves()
-    {
-        var user = await SeedAsync();
-        var other = await SeedAsync();
-
-        var response = await SyncAsync(other.Email, previousEmail: user.Email);
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.Equal(user.Email, (await ByIdAsync(user.Id))!.Email);
-        Assert.Equal(other.Email, (await ByIdAsync(other.Id))!.Email);
+        Assert.Null(await ByEmailAsync(moved));
     }
 
-    /// <summary>A caller that sends no previous address (an older Platform, or no e-mail change) is looked up as before.</summary>
+    /// <summary>Another account's address, sent as a "previous" one, is not adopted either.</summary>
     [Fact]
-    public async Task Without_a_previous_address_the_account_is_found_by_its_address_as_before()
-    {
-        var user = await SeedAsync();
-
-        var response = await SyncAsync(user.Email, previousEmail: null, displayName: "Renamed Account");
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var after = await ByIdAsync(user.Id);
-        Assert.Equal((user.Email, "Renamed"), (after!.Email, after.FirstName));
-    }
-
-    /// <summary>Nothing is attached to whatever already sits on the new address when the previous one is unknown.</summary>
-    [Fact]
-    public async Task An_unknown_previous_address_is_not_found_and_the_account_on_the_new_address_is_left_alone()
+    public async Task An_unknown_address_is_not_found_and_another_account_named_as_previous_is_left_alone()
     {
         var bystander = await SeedAsync();
 
-        var response = await SyncAsync(bystander.Email, previousEmail: $"nobody.{Guid.NewGuid():N}@bl521.test", displayName: "Taken Over");
+        var response = await SyncAsync($"nobody.{Guid.NewGuid():N}@bl521.test", previousEmail: bystander.Email, displayName: "Taken Over");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        Assert.Equal("Sync", (await ByIdAsync(bystander.Id))!.FirstName);
+        Assert.Equal(("Sync", bystander.Email), ((await ByIdAsync(bystander.Id))!.FirstName, (await ByIdAsync(bystander.Id))!.Email));
+    }
+
+    // ── item 5 — the account's state follows the record's ───────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("Active", true)]
+    [InlineData("Suspended", false)]
+    [InlineData("Disabled", false)]
+    [InlineData(null, false)] // an older Platform that sends no status: nothing is switched on
+    public async Task A_disabled_account_is_activated_only_for_an_active_record_and_the_address_is_never_confirmed_here(string? status, bool activated)
+    {
+        var user = await SeedAsync(active: false, emailConfirmed: false);
+
+        var response = await SyncAsync(user.Email, status: status);
+
+        Assert.True(response.StatusCode == HttpStatusCode.NoContent, $"{(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+        var after = await ByIdAsync(user.Id);
+        Assert.Equal(activated, after!.IsActive);
+        Assert.False(after.EmailConfirmed);
+    }
+
+    // ── item 4 — roles first, the account last ──────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task When_the_account_write_fails_the_roles_were_already_converged_and_the_account_was_not_re_enabled()
+    {
+        var user = await SeedAsync(active: false, roles: ["SuperAdmin"]);
+        Host.FailingAccountWrites[user.Email] = 0;
+
+        var response = await SyncAsync(user.Email, roles: ["ReadOnly"], status: "Active");
+
+        Assert.True((int)response.StatusCode >= 500, $"{(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+        Assert.Equal(["ReadOnly"], await PlatformRolesAsync(user.Id));
+        Assert.False((await ByIdAsync(user.Id))!.IsActive);
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────
 
-    private async Task<HttpResponseMessage> SyncAsync(string email, string? previousEmail, string displayName = "Sync Probe")
+    private async Task<HttpResponseMessage> SyncAsync(
+        string email,
+        string? previousEmail = null,
+        string displayName = "Sync Probe",
+        string? status = "Active",
+        string[]? roles = null)
     {
         // As Platform calls it: the internal key and the platform tenant (Auth's tenant resolution requires one here).
         using var client = _host.Client(tenantHeader: PlatformTenantId);
@@ -97,19 +149,44 @@ public sealed class PlatformAdminSyncPreviousEmailTests : IClassFixture<AccountK
             userName = $"sync{Guid.NewGuid():N}"[..20],
             displayName,
             actorType = "PlatformAdmin",
-            roles = new[] { "SupportAdmin" }
+            roles = roles ?? ["SupportAdmin"],
+            status
         });
     }
 
-    private async Task<User> SeedAsync()
+    private async Task<User> SeedAsync(bool active = true, bool emailConfirmed = true, string[]? roles = null)
     {
         using var scope = _host.Factory.Services.CreateScope();
         var sp = scope.ServiceProvider;
         sp.GetRequiredService<TenantContext>().SetTenant(PlatformTenantId);
         var user = new User($"sync.{Guid.NewGuid():N}@bl521.test", sp.GetRequiredService<IPasswordHasher>().Hash($"Unused!{Guid.NewGuid():N}"), "Sync", "Probe", PlatformTenantId);
-        user.ConfirmEmail();
+        if (emailConfirmed)
+        {
+            user.ConfirmEmail();
+        }
+
+        if (!active)
+        {
+            user.Deactivate();
+        }
+
         user.SetPlatformActorType("platform_admin");
-        return await sp.GetRequiredService<IUserRepository>().CreateAsync(user, CancellationToken.None);
+        user = await sp.GetRequiredService<IUserRepository>().CreateAsync(user, CancellationToken.None);
+        foreach (var roleName in roles ?? [])
+        {
+            var role = await sp.GetRequiredService<IRoleRepository>().UpsertSystemRoleAsync(roleName, roleName, "Platform administrator role", PlatformTenantId, CancellationToken.None);
+            await sp.GetRequiredService<IUserRoleRepository>().AssignAsync(new UserRole(user.Id, role.Id, PlatformTenantId, "bl521-fix4"), CancellationToken.None);
+        }
+
+        return user;
+    }
+
+    private async Task<string[]> PlatformRolesAsync(Guid userId)
+    {
+        using var scope = _host.Factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<TenantContext>().SetTenant(PlatformTenantId);
+        var roles = await scope.ServiceProvider.GetRequiredService<IUserRoleRepository>().GetRolesByUserAsync(userId, PlatformTenantId, CancellationToken.None);
+        return roles.Where(PlatformAdministratorRoleConvergence.IsPlatformRole).OrderBy(r => r, StringComparer.Ordinal).ToArray();
     }
 
     private async Task<User?> ByIdAsync(Guid id)
@@ -124,5 +201,25 @@ public sealed class PlatformAdminSyncPreviousEmailTests : IClassFixture<AccountK
         using var scope = _host.Factory.Services.CreateScope();
         scope.ServiceProvider.GetRequiredService<TenantContext>().SetTenant(PlatformTenantId);
         return await scope.ServiceProvider.GetRequiredService<IUserRepository>().GetByEmailAndTenantAsync(email, PlatformTenantId, CancellationToken.None);
+    }
+
+    /// <summary>The production user repository, except that the account write of a listed address fails.</summary>
+    private sealed class AccountWriteFailsFor(IUserRepository inner) : IUserRepository
+    {
+        public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) =>
+            Host.FailingAccountWrites.ContainsKey(user.Email)
+                ? throw new InvalidOperationException("bl521-fix4: the account write fails here")
+                : inner.UpdateForTenantAsync(user, tenantId, ct);
+
+        public Task<User?> GetByEmailAndTenantAsync(string email, Guid tenantId, CancellationToken ct) => inner.GetByEmailAndTenantAsync(email, tenantId, ct);
+        public Task<User?> GetByUserNameAndTenantAsync(string normalizedUserName, Guid tenantId, CancellationToken ct) => inner.GetByUserNameAndTenantAsync(normalizedUserName, tenantId, ct);
+        public Task<User?> GetByIdAndTenantAsync(Guid id, Guid tenantId, CancellationToken ct) => inner.GetByIdAndTenantAsync(id, tenantId, ct);
+        public Task<User?> GetByPasswordResetTokenHashAsync(string tokenHash, CancellationToken ct) => inner.GetByPasswordResetTokenHashAsync(tokenHash, ct);
+        public Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct) => inner.GetAllByTenantAsync(tenantId, page, pageSize, ct);
+        public Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct) => inner.SearchActiveAsync(tenantId, term, limit, ct);
+        public Task<long> GetCountByTenantAsync(Guid tenantId, CancellationToken ct) => inner.GetCountByTenantAsync(tenantId, ct);
+        public Task<User> CreateAsync(User user, CancellationToken ct) => inner.CreateAsync(user, ct);
+        public Task<User> UpdateAsync(User user, CancellationToken ct) => inner.UpdateAsync(user, ct);
+        public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => inner.SoftDeleteAsync(id, tenantId, ct);
     }
 }

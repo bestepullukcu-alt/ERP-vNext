@@ -457,21 +457,12 @@ const AdministratorsList = (function () {
         document.getElementById('createRecommendedBadge')?.classList.remove('d-none');
         document.getElementById('btnSaveAdministrator').textContent = L.Save || '';
         
-        // Ensure email input is unlocked and button is hidden
+        // BL-521 FIX4 — a new administrator's e-mail is typed here; once invited it never changes (edit mode is read-only).
         const emailInput = document.getElementById('administratorEmail');
         if (emailInput) {
-            emailInput.removeAttribute('disabled');
-            emailInput.style.borderColor = ''; // Reset custom border color
-            emailInput.classList.add('rounded-end'); // Beautiful rounded corner on the right when button is hidden
+            emailInput.readOnly = false;
         }
-        const btnUnlockEmail = document.getElementById('btnUnlockEmail');
-        if (btnUnlockEmail) {
-            btnUnlockEmail.classList.add('d-none');
-            btnUnlockEmail.innerHTML = '<i class="bx bx-lock-alt"></i>';
-            btnUnlockEmail.classList.remove('btn-outline-primary', 'btn-outline-warning');
-            btnUnlockEmail.classList.add('btn-outline-secondary');
-            btnUnlockEmail.style.borderColor = '';
-        }
+        document.getElementById('administratorEmailImmutableHelp')?.classList.add('d-none');
 
         // Enable select for ActorType
         const actorTypeSelect = document.getElementById('administratorActorType');
@@ -493,28 +484,14 @@ const AdministratorsList = (function () {
         document.getElementById('createRecommendedBadge')?.classList.add('d-none');
         document.getElementById('btnSaveAdministrator').textContent = L.Update || L.Save || '';
 
-        // Compute Display Name border color to match perfectly
-        const displayNameInput = document.getElementById('administratorDisplayName');
-        let matchedBorderColor = '#d9dee3'; // fallback standard border color
-        if (displayNameInput) {
-            matchedBorderColor = window.getComputedStyle(displayNameInput).borderColor || '#d9dee3';
-        }
-
-        // Lock email and show unlock button
+        // BL-521 FIX4 — an administrator's e-mail is its identity on Platform and in Auth and never changes: read-only
+        // here, with the reason under it (a new address is invited as a new administrator). Read-only, not disabled: the
+        // form still sends it, and Platform refuses any other value (409 PLATFORM_ADMINISTRATOR_EMAIL_IMMUTABLE).
         const emailInput = document.getElementById('administratorEmail');
         if (emailInput) {
-            emailInput.setAttribute('disabled', 'disabled');
-            emailInput.style.borderColor = matchedBorderColor; // Perfect match with Display Name
-            emailInput.classList.remove('rounded-end'); // Flat right side when button is shown
+            emailInput.readOnly = true;
         }
-        const btnUnlockEmail = document.getElementById('btnUnlockEmail');
-        if (btnUnlockEmail) {
-            btnUnlockEmail.classList.remove('d-none');
-            btnUnlockEmail.innerHTML = '<i class="bx bx-lock-alt"></i>';
-            btnUnlockEmail.classList.remove('btn-outline-primary', 'btn-outline-warning');
-            btnUnlockEmail.classList.add('btn-outline-secondary');
-            btnUnlockEmail.style.borderColor = matchedBorderColor; // Perfect matching border with standard input
-        }
+        document.getElementById('administratorEmailImmutableHelp')?.classList.remove('d-none');
 
         try {
             const response = await fetch(`/Platform/Administrators/get/${encodeURIComponent(id)}`, {
@@ -1045,40 +1022,6 @@ const AdministratorsList = (function () {
             const id = document.getElementById('oc-btn-edit')?.dataset.editId;
             if (id) openEditOffcanvas(id);
         });
-
-        // Email unlock button
-        const btnUnlockEmail = document.getElementById('btnUnlockEmail');
-        if (btnUnlockEmail) {
-            btnUnlockEmail.addEventListener('click', () => {
-                const emailInput = document.getElementById('administratorEmail');
-                if (emailInput) {
-                    if (emailInput.hasAttribute('disabled')) {
-                        emailInput.removeAttribute('disabled');
-                        emailInput.style.borderColor = ''; // Let focus/active styling handle the border color
-                        emailInput.focus();
-                        btnUnlockEmail.innerHTML = '<i class="bx bx-lock-open-alt"></i>';
-                        btnUnlockEmail.classList.remove('btn-outline-secondary');
-                        btnUnlockEmail.classList.add('btn-outline-primary');
-                        btnUnlockEmail.style.borderColor = ''; // Let active class handle it
-                    } else {
-                        emailInput.setAttribute('disabled', 'disabled');
-                        
-                        // Dynamically compute the active input's border color
-                        const displayNameInput = document.getElementById('administratorDisplayName');
-                        let matchedBorderColor = '#d9dee3';
-                        if (displayNameInput) {
-                            matchedBorderColor = window.getComputedStyle(displayNameInput).borderColor || '#d9dee3';
-                        }
-                        
-                        emailInput.style.borderColor = matchedBorderColor;
-                        btnUnlockEmail.innerHTML = '<i class="bx bx-lock-alt"></i>';
-                        btnUnlockEmail.classList.remove('btn-outline-primary');
-                        btnUnlockEmail.classList.add('btn-outline-secondary');
-                        btnUnlockEmail.style.borderColor = matchedBorderColor; // Perfect matching border with standard inputs
-                    }
-                }
-            });
-        }
 
         // Resend Invite button
         const btnResendInvite = document.getElementById('btnResendInvite');

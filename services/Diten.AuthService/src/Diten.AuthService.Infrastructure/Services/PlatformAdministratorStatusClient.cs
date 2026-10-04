@@ -63,12 +63,14 @@ public sealed class PlatformAdministratorStatusClient : IPlatformAdministratorSt
             return PlatformAdministratorRecordAnswer.Unavailable;
         }
 
+        // FIX4 item 2 — the record's roles travel with a confirmed answer (null from an older Platform that does not send
+        // them: then nothing is converged).
         return status.ActorType switch
         {
             { } value when string.Equals(value, "PartnerAdmin", StringComparison.OrdinalIgnoreCase)
-                => PlatformAdministratorRecordAnswer.ConfirmedAs(PlatformAdministratorRecordAnswer.PartnerAdminActorType),
+                => PlatformAdministratorRecordAnswer.ConfirmedAs(PlatformAdministratorRecordAnswer.PartnerAdminActorType, status.Roles),
             { } value when string.Equals(value, "PlatformAdmin", StringComparison.OrdinalIgnoreCase)
-                => PlatformAdministratorRecordAnswer.ConfirmedAs(PlatformAdministratorRecordAnswer.PlatformAdminActorType),
+                => PlatformAdministratorRecordAnswer.ConfirmedAs(PlatformAdministratorRecordAnswer.PlatformAdminActorType, status.Roles),
             _ => PlatformAdministratorRecordAnswer.Refused
         };
     }
@@ -208,5 +210,6 @@ public sealed class PlatformAdministratorStatusClient : IPlatformAdministratorSt
     }
 
     private sealed record PlatformEnvelope<T>(bool IsSuccessful, int StatusCode, T? Data);
-    private sealed record PlatformAdministratorStatusSnapshot(Guid Id, string Email, string Status, bool IsDeleted, bool IsActive, string? ActorType = null);
+    private sealed record PlatformAdministratorStatusSnapshot(
+        Guid Id, string Email, string Status, bool IsDeleted, bool IsActive, string? ActorType = null, IReadOnlyList<string>? Roles = null);
 }

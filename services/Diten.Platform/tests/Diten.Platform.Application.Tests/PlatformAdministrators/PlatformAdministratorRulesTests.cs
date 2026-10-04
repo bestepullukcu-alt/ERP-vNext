@@ -271,6 +271,18 @@ public sealed class PlatformAdministratorRulesTests
         public async Task<SuperAdminGuardedWriteResult> SoftDeleteGuardedAsync(Guid id, int expectedVersion, string actorName, CancellationToken ct = default) =>
             await CountActiveSuperAdminsAsync(id, ct) == 0 ? SuperAdminGuardedWriteResult.LastActiveSuperAdmin
             : await SoftDeleteAsync(id, expectedVersion, actorName, ct) ? SuperAdminGuardedWriteResult.Written : SuperAdminGuardedWriteResult.VersionConflict;
+
+        // BL-521 FIX4 item 2 — the convergence mark (no version move).
+        public Task MarkAuthSyncPendingAsync(Guid id, bool pending, CancellationToken ct = default)
+        {
+            var item = _items.FirstOrDefault(x => x.Id == id);
+            if (item is not null)
+            {
+                item.AuthSyncPendingSinceUtc = pending ? item.AuthSyncPendingSinceUtc ?? DateTimeOffset.UtcNow : null;
+            }
+
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class TestPlatformAdministratorProvisioningService : IPlatformAdministratorProvisioningService

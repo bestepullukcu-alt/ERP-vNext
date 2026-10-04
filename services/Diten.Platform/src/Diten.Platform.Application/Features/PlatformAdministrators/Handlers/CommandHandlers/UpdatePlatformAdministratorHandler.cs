@@ -44,6 +44,15 @@ public sealed class UpdatePlatformAdministratorHandler : IRequestHandler<UpdateP
             return Response<NoContent>.Fail("Platform administrator not found.", 404);
         }
 
+        // BL-521 FIX4 item 3 — every decision below is made on the record as loaded, so it must be the version the client
+        // edited: a different version is refused before anything is decided, and the write is conditional on the version
+        // that was read (the two are then the same).
+        if (administrator.Version != request.Request.Version)
+        {
+            return Response<NoContent>.Fail(AdminSafetyMessages.ChangedByAnotherUser, 409);
+        }
+
+        var loadedVersion = administrator.Version;
         var normalizedEmail = PlatformAdministratorParsing.NormalizeEmail(request.Request.Email);
         var currentEmail = PlatformAdministratorParsing.NormalizeEmail(administrator.Email);
         var newActorType = PlatformAdministratorParsing.ParseActorType(request.Request.ActorType);
@@ -82,30 +91,26 @@ public sealed class UpdatePlatformAdministratorHandler : IRequestHandler<UpdateP
             }
         }
 
+        // BL-521 FIX4 item 1 — AN ADMINISTRATOR'S E-MAIL NEVER CHANGES. It is the identity key: Platform and Auth find the
+        // same administrator by it (status, sign-in, refresh, the sync below), and every way of moving it (FIX3's saga
+        // included) left a window in which the two pointed at different addresses. A new address is invited as a new
+        // administrator and the old record removed — as SAP never renames a user id. The comparison is on the normalized
+        // address, so a change of letter case or surrounding spaces is not a change.
+        if (emailChanges)
+        {
+            return Response<NoContent>.Fail(AdminSafetyMessages.EmailImmutable, 409, AdminSafetyReasonCodes.EmailImmutable);
+        }
+
         // FIX2 item 5(b) — demoting (to partner, or out of SuperAdmin) or suspending / disabling the last active platform
-        // administrator holding SuperAdmin is refused 409, as suspend / delete / role removal already are. FIX3 item 2(b) —
-        // so is moving it to another e-mail: until Auth follows, it cannot sign in, while the count still counts it.
+        // administrator holding SuperAdmin is refused 409, as suspend / delete / role removal already are.
         var staysPlatformSuperAdmin = newStatus == AdministratorStatus.Active
                                       && newActorType == ActorType.PlatformAdmin
-                                      && newRoles.Contains(AdministratorRole.SuperAdmin)
-                                      && !emailChanges;
+                                      && newRoles.Contains(AdministratorRole.SuperAdmin);
         var leavesSuperAdminSet = PlatformAdministratorMutationSupport.IsActivePlatformSuperAdmin(administrator) && !staysPlatformSuperAdmin;
         if (leavesSuperAdminSet)
         {
             var lastAdminGuard = await _safetyGuard.EnsureNotLastActiveSuperAdminAsync(administrator.Id, AdminSafetyAction.Disable, ct);
             if (lastAdminGuard is not null) return lastAdminGuard;
-        }
-
-        // The write below is conditional on this version anyway; refusing a stale edit HERE spares Auth a sync it would
-        // have to undo.
-        if (administrator.Version != request.Request.Version)
-        {
-            return Response<NoContent>.Fail(AdminSafetyMessages.ChangedByAnotherUser, 409);
-        }
-
-        if (await _repository.ExistsByEmailAsync(normalizedEmail, administrator.Id, ct))
-        {
-            return Response<NoContent>.Fail("Administrator email already exists.", 409);
         }
 
         var normalizedUserName = PlatformAdministratorParsing.NormalizeUserName(request.Request.UserName);
@@ -114,33 +119,26 @@ public sealed class UpdatePlatformAdministratorHandler : IRequestHandler<UpdateP
             return Response<NoContent>.Fail("Administrator username already exists.", 409);
         }
 
-        // FIX3 item 2(a) — AUTH FIRST, THEN THE RECORD. Auth finds the account by the record's CURRENT address and moves
-        // it to the new one. Before, the record was saved first and the sync looked the account up by the NEW address: an
-        // e-mail change answered 404 there, the request 400, and the saved record pointed at an address Auth did not have
-        // — the next sign-in / refresh was refused and every session revoked. Now a refused sync throws before anything is
-        // written here (Auth is first put back to the record's values, in case it applied part of the change); a record
-        // write refused after a successful sync (version, the last super administrator, a concurrent change) puts Auth back
-        // too — found then under the NEW address it was just moved to.
-        var recordValues = SyncRequestOf(administrator);
+        // FIX3 item 2(a) — AUTH FIRST, THEN THE RECORD: a sync Auth refuses throws before anything is written here. The
+        // address only FINDS the account (FIX4 item 1). FIX4 item 5 — the record's status travels with it, so Auth
+        // activates the account only when the record is Active and otherwise leaves the account's own state alone.
         var syncAuth = new PlatformAdministratorProvisioningSyncRequest(
-            normalizedEmail,
+            currentEmail,
             request.Request.UserName.Trim(),
             request.Request.DisplayName.Trim(),
             newActorType.ToString(),
             newRoles.Select(x => x.ToString()).ToList(),
-            PreviousEmail: currentEmail);
+            newStatus.ToString());
         try
         {
             await _provisioningService.SyncAsync(syncAuth, ct);
         }
         catch
         {
-            await RestoreAuthAsync(recordValues, administrator.Id);
+            await ConvergeAuthToRecordAsync(administrator.Id);
             throw;
         }
 
-        administrator.Email = normalizedEmail;
-        administrator.NormalizedEmail = normalizedEmail;
         administrator.UserName = request.Request.UserName.Trim();
         administrator.NormalizedUserName = normalizedUserName;
         administrator.DisplayName = request.Request.DisplayName.Trim();
@@ -153,46 +151,127 @@ public sealed class UpdatePlatformAdministratorHandler : IRequestHandler<UpdateP
             request.Request.AllowedTenantIds);
         PlatformAdministratorMutationSupport.MarkUpdated(administrator, _currentUser);
 
+        // FIX4 item 2 — Auth was just given exactly what is written here, so a successful write leaves the two converged
+        // and clears a convergence still pending from an earlier failure.
+        administrator.AuthSyncPendingSinceUtc = null;
+
         // FIX3 item 3 — a change that takes an active platform super administrator out of the set is written under the
         // guard: the "is another one left?" count and the write in one transaction no concurrent such write can slip past.
-        var outcome = leavesSuperAdminSet
-            ? await _repository.UpdateGuardedAsync(administrator, request.Request.Version, ct)
-            : await _repository.UpdateAsync(administrator, request.Request.Version, ct)
-                ? SuperAdminGuardedWriteResult.Written
-                : SuperAdminGuardedWriteResult.VersionConflict;
+        SuperAdminGuardedWriteResult outcome;
+        try
+        {
+            outcome = leavesSuperAdminSet
+                ? await _repository.UpdateGuardedAsync(administrator, loadedVersion, ct)
+                : await _repository.UpdateAsync(administrator, loadedVersion, ct)
+                    ? SuperAdminGuardedWriteResult.Written
+                    : SuperAdminGuardedWriteResult.VersionConflict;
+        }
+        catch
+        {
+            // An exception, a cancellation, a commit whose result never came back: whatever the record now says, Auth
+            // follows THAT — never this request's values, never the values it had before.
+            await ConvergeAuthToRecordAsync(administrator.Id);
+            throw;
+        }
+
         if (outcome != SuperAdminGuardedWriteResult.Written)
         {
-            await RestoreAuthAsync(recordValues with { PreviousEmail = normalizedEmail }, administrator.Id);
+            await ConvergeAuthToRecordAsync(administrator.Id);
             return PlatformAdministratorMutationSupport.RefusedWrite(outcome, AdminSafetyMessages.ChangedByAnotherUser);
         }
 
         return Response<NoContent>.Success(204);
     }
 
-    /// <summary>What Auth holds for the administrator BEFORE this change (its current address, names, type, roles).</summary>
+    /// <summary>
+    /// What Auth must hold for this record: its address (the lookup key, never changed), names, type, roles and status.
+    /// </summary>
     private static PlatformAdministratorProvisioningSyncRequest SyncRequestOf(PlatformAdministrator administrator) => new(
         PlatformAdministratorParsing.NormalizeEmail(administrator.Email),
         administrator.UserName,
         administrator.DisplayName,
         administrator.ActorType.ToString(),
-        administrator.Roles.Select(x => x.ToString()).ToList());
+        administrator.Roles.Select(x => x.ToString()).ToList(),
+        administrator.Status.ToString());
 
     /// <summary>
-    /// Puts Auth back to what the record still says, after a sync this request will not keep. Best effort, never masking
-    /// the refusal being answered: if it fails too, the two disagree until the next successful update of this record —
-    /// logged as an error (identifiers only).
+    /// BL-521 FIX4 item 2 — THE RECORD IS READ AGAIN AND AUTH FOLLOWS IT AS IT IS NOW. FIX3 put back the values the record
+    /// had when THIS request loaded it, which another request may already have replaced: R1 (a name edit) and R2 (taking
+    /// SuperAdmin away) load the same version; R2 syncs Auth, R1 syncs Auth (SuperAdmin again), R2 writes, R1's write is
+    /// refused — and R1 then restored ITS picture (SuperAdmin): the record said SupportAdmin, every new token SuperAdmin.
+    /// Now R1 re-reads (SupportAdmin) and syncs that. Never masks the refusal being answered: if Auth cannot be reached
+    /// either, the failure is logged at Error (identifiers only) and the record is marked
+    /// <see cref="PlatformAdministrator.AuthSyncPendingSinceUtc"/>; the next successful update of the record clears the
+    /// mark, and every platform sign-in and refresh takes the roles from the record anyway.
     /// </summary>
-    private async Task RestoreAuthAsync(PlatformAdministratorProvisioningSyncRequest restore, Guid administratorId)
+    private async Task ConvergeAuthToRecordAsync(Guid administratorId)
     {
+        PlatformAdministrator? current;
         try
         {
-            await _provisioningService.SyncAsync(restore, CancellationToken.None);
+            current = await _repository.GetByIdAsync(administratorId, CancellationToken.None);
         }
         catch (Exception exception)
         {
             _logger.LogError(
                 exception,
-                "Platform administrator update was not written, and Auth could not be put back to the record's values. AdministratorId={AdministratorId}",
+                "Platform administrator record could not be read again to converge Auth to it. AdministratorId={AdministratorId}",
+                administratorId);
+            await MarkConvergencePendingAsync(administratorId);
+            return;
+        }
+
+        if (current is null)
+        {
+            // Deleted in the meantime: Platform answers its own 404 to the account's every sign-in and refresh, which
+            // Auth treats as a definite no. There is no record state left to converge to.
+            _logger.LogWarning(
+                "Platform administrator record is gone; Auth is not converged to it. AdministratorId={AdministratorId}",
+                administratorId);
+            return;
+        }
+
+        try
+        {
+            await _provisioningService.SyncAsync(SyncRequestOf(current), CancellationToken.None);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Auth could not be converged to the platform administrator record (roles, status); the record is marked AuthSyncPending. The next successful update of this record clears the mark, and every platform sign-in and refresh takes the roles from the record. AdministratorId={AdministratorId}",
+                administratorId);
+            await MarkConvergencePendingAsync(administratorId);
+            return;
+        }
+
+        if (current.AuthSyncPendingSinceUtc is not null)
+        {
+            try
+            {
+                await _repository.MarkAuthSyncPendingAsync(administratorId, pending: false, CancellationToken.None);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(
+                    exception,
+                    "Auth was converged to the platform administrator record but its pending mark could not be cleared. AdministratorId={AdministratorId}",
+                    administratorId);
+            }
+        }
+    }
+
+    private async Task MarkConvergencePendingAsync(Guid administratorId)
+    {
+        try
+        {
+            await _repository.MarkAuthSyncPendingAsync(administratorId, pending: true, CancellationToken.None);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Platform administrator record could not be marked AuthSyncPending either. AdministratorId={AdministratorId}",
                 administratorId);
         }
     }

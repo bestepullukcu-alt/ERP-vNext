@@ -15,6 +15,9 @@ namespace Diten.Web.Controllers.Platform;
 [Route("Platform/Administrators")]
 public sealed class AdministratorsController : Controller
 {
+    /// <summary>BL-521 FIX4 item 1 — Platform's 409 code for a refused e-mail change (AdminSafetyReasonCodes.EmailImmutable).</summary>
+    private const string EmailImmutableReasonCode = "PLATFORM_ADMINISTRATOR_EMAIL_IMMUTABLE";
+
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
@@ -326,6 +329,16 @@ public sealed class AdministratorsController : Controller
         {
             using var doc = JsonDocument.Parse(raw);
             var root = doc.RootElement;
+
+            // BL-521 FIX4 item 1 — an administrator's e-mail cannot be changed: said from Platform's CODE, in the reader's
+            // language (en, tr), not by matching its English sentence.
+            if (root.ValueKind == JsonValueKind.Object
+                && (root.TryGetProperty("reason_code", out var reasonCode) || root.TryGetProperty("reasonCode", out reasonCode))
+                && reasonCode.ValueKind == JsonValueKind.String
+                && string.Equals(reasonCode.GetString(), EmailImmutableReasonCode, StringComparison.Ordinal))
+            {
+                return [_sharedLocalizer["AdminEmailImmutable"].Value];
+            }
 
             // 1. Try to parse "errors" property (can be list or dictionary)
             if (root.TryGetProperty("errors", out var errorsProp) || root.TryGetProperty("Errors", out errorsProp))

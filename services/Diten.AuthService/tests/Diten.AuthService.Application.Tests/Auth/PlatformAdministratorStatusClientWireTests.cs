@@ -46,6 +46,29 @@ public sealed class PlatformAdministratorStatusClientWireTests
         Assert.Equal(tokenType, answer.ActorType);
     }
 
+    // ── BL-521 FIX4 item 2: the record's roles travel with a confirmed answer ──────────────────────────
+
+    [Fact]
+    public async Task A_confirmed_answer_carries_the_records_roles()
+    {
+        var body = $$"""{"data":{"id":"{{Guid.NewGuid()}}","email":"wire.probe@bl521.test","status":"Active","isDeleted":false,"isActive":true,"actorType":"PlatformAdmin","roles":["SupportAdmin","BillingAdmin"]},"statusCode":200,"isSuccessful":true,"errors":[]}""";
+
+        var answer = await ClientFor(Ok(body)).GetActiveActorTypeAsync(Email, CancellationToken.None);
+
+        Assert.Equal(PlatformAdministratorRecordVerdict.Confirmed, answer.Verdict);
+        Assert.Equal(["SupportAdmin", "BillingAdmin"], answer.Roles!);
+    }
+
+    /// <summary>An older Platform sends no roles: still a confirmed answer, and nothing to converge to.</summary>
+    [Fact]
+    public async Task An_answer_without_roles_is_still_confirmed_and_carries_none()
+    {
+        var answer = await ClientFor(Ok(Status(isActive: true, "PartnerAdmin"))).GetActiveActorTypeAsync(Email, CancellationToken.None);
+
+        Assert.Equal(PlatformAdministratorRecordVerdict.Confirmed, answer.Verdict);
+        Assert.Null(answer.Roles);
+    }
+
     // ── refused: Platform's definitive no ─────────────────────────────────────────────────────────────
 
     [Theory]

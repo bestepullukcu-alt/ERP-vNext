@@ -38,6 +38,15 @@ public sealed class SuspendPlatformAdministratorHandler : IRequestHandler<Suspen
             return Response<NoContent>.Fail("Platform administrator not found.", 404);
         }
 
+        // BL-521 FIX4 item 3 — every rule below decides on the record as loaded, so the client must have edited THAT
+        // version; the write is then conditional on the version that was read, never on the one the client names.
+        if (administrator.Version != request.Request.Version)
+        {
+            return Response<NoContent>.Fail(AdminSafetyMessages.ChangedByAnotherUser, 409);
+        }
+
+        var loadedVersion = administrator.Version;
+
         if (PlatformAdministratorMutationSupport.IsSystemSeed(administrator))
         {
             return Response<NoContent>.Fail(AdminSafetyMessages.SeedCannotBeSuspended, 409, AdminSafetyReasonCodes.SystemSeedProtected);
@@ -55,8 +64,8 @@ public sealed class SuspendPlatformAdministratorHandler : IRequestHandler<Suspen
 
         // BL-521 FIX3 item 3 — suspending an active platform super administrator is written under the guard.
         var outcome = leavesSuperAdminSet
-            ? await _repository.UpdateGuardedAsync(administrator, request.Request.Version, ct)
-            : await _repository.UpdateAsync(administrator, request.Request.Version, ct)
+            ? await _repository.UpdateGuardedAsync(administrator, loadedVersion, ct)
+            : await _repository.UpdateAsync(administrator, loadedVersion, ct)
                 ? SuperAdminGuardedWriteResult.Written
                 : SuperAdminGuardedWriteResult.VersionConflict;
         return outcome == SuperAdminGuardedWriteResult.Written

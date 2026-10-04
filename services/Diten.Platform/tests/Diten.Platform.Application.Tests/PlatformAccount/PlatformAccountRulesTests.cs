@@ -221,6 +221,10 @@ public sealed class PlatformAccountRulesTests
         public Task<SuperAdminGuardedWriteResult> SoftDeleteGuardedAsync(Guid id, int expectedVersion, string actorName, CancellationToken ct = default) =>
             throw new NotSupportedException("The account settings tests never take a super administrator out of the set.");
 
+        // BL-521 FIX4 item 2 — only the administrator update writes the convergence mark.
+        public Task MarkAuthSyncPendingAsync(Guid id, bool pending, CancellationToken ct = default) =>
+            throw new NotSupportedException("The account settings tests never converge Auth.");
+
         private static PlatformAdministrator? CloneOrNull(PlatformAdministrator? administrator) =>
             administrator is null ? null : Clone(administrator);
 

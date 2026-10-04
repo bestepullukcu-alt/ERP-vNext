@@ -38,10 +38,14 @@ public sealed class SystemGrantPathsActorGuardTests
     // api/tenant-auth/register) writes the default Viewer row as "system": tenant policy chose the role, not the
     // registrant. The registrant is named where the act is attributable — the tenant_user_self_registered audit event
     // (RegisterCommandHandlerTests, SelfRegistrationActorEndpointTests).
+    // BL-521 FIX4 item 2 — the platform-admin role write moved out of PlatformAuthController (provision, sync) into
+    // PlatformAdministratorRoleConvergence, which the controller, platform login, refresh and the forced password change all
+    // call to bring Auth's copy of an administrator's roles to the Platform record. Same writer, same "system" actor: the
+    // classification moved with the code; every check below still applies to it.
     private static readonly string[] SystemUserRoleWriters =
     [
         "Diten.AuthService.Api/Controllers/InternalEventsController.cs",
-        "Diten.AuthService.Api/Controllers/PlatformAuthController.cs",
+        "Diten.AuthService.Application/Common/Interfaces/IPlatformAdministratorStatusClient.cs",
         "Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/RegisterCommandHandler.cs",
         "Diten.AuthService.Persistence/Seed/DataSeeder.cs",
     ];
@@ -63,6 +67,7 @@ public sealed class SystemGrantPathsActorGuardTests
         typeof(DataSeeder),
         typeof(TenantAdminSelfServiceReconciler),
         typeof(RegisterCommandHandler),
+        typeof(PlatformAdministratorRoleConvergence), // BL-521 FIX4 — the platform-admin role writer (see SystemUserRoleWriters)
     };
 
     [Theory]

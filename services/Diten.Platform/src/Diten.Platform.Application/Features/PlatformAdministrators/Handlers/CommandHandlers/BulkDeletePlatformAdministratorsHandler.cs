@@ -56,6 +56,13 @@ public sealed class BulkDeletePlatformAdministratorsHandler
                 return Response<NoContent>.Fail("One or more administrators could not be found.", 404);
             }
 
+            // BL-521 FIX4 item 3 — every target is decided on the record as loaded and written at the version that was
+            // read: a version other than the client's refuses the whole request before anything is deleted.
+            if (administrator.Version != item.Version)
+            {
+                return Response<NoContent>.Fail(BulkConflictMessage, 409);
+            }
+
             if (PlatformAdministratorMutationSupport.IsSystemSeed(administrator))
             {
                 return Response<NoContent>.Fail(AdminSafetyMessages.SeedCannotBeDeleted, 409, AdminSafetyReasonCodes.SystemSeedProtected);
@@ -73,8 +80,8 @@ public sealed class BulkDeletePlatformAdministratorsHandler
 
             // FIX3 item 3 — deleting an active platform super administrator is written under the guard.
             var outcome = PlatformAdministratorMutationSupport.IsActivePlatformSuperAdmin(administrator)
-                ? await _repository.SoftDeleteGuardedAsync(item.Id, item.Version, _currentUser.ActorName, ct)
-                : await _repository.SoftDeleteAsync(item.Id, item.Version, _currentUser.ActorName, ct)
+                ? await _repository.SoftDeleteGuardedAsync(item.Id, administrator.Version, _currentUser.ActorName, ct)
+                : await _repository.SoftDeleteAsync(item.Id, administrator.Version, _currentUser.ActorName, ct)
                     ? SuperAdminGuardedWriteResult.Written
                     : SuperAdminGuardedWriteResult.VersionConflict;
             if (outcome != SuperAdminGuardedWriteResult.Written)

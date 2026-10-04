@@ -62,6 +62,10 @@ public static class AdminSafetyReasonCodes
     /// <summary>503 — FIX3 item 3: the guarded write could not run (no transaction support, the database unreachable);
     /// nothing was written.</summary>
     public const string SafetyCheckUnavailable = "PLATFORM_ADMINISTRATOR_SAFETY_CHECK_UNAVAILABLE";
+
+    /// <summary>409 — FIX4 item 1: an administrator's e-mail never changes (Platform and Auth find the administrator by it);
+    /// a new address is invited as a new administrator and the old one removed.</summary>
+    public const string EmailImmutable = "PLATFORM_ADMINISTRATOR_EMAIL_IMMUTABLE";
 }
 
 /// <summary>
@@ -82,4 +86,8 @@ public static class AdminSafetyMessages
 
     /// <summary>FIX3 item 3 — new; the screen's en + tr text: SharedResource AdminChangeUnavailable.</summary>
     public const string SafetyCheckUnavailable = "The administrator change could not be saved right now. Nothing was written. Please try again.";
+
+    /// <summary>FIX4 item 1 — new; the edit form says it from the CODE (<see cref="AdminSafetyReasonCodes.EmailImmutable"/>),
+    /// en + tr: SharedResource AdminEmailImmutable.</summary>
+    public const string EmailImmutable = "An administrator's e-mail cannot be changed. Invite the new address as a new administrator and remove the old one.";
 }

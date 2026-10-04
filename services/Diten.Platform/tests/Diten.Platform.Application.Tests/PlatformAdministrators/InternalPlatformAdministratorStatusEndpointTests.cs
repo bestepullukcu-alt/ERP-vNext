@@ -50,6 +50,8 @@ public sealed class InternalPlatformAdministratorStatusEndpointTests
         Assert.Equal(expected, data.GetProperty("actorType").GetString());
         Assert.True(data.GetProperty("isActive").GetBoolean());
         Assert.Equal("Active", data.GetProperty("status").GetString());
+        // FIX4 item 2 — the record's roles, which Auth converges its own copy to at every sign-in and refresh
+        Assert.Equal(["SupportAdmin"], data.GetProperty("roles").EnumerateArray().Select(role => role.GetString()));
     }
 
     [Theory]

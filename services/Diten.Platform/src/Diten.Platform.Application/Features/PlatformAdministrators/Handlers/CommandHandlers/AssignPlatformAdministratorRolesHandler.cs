@@ -34,6 +34,14 @@ public sealed class AssignPlatformAdministratorRolesHandler : IRequestHandler<As
             return Response<NoContent>.Fail("Platform administrator not found.", 404);
         }
 
+        // BL-521 FIX4 item 3 — the guarded / unguarded decision below is made on the record as loaded, so it is written at
+        // the version that was read; a client version other than that one is refused before anything is decided.
+        if (administrator.Version != request.Request.Version)
+        {
+            return Response<NoContent>.Fail(AdminSafetyMessages.ChangedByAnotherUser, 409);
+        }
+
+        var loadedVersion = administrator.Version;
         var newRoles = PlatformAdministratorParsing.ParseRoles(request.Request.Roles).ToList();
 
         // BL-521 FIX3 item 1 — an administrator does not change its OWN roles, in either direction. Before, only removing
@@ -63,8 +71,8 @@ public sealed class AssignPlatformAdministratorRolesHandler : IRequestHandler<As
 
         // FIX3 item 3 — taking an active platform super administrator out of the set is written under the guard.
         var outcome = leavesSuperAdminSet
-            ? await _repository.UpdateGuardedAsync(administrator, request.Request.Version, ct)
-            : await _repository.UpdateAsync(administrator, request.Request.Version, ct)
+            ? await _repository.UpdateGuardedAsync(administrator, loadedVersion, ct)
+            : await _repository.UpdateAsync(administrator, loadedVersion, ct)
                 ? SuperAdminGuardedWriteResult.Written
                 : SuperAdminGuardedWriteResult.VersionConflict;
         return outcome == SuperAdminGuardedWriteResult.Written

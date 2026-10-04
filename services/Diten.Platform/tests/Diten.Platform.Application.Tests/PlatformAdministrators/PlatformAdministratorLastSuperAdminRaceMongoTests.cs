@@ -28,6 +28,10 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// its own write, before its commit — until the other request has either reached the same point or finished. Without the
 /// guard both reach it (both counted the other as present) and both commit; with it the second one is refused 409 before it
 /// can count. Production handlers, production safety guard, a test-owned replica set — never the shared database.</para>
+///
+/// <para>FIX4 item 4 — three interleavings FIX3 left untested: a removal that commits between the other request's pre-check
+/// and its claim (only the count inside the transaction can still refuse it), a bulk delete racing a demotion (the bulk
+/// path is guarded too), and a commit whose answer never came back (the record read again decides).</para>
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
 public sealed class PlatformAdministratorLastSuperAdminRaceMongoTests
@@ -78,6 +82,117 @@ public sealed class PlatformAdministratorLastSuperAdminRaceMongoTests
         Assert.Equal(AdminSafetyReasonCodes.SafetyCheckUnavailable, response.ReasonCode);
         var after = await World.ReadAsync(database, target.Id);
         Assert.Equal((ActorType.PlatformAdmin, target.Version), (after.ActorType, after.Version));
+    }
+
+    // ── BL-521 FIX4 item 4 — the interleavings FIX3 left without a test ──────────────────────────────────────
+
+    /// <summary>
+    /// T1 commits AFTER T2's pre-check but BEFORE T2's claim: T2's handler already counted T1's target as present, so the
+    /// count INSIDE T2's transaction is the only thing left that can refuse it. (A count that refused only below zero
+    /// stayed green under every other test.) The seam holds T2 where its guarded write starts, before its claim.
+    /// </summary>
+    [Fact]
+    public async Task A_removal_committed_between_the_others_pre_check_and_its_claim_is_seen_by_the_count_in_the_transaction()
+    {
+        await using var world = await World.StartAsync();
+        var a = await world.SeedAsync(AdministratorRole.SuperAdmin);
+        var b = await world.SeedAsync(AdministratorRole.SuperAdmin);
+        await world.WarmUpGuardAsync(actingAs: a);
+
+        var atClaim = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var heldBeforeClaim = world.Repository(beforeGuardClaim: async ct =>
+        {
+            atClaim.TrySetResult();
+            await release.Task.WaitAsync(TimeSpan.FromSeconds(30), ct);
+        });
+
+        var second = Task.Run(() => World.UpdateAsync(heldBeforeClaim, world.Database, actingAs: b, target: a, Demote));
+        await atClaim.Task.WaitAsync(TimeSpan.FromSeconds(30)); // T2 passed its pre-check (b was still there)
+        var first = await World.UpdateAsync(world.Repository(), world.Database, actingAs: a, target: b, Demote);
+        release.TrySetResult();
+        var refused = await second;
+
+        Assert.True(first.StatusCode == 204, Describe([first, refused]));
+        Assert.True(refused.StatusCode == 409, Describe([first, refused]));
+        Assert.Equal(AdminSafetyReasonCodes.LastActiveSuperAdmin, refused.ReasonCode);
+        Assert.Equal(1, await world.CountActivePlatformSuperAdminsAsync());
+    }
+
+    /// <summary>
+    /// A bulk delete of B while a demotion of A holds the guard (inside its transaction, just before its commit): the bulk
+    /// path is guarded too, so its claim conflicts and it is refused. An unguarded bulk delete passed its own count (A was
+    /// still there), deleted B, and the demotion then committed — no super administrator left.
+    /// </summary>
+    [Fact]
+    public async Task A_bulk_delete_racing_a_demotion_is_written_under_the_guard_and_refused_409()
+    {
+        await using var world = await World.StartAsync();
+        var a = await world.SeedAsync(AdministratorRole.SuperAdmin);
+        var b = await world.SeedAsync(AdministratorRole.SuperAdmin);
+        await world.WarmUpGuardAsync(actingAs: a);
+
+        var held = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var holdingTheGuard = world.Repository(beforeGuardedCommit: async ct =>
+        {
+            held.TrySetResult();
+            await release.Task.WaitAsync(TimeSpan.FromSeconds(30), ct);
+        });
+
+        var demotion = Task.Run(() => World.UpdateAsync(holdingTheGuard, world.Database, actingAs: b, target: a, Demote));
+        await held.Task.WaitAsync(TimeSpan.FromSeconds(30));
+        var bulk = await world.BulkDeleteAsync(world.Repository(), actingAs: a, target: b);
+        release.TrySetResult();
+        var demoted = await demotion;
+
+        Assert.True(bulk.StatusCode == 409, Describe([bulk, demoted]));
+        Assert.Equal(AdminSafetyReasonCodes.ConcurrentSuperAdminChange, bulk.ReasonCode);
+        Assert.True(demoted.StatusCode == 204, Describe([bulk, demoted]));
+        Assert.Equal(1, await world.CountActivePlatformSuperAdminsAsync());
+        Assert.False((await World.ReadAsync(world.Database, b.Id)).IsDeleted);
+    }
+
+    /// <summary>
+    /// A commit whose answer never came back (the driver's UnknownTransactionCommitResult, even after the commit-only
+    /// retries) was answered "not written" (503) — while the record could already hold the change. Now the record is read
+    /// again and decides: written → 204; never sent → 503 and nothing changed.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]  // durably committed, the answer lost on every attempt
+    [InlineData(false)] // the commit never left (lost before every attempt)
+    public async Task A_commit_whose_answer_never_came_back_is_decided_by_reading_the_record_again(bool committed)
+    {
+        await using var world = await World.StartAsync();
+        var a = await world.SeedAsync(AdministratorRole.SuperAdmin);
+        var b = await world.SeedAsync(AdministratorRole.SuperAdmin);
+        await world.WarmUpGuardAsync(actingAs: a);
+        var repository = world.Repository(commitProbe: (_, afterCommit, _) => afterCommit == committed ? throw UnknownCommitResult() : Task.CompletedTask);
+
+        var response = await World.UpdateAsync(repository, world.Database, actingAs: a, target: b, r => r with { Roles = ["SupportAdmin"] });
+
+        var after = await World.ReadAsync(world.Database, b.Id);
+        if (committed)
+        {
+            Assert.True(response.StatusCode == 204, Describe([response]));
+            Assert.Equal([AdministratorRole.SupportAdmin], after.Roles);
+        }
+        else
+        {
+            Assert.True(response.StatusCode == 503, Describe([response]));
+            Assert.Equal(AdminSafetyReasonCodes.SafetyCheckUnavailable, response.ReasonCode);
+            Assert.Equal([AdministratorRole.SuperAdmin], after.Roles);
+        }
+    }
+
+    private static UpdatePlatformAdministratorRequest Demote(UpdatePlatformAdministratorRequest request) =>
+        request with { ActorType = "PartnerAdmin", PartnerId = Guid.NewGuid(), AllowedTenantIds = [Guid.NewGuid()] };
+
+    private static MongoException UnknownCommitResult()
+    {
+        var exception = new MongoException("synthetic unknown commit result (bl521-fix4)");
+        exception.AddErrorLabel("UnknownTransactionCommitResult");
+        return exception;
     }
 
     private static string Describe(IEnumerable<Response<NoContent>> results) =>
@@ -142,7 +257,25 @@ public sealed class PlatformAdministratorLastSuperAdminRaceMongoTests
             return new World(mongo, database);
         }
 
+        public IMongoDatabase Database => _database;
+
+        /// <summary>A request's own production repository (as each HTTP request has its own), with the test seams it
+        /// needs (none by default).</summary>
+        public PlatformAdministratorRepository Repository(
+            Func<CancellationToken, Task>? beforeGuardedCommit = null,
+            Func<CancellationToken, Task>? beforeGuardClaim = null,
+            Func<int, bool, CancellationToken, Task>? commitProbe = null) =>
+            new(_dbContext, new TenantContext(), beforeGuardedCommit, beforeGuardClaim, commitProbe);
+
         public Task<PlatformAdministrator> SeedAsync(AdministratorRole role) => InsertAsync(_database, role);
+
+        public async Task<Response<NoContent>> BulkDeleteAsync(PlatformAdministratorRepository repository, PlatformAdministrator actingAs, PlatformAdministrator target)
+        {
+            var user = new Actor(actingAs.Email);
+            var version = (await ReadAsync(_database, target.Id)).Version;
+            return await new BulkDeletePlatformAdministratorsHandler(repository, user, new ActorSafetyGuard(user, repository))
+                .Handle(new BulkDeletePlatformAdministratorsCommand([new PlatformAdministratorBulkDeleteItemRequest(target.Id, version)]), CancellationToken.None);
+        }
 
         public static async Task<PlatformAdministrator> InsertAsync(IMongoDatabase database, AdministratorRole role)
         {

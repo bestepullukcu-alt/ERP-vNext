@@ -26,10 +26,13 @@ namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 /// not count as one.
 ///
 /// <para>FIX3 — (1) nor its own ROLES, on the update path or the role assignment path (a ReadOnly administrator made itself
-/// SuperAdmin); (2a) an update reaches Auth FIRST, under the record's previous address, and the record is written only if
-/// Auth took it (a write refused afterwards puts Auth back); (2b) moving the last platform super administrator to another
-/// e-mail counts as taking it out of the set; (2c) the system seed administrator's e-mail does not change, it is not
-/// suspended through the update path, and the bulk delete does not delete it.</para>
+/// SuperAdmin); (2a) an update reaches Auth FIRST and the record is written only if Auth took it; (2c) the system seed
+/// administrator's e-mail does not change, it is not suspended through the update path, and the bulk delete does not
+/// delete it.</para>
+///
+/// <para>FIX4 — (1) NOBODY's e-mail changes (409 <see cref="AdminSafetyReasonCodes.EmailImmutable"/>): FIX3's move of it and
+/// its "the last super administrator's e-mail change is a demotion" rule are gone; (2) a record write refused after the
+/// sync converges Auth to the record as it is NOW, never to the values this request loaded.</para>
 ///
 /// <para>Measured on the production handlers, the production <see cref="ActorSafetyGuard"/> and the production
 /// <see cref="PlatformAdministratorRepository"/> (its count query included) over a test-owned replica set — never the
@@ -124,7 +127,6 @@ public sealed class PlatformAdministratorSafetyMongoTests
     [InlineData("suspend")]
     [InlineData("disable")]
     [InlineData("dropSuperAdmin")]
-    [InlineData("email")] // FIX3 item 2(b)
     public async Task The_last_active_platform_super_admin_cannot_be_demoted_or_suspended_through_update(string change)
     {
         await using var world = await World.StartAsync();
@@ -135,7 +137,6 @@ public sealed class PlatformAdministratorSafetyMongoTests
             "toPartner" => r => r with { ActorType = "PartnerAdmin", PartnerId = Guid.NewGuid(), AllowedTenantIds = [Guid.NewGuid()] },
             "suspend" => r => r with { Status = "Suspended" },
             "disable" => r => r with { Status = "Disabled" },
-            "email" => r => r with { Email = $"moved.{Guid.NewGuid():N}@bl521.test" },
             _ => r => r with { Roles = ["SupportAdmin"] }
         });
 
@@ -186,74 +187,85 @@ public sealed class PlatformAdministratorSafetyMongoTests
         Assert.Equal(AdministratorStatus.Suspended, (await world.ReadAsync(partner.Id)).Status);
     }
 
-    // ── FIX3 item 2(a) — Auth first, the record only if Auth took it ─────────────────────────────────────
+    // ── FIX4 item 1 — an administrator's e-mail never changes ────────────────────────────────────────────
 
-    /// <summary>Changing another administrator's e-mail: Auth is asked FIRST, under the record's previous address, and
-    /// the record follows.</summary>
+    /// <summary>
+    /// The e-mail is the identity key Platform and Auth match an administrator by; FIX3's way of moving it (Auth first under
+    /// the previous address, put back on a refused write) left windows in which the two disagreed. Now nobody changes it —
+    /// not even for the last super administrator, where FIX3 counted the move as a demotion: 409, nothing written, nothing
+    /// sent to Auth. A new address is invited as a new administrator.
+    /// </summary>
+    [Theory]
+    [InlineData("ordinary")]
+    [InlineData("lastSuperAdmin")]
+    public async Task Another_administrators_email_cannot_be_changed_409_and_nothing_reaches_auth(string who)
+    {
+        await using var world = await World.StartAsync();
+        PlatformAdministrator target, actor;
+        if (who == "lastSuperAdmin")
+        {
+            (target, actor) = await world.LastSuperAdminWorldAsync();
+        }
+        else
+        {
+            actor = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]);
+            target = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SupportAdmin]);
+        }
+
+        var before = await world.ReadAsync(target.Id);
+
+        var response = await world.UpdateAsync(target, actingAs: actor, r => r with { Email = $"moved.{Guid.NewGuid():N}@bl521.test" });
+
+        Assert.True(response.StatusCode == 409, $"{response.StatusCode}: {string.Join("; ", response.Errors)}");
+        Assert.Equal(AdminSafetyReasonCodes.EmailImmutable, response.ReasonCode);
+        Assert.Equal(AdminSafetyMessages.EmailImmutable, Assert.Single(response.Errors));
+        var after = await world.ReadAsync(target.Id);
+        Assert.Equal((before.Email, before.NormalizedEmail, before.Version), (after.Email, after.NormalizedEmail, after.Version));
+        Assert.Empty(world.Auth.Synced);
+    }
+
+    /// <summary>The comparison is on the normalized address: other letter case or surrounding spaces are the same address,
+    /// so the edit goes through — and Auth is asked about the account under its one address.</summary>
     [Fact]
-    public async Task An_email_change_reaches_auth_first_under_the_previous_address_and_then_the_record()
+    public async Task The_same_address_in_other_letter_case_or_with_spaces_is_not_a_change()
     {
         await using var world = await World.StartAsync();
         var actor = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]);
         var target = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SupportAdmin]);
-        var moved = $"moved.{Guid.NewGuid():N}@bl521.test";
-        world.Auth.OnSync = async _ => Assert.Equal(target.Email, (await world.ReadAsync(target.Id)).Email); // not written yet
 
-        var response = await world.UpdateAsync(target, actingAs: actor, r => r with { Email = moved });
+        var response = await world.UpdateAsync(target, actingAs: actor, r => r with { Email = $"  {target.Email.ToUpperInvariant()} ", DisplayName = "Same Address" });
 
         Assert.True(response.StatusCode == 204, $"{response.StatusCode}: {string.Join("; ", response.Errors)}");
-        var sync = Assert.Single(world.Auth.Synced);
-        Assert.Equal((moved, target.Email), (sync.Email, sync.PreviousEmail));
-        Assert.Equal(moved, (await world.ReadAsync(target.Id)).Email);
+        Assert.Equal((target.Email, "Same Address"), ((await world.ReadAsync(target.Id)).Email, (await world.ReadAsync(target.Id)).DisplayName));
+        Assert.Equal(target.Email, Assert.Single(world.Auth.Synced).Email);
     }
 
-    /// <summary>The reported case: Auth refuses (it does not know the account under that address) — the record is NOT
-    /// written. Before, it was already saved and pointed at an address Auth did not have.</summary>
+    // ── FIX4 item 2 — a refused write converges Auth to the record as it is NOW ────────────────────────
+
+    /// <summary>Auth took the change, then the record write was refused because someone else saved the record in between
+    /// (with other roles). FIX3 put back the values THIS request had loaded (SupportAdmin) — over the other save. Now the
+    /// record is read again and Auth gets what it holds now (BillingAdmin).</summary>
     [Fact]
-    public async Task When_auth_refuses_the_sync_the_record_is_not_written()
+    public async Task When_the_record_write_is_refused_auth_follows_the_record_as_it_now_is_not_as_it_was_loaded()
     {
         await using var world = await World.StartAsync();
         var actor = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]);
         var target = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SupportAdmin]);
-        var before = await world.ReadAsync(target.Id);
-        world.Auth.OnSync = request => request.PreviousEmail == target.Email
-            ? throw new InvalidOperationException("platform user not found")
-            : Task.CompletedTask;
-
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            world.UpdateAsync(target, actingAs: actor, r => r with { Email = $"moved.{Guid.NewGuid():N}@bl521.test", Roles = ["BillingAdmin"] }));
-
-        var after = await world.ReadAsync(target.Id);
-        Assert.Equal((before.Email, before.Roles.Single(), before.Version), (after.Email, after.Roles.Single(), after.Version));
-        // whatever Auth may have applied is put back to the record's values, found under the record's address
-        var restore = world.Auth.Synced[^1];
-        Assert.Equal((target.Email, "SupportAdmin"), (restore.Email, restore.Roles.Single()));
-    }
-
-    /// <summary>Auth took the change but the record write is then refused (here: another user saved the record in
-    /// between) — Auth is put back to the record's values, found under the NEW address it was just moved to.</summary>
-    [Fact]
-    public async Task When_the_record_write_is_refused_after_the_sync_auth_is_put_back()
-    {
-        await using var world = await World.StartAsync();
-        var actor = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SuperAdmin]);
-        var target = await world.SeedAsync(ActorType.PlatformAdmin, [AdministratorRole.SupportAdmin]);
-        var moved = $"moved.{Guid.NewGuid():N}@bl521.test";
-        var concurrentEditDone = false;
+        var concurrentSaveDone = false;
         world.Auth.OnSync = async _ =>
         {
-            if (concurrentEditDone) return;
-            concurrentEditDone = true;
-            await world.BumpVersionAsync(target.Id); // someone else saved the record while Auth was being synced
+            if (concurrentSaveDone) return;
+            concurrentSaveDone = true;
+            await world.SaveRolesAsync(target.Id, AdministratorRole.BillingAdmin); // another user's save while Auth was synced
         };
 
-        var response = await world.UpdateAsync(target, actingAs: actor, r => r with { Email = moved });
+        var response = await world.UpdateAsync(target, actingAs: actor, r => r with { Roles = ["ReadOnly"] });
 
         Assert.Equal(409, response.StatusCode);
-        Assert.Equal(target.Email, (await world.ReadAsync(target.Id)).Email);
+        Assert.Equal([AdministratorRole.BillingAdmin], (await world.ReadAsync(target.Id)).Roles);
         Assert.Equal(2, world.Auth.Synced.Count);
-        var restore = world.Auth.Synced[1];
-        Assert.Equal((target.Email, moved, "SupportAdmin"), (restore.Email, restore.PreviousEmail, restore.Roles.Single()));
+        Assert.Equal(("ReadOnly", "BillingAdmin"), (world.Auth.Synced[0].Roles.Single(), world.Auth.Synced[1].Roles.Single()));
+        Assert.Equal(target.Email, world.Auth.Synced[1].Email);
     }
 
     // ── FIX3 item 2(c) — the system seed administrator ───────────────────────────────────────────────────
@@ -375,10 +387,10 @@ public sealed class PlatformAdministratorSafetyMongoTests
         public async Task<PlatformAdministrator> ReadAsync(Guid id) =>
             await _database.GetCollection<PlatformAdministrator>(PlatformCollections.PlatformAdministrators).Find(x => x.Id == id).SingleAsync();
 
-        /// <summary>Another user's save of the record: only its version moves.</summary>
-        public Task BumpVersionAsync(Guid id) =>
+        /// <summary>Another user's save of the record: other roles, the next version.</summary>
+        public Task SaveRolesAsync(Guid id, AdministratorRole role) =>
             _database.GetCollection<PlatformAdministrator>(PlatformCollections.PlatformAdministrators)
-                .UpdateOneAsync(x => x.Id == id, Builders<PlatformAdministrator>.Update.Inc(x => x.Version, 1));
+                .UpdateOneAsync(x => x.Id == id, Builders<PlatformAdministrator>.Update.Set(x => x.Roles, [role]).Inc(x => x.Version, 1));
 
         public async Task AssertStillPlatformSuperAdminAsync(Guid id)
         {

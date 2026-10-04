@@ -147,6 +147,14 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             }
 
             actorType = recordActorType;
+
+            // BL-521 FIX4 item 2 — the refreshed token's roles follow the RECORD: Auth's copy is converged to the roles
+            // Platform's answer names before the token is minted from it. An older Platform that sends none converges nothing.
+            if (record.Roles is not null)
+            {
+                await PlatformAdministratorRoleConvergence.ConvergeAsync(_userRoleRepository, _roleRepository, user.Id, existingToken.TenantId, record.Roles, ct);
+            }
+
             await _platformAdministratorStatusClient.MarkLoginAcceptedAsync(user.Email, ct);
         }
 

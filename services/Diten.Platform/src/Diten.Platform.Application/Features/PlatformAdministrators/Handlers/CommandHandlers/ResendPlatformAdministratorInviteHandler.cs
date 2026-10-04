@@ -1,6 +1,7 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.PlatformAdministrators.Commands;
+using Diten.Platform.Application.Security;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -35,6 +36,14 @@ public sealed class ResendPlatformAdministratorInviteHandler : IRequestHandler<R
             return Response<PlatformAdministratorInviteResultDto>.Fail("Platform administrator not found.", 404);
         }
 
+        // BL-521 FIX4 item 3 — refused BEFORE Auth is provisioned: the record is written back whole, so it must be the
+        // version the client saw, and the write is conditional on the version that was read.
+        if (administrator.Version != request.Request.Version)
+        {
+            return Response<PlatformAdministratorInviteResultDto>.Fail(AdminSafetyMessages.ChangedByAnotherUser, 409);
+        }
+
+        var loadedVersion = administrator.Version;
         var provisioning = await _provisioningService.ProvisionAsync(new PlatformAdministratorProvisioningRequest(
             administrator.Email,
             administrator.UserName,
@@ -54,10 +63,10 @@ public sealed class ResendPlatformAdministratorInviteHandler : IRequestHandler<R
 
         PlatformAdministratorMutationSupport.MarkUpdated(administrator, _currentUser);
 
-        var updated = await _repository.UpdateAsync(administrator, request.Request.Version, ct);
+        var updated = await _repository.UpdateAsync(administrator, loadedVersion, ct);
         if (!updated)
         {
-            return Response<PlatformAdministratorInviteResultDto>.Fail("The administrator was changed by another user. Reload and try again.", 409);
+            return Response<PlatformAdministratorInviteResultDto>.Fail(AdminSafetyMessages.ChangedByAnotherUser, 409);
         }
 
         _logger.LogInformation(

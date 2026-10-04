@@ -35,12 +35,28 @@ ve yenileme yapan her yöneticinin oturumlarını iptal ediyordu.)
 göndermez ve yukarıdaki kesinti yaşanır (oturumlar silinmez). Geri alma gerekiyorsa sıra yine:
 önce Auth, sonra Platform.
 
-**E-posta değişikliği (FIX3 madde 2).** Platform bir yöneticinin e-postasını değiştirirken önce
-Auth'u eşitler (`POST /api/platform-auth/platform-admins/sync`, gövdede `previousEmail` = kaydın
-eski adresi), kaydı ancak Auth kabul ederse yazar; kayıt yazılamazsa Auth'u eski değerlere geri
-çeker. Eski Auth `previousEmail`'i tanımaz, hesabı yeni adresle arar, bulamaz (404): Platform
-kaydı **yazmaz**, istek reddedilir. Yani Platform önce çıktığında Auth çıkana kadar yalnız
-e-posta değişikliği yapılamaz; kimse kilitlenmez.
+**E-posta değiştirilemez (FIX4 madde 1; FIX3'ün e-posta taşıması kalktı).** Bir platform
+yöneticisinin e-postası değiştirilemez: Platform 409 `PLATFORM_ADMINISTRATOR_EMAIL_IMMUTABLE` verir;
+yeni adres yeni yönetici olarak davet edilir, eski kayıt kaldırılır. Senkron
+(`POST /api/platform-auth/platform-admins/sync`) e-postayı yalnız hesabı **bulmak** için kullanır;
+`previousEmail` gönderilmez, gönderilse de yeni Auth okumaz, hiçbir hesap başka adrese taşınmaz.
+Bu madde için dağıtım sırası önemsizdir (eski Auth da hesabı aynı adresle arar).
+
+**Durum ve roller (FIX4 madde 2 ve 5).** Senkron gövdesinde kaydın durumu (`status`) gider: yeni
+Auth hesabı yalnız kayıt `Active` ise etkinleştirir, başka durumda (ya da `status` yoksa) hesabın
+durumuna dokunmaz ve adresi hiçbir zaman onaylamaz (onay yalnız davet kabulünde). Eski Auth
+`status`'u tanımaz, eskisi gibi her senkronda etkinleştirir — eski davranış, kilitlenme yok.
+Durum cevabında kaydın rolleri (`roles`) gider: yeni Auth her giriş, yenileme ve zorunlu parola
+değişiminde Auth'taki dört platform rolünü kayda yakınsatır ve belirteci onlardan basar; `roles`
+göndermeyen eski Platform'da yakınsatma yapılmaz (eski davranış). Sıra yine: önce Platform, sonra Auth.
+
+**Yakınsatma bekliyor işareti (FIX4 madde 2).** Platform güncellemede önce Auth'u eşitler, sonra
+kaydı yazar. Kayıt yazımı reddedilir, hata verir ya da sonucu bilinmez kalırsa kayıt **yeniden
+okunur** ve Auth kaydın **şimdiki** haline (roller, durum) yakınsatılır; ön görüntü geri
+yüklenmez. Bu yakınsatma da başarısız olursa kayıtta `AuthSyncPendingSinceUtc` dolar ve Error
+günlüğü yazılır (yalnız yönetici kimliği). Bekleyenleri bulmak (salt okunur):
+`db.platform_administrators.find({AuthSyncPendingSinceUtc: {$ne: null}}, {_id: 1, AuthSyncPendingSinceUtc: 1})`.
+Kaydın bir sonraki başarılı güncellemesi işareti temizler; giriş ve yenileme rolleri zaten kayıttan alır.
 
 **İç anahtar reddi (FIX3 madde 7).** Platform durum çağrısına 401 / 403 dönerse (iç anahtar iki
 serviste aynı değil) Auth bunu **Error** düzeyinde günlükler (anahtar ya da değeri yazılmaz) ve

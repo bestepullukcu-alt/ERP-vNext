@@ -10,18 +10,18 @@ using Xunit;
 namespace Diten.Platform.Application.Tests.PlatformAdministrators;
 
 /// <summary>
-/// BL-521 FIX3 item 2(a) — THE WIRE OF THE ADMINISTRATOR SYNC, on the PRODUCTION
-/// <see cref="PlatformAdministratorProvisioningService"/> (only the HTTP handler underneath is fake). Auth finds the account by
-/// the address the record had BEFORE the change and moves it to the new one, so the previous address must travel in the body
-/// under the name Auth binds (<c>previousEmail</c>), with the platform tenant Auth's tenant resolution requires on this
-/// route; a refusal from Auth must reach the caller as a failure (the handler then writes nothing).
+/// BL-521 — THE WIRE OF THE ADMINISTRATOR SYNC AND PROVISION, on the PRODUCTION <see cref="PlatformAdministratorProvisioningService"/>
+/// (only the HTTP handler underneath is fake). FIX3: both routes carry the platform tenant Auth's tenant resolution requires
+/// on them, and a refusal from Auth reaches the caller as a failure. FIX4: the address only finds the account (an
+/// administrator's e-mail never changes — no previous address travels any more) and the record's status travels under the
+/// name Auth binds (<c>status</c>); the provision route's tenant header has its own test (item 4).
 /// </summary>
 public sealed class PlatformAdministratorProvisioningSyncWireTests
 {
     private const string TestOnlyKey = "bl521-fix3-test-only-internal-key";
 
     [Fact]
-    public async Task The_sync_posts_the_new_and_the_previous_address_to_the_auth_sync_route()
+    public async Task The_sync_posts_the_address_and_the_records_status_to_the_auth_sync_route()
     {
         HttpRequestMessage? seen = null;
         string? body = null;
@@ -33,7 +33,7 @@ public sealed class PlatformAdministratorProvisioningSyncWireTests
         });
 
         await service.SyncAsync(new PlatformAdministratorProvisioningSyncRequest(
-            "new.address@bl521.test", "probe", "Probe", "PlatformAdmin", ["SupportAdmin"], PreviousEmail: "old.address@bl521.test"), CancellationToken.None);
+            "the.address@bl521.test", "probe", "Probe", "PlatformAdmin", ["SupportAdmin"], "Suspended"), CancellationToken.None);
 
         Assert.NotNull(seen);
         Assert.Equal(HttpMethod.Post, seen!.Method);
@@ -41,20 +41,43 @@ public sealed class PlatformAdministratorProvisioningSyncWireTests
         // Auth's tenant resolution answers this route 400 "Missing Tenant" without one (only the Development bypass hid it)
         Assert.Equal("00000000-0000-0000-0000-000000000001", Assert.Single(seen.Headers.GetValues("X-Tenant-Id")));
         using var json = JsonDocument.Parse(body!);
-        Assert.Equal("new.address@bl521.test", json.RootElement.GetProperty("email").GetString());
-        Assert.Equal("old.address@bl521.test", json.RootElement.GetProperty("previousEmail").GetString());
+        Assert.Equal("the.address@bl521.test", json.RootElement.GetProperty("email").GetString());
+        Assert.Equal("Suspended", json.RootElement.GetProperty("status").GetString());
+        Assert.False(json.RootElement.TryGetProperty("previousEmail", out _));
+    }
+
+    /// <summary>FIX4 item 4 — the provision route needs the platform tenant too (FIX3 added it with a test for the sync
+    /// only): without it Auth answers 400 "Missing Tenant" outside Development and no administrator can be invited.</summary>
+    [Fact]
+    public async Task The_provision_posts_to_the_auth_provision_route_with_the_platform_tenant()
+    {
+        HttpRequestMessage? seen = null;
+        var service = Service(request =>
+        {
+            seen = request;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("""{"emailSent":true}""") });
+        });
+
+        var result = await service.ProvisionAsync(new PlatformAdministratorProvisioningRequest(
+            "invited@bl521.test", "invited", "Invited Probe", "PlatformAdmin", ["ReadOnly"], RequirePasswordChange: true), CancellationToken.None);
+
+        Assert.NotNull(seen);
+        Assert.Equal(HttpMethod.Post, seen!.Method);
+        Assert.Equal("/api/platform-auth/platform-admins/provision", seen.RequestUri!.AbsolutePath);
+        Assert.Equal("00000000-0000-0000-0000-000000000001", Assert.Single(seen.Headers.GetValues("X-Tenant-Id")));
+        Assert.True(result.EmailSent);
     }
 
     [Theory]
     [InlineData(HttpStatusCode.NotFound, """{"message":"platform user not found"}""")]
-    [InlineData(HttpStatusCode.Conflict, """{"message":"email already exists"}""")]
+    [InlineData(HttpStatusCode.Conflict, """{"message":"username already exists"}""")]
     [InlineData(HttpStatusCode.ServiceUnavailable, "")]
     public async Task A_refusal_from_auth_is_a_failure_for_the_caller(HttpStatusCode status, string reply)
     {
         var service = Service(_ => Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(reply) }));
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.SyncAsync(new PlatformAdministratorProvisioningSyncRequest(
-            "new.address@bl521.test", "probe", "Probe", "PlatformAdmin", ["SupportAdmin"], PreviousEmail: "old.address@bl521.test"), CancellationToken.None));
+            "the.address@bl521.test", "probe", "Probe", "PlatformAdmin", ["SupportAdmin"], "Active"), CancellationToken.None));
     }
 
     private static PlatformAdministratorProvisioningService Service(Func<HttpRequestMessage, Task<HttpResponseMessage>> reply) =>

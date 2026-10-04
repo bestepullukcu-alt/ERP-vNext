@@ -513,6 +513,7 @@
   <data name="AdminSeedSuspendDenied" xml:space="preserve"><value>The system seed administrator cannot be suspended.</value></data>
   <data name="AdminSeedEmailChangeDenied" xml:space="preserve"><value>The system seed administrator's e-mail cannot be changed.</value></data>
   <data name="AdminChangeUnavailable" xml:space="preserve"><value>The administrator change could not be saved right now. Nothing was written. Please try again.</value></data>
+  <data name="AdminEmailImmutable" xml:space="preserve"><value>An administrator's e-mail cannot be changed. Invite the new address as a new administrator and remove the old one.</value></data>
   <data name="InvitationEmailSendFailed" xml:space="preserve"><value>Administrator was created, but the invitation email could not be sent. Check SMTP settings and use Resend Invitation.</value></data>
   <data name="AccessGovernance" xml:space="preserve"><value>Access Governance</value></data>
   <data name="UsersMenu" xml:space="preserve"><value>Users</value></data>

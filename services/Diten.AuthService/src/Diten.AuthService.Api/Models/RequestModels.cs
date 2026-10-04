@@ -19,15 +19,17 @@ public sealed record PlatformAdminProvisioningRequest(
     string ActorType,
     IReadOnlyList<string> Roles,
     bool RequirePasswordChange = true);
-// BL-521 FIX3 item 2(a) — PreviousEmail: the address the Platform record had BEFORE this change; the account is found by
-// it and moved to Email. Optional: an older Platform does not send it (the account is then found by Email, as before).
+// BL-521 FIX4 item 1 — Email only FINDS the account: a platform administrator's e-mail never changes, so the sync never
+// moves an account (FIX3's PreviousEmail is gone; a body that still carries it is not read).
+// Item 5 — Status: the Platform record's status; the account is switched on only for "Active". Optional: an older Platform
+// does not send it, and then the account's state is left alone.
 public sealed record PlatformAdminSyncRequest(
     string Email,
     string UserName,
     string DisplayName,
     string ActorType,
     IReadOnlyList<string> Roles,
-    string? PreviousEmail = null);
+    string? Status = null);
 public sealed record AssignRoleRequest(Guid RoleId);
 public sealed record AssignPermissionRequest(Guid PermissionId);
 // Password is optional: omit it to create the user as an invitation (set-password link emailed).

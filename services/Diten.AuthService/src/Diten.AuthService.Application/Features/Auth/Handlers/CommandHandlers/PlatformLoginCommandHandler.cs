@@ -87,6 +87,14 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             return Response<AuthResponse>.Fail("Temporary password has expired. Please reset your password.", 401);
         }
 
+        // BL-521 FIX4 item 2 — the roles this token is minted with follow the RECORD: Auth's copy is converged to the roles
+        // Platform's answer names before it is read below (a sync that was lost — a refused write, a failed convergence —
+        // no longer outlives the next sign-in). An older Platform that sends no roles converges nothing.
+        if (record.Roles is not null)
+        {
+            await PlatformAdministratorRoleConvergence.ConvergeAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, record.Roles, ct);
+        }
+
         var roles = (await _userRoleRepository.GetRolesByUserAsync(user.Id, PlatformTenantId, ct))
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
