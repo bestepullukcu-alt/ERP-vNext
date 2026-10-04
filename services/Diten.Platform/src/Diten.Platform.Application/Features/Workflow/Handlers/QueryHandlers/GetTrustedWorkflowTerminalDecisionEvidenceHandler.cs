@@ -25,12 +25,24 @@ public sealed class GetTrustedWorkflowTerminalDecisionEvidenceHandler
         _logs = logs;
     }
 
-    public async Task<Response<TrustedWorkflowTerminalDecisionEvidence>> Handle(
+    public Task<Response<TrustedWorkflowTerminalDecisionEvidence>> Handle(
         GetTrustedWorkflowTerminalDecisionEvidenceQuery request,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
+        return EvaluateAsync(request, mayReread: true, ct);
+    }
 
+    /// <summary>
+    /// Reads the instance, then its tasks, then its logs, and answers from what it read. The three reads are NOT one
+    /// snapshot (BL-547-FIX1): a transition can commit between them. <paramref name="mayReread"/> is the one second look
+    /// that closes that window — see the end of the non-terminal branch.
+    /// </summary>
+    private async Task<Response<TrustedWorkflowTerminalDecisionEvidence>> EvaluateAsync(
+        GetTrustedWorkflowTerminalDecisionEvidenceQuery request,
+        bool mayReread,
+        CancellationToken ct)
+    {
         var instance = await _instances.GetByIdAsync(request.WorkflowInstanceId, ct);
         if (instance is null ||
             instance.TrustedConsumerClientId != request.TrustedConsumerClientId ||
@@ -79,8 +91,8 @@ public sealed class GetTrustedWorkflowTerminalDecisionEvidenceHandler
             }
 
             /*
-             * BL-547 — AN APPROVAL THAT ENDED WITH NOBODY DECIDING HAS ITS OWN CODE. Cancelled (the maker or the owning
-             * module called it off) and TimedOut (the SLA ran out) used to be answered "inconsistent", the code that means
+             * BL-547 — AN APPROVAL THAT ENDED WITH NOBODY DECIDING HAS ITS OWN CODE. Cancelled (the trusted consumer's own
+             * cancel, or the public task cancel) and TimedOut (the SLA ran out) used to be answered "inconsistent", the code that means
              * "the engine's own facts contradict each other" — a consumer could not tell a closed approval from a corrupt
              * one, and quarantined both. The answer is the closed-without-decision code only when the facts HOLD TOGETHER
              * (see IsCoherentClosedWithoutDecision): a consumer that hears it may stop waiting and take its request back,
@@ -91,6 +103,23 @@ public sealed class GetTrustedWorkflowTerminalDecisionEvidenceHandler
                 return IsCoherentClosedWithoutDecision(instance, tasks, logs, decisionLogs)
                     ? ClosedWithoutDecision(instance.Status, request.CorrelationId)
                     : Inconsistent("Workflow closed-without-decision facts are contradictory.", request.CorrelationId);
+            }
+
+            /*
+             * BL-547-FIX1 — A RUNNING INSTANCE WHOSE FACTS DO NOT HOLD TOGETHER MAY ONLY HAVE BEEN READ IN THE MIDDLE OF A
+             * TRANSITION. The instance, its tasks and its logs are three reads, not a snapshot: if the instance was read
+             * Active or Escalated and the final approve / reject / cancel / timeout committed before the tasks or the logs
+             * were read, the facts of a DECIDED approval look contradictory, and "inconsistent" is the answer some consumers
+             * release a request on. So: read all three ONCE more and answer from that (decided now → the ordinary terminal
+             * path, closed now → the closed answer; still incoherent → inconsistent, and no third look). A coherent answer
+             * costs no extra read, and a closed instance is not read again (nothing about it changes any more).
+             */
+            if (mayReread
+                && instance.Status is WorkflowInstanceStatus.Pending
+                    or WorkflowInstanceStatus.Active
+                    or WorkflowInstanceStatus.Escalated)
+            {
+                return await EvaluateAsync(request, mayReread: false, ct);
             }
 
             return Inconsistent("Workflow non-terminal facts are contradictory.", request.CorrelationId);
@@ -270,7 +299,9 @@ public sealed class GetTrustedWorkflowTerminalDecisionEvidenceHandler
     /// request back and stops reading: a decision that could still land afterwards would be an approval nobody applies.
     /// <list type="bullet">
     /// <item>Every decision log is an earlier step's approval (<see cref="IsCoherentPriorApproval"/>, unchanged): a
-    /// reject, or an approve that finished the instance, contradicts a cancelled or timed-out one.</item>
+    /// reject, or an approve that finished the instance, contradicts a cancelled or timed-out one. And every APPROVED task
+    /// has its approval log (BL-547-FIX1): an approved task with none may be a decision this endpoint cannot see, and
+    /// "closed" would let a consumer drop it.</item>
     /// <item>Every task is closed — an earlier step's approval, or the cancelled / timed-out one. A task still waiting,
     /// escalated or rejected under a closed instance can still be decided (the gates look at the task) or is a contradiction.</item>
     /// <item>The instance's last transition is the one that closed it (Cancel for Cancelled, Timeout for TimedOut), on a
@@ -300,6 +331,7 @@ public sealed class GetTrustedWorkflowTerminalDecisionEvidenceHandler
         }
 
         if (!decisionLogs.All(x => IsCoherentPriorApproval(x, tasks))
+            || tasks.Count(x => x.Status == ApprovalTaskStatus.Approved) != decisionLogs.Count
             || tasks.Any(x => x.Status is not (ApprovalTaskStatus.Approved
                 or ApprovalTaskStatus.Cancelled or ApprovalTaskStatus.TimedOut)))
         {

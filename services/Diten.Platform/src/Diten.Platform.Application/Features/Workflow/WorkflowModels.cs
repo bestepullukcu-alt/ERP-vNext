@@ -45,8 +45,8 @@ public static class WorkflowReasonCodes
     public const string WorkflowTerminalEvidenceInconsistent = "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT";
     public const string WorkflowDecisionNotTerminal = "WORKFLOW_DECISION_NOT_TERMINAL";
 
-    /// <summary>BL-547 — the trusted terminal-decision evidence of an approval that was CANCELLED (the maker, or the owning
-    /// module's withdraw) or TIMED OUT (the SLA ran out) and that nobody decided, with every fact of it holding together:
+    /// <summary>BL-547 — the trusted terminal-decision evidence of an approval that was CANCELLED (the trusted consumer's own
+    /// cancel, or the public task cancel) or TIMED OUT (the SLA ran out) and that nobody decided, with every fact of it holding together:
     /// nothing is left open that could still be decided. 409. Apart from <see cref="WorkflowDecisionNotTerminal"/> (still
     /// open — an escalated approval included: wait) and from <see cref="WorkflowTerminalEvidenceInconsistent"/> (the
     /// engine's own facts contradict each other — a person has to look). Which of the two endings it was is in the
