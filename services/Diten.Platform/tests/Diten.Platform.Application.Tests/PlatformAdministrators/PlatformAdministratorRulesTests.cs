@@ -51,6 +51,27 @@ public sealed class PlatformAdministratorRulesTests
         Assert.Contains(result.Errors, error => error.ErrorMessage.Contains("AllowedTenantIds"));
     }
 
+    /// <summary>BL-521 FIX1 F6 — the platform system tenant cannot be given to a partner administrator, on invite or on
+    /// update; an ordinary tenant still can.</summary>
+    [Fact]
+    public void Invite_and_update_validators_refuse_the_platform_system_tenant_for_a_partner()
+    {
+        var partnerId = Guid.NewGuid();
+        var customer = Guid.NewGuid();
+        IReadOnlyList<Guid> withSystem = [customer, SystemTenantRules.PlatformSystemTenantId];
+
+        var invite = new InvitePlatformAdministratorValidator().Validate(new InvitePlatformAdministratorCommand(new InvitePlatformAdministratorRequest(
+            "partner@diten.com", "partner", "Partner Admin", "PartnerAdmin", partnerId, withSystem, ["SupportAdmin"])));
+        var update = new UpdatePlatformAdministratorValidator().Validate(new UpdatePlatformAdministratorCommand(Guid.NewGuid(), new UpdatePlatformAdministratorRequest(
+            "partner@diten.com", "partner", "Partner Admin", "PartnerAdmin", partnerId, withSystem, "Active", ["SupportAdmin"], 1)));
+        var ordinary = new InvitePlatformAdministratorValidator().Validate(new InvitePlatformAdministratorCommand(new InvitePlatformAdministratorRequest(
+            "partner@diten.com", "partner", "Partner Admin", "PartnerAdmin", partnerId, [customer], ["SupportAdmin"])));
+
+        Assert.Contains(invite.Errors, e => e.ErrorMessage == InvitePlatformAdministratorValidator.SystemTenantNotAllowedMessage);
+        Assert.Contains(update.Errors, e => e.ErrorMessage == UpdatePlatformAdministratorValidator.SystemTenantNotAllowedMessage);
+        Assert.True(ordinary.IsValid, string.Join("; ", ordinary.Errors.Select(e => e.ErrorMessage)));
+    }
+
     [Fact]
     public void Assign_roles_validator_rejects_empty_or_invalid_roles()
     {

@@ -59,7 +59,10 @@ public sealed class InternalPlatformAdministratorsController : CustomBaseControl
             administrator.Email,
             administrator.Status.ToString(),
             administrator.IsDeleted,
-            administrator.Status == AdministratorStatus.Active && !administrator.IsDeleted);
+            administrator.Status == AdministratorStatus.Active && !administrator.IsDeleted,
+            // BL-521 FIX1 F1(b) — the record's actor type, so Auth re-issues a refreshed token as what the record says
+            // (a demoted platform administrator becomes partner_admin at its next refresh), not as the old token said.
+            administrator.ActorType.ToString());
 
         return CreateActionResultInstance(Response<PlatformAdministratorStatusDto>.Success(dto));
     }
@@ -133,7 +136,8 @@ public sealed class InternalPlatformAdministratorsController : CustomBaseControl
         string Email,
         string Status,
         bool IsDeleted,
-        bool IsActive);
+        bool IsActive,
+        string ActorType);
 
     public sealed record PlatformAdministratorLoginAcceptedRequest(string Email);
 }

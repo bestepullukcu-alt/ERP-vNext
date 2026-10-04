@@ -1,16 +1,23 @@
+using Diten.Platform.Domain.Entities;
+
 namespace Diten.Platform.Application.Contracts;
 
 /// <summary>
-/// BL-521 — WHICH TENANTS THE PLATFORM ACTOR OF THIS REQUEST MAY TOUCH. The one place the rule lives: the tenant list,
-/// the tenant's own endpoints, its subscription and its modules all ask here; none re-derives it.
+/// BL-521 — WHICH TENANTS THE PLATFORM ACTOR OF THIS REQUEST MAY TOUCH, AND WHETHER IT IS A PLATFORM ADMINISTRATOR AT
+/// ALL. The one place the rule lives: the tenant list, the tenant's own endpoints, its subscription and its modules, the
+/// two platform policies and the permission filter all ask here; none re-derives it.
 ///
-/// <para>A platform administrator is unrestricted. A partner administrator is limited to the tenants its
-/// <c>PlatformAdministrator</c> record allows — read on the server for each request (CT decision: never from the
-/// token, whose list would grow and whose revocation would wait for the token to expire). Comparable: SAP limits a
-/// partner by organisational unit / company code, Oracle by data access sets — both on the server.</para>
+/// <para>A platform administrator — a <c>platform_admin</c> token whose OWN administrator record is live (not deleted,
+/// active) and is not a partner record — is unrestricted. A partner administrator — a <c>partner_admin</c> token, OR a
+/// record that says PartnerAdmin whatever the token says (FIX1 F1: a demoted administrator keeps its old token for up to
+/// its lifetime) — is limited to the tenants its <c>PlatformAdministrator</c> record allows, read on the server for each
+/// request (CT decision: never from the token, whose list would grow and whose revocation would wait for the token to
+/// expire). Comparable: SAP limits a partner by organisational unit / company code, Oracle by data access sets — both on
+/// the server.</para>
 ///
-/// <para>⚠ FAIL CLOSED. A partner whose record cannot be read, is not active, or allows no tenant may touch NONE — never
-/// "all". Any other caller (no principal, a tenant user) may touch none either.</para>
+/// <para>⚠ FAIL CLOSED. An actor whose record cannot be read, is missing, deleted or not active, or allows no tenant may
+/// touch NONE — never "all" (FIX1 F7: this holds for a <c>platform_admin</c> token too, the same rule the permission
+/// filter already applied). Any other caller (no principal, a tenant user) may touch none either.</para>
 /// </summary>
 public interface IPlatformActorTenantScope
 {
@@ -21,18 +28,36 @@ public interface IPlatformActorTenantScope
 /// <summary>What a platform actor may touch: everything, or exactly <see cref="TenantIds"/> (possibly none).</summary>
 public sealed class PlatformTenantScope
 {
-    private PlatformTenantScope(bool isUnrestricted, IReadOnlySet<Guid> tenantIds)
+    private PlatformTenantScope(bool isUnrestricted, bool isPartner, IReadOnlySet<Guid> tenantIds)
     {
         IsUnrestricted = isUnrestricted;
+        IsPartner = isPartner;
         TenantIds = tenantIds;
     }
 
-    public static PlatformTenantScope Unrestricted { get; } = new(true, new HashSet<Guid>());
-    public static PlatformTenantScope None { get; } = new(false, new HashSet<Guid>());
-    public static PlatformTenantScope Only(IEnumerable<Guid> tenantIds) =>
-        new(false, tenantIds.Where(id => id != Guid.Empty).ToHashSet());
+    /// <summary>A platform administrator confirmed by its own live record.</summary>
+    public static PlatformTenantScope Unrestricted { get; } = new(true, false, new HashSet<Guid>());
 
+    /// <summary>Nothing: no principal, a tenant user, or a platform actor without a live record.</summary>
+    public static PlatformTenantScope None { get; } = new(false, false, new HashSet<Guid>());
+
+    /// <summary>
+    /// A partner administrator's tenants. Never the platform system tenant (FIX1 F6): that is the home of the platform
+    /// administrators, not a customer a partner can be given — a record that names it does not open it.
+    /// </summary>
+    public static PlatformTenantScope Only(IEnumerable<Guid> tenantIds) =>
+        new(false, true, tenantIds
+            .Where(id => id != Guid.Empty && !SystemTenantRules.IsSystemTenantId(id))
+            .ToHashSet());
+
+    /// <summary>
+    /// A platform administrator confirmed by its record: the only actor the global (unmarked) platform endpoints and the
+    /// <c>PlatformAdminOnly</c> policy admit.
+    /// </summary>
     public bool IsUnrestricted { get; }
+
+    /// <summary>A partner administrator (by its token or by its record) with a live record.</summary>
+    public bool IsPartner { get; }
 
     /// <summary>The allowed tenants when restricted; empty means none. Ignored when unrestricted.</summary>
     public IReadOnlySet<Guid> TenantIds { get; }
@@ -44,9 +69,9 @@ public sealed class PlatformTenantScope
 }
 
 /// <summary>
-/// BL-521 — endpoint metadata: a <c>partner_admin</c> may reach this endpoint (it is tenant-scoped, or a partner-owned
-/// object). Without it both platform gates refuse a partner 403. Implemented by the API's PartnerAdminScopeAttribute;
-/// declared here so the authorization policy (Infrastructure) can see it.
+/// BL-521 — endpoint metadata: a <c>partner_admin</c> may reach this endpoint (it is tenant-scoped, a list that filters
+/// by the scope, or names no tenant at all). Without it both platform gates refuse a partner 403. Implemented by the
+/// API's PartnerAdminScopeAttribute; declared here so the authorization policy (Infrastructure) can see it.
 /// </summary>
 public interface IPartnerAdminAllowed
 {

@@ -13,7 +13,7 @@ namespace Diten.Platform.API.Controllers.Platform;
 [Route("api/platform/account")]
 [Authorize(Policy = "PlatformActor")]
 // BL-521 — the caller's own account: a partner administrator keeps it.
-[PartnerAdminScope]
+[PartnerAdminScope(PartnerAdminScopeAttribute.NoTenant)]
 public sealed class PlatformAccountController : CustomBaseController
 {
     private readonly IMediator _mediator;

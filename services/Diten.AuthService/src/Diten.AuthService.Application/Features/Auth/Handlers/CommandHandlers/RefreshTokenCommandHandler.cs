@@ -107,18 +107,33 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             return Response<AuthResponse>.Fail("User was not found or is inactive.", 401);
 
         var isPlatformActor = IsPlatformActor(actorType);
-        if (isPlatformActor && !await _platformAdministratorStatusClient.IsActiveAsync(user.Email, ct))
-        {
-            await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, existingToken.TenantId, ct);
-            _logger.LogWarning(
-                "Platform refresh denied by platform administrator status. UserId={UserId} Email={Email}",
-                user.Id,
-                user.Email);
-            return Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401);
-        }
-
         if (isPlatformActor)
         {
+            // BL-521 FIX1 F1(b) — a platform actor's new token carries the actor type its Platform administrator RECORD
+            // names, not the one the old token carried: a platform administrator demoted to partner becomes partner_admin
+            // at its next refresh instead of keeping platform_admin forever. No active record / unreadable → refused, the
+            // same direction as the activity rule this replaces.
+            var recordActorType = await _platformAdministratorStatusClient.GetActiveActorTypeAsync(user.Email, ct);
+            if (recordActorType is null)
+            {
+                await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, existingToken.TenantId, ct);
+                _logger.LogWarning(
+                    "Platform refresh denied by platform administrator status. UserId={UserId} Email={Email}",
+                    user.Id,
+                    user.Email);
+                return Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401);
+            }
+
+            if (!string.Equals(recordActorType, actorType, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation(
+                    "Platform refresh re-issued with the administrator record's actor type. UserId={UserId} From={From} To={To}",
+                    user.Id,
+                    actorType,
+                    recordActorType);
+            }
+
+            actorType = recordActorType;
             await _platformAdministratorStatusClient.MarkLoginAcceptedAsync(user.Email, ct);
         }
 

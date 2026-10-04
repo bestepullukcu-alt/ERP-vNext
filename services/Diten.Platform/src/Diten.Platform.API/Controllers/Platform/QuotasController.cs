@@ -12,7 +12,8 @@ namespace Diten.Platform.API.Controllers.Platform;
 [ApiController]
 [Route("api/platform/tenants/{tenantId:guid}/quotas")]
 [Authorize(Policy = "PlatformActor")]
-// BL-521 — a partner administrator reaches it only for a tenant it is allowed (else 404).
+// BL-521 — a partner administrator reaches it only for a tenant it is allowed (else 404); it reads, it does not write
+// quotas (FIX1 F4, closed until the owner opens it).
 [PartnerAdminScope("tenantId")]
 public sealed class QuotasController : CustomBaseController
 {
@@ -41,6 +42,7 @@ public sealed class QuotasController : CustomBaseController
 
     [HttpPost("initialize")]
     [HasPermission("platform.tenants.quotas.manage")]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> Initialize(Guid tenantId, [FromBody] InitializeTenantQuotasRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new InitializeTenantQuotasCommand(tenantId, request), ct);
@@ -49,6 +51,7 @@ public sealed class QuotasController : CustomBaseController
 
     [HttpPost("sync-limits")]
     [HasPermission("platform.tenants.quotas.manage")]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> SyncLimits(Guid tenantId, [FromBody] SyncTenantQuotaLimitsRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new SyncTenantQuotaLimitsFromSubscriptionCommand(tenantId, request), ct);

@@ -34,17 +34,38 @@ public sealed class PlatformAdministratorStatusClient : IPlatformAdministratorSt
         _logger = logger;
     }
 
-    public async Task<bool> IsActiveAsync(string email, CancellationToken ct)
+    public async Task<bool> IsActiveAsync(string email, CancellationToken ct) =>
+        (await ReadStatusAsync(email, ct))?.IsActive == true;
+
+    public async Task<string?> GetActiveActorTypeAsync(string email, CancellationToken ct)
+    {
+        var status = await ReadStatusAsync(email, ct);
+        if (status?.IsActive != true)
+        {
+            return null;
+        }
+
+        // BL-521 FIX1 F1(b) — the record's enum name (PlatformAdmin / PartnerAdmin) as the token actor type. Anything
+        // else (an older Platform that does not send it, a new value) is no answer: the refresh is refused.
+        return status.ActorType switch
+        {
+            { } value when string.Equals(value, "PartnerAdmin", StringComparison.OrdinalIgnoreCase) => "partner_admin",
+            { } value when string.Equals(value, "PlatformAdmin", StringComparison.OrdinalIgnoreCase) => "platform_admin",
+            _ => null
+        };
+    }
+
+    private async Task<PlatformAdministratorStatusSnapshot?> ReadStatusAsync(string email, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(email))
         {
-            return false;
+            return null;
         }
 
         if (string.IsNullOrWhiteSpace(_options.InternalApiKey))
         {
             _logger.LogError("Platform internal API key is not configured.");
-            return false;
+            return null;
         }
 
         var normalizedEmail = email.Trim().ToLowerInvariant();
@@ -61,11 +82,11 @@ public sealed class PlatformAdministratorStatusClient : IPlatformAdministratorSt
                 "Platform administrator status read failed. Email={Email} StatusCode={StatusCode}",
                 normalizedEmail,
                 (int)response.StatusCode);
-            return false;
+            return null;
         }
 
         var envelope = await response.Content.ReadFromJsonAsync<PlatformEnvelope<PlatformAdministratorStatusSnapshot>>(JsonOptions, ct);
-        return envelope?.Data?.IsActive == true;
+        return envelope?.Data;
     }
 
     public async Task MarkLoginAcceptedAsync(string email, CancellationToken ct)
@@ -116,5 +137,5 @@ public sealed class PlatformAdministratorStatusClient : IPlatformAdministratorSt
     }
 
     private sealed record PlatformEnvelope<T>(bool IsSuccessful, int StatusCode, T? Data);
-    private sealed record PlatformAdministratorStatusSnapshot(Guid Id, string Email, string Status, bool IsDeleted, bool IsActive);
+    private sealed record PlatformAdministratorStatusSnapshot(Guid Id, string Email, string Status, bool IsDeleted, bool IsActive, string? ActorType = null);
 }

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 
@@ -7,15 +8,18 @@ namespace Diten.Platform.API.Security;
 
 /// <summary>
 /// BL-521 — the request's <see cref="IPlatformActorTenantScope"/>: the token says WHO (actor type and e-mail), the
-/// administrator record says WHAT (allowed tenants). Scoped, so the record is read at most once per request.
+/// administrator record says WHAT (whether it is a partner, and its allowed tenants). Scoped, so the record is read at
+/// most once per request — by the two platform policies, the permission filter, the partner scope filter and the
+/// handlers alike.
 ///
 /// <para>Rules, each fail-closed:</para>
 /// <list type="bullet">
-/// <item><c>platform_admin</c> → unrestricted, unless its own record says it is a partner administrator (then the
-/// record's list applies).</item>
-/// <item><c>partner_admin</c> → the record's <c>AllowedTenantIds</c>; no record, a deleted or inactive one, or an empty
-/// list → none.</item>
-/// <item>anything else (no principal, a tenant user) → none.</item>
+/// <item>no principal, or a token that is neither <c>platform_admin</c> nor <c>partner_admin</c> → none.</item>
+/// <item>no e-mail, no record, an unreadable, deleted or inactive record → none — for a <c>platform_admin</c> token too
+/// (FIX1 F7).</item>
+/// <item><c>platform_admin</c> token and a live record that is not a partner record → unrestricted.</item>
+/// <item>otherwise — a <c>partner_admin</c> token, or a record that says PartnerAdmin whatever the token says (FIX1 F1)
+/// → the record's <c>AllowedTenantIds</c> (never the platform system tenant).</item>
 /// </list>
 /// </summary>
 public sealed class PlatformActorTenantScope : IPlatformActorTenantScope
@@ -25,7 +29,7 @@ public sealed class PlatformActorTenantScope : IPlatformActorTenantScope
 
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IPlatformAdministratorRepository _administrators;
-    private Task<PlatformTenantScope>? _scope;
+    private Task<Resolution>? _resolution;
 
     public PlatformActorTenantScope(IHttpContextAccessor httpContextAccessor, IPlatformAdministratorRepository administrators)
     {
@@ -33,7 +37,14 @@ public sealed class PlatformActorTenantScope : IPlatformActorTenantScope
         _administrators = administrators;
     }
 
-    public Task<PlatformTenantScope> GetAsync(CancellationToken ct = default) => _scope ??= ResolveAsync(ct);
+    public async Task<PlatformTenantScope> GetAsync(CancellationToken ct = default) => (await ResolveOnceAsync(ct)).Scope;
+
+    /// <summary>
+    /// The administrator record this request's scope was decided from (null: no principal, no e-mail, no record, or it
+    /// could not be read). The permission filter uses it for the live-record check and the first-login stamp instead of
+    /// reading the record a second time.
+    /// </summary>
+    public async Task<PlatformAdministrator?> GetRecordAsync(CancellationToken ct = default) => (await ResolveOnceAsync(ct)).Record;
 
     /// <summary>The token's actor type is a partner administrator.</summary>
     public static bool IsPartnerAdmin(ClaimsPrincipal? user) =>
@@ -52,39 +63,41 @@ public sealed class PlatformActorTenantScope : IPlatformActorTenantScope
         return string.IsNullOrWhiteSpace(email) ? null : email.Trim().ToLowerInvariant();
     }
 
-    private async Task<PlatformTenantScope> ResolveAsync(CancellationToken ct)
+    private Task<Resolution> ResolveOnceAsync(CancellationToken ct) => _resolution ??= ResolveAsync(ct);
+
+    private async Task<Resolution> ResolveAsync(CancellationToken ct)
     {
         var user = _httpContextAccessor.HttpContext?.User;
         if (user?.Identity?.IsAuthenticated != true)
         {
-            return PlatformTenantScope.None;
+            return new Resolution(PlatformTenantScope.None, null);
         }
 
         var platformAdmin = IsPlatformAdmin(user);
-        var partnerAdmin = IsPartnerAdmin(user);
-        if (!platformAdmin && !partnerAdmin)
+        if (!platformAdmin && !IsPartnerAdmin(user))
         {
-            return PlatformTenantScope.None;
+            return new Resolution(PlatformTenantScope.None, null);
         }
 
         var email = NormalizedEmailOf(user);
         var record = email is null ? null : await ReadRecordAsync(email, ct);
 
-        if (platformAdmin && record?.ActorType != ActorType.PartnerAdmin)
-        {
-            return PlatformTenantScope.Unrestricted;
-        }
-
-        // A partner — by its token or by its own record. Only an active, live record names tenants.
+        // F7 — only a live record names anything, whatever the token says.
         if (record is null || record.IsDeleted || record.Status != AdministratorStatus.Active)
         {
-            return PlatformTenantScope.None;
+            return new Resolution(PlatformTenantScope.None, record);
         }
 
-        return PlatformTenantScope.Only(record.AllowedTenantIds ?? []);
+        // F1 — the record decides whether this is a partner; a platform_admin token does not outrank it.
+        if (platformAdmin && record.ActorType != ActorType.PartnerAdmin)
+        {
+            return new Resolution(PlatformTenantScope.Unrestricted, record);
+        }
+
+        return new Resolution(PlatformTenantScope.Only(record.AllowedTenantIds ?? []), record);
     }
 
-    private async Task<Domain.Entities.PlatformAdministrator?> ReadRecordAsync(string normalizedEmail, CancellationToken ct)
+    private async Task<PlatformAdministrator?> ReadRecordAsync(string normalizedEmail, CancellationToken ct)
     {
         try
         {
@@ -96,7 +109,26 @@ public sealed class PlatformActorTenantScope : IPlatformActorTenantScope
         }
         catch (Exception)
         {
-            return null; // unreadable → a partner sees nothing (fail closed); a platform admin is unrestricted by its token
+            return null; // unreadable → none (fail closed), for a partner and a platform administrator alike
         }
+    }
+
+    private sealed record Resolution(PlatformTenantScope Scope, PlatformAdministrator? Record);
+}
+
+/// <summary>
+/// BL-521 — THE registration of the request's platform-actor scope, as production makes it (Program.cs calls this). Test
+/// hosts call it too, so a registration that goes missing here is a red test, not a host that silently registers its own
+/// copy (FIX1 F8-7). Both the interface and the concrete type resolve to the SAME scoped instance: the permission filter
+/// asks the concrete type for the record it already read.
+/// </summary>
+public static class PlatformActorTenantScopeRegistration
+{
+    public static IServiceCollection AddPlatformActorTenantScope(this IServiceCollection services)
+    {
+        services.AddHttpContextAccessor();
+        services.AddScoped<PlatformActorTenantScope>();
+        services.AddScoped<IPlatformActorTenantScope>(sp => sp.GetRequiredService<PlatformActorTenantScope>());
+        return services;
     }
 }

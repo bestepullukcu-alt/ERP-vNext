@@ -221,21 +221,40 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
         Assert.Equal(0, await host.CountAsync("quota_events"));
     }
 
+    /// <summary>
+    /// BL-521 FIX1 F4 — until the owner opens them, every subscription write is a platform administrator's: a partner is
+    /// refused 403 for its OWN tenant and for any other (before the tenant is looked at, so the answer tells nothing
+    /// about it), nothing is written; it still READS its own tenant's subscription and not another's (404).
+    /// </summary>
     [Fact]
-    public async Task A_partner_assigns_a_plan_to_its_allowed_tenant_and_another_tenant_is_not_found_with_nothing_written()
+    public async Task A_partner_writes_no_subscription_even_for_its_allowed_tenant_and_reads_only_its_own()
     {
-        // BL-521 — the partner administrator is allowed Tenant only.
         await using var host = await Host.StartAsync();
+        var anySubscription = Guid.NewGuid();
 
-        var refused = await Host.ReadAsync(await host.PostAsync(Host.PartnerToken(), Host.OtherTenant, "", AssignBody));
-        Assert.Equal(HttpStatusCode.NotFound, refused.Status);
-        Assert.Empty(await host.SubscriptionsAsync(Host.OtherTenant));
+        foreach (var tenant in new[] { Host.Tenant, Host.OtherTenant })
+        {
+            var writes = new[]
+            {
+                await host.PostAsync(Host.PartnerToken(), tenant, "", AssignBody),
+                await host.PostAsync(Host.PartnerToken(), tenant, $"{anySubscription:D}/activate", "{}"),
+                await host.PostAsync(Host.PartnerToken(), tenant, $"{anySubscription:D}/cancel", "{}"),
+                await host.PostAsync(Host.PartnerToken(), tenant, $"{anySubscription:D}/renew", "{}"),
+                await host.PostAsync(Host.PartnerToken(), tenant, $"{anySubscription:D}/expire", "null"),
+                await host.PostAsync(Host.PartnerToken(), tenant, $"{anySubscription:D}/suspend", "{}"),
+                await host.PostAsync(Host.PartnerToken(), tenant, $"{anySubscription:D}/reactivate", "{}"),
+            };
+            Assert.All(writes, response => Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode));
+            Assert.Empty(await host.SubscriptionsAsync(tenant));
+        }
+
         Assert.Equal(0, await host.EventsAsync());
 
-        var allowed = await host.PostAsync(Host.PartnerToken(), Host.Tenant, "", AssignBody);
-        var answer = await Host.ReadAsync(allowed);
-        Assert.True(allowed.IsSuccessStatusCode, $"{(int)answer.Status}: {answer.Body}");
-        Assert.Single(await host.SubscriptionsAsync(Host.Tenant));
+        // a platform administrator assigns; the partner then reads its own tenant's subscription, not another's
+        var assigned = await host.PostAsync(Host.AdministratorToken(), Host.Tenant, "", AssignBody);
+        Assert.True(assigned.IsSuccessStatusCode, (await Host.ReadAsync(assigned)).Body);
+        Assert.Equal(HttpStatusCode.OK, (await host.GetAsync(Host.PartnerToken(), Host.Tenant, "")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await host.GetAsync(Host.PartnerToken(), Host.OtherTenant, "")).StatusCode);
     }
 
     [Fact]
@@ -398,7 +417,8 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
                         });
                     // THE production policies (BL-521: no longer a copy — a copy kept admitting partners everywhere).
                     services.AddAuthorization(Diten.Platform.Infrastructure.DependencyInjection.AddPlatformActorPolicies);
-                    services.AddScoped<IPlatformActorTenantScope, Diten.Platform.API.Security.PlatformActorTenantScope>();
+                    // THE production scope registration (Program.cs calls the same method) — BL-521 FIX1 F8-7.
+                    Diten.Platform.API.Security.PlatformActorTenantScopeRegistration.AddPlatformActorTenantScope(services);
                     services.AddHttpContextAccessor();
 
                     services.AddApplication();
@@ -516,6 +536,13 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
 
             var path = $"/api/platform/tenants/{tenantId:D}/commercial/subscription" + (suffix.Length == 0 ? string.Empty : "/" + suffix);
             return client.PostAsync(path, new StringContent(json, Encoding.UTF8, "application/json"));
+        }
+
+        public Task<HttpResponseMessage> GetAsync(string token, Guid tenantId, string suffix)
+        {
+            var client = _server.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            return client.GetAsync($"/api/platform/tenants/{tenantId:D}/commercial/subscription" + (suffix.Length == 0 ? string.Empty : "/" + suffix));
         }
 
         /// <summary>One pass of the PRODUCTION outbox processor — the unit of work the hosted worker repeats.</summary>

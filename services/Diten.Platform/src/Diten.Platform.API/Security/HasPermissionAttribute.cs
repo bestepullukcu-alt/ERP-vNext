@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-using System.Security.Claims;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.API.Observability;
@@ -36,34 +35,31 @@ public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilte
         var actorType = user.FindFirst("actor_type")?.Value;
         var isPlatformActor = string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
             || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
-
-        // BL-521 — a partner administrator passes ONLY an endpoint that admits partners (PartnerAdminScopeAttribute):
-        // tenant-scoped families, where its tenant scope is applied. Everywhere else — global objects, endpoints nobody
-        // has decided about yet — it is refused before anything else is read.
-        if (string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase)
-            && context.ActionDescriptor.EndpointMetadata?.OfType<Diten.Platform.Application.Contracts.IPartnerAdminAllowed>().Any() != true)
-        {
-            context.Result = PermissionDenied(context);
-            return;
-        }
+        var admitsPartners = context.ActionDescriptor.EndpointMetadata?
+            .OfType<Diten.Platform.Application.Contracts.IPartnerAdminAllowed>().Any() == true;
 
         if (isPlatformActor)
         {
-            var repository = context.HttpContext.RequestServices.GetService<IPlatformAdministratorRepository>();
-            if (repository != null)
+            var scopeService = ScopeOf(context.HttpContext);
+            if (scopeService is not null)
             {
-                var email = user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email)?.Value
-                    ?? user.FindFirst(ClaimTypes.Email)?.Value
-                    ?? user.FindFirst("email")?.Value;
+                var ct = context.HttpContext.RequestAborted;
 
-                if (string.IsNullOrWhiteSpace(email))
+                // BL-521 FIX1 F1 — WHO is a partner is decided by the administrator RECORD (PlatformActorTenantScope), not
+                // by the token: a record that says PartnerAdmin gets the partner rule even behind a platform_admin token
+                // (a demoted administrator keeps its old token until it expires). A partner — and any platform actor its
+                // record does not confirm — passes ONLY an endpoint that admits partners (PartnerAdminScopeAttribute),
+                // where its tenant scope is applied. Everywhere else it is refused before the key is looked at.
+                var scope = await scopeService.GetAsync(ct);
+                if (!scope.IsUnrestricted && !admitsPartners)
                 {
                     context.Result = PermissionDenied(context);
                     return;
                 }
 
-                var normalizedEmail = email.Trim().ToLowerInvariant();
-                var admin = await repository.GetByNormalizedEmailAsync(normalizedEmail, context.HttpContext.RequestAborted);
+                // The same record the scope was decided from (one read per request): missing, unreadable, deleted or
+                // inactive → refused.
+                var admin = await scopeService.GetRecordAsync(ct);
                 if (admin == null || admin.IsDeleted || admin.Status != AdministratorStatus.Active)
                 {
                     context.Result = PermissionDenied(context);
@@ -72,13 +68,21 @@ public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilte
 
                 if (admin.InvitationStatus != AdministratorInvitationStatus.Accepted || admin.LastLoginAtUtc is null)
                 {
+                    var repository = context.HttpContext.RequestServices.GetRequiredService<IPlatformAdministratorRepository>();
                     var expectedVersion = admin.Version;
                     admin.InvitationStatus = AdministratorInvitationStatus.Accepted;
                     admin.LastLoginAtUtc = DateTimeOffset.UtcNow;
                     admin.UpdatedAt = DateTimeOffset.UtcNow;
                     admin.UpdatedBy = "platform-api";
-                    await repository.UpdateAsync(admin, expectedVersion, context.HttpContext.RequestAborted);
+                    await repository.UpdateAsync(admin, expectedVersion, ct);
                 }
+            }
+            else if (string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase) && !admitsPartners)
+            {
+                // A host with no administrator records to read at all: the token is all there is, and a partner token
+                // still passes only an endpoint that admits partners.
+                context.Result = PermissionDenied(context);
+                return;
             }
         }
 
@@ -92,6 +96,24 @@ public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilte
         }
 
         context.Result = PermissionDenied(context);
+    }
+
+    /// <summary>
+    /// The request's scope (registered by <see cref="PlatformActorTenantScopeRegistration"/>, one record read per
+    /// request). A host that registers only the administrator repository still gets the record rule, over a scope built
+    /// for this request; a host with neither has no record to read.
+    /// </summary>
+    private static PlatformActorTenantScope? ScopeOf(HttpContext httpContext)
+    {
+        var services = httpContext.RequestServices;
+        if (services.GetService<PlatformActorTenantScope>() is { } scoped)
+        {
+            return scoped;
+        }
+
+        return services.GetService<IPlatformAdministratorRepository>() is { } repository
+            ? new PlatformActorTenantScope(new HttpContextAccessor { HttpContext = httpContext }, repository)
+            : null;
     }
 
     private static ObjectResult PermissionDenied(AuthorizationFilterContext context)

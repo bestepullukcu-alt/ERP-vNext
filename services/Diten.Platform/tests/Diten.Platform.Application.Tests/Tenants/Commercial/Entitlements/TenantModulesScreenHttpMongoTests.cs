@@ -82,8 +82,41 @@ public sealed class TenantModulesScreenHttpMongoTests
 
         Assert.Equal(HttpStatusCode.OK, mine.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, list.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, enable.StatusCode);
+        // BL-521 FIX1 F4 — a module entitlement write is refused to a partner for EVERY tenant (403 before the tenant is
+        // looked at, so it tells nothing about OtherTenant either).
+        Assert.Equal(HttpStatusCode.Forbidden, enable.StatusCode);
         Assert.False((await host.StoredAsync(theirs.Id)).IsEnabled); // nothing written
+    }
+
+    /// <summary>
+    /// BL-521 FIX1 F4 — until the owner opens them, a partner administrator READS its tenant's modules but writes none:
+    /// manual add, enable, disable, expiry, removing a manual override and the projection refresh are platform
+    /// administrators' (403, nothing written), even for the partner's own tenant.
+    /// </summary>
+    [Fact]
+    public async Task A_partner_writes_no_module_entitlement_even_for_its_own_tenant()
+    {
+        await using var host = await Host.StartAsync();
+        var mine = await host.SeedAsync(Tenant, "GOLDENSLIM", EntitlementSource.Addon, enabled: false);
+        var row = (await host.ListAsync(Tenant)).Single(r => r.PhysicalEntitlementId == mine.Id);
+        var partner = host.PartnerClient();
+
+        var writes = new[]
+        {
+            await partner.PostAsync(Host.PathOf(Tenant, null), JsonContent.Create(new { moduleCode = "GOLDENCOMPACT", reason = "x" })),
+            await partner.PostAsync(Host.PathOf(Tenant, $"{mine.Id:D}/enable"), JsonContent.Create(row.RowVersion)),
+            await partner.PostAsync(Host.PathOf(Tenant, "disable"), JsonContent.Create(new { moduleCode = "GOLDENSLIM", reason = "x" })),
+            await partner.PatchAsync(Host.PathOf(Tenant, $"{mine.Id:D}/expiry"), JsonContent.Create(new { expiresAtUtc = DateTimeOffset.UtcNow.AddDays(30) })),
+            await partner.SendAsync(new HttpRequestMessage(HttpMethod.Delete, Host.PathOf(Tenant, $"{mine.Id:D}/manual-override"))
+            {
+                Content = JsonContent.Create(new { reason = "x" })
+            }),
+            await partner.PostAsync(Host.PathOf(Tenant, "refresh-projection"), null),
+        };
+
+        Assert.All(writes, response => Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode));
+        Assert.False((await host.StoredAsync(mine.Id)).IsEnabled); // nothing written
+        Assert.Equal(HttpStatusCode.OK, (await partner.GetAsync(Host.PathOf(Tenant, null))).StatusCode); // reads stay open
     }
 
     [Fact]
@@ -956,7 +989,8 @@ public sealed class TenantModulesScreenHttpMongoTests
                         });
                     // THE production policies (BL-521: no longer a copy — a copy kept admitting partners everywhere).
                     services.AddAuthorization(Diten.Platform.Infrastructure.DependencyInjection.AddPlatformActorPolicies);
-                    services.AddScoped<IPlatformActorTenantScope, Diten.Platform.API.Security.PlatformActorTenantScope>();
+                    // THE production scope registration (Program.cs calls the same method) — BL-521 FIX1 F8-7.
+                    Diten.Platform.API.Security.PlatformActorTenantScopeRegistration.AddPlatformActorTenantScope(services);
                     services.AddHttpContextAccessor();
 
                     services.AddApplication();

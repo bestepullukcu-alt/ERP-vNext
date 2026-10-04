@@ -829,34 +829,59 @@ public static class DependencyInjection
         options.AddPolicy("PlatformActor", policy =>
         {
             policy.RequireAuthenticatedUser();
-            policy.RequireAssertion(context =>
+            policy.RequireAssertion(async context =>
             {
-                var actorType = context.User.Claims
-                    .FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
-                    ?.Value;
+                var actorType = ActorTypeOf(context.User);
+                if (!string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
 
-                // BL-521 — a partner administrator only where the endpoint admits partners (tenant-scoped families).
-                return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
-                       || (string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase)
-                           && EndpointAdmitsPartners(context.Resource));
+                // BL-521 — a partner administrator only where the endpoint admits partners (tenant-scoped families); the
+                // scope filter / handler then applies its tenants. FIX1 F1 — "partner" is decided by the administrator
+                // RECORD, so a global endpoint admits only a platform administrator its own live record confirms.
+                return EndpointAdmitsPartners(context.Resource) || await IsConfirmedPlatformAdministratorAsync(context);
             });
         });
 
         // Phase 5 baseline policy: audit endpoints accept ONLY platform_admin.
         // Partner admin audit scope support (per-tenant filter, partner-scoped redaction)
         // is follow-up; see MOD-0021 Phase 5A review H1/H2.
+        // BL-521 FIX1 F1 — and only a platform_admin whose record is live and not a partner record: a demoted
+        // administrator's platform_admin token no longer opens it.
         options.AddPolicy("PlatformAdminOnly", policy =>
         {
             policy.RequireAuthenticatedUser();
-            policy.RequireAssertion(context =>
-            {
-                var actorType = context.User.Claims
-                    .FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
-                    ?.Value;
-
-                return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase);
-            });
+            policy.RequireAssertion(async context =>
+                string.Equals(ActorTypeOf(context.User), "platform_admin", StringComparison.OrdinalIgnoreCase)
+                && await IsConfirmedPlatformAdministratorAsync(context));
         });
+    }
+
+    private static string? ActorTypeOf(System.Security.Claims.ClaimsPrincipal user) =>
+        user.Claims.FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))?.Value;
+
+    /// <summary>
+    /// BL-521 FIX1 F1 — the one decision both policies and the permission filter share: the request's
+    /// <see cref="IPlatformActorTenantScope"/> (the administrator record, read once per request) says this is a platform
+    /// administrator. No request to read it from, or no scope service → no (fail closed).
+    /// </summary>
+    internal static async Task<bool> IsConfirmedPlatformAdministratorAsync(AuthorizationHandlerContext context)
+    {
+        var http = context.Resource switch
+        {
+            Microsoft.AspNetCore.Http.HttpContext direct => direct,
+            Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext filter => filter.HttpContext,
+            _ => null
+        };
+        var scope = http?.RequestServices?.GetService<IPlatformActorTenantScope>();
+        if (scope is null)
+        {
+            return false;
+        }
+
+        return (await scope.GetAsync(http!.RequestAborted)).IsUnrestricted;
     }
 
     /// <summary>BL-521 — the endpoint being authorized admits partner administrators (IPartnerAdminAllowed metadata).

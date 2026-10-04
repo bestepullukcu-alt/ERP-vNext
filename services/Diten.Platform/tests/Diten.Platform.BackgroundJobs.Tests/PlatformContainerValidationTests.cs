@@ -140,9 +140,8 @@ public sealed class PlatformContainerValidationTests
         services.AddSingleton<EndpointDataSource>(new DefaultEndpointDataSource());
         services.AddScoped<Diten.Platform.Application.Contracts.IActorPermissionContext,
             Diten.Platform.API.Security.ClaimsActorPermissionContext>();
-        // BL-521 — Program.cs's registration of the partner tenant scope, reproduced like the line above.
-        services.AddScoped<Diten.Platform.Application.Contracts.IPlatformActorTenantScope,
-            Diten.Platform.API.Security.PlatformActorTenantScope>();
+        // BL-521 — the partner tenant scope, through THE registration method Program.cs calls (FIX1 F8-7), not a copy.
+        Diten.Platform.API.Security.PlatformActorTenantScopeRegistration.AddPlatformActorTenantScope(services);
 
         return services;
     });
