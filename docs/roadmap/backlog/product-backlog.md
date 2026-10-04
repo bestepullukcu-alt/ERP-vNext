@@ -7818,7 +7818,10 @@ korumasız. CT sabotajı d12add3d5'te P1–P3 yeşil kalmıştı (FIX1 testleri 
 iptal; varsayılan HAYIR yazıldı) · (2) var olan kullanıcının e-postasıyla yönetici daveti o kullanıcının parolasını sıfırlayıp Admin veriyor:
 iş ortağına açık kalsın mı · (3) iş ortağının yazdığı alan adı platformun davet e-postası bağlantısına giriyor (oltalama yolu) · (4) giriş
 ayarlarıyla MFA kapatma / IP kilidi / denetim saklama süresini kısaltma iş ortağına açık mı · (5) askıya alma açık, askıdan çıkarma kapalı:
-böyle kalsın mı · (6) admin@diten.com tohum hesabı her açılışta PlatformAdmin + etkin yapılıyor (kalıcı düşürülemez); canlıda da mı (FIX2 ölçüyor).
+böyle kalsın mı · (6) admin@diten.com tohum hesabı her açılışta PlatformAdmin + etkin yapılıyor (kalıcı düşürülemez); canlıda da → BL-534 ·
+(7) Platform'da onaylı HER platform yöneticisi her izin anahtarını geçiyor (`HasPermissionAttribute.cs:93`, a2445b8f2'den beri): ReadOnly / SupportAdmin
+rolleri Platform içinde fiilen SuperAdmin; roller yalnız belirteçle diğer servislere gidince anlam kazanıyor. Platform yöneticileri yalnız rollerinin izinlerini
+alsın mı? (Canlıdaki platform yöneticilerinin davranışını değiştirir; önce rol / izin eşlemesinin tam olduğu ölçülmeli.) FIX3 kendi rolünü değiştirmeyi kapatıyor.
 
 ---
 
