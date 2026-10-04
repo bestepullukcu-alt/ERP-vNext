@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common.Events;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,7 @@ public sealed class InternalEventsController : ControllerBase
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITenantLoginSettingsClient _tenantLoginSettingsClient;
     private readonly IPasswordPolicyService _passwordPolicyService;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly ILogger<InternalEventsController> _logger;
 
     public InternalEventsController(
@@ -42,8 +44,10 @@ public sealed class InternalEventsController : ControllerBase
         IPasswordHasher passwordHasher,
         ITenantLoginSettingsClient tenantLoginSettingsClient,
         IPasswordPolicyService passwordPolicyService,
-        ILogger<InternalEventsController> logger)
+        ILogger<InternalEventsController> logger,
+        IRefreshTokenRepository refreshTokenRepository)
     {
+        _refreshTokenRepository = refreshTokenRepository;
         _internalEventAuthService = internalEventAuthService;
         _roleProvisioningService = roleProvisioningService;
         _tenantEntitlementClient = tenantEntitlementClient;
@@ -129,7 +133,9 @@ public sealed class InternalEventsController : ControllerBase
         }
         else
         {
-            user.UpdatePassword(passwordHash);
+            // BL-529 — an EXISTING account re-invited as tenant administrator is reset: the new temporary password
+            // replaces the old one and every session of the account in this tenant ends (AdminPasswordReset).
+            await AdminPasswordReset.InvalidateAsync(user, request.TenantId, passwordHash, _refreshTokenRepository, ct);
             user.Activate();
             user.ConfirmEmail();
             // FIX-TENANT-ADMIN-INVITE-ACTIVATION (Part A) — same on the re-provision (reset) path; set AFTER

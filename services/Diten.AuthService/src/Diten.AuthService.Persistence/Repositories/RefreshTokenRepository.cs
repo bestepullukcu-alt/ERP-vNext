@@ -49,7 +49,7 @@ public sealed class RefreshTokenRepository : RepositoryBase<RefreshToken>, IRefr
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
 
-    public async Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
+    public async Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
     {
         var filter = Builders<RefreshToken>.Filter.And(
             Builders<RefreshToken>.Filter.Eq(t => t.UserId, userId),
@@ -58,6 +58,7 @@ public sealed class RefreshTokenRepository : RepositoryBase<RefreshToken>, IRefr
         );
 
         var update = Builders<RefreshToken>.Update.Set(t => t.RevokedAt, DateTime.UtcNow);
-        await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
+        var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
+        return result.IsModifiedCountAvailable ? result.ModifiedCount : 0;
     }
 }

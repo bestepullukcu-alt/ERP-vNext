@@ -195,14 +195,14 @@ public sealed class RevokeRoleCommandHandlerTests
         public (Guid userId, Guid tenantId)? RevokeAllCall { get; private set; }
         public CancellationToken RevokeAllToken { get; private set; }
 
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
         {
             if (ThrowOnRevokeAll)
                 throw new InvalidOperationException("refresh-token revoke failed");
             RevokeAllCall = (userId, tenantId);
             RevokeAllToken = ct;
             callLog?.Add("refresh-token-revoke-all");
-            return Task.CompletedTask;
+            return Task.FromResult(0L);
         }
 
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();

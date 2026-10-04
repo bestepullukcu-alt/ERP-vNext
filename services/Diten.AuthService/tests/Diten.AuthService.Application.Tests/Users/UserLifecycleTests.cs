@@ -331,7 +331,7 @@ public sealed class UserLifecycleTests
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
         public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
         public Task RevokeAsync(string token, CancellationToken ct) => throw new NotSupportedException();
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.CompletedTask;
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.FromResult(0L);
     }
 
     private sealed class NoRolesRepository : IUserRoleRepository
@@ -535,7 +535,7 @@ public sealed class UserLifecycleTests
     private sealed class CountingRevokes : IRefreshTokenRepository
     {
         public int RevokeAllCount { get; private set; }
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) { RevokeAllCount++; return Task.CompletedTask; }
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) { RevokeAllCount++; return Task.FromResult(0L); }
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
         public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();

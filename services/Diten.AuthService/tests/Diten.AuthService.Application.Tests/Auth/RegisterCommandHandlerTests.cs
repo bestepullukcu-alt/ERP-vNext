@@ -181,7 +181,7 @@ public sealed class RegisterCommandHandlerTests
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();
         public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
         public Task RevokeAsync(string token, CancellationToken ct) => throw new NotSupportedException();
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
     }
 
     private sealed class FakePasswordHasher : IPasswordHasher

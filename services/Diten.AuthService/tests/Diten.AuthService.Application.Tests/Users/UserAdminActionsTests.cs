@@ -135,7 +135,8 @@ public sealed class UserAdminActionsTests
     }
 
     private static AdminResetPasswordCommandHandler ResetHandler(InMemoryUserRepository repo, FakeInvitationEmailService email, FakeRefreshTokenHasher hasher) =>
-        new(repo, TenantContextFor(TenantA), new FakeTokenService(), hasher, email, new FakeHostEnvironment(isDevelopment: true), UserAuditForTests.None(), NullLogger<AdminResetPasswordCommandHandler>.Instance);
+        new(repo, TenantContextFor(TenantA), new FakeTokenService(), hasher, email, new FakeHostEnvironment(isDevelopment: true), UserAuditForTests.None(), NullLogger<AdminResetPasswordCommandHandler>.Instance,
+            new ResetHasher(), new FakeRefreshTokenRepository());
 
     private static TestTenantContext TenantContextFor(Guid tenantId)
     {
@@ -174,15 +175,22 @@ public sealed class UserAdminActionsTests
         }
     }
 
+    /// <summary>BL-529 — the reset handler hashes a random secret into an unusable password; any stable hash will do.</summary>
+    private sealed class ResetHasher : IPasswordHasher
+    {
+        public string Hash(string password) => "hash:" + password;
+        public bool Verify(string password, string hash) => hash == "hash:" + password;
+    }
+
     private sealed class FakeRefreshTokenRepository : IRefreshTokenRepository
     {
         public (Guid userId, Guid tenantId)? RevokeAllCall { get; private set; }
         public int RevokeAllCount { get; private set; }
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
         {
             RevokeAllCall = (userId, tenantId);
             RevokeAllCount++;
-            return Task.CompletedTask;
+            return Task.FromResult(0L);
         }
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
@@ -219,7 +227,7 @@ public sealed class UserAdminActionsTests
         var local = new EventNames();
         var handler = new AdminResetPasswordCommandHandler(repo, TenantContextFor(TenantA), new FakeTokenService(), new FakeRefreshTokenHasher(),
             new ThrowingInvitationEmail(), new FakeHostEnvironment(isDevelopment: false), UserAuditForTests.Over(local),
-            NullLogger<AdminResetPasswordCommandHandler>.Instance);
+            NullLogger<AdminResetPasswordCommandHandler>.Instance, new ResetHasher(), new FakeRefreshTokenRepository());
 
         await Assert.ThrowsAnyAsync<Exception>(() => handler.Handle(new AdminResetPasswordCommand(user.Id), CancellationToken.None));
 

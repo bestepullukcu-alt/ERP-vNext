@@ -157,7 +157,7 @@ public sealed class TenantLoginActiveStatusTests
 
     private sealed class FakeRefreshTokenRepository : IRefreshTokenRepository
     {
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.CompletedTask;
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.FromResult(0L);
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => Task.FromResult<RefreshToken?>(null);
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => Task.CompletedTask;
         public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => Task.CompletedTask;

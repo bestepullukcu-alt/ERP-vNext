@@ -12,6 +12,8 @@ namespace Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 // Admin reset (mirror of ResendUserInvitation, guard INVERTED): only for users who already completed
 // setup. Issues a fresh 7-day set-password token, forces a password change, and re-sends the link.
 // Pending invitations (MustChangePassword == true) are rejected — use Resend for those.
+// BL-529 — and the reset INVALIDATES: the old password stops working at once and every open session ends
+// (AdminPasswordReset — the one rule every administrator reset path follows).
 public sealed class AdminResetPasswordCommandHandler : IRequestHandler<AdminResetPasswordCommand, Response<InviteLinkResult>>
 {
     private static readonly TimeSpan InvitationTokenLifetime = TimeSpan.FromDays(7);
@@ -23,6 +25,8 @@ public sealed class AdminResetPasswordCommandHandler : IRequestHandler<AdminRese
     private readonly ITenantUserInvitationEmailService _invitationEmailService;
     private readonly IHostEnvironment _environment;
     private readonly IUserAuditRecorder _audit;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly IRefreshTokenRepository _refreshTokens;
     private readonly ILogger<AdminResetPasswordCommandHandler> _logger;
 
     public AdminResetPasswordCommandHandler(
@@ -33,8 +37,12 @@ public sealed class AdminResetPasswordCommandHandler : IRequestHandler<AdminRese
         ITenantUserInvitationEmailService invitationEmailService,
         IHostEnvironment environment,
         IUserAuditRecorder audit,
-        ILogger<AdminResetPasswordCommandHandler> logger)
+        ILogger<AdminResetPasswordCommandHandler> logger,
+        IPasswordHasher passwordHasher,
+        IRefreshTokenRepository refreshTokens)
     {
+        _passwordHasher = passwordHasher;
+        _refreshTokens = refreshTokens;
         _userRepository = userRepository;
         _tenantContext = tenantContext;
         _tokenService = tokenService;
@@ -55,6 +63,10 @@ public sealed class AdminResetPasswordCommandHandler : IRequestHandler<AdminRese
         {
             return Response<InviteLinkResult>.Fail("User invitation is still pending — use Resend instead.", [new ResponseError(UserErrorCodes.PasswordSetupPending)], 409);
         }
+
+        // BL-529 — the old password and every open session end here, before the link is written.
+        var sessionsRevoked = await AdminPasswordReset.InvalidateAsync(
+            user, _tenantContext.TenantId, AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService), _refreshTokens, ct);
 
         var setupToken = _tokenService.GenerateRefreshToken();
         user.SetPasswordResetToken(_refreshTokenHasher.Hash(setupToken), DateTime.UtcNow.Add(InvitationTokenLifetime));
@@ -77,7 +89,7 @@ public sealed class AdminResetPasswordCommandHandler : IRequestHandler<AdminRese
             // BL-456 — the reset token is already saved; the audit row must exist even when the e-mail throws
             // (production re-throws). Never the link or the token; only that a reset was issued and whether the e-mail left.
             await _audit.RecordAsync(UserAuditEvents.PasswordResetByAdmin, _tenantContext.TenantId, user.Id,
-                new Dictionary<string, object?> { ["emailSent"] = emailSent }, ct);
+                new Dictionary<string, object?> { ["emailSent"] = emailSent, ["sessionsRevoked"] = sessionsRevoked }, ct);
         }
 
         _logger.LogInformation("Admin password reset issued. Id={Id} EmailSent={EmailSent}", user.Id, emailSent);

@@ -57,6 +57,7 @@
   <data name="ErrorUserQuotaExceeded" xml:space="preserve"><value>La limite d'utilisateurs de votre abonnement est atteinte ; aucun utilisateur n'a été ajouté. Supprimez un utilisateur ou passez à une offre supérieure.</value></data>
   <data name="ErrorUserQuotaUsage" xml:space="preserve"><value>Utilisés : {current} sur {max} utilisateurs.</value></data>
   <data name="DeleteUserConfirmText" xml:space="preserve"><value>L'utilisateur est supprimé et ses rôles sont retirés ; le compte ne peut pas être restauré. Un nouveau compte peut être ouvert avec la même adresse e-mail.</value></data>
+  <data name="ResetPasswordConfirmText" xml:space="preserve"><value>Le mot de passe actuel de l'utilisateur cesse immédiatement de fonctionner et toutes ses sessions ouvertes sont fermées. Il définit un nouveau mot de passe via le lien qui lui est envoyé.</value></data>
   <data name="ErrorUserDeleteSelf" xml:space="preserve"><value>Vous ne pouvez pas supprimer votre propre compte.</value></data>
   <data name="ErrorUserDeleteLastSteward" xml:space="preserve"><value>Ce compte est le dernier à pouvoir ajouter des utilisateurs ; il ne peut donc pas être supprimé. Accordez d'abord ce droit à un autre utilisateur.</value></data>
   <data name="ErrorUserDeactivateSelf" xml:space="preserve"><value>Vous ne pouvez pas désactiver votre propre compte.</value></data>

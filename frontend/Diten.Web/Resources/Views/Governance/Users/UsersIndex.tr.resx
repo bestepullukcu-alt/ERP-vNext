@@ -57,6 +57,7 @@
   <data name="ErrorUserQuotaExceeded" xml:space="preserve"><value>Abonelik planınızın kullanıcı sınırına ulaşıldı; kullanıcı eklenmedi. Bir kullanıcıyı kaldırın ya da planı yükseltin.</value></data>
   <data name="ErrorUserQuotaUsage" xml:space="preserve"><value>Kullanımda: {current} / {max} kullanıcı.</value></data>
   <data name="DeleteUserConfirmText" xml:space="preserve"><value>Kullanıcı silinir, rolleri kaldırılır; hesap geri getirilemez. Aynı e-posta ile yeni bir hesap açılabilir.</value></data>
+  <data name="ResetPasswordConfirmText" xml:space="preserve"><value>Kullanıcının mevcut parolası hemen geçersiz olur ve açık oturumlarının tümü kapanır. Yeni parolayı kendisine gönderilen bağlantıyla belirler.</value></data>
   <data name="ErrorUserDeleteSelf" xml:space="preserve"><value>Kendi hesabınızı silemezsiniz.</value></data>
   <data name="ErrorUserDeleteLastSteward" xml:space="preserve"><value>Bu, kullanıcı ekleyebilen son hesap olduğu için silinemez. Önce bu yetkiyi başka bir kullanıcıya verin.</value></data>
   <data name="ErrorUserDeactivateSelf" xml:space="preserve"><value>Kendi hesabınızı pasife alamazsınız.</value></data>

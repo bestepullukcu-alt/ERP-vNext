@@ -57,6 +57,7 @@
   <data name="ErrorUserQuotaExceeded" xml:space="preserve"><value>تم بلوغ الحد الأقصى للمستخدمين في خطة اشتراكك، لذلك لم تتم إضافة أي مستخدم. احذف مستخدمًا أو قم بترقية الخطة.</value></data>
   <data name="ErrorUserQuotaUsage" xml:space="preserve"><value>المستخدَم: {current} من {max} مستخدمين.</value></data>
   <data name="DeleteUserConfirmText" xml:space="preserve"><value>يُحذف المستخدم وتُزال أدواره؛ ولا يمكن استعادة الحساب. يمكن فتح حساب جديد بعنوان البريد الإلكتروني نفسه.</value></data>
+  <data name="ResetPasswordConfirmText" xml:space="preserve"><value>تتوقف كلمة المرور الحالية للمستخدم عن العمل فورًا، ويُسجَّل خروجه من جميع جلساته المفتوحة. ويعيّن كلمة مرور جديدة عبر الرابط المرسل إليه.</value></data>
   <data name="ErrorUserDeleteSelf" xml:space="preserve"><value>لا يمكنك حذف حسابك الخاص.</value></data>
   <data name="ErrorUserDeleteLastSteward" xml:space="preserve"><value>هذا آخر حساب يستطيع إضافة مستخدمين، لذلك لا يمكن حذفه. امنح هذه الصلاحية لمستخدم آخر أولاً.</value></data>
   <data name="ErrorUserDeactivateSelf" xml:space="preserve"><value>لا يمكنك تعطيل حسابك الخاص.</value></data>

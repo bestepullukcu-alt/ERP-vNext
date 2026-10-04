@@ -329,7 +329,8 @@ const UsersList = (function () {
         disable: { className: 'js-user-disable text-warning', icon: 'bx-minus-circle', text: 'Disable', url: (id) => `/Users/disable/${id}`, toast: 'UserDisabled', type: 'warning' },
         enable: { className: 'js-user-enable text-success', icon: 'bx-check-circle', text: 'Enable', url: (id) => `/Users/enable/${id}`, toast: 'UserEnabled', type: 'primary' },
         resend: { className: 'js-user-resend', icon: 'bx-mail-send', text: 'ResendInvitation', url: (id) => `/Users/resend-invite/${id}`, toast: 'InvitationResent', type: 'primary' },
-        reset: { className: 'js-user-reset', icon: 'bx-key', text: 'ResetPassword', url: (id) => `/Users/reset-password/${id}`, toast: 'PasswordReset', type: 'warning' }
+        // BL-529 — the reset INVALIDATES: the confirm says so (the old password stops working, the sessions end).
+        reset: { className: 'js-user-reset', icon: 'bx-key', text: 'ResetPassword', url: (id) => `/Users/reset-password/${id}`, toast: 'PasswordReset', type: 'warning', subtext: 'ResetPasswordConfirmText' }
     };
     const runAdminAction = (cfg) => ({ id, row }) => {
         if (!id) return;
@@ -350,7 +351,7 @@ const UsersList = (function () {
                 console.error('[Users] Admin action failed.', error);
                 sayFailure(error);
             }
-        }, { entityName: row?.email, type: cfg.type, icon: cfg.icon, confirmButtonText: L()[cfg.text] || '' });
+        }, { entityName: row?.email, subtext: cfg.subtext ? L()[cfg.subtext] : undefined, type: cfg.type, icon: cfg.icon, confirmButtonText: L()[cfg.text] || '' });
     };
     const adminAction = (key, full, rowJson, extraAttrs) => {
         const cfg = adminActions[key];

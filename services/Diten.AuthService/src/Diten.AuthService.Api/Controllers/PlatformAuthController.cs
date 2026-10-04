@@ -2,6 +2,7 @@ using Diten.AuthService.Api.Models;
 using Diten.AuthService.Api.Controllers.Common;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Domain.Entities;
@@ -127,6 +128,15 @@ public sealed class PlatformAuthController : CustomBaseController
         }
 
         user.SetPlatformActorType(NormalizeActorType(request.ActorType));
+
+        // BL-529 — an EXISTING platform account sent a new set-password link (Platform's "Resend invite") is reset: the
+        // old password stops working and every session ends, the same rule as a tenant administrator's reset.
+        if (existingUser is not null)
+        {
+            await AdminPasswordReset.InvalidateAsync(
+                user, PlatformTenantId, AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService), _refreshTokenRepository, ct);
+        }
+
         var setupToken = _tokenService.GenerateRefreshToken();
         user.SetPasswordResetToken(_refreshTokenHasher.Hash(setupToken), DateTime.UtcNow.AddHours(24));
 
@@ -140,7 +150,6 @@ public sealed class PlatformAuthController : CustomBaseController
         }
 
         await SyncPlatformRolesAsync(user.Id, request.Roles, ct);
-        await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, PlatformTenantId, ct);
         var setupDelivery = await SendSetupLinkAsync(user.Email, setupToken, ct);
 
         return Ok(new

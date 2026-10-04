@@ -374,10 +374,10 @@ public sealed class TenantUserInvitationTests
     private sealed class FakeRefreshTokenRepository : IRefreshTokenRepository
     {
         public (Guid userId, Guid tenantId)? RevokeAllCall { get; private set; }
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
         {
             RevokeAllCall = (userId, tenantId);
-            return Task.CompletedTask;
+            return Task.FromResult(0L);
         }
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();

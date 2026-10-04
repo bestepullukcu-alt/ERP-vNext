@@ -57,6 +57,7 @@
   <data name="ErrorUserQuotaExceeded" xml:space="preserve"><value>Your subscription plan's user limit has been reached, so no user was added. Remove a user or upgrade the plan.</value></data>
   <data name="ErrorUserQuotaUsage" xml:space="preserve"><value>In use: {current} of {max} users.</value></data>
   <data name="DeleteUserConfirmText" xml:space="preserve"><value>The user is deleted and their roles are removed; the account cannot be restored. A new account can be opened with the same e-mail address.</value></data>
+  <data name="ResetPasswordConfirmText" xml:space="preserve"><value>The user's current password stops working immediately and all of their open sessions are signed out. They set a new password through the link sent to them.</value></data>
   <data name="ErrorUserDeleteSelf" xml:space="preserve"><value>You cannot delete your own account.</value></data>
   <data name="ErrorUserDeleteLastSteward" xml:space="preserve"><value>This is the last account that can add users, so it cannot be deleted. Give another user that right first.</value></data>
   <data name="ErrorUserDeactivateSelf" xml:space="preserve"><value>You cannot deactivate your own account.</value></data>
