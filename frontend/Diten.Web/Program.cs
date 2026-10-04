@@ -1,6 +1,7 @@
 using Diten.Web;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Web.Filters;
+using Diten.Web.Security;
 using Diten.Web.Services.Auth;
 using Diten.Web.Services.EnterpriseStrategy;
 using Diten.Web.Services.ManagementGovernance;
@@ -75,6 +76,34 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.Name = "auth_ticket"; // Use a separate cookie for ASP.NET state if needed
         options.LoginPath = "/account/login";
         options.LogoutPath = "/account/logout";
+        // Q394 (MODULE-RECIPE 2.4): an endpoint marked [JsonAdapterEndpoint] is called by page scripts, not navigated
+        // to, so an unauthenticated call answers 401 with the contract Error envelope instead of a 302 to the login
+        // page; every other endpoint keeps the redirect. Restored from the A12 base, which Q202a imported without it.
+        options.Events.OnRedirectToLogin = async context =>
+        {
+            if (context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<JsonAdapterEndpointAttribute>() is null)
+            {
+                context.Response.Redirect(context.RedirectUri);
+                return;
+            }
+
+            var correlationId = context.Request.Headers.TryGetValue("X-Correlation-Id", out var values)
+                && values.Count == 1 && Guid.TryParse(values[0], out var parsed)
+                    ? parsed
+                    : Guid.NewGuid();
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.Headers["X-Correlation-Id"] = correlationId.ToString("D");
+            await context.Response.WriteAsJsonAsync(new
+            {
+                error = new
+                {
+                    code = "INVALID_REQUEST",
+                    message = "Authentication required.",
+                    correlationId
+                },
+                contractVersion = "v1"
+            });
+        };
     });
 
 var authServiceUrl = builder.Configuration["GatewayUrl"] ?? "http://localhost:5000";
@@ -113,6 +142,11 @@ builder.Services.AddMemoryCache();
 // should prefer the per-request HttpRequestMessage pattern (see GoldenReferenceSlimController /
 // PlatformAuditController) so the guarantee holds even if this ever changes.
 builder.Services.AddHttpClient();
+// Q394 (MODULE-RECIPE 2.5): calls to the shipment-bundle family (Shipments, Carriers, Loads, Returns, Claims) get their
+// own deadline instead of HttpClient's 100 s default, which kept a user on "Loading…" for 90 s (Q362). The handler sits
+// on the default client but leaves every other URL untouched, so the 136 other default-client consumers are unchanged.
+builder.Services.AddHttpClient(Microsoft.Extensions.Options.Options.DefaultName)
+    .AddHttpMessageHandler(() => new ShipmentBundleTimeoutHandler());
 builder.Services.AddScoped<Diten.Web.Services.IPlatformProfileSnapshotProvider, Diten.Web.Services.PlatformProfileSnapshotProvider>();
 // FE-B (MOD-0018-FU9): UX-only permission snapshot for tenant RBAC screens. Not enforcement.
 builder.Services.AddScoped<Diten.Web.Services.IPermissionSnapshot, Diten.Web.Services.PermissionSnapshot>();
@@ -525,3 +559,33 @@ static bool IsPasswordChangeAllowedPath(PathString path)
 /// real request through the real pipeline — which is the gap `inquire` slipped through.
 /// </summary>
 public partial class Program { }
+
+/// <summary>
+/// Deadline for gateway calls under <c>/api/shipment-bundle/</c>: 15 s for reads, 30 s for writes (Q371's
+/// recommendation, about 10–15× the slowest healthy call measured). On expiry it throws a
+/// <see cref="TaskCanceledException"/>, which the adapters already answer as 503 PERSISTENCE_UNAVAILABLE.
+/// </summary>
+internal sealed class ShipmentBundleTimeoutHandler : DelegatingHandler
+{
+    internal static readonly TimeSpan ReadTimeout = TimeSpan.FromSeconds(15);
+    internal static readonly TimeSpan WriteTimeout = TimeSpan.FromSeconds(30);
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        if (request.RequestUri?.AbsolutePath.StartsWith("/api/shipment-bundle/", StringComparison.OrdinalIgnoreCase) != true)
+            return await base.SendAsync(request, cancellationToken);
+
+        var timeout = request.Method == HttpMethod.Get ? ReadTimeout : WriteTimeout;
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(timeout);
+        try
+        {
+            return await base.SendAsync(request, deadline.Token);
+        }
+        catch (OperationCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new TaskCanceledException($"Shipment-bundle call exceeded its {timeout.TotalSeconds:0} s deadline.",
+                new TimeoutException(exception.Message, exception));
+        }
+    }
+}

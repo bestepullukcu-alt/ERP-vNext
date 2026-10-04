@@ -114,6 +114,9 @@ public sealed class SupplyChainShipmentsController : Controller
     {
         if (!TryCreateGatewayRequest(method, targetUrl, content, includeIdempotencyKey, out var request, out var status))
             return ContractFailure(status);
+        // Q372: the id TryCreateGatewayRequest validated and forwarded; every line below carries it, so one user action
+        // can be followed through the Web, Gateway and service logs by the same value (MOD-0183 §8.1 O-1).
+        var correlationId = request.Headers.GetValues(CorrelationHeader).Single();
         try
         {
             using (request)
@@ -127,9 +130,11 @@ public sealed class SupplyChainShipmentsController : Controller
                 // case as an unreachable Gateway, so it gets the same envelope the HttpRequestException branch sends.
                 if ((int)response.StatusCode >= 500 && !HasContractError(body))
                 {
-                    _logger.LogWarning("Shipment Gateway answered {StatusCode} without a contract error for {TargetUrl}.", (int)response.StatusCode, targetUrl);
+                    _logger.LogWarning("Shipment Gateway answered {StatusCode} without a contract error for {TargetUrl}; correlation {CorrelationId}.", (int)response.StatusCode, targetUrl, correlationId);
                     return ContractFailure(StatusCodes.Status503ServiceUnavailable);
                 }
+                _logger.LogInformation("Shipment Gateway answered {StatusCode} for {Method} {TargetUrl}; correlation {CorrelationId}.",
+                    (int)response.StatusCode, method.Method, targetUrl, correlationId);
                 return new ContentResult
                 {
                     StatusCode = (int)response.StatusCode,
@@ -140,17 +145,17 @@ public sealed class SupplyChainShipmentsController : Controller
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
-            _logger.LogWarning(exception, "Shipment Gateway request timed out for {TargetUrl}.", targetUrl);
+            _logger.LogWarning(exception, "Shipment Gateway request timed out for {TargetUrl}; correlation {CorrelationId}.", targetUrl, correlationId);
             return ContractFailure(StatusCodes.Status503ServiceUnavailable);
         }
         catch (HttpRequestException exception)
         {
-            _logger.LogError(exception, "Shipment Gateway request failed for {TargetUrl}.", targetUrl);
+            _logger.LogError(exception, "Shipment Gateway request failed for {TargetUrl}; correlation {CorrelationId}.", targetUrl, correlationId);
             return ContractFailure(StatusCodes.Status503ServiceUnavailable);
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Unexpected Shipment proxy failure for {TargetUrl}.", targetUrl);
+            _logger.LogError(exception, "Unexpected Shipment proxy failure for {TargetUrl}; correlation {CorrelationId}.", targetUrl, correlationId);
             return ContractFailure(StatusCodes.Status500InternalServerError);
         }
     }

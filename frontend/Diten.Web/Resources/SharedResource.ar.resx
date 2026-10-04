@@ -807,4 +807,6 @@
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>شركات النقل</value></data>
   <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>تتبع الشحنات وإثبات التسليم</value></data>
   <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>الشحنات</value></data>
+  <data name="Nav.Module.REVERSELOGISTICS" xml:space="preserve"><value>الخدمات اللوجستية العكسية</value></data>
+  <data name="Nav.Page.RETURNS" xml:space="preserve"><value>المرتجعات</value></data>
 </root>

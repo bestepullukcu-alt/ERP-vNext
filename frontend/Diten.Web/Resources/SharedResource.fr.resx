@@ -808,4 +808,6 @@
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transporteurs</value></data>
   <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Suivi des expéditions et preuve de livraison</value></data>
   <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Expéditions</value></data>
+  <data name="Nav.Module.REVERSELOGISTICS" xml:space="preserve"><value>Logistique inverse</value></data>
+  <data name="Nav.Page.RETURNS" xml:space="preserve"><value>Retours</value></data>
 </root>

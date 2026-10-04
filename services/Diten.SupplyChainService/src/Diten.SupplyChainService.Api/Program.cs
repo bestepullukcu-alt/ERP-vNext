@@ -96,6 +96,8 @@ builder.Services.AddHostedService<ShipmentOutboxWorker>();
 builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IModuleManifestProvider, ShipmentTrackingPodManifestProvider>();
+// R-2 (2026-10-04): Returns (MOD-0186 §33) ships with its UI in the same change, per the §33 ship rule.
+builder.Services.AddSingleton<IModuleManifestProvider, ReverseLogisticsManifestProvider>();
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 // Q381 (2026-10-04, owner decision §4): routes of uncomposed modules answer 404, not 500. The filter below reads
 // which modules exist from the registrations above; it keeps no list of its own (K6).

@@ -865,4 +865,6 @@
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Taşıyıcılar</value></data>
   <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Sevkiyat Takibi ve Teslimat Kanıtı</value></data>
   <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Sevkiyatlar</value></data>
+  <data name="Nav.Module.REVERSELOGISTICS" xml:space="preserve"><value>Tersine Lojistik</value></data>
+  <data name="Nav.Page.RETURNS" xml:space="preserve"><value>İadeler</value></data>
 </root>

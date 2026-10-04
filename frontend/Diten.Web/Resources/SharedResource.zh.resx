@@ -807,4 +807,6 @@
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>承运商</value></data>
   <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>货运跟踪与交付证明</value></data>
   <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>货运</value></data>
+  <data name="Nav.Module.REVERSELOGISTICS" xml:space="preserve"><value>逆向物流</value></data>
+  <data name="Nav.Page.RETURNS" xml:space="preserve"><value>退货</value></data>
 </root>

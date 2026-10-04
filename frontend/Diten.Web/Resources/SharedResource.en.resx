@@ -865,4 +865,6 @@
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Carriers</value></data>
   <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Shipment Tracking &amp; POD</value></data>
   <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Shipments</value></data>
+  <data name="Nav.Module.REVERSELOGISTICS" xml:space="preserve"><value>Reverse Logistics</value></data>
+  <data name="Nav.Page.RETURNS" xml:space="preserve"><value>Returns</value></data>
 </root>
