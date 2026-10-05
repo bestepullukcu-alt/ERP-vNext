@@ -8045,6 +8045,38 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-553
+
+**Liste standardı artıkları (ABB turlarından): 413 için paylaşılan cümle "50.000 satır" diyor; dışa aktarma URL'si yalnız-yerel alanı taşıyor; görünüm taşımasında "bitti" işareti yok**
+
+DURUM: AÇIK · SAHİP: CT (liste bileşeni — BL-440) · BULAN: WP-MDM-ABB-LIST-01 FIX1 bağımsız gözden geçirmesi · KAYIT: 2026-10-05
+
+(a) Fabrikanın 413 tostu paylaşılan `ExportTooLarge` anahtarını kullanıyor ("50.000'den fazla satır, süzgeci daraltın"); MDM'nin tek ürün okuması 500'de kesilen ABB gibi
+listelerde eşik başka ve daraltmak işe yaramıyor → fabrika sunucunun 413 gövdesindeki kodu / eşiği okuyup sayfaya özgü cümleye izin vermeli. (b) Fabrika dışa aktarma URL'sini
+kendisi kurarken süzgeç alanlarının hepsini ekliyor; ABB'nin görüntü metni alanı (`globalProductText`) sunucuya gidiyor (sunucu yok sayıyor) → alan için "yalnız yerel"
+seçeneği. (c) Sürümlenmiş sayfa anahtarına görünüm taşımasında "bitti" işareti yok: görünümü olmayan kullanıcı her açılışta fazladan `getViews` yapıyor, iki sekme iki v2
+varsayılanı yazabiliyor, kalıcı depo hatasında uyarı her açılışta çıkıyor. (d) İlk ajax başarısızsa DataTables initComplete'i tetiklemiyor → fabrikaya bağlı süzgeç / derin
+bağlantı akışı ölü kalıyor (fabrika bir "init başarısız" kancası sunmalı). Karşılaştırma: SAP Fiori List Report'ta dışa aktarma sınırı ve mesajı uygulama bazında
+yapılandırılır; Oracle VBCS tablolarında da. Gelecek regresyon riski: 🟡 (her yeni sunucu modlu listede tekrarlanır).
+
+---
+
+### BL-552
+
+**Global Ürün onay akışları BL-547'nin üç cevabını hâlâ karantinaya çeviriyor: Görev Merkezi'nde iptal edilen bir GP onayı ürünü kalıcı kilitleyebilir**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) · BULAN: WP-MDM-GSKU-ACCEPT-01 FIX5 bağımsız gözden geçirmesi · KAYIT: 2026-10-05
+
+GSKU FIX5 COR / RRP'de üç cevabı ayırdı (kararsız kapandı → biter + kilit bırakılır; tutarsız → takılı + talep edenin komutu çıkış; bitmedi → bekler). Global Ürün işlemcileri
+(`GlobalProductCorrectionWorkflowProcessor.cs:259, :98`, `GlobalProductRetirementRequestWorkflowProcessor.cs:205, :77`, `GlobalProductIdentityWorkflowProcessor.cs:1205`)
+CLOSED_WITHOUT_DECISION, INCONSISTENT ve 401/403 ServiceWait'i hep ManualAsync / QuarantineAsync'e gönderiyor; kontrol noktası uç, 409, tekrar yolu yok → iptal edilmiş bir
+GP onayı ya da bir servis kimliği arızası ürünü kalıcı kilitler (çıkarım: işlemciler bırakmıyor ve uzlaştırmıyor). Düzeltme: GSKU FIX6 kabul edildikten sonra ayrı WP —
+aynı durum ⇔ çıkış tablosu GP'ye uygulanır, başlatma araması ile başlatma cevabı ayrılır (GSKU FIX6 madde 1), testler gerçek istemci cevaplarıyla. Karşılaştırma: SAP MDG'de
+iptal edilen değişiklik talebi nesneyi kilitten çıkarır (USMD_CREQUEST iptali); Oracle PIM'de reddedilen / geri çekilen onay öğeyi düzenlenebilir duruma döndürür.
+Gelecek regresyon riski: 🔴 (canlıda tek bir iptal kalıcı kilit doğurur).
+
+---
+
 ### BL-551
 
 **İki kararsız test gerçek kırmızıyı gölgeliyor: `DocumentDowntimeTemporaryIssueTests.Close_downtime_after_all_issues_reconciled_succeeds` saate bağlı, `TimesheetNotificationHttpMongoTests.T3_04` aralıklı**
