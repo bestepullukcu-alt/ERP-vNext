@@ -324,23 +324,52 @@ public sealed class MeetingTaskReadRuleTests
         Assert.Equal(open.Id, Assert.Single(answer.Items).Id);
     }
 
-    /// <summary>FIX6 (item 3) — every AgendaItemDto is built through MeetingAgendaCodes.TextFor, in production source: a
-    /// second construction that took the stored text would bring a carried line's stored title back.</summary>
+    /// <summary>FIX6 (item 3) / FIX7 (item 4) — every AgendaItemDto is built through MeetingAgendaCodes.TextFor, in
+    /// production source: a second construction that took the stored text would bring a carried line's stored title
+    /// back. The scanner (<see cref="AgendaDtoTextScan"/>) is measured on its own below.</summary>
     [Fact]
     public void Every_agenda_item_dto_is_built_through_TextFor()
     {
         var root = Path.Combine(RepoPaths.Root(), "services", "Diten.Platform", "src");
-        var constructions = Directory.EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
-            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .SelectMany(path => System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(path), @"new AgendaItemDto\(([^;]*?)\)\s*[,;)]",
-                    System.Text.RegularExpressions.RegexOptions.Singleline)
-                .Select(m => (File: Path.GetFileName(path), Args: m.Groups[1].Value)))
-            .ToList();
+        var found = 0;
+        var violations = new List<string>();
+        foreach (var path in Directory.EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
+                     .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal)))
+        {
+            var (constructions, bad) = AgendaDtoTextScan.Scan(File.ReadAllText(path));
+            found += constructions;
+            violations.AddRange(bad.Select(b => $"{Path.GetFileName(path)}: {b}"));
+        }
 
-        Assert.True(constructions.Count >= 2, "the AgendaItemDto constructions were not found — the guard would pass empty");
-        Assert.All(constructions, c => Assert.True(
-            c.Args.Contains("MeetingAgendaCodes.TextFor(", StringComparison.Ordinal),
-            $"{c.File} builds an AgendaItemDto without MeetingAgendaCodes.TextFor"));
+        Assert.True(found >= 2, "the AgendaItemDto constructions were not found — the guard would pass empty");
+        Assert.Empty(violations);
+    }
+
+    /// <summary>FIX7 (item 4) — the scanner sees every shape a construction can take, and passes the one rule.</summary>
+    [Theory]
+    [InlineData("var d = new AgendaItemDto(a.Id, a.Text, a.SortOrder, a.Version, a.RecordLinkId);")]
+    [InlineData("var d = new AgendaItemDto (a.Id, a.Text, a.SortOrder, a.Version, a.RecordLinkId);")]
+    [InlineData("var d = new Diten.Platform.Application.Features.Meetings.AgendaItemDto(a.Id, a.Text, a.SortOrder, a.Version, null);")]
+    [InlineData("AgendaItemDto d = new(a.Id, a.Text, a.SortOrder, a.Version, a.RecordLinkId);")]
+    [InlineData("return Response<AgendaItemDto>.Success(\n    new(item.Id, item.Text, item.SortOrder, item.Version, null), 201, c);")]
+    [InlineData("var e = d with { Text = line.Text };")]
+    [InlineData("var d = new AgendaItemDto(Guid.NewGuid(), a.Text, Map(a), a.Version, null);")]
+    public void The_scanner_flags_a_construction_that_skips_TextFor(string source)
+    {
+        var (constructions, bad) = AgendaDtoTextScan.Scan("using X; // AgendaItemDto\n" + source);
+        Assert.Equal(1, constructions);
+        Assert.Single(bad);
+    }
+
+    [Theory]
+    [InlineData("var d = new AgendaItemDto(a.Id, MeetingAgendaCodes.TextFor(a), a.SortOrder, a.Version, a.RecordLinkId);")]
+    [InlineData("AgendaItemDto d = new(Guid.NewGuid(), MeetingAgendaCodes.TextFor(a), a.SortOrder, a.Version, null);")]
+    [InlineData("var e = d with { Text = MeetingAgendaCodes.TextFor(line) };")]
+    public void The_scanner_passes_a_construction_through_TextFor(string source)
+    {
+        var (constructions, bad) = AgendaDtoTextScan.Scan("// AgendaItemDto\n" + source);
+        Assert.Equal(1, constructions);
+        Assert.Empty(bad);
     }
 
     private static async Task<TaskLinkCandidatesDto> PickAsync(FakeTaskItemRepository tasks) =>
@@ -476,5 +505,75 @@ public sealed class MeetingTaskReadRuleTests
 
         public Task Publish<TNotification>(TNotification notification, CancellationToken ct = default)
             where TNotification : INotification => throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// FIX7 (item 4) — finds every AgendaItemDto construction in one source file: <c>new AgendaItemDto(…)</c> with any
+/// spacing or a namespace-qualified name, a target-typed <c>new(…)</c> whose target names AgendaItemDto just before
+/// it, and a <c>with { Text = … }</c> in a file that mentions AgendaItemDto. Arguments are read up to the BALANCED
+/// closing parenthesis (a nested call no longer cuts the list short).
+/// </summary>
+internal static class AgendaDtoTextScan
+{
+    private const string Rule = "MeetingAgendaCodes.TextFor(";
+
+    public static (int Constructions, IReadOnlyList<string> Violations) Scan(string source)
+    {
+        var bad = new List<string>();
+        var count = 0;
+        if (!source.Contains("AgendaItemDto", StringComparison.Ordinal))
+        {
+            return (0, bad);
+        }
+
+        foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(
+                     source, @"\bnew\s+(?:[A-Za-z_][\w]*\s*\.\s*)*AgendaItemDto\s*\("))
+        {
+            count++;
+            Check(Arguments(source, m.Index + m.Length - 1), m.Value);
+        }
+
+        foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(source, @"\bnew\s*\("))
+        {
+            var before = source[Math.Max(0, m.Index - 80)..m.Index];
+            if (!System.Text.RegularExpressions.Regex.IsMatch(before, @"AgendaItemDto\b[^;{}]*$"))
+            {
+                continue;
+            }
+
+            count++;
+            Check(Arguments(source, m.Index + m.Length - 1), "new(");
+        }
+
+        foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(
+                     source, @"\bwith\s*\{([^}]*\bText\s*=[^}]*)\}"))
+        {
+            count++;
+            Check(m.Groups[1].Value, "with { Text = … }");
+        }
+
+        return (count, bad);
+
+        void Check(string arguments, string shape)
+        {
+            if (!arguments.Contains(Rule, StringComparison.Ordinal))
+            {
+                bad.Add($"{shape} without {Rule}…)");
+            }
+        }
+    }
+
+    /// <summary>The text between the parenthesis at <paramref name="open"/> and its balanced closing one.</summary>
+    private static string Arguments(string source, int open)
+    {
+        var depth = 0;
+        for (var i = open; i < source.Length; i++)
+        {
+            if (source[i] == '(') { depth++; }
+            else if (source[i] == ')' && --depth == 0) { return source[(open + 1)..i]; }
+        }
+
+        return source[(open + 1)..];
     }
 }

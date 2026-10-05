@@ -577,10 +577,11 @@
     /*
      * WP-WCN-TASK-REQUEST-01 FIX5/FIX6 — the candidates answer: { items, truncated } today; a plain array from a server
      * deployed before FIX5 (the switch-over), read as it is. Anything else is UNREADABLE — said so, never shown as an
-     * empty list that looks like "no task to link".
+     * empty list that looks like "no task to link". FIX7 — a refused call (403 / 500 / no answer) is FAILED, said so the
+     * same way: neither opens as an empty list.
      */
     const readLinkCandidates = (result) => {
-        if (!result?.ok) { return { items: [], truncated: false, unreadable: false }; }
+        if (!result?.ok) { return { items: [], truncated: false, unreadable: false, failed: true }; }
         const data = result.data;
         if (Array.isArray(data)) { return { items: data, truncated: false, unreadable: false }; }
         if (data && Array.isArray(data.items)) { return { items: data.items, truncated: data.truncated === true, unreadable: false }; }
@@ -590,8 +591,9 @@
     const openLinkExistingTaskDialog = () => {
         void (async () => {
             const first = readLinkCandidates(await window.TasksApi?.linkCandidates?.(null, 20));
-            if (first.unreadable) {
-                window.DitenModal?.error?.({ title: t('errorOccurred'), message: t('linkExistingTaskListUnreadable') });
+            if (first.failed || first.unreadable) {
+                const message = first.failed ? t('linkExistingTaskListFailed') : t('linkExistingTaskListUnreadable');
+                window.DitenModal?.error?.({ title: t('errorOccurred'), message });
                 return;
             }
             const candidates = first.items;
@@ -603,8 +605,18 @@
             const canSearch = !!(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2);
             const truncated = first.truncated && canSearch;
             const remoteSearch = {
+                // FIX7 — select2's own texts are English; this screen speaks the reader's language.
+                messages: {
+                    searching: t('linkExistingTaskSearching'),
+                    noResults: t('linkExistingTaskNoResults'),
+                    inputTooShort: t('linkExistingTaskInputTooShort'),
+                    errorLoading: t('linkExistingTaskListFailed')
+                },
                 search: async (term) => {
                     const answer = readLinkCandidates(await window.TasksApi.linkCandidates(term, 20));
+                    // FIX7 — a failed or unreadable answer is never "no results": it rejects with its sentence.
+                    if (answer.failed) { throw Object.assign(new Error('LINK_CANDIDATES_FAILED'), { userMessage: t('linkExistingTaskListFailed') }); }
+                    if (answer.unreadable) { throw Object.assign(new Error('LINK_CANDIDATES_UNREADABLE'), { userMessage: t('linkExistingTaskListUnreadable') }); }
                     const results = answer.items.map((candidate) => ({ id: candidate.id, text: candidate.title }));
                     if (answer.truncated) {
                         results.push({ id: '__truncated', text: t('linkExistingTaskTruncated'), disabled: true });

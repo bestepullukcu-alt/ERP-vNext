@@ -67,14 +67,33 @@
          * A term shorter than `minimumTermLength` (default 2) shows the options the <select> was built with; a longer
          * one asks the server, `delayMs` (default 250) after the last keystroke. Labels go through select2's own
          * escaping (no templateResult here), the same as the static options.
+         *
+         * FIX7 — the remote mode also:
+         *  - shows the search box from the first option (`minimumResultsForSearch` 0) unless the caller named its own
+         *    value: a remote list is not "short" just because its opening page is;
+         *  - speaks the caller's language: `remoteSearch.messages` { searching, noResults, errorLoading, inputTooShort }
+         *    become select2's `language` (select2's built-ins are English); a missing one keeps select2's own;
+         *  - says WHY a search failed: a `search` that rejects with `{ userMessage }` shows that sentence through
+         *    `errorLoading`, any other rejection the caller's `messages.errorLoading`; a `search` that THROWS is a
+         *    rejection too (never left on "Searching…").
          */
         const remote = opts.remoteSearch;
         if (remote && typeof remote.search === 'function') {
             const minimum = remote.minimumTermLength ?? 2;
+            const messages = remote.messages || {};
+            let failureMessage = null;
             const initial = () => Array.from(element.options || [])
                 .filter((option) => option.value)
                 .map((option) => ({ id: option.value, text: option.text }));
-            config.minimumResultsForSearch = 0;
+            config.minimumResultsForSearch = opts.minimumResultsForSearch ?? 0;
+            const language = {};
+            if (messages.searching) { language.searching = () => messages.searching; }
+            if (messages.noResults) { language.noResults = () => messages.noResults; }
+            if (messages.inputTooShort) { language.inputTooShort = () => messages.inputTooShort; }
+            // Always set: the caller's failure sentence has to reach the reader; select2's own English text is the
+            // last fallback, as before.
+            language.errorLoading = () => failureMessage || messages.errorLoading || 'The results could not be loaded.';
+            config.language = language;
             config.ajax = {
                 delay: remote.delayMs ?? 250,
                 transport: (params, success, failure) => {
@@ -84,9 +103,13 @@
                         return { abort: () => {} };
                     }
                     let aborted = false;
-                    Promise.resolve(remote.search(term)).then(
-                        (results) => { if (!aborted) { success({ results: results || [] }); } },
-                        (error) => { if (!aborted) { failure(error); } });
+                    new Promise((resolve) => { resolve(remote.search(term)); }).then(
+                        (results) => { if (!aborted) { failureMessage = null; success({ results: results || [] }); } },
+                        (error) => {
+                            if (aborted) { return; }
+                            failureMessage = typeof error?.userMessage === 'string' && error.userMessage ? error.userMessage : null;
+                            failure(error);
+                        });
                     return { abort: () => { aborted = true; } };
                 },
                 processResults: (data) => data
