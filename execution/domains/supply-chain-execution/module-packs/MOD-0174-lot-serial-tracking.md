@@ -17,7 +17,7 @@ screens:
     data_mode: server
 entity_base: EntityBase
 status: draft
-status_note: "draft — WP-0174-P0 (CT-MVP1-0174-P0 v1), 2026-10-05. Owner decisions K-A…K-G (2026-10-05) recorded in §19 as DECISIONS. CT decisions CT-D1…CT-D8 TAKEN 2026-10-05 (§19; CT-D1 = option a, owner). WP-0174-P0 CT-ACCEPTED 2026-10-05. TRACE v1.1 proposal: docs/analysis/contracts/drafts/trace-v1.1-proposal.md. DCP-002 verifier re-run pending (no Python — waiver W-0173-01 pattern)."
+status_note: "ready-for-dev 2026-10-05 (owner). Was draft — WP-0174-P0 (CT-MVP1-0174-P0 v1), 2026-10-05. Owner decisions K-A…K-G (2026-10-05) recorded in §19 as DECISIONS. CT decisions CT-D1…CT-D8 TAKEN 2026-10-05 (§19; CT-D1 = option a, owner). WP-0174-P0 CT-ACCEPTED 2026-10-05. TRACE v1.1 proposal: docs/analysis/contracts/drafts/trace-v1.1-proposal.md. DCP-002 verifier re-run pending (no Python — waiver W-0173-01 pattern)."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0174-lot-serial-tracking
 started: 2026-10-05
@@ -664,7 +664,7 @@ The ledger never calls `/api/trace` over HTTP (in-process `ILotMasterClient`).
 ## 18. Ready-for-dev Checklist
 
 - [x] Canonical ID/name present in the registry (`module-id-registry.md:272`, "DCP-002 gate OK 2026-09-11").
-- [ ] DCP-002 verifier re-run exit 0 — **blocked here: no Python** (same waiver pattern as W-0173-01; CT records a W-0174-01 or carries W-0173-01).
+- [x] DCP-002 verifier re-run exit 0 — **waived: W-0174-01** (no Python on the MVP-1 machine; same pattern as W-0173-01; run on a machine with Python before the MVP-1 PR).
 - [x] DCP-009, domain-config, report §4/§5/§9/§14.4/§20.1/§23 read; TRACE v1 read; mockup read (6 logic assets).
 - [x] Golden Reference decision: 9 form fields → **Compact**; lists DataTable server mode.
 - [x] Frontmatter fields filled; Layout contract explicit (§9).
@@ -674,17 +674,17 @@ The ledger never calls `/api/trace` over HTTP (in-process `ILotMasterClient`).
 - [x] Gateway decision explicit (INT-TRACE, §15).
 - [x] Acceptance criteria and tests per slice (§16, §17).
 - [x] Owner decisions K-A…K-G recorded as DECISIONS (§19).
-- [ ] **CT-D1** blocked / expired lot availability — option (a) or (b) (blocks P2).
-- [ ] **CT-D2** createLot without SKU (B-2).
-- [ ] **CT-D3** lot identity tenant-wide vs per company.
-- [ ] **CT-D4** disposal / reversal out of Blocked / Expired lots.
-- [ ] **CT-D5** module code `LOT-SERIAL-TRACKING` + namespace `trace.*` + cross-module action `NEWLOTQUICK`.
-- [ ] **CT-D6** migration re-key of balance projections; v1 `TransactionItem.lotId` shows the registered lot after migration.
-- [ ] **CT-D7** serial uniqueness scope (Tenant + SKU + serial number).
-- [ ] **CT-D8** non-Draft edit includes Blocked + Expired lots; which statuses auto-expire.
-- [ ] CT accepts the TRACE v1.1 proposal (incl. behaviour changes B-1, B-2, B-3) and records the DEC-INV-14 change
+- [x] **CT-D1** (taken 2026-10-05, §19) blocked / expired lot availability — option (a) or (b) (blocks P2).
+- [x] **CT-D2** (taken 2026-10-05, §19) createLot without SKU (B-2).
+- [x] **CT-D3** (taken 2026-10-05, §19) lot identity tenant-wide vs per company.
+- [x] **CT-D4** (taken 2026-10-05, §19) disposal / reversal out of Blocked / Expired lots.
+- [x] **CT-D5** (taken 2026-10-05, §19) module code `LOT-SERIAL-TRACKING` + namespace `trace.*` + cross-module action `NEWLOTQUICK`.
+- [x] **CT-D6** (taken 2026-10-05, §19) migration re-key of balance projections; v1 `TransactionItem.lotId` shows the registered lot after migration.
+- [x] **CT-D7** (taken 2026-10-05, §19) serial uniqueness scope (Tenant + SKU + serial number).
+- [x] **CT-D8** (taken 2026-10-05, §19) non-Draft edit includes Blocked + Expired lots; which statuses auto-expire.
+- [x] (2026-10-05: proposal ACCEPTED by the CT incl. B-1, B-2 (= CT-D2), B-3; DEC-INV-14 change recorded in report §9) CT accepts the TRACE v1.1 proposal (incl. behaviour changes B-1, B-2, B-3) and records the DEC-INV-14 change
   (owner, 2026-10-05) in the report / registry (CT action, protected paths).
-- [ ] **Owner approval → `ready-for-dev`.**
+- [x] **Owner approval → `ready-for-dev`** (Ali, 2026-10-05).
 
 ## 19. Implementation Notes
 
