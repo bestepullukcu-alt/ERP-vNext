@@ -162,7 +162,171 @@ Written in the **same transaction** as the change; insert-only (no update / dele
 ### `SerialNumber` (`trace_serials`)
 
 `Id` (surrogate = TRACE `serialId`), `TenantId`, `LegalEntityId` (receiving company), `ItemId`, `SkuId`, `SkuLevel`,
-`LotId?`, `SerialNumber` (1–24 `^[A-Z0-9-]+$`, upper-case — mockup rule), `IdentityKey` (by the policy:
+`LotId?`, `SerialNumber` (3–24 `^[A-Z0-9-]+---
+id: MOD-0174
+name: Lot/Batch/Serial Tracking
+domain: supply-chain-execution
+service: Diten.InventoryService (5066, in-process with the MOD-0173 ledger — domain-config OD-5) + frontend/Diten.Web
+shell: tenant
+golden_reference: compact
+data_mode: server
+screens:
+  - module: Lots
+    data_mode: server
+  - module: Serials
+    data_mode: server
+  - module: LotMovements
+    data_mode: server
+  - module: LotMigration
+    data_mode: server
+entity_base: EntityBase
+status: draft
+status_note: "ready-for-dev 2026-10-05 (owner). Was draft — WP-0174-P0 (CT-MVP1-0174-P0 v1), 2026-10-05. Owner decisions K-A…K-G (2026-10-05) recorded in §19 as DECISIONS. CT decisions CT-D1…CT-D8 TAKEN 2026-10-05 (§19; CT-D1 = option a, owner). WP-0174-P0 CT-ACCEPTED 2026-10-05. TRACE v1.1 proposal: docs/analysis/contracts/drafts/trace-v1.1-proposal.md. DCP-002 verifier re-run pending (no Python — waiver W-0173-01 pattern)."
+owner: supply-chain-execution / mvp-1 control-tower
+branch: feature/sce/mod-0174-lot-serial-tracking
+started: 2026-10-05
+target: 2026-10-31
+form_field_count: 9
+dependencies: [MOD-0173, MOD-0173-FU01, MOD-0173-FU02, MOD-0290, TRACE-v1, INT-TRACE, DEV-0001]
+---
+
+# MOD-0174 — Lot/Batch/Serial Tracking
+
+> **Identity (DCP-002):** `MOD-0174 · Lot/Batch/Serial Tracking` is a Blueprint module, registered
+> `reserved / planned` (`execution/registries/module-id-registry.md:272`: "DCP-002 gate OK 2026-09-11. DCP-009. SoR =
+> lot/serial/genealogy."); DCP-009 records the preflight "MOD-0173/0174/0178 exit 0" (DCP-009 lines 24, 106). **Not
+> re-measured here:** no Python interpreter on the MVP-1 machine, so `python3 .antigravity/scripts/verify_module_id.py .
+> --check-id MOD-0174 --name "Lot/Batch/Serial Tracking"` could not run → ready-for-dev item (§18), same waiver pattern
+> as W-0173-01. No registry row is written by this pack (CT action at acceptance).
+>
+> **Authority:** this pack > `domain-config.md` > `AGENTS.md` > `.antigravity/`. Owner decisions **K-A…K-G
+> (2026-10-05)** are binding (§19 "Owner decisions"); where the approved mockup "Lot Seri Takibi v2 (offline).html"
+> disagrees with them, K-* wins and the difference is listed (§21.3). Wire authority: `docs/analysis/contracts/trace.openapi.yaml`
+> (TRACE-BUNDLE **v1.0.0, FROZEN**, owner MOD-0174) — implemented as is; everything new is the additive **v1.1
+> proposal** `docs/analysis/contracts/drafts/trace-v1.1-proposal.md` (written into the yaml in P1 only after CT accepts it).
+> `INVENTORY-BUNDLE` v1 (MOD-0173, FROZEN) is consumed and **not** changed — see CT-D1 for the one semantic question.
+
+## 1. Module Summary
+
+MOD-0174 is the **single source of lot and serial identity**: every lot (`Lot`), every serial number (`SerialNumber`)
+and every lot-to-lot transformation (`LotGenealogyLink`) of a tenant. It ties every stock movement of the MOD-0173
+ledger to a registered lot / serial (inside the same posting transaction — in-process, like the MOD-0173-FU02 location
+master), owns the lot lifecycle (Draft → Released ⇄ Blocked, Expired by the system), the change history (GxP audit
+trail), and forward / backward traceability. It retires waiver **W-UI-02** (typed lots in the Stock Ledger form) by
+migrating every typed lot text to a registered lot without changing a single ledger transaction.
+
+MVP-1 chain: `0290 → 0173 → 0174 → {0175 ∥ 0176 ∥ 0177}`. MOD-0174 leaves **extension points only** for quarantine
+release / e-signature (0175), FEFO (0176) and recall (0177); it designs none of them.
+
+### Slice plan (each slice = its own Work Package, CT-verified before the next)
+
+| Slice | Scope | Contract | Closes |
+|---|---|---|---|
+| **P1 — Lot / serial SoR** | `Lot`, `LotChangeEntry`, `SerialNumber`, `LotGenealogyLink` entities + `LotIdentityPolicy` (K-G single point); TRACE v1 ops + v1.1 ops; status lifecycle + reason + history; expiry sweeper; GS1 check; manifest `LOT-SERIAL-TRACKING` | TRACE v1 implemented; v1.1 written into the yaml (single-writer step, after CT accepts the proposal) | lot SoR, history, K-C, K-E, K-G, B-3 |
+| **P2 — Ledger integration** | in-process `ILotMasterClient` for the ledger; lot required / allowed / registered / same SKU / not Blocked / not Expired; serial registry + count (= quantity) + uniqueness + consumption; `inventory_lot_positions` (K-A); availability rule per CT-D1 | INVENTORY-BUNDLE v1 unchanged (new `error.code` values only) | lot+serial posting invariants (report §4 R6/R7) |
+| **P3 — UI** | 8 screens (§11) + the Stock Ledger form lot field / quick lot / serial entry (3 methods, K-B) | — | G1 E4 UI leg for lots |
+| **P4 — Migration** | "Elle girilmiş lotları aktarma" screen + commit; typing closed | v1.1 migration ops | **W-UI-02 closed** |
+| **P5 — L10n** | 7 languages for every key of §11.6 | — | language parity |
+| **INT-TRACE** | Gateway `/api/trace/**` → 5066 + permission catalog check (integration-agent) | — | external consumers (0142, 0175–0177, 0194) |
+
+Order: P1 → INT-TRACE → P2 → P3 → P4 → P5 (P5 may run with P3/P4 per file). P2 needs CT-D1.
+
+## 2. Ownership and Boundaries
+
+**Owns (single writer, K15):**
+
+- `TRACE-BUNDLE` contract (v1 frozen, v1.1 proposal) and its implementation under `/api/trace`.
+- `Lot`, `LotChangeEntry`, `SerialNumber`, `LotGenealogyLink`, `MovementLotLink`, `ManualLotMigration`.
+- Lot status lifecycle (`Draft · Released · Blocked · Expired`), serial status (`Active · Consumed · Blocked`).
+- Lot / serial identity policy (`LotIdentityPolicy`, K-G) and its migration path (§8).
+- Permission namespace **`trace.*`** (proposed, PKS-001 §4 — measured: no `trace.` key exists in `services/`,
+  `gateway/`, `execution/`, `.antigravity/` on `876805f0e`).
+
+**Consumes:**
+
+- MOD-0173 ledger **in-process** (same service): balance rows `?lotId=`, transactions `?lotId=`, the per-lot projection
+  `inventory_lot_positions` (written by the ledger code, §8). Never a second balance.
+- `PRODUCT-MASTER-BUNDLE` v1 (MOD-0290, Model A only): `lotControlled`, `serialControlled`, `gtin` (nullable — D-1),
+  `resolveSkuProduct` (SKU → itemId). Fail-closed 503 `PRODUCT_MASTER_UNAVAILABLE`.
+- Company scope: MOD-0173 scope middleware + W-0173-02 company selector (FU01 component, reused as is).
+
+**Does not own / must not do:**
+
+- Stock quantities, stock status, movements, reservations (MOD-0173). Quarantine hold / release / e-signature
+  (MOD-0175). Shelf-life rules, FEFO (MOD-0176). Recall cases, drills, evidence packs (MOD-0177). BOM / work orders
+  (MOD-0193/0194 — they **call** `linkGenealogy`). Shipment / customer (MVP-6).
+- Model B (`Product`, `mdm_products`, `/api/mdm/products`) — never.
+- The frozen yaml files (`trace.openapi.yaml` is edited only in P1 after CT acceptance of the proposal;
+  `inventory-bundle.openapi.yaml` never), registries, DCP, domain-config, report.
+
+## 3. Owned Objects
+
+| Object | Kind | Notes |
+|---|---|---|
+| `Lot` | Entity (`EntityBase`) | collection `trace_lots`; business key per `LotIdentityPolicy` (K-G) |
+| `LotChangeEntry` | Entity (append-only) | `trace_lot_history`; one row per created lot, per changed field, per status change, per link / migration |
+| `SerialNumber` | Entity (`EntityBase`) | `trace_serials`; created by an inbound posting (P2) |
+| `LotGenealogyLink` | Entity (append-only) | `trace_genealogy_links`; written via API by MOD-0194 later |
+| `MovementLotLink` | Entity (append-only) | `trace_movement_lot_links`; typed-lot transaction → registered lot (P4) |
+| `ManualLotMigration` | Entity (one per tenant) | `trace_lot_migrations`; the commit record + `ManualLotEntryClosed` flag |
+| `LotIdentityPolicy` | Domain service | the ONLY place that knows "a lot belongs to a SKU" and the uniqueness key (K-G rule 1) |
+| `LotStatusRules` | Domain rules | allowed transitions, `ILotStatusChangeGate` extension point (0175) |
+| `Gs1CodeParser`, `SerialRangeExpander`, `ManualLotMatcher` | Domain helpers | K-B, K-B range, K-D |
+| `InventoryLotDirectory` | in-process adapter | implements the ledger's new `ILotMasterClient` from the repository (pattern `InventoryLocationDirectory`) |
+| `LotExpirySweeper` | hosted service | sets `Expired` (B-3) |
+| `TraceController` (service) | API | base `/api/trace` (contract `servers`) |
+| `LotSerialTrackingManifestProvider` | self-registration | module code `LOT-SERIAL-TRACKING` (§14) |
+| MVC controllers (Web) | `LotsController`, `SerialsController`, `LotMovementsController`, `LotTraceController`, `LotMigrationController` | `[Authorize]`; pages + same-origin proxies |
+| Permissions | `trace.lots.read`, `trace.lots.create`, `trace.lots.update`, `trace.lots.update-released`, `trace.lots.change-status`, `trace.lots.migrate`, `trace.serials.read`, `trace.genealogy.link` | §14 |
+
+## 4. Entity Fields
+
+**Entity base (decision):** the MOD-0173 `EntityBase` of `Diten.InventoryService`
+(`services/Diten.InventoryService/src/Diten.InventoryService.Domain/Entities/EntityBase.cs:9` — `Id`, `TenantId`,
+`LegalEntityId`, `CreatedAt`, `UpdatedAt`, `Version` (:22, ETag), `IsDeleted`, `DeletedAt`; `CreatedBy`/`UpdatedBy` are
+added per entity, as `Location`). **Why:** same service, same scope middleware, same Mongo transaction as the ledger
+posting; `Version` gives `If-Match`. **No delete:** a lot or serial is never deleted — `IsDeleted` exists for the
+standard and is always `false`; no delete route or repository method (architecture test). A wrong lot is corrected by
+editing (K-C) or blocking, never by deletion (GxP).
+
+### `Lot` (`trace_lots`) — mapping to `LotRef` (v1 + v1.1)
+
+| Field | Type | Rule | `LotRef` |
+|---|---|---|---|
+| `Id` | string (Guid "D") | surrogate, immutable — what the ledger stores in `LotId` after P2 | `lotId` |
+| `TenantId` | Guid | from the scope | — |
+| `LegalEntityId` | Guid | the company that **created** the lot (audit); visibility per CT-D3 | `legalEntityId` (v1.1) |
+| `ItemId` | Guid | **always filled** — resolved from the SKU through PRODUCT-MASTER (K-G rule 2) | `itemId` |
+| `SkuId`, `SkuLevel` | Guid, `Gsku · Lsku · FinishedGood` | set at create, **immutable** (owner: Lot No and SKU locked even in Draft) | `skuId`, `skuLevel` (v1.1) |
+| `LotNumber` | string 1–40 `^[A-Z0-9./-]+$` | trimmed + upper-case (same normalisation as W-UI-02 — `frontend/Diten.Web/Models/Inventory/MovementRules.cs:77,280`); immutable | `lotNumber` |
+| `IdentityKey` | string | built ONLY by `LotIdentityPolicy` (today `{TenantId}|{SkuLevel}|{SkuId}|{LotNumber}`); unique index | — |
+| `ManufacturerLot`, `SupplierLot` | string 1–40? | attributes, not keys (DEC-INV-14) | same |
+| `ManufacturingDate`, `ExpiryDate`, `RetestDate` | date (UTC midnight)? | §12 date rules | same (date-time) |
+| `CountryOfOrigin` | ISO 3166-1 alpha-2? | UI shows the localized country name | `countryOfOrigin` |
+| `CoaReference` | string 1–60? | | `coaReference` |
+| `Status` | `Draft · Released · Blocked · Expired` | new lots `Draft`; §12 transitions | `status` (v1 enum, unchanged) |
+| `TrackingMode` | `Lot · LotAndSerial` | from PRODUCT-MASTER flags at create | `trackingMode` (v1.1) |
+| `CreatedBy`, `UpdatedBy` | string | JWT `sub` | — |
+| `CreationSource` | `LotForm · LedgerShortcut · Api · Migration` | | history `source` |
+
+Indexes: unique `(TenantId, IdentityKey)`; `(TenantId, SkuId, SkuLevel, ExpiryDate)`; `(TenantId, ItemId)`;
+`(TenantId, Status, ExpiryDate)` (sweeper); text-ish prefix `(TenantId, LotNumber)`.
+
+**Form fields (9 → Compact):** ① Ürün / SKU* (create only) ② Lot No* (create only) ③ Üretici Lotu ④ Tedarikçi Lotu
+⑤ Üretim Tarihi ⑥ Son Kullanma (SKT) ⑦ Yeniden Test Tarihi ⑧ Menşe Ülke ⑨ CoA Referansı — plus **Gerekçe** on the edit
+form of a non-Draft lot (conditional, not counted). Status is not a form field (status dialog).
+
+### `LotChangeEntry` (`trace_lot_history`)
+
+`Id, TenantId, LegalEntityId, LotId, Action (Created · Updated · StatusChanged · Linked · Migrated · SystemExpired),
+Field?, OldValue?, NewValue?, Reason?, ActorUserId, ActorDisplay, Source, CorrelationId, LeSource, OccurredAt`.
+Written in the **same transaction** as the change; insert-only (no update / delete route — pattern
+`LocationRepository.AppendHistoryAsync`, `…/Persistence/Repositories/LocationRepository.cs:243`).
+
+### `SerialNumber` (`trace_serials`)
+
+`Id` (surrogate = TRACE `serialId`), `TenantId`, `LegalEntityId` (receiving company), `ItemId`, `SkuId`, `SkuLevel`,
+`LotId?`,  — CT 2026-10-05, = §12, upper-case — mockup rule), `IdentityKey` (by the policy:
 Tenant + SKU + SerialNumber, CT-D7), `Status` (`Active · Consumed` stored; `Blocked` **derived on read** when the lot
 is Blocked/Expired or the balance row status is BLOCKED/QUARANTINE — mockup note), `WarehouseId?`, `LocationId?`,
 `LastTransactionId`, `LastMovementAt`, `ReceivedTransactionId`, `CreatedAt`. Unique `(TenantId, IdentityKey)`.
@@ -798,7 +962,7 @@ and recording the DEC-INV-14 change (K-G) in the inventory report §9.
 - **ASSUMPTION-0174-12:** "Etkilenen toplam miktar" = on hand of the lot and its genealogy children + shipped quantities
   from outbound ledger rows, per base unit.
 
-### WP-0174-P1 (agent result, pending CT, 2026-10-05) — lot / serial SoR + TRACE 1.1.0
+### WP-0174-P1 (CT-ACCEPTED 2026-10-05) — lot / serial SoR + TRACE 1.1.0
 
 Commits `c282c981e` (TRACE 1.1.0, single-writer step) · `90d64ca88` (code + tests) · `218f4fb41` (sweeper shutdown) ·
 `366d16ee3` (yaml changelog text, DocsPathGuard) · `3ebe52ef0` (comment, DocsPathGuard). `/api/trace` in
