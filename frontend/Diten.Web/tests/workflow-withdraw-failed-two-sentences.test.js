@@ -9,7 +9,8 @@ const { loadScript } = require("./load-script");
  *     on an EDIT that switched the approval / review off         → "saved; save again to retry"   (the base map);
  *     on an ACT — delete, cancel, return, reassign, release      → "the linked approval or review could not be
  *                                                                   withdrawn; nothing was done"  (reasonOverridesFor);
- *   TASK_REVIEW_PENDING on submitReview (a review is still open)  → its own sentence, not the completion gate's.
+ *   REVIEW_PENDING on submitReview (a review is still open)       → its own sentence (FIX5 item 3: the REAL code);
+ *   REVIEW_PENDING on complete (the completion gate)              → the completion gate's sentence, unchanged.
  * Measured on the production map, bridge and resx, and on the Task Center's own dispatcher.
  */
 
@@ -45,13 +46,16 @@ describe("the sentence follows the act", () => {
     }
   });
 
-  it("submitReview's open-review refusal has its own sentence, and is not an act", () => {
-    expect(global.TasksApi.reasonOverridesFor("submitReview")).toBeUndefined();
-    expect(global.TasksApi.failureMessage({ ok: false, status: 409, reasonCode: "TASK_REVIEW_PENDING" }))
+  it("REVIEW_PENDING reads 'a review is already open' on submitReview, and the completion sentence everywhere else", () => {
+    const pending = { ok: false, status: 409, reasonCode: "REVIEW_PENDING" };
+    expect(global.TasksApi.failureMessage(pending, global.TasksApi.reasonOverridesFor("submitReview")))
       .toBe("t:errorReviewAlreadyOpen");
-    expect(global.TasksApi.failureMessage({ ok: false, status: 409, reasonCode: "REVIEW_PENDING" }))
-      .not.toBe("t:errorReviewAlreadyOpen");
-    for (const code of [...WITHDRAW_CODES, "TASK_REVIEW_PENDING"]) {
+    expect(global.TasksApi.failureMessage(pending, global.TasksApi.reasonOverridesFor("complete")))
+      .toBe("t:errorReviewPending");
+    expect(global.TasksApi.failureMessage(pending)).toBe("t:errorReviewPending");
+    // The invented code is gone: no map knows it.
+    expect(global.TasksApi.REASON_CODE_MESSAGE_KEYS.TASK_REVIEW_PENDING).toBeUndefined();
+    for (const code of [...WITHDRAW_CODES, "REVIEW_PENDING"]) {
       expect(global.TasksApi.isTransitionBlocked({ status: 409, reasonCode: code }), code).toBe(true);
     }
   });
@@ -133,8 +137,8 @@ describe("the Task Center's dispatcher picks the sentence by the act", () => {
     expect(errors).not.toContain("t:errorApprovalCancelFailed");
   });
 
-  it("a submitReview refused with TASK_REVIEW_PENDING says a review is already open", async () => {
-    const errors = await refuse("submitReview", "TASK_REVIEW_PENDING");
+  it("a submitReview refused with REVIEW_PENDING says a review is already open", async () => {
+    const errors = await refuse("submitReview", "REVIEW_PENDING");
     expect(errors).toContain("t:errorReviewAlreadyOpen");
   });
 });

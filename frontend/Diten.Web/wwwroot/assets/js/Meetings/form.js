@@ -576,7 +576,10 @@
     const openLinkExistingTaskDialog = () => {
         void (async () => {
             const candidatesResult = await window.TasksApi?.linkCandidates?.(null, 20);
-            const candidates = candidatesResult?.ok ? candidatesResult.data : [];
+            // WP-WCN-TASK-REQUEST-01 FIX5 (item 2) — { items, truncated }: truncated = the server stopped at its ceiling
+            // with matches it never judged, and the reader is told to narrow the search instead of seeing "no tasks".
+            const candidates = candidatesResult?.ok ? (candidatesResult.data?.items || []) : [];
+            const truncated = candidatesResult?.ok && candidatesResult.data?.truncated === true;
             // A leading BLANK entry, deliberately: a native `<select>` otherwise opens on its first real option
             // already selected, and confirming without touching it would link a task nobody chose.
             const taskOptions = { '': t('linkExistingTaskPlaceholder') };
@@ -594,7 +597,7 @@
                 window.DitenModal?.success?.({ title: t('toastTaskLinked'), timer: 1200 });
                 await reloadMeeting();
             }, {
-                subtext: '',
+                subtext: truncated ? t('linkExistingTaskTruncated') : '',
                 confirmButtonText: t('linkExistingTask'),
                 showInput: true,
                 inputType: 'select',

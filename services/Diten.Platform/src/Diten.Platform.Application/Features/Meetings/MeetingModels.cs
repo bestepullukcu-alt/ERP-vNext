@@ -37,6 +37,19 @@ public static class MeetingPermissions
 public static class MeetingAgendaCodes
 {
     public const string CarriedOpenAction = "MEETING_CARRIED_OPEN_ACTION";
+
+    /// <summary>
+    /// FIX5 (item 1) — what a reader is SENT as an agenda line's text. A carried-forward line (it came from a previous
+    /// meeting AND names its task through a RecordLink) is always the code, whatever is stored: lines carried before
+    /// FIX4 stored the task's TITLE (origin/main) or TASK_NOT_ACCESSIBLE (FIX3), and the stored text never leaves the
+    /// server. No migration — the rule is applied at read time. The screen names the task from the reader's own
+    /// linked-task list, which the read rule answers per reader.
+    /// </summary>
+    public static string TextFor(Diten.Platform.Domain.Entities.Meetings.AgendaItem line)
+    {
+        ArgumentNullException.ThrowIfNull(line);
+        return line.CarriedFromMeetingId is not null && line.RecordLinkId is not null ? CarriedOpenAction : line.Text;
+    }
 }
 
 public static class MeetingReasonCodes

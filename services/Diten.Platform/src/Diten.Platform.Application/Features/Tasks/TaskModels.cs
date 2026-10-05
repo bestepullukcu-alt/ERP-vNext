@@ -1901,3 +1901,9 @@ public sealed record TaskTemplateDto(
 /// <summary>MOD-0357 S4 — one row of the "link an existing task" picker. Deliberately lighter than
 /// <see cref="TaskItemListItemDto"/>: the picker asks one question ("which task?"), not the whole list shape.</summary>
 public sealed record TaskLinkCandidateDto(Guid Id, string Title);
+
+/// <summary>
+/// WP-WCN-TASK-REQUEST-01 FIX5 (item 2) — the picker's answer: the candidates, and whether the search stopped at its
+/// ceiling with matches left unjudged (the reader should narrow the search).
+/// </summary>
+public sealed record TaskLinkCandidatesDto(IReadOnlyList<TaskLinkCandidateDto> Items, bool Truncated);

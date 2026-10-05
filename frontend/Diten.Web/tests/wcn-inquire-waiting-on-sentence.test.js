@@ -27,12 +27,20 @@ const submitRealTransition = () => {
 };
 
 describe("BL-351: submitRealTransition asks for the waiting-on sentence when the action is inquire", () => {
-  it("derives the override from the action code through the one rule, which gives inquire its own", () => {
-    // WP-WCN-TASK-REQUEST-01 FIX4 (item 7) — the rule moved into TasksApi.reasonOverridesFor (inquire's map, the
-    // withdrawing acts' map, otherwise none); the dispatcher asks it with the action's code.
-    expect(submitRealTransition()).toMatch(/const overrides = global\.TasksApi\.reasonOverridesFor\(action\.code\);/);
-    const API = fs.readFileSync(path.join(__dirname, "..", "wwwroot", "assets", "js", "Tasks", "api.js"), "utf8");
-    expect(API).toMatch(/actionCode === 'inquire'\s*\?\s*INQUIRE_REASON_CODE_OVERRIDES/);
+  it("asks the one rule for its sentences, and the rule gives inquire the waiting-on sentence", () => {
+    // FIX5 (item 5) — BEHAVIOUR, not source text: a comment could keep a source regex green. The dispatcher's own
+    // wiring (reasonOverridesFor(action.code) reaching failureMessage) is driven through the page by
+    // workflow-withdraw-failed-two-sentences.test.js (cancel, submitReview).
+    delete global.TasksApi;
+    global.TasksL10n = { t: (key) => `t:${key}` };
+    const { loadScript } = require("./load-script");
+    loadScript("wwwroot/assets/js/Tasks/api.js");
+    const refused = { ok: false, status: 409, reasonCode: "TASK_ASSIGNEE_NOT_ASSIGNABLE" };
+    expect(global.TasksApi.failureMessage(refused, global.TasksApi.reasonOverridesFor("inquire")))
+      .toBe("t:errorWaitingOnNotAssignable");
+    expect(global.TasksApi.failureMessage(refused, global.TasksApi.reasonOverridesFor("reassign")))
+      .not.toBe("t:errorWaitingOnNotAssignable");
+    expect(global.TasksApi.failureMessage(refused)).not.toBe("t:errorWaitingOnNotAssignable");
   });
 
   it("passes the override to EVERY failureMessage call in the function — none is left on the base map alone", () => {

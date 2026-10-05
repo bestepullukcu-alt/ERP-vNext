@@ -74,6 +74,7 @@
   <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>De la reunión anterior</value></data>
   <data name="CarriedOpenActionLine" xml:space="preserve"><value>Acción abierta de la reunión anterior</value></data>
   <data name="LinkedTaskNotAccessible" xml:space="preserve"><value>Una tarea a la que no tiene acceso</value></data>
+  <data name="LinkExistingTaskTruncated" xml:space="preserve"><value>Solo se pudo revisar parte de la lista. Si la tarea que busca no aparece, acote la búsqueda.</value></data>
   <data name="Yes" xml:space="preserve"><value>Sí</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Información de la reunión</value></data>

@@ -46,6 +46,34 @@ public sealed class TaskReadRuleFix4Tests
         Assert.Equal(pooled.Where((_, i) => i % 10 == 0).Select(t => t.Id).ToHashSet(), readable);
     }
 
+    /// <summary>FIX5 (item 5) — MUTATION TARGET (the parents join the batch). Subtasks whose PARENTS are pool tasks: the
+    /// parents' holders come from the same one read, not one read per parent.</summary>
+    [Fact]
+    public async Task Pool_parents_join_the_one_seat_read()
+    {
+        var assignments = new CountingAssignments();
+        var tasks = new FakeTaskItemRepository();
+        var subtasks = new List<TaskItem>();
+        for (var i = 0; i < 10; i++)
+        {
+            var position = Guid.NewGuid();
+            assignments.Add(position, TaskTestData.Me);
+            var parent = NewTask(holder: null, creator: TaskTestData.Rival);
+            parent.AssignmentTarget = TaskAssignmentTarget.PositionPool;
+            parent.PoolPositionId = position;
+            var subtask = NewTask(holder: TaskTestData.Other, creator: TaskTestData.Other, parent: parent.Id);
+            await tasks.CreateAsync(parent);
+            await tasks.CreateAsync(subtask);
+            subtasks.Add(subtask);
+        }
+
+        var readable = await Policy(tasks, assignments, TaskTestData.Me)
+            .ReadableTaskIdsAsync(subtasks, TaskTestData.Me, CancellationToken.None);
+
+        Assert.Equal(subtasks.Select(t => t.Id).ToHashSet(), readable);   // non-vacuity: the parent pool leg admits
+        Assert.Equal(1, assignments.Reads);
+    }
+
     // ── item 4 (G4) — the parent legs are Full: change the subtask through the real gate ───────────────────────
 
     [Fact]

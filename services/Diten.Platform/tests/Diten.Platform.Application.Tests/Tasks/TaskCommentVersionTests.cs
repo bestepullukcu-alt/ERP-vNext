@@ -104,6 +104,51 @@ public sealed class TaskCommentVersionTests
         Assert.Equal(2, stored.Version);
     }
 
+    /// <summary>FIX5 (item 5) — MUTATION TARGET (the version condition past 1). Each write moves the version; a writer still
+    /// holding version 2 after the row moved to 3 writes nothing.</summary>
+    [Fact]
+    public async Task Writes_past_version_1_are_conditional_too()
+    {
+        await using var mongo = await DisposableStandaloneMongo.StartAsync();
+        var (repository, _, tenant) = await RepositoryAsync(mongo);
+        var comment = await repository.CreateAsync(NewComment(tenant));
+
+        var first = (await repository.GetByIdAsync(comment.Id))!;
+        first.Text = "ikinci";
+        Assert.True(await repository.UpdateAsync(first, 1));
+        var atTwo = (await repository.GetByIdAsync(comment.Id))!;
+        var staleAtTwo = (await repository.GetByIdAsync(comment.Id))!;
+        atTwo.Text = "üçüncü";
+        Assert.True(await repository.UpdateAsync(atTwo, 2));
+
+        staleAtTwo.Text = "bayat";
+        Assert.False(await repository.UpdateAsync(staleAtTwo, 2));
+        var stored = (await repository.GetByIdAsync(comment.Id))!;
+        Assert.Equal("üçüncü", stored.Text);
+        Assert.Equal(3, stored.Version);
+    }
+
+    /// <summary>FIX5 (item 5) — MUTATION TARGET (the tenant filter on the write). Another tenant's repository, holding the
+    /// same id and the right version, writes nothing.</summary>
+    [Fact]
+    public async Task A_comment_of_another_tenant_is_not_written()
+    {
+        await using var mongo = await DisposableStandaloneMongo.StartAsync();
+        var (mine, database, tenant) = await RepositoryAsync(mongo);
+        var comment = await mine.CreateAsync(NewComment(tenant));
+        var otherContext = new Diten.Platform.Common.Tenancy.TenantContext();
+        otherContext.SetTenant(Guid.NewGuid());
+        var theirs = new TaskCommentRepository(new PlatformDbContext(database.Client, database), otherContext);
+
+        var forged = (await mine.GetByIdAsync(comment.Id))!;
+        forged.Text = "başka kiracıdan";
+        Assert.False(await theirs.UpdateAsync(forged, 1));
+
+        var stored = (await mine.GetByIdAsync(comment.Id))!;
+        Assert.Equal("ilk metin", stored.Text);
+        Assert.Equal(1, stored.Version);
+    }
+
     [Fact]
     public async Task A_row_stored_without_a_version_field_is_version_1()
     {

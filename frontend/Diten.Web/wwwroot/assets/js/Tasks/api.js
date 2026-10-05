@@ -238,9 +238,6 @@
         // asks for its own sentence through reasonOverridesFor (nothing was done).
         TASK_APPROVAL_CANCEL_FAILED: 'errorApprovalCancelFailed',
         TASK_REVIEW_CANCEL_FAILED: 'errorReviewCancelFailed',
-        // FIX4 (item 7) — submitting for review while a review is still open on the task: its own sentence, not the
-        // completion gate's REVIEW_PENDING one.
-        TASK_REVIEW_PENDING: 'errorReviewAlreadyOpen',
         WORKFLOW_NO_ELIGIBLE_APPROVER: 'errorNoEligibleApprover',
         TASK_WAITING_REASON_REQUIRED: 'errorWaitingReasonRequired',
         /*
@@ -324,13 +321,24 @@
     };
     const WITHDRAWING_ACTIONS = new Set(['delete', 'cancel', 'return', 'reassign', 'release']);
 
+    /*
+     * FIX5 (item 3) — REVIEW_PENDING is ONE server code for two refusals: the completion gate ("a reviewer still holds
+     * the work" — the base map's sentence) and submitting for review while a review is still open on the task. Only
+     * submitReview asks for the second sentence.
+     */
+    const SUBMIT_REVIEW_REASON_CODE_OVERRIDES = {
+        REVIEW_PENDING: 'errorReviewAlreadyOpen'
+    };
+
     /**
      * The ONE answer to "which sentences does this action ask for": inquire its own (BL-351), the acts that withdraw
      * the task's linked workflow theirs (FIX4 item 7), every other action the base map (undefined).
      */
-    const reasonOverridesFor = (actionCode) => (actionCode === 'inquire'
-        ? INQUIRE_REASON_CODE_OVERRIDES
-        : WITHDRAWING_ACTIONS.has(actionCode) ? ACT_REASON_CODE_OVERRIDES : undefined);
+    const reasonOverridesFor = (actionCode) => {
+        if (actionCode === 'inquire') { return INQUIRE_REASON_CODE_OVERRIDES; }
+        if (actionCode === 'submitReview') { return SUBMIT_REVIEW_REASON_CODE_OVERRIDES; }
+        return WITHDRAWING_ACTIONS.has(actionCode) ? ACT_REASON_CODE_OVERRIDES : undefined;
+    };
 
     /*
      * A 409 carrying one of the gate's blocking codes is a RULE refusing the write, not a lost race. The two need
@@ -368,8 +376,7 @@
         'WORKFLOW_NO_ELIGIBLE_APPROVER',
         // FIX4 (item 7) — a workflow that could not be withdrawn, a review still open: refusals, not races.
         'TASK_APPROVAL_CANCEL_FAILED',
-        'TASK_REVIEW_CANCEL_FAILED',
-        'TASK_REVIEW_PENDING'
+        'TASK_REVIEW_CANCEL_FAILED'
     ]);
 
     /*

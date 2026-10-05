@@ -29,8 +29,9 @@ public static class TaskLinks
 
     /// <summary>
     /// WP-WCN-TASK-REQUEST-01 FIX3 (item 4) — what stands where a task's TITLE would, for a reader who may not read that
-    /// task (a meeting's linked-task row, a carried-forward agenda line): a CODE, never a sentence in one language. The
-    /// client renders it in the reader's own; the server never puts a task's title where its read rule says no.
+    /// task (a meeting's linked-task row, a related-record row): a CODE, never a sentence in one language. The client
+    /// renders it in the reader's own; the server never puts a task's title where its read rule says no. (A carried-
+    /// forward agenda line does not use it: since FIX4/FIX5 it is MeetingAgendaCodes.CarriedOpenAction.)
     /// </summary>
     public const string InaccessibleTitleCode = "TASK_NOT_ACCESSIBLE";
 }
