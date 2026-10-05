@@ -202,12 +202,15 @@ public sealed class InventoryLedgerManifestCompletenessTests
     /// permission catalog, i.e. be declared by the manifest as a page, an action OR an API-only permission (standard
     /// §2d). Measured by reflection over the shipping API assembly: a key with no UI (reserve / release) that is dropped
     /// from <c>ApiPermissions</c> makes this red — the G1 live-run failure (403 for every role) caught at build time.
+    /// MOD-0174 (WP-0174-P1): the service now hosts a second module; its controllers (namespace
+    /// <c>…Controllers.Traceability</c>) are measured against THEIR manifest by <c>LotSerialTrackingManifestCompletenessTests</c>.
     /// </summary>
     [Fact]
     public void Every_enforced_permission_is_reachable_from_the_manifest()
     {
         var enforced = typeof(InventoryLedgerManifestProvider).Assembly.GetTypes()
             .Where(t => typeof(Microsoft.AspNetCore.Mvc.ControllerBase).IsAssignableFrom(t) && !t.IsAbstract)
+            .Where(t => t.Namespace?.EndsWith(".Controllers.Traceability", StringComparison.Ordinal) != true)
             .SelectMany(t => t.GetCustomAttributes<HasPermissionAttribute>(inherit: true)
                 .Concat(t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                     .SelectMany(m => m.GetCustomAttributes<HasPermissionAttribute>(inherit: true))))

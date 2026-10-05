@@ -17,6 +17,7 @@ public sealed class ContractValidatingHandler : DelegatingHandler
 {
     private const string Inventory = "inventory";
     private const string Location = "location";
+    private const string Trace = "trace";
 
     private sealed record Operation(
         string Method,
@@ -54,7 +55,23 @@ public sealed class ContractValidatingHandler : DelegatingHandler
         Loc("POST", "/api/locations/{id}/bins/bulk", [200, 201, 400, 401, 403, 404, 409, 422, 503],
             status => status == 201 ? ContractSchemas.BulkBinsResult : ContractSchemas.BulkBins200),
         Loc("GET", "/api/locations/{id}/history", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.LocationHistoryPage),
-        Loc("GET", "/api/locations/{id}/stock-presence", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.LocationStockPresence)
+        Loc("GET", "/api/locations/{id}/stock-presence", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.LocationStockPresence),
+
+        // TRACE-BUNDLE (MOD-0174, WP-0174-P1): v1 frozen + v1.1. 400 / 401 / 403 / 503 are the MOD-0173 scope refusals every
+        // endpoint may give (the scope middleware covers /api/trace). Literal segments first: /serials/gs1-check before /serials/{id}.
+        Trc("GET", "/api/trace/lots", [200, 400, 401, 403, 503], _ => ContractSchemas.LotList),
+        Trc("POST", "/api/trace/lots", [200, 201, 400, 401, 403, 409, 422, 503], _ => ContractSchemas.LotRef, etag: true),
+        Trc("POST", "/api/trace/validate", [200, 400, 401, 403, 503], _ => ContractSchemas.ValidateResponse),
+        Trc("POST", "/api/trace/serials/gs1-check", [200, 400, 401, 403, 404, 422, 503], _ => ContractSchemas.Gs1CheckResult),
+        Trc("GET", "/api/trace/serials", [200, 400, 401, 403, 503], _ => ContractSchemas.SerialPage),
+        Trc("GET", "/api/trace/serials/{id}", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.SerialRef),
+        Trc("GET", "/api/trace/lots/{id}", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.LotRef, etag: true),
+        Trc("PATCH", "/api/trace/lots/{id}", [200, 400, 401, 403, 404, 409, 422, 503], _ => ContractSchemas.LotRef, etag: true),
+        Trc("POST", "/api/trace/lots/{id}/status", [200, 400, 401, 403, 404, 409, 422, 503], _ => ContractSchemas.LotRef, etag: true),
+        Trc("GET", "/api/trace/lots/{id}/history", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.LotHistoryPage),
+        Trc("GET", "/api/trace/lots/{id}/detail", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.LotDetail, etag: true),
+        Trc("GET", "/api/trace/lots/{id}/genealogy", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.Genealogy),
+        Trc("POST", "/api/trace/lots/{id}/genealogy", [200, 201, 400, 401, 403, 404, 422, 503], _ => ContractSchemas.GenealogyLink)
     ];
 
     private static readonly Regex WeakETag = new("^W/\"\\d+\"$", RegexOptions.Compiled);
@@ -82,9 +99,12 @@ public sealed class ContractValidatingHandler : DelegatingHandler
         }
 
         var schemaName = status is 200 or 201 ? operation.SuccessSchema(status) : ContractSchemas.Error;
-        var errors = operation.Contract == Location
-            ? ContractSchemas.ValidateLocation(schemaName, body)
-            : ContractSchemas.Validate(schemaName, body);
+        var errors = operation.Contract switch
+        {
+            Location => ContractSchemas.ValidateLocation(schemaName, body),
+            Trace => ContractSchemas.ValidateTrace(schemaName, body),
+            _ => ContractSchemas.Validate(schemaName, body)
+        };
         if (errors.Count > 0)
         {
             throw new ContractViolationException(
@@ -123,6 +143,9 @@ public sealed class ContractValidatingHandler : DelegatingHandler
         => new(method, template, Route(template), Location, [.. allowed], schema, etag);
 
     /// <summary><c>{id}</c> = one path segment; literal segments (<c>search</c>, <c>validate</c>) are listed before it wins.</summary>
+    private static Operation Trc(string method, string template, int[] allowed, Func<int, string> schema, bool etag = false)
+        => new(method, template, Route(template), Trace, [.. allowed], schema, etag);
+
     private static Regex Route(string template)
         => new("^" + Regex.Escape(template).Replace("\\{id}", "[^/]+") + "/?$", RegexOptions.Compiled);
 }

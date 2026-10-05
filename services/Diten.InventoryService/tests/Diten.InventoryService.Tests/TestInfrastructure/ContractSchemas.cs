@@ -69,6 +69,28 @@ public static class ContractSchemas
     /// <summary>Returns the validation errors of <paramref name="body"/> against the named LOCATION schema (empty = valid).</summary>
     public static IReadOnlyList<string> ValidateLocation(string schemaName, string body) => Location.Validate(schemaName, body);
 
+    // TRACE-BUNDLE (MOD-0174, v1 frozen + v1.1 — WP-0174-P1). listLots declares its 200 body inline (v1): lifted by name.
+    public const string LotRef = "LotRef";
+    public const string LotList = "LotList";
+    public const string LotDetail = "LotDetail";
+    public const string LotHistoryPage = "LotHistoryPage";
+    public const string SerialRef = "SerialRef";
+    public const string SerialPage = "SerialPage";
+    public const string Genealogy = "Genealogy";
+    public const string GenealogyLink = "GenealogyLink";
+    public const string ValidateResponse = "ValidateResponse";
+    public const string Gs1CheckResult = "Gs1CheckResult";
+
+    private static readonly Contract Trace = new("trace.openapi.yaml", "trace", doc => new Dictionary<string, JsonNode>
+    {
+        [LotList] = doc["paths"]!["/lots"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["schema"]!.DeepClone()
+    });
+
+    public static string TraceContractPath => RepoPaths.Contract("trace.openapi.yaml");
+
+    /// <summary>Returns the validation errors of <paramref name="body"/> against the named TRACE schema (empty = valid).</summary>
+    public static IReadOnlyList<string> ValidateTrace(string schemaName, string body) => Trace.Validate(schemaName, body);
+
     private sealed class Contract
     {
         private readonly string _file;

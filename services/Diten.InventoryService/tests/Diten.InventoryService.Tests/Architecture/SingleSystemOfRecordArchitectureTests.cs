@@ -23,25 +23,34 @@ public sealed class SingleSystemOfRecordArchitectureTests
             ["inventory_audit", "inventory_balances", "inventory_location_history", "inventory_locations", "inventory_outbox",
              "inventory_reservations", "inventory_sequences", "inventory_sku_positions", "inventory_transactions"],
             InventoryCollections.All.OrderBy(x => x).ToList());
+
+        // MOD-0174 (WP-0174-P1) — the lot / serial SoR in the same database, prefix trace_ (pack ASSUMPTION-0174-02).
+        // None carries a quantity (asserted below by Only_the_ledger_and_its_projection_carry_quantities).
+        Assert.Equal(
+            ["trace_genealogy_links", "trace_lot_history", "trace_lot_migrations", "trace_lots", "trace_movement_lot_links", "trace_serials"],
+            Diten.InventoryService.Persistence.Traceability.TraceCollections.All.OrderBy(x => x).ToList());
     }
 
     [Fact]
     public void No_production_source_names_a_collection_outside_the_declared_set()
     {
         var persistence = SourceScan.Production("Diten.InventoryService.Persistence");
+        var declared = InventoryCollections.All.Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.All).ToList();
         var named = persistence
             .SelectMany(f => CollectionName.Matches(f.Body).Select(m => m.Groups[1].Value))
-            .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.Contains("stock"))
+            .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal) || n.Contains("stock"))
             .Distinct()
             .ToList();
 
-        Assert.All(named, n => Assert.Contains(n, InventoryCollections.All));
+        Assert.All(named, n => Assert.Contains(n, declared));
 
         var getCollectionCalls = persistence
             .SelectMany(f => Regex.Matches(f.Body, @"GetCollection<[^>]+>\(([^)]*)\)").Select(m => m.Groups[1].Value.Trim()))
             .Distinct()
             .ToList();
-        Assert.All(getCollectionCalls, arg => Assert.StartsWith("InventoryCollections.", arg));
+        Assert.All(getCollectionCalls, arg => Assert.True(
+            arg.StartsWith("InventoryCollections.", StringComparison.Ordinal) || arg.StartsWith("TraceCollections.", StringComparison.Ordinal),
+            $"GetCollection({arg}) does not name a declared collection constant."));
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.InventoryService.Api.ModuleRegistration;
+using Diten.InventoryService.Api.Traceability;
 using Diten.InventoryService.Application;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Common.Models;
@@ -37,6 +38,8 @@ builder.Services.AddPersistence(builder.Configuration, builder.Environment);
 builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IModuleManifestProvider, InventoryLedgerManifestProvider>();
+builder.Services.AddSingleton<IModuleManifestProvider, LotSerialTrackingManifestProvider>(); // MOD-0174 (pack §14)
+builder.Services.AddTraceability(builder.Configuration); // MOD-0174 slice P1
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 
 // ── JWT (issuer / audience / keys from configuration; shared clock skew — BL-296) ─────────────────────────

@@ -20,6 +20,13 @@ public static class TestTokens
 
     public static readonly string[] LocationPermissions = [LocationsReadPermission, LocationsManagePermission];
 
+    // MOD-0174 (WP-0174-P1) — trace.* keys, kept out of AllPermissions (the K1 namespace test pins that list).
+    public static readonly string[] TracePermissions =
+    [
+        "trace.lots.read", "trace.lots.create", "trace.lots.update", "trace.lots.update-released", "trace.lots.change-status",
+        "trace.lots.migrate", "trace.serials.read", "trace.genealogy.link"
+    ];
+
     public static string Mint(
         Guid? tenantId,
         Guid? legalEntityId,

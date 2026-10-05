@@ -48,6 +48,8 @@ public static class TestSettings
             // S2: the periodic expiry sweeper is off in API tests so the in-transaction expiry path is measured alone;
             // the sweeper itself is driven directly through IReservationExpirySweeper (AC-R7).
             Environment.SetEnvironmentVariable("Inventory__Reservations__SweeperEnabled", "false");
+            // MOD-0174: the periodic lot expiry sweeper is off in API tests; it is driven directly through ILotExpirySweeper.
+            Environment.SetEnvironmentVariable("Inventory__Trace__SweeperEnabled", "false");
             _applied = true;
         }
     }

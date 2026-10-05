@@ -185,5 +185,7 @@ public static class InventoryIndexConfiguration
         await database.GetCollection<InventoryOutboxMessage>(InventoryCollections.Outbox).Indexes.CreateManyAsync(BuildOutbox(), ct);
         await database.GetCollection<Location>(InventoryCollections.Locations).Indexes.CreateManyAsync(BuildLocations(), ct);
         await database.GetCollection<LocationChangeEntry>(InventoryCollections.LocationHistory).Indexes.CreateManyAsync(BuildLocationHistory(), ct);
+        // MOD-0174 (lot / serial SoR, same database and startup gate).
+        await Traceability.TraceIndexConfiguration.ApplyAsync(database, ct);
     }
 }
