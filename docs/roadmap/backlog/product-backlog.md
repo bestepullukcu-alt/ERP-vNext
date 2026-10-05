@@ -8095,6 +8095,13 @@ varsayılanı yazabiliyor, kalıcı depo hatasında uyarı her açılışta çı
 bağlantı akışı ölü kalıyor (fabrika bir "init başarısız" kancası sunmalı). Karşılaştırma: SAP Fiori List Report'ta dışa aktarma sınırı ve mesajı uygulama bazında
 yapılandırılır; Oracle VBCS tablolarında da. Gelecek regresyon riski: 🟡 (her yeni sunucu modlu listede tekrarlanır).
 
+**Ek 2026-10-05 — ABB LİSTESİ CT KABULÜ (kod): `feature/mdm/abb-accept` `9020e844f` (WP-MDM-ABB-LIST-01, FIX1–FIX3).** FIX3 gözden geçirmesi engelleyici / zorunlu yok;
+CT sabotajı 2/2. Paylaşılan fabrikada tek geriye uyumlu satır: `data-dt-describe="false"` olan alan kontrollü kopyanın süzgeç satırına yazılmaz (CT izni; BL-440 sahibi
+CT). Takeover'a birleştirme bekliyor (takeover worktree'sinde GP işi sürüyor). Kabulden kalan küçükler: (e) ürün etiketi okuması sütun gizlense de yapılıyor — kapsam
+dışı üründe (GP okuma 404) dışa aktarma 502 · ürün okumasının 401'i de 502 ve günlüksüz · izinli okuyucunun DataTables Copy düğmesi derin bağlantıdan sonra GUID kopyalıyor ·
+derin bağlantıdan sonra süzgeç satırı "Yok" diyor ("Global Ürün: —" daha doğru) · FIX1/FIX2 derlemelerinin kaydettiği görünümlerde metin = GUID (yalnız dev) · süzgeç
+satırı istemci metninden — ad değişince eski ad. (f) ABB izin denetimi `PermissionClaims`'i kullanmıyor ("*" yetkisini tanımaz; güvenli yöne düşer).
+
 ---
 
 ### BL-552
