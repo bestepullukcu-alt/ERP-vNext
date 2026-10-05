@@ -7856,6 +7856,16 @@ kiracı kapısı platform kiracısına belirteç basmaz (genel 401) + Auth platf
 Verilmiş belirteçler `SessionTimeoutMinutes` (vars. 60) dolana kadar geçerli. Canlıda da açık olabilir (canlı ölçülmedi; giriş ayarları platform kiracısı
 için döner — kod okuması). Gelecek regresyon riski: 🟢 (kapı kapatma; platform kapısı değişmez).
 
+**Ek 2026-10-05 — CT KABULÜ (kod): dal `fix/platform/partner-admin-scope` `6dea5a0c4` (FIX6 kararı A' + D' platform HESABINA daraltılmış, FIX7 işaret onarımı +
+Mongo süzgeci + rol düzeyi, FIX8 fail-closed işaret yazımı + tersine görünürlük + boşluk farkında tek süzgeç).** FIX8 bağımsız gözden geçirmesi: engelleyici
+ve zorunlu yok; CT sabotajı 4/4 KIRMIZI (FIX6'da NOT RED olan P1 FIX7'de, FIX7'de NOT RED olan Q2 FIX8'de kızardı). **Şeride birleştirme BEKLİYOR:** dev'deki tek
+platform hesabı (`a***@diten.com`) kiracı tarafında 74 oturum açmış — birleşince bu hesapla kiracı girişi kapanır; sahip için sıradan bir kiracı yöneticisi
+hesabı gerekir (canlı ekip için de aynı soru açık). Birleştirmede uzlaştırılacaklar: e-posta dalının `PlatformAdministratorProvisioningService.cs:90` satırı,
+admin-reset dalının PlatformAuthController / LoginCommandHandler / RefreshTokenCommandHandler değişiklikleri. Kabulde kalan küçükler (BL-550'ye eklendi):
+platform zorunlu değişiminde rol yakınsaması işaret yazımından önce (`PlatformAuthController.cs:307-314`; giriş ve yenilemede tersi) · süzgeç yorumunda
+var olmayan test adı (`PlatformAccountFilterParityTests`) · parite testi `char.IsWhiteSpace`'in ~25 karakterinin yalnız birkaçını deniyor · bir test kâhini
+emekli kuralı (`!= null`) kullanıyor.
+
 ---
 
 ### BL-522
@@ -8104,6 +8114,9 @@ oturum sonlanmaz ama hesabın bir sonraki basımda yetkisi daralır. (b) Somut `
 `$set`, ama işaretten önce yüklenmiş bir kiracı isteğinin (girişi, parola değişimi) bütün belge yazımı onu geri alır; bir sonraki platform basımı yeniden onarır.
 (d) Kiracı giriş kapısının ret satırı anonim tekrarla çoğaltılabilir (sayaç / örnekleme yok). (e) Platform kapısından hiç geçmemiş, kopyası eksik hesap işaretsiz
 kalır; tek seferlik doldurma (Platform kayıtlarından Auth'a) gerekir — o zamana dek o hesabın kiracı oturumu SessionTimeoutMinutes'ı aşarak yenilenebilir.
+(f) BL-521 FIX8 kabulünden kalan küçükler: platform zorunlu değişiminde rol yakınsaması işaret yazımından ÖNCE (`PlatformAuthController.cs:307-314`) — işaret
+yazılamazsa değişim yapılmaz ama roller yeniden yazılmış olur; süzgeç yorumunda var olmayan test adı; parite testi bütün `char.IsWhiteSpace` üyelerini denemiyor;
+bir test kâhini emekli `!= null` kuralını kullanıyor.
 Karşılaştırma: SAP'de platform (BASIS) kullanıcıları iş istemcisinden ayrı istemcide tutulur; Oracle Fusion'da yönetici kimlikleri IDCS'de ayrı alan adı ile
 ayrılır — ikisi de "aynı kiracıda işaretle ayır" yolunu kullanmaz (uzun vadeli öneri: platform hesaplarını ayrı kiracıya taşımak, sahip kararı).
 Gelecek regresyon riski: 🟡.
