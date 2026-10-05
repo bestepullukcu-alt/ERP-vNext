@@ -8063,6 +8063,46 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-558
+
+**"Son yönetici" koruması silinen kişi yönetici değilken de reddediyor (KR1)**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: sahibin Kullanıcı Rolleri canlı kontrolü · KAYIT: 2026-10-05
+
+Kiracıda `auth.users.create` taşıyan aktif hesap kalmayınca (o gün yönetici hesabı silinmişti — BL-521 olayı) rolsüz yeni bir "deneme" kullanıcısını silmek "Bu, kullanıcı
+ekleyebilen son hesap olduğu için silinemez" ile reddedildi. Koruma "silinince kalan yönetici sayısı 0 mı" diye bakıyor, "silinen kişi yönetici mi" diye değil → yönetici
+kalmamış kiracıda HİÇBİR kullanıcı silinemez ve cümle yanlış kişiyi suçlar. Düzeltme: yalnız hedef kendisi yöneticiyse ve ondan başka aktif yönetici yoksa reddet; yöneticisiz
+kiracı durumu ayrı bir uyarı / kurtarma yolu ister (platform yöneticisi kurtarır). Karşılaştırma: SAP'de son SAP_ALL kullanıcısının kilitlenmesi uyarıyla korunur, diğer
+kullanıcılar etkilenmez; Oracle'da son IDCS yöneticisi korunur. Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-557
+
+**Parola sıfırlama belirteci özetinde dizin yok ve kiracı `set-password` kapısı sınırsız**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: BL-529 FIX4 bağımsız gözden geçirmesi · KAYIT: 2026-10-05
+
+Anonim kiracı `api/users/set-password` kapısı kullanıcıyı `PasswordResetTokenHash` ile arıyor; `MongoDbIndexConfigurations`'ta bu alanda dizin yok (her deneme koleksiyon taraması)
+ve kapı hız sınırsız. Belirteç tahmin edilemez (64 bayt), ama sınırsız tarama bir yük kaldıracı. Düzeltme: seyrek dizin + BL-529 FIX5'teki kural (önce belirteç, yalnız geçersizler
+sayılır). Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-556
+
+**Auth tohumlayıcısı `admin@diten.com`'u sabit bir bcrypt özetiyle HER ortamda oluşturuyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) — canlı hesap kararı sahibin · BULAN: BL-529 FIX4 bağımsız gözden geçirmesi · KAYIT: 2026-10-05
+
+`Persistence/DependencyInjection.cs:90-92` yalnız sahte kullanıcıları Development'a bağlıyor; `DataSeeder.cs:1062-1070` platform yöneticisini depoda yazılı sabit bir parola özetiyle
+her ortamda oluşturuyor (bulunamazsa). Kaynak koduna erişen herkes yeni kurulan bir ortamda bu hesabın parolasını bilir. Düzeltme: üretimde tohum yok — ilk yönetici kurulum
+komutuyla / tek kullanımlık kurulum bağlantısıyla oluşturulur (`MustChangePassword` + MFA zorunlu); var olan canlı hesapların parolası bu özetle eşleşiyor mu ölçülür (sahip kararı).
+Karşılaştırma: SAP'de kurulumda varsayılan parolalar (SAP*, DDIC) kurulum sonrası değiştirilmek ZORUNDA ve denetimde raporlanır; Oracle Cloud'da ilk yönetici etkinleştirme
+e-postasıyla gelir. Gelecek regresyon riski: 🔴 (yeni ortam kurulumunda bilinen parolalı yönetici).
+
+---
+
 ### BL-555
 
 **MDM denetim defteri: takeover'da 19 yazma komutu ne denetimli ne beyanlı istisna ne borç (`EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt` kırmızı)**
