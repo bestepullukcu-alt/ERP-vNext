@@ -820,6 +820,19 @@ with the catalog attribution of `NEWLOTQUICK` and the `inventory.stock.read` act
 probe start tried the owner's port 5066 via the appsettings Kestrel endpoint, failed on the occupied port, owner's
 process unaffected (PID unchanged); the probe script now passes `--urls`.
 
+### WP-0174-INT (agent result, pending CT, 2026-10-05) — gateway routes INT-TRACE
+
+`ocelot.json`: two blocks after `/api/locations/{everything}` — `/api/trace` and `/api/trace/{everything}` → `localhost:5066`,
+GET/POST/PATCH/OPTIONS, no gateway AuthenticationOptions, headers passed through (INT-1/INT-2 pattern, byte-equal to the
+locations blocks except the path); 289 → 291 routes, existing routes unchanged in content and order. Gateway tests 84 → 89
+(5 new `Mod0174TraceRouteTests` green, incl. every `trace.openapi.yaml` path + method served); red count unchanged at 1 —
+the known `EveryRoute_DownstreamPortIsInKnownServiceSet` (FU-INT1-01, not fixed here), whose list grew by exactly the two
+new routes. K3 sabotage (port 5066 → 5067) → 2 red, restored by hash. Own-port routing proof (gateway on 127.0.0.1:5190):
+`GET /api/trace/lots` was forwarded to 5066 (Ocelot logs the downstream 404 of `http://localhost:5066/api/trace/lots`; the
+owner's 5066 runs the 0173 branch without `/api/trace`), the control `/api/tracex/lots` gave `UnableToFindDownstreamRouteError`;
+owner PIDs 5000/5066 unchanged. Open for the CT: live end-to-end once the 0174 branch runs in the fleet. Evidence
+`docs/records/audits/2026-10/mod-0174-int-evidence-2026-10-05.md`.
+
 ## 20. Follow-up Items
 
 - **W-UI-02 closure** in the FU01 pack (CT records after P4).
