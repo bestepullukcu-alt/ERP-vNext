@@ -75,8 +75,9 @@ describe("ABB register list options", () => {
       const page = fs.readFileSync(path.join(WEB,
         `Resources/Views/MDM/ProductAbbreviationRegister/ProductAbbreviationRegisterIndex.${lang}.resx`), "utf8");
       expect(partial).toContain('SavedViewNotCarried = Localizer["SavedViewNotCarried"].Value');
+      expect(partial).toContain('LinkedProductNotOpened = Localizer["LinkedProductNotOpened"].Value');
       expect(index).toContain('@Localizer["ListTruncated"]');
-      for (const key of ["ListTruncated", "SavedViewNotCarried"]) {
+      for (const key of ["ListTruncated", "SavedViewNotCarried", "LinkedProductNotOpened"]) {
         const match = page.match(new RegExp(`<data name="${key}" xml:space="preserve">\\s*<value>([^<]*)</value>`));
         expect([key, match ? match[1].trim() : null]).toEqual([key, expect.stringMatching(/\S/)]);
       }

@@ -40,4 +40,7 @@
   <data name="SavedViewNotCarried" xml:space="preserve">
     <value>Your previously saved view could not be carried over; the default view is shown. It will be tried again next time.</value>
   </data>
+  <data name="LinkedProductNotOpened" xml:space="preserve">
+    <value>The product in the link could not be opened; please reload the page.</value>
+  </data>
 </root>

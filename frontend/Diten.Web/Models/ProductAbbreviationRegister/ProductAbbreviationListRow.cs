@@ -52,7 +52,11 @@ public sealed record ProductAbbreviationListRow(
             {
                 if (item.ValueKind != JsonValueKind.Object
                     || !TryGet(item, "id", out var id) || !id.TryGetGuid(out var entryId)
-                    || !TryGet(item, "abbreviation", out var abbreviation) || abbreviation.ValueKind != JsonValueKind.String)
+                    || !TryGet(item, "abbreviation", out var abbreviation) || abbreviation.ValueKind != JsonValueKind.String
+                    // LIST-FIX2 item 6 — a row without a readable lifecycle is not an entry: the read is refused (502)
+                    // instead of an undefined JsonElement failing the serializer later (an unhandled 500).
+                    || !TryGet(item, "lifecycleStatus", out var lifecycle)
+                    || lifecycle.ValueKind is not (JsonValueKind.String or JsonValueKind.Number))
                 {
                     return false;
                 }
@@ -61,7 +65,7 @@ public sealed record ProductAbbreviationListRow(
                     entryId,
                     TryGet(item, "globalProductId", out var product) && product.TryGetGuid(out var productId) ? productId : Guid.Empty,
                     abbreviation.GetString() ?? string.Empty,
-                    TryGet(item, "lifecycleStatus", out var status) ? status.Clone() : default,
+                    lifecycle.Clone(),
                     TryGet(item, "version", out var version) && version.TryGetInt32(out var number) ? number : 0,
                     Flag(item, "retirementPending"),
                     Flag(item, "correctionPending"),

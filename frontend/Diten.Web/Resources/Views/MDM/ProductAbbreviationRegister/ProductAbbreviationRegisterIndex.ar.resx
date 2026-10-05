@@ -40,4 +40,7 @@
   <data name="SavedViewNotCarried" xml:space="preserve">
     <value>تعذّر نقل العرض الذي حفظته سابقًا؛ يتم عرض العرض الافتراضي. ستتم إعادة المحاولة في المرة القادمة.</value>
   </data>
+  <data name="LinkedProductNotOpened" xml:space="preserve">
+    <value>تعذّر فتح المنتج الوارد في الرابط؛ يرجى إعادة تحميل الصفحة.</value>
+  </data>
 </root>

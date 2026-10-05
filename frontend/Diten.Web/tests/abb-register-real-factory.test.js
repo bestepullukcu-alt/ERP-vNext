@@ -26,9 +26,10 @@ const settle = () => new Promise((r) => setTimeout(r, 120));
 const LINKED = "11111111-1111-4111-8111-111111111111";
 const SAVED = "22222222-2222-4222-8222-222222222222";
 
-function pageDom() {
+function pageDom(selectProduct = false) {
   document.body.innerHTML =
-    '<div id="product-abbreviation-register" data-can-audit="true" data-can-select-product="false">' +
+    '<div id="product-abbreviation-register" data-can-audit="true" data-can-request="true" data-can-select-product="' + selectProduct + '">' +
+    '<button type="button" class="add-new"></button>' +
     '<div id="inlineFilterHost"><div class="collapse" id="inlineFilterCollapse"><form id="filterForm">' +
     '<select id="filterGlobalProduct"></select>' +
     '<input type="hidden" id="filterGlobalProductText" /><input type="hidden" id="filterGlobalProductId" />' +
@@ -43,8 +44,8 @@ function pageDom() {
  * One page load. `views` = the saved-view store by page key; `answer(url)` = the list proxy's answer.
  * Returns the recorded list requests, the store's writes and the toasts.
  */
-function loadPage({ search = "", views = {}, saveFails = false, answer } = {}) {
-  pageDom();
+function loadPage({ search = "", views = {}, saveFails = false, answer, delay = () => 0, selectProduct = false } = {}) {
+  pageDom(selectProduct);
   window.history.replaceState(null, "", "/MDM/ProductAbbreviationRegister" + search);
   const requests = [];
   const saves = [];
@@ -65,7 +66,8 @@ function loadPage({ search = "", views = {}, saveFails = false, answer } = {}) {
   run("wwwroot/assets/js/diten-datatable.js");
 
   window.DtDefaults = { create: (cfg) => cfg, exportButtons: () => [], updateVisualState() {}, refreshButtonGroupRadii() {}, handleUnauthorized() {} };
-  window.L10n = { ErrorForbidden: "fixture: forbidden sentence", ErrorGateway: "fixture: unavailable sentence", SavedViewNotCarried: "fixture: view not carried" };
+  window.L10n = { ErrorForbidden: "fixture: forbidden sentence", ErrorGateway: "fixture: unavailable sentence", SavedViewNotCarried: "fixture: view not carried",
+    ErrorNotFound: "fixture: not found sentence", LinkedProductNotOpened: "fixture: linked product not opened" };
   window.showToast = (message, type) => toasts.push([message, type]);
   window.personalizationClient = {
     getViews: async (moduleKey, pageKey) => (views[pageKey] || []).map((v) => ({ ...v })),
@@ -82,7 +84,7 @@ function loadPage({ search = "", views = {}, saveFails = false, answer } = {}) {
     send(_headers, complete) {
       requests.push(decodeURIComponent(options.url));
       const [status, body] = (answer || (() => [200, { isSuccessful: true, data: { items: [], total: 0, filteredTotal: 0, hasOpenEntry: false, truncated: false } }]))(options.url);
-      setTimeout(() => complete(status, status === 200 ? "OK" : "Refused", { text: JSON.stringify(body) }, "Content-Type: application/json"), 0);
+      setTimeout(() => complete(status, status === 200 ? "OK" : "Refused", { text: JSON.stringify(body) }, "Content-Type: application/json"), delay(options.url));
     },
     abort() {}
   }));
@@ -120,6 +122,52 @@ describe("ABB register on the real list component", () => {
     const lastSaved = page.requests.map((url) => url.includes("globalProductId=" + SAVED)).lastIndexOf(true);
     const firstLinked = page.requests.findIndex((url) => url.includes("globalProductId=" + LINKED));
     expect(lastSaved, "every saved-product request precedes the linked one").toBeLessThan(firstLinked);
+  });
+
+  test("LIST-FIX2 item 3 — the link is applied even when the product picker fails during the factory's start", async () => {
+    // A reader who may choose products: the picker's select2 is not on this page, so initSelector throws inside
+    // loadOptions; the factory catches it. The link was queued before it and still lands.
+    const page = loadPage({
+      search: "?globalProductId=" + LINKED, selectProduct: true,
+      views: { "ProductAbbreviationRegister.v2": [savedView({ globalProductId: SAVED, globalProductText: "Saved product" })] }
+    });
+    await page.ready;
+
+    await until(() => page.requests.some((url) => url.includes("globalProductId=" + LINKED)));
+    await settle();
+    expect(page.requests.at(-1)).toContain("globalProductId=" + LINKED);
+  });
+
+  test("LIST-FIX2 item 3 — when the first read fails, a link's product is said to be unopened, not dropped silently", async () => {
+    const page = loadPage({
+      search: "?globalProductId=" + LINKED,
+      views: { "ProductAbbreviationRegister.v2": [savedView({ globalProductId: SAVED, globalProductText: "Saved product" })] },
+      answer: () => [404, { success: false, errors: ["ABBREVIATION_NOT_FOUND"] }]
+    });
+    await page.ready;
+    await until(() => page.toasts.length >= 1);
+
+    expect(page.toasts[0][1]).toBe("error");
+    expect(page.toasts[0][0]).toContain("fixture: linked product not opened");
+  });
+
+  test("LIST-FIX2 item 4 — a stale answer arriving after the newest one does not decide the request button or the notice", async () => {
+    // The saved view's product (asked first) answers LAST, saying "open entry" and "truncated"; the link's product answers
+    // first and says neither. The page shows the link's state.
+    const page = loadPage({
+      search: "?globalProductId=" + LINKED,
+      views: { "ProductAbbreviationRegister.v2": [savedView({ globalProductId: SAVED, globalProductText: "Saved product" })] },
+      answer: (url) => [200, { isSuccessful: true, data: {
+        items: [], total: 0, filteredTotal: 0,
+        hasOpenEntry: url.includes(SAVED), truncated: url.includes(SAVED) } }],
+      delay: (url) => (url.includes(SAVED) ? 250 : 0)
+    });
+    await page.ready;
+    await until(() => page.requests.some((url) => url.includes("globalProductId=" + LINKED)));
+    await new Promise((r) => setTimeout(r, 500));
+
+    expect(document.querySelector(".add-new").classList.contains("d-none")).toBe(false);
+    expect(document.getElementById("abbListTruncated").classList.contains("d-none")).toBe(true);
   });
 
   test("item 1 — without a link the saved view's product stays the list's", async () => {

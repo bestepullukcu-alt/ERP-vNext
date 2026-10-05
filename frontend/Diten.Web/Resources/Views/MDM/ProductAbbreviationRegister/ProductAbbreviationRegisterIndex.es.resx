@@ -40,4 +40,7 @@
   <data name="SavedViewNotCarried" xml:space="preserve">
     <value>No se pudo trasladar la vista guardada anteriormente; se muestra la vista predeterminada. Se volverá a intentar la próxima vez.</value>
   </data>
+  <data name="LinkedProductNotOpened" xml:space="preserve">
+    <value>No se pudo abrir el producto del enlace; vuelva a cargar la página.</value>
+  </data>
 </root>

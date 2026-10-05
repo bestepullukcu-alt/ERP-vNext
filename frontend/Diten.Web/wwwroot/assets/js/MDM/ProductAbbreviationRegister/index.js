@@ -12,6 +12,18 @@ const ProductAbbreviationRegisterList = (function () {
     let list = null;
     let productHasOpenEntry = false;
     let linkedProduct = null;
+    /*
+     * LIST-FIX2 item 4 — what the LATEST list answer said. Every request carries its draw number; an answer whose draw is
+     * not the newest one sent is stale and writes nothing. A failed newest read makes the state UNKNOWN: no request
+     * button (it might be wrong) and no truncation notice (it would be about an older answer).
+     */
+    let listTruncated = false;
+    let listStateKnown = true;
+    let latestDraw = 0;
+    let pendingAnswer = null;
+    // LIST-FIX2 item 3 — the factory has started its filters (loadOptions ran): a read failing before that means a
+    // linked product was never applied.
+    let filtersStarted = false;
     const endpoint = '/MDM/ProductAbbreviationRegister/api';
     const root = document.getElementById('product-abbreviation-register');
     const tableEl = document.getElementById('dt-product-abbreviation-register');
@@ -176,7 +188,17 @@ const ProductAbbreviationRegisterList = (function () {
         if (!payload || typeof payload !== 'object') {
             try { payload = JSON.parse(xhr?.responseText || '{}'); } catch (error) { payload = {}; }
         }
-        window.showToast?.(failureSentence(payload, status), 'error');
+        const sentence = failureSentence(payload, status);
+        // LIST-FIX2 item 3 — the FIRST read failed (the saved view's product is gone, MDM is down): DataTables then never
+        // completes its start, so a link's product is never applied. Said, never silent.
+        window.showToast?.(linkedProduct && !filtersStarted ? `${sentence} ${L.LinkedProductNotOpened || ''}`.trim() : sentence, 'error');
+    };
+    const drawOf = (url) => Number(/[?&]draw=(\d+)/.exec(String(url || ''))?.[1] || 0);
+    // The request button and the truncation notice, from the latest answer (or hidden while it is unknown).
+    const showListState = () => {
+        const blocked = !listStateKnown || productHasOpenEntry || listTruncated;
+        document.querySelector('.add-new')?.classList.toggle('d-none', blocked);
+        document.getElementById('abbListTruncated')?.classList.toggle('d-none', !(listStateKnown && listTruncated));
     };
     // LIST-FIX1 item 7 — the product's NAME is the filter bar's display only: it rides in the saved view, never on the wire.
     const withoutProductText = (url) => String(url)
@@ -444,15 +466,30 @@ const ProductAbbreviationRegisterList = (function () {
         dataMode: 'server',
         ajax: {
             url: `${endpoint}/list`, type: 'GET', headers: getAuthHeaders(), error: onListError,
-            beforeSend: (xhr, settings) => { settings.url = withoutProductText(settings.url); }
+            beforeSend: (xhr, settings) => {
+                settings.url = withoutProductText(settings.url);
+                latestDraw = Math.max(latestDraw, drawOf(settings.url));
+            },
+            // jQuery runs dataFilter (onResponse) and then complete for ONE response, back to back: the answer onResponse
+            // kept is this request's. Only the newest draw's answer becomes the page's state.
+            complete: function (xhr, textStatus) {
+                const answer = pendingAnswer;
+                pendingAnswer = null;
+                if (drawOf(this?.url) !== latestDraw) return;
+                if (textStatus === 'success' && answer) {
+                    productHasOpenEntry = answer.hasOpenEntry === true;
+                    listTruncated = answer.truncated === true;
+                    listStateKnown = true;
+                } else {
+                    listStateKnown = false;
+                    listTruncated = false;
+                }
+                showListState();
+            }
         },
         // FIX1 S2 — a product with an active or pending code is offered no new request. LIST-FIX1 item 4: the proxy reads
         // that from EVERY entry of the product (not this page, not the search result). Item 6: a read MDM cut off says so.
-        onResponse: (json) => {
-            const data = unwrapData(json) || {};
-            productHasOpenEntry = data.hasOpenEntry === true;
-            document.getElementById('abbListTruncated')?.classList.toggle('d-none', data.truncated !== true);
-        },
+        onResponse: (json) => { pendingAnswer = unwrapData(json) || {}; },
         // LIST-FIX1 item 5 (BL-452) — CSV/Excel/PDF/print are every entry of the product as the list shows them (search,
         // order, visible columns), written by the proxy; never the page the table happens to hold.
         export: { mode: 'server', url: `${endpoint}/list/export`, fileName: 'product-abbreviation-register' },
@@ -472,7 +509,9 @@ const ProductAbbreviationRegisterList = (function () {
                 document.getElementById('formProductAbbreviationRequest')?.reset();
                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).show();
             },
-            exportColumns: saveViewColumnIndexes,
+            // LIST-FIX2 item 2: the product column is shown but not exported (the proxy cannot name the product for every
+            // reader, and a bare id is not the screen).
+            exportColumns: [2, 3, 4, 5],
             colvisColumns: saveViewColumnIndexes
         },
         filters: {
@@ -486,8 +525,7 @@ const ProductAbbreviationRegisterList = (function () {
                 { id: 'filterGlobalProductId', key: 'globalProductId', kind: 'text' }
             ],
             loadOptions: async () => {
-                initSelector('#filterGlobalProduct', document.body);
-                bindProductFilterFields();
+                filtersStarted = true;
                 /*
                  * LIST-FIX1 item 1 — a link from the Task Center names the product. It is applied AFTER the factory's own
                  * start: the factory awaits this function, then (in the same task) writes the saved / empty filter into the
@@ -495,6 +533,10 @@ const ProductAbbreviationRegisterList = (function () {
                  * overwritten by the saved filter nor clicked into an Apply nobody listens to yet.
                  */
                 if (linkedProduct) setTimeout(() => applyProductFilter(linkedProduct, linkedProduct), 0);
+                // LIST-FIX2 item 3: queued FIRST — the picker below may throw (the factory catches it), and the link must
+                // not fall with it.
+                initSelector('#filterGlobalProduct', document.body);
+                bindProductFilterFields();
             }
         },
         // Same keys as before the migration: every saved register view still loads.
@@ -530,7 +572,7 @@ const ProductAbbreviationRegisterList = (function () {
                 initSelector('#requestGlobalProduct', document.getElementById('offcanvasCreateEdit'));
             },
             drawCallback: function () {
-                document.querySelector('.add-new')?.classList.toggle('d-none', productHasOpenEntry);
+                showListState();
             }
         }
     });

@@ -177,25 +177,36 @@ public sealed class ProductAbbreviationRegisterController : Controller
 
         var ordered = ProductAbbreviationListRow.Order(Search(rows, search), orderBy ?? "abbreviation", orderDir == "desc");
         var culture = ListExportContract.ResolveCulture(Request.Headers.AcceptLanguage.ToString());
-        var previous = (CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
-        byte[] file;
-        try
-        {
-            // The page's resources answer in the CURRENT UI culture: the file's language for the time it is written.
-            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = culture;
-            file = ListExportWriter.Write(exportFormat, exportColumns, ordered, culture, _pageLocalizer["ProductAbbreviationRegisterTitle"].Value);
-        }
-        finally
-        {
-            (CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture) = previous;
-        }
+        // The page's resources answer in the CURRENT UI culture: the file's language for the time it is written.
+        var file = WithCulture(culture, () =>
+            ListExportWriter.Write(exportFormat, exportColumns, ordered, culture, _pageLocalizer["ProductAbbreviationRegisterTitle"].Value));
 
         return File(file, ListExportContract.ContentType(exportFormat),
             ListExportContract.FileName("product-abbreviation-register", DateTimeOffset.UtcNow, exportFormat));
     }
 
+    /// <summary>
+    /// LIST-FIX2 item 6 — runs <paramref name="work"/> in <paramref name="culture"/> and gives the caller its own culture back,
+    /// thrown or not. SYNCHRONOUS on purpose: .NET carries the culture with the async flow, so a switch inside an async
+    /// action is dropped when the action returns and its restore could never be observed (CT sabotage: "not restored" was
+    /// not red). Here the caller shares the culture, so the restore is real and is measured.
+    /// </summary>
+    public static T WithCulture<T>(CultureInfo culture, Func<T> work)
+    {
+        var previous = (CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = culture;
+            return work();
+        }
+        finally
+        {
+            (CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture) = previous;
+        }
+    }
+
     /// <summary>MDM's one-product read stops here (<c>GetByGlobalProductIdAsync</c>, Limit 500).</summary>
-    internal const int MdmEntryReadLimit = 500;
+    public const int MdmEntryReadLimit = 500;
 
     private const int MaxListPageLength = 100;
 
@@ -263,17 +274,21 @@ public sealed class ProductAbbreviationRegisterController : Controller
     {
         var term = search?.Trim();
         if (string.IsNullOrEmpty(term)) return rows;
-        // In the reader's language (the UI culture the words are in): "iptal" finds "İptal edildi" for a Turkish reader,
-        // "in use" finds "In use" for an English one — each language's own case rules, not the server thread's.
-        var compare = CultureInfo.CurrentUICulture.CompareInfo;
-        return rows.Where(row => SearchTexts(row).Any(text => compare.IndexOf(text, term, CompareOptions.IgnoreCase) >= 0)).ToList();
+        // LIST-FIX2 item 1 — two kinds of text, two comparisons. The CODE (three ASCII letters, stored upper-case) and the
+        // version are not words of any language: compared ordinally, so a Turkish reader's "abi" finds "ABI" (under Turkish
+        // rules "i" pairs with "İ" and never would). The lifecycle and yes/no are the reader's WORDS: compared in the
+        // reader's language, so "iptal" finds "İptal edildi" and "in use" finds "In use".
+        var words = CultureInfo.CurrentUICulture.CompareInfo;
+        return rows.Where(row =>
+                row.Abbreviation.Contains(term, StringComparison.OrdinalIgnoreCase)
+                || row.Version.ToString(CultureInfo.InvariantCulture).Contains(term, StringComparison.Ordinal)
+                || ReaderWords(row).Any(text => words.IndexOf(text, term, CompareOptions.IgnoreCase) >= 0))
+            .ToList();
     }
 
-    private IEnumerable<string> SearchTexts(ProductAbbreviationListRow row)
+    private IEnumerable<string> ReaderWords(ProductAbbreviationListRow row)
     {
-        yield return row.Abbreviation;
         yield return LifecycleText(row);
-        yield return row.Version.ToString(CultureInfo.InvariantCulture);
         yield return YesNo(row.RetirementPending);
     }
 
@@ -284,10 +299,14 @@ public sealed class ProductAbbreviationRegisterController : Controller
 
     private string YesNo(bool value) => _pageLocalizer[value ? "Yes" : "No"].Value;
 
-    /// <summary>The export whitelist: the list's data columns by their <c>data</c> key, headers from the page's resources.</summary>
+    /// <summary>
+    /// The export whitelist: the list's data columns by their <c>data</c> key, headers from the page's resources.
+    /// LIST-FIX2 item 2 — NO product column. The screen shows the product's code and name, which this proxy cannot read
+    /// for every register reader (MDM's product read needs mdm.global-products.read, which an ABB reader or auditor need
+    /// not hold), and a bare GUID in a GxP printout is not the screen. The list is one product's, chosen by the reader.
+    /// </summary>
     private ListExportColumnSet<ProductAbbreviationListRow> ExportColumns => new(
     [
-        new("globalProductId", _ => _pageLocalizer["GlobalProduct"].Value, (row, _) => row.GlobalProductId.ToString("D")),
         new("abbreviation", _ => _pageLocalizer["Abbreviation"].Value, (row, _) => row.Abbreviation),
         new("lifecycleStatus", _ => _pageLocalizer["LifecycleStatus"].Value, (row, _) => LifecycleText(row)),
         new("version", _ => _pageLocalizer["Version"].Value, (row, culture) => row.Version.ToString(culture)),

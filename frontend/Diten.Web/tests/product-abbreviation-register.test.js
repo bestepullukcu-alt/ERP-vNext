@@ -157,18 +157,52 @@ describe('ABB executed browser contract', () => {
         expect(h.fields.filterGlobalProductId.value).toBe('');
         expect(h.fields.btnFilterApply.click).not.toHaveBeenCalled();
     });
+    /*
+     * One list answer as jQuery delivers it (LIST-FIX2 item 4): beforeSend for the request (its draw), then — for a
+     * response — dataFilter (onResponse) and complete, back to back.
+     */
+    const send = (options, draw) => {
+        const settings = { url: `/MDM/ProductAbbreviationRegister/api/list?start=0&length=10&draw=${draw}&globalProductId=p` };
+        options.ajax.beforeSend({}, settings);
+        return settings;
+    };
+    const answer = (options, settings, data, status = 'success') => {
+        if (status === 'success') options.onResponse({ isSuccessful: true, data });
+        options.ajax.complete.call(settings, {}, status);
+    };
     it('hides the request button by the proxy\'s answer for EVERY entry, not by the rows on this page', () => {
         // LIST-FIX1 item 4 — page two shows a rejected code, yet the product's active one (page one) still counts.
         const h=harness({canRequest:'true',canSelectProduct:'true'});
         const options=h.sut.buildListOptions();
-        options.onResponse({data:{items:[{id:'x',lifecycleStatus:'REJECTED'}],hasOpenEntry:true}});
-        options.config.drawCallback();
+        answer(options, send(options, 1), {items:[{id:'x',lifecycleStatus:'REJECTED'}],hasOpenEntry:true});
         expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', true);
-        options.onResponse({data:{items:[{id:'x',lifecycleStatus:'ACTIVE'}],hasOpenEntry:false}});
+        answer(options, send(options, 2), {items:[{id:'x',lifecycleStatus:'ACTIVE'}],hasOpenEntry:false});
+        expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', false);
         options.config.drawCallback();
         expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', false);
-        options.onResponse({data:{items:[]}});
+    });
+    it('lets only the NEWEST answer write the page state; a stale one arriving late writes nothing', () => {
+        // LIST-FIX2 item 4 — draw 1 (the saved view) answers AFTER draw 2 (the link): its "open entry" must not hide the button.
+        const h=harness({canRequest:'true',canSelectProduct:'true'});
+        const options=h.sut.buildListOptions();
+        const older = send(options, 1);
+        const newer = send(options, 2);
+        answer(options, newer, {items:[],hasOpenEntry:false,truncated:false});
+        answer(options, older, {items:[],hasOpenEntry:true,truncated:true});
         options.config.drawCallback();
+        expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', false);
+    });
+    it('hides the request button while the newest read failed (the state is unknown) and while the list is cut off', () => {
+        // LIST-FIX2 items 4 and 5.
+        const h=harness({canRequest:'true',canSelectProduct:'true'});
+        const options=h.sut.buildListOptions();
+        answer(options, send(options, 1), {items:[],hasOpenEntry:false,truncated:false});
+        expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', false);
+        answer(options, send(options, 2), null, 'error');
+        expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', true);
+        answer(options, send(options, 3), {items:[],hasOpenEntry:false,truncated:true});
+        expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', true);
+        answer(options, send(options, 4), {items:[],hasOpenEntry:false,truncated:false});
         expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', false);
     });
     it('preserves saved filter/search/column/order state under the versioned view key', () => {
@@ -204,18 +238,22 @@ describe('ABB executed browser contract', () => {
     it('declares the server export of every entry, not the page the table holds', () => {
         const options = harness().sut.buildListOptions();
         expect(options.export).toEqual({ mode: 'server', url: '/MDM/ProductAbbreviationRegister/api/list/export', fileName: 'product-abbreviation-register' });
-        expect(options.toolbar.exportColumns).toEqual([1, 2, 3, 4, 5]);
+        // LIST-FIX2 item 2: the product column (1) is shown but not exported.
+        expect(options.toolbar.exportColumns).toEqual([2, 3, 4, 5]);
     });
-    it('says when MDM\'s read of the product came back full', () => {
+    it('says when MDM\'s read of the product came back full, and stops saying it once the state is unknown', () => {
         const h = harness({}, { dom: '<div id="product-abbreviation-register"></div><table id="dt-product-abbreviation-register"></table><div id="abbListTruncated" class="d-none"></div>' });
         const options = h.sut.buildListOptions();
         const notice = h.document.getElementById('abbListTruncated');
-        options.onResponse({ data: { items: [], truncated: true } });
+        answer(options, send(options, 1), { items: [], truncated: true });
         expect(notice.classList.contains('d-none')).toBe(false);
-        options.onResponse({ data: { items: [], truncated: false } });
+        answer(options, send(options, 2), null, 'error');
+        expect(notice.classList.contains('d-none')).toBe(true);
+        answer(options, send(options, 3), { items: [], truncated: true });
+        expect(notice.classList.contains('d-none')).toBe(false);
+        answer(options, send(options, 4), { items: [], truncated: false });
         expect(notice.classList.contains('d-none')).toBe(true);
     });
-
     // ── LIST-FIX1 item 8: the page's flows, run ────────────────────────────────────────────────────────────────
     const PRODUCT = '33333333-3333-4333-8333-333333333333';
     const requestDom = '<div id="product-abbreviation-register"><input name="__RequestVerificationToken" value="synthetic-csrf-fixture" />' +
@@ -268,7 +306,8 @@ describe('ABB executed browser contract', () => {
         const h = requestHarness();
         await h.sut.init();
         h.list.appliedFilters = { globalProductId: PRODUCT };
-        h.sut.buildListOptions().onResponse({ data: { items: [], hasOpenEntry: true } });
+        const options = h.sut.buildListOptions();
+        answer(options, send(options, 1), { items: [], hasOpenEntry: true });
 
         h.document.getElementById('btnRequestAbbreviation').click();
 

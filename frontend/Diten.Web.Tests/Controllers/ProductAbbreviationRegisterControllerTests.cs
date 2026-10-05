@@ -390,6 +390,12 @@ public sealed class ProductAbbreviationRegisterControllerTests
         Assert.Equal(["AAA"], Codes(page));
     }
 
+    private static readonly Dictionary<string, string> TurkishPageWords = new()
+    {
+        ["Abbreviation"] = "Kısaltma", ["LifecycleStatus"] = "Yaşam döngüsü", ["Version"] = "Sürüm",
+        ["RetirementPending"] = "Emeklilik bekliyor", ["LifecycleActive"] = "Etkin", ["Yes"] = "Evet", ["No"] = "Hayır"
+    };
+
     /// <summary>The reader's language for one test: the UI culture the page's words are looked up and compared in.</summary>
     private sealed class ReaderCulture : IDisposable
     {
@@ -520,12 +526,18 @@ public sealed class ProductAbbreviationRegisterControllerTests
         var controller = Controller(wire, "mdm.product-abbreviations.read");
 
         var csv = await CsvAsync(await controller.Export(globalProductId: product.ToString("D")));
-        Assert.Equal("Product,Code,State,Rev,Retiring", csv.Split("\r\n")[0]);
-        Assert.Equal($"{product:D},AAA,In use,1,Nope", csv.Split("\r\n")[1]);
+        // LIST-FIX2 item 2: no product column — never a bare product id in the file.
+        Assert.Equal("Code,State,Rev,Retiring", csv.Split("\r\n")[0]);
+        Assert.Equal("AAA,In use,1,Nope", csv.Split("\r\n")[1]);
+        Assert.DoesNotContain(product.ToString("D"), csv);
 
         var xlsx = Assert.IsType<FileContentResult>(await controller.Export(format: "xlsx", globalProductId: product.ToString("D")));
         Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", xlsx.ContentType);
-        Assert.Equal((byte)'P', xlsx.FileContents[0]);
+        using var book = new ClosedXML.Excel.XLWorkbook(new MemoryStream(xlsx.FileContents));
+        var sheet = book.Worksheets.First();
+        Assert.Equal(["Code", "State", "Rev", "Retiring"], Enumerable.Range(1, 4).Select(c => sheet.Cell(1, c).GetString()).ToArray());
+        Assert.Equal(["AAA", "In use", "1", "Nope"], Enumerable.Range(1, 4).Select(c => sheet.Cell(2, c).GetString()).ToArray());
+        Assert.True(sheet.Cell(3, 1).IsEmpty());
     }
 
     [Fact]
@@ -547,6 +559,7 @@ public sealed class ProductAbbreviationRegisterControllerTests
     [Theory]
     [InlineData("pdf", null, null, "EXPORT_FORMAT_INVALID")]
     [InlineData("csv", "tenantId", null, "EXPORT_COLUMNS_INVALID")]
+    [InlineData("csv", "globalProductId", null, "EXPORT_COLUMNS_INVALID")]
     [InlineData("csv", "abbreviation", "id", "ABBREVIATION_LIST_ORDER_INVALID")]
     public async Task An_export_outside_its_whitelists_is_refused_with_400_and_never_reaches_the_gateway(
         string format, string? column, string? orderBy, string code)
@@ -559,6 +572,153 @@ public sealed class ProductAbbreviationRegisterControllerTests
         Assert.Equal(StatusCodes.Status400BadRequest, refused.StatusCode);
         Assert.Contains(code, System.Text.Json.JsonSerializer.Serialize(refused.Value));
         Assert.Empty(wire.Paths);
+    }
+
+    [Fact]
+    public async Task The_export_writes_its_headers_and_words_in_the_requested_language_and_gives_the_server_its_culture_back()
+    {
+        // LIST-FIX2 item 6 (CT A4) — Accept-Language: tr → Turkish headers and words; the server thread's culture is the
+        // same after the request as before it.
+        using var server = new ReaderCulture("en");
+        var product = Guid.NewGuid();
+        using var wire = new Wire { Body = Entries(product, ("AAA", "ACTIVE", 1, true)) };
+        var controller = Controller(wire, "mdm.product-abbreviations.read");
+        controller.ControllerContext.HttpContext.Request.Headers.AcceptLanguage = "tr-TR,tr;q=0.9,en;q=0.5";
+
+        var csv = await CsvAsync(await controller.Export(globalProductId: product.ToString("D")));
+
+        Assert.Equal("Kısaltma,Yaşam döngüsü,Sürüm,Emeklilik bekliyor", csv.Split("\r\n")[0]);
+        Assert.Equal("AAA,Etkin,1,Evet", csv.Split("\r\n")[1]);
+        Assert.Equal("en", System.Globalization.CultureInfo.CurrentUICulture.Name);
+        Assert.Equal("en", System.Globalization.CultureInfo.CurrentCulture.Name);
+    }
+
+    [Fact]
+    public void The_file_is_written_in_the_requested_culture_and_the_caller_gets_its_own_back_even_when_writing_fails()
+    {
+        // LIST-FIX2 item 6 — measured where it can be seen: a synchronous caller shares the culture (an async caller would
+        // not see a leak at all — .NET restores the culture of the async flow on return).
+        using var server = new ReaderCulture("en");
+        var turkish = System.Globalization.CultureInfo.GetCultureInfo("tr");
+
+        var inside = ProductAbbreviationRegisterController.WithCulture(turkish,
+            () => (System.Globalization.CultureInfo.CurrentUICulture.Name, System.Globalization.CultureInfo.CurrentCulture.Name));
+        Assert.Equal(("tr", "tr"), inside);
+        Assert.Equal("en", System.Globalization.CultureInfo.CurrentUICulture.Name);
+        Assert.Equal("en", System.Globalization.CultureInfo.CurrentCulture.Name);
+
+        Assert.Throws<InvalidOperationException>(() => ProductAbbreviationRegisterController.WithCulture<int>(turkish,
+            () => throw new InvalidOperationException("fixture: the writer failed")));
+        Assert.Equal("en", System.Globalization.CultureInfo.CurrentUICulture.Name);
+        Assert.Equal("en", System.Globalization.CultureInfo.CurrentCulture.Name);
+    }
+
+    [Theory]
+    [InlineData("abi", "ABI")]
+    [InlineData("ISO", "ISO")]
+    [InlineData("iso", "ISO")]
+    public async Task A_turkish_reader_finds_a_code_with_an_i_whatever_case_it_types(string term, string expected)
+    {
+        // LIST-FIX2 item 1 — the code is three ASCII letters, not a Turkish word: compared ordinally. Under Turkish rules
+        // "i" pairs with "İ", so a culture comparison never found "ABI" for "abi". The list and the export alike.
+        using var reader = new ReaderCulture("tr");
+        var product = Guid.NewGuid();
+        using var wire = new Wire { Body = Entries(product, ("ABI", "ACTIVE", 1, false), ("ISO", "RETIRED", 2, false), ("XYZ", "REJECTED", 3, false)) };
+        var controller = Controller(wire, "mdm.product-abbreviations.read");
+
+        var page = Page(await controller.List(search: term, globalProductId: product.ToString("D")));
+        Assert.Equal([expected], Codes(page));
+
+        // The reader's browser asks for Turkish: the file is Turkish, and the code is still found.
+        controller.ControllerContext.HttpContext.Request.Headers.AcceptLanguage = "tr";
+        var csv = await CsvAsync(await controller.Export(columns: ["abbreviation"], search: term, globalProductId: product.ToString("D")));
+        Assert.Equal(["Kısaltma", expected], csv.Split("\r\n", StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    [Fact]
+    public async Task Without_a_tenant_the_export_is_401_and_never_reaches_the_gateway()
+    {
+        using var wire = new Wire();
+
+        var result = await Controller(wire, withTenant: false, "mdm.product-abbreviations.read")
+            .Export(globalProductId: Guid.NewGuid().ToString("D"));
+
+        Assert.IsType<UnauthorizedObjectResult>(result);
+        Assert.Empty(wire.Paths);
+    }
+
+    [Fact]
+    public async Task Without_a_product_the_export_is_a_file_of_headers_only_and_no_gateway_call()
+    {
+        using var wire = new Wire();
+
+        var csv = await CsvAsync(await Controller(wire, "mdm.product-abbreviations.read").Export());
+
+        Assert.Equal(["Code,State,Rev,Retiring"], csv.Split("\r\n", StringSplitOptions.RemoveEmptyEntries));
+        Assert.Empty(wire.Paths);
+    }
+
+    [Fact]
+    public async Task A_product_with_one_entry_under_the_read_limit_is_exported_whole()
+    {
+        var product = Guid.NewGuid();
+        using var wire = new Wire
+        {
+            Body = Entries(product, Enumerable.Range(0, 499).Select(i => ($"A{i:D3}", "RETIRED", 1, false)).ToArray())
+        };
+
+        var csv = await CsvAsync(await Controller(wire, "mdm.product-abbreviations.read").Export(globalProductId: product.ToString("D")));
+
+        Assert.Equal(500, csv.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Length);
+    }
+
+    [Fact]
+    public async Task An_entry_without_a_readable_lifecycle_makes_the_read_502_not_an_unhandled_500()
+    {
+        // LIST-FIX2 item 6 — before, the row kept an undefined JsonElement and the serializer threw on the way out.
+        var product = Guid.NewGuid();
+        using var missing = new Wire
+        {
+            Body = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                isSuccessful = true,
+                data = new[] { new { id = Guid.NewGuid(), globalProductId = product, abbreviation = "NOL", version = 1 } }
+            })
+        };
+        using var objectStatus = new Wire
+        {
+            Body = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                isSuccessful = true,
+                data = new[] { new { id = Guid.NewGuid(), globalProductId = product, abbreviation = "OBJ", lifecycleStatus = new { }, version = 1 } }
+            })
+        };
+
+        foreach (var wire in new[] { missing, objectStatus })
+        {
+            var result = Assert.IsType<ObjectResult>(await Controller(wire, "mdm.product-abbreviations.read")
+                .List(globalProductId: product.ToString("D")));
+            Assert.Equal(StatusCodes.Status502BadGateway, result.StatusCode);
+        }
+    }
+
+    [Fact]
+    public void The_proxys_read_limit_is_MDMs_own_read_limit()
+    {
+        // LIST-FIX2 item 5 — the proxy says "truncated" (and refuses the export) at the count MDM stops reading at. The two
+        // numbers live in two services; this reads MDM's from its source, so lowering one without the other goes red here.
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "AGENTS.md"))) root = root.Parent;
+        Assert.NotNull(root);
+        var source = File.ReadAllText(Path.Combine(root!.FullName,
+            "services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductAbbreviationRegisterRepository.cs"));
+        var start = source.IndexOf("GetByGlobalProductIdAsync(", StringComparison.Ordinal);
+        Assert.True(start >= 0, "MDM's one-product read was not found");
+        // An expression-bodied query: the method ends at its first semicolon.
+        var body = source[start..source.IndexOf(';', start)];
+        var limits = System.Text.RegularExpressions.Regex.Matches(body, @"\.Limit\((\d+)\)").Select(m => int.Parse(m.Groups[1].Value)).ToArray();
+
+        Assert.Equal([ProductAbbreviationRegisterController.MdmEntryReadLimit], limits);
     }
 
     [Fact]
@@ -632,9 +792,17 @@ public sealed class ProductAbbreviationRegisterControllerTests
             });
         }
     }
+    /// <summary>
+    /// The page's words in the CURRENT UI culture, as the real resource localizer answers: Turkish words while the UI culture
+    /// is Turkish (<see cref="TurkishPageWords"/>), the fixture words otherwise.
+    /// </summary>
     private sealed class Localizer<T>(IReadOnlyDictionary<string, string>? words = null) : IStringLocalizer<T>
     {
-        public LocalizedString this[string name] => new(name, words is not null && words.TryGetValue(name, out var word) ? word : name);
+        public LocalizedString this[string name]
+            => System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "tr" && words is not null
+               && TurkishPageWords.TryGetValue(name, out var turkish)
+                ? new(name, turkish)
+                : new(name, words is not null && words.TryGetValue(name, out var word) ? word : name);
         public LocalizedString this[string name, params object[] arguments] => this[name];
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
     }

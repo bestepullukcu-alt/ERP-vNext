@@ -40,4 +40,7 @@
   <data name="SavedViewNotCarried" xml:space="preserve">
     <value>Önceden kaydettiğiniz görünüm aktarılamadı; varsayılan görünüm gösteriliyor. Bir sonraki açılışta yeniden denenecek.</value>
   </data>
+  <data name="LinkedProductNotOpened" xml:space="preserve">
+    <value>Bağlantıdaki ürün açılamadı; lütfen sayfayı yenileyin.</value>
+  </data>
 </root>

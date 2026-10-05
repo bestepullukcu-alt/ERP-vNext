@@ -40,4 +40,7 @@
   <data name="SavedViewNotCarried" xml:space="preserve">
     <value>Не удалось перенести ранее сохранённое представление; показано представление по умолчанию. Попытка будет повторена в следующий раз.</value>
   </data>
+  <data name="LinkedProductNotOpened" xml:space="preserve">
+    <value>Не удалось открыть продукт из ссылки; перезагрузите страницу.</value>
+  </data>
 </root>

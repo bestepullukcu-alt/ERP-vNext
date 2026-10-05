@@ -40,4 +40,7 @@
   <data name="SavedViewNotCarried" xml:space="preserve">
     <value>Votre vue enregistrée précédemment n’a pas pu être reprise ; la vue par défaut est affichée. Une nouvelle tentative aura lieu la prochaine fois.</value>
   </data>
+  <data name="LinkedProductNotOpened" xml:space="preserve">
+    <value>Le produit du lien n’a pas pu être ouvert ; veuillez recharger la page.</value>
+  </data>
 </root>
