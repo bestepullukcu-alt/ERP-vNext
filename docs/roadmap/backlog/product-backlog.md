@@ -8358,6 +8358,13 @@ başına güvenlik damgası (parola / rol / tür değişiminde artar), belirteç
 `pwd_change_required` taşıyan belirteçle yalnız parola değişim uçlarına izin verir. Karşılaştırma: ASP.NET Identity `SecurityStamp`, Oracle IDCS
 oturum iptali. Gelecek regresyon riski: 🟡 (her istekte doğrulama).
 
+**Ek 2026-10-05 — SAHİP KARARI: şimdi öne alınmıyor.** Canlı kontrolde görüldü: Rol İzinleri'nde kaldırılan izin sayfa yenilemede duruyor, çıkış / girişte
+gidiyor (beklenen; izinler oturum belirtecinde). Erteleme riski: bugün 🟡 (canlıyı yalnız sahibin ekibi kullanıyor; davranış yeni değil, kötüleşmiyor) · iş ortağı
+hesabı, dış kullanıcı ya da GxP doğrulamasından ÖNCE 🔴 — işten ayrılan / pasife alınan kişi belirteç süresi bitene kadar (kiracıda en çok 24 saat) erişir,
+BL-529'un sıfırlaması ve BL-521'in kapısı açık erişim belirtecini durdurmaz. Ara önlem (kod gerektirmez): canlı kiracıların `SessionTimeoutMinutes`'ı 60 ya da
+altında tutulur. Geri dönüş maliyeti: izin denetimi ağ geçidinde ve her serviste belirteçten okunuyor — damga doğrulaması ağ geçidinde tek noktada yapılırsa
+sonradan eklemek orta maliyet; servis sayısı arttıkça artar. Ön koşul olarak işaretlendi: BL-521 iş ortağı hesabı açılmadan önce.
+
 ---
 
 ### BL-531
