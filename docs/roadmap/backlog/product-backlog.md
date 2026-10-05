@@ -8045,6 +8045,39 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-551
+
+**İki kararsız test gerçek kırmızıyı gölgeliyor: `DocumentDowntimeTemporaryIssueTests.Close_downtime_after_all_issues_reconciled_succeeds` saate bağlı, `TimesheetNotificationHttpMongoTests.T3_04` aralıklı**
+
+DURUM: AÇIK · SAHİP: CT (altyapı; testlerin sahipleri: belge yönetimi, Zaman Çizelgesi) · BULAN: WP-WCN-TASK-REQUEST-01 FIX5 ÖNCE/SONRA ölçümü · KAYIT: 2026-10-05
+
+Belge kesintisi testi kesintiyi "şimdi − 2 saat"te başlatıp `DurationWorkingDays == 0` bekliyor; gece yarısına yakın koşunca 1 çıkıyor (9fd968d97 arşivinde
+de aynı anda kırmızı — dalın işi değil). T3_04 aynı ağaçta bir koşuda kırmızı, sonrakinde yeşil. İkisi de her ÖNCE/SONRA tablosunda "bilinen kırmızı" satırı
+doğuruyor ve sabotaj tabanını bozuyor. Düzeltme: belge testi sabit bir saatle (`TimeProvider` / sahte saat) kurulur; T3_04'ün yarışı bulunur (büyük olasılıkla
+bildirim yazımının beklenmeden okunması) ve bariyerle sabitlenir. Karşılaştırma: SAP ve Oracle CI'larında kararsız test karantina listesine alınır ve sahibine
+bilet açılır; karantina süresiz değildir. Gelecek regresyon riski: 🟡 (gürültü gerçek bir kırmızıyı "bilinen" diye geçirebilir).
+
+---
+
+### BL-550
+
+**BL-521 artıkları: kiracı aktörünün sistem dışı rol işlemleri platform hesabının yetkisini daraltabiliyor; somut depo açık; işaret onarımı yarışta geri alınabiliyor; tek seferlik işaret doldurma yok**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: WP-PLATFORM-PARTNER-SCOPE-01 FIX7 bağımsız gözden geçirmesi + alt ajan raporu · KAYIT: 2026-10-05
+
+FIX7–FIX8 kapsamı dışında kalanlar: (a) `DeleteRoleCommandHandler.cs:44-46` / `UpdateRoleCommandHandler.cs:46` yalnız sistem rollerini koruyor; kiracı aktörü,
+bir platform kapısı aktörünün platform hesabına verdiği sistem dışı bir rolü silebilir ya da `RevokePermissionCommandHandler` ile izin kaldırabilir —
+oturum sonlanmaz ama hesabın bir sonraki basımda yetkisi daralır. (b) Somut `UserRepository` DI'da açık kayıtlı (`Persistence/DependencyInjection.cs:71`);
+`VisibleUserIdsAsync` orada no-op — somut türü enjekte eden her şey kapsamı atlar; mimari testi: işleyiciler somut depoyu istemez. (c) İşaret onarımı hedefli
+`$set`, ama işaretten önce yüklenmiş bir kiracı isteğinin (girişi, parola değişimi) bütün belge yazımı onu geri alır; bir sonraki platform basımı yeniden onarır.
+(d) Kiracı giriş kapısının ret satırı anonim tekrarla çoğaltılabilir (sayaç / örnekleme yok). (e) Platform kapısından hiç geçmemiş, kopyası eksik hesap işaretsiz
+kalır; tek seferlik doldurma (Platform kayıtlarından Auth'a) gerekir — o zamana dek o hesabın kiracı oturumu SessionTimeoutMinutes'ı aşarak yenilenebilir.
+Karşılaştırma: SAP'de platform (BASIS) kullanıcıları iş istemcisinden ayrı istemcide tutulur; Oracle Fusion'da yönetici kimlikleri IDCS'de ayrı alan adı ile
+ayrılır — ikisi de "aynı kiracıda işaretle ayır" yolunu kullanmaz (uzun vadeli öneri: platform hesaplarını ayrı kiracıya taşımak, sahip kararı).
+Gelecek regresyon riski: 🟡.
+
+---
+
 ### BL-549
 
 **Yarım kalmış genel başlatma (örnek var, motor görevi yok) görevin onayını / incelemesini süresiz kilitliyor; motorda kurtarma yolu yok**
