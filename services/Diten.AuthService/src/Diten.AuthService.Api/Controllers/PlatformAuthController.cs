@@ -2,6 +2,7 @@ using Diten.AuthService.Api.Models;
 using Diten.AuthService.Api.Controllers.Common;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Features.Auth.Services;
 using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
@@ -34,6 +35,7 @@ public sealed class PlatformAuthController : CustomBaseController
     private readonly IPlatformAdministratorStatusClient _platformAdministratorStatusClient;
     private readonly IUserAuditRecorder _audit;
     private readonly Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter _passwordDoors;
+    private readonly Diten.AuthService.Infrastructure.Security.ClientAddressResolver _clientAddress;
     private readonly IWebHostEnvironment _environment;
 
     public PlatformAuthController(
@@ -52,8 +54,10 @@ public sealed class PlatformAuthController : CustomBaseController
         IPlatformAdministratorStatusClient platformAdministratorStatusClient,
         IWebHostEnvironment environment,
         IUserAuditRecorder audit,
-        Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter passwordDoors)
+        Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter passwordDoors,
+        Diten.AuthService.Infrastructure.Security.ClientAddressResolver clientAddress)
     {
+        _clientAddress = clientAddress;
         _audit = audit;
         _passwordDoors = passwordDoors;
         _mediator = mediator;
@@ -317,13 +321,16 @@ public sealed class PlatformAuthController : CustomBaseController
         }
 
         var (firstName, lastName) = SplitName(request.DisplayName, normalizedEmail);
+        var state = _userRepository.CaptureState(user);
         user.SetUserName(request.UserName);
         user.UpdateProfile(firstName, lastName);
         user.Activate();
         user.ConfirmEmail();
         user.SetPlatformActorType(NormalizeActorType(request.ActorType));
 
-        await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);
+        // BL-529 FIX3 — only the fields this sync changes (name, profile, switch, actor type): a whole write from the copy
+        // read above could put back a password hash an administrator's reset replaced meanwhile.
+        await _userRepository.TryWriteChangesAsync(user, state, PlatformTenantId, UserWriteCondition.None, ct);
 
         await SyncPlatformRolesAsync(user.Id, request.Roles, ct);
 
@@ -353,15 +360,18 @@ public sealed class PlatformAuthController : CustomBaseController
 
         await _passwordPolicyService.ValidateTenantPasswordAsync(PlatformTenantId, user.Id, request.NewPassword, "platform_forced_change", ct);
         var verifiedHash = user.PasswordHash;
+        var state = _userRepository.CaptureState(user);
         user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
         user.ClearPasswordChangeRequirement();
         // BL-529 FIX2 — only over the password just verified: never over an administrator's reset that landed meanwhile.
-        if (!await _userRepository.TryUpdateForTenantIfPasswordHashAsync(user, PlatformTenantId, verifiedHash, ct))
+        if (!await _userRepository.TryWriteChangesAsync(user, state, PlatformTenantId, new UserWriteCondition(PasswordHash: verifiedHash), ct))
         {
             return CreateActionResultInstance(Response<AuthResponse>.Fail(
-                "The password changed while this request ran (for example an administrator reset it). Sign in again.", 409));
+                "The password changed while this request ran (for example an administrator reset it). Sign in again.",
+                [new ResponseError(AuthRefusalCodes.PasswordChangedMeanwhile)],
+                409));
         }
-        await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, PlatformTenantId, ct);
+        await _refreshTokenRepository.RevokeLiveSessionsAsync(user.Id, PlatformTenantId, SessionRevocationReasons.PasswordChanged, ct);
 
         var authResponse = await BuildPlatformAuthResponseAsync(user, request.RememberMe, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext), false, ct);
         return CreateActionResultInstance(Response<AuthResponse>.Success(authResponse));
@@ -372,7 +382,7 @@ public sealed class PlatformAuthController : CustomBaseController
     public async Task<IActionResult> ForgotPassword([FromBody] PlatformForgotPasswordRequest request, CancellationToken ct)
     {
         var normalizedEmail = NormalizeEmail(request.Email);
-        if (!_passwordDoors.TryAcquire("forgot-password", ResolveRequestIp(HttpContext), normalizedEmail))
+        if (!_passwordDoors.TryAcquireForgotPassword(_clientAddress.Resolve(HttpContext), normalizedEmail))
         {
             return TooManyRequests();
         }
@@ -405,7 +415,7 @@ public sealed class PlatformAuthController : CustomBaseController
     public async Task<IActionResult> ResetPassword([FromBody] PlatformResetPasswordRequest request, CancellationToken ct)
     {
         var normalizedEmail = NormalizeEmail(request.Email);
-        if (!_passwordDoors.TryAcquire("reset-password", ResolveRequestIp(HttpContext), normalizedEmail))
+        if (!_passwordDoors.TryAcquireLinkRedemption(_clientAddress.Resolve(HttpContext), normalizedEmail))
         {
             return TooManyRequests();
         }
@@ -422,17 +432,18 @@ public sealed class PlatformAuthController : CustomBaseController
 
         await _passwordPolicyService.ValidateTenantPasswordAsync(PlatformTenantId, user.Id, request.NewPassword, "platform_reset_password", ct);
         var redeemedTokenHash = user.PasswordResetTokenHash!;
+        var redeemState = _userRepository.CaptureState(user);
         user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
         user.ClearPasswordChangeRequirement();
         user.Activate();
         user.ConfirmEmail();
         // BL-529 FIX2 — written only while this link is still the account's (not replaced by a newer reset, not used by a
         // parallel redemption).
-        if (!await _userRepository.TryUpdateForTenantIfResetTokenAsync(user, PlatformTenantId, redeemedTokenHash, ct))
+        if (!await _userRepository.TryWriteChangesAsync(user, redeemState, PlatformTenantId, new UserWriteCondition(PasswordResetTokenHash: redeemedTokenHash), ct))
         {
             return CreateActionResultInstance(Response<NoContent>.Fail("Password reset token is invalid or expired.", 400));
         }
-        await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, PlatformTenantId, ct);
+        await _refreshTokenRepository.RevokeLiveSessionsAsync(user.Id, PlatformTenantId, SessionRevocationReasons.PasswordChanged, ct);
         return CreateActionResultInstance(Response<NoContent>.Success(204));
     }
 
@@ -478,6 +489,8 @@ public sealed class PlatformAuthController : CustomBaseController
             PlatformTenantId,
             actorType,
             userAgent);
+        // BL-529 FIX3 — the session is bound to the password it was opened with (SessionPasswordBinding).
+        SessionPasswordBinding.Bind(refreshToken, _refreshTokenHasher, user);
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
 
         return new AuthResponse(

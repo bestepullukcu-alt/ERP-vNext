@@ -39,8 +39,17 @@ public sealed class UserAuditRecorder : IUserAuditRecorder
     {
         var local = new Dictionary<string, object?>(metadata, StringComparer.Ordinal) { ["targetUserId"] = targetUserId };
 
-        // The local row first: it is the one that must exist whatever Platform does.
-        await _localAudit.RecordAsync(eventName, tenantId, local, ct);
+        // The local row first: it is the one that must exist whatever Platform does. BL-529 FIX3 — and it is inside the
+        // recorder's "never throws" promise too: a local write failure after a completed mutation (an administrator's
+        // reset, written in a finally) is logged, not turned into a 500 that says the reset failed.
+        try
+        {
+            await _localAudit.RecordAsync(eventName, tenantId, local, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Local user audit write failed for {EventName}. The mutation stands; forwarding continues.", eventName);
+        }
 
         if (!UserAuditEvents.Operations.TryGetValue(eventName, out var operation))
         {

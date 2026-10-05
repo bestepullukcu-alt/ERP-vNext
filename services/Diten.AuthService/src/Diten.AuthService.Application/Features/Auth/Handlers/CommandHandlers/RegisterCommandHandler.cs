@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Features.Auth.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Domain.Entities;
@@ -126,6 +127,8 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
             _tenantContext.TenantId,
             "tenant_user",
             request.UserAgent);
+        // BL-529 FIX3 — the session is bound to the password it was opened with (SessionPasswordBinding).
+        SessionPasswordBinding.Bind(refreshToken, _refreshTokenHasher, created);
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
 
         return Response<AuthResponse>.Success(new AuthResponse(

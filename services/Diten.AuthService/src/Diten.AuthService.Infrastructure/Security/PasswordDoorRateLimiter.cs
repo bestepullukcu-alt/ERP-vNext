@@ -9,15 +9,15 @@ namespace Diten.AuthService.Infrastructure.Security;
 /// and <c>POST api/platform-auth/reset-password</c> (the set-password link). Both open without a tenant since BL-529, and
 /// both can be asked by anyone, endlessly — a flood of "forgot password" against one administrator is also how a stale
 /// write would be aimed at a reset.
-/// <para>Two fixed windows, counted separately per door: per e-mail address (the target — unspoofable, the address is in
-/// the body) and per client address (coarse; behind the gateway this is the forwarded address). The address is keyed by
-/// its SHA-256, never stored or logged in clear. The ASP.NET rate-limiting middleware is not used because its partition
+/// <para>Two fixed windows per door. The client is <see cref="ClientAddressResolver"/>'s answer (never a header the client
+/// wrote on its own). "Forgot password" counts per client and per e-mail address; the set-password link per client and per
+/// (client, address) — see the two methods. Every key is a SHA-256, never stored or logged in clear. The ASP.NET rate-limiting middleware is not used because its partition
 /// key cannot read the request body; the same <see cref="PartitionedRateLimiter"/> primitives are used here instead.</para>
 /// </summary>
 public sealed class PasswordDoorRateLimiter : IDisposable
 {
     /// <summary>The stable code a refused request carries (429).</summary>
-    public const string TooManyRequestsCode = "AUTH_TOO_MANY_REQUESTS";
+    public const string TooManyRequestsCode = Application.Common.AuthRefusalCodes.TooManyRequests;
 
     public const int DefaultPerAddressLimit = 5;
     public const int DefaultPerClientLimit = 30;
@@ -40,18 +40,22 @@ public sealed class PasswordDoorRateLimiter : IDisposable
 
     public TimeSpan Window { get; }
 
-    /// <summary>True when the request may go on; false = answer 429 <see cref="TooManyRequestsCode"/>.</summary>
-    public bool TryAcquire(string door, string? clientAddress, string? email)
-    {
-        using var client = _perClient.AttemptAcquire($"{door}|{clientAddress ?? "unknown"}");
-        if (!client.IsAcquired)
-        {
-            return false;
-        }
+    /// <summary>
+    /// "Forgot password": per client first (so the per-address partitions can only grow as fast as real clients do), then
+    /// per e-mail address (the target — a flood against one administrator is capped whoever sends it). True = go on.
+    /// </summary>
+    public bool TryAcquireForgotPassword(string client, string? email)
+        => TryAcquire(_perClient, $"forgot-password|client|{client}")
+           && TryAcquire(_perAddress, $"forgot-password|address|{Normalize(email)}");
 
-        using var address = _perAddress.AttemptAcquire($"{door}|{Fingerprint(email)}");
-        return address.IsAcquired;
-    }
+    /// <summary>
+    /// The set-password link: per client, then per (client, address). The e-mail is NEVER a key on its own here: the link
+    /// is a 256-bit secret, and counting by address alone let anyone who knows the address spend the owner's allowance
+    /// with junk requests and lock the owner's valid link out. True = go on.
+    /// </summary>
+    public bool TryAcquireLinkRedemption(string client, string? email)
+        => TryAcquire(_perClient, $"reset-password|client|{client}")
+           && TryAcquire(_perAddress, $"reset-password|client-address|{client}|{Normalize(email)}");
 
     public void Dispose()
     {
@@ -70,6 +74,12 @@ public sealed class PasswordDoorRateLimiter : IDisposable
                 AutoReplenishment = true
             }));
 
-    private static string Fingerprint(string? email)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes((email ?? string.Empty).Trim().ToLowerInvariant())));
+    private static string Normalize(string? email) => (email ?? string.Empty).Trim().ToLowerInvariant();
+
+    // Every partition key is a fixed-length SHA-256: no caller-chosen string is kept, whatever its length.
+    private static bool TryAcquire(PartitionedRateLimiter<string> limiter, string key)
+    {
+        using var lease = limiter.AttemptAcquire(Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key))));
+        return lease.IsAcquired;
+    }
 }

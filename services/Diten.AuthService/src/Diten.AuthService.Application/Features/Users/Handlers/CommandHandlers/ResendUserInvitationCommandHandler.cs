@@ -85,8 +85,18 @@ public sealed class ResendUserInvitationCommandHandler : IRequestHandler<ResendU
             return await ResetInsteadAsync(user, setupToken, ct);
         }
 
+        var state = _userRepository.CaptureState(user);
         user.SetPasswordResetToken(_refreshTokenHasher.Hash(setupToken), DateTime.UtcNow.Add(InvitationTokenLifetime));
-        await _userRepository.UpdateForTenantAsync(user, _tenantContext.TenantId, ct);
+        // BL-529 FIX3 — an administrator who resends a pending invitation they had deactivated asks for it again: the mark
+        // goes (the system's own word was "Resend the invitation instead"), and the audit row says so.
+        var markLifted = user.DeactivatedByAdministrator;
+        if (markLifted)
+        {
+            user.LiftAdministratorDeactivation();
+        }
+
+        // FIX3 — the link fields (and the mark) only; never a whole-document write from the copy read above.
+        await _userRepository.TryWriteChangesAsync(user, state, _tenantContext.TenantId, UserWriteCondition.None, ct);
 
         var setupUrl = _invitationEmailService.BuildTenantSetPasswordUrl(user.Email, setupToken);
         var emailSent = false;
@@ -103,7 +113,7 @@ public sealed class ResendUserInvitationCommandHandler : IRequestHandler<ResendU
         {
             // BL-456 — the new token is already saved; the audit row must exist even when the e-mail throws (production re-throws).
             await _audit.RecordAsync(UserAuditEvents.InvitationResent, _tenantContext.TenantId, user.Id,
-                new Dictionary<string, object?> { ["emailSent"] = emailSent }, ct);
+                new Dictionary<string, object?> { ["emailSent"] = emailSent, ["markLifted"] = markLifted }, ct);
         }
 
         _logger.LogInformation("Tenant user invitation re-sent. Id={Id} EmailSent={EmailSent}", user.Id, emailSent);

@@ -31,16 +31,19 @@ public interface IUserRepository
     Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct);
 
     /// <summary>
-    /// BL-529 — writes the account only while its password hash is still <paramref name="expectedPasswordHash"/> (the one
-    /// the caller read). False when the password changed in between (nothing is written): the caller reads again.
+    /// BL-529 FIX3 — the state of <paramref name="user"/> as it was read, opaque to the caller; hand it back to
+    /// <see cref="TryWriteChangesAsync"/> after changing the entity.
     /// </summary>
-    Task<bool> TryUpdateForTenantIfPasswordHashAsync(User user, Guid tenantId, string expectedPasswordHash, CancellationToken ct);
+    object CaptureState(User user);
 
     /// <summary>
-    /// BL-529 — writes the account only while its set-password link is still <paramref name="expectedResetTokenHash"/>
-    /// (the one the caller redeemed). False when the link was replaced, used or cleared in between: nothing is written.
+    /// BL-529 FIX3 — writes ONLY the fields that changed since <paramref name="capturedState"/> (a targeted <c>$set</c>), and
+    /// only while the stored account still meets <paramref name="condition"/>. A whole-document write from a copy read
+    /// earlier put back whatever another writer changed meanwhile (an administrator's reset, a deactivation); this never
+    /// touches a field the caller did not change. False when the account is gone, deleted, or no longer meets the
+    /// condition — nothing is written then.
     /// </summary>
-    Task<bool> TryUpdateForTenantIfResetTokenAsync(User user, Guid tenantId, string expectedResetTokenHash, CancellationToken ct);
+    Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct);
 
     /// <summary>
     /// BL-529 — issues a set-password link by writing ONLY the link fields (hash, expiry, request time). Never the password
@@ -57,3 +60,15 @@ public interface IUserRepository
 }
 
 public sealed record LoginFailureOutcome(int FailedLoginAttempts, DateTime? LockoutEnd);
+
+/// <summary>
+/// BL-529 FIX3 — what the stored account must still look like for a targeted write to land (null = not checked).
+/// </summary>
+public sealed record UserWriteCondition(
+    string? PasswordHash = null,
+    bool? IsActive = null,
+    bool? DeactivatedByAdministrator = null,
+    string? PasswordResetTokenHash = null)
+{
+    public static UserWriteCondition None { get; } = new();
+}

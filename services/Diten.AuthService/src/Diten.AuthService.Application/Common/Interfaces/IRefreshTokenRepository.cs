@@ -8,6 +8,10 @@ public interface IRefreshTokenRepository
     Task CreateAsync(RefreshToken refreshToken, CancellationToken ct);
     Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct);
     Task RevokeAsync(string token, CancellationToken ct);
+
+    /// <summary>BL-529 FIX3 — revokes the token with <paramref name="reason"/> only while it is still live; a revocation that
+    /// happened first keeps its own time and reason. False when it was already revoked.</summary>
+    Task<bool> RevokeIfLiveAsync(string token, string reason, CancellationToken ct);
     /// <summary>Revokes every live refresh token of the user in the tenant; returns how many were revoked (BL-529 audit).</summary>
     Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct);
 

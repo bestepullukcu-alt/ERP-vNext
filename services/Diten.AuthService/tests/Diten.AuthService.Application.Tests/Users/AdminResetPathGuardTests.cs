@@ -92,6 +92,43 @@ public sealed class AdminResetPathGuardTests
         Assert.Equal([(PlatformAuth, "ForgotPassword")], calls);
     }
 
+    [Fact]
+    public void Every_minted_refresh_token_is_bound_to_the_password()
+    {
+        // BL-529 FIX3 — a mint that forgets SessionPasswordBinding issues a token the next refresh refuses (or, worse, a
+        // binding check someone later loosens): each `new RefreshToken(` in src is followed, in the same member, by a bind.
+        var unbound = new List<string>();
+        foreach (var (full, relative) in SourceFiles())
+        {
+            var source = WithoutComments(File.ReadAllText(full));
+            foreach (Match mint in Regex.Matches(source, @"new\s+(?:Diten\.AuthService\.Domain\.Entities\.)?RefreshToken\s*\("))
+            {
+                var member = EnclosingMember(source, mint.Index);
+                var rest = source[mint.Index..];
+                var next = MemberDeclaration.Match(rest, 1);
+                var body = next.Success ? rest[..next.Index] : rest;
+                if (!Regex.IsMatch(body, @"SessionPasswordBinding\.Bind\s*\(|\.BindToPassword\s*\("))
+                {
+                    unbound.Add($"{relative} :: {member}");
+                }
+            }
+        }
+
+        Assert.True(unbound.Count == 0, "refresh tokens minted without a password binding:\n" + string.Join("\n", unbound));
+    }
+
+    [Fact]
+    public void No_production_path_writes_a_whole_user_document()
+    {
+        // BL-529 FIX3 — every user write in src goes through the targeted, conditional TryWriteChangesAsync (or a purpose-built
+        // targeted write); a whole-document replace from a copy read earlier is what put back a replaced password.
+        var whole = Calls(new Regex(@"_userRepository\.(UpdateAsync|UpdateForTenantAsync)\s*\(|\busers\.(UpdateAsync|UpdateForTenantAsync)\s*\(", RegexOptions.Compiled))
+            .Select(c => $"{c.File} :: {c.Member}")
+            .ToArray();
+
+        Assert.True(whole.Length == 0, "whole-document user writes:\n" + string.Join("\n", whole));
+    }
+
     [Theory]
     [InlineData(AdminReset, 1)]
     [InlineData(Resend, 1)]

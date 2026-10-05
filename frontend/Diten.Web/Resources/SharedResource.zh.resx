@@ -516,6 +516,9 @@
   <data name="Password.Error.NewRequired" xml:space="preserve"><value>新密码为必填项。</value></data>
   <data name="Password.Error.ResetEmailRequired" xml:space="preserve"><value>电子邮件为必填项。</value></data>
   <data name="Password.Error.ResetTokenRequired" xml:space="preserve"><value>重置令牌为必填项。</value></data>
+  <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>请求过多。请等待几分钟后重试。</value></data>
+  <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>您的密码已在此期间被更改（例如由管理员更改）。请重新登录。</value></data>
+  <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>此账户已被管理员停用。请联系您的管理员。</value></data>
   <!-- Tenant navigation names (FEAT-NAV-L10N: generic code→resx localization, keyed by stable nav codes) -->
   <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>管理</value></data>
   <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>开发者赋能</value></data>

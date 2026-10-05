@@ -57,6 +57,7 @@ public sealed class SetAccountKindCommandHandler : IRequestHandler<SetAccountKin
             return Response<AccountAssertionDto>.Fail("User not found.", 404);
         }
 
+        var state = _userRepository.CaptureState(user);
         var change = _kindWriter.Apply(user, newKind);
         if (change is null)
         {
@@ -64,7 +65,8 @@ public sealed class SetAccountKindCommandHandler : IRequestHandler<SetAccountKin
             return Response<AccountAssertionDto>.Success(Assertion(user));
         }
 
-        await _userRepository.UpdateForTenantAsync(user, _tenantContext.TenantId, ct);
+        // BL-529 FIX3 — the kind (and its stamp) only; never a whole-document write from the copy read above.
+        await _userRepository.TryWriteChangesAsync(user, state, _tenantContext.TenantId, UserWriteCondition.None, ct);
         await _kindWriter.RecordAsync(user, change, _tenantContext.TenantId, request.CorrelationId, ct);
 
         _logger.LogInformation(

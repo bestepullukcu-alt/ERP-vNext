@@ -516,6 +516,9 @@
   <data name="Password.Error.NewRequired" xml:space="preserve"><value>Новый пароль обязателен.</value></data>
   <data name="Password.Error.ResetEmailRequired" xml:space="preserve"><value>Электронная почта обязательна.</value></data>
   <data name="Password.Error.ResetTokenRequired" xml:space="preserve"><value>Токен сброса обязателен.</value></data>
+  <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>Слишком много запросов. Подождите несколько минут и повторите попытку.</value></data>
+  <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>Ваш пароль тем временем был изменён (например, администратором). Войдите снова.</value></data>
+  <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>Эта учётная запись отключена администратором. Обратитесь к администратору.</value></data>
   <!-- Tenant navigation names (FEAT-NAV-L10N: generic code→resx localization, keyed by stable nav codes) -->
   <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>Администрирование</value></data>
   <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>Инструменты разработчика</value></data>

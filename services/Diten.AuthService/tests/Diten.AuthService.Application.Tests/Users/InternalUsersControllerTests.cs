@@ -271,8 +271,8 @@ public sealed class InternalUsersControllerTests
         public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
-        public Task<bool> TryUpdateForTenantIfPasswordHashAsync(User user, Guid tenantId, string expectedPasswordHash, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
-        public Task<bool> TryUpdateForTenantIfResetTokenAsync(User user, Guid tenantId, string expectedResetTokenHash, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
+        public object CaptureState(User user) => throw new NotSupportedException("read-only endpoint");
+        public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
         public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
         public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
     }

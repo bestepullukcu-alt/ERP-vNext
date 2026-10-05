@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Features.Auth.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Domain.Entities;
@@ -82,14 +83,15 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
         await _passwordPolicyService.ValidateTenantPasswordAsync(request.TenantId, user.Id, request.NewPassword, "tenant_forced_change", ct);
 
         var verifiedHash = user.PasswordHash;
+        var state = _userRepository.CaptureState(user);
         user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
         user.ClearPasswordChangeRequirement(); // MustChangePassword → false
         // BL-529 FIX2 — only over the password just verified (never over a reset that landed meanwhile).
-        if (!await _userRepository.TryUpdateForTenantIfPasswordHashAsync(user, request.TenantId, verifiedHash, ct))
+        if (!await _userRepository.TryWriteChangesAsync(user, state, request.TenantId, new UserWriteCondition(PasswordHash: verifiedHash), ct))
         {
             return ChangePasswordCommandHandler.PasswordChangedMeanwhile<AuthResponse>();
         }
-        await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, request.TenantId, ct);
+        await _refreshTokenRepository.RevokeLiveSessionsAsync(user.Id, request.TenantId, SessionRevocationReasons.PasswordChanged, ct);
         await _authAuditService.WriteAsync("tenant_forced_password_changed", user.Id, request.TenantId, "{}", ct);
 
         // FIX-TENANT-ADMIN-INVITE-ACTIVATION (Part B) — the invited admin has now completed its forced first-login
@@ -143,6 +145,8 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
             request.TenantId,
             TenantActorType,
             request.UserAgent);
+        // BL-529 FIX3 — the session is bound to the password it was opened with (SessionPasswordBinding).
+        SessionPasswordBinding.Bind(refreshToken, _refreshTokenHasher, user);
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
 
         return new AuthResponse(

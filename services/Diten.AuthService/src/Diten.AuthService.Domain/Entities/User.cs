@@ -91,11 +91,27 @@ public sealed class User : EntityBase
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
 
-    /// <summary>BL-529 FIX2 — the administrator's deactivation: off, and marked so a link cannot undo it.</summary>
+    /// <summary>
+    /// BL-529 FIX2 — the administrator's deactivation: off, and marked so a link cannot undo it. FIX3 — a pending reset link
+    /// goes with it (whichever door deactivates: the kebab or the edit form); a pending INVITATION keeps its link (the
+    /// mark alone stops it, and "Resend invitation" lifts the mark).
+    /// </summary>
     public void DeactivateByAdministrator()
     {
         IsActive = false;
         DeactivatedByAdministrator = true;
+        if (!IsInvitationPending())
+        {
+            ClearPasswordResetToken();
+        }
+
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>BL-529 FIX3 — "Resend invitation" of a marked pending invitation: the administrator asks for it again.</summary>
+    public void LiftAdministratorDeactivation()
+    {
+        DeactivatedByAdministrator = false;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 

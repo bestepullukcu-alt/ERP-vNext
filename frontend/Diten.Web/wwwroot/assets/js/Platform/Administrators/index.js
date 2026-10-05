@@ -735,14 +735,14 @@ const AdministratorsList = (function () {
                 headers: getAuthHeaders(true),
                 body: JSON.stringify({ version: Number(version || 0) })
             });
-            if (!response.ok) throw new Error(`${action} failed.`);
+            if (!response.ok) throw new Error(await readErrorMessage(response, L.ErrorOccurred));
             const json = await response.json().catch(() => null);
             const result = json?.data || json?.Data;
             showDevSetupLink(result?.setupUrl || result?.SetupUrl, result?.emailSent ?? result?.EmailSent);
             reloadWithSuccessToast(successKey);
         } catch (error) {
             console.error(error);
-            window.showToast?.(L.ErrorOccurred || '', 'error');
+            window.showToast?.(error?.message || L.ErrorOccurred || '', 'error');
         }
     };
     const changeStatus = async (id, action, version, reason) => {
@@ -769,6 +769,8 @@ const AdministratorsList = (function () {
             // instead of the localized `detail`. One shared rule now, in DitenHttp.
             if (window.DitenHttp.isJsonMediaType(response.headers.get('content-type'))) {
                 const json = await response.json();
+                const coded = refusalByCode(json);
+                if (coded) return coded;
                 if (Array.isArray(json?.errors) && json.errors.length) return localizeServerError(json.errors[0]);
                 if (json?.errors && typeof json.errors === 'object') {
                     const first = Object.values(json.errors).flat().find(Boolean);
@@ -784,6 +786,12 @@ const AdministratorsList = (function () {
         } catch {
             return fallback || L.ErrorOccurred || '';
         }
+    };
+    // BL-529 FIX3 — a coded refusal reads by its code in the reader's language; the server's English never reaches the screen.
+    const REASON_CODE_KEYS = { PLATFORM_ADMINISTRATOR_SELF_RESET_FORBIDDEN: 'AdminSelfResetDenied' };
+    const refusalByCode = (json) => {
+        const key = REASON_CODE_KEYS[json?.reason_code || json?.reasonCode || ''];
+        return key ? (L[key] || L.ErrorOccurred || '') : null;
     };
     const localizeServerError = (message) => {
         const text = String(message || '').trim();
@@ -1111,7 +1119,8 @@ const AdministratorsList = (function () {
                         reloadWithSuccessToast('ResendInviteSuccess');
                         getOcCreateEditInstance()?.hide();
                     } else {
-                        const errorMsg = Array.isArray(json.errors) ? json.errors[0] : (json.message || L.ErrorOccurred);
+                        const errorMsg = refusalByCode(json)
+                            || localizeServerError(Array.isArray(json.errors) ? json.errors[0] : (json.message || L.ErrorOccurred));
                         window.showToast?.(errorMsg, 'error');
                     }
                 } catch (error) {

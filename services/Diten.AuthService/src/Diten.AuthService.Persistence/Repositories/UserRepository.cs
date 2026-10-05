@@ -165,27 +165,40 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
 
-    public async Task<bool> TryUpdateForTenantIfPasswordHashAsync(User user, Guid tenantId, string expectedPasswordHash, CancellationToken ct)
+    public object CaptureState(User user) => user.ToBsonDocument();
+
+    public async Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
     {
-        var filter = Builders<User>.Filter.And(
+        ArgumentNullException.ThrowIfNull(user);
+        if (capturedState is not BsonDocument before)
+        {
+            throw new ArgumentException("The captured state does not come from this repository.", nameof(capturedState));
+        }
+
+        var filters = new List<FilterDefinition<User>>
+        {
             Builders<User>.Filter.Eq(u => u.Id, user.Id),
             Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
-            Builders<User>.Filter.Eq(u => u.IsDeleted, false),
-            Builders<User>.Filter.Eq(u => u.PasswordHash, expectedPasswordHash));
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false)
+        };
+        if (condition.PasswordHash is { } hash) filters.Add(Builders<User>.Filter.Eq(u => u.PasswordHash, hash));
+        if (condition.IsActive is { } active) filters.Add(Builders<User>.Filter.Eq(u => u.IsActive, active));
+        if (condition.DeactivatedByAdministrator is { } marked) filters.Add(Builders<User>.Filter.Eq(u => u.DeactivatedByAdministrator, marked));
+        if (condition.PasswordResetTokenHash is { } link) filters.Add(Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, link));
+        var filter = Builders<User>.Filter.And(filters);
 
-        var result = await Collection.ReplaceOneAsync(filter, user, cancellationToken: ct);
-        return result.MatchedCount == 1;
-    }
+        // Only the elements whose value differs from the state read — never the whole document.
+        var after = user.ToBsonDocument();
+        var changed = new BsonDocument(after.Elements
+            .Where(element => element.Name != "_id" && (!before.TryGetValue(element.Name, out var old) || !old.Equals(element.Value))));
+        if (changed.ElementCount == 0)
+        {
+            return await Collection.Find(filter).AnyAsync(ct);
+        }
 
-    public async Task<bool> TryUpdateForTenantIfResetTokenAsync(User user, Guid tenantId, string expectedResetTokenHash, CancellationToken ct)
-    {
-        var filter = Builders<User>.Filter.And(
-            Builders<User>.Filter.Eq(u => u.Id, user.Id),
-            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
-            Builders<User>.Filter.Eq(u => u.IsDeleted, false),
-            Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, expectedResetTokenHash));
-
-        var result = await Collection.ReplaceOneAsync(filter, user, cancellationToken: ct);
+        // A raw $set of the serialized values: the field serializers already ran in ToBsonDocument (a null stays a BSON null).
+        UpdateDefinition<User> update = new BsonDocument("$set", changed);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
         return result.MatchedCount == 1;
     }
 

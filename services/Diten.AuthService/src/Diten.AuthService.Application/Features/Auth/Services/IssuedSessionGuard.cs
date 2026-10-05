@@ -27,7 +27,9 @@ public static class IssuedSessionGuard
             return true;
         }
 
-        await refreshTokens.RevokeAsync(issuedRefreshToken, ct);
+        // FIX3 — conditional (only if still live) and with its own reason: a sweep that ended the token first keeps its
+        // time and its "admin-reset".
+        await refreshTokens.RevokeIfLiveAsync(issuedRefreshToken, Common.SessionRevocationReasons.PasswordChanged, ct);
         return false;
     }
 }

@@ -35,3 +35,29 @@ describe("BL-529 — your own administrator record", () => {
     expect(source).toMatch(/wrapperResend\?\.classList\.toggle\('d-none', isOwnRecord\(data\)\)/);
   });
 });
+
+describe("BL-529 FIX3 — the self setup-link refusal reads by its code", () => {
+  const load = (labels) => {
+    // eslint-disable-next-line no-new-func
+    return new Function("L", slice("const REASON_CODE_KEYS", "const localizeServerError") + "; return refusalByCode;")(labels);
+  };
+
+  test("PLATFORM_ADMINISTRATOR_SELF_RESET_FORBIDDEN becomes the screen's sentence, never the server's English", () => {
+    const refusalByCode = load({ AdminSelfResetDenied: "«kendine kurulum bağlantısı yok»", ErrorOccurred: "«genel»" });
+    expect(refusalByCode({ reason_code: "PLATFORM_ADMINISTRATOR_SELF_RESET_FORBIDDEN", errors: ["You cannot send a setup link…"] }))
+      .toBe("«kendine kurulum bağlantısı yok»");
+    expect(refusalByCode({ errors: ["anything"] })).toBeNull();
+  });
+
+  test("both setup-link doors ask the code first", () => {
+    expect(source).toMatch(/const coded = refusalByCode\(json\);\s*if \(coded\) return coded;/);
+    expect(source).toMatch(/const errorMsg = refusalByCode\(json\)/);
+  });
+
+  test("the sentence exists in English and Turkish", () => {
+    for (const lang of ["en", "tr"]) {
+      const resx = fs.readFileSync(path.resolve(__dirname, "..", "Resources", "Views", "Platform", "Administrators", `AdministratorsIndex.${lang}.resx`), "utf8");
+      expect(resx).toMatch(/<data name="AdminSelfResetDenied"[^>]*>\s*<value>[^<]+<\/value>/);
+    }
+  });
+});

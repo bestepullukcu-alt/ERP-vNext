@@ -37,6 +37,20 @@ public class AccountController : Controller
     // FIX-LOGIN-BRIDGE-RESILIENCE — a transport failure (auth service / gateway unreachable) surfaces from the
     // bridge as StatusCode >= 500 with a clean ErrorMessage; map it to 503 so the client shows "service
     // unavailable" instead of a misleading 401. Credential / validation failures keep the existing 401.
+    // BL-529 FIX3 — the set-password link doors keep the service's status where it means something to the page (429 too
+    // many requests, 409 a deactivated account); the localized sentence travels in `detail`.
+    private IActionResult PasswordDoorFailure(AuthBridgeResult result, string fallbackMessage)
+    {
+        var detail = result.ErrorMessage ?? fallbackMessage;
+        return result.StatusCode switch
+        {
+            429 => StatusCode(429, new { detail }),
+            409 => Conflict(new { detail }),
+            >= 500 => StatusCode(503, new { detail }),
+            _ => BadRequest(new { detail })
+        };
+    }
+
     private IActionResult AuthFailureResult(AuthBridgeResult result, string fallbackMessage)
     {
         var detail = result.ErrorMessage ?? fallbackMessage;
@@ -231,7 +245,14 @@ public class AccountController : Controller
             return BadRequest(new { detail = "Email is required." });
         }
 
-        await _authGateway.ForgotPlatformPasswordAsync(request.Email, ct);
+        // BL-529 FIX3 — a refusal the person must see (too many requests, the service down) is passed on in their language;
+        // every other answer stays "sent" (the door never says whether the address exists).
+        var result = await _authGateway.ForgotPlatformPasswordAsync(request.Email, ct);
+        if (!result.Success && result.StatusCode is 429 or >= 500)
+        {
+            return StatusCode(result.StatusCode == 429 ? 429 : 503, new { detail = result.ErrorMessage ?? "Password reset is temporarily unavailable." });
+        }
+
         return Ok(new { success = true });
     }
 
@@ -274,7 +295,7 @@ public class AccountController : Controller
         var result = await _authGateway.ResetTenantPasswordAsync(request.Email, request.Token, request.NewPassword, ct);
         return result.Success
             ? Ok(new { success = true, redirectUrl = "/account/login" })
-            : BadRequest(new { detail = result.ErrorMessage ?? "Password setup link is invalid or expired." });
+            : PasswordDoorFailure(result, "Password setup link is invalid or expired.");
     }
 
     [HttpPost("/platform/reset-password")]
@@ -291,7 +312,7 @@ public class AccountController : Controller
         var result = await _authGateway.ResetPlatformPasswordAsync(request.Email, request.Token, request.NewPassword, ct);
         return result.Success
             ? Ok(new { success = true, redirectUrl = "/platform/login" })
-            : BadRequest(new { detail = result.ErrorMessage ?? "Password reset token is invalid or expired." });
+            : PasswordDoorFailure(result, "Password reset token is invalid or expired.");
     }
 
     [HttpGet("/platform/change-password")]

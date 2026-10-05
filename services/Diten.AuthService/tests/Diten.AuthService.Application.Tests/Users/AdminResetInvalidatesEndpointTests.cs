@@ -64,11 +64,13 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
                 ActivatorUtilities.CreateInstance<Diten.AuthService.Persistence.Repositories.UserRepository>(sp), Gate));
             services.AddSingleton<IOtpDeliveryService>(Otp);
             services.Configure<Diten.AuthService.Infrastructure.Settings.MfaOptions>(o => o.HashSecret = MfaSecret);
-            // The per-address limit is production's; the per-client one is raised so this class's many anonymous calls
-            // (all from one test client) do not trip it — PasswordDoorRateLimiterTests measures that limit on its own.
-            services.AddSingleton(new Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter(
-                Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerAddressLimit, 10_000,
-                Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultWindow));
+            // FIX3 — the production refresh-token repository with two hold points: before a session is written
+            // (create:{user}) and before the reset's sweep (scan:{user}).
+            services.AddScoped<IRefreshTokenRepository>(sp => new GatedRefreshTokens(
+                ActivatorUtilities.CreateInstance<Diten.AuthService.Persistence.Repositories.RefreshTokenRepository>(sp), Gate));
+            // FIX3 — every request arrives from its own client address (X-Test-Peer names one), so the production rate
+            // limits apply as they are and one test's requests never spend another's allowance.
+            services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, TestPeerStartupFilter>();
         }
 
         public CapturingOtp Otp { get; } = new();
@@ -773,15 +775,39 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         var stored = await ReadUserAsync(user.Id);
 
         var copy = await ReadUserAsync(user.Id);
+        var state = repository.CaptureState(copy);
         copy.UpdateProfile("Stale", "Copy");
-        Assert.False(await repository.TryUpdateForTenantIfPasswordHashAsync(copy, tenantId, "not-the-hash", CancellationToken.None));
-        Assert.False(await repository.TryUpdateForTenantIfResetTokenAsync(copy, tenantId, "not-the-link", CancellationToken.None));
+        Assert.False(await repository.TryWriteChangesAsync(copy, state, tenantId, new UserWriteCondition(PasswordHash: "not-the-hash"), CancellationToken.None));
+        Assert.False(await repository.TryWriteChangesAsync(copy, state, tenantId, new UserWriteCondition(PasswordResetTokenHash: "not-the-link"), CancellationToken.None));
+        Assert.False(await repository.TryWriteChangesAsync(copy, state, tenantId, new UserWriteCondition(IsActive: false), CancellationToken.None));
         Assert.Equal(stored.FirstName, (await ReadUserAsync(user.Id)).FirstName); // nothing written
 
         await repository.SoftDeleteAsync(user.Id, tenantId, CancellationToken.None);
-        Assert.False(await repository.TryUpdateForTenantIfPasswordHashAsync(copy, tenantId, stored.PasswordHash, CancellationToken.None));
+        Assert.False(await repository.TryWriteChangesAsync(copy, state, tenantId, new UserWriteCondition(PasswordHash: stored.PasswordHash), CancellationToken.None));
         Assert.True((await ReadUserAsync(user.Id)).IsDeleted); // a reset racing a delete does not bring the account back
         Assert.False(await repository.SetPasswordResetTokenAsync(user.Id, tenantId, "h", DateTime.UtcNow.AddHours(1), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task A_targeted_write_changes_only_the_fields_the_caller_changed()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        using var scope = Scope(tenantId);
+        var repository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+
+        var stale = await ReadUserAsync(user.Id);            // read before the password changes
+        var state = repository.CaptureState(stale);
+        var other = await ReadUserAsync(user.Id);
+        other.UpdatePassword("changed-elsewhere");
+        Assert.True(await repository.TryWriteChangesAsync(other, repository.CaptureState(await ReadUserAsync(user.Id)), tenantId, UserWriteCondition.None, CancellationToken.None));
+
+        stale.UpdateProfile("Renamed", "Only");
+        Assert.True(await repository.TryWriteChangesAsync(stale, state, tenantId, UserWriteCondition.None, CancellationToken.None));
+
+        var after = await ReadUserAsync(user.Id);
+        Assert.Equal("Renamed", after.FirstName);
+        Assert.Equal("changed-elsewhere", after.PasswordHash); // the stale copy's hash was not written back
     }
 
     // ── FIX2 item 8: the failure counter, the MFA challenge issued before a reset ──────────────────────────────
@@ -825,6 +851,338 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.Equal(HttpStatusCode.OK, verify.StatusCode);
     }
 
+    // ── FIX3 item 1: the mark moves only on a real switch; "Resend invitation" lifts it ───────────────────────────
+
+    [Fact]
+    public async Task Editing_a_pending_invitation_does_not_lock_it()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        using var client = _host.Client(await TenantAdminTokenAsync(tenantId, "auth.users.create", "auth.users.update"), tenantId);
+        var email = $"invited.{Guid.NewGuid():N}@reset.test";
+        Assert.Equal(HttpStatusCode.Created, (await client.PostAsJsonAsync("api/users", new { email, firstName = "In", lastName = "Vited" })).StatusCode);
+        var invited = await TenantUserByEmailAsync(email, tenantId);
+
+        var edit = await client.PutAsJsonAsync($"api/users/{invited.Id}", new { firstName = "Renamed", lastName = "Invitee", isActive = false });
+
+        Assert.True(edit.IsSuccessStatusCode, $"{(int)edit.StatusCode}: {await edit.Content.ReadAsStringAsync()}");
+        Assert.False((await ReadUserAsync(invited.Id)).DeactivatedByAdministrator);
+        Assert.Equal(HttpStatusCode.NoContent, (await RedeemTenantLinkAsync(email, NewPassword)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Resending_a_deactivated_invitation_lifts_the_mark_and_its_new_link_works()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        using var client = _host.Client(await TenantAdminTokenAsync(tenantId, "auth.users.create", "auth.users.update"), tenantId);
+        var email = $"invited.{Guid.NewGuid():N}@reset.test";
+        Assert.Equal(HttpStatusCode.Created, (await client.PostAsJsonAsync("api/users", new { email, firstName = "In", lastName = "Vited" })).StatusCode);
+        var invited = await TenantUserByEmailAsync(email, tenantId);
+        Assert.True((await client.PostAsync($"api/users/{invited.Id}/disable", null)).IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await RedeemTenantLinkAsync(email, NewPassword)).StatusCode);
+
+        Assert.Equal(HttpStatusCode.OK, (await client.PostAsync($"api/users/resend-invite/{invited.Id}", null)).StatusCode);
+
+        Assert.False((await ReadUserAsync(invited.Id)).DeactivatedByAdministrator);
+        var row = Assert.Single((await _host.Database.GetCollection<AuthAuditLog>("authAuditLogs")
+            .Find(r => r.EventName == UserAuditEvents.InvitationResent && r.TenantId == tenantId).ToListAsync())
+            .Where(r => r.Metadata.Contains(invited.Id.ToString(), StringComparison.OrdinalIgnoreCase)));
+        using var metadata = JsonDocument.Parse(row.Metadata);
+        Assert.True(metadata.RootElement.GetProperty("markLifted").GetBoolean());
+        Assert.Equal(HttpStatusCode.NoContent, (await RedeemTenantLinkAsync(email, NewPassword)).StatusCode);
+    }
+
+    // ── FIX3 item 2: a refresh is bound to the password the session was opened with ──────────────────────────────
+
+    [Fact]
+    public async Task A_refresh_between_the_resets_write_and_its_sweep_gets_nothing()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        // The reset has written the new hash and is held before its sweep; a refresh that reads the NEW hash runs now,
+        // and — if it got that far — would be held right before writing its new token.
+        _host.Gate.Arm("scan:" + user.Id);
+        var reset = Task.Run(() => ResetOnUsersScreenAsync(tenantId, user.Id));
+        await AwaitReachedAsync("scan:" + user.Id);
+        _host.Gate.Arm("create:" + user.Id);
+        var refresh = Task.Run(() => RefreshAsync(tenantId, session));
+        var first = await Task.WhenAny(refresh, _host.Gate.ReachedOf("create:" + user.Id), Task.Delay(TimeSpan.FromSeconds(30)));
+        _host.Gate.ReleaseOf("scan:" + user.Id);
+        Assert.Equal(HttpStatusCode.OK, (await reset).StatusCode);
+        _host.Gate.ReleaseOf("create:" + user.Id);
+
+        Assert.Same(refresh, first); // refused before it could write anything
+        Assert.Equal(HttpStatusCode.Unauthorized, (await refresh).StatusCode);
+        Assert.Empty(await LiveRefreshTokensAsync(user.Id, tenantId));
+    }
+
+    [Fact]
+    public async Task A_refresh_chain_keeps_working_while_the_password_is_unchanged()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        for (var i = 0; i < 3; i++)
+        {
+            session = await SessionFromAsync(await RefreshAsync(tenantId, session));
+        }
+
+        Assert.Single(await LiveRefreshTokensAsync(user.Id, tenantId));
+    }
+
+    [Fact]
+    public async Task A_refresh_token_minted_before_the_binding_is_refused_once()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        string access;
+        var raw = $"pre-binding-{Guid.NewGuid():N}";
+        using (var scope = Scope(tenantId))
+        {
+            var sp = scope.ServiceProvider;
+            access = sp.GetRequiredService<ITokenService>().GenerateAccessToken(await ReadUserAsync(user.Id), [], [], expiresInMinutes: 60);
+            var token = new RefreshToken(user.Id, sp.GetRequiredService<IRefreshTokenHasher>().Hash(raw), DateTime.UtcNow.AddDays(1), "127.0.0.1", tenantId, "tenant_user", "bl529");
+            await _host.Database.GetCollection<RefreshToken>("refreshTokens").InsertOneAsync(token); // no fingerprint
+        }
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await RefreshAsync(tenantId, new Session(access, raw))).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await TenantLoginAsync(tenantId, user.Email, OldPassword)).StatusCode); // sign in once again
+    }
+
+    // ── FIX3 item 3: the guard's revocation never overwrites the sweep's ──────────────────────────────────────────
+
+    [Fact]
+    public async Task A_session_ended_by_the_sweep_keeps_the_admin_reset_reason()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+
+        // The sign-in has written its token and is held where the guard reads the account; the whole reset runs.
+        var login = await RaceAsync("read:" + user.Id,
+            () => TenantLoginAsync(tenantId, user.Email, OldPassword),
+            async () => Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, login.StatusCode);
+        var token = Assert.Single(await _host.Database.GetCollection<RefreshToken>("refreshTokens").Find(t => t.UserId == user.Id).ToListAsync());
+        Assert.Equal(AdminPasswordReset.RevokeReason, token.RevokedReason);
+    }
+
+    // ── FIX3 item 4: administrator writes never put back a password a reset replaced (and the reverse) ─────────────
+
+    [Fact]
+    public async Task An_edit_racing_a_reset_does_not_write_the_old_password_back()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        using var client = _host.Client(await TenantAdminTokenAsync(tenantId, "auth.users.update"), tenantId);
+
+        var edit = await RaceAsync("write:" + user.Id,
+            () => client.PutAsJsonAsync($"api/users/{user.Id}", new { firstName = "Renamed", lastName = "Subject", isActive = true }),
+            async () => Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode));
+
+        Assert.True(edit.IsSuccessStatusCode);
+        Assert.Equal("Renamed", (await ReadUserAsync(user.Id)).FirstName);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await TenantLoginAsync(tenantId, user.Email, OldPassword)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await RedeemTenantLinkAsync(user.Email, NewPassword)).StatusCode);
+    }
+
+    [Fact]
+    public async Task A_deactivation_racing_a_reset_does_not_write_the_old_password_back()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        using var client = _host.Client(await TenantAdminTokenAsync(tenantId, "auth.users.update"), tenantId);
+
+        var disable = await RaceAsync("write:" + user.Id,
+            () => client.PostAsync($"api/users/{user.Id}/disable", null),
+            async () => Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode));
+
+        Assert.True(disable.IsSuccessStatusCode);
+        var after = await ReadUserAsync(user.Id);
+        Assert.False(after.IsActive);
+        Assert.NotEqual((await ReadUserAsync(user.Id)).PasswordHash, user.PasswordHash); // the reset's hash stands
+    }
+
+    [Fact]
+    public async Task A_platform_sync_racing_a_reset_does_not_write_the_old_password_back()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        var admin = await PlatformUserAsync(email);
+        using var platform = _host.Client();
+        platform.DefaultRequestHeaders.Add("X-Internal-Api-Key", _host.InternalKey);
+
+        var sync = await RaceAsync("write:" + admin.Id,
+            () => platform.PostAsJsonAsync("api/platform-auth/platform-admins/sync",
+                new { email, userName = email.Split('@')[0], displayName = "Synced Name", actorType = "platform_admin", roles = new[] { "ReadOnly" } }),
+            async () => await AssertOkAsync(await ProvisionPlatformAdminAsync(email)));
+
+        Assert.True(sync.IsSuccessStatusCode, $"{(int)sync.StatusCode}");
+        Assert.Equal(HttpStatusCode.Unauthorized, (await PlatformLoginAsync(email, OldPassword)).StatusCode);
+    }
+
+    [Fact]
+    public async Task A_reset_racing_a_deactivation_leaves_the_account_off_and_mails_no_link()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        using var client = _host.Client(await TenantAdminTokenAsync(tenantId, "auth.users.update"), tenantId);
+
+        // The reset is held before its write; the deactivation lands first.
+        var reset = await RaceAsync("write:" + user.Id,
+            () => ResetOnUsersScreenAsync(tenantId, user.Id),
+            async () => Assert.True((await client.PostAsync($"api/users/{user.Id}/disable", null)).IsSuccessStatusCode));
+
+        Assert.Equal(HttpStatusCode.Conflict, reset.StatusCode);
+        Assert.Contains(UserErrorCodes.ResetConflict, await reset.Content.ReadAsStringAsync());
+        var after = await ReadUserAsync(user.Id);
+        Assert.False(after.IsActive);
+        Assert.True(after.DeactivatedByAdministrator);
+        Assert.Equal(0, _host.TenantEmails.SentTo(user.Email));
+    }
+
+    // ── FIX3 items 5 + 6: the client is who connects; the link door does not count by address alone ─────────────
+
+    [Fact]
+    public async Task One_client_is_refused_past_its_limit_whatever_addresses_and_forwarded_headers_it_sends()
+    {
+        var peer = RandomPeer();
+        HttpResponseMessage? last = null;
+        for (var i = 0; i <= Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerClientLimit; i++)
+        {
+            last = await PeerPostAsync(peer, "api/platform-auth/forgot-password", new { email = $"x{i}.{Guid.NewGuid():N}@reset.test" },
+                forwardedFor: $"203.0.113.{i % 250}"); // a fresh made-up forwarded address each time: never believed
+        }
+
+        Assert.Equal((HttpStatusCode)429, last!.StatusCode);
+        Assert.Contains(AuthRefusalCodes.TooManyRequests, await last.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task Junk_from_another_client_does_not_lock_the_owners_link()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        await AssertOkAsync(await ProvisionPlatformAdminAsync(email)); // a fresh link for the owner
+        var link = _host.PlatformEmails.LastTokenFor(email);
+        var attacker = RandomPeer();
+
+        HttpResponseMessage? junk = null;
+        for (var i = 0; i <= Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerAddressLimit; i++)
+        {
+            junk = await PeerPostAsync(attacker, "api/platform-auth/reset-password", new { email, token = "junk", newPassword = NewPassword });
+        }
+
+        Assert.Equal((HttpStatusCode)429, junk!.StatusCode); // the link door limits the client that floods it
+        var owner = await PeerPostAsync(RandomPeer(), "api/platform-auth/reset-password", new { email, token = link, newPassword = NewPassword });
+        Assert.Equal(HttpStatusCode.NoContent, owner.StatusCode);
+    }
+
+    // ── FIX3 item 7: the guard runs AFTER the token is written (held right before the write) ────────────────────
+
+    [Fact]
+    public async Task A_sign_in_held_before_its_token_write_while_a_reset_runs_keeps_no_session()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+
+        var login = await RaceAsync("create:" + user.Id,
+            () => TenantLoginAsync(tenantId, user.Email, OldPassword),
+            async () => Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, login.StatusCode);
+        Assert.Empty(await LiveRefreshTokensAsync(user.Id, tenantId));
+    }
+
+    [Fact]
+    public async Task A_platform_sign_in_held_before_its_token_write_while_a_reset_runs_keeps_no_session()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        var admin = await PlatformUserAsync(email);
+
+        var login = await RaceAsync("create:" + admin.Id,
+            () => PlatformLoginAsync(email, OldPassword),
+            async () => await AssertOkAsync(await ProvisionPlatformAdminAsync(email)));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, login.StatusCode);
+        Assert.Empty(await LiveRefreshTokensAsync(admin.Id, PlatformTenantId));
+    }
+
+    [Fact]
+    public async Task A_refresh_held_before_its_token_write_while_a_reset_runs_keeps_no_session()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        var refresh = await RaceAsync("create:" + user.Id,
+            () => RefreshAsync(tenantId, session),
+            async () => Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, refresh.StatusCode);
+        Assert.Empty(await LiveRefreshTokensAsync(user.Id, tenantId));
+    }
+
+    // ── FIX3 item 8: every new refusal carries its code ───────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_new_refusals_carry_their_codes()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        using var client = _host.Client(session.AccessToken, tenantId);
+        var change = await RaceAsync("verify:" + OldPassword,
+            () => client.PostAsJsonAsync("api/auth/change-password", new { currentPassword = OldPassword, newPassword = WrongPassword }),
+            async () => Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode));
+        Assert.Contains(AuthRefusalCodes.PasswordChangedMeanwhile, await change.Content.ReadAsStringAsync());
+
+        using var admin = _host.Client(await TenantAdminTokenAsync(tenantId, "auth.users.create", "auth.users.update"), tenantId);
+        var email = $"invited.{Guid.NewGuid():N}@reset.test";
+        Assert.Equal(HttpStatusCode.Created, (await admin.PostAsJsonAsync("api/users", new { email, firstName = "In", lastName = "Vited" })).StatusCode);
+        Assert.True((await admin.PostAsync($"api/users/{(await TenantUserByEmailAsync(email, tenantId)).Id}/disable", null)).IsSuccessStatusCode);
+        Assert.Contains(AuthRefusalCodes.AccountDeactivated, await (await RedeemTenantLinkAsync(email, NewPassword)).Content.ReadAsStringAsync());
+    }
+
+    // ── FIX3 item 9: a tab left open from before the reset does not end the new session ─────────────────────────
+
+    [Fact]
+    public async Task A_stale_tab_after_a_reset_is_refused_without_ending_the_new_session()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        var oldTab = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await RedeemTenantLinkAsync(user.Email, NewPassword)).StatusCode);
+        var newSession = await TenantSessionAsync(tenantId, user.Email, NewPassword);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await RefreshAsync(tenantId, oldTab)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await RefreshAsync(tenantId, newSession)).StatusCode);
+    }
+
+    [Fact]
+    public async Task A_reused_rotated_token_still_ends_every_session()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        var first = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        var second = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        await SessionFromAsync(await RefreshAsync(tenantId, first)); // "first" is now rotated
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await RefreshAsync(tenantId, first)).StatusCode); // reuse → theft signal
+        Assert.Equal(HttpStatusCode.Unauthorized, (await RefreshAsync(tenantId, second)).StatusCode);
+    }
+
+    // ── FIX3 item 10: the production registrations resolve ─────────────────────────────────────────────────────
+
+    [Fact]
+    public void The_production_rate_limiter_and_client_resolver_resolve_from_the_container()
+    {
+        var limiter = _host.Factory.Services.GetRequiredService<Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter>();
+        Assert.Equal(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultWindow, limiter.Window);
+        Assert.NotNull(_host.Factory.Services.GetRequiredService<Diten.AuthService.Infrastructure.Security.ClientAddressResolver>());
+    }
+
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────────────
 
     private sealed record Session(string AccessToken, string RefreshToken);
@@ -847,6 +1205,22 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         }
 
         return await pending;
+    }
+
+    private static string RandomPeer() => new System.Net.IPAddress(Guid.NewGuid().ToByteArray()[..4]).ToString();
+
+    private async Task<HttpResponseMessage> PeerPostAsync(string peer, string path, object body, string? forwardedFor = null)
+    {
+        using var client = _host.Client();
+        client.DefaultRequestHeaders.Add("X-Test-Peer", peer);
+        if (forwardedFor is not null) client.DefaultRequestHeaders.Add("X-Forwarded-For", forwardedFor);
+        return await client.PostAsJsonAsync(path, body);
+    }
+
+    private async Task AwaitReachedAsync(string key)
+    {
+        var reached = await Task.WhenAny(_host.Gate.ReachedOf(key), Task.Delay(TimeSpan.FromSeconds(30)));
+        Assert.True(reached == _host.Gate.ReachedOf(key), $"the request never reached {key}");
     }
 
     private IServiceScope Scope(Guid tenantId)
@@ -1068,48 +1442,99 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
     /// <summary>Holds ONE request at a named point (synchronously, the way the production code calls it) until released.</summary>
     public sealed class Barrier
     {
-        private readonly object _lock = new();
-        private string? _armed;
-        private TaskCompletionSource _reached = New();
-        private TaskCompletionSource _release = New();
-
-        public Task Reached
+        private sealed class Gate
         {
-            get { lock (_lock) return _reached.Task; }
+            public TaskCompletionSource Reached { get; } = New();
+            public TaskCompletionSource Release { get; } = New();
+            public bool Passed { get; set; }
         }
 
+        private readonly object _lock = new();
+        private readonly Dictionary<string, Gate> _gates = new(StringComparer.Ordinal);
+        private string? _last;
+
+        /// <summary>Holds the FIRST request that passes <paramref name="key"/> until <see cref="ReleaseOf"/>. Several keys may be armed.</summary>
         public void Arm(string key)
         {
             lock (_lock)
             {
-                _armed = key;
-                _reached = New();
-                _release = New();
+                _gates[key] = new Gate();
+                _last = key;
             }
         }
 
-        public void Release()
+        public Task ReachedOf(string key)
         {
-            lock (_lock) _release.TrySetResult();
+            lock (_lock) return _gates[key].Reached.Task;
         }
+
+        public void ReleaseOf(string key)
+        {
+            lock (_lock)
+            {
+                if (_gates.TryGetValue(key, out var gate)) gate.Release.TrySetResult();
+            }
+        }
+
+        public Task Reached => ReachedOf(_last!);
+
+        public void Release() => ReleaseOf(_last!);
 
         public void Pass(string key)
         {
-            TaskCompletionSource? release = null;
+            Gate? held = null;
             lock (_lock)
             {
-                if (_armed == key)
+                if (_gates.TryGetValue(key, out var gate) && !gate.Passed)
                 {
-                    _armed = null;
-                    _reached.TrySetResult();
-                    release = _release;
+                    gate.Passed = true;
+                    gate.Reached.TrySetResult();
+                    held = gate;
                 }
             }
 
-            release?.Task.Wait(TimeSpan.FromSeconds(30));
+            held?.Release.Task.Wait(TimeSpan.FromSeconds(30));
         }
 
         private static TaskCompletionSource New() => new(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+
+    /// <summary>FIX3 — sets the connection's peer address: X-Test-Peer when the test names one, a fresh one otherwise.</summary>
+    private sealed class TestPeerStartupFilter : Microsoft.AspNetCore.Hosting.IStartupFilter
+    {
+        public Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> Configure(Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> next)
+            => app =>
+            {
+                Microsoft.AspNetCore.Builder.UseExtensions.Use(app, async (context, nextMiddleware) =>
+                {
+                    context.Connection.RemoteIpAddress = context.Request.Headers.TryGetValue("X-Test-Peer", out var named)
+                        ? System.Net.IPAddress.Parse(named.ToString())
+                        : new System.Net.IPAddress(Guid.NewGuid().ToByteArray()[..4]);
+                    await nextMiddleware();
+                });
+                next(app);
+            };
+    }
+
+    /// <summary>FIX3 — the production refresh-token repository, held before a session is written or before a sweep.</summary>
+    private sealed class GatedRefreshTokens(IRefreshTokenRepository inner, Barrier gate) : IRefreshTokenRepository
+    {
+        public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => inner.GetByTokenAsync(token, ct);
+        public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct)
+        {
+            gate.Pass("create:" + refreshToken.UserId);
+            return inner.CreateAsync(refreshToken, ct);
+        }
+        public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => inner.UpdateAsync(refreshToken, ct);
+        public Task RevokeAsync(string token, CancellationToken ct) => inner.RevokeAsync(token, ct);
+        public Task<bool> RevokeIfLiveAsync(string token, string reason, CancellationToken ct) => inner.RevokeIfLiveAsync(token, reason, ct);
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => inner.RevokeAllByUserAsync(userId, tenantId, ct);
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct)
+        {
+            gate.Pass("scan:" + userId);
+            return inner.RevokeLiveSessionsAsync(userId, tenantId, reason, ct);
+        }
+        public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => inner.TryRotateAsync(tokenId, replacedByTokenHash, revokedByIp, ct);
     }
 
     /// <summary>The production BCrypt hasher; Verify can be held AFTER it has checked the password.</summary>
@@ -1143,14 +1568,18 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
     public sealed class CapturingTenantEmails : ITenantUserInvitationEmailService
     {
         private readonly ConcurrentDictionary<string, string> _last = new(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, int> _sent = new(StringComparer.OrdinalIgnoreCase);
 
         public string LastTokenFor(string email) => _last[email];
+
+        public int SentTo(string email) => _sent.TryGetValue(email, out var n) ? n : 0;
 
         public string BuildTenantSetPasswordUrl(string email, string setupToken)
             => $"http://localhost/set-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(setupToken)}";
 
         public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct)
         {
+            _sent.AddOrUpdate(email, 1, (_, n) => n + 1);
             _last[email] = setupToken;
             return Task.CompletedTask;
         }
@@ -1216,12 +1645,12 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) => inner.UpdateForTenantAsync(user, tenantId, ct);
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => inner.SoftDeleteAsync(id, tenantId, ct);
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => inner.RecordLoginOutcomeAsync(user, tenantId, ct);
-        public Task<bool> TryUpdateForTenantIfPasswordHashAsync(User user, Guid tenantId, string expectedPasswordHash, CancellationToken ct)
+        public object CaptureState(User user) => inner.CaptureState(user);
+        public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
         {
             gate.Pass("write:" + user.Id);
-            return inner.TryUpdateForTenantIfPasswordHashAsync(user, tenantId, expectedPasswordHash, ct);
+            return inner.TryWriteChangesAsync(user, capturedState, tenantId, condition, ct);
         }
-        public Task<bool> TryUpdateForTenantIfResetTokenAsync(User user, Guid tenantId, string expectedResetTokenHash, CancellationToken ct) => inner.TryUpdateForTenantIfResetTokenAsync(user, tenantId, expectedResetTokenHash, ct);
         public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct) => inner.SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, ct);
         public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct) => inner.RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes, ct);
     }

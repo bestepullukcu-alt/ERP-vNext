@@ -57,11 +57,15 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
         // included: the link activates the account, the deactivation would be undone from outside).
         if (user.DeactivatedByAdministrator)
         {
-            return Response<NoContent>.Fail("This account has been deactivated by an administrator.", 409);
+            return Response<NoContent>.Fail(
+                "This account has been deactivated by an administrator.",
+                [new ResponseError(AuthRefusalCodes.AccountDeactivated)],
+                409);
         }
 
         await _passwordPolicyService.ValidateTenantPasswordAsync(user.TenantId, user.Id, request.NewPassword, "tenant_set_password", ct);
 
+        var state = _userRepository.CaptureState(user);
         user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
         user.ClearPasswordChangeRequirement(); // also clears the one-time token (single use)
         // BL-529 — a password set through the link starts clean: the lockout the old password's failures (or an attacker
@@ -72,11 +76,11 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
 
         // BL-529 FIX2 — written only while this link is still the account's (not replaced by a newer reset, not used by a
         // parallel redemption, not cleared by a deactivation).
-        if (!await _userRepository.TryUpdateForTenantIfResetTokenAsync(user, user.TenantId, tokenHash, ct))
+        if (!await _userRepository.TryWriteChangesAsync(user, state, user.TenantId, new UserWriteCondition(PasswordResetTokenHash: tokenHash), ct))
         {
             return Response<NoContent>.Fail(InvalidTokenMessage, 400);
         }
-        await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, user.TenantId, ct);
+        await _refreshTokenRepository.RevokeLiveSessionsAsync(user.Id, user.TenantId, SessionRevocationReasons.PasswordChanged, ct);
 
         _logger.LogInformation("Tenant user set-password redeemed. Id={Id}", user.Id);
         return Response<NoContent>.Success(204);

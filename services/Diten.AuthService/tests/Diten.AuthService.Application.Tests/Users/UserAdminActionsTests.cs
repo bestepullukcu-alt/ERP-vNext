@@ -188,6 +188,7 @@ public sealed class UserAdminActionsTests
         public int RevokeAllCount { get; private set; }
         public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
         public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => Task.FromResult(true);
+        public Task<bool> RevokeIfLiveAsync(string token, string reason, CancellationToken ct) => Task.FromResult(true);
         /// <summary>BL-529 — how many live sessions the revoke reports ending.</summary>
         public long Revoked { get; set; }
         public Action? OnRevoke { get; set; }
@@ -384,6 +385,25 @@ public sealed class UserAdminActionsTests
         await ResetHandlerWith(repo, new RecordingUserAudit(), refreshTokens, new SomeoneElse()).Handle(new AdminResetPasswordCommand(user.Id), CancellationToken.None);
 
         Assert.Equal(["write", "scan"], log);
+    }
+
+    [Fact]
+    public async Task The_user_audit_recorder_never_throws_when_its_local_write_fails()
+    {
+        // BL-529 FIX3 — the row is written in AdminPasswordReset's finally, after the reset stood: a failing local write
+        // must not turn a completed reset into a 500.
+        var forwarder = new RecordingPlatformAuditForwarder();
+        var recorder = UserAuditForTests.Over(new ThrowingRbac(), forwarder);
+
+        await recorder.RecordAsync(UserAuditEvents.PasswordResetByAdmin, TenantA, Guid.NewGuid(), new Dictionary<string, object?>(), CancellationToken.None);
+
+        Assert.Single(forwarder.Events); // the central log still gets it
+    }
+
+    private sealed class ThrowingRbac : IRbacAuditRecorder
+    {
+        public Task RecordAsync(string eventName, Guid tenantId, object metadata, CancellationToken ct = default)
+            => throw new InvalidOperationException("authAuditLogs is down");
     }
 
     private sealed class NoRbac : IRbacAuditRecorder

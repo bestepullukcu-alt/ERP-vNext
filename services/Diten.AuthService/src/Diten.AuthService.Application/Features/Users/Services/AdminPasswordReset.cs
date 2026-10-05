@@ -35,7 +35,7 @@ namespace Diten.AuthService.Application.Features.Users.Services;
 public static class AdminPasswordReset
 {
     /// <summary>The <c>RevokedReason</c> every session ended by an administrator's reset carries.</summary>
-    public const string RevokeReason = "admin-reset";
+    public const string RevokeReason = Common.SessionRevocationReasons.AdminReset;
 
     public const int MaxAttempts = 3;
 
@@ -76,6 +76,11 @@ public static class AdminPasswordReset
         var outcome = "failed";
         var emailSent = false;
 
+        // FIX3 — the account's switch as the caller first saw it. A deactivation (or activation) that lands while the reset
+        // runs is never written over and never followed by a link: the reset stops as a conflict.
+        var wasActive = user.IsActive;
+        var wasMarked = user.DeactivatedByAdministrator;
+
         try
         {
             User? current = user;
@@ -87,12 +92,21 @@ public static class AdminPasswordReset
                     return new Outcome(null, sessionsRevoked, Conflict: false);
                 }
 
+                if (current.IsActive != wasActive || current.DeactivatedByAdministrator != wasMarked)
+                {
+                    break; // switched on or off meanwhile: conflict
+                }
+
                 var readHash = current.PasswordHash;
+                var state = users.CaptureState(current);
                 var newHash = replacementHash(current); // first: the slow part happens before anything is written
                 current.UpdatePassword(newHash);
                 apply(current);
 
-                if (await users.TryUpdateForTenantIfPasswordHashAsync(current, tenantId, readHash, ct))
+                // FIX3 — ONLY the fields the reset changed (hash, link, forced change, and what this path's apply changed),
+                // and only while the hash and the switch are still the ones read.
+                if (await users.TryWriteChangesAsync(current, state, tenantId,
+                        new UserWriteCondition(PasswordHash: readHash, IsActive: wasActive, DeactivatedByAdministrator: wasMarked), ct))
                 {
                     // Only now, with the new hash stored: every session that exists ends here; any written later fails
                     // IssuedSessionGuard against the new hash.

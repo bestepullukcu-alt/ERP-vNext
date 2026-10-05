@@ -61,6 +61,14 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
 
         if (existingToken.RevokedAt != null)
         {
+            // BL-529 FIX3 — a token ended by a password change or an administrator's reset is a stale tab, not a stolen
+            // token: it is refused and nothing else happens (ending every session here killed the session the owner had
+            // just opened with the new password). Reuse of a "rotated" (or otherwise revoked) token is still a theft signal.
+            if (SessionRevocationReasons.EndedByPasswordChange(existingToken.RevokedReason))
+            {
+                return Response<AuthResponse>.Fail("The session was ended. Please sign in again.", 401);
+            }
+
             await _refreshTokenRepository.RevokeAllByUserAsync(existingToken.UserId, existingToken.TenantId, ct);
             return Response<AuthResponse>.Fail("Security violation detected. Please sign in again.", 401);
         }
@@ -106,6 +114,13 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         var user = await _userRepository.GetByIdAndTenantAsync(existingToken.UserId, existingToken.TenantId, ct);
         if (user == null || !user.IsActive)
             return Response<AuthResponse>.Fail("User was not found or is inactive.", 401);
+
+        // BL-529 FIX3 — the token's authority is the password it was opened with: changed (reset) since, or never bound
+        // (minted before this rule) → refused, nothing issued.
+        if (!SessionPasswordBinding.Matches(existingToken, _refreshTokenHasher, user))
+        {
+            return Response<AuthResponse>.Fail("The session was ended. Please sign in again.", 401);
+        }
 
         var isPlatformActor = IsPlatformActor(actorType);
         if (isPlatformActor && !await _platformAdministratorStatusClient.IsActiveAsync(user.Email, ct))
@@ -181,6 +196,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             request.UserAgent,
             oldToken.SessionId,
             oldToken.DeviceId);
+        newRefreshToken.BindToPassword(oldToken.PasswordFingerprint!); // carried through rotation
         await _refreshTokenRepository.CreateAsync(newRefreshToken, ct);
 
         if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, tokenTenantId, user.PasswordHash, newRefreshTokenStr, ct))

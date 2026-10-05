@@ -106,13 +106,17 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         var wasActive = user.IsActive;
         if (wasActive != isActive) changedFields.Add("isActive");
 
+        var state = _userRepository.CaptureState(user);
         user.UpdateProfile(request.FirstName, request.LastName);
-        // BL-529 FIX2 — an administrator's switch: the mark a set-password link respects goes with it.
-        if (isActive) user.ActivateByAdministrator(); else user.DeactivateByAdministrator();
+        // BL-529 FIX3 — the administrator's mark moves only on a REAL switch. A pending invitation is inactive by nature:
+        // saving its name must not mark it deactivated (that locked it for good — FIX2's regression).
+        if (wasActive && !isActive) user.DeactivateByAdministrator();
+        else if (!wasActive && isActive) user.ActivateByAdministrator();
         var kindChange = hasKind ? _kindWriter.Apply(user, newKind) : null;
 
-        // One tenant-scoped replace for the profile AND the kind; the audit row follows the persisted change.
-        await _userRepository.UpdateForTenantAsync(user, _tenantContext.TenantId, ct);
+        // BL-529 FIX3 — only the fields the form changed (profile, switch, kind), never a whole-document write from the copy
+        // read above (which put back a password an administrator's reset replaced meanwhile).
+        await _userRepository.TryWriteChangesAsync(user, state, _tenantContext.TenantId, UserWriteCondition.None, ct);
         if (wasActive && !isActive)
         {
             // Deactivation through the form ends the sessions too — the kebab's disable already did; a deactivated user

@@ -126,6 +126,8 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             actorType,
             request.UserAgent);
 
+        // BL-529 FIX3 — the session is bound to the password it was opened with (SessionPasswordBinding).
+        SessionPasswordBinding.Bind(refreshToken, _refreshTokenHasher, user);
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
 
         // BL-529 — a reset between this sign-in's read and now ended every session; the token just written must not

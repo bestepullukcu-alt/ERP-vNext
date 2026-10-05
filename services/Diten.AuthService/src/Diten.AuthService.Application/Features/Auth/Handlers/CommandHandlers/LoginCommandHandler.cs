@@ -197,6 +197,8 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
             _tenantContext.TenantId,
             TenantActorType,
             request.UserAgent);
+        // BL-529 FIX3 — the session is bound to the password it was opened with (SessionPasswordBinding).
+        SessionPasswordBinding.Bind(refreshToken, _refreshTokenHasher, user);
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
 
         if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, _tenantContext.TenantId, user.PasswordHash, refreshTokenStr, ct))

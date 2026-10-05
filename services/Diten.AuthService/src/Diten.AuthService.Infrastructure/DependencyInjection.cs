@@ -68,7 +68,9 @@ public static class DependencyInjection
         services.AddScoped<IInternalEventAuthService, InternalEventAuthService>();
         services.AddScoped<IPlatformAuthEmailService, PlatformAuthEmailService>();
         // BL-529 FIX2 — the two anonymous platform password doors (forgot-password, set-password link) are rate-limited.
-        services.AddSingleton<Security.PasswordDoorRateLimiter>();
+        // FIX3 — the parameterless constructor is the production one (the other is for tests); stated, not left to DI.
+        services.AddSingleton(_ => new Security.PasswordDoorRateLimiter());
+        services.AddSingleton<Security.ClientAddressResolver>();
         services.AddScoped<ITenantUserInvitationEmailService, TenantUserInvitationEmailService>();
         services.AddScoped<IMfaChallengeService, MfaChallengeService>();
         services.AddScoped<IOtpDeliveryService, SmtpOtpDeliveryService>();

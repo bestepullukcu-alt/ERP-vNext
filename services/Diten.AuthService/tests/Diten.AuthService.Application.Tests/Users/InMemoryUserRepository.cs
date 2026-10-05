@@ -101,24 +101,36 @@ internal sealed class InMemoryUserRepository : IUserRepository
 
     public Action? OnConditionalWrite { get; set; }
 
-    public Task<bool> TryUpdateForTenantIfPasswordHashAsync(User user, Guid tenantId, string expectedPasswordHash, CancellationToken ct)
+    // The in-memory store holds the entity itself, so the "stored" state a condition is checked against is the state the
+    // caller captured when it read the account — the same thing the real store compares to.
+    private sealed record Captured(string PasswordHash, bool IsActive, bool DeactivatedByAdministrator, string? PasswordResetTokenHash);
+
+    public object CaptureState(User user)
+        => new Captured(user.PasswordHash, user.IsActive, user.DeactivatedByAdministrator, user.PasswordResetTokenHash);
+
+    public int Writes { get; private set; }
+
+    public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
     {
+        var read = (Captured)capturedState;
         ConditionalWrites++;
         OnConditionalWrite?.Invoke();
         if (ThrowOnConditionalWrite) throw new InvalidOperationException("user write failed");
-        if (PasswordChangedConflicts > 0)
+        if (PasswordChangedConflicts > 0 && condition.PasswordHash is not null)
         {
             PasswordChangedConflicts--;
             return Task.FromResult(false);
         }
 
-        return Task.FromResult(true);
+        var holds = (condition.PasswordHash is null || condition.PasswordHash == read.PasswordHash)
+                    && (condition.IsActive is null || condition.IsActive == read.IsActive)
+                    && (condition.DeactivatedByAdministrator is null || condition.DeactivatedByAdministrator == read.DeactivatedByAdministrator)
+                    && (condition.PasswordResetTokenHash is null || condition.PasswordResetTokenHash == read.PasswordResetTokenHash);
+        if (holds) Writes++;
+        return Task.FromResult(holds);
     }
 
     public int ResetTokenWrites { get; private set; }
-
-    public Task<bool> TryUpdateForTenantIfResetTokenAsync(User user, Guid tenantId, string expectedResetTokenHash, CancellationToken ct)
-        => Task.FromResult(true);
 
     public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct)
     {

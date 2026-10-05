@@ -103,6 +103,8 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
             challenge.TenantId,
             TenantActorType,
             request.UserAgent);
+        // BL-529 FIX3 — the session is bound to the password it was opened with (SessionPasswordBinding).
+        SessionPasswordBinding.Bind(refreshToken, _refreshTokenHasher, user);
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
 
         // BL-529 — the same rule as the password sign-in: a reset that landed meanwhile revokes the token just written,
