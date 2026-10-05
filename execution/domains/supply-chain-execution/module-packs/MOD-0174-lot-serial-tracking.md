@@ -798,6 +798,19 @@ and recording the DEC-INV-14 change (K-G) in the inventory report §9.
 - **ASSUMPTION-0174-12:** "Etkilenen toplam miktar" = on hand of the lot and its genealogy children + shipped quantities
   from outbound ledger rows, per base unit.
 
+### WP-0174-P1 (agent result, pending CT, 2026-10-05) — lot / serial SoR + TRACE 1.1.0
+
+Commits `c282c981e` (TRACE 1.1.0, single-writer step) · `90d64ca88` (code + tests) · `218f4fb41` (sweeper shutdown) ·
+`366d16ee3` (yaml changelog text, DocsPathGuard) · `3ebe52ef0` (comment, DocsPathGuard). `/api/trace` in
+`Diten.InventoryService`: TRACE v1 ops + the P1 v1.1 ops (updateLot, changeLotStatus, getLotHistory, getLotDetail,
+listSerials, checkGs1Code, linkGenealogy, listLots filters); migration ops declared in the yaml, implemented by P4.
+`LotIdentityPolicy` is the only key builder (K-G); `Expired` only by `LotExpirySweeper` (B-3, any status, CT-D8);
+module `LOT-SERIAL-TRACKING` registered from code (8 pages, every §14 action, `trace.genealogy.link` in `ApiPermissions`).
+Tests 355 → 453 (0 skipped), repo architecture 18/18; five sabotages red → green. Own-port runtime probe (5174, itest DB,
+Prism with and without GTIN, real restart). Ledger code untouched (P2). Open for the CT: the live catalog step; the §4
+serial shape text (1–24 vs §12 3–24, implemented 3–24); the catalog attribution of the cross-namespace `inventory.stock.read`
+actions. Slice assumptions ASSUMPTION-0174-P1-01…09. Evidence `docs/records/audits/2026-10/mod-0174-p1-evidence-2026-10-05.md`.
+
 ## 20. Follow-up Items
 
 - **W-UI-02 closure** in the FU01 pack (CT records after P4).
