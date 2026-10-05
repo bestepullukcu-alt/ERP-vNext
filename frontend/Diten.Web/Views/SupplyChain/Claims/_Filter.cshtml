@@ -1,0 +1,47 @@
+@using Diten.Web.Views.SupplyChain.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Index.cshtml states it.
+}
+
+@* Inline collapse filter (pack §32.5): exactly the two published query parameters, nothing else (CU-02). *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Status (single select; ShowAll omits the parameter — CU-SCR-05 keeps multi-select out) *@
+                    <div class="filter-chip filter-status">
+                        <label for="filterStatus" class="visually-hidden">@SharedLocalizer["Status"]</label>
+                        <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="Open">@Localizer["StatusOpen"]</option>
+                            <option value="Investigating">@Localizer["StatusInvestigating"]</option>
+                            <option value="Approved">@Localizer["StatusApproved"]</option>
+                            <option value="Rejected">@Localizer["StatusRejected"]</option>
+                            <option value="Settled">@Localizer["StatusSettled"]</option>
+                            <option value="Closed">@Localizer["StatusClosed"]</option>
+                            <option value="Withdrawn">@Localizer["StatusWithdrawn"]</option>
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Shipment ID (UUID text, not a lookup) *@
+                    <div class="filter-chip filter-shipment-id">
+                        <label for="filterShipmentId" class="visually-hidden">@Localizer["ShipmentId"]</label>
+                        <input type="text" id="filterShipmentId" class="form-control form-control-sm" dir="ltr" autocomplete="off" spellcheck="false"
+                               placeholder="@Localizer["ShipmentId"]" aria-describedby="filterShipmentIdHelp" />
+                        <span id="filterShipmentIdHelp" class="visually-hidden">@Localizer["ShipmentIdHelp"]</span>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

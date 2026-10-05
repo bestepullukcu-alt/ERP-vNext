@@ -42,68 +42,39 @@ MOD-0183's committed files and the Q362/Q371/Q374 records, a written sequence wi
 defects already named — then one module is built against it as the proof the recipe is
 real, and only then do the remaining three run in parallel.
 
-## 3. Sequence
+## 3. Sequence — Phase 4 is CLOSED
 
-Corrected by R-1 (Q386): CT's previous order said "the gateway file is shared, so route
-additions are sequenced." **There are six shared surfaces, not one**, and R-4's three
-parallel modules would have collided on the other five. The recipe measured them from
-what MOD-0183's commits touched outside its own folders.
+All five modules are built and proven end to end. Five providers registered; the permission
+guard's exception list is down to two (S&OP and Capacity only); every module carries views,
+a controller and seven languages. Frontend 390/0/390. MOD-0183 has **no open gate row**:
+Q372-R2 closed row 13 under the Q388 ruling.
 
-### Phase 0 — finish MOD-0183 (in flight)
-| lane | closes |
-|---|---|
-| **Q372-R2** | §18.0 row 13. PAUSED mid-run: the controller edit is in the working tree and a suite mongod is still up on 57373. O-1 is already measured (Web 1 / Gateway 1 / SupplyChain 8, sabotage 0/1/8), O-2's p95 measured for the first time. |
-| Q361 | the zero-margin p95 assertion that makes every suite comparison unreliable |
-| Q360 | the expiry guard; without it the Q357 retraction passes unnoticed on 2026-11-03 |
-| **new, from R-1** | **F-R1-2**: Q371's idempotency fix is half-done. `create.js:76` mints a new correlation id per Save; `ShipmentRepository.cs:70` answers 400 to a known key with a different id. Q371 measured the edited-payload path (409, correct) and never measured the unchanged retry — the recovery case the fix exists for. K4. |
+### What is left is not module work
 
-### Phase 1 — cross-cutting, ONCE, before any module
-`frontend/Diten.Web/Program.cs` carries two defects every module would otherwise inherit:
-- **2.4** the JSON-401 marker has no consumer (`:72-78` has no `OnRedirectToLogin`), which
-  is the real cause of the "pre-existing" frontend test failure (F-R1-1)
-- **2.5** the adapter inherits `HttpClient`'s 100 s default; a failed list load took 90 s
-
-Fix both here and no module touches this file again. Doing it after R-2 means doing it
-four more times.
-
-### Phase 2 — R-2: ONE module, end to end, against the recipe
-**Returns (MOD-0186).** It depends only on what is already shipped: its service is composed
-and reachable, its contract pin is current (Q380), and `supplychain.shipments.read` — which
-Q279 found Returns needs — already exists.
-
-### Phase 3 — R-3: amend the recipe from what R-2 actually cost
-Only the lines R-2 paid for that R-1 did not predict. A recipe that is never corrected by
-contact with a second module is a guess with a table around it.
-
-### Phase 4 — R-4: Carriers, Loads, Claims
-Module-scoped work runs in parallel: controller, views, scripts, module resx ×7, view
-models, provider and its tests.
-
-**Sequenced, one writer at a time:**
-
-| shared surface | why every module touches it |
-|---|---|
-| `gateway/.../ocelot.json` | one route pair per module |
-| SupplyChain `Program.cs` | one `AddSingleton` per provider; already carries the MediatR exclusion and the Q381 filter |
-| `SharedResource.{en,tr,fr,es,zh,ar,ru}.resx` | nav keys per module — **seven separate conflict points** |
-| `_DataTableL10n.cshtml` + `dt-defaults.js` | any module needing a new DataTable key |
-| `DefaultRolePermissionTemplate.cs:41` | only on the `AdminModules` path; the entitlement route touches no shared file |
-
-**Order constraint that is not a file collision:** Carrier's provider must ship before
-Claims' carrier path.
-
-### Phase 5 — MOD-0190 / MOD-0192
-Behind a production `IDemandFixtureReader` (Q273). Q381 made their absence honest — 404
-rather than 500 — but did not resolve it.
-
-### Gating the sequence, not inside it
-| item | blocks | who |
+| | | who |
 |---|---|---|
-| **Q384** 2296 vitest cases exist, CI runs none | Q376, and the honesty of every frontend suite number | Owner |
-| **Q388** row 13 ruling: wiring vs demonstration | whether row 13 closes with 4 of 8 instruments unexercisable | Owner may overrule CT |
-| **Q389** warehouse intake is dead code · **Q390** outbox has no transport, 93 rows Pending | what MVP-6 actually means for this module | Owner |
-| **F-R1-3** Carrier nav keys shipped in 7 languages with no Carrier UI; `NavManifestL10nGuardTests` forces it, `MOD-0184:473` forbids it | Phase 4's Carrier work | Owner |
-| **Q379** historical timestamps · **Q357** retraction, expires 2026-11-03 | — | Owner |
+| **Q418** four modules have **no §18.0 gate matrix at all** | so "ready" has no denominator for them; MOD-0183's matrix is the template | pack work |
+| **Q424** nothing in any code sets `Shipment.CarrierId` | so Claims' carrier path cannot run on real data; R-4c proved it with a lane DB fixture | owner |
+| **Q414** `Loads:ReferenceBaseUrl` configured nowhere | Loads cannot create in any environment built from the tracked config | owner |
+| **Q389 / Q390** warehouse intake is dead code; the outbox has no transport, 93 rows Pending | both DECLARED at /health; they decide what MVP-6 means for this module | owner |
+| **Q399 / Q416** dated to **2026-11-03** | Q357's expiry breaks Returns create AND Loads' shipment picking | owner |
+| **Q404** two acceptance rows | reject and the packs contradict themselves | owner |
+| **Q384** 2296 vitest cases, CI runs none | the decision CT asked for rested on a false premise | owner |
+| **Q423** a test pins the defect Q420 fixed | three lanes hit it; the fix encodes a contract decision | small lane |
+| Q391, Q360, Q405, Q395, Q341, Q293 | carried, each small and independent | lanes |
+
+### Phase 5 — MOD-0190 / MOD-0192, and it is not a lane
+
+Q282 ruled it 2026-10-03: **impossible as framed, not expensive.** DEMAND v1 cannot answer
+the question both modules ask — no plan-id lookup, no version, no checksum. The Capacity
+"reader" is a single hardcoded tuple; S&OP's takes a collection that is empty in a composed
+host. Q381 made their absence honest (404, not 500) without resolving it.
+
+Phase 5 opens on a **capability decision about DEMAND**, which is MVP-4 scope. Writing UI
+against it now would repeat what this programme has now measured four times: the September
+drafts for Returns, Carriers and Claims were each declared complete — one of them CT
+ACCEPTED — and each shipped with between five and six defects, 15 to 18 files changed.
+Unbuildable UI is the most expensive work in this repository.
 
 ## 4. What CT changes about itself
 

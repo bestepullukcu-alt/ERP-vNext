@@ -7,8 +7,13 @@ info:
     bağlamından çözülür. Portal supplier identity authenticated actor'dan çözülür;
     mutation body ile override edilemez. ASSUMPTION: scorecard dönemleri ISO tarih
     aralığıdır ve skorlar 0..100 string decimal olarak taşınır.
-    CONSUMES: SUPPLIER-BASE (merkez üretecek). GAP: merkez CT, MOD-0140 base Supplier
-    frozen mock contract'ını üretmeli; bu contract Supplier SoR alanlarını tanımlamaz.
+    CONSUMES: SUPPLIER-BASE (merkez üretecek). MOD-0140 base Supplier frozen mock
+    contract'ı yayınlanmış ve FROZEN durumdadır:
+    docs/analysis/contracts/supplier.openapi.yaml (x-status FROZEN, x-owner MOD-0140,
+    c8badff96, 2026-09-15); listSuppliers, getSupplier ve validateSuppliers sunar.
+    Açık olan şey contract'ın varlığı değil, onu tüketme yetkisidir — DC-02,
+    2026-10-05 CT ruling'e göre AWAITING-CT. Bu contract Supplier SoR alanlarını
+    tanımlamaz.
   version: 1.0.0
   x-status: FROZEN
   x-contract-version: v1

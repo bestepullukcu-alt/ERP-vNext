@@ -28,8 +28,6 @@ public sealed class EnforcedPermissionDeclarationGuardTests
     private static readonly IReadOnlyDictionary<string, (string ModuleCode, string Reason)> KnownWithoutProvider =
         new Dictionary<string, (string, string)>(StringComparer.Ordinal)
         {
-            ["loads"] = ("routing-load-planning", "MOD-0185:602 ship rule — no UI yet"),
-            ["claims"] = ("claims-management", "MOD-0187:819 ship rule — no UI yet"),
             ["sandop-plans"] = ("sop-workflow-signoffs", "MOD-0190:552 ship rule — no UI yet; also MediatR-excluded (Q273)"),
             ["capacity-plans"] = ("capacity-planning", "MOD-0192:574 ship rule — no UI yet; also uncomposed (Q273)")
         };

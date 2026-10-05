@@ -109,7 +109,15 @@ Flow:
 5. `reasonCode`: free text, sent as typed. Schema presence ≠ nonempty: no HTML `required`, trim or maxlength is added.
 6. `evidenceReferenceIds`: optional repeatable text. The field is omitted when the list is empty (the annex treats omission as `[]`); order, duplicates and empty strings are preserved.
 7. Submit: one pending request; per-intent `Idempotency-Key`; network/500/503 retry reuses the same key and body.
-   Editing the payload starts a new intent. 409 `IDEMPOTENCY_KEY_REUSED` stops retry. 201 (including
+   **An intent is one opened create form or transition panel, not one payload** (amended 2026-10-05, Q449, carrying the
+   definition of Q403 / commit `cea01354e`, which amended MOD-0186:713-718 and three other packs; this sentence previously read
+   "Editing the payload starts a new intent."). The UI mints the `Idempotency-Key` when that form or panel
+   opens and keeps it unchanged across edits, failures and network/500/503 retries until it closes; only a newly opened form or panel is a new
+   intent with a new key. A user who edits while the outcome is unknown resends under the same key, so a committed first attempt answers
+   409 `IDEMPOTENCY_KEY_REUSED` instead of creating a second record. On that 409 the UI stops, keeps the inputs, tells the user the
+   request was already received with different values and that a different request needs a new form, and never mints a key to get past it.
+   Measured by R-2 (`docs/records/audits/2026-10/mvp6-r2-returns-ui-01/evidence/traps-browser.md` §T2): a key re-minted per payload created **two Returns from one intent**; one key per opened form gave 409 and **one** Return.
+   409 `IDEMPOTENCY_KEY_REUSED` stops retry. 201 (including
    `idempotentReplay: true`) shows success, closes the panel and reloads the list. The replay snapshot is never shown as current state.
 
 ## 7. Transition action (row → premium modal form)

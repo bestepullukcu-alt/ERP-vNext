@@ -133,3 +133,20 @@ models, provider file and provider tests.
 - Carrier's provider before Claims' carrier path (7.2).
 - Shipments' `read` serves Returns and Claims (7.1), but for an Admin it comes only from Q357's entry until 2026-11-03.
 - **Q394's `W/Program.cs` must be committed before R-4's modules rely on 2.4/2.5.**
+
+## Sealing: two manifests, not one
+
+A lane in this family edits **shared** files — `Program.cs`, the guard, the seven
+`SharedResource.*.resx`. Hashing those in `ARTIFACTS.sha256` makes the seal fail as soon as
+the next module touches them, and three sealed records were already failing on ten entries
+before anyone noticed.
+
+So:
+
+- `ARTIFACTS.sha256` — the record folder's own files only. Verified, and expected to pass
+  forever. A FAILED entry here means tampering.
+- `SOURCE-AS-MEASURED.sha256` — the repo paths this lane changed, hashed at measurement
+  time. Never verified; it records what the code looked like when the lane measured it.
+
+Both carry the K5 first line. The second also states that it is not for verification.
+Rule: `.antigravity/rules/docs-organization.md` K6.

@@ -1,0 +1,67 @@
+@using Diten.Web.Views.SupplyChain.Carriers
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CarriersIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* R-4a (MODULE-RECIPE 5.3): a Dictionary, not an anonymous object — Json.Serialize camel-cases an anonymous object's property
+   names (Q371), and the page must receive these keys exactly as the resx names them. *@
+<script id="carriers-l10n" type="application/json">
+    @Json.Serialize(new Dictionary<string, string>
+    {
+        ["Active"] = SharedLocalizer["Active"].Value,
+        ["Passive"] = SharedLocalizer["Passive"].Value,
+        ["Unknown"] = SharedLocalizer["Unknown"].Value,
+        ["Actions"] = Localizer["Actions"].Value,
+        ["Edit"] = SharedLocalizer["Edit"].Value,
+        ["ViewDetails"] = SharedLocalizer["ViewDetails"].Value,
+        ["QuickView"] = Localizer["QuickView"].Value,
+        ["BulkDelete"] = SharedLocalizer["BulkDelete"].Value,
+        ["BulkDeleteConfirm"] = SharedLocalizer["BulkDeleteConfirm"].Value,
+        ["AreYouSure"] = SharedLocalizer["AreYouSure"].Value,
+        ["Cancel"] = SharedLocalizer["Cancel"].Value,
+        ["Search"] = SharedLocalizer["Search"].Value,
+        ["Export"] = SharedLocalizer["Export"].Value,
+        ["Import"] = SharedLocalizer["Import"].Value,
+        ["Filter"] = SharedLocalizer["Filter"].Value,
+        ["Apply"] = SharedLocalizer["Apply"].Value,
+        ["Reset"] = SharedLocalizer["Reset"].Value,
+        ["ShowAll"] = SharedLocalizer["ShowAll"].Value,
+        ["SaveView"] = SharedLocalizer["SaveView"].Value,
+        ["ColumnVisibility"] = SharedLocalizer["ColumnVisibility"].Value,
+        ["Status"] = SharedLocalizer["Status"].Value,
+        ["Save"] = SharedLocalizer["Save"].Value,
+        ["ErrorOccurred"] = SharedLocalizer["ErrorOccurred"].Value,
+        ["RecordSaved"] = SharedLocalizer["RecordSaved"].Value,
+        ["AddNewCarrier"] = Localizer["AddNewCarrier"].Value,
+        ["CarrierCode"] = Localizer["CarrierCode"].Value,
+        ["DisplayName"] = Localizer["DisplayName"].Value,
+        ["SupportedModes"] = Localizer["SupportedModes"].Value,
+        ["StatusActive"] = Localizer["StatusActive"].Value,
+        ["StatusSuspended"] = Localizer["StatusSuspended"].Value,
+        ["StatusRetired"] = Localizer["StatusRetired"].Value,
+        ["ModeRoad"] = Localizer["ModeRoad"].Value,
+        ["ModeAir"] = Localizer["ModeAir"].Value,
+        ["ModeSea"] = Localizer["ModeSea"].Value,
+        ["ModeRail"] = Localizer["ModeRail"].Value,
+        ["ModeParcel"] = Localizer["ModeParcel"].Value,
+        ["ChangeStatus"] = Localizer["ChangeStatus"].Value,
+        ["StatusChangeConfirm"] = Localizer["StatusChangeConfirm"].Value,
+        ["ConfirmStatusChange"] = Localizer["ConfirmStatusChange"].Value,
+        ["CreateSuccess"] = Localizer["CreateSuccess"].Value,
+        ["CreateReplaySuccess"] = Localizer["CreateReplaySuccess"].Value,
+        ["StatusSuccess"] = Localizer["StatusSuccess"].Value,
+        ["StatusReplaySuccess"] = Localizer["StatusReplaySuccess"].Value,
+        ["ValidationError"] = Localizer["ValidationError"].Value,
+        ["AccessDenied"] = Localizer["AccessDenied"].Value,
+        ["CarrierNotFound"] = Localizer["CarrierNotFound"].Value,
+        ["CarrierCodeConflict"] = Localizer["CarrierCodeConflict"].Value,
+        ["IdempotencyKeyReused"] = Localizer["IdempotencyKeyReused"].Value,
+        ["InvalidCarrierTransition"] = Localizer["InvalidCarrierTransition"].Value,
+        ["PersistenceUnavailable"] = Localizer["PersistenceUnavailable"].Value,
+        ["ListUnavailable"] = Localizer["ListUnavailable"].Value,
+        ["InternalError"] = Localizer["InternalError"].Value,
+        ["RetrySameRequest"] = Localizer["RetrySameRequest"].Value,
+        ["SupportReference"] = Localizer["SupportReference"].Value,
+        ["EmptyList"] = Localizer["EmptyList"].Value
+    })
+</script>

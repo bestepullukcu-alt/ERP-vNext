@@ -1,0 +1,33 @@
+# measured 2026-10-05 (Q450) — commands and output
+## pack frontmatter status
+MOD-0147-supplier-performance-risk.md: status: draft
+MOD-0148-supplier-portal.md: status: draft
+MOD-0183-shipment-tracking-pod.md: status: ready-for-dev
+MOD-0184-carrier-management.md: status: ready-for-dev
+MOD-0185-routing-load-planning.md: status: ready-for-dev
+MOD-0186-reverse-logistics.md: status: ready-for-dev
+MOD-0187-claims-management.md: status: ready-for-dev
+MOD-0190-sop-workflow-signoffs.md: status: ready-for-dev
+MOD-0192-capacity-planning.md: status: ready-for-dev
+## providers (Program.cs)
+97:builder.Services.AddSingleton<IModuleManifestProvider, ShipmentTrackingPodManifestProvider>();
+99:builder.Services.AddSingleton<IModuleManifestProvider, ReverseLogisticsManifestProvider>();
+102:builder.Services.AddSingleton<IModuleManifestProvider, CarrierManagementManifestProvider>();
+104:builder.Services.AddSingleton<IModuleManifestProvider, RoutingLoadPlanningManifestProvider>();
+106:builder.Services.AddSingleton<IModuleManifestProvider, ClaimsManagementManifestProvider>();
+## views per module: on disk / tracked at HEAD
+Carriers: 6 / 0
+Claims: 6 / 0
+Loads: 5 / 0
+Returns: 6 / 6
+Shipments: 10 / 10
+total: 33
+## service files tracked at HEAD cea01354e: 363
+## golden-flow records (tracked?)
+mvp6-q362-runtime-closure-01: tracked; 98:## R-09 — the golden flow (COUNTERFACTUAL stack) — **runs end to end**   [NOT cited by DCP-009: counterfactual stack; Q366 §D cited instead]
+mvp6-r2-returns-ui-01: tracked; 68:## The golden flow: real user, reload after every step, the database agrees
+mvp6-r4a-carriers-ui-01: untracked; 57:## Golden flow — real user, reload after each step, the database agrees
+mvp6-r4b-loads-ui-01: untracked; 40:## Golden flow — real user, reload after each step, the database agrees
+mvp6-r4c-claims-ui-01: untracked; 63:## Golden flow — real user, reload after each step, the database agrees
+mvp6-q366-scope-chain-registration-01: tracked; 115:## D — the golden flow on the real tree (R-09 measured)
+mvp6-q435-merge-origin-main-01: untracked; 246:Q425 suite baseline and the five golden flows remain `VALID_PRE_MERGE / INTEGRATION_STALE` —

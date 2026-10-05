@@ -1707,6 +1707,67 @@ Acceptance/rework sonrası build plan, dependency gates ve newly-unblocked work 
 
 ---
 
+### K22 — Lane closure, workspace'i de kapsar
+
+Lane evidence record mühürlenmeden önce lane'e ait süreçler kontrollü biçimde durdurulur,
+tahsis edilmiş portlar serbest bırakılır ve evidence-retention kapsamı dışındaki
+workspace / source / build / env / secrets / database artifact'ları kaldırılır. Cleanup
+**yalnız lane-owned** PID ve kaynaklara uygulanır. Sonuç doğrulanır ve closure evidence'a
+yazılır.
+
+Bağlayıcı olan sıra değil, üç değişmezdir:
+
+1. **Kanıt workspace'in dışında yaşar.** Bu bir tercih değil önkoşuldur; sağlanırsa temizliğin
+   mühürlemeden önce ya da sonra gelmesi önemsizdir. (Kanıt kiti bunu zaten böyle kuruyor:
+   `EK_WORK` tek kullanımlık bir tmp yolu, `EK_EVIDENCE` repo içindeki kayıt klasörü,
+   `lane.env.example:19-20,36`.)
+2. **Temizlik doğrulanır.** Silme denemesi değil, yokluk ölçülür ve sonuç kayda yazılır.
+3. **Doğrulanmamış ya da başarısız temizlik closure'ı bloke eder.** Bir lane workspace'i
+   diskte dururken CLOSED olamaz.
+
+> **CT'NİN KENDİ HATASI, aynı gün:** CT bu kuralı önce `seal → … → cleanup` sırasıyla yazdı ve
+> gerekçesini "kanıtı üretmeden silen lane hiçbir şey kanıtlamamış olur" diye kurdu. Bu gerekçe
+> kanıtın workspace'te yaşayabileceğini varsayar; kit tasarımında yaşayamaz ve `lane.env.example:36`
+> bunu zorunlu kılar. Sıra yanlış şeydi; değişmez yukarıdaki üçü. Ledger Q412.
+
+"Workspace'i kaldır" **tek başına yazılmaz**: bir ajan klasörü silerken başka bir lane'in
+workspace'ine ya da hâlâ çalışan bir sürece dokunabilir. Sahiplik doğrulaması kuralın
+parçasıdır, eki değil.
+
+> **MEASURED CASE 2026-10-04:** `~/mvp6-env` 57 klasör ve 73 GB taşıyordu. `k11_cleanup.sh`
+> tam olarak bu işi yapıyor ve `run-kit.sh:30,:73` onu çağırıyor, ama 15 kit fazının hepsi
+> `CANDIDATE — NOT ACTIVE`. 20 ajan sözleşmesinin hiçbirinde temizlik yükümlülüğü yoktu ve
+> §39 Closure checklist'inin altı maddesi çalışma alanından hiç söz etmiyordu. CT kendi
+> dispatch'lerinde "süreçlerini durdur, portlarını boşalt" dedi, "workspace'ini kaldır"
+> sıfır kez. Hiçbir lane kusurlu değildi: yükümlülük yoktu. Ledger Q407.
+
+### K23 — Implemented ≠ wired ≠ active ≠ evidenced
+
+Bir control'ün repoda bulunması, hatta doğru implement edilmiş ve execution path'e bağlanmış
+olması, onun **enforce edildiği** anlamına gelmez. Control durumu `EXISTS / NOT EXISTS`
+ikilisiyle raporlanamaz.
+
+Canonical lifecycle:
+
+`DEFINED → IMPLEMENTED → WIRED → ACTIVATED → EXECUTED → EVIDENCED`
+
+Kabul kriteri **EVIDENCED**'dır: control son lane run'ında çalıştı ve kanıt üretti. CT'nin
+acceptance sorusu "script var mı?" değil, **"control execution path'te ACTIVE mi ve son
+lane run'ında evidence üretti mi?"**dir.
+
+Bir control'ü doğrudan `CANDIDATE → ACTIVE` ilan etmek yasaktır. Araya **QUALIFICATION** ve
+**PILOT** girer; pilot lane control'ü baştan sona çalıştırmadan ACTIVE statüsü verilmez.
+
+> **MEASURED CASE 2026-10-04 — beş vaka, tek kök.** Aynı gün beş ayrı control "yazılmış,
+> doğru ve erişilemez" bulundu: Q217/Q236 komposisyona girmemiş modüllerin MediatR
+> handler'ları · Q271/Q272 Returns ve Claims çözülebilir ama erişilemez · Q363 scope
+> zinciri hiçbir yerde kayıtlı değil · Q387 `WarehouseIntakeCoordinator` hiçbir şeyin
+> istemediği bir sınıf ve `IEventTransportPublisher` bu serviste hiç implement edilmemiş ·
+> Q407 kanıt kitinin 15 fazı da NOT ACTIVE, 0 kit çıktısına karşı 7 lane-local harness.
+> Bu, §18.0'ın operational-looking shell yasağının engineering control'lere uygulanmış
+> hâlidir: **control shell de completion değildir.** Ledger Q409.
+
+
 # 33. Yeni module/capability devralma — Day 1
 
 ```text
@@ -2267,6 +2328,7 @@ CONTROL TOWER
 - [ ] Dependency graph yeniden hesaplandı mı?
 - [ ] Newly unblocked work belirlendi mi?
 - [ ] Güvenli paralellik varsa en az iki sonraki WP hazır mı?
+- [ ] **K22 lane closure invariant uygulandı mı?** Evidence mühürlendi, lane-owned süreçler durduruldu, portlar bırakıldı, workspace kaldırıldı, yokluk doğrulandı ve sonuç kayda yazıldı.
 
 ---
 

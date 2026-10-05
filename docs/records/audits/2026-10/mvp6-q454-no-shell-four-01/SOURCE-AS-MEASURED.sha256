@@ -1,0 +1,8 @@
+# from: repository root /Users/natig/Projects/ERP-vNext-recovery — RECORD ONLY, NOT FOR VERIFICATION. Never run shasum -c on this file (docs-organization K6). Files read for the premise check.
+e80cd857881aee96004bf02dba69d6c17d6b4bf48d24ce9fdf90a62a1caef8de  frontend/Diten.Web/wwwroot/assets/js/personalization-client.js  as read
+14b22137f6bd23008b2e1eb8d8bf868bf1752d9758adedee1a681282c8bb6f5c  frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.js  as read
+e4ff546e90079014d3de971a8a2280e6170f96d77d97d9805cc381f0d3d89069  frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Loads/index.js  as read
+fdff02236f130d6809596a09f43500e75d1b38a3a94b17beda0c39d757e6687a  frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.js  as read
+e65f840a4020f6db5b52f1c8eccf9ad915988cef8b05cf12f8db0f4893938ec8  frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js  as read
+c4bc7593d37daf10795ea17e72a9401515cf24deff4b7bb3f0d247b847ac04a3  frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml  as read
+5534844ca03ba88cfa1de332037e95901fb8764ce57f5e2634c991fc8d6d0e8a  docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv  as read

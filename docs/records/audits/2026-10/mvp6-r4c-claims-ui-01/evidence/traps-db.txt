@@ -1,0 +1,133 @@
+{
+  claimsPerShipment: {
+    '21c7563a-2fb6-4426-8b1b-d3b6e95af1e2': [
+      'CLM-3b569dd1 Closed 250.00 v5'
+    ],
+    '7da68be6-1077-4649-977f-59e232f54c04': [
+      'CLM-88d91434 Withdrawn 75.5 v2'
+    ],
+    '37dcd93c-598c-401a-9728-fa970e620207': [
+      'CLM-02e00fbe Open 100.00 v1'
+    ],
+    '50105142-8483-47d7-8600-45dbe3e08ad9': [
+      'CLM-006c1baf Open 40 v1'
+    ],
+    '3091b3ee-5ef8-4500-b353-65d2f4269e70': [
+      'CLM-6c6d0a8c Investigating 100.00 v2',
+      'CLM-cc07b692 Investigating 110.00 v2'
+    ]
+  },
+  total: 6,
+  receipts: [
+    {
+      Operation: 'createClaim',
+      IdempotencyKey: '444041b9-6d3d-4aea-9432-3fa6e7e41a2e',
+      ResultingStatus: 'Open',
+      StatusCode: 201
+    },
+    {
+      Operation: 'transitionClaim',
+      IdempotencyKey: 'c5f6ee29-5cc4-46f2-9a0d-abf0eebb1448',
+      ResultingStatus: 'Investigating',
+      StatusCode: 200
+    },
+    {
+      Operation: 'transitionClaim',
+      IdempotencyKey: '04c543ce-ac00-4877-8c55-51a17297a882',
+      ResultingStatus: 'Approved',
+      StatusCode: 200
+    },
+    {
+      Operation: 'transitionClaim',
+      IdempotencyKey: '1f4939de-c2b2-42e3-9294-4f9c3b9d6e1c',
+      ResultingStatus: 'Settled',
+      StatusCode: 200
+    },
+    {
+      Operation: 'transitionClaim',
+      IdempotencyKey: 'ab94805d-dd8e-42fe-8e7a-dd3ed34f8daa',
+      ResultingStatus: 'Closed',
+      StatusCode: 200
+    },
+    {
+      Operation: 'createClaim',
+      IdempotencyKey: 'f57a786d-6996-4c29-b283-4ce31f7798a5',
+      ResultingStatus: 'Open',
+      StatusCode: 201
+    },
+    {
+      Operation: 'transitionClaim',
+      IdempotencyKey: '439439e7-b91a-406c-af37-cc1aeb6b314b',
+      ResultingStatus: 'Withdrawn',
+      StatusCode: 200
+    },
+    {
+      Operation: 'createClaim',
+      IdempotencyKey: '4a0113c3-5e93-4edd-a29f-55fbb259ea2e',
+      ResultingStatus: 'Open',
+      StatusCode: 201
+    },
+    {
+      Operation: 'createClaim',
+      IdempotencyKey: '8babe890-faa5-4a50-b3a2-895781775b03',
+      ResultingStatus: 'Open',
+      StatusCode: 201
+    },
+    {
+      Operation: 'createClaim',
+      IdempotencyKey: '0bc2c5bd-d6be-428d-bb24-be2ce90f68ba',
+      ResultingStatus: 'Open',
+      StatusCode: 201
+    },
+    {
+      Operation: 'createClaim',
+      IdempotencyKey: 'f9372f03-ae79-43d2-a2bc-683848532dfa',
+      ResultingStatus: 'Open',
+      StatusCode: 201
+    },
+    {
+      Operation: 'transitionClaim',
+      IdempotencyKey: 'a3f977db-5094-4bba-99ea-93f0864f199e',
+      ResultingStatus: 'Investigating',
+      StatusCode: 200
+    },
+    {
+      Operation: 'transitionClaim',
+      IdempotencyKey: 'dba53e3b-489a-49b8-9e04-3ea56b54dc29',
+      ResultingStatus: 'Investigating',
+      StatusCode: 200
+    }
+  ],
+  transitionsOfCc07: [
+    {
+      Version: 1,
+      After: {
+        Status: 'Open'
+      },
+      Note: null
+    },
+    {
+      Version: 2,
+      After: {
+        Status: 'Investigating'
+      },
+      Note: 'first'
+    }
+  ],
+  transitionsOf6c6d: [
+    {
+      Version: 1,
+      After: {
+        Status: 'Open'
+      },
+      Note: null
+    },
+    {
+      Version: 2,
+      After: {
+        Status: 'Investigating'
+      },
+      Note: 'first'
+    }
+  ]
+}

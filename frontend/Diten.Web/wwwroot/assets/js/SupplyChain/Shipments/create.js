@@ -7,8 +7,12 @@ const ShipmentCreate = (function () {
     // reaching 409 IDEMPOTENCY_KEY_REUSED. The contract keeps no receipt for failed requests, so the same key stays
     // valid across corrected submits; a new Create page is a new intent.
     const intentKey = crypto.randomUUID();
+    // Q419 (MODULE-RECIPE 3.2): the intent's X-Correlation-Id is minted with its key and kept for every retry. The
+    // create's correlation becomes the new Shipment's lifecycle root, and a known key under a different correlation is
+    // refused 400 INVALID_REQUEST (ShipmentRepository.cs:70) — so a per-Save id turned an unchanged retry after a lost
+    // response into a validation message instead of a replay. Same pattern as Loads index.js (newIntent).
+    const intentRoot = crypto.randomUUID();
     const lineFields = ['lineNumber', 'itemId', 'skuId', 'quantity', 'uomId', 'inventoryReferenceId'];
-    const uuid = () => crypto.randomUUID();
     const value = (id) => document.getElementById(id)?.value || '';
     const toUtc = (input) => input ? new Date(input).toISOString() : null;
     const token = () => document.querySelector('#formShipment input[name="__RequestVerificationToken"]')?.value || '';
@@ -73,7 +77,7 @@ const ShipmentCreate = (function () {
         try {
             const response = await fetch('/SupplyChain/Shipments/api', {
                 method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json',
-                    'RequestVerificationToken': token(), 'Idempotency-Key': intentKey, 'X-Correlation-Id': uuid() }, body: JSON.stringify(body)
+                    'RequestVerificationToken': token(), 'Idempotency-Key': intentKey, 'X-Correlation-Id': intentRoot }, body: JSON.stringify(body)
             });
             if (!response.ok) { await failure(response); return; }
             const result = await response.json();

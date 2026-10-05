@@ -1,0 +1,33 @@
+{
+  carriers: [
+    {
+      code: 'R4A-CARRIER-1',
+      status: 'Retired',
+      version: 4,
+      modes: [
+        'Road'
+      ],
+      tenantOk: true,
+      leOk: true
+    },
+    {
+      code: 'R4A-CARRIER-2',
+      status: 'Active',
+      version: 1,
+      modes: [
+        'Air',
+        'Parcel'
+      ],
+      tenantOk: true,
+      leOk: true
+    }
+  ],
+  audit1: [
+    'FromStatus=null ToStatus=Active ReasonCode=null CorrelationId=b0c8bcde-a508-4d19-918c-c3b066761510',
+    'FromStatus=Active ToStatus=Suspended ReasonCode=R4A-AUDIT-HOLD CorrelationId=ade7dd13-aef2-4414-a328-9d1718e37563',
+    'FromStatus=Active ToStatus=Retired ReasonCode=R4A-END-OF-CONTRACT CorrelationId=25f44f83-87a3-4223-a9ed-5dfeba3cc369',
+    'FromStatus=Suspended ToStatus=Active ReasonCode= CorrelationId=32fe6071-4093-4d67-83a0-74e9d6d51e74'
+  ],
+  auditTotal: 5,
+  receipts: 5
+}

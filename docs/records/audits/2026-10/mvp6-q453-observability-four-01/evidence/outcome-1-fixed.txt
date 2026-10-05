@@ -1,0 +1,13 @@
+[01:44:34 INF] Carrier outcome queryCarriers a83097e6-f24f-44da-b3db-3acf745f243f 07d0f6c5-3d22-48d6-aaf9-4bec8bbe62ea 4049b989-d3a2-47d9-8c72-f82674ef58a4 200 null False 1 79.3 CorrelationId=4049b989-d3a2-47d9-8c72-f82674ef58a4 TenantId=a83097e6-f24f-44da-b3db-3acf745f243f LegalEntityId=07d0f6c5-3d22-48d6-aaf9-4bec8bbe62ea
+[01:44:34 INF] Carrier outcome createCarrier a83097e6-f24f-44da-b3db-3acf745f243f 07d0f6c5-3d22-48d6-aaf9-4bec8bbe62ea c672286e-f20b-435f-a622-b406a7b05250 201 null False null 73.7 CorrelationId=c672286e-f20b-435f-a622-b406a7b05250 TenantId=a83097e6-f24f-44da-b3db-3acf745f243f LegalEntityId=07d0f6c5-3d22-48d6-aaf9-4bec8bbe62ea
+[01:44:34 INF] Carrier outcome createCarrier a83097e6-f24f-44da-b3db-3acf745f243f 07d0f6c5-3d22-48d6-aaf9-4bec8bbe62ea c672286e-f20b-435f-a622-b406a7b05250 201 null True null 2.7 CorrelationId=c672286e-f20b-435f-a622-b406a7b05250 TenantId=a83097e6-f24f-44da-b3db-3acf745f243f LegalEntityId=07d0f6c5-3d22-48d6-aaf9-4bec8bbe62ea
+[01:44:34 INF] Load outcome queryLoads 200 null False CorrelationId=28669d3a-6874-4f14-91d4-fded5cba763b TenantId= LegalEntityId=
+[01:44:34 INF] Carrier outcome queryCarriers a83097e6-f24f-44da-b3db-3acf745f243f 07d0f6c5-3d22-48d6-aaf9-4bec8bbe62ea ffdf3bd3-d135-4fb2-88e2-dff907025c66 200 null False 2 3.2 CorrelationId=ffdf3bd3-d135-4fb2-88e2-dff907025c66 TenantId=a83097e6-f24f-44da-b3db-3acf745f243f LegalEntityId=07d0f6c5-3d22-48d6-aaf9-4bec8bbe62ea
+[01:44:34 INF] Load outcome createLoadPlan 201 null False CorrelationId=ffdf3bd3-d135-4fb2-88e2-dff907025c66 TenantId= LegalEntityId=
+[01:44:34 INF] Load outcome createLoadPlan 201 null True CorrelationId=ffdf3bd3-d135-4fb2-88e2-dff907025c66 TenantId= LegalEntityId=
+[01:44:34 INF] Return outcome queryReturns 200 null False CorrelationId=9089beb2-12d9-48de-813e-b55654bdf853 TenantId= LegalEntityId=
+[01:44:34 INF] Return outcome createReturn 201 null False CorrelationId=a0e19dd4-8644-4a71-8039-34a940c854e5 TenantId= LegalEntityId=
+[01:44:34 INF] Return outcome createReturn 201 null True CorrelationId=a0e19dd4-8644-4a71-8039-34a940c854e5 TenantId= LegalEntityId=
+[01:44:34 INF] Claim outcome queryClaims 200 null False CorrelationId=1083c002-9d41-4f4e-8df5-42ca05271c6e TenantId= LegalEntityId=
+[01:44:34 INF] Claim outcome createClaim 201 null False CorrelationId=e3896107-bc07-41c5-8949-53c760015ce7 TenantId= LegalEntityId=
+[01:44:34 INF] Claim outcome createClaim 201 null True CorrelationId=e3896107-bc07-41c5-8949-53c760015ce7 TenantId= LegalEntityId=

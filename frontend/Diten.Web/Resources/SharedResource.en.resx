@@ -867,4 +867,8 @@
   <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Shipments</value></data>
   <data name="Nav.Module.REVERSELOGISTICS" xml:space="preserve"><value>Reverse Logistics</value></data>
   <data name="Nav.Page.RETURNS" xml:space="preserve"><value>Returns</value></data>
+  <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>Routing &amp; Load Planning</value></data>
+  <data name="Nav.Page.LOADS" xml:space="preserve"><value>Loads</value></data>
+  <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Claims Management</value></data>
+  <data name="Nav.Page.CLAIMS" xml:space="preserve"><value>Claims</value></data>
 </root>

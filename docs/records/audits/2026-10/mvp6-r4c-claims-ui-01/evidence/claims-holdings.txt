@@ -1,0 +1,22 @@
+{
+  Admin: [
+    'carriers.create(1:carrier-management)',
+    'carriers.read(1:carrier-management)',
+    'carriers.status.change(1:carrier-management)',
+    'claims.create(1:claims-management)',
+    'claims.decide(1:claims-management)',
+    'claims.investigate(1:claims-management)',
+    'claims.read(1:claims-management)',
+    'claims.settle(1:claims-management)',
+    'shipments.cancel(0:null)',
+    'shipments.create(0:null)',
+    'shipments.dispatch(0:null)',
+    'shipments.pod.capture(0:null)',
+    'shipments.read(0:null)'
+  ],
+  Viewer: [
+    'carriers.read(0:null)',
+    'claims.read(0:null)',
+    'shipments.read(0:null)'
+  ]
+}

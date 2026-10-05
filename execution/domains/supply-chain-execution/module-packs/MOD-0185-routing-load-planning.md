@@ -3,16 +3,16 @@ id: MOD-0185
 name: Routing & Load Planning
 domain: supply-chain-execution
 service: Diten.SupplyChainService
-shell: none
-golden_reference: none
+shell: tenant
+golden_reference: slim
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "2026-09-18 explicit user Phase1.5, promotion and bounded mock-first DEV approval; effective section28 supersedes historical proposals. Pending-only outbox; no operational rollout."
+status_note: "2026-09-18 explicit user Phase1.5, promotion and bounded mock-first DEV approval; effective section28 supersedes historical proposals. Pending-only outbox; no operational rollout. Tenant UI scope (list + create) owner-approved 2026-10-04 (section 30); UI DEV released to R-4b; independent UI VER open."
 owner: supply-chain-execution / control-tower
 branch: feature/mvp6-logistics
 started: 2026-09-15
 target: 2026-09-30
-form_field_count: 0
+form_field_count: 7
 ---
 
 # MOD-0185 — Routing & Load Planning
@@ -547,6 +547,9 @@ Approved: `docs/records/decisions/2026-09/mvp6-self-registration-patches-signoff
 This section specifies; it authorizes no code, `Program.cs`, `.csproj`, appsettings, `SharedResource`, Platform or gateway change, no new permission key or ID, and no commit, push or stash.
 
 > **After Loads UI approval.** Nothing in this section is actionable until the Loads UI scope (`mvp6-loads-ui-scope-01`, HELD) is approved by the owner and built. Until then no provider, no `AddSingleton` line and no `Nav.Module.ROUTINGLOADPLANNING` / `Nav.Page.LOADS` values ship.
+>
+> **Disposition 2026-10-04:** the scope was owner-approved (§30) and the UI built by R-4b; this section shipped with it (provider,
+> `AddSingleton`, `Nav.Module.ROUTINGLOADPLANNING` / `Nav.Page.LOADS` in seven languages).
 
 ### Identity (D3 = A)
 
@@ -570,8 +573,14 @@ This section specifies; it authorizes no code, `Program.cs`, `.csproj`, appsetti
 | Page | ActionCode | DisplayName | PermissionKey | Placement | Dangerous |
 |---|---|---|---|---|---|
 | `LOADS` | `CREATE` | Create | `supplychain.loads.create` | Toolbar | no |
+| `LOADS` | `CHANGE_STATUS` | Change Load Status | `supplychain.loads.transition` | RowAction | no |
 
-All keys are existing constants in `Infrastructure/Features/Loads/LoadPermissions.cs`. Not modeled: `supplychain.loads.transition` (the prepared UI scope has no transition button, ROOT-UI-01).
+All keys are existing constants in `Infrastructure/Features/Loads/LoadPermissions.cs`. **Amended 2026-10-04 (R-4b):** `supplychain.loads.transition`
+was "not modeled" here because the UI scope has no transition button (ROOT-UI-01). But `LoadsController.Transition` enforces it, and
+Platform syncs to Auth only declared keys, so an undeclared key could never be granted and that endpoint would answer 403 to every
+caller — the defect R-2 measured for Returns (`docs/records/audits/2026-10/mvp6-r2-returns-ui-01/` F-R2-1) and the R-3 guard
+(`EnforcedPermissionDeclarationGuardTests`) rejects. It is therefore declared as `CHANGE_STATUS`. This UI slice still renders no
+transition control; the declaration makes the key holdable, not a button.
 
 ### Navigation keys (NAV-L10N-KEYS.tsv; 0/7 present today)
 
@@ -588,7 +597,7 @@ Values are added to `frontend/Diten.Web/Resources/SharedResource.{lang}.resx` by
 |---|---|
 | M-01 | Identity exactly as above; `IsTenantAssignable` true |
 | M-02 | Every manifest `RequiredPermission` / `PermissionKey` is in the reflected `public const string` fields of `LoadPermissions` |
-| M-03 | Every reflected key is in the manifest or on the API-only allow-list with a reason: `supplychain.loads.transition` (no UI button in the prepared scope) |
+| M-03 | Every reflected key is in the manifest (amended 2026-10-04: the allow-list is empty; `supplychain.loads.transition` is the `CHANGE_STATUS` action) |
 | M-04 | Manifest RoutePaths = the frontend view-route set of the Loads controller (to be built), counts equal (cross-checked by W-01) |
 | M-05 | The action table above equals the manifest actions per page (code, key, placement, dangerous flag) |
 | M-06 | PageCodes, RoutePaths and ActionCodes (per page) unique, case-insensitive |
@@ -604,5 +613,52 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 ### Open gaps (carried, not solved)
 
 1. Loads UI scope is HELD and unbuilt; the RoutePath and the action table are proposals and must be re-checked against the approved UI before this section is applied.
-2. If a transition button is later approved, `supplychain.loads.transition` moves from the allow-list into the action table.
+2. ~~If a transition button is later approved, `supplychain.loads.transition` moves from the allow-list into the action table.~~ Done
+   2026-10-04 for a different reason (the key must be holdable at all); a transition **button** still needs its own approved scope.
 3. Runtime tests R-02…R-04 need a native executor and the integrated target.
+
+## 30. Tenant UI scope — MVP6-LOADS-UI-SCOPE-PREP-01 (approved 2026-10-04)
+
+**Approved** by the owner on 2026-10-04: `docs/records/decisions/2026-10/mvp6-carrier-loads-ui-scope-owner-decision-01.md`. The full scope
+text is `docs/roadmap/plans/mvp6-loads-ui-scope-01/SCOPE.md` (`ce1cadef…f7b65`, Turkish) with `PHASE15-PROPOSED.md` (`e1e579fa…d900d287`);
+this section states what it binds. It changes no backend, contract or acceptance rule in §§1–29; the backend `ready-for-dev` scope stays.
+
+### 30.1 Surface and operations
+
+- Page `/SupplyChain/Loads` in the tenant shell (`_LayoutTenantShell`), GoldenReferenceSlim, DataTables v2 (`serverSide: false`; client
+  search/sort/paging over the returned set). Bound operations: `queryLoads` (list, refresh, filter) and `createLoadPlan` (create
+  offcanvas). **No transition UI** in this slice (ROOT-UI-01); no detail, edit, delete, bulk, import, lookup or optimisation.
+- Browser → same-origin MVC adapter → Gateway 5000. The adapter alone holds the token and sends `X-Tenant-Id`/`X-Legal-Entity-Id` from the
+  signed claims; scope never comes from browser input.
+- List columns: `loadNumber`, `carrierId`, `shipmentIds`, `status` (no enrichment; opaque ids shown escaped and LTR; an absent summary field
+  reads "not provided"). Filters: `status` (single; ShowAll omits it) and `carrierId` (UUID text, not a lookup). Save View / column
+  visibility / reset through the shared `personalizationClient`; no browser storage.
+
+### 30.2 Create form — 7 field types (Slim)
+
+`carrierId` (UUID), `shipmentIds` (repeatable UUIDs, at least one, order kept), `mode` (Road/Air/Sea/Rail/Parcel, labels localized),
+`plannedDepartAt` (local wall clock in a `datetime-local` field, sent as the same instant in UTC; a time that does not exist in the
+user's zone is rejected), `stops[]` with `sequence` (positive integer), `locationReferenceId` (opaque string, empty allowed, no trim or
+length cap) and `action` (Pickup/Delivery/Return); at least two stops. Correlation, idempotency key, tenant/LE, number, audit and version are
+not user fields. The backend is authoritative for every business rule (stop numbering, Pickup+Delivery, eligibility, carrier mode).
+
+### 30.3 Intent, correlation and replay
+
+**An intent is one opened create form, not one payload** (Q403; `docs/records/audits/2026-10/mvp6-r2-returns-ui-01/evidence/traps-browser.md`
+§T2). The UI mints the `Idempotency-Key` **and** the `X-Correlation-Id` when the form opens and keeps both across edits, failures and
+retries until it closes: the create's correlation is the new Load's root (`CreateLoadHandler` passes `context.CorrelationId`), and a replay
+under a different root answers 409 `CORRELATION_ROOT_MISMATCH` (`LoadRepository.cs:16`). On 409 `IDEMPOTENCY_KEY_REUSED` or
+`CORRELATION_ROOT_MISMATCH` the form stops, keeps the inputs and never mints a key to get past it. A 201 with `idempotentReplay: true` is
+shown as completed and the list reloads.
+
+### 30.4 Localization, states, access
+
+Seven tenant languages; status, mode and stop-action labels localized, wire values the contract's English names. Skeleton while the first
+load runs; a failed load is an alert in place of the table, worded as a read failure; a 403 shows the denied card. UAS-001: without
+`supplychain.loads.read`, only `_AccessDenied` inside the shell. The create CTA appears only with `supplychain.loads.create`.
+
+### 30.5 Open items carried
+
+- **LIVE-185:** the create reads Carrier and Shipment references live with the caller's token (`LoadReferenceReader`), so a creator also
+  needs `supplychain.carriers.read` and `supplychain.shipments.read`, and Carrier's provider must be registered for the first to exist.
+- **ROOT-UI-01:** a transition UI needs its own approved scope. Independent UI VER remains open.

@@ -92,12 +92,18 @@ builder.Services.AddHostedService<ShipmentOutboxWorker>();
 // These four lines follow MdmService Program.cs:88-92. They make the hosted service push the one Shipment
 // manifest to Platform after startup, best-effort: blank config logs a warning and returns, and a dead
 // Platform is retried 5 times and then logged. The API serves either way (measured, Q339-R2 P1-P3).
-// Carrier is absent on purpose: MOD-0184:473 forbids its AddSingleton until Carrier has a UI (none exists).
 builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IModuleManifestProvider, ShipmentTrackingPodManifestProvider>();
 // R-2 (2026-10-04): Returns (MOD-0186 §33) ships with its UI in the same change, per the §33 ship rule.
 builder.Services.AddSingleton<IModuleManifestProvider, ReverseLogisticsManifestProvider>();
+// R-4a (2026-10-04): Carrier (MOD-0184 §31 ship rule) ships with its UI in the same change; until now it was withheld because
+// Carrier had no UI. Its tenant UI scope was owner-approved the same day (MOD-0184 §32).
+builder.Services.AddSingleton<IModuleManifestProvider, CarrierManagementManifestProvider>();
+// R-4b (2026-10-04): Loads (MOD-0185 §29 ship rule) ships with its UI in the same change (MOD-0185 §30, owner-approved the same day).
+builder.Services.AddSingleton<IModuleManifestProvider, RoutingLoadPlanningManifestProvider>();
+// R-4c (2026-10-04): Claims (MOD-0187 §33 ship rule) ships with its UI in the same change (MOD-0187 §32).
+builder.Services.AddSingleton<IModuleManifestProvider, ClaimsManagementManifestProvider>();
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 // Q381 (2026-10-04, owner decision §4): routes of uncomposed modules answer 404, not 500. The filter below reads
 // which modules exist from the registrations above; it keeps no list of its own (K6).

@@ -1,0 +1,56 @@
+diff -ru --label fixed --label sabotage /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/d055b718-e2c9-4712-a3ce-c6827969ffdf/scratchpad/q453-sab/a/CarriersController.cs /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/d055b718-e2c9-4712-a3ce-c6827969ffdf/scratchpad/q453-sab/b/CarriersController.cs
+--- fixed
++++ sabotage
+@@ -24,10 +24,9 @@
+     // list size and timings. The started timestamp is taken before the handler runs (arguments evaluate left to right).
+     private IActionResult CarrierWire<T>(string operation, long started, Response<T> result)
+     {
+-        logger.LogInformation("Carrier outcome {Operation} {TenantId} {LegalEntityId} {CorrelationId} {Status} {ErrorCode} {IdempotentReplay} {ListSize} {ElapsedMs}",
++        logger.LogInformation("Carrier outcome {Operation} {TenantId} {LegalEntityId} {CorrelationId} {Status} {ErrorCode} {IdempotentReplay} {ElapsedMs}", // SABOTAGE: ListSize removed
+             operation, context.Scope.TenantId, context.Scope.LegalEntityId, context.CorrelationId, result.StatusCode, result.ErrorCode,
+-            result.Data is CarrierResponse carrier && carrier.IdempotentReplay, result.Data is CarrierListResponse list ? list.Items.Count : (int?)null,
+-            Math.Round(Stopwatch.GetElapsedTime(started).TotalMilliseconds, 1));
++            result.Data is CarrierResponse carrier && carrier.IdempotentReplay,             Math.Round(Stopwatch.GetElapsedTime(started).TotalMilliseconds, 1));
+         var code = result.StatusCode == 500 ? "INTERNAL_ERROR" : result.ErrorCode;
+         return StatusCode(result.StatusCode, code is null ? result.Data : CarrierContractError.Create(code, result.StatusCode, context.CorrelationId));
+     }
+diff -ru --label fixed --label sabotage /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/d055b718-e2c9-4712-a3ce-c6827969ffdf/scratchpad/q453-sab/a/ClaimsController.cs /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/d055b718-e2c9-4712-a3ce-c6827969ffdf/scratchpad/q453-sab/b/ClaimsController.cs
+--- fixed
++++ sabotage
+@@ -25,8 +25,8 @@
+     // Shipment root on mutations) is added by CorrelationIdEnricher (Program.cs).
+     private IActionResult ClaimWireResponse<T>(string operation, Response<T> result)
+     {
+-        logger.LogInformation("Claim outcome {Operation} {Status} {ErrorCode} {IdempotentReplay}",
+-            operation, result.StatusCode, result.ErrorCode, result.Data is ClaimResponse claim && claim.IdempotentReplay);
++        logger.LogInformation("Claim outcome {Operation} {ErrorCode} {IdempotentReplay}", // SABOTAGE: status removed
++            operation, result.ErrorCode, result.Data is ClaimResponse claim && claim.IdempotentReplay);
+         return StatusCode(result.StatusCode,
+             result.ErrorCode is null ? result.Data : ClaimContractError.Create(result.StatusCode == 500 ? "INTERNAL_ERROR" : result.ErrorCode, result.StatusCode, context.CorrelationId));
+     }
+diff -ru --label fixed --label sabotage /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/d055b718-e2c9-4712-a3ce-c6827969ffdf/scratchpad/q453-sab/a/LoadsController.cs /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/d055b718-e2c9-4712-a3ce-c6827969ffdf/scratchpad/q453-sab/b/LoadsController.cs
+--- fixed
++++ sabotage
+@@ -18,7 +18,7 @@
+  // Pack :432: logs carry operation/result/correlation/replay. The correlation is added by CorrelationIdEnricher (Program.cs).
+  private IActionResult LoadWireResponse<T>(string operation,Response<T> r)
+  {
+-  logger.LogInformation("Load outcome {Operation} {Status} {ErrorCode} {IdempotentReplay}",operation,r.StatusCode,r.ErrorCode,r.Data is LoadResponse load&&load.IdempotentReplay);
++  logger.LogInformation("Load outcome {Operation} {Status} {ErrorCode}",operation,r.StatusCode,r.ErrorCode); // SABOTAGE: replay removed
+   return StatusCode(r.StatusCode,r.ErrorCode is null?r.Data:LoadContractError.Create(r.StatusCode==500?"INTERNAL_ERROR":r.ErrorCode,r.StatusCode,context.CorrelationId));
+  }
+ }
+diff -ru --label fixed --label sabotage /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/d055b718-e2c9-4712-a3ce-c6827969ffdf/scratchpad/q453-sab/a/ReturnsController.cs /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/d055b718-e2c9-4712-a3ce-c6827969ffdf/scratchpad/q453-sab/b/ReturnsController.cs
+--- fixed
++++ sabotage
+@@ -23,8 +23,8 @@
+     // CorrelationIdEnricher (Program.cs).
+     private IActionResult ReturnWireResponse<T>(string operation, Response<T> response)
+     {
+-        logger.LogInformation("Return outcome {Operation} {Status} {ErrorCode} {IdempotentReplay}",
+-            operation, response.StatusCode, response.ErrorCode, response.Data is ReturnResponse result && result.IdempotentReplay);
++        logger.LogInformation("Return outcome {Status} {ErrorCode} {IdempotentReplay}", // SABOTAGE: operation removed
++            response.StatusCode, response.ErrorCode, response.Data is ReturnResponse result && result.IdempotentReplay);
+         return StatusCode(response.StatusCode, response.ErrorCode is null ? response.Data : ReturnContractError.Create(response.StatusCode == 500 ? "INTERNAL_ERROR" : response.ErrorCode, response.StatusCode, context.CorrelationId));
+     }
+ }

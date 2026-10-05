@@ -5,7 +5,7 @@ name: Supply Chain Inventory & Execution
 type: Delivery Capability Pack
 standard: CAP-001
 status: approved
-status_note: "approved (CT 2026-09-11, per CAP-001 §5). Owner decisions RESOLVED (scope=Inventory+Warehouse; service=Diten.SupplyChainService; port=5061). runtime_code_allowed=false: DCP approval alone does NOT authorize code — each member module pack must reach its own ready-for-dev gate first (CAP-001 §7). Member module packs remain unwritten (each team's local CT authors its own)."
+status_note: "approved (CT 2026-09-11, per CAP-001 §5). Owner decisions RESOLVED (scope=Inventory+Warehouse; service=Diten.SupplyChainService; port=5061). runtime_code_allowed=false: DCP approval alone does NOT authorize code — each member module pack must reach its own ready-for-dev gate first (CAP-001 §7). Member module packs: nine written under execution/domains/supply-chain-execution/module-packs/ — seven ready-for-dev (MOD-0183…0187, 0190, 0192), two draft (MOD-0147, MOD-0148); measured 2026-10-05, Q450 (each team's local CT authors its own)."
 approved_by: control-tower
 approved_on: 2026-09-11
 owner_domain: supply-chain-execution
@@ -15,7 +15,7 @@ authoring_branch: feature/inventory
 canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx#Blueprint_Data (Supply Chain Execution Suite + Planning + Manufacturing)"
 canonical_modules: [MOD-0173, MOD-0174, MOD-0175, MOD-0176, MOD-0177, MOD-0178, MOD-0180, MOD-0181, MOD-0182, MOD-0188, MOD-0189, MOD-0190, MOD-0191, MOD-0192, MOD-0193]
 runtime_code_allowed: false
-runtime_code_scope: "NONE yet. No member module pack is ready-for-dev. MVP-6-FIRST decision (user 2026-09-15): MVP-6 is the first lane to code, contract-first vs mocks. Diten.SupplyChainService scaffold trigger = an approved MOD-0183 module pack + @orchestrator /add-module (was MOD-0173; OD-4 resolved). MVP-1 (0173) later joins the same service. runtime_code_allowed flips per-module as each module pack reaches ready-for-dev."
+runtime_code_scope: "MVP-6 runtime code EXISTS (status measured 2026-10-05, Q450; record docs/records/audits/2026-10/mvp6-q450-dcp009-status-01/). Seven member module packs are ready-for-dev: MOD-0183, 0184, 0185, 0186, 0187, 0190, 0192 (each pack's frontmatter). Diten.SupplyChainService is in HEAD (363 tracked files). Five module manifest providers are registered in services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs:97-106 (Shipments 0183, Returns 0186, Carriers 0184, Loads 0185, Claims 0187). The same five modules have a tenant UI: 33 Razor views under frontend/Diten.Web/Views/SupplyChain/ (Shipments 10 and Returns 6 committed; Carriers 6, Loads 5, Claims 6 in the working tree only). Golden flows recorded live on the branch: Shipments docs/records/audits/2026-10/mvp6-q366-scope-chain-registration-01/ §D (real tree; Q362 had run it on a counterfactual stack only), Returns mvp6-r2-returns-ui-01/, Carriers mvp6-r4a-carriers-ui-01/, Loads mvp6-r4b-loads-ui-01/, Claims mvp6-r4c-claims-ui-01/ (the last three untracked at this writing). They are pre-integration evidence: Q435 (mvp6-q435-merge-origin-main-01/, untracked) did not perform the origin/main merge and classes all five as VALID_PRE_MERGE / INTEGRATION_STALE; no integrated PASS exists. S&OP (0190) and Capacity (0192) are ready-for-dev but not composed in Program.cs and have no UI. Agent records, not CT acceptance. MVP-6-FIRST decision (user 2026-09-15): MVP-6 is the first lane to code, contract-first vs mocks. Diten.SupplyChainService scaffold trigger = an approved MOD-0183 module pack + @orchestrator /add-module (was MOD-0173; OD-4 resolved). MVP-1 (0173) later joins the same service. runtime_code_allowed flips per-module as each module pack reaches ready-for-dev."
 inputs:
   - "docs/analysis/inventory-capability-scope-and-dependency-report.md (v2.1 decision-complete, 19 DEC-INV)"
   - "docs/analysis/contracts/*.openapi.yaml (8 frozen Wave-0 contracts)"
@@ -40,7 +40,7 @@ inputs:
 | Owner domain | supply-chain-execution |
 | Canonical source | Blueprint 8.1 (Supply Chain Execution Suite + Planning + Manufacturing) |
 | Service | `Diten.SupplyChainService` · port **5061** |
-| runtime_code_allowed | **false** (no member ready-for-dev yet) |
+| runtime_code_allowed | **false** (DCP-level value, unchanged here; seven member packs are ready-for-dev and MVP-6 code exists — see `runtime_code_scope`, measured 2026-10-05, Q450) |
 
 ## 2. Business outcome
 Denetlenebilir tek stok gerçeği + izlenebilirlik + kalite-kontrollü serbest bırakma + FEFO + recall + depo yürütme. GxP/pharma uyumlu, çok-tüzel-kişilikli, dış-sisteme entegre olabilir stok platformu.

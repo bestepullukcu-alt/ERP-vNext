@@ -7,7 +7,7 @@ shell: none
 golden_reference: none
 entity_base: EntityBase
 status: draft
-status_note: "Phase A specification draft only; no runtime code or service-scaffold authority. Domain ownership and central SUPPLIER-BASE contract gates remain open."
+status_note: "Phase A specification draft only; no runtime code or service-scaffold authority. The central SUPPLIER-BASE contract is published and frozen (docs/analysis/contracts/supplier.openapi.yaml, c8badff96, 2026-09-15). Two separate gates remain open: the authority to consume it (DC-02, AWAITING-CT) and durable domain ownership (DC-01)."
 owner: supply-chain-execution / control-tower
 branch: feature/mvp6-logistics
 started: 2026-09-15
@@ -116,7 +116,7 @@ no current write permission to runtime paths.
 | Dependency | State | Rule |
 |---|---|---|
 | `SUPPLIER-PERFORMANCE` v1 | FROZEN | Owned contract; implementation must match exactly |
-| `SUPPLIER-BASE` | GAP — central frozen mock absent | **CONSUMES: SUPPLIER-BASE (merkez üretecek)**; no local substitute |
+| `SUPPLIER-BASE` | FROZEN in `docs/analysis/contracts/supplier.openapi.yaml` (x-owner MOD-0140, `c8badff96`, 2026-09-15) — identity surface only; consumption authority open (DC-02) | **CONSUMES: SUPPLIER-BASE (merkez üretecek)**; no local substitute |
 | Metric Registry / Risk Register | Building-block dependency | Contract adapters only; no local registry clone |
 | Event Bus | Platform dependency | Correlation-preserving outbox publication |
 | Domain ownership | OPEN | **GAP: merkez CT üretmeli** ownership reconciliation before ready-for-dev |
@@ -209,7 +209,7 @@ verify auth, tenant/legal-entity context, correlation and idempotency propagatio
 - [x] Canonical ID/name passed DCP-002 on 2026-09-15.
 - [x] Owned OpenAPI is frozen as `SUPPLIER-PERFORMANCE` v1.
 - [x] Backend-only proposed first slice, paths, objects, failures and acceptance are explicit.
-- [ ] Central CT publishes/freezes SUPPLIER-BASE and mock.
+- [x] Central CT publishes/freezes SUPPLIER-BASE and mock — done 2026-09-15 in `docs/analysis/contracts/supplier.openapi.yaml` (x-status FROZEN, x-owner MOD-0140, `c8badff96`), the day before this pack was committed.
 - [ ] **GAP: merkez CT üretmeli** domain-config/central ownership reconciliation for MOD-0147.
 - [ ] Module owner reviews and explicitly changes `status` to `ready-for-dev`.
 - [ ] Runtime implementation WP supplies base HEAD, agent lane and bounded allowed paths.
@@ -224,7 +224,7 @@ verify auth, tenant/legal-entity context, correlation and idempotency propagatio
 
 ## 20. Follow-up Items
 
-- **GAP: merkez CT üretmeli** and freeze the SUPPLIER-BASE contract/mock owned by MOD-0140.
+- SUPPLIER-BASE contract/mock owned by MOD-0140 is published and frozen: `docs/analysis/contracts/supplier.openapi.yaml` (x-status FROZEN, `c8badff96`, 2026-09-15), offering `listSuppliers`, `getSupplier` and `validateSuppliers`. What remains open is the authority to consume it — DC-02, AWAITING-CT per the 2026-10-05 CT ruling — not the contract's existence.
 - Reconcile MOD-0147 ownership in domain-config and central records.
 - Separate permission/gateway integration WP after endpoints exist.
 - Future UI pack revision if an operator surface is approved.

@@ -1,0 +1,15 @@
+== frontend after placing the rescued 21 paths (unchanged)
+Passed!  - Failed:     0, Passed:   276, Skipped:     0, Total:   276, Duration: 6 s - Diten.Web.Tests.dll (net8.0)
+== after the script fix, before re-pinning (the rescued test pinned the per-payload key)
+Failed Diten.Web.Tests.JavaScript.CarrierIndexBehaviorTests.KeepsStablePerPayloadIntentAndUsesSharedModalPrimitives [6 ms]
+Failed!  - Failed:     1, Passed:   275, Skipped:     0, Total:   276, Duration: 5 s - Diten.Web.Tests.dll (net8.0)
+== FINAL frontend
+Passed!  - Failed:     0, Passed:   282, Skipped:     0, Total:   282, Duration: 6 s - Diten.Web.Tests.dll (net8.0)
+== unit SABOTAGE: the rescued controller (no 5xx mapping, no [JsonAdapterEndpoint])
+Failed Diten.Web.Tests.Controllers.SupplyChainCarriersControllerTests.EveryAdapterActionCarriesTheJsonAdapterMarker [12 ms]
+Failed Diten.Web.Tests.Controllers.SupplyChainCarriersControllerTests.UpstreamServerFailureWithoutContractBody_BecomesPersistenceUnavailable(upstream: GatewayTimeout, body: "<html>gateway timeout</html>") [1 ms]
+Failed Diten.Web.Tests.Controllers.SupplyChainCarriersControllerTests.UpstreamServerFailureWithoutContractBody_BecomesPersistenceUnavailable(upstream: ServiceUnavailable, body: "") [< 1 ms]
+Failed Diten.Web.Tests.Controllers.SupplyChainCarriersControllerTests.UpstreamServerFailureWithoutContractBody_BecomesPersistenceUnavailable(upstream: BadGateway, body: "") [< 1 ms]
+Failed!  - Failed:     4, Passed:     5, Skipped:     0, Total:     9, Duration: 61 ms - Diten.Web.Tests.dll (net8.0)
+== SupplyChain guard + provider + registration tests (outside the module filters)
+Passed!  - Failed:     0, Passed:    20, Skipped:     0, Total:    20, Duration: 82 ms - Diten.SupplyChainService.Tests.dll (net8.0)

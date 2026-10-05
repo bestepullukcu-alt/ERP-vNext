@@ -1,0 +1,14 @@
+#!/bin/bash
+# Q420: Q335 recipe shape on port 57422. usage: run-modules.sh <W> <tree> <module>...
+W=$1; T=$2; shift 2; D=$W/$T/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests; OUT=$W/evidence/suite-$T
+URI='mongodb://127.0.0.1:57422/?replicaSet=rsq420s'
+unset MOD0183_TEST_MONGO MOD0184_TEST_MONGO MOD0185_TEST_MONGO MVP6_MOD0190_MONGO_URI MVP6_MOD0192_MONGO_URI RETURNS_MONGO_URI CLAIMS_TEST_MONGO MOD192_CHILD_MODE CLAIMS_RESTART_MODE CLAIMS_RESTART_TENANT RETURNS_RESTART_MODE RETURNS_PROCESS_EVIDENCE
+mkdir -p $OUT; cd $D; dotnet build -nodeReuse:false -p:UseSharedCompilation=false -v q > $OUT/build.log 2>&1; echo "== $T build rc=$?"; grep -E 'Error\(s\)' $OUT/build.log
+vf() { case $1 in
+  Shipments) echo "MOD0183_TEST_MONGO|FullyQualifiedName~Diten.SupplyChainService.Tests.Shipment|FullyQualifiedName~Diten.SupplyChainService.Tests.Source";;
+  Carriers) echo "MOD0184_TEST_MONGO|FullyQualifiedName~Diten.SupplyChainService.Tests.Carriers.";; Loads) echo "MOD0185_TEST_MONGO|FullyQualifiedName~Diten.SupplyChainService.Tests.Loads.";;
+  Returns) echo "RETURNS_MONGO_URI|FullyQualifiedName~Diten.SupplyChainService.Tests.Returns.";; Claims) echo "CLAIMS_TEST_MONGO|FullyQualifiedName~Diten.SupplyChainService.Tests.Claims.";;
+  SandopPlans) echo "MVP6_MOD0190_MONGO_URI|FullyQualifiedName~Diten.SupplyChainService.Tests.SandopPlans.";; CapacityPlans) echo "MVP6_MOD0192_MONGO_URI|FullyQualifiedName~Diten.SupplyChainService.Tests.CapacityPlans.";;
+  *) echo "UNKNOWN|x";; esac; }
+for m in "$@"; do s=$(date +%s); var=$(vf $m | cut -d'|' -f1); filt=$(vf $m | cut -d'|' -f2-); [ -z "$var" ] || [ "$var" = UNKNOWN ] && { echo "bad module $m"; exit 2; }; echo "   ($m: $var, filter $filt)"; env $var="$URI" perl -e 'alarm 900; exec @ARGV' dotnet test --no-build --filter "$filt" --logger "trx;LogFileName=$m.trx" --results-directory $OUT > $OUT/$m.log 2>&1
+  echo "== $T $m rc=$? $(( $(date +%s)-s ))s $(grep -hE '^(Passed!|Failed!)' $OUT/$m.log | sed -E 's/ - Diten.*//')"; done

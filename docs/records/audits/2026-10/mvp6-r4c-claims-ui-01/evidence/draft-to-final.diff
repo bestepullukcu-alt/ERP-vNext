@@ -1,0 +1,857 @@
+--- draft-v4/frontend/Diten.Web.Tests/Controllers/SupplyChainClaimsControllerTests.cs
++++ final/frontend/Diten.Web.Tests/Controllers/SupplyChainClaimsControllerTests.cs
+@@ -15,7 +15,7 @@
+ namespace Diten.Web.Tests.Controllers;
+ 
+ // MOD-0187 Claims — same-origin adapter contract (pack §32.4/§32.8; CU-01, CU-02, CU-07…CU-09, CU-14, CU-18, CU-23).
+-// DRAFT overlay — not built, not run.
++// Built and run by R-4c.
+ public sealed class SupplyChainClaimsControllerTests
+ {
+     private static readonly Guid Tenant = Guid.Parse("11111111-1111-4111-8111-111111111111");
+@@ -202,8 +202,38 @@
+         Assert.DoesNotContain(Root.ToString("D"), text);
+         Assert.Contains(Trace.ToString("D"), text);
+         Assert.Equal(Trace.ToString("D"), controller.Response.Headers["X-Correlation-Id"].ToString());
++    }
++
++    // MODULE-RECIPE 2.1 (R-4c): service down = a Gateway 5xx with no contract envelope. The page must keep the outcome open
++    // (503 CLAIM_STORAGE_UNAVAILABLE, same-key retry), never relay a raw 502 or call it INTERNAL_ERROR.
++    [Theory]
++    [InlineData(HttpStatusCode.BadGateway, "")]
++    [InlineData(HttpStatusCode.ServiceUnavailable, "")]
++    [InlineData(HttpStatusCode.GatewayTimeout, "<html>gateway timeout</html>")]
++    public async Task Upstream_server_failure_without_a_contract_body_becomes_storage_unavailable(HttpStatusCode upstream, string body)
++    {
++        var listHandler = new CaptureHandler(_ => new HttpResponseMessage(upstream) { Content = new StringContent(body) });
++        var list = await CreateController(listHandler, [Read]).List(null, null, CancellationToken.None);
++        AssertFailure(list, StatusCodes.Status503ServiceUnavailable, "CLAIM_STORAGE_UNAVAILABLE");
++
++        var createHandler = new CaptureHandler(request => request.Uri.EndsWith("/claims", StringComparison.Ordinal)
++            ? new HttpResponseMessage(upstream) { Content = new StringContent(body) }
++            : Json(HttpStatusCode.OK, ShipmentDetail("\"" + Root.ToString("D") + "\"", Carrier)));
++        var create = await CreateController(createHandler, [Create, ShipmentRead], "{\"shipmentId\":\"" + Shipment + "\"}", "k")
++            .Create(CancellationToken.None);
++        var text = AssertFailure(create, StatusCodes.Status503ServiceUnavailable, "CLAIM_STORAGE_UNAVAILABLE");
++        Assert.Contains(Trace.ToString("D"), text);
+     }
+ 
++    [Fact]
++    public async Task A_published_server_code_passes_through_with_its_status()
++    {
++        var handler = new CaptureHandler(_ => Json(HttpStatusCode.ServiceUnavailable,
++            $"{{\"error\":{{\"code\":\"CLAIM_REFERENCE_UNAVAILABLE\",\"message\":\"m\",\"correlationId\":\"{Trace:D}\"}},\"contractVersion\":\"v1\"}}"));
++        var result = await CreateController(handler, [Read]).List(null, null, CancellationToken.None);
++        AssertFailure(result, StatusCodes.Status503ServiceUnavailable, "CLAIM_REFERENCE_UNAVAILABLE");
++    }
++
+     // ── Transition ──────────────────────────────────────────────────────────────────────────────────────────────
+ 
+     [Theory]
+--- draft-v4/frontend/Diten.Web.Tests/Forms/ClaimFormContractTests.cs
++++ final/frontend/Diten.Web.Tests/Forms/ClaimFormContractTests.cs
+@@ -7,7 +7,7 @@
+ namespace Diten.Web.Tests.Forms;
+ 
+ // MOD-0187 Claims — view-model/validator mapping and form/view contract (pack §32.2, §32.6, §32.7, §32.9;
+-// CU-06, CU-09, CU-11, CU-12, CU-24). DRAFT overlay — not built, not run.
++// CU-06, CU-09, CU-11, CU-12, CU-24). Built and run by R-4c.
+ public sealed class ClaimFormContractTests
+ {
+     private const string ViewDir = "frontend/Diten.Web/Views/SupplyChain/Claims";
+@@ -268,10 +268,12 @@
+     [Fact]
+     public void L10n_bridge_exposes_every_module_key()
+     {
++        // MODULE-RECIPE 5.3 (R-4c re-pin): a Dictionary, so Json.Serialize keeps every key exactly as the resx names it.
+         var bridge = Read($"{ViewDir}/_IndexL10n.cshtml");
++        Assert.Contains("@Json.Serialize(new Dictionary<string, string>", bridge);
+         foreach (var key in Resx($"{ResxDir}/ClaimsIndex.en.resx").Keys)
+         {
+-            Assert.Contains($"{key} = Localizer[\"{key}\"].Value", bridge);
++            Assert.Contains($"[\"{key}\"] = Localizer[\"{key}\"].Value", bridge);
+         }
+     }
+ 
+--- draft-v4/frontend/Diten.Web.Tests/JavaScript/ClaimIndexBehaviorTests.cs
++++ final/frontend/Diten.Web.Tests/JavaScript/ClaimIndexBehaviorTests.cs
+@@ -5,7 +5,7 @@
+ 
+ // MOD-0187 Claims — static behaviour contract of index.js / index.l10n.js (pack §32.3–§32.9; CU-01, CU-02, CU-04,
+ // CU-05, CU-09, CU-13, CU-19, CU-22, CU-26, CU-31, CU-SCR-01…05). Runtime behaviour is covered by the Playwright
+-// scenarios for the Mac lane (Q64b). DRAFT overlay — not built, not run.
++// scenarios for the Mac lane (Q64b). Built and run by R-4c.
+ public sealed class ClaimIndexBehaviorTests
+ {
+     private readonly string _script = Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js");
+@@ -87,10 +87,17 @@
+     }
+ 
+     [Fact]
+-    public void Intent_keeps_key_and_body_for_retry_and_blocks_after_409()
++    public void One_intent_per_opened_form_or_panel_and_409_blocks_it()
+     {
+-        Assert.Contains("createIntent.bodyText !== bodyText", _script);
+-        Assert.Contains("transitionIntent.bodyText !== bodyText", _script);
++        // MODULE-RECIPE 3.1 / Q403 (R-4c re-pin): the draft pinned the per-payload key ("createIntent.bodyText !== bodyText"),
++        // which lets an edited retry after a lost response create a second claim. The key is minted when the create form or
++        // the transition panel opens, is never compared with the payload, and survives every failure until the surface closes.
++        Assert.DoesNotContain("bodyText !==", _script);
++        Assert.Contains("const newIntent = (extra) => Object.assign({ key: uuid(), blocked: false, blockedFailure: null }, extra);", _script);
++        Assert.Contains("createIntent = newIntent();", Slice(_script, "const openCreate", "const resolveShipment"));
++        Assert.Contains("transitionIntent = newIntent({ claimId });", Slice(_script, "const openTransition", "const syncTransitionTarget"));
++        Assert.DoesNotContain("createIntent = null", Slice(_script, "const handleCreateFailure", "// ─── Transition"));
++        Assert.DoesNotContain("transitionIntent = null", Slice(_script, "const handleTransitionFailure", "// ─── Filters"));
+         Assert.Contains("'Idempotency-Key': key", _script);
+         Assert.Contains("intent.blocked = true;", _script);
+         Assert.Contains("if (createPending)", _script);
+@@ -98,6 +105,19 @@
+     }
+ 
+     [Fact]
++    public void A_failed_list_load_uses_read_wording_and_a_403_draws_the_denied_card()
++    {
++        // MODULE-RECIPE 3.11 and 3.6 (R-4c): the draft chose the list's error text by code, so a 503 or a dropped connection
++        // read "the outcome is not confirmed; try the same request again" on a read, and a 403 drew the error state.
++        var states = Slice(_script, "const setListState", "const isListEnvelope");
++        Assert.Contains("if (message) message.textContent = t('ListErrorState');", states);
++        Assert.DoesNotContain("failureText(failure)", states);
++        Assert.Contains("if (response.status === 403) { showListDenied(); callback({ data: [] }); return; }", _script);
++        Assert.Contains("surface.hidden = true; surface.setAttribute('inert', ''); denied.hidden = false;", _script);
++        Assert.Contains("ajax: (data, callback) => { void loadClaims(data, callback); }", _script);
++    }
++
++    [Fact]
+     public void Transition_sends_approved_amount_only_for_approved_and_confirms_through_the_shared_wrapper()
+     {
+         var build = Slice(_script, "const buildTransitionBody", "const closeTransition");
+--- draft-v4/frontend/Diten.Web/Controllers/SupplyChainClaimsController.cs
++++ final/frontend/Diten.Web/Controllers/SupplyChainClaimsController.cs
+@@ -8,7 +8,9 @@
+ 
+ namespace Diten.Web.Controllers;
+ 
+-// MOD-0187 Claims — same-origin MVC adapter (pack §32.3/§32.4). DRAFT overlay — not built, not writer-complete.
++// MOD-0187 Claims — same-origin MVC adapter (pack §32.3/§32.4). Built by R-4c from the September draft v4, held against
++// MODULE-RECIPE.md: every failure is re-enveloped with the trace (2.1: an un-enveloped 5xx becomes 503
++// CLAIM_STORAGE_UNAVAILABLE, never a raw 502), and every Gateway answer is logged with its trace (2.3).
+ //
+ // Browser → this controller → Gateway (GatewayUrl) → SupplyChain. The browser never calls the Gateway or holds a token.
+ // Bound operations only: queryClaims, createClaim, transitionClaim, and Shipment-owned getShipment read-only.
+@@ -21,8 +23,7 @@
+ //                     Authorization + tenant/LE headers from the caller's claims + the browser trace.
+ //   X-Correlation-Id on Claims POSTs = the Shipment lifecycle root read server-side; the root is never sent to the
+ //   browser (see ProxyClaimsMutationAsync).
+-// Depends on Diten.Web.Security.JsonAdapterEndpointAttribute and the JSON challenge branch in frontend Program.cs,
+-// which exist in the A12 360 overlay (7b6a0d1a…), not in the common checkout (README FINDING F3).
++// Depends on Diten.Web.Security.JsonAdapterEndpointAttribute and the JSON challenge branch in frontend Program.cs (Q394).
+ [Authorize]
+ [Route("SupplyChain/Claims")]
+ public sealed class SupplyChainClaimsController : Controller
+@@ -34,6 +35,16 @@
+     private const string ClaimsPath = "/api/shipment-bundle/claims";
+     private const string ShipmentsPath = "/api/shipment-bundle/shipments";
+ 
++    // The 18 published Claims codes (annex D187-05, pack §32.8). The adapter never relays a code outside this set.
++    private static readonly HashSet<string> PublishedCodes = new(StringComparer.Ordinal)
++    {
++        "INVALID_REQUEST", "UNAUTHENTICATED", "FORBIDDEN", "CLAIM_NOT_FOUND", "UNSUPPORTED_MEDIA_TYPE",
++        "CLAIM_SHIPMENT_INELIGIBLE", "CLAIM_CARRIER_MISMATCH", "CLAIM_AMOUNT_INVALID", "CLAIM_APPROVAL_AMOUNT_INVALID",
++        "CLAIM_APPROVED_AMOUNT_NOT_ALLOWED", "INVALID_CLAIM_TRANSITION", "CLAIM_CORRELATION_MISMATCH", "IDEMPOTENCY_KEY_REUSED",
++        "CLAIM_REFERENCE_INVALID", "CLAIM_REFERENCE_INCOMPLETE", "CLAIM_REFERENCE_UNAVAILABLE", "CLAIM_STORAGE_UNAVAILABLE",
++        "INTERNAL_ERROR"
++    };
++
+     private readonly HttpClient _httpClient;
+     private readonly string _gatewayUrl;
+     private readonly ILogger<SupplyChainClaimsController> _logger;
+@@ -165,13 +176,13 @@
+         try
+         {
+             using var response = await _httpClient.SendAsync(request, cancellationToken);
+-            // A GET correlation is a request trace only, so echoing it is safe.
+-            if (response.Headers.TryGetValues(CorrelationHeader, out var values))
+-            {
+-                Response.Headers[CorrelationHeader] = values.ToArray();
+-            }
+-
+-            return await PassThroughAsync(response, cancellationToken);
++            // A GET correlation is a request trace only, so the browser's own trace is the support reference.
++            Response.Headers[CorrelationHeader] = trace.ToString("D");
++            _logger.LogInformation("Claims gateway answered {StatusCode} for GET {TargetUrl}. Trace {Trace}.",
++                (int)response.StatusCode, targetUrl, trace);
++            return (int)response.StatusCode >= 400
++                ? await ReenvelopeFailureAsync(response, trace, cancellationToken)
++                : await PassThroughAsync(response, cancellationToken);
+         }
+         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+         {
+@@ -228,6 +239,8 @@
+         {
+             using var response = await _httpClient.SendAsync(request, cancellationToken);
+             Response.Headers[CorrelationHeader] = trace.ToString("D");
++            _logger.LogInformation("Claims gateway answered {StatusCode} for POST {TargetUrl}. Trace {Trace} Root {Root}.",
++                (int)response.StatusCode, targetUrl, trace, root.Root);
+             if ((int)response.StatusCode >= 400)
+             {
+                 return await ReenvelopeFailureAsync(response, trace, cancellationToken);
+@@ -271,6 +284,7 @@
+         {
+             using var response = await _httpClient.SendAsync(request, cancellationToken);
+             var status = (int)response.StatusCode;
++            _logger.LogInformation("Shipment lookup for a claim answered {StatusCode}. Trace {Trace}.", status, trace);
+             if (status == StatusCodes.Status200OK)
+             {
+                 var text = await response.Content.ReadAsStringAsync(cancellationToken);
+@@ -314,33 +328,52 @@
+         Content = await response.Content.ReadAsStringAsync(cancellationToken)
+     };
+ 
+-    /// <summary>Keeps the backend's status and error code; replaces only the correlationId (the root) with the trace.</summary>
++    /// <summary>
++    /// Keeps a published code and its status; replaces only the correlationId (the root on a mutation) with the trace.
++    /// A failure without a published code is the Gateway's or the transport's, not the service's: MODULE-RECIPE 2.1 — a
++    /// 5xx without the contract envelope (service down: the Gateway answers 502 with an empty body) becomes 503
++    /// CLAIM_STORAGE_UNAVAILABLE, so the page keeps the outcome open and retries with the same key. The draft relayed the
++    /// list's 502 as it came and turned a mutation's into 502 INTERNAL_ERROR.
++    /// </summary>
+     private async Task<IActionResult> ReenvelopeFailureAsync(HttpResponseMessage response, Guid trace,
+         CancellationToken cancellationToken)
+     {
+         var status = (int)response.StatusCode;
+-        var text = await response.Content.ReadAsStringAsync(cancellationToken);
+-        string? code = null;
+-        string? message = null;
++        var (code, message) = ErrorOf(await response.Content.ReadAsStringAsync(cancellationToken));
++        if (code is null || !PublishedCodes.Contains(code))
++        {
++            message = null;
++            (status, code) = status switch
++            {
++                StatusCodes.Status401Unauthorized => (status, "UNAUTHENTICATED"),
++                StatusCodes.Status403Forbidden => (status, "FORBIDDEN"),
++                StatusCodes.Status404NotFound => (status, "CLAIM_NOT_FOUND"),
++                StatusCodes.Status415UnsupportedMediaType => (status, "UNSUPPORTED_MEDIA_TYPE"),
++                >= 500 => (StatusCodes.Status503ServiceUnavailable, "CLAIM_STORAGE_UNAVAILABLE"),
++                _ => (StatusCodes.Status400BadRequest, "INVALID_REQUEST")
++            };
++        }
++
++        return StatusCode(status,
++            new { error = new { code, message = message ?? DefaultMessage(code), correlationId = trace }, contractVersion = "v1" });
++    }
++
++    private static (string? Code, string? Message) ErrorOf(string text)
++    {
+         try
+         {
+             using var document = JsonDocument.Parse(text);
+-            if (document.RootElement.ValueKind == JsonValueKind.Object
+-                && document.RootElement.TryGetProperty("error", out var error)
+-                && error.ValueKind == JsonValueKind.Object)
+-            {
+-                code = error.TryGetProperty("code", out var c) && c.ValueKind == JsonValueKind.String ? c.GetString() : null;
+-                message = error.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String ? m.GetString() : null;
+-            }
++            if (document.RootElement.ValueKind != JsonValueKind.Object
++                || !document.RootElement.TryGetProperty("error", out var error) || error.ValueKind != JsonValueKind.Object)
++                return (null, null);
++            var code = error.TryGetProperty("code", out var c) && c.ValueKind == JsonValueKind.String ? c.GetString() : null;
++            var message = error.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String ? m.GetString() : null;
++            return (code, message);
+         }
+         catch (JsonException)
+         {
+-            // Malformed upstream envelope → sanitized INTERNAL_ERROR below; the upstream text is not relayed.
++            return (null, null);
+         }
+-
+-        code ??= "INTERNAL_ERROR";
+-        message ??= DefaultMessage(code);
+-        return StatusCode(status, new { error = new { code, message, correlationId = trace }, contractVersion = "v1" });
+     }
+ 
+     private bool TryGetToken(out string token)
+--- draft-v4/frontend/Diten.Web/Models/SupplyChain/Claims/ClaimViewModels.cs
++++ final/frontend/Diten.Web/Models/SupplyChain/Claims/ClaimViewModels.cs
+@@ -2,7 +2,7 @@
+ 
+ namespace Diten.Web.Models.SupplyChain.Claims;
+ 
+-// MOD-0187 Claims tenant UI (pack §32). DRAFT overlay — not built, not writer-complete.
++// MOD-0187 Claims tenant UI (pack §32). Built by R-4c from the September draft v4.
+ //
+ // These types carry NO business rule of their own. They exist so that the same-origin MVC adapter can
+ //   (1) read the two values it needs from the browser's body without rewriting that body (create: shipmentId,
+--- draft-v4/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.ar.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.ar.resx
+@@ -93,7 +93,7 @@
+   <data name="ErrClaimApprovedAmountNotAllowed" xml:space="preserve"><value>لا يمكن إرسال مبلغ معتمد إلا عند الاعتماد.</value></data>
+   <data name="ErrInvalidClaimTransition" xml:space="preserve"><value>تغيّرت المطالبة في هذه الأثناء ولم يعد تغيير الحالة هذا ممكنًا. تمت إعادة تحميل القائمة.</value></data>
+   <data name="ErrClaimCorrelationMismatch" xml:space="preserve"><value>لم يعد الطلب مطابقًا لسجل الشحنة.</value></data>
+-  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>استُخدم هذا الطلب مسبقًا بقيم مختلفة. ابدأ إجراءً جديدًا.</value></data>
++  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>تم استلام هذا الطلب بالفعل بقيم مختلفة. لتقديم طلب مختلف، أغلق هذا النموذج وافتح نموذجًا جديدًا.</value></data>
+   <data name="ErrClaimReferenceInvalid" xml:space="preserve"><value>بيانات مرجع الشحنة غير صالحة. يُرجى التواصل مع الدعم.</value></data>
+   <data name="ErrClaimReferenceIncomplete" xml:space="preserve"><value>بيانات مرجع الشحنة غير مكتملة. أعد محاولة الطلب نفسه لاحقًا.</value></data>
+   <data name="ErrClaimReferenceUnavailable" xml:space="preserve"><value>بيانات مرجع الشحنة غير متاحة مؤقتًا. أعد محاولة الطلب نفسه.</value></data>
+--- draft-v4/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.en.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.en.resx
+@@ -93,7 +93,7 @@
+   <data name="ErrClaimApprovedAmountNotAllowed" xml:space="preserve"><value>An approved amount can be sent only when approving.</value></data>
+   <data name="ErrInvalidClaimTransition" xml:space="preserve"><value>The claim has changed in the meantime and this status change is no longer possible. The list has been reloaded.</value></data>
+   <data name="ErrClaimCorrelationMismatch" xml:space="preserve"><value>The request no longer matches the shipment record.</value></data>
+-  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>This request was already used with different values. Start a new action.</value></data>
++  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>This request was already received with different values. To make a different request, close this form and open a new one.</value></data>
+   <data name="ErrClaimReferenceInvalid" xml:space="preserve"><value>The shipment reference data is invalid. Please contact support.</value></data>
+   <data name="ErrClaimReferenceIncomplete" xml:space="preserve"><value>The shipment reference data is incomplete. Try the same request again later.</value></data>
+   <data name="ErrClaimReferenceUnavailable" xml:space="preserve"><value>The shipment reference data is temporarily unavailable. Try the same request again.</value></data>
+--- draft-v4/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.es.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.es.resx
+@@ -93,7 +93,7 @@
+   <data name="ErrClaimApprovedAmountNotAllowed" xml:space="preserve"><value>Solo se puede enviar un importe aprobado al aprobar.</value></data>
+   <data name="ErrInvalidClaimTransition" xml:space="preserve"><value>La reclamación cambió mientras tanto y este cambio de estado ya no es posible. Se ha recargado la lista.</value></data>
+   <data name="ErrClaimCorrelationMismatch" xml:space="preserve"><value>La solicitud ya no coincide con el registro del envío.</value></data>
+-  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Esta solicitud ya se usó con otros valores. Inicie una nueva acción.</value></data>
++  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Esta solicitud ya se recibió con valores diferentes. Para hacer otra solicitud, cierre este formulario y abra uno nuevo.</value></data>
+   <data name="ErrClaimReferenceInvalid" xml:space="preserve"><value>Los datos de referencia del envío no son válidos. Póngase en contacto con soporte.</value></data>
+   <data name="ErrClaimReferenceIncomplete" xml:space="preserve"><value>Los datos de referencia del envío están incompletos. Vuelva a intentar la misma solicitud más tarde.</value></data>
+   <data name="ErrClaimReferenceUnavailable" xml:space="preserve"><value>Los datos de referencia del envío no están disponibles temporalmente. Vuelva a intentar la misma solicitud.</value></data>
+--- draft-v4/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.fr.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.fr.resx
+@@ -93,7 +93,7 @@
+   <data name="ErrClaimApprovedAmountNotAllowed" xml:space="preserve"><value>Un montant approuvé ne peut être envoyé que lors d’une approbation.</value></data>
+   <data name="ErrInvalidClaimTransition" xml:space="preserve"><value>La réclamation a été modifiée entre-temps et ce changement de statut n’est plus possible. La liste a été rechargée.</value></data>
+   <data name="ErrClaimCorrelationMismatch" xml:space="preserve"><value>La demande ne correspond plus à l’enregistrement de l’expédition.</value></data>
+-  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Cette demande a déjà été utilisée avec d’autres valeurs. Lancez une nouvelle action.</value></data>
++  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Cette demande a déjà été reçue avec des valeurs différentes. Pour une autre demande, fermez ce formulaire et ouvrez-en un nouveau.</value></data>
+   <data name="ErrClaimReferenceInvalid" xml:space="preserve"><value>Les données de référence de l’expédition sont invalides. Veuillez contacter le support.</value></data>
+   <data name="ErrClaimReferenceIncomplete" xml:space="preserve"><value>Les données de référence de l’expédition sont incomplètes. Réessayez plus tard la même demande.</value></data>
+   <data name="ErrClaimReferenceUnavailable" xml:space="preserve"><value>Les données de référence de l’expédition sont temporairement indisponibles. Réessayez la même demande.</value></data>
+--- draft-v4/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.ru.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.ru.resx
+@@ -93,7 +93,7 @@
+   <data name="ErrClaimApprovedAmountNotAllowed" xml:space="preserve"><value>Утверждённую сумму можно отправить только при утверждении.</value></data>
+   <data name="ErrInvalidClaimTransition" xml:space="preserve"><value>Претензия тем временем изменилась, и это изменение статуса больше невозможно. Список перезагружен.</value></data>
+   <data name="ErrClaimCorrelationMismatch" xml:space="preserve"><value>Запрос больше не соответствует записи об отгрузке.</value></data>
+-  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Этот запрос уже использовался с другими значениями. Начните новое действие.</value></data>
++  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Этот запрос уже был получен с другими значениями. Чтобы отправить другой запрос, закройте эту форму и откройте новую.</value></data>
+   <data name="ErrClaimReferenceInvalid" xml:space="preserve"><value>Справочные данные отгрузки недействительны. Обратитесь в поддержку.</value></data>
+   <data name="ErrClaimReferenceIncomplete" xml:space="preserve"><value>Справочные данные отгрузки неполные. Повторите тот же запрос позже.</value></data>
+   <data name="ErrClaimReferenceUnavailable" xml:space="preserve"><value>Справочные данные отгрузки временно недоступны. Повторите тот же запрос.</value></data>
+--- draft-v4/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.tr.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.tr.resx
+@@ -93,7 +93,7 @@
+   <data name="ErrClaimApprovedAmountNotAllowed" xml:space="preserve"><value>Onaylanan tutar yalnızca onay sırasında gönderilebilir.</value></data>
+   <data name="ErrInvalidClaimTransition" xml:space="preserve"><value>Talep bu arada değişti ve bu durum değişikliği artık mümkün değil. Liste yeniden yüklendi.</value></data>
+   <data name="ErrClaimCorrelationMismatch" xml:space="preserve"><value>İstek artık sevkiyat kaydıyla eşleşmiyor.</value></data>
+-  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Bu istek farklı değerlerle zaten kullanıldı. Yeni bir işlem başlatın.</value></data>
++  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Bu istek farklı değerlerle zaten alındı. Farklı bir istek için bu formu kapatıp yeni bir form açın.</value></data>
+   <data name="ErrClaimReferenceInvalid" xml:space="preserve"><value>Sevkiyat referans verisi geçersiz. Lütfen destek ekibine başvurun.</value></data>
+   <data name="ErrClaimReferenceIncomplete" xml:space="preserve"><value>Sevkiyat referans verisi eksik. Aynı isteği daha sonra yeniden deneyin.</value></data>
+   <data name="ErrClaimReferenceUnavailable" xml:space="preserve"><value>Sevkiyat referans verisine geçici olarak ulaşılamıyor. Aynı isteği yeniden deneyin.</value></data>
+--- draft-v4/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.zh.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.zh.resx
+@@ -93,7 +93,7 @@
+   <data name="ErrClaimApprovedAmountNotAllowed" xml:space="preserve"><value>仅在批准时才能提交批准金额。</value></data>
+   <data name="ErrInvalidClaimTransition" xml:space="preserve"><value>索赔已在此期间发生变化，无法再执行此状态变更。列表已重新加载。</value></data>
+   <data name="ErrClaimCorrelationMismatch" xml:space="preserve"><value>该请求与货运记录已不再一致。</value></data>
+-  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>此请求已使用不同的值提交过。请重新开始操作。</value></data>
++  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>此请求已使用不同的值接收。如需提交不同的请求，请关闭此表单并打开新表单。</value></data>
+   <data name="ErrClaimReferenceInvalid" xml:space="preserve"><value>货运参考数据无效，请联系支持团队。</value></data>
+   <data name="ErrClaimReferenceIncomplete" xml:space="preserve"><value>货运参考数据不完整，请稍后重试同一请求。</value></data>
+   <data name="ErrClaimReferenceUnavailable" xml:space="preserve"><value>货运参考数据暂时不可用，请重试同一请求。</value></data>
+--- draft-v4/frontend/Diten.Web/Views/SupplyChain/Claims/Index.cshtml
++++ final/frontend/Diten.Web/Views/SupplyChain/Claims/Index.cshtml
+@@ -5,7 +5,7 @@
+ @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+ @inject Diten.Web.Services.IPermissionSnapshot Perms
+ @{
+-    // MOD-0187 Claims tenant list (pack §32). DRAFT overlay — not built, not writer-complete.
++    // MOD-0187 Claims tenant list (pack §32). Built by R-4c from the September draft v4, held against MODULE-RECIPE.md.
+     ViewData["Title"] = Localizer["ClaimsTitle"].Value;
+     Layout = "_LayoutTenantShell";
+ }
+@@ -21,6 +21,8 @@
+     var canTransition = permissions.CanInvestigate || permissions.CanDecide || permissions.CanSettle;
+ }
+ 
++@* MODULE-RECIPE 3.6: the list surface is replaced by the denied card when the list answers 403 (index.js showListDenied). *@
++<div id="claimsListSurface">
+ @* ① Inline Filter partial *@
+ @* Contract marker: <partial name="_Filter" /> *@
+ <partial name="~/Views/SupplyChain/Claims/_Filter.cshtml" />
+@@ -35,6 +37,8 @@
+ @* ③ DataTable Card — skeleton, empty and error are three distinct states (VIEW-001 §3.1) *@
+ @* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-claims" data-dt-standard="v2"> *@
+ <partial name="~/Views/SupplyChain/Claims/_DataTable.cshtml" />
++</div>
++<div id="claimsListDenied" hidden><partial name="_AccessDenied" model="@Localizer["ClaimsTitle"].Value" /></div>
+ 
+ @* ④ Offcanvas panels *@
+ @* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" *@
+--- draft-v4/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml
++++ final/frontend/Diten.Web/Views/SupplyChain/Claims/_IndexL10n.cshtml
+@@ -7,118 +7,121 @@
+ }
+ 
+ @* JSON bridge (pack §32.9): shared toolbar vocabulary from SharedResource, module text from ClaimsIndex.{lang}.resx.
+-   index.l10n.js normalizes the names to PascalCase into window.L10n. No hard-coded fallback text anywhere. *@
++   index.l10n.js copies them into window.L10n. No hard-coded fallback text anywhere.
++   MODULE-RECIPE 5.3: a Dictionary, not an anonymous object — Json.Serialize camel-cases an anonymous object's property
++   names (Q371), and the page must receive these keys exactly as the resx names them (R-4c; the draft used an anonymous
++   object and relied on index.l10n.js to re-capitalize). *@
+ <script id="claims-l10n" type="application/json">
+-    @Json.Serialize(new
++    @Json.Serialize(new Dictionary<string, string>
+     {
+-        Status = SharedLocalizer["Status"].Value,
+-        ShowAll = SharedLocalizer["ShowAll"].Value,
+-        Apply = SharedLocalizer["Apply"].Value,
+-        Reset = SharedLocalizer["Reset"].Value,
+-        Cancel = SharedLocalizer["Cancel"].Value,
+-        Close = SharedLocalizer["Close"].Value,
+-        Copy = SharedLocalizer["Copy"].Value,
+-        Filter = SharedLocalizer["Filter"].Value,
+-        SaveView = SharedLocalizer["SaveView"].Value,
+-        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+-        Search = SharedLocalizer["Search"].Value,
+-        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+-        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+-        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+-        ClaimsTitle = Localizer["ClaimsTitle"].Value,
+-        PageDescription = Localizer["PageDescription"].Value,
+-        AddNewClaims = Localizer["AddNewClaims"].Value,
+-        ActionsHeader = Localizer["ActionsHeader"].Value,
+-        ClaimNumber = Localizer["ClaimNumber"].Value,
+-        ClaimId = Localizer["ClaimId"].Value,
+-        ShipmentId = Localizer["ShipmentId"].Value,
+-        ShipmentIdHelp = Localizer["ShipmentIdHelp"].Value,
+-        ClaimedAmount = Localizer["ClaimedAmount"].Value,
+-        CurrencyLabel = Localizer["CurrencyLabel"].Value,
+-        ClaimSummary = Localizer["ClaimSummary"].Value,
+-        QuickView = Localizer["QuickView"].Value,
+-        EmptyState = Localizer["EmptyState"].Value,
+-        ListErrorState = Localizer["ListErrorState"].Value,
+-        Retry = Localizer["Retry"].Value,
+-        NotProvided = Localizer["NotProvided"].Value,
+-        SupportReference = Localizer["SupportReference"].Value,
+-        CopyDone = Localizer["CopyDone"].Value,
+-        TotalLabel = Localizer["TotalLabel"].Value,
+-        ApprovedAmountNotListed = Localizer["ApprovedAmountNotListed"].Value,
+-        StatusOpen = Localizer["StatusOpen"].Value,
+-        StatusInvestigating = Localizer["StatusInvestigating"].Value,
+-        StatusApproved = Localizer["StatusApproved"].Value,
+-        StatusRejected = Localizer["StatusRejected"].Value,
+-        StatusSettled = Localizer["StatusSettled"].Value,
+-        StatusClosed = Localizer["StatusClosed"].Value,
+-        StatusWithdrawn = Localizer["StatusWithdrawn"].Value,
+-        ShipmentStatusDraft = Localizer["ShipmentStatusDraft"].Value,
+-        ShipmentStatusPlanned = Localizer["ShipmentStatusPlanned"].Value,
+-        ShipmentStatusDispatched = Localizer["ShipmentStatusDispatched"].Value,
+-        ShipmentStatusInTransit = Localizer["ShipmentStatusInTransit"].Value,
+-        ShipmentStatusDelivered = Localizer["ShipmentStatusDelivered"].Value,
+-        ShipmentStatusException = Localizer["ShipmentStatusException"].Value,
+-        ShipmentStatusClosed = Localizer["ShipmentStatusClosed"].Value,
+-        ShipmentStatusCancelled = Localizer["ShipmentStatusCancelled"].Value,
+-        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+-        Resolve = Localizer["Resolve"].Value,
+-        ResolveFirst = Localizer["ResolveFirst"].Value,
+-        ShipmentNumber = Localizer["ShipmentNumber"].Value,
+-        ShipmentStatus = Localizer["ShipmentStatus"].Value,
+-        EligibilityNote = Localizer["EligibilityNote"].Value,
+-        ShipmentIneligible = Localizer["ShipmentIneligible"].Value,
+-        LinkShipmentCarrier = Localizer["LinkShipmentCarrier"].Value,
+-        NoShipmentCarrier = Localizer["NoShipmentCarrier"].Value,
+-        ReasonCode = Localizer["ReasonCode"].Value,
+-        AmountHelp = Localizer["AmountHelp"].Value,
+-        CurrencyHelp = Localizer["CurrencyHelp"].Value,
+-        EvidenceReferenceIds = Localizer["EvidenceReferenceIds"].Value,
+-        EvidenceReference = Localizer["EvidenceReference"].Value,
+-        AddEvidenceReference = Localizer["AddEvidenceReference"].Value,
+-        RemoveEvidenceReference = Localizer["RemoveEvidenceReference"].Value,
+-        EvidenceHelp = Localizer["EvidenceHelp"].Value,
+-        CreateClaim = Localizer["CreateClaim"].Value,
+-        ClaimCreated = Localizer["ClaimCreated"].Value,
+-        ClaimCreateReplayed = Localizer["ClaimCreateReplayed"].Value,
+-        TransitionTitle = Localizer["TransitionTitle"].Value,
+-        TransitionTarget = Localizer["TransitionTarget"].Value,
+-        ActionInvestigate = Localizer["ActionInvestigate"].Value,
+-        ActionWithdraw = Localizer["ActionWithdraw"].Value,
+-        ActionApprove = Localizer["ActionApprove"].Value,
+-        ActionReject = Localizer["ActionReject"].Value,
+-        ActionSettle = Localizer["ActionSettle"].Value,
+-        ActionClose = Localizer["ActionClose"].Value,
+-        TargetSettledLabel = Localizer["TargetSettledLabel"].Value,
+-        SettledNoPaymentNote = Localizer["SettledNoPaymentNote"].Value,
+-        OccurredAt = Localizer["OccurredAt"].Value,
+-        OccurredAtHelp = Localizer["OccurredAtHelp"].Value,
+-        ApprovedAmount = Localizer["ApprovedAmount"].Value,
+-        ApprovedAmountHelp = Localizer["ApprovedAmountHelp"].Value,
+-        ResolutionCode = Localizer["ResolutionCode"].Value,
+-        NoteLabel = Localizer["NoteLabel"].Value,
+-        SubmitTransition = Localizer["SubmitTransition"].Value,
+-        ConfirmTransition = Localizer["ConfirmTransition"].Value,
+-        TransitionCompleted = Localizer["TransitionCompleted"].Value,
+-        TransitionReplayed = Localizer["TransitionReplayed"].Value,
+-        ApprovedAmountResult = Localizer["ApprovedAmountResult"].Value,
+-        RequestPending = Localizer["RequestPending"].Value,
+-        ErrInvalidRequest = Localizer["ErrInvalidRequest"].Value,
+-        ErrUnauthenticated = Localizer["ErrUnauthenticated"].Value,
+-        ErrForbidden = Localizer["ErrForbidden"].Value,
+-        ErrClaimNotFound = Localizer["ErrClaimNotFound"].Value,
+-        ErrUnsupportedMediaType = Localizer["ErrUnsupportedMediaType"].Value,
+-        ErrClaimShipmentIneligible = Localizer["ErrClaimShipmentIneligible"].Value,
+-        ErrClaimCarrierMismatch = Localizer["ErrClaimCarrierMismatch"].Value,
+-        ErrClaimAmountInvalid = Localizer["ErrClaimAmountInvalid"].Value,
+-        ErrClaimApprovalAmountInvalid = Localizer["ErrClaimApprovalAmountInvalid"].Value,
+-        ErrClaimApprovedAmountNotAllowed = Localizer["ErrClaimApprovedAmountNotAllowed"].Value,
+-        ErrInvalidClaimTransition = Localizer["ErrInvalidClaimTransition"].Value,
+-        ErrClaimCorrelationMismatch = Localizer["ErrClaimCorrelationMismatch"].Value,
+-        ErrIdempotencyKeyReused = Localizer["ErrIdempotencyKeyReused"].Value,
+-        ErrClaimReferenceInvalid = Localizer["ErrClaimReferenceInvalid"].Value,
+-        ErrClaimReferenceIncomplete = Localizer["ErrClaimReferenceIncomplete"].Value,
+-        ErrClaimReferenceUnavailable = Localizer["ErrClaimReferenceUnavailable"].Value,
+-        ErrClaimStorageUnavailable = Localizer["ErrClaimStorageUnavailable"].Value,
+-        ErrInternalError = Localizer["ErrInternalError"].Value
++        ["Status"] = SharedLocalizer["Status"].Value,
++        ["ShowAll"] = SharedLocalizer["ShowAll"].Value,
++        ["Apply"] = SharedLocalizer["Apply"].Value,
++        ["Reset"] = SharedLocalizer["Reset"].Value,
++        ["Cancel"] = SharedLocalizer["Cancel"].Value,
++        ["Close"] = SharedLocalizer["Close"].Value,
++        ["Copy"] = SharedLocalizer["Copy"].Value,
++        ["Filter"] = SharedLocalizer["Filter"].Value,
++        ["SaveView"] = SharedLocalizer["SaveView"].Value,
++        ["ColumnVisibility"] = SharedLocalizer["ColumnVisibility"].Value,
++        ["Search"] = SharedLocalizer["Search"].Value,
++        ["ErrorOccurred"] = SharedLocalizer["ErrorOccurred"].Value,
++        ["RecordSaved"] = SharedLocalizer["RecordSaved"].Value,
++        ["AreYouSure"] = SharedLocalizer["AreYouSure"].Value,
++        ["ClaimsTitle"] = Localizer["ClaimsTitle"].Value,
++        ["PageDescription"] = Localizer["PageDescription"].Value,
++        ["AddNewClaims"] = Localizer["AddNewClaims"].Value,
++        ["ActionsHeader"] = Localizer["ActionsHeader"].Value,
++        ["ClaimNumber"] = Localizer["ClaimNumber"].Value,
++        ["ClaimId"] = Localizer["ClaimId"].Value,
++        ["ShipmentId"] = Localizer["ShipmentId"].Value,
++        ["ShipmentIdHelp"] = Localizer["ShipmentIdHelp"].Value,
++        ["ClaimedAmount"] = Localizer["ClaimedAmount"].Value,
++        ["CurrencyLabel"] = Localizer["CurrencyLabel"].Value,
++        ["ClaimSummary"] = Localizer["ClaimSummary"].Value,
++        ["QuickView"] = Localizer["QuickView"].Value,
++        ["EmptyState"] = Localizer["EmptyState"].Value,
++        ["ListErrorState"] = Localizer["ListErrorState"].Value,
++        ["Retry"] = Localizer["Retry"].Value,
++        ["NotProvided"] = Localizer["NotProvided"].Value,
++        ["SupportReference"] = Localizer["SupportReference"].Value,
++        ["CopyDone"] = Localizer["CopyDone"].Value,
++        ["TotalLabel"] = Localizer["TotalLabel"].Value,
++        ["ApprovedAmountNotListed"] = Localizer["ApprovedAmountNotListed"].Value,
++        ["StatusOpen"] = Localizer["StatusOpen"].Value,
++        ["StatusInvestigating"] = Localizer["StatusInvestigating"].Value,
++        ["StatusApproved"] = Localizer["StatusApproved"].Value,
++        ["StatusRejected"] = Localizer["StatusRejected"].Value,
++        ["StatusSettled"] = Localizer["StatusSettled"].Value,
++        ["StatusClosed"] = Localizer["StatusClosed"].Value,
++        ["StatusWithdrawn"] = Localizer["StatusWithdrawn"].Value,
++        ["ShipmentStatusDraft"] = Localizer["ShipmentStatusDraft"].Value,
++        ["ShipmentStatusPlanned"] = Localizer["ShipmentStatusPlanned"].Value,
++        ["ShipmentStatusDispatched"] = Localizer["ShipmentStatusDispatched"].Value,
++        ["ShipmentStatusInTransit"] = Localizer["ShipmentStatusInTransit"].Value,
++        ["ShipmentStatusDelivered"] = Localizer["ShipmentStatusDelivered"].Value,
++        ["ShipmentStatusException"] = Localizer["ShipmentStatusException"].Value,
++        ["ShipmentStatusClosed"] = Localizer["ShipmentStatusClosed"].Value,
++        ["ShipmentStatusCancelled"] = Localizer["ShipmentStatusCancelled"].Value,
++        ["FormTitleCreate"] = Localizer["FormTitleCreate"].Value,
++        ["Resolve"] = Localizer["Resolve"].Value,
++        ["ResolveFirst"] = Localizer["ResolveFirst"].Value,
++        ["ShipmentNumber"] = Localizer["ShipmentNumber"].Value,
++        ["ShipmentStatus"] = Localizer["ShipmentStatus"].Value,
++        ["EligibilityNote"] = Localizer["EligibilityNote"].Value,
++        ["ShipmentIneligible"] = Localizer["ShipmentIneligible"].Value,
++        ["LinkShipmentCarrier"] = Localizer["LinkShipmentCarrier"].Value,
++        ["NoShipmentCarrier"] = Localizer["NoShipmentCarrier"].Value,
++        ["ReasonCode"] = Localizer["ReasonCode"].Value,
++        ["AmountHelp"] = Localizer["AmountHelp"].Value,
++        ["CurrencyHelp"] = Localizer["CurrencyHelp"].Value,
++        ["EvidenceReferenceIds"] = Localizer["EvidenceReferenceIds"].Value,
++        ["EvidenceReference"] = Localizer["EvidenceReference"].Value,
++        ["AddEvidenceReference"] = Localizer["AddEvidenceReference"].Value,
++        ["RemoveEvidenceReference"] = Localizer["RemoveEvidenceReference"].Value,
++        ["EvidenceHelp"] = Localizer["EvidenceHelp"].Value,
++        ["CreateClaim"] = Localizer["CreateClaim"].Value,
++        ["ClaimCreated"] = Localizer["ClaimCreated"].Value,
++        ["ClaimCreateReplayed"] = Localizer["ClaimCreateReplayed"].Value,
++        ["TransitionTitle"] = Localizer["TransitionTitle"].Value,
++        ["TransitionTarget"] = Localizer["TransitionTarget"].Value,
++        ["ActionInvestigate"] = Localizer["ActionInvestigate"].Value,
++        ["ActionWithdraw"] = Localizer["ActionWithdraw"].Value,
++        ["ActionApprove"] = Localizer["ActionApprove"].Value,
++        ["ActionReject"] = Localizer["ActionReject"].Value,
++        ["ActionSettle"] = Localizer["ActionSettle"].Value,
++        ["ActionClose"] = Localizer["ActionClose"].Value,
++        ["TargetSettledLabel"] = Localizer["TargetSettledLabel"].Value,
++        ["SettledNoPaymentNote"] = Localizer["SettledNoPaymentNote"].Value,
++        ["OccurredAt"] = Localizer["OccurredAt"].Value,
++        ["OccurredAtHelp"] = Localizer["OccurredAtHelp"].Value,
++        ["ApprovedAmount"] = Localizer["ApprovedAmount"].Value,
++        ["ApprovedAmountHelp"] = Localizer["ApprovedAmountHelp"].Value,
++        ["ResolutionCode"] = Localizer["ResolutionCode"].Value,
++        ["NoteLabel"] = Localizer["NoteLabel"].Value,
++        ["SubmitTransition"] = Localizer["SubmitTransition"].Value,
++        ["ConfirmTransition"] = Localizer["ConfirmTransition"].Value,
++        ["TransitionCompleted"] = Localizer["TransitionCompleted"].Value,
++        ["TransitionReplayed"] = Localizer["TransitionReplayed"].Value,
++        ["ApprovedAmountResult"] = Localizer["ApprovedAmountResult"].Value,
++        ["RequestPending"] = Localizer["RequestPending"].Value,
++        ["ErrInvalidRequest"] = Localizer["ErrInvalidRequest"].Value,
++        ["ErrUnauthenticated"] = Localizer["ErrUnauthenticated"].Value,
++        ["ErrForbidden"] = Localizer["ErrForbidden"].Value,
++        ["ErrClaimNotFound"] = Localizer["ErrClaimNotFound"].Value,
++        ["ErrUnsupportedMediaType"] = Localizer["ErrUnsupportedMediaType"].Value,
++        ["ErrClaimShipmentIneligible"] = Localizer["ErrClaimShipmentIneligible"].Value,
++        ["ErrClaimCarrierMismatch"] = Localizer["ErrClaimCarrierMismatch"].Value,
++        ["ErrClaimAmountInvalid"] = Localizer["ErrClaimAmountInvalid"].Value,
++        ["ErrClaimApprovalAmountInvalid"] = Localizer["ErrClaimApprovalAmountInvalid"].Value,
++        ["ErrClaimApprovedAmountNotAllowed"] = Localizer["ErrClaimApprovedAmountNotAllowed"].Value,
++        ["ErrInvalidClaimTransition"] = Localizer["ErrInvalidClaimTransition"].Value,
++        ["ErrClaimCorrelationMismatch"] = Localizer["ErrClaimCorrelationMismatch"].Value,
++        ["ErrIdempotencyKeyReused"] = Localizer["ErrIdempotencyKeyReused"].Value,
++        ["ErrClaimReferenceInvalid"] = Localizer["ErrClaimReferenceInvalid"].Value,
++        ["ErrClaimReferenceIncomplete"] = Localizer["ErrClaimReferenceIncomplete"].Value,
++        ["ErrClaimReferenceUnavailable"] = Localizer["ErrClaimReferenceUnavailable"].Value,
++        ["ErrClaimStorageUnavailable"] = Localizer["ErrClaimStorageUnavailable"].Value,
++        ["ErrInternalError"] = Localizer["ErrInternalError"].Value
+     })
+ </script>
+--- draft-v4/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js
++++ final/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js
+@@ -2,7 +2,7 @@
+ 
+ /**
+  * MOD-0187 Claims — tenant list page (pack §32, golden-reference slim, bounded DataTables v2 profile).
+- * DRAFT overlay — not built, not runtime-verified, not writer-complete.
++ * Built by R-4c from the September draft v4 (mvp6-claims-ui-draft-04), held against MODULE-RECIPE.md.
+  *
+  * Bound operations only (pack §32.3): queryClaims (list/filter/reload), createClaim (create offcanvas),
+  * transitionClaim (row action) and the Shipment resolve projection. Every request goes to the same-origin adapter
+@@ -12,8 +12,10 @@
+  * server paging/search/sort (CU-SCR-04), multi-select status (CU-SCR-05), by-ID claim GET and Details page (§32.3).
+  *
+  * Payload rule (pack §32.6/§32.8): values are sent exactly as typed — no trim, no uppercase, no number conversion.
+- * One pending request per intent; a retry after network/500/503 re-sends the same Idempotency-Key with identical body
+- * text; an edited payload is a new intent with a new key.
++ * One pending request per intent. An intent is one opened create form or transition panel, not one payload (Q403,
++ * MODULE-RECIPE 3.1): the Idempotency-Key is minted when the form or panel opens and kept across edits, failures and
++ * retries until it closes. An edited retry after a lost response therefore answers 409 IDEMPOTENCY_KEY_REUSED instead of
++ * creating a second claim, and the form stops there (R-4c; the September draft re-minted the key per payload).
+  */
+ const ClaimsList = (function () {
+     const endpoint = '/SupplyChain/Claims/api';
+@@ -103,14 +105,14 @@
+     const permissions = readPermissions();
+ 
+     // Create intent and resolve state.
+-    let createIntent = null;           // { key, bodyText, blocked }
++    let createIntent = null;           // { key, blocked, blockedFailure } — minted when the form opens
+     let createPending = false;
+     let resolveSequence = 0;
+     let resolvedShipment = null;       // { shipmentId (exact typed text), shipmentNumber, status, carrierId }
+ 
+     // Transition intent and state.
+     let transitionContext = null;      // { claimId, shipmentId, claimNumber, fromStatus }
+-    let transitionIntent = null;       // { claimId, key, bodyText, blocked }
++    let transitionIntent = null;       // { claimId, key, blocked, blockedFailure } — minted when the panel opens
+     let transitionPending = false;
+ 
+     // ─── Basics ──────────────────────────────────────────────────────────────
+@@ -138,6 +140,7 @@
+     };
+     const t = (key) => L[key] || '';
+     const uuid = () => crypto.randomUUID();
++    const newIntent = (extra) => Object.assign({ key: uuid(), blocked: false, blockedFailure: null }, extra);
+     const escapeHtml = (value) => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;')
+         .replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+     const isText = (value) => typeof value === 'string';
+@@ -284,8 +287,10 @@
+         const errorHost = document.getElementById('claims-error-state');
+         errorHost?.classList.toggle('d-none', state !== 'error');
+         if (state === 'error' && failure) {
++            // MODULE-RECIPE 3.11: a failed read uses read wording. The write texts ("the outcome is not confirmed; try the
++            // same request again") belong to an intent, and a list load has none (R-4c; the draft chose them by code).
+             const message = document.getElementById('claims-error-message');
+-            if (message) message.textContent = failure.code ? failureText(failure) : t('ListErrorState');
++            if (message) message.textContent = t('ListErrorState');
+             const referenceRow = document.getElementById('claims-error-reference');
+             const referenceValue = document.getElementById('claims-error-reference-value');
+             const referenceCopy = document.getElementById('claims-error-reference-copy');
+@@ -297,6 +302,14 @@
+         }
+     };
+ 
++    // MODULE-RECIPE 3.6: a 403 on the list is the denied card inside the shell, never the error state or a toast.
++    const showListDenied = () => {
++        const surface = document.getElementById('claimsListSurface');
++        const denied = document.getElementById('claimsListDenied');
++        if (!surface || !denied) return;
++        surface.hidden = true; surface.setAttribute('inert', ''); denied.hidden = false;
++    };
++
+     const isListEnvelope = (body) => body !== null && typeof body === 'object' && Array.isArray(body.items)
+         && body.items.every((item) => item !== null && typeof item === 'object' && !Array.isArray(item));
+ 
+@@ -318,6 +331,7 @@
+             if (!response.ok) {
+                 const failure = await readFailure(response);
+                 if (response.status === 401) handleUnauthorized();
++                if (response.status === 403) { showListDenied(); callback({ data: [] }); return; }
+                 setListState('error', failure);
+                 callback({ data: [] });
+                 return;
+@@ -447,7 +461,7 @@
+         if (list) list.replaceChildren();
+         hideAlert('formClaimAlert');
+         clearResolvedShipment();
+-        createIntent = null;
++        createIntent = newIntent();
+         createOpener = document.activeElement instanceof HTMLElement && document.activeElement !== document.body
+             ? document.activeElement : document.querySelector('.add-new');
+         offcanvas('offcanvasCreateEdit')?.show();
+@@ -538,9 +552,8 @@
+         if (!ELIGIBLE_SHIPMENT_STATUSES.has(resolvedShipment.status)) return;
+         hideAlert('formClaimAlert');
+         const bodyText = buildCreateBody();
+-        if (!createIntent || createIntent.bodyText !== bodyText) {
+-            createIntent = { key: uuid(), bodyText, blocked: false };
+-        } else if (createIntent.blocked) {
++        if (!createIntent) createIntent = newIntent();
++        if (createIntent.blocked) {
+             showAlert('formClaimAlert', createIntent.blockedFailure);
+             return;
+         }
+@@ -550,7 +563,7 @@
+         if (save) save.disabled = true;
+         try {
+             const response = await fetch(endpoint, {
+-                method: 'POST', credentials: 'same-origin', headers: mutationHeaders(intent.key), body: intent.bodyText
++                method: 'POST', credentials: 'same-origin', headers: mutationHeaders(intent.key), body: bodyText
+             });
+             if (response.ok) {
+                 let result = null;
+@@ -594,8 +607,8 @@
+                 showAlert('formClaimAlert', failure);
+                 return;
+             default:
+-                // 400/415/422: inputs kept. 500/502/503: same key + identical body on the explicit retry.
+-                if (!retryable(failure) && failure.status !== 422 && failure.status !== 400) createIntent = null;
++                // 400/415/422 keep the inputs; 500/502/503 keep the outcome open. The key stays with the opened form either
++                // way: only closing the form ends the intent (Q403).
+                 showAlert('formClaimAlert', failure);
+         }
+     };
+@@ -607,7 +620,7 @@
+         const targets = allowedTargets(row);
+         if (!targets.includes(target)) return;
+         transitionContext = { claimId, shipmentId: row.shipmentId, claimNumber: row.claimNumber, fromStatus: row.status };
+-        transitionIntent = null;
++        transitionIntent = newIntent({ claimId });
+         hideAlert('formClaimTransitionAlert');
+         const number = document.getElementById('transitionClaimNumber');
+         if (number) number.textContent = isText(row.claimNumber) ? row.claimNumber : t('NotProvided');
+@@ -676,9 +689,8 @@
+         if (!context || transitionPending) return;
+         hideAlert('formClaimTransitionAlert');
+         const { target, bodyText } = buildTransitionBody();
+-        if (!transitionIntent || transitionIntent.claimId !== context.claimId || transitionIntent.bodyText !== bodyText) {
+-            transitionIntent = { claimId: context.claimId, key: uuid(), bodyText, blocked: false };
+-        } else if (transitionIntent.blocked) {
++        if (!transitionIntent || transitionIntent.claimId !== context.claimId) transitionIntent = newIntent({ claimId: context.claimId });
++        if (transitionIntent.blocked) {
+             showAlert('formClaimTransitionAlert', transitionIntent.blockedFailure);
+             return;
+         }
+@@ -689,7 +701,7 @@
+         const url = `${endpoint}/${encodeURIComponent(context.claimId)}/transition?shipmentId=${encodeURIComponent(context.shipmentId)}`;
+         try {
+             const response = await fetch(url, {
+-                method: 'POST', credentials: 'same-origin', headers: mutationHeaders(intent.key), body: intent.bodyText
++                method: 'POST', credentials: 'same-origin', headers: mutationHeaders(intent.key), body: bodyText
+             });
+             if (response.ok) {
+                 let result = null;
+@@ -1084,8 +1096,9 @@
+             el.addEventListener('show.bs.offcanvas', () => { el.inert = false; });
+             el.addEventListener('hidden.bs.offcanvas', () => {
+                 el.inert = true;
+-                if (id === 'offcanvasClaimTransition') transitionContext = null;
++                if (id === 'offcanvasClaimTransition') { transitionContext = null; transitionIntent = null; }
+                 if (id === 'offcanvasCreateEdit') {
++                    createIntent = null;
+                     clearResolvedShipment();
+                     restoreCreateOpener();
+                 }
+--- draft-v4/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.l10n.js
++++ final/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.l10n.js
+@@ -1,8 +1,9 @@
+ 'use strict';
+ 
+-// MOD-0187 Claims — L10n bridge normalizer (golden-reference slim pattern). DRAFT overlay — not built.
+-// Reads #claims-l10n, normalizes names to PascalCase into window.L10n and warns (never substitutes text) when a key is
+-// missing, so a missing resource is visible in the console instead of rendering an English fallback.
++// MOD-0187 Claims — L10n bridge reader (golden-reference slim pattern). Built by R-4c from the September draft v4.
++// Reads #claims-l10n into window.L10n and warns (never substitutes text) when a key is missing, so a missing resource is
++// visible in the console instead of rendering an English fallback. The bridge is a Dictionary (MODULE-RECIPE 5.3), so the
++// keys arrive exactly as the resx names them and are copied as they are; the draft re-capitalized camel-cased names.
+ (function () {
+     const payload = document.getElementById('claims-l10n');
+     const requiredKeys = [
+@@ -131,15 +132,9 @@
+         return;
+     }
+ 
+-    const toPascalCase = (key) => key.charAt(0).toUpperCase() + key.slice(1);
+-
+     try {
+         const raw = JSON.parse(payload.textContent || '{}');
+-        const normalized = {};
+-        for (const key of Object.keys(raw)) {
+-            normalized[toPascalCase(key)] = raw[key];
+-        }
+-        window.L10n = Object.assign({}, window.L10n || {}, normalized);
++        window.L10n = Object.assign({}, window.L10n || {}, raw);
+         logMissingKeys(window.L10n);
+     } catch (error) {
+         console.error('[Claims] Localization payload could not be parsed.', error);
+--- draft-v4/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ClaimsManagementManifestProvider.cs
++++ final/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ClaimsManagementManifestProvider.cs
+@@ -4,14 +4,16 @@
+ namespace Diten.SupplyChainService.Api.ModuleRegistration;
+ 
+ /// <summary>
+-/// MOD-0187 Claims Management self-registration manifest (pack §33; DCP-009 §21). DRAFT overlay — not built.
++/// MOD-0187 Claims Management self-registration manifest (pack §33; DCP-009 §21). Built by R-4c from the September draft v4.
+ /// Mirrors the Claims tenant UI (pack §32): one List page at /SupplyChain/Claims gated by supplychain.claims.read, with
+ /// the create toolbar action and the six transition row actions. Permission keys are the existing ClaimPermissions
+ /// constants (ClaimPermissions.cs:4-8, accepted archive normal-source.tar.gz edb759a0…); no new key, page or ID.
+ /// The G-SHIPREAD conjunction (supplychain.shipments.read) cannot be expressed in the single-key action model
+ /// (DCP-009 §21.5 item 4); the adapter and backend keep enforcing it.
+-/// Ships with the Claims UI only (DCP-009 §21.4): the AddSingleton line and the Nav.Module/Nav.Page keys are applied by
+-/// the integration owner from _shared-integration/ in the same change.
++/// Ships with the Claims UI only (DCP-009 §21.4): its AddSingleton line and the Nav.Module/Nav.Page keys landed in the same
++/// change (R-4c). Every enforced Claims key is declared here: investigate, decide and settle are enforced on the transition
++/// endpoint (ClaimsController.Transition's ClaimPermission, read by ClaimContextMiddleware:61) and, per target, in
++/// TransitionClaimHandler:13 through ClaimWire.Permission (ClaimModels.cs:45); they are declared as the six row actions.
+ /// </summary>
+ public sealed class ClaimsManagementManifestProvider : IModuleManifestProvider
+ {
+--- draft-v4/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/ClaimsManagementManifestProviderTests.cs
++++ final/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/ClaimsManagementManifestProviderTests.cs
+@@ -6,7 +6,7 @@
+ 
+ namespace Diten.SupplyChainService.Tests.ModuleRegistration;
+ 
+-// MOD-0187 Claims — manifest completeness (pack §33 tests M-01…M-08; TEST-PLAN.md §2). DRAFT overlay — not built.
++// MOD-0187 Claims — manifest completeness (pack §33 tests M-01…M-08; TEST-PLAN.md §2). Built and run by R-4c.
+ // Asserted in BOTH directions: every manifest key is a real ClaimPermissions constant, and every constant is modeled.
+ // The frontend view-route set is fixed here from pack §32.4 and cross-checked on the frontend side by
+ // Diten.Web.Tests.Controllers.SupplyChainClaimsControllerTests.View_routes_are_exactly_the_manifest_page (and by the

@@ -1,0 +1,11 @@
+# verify from: repository root
+# NOT FOR VERIFICATION (K6) — never shasum -c this file.
+# The three repo paths Q439 wrote, hashed AS MEASURED after the 9 edits, 2026-10-05.
+# These are working-tree bytes; this lane never staged or committed them.
+# Also recorded: the cited source of truth, which Q439 READ and did not modify.
+#
+cec7ca4f3abf3995981648a0ef219c5d9a556d02dd19bc65be203366ba4a1f88  execution/domains/supply-chain-execution/module-packs/MOD-0147-supplier-performance-risk.md
+54075c4da3c5538f175102decc8b624f86fa1ea9e875d69978a20a1425a3793b  execution/domains/supply-chain-execution/module-packs/MOD-0148-supplier-portal.md
+e311cd102bed0041ae7c58395315774e9b737c23f70b3397d6cd66b266f84d36  docs/analysis/contracts/supplier-performance.openapi.yaml
+# --- read-only reference, unmodified by this lane ---
+87a297edfb8eabf9ecc8beff7870955f46b38413a1490a05a36e3f255d77bb00  docs/analysis/contracts/supplier.openapi.yaml

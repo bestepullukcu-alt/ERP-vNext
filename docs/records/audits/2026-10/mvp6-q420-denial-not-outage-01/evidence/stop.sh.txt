@@ -1,0 +1,4 @@
+#!/bin/bash
+# usage: stop.sh <port>...  -- stops ONLY the dotnet listener on each given lane port
+for p in "$@"; do pid=$(lsof -nP -t -iTCP:$p -sTCP:LISTEN); [ -n "$pid" ] && ps -o comm= -p $pid | grep -q dotnet && kill $pid && echo "stopped $p pid $pid"; done
+for i in $(seq 1 20); do busy=0; for p in "$@"; do nc -z 127.0.0.1 $p 2>/dev/null && busy=1; done; [ $busy = 0 ] && break; sleep 0.5; done

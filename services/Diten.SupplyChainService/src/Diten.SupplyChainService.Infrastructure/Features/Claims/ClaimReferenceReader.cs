@@ -100,7 +100,12 @@ public sealed class ClaimReferenceReader(HttpClient client, IConfiguration confi
             if (response.StatusCode == HttpStatusCode.NotFound) throw new ClaimFailureException(404, "CLAIM_NOT_FOUND");
             if (response.StatusCode == HttpStatusCode.InternalServerError && await IsShipmentRootInvalid(response.Content, ct))
                 throw new ClaimFailureException(502, "CLAIM_REFERENCE_INVALID");
-            if ((int)response.StatusCode >= 500 || response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+            // Q420: a 403 from the Shipment or Carrier read means the caller lacks supplychain.shipments.read or
+            // supplychain.carriers.read. That is an authorization outcome, reported with the annex's 403 code
+            // (claims-semantics-v3.0.0.md: "403 FORBIDDEN includes scope/identity/action failures"), not as an outage.
+            // A 401 or any 5xx is still the dependency failing and stays 503.
+            if (response.StatusCode == HttpStatusCode.Forbidden) throw new ClaimFailureException(403, "FORBIDDEN");
+            if ((int)response.StatusCode >= 500 || response.StatusCode is HttpStatusCode.Unauthorized)
                 throw new ClaimFailureException(503, "CLAIM_REFERENCE_UNAVAILABLE");
             if (response.StatusCode != HttpStatusCode.OK) Invalid();
             using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));

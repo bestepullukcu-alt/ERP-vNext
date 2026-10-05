@@ -1,0 +1,21 @@
+[BEFORE] seed: create 201, read 200, shipmentId=0eb42e30-88b7-41a1-b4d7-78d1cbbfb01d, lifecycleCorrelationId=5727cb08-31be-4706-b517-eb3853cb12bf
+[BEFORE] RETURN create, user WITHOUT shipments.read
+    -> 503 code=DEPENDENCY_UNAVAILABLE message='DEPENDENCY UNAVAILABLE' (0.53s)
+[BEFORE] RETURN create, user WITH shipments.read (control: reaches business rules)
+    -> 422 code=SHIPMENT_NOT_RETURNABLE message='SHIPMENT NOT RETURNABLE' (0.04s)
+[BEFORE] CLAIM create naming a carrier, user WITHOUT carriers.read
+    -> 503 code=CLAIM_REFERENCE_UNAVAILABLE message='Reference service is unavailable.' (0.14s)
+[BEFORE] CLAIM create, user WITHOUT shipments.read
+    -> 503 code=CLAIM_REFERENCE_UNAVAILABLE message='Reference service is unavailable.' (0.01s)
+[BEFORE] CLAIM create naming a carrier, user WITH carriers.read (control)
+    -> 404 code=CLAIM_NOT_FOUND message='Claim or referenced resource was not found.' (0.06s)
+[BEFORE] dependency itself (B, GET shipment, full grant): 500 1.54s {"error":{"code":"INTERNAL_ERROR","message":"Operation could not be completed.","correlationId":"0ef34170-7189-4fd2-8ecf-c2e39716c144"},"contractVersion":"v1"}
+[BEFORE] RETURN create, fully granted, dependency DOWN
+    -> 503 code=DEPENDENCY_UNAVAILABLE message='DEPENDENCY UNAVAILABLE' (1.59s)
+[BEFORE] CLAIM create, fully granted, dependency DOWN
+    -> 503 code=CLAIM_REFERENCE_UNAVAILABLE message='Reference service is unavailable.' (1.55s)
+[BEFORE] dependency itself (B, GET shipment, full grant): refused 0s 
+[BEFORE] RETURN create, fully granted, dependency DOWN
+    -> 503 code=DEPENDENCY_UNAVAILABLE message='DEPENDENCY UNAVAILABLE' (0.03s)
+[BEFORE] CLAIM create, fully granted, dependency DOWN
+    -> 503 code=CLAIM_REFERENCE_UNAVAILABLE message='Reference service is unavailable.' (0.02s)

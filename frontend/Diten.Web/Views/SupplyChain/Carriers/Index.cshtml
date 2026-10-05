@@ -1,0 +1,78 @@
+@using Diten.Web.Views.SupplyChain.Carriers
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CarriersIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["CarriersTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@if (!Perms.Has("supplychain.carriers.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["CarriersTitle"].Value" />
+    return;
+}
+
+@* R-4a (MODULE-RECIPE 3.6/4.1): the list has three distinct states — skeleton while the first load runs, the table, and a
+   failed load shown as an alert in place of the table (a 403 shows the denied card instead). A failed load used to leave
+   an empty table under a toast, which reads as "no carriers" (Q231 D-2 shape, measured live by R-4a). *@
+<div id="carriersListSurface">
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/SupplyChain/Carriers/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["CarriersTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="carriersLoadError" class="alert alert-danger d-none" role="alert"></div>
+<partial name="~/Views/SupplyChain/Carriers/_DataTable.cshtml" />
+</div>
+<div id="carriersListDenied" hidden><partial name="_AccessDenied" model="@Localizer["CarriersTitle"].Value" /></div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview"
+     aria-labelledby="carrierQuickViewTitle">
+    <div class="offcanvas-header border-bottom p-4">
+        <div>
+            <h5 id="carrierQuickViewTitle" class="offcanvas-title">@Localizer["QuickView"]</h5>
+            <small id="carrierQuickViewCode" class="text-muted"></small>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+    <div class="offcanvas-body p-4">
+        <dl class="row mb-0">
+            <dt class="col-5 mb-3">@Localizer["DisplayName"]</dt>
+            <dd id="carrierQuickViewName" class="col-7 mb-3"></dd>
+            <dt class="col-5 mb-3">@Localizer["SupportedModes"]</dt>
+            <dd id="carrierQuickViewModes" class="col-7 mb-3"></dd>
+            <dt class="col-5 mb-3">@SharedLocalizer["Status"]</dt>
+            <dd id="carrierQuickViewStatus" class="col-7 mb-3"></dd>
+        </dl>
+    </div>
+</div>
+
+@if (Perms.Has("supplychain.carriers.create"))
+{
+    <partial name="~/Views/SupplyChain/Carriers/_CreateEditOffcanvas.cshtml" />
+}
+@if (Perms.Has("supplychain.carriers.status.change"))
+{
+    <partial name="~/Views/SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml" />
+}
+
+<script id="carrier-permissions" type="application/json">
+    @Json.Serialize(new
+    {
+        canCreate = Perms.Has("supplychain.carriers.create"),
+        canChangeStatus = Perms.Has("supplychain.carriers.status.change")
+    })
+</script>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/SupplyChain/Carriers/_IndexL10n.cshtml" />
+    <script src="~/assets/js/SupplyChain/Carriers/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/SupplyChain/Carriers/index.js" asp-append-version="true"></script>
+}

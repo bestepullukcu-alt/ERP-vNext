@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="LoadsTitle" xml:space="preserve"><value>الحمولات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>اعرض خطط الحمولات وأنشئ خطة حمولة من مراجع شركات النقل والشحنات الموجودة.</value></data>
+  <data name="AddNewLoad" xml:space="preserve"><value>إضافة حمولة</value></data>
+  <data name="LoadNumber" xml:space="preserve"><value>رقم الحمولة</value></data>
+  <data name="CarrierId" xml:space="preserve"><value>معرّف شركة النقل</value></data>
+  <data name="CarrierIdHelp" xml:space="preserve"><value>معرّف UUID لشركة النقل. يجب أن تكون نشطة وتدعم الوسيلة المختارة.</value></data>
+  <data name="ShipmentIds" xml:space="preserve"><value>الشحنات</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>معرّف الشحنة</value></data>
+  <data name="ShipmentIdsHelp" xml:space="preserve"><value>معرّف UUID لشحنة واحدة على الأقل. يجب أن تكون الشحنات مسودة أو مخططة؛ يُحفظ الترتيب الذي تدخله.</value></data>
+  <data name="AddShipment" xml:space="preserve"><value>إضافة شحنة</value></data>
+  <data name="RemoveShipment" xml:space="preserve"><value>إزالة الشحنة</value></data>
+  <data name="Mode" xml:space="preserve"><value>الوسيلة</value></data>
+  <data name="ModeRoad" xml:space="preserve"><value>بري</value></data>
+  <data name="ModeAir" xml:space="preserve"><value>جوي</value></data>
+  <data name="ModeSea" xml:space="preserve"><value>بحري</value></data>
+  <data name="ModeRail" xml:space="preserve"><value>سكك حديدية</value></data>
+  <data name="ModeParcel" xml:space="preserve"><value>طرود</value></data>
+  <data name="PlannedDepartAt" xml:space="preserve"><value>المغادرة المخططة</value></data>
+  <data name="PlannedDepartAtHelp" xml:space="preserve"><value>التاريخ والوقت المحليان لديك. يُرسلان بتوقيت UTC.</value></data>
+  <data name="PlannedDepartAtInvalid" xml:space="preserve"><value>أدخل تاريخًا ووقتًا صالحين موجودين في منطقتك الزمنية.</value></data>
+  <data name="Stops" xml:space="preserve"><value>نقاط التوقف</value></data>
+  <data name="StopsHelp" xml:space="preserve"><value>نقطتا توقف على الأقل، مرقمتان من 1 إلى N، مع استلام واحد وتسليم واحد على الأقل.</value></data>
+  <data name="StopSequence" xml:space="preserve"><value>التسلسل</value></data>
+  <data name="StopLocationReferenceId" xml:space="preserve"><value>مرجع الموقع</value></data>
+  <data name="StopAction" xml:space="preserve"><value>الإجراء</value></data>
+  <data name="ActionPickup" xml:space="preserve"><value>استلام</value></data>
+  <data name="ActionDelivery" xml:space="preserve"><value>تسليم</value></data>
+  <data name="ActionReturn" xml:space="preserve"><value>إرجاع</value></data>
+  <data name="AddStop" xml:space="preserve"><value>إضافة نقطة توقف</value></data>
+  <data name="RemoveStop" xml:space="preserve"><value>إزالة نقطة التوقف</value></data>
+  <data name="FilterCarrierId" xml:space="preserve"><value>معرّف شركة النقل (UUID)</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusPlanned" xml:space="preserve"><value>مخططة</value></data>
+  <data name="StatusTendered" xml:space="preserve"><value>مطروحة</value></data>
+  <data name="StatusAccepted" xml:space="preserve"><value>مقبولة</value></data>
+  <data name="StatusDispatched" xml:space="preserve"><value>مُرسلة</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>مكتملة</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="EmptyList" xml:space="preserve"><value>لم يتم العثور على حمولات.</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>غير متوفر</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>مرجع الدعم</value></data>
+  <data name="ListUnavailable" xml:space="preserve"><value>تعذّر تحميل الحمولات. حاول مرة أخرى لاحقًا.</value></data>
+  <data name="ValidationError" xml:space="preserve"><value>تحقق من القيم المدخلة ثم أعد المحاولة.</value></data>
+  <data name="AccessDenied" xml:space="preserve"><value>ليس لديك إذن لتنفيذ هذا الإجراء.</value></data>
+  <data name="CreateSuccess" xml:space="preserve"><value>تم إنشاء خطة الحمولة بنجاح.</value></data>
+  <data name="CreateReplaySuccess" xml:space="preserve"><value>اكتمل طلب خطة الحمولة هذا بنجاح من قبل.</value></data>
+  <data name="RetrySameRequest" xml:space="preserve"><value>أعد المحاولة دون تغيير النموذج للحفاظ على هوية الطلب.</value></data>
+  <data name="ErrCarrierNotFound" xml:space="preserve"><value>لم يتم العثور على شركة نقل نشطة بهذا المعرّف ضمن نطاقك.</value></data>
+  <data name="ErrCarrierModeUnsupported" xml:space="preserve"><value>شركة النقل لا تدعم الوسيلة المختارة.</value></data>
+  <data name="ErrShipmentNotFound" xml:space="preserve"><value>لم يتم العثور على شحنة بهذا المعرّف ضمن نطاقك.</value></data>
+  <data name="ErrShipmentNotEligible" xml:space="preserve"><value>يمكن إضافة الشحنات المسودة أو المخططة فقط إلى الحمولة.</value></data>
+  <data name="ErrShipmentCarrierMismatch" xml:space="preserve"><value>إحدى الشحنات مُسندة بالفعل إلى شركة نقل أخرى.</value></data>
+  <data name="ErrShipmentAlreadyAssigned" xml:space="preserve"><value>إحدى الشحنات تنتمي بالفعل إلى حمولة أخرى.</value></data>
+  <data name="ErrDuplicateShipment" xml:space="preserve"><value>الشحنة نفسها مدرجة أكثر من مرة.</value></data>
+  <data name="ErrInvalidLoadStops" xml:space="preserve"><value>يجب ترقيم نقاط التوقف من 1 إلى N وأن تتضمن استلامًا وتسليمًا واحدًا على الأقل.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>تم استلام هذا الطلب بالفعل بقيم مختلفة. لتقديم طلب مختلف، أغلق هذا النموذج وافتح نموذجًا جديدًا.</value></data>
+  <data name="ErrCorrelationRootMismatch" xml:space="preserve"><value>لم يعد هذا الطلب مطابقًا للحمولة التي بدأها. أغلق هذا النموذج وافتح نموذجًا جديدًا.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>بيانات شركة النقل أو الشحنة غير متاحة مؤقتًا. أعد محاولة الطلب نفسه.</value></data>
+  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>تعذّرت قراءة بيانات شركة النقل أو الشحنة. تواصل مع الدعم مع ذكر المرجع.</value></data>
+  <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>تعذّر تأكيد الحالة الحالية للشحنة. أعد محاولة الطلب نفسه لاحقًا.</value></data>
+  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>نتيجة الطلب غير متاحة حالياً.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>حدث خطأ غير متوقع. تواصل مع الدعم مع ذكر المرجع.</value></data>
+</root>

@@ -3,16 +3,16 @@ id: MOD-0184
 name: Carrier Management
 domain: supply-chain-execution
 service: Diten.SupplyChainService
-shell: none
-golden_reference: none
+shell: tenant
+golden_reference: slim
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "Owner-approved bounded runtime 2026-09-17; canonical 1.1.0 publication and uptake verified; see section29. Historical draft proposals below superseded by section29."
+status_note: "Bounded backend E4 remains CT-accepted under sections 29-30 and ready-for-dev; tenant UI scope owner-approved 2026-10-04 (section 32), UI DEV released to R-4a, independent UI VER open."
 owner: supply-chain-execution / control-tower
 branch: feature/mvp6-logistics
 started: 2026-09-15
 target: 2026-09-30
-form_field_count: 0
+form_field_count: 4
 ---
 
 # MOD-0184 — Carrier Management
@@ -477,3 +477,87 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 1. The Carrier v2 UI source is not archived in the repository (VER `docs/records/audits/2026-09/mvp6-carrier-ui-ver-01/`, Index `da254157…`); the view-route set is proven only after integration.
 2. The candidate's both-direction completeness tests are not yet written (M-02/M-03).
 3. Runtime tests R-02…R-04 need a native executor and the integrated target.
+
+## 32. Tenant UI scope — MVP6-CARRIER-UI-SCOPE-01 (approved 2026-10-04)
+
+**Approved** by the owner on 2026-10-04: `docs/records/decisions/2026-10/mvp6-carrier-loads-ui-scope-owner-decision-01.md`. The text below is
+the scope package's proposed section (`docs/roadmap/plans/mvp6-carrier-ui-scope-01/PROPOSED-PACK.patch` `93ee76da…7777d`), renumbered from §31
+(§31 is now Self-registration) with two recorded changes: the intent sentence in §32.3 (see there) and the gate disposition in §32.5.
+
+This section began as a proposed expansion of the module pack. It does not alter or reopen the bounded backend E4
+acceptance in §§29–30. Because UI, gateway and shared permission/catalog work were expressly excluded from that
+acceptance, the existing backend readiness remains scoped to §§29–30 and UI dispatch remains HELD pending an exact owner decision,
+Phase 1.5 approval, exact pack-delta application and versioned UI dispatch.
+
+### 32.1 Bounded screen and contract surface
+
+The first tenant UI owns only list, create and status change over the published Carrier operations
+`queryCarriers`, `createCarrier` and `changeCarrierStatus`. It must not add detail-by-id, edit, delete, bulk,
+import/export, lookup, server paging/search/sort, Supplier ownership or a new backend operation. The browser uses
+same-origin MVC adapter routes; the adapter's only service egress is Gateway port 5000. It never calls SupplyChain
+port 5061 directly.
+
+The create surface has exactly four user fields: required `carrierCode`, required `displayName`, required
+`supportedModes`, and optional nullable `externalReference`. Tenant/LE, identity, status, audit and version fields
+are server-owned. Therefore `form_field_count: 4`, `shell: tenant` and `golden_reference: slim`. The status row
+command's `targetStatus` and `reasonCode` are not create fields. Empty `reasonCode` is valid; no trim, max-length,
+case normalization, mode deduplication or other contract tightening is permitted.
+
+### 32.2 UI and permission behavior
+
+- Page route: `/SupplyChain/Carriers`; `data-dt-standard="v2"`; `_LayoutTenantShell.cshtml` consumed unchanged.
+- Read: `supplychain.carriers.read`; create: `supplychain.carriers.create`; status:
+  `supplychain.carriers.status.change`. Missing action grants remove only that action. Backend authorization remains
+  authoritative for every adapter call.
+- UAS-001: an authenticated user without read sees only `_AccessDenied`, without title, filter, skeleton, table,
+  buttons, toast or redirect. An unauthenticated user uses the standard shell-less 401 surface.
+- Seven tenant languages (`en,tr,fr,es,zh,ar,ru`) cover all screen/action/validation/empty/error/replay text.
+  Wire enum/error tokens are never translated. Premium SweetAlert2/shared confirmation primitives are used; no
+  native alert/confirm.
+- The Slim template is deliberately create-only. Because no detail/edit/delete/bulk operation exists, its generic
+  checkbox, bulk, edit, delete and by-id quick-view affordances are omitted. The list uses client-side DataTables
+  search/order/page; only the optional exact `status` query reaches the backend.
+
+### 32.3 Replay, errors and lifecycle
+
+The UI preserves the normative Carrier annex. One stable idempotency key belongs to one logical create/status
+intent. In-flight duplicate submit is suppressed; network loss/500/503 retries the exact body with the same key.
+**An intent is one opened create form or status panel, not one payload** (applied 2026-10-04 instead of the scope's "A changed payload is
+a new intent and key", per the owner decision above and `cea01354e`/Q403): the key is minted when the form or panel opens and kept across
+edits, failures and retries until it closes; only a newly opened form or panel is a new intent. An edit resent while the outcome is unknown
+uses the same key, so a committed first attempt answers 409 `IDEMPOTENCY_KEY_REUSED`; the UI then stops, keeps the inputs and never mints a
+key to get past it. Measured: `docs/records/audits/2026-10/mvp6-r2-returns-ui-01/evidence/traps-browser.md` §T2 (a per-payload key created
+two records from one intent). Replay success uses the original 201/200 body with
+`idempotentReplay:true` and the current response correlation header, then reloads the list. It does not infer
+current state from a historical receipt.
+
+The UI distinguishes 401/403, safe 404 scope hiding, validation/415, 409 `CARRIER_CODE_CONFLICT`, 409
+`IDEMPOTENCY_KEY_REUSED`, 422 `INVALID_CARRIER_TRANSITION`, 500 and 503 without replacing the published status,
+code, body or precedence. Active may move to Suspended/Retired; Suspended to Active/Retired; Retired is terminal.
+The backend remains authoritative under races. Empty 200 is a normal localized list state, never an auth/error
+fallback.
+
+### 32.4 Exact prospective UI-owned paths
+
+The 21 paths in `docs/roadmap/plans/mvp6-carrier-ui-scope-01/OWNED-PATHS.txt` are the complete prospective UI
+allowlist. Shared shell, Program.cs, gateway, permission/catalog, module registration and navigation resources are
+excluded and protected. The exact gateway route, SupplyChain module/permission provider and navigation localization
+are separate single-writer integration changes described in `SHARED-INTEGRATION-HANDOFF.md`.
+
+### 32.5 UI Phase 1.5 and dispatch gates
+
+The UI field/wire mapping, Slim choice, tenant shell, DataTables v2 topology, UAS-001, seven-language resource set,
+SweetAlert2 interaction, permission split, acceptance matrix and owned paths are design-complete in
+`docs/roadmap/plans/mvp6-carrier-ui-scope-01/`. The remaining gates are:
+
+1. Lane A successor binds and authorizes one immutable source baseline/checkout; the current selection record is
+   HELD and is not transfer authority.
+2. A single integration owner supplies exact target-bound gateway, permission/catalog/module-registration and
+   navigation changes; `_LayoutTenantShell.cshtml` remains unchanged.
+3. The owner approves and applies this pack target, closes UI Phase 1.5, and releases a versioned UI DEV prompt.
+4. Independent UI VER follows writer-complete and includes composed Gateway 5000 evidence; isolated UI tests do not
+   prove gateway integration.
+
+Disposition 2026-10-04: gate 3 closed by the owner decision above; gates 1–2 are answered by the R-4 dispatch (the integrated branch
+`feature/mvp6-logistics` is the source baseline; the R-4 lane is the single integration owner; no gateway route is added because C-03's
+catch-all already serves the family). **UI DEV released to R-4a. Independent UI VER (gate 4) remains open.**

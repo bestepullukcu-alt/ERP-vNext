@@ -1,0 +1,27 @@
+# verify from: repository root
+# NOT FOR VERIFICATION (K6) — never shasum -c this file.
+# It records what the measured source looked like at 2026-10-04, nothing more.
+# This lane changed NO repo path. Every hash below is an unchanged file it READ.
+# The worktree carried 59 entries of another lane's in-flight work at measurement.
+023312ced60db89be09e03eb308d04cc1bbd839ff54da8376c47ee292c43f129  frontend/Diten.Web/package.json
+38884f0740febbaa7c5196311bf9f3d277580bb160c2f8adb30bad12397abd14  frontend/Diten.Web/package-lock.json
+39ac5726c4e8a538bfd7d125588d75502abe4ee98939294431fc856d273b1495  frontend/Diten.Web/vitest.config.js
+bea4f4636ee6e30839ac230f129e8bb7aa92d0b317ba99bf0e43f5b7c4553e23  frontend/Diten.Web/tests/campaign-targeting-admin-ui.test.js
+9cc8ced6ac677903c4a4be9ceed2e95ef3e8c9f1421ef6b42e218823129bed35  frontend/Diten.Web/tests/consent-preference-admin-ui.test.js
+981d4d00e08a697110e47b209071964507ca1209685ad125f5b7bd446253ea07  frontend/Diten.Web/tests/dialog-one-implementation.test.js
+ed276f20368d6bf66041058105b22fd68d822a2db5fb0dcec0a5ac21583b7694  frontend/Diten.Web/tests/diten-field-icons.test.js
+9f83bd464ef70296ba7d34a4c3e53aa6d3e5db6628ffe3b61c19e5b3ac99037f  frontend/Diten.Web/tests/diten-tags.test.js
+a3e1ef02f513300b28a98e856c0956002ad7309859c7a45efde9e34946202639  frontend/Diten.Web/tests/global-confirm-input-type.test.js
+c90c4c697d5209bc36aca787c544119c19286029718909a23a867594ec6da37c  frontend/Diten.Web/tests/objectives-edit-hydration.test.js
+19d27bf03fbd0fa2220884df61fb2e90483a7bada3d90a46869f73cc63abb870  frontend/Diten.Web/tests/planning-cycles-owner-position.test.js
+b69a9a3ce3dd9c1ce342c0d79ea57d4648c79ceb660c78cc003fecd723327bf4  frontend/Diten.Web/tests/planning-cycles-register.test.js
+53f5f90eff3bd61a0b63a7914a0e0ae522823542277cf397838c6fc4569a91c7  frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js
+26518804a32f5d65798487548873974d712a07bf6eced20e49e76991f2097e48  frontend/Diten.Web/tests/strategy-apis.test.js
+36a91c8e7bd91fa2ff2d41ccf4eeb7c2f192d67d0cc3019c2cfe81803c7e2fc0  frontend/Diten.Web/tests/strategy-periods-owner-position.test.js
+0296c2fc3de3670376a134713a501262023b55956cc55ec7560ae0aeb8746de4  frontend/Diten.Web/tests/strategy-periods-register.test.js
+d1ef52427b12637a08999bd511e010a37220468f4f8464d140510967a0a9a558  frontend/Diten.Web/tests/wcn-dialog-one-language.test.js
+8ba3b944d872c4a5c11e68a90e4ff9a599157ff7bb797377dfb22a94a92f005d  frontend/Diten.Web/tests/vitest-crypto-polyfill.cjs
+67d7ad6453e71caecebd9d70949360a7c88c3443f1878726926841dc4de83551  frontend/Diten.Web/wwwroot/assets/js/pages/enterprise-strategy/strategy-apis.js
+796b5ea1b15c7f05f511101cb5c9c336d40639ab36512aa83e6acea3762afaf1  frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/create.js
+f1422ce5444b09c4e5f7e07a82be0515e3900744811ae1082176822e454fba5b  frontend/Diten.Web/wwwroot/assets/js/PPM/Initiatives/index.js
+08b21f316a377abfa0f734f36dfefc0a067f59992f2ecc43ca74e2b26d0230f0  scripts/run_phase1_gates.sh

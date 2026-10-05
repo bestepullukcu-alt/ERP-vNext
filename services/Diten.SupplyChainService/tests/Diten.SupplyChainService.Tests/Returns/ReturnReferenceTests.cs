@@ -45,12 +45,25 @@ public sealed class ReturnReferenceTests
  [InlineData(500,"not-json")]
  [InlineData(500,"{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\"contractVersion\":\"v2\"}")]
  [InlineData(501,"{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\"contractVersion\":\"v1\"}")]
+ // Q447: 401 stays 503 on purpose (Q420). Returns has already validated the same token with the same key, so a 401 from
+ // the Shipment read means the two services disagree about trust, which is not the user's missing permission.
  [InlineData(401,"{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\"contractVersion\":\"v1\"}")]
- [InlineData(403,"{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\"contractVersion\":\"v1\"}")]
  public async Task OtherProducerFailures_RemainDependencyUnavailable(int status,string body)
  {
   var ex=await ObserveFailure(new CaptureHandler(_=>new((System.Net.HttpStatusCode)status){Content=new StringContent(body)}));
   Assert.Equal(503,ex.Status);Assert.Equal("DEPENDENCY_UNAVAILABLE",ex.Code);
+ }
+ // Q447: a 403 from the Shipment read is the caller lacking supplychain.shipments.read, so it is a denial and not an outage
+ // (Q420). Returns answers it with the context-403 code its annex declares: returns-semantics-v3.0.0.md:62
+ // "Auth401/context403/schema400/media415 use INVALID_REQUEST". The producer's own body never decides the answer.
+ [Theory]
+ [InlineData("{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Required shipment permission is missing.\"},\"contractVersion\":\"v1\"}")]
+ [InlineData("{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\"contractVersion\":\"v1\"}")]
+ [InlineData("")]
+ public async Task ProducerDenial403_IsReportedAsContextDenialNotOutage(string body)
+ {
+  var ex=await ObserveFailure(new CaptureHandler(_=>new(System.Net.HttpStatusCode.Forbidden){Content=new StringContent(body)}));
+  Assert.Equal(403,ex.Status);Assert.Equal("INVALID_REQUEST",ex.Code);Assert.DoesNotContain("permission",ex.Message);
  }
  [Fact] public async Task RefusedProducer_RemainsDependencyUnavailable()
  {

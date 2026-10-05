@@ -100,6 +100,32 @@ public sealed class ClaimReferenceTests
   var ex=await Assert.ThrowsAsync<ClaimFailureException>(()=>BranchReader(handler).ObserveAsync(new Claim{ShipmentId=Guid.NewGuid()},default));
   Assert.Equal(503,ex.Status);Assert.Equal("CLAIM_REFERENCE_UNAVAILABLE",ex.Code);Assert.DoesNotContain("private-source-error",ex.Message);
  }
+ // Q447: a 403 from either dependency read is the caller lacking supplychain.shipments.read or supplychain.carriers.read,
+ // so it is a denial and not an outage (Q420). Claims answers it with its annex's code: claims-semantics-v3.0.0.md:163
+ // "403 FORBIDDEN includes scope/identity/action failures". A 401 stays 503 on purpose: Claims has already validated the
+ // same token with the same key, so a dependency 401 means the two services disagree about trust.
+ [Theory]
+ [InlineData("shipment",HttpStatusCode.Forbidden,403,"FORBIDDEN",1)]
+ [InlineData("carrier",HttpStatusCode.Forbidden,403,"FORBIDDEN",2)]
+ [InlineData("shipment",HttpStatusCode.Unauthorized,503,"CLAIM_REFERENCE_UNAVAILABLE",1)]
+ [InlineData("carrier",HttpStatusCode.Unauthorized,503,"CLAIM_REFERENCE_UNAVAILABLE",2)]
+ public async Task Reader_DependencyRefusesCaller_403IsDenial401StaysUnavailable(string refusingRead,HttpStatusCode refusal,int status,string code,int reads)
+ {
+  var id=Guid.NewGuid();var carrier=Guid.NewGuid();var shipment=Shipment(id);shipment["carrierId"]=carrier.ToString();
+  var handler=new RefusingTransport(shipment.ToJsonString(),Carriers(carrier,"Active").ToJsonString(),refusingRead=="shipment"?"/api/shipment-bundle/shipments/"+id:"/api/shipment-bundle/carriers",refusal);
+  var ex=await Assert.ThrowsAsync<ClaimFailureException>(()=>BranchReader(handler).ObserveAsync(new Claim {ShipmentId=id,CarrierId=carrier},default));
+  Assert.Equal(status,ex.Status);Assert.Equal(code,ex.Code);Assert.Equal(reads,handler.Paths.Count);Assert.DoesNotContain("private-source-error",ex.Message);
+ }
+ private sealed class RefusingTransport(string shipment,string carriers,string refusedPath,HttpStatusCode refusal):HttpMessageHandler
+ {
+  public List<string> Paths {get;}=[];
+  protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken ct)
+  {
+   var path=request.RequestUri!.PathAndQuery;Paths.Add(path);
+   if(path==refusedPath)return Task.FromResult(new HttpResponseMessage(refusal){Content=new StringContent("{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"private-source-error\"},\"contractVersion\":\"v1\"}")});
+   return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK){Content=new StringContent(path=="/api/shipment-bundle/carriers"?carriers:shipment)});
+  }
+ }
  private static JsonObject Carriers(Guid id,string status)=>new(){["items"]=new JsonArray(new JsonObject{["carrierId"]=id.ToString(),["carrierCode"]="C1",["displayName"]="Carrier",["status"]=status,["supportedModes"]=new JsonArray("Road")}),["total"]=1,["contractVersion"]="v1"};
  private static ClaimReferenceReader BranchReader(HttpMessageHandler handler)=>new(new HttpClient(handler),new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{["Claims:ReferenceBaseUrl"]="http://reference.invalid/"}).Build(),new ClaimRequestContext {Scope=new(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid()),CorrelationId=Guid.NewGuid(),Authorization="Bearer test-only"});
  private sealed class BranchTransport(string shipment,string carriers):HttpMessageHandler

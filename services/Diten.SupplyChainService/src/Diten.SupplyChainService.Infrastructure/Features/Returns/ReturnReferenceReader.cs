@@ -80,7 +80,11 @@ public sealed class ReturnReferenceReader(HttpClient client, IConfiguration conf
             if (response.StatusCode == HttpStatusCode.NotFound) throw new ReturnFailureException(404, "SHIPMENT_NOT_FOUND");
             if (response.StatusCode == HttpStatusCode.InternalServerError && await IsShipmentRootInvalid(response.Content, ct))
                 throw new ReturnFailureException(502, "RETURN_SHIPMENT_ROOT_INVALID");
-            if ((int)response.StatusCode >= 500 || response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden) throw new ReturnFailureException(503, "DEPENDENCY_UNAVAILABLE");
+            // Q420: a 403 from the Shipment read means the caller lacks supplychain.shipments.read. That is an authorization
+            // outcome and is reported as one, with the annex's context-403 code (returns-semantics-v3.0.0.md:62), not as an
+            // outage. A 401 or any 5xx is still the dependency failing and stays 503.
+            if (response.StatusCode == HttpStatusCode.Forbidden) throw new ReturnFailureException(403, "INVALID_REQUEST");
+            if ((int)response.StatusCode >= 500 || response.StatusCode is HttpStatusCode.Unauthorized) throw new ReturnFailureException(503, "DEPENDENCY_UNAVAILABLE");
             if (response.StatusCode != HttpStatusCode.OK) Invalid();
             using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
             return ParseShipment(body.RootElement, order.ShipmentId, DateTimeOffset.UtcNow);
