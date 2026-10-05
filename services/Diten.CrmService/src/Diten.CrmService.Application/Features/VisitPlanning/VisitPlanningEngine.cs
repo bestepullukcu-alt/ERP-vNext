@@ -649,8 +649,15 @@ public sealed class VisitPlanningEngine
             null, null, null, 0, 0, VisitContentSequenceStatus.NotApplicable, false,
             Array.Empty<AvailabilityWindow>(), null, null);
 
-    private static int DefaultDuration(CapacityEntity? capacity)
-        => capacity is null ? DefaultVisitDurationMinutes : Math.Max(1, ActivityTimeBudgetCalculator.VisitDuration(capacity, 0, 0));
+    /// <summary>WP-CAP-MODEL — a typical-model capacity plans an unsequenced visit at its TYPICAL visit length (the
+    /// same minutes the capacity divides by); a legacy row keeps today's value (the report charge only).
+    /// <para>Public only so the rule can be tested directly; it reads nothing but the capacity.</para></summary>
+    public static int DefaultDuration(CapacityEntity? capacity)
+        => capacity is null
+            ? DefaultVisitDurationMinutes
+            : Math.Max(1, capacity.UsesTypicalVisitModel()
+                ? capacity.TypicalVisitMinutes()
+                : ActivityTimeBudgetCalculator.VisitDuration(capacity, 0, 0));
 
     private static GeoPoint? ResolveStartLocation(VisitPlanGenerationOptions options)
         => options.StartLat is { } lat && options.StartLong is { } lng ? new GeoPoint(lat, lng) : null;

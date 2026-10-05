@@ -37,7 +37,9 @@ public static class CycleCapacityMapper
         c.CreatedAt,
         c.UpdatedAt,
         c.EffectiveMaxPromoProducts(),
-        c.EffectiveMaxNonPromoProducts());
+        c.EffectiveMaxNonPromoProducts(),
+        c.VisitModel(),
+        c.TypicalVisitMinutes());
 
     public static CycleCapacityDetailDto ToDetail(
         CapacityEntity c, CyclePeriodSnapshot? period, bool calendarCountryIsDerived) => new(
@@ -57,9 +59,8 @@ public static class CycleCapacityMapper
         c.BetweenVisitTimeMinutes.GetValueOrDefault(),
         c.DailySpendMinutes(),
         c.MinutesPerVisit(),
-        // The FTE is never editable in this FU. It is published as a flag so the form does not hardcode the rule, and
-        // the server ignores the payload's value regardless — the flag is a hint, not the guard (F-FTE-HR).
-        FteIsEditable: false,
+        // WP-CAP-MODEL (K-5) — the month FTE is authorable; an omitted value keeps the stored / configured one.
+        FteIsEditable: true,
         c.Description,
         c.OrderedMonths().Select(ToMonth).ToList(),
         c.IsArchived,
@@ -71,7 +72,13 @@ public static class CycleCapacityMapper
         c.UpdatedAt,
         c.UpdatedBy,
         c.EffectiveMaxPromoProducts(),
-        c.EffectiveMaxNonPromoProducts());
+        c.EffectiveMaxNonPromoProducts(),
+        c.TypicalPromoCount,
+        c.TypicalNonPromoCount,
+        c.ReportMinutesPerVisit,
+        c.VisitModel(),
+        c.TypicalVisitMinutes(),
+        c.DailyFixedMinutes());
 
     public static CycleCapacityMonthDto ToMonth(CycleCapacityMonth m) => new(
         m.Year, m.MonthNumber, m.MeetingDays, m.TrainingDays, m.VacationDays,
@@ -100,13 +107,22 @@ public static class CycleCapacityMapper
         calculation.MinutesPerVisit,
         calculation.Months.Select(ToMonthCalculation).ToList(),
         calculation.ReasonCodes,
-        calculation.Reason);
+        calculation.Reason,
+        calculation.VisitModel,
+        calculation.TypicalVisitMinutes,
+        calculation.DailyFixedMinutes,
+        calculation.Totals is { } t
+            ? new CycleCapacityCalculationTotalsDto(
+                t.WorkingDays, t.DeductedDays, t.FieldDays, t.AvailableMinutes, t.DailyFixedMinutes,
+                t.MicroTargetingMinutes, t.RemainingMinutes, t.Visits, t.AverageFte)
+            : null);
 
     private static CycleCapacityMonthCalculationDto ToMonthCalculation(
         CycleCapacityCalculator.MonthCalculation m) => new(
         m.Year, m.MonthNumber, m.RangeStart, m.RangeEnd, m.CalendarDays, m.WorkingDays, m.NonWorkingDays,
         m.MeetingDays, m.TrainingDays, m.VacationDays, m.DeductedDays, m.FieldDays,
-        m.AvailableMinutes, m.MicroTargetingMinutes, m.SpendMinutes, m.VisitMinutes, m.Fte, m.TotalVisitNumber);
+        m.AvailableMinutes, m.MicroTargetingMinutes, m.SpendMinutes, m.VisitMinutes, m.Fte, m.TotalVisitNumber,
+        m.DailyFixedMinutes, m.RemainingMinutes, m.TypicalVisitMinutes);
 
     /// <summary>
     /// A capacity is editable while its pinned period is not closed. This is the whole of D-LIFECYCLE: the aggregate

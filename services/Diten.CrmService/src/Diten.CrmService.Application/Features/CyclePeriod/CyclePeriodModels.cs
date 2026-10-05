@@ -137,3 +137,7 @@ public sealed record CyclePeriodScopeOptionsDto(
     bool BusinessUnitFromTerritory,
     string CountrySetCode,
     string BusinessUnitSetCode);
+
+/// <summary>WP-CAP-MODEL (K-2) — a SUGGESTED cycle code for the next period of a scope and year. Only a suggestion:
+/// the create command still takes its code from the request.</summary>
+public sealed record CyclePeriodCodeSuggestionDto(string SuggestedCode, int NextSequenceInYear);

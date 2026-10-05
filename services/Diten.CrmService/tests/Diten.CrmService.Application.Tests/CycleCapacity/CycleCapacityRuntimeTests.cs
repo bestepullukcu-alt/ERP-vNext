@@ -25,7 +25,7 @@ namespace Diten.CrmService.Application.Tests.CycleCapacity;
 /// the formula, the fail-closed calendar, the 1:1 pin, the closed-period lock, the never-persisted projection, and the
 /// CyclePeriod contract staying exactly where FU07 left it.</para>
 /// </summary>
-public sealed class CycleCapacityRuntimeTests
+public sealed partial class CycleCapacityRuntimeTests
 {
     private static readonly Guid TenantA = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid TenantB = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -72,6 +72,9 @@ public sealed class CycleCapacityRuntimeTests
                     BetweenVisitTimeMinutes = source.BetweenVisitTimeMinutes,
                     MaxPromoProducts = source.MaxPromoProducts,
                     MaxNonPromoProducts = source.MaxNonPromoProducts,
+                    TypicalPromoCount = source.TypicalPromoCount,
+                    TypicalNonPromoCount = source.TypicalNonPromoCount,
+                    ReportMinutesPerVisit = source.ReportMinutesPerVisit,
                     Description = source.Description,
                     IsArchived = source.IsArchived,
                     Version = source.Version,
@@ -453,6 +456,8 @@ public sealed class CycleCapacityRuntimeTests
             // figure: it is authored, range-checked and never derived from the calendar. The scan targets computed
             // visit/working-day/field-day OUTPUTS, so the one config field is excluded by name.
             .Where(n => n != nameof(CapacityEntity.BetweenVisitTimeMinutes))
+            // WP-CAP-MODEL — ReportMinutesPerVisit is the same kind of authored INPUT (a per-visit report charge).
+            .Where(n => n != nameof(CapacityEntity.ReportMinutesPerVisit))
             .Where(n => n.Contains("Visit", StringComparison.OrdinalIgnoreCase)
                         || n.Contains("WorkingDay", StringComparison.OrdinalIgnoreCase)
                         || n.Contains("FieldDay", StringComparison.OrdinalIgnoreCase))

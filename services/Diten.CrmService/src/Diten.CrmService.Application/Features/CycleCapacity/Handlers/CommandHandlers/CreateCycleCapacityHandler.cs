@@ -14,9 +14,8 @@ namespace Diten.CrmService.Application.Features.CycleCapacity.Handlers.CommandHa
 /// <para>Order is fixed: the shared write gate (pin → closed-period lock → shape → calendar country → month rows) runs
 /// FIRST and completes every external check, then the 1:1 rule is decided, then the row is written. <b>Every external
 /// call finishes before the insert</b>, so a dependency outage can never leave a half-authored capacity behind.</para>
-/// <para><b>The FTE is written by the server, never by the caller.</b> The command carries no FTE at all; the interim
-/// configured average is stamped here together with its provenance. A caller who re-enables the disabled field in the
-/// browser and posts a value changes nothing, because there is no field to change.</para>
+/// <para><b>FTE (WP-CAP-MODEL, K-5).</b> A month FTE the author sends is stored as <c>authored</c> (0 allowed — a
+/// vacant position); an omitted one is stamped with the configured interim average, as before.</para>
 /// <para>This handler touches exactly one collection. It creates no MicroTarget row, no visit, no frequency policy and
 /// no working-calendar entry, and it never writes to CyclePeriod.</para>
 /// </summary>
@@ -61,7 +60,11 @@ public sealed class CreateCycleCapacityHandler : IRequestHandler<CreateCycleCapa
             request.Description,
             request.Months,
             request.BetweenVisitTimeMinutes,
-            cancellationToken);
+            cancellationToken,
+            request.MaxPromoProducts,
+            request.MaxNonPromoProducts,
+            new CycleCapacityValidation.TypicalVisit(
+                request.TypicalPromoCount, request.TypicalNonPromoCount, request.ReportMinutesPerVisit));
 
         if (validation.Failure is not null || validation.Months is null || validation.CalendarCountryCode is null)
         {
@@ -70,13 +73,6 @@ public sealed class CreateCycleCapacityHandler : IRequestHandler<CreateCycleCapa
             return Response<Guid>.Fail(CycleCapacityValidation.ToErrors(resolved), resolved.StatusCode);
         }
 
-        // WP-SB-3a — products per visit by role (default 3 / 3, 1..10).
-        var maxPromo = request.MaxPromoProducts ?? CycleCapacityLimits.DefaultMaxProductsPerVisit;
-        var maxNonPromo = request.MaxNonPromoProducts ?? CycleCapacityLimits.DefaultMaxProductsPerVisit;
-        if (CycleCapacityValidation.ValidateMaxProducts(maxPromo, maxNonPromo) is { } maxFailure)
-        {
-            return Response<Guid>.Fail(CycleCapacityValidation.ToErrors(maxFailure), maxFailure.StatusCode);
-        }
 
         // 1:1. Decided in the handler AND backed by a partial unique index: the index is the guarantee, the handler is
         // the readable error. A concurrent second create loses at the index rather than producing a second row.
@@ -103,14 +99,21 @@ public sealed class CreateCycleCapacityHandler : IRequestHandler<CreateCycleCapa
             PromoProductTime = request.PromoProductTime,
             NonPromoProductTime = request.NonPromoProductTime,
             TravelingTime = request.TravelingTime,
-            ReportDuration = request.ReportDuration,
+            // WP-CAP-MODEL — 0 on a typical-model row (its report is charged per visit), the request's value otherwise.
+            ReportDuration = validation.ReportDuration,
             QuizDuration = request.QuizDuration,
 
             // FU06B — the between-visit buffer, resolved (payload or configured default) and range-checked by the write
             // validator. It is stored but never enters the capacity arithmetic.
             BetweenVisitTimeMinutes = validation.BetweenVisitTimeMinutes,
-            MaxPromoProducts = maxPromo,
-            MaxNonPromoProducts = maxNonPromo,
+            // WP-SB-3a — products per visit by role (default 3 / 3, 1..10), resolved and range-checked by the gate.
+            MaxPromoProducts = validation.MaxPromoProducts,
+            MaxNonPromoProducts = validation.MaxNonPromoProducts,
+
+            // WP-CAP-MODEL (K-1) — the typical visit; all null keeps the legacy model.
+            TypicalPromoCount = validation.TypicalVisit.TypicalPromoCount,
+            TypicalNonPromoCount = validation.TypicalVisit.TypicalNonPromoCount,
+            ReportMinutesPerVisit = validation.TypicalVisit.ReportMinutesPerVisit,
 
             // FU07 — the FTE now lives on each month and is stamped by the write validator, from the same configured
             // average. Nothing capacity-wide is written here any more.

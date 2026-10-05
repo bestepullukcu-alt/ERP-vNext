@@ -1,10 +1,10 @@
 namespace Diten.CrmService.Api.Models.CRM;
 
 /// <summary>
-/// MOD-0155 FU06 request bodies. <c>TenantId</c> appears in none of them — it is resolved server-side from the claim —
-/// and neither does <c>Fte</c>: the interim average is stamped by the server, so a caller who re-enables the disabled
-/// field in a browser has nothing to send. There is no status field either, because this aggregate has no lifecycle of
-/// its own.
+/// MOD-0155 FU06 request bodies. <c>TenantId</c> appears in none of them — it is resolved server-side from the claim.
+/// WP-CAP-MODEL: the month FTE is authorable per row (<see cref="CycleCapacityMonthRequest.Fte"/>), and the typical
+/// visit (<c>TypicalPromoCount</c> / <c>TypicalNonPromoCount</c> / <c>ReportMinutesPerVisit</c>) travels as a triple —
+/// all three or none. There is no status field, because this aggregate has no lifecycle of its own.
 /// </summary>
 public sealed class CreateCycleCapacityRequest
 {
@@ -47,6 +47,17 @@ public sealed class CreateCycleCapacityRequest
 
     public int? MaxNonPromoProducts { get; set; }
 
+    /// <summary>WP-CAP-MODEL — promo products in a typical visit (0..MaxPromoProducts). With the two below: all or none;
+    /// none = legacy model (report per day).</summary>
+    public int? TypicalPromoCount { get; set; }
+
+    /// <summary>WP-CAP-MODEL — non-promo products in a typical visit (0..MaxNonPromoProducts).</summary>
+    public int? TypicalNonPromoCount { get; set; }
+
+    /// <summary>WP-CAP-MODEL — reporting minutes charged once per visit (0..480). On the typical model the per-day
+    /// <see cref="ReportDuration"/> is stored as 0.</summary>
+    public int? ReportMinutesPerVisit { get; set; }
+
     public string? Description { get; set; }
 
     /// <summary>One row per calendar month the period touches, each addressed by (Year, MonthNumber). There is no
@@ -75,6 +86,14 @@ public sealed class UpdateCycleCapacityRequest
 
     public int? MaxNonPromoProducts { get; set; }
 
+    /// <summary>WP-CAP-MODEL — the typical visit: all three or none (none = keep the stored model; mixed → 400
+    /// <c>typical_visit_incomplete</c>).</summary>
+    public int? TypicalPromoCount { get; set; }
+
+    public int? TypicalNonPromoCount { get; set; }
+
+    public int? ReportMinutesPerVisit { get; set; }
+
     public string? Description { get; set; }
     public List<CycleCapacityMonthRequest> Months { get; set; } = new();
     public int? ExpectedVersion { get; set; }
@@ -83,9 +102,9 @@ public sealed class UpdateCycleCapacityRequest
 /// <summary>
 /// The LIVE estimate request — the same numbers the create/edit form is holding, sent while the author is still
 /// typing.
-/// <para>It deliberately carries <b>no <c>Fte</c> and no <c>Description</c></b>: the FTE is stamped server-side from
-/// configuration (so the preview matches what a save would store), and a description changes no figure. There is no
-/// <c>CycleCapacityId</c> either — a preview is not about a record, saved or otherwise.</para>
+/// <para>It carries <b>no <c>Description</c></b> (a description changes no figure) and no <c>CycleCapacityId</c> — a
+/// preview is not about a record, saved or otherwise. WP-CAP-MODEL: the month FTE and the typical visit travel exactly
+/// as on a save, so the live figure uses the model the save will store.</para>
 /// </summary>
 public sealed class PreviewCycleCapacityRequest
 {
@@ -101,6 +120,13 @@ public sealed class PreviewCycleCapacityRequest
     public int TravelingTime { get; set; }
     public int ReportDuration { get; set; }
     public int QuizDuration { get; set; }
+
+    /// <summary>WP-CAP-MODEL — the typical visit (all three → typical model).</summary>
+    public int? TypicalPromoCount { get; set; }
+
+    public int? TypicalNonPromoCount { get; set; }
+
+    public int? ReportMinutesPerVisit { get; set; }
 
     public List<CycleCapacityMonthRequest> Months { get; set; } = new();
 }
@@ -123,4 +149,8 @@ public sealed class CycleCapacityMonthRequest
     /// <summary>Minutes that charge costs on one such day. Together these form a MONTHLY minute pool, not a per-day
     /// rate.</summary>
     public int MicroTargetingDuration { get; set; }
+
+    /// <summary>WP-CAP-MODEL (K-5) — the month's FTE (0..9999, 0 = vacant position). Sent → stored as
+    /// <c>authored</c>; omitted → the stored authored value is kept, else the configured interim average.</summary>
+    public decimal? Fte { get; set; }
 }

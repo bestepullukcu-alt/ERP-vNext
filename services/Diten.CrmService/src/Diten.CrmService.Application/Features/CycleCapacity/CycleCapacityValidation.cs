@@ -17,6 +17,21 @@ public static class CycleCapacityValidation
     /// handler must answer with. Nested so this file still declares a single top-level public type.</summary>
     public sealed record Failure(string Message, string? Code, int StatusCode = 400);
 
+    /// <summary>
+    /// WP-CAP-MODEL (K-1) — the typical-visit triple as it arrives on a write. All three present switches the row onto
+    /// the single visit-duration model; none present keeps the stored model (legacy on a new row); anything in between
+    /// is refused (<c>typical_visit_incomplete</c>).
+    /// </summary>
+    public sealed record TypicalVisit(int? TypicalPromoCount, int? TypicalNonPromoCount, int? ReportMinutesPerVisit)
+    {
+        public static readonly TypicalVisit None = new(null, null, null);
+
+        public bool IsEmpty => TypicalPromoCount is null && TypicalNonPromoCount is null && ReportMinutesPerVisit is null;
+
+        public bool IsComplete => TypicalPromoCount is not null && TypicalNonPromoCount is not null
+                                  && ReportMinutesPerVisit is not null;
+    }
+
     public static string? Trim(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     /// <summary>Normalises a date to UTC midnight. A period is a run of DAYS: keeping the caller's clock time would
@@ -119,6 +134,79 @@ public static class CycleCapacityValidation
         return null;
     }
 
+    /// <summary>
+    /// WP-CAP-MODEL (K-1) — the typical visit. An EMPTY triple is valid (legacy model) and returns null; a partial one
+    /// is <c>typical_visit_incomplete</c>; the counts must lie within 0..the per-visit ceilings
+    /// (<c>typical_count_exceeds_max</c>) and may not both be zero (<c>typical_visit_empty</c>); the per-visit report
+    /// charge is a per-visit minute field (0..480); and the resulting typical visit must take more than zero and at
+    /// most <see cref="CycleCapacityLimits.MaxMinutesPerVisit"/> minutes.
+    /// </summary>
+    public static Failure? ValidateTypicalVisit(
+        TypicalVisit typical,
+        int promoProductTime,
+        int nonPromoProductTime,
+        int maxPromoProducts,
+        int maxNonPromoProducts)
+    {
+        if (typical.IsEmpty)
+        {
+            return null;
+        }
+
+        if (!typical.IsComplete)
+        {
+            return new Failure(
+                "TypicalPromoCount, TypicalNonPromoCount and ReportMinutesPerVisit are sent together or not at all.",
+                CycleCapacityReasonCodes.TypicalVisitIncomplete);
+        }
+
+        var promo = typical.TypicalPromoCount!.Value;
+        var nonPromo = typical.TypicalNonPromoCount!.Value;
+        var report = typical.ReportMinutesPerVisit!.Value;
+
+        if (promo < 0 || promo > maxPromoProducts)
+        {
+            return new Failure(
+                $"TypicalPromoCount must be between 0 and MaxPromoProducts ({maxPromoProducts}).",
+                CycleCapacityReasonCodes.TypicalCountExceedsMax);
+        }
+
+        if (nonPromo < 0 || nonPromo > maxNonPromoProducts)
+        {
+            return new Failure(
+                $"TypicalNonPromoCount must be between 0 and MaxNonPromoProducts ({maxNonPromoProducts}).",
+                CycleCapacityReasonCodes.TypicalCountExceedsMax);
+        }
+
+        if (promo == 0 && nonPromo == 0)
+        {
+            return new Failure(
+                "A typical visit tells at least one product — TypicalPromoCount and TypicalNonPromoCount cannot both be "
+                + "zero.",
+                CycleCapacityReasonCodes.TypicalVisitEmpty);
+        }
+
+        if (!InRange(report, CycleCapacityLimits.MaxMinutesPerVisit))
+        {
+            return MinutesFailure("ReportMinutesPerVisit", CycleCapacityLimits.MaxMinutesPerVisit);
+        }
+
+        var minutes = ((long)promo * promoProductTime) + ((long)nonPromo * nonPromoProductTime) + report;
+        if (minutes <= 0)
+        {
+            return new Failure(
+                "The typical visit takes no time — the capacity would be infinite.",
+                CycleCapacityReasonCodes.VisitMinutesZero);
+        }
+
+        return minutes <= CycleCapacityLimits.MaxMinutesPerVisit
+            ? null
+            : new Failure(
+                $"The typical visit takes {minutes} minutes; a visit may take at most "
+                + $"{CycleCapacityLimits.MaxMinutesPerVisit}.",
+                CycleCapacityReasonCodes.ActivityMinutesInvalid);
+    }
+
     public static Failure? ValidateDescription(string? description)
     {
         var value = Trim(description);
@@ -200,13 +288,23 @@ public static class CycleCapacityValidation
             {
                 return deductionFailure;
             }
+
+            // WP-CAP-MODEL (K-5) — an authored FTE: the published range, with 0 allowed (a vacant position).
+            if (month.Fte is { } fte && (fte < CycleCapacityLimits.MinAuthoredFte || fte > CycleCapacityLimits.MaxFte))
+            {
+                return new Failure(
+                    $"Fte of {month.Year}-{month.MonthNumber:00} must be between {CycleCapacityLimits.MinAuthoredFte} "
+                    + $"and {CycleCapacityLimits.MaxFte}.",
+                    CycleCapacityReasonCodes.MonthFteInvalid);
+            }
         }
 
         return null;
     }
 
     /// <summary>
-    /// FU07 — the FTE the SERVER stamped onto a month row.
+    /// FU07 — the FTE the SERVER stamped onto a month row (interim default only; an authored value is range-checked in
+    /// <see cref="ValidateMonths"/>).
     /// <para>It is checked here rather than on the request, because the request carries no FTE at all: the caller
     /// cannot send one, so validating an input field would be a guard over something that never arrives. What CAN go
     /// wrong is a configured default outside the published range, and that is a server-side fault worth refusing

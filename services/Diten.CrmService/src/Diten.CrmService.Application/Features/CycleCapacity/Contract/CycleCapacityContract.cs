@@ -83,9 +83,9 @@ public sealed record CycleCapacityContractLimits(
 /// <summary>
 /// The configured values a new capacity is born with, published so the create form shows the SAME numbers the server
 /// will write instead of hardcoding its own.
-/// <para><see cref="Fte"/> is published together with <see cref="FteIsEditable"/> = false: the form renders it, states
-/// where it came from, and disables it. The server ignores the payload's value regardless, so the flag is a UI hint
-/// rather than the guard.</para>
+/// <para><see cref="Fte"/> is the configured interim average a month takes when the author sends none.
+/// WP-CAP-MODEL (K-5): <see cref="FteIsEditable"/> = true — a month FTE the author sends is stored as <c>authored</c>.
+/// </para>
 /// </summary>
 public sealed record CycleCapacityDefaultsDto(
     int DailyWorkMinutes,

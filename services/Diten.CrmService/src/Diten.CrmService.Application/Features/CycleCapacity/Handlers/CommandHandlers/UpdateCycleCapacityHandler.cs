@@ -14,8 +14,8 @@ namespace Diten.CrmService.Application.Features.CycleCapacity.Handlers.CommandHa
 /// re-validated rather than re-assigned: re-pointing a capacity at another period would silently change what a past
 /// estimate was an estimate OF. The API surface has no way to express the move at all, which is stronger than
 /// rejecting it.</para>
-/// <para><b>The FTE does not move either.</b> The command carries none, so the stored interim value survives every
-/// edit and the row keeps reproducing the same figure (D-FTE).</para>
+/// <para><b>The FTE (WP-CAP-MODEL, K-5).</b> A month FTE the author sends is stored as <c>authored</c>; an omitted one
+/// keeps that month's stored authored value, otherwise the configured interim average is stamped as before.</para>
 /// </summary>
 public sealed class UpdateCycleCapacityHandler : IRequestHandler<UpdateCycleCapacityCommand, Response<bool>>
 {
@@ -64,7 +64,12 @@ public sealed class UpdateCycleCapacityHandler : IRequestHandler<UpdateCycleCapa
             request.Description,
             request.Months,
             request.BetweenVisitTimeMinutes,
-            cancellationToken);
+            cancellationToken,
+            request.MaxPromoProducts,
+            request.MaxNonPromoProducts,
+            new CycleCapacityValidation.TypicalVisit(
+                request.TypicalPromoCount, request.TypicalNonPromoCount, request.ReportMinutesPerVisit),
+            existing: entity);
 
         if (validation.Failure is not null || validation.Months is null || validation.CalendarCountryCode is null)
         {
@@ -73,22 +78,20 @@ public sealed class UpdateCycleCapacityHandler : IRequestHandler<UpdateCycleCapa
             return Response<bool>.Fail(CycleCapacityValidation.ToErrors(resolved), resolved.StatusCode);
         }
 
-        // WP-SB-3a — an omitted ceiling keeps the stored one (3 on a pre-SB-3a row); an authored one is range-checked.
-        var maxPromo = request.MaxPromoProducts ?? entity.EffectiveMaxPromoProducts();
-        var maxNonPromo = request.MaxNonPromoProducts ?? entity.EffectiveMaxNonPromoProducts();
-        if (CycleCapacityValidation.ValidateMaxProducts(maxPromo, maxNonPromo) is { } maxFailure)
-        {
-            return Response<bool>.Fail(CycleCapacityValidation.ToErrors(maxFailure), maxFailure.StatusCode);
-        }
-
+        // WP-SB-3a — an omitted ceiling keeps the stored one (3 on a pre-SB-3a row); resolved and range-checked by the
+        // gate. WP-CAP-MODEL — likewise an omitted typical visit keeps the stored one, and a typical-model row stores a
+        // 0 per-day report charge.
         entity.CalendarCountryCode = validation.CalendarCountryCode;
-        entity.MaxPromoProducts = maxPromo;
-        entity.MaxNonPromoProducts = maxNonPromo;
+        entity.MaxPromoProducts = validation.MaxPromoProducts;
+        entity.MaxNonPromoProducts = validation.MaxNonPromoProducts;
+        entity.TypicalPromoCount = validation.TypicalVisit.TypicalPromoCount;
+        entity.TypicalNonPromoCount = validation.TypicalVisit.TypicalNonPromoCount;
+        entity.ReportMinutesPerVisit = validation.TypicalVisit.ReportMinutesPerVisit;
         entity.DailyWorkMinutes = request.DailyWorkMinutes;
         entity.PromoProductTime = request.PromoProductTime;
         entity.NonPromoProductTime = request.NonPromoProductTime;
         entity.TravelingTime = request.TravelingTime;
-        entity.ReportDuration = request.ReportDuration;
+        entity.ReportDuration = validation.ReportDuration;
         entity.QuizDuration = request.QuizDuration;
         entity.BetweenVisitTimeMinutes = validation.BetweenVisitTimeMinutes;
         entity.Description = CycleCapacityValidation.Trim(request.Description);

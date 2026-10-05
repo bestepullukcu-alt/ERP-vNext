@@ -95,6 +95,22 @@ public sealed class CycleCapacity : EntityBase
     /// template's non-promo lines. Absent on an old row = 3 (<see cref="EffectiveMaxNonPromoProducts"/>).</summary>
     public int? MaxNonPromoProducts { get; set; }
 
+    /// <summary>
+    /// WP-CAP-MODEL (K-1) — how many PROMO products a TYPICAL visit tells (0..<see cref="EffectiveMaxPromoProducts"/>).
+    /// <para>Together with <see cref="TypicalNonPromoCount"/> and <see cref="ReportMinutesPerVisit"/> it switches the row
+    /// onto the single visit-duration model (<see cref="UsesTypicalVisitModel"/>). The three are written together or not
+    /// at all. Nullable on purpose: a row written before WP-CAP-MODEL has none and keeps its legacy arithmetic on read —
+    /// nothing is backfilled.</para>
+    /// </summary>
+    public int? TypicalPromoCount { get; set; }
+
+    /// <summary>WP-CAP-MODEL — how many NON-PROMO products a typical visit tells (0..<see cref="EffectiveMaxNonPromoProducts"/>).</summary>
+    public int? TypicalNonPromoCount { get; set; }
+
+    /// <summary>WP-CAP-MODEL — reporting minutes charged ONCE PER VISIT. On a typical-model row this replaces the legacy
+    /// per-DAY <see cref="ReportDuration"/>, which the write path then stores as 0.</summary>
+    public int? ReportMinutesPerVisit { get; set; }
+
     public string? Description { get; set; }
 
     /// <summary>
@@ -122,12 +138,70 @@ public sealed class CycleCapacity : EntityBase
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
 
-    /// <summary>Sum of the three per-day minute charges. Kept here so the validator and the calculator read one
-    /// definition.</summary>
-    public int DailySpendMinutes() => TravelingTime + ReportDuration + QuizDuration;
+    // ── WP-CAP-MODEL — the ONE visit-duration model ─────────────────────────────────────────────────────────────────
+    // Capacity (supply) and visit planning (demand) both read their minutes from the four methods below, so the two can
+    // never again compute a visit with different arithmetic.
+    //
+    //   typical model (all three typical fields present):
+    //     VisitMinutes(p, n)    = p × PromoProductTime + n × NonPromoProductTime + ReportMinutesPerVisit
+    //     TypicalVisitMinutes() = VisitMinutes(TypicalPromoCount, TypicalNonPromoCount)   ← the capacity divisor
+    //     DailyFixedMinutes()   = TravelingTime + QuizDuration                            ← report is NOT per day
+    //
+    //   legacy model (no typical fields — a row written before WP-CAP-MODEL), today's figures exactly:
+    //     VisitMinutes(p, n)    = p × PromoProductTime + n × NonPromoProductTime + ReportDuration
+    //     TypicalVisitMinutes() = PromoProductTime + NonPromoProductTime
+    //     DailyFixedMinutes()   = TravelingTime + ReportDuration + QuizDuration
+    //
+    // The legacy branch is a read-time interpretation, not a migration: nothing is written back.
 
-    /// <summary>Minutes one visit consumes. The write path guarantees this is greater than zero.</summary>
-    public int MinutesPerVisit() => PromoProductTime + NonPromoProductTime;
+    /// <summary>WP-CAP-MODEL — true when the row carries all three typical-visit fields.</summary>
+    public bool UsesTypicalVisitModel()
+        => TypicalPromoCount.HasValue && TypicalNonPromoCount.HasValue && ReportMinutesPerVisit.HasValue;
+
+    /// <summary>WP-CAP-MODEL — <see cref="CycleCapacityVisitModels"/> name of the arithmetic this row uses.</summary>
+    public string VisitModel()
+        => UsesTypicalVisitModel() ? CycleCapacityVisitModels.Typical : CycleCapacityVisitModels.Legacy;
+
+    /// <summary>WP-CAP-MODEL — the reporting charge added to ONE visit (typical: per-visit field; legacy: the per-day
+    /// field, which planning has always added per visit).</summary>
+    public int ReportMinutesForVisit()
+        => UsesTypicalVisitModel() ? ReportMinutesPerVisit!.Value : ReportDuration;
+
+    /// <summary>WP-CAP-MODEL — the fixed minutes charged on every FIELD DAY before any visit. Typical model: travel +
+    /// quiz (the report is charged per visit instead). Legacy: travel + report + quiz, as before.</summary>
+    public int DailyFixedMinutes()
+        => UsesTypicalVisitModel()
+            ? TravelingTime + QuizDuration
+            : TravelingTime + ReportDuration + QuizDuration;
+
+    /// <summary>
+    /// WP-CAP-MODEL — minutes ONE visit with the given product counts takes. Negative counts are clamped to zero and the
+    /// arithmetic runs in <c>long</c> then clamps to <see cref="int.MaxValue"/>, so a nonsense count degrades rather than
+    /// overflowing.
+    /// </summary>
+    public int VisitMinutes(int promoCount, int nonPromoCount)
+    {
+        var duration = ((long)Math.Max(0, promoCount) * PromoProductTime)
+                       + ((long)Math.Max(0, nonPromoCount) * NonPromoProductTime)
+                       + ReportMinutesForVisit();
+
+        return duration <= 0L ? 0 : (int)Math.Min(duration, int.MaxValue);
+    }
+
+    /// <summary>WP-CAP-MODEL — the minutes the CAPACITY divides by: the typical visit on a typical-model row, the legacy
+    /// divisor (promo + non-promo time) on an old row.</summary>
+    public int TypicalVisitMinutes()
+        => UsesTypicalVisitModel()
+            ? VisitMinutes(TypicalPromoCount!.Value, TypicalNonPromoCount!.Value)
+            : PromoProductTime + NonPromoProductTime;
+
+    /// <summary>The per-day fixed charge. Kept as the published DTO name; delegates to <see cref="DailyFixedMinutes"/>
+    /// so a legacy row reads exactly what it always read.</summary>
+    public int DailySpendMinutes() => DailyFixedMinutes();
+
+    /// <summary>Minutes one visit consumes in the capacity arithmetic. Kept as the published DTO name; delegates to
+    /// <see cref="TypicalVisitMinutes"/> (identical to the old value on a legacy row).</summary>
+    public int MinutesPerVisit() => TypicalVisitMinutes();
 
     /// <summary>WP-SB-3a — the promo ceiling a reader applies (3 on a pre-SB-3a row).</summary>
     public int EffectiveMaxPromoProducts() => MaxPromoProducts ?? CycleCapacityLimits.DefaultMaxProductsPerVisit;
@@ -156,7 +230,9 @@ public sealed class CycleCapacity : EntityBase
 
         foreach (var month in Months)
         {
-            if (month.Fte > 0m)
+            // WP-CAP-MODEL (K-5) — an AUTHORED value is the author's answer, including 0 (a vacant position), and is
+            // never replaced by a default.
+            if (month.Fte > 0m || CycleCapacityFteSources.IsAuthored(month.FteSource))
             {
                 continue;
             }
@@ -257,8 +333,13 @@ public sealed class CycleCapacityMonth
     /// <summary>Whole days deducted from the calendar's working days before any minute arithmetic.</summary>
     public int DeductedDays() => MeetingDays + TrainingDays + VacationDays;
 
-    /// <summary>The monthly micro-targeting minute pool.</summary>
+    /// <summary>The monthly micro-targeting minute pool, as authored (unclipped).</summary>
     public int MicroTargetingMinutes() => MicroTargetingDayCount * MicroTargetingDuration;
+
+    /// <summary>WP-CAP-MODEL (E8) — the pool the CALCULATION charges: micro-targeting days beyond the month's field days
+    /// cannot happen, so the day count is clipped to <paramref name="fieldDays"/>.</summary>
+    public int MicroTargetingMinutes(int fieldDays)
+        => Math.Min(MicroTargetingDayCount, Math.Max(0, fieldDays)) * MicroTargetingDuration;
 }
 
 /// <summary>Where a stored <see cref="CycleCapacityMonth.Fte"/> came from. In-domain and fail-closed, like every other
@@ -268,14 +349,30 @@ public static class CycleCapacityFteSources
     /// <summary>The configured interim average. The only value this FU ever writes.</summary>
     public const string InterimDefault = "interim-default";
 
-    /// <summary>Reserved for the day an HR source or an explicit author supplies it (F-FTE-HR). Never written here —
-    /// published so a consumer can already branch on provenance rather than assuming every value is an average.</summary>
+    /// <summary>WP-CAP-MODEL (K-5) — the author supplied the month's FTE on the write (0 allowed: a vacant
+    /// position). An HR source (F-FTE-HR) will get its own value.</summary>
     public const string Authored = "authored";
 
     public static readonly IReadOnlyList<string> All = new[] { InterimDefault, Authored };
 
+    public static bool IsAuthored(string? value)
+        => string.Equals(value?.Trim(), Authored, StringComparison.OrdinalIgnoreCase);
+
     public static bool IsKnown(string? value)
         => value is not null && All.Contains(value.Trim().ToLowerInvariant(), StringComparer.Ordinal);
+}
+
+/// <summary>WP-CAP-MODEL — which visit-duration arithmetic a capacity row uses (<see cref="CycleCapacity.VisitModel"/>).
+/// A projection of the stored fields, never stored itself.</summary>
+public static class CycleCapacityVisitModels
+{
+    /// <summary>All three typical-visit fields present: report per visit, typical visit as the capacity divisor.</summary>
+    public const string Typical = "typical";
+
+    /// <summary>A row written before WP-CAP-MODEL: report per day, promo + non-promo time as the divisor.</summary>
+    public const string Legacy = "legacy";
+
+    public static readonly IReadOnlyList<string> All = new[] { Typical, Legacy };
 }
 
 /// <summary>
@@ -335,6 +432,15 @@ public static class CycleCapacityReasonCodes
     /// <summary>WP-SB-3a — a max promo / non-promo products per visit outside 1..10.</summary>
     public const string MaxProductsOutOfRange = "max_products_out_of_range";
 
+    /// <summary>WP-CAP-MODEL — a typical visit with zero promo AND zero non-promo products.</summary>
+    public const string TypicalVisitEmpty = "typical_visit_empty";
+
+    /// <summary>WP-CAP-MODEL — a typical promo / non-promo count above the per-visit ceiling.</summary>
+    public const string TypicalCountExceedsMax = "typical_count_exceeds_max";
+
+    /// <summary>WP-CAP-MODEL — some but not all of TypicalPromoCount / TypicalNonPromoCount / ReportMinutesPerVisit.</summary>
+    public const string TypicalVisitIncomplete = "typical_visit_incomplete";
+
     public const string ConcurrencyConflict = "cycle_capacity_concurrency_conflict";
     public const string NotFound = "cycle_capacity_not_found";
 
@@ -344,7 +450,8 @@ public static class CycleCapacityReasonCodes
         VisitMinutesZero, PeriodClosed, PeriodNotFound, PinImmutable, CountryRequired, CountryUnknown,
         ReferenceSetUnpublished, DailyWorkMinutesInvalid, ActivityMinutesInvalid, DailySpendExceedsDay, MonthsRequired,
         MonthInvalid, MonthDuplicate, DeductionInvalid, MonthFteInvalid, DescriptionInvalid, BetweenVisitTimeInvalid,
-        MaxProductsOutOfRange, ConcurrencyConflict, NotFound
+        MaxProductsOutOfRange, TypicalVisitEmpty, TypicalCountExceedsMax, TypicalVisitIncomplete, ConcurrencyConflict,
+        NotFound
     };
 }
 
@@ -389,5 +496,8 @@ public static class CycleCapacityLimits
     public const int CalendarCountryCodeLength = 2;
 
     public const decimal MinFte = 0.01m;
+
+    /// <summary>WP-CAP-MODEL (K-5) — an AUTHORED month FTE may be 0 (a vacant position); the interim default may not.</summary>
+    public const decimal MinAuthoredFte = 0m;
     public const decimal MaxFte = 9999m;
 }
