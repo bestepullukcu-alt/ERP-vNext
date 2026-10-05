@@ -7607,6 +7607,14 @@ talep / bildirim olarak gider ve karşı taraf ya da yöneticisi üstlenir; sür
 Kod yazmadan bugün: iki kişinin üstünde ortak bir grup pozisyonu varsa o yönetici ikisine de atayabilir. İkinci koltuk vermek çalışır ama
 önerilmez (onay zincirini ve zaman çizelgesi onaycısını da değiştirir). Gelecek regresyon riski: 🟡 (atama kapsamı, kişisel veri görünürlüğü).
 
+**Ek 2026-10-05 — (a) GÖREV TALEBİ CT KABULÜ (kod): dal `feature/platform/task-request` `f748673cb` (WP-WCN-TASK-REQUEST-01 D1, FIX1–FIX7).** FIX7 bağımsız
+gözden geçirmesi engelleyici ve zorunlu bulmadı; CT sabotajı (vitest) 2/3 — J2 eşdeğer mutasyon (her hata cümleyi `failure()`'dan önce yeniden yazdığı için başarıda
+sıfırlama gözlenemez). **Birleştirme bekliyor:** motor (D2 + BL-547) takeover dalında; görev talebi dalı oraya birleştirilirken CT `TaskItemWriteHandlers` /
+`TaskItemTransitionHandlers` uzlaştırmasını ve gönderimde açık inceleme kodunu düzeltir (motor PendingReview + açık incelemede `TASK_INVALID_STATE` dönüyor →
+`REVIEW_PENDING` olmalı; görev talebinin `errorReviewAlreadyOpen` eşlemesi buna bağlı). Takeover'da GSKU FIX7 sürdüğü için birleştirme o teslimden sonra.
+Kabulde kalan küçükler: `inputTooShort` cümlesi ölü (select2 `minimumInputLength` 0) · açılış çağrısında try/catch yok (gerçek istemciyle ulaşılamaz) · AgendaItemDto
+tarayıcısı blok gövdeli eşleyiciyi ve `global::` adı görmüyor · 403 ve 500 aynı "yeniden deneyin" cümlesi.
+
 ---
 
 ### BL-510
@@ -8052,6 +8060,24 @@ DuplicateKey alıyor ve Platform açılmıyor (ölçüldü). Risk: canlıda bu h
 SuperAdmin doğar. Öneri: tohum yalnız Development'ta; canlı ilk kurulum tek seferlik bir komutla rastgele parola + zorunlu değişim; e-posta değişikliği
 bu kayıtta yasak; tohum açılışı asla çökertmez. Karşılaştırma: SAP ve Oracle'da ilk yönetici kurulum sırasında, rastgele / kurulumcunun verdiği parolayla
 bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: 🟡 (canlı ilk kurulum yolu).
+
+---
+
+### BL-554
+
+**Organizasyon birimi üst değişikliği yük altında iki eşzamanlı değişikliğin ikisini de yazabiliyor: yapı sayacı kenar yazılmadan ÖNCE ilerliyor (ağaçta döngü riski)**
+
+DURUM: AÇIK · SAHİP: Organizasyon (MOD-0288) sahibi; CT yönlendirir · BULAN: WP-WCN-TASK-REQUEST-01 FIX7 tam koşusu (`OrganizationMatrixReportingTests.Two_concurrent_reparentings_cannot_both_land`
+"round 5: both re-parentings landed") + bağımsız gözden geçirme, CT kodda doğruladı · KAYIT: 2026-10-05
+
+`UpdateOrganizationUnitCommandHandler.cs` yapı belirtecini doğrulamadan önce okuyor (:36, doğru), doğruluyor, `TryAdvanceStructureTokenAsync` ile koşullu ilerletiyor (:137) ve
+KENARI ANCAK SONRA yazıyor (:152, düz ReplaceOne). Koşullu ilerletme sağlam, ama ilerletme ile yazım arasında pencere var: ikinci yazan belirteci birincinin ilerletmesinden
+SONRA, ağacı birincinin yazımından ÖNCE okursa taze belirteç + bayat ağaçla döngü denetimini geçer, kendi ilerletmesini kazanır ve kenarını yazar → iki kenar birden (çapraz iki
+değişiklikte döngü). Testin güvenlik iddiası (`landed <= 1`) tam takımın yükünde bir kez kırmızı; tek başına 3/3 yeşil — kararsız test DEĞİL, yükle açılan gerçek yarış
+(çıkarım; yeniden üretilmedi). Düzeltme sırayı değiştirmekle bitmez (yazım önce olursa kaybedenin kenarı zaten yazılmış olur): ya kenar ile belirteç tek işlemde (Mongo
+işlemi), ya "bekleyen" durumu okuyucuların reddettiği iki aşamalı yazım, ya yazımdan sonra yeniden denetim + geri alma. Karşılaştırma: SAP HCM'de (PP01 / OM) yapı değişikliği
+nesne kilidiyle (ENQUEUE) seri hâle getirilir; Oracle HCM'de hiyerarşi değişikliği sürümlenir ve tek işlemde yazılır. Gelecek regresyon riski: 🔴 (organizasyon ağacında döngü;
+onay zincirleri ve kapsam çözümü ağaca dayanıyor).
 
 ---
 
