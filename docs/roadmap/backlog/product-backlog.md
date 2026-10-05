@@ -8111,6 +8111,13 @@ aynı durum ⇔ çıkış tablosu GP'ye uygulanır, başlatma araması ile başl
 iptal edilen değişiklik talebi nesneyi kilitten çıkarır (USMD_CREQUEST iptali); Oracle PIM'de reddedilen / geri çekilen onay öğeyi düzenlenebilir duruma döndürür.
 Gelecek regresyon riski: 🔴 (canlıda tek bir iptal kalıcı kilit doğurur).
 
+**Ek 2026-10-05 — GSKU CT KABULÜ ve GP işinin başlaması.** GSKU (WP-MDM-GSKU-ACCEPT-01) takeover `75c286f7d`'de kabul edildi (FIX7; gözden geçirme engelleyici / zorunlu
+yok; CT sabotajı 4/4). GP işi WP-MDM-GP-WF-ANSWERS-01 olarak MDM sohbetine verildi (`gp-bl552-prompt.md`). GSKU kabulünden kalan küçükler (GP işiyle ya da sonra): depo
+değişmezi sessiz `return false` (koşucu `deferred++`, günlük yok) · bekleme saati yedeği her talepte yenileniyor (`UpdatedAt`) · kalıcı RELEASE_CONFLICT'te tekrar sonrası gösterge
+inip çıkıyor · runbook'ta FIX7 öncesi cümleler (`service-trust-chain-runbook.md:390, :402-404, :442-443`) · bir başvuru verisi 500 / 502'si artık kişiye düşüyor (yalnız 503 / 504 /
+401 / 403 geçici sayılıyor; `ApplyAsync`) · FIX6 derlemesinin yazdığı Manual + Retryable satırları için onarım yok (yalnız dev) · `GSKU_LIFECYCLE_RELEASE_CONFLICT` dört yerde
+çıplak dizgi.
+
 ---
 
 ### BL-551
