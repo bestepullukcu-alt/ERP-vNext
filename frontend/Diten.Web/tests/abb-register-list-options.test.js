@@ -48,7 +48,8 @@ describe("ABB register list options", () => {
 
   it("keeps the saved-view keys, the quick view and the product filter", () => {
     expect(options.savedView.moduleKey).toBe("MasterDataManagement");
-    expect(options.savedView.pageKey).toBe("ProductAbbreviationRegister");
+    // LIST-FIX1 item 3: versioned — the old eight-column views are carried over to it by the page.
+    expect(options.savedView.pageKey).toBe("ProductAbbreviationRegister.v2");
     expect(options.quickView.actionKey).toBe("quickView");
     expect(options.filters.fields.map((field) => field.key)).toEqual(["globalProductText", "globalProductId"]);
     expect(Object.keys(options.actions.onRowAction).sort()).toEqual(["cancel", "correct", "retire", "taskCenter"]);
@@ -59,9 +60,24 @@ describe("ABB register list options", () => {
       const partial = fs.readFileSync(path.join(WEB, "Views/MDM/ProductAbbreviationRegister/_IndexL10n.cshtml"), "utf8");
       const shared = fs.readFileSync(path.join(WEB, `Resources/SharedResource.${lang}.resx`), "utf8");
       const keys = [...partial.matchAll(/SharedLocalizer\["([A-Za-z]+)"\]\.Value/g)].map((match) => match[1]);
-      ["Active", "Passive", "Edit", "ViewDetails", "Import", "Status"].forEach((key) => expect(keys).toContain(key));
+      // LIST-FIX1 item 7: RecordSaved — the list component's Save View toast.
+      ["Active", "Passive", "Edit", "ViewDetails", "Import", "Status", "RecordSaved"].forEach((key) => expect(keys).toContain(key));
       for (const key of keys) {
         const match = shared.match(new RegExp(`<data name="${key}" xml:space="preserve">\\s*<value>([^<]*)</value>`));
+        expect([key, match ? match[1].trim() : null]).toEqual([key, expect.stringMatching(/\S/)]);
+      }
+    });
+
+  it.each(["en", "tr", "fr", "es", "zh", "ar", "ru"])(
+    "has the page's own new words in %s: the truncation notice and the saved view that was not carried over", (lang) => {
+      const partial = fs.readFileSync(path.join(WEB, "Views/MDM/ProductAbbreviationRegister/_IndexL10n.cshtml"), "utf8");
+      const index = fs.readFileSync(path.join(WEB, "Views/MDM/ProductAbbreviationRegister/Index.cshtml"), "utf8");
+      const page = fs.readFileSync(path.join(WEB,
+        `Resources/Views/MDM/ProductAbbreviationRegister/ProductAbbreviationRegisterIndex.${lang}.resx`), "utf8");
+      expect(partial).toContain('SavedViewNotCarried = Localizer["SavedViewNotCarried"].Value');
+      expect(index).toContain('@Localizer["ListTruncated"]');
+      for (const key of ["ListTruncated", "SavedViewNotCarried"]) {
+        const match = page.match(new RegExp(`<data name="${key}" xml:space="preserve">\\s*<value>([^<]*)</value>`));
         expect([key, match ? match[1].trim() : null]).toEqual([key, expect.stringMatching(/\S/)]);
       }
     });

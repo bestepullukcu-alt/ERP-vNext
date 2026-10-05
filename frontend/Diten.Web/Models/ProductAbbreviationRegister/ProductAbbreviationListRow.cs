@@ -20,6 +20,20 @@ public sealed record ProductAbbreviationListRow(
     /// <summary>MDM's lifecycle order, for a status that arrives as its name.</summary>
     private static readonly string[] LifecycleOrder = ["REQUESTED", "ACTIVE", "REJECTED", "CANCELLED", "RETIRED"];
 
+    /// <summary>The lifecycle's NAME whether MDM sent the name or its number (MDM's enum order); null when unreadable.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? LifecycleName => LifecycleStatus.ValueKind switch
+    {
+        JsonValueKind.String when Array.IndexOf(LifecycleOrder, LifecycleStatus.GetString()) >= 0 => LifecycleStatus.GetString(),
+        JsonValueKind.Number when LifecycleStatus.TryGetInt32(out var number) && number >= 0 && number < LifecycleOrder.Length
+            => LifecycleOrder[number],
+        _ => null
+    };
+
+    /// <summary>LIST-FIX1 item 4 — an active or still-requested code: the product takes no new request.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool IsOpen => LifecycleName is "ACTIVE" or "REQUESTED";
+
     /// <summary>The entries of MDM's envelope (<c>{ data: [ … ] }</c>); false when the answer is not that shape.</summary>
     public static bool TryReadEntries(string body, out List<ProductAbbreviationListRow> rows)
     {

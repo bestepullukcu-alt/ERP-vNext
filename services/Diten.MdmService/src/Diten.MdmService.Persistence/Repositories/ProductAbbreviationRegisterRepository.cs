@@ -184,13 +184,19 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
     {
         // A stored time is [clock ticks, offset minutes]. Anything else — not an array, not two items, an item that is
         // not a number or does not fit a long — is left WITHOUT an order ($$REMOVE): never a failed update for every other
-        // row, and never a guessed time (WP-MDM-ABB-LIST-01 EK 5).
-        static BsonDocument AsLong(BsonValue input) => new("$convert", new BsonDocument
+        // row, and never a guessed time (WP-MDM-ABB-LIST-01 EK 5). Only a NUMBER is converted (LIST-FIX1 item 7):
+        // $convert alone turns true into 1, "123" into 123 and a date into its milliseconds — each a made-up time.
+        static BsonDocument AsLong(BsonValue input) => new("$cond", new BsonArray
         {
-            ["input"] = input,
-            ["to"] = "long",
-            ["onError"] = BsonNull.Value,
-            ["onNull"] = BsonNull.Value
+            new BsonDocument("$isNumber", input),
+            new BsonDocument("$convert", new BsonDocument
+            {
+                ["input"] = input,
+                ["to"] = "long",
+                ["onError"] = BsonNull.Value,
+                ["onNull"] = BsonNull.Value
+            }),
+            BsonNull.Value
         });
 
         static BsonDocument UtcTicksOrNothing(string field) => new("$cond", new BsonArray
@@ -1346,6 +1352,12 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
         DropRetiredIndexNow();
         RetiredIndexChecked.TryAdd(marker, 0);
     }
+
+    /// <summary>
+    /// TEST ONLY (LIST-FIX1 item 7): forgets that one database's index list was read, so a test on a fixed-name database
+    /// measures the check again when the same process runs it a second time.
+    /// </summary>
+    internal static void ForgetRetiredIndexCheck(string databaseName) => RetiredIndexChecked.TryRemove(databaseName, out _);
 
     private void DropRetiredIndexNow()
     {

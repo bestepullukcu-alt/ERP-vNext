@@ -34,4 +34,10 @@
 <data name="ErrorDecidedByAnother" xml:space="preserve"><value>This was already decided by someone else. The list has been refreshed.</value></data>
 <data name="ErrorKeyInvalid" xml:space="preserve"><value>The request could not be identified. Reload the page and try again.</value></data>
 <data name="ErrorScopeUnavailable" xml:space="preserve"><value>Your company scope could not be determined, so the register cannot be used right now.</value></data>
+  <data name="ListTruncated" xml:space="preserve">
+    <value>Only the first 500 entries of this product are shown; the rest cannot be read here. An incomplete list cannot be exported.</value>
+  </data>
+  <data name="SavedViewNotCarried" xml:space="preserve">
+    <value>Your previously saved view could not be carried over; the default view is shown. It will be tried again next time.</value>
+  </data>
 </root>

@@ -1674,6 +1674,8 @@ public sealed class ProductAbbreviationFix1MongoTests(Audit.AuditIntentTemporalM
 
         var client = new MongoClient(settings);
         await client.DropDatabaseAsync(name);
+        // A fixed name repeats when the same process runs the test again: forget the earlier run's "already checked".
+        ProductAbbreviationRegisterRepository.ForgetRetiredIndexCheck(name);
         return (client, client.GetDatabase(name));
     }
 
@@ -1915,6 +1917,68 @@ public sealed class ProductAbbreviationFix1MongoTests(Audit.AuditIntentTemporalM
 
         Assert.False((await RawRowAsync(scope, text.Id)).Contains(nameof(ProductAbbreviationRegisterEntry.PendingSinceUtcTicks)));
         Assert.False((await RawRowAsync(scope, huge.Id)).Contains(nameof(ProductAbbreviationRegisterEntry.PendingSinceUtcTicks)));
+    }
+
+    public static TheoryData<string> NonNumberTicks() => new() { "true", "numeric-text", "date" };
+
+    [Theory]
+    [MemberData(nameof(NonNumberTicks))]
+    public async Task An_old_time_holding_a_boolean_numeric_text_or_a_date_is_not_read_as_ticks(string kind)
+    {
+        // LIST-FIX1 item 7 — $convert alone turns true into 1, "123" into 123 and a date into its milliseconds: each would
+        // stamp the row with a made-up time and put it at the head of the Task Center. Only a NUMBER is a tick count.
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var odd = LegacyPending(scope, scope.Tenant, DateTimeOffset.UtcNow.AddDays(-9), "NTA");
+        var good = LegacyPending(scope, scope.Tenant, DateTimeOffset.UtcNow.AddDays(-3), "NTB");
+        await InsertWithoutOrderAsync(scope, odd, good);
+        MongoDB.Bson.BsonValue ticks = kind switch
+        {
+            "true" => MongoDB.Bson.BsonBoolean.True,
+            "numeric-text" => new MongoDB.Bson.BsonString("638000000000000000"),
+            _ => new MongoDB.Bson.BsonDateTime(DateTime.UtcNow.AddDays(-9))
+        };
+        var raw = scope.Database.GetCollection<MongoDB.Bson.BsonDocument>("mdm_product_abbreviation_register");
+        await raw.UpdateOneAsync(Builders<MongoDB.Bson.BsonDocument>.Filter.Eq("_id", odd.Id),
+            Builders<MongoDB.Bson.BsonDocument>.Update.Set(nameof(ProductAbbreviationRegisterEntry.RequestedAtUtc),
+                new MongoDB.Bson.BsonArray { ticks, 0 }));
+
+        try
+        {
+            await scope.Register.GetPendingWorkItemsPageAsync(null, 50);
+        }
+        catch (FormatException)
+        {
+            // The odd row cannot be deserialized as an entry: the page read may refuse it. The backfill is measured below.
+        }
+
+        Assert.Equal(good.RequestedAtUtc.UtcTicks,
+            (await RawRowAsync(scope, good.Id))[nameof(ProductAbbreviationRegisterEntry.PendingSinceUtcTicks)].ToInt64());
+        Assert.False((await RawRowAsync(scope, odd.Id)).Contains(nameof(ProductAbbreviationRegisterEntry.PendingSinceUtcTicks)));
+    }
+
+    [Fact]
+    public async Task A_late_approver_of_a_code_whose_retirement_now_waits_is_not_told_another_approver_decided()
+    {
+        // LIST-FIX1 item 7 — the EK 9 clause at the repository (DecideAsync): Checker approved the code, Maker2 then asked to
+        // retire it. A late approval of the ORIGINAL request by Checker2 does not hear "another approver decided" — what
+        // waits on the code now is a retirement nobody has decided — but the old answer, CONCURRENCY_CONFLICT. BEHAVIOUR
+        // CHANGE (declared): before EK 9 this answered ABBREVIATION_ALREADY_DECIDED_BY_ANOTHER.
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var requested = await RequestAsync(scope, Maker, Guid.NewGuid(), "LRW");
+        var active = await ApproveAsync(scope, requested);
+        Assert.True((await scope.Workflow(Maker2).RequestRetirementAsync(
+            new RequestProductAbbreviationRetirementCommand(active.Id, active.Version, Key(), "retire"), default)).IsSuccessful);
+        var before = (await scope.Register.GetByIdAsync(active.Id))!;
+        Assert.NotNull(before.RetirementRequestId);
+
+        var late = await scope.Workflow(Checker2).ApproveAsync(
+            new ApproveProductAbbreviationAllocationCommand(requested.Id, requested.Version, Key()), default);
+
+        Assert.Equal(409, late.StatusCode);
+        Assert.Equal("CONCURRENCY_CONFLICT", Assert.Single(late.Errors));
+        var after = (await scope.Register.GetByIdAsync(active.Id))!;
+        Assert.Equal(before.Version, after.Version);
+        Assert.Equal(before.RetirementRequestId, after.RetirementRequestId);
     }
 
     [Fact]

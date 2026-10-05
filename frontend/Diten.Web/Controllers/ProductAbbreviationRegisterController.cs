@@ -3,8 +3,11 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Globalization;
 using System.Text.Json;
+using Diten.BuildingBlocks.ListExport;
 using Diten.Web.Models.ProductAbbreviationRegister;
+using Diten.Web.Views.MDM.ProductAbbreviationRegister;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -19,18 +22,21 @@ public sealed class ProductAbbreviationRegisterController : Controller
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
+    private readonly IStringLocalizer<ProductAbbreviationRegisterIndex> _pageLocalizer;
     private readonly ILogger<ProductAbbreviationRegisterController> _logger;
 
     public ProductAbbreviationRegisterController(
         HttpClient httpClient,
         IConfiguration configuration,
         IStringLocalizer<SharedResource> sharedLocalizer,
+        IStringLocalizer<ProductAbbreviationRegisterIndex> pageLocalizer,
         ILogger<ProductAbbreviationRegisterController> logger)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"]?.TrimEnd('/')
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _sharedLocalizer = sharedLocalizer;
+        _pageLocalizer = pageLocalizer;
         _logger = logger;
     }
 
@@ -70,10 +76,16 @@ public sealed class ProductAbbreviationRegisterController : Controller
 
     /// <summary>
     /// WP-MDM-ABB-LIST-01 — the register list in the list component's SERVER protocol: start, length, search, orderBy,
-    /// orderDir and the applied product filter in; <c>{ data: { items, total, filteredTotal } }</c> out. A list shows ONE
-    /// product's entries (MDM answers them in one bounded read, at most 500); this proxy searches (abbreviation),
-    /// sorts (whitelist below; anything else is 400, never a silent default) and pages them. MDM is not changed.
-    /// No product chosen = an empty page, without a gateway call.
+    /// orderDir and the applied product filter in; <c>{ data: { items, total, filteredTotal, hasOpenEntry, truncated } }</c>
+    /// out. A list shows ONE product's entries (MDM answers them in one bounded read, at most
+    /// <see cref="MdmEntryReadLimit"/>); this proxy searches, sorts (whitelist below; anything else is 400, never a silent
+    /// default) and pages them. MDM is not changed. No product chosen = an empty page, without a gateway call.
+    /// <list type="bullet">
+    /// <item>LIST-FIX1 item 4 — <c>hasOpenEntry</c> is read from EVERY entry of the product, not from the page or the
+    /// search result: the request button must not reappear on page two or behind a search.</item>
+    /// <item>LIST-FIX1 item 6 — MDM stops at <see cref="MdmEntryReadLimit"/> entries; a read that came back full says so
+    /// (<c>truncated</c>), because the totals then count only what was read.</item>
+    /// </list>
     /// </summary>
     [HttpGet("api/list")]
     public async Task<IActionResult> List(
@@ -82,21 +94,140 @@ public sealed class ProductAbbreviationRegisterController : Controller
         [FromQuery] string? search = null,
         [FromQuery] string? orderBy = null,
         [FromQuery] string? orderDir = null,
-        [FromQuery] Guid? globalProductId = null,
+        [FromQuery] string? globalProductId = null,
         CancellationToken cancellationToken = default)
     {
         if (!Has("mdm.product-abbreviations.read")) return Denied();
         if (start < 0 || length is < 1 or > MaxListPageLength)
             return ListRefused("ABBREVIATION_LIST_PAGE_INVALID");
-        if (orderBy is not null && !SortableListColumns.Contains(orderBy)
-            || orderDir is not null && orderDir is not ("asc" or "desc"))
+        if (!IsListOrder(orderBy, orderDir))
             return ListRefused("ABBREVIATION_LIST_ORDER_INVALID");
-        if (globalProductId is null || globalProductId == Guid.Empty)
-            return Ok(new { isSuccessful = true, data = new { items = Array.Empty<ProductAbbreviationListRow>(), total = 0, filteredTotal = 0 } });
+        if (!TryReadProduct(globalProductId, out var product))
+            return ListRefused("ABBREVIATION_LIST_PRODUCT_INVALID");
+        if (product is null)
+            return Ok(new
+            {
+                isSuccessful = true,
+                data = new
+                {
+                    items = Array.Empty<ProductAbbreviationListRow>(), total = 0, filteredTotal = 0,
+                    hasOpenEntry = false, truncated = false
+                }
+            });
 
-        var targetUrl = $"{_gatewayUrl}{ServicePath}/by-global-product/{globalProductId.Value:D}/entries";
+        var (refusal, rows) = await ReadEntriesAsync(product.Value, cancellationToken);
+        if (refusal is not null) return refusal;
+
+        var filtered = Search(rows, search);
+        var ordered = ProductAbbreviationListRow.Order(filtered, orderBy ?? "abbreviation", orderDir == "desc");
+        return Ok(new
+        {
+            isSuccessful = true,
+            data = new
+            {
+                items = ordered.Skip(start).Take(length).ToList(),
+                total = rows.Count,
+                filteredTotal = filtered.Count,
+                hasOpenEntry = rows.Any(row => row.IsOpen),
+                truncated = rows.Count >= MdmEntryReadLimit
+            }
+        });
+    }
+
+    /// <summary>
+    /// LIST-FIX1 item 5 — BL-452: THE FILE IS THE LIST. The same product, search and order as the list, every matching
+    /// entry (no start/length), the visible columns in screen order (whitelist <see cref="ExportColumns"/>; anything else
+    /// is 400), headers and values in the request culture. A read MDM cut off at <see cref="MdmEntryReadLimit"/> is
+    /// refused with 413 EXPORT_TOO_LARGE: a GxP register is never exported silently in part.
+    /// </summary>
+    [HttpGet("api/list/export")]
+    public async Task<IActionResult> Export(
+        [FromQuery] string? format = null,
+        [FromQuery] string[]? columns = null,
+        [FromQuery] string? search = null,
+        [FromQuery] string? orderBy = null,
+        [FromQuery] string? orderDir = null,
+        [FromQuery] string? globalProductId = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Has("mdm.product-abbreviations.read")) return Denied();
+        if (!ListExportContract.TryParseFormat(format, out var exportFormat))
+            return ListRefused(ListExportContract.FormatInvalidCode);
+        if (!IsListOrder(orderBy, orderDir))
+            return ListRefused("ABBREVIATION_LIST_ORDER_INVALID");
+        if (!TryReadProduct(globalProductId, out var product))
+            return ListRefused("ABBREVIATION_LIST_PRODUCT_INVALID");
+        if (!ExportColumns.TryResolve(columns, out var exportColumns, out _))
+            return ListRefused(ListExportContract.ColumnsInvalidCode);
+
+        List<ProductAbbreviationListRow> rows = [];
+        if (product is not null)
+        {
+            var (refusal, read) = await ReadEntriesAsync(product.Value, cancellationToken);
+            if (refusal is not null) return refusal;
+            if (read.Count >= MdmEntryReadLimit)
+                return StatusCode(StatusCodes.Status413PayloadTooLarge, new
+                {
+                    success = false,
+                    errors = new[] { ListExportContract.TooLargeCode },
+                    errorCode = ListExportContract.TooLargeCode
+                });
+            rows = read;
+        }
+
+        var ordered = ProductAbbreviationListRow.Order(Search(rows, search), orderBy ?? "abbreviation", orderDir == "desc");
+        var culture = ListExportContract.ResolveCulture(Request.Headers.AcceptLanguage.ToString());
+        var previous = (CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
+        byte[] file;
+        try
+        {
+            // The page's resources answer in the CURRENT UI culture: the file's language for the time it is written.
+            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = culture;
+            file = ListExportWriter.Write(exportFormat, exportColumns, ordered, culture, _pageLocalizer["ProductAbbreviationRegisterTitle"].Value);
+        }
+        finally
+        {
+            (CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture) = previous;
+        }
+
+        return File(file, ListExportContract.ContentType(exportFormat),
+            ListExportContract.FileName("product-abbreviation-register", DateTimeOffset.UtcNow, exportFormat));
+    }
+
+    /// <summary>MDM's one-product read stops here (<c>GetByGlobalProductIdAsync</c>, Limit 500).</summary>
+    internal const int MdmEntryReadLimit = 500;
+
+    private const int MaxListPageLength = 100;
+
+    /// <summary>The register list's sortable columns (the page's column <c>data</c> names); the rest is 400.</summary>
+    internal static readonly IReadOnlySet<string> SortableListColumns =
+        new HashSet<string>(StringComparer.Ordinal) { "abbreviation", "lifecycleStatus", "version", "retirementPending" };
+
+    private static bool IsListOrder(string? orderBy, string? orderDir)
+        => (orderBy is null || SortableListColumns.Contains(orderBy))
+           && (orderDir is null || orderDir is "asc" or "desc");
+
+    /// <summary>No value = no product (an empty list); a value that is not a product id is refused, never read as "none".</summary>
+    private static bool TryReadProduct(string? value, out Guid? product)
+    {
+        product = null;
+        if (string.IsNullOrEmpty(value)) return true;
+        if (!Guid.TryParseExact(value, "D", out var id)) return false;
+        if (id != Guid.Empty) product = id;
+        return true;
+    }
+
+    /// <summary>
+    /// The product's entries as MDM answers them: 401 without a usable token / tenant, 502 when the gateway cannot be
+    /// reached or answers what is not an entry list, MDM's own refusal (403, 404, 503 …) passed on as it came.
+    /// </summary>
+    private async Task<(IActionResult? Refusal, List<ProductAbbreviationListRow> Rows)> ReadEntriesAsync(
+        Guid product,
+        CancellationToken cancellationToken)
+    {
+        var targetUrl = $"{_gatewayUrl}{ServicePath}/by-global-product/{product:D}/entries";
         if (!TryCreateGatewayRequest(HttpMethod.Get, targetUrl, null, mutation: false, out var request))
-            return Unauthorized(new { errors = new[] { _sharedLocalizer["Unauthorized"].Value } });
+            return (Unauthorized(new { errors = new[] { _sharedLocalizer["Unauthorized"].Value } }), []);
 
         string body;
         int status;
@@ -112,33 +243,56 @@ public sealed class ProductAbbreviationRegisterController : Controller
         catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             _logger.LogError(exception, "ABB Register list proxy failed for {TargetUrl}.", targetUrl);
-            return StatusCode(StatusCodes.Status502BadGateway, new { errors = new[] { _sharedLocalizer["GatewayError"].Value } });
+            return (StatusCode(StatusCodes.Status502BadGateway, new { errors = new[] { _sharedLocalizer["GatewayError"].Value } }), []);
         }
 
-        // MDM's own refusal (403, 404, 503 …) is passed on as it came: the page reads its code.
         if (status is < 200 or > 299)
-            return new ContentResult { StatusCode = status, ContentType = "application/json", Content = body };
+            return (new ContentResult { StatusCode = status, ContentType = "application/json", Content = body }, []);
 
-        if (!ProductAbbreviationListRow.TryReadEntries(body, out var rows))
-            return StatusCode(StatusCodes.Status502BadGateway, new { errors = new[] { _sharedLocalizer["GatewayError"].Value } });
-
-        var term = search?.Trim();
-        var filtered = string.IsNullOrEmpty(term)
-            ? rows
-            : rows.Where(row => row.Abbreviation.Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
-        var ordered = ProductAbbreviationListRow.Order(filtered, orderBy ?? "abbreviation", orderDir == "desc");
-        return Ok(new
-        {
-            isSuccessful = true,
-            data = new { items = ordered.Skip(start).Take(length).ToList(), total = rows.Count, filteredTotal = filtered.Count }
-        });
+        return ProductAbbreviationListRow.TryReadEntries(body, out var rows)
+            ? (null, rows)
+            : (StatusCode(StatusCodes.Status502BadGateway, new { errors = new[] { _sharedLocalizer["GatewayError"].Value } }), []);
     }
 
-    private const int MaxListPageLength = 100;
+    /// <summary>
+    /// LIST-FIX1 item 7 — what the reader can see in a row, as the page's former client-side search matched it: the code,
+    /// the lifecycle as shown (the reader's language), the version and the retirement-pending yes/no. The product column
+    /// is the filter itself (one product per list), so it does not narrow anything.
+    /// </summary>
+    private List<ProductAbbreviationListRow> Search(List<ProductAbbreviationListRow> rows, string? search)
+    {
+        var term = search?.Trim();
+        if (string.IsNullOrEmpty(term)) return rows;
+        // In the reader's language (the UI culture the words are in): "iptal" finds "İptal edildi" for a Turkish reader,
+        // "in use" finds "In use" for an English one — each language's own case rules, not the server thread's.
+        var compare = CultureInfo.CurrentUICulture.CompareInfo;
+        return rows.Where(row => SearchTexts(row).Any(text => compare.IndexOf(text, term, CompareOptions.IgnoreCase) >= 0)).ToList();
+    }
 
-    /// <summary>The register list's sortable columns (the page's column <c>data</c> names); the rest is 400.</summary>
-    internal static readonly IReadOnlySet<string> SortableListColumns =
-        new HashSet<string>(StringComparer.Ordinal) { "abbreviation", "lifecycleStatus", "version", "retirementPending" };
+    private IEnumerable<string> SearchTexts(ProductAbbreviationListRow row)
+    {
+        yield return row.Abbreviation;
+        yield return LifecycleText(row);
+        yield return row.Version.ToString(CultureInfo.InvariantCulture);
+        yield return YesNo(row.RetirementPending);
+    }
+
+    private string LifecycleText(ProductAbbreviationListRow row)
+        => row.LifecycleName is { } name
+            ? _pageLocalizer["Lifecycle" + name[0] + name[1..].ToLowerInvariant()].Value
+            : string.Empty;
+
+    private string YesNo(bool value) => _pageLocalizer[value ? "Yes" : "No"].Value;
+
+    /// <summary>The export whitelist: the list's data columns by their <c>data</c> key, headers from the page's resources.</summary>
+    private ListExportColumnSet<ProductAbbreviationListRow> ExportColumns => new(
+    [
+        new("globalProductId", _ => _pageLocalizer["GlobalProduct"].Value, (row, _) => row.GlobalProductId.ToString("D")),
+        new("abbreviation", _ => _pageLocalizer["Abbreviation"].Value, (row, _) => row.Abbreviation),
+        new("lifecycleStatus", _ => _pageLocalizer["LifecycleStatus"].Value, (row, _) => LifecycleText(row)),
+        new("version", _ => _pageLocalizer["Version"].Value, (row, culture) => row.Version.ToString(culture)),
+        new("retirementPending", _ => _pageLocalizer["RetirementPending"].Value, (row, _) => YesNo(row.RetirementPending))
+    ]);
 
     private IActionResult ListRefused(string code) => StatusCode(StatusCodes.Status400BadRequest, new
     {

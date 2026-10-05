@@ -34,4 +34,10 @@
 <data name="ErrorDecidedByAnother" xml:space="preserve"><value>Это решение уже принято другим пользователем. Список обновлён.</value></data>
 <data name="ErrorKeyInvalid" xml:space="preserve"><value>Не удалось определить запрос. Обновите страницу и повторите попытку.</value></data>
 <data name="ErrorScopeUnavailable" xml:space="preserve"><value>Не удалось определить область вашей компании, поэтому реестр сейчас недоступен.</value></data>
+  <data name="ListTruncated" xml:space="preserve">
+    <value>Показаны только первые 500 записей этого продукта; остальные здесь прочитать нельзя. Неполный список нельзя экспортировать.</value>
+  </data>
+  <data name="SavedViewNotCarried" xml:space="preserve">
+    <value>Не удалось перенести ранее сохранённое представление; показано представление по умолчанию. Попытка будет повторена в следующий раз.</value>
+  </data>
 </root>

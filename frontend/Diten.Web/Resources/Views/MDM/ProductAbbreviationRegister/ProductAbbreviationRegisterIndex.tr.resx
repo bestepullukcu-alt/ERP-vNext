@@ -34,4 +34,10 @@
 <data name="ErrorDecidedByAnother" xml:space="preserve"><value>Bu karar başka biri tarafından verildi. Liste yenilendi.</value></data>
 <data name="ErrorKeyInvalid" xml:space="preserve"><value>İstek tanımlanamadı. Sayfayı yenileyip tekrar deneyin.</value></data>
 <data name="ErrorScopeUnavailable" xml:space="preserve"><value>Şirket kapsamınız belirlenemedi; kayıt şu anda kullanılamıyor.</value></data>
+  <data name="ListTruncated" xml:space="preserve">
+    <value>Bu ürünün yalnızca ilk 500 kaydı gösteriliyor; kalanı burada okunamıyor. Eksik bir liste dışa aktarılamaz.</value>
+  </data>
+  <data name="SavedViewNotCarried" xml:space="preserve">
+    <value>Önceden kaydettiğiniz görünüm aktarılamadı; varsayılan görünüm gösteriliyor. Bir sonraki açılışta yeniden denenecek.</value>
+  </data>
 </root>

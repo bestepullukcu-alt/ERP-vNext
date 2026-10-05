@@ -9,43 +9,59 @@ const path = require('path');
 describe('ABB executed browser contract', () => {
     const vm = require('vm');
     const source = fs.readFileSync(path.join(__dirname, '..', 'wwwroot/assets/js/MDM/ProductAbbreviationRegister/index.js'), 'utf8');
-    function harness(dataset = {}) {
+    /*
+     * `dom`: the page's real markup (jsdom) for the behaviour tests of LIST-FIX1 item 8 — the request form, the quick
+     * view and its evidence are real elements; otherwise the light stand-ins below.
+     */
+    function harness(dataset = {}, { dom = null, values = {} } = {}) {
         const selects = [];
         const list = { reload: vi.fn(), appliedFilters: {} };
         const createList = vi.fn(async () => list);
-        const root = { dataset, querySelector: () => ({ value: 'synthetic-csrf-fixture' }) };
         const addNew = { classList: { toggle: vi.fn() } };
         const fields = {
             filterGlobalProductId: { value: '' },
             filterGlobalProductText: { value: '' },
             btnFilterApply: { click: vi.fn() }
         };
-        const document = {
-            getElementById: (id) => id === 'product-abbreviation-register' ? root
-                : id === 'dt-product-abbreviation-register' ? {} : fields[id] ?? null,
-            querySelector: (selector) => selector === '.add-new' ? addNew : null, addEventListener: vi.fn(), body: {}
-        };
+        let document;
+        if (dom) {
+            globalThis.document.body.innerHTML = dom;
+            const root = globalThis.document.getElementById('product-abbreviation-register');
+            Object.entries(dataset).forEach(([key, value]) => { root.dataset[key] = value; });
+            document = globalThis.document;
+        } else {
+            const root = { dataset, querySelector: () => ({ value: 'synthetic-csrf-fixture' }) };
+            document = {
+                getElementById: (id) => id === 'product-abbreviation-register' ? root
+                    : id === 'dt-product-abbreviation-register' ? {} : fields[id] ?? null,
+                querySelector: (selector) => selector === '.add-new' ? addNew : null, addEventListener: vi.fn(), body: {}
+            };
+        }
         const win = {
             location: { search: '', assign: vi.fn() }, L10n: { AddNew: 'Request', ErrorForbidden: 'denied', ErrorConflict: 'conflict',
-                ErrorGateway: 'unavailable', ErrorReconciliation: 'pending', ErrorValidation: 'invalid', ErrorNotFound: 'missing' },
+                ErrorGateway: 'unavailable', ErrorReconciliation: 'pending', ErrorValidation: 'invalid', ErrorNotFound: 'missing',
+                ErrorProductHasEntry: 'has entry', RequestSuccess: 'requested', LifecycleActive: 'Active', LifecycleRequested: 'Requested',
+                Yes: 'Yes', No: 'No', Unknown: 'Unknown', ErrorAlreadyAllocated: 'taken' },
             DitenDataTable: { renderActions: (actions) => actions, createList },
             DtDefaults: { handleUnauthorized: vi.fn() },
             showToast: vi.fn(), showConfirm: vi.fn()
         };
         const fetch = vi.fn();
-        const context = { window: win, document, fetch, URLSearchParams, FormData, Option: function(){}, console, setTimeout,
-            bootstrap: { Offcanvas: { getOrCreateInstance: () => ({ show: vi.fn(), hide: vi.fn() }) } },
-            $: () => ({ length: 1, hasClass: () => false, prop: vi.fn(), select2: x => selects.push(x), on: vi.fn(),
-                val: () => ({ trigger: vi.fn() }), data: () => '', find: () => ({ text: () => '' }) })
+        const offcanvas = { show: vi.fn(), hide: vi.fn() };
+        const context = { window: win, document, fetch, URLSearchParams, FormData: globalThis.FormData, Option: function(){}, console, setTimeout,
+            bootstrap: { Offcanvas: { getOrCreateInstance: () => offcanvas } },
+            $: (selector) => ({ length: 1, hasClass: () => false, prop: vi.fn(), select2: x => selects.push(x), on: vi.fn(),
+                val: (value) => value === undefined ? (values[selector] ?? '') : ({ trigger: vi.fn() }), data: () => '',
+                find: () => ({ text: () => '' }), text: () => values[selector] ?? '' })
         };
         const anchor = '        buildListOptions\n    };';
         expect(source.split(anchor)).toHaveLength(2);
         const instrumented = source.replace(anchor,
-            '        buildListOptions, canRequest, initSelector, renderActions, requestRetirement, requestCorrection, initDataTable\n    };')
+            '        buildListOptions, canRequest, initSelector, renderActions, requestRetirement, requestCorrection, cancelRequest, showDetails, initDataTable\n    };')
             .replace("document.addEventListener('DOMContentLoaded', () => ProductAbbreviationRegisterList.init());", '');
         vm.createContext(context);
         vm.runInContext(instrumented + '\nglobalThis.testSubject = ProductAbbreviationRegisterList;', context);
-        return { sut: context.testSubject, win, fetch, list, createList, fields, selects, addNew };
+        return { sut: context.testSubject, win, fetch, list, createList, fields, selects, addNew, offcanvas, document };
     }
     const keys = (h, row) => h.sut.renderActions(row).map(x => x.key);
 
@@ -121,9 +137,13 @@ describe('ABB executed browser contract', () => {
         // FIX1 B2 + LIST: every entry of the product, read through the server-mode list proxy.
         expect(options.dataMode).toBe('server');
         expect(options.ajax.url).toBe('/MDM/ProductAbbreviationRegister/api/list');
+        // LIST-FIX1 item 1: nothing is applied before the factory's own start (loadOptions), and then only after it.
+        expect(h.fields.btnFilterApply.click).not.toHaveBeenCalled();
+        await options.filters.loadOptions();
+        expect(h.fields.btnFilterApply.click).not.toHaveBeenCalled();
+        await new Promise(resolve => setTimeout(resolve, 0));
         expect(h.fields.filterGlobalProductId.value).toBe(id);
         expect(h.fields.btnFilterApply.click).toHaveBeenCalledTimes(1);
-        await options.filters.loadOptions();
         expect(h.selects).toHaveLength(0);
         expect(options.toolbar.addNewText).toBe('');
         expect(h.fetch).not.toHaveBeenCalled();
@@ -132,28 +152,203 @@ describe('ABB executed browser contract', () => {
         const h=harness({canAudit:'true'});
         h.win.location.search='?globalProductId=not-a-guid';
         await h.sut.initDataTable();
+        await h.createList.mock.calls[0][0].filters.loadOptions();
+        await new Promise(resolve => setTimeout(resolve, 0));
         expect(h.fields.filterGlobalProductId.value).toBe('');
         expect(h.fields.btnFilterApply.click).not.toHaveBeenCalled();
     });
-    it('hides the request button for a product that already has an active or pending code', () => {
+    it('hides the request button by the proxy\'s answer for EVERY entry, not by the rows on this page', () => {
+        // LIST-FIX1 item 4 — page two shows a rejected code, yet the product's active one (page one) still counts.
         const h=harness({canRequest:'true',canSelectProduct:'true'});
         const options=h.sut.buildListOptions();
-        options.onResponse({data:{items:[{id:'x',lifecycleStatus:'REJECTED'}]}});
+        options.onResponse({data:{items:[{id:'x',lifecycleStatus:'REJECTED'}],hasOpenEntry:true}});
+        options.config.drawCallback();
+        expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', true);
+        options.onResponse({data:{items:[{id:'x',lifecycleStatus:'ACTIVE'}],hasOpenEntry:false}});
         options.config.drawCallback();
         expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', false);
-        options.onResponse({data:{items:[{id:'x',lifecycleStatus:'REQUESTED'}]}});
+        options.onResponse({data:{items:[]}});
         options.config.drawCallback();
-        expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', true);
-        options.onResponse({data:{items:[{id:'x',lifecycleStatus:1}]}});
-        options.config.drawCallback();
-        expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', true);
+        expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', false);
     });
-    it('preserves saved filter/search/column/order state under the old view keys', () => {
+    it('preserves saved filter/search/column/order state under the versioned view key', () => {
+        // LIST-FIX1 item 3 — the old key's views are carried over by the page (abb-register-real-factory.test.js).
         const options=harness().sut.buildListOptions();
-        expect(options.savedView).toMatchObject({ moduleKey:'MasterDataManagement', pageKey:'ProductAbbreviationRegister',
+        expect(options.savedView).toMatchObject({ moduleKey:'MasterDataManagement', pageKey:'ProductAbbreviationRegister.v2',
             saveViewColumnIndexes:[1,2,3,4,5], baseOrder:[[2,'asc']] });
         expect(options.filters.fields.map(f=>f.key)).toEqual(['globalProductText','globalProductId']);
         expect(options.filters.resetBtn).toBe('btnFilterReset');
+    });
+
+    // ── LIST-FIX1 items 2, 5, 6 ──────────────────────────────────────────────────────────────────────────────
+    it.each([
+        [403, { errorCode: 'ABBREVIATION_PERMISSION_DENIED' }, 'denied'],
+        [400, { errors: ['ABBREVIATION_LIST_ORDER_INVALID'] }, 'invalid'],
+        [400, { errors: ['ABBREVIATION_LIST_PRODUCT_INVALID'] }, 'invalid'],
+        [404, {}, 'missing'],
+        [502, { errors: ['Gateway error'] }, 'unavailable'],
+        [503, { errors: ['ABBREVIATION_PERSISTENCE_UNAVAILABLE'] }, 'unavailable']
+    ])('a list read refused with %s says the register\'s sentence', (status, payload, sentence) => {
+        const h = harness();
+        h.sut.buildListOptions().ajax.error.call({}, { status, responseJSON: payload });
+        expect(h.win.showToast).toHaveBeenCalledWith(sentence, 'error');
+    });
+    it('hands a 401 list read to the token refresh and stays quiet on an aborted one', () => {
+        const h = harness();
+        const error = h.sut.buildListOptions().ajax.error;
+        error.call({}, { status: 401 });
+        error.call({}, { status: 0, statusText: 'abort' });
+        expect(h.win.DtDefaults.handleUnauthorized).toHaveBeenCalledTimes(1);
+        expect(h.win.showToast).not.toHaveBeenCalled();
+    });
+    it('declares the server export of every entry, not the page the table holds', () => {
+        const options = harness().sut.buildListOptions();
+        expect(options.export).toEqual({ mode: 'server', url: '/MDM/ProductAbbreviationRegister/api/list/export', fileName: 'product-abbreviation-register' });
+        expect(options.toolbar.exportColumns).toEqual([1, 2, 3, 4, 5]);
+    });
+    it('says when MDM\'s read of the product came back full', () => {
+        const h = harness({}, { dom: '<div id="product-abbreviation-register"></div><table id="dt-product-abbreviation-register"></table><div id="abbListTruncated" class="d-none"></div>' });
+        const options = h.sut.buildListOptions();
+        const notice = h.document.getElementById('abbListTruncated');
+        options.onResponse({ data: { items: [], truncated: true } });
+        expect(notice.classList.contains('d-none')).toBe(false);
+        options.onResponse({ data: { items: [], truncated: false } });
+        expect(notice.classList.contains('d-none')).toBe(true);
+    });
+
+    // ── LIST-FIX1 item 8: the page's flows, run ────────────────────────────────────────────────────────────────
+    const PRODUCT = '33333333-3333-4333-8333-333333333333';
+    const requestDom = '<div id="product-abbreviation-register"><input name="__RequestVerificationToken" value="synthetic-csrf-fixture" />' +
+        '<form id="formProductAbbreviationRequest"><input id="requestAbbreviation" name="Abbreviation" value=" abc " /></form>' +
+        '<button id="btnRequestAbbreviation"></button><div id="offcanvasCreateEdit"></div></div>' +
+        '<table id="dt-product-abbreviation-register"></table><input id="filterGlobalProductId" /><input id="filterGlobalProductText" />' +
+        '<button id="btnFilterApply"></button>';
+    function requestHarness() {
+        const h = harness({ canRequest: 'true', canSelectProduct: 'true' }, {
+            dom: requestDom,
+            values: { '#requestGlobalProduct': PRODUCT, '#requestGlobalProduct option:selected': 'P-001 — Product' }
+        });
+        return h;
+    }
+    it('request: posts the chosen product and code with the CSRF token, then lists that product', async () => {
+        const h = requestHarness();
+        await h.sut.init();
+        const applied = vi.fn();
+        h.document.getElementById('btnFilterApply').addEventListener('click', applied);
+        h.fetch.mockResolvedValue({ status: 200, ok: true, json: async () => ({ isSuccessful: true, data: {} }) });
+
+        h.document.getElementById('btnRequestAbbreviation').click();
+        await h.win.showConfirm.mock.calls[0][1]();
+
+        const [url, init] = h.fetch.mock.calls[0];
+        expect(url).toBe('/MDM/ProductAbbreviationRegister/api/requests');
+        expect(init.method).toBe('POST');
+        expect(init.headers.RequestVerificationToken).toBe('synthetic-csrf-fixture');
+        expect(init.body.get('GlobalProductId')).toBe(PRODUCT);
+        expect(init.body.get('Abbreviation')).toBe('abc');
+        expect(h.offcanvas.hide).toHaveBeenCalled();
+        expect(h.win.showToast).toHaveBeenCalledWith('requested', 'success');
+        expect(h.document.getElementById('filterGlobalProductId').value).toBe(PRODUCT);
+        expect(h.document.getElementById('filterGlobalProductText').value).toBe('P-001 — Product');
+        expect(applied).toHaveBeenCalledTimes(1);
+    });
+    it('request: a refusal keeps the form open, says why and lists nothing new', async () => {
+        const h = requestHarness();
+        await h.sut.init();
+        h.fetch.mockResolvedValue({ status: 409, ok: false, json: async () => ({ errors: ['ABBREVIATION_ALREADY_ALLOCATED'] }) });
+
+        h.document.getElementById('btnRequestAbbreviation').click();
+        await h.win.showConfirm.mock.calls[0][1]();
+
+        expect(h.win.showToast).toHaveBeenCalledWith('taken', 'error');
+        expect(h.offcanvas.hide).not.toHaveBeenCalled();
+        expect(h.document.getElementById('filterGlobalProductId').value).toBe('');
+    });
+    it('request: a product that already has an open code on the list is refused before anything is sent', async () => {
+        const h = requestHarness();
+        await h.sut.init();
+        h.list.appliedFilters = { globalProductId: PRODUCT };
+        h.sut.buildListOptions().onResponse({ data: { items: [], hasOpenEntry: true } });
+
+        h.document.getElementById('btnRequestAbbreviation').click();
+
+        expect(h.win.showToast).toHaveBeenCalledWith('has entry', 'error');
+        expect(h.win.showConfirm).not.toHaveBeenCalled();
+        expect(h.fetch).not.toHaveBeenCalled();
+    });
+    it('cancel: the requester withdraws a pending entry at its version, then the list reloads', async () => {
+        const h = harness({ canCancel: 'true' });
+        await h.sut.initDataTable();
+        h.fetch.mockResolvedValue({ status: 200, ok: true, json: async () => ({ isSuccessful: true, data: {} }) });
+
+        h.sut.cancelRequest({ id: 'entry', version: 3, abbreviation: 'ABC', lifecycleStatus: 'REQUESTED', requestedByCurrentUser: true });
+        await h.win.showConfirm.mock.calls[0][1]();
+
+        expect(h.fetch.mock.calls[0][0]).toBe('/MDM/ProductAbbreviationRegister/api/entry/cancel');
+        expect(h.fetch.mock.calls[0][1].method).toBe('PATCH');
+        expect(JSON.parse(h.fetch.mock.calls[0][1].body)).toEqual({ expectedVersion: 3 });
+        expect(h.list.reload).toHaveBeenCalledWith('RequestSuccess');
+    });
+    it.each([
+        ['someone else\'s request', { canCancel: 'true' }, { requestedByCurrentUser: false, lifecycleStatus: 'REQUESTED' }],
+        ['a decided entry', { canCancel: 'true' }, { requestedByCurrentUser: true, lifecycleStatus: 'ACTIVE' }],
+        ['a reader without the right', {}, { requestedByCurrentUser: true, lifecycleStatus: 'REQUESTED' }]
+    ])('cancel: is not offered for %s', (_name, permissions, row) => {
+        const h = harness(permissions);
+        h.sut.cancelRequest({ id: 'entry', version: 1, ...row });
+        expect(h.win.showConfirm).not.toHaveBeenCalled();
+    });
+
+    const detailsDom = '<div id="product-abbreviation-register"></div><table id="dt-product-abbreviation-register"></table>' +
+        '<span id="oc-subtitle"></span><span id="oc-global-product"></span><span id="oc-abbreviation"></span><span id="oc-version"></span>' +
+        '<span id="oc-retirement-pending"></span><span id="oc-status"></span>' +
+        '<div id="auditEvidenceSection" class="d-none"><div id="auditEvidenceLoading" class="d-none"></div>' +
+        '<div id="auditEvidenceEmpty" class="d-none"></div><div id="auditEvidenceList"></div></div>';
+    it('quick view: fills the row and, for an auditor, its evidence — as text, never as markup', async () => {
+        const h = harness({ canAudit: 'true' }, { dom: detailsDom });
+        await h.sut.initDataTable();
+        h.list.appliedFilters = { globalProductId: PRODUCT, globalProductText: 'P-001 — Product' };
+        h.fetch.mockResolvedValue({ status: 200, ok: true, json: async () => ({ data: { history: [{
+            eventType: '<img src=x onerror=alert(1)>', occurredAtUtc: '2026-10-01T10:00:00Z', beforeStatus: 'REQUESTED', afterStatus: 'ACTIVE',
+            canonicalHumanSubjectId: 'subject-1', correlationId: 'corr-1', idempotencyKey: 'key-1', evidenceHash: 'hash-1', reason: 'approved'
+        }] } }) });
+
+        h.sut.showDetails({ id: 'entry/1', abbreviation: 'ABC', version: 4, retirementPending: true, lifecycleStatus: 'ACTIVE' });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        const text = (id) => h.document.getElementById(id).textContent;
+        expect([text('oc-subtitle'), text('oc-global-product'), text('oc-abbreviation'), text('oc-version'), text('oc-retirement-pending')])
+            .toEqual(['ABC', 'P-001 — Product', 'ABC', '4', 'Yes']);
+        expect(h.document.getElementById('oc-status').textContent).toBe('Active');
+        expect(h.fetch.mock.calls[0][0]).toBe('/MDM/ProductAbbreviationRegister/api/entry%2F1/evidence');
+        const list = h.document.getElementById('auditEvidenceList');
+        expect(list.querySelector('img')).toBeNull();
+        expect(list.textContent).toContain('<img src=x onerror=alert(1)>');
+        expect(list.textContent).toContain('Requested');
+        expect(list.textContent).toContain('hash-1');
+        expect(h.document.getElementById('auditEvidenceSection').classList.contains('d-none')).toBe(false);
+        expect(h.document.getElementById('auditEvidenceEmpty').classList.contains('d-none')).toBe(true);
+    });
+    it('quick view: a reader without the audit right reads no evidence', async () => {
+        const h = harness({}, { dom: detailsDom });
+        await h.sut.initDataTable();
+
+        h.sut.showDetails({ id: 'entry', abbreviation: 'ABC', version: 1, retirementPending: false, lifecycleStatus: 'ACTIVE' });
+
+        expect(h.fetch).not.toHaveBeenCalled();
+        expect(h.document.getElementById('auditEvidenceSection').classList.contains('d-none')).toBe(true);
+        expect(h.document.getElementById('oc-retirement-pending').textContent).toBe('No');
+    });
+    it('quick view: an evidence read that fails says so and leaves no spinner', async () => {
+        const h = harness({ canAudit: 'true' }, { dom: detailsDom });
+        await h.sut.initDataTable();
+        h.fetch.mockResolvedValue({ status: 403, ok: false, json: async () => ({ errorCode: 'ABBREVIATION_PERMISSION_DENIED' }) });
+
+        h.sut.showDetails({ id: 'entry', abbreviation: 'ABC', version: 1, lifecycleStatus: 'ACTIVE' });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(h.win.showToast).toHaveBeenCalledWith('denied', 'error');
+        expect(h.document.getElementById('auditEvidenceLoading').classList.contains('d-none')).toBe(true);
     });
 });
 
@@ -194,7 +389,7 @@ describe('MOD-0290-FU01 Product Abbreviation Register', () => {
         // FIX1 B2: the requester must see the pending request they just made, so the list reads every entry —
         // LIST: through the server-mode proxy, which reads MDM's every-entry call for the one product.
         expect(source).toContain('`${endpoint}/list`');
-        expect(controller()).toContain('/by-global-product/{globalProductId.Value:D}/entries');
+        expect(controller()).toContain('/by-global-product/{product:D}/entries');
         expect(source).toContain('`${endpoint}/${encodeURIComponent(entryId)}/evidence`');
         expect(source).toContain('item.canonicalHumanSubjectId ?? item.CanonicalHumanSubjectId');
         expect(source).toContain('item.correlationId ?? item.CorrelationId');
@@ -222,7 +417,7 @@ describe('MOD-0290-FU01 Product Abbreviation Register', () => {
     it('persists, restores, and resets the complete saved-view state without leaking browser credentials', () => {
         const source = script();
 
-        expect(source).toContain("const personalizationContext = { moduleKey: 'MasterDataManagement', pageKey: 'ProductAbbreviationRegister' }");
+        expect(source).toContain("const personalizationContext = { moduleKey: 'MasterDataManagement', pageKey: 'ProductAbbreviationRegister.v2' }");
         // LIST: save / restore / reset belong to the list component; the page hands it the same view keys.
         expect(source).toContain('moduleKey: personalizationContext.moduleKey');
         expect(source).toContain('pageKey: personalizationContext.pageKey');

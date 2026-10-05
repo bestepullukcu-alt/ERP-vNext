@@ -11,10 +11,18 @@ const ProductAbbreviationRegisterList = (function () {
      */
     let list = null;
     let productHasOpenEntry = false;
+    let linkedProduct = null;
     const endpoint = '/MDM/ProductAbbreviationRegister/api';
     const root = document.getElementById('product-abbreviation-register');
     const tableEl = document.getElementById('dt-product-abbreviation-register');
-    const personalizationContext = { moduleKey: 'MasterDataManagement', pageKey: 'ProductAbbreviationRegister' };
+    /*
+     * LIST-FIX1 item 3 — the views the page saved BEFORE the list component describe eight columns (control, selection,
+     * product, code, lifecycle, version, retirement, actions); the list has seven (no selection). Read as they are, every
+     * index lands one column off. So the page key is VERSIONED (.v2) and the reader's old default view is carried over to
+     * it ONCE, its indexes mapped onto the new columns (migrateLegacyView). The old record is left as it was.
+     */
+    const personalizationContext = { moduleKey: 'MasterDataManagement', pageKey: 'ProductAbbreviationRegister.v2' };
+    const legacyPageKey = 'ProductAbbreviationRegister';
     const saveViewColumnIndexes = [1, 2, 3, 4, 5];
     const baseOrder = [[2, 'asc']];
     const L = window.L10n || {};
@@ -73,7 +81,11 @@ const ProductAbbreviationRegisterList = (function () {
         ABBREVIATION_ALREADY_DECIDED_BY_ANOTHER: 'ErrorDecidedByAnother',
         ABBREVIATION_IDEMPOTENCY_KEY_INVALID: 'ErrorKeyInvalid',
         TENANT_CONTEXT_REQUIRED: 'ErrorScopeUnavailable',
-        PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID: 'ErrorScopeUnavailable'
+        PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID: 'ErrorScopeUnavailable',
+        // LIST-FIX1 item 2 — the list proxy's own refusals.
+        ABBREVIATION_LIST_PAGE_INVALID: 'ErrorValidation',
+        ABBREVIATION_LIST_ORDER_INVALID: 'ErrorValidation',
+        ABBREVIATION_LIST_PRODUCT_INVALID: 'ErrorValidation'
     });
 
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
@@ -137,12 +149,104 @@ const ProductAbbreviationRegisterList = (function () {
         document.getElementById('btnFilterApply')?.click();
     };
 
+    // One sentence per answer, in the reader's language: the code first, then the status, then "unavailable".
+    const failureSentence = (payload, status) => {
+        const errors = payload?.errors ?? payload?.Errors ?? [];
+        const code = payload?.errorCode ?? (Array.isArray(errors) ? errors.find(Boolean) : '');
+        return L[ERROR_KEYS[code]] || ({ 400: L.ErrorValidation, 403: L.ErrorForbidden, 404: L.ErrorNotFound, 409: L.ErrorConflict })[status] || L.ErrorGateway;
+    };
     const getErrorMessage = async (response) => {
         let payload = {};
         try { payload = await response.json(); } catch (error) { /* bounded status mapping below */ }
-        const errors = payload?.errors ?? payload?.Errors ?? [];
-        const code = payload?.errorCode ?? (Array.isArray(errors) ? errors.find(Boolean) : '');
-        return L[ERROR_KEYS[code]] || ({ 400: L.ErrorValidation, 403: L.ErrorForbidden, 404: L.ErrorNotFound, 409: L.ErrorConflict })[response.status] || L.ErrorGateway;
+        return failureSentence(payload, response.status);
+    };
+    /*
+     * LIST-FIX1 item 2 — a failed LIST read speaks the register's own sentences (seven languages), as every other call on
+     * the page does; without it DtDefaults says "Permission denied." / "DataTables Ajax error (HTTP n)" in English.
+     * 401 goes to the shared token refresh; an aborted request (a newer draw replaced it) is not a failure.
+     */
+    const onListError = function (xhr) {
+        const status = Number(xhr?.status) || 0;
+        if (status === 401) {
+            if (!this?._retried) window.DtDefaults?.handleUnauthorized?.(this);
+            return;
+        }
+        if (xhr?.statusText === 'abort') return;
+        let payload = xhr?.responseJSON;
+        if (!payload || typeof payload !== 'object') {
+            try { payload = JSON.parse(xhr?.responseText || '{}'); } catch (error) { payload = {}; }
+        }
+        window.showToast?.(failureSentence(payload, status), 'error');
+    };
+    // LIST-FIX1 item 7 — the product's NAME is the filter bar's display only: it rides in the saved view, never on the wire.
+    const withoutProductText = (url) => String(url)
+        .replace(/([?&])globalProductText=[^&]*&?/, (match, lead) => (match.endsWith('&') ? lead : ''))
+        .replace(/[?&]$/, '');
+
+    // ── LIST-FIX1 item 3 — the old default view, carried over to the versioned page key once ───────────────────
+    const viewsOf = (response) => {
+        const items = Array.isArray(response) ? response : (response?.data || response?.Data || []);
+        return Array.isArray(items) ? items : [];
+    };
+    const definitionOf = (record) => {
+        let raw = record?.viewDefinition ?? record?.ViewDefinition ?? {};
+        if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch (error) { raw = {}; } }
+        return raw && typeof raw === 'object' ? raw : {};
+    };
+    // The old page's columns 0 control · 1 selection · 2 product · 3 code · 4 lifecycle · 5 version · 6 retirement ·
+    // 7 actions. The selection column is gone; every column after it moves one to the left.
+    const LEGACY_COLUMN_COUNT = 8;
+    const LEGACY_DATA_COLUMNS = [2, 3, 4, 5, 6];
+    const SORTABLE_COLUMNS = [2, 3, 4, 5];
+    const fromLegacyColumn = (index) => (index >= 2 && index < LEGACY_COLUMN_COUNT ? index - 1 : index === 0 ? 0 : null);
+    const isLegacyDefinition = (raw) => Array.isArray(raw.colVis)
+        || Array.isArray(raw.columnOrder) && raw.columnOrder.length === LEGACY_COLUMN_COUNT;
+    const migrateLegacyDefinition = (raw) => {
+        if (!isLegacyDefinition(raw)) return raw;
+        const colVis = {};
+        if (Array.isArray(raw.colVis)) {
+            LEGACY_DATA_COLUMNS.forEach((legacy, position) => {
+                if (typeof raw.colVis[position] === 'boolean') colVis[fromLegacyColumn(legacy)] = raw.colVis[position];
+            });
+        }
+        const columnOrder = Array.isArray(raw.columnOrder) && raw.columnOrder.length === LEGACY_COLUMN_COUNT
+            ? raw.columnOrder.map(Number).filter((index) => index !== 1).map(fromLegacyColumn)
+            : null;
+        const entries = !Array.isArray(raw.order) ? [] : (Array.isArray(raw.order[0]) ? raw.order : [raw.order]);
+        const order = entries
+            .map((entry) => [fromLegacyColumn(Number(entry?.[0])), String(entry?.[1]).toLowerCase() === 'desc' ? 'desc' : 'asc'])
+            .filter(([column]) => SORTABLE_COLUMNS.includes(column));
+        return {
+            filters: raw.filters || {},
+            search: typeof raw.search === 'string' ? raw.search : '',
+            colVis,
+            columnOrder: columnOrder && columnOrder.every((index) => index !== null) ? columnOrder : null,
+            order: order.length ? order : baseOrder
+        };
+    };
+    const migrateLegacyView = async () => {
+        const client = window.personalizationClient;
+        if (!client?.getViews || !client?.saveView) return;
+        try {
+            if (viewsOf(await client.getViews(personalizationContext.moduleKey, personalizationContext.pageKey)).length) return;
+            const legacy = viewsOf(await client.getViews(personalizationContext.moduleKey, legacyPageKey));
+            const record = legacy.find((view) => view?.isDefault === true || view?.IsDefault === true) || legacy[0];
+            if (!record) return;
+            await client.saveView({
+                moduleKey: personalizationContext.moduleKey,
+                pageKey: personalizationContext.pageKey,
+                viewName: String(record.viewName || record.ViewName || L.SaveView || 'Default').trim(),
+                viewDefinition: migrateLegacyDefinition(definitionOf(record)),
+                isDefault: true,
+                visibility: 'private'
+            });
+        } catch (error) {
+            if (error?.authHandled) return;
+            // Nothing was written under the new key: the list opens on its baseline (never on shifted columns), the reader
+            // is told once on this load, and the next load tries again.
+            console.error('[ProductAbbreviationRegister SaveView] Carrying the old view over failed.', error);
+            window.showToast?.(L.SavedViewNotCarried || L.ErrorGateway, 'warning');
+        }
     };
     const handleUnauthorized = () => {
         window.DtDefaults?.handleUnauthorized?.();
@@ -338,12 +442,20 @@ const ProductAbbreviationRegisterList = (function () {
     const buildListOptions = () => ({
         tableEl,
         dataMode: 'server',
-        ajax: { url: `${endpoint}/list`, type: 'GET', headers: getAuthHeaders() },
-        // FIX1 S2 — a product with an active or pending code is offered no new request: read from every answer.
-        onResponse: (json) => {
-            const items = unwrapData(json)?.items ?? [];
-            productHasOpenEntry = items.some((row) => isStatus(row, 'ACTIVE', 1) || isStatus(row, 'REQUESTED', 0));
+        ajax: {
+            url: `${endpoint}/list`, type: 'GET', headers: getAuthHeaders(), error: onListError,
+            beforeSend: (xhr, settings) => { settings.url = withoutProductText(settings.url); }
         },
+        // FIX1 S2 — a product with an active or pending code is offered no new request. LIST-FIX1 item 4: the proxy reads
+        // that from EVERY entry of the product (not this page, not the search result). Item 6: a read MDM cut off says so.
+        onResponse: (json) => {
+            const data = unwrapData(json) || {};
+            productHasOpenEntry = data.hasOpenEntry === true;
+            document.getElementById('abbListTruncated')?.classList.toggle('d-none', data.truncated !== true);
+        },
+        // LIST-FIX1 item 5 (BL-452) — CSV/Excel/PDF/print are every entry of the product as the list shows them (search,
+        // order, visible columns), written by the proxy; never the page the table happens to hold.
+        export: { mode: 'server', url: `${endpoint}/list/export`, fileName: 'product-abbreviation-register' },
         quickView: { offcanvasId: 'offcanvasDetailsPreview', populate: showDetails, actionKey: 'quickView' },
         actions: {
             onRowAction: {
@@ -376,6 +488,13 @@ const ProductAbbreviationRegisterList = (function () {
             loadOptions: async () => {
                 initSelector('#filterGlobalProduct', document.body);
                 bindProductFilterFields();
+                /*
+                 * LIST-FIX1 item 1 — a link from the Task Center names the product. It is applied AFTER the factory's own
+                 * start: the factory awaits this function, then (in the same task) writes the saved / empty filter into the
+                 * bar and binds Apply. A task queued here runs after all of that, so the link's product is neither
+                 * overwritten by the saved filter nor clicked into an Apply nobody listens to yet.
+                 */
+                if (linkedProduct) setTimeout(() => applyProductFilter(linkedProduct, linkedProduct), 0);
             }
         },
         // Same keys as before the migration: every saved register view still loads.
@@ -418,11 +537,11 @@ const ProductAbbreviationRegisterList = (function () {
 
     const initDataTable = async () => {
         if (!tableEl || !window.DitenDataTable?.createList) return;
+        // A link from another page names the product: it becomes the applied filter, as if chosen in the bar (loadOptions).
+        const linked = new URLSearchParams(window.location.search).get('globalProductId');
+        linkedProduct = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(linked || '') ? linked : null;
+        await migrateLegacyView();
         list = await window.DitenDataTable.createList(buildListOptions());
-        // A link from another page names the product: it becomes the applied filter, as if chosen in the bar.
-        const linkedProduct = new URLSearchParams(window.location.search).get('globalProductId');
-        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(linkedProduct || ''))
-            applyProductFilter(linkedProduct, linkedProduct);
     };
 
     const bindEvents = () => {

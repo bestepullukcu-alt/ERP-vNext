@@ -41,6 +41,9 @@
         <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
     </div>
 
+    @* LIST-FIX1 item 6: MDM reads at most 500 entries of a product; when the read came back full the list says so. *@
+    <div id="abbListTruncated" class="alert alert-warning d-none" role="status">@Localizer["ListTruncated"]</div>
+
     @* WP-MDM-ABB-LIST-01: no bulk bar — the list declares no selection (HasSelection = false, GxP). *@
     <partial name="~/Views/MDM/ProductAbbreviationRegister/_DataTable.cshtml" />
     @* The details partial renders id="offcanvasDetailsPreview". *@

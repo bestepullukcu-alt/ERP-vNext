@@ -34,4 +34,10 @@
 <data name="ErrorDecidedByAnother" xml:space="preserve"><value>اتُّخذ هذا القرار من قِبل شخص آخر. تم تحديث القائمة.</value></data>
 <data name="ErrorKeyInvalid" xml:space="preserve"><value>تعذّر التعرّف على الطلب. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
 <data name="ErrorScopeUnavailable" xml:space="preserve"><value>تعذّر تحديد نطاق شركتك، لذا لا يمكن استخدام السجل الآن.</value></data>
+  <data name="ListTruncated" xml:space="preserve">
+    <value>يتم عرض أول 500 سجل فقط لهذا المنتج؛ ولا يمكن قراءة البقية هنا. لا يمكن تصدير قائمة غير مكتملة.</value>
+  </data>
+  <data name="SavedViewNotCarried" xml:space="preserve">
+    <value>تعذّر نقل العرض الذي حفظته سابقًا؛ يتم عرض العرض الافتراضي. ستتم إعادة المحاولة في المرة القادمة.</value>
+  </data>
 </root>

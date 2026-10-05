@@ -17,6 +17,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\services\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+    <!-- LIST-FIX1 item 5 (BL-452): the ABB register's server export writes its file with the shared list-export writer. -->
+    <ProjectReference Include="..\..\services\Diten.Building.Blocks\src\Diten.BuildingBlocks.ListExport\Diten.BuildingBlocks.ListExport.csproj" />
   </ItemGroup>
 
 </Project>

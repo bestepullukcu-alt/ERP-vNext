@@ -34,4 +34,10 @@
 <data name="ErrorDecidedByAnother" xml:space="preserve"><value>此项已由其他人作出决定。列表已刷新。</value></data>
 <data name="ErrorKeyInvalid" xml:space="preserve"><value>无法识别该请求。请刷新页面后重试。</value></data>
 <data name="ErrorScopeUnavailable" xml:space="preserve"><value>无法确定您的公司范围，登记册暂时无法使用。</value></data>
+  <data name="ListTruncated" xml:space="preserve">
+    <value>仅显示该产品的前 500 条记录；其余记录无法在此读取。不完整的列表不能导出。</value>
+  </data>
+  <data name="SavedViewNotCarried" xml:space="preserve">
+    <value>无法迁移您之前保存的视图；当前显示默认视图。下次打开时将再次尝试。</value>
+  </data>
 </root>

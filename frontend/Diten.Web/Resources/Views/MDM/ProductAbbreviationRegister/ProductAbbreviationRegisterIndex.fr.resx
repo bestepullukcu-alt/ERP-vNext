@@ -34,4 +34,10 @@
 <data name="ErrorDecidedByAnother" xml:space="preserve"><value>Cette décision a déjà été prise par quelqu'un d'autre. La liste a été actualisée.</value></data>
 <data name="ErrorKeyInvalid" xml:space="preserve"><value>La demande n'a pas pu être identifiée. Rechargez la page et réessayez.</value></data>
 <data name="ErrorScopeUnavailable" xml:space="preserve"><value>Votre périmètre de société n'a pas pu être déterminé ; le registre ne peut pas être utilisé pour le moment.</value></data>
+  <data name="ListTruncated" xml:space="preserve">
+    <value>Seules les 500 premières entrées de ce produit sont affichées ; les autres ne peuvent pas être lues ici. Une liste incomplète ne peut pas être exportée.</value>
+  </data>
+  <data name="SavedViewNotCarried" xml:space="preserve">
+    <value>Votre vue enregistrée précédemment n’a pas pu être reprise ; la vue par défaut est affichée. Une nouvelle tentative aura lieu la prochaine fois.</value>
+  </data>
 </root>
