@@ -8063,6 +8063,22 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-555
+
+**MDM denetim defteri: takeover'da 19 yazma komutu ne denetimli ne beyanlı istisna ne borç (`EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt` kırmızı)**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) · BULAN: görev talebi → takeover birleştirmesi (main'in sıkı AuditTrailStandardTests'i) · KAYIT: 2026-10-05
+
+Takeover dalında mimari testi 18 MDM komutuyla zaten kırmızıydı (ABB / GSKU turlarının raporlarında "önceden var"). Main'den gelen sıkı sürüm bir ad daha yakaladı:
+`DispatchProductAbbreviationWorkItemActionCommand` — onay / ret / iptal / emeklilik için denetlenen komutlara `_mediator.Send` ile yönlendiriyor ve bir yolda denetim niyetini
+kendisi yazıyor (`AppendAuditIntentIfAbsentAsync`), ama `audit-ledger/Diten.MdmService.md`'de satırı yok. Düzeltme: 19 komutun her biri için defter satırı — doğrudan
+denetimli, dolaylı (ispat testinin kabul ettiği "üzerinden" türüyle) ya da beyanlı istisna; hiçbiri sessiz borç kalmaz; sabit sayılar CT kararıyla güncellenir.
+Bu, birleştirmelerde her seferinde "bilinen kırmızı" satırı doğuruyor ve yeni bir denetimsiz MDM komutunu gizleyebilir. Karşılaştırma: SAP'de değişiklik belgesi
+(CDHDR/CDPOS) nesne sınıfı bazında zorunludur; Oracle Fusion'da denetim politikası iş nesnesi bazında açılır — ikisinde de "denetimsiz yazma" yapılandırma kararıdır,
+sessiz durum değil. Gelecek regresyon riski: 🟡.
+
+---
+
 ### BL-554
 
 **Organizasyon birimi üst değişikliği yük altında iki eşzamanlı değişikliğin ikisini de yazabiliyor: yapı sayacı kenar yazılmadan ÖNCE ilerliyor (ağaçta döngü riski)**
