@@ -36,9 +36,16 @@ public sealed class LotExpirySweeperHostedService : BackgroundService
 
         await SweepOnceAsync(stoppingToken);
         using var timer = new PeriodicTimer(TimeSpan.FromSeconds(Math.Max(5, _options.SweepIntervalSeconds)));
-        while (await timer.WaitForNextTickAsync(stoppingToken))
+        try
         {
-            await SweepOnceAsync(stoppingToken);
+            while (await timer.WaitForNextTickAsync(stoppingToken))
+            {
+                await SweepOnceAsync(stoppingToken);
+            }
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            // Host shutdown: the wait for the next tick is cancelled — a normal stop, not a failure.
         }
     }
 
