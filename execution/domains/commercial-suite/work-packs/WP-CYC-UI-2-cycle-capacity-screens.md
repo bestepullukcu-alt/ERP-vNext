@@ -70,3 +70,14 @@ KORU/YAPMA: CRM DOKUNMA; hesap istemcide yazılmaz; dönem ekranlarına DOKUNMA;
 DOĞRULA (E2): dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 473); CRM testleri 0 kırmızı (dokunulmadı); build 0 hata. Yeni testler WP Acceptance. Sabotaj: (1) iki tipik alan gönder → kırmızı; (2) takvim çözülemezken tahmin göster → kırmızı; geri al. Commit ("feat(web): WP-CYC-UI-2 — cycle capacity screens (live preview form, waterfall, monthly chart, supply vs demand)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: önizleme ucu yeni alanları kabul etmiyorsa ya da şelale kalemi eksikse → DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-05) — **ACCEPTED (E2)**
+- **Commit:** ajan `8ad19675` (taban `0bffdeb9`) → `test/crm-content-visit-e2e` fast-forward. 22 dosya (+3825 / −797). Yalnız Web.
+- **K13 okuma:** sağ özet yalnız önizleme ucundan (istemcide formül yok; gecikmeli tek istek, eskisi iptal); önizleme proxy'si gövdeyi kendisi kurar (tipik üçlü hep / hiç); yalnız dokunulan ayın FTE'si gönderilir (kültürden bağımsız metin); sınırlar sözleşme ucundan, yoksa CRM sabitleri; K-4 çift katman (CRM `totals = null` + Web `IsResolved`); arz / talep `usage.demandByMonth` (okunamazsa kart söyler); 125 anahtar × 7 dil; yetkisize kabuk içinde açıklama.
+- **Ajan kararları (kabul):** yeni kapasitede tipik ziyaret ekranda zorunlu (CRM boş üçlüyü eski modelle kabul ediyor); ürün sınırı 1–10 CRM sabitinden.
+- **CT testleri:** Web **505/0** (+32); CYC-UI-1 ile birleşik CRM 2231/0/5, Web 536/0.
+- **CT sabotajı:** (1) `IsResolved` her zaman true → **kırmızı olmadı** (CRM toplamları boş gönderdiği için çift katman; davranış güvende, not); (2) dokunulmamış ayın FTE'sini de gönder → 1 kırmızı. Geri alındı. Ajan: iki tipik alan (5), takvim çözülemezken tahmin (1).
+- **Açık:** liste altın şablon 12 sapma (önceden var) — kullanıcı kararı; ajan önerisi 1–3 düzelt (veri modu, `_TableSkeleton`, hızlı bakış), 4–12 bilinen sapma.
+- **E4:** CT, fleet sonrası (yeni kapasite canlı hesap; eski kapasite aynı sayı + legacy bandı).

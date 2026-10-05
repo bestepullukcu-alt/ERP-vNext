@@ -76,3 +76,15 @@ KORU/YAPMA: CRM dönem/kapasite yazma kuralları değişmez; kapasite ekranları
 DOĞRULA (E2): CRM testleri (tabanı ölç; son CT 2223/0/5) → 0 kırmızı (PiiMasking flake'i hariç); dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 473); build 0 hata. Yeni testler WP Acceptance. Sabotaj: (1) usage'da iptal filtresini kaldır → kırmızı; (2) aktif dönemde tarihi düzenlenebilir yap → kırmızı; geri al. TestResults/*.trx izleniyor, klasörü silme. Commit ("feat(web): WP-CYC-UI-1 — cycle periods screens (table + year timeline, side panel form, details, effective-period tool) + period usage read" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: usage ziyaret sayısını oturum bağı dışında gerektiriyorsa; altın şablon zaman çizelgesine izin vermiyorsa → DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-05) — **ACCEPTED (E2)**
+- **Commit:** ajan `0617bd31` → CYC-UI-2 (`8ad19675`) üzerine rebase (çakışmasız) → `7eb58d3f` → `test/crm-content-visit-e2e` fast-forward. 39 dosya (+4497 / −898).
+- **CRM:** `GET cycle-periods/{id}/usage` dar salt okunur `ICyclePeriodUsageReader` üzerinden (depo arayüzleri değişmedi); ziyaretler oturum `CommittedPlannedVisitIds` üzerinden; iptal + arşiv talepte yok; liste satırlarına toplu `hasCapacity / campaignCount / plannedVisitCount` (okunamazsa boş, 0 değil). Oturumun ad alanı yok → `name` = plan haftası / oluşturulma günü.
+- **Web:** tablo + yıl zaman çizelgesi (eksen seçili yıl ± 1, RTL aynalı), sağ panel form (kod önerisi + kayıttan sonra salt okunur, aktifte yapısal alanlar kilitli + "kapat ve yeni aç"), ayrıntı (taslakta Kapat dahil), geçerli dönem bulucu (resolved / none / ambiguous), kapasitesiz açık dönem bandı; kurallar C# `CyclePeriodScreenRules`'ta (test edilir), JS çizer; 110 anahtar × 7 dil; yetkisize düz 403.
+- **Bilinen sapma (kullanıcı kararı, ajan oturumu):** form ayrı Create / Edit sayfası değil, sağ panel (Compact kuralından bilinçli sapma).
+- **CT testleri (CYC-UI-2 ile birleşik):** CRM **2231/0/5**, Web **536/0**.
+- **CT sabotajı:** talepte arşiv dışlaması kaldırıldı → 2 kırmızı. Kod geri alındı. Ajan: iptal filtresi (2), aktif dönemde tarih düzenlenebilir (1).
+- **Açık:** liste altın şablon denetimi 12 sapma (hepsi önceden var) — kullanıcı kararı bekliyor.
+- **E4:** CT, fleet sonrası.
