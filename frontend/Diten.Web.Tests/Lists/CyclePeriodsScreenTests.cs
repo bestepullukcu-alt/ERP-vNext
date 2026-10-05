@@ -358,7 +358,8 @@ public sealed class CyclePeriodsScreenTests
         var index = File.ReadAllText(Path.Combine(root, "Views", "CRM", "CyclePeriods", "Index.cshtml"));
         Assert.Contains("_PeriodPanel.cshtml", index);
         Assert.Contains("_Timeline.cshtml", index);
-        Assert.Contains("skeleton-loader", File.ReadAllText(Path.Combine(root, "Views", "CRM", "CyclePeriods", "_DataTable.cshtml")));
+        // WP-CYC-UI-FIX-1 — the loading shape is the shared _TableSkeleton partial (it renders id="skeleton-loader").
+        Assert.Contains("<partial name=\"_TableSkeleton\" />", File.ReadAllText(Path.Combine(root, "Views", "CRM", "CyclePeriods", "_DataTable.cshtml")));
     }
 
     // ── seven languages ──────────────────────────────────────────────────────────────────────────────────────────

@@ -251,7 +251,7 @@
         const id = esc(row.cyclePeriodId);
         const items = [{
             key: 'quickView', className: 'js-quick-view me-1', icon: 'bx bx-show',
-            attrs: { 'data-id': id, title: L.ViewDetails }
+            attrs: { 'data-id': id, title: L.QuickView }
         }];
         if (canManage && row.cycleStatus !== 'closed') {
             items.push({ key: 'edit', className: 'js-edit-period', icon: 'bx bx-edit', text: L.Edit, attrs: { 'data-id': id } });
@@ -586,7 +586,9 @@
         } catch (error) {
             window.showToast?.(error.message || L.ErrorOccurred, 'error');
         } finally {
-            document.getElementById('skeleton-loader')?.classList.add('d-none');
+            // WP-CYC-UI-FIX-1 — the shared placeholder hides the table for as long as it EXISTS, so it is removed (the
+            // same act dt-defaults.js performs on the first draw); this also covers an init that failed before drawing.
+            document.getElementById('skeleton-loader')?.remove();
         }
     };
 
@@ -598,13 +600,93 @@
         else if (q.get('create') === '1') window.CyclePeriodPanel.openCreate();
     };
 
-    // Quick View navigates to the details page; Edit opens the right-side panel (WP-CYC-UI-1); a timeline bar opens
-    // the period's details.
+    // ── quick view (WP-CYC-UI-FIX-1) ─────────────────────────────────────────────────────────────────────────────
+    // The golden #offcanvasDetailsPreview, filled from the row ALREADY in allRows — no request of any kind. Every value
+    // is written with textContent (a period named "<script>" is shown as those characters); labels come from the
+    // server-rendered markup and the panel's data-* texts.
+    const quickViewEl = document.getElementById('offcanvasDetailsPreview');
+    const qvText = name => quickViewEl?.dataset?.[name] || '';
+    const qvSet = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value === null || value === undefined || value === '' ? '—' : String(value);
+    };
+    const qvBadge = (id, text, tone) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = '';
+        const span = document.createElement('span');
+        span.className = `badge bg-label-${tone}`;
+        span.textContent = text || '—';
+        el.appendChild(span);
+    };
+
+    const openPeriodQuickView = id => {
+        const row = allRows.find(r => String(r.cyclePeriodId) === String(id));
+        if (!row || !quickViewEl) return false;
+
+        qvSet('periodPreviewTitle', row.cycleCode);
+        qvSet('periodPreviewSubtitle', row.cycleName);
+        qvSet('pvDates', `${day(row.startDate)} – ${day(row.endDate)}`);
+        const days = dayCount(row);
+        qvSet('pvDays', days === null ? null : `${S.number(days)} ${qvText('textDaysUnit')}`.trim());
+        const ref = norm(row.scopeRef);
+        const context = norm(row.businessUnitCountryContext);
+        qvSet('pvScope', `${scopeLabel(row.scopeType) || '—'} · ${ref ? (context ? `${context} / ${ref}` : ref) : qvText('textTenantWide')}`);
+        qvBadge('pvStatus', statusLabel(row.cycleStatus), statusTone(row.cycleStatus));
+
+        // The status line: draft → active → closed, each step with its moment (or "not yet").
+        const line = document.getElementById('pvStatusLine');
+        if (line) {
+            line.textContent = '';
+            const order = ['draft', 'active', 'closed'];
+            const current = order.indexOf(row.cycleStatus);
+            [
+                ['draft', null],
+                ['active', row.activatedAt ? stamp(row.activatedAt) : qvText('textNotActivated')],
+                ['closed', row.closedAt ? stamp(row.closedAt) : qvText('textNotClosed')]
+            ].forEach(([status, when], index) => {
+                const li = document.createElement('li');
+                li.className = index <= current ? 'fw-medium' : 'text-muted';
+                if (index === current) li.setAttribute('aria-current', 'step');
+                const mark = document.createElement('i');
+                mark.className = `icon-base bx ${index <= current ? 'bx-radio-circle-marked text-primary' : 'bx-radio-circle'} me-1`;
+                mark.setAttribute('aria-hidden', 'true');
+                li.appendChild(mark);
+                li.appendChild(document.createTextNode(when ? `${statusLabel(status)} · ${when}` : statusLabel(status)));
+                line.appendChild(li);
+            });
+        }
+
+        // The batch usage summary of the row: null = the read failed (unknown), never "none".
+        qvSet('pvCapacity', row.hasCapacity === true ? qvText('textHasCapacity') : row.hasCapacity === false ? qvText('textNoCapacity') : null);
+        qvSet('pvCampaigns', row.campaignCount === null || row.campaignCount === undefined ? null : S.number(row.campaignCount));
+        qvSet('pvPlannedVisits', row.plannedVisitCount === null || row.plannedVisitCount === undefined ? null : S.number(row.plannedVisitCount));
+
+        const details = document.getElementById('periodPreviewDetails');
+        if (details) details.setAttribute('href', `${pageRoot}/Details/${encodeURIComponent(row.cyclePeriodId)}`);
+
+        window.bootstrap?.Offcanvas?.getOrCreateInstance(quickViewEl).show();
+        return true;
+    };
+    // ── end quick view ───────────────────────────────────────────────────────────────────────────────────────────
+
+    // Quick View opens the side summary (WP-CYC-UI-FIX-1); Edit opens the right-side panel (WP-CYC-UI-1); a timeline
+    // bar still opens the period's details page.
     document.addEventListener('click', event => {
-        const quickView = event.target.closest('.js-quick-view') || event.target.closest('.js-timeline-bar');
+        const quickView = event.target.closest('.js-quick-view');
         if (quickView) {
             event.preventDefault();
-            if (quickView.dataset.id) window.location.assign(`${pageRoot}/Details/${encodeURIComponent(quickView.dataset.id)}`);
+            // A row the page somehow does not hold falls back to the details page rather than doing nothing.
+            if (quickView.dataset.id && !openPeriodQuickView(quickView.dataset.id)) {
+                window.location.assign(`${pageRoot}/Details/${encodeURIComponent(quickView.dataset.id)}`);
+            }
+            return;
+        }
+
+        const timelineBar = event.target.closest('.js-timeline-bar');
+        if (timelineBar) {
+            event.preventDefault();
+            if (timelineBar.dataset.id) window.location.assign(`${pageRoot}/Details/${encodeURIComponent(timelineBar.dataset.id)}`);
             return;
         }
 

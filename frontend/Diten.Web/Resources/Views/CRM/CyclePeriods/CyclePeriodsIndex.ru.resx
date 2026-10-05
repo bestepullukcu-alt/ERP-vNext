@@ -191,4 +191,6 @@
   <data name="SessionStatus_generated" xml:space="preserve"><value>Сформирован</value></data>
   <data name="SessionStatus_committed" xml:space="preserve"><value>Применён</value></data>
   <data name="SessionStatus_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>Перейти к подробностям</value></data>
+  <data name="StatusLine" xml:space="preserve"><value>Ход статуса</value></data>
 </root>

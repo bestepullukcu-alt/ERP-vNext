@@ -191,4 +191,6 @@
   <data name="SessionStatus_generated" xml:space="preserve"><value>已生成</value></data>
   <data name="SessionStatus_committed" xml:space="preserve"><value>已提交</value></data>
   <data name="SessionStatus_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>查看详情</value></data>
+  <data name="StatusLine" xml:space="preserve"><value>状态进程</value></data>
 </root>

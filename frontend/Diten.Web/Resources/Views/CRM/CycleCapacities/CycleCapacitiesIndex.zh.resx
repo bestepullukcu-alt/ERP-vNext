@@ -207,4 +207,5 @@
   <data name="Err_typical_count_exceeds_max" xml:space="preserve"><value>典型产品数不得超过每次拜访的产品上限。</value></data>
   <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>某个月的 FTE 超出范围。</value></data>
   <data name="Err_period_closed" xml:space="preserve"><value>该周期已关闭，其产能不可再更改。</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>查看详情</value></data>
 </root>

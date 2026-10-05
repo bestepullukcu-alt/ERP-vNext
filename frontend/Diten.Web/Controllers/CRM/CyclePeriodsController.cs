@@ -24,6 +24,13 @@ namespace Diten.Web.Controllers.CRM;
 /// served by the computed endpoints below, so the browser only renders.</para>
 /// <para>There is no delete surface (ending a period is Close), no reopen surface (closed is terminal) and no
 /// apply/generate surface: applying a plan to a period is MOD-0155.</para>
+/// <para><b>Golden list — known deviations (WP-CYC-UI-FIX-1, owner decision 2026-10-05).</b> The list declares its data
+/// mode (client), uses the shared <c>_TableSkeleton</c> and the <c>#offcanvasDetailsPreview</c> quick view. What
+/// <c>verify_datatable_page.py --api-profile proxy</c> still reports is accepted on purpose: (a) the shared
+/// <c>personalization-client.js</c> tenant-header check — a shared file outside this module (separate work); (b) under the
+/// default profile, the direct-gateway <c>window.API</c> expectation — this page deliberately uses the same-origin proxy;
+/// (c) select-all column, bulk config, bulk selection, <c>/bulk</c> endpoint, bulk delete trigger, <c>reloadWithToast</c>
+/// and clear-selection — a period is ended by Close has no delete at all, so there is no bulk surface.</para>
 /// </summary>
 [Authorize]
 [Route("CRM/CyclePeriods")]

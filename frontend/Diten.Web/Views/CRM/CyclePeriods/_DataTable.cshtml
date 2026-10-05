@@ -3,19 +3,17 @@
 @inject IHtmlLocalizer<CyclePeriodsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-@* There is no select-all checkbox and no bulk action bar here on purpose: this module has NO bulk delete and no delete
+@* DATA MODE: client — index.js loads the whole (bounded) set once and DataTables pages, sorts and filters it in
+   the browser; there is no serverSide paging. Declared on the <table> (data-dt-data-mode) per the golden template.
+   There is no select-all checkbox and no bulk action bar here on purpose: this module has NO bulk delete and no delete
    at all (ending a period is Close), so a selection column would offer an action that does not exist. *@
 <div class="card">
-    <div id="skeleton-loader" class="backbone-skeleton p-4">
-        <div class="shimmer skeleton-row skeleton-row-lg"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row skeleton-row-last"></div>
-    </div>
+    @* WP-CYC-UI-FIX-1 — the shared, shaped placeholder (renders id="skeleton-loader" data-table-skeleton). It is
+       visible from the first paint and hides the table beside it until dt-defaults.js REMOVES it on the first draw. *@
+    <partial name="_TableSkeleton" />
 
     <div class="card-datatable table-responsive">
-        <table id="dt-cycle-periods" data-dt-standard="v2" class="datatables-cycleperiods table border-top">
+        <table id="dt-cycle-periods" data-dt-standard="v2" data-dt-data-mode="client" class="datatables-cycleperiods table border-top">
             <thead>
                 <tr>
                     <th></th>

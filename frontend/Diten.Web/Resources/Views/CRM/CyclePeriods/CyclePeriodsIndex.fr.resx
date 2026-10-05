@@ -191,4 +191,6 @@
   <data name="SessionStatus_generated" xml:space="preserve"><value>Générée</value></data>
   <data name="SessionStatus_committed" xml:space="preserve"><value>Validée</value></data>
   <data name="SessionStatus_archived" xml:space="preserve"><value>Archivée</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>Voir le détail</value></data>
+  <data name="StatusLine" xml:space="preserve"><value>Chronologie du statut</value></data>
 </root>

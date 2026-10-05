@@ -207,4 +207,5 @@
   <data name="Err_typical_count_exceeds_max" xml:space="preserve"><value>Le nombre de produits de la visite type ne peut pas dépasser la limite par visite.</value></data>
   <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>L’ETP d’un mois est hors limites.</value></data>
   <data name="Err_period_closed" xml:space="preserve"><value>La période est clôturée ; sa capacité ne peut plus être modifiée.</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>Voir le détail</value></data>
 </root>

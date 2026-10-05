@@ -207,4 +207,5 @@
   <data name="Err_typical_count_exceeds_max" xml:space="preserve"><value>The typical product count cannot exceed the products-per-visit limit.</value></data>
   <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>A month’s FTE is out of range.</value></data>
   <data name="Err_period_closed" xml:space="preserve"><value>The period is closed; its capacity can no longer be changed.</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>Go to details</value></data>
 </root>

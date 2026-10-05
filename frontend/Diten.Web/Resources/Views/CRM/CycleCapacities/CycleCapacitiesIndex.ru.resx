@@ -207,4 +207,5 @@
   <data name="Err_typical_count_exceeds_max" xml:space="preserve"><value>Число продуктов типичного визита не может превышать лимит на визит.</value></data>
   <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>FTE одного из месяцев вне допустимого диапазона.</value></data>
   <data name="Err_period_closed" xml:space="preserve"><value>Период закрыт; его ёмкость больше нельзя изменить.</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>Перейти к подробностям</value></data>
 </root>

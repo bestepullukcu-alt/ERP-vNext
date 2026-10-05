@@ -191,4 +191,6 @@
   <data name="SessionStatus_generated" xml:space="preserve"><value>تم إنشاؤها</value></data>
   <data name="SessionStatus_committed" xml:space="preserve"><value>معتمدة</value></data>
   <data name="SessionStatus_archived" xml:space="preserve"><value>مؤرشفة</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>الانتقال إلى التفاصيل</value></data>
+  <data name="StatusLine" xml:space="preserve"><value>مسار الحالة</value></data>
 </root>

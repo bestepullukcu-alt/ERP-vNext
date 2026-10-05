@@ -191,4 +191,6 @@
   <data name="SessionStatus_generated" xml:space="preserve"><value>Generated</value></data>
   <data name="SessionStatus_committed" xml:space="preserve"><value>Committed</value></data>
   <data name="SessionStatus_archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>Go to details</value></data>
+  <data name="StatusLine" xml:space="preserve"><value>Status line</value></data>
 </root>

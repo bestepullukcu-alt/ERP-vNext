@@ -80,4 +80,8 @@ Durma: önizleme ucu yeni alanları kabul etmiyorsa ya da şelale kalemi eksikse
 - **CT testleri:** Web **505/0** (+32); CYC-UI-1 ile birleşik CRM 2231/0/5, Web 536/0.
 - **CT sabotajı:** (1) `IsResolved` her zaman true → **kırmızı olmadı** (CRM toplamları boş gönderdiği için çift katman; davranış güvende, not); (2) dokunulmamış ayın FTE'sini de gönder → 1 kırmızı. Geri alındı. Ajan: iki tipik alan (5), takvim çözülemezken tahmin (1).
 - **Açık:** liste altın şablon 12 sapma (önceden var) — kullanıcı kararı; ajan önerisi 1–3 düzelt (veri modu, `_TableSkeleton`, hızlı bakış), 4–12 bilinen sapma.
+- **WP-CYC-UI-FIX-1 güncellemesi (2026-10-05):** liste altın şablon sapmaları **1–3 düzeltildi** — veri modu `data-dt-data-mode="client"` (tüm küme bir kez yüklenir; sayfalama / sıralama / filtre tarayıcıda), ortak `<partial name="_TableSkeleton" />`, `#offcanvasDetailsPreview` hızlı bakış (satır verisinden, ek istek yok, düz metin). **Bilinen sapmalar** (doğrulayıcı `--api-profile proxy` ile kalan 8 madde; `CycleCapacitiesController` belge yorumunda da kayıtlı):
+  - ortak `personalization-client.js` kiracı başlığı kontrolü — modül dışı ortak dosya, ayrı iş;
+  - doğrulayıcının varsayılan profilde doğrudan gateway (`window.API`) beklentisi — sayfa bilinçli aynı köken proxy kullanır (proxy profiliyle bu madde raporlanmaz);
+  - tümünü seç sütunu, toplu işlem yapılandırması, toplu seçim bağlama, `/bulk` ucu, toplu silme tetikleyicisi, `reloadWithToast`, seçimi temizle — modülde silme yok (sonlandırma Kapat / Arşivle), toplu yüzey yok.
 - **E4:** CT, fleet sonrası (yeni kapasite canlı hesap; eski kapasite aynı sayı + legacy bandı).

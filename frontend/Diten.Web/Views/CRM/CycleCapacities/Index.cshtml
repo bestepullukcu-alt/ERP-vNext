@@ -33,6 +33,34 @@
 @* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-cycle-capacities" data-dt-standard="v2"> *@
 <partial name="~/Views/CRM/CycleCapacities/_DataTable.cshtml" />
 
+@* ④ WP-CYC-UI-FIX-1 — Quick View (golden #offcanvasDetailsPreview). Filled by index.js from the row ALREADY loaded and
+   from the per-row estimate only if it was already read (no extra request); every value written as plain text. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="capacityPreviewTitle"
+     data-text-calculating="@Localizer["Calculating"].Value" data-text-not-calculable="@Localizer["StatusNotCalculable"].Value"
+     data-text-legacy="@Localizer["LegacyBadge"].Value" data-text-minutes="@Localizer["UnitMinutesShort"].Value">
+    <div class="offcanvas-header p-4">
+        <div class="min-w-0">
+            <h5 id="capacityPreviewTitle" class="offcanvas-title mb-0 text-truncate">-</h5>
+            <small id="capacityPreviewSubtitle" class="text-muted d-block text-truncate">-</small>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <dl class="row mb-0 small">
+            <dt class="col-5 text-muted">@Localizer["ColPeriod"]</dt><dd class="col-7" id="cvPeriod">-</dd>
+            <dt class="col-5 text-muted">@Localizer["CalendarCountryCode"]</dt><dd class="col-7" id="cvCountry">-</dd>
+            <dt class="col-5 text-muted">@Localizer["ColTypicalVisit"]</dt><dd class="col-7" id="cvTypicalVisit">-</dd>
+            <dt class="col-5 text-muted">@Localizer["ColEstimatedVisits"]</dt><dd class="col-7" id="cvVisits">-</dd>
+            <dt class="col-5 text-muted">@Localizer["ColAverageFte"]</dt><dd class="col-7" id="cvFte">-</dd>
+            <dt class="col-5 text-muted">@Localizer["ColProductLimits"]</dt><dd class="col-7" id="cvLimits">-</dd>
+        </dl>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Close"]</button>
+        <a href="#" id="capacityPreviewDetails" class="btn btn-primary">@Localizer["GoToDetails"]</a>
+    </div>
+</div>
+
 <script id="cyclecapacity-page-flags" type="application/json">{"canManage": @(Model.CanManage ? "true" : "false")}</script>
 
 @section Scripts {

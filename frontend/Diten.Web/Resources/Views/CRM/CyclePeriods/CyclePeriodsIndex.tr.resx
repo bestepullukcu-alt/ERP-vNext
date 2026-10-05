@@ -191,4 +191,6 @@
   <data name="SessionStatus_generated" xml:space="preserve"><value>Oluşturuldu</value></data>
   <data name="SessionStatus_committed" xml:space="preserve"><value>Uygulandı</value></data>
   <data name="SessionStatus_archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>Ayrıntıya git</value></data>
+  <data name="StatusLine" xml:space="preserve"><value>Durum çizgisi</value></data>
 </root>

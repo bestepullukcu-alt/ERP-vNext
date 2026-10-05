@@ -200,7 +200,7 @@
         const id = esc(row.cycleCapacityId);
         const items = [{
             key: 'quickView', className: 'js-quick-view me-1', icon: 'bx bx-show',
-            attrs: { 'data-id': id, title: L.ViewDetails }
+            attrs: { 'data-id': id, title: L.QuickView }
         }];
         if (canManage && row.isEditable && !row.isArchived) {
             items.push({ key: 'edit', className: 'js-edit-capacity', icon: 'bx bx-edit', text: L.Edit, attrs: { 'data-id': id } });
@@ -462,16 +462,76 @@
         } catch (error) {
             window.showToast?.(error.message || L.ErrorOccurred, 'error');
         } finally {
-            document.getElementById('skeleton-loader')?.classList.add('d-none');
+            // WP-CYC-UI-FIX-1 — the shared placeholder hides the table for as long as it EXISTS, so it is removed (the
+            // same act dt-defaults.js performs on the first draw); this also covers an init that failed before drawing.
+            document.getElementById('skeleton-loader')?.remove();
         }
     };
 
-    // Golden Compact: Quick View and Edit NAVIGATE to their own pages rather than opening a panel.
+    // ── quick view (WP-CYC-UI-FIX-1) ─────────────────────────────────────────────────────────────────────────────
+    // The golden #offcanvasDetailsPreview, filled from the row ALREADY in allRows and from the per-row estimate ONLY if
+    // the lazy read already produced it (calcCache) — no request of any kind. Every value is written with textContent.
+    const quickViewEl = document.getElementById('offcanvasDetailsPreview');
+    const qvText = name => quickViewEl?.dataset?.[name] || '';
+    const qvSet = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value === null || value === undefined || value === '' ? '—' : String(value);
+    };
+
+    const openCapacityQuickView = id => {
+        const row = allRows.find(r => String(r.cycleCapacityId) === String(id));
+        if (!row || !quickViewEl) return false;
+
+        qvSet('capacityPreviewTitle', row.cycleCode);
+        qvSet('capacityPreviewSubtitle', row.cycleName);
+        qvSet('cvPeriod', `${row.cycleCode || '—'} · ${windowCell(row)}`);
+        qvSet('cvCountry', row.calendarCountryCode);
+
+        // Typical visit (min), with the "old model" badge as a separate element.
+        const typical = document.getElementById('cvTypicalVisit');
+        if (typical) {
+            const minutes = row.typicalVisitMinutes ?? row.minutesPerVisit;
+            typical.textContent = minutes === null || minutes === undefined ? '—' : `${numberFormat.format(minutes)} ${qvText('textMinutes')}`.trim();
+            if (row.visitModel === 'legacy') {
+                const legacy = document.createElement('span');
+                legacy.className = 'badge bg-label-info ms-2';
+                legacy.textContent = qvText('textLegacy');
+                typical.appendChild(legacy);
+            }
+        }
+
+        // The estimate: only what the lazy per-row read already answered (K-4: unresolved = "not calculable").
+        const c = calcOf(row);
+        if (!c || c.state === 'pending') {
+            qvSet('cvVisits', qvText('textCalculating'));
+            qvSet('cvFte', qvText('textCalculating'));
+        } else if (c.state === 'error' || c.visits === null || c.visits === undefined) {
+            qvSet('cvVisits', qvText('textNotCalculable'));
+            qvSet('cvFte', null);
+        } else {
+            qvSet('cvVisits', numberFormat.format(c.visits));
+            qvSet('cvFte', c.averageFte === null || c.averageFte === undefined ? null : fteFormat.format(c.averageFte));
+        }
+
+        qvSet('cvLimits', `${row.maxPromoProducts ?? '—'} / ${row.maxNonPromoProducts ?? '—'}`);
+
+        const details = document.getElementById('capacityPreviewDetails');
+        if (details) details.setAttribute('href', `${pageRoot}/Details/${encodeURIComponent(row.cycleCapacityId)}`);
+
+        window.bootstrap?.Offcanvas?.getOrCreateInstance(quickViewEl).show();
+        return true;
+    };
+    // ── end quick view ───────────────────────────────────────────────────────────────────────────────────────────
+
+    // Quick View opens the side summary (WP-CYC-UI-FIX-1); Edit NAVIGATES to its own page (Golden Compact).
     document.addEventListener('click', event => {
         const quickView = event.target.closest('.js-quick-view');
         if (quickView) {
             event.preventDefault();
-            if (quickView.dataset.id) window.location.assign(`${pageRoot}/Details/${quickView.dataset.id}`);
+            // A row the page somehow does not hold falls back to the details page rather than doing nothing.
+            if (quickView.dataset.id && !openCapacityQuickView(quickView.dataset.id)) {
+                window.location.assign(`${pageRoot}/Details/${encodeURIComponent(quickView.dataset.id)}`);
+            }
             return;
         }
 

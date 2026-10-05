@@ -87,4 +87,8 @@ Durma: usage ziyaret sayısını oturum bağı dışında gerektiriyorsa; altın
 - **CT testleri (CYC-UI-2 ile birleşik):** CRM **2231/0/5**, Web **536/0**.
 - **CT sabotajı:** talepte arşiv dışlaması kaldırıldı → 2 kırmızı. Kod geri alındı. Ajan: iptal filtresi (2), aktif dönemde tarih düzenlenebilir (1).
 - **Açık:** liste altın şablon denetimi 12 sapma (hepsi önceden var) — kullanıcı kararı bekliyor.
+- **WP-CYC-UI-FIX-1 güncellemesi (2026-10-05):** liste altın şablon sapmaları **1–3 düzeltildi** — veri modu `data-dt-data-mode="client"` (tüm küme bir kez yüklenir; sayfalama / sıralama / filtre tarayıcıda), ortak `<partial name="_TableSkeleton" />`, `#offcanvasDetailsPreview` hızlı bakış (satır verisinden, ek istek yok, düz metin). **Bilinen sapmalar** (doğrulayıcı `--api-profile proxy` ile kalan 8 madde; `CyclePeriodsController` belge yorumunda da kayıtlı):
+  - ortak `personalization-client.js` kiracı başlığı kontrolü — modül dışı ortak dosya, ayrı iş;
+  - doğrulayıcının varsayılan profilde doğrudan gateway (`window.API`) beklentisi — sayfa bilinçli aynı köken proxy kullanır (proxy profiliyle bu madde raporlanmaz);
+  - tümünü seç sütunu, toplu işlem yapılandırması, toplu seçim bağlama, `/bulk` ucu, toplu silme tetikleyicisi, `reloadWithToast`, seçimi temizle — modülde silme yok (sonlandırma Kapat / Arşivle), toplu yüzey yok.
 - **E4:** CT, fleet sonrası.

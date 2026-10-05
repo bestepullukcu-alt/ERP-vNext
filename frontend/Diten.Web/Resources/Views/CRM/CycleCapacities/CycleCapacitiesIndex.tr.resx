@@ -207,4 +207,5 @@
   <data name="Err_typical_count_exceeds_max" xml:space="preserve"><value>Tipik ürün sayısı ziyaret başına ürün sınırını aşamaz.</value></data>
   <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>Bir ayın FTE değeri geçerli aralığın dışında.</value></data>
   <data name="Err_period_closed" xml:space="preserve"><value>Dönem kapalı; kapasitesi artık değiştirilemez.</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>Ayrıntıya git</value></data>
 </root>
