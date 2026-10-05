@@ -1297,6 +1297,9 @@ window.DitenDataTable = (function () {
                 var values = field.kind === 'multi' ? normalizeArray(appliedFilters[field.key]) : [normalizeScalar(appliedFilters[field.key])].filter(Boolean);
                 if (!values.length) return null;
                 var el = document.getElementById(field.id);
+                // A field whose element says data-dt-describe="false" is a wire value only (an id behind a named field):
+                // left out of the description. Without the attribute nothing changes.
+                if (el?.getAttribute?.('data-dt-describe') === 'false') return null;
                 var labelEl = el?.id ? document.querySelector('label[for="' + el.id + '"]') : null;
                 var label = normalizeScalar(el?.getAttribute?.('data-placeholder') || el?.getAttribute?.('aria-label') || labelEl?.textContent || field.key);
                 var texts = values.map(function (value) {

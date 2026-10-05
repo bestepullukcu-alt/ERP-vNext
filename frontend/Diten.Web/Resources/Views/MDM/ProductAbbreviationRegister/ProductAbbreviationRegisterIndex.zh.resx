@@ -43,4 +43,7 @@
   <data name="LinkedProductNotOpened" xml:space="preserve">
     <value>无法打开链接中的产品；请重新加载页面。</value>
   </data>
+  <data name="ExportWithoutProductName" xml:space="preserve">
+    <value>导出的文件不包含产品名称：您没有读取产品的权限。</value>
+  </data>
 </root>

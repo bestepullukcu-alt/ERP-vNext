@@ -32,7 +32,8 @@ function pageDom(selectProduct = false) {
     '<button type="button" class="add-new"></button>' +
     '<div id="inlineFilterHost"><div class="collapse" id="inlineFilterCollapse"><form id="filterForm">' +
     '<select id="filterGlobalProduct"></select>' +
-    '<input type="hidden" id="filterGlobalProductText" /><input type="hidden" id="filterGlobalProductId" />' +
+    // As _Filter.cshtml renders them (the Razor render test pins the partial's own attributes).
+    '<input type="hidden" id="filterGlobalProductText" aria-label="Global Product" /><input type="hidden" id="filterGlobalProductId" data-dt-describe="false" />' +
     '<button type="button" id="btnFilterApply"></button><button type="button" id="btnFilterReset"></button></form></div></div>' +
     '<div id="abbListTruncated" class="alert d-none"></div>' +
     '<div class="card"><div class="card-datatable"><table id="dt-product-abbreviation-register">' +
@@ -65,7 +66,9 @@ function loadPage({ search = "", views = {}, saveFails = false, answer, delay = 
   ctx.DataTable = ctx.DataTable || ctx.jQuery.fn.dataTable;
   run("wwwroot/assets/js/diten-datatable.js");
 
-  window.DtDefaults = { create: (cfg) => cfg, exportButtons: () => [], updateVisualState() {}, refreshButtonGroupRadii() {}, handleUnauthorized() {} };
+  const buttons = {};
+  window.DtDefaults = { create: (cfg) => cfg, exportButtons: (_text, _attr, _extra, options) => { buttons.options = options; return []; },
+    updateVisualState() {}, refreshButtonGroupRadii() {}, handleUnauthorized() {} };
   window.L10n = { ErrorForbidden: "fixture: forbidden sentence", ErrorGateway: "fixture: unavailable sentence", SavedViewNotCarried: "fixture: view not carried",
     ErrorNotFound: "fixture: not found sentence", LinkedProductNotOpened: "fixture: linked product not opened" };
   window.showToast = (message, type) => toasts.push([message, type]);
@@ -93,7 +96,9 @@ function loadPage({ search = "", views = {}, saveFails = false, answer, delay = 
     .replace("document.addEventListener('DOMContentLoaded', () => ProductAbbreviationRegisterList.init());", "")
     + "\nglobalThis.__abbPage = ProductAbbreviationRegisterList;", ctx, { filename: "index.js" });
   const ready = ctx.__abbPage.init();
-  return { ctx, ready, requests, saves, toasts, views };
+  // The controlled copy's (PDF / print) "filters" line, as the factory builds it.
+  const copyFilters = () => buttons.options.controlledCopy.meta().filters;
+  return { ctx, ready, requests, saves, toasts, views, copyFilters };
 }
 
 const savedView = (filters) => ({
@@ -168,6 +173,44 @@ describe("ABB register on the real list component", () => {
 
     expect(document.querySelector(".add-new").classList.contains("d-none")).toBe(false);
     expect(document.getElementById("abbListTruncated").classList.contains("d-none")).toBe(true);
+  });
+
+  test("LIST-FIX3 item 2 — the controlled copy names the product by its label and text, never by its id or a raw key", async () => {
+    const page = loadPage({ views: { "ProductAbbreviationRegister.v2": [savedView({ globalProductId: SAVED, globalProductText: "GP-001 — Aspirin 500" })] } });
+    await page.ready;
+    await until(() => page.requests.length >= 1);
+    await settle();
+
+    const filters = page.copyFilters();
+    expect(filters).toEqual([{ label: "Global Product", values: ["GP-001 — Aspirin 500"] }]);
+    expect(JSON.stringify(filters)).not.toContain(SAVED);
+    expect(JSON.stringify(filters)).not.toMatch(/globalProduct(Id|Text)/);
+  });
+
+  test("LIST-FIX3 item 2 — after a link (only the product's id is known) the copy leaves the product out, never a GUID", async () => {
+    const page = loadPage({ search: "?globalProductId=" + LINKED });
+    await page.ready;
+    await until(() => page.requests.some((url) => url.includes("globalProductId=" + LINKED)));
+    await settle();
+
+    const filters = page.copyFilters();
+    expect(filters).toEqual([]);
+    expect(document.getElementById("filterGlobalProductText").value).toBe("");
+  });
+
+  test("LIST-FIX3 item 4 — the picker failing does not take the filter binding with it", async () => {
+    // select2 is not on this page: for a reader who may choose products initSelector throws inside loadOptions.
+    const page = loadPage({ selectProduct: true });
+    await page.ready;
+    await until(() => page.requests.length >= 1);
+    await settle();
+
+    const select = document.getElementById("filterGlobalProduct");
+    select.add(new Option("GP-002 — Paracetamol", SAVED, true, true));
+    page.ctx.jQuery(select).trigger("change");
+
+    expect(document.getElementById("filterGlobalProductId").value).toBe(SAVED);
+    expect(document.getElementById("filterGlobalProductText").value).toBe("GP-002 — Paracetamol");
   });
 
   test("item 1 — without a link the saved view's product stays the list's", async () => {

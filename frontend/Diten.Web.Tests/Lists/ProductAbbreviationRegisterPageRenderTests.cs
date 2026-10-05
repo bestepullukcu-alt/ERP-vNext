@@ -63,6 +63,21 @@ public sealed class ProductAbbreviationRegisterPageRenderTests : IClassFixture<W
         Assert.DoesNotContain("bulkActionBar", html);
         Assert.Contains("filterGlobalProductId", html);
         Assert.Contains("ProductAbbreviationRegister/index.js", html);
+        // LIST-FIX3 item 2: the copy's filter line names the product's text field; the id field is never described.
+        Assert.Matches("<input type=\"hidden\" id=\"filterGlobalProductText\" aria-label=\"[^\"]+\" />", html);
+        Assert.Contains("<input type=\"hidden\" id=\"filterGlobalProductId\" data-dt-describe=\"false\" />", html);
+        // LIST-FIX3 item 1: this reader may not read products — the page says the file carries no product name.
+        Assert.Contains("id=\"abbExportWithoutProduct\"", html);
+    }
+
+    [Fact]
+    public async Task A_reader_who_may_read_products_is_not_told_the_file_lacks_the_product_name()
+    {
+        var (status, html) = await GetPageAsync("mdm.product-abbreviations.read", "mdm.global-products.read");
+
+        Assert.Equal(HttpStatusCode.OK, status);
+        Assert.DoesNotContain("abbExportWithoutProduct", html);
+        Assert.Contains("dt-product-abbreviation-register", html);
     }
 
     private async Task<(HttpStatusCode Status, string Html)> GetPageAsync(params string[] permissions)

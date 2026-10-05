@@ -34,6 +34,8 @@
     @if (!permissions.Contains("mdm.global-products.read"))
     {
         <div class="alert alert-info" role="status">@Localizer["SelectorPermissionRequired"]</div>
+        @* LIST-FIX3 item 1: the export cannot name the product for this reader — said, not silent. *@
+        <div id="abbExportWithoutProduct" class="alert alert-info" role="status">@Localizer["ExportWithoutProductName"]</div>
     }
 
     <div class="mb-3">

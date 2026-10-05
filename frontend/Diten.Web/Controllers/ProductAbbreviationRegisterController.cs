@@ -136,7 +136,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
 
     /// <summary>
     /// LIST-FIX1 item 5 — BL-452: THE FILE IS THE LIST. The same product, search and order as the list, every matching
-    /// entry (no start/length), the visible columns in screen order (whitelist <see cref="ExportColumns"/>; anything else
+    /// entry (no start/length), the visible columns in screen order (whitelist <see cref="ExportColumnsFor"/>; anything else
     /// is 400), headers and values in the request culture. A read MDM cut off at <see cref="MdmEntryReadLimit"/> is
     /// refused with 413 EXPORT_TOO_LARGE: a GxP register is never exported silently in part.
     /// </summary>
@@ -157,12 +157,24 @@ public sealed class ProductAbbreviationRegisterController : Controller
             return ListRefused("ABBREVIATION_LIST_ORDER_INVALID");
         if (!TryReadProduct(globalProductId, out var product))
             return ListRefused("ABBREVIATION_LIST_PRODUCT_INVALID");
-        if (!ExportColumns.TryResolve(columns, out var exportColumns, out _))
+        // LIST-FIX3 item 1 — the product column exists only for a reader who may read the product (MDM's own product read
+        // answers them); for anyone else it is not declared, so asking for it is 400, and the page says the file carries no
+        // product name.
+        var namesProduct = Has(ProductReadPermission);
+        if (!ExportColumnsFor(namesProduct, productLabel: string.Empty).TryResolve(columns, out _, out _))
             return ListRefused(ListExportContract.ColumnsInvalidCode);
 
+        var productLabel = string.Empty;
         List<ProductAbbreviationListRow> rows = [];
         if (product is not null)
         {
+            if (namesProduct)
+            {
+                var (labelRefusal, label) = await ReadProductLabelAsync(product.Value, cancellationToken);
+                if (labelRefusal is not null) return labelRefusal;
+                productLabel = label;
+            }
+
             var (refusal, read) = await ReadEntriesAsync(product.Value, cancellationToken);
             if (refusal is not null) return refusal;
             if (read.Count >= MdmEntryReadLimit)
@@ -175,11 +187,15 @@ public sealed class ProductAbbreviationRegisterController : Controller
             rows = read;
         }
 
-        var ordered = ProductAbbreviationListRow.Order(Search(rows, search), orderBy ?? "abbreviation", orderDir == "desc");
         var culture = ListExportContract.ResolveCulture(Request.Headers.AcceptLanguage.ToString());
-        // The page's resources answer in the CURRENT UI culture: the file's language for the time it is written.
+        // The page's resources answer in the CURRENT UI culture: the file's language — for the SEARCH as much as for the
+        // writing (LIST-FIX3 item 3): rows found by one language's words are never written in another's.
         var file = WithCulture(culture, () =>
-            ListExportWriter.Write(exportFormat, exportColumns, ordered, culture, _pageLocalizer["ProductAbbreviationRegisterTitle"].Value));
+        {
+            ExportColumnsFor(namesProduct, productLabel).TryResolve(columns, out var exportColumns, out _);
+            var ordered = ProductAbbreviationListRow.Order(Search(rows, search), orderBy ?? "abbreviation", orderDir == "desc");
+            return ListExportWriter.Write(exportFormat, exportColumns, ordered, culture, _pageLocalizer["ProductAbbreviationRegisterTitle"].Value);
+        });
 
         return File(file, ListExportContract.ContentType(exportFormat),
             ListExportContract.FileName("product-abbreviation-register", DateTimeOffset.UtcNow, exportFormat));
@@ -203,6 +219,54 @@ public sealed class ProductAbbreviationRegisterController : Controller
         {
             (CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture) = previous;
         }
+    }
+
+    private const string ProductReadPermission = "mdm.global-products.read";
+
+    /// <summary>
+    /// LIST-FIX3 item 1 — the product as the screen names it ("CODE — Name"), read on the server from MDM's EXISTING product
+    /// read (<c>GET /api/global-products/{id}</c>, which needs <c>mdm.global-products.read</c> — asked only for a caller who
+    /// holds it). Anything but a readable code and name is 502 and no file: never the browser's text, never a bare GUID.
+    /// </summary>
+    private async Task<(IActionResult? Refusal, string Label)> ReadProductLabelAsync(Guid product, CancellationToken cancellationToken)
+    {
+        var targetUrl = $"{_gatewayUrl}/api/global-products/{product:D}";
+        if (!TryCreateGatewayRequest(HttpMethod.Get, targetUrl, null, mutation: false, out var request))
+            return (Unauthorized(new { errors = new[] { _sharedLocalizer["Unauthorized"].Value } }), string.Empty);
+
+        var unreadable = (StatusCode(StatusCodes.Status502BadGateway, new { errors = new[] { _sharedLocalizer["GatewayError"].Value } }), string.Empty);
+        try
+        {
+            using (request)
+            using (var response = await _httpClient.SendAsync(request, cancellationToken))
+            {
+                if (!response.IsSuccessStatusCode) return unreadable;
+                using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+                var data = Property(document.RootElement, "data");
+                var code = Property(data, "canonicalCode");
+                var name = Property(data, "globalProductName");
+                return code.ValueKind == JsonValueKind.String && name.ValueKind == JsonValueKind.String
+                       && !string.IsNullOrWhiteSpace(code.GetString()) && !string.IsNullOrWhiteSpace(name.GetString())
+                    ? (null, $"{code.GetString()} — {name.GetString()}")
+                    : unreadable;
+            }
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogError(exception, "ABB Register product read failed for {TargetUrl}.", targetUrl);
+            return unreadable;
+        }
+    }
+
+    private static JsonElement Property(JsonElement element, string name)
+    {
+        if (element.ValueKind != JsonValueKind.Object) return default;
+        foreach (var property in element.EnumerateObject())
+        {
+            if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase)) return property.Value;
+        }
+
+        return default;
     }
 
     /// <summary>MDM's one-product read stops here (<c>GetByGlobalProductIdAsync</c>, Limit 500).</summary>
@@ -274,13 +338,16 @@ public sealed class ProductAbbreviationRegisterController : Controller
     {
         var term = search?.Trim();
         if (string.IsNullOrEmpty(term)) return rows;
+        // LIST-FIX3 item 4 — a Turkish keyboard with Caps Lock types "İSO" (U+0130) and lower-case "ı" (U+0131): for the
+        // code (ASCII letters only) they are I and i.
+        var codeTerm = term.Replace('\u0130', 'I').Replace('\u0131', 'i');
         // LIST-FIX2 item 1 — two kinds of text, two comparisons. The CODE (three ASCII letters, stored upper-case) and the
         // version are not words of any language: compared ordinally, so a Turkish reader's "abi" finds "ABI" (under Turkish
         // rules "i" pairs with "İ" and never would). The lifecycle and yes/no are the reader's WORDS: compared in the
         // reader's language, so "iptal" finds "İptal edildi" and "in use" finds "In use".
         var words = CultureInfo.CurrentUICulture.CompareInfo;
         return rows.Where(row =>
-                row.Abbreviation.Contains(term, StringComparison.OrdinalIgnoreCase)
+                row.Abbreviation.Contains(codeTerm, StringComparison.OrdinalIgnoreCase)
                 || row.Version.ToString(CultureInfo.InvariantCulture).Contains(term, StringComparison.Ordinal)
                 || ReaderWords(row).Any(text => words.IndexOf(text, term, CompareOptions.IgnoreCase) >= 0))
             .ToList();
@@ -301,17 +368,23 @@ public sealed class ProductAbbreviationRegisterController : Controller
 
     /// <summary>
     /// The export whitelist: the list's data columns by their <c>data</c> key, headers from the page's resources.
-    /// LIST-FIX2 item 2 — NO product column. The screen shows the product's code and name, which this proxy cannot read
-    /// for every register reader (MDM's product read needs mdm.global-products.read, which an ABB reader or auditor need
-    /// not hold), and a bare GUID in a GxP printout is not the screen. The list is one product's, chosen by the reader.
+    /// LIST-FIX3 item 1 — the product column ("CODE — Name", the same for every row: the list is one product's) only for a
+    /// reader who may read the product: MDM's existing product read needs mdm.global-products.read, which an ABB reader or
+    /// auditor need not hold. For them it is not declared — never a bare GUID instead.
     /// </summary>
-    private ListExportColumnSet<ProductAbbreviationListRow> ExportColumns => new(
+    private ListExportColumnSet<ProductAbbreviationListRow> ExportColumnsFor(bool namesProduct, string productLabel) => new(
+    (namesProduct
+        ? new ListExportColumn<ProductAbbreviationListRow>[]
+        {
+            new("globalProductId", _ => _pageLocalizer["GlobalProduct"].Value, (_, _) => productLabel)
+        }
+        : []).Concat(
     [
         new("abbreviation", _ => _pageLocalizer["Abbreviation"].Value, (row, _) => row.Abbreviation),
         new("lifecycleStatus", _ => _pageLocalizer["LifecycleStatus"].Value, (row, _) => LifecycleText(row)),
         new("version", _ => _pageLocalizer["Version"].Value, (row, culture) => row.Version.ToString(culture)),
         new("retirementPending", _ => _pageLocalizer["RetirementPending"].Value, (row, _) => YesNo(row.RetirementPending))
-    ]);
+    ]));
 
     private IActionResult ListRefused(string code) => StatusCode(StatusCodes.Status400BadRequest, new
     {

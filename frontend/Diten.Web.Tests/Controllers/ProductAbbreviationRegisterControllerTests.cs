@@ -392,7 +392,8 @@ public sealed class ProductAbbreviationRegisterControllerTests
 
     private static readonly Dictionary<string, string> TurkishPageWords = new()
     {
-        ["Abbreviation"] = "Kısaltma", ["LifecycleStatus"] = "Yaşam döngüsü", ["Version"] = "Sürüm",
+        ["Abbreviation"] = "Kısaltma", ["LifecycleStatus"] = "Yaşam döngüsü", ["Version"] = "Sürüm", ["GlobalProduct"] = "Global Ürün",
+        ["LifecycleCancelled"] = "İptal edildi", ["LifecycleRetired"] = "Emekli",
         ["RetirementPending"] = "Emeklilik bekliyor", ["LifecycleActive"] = "Etkin", ["Yes"] = "Evet", ["No"] = "Hayır"
     };
 
@@ -617,6 +618,8 @@ public sealed class ProductAbbreviationRegisterControllerTests
     [InlineData("abi", "ABI")]
     [InlineData("ISO", "ISO")]
     [InlineData("iso", "ISO")]
+    [InlineData("\u0130SO", "ISO")]
+    [InlineData("\u0131so", "ISO")]
     public async Task A_turkish_reader_finds_a_code_with_an_i_whatever_case_it_types(string term, string expected)
     {
         // LIST-FIX2 item 1 — the code is three ASCII letters, not a Turkish word: compared ordinally. Under Turkish rules
@@ -721,6 +724,113 @@ public sealed class ProductAbbreviationRegisterControllerTests
         Assert.Equal([ProductAbbreviationRegisterController.MdmEntryReadLimit], limits);
     }
 
+    // ── LIST-FIX3: the file says which product it is a copy of ──────────────────────────────────────────────────
+
+    private const string ProductBody = "{\"isSuccessful\":true,\"data\":{\"id\":\"x\",\"canonicalCode\":\"GP-001\",\"globalProductName\":\"Aspirin 500\"}}";
+
+    private static Wire ProductWire(Guid product, string entries, (int Status, string Body)? productAnswer = null) => new()
+    {
+        Route = path => path.EndsWith($"/api/global-products/{product:D}", StringComparison.Ordinal)
+            ? productAnswer ?? (200, ProductBody)
+            : (200, entries)
+    };
+
+    [Fact]
+    public async Task A_reader_who_may_read_the_product_gets_its_code_and_name_in_every_row_never_its_id()
+    {
+        var product = Guid.NewGuid();
+        using var wire = ProductWire(product, Entries(product, ("AAA", "ACTIVE", 1, false), ("BBB", "RETIRED", 2, true)));
+
+        var csv = await CsvAsync(await Controller(wire, "mdm.product-abbreviations.read", "mdm.global-products.read")
+            .Export(globalProductId: product.ToString("D")));
+
+        var lines = csv.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal("Product,Code,State,Rev,Retiring", lines[0]);
+        Assert.Equal(["GP-001 — Aspirin 500,AAA,In use,1,Nope", "GP-001 — Aspirin 500,BBB,Gone,2,Indeed"], lines.Skip(1).ToArray());
+        Assert.DoesNotContain(product.ToString("D"), csv);
+        // MDM's own product read, asked once.
+        Assert.Single(wire.Paths, path => path == $"/api/global-products/{product:D}");
+    }
+
+    [Fact]
+    public async Task A_reader_who_may_read_the_product_can_ask_for_its_column_by_key()
+    {
+        var product = Guid.NewGuid();
+        using var wire = ProductWire(product, Entries(product, ("AAA", "ACTIVE", 1, false)));
+
+        var csv = await CsvAsync(await Controller(wire, "mdm.product-abbreviations.read", "mdm.global-products.read")
+            .Export(columns: ["abbreviation,globalProductId"], globalProductId: product.ToString("D")));
+
+        Assert.Equal(["Code,Product", "AAA,GP-001 — Aspirin 500"], csv.Split("\r\n", StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    public static TheoryData<int, string> UnreadableProducts() => new()
+    {
+        { 404, "{\"isSuccessful\":false,\"errors\":[\"GLOBAL_PRODUCT_NOT_FOUND\"]}" },
+        { 403, "{\"isSuccessful\":false}" },
+        { 200, "<html>not json</html>" },
+        { 200, "{\"isSuccessful\":true,\"data\":{\"canonicalCode\":\"GP-001\"}}" },
+        { 200, "{\"isSuccessful\":true,\"data\":{\"canonicalCode\":\" \",\"globalProductName\":\"Aspirin\"}}" },
+        { -1, "" }
+    };
+
+    [Theory]
+    [MemberData(nameof(UnreadableProducts))]
+    public async Task A_product_that_cannot_be_named_is_502_and_no_file_never_a_bare_id(int status, string body)
+    {
+        var product = Guid.NewGuid();
+        using var wire = ProductWire(product, Entries(product, ("AAA", "ACTIVE", 1, false)), (status, body));
+
+        var refused = Assert.IsType<ObjectResult>(await Controller(wire, "mdm.product-abbreviations.read", "mdm.global-products.read")
+            .Export(globalProductId: product.ToString("D")));
+
+        Assert.Equal(StatusCodes.Status502BadGateway, refused.StatusCode);
+    }
+
+    [Fact]
+    public async Task A_reader_without_the_product_right_gets_no_product_column_and_no_product_read()
+    {
+        var product = Guid.NewGuid();
+        using var wire = ProductWire(product, Entries(product, ("AAA", "ACTIVE", 1, false)));
+        var controller = Controller(wire, "mdm.product-abbreviations.read");
+
+        var csv = await CsvAsync(await controller.Export(globalProductId: product.ToString("D")));
+        Assert.Equal("Code,State,Rev,Retiring", csv.Split("\r\n")[0]);
+        Assert.DoesNotContain(product.ToString("D"), csv);
+        Assert.DoesNotContain(wire.Paths, path => path.StartsWith("/api/global-products/", StringComparison.Ordinal));
+
+        var refused = Assert.IsType<ObjectResult>(await controller.Export(columns: ["globalProductId"], globalProductId: product.ToString("D")));
+        Assert.Equal(StatusCodes.Status400BadRequest, refused.StatusCode);
+    }
+
+    [Fact]
+    public async Task Without_a_product_a_reader_who_may_read_products_gets_the_headers_with_the_product_column_and_no_call()
+    {
+        using var wire = new Wire();
+
+        var csv = await CsvAsync(await Controller(wire, "mdm.product-abbreviations.read", "mdm.global-products.read").Export());
+
+        Assert.Equal(["Product,Code,State,Rev,Retiring"], csv.Split("\r\n", StringSplitOptions.RemoveEmptyEntries));
+        Assert.Empty(wire.Paths);
+    }
+
+    [Fact]
+    public async Task The_export_searches_in_the_files_language_not_in_the_servers()
+    {
+        // LIST-FIX3 item 3 — the server thread is English, the file is Turkish: "iptal" finds the cancelled entries by their
+        // Turkish word, and they are written in Turkish. Before, the search ran in English and found nothing.
+        using var server = new ReaderCulture("en");
+        var product = Guid.NewGuid();
+        using var wire = new Wire { Body = Entries(product, ("AAA", "CANCELLED", 1, false), ("BBB", "ACTIVE", 1, false), ("CCC", "CANCELLED", 2, false)) };
+        var controller = Controller(wire, "mdm.product-abbreviations.read");
+        controller.ControllerContext.HttpContext.Request.Headers.AcceptLanguage = "tr";
+
+        var csv = await CsvAsync(await controller.Export(columns: ["abbreviation", "lifecycleStatus"], search: "iptal",
+            globalProductId: product.ToString("D")));
+
+        Assert.Equal(["Kısaltma,Yaşam döngüsü", "AAA,İptal edildi", "CCC,İptal edildi"], csv.Split("\r\n", StringSplitOptions.RemoveEmptyEntries));
+    }
+
     [Fact]
     public async Task The_export_needs_read_permission()
     {
@@ -777,6 +887,8 @@ public sealed class ProductAbbreviationRegisterControllerTests
         public int Status { get; init; } = 200;
         /// <summary>The gateway cannot be reached: the send throws.</summary>
         public bool Unreachable { get; init; }
+        /// <summary>Per-path answers (path → status, body); null = <see cref="Status"/> / <see cref="Body"/> for every path.</summary>
+        public Func<string, (int Status, string Body)?>? Route { get; init; }
         /// <summary>The gateway's answer body; null = the default success / failure envelope.</summary>
         public string? Body { get; init; }
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
@@ -787,6 +899,11 @@ public sealed class ProductAbbreviationRegisterControllerTests
             Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
             Assert.Single(request.Headers.GetValues("X-Tenant-Id"));
             if (Unreachable) throw new HttpRequestException("fixture: gateway unreachable");
+            if (Route?.Invoke(request.RequestUri.AbsolutePath) is { } routed)
+            {
+                if (routed.Status < 0) throw new HttpRequestException("fixture: this read failed");
+                return Task.FromResult(new HttpResponseMessage((HttpStatusCode)routed.Status) { Content = new StringContent(routed.Body) });
+            }
             return Task.FromResult(new HttpResponseMessage((HttpStatusCode)Status) {
                 Content = new StringContent(Body ?? (Status == 200 ? "{\"isSuccessful\":true,\"data\":{}}" : "{\"isSuccessful\":false,\"errors\":[\"fixture-failure\"]}"))
             });

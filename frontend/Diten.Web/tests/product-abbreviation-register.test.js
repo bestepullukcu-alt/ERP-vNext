@@ -238,8 +238,43 @@ describe('ABB executed browser contract', () => {
     it('declares the server export of every entry, not the page the table holds', () => {
         const options = harness().sut.buildListOptions();
         expect(options.export).toEqual({ mode: 'server', url: '/MDM/ProductAbbreviationRegister/api/list/export', fileName: 'product-abbreviation-register' });
-        // LIST-FIX2 item 2: the product column (1) is shown but not exported.
+        // LIST-FIX3 item 1: without the product right the product column (1) is shown but not exported.
         expect(options.toolbar.exportColumns).toEqual([2, 3, 4, 5]);
+        // With it, the proxy names the product (CODE — Name) and the column is exported.
+        expect(harness({ canSelectProduct: 'true' }).sut.buildListOptions().toolbar.exportColumns).toEqual([1, 2, 3, 4, 5]);
+    });
+    it('exports exactly the keys the proxy declares — for each reader (no drift between page and proxy)', () => {
+        // LIST-FIX3 item 4 — read from the production controller, as the sort whitelist is.
+        const proxy = fs.readFileSync(path.join(__dirname, '..', 'Controllers/ProductAbbreviationRegisterController.cs'), 'utf8');
+        const start = proxy.indexOf('ExportColumnsFor(bool namesProduct, string productLabel) => new(');
+        const block = proxy.slice(start, proxy.indexOf(']));', start));
+        const proxyKeys = [...block.matchAll(/new\("([A-Za-z]+)", _ => _pageLocalizer/g)].map((m) => m[1]).sort();
+        expect(proxyKeys).toEqual(['abbreviation', 'globalProductId', 'lifecycleStatus', 'retirementPending', 'version']);
+        const exported = (options) => options.toolbar.exportColumns.map((i) => options.config.columns[i].data).sort();
+        expect(exported(harness({ canSelectProduct: 'true' }).sut.buildListOptions())).toEqual(proxyKeys);
+        expect(exported(harness().sut.buildListOptions())).toEqual(proxyKeys.filter((key) => key !== 'globalProductId'));
+    });
+    it('says the linked product was not opened only when there is a link and the start never ran', async () => {
+        // LIST-FIX3 item 4 — the negatives: no link → the plain sentence; a link, but the factory's start ran → the plain sentence.
+        const noLink = harness();
+        noLink.sut.buildListOptions().ajax.error.call({}, { status: 503, responseJSON: {} });
+        expect(noLink.win.showToast).toHaveBeenLastCalledWith('unavailable', 'error');
+
+        const started = harness({ canAudit: 'true' });
+        started.win.L10n.LinkedProductNotOpened = 'link not opened';
+        started.win.location.search = '?globalProductId=11111111-1111-1111-1111-111111111111';
+        await started.sut.initDataTable();
+        const options = started.createList.mock.calls[0][0];
+        await options.filters.loadOptions();
+        options.ajax.error.call({}, { status: 503, responseJSON: {} });
+        expect(started.win.showToast).toHaveBeenLastCalledWith('unavailable', 'error');
+
+        const notStarted = harness({ canAudit: 'true' });
+        notStarted.win.L10n.LinkedProductNotOpened = 'link not opened';
+        notStarted.win.location.search = '?globalProductId=11111111-1111-1111-1111-111111111111';
+        await notStarted.sut.initDataTable();
+        notStarted.createList.mock.calls[0][0].ajax.error.call({}, { status: 503, responseJSON: {} });
+        expect(notStarted.win.showToast).toHaveBeenLastCalledWith('unavailable link not opened', 'error');
     });
     it('says when MDM\'s read of the product came back full, and stops saying it once the state is unknown', () => {
         const h = harness({}, { dom: '<div id="product-abbreviation-register"></div><table id="dt-product-abbreviation-register"></table><div id="abbListTruncated" class="d-none"></div>' });

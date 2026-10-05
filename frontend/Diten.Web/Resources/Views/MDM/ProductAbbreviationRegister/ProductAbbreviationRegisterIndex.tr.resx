@@ -43,4 +43,7 @@
   <data name="LinkedProductNotOpened" xml:space="preserve">
     <value>Bağlantıdaki ürün açılamadı; lütfen sayfayı yenileyin.</value>
   </data>
+  <data name="ExportWithoutProductName" xml:space="preserve">
+    <value>Dışa aktarılan dosyalar ürün adını içermez: ürün okuma izniniz yok.</value>
+  </data>
 </root>

@@ -77,7 +77,8 @@ describe("ABB register list options", () => {
       expect(partial).toContain('SavedViewNotCarried = Localizer["SavedViewNotCarried"].Value');
       expect(partial).toContain('LinkedProductNotOpened = Localizer["LinkedProductNotOpened"].Value');
       expect(index).toContain('@Localizer["ListTruncated"]');
-      for (const key of ["ListTruncated", "SavedViewNotCarried", "LinkedProductNotOpened"]) {
+      expect(index).toContain('@Localizer["ExportWithoutProductName"]');
+      for (const key of ["ListTruncated", "SavedViewNotCarried", "LinkedProductNotOpened", "ExportWithoutProductName"]) {
         const match = page.match(new RegExp(`<data name="${key}" xml:space="preserve">\\s*<value>([^<]*)</value>`));
         expect([key, match ? match[1].trim() : null]).toEqual([key, expect.stringMatching(/\S/)]);
       }

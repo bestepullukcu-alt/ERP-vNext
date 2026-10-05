@@ -43,4 +43,7 @@
   <data name="LinkedProductNotOpened" xml:space="preserve">
     <value>The product in the link could not be opened; please reload the page.</value>
   </data>
+  <data name="ExportWithoutProductName" xml:space="preserve">
+    <value>Exported files do not contain the product name: you do not have permission to read products.</value>
+  </data>
 </root>

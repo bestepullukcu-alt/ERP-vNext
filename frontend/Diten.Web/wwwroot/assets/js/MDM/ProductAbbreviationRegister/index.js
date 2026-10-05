@@ -155,7 +155,9 @@ const ProductAbbreviationRegisterList = (function () {
         const idField = productIdField();
         const textField = productTextField();
         if (!idField || !textField) return;
-        textField.value = productText || productId;
+        // LIST-FIX3 item 2 — the bar keeps a product NAME only: a link carries just the id, so no text is stored (the
+        // controlled copy then leaves the product out instead of printing a GUID; the column still shows the id).
+        textField.value = productText && productText !== productId ? productText : '';
         idField.value = productId;
         syncProductSelect('#filterGlobalProduct', productId, textField.value);
         document.getElementById('btnFilterApply')?.click();
@@ -511,7 +513,9 @@ const ProductAbbreviationRegisterList = (function () {
             },
             // LIST-FIX2 item 2: the product column is shown but not exported (the proxy cannot name the product for every
             // reader, and a bare id is not the screen).
-            exportColumns: [2, 3, 4, 5],
+            // LIST-FIX3 item 1: the product column too for a reader who may read the product (the proxy names it from
+            // MDM); for anyone else the page says the file carries no product name.
+            exportColumns: permissions.selectProduct ? [1, 2, 3, 4, 5] : [2, 3, 4, 5],
             colvisColumns: saveViewColumnIndexes
         },
         filters: {
@@ -535,8 +539,9 @@ const ProductAbbreviationRegisterList = (function () {
                 if (linkedProduct) setTimeout(() => applyProductFilter(linkedProduct, linkedProduct), 0);
                 // LIST-FIX2 item 3: queued FIRST — the picker below may throw (the factory catches it), and the link must
                 // not fall with it.
-                initSelector('#filterGlobalProduct', document.body);
+                // LIST-FIX3 item 4 — bound first: the picker may throw (select2 missing) and must not take the binding with it.
                 bindProductFilterFields();
+                initSelector('#filterGlobalProduct', document.body);
             }
         },
         // Same keys as before the migration: every saved register view still loads.
