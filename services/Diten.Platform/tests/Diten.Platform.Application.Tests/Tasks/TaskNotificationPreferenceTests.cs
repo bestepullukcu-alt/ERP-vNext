@@ -696,7 +696,7 @@ public sealed class TaskNotificationPreferenceTests
             new FakeTaskApprovalService(),
             new FakeTaskReviewService(),
             NullLogger<UpdateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), writeGate: TaskWriteGateDoubles.Open);
         return (handler, tasks);
     }
 

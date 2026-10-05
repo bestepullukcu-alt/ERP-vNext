@@ -16,17 +16,41 @@ public sealed class TaskGatewayAdapter : ITimeEntryTaskGateway
     private readonly ITaskItemRepository _tasks;
     private readonly ITaskTransitionRepository _transitions;
     private readonly ITaskReadAccessPolicy _readAccess;
+    private readonly ITaskWriteGate _writeGate;
 
-    public TaskGatewayAdapter(ITaskItemRepository tasks, ITaskTransitionRepository transitions, ITaskReadAccessPolicy readAccess)
+    public TaskGatewayAdapter(
+        ITaskItemRepository tasks,
+        ITaskTransitionRepository transitions,
+        ITaskReadAccessPolicy readAccess,
+        ITaskWriteGate writeGate)
     {
         _tasks = tasks;
         _transitions = transitions;
         _readAccess = readAccess;
+        _writeGate = writeGate;
     }
 
     public async Task<IReadOnlySet<Guid>> ReadableTaskIdsAsync(
         Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
         => (await ReadableTaskSummariesAsync(userId, taskIds, ct)).Keys.ToHashSet();
+
+    /// <summary>
+    /// WP-WCN-TASK-REQUEST-01 FIX3 (item 6) — new time on a task is a CHANGE of it, and MOD-0024's write gate is the one
+    /// place that says who may make one (<see cref="ITaskWriteGate.AllowedTaskIdsAsync"/>: the read rule batched, then the
+    /// same decision every task write asks). This used to restate two of the gate's rules here — and so knew nothing of
+    /// the third one the gate gained (a reader by watching only).
+    /// </summary>
+    public async Task<IReadOnlySet<Guid>> TimeWritableTaskIdsAsync(
+        Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
+    {
+        if (taskIds.Count == 0)
+        {
+            return new HashSet<Guid>();
+        }
+
+        var tasks = await _tasks.ListByIdsAsync(taskIds.Distinct().ToList(), ct);
+        return await _writeGate.AllowedTaskIdsAsync(tasks, userId, TaskWriteKind.Change, ct);
+    }
 
     public async Task<IReadOnlyDictionary<Guid, TimeEntryTaskSummary>> ReadableTaskSummariesAsync(
         Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)

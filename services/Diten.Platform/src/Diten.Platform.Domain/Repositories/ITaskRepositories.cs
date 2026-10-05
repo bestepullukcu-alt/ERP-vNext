@@ -71,8 +71,21 @@ public interface ITaskItemRepository
     Task<IReadOnlyList<TaskItem>> ListWaitingOnUserAsync(Guid userId, CancellationToken ct = default);
 
     /// <summary>
+    /// BL-509 — requests waiting for THIS user's answer: offered to them, held by nobody, not closed.
+    ///
+    /// <para>The fifth question the Task Center asks. <see cref="ListByAssigneeAsync"/> cannot answer it and must
+    /// not: a request nobody has accepted has no assignee, which is exactly what keeps it out of every surface
+    /// that counts a person's work. All three conditions are in the filter rather than left to the caller — the
+    /// moment the request is accepted, declined or withdrawn the row stops matching.</para>
+    /// </summary>
+    Task<IReadOnlyList<TaskItem>> ListOfferedToAsync(Guid userId, CancellationToken ct = default);
+
+    /// <summary>
     /// Optimistic-concurrency update. Returns false when the expected version no longer matches — the caller
     /// turns that into a controlled 409 rather than silently overwriting (pack §13).
+    /// <para>WP-WCN-TASK-REQUEST-01 FIX3 — and false, writing nothing, when <paramref name="task"/> was not READ at
+    /// <paramref name="expectedVersion"/>: the whole document is replaced, so a decision taken on an older read must
+    /// never land on a newer document that happens to carry the version the client named.</para>
     /// </summary>
     Task<bool> UpdateAsync(TaskItem task, int expectedVersion, CancellationToken ct = default);
 
@@ -169,10 +182,12 @@ public interface ITaskCommentRepository
     /// that survives intact: a withdrawn comment keeps its row so the feed keeps a marker where somebody spoke.
     /// A hard delete would renumber a conversation other people quoted.</para>
     ///
-    /// <para>No expected version: a comment has exactly one writer — its author — so there is no race to lose,
-    /// and refusing an author's own correction on a stale token would invent a conflict nobody could cause.</para>
+    /// <para><b>Conditional on the version that was READ</b> (WP-WCN-TASK-REQUEST-01 FIX4, item 5). A comment has one
+    /// writer, its author — but one author can still race themselves (an edit in one tab, a withdrawal in another),
+    /// and an unconditional rewrite then brought a withdrawn text back. False = the comment changed since it was read;
+    /// nothing was written. A row stored before <c>Version</c> was written at all reads as 1 and matches 1.</para>
     /// </summary>
-    Task UpdateAsync(TaskComment comment, CancellationToken ct = default);
+    Task<bool> UpdateAsync(TaskComment comment, int expectedVersion, CancellationToken ct = default);
 }
 
 public interface ITaskWatcherRepository

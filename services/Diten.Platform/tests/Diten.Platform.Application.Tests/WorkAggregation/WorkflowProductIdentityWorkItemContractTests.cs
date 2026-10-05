@@ -92,7 +92,10 @@ public sealed class WorkflowProductIdentityWorkItemContractTests
         // REQ-WCN-01 — carried only when the PROVIDER hands the projection a step context (the pinned version's step
         // name and its candidate positions; ApprovalStepContextTests). Projected without one, as here, both are absent.
         nameof(WorkItemProjectionDto.StepName),
-        nameof(WorkItemProjectionDto.CandidatePositions)
+        nameof(WorkItemProjectionDto.CandidatePositions),
+        // WP-WCN-TASK-REQUEST-01 (merged into the takeover) — a task REQUEST's offer, set only by TaskWorkItemProvider;
+        // the workflow approval projection never sets it, and the theory below asserts it stays null here.
+        nameof(WorkItemProjectionDto.Offer)
     };
 
     [Fact]

@@ -29,6 +29,8 @@ public sealed class ClaimTaskItemHandler : IRequestHandler<ClaimTaskItemCommand,
     private readonly ITaskNotificationService _notifications;
     private readonly ILogger<ClaimTaskItemHandler> _logger;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public ClaimTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
@@ -36,8 +38,10 @@ public sealed class ClaimTaskItemHandler : IRequestHandler<ClaimTaskItemCommand,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext,
         ITaskNotificationService notifications,
-        ILogger<ClaimTaskItemHandler> logger)
+        ILogger<ClaimTaskItemHandler> logger,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _logger = logger;
         _tasks = tasks;
         _assignments = assignments;
@@ -54,6 +58,13 @@ public sealed class ClaimTaskItemHandler : IRequestHandler<ClaimTaskItemCommand,
         {
             return Response<NoContent>.Fail(
                 "Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         if (task.AssignmentTarget != TaskAssignmentTarget.PositionPool)

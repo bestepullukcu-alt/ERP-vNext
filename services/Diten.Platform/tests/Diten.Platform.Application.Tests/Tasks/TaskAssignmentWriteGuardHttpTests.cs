@@ -214,6 +214,7 @@ public sealed class TaskAssignmentWriteGuardHttpTests
                 NullLogger<CreateTaskItemHandler>.Instance,
                 TaskDocumentFreezerDoubles.OverAnEmptyRegister(),
                 new TaskAssignmentGuard(seats, positions, units, scopes, permissions, me),
+                TaskWriteGateDoubles.Open,
                 new TaskAssignmentDirection(scopes, seats, me),
                 new RecordingUpwardRequests());
         }

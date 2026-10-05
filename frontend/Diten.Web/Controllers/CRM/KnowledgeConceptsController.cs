@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -35,6 +36,7 @@ public sealed class KnowledgeConceptsController : Controller
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
     private readonly ILogger<KnowledgeConceptsController> _logger;
+    private readonly CrmReferenceSetReader _referenceSets;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true };
 
     public KnowledgeConceptsController(
@@ -48,6 +50,7 @@ public sealed class KnowledgeConceptsController : Controller
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _sharedLocalizer = sharedLocalizer;
         _logger = logger;
+        _referenceSets = new CrmReferenceSetReader(httpClient, _gatewayUrl, logger);
     }
 
     // ---------------- Pages (tabbed console + ConceptNode Compact page-set) ----------------
@@ -283,12 +286,16 @@ public sealed class KnowledgeConceptsController : Controller
 
     private sealed record ActorNameDto(string? FirstName, string? LastName, string? Email);
 
+    // WP-BRD-TENANT-CRM-SETS — the moderator source above (content-moderator-role) is read through the shared
+    // CrmReferenceSetReader: consumable-sets route first, so a non-admin template author gets the dropdown too. The
+    // Platform answer is passed through unchanged.
     [HttpGet("api/reference-data/{setCode}/values")]
-    public Task<IActionResult> ReferenceValues(string setCode, CancellationToken ct)
+    public async Task<IActionResult> ReferenceValues(string setCode, CancellationToken ct)
     {
-        var tenantId = GetTenantId() ?? string.Empty;
-        var path = $"/api/v1/reference-data/sets/{Uri.EscapeDataString(setCode)}/published-values?scope_key={Uri.EscapeDataString(tenantId)}";
-        return ProxyGetAsync(path, ReadPermission, ct, ReadFallback);
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied) return denied;
+        var response = await _referenceSets.ReadAsync(
+            setCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), GetTenantId(), ct);
+        return await ToProxyResultAsync(response, ct);
     }
 
     [HttpPost("api/concept-chain-templates")]

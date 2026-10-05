@@ -37,6 +37,7 @@ public sealed class LoginOnlyEndpointGuardTests
     private static readonly HashSet<string> ExpectedLoginOnly = new(StringComparer.Ordinal)
     {
         "AccessExplainController.ExplainMyAccess",
+        "ConsumableReferenceDataController.GetPublishedValues",
         "MyNotificationsController.GetMine",
         "MyNotificationsController.MarkAllRead",
         "MyNotificationsController.MarkRead",

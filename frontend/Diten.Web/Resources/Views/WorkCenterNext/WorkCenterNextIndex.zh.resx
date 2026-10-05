@@ -1358,6 +1358,7 @@
   <data name="RelatedTypeChild" xml:space="preserve"><value>子级</value></data>
   <data name="RelatedTypeTransaction" xml:space="preserve"><value>交易</value></data>
   <data name="RelatedTypeDocument" xml:space="preserve"><value>文档</value></data>
+  <data name="RelatedTaskNotAccessible" xml:space="preserve"><value>您无权访问的任务</value></data>
   <data name="ComplianceTitle" xml:space="preserve"><value>合规与控制</value></data>
   <data name="CompliancePolicy" xml:space="preserve"><value>政策</value></data>
   <data name="ComplianceLimit" xml:space="preserve"><value>审批限额</value></data>

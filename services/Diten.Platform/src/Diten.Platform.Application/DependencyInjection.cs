@@ -82,6 +82,9 @@ public static class DependencyInjection
         // assigned to. ONE rule, asked by every read-side endpoint that resolves a single task by id.
         services.AddScoped<Features.Tasks.Services.ITaskReadAccessPolicy,
             Features.Tasks.Services.TaskReadAccessPolicy>();
+        // WP-WCN-TASK-REQUEST-01 FIX2 — and the base of every WRITE on one task: who cannot read it reaches no write.
+        services.AddScoped<Features.Tasks.Services.ITaskWriteGate,
+            Features.Tasks.Services.TaskWriteGate>();
         // BL-023 — turns that resolver's DESCENT into "my team". Walks nothing of its own.
         services.AddScoped<Features.Tasks.Services.ITaskTeamResolver,
             Features.Tasks.Services.TaskTeamResolver>();
@@ -454,6 +457,10 @@ public static class DependencyInjection
             Features.Tasks.Services.TaskAssignmentDirection>();
         services.AddScoped<Features.Tasks.Services.ITaskUpwardRequestService,
             Features.Tasks.Services.TaskUpwardRequestService>();
+        // BL-509 — the task REQUEST: who may be asked to take work on, across the assignment scope. It consumes the
+        // seat directory and the shared eligibility rule; BL-057's scope is deliberately not among its dependencies.
+        services.AddScoped<Features.Tasks.Services.ITaskRequestService,
+            Features.Tasks.Services.TaskRequestService>();
 
         /*
          * WC-2 — the working-time seam and the SLA decision that rides on it.

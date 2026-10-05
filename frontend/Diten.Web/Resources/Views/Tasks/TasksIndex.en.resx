@@ -123,9 +123,12 @@
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Only the person who requested this task can cancel it. If you do not want the work, return it instead.</value></data>
   <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>You cannot be the approver of an approval you request. Choose someone else as the approval manager.</value></data>
   <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>You cannot review your own submission. Ask someone else to review this task.</value></data>
-  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Nobody other than you can review this task. Choose another reviewer.</value></data>
+  <data name="ErrorNoEligibleReviewer" xml:space="preserve"><value>Nobody other than you can review this task. Choose another reviewer.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Nobody other than you can decide the next step of this approval. Ask your administrator to adjust the workflow's approvers.</value></data>
   <data name="ErrorApprovalCancelFailed" xml:space="preserve"><value>Your changes are saved, but the running approval could not be withdrawn. Save again to retry.</value></data>
   <data name="ErrorReviewCancelFailed" xml:space="preserve"><value>Your changes are saved, but the running review could not be withdrawn. Save again to retry.</value></data>
+  <data name="ErrorWorkflowWithdrawFailedOnAct" xml:space="preserve"><value>The linked approval or review could not be withdrawn, so nothing was done. Try again shortly.</value></data>
+  <data name="ErrorReviewAlreadyOpen" xml:space="preserve"><value>This task already has an open review.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Say what the task is waiting for.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>A title is required.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>The title may be at most 200 characters.</value></data>

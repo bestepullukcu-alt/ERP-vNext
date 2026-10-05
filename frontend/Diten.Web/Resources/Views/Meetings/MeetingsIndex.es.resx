@@ -72,6 +72,14 @@
   <data name="PreviousMeetingLabel" xml:space="preserve"><value>Reunión anterior</value></data>
   <data name="FollowUpMeetingLabel" xml:space="preserve"><value>Reunión de seguimiento</value></data>
   <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>De la reunión anterior</value></data>
+  <data name="CarriedOpenActionLine" xml:space="preserve"><value>Acción abierta de la reunión anterior</value></data>
+  <data name="LinkedTaskNotAccessible" xml:space="preserve"><value>Una tarea a la que no tiene acceso</value></data>
+  <data name="LinkExistingTaskTruncated" xml:space="preserve"><value>Solo se pudo revisar parte de la lista. Si la tarea que busca no aparece, acote la búsqueda.</value></data>
+  <data name="LinkExistingTaskListUnreadable" xml:space="preserve"><value>No se pudo leer la lista de tareas. Vuelva a cargar la página e inténtelo de nuevo.</value></data>
+  <data name="LinkExistingTaskListFailed" xml:space="preserve"><value>No se pudo cargar la lista de tareas. Inténtelo de nuevo.</value></data>
+  <data name="LinkExistingTaskSearching" xml:space="preserve"><value>Buscando…</value></data>
+  <data name="LinkExistingTaskNoResults" xml:space="preserve"><value>Ninguna tarea coincide.</value></data>
+  <data name="LinkExistingTaskInputTooShort" xml:space="preserve"><value>Escriba al menos 2 caracteres para buscar.</value></data>
   <data name="Yes" xml:space="preserve"><value>Sí</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Información de la reunión</value></data>

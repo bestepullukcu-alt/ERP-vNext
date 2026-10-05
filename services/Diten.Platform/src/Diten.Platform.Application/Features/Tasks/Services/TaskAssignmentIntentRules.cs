@@ -25,6 +25,17 @@ public static class TaskAssignmentIntentRules
 
     public const string PoolPositionRequiredMessage = "A position is required when pooling a task.";
 
+    public const string RequestNotAvailableMessage =
+        "A request is sent by a person, to a person. A recurring rule or a template cannot send one.";
+
+    public const string OfferedToRequiredMessage = "Say who the request is for.";
+
+    public const string RequestCarriesNoHolderMessage =
+        "A request must not carry an assignee or a pool; it has no holder until it is accepted.";
+
+    public const string OfferedToOnlyOnRequestMessage =
+        "A person to ask can only be named on a request.";
+
     public const string PoolCarriesNoAssigneeMessage =
         "A pooled task must not carry an assignee; it is claimed later.";
 
@@ -36,8 +47,17 @@ public static class TaskAssignmentIntentRules
         TaskAssignmentTarget target,
         Guid? assigneeUserId,
         Guid? poolPositionId,
-        bool allowSelfAssigned)
+        bool allowSelfAssigned,
+        Guid? offeredToUserId = null,
+        // BL-509 — only a person filling the create form may send a request. A recurrence rule and a template name
+        // nobody who could be asked, so both leave this false and an Offered target is refused for them.
+        bool allowOffered = false)
     {
+        if (target != TaskAssignmentTarget.Offered && !IsMissing(offeredToUserId))
+        {
+            return (TaskReasonCodes.AssignmentTargetInvalid, OfferedToOnlyOnRequestMessage);
+        }
+
         switch (target)
         {
             case TaskAssignmentTarget.SelfAssigned:
@@ -61,6 +81,22 @@ public static class TaskAssignmentIntentRules
                 return IsMissing(assigneeUserId)
                     ? null
                     : (TaskReasonCodes.AssignmentTargetInvalid, PoolCarriesNoAssigneeMessage);
+
+            case TaskAssignmentTarget.Offered:
+                if (!allowOffered)
+                {
+                    return (TaskReasonCodes.AssignmentTargetInvalid, RequestNotAvailableMessage);
+                }
+
+                if (IsMissing(offeredToUserId))
+                {
+                    return (TaskReasonCodes.AssignmentTargetInvalid, OfferedToRequiredMessage);
+                }
+
+                // Nobody holds a request until it is accepted, and it is not pooled either.
+                return IsMissing(assigneeUserId) && IsMissing(poolPositionId)
+                    ? null
+                    : (TaskReasonCodes.AssignmentTargetInvalid, RequestCarriesNoHolderMessage);
 
             default:
                 return (TaskReasonCodes.AssignmentTargetInvalid, "Unsupported assignment target.");

@@ -1188,9 +1188,9 @@ public sealed class TaskPlanCalendarHttpMongoTests : IClassFixture<PlanCalendarM
                 PlanTaskItemCommand command => await new PlanTaskItemHandler(
                     tasks, new TaskLifecycleService(), currentUser,
                     services.GetRequiredService<IWorkingHoursProvider>(),
-                    services.GetRequiredService<ICalendarMeetingReader>()).Handle(command, ct),
+                    services.GetRequiredService<ICalendarMeetingReader>(), writeGate: TaskWriteGateDoubles.Open).Handle(command, ct),
                 UnplanTaskItemCommand command => await new UnplanTaskItemHandler(
-                    tasks, new TaskLifecycleService(), currentUser).Handle(command, ct),
+                    tasks, new TaskLifecycleService(), currentUser, writeGate: TaskWriteGateDoubles.Open).Handle(command, ct),
                 GetMyWorkCalendarQuery query => await new GetMyWorkCalendarHandler(
                     tasks, new TaskLifecycleService(),
                     services.GetRequiredService<IWorkingHoursProvider>(),

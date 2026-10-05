@@ -543,7 +543,7 @@ public sealed class ReviewMeetingGateTests
                 new FakeChecklistRunRepository(), new TaskChecklistService(), new FakeWorkflowTransitionGate(),
                 new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(TypeOf(task, requirement)), new FakeTaskNotificationService(),
                 new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
-                new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance, reviewMeetingGate)
+                new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance, TaskWriteGateDoubles.Open, reviewMeetingGate)
             .Handle(
                 new TransitionTaskItemCommand(task.Id, target, new TaskTransitionRequest(task.Version, null, null), "corr"),
                 CancellationToken.None);
@@ -554,7 +554,7 @@ public sealed class ReviewMeetingGateTests
         FakeTaskApprovalService? states = null)
         => new SubmitTaskForReviewHandler(
                 tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
-                reviews, states ?? new FakeTaskApprovalService(), NullLogger<SubmitTaskForReviewHandler>.Instance,
+                reviews, states ?? new FakeTaskApprovalService(), NullLogger<SubmitTaskForReviewHandler>.Instance, TaskWriteGateDoubles.Open,
                 new FakeTaskTypeRepository(TypeOf(task, requirement)), reviewMeetingGate)
             .Handle(
                 new SubmitTaskForReviewCommand(task.Id, new TaskTransitionRequest(task.Version, null, null), "corr"),

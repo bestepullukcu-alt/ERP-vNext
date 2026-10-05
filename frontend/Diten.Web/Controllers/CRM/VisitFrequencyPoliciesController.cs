@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Diten.Web.Security;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,10 +44,12 @@ public sealed class VisitFrequencyPoliciesController : Controller
 
     private const string ViewRoot = "~/Views/CRM/VisitFrequencyPolicies";
     private const string PoliciesBase = "/api/crm/visit-frequency-policies";
+    private const string BusinessUnitSetCode = "business-unit";
 
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly ILogger<VisitFrequencyPoliciesController> _logger;
+    private readonly CrmReferenceSetReader _referenceSets;
 
     public VisitFrequencyPoliciesController(
         HttpClient httpClient,
@@ -57,6 +60,7 @@ public sealed class VisitFrequencyPoliciesController : Controller
         _gatewayUrl = configuration["GatewayUrl"]
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _logger = logger;
+        _referenceSets = new CrmReferenceSetReader(httpClient, _gatewayUrl, logger);
     }
 
     // ---------------- Page ----------------
@@ -188,9 +192,11 @@ public sealed class VisitFrequencyPoliciesController : Controller
     public Task<IActionResult> MdmProducts(CancellationToken ct) =>
         ProxyGetAsync($"/api/mdm/products{Request.QueryString}", ct, "mdm.products.read", ReadFallback);
 
-    /// <summary>business-unit context picker. Reads the MOD-0048 PUBLISHED business-unit value set (tenant scope_key) —
-    /// the same consumer call the Territory + Campaign forms make. The stored <c>BusinessUnit</c> is a value CODE (a
-    /// string), not a GUID, so the editor keeps the picked value code. An unpublished set degrades to an empty list.</summary>
+    /// <summary>business-unit context picker. Reads the MOD-0048 PUBLISHED business-unit value set of the caller's tenant —
+    /// the same set the Territory + Campaign forms read. The stored <c>BusinessUnit</c> is a value CODE (a string), not a
+    /// GUID, so the editor keeps the picked value code. An unpublished set degrades to an empty list.
+    /// <para>WP-BRD-TENANT-CRM-SETS — read through the shared <see cref="CrmReferenceSetReader"/> (consumable-sets route
+    /// first, so every tenant role gets the picker; the old consumer path with the JWT tenant only for an unlisted set).</para></summary>
     [HttpGet("api/business-units")]
     public async Task<IActionResult> BusinessUnits(CancellationToken ct)
     {
@@ -199,8 +205,9 @@ public sealed class VisitFrequencyPoliciesController : Controller
         if (string.IsNullOrWhiteSpace(tenantId))
             return StatusCode(StatusCodes.Status401Unauthorized, new { message = "Tenant context is required." });
 
-        var path = $"/api/v1/reference-data/sets/business-unit/published-values?scope_key={Uri.EscapeDataString(tenantId)}";
-        return await ToProxyResultAsync(await SendGatewayAsync(HttpMethod.Get, path, null, ct), ct);
+        var response = await _referenceSets.ReadAsync(
+            BusinessUnitSetCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), tenantId, ct);
+        return await ToProxyResultAsync(response, ct);
     }
 
     // ---------------- helpers ----------------

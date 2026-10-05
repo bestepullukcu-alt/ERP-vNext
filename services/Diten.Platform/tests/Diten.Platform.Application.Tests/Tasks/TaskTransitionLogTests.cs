@@ -174,7 +174,7 @@ public sealed class TaskTransitionLogTests
                         // the honest arrangement.
                         new FakePositionAssignmentRepository(), new FakePositionRepository(),
                         new FakeOrganizationUnitRepository(),
-                        new FakeTaskNotificationService(), NullLogger<InquireTaskItemHandler>.Instance)
+                        new FakeTaskNotificationService(), NullLogger<InquireTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new InquireTaskItemCommand(
                     task.Id,
@@ -454,6 +454,30 @@ public sealed class TaskTransitionLogTests
     //
     // One real handler per kind. Each returns the entry the handler wrote, or null if it wrote none.
 
+    /// <summary>BL-509 — an open request sent by <see cref="TaskTestData.Me"/>, addressed to
+    /// <paramref name="offeredTo"/> (or to nobody: declined / withdrawn).</summary>
+    private static TaskItem RequestTask(Guid? offeredTo) => new()
+    {
+        TenantId = TaskTestData.Tenant,
+        Title = "Review the stability report",
+        AssignmentTarget = TaskAssignmentTarget.Offered,
+        OfferedToUserId = offeredTo,
+        IsRequest = true,
+        CreatedByUserId = TaskTestData.Me,
+        OrganizationUnitId = AssignmentWorld.HomeUnit,
+        CreatedBy = "wc1"
+    };
+
+    /// <summary>The REAL request service over the two-company world; every account is switched on.</summary>
+    private static TaskRequestService Requests(Guid actor) => new(
+        AssignmentWorld.SeatRepository(),
+        AssignmentWorld.PositionRepository(),
+        AssignmentWorld.UnitRepository(),
+        new FakeTaskNotificationRecipientResolver(
+            AssignmentWorld.EveryPerson.Select(person => (person, $"{person:N}@tenant.example")).ToArray()),
+        TaskActors.PermitAll(),
+        new FakeCurrentUserContext(actor));
+
     private static readonly IReadOnlyDictionary<TaskTransitionKind, Func<Task<TaskTransition?>>> Scenarios =
         new Dictionary<TaskTransitionKind, Func<Task<TaskTransition?>>>
         {
@@ -499,7 +523,7 @@ public sealed class TaskTransitionLogTests
                 task.PlannedDate = DateTimeOffset.UtcNow.AddDays(2);
                 var repository = new FakeTaskItemRepository(task);
                 await new UnplanTaskItemHandler(
-                        repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me))
+                        repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me), writeGate: TaskWriteGateDoubles.Open)
                     .Handle(
                         new UnplanTaskItemCommand(task.Id, new TaskTransitionRequest(task.Version, null, null), "corr"),
                         CancellationToken.None);
@@ -530,7 +554,7 @@ public sealed class TaskTransitionLogTests
                         // the honest arrangement.
                         new FakePositionAssignmentRepository(), new FakePositionRepository(),
                         new FakeOrganizationUnitRepository(),
-                        new FakeTaskNotificationService(), NullLogger<InquireTaskItemHandler>.Instance)
+                        new FakeTaskNotificationService(), NullLogger<InquireTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
                     .Handle(
                         new InquireTaskItemCommand(
                             task.Id, new InquireTaskItemRequest(task.Version, "Blocked on procurement"), "corr"),
@@ -548,7 +572,7 @@ public sealed class TaskTransitionLogTests
                         new FakeCurrentUserContext(TaskTestData.Me),
                         new FakeTaskReviewService(),
                         new FakeTaskApprovalService(),
-                        NullLogger<SubmitTaskForReviewHandler>.Instance)
+                        NullLogger<SubmitTaskForReviewHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
                     .Handle(
                         new SubmitTaskForReviewCommand(
                             task.Id, new TaskTransitionRequest(task.Version, null, null), "corr"),
@@ -597,7 +621,7 @@ public sealed class TaskTransitionLogTests
                         repository,
                         new FakeTaskAssignmentRepository(),
                         new FakeCurrentUserContext(TaskTestData.Me),
-                        new FakeTenantContext(TaskTestData.Tenant))
+                        new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
                     .Handle(
                         new ReleaseTaskItemCommand(
                             task.Id, new TaskTransitionRequest(task.Version, null, null), "corr"),
@@ -618,6 +642,49 @@ public sealed class TaskTransitionLogTests
                 await Return(repository, task, "Not my remit");
                 return Last(repository);
             },
+            // BL-509 — the task request: addressed again by its sender, declined by the person asked, withdrawn.
+            [TaskTransitionKind.Offered] = async () =>
+            {
+                var task = RequestTask(offeredTo: null);
+                var repository = new FakeTaskItemRepository(task);
+                await new OfferTaskItemHandler(
+                        repository, new FakeTaskAssignmentRepository(), Requests(TaskTestData.Me),
+                        new AlwaysAdmitReadAccessPolicy(),
+                        new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant))
+                    .Handle(
+                        new OfferTaskItemCommand(
+                            task.Id, new OfferTaskItemRequest(task.Version, AssignmentWorld.ForeignPeer), "corr"),
+                        CancellationToken.None);
+                return Last(repository);
+            },
+            [TaskTransitionKind.Declined] = async () =>
+            {
+                var task = RequestTask(offeredTo: AssignmentWorld.ForeignPeer);
+                var repository = new FakeTaskItemRepository(task);
+                await new DeclineTaskOfferHandler(
+                        repository, new FakeTaskAssignmentRepository(), Requests(AssignmentWorld.ForeignPeer),
+                        new AlwaysAdmitReadAccessPolicy(),
+                        new FakeCurrentUserContext(AssignmentWorld.ForeignPeer),
+                        new FakeTenantContext(TaskTestData.Tenant))
+                    .Handle(
+                        new DeclineTaskOfferCommand(
+                            task.Id, new DeclineTaskOfferRequest(task.Version, "No capacity this month"), "corr"),
+                        CancellationToken.None);
+                return Last(repository);
+            },
+            [TaskTransitionKind.Withdrawn] = async () =>
+            {
+                var task = RequestTask(offeredTo: AssignmentWorld.ForeignPeer);
+                var repository = new FakeTaskItemRepository(task);
+                await new WithdrawTaskOfferHandler(
+                        repository, new FakeTaskAssignmentRepository(), Requests(TaskTestData.Me),
+                        new AlwaysAdmitReadAccessPolicy(),
+                        new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant))
+                    .Handle(
+                        new WithdrawTaskOfferCommand(task.Id, new WithdrawTaskOfferRequest(task.Version), "corr"),
+                        CancellationToken.None);
+                return Last(repository);
+            },
             // BL-439 — the person a parked task is asking answers it.
             [TaskTransitionKind.InquiryAnswered] = async () =>
             {
@@ -629,7 +696,7 @@ public sealed class TaskTransitionLogTests
                         repository, repository.Transitions, new TaskLifecycleService(),
                         new FakeCurrentUserContext(TaskTestData.Other), new FakeWorkflowTransitionGate(),
                         new FakeTaskDependencyRepository(), new FakeTaskNotificationService(),
-                        NullLogger<AnswerInquiryHandler>.Instance)
+                        NullLogger<AnswerInquiryHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
                     .Handle(
                         new AnswerInquiryCommand(task.Id, new AnswerInquiryRequest(task.Version, "Lot 42"), "corr"),
                         CancellationToken.None);
@@ -647,7 +714,7 @@ public sealed class TaskTransitionLogTests
                 tasks,
                 new FakeTaskAssignmentRepository(),
                 new FakeCurrentUserContext(TaskTestData.Me),
-                new FakeTenantContext(TaskTestData.Tenant))
+                new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new AcceptTaskItemCommand(task.Id, new TaskTransitionRequest(task.Version, null, null), "corr"),
                 CancellationToken.None);
@@ -655,7 +722,7 @@ public sealed class TaskTransitionLogTests
     private static Task<Response<PlanTaskItemResultDto>> Plan(FakeTaskItemRepository tasks, TaskItem task)
         => new PlanTaskItemHandler(
                 tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
-                new FakeWorkingHoursProvider(), new FakeCalendarMeetingReader())
+                new FakeWorkingHoursProvider(), new FakeCalendarMeetingReader(), writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new PlanTaskItemCommand(
                     task.Id,
@@ -678,7 +745,7 @@ public sealed class TaskTransitionLogTests
                 new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
                 new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                 new FakeTaskAttachmentRepository(),
-                NullLogger<TransitionTaskItemHandler>.Instance)
+                NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new TransitionTaskItemCommand(
                     task.Id, target, new TaskTransitionRequest(task.Version, null, null), "corr"),
@@ -692,7 +759,7 @@ public sealed class TaskTransitionLogTests
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeTenantContext(TaskTestData.Tenant),
                 new FakeTaskNotificationService(),
-                NullLogger<ClaimTaskItemHandler>.Instance)
+                NullLogger<ClaimTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new ClaimTaskItemCommand(task.Id, new ClaimTaskItemRequest(task.Version), "corr"),
                 CancellationToken.None);
@@ -702,7 +769,7 @@ public sealed class TaskTransitionLogTests
                 tasks,
                 new FakeTaskAssignmentRepository(),
                 new FakeCurrentUserContext(TaskTestData.Me),
-                new FakeTenantContext(TaskTestData.Tenant))
+                new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new ReturnTaskItemCommand(task.Id, new ReturnTaskItemRequest(task.Version, reason), "corr"),
                 CancellationToken.None);
@@ -722,7 +789,7 @@ public sealed class TaskTransitionLogTests
                     TaskTestData.Me,
                     UnitId),
                 new FakeCurrentUserContext(TaskTestData.Me),
-                new FakeTenantContext(TaskTestData.Tenant))
+                new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new ReassignTaskItemCommand(
                     task.Id, new ReassignTaskItemRequest(task.Version, newAssignee, reason), "corr"),
@@ -746,7 +813,7 @@ public sealed class TaskTransitionLogTests
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeTenantContext(TaskTestData.Tenant),
                 NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll())
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll(), writeGate: TaskWriteGateDoubles.Open)
             .Handle(new CreateTaskItemCommand(NewTaskRequest(), "corr"), CancellationToken.None);
 
     private static UpdateTaskItemHandler UpdateHandler(FakeTaskItemRepository tasks)
@@ -758,7 +825,7 @@ public sealed class TaskTransitionLogTests
             new FakeTaskApprovalService(),
             new FakeTaskReviewService(),
             NullLogger<UpdateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), writeGate: TaskWriteGateDoubles.Open);
 
     /// <summary>An edit that switches the review requirement OFF — the one path that moves a task out of
     /// PendingReview without its holder doing anything.</summary>

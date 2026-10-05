@@ -9,11 +9,11 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 
 | iz | yol | tür | belirteç |
 |---|---|---|---|
-| esbp-denetim-deposu | aday | yazıcı | IEnterpriseStrategyAuditSink |
+| esbp-denetim-deposu | aday | yazıcı | IEnterpriseStrategyAuditSink.WriteAsync/EnterpriseStrategyAuditExtensions.WriteMutationAsync |
 
 Ölçüm notları (2026-10-02; `yol = aday` kabul edilmemiş demektir ve o ize giden komut borçta kalır):
 
-* **esbp-denetim-deposu** — Kendi Mongo `AuditEvent` koleksiyonu; kayıtta KİRACI KİMLİĞİ ve sonuç yok; okuma ucu yalnız Project için.
+> **esbp-denetim-deposu** — Kendi Mongo `AuditEvent` koleksiyonu; kayıtta KİRACI KİMLİĞİ ve sonuç yok; okuma ucu yalnız Project için.
 
 ## İstisnalar
 

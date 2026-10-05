@@ -306,9 +306,9 @@ public sealed class TaskPersonalOverlayTests
             var user = new FakeCurrentUserContext(actingAs ?? TaskTestData.Me);
             var tenant = new FakeTenantContext(TaskTestData.Tenant);
             var mediator = new DirectMediator(
-                new AddTaskPersonalNoteHandler(_tasks, Overlays, user, tenant),
+                new AddTaskPersonalNoteHandler(_tasks, Overlays, user, tenant, writeGate: TaskWriteGateDoubles.Open),
                 new DeleteTaskPersonalNoteHandler(Overlays, user),
-                new SetTaskSnoozeHandler(_tasks, Overlays, user, tenant));
+                new SetTaskSnoozeHandler(_tasks, Overlays, user, tenant, writeGate: TaskWriteGateDoubles.Open));
 
             var correlation = new CorrelationContext();
             correlation.SetCorrelationId("corr");

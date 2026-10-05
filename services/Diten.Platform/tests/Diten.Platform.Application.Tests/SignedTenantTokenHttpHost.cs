@@ -112,8 +112,35 @@ internal sealed class SignedTenantTokenHttpHost : IDisposable
         return await client.PostAsync(path, new StringContent(json, Encoding.UTF8, "application/json"));
     }
 
+    /// <summary>
+    /// GETs <paramref name="path"/>; no <c>Authorization</c> header when <paramref name="bearerToken"/> is null, and an
+    /// <c>X-Tenant-Id</c> header only when <paramref name="tenantHeader"/> is given (WP-BRD-TENANT-CRM-SETS).
+    /// </summary>
+    public async Task<HttpResponseMessage> GetAsync(string path, string? bearerToken, string? tenantHeader = null)
+    {
+        var client = _server.CreateClient();
+        if (bearerToken is not null)
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+        }
+
+        if (tenantHeader is not null)
+        {
+            client.DefaultRequestHeaders.TryAddWithoutValidation("X-Tenant-Id", tenantHeader);
+        }
+
+        return await client.GetAsync(path);
+    }
+
     /// <summary>A tenant-user token as AuthService mints it, holding exactly the permissions named.</summary>
     public static string TenantUserToken(Guid tenant, Guid user, params string[] permissions)
+        => Token("tenant_user", tenant, user, permissions);
+
+    /// <summary>
+    /// A signed token with the given <c>actor_type</c> and, when <paramref name="tenant"/> is not null, a <c>tenant_id</c>
+    /// (a platform token carries the platform tenant, …0001, exactly as AuthService mints it).
+    /// </summary>
+    public static string Token(string actorType, Guid? tenant, Guid user, params string[] permissions)
     {
         var claims = new List<Claim>
         {
@@ -121,10 +148,14 @@ internal sealed class SignedTenantTokenHttpHost : IDisposable
             new(JwtRegisteredClaimNames.Email, "signed.host@tenant.example"),
             new(JwtRegisteredClaimNames.GivenName, "Signed"),
             new(JwtRegisteredClaimNames.FamilyName, "Host"),
-            new("actor_type", "tenant_user"),
-            new("tenant_id", tenant.ToString()),
+            new("actor_type", actorType),
             new("pwd_change_required", "false")
         };
+        if (tenant is { } tenantId)
+        {
+            claims.Add(new Claim("tenant_id", tenantId.ToString()));
+        }
+
         claims.AddRange(permissions.Select(permission => new Claim("permission", permission)));
 
         var token = new JwtSecurityToken(

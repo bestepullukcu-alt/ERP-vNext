@@ -9,19 +9,19 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 
 | iz | yol | tür | belirteç |
 |---|---|---|---|
-| crm-contact-yayinci | aday | yazıcı | IContactAuditPublisher |
-| crm-account-yayinci | aday | yazıcı | IAccountAuditPublisher |
-| crm-content-yayinci | aday | yazıcı | IContentCompositionAuditPublisher |
-| crm-knowledge-yayinci | aday | yazıcı | IKnowledgeConceptAuditPublisher |
-| crm-territory-yayinci | aday | yazıcı | ITerritoryLifecycleAuditPublisher |
+| crm-contact-yayinci | aday | yazıcı | IContactAuditPublisher.PublishAsync |
+| crm-account-yayinci | aday | yazıcı | IAccountAuditPublisher.PublishAsync |
+| crm-content-yayinci | aday | yazıcı | IContentCompositionAuditPublisher.PublishAsync |
+| crm-knowledge-yayinci | aday | yazıcı | IKnowledgeConceptAuditPublisher.PublishAsync |
+| crm-territory-yayinci | aday | yazıcı | ITerritoryLifecycleAuditPublisher.PublishAsync |
 
 Ölçüm notları (2026-10-02; `yol = aday` kabul edilmemiş demektir ve o ize giden komut borçta kalır):
 
-* **crm-contact-yayinci** — Varsayılan kayıt: yalnız uygulama günlüğü (`Logging…AuditPublisher`); `Crm:Audit:Mode=http` hiçbir ayar dosyasında yok.
-* **crm-account-yayinci** — Aynı: varsayılan yalnız uygulama günlüğü.
-* **crm-content-yayinci** — Aynı: varsayılan yalnız uygulama günlüğü.
-* **crm-knowledge-yayinci** — Aynı: varsayılan yalnız uygulama günlüğü.
-* **crm-territory-yayinci** — Yalnız uygulama günlüğü; HTTP uygulaması yok.
+> **crm-contact-yayinci** — Varsayılan kayıt: yalnız uygulama günlüğü (`Logging…AuditPublisher`); `Crm:Audit:Mode=http` hiçbir ayar dosyasında yok.
+> **crm-account-yayinci** — Aynı: varsayılan yalnız uygulama günlüğü.
+> **crm-content-yayinci** — Aynı: varsayılan yalnız uygulama günlüğü.
+> **crm-knowledge-yayinci** — Aynı: varsayılan yalnız uygulama günlüğü.
+> **crm-territory-yayinci** — Yalnız uygulama günlüğü; HTTP uygulaması yok.
 
 ## İstisnalar
 

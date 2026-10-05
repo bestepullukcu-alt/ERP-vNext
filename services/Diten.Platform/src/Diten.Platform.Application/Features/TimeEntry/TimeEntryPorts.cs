@@ -58,6 +58,14 @@ public interface ITimeEntryTaskGateway
     /// apart, so a time row can never be used to probe for another team's task ids.</summary>
     Task<IReadOnlySet<Guid>> ReadableTaskIdsAsync(Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default);
 
+    /// <summary>
+    /// WP-WCN-TASK-REQUEST-01 FIX2 — which of these task ids <paramref name="userId"/> may put NEW time on: the readable
+    /// ones (<see cref="ReadableTaskIdsAsync"/>, the same absent-means-unknown answer) minus MOD-0024's own write rules of
+    /// a request — the person a request waits on answers it first, and the sender of an accepted request does not direct
+    /// its holder's work (<c>TaskRequestPolicy</c>).
+    /// </summary>
+    Task<IReadOnlySet<Guid>> TimeWritableTaskIdsAsync(Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default);
+
     /// <summary>T2a — title and lifecycle of the tasks among <paramref name="taskIds"/> that <paramref name="userId"/> may
     /// READ, in ONE batched read (a week asks once, never once per task). The same rule as
     /// <see cref="ReadableTaskIdsAsync"/>: a task the person cannot read is absent, so its title never leaves the server.</summary>

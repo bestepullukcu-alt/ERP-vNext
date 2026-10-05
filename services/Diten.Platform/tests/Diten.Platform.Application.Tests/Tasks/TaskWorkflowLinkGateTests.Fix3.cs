@@ -408,11 +408,11 @@ public sealed partial class TaskWorkflowLinkGateTests
         }
 
         public Task<Response<NoContent>> DeleteAsync() =>
-            new DeleteTaskItemHandler(_tasks, WithdrawApprovals, WithdrawReviews)
+            new DeleteTaskItemHandler(_tasks, TaskWriteGateDoubles.Open, WithdrawApprovals, WithdrawReviews)
                 .Handle(new DeleteTaskItemCommand(Task.Id, "corr-delete"), CancellationToken.None);
 
         public Task<Response<BulkDeleteTaskItemResultDto>> BulkDeleteAsync(params Guid[] ids) =>
-            new BulkDeleteTaskItemHandler(_tasks, WithdrawApprovals, WithdrawReviews,
+            new BulkDeleteTaskItemHandler(_tasks, TaskWriteGateDoubles.Open, WithdrawApprovals, WithdrawReviews,
                     NullLogger<BulkDeleteTaskItemHandler>.Instance)
                 .Handle(new BulkDeleteTaskItemCommand(new BulkDeleteTaskItemRequest(ids), "corr-bulk"), CancellationToken.None);
 
@@ -422,16 +422,16 @@ public sealed partial class TaskWorkflowLinkGateTests
             return handover switch
             {
                 "return" => new ReturnTaskItemHandler(_tasks, new FakeTaskAssignmentRepository(), CurrentUser, Tenant,
-                        WithdrawReviews)
+                        TaskWriteGateDoubles.Open, reviews: WithdrawReviews)
                     .Handle(new ReturnTaskItemCommand(Task.Id, new ReturnTaskItemRequest(version, "Not mine"), "corr-return"),
                         CancellationToken.None),
                 "reassign" => new ReassignTaskItemHandler(_tasks, new FakeTaskAssignmentRepository(),
-                        TaskAssignmentGuards.AdmitAll(), CurrentUser, Tenant, WithdrawReviews)
+                        TaskAssignmentGuards.AdmitAll(), CurrentUser, Tenant, TaskWriteGateDoubles.Open, WithdrawReviews)
                     .Handle(new ReassignTaskItemCommand(Task.Id,
                         new ReassignTaskItemRequest(version, TaskTestData.Other, "Their skill"), "corr-reassign"),
                         CancellationToken.None),
                 "release" => new ReleaseTaskItemHandler(_tasks, new FakeTaskAssignmentRepository(), CurrentUser, Tenant,
-                        WithdrawReviews)
+                        TaskWriteGateDoubles.Open, WithdrawReviews)
                     .Handle(new ReleaseTaskItemCommand(Task.Id, new TaskTransitionRequest(version, null, null), "corr-release"),
                         CancellationToken.None),
                 _ => throw new ArgumentOutOfRangeException(nameof(handover))
@@ -439,7 +439,7 @@ public sealed partial class TaskWorkflowLinkGateTests
         }
 
         public Task<Response<NoContent>> AcceptAsAsync(Guid user) =>
-            new AcceptTaskItemHandler(_tasks, new FakeTaskAssignmentRepository(), new FakeCurrentUserContext(user), Tenant)
+            new AcceptTaskItemHandler(_tasks, new FakeTaskAssignmentRepository(), new FakeCurrentUserContext(user), Tenant, TaskWriteGateDoubles.Open)
                 .Handle(new AcceptTaskItemCommand(Task.Id, new TaskTransitionRequest(Stored().Version, null, null), "corr-accept"),
                     CancellationToken.None);
 
@@ -448,7 +448,7 @@ public sealed partial class TaskWorkflowLinkGateTests
         public Task<Response<NoContent>> SubmitAsAsync(
             Guid user, ITaskReviewService starter, ILogger<SubmitTaskForReviewHandler>? logger = null) =>
             new SubmitTaskForReviewHandler(_tasks, new TaskLifecycleService(), new FakeCurrentUserContext(user), starter,
-                    Approvals, logger ?? NullLogger<SubmitTaskForReviewHandler>.Instance)
+                    Approvals, logger ?? NullLogger<SubmitTaskForReviewHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
                 .Handle(new SubmitTaskForReviewCommand(Task.Id, new TaskTransitionRequest(Stored().Version, null, null), "corr-submit"),
                     CancellationToken.None);
     }

@@ -176,6 +176,8 @@ public static class DependencyInjection
             Application.Common.IUserDisplayNameResolver,
             Auth.AuthUserDisplayNameClient>();
 
+        // WP-BRD-TENANT-CRM-SETS — set codes the Platform does not list as consumable, remembered per process.
+        services.AddSingleton<ConsumableReferenceSetRouting>();
         services.AddHttpClient<IReferenceDataValidator, GatewayReferenceDataValidator>();
         // MOD-0150 FU04 — the same Gateway validator also reads per-value attributes (relationship-type metadata).
         services.AddScoped<Application.Common.ReferenceValidation.IReferenceMetadataReader>(
