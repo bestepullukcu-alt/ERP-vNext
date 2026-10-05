@@ -11,7 +11,7 @@ info:
   x-owner-service: Diten.InventoryService (MOD-0174, in-process with MOD-0173)
   x-changelog:
     - "1.0.0 — Wave-0 frozen: getLot, listLots, createLot, getSerial, getGenealogy, validateTrace (paths, parameters, schemas and enums unchanged in 1.1.0)."
-    - "1.1.0 — additive (WP-0174-P1, accepted proposal docs/analysis/contracts/drafts/trace-v1.1-proposal.md): LotRef / SerialRef / CreateLotRequest optional members; listLots optional filters + paging; getGenealogy optional depth; validateTrace typed results; new operations updateLot, changeLotStatus, getLotHistory, getLotDetail, listSerials, checkGs1Code, linkGenealogy, and the typed-lot migration operations (implemented by slice P4). contractVersion stays v1."
+    - "1.1.0 — additive (WP-0174-P1, accepted proposal drafts/trace-v1.1-proposal.md next to this file): LotRef / SerialRef / CreateLotRequest optional members; listLots optional filters + paging; getGenealogy optional depth; validateTrace typed results; new operations updateLot, changeLotStatus, getLotHistory, getLotDetail, listSerials, checkGs1Code, linkGenealogy, and the typed-lot migration operations (implemented by slice P4). contractVersion stays v1."
     - "1.1.0 behaviour changes — B-1: business key Tenant+SKU+LotNumber (the same lotNumber may exist twice under one itemId; LOT_ALREADY_EXISTS is per SKU). B-2: createLot without skuId+skuLevel → 422 LOT_SKU_REQUIRED (CT-D2). B-3: Expired is set automatically when expiryDate < today and can never be set or left by a caller."
   x-decisions: [DEC-INV-14, 18]
 servers: [{ url: /api/trace }]
