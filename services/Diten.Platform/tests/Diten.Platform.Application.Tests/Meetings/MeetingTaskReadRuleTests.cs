@@ -243,6 +243,137 @@ public sealed class MeetingTaskReadRuleTests
         Assert.Equal(lowest.Id, Assert.Single(answer.Items).Id);
     }
 
+    // ── FIX6 (item 4 + CT's NOT RED cases) — the edges of the chunked search ───────────────────────────────────
+
+    /// <summary>FIX6 (item 4). Exactly the ceiling's worth of matches, none readable: every match was judged, so the
+    /// search was complete — not truncated.</summary>
+    [Fact]
+    public async Task Exactly_the_ceilings_worth_of_unreadable_matches_is_not_truncated()
+    {
+        var hidden = Hidden(GetTaskLinkCandidatesHandler.ChunkSize * GetTaskLinkCandidatesHandler.MaxChunks, DateTimeOffset.UtcNow.AddDays(-1));
+        var answer = await PickAsync(new FakeTaskItemRepository(hidden));
+
+        Assert.Empty(answer.Items);
+        Assert.False(answer.Truncated);
+    }
+
+    /// <summary>FIX6 (item 4) — CT's T1 (truncated computed without asking whether the limit was reached). The LAST
+    /// allowed chunk yields exactly <c>limit</c> readable tasks with matches still unjudged behind it: the answer is full,
+    /// not truncated.</summary>
+    [Fact]
+    public async Task A_full_answer_found_in_the_last_allowed_chunk_is_not_truncated()
+    {
+        var start = DateTimeOffset.UtcNow.AddDays(-30);
+        var chunk = GetTaskLinkCandidatesHandler.ChunkSize;
+        var newestHidden = Hidden(chunk * (GetTaskLinkCandidatesHandler.MaxChunks - 1), start.AddDays(10));
+        var lastChunkReadable = Enumerable.Range(0, 20)
+            .Select(i => NewTask(holder: TaskTestData.Me, creator: TaskTestData.Me, title: $"Okunur {i:00}", createdAt: start.AddDays(5).AddSeconds(i)))
+            .ToArray();
+        var lastChunkHidden = Hidden(chunk - 20, start.AddDays(4));
+        var beyond = Hidden(50, start);                                   // unjudged, behind the ceiling
+        var answer = await PickAsync(new FakeTaskItemRepository([.. newestHidden, .. lastChunkReadable, .. lastChunkHidden, .. beyond]));
+
+        Assert.Equal(20, answer.Items.Count);
+        Assert.False(answer.Truncated);
+    }
+
+    /// <summary>FIX6 (item 4). At the ceiling with matches left and FEWER than <c>limit</c> readable: truncated.</summary>
+    [Fact]
+    public async Task Fewer_than_the_limit_at_the_ceiling_with_matches_left_is_truncated()
+    {
+        var start = DateTimeOffset.UtcNow.AddDays(-30);
+        var some = Enumerable.Range(0, 3)
+            .Select(i => NewTask(holder: TaskTestData.Me, creator: TaskTestData.Me, title: $"Az okunur {i}", createdAt: start.AddDays(20).AddSeconds(i)))
+            .ToArray();
+        var hidden = Hidden(GetTaskLinkCandidatesHandler.ChunkSize * GetTaskLinkCandidatesHandler.MaxChunks, start.AddDays(10));
+        var beyond = Hidden(1, start);
+        var answer = await PickAsync(new FakeTaskItemRepository([.. some, .. hidden, .. beyond]));
+
+        Assert.Equal(3, answer.Items.Count);
+        Assert.True(answer.Truncated);
+    }
+
+    /// <summary>FIX6 — CT's T2 (the chunk loop not stopping once <c>limit</c> readable tasks are found). The first chunk
+    /// holds the limit: the read rule is asked ONCE.</summary>
+    [Fact]
+    public async Task A_first_chunk_that_fills_the_limit_asks_the_read_rule_once()
+    {
+        var start = DateTimeOffset.UtcNow.AddDays(-30);
+        var readable = Enumerable.Range(0, GetTaskLinkCandidatesHandler.ChunkSize)
+            .Select(i => NewTask(holder: TaskTestData.Me, creator: TaskTestData.Me, title: $"Okunur {i:000}", createdAt: start.AddDays(5).AddSeconds(i)))
+            .ToArray();
+        var tasks = new FakeTaskItemRepository([.. readable, .. Hidden(GetTaskLinkCandidatesHandler.ChunkSize * 3, start)]);
+        var counting = new CountingReadRule(RealTaskReadRule.Over(tasks, TaskTestData.Me));
+
+        var answer = (await new GetTaskLinkCandidatesHandler(tasks, counting, new FakeCurrentUserContext(TaskTestData.Me))
+            .Handle(new GetTaskLinkCandidatesQuery(null, 20, Corr), CancellationToken.None)).Data!;
+
+        Assert.Equal(20, answer.Items.Count);
+        Assert.Equal(1, counting.BatchReads);
+    }
+
+    /// <summary>FIX6 — CT's T5 (the cancelled filter removed). A cancelled task the caller CAN read is not offered.</summary>
+    [Fact]
+    public async Task A_cancelled_task_is_never_offered_even_when_readable()
+    {
+        var cancelled = NewTask(holder: TaskTestData.Me, creator: TaskTestData.Me, title: "İptal edilmiş iş");
+        cancelled.Lifecycle = TaskLifecycle.Cancelled;
+        var open = NewTask(holder: TaskTestData.Me, creator: TaskTestData.Me, title: "Açık iş");
+        var answer = await PickAsync(new FakeTaskItemRepository(cancelled, open));
+
+        Assert.Equal(open.Id, Assert.Single(answer.Items).Id);
+    }
+
+    /// <summary>FIX6 (item 3) — every AgendaItemDto is built through MeetingAgendaCodes.TextFor, in production source: a
+    /// second construction that took the stored text would bring a carried line's stored title back.</summary>
+    [Fact]
+    public void Every_agenda_item_dto_is_built_through_TextFor()
+    {
+        var root = Path.Combine(RepoPaths.Root(), "services", "Diten.Platform", "src");
+        var constructions = Directory.EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .SelectMany(path => System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(path), @"new AgendaItemDto\(([^;]*?)\)\s*[,;)]",
+                    System.Text.RegularExpressions.RegexOptions.Singleline)
+                .Select(m => (File: Path.GetFileName(path), Args: m.Groups[1].Value)))
+            .ToList();
+
+        Assert.True(constructions.Count >= 2, "the AgendaItemDto constructions were not found — the guard would pass empty");
+        Assert.All(constructions, c => Assert.True(
+            c.Args.Contains("MeetingAgendaCodes.TextFor(", StringComparison.Ordinal),
+            $"{c.File} builds an AgendaItemDto without MeetingAgendaCodes.TextFor"));
+    }
+
+    private static async Task<TaskLinkCandidatesDto> PickAsync(FakeTaskItemRepository tasks) =>
+        (await new GetTaskLinkCandidatesHandler(tasks, RealTaskReadRule.Over(tasks, TaskTestData.Me), new FakeCurrentUserContext(TaskTestData.Me))
+            .Handle(new GetTaskLinkCandidatesQuery(null, 20, Corr), CancellationToken.None)).Data!;
+
+    private static TaskItem[] Hidden(int count, DateTimeOffset newestAt) => Enumerable.Range(0, count)
+        .Select(i => NewTask(holder: TaskTestData.Other, creator: TaskTestData.Other, title: $"Gizli {i:0000}", createdAt: newestAt.AddSeconds(-i)))
+        .ToArray();
+
+    /// <summary>The production read rule, counting its batch reads.</summary>
+    private sealed class CountingReadRule(ITaskReadAccessPolicy inner) : ITaskReadAccessPolicy
+    {
+        public int BatchReads { get; private set; }
+
+        public Task<bool> CanReadAsync(TaskItem task, Guid actorUserId, CancellationToken ct) => inner.CanReadAsync(task, actorUserId, ct);
+
+        public Task<IReadOnlySet<Guid>> ResolveDataLegCandidatesAsync(TaskItem task, CancellationToken ct) =>
+            inner.ResolveDataLegCandidatesAsync(task, ct);
+
+        public Task<IReadOnlySet<Guid>> ReadableTaskIdsAsync(IReadOnlyCollection<TaskItem> tasks, Guid actorUserId, CancellationToken ct)
+        {
+            BatchReads++;
+            return inner.ReadableTaskIdsAsync(tasks, actorUserId, ct);
+        }
+
+        public Task<TaskReadGround> ReadGroundAsync(TaskItem task, Guid actorUserId, CancellationToken ct) =>
+            inner.ReadGroundAsync(task, actorUserId, ct);
+
+        public Task<IReadOnlyDictionary<Guid, TaskReadGround>> ReadGroundsAsync(
+            IReadOnlyCollection<TaskItem> tasks, Guid actorUserId, CancellationToken ct) => inner.ReadGroundsAsync(tasks, actorUserId, ct);
+    }
+
     /// <summary>FIX5 (item 1) — MUTATION TARGET (MeetingAgendaCodes.TextFor). A line carried forward BEFORE FIX4 stored the
     /// task's title (origin/main) or TASK_NOT_ACCESSIBLE (FIX3); the meeting read sends the code instead, whatever is
     /// stored, and the title is in no field of the answer. The line's link is the one the SAME reader's linked-task list

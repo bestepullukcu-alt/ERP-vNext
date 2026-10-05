@@ -75,6 +75,7 @@
   <data name="CarriedOpenActionLine" xml:space="preserve"><value>Открытое действие с предыдущей встречи</value></data>
   <data name="LinkedTaskNotAccessible" xml:space="preserve"><value>Задача, к которой у вас нет доступа</value></data>
   <data name="LinkExistingTaskTruncated" xml:space="preserve"><value>Просмотрена только часть списка. Если нужной задачи здесь нет, уточните поиск.</value></data>
+  <data name="LinkExistingTaskListUnreadable" xml:space="preserve"><value>Не удалось прочитать список задач. Обновите страницу и повторите попытку.</value></data>
   <data name="Yes" xml:space="preserve"><value>Да</value></data>
   <data name="No" xml:space="preserve"><value>Нет</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Сведения о совещании</value></data>

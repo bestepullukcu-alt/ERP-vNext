@@ -179,6 +179,10 @@ describe("the link picker says when the server stopped at its ceiling", () => {
     loadScript("wwwroot/assets/js/Meetings/form.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
     for (let i = 0; i < 4; i++) { await settle(); }
+    // FIX6 — "narrow your search" only when the term can be sent: select2 is on the page.
+    const jq = () => ({ hasClass: () => false, data: () => "", select2: () => {} });
+    jq.fn = { select2: true };
+    global.jQuery = jq;
     document.getElementById("btnLinkExistingTask").click();
     for (let i = 0; i < 4; i++) { await settle(); }
     return confirms;

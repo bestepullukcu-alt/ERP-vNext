@@ -61,6 +61,37 @@
         // option even when it is a real choice, not a prompt (measured against WCN's own waiting-on picker).
         if (declared) { config.placeholder = declared; }
         if (opts.dropdownAdapter) { config.dropdownAdapter = opts.dropdownAdapter; }
+        /*
+         * WP-WCN-TASK-REQUEST-01 FIX6 (item 1) — OPTIONAL, and absent for every caller that does not ask: a picker whose
+         * full list lives on the server can hand in `remoteSearch.search(term) => Promise<[{ id, text, disabled? }]>`.
+         * A term shorter than `minimumTermLength` (default 2) shows the options the <select> was built with; a longer
+         * one asks the server, `delayMs` (default 250) after the last keystroke. Labels go through select2's own
+         * escaping (no templateResult here), the same as the static options.
+         */
+        const remote = opts.remoteSearch;
+        if (remote && typeof remote.search === 'function') {
+            const minimum = remote.minimumTermLength ?? 2;
+            const initial = () => Array.from(element.options || [])
+                .filter((option) => option.value)
+                .map((option) => ({ id: option.value, text: option.text }));
+            config.minimumResultsForSearch = 0;
+            config.ajax = {
+                delay: remote.delayMs ?? 250,
+                transport: (params, success, failure) => {
+                    const term = String(params?.data?.term ?? '').trim();
+                    if (term.length < minimum) {
+                        success({ results: initial() });
+                        return { abort: () => {} };
+                    }
+                    let aborted = false;
+                    Promise.resolve(remote.search(term)).then(
+                        (results) => { if (!aborted) { success({ results: results || [] }); } },
+                        (error) => { if (!aborted) { failure(error); } });
+                    return { abort: () => { aborted = true; } };
+                },
+                processResults: (data) => data
+            };
+        }
         $s.select2(config);
         return true;
     };

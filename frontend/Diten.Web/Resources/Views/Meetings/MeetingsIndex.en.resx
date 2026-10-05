@@ -75,6 +75,7 @@
   <data name="CarriedOpenActionLine" xml:space="preserve"><value>Open action from the previous meeting</value></data>
   <data name="LinkedTaskNotAccessible" xml:space="preserve"><value>A task you do not have access to</value></data>
   <data name="LinkExistingTaskTruncated" xml:space="preserve"><value>Only part of the list could be searched. If the task you need is not here, narrow your search.</value></data>
+  <data name="LinkExistingTaskListUnreadable" xml:space="preserve"><value>The task list could not be read. Reload the page and try again.</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Meeting Details</value></data>

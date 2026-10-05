@@ -540,8 +540,9 @@
                 data: Array.isArray(res.data?.people) ? res.data.people : []
             });
         },
-        /** MOD-0357 S4 — the "link an existing task" dialog's own search box. `data` is already the plain
-         * array (`TaskLinkCandidateDto[]`), never wrapped — unlike {@link assignablePeople} above. */
+        /** MOD-0357 S4 — the "link an existing task" picker's server search (FIX6: the typed term is sent). Since FIX5
+         * `data` is `{ items: TaskLinkCandidateDto[], truncated }` — truncated = the server stopped at its ceiling with
+         * matches it never judged. A server from before FIX5 answers a plain array (Meetings/form.js reads both). */
         linkCandidates: (term, limit) => {
             const params = new URLSearchParams();
             if (term) { params.set('term', term); }

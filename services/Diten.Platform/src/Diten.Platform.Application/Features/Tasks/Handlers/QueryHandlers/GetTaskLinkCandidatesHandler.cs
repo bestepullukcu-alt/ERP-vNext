@@ -17,8 +17,9 @@ namespace Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
 ///
 /// <para><b>In chunks, newest first, with a ceiling</b> (FIX5, item 2). The matches are put to the rule
 /// <see cref="ChunkSize"/> at a time until <c>limit</c> readable ones are found or <see cref="MaxChunks"/> chunks were
-/// judged — so a crowd of newer unreadable tasks does not hide older readable ones (FIX4's single chunk did), and the
-/// cost no longer grows with the whole tenant. When the ceiling stops the search with matches left unjudged, the answer
+/// judged — so a crowd of newer unreadable tasks does not hide older readable ones (FIX4's single chunk did). What is
+/// bounded is the READ RULE's cost (at most MaxChunks × ChunkSize tasks judged); the repository read is not —
+/// <c>GetAllForTenantAsync</c> still loads every task of the tenant, the accepted caveat above. When the ceiling stops the search with matches left unjudged, the answer
 /// says so (<see cref="TaskLinkCandidatesDto.Truncated"/>) and the picker asks the reader to narrow the search.</para></summary>
 public sealed class GetTaskLinkCandidatesHandler
     : IRequestHandler<GetTaskLinkCandidatesQuery, Response<TaskLinkCandidatesDto>>

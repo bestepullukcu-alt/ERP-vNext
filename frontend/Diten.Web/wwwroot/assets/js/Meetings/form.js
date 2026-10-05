@@ -371,7 +371,8 @@
     /*
      * FIX4 (item 1) — a carried-forward agenda line is STORED as a neutral code (one row every reader sees) and names
      * its task only through its RecordLink: the title comes from THIS reader's linked-task list, which the server has
-     * already passed through the task read rule. Lines written before FIX4 hold text and are shown as written.
+     * already passed through the task read rule. Since FIX5 the server sends the code for EVERY carried line, whatever
+     * it stored (lines carried before FIX4 included), so no stored title reaches this screen.
      */
     const CARRIED_OPEN_ACTION = 'MEETING_CARRIED_OPEN_ACTION';
     let linkedTaskTitleByRecordLinkId = {};
@@ -573,13 +574,44 @@
      * "Link existing task" is ONE field — a search-select — so it goes through `window.showConfirm` exactly
      * like the reassign-organizer picker above (M2), never the raw-Swal path `openCreateTaskDialog` takes.
      */
+    /*
+     * WP-WCN-TASK-REQUEST-01 FIX5/FIX6 — the candidates answer: { items, truncated } today; a plain array from a server
+     * deployed before FIX5 (the switch-over), read as it is. Anything else is UNREADABLE — said so, never shown as an
+     * empty list that looks like "no task to link".
+     */
+    const readLinkCandidates = (result) => {
+        if (!result?.ok) { return { items: [], truncated: false, unreadable: false }; }
+        const data = result.data;
+        if (Array.isArray(data)) { return { items: data, truncated: false, unreadable: false }; }
+        if (data && Array.isArray(data.items)) { return { items: data.items, truncated: data.truncated === true, unreadable: false }; }
+        return { items: [], truncated: false, unreadable: true };
+    };
+
     const openLinkExistingTaskDialog = () => {
         void (async () => {
-            const candidatesResult = await window.TasksApi?.linkCandidates?.(null, 20);
-            // WP-WCN-TASK-REQUEST-01 FIX5 (item 2) — { items, truncated }: truncated = the server stopped at its ceiling
-            // with matches it never judged, and the reader is told to narrow the search instead of seeing "no tasks".
-            const candidates = candidatesResult?.ok ? (candidatesResult.data?.items || []) : [];
-            const truncated = candidatesResult?.ok && candidatesResult.data?.truncated === true;
+            const first = readLinkCandidates(await window.TasksApi?.linkCandidates?.(null, 20));
+            if (first.unreadable) {
+                window.DitenModal?.error?.({ title: t('errorOccurred'), message: t('linkExistingTaskListUnreadable') });
+                return;
+            }
+            const candidates = first.items;
+            /*
+             * FIX6 (item 1) — the typed term goes to the SERVER (select2's search box, through the shared binder's
+             * optional remote mode), so "narrow your search" is advice the reader can follow. It is only given when
+             * the search can be sent — select2 is on the page.
+             */
+            const canSearch = !!(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2);
+            const truncated = first.truncated && canSearch;
+            const remoteSearch = {
+                search: async (term) => {
+                    const answer = readLinkCandidates(await window.TasksApi.linkCandidates(term, 20));
+                    const results = answer.items.map((candidate) => ({ id: candidate.id, text: candidate.title }));
+                    if (answer.truncated) {
+                        results.push({ id: '__truncated', text: t('linkExistingTaskTruncated'), disabled: true });
+                    }
+                    return results;
+                }
+            };
             // A leading BLANK entry, deliberately: a native `<select>` otherwise opens on its first real option
             // already selected, and confirming without touching it would link a task nobody chose.
             const taskOptions = { '': t('linkExistingTaskPlaceholder') };
@@ -607,7 +639,7 @@
                 didOpen: (popup) => {
                     const box = (window.Swal && typeof window.Swal.getInput === 'function' && window.Swal.getInput())
                         || popup.querySelector('.swal2-select');
-                    if (box) { window.DitenDialog?.bindDialogSelect2?.(box, popup, { allowClear: false }); }
+                    if (box) { window.DitenDialog?.bindDialogSelect2?.(box, popup, { allowClear: false, remoteSearch }); }
                 }
             });
         })();
