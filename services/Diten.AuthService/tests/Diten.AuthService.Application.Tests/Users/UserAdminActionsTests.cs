@@ -406,6 +406,25 @@ public sealed class UserAdminActionsTests
             => throw new InvalidOperationException("authAuditLogs is down");
     }
 
+    [Fact]
+    public async Task AdminReset_is_decided_against_the_stored_account_not_the_callers_copy()
+    {
+        // BL-529 FIX4 — the double decides like the store: another administrator deactivated the account after this reset
+        // read it; the write is refused and the reset stops as a conflict (nothing mailed).
+        var user = new User("stored@acme.test", "hash:x", "St", "Ored", TenantA);
+        var repo = new InMemoryUserRepository([user]);
+        repo.ChangeStored(user.Id, isActive: false, deactivatedByAdministrator: true);
+        var email = new FakeInvitationEmailService();
+        var handler = new AdminResetPasswordCommandHandler(repo, TenantContextFor(TenantA), new FakeTokenService(), new FakeRefreshTokenHasher(),
+            email, new FakeHostEnvironment(isDevelopment: true), new RecordingUserAudit(), NullLogger<AdminResetPasswordCommandHandler>.Instance,
+            new ResetHasher(), new FakeRefreshTokenRepository(), new SomeoneElse());
+
+        var result = await handler.Handle(new AdminResetPasswordCommand(user.Id), CancellationToken.None);
+
+        Assert.Equal(409, result.StatusCode);
+        Assert.Empty(email.Sends);
+    }
+
     private sealed class NoRbac : IRbacAuditRecorder
     {
         public Task RecordAsync(string eventName, Guid tenantId, object metadata, CancellationToken ct = default) => Task.CompletedTask;

@@ -506,14 +506,6 @@ public sealed class AccountKindTests
         public Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct) => _inner.SearchActiveAsync(tenantId, term, limit, ct);
         public Task<long> GetCountByTenantAsync(Guid tenantId, CancellationToken ct) => _inner.GetCountByTenantAsync(tenantId, ct);
         public Task<User> CreateAsync(User user, CancellationToken ct) => _inner.CreateAsync(user, ct);
-        public Task<User> UpdateAsync(User user, CancellationToken ct) => throw new InvalidOperationException("The kind change must use the tenant-scoped update.");
-        public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct)
-        {
-            UpdatedForTenant = (user.Id, tenantId);
-            UpdatesForTenant++;
-            tape?.Add("persist");
-            return Task.FromResult(user);
-        }
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => _inner.SoftDeleteAsync(id, tenantId, ct);
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => _inner.RecordLoginOutcomeAsync(user, tenantId, ct);
         public object CaptureState(User user) => _inner.CaptureState(user);

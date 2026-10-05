@@ -118,15 +118,17 @@ public sealed class AdminResetPathGuardTests
     }
 
     [Fact]
-    public void No_production_path_writes_a_whole_user_document()
+    public void The_user_repository_offers_no_whole_document_write()
     {
-        // BL-529 FIX3 — every user write in src goes through the targeted, conditional TryWriteChangesAsync (or a purpose-built
-        // targeted write); a whole-document replace from a copy read earlier is what put back a replaced password.
-        var whole = Calls(new Regex(@"_userRepository\.(UpdateAsync|UpdateForTenantAsync)\s*\(|\busers\.(UpdateAsync|UpdateForTenantAsync)\s*\(", RegexOptions.Compiled))
-            .Select(c => $"{c.File} :: {c.Member}")
-            .ToArray();
+        // BL-529 FIX3/FIX4 — a whole-document replace from a copy read earlier is what put back a replaced password. The
+        // interface no longer has one, so no caller can make one; a new write method must be added here on purpose.
+        string[] writes = ["CreateAsync", "SoftDeleteAsync", "RecordLoginOutcomeAsync", "TryWriteChangesAsync", "SetPasswordResetTokenAsync", "RecordLoginFailureAsync"];
+        string[] reads = ["GetByEmailAndTenantAsync", "GetByUserNameAndTenantAsync", "GetByIdAndTenantAsync", "GetByPasswordResetTokenHashAsync",
+            "GetAllByTenantAsync", "SearchActiveAsync", "GetCountByTenantAsync", "CaptureState"];
 
-        Assert.True(whole.Length == 0, "whole-document user writes:\n" + string.Join("\n", whole));
+        var methods = typeof(Diten.AuthService.Application.Common.Interfaces.IUserRepository).GetMethods().Select(m => m.Name).Distinct().OrderBy(n => n, StringComparer.Ordinal);
+
+        Assert.Equal(writes.Concat(reads).OrderBy(n => n, StringComparer.Ordinal), methods);
     }
 
     [Theory]

@@ -71,6 +71,10 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
             // FIX3 — every request arrives from its own client address (X-Test-Peer names one), so the production rate
             // limits apply as they are and one test's requests never spend another's allowance.
             services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, TestPeerStartupFilter>();
+            // FIX4 — a configured trusted proxy (one no test request comes from): the per-client limit is ON, as in a
+            // deployment with ClientAddress:TrustedProxies filled in. ClientAddressProductionDefaultsTests runs the empty list.
+            services.AddSingleton(new Diten.AuthService.Infrastructure.Security.ClientAddressResolver(
+                [System.Net.IPAddress.Parse("10.255.255.254")], trustLoopback: false));
         }
 
         public CapturingOtp Otp { get; } = new();
@@ -1173,14 +1177,99 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.Equal(HttpStatusCode.Unauthorized, (await RefreshAsync(tenantId, second)).StatusCode);
     }
 
-    // ── FIX3 item 10: the production registrations resolve ─────────────────────────────────────────────────────
+    // ── FIX4 item 1: a platform re-invitation stores every change it makes ─────────────────────────────────────
 
     [Fact]
-    public void The_production_rate_limiter_and_client_resolver_resolve_from_the_container()
+    public async Task A_platform_reinvite_stores_the_new_name_user_name_and_actor_type()
     {
-        var limiter = _host.Factory.Services.GetRequiredService<Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter>();
-        Assert.Equal(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultWindow, limiter.Window);
-        Assert.NotNull(_host.Factory.Services.GetRequiredService<Diten.AuthService.Infrastructure.Security.ClientAddressResolver>());
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        var newUserName = $"renamed.{Guid.NewGuid():N}"[..20];
+
+        using var platform = _host.Client();
+        platform.DefaultRequestHeaders.Add("X-Internal-Api-Key", _host.InternalKey);
+        await AssertOkAsync(await platform.PostAsJsonAsync("api/platform-auth/platform-admins/provision", new
+        {
+            email,
+            userName = newUserName,
+            displayName = "Renamed Administrator",
+            actorType = "PartnerAdmin",
+            roles = new[] { "ReadOnly" },
+            requirePasswordChange = true
+        }));
+
+        var stored = await PlatformUserAsync(email);
+        Assert.Equal(newUserName, stored.UserName);
+        Assert.Equal("Renamed", stored.FirstName);
+        Assert.Equal("Administrator", stored.LastName);
+        Assert.Equal("partner_admin", stored.PlatformActorType);
+    }
+
+    [Fact]
+    public async Task A_platform_reinvite_of_a_passive_account_reinvites_it()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        var admin = await PlatformUserAsync(email);
+        using (var scope = Scope(PlatformTenantId))
+        {
+            var repository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            var state = repository.CaptureState(admin);
+            admin.DeactivateByAdministrator();
+            Assert.True(await repository.TryWriteChangesAsync(admin, state, PlatformTenantId, UserWriteCondition.None, CancellationToken.None));
+        }
+
+        await AssertOkAsync(await ProvisionPlatformAdminAsync(email)); // not 409
+
+        var after = await PlatformUserAsync(email);
+        Assert.True(after.IsActive);
+        Assert.False(after.DeactivatedByAdministrator);
+        await RedeemPlatformLinkAsync(email, NewPassword);
+        Assert.Equal(HttpStatusCode.OK, (await PlatformLoginAsync(email, NewPassword)).StatusCode);
+    }
+
+    // ── FIX4 item 3: a link redeemed while the invitation is deactivated writes nothing ──────────────────────────
+
+    [Fact]
+    public async Task A_link_redeemed_while_the_invitation_is_deactivated_writes_nothing()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        using var admin = _host.Client(await TenantAdminTokenAsync(tenantId, "auth.users.create", "auth.users.update"), tenantId);
+        var email = $"invited.{Guid.NewGuid():N}@reset.test";
+        Assert.Equal(HttpStatusCode.Created, (await admin.PostAsJsonAsync("api/users", new { email, firstName = "In", lastName = "Vited" })).StatusCode);
+        var invited = await TenantUserByEmailAsync(email, tenantId);
+
+        // The redemption has checked the mark (not set yet) and is held at the password-policy read; the kebab disables.
+        var redeem = await RaceAsync("settings:" + tenantId,
+            () => AnonymousPostAsync("api/users/set-password", new { email, token = _host.TenantEmails.LastTokenFor(email), newPassword = NewPassword }),
+            async () => Assert.True((await admin.PostAsync($"api/users/{invited.Id}/disable", null)).IsSuccessStatusCode));
+
+        Assert.Equal(HttpStatusCode.BadRequest, redeem.StatusCode);
+        var after = await ReadUserAsync(invited.Id);
+        Assert.False(after.IsActive);
+        Assert.True(after.DeactivatedByAdministrator);
+    }
+
+    // ── FIX4 (CT D1): a tab left open from before the OWNER'S change is a stale tab too ─────────────────────────
+
+    [Fact]
+    public async Task A_stale_tab_after_the_owners_own_change_is_refused_without_ending_the_new_session()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        var oldTab = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        var changing = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        using (var client = _host.Client(changing.AccessToken, tenantId))
+        {
+            var change = await client.PostAsJsonAsync("api/auth/change-password", new { currentPassword = OldPassword, newPassword = NewPassword });
+            Assert.True(change.IsSuccessStatusCode, $"{(int)change.StatusCode}: {await change.Content.ReadAsStringAsync()}");
+        }
+
+        var token = await _host.Database.GetCollection<RefreshToken>("refreshTokens")
+            .Find(t => t.UserId == user.Id && t.RevokedReason == SessionRevocationReasons.PasswordChanged).FirstOrDefaultAsync();
+        Assert.NotNull(token); // the old tab was ended for the password change
+        var newSession = await TenantSessionAsync(tenantId, user.Email, NewPassword);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await RefreshAsync(tenantId, oldTab)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await RefreshAsync(tenantId, newSession)).StatusCode); // not swept as a theft
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -1641,8 +1730,6 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         public Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct) => inner.SearchActiveAsync(tenantId, term, limit, ct);
         public Task<long> GetCountByTenantAsync(Guid tenantId, CancellationToken ct) => inner.GetCountByTenantAsync(tenantId, ct);
         public Task<User> CreateAsync(User user, CancellationToken ct) => inner.CreateAsync(user, ct);
-        public Task<User> UpdateAsync(User user, CancellationToken ct) => inner.UpdateAsync(user, ct);
-        public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) => inner.UpdateForTenantAsync(user, tenantId, ct);
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => inner.SoftDeleteAsync(id, tenantId, ct);
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => inner.RecordLoginOutcomeAsync(user, tenantId, ct);
         public object CaptureState(User user) => inner.CaptureState(user);

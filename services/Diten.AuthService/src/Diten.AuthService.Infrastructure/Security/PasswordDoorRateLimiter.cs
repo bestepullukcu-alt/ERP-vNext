@@ -44,8 +44,10 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     /// "Forgot password": per client first (so the per-address partitions can only grow as fast as real clients do), then
     /// per e-mail address (the target — a flood against one administrator is capped whoever sends it). True = go on.
     /// </summary>
-    public bool TryAcquireForgotPassword(string client, string? email)
-        => TryAcquire(_perClient, $"forgot-password|client|{client}")
+    /// <param name="countPerClient">false when the client cannot be told apart (FIX4: no trusted proxy configured outside
+    /// Development) — the per-client limit is then skipped rather than turned into one bucket for everybody.</param>
+    public bool TryAcquireForgotPassword(string client, string? email, bool countPerClient = true)
+        => (!countPerClient || TryAcquire(_perClient, $"forgot-password|client|{client}"))
            && TryAcquire(_perAddress, $"forgot-password|address|{Normalize(email)}");
 
     /// <summary>
@@ -53,8 +55,8 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     /// is a 256-bit secret, and counting by address alone let anyone who knows the address spend the owner's allowance
     /// with junk requests and lock the owner's valid link out. True = go on.
     /// </summary>
-    public bool TryAcquireLinkRedemption(string client, string? email)
-        => TryAcquire(_perClient, $"reset-password|client|{client}")
+    public bool TryAcquireLinkRedemption(string client, string? email, bool countPerClient = true)
+        => (!countPerClient || TryAcquire(_perClient, $"reset-password|client|{client}"))
            && TryAcquire(_perAddress, $"reset-password|client-address|{client}|{Normalize(email)}");
 
     public void Dispose()

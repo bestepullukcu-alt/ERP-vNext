@@ -7,10 +7,30 @@ internal sealed class InMemoryUserRepository : IUserRepository
 {
     private readonly List<User> _users;
 
+    // BL-529 FIX4 — what the "store" holds, apart from the entity objects the callers mutate: the fields a
+    // UserWriteCondition checks. A conditional write is decided against THIS (as Mongo decides against the stored
+    // document), not against what the caller captured; another writer is simulated with ChangeStored.
+    private readonly Dictionary<Guid, Captured> _stored = new();
+
     public InMemoryUserRepository(IEnumerable<User> users)
     {
         _users = users.ToList();
+        foreach (var user in _users) _stored[user.Id] = Snapshot(user);
     }
+
+    /// <summary>Another writer changed the stored account (the entity the caller holds is left as it was).</summary>
+    public void ChangeStored(Guid userId, string? passwordHash = null, bool? isActive = null, bool? deactivatedByAdministrator = null, string? resetTokenHash = null)
+    {
+        var current = _stored[userId];
+        _stored[userId] = new Captured(
+            passwordHash ?? current.PasswordHash,
+            isActive ?? current.IsActive,
+            deactivatedByAdministrator ?? current.DeactivatedByAdministrator,
+            resetTokenHash ?? current.PasswordResetTokenHash);
+    }
+
+    private static Captured Snapshot(User user)
+        => new(user.PasswordHash, user.IsActive, user.DeactivatedByAdministrator, user.PasswordResetTokenHash);
 
     public Task<User?> GetByEmailAndTenantAsync(string email, Guid tenantId, CancellationToken ct)
     {
@@ -76,12 +96,9 @@ internal sealed class InMemoryUserRepository : IUserRepository
     public Task<User> CreateAsync(User user, CancellationToken ct)
     {
         _users.Add(user);
+        _stored[user.Id] = Snapshot(user);
         return Task.FromResult(user);
     }
-
-    public Task<User> UpdateAsync(User user, CancellationToken ct) => Task.FromResult(user);
-
-    public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) => Task.FromResult(user);
 
     /// <summary>BL-529 — how many conditional writes to refuse first (a password changed between the read and the write).</summary>
     public int PasswordChangedConflicts { get; set; }
@@ -105,20 +122,21 @@ internal sealed class InMemoryUserRepository : IUserRepository
     // caller captured when it read the account — the same thing the real store compares to.
     private sealed record Captured(string PasswordHash, bool IsActive, bool DeactivatedByAdministrator, string? PasswordResetTokenHash);
 
-    public object CaptureState(User user)
-        => new Captured(user.PasswordHash, user.IsActive, user.DeactivatedByAdministrator, user.PasswordResetTokenHash);
+    public object CaptureState(User user) => Snapshot(user);
 
     public int Writes { get; private set; }
 
     public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
     {
-        var read = (Captured)capturedState;
+        var read = _stored.TryGetValue(user.Id, out var stored) ? stored : (Captured)capturedState;
         ConditionalWrites++;
         OnConditionalWrite?.Invoke();
         if (ThrowOnConditionalWrite) throw new InvalidOperationException("user write failed");
         if (PasswordChangedConflicts > 0 && condition.PasswordHash is not null)
         {
+            // Another writer changed the password meanwhile: refused; a re-read (the same entity here) sees what is now stored.
             PasswordChangedConflicts--;
+            _stored[user.Id] = Snapshot(user);
             return Task.FromResult(false);
         }
 
@@ -126,7 +144,12 @@ internal sealed class InMemoryUserRepository : IUserRepository
                     && (condition.IsActive is null || condition.IsActive == read.IsActive)
                     && (condition.DeactivatedByAdministrator is null || condition.DeactivatedByAdministrator == read.DeactivatedByAdministrator)
                     && (condition.PasswordResetTokenHash is null || condition.PasswordResetTokenHash == read.PasswordResetTokenHash);
-        if (holds) Writes++;
+        if (holds)
+        {
+            Writes++;
+            _stored[user.Id] = Snapshot(user);
+        }
+
         return Task.FromResult(holds);
     }
 
@@ -137,6 +160,7 @@ internal sealed class InMemoryUserRepository : IUserRepository
         var user = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
         if (user is null) return Task.FromResult(false);
         user.SetPasswordResetToken(tokenHash, expiresAtUtc);
+        _stored[user.Id] = Snapshot(user);
         ResetTokenWrites++;
         return Task.FromResult(true);
     }

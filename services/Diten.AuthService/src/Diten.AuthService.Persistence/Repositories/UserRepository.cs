@@ -135,22 +135,6 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
            && (ex.WriteError.Message ?? string.Empty).Contains(
                Configurations.MongoDbIndexConfigurations.UserEmailIndexName, StringComparison.Ordinal);
 
-    public async Task<User> UpdateAsync(User user, CancellationToken ct)
-    {
-        return await ReplaceOneAsync(user, ct);
-    }
-
-    public async Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct)
-    {
-        var filter = Builders<User>.Filter.And(
-            Builders<User>.Filter.Eq(u => u.Id, user.Id),
-            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
-            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
-
-        await Collection.ReplaceOneAsync(filter, user, cancellationToken: ct);
-        return user;
-    }
-
     public async Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct)
     {
         var filter = Builders<User>.Filter.And(

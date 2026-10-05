@@ -321,8 +321,6 @@ public sealed class UserLifecycleTests
             Writes++;
             return _inner.CreateAsync(user, ct);
         }
-        public Task<User> UpdateAsync(User user, CancellationToken ct) { Writes++; return _inner.UpdateAsync(user, ct); }
-        public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) { Writes++; return _inner.UpdateForTenantAsync(user, tenantId, ct); }
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => _inner.SoftDeleteAsync(id, tenantId, ct);
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => _inner.RecordLoginOutcomeAsync(user, tenantId, ct);
         public object CaptureState(User user) => _inner.CaptureState(user);

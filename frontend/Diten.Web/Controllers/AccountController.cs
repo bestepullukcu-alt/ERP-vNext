@@ -34,9 +34,6 @@ public class AccountController : Controller
         _environment = environment;
     }
 
-    // FIX-LOGIN-BRIDGE-RESILIENCE — a transport failure (auth service / gateway unreachable) surfaces from the
-    // bridge as StatusCode >= 500 with a clean ErrorMessage; map it to 503 so the client shows "service
-    // unavailable" instead of a misleading 401. Credential / validation failures keep the existing 401.
     // BL-529 FIX3 — the set-password link doors keep the service's status where it means something to the page (429 too
     // many requests, 409 a deactivated account); the localized sentence travels in `detail`.
     private IActionResult PasswordDoorFailure(AuthBridgeResult result, string fallbackMessage)
@@ -51,6 +48,9 @@ public class AccountController : Controller
         };
     }
 
+    // FIX-LOGIN-BRIDGE-RESILIENCE — a transport failure (auth service / gateway unreachable) surfaces from the
+    // bridge as StatusCode >= 500 with a clean ErrorMessage; map it to 503 so the client shows "service
+    // unavailable" instead of a misleading 401. Credential / validation failures keep the existing 401.
     private IActionResult AuthFailureResult(AuthBridgeResult result, string fallbackMessage)
     {
         var detail = result.ErrorMessage ?? fallbackMessage;

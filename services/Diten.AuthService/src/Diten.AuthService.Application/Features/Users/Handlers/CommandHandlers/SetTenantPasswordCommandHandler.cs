@@ -75,8 +75,9 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
         user.ConfirmEmail();
 
         // BL-529 FIX2 — written only while this link is still the account's (not replaced by a newer reset, not used by a
-        // parallel redemption, not cleared by a deactivation).
-        if (!await _userRepository.TryWriteChangesAsync(user, state, user.TenantId, new UserWriteCondition(PasswordResetTokenHash: tokenHash), ct))
+        // parallel redemption, not cleared by a deactivation). FIX4 — and while no administrator has deactivated it: a
+        // deactivation of a pending invitation keeps the link, so the link alone does not say it.
+        if (!await _userRepository.TryWriteChangesAsync(user, state, user.TenantId, new UserWriteCondition(PasswordResetTokenHash: tokenHash, DeactivatedByAdministrator: false), ct))
         {
             return Response<NoContent>.Fail(InvalidTokenMessage, 400);
         }

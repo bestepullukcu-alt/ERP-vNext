@@ -19,8 +19,8 @@ public interface IUserRepository
     Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct);
     Task<long> GetCountByTenantAsync(Guid tenantId, CancellationToken ct);
     Task<User> CreateAsync(User user, CancellationToken ct);
-    Task<User> UpdateAsync(User user, CancellationToken ct);
-    Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct);
+    // BL-529 FIX4 — no whole-document update exists here any more: every write of an existing account is targeted
+    // (TryWriteChangesAsync and the purpose-built writes below), so a stale copy can never be written back.
     Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct);
 
     /// <summary>

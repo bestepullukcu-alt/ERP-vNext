@@ -72,6 +72,29 @@ beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı b
 
 ---
 
+### 3 · BL-529 — Auth: güvenilir vekiller ve herkes bir kez yeniden oturum açar
+
+| | |
+|---|---|
+| **Modül** | Auth (AuthService) — yöneticinin parola sıfırlaması, BL-529 |
+| **Ne zaman** | BL-529'u (WP-AUTH-ADMIN-RESET-01) taşıyan deploy'da |
+| **Yapılmazsa** | (1) Platform'un anonim parola kapılarında istemci başına hız sınırı **kapalı** kalır (e-posta başına sınır çalışır); Auth başlangıçta bir kez uyarı yazar. (2) Değişiklik değil, beklenen davranış: herkes bir kez yeniden oturum açar. |
+| **Kim** | Altyapı / deploy operatörü |
+
+1. **`ClientAddress:TrustedProxies`** (Auth yapılandırması): Auth'a doğrudan bağlanan **Web sunucusunun ve ağ
+   geçidinin** IP adreslerini, her birini ayrı bir öğe olarak yazın (aralık / CIDR desteklenmez; geçersiz bir değer
+   Auth'u başlangıçta adını söyleyen bir hatayla durdurur). Web son kullanıcının adresini `X-Forwarded-For` ile zaten
+   iletiyor; Auth bu başlığı YALNIZ listedeki bir karşı taraftan gelirse okur. Liste boş kalırsa istemci başına sınır
+   kapalı kalır — herkes için tek kova hiçbir zaman oluşmaz. Not: ağ geçidi (Ocelot) son kullanıcının adresini
+   başlığa kendisi eklemiyorsa, ağ geçidine doğrudan gelen isteklerde bu adres sahtelenebilir; Ocelot'a dokunulmadı.
+2. **Herkes bir kez yeniden oturum açar.** BL-529'dan önce basılmış yenileme belirteçleri parolaya bağlı değil; ilk
+   yenilemede 401 alırlar. Kullanıcı bir kez yeniden giriş yapar; destek ekibine önceden söyleyin.
+
+**Belirti:** (1) Auth günlüğünde başlangıçta "`ClientAddress:TrustedProxies` is empty" uyarısı. (2) Deploy'dan sonra
+herkesin bir kez oturum açma sayfasına düşmesi — hata değil.
+
+---
+
 ## Tamamlananlar
 
 *(henüz yok)*

@@ -115,38 +115,18 @@ public sealed class PlatformAuthController : CustomBaseController
 
         var (firstName, lastName) = SplitName(request.DisplayName, normalizedEmail);
         var userProvisioned = existingUser is null;
-        var user = existingUser ?? new User(
-            normalizedEmail,
-            _passwordHasher.Hash(_tokenService.GenerateRefreshToken()),
-            firstName,
-            lastName,
-            PlatformTenantId);
-        user.SetUserName(request.UserName);
-
-        if (existingUser is null)
-        {
-            user.ConfirmEmail();
-            // WP-INFRA-AUTH-ACCOUNT-KIND-01 — a provisioned platform admin is created Unknown; an existing account's
-            // kind is left exactly as it is (this path never rewrites a classification).
-            user.SetAccountKind(Diten.AuthService.Domain.Enums.AccountKind.Unknown);
-        }
-        else
-        {
-            user.UpdateProfile(firstName, lastName);
-            user.ActivateByAdministrator();
-            user.ConfirmEmail();
-        }
-
-        user.SetPlatformActorType(NormalizeActorType(request.ActorType));
         var setupToken = _tokenService.GenerateRefreshToken();
 
         if (existingUser is not null)
         {
             // BL-529 — an EXISTING platform account sent a new set-password link (Platform's "Resend invite") is reset: the
             // old password stops working and every session ends, the same rule (and audit row) as every administrator reset.
+            // FIX4 — the account reaches ResetAsync UNCHANGED: every change of this re-invitation (name, user name, switch,
+            // actor type, link) is made inside `apply`, so the targeted write sees — and stores — each of them, and the
+            // switch the reset compares against is the stored one (a passive account is re-invited, not refused).
             (string? SetupUrl, bool EmailSent) delivery = (null, false);
             var outcome = await AdminPasswordReset.ResetAsync(
-                user,
+                existingUser,
                 PlatformTenantId,
                 AdminResetVia.PlatformAdministratorReinvite,
                 _ => AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService),
@@ -184,6 +164,18 @@ public sealed class PlatformAuthController : CustomBaseController
             });
         }
 
+        var user = new User(
+            normalizedEmail,
+            _passwordHasher.Hash(_tokenService.GenerateRefreshToken()),
+            firstName,
+            lastName,
+            PlatformTenantId);
+        user.SetUserName(request.UserName);
+        user.ConfirmEmail();
+        // WP-INFRA-AUTH-ACCOUNT-KIND-01 — a provisioned platform admin is created Unknown; an existing account's
+        // kind is left exactly as it is (this path never rewrites a classification).
+        user.SetAccountKind(Diten.AuthService.Domain.Enums.AccountKind.Unknown);
+        user.SetPlatformActorType(NormalizeActorType(request.ActorType));
         user.SetPasswordResetToken(_refreshTokenHasher.Hash(setupToken), DateTime.UtcNow.AddHours(24));
         await _userRepository.CreateAsync(user, ct);
         await SyncPlatformRolesAsync(user.Id, request.Roles, ct);
@@ -382,7 +374,7 @@ public sealed class PlatformAuthController : CustomBaseController
     public async Task<IActionResult> ForgotPassword([FromBody] PlatformForgotPasswordRequest request, CancellationToken ct)
     {
         var normalizedEmail = NormalizeEmail(request.Email);
-        if (!_passwordDoors.TryAcquireForgotPassword(_clientAddress.Resolve(HttpContext), normalizedEmail))
+        if (!_passwordDoors.TryAcquireForgotPassword(_clientAddress.Resolve(HttpContext), normalizedEmail, _clientAddress.IdentifiesClients))
         {
             return TooManyRequests();
         }
@@ -415,7 +407,7 @@ public sealed class PlatformAuthController : CustomBaseController
     public async Task<IActionResult> ResetPassword([FromBody] PlatformResetPasswordRequest request, CancellationToken ct)
     {
         var normalizedEmail = NormalizeEmail(request.Email);
-        if (!_passwordDoors.TryAcquireLinkRedemption(_clientAddress.Resolve(HttpContext), normalizedEmail))
+        if (!_passwordDoors.TryAcquireLinkRedemption(_clientAddress.Resolve(HttpContext), normalizedEmail, _clientAddress.IdentifiesClients))
         {
             return TooManyRequests();
         }
