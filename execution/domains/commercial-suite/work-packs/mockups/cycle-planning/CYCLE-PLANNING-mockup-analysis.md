@@ -42,3 +42,6 @@ Eksik: 7 dil / sağdan sola / tema (yalnız Türkçe, sabit renk); kapasite düz
 1. **CAP-MODEL (CRM):** K-1 (tipik sayılar + ziyaret başına rapor, eski kayıt okuma uyumu, tek formül), K-5 (yazar FTE), E8 (mikro-hedefleme kırpma), K-2 (kod önerisi ucu), hesap DTO'suna şelale kalemleri (ekranın ihtiyacı).
 2. **CYC-UI (Web):** iki sayfanın yeniden kurgusu (mockup + §2 kararları), 7 dil, tema, klavye.
 Sıra: CAP-MODEL → CYC-UI (ekran yeni sözleşmeyi kullanır).
+
+## 5. Kullanıcı kararı (2026-10-05)
+"kabul CAP-MODEL'i paketle" — §2 CT önerilerinin tümü (K-1..K-8, E3–E15) kabul. Paket: `WP-CAP-MODEL-visit-duration-capacity.md`.
