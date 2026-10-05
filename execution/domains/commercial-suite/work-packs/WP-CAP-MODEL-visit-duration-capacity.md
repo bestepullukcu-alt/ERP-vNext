@@ -59,3 +59,19 @@ KORU/YAPMA: dönem kuralları, takvim çözülemez=değer yok, takvim ülkesi ku
 DOĞRULA (E2): cd C:\tmp\cap-model; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban ölç; PiiMasking flake'i hariç); dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 473); build 0 hata. Yeni testler WP Acceptance. Sabotaj: (1) yeni modelde raporu gün başına da düş → kırmızı; (2) eski kayıt yolunu yeni formüle çevir → golden eski sonuç kırmızı; geri al. TestResults/*.trx izleniyor, klasörü silme. Commit ("feat(crm): WP-CAP-MODEL — single visit duration model (typical visit, report per visit), authored FTE, micro-targeting clip, cycle period code suggestion" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: MinutesPerVisit/DailySpendMinutes'ı dışarı açan bir tüketici anlam değişince kırılıyorsa → DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-05) — **ACCEPTED (E2)**
+- **Commit:** ajan `9deaca04` (taban `d9b680ef`) → `test/crm-content-visit-e2e` fast-forward. 28 dosya (+1607 / −139). Yalnız CrmService.
+- **DUR yok:** `MinutesPerVisit` / `DailySpendMinutes` yalnız mevcut Web kapasite ekranında okunuyor; eski kayıtta aynı değeri veriyor (artık `TypicalVisitMinutes` / `DailyFixedMinutes`'a devrediyor).
+- **Diff (K13 okuma):**
+  - `CycleCapacity`: üç nullable alan + `UsesTypicalVisitModel()`; tek formül domain'de (`VisitMinutes`, `TypicalVisitMinutes`, `DailyFixedMinutes`, `ReportMinutesForVisit`); eski kayıt okuma anında eski aritmetik (veri yazılmaz); `ActivityTimeBudgetCalculator.VisitDuration`, `CycleCapacityCalculator`, `VisitPlanningEngine.DefaultDuration` bunları kullanıyor.
+  - Yazar FTE: gönderilen değer `authored` (0 dahil), varsayılanla ezilmiyor.
+  - Mikro-hedefleme `min(gün, saha günü)` — **eski kayıtlarda da** (aşırı gün girilmiş ayda sayı küçük ölçüde değişir; golden testler etkilenmedi). Kullanıcının kabul ettiği E8 düzeltmesi; CT kabul.
+  - Hesap DTO: ay + kök kalemleri, `Totals` (takvim çözülemezse `null`).
+  - `GET cycle-periods/code-suggestion` (yalnız öneri; `GM` sabit önek).
+  - Eski formla güncelleme (tipik alanlar gönderilmezse) kaydın modelini korur.
+- **CT testleri:** CRM **2223/0/5** (+36; ilk koşuda bilinen PiiMasking flake'i, ikinci koşu temiz), Web **473/0**.
+- **CT sabotajı:** yazar FTE 0'ın korunması kaldırıldı (varsayılanla eziliyor) → 1 kırmızı. Kod geri alındı. Ajan: rapor çift sayım (5), eski kayıt yeni formül (8, FU06 golden dahil).
+- **E4:** CYC-UI sonrası.
