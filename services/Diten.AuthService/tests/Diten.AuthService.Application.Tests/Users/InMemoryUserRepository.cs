@@ -3,12 +3,28 @@ using Diten.AuthService.Domain.Entities;
 
 namespace Diten.AuthService.Application.Tests.Users;
 
+/// <summary>FIX8 item 1 - what the marker write of <see cref="InMemoryUserRepository"/> does.</summary>
+internal enum MarkerWrite
+{
+    /// <summary>It marks the stored account and reports a match when one was found (the default).</summary>
+    Matches,
+
+    /// <summary>It writes nothing and reports that no account matched.</summary>
+    MatchesNothing,
+
+    /// <summary>It throws.</summary>
+    Throws,
+}
+
 internal sealed class InMemoryUserRepository : IUserRepository
 {
     private readonly List<User> _users;
 
     /// <summary>FIX7 item 3 - plays a tenant actor for <see cref="VisibleUserIdsAsync"/>: the platform accounts are not among the visible ids.</summary>
     public bool HidesPlatformAccounts { get; init; }
+
+    /// <summary>FIX8 item 1 - how <see cref="SetPlatformActorTypeAsync"/> behaves.</summary>
+    public MarkerWrite MarkerWrites { get; init; } = MarkerWrite.Matches;
 
     public InMemoryUserRepository(IEnumerable<User> users)
     {
@@ -86,10 +102,19 @@ internal sealed class InMemoryUserRepository : IUserRepository
 
     public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) => Task.FromResult(user);
 
-    public Task SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct)
+    public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct)
     {
-        _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted)?.SetPlatformActorType(actorType);
-        return Task.CompletedTask;
+        switch (MarkerWrites)
+        {
+            case MarkerWrite.Throws:
+                throw new InvalidOperationException("the marker write fails here");
+            case MarkerWrite.MatchesNothing:
+                return Task.FromResult(false);
+        }
+
+        var stored = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
+        stored?.SetPlatformActorType(actorType);
+        return Task.FromResult(stored is not null);
     }
 
     public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct)

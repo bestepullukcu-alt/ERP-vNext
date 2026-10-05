@@ -274,7 +274,7 @@ public sealed class PlatformAdminSyncTests : IClassFixture<PlatformAdminSyncTest
         public Task<User> CreateAsync(User user, CancellationToken ct) => inner.CreateAsync(user, ct);
         public Task<User> UpdateAsync(User user, CancellationToken ct) => inner.UpdateAsync(user, ct);
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => inner.SoftDeleteAsync(id, tenantId, ct);
-        public Task SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
+        public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
         public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => inner.VisibleUserIdsAsync(tenantId, userIds, ct);
     }
 }

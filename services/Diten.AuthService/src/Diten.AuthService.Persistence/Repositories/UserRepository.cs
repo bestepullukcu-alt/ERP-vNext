@@ -92,8 +92,9 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
             .ToListAsync(ct);
     }
 
-    /// <summary>An account that carries no platform actor type (missing or null): what a tenant actor is allowed to see.</summary>
-    private static readonly FilterDefinition<User> NotAPlatformAccount = Builders<User>.Filter.Eq(u => u.PlatformActorType, null);
+    // BL-521 FIX8 item 3 - what a tenant actor is allowed to see is decided by ONE filter (PlatformAccountFilter), equal to
+    // User.IsPlatformAccount: an account whose actor type is missing, null, empty or whitespace is not a platform account.
+    private static readonly FilterDefinition<User> NotAPlatformAccount = PlatformAccountFilter.IsNotPlatformAccount;
 
     // WP-INFRA-AUTH-ACCOUNT-KIND-01 — see IUserRepository. The filter IS the contract: TenantId + IsDeleted=false +
     // IsActive=true, then each whitespace-separated token of the term must match the FIRST or the LAST name
@@ -194,7 +195,7 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
     }
 
     // BL-521 FIX7 item 1 - a targeted $set, never a replace (see IUserRepository).
-    public async Task SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct)
+    public async Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct)
     {
         var filter = Builders<User>.Filter.And(
             Builders<User>.Filter.Eq(u => u.Id, userId),
@@ -204,7 +205,8 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
             .Set(u => u.PlatformActorType, actorType.Trim())
             .Set(u => u.UpdatedAt, DateTimeOffset.UtcNow);
 
-        await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.MatchedCount > 0; // a $set of the value the document already holds still MATCHES; only a missing account does not
     }
 
     // BL-521 FIX7 item 3 - this repository applies no caller scope (see IUserRepository); the decorator does.
@@ -222,7 +224,7 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         var filter = Builders<User>.Filter.And(
             Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
             Builders<User>.Filter.In(u => u.Id, userIds),
-            Builders<User>.Filter.Ne(u => u.PlatformActorType, null));
+            PlatformAccountFilter.IsPlatformAccount);
 
         return await Collection.Find(filter).Project(u => u.Id).ToListAsync(ct);
     }

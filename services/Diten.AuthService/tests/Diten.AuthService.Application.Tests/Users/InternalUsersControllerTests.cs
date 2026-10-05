@@ -270,7 +270,7 @@ public sealed class InternalUsersControllerTests
         public Task<User> UpdateAsync(User user, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
         public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
-        public Task SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
+        public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
         public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
     }
 

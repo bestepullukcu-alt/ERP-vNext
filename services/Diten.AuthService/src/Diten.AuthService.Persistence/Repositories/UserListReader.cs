@@ -191,9 +191,9 @@ public sealed class UserListReader : IUserListReader
         return f.And(all);
     }
 
-    /// <summary>A null (or missing) platform actor type: the account is not a platform account (BL-521 FIX6 item 13).</summary>
-    private static readonly FilterDefinition<User> PlatformAccountsExcluded =
-        Builders<User>.Filter.Eq(u => u.PlatformActorType, null);
+    /// <summary>An account that is not a platform account (BL-521 FIX6 item 13) — the ONE shared definition, equal to
+    /// <c>User.IsPlatformAccount</c> (FIX8 item 3: an empty or whitespace actor type is not one either).</summary>
+    private static readonly FilterDefinition<User> PlatformAccountsExcluded = PlatformAccountFilter.IsNotPlatformAccount;
 
     // The "i" option folds I↔i and Ç↔ç but not the Turkish pair: "YILMAZ" would miss "Yılmaz" (ı) and "ÇELİK" would miss
     // "Çelik". Every i-like letter of the (already escaped) token becomes the class of all four, so a Turkish tenant's

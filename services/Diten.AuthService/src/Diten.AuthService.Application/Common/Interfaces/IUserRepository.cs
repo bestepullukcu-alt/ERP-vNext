@@ -25,7 +25,9 @@ public interface IUserRepository
 
     // BL-521 FIX7 item 1 - the platform door's maintenance write: sets ONLY the account's platform actor type (and the update
     // time), by id and tenant. Never the whole document - a replace of an object loaded earlier would undo a concurrent change.
-    Task SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct);
+    // FIX8 item 1 - returns whether the write MATCHED a live account of that id and tenant (false: the account is gone or
+    // was moved since it was read, nothing was written). The caller must treat false as a failed mint.
+    Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct);
 
     // BL-521 FIX7 item 3 - of these user ids (a role's holders), the ones the CURRENT CALLER may see and act on: for a tenant
     // actor the platform accounts are not among them, so a role-level action (ending sessions, counting holders) never reaches

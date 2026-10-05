@@ -7,7 +7,8 @@ namespace Diten.AuthService.Persistence.Repositories;
 /// BL-521 FIX6 item 13 (D') — THE ONE PLACE A TENANT ACTOR'S VIEW OF USERS LOSES THE PLATFORM ACCOUNTS. The platform system
 /// tenant is also a business tenant, so a tenant administrator of it manages ordinary users next to the platform
 /// administrators' own accounts (measured on FIX5: with a full <c>auth.users.*</c> token it could disable, reset the password
-/// of and assign roles to another administrator). When the caller is a tenant actor (<see cref="IPlatformAccountVisibility"/>)
+/// of and assign roles to another administrator). When the caller is hidden from platform accounts
+/// (<see cref="IPlatformAccountVisibility"/>: since FIX8 every authenticated caller that is not a platform-door actor)
 /// a platform account is ABSENT from every by-id read and every list / search the user-management endpoints use — so each of
 /// their handlers (get, disable, enable, reset-password, role assignment, update, delete, resend invitation, account kind,
 /// display label, lookup, reference validation) answers its own "not found" for it, indistinguishable from an id that does not
@@ -16,7 +17,7 @@ namespace Diten.AuthService.Persistence.Repositories;
 /// <para>What is deliberately NOT hidden: the lookups by e-mail and by user name (they enforce the uniqueness of an address /
 /// a user name — hiding them would let a duplicate through to the unique index), the by-reset-token lookup (the anonymous
 /// set-password door holds the token), the tenant's user COUNT (quota) and every write of an object already loaded.
-/// A caller that is not a tenant actor — platform door, internal service call, background work — sees everything.</para>
+/// A caller that is not hidden — platform door, anonymous door, internal service call, background work — sees everything.</para>
 ///
 /// <para>FIX7 item 2 — THE FILTER IS IN THE QUERY. A list or a search that dropped the platform accounts AFTER the database
 /// had applied its limit or its page returned too few rows (a lookup with <c>limit=1</c> whose first row is a platform account
@@ -85,5 +86,5 @@ public sealed class PlatformAccountScopedUserRepository : IUserRepository
     public Task<User> CreateAsync(User user, CancellationToken ct) => _inner.CreateAsync(user, ct);
     public Task<User> UpdateAsync(User user, CancellationToken ct) => _inner.UpdateAsync(user, ct);
     public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) => _inner.UpdateForTenantAsync(user, tenantId, ct);
-    public Task SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => _inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
+    public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => _inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
 }

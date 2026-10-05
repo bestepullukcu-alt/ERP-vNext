@@ -20,12 +20,16 @@ namespace Diten.AuthService.Application.Common.Services;
 /// callers that later replace the whole document (login records the sign-in, the forced change the new password) carry the
 /// healed value as well, because the in-memory user is updated here too — a replace of the old object would undo the write.
 /// Only an account of the platform system tenant is touched. A failure is NOT swallowed: a mint that cannot mark its account
-/// fails (500, retry) rather than leave an account the tenant door would accept.</para>
+/// fails (500, retry) rather than leave an account the tenant door would accept — and FIX8 makes "cannot mark" include the
+/// write that matched no account.</para>
 /// </summary>
 public static class PlatformAccountDiscriminator
 {
     /// <summary>The event code of the log line written when a copy was missing or different and was corrected.</summary>
     public const string HealedEventCode = "AUTH_PLATFORM_ACCOUNT_DISCRIMINATOR_HEALED";
+
+    /// <summary>The message of the failure when the marker write matched no account (no e-mail, no user id).</summary>
+    public const string MarkerNotWrittenMessage = "The platform account marker was not written: no live account matched, so no platform token is minted.";
 
     public static async Task EnsureAsync(IUserRepository users, User user, string recordActorType, ILogger logger, CancellationToken ct)
     {
@@ -41,7 +45,16 @@ public static class PlatformAccountDiscriminator
         }
 
         var from = user.PlatformActorType;
-        await users.SetPlatformActorTypeAsync(user.Id, PlatformSystemTenant.Id, actorType, ct);
+
+        // FIX8 item 1 - FAIL CLOSED, BOTH WAYS: a write that throws propagates (nothing here catches it), and a write that
+        // MATCHED NO ACCOUNT (deleted or moved since the sign-in read it) is a failure too — the loaded user is not marked and
+        // no platform token is minted from an account the tenant door could still accept.
+        var matched = await users.SetPlatformActorTypeAsync(user.Id, PlatformSystemTenant.Id, actorType, ct);
+        if (!matched)
+        {
+            throw new InvalidOperationException(MarkerNotWrittenMessage);
+        }
+
         user.SetPlatformActorType(actorType);
         logger.LogInformation(
             "Platform account discriminator corrected at mint. EventCode={EventCode} From={From} To={To} UserId={UserId}",

@@ -198,10 +198,12 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
 
     /// <summary>Registration mints a token only for the account it CREATES. An address that belongs to a platform account is
     /// "already in use" — the same 409 an ordinary user's address gets — and creates, mints and writes nothing.</summary>
-    [Fact]
-    public async Task Registering_the_address_of_a_platform_account_is_the_ordinary_409_and_mints_nothing()
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task Registering_the_address_of_a_platform_account_is_the_ordinary_409_and_mints_nothing(string actorType)
     {
-        var platformAccount = await SeedAsync(BusinessAndPlatformTenant, platform: true);
+        var platformAccount = await SeedAsync(BusinessAndPlatformTenant, platform: true, actorType: actorType);
         var ordinary = await SeedAsync(BusinessAndPlatformTenant);
         var before = await _host.Database.GetCollection<User>("users").CountDocumentsAsync(u => u.TenantId == BusinessAndPlatformTenant);
 
@@ -401,17 +403,19 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
     }
 
     /// <summary>A platform-DOOR actor is not a tenant actor: it still sees the platform accounts in the list and reads one.</summary>
-    [Fact]
-    public async Task A_platform_door_actor_still_sees_and_reads_platform_accounts()
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task A_platform_door_actor_still_sees_and_reads_platform_accounts(string actorType)
     {
-        var actor = await SeedAsync(BusinessAndPlatformTenant, platform: true, roles: ["SuperAdmin"]);
-        var other = await SeedAsync(BusinessAndPlatformTenant, platform: true);
+        var actor = await SeedAsync(BusinessAndPlatformTenant, platform: true, roles: ["SuperAdmin"], actorType: actorType);
+        var other = await SeedAsync(BusinessAndPlatformTenant, platform: true, actorType: actorType);
         var user = await UserAsync(actor.Id, BusinessAndPlatformTenant);
         string token;
         using (var scope = _host.Factory.Services.CreateScope())
         {
             token = scope.ServiceProvider.GetRequiredService<ITokenService>().GeneratePlatformAccessToken(
-                user!.Id, user.Email, user.FirstName, user.LastName, BusinessAndPlatformTenant, "platform_admin", ["SuperAdmin"],
+                user!.Id, user.Email, user.FirstName, user.LastName, BusinessAndPlatformTenant, actorType, ["SuperAdmin"],
                 ["auth.users.read"], 60, false);
         }
 
@@ -426,11 +430,13 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
     }
 
     /// <summary>The platform door is untouched: the platform account signs in there (its record is active) and its session refreshes.</summary>
-    [Fact]
-    public async Task The_platform_door_still_signs_in_and_refreshes()
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task The_platform_door_still_signs_in_and_refreshes(string actorType)
     {
-        var account = await SeedAsync(BusinessAndPlatformTenant, platform: true, roles: ["SuperAdmin"]);
-        Host.Records[account.Email] = PlatformAdministratorRecordAnswer.ConfirmedAs("platform_admin");
+        var account = await SeedAsync(BusinessAndPlatformTenant, platform: true, roles: ["SuperAdmin"], actorType: actorType);
+        Host.Records[account.Email] = PlatformAdministratorRecordAnswer.ConfirmedAs(actorType);
         using var anonymous = _host.Client(tenantHeader: BusinessAndPlatformTenant);
 
         var login = await anonymous.PostAsJsonAsync("api/platform-auth/login", new { email = account.Email, password = Password, rememberMe = false });
@@ -441,7 +447,7 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
         var data = json.RootElement.GetProperty("data");
         var accessToken = data.GetProperty("accessToken").GetString()!;
         var refreshToken = data.GetProperty("refreshToken").GetString()!;
-        Assert.Equal("platform_admin", new JwtSecurityTokenHandler().ReadJwtToken(accessToken).Claims.Single(c => c.Type == "actor_type").Value);
+        Assert.Equal(actorType, new JwtSecurityTokenHandler().ReadJwtToken(accessToken).Claims.Single(c => c.Type == "actor_type").Value);
 
         var refresh = await anonymous.PostAsJsonAsync("api/auth/refresh-token", new { accessToken, refreshToken });
         Assert.True(refresh.StatusCode == HttpStatusCode.OK, $"{(int)refresh.StatusCode}: {await refresh.Content.ReadAsStringAsync()}");
@@ -585,15 +591,17 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
     /// <summary>A lookup with a small limit whose first rows (by last name, first name) are platform accounts still answers the
     /// ordinary matches: the limit counts only what the tenant actor may see. (Dropping them in memory after Mongo's limit
     /// answered nothing for limit=1.)</summary>
-    [Fact]
-    public async Task A_lookup_with_a_small_limit_still_answers_the_ordinary_match_behind_platform_accounts()
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task A_lookup_with_a_small_limit_still_answers_the_ordinary_match_behind_platform_accounts(string actorType)
     {
         var tenant = Guid.NewGuid();
         var tag = $"L{Guid.NewGuid():N}"[..12];
         var admin = await SeedAsync(tenant);
         for (var i = 1; i <= 3; i++)
         {
-            await SeedAsync(tenant, platform: true, firstName: $"{tag}A{i}"); // sort first
+            await SeedAsync(tenant, platform: true, firstName: $"{tag}A{i}", actorType: actorType); // sort first
         }
 
         var first = await SeedAsync(tenant, firstName: $"{tag}B1");
@@ -606,15 +614,17 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
     }
 
     /// <summary>limit=20 returns 20 when 20 ordinary matches exist, however many platform accounts sort ahead of them.</summary>
-    [Fact]
-    public async Task A_lookup_limit_of_twenty_returns_twenty_when_twenty_ordinary_matches_exist()
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task A_lookup_limit_of_twenty_returns_twenty_when_twenty_ordinary_matches_exist(string actorType)
     {
         var tenant = Guid.NewGuid();
         var tag = $"M{Guid.NewGuid():N}"[..12];
         var admin = await SeedAsync(tenant);
         for (var i = 1; i <= 3; i++)
         {
-            await SeedAsync(tenant, platform: true, firstName: $"{tag}A{i}");
+            await SeedAsync(tenant, platform: true, firstName: $"{tag}A{i}", actorType: actorType);
         }
 
         var ordinary = new List<Guid>();
@@ -633,8 +643,10 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
     /// <summary>The page of the repository the internal sweeps use counts only what the caller may see: three platform accounts
     /// that come first and three ordinary users, page size 2 → pages of 2, 1 and 0 ordinary users; a caller that is not hidden
     /// from anything gets all six.</summary>
-    [Fact]
-    public async Task The_repository_page_counts_only_what_the_caller_may_see()
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task The_repository_page_counts_only_what_the_caller_may_see(string actorType)
     {
         var tenant = Guid.NewGuid();
         using var scope = _host.Factory.Services.CreateScope();
@@ -667,9 +679,9 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
         Assert.All(pages.SelectMany(p => p), u => Assert.False(u.IsPlatformAccount));
         Assert.Equal(6, (await visible.GetAllByTenantAsync(tenant, 1, 10, CancellationToken.None)).Count());
 
-        static User PlatformMarked(User user)
+        User PlatformMarked(User user)
         {
-            user.SetPlatformActorType("platform_admin");
+            user.SetPlatformActorType(actorType);
             return user;
         }
     }
@@ -704,14 +716,16 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
 
     /// <summary>The platform-door actor is not hidden from anything: the count it reads for a role includes the platform accounts
     /// that hold it (the same role, counted for the tenant actor above without them).</summary>
-    [Fact]
-    public async Task A_platform_door_actor_counts_the_platform_accounts_holding_a_role()
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task A_platform_door_actor_counts_the_platform_accounts_holding_a_role(string actorType)
     {
         var superAdmin = await RoleIdAsync("SuperAdmin");
-        var holder = await SeedAsync(BusinessAndPlatformTenant, platform: true, roles: ["SuperAdmin"]);
+        var holder = await SeedAsync(BusinessAndPlatformTenant, platform: true, roles: ["SuperAdmin"], actorType: actorType);
         var ordinary = await SeedAsync(BusinessAndPlatformTenant, roles: ["SuperAdmin"]);
         var admin = await SeedAsync(BusinessAndPlatformTenant);
-        var platformToken = await MintPlatformTokenAsync(holder, "platform_admin", ["auth.roles.read"]);
+        var platformToken = await MintPlatformTokenAsync(holder, actorType, ["auth.roles.read"]);
 
         using var platformClient = _host.Client(platformToken, BusinessAndPlatformTenant);
         using var tenantClient = _host.Client(await MintTenantTokenAsync(admin, ["auth.roles.read"]), BusinessAndPlatformTenant);
@@ -736,11 +750,13 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
     /// <summary>The production container resolves the user repository and the list reader WITH the visibility: the same request
     /// principal drives both, so a tenant actor does not get the platform account from either, a platform-door actor and a call with
     /// no request do.</summary>
-    [Fact]
-    public async Task The_production_container_resolves_both_with_the_visibility_and_both_follow_the_request()
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task The_production_container_resolves_both_with_the_visibility_and_both_follow_the_request(string actorType)
     {
         var tenant = Guid.NewGuid();
-        var platformAccount = await SeedAsync(tenant, platform: true);
+        var platformAccount = await SeedAsync(tenant, platform: true, actorType: actorType);
         var ordinary = await SeedAsync(tenant);
         using var scope = _host.Factory.Services.CreateScope();
         var sp = scope.ServiceProvider;
@@ -769,7 +785,11 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
         {
             accessor.HttpContext = As("tenant_user");
             Assert.Equal((false, 1L), await SeenAsync()); // the ordinary user only
-            accessor.HttpContext = As("platform_admin");
+            accessor.HttpContext = As("");              // FIX8: authenticated, but no actor type: hidden like a tenant actor
+            Assert.Equal((false, 1L), await SeenAsync());
+            accessor.HttpContext = As("unknown_actor"); // … and an actor type this service does not know
+            Assert.Equal((false, 1L), await SeenAsync());
+            accessor.HttpContext = As(actorType);       // only a platform-door actor sees
             Assert.Equal((true, 2L), await SeenAsync());
             accessor.HttpContext = null;
             Assert.Equal((true, 2L), await SeenAsync());
@@ -956,18 +976,206 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
         Assert.True(accepted.HasToken);
     }
 
+    // ═══ BL-521 FIX8 ═══════════════════════════════════════════════════════════════════════════════════════
+
+    // ── item 1: the marker write fails closed (the HTTP end of it is PlatformMintMarkerFailureTests) ─────
+
+    /// <summary>The helper itself: a write that throws propagates, and a write that matched no account is a failure too — in both
+    /// cases the loaded user is NOT marked (nothing downstream may treat the account as marked, or mint from it).</summary>
+    [Theory]
+    [InlineData("throws")]
+    [InlineData("matches-nothing")]
+    public async Task The_discriminator_helper_fails_and_leaves_the_user_unmarked_when_the_write_throws_or_matches_nothing(string outcome)
+    {
+        var user = new User($"helper.{Guid.NewGuid():N}@bl521.test", "hash:x", "Door", "Probe", BusinessAndPlatformTenant);
+        var store = new InMemoryUserRepository([user]) { MarkerWrites = outcome == "throws" ? MarkerWrite.Throws : MarkerWrite.MatchesNothing };
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            PlatformAccountDiscriminator.EnsureAsync(store, user, "platform_admin", NullLogger.Instance, CancellationToken.None));
+
+        Assert.Null(user.PlatformActorType);
+        if (outcome == "matches-nothing")
+        {
+            Assert.Equal(PlatformAccountDiscriminator.MarkerNotWrittenMessage, failure.Message);
+        }
+    }
+
+    /// <summary>The real repository's write reports whether it MATCHED a live account of that id and tenant: yes for a live one
+    /// (also when it already holds the value), no for a deleted account, another tenant's, an unknown id — and what matched nothing
+    /// wrote nothing.</summary>
+    [Fact]
+    public async Task The_marker_write_reports_whether_it_matched_a_live_account_of_that_tenant()
+    {
+        var tenant = Guid.NewGuid();
+        var live = await SeedAsync(tenant);
+        var deleted = await SeedAsync(tenant);
+        using var scope = _host.Factory.Services.CreateScope();
+        var sp = scope.ServiceProvider;
+        sp.GetRequiredService<TenantContext>().SetTenant(tenant);
+        var repository = sp.GetRequiredService<UserRepository>();
+        await repository.SoftDeleteAsync(deleted.Id, tenant, CancellationToken.None);
+
+        Assert.True(await repository.SetPlatformActorTypeAsync(live.Id, tenant, "partner_admin", CancellationToken.None));
+        Assert.True(await repository.SetPlatformActorTypeAsync(live.Id, tenant, "partner_admin", CancellationToken.None)); // the value it holds still matches
+        Assert.False(await repository.SetPlatformActorTypeAsync(deleted.Id, tenant, "platform_admin", CancellationToken.None));
+        Assert.False(await repository.SetPlatformActorTypeAsync(live.Id, Guid.NewGuid(), "platform_admin", CancellationToken.None));
+        Assert.False(await repository.SetPlatformActorTypeAsync(Guid.NewGuid(), tenant, "platform_admin", CancellationToken.None));
+
+        var users = _host.Database.GetCollection<User>("users");
+        Assert.Equal("partner_admin", (await users.Find(u => u.Id == live.Id).FirstAsync()).PlatformActorType);
+        Assert.Null((await users.Find(u => u.Id == deleted.Id).FirstAsync()).PlatformActorType);
+    }
+
+    // ── item 2: only a platform-door actor sees platform accounts; every other authenticated request does not ─
+
+    /// <summary>A token that IS authenticated but carries an empty or an unknown actor type is not a platform-door actor: it gets the
+    /// answer of an absent user for a platform account (404), and the platform account is not in its lookup, its list or its counter.
+    /// (FIX6 hid only <c>tenant_user</c>: anything else saw every account.) The control: the same token reads the ordinary colleague.</summary>
+    [Theory]
+    [InlineData("", "platform_admin")]
+    [InlineData("service", "partner_admin")]
+    [InlineData("unknown_actor", "platform_admin")]
+    public async Task An_authenticated_token_with_an_empty_or_unknown_actor_type_does_not_see_platform_accounts(string tokenActorType, string platformType)
+    {
+        var tenant = Guid.NewGuid();
+        var tag = $"U{Guid.NewGuid():N}"[..12];
+        var admin = await SeedAsync(tenant, firstName: tag);
+        var colleague = await SeedAsync(tenant, firstName: tag);
+        var platformAccount = await SeedAsync(tenant, platform: true, firstName: tag, actorType: platformType);
+        using var client = _host.Client(await MintPlatformTokenAsync(admin, tokenActorType, UserAdminPermissions), tenant);
+
+        var getPlatform = await client.GetAsync($"api/users/{platformAccount.Id}");
+        var getColleague = await client.GetAsync($"api/users/{colleague.Id}");
+        var lookup = await LookupIdsAsync(client, tag, 50);
+        var list = await client.GetAsync("api/users?start=0&length=200");
+
+        Assert.Equal(HttpStatusCode.NotFound, getPlatform.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, getColleague.StatusCode);
+        Assert.Contains(colleague.Id, lookup);
+        Assert.DoesNotContain(platformAccount.Id, lookup);
+        var listBody = await list.Content.ReadAsStringAsync();
+        Assert.True(list.StatusCode == HttpStatusCode.OK, $"{(int)list.StatusCode}: {listBody}");
+        Assert.DoesNotContain(platformAccount.Email, listBody, StringComparison.OrdinalIgnoreCase);
+        using var listJson = JsonDocument.Parse(listBody);
+        Assert.Equal(2, listJson.RootElement.GetProperty("data").GetProperty("summary").GetProperty("total").GetInt64()); // admin + colleague
+    }
+
+    // ── item 3: an empty or whitespace actor type is "not a platform account" in every filter, as in memory ─
+
+    /// <summary>An account whose stored actor type is "", whitespace only or a lone no-break space is — by <c>User.IsPlatformAccount</c>
+    /// — an ordinary user, and now every rule agrees: the tenant actor sees it (get, lookup, list, counter), a role-permission removal
+    /// ends its sessions, and the tenant door signs it in. A real platform account beside it stays hidden and untouched.</summary>
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData("\t  ")]
+    public async Task An_account_with_a_blank_actor_type_is_an_ordinary_user_to_every_rule(string blank)
+    {
+        var tenant = Guid.NewGuid();
+        var tag = $"B{Guid.NewGuid():N}"[..12];
+        var admin = await SeedAsync(tenant, firstName: tag);
+        var blankAccount = await SeedAsync(tenant, firstName: tag);
+        var platformAccount = await SeedAsync(tenant, platform: true, firstName: tag);
+        await SetStoredActorTypeAsync(blankAccount.Id, blank);
+        Assert.False((await UserAsync(blankAccount.Id, tenant))!.IsPlatformAccount); // the memory rule this must agree with
+        var (roleId, permissionId) = await SeedRoleWithGrantAsync(tenant, blankAccount, platformAccount);
+        var blankRow = await AddRefreshRowAsync(blankAccount, tenant, "tenant_user");
+        var platformRow = await AddRefreshRowAsync(platformAccount, tenant, "platform_admin");
+        using var client = _host.Client(await MintTenantTokenAsync(admin, [.. UserAdminPermissions, "auth.roles.read", "auth.roles.assign-permission"]), tenant);
+
+        // seen: get, lookup, list, counter
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"api/users/{blankAccount.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"api/users/{platformAccount.Id}")).StatusCode);
+        var lookup = await LookupIdsAsync(client, tag, 50);
+        Assert.Contains(blankAccount.Id, lookup);
+        Assert.DoesNotContain(platformAccount.Id, lookup);
+        var list = await client.GetAsync("api/users?start=0&length=200");
+        var listBody = await list.Content.ReadAsStringAsync();
+        Assert.Contains(blankAccount.Email, listBody, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(platformAccount.Email, listBody, StringComparison.OrdinalIgnoreCase);
+        using (var listJson = JsonDocument.Parse(listBody))
+        {
+            Assert.Equal(2, listJson.RootElement.GetProperty("data").GetProperty("summary").GetProperty("total").GetInt64()); // admin + the blank one
+        }
+
+        // counted as a holder, and its sessions end with a permission removal; the platform account's do not
+        Assert.Equal(1, await RoleUserCountAsync(client, roleId));
+        var revoke = await client.DeleteAsync($"api/roles/{roleId}/permissions/{permissionId}");
+        Assert.True(revoke.StatusCode == HttpStatusCode.NoContent, $"{(int)revoke.StatusCode}: {await revoke.Content.ReadAsStringAsync()}");
+        Assert.NotNull((await RefreshRowAsync(blankRow, tenant))!.RevokedAt);
+        Assert.Null((await RefreshRowAsync(platformRow, tenant))!.RevokedAt);
+
+        // and the tenant door signs it in
+        var signIn = await TenantLoginAsync(blankAccount.Email, Password, tenant);
+        Assert.Equal(HttpStatusCode.OK, signIn.Status);
+        Assert.True(signIn.HasToken);
+    }
+
+    /// <summary>The two Mongo filters (and the role-holder lookup) are the in-memory rule, over real documents: for every kind of
+    /// value — missing, empty, ASCII and Unicode whitespace, spaces around a real value, real and unknown types — the accounts the
+    /// platform-account filter finds are exactly the ones <c>IsPlatformAccount</c> says are, and the accounts the exclusion keeps
+    /// (page, lookup, counter) are exactly the rest.</summary>
+    [Fact]
+    public async Task The_mongo_filters_agree_with_IsPlatformAccount_for_every_kind_of_actor_type_value()
+    {
+        var tenant = Guid.NewGuid();
+        var values = new string?[] { null, "", " ", "\t", " ", "  　", "platform_admin", "partner_admin", " partner_admin ", "x", "service" };
+        var ids = new List<Guid>();
+        foreach (var value in values)
+        {
+            var account = await SeedAsync(tenant);
+            if (value is not null)
+            {
+                await SetStoredActorTypeAsync(account.Id, value);
+            }
+
+            ids.Add(account.Id);
+        }
+
+        using var scope = _host.Factory.Services.CreateScope();
+        var sp = scope.ServiceProvider;
+        sp.GetRequiredService<TenantContext>().SetTenant(tenant);
+        var repository = sp.GetRequiredService<UserRepository>();
+        var everyone = (await repository.GetAllByTenantAsync(tenant, 1, 100, CancellationToken.None)).ToList();
+        var expectedPlatform = everyone.Where(u => u.IsPlatformAccount).Select(u => u.Id).Order().ToList();
+        var expectedOrdinary = everyone.Where(u => !u.IsPlatformAccount).Select(u => u.Id).Order().ToList();
+        Assert.Equal(values.Length, everyone.Count);
+        Assert.Equal(5, expectedPlatform.Count);  // not vacuous: five carry a real value …
+        Assert.Equal(6, expectedOrdinary.Count);  // … six carry none (missing, empty or whitespace)
+
+        var found = (await repository.PlatformAccountIdsAmongAsync(tenant, ids, CancellationToken.None)).Order().ToList();
+        var page = (await repository.GetAllByTenantAsync(tenant, 1, 100, excludePlatformAccounts: true, CancellationToken.None)).Select(u => u.Id).Order().ToList();
+        var search = (await repository.SearchActiveAsync(tenant, null, 50, excludePlatformAccounts: true, CancellationToken.None)).Select(u => u.Id).Order().ToList();
+        var summary = await new UserListReader(_host.Database, new HideAccountsFromCaller()).GetSummaryAsync(tenant, CancellationToken.None);
+
+        Assert.Equal(expectedPlatform, found);
+        Assert.Equal(expectedOrdinary, page);
+        Assert.Equal(expectedOrdinary, search);
+        Assert.Equal(expectedOrdinary.Count, summary.Total);
+    }
+
     // ── the visibility itself ───────────────────────────────────────────────────────────────────────────
 
-    /// <summary>Only a tenant actor's authenticated principal hides platform accounts: a platform-door actor, an anonymous request
-    /// and a call with no request at all (internal service calls, background work) are not hidden from anything.</summary>
+    /// <summary>FIX8 item 2 — THE RULE IS THE OTHER WAY ROUND: inside a request ONLY a platform-door actor (platform_admin /
+    /// partner_admin, any letter case) sees platform accounts; every other AUTHENTICATED principal hides them — a tenant actor, but
+    /// also one with no, an empty or an unknown actor type. An unauthenticated request (the anonymous doors, the internal calls that
+    /// authenticate by key) and a call with no request at all (background work) are not hidden from anything.</summary>
     [Theory]
     [InlineData("tenant_user", true, true)]
     [InlineData("TENANT_USER", true, true)]
+    [InlineData(null, true, true)]
+    [InlineData("", true, true)]
+    [InlineData("   ", true, true)]
+    [InlineData("service", true, true)]
+    [InlineData("unknown_actor", true, true)]
     [InlineData("platform_admin", true, false)]
+    [InlineData("PLATFORM_ADMIN", true, false)]
     [InlineData("partner_admin", true, false)]
-    [InlineData(null, true, false)]
+    [InlineData("Partner_Admin", true, false)]
     [InlineData("tenant_user", false, false)]
-    public void Only_an_authenticated_tenant_actor_hides_platform_accounts(string? actorType, bool authenticated, bool hides)
+    [InlineData(null, false, false)]
+    [InlineData("unknown_actor", false, false)]
+    public void An_authenticated_request_hides_platform_accounts_unless_it_is_a_platform_door_actor(string? actorType, bool authenticated, bool hides)
     {
         var context = new DefaultHttpContext();
         var claims = actorType is null ? [] : new[] { new System.Security.Claims.Claim("actor_type", actorType) };
@@ -1308,6 +1516,10 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
             return Task.CompletedTask;
         }
     }
+
+    /// <summary>Writes the actor type into the stored document as it is (no entity normalisation): how a blank value gets there.</summary>
+    private async Task SetStoredActorTypeAsync(Guid userId, string? value) =>
+        await _host.Database.GetCollection<User>("users").UpdateOneAsync(u => u.Id == userId, Builders<User>.Update.Set("PlatformActorType", value));
 
     /// <summary>One server log line as a handler wrote it: its level, its rendered message and its structured fields.</summary>
     public sealed record LogLine(string Category, LogLevel Level, string Message, IReadOnlyDictionary<string, string> Fields);

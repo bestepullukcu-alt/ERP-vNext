@@ -94,11 +94,20 @@ yaşar. Bu yüzden kural kiracıya değil **hesaba** bağlıdır: Auth kaydında
   bakılmadan, belirteç, yenileme satırı ve denetim satırı yazılmadan. Sıradan kullanıcılar eskisi gibi girer. Platform kapısı
   (`/api/platform-auth/login`, yenileme) etkilenmez. Kayıt (register) yalnız YARATTIĞI hesaba belirteç basar; platform
   hesabının adresi her zamanki "kullanımda" 409'u alır.
-- **Kiracı aktörü (`actor_type=tenant_user`) platform hesabını görmez ve ona dokunamaz:** liste / arama / arama kutusu /
-  dışa aktarım ve üst sayaçlar onu içermez; kullanıcı yönetimi uçları (oku, doğrula, onay, etiket, tür, güncelle, sil, askıya
-  al, etkinleştir, parola sıfırla, davet yeniden gönder, rol ata / kaldır) ona **404** verir, olmayan bir kimliğin cevabıyla
-  aynı. Kural tek yerde (`PlatformAccountScopedUserRepository` + `UserListReader`). Platform kapısı aktörleri ve iç servis
-  çağrıları etkilenmez.
+- **Yalnız platform kapısı aktörü (`actor_type` = `platform_admin` / `partner_admin`) platform hesabını görür; kimliği
+  doğrulanmış her öteki istek (kiracı aktörü `tenant_user`, ama aynı zamanda actor_type'ı olmayan, boş ya da bilinmeyen bir
+  belirteç) görmez ve dokunamaz (FIX8 madde 2; FIX6 yalnız `tenant_user`'ı gizliyordu, ötekiler her hesabı görüyordu):** liste /
+  arama / arama kutusu / dışa aktarım ve üst sayaçlar onu içermez; kullanıcı yönetimi uçları (oku, doğrula, onay, etiket, tür,
+  güncelle, sil, askıya al, etkinleştir, parola sıfırla, davet yeniden gönder, rol ata / kaldır) ona **404** verir, olmayan bir
+  kimliğin cevabıyla aynı. Kural tek yerde (`HttpPlatformAccountVisibility` → `PlatformAccountScopedUserRepository` +
+  `UserListReader`). Kimliği doğrulanmamış istek (anonim kapılar: giriş, MFA doğrulama, yenileme, platform kapısı; iç anahtarla
+  gelen iç servis çağrıları) ve istek dışı çalışma (arka plan) gizlenmez. Auth yalnız `tenant_user` ve platform kapısı türlerinde
+  belirteç basar; başka bir türde belirteç gelirse platform hesabı ona görünmez (kapalı yönde).
+- **"Platform hesabı" her yerde aynı tanımdır (FIX8 madde 3).** `PlatformActorType` en az bir boşluk-dışı karakter taşıyorsa
+  hesap platform hesabıdır (`User.IsPlatformAccount`); boş, boşluklu ya da eksik değer platform hesabı **değildir** ve kiracı
+  aktörü onu sıradan kullanıcı gibi görür, rol izin kaldırmada oturumu sonlanır, kiracı kapısından girer. Mongo süzgeçleri bu
+  kuralın tek paylaşılan tanımını kullanır (`PlatformAccountFilter`, boşluk kümesi `char.IsWhiteSpace`'ten türetilir; liste, arama,
+  sayaç ve rol sahipleri aynı süzgeçtir) ve bir testle bellek kuralıyla gerçek belgeler üzerinde karşılaştırılır.
 - **Dev etkisi:** `admin@diten.com` (tohum, `PlatformActorType=platform_admin`) artık kiracı kapısından (`/account/login`)
   giremez; aynı kiracının öteki kullanıcıları girer.
 - **İşaret platform kapısında onarılır (FIX7 madde 1).** Hesabı "platform hesabı" yapan şey Auth'un kullanıcı üzerindeki
@@ -126,6 +135,17 @@ yaşar. Bu yüzden kural kiracıya değil **hesaba** bağlıdır: Auth kaydında
   ayarı, varsayılan 60 dk) dolana kadar o belirteç **içine gömülü izinleriyle** sıradan kullanıcılar ve roller üzerinde işlem
   yapabilir ve öteki servisler tarafından kabul edilir. Bu bir **penceredir**; "hiçbir şeyi yönetemez" değildir. Kapanması için
   belirtecin süresinin dolması ya da o hesabın oturumlarının elle iptali gerekir.
+  (c) **Anonim `POST api/tenant-auth/register`, bir platform hesabının adresine aynı 409'u verir** (`RegisterCommandHandler`: adres
+  zaten kullanımda). Bu yoklama belirteç gerektirmez; (a)'daki yoklamanın belirteçsiz hâlidir ve aynı nedenle kaçınılmazdır.
+  (d) **İşaretsiz bir hesabın kiracı oturumu yenilemede reddedilmez.** Kiracı yenilemesinin platform hesabını reddetmesi (A')
+  işarete bağlıdır; işareti eksik hesabın kiracı oturumu, hesap bir platform basımından geçip işaretlenene kadar yenilenmeye devam
+  eder ve böylece `SessionTimeoutMinutes`'ı aşar (yenileme ömrü kadar). İşaretin yalnız platform basımında onarılması (FIX7) ile
+  birlikte okunmalıdır: hiç platform basımından geçmemiş hesap işaretsiz kalır (tek seferlik doldurma yapılırsa kapanır).
+  (e) **Kiracı zorunlu parola değişimi kapısının ret satırı üretim yolunda yazılmaz.** Bu kapı HTTP'de bir kiracı belirteciyle
+  çağrılır ve depo hesabı önce gizlediği için "kullanıcı yok" 401'ini verir; satır yalnız hiçbir şeyin hesabı gizlemediği çağrıda
+  (handler düzeyinde) yazılır.
+  (f) **İşaret yazımı fail-closed'dır (FIX8 madde 1):** yazım hata verirse ya da hiçbir hesapla eşleşmezse (hesap okunduktan sonra
+  silinmiş ya da taşınmış) platform girişi / yenilemesi / zorunlu değişimi belirteç basmaz (500); yeniden denenir.
 
 **İç anahtar reddi (FIX3 madde 7).** Platform durum çağrısına 401 / 403 dönerse (iç anahtar iki
 serviste aynı değil) Auth bunu **Error** düzeyinde günlükler (anahtar ya da değeri yazılmaz) ve
