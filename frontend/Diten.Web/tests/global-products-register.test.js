@@ -29,8 +29,9 @@ describe("MOD-0290 Global Product Register", () => {
         const view = read("Views/MasterDataManagement/GlobalProducts/Index.cshtml");
         const source = indexScript();
 
-        expect(view).toContain('@inject Diten.Web.Services.IPermissionSnapshot Permissions');
-        expect(view).toContain('Permissions.Has("mdm.global-products.create")');
+        // FIX6 item 5 (d): Add is read with the controller's reader (PermissionClaims), like the list gate.
+        expect(view).toContain('PermissionClaims.HasPermission(User, "mdm.global-products.create")');
+        expect(view).not.toContain('IPermissionSnapshot');
         expect(view).toContain('data-can-create="@canCreate.ToString().ToLowerInvariant()"');
         expect(source).toContain("const permissionHost = document.querySelector('[data-can-create]')");
         expect(source).toContain("const canCreate = permissionHost?.getAttribute('data-can-create') === 'true'");

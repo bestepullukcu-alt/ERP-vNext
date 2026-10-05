@@ -51,13 +51,13 @@ public sealed partial class GskuLifecycleHttpTests
 
     [Theory]
     [InlineData(ProductIdentityWorkflowTransportOutcome.Invalid, ProductIdentityWorkflowFaultPolicy.ResponseUnreadable, false)]
-    [InlineData(ProductIdentityWorkflowTransportOutcome.Retryable, "WORKFLOW_UNAVAILABLE", false)]
-    [InlineData(ProductIdentityWorkflowTransportOutcome.Success, "FAKE_ENGINE_LOOKUP_FAILED", true)]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.Retryable, "PRODUCT_WORKFLOW_UNAVAILABLE", false)]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_START_RECOVERY_CONFLICT", true)]
     public async Task F5_A_service_fault_on_the_start_lookup_waits_and_an_unusable_answer_is_stuck(
         ProductIdentityWorkflowTransportOutcome outcome, string code, bool stuck)
     {
         var approved = await ApprovedGskuAsync();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "WORKFLOW_TIMEOUT", false);
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT", false);
         host.Engine.LookupFailure = outcome;
         host.Engine.LookupFailureCode = code;
         try
@@ -93,6 +93,9 @@ public sealed partial class GskuLifecycleHttpTests
     [InlineData("GSKU_CORRECTION_IDEMPOTENCY_CONFLICT", "stuck")]
     [InlineData("GSKU_NOT_FOUND", "stuck")]
     [InlineData("AUDIT_INTENT_CAPACITY_REACHED", "waits")]
+    // FIX6 item 3 (CT sabotage W1 / W2 stayed green): the other two members of "waits" are measured too.
+    [InlineData("GSKU_CORRECTION_BUSY", "waits")]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_STORE_UNAVAILABLE", "waits")]
     [InlineData("GSKU_CORRECTION_CONCURRENCY_CONFLICT", "counted")]
     public async Task F5_A_refused_apply_is_read_by_what_can_change_it(string code, string expected)
     {
@@ -151,8 +154,9 @@ public sealed partial class GskuLifecycleHttpTests
     {
         var approved = await ApprovedGskuAsync();
         var key = Guid.NewGuid();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "WORKFLOW_TIMEOUT", true);
-        host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Success; // an answer that cannot be used
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT", true);
+        host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Conflict; // Platform refuses the lookup (409)
+        host.Engine.LookupFailureCode = "WORKFLOW_START_RECOVERY_CONFLICT";
         try
         {
             Assert.False((await CorrectAsync(approved.Id, approved.Version, 4m, key)).IsSuccessStatusCode);
@@ -248,8 +252,9 @@ public sealed partial class GskuLifecycleHttpTests
     {
         var approved = await ApprovedGskuAsync();
         var key = Guid.NewGuid();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "WORKFLOW_TIMEOUT", false);
-        host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Success; // an answer that cannot be used
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT", false);
+        host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Conflict; // Platform refuses the lookup (409)
+        host.Engine.LookupFailureCode = "WORKFLOW_START_RECOVERY_CONFLICT";
         try
         {
             Assert.False((await RetireAsync(approved.Id, approved.Version, key)).IsSuccessStatusCode);

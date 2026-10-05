@@ -20,7 +20,14 @@ public static class ProductIdentityWriteFaults
         code is AuditCapacityReached or ProductIdentityStore.Unavailable
         || code?.EndsWith("_BUSY", StringComparison.Ordinal) == true;
 
-    /// <summary>The write met a concurrent one: read again and tried again — counted, so it cannot go on for ever.</summary>
+    /// <summary>
+    /// The write met a concurrent one: read again and tried again — counted, so it cannot go on for ever.
+    /// FIX6 item 4 (c): GSKU_LIFECYCLE_RELEASE_CONFLICT is the lock release's conditional write missing although the GSKU
+    /// exists and still holds a lifecycle lock — its version or binding moved between the read and the write. Only a
+    /// re-read can tell a race (gone on the next attempt) from a lasting mismatch (handed to a person at the limit), so
+    /// it is retried and counted like any concurrent write; the rule of what may release the lock is unchanged.
+    /// </summary>
     public static bool MetAConcurrentWrite(string? code) =>
-        code?.EndsWith("_CONCURRENCY_CONFLICT", StringComparison.Ordinal) == true;
+        code?.EndsWith("_CONCURRENCY_CONFLICT", StringComparison.Ordinal) == true
+        || code == "GSKU_LIFECYCLE_RELEASE_CONFLICT";
 }

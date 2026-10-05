@@ -68,7 +68,14 @@ public sealed class GskuCorrectionWorkflowProcessor(
             || operation.BaseGskuVersion != expectedVersion || operation.MakerSubjectId != makerId
             || operation.ProposedPackQuantity != quantity || operation.ProposedPackUomCode != uomCode
             || !factory.MatchesConfiguration(operation)) return Fail("GSKU_CORRECTION_OPERATION_CONFLICT", 409);
+        var wasStuck = IsStuck(operation);
+        var cause = operation.LastFailureCode;
         var result = await ProcessAsync(operation, delegatedToken, $"interactive-{makerId:N}", execution, true, ct);
+        // FIX6 item 5 (c): ONE Error line when a request becomes stuck. The worker's runner writes it for its attempts;
+        // a request that becomes stuck in its maker's own request is said here (no runner sees it).
+        if (!wasStuck && result.Operation is { } after && IsStuck(after))
+            log.LogError("GSKU correction {OperationId} of tenant {TenantId} is stuck ({ResultCode}); the cause before: {CauseCode}.",
+                after.OperationId, after.TenantId, after.LastFailureCode, cause ?? "none");
         return result with { IsReplay = replay || result.IsReplay };
     }
 
@@ -249,7 +256,11 @@ public sealed class GskuCorrectionWorkflowProcessor(
         if (found.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound)
             return await EndAndReleaseAsync(op, claim, "GSKU_CORRECTION_START_NOT_RECEIVED", now, execution, ct);
         // The engine could not be asked: the request stays as it is; the next repeat (or a person) asks again.
-        signal.EngineSilent = true;
+        // FIX6 item 2 (the identity E2 rule): only a service fault (no answer, the shared classification's ServiceWait)
+        // is "the engine cannot be asked" — 503, ask again. An answer about the record (WORKFLOW_START_RECOVERY_CONFLICT,
+        // a tenant mismatch) will not change by asking again: 409, a person has to reconcile it (BL-530).
+        if (Waits(ProductIdentityWorkflowCall.StartResult, found.Outcome, found.ErrorCode))
+            signal.EngineSilent = true;
         return await operations.AdvanceAsync(claim, new(op.Checkpoint, op.RecoveryDisposition, now.UtcTicks,
             LastFailureCode: op.LastFailureCode, ReleaseLease: true, Streak: RecoveryStreakWrite.Keep), ct);
     }
@@ -330,6 +341,14 @@ public sealed class GskuCorrectionWorkflowProcessor(
                 ?? (result.Outcome == ProductIdentityWorkflowTransportOutcome.Success ? "GSKU_CORRECTION_START_EVIDENCE_INVALID" : null),
                 now, execution, ct, fromStart, transient: Waits(fromStart ? ProductIdentityWorkflowCall.Start
                     : ProductIdentityWorkflowCall.StartResult, result.Outcome, result.ErrorCode));
+        if (!fromStart)
+            // FIX6 item 1 (blocker): this is the LOOKUP's answer, not the start's. A refused lookup (a service identity
+            // not granted, a rotated key, a tenant mismatch, an unreadable answer) says nothing about what the lost start
+            // did — the engine may hold an open approval for this correction. The lock is kept and the engine asked again:
+            // a service fault waits (never quarantined), anything else is counted and handed to a person at the limit.
+            // Only the START call's own "nothing was processed" answer below may give the GSKU back.
+            return await StartUnknownAsync(op, claim, result.ErrorCode ?? "GSKU_CORRECTION_START_LOOKUP_FAILED", now, execution, ct,
+                startSent: false, transient: Waits(ProductIdentityWorkflowCall.StartResult, result.Outcome, result.ErrorCode));
         var fault = ProductIdentityWorkflowFaultPolicy.Classify(
             ProductIdentityWorkflowCall.Start, result.Outcome, result.ErrorCode);
         if (!fault.StartedNothing)
@@ -380,7 +399,7 @@ public sealed class GskuCorrectionWorkflowProcessor(
     private async Task<bool> ObserveAsync(GskuCorrectionWorkflowOperation op, GskuCorrectionWorkflowClaim claim,
         DateTimeOffset now, GskuCorrectionExecutionConfiguration execution, CancellationToken ct)
     {
-        if (!op.WorkflowInstanceId.HasValue) return await Stuck(claim, "GSKU_CORRECTION_START_EVIDENCE_INVALID", now, ct);
+        if (!op.WorkflowInstanceId.HasValue) return await Stuck(claim, StartEvidenceInvalid, now, ct);
         var result = await workflow.GetTerminalEvidenceAsync(op.TenantId,
             new(op.WorkflowInstanceId.Value, op.ObjectType, op.ObjectId), ct);
         // An approval still open is not a failure: the streak is over (FIX3 item 1).
@@ -428,7 +447,7 @@ public sealed class GskuCorrectionWorkflowProcessor(
                 : e is null && result.Outcome != ProductIdentityWorkflowTransportOutcome.Conflict
                     ? await RetryAsync(op, claim, op.Checkpoint,
                         result.ErrorCode ?? "GSKU_CORRECTION_EVIDENCE_UNREADABLE", now, execution, ct)
-                    : await Stuck(claim, "GSKU_CORRECTION_EVIDENCE_CONFLICT", now, ct);
+                    : await Stuck(claim, EvidenceConflict, now, ct);
         return await operations.AdvanceAsync(claim, new(GskuCorrectionWorkflowCheckpoint.DecisionObserved,
             ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
             DecisionKind: approved ? ProductIdentityDecisionKind.Approved : ProductIdentityDecisionKind.Rejected,
@@ -528,29 +547,30 @@ public sealed class GskuCorrectionWorkflowProcessor(
         long? startSentAt = null)
     {
         var counted = !execution.Interactive;
-        var (exhausted, attempts, next) = ProductIdentityRecoveryStreak.Next(
+        var (exhausted, _, next) = ProductIdentityRecoveryStreak.Next(
             counted ? op.FailedAttemptCount : Math.Max(op.FailedAttemptCount - 1, 0), now,
             execution.RetryDelay, execution.QuarantineAfterFailedAttempts, execution.MaxRetryDelay);
         if (counted && exhausted && !transient)
-        {
-            log.LogError("GSKU correction {OperationId} of tenant {TenantId} failed {Attempts} attempts in a row (last {ResultCode}); it is handed to manual reconciliation, the GSKU's lock kept.",
-                op.OperationId, op.TenantId, attempts, code);
+            // FIX6 item 5 (c): said ONCE, by the runner, when the request becomes stuck (with this cause).
             return await Stuck(claim, RetryLimitReached, now, ct);
-        }
         if (counted && exhausted)
-        {
-            if (attempts == execution.QuarantineAfterFailedAttempts)
-                log.LogError("GSKU correction {OperationId} of tenant {TenantId} failed {Attempts} attempts in a row (last {ResultCode}); a service it needs does not answer — it keeps retrying at the ceiling.",
-                    op.OperationId, op.TenantId, attempts, code);
-            code = RetryLimitReached;
-        }
+            code = RetryLimitReached; // said once by the runner when it first reaches the limit, with the cause before
         return await operations.AdvanceAsync(claim, new(checkpoint, ProductIdentityWorkflowRecoveryDisposition.Retryable,
             now.UtcTicks, next, code, ReleaseLease: true,
             Streak: counted ? RecoveryStreakWrite.Increment : RecoveryStreakWrite.Keep,
             LastStartSentAtUtcTicksV1: startSentAt), ct);
     }
 
+    // Stuck: the lock held and a person or the requester's repeat needed (manual reconciliation), or past the retry
+    // limit (said, retrying at the ceiling) — the gauge's and the runner's definition.
+    private static bool IsStuck(GskuCorrectionWorkflowOperation op) =>
+        op.Checkpoint == GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired
+            ? op.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired
+            : op.LastFailureCode == RetryLimitReached;
+
     public const string RetryLimitReached = "GSKU_CORRECTION_RETRY_LIMIT_REACHED";
+    public const string EvidenceConflict = "GSKU_CORRECTION_EVIDENCE_CONFLICT";
+    public const string StartEvidenceInvalid = "GSKU_CORRECTION_START_EVIDENCE_INVALID";
 
     private async Task ReleaseAsync(GskuCorrectionWorkflowOperation op, string leaseOwner, long leaseUntil,
         GskuCorrectionExecutionConfiguration execution)

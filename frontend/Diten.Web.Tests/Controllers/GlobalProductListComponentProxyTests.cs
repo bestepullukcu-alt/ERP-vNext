@@ -178,6 +178,8 @@ public sealed class GlobalProductListComponentProxyTests : IClassFixture<WebAppl
         Assert.NotEqual(StatusCodes.Status403Forbidden, controller.Response.StatusCode);
         Assert.Contains("id=\"dt-globalproducts\"", html);
         Assert.DoesNotContain("diten-access-denied", html);
+        // FIX6 item 5 (d): and Add, read the same way (the snapshot showed the list to "*" but not Add).
+        Assert.Contains("data-can-create=\"true\"", html);
     }
 
     private async Task<string> RenderIndexAsync(string permission)

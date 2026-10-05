@@ -1,63 +1,120 @@
-using System.Reflection;
 using System.Text.RegularExpressions;
-using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Xunit;
 
 namespace Diten.MdmService.Api.Tests;
 
 /// <summary>
-/// WP-MDM-GSKU-ACCEPT-01 FIX4 (CT decision 3 corrected): the fake engine answers only with codes the real engine has.
-/// FIX3 made the fake answer WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION — a code Platform does not emit yet (BL-547) —
-/// and the tests went green on behaviour production never sees. Every workflow code the fake answers, as a literal or
-/// through a constant of ProductIdentityWorkflowFaultPolicy, must be defined in Platform's own source (read, not
-/// changed). The fake's FAKE_ENGINE_* codes stand for a transport failure with no envelope and are not engine codes.
-/// FIX5 item 1: DEFINED is not enough — WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION was a constant in Platform long before
-/// any handler answered it. Each code must also be ANSWERED: its literal, or the constant that holds it, appears in a
-/// Platform file other than the one that declares it (a handler, a coordinator, a service).
+/// WP-MDM-GSKU-ACCEPT-01 FIX4 / FIX5 / FIX6 item 5 (b): the fake engine answers only what the real chain can answer.
+/// FIX3 made the fake answer WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION before Platform did (BL-547), and the tests went
+/// green on behaviour production never saw. Two rules, both read from source (Platform is read, never changed):
+///   1. every code the fake answers as an ENGINE answer (an envelope from Platform) is answered by a Platform handler,
+///      coordinator or service — not merely declared — and next to the HTTP status the fake's outcome stands for
+///      (Conflict / NonTerminal → 409, NotFound → 404, Forbidden → 403, AuthenticationRejected → 401, Invalid → 400);
+///   2. every code a test feeds into the fake (a start or lookup failure) is either such an engine answer or one the
+///      real client itself reports (PlatformProductIdentityWorkflowClient / ProductIdentityWorkflowFaultPolicy, e.g.
+///      PRODUCT_WORKFLOW_TIMEOUT) — test-only codes ("WORKFLOW_TIMEOUT") are not allowed.
+/// FAKE_ENGINE_* codes stand for a transport failure the fake simulates without an envelope and are exempt.
 /// </summary>
 public sealed class FakePlatformCodeGuardTests
 {
-    private static readonly Regex CodeLiteral = new("\"((?:WORKFLOW|NOT_FOUND)[A-Z0-9_]*)\"", RegexOptions.CultureInvariant);
-    private static readonly Regex PolicyConstant = new(@"ProductIdentityWorkflowFaultPolicy\.([A-Za-z]+)\b", RegexOptions.CultureInvariant);
+    private static readonly Regex FakeAnswer = new(
+        @"ProductIdentityWorkflowTransportOutcome\.(\w+),\s*""((?:WORKFLOW|NOT_FOUND)[A-Z0-9_]*)""", RegexOptions.CultureInvariant);
+    private static readonly Regex FedCode = new(
+        @"(?:NextStartFailure\s*=\s*\(\s*ProductIdentityWorkflowTransportOutcome\.\w+,\s*|LookupFailureCode\s*=\s*)""([A-Z][A-Z0-9_]+)""",
+        RegexOptions.CultureInvariant);
+
+    private static readonly IReadOnlyDictionary<string, string> StatusFor = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["Conflict"] = "409", ["NonTerminal"] = "409", ["Incomplete"] = "409", ["NotFound"] = "404",
+        ["Forbidden"] = "403", ["AuthenticationRejected"] = "401", ["Invalid"] = "400"
+    };
 
     [Fact]
-    public void Every_code_the_fake_engine_answers_is_one_Platform_defines()
+    public void Every_code_the_fake_engine_answers_is_one_a_Platform_handler_answers_with_its_status()
     {
-        var fake = File.ReadAllText(Path.Combine(RepoRoot(), "services", "Diten.MdmService", "tests",
-            "Diten.MdmService.Api.Tests", "FakePlatform.cs"));
-        var codes = CodeLiteral.Matches(fake).Select(match => match.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
-        foreach (Match match in PolicyConstant.Matches(fake))
-        {
-            var field = typeof(ProductIdentityWorkflowFaultPolicy).GetField(match.Groups[1].Value,
-                BindingFlags.Public | BindingFlags.Static);
-            if (field?.GetRawConstantValue() is string value && value.StartsWith("WORKFLOW_", StringComparison.Ordinal))
-                codes.Add(value);
-        }
-        Assert.NotEmpty(codes);
+        var fake = Read("services", "Diten.MdmService", "tests", "Diten.MdmService.Api.Tests", "FakePlatform.cs");
+        var answers = FakeAnswer.Matches(fake).Select(m => (Outcome: m.Groups[1].Value, Code: m.Groups[2].Value))
+            .Distinct().ToArray();
+        Assert.NotEmpty(answers);
+        var platform = PlatformSources();
 
-        var platform = Directory.EnumerateFiles(Path.Combine(RepoRoot(), "services", "Diten.Platform", "src"), "*.cs",
-                SearchOption.AllDirectories)
-            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .Select(path => (Path: path, Source: File.ReadAllText(path)))
+        var unanswered = answers
+            .Where(answer => !IsAnswered(answer.Code, StatusFor.GetValueOrDefault(answer.Outcome, "4"), platform))
+            .Select(answer => $"{answer.Code} ({answer.Outcome})")
             .ToArray();
-        var undefined = codes.Where(code => !platform.Any(file => file.Source.Contains($"\"{code}\"", StringComparison.Ordinal)))
-            .OrderBy(code => code, StringComparer.Ordinal).ToArray();
-        Assert.True(undefined.Length == 0, "The fake engine answers codes Platform does not define: " + string.Join(", ", undefined));
 
-        var unanswered = codes.Where(code => !IsAnswered(code, platform)).OrderBy(code => code, StringComparer.Ordinal).ToArray();
-        Assert.True(unanswered.Length == 0, "The fake engine answers codes no Platform handler answers: " + string.Join(", ", unanswered));
+        Assert.True(unanswered.Length == 0,
+            "The fake engine answers codes no Platform handler answers with that status: " + string.Join(", ", unanswered));
     }
 
-    private static bool IsAnswered(string code, IReadOnlyList<(string Path, string Source)> platform)
+    [Fact]
+    public void Every_code_a_test_feeds_into_the_fake_engine_is_one_the_real_chain_can_answer()
+    {
+        var tests = Directory.EnumerateFiles(Path.Combine(RepoRoot(), "services", "Diten.MdmService", "tests",
+                "Diten.MdmService.Api.Tests"), "*.cs")
+            .Select(File.ReadAllText);
+        // The real client and its service-identity provider (Infrastructure/Workflow), and the shared fault policy.
+        var client = string.Concat(Directory.EnumerateFiles(Path.Combine(RepoRoot(), "services", "Diten.MdmService", "src",
+                         "Diten.MdmService.Infrastructure", "Workflow"), "*.cs", SearchOption.AllDirectories).Select(File.ReadAllText))
+                     + Read("services", "Diten.MdmService", "src", "Diten.MdmService.Application", "Features",
+                         "ProductItemSkuMaster", "Workflow", "ProductIdentityWorkflowFaultPolicy.cs");
+        var platform = PlatformSources();
+        var fed = tests.SelectMany(source => FedCode.Matches(source).Select(m => m.Groups[1].Value))
+            .Where(code => !code.StartsWith("FAKE_ENGINE_", StringComparison.Ordinal))
+            .ToHashSet(StringComparer.Ordinal);
+        Assert.NotEmpty(fed);
+
+        var unknown = fed
+            .Where(code => !client.Contains($"\"{code}\"", StringComparison.Ordinal) && !IsAnswered(code, "4", platform))
+            .OrderBy(code => code, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(unknown.Length == 0, "Tests feed the fake engine codes the real chain never answers: " + string.Join(", ", unknown));
+    }
+
+    // Answered: the code (its literal, or a constant that holds it) appears in a Platform file OTHER than the one that
+    // declares the constant, within three lines of the expected HTTP status ("4" = any 4xx when only a family is known).
+    private static bool IsAnswered(string code, string status, IReadOnlyList<(string Path, string[] Lines)> platform)
     {
         var declaration = new Regex($@"const\s+string\s+(\w+)\s*=\s*""{Regex.Escape(code)}""", RegexOptions.CultureInvariant);
-        var declaringFiles = platform.Where(file => declaration.IsMatch(file.Source)).Select(file => file.Path).ToHashSet();
-        var names = platform.SelectMany(file => declaration.Matches(file.Source).Select(match => match.Groups[1].Value))
-            .Distinct(StringComparer.Ordinal).ToArray();
-        return platform.Where(file => !declaringFiles.Contains(file.Path)).Any(file =>
-            file.Source.Contains($"\"{code}\"", StringComparison.Ordinal)
-            || names.Any(name => Regex.IsMatch(file.Source, $@"\.{Regex.Escape(name)}\b")));
+        var declaring = platform.Where(file => file.Lines.Any(declaration.IsMatch)).Select(file => file.Path).ToHashSet();
+        var names = platform.SelectMany(file => file.Lines.Select(line => declaration.Match(line)))
+            .Where(match => match.Success).Select(match => match.Groups[1].Value).Distinct().ToArray();
+        var reference = new Regex(
+            $@"""{Regex.Escape(code)}""" + (names.Length == 0 ? "" : "|" + string.Join("|", names.Select(n => $@"\.{Regex.Escape(n)}\b"))),
+            RegexOptions.CultureInvariant);
+        // The status as a number, a StatusCodes constant, or a helper that names it (Conflict(...) is Platform's 409, …).
+        var helper = status switch
+        {
+            "409" => @"|\bConflict\w*\(|\bInconsistent\(|\bNotTerminal\(|\bClosedWithoutDecision\(",
+            "404" => @"|\bNotFound\w*\(",
+            "403" => @"|\bForbidden\w*\(",
+            "401" => @"|\bUnauthori[sz]ed\w*\(",
+            "400" => @"|\bBadRequest\w*\(|\bValidation\w*\(",
+            _ => @"|\b(?:Conflict|NotFound|Forbidden|Unauthori[sz]ed|BadRequest|Inconsistent|NotTerminal)\w*\("
+        };
+        var statusMark = new Regex($@"\b{Regex.Escape(status)}\d{{0,2}}\b|Status{Regex.Escape(status)}{helper}", RegexOptions.CultureInvariant);
+        foreach (var file in platform.Where(file => !declaring.Contains(file.Path)))
+        {
+            for (var i = 0; i < file.Lines.Length; i++)
+            {
+                if (!reference.IsMatch(file.Lines[i])) continue;
+                var from = Math.Max(0, i - 3);
+                var to = Math.Min(file.Lines.Length - 1, i + 3);
+                for (var j = from; j <= to; j++)
+                    if (statusMark.IsMatch(file.Lines[j])) return true;
+            }
+        }
+        return false;
     }
+
+    private static IReadOnlyList<(string Path, string[] Lines)> PlatformSources() =>
+        Directory.EnumerateFiles(Path.Combine(RepoRoot(), "services", "Diten.Platform", "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Select(path => (Path: path, Lines: File.ReadAllLines(path)))
+            .ToArray();
+
+    private static string Read(params string[] parts) => File.ReadAllText(Path.Combine([RepoRoot(), .. parts]));
 
     private static string RepoRoot()
     {

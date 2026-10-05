@@ -65,7 +65,7 @@ public sealed partial class GskuLifecycleHttpTests
     {
         var approved = await ApprovedGskuAsync();
         var key = Guid.NewGuid();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "WORKFLOW_TIMEOUT", false);
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT", false);
         Assert.False((await CorrectAsync(approved.Id, approved.Version, 4m, key)).IsSuccessStatusCode);
         await StuckCorrectionAsync(approved.Id, GskuCorrectionWorkflowProcessor.RetryLimitReached);
 
@@ -150,8 +150,9 @@ public sealed partial class GskuLifecycleHttpTests
     {
         var approved = await ApprovedGskuAsync();
         var key = Guid.NewGuid();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Success, "UNUSABLE", false);
-        host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Success; // unusable — a non-transient cause
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_START_IDEMPOTENCY_CONFLICT", false);
+        host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Conflict; // Platform refuses the lookup (409)
+        host.Engine.LookupFailureCode = "WORKFLOW_START_RECOVERY_CONFLICT";
         try
         {
             Assert.False((await CorrectAsync(approved.Id, approved.Version, 4m, key)).IsSuccessStatusCode);
@@ -178,8 +179,9 @@ public sealed partial class GskuLifecycleHttpTests
     {
         var approved = await ApprovedGskuAsync();
         var key = Guid.NewGuid();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Success, "UNUSABLE", false);
-        host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Success;
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_START_IDEMPOTENCY_CONFLICT", false);
+        host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Conflict; // Platform refuses the lookup (409)
+        host.Engine.LookupFailureCode = "WORKFLOW_START_RECOVERY_CONFLICT";
         try
         {
             Assert.False((await CorrectAsync(approved.Id, approved.Version, 4m, key)).IsSuccessStatusCode);
@@ -213,7 +215,7 @@ public sealed partial class GskuLifecycleHttpTests
     public async Task F4_Two_workers_with_the_same_old_snapshot_both_count()
     {
         var approved = await ApprovedGskuAsync();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "WORKFLOW_TIMEOUT", true);
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT", true);
         host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Timeout;
         try
         {
@@ -419,7 +421,7 @@ public sealed partial class GskuLifecycleHttpTests
     public async Task F4_A_retirement_requests_nothing_arrived_is_not_trusted_inside_the_settle_window()
     {
         var approved = await ApprovedGskuAsync();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "WORKFLOW_TIMEOUT", false);
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT", false);
         Assert.False((await RetireAsync(approved.Id, approved.Version, Guid.NewGuid())).IsSuccessStatusCode);
         await Task.Delay(1100);
         await host.RunAsync<Diten.MdmService.Api.Services.ProductItemSkuMaster.GskuRetirementRequestRecoveryRunner>(

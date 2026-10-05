@@ -143,8 +143,17 @@ public sealed class GskuCorrectionWorkflowOperationRepository(IMongoDatabase dat
             (Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.Checkpoint, GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired)
              & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired))
             | (Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.Retryable)
-               // FIX5 item 7: the flow's own constant, an equality (an index-friendly match, no suffix scan).
-               & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.LastFailureCode, "GSKU_CORRECTION_RETRY_LIMIT_REACHED"))),
+               // FIX5 item 7 / FIX6 item 5 (f): the processor's own constant (not a copy), an equality match.
+               & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.LastFailureCode, Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.GskuCorrectionWorkflowProcessor.RetryLimitReached))),
+            cancellationToken: cancellationToken);
+
+    // FIX6 item 4 (b): stuck (lock held) for a reason the requester's repeat cannot settle — a person has to (BL-530).
+    public Task<long> CountNeedingAPersonAsync(CancellationToken cancellationToken = default) =>
+        rows.CountDocumentsAsync(Active
+            & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.Checkpoint, GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired)
+            & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+            & Builders<GskuCorrectionWorkflowOperation>.Filter.Nin(x => x.LastFailureCode,
+                Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.GskuLifecycleStuckKinds.SettledByTheRequestersRepeat),
             cancellationToken: cancellationToken);
 
     public async Task<GskuCorrectionWorkflowRecoverablePage> DiscoverRecoverableAsync(long nowUtcTicks, int limit,

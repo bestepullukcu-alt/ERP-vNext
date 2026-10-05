@@ -20,6 +20,8 @@ public interface IGskuCorrectionWorkflowOperationRepository
     // within its bound is given back if (and only if) this owner holds it with exactly that lease.
     // FIX3 item 1 (B13): this tenant's operations waiting for a person (manual reconciliation), for the cycle report.
     Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) => Task.FromResult(0L);
+    // FIX6 item 4 (b): the stuck requests their requester's repeat cannot settle — a person has to (BL-530).
+    Task<long> CountNeedingAPersonAsync(CancellationToken cancellationToken = default) => Task.FromResult(0L);
     Task ReleaseIfOwnedAsync(Guid operationId, string leaseOwner, long leaseUntilUtcTicks,
         CancellationToken cancellationToken = default) => Task.CompletedTask;
     Task<bool> AdvanceAsync(

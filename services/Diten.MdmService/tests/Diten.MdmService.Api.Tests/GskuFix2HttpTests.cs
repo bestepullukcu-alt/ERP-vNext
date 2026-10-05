@@ -65,7 +65,7 @@ public sealed partial class GskuLifecycleHttpTests
     {
         var (gsku, version) = await CreateAsync(await SeedProductAsync(ProductIdentityLifecycleStatus.IdentityApproved));
         var key = Guid.NewGuid();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_START_CONFLICT", false);
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_START_IDEMPOTENCY_CONFLICT", false);
         Assert.False((await SubmitWithAsync(gsku, version, key, MakerToken())).IsSuccessStatusCode);
 
         var manual = await DetailAsync(gsku);
@@ -98,7 +98,7 @@ public sealed partial class GskuLifecycleHttpTests
     {
         var (gsku, version) = await CreateAsync(await SeedProductAsync(ProductIdentityLifecycleStatus.IdentityApproved));
         var key = Guid.NewGuid();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_START_CONFLICT", true);
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_START_IDEMPOTENCY_CONFLICT", true);
         Assert.False((await SubmitWithAsync(gsku, version, key, MakerToken())).IsSuccessStatusCode);
         Assert.Equal("RECONCILIATION_REQUIRED", (await DetailAsync(gsku)).SubmitState);
 
@@ -116,7 +116,7 @@ public sealed partial class GskuLifecycleHttpTests
     public async Task F1_A_start_the_engine_refused_before_processing_ends_and_opens_the_draft()
     {
         var (gsku, version) = await CreateAsync(await SeedProductAsync(ProductIdentityLifecycleStatus.IdentityApproved));
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Invalid, "WORKFLOW_REQUEST_INVALID", false);
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Invalid, "VALIDATION_FAILED", false);
 
         var submit = await SubmitAsync(gsku, version);
 
@@ -214,7 +214,7 @@ public sealed partial class GskuLifecycleHttpTests
     public async Task F5_A_correction_whose_definition_is_missing_frees_the_gsku_and_says_so()
     {
         var approved = await ApprovedGskuAsync();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_TEMPLATE_NOT_FOUND", false);
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.NotFound, "NOT_FOUND_NON_LEAKAGE", false);
 
         var refused = await RequestCorrectionAsync(approved.Id, approved.Version, 5m);
 

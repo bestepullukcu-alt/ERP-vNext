@@ -113,6 +113,8 @@ public sealed class GskuRetirementRequestRecoveryRunner(IServiceScopeFactory sco
                     countScope.ServiceProvider.GetRequiredService<ITenantContext>().SetTenant(tenantId);
                     cycle.InManualReconciliation += await countScope.ServiceProvider
                         .GetRequiredService<IGskuRetirementRequestOperationRepository>().CountManualReconciliationAsync(ct);
+                    cycle.NeedingAPerson += await countScope.ServiceProvider
+                        .GetRequiredService<IGskuRetirementRequestOperationRepository>().CountNeedingAPersonAsync(ct);
                     // The pair retirement has no worker of its own: it runs inside this flow's apply step, and
                     // its quarantined operations are reported here, as their own flow.
                     pairManual += await countScope.ServiceProvider
@@ -123,7 +125,7 @@ public sealed class GskuRetirementRequestRecoveryRunner(IServiceScopeFactory sco
         } while (tenantCursor.HasValue);
         cycle.Tenants = tenants;
         cycle.Log(logger, Flow);
-        metrics?.Record(Flow, cycle.InManualReconciliation);
+        metrics?.Record(Flow, cycle.InManualReconciliation, cycle.NeedingAPerson);
         metrics?.Record(PairRetirementFlow, pairManual);
         if (pairManual > 0)
             logger.LogWarning("{Flow}: {InManualReconciliation} pair retirements are in manual reconciliation.",

@@ -412,7 +412,11 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
 - A correction or retirement request stuck in manual reconciliation is settled by its requester repeating the same
   request (same GSKU version, same facts): a decision on record is applied, an approval closed without a decision or
   never started ends the request and frees the GSKU, an open approval keeps waiting. Another user, or another version,
-  cannot (409). If the engine cannot be reached the repeat answers 503 and nothing changes — repeat later.
+  cannot (409). If the engine cannot be reached (no answer, a 5xx, an unreadable or unexpected answer, a refused
+  service identity) the repeat answers 503: a request whose approval is on record goes back to waiting for its decision
+  (AwaitingDecision); one with nothing on record stays as it is — repeat later. If the engine answers something about
+  the record itself (`WORKFLOW_START_RECOVERY_CONFLICT`, a tenant mismatch), the repeat answers 409
+  `*_MANUAL_RECONCILIATION_NEEDED`: a person has to reconcile it (BL-530).
 - What the engine's terminal evidence means (FIX5, Platform BL-547): `WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION`
   (cancelled in the Task Center, timed out) — the request ENDS and the GSKU is free (an identity submit goes back to
   draft); `WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT` — the engine's facts contradict each other: STUCK, the lock held;
@@ -420,6 +424,14 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
 - A refused GSKU write: the audit capacity, the store or a lease held elsewhere WAIT (never quarantined); a concurrent
   write is tried again (counted); anything else (an idempotency or contract conflict, a lock that is not the request's,
   a GSKU that is gone) is STUCK at once.
+- A start whose answer was lost keeps the GSKU's lock until the engine says what it holds: a refused LOOKUP (an
+  identity not granted, a rotated key, a 403) never gives the lock back — only the START call's own "nothing was
+  processed" refusal does (FIX6). Otherwise a lost start could leave an approval open in the Task Center that nobody
+  would ever apply.
+- `mdm.product_identity.recovery.needing_a_person` (same meter, tag `flow`) counts the stuck requests their requester's
+  repeat cannot settle — a write refused for a reason that does not pass (an idempotency or contract conflict, a lock
+  that is not the request's, a GSKU that is gone or drifted, a refused admission, a quarantined pair retirement). Only a
+  person can release those (BL-530): alert on any value above 0. The cycle line says it as "needing a person".
 - The "is stuck" Error line is written ONCE, when a request becomes stuck, with the cause the attempt before it met
   (the record then holds only `*_RETRY_LIMIT_REACHED`); while it keeps retrying at the ceiling the next cycles say
   "still stuck" as Information.

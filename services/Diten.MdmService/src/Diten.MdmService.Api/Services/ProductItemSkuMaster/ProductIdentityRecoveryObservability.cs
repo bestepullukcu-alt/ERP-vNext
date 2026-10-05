@@ -19,6 +19,8 @@ public sealed class ProductIdentityRecoveryCycle
     public int Waiting { get; set; }
     public int Failed { get; set; }
     public long InManualReconciliation { get; set; }
+    // FIX6 item 4 (b): of those, the ones the requester's repeat cannot settle — only a person can (BL-530).
+    public long NeedingAPerson { get; set; }
 
     /// <summary>
     /// Counts one operation. <paramref name="claimed"/> is false when the processor answered without holding the
@@ -50,8 +52,8 @@ public sealed class ProductIdentityRecoveryCycle
         // FIX4 item 8: a cycle that found nothing to do and nothing stuck is Debug (every few seconds otherwise).
         logger.Log(Quarantined > 0 || Failed > 0 ? LogLevel.Warning
             : Seen == 0 && InManualReconciliation == 0 ? LogLevel.Debug : LogLevel.Information,
-            "{Flow} recovery cycle: tenants {Tenants}, operations {Seen}, claimed {Claimed}, advanced {Advanced}, quarantined {Quarantined}, waiting {Waiting}, failed {Failed}, in manual reconciliation {InManualReconciliation}.",
-            flow, Tenants, Seen, Claimed, Advanced, Quarantined, Waiting, Failed, InManualReconciliation);
+            "{Flow} recovery cycle: tenants {Tenants}, operations {Seen}, claimed {Claimed}, advanced {Advanced}, quarantined {Quarantined}, waiting {Waiting}, failed {Failed}, in manual reconciliation {InManualReconciliation}, needing a person {NeedingAPerson}.",
+            flow, Tenants, Seen, Claimed, Advanced, Quarantined, Waiting, Failed, InManualReconciliation, NeedingAPerson);
     }
 
     public static bool WasNotClaimed(string? errorCode) =>
@@ -69,9 +71,12 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
 {
     public const string MeterName = "Diten.MdmService.ProductIdentityRecovery";
     public const string ManualReconciliationGauge = "mdm.product_identity.recovery.manual_reconciliation";
+    // FIX6 item 4 (b): the stuck operations only a person can settle (their requester's repeat cannot) — alert on it.
+    public const string NeedingAPersonGauge = "mdm.product_identity.recovery.needing_a_person";
 
     private readonly Meter _meter = new(MeterName);
     private readonly ConcurrentDictionary<string, long> _manual = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, long> _person = new(StringComparer.Ordinal);
 
     public ProductIdentityRecoveryMetrics()
     {
@@ -79,9 +84,21 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
             () => _manual.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
             unit: "{operation}",
             description: "Product-identity operations waiting in manual reconciliation, per flow, at the last recovery cycle.");
+        _meter.CreateObservableGauge(NeedingAPersonGauge,
+            () => _person.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "{operation}",
+            description: "Stuck operations their requester's repeat cannot settle (a person has to, BL-530), per flow.");
     }
 
     public void Record(string flow, long inManualReconciliation) => _manual[flow] = inManualReconciliation;
+
+    public void Record(string flow, long inManualReconciliation, long needingAPerson)
+    {
+        _manual[flow] = inManualReconciliation;
+        _person[flow] = needingAPerson;
+    }
+
+    public long? NeedingAPerson(string flow) => _person.TryGetValue(flow, out var value) ? value : null;
 
     public long? Current(string flow) => _manual.TryGetValue(flow, out var value) ? value : null;
 

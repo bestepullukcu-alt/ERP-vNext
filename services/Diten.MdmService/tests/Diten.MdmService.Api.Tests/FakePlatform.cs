@@ -40,6 +40,7 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         public bool ClosedWithoutDecision { get; set; }
         public bool EvidenceInconsistent { get; set; }
         public bool Escalated { get; set; }
+        public Guid? RejectedBy { get; set; }
     }
 
     private readonly ConcurrentDictionary<string, Instance> _byKey = new(StringComparer.Ordinal);
@@ -59,13 +60,28 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
     public (ProductIdentityWorkflowTransportOutcome Outcome, string Code, bool Created)? NextStartFailure { get; set; }
 
     /// <summary>While set, every start lookup answers this (the engine cannot say what it holds).</summary>
-    public ProductIdentityWorkflowTransportOutcome? LookupFailure { get; set; }
+    public ProductIdentityWorkflowTransportOutcome? LookupFailure
+    {
+        get => _lookupFailure;
+        // Cleared together: the code belongs to the failure (the host — and this fake — are shared by the tests).
+        set { _lookupFailure = value; if (value is null) LookupFailureCode = null; }
+    }
+    private ProductIdentityWorkflowTransportOutcome? _lookupFailure;
 
     /// <summary>FIX5 item 2: the code a failing lookup answers with (MDM's own transport codes, e.g. an unreadable 502).</summary>
     public string? LookupFailureCode { get; set; }
 
     /// <summary>The outcome the next cancellation answers with (once), instead of cancelling.</summary>
     public ProductIdentityWorkflowTransportOutcome? NextCancelFails { get; set; }
+
+    /// <summary>FIX6 item 3: the approver rejects (Platform's terminal evidence: Reject / Rejected / Rejected).</summary>
+    public void Reject(Instance instance, Guid approver)
+    {
+        instance.RejectedBy = approver;
+        instance.DecidedAt = DateTimeOffset.UtcNow;
+        instance.InstanceVersion++;
+        instance.TaskVersion++;
+    }
 
     /// <summary>The approval's SLA escalates it: still open (BL-547 — Platform answers NOT_TERMINAL, not "inconsistent").</summary>
     public void Escalate(Instance instance)
@@ -181,12 +197,22 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         if (!_byId.TryGetValue(request.WorkflowInstanceId, out var instance))
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
                 ProductIdentityWorkflowTransportOutcome.NotFound, "NOT_FOUND_NON_LEAKAGE"));
+        // FIX6 item 5 (a): an SLA-escalated approval that nobody decided is OPEN — BL-547 made Platform answer
+        // NOT_TERMINAL for it (before, the escalation's own transition made the evidence "inconsistent").
+        if (instance.Escalated && instance.ApprovedBy is null && instance.RejectedBy is null && !instance.ClosedWithoutDecision)
+            return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
+                ProductIdentityWorkflowTransportOutcome.NonTerminal, "WORKFLOW_DECISION_NOT_TERMINAL"));
         if (instance.EvidenceInconsistent)
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
                 ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT"));
         if (instance.ClosedWithoutDecision)
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
                 ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION"));
+        if (instance.RejectedBy is { } rejecter)
+            return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Success(new(
+                instance.Id, instance.TaskId, instance.TemplateId, instance.TemplateVersionId, instance.ObjectType,
+                instance.ObjectId, instance.ObjectRef, "Reject", rejecter.ToString("D"), "REJECTED",
+                instance.DecidedAt!.Value, 2, "Rejected", "Rejected", "http-host")));
         if (instance.ApprovedBy is not { } approver)
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
                 ProductIdentityWorkflowTransportOutcome.NonTerminal, "WORKFLOW_DECISION_NOT_TERMINAL"));

@@ -2,11 +2,11 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<GlobalProductsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
-@inject Diten.Web.Services.IPermissionSnapshot Permissions
 @{
     ViewData["Title"] = Localizer["GlobalProductsTitle"].Value;
     Layout = "_LayoutTenantShell";
-    var canCreate = Permissions.Has("mdm.global-products.create");
+    // FIX6 item 5 (d): the same reader as the controller's gates (PermissionClaims), for Add as for the list.
+    var canCreate = Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.global-products.create");
 }
 
 @*

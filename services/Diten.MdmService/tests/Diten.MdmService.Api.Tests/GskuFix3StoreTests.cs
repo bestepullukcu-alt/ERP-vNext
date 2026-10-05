@@ -34,7 +34,7 @@ public sealed partial class GskuLifecycleHttpTests
     public async Task B13_A_transient_outage_is_never_quarantined_and_heals_when_the_engine_is_back()
     {
         var approved = await ApprovedGskuAsync();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "WORKFLOW_TIMEOUT", true);
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT", true);
         host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Timeout;
         var operations = new GskuCorrectionWorkflowOperationRepository(host.Database, Tenant());
         GskuCorrectionWorkflowOperation operation;
@@ -75,7 +75,7 @@ public sealed partial class GskuLifecycleHttpTests
     public async Task B13_The_streak_ends_when_the_engine_answers()
     {
         var approved = await ApprovedGskuAsync();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "WORKFLOW_TIMEOUT", true);
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT", true);
         host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Timeout;
         Assert.False((await RequestCorrectionAsync(approved.Id, approved.Version, 6m)).IsSuccessStatusCode);
         await Task.Delay(1100);
@@ -117,7 +117,7 @@ public sealed partial class GskuLifecycleHttpTests
     public async Task B13_A_retirement_request_past_the_limit_on_a_transient_cause_keeps_retrying()
     {
         var approved = await ApprovedGskuAsync();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "WORKFLOW_TIMEOUT", false);
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT", false);
         host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Timeout;
         try
         {

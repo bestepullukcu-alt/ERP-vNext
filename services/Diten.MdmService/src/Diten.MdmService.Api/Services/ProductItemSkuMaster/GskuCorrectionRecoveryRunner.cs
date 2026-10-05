@@ -111,13 +111,15 @@ public sealed class GskuCorrectionRecoveryRunner(IServiceScopeFactory scopes,
                     countScope.ServiceProvider.GetRequiredService<ITenantContext>().SetTenant(tenantId);
                     cycle.InManualReconciliation += await countScope.ServiceProvider
                         .GetRequiredService<IGskuCorrectionWorkflowOperationRepository>().CountManualReconciliationAsync(ct);
+                    cycle.NeedingAPerson += await countScope.ServiceProvider
+                        .GetRequiredService<IGskuCorrectionWorkflowOperationRepository>().CountNeedingAPersonAsync(ct);
                 }
             }
             tenantCursor = tenantPage.NextAfterTenantId;
         } while (tenantCursor.HasValue);
         cycle.Tenants = tenants;
         cycle.Log(logger, Flow);
-        metrics?.Record(Flow, cycle.InManualReconciliation);
+        metrics?.Record(Flow, cycle.InManualReconciliation, cycle.NeedingAPerson);
         return new(tenants, count, completed, deferred, failed) { Cycle = cycle };
     }
 }
