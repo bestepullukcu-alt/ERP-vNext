@@ -115,7 +115,9 @@ public sealed class GlobalProductCorrectionWorkflowStartRequestFactory(
             ? new(operation.DueAtUtcTicksV1.Value, TimeSpan.Zero) : null);
 
     public bool MatchesConfiguration(GlobalProductCorrectionOperation operation) =>
-        operation.WorkflowTemplateId == configuration.TemplateId
+        // FIX5 item 6 (the GSKU correction's FIX4 fix): a started correction carries the template id the engine
+        // resolved from the code; a configuration that names only the code must still recognise the maker's repeat.
+        (configuration.TemplateId is null || operation.WorkflowTemplateId == configuration.TemplateId)
         && string.Equals(operation.WorkflowTemplateCode, configuration.TemplateCode, StringComparison.Ordinal)
         && operation.CandidatePrincipalIds.Order().SequenceEqual(configuration.CandidatePrincipalIds.Order())
         && string.Equals(operation.ReasonCode, configuration.ReasonCode, StringComparison.Ordinal)

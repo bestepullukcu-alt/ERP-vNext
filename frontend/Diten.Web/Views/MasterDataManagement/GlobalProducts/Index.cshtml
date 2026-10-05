@@ -16,7 +16,9 @@
 
     ⚠ Display only. MDM's [HasPermission("mdm.global-products.read")] and the proxy's own check remain the authority.
 *@
-@if (!Permissions.Has("mdm.global-products.read"))
+@* EK item 11 (FIX5): the same reader as GlobalProductsController.Index (PermissionClaims) — "*", a "permissions" claim and a
+   comma-separated list count the same here as there; the UX snapshot reads only exact "permission" claims. *@
+@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.global-products.read"))
 {
     <partial name="_AccessDenied" model="@Localizer["GlobalProductsTitle"].Value" />
     return;

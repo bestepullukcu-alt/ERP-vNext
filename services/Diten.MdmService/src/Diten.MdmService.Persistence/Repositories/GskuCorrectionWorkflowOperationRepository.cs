@@ -143,7 +143,8 @@ public sealed class GskuCorrectionWorkflowOperationRepository(IMongoDatabase dat
             (Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.Checkpoint, GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired)
              & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired))
             | (Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.Retryable)
-               & Builders<GskuCorrectionWorkflowOperation>.Filter.Regex(x => x.LastFailureCode, new MongoDB.Bson.BsonRegularExpression("_RETRY_LIMIT_REACHED$")))),
+               // FIX5 item 7: the flow's own constant, an equality (an index-friendly match, no suffix scan).
+               & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.LastFailureCode, "GSKU_CORRECTION_RETRY_LIMIT_REACHED"))),
             cancellationToken: cancellationToken);
 
     public async Task<GskuCorrectionWorkflowRecoverablePage> DiscoverRecoverableAsync(long nowUtcTicks, int limit,

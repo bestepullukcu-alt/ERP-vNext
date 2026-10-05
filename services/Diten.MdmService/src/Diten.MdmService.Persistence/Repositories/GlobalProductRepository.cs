@@ -451,7 +451,14 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             if (draftNow is not null && !hasIdentityOperation)
             {
                 var single = await _globalProducts.FindOneAndUpdateAsync(
-                    filter & Builders<GlobalProduct>.Filter.Eq(x => x.IdentitySubmitReservations, draftNow.IdentitySubmitReservations),
+                    // FIX5 item 7: a product written before the field existed has no reservation count at all — it
+                    // reads as 0 and must match as 0 (else every edit of an old product needed a transaction: 503 on
+                    // a standalone mongod).
+                    filter & (draftNow.IdentitySubmitReservations == 0
+                        ? Builders<GlobalProduct>.Filter.Or(
+                            Builders<GlobalProduct>.Filter.Eq(x => x.IdentitySubmitReservations, 0),
+                            Builders<GlobalProduct>.Filter.Exists(x => x.IdentitySubmitReservations, false))
+                        : Builders<GlobalProduct>.Filter.Eq(x => x.IdentitySubmitReservations, draftNow.IdentitySubmitReservations)),
                     update,
                     new FindOneAndUpdateOptions<GlobalProduct> { ReturnDocument = ReturnDocument.After },
                     cancellationToken);

@@ -110,9 +110,9 @@ public static class ProductIdentityWorkflowFaultPolicy
      * FIX3 E1 (CT decision 3): the engine's terminal evidence names an approval CLOSED WITHOUT A DECISION (cancelled,
      * timed out, closed undecided) with its own reason. Only that answer sends a request back (to draft / frees the
      * GSKU); any other conflict (a version, a contradiction between the engine's own facts) is quarantined as before.
-     * Platform's trusted evidence endpoint does not name this case yet — it answers every such 409 with
-     * WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT — so until it does, every conflict is quarantined (safe; the screen says
-     * so in words). The Platform side is the engine lane's (reported, not done here).
+     * FIX5: Platform names it since BL-547 (GetTrustedWorkflowTerminalDecisionEvidenceHandler — cancelled or timed out
+     * without a decision); an escalated approval that is still open is WORKFLOW_DECISION_NOT_TERMINAL (it waits), and
+     * WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT is only evidence that contradicts itself.
      */
     public const string ClosedWithoutDecision = "WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION";
 

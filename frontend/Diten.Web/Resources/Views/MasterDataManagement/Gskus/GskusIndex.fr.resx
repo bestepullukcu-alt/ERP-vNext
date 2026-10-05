@@ -52,4 +52,7 @@
   <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>Votre demande sur ce GSKU attend un rapprochement et le garde verrouillé. Renvoyez-la : le service d'approbation est relu ; si cela ne suffit pas, contactez votre administrateur.</value></data>
   <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>Une demande sur ce GSKU attend un rapprochement et le garde verrouillé. Seule la personne qui l'a faite peut la renvoyer ; sinon, un administrateur doit la rapprocher.</value></data>
   <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>Cette soumission attend un rapprochement. Seule la personne qui l'a soumise peut la soumettre à nouveau ; sinon, un administrateur doit la rapprocher.</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve">
+    <value>Page actuelle uniquement</value>
+  </data>
 </root>

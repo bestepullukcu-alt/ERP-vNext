@@ -52,4 +52,7 @@
   <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>Ваш запрос по этому GSKU ожидает сверки и держит его заблокированным. Отправьте его снова: служба утверждения будет прочитана заново; если это не поможет, обратитесь к администратору.</value></data>
   <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>Запрос по этому GSKU ожидает сверки и держит его заблокированным. Отправить его снова может только автор; иначе сверку должен выполнить администратор.</value></data>
   <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>Эта отправка ожидает сверки. Отправить её снова может только отправитель; иначе сверку должен выполнить администратор.</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve">
+    <value>Только текущая страница</value>
+  </data>
 </root>

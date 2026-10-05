@@ -39,6 +39,7 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         public DateTimeOffset? DecidedAt { get; set; }
         public bool ClosedWithoutDecision { get; set; }
         public bool EvidenceInconsistent { get; set; }
+        public bool Escalated { get; set; }
     }
 
     private readonly ConcurrentDictionary<string, Instance> _byKey = new(StringComparer.Ordinal);
@@ -60,8 +61,18 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
     /// <summary>While set, every start lookup answers this (the engine cannot say what it holds).</summary>
     public ProductIdentityWorkflowTransportOutcome? LookupFailure { get; set; }
 
+    /// <summary>FIX5 item 2: the code a failing lookup answers with (MDM's own transport codes, e.g. an unreadable 502).</summary>
+    public string? LookupFailureCode { get; set; }
+
     /// <summary>The outcome the next cancellation answers with (once), instead of cancelling.</summary>
     public ProductIdentityWorkflowTransportOutcome? NextCancelFails { get; set; }
+
+    /// <summary>The approval's SLA escalates it: still open (BL-547 — Platform answers NOT_TERMINAL, not "inconsistent").</summary>
+    public void Escalate(Instance instance)
+    {
+        instance.Escalated = true;
+        instance.InstanceVersion++;
+    }
 
     /// <summary>An administrator closes the approval without a decision (cancelled in the Task Center).</summary>
     public void CloseWithoutDecision(Instance instance)
@@ -146,7 +157,7 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
     public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>> GetStartResultAsync(
         Guid tenantId, ProductIdentityWorkflowStartResultRequest request, CancellationToken cancellationToken = default) =>
         Task.FromResult(LookupFailure is { } lookupFailure
-            ? ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(lookupFailure, "FAKE_ENGINE_LOOKUP_FAILED")
+            ? ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(lookupFailure, LookupFailureCode ?? "FAKE_ENGINE_LOOKUP_FAILED")
             : _byKey.TryGetValue(request.IdempotencyKey, out var instance)
                         && instance.ObjectType == request.ExpectedObjectType
                         && instance.ObjectId == request.ExpectedObjectId
@@ -162,15 +173,20 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
             NextTerminalEvidenceThrows = false;
             throw new IOException("the engine connection broke half-way");
         }
+        // FIX5 item 1: what Platform's trusted evidence endpoint answers (GetTrustedWorkflowTerminalDecisionEvidenceHandler,
+        // BL-547): no such instance → 404 NOT_FOUND_NON_LEAKAGE; cancelled / timed out without a decision → 409
+        // WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION; facts that contradict each other → 409 INCONSISTENT; open (an
+        // escalated one included) → 409 NOT_TERMINAL. Every code this fake answers is one Platform defines AND answers
+        // from a handler (FakePlatformCodeGuardTests).
         if (!_byId.TryGetValue(request.WorkflowInstanceId, out var instance))
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
-                ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_INSTANCE_NOT_FOUND"));
-        // FIX4 (CT decision 3 corrected): what Platform answers TODAY for an approval closed without a decision — the
-        // same "inconsistent" conflict as for contradictory facts (BL-547 will give it its own reason). Every code this
-        // fake answers is one Platform's own source defines (FakePlatformCodeGuardTests).
-        if (instance.ClosedWithoutDecision || instance.EvidenceInconsistent)
+                ProductIdentityWorkflowTransportOutcome.NotFound, "NOT_FOUND_NON_LEAKAGE"));
+        if (instance.EvidenceInconsistent)
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
                 ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT"));
+        if (instance.ClosedWithoutDecision)
+            return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
+                ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION"));
         if (instance.ApprovedBy is not { } approver)
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
                 ProductIdentityWorkflowTransportOutcome.NonTerminal, "WORKFLOW_DECISION_NOT_TERMINAL"));
@@ -186,7 +202,7 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
     {
         if (!_byId.TryGetValue(request.WorkflowInstanceId, out var instance))
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationPreflight>.Fail(
-                ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_INSTANCE_NOT_FOUND"));
+                ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND"));
         return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationPreflight>.Success(new(
             instance.Id, instance.TaskId, instance.ObjectType, instance.ObjectId, instance.ObjectRef,
             instance.InstanceVersion, instance.TaskVersion,
@@ -206,7 +222,7 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         }
         if (!_byId.TryGetValue(request.WorkflowInstanceId, out var instance))
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationEvidence>.Fail(
-                ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_INSTANCE_NOT_FOUND"));
+                ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND"));
         if (instance.ApprovedBy is not null
             || !instance.Cancelled && (request.ExpectedWorkflowInstanceVersion != instance.InstanceVersion
                                        || request.ExpectedApprovalTaskVersion != instance.TaskVersion))

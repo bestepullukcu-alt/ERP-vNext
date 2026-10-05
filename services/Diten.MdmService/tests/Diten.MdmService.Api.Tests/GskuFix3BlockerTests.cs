@@ -18,17 +18,33 @@ namespace Diten.MdmService.Api.Tests;
 /// </summary>
 public sealed partial class GskuLifecycleHttpTests
 {
-    // FIX4 (CT decision 3 corrected), the IDENTITY flow: Platform answers an approval closed without a decision with
-    // the general "inconsistent" conflict (BL-547). The identity flow keeps FIX3's rule: quarantined, the pair kept
-    // pending, and the submitter's repeat says truthfully that a person has to reconcile it.
+    // FIX5 item 1 (BL-547 merged): Platform now names an approval cancelled or timed out without a decision. The identity
+    // flow's branch that FIX3 wrote and FIX4 kept dormant is live: the pair goes back to draft, the maker sees why.
     [Fact]
-    public async Task E1_A_closed_identity_approval_is_quarantined_and_the_repeat_says_a_person_has_to_reconcile()
+    public async Task E1_An_identity_approval_closed_without_a_decision_sends_the_pair_back_to_draft()
+    {
+        var (gsku, version) = await CreateAsync(await SeedProductAsync(ProductIdentityLifecycleStatus.IdentityApproved));
+        Assert.Equal(HttpStatusCode.Accepted, (await SubmitAsync(gsku, version)).StatusCode);
+        host.Engine.CloseWithoutDecision(host.Engine.Open("gsku", gsku.ToString("D")));
+
+        var draft = await IdentityCyclesUntilAsync(gsku, ProductIdentityLifecycleStatus.Draft);
+
+        Assert.Equal("FIRST_GSKU_IDENTITY_CLOSED_WITHOUT_DECISION", draft.NotAppliedReason);
+        Assert.Contains("EDIT", draft.Actions);
+        Assert.Contains("SUBMIT", draft.Actions);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable, (await IdentityOperationOf(gsku)).Checkpoint);
+    }
+
+    // Evidence that contradicts itself is not "closed": quarantined, the pair kept pending, and the submitter's repeat
+    // says truthfully that a person has to reconcile it.
+    [Fact]
+    public async Task E1_Inconsistent_identity_evidence_is_quarantined_and_the_repeat_says_a_person_has_to_reconcile()
     {
         var (gsku, version) = await CreateAsync(await SeedProductAsync(ProductIdentityLifecycleStatus.IdentityApproved));
         var key = Guid.NewGuid();
         Assert.Equal(HttpStatusCode.Accepted, (await SendAsync(HttpMethod.Post, $"/api/gskus/{gsku:D}/submit",
             new { expectedVersion = version }, MakerToken(), key)).StatusCode);
-        host.Engine.CloseWithoutDecision(host.Engine.Open("gsku", gsku.ToString("D")));
+        host.Engine.Open("gsku", gsku.ToString("D")).EvidenceInconsistent = true;
 
         for (var cycle = 0; cycle < 10 && (await IdentityOperationOf(gsku)).Checkpoint
                  != FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired; cycle++)
@@ -47,8 +63,7 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.Equal(FirstGskuIdentityWorkflowProcessor.ManualReconciliationNeeded, Envelope.FirstError(await Envelope.ReadAsync(repeat)));
     }
 
-    // The dormant branch the identity flow keeps for BL-547: only the engine's own "closed without a decision" code
-    // would send a pair back to draft — the rule itself, without a fake that answers a code Platform does not have.
+    // Only the engine's own "closed without a decision" code counts as closed.
     [Theory]
     [InlineData(ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION", true)]
     [InlineData(ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT", false)]
@@ -60,26 +75,110 @@ public sealed partial class GskuLifecycleHttpTests
             .IsClosedWithoutDecision(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(outcome, code)));
     }
 
-    // FIX4 (CT decision 3 corrected), a CORRECTION: terminal evidence this service cannot apply (a cancellation in the
-    // Task Center, contradictory facts — Platform says both the same way) ends the request and frees the GSKU (FIX2) —
-    // FIX3 quarantined it and every such cancellation locked the GSKU for good.
+    /*
+     * FIX5 item 1 (CT decision 3, final) on a CORRECTION and a RETIREMENT REQUEST, by Platform's own answer:
+     *   closed     — WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION: the request ends, the GSKU is free (not counted);
+     *   inconsistent — WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT: stuck with the lock held (counted); the requester's same
+     *                command reads the engine again — still contradictory: a person (409); once the engine's facts are
+     *                straight and decided: applied;
+     *   escalated  — WORKFLOW_DECISION_NOT_TERMINAL (SLA-escalated, still open): waits; approved later: applied.
+     */
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task CT3_A_correction_whose_evidence_cannot_be_applied_ends_and_frees_the_gsku(bool cancelledInTheTaskCenter)
+    [InlineData("correction", "closed")]
+    [InlineData("correction", "inconsistent")]
+    [InlineData("correction", "escalated")]
+    [InlineData("retirement", "closed")]
+    [InlineData("retirement", "inconsistent")]
+    [InlineData("retirement", "escalated")]
+    public async Task CT3_Each_terminal_answer_of_the_engine_has_its_own_outcome(string flow, string answer)
     {
         var approved = await ApprovedGskuAsync();
-        Assert.True((await RequestCorrectionAsync(approved.Id, approved.Version, 5m)).IsSuccessStatusCode);
-        var instance = host.Engine.Latest("GskuCorrection");
-        if (cancelledInTheTaskCenter) host.Engine.CloseWithoutDecision(instance);
-        else instance.EvidenceInconsistent = true;
+        var key = Guid.NewGuid();
+        var correction = flow == "correction";
+        var path = correction ? "correction-requests" : "retirement-requests";
+        object body = correction
+            ? new { expectedGskuVersion = approved.Version, packQuantity = 5m, packUomCode = "C62" }
+            : new { expectedGskuVersion = approved.Version, requestReason = "PRODUCT_DISCONTINUED" };
+        Task<HttpResponseMessage> Request() => SendAsync(HttpMethod.Post, $"/api/gskus/{approved.Id:D}/{path}", body, MakerToken(), key);
+        Assert.True((await Request()).IsSuccessStatusCode);
+        var instance = host.Engine.Latest(correction ? "GskuCorrection" : GskuRetirementRequestWorkflowStartRequestFactory.ObjectType);
+        var prefix = correction ? "GSKU_CORRECTION" : "GSKU_RETIREMENT_REQUEST";
+        var free = correction ? "REQUEST_CORRECTION" : "REQUEST_RETIREMENT";
+        Func<Func<Detail, bool>, Task<Detail>> cycles = correction
+            ? until => CorrectionCyclesUntilAsync(approved.Id, until)
+            : until => RetirementCyclesUntilAsync(approved.Id, until);
 
-        var freed = await CorrectionCyclesUntilAsync(approved.Id, detail => detail.Actions.Contains("REQUEST_CORRECTION"));
+        switch (answer)
+        {
+            case "closed":
+            {
+                host.Engine.CloseWithoutDecision(instance);
+                var freed = await cycles(detail => detail.Actions.Contains(free));
+                var (code, disposition) = await StateOf(approved.Id, correction);
+                Assert.Equal($"{prefix}_CLOSED_WITHOUT_DECISION", code);
+                Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, disposition); // ended, not stuck
+                Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, freed.Status);
+                break;
+            }
+            case "inconsistent":
+            {
+                instance.EvidenceInconsistent = true;
+                var stuck = await cycles(detail => detail.LifecycleRequestState == "STUCK");
+                Assert.DoesNotContain(free, stuck.Actions);
+                var (code, disposition) = await StateOf(approved.Id, correction);
+                Assert.Equal($"{prefix}_EVIDENCE_CONFLICT", code);
+                Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired, disposition);
 
-        var ended = await CorrectionOf(approved.Id);
-        Assert.Equal("GSKU_CORRECTION_CLOSED_WITHOUT_DECISION", ended.LastFailureCode);
-        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, ended.RecoveryDisposition); // ended, not stuck
-        Assert.Equal(1m, freed.Quantity);
+                var still = await Request();
+                Assert.Equal(HttpStatusCode.Conflict, still.StatusCode);
+                Assert.Equal($"{prefix}_MANUAL_RECONCILIATION_NEEDED", Envelope.FirstError(await Envelope.ReadAsync(still)));
+
+                instance.EvidenceInconsistent = false;
+                host.Engine.Approve(instance, host.Approver);
+                var settled = await Request();
+                Assert.True(settled.IsSuccessStatusCode, await settled.Content.ReadAsStringAsync());
+                var detail = await DetailAsync(approved.Id);
+                if (correction) Assert.Equal(5m, detail.Quantity);
+                else Assert.Equal(ProductIdentityLifecycleStatus.Retired, detail.Status);
+                break;
+            }
+            default:
+            {
+                host.Engine.Escalate(instance);
+                for (var cycle = 0; cycle < 3; cycle++)
+                {
+                    // The worker itself, each cycle (the helper above stops at once when its condition already holds).
+                    if (correction)
+                        await host.RunAsync<Diten.MdmService.Api.Services.ProductItemSkuMaster.GskuCorrectionRecoveryRunner>(
+                            runner => runner.RunCycleAsync());
+                    else
+                        await host.RunAsync<Diten.MdmService.Api.Services.ProductItemSkuMaster.GskuRetirementRequestRecoveryRunner>(
+                            runner => runner.RunCycleAsync());
+                    await Task.Delay(1100);
+                }
+                var (code, disposition) = await StateOf(approved.Id, correction);
+                Assert.Equal("WORKFLOW_DECISION_NOT_TERMINAL", code);
+                Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, disposition);
+                Assert.DoesNotContain(free, (await DetailAsync(approved.Id)).Actions); // still waiting, lock held
+
+                host.Engine.Approve(instance, host.Approver);
+                var applied = await cycles(detail => correction ? detail.Quantity == 5m
+                    : detail.Status == ProductIdentityLifecycleStatus.Retired);
+                Assert.NotNull(applied);
+                break;
+            }
+        }
+    }
+
+    private async Task<(string? Code, ProductIdentityWorkflowRecoveryDisposition Disposition)> StateOf(Guid gsku, bool correction)
+    {
+        if (correction)
+        {
+            var operation = await CorrectionOf(gsku);
+            return (operation.LastFailureCode, operation.RecoveryDisposition);
+        }
+        var request = await RetirementOf(gsku);
+        return (request.LastFailureCode, request.RecoveryDisposition);
     }
 
     // E2, decided: the approval was granted while the operation sat in manual reconciliation; the repeat applies it.

@@ -551,6 +551,28 @@ const GlobalProductsList = (function () {
         }, { entityName: name, type: 'primary', confirmButtonText: L.Save });
     };
 
+    /*
+     * EK item 9 (FIX5) — no silent partial export in a GxP list: until BL-452 gives this list a server export (every
+     * matching row), each Print / CSV / Excel / PDF / Copy entry says plainly that it writes only the page on screen.
+     * The list component chains the page's `initComplete`, so this is done without touching the shared files; the
+     * entries are found by their Buttons class or the export icon dt-defaults gives them (read, not changed).
+     */
+    const exportEntrySelector = '.dt-controlled-copy, .buttons-csv, .buttons-excel, .buttons-copy, .buttons-print, .buttons-pdf';
+    const exportEntryIcon = '.bx-printer, .bx-file, .bxs-file-export, .bxs-file-pdf, .bx-copy';
+    const labelExportsCurrentPageOnly = (api) => {
+        const nodes = api?.buttons?.()?.nodes?.();
+        Array.from(nodes || []).forEach((node) => {
+            if (!node?.matches || node.matches('.dt-server-export')) return;
+            if (!node.matches(exportEntrySelector) && !node.querySelector(exportEntryIcon)) return;
+            if (node.querySelector('.dt-current-page-only')) return;
+            const note = document.createElement('small');
+            note.className = 'd-block text-muted dt-current-page-only';
+            note.textContent = L.CurrentPageOnly || '';
+            node.appendChild(note);
+            node.setAttribute('title', L.CurrentPageOnly || '');
+        });
+    };
+
     // The createList options of the register — one place, so the wire and the saved-view keys are measurable.
     const buildListOptions = () => ({
         tableEl,
@@ -587,6 +609,8 @@ const GlobalProductsList = (function () {
             pageLength: initialPageSize,
             deferRender: true,
             colReorder: { columns: ':gt(0):not(:last-child)' },
+            // EK item 9: chained by the list component after its own initComplete.
+            initComplete: function () { labelExportsCurrentPageOnly(this.api()); },
             // `data` names are MDM's orderBy whitelist (globalProductName, canonicalCode, lifecycleStatus).
             columns: [
                 { data: 'id', name: 'control' },

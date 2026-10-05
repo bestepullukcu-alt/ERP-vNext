@@ -138,7 +138,9 @@ public sealed class GskuRepository : IGskuRepository
             })
         };
 
-        var result = await _documents.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync(cancellationToken);
+        // FIX5 item 7: every sorted register aggregation may spill to disk (FIX4 item 9 gave it to one of three).
+        var result = await _documents.Aggregate<BsonDocument>(pipeline, new AggregateOptions { AllowDiskUse = true })
+            .FirstOrDefaultAsync(cancellationToken);
         var items = result?["items"].AsBsonArray
             .Select(item => BsonSerializer.Deserialize<Gsku>(item.AsBsonDocument))
             .ToArray() ?? [];
@@ -271,7 +273,9 @@ public sealed class GskuRepository : IGskuRepository
             { "summary", new BsonArray { new BsonDocument("$count", "total") } }
         }));
 
-        var result = await _documents.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync(cancellationToken);
+        // FIX5 item 7: every sorted register aggregation may spill to disk (FIX4 item 9 gave it to one of three).
+        var result = await _documents.Aggregate<BsonDocument>(pipeline, new AggregateOptions { AllowDiskUse = true })
+            .FirstOrDefaultAsync(cancellationToken);
         var items = result?["items"].AsBsonArray
             .Select(item => BsonSerializer.Deserialize<Gsku>(item.AsBsonDocument))
             .ToArray() ?? [];

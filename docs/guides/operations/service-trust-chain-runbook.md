@@ -410,8 +410,19 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
   it with `dotnet-counters` or wire an OpenTelemetry exporter. Alert when it rises; a `*_RETRY_LIMIT_REACHED` that
   falls back to 0 by itself was an outage that healed.
 - A correction or retirement request stuck in manual reconciliation is settled by its requester repeating the same
-  request (same GSKU version, same facts): a decision on record is applied, an approval that cannot be applied or never
-  started ends the request and frees the GSKU, an open approval keeps waiting. Another user, or another version, cannot.
+  request (same GSKU version, same facts): a decision on record is applied, an approval closed without a decision or
+  never started ends the request and frees the GSKU, an open approval keeps waiting. Another user, or another version,
+  cannot (409). If the engine cannot be reached the repeat answers 503 and nothing changes — repeat later.
+- What the engine's terminal evidence means (FIX5, Platform BL-547): `WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION`
+  (cancelled in the Task Center, timed out) — the request ENDS and the GSKU is free (an identity submit goes back to
+  draft); `WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT` — the engine's facts contradict each other: STUCK, the lock held;
+  `WORKFLOW_DECISION_NOT_TERMINAL` — still open, an SLA-escalated approval included: it WAITS.
+- A refused GSKU write: the audit capacity, the store or a lease held elsewhere WAIT (never quarantined); a concurrent
+  write is tried again (counted); anything else (an idempotency or contract conflict, a lock that is not the request's,
+  a GSKU that is gone) is STUCK at once.
+- The "is stuck" Error line is written ONCE, when a request becomes stuck, with the cause the attempt before it met
+  (the record then holds only `*_RETRY_LIMIT_REACHED`); while it keeps retrying at the ceiling the next cycles say
+  "still stuck" as Information.
 
 ### 6. Not covered here — open before a live bring-up
 

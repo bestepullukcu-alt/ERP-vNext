@@ -349,7 +349,9 @@ public sealed partial class GskuLifecycleHttpTests(MdmHttpHost host)
             data.TryGetProperty("identityNotAppliedReason", out var reason) && reason.ValueKind == JsonValueKind.String
                 ? reason.GetString() : null,
             data.TryGetProperty("identitySubmitState", out var state) && state.ValueKind == JsonValueKind.String
-                ? state.GetString() : null);
+                ? state.GetString() : null,
+            data.TryGetProperty("lifecycleRequestState", out var requestState) && requestState.ValueKind == JsonValueKind.String
+                ? requestState.GetString() : null);
     }
 
     private async Task<(Guid Id, int Version)> ApprovedGskuAsync()
@@ -387,5 +389,6 @@ public sealed partial class GskuLifecycleHttpTests(MdmHttpHost host)
         string Uom,
         IReadOnlyList<string> Actions,
         string? NotAppliedReason,
-        string? SubmitState = null);
+        string? SubmitState = null,
+        string? LifecycleRequestState = null);
 }

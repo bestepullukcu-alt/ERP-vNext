@@ -51,4 +51,7 @@
   <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>Your request on this GSKU is waiting for reconciliation and keeps it locked. Send it again: the approval service is read again; if that does not settle it, contact your administrator.</value></data>
   <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>A request on this GSKU is waiting for reconciliation and keeps it locked. Only the person who made it can send it again; otherwise an administrator has to reconcile it.</value></data>
   <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>This submission is waiting for reconciliation. Only the person who submitted it can submit it again; otherwise an administrator has to reconcile it.</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve">
+    <value>Current page only</value>
+  </data>
 </root>

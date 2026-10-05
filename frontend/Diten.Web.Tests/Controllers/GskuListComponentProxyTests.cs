@@ -61,6 +61,9 @@ public sealed class GskuListComponentProxyTests : IClassFixture<WebApplicationFa
     [InlineData("?start=-5&length=0", "pageNumber=1&pageSize=20")]
     [InlineData("", "pageNumber=1&pageSize=20")]
     [InlineData("?start=250&length=100", "pageNumber=3&pageSize=100")]
+    // FIX5 item 7: the largest start does not wrap to a negative page; the proxy stops at MDM's own bound.
+    [InlineData("?start=9223372036854775807&length=1", "pageNumber=100000&pageSize=1")]
+    [InlineData("?start=99999999&length=100", "pageNumber=100000&pageSize=100")]
     public async Task The_page_size_is_capped_at_100_and_a_bad_start_or_length_is_the_first_page(string query, string expected)
     {
         var wire = new RecordingHandler(HttpStatusCode.OK, "{\"data\":{\"items\":[],\"totalCount\":0}}");
@@ -139,6 +142,40 @@ public sealed class GskuListComponentProxyTests : IClassFixture<WebApplicationFa
         Assert.Contains("id=\"dt-gskus\"", html);
         Assert.Contains("data-dt-data-mode=\"server\"", html);
         Assert.Contains("skeleton-loader", html);
+        Assert.DoesNotContain("diten-access-denied", html);
+    }
+
+    // EK item 10 (FIX5): through the real layout — both ways. The reader who may read gets the list, its l10n block and
+    // its script (the layout writes @section Scripts); the one who may not gets the access-denied surface and none of
+    // them (the page returns before its sections are defined, so the layout has no script of this page to write).
+    [Fact]
+    public async Task With_the_layout_the_unauthorized_face_carries_no_list_script_and_the_reader_gets_it()
+    {
+        var denied = await LayoutRenderer.RenderAsync(_factory, "/Views/MasterDataManagement/Gskus/Index.cshtml", "Gskus", "mdm.gskus.create");
+        var reader = await LayoutRenderer.RenderAsync(_factory, "/Views/MasterDataManagement/Gskus/Index.cshtml", "Gskus", "mdm.gskus.read");
+
+        Assert.Contains("diten-access-denied", denied);
+        Assert.DoesNotContain("gskus-l10n", denied);
+        Assert.DoesNotContain("Gskus/index.js", denied);
+        Assert.DoesNotContain("dt-gskus", denied);
+        Assert.Contains("gskus-l10n", reader);
+        Assert.Contains("Gskus/index.js", reader);
+        Assert.Contains("id=\"dt-gskus\"", reader);
+        Assert.DoesNotContain("diten-access-denied", reader);
+    }
+
+    // EK item 11 (FIX5): the view's gate and the controller's gate read permissions the same way — a wildcard grant is
+    // the list in both (the UX snapshot alone would have drawn the access-denied face under a 200).
+    [Fact]
+    public async Task A_wildcard_grant_opens_the_list_in_the_controller_and_in_the_view_alike()
+    {
+        var controller = Controller(new RecordingHandler(HttpStatusCode.OK, "{}"), "*", "");
+
+        controller.Index();
+        var html = await RenderIndexAsync("*");
+
+        Assert.NotEqual(StatusCodes.Status403Forbidden, controller.Response.StatusCode);
+        Assert.Contains("id=\"dt-gskus\"", html);
         Assert.DoesNotContain("diten-access-denied", html);
     }
 

@@ -147,6 +147,31 @@ public sealed class GskuAvailableActionsTests
         Assert.DoesNotContain("SUBMIT", For(Guid.NewGuid()));
     }
 
+    // FIX5 item 8: the same rule on the PAIR branch (a pending pair whose submit is in reconciliation — the revision may
+    // be half-written): the SUBMIT that settles it is the submitter's only.
+    [Fact]
+    public void A_submit_in_reconciliation_on_a_pending_pair_is_offered_to_its_submitter_only()
+    {
+        var revision = new ProductDefinitionRevision
+        {
+            Id = Guid.NewGuid(), LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval
+        };
+        var gsku = new Gsku
+        {
+            Id = Guid.NewGuid(), ProductDefinitionRevisionId = revision.Id,
+            LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval
+        };
+        var submitter = Guid.NewGuid();
+
+        IReadOnlyList<string> For(Guid actorId) => Assert.IsAssignableFrom<IReadOnlyList<string>>(typeof(GetGskuByIdHandler)
+            .GetMethod("BuildPairAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
+            .Invoke(null, [gsku, revision, new Actor(actorId, "mdm.gskus.update", "mdm.gskus.submit"),
+                FirstGskuIdentitySubmitStateKind.ReconciliationRequired, false, submitter]));
+
+        Assert.Contains("SUBMIT", For(submitter));
+        Assert.DoesNotContain("SUBMIT", For(Guid.NewGuid()));
+    }
+
     private static IReadOnlyList<string> Actions(Gsku gsku, IProductIdentityLifecycleActorContext actor) =>
         Assert.IsAssignableFrom<IReadOnlyList<string>>(
             typeof(GetGskuByIdHandler)

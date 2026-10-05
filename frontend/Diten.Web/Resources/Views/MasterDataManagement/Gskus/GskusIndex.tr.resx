@@ -52,4 +52,7 @@
   <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>Bu GSKU üzerindeki isteğiniz uzlaştırma bekliyor ve GSKU'yu kilitli tutuyor. İsteği yeniden gönderin: onay servisi yeniden okunur; bu çözmezse yöneticinize başvurun.</value></data>
   <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>Bu GSKU üzerindeki bir istek uzlaştırma bekliyor ve GSKU'yu kilitli tutuyor. Yalnız isteği yapan kişi yeniden gönderebilir; aksi halde bir yöneticinin uzlaştırması gerekir.</value></data>
   <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>Bu gönderim uzlaştırma bekliyor. Yalnız gönderen kişi yeniden gönderebilir; aksi halde bir yöneticinin uzlaştırması gerekir.</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve">
+    <value>Yalnızca mevcut sayfa</value>
+  </data>
 </root>

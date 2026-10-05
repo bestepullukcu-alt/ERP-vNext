@@ -123,7 +123,7 @@ public sealed class GskusController : Controller
             "update-draft",
             id,
             expectedVersion.Value,
-            $"{parsedPackQuantity.ToString(CultureInfo.InvariantCulture)}\t{packUomCode}");
+            $"{CanonicalQuantity(parsedPackQuantity)}\t{packUomCode}");
         return await ProxyLifecycleRequestAsync(
             HttpMethod.Put,
             $"{_gatewayUrl}/api/gskus/{id:D}",
@@ -223,7 +223,7 @@ public sealed class GskusController : Controller
             "request-correction",
             id,
             expectedGskuVersion.Value,
-            $"{parsedPackQuantity.ToString(CultureInfo.InvariantCulture)}\t{packUomCode}");
+            $"{CanonicalQuantity(parsedPackQuantity)}\t{packUomCode}");
         return await ProxyLifecycleRequestAsync(
             HttpMethod.Post,
             $"{_gatewayUrl}/api/gskus/{id:D}/correction-requests",
@@ -305,8 +305,9 @@ public sealed class GskusController : Controller
             && parsedStart > 0
                 ? parsedStart
                 : 0;
-        // FIX4 item 9: bounded as MDM bounds it (a page beyond is refused by MDM's validator, 400 — never an overflow).
-        var pageNumber = (int)Math.Min(start / length + 1, MaxListPageNumber + 1L);
+        // FIX4 item 9 + FIX5 item 7: never beyond MDM's own bound (GetGskusQuery.MaxPageNumber), and capped BEFORE the +1
+        // so the largest start (long.MaxValue) never wraps to a negative page.
+        var pageNumber = (int)(Math.Min(start / length, MaxListPageNumber - 1L) + 1);
         var parts = new List<string>
         {
             $"pageNumber={pageNumber.ToString(CultureInfo.InvariantCulture)}",
@@ -698,6 +699,11 @@ public sealed class GskusController : Controller
         result = parsed;
         return true;
     }
+
+    // FIX5 item 4: the same quantity is the same request, however it was written — "2.50" (the form) and "2.5" (the
+    // repeat, which reads MDM's number) must derive the same operation. Trailing zeros dropped, never an exponent.
+    public static string CanonicalQuantity(decimal value) =>
+        value.ToString("0.############################", CultureInfo.InvariantCulture);
 
     private static Guid CreateLifecycleOperationId(
         Guid tenantId,

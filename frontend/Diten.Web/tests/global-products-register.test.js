@@ -89,14 +89,22 @@ describe("MOD-0290 Global Product Register", () => {
         expect(source).toContain('dt?.ajax.reload(null, false)');
     });
 
-    it("omits the forbidden fake import while preserving the real shared Action exports", () => {
+    // EK item 11: the register's own assertions live in a GREEN test — the one below is red at baseline for a reason
+    // outside this page (it pins the shared dt-defaults.js export shape) and would hide a regression here.
+    it("omits the forbidden fake import and leaves the export menu to the list component", () => {
         const source = indexScript();
-        const defaults = dataTableDefaults();
 
         expect(source).not.toMatch(/importBtn|bx-import|L\.ComingSoon/);
         // The export menu is the list component's (DtDefaults.exportButtons); server export is BL-452 (open).
         expect(source).not.toContain('window.DtDefaults.exportButtons(');
         expect(source).toContain('exportColumns: saveViewColumnIndexes');
+    });
+
+    // Baseline red (one of the 27, unchanged): the shared dt-defaults.js no longer declares print / pdf with `extend`
+    // (they are the controlled copy, BL-452 package 2). Only that shared pin is left here.
+    it("omits the forbidden fake import while preserving the real shared Action exports", () => {
+        const defaults = dataTableDefaults();
+
         ['print', 'csv', 'excel', 'pdf', 'copy']
             .forEach((format) => expect(defaults).toContain(`extend: '${format}'`));
     });
@@ -391,6 +399,36 @@ describe("Global Product register on the list component (executed)", () => {
         expect(Object.keys(options.actions.onRowAction).sort()).toEqual(
             ["editDraft", "quickView", "requestCorrection", "requestRetirement", "submitIdentity", "withdrawApproval"]);
         expect(options.config.pageLength).toBe(10);
+    });
+
+    // EK item 9: no silent partial export — every export entry says "current page only"; nothing else is touched,
+    // a server export (BL-452, every matching row) is not labelled, and a second run adds nothing.
+    it("labels every export entry of the list as current page only", () => {
+        const options = harness().api.buildListOptions();
+        const make = (className, icon) => {
+            const node = document.createElement("a");
+            node.className = className;
+            node.innerHTML = icon ? `<span><i class="icon-base bx ${icon} me-2"></i>Entry</span>` : "Entry";
+            return node;
+        };
+        const nodes = [
+            make("dropdown-item dt-controlled-copy", "bx-printer"), make("dropdown-item buttons-csv", "bx-file"),
+            make("dropdown-item", "bxs-file-export"), make("dropdown-item dt-controlled-copy", "bxs-file-pdf"),
+            make("dropdown-item buttons-copy", "bx-copy"),
+            make("dropdown-item dt-server-export", "bx-file"), make("btn btn-icon dt-filter-btn", "bx-filter-alt")
+        ];
+        const api = { buttons: () => ({ nodes: () => nodes }) };
+
+        options.config.initComplete.call({ api: () => api });
+        options.config.initComplete.call({ api: () => api });
+
+        nodes.slice(0, 5).forEach((node) => {
+            expect(node.querySelectorAll(".dt-current-page-only")).toHaveLength(1);
+            expect(node.querySelector(".dt-current-page-only").textContent).toBe("CurrentPageOnly");
+            expect(node.getAttribute("title")).toBe("CurrentPageOnly");
+        });
+        expect(nodes[5].querySelector(".dt-current-page-only")).toBeNull();
+        expect(nodes[6].querySelector(".dt-current-page-only")).toBeNull();
     });
 
     it("answers the component's first request from the prefetch when it is the same page", async () => {

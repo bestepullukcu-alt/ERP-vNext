@@ -52,4 +52,7 @@
   <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>Su solicitud sobre este GSKU espera una conciliación y lo mantiene bloqueado. Vuelva a enviarla: se vuelve a leer el servicio de aprobación; si eso no lo resuelve, contacte con su administrador.</value></data>
   <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>Una solicitud sobre este GSKU espera una conciliación y lo mantiene bloqueado. Solo quien la hizo puede volver a enviarla; de lo contrario, debe conciliarla un administrador.</value></data>
   <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>Este envío espera una conciliación. Solo quien lo envió puede volver a enviarlo; de lo contrario, debe conciliarlo un administrador.</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve">
+    <value>Solo la página actual</value>
+  </data>
 </root>

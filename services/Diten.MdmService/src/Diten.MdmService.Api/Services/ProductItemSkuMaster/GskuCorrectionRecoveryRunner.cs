@@ -75,10 +75,20 @@ public sealed class GskuCorrectionRecoveryRunner(IServiceScopeFactory scopes,
                                         && result.Operation?.RecoveryDisposition != ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired;
                             var stuck = !ended && (after == GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired
                                         || result.Operation?.LastFailureCode?.EndsWith("_RETRY_LIMIT_REACHED", StringComparison.Ordinal) == true);
-                            cycle.Count(!ProductIdentityRecoveryCycle.WasNotClaimed(result.ErrorCode), stuck,
+                            // FIX5 item 7: said as an ERROR once — when the request BECOMES stuck — with the cause the
+                            // attempt before it met (the record then holds only "…_RETRY_LIMIT_REACHED"); a request still
+                            // retrying at the ceiling is information on the next cycles, and is not "quarantined" again.
+                            var wasStuck = operation.Checkpoint == GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired
+                                           || operation.LastFailureCode?.EndsWith("_RETRY_LIMIT_REACHED", StringComparison.Ordinal) == true;
+                            var newlyStuck = stuck && !wasStuck;
+                            cycle.Count(!ProductIdentityRecoveryCycle.WasNotClaimed(result.ErrorCode), newlyStuck,
                                 result.Succeeded || ended || (after.HasValue && after != operation.Checkpoint));
-                            if (stuck)
-                                logger.LogError("{Flow} operation {OperationId} of tenant {TenantId} is stuck ({ResultCode}).",
+                            if (newlyStuck)
+                                logger.LogError("{Flow} operation {OperationId} of tenant {TenantId} is stuck ({ResultCode}); the cause before: {CauseCode}.",
+                                    Flow, operation.OperationId, tenantId, result.Operation?.LastFailureCode ?? result.ErrorCode,
+                                    operation.LastFailureCode ?? "none");
+                            else if (stuck)
+                                logger.LogInformation("{Flow} operation {OperationId} of tenant {TenantId} is still stuck ({ResultCode}).",
                                     Flow, operation.OperationId, tenantId, result.Operation?.LastFailureCode ?? result.ErrorCode);
                             else if (ended)
                                 logger.LogInformation("{Flow} operation {OperationId} of tenant {TenantId} ended ({ResultCode}).",

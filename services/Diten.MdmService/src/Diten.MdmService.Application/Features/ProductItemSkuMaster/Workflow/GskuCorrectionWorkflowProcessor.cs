@@ -82,6 +82,7 @@ public sealed class GskuCorrectionWorkflowProcessor(
     {
         execution = execution with { Interactive = token is not null };
         var reconciling = false;
+        var signal = new ReconcileSignal();
         for (var step = 0; step < 9; step++)
         {
             ct.ThrowIfCancellationRequested();
@@ -92,6 +93,9 @@ public sealed class GskuCorrectionWorkflowProcessor(
                 // FIX4 item 1 (b): a request STUCK in manual reconciliation (the GSKU's lock held) has a way out — its
                 // requester's same command reads the engine again (ReconcileAsync). One that ENDED (lock given back)
                 // only answers why it ended. A repeat that could not settle it says so: a person has to (BL-530).
+                // FIX5 item 5: the engine could not be asked — a service fault, not the record's: 503, not "a person".
+                if (signal.EngineSilent)
+                    return Fail(operation, ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, 503);
                 if (token is null || step > 0
                     || operation.RecoveryDisposition != ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
                     return Fail(operation, reconciling && operation.RecoveryDisposition
@@ -127,7 +131,7 @@ public sealed class GskuCorrectionWorkflowProcessor(
             {
                 GskuCorrectionWorkflowCheckpoint.Prepared => await PrepareAsync(operation, claim, token, now, execution, ct),
                 GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired when reconcile
-                    => await ReconcileAsync(operation, claim, now, execution, ct),
+                    => await ReconcileAsync(operation, claim, now, execution, signal, ct),
                 // FIX4 item 10: FIX2 parked a Prepared request the worker picked up in AwaitingMakerReplay, holding the
                 // GSKU's lock; the worker now settles it as it does a Prepared one (FIX3 S3).
                 GskuCorrectionWorkflowCheckpoint.AwaitingMakerReplay when token is null
@@ -217,7 +221,7 @@ public sealed class GskuCorrectionWorkflowProcessor(
                 ? await RetryAsync(op, claim, op.Checkpoint, StartSettling, now, execution, ct, transient: true)
                 : await EndAndReleaseAsync(op, claim, "GSKU_CORRECTION_START_NOT_RECEIVED", now, execution, ct);
         return await RetryAsync(op, claim, op.Checkpoint, found.ErrorCode ?? "GSKU_CORRECTION_START_LOOKUP_FAILED",
-            now, execution, ct, transient: IsTransient(found.Outcome));
+            now, execution, ct, transient: Waits(ProductIdentityWorkflowCall.StartResult, found.Outcome, found.ErrorCode));
     }
 
     /*
@@ -232,7 +236,7 @@ public sealed class GskuCorrectionWorkflowProcessor(
      *   the engine cannot answer → said as such (503); nothing changes.
      */
     private async Task<bool> ReconcileAsync(GskuCorrectionWorkflowOperation op, GskuCorrectionWorkflowClaim claim,
-        DateTimeOffset now, GskuCorrectionExecutionConfiguration execution, CancellationToken ct)
+        DateTimeOffset now, GskuCorrectionExecutionConfiguration execution, ReconcileSignal signal, CancellationToken ct)
     {
         if (op.DecisionKind.HasValue && op.DecisionActorSubjectId.HasValue)
             return await Advance(claim, GskuCorrectionWorkflowCheckpoint.DecisionObserved, now, release: true, ct: ct);
@@ -245,6 +249,7 @@ public sealed class GskuCorrectionWorkflowProcessor(
         if (found.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound)
             return await EndAndReleaseAsync(op, claim, "GSKU_CORRECTION_START_NOT_RECEIVED", now, execution, ct);
         // The engine could not be asked: the request stays as it is; the next repeat (or a person) asks again.
+        signal.EngineSilent = true;
         return await operations.AdvanceAsync(claim, new(op.Checkpoint, op.RecoveryDisposition, now.UtcTicks,
             LastFailureCode: op.LastFailureCode, ReleaseLease: true, Streak: RecoveryStreakWrite.Keep), ct);
     }
@@ -255,6 +260,20 @@ public sealed class GskuCorrectionWorkflowProcessor(
     private static bool IsTransient(ProductIdentityWorkflowTransportOutcome outcome) =>
         outcome is ProductIdentityWorkflowTransportOutcome.Timeout or ProductIdentityWorkflowTransportOutcome.Retryable
             or ProductIdentityWorkflowTransportOutcome.Incomplete;
+
+    // FIX5 item 2: on the start and lookup paths too, "transient" is the shared classification's ServiceWait (an
+    // unreadable 502 / 503, a refused service identity) as well as no answer at all — as ObserveAsync already reads it.
+    private static bool Waits(ProductIdentityWorkflowCall call, ProductIdentityWorkflowTransportOutcome outcome, string? code) =>
+        IsTransient(outcome)
+        || outcome is not (ProductIdentityWorkflowTransportOutcome.Success or ProductIdentityWorkflowTransportOutcome.NotFound
+            or ProductIdentityWorkflowTransportOutcome.NonTerminal)
+           && ProductIdentityWorkflowFaultPolicy.Classify(call, outcome, code).Kind == ProductIdentityWorkflowFaultKind.ServiceWait;
+
+    // FIX5 item 5: what the requester's repeat met at the engine, for the answer it gets.
+    private sealed class ReconcileSignal
+    {
+        public bool EngineSilent { get; set; }
+    }
 
     // FIX3 S8: a start sent less than the settle window ago may still be in the engine's hands.
     private static bool Settling(GskuCorrectionWorkflowOperation op, DateTimeOffset now,
@@ -309,12 +328,15 @@ public sealed class GskuCorrectionWorkflowProcessor(
             // the GSKU keeps its lock and the worker asks the engine again.
             return await StartUnknownAsync(op, claim, result.ErrorCode
                 ?? (result.Outcome == ProductIdentityWorkflowTransportOutcome.Success ? "GSKU_CORRECTION_START_EVIDENCE_INVALID" : null),
-                now, execution, ct, fromStart, transient: IsTransient(result.Outcome));
+                now, execution, ct, fromStart, transient: Waits(fromStart ? ProductIdentityWorkflowCall.Start
+                    : ProductIdentityWorkflowCall.StartResult, result.Outcome, result.ErrorCode));
         var fault = ProductIdentityWorkflowFaultPolicy.Classify(
             ProductIdentityWorkflowCall.Start, result.Outcome, result.ErrorCode);
         if (!fault.StartedNothing)
             // The engine may have done it (an unreadable or invalid answer): the lock stays, the start is looked up.
-            return await StartUnknownAsync(op, claim, result.ErrorCode, now, execution, ct, fromStart);
+            // FIX5 item 2: an answer nobody could read (an HTML or text 502 / 503) is the service's fault — transient.
+            return await StartUnknownAsync(op, claim, result.ErrorCode, now, execution, ct, fromStart,
+                transient: fault.Kind == ProductIdentityWorkflowFaultKind.ServiceWait);
         // Refused before anything was processed (the shared classification): nothing exists at the engine, so the
         // GSKU is given back and the reason recorded; the maker learns it from the answer.
         return await EndAndReleaseAsync(op, claim, fault.MakerCode ?? result.ErrorCode ?? "GSKU_CORRECTION_START_REFUSED", now, execution, ct);
@@ -346,8 +368,8 @@ public sealed class GskuCorrectionWorkflowProcessor(
             var released = await gskus.ReleaseLifecycleOperationAsync(gsku.Id, checked(op.BaseGskuVersion + 1),
                 Binding(op), audit, ct);
             if (!released.Succeeded)
-                // The cap, the store: giving the lock back waits, it is never quarantined (FIX4 item 1 (a)).
-                return await RetryAsync(op, claim, op.Checkpoint, released.ErrorCode, now, execution, ct, transient: true);
+                // FIX5 item 3: the cap, the store wait (never quarantined); anything else will not change by waiting.
+                return await WriteRefusedAsync(op, claim, released.ErrorCode, now, execution, ct);
         }
         // FIX4 item 4: a request that ended, its lock given back, is not "stuck": information, not an error.
         log.LogInformation("GSKU correction {OperationId} of tenant {TenantId} ended without its decision applied ({ResultCode}); the GSKU is free again.",
@@ -393,21 +415,20 @@ public sealed class GskuCorrectionWorkflowProcessor(
             || e.ObjectId != op.ObjectId || e.ObjectRef != op.ObjectRef
             || !Guid.TryParse(e.ActorUserId, out var actor) || actor == Guid.Empty
             || e.TransitionSequence <= 0 || e.DecisionAt.Offset != TimeSpan.Zero)
-            // The approval is decided (terminal evidence) and its evidence cannot be used: nothing more can come of
-            // it — the GSKU is given back (B3).
-            // FIX2 item 5 (a): closed without a decision this service can apply (cancelled by an administrator,
-            // evidence that contradicts the request): nothing more can come of it — the GSKU is given back. An answer
-            // that is not evidence at all is the engine's fault and is asked again (the lock stays).
-            // FIX4 (CT decision 3 corrected): Platform does not name "closed without a decision" yet (BL-547) — it
-            // answers WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT for a cancellation in the Task Center and for a timeout
-            // alike. Quarantining that turned every such cancellation into a GSKU locked for good. Back to FIX2: any
-            // terminal evidence this service cannot apply ends the request and frees the GSKU (the identity flow keeps
-            // its quarantine, FIX3). An answer that is not evidence at all is asked again.
-            return e is null && result.Outcome != ProductIdentityWorkflowTransportOutcome.Conflict
-                ? await RetryAsync(op, claim, op.Checkpoint,
-                    result.ErrorCode ?? "GSKU_CORRECTION_EVIDENCE_UNREADABLE", now, execution, ct)
-                : await EndAndReleaseAsync(op, claim, e is null
-                    ? "GSKU_CORRECTION_CLOSED_WITHOUT_DECISION" : "GSKU_CORRECTION_EVIDENCE_CONFLICT", now, execution, ct);
+            // FIX5 item 1 (CT decision 3, final — Platform names each case since BL-547):
+            //   WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION (cancelled in the Task Center, timed out) — nothing more can
+            //     come of it: the request ends, the GSKU is given back, the requester is told why;
+            //   WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT, or decided evidence this request cannot apply — the engine's
+            //     facts contradict each other or the request: stuck, the lock held; its requester's same command reads
+            //     the engine again (ReconcileAsync) — a person if that does not settle it;
+            //   an answer that is not evidence at all — asked again (the lock stays).
+            // (WORKFLOW_DECISION_NOT_TERMINAL — open, an escalated one included — is NonTerminal above: it waits.)
+            return ProductIdentityWorkflowFaultPolicy.IsClosedWithoutDecision(result)
+                ? await EndAndReleaseAsync(op, claim, "GSKU_CORRECTION_CLOSED_WITHOUT_DECISION", now, execution, ct)
+                : e is null && result.Outcome != ProductIdentityWorkflowTransportOutcome.Conflict
+                    ? await RetryAsync(op, claim, op.Checkpoint,
+                        result.ErrorCode ?? "GSKU_CORRECTION_EVIDENCE_UNREADABLE", now, execution, ct)
+                    : await Stuck(claim, "GSKU_CORRECTION_EVIDENCE_CONFLICT", now, ct);
         return await operations.AdvanceAsync(claim, new(GskuCorrectionWorkflowCheckpoint.DecisionObserved,
             ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
             DecisionKind: approved ? ProductIdentityDecisionKind.Approved : ProductIdentityDecisionKind.Rejected,
@@ -476,9 +497,21 @@ public sealed class GskuCorrectionWorkflowProcessor(
             // write that may still go through (the cap, the store, a concurrent write) and is tried again.
             return result.ErrorCode is "DEPENDENT_IDENTITIES_EXIST" or "GSKU_CHILD_CREATION_IN_PROGRESS"
                 ? await EndAndReleaseAsync(op, claim, result.ErrorCode, now, execution, ct)
-                : await RetryAsync(op, claim, op.Checkpoint, result.ErrorCode, now, execution, ct, transient: true);
+                : await WriteRefusedAsync(op, claim, result.ErrorCode, now, execution, ct);
         return await Advance(claim, GskuCorrectionWorkflowCheckpoint.DecisionApplied, now, release: true, ct: ct);
     }
+
+    // FIX5 item 3: a refused GSKU write. The capacity / store / a lease held elsewhere pass by themselves (wait, never
+    // quarantined); a concurrent write is read and tried again (counted); anything else — an idempotency conflict, a
+    // contract the request does not meet, a lock that is not this request's, a GSKU that is gone — will not change by
+    // waiting: stuck, with the lock held, and its requester's same command is the way out (ReconcileAsync).
+    private Task<bool> WriteRefusedAsync(GskuCorrectionWorkflowOperation op, GskuCorrectionWorkflowClaim claim,
+        string? code, DateTimeOffset now, GskuCorrectionExecutionConfiguration execution, CancellationToken ct) =>
+        ProductIdentityWriteFaults.MayPassByItself(code)
+            ? RetryAsync(op, claim, op.Checkpoint, code, now, execution, ct, transient: true)
+            : ProductIdentityWriteFaults.MetAConcurrentWrite(code)
+                ? RetryAsync(op, claim, op.Checkpoint, code, now, execution, ct)
+                : Stuck(claim, code, now, ct);
 
     /*
      * FIX3 item 1 (B13) + FIX4 items 1 (a), 2, 3: every retry goes through here. Only the WORKER's attempts count (a

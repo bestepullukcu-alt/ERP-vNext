@@ -76,7 +76,7 @@ public sealed class GlobalProductsController : Controller
 
     internal const int MaxListPageSize = 100;
     private const int DefaultListPageSize = 20;
-    // MDM's own bound (GetGlobalProductsValidator); a page beyond is refused there (400), never an overflow here.
+    // MDM's own bound (GetGlobalProductsValidator: 1–1 000 000): the proxy never asks beyond it (FIX5 item 11).
     private const int MaxListPageNumber = 1_000_000;
 
     internal static string BuildListQuery(IQueryCollection query)
@@ -89,8 +89,8 @@ public sealed class GlobalProductsController : Controller
             && parsedStart > 0
                 ? parsedStart
                 : 0;
-        // Capped BEFORE the +1, so the largest start never wraps to a negative page.
-        var pageNumber = (int)(Math.Min(start / length, MaxListPageNumber) + 1);
+        // Capped BEFORE the +1, so the largest start never wraps to a negative page, and never past MDM's bound.
+        var pageNumber = (int)(Math.Min(start / length, MaxListPageNumber - 1L) + 1);
         var parts = new List<string>
         {
             $"pageNumber={pageNumber.ToString(CultureInfo.InvariantCulture)}",

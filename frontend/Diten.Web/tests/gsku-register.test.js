@@ -53,7 +53,7 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
         const exposed = source.replace('init: async () => {', `test: {
             readAvailableActions, readVersion, buildListOptions, createProductPickerOptions, fetchProductPage,
             getErrorMessage, onListError,
-            openExistingEditor, requestLifecycle, requestRetirement, submitEditor,
+            openExistingEditor, requestLifecycle, requestRetirement, submitEditor, repeatLifecycleRequest,
             setupEditor: (mode) => { editorId = '${id}'; editorGskuVersion = 3; editorRevisionVersion = 2; editorMode = mode; },
             setupTable: (table) => { dt = table; }
         }, init: async () => {`);
@@ -123,6 +123,54 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
         expect(h.fetch.mock.calls[1][0]).toBe('/MasterDataManagement/Gskus/api/' + id + '/retirement-requests');
         expect(h.reload).toHaveBeenCalled();
         expect(h.toast).toHaveBeenCalledWith('RetirementRequestedSuccess', 'warning');
+    });
+    // FIX5 item 4: "Repeat request" sends the stored request back exactly as the proxy derives its operation — the
+    // quantity MDM returns as a number (2.5, 1e-7) is written without an exponent; the proxy drops trailing zeros, so
+    // the original "2.50" and this "2.5" are the same operation and the repeat reaches the stuck request.
+    it.each([[2.5, '2.5'], [1e-7, '0.0000001'], [12, '12'], [123456.125, '123456.125']])(
+        'repeats a stuck correction with the quantity %s written as %s', async (quantity, written) => {
+            const pending = { kind: 'CORRECTION', expectedGskuVersion: 3, packQuantity: quantity, packUomCode: 'C62' };
+            const h = harness([response({ ...detail(['DETAILS', 'REPEAT_REQUEST'], 3), pendingLifecycleRequest: pending }),
+                response({ gskuId: id, checkpoint: 'AwaitingDecision' }, 202)]);
+            document.body.insertAdjacentHTML('beforeend',
+                '<form id="gskuLifecycleToken"><input name="__RequestVerificationToken" value="synthetic-csrf"></form>');
+            h.api.repeatLifecycleRequest(id, null); await h.settle();
+            expect(h.fetch.mock.calls[1][0]).toBe('/MasterDataManagement/Gskus/api/' + id + '/correction-requests');
+            const body = h.fetch.mock.calls[1][1].body;
+            expect(body.get('PackQuantity')).toBe(written);
+            expect(body.get('ExpectedGskuVersion')).toBe('3');
+            expect(body.get('PackUomCode')).toBe('C62');
+            expect(h.toast).toHaveBeenCalledWith('RepeatRequestWaiting', 'success');
+        });
+
+    // EK item 9: no silent partial export — every export entry says 'current page only'; nothing else is touched,
+    // a server export (BL-452, every matching row) is not labelled, and a second run adds nothing.
+    it('labels every export entry of the list as current page only', () => {
+        const options = harness().api.buildListOptions();
+        const make = (className, icon) => {
+            const node = document.createElement('a');
+            node.className = className;
+            node.innerHTML = icon ? `<span><i class="icon-base bx ${icon} me-2"></i>Entry</span>` : 'Entry';
+            return node;
+        };
+        const nodes = [
+            make('dropdown-item dt-controlled-copy', 'bx-printer'), make('dropdown-item buttons-csv', 'bx-file'),
+            make('dropdown-item', 'bxs-file-export'), make('dropdown-item dt-controlled-copy', 'bxs-file-pdf'),
+            make('dropdown-item buttons-copy', 'bx-copy'),
+            make('dropdown-item dt-server-export', 'bx-file'), make('btn btn-icon dt-filter-btn', 'bx-filter-alt')
+        ];
+        const api = { buttons: () => ({ nodes: () => nodes }) };
+
+        options.config.initComplete.call({ api: () => api });
+        options.config.initComplete.call({ api: () => api });
+
+        nodes.slice(0, 5).forEach((node) => {
+            expect(node.querySelectorAll('.dt-current-page-only')).toHaveLength(1);
+            expect(node.querySelector('.dt-current-page-only').textContent).toBe('CurrentPageOnly');
+            expect(node.getAttribute('title')).toBe('CurrentPageOnly');
+        });
+        expect(nodes[5].querySelector('.dt-current-page-only')).toBeNull();
+        expect(nodes[6].querySelector('.dt-current-page-only')).toBeNull();
     });
     // FIX3 B17: the list component owns Save View, the filter and the server wire; the register keeps its saved-view
     // keys (existing views still load) and names only the sort keys MDM whitelists.
@@ -565,8 +613,8 @@ describe('MOD-0290 GSKU Register exposure', () => {
 
     it('draws nothing of the register without mdm.gskus.read (UAS-001)', () => {
         const index = read('Views/MasterDataManagement/Gskus/Index.cshtml');
-        const gate = index.indexOf('@if (!Perms.Has("mdm.gskus.read"))');
-        expect(index).toContain('@inject Diten.Web.Services.IPermissionSnapshot Perms');
+        // EK item 11 (FIX5): the gate reads permissions as GskusController.Index does (PermissionClaims).
+        const gate = index.indexOf('@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.gskus.read"))');
         expect(gate).toBeGreaterThan(0);
         expect(index.slice(gate, gate + 200)).toContain('<partial name="_AccessDenied"');
         expect(gate).toBeLessThan(index.indexOf('<partial name="~/Views/MasterDataManagement/Gskus/_Filter.cshtml" />'));
@@ -633,7 +681,8 @@ describe('MOD-0290 GSKU Register exposure', () => {
                 expect(l10n).toContain(`${key} = Localizer["${key}"].Value`);
             });
         // FIX4 item 11: a submit in reconciliation is the submitter's to repeat; anyone else is told so.
-        expect(source).toContain("RECONCILIATION_REQUIRED: readAvailableActions(detail).includes('SUBMIT')\n                ? L.IdentityStateReconciliationRequired : L.IdentityStateReconciliationOtherUser");
+        // FIX5 item 7: the rule, not its line breaks or indentation.
+        expect(source).toMatch(/RECONCILIATION_REQUIRED:\s*readAvailableActions\(detail\)\.includes\('SUBMIT'\)\s*\?\s*L\.IdentityStateReconciliationRequired\s*:\s*L\.IdentityStateReconciliationOtherUser/);
         // FIX4 item 1 (b): a stuck correction / retirement request — its requester's repeat, or why another cannot.
         ['IdentityStateReconciliationRequired', 'IdentityStateReconciliationOtherUser', 'RepeatRequest',
             'RepeatRequestConfirmation', 'RepeatRequestWaiting', 'RepeatRequestSettled',
