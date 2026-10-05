@@ -122,7 +122,8 @@ public sealed partial class GskuLifecycleHttpTests
                 break;
             default:
                 Assert.Equal(GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired, after.Checkpoint);
-                Assert.Equal(GskuCorrectionWorkflowProcessor.RetryLimitReached, after.LastFailureCode);
+                // FIX7 item 2: a store answer about the record — kept as the cause, a person's (not RETRY_LIMIT).
+                Assert.Equal(GskuCorrectionWorkflowProcessor.StuckOnRecordAnswer, after.LastFailureCode);
                 break;
         }
     }
@@ -265,6 +266,9 @@ public sealed partial class GskuLifecycleHttpTests
         {
             host.Engine.LookupFailure = null;
         }
+
+        // FIX7 item 3: "nothing arrived" is trusted only after the settle window (2 s in this host).
+        await Task.Delay(2100);
 
         var repeat = await RetireAsync(approved.Id, approved.Version, key);
 

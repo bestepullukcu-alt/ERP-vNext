@@ -432,6 +432,12 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
   repeat cannot settle — a write refused for a reason that does not pass (an idempotency or contract conflict, a lock
   that is not the request's, a GSKU that is gone or drifted, a refused admission, a quarantined pair retirement). Only a
   person can release those (BL-530): alert on any value above 0. The cycle line says it as "needing a person".
+  A request that reaches the retry limit on an answer about the record says so (`*_STUCK_ON_RECORD_ANSWER`, or
+  `*_STUCK_ON_RELEASE_CONFLICT` for a lock release that kept conflicting) and is counted there; one that reaches it on a
+  service fault stays `*_RETRY_LIMIT_REACHED`, keeps retrying and is not a person's (FIX7).
+- No request is left in manual reconciliation while it is waiting: if the requester's repeat would end a request but
+  the lock release has to wait (the cap, the store, a concurrent write), the request goes back to where the worker looks
+  (its decision, or the start's outcome) and the worker releases it. The store refuses "manual reconciliation + retryable".
 - The "is stuck" Error line is written ONCE, when a request becomes stuck, with the cause the attempt before it met
   (the record then holds only `*_RETRY_LIMIT_REACHED`); while it keeps retrying at the ceiling the next cycles say
   "still stuck" as Information.

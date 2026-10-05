@@ -217,7 +217,8 @@ public sealed partial class GskuLifecycleHttpTests
                 operation = (await operations.GetByOperationIdAsync(operation.OperationId))!;
             }
 
-            Assert.Equal(GskuCorrectionWorkflowProcessor.RetryLimitReached, operation.LastFailureCode);
+            // FIX7 item 2: the cause is kept — the limit reached on the engine's answer about the record.
+            Assert.Equal(GskuCorrectionWorkflowProcessor.StuckOnRecordAnswer, operation.LastFailureCode);
             Assert.DoesNotContain("REQUEST_CORRECTION", (await DetailAsync(approved.Id)).Actions);
         }
         finally

@@ -69,6 +69,9 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.False((await CorrectAsync(approved.Id, approved.Version, 4m, key)).IsSuccessStatusCode);
         await StuckCorrectionAsync(approved.Id, GskuCorrectionWorkflowProcessor.RetryLimitReached);
 
+        // FIX7 item 3: "nothing arrived" is trusted only after the settle window (2 s in this host).
+        await Task.Delay(2100);
+
         var repeat = await CorrectAsync(approved.Id, approved.Version, 4m, key);
 
         Assert.Equal("GSKU_CORRECTION_START_NOT_RECEIVED", Envelope.FirstError(await Envelope.ReadAsync(repeat)));

@@ -239,6 +239,10 @@ public static class GskuRefusalSentences
         ["GSKU_CORRECTION_START_LOOKUP_FAILED"] = "RefusalServiceUnavailable",
         ["GSKU_RETIREMENT_REQUEST_START_LOOKUP_FAILED"] = "RefusalServiceUnavailable",
         ["GSKU_CORRECTION_MANUAL_RECONCILIATION_NEEDED"] = "RefusalManualReconciliation",
+        ["GSKU_CORRECTION_STUCK_ON_RECORD_ANSWER"] = "RefusalManualReconciliation",
+        ["GSKU_CORRECTION_STUCK_ON_RELEASE_CONFLICT"] = "RefusalManualReconciliation",
         ["GSKU_RETIREMENT_REQUEST_MANUAL_RECONCILIATION_NEEDED"] = "RefusalManualReconciliation",
+        ["GSKU_RETIREMENT_REQUEST_STUCK_ON_RECORD_ANSWER"] = "RefusalManualReconciliation",
+        ["GSKU_RETIREMENT_REQUEST_STUCK_ON_RELEASE_CONFLICT"] = "RefusalManualReconciliation",
     };
 }

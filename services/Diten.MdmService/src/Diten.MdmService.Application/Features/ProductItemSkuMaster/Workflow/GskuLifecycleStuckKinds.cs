@@ -9,6 +9,9 @@ namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 /// lock that is not the request's, a GSKU that is gone, the GSKU drifted, the admission refused, the pair retirement
 /// quarantined) — keeps the GSKU locked until a person reconciles it. Those are counted on their own so an alert can
 /// be set on them.
+/// FIX7 item 2: a limit reached on an answer about the record (the engine's, the store's) is *_STUCK_ON_RECORD_ANSWER /
+/// *_STUCK_ON_RELEASE_CONFLICT — not on the list below, so a person's. RETRY_LIMIT_REACHED is now written only for a
+/// service fault, which keeps retrying (never in manual reconciliation) and heals by itself.
 /// </summary>
 public static class GskuLifecycleStuckKinds
 {

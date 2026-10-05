@@ -99,6 +99,12 @@ public sealed class GskuCorrectionWorkflowOperationRepository(IMongoDatabase dat
         GskuCorrectionWorkflowMutation mutation, CancellationToken cancellationToken = default)
     {
         if (claim.TenantId != TenantId || !Allowed(claim.Checkpoint, mutation.NextCheckpoint)) return false;
+        // FIX7 item 1 — a store invariant: manual reconciliation is never "retryable". The worker does not scan that
+        // checkpoint and the gauge counts it only when its disposition says it is held for a person, so the pair
+        // would be a lock nobody sees and nobody asks about again. A request that has to wait goes to a checkpoint
+        // the worker scans; one that does not is stuck (disposition ManualReconciliationRequired) or ended (None).
+        if (mutation.NextCheckpoint == GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired
+            && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable) return false;
         var filter = Active & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.OperationId, claim.OperationId)
             & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.OperationFingerprint, claim.OperationFingerprint)
             & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.Checkpoint, claim.Checkpoint)
@@ -220,6 +226,8 @@ public sealed class GskuCorrectionWorkflowOperationRepository(IMongoDatabase dat
         (GskuCorrectionWorkflowCheckpoint.DecisionApplied, GskuCorrectionWorkflowCheckpoint.Completed or GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired) => true,
         // FIX4 item 1 (b): the requester's same command reads the engine again and puts a stuck request back.
         (GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired, GskuCorrectionWorkflowCheckpoint.WorkflowStarted or GskuCorrectionWorkflowCheckpoint.AwaitingDecision or GskuCorrectionWorkflowCheckpoint.DecisionObserved) => true,
+        // FIX7 item 1 (a): a stuck request whose lock release has to wait goes back where the worker looks again.
+        (GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired, GskuCorrectionWorkflowCheckpoint.StartOutcomeUnknown) => true,
         _ => false
     };
     private async Task EnsureIndexesAsync(CancellationToken ct)

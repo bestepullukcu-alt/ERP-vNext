@@ -160,6 +160,11 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
                 && operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.None
                 && operation.NextAttemptAtUtcTicksV1 > clock.GetUtcNow().UtcTicks)
                 return Success(operation, false);
+            // FIX7 item 1: the reconciling repeat that left the request WAITING (its lock release refused by the cap, the
+            // store, a concurrent write — now back where the worker looks) stops here: the worker releases it. Going on
+            // in this request would treat "nothing arrived" as a start never sent and send it again.
+            if (reconciling && operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable)
+                return Fail(operation, ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, 503);
             if (operation.NextAttemptAtUtcTicksV1 > clock.GetUtcNow().UtcTicks)
                 return Fail(operation, operation.LastFailureCode ?? "GSKU_RETIREMENT_REQUEST_RETRY_SCHEDULED", 503);
         }
@@ -222,12 +227,16 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             new(op.ObjectType, op.ObjectId, op.MakerSubjectId, op.StartIdempotencyKey), ct);
         if (found.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
             return await RecordStart(op, claim, found, fromStart: false, now, execution, ct);
-        if (found.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound)
+        if (found.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound && !Settling(op, now, execution))
             return await EndAndReleaseAsync(op, claim, "GSKU_RETIREMENT_REQUEST_START_NOT_RECEIVED", now, execution, ct);
-        // FIX6 item 2 (the identity E2 rule): only a service fault (no answer, the shared classification's ServiceWait)
-        // is "the engine cannot be asked" — 503, ask again. An answer about the record (WORKFLOW_START_RECOVERY_CONFLICT,
-        // a tenant mismatch) will not change by asking again: 409, a person has to reconcile it (BL-530).
-        if (Waits(ProductIdentityWorkflowCall.StartResult, found.Outcome, found.ErrorCode))
+        // The engine could not settle it now; the request stays as it is and the next repeat (or a person) asks again.
+        //   FIX7 item 3: "nothing under this key" right after a start was sent may only mean the engine is still on it
+        //   (the settle window every other lookup respects) — ask again (503);
+        //   FIX6 item 2 (the identity E2 rule): a service fault (no answer, the shared classification's ServiceWait) —
+        //   ask again (503); an answer about the record (WORKFLOW_START_RECOVERY_CONFLICT, a tenant mismatch) will not
+        //   change by asking again — 409, a person has to reconcile it (BL-530).
+        if (found.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound
+            || Waits(ProductIdentityWorkflowCall.StartResult, found.Outcome, found.ErrorCode))
             signal.EngineSilent = true;
         return await operations.AdvanceAsync(claim, new(op.Checkpoint, op.RecoveryDisposition, now.UtcTicks,
             LastFailureCode: op.LastFailureCode, ReleaseLease: true, Streak: RecoveryStreakWrite.Keep), ct);
@@ -331,7 +340,8 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
         string? code, DateTimeOffset now, GskuRetirementRequestExecutionConfiguration execution, CancellationToken ct,
         bool startSent = false, bool transient = false)
     {
-        if (code is not null && code.EndsWith("_INVALID", StringComparison.Ordinal))
+        // FIX7 item 3: said once when first seen (and once more by the runner if it reaches the limit), not per attempt.
+        if (code is not null && code.EndsWith("_INVALID", StringComparison.Ordinal) && op.LastFailureCode != code)
             log.LogError("GSKU retirement request {OperationId} of tenant {TenantId}: the engine's start answer cannot be used ({ResultCode}); the lock is kept and the start is looked up again.",
                 op.OperationId, op.TenantId, code);
         return RetryAsync(op, claim, GskuRetirementRequestCheckpoint.StartOutcomeUnknown, code, now, execution, ct,
@@ -487,13 +497,25 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
         GskuRetirementRequestExecutionConfiguration execution, CancellationToken ct, bool transient = false,
         long? startSentAt = null)
     {
+        // FIX7 item 1 (a): a request in manual reconciliation that has to WAIT (its lock release refused by the cap,
+        // the store, a concurrent write) goes back to where the worker looks again — its approval's decision if one
+        // is on record, the start's outcome if not — and the worker's ordinary step tries the release again. Written
+        // as manual + retryable it would be a lock nobody sees (the store refuses that pair now).
+        if (checkpoint == GskuRetirementRequestCheckpoint.ManualReconciliationRequired)
+            checkpoint = op.WorkflowInstanceId.HasValue
+                ? GskuRetirementRequestCheckpoint.AwaitingDecision
+                : GskuRetirementRequestCheckpoint.StartOutcomeUnknown;
         var counted = !execution.Interactive;
         var (exhausted, _, next) = ProductIdentityRecoveryStreak.Next(
             counted ? op.FailedAttemptCount : Math.Max(op.FailedAttemptCount - 1, 0), now,
             execution.RetryDelay, execution.QuarantineAfterFailedAttempts, execution.MaxRetryDelay);
         if (counted && exhausted && !transient)
             // FIX6 item 5 (c): said ONCE, by the runner, when the request becomes stuck (with this cause).
-            return await Stuck(claim, RetryLimitReached, now, ct);
+            // FIX7 item 2: the CAUSE is kept — a limit reached on an answer about the record (the engine's or the
+            // store's) is not one the requester's repeat settles; a person has to (needing_a_person counts it).
+            // Only a service fault reaches the limit as RETRY_LIMIT_REACHED, and it keeps retrying (never stuck).
+            return await Stuck(claim, code == "GSKU_LIFECYCLE_RELEASE_CONFLICT" ? StuckOnReleaseConflict : StuckOnRecordAnswer,
+                now, ct);
         if (counted && exhausted)
             code = RetryLimitReached; // said once by the runner when it first reaches the limit, with the cause before
         return await operations.AdvanceAsync(claim, new(checkpoint, ProductIdentityWorkflowRecoveryDisposition.Retryable,
@@ -510,6 +532,9 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             : op.LastFailureCode == RetryLimitReached;
 
     public const string RetryLimitReached = "GSKU_RETIREMENT_REQUEST_RETRY_LIMIT_REACHED";
+    // FIX7 item 2: the limit reached on an answer about the record / on a lock release that kept conflicting.
+    public const string StuckOnRecordAnswer = "GSKU_RETIREMENT_REQUEST_STUCK_ON_RECORD_ANSWER";
+    public const string StuckOnReleaseConflict = "GSKU_RETIREMENT_REQUEST_STUCK_ON_RELEASE_CONFLICT";
     public const string EvidenceConflict = "GSKU_RETIREMENT_REQUEST_EVIDENCE_CONFLICT";
     public const string StartEvidenceInvalid = "GSKU_RETIREMENT_REQUEST_START_EVIDENCE_INVALID";
 
