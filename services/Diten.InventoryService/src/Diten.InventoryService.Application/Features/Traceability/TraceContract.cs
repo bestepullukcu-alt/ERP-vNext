@@ -1,7 +1,7 @@
 namespace Diten.InventoryService.Application.Features.Traceability;
 
 /// <summary>
-/// TRACE-BUNDLE (MOD-0174) wire constants — <c>docs/analysis/contracts/trace.openapi.yaml</c> 1.1.0. Bodies stay
+/// TRACE-BUNDLE (MOD-0174) wire constants — the frozen contract <c>trace.openapi.yaml</c> 1.1.0. Bodies stay
 /// <c>contractVersion: "v1"</c> (v1.1 is additive to the v1 major, same rule as LOCATION 1.1.0).
 /// </summary>
 public static class TraceContract
