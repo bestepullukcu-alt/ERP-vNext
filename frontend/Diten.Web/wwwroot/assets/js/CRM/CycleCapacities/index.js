@@ -6,8 +6,10 @@
  *  - All traffic via same-origin MVC proxy /CRM/CycleCapacities/api (never a Gateway URL / bearer token)
  *  - There is NO delete and NO bulk delete anywhere (retiring a capacity is Archive), and no approve action:
  *    approving an ESTIMATE is follow-up F-APPROVAL, so this page cannot offer it.
- *  - There is deliberately NO visit-number column: the estimate costs one working-calendar call per month, so
- *    computing one per row would turn a single grid draw into dozens of cross-service calls. It lives on Details.
+ *  - WP-CYC-UI-2: the estimated-visit / average-FTE / "not calculable" cells are filled LAZILY for the rows on the
+ *    current page only — one calculation read per visible row, cached for the life of the page. The estimate reaches
+ *    the working calendar, so it is never asked for the whole set; and the figure is the CRM's (totals.visits), never
+ *    computed here. K-4: an unresolved calendar shows "not calculable", never a number.
  */
 (function (window, document) {
     'use strict';
@@ -19,8 +21,8 @@
     const filterCollapseId = 'inlineFilterCollapse';
     const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'CRM', pageKey: 'CycleCapacities' };
-    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    const totalColumnCount = 12;
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8];
+    const totalColumnCount = 10;
     const baseOrder = [[1, 'asc']];
 
     let L = window.CycleCapacitiesL10n || window.L10n || {};
@@ -37,7 +39,7 @@
     let saveFilterArmed = false;
     let defaultViewRecord = null;
     let defaultViewState = null;
-    const emptyFilters = () => ({ cyclePeriodId: '', calendarCountryCode: [], cycleStatus: [], archived: '' });
+    const emptyFilters = () => ({ year: '', cyclePeriodId: '', calendarCountryCode: [], archived: '' });
     let appliedFilters = emptyFilters();
     let allRows = [];
 
@@ -50,10 +52,14 @@
     // Greenwich would otherwise render that instant as the previous evening and drop a day.
     // STAMP_FORMAT does NOT pin it: UpdatedAt is a real moment, and "when was this last touched?" is answered against
     // the reader's own clock.
+    // WP-CYC-UI-2: dates and numbers in the READER's language (document lang), not a fixed en-US.
+    const lang = document.documentElement.lang || undefined;
     const DAY_FORMAT = { month: 'short', day: '2-digit', year: '2-digit', timeZone: 'UTC' };
     const STAMP_FORMAT = { month: 'short', day: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' };
-    const day = v => v ? new Date(v).toLocaleDateString('en-US', DAY_FORMAT) : '—';
-    const stamp = v => v ? new Date(v).toLocaleString('en-US', STAMP_FORMAT) : '—';
+    const day = v => v ? new Date(v).toLocaleDateString(lang, DAY_FORMAT) : '—';
+    const stamp = v => v ? new Date(v).toLocaleString(lang, STAMP_FORMAT) : '—';
+    const numberFormat = new Intl.NumberFormat(lang);
+    const fteFormat = new Intl.NumberFormat(lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const norm = v => (typeof v === 'string' ? v.trim() : (v == null ? '' : String(v)));
     const normArr = v => Array.isArray(v) ? Array.from(new Set(v.map(x => norm(x)).filter(Boolean))) : (norm(v) ? [norm(v)] : []);
     const hasVal = v => Array.isArray(v) ? normArr(v).length > 0 : norm(v).length > 0;
@@ -116,17 +122,17 @@
     // Filter options come from the LOADED ROWS. A hardcoded list would offer a value the runtime does not know, and a
     // fixed one would go stale the day a new period is authored.
     const loadFilterOptions = () => {
+        const years = new Set();
         const periods = new Map();
         const countries = new Set();
-        const statuses = new Set();
         allRows.forEach(r => {
+            if (r.cycleYear) years.add(String(r.cycleYear));
             if (r.cyclePeriodId) periods.set(r.cyclePeriodId, `${r.cycleCode || ''} · ${r.cycleName || ''}`.trim());
             if (r.calendarCountryCode) countries.add(r.calendarCountryCode);
-            if (r.cycleStatus) statuses.add(r.cycleStatus);
         });
+        fillSelect('filterYear', Array.from(years).sort().reverse().map(v => ({ value: v, text: v })), true);
         fillSelect('filterCyclePeriodId', Array.from(periods, ([value, text]) => ({ value, text })), true);
         fillSelect('filterCalendarCountryCode', Array.from(countries).sort().map(v => ({ value: v, text: v })), false);
-        fillSelect('filterCycleStatus', Array.from(statuses).sort().map(v => ({ value: v, text: v })), false);
         initSelect2();
     };
 
@@ -164,27 +170,27 @@
             if (settings.nTable !== tableEl) return true;
             const r = row || dt?.row(dataIndex)?.data?.();
             if (!r) return true;
-            return matchesSingle(appliedFilters.cyclePeriodId, r.cyclePeriodId)
+            return matchesSingle(appliedFilters.year, r.cycleYear)
+                && matchesSingle(appliedFilters.cyclePeriodId, r.cyclePeriodId)
                 && matchesMulti(appliedFilters.calendarCountryCode, r.calendarCountryCode)
-                && matchesMulti(appliedFilters.cycleStatus, r.cycleStatus)
                 && matchesArchived(appliedFilters.archived, r);
         });
     };
     const getAppliedFilterCount = () => [
-        appliedFilters.cyclePeriodId, appliedFilters.calendarCountryCode,
-        appliedFilters.cycleStatus, appliedFilters.archived
+        appliedFilters.year, appliedFilters.cyclePeriodId,
+        appliedFilters.calendarCountryCode, appliedFilters.archived
     ].filter(hasVal).length;
 
     const readControls = () => ({
+        year: document.getElementById('filterYear')?.value || '',
         cyclePeriodId: document.getElementById('filterCyclePeriodId')?.value || '',
         calendarCountryCode: window.jQuery('#filterCalendarCountryCode').val() || [],
-        cycleStatus: window.jQuery('#filterCycleStatus').val() || [],
         archived: document.getElementById('filterArchived')?.value || ''
     });
     const writeControls = f => {
+        window.jQuery('#filterYear').val(f.year || '').trigger('change');
         window.jQuery('#filterCyclePeriodId').val(f.cyclePeriodId || '').trigger('change');
         window.jQuery('#filterCalendarCountryCode').val(normArr(f.calendarCountryCode)).trigger('change');
-        window.jQuery('#filterCycleStatus').val(normArr(f.cycleStatus)).trigger('change');
         window.jQuery('#filterArchived').val(f.archived || '').trigger('change');
     };
 
@@ -203,12 +209,84 @@
         return window.DitenDataTable?.renderActions ? window.DitenDataTable.renderActions(items) : '';
     };
 
-    // One Status cell: whether the row is archived, and otherwise whether its PINNED PERIOD has closed. The capacity
-    // itself has no status — editability is derived — so the cell reports the fact that actually governs it.
+    // ── lazy per-row estimate (visible rows only, cached) ─────────────────────────────────────────────────────────
+    // id → { state: 'pending' | 'done' | 'error', resolution, visits, averageFte }
+    const calcCache = new Map();
+    const calcOf = row => calcCache.get(row.cycleCapacityId);
+
+    const fetchCalculation = async id => {
+        try {
+            const response = await fetch(`${endpoint}/capacities/${encodeURIComponent(id)}/calculation`, { credentials: 'same-origin', headers: getAuthHeaders() });
+            // An unresolved calendar answers 503 WITH a body — the body is the answer.
+            const body = await response.json().catch(() => null);
+            const data = body?.data;
+            if (!data) { calcCache.set(id, { state: 'error' }); return; }
+            const resolved = data.resolution === 'resolved' && !!data.totals;
+            calcCache.set(id, {
+                state: 'done',
+                resolution: data.resolution,
+                visits: resolved ? data.totals.visits : null,
+                averageFte: resolved ? data.totals.averageFte : null
+            });
+        } catch (e) {
+            calcCache.set(id, { state: 'error' });
+        }
+    };
+
+    let calcBatchRunning = false;
+    const fillVisibleCalculations = async api => {
+        if (calcBatchRunning || !api) return;
+        const ids = api.rows({ page: 'current', search: 'applied' }).data().toArray()
+            .map(r => r.cycleCapacityId).filter(id => id && !calcCache.has(id));
+        if (ids.length === 0) return;
+        calcBatchRunning = true;
+        ids.forEach(id => calcCache.set(id, { state: 'pending' }));
+        try {
+            await Promise.all(ids.map(fetchCalculation));
+        } finally {
+            calcBatchRunning = false;
+        }
+        api.rows().invalidate('data');
+        api.draw(false);
+    };
+
+    const pendingCell = () => `<span class="spinner-border spinner-border-sm text-muted" role="status" aria-label="${esc(L.Calculating || '')}"></span>`;
+
+    const visitsCell = row => {
+        const c = calcOf(row);
+        if (!c || c.state === 'pending') return pendingCell();
+        if (c.state === 'error' || c.visits === null || c.visits === undefined) return '<span class="text-muted">—</span>';
+        return `<span class="fw-medium text-heading">${esc(numberFormat.format(c.visits))}</span>`;
+    };
+
+    const fteCell = row => {
+        const c = calcOf(row);
+        if (!c || c.state === 'pending') return pendingCell();
+        return c.averageFte === null || c.averageFte === undefined ? '—' : esc(fteFormat.format(c.averageFte));
+    };
+
+    const periodCell = row => `<div class="d-flex flex-column" title="${esc(row.cycleName || '')}">
+            <span class="fw-medium text-heading">${esc(row.cycleCode || '—')}</span>
+            <small class="text-muted">${esc(windowCell(row))}</small>
+        </div>`;
+
+    // The typical visit (min) — with an "old model" badge when the row still uses the legacy arithmetic.
+    const typicalCell = row => {
+        const minutes = row.typicalVisitMinutes ?? row.minutesPerVisit;
+        const legacy = row.visitModel === 'legacy' ? ` ${badge(L.LegacyBadge, 'info')}` : '';
+        return `${esc(minutes === null || minutes === undefined ? '—' : numberFormat.format(minutes))} ${esc(L.UnitMinutesShort || '')}${legacy}`;
+    };
+
+    const limitsCell = row => `${esc(row.maxPromoProducts ?? '—')} / ${esc(row.maxNonPromoProducts ?? '—')}`;
+
+    // One Status cell: archived, then whether the PINNED PERIOD has closed (editability is derived — the capacity has no
+    // status of its own), then whether the estimate could be computed at all.
     const statusCell = row => {
         if (row.isArchived) return badge(L.ArchivedOnly, 'secondary');
         if (!row.isEditable) return badge(L.PeriodClosedLock, 'secondary');
-        return badge(L.Active, 'success');
+        const c = calcOf(row);
+        if (c?.state === 'error' || (c?.state === 'done' && c.resolution !== 'resolved')) return badge(L.StatusNotCalculable, 'warning');
+        return badge(L.StatusEditable, 'success');
     };
 
     const windowCell = row => (row.cycleStartDate && row.cycleEndDate)
@@ -220,19 +298,20 @@
         colReorder: { columns: ':gt(0):not(:last-child)' },
         order: baseOrder,
         columns: [
-            { data: null, defaultContent: '' }, { data: 'cycleCode' }, { data: 'cycleName' },
-            { data: 'cycleStartDate' }, { data: 'calendarCountryCode' }, { data: 'dailyWorkMinutes' },
-            { data: 'minutesPerVisit' }, { data: 'fte' }, { data: 'monthCount' },
-            { data: 'isArchived' }, { data: 'updatedAt' }, { data: null }
+            { data: null, defaultContent: '' }, { data: 'cycleCode' }, { data: 'calendarCountryCode' },
+            { data: null }, { data: 'typicalVisitMinutes' }, { data: null },
+            { data: 'maxPromoProducts' }, { data: 'isArchived' }, { data: 'updatedAt' }, { data: null }
         ],
         columnDefs: [
             { targets: 0, className: 'control', orderable: false, render: () => '' },
-            { targets: 2, render: v => `<span class="fw-medium text-heading">${esc(v)}</span>` },
-            { targets: 3, render: (v, t, row) => t === 'display' ? windowCell(row) : (v || '') },
-            { targets: 7, render: v => (v === null || v === undefined) ? '—' : Number(v).toFixed(2) },
-            { targets: 9, render: (v, t, row) => t === 'display' ? statusCell(row) : (v ? '1' : '0') },
-            { targets: 10, render: v => stamp(v) },
-            { targets: 11, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, t, row) => actions(row) }
+            { targets: 1, render: (v, t, row) => t === 'display' ? periodCell(row) : `${row.cycleYear || ''}-${String(row.cycleSequenceInYear || 0).padStart(2, '0')} ${v || ''}` },
+            { targets: 3, className: 'text-end', render: (v, t, row) => t === 'display' ? visitsCell(row) : (calcOf(row)?.visits ?? -1) },
+            { targets: 4, render: (v, t, row) => t === 'display' ? typicalCell(row) : (v ?? 0) },
+            { targets: 5, className: 'text-end', render: (v, t, row) => t === 'display' ? fteCell(row) : (calcOf(row)?.averageFte ?? -1) },
+            { targets: 6, render: (v, t, row) => t === 'display' ? limitsCell(row) : (v ?? 0) },
+            { targets: 7, render: (v, t, row) => t === 'display' ? statusCell(row) : (v ? '1' : '0') },
+            { targets: 8, render: v => stamp(v) },
+            { targets: 9, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, t, row) => actions(row) }
         ],
         language: { emptyTable: L.EmptyState, processing: L.Loading },
         buttons: window.DtDefaults.exportButtons(canManage ? (L.CreateCycleCapacity || '') : '', { href: `${pageRoot}/Create` }, {
@@ -254,7 +333,10 @@
             if (canManage && !addNewBound) { document.querySelector('.add-new')?.addEventListener('click', e => { e.preventDefault(); window.location.assign(`${pageRoot}/Create`); }); addNewBound = true; }
             setTimeout(() => { saveFilterArmed = true; }, 0);
         },
-        drawCallback: function () { window.DtDefaults?.updateVisualState?.(this.api(), getAppliedFilterCount()); }
+        drawCallback: function () {
+            window.DtDefaults?.updateVisualState?.(this.api(), getAppliedFilterCount());
+            void fillVisibleCalculations(this.api());
+        }
     });
 
     const setupFilters = async api => {
@@ -293,6 +375,7 @@
 
     const reload = async () => {
         allRows = await fetchRows();
+        calcCache.clear();
         if (dt) { dt.clear(); dt.rows.add(allRows).draw(false); }
         loadFilterOptions();
     };

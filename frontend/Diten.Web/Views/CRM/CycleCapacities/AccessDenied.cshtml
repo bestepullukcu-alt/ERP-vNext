@@ -1,0 +1,11 @@
+@using Diten.Web.Views.CRM.CycleCapacities
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CycleCapacitiesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["CycleCapacitiesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* UAS-001 — the actor lacks the page's permission. ONE explanation, inside the shell: no heading, no table, no
+   "+ New" button, no redirect. The controller returns this with 403 and reads no data for them. *@
+<partial name="_AccessDenied" model="@Localizer["CycleCapacitiesTitle"].Value" />

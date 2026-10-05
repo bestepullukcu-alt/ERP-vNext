@@ -16,7 +16,11 @@
         'WorkingDays',
         'NotAvailable', 'PageDescription', 'PeriodClosedLock', 'PeriodWindow', 'QuickView', 'RecordArchived',
         'RecordCreated', 'RecordSaved', 'RecordUpdated', 'Reset', 'Save', 'SaveView', 'Search',
-        'SelectPlaceholder', 'ShowAll', 'Status', 'Unknown', 'Update', 'UpdatedAt', 'ViewDetails'
+        'SelectPlaceholder', 'ShowAll', 'Status', 'Unknown', 'Update', 'UpdatedAt', 'ViewDetails',
+        // WP-CYC-UI-2
+        'LegacyBadge', 'StatusEditable', 'StatusNotCalculable', 'Calculating', 'UnitMinutesShort', 'HoursMinutesFormat',
+        'NoNumberBlocked', 'CalendarResolvedShort', 'CalendarUnresolvedShort', 'CalendarForbiddenShort',
+        'CalendarUnknownShort', 'Codes'
     ];
 
     const logMissingKeys = (dictionary) => {

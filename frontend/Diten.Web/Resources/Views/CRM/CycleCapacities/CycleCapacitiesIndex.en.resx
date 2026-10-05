@@ -7,7 +7,7 @@
   <data name="Actions" xml:space="preserve"><value>Actions</value></data>
   <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
   <data name="CycleCapacitiesTitle" xml:space="preserve"><value>Cycle Capacity</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>How many visits fit in a cycle period. An estimate built on the published working calendar and an authored activity budget.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>How many visits a rep can make in a period: an estimate built on the published working calendar and the authored activity budget. One capacity per period.</value></data>
   <data name="ContractUnavailable" xml:space="preserve"><value>The cycle capacity service is unavailable.</value></data>
   <data name="CreateCycleCapacity" xml:space="preserve"><value>New capacity</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>New cycle capacity</value></data>
@@ -82,4 +82,129 @@
   <data name="MaxNonPromoProducts" xml:space="preserve"><value>Max non-promo products per visit</value></data>
   <data name="MaxProductsHint" xml:space="preserve"><value>1–10. Left empty, the stored value is kept (3 on a new record).</value></data>
   <data name="Err_max_products_out_of_range" xml:space="preserve"><value>The number of products per visit must be between 1 and 10.</value></data>
+  <data name="DetailsTitleFormat" xml:space="preserve"><value>Capacity · {0}</value></data>
+  <data name="HoursMinutesFormat" xml:space="preserve"><value>{h} h {m} min</value></data>
+  <data name="UnitMinutesShort" xml:space="preserve"><value>min</value></data>
+  <data name="UnitDaysShort" xml:space="preserve"><value>days</value></data>
+  <data name="Total" xml:space="preserve"><value>Total</value></data>
+  <data name="Retry" xml:space="preserve"><value>Try again</value></data>
+  <data name="ColPeriod" xml:space="preserve"><value>Period</value></data>
+  <data name="ColEstimatedVisits" xml:space="preserve"><value>Estimated visits (per rep)</value></data>
+  <data name="ColTypicalVisit" xml:space="preserve"><value>Typical visit</value></data>
+  <data name="ColAverageFte" xml:space="preserve"><value>Avg. FTE</value></data>
+  <data name="ColProductLimits" xml:space="preserve"><value>Max products (promo / non-promo)</value></data>
+  <data name="FilterYear" xml:space="preserve"><value>Year</value></data>
+  <data name="LegacyBadge" xml:space="preserve"><value>old model</value></data>
+  <data name="StatusEditable" xml:space="preserve"><value>Editable</value></data>
+  <data name="StatusNotCalculable" xml:space="preserve"><value>Not calculable</value></data>
+  <data name="Calculating" xml:space="preserve"><value>Calculating…</value></data>
+  <data name="FormLiveHint" xml:space="preserve"><value>As you change the inputs, the summary on the right and the monthly table are recalculated by the server.</value></data>
+  <data name="ReadOnlyTitle" xml:space="preserve"><value>Read-only.</value></data>
+  <data name="ReadOnlyClosedBody" xml:space="preserve"><value>The period is closed: the capacity of a closed period and the plans that use it cannot be changed.</value></data>
+  <data name="ReadOnlyArchivedBody" xml:space="preserve"><value>This capacity is archived and cannot be changed. Create a new capacity for the period instead.</value></data>
+  <data name="LegacyBandTitle" xml:space="preserve"><value>This capacity is calculated with the old visit-duration model.</value></data>
+  <data name="LegacyBandBody" xml:space="preserve"><value>Fill in the typical visit (promo count, non-promo count, report minutes per visit) and save to switch to the new model. Saving with the typical visit empty keeps the old model.</value></data>
+  <data name="LegacyBandNumberMayChange" xml:space="preserve"><value>After switching, the estimated visit number may change: the report is then charged per visit instead of per day.</value></data>
+  <data name="PeriodLockedHint" xml:space="preserve"><value>The period cannot be changed after the capacity is created.</value></data>
+  <data name="PeriodPickHint" xml:space="preserve"><value>Cannot be changed after creation. Closed periods and periods that already have a capacity cannot be saved.</value></data>
+  <data name="DailyTimeSection" xml:space="preserve"><value>Daily time</value></data>
+  <data name="DailyTimeHint" xml:space="preserve"><value>Minutes per day. Travel and quiz are taken from every field day; together they must stay below the working day.</value></data>
+  <data name="LegacyReportPerDay" xml:space="preserve"><value>Old model: report per day</value></data>
+  <data name="VisitDurationSection" xml:space="preserve"><value>Visit duration</value></data>
+  <data name="VisitDurationHint" xml:space="preserve"><value>Minutes per product × products in a typical visit + report per visit. The capacity is calculated with this typical visit duration.</value></data>
+  <data name="PerProductHint" xml:space="preserve"><value>Minutes per product.</value></data>
+  <data name="ReportMinutesPerVisit" xml:space="preserve"><value>Report per visit</value></data>
+  <data name="TypicalVisitTitle" xml:space="preserve"><value>Typical visit</value></data>
+  <data name="TypicalVisitHint" xml:space="preserve"><value>How many products a typical visit covers. Fill in both counts and the report per visit — all three together.</value></data>
+  <data name="TypicalPromoCount" xml:space="preserve"><value>Promo products</value></data>
+  <data name="TypicalNonPromoCount" xml:space="preserve"><value>Non-promo products</value></data>
+  <data name="TypicalCountHint" xml:space="preserve"><value>Cannot exceed the products-per-visit limit.</value></data>
+  <data name="TypicalVisitMinutesLabel" xml:space="preserve"><value>Typical visit duration</value></data>
+  <data name="BufferInfo" xml:space="preserve"><value>The buffer does not change the capacity number; it is added to the route in visit planning.</value></data>
+  <data name="ProductLimitsSection" xml:space="preserve"><value>Products per visit</value></data>
+  <data name="ProductLimitsHint" xml:space="preserve"><value>In planning, at most this many products can be added to a visit. The typical visit cannot exceed these limits.</value></data>
+  <data name="LiveSummaryTitle" xml:space="preserve"><value>Live calculation</value></data>
+  <data name="SummaryLoading" xml:space="preserve"><value>Calculating…</value></data>
+  <data name="SummaryError" xml:space="preserve"><value>The calculation could not be loaded. Your inputs are kept.</value></data>
+  <data name="SummaryIdle" xml:space="preserve"><value>Choose a period to see the calculation.</value></data>
+  <data name="VisitsPerRep" xml:space="preserve"><value>visits / rep</value></data>
+  <data name="RemainingMinutes" xml:space="preserve"><value>Left for visits (min)</value></data>
+  <data name="DivideByTypicalVisit" xml:space="preserve"><value>÷ Typical visit</value></data>
+  <data name="TimesAverageFte" xml:space="preserve"><value>× Avg. FTE</value></data>
+  <data name="BlocksTitle" xml:space="preserve"><value>Prevents saving</value></data>
+  <data name="WarningsTitle" xml:space="preserve"><value>Warnings</value></data>
+  <data name="SummaryAllOk" xml:space="preserve"><value>No warnings. The calculation is ready to be saved.</value></data>
+  <data name="TeamSupplyLater" xml:space="preserve"><value>The figure is per rep. Team supply (number of reps) comes in a later release.</value></data>
+  <data name="ApplyToAllMonths" xml:space="preserve"><value>Apply to all months</value></data>
+  <data name="PartialMonth" xml:space="preserve"><value>partial</value></data>
+  <data name="PartialMonthTitle" xml:space="preserve"><value>The month is cut at the period boundary.</value></data>
+  <data name="MonthZeroedBadge" xml:space="preserve"><value>month at zero</value></data>
+  <data name="FteSourceAuthored" xml:space="preserve"><value>entered</value></data>
+  <data name="FteSourceDefault" xml:space="preserve"><value>default</value></data>
+  <data name="NoNumberBlocked" xml:space="preserve"><value>No number while the inputs cannot be saved — resolve the items below.</value></data>
+  <data name="CalendarResolvedShort" xml:space="preserve"><value>Calendar found</value></data>
+  <data name="CalendarUnresolvedShort" xml:space="preserve"><value>No calendar</value></data>
+  <data name="CalendarForbiddenShort" xml:space="preserve"><value>No access</value></data>
+  <data name="CalendarUnknownShort" xml:space="preserve"><value>Unknown</value></data>
+  <data name="GoToPeriod" xml:space="preserve"><value>Go to period</value></data>
+  <data name="ViewInputs" xml:space="preserve"><value>View inputs</value></data>
+  <data name="CalendarStatusTitle" xml:space="preserve"><value>Calendar status</value></data>
+  <data name="CalendarResolvedBody" xml:space="preserve"><value>The working calendar was found. Weekends and public holidays are already excluded from the working days.</value></data>
+  <data name="CalculationUnavailableBody" xml:space="preserve"><value>The server did not answer. Reload the page; if it persists, contact your administrator.</value></data>
+  <data name="NoNumberCalendar" xml:space="preserve"><value>No figure: the calendar did not answer.</value></data>
+  <data name="KpiVisits" xml:space="preserve"><value>Estimated visits / rep</value></data>
+  <data name="KpiTypicalVisit" xml:space="preserve"><value>Typical visit duration</value></data>
+  <data name="BufferOnRoute" xml:space="preserve"><value>buffer {0} min (on the route)</value></data>
+  <data name="KpiFieldOverWorking" xml:space="preserve"><value>Field days / working days</value></data>
+  <data name="KpiAverageFte" xml:space="preserve"><value>Average FTE</value></data>
+  <data name="WaterfallTitle" xml:space="preserve"><value>Calculation waterfall</value></data>
+  <data name="WaterfallHint" xml:space="preserve"><value>Period total, per rep. From working days down to the minutes left for visits, divided by the visit duration.</value></data>
+  <data name="WfWorkingDays" xml:space="preserve"><value>Working days</value></data>
+  <data name="WfDeductedDays" xml:space="preserve"><value>Deducted days (meeting, training, leave)</value></data>
+  <data name="WfFieldDays" xml:space="preserve"><value>Field days</value></data>
+  <data name="WfAvailableMinutes" xml:space="preserve"><value>Available minutes</value></data>
+  <data name="WfDailyFixedMinutes" xml:space="preserve"><value>Daily fixed tasks (travel, quiz)</value></data>
+  <data name="WfMicroTargetingMinutes" xml:space="preserve"><value>Micro-targeting</value></data>
+  <data name="WfRemainingMinutes" xml:space="preserve"><value>Left for visits</value></data>
+  <data name="WfDivide" xml:space="preserve"><value>÷ {0} min typical visit</value></data>
+  <data name="WfMultiply" xml:space="preserve"><value>× {0} avg. FTE</value></data>
+  <data name="MonthlyChartTitle" xml:space="preserve"><value>Capacity month by month</value></data>
+  <data name="ChartVisits" xml:space="preserve"><value>Visits</value></data>
+  <data name="ChartFieldDays" xml:space="preserve"><value>Field days</value></data>
+  <data name="SupplyDemandTitle" xml:space="preserve"><value>Supply / demand</value></data>
+  <data name="SupplyDemandPerRepNote" xml:space="preserve"><value>Per rep: each month’s capacity against the visits planned in the period’s planning sessions. Team size is not included yet (a later release).</value></data>
+  <data name="Planned" xml:space="preserve"><value>Planned</value></data>
+  <data name="Capacity" xml:space="preserve"><value>capacity</value></data>
+  <data name="CapacityLegend" xml:space="preserve"><value>Capacity (possible)</value></data>
+  <data name="PlannedLegend" xml:space="preserve"><value>Planned (demand)</value></data>
+  <data name="Overage" xml:space="preserve"><value>Overage</value></data>
+  <data name="OverWarning" xml:space="preserve"><value>in {0} the planned visits exceed the capacity. Move visits to other months in the planning sessions or review the capacity inputs.</value></data>
+  <data name="FreeCapacity" xml:space="preserve"><value>Free capacity (visits)</value></data>
+  <data name="SupplyUnavailableCalendar" xml:space="preserve"><value>The calendar did not answer, so there is no capacity to compare: only the planned visits are shown.</value></data>
+  <data name="UsageUnavailable" xml:space="preserve"><value>The period’s planning data could not be read, so supply and demand cannot be compared right now.</value></data>
+  <data name="NoDemandYet" xml:space="preserve"><value>No visits have been planned for this period yet.</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>Planning sessions using this capacity</value></data>
+  <data name="NoSessions" xml:space="preserve"><value>No planning session uses this period yet.</value></data>
+  <data name="SessionName" xml:space="preserve"><value>Session</value></data>
+  <data name="SessionOwner" xml:space="preserve"><value>Owner</value></data>
+  <data name="SessionVisits" xml:space="preserve"><value>Planned visits</value></data>
+  <data name="Code_typical_visit_required" xml:space="preserve"><value>Fill in the typical visit (promo count, non-promo count, report per visit): a new capacity uses the typical-visit model.</value></data>
+  <data name="Code_typical_visit_incomplete" xml:space="preserve"><value>The typical visit is incomplete: fill in all three fields or none.</value></data>
+  <data name="Code_typical_visit_empty" xml:space="preserve"><value>A typical visit must cover at least one product.</value></data>
+  <data name="Code_typical_count_exceeds_max" xml:space="preserve"><value>The typical product count exceeds the products-per-visit limit.</value></data>
+  <data name="Code_visit_minutes_zero" xml:space="preserve"><value>The visit duration is 0 minutes; enter the minutes per product.</value></data>
+  <data name="Code_cycle_capacity_daily_spend_exceeds_day" xml:space="preserve"><value>Daily fixed tasks use up the whole working day; no time is left for visits.</value></data>
+  <data name="Code_month_zeroed" xml:space="preserve"><value>deducted days exceed the working days, so the month counts as 0.</value></data>
+  <data name="Code_micro_targeting_clipped" xml:space="preserve"><value>more micro-targeting days than field days; the extra days are ignored.</value></data>
+  <data name="Code_calendar_unresolved" xml:space="preserve"><value>No working calendar is published for this country and year.</value></data>
+  <data name="Code_calendar_forbidden" xml:space="preserve"><value>You are not allowed to read the working calendar.</value></data>
+  <data name="Code_country_underivable" xml:space="preserve"><value>The calendar country could not be determined; choose a calendar country.</value></data>
+  <data name="Code_cycle_capacity_months_required" xml:space="preserve"><value>The period has no months to calculate.</value></data>
+  <data name="Code_cycle_capacity_period_not_found" xml:space="preserve"><value>The period was not found.</value></data>
+  <data name="Code_unknown" xml:space="preserve"><value>The calculation could not be completed.</value></data>
+  <data name="Err_typical_visit_empty" xml:space="preserve"><value>A typical visit must cover at least one product.</value></data>
+  <data name="Err_typical_visit_incomplete" xml:space="preserve"><value>Fill in all three typical-visit fields or none.</value></data>
+  <data name="Err_typical_count_exceeds_max" xml:space="preserve"><value>The typical product count cannot exceed the products-per-visit limit.</value></data>
+  <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>A month’s FTE is out of range.</value></data>
+  <data name="Err_period_closed" xml:space="preserve"><value>The period is closed; its capacity can no longer be changed.</value></data>
 </root>

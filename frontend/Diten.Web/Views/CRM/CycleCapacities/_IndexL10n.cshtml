@@ -1,3 +1,4 @@
+@using Diten.Web.Models.CRM
 @using Diten.Web.Views.CRM.CycleCapacities
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<CycleCapacitiesIndex> Localizer
@@ -85,6 +86,21 @@
         CalendarUnresolvedTitle = Localizer["CalendarUnresolvedTitle"].Value,
         CalendarUnresolvedBody = Localizer["CalendarUnresolvedBody"].Value,
         BudgetVisitMinutesZero = Localizer["BudgetVisitMinutesZero"].Value,
-        BudgetDailySpendExceedsDay = Localizer["BudgetDailySpendExceedsDay"].Value
+        BudgetDailySpendExceedsDay = Localizer["BudgetDailySpendExceedsDay"].Value,
+
+        // WP-CYC-UI-2 — list, live summary and the coded blockers / warnings / reasons.
+        LegacyBadge = Localizer["LegacyBadge"].Value,
+        StatusEditable = Localizer["StatusEditable"].Value,
+        StatusNotCalculable = Localizer["StatusNotCalculable"].Value,
+        Calculating = Localizer["Calculating"].Value,
+        UnitMinutesShort = Localizer["UnitMinutesShort"].Value,
+        HoursMinutesFormat = Localizer["HoursMinutesFormat"].Value,
+        NoNumberBlocked = Localizer["NoNumberBlocked"].Value,
+        CalendarResolvedShort = Localizer["CalendarResolvedShort"].Value,
+        CalendarUnresolvedShort = Localizer["CalendarUnresolvedShort"].Value,
+        CalendarForbiddenShort = Localizer["CalendarForbiddenShort"].Value,
+        CalendarUnknownShort = Localizer["CalendarUnknownShort"].Value,
+        // A dictionary, so its keys (the CRM's / the summary's codes) are serialized verbatim.
+        Codes = CycleCapacityL10nCodes.All.ToDictionary(code => code, code => Localizer["Code_" + code].Value)
     })
 </script>
