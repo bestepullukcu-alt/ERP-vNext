@@ -17,7 +17,7 @@ screens:
     data_mode: server
 entity_base: EntityBase
 status: draft
-status_note: "draft — WP-0174-P0 (CT-MVP1-0174-P0 v1), 2026-10-05. Owner decisions K-A…K-G (2026-10-05) recorded in §19 as DECISIONS. Open CT decisions CT-D1…CT-D8 (§19) — CT-D1 (blocked-lot availability) blocks P2. TRACE v1.1 proposal: docs/analysis/contracts/drafts/trace-v1.1-proposal.md. DCP-002 verifier re-run pending (no Python — waiver W-0173-01 pattern)."
+status_note: "draft — WP-0174-P0 (CT-MVP1-0174-P0 v1), 2026-10-05. Owner decisions K-A…K-G (2026-10-05) recorded in §19 as DECISIONS. CT decisions CT-D1…CT-D8 TAKEN 2026-10-05 (§19; CT-D1 = option a, owner). WP-0174-P0 CT-ACCEPTED 2026-10-05. TRACE v1.1 proposal: docs/analysis/contracts/drafts/trace-v1.1-proposal.md. DCP-002 verifier re-run pending (no Python — waiver W-0173-01 pattern)."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0174-lot-serial-tracking
 started: 2026-10-05
@@ -736,7 +736,25 @@ The ledger never calls `/api/trace` over HTTP (in-process `ILotMasterClient`).
 | F-15 | Inbound types = OPENING_BALANCE, GOODS_RECEIPT_PO, GOODS_RECEIPT_PROD, CUSTOMER_RETURN, COUNT_GAIN | `…Domain/Rules/MovementDirectionRules.cs:22-23` |
 | F-16 | Multiple manifest providers per service are supported | `…Api/ModuleRegistration/ModuleRegistrationHostedService.cs:43`; registration `…Api/Program.cs:39` |
 
-### Open CT decisions
+### CT decisions — TAKEN 2026-10-05 (CT acceptance of WP-0174-P0)
+
+All eight are closed; the texts below are the options that were on the table, kept for the record.
+
+| # | Decision | Taken by |
+|---|---|---|
+| CT-D1 | **Option (a).** Availability subtracts Blocked / Expired lots via the lot projection; balance-row stock status unchanged ("bloke lot ≠ bloke stok"). INVENTORY-BUNDLE v1 stays structurally unchanged; the `available` description gains "excluding Blocked / Expired lots" (description-only note + change record, MOD-0173 owner single-writer step in P2). This is a **semantic change of a frozen contract**, therefore an owner decision. | **Owner (Ali), 2026-10-05** |
+| CT-D2 | Refuse `createLot` without SKU → `LOT_SKU_REQUIRED` (B-2). | CT |
+| CT-D3 | Lot identity is **tenant-wide** (K-G key has no company; an inter-company transfer keeps one lot). Stock, movements and every stock read stay Tenant + LegalEntity scoped (DEC-INV-18 unchanged). | CT |
+| CT-D4 | From Blocked / Expired lots only SCRAP, WRITE_OFF and REVERSAL are allowed; every other movement and reservation refused. | CT |
+| CT-D5 | Separate module `LOT-SERIAL-TRACKING`, namespace `trace.*`, cross-module action `NEWLOTQUICK`; P3 measures the catalog attribution of the shared key and reports it. | CT |
+| CT-D6 | Migration re-keys projections to the registered lot; `getTransactions` resolves linked rows to the registered `lotId` read-side; transaction documents unchanged (append-only). | CT |
+| CT-D7 | Serial uniqueness Tenant + SKU + serial number (one GTIN per SKU assumed). | CT |
+| CT-D8 | Every non-Draft lot edit needs a reason (Blocked and Expired included); the expiry sweeper expires lots in any status. | CT |
+
+Still open for the CT (not pack decisions): accepting the TRACE v1.1 proposal into the yaml (P1 single-writer step)
+and recording the DEC-INV-14 change (K-G) in the inventory report §9.
+
+#### Options as proposed (record)
 
 - **CT-D1 (blocks P2) — Blocked / Expired lot availability:** option (a) projection + availability subtracts, or (b)
   automatic STATUS_TRANSFER (§8). Recommendation (a) + a description-only INVENTORY-BUNDLE note by the MOD-0173 owner.
