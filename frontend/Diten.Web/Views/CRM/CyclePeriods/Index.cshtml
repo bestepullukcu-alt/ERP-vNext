@@ -8,23 +8,45 @@
     Layout = "_LayoutTenantShell";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/crm-cycle-periods.css" asp-append-version="true" />
+}
+
 @* ① Inline Filter partial *@
 @* Contract marker: <partial name="_Filter" /> *@
 <partial name="~/Views/CRM/CyclePeriods/_Filter.cshtml" />
 
-@* Golden Compact: authoring happens on its own page, and the create affordance lives in the DataTable toolbar
-   (the `.add-new` button) — exactly once. A second button in the page header offered the same action twice, which
-   makes a reader wonder whether the two differ. The permission gate is UNCHANGED and still decided server-side; it is
-   published to index.js below so the surviving toolbar button obeys it (the Campaign golden-compact pattern). *@
-<div class="mb-3">
-    <h5 class="mb-0">@Localizer["CyclePeriodsTitle"]</h5>
-    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+@* WP-CYC-UI-1 — the create affordance stays ONCE, in the DataTable toolbar (`.add-new`); it now opens the right-side
+   panel instead of a page (product-owner decision 2026-10-05, a known deviation from Golden Compact's separate pages).
+   The header carries the two navigations the mockup puts there: the capacity list and the effective-period finder,
+   plus the Table / Timeline toggle (the OrganizationUnits diten-view-toggle precedent). *@
+<div class="mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["CyclePeriodsTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <a href="/CRM/CycleCapacities" class="btn btn-label-secondary">
+            <i class="icon-base bx bx-tachometer me-1"></i>@Localizer["CycleCapacities"]
+        </a>
+        <button type="button" id="btnFinderToggle" class="btn btn-outline-primary" aria-expanded="false" aria-controls="finderCard">
+            <i class="icon-base bx bx-target-lock me-1"></i>@Localizer["FinderOpen"]
+        </button>
+        <div class="btn-group diten-view-toggle" role="group" aria-label="@Localizer["ViewTable"] / @Localizer["ViewTimeline"]">
+            <button type="button" id="btnViewTable" class="btn btn-outline-primary active" data-view="table" aria-pressed="true">
+                <i class="icon-base bx bx-table me-1"></i>@Localizer["ViewTable"]
+            </button>
+            <button type="button" id="btnViewTimeline" class="btn btn-outline-primary" data-view="timeline" aria-pressed="false">
+                <i class="icon-base bx bx-calendar-week me-1"></i>@Localizer["ViewTimeline"]
+            </button>
+        </div>
+    </div>
 </div>
 
-@* ② The read-only "which period is in force today?" badge. It is a READ: opening this page creates nothing and
-     remembers nothing. An ambiguous answer is shown as a WARNING rather than silently resolved to the first row, and
-     the badge names the SCOPE that answered — "my unit has its own calendar" and "my unit follows the tenant's" are
-     different facts. *@
+@* ② The effective-period finder (K-6): ACTIVE periods only, through the runtime's resolve-active. *@
+<partial name="~/Views/CRM/CyclePeriods/_Finder.cshtml" model="Model.ScopeOptions" />
+
+@* ③ The read-only "which period is in force today?" badge (tenant-wide ask). *@
 <div class="card mb-3">
     <div class="card-body py-3 d-flex flex-wrap align-items-center gap-3">
         <span class="text-muted">@Localizer["CurrentPeriod"]</span>
@@ -34,15 +56,41 @@
     </div>
 </div>
 
-@* ③ DataTable Card *@
-@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-cycle-periods" data-dt-standard="v2"> *@
-<partial name="~/Views/CRM/CyclePeriods/_DataTable.cshtml" />
+@* ④ E11 — open periods that have no capacity yet. Hidden until the overview answers and lists at least one. *@
+<div id="noCapacityBand" class="alert alert-warning d-none d-flex flex-wrap align-items-center gap-2" role="status">
+    <i class="icon-base bx bx-error-circle"></i>
+    <span class="fw-medium">@Localizer["NoCapacityBandTitle"]</span>
+    <span id="noCapacityBandItems" class="d-flex flex-wrap gap-2"></span>
+</div>
 
-<script id="cycleperiod-page-flags" type="application/json">{"canManage": @(Model.CanManage ? "true" : "false")}</script>
+@* ⑤ Table view — DataTable Card *@
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-cycle-periods" data-dt-standard="v2"> *@
+<div id="cyclePeriodsTableView">
+    <partial name="~/Views/CRM/CyclePeriods/_DataTable.cshtml" />
+</div>
+
+@* ⑥ Timeline view (hidden by default) — rendered from /api/overview, which computes the axis (filtered year ± 1),
+   the scope lanes, the gaps / overlaps and the today line server-side (CyclePeriodScreenRules). *@
+<div id="cyclePeriodsTimelineView" class="d-none">
+    <partial name="~/Views/CRM/CyclePeriods/_Timeline.cshtml" />
+</div>
+
+@* ⑦ The create / edit panel. *@
+@if (Model.CanManage)
+{
+    <partial name="~/Views/CRM/CyclePeriods/_PeriodPanel.cshtml" model="Model.ScopeOptions" />
+}
+
+<script id="cycleperiod-page-flags" type="application/json">{"canManage": @(Model.CanManage ? "true" : "false"), "canActivate": @(Model.CanActivate ? "true" : "false")}</script>
 
 @section Scripts {
     @* Contract marker: <partial name="_IndexL10n" /> *@
     <partial name="~/Views/CRM/CyclePeriods/_IndexL10n.cshtml" />
     <script src="~/assets/js/CRM/CyclePeriods/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/CyclePeriods/shared.js" asp-append-version="true"></script>
+    @if (Model.CanManage)
+    {
+        <script src="~/assets/js/CRM/CyclePeriods/panel.js" asp-append-version="true"></script>
+    }
     <script src="~/assets/js/CRM/CyclePeriods/index.js" asp-append-version="true"></script>
 }

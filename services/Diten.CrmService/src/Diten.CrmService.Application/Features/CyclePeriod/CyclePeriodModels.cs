@@ -33,7 +33,11 @@ public sealed record CyclePeriodListItemDto(
     DateTimeOffset? ClosedAt,
     int Version,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    // WP-CYC-UI-1 — usage summary, read in ONE batch for the whole page (null = the usage read failed; unknown, not 0).
+    bool? HasCapacity = null,
+    int? CampaignCount = null,
+    int? PlannedVisitCount = null);
 
 public sealed record CyclePeriodListDto(IReadOnlyList<CyclePeriodListItemDto> Items, int TotalCount);
 
@@ -141,3 +145,28 @@ public sealed record CyclePeriodScopeOptionsDto(
 /// <summary>WP-CAP-MODEL (K-2) — a SUGGESTED cycle code for the next period of a scope and year. Only a suggestion:
 /// the create command still takes its code from the request.</summary>
 public sealed record CyclePeriodCodeSuggestionDto(string SuggestedCode, int NextSequenceInYear);
+
+// ── WP-CYC-UI-1 — period usage (GET /api/crm/cycle-periods/{id}/usage) ─────────────────────────────────────────────
+
+/// <summary>What points at one period. No personal data: the only name is a session owner's display name.</summary>
+public sealed record CyclePeriodUsageDto(
+    CyclePeriodUsageCapacityDto? Capacity,
+    IReadOnlyList<CyclePeriodUsageCampaignDto> Campaigns,
+    IReadOnlyList<CyclePeriodUsageSessionDto> PlanningSessions,
+    CyclePeriodUsageVisitsDto PlannedVisits,
+    IReadOnlyList<CyclePeriodUsageDemandMonthDto> DemandByMonth);
+
+public sealed record CyclePeriodUsageCapacityDto(Guid CycleCapacityId, bool IsArchived);
+
+public sealed record CyclePeriodUsageCampaignDto(Guid CampaignId, string Code, string Name, string Status);
+
+/// <summary><see cref="Name"/> is the session's plan week (or creation day), ISO yyyy-MM-dd — sessions have no name of
+/// their own. <see cref="CommittedVisitCount"/> counts the committed visits found, whatever their status.</summary>
+public sealed record CyclePeriodUsageSessionDto(
+    Guid PlanningSessionId, string Name, string? OwnerDisplayName, string Status, int CommittedVisitCount);
+
+/// <summary>Every committed visit of the period's sessions, by status (cancelled / archived included here).</summary>
+public sealed record CyclePeriodUsageVisitsDto(int Total, IReadOnlyDictionary<string, int> ByStatus);
+
+/// <summary>Planned visits per calendar month, cancelled and archived EXCLUDED — the demand side of supply / demand.</summary>
+public sealed record CyclePeriodUsageDemandMonthDto(int Year, int Month, int PlannedVisits);

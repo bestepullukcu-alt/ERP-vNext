@@ -222,6 +222,11 @@ public static class DependencyInjection
         // business-unit vocabularies, and the fail-closed MDM check, in one place so create and draft-edit cannot
         // drift. Everything it does happens BEFORE any insert or replace.
         services.AddScoped<Application.Features.CyclePeriod.Services.CyclePeriodScopeWriteValidator>();
+        // WP-CYC-UI-1 - the read-only usage seam (capacity / campaigns / planning sessions / their committed visits that
+        // point AT a period). It cannot write, so the usage read and the list summaries never touch those aggregates.
+        services.AddScoped<
+            Application.Features.CyclePeriod.Read.ICyclePeriodUsageReader,
+            Repositories.CyclePeriodUsageReader>();
 
         // MOD-0155 FU06 - CycleCapacity: the visit-capacity model of ONE cycle period (one collection, month rows
         // EMBEDDED so the aggregate is a single document). No delete: retiring a capacity is the soft archive.

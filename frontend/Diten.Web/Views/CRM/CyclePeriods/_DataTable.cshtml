@@ -25,10 +25,15 @@
                     <th>@Localizer["SequenceInYear"]</th>
                     <th>@Localizer["StartDate"]</th>
                     <th>@Localizer["EndDate"]</th>
+                    <th class="text-end">@Localizer["Days"]</th>
                     @* One Scope column: the level as a badge plus its reference, so a reader can see at a glance which
                        calendar a row belongs to. *@
                     <th>@Localizer["Scope"]</th>
                     <th>@SharedLocalizer["Status"]</th>
+                    @* WP-CYC-UI-1 — the usage summary the list reads in one batch (null = unknown, shown as "—"). *@
+                    <th>@Localizer["Capacity"]</th>
+                    <th class="text-end">@Localizer["Campaigns"]</th>
+                    <th class="text-end">@Localizer["PlannedVisits"]</th>
                     <th>@Localizer["UpdatedAt"]</th>
                     <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
                 </tr>

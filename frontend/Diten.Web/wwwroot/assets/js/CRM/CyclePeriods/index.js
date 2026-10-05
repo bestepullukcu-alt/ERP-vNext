@@ -1,10 +1,12 @@
 /**
- * MOD-0165-FU07 Cycle Periods — DataTables Index (Golden Compact aligned, proxy profile).
+ * MOD-0165-FU07 + WP-CYC-UI-1 Cycle Periods — DataTables Index (proxy profile).
  *  - Native toolbar search, Select2 filter chips mounted under the toolbar
  *  - SaveView (filter + search + colvis + colorder) via personalizationClient
- *  - Row actions: Details + Edit + Activate + Close. Create/Edit/Details are their OWN PAGES (Golden Compact):
- *    FU07 took the form from 8 user fields to 11, and a page carrying both an offcanvas and separate pages would
- *    pass neither verifier reference — so the Slim offcanvas and quick-view were deleted rather than kept alongside.
+ *  - Row actions: Details (page) + Edit (right-side PANEL) + Activate + Close + Capacity. WP-CYC-UI-1: create / edit
+ *    moved into the panel (product-owner decision 2026-10-05 — a known deviation from Golden Compact's own pages).
+ *  - Two views: the table, and the year timeline rendered from /api/overview (axis = filtered year ± 1, scope lanes,
+ *    gaps / overlaps / today computed server-side). The "open periods without a capacity" band comes from the same call.
+ *  - The effective-period finder asks /api/finder (ACTIVE periods only; resolved / none / ambiguous).
  *  - All traffic via same-origin MVC proxy /CRM/CyclePeriods/api (never a Gateway URL / bearer token)
  *  - There is NO delete and NO bulk delete anywhere (ending a period is Close), no reopen (closed is terminal),
  *    and no apply/generate: applying a plan to a period is MOD-0155, so this page cannot offer it.
@@ -17,22 +19,21 @@
     const tableEl = document.getElementById('dt-cycle-periods');
     if (!tableEl) return;
 
+    const S = window.CyclePeriodsShared;
     const endpoint = '/CRM/CyclePeriods/api';
     const pageRoot = '/CRM/CyclePeriods';
     const filterCollapseId = 'inlineFilterCollapse';
     const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'CRM', pageKey: 'CyclePeriods' };
-    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    const totalColumnCount = 11;
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+    const totalColumnCount = 15;
     const baseOrder = [[3, 'desc'], [4, 'desc']];
 
     let L = window.CyclePeriodsL10n || window.L10n || {};
     // The create affordance exists ONCE, in the DataTable toolbar, and it obeys the same server-side permission the
     // page header used to. The flag is published as JSON by Index.cshtml (the Campaign golden-compact pattern); a
     // parse failure is read as "no permission", because guessing the permissive answer is the wrong way to be wrong.
-    let canManage = false;
-    try { canManage = !!JSON.parse(document.getElementById('cycleperiod-page-flags')?.textContent || '{}').canManage; }
-    catch (e) { canManage = false; }
+    const canManage = !!S?.canManage;
 
     let dt = null;
     let contract = null;
@@ -45,27 +46,21 @@
     let allRows = [];
 
     const getAuthHeaders = () => ({ Accept: 'application/json', 'Content-Type': 'application/json' });
-    const esc = v => String(v ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
+    const esc = S.esc;
     const badge = (v, cls = 'primary') => `<span class="badge bg-label-${cls}">${esc(v || '—')}</span>`;
-    // One fixed presentation for every date on this page: "Jan 01, 26" / "Jan 01, 26, 12:00 AM".
-    // The locale is PINNED to en-US rather than left to the browser: a period's window is an operational fact that gets
-    // read out, copied into tickets and compared across screens, and "01/02/26" means two different days depending on
-    // who is looking. The Details page renders the same shape server-side (MMM dd, yy) so the two never disagree.
-    // The two differ in ONE way, deliberately. DAY_FORMAT pins timeZone: 'UTC' because a period's window is stored as
-    // a UTC-midnight DAY: a browser west of Greenwich would otherwise render that instant as the previous evening and
-    // drop a day, so the row saved as "Jul 01" would read "Jun 30". A window is a calendar fact and is shown in the
-    // calendar it was written in.
-    // STAMP_FORMAT does NOT pin it: UpdatedAt is a real moment in time, not a calendar day, and "when was this last
-    // touched?" is a question a reader answers against their own clock.
-    const DAY_FORMAT = { month: 'short', day: '2-digit', year: '2-digit', timeZone: 'UTC' };
-    const STAMP_FORMAT = { month: 'short', day: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' };
-    const day = v => v ? new Date(v).toLocaleDateString('en-US', DAY_FORMAT) : '—';
-    const stamp = v => v ? new Date(v).toLocaleString('en-US', STAMP_FORMAT) : '—';
+    // WP-CYC-UI-1 — dates and numbers in the READER's culture (shared.js). A period day is a stored UTC-midnight DAY
+    // and is shown in UTC so it never drifts; UpdatedAt is a real instant and follows the reader's clock.
+    const day = S.day;
+    const stamp = S.stamp;
+    const dayCount = row => {
+        const a = S.toDate(String(row.startDate || '').slice(0, 10)), b = S.toDate(String(row.endDate || '').slice(0, 10));
+        return a && b ? Math.round((b - a) / 86400000) + 1 : null;
+    };
     const norm = v => (typeof v === 'string' ? v.trim() : (v == null ? '' : String(v)));
     const normArr = v => Array.isArray(v) ? Array.from(new Set(v.map(x => norm(x)).filter(Boolean))) : (norm(v) ? [norm(v)] : []);
     const hasVal = v => Array.isArray(v) ? normArr(v).length > 0 : norm(v).length > 0;
-    const statusLabel = v => ({ draft: L.StatusDraft, active: L.StatusActive, closed: L.StatusClosed }[v] || v);
-    const statusTone = v => v === 'active' ? 'success' : v === 'closed' ? 'secondary' : 'primary';
+    const statusLabel = S.statusLabel;
+    const statusTone = S.statusTone;
     // Scope labels come from the l10n bridge keyed by the CONTRACT vocabulary — never a hardcoded list here.
     const scopeLabel = v => ({
         tenant: L.ScopeTypeTenant,
@@ -250,15 +245,15 @@
         window.DtDefaults?.updateVisualState?.(api, getAppliedFilterCount());
     };
 
-    // A closed period offers no mutation action at all: it is terminal, and there is no reopen anywhere. Details and
-    // Edit are links to their own pages (Golden Compact) rather than offcanvas triggers.
+    // A closed period offers no mutation action at all: it is terminal, and there is no reopen anywhere. Details is a
+    // page; Edit opens the right-side panel (WP-CYC-UI-1).
     const actions = row => {
         const id = esc(row.cyclePeriodId);
         const items = [{
             key: 'quickView', className: 'js-quick-view me-1', icon: 'bx bx-show',
             attrs: { 'data-id': id, title: L.ViewDetails }
         }];
-        if (row.cycleStatus !== 'closed') {
+        if (canManage && row.cycleStatus !== 'closed') {
             items.push({ key: 'edit', className: 'js-edit-period', icon: 'bx bx-edit', text: L.Edit, attrs: { 'data-id': id } });
         }
         if (row.cycleStatus === 'draft') {
@@ -301,16 +296,25 @@
         columns: [
             { data: null, defaultContent: '' }, { data: 'cycleCode' }, { data: 'cycleName' },
             { data: 'year' }, { data: 'sequenceInYear' }, { data: 'startDate' }, { data: 'endDate' },
-            { data: 'scopeRef' }, { data: 'cycleStatus' }, { data: 'updatedAt' }, { data: null }
+            { data: null }, { data: 'scopeRef' }, { data: 'cycleStatus' },
+            { data: 'hasCapacity' }, { data: 'campaignCount' }, { data: 'plannedVisitCount' },
+            { data: 'updatedAt' }, { data: null }
         ],
         columnDefs: [
             { targets: 0, className: 'control', orderable: false, render: () => '' },
+            { targets: 1, render: (v, t) => t === 'display' ? `<span class="fw-medium text-primary">${esc(v)}</span>` : v },
             { targets: 2, render: v => `<span class="fw-medium text-heading">${esc(v)}</span>` },
-            { targets: [5, 6], render: v => day(v) },
-            { targets: 7, render: (v, t, row) => t === 'display' ? scopeCell(row) : (v || '') },
-            { targets: 8, render: v => badge(statusLabel(v), statusTone(v)) },
-            { targets: 9, render: v => stamp(v) },
-            { targets: 10, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, t, row) => actions(row) }
+            { targets: [5, 6], render: (v, t) => t === 'display' || t === 'filter' ? day(v) : v },
+            { targets: 7, className: 'text-end', render: (v, t, row) => { const n = dayCount(row); return t === 'display' ? esc(S.number(n)) : n; } },
+            { targets: 8, render: (v, t, row) => t === 'display' ? scopeCell(row) : (v || '') },
+            { targets: 9, render: (v, t) => t === 'display' ? badge(statusLabel(v), statusTone(v)) : v },
+            // WP-CYC-UI-1 — the batch usage summary; null means the read failed (unknown), never "none".
+            { targets: 10, render: (v, t) => t !== 'display' ? (v === true ? 1 : v === false ? 0 : -1)
+                : v === true ? `<i class="icon-base bx bx-check text-success" aria-label="${esc(L.HasCapacity || '')}"></i>`
+                : v === false ? `<span class="badge bg-label-warning">${esc(L.NoCapacity || '')}</span>` : '—' },
+            { targets: [11, 12], className: 'text-end', render: (v, t) => t === 'display' ? esc(S.number(v)) : (v ?? -1) },
+            { targets: 13, render: (v, t) => t === 'display' ? stamp(v) : v },
+            { targets: 14, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, t, row) => actions(row) }
         ],
         language: { emptyTable: L.EmptyState, processing: L.Loading },
         buttons: window.DtDefaults.exportButtons(canManage ? (L.CreateCyclePeriod || '') : '', { }, {
@@ -328,8 +332,8 @@
             mountInlineFilter();
             bindInlineFilterA11y();
             void setupFilters(this.api());
-            // Golden Compact: authoring is a page, so the toolbar button navigates instead of opening a panel.
-            if (canManage && !addNewBound) { document.querySelector('.add-new')?.addEventListener('click', e => { e.preventDefault(); window.location.assign(`${pageRoot}/Create`); }); addNewBound = true; }
+            // WP-CYC-UI-1: the toolbar's create button opens the right-side panel.
+            if (canManage && !addNewBound) { document.querySelector('.add-new')?.addEventListener('click', e => { e.preventDefault(); window.CyclePeriodPanel?.openCreate(); }); addNewBound = true; }
             setTimeout(() => { saveFilterArmed = true; }, 0);
         },
         drawCallback: function () { window.DtDefaults?.updateVisualState?.(this.api(), getAppliedFilterCount()); }
@@ -342,6 +346,7 @@
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
             appliedFilters = readControls();
             api.draw();
+            void refreshOverview();
             window.DtDefaults?.updateVisualState?.(api, getAppliedFilterCount());
             if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
             const el = document.getElementById(filterCollapseId);
@@ -350,6 +355,7 @@
         document.getElementById('btnFilterReset')?.addEventListener('click', e => {
             e.preventDefault();
             applySavedTableState(api, getResetBaselineState());
+            void refreshOverview();
             if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
         });
     };
@@ -411,7 +417,140 @@
         allRows = await fetchRows();
         if (dt) { dt.clear(); dt.rows.add(allRows).draw(false); }
         loadFilterOptions();
-        await refreshCurrentPeriod();
+        await Promise.all([refreshCurrentPeriod(), refreshOverview()]);
+    };
+
+    // ── WP-CYC-UI-1: overview (timeline + band) ─────────────────────────────────────────────────────────────
+    const overviewQuery = () => {
+        const q = new URLSearchParams();
+        if (norm(appliedFilters.year)) q.set('year', norm(appliedFilters.year));
+        if (norm(appliedFilters.scopeType)) q.set('scopeType', norm(appliedFilters.scopeType));
+        if (norm(appliedFilters.country)) q.set('country', norm(appliedFilters.country));
+        normArr(appliedFilters.cycleStatus).forEach(s => q.append('status', s));
+        return q.toString();
+    };
+    const renderBand = items => {
+        const band = document.getElementById('noCapacityBand');
+        const host = document.getElementById('noCapacityBandItems');
+        if (!band || !host) return;
+        band.classList.toggle('d-none', !items.length);
+        host.innerHTML = items.map(i =>
+            `<a class="badge bg-label-warning text-decoration-none" href="/CRM/CycleCapacities/Index?cyclePeriodId=${encodeURIComponent(i.cyclePeriodId)}&returnTo=cycleperiods"`
+            + ` title="${esc(i.cycleName)}">${esc(i.cycleCode)} <i class="icon-base bx bx-plus"></i></a>`).join('');
+    };
+    const laneLabel = lane => `<span class="fw-medium">${esc(lane.scopeRef || L.TenantWide || '')}</span><small>${esc(S.scopeLabel(lane.scopeType))}</small>`;
+    const renderTimeline = timeline => {
+        const grid = document.getElementById('timelineGrid');
+        const empty = document.getElementById('timelineEmpty');
+        if (!grid) return;
+        const lanes = timeline?.lanes || [];
+        empty?.classList.toggle('d-none', lanes.length > 0);
+        grid.classList.toggle('d-none', lanes.length === 0);
+        if (!lanes.length) { grid.innerHTML = ''; return; }
+        const pos = (offset, width) => `inset-inline-start:${Number(offset)}%;inline-size:${Number(width)}%`;
+        const today = timeline.todayPct === null || timeline.todayPct === undefined ? '' : `<span class="cp-today" style="inset-inline-start:${Number(timeline.todayPct)}%"></span>`;
+        const gridlines = (timeline.years || []).map(y => `<span class="cp-tl-gridline cp-tl-gridline--year" style="inset-inline-start:${Number(y.offsetPct)}%"></span>`).join('')
+            + (timeline.quarterPcts || []).map(q => `<span class="cp-tl-gridline" style="inset-inline-start:${Number(q)}%"></span>`).join('');
+        const head = `<div class="cp-tl-label cp-tl-head"></div><div class="cp-tl-track cp-tl-head">`
+            + (timeline.years || []).map(y => `<span class="cp-tl-year" style="${pos(y.offsetPct, y.widthPct)}">${esc(S.plain(y.year))}</span>`).join('')
+            + gridlines + today + '</div>';
+        const rows = lanes.map(lane => {
+            // Bars that share days within a lane stack onto sub-rows so none hides another.
+            const subEnds = [];
+            const placed = lane.bars.map(b => {
+                let idx = subEnds.findIndex(end => end < b.offsetPct);
+                if (idx < 0) { idx = subEnds.length; subEnds.push(0); }
+                subEnds[idx] = b.offsetPct + b.widthPct;
+                return { b, idx };
+            });
+            const height = 0.625 + Math.max(1, subEnds.length) * 2.125;
+            const bars = placed.map(({ b, idx }) =>
+                `<button type="button" role="listitem" class="cp-bar cp-bar--${esc(b.cycleStatus)} js-timeline-bar" data-id="${esc(b.cyclePeriodId)}"`
+                + ` style="${pos(b.offsetPct, b.widthPct)};inset-block-start:${0.3125 + idx * 2.125}rem"`
+                + ` title="${esc(`${b.cycleCode} · ${b.cycleName} · ${day(b.startDate)} – ${day(b.endDate)} · ${statusLabel(b.cycleStatus)}`)}">${esc(b.cycleCode)}</button>`).join('');
+            const marks = (lane.marks || []).map(m => {
+                const days = Math.round((S.toDate(m.to) - S.toDate(m.from)) / 86400000) + 1;
+                const title = m.kind === 'gap'
+                    ? String(L.TimelineGapTitle || '{0} – {1}').replace('{0}', day(m.from)).replace('{1}', day(m.to)).replace('{2}', S.number(days))
+                    : String(L.TimelineOverlapTitle || '{0}').replace('{0}', (m.codes || []).join(' ↔ ')).replace('{1}', S.number(days));
+                const label = m.kind === 'gap' && days >= 20 ? esc(String(L.TimelineGapLabel || '{0}').replace('{0}', S.number(days))) : '';
+                return `<span class="cp-mark cp-mark--${esc(m.kind)}" style="${pos(m.offsetPct, m.widthPct)}" title="${esc(title)}">${label}</span>`;
+            }).join('');
+            return `<div class="cp-tl-label">${laneLabel(lane)}</div>`
+                + `<div class="cp-tl-track" style="min-block-size:${height}rem">${gridlines}${marks}${bars}${today}</div>`;
+        }).join('');
+        grid.innerHTML = head + rows;
+    };
+    let overviewSeq = 0;
+    const refreshOverview = async () => {
+        const seq = ++overviewSeq;
+        const loading = document.getElementById('timelineLoading');
+        const error = document.getElementById('timelineError');
+        loading?.classList.remove('d-none');
+        error?.classList.add('d-none');
+        try {
+            const data = await S.getJson(`/overview?${overviewQuery()}`);
+            if (seq !== overviewSeq) return;
+            renderTimeline(data?.timeline);
+            renderBand(data?.openWithoutCapacity || []);
+        } catch (e) {
+            if (seq !== overviewSeq) return;
+            error?.classList.remove('d-none');
+            document.getElementById('timelineGrid')?.classList.add('d-none');
+        } finally {
+            if (seq === overviewSeq) loading?.classList.add('d-none');
+        }
+    };
+
+    // ── view toggle (table / timeline) ──────────────────────────────────────────────────────────────────────
+    const setView = view => {
+        const timeline = view === 'timeline';
+        document.getElementById('cyclePeriodsTableView')?.classList.toggle('d-none', timeline);
+        document.getElementById('cyclePeriodsTimelineView')?.classList.toggle('d-none', !timeline);
+        [['btnViewTable', !timeline], ['btnViewTimeline', timeline]].forEach(([id, on]) => {
+            const b = document.getElementById(id);
+            b?.classList.toggle('active', on);
+            b?.setAttribute('aria-pressed', String(on));
+        });
+        if (!timeline) dt?.columns?.adjust?.();
+    };
+
+    // ── finder (K-6) ────────────────────────────────────────────────────────────────────────────────────────
+    const finderLevel = () => document.getElementById('finderLevel')?.value || 'tenant';
+    const applyFinderLevel = () => {
+        document.querySelectorAll('#finderCard .finder-ref').forEach(b => b.classList.toggle('d-none', b.dataset.finderRef !== finderLevel()));
+    };
+    const runFinder = async () => {
+        const result = document.getElementById('finderResult');
+        const date = document.getElementById('finderDate')?.value;
+        if (!result || !date) return;
+        const q = new URLSearchParams({ at: `${date}T12:00:00Z` });
+        const level = finderLevel();
+        const country = document.getElementById('finderCountry')?.value;
+        const le = document.getElementById('finderLegalEntity')?.value;
+        const bu = document.getElementById('finderBusinessUnit')?.value;
+        if (level === 'country' && country) q.set('country', country);
+        if (level === 'legal-entity' && le) q.set('legalEntityId', le);
+        if (level === 'business-unit' && bu) q.set('businessUnitId', bu);
+        result.innerHTML = `<p class="text-muted mb-0">${esc(L.Loading || '')}</p>`;
+        try {
+            const r = await S.getJson(`/finder?${q.toString()}`);
+            const message = esc(L[r.messageKey] || r.messageKey || '');
+            if (r.outcome === 'resolved' && r.period) {
+                result.innerHTML = `<div class="alert alert-success mb-0" role="status"><div class="fw-medium">${message}</div>`
+                    + `<div class="mt-1"><a href="${pageRoot}/Details/${encodeURIComponent(r.period.cyclePeriodId)}" class="fw-medium">${esc(r.period.cycleCode)}</a>`
+                    + ` · ${esc(r.period.cycleName)} · ${esc(day(r.period.startDate))} – ${esc(day(r.period.endDate))}</div>`
+                    + (r.resolvedScopeType ? `<div class="mt-1 small">${esc(L.FinderAnsweredBy || '')}: ${badge(S.scopeLabel(r.resolvedScopeType), 'primary')}</div>` : '')
+                    + '</div>';
+            } else if (r.outcome === 'ambiguous') {
+                result.innerHTML = `<div class="alert alert-warning mb-0" role="alert">${message}`
+                    + (r.resolvedScopeType ? ` ${badge(S.scopeLabel(r.resolvedScopeType), 'warning')}` : '') + '</div>';
+            } else {
+                result.innerHTML = `<div class="alert alert-secondary mb-0" role="status">${message}</div>`;
+            }
+        } catch (e) {
+            result.innerHTML = `<div class="alert alert-danger mb-0" role="alert">${esc(e.message || L.ErrorOccurred || '')}</div>`;
+        }
     };
 
     // Every mutating action lands back on the SAME lifecycle: reload the rows, then toast.
@@ -442,7 +581,8 @@
                 window.DtDefaults?.updateVisualState?.(dt, getAppliedFilterCount());
                 if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
             });
-            await refreshCurrentPeriod();
+            await Promise.all([refreshCurrentPeriod(), refreshOverview()]);
+            openFromQuery();
         } catch (error) {
             window.showToast?.(error.message || L.ErrorOccurred, 'error');
         } finally {
@@ -450,20 +590,28 @@
         }
     };
 
-    // Golden Compact: Quick View and Edit NAVIGATE to their own pages rather than opening a panel — the same wiring
-    // the Golden Reference Compact uses, so the class name means what it means everywhere else.
+    /** ?create=1 / ?edit={id} open the panel on arrival (links from the details page). */
+    const openFromQuery = () => {
+        const q = new URLSearchParams(window.location.search);
+        if (!canManage || !window.CyclePeriodPanel) return;
+        if (q.get('edit')) window.CyclePeriodPanel.openEdit(q.get('edit'));
+        else if (q.get('create') === '1') window.CyclePeriodPanel.openCreate();
+    };
+
+    // Quick View navigates to the details page; Edit opens the right-side panel (WP-CYC-UI-1); a timeline bar opens
+    // the period's details.
     document.addEventListener('click', event => {
-        const quickView = event.target.closest('.js-quick-view');
+        const quickView = event.target.closest('.js-quick-view') || event.target.closest('.js-timeline-bar');
         if (quickView) {
             event.preventDefault();
-            if (quickView.dataset.id) window.location.assign(`${pageRoot}/Details/${quickView.dataset.id}`);
+            if (quickView.dataset.id) window.location.assign(`${pageRoot}/Details/${encodeURIComponent(quickView.dataset.id)}`);
             return;
         }
 
         const edit = event.target.closest('.js-edit-period');
         if (edit) {
             event.preventDefault();
-            if (edit.dataset.id) window.location.assign(`${pageRoot}/Edit/${edit.dataset.id}`);
+            if (edit.dataset.id) window.CyclePeriodPanel?.openEdit(edit.dataset.id);
             return;
         }
 
@@ -494,6 +642,22 @@
             { entityName: close.dataset.name, type: 'warning', confirmButtonText: L.CloseCyclePeriod });
     });
 
+    document.getElementById('btnViewTable')?.addEventListener('click', () => setView('table'));
+    document.getElementById('btnViewTimeline')?.addEventListener('click', () => setView('timeline'));
+    document.getElementById('timelineRetry')?.addEventListener('click', () => { void refreshOverview(); });
+    document.getElementById('btnFinderToggle')?.addEventListener('click', event => {
+        const card = document.getElementById('finderCard');
+        if (!card) return;
+        const open = card.classList.toggle('d-none') === false;
+        event.currentTarget.setAttribute('aria-expanded', String(open));
+        const date = document.getElementById('finderDate');
+        if (open && date && !date.value) date.value = S.isoDay(new Date());
+        if (open) document.getElementById('finderLevel')?.focus();
+    });
+    document.getElementById('finderLevel')?.addEventListener('change', applyFinderLevel);
+    document.getElementById('finderForm')?.addEventListener('submit', event => { event.preventDefault(); void runFinder(); });
+    applyFinderLevel();
+    window.CyclePeriodPanel?.onSaved(() => { void reload(); });
 
     init();
 })(window, document);

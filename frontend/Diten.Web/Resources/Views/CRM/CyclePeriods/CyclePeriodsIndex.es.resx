@@ -81,4 +81,114 @@
   <data name="ScopeType_tenant" xml:space="preserve"><value>Todo el inquilino</value></data>
   <data name="Version" xml:space="preserve"><value>Versión</value></data>
   <data name="CycleCapacity" xml:space="preserve"><value>Capacidad de ciclo</value></data>
+  <data name="ViewTable" xml:space="preserve"><value>Tabla</value></data>
+  <data name="ViewTimeline" xml:space="preserve"><value>Cronograma</value></data>
+  <data name="CycleCapacities" xml:space="preserve"><value>Capacidades del ciclo</value></data>
+  <data name="FinderOpen" xml:space="preserve"><value>Buscar período vigente</value></data>
+  <data name="FinderTitle" xml:space="preserve"><value>Período vigente para esta unidad en esta fecha</value></data>
+  <data name="FinderHint" xml:space="preserve"><value>Los períodos de distintos niveles pueden solaparse. Se aplica el activo de alcance más estrecho: unidad de negocio › entidad legal › país › toda la empresa. No se tienen en cuenta borradores ni períodos cerrados.</value></data>
+  <data name="FinderUnit" xml:space="preserve"><value>Unidad</value></data>
+  <data name="FinderDate" xml:space="preserve"><value>Fecha</value></data>
+  <data name="FinderSubmit" xml:space="preserve"><value>Buscar</value></data>
+  <data name="FinderIdle" xml:space="preserve"><value>Elija una unidad y una fecha.</value></data>
+  <data name="FinderResolved" xml:space="preserve"><value>Se encontró el período vigente.</value></data>
+  <data name="FinderNone" xml:space="preserve"><value>No hay ningún período vigente para esta unidad en esta fecha. No se puede planificar.</value></data>
+  <data name="FinderAmbiguous" xml:space="preserve"><value>Más de un período activo del mismo alcance cubre esta fecha: es un problema de datos. Cierre o corrija uno de ellos.</value></data>
+  <data name="FinderAnsweredBy" xml:space="preserve"><value>Nivel que respondió</value></data>
+  <data name="NoCapacityBandTitle" xml:space="preserve"><value>Períodos abiertos sin capacidad:</value></data>
+  <data name="Days" xml:space="preserve"><value>Días</value></data>
+  <data name="Capacity" xml:space="preserve"><value>Capacidad</value></data>
+  <data name="Campaigns" xml:space="preserve"><value>Campañas</value></data>
+  <data name="PlannedVisits" xml:space="preserve"><value>Visitas planificadas</value></data>
+  <data name="PlanningSessions" xml:space="preserve"><value>Sesiones de planificación</value></data>
+  <data name="HasCapacity" xml:space="preserve"><value>Tiene capacidad</value></data>
+  <data name="NoCapacity" xml:space="preserve"><value>sin capacidad</value></data>
+  <data name="TimelineConflict" xml:space="preserve"><value>Conflicto</value></data>
+  <data name="TimelineOverlap" xml:space="preserve"><value>Solapamiento (borradores)</value></data>
+  <data name="TimelineGap" xml:space="preserve"><value>Hueco</value></data>
+  <data name="TimelineToday" xml:space="preserve"><value>Hoy</value></data>
+  <data name="TimelineEmpty" xml:space="preserve"><value>Ningún período coincide con los filtros.</value></data>
+  <data name="TimelineFootnote" xml:space="preserve"><value>Cada alcance es una fila. Los bloques que se solapan en la misma fila son conflictos; los niveles distintos (p. ej., un país y una de sus unidades) están en filas separadas y pueden solaparse. Haga clic en un bloque para ver sus detalles.</value></data>
+  <data name="TimelineGapTitle" xml:space="preserve"><value>Hueco: {0} – {1} ({2} días)</value></data>
+  <data name="TimelineGapLabel" xml:space="preserve"><value>hueco · {0} días</value></data>
+  <data name="TimelineOverlapTitle" xml:space="preserve"><value>Solapamiento: {0} ({1} días)</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>No se pudieron cargar los períodos.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="DatesSection" xml:space="preserve"><value>Fechas</value></data>
+  <data name="DateTemplates" xml:space="preserve"><value>Plantillas de fechas</value></data>
+  <data name="TemplateQ1" xml:space="preserve"><value>T1</value></data>
+  <data name="TemplateQ2" xml:space="preserve"><value>T2</value></data>
+  <data name="TemplateQ3" xml:space="preserve"><value>T3</value></data>
+  <data name="TemplateQ4" xml:space="preserve"><value>T4</value></data>
+  <data name="TemplateH1" xml:space="preserve"><value>S1</value></data>
+  <data name="TemplateH2" xml:space="preserve"><value>S2</value></data>
+  <data name="TemplateMonth" xml:space="preserve"><value>Elegir un mes…</value></data>
+  <data name="DaysUnit" xml:space="preserve"><value>días</value></data>
+  <data name="WorkingDaysUnit" xml:space="preserve"><value>días laborables</value></data>
+  <data name="UseSuggestion" xml:space="preserve"><value>usar la sugerencia</value></data>
+  <data name="Suggestion" xml:space="preserve"><value>Sugerencia</value></data>
+  <data name="SequenceSuggestion" xml:space="preserve"><value>Sugerencia: {0} (primera secuencia libre en este alcance)</value></data>
+  <data name="NameSuggestionPattern" xml:space="preserve"><value>{0} · período {1}</value></data>
+  <data name="CodeSuggestedHint" xml:space="preserve"><value>Sugerido según el alcance y el año; puede cambiarlo. No se puede cambiar después de guardar.</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>El código no cambia una vez guardado el período.</value></data>
+  <data name="ChecksSection" xml:space="preserve"><value>Control de conflictos</value></data>
+  <data name="CheckClear" xml:space="preserve"><value>No hay períodos en conflicto en el mismo alcance.</value></data>
+  <data name="CheckEndNotAfterStart" xml:space="preserve"><value>La fecha de fin debe ser posterior a la de inicio.</value></data>
+  <data name="CheckSequenceTaken" xml:space="preserve"><value>Esta secuencia ya se usa en este alcance y año (incluidos los períodos cerrados):</value></data>
+  <data name="CheckActiveOverlap" xml:space="preserve"><value>Se solapa con un período activo del mismo alcance: puede guardarse como borrador, pero no activarse hasta resolver el solapamiento:</value></data>
+  <data name="CheckOtherLevelOverlap" xml:space="preserve"><value>Períodos solapados en otros niveles (permitido: en un día dado se aplica el alcance más estrecho):</value></data>
+  <data name="CloseAndReopen" xml:space="preserve"><value>Cerrar y abrir un nuevo período</value></data>
+  <data name="CloseAndReopenConfirm" xml:space="preserve"><value>¿Cerrar este período y abrir uno nuevo para el mismo alcance? El cierre no se puede deshacer.</value></data>
+  <data name="ClosedReadOnly" xml:space="preserve"><value>Este período está cerrado y es de solo lectura.</value></data>
+  <data name="SaveAsDraft" xml:space="preserve"><value>Guardar como borrador</value></data>
+  <data name="ScopeCardHint_tenant" xml:space="preserve"><value>Todos los países y unidades</value></data>
+  <data name="ScopeCardHint_country" xml:space="preserve"><value>Un solo país</value></data>
+  <data name="ScopeCardHint_legal-entity" xml:space="preserve"><value>Una entidad legal</value></data>
+  <data name="ScopeCardHint_business-unit" xml:space="preserve"><value>Región / equipo</value></data>
+  <data name="ClosedBanner" xml:space="preserve"><value>Este período está cerrado. El período, su capacidad y sus planes son de solo lectura.</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>Resumen</value></data>
+  <data name="Dates" xml:space="preserve"><value>Fechas</value></data>
+  <data name="DaysAndWorkingDays" xml:space="preserve"><value>Días · días laborables</value></data>
+  <data name="YearAndSequence" xml:space="preserve"><value>Año · secuencia</value></data>
+  <data name="NoDescription" xml:space="preserve"><value>Sin descripción.</value></data>
+  <data name="NotActivatedYet" xml:space="preserve"><value>Aún no activado</value></data>
+  <data name="NotClosedYet" xml:space="preserve"><value>Aún no cerrado</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>Borrador → Activar → Activo → Cerrar → Cerrado. Al activar se comprueban solapamientos con períodos activos del mismo alcance.</value></data>
+  <data name="CalendarSummary" xml:space="preserve"><value>Resumen del calendario</value></data>
+  <data name="Month" xml:space="preserve"><value>Mes</value></data>
+  <data name="CalendarDays" xml:space="preserve"><value>Días naturales</value></data>
+  <data name="NonWorkingDays" xml:space="preserve"><value>Días no laborables</value></data>
+  <data name="PartialMonth" xml:space="preserve"><value>parcial</value></data>
+  <data name="PartialMonthHint" xml:space="preserve"><value>El mes está recortado en el límite del período.</value></data>
+  <data name="CalendarResolved" xml:space="preserve"><value>Calendario resuelto</value></data>
+  <data name="CalendarUnresolved" xml:space="preserve"><value>No se pudo resolver el calendario</value></data>
+  <data name="CalendarForbidden" xml:space="preserve"><value>Sin acceso al calendario</value></data>
+  <data name="CalendarNoCountry" xml:space="preserve"><value>Sin país de calendario</value></data>
+  <data name="CalendarLoadFailed" xml:space="preserve"><value>No se pudo cargar el resumen del calendario.</value></data>
+  <data name="UsageLoadFailed" xml:space="preserve"><value>No se pudieron cargar los registros vinculados.</value></data>
+  <data name="CapacityArchived" xml:space="preserve"><value>Capacidad archivada</value></data>
+  <data name="OpenCapacity" xml:space="preserve"><value>Detalles</value></data>
+  <data name="CreateCapacity" xml:space="preserve"><value>Crear capacidad</value></data>
+  <data name="NoCapacityTitle" xml:space="preserve"><value>Este período no tiene capacidad</value></data>
+  <data name="NoCapacityHint" xml:space="preserve"><value>Sin capacidad, la planificación de visitas no puede calcular la oferta.</value></data>
+  <data name="NoCapacityClosed" xml:space="preserve"><value>El período está cerrado, por lo que ya no se puede crear capacidad.</value></data>
+  <data name="NoPlannedVisits" xml:space="preserve"><value>No hay visitas planificadas vinculadas a este período.</value></data>
+  <data name="NoCampaigns" xml:space="preserve"><value>No hay campañas vinculadas a este período.</value></data>
+  <data name="NoPlanningSessions" xml:space="preserve"><value>Aún no hay sesiones de planificación.</value></data>
+  <data name="VisitCountPattern" xml:space="preserve"><value>{0} visitas</value></data>
+  <data name="VisitStatus_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="VisitStatus_planned" xml:space="preserve"><value>Planificada</value></data>
+  <data name="VisitStatus_confirmed" xml:space="preserve"><value>Confirmada</value></data>
+  <data name="VisitStatus_cancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="VisitStatus_archived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="CampaignStatus_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="CampaignStatus_active" xml:space="preserve"><value>Activa</value></data>
+  <data name="CampaignStatus_paused" xml:space="preserve"><value>En pausa</value></data>
+  <data name="CampaignStatus_completed" xml:space="preserve"><value>Completada</value></data>
+  <data name="CampaignStatus_cancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="CampaignStatus_archived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="SessionStatus_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="SessionStatus_generated" xml:space="preserve"><value>Generada</value></data>
+  <data name="SessionStatus_committed" xml:space="preserve"><value>Confirmada</value></data>
+  <data name="SessionStatus_archived" xml:space="preserve"><value>Archivada</value></data>
 </root>

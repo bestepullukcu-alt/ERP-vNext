@@ -1,25 +1,29 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
+using Diten.Web.Views.CRM.CyclePeriods;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.Web.Controllers.CRM;
 
 /// <summary>
-/// MOD-0165 FU06/FU07 Cycle Period Admin UI (Golden <b>Compact</b>). All business traffic is proxied server-side
-/// through Gateway 5000; the browser never sees a service URL or a bearer token. The CrmService runtime stays the
-/// authoritative validation and permission layer — nothing is decided here.
-/// <para>FU07 moved the module from Slim to Compact: the create/edit offcanvas and the quick-view are gone, replaced by
-/// Create / Edit / Details pages, because the discriminated scope took the form from 8 user fields to 11. A page that
-/// carried both shapes would pass neither verifier reference, so the Slim files were deleted rather than kept
-/// alongside.</para>
+/// MOD-0165 FU06/FU07 + WP-CYC-UI-1 Cycle Period UI. All business traffic is proxied server-side through Gateway 5000;
+/// the browser never sees a service URL or a bearer token. The CrmService runtime stays the authoritative validation
+/// and permission layer — nothing is decided here.
+/// <para><b>WP-CYC-UI-1 surface.</b> The list page carries a table view and a year-timeline view, and create / edit
+/// happen in a RIGHT-SIDE PANEL on the list (and on the details page) — the mockup's surface, chosen by the product
+/// owner on 2026-10-05 as a <b>known deviation</b> from the Golden Compact rule that puts create / edit on their own
+/// pages. The Create / Edit pages are gone; Details stays a page.</para>
+/// <para>The screen's display rules (timeline axis and lanes, which fields a status locks, live panel warnings, the
+/// effective-period finder, the open-without-capacity band) live in <see cref="CyclePeriodScreenRules"/> and are
+/// served by the computed endpoints below, so the browser only renders.</para>
 /// <para>There is no delete surface (ending a period is Close), no reopen surface (closed is terminal) and no
-/// apply/generate surface at all: applying a plan to a period is MOD-0155. Nothing here computes working days either —
-/// that is the working-calendar capability, combined by a consumer.</para>
+/// apply/generate surface: applying a plan to a period is MOD-0155.</para>
 /// </summary>
 [Authorize]
 [Route("CRM/CyclePeriods")]
@@ -35,6 +39,9 @@ public sealed class CyclePeriodsController : Controller
 
     private const string ManageFallback = "crm.territory.model.manage";
     private const string ViewRoot = "~/Views/CRM/CyclePeriods";
+
+    /// <summary>The platform working calendar's range operation (the same route the CrmService capacity reads).</summary>
+    private const string WorkingDaysPath = "/api/platform/working-calendars/overrides/resolve?op=working-days-between";
 
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
@@ -52,8 +59,10 @@ public sealed class CyclePeriodsController : Controller
 
     // ---------------- pages ----------------
 
+    /// <summary>The list. <c>?create=1</c> / <c>?edit={id}</c> open the panel on arrival (links from the details page
+    /// and from "close and open a new period").</summary>
     [HttpGet("")]
-    public IActionResult Index()
+    public async Task<IActionResult> Index(CancellationToken ct)
     {
         if (RequirePage(ReadPermission, ReadFallback) is { } denied)
         {
@@ -63,105 +72,11 @@ public sealed class CyclePeriodsController : Controller
         return View($"{ViewRoot}/Index.cshtml", new CyclePeriodIndexViewModel
         {
             CanManage = HasAnyPermission(ManagePermission, ManageFallback),
-            CanActivate = HasAnyPermission(ActivatePermission, ManagePermission, ManageFallback)
+            CanActivate = HasAnyPermission(ActivatePermission, ManagePermission, ManageFallback),
+            ScopeOptions = HasAnyPermission(ManagePermission, ManageFallback)
+                ? await LoadScopeOptionsAsync(null, null, null, ct)
+                : new CyclePeriodScopeOptionsViewModel()
         });
-    }
-
-    [HttpGet("Create")]
-    public async Task<IActionResult> Create(CancellationToken ct)
-    {
-        if (RequirePage(ManagePermission, ManageFallback) is { } denied)
-        {
-            return denied;
-        }
-
-        var model = new CyclePeriodEditViewModel
-        {
-            ScopeType = "tenant",
-            ScopeOptions = await LoadScopeOptionsAsync(null, null, null, ct)
-        };
-
-        return View($"{ViewRoot}/Create.cshtml", model);
-    }
-
-    [HttpPost("Create")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([FromForm] CyclePeriodEditViewModel model, CancellationToken ct)
-    {
-        if (RequirePage(ManagePermission, ManageFallback) is { } denied)
-        {
-            return denied;
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return await RedisplayAsync($"{ViewRoot}/Create.cshtml", model, ct);
-        }
-
-        var response = await SendGatewayAsync(
-            HttpMethod.Post, "/api/crm/cycle-periods", ToPayload(model, includeExpectedVersion: false), ct);
-
-        if (response is not null && response.IsSuccessStatusCode)
-        {
-            TempData["SuccessMessage"] = model.CycleName;
-            return RedirectToAction(nameof(Index));
-        }
-
-        await AddGatewayErrorsAsync(response, ct);
-        return await RedisplayAsync($"{ViewRoot}/Create.cshtml", model, ct);
-    }
-
-    [HttpGet("Edit/{cyclePeriodId:guid}")]
-    public async Task<IActionResult> Edit(Guid cyclePeriodId, CancellationToken ct)
-    {
-        if (RequirePage(ManagePermission, ManageFallback) is { } denied)
-        {
-            return denied;
-        }
-
-        var detail = await LoadDetailAsync(cyclePeriodId, ct);
-        if (detail is null)
-        {
-            return RedirectToAction(nameof(Index));
-        }
-
-        var model = ToEditModel(detail);
-        // The model's dates are already UTC-anchored; the raw detail's are not necessarily, and the candidate window
-        // must be the same window the author is looking at.
-        model.ScopeOptions = await LoadScopeOptionsAsync(
-            model.CountryScope, model.StartDate, model.EndDate, ct);
-
-        return View($"{ViewRoot}/Edit.cshtml", model);
-    }
-
-    [HttpPost("Edit/{cyclePeriodId:guid}")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(
-        Guid cyclePeriodId, [FromForm] CyclePeriodEditViewModel model, CancellationToken ct)
-    {
-        if (RequirePage(ManagePermission, ManageFallback) is { } denied)
-        {
-            return denied;
-        }
-
-        model.CyclePeriodId = cyclePeriodId;
-        if (!ModelState.IsValid)
-        {
-            return await RedisplayAsync($"{ViewRoot}/Edit.cshtml", model, ct);
-        }
-
-        var response = await SendGatewayAsync(
-            HttpMethod.Put, $"/api/crm/cycle-periods/{cyclePeriodId}",
-            ToPayload(model, includeExpectedVersion: true), ct);
-
-        if (response is not null && response.IsSuccessStatusCode)
-        {
-            TempData["SuccessMessage"] = model.CycleName;
-            return RedirectToAction(nameof(Index));
-        }
-
-        await AddGatewayErrorsAsync(response, ct);
-        return await RedisplayAsync($"{ViewRoot}/Edit.cshtml", model, ct);
     }
 
     [HttpGet("Details/{cyclePeriodId:guid}")]
@@ -178,12 +93,20 @@ public sealed class CyclePeriodsController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        var model = ToEditModel(detail);
-        ViewData["CanManage"] = HasAnyPermission(ManagePermission, ManageFallback);
-        return View($"{ViewRoot}/Details.cshtml", model);
+        var canManage = HasAnyPermission(ManagePermission, ManageFallback);
+        var canActivate = HasAnyPermission(ActivatePermission, ManagePermission, ManageFallback);
+        return View($"{ViewRoot}/Details.cshtml", new CyclePeriodDetailsViewModel
+        {
+            Period = detail,
+            CanManage = canManage,
+            CanActivate = canActivate,
+            Actions = CyclePeriodScreenRules.Actions(detail.CycleStatus, canActivate, canManage),
+            CalendarCountry = CalendarCountryOf(detail.ScopeType, detail.CountryScope, detail.BusinessUnitCountryContext),
+            ScopeOptions = canManage ? await LoadScopeOptionsAsync(null, null, null, ct) : new CyclePeriodScopeOptionsViewModel()
+        });
     }
 
-    // ---------------- JSON proxies (same-origin; the browser never calls 5061) ----------------
+    // ---------------- JSON proxies (same-origin; the browser never calls the service) ----------------
 
     [HttpGet("api/contract")]
     public Task<IActionResult> Contract(CancellationToken ct) =>
@@ -199,6 +122,12 @@ public sealed class CyclePeriodsController : Controller
         ProxyAsync(
             HttpMethod.Get, $"/api/crm/cycle-periods/{cyclePeriodId}", null, ReadPermission, ct, ReadFallback);
 
+    /// <summary>WP-CYC-UI-1 — what points at the period (capacity, campaigns, sessions, visits, monthly demand).</summary>
+    [HttpGet("api/periods/{cyclePeriodId:guid}/usage")]
+    public Task<IActionResult> Usage(Guid cyclePeriodId, CancellationToken ct) =>
+        ProxyAsync(
+            HttpMethod.Get, $"/api/crm/cycle-periods/{cyclePeriodId}/usage", null, ReadPermission, ct, ReadFallback);
+
     /// <summary>The read-only "which period is in force?" answer. It creates nothing.</summary>
     [HttpGet("api/periods/resolve-active")]
     public Task<IActionResult> ResolveActive(CancellationToken ct) =>
@@ -213,6 +142,41 @@ public sealed class CyclePeriodsController : Controller
             HttpMethod.Get, $"/api/crm/cycle-periods/scope-options{Request.QueryString}", null,
             ReadPermission, ct, ReadFallback);
 
+    /// <summary>K-2 — the suggested code for a new period (a suggestion only; the author may change it).</summary>
+    [HttpGet("api/code-suggestion")]
+    public Task<IActionResult> CodeSuggestion(CancellationToken ct) =>
+        ProxyAsync(
+            HttpMethod.Get, $"/api/crm/cycle-periods/code-suggestion{Request.QueryString}", null,
+            ManagePermission, ct, ManageFallback);
+
+    [HttpPost("api/periods")]
+    public async Task<IActionResult> Create([FromBody] CyclePeriodEditViewModel model, CancellationToken ct)
+    {
+        if (RequireJson(ManagePermission, ManageFallback) is { } denied)
+        {
+            return denied;
+        }
+
+        var response = await SendGatewayAsync(
+            HttpMethod.Post, "/api/crm/cycle-periods", ToPayload(model, includeExpectedVersion: false), ct);
+        return await ToProxyResultAsync(response, ct);
+    }
+
+    [HttpPut("api/periods/{cyclePeriodId:guid}")]
+    public async Task<IActionResult> Update(
+        Guid cyclePeriodId, [FromBody] CyclePeriodEditViewModel model, CancellationToken ct)
+    {
+        if (RequireJson(ManagePermission, ManageFallback) is { } denied)
+        {
+            return denied;
+        }
+
+        var response = await SendGatewayAsync(
+            HttpMethod.Put, $"/api/crm/cycle-periods/{cyclePeriodId}",
+            ToPayload(model, includeExpectedVersion: true), ct);
+        return await ToProxyResultAsync(response, ct);
+    }
+
     [HttpPost("api/periods/{cyclePeriodId:guid}/activate")]
     public Task<IActionResult> Activate(Guid cyclePeriodId, CancellationToken ct) =>
         ProxyAsync(
@@ -225,6 +189,218 @@ public sealed class CyclePeriodsController : Controller
             HttpMethod.Post, $"/api/crm/cycle-periods/{cyclePeriodId}/close{Request.QueryString}", null,
             ActivatePermission, ct, ManagePermission, ManageFallback);
 
+    // ---------------- computed endpoints (CyclePeriodScreenRules) ----------------
+
+    /// <summary>The timeline (dynamic axis = year ± 1) and the "open periods without a capacity" band.</summary>
+    [HttpGet("api/overview")]
+    public async Task<IActionResult> Overview(
+        [FromQuery] int? year, [FromQuery] string? scopeType, [FromQuery] string? country,
+        [FromQuery(Name = "status")] string[]? statuses, CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied)
+        {
+            return denied;
+        }
+
+        var loaded = await LoadRowsAsync(ct);
+        if (loaded is null)
+        {
+            return GatewayUnavailable();
+        }
+
+        // The list's own filters narrow the timeline too (the year sets the axis, it does not hide rows).
+        var rows = CyclePeriodScreenRules.Filter(loaded, scopeType, country, statuses);
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        return Envelope(new
+        {
+            timeline = CyclePeriodScreenRules.BuildTimeline(rows, year, today),
+            openWithoutCapacity = CyclePeriodScreenRules.OpenWithoutCapacity(rows)
+                .Select(r => new { r.CyclePeriodId, r.CycleCode, r.CycleName, r.CycleStatus, r.StartDate, r.EndDate })
+        });
+    }
+
+    /// <summary>The panel's state for one period (or a new one): which fields the status leaves editable, which
+    /// lifecycle actions are offered, and the period itself.</summary>
+    [HttpGet("api/panel/state")]
+    public async Task<IActionResult> PanelState([FromQuery] Guid? cyclePeriodId, CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied)
+        {
+            return denied;
+        }
+
+        var canManage = HasAnyPermission(ManagePermission, ManageFallback);
+        var canActivate = HasAnyPermission(ActivatePermission, ManagePermission, ManageFallback);
+        if (cyclePeriodId is not { } id)
+        {
+            return Envelope(new
+            {
+                period = (CyclePeriodDetailApiModel?)null,
+                fields = CyclePeriodScreenRules.FieldStates(null, isNew: true),
+                actions = new CyclePeriodActions(false, false, canManage)
+            });
+        }
+
+        var detail = await LoadDetailAsync(id, ct);
+        if (detail is null)
+        {
+            return NotFound(new { errors = new[] { "Cycle period not found." } });
+        }
+
+        return Envelope(new
+        {
+            period = detail,
+            fields = CyclePeriodScreenRules.FieldStates(detail.CycleStatus, isNew: false),
+            actions = CyclePeriodScreenRules.Actions(detail.CycleStatus, canActivate, canManage)
+        });
+    }
+
+    /// <summary>The panel's live warnings (end after start, sequence taken, active overlap, other-level overlap) and
+    /// the first free sequence for the draft's scope and year.</summary>
+    [HttpPost("api/panel/check")]
+    public async Task<IActionResult> PanelCheck([FromBody] CyclePeriodDraftRequest draft, CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied)
+        {
+            return denied;
+        }
+
+        var rows = await LoadRowsAsync(ct);
+        if (rows is null)
+        {
+            return GatewayUnavailable();
+        }
+
+        var scopeRef = ScopeRefOf(draft.ScopeType, draft.CountryScope, draft.LegalEntityId, draft.BusinessUnitId);
+        var model = new CyclePeriodDraft(
+            draft.CyclePeriodId, draft.Year, draft.SequenceInYear, ParseDay(draft.StartDate), ParseDay(draft.EndDate),
+            draft.ScopeType, scopeRef);
+
+        return Envelope(new
+        {
+            warnings = CyclePeriodScreenRules.Check(model, rows),
+            nextSequence = draft.Year is { } y
+                ? CyclePeriodScreenRules.NextSequence(rows, draft.ScopeType, scopeRef, y, draft.CyclePeriodId)
+                : null
+        });
+    }
+
+    /// <summary>K-6 — "which period is in force for this unit on this day?". ACTIVE periods only (the runtime's
+    /// resolve-active); resolved / none / ambiguous each answered in their own words.</summary>
+    [HttpGet("api/finder")]
+    public async Task<IActionResult> Finder(
+        [FromQuery] DateTimeOffset? at, [FromQuery] string? country, [FromQuery] Guid? legalEntityId,
+        [FromQuery] string? businessUnitId, CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied)
+        {
+            return denied;
+        }
+
+        if (at is not { } instant)
+        {
+            return BadRequest(new { errors = new[] { "A date is required." } });
+        }
+
+        var query = new List<string> { $"at={Uri.EscapeDataString(instant.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture))}" };
+        if (!string.IsNullOrWhiteSpace(country)) query.Add($"country={Uri.EscapeDataString(country.Trim())}");
+        if (legalEntityId is { } le && le != Guid.Empty) query.Add($"legalEntityId={le:D}");
+        if (!string.IsNullOrWhiteSpace(businessUnitId)) query.Add($"businessUnitId={Uri.EscapeDataString(businessUnitId.Trim())}");
+
+        var response = await SendGatewayAsync(
+            HttpMethod.Get, "/api/crm/cycle-periods/resolve-active?" + string.Join("&", query), null, ct);
+        if (response is null || !response.IsSuccessStatusCode)
+        {
+            return await ToProxyResultAsync(response, ct);
+        }
+
+        var body = await response.Content.ReadAsStringAsync(ct);
+        var resolution = JsonSerializer.Deserialize<CyclePeriodGatewayResponse<CyclePeriodResolutionApiModel>>(body, _json)?.Data;
+        var view = CyclePeriodScreenRules.Finder(resolution?.Outcome);
+        return Envelope(new
+        {
+            view.Outcome,
+            view.Tone,
+            view.MessageKey,
+            resolvedScopeType = resolution?.ResolvedScopeType,
+            period = view.Outcome == "resolved" ? resolution?.Period : null,
+            candidateCount = resolution?.CandidateIds?.Count ?? 0
+        });
+    }
+
+    /// <summary>The panel's live day + working-day count. The working calendar needs a country; without one the answer
+    /// is <c>no_country</c>, never a guess.</summary>
+    [HttpGet("api/working-days")]
+    public async Task<IActionResult> WorkingDays(
+        [FromQuery] string? from, [FromQuery] string? to, [FromQuery] string? country, [FromQuery] Guid? legalEntityId,
+        CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied)
+        {
+            return denied;
+        }
+
+        if (ParseDay(from) is not { } start || ParseDay(to) is not { } end || end < start)
+        {
+            return BadRequest(new { errors = new[] { "A valid range is required." } });
+        }
+
+        var count = await CountWorkingDaysAsync(country, legalEntityId, start, end, ct);
+        return Envelope(new
+        {
+            days = CyclePeriodScreenRules.DayCount(start, end),
+            workingDays = count.WorkingDays,
+            resolution = count.Resolution,
+            country = string.IsNullOrWhiteSpace(country) ? null : country.Trim().ToUpperInvariant()
+        });
+    }
+
+    /// <summary>The details page's calendar summary: one row per month the period touches (clipped at its edges).</summary>
+    [HttpGet("api/periods/{cyclePeriodId:guid}/calendar")]
+    public async Task<IActionResult> Calendar(Guid cyclePeriodId, CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied)
+        {
+            return denied;
+        }
+
+        var detail = await LoadDetailAsync(cyclePeriodId, ct);
+        if (detail is null)
+        {
+            return NotFound(new { errors = new[] { "Cycle period not found." } });
+        }
+
+        var country = CalendarCountryOf(detail.ScopeType, detail.CountryScope, detail.BusinessUnitCountryContext);
+        var months = new List<object>();
+        var resolution = "resolved";
+        foreach (var (year, month, from, to) in CyclePeriodScreenRules.Months(
+                     CyclePeriodScreenRules.ToDay(detail.StartDate), CyclePeriodScreenRules.ToDay(detail.EndDate)))
+        {
+            var count = await CountWorkingDaysAsync(country, detail.LegalEntityId, from, to, ct);
+            if (count.Resolution != "resolved")
+            {
+                resolution = count.Resolution;
+            }
+
+            var days = CyclePeriodScreenRules.DayCount(from, to);
+            months.Add(new
+            {
+                year,
+                month,
+                from,
+                to,
+                days,
+                workingDays = count.WorkingDays,
+                nonWorkingDays = count.WorkingDays is { } wd ? days - wd : (int?)null,
+                partial = from.Day != 1 || to != new DateOnly(year, month, 1).AddMonths(1).AddDays(-1),
+                resolution = count.Resolution
+            });
+        }
+
+        return Envelope(new { country, resolution, months });
+    }
+
     // ---------------- form helpers ----------------
 
     /// <summary>
@@ -232,7 +408,7 @@ public sealed class CyclePeriodsController : Controller
     /// belonging to the chosen scope is sent: a hidden-but-populated field would otherwise reach the runtime and be
     /// refused as an ambiguous scope, which is a confusing way to fail a form the author filled in correctly.
     /// </summary>
-    private static object ToPayload(CyclePeriodEditViewModel model, bool includeExpectedVersion)
+    public static object ToPayload(CyclePeriodEditViewModel model, bool includeExpectedVersion)
     {
         var scopeType = (model.ScopeType ?? string.Empty).Trim().ToLowerInvariant();
 
@@ -261,57 +437,108 @@ public sealed class CyclePeriodsController : Controller
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     /// <summary>
-    /// A date the AUTHOR picked, anchored to UTC midnight.
-    /// <para>An <c>&lt;input type="date"&gt;</c> posts a bare calendar day; MVC binds it with the SERVER's offset, so
-    /// "1 Jul" arrives as <c>2026-07-01T00:00+03:00</c> — which is 30 Jun in UTC. The runtime stores the UTC day, so
-    /// the period silently landed a day early on every server east of Greenwich (and a day late west of it). The date
-    /// component here is the day the author actually clicked; pairing it with a zero offset sends exactly that day.
-    /// </para>
-    /// <para>The runtime's UTC canon is CORRECT and untouched: the fix belongs where a calendar day is turned into an
-    /// instant, which is here.</para>
+    /// A date the AUTHOR picked, anchored to UTC midnight. An <c>&lt;input type="date"&gt;</c> value bound with the
+    /// SERVER's offset lands a day early east of Greenwich; the date component is the day the author clicked, and
+    /// pairing it with a zero offset sends exactly that day.
     /// </summary>
     private static DateTimeOffset? PickedDayToUtc(DateTimeOffset? value)
         => value is { } d ? new DateTimeOffset(d.Date, TimeSpan.Zero) : null;
 
-    /// <summary>
-    /// A date the RUNTIME returned, anchored to UTC midnight. The opposite reading of
-    /// <see cref="PickedDayToUtc"/> and NOT interchangeable with it: a stored instant may deserialize into any offset,
-    /// and on a negative one its local date component is the previous day. The stored day is the UTC day.
-    /// </summary>
-    private static DateTimeOffset? StoredDayToUtc(DateTimeOffset? value)
-        => value is { } d ? new DateTimeOffset(d.UtcDateTime.Date, TimeSpan.Zero) : null;
+    /// <summary>The working-calendar country a period's days are counted in: its own country, a business unit's
+    /// country context, otherwise none (tenant and legal-entity periods name no country).</summary>
+    public static string? CalendarCountryOf(string? scopeType, string? countryScope, string? businessUnitCountryContext)
+        => CyclePeriodScreenRules.NormalizeScope(scopeType) switch
+        {
+            "country" => Clean(countryScope)?.ToUpperInvariant(),
+            "business-unit" => Clean(businessUnitCountryContext)?.ToUpperInvariant(),
+            _ => null
+        };
 
-    private static CyclePeriodEditViewModel ToEditModel(CyclePeriodDetailApiModel detail) => new()
-    {
-        CyclePeriodId = detail.CyclePeriodId,
-        CycleCode = detail.CycleCode,
-        CycleName = detail.CycleName,
-        Year = detail.Year,
-        SequenceInYear = detail.SequenceInYear,
-        StartDate = StoredDayToUtc(detail.StartDate),
-        EndDate = StoredDayToUtc(detail.EndDate),
-        ScopeType = string.IsNullOrWhiteSpace(detail.ScopeType) ? "tenant" : detail.ScopeType,
-        CountryScope = detail.CountryScope,
-        LegalEntityId = detail.LegalEntityId,
-        BusinessUnitId = detail.BusinessUnitId,
-        BusinessUnitSource = detail.BusinessUnitSource,
-        BusinessUnitCountryContext = detail.BusinessUnitCountryContext,
-        Description = detail.Description,
-        CycleStatus = detail.CycleStatus,
-        ExpectedVersion = detail.Version
-    };
+    private static string? ScopeRefOf(string? scopeType, string? country, Guid? legalEntityId, string? businessUnitId)
+        => CyclePeriodScreenRules.NormalizeScope(scopeType) switch
+        {
+            "country" => Clean(country),
+            "legal-entity" => legalEntityId is { } id && id != Guid.Empty ? id.ToString("D") : null,
+            "business-unit" => Clean(businessUnitId),
+            _ => null
+        };
 
-    /// <summary>Re-renders a rejected form with its option lists intact — an author must not lose their dropdowns
-    /// because the runtime refused one field.</summary>
-    private async Task<IActionResult> RedisplayAsync(
-        string view, CyclePeriodEditViewModel model, CancellationToken ct)
+    private static DateOnly? ParseDay(string? value)
     {
-        // Anchor BEFORE re-rendering: the form re-reads these values, and a rejected post that came back shifted by a
-        // day would look like the runtime moved the author's dates.
-        model.StartDate = PickedDayToUtc(model.StartDate);
-        model.EndDate = PickedDayToUtc(model.EndDate);
-        model.ScopeOptions = await LoadScopeOptionsAsync(model.CountryScope, model.StartDate, model.EndDate, ct);
-        return View(view, model);
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var text = value.Trim();
+        if (DateOnly.TryParseExact(text.Length >= 10 ? text[..10] : text, "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out var day))
+        {
+            return day;
+        }
+
+        return null;
+    }
+
+    private async Task<(int? WorkingDays, string Resolution)> CountWorkingDaysAsync(
+        string? country, Guid? legalEntityId, DateOnly from, DateOnly to, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(country))
+        {
+            return (null, "no_country");
+        }
+
+        var path = $"{WorkingDaysPath}&date={CyclePeriodScreenRules.Iso(from)}&toDate={CyclePeriodScreenRules.Iso(to)}"
+                   + $"&countryCode={Uri.EscapeDataString(country.Trim().ToUpperInvariant())}"
+                   + (legalEntityId is { } le && le != Guid.Empty ? $"&legalEntityId={le:D}" : string.Empty);
+
+        var response = await SendGatewayAsync(HttpMethod.Get, path, null, ct);
+        if (response is null)
+        {
+            return (null, "calendar_unresolved");
+        }
+
+        if (response.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized)
+        {
+            return (null, "calendar_forbidden");
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return (null, "calendar_unresolved");
+        }
+
+        try
+        {
+            var body = await response.Content.ReadAsStringAsync(ct);
+            var data = JsonSerializer.Deserialize<CyclePeriodGatewayResponse<CyclePeriodWorkingDaysApiModel>>(body, _json)?.Data;
+            return data is not null
+                   && string.Equals(data.Resolution, "resolved", StringComparison.OrdinalIgnoreCase)
+                   && data.WorkingDayCount is { } count
+                ? (count, "resolved")
+                : (null, "calendar_unresolved");
+        }
+        catch (JsonException)
+        {
+            return (null, "calendar_unresolved");
+        }
+    }
+
+    private async Task<IReadOnlyList<CyclePeriodRow>?> LoadRowsAsync(CancellationToken ct)
+    {
+        var response = await SendGatewayAsync(HttpMethod.Get, "/api/crm/cycle-periods", null, ct);
+        if (response is null || !response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        var body = await response.Content.ReadAsStringAsync(ct);
+        var list = JsonSerializer.Deserialize<CyclePeriodGatewayResponse<CyclePeriodListApiModel>>(body, _json)?.Data;
+        return (list?.Items ?? []).Select(i => new CyclePeriodRow(
+                i.CyclePeriodId, i.CycleCode, i.CycleName, i.Year, i.SequenceInYear,
+                CyclePeriodScreenRules.ToDay(i.StartDate), CyclePeriodScreenRules.ToDay(i.EndDate),
+                i.ScopeType, i.ScopeRef, i.CycleStatus, i.HasCapacity))
+            .ToList();
     }
 
     private async Task<CyclePeriodDetailApiModel?> LoadDetailAsync(Guid cyclePeriodId, CancellationToken ct)
@@ -331,8 +558,7 @@ public sealed class CyclePeriodsController : Controller
 
     /// <summary>
     /// Loads the selector's options. An unreachable source yields an EMPTY, NOT-READY list — never a substituted one:
-    /// a hardcoded fallback would let an author pick a value the platform does not know, and the save would then be
-    /// refused for a reason the form never showed them.
+    /// a hardcoded fallback would let an author pick a value the platform does not know.
     /// </summary>
     private async Task<CyclePeriodScopeOptionsViewModel> LoadScopeOptionsAsync(
         string? country, DateTimeOffset? startDate, DateTimeOffset? endDate, CancellationToken ct)
@@ -359,7 +585,7 @@ public sealed class CyclePeriodsController : Controller
         var response = await SendGatewayAsync(HttpMethod.Get, path, null, ct);
         if (response is null || !response.IsSuccessStatusCode)
         {
-            _logger.LogWarning("Cycle period scope options could not be loaded; rendering the form without them.");
+            _logger.LogWarning("Cycle period scope options could not be loaded; rendering the panel without them.");
             return new CyclePeriodScopeOptionsViewModel();
         }
 
@@ -389,40 +615,12 @@ public sealed class CyclePeriodsController : Controller
             => new() { Value = o.Value, Label = o.Label, Hint = o.Hint };
     }
 
-    /// <summary>Surfaces the runtime's own refusal verbatim. The overlap and scope messages name the blocking period
-    /// and its address, and flattening them into "save failed" would take away the only thing an author can act on.
-    /// </summary>
-    private async Task AddGatewayErrorsAsync(HttpResponseMessage? response, CancellationToken ct)
-    {
-        if (response is null)
-        {
-            ModelState.AddModelError(string.Empty, "Gateway unavailable.");
-            return;
-        }
-
-        try
-        {
-            var body = await response.Content.ReadAsStringAsync(ct);
-            var envelope = JsonSerializer.Deserialize<CyclePeriodGatewayResponse<object>>(body, _json);
-            if (envelope?.Errors is { Count: > 0 })
-            {
-                foreach (var error in envelope.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error);
-                }
-
-                return;
-            }
-        }
-        catch (JsonException)
-        {
-            // fall through to the status-only message
-        }
-
-        ModelState.AddModelError(string.Empty, $"HTTP {(int)response.StatusCode}");
-    }
-
     // ---------------- proxy helpers ----------------
+
+    private IActionResult Envelope(object data) => Json(new { data, isSuccessful = true, statusCode = 200 });
+
+    private static IActionResult GatewayUnavailable()
+        => new ObjectResult(new { errors = new[] { "Gateway unavailable." } }) { StatusCode = 502 };
 
     private async Task<IActionResult> ProxyAsync(
         HttpMethod method, string path, JsonElement? body, string permission, CancellationToken ct,
@@ -484,7 +682,7 @@ public sealed class CyclePeriodsController : Controller
     {
         if (response is null)
         {
-            return new ObjectResult(new { errors = new[] { "Gateway unavailable." } }) { StatusCode = 502 };
+            return GatewayUnavailable();
         }
 
         // A bodiless status must stay bodiless: writing a body onto a 204/205/304/1xx makes Kestrel throw
@@ -517,6 +715,7 @@ public sealed class CyclePeriodsController : Controller
     private bool HasAnyPermission(params string[] permissions) =>
         permissions.Any(x => PermissionClaims.HasPermission(User, x));
 
+    /// <summary>An unauthorized page answers a bare 403 — no shell, no skeleton, no redirect (UAS-001).</summary>
     private IActionResult? RequirePage(string permission, params string[] fallbacks) =>
         HasAnyPermission([permission, .. fallbacks]) ? null : StatusCode(StatusCodes.Status403Forbidden);
 

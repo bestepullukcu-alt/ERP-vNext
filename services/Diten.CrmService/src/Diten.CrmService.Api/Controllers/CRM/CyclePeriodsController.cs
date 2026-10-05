@@ -118,6 +118,17 @@ public sealed class CyclePeriodsController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new GetCyclePeriodByIdQuery(cyclePeriodId), cancellationToken));
 
+    /// <summary>
+    /// WP-CYC-UI-1 — what points at this period: its capacity, the campaigns bound to it, the planning sessions planning
+    /// it, their committed planned visits (by status) and the monthly demand (cancelled / archived excluded). A READ;
+    /// another tenant's id answers 404. No personal data beyond a session owner's display name.
+    /// </summary>
+    [HttpGet("api/crm/cycle-periods/{cyclePeriodId:guid}/usage")]
+    [HasPermission(Perms.ReadFallback)]
+    public async Task<IActionResult> Usage(Guid cyclePeriodId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new GetCyclePeriodUsageQuery(cyclePeriodId), cancellationToken));
+
     [HttpPost("api/crm/cycle-periods")]
     [HasPermission(Perms.ManageFallback)]
     public async Task<IActionResult> Create(

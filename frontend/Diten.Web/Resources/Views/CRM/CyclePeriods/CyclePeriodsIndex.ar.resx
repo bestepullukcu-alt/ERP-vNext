@@ -81,4 +81,114 @@
   <data name="ScopeType_tenant" xml:space="preserve"><value>على مستوى المستأجر</value></data>
   <data name="Version" xml:space="preserve"><value>الإصدار</value></data>
   <data name="CycleCapacity" xml:space="preserve"><value>سعة الدورة</value></data>
+  <data name="ViewTable" xml:space="preserve"><value>جدول</value></data>
+  <data name="ViewTimeline" xml:space="preserve"><value>المخطط الزمني</value></data>
+  <data name="CycleCapacities" xml:space="preserve"><value>سعات الدورات</value></data>
+  <data name="FinderOpen" xml:space="preserve"><value>البحث عن الفترة السارية</value></data>
+  <data name="FinderTitle" xml:space="preserve"><value>الفترة السارية لهذه الوحدة في هذا التاريخ</value></data>
+  <data name="FinderHint" xml:space="preserve"><value>قد تتداخل فترات المستويات المختلفة. تُطبَّق الفترة النشطة الأضيق نطاقًا: وحدة الأعمال › الكيان القانوني › الدولة › الشركة بأكملها. لا تُحتسب المسودات والفترات المغلقة.</value></data>
+  <data name="FinderUnit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="FinderDate" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="FinderSubmit" xml:space="preserve"><value>بحث</value></data>
+  <data name="FinderIdle" xml:space="preserve"><value>اختر وحدة وتاريخًا.</value></data>
+  <data name="FinderResolved" xml:space="preserve"><value>تم العثور على الفترة السارية.</value></data>
+  <data name="FinderNone" xml:space="preserve"><value>لا توجد فترة سارية لهذه الوحدة في هذا التاريخ. لا يمكن التخطيط.</value></data>
+  <data name="FinderAmbiguous" xml:space="preserve"><value>تغطي هذا التاريخ أكثر من فترة نشطة بالنطاق نفسه — هذه مشكلة في البيانات. أغلق إحداها أو صحّحها.</value></data>
+  <data name="FinderAnsweredBy" xml:space="preserve"><value>المستوى المُجيب</value></data>
+  <data name="NoCapacityBandTitle" xml:space="preserve"><value>فترات مفتوحة بلا سعة:</value></data>
+  <data name="Days" xml:space="preserve"><value>الأيام</value></data>
+  <data name="Capacity" xml:space="preserve"><value>السعة</value></data>
+  <data name="Campaigns" xml:space="preserve"><value>الحملات</value></data>
+  <data name="PlannedVisits" xml:space="preserve"><value>الزيارات المخطط لها</value></data>
+  <data name="PlanningSessions" xml:space="preserve"><value>جلسات التخطيط</value></data>
+  <data name="HasCapacity" xml:space="preserve"><value>توجد سعة</value></data>
+  <data name="NoCapacity" xml:space="preserve"><value>لا سعة</value></data>
+  <data name="TimelineConflict" xml:space="preserve"><value>تعارض</value></data>
+  <data name="TimelineOverlap" xml:space="preserve"><value>تداخل (مسودات)</value></data>
+  <data name="TimelineGap" xml:space="preserve"><value>فجوة</value></data>
+  <data name="TimelineToday" xml:space="preserve"><value>اليوم</value></data>
+  <data name="TimelineEmpty" xml:space="preserve"><value>لا توجد فترة تطابق عوامل التصفية.</value></data>
+  <data name="TimelineFootnote" xml:space="preserve"><value>كل نطاق صف. الكتل المتداخلة في الصف نفسه تعارضات؛ أما المستويات المختلفة (مثل دولة وإحدى وحداتها) فتقع في صفوف منفصلة ويمكن أن تتداخل بحرية. انقر على الكتلة لفتح تفاصيلها.</value></data>
+  <data name="TimelineGapTitle" xml:space="preserve"><value>فجوة: {0} – {1} ({2} يومًا)</value></data>
+  <data name="TimelineGapLabel" xml:space="preserve"><value>فجوة · {0} يومًا</value></data>
+  <data name="TimelineOverlapTitle" xml:space="preserve"><value>تداخل: {0} ({1} يومًا)</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>تعذّر تحميل الفترات.</value></data>
+  <data name="Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="DatesSection" xml:space="preserve"><value>التواريخ</value></data>
+  <data name="DateTemplates" xml:space="preserve"><value>قوالب التواريخ</value></data>
+  <data name="TemplateQ1" xml:space="preserve"><value>الربع الأول</value></data>
+  <data name="TemplateQ2" xml:space="preserve"><value>الربع الثاني</value></data>
+  <data name="TemplateQ3" xml:space="preserve"><value>الربع الثالث</value></data>
+  <data name="TemplateQ4" xml:space="preserve"><value>الربع الرابع</value></data>
+  <data name="TemplateH1" xml:space="preserve"><value>النصف الأول</value></data>
+  <data name="TemplateH2" xml:space="preserve"><value>النصف الثاني</value></data>
+  <data name="TemplateMonth" xml:space="preserve"><value>اختر شهرًا…</value></data>
+  <data name="DaysUnit" xml:space="preserve"><value>يوم</value></data>
+  <data name="WorkingDaysUnit" xml:space="preserve"><value>أيام عمل</value></data>
+  <data name="UseSuggestion" xml:space="preserve"><value>استخدم الاقتراح</value></data>
+  <data name="Suggestion" xml:space="preserve"><value>اقتراح</value></data>
+  <data name="SequenceSuggestion" xml:space="preserve"><value>اقتراح: {0} (أول تسلسل متاح في هذا النطاق)</value></data>
+  <data name="NameSuggestionPattern" xml:space="preserve"><value>{0} · الفترة {1}</value></data>
+  <data name="CodeSuggestedHint" xml:space="preserve"><value>مقترح وفق النطاق والسنة؛ يمكنك تغييره. لا يمكن تغييره بعد الحفظ.</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>لا يتغير الرمز بعد حفظ الفترة.</value></data>
+  <data name="ChecksSection" xml:space="preserve"><value>فحص التعارض</value></data>
+  <data name="CheckClear" xml:space="preserve"><value>لا توجد فترة متعارضة في النطاق نفسه.</value></data>
+  <data name="CheckEndNotAfterStart" xml:space="preserve"><value>يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء.</value></data>
+  <data name="CheckSequenceTaken" xml:space="preserve"><value>هذا التسلسل مستخدم بالفعل في هذا النطاق وهذه السنة (بما في ذلك الفترات المغلقة):</value></data>
+  <data name="CheckActiveOverlap" xml:space="preserve"><value>تتداخل مع فترة نشطة في النطاق نفسه — يمكن حفظها كمسودة لكن لا يمكن تفعيلها قبل إزالة التداخل:</value></data>
+  <data name="CheckOtherLevelOverlap" xml:space="preserve"><value>فترات متداخلة في مستويات أخرى (مسموح — يُطبَّق النطاق الأضيق في اليوم نفسه):</value></data>
+  <data name="CloseAndReopen" xml:space="preserve"><value>إغلاق وفتح فترة جديدة</value></data>
+  <data name="CloseAndReopenConfirm" xml:space="preserve"><value>إغلاق هذه الفترة وفتح فترة جديدة للنطاق نفسه؟ لا يمكن التراجع عن الإغلاق.</value></data>
+  <data name="ClosedReadOnly" xml:space="preserve"><value>هذه الفترة مغلقة وللقراءة فقط.</value></data>
+  <data name="SaveAsDraft" xml:space="preserve"><value>حفظ كمسودة</value></data>
+  <data name="ScopeCardHint_tenant" xml:space="preserve"><value>جميع الدول والوحدات</value></data>
+  <data name="ScopeCardHint_country" xml:space="preserve"><value>دولة واحدة</value></data>
+  <data name="ScopeCardHint_legal-entity" xml:space="preserve"><value>كيان قانوني واحد</value></data>
+  <data name="ScopeCardHint_business-unit" xml:space="preserve"><value>منطقة / فريق</value></data>
+  <data name="ClosedBanner" xml:space="preserve"><value>هذه الفترة مغلقة. الفترة وسعتها وخططها للقراءة فقط.</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>الملخص</value></data>
+  <data name="Dates" xml:space="preserve"><value>التواريخ</value></data>
+  <data name="DaysAndWorkingDays" xml:space="preserve"><value>الأيام · أيام العمل</value></data>
+  <data name="YearAndSequence" xml:space="preserve"><value>السنة · التسلسل</value></data>
+  <data name="NoDescription" xml:space="preserve"><value>لا يوجد وصف.</value></data>
+  <data name="NotActivatedYet" xml:space="preserve"><value>لم تُفعَّل بعد</value></data>
+  <data name="NotClosedYet" xml:space="preserve"><value>لم تُغلق بعد</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>مسودة ← تفعيل ← نشطة ← إغلاق ← مغلقة. عند التفعيل يُفحص التداخل مع الفترات النشطة في النطاق نفسه.</value></data>
+  <data name="CalendarSummary" xml:space="preserve"><value>ملخص التقويم</value></data>
+  <data name="Month" xml:space="preserve"><value>الشهر</value></data>
+  <data name="CalendarDays" xml:space="preserve"><value>أيام التقويم</value></data>
+  <data name="NonWorkingDays" xml:space="preserve"><value>أيام العطل</value></data>
+  <data name="PartialMonth" xml:space="preserve"><value>جزئي</value></data>
+  <data name="PartialMonthHint" xml:space="preserve"><value>الشهر مقتطع عند حد الفترة.</value></data>
+  <data name="CalendarResolved" xml:space="preserve"><value>تم حل التقويم</value></data>
+  <data name="CalendarUnresolved" xml:space="preserve"><value>تعذّر حل التقويم</value></data>
+  <data name="CalendarForbidden" xml:space="preserve"><value>لا صلاحية للوصول إلى التقويم</value></data>
+  <data name="CalendarNoCountry" xml:space="preserve"><value>لا توجد دولة للتقويم</value></data>
+  <data name="CalendarLoadFailed" xml:space="preserve"><value>تعذّر تحميل ملخص التقويم.</value></data>
+  <data name="UsageLoadFailed" xml:space="preserve"><value>تعذّر تحميل السجلات المرتبطة.</value></data>
+  <data name="CapacityArchived" xml:space="preserve"><value>السعة مؤرشفة</value></data>
+  <data name="OpenCapacity" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="CreateCapacity" xml:space="preserve"><value>إنشاء السعة</value></data>
+  <data name="NoCapacityTitle" xml:space="preserve"><value>لا توجد سعة لهذه الفترة</value></data>
+  <data name="NoCapacityHint" xml:space="preserve"><value>بدون سعة لا يمكن لتخطيط الزيارات حساب العرض.</value></data>
+  <data name="NoCapacityClosed" xml:space="preserve"><value>الفترة مغلقة، لذا لا يمكن إنشاء سعة.</value></data>
+  <data name="NoPlannedVisits" xml:space="preserve"><value>لا توجد زيارات مخطط لها مرتبطة بهذه الفترة.</value></data>
+  <data name="NoCampaigns" xml:space="preserve"><value>لا توجد حملات مرتبطة بهذه الفترة.</value></data>
+  <data name="NoPlanningSessions" xml:space="preserve"><value>لا توجد جلسات تخطيط بعد.</value></data>
+  <data name="VisitCountPattern" xml:space="preserve"><value>{0} زيارة</value></data>
+  <data name="VisitStatus_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="VisitStatus_planned" xml:space="preserve"><value>مخطط لها</value></data>
+  <data name="VisitStatus_confirmed" xml:space="preserve"><value>مؤكدة</value></data>
+  <data name="VisitStatus_cancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="VisitStatus_archived" xml:space="preserve"><value>مؤرشفة</value></data>
+  <data name="CampaignStatus_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="CampaignStatus_active" xml:space="preserve"><value>نشطة</value></data>
+  <data name="CampaignStatus_paused" xml:space="preserve"><value>متوقفة مؤقتًا</value></data>
+  <data name="CampaignStatus_completed" xml:space="preserve"><value>مكتملة</value></data>
+  <data name="CampaignStatus_cancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="CampaignStatus_archived" xml:space="preserve"><value>مؤرشفة</value></data>
+  <data name="SessionStatus_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="SessionStatus_generated" xml:space="preserve"><value>تم إنشاؤها</value></data>
+  <data name="SessionStatus_committed" xml:space="preserve"><value>معتمدة</value></data>
+  <data name="SessionStatus_archived" xml:space="preserve"><value>مؤرشفة</value></data>
 </root>
