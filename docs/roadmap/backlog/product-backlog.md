@@ -8063,6 +8063,22 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-560
+
+**Tamamlanmamış güvenilir başlatmayı tüketici kimliksiz iptal edemiyor; kapatıldığını da kendi koduyla öğrenemiyor (anahtarla iptal + "kapatıldı" cevabı + MDM bağlantısı)**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 onay motoru + MDM devralma) · BULAN: WP-WF-ENGINE-RECOVERY-01 ölçümü (motor sohbeti) · KAYIT: 2026-10-06
+
+Tamamlanmamış güvenilir başlatmada start-result yalnız 409 WORKFLOW_START_NOT_COMPLETED dönüyor; örnek / görev kimliği ve sürüm yok (`GetTrustedWorkflowStartResultHandler.cs:44-51`).
+Mevcut iptal sözleşmesi (`TrustedWorkflowCancellationRequest`, `WorkflowModels.cs:356`) örnek + görev kimliği, iki sürüm ve Active örnek / Waiting* görev istiyor (`TrustedWorkflowCancellationCoordinator.cs:115-122`).
+Bu yüzden tüketici, terk etmeden önce tamamlanmamış başlatmayı iptal edemiyor. Bugünkü yol (WF-RECOVERY'de ölçülüp belgelenen A): yeniden oynat (koordinatör tamamlar) → preflight → cancel. Bedeli: tamamlanma ile
+iptal arasındaki kısa pencerede görev onaylayanlara görünür. WF-RECOVERY'nin süpürmesi süresi dolmuş rezervasyonu kapatır; start-result o anahtara bilinmeyen anahtarla aynı 404'ü verir. Tüketicinin "pencere
+sonrası NotFound → bitir + bırak" kuralı böylece doğru sonucu verir (ilke A), ama tüketici kapatıldığını adıyla öğrenmez. Düzeltme: Platform'da idempotency anahtarıyla iptal ucu (rezervasyonu motorun kendi
+kapatma yolu kapatır, görev yazılmışsa geri çekilir) + kapatılmış rezervasyon için start-result'ta adlı bir kod + MDM'nin bu kodu sonlandırmaya bağlaması (`PlatformProductIdentityWorkflowClient.cs:278`), birlikte.
+Karşılaştırma: SAP Business Workflow'da başlatılamamış iş akışı SWPR / SWIA ile mantıksal silinir; Oracle BPM'de örnek kimliği olmadan "abort by correlation key" yolu var. Gelecek regresyon riski: 🟢 (süpürme kapatıyor, tüketici kuralı doğru sonuç veriyor).
+
+---
+
 ### BL-559
 
 **Taslak bir Bitmiş Ürün (FG) bağlı olduğu GSKU'yu düzeltmeye ve emekliye ayırmaya kalıcı kapatıyor: FG'nin çıkışı yok, GSKU onu engel sayıyor**
