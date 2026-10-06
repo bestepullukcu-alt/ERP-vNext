@@ -65,7 +65,9 @@ public sealed class Mod0174TraceRouteTests
         var root = new DirectoryInfo(AppContext.BaseDirectory);
         while (root is not null && !File.Exists(Path.Combine(root.FullName, "AGENTS.md"))) root = root.Parent;
         Assert.NotNull(root);
-        var lines = File.ReadAllLines(Path.Combine(root!.FullName, "docs", "analysis", "contracts", "trace.openapi.yaml"));
+        // Found by name under the docs tree (DocsPathGuard: no hard-coded docs sub-folder; same as the Inventory RepoPaths).
+        var contract = Directory.EnumerateFiles(Path.Combine(root!.FullName, "docs"), "trace.openapi.yaml", SearchOption.AllDirectories).Single();
+        var lines = File.ReadAllLines(contract);
         Assert.Contains("servers: [{ url: /api/trace }]", lines);
 
         var everything = Config().Routes.Single(r => r.UpstreamPathTemplate == "/api/trace/{everything}");

@@ -572,12 +572,12 @@ registered provider, `…/Api/ModuleRegistration/ModuleRegistrationHostedService
 | Lot Gezgini · Lot Detayı | Durum Değiştir | `CHANGELOTSTATUS` | Row / detail | `trace.lots.change-status` | **yes** (Bloke) |
 | Lot Gezgini · Lot Detayı | Hareket Geçmişi | `LOTMOVES` | Row / detail | `trace.lots.read` | no |
 | Lot Gezgini · Lot Detayı | İzlenebilirlik | `LOTTRACEOPEN` | Row / detail | `trace.lots.read` | no |
-| Lot Detayı | Stok Defteri'nde aç | `OPENINLEDGER` | detail | `inventory.stock.read` | no |
+| Lot Detayı | Stok Defteri'nde aç | `OPENINLEDGER` | detail | `trace.lots.read` (FU-0174-CAT-01; the target page enforces `inventory.stock.read`) | no |
 | Lot Detayı | Seri Gezgini'nde tümü | `VIEWALLSERIALS` | detail | `trace.serials.read` | no |
 | Seri Gezgini | Lot Detayı | `SERIALLOT` | RowAction | `trace.lots.read` | no |
 | Seri Gezgini | Hareket Geçmişi | `SERIALMOVES` | RowAction | `trace.lots.read` | no |
-| Lot Hareket Geçmişi | (row) Hareket fişi | `VIEWRECEIPT` | RowAction | `inventory.stock.read` | no |
-| Lot Hareket Geçmişi (fiş) | Stok Defteri'nde aç | `RECEIPTINLEDGER` | modal | `inventory.stock.read` | no |
+| Lot Hareket Geçmişi | (row) Hareket fişi | `VIEWRECEIPT` | RowAction | `trace.lots.read` (FU-0174-CAT-01) | no |
+| Lot Hareket Geçmişi (fiş) | Stok Defteri'nde aç | `RECEIPTINLEDGER` | modal | `trace.lots.read` (FU-0174-CAT-01) | no |
 | İzlenebilirlik | Lot Detayı | `TRACELOTDETAIL` | detail | `trace.lots.read` | no |
 | Aktarma | Tüm önerileri uygula | `APPLYALLSUGGESTIONS` | Toolbar | `trace.lots.migrate` | no |
 | Aktarma | Aktarımı Onayla | `CONFIRMMIGRATION` | Toolbar | `trace.lots.migrate` | **yes** |
@@ -849,7 +849,7 @@ Same mechanism in reverse for CT-D5 `NEWLOTQUICK` (a `trace.*` key on an INVENTO
 `trace.lots.create` to `inventory-ledger`): P3 must not add it to the INVENTORY-LEDGER manifest until the Platform guard
 exists — CT decision before P3.
 
-### WP-0174-P2 (agent result, pending CT, 2026-10-06) — ledger integration + FU-0174-CAT-01
+### WP-0174-P2 (CT-ACCEPTED 2026-10-06) — ledger integration + FU-0174-CAT-01
 
 Commits `8f41b771b` (FU-0174-CAT-01: LOT-SERIAL-TRACKING declares only `trace.*`; the ledger-opening actions carry
 `trace.lots.read`; namespace test for both manifests) · `02a7fa54e` (in-process `ILotMasterClient` = `InventoryLotDirectory`,
@@ -865,6 +865,17 @@ owner PIDs unchanged. Slice assumptions ASSUMPTION-0174-P2-01…11. Open for the
 fast-forward (CAT-01), live end-to-end, §14 table text for the three re-keyed actions, reservation `availableAfter` now
 also lot-aware, FU-0174-INT-01 (the INT gateway test trips `DocsPathGuardTests`, pre-existing). Evidence
 `docs/records/audits/2026-10/mod-0174-p2-evidence-2026-10-06.md`.
+**CT acceptance (K13):** re-measured in a worktree at `f6ef16913` — 507/507. Ledger files touched = the pack §5 hooks
+(validator, posting repository, availability + `SkuPositionRebuilder`, error codes) + the four K-1 files the owner
+approved in the agent session (`PostMovementHandler`, `LedgerPosting`, `LedgerPostingOutcome`, `LedgerPostingResult`).
+CT sabotage: date-based expiry check disabled (`LotPostingRules.cs:62`) → 3 red, restored, empty diff. CT decisions:
+§14 rows `OPENINLEDGER` / `VIEWRECEIPT` / `RECEIPTINLEDGER` re-keyed to `trace.lots.read` (fixed above); reservation
+`availableAfter` being lot-aware is the same CT-D1 rule — accepted, the INVENTORY-BUNDLE note on `AvailabilityView`
+covers the meaning. **FU-0174-INT-01 closed (CT break-glass, SOP §3.1):** the INT gateway test hard-coded a docs
+sub-folder; it now finds `trace.openapi.yaml` by name under `docs/` (same as the Inventory `RepoPaths`) — gateway tests
+88/89 (only the known FU-INT1-01), repo architecture tests 18/18. The CT missed this in the INT acceptance (repo
+architecture tests were not run) — lesson: run them at every acceptance that adds a test file. Live checks after the
+fast-forward follow below.
 
 ## 20. Follow-up Items
 
