@@ -80,6 +80,9 @@ public sealed class LskuIdentityWorkflowOperation : EntityBase
     // needing_a_person counts it past a threshold. A document without the field ages from its last update.
     public long? WithdrawalUnansweredSinceUtcTicksV1 { get; set; }
     public string? LastFailureCode { get; set; }
+    // LSKU FIX4 item 6: while LastFailureCode says the retry limit was reached, the cause that kept failing is kept
+    // here — an interactive repeat updates the cause, never the limit (one Error line, a steady gauge).
+    public string? RetryLimitCauseCode { get; set; }
     public string? LeaseOwner { get; set; }
     public long? LeaseUntilUtcTicksV1 { get; set; }
     public long LeaseGeneration { get; set; }

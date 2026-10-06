@@ -104,7 +104,7 @@ public sealed class LskuIdentityWorkflowRecoveryRunner(
                             if (newlyStuck)
                                 logger.LogError("{Flow} operation {OperationId} of tenant {TenantId} is stuck ({ResultCode}); the cause before: {CauseCode}.",
                                     Flow, operation.OperationId, tenantId, Safe(after!.LastFailureCode ?? result.ErrorCode),
-                                    Safe(operation.LastFailureCode ?? "NONE"));
+                                    Safe(after.RetryLimitCauseCode ?? operation.LastFailureCode ?? "NONE"));
                         }
                         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
                         catch (Exception exception)

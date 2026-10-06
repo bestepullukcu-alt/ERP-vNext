@@ -85,7 +85,7 @@ public sealed class CancelLskuDraftHandler(
             var unfinished = await identityOperations.GetUnfinishedForLskuAsync(lsku.Id, cancellationToken);
             foreach (var operation in unfinished)
             {
-                var closed = await identityProcessor.CloseForDraftCancelAsync(operation,
+                var closed = await identityProcessor.CloseForDraftCancelAsync(operation, actor,
                     $"draft-cancel-{actor:N}", identityExecution.LeaseDuration, cancellationToken);
                 if (!closed.Closed) return Fail(closed.Code ?? "LSKU_SUBMIT_IN_FLIGHT", closed.Status);
                 expectedVersion++;

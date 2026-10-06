@@ -230,13 +230,18 @@ public sealed class LskuRepository : ILskuRepository
 
         try
         {
-            // A write conflict that is NOT the code being burned (another insert of the same market or key still in
-            // its transaction) is retried: the second attempt meets the committed row as an ordinary duplicate key.
-            LskuCreateResult inserted;
-            var attempt = 0;
-            do inserted = await InsertBoundToLiveCodeAsync(lsku, reservationFilter, cancellationToken);
-            while (inserted.ErrorCode == InsertConflictRetry && ++attempt < 3);
-            return inserted.ErrorCode == InsertConflictRetry ? new(false, null, "LSKU_DUPLICATE_CONFLICT") : inserted;
+            // A transient transaction error that is NOT the code being burned (another insert of the same market or key
+            // still in its transaction, a failover, a network cut) is retried with backoff (the FirstGsku ReserveAttempts
+            // shape): the next attempt meets a committed row as an ordinary duplicate key (a definite refusal). Running
+            // out of attempts is NOT a refusal — LSKU FIX4 item 1: "a wait never burns" — the outcome stays ambiguous
+            // (202, the code and the admission kept for the same key's repeat).
+            for (var attempt = 1; ; attempt++)
+            {
+                var inserted = await InsertBoundToLiveCodeAsync(lsku, reservationFilter, cancellationToken);
+                if (inserted.ErrorCode != InsertConflictRetry) return inserted;
+                if (attempt >= InsertAttempts) return AmbiguousWrite();
+                await Task.Delay(TimeSpan.FromMilliseconds(50 << attempt), cancellationToken);
+            }
         }
         catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
@@ -332,6 +337,7 @@ public sealed class LskuRepository : ILskuRepository
     }
 
     private const string InsertConflictRetry = "LSKU_INSERT_CONFLICT_RETRY";
+    internal const int InsertAttempts = 4;
 
     public Task<LskuLifecycleWriteResult> SubmitIdentityAsync(
         Guid id,

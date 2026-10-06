@@ -26,7 +26,7 @@ namespace Diten.MdmService.Api.Tests;
 /// client produces (FakePlatformCodeGuardTests holds every fed code to Platform's own).
 /// </summary>
 [Collection(MdmHttpCollection.Name)]
-public sealed class LskuFix3HttpTests(MdmHttpHost host)
+public sealed partial class LskuFix3HttpTests(MdmHttpHost host)
 {
     private static readonly string[] MakerPermissions =
     [

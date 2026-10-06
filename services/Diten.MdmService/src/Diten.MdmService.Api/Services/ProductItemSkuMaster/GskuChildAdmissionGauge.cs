@@ -63,6 +63,9 @@ public sealed class GskuChildAdmissionGaugeOptions
     public const string SectionName = "GskuChildAdmissionGauge";
     // A read of one count: on by default, so the gauge does not depend on any recovery worker being switched on.
     public bool Enabled { get; set; } = true;
+    // LSKU FIX4 item 12: the LSKU identity gauges (flow LSKU_IDENTITY) have their own switch — turning the admission
+    // count off no longer silences them. The worker runs while either is on.
+    public bool LskuIdentityEnabled { get; set; } = true;
     public int IntervalSeconds { get; set; } = 300;
 }
 
@@ -72,7 +75,9 @@ public sealed class GskuChildAdmissionGaugeWorker(GskuChildAdmissionGauge gauge,
 {
     public async Task RunOnceAsync(CancellationToken ct)
     {
-        if (identityGauge is not null) await identityGauge.RecordAsync(ct);
+        var settings = options.Value;
+        if (identityGauge is not null && settings.LskuIdentityEnabled) await identityGauge.RecordAsync(ct);
+        if (!settings.Enabled) return;
         try { await gauge.RecordAsync(ct); }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         catch (Exception exception)
@@ -85,7 +90,7 @@ public sealed class GskuChildAdmissionGaugeWorker(GskuChildAdmissionGauge gauge,
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
         var settings = options.Value;
-        if (!settings.Enabled) return;
+        if (!settings.Enabled && !settings.LskuIdentityEnabled) return;
         var interval = TimeSpan.FromSeconds(Math.Clamp(settings.IntervalSeconds, 30, 3600));
         while (!ct.IsCancellationRequested)
         {

@@ -281,6 +281,11 @@ Product's own `ChildCreationAdmissions` (GSKU creation under a GP) are not count
 
 *LSKU gauges (FIX3 items 2, 12, 14, 15):* the same worker also records the `LSKU_IDENTITY` flow, so it is counted even
 while the identity worker is off; `mdm.product_identity.recovery.count_failed{flow}` = 1 says the last count failed.
+Each count has its own switch (FIX4 item 12): `GskuChildAdmissionGauge:Enabled` (the admission count) and
+`GskuChildAdmissionGauge:LskuIdentityEnabled` (the `LSKU_IDENTITY` gauges), both default on; the worker runs while
+either is on, so turning the admission count off no longer silences the LSKU identity gauges. A wait at its limit is
+logged as an Error ONCE, by the recovery runner when the operation newly becomes stuck (FIX4 item 6); a repeat by the
+maker keeps the limit and records the current cause in `RetryLimitCauseCode`.
 
 | gauge (`flow=LSKU_IDENTITY`) | counts | what to do |
 |---|---|---|
@@ -292,6 +297,14 @@ never released while a live row or a live code can still become the child. Past 
 code that can no longer become one — consumed for an identity whose row never came, bound to a cancelled row, or
 reserved and never consumed — and only then releases the admission, with an audit intent on the GSKU in the same
 write. A refused burn keeps the admission and is reported (`LSKU_ADMISSION_REPAIR_BURN_REFUSED:<code>`).
+
+**A burn needs a replica set (FIX4 item 11).** Burning a code is one Mongo transaction (it reads "no live row bound" and
+burns in the same transaction). On a standalone `mongod` every burn is refused with
+`CODE_RESERVATION_BURN_TRANSACTION_UNAVAILABLE` (503): an LSKU draft cancel deletes the draft and answers 503 (its code
+stays consumed, never burned), and a creation's repeat or this repair cannot burn either — the admission stays, counted.
+This is the GSKU S5 stance (no transaction, no irreversible step); run MDM on a replica set (a single-node one is
+enough). Only the LSKU kind can be burned today: an FG / GSKU / GP code burn is refused with
+`CODE_RESERVATION_BURN_KIND_NOT_TRANSACTIONAL` until that insert writes its reservation inside its own transaction.
 
 - **Tracked** (not secret): the three template codes and the identity reason code in MDM's
   `appsettings.Development.json`, and Platform's three `TrustedWorkflowStartAuthorization` entries for the default

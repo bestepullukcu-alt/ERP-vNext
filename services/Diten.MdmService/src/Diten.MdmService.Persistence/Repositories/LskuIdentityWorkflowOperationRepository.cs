@@ -369,6 +369,7 @@ public sealed class LskuIdentityWorkflowOperationRepository
             .Set(item => item.RecoveryDisposition, mutation.RecoveryDisposition)
             .Set(item => item.NextAttemptAtUtcTicksV1, mutation.NextAttemptAtUtcTicksV1)
             .Set(item => item.LastFailureCode, mutation.LastFailureCode)
+            .Set(item => item.RetryLimitCauseCode, mutation.RetryLimitCauseCode)
             .Set(item => item.UpdatedAtUtcTicksV1, mutation.UpdatedAtUtcTicks)
             .Set(item => item.UpdatedAt, new DateTimeOffset(mutation.UpdatedAtUtcTicks, TimeSpan.Zero))
             .Inc(item => item.Version, 1);
@@ -487,7 +488,7 @@ public sealed class LskuIdentityWorkflowOperationRepository
         ArgumentNullException.ThrowIfNull(auditIntent);
         if (claim.TenantId != _tenantId || claim.OperationId != operation.OperationId
             || claim.OperationFingerprint != operation.OperationFingerprint
-            || claim.Checkpoint != LskuIdentityWorkflowCheckpoint.WithdrawalObserved
+            || !WithdrawalWriterFrom.Contains(claim.Checkpoint)
             || updatedAtUtcTicks <= 0 || operation.WithdrawalExpectedLskuVersion is not > 0
             || operation.WithdrawalCommandId is not { } commandId || commandId == Guid.Empty
             || cancellationEvidence.RequesterSubjectId != operation.MakerSubjectId
@@ -542,7 +543,7 @@ public sealed class LskuIdentityWorkflowOperationRepository
                 & Builders<LskuIdentityWorkflowOperation>.Filter.Gt(x => x.LeaseUntilUtcTicksV1, updatedAtUtcTicks);
             var operationResult = await _operations.UpdateOneAsync(session, operationFilter,
                 Builders<LskuIdentityWorkflowOperation>.Update
-                    .Set(x => x.Checkpoint, LskuIdentityWorkflowCheckpoint.WithdrawalApplied)
+                    .Set(x => x.Checkpoint, WithdrawalWriterEnd)
                     .Set(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.None)
                     .Set(x => x.NextAttemptAtUtcTicksV1, null).Set(x => x.LastFailureCode, null)
                     .Set(x => x.LeaseOwner, null).Set(x => x.LeaseUntilUtcTicksV1, null)
@@ -588,7 +589,7 @@ public sealed class LskuIdentityWorkflowOperationRepository
                 & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.Checkpoint,
                     LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart)
                 & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.LastFailureCode,
-                    "LSKU_IDENTITY_SUBMIT_CLOSED_BY_DRAFT_CANCEL"))
+                    Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.LskuIdentityWorkflowProcessor.ClosedByDraftCancel))
             .FirstOrDefaultAsync(cancellationToken);
 
     public Task<bool> HasUnfinishedForLskuAsync(Guid lskuId, CancellationToken cancellationToken = default) =>
@@ -603,19 +604,32 @@ public sealed class LskuIdentityWorkflowOperationRepository
         LocalAuditIntent auditIntent, long updatedAtUtcTicks, CancellationToken cancellationToken = default) =>
         EndWithDraftAsync(claim, operation, reasonCode, auditIntent, updatedAtUtcTicks,
             ProductAuditOperation.LskuIdentitySubmitAbandoned, operation.ExpectedLskuVersion,
-            ProductIdentityLifecycleStatus.Draft, LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
-            [LskuIdentityWorkflowCheckpoint.StartOutcomeUnknown, LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
-                LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired], cancellationToken);
+            ProductIdentityLifecycleStatus.Draft, AbandonWriterEnd, AbandonWriterFrom, cancellationToken);
 
     public Task<LskuIdentityWithdrawalWriteResult> ApplyDecisionNotApplicableAsync(
         LskuIdentityWorkflowClaim claim, LskuIdentityWorkflowOperation operation, string reasonCode,
         LocalAuditIntent auditIntent, long updatedAtUtcTicks, CancellationToken cancellationToken = default) =>
         EndWithDraftAsync(claim, operation, reasonCode, auditIntent, updatedAtUtcTicks,
             ProductAuditOperation.LskuIdentityDecisionNotApplicable, operation.ExpectedLskuVersion + 1,
-            ProductIdentityLifecycleStatus.PendingIdentityApproval, LskuIdentityWorkflowCheckpoint.DecisionNotApplicable,
-            [LskuIdentityWorkflowCheckpoint.AwaitingDecision, LskuIdentityWorkflowCheckpoint.DecisionObserved,
-                LskuIdentityWorkflowCheckpoint.ApprovalValidated],
+            ProductIdentityLifecycleStatus.PendingIdentityApproval, NotApplicableWriterEnd, NotApplicableWriterFrom,
             cancellationToken);
+
+    /*
+     * LSKU FIX4 item 4: the store's OWN multi-step writers (they write their end checkpoint directly, without
+     * AdvanceAsync's IsAllowedTransition) — their from-lists and ends are these constants, read by the writers above
+     * AND by the transition matrix test, so narrowing a writer here is seen by the matrix, never copied past it.
+     */
+    public static readonly IReadOnlyList<LskuIdentityWorkflowCheckpoint> WithdrawalWriterFrom =
+        [LskuIdentityWorkflowCheckpoint.WithdrawalObserved];
+    public const LskuIdentityWorkflowCheckpoint WithdrawalWriterEnd = LskuIdentityWorkflowCheckpoint.WithdrawalApplied;
+    public static readonly IReadOnlyList<LskuIdentityWorkflowCheckpoint> AbandonWriterFrom =
+        [LskuIdentityWorkflowCheckpoint.StartOutcomeUnknown, LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+            LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired];
+    public const LskuIdentityWorkflowCheckpoint AbandonWriterEnd = LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart;
+    public static readonly IReadOnlyList<LskuIdentityWorkflowCheckpoint> NotApplicableWriterFrom =
+        [LskuIdentityWorkflowCheckpoint.AwaitingDecision, LskuIdentityWorkflowCheckpoint.DecisionObserved,
+            LskuIdentityWorkflowCheckpoint.ApprovalValidated];
+    public const LskuIdentityWorkflowCheckpoint NotApplicableWriterEnd = LskuIdentityWorkflowCheckpoint.DecisionNotApplicable;
 
     /*
      * LSKU FIX1 B3 / B5: an operation that ends with its LSKU a draft — the LSKU write (status Draft, version + 1, the
@@ -627,7 +641,7 @@ public sealed class LskuIdentityWorkflowOperationRepository
         LskuIdentityWorkflowClaim claim, LskuIdentityWorkflowOperation operation, string reasonCode,
         LocalAuditIntent auditIntent, long updatedAtUtcTicks, ProductAuditOperation auditOperation,
         int expectedLskuVersion, ProductIdentityLifecycleStatus sourceStatus,
-        LskuIdentityWorkflowCheckpoint endCheckpoint, LskuIdentityWorkflowCheckpoint[] fromCheckpoints,
+        LskuIdentityWorkflowCheckpoint endCheckpoint, IReadOnlyList<LskuIdentityWorkflowCheckpoint> fromCheckpoints,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(operation);

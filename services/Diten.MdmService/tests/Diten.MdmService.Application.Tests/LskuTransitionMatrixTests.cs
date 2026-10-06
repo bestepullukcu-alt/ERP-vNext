@@ -22,8 +22,11 @@ namespace Diten.MdmService.Application.Tests;
  * meet × with and without the maker's delegated token (and, for the identity flow, with and without withdrawal fields).
  * A recording fake store notes every (claimed checkpoint → next checkpoint) the processor asks it to write — including
  * the identity store's own multi-step writers (AbandonBeforeStartAsync, ApplyDecisionNotApplicableAsync,
- * ApplyWithdrawalAsync) — and applies the REAL store's rules to each write (the table, the coherence rule, never
- * "manual + retryable"): a write the store would refuse is a red test, not a silent false.
+ * ApplyWithdrawalAsync) — and applies the real store's TRANSITION rules to each write (the table, the coherence rule,
+ * never "manual + retryable", and — LSKU FIX4 item 4 — the multi-step writers' from-lists and ends read from the store's
+ * own constants, never copied): a write the store would refuse is a red test, not a silent false. NOT modelled: the
+ * Mongo filters of AdvanceAsync's update (lease owner / generation / expiry, fingerprint, version) — the fake answers
+ * ownership by its own claim check (Owns), so a lease or concurrency refusal is measured by the HTTP tests, not here.
  *
  * The assertion: the recorded pairs (a != b) are EXACTLY the pairs the store's table allows (a != b). A pair the table
  * allows that no processor path writes is dead permission; a pair the processor writes that the table lacks is a refused
@@ -304,7 +307,7 @@ public sealed class LskuTransitionMatrixTests
                     WithdrawComment, Token, Lease, Retry);
                 break;
             case IdentityEntry.DraftCancel:
-                await processor.CloseForDraftCancelAsync(world.Store.Read(), "draft-cancel", Lease, default);
+                await processor.CloseForDraftCancelAsync(world.Store.Read(), Guid.NewGuid(), "draft-cancel", Lease, default);
                 break;
         }
     }
@@ -869,8 +872,8 @@ public sealed class LskuTransitionMatrixTests
         public Task<LskuIdentityWithdrawalWriteResult> ApplyWithdrawalAsync(LskuIdentityWorkflowClaim claim,
             LskuIdentityWorkflowOperation operation, DomainCancellation cancellationEvidence, LocalAuditIntent auditIntent,
             long updatedAtUtcTicks, CancellationToken cancellationToken = default) =>
-            EndWrite(claim, updatedAtUtcTicks, LskuIdentityWorkflowCheckpoint.WithdrawalApplied,
-                [LskuIdentityWorkflowCheckpoint.WithdrawalObserved], world.Answers.WithdrawalWrite, null, () =>
+            EndWrite(claim, updatedAtUtcTicks, IdentityStoreRules.WithdrawalWriterEnd,
+                IdentityStoreRules.WithdrawalWriterFrom, world.Answers.WithdrawalWrite, null, () =>
                 {
                     world.Lsku.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
                     world.Lsku.IdentityWorkflowBinding!.CancellationEvidence = cancellationEvidence;
@@ -882,11 +885,8 @@ public sealed class LskuTransitionMatrixTests
             LskuIdentityWorkflowOperation operation, string reasonCode, LocalAuditIntent auditIntent,
             long updatedAtUtcTicks, CancellationToken cancellationToken = default) =>
             // FIX3 item 4 (the real store's filter): the end is written only on the start-sent mark it was decided on.
-            EndWrite(claim, updatedAtUtcTicks, LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
-                [
-                    LskuIdentityWorkflowCheckpoint.StartOutcomeUnknown, LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
-                    LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
-                ],
+            EndWrite(claim, updatedAtUtcTicks, IdentityStoreRules.AbandonWriterEnd,
+                IdentityStoreRules.AbandonWriterFrom,
                 Stored.LastStartSentAtUtcTicksV1 != operation.LastStartSentAtUtcTicksV1
                     ? "LSKU_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT"
                     : world.Answers.AbandonWrite,
@@ -900,11 +900,8 @@ public sealed class LskuTransitionMatrixTests
         public Task<LskuIdentityWithdrawalWriteResult> ApplyDecisionNotApplicableAsync(LskuIdentityWorkflowClaim claim,
             LskuIdentityWorkflowOperation operation, string reasonCode, LocalAuditIntent auditIntent,
             long updatedAtUtcTicks, CancellationToken cancellationToken = default) =>
-            EndWrite(claim, updatedAtUtcTicks, LskuIdentityWorkflowCheckpoint.DecisionNotApplicable,
-                [
-                    LskuIdentityWorkflowCheckpoint.AwaitingDecision, LskuIdentityWorkflowCheckpoint.DecisionObserved,
-                    LskuIdentityWorkflowCheckpoint.ApprovalValidated
-                ],
+            EndWrite(claim, updatedAtUtcTicks, IdentityStoreRules.NotApplicableWriterEnd,
+                IdentityStoreRules.NotApplicableWriterFrom,
                 world.Answers.NotApplicableWrite, reasonCode, () =>
                 {
                     world.Lsku.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
@@ -915,7 +912,7 @@ public sealed class LskuTransitionMatrixTests
         // The store's own multi-step writers: the pair (claimed checkpoint → its end) is recorded and held to the
         // table and to the writer's own from-list, then the configured outcome is answered.
         private Task<LskuIdentityWithdrawalWriteResult> EndWrite(LskuIdentityWorkflowClaim claim, long updatedAt,
-            LskuIdentityWorkflowCheckpoint end, LskuIdentityWorkflowCheckpoint[] from, string? failure,
+            LskuIdentityWorkflowCheckpoint end, IReadOnlyList<LskuIdentityWorkflowCheckpoint> from, string? failure,
             string? reasonCode, Action lskuWrite)
         {
             census.Record(claim.Checkpoint, end);

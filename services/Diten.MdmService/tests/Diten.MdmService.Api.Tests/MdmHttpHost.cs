@@ -91,6 +91,9 @@ public sealed class MdmHttpHost : IAsyncLifetime
     // LSKU FIX1: the verified market answers (create and approval time).
     public FakeMarkets Markets { get; } = new();
 
+    /// <summary>Every log entry the host writes (level, category, rendered message).</summary>
+    public LogSink Logs { get; } = new();
+
     // LSKU FIX3 item 7: the hosted services the real Program registered (before the host removes them).
     public List<Type> RegisteredHostedServices { get; } = [];
     public string MongoConnectionString => _runner?.ConnectionString ?? throw NotStarted();
@@ -108,7 +111,9 @@ public sealed class MdmHttpHost : IAsyncLifetime
             _runner = MongoRunner.Run(new MongoRunnerOptions
             {
                 BinaryDirectory = ResolveLocalMongoBinaryDirectory(),
-                UseSingleNodeReplicaSet = true
+                UseSingleNodeReplicaSet = true,
+                // LSKU FIX4 item 1: failCommand failpoints (configureFailPoint) on this throwaway mongod only.
+                AdditionalArguments = "--setParameter enableTestCommands=1"
             });
             if (new MongoUrl(_runner.ConnectionString).Server.Port == SharedMongoPort)
                 throw new InvalidOperationException("The throwaway mongod bound the SHARED port 27017. Refusing to run.");
@@ -221,6 +226,8 @@ public sealed class MdmHttpHost : IAsyncLifetime
                     services.AddSingleton<IVerifiedMarketReferenceResolver>(Markets);
                     services.RemoveAll<IWorkflowVerifiedMarketReferenceResolver>();
                     services.AddSingleton<IWorkflowVerifiedMarketReferenceResolver>(Markets);
+                    // LSKU FIX4 item 6: what the host logs, for "said once" assertions.
+                    services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider>(Logs);
                 });
             });
             _ = _factory.Server;
@@ -345,4 +352,24 @@ internal static class Envelope
             : null;
 
     public static JsonContent Json(object value) => JsonContent.Create(value);
+}
+
+public sealed class LogSink : Microsoft.Extensions.Logging.ILoggerProvider
+{
+    public System.Collections.Concurrent.ConcurrentQueue<(Microsoft.Extensions.Logging.LogLevel Level, string Category, string Message)> Entries { get; } = new();
+
+    public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName) => new Sink(this, categoryName);
+
+    public void Dispose() { }
+
+    private sealed class Sink(LogSink owner, string category) : Microsoft.Extensions.Logging.ILogger
+    {
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => logLevel >= Microsoft.Extensions.Logging.LogLevel.Information;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId,
+            TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (IsEnabled(logLevel)) owner.Entries.Enqueue((logLevel, category, formatter(state, exception)));
+        }
+    }
 }
