@@ -17,4 +17,18 @@ public sealed class ChildCreationAdmissionCensusRepository(IMongoDatabase databa
             .Project(x => x.ChildCreationAdmissions).ToListAsync(cancellationToken);
         return holders.Sum(list => (long)list.Count(x => x.AcquiredAtUtc < acquiredBeforeUtc));
     }
+
+    // FG FIX1 item 1: tenant-free like the count above; the disposition is the same proof the GSKU blocker uses.
+    public async Task<long> CountPendingFinishedGoodCancellationsAsync(DateTimeOffset requestedBeforeUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var candidates = await database.GetCollection<FinishedGood>("mdm_finished_goods")
+            .Find(Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
+                  & Builders<FinishedGood>.Filter.Ne(x => x.DraftCancellation, null)
+                  & Builders<FinishedGood>.Filter.Lt(x => x.DraftCancellation!.RequestedAtUtc, requestedBeforeUtc))
+            .ToListAsync(cancellationToken);
+        return candidates.LongCount(fg => Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle
+            .FinishedGoodDraftCancellationProof.Disposition(fg) != Diten.MdmService.Domain.ValueObjects
+            .FinishedGoodCancellationDisposition.Cancelled);
+    }
 }

@@ -96,6 +96,15 @@ public sealed class CreateFinishedGoodDraftHandler
                 return replayScopeFailure;
             }
 
+            // FG FIX1 item 1 (s21.5): the original create key of a cancelled Draft never comes back as a new Draft —
+            // a terminal conflict naming the cancellation (pending its audit or finished alike).
+            if (replay.DraftCancellation is not null)
+            {
+                return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
+                    "FINISHED_GOOD_DRAFT_CANCELLED",
+                    409);
+            }
+
             if (replay.IsDeleted)
             {
                 return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(

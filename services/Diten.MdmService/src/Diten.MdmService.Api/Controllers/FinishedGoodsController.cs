@@ -1,7 +1,11 @@
 using Diten.MdmService.Application.Features.ProductItemSkuMaster;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
 using Diten.MdmService.Infrastructure.Authorization;
+using Diten.Shared.Core;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -42,4 +46,33 @@ public sealed class FinishedGoodsController : CustomBaseController
         [FromBody] ProductItemSkuMasterModels.CreateFinishedGoodDraftRequest request,
         CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new CreateFinishedGoodDraftCommand(request), cancellationToken));
+
+    // FG FIX1 item 1 (BL-559; MOD-0290 s21.2 route): the audited Draft cancellation. The operation id is the
+    // Idempotency-Key; the same key again is a replay (200, isReplay).
+    [HttpPost("{id:guid}/cancel-draft")]
+    [HasPermission(FinishedGoodDraftCancellationPermissions.CancelDraft)]
+    public async Task<IActionResult> CancelDraft(
+        Guid id,
+        [FromBody] CancelFinishedGoodDraftApiRequest request,
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        if (request is null || request.ExpectedVersion is null || request.UnmappedFields is { Count: > 0 })
+            return CreateActionResultInstance(Response<NoContent>.Fail("FINISHED_GOOD_DRAFT_CANCEL_INVALID", 400));
+        if (idempotencyKey is not { Length: 36 } || !Guid.TryParseExact(idempotencyKey, "D", out var operationId)
+            || operationId == Guid.Empty)
+            return CreateActionResultInstance(Response<NoContent>.Fail("IDEMPOTENCY_KEY_INVALID", 400));
+        return CreateActionResultInstance(await _mediator.Send(
+            new CancelFinishedGoodDraftCommand(id, request.ExpectedVersion.Value, operationId, request.ReasonCode),
+            cancellationToken));
+    }
+
+    public sealed class CancelFinishedGoodDraftApiRequest
+    {
+        public int? ExpectedVersion { get; init; }
+        public string ReasonCode { get; init; } = string.Empty;
+
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
+    }
 }

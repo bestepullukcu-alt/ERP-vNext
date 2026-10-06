@@ -440,6 +440,62 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
             ? FinishedGoodCreationAttemptResult.Bound(attempt)
             : FinishedGoodCreationAttemptResult.Conflict(attempt);
 
+    // FG FIX1 item 1: the audited Draft cancellation. One CAS: Draft, the expected version, no cancellation yet, room
+    // for one more intent — then the decision and its intent go in together and the version moves; the FG is retained.
+    // The same operation again is a replay (the same decision) or a conflict (another one); nothing is ever deleted.
+    public async Task<FinishedGoodDraftCancelResult> CancelDraftAsync(
+        Guid id, int expectedVersion, FinishedGoodDraftCancellation cancellation, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(cancellation);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        if (id == Guid.Empty || expectedVersion < 0 || cancellation.OperationId == Guid.Empty
+            || !Fingerprint(cancellation.Fingerprint) || cancellation.RequesterSubjectId == Guid.Empty
+            || !Exact(cancellation.ReasonCode, 128) || cancellation.BaseVersion != expectedVersion
+            || cancellation.IntentId != auditIntent.IntentId || cancellation.IdempotencyKey != auditIntent.IdempotencyKey
+            || cancellation.EvidenceHash != auditIntent.EvidenceHash
+            || auditIntent.Operation != ProductAuditOperation.FinishedGoodDraftCancelled
+            || auditIntent.AggregateType != AuditAggregateType.FinishedGood || auditIntent.AggregateId != id
+            || auditIntent.TenantId != _tenantId || auditIntent.PreVersion != expectedVersion
+            || auditIntent.PostVersion != expectedVersion + 1)
+        {
+            return new(false, null, "FINISHED_GOOD_DRAFT_CANCEL_CONTRACT_INVALID");
+        }
+
+        // Not Eq(IsDeleted, false) / Eq(DraftCancellation, null) on purpose: a document written before a field existed
+        // has no such field — Ne(true) and Eq(null) both match a missing field (FG FIX1 legacy rule).
+        var target = TenantIncludingDeletedFilter
+            & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
+            & Builders<FinishedGood>.Filter.Eq(x => x.Id, id);
+        var filter = target
+            & Builders<FinishedGood>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<FinishedGood>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
+            & Builders<FinishedGood>.Filter.Eq(x => x.DraftCancellation, null)
+            & Builders<FinishedGood>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var update = Builders<FinishedGood>.Update
+            .Set(x => x.DraftCancellation, cancellation)
+            .Push(x => x.AuditIntents, auditIntent)
+            .Set(x => x.UpdatedAt, auditIntent.TimestampUtc)
+            .Inc(x => x.Version, 1);
+        var written = await _finishedGoods.FindOneAndUpdateAsync(filter, update,
+            new FindOneAndUpdateOptions<FinishedGood> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (written is not null) return new(true, written);
+
+        var current = await _finishedGoods.Find(target).FirstOrDefaultAsync(cancellationToken);
+        if (current is null) return new(false, null, "FINISHED_GOOD_NOT_FOUND");
+        if (current.DraftCancellation is { } existing)
+            return existing.OperationId == cancellation.OperationId
+                ? existing.Fingerprint == cancellation.Fingerprint
+                    ? new(true, current, IsReplay: true)
+                    : new(false, current, "IDEMPOTENCY_KEY_CONFLICT")
+                : new(false, current, "FINISHED_GOOD_DRAFT_ALREADY_CANCELLED");
+        return new(false, current,
+            current.LifecycleStatus != ProductIdentityLifecycleStatus.Draft ? "FINISHED_GOOD_NOT_A_DRAFT"
+            : current.Version != expectedVersion ? "CONCURRENCY_CONFLICT"
+            : current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate ? "AUDIT_INTENT_CAPACITY_REACHED"
+            : "FINISHED_GOOD_DRAFT_CANCEL_CONFLICT");
+    }
+
     private static bool Exact(string? value, int maximum) =>
         value is { Length: > 0 } && value.Length <= maximum
         && value == value.Trim() && !value.Any(char.IsControl);

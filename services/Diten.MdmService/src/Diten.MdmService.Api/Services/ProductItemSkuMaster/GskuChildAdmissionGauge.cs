@@ -28,6 +28,23 @@ public sealed class GskuChildAdmissionGauge(IServiceScopeFactory scopes, TimePro
                 Flow, stale, (int)StaleAfter.TotalMinutes);
         return stale;
     }
+
+    // FG FIX1 item 1 (principle B): a Draft-FG cancellation still pending its audit receipt after the cutoff blocks its
+    // GSKU — counted under its own flow and said once per run, so a delivery that never comes is never invisible.
+    public const string FinishedGoodCancellationFlow = "FINISHED_GOOD_DRAFT_CANCELLATION";
+
+    public async Task<long> RecordFinishedGoodCancellationsAsync(CancellationToken ct)
+    {
+        long pending;
+        await using (var scope = scopes.CreateAsyncScope())
+            pending = await scope.ServiceProvider.GetRequiredService<IChildCreationAdmissionCensus>()
+                .CountPendingFinishedGoodCancellationsAsync(clock.GetUtcNow().ToUniversalTime() - StaleAfter, ct);
+        metrics?.Record(FinishedGoodCancellationFlow, pending);
+        if (pending > 0)
+            logger.LogWarning("{Flow}: {Count} Draft Finished Good cancellations have waited more than {Minutes} minutes for their audit receipt; each keeps its GSKU blocked until the audit delivery finishes it.",
+                FinishedGoodCancellationFlow, pending, (int)StaleAfter.TotalMinutes);
+        return pending;
+    }
 }
 
 public sealed class GskuChildAdmissionGaugeOptions
@@ -49,6 +66,13 @@ public sealed class GskuChildAdmissionGaugeWorker(GskuChildAdmissionGauge gauge,
         {
             logger.LogError("{Flow}: the admission count failed with {ExceptionType}.", GskuChildAdmissionGauge.Flow,
                 exception.GetType().Name);
+        }
+        try { await gauge.RecordFinishedGoodCancellationsAsync(ct); }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (Exception exception)
+        {
+            logger.LogError("{Flow}: the cancellation count failed with {ExceptionType}.",
+                GskuChildAdmissionGauge.FinishedGoodCancellationFlow, exception.GetType().Name);
         }
     }
 

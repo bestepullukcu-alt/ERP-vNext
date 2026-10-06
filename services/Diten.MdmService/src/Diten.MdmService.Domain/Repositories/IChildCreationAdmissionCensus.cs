@@ -9,4 +9,9 @@ namespace Diten.MdmService.Domain.Repositories;
 public interface IChildCreationAdmissionCensus
 {
     Task<long> CountStaleAsync(DateTimeOffset acquiredBeforeUtc, CancellationToken cancellationToken = default);
+
+    // FG FIX1 item 1 (principle B): audited Draft-FG cancellations requested before the cutoff and still pending their
+    // audit receipt — each keeps its parent GSKU blocked until the G4 delivery finishes it; counted, never hidden.
+    Task<long> CountPendingFinishedGoodCancellationsAsync(DateTimeOffset requestedBeforeUtc,
+        CancellationToken cancellationToken = default) => Task.FromResult(0L);
 }

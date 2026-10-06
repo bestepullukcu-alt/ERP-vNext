@@ -82,6 +82,9 @@ public sealed class GetFinishedGoodByIdHandler
             finishedGood.LifecycleStatus,
             finishedGood.Version,
             finishedGood.CreatedAt,
-            finishedGood.UpdatedAt));
+            finishedGood.UpdatedAt)
+        {
+            CancellationDisposition = Lifecycle.FinishedGoodDraftCancellationProof.Disposition(finishedGood)
+        });
     }
 }

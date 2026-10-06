@@ -1,4 +1,5 @@
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.ValueObjects;
 
 namespace Diten.MdmService.Domain.Repositories;
 
@@ -37,7 +38,19 @@ public interface IFinishedGoodRepository
         FinishedGood finishedGood, string admissionFingerprint,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
+
+    // FG FIX1 item 1: the audited Draft cancellation — one CAS writes the decision and its intent; the FG is retained.
+    Task<FinishedGoodDraftCancelResult> CancelDraftAsync(
+        Guid id, int expectedVersion, FinishedGoodDraftCancellation cancellation, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FINISHED_GOOD_DRAFT_CANCEL_NOT_IMPLEMENTED");
 }
+
+public sealed record FinishedGoodDraftCancelResult(
+    bool Succeeded,
+    FinishedGood? FinishedGood,
+    string? ErrorCode = null,
+    bool IsReplay = false);
 
 public sealed record FinishedGoodPage(IReadOnlyList<FinishedGood> Items, long TotalCount);
 public sealed record FinishedGoodCreateResult(

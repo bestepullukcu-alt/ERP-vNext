@@ -945,11 +945,22 @@ public sealed class GskuRepository : IGskuRepository
             & Builders<Lsku>.Filter.Eq(x => x.GskuId, id)
             & Builders<Lsku>.Filter.Ne(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Retired);
         if (await _lskus.Find(childFilter).AnyAsync(cancellationToken)) return "DEPENDENT_IDENTITIES_EXIST";
+        // FG FIX1 item 1 (BL-559; MOD-0290 s21.5): a Draft FG blocks like any non-retired child — except one whose audited
+        // Draft cancellation is FINISHED (its intent's central receipt is on the FG and validates). A cancellation still
+        // pending its audit, a decision without its evidence, a forged or legacy record: all keep blocking. An active
+        // sibling blocks whatever another FG's cancellation says. Ne(IsDeleted, true): a document without the field.
         var fgFilter = Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)
-            & Builders<FinishedGood>.Filter.Eq(x => x.IsDeleted, false)
+            & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
             & Builders<FinishedGood>.Filter.Eq(x => x.GskuId, id)
             & Builders<FinishedGood>.Filter.Ne(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Retired);
-        return await _finishedGoods.Find(fgFilter).AnyAsync(cancellationToken) ? "DEPENDENT_IDENTITIES_EXIST" : null;
+        using var children = await _finishedGoods.Find(fgFilter).ToCursorAsync(cancellationToken);
+        while (await children.MoveNextAsync(cancellationToken))
+        {
+            if (children.Current.Any(child => Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle
+                    .FinishedGoodDraftCancellationProof.Disposition(child) != FinishedGoodCancellationDisposition.Cancelled))
+                return "DEPENDENT_IDENTITIES_EXIST";
+        }
+        return null;
     }
 
     public Task<bool> HasNonRetiredSiblingAsync(

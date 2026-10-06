@@ -88,7 +88,10 @@ public sealed class GetFinishedGoodsHandler
                 item.LifecycleStatus,
                 item.Version,
                 item.CreatedAt,
-                item.UpdatedAt);
+                item.UpdatedAt)
+            {
+                CancellationDisposition = Lifecycle.FinishedGoodDraftCancellationProof.Disposition(item)
+            };
         }).ToList();
 
         return Response<ProductItemSkuMasterModels.PagedResult<ProductItemSkuMasterModels.FinishedGoodListItemDto>>
