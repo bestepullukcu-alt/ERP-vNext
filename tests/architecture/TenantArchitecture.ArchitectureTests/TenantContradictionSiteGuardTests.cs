@@ -69,7 +69,7 @@ public class TenantContradictionSiteGuardTests
     /// pinned as an exact floor AND ceiling on purpose — the failure this prevents is a ninth site appearing and
     /// inheriting neither the rule nor the decision, which is exactly how the five-site drift happened.
     /// </summary>
-    private const int KnownTenantResolutionSites = 9;
+    private const int KnownTenantResolutionSites = 10;
 
     /// <summary>Sites that refuse the contradiction. Measured, not aspirational.</summary>
     private static readonly string[] EnforcesTheRule =
@@ -100,7 +100,12 @@ public class TenantContradictionSiteGuardTests
         // refuses a contradicting X-Tenant-Id / X-Legal-Entity-Id header (400) before the tenant context is
         // consumed; a missing legal-entity for a tenant-scoped request is also refused (fail-closed 400).
         // Behaviour test: services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Tenancy/LegalEntityResolutionGuardTests.cs.
-        "services/Diten.ProcurementService/src/Diten.ProcurementService.Infrastructure/Middleware/TenantResolutionMiddleware.cs"
+        "services/Diten.ProcurementService/src/Diten.ProcurementService.Infrastructure/Middleware/TenantResolutionMiddleware.cs",
+        // MOD-0193 MVP-3 Manufacturing (BOM & Routings, 2026-10-06): the Procurement middleware's rule, carried over —
+        // Tenant + Legal-Entity from the JWT, a contradicting header refused 400, a missing legal entity refused 400;
+        // the refusal body is the BOM contract Error shape. Behaviour test:
+        // services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Tenancy/TenantResolutionGuardTests.cs.
+        "services/Diten.ManufacturingService/src/Diten.ManufacturingService.Infrastructure/Middleware/TenantResolutionMiddleware.cs"
     ];
 
     /// <summary>
