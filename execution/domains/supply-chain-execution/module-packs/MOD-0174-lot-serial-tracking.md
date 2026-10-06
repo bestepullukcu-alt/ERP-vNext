@@ -887,6 +887,25 @@ holder of `trace.lots.create`, and `createLot` enforces the same key server-side
 LOT-SERIAL-TRACKING (`NEWLOT` / `LOTCREATE`). §14 row `NEWLOTQUICK` is superseded by this note. Follow-up FU-0174-CAT-02
 (Platform/Auth owner): the catalog sync must not move `Module` across namespace owners.
 
+### WP-0174-P3 (agent result 2026-10-06, pending CT) — UI: 7 pages + Stock Ledger lot field
+
+Commit `04f516b17`: Lots Index / Details / Create / Edit + Durum Değiştir dialog, Serials, LotMovements, LotTrace — tenant
+shell, UAS-001 per page, every §14 button only with its key (Web table = manifest source, test); TRACE through a
+same-origin proxy with the W-0173-02 company header (`TraceGatewayClient`). Stock Ledger lot field per §11.4: picker on
+inbound, Blocked / Expired disabled with the reason, K-F warning + confirmation, quick lot (CT-D5a: in-form, Draft,
+selected, `trace.lots.create` only), serial single / range / GS1 with the GTIN-null warning; typed lots still accepted
+(P4). L10n en + tr; the lot-field keys live in the Traceability family `LotFieldIndex`, not in FU01
+`StockMovementsIndex` as §11.6 says (**owner decision 2026-10-06** — §11.6 text for the CT). **LotMigration not drawn
+(P4)**: §16 "grep 8" measured as 7 + 1 open. Web tests 509/511 → 588/590 (the 2 reds = Nav guard, P5), architecture
+18/18, build 0 new warnings, five sabotages red → restored clean. E4 on an own Web (127.0.0.1:5195) against the owner's
+5000: create / Draft edit / Released edit with reason / Draft → Released → Blocked / quick lot / inbound with the
+registered lot (`INV-2026-0000031`) — screenshots + API + Mongo, owner PIDs unchanged. E4 found and fixed: Lot Gezgini
+500 (FU01 `MasterLabelResolver` throws on products without SKUs → `TraceLabels`), hidden Durum / Eldeki Stok columns,
+empty 15-row length selector. Open for the CT: **InventoryService 506/507 since `8b062d335`** — the §14 cells
+`` `trace.lots.read` (FU-0174-CAT-01) `` of `OPENINLEDGER` / `VIEWRECEIPT` / `RECEIPTINLEDGER` no longer match the
+completeness test's row regex (measured: pack of `f6ef16913` → green). Evidence
+`docs/records/audits/2026-10/mod-0174-p3-evidence-2026-10-06.md`.
+
 ## 20. Follow-up Items
 
 - **W-UI-02 closure** in the FU01 pack (CT records after P4).
