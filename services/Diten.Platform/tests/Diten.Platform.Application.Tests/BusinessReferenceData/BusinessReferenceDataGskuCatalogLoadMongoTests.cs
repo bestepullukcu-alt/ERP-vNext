@@ -19,7 +19,7 @@ public sealed class BusinessReferenceDataGskuCatalogLoadMongoTests : IAsyncLifet
 
     public async Task InitializeAsync()
     {
-        _harness = await BusinessReferenceDataTestHarness.CreateAsync();
+        _harness = await BusinessReferenceDataTestHarness.CreateAsync("gsku_catalog");
     }
 
     public Task DisposeAsync() => _harness.DisposeAsync().AsTask();
@@ -87,7 +87,9 @@ public sealed class BusinessReferenceDataGskuCatalogLoadMongoTests : IAsyncLifet
     [Fact]
     public async Task VerifiedPath_MissingProviderOptionFailsClosedBeforeAnyWrite()
     {
-        await using var withoutProvider = await BusinessReferenceDataTestHarness.CreateAsync(configureProvider: false);
+        await using var withoutProvider = await BusinessReferenceDataTestHarness.CreateAsync(
+            "gsku_catalog_noprovider",
+            configureProvider: false);
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => withoutProvider.CreateLoader()
             .LoadVerifiedGskuCatalogFromFileAsync(
                 BusinessReferenceDataTestHarness.GetArtifactPath(),
@@ -191,7 +193,9 @@ public sealed class BusinessReferenceDataGskuCatalogLoadMongoTests : IAsyncLifet
     [Fact]
     public async Task GenericLegacyLoader_LoadsQmsAndLegalEntityWithoutProviderOrEligibilityAndCreatesNoVerifiedClaim()
     {
-        await using var legacy = await BusinessReferenceDataTestHarness.CreateAsync(configureProvider: false);
+        await using var legacy = await BusinessReferenceDataTestHarness.CreateAsync(
+            "gsku_catalog_legacy",
+            configureProvider: false);
         var loader = legacy.CreateLoader(eligibility: new RuntimeBusinessReferenceDataPublicationEligibility());
 
         var qms = await loader.LoadFromFileAsync(
@@ -205,11 +209,22 @@ public sealed class BusinessReferenceDataGskuCatalogLoadMongoTests : IAsyncLifet
             "legacy-seed",
             ["legal-form", "country", "base-currency"]);
 
+        // BL-482: the loader loads EVERY set in the file (the code list is a presence check, not a filter), and
+        // both seed files are shared with other modules and grow. The count is read from the file, not retyped:
+        // "3" was true on 2026-08-24, the QMS seed reached 5 on 2026-08-28 and 6 on 2026-09-16, and nobody saw this
+        // go stale because the harness was already red.
+        var qmsSets = BusinessReferenceDataTestHarness.SeedSetCodes("document-management-qms.json");
+        var legalSets = BusinessReferenceDataTestHarness.SeedSetCodes("legal-entity-reference.json");
+        Assert.Superset(
+            new HashSet<string> { "qms-document-class", "qms-document-classification", "qms-document-retention" },
+            qmsSets.ToHashSet());
+        Assert.Superset(new HashSet<string> { "legal-form", "country", "base-currency" }, legalSets.ToHashSet());
+
         Assert.Empty(qms.BlockedConflicts);
         Assert.Empty(legal.BlockedConflicts);
-        Assert.Equal(3, qms.SetsLoaded);
-        Assert.Equal(3, legal.SetsLoaded);
-        Assert.Equal(6, await legacy.Database.GetCollection<BusinessReferenceDataSet>("business_reference_data_sets")
+        Assert.Equal(qmsSets.Count, qms.SetsLoaded);
+        Assert.Equal(legalSets.Count, legal.SetsLoaded);
+        Assert.Equal(qmsSets.Count + legalSets.Count, await legacy.Database.GetCollection<BusinessReferenceDataSet>("business_reference_data_sets")
             .CountDocumentsAsync(x => x.TenantId == legacy.ReferenceTenantId && x.PublishedVersionId != null));
         Assert.Equal(0, await legacy.Database.GetCollection<BusinessReferenceDataPublishOperation>("business_reference_data_publish_operations")
             .CountDocumentsAsync(FilterDefinition<BusinessReferenceDataPublishOperation>.Empty));
@@ -232,7 +247,11 @@ public sealed class BusinessReferenceDataGskuCatalogLoadMongoTests : IAsyncLifet
 
         var sets = _harness.Database.GetCollection<BusinessReferenceDataSet>("business_reference_data_sets");
         var operations = _harness.Database.GetCollection<BusinessReferenceDataPublishOperation>("business_reference_data_publish_operations");
-        Assert.Equal(3, await sets.CountDocumentsAsync(x => x.TenantId == legacyTenantId));
+        // BL-482: every set in the QMS seed lands under the legacy tenant; the count is read from the file (see
+        // GenericLegacyLoader_… above for why it is not a literal).
+        var qmsSets = BusinessReferenceDataTestHarness.SeedSetCodes("document-management-qms.json");
+        Assert.Contains("qms-document-class", qmsSets);
+        Assert.Equal(qmsSets.Count, await sets.CountDocumentsAsync(x => x.TenantId == legacyTenantId));
         Assert.Equal(2, await sets.CountDocumentsAsync(x => x.TenantId == _harness.ReferenceTenantId));
         Assert.Equal(0, await operations.CountDocumentsAsync(x => x.TenantId == legacyTenantId));
         Assert.Equal(2, await operations.CountDocumentsAsync(x => x.TenantId == _harness.ReferenceTenantId
@@ -317,30 +336,94 @@ public sealed class BusinessReferenceDataGskuCatalogLoadMongoTests : IAsyncLifet
     }
 }
 
+/*
+ * BL-482 (BRD half) — WHAT THIS HARNESS USED TO DO, AND WHY IT WAS RED ON EVERY RUN (measured 2026-10-01).
+ *
+ * It built its own MongoClient, named a database with a fresh Guid per TEST, pinged it with
+ * `RunCommandAsync<object>("{ ping: 1 }")`, and dropped the database on dispose. Two defects fed each other:
+ *
+ *   1. The local mongod is a replica set, so the ping reply is { ok, $clusterTime, operationTime } — and
+ *      operationTime / $clusterTime.clusterTime are BSON Timestamps. Reading the reply as `object` goes through
+ *      ObjectSerializer, which has no CLR type for a Timestamp: "ObjectSerializer does not support BSON type
+ *      'Timestamp'". The Timestamp is in the COMMAND REPLY — not in a stored document and not in a field production
+ *      code writes. InitializeAsync threw AFTER the per-test database had been created and marked, and xUnit does
+ *      not call DisposeAsync when InitializeAsync throws, so every test left a database behind (46 on this machine).
+ *   2. A minute later that residue was "stale", and every test class swept it at once from its own thread:
+ *      "Command dropDatabase failed: The database is currently being dropped" — raised in the SWEEP, in whichever
+ *      class lost the race, naming a database that belonged to another class.
+ *
+ * So one run was red on the Timestamp (45 of 50) and the next on the drop (52 of 53), in turn.
+ *
+ * WHAT IT DOES NOW. It is a thin layer over MongoIntegrationHarness.CreateIsolatedAsync: a FIXED-name database per
+ * scope, emptied (documents deleted, collections and indexes kept) before each test, and never dropped BY BRD CODE.
+ * (The shared harness underneath still sweeps, once per process, any owned database whose marker belongs to another
+ * run and is over an hour old — scope databases included; they are rebuilt on the next open. That sweep is the
+ * harness's, it is lock-guarded, and it is why a retired scope's database does not stay forever.) It pings with
+ * a BsonDocument reply, takes the machine-wide lock, and stamps the marker — all in the one place that already
+ * does those correctly.
+ *
+ * ⚠ WHY A SCOPED DATABASE AND NOT THE SHARED ONE + A FRESH TENANT — FOR THE CLASSES THAT NEED IT. Four classes
+ * (GovernanceMode, GskuCatalogLoad, VerifiedMarketCatalogLoad, VerifiedMarketOperational) assert on the WHOLE collection:
+ * "the loader wrote nothing at all" (CountDocuments(Empty) == 0), "exactly one operation exists" (Single over an
+ * empty filter), "no OTHER tenant got a market set". In the shared database those are false the moment a parallel
+ * class writes, and narrowing them to one tenant would stop them proving what they are there to prove. Their
+ * subject is database-global, which is the stated exception in MongoIntegrationHarness.CreateIsolatedAsync.
+ * Every BRD unique index IS tenant-keyed (measured), so the tests that only need tenant isolation moved to the
+ * shared database: TenantAssignment and PublishOperation directly, and — CT acceptance, 2026-10-01, after the
+ * independent review showed every one of their assertions is tenant- or operation-scoped, and two full runs on the
+ * shared database stayed green — VerifiedMarketPublish, VerifiedMarketResolve and VerifiedPublish through
+ * CreateSharedAsync below. A scope is the exception, not the default.
+ *
+ * ⚠ ONE SCOPE, ONE OWNER AT A TIME. Opening a scope EMPTIES it. xUnit runs test classes in parallel, so two classes
+ * on the same scope would empty each other mid-assertion and fail at random. A scope that is already open in this
+ * process is therefore refused, loudly, instead of being emptied under its owner
+ * (BusinessReferenceDataTestHarnessScopeTests). Across processes the machine-wide lock already excludes.
+ */
 internal sealed class BusinessReferenceDataTestHarness : IAsyncDisposable
 {
-    private readonly MongoClient _client;
-    private readonly string _databaseName;
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> OpenScopes =
+        new(StringComparer.Ordinal);
+
+    /*
+     * CT acceptance (2026-10-01). EVERY SCOPE IS ON THIS LIST. Each one is a permanent database on the shared mongod,
+     * so the set is closed: a scope that is not registered is refused before Mongo is touched. The grammar alone
+     * could not hold the line — `$"run_{Guid.NewGuid():N}"` is lowercase letters and digits, passed every guard, and
+     * would have brought back the database-per-run residue this harness exists to end. A new scope is one line
+     * here, in a diff a reviewer sees.
+     */
+    internal static readonly IReadOnlySet<string> RegisteredScopes = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "governance_mode",
+        "gsku_catalog",
+        "gsku_catalog_legacy",
+        "gsku_catalog_noprovider",
+        "harness_blank_proof",
+        "harness_scope_proof",
+        "market_catalog",
+        "market_operational"
+    };
+
+    private readonly Persistence.MongoIntegrationHarness _mongo;
+    private readonly string? _scope; // null: the shared database, where the tenant is the isolation
+    private int _disposed;
 
     private BusinessReferenceDataTestHarness(
-        MongoClient client,
-        string databaseName,
-        IMongoDatabase database,
+        Persistence.MongoIntegrationHarness mongo,
+        string? scope,
         bool configureProvider)
     {
-        _client = client;
-        _databaseName = databaseName;
-        Database = database;
-        ReferenceTenantId = Guid.NewGuid();
-        TenantContext = new TenantContext();
-        TenantContext.SetTenant(ReferenceTenantId);
+        _mongo = mongo;
+        _scope = scope;
+        Database = mongo.Database;
+        ReferenceTenantId = mongo.TenantId;
+        TenantContext = mongo.TenantContext;
         Repository = configureProvider
             ? new BusinessReferenceDataStewardshipRepository(
-                new PlatformDbContext(client, database),
+                mongo.DbContext,
                 TenantContext,
                 Options.Create(new BusinessReferenceDataProviderOptions { ReferenceTenantId = ReferenceTenantId }))
             : new BusinessReferenceDataStewardshipRepository(
-                new PlatformDbContext(client, database),
+                mongo.DbContext,
                 TenantContext);
     }
 
@@ -349,21 +432,58 @@ internal sealed class BusinessReferenceDataTestHarness : IAsyncDisposable
     public TenantContext TenantContext { get; }
     public BusinessReferenceDataStewardshipRepository Repository { get; }
 
-    public static async Task<BusinessReferenceDataTestHarness> CreateAsync(bool configureProvider = true)
-    {
-        await Diten.Platform.Application.Tests.Persistence.PlatformMongoTestLock.EnsureHeldAsync(); // BL-395
+    /// <summary>The fixed database a scope maps to: <c>diten_platform_itest_brd_{scope}</c>.</summary>
+    internal static string DatabaseNameFor(string scope)
+        => Persistence.MongoIntegrationHarness.IsolatedDatabaseName($"brd_{scope}");
 
-        var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017");
-        settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
-        var client = new MongoClient(settings);
-        var databaseName = await BusinessReferenceDataMongoResidueSweeper.CreateDatabaseAsync(client, "gsku");
-        var database = client.GetDatabase(databaseName);
-        await database.RunCommandAsync<object>("{ ping: 1 }");
-        await PlatformSchemaManifest.ApplyAsync(
-            database,
-            new[] { SchemaProfile.BusinessReferenceData });
-        return new BusinessReferenceDataTestHarness(client, databaseName, database, configureProvider);
+    /// <param name="scope">
+    /// A FIXED name (lowercase letters, digits, underscores) owned by exactly one test class — or by one role
+    /// inside one class, for a test that needs a second blank database. Never a Guid.
+    /// </param>
+    public static async Task<BusinessReferenceDataTestHarness> CreateAsync(string scope, bool configureProvider = true)
+    {
+        var databaseName = DatabaseNameFor(scope); // refuses a scope outside the owned grammar before Mongo is touched
+        if (!RegisteredScopes.Contains(scope))
+        {
+            throw new ArgumentException(
+                $"BRD test scope '{scope}' is not registered. Every scope is a permanent database on the shared mongod "
+                + "(a name made per run would pile up), so the set is closed: add the scope to "
+                + "BusinessReferenceDataTestHarness.RegisteredScopes, or reuse the scope your test class already owns.",
+                nameof(scope));
+        }
+
+        if (!OpenScopes.TryAdd(scope, 0))
+        {
+            throw new InvalidOperationException(
+                $"BRD test scope '{scope}' ({databaseName}) is already open in this process. Opening a scope empties "
+                + "its database, so a second owner would wipe the first one's data mid-test. Give each test class "
+                + "(and each extra database inside a test) its own fixed scope.");
+        }
+
+        try
+        {
+            var mongo = await Persistence.MongoIntegrationHarness.CreateIsolatedAsync(
+                $"brd_{scope}",
+                SchemaProfile.BusinessReferenceData);
+            return new BusinessReferenceDataTestHarness(mongo, scope, configureProvider);
+        }
+        catch
+        {
+            OpenScopes.TryRemove(scope, out _);
+            throw;
+        }
     }
+
+    /// <summary>
+    /// For a BRD test whose every assertion is TENANT-scoped: the ONE shared database and a fresh reference tenant,
+    /// like every other Platform Mongo test. No scope, no database of its own, nothing emptied. A test that asserts
+    /// on a whole collection ("nothing at all was written") cannot use this — that is what a scope is for.
+    /// </summary>
+    public static async Task<BusinessReferenceDataTestHarness> CreateSharedAsync(bool configureProvider = true)
+        => new(
+            await Persistence.MongoIntegrationHarness.CreateAsync(SchemaProfile.BusinessReferenceData),
+            scope: null,
+            configureProvider);
 
     public BusinessReferenceDataCatalogLoaderService CreateLoader(
         IBusinessReferenceDataPublishCheckpointObserver? observer = null,
@@ -401,6 +521,17 @@ internal sealed class BusinessReferenceDataTestHarness : IAsyncDisposable
     public static string GetArtifactPath()
         => GetSeedPath("mod-0290-gsku-reference.json");
 
+    /// <summary>
+    /// The set codes a seed catalog declares, read straight from the JSON — independent of the loader under test.
+    /// </summary>
+    public static IReadOnlyList<string> SeedSetCodes(string fileName)
+    {
+        using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(GetSeedPath(fileName)));
+        return document.RootElement.GetProperty("sets").EnumerateArray()
+            .Select(set => set.GetProperty("set_code").GetString()!)
+            .ToArray();
+    }
+
     public static string GetSeedPath(string fileName)
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -418,7 +549,26 @@ internal sealed class BusinessReferenceDataTestHarness : IAsyncDisposable
             "business-reference-data", fileName);
     }
 
-    public ValueTask DisposeAsync() => new(_client.DropDatabaseAsync(_databaseName));
+    /// <summary>Releases the scope. Nothing is dropped: the next owner of the scope empties it on the way in.</summary>
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        try
+        {
+            await _mongo.DisposeAsync();
+        }
+        finally
+        {
+            if (_scope is not null)
+            {
+                OpenScopes.TryRemove(_scope, out _);
+            }
+        }
+    }
 }
 
 internal sealed class EligiblePublicationForTests : IBusinessReferenceDataPublicationEligibility

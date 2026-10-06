@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Persistence;
@@ -41,14 +42,20 @@ public sealed class WorkReportRepository : IWorkReportRepository
     private readonly ILegalEntityReferenceValidator _legalEntities;
     private readonly ILogger<WorkReportRepository> _logger;
 
+    /// <summary>MOD-0280-FU01 D7 — a task's spent time. Optional only so hand-built repositories in older tests compile;
+    /// absent, no task has spent time — <c>TaskItem.SpentHours</c> (no writer, always 0) is never read.</summary>
+    private readonly ITaskSpentTimeSource? _spentTime;
+
     public WorkReportRepository(
         IPlatformDbContext dbContext,
         ITenantContext tenantContext,
         IOrganizationUnitRepository organizationUnits,
         ITaskTypeRepository taskTypes,
         ILegalEntityReferenceValidator legalEntities,
-        ILogger<WorkReportRepository> logger)
+        ILogger<WorkReportRepository> logger,
+        ITaskSpentTimeSource? spentTime = null)
     {
+        _spentTime = spentTime;
         _tasks = dbContext.Database.GetCollection<TaskItem>(PlatformCollections.TaskItems);
         _transitions = dbContext.Database.GetCollection<TaskTransition>(PlatformCollections.TaskTransitions);
         _tenantContext = tenantContext;
@@ -383,7 +390,8 @@ public sealed class WorkReportRepository : IWorkReportRepository
                 task.CancelledAt,
                 task.DueAt,
                 task.EstimateHours,
-                task.SpentHours,
+                // MOD-0280-FU01 D7 — filled below from ITaskSpentTimeSource, never from the entity's writer-less field.
+                0m,
                 task.ClosureReasonCode,
                 task.Lifecycle,
                 /*
@@ -424,6 +432,24 @@ public sealed class WorkReportRepository : IWorkReportRepository
              */
             .Where(row => WorkReportTally.MatchesFilter(criteria.Filter, row))
             .ToList();
+
+        /*
+         * MOD-0280-FU01 D7 — SPENT TIME IS THE APPROVED TIME, read once for the period's rows. The effort numbers, the
+         * lists and the export all read these rows, so one read here serves the report and the file alike.
+         */
+        if (_spentTime is not null && rows.Count > 0)
+        {
+            var approved = new Dictionary<Guid, int>();
+            foreach (var chunk in rows.Select(row => row.Id).Chunk(1_000))
+            {
+                foreach (var (id, minutes) in await _spentTime.ApprovedMinutesAsync(chunk, ct))
+                {
+                    approved[id] = minutes;
+                }
+            }
+
+            rows = rows.Select(row => row with { SpentHours = approved.GetValueOrDefault(row.Id) / 60m }).ToList();
+        }
 
         var set = new WorkReportRowSet(
             rows,

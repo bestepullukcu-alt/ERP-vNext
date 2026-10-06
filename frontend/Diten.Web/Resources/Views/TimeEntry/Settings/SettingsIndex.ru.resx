@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SettingsTitle" xml:space="preserve"><value>Настройки учёта времени</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Кто утверждает, если непосредственный руководитель не найден, и где можно использовать таймер.</value></data>
+  <data name="PoolTitle" xml:space="preserve"><value>Пул администраторов учёта времени</value></data>
+  <data name="PoolHelp" xml:space="preserve"><value>Утверждает неделю, если в линии подчинения сотрудника никого нет, и открывает старые недели повторно.</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>Должность пула</value></data>
+  <data name="PoolNone" xml:space="preserve"><value>Без пула</value></data>
+  <data name="SavePool" xml:space="preserve"><value>Сохранить пул</value></data>
+  <data name="PoolSaved" xml:space="preserve"><value>Пул сохранён.</value></data>
+  <data name="SwitchTitle" xml:space="preserve"><value>Таймер по юридическим лицам</value></data>
+  <data name="SwitchHelp" xml:space="preserve"><value>Таймер ВЫКЛЮЧЕН для каждого юридического лица, пока его не включат здесь. Ручной ввод работает всегда.</value></data>
+  <data name="ColLegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="ColTimer" xml:space="preserve"><value>Таймер</value></data>
+  <data name="ColChanged" xml:space="preserve"><value>Последнее изменение</value></data>
+  <data name="ColReason" xml:space="preserve"><value>Причина</value></data>
+  <data name="TimerOn" xml:space="preserve"><value>Вкл.</value></data>
+  <data name="TimerOff" xml:space="preserve"><value>Выкл.</value></data>
+  <data name="SwitchOn" xml:space="preserve"><value>Включить</value></data>
+  <data name="SwitchOff" xml:space="preserve"><value>Выключить</value></data>
+  <data name="SwitchReason" xml:space="preserve"><value>Правовое основание / причина включения таймера (обязательно)</value></data>
+  <data name="SwitchReasonRequired" xml:space="preserve"><value>Укажите причину (правовое основание) включения таймера.</value></data>
+  <data name="SwitchSave" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="SwitchSavedOn" xml:space="preserve"><value>Таймер включён для {0}.</value></data>
+  <data name="SwitchSavedOff" xml:space="preserve"><value>Таймер выключен для {0}.</value></data>
+  <data name="SwitchOffConfirm" xml:space="preserve"><value>Выключить таймер для {0}? Работающие там таймеры будут остановлены.</value></data>
+  <data name="SwissWarning" xml:space="preserve"><value>Швейцарские юридические лица: не включайте таймер, пока юристы не ответят на вопросы ArGV 1 ст. 73, ArGV 3 ст. 26, консультации с персоналом и DPIA. Этот табель не является установленным законом учётом рабочего времени.</value></data>
+  <data name="NoLegalEntities" xml:space="preserve"><value>Юридические лица не найдены.</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Не удалось загрузить юридические лица. Повторите позже.</value></data>
+  <data name="PositionsUnavailable" xml:space="preserve"><value>Не удалось загрузить должности. Повторите позже.</value></data>
+  <data name="SettingsUnavailable" xml:space="preserve"><value>Не удалось прочитать настройки. Обновите страницу; пока они не загрузятся, на этой странице ничего нельзя сохранить.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="NeverChanged" xml:space="preserve"><value>никогда</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="ReminderTitle" xml:space="preserve"><value>Еженедельное напоминание</value></data>
+  <data name="ReminderHelp" xml:space="preserve"><value>Каждый понедельник с 09:00 сотрудники, пользовавшиеся учётом времени в последние недели, получают одно письмо, если табель за прошлую неделю отсутствует или ещё не отправлен. Пока вы не включите эту функцию, напоминания никому не отправляются.</value></data>
+  <data name="ReminderLabel" xml:space="preserve"><value>Отправлять еженедельное напоминание</value></data>
+  <data name="ReminderSavedOn" xml:space="preserve"><value>Еженедельное напоминание включено.</value></data>
+  <data name="ReminderSavedOff" xml:space="preserve"><value>Еженедельное напоминание выключено.</value></data>
+  <data name="ReminderSaveFailed" xml:space="preserve"><value>Не удалось сохранить еженедельное напоминание. Повторите попытку.</value></data>
+  <data name="ReminderJobOff" xml:space="preserve"><value>Напоминание включено, но задача напоминаний на этом сервере не запущена, поэтому письма отправляться не будут. Сообщите системному администратору.</value></data>
+</root>

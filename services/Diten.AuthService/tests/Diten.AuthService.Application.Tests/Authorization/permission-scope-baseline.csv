@@ -18,6 +18,7 @@ auth.users.lookup,0
 auth.users.account-kind.manage,0
 auth.users.read,0
 auth.users.update,0
+auth.users.export,0
 crm.account-contact.manage,0
 crm.account-contact.read,0
 crm.account-relationship.manage,0

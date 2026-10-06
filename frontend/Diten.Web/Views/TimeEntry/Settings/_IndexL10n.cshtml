@@ -1,0 +1,49 @@
+@using Diten.Web.Views.TimeEntry.Settings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SettingsIndex> Localizer
+@* MOD-0280-FU01 T2b — the settings page's words, 7 languages. *@
+@{
+    var payload = new Dictionary<string, string>
+    {
+        ["SettingsTitle"] = Localizer["SettingsTitle"].Value,
+        ["PageDescription"] = Localizer["PageDescription"].Value,
+        ["PoolTitle"] = Localizer["PoolTitle"].Value,
+        ["PoolHelp"] = Localizer["PoolHelp"].Value,
+        ["PoolPosition"] = Localizer["PoolPosition"].Value,
+        ["PoolNone"] = Localizer["PoolNone"].Value,
+        ["SavePool"] = Localizer["SavePool"].Value,
+        ["PoolSaved"] = Localizer["PoolSaved"].Value,
+        ["ReminderTitle"] = Localizer["ReminderTitle"].Value,
+        ["ReminderHelp"] = Localizer["ReminderHelp"].Value,
+        ["ReminderLabel"] = Localizer["ReminderLabel"].Value,
+        ["ReminderSavedOn"] = Localizer["ReminderSavedOn"].Value,
+        ["ReminderSavedOff"] = Localizer["ReminderSavedOff"].Value,
+        ["ReminderSaveFailed"] = Localizer["ReminderSaveFailed"].Value,
+        ["ReminderJobOff"] = Localizer["ReminderJobOff"].Value,
+        ["SwitchTitle"] = Localizer["SwitchTitle"].Value,
+        ["SwitchHelp"] = Localizer["SwitchHelp"].Value,
+        ["ColLegalEntity"] = Localizer["ColLegalEntity"].Value,
+        ["ColTimer"] = Localizer["ColTimer"].Value,
+        ["ColChanged"] = Localizer["ColChanged"].Value,
+        ["ColReason"] = Localizer["ColReason"].Value,
+        ["TimerOn"] = Localizer["TimerOn"].Value,
+        ["TimerOff"] = Localizer["TimerOff"].Value,
+        ["SwitchOn"] = Localizer["SwitchOn"].Value,
+        ["SwitchOff"] = Localizer["SwitchOff"].Value,
+        ["SwitchReason"] = Localizer["SwitchReason"].Value,
+        ["SwitchReasonRequired"] = Localizer["SwitchReasonRequired"].Value,
+        ["SwitchSave"] = Localizer["SwitchSave"].Value,
+        ["SwitchSavedOn"] = Localizer["SwitchSavedOn"].Value,
+        ["SwitchSavedOff"] = Localizer["SwitchSavedOff"].Value,
+        ["SwitchOffConfirm"] = Localizer["SwitchOffConfirm"].Value,
+        ["SwissWarning"] = Localizer["SwissWarning"].Value,
+        ["NoLegalEntities"] = Localizer["NoLegalEntities"].Value,
+        ["LegalEntitiesUnavailable"] = Localizer["LegalEntitiesUnavailable"].Value,
+        ["PositionsUnavailable"] = Localizer["PositionsUnavailable"].Value,
+        ["SettingsUnavailable"] = Localizer["SettingsUnavailable"].Value,
+        ["Loading"] = Localizer["Loading"].Value,
+        ["NeverChanged"] = Localizer["NeverChanged"].Value,
+        ["Cancel"] = Localizer["Cancel"].Value
+    };
+}
+<script id="timesettings-l10n" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(payload))</script>

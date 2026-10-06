@@ -23,6 +23,10 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
     private readonly ITaskReadAccessPolicy _readAccess;
     private readonly ICurrentUserContext _currentUser;
 
+    /// <summary>MOD-0280-FU01 D7 — where the task's spent time comes from. Optional only so hand-built handlers in older
+    /// tests compile; absent, the task simply has no approved time — <c>TaskItem.SpentHours</c> is never the fallback.</summary>
+    private readonly ITaskSpentTimeSource? _spentTime;
+
     public GetTaskItemByIdHandler(
         ITaskItemRepository tasks,
         ITaskWatcherRepository watchers,
@@ -32,8 +36,10 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
         ITaskFieldDefinitionRepository fieldDefinitions,
         IActorPermissionContext actor,
         ITaskReadAccessPolicy readAccess,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITaskSpentTimeSource? spentTime = null)
     {
+        _spentTime = spentTime;
         _tasks = tasks;
         _watchers = watchers;
         _dependencies = dependencies;
@@ -99,10 +105,14 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
             ? null
             : (await _fieldDefinitions.ListAllAsync(ct)).ToDictionary(d => d.Code, StringComparer.OrdinalIgnoreCase);
 
+        var spentHours = _spentTime is null
+            ? 0m
+            : (await _spentTime.ApprovedMinutesAsync([task.Id], ct)).GetValueOrDefault(task.Id) / 60m;
+
         return Response<TaskItemDetailDto>.Success(
             TaskItemMapper.ToDetail(
                 task, _lifecycle, approvalOutstanding, approvalRejected, watchers, dependencies,
-                _actor, definitions, reviewOutstanding, reviewRejected),
+                _actor, definitions, spentHours, reviewOutstanding, reviewRejected),
             correlationId: request.CorrelationId);
     }
 }

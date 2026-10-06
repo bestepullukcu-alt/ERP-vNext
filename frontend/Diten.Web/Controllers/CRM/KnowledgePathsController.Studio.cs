@@ -12,7 +12,6 @@ namespace Diten.Web.Controllers.CRM;
 /// </summary>
 public sealed partial class KnowledgePathsController
 {
-    private const string ReferenceDataBase = "/api/v1/reference-data/sets";
     private const string GlobalProductSource = "global-product";
 
     /// <summary>The CRM (WP-KP-1) error codes the studio shows as user text (Err_{code}); never shown raw.</summary>
@@ -104,12 +103,12 @@ public sealed partial class KnowledgePathsController
     public async Task<IActionResult> CountryLookup(CancellationToken ct)
     {
         if (RequireJson(ReadPermission, ReadFallback) is { } denied) return denied;
-        var countries = ReferenceValueSet.Parse(await ReadDataAsync($"{ReferenceDataBase}/COUNTRY_CODES/published-values", ct));
+        var countries = ReferenceValueSet.Parse(await ReadReferenceSetDataAsync("COUNTRY_CODES", ct));
         if (countries is null)
             return StatusCode(StatusCodes.Status503ServiceUnavailable,
                 new { errors = new[] { "reference_set_unavailable", "COUNTRY_CODES is not available." } });
         var languages = ReferenceValueSet.Parse(
-            await ReadDataAsync($"{ReferenceDataBase}/country-content-languages/published-values", ct));
+            await ReadReferenceSetDataAsync("country-content-languages", ct));
         return Ok(new
         {
             data = ReferenceValueSet.Countries(countries, languages).Select(c => new
@@ -619,6 +618,26 @@ public sealed partial class KnowledgePathsController
 
     private readonly record struct LocalizedText(string Language, string? Text);
 
+    /// <summary>WP-BRD-TENANT-CRM-SETS — a reference set through the shared <see cref="Diten.Web.Services.CrmReferenceSetReader"/>
+    /// (consumable-sets first, so any tenant role reads it). Returns the envelope's <c>data</c>, or null when unavailable.</summary>
+    private async Task<JsonElement?> ReadReferenceSetDataAsync(string setCode, CancellationToken ct)
+    {
+        using var response = await new Diten.Web.Services.CrmReferenceSetReader(_httpClient, _gatewayUrl, _logger).ReadAsync(
+            setCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), GetTenantId(), ct);
+        if (response is null || !response.IsSuccessStatusCode) return null;
+        try
+        {
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            return doc.RootElement.ValueKind == JsonValueKind.Object && doc.RootElement.TryGetProperty("data", out var data)
+                ? data.Clone()
+                : null;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Studio reference set read failed: {SetCode}", setCode);
+            return null;
+        }
+    }
     private async Task<JsonElement?> ReadDataAsync(string path, CancellationToken ct)
     {
         var response = await SendGatewayAsync(HttpMethod.Get, path, null, ct);

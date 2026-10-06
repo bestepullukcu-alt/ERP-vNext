@@ -35,7 +35,6 @@ public abstract class RegulatoryTextsControllerBase : Controller
     /// <summary>The lifecycle words of WP-KP-5a (CRM's own vocabulary; the status filter offers exactly these).</summary>
     public static readonly IReadOnlyList<string> Statuses = ["draft", "in-review", "active", "superseded", "archived"];
 
-    private const string ReferenceDataBase = "/api/v1/reference-data/sets";
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly ILogger _logger;
@@ -155,12 +154,12 @@ public abstract class RegulatoryTextsControllerBase : Controller
     protected async Task<IActionResult> CountriesAsync(CancellationToken ct)
     {
         if (RequireJson(ReadPermission) is { } denied) return denied;
-        var countries = ReferenceValueSet.Parse(await ReadDataAsync($"{ReferenceDataBase}/COUNTRY_CODES/published-values", ct));
+        var countries = ReferenceValueSet.Parse(await ReadReferenceSetDataAsync("COUNTRY_CODES", ct));
         if (countries is null)
             return StatusCode(StatusCodes.Status503ServiceUnavailable,
                 new { errors = new[] { "reference_set_unavailable", "COUNTRY_CODES is not available." } });
         var languages = ReferenceValueSet.Parse(
-            await ReadDataAsync($"{ReferenceDataBase}/country-content-languages/published-values", ct));
+            await ReadReferenceSetDataAsync("country-content-languages", ct));
         return Ok(new
         {
             data = ReferenceValueSet.Countries(countries, languages).Select(c => new
@@ -272,6 +271,15 @@ public abstract class RegulatoryTextsControllerBase : Controller
         return await ToProxyResultAsync(await SendAsync(method, path, body, ct), ct);
     }
 
+    /// <summary>WP-BRD-TENANT-CRM-SETS — a reference set through the shared <see cref="Diten.Web.Services.CrmReferenceSetReader"/>
+    /// (consumable-sets first, so any tenant role reads it). Returns the envelope's <c>data</c>, or null when unavailable.</summary>
+    protected async Task<JsonElement?> ReadReferenceSetDataAsync(string setCode, CancellationToken ct)
+    {
+        using var response = await new Diten.Web.Services.CrmReferenceSetReader(_httpClient, _gatewayUrl, _logger).ReadAsync(
+            setCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), GetTenantId(), ct);
+        if (response is null || !response.IsSuccessStatusCode) return null;
+        return await ReadEnvelopeDataAsync(response, ct);
+    }
     protected async Task<JsonElement?> ReadDataAsync(string path, CancellationToken ct)
     {
         var response = await SendAsync(HttpMethod.Get, path, null, ct);

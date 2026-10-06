@@ -4,6 +4,7 @@ using System.Text.Json;
 using Diten.Web.Models;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -57,6 +58,7 @@ public sealed class ContactsController : Controller
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
     private readonly IStringLocalizer<Diten.Web.Views.CRM.Contacts.ContactIndex> _localizer;
     private readonly ILogger<ContactsController> _logger;
+    private readonly CrmReferenceSetReader _referenceSets;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNameCaseInsensitive = true
@@ -75,6 +77,7 @@ public sealed class ContactsController : Controller
         _sharedLocalizer = sharedLocalizer;
         _localizer = localizer;
         _logger = logger;
+        _referenceSets = new CrmReferenceSetReader(httpClient, _gatewayUrl, logger);
     }
 
     [HttpGet("")]
@@ -574,8 +577,9 @@ public sealed class ContactsController : Controller
         }
     }
 
-    /// <summary>Reads MOD-0048 published values through the Gateway. Returns an EMPTY list when unavailable — never a
-    /// hardcoded fallback; the caller surfaces a controlled dependency message instead.</summary>
+    /// <summary>Reads MOD-0048 published values through the Gateway (WP-BRD-TENANT-CRM-SETS: the shared
+    /// <see cref="CrmReferenceSetReader"/> — consumable-sets route first, so every tenant role gets the options). Returns
+    /// an EMPTY list when unavailable — never a hardcoded fallback; the caller surfaces a controlled dependency message.</summary>
     private async Task<IReadOnlyList<ReferenceOptionViewModel>> LoadReferenceOptionsAsync(string setCode)
     {
         if (!AddAuthHeaders())
@@ -587,10 +591,11 @@ public sealed class ContactsController : Controller
 
         try
         {
-            var url = $"{_gatewayUrl}/api/v1/reference-data/sets/{Uri.EscapeDataString(setCode)}"
-                      + $"/published-values?scope_key={Uri.EscapeDataString(tenantId)}";
+            using var response = await _referenceSets.ReadAsync(
+                setCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), tenantId);
+            if (response is null)
+                return [];
 
-            var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning("Reference set '{SetCode}' returned {Status}; rendering without options.", setCode, response.StatusCode);

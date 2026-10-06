@@ -47,6 +47,7 @@ public static partial class PlatformSchemaManifest
             .Concat(WorkingCalendarCollections)
             .Concat(MeetingsCollections)
             .Concat(EvidenceLinkingCollections)
+            .Concat(TimeEntryCollections)
             .ToArray());
 
     /// <summary>Every collection in every profile — what the production path builds.</summary>

@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve"><value>سجل ساعاتي</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>أين ذهب وقت عملك هذا الأسبوع، يومًا بيوم.</value></data>
+  <data name="Disclaimer" xml:space="preserve"><value>هذا السجل توزيع للجهد؛ وليس سجلًا قانونيًا لساعات العمل (العمل الإضافي).</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="PrevWeek" xml:space="preserve"><value>الأسبوع السابق</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>الأسبوع التالي</value></data>
+  <data name="Today" xml:space="preserve"><value>اليوم</value></data>
+  <data name="Actions" xml:space="preserve"><value>إجراءات</value></data>
+  <data name="CopyPreviousWeek" xml:space="preserve"><value>نسخ الأسبوع السابق</value></data>
+  <data name="FillFromPlan" xml:space="preserve"><value>التعبئة من الخطة</value></data>
+  <data name="ReviewSuggestions" xml:space="preserve"><value>مراجعة الاقتراحات</value></data>
+  <data name="SidePanel" xml:space="preserve"><value>تنبيهات</value></data>
+  <data name="SideToggle" xml:space="preserve"><value>إظهار التنبيهات أو إخفاؤها</value></data>
+  <data name="WeekLabel" xml:space="preserve"><value>{week} · {from} – {to}</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusSubmitted" xml:space="preserve"><value>مُرسَل</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="StatusCorrection" xml:space="preserve"><value>مسودة تصحيح</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>مستبدَل</value></data>
+  <data name="MissingDays" xml:space="preserve"><value>{count} يوم دون الهدف حتى الآن</value></data>
+  <data name="SourceManual" xml:space="preserve"><value>يدوي</value></data>
+  <data name="SourceTimer" xml:space="preserve"><value>المؤقت</value></data>
+  <data name="SourceMeeting" xml:space="preserve"><value>اجتماع</value></data>
+  <data name="SourcePlan" xml:space="preserve"><value>من الخطة</value></data>
+  <data name="UnreadableTask" xml:space="preserve"><value>مهمة يتعذر الوصول إليها</value></data>
+  <data name="UnknownPerson" xml:space="preserve"><value>شخص ما</value></data>
+  <data name="ColumnWork" xml:space="preserve"><value>العمل</value></data>
+  <data name="ColumnTotal" xml:space="preserve"><value>المجموع</value></data>
+  <data name="RowTotal" xml:space="preserve"><value>المجموع</value></data>
+  <data name="RowTarget" xml:space="preserve"><value>الهدف</value></data>
+  <data name="CellAria" xml:space="preserve"><value>{row}، {day}</value></data>
+  <data name="EmptyWeek" xml:space="preserve"><value>لا يوجد شيء مسجل هذا الأسبوع بعد. أضف صف مهمة أو فئة للبدء.</value></data>
+  <data name="EmptyDay" xml:space="preserve"><value>لا يوجد شيء مسجل في هذا اليوم.</value></data>
+  <data name="DaySummary" xml:space="preserve"><value>المسجل {recorded} · الهدف {target}</value></data>
+  <data name="MarkEdited" xml:space="preserve"><value>مُصحَّح</value></data>
+  <data name="MarkOutsideHours" xml:space="preserve"><value>{value} خارج ساعات العمل</value></data>
+  <data name="MarkMinutesConflict" xml:space="preserve"><value>المحضر يذكر أنك لم تحضر</value></data>
+  <data name="MarkFlaggedDay" xml:space="preserve"><value>يوم طويل — سيراه المعتمِد</value></data>
+  <data name="ConfirmedByMinutes" xml:space="preserve"><value>مؤكد بالمحضر</value></data>
+  <data name="AcceptPlanValue" xml:space="preserve"><value>إضافة هذا الوقت المخطط</value></data>
+  <data name="Attended" xml:space="preserve"><value>حضرت</value></data>
+  <data name="DidNotAttend" xml:space="preserve"><value>لم أحضر</value></data>
+  <data name="RowNote" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="RowNoteTitle" xml:space="preserve"><value>ملاحظات · {row}</value></data>
+  <data name="NoteNeedsTime" xml:space="preserve"><value>أدخل وقتًا في يوم أولًا؛ الملاحظة تتبع قيد ذلك اليوم.</value></data>
+  <data name="Note" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="AddTaskRow" xml:space="preserve"><value>+ صف مهمة</value></data>
+  <data name="AddCategoryRow" xml:space="preserve"><value>+ صف فئة</value></data>
+  <data name="PickTask" xml:space="preserve"><value>اختر مهمة…</value></data>
+  <data name="PickCategory" xml:space="preserve"><value>اختر فئة…</value></data>
+  <data name="NoTaskOptions" xml:space="preserve"><value>لم يُعثر على مهمة يمكنك تسجيل الوقت عليها.</value></data>
+  <data name="NoCategoryOptions" xml:space="preserve"><value>لا توجد فئة نشطة. راجع مسؤول الوقت.</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Close" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>حفظ المسودة</value></data>
+  <data name="Saved" xml:space="preserve"><value>تم حفظ المسودة.</value></data>
+  <data name="SubmitWeek" xml:space="preserve"><value>إرسال للاعتماد</value></data>
+  <data name="Resubmit" xml:space="preserve"><value>إرسال مرة أخرى</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>هل تريد إرسال هذا الأسبوع للاعتماد؟</value></data>
+  <data name="Submitted" xml:space="preserve"><value>تم إرسال الأسبوع للاعتماد.</value></data>
+  <data name="Withdraw" xml:space="preserve"><value>سحب</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>هل تريد سحب هذا الأسبوع من الاعتماد؟ سيعود مسودة.</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>تم سحب الأسبوع؛ وعاد مسودة.</value></data>
+  <data name="RequestCorrection" xml:space="preserve"><value>طلب تصحيح</value></data>
+  <data name="CorrectionReason" xml:space="preserve"><value>لماذا يحتاج هذا الأسبوع المعتمد إلى تصحيح؟</value></data>
+  <data name="StartCorrection" xml:space="preserve"><value>بدء التصحيح</value></data>
+  <data name="CorrectionStarted" xml:space="preserve"><value>تم فتح مسودة تصحيح. يبقى الأسبوع المعتمد ساريًا حتى يُعتمد التصحيح.</value></data>
+  <data name="DiscardCorrection" xml:space="preserve"><value>تجاهل التصحيح</value></data>
+  <data name="DiscardCorrectionConfirm" xml:space="preserve"><value>هل تريد تجاهل مسودة التصحيح هذه؟ يبقى الأسبوع المعتمد كما هو.</value></data>
+  <data name="DiscardChangesConfirm" xml:space="preserve"><value>توجد تغييرات غير محفوظة في هذا الأسبوع. هل تريد المغادرة دون حفظ؟</value></data>
+  <data name="RejectedBand" xml:space="preserve"><value>أعاده {name} في {when}: «{reason}». صحّح الأسبوع وأرسله مرة أخرى.</value></data>
+  <data name="WaitingApprovalOf" xml:space="preserve"><value>بانتظار اعتماد {name}.</value></data>
+  <data name="WaitingApprovalUnnamed" xml:space="preserve"><value>بانتظار الاعتماد.</value></data>
+  <data name="ApprovedBand" xml:space="preserve"><value>معتمد. التغييرات الآن تتم عبر طلب تصحيح.</value></data>
+  <data name="CorrectionBand" xml:space="preserve"><value>تصحيح للمراجعة المعتمدة {revision}: «{reason}». تبقى المراجعة المعتمدة سارية حتى تُعتمد هذه.</value></data>
+  <data name="ReopenedBand" xml:space="preserve"><value>أعاد مسؤول الوقت فتحه: «{reason}».</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>سجل الاعتماد</value></data>
+  <data name="HistorySubmitted" xml:space="preserve"><value>أرسله {name}</value></data>
+  <data name="HistoryRejected" xml:space="preserve"><value>أعاده {name}</value></data>
+  <data name="HistoryApproved" xml:space="preserve"><value>اعتمده {name}</value></data>
+  <data name="CopiedRows" xml:space="preserve"><value>تم نسخ {count} صف من الأسبوع السابق دون أوقاتها.</value></data>
+  <data name="NothingToCopy" xml:space="preserve"><value>لا يوجد جديد للنسخ من الأسبوع السابق.</value></data>
+  <data name="PlanValuesShown" xml:space="preserve"><value>يظهر الوقت المخطط باللون الرمادي؛ أضفه خلية بخلية أو من مراجعة الاقتراحات.</value></data>
+  <data name="NoPlanValues" xml:space="preserve"><value>لا تحتوي خطتك على وقت لإضافته لهذا الأسبوع.</value></data>
+  <data name="ReviewMeetingItem" xml:space="preserve"><value>{day} · {title} · {value}</value></data>
+  <data name="ReviewPlanItem" xml:space="preserve"><value>{day} · {title} · {value} (خطة)</value></data>
+  <data name="NoSuggestions" xml:space="preserve"><value>لا توجد اقتراحات لهذا الأسبوع.</value></data>
+  <data name="AddSelected" xml:space="preserve"><value>إضافة المحدد</value></data>
+  <data name="InvalidDuration" xml:space="preserve"><value>ليست مدة صحيحة. استخدم 1:30 أو 1,5 أو 1.5 أو 90m.</value></data>
+  <data name="RoundedTo" xml:space="preserve"><value>تم التقريب إلى أقرب {step} دقيقة: {value}.</value></data>
+  <data name="NoticeMidnightTitle" xml:space="preserve"><value>أُغلق المؤقت عند منتصف الليل</value></data>
+  <data name="NoticeOutsideOpenWeekTitle" xml:space="preserve"><value>وقت المؤقت في أسبوع مقفل — اطلب تصحيحًا</value></data>
+  <data name="NoticeDraftPendingTitle" xml:space="preserve"><value>وقت المؤقت لم يُكتب في المسودة بعد</value></data>
+  <data name="TooShortTitle" xml:space="preserve"><value>أقصر من أن يُحتسب</value></data>
+  <data name="Seconds" xml:space="preserve"><value>{value} ث</value></data>
+  <data name="SideEmpty" xml:space="preserve"><value>لا توجد تنبيهات.</value></data>
+  <data name="CorrectCapturedTitle" xml:space="preserve"><value>تصحيح الوقت الملتقَط</value></data>
+  <data name="MeasuredValue" xml:space="preserve"><value>المقاس: {value}</value></data>
+  <data name="CorrectedValue" xml:space="preserve"><value>الوقت المصحح</value></data>
+  <data name="AccessDeniedTitle" xml:space="preserve"><value>ليس لديك وصول إلى سجل ساعاتي</value></data>
+  <data name="AccessDeniedMessage" xml:space="preserve"><value>اطلب من المسؤول صلاحية الوصول إلى هذه الوحدة.</value></data>
+  <data name="TimerChipLabel" xml:space="preserve"><value>مؤقت قيد التشغيل</value></data>
+  <data name="TimerChipStop" xml:space="preserve"><value>إيقاف</value></data>
+  <data name="OpenTask" xml:space="preserve"><value>فتح المهمة</value></data>
+  <data name="TimerStopped" xml:space="preserve"><value>تم إيقاف المؤقت.</value></data>
+  <data name="TimerStopFailed" xml:space="preserve"><value>تعذر إيقاف المؤقت. حاول مرة أخرى.</value></data>
+  <data name="MidnightNotice" xml:space="preserve"><value>استمر مؤقتك حتى منتصف الليل وأُغلق. راجع يوم أمس في سجل ساعاتي.</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>حدث خطأ ما. حاول مرة أخرى.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء.</value></data>
+  <data name="ErrStepInvalid" xml:space="preserve"><value>يُدخل الوقت بخطوات من {step} دقيقة، وبحد أقصى {maxRowHours} ساعة لكل قيد.</value></data>
+  <data name="ErrTimerDraftsUnavailable" xml:space="preserve"><value>تعذر نقل وقت المؤقت إلى المسودة الآن. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="ErrFutureDate" xml:space="preserve"><value>لا يمكن تسجيل وقت ليوم في المستقبل.</value></data>
+  <data name="ErrDateOutsideWeek" xml:space="preserve"><value>هذا اليوم لا ينتمي إلى هذا الأسبوع.</value></data>
+  <data name="ErrTargetInvalid" xml:space="preserve"><value>لا يمكن استخدام هذه المهمة — فهي غير موجودة أو لا يمكنك فتحها.</value></data>
+  <data name="ErrDuplicateRow" xml:space="preserve"><value>تظهر المهمة أو الفئة نفسها مرتين في يوم واحد.</value></data>
+  <data name="ErrNoteTooLong" xml:space="preserve"><value>يمكن أن تحتوي الملاحظة على {noteMax} حرف كحد أقصى.</value></data>
+  <data name="ErrCategoryInactive" xml:space="preserve"><value>هذه الفئة لم تعد نشطة.</value></data>
+  <data name="ErrDayImplausible" xml:space="preserve"><value>لا يمكن أن يتجاوز اليوم {maxDayHours} ساعة.</value></data>
+  <data name="ErrWeekKeyInvalid" xml:space="preserve"><value>تعذرت قراءة هذا الأسبوع.</value></data>
+  <data name="ErrWeekNotFound" xml:space="preserve"><value>لم يُعثر على هذا الأسبوع.</value></data>
+  <data name="ErrWeekNotOpen" xml:space="preserve"><value>هذا الأسبوع غير مفتوح للتغيير.</value></data>
+  <data name="ErrWeekOutsideEditWindow" xml:space="preserve"><value>هذا الأسبوع أقدم من فترة التعديل. اطلب من مسؤول الوقت إعادة فتحه.</value></data>
+  <data name="ErrEmptyWeek" xml:space="preserve"><value>لا يمكن إرسال أسبوع فارغ.</value></data>
+  <data name="ErrNoApprover" xml:space="preserve"><value>لم يُعثر على معتمِد لك. راجع مسؤول الوقت.</value></data>
+  <data name="ErrApprovalStartFailed" xml:space="preserve"><value>تعذر بدء الاعتماد. حاول مرة أخرى.</value></data>
+  <data name="ErrWithdrawTooLate" xml:space="preserve"><value>اتخذ المعتمِد قراره بالفعل؛ لم يعد بالإمكان سحب الأسبوع.</value></data>
+  <data name="ErrCorrectionReasonRequired" xml:space="preserve"><value>اكتب سبب الحاجة إلى التصحيح.</value></data>
+  <data name="ErrCorrectionAlreadyOpen" xml:space="preserve"><value>يوجد تصحيح مفتوح لهذا الأسبوع بالفعل.</value></data>
+  <data name="ErrCorrectionNotAllowed" xml:space="preserve"><value>لا يمكن تصحيح إلا أسبوع معتمد.</value></data>
+  <data name="ErrCorrectionDraftNotFound" xml:space="preserve"><value>لا توجد مسودة تصحيح لتجاهلها.</value></data>
+  <data name="ErrReopenReasonRequired" xml:space="preserve"><value>يلزم ذكر سبب لإعادة فتح أسبوع.</value></data>
+  <data name="ErrReopenNotNeeded" xml:space="preserve"><value>هذا الأسبوع لا يحتاج إلى إعادة فتح.</value></data>
+  <data name="ErrConcurrencyConflict" xml:space="preserve"><value>تغيّر الأسبوع في هذه الأثناء. أعد التحميل وحاول مرة أخرى.</value></data>
+  <data name="ErrSelfDecisionRefused" xml:space="preserve"><value>لم يُقبل قرار بشأن أسبوعك أنت؛ أرسله مرة أخرى.</value></data>
+  <data name="ErrApprovalInstanceClosed" xml:space="preserve"><value>هذا الاعتماد مغلق بالفعل.</value></data>
+  <data name="ErrReopenOwnWeek" xml:space="preserve"><value>لا يمكنك إعادة فتح أسبوعك أنت.</value></data>
+  <data name="ErrPersonNotFound" xml:space="preserve"><value>لم يُعثر على هذا الشخص.</value></data>
+  <data name="ErrTimerSwitchConcurrencyConflict" xml:space="preserve"><value>تغيّر إعداد المؤقت في هذه الأثناء. أعد التحميل وحاول مرة أخرى.</value></data>
+  <data name="ErrApprovalNotFound" xml:space="preserve"><value>لم يُعثر على هذا الاعتماد.</value></data>
+  <data name="ErrCategoryNotFound" xml:space="preserve"><value>لم يُعثر على هذه الفئة.</value></data>
+  <data name="ErrCategoryCodeInvalid" xml:space="preserve"><value>رمز الفئة غير صالح.</value></data>
+  <data name="ErrCategoryCodeReserved" xml:space="preserve"><value>رمز الفئة هذا محجوز.</value></data>
+  <data name="ErrCategoryCodeDuplicate" xml:space="preserve"><value>توجد فئة بهذا الرمز بالفعل.</value></data>
+  <data name="ErrCategoryCodeImmutable" xml:space="preserve"><value>لا يمكن تغيير رمز الفئة.</value></data>
+  <data name="ErrCategoryLabelRequired" xml:space="preserve"><value>تحتاج الفئة إلى تسمية.</value></data>
+  <data name="ErrCategoryDescriptionTooLong" xml:space="preserve"><value>الوصف طويل جدًا.</value></data>
+  <data name="ErrCategorySortOrderInvalid" xml:space="preserve"><value>يجب أن يكون الترتيب بين 0 و999.</value></data>
+  <data name="ErrCategoryConcurrencyConflict" xml:space="preserve"><value>تغيّرت الفئة في هذه الأثناء. أعد التحميل وحاول مرة أخرى.</value></data>
+  <data name="ErrSettingsPositionNotFound" xml:space="preserve"><value>لم يُعثر على هذا المنصب.</value></data>
+  <data name="ErrSettingsConcurrencyConflict" xml:space="preserve"><value>تغيّرت الإعدادات في هذه الأثناء. أعد التحميل وحاول مرة أخرى.</value></data>
+  <data name="ErrLegalEntityRequired" xml:space="preserve"><value>يلزم تحديد كيان قانوني.</value></data>
+  <data name="ErrTimerSwitchReasonRequired" xml:space="preserve"><value>يلزم ذكر سبب لتشغيل المؤقت.</value></data>
+  <data name="ErrTimerDisabledForLegalEntity" xml:space="preserve"><value>المؤقت غير مفعّل لكيانك القانوني. لا يزال بإمكانك إدخال الوقت يدويًا.</value></data>
+  <data name="ErrTimerTaskNotHeld" xml:space="preserve"><value>يعمل المؤقت فقط على مهمة مسندة إليك.</value></data>
+  <data name="ErrTimerTaskNotInProgress" xml:space="preserve"><value>يعمل المؤقت فقط على مهمة قيد التنفيذ.</value></data>
+  <data name="ErrTimerNotRunning" xml:space="preserve"><value>لا يوجد مؤقت قيد التشغيل.</value></data>
+  <data name="ErrTimerConcurrencyConflict" xml:space="preserve"><value>تغيّر المؤقت في هذه الأثناء. أعد التحميل وحاول مرة أخرى.</value></data>
+  <data name="ErrTimerUndoExpired" xml:space="preserve"><value>فات أوان التراجع عن هذا التبديل.</value></data>
+  <data name="ErrSuggestionNotFound" xml:space="preserve"><value>لم يُعثر على هذا الاقتراح.</value></data>
+  <data name="ErrSuggestionAlreadyDecided" xml:space="preserve"><value>تم البت في هذا الاقتراح بالفعل.</value></data>
+  <data name="ErrSuggestionWithdrawn" xml:space="preserve"><value>لم يعد هذا الاقتراح معروضًا — المحضر يذكر أنك لم تحضر.</value></data>
+  <data name="ErrSourceInvalid" xml:space="preserve"><value>مصدر الصف غير صالح.</value></data>
+  <data name="ErrSourceRequired" xml:space="preserve"><value>يجب أن يذكر كل صف مصدر وقته.</value></data>
+  <data name="ErrCapturedRowNotFound" xml:space="preserve"><value>لم يعد صف المؤقت أو الاجتماع هذا في المسودة. أعد تحميل الأسبوع.</value></data>
+  <data name="ErrRejectCommentRequired" xml:space="preserve"><value>يلزم ذكر سبب عند إعادة سجل ساعات.</value></data>
+  <data name="TimeEntry.Category.ADMINISTRATION" xml:space="preserve"><value>أعمال إدارية</value></data>
+  <data name="TimeEntry.Category.INTERNAL_MEETING" xml:space="preserve"><value>اجتماع داخلي</value></data>
+  <data name="TimeEntry.Category.TRAINING" xml:space="preserve"><value>تدريب</value></data>
+  <data name="TimeEntry.Category.SUPPORT" xml:space="preserve"><value>دعم</value></data>
+  <data name="TimeEntry.Category.TRAVEL" xml:space="preserve"><value>سفر</value></data>
+  <data name="NoticeTooSmall" xml:space="preserve"><value>«{typed}» دقيقة ستُقرَّب إلى صفر، فاحتفظت الخلية بقيمتها. اكتب 0 أو أفرغ الخلية لحذف الوقت.</value></data>
+  <data name="BareHoursRead" xml:space="preserve"><value>{typed} ← {value} (قُرئت ساعات). للدقائق اكتب مثلًا 15m.</value></data>
+  <data name="PendingRow" xml:space="preserve"><value>لم يُحفظ بعد</value></data>
+  <data name="PendingRowHint" xml:space="preserve"><value>الصف الذي بلا وقت لا يُحفظ. أدخل وقتًا في يوم ما للاحتفاظ به.</value></data>
+  <data name="PendingRowsLeaveConfirm" xml:space="preserve"><value>الصفوف التي بلا وقت لا تُحفظ وستضيع. هل تريد مغادرة هذا الأسبوع على أي حال؟</value></data>
+  <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>توجد تغييرات غير محفوظة، والصفوف التي بلا وقت لا تُحفظ. هل تريد مغادرة هذا الأسبوع على أي حال؟</value></data>
+  <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>لا يمكن تصحيح الوقت الملتقَط إلى صفر. صحّحه إلى {step} دقيقة على الأقل واذكر السبب في الملاحظة.</value></data>
+  <data name="SaveFailedKept" xml:space="preserve"><value>لم تُحفظ المسودة. لا تزال تغييراتك على الصفحة.</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>فترات المؤقت وراء هذا الصف</value></data>
+  <data name="SegmentLine" xml:space="preserve"><value>{start}–{end} · {duration}</value></data>
+  <data name="SegmentCutAtMidnight" xml:space="preserve"><value>قُطع عند منتصف الليل</value></data>
+  <data name="ErrApprovalsQueryInvalid" xml:space="preserve"><value>تعذرت قراءة قائمة الاعتمادات بهذه الإعدادات. أعد تحميل الصفحة.</value></data>
+  <data name="SubmitNeedsTime" xml:space="preserve"><value>أدخل وقتًا قبل إرسال الأسبوع.</value></data>
+</root>

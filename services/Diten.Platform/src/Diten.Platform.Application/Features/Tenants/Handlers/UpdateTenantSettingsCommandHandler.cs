@@ -33,6 +33,13 @@ public sealed class UpdateTenantSettingsCommandHandler : IRequestHandler<UpdateT
         tenant.Settings.Currency = request.Request.Currency.Trim().ToUpperInvariant();
         tenant.Settings.Environment = request.Request.Environment.Trim();
         tenant.Environment = tenant.Settings.Environment;
+        if (request.Request.DefaultWorkdayStart is { } workdayStart && request.Request.DefaultWorkdayEnd is { } workdayEnd)
+        {
+            // WP-TASK-CALENDAR-ENGINE-01 — written here, READ only by IWorkingHoursProvider (and echoed below).
+            tenant.DefaultWorkdayStart = workdayStart;
+            tenant.DefaultWorkdayEnd = workdayEnd;
+        }
+
         tenant.UpdatedAt = now;
         tenant.UpdatedBy = actor;
         tenant.ActivityTimeline.Add(new Domain.Entities.TenantActivityEvent
@@ -51,6 +58,8 @@ public sealed class UpdateTenantSettingsCommandHandler : IRequestHandler<UpdateT
             tenant.Settings.Language,
             tenant.Settings.Timezone,
             tenant.Settings.Currency,
-            tenant.Settings.Environment);
+            tenant.Settings.Environment,
+            tenant.DefaultWorkdayStart,
+            tenant.DefaultWorkdayEnd);
     }
 }

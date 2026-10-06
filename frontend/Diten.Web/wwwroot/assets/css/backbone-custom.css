@@ -4727,8 +4727,12 @@ div.dt-container div.dt-search input {
     min-inline-size: 0;
     padding-block-start: .0625rem;
 }
+/* Rİ3 (owner, 2026-10-02) — "unaffected" above was wrong: in a COLUMN, `align-items: center` centres horizontally,
+   so the stacked row floated its name and its chips to the middle as two separate blocks while the group header
+   and every line inside the name block stayed left. Measured at 800px: name block at x=346, chips at x=178, header
+   at x=32. Stacked rows start at the same edge as the header they sit under. */
 @media (max-width: 991.98px) {
-    .ra-row { flex-direction: column; gap: .5rem; }
+    .ra-row { flex-direction: column; align-items: stretch; gap: .5rem; }
     .ra-row-source { flex: 1 1 auto; max-inline-size: 100%; }
 }
 
@@ -5908,7 +5912,7 @@ tags.diten-tags .tagify__input {
 /* The column a dragged card could NOT land in — dimmed and, on the dropzone shape, still dashed underneath. */
 .wcn-kcol.wcn-kcol-pale { opacity: .45; }
 .wcn-kcol.wcn-kcol-pale .wcn-kcol-body { pointer-events: none; }
-.wcn-kcard:focus-visible, .wcn-cal-item:focus-visible, .wcn-tr:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 1px; }
+.wcn-kcard:focus-visible, .wcn-tr:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 1px; }
 /* CT fix — this used to REPLACE box-shadow with only the ring, so a selected card lost its resting elevation
    entirely (read as a flat cut-out, not a raised card with a ring around it). Stacked on the base shadow now,
    the same fix as `:hover` above. `.selected:hover` gets its own rule right after so the two states' shadows
@@ -5940,28 +5944,136 @@ tags.diten-tags .tagify__input {
 .wcn-kcard-processing-note { margin-block-start: .5rem; display: flex; align-items: center; gap: .375rem;
     font-size: .75rem; color: var(--bs-secondary-color); }
 
-/* Calendar (read-only deadline clustering) --------------------------------- */
-.wcn-cal-head { display: flex; align-items: center; justify-content: space-between; margin-block-end: .625rem; flex-wrap: wrap; gap: .5rem; }
-.wcn-cal-month { font-size: 1rem; font-weight: 700; color: var(--bs-heading-color); text-transform: capitalize; }
-.wcn-cal-legend { font-size: .75rem; color: var(--bs-secondary-color); display: inline-flex; align-items: center; gap: .375rem; }
-.wcn-cal-lg { inline-size: .625rem; block-size: .625rem; border-radius: 50%; display: inline-block; margin-inline-end: .125rem; }
-.wcn-cal-due, .wcn-cal-item.wcn-cal-due .wcn-cal-dot { background: var(--bs-danger); }
-.wcn-cal-plan, .wcn-cal-item.wcn-cal-plan .wcn-cal-dot { background: var(--bs-primary); }
-.wcn-cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; margin-block-end: 1px; }
-.wcn-cal-weekdays span { font-size: .6875rem; font-weight: 600; text-transform: uppercase; color: var(--bs-secondary-color); text-align: center; padding: .25rem; }
-.wcn-calendar { max-inline-size: 100%; overflow-x: auto; }
-.wcn-cal-head, .wcn-cal-weekdays, .wcn-cal-grid { min-inline-size: 42rem; }
-.wcn-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--bs-border-color); border: 1px solid var(--bs-border-color); border-radius: .375rem; overflow: hidden; }
-.wcn-cal-cell { background: var(--bs-card-bg); min-block-size: 5.5rem; padding: .25rem; display: flex; flex-direction: column; gap: .1875rem; }
-.wcn-cal-empty { background: var(--bs-body-bg); }
-.wcn-cal-today { background: color-mix(in sRGB, var(--bs-primary) 8%, var(--bs-card-bg)); }
-.wcn-cal-day { font-size: .75rem; font-weight: 600; color: var(--bs-secondary-color); }
-.wcn-cal-today .wcn-cal-day { color: var(--bs-primary); }
-.wcn-cal-item { display: flex; align-items: center; gap: .25rem; font-size: .625rem; padding: .125rem .25rem; border-radius: .25rem;
-    background: var(--bs-body-bg); cursor: pointer; overflow: hidden; }
-.wcn-cal-item:hover { outline: 1px solid var(--bs-primary); }
-.wcn-cal-dot { inline-size: .375rem; block-size: .375rem; border-radius: 50%; flex: 0 0 auto; }
-.wcn-cal-item-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Calendar view (WP-UI-CALENDAR-VIEW-01) -------------------------------------
+   The Task Center's calendar on the shared DitenCalendar (FullCalendar 6.1.15, vendored). Every colour is a theme
+   token, so the same rules read in the light and the dark theme; the legend swatches use the SAME tokens as the
+   events they explain. İşlerim = planning board with a left panel; every other tab = read-only. */
+.wcn-calview { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.wcn-calview-planning { grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr); }
+@media (max-width: 991.98px) { .wcn-calview-planning { grid-template-columns: minmax(0, 1fr); } }
+.wcn-calview-main { padding: 1rem; min-inline-size: 0; }
+.wcn-calview-host { min-inline-size: 0; }
+/* The shared component (DitenCalendar adds .dc-calendar to its host). The vendored Sneat CSS gives every time-grid
+   slot `block-size: 4em` (52 px), sized for 30-minute rows; our grid is 15 minutes, so a quarter hour is set back to
+   a compact row — 84 px an hour — and the week/day view scrolls inside its fixed height (CT live check 2026-09-29). */
+/* .dc-calendar sits on FullCalendar's own .fc root (same element), and the vendored rule is `.fc .fc-timegrid-slot`
+   loaded after this file — hence the compound selector, which outranks it. */
+.dc-calendar.fc .fc-timegrid-slot { block-size: 1.3125rem; }
+.wcn-calview-note { display: flex; align-items: center; gap: .375rem; margin-block: 0 .75rem; font-size: .8125rem;
+    color: var(--bs-danger); }
+.wcn-calview-legend { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin-block-end: .75rem; font-size: .75rem;
+    color: var(--bs-secondary-color); }
+.wcn-calview-lg { display: inline-flex; align-items: center; gap: .375rem; }
+.wcn-calview-swatch { inline-size: .875rem; block-size: .625rem; border-radius: .125rem; display: inline-block;
+    border: 1px solid transparent; }
+.wcn-calview-swatch-task { background: color-mix(in sRGB, var(--bs-primary) 16%, var(--bs-card-bg)); border-color: var(--bs-primary); }
+.wcn-calview-swatch-task-block { background: var(--bs-primary); border-color: var(--bs-primary); }
+.wcn-calview-swatch-meeting-accepted { background: var(--bs-info); border-color: var(--bs-info); }
+.wcn-calview-swatch-meeting-pending { background: transparent; border: 1px dashed var(--bs-info); }
+.wcn-calview-swatch-conflict { background: var(--bs-card-bg); border: 2px solid var(--bs-danger); }
+.wcn-calview-swatch-offhours { background: color-mix(in sRGB, var(--bs-secondary-color) 18%, var(--bs-card-bg)); }
+.wcn-calview-swatch-holiday { background: color-mix(in sRGB, var(--bs-warning) 22%, var(--bs-card-bg)); }
+.wcn-calview-swatch-due { background: var(--bs-danger); }
+.wcn-calview-swatch-plan { background: var(--bs-primary); }
+
+/* The left panel: three tabs with the feed's counts, splitCard cards below. */
+.wcn-calpanel { padding: .75rem; display: flex; flex-direction: column; gap: .5rem; min-inline-size: 0; }
+.wcn-calpanel-tabs { display: flex; gap: .25rem; padding: .125rem; border-radius: .375rem; background: var(--bs-body-bg); }
+.wcn-calpanel-tab { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; gap: .375rem;
+    padding: .375rem .25rem; font-size: .75rem; font-weight: 600; color: var(--bs-secondary-color); background: none;
+    border: 0; border-radius: .25rem; }
+.wcn-calpanel-tab.active { color: var(--bs-primary); background: color-mix(in sRGB, var(--bs-primary) 12%, var(--bs-card-bg)); }
+.wcn-calpanel-count { min-inline-size: 1.25rem; padding: 0 .375rem; border-radius: 1rem; font-size: .6875rem;
+    background: var(--bs-body-bg); color: var(--bs-body-color); }
+.wcn-calpanel-hint, .wcn-calpanel-empty { margin: 0; font-size: .75rem; color: var(--bs-secondary-color); }
+.wcn-calpanel-list { display: flex; flex-direction: column; gap: .5rem; overflow-y: auto; max-block-size: 70vh; }
+.wcn-calpanel [data-wcn-plan-drag] { cursor: grab; }
+.wcn-calcard-extras { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; margin-block-start: .375rem; }
+.wcn-calcard-btn { display: inline-flex; align-items: center; gap: .25rem; }
+
+/* Events. FullCalendar draws them; these classes are set by the host. Scoped on the COMPONENT's own root
+   (.dc-calendar.fc, one element) since WP-UI-MEETINGS-CALENDAR-01: the Meetings page draws the same events and must
+   read the same — a page-scoped rule (.wcn-calview .fc …) left its meetings unstyled. */
+.dc-calendar.fc { font-size: .8125rem; }
+.dc-calendar.fc .dc-task { background: color-mix(in sRGB, var(--bs-primary) 16%, var(--bs-card-bg));
+    border-color: var(--bs-primary); color: var(--bs-body-color); }
+.dc-calendar.fc .dc-task-block { background: var(--bs-primary); color: var(--bs-white); }
+.dc-calendar.fc .dc-meeting-accepted { background: var(--bs-info); border-color: var(--bs-info); color: var(--bs-white); }
+.dc-calendar.fc .dc-meeting-pending { background: color-mix(in sRGB, var(--bs-info) 10%, var(--bs-card-bg));
+    border: 1px dashed var(--bs-info); color: var(--bs-body-color); }
+/* A meeting the reader can see but is not on (a read-all reader on the Meetings page): filled, but quieter. */
+.dc-calendar.fc .dc-meeting-other { background: color-mix(in sRGB, var(--bs-secondary-color) 16%, var(--bs-card-bg));
+    border-color: var(--bs-secondary-color); color: var(--bs-body-color); }
+.dc-calendar.fc .dc-conflict { border: 2px solid var(--bs-danger); }
+.dc-calendar.fc .dc-due { background: var(--bs-danger); border-color: var(--bs-danger); color: var(--bs-white); }
+.dc-calendar.fc .dc-plan { background: var(--bs-primary); border-color: var(--bs-primary); color: var(--bs-white); }
+.dc-calendar.fc .dc-event-body { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; overflow: hidden; }
+.dc-calendar.fc .dc-event-time { font-weight: 600; }
+.dc-calendar.fc .dc-event-title { overflow: hidden; text-overflow: ellipsis; }
+.dc-calendar.fc .dc-event-actions { display: inline-flex; flex-wrap: wrap; gap: .25rem; margin-inline-start: auto; }
+.dc-calendar.fc .dc-event-chip { font-size: .6875rem; padding: 0 .25rem; border-radius: .25rem;
+    background: color-mix(in sRGB, var(--bs-card-bg) 70%, transparent); color: var(--bs-body-color); }
+.dc-calendar.fc .dc-event-warning { color: var(--bs-warning); }
+.dc-calendar.fc .dc-warned { box-shadow: inset 0 0 0 2px var(--bs-warning); }
+.dc-calendar.fc .dc-event-plan { padding: 0 .25rem; line-height: 1.2; color: inherit; background: transparent; border: 0; }
+
+/* Non-working time: FullCalendar's own non-business shading, weekends and holidays by day, the holiday's name. */
+.dc-calendar.fc .fc-non-business { background: color-mix(in sRGB, var(--bs-secondary-color) 18%, transparent); }
+.dc-calendar.fc .dc-day-weekend { background: color-mix(in sRGB, var(--bs-secondary-color) 10%, transparent); }
+.dc-calendar.fc .dc-day-holiday { background: color-mix(in sRGB, var(--bs-warning) 14%, transparent); }
+.dc-calendar.fc .dc-holiday-band { background: color-mix(in sRGB, var(--bs-warning) 22%, transparent); opacity: 1; }
+.dc-calendar.fc .dc-holiday-band .dc-band-title { display: block; padding: .125rem .25rem; color: var(--bs-body-color);
+    font-size: .6875rem; font-weight: 600; }
+
+/* The unresolved-calendar sentence over any calendar (DitenCalendar.unresolvedNotice, WP-UI-MEETINGS-CALENDAR-01 D1). */
+.dc-unresolved-note { display: flex; align-items: center; gap: .375rem; margin-block: 0 .75rem; font-size: .8125rem;
+    color: var(--bs-warning); }
+
+/* The ONE meeting-invitation card (shared/diten-invite-card.js): the Task Center's "Davetler" panel and the Meetings
+   page's "pending invitations" panel. Same rhythm as the Task Center's splitCard it replaces for invitations. */
+.dic-card { padding: .625rem .75rem; display: flex; flex-direction: column; gap: .375rem; box-shadow: none;
+    border: 1px solid var(--bs-border-color); }
+.dic-card-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.dic-card-type { display: inline-flex; align-items: center; gap: .25rem; font-size: .6875rem; font-weight: 600;
+    color: var(--bs-info); }
+.dic-card-kind { font-size: .6875rem; color: var(--bs-secondary-color); overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; }
+.dic-card-title { font-size: .8125rem; font-weight: 600; color: var(--bs-heading-color); overflow-wrap: anywhere; }
+.dic-card-meta { display: flex; flex-wrap: wrap; gap: .25rem .75rem; font-size: .75rem; color: var(--bs-secondary-color); }
+.dic-card-meta span { display: inline-flex; align-items: center; gap: .25rem; }
+.dic-card-actions { display: flex; flex-wrap: wrap; gap: .25rem; }
+.dic-card-btn { display: inline-flex; align-items: center; gap: .25rem; }
+
+/* Meetings page — list ⇄ calendar (MOD-0357 S3b 2c). The panel on the left, the calendar on the right, stacked on
+   a narrow screen; the same geometry as the Task Center's planning view. */
+.mc-view-switch .btn.active { color: var(--bs-primary); background: color-mix(in sRGB, var(--bs-primary) 12%, var(--bs-card-bg)); }
+.mc-calendar-layout { display: grid; grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr); gap: 1rem; }
+@media (max-width: 991.98px) { .mc-calendar-layout { grid-template-columns: minmax(0, 1fr); } }
+.mc-invites { padding: .75rem; display: flex; flex-direction: column; gap: .5rem; min-inline-size: 0; }
+.mc-invites-title { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin: 0;
+    font-size: .8125rem; font-weight: 600; }
+.mc-invites-count { min-inline-size: 1.25rem; padding: 0 .375rem; border-radius: 1rem; font-size: .6875rem;
+    text-align: center; background: var(--bs-body-bg); color: var(--bs-body-color); }
+.mc-invites-empty { margin: 0; font-size: .75rem; color: var(--bs-secondary-color); }
+.mc-invites-list { display: flex; flex-direction: column; gap: .5rem; overflow-y: auto; max-block-size: 70vh; }
+.mc-invites-list .dic-card { cursor: pointer; }
+.mc-calendar-main { padding: 1rem; min-inline-size: 0; }
+.mc-calendar-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem;
+    margin-block-end: .75rem; }
+.mc-calendar-legend { display: flex; flex-wrap: wrap; gap: .5rem 1rem; font-size: .75rem; color: var(--bs-secondary-color); }
+.mc-calendar-lg { display: inline-flex; align-items: center; gap: .375rem; }
+.mc-calendar-swatch { inline-size: .875rem; block-size: .625rem; border-radius: .125rem; display: inline-block;
+    border: 1px solid transparent; }
+.mc-calendar-swatch-accepted { background: var(--bs-info); border-color: var(--bs-info); }
+.mc-calendar-swatch-pending { background: transparent; border: 1px dashed var(--bs-info); }
+.mc-calendar-swatch-other { background: color-mix(in sRGB, var(--bs-secondary-color) 16%, var(--bs-card-bg));
+    border-color: var(--bs-secondary-color); }
+.mc-calendar-error { display: flex; align-items: center; gap: .375rem; margin-block: 0 .75rem; font-size: .8125rem;
+    color: var(--bs-danger); }
+
+/* The plan dialog's time and length fields (a form dialog, dressed by dialogLook). */
+.wcn-plan-form { display: flex; flex-direction: column; gap: .375rem; text-align: start; }
+.wcn-plan-form-hint { margin: .25rem 0 0; font-size: .75rem; color: var(--bs-secondary-color); }
 /* Toolbar ------------------------------------------------------------------ */
 .wcn-toolbar {
     display: flex; flex-wrap: wrap; gap: .75rem; align-items: center;
@@ -7686,18 +7798,29 @@ tags.diten-tags .tagify__input {
    rather than left reserving space — the same 80px gap that used to sit under a suppressed icon. */
 .swal2-container .swal2-modal.swal2-popup .swal2-icon.dt-dialog-iconslot { display: none !important; }
 
+/* ── THE CONFIRM'S READING SIZES (owner, 2026-09-24, variant A of the delete-confirm prototypes) ──
+   Measured on the delete confirm: the description printed at 12px with tight lines, the record chip sat 10px under
+   it, the buttons 20px under that — "text too small and everything too close". Three numbers, all on the shared
+   dialog, so every confirm in the product gets the same air: description 14px on a 1.55 line, the chip 14px below
+   it, the buttons 22px below the body. The description keeps its `small` class (other files pin the string); the
+   size is set here, where the dialog's own scale already lives. */
+.swal2-container .swal2-modal.swal2-popup .swal2-html-container.dt-dialog-body > .small {
+    font-size: 0.875rem;
+    line-height: 1.55;
+}
+.swal2-container .swal2-modal.swal2-popup .swal2-actions { margin-block-start: 1.375rem; }
 /* The record's NAME: neutral, full width, one line. Not `type`-coloured — a name is not dangerous. */
 .swal2-container .swal2-modal.swal2-popup .dt-dialog-entity {
     inline-size: 100%;
-    font-size: 0.8125rem;
-    margin-block-start: 0.625rem;
+    font-size: 0.875rem;
+    margin-block-start: 0.875rem;
 }
 
 /* ── A DIALOG FIELD FILLS ITS COLUMN, LIKE EVERY OTHER FIELD IN THIS PRODUCT ──
    MEASURED (2026-08-24), and it is the other half of the label fix: once the label was left-aligned, it started
    at the popup's content edge (x=544) while the box beside it started 34px further in (x=578). The 34px is
    SweetAlert's own `margin-inline` on its input slots — a number this product uses nowhere else, and the reason
-   `.wcn-date-input` and `.wcn-time-input` each already had to cancel it by hand.
+   `.wcn-date-input` already had to cancel it by hand.
 
    Cancelling it once, here, is what stops the next field having to remember. `.form-control` fills its column
    everywhere else in this product; a dialog is not the exception. The label, the box and the buttons now share
@@ -7841,46 +7964,9 @@ tags.diten-tags .tagify__input {
     background-position: right 0.9375rem center;
 }
 
-/* ── THE DURATION BOX, THE SAME WAY ────────────────────────────────────────
-   ⚠ SAME TECHNIQUE, DELIBERATELY, AND FOR THE SAME REASON: no wrapper, glyph painted on the box. A
-   `.diten-field` around this input would make it a GRANDCHILD of the popup and `Swal.getInput()` would return
-   null — the defect that shipped once on the date field and cost a round to undo.
-
-   THE RULE FOR WHETHER A FIELD GETS A GLYPH AT ALL: it gets one when the glyph SAYS something the label does
-   not. A date box gets a calendar and a duration box gets a clock, because both name a KIND of value. A select
-   already has the theme's own caret and a second arrow would be two arrows on one control. Free prose gets
-   nothing: a pencil beside a comment box says "this is a box you type in", which the box says by existing.
-
-   The SVG is the product's own `.bx-time-five`, copied from `assets/vendor/fonts/iconify-icons.css:6134` —
-   only the fill is written out, because a `background-image` cannot inherit `currentColor` the way `.bx`'s
-   mask does. The grey is `--bs-secondary-color`, the same #a7acb2 the date field measured. */
-.swal2-container .swal2-modal.swal2-popup .swal2-input.wcn-time-input {
-    block-size: 38px;
-    padding-block: calc(0.543rem - var(--bs-border-width));
-    font-size: 0.9375rem;
-    line-height: 1.375;
-    border-radius: var(--bs-border-radius);
-    padding-inline-start: calc(0.9375rem + 1rem + 0.5rem);
-    padding-inline-end: 0.9375rem;
-    margin-inline: 0;
-    inline-size: 100%;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='%23a7acb2' d='M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10s10-4.486 10-10S17.514 2 12 2m0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8s8 3.589 8 8s-3.589 8-8 8'/%3E%3Cpath fill='%23a7acb2' d='M13 7h-2v5.414l3.293 3.293l1.414-1.414L13 11.586z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: left 0.9375rem center;
-    background-size: 1rem 1rem;
-}
-[dir="rtl"] .swal2-container .swal2-modal.swal2-popup .swal2-input.wcn-time-input {
-    background-position: right 0.9375rem center;
-}
-
 /* The dark theme's own secondary grey, from the same token. Only the fill differs from the rule above. */
 [data-bs-theme="dark"] .swal2-container .swal2-modal.swal2-popup .swal2-input.wcn-date-input {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='%237e7f96' d='M7 11h2v2H7zm0 4h2v2H7zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z'/%3E%3Cpath fill='%237e7f96' d='M5 22h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2M19 8l.001 12H5V8z'/%3E%3C/svg%3E");
-}
-
-/* Same token, same rule, the clock's turn. */
-[data-bs-theme="dark"] .swal2-container .swal2-modal.swal2-popup .swal2-input.wcn-time-input {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='%237e7f96' d='M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10s10-4.486 10-10S17.514 2 12 2m0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8s8 3.589 8 8s-3.589 8-8 8'/%3E%3Cpath fill='%237e7f96' d='M13 7h-2v5.414l3.293 3.293l1.414-1.414L13 11.586z'/%3E%3C/svg%3E");
 }
 
 /* ── WHEN THE DIALOG REFUSES WHAT WAS TYPED ────────────────────────────────
@@ -9671,3 +9757,185 @@ body:has(.offcanvas.show) .flatpickr-calendar.open { z-index: 1095; }
    own floor (220). Named here so a change to either is a change in two places a test can compare. */
 .wr-skeleton .wr-skel-chart { block-size: 260px; margin-block-start: .5rem; }
 .wr-skeleton .wr-skel-chart-sm { block-size: 220px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+   MOD-0280-FU01 T2a — My Timesheet (/TimeEntry) and the top-bar timer chip. `.time-entry-*` only (FG-003).
+   Colours come from the theme's own tokens (--bs-*), so light and dark follow the shell; sides are LOGICAL
+   (inline-start / inline-end), so the Arabic page mirrors without a second rule set.
+   Desktop shows the week grid; below 768 px the one-day list with its day switcher (pack §21.2 U2).
+   ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════ */
+.time-entry-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-block-end: 1rem;
+}
+.time-entry-title-block { flex: 1 1 16rem; min-inline-size: 0; }
+.time-entry-week-nav { display: inline-flex; gap: 0.25rem; }
+.time-entry-missing { color: var(--bs-warning); font-size: 0.8125rem; }
+.time-entry-status-draft { background-color: var(--bs-secondary-bg-subtle); color: var(--bs-secondary-text-emphasis); }
+.time-entry-status-submitted { background-color: var(--bs-info-bg-subtle); color: var(--bs-info-text-emphasis); }
+.time-entry-status-approved { background-color: var(--bs-success-bg-subtle); color: var(--bs-success-text-emphasis); }
+.time-entry-status-rejected { background-color: var(--bs-danger-bg-subtle); color: var(--bs-danger-text-emphasis); }
+.time-entry-status-correction { background-color: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); }
+.time-entry-loading { color: var(--bs-secondary-color); }
+
+.time-entry-banners { display: flex; flex-direction: column; gap: 0.5rem; margin-block-end: 0.75rem; }
+.time-entry-banner { margin-block-end: 0; padding-block: 0.625rem; }
+.time-entry-banner-rejected, .time-entry-banner-blocked { background-color: var(--bs-danger-bg-subtle); color: var(--bs-danger-text-emphasis); border-color: var(--bs-danger-border-subtle); }
+.time-entry-banner-submitted { background-color: var(--bs-info-bg-subtle); color: var(--bs-info-text-emphasis); border-color: var(--bs-info-border-subtle); }
+.time-entry-banner-approved { background-color: var(--bs-success-bg-subtle); color: var(--bs-success-text-emphasis); border-color: var(--bs-success-border-subtle); }
+.time-entry-banner-correction, .time-entry-banner-reopened { background-color: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); border-color: var(--bs-warning-border-subtle); }
+
+.time-entry-history { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; margin-block-end: 1rem; font-size: 0.8125rem; }
+.time-entry-history-title { font-weight: 600; color: var(--bs-heading-color); }
+.time-entry-history-list { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; margin: 0; padding: 0; list-style: none; }
+.time-entry-history-item { display: inline-flex; gap: 0.375rem; }
+.time-entry-history-when { color: var(--bs-secondary-color); }
+.time-entry-history-rejected .time-entry-history-text { color: var(--bs-danger); }
+.time-entry-history-approved .time-entry-history-text { color: var(--bs-success); }
+
+/* T2b (CT live finding E3) — below 992 px the notices panel goes UNDER the table, never beside it or above it. */
+.time-entry-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.time-entry-layout > .time-entry-main { order: 1; }
+.time-entry-layout > .time-entry-side { order: 2; }
+@media (min-width: 992px) {
+    .time-entry-layout { grid-template-columns: minmax(0, 1fr) 18rem; }
+}
+.time-entry-side-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.time-entry-side-collapsed .time-entry-side-body { display: none; }
+.time-entry-side-section + .time-entry-side-section { margin-block-start: 1rem; }
+.time-entry-side-title { font-size: 0.8125rem; font-weight: 600; margin-block-end: 0.375rem; }
+.time-entry-side-item { font-size: 0.8125rem; margin-block-end: 0.25rem; }
+.time-entry-side-empty { color: var(--bs-secondary-color); font-size: 0.8125rem; margin: 0; }
+.time-entry-side-actions, .time-entry-review-actions, .time-entry-correction-actions {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; margin-block-start: 0.5rem;
+}
+
+.time-entry-row-add { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-block-end: 0.75rem; }
+.time-entry-picker { display: flex; align-items: center; gap: 0.5rem; flex: 1 1 20rem; min-inline-size: 0; }
+.time-entry-picker-select { min-inline-size: 14rem; }
+.time-entry-picker-empty { color: var(--bs-secondary-color); font-size: 0.8125rem; }
+.time-entry-review { border: 1px dashed var(--bs-border-color); border-radius: var(--bs-border-radius); padding: 0.75rem; margin-block-end: 0.75rem; }
+
+.time-entry-grid { margin-block-end: 0; font-size: 0.8125rem; }
+.time-entry-grid th, .time-entry-grid td { vertical-align: middle; text-align: center; white-space: nowrap; }
+.time-entry-grid .time-entry-row-label { text-align: start; white-space: normal; min-inline-size: 12rem; }
+.time-entry-row-title { display: inline-block; margin-inline-end: 0.375rem; }
+.time-entry-row-title-unreadable { color: var(--bs-secondary-color); font-style: italic; }
+.time-entry-day-name { display: block; font-weight: 600; }
+.time-entry-day-date, .time-entry-day-holiday-name { display: block; font-weight: 400; color: var(--bs-secondary-color); }
+.time-entry-day-weekend, .time-entry-day-holiday { background-color: var(--bs-tertiary-bg); }
+.time-entry-day-halfday { background-image: linear-gradient(to bottom, var(--bs-tertiary-bg) 50%, transparent 50%); }
+.time-entry-day-future { color: var(--bs-secondary-color); }
+.time-entry-day-today .time-entry-day-name { color: var(--bs-primary); }
+.time-entry-cell-input { inline-size: 4.5rem; margin-inline: auto; text-align: center; }
+.time-entry-cell-captured { min-inline-size: 3.5rem; border: 1px solid var(--bs-border-color); }
+.time-entry-cell-value { color: var(--bs-body-color); }
+.time-entry-total-col { font-weight: 600; }
+.time-entry-totals th, .time-entry-totals td { border-block-start: 2px solid var(--bs-border-color); font-weight: 600; }
+.time-entry-targets th, .time-entry-targets td { color: var(--bs-secondary-color); }
+.time-entry-day-flagged { color: var(--bs-warning-text-emphasis); background-color: var(--bs-warning-bg-subtle); }
+.time-entry-empty-cell { color: var(--bs-secondary-color); text-align: center; }
+
+.time-entry-source { margin-inline-end: 0.25rem; font-weight: 500; }
+.time-entry-source-manual { background-color: var(--bs-secondary-bg-subtle); color: var(--bs-secondary-text-emphasis); }
+.time-entry-source-timer { background-color: var(--bs-primary-bg-subtle); color: var(--bs-primary-text-emphasis); }
+.time-entry-source-meeting { background-color: var(--bs-info-bg-subtle); color: var(--bs-info-text-emphasis); }
+.time-entry-source-plan { background-color: var(--bs-success-bg-subtle); color: var(--bs-success-text-emphasis); }
+
+.time-entry-mark { display: block; font-size: 0.6875rem; line-height: 1.2; color: var(--bs-secondary-color); white-space: normal; }
+.time-entry-mark-conflict, .time-entry-mark-flag { color: var(--bs-warning-text-emphasis); }
+.time-entry-mark-confirmed { color: var(--bs-success-text-emphasis); background-color: var(--bs-success-bg-subtle); }
+.time-entry-note-toggle { color: var(--bs-secondary-color); }
+.time-entry-note-present { color: var(--bs-primary); }
+
+/* Suggestions and plan values are GREY until the person takes them (U3). */
+.time-entry-ghost, .time-entry-ghost-value { color: var(--bs-secondary-color); font-style: italic; }
+.time-entry-ghost { border: 1px dashed var(--bs-border-color); background-color: transparent; }
+.time-entry-row-ghost th, .time-entry-row-suggestion th { color: var(--bs-secondary-color); }
+.time-entry-suggestion { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.25rem; }
+
+.time-entry-footer-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.5rem; margin-block-start: 1rem; }
+.time-entry-correction-form { flex: 1 1 100%; }
+.time-entry-inline-error:not([hidden]) { display: block; }
+
+.time-entry-day-switcher { display: flex; gap: 0.25rem; overflow-x: auto; margin-block-end: 0.75rem; }
+.time-entry-day-tab { flex: 0 0 auto; border: 1px solid var(--bs-border-color); }
+.time-entry-day-tab.active { background-color: var(--bs-primary); border-color: var(--bs-primary); color: var(--bs-white); }
+.time-entry-day-item { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.time-entry-day-item-label { min-inline-size: 0; }
+.time-entry-day-summary { margin-block: 0.75rem 0; font-weight: 600; }
+
+.time-entry-notice {
+    margin-block-end: 0.75rem; padding-block: 0.5rem; padding-inline: 0.75rem;
+    border-radius: var(--bs-border-radius); font-size: 0.8125rem;
+    background-color: var(--bs-info-bg-subtle); color: var(--bs-info-text-emphasis);
+}
+.time-entry-notice-warning { background-color: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); }
+/* An empty status line takes no room, but stays in the page as a live region. */
+.time-entry-notice:empty { margin: 0; padding: 0; }
+.time-entry-pending { background-color: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); margin-inline-end: 0.25rem; }
+.time-entry-row-pending th { font-style: italic; }
+
+.time-entry-disclaimer { margin-block: 1rem 0; font-size: 0.75rem; color: var(--bs-secondary-color); }
+
+.time-entry-day-view { display: none; }
+@media (max-width: 767.98px) {
+    .time-entry-grid-host { display: none; }
+    .time-entry-day-view { display: block; }
+}
+
+/* The top-bar chip: only drawn while a timer runs (the script removes the `hidden` attribute). */
+.time-entry-timer-chip { display: flex; align-items: center; }
+.time-entry-timer-chip[hidden] { display: none; }
+.time-entry-timer-chip-body {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    padding-block: 0.125rem; padding-inline: 0.5rem 0.25rem;
+    border: 1px solid var(--bs-primary-border-subtle); border-radius: 50rem;
+    background-color: var(--bs-primary-bg-subtle);
+}
+.time-entry-timer-chip-link { display: inline-flex; align-items: center; gap: 0.375rem; color: var(--bs-primary-text-emphasis); min-inline-size: 0; }
+.time-entry-timer-chip-title { max-inline-size: 12rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.time-entry-timer-chip-elapsed { font-variant-numeric: tabular-nums; font-weight: 600; }
+.time-entry-timer-chip-stop { padding-block: 0; }
+@media (max-width: 575.98px) {
+    .time-entry-timer-chip-title { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+   MOD-0280-FU01 T2b — Task Center time card, approvals, categories, settings. Theme tokens only; logical sides only.
+   ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════ */
+.wcn-ts-figure { display: inline-flex; flex-direction: column; align-items: flex-start; margin-inline-end: 1rem; }
+.wcn-ts-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-block-start: 0.5rem; }
+.wcn-timer-undo {
+    position: fixed; inset-block-end: 1.5rem; inset-inline-start: 50%; transform: translateX(-50%); z-index: 1090;
+    display: inline-flex; align-items: center; gap: 0.75rem; padding-block: 0.5rem; padding-inline: 1rem;
+    border-radius: var(--bs-border-radius-lg); background-color: var(--bs-paper-bg, var(--bs-body-bg));
+    color: var(--bs-body-color); box-shadow: var(--bs-box-shadow);
+}
+[dir="rtl"] .wcn-timer-undo { transform: translateX(50%); }
+
+.time-entry-approvals-hint { margin-block-start: 0.25rem; }
+.time-entry-mark-badge { font-weight: 500; }
+.time-entry-approval-marks { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-block-end: 0.75rem; }
+.time-entry-changes td, .time-entry-changes th { vertical-align: middle; }
+.time-entry-change-added .time-entry-change-after { color: var(--bs-success-text-emphasis); font-weight: 600; }
+.time-entry-change-removed .time-entry-change-before { color: var(--bs-danger-text-emphasis); text-decoration: line-through; }
+.time-entry-change-removed .time-entry-change-after { color: var(--bs-danger-text-emphasis); }
+
+.time-entry-code-locked { background-color: var(--bs-tertiary-bg); }
+
+.time-entry-settings-pool { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; max-inline-size: 36rem; }
+@media (min-width: 768px) {
+    .time-entry-settings-pool { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+    .time-entry-settings-pool .form-label { grid-column: 1 / -1; margin-block-end: 0; }
+}
+.time-entry-switches td { vertical-align: middle; }
+.time-entry-switch-reason { max-inline-size: 22rem; white-space: normal; }
+.time-entry-swiss-warning { font-size: 0.8125rem; }
+
+.time-entry-segments { margin-block: 0.25rem 0.75rem; }
+.time-entry-segment { font-variant-numeric: tabular-nums; }
+.time-entry-calendar-unresolved { margin-block-end: 0.5rem; }

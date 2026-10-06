@@ -1,0 +1,64 @@
+@using Diten.Web.Views.TimeEntry.Approvals
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ApprovalsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["DetailTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var weekId = ViewData["WeekId"] as string ?? string.Empty;
+    var canApprove = Perms.Has("platform.workflow.tasks.approve");
+    var canReject = Perms.Has("platform.workflow.tasks.reject");
+}
+
+@*
+    MOD-0280-FU01 T2b (U4, U5) — one submitted week, READ ONLY, for the approver it was routed to. Approve and Return
+    travel the Task Center's own action path (work-items → MOD-0023); the return reason is a field on this page (never
+    a browser prompt) and MOD-0023 refuses a timesheet return without one. There is no edit control (D6).
+    UAS-001: without time-entry.approvals.read nothing below is drawn.
+*@
+@if (!Perms.Has("time-entry.approvals.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["ApprovalsTitle"].Value" />
+    return;
+}
+
+<div class="time-entry-approval" id="timeApprovalWeek" data-week-id="@weekId"
+     data-can-approve="@(canApprove ? "true" : "false")" data-can-reject="@(canReject ? "true" : "false")">
+    <a class="btn btn-sm btn-text-secondary mb-2" href="/TimeEntry/Approvals"><i class="bx bx-arrow-back me-1"></i>@Localizer["BackToList"]</a>
+    <div class="mb-3">
+        <h5 class="mb-0" id="taTitle">@Localizer["DetailTitle"]</h5>
+        <p class="mb-0 text-muted" id="taMeta"></p>
+    </div>
+
+    <div class="time-entry-notice" id="taNotice" role="status" aria-live="polite"></div>
+    <p class="time-entry-loading" id="taLoading">@Localizer["Loading"]</p>
+
+    <div id="taContent" hidden>
+        <div id="taMarks" class="time-entry-approval-marks"></div>
+        <p class="time-entry-banner time-entry-banner-correction alert" id="taInForce" hidden></p>
+
+        <section class="card mb-4">
+            <div class="card-body">
+                <div id="taGrid" class="time-entry-grid-host time-entry-approval-grid"></div>
+            </div>
+        </section>
+
+        <section class="card mb-4" id="taChangesCard" hidden>
+            <div class="card-body">
+                <h6 class="mb-3">@Localizer["CorrectionChangesTitle"]</h6>
+                <div id="taChanges"></div>
+            </div>
+        </section>
+
+        <p class="text-muted small" id="taCannotEdit">@Localizer["ApproverCannotEdit"]</p>
+        <div id="taDecision" class="time-entry-footer-actions"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TimeEntry/Approvals/_IndexL10n.cshtml" />
+    <partial name="~/Views/TimeEntry/_ErrorL10n.cshtml" />
+    <script src="~/assets/js/TimeEntry/Approvals/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TimeEntry/core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TimeEntry/Approvals/details.js" asp-append-version="true"></script>
+}

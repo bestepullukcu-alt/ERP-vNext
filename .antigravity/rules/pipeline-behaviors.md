@@ -5,6 +5,11 @@ description: "PIPELINE-001 — Diten ERP vNext MediatR Pipeline Behavior Standar
 # MediatR Pipeline Behavior Standardı (Diten ERP vNext)
 
 Her mikroserviste aşağıdaki 4 pipeline behavior **zorunlu olarak** kurulmalıdır.
+
+> **Denetim kaydı bu dördün dışındadır ve ayrıca zorunludur (AUD-001).** Platform'da `AuditBehavior`, başka bir serviste merkezi
+> günlüğe iletim davranışı **beşinci** davranıştır. O davranış servis başına yazılmaz: ortak iletici `Diten.Building.Blocks`
+> içinden gelir (Control Tower kararı K4, `audit-trail-standard.md` §5). Paket gelene kadar denetim izi olmayan serviste yeni
+> yazma komutu engellidir.
 Behavior'lar `Application` katmanında yaşar — `Infrastructure`'da değil.
 
 ---

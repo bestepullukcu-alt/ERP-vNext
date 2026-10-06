@@ -38,5 +38,9 @@ public enum SchemaProfile
     Meetings = 10,
 
     /// <summary>MOD-0031 Evidence Linking (slice 1): evidence_links.</summary>
-    EvidenceLinking = 11
+    EvidenceLinking = 11,
+
+    /// <summary>MOD-0280-FU01 Time Entry &amp; Weekly Timesheet (ADR-004): weeks, entries, task totals, categories,
+    /// settings. T1b adds timer segments and meeting suggestions to this profile.</summary>
+    TimeEntry = 12
 }

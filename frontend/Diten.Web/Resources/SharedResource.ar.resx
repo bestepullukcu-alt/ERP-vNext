@@ -536,6 +536,7 @@
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>إعدادات المهام</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>سير العمل</value></data>
   <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>الاجتماعات</value></data>
+  <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>سجل ساعات العمل</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>المستخدمون</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>الأدوار</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>أذونات الأدوار</value></data>
@@ -820,6 +821,10 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>تجاوز</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>تعريفات الحقول</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>الاجتماعات</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>سجل ساعاتي</value></data>
+  <data name="Nav.Page.TIMEAPPROVALS" xml:space="preserve"><value>اعتماد سجلات الساعات</value></data>
+  <data name="Nav.Page.TIMECATEGORIES" xml:space="preserve"><value>فئات العمل</value></data>
+  <data name="Nav.Page.TIMESETTINGS" xml:space="preserve"><value>إعدادات تسجيل الوقت</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>أنواع الاجتماعات</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>سلاسل الاجتماعات</value></data>
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>تقرير الاجتماعات</value></data>
@@ -925,4 +930,113 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>التنقل بين علامات التبويب (عند التركيز على علامة تبويب)</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>تعديل المهمة</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>العودة إلى قائمة المهام</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>عدد الصفوف المراد تصديرها كبير جدًا (أكثر من 50,000). ضيّق عامل التصفية ثم حاول مرة أخرى.</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
+  <!-- BL-452 package 2 (WP-UI-EXPORT-02): list Action menu + controlled copy (PDF / print header block, footer). -->
+  <data name="Action" xml:space="preserve">
+    <value>إجراءات</value>
+    <comment>List toolbar: the Action (export) dropdown button. BL-452 package 2 (finding 34, toolbar part).</comment>
+  </data>
+  <data name="ControlledCopy.Report" xml:space="preserve">
+    <value>تقرير</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Tenant" xml:space="preserve">
+    <value>الشركة</value>
+    <comment>BL-452 package 2 controlled copy header: label for the tenant's display name (the customer company).</comment>
+  </data>
+  <data name="ControlledCopy.Filters" xml:space="preserve">
+    <value>عوامل التصفية</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Search" xml:space="preserve">
+    <value>البحث</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Sort" xml:space="preserve">
+    <value>الترتيب</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortAsc" xml:space="preserve">
+    <value>تصاعدي</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortDesc" xml:space="preserve">
+    <value>تنازلي</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Rows" xml:space="preserve">
+    <value>عدد الصفوف</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedBy" xml:space="preserve">
+    <value>أنشأه</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedAt" xml:space="preserve">
+    <value>تاريخ الإنشاء</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.None" xml:space="preserve">
+    <value>لا يوجد</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Uncontrolled" xml:space="preserve">
+    <value>هذه النسخة المطبوعة نسخة غير خاضعة للرقابة — {0}</value>
+    <comment>BL-452 package 2 controlled copy footer on every page; {0} = creation date-time with time zone.</comment>
+  </data>
+  <data name="ControlledCopy.Page" xml:space="preserve">
+    <value>صفحة {0} من {1}</value>
+    <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
+  </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>شهر</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>أسبوع</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>يوم</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>السابق</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>التالي</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>طوال اليوم</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>+{0} أخرى</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>لا يوجد ما يُعرض</value>
+  </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>لم يتم تعريف تقويم العمل — لا يمكن عرض عطلات نهاية الأسبوع والعطلات الرسمية.</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>دعوة إلى اجتماع</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>قبول</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>رفض</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>هذا الاجتماع يتعارض مع خطتك</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>يتداخل مع الفترة المخططة «{0}» ({1}). هل تريد القبول على أي حال؟</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>القبول على أي حال</value>
+  </data>
 </root>

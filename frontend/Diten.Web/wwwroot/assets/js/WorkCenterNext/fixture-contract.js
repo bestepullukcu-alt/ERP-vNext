@@ -164,6 +164,8 @@
         'edited',
         // BL-439 — the person a waiting task was asking answered; the entry's reason is their answer.
         'inquiryAnswered',
+        // WP-TASK-CALENDAR-ENGINE-01 — the holder took the task off their calendar (POST {id}/unplan).
+        'unplanned',
         'unknown'
     ];
 
@@ -260,6 +262,30 @@
             }
             if ('expectedVersion' in action || 'expectedConcurrencyToken' in action || 'requiresConcurrency' in action) {
                 push(errors, fixture, 'ACTION_CONCURRENCY_DUPLICATE', path);
+            }
+            // REQ-WCN-01 (W-2) — OPTIONAL: the server says which action accepts an optional note. Validated only when
+            // present, so an item from a provider (or a server) that has never heard of it is never dropped. It
+            // cannot sit beside a required reason: that window is already mandatory.
+            if (action.acceptsNote !== undefined && action.acceptsNote !== null) {
+                if (typeof action.acceptsNote !== 'boolean') {
+                    push(errors, fixture, 'ACTION_ACCEPTS_NOTE_INVALID', `${path}.acceptsNote`);
+                } else if (action.acceptsNote && action.requiresReason === true) {
+                    push(errors, fixture, 'ACTION_NOTE_WITH_REQUIRED_REASON', `${path}.acceptsNote`);
+                }
+            }
+            // BL-491 — OPTIONAL, the same way: the server says which action names a person, and whom its window must
+            // not offer. Validated only when present. The excluded ids mean nothing without the flag beside them.
+            if (action.requiresTargetPerson !== undefined && action.requiresTargetPerson !== null
+                && typeof action.requiresTargetPerson !== 'boolean') {
+                push(errors, fixture, 'ACTION_TARGET_PERSON_INVALID', `${path}.requiresTargetPerson`);
+            }
+            if (action.excludedTargetPrincipalIds !== undefined && action.excludedTargetPrincipalIds !== null) {
+                const ids = action.excludedTargetPrincipalIds;
+                if (!Array.isArray(ids) || ids.some((id) => typeof id !== 'string' || !id)) {
+                    push(errors, fixture, 'ACTION_EXCLUDED_TARGETS_INVALID', `${path}.excludedTargetPrincipalIds`);
+                } else if (action.requiresTargetPerson !== true) {
+                    push(errors, fixture, 'ACTION_EXCLUDED_TARGETS_WITHOUT_TARGET', `${path}.excludedTargetPrincipalIds`);
+                }
             }
         });
         if (enabledInlineActions(fixture).length && (!fixture.concurrency || !fixture.concurrency.kind || !fixture.concurrency.token)) {
@@ -406,6 +432,16 @@
         // present it must be a real label: a malformed one would render as a raw key or as nothing at all.
         if (fixture.arrivalReason !== undefined && fixture.arrivalReason !== null && !isLabel(fixture.arrivalReason)) {
             push(errors, fixture, 'ARRIVAL_REASON_INVALID', 'arrivalReason');
+        }
+        // REQ-WCN-01 (W-1, W-3) — the approval step's name and the positions it waits on. Both OPTIONAL and validated
+        // only when present (an older item without them is never refused), but when present they must be real
+        // labels: a malformed one would put a raw key — or an id — on screen.
+        if (fixture.stepName !== undefined && fixture.stepName !== null && !isLabel(fixture.stepName)) {
+            push(errors, fixture, 'STEP_NAME_INVALID', 'stepName');
+        }
+        if (fixture.candidatePositions !== undefined && fixture.candidatePositions !== null
+            && (!Array.isArray(fixture.candidatePositions) || !fixture.candidatePositions.every(isLabel))) {
+            push(errors, fixture, 'CANDIDATE_POSITIONS_INVALID', 'candidatePositions');
         }
         if (fixture.personal?.snoozedUntil && fixture.normalizedStatus === 'Waiting' && fixture.waitingContext?.type === 'personalSnooze') {
             push(errors, fixture, 'SNOOZE_MUST_NOT_CREATE_WAITING', 'personal.snoozedUntil');

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Diten.Web.Models.CRM;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.Web.Controllers.CRM;
@@ -20,6 +21,7 @@ public sealed partial class KnowledgeController
 {
     private const string ClaimReadPermission = "crm.claim.read";
     private const string ClaimCoveragePath = "/api/crm/content-composition/claims/coverage";
+    private const string CountryContentLanguagesSet = "country-content-languages";
 
     /// <summary>The CRM content ↔ claim error codes (KnowledgeContentClaimErrors) shown as Claims-section field errors.</summary>
     internal static readonly IReadOnlyList<string> ClaimErrorCodes =
@@ -225,12 +227,14 @@ public sealed partial class KnowledgeController
         }).ToList();
     }
 
-    /// <summary>Country → content languages from the GLOBAL BRD set <c>country-content-languages</c> (read without
-    /// scope_key; attribute <c>Languages</c>, comma separated). Null = the set is unavailable.</summary>
+    /// <summary>Country → content languages from the GLOBAL BRD set <c>country-content-languages</c> (attribute
+    /// <c>Languages</c>, comma separated). Null = the set is unavailable.
+    /// <para>WP-BRD-TENANT-CRM-SETS — read through the shared <see cref="CrmReferenceSetReader"/> (consumable-sets route
+    /// first, which reads a Global set globally; the old consumer path drops scope_key on the global-set refusal).</para></summary>
     private async Task<Dictionary<string, string[]>?> ReadCountryLanguagesAsync(CancellationToken ct)
     {
-        var response = await SendGatewayAsync(HttpMethod.Get,
-            "/api/v1/reference-data/sets/country-content-languages/published-values", null, ct);
+        using var response = await _referenceSets.ReadAsync(
+            CountryContentLanguagesSet, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), GetTenantId(), ct);
         if (response is null || !response.IsSuccessStatusCode) return null;
         try
         {

@@ -19,7 +19,8 @@ const APP = fs.readFileSync(
 const scheduler = () => {
   const start = APP.indexOf("const openMeetingScheduler = ");
   expect(start).toBeGreaterThan(-1);
-  const end = APP.indexOf("const openLogTime = ", start);
+  // The next declaration after the scheduler (the fake "log time" dialog that used to follow it is gone — BL-485).
+  const end = APP.indexOf("const addPersonalNote = ", start);
   expect(end).toBeGreaterThan(start);
   return APP.slice(start, end);
 };

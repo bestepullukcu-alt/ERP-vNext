@@ -9,6 +9,7 @@ using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Domain.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
+using Diten.AuthService.Application.Tests.Testing;
 
 namespace Diten.AuthService.Application.Tests.Users;
 
@@ -50,15 +51,19 @@ public sealed class AccountKindTests
     // are unchanged otherwise.
     // WP-PSS-MOD0024-BL392-WORK-REPORT-READ-EXPLICIT-01 (BL-392, owner decision 2026-09-14) added
     // platform.tasks.work-report.read-tenant-wide as the fourth — same treatment.
+    // MOD-0280-FU01 D11 (T1a CT prerequisite, 79547b4e3, owner's delegation 2026-09-29) added the two time-entry report keys
+    // as the fifth and sixth; this test was left at four until the T3 stop report's full Auth run (2026-09-30).
     [Fact]
-    public void The_explicit_grant_only_set_is_exactly_the_four_owner_decided_keys()
+    public void The_explicit_grant_only_set_is_exactly_the_six_owner_decided_keys()
     {
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.account-kind.manage"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("AUTH.USERS.ACCOUNT-KIND.MANAGE")); // case-insensitive, like the catalog
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("ppm.portfolios.assign-owner"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("platform.tasks.read-all"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("platform.tasks.work-report.read-tenant-wide"));
-        Assert.Equal(4, ExplicitGrantOnlyPermissions.Keys.Count);
+        Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("time-entry.team-totals.read"));
+        Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("time-entry.person-reports.read"));
+        Assert.Equal(6, ExplicitGrantOnlyPermissions.Keys.Count);
         Assert.False(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.lookup")); // lookup is an ORDINARY tenant key
     }
 
@@ -432,10 +437,21 @@ public sealed class AccountKindTests
     // ── wiring ──
 
     private static SetAccountKindCommandHandler SetHandler(IUserRepository repo, CapturingAudit audit)
-        => new(repo, TenantContextFor(TenantA), new AccountKindWriter(audit), NullLogger<SetAccountKindCommandHandler>.Instance);
+        => new(repo, TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(audit)), NullLogger<SetAccountKindCommandHandler>.Instance);
 
     private static UpdateUserCommandHandler UpdateHandler(IUserRepository repo, CapturingAudit audit)
-        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(audit), NullLogger<UpdateUserCommandHandler>.Instance);
+        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(audit)), UserAuditForTests.None(), new RecordingUserQuotaClient(), new AnotherActor(), new NoRevokes(), NullLogger<UpdateUserCommandHandler>.Instance);
+
+    private sealed class AnotherActor : ICurrentUserAccessor { public Guid? UserId { get; } = Guid.NewGuid(); }
+
+    private sealed class NoRevokes : IRefreshTokenRepository
+    {
+        public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();
+        public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
+        public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
+        public Task RevokeAsync(string token, CancellationToken ct) => throw new NotSupportedException();
+        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.CompletedTask;
+    }
 
     private static CreateUserCommandHandler CreateHandler(InMemoryUserRepository repo, FakeInvitationEmailService email)
         => new(
@@ -447,6 +463,8 @@ public sealed class AccountKindTests
             new FakeRefreshTokenHasher(),
             new FakeHostEnvironment(),
             email,
+            UserAuditForTests.None(),
+            new RecordingUserQuotaClient(),
             NullLogger<CreateUserCommandHandler>.Instance);
 
     private static ITenantContext TenantContextFor(Guid tenantId)

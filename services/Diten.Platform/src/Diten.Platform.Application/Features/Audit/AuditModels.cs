@@ -49,7 +49,10 @@ public sealed record AuditEventListItemDto(
     string SourceService,
     string? SourceModule,
     bool IsMetaAudit,
-    string RedactionStatus);
+    string RedactionStatus,
+    // BL-456 — the source's own event name (e.g. AuthService "user_invited"); the Audit Log screen labels a known one
+    // (AuditLog.Event.{name}) where the generic Operation alone would read "Execute"/"Update". Trailing + optional.
+    string? RequestType = null);
 
 public sealed record AuditEventDetailDto(
     Guid Id,
@@ -160,7 +163,8 @@ public static class AuditEventMapper
             auditEvent.SourceService,
             auditEvent.SourceModule,
             auditEvent.IsMetaAudit,
-            auditEvent.RedactionStatus.ToString());
+            auditEvent.RedactionStatus.ToString(),
+            auditEvent.RequestType);
 
     public static AuditEventDetailDto ToDetailDto(AuditEvent auditEvent, ISensitiveFieldRedactor redactor) =>
         new(

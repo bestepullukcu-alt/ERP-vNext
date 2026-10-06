@@ -1297,27 +1297,6 @@
         "targetStatus": null
       },
       {
-        "code": "plan",
-        "label": {
-          "kind": "resource",
-          "key": "WorkAggregation_Action_Plan"
-        },
-        "semanticType": "plan",
-        "enabled": false,
-        "source": "provider",
-        "disabledReasonCode": "PERMISSION_DENIED",
-        "disabledReason": {
-          "kind": "resource",
-          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
-        },
-        "requiresConfirmation": false,
-        "requiresReason": false,
-        "requiresEvidence": false,
-        "supportsBulk": false,
-        "riskLevel": "normal",
-        "targetStatus": null
-      },
-      {
         "code": "cancel",
         "label": {
           "kind": "resource",
@@ -1366,7 +1345,6 @@
     "dueAt": null,
     "primaryActionCode": "reassign",
     "overflowActionCodes": [
-      "plan",
       "cancel",
       "scheduleReviewMeeting"
     ],
@@ -1475,24 +1453,6 @@
         "targetStatus": null
       },
       {
-        "code": "plan",
-        "label": {
-          "kind": "resource",
-          "key": "WorkAggregation_Action_Plan"
-        },
-        "semanticType": "plan",
-        "enabled": true,
-        "source": "provider",
-        "disabledReasonCode": null,
-        "disabledReason": null,
-        "requiresConfirmation": false,
-        "requiresReason": false,
-        "requiresEvidence": false,
-        "supportsBulk": false,
-        "riskLevel": "normal",
-        "targetStatus": null
-      },
-      {
         "code": "cancel",
         "label": {
           "kind": "resource",
@@ -1541,7 +1501,6 @@
     "dueAt": null,
     "primaryActionCode": "reassign",
     "overflowActionCodes": [
-      "plan",
       "cancel",
       "scheduleReviewMeeting"
     ],
@@ -1650,27 +1609,6 @@
         "targetStatus": null
       },
       {
-        "code": "plan",
-        "label": {
-          "kind": "resource",
-          "key": "WorkAggregation_Action_Plan"
-        },
-        "semanticType": "plan",
-        "enabled": false,
-        "source": "provider",
-        "disabledReasonCode": "PERMISSION_DENIED",
-        "disabledReason": {
-          "kind": "resource",
-          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
-        },
-        "requiresConfirmation": false,
-        "requiresReason": false,
-        "requiresEvidence": false,
-        "supportsBulk": false,
-        "riskLevel": "normal",
-        "targetStatus": null
-      },
-      {
         "code": "cancel",
         "label": {
           "kind": "resource",
@@ -1719,7 +1657,6 @@
     "dueAt": null,
     "primaryActionCode": "reassign",
     "overflowActionCodes": [
-      "plan",
       "cancel",
       "scheduleReviewMeeting"
     ],
@@ -1826,24 +1763,6 @@
         "targetStatus": null
       },
       {
-        "code": "plan",
-        "label": {
-          "kind": "resource",
-          "key": "WorkAggregation_Action_Plan"
-        },
-        "semanticType": "plan",
-        "enabled": true,
-        "source": "provider",
-        "disabledReasonCode": null,
-        "disabledReason": null,
-        "requiresConfirmation": false,
-        "requiresReason": false,
-        "requiresEvidence": false,
-        "supportsBulk": false,
-        "riskLevel": "normal",
-        "targetStatus": null
-      },
-      {
         "code": "cancel",
         "label": {
           "kind": "resource",
@@ -1889,7 +1808,6 @@
     "dueAt": null,
     "primaryActionCode": "reassign",
     "overflowActionCodes": [
-      "plan",
       "cancel",
       "scheduleReviewMeeting"
     ],

@@ -115,9 +115,7 @@ internal sealed class WorkflowTaskTransitionSupport
                 correlationId);
         }
 
-        if (action == WorkflowTransitionAction.Approve &&
-            !string.IsNullOrWhiteSpace(instance.StartedBy) &&
-            string.Equals(instance.StartedBy, actorId, StringComparison.Ordinal))
+        if (action == WorkflowTransitionAction.Approve && IsStarter(instance, actorId))
         {
             return Response<WorkflowTaskTransitionResponse>.Fail(
                 "Submitter cannot approve their own workflow.",
@@ -338,7 +336,10 @@ internal sealed class WorkflowTaskTransitionSupport
         CancellationToken ct)
     {
         actorId = actorId.Trim();
-        delegatePrincipalId = delegatePrincipalId.Trim();
+        // BL-491 — every later gate compares principals letter for letter, so a user id written in another spelling
+        // (upper case, braces, no dashes) would pass the "not yourself" check below and then leave the task with a
+        // principal nobody's token ever matches. A user id is kept in ONE spelling; any other principal is untouched.
+        delegatePrincipalId = CanonicalPrincipal(delegatePrincipalId.Trim());
         reasonCode = reasonCode.Trim();
         idempotencyKey = idempotencyKey.Trim();
 
@@ -378,6 +379,18 @@ internal sealed class WorkflowTaskTransitionSupport
         if (!string.Equals(snapshot.ResolvedPrincipalId, actorId, StringComparison.Ordinal))
         {
             return ActorDenied(correlationId);
+        }
+
+        // BL-491 — the approve gate refuses the starter (SOD_VIOLATION), so a task delegated TO the starter would sit
+        // with the one person who can never approve it. The same rule, at the gate that would create that lock —
+        // asked after the assignment check, so somebody the task is not with learns nothing about who started it.
+        if (IsStarter(instance, delegatePrincipalId))
+        {
+            return Response<WorkflowTaskTransitionResponse>.Fail(
+                "A workflow task cannot be delegated to the person who started the workflow.",
+                409,
+                WorkflowReasonCodes.SodViolation,
+                correlationId);
         }
 
         var previousTaskStatus = task.Status;
@@ -502,7 +515,8 @@ internal sealed class WorkflowTaskTransitionSupport
         string idempotencyKey,
         string? comment,
         string correlationId,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool allowEscalated = false)
     {
         actorId = actorId.Trim();
         reasonCode = reasonCode.Trim();
@@ -526,7 +540,10 @@ internal sealed class WorkflowTaskTransitionSupport
 
         var task = context.Task!;
         var instance = context.Instance!;
-        if (!IsOpen(task))
+        // B3 — an ESCALATED task is still open (nobody decided; it only moved to somebody else), but only the OWNING
+        // module's in-process withdraw may call it off (allowEscalated). The public cancel endpoint never sets it, so
+        // an escalated approval cannot be cancelled by whoever holds the cancel permission.
+        if (!IsOpen(task) && !(allowEscalated && task.Status == ApprovalTaskStatus.Escalated))
         {
             return InvalidState(correlationId);
         }
@@ -755,6 +772,26 @@ internal sealed class WorkflowTaskTransitionSupport
 
     private static bool IsOpen(ApprovalTask task) =>
         task.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence;
+
+    /// <summary>A principal that is a user id, in the one spelling tokens and snapshots carry it; anything else as given.</summary>
+    internal static string CanonicalPrincipal(string principalId) =>
+        Guid.TryParse(principalId, out var userId) ? userId.ToString() : principalId;
+
+
+    /// <summary>
+    /// B2 — did <paramref name="actorId"/> start this instance? Decided by the starter's USER ID when the instance has
+    /// one (every instance started from now on); an older instance has only the actor name and keeps the old comparison.
+    /// </summary>
+    internal static bool IsStarter(WorkflowInstance instance, string actorId)
+    {
+        if (instance.StartedByUserId is { } starter)
+        {
+            return Guid.TryParse(actorId, out var actor) && actor == starter;
+        }
+
+        return !string.IsNullOrWhiteSpace(instance.StartedBy)
+               && string.Equals(instance.StartedBy, actorId, StringComparison.Ordinal);
+    }
 
     private static Response<WorkflowTaskTransitionResponse> InvalidState(string correlationId) =>
         Response<WorkflowTaskTransitionResponse>.Fail(

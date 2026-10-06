@@ -1,3 +1,5 @@
+using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.API.Controllers.Common;
 using Diten.Platform.API.Observability;
 using Diten.Platform.API.Security;
@@ -21,11 +23,13 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
 {
     private readonly IMediator _mediator;
     private readonly ICorrelationContext _correlationContext;
+    private readonly ICurrentUserContext _currentUser;
 
-    public WorkflowDefinitionsController(IMediator mediator, ICorrelationContext correlationContext)
+    public WorkflowDefinitionsController(IMediator mediator, ICorrelationContext correlationContext, ICurrentUserContext currentUser)
     {
         _mediator = mediator;
         _correlationContext = correlationContext;
+        _currentUser = currentUser;
     }
 
     [HttpPost("definitions")]
@@ -197,7 +201,12 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         [FromBody] ApproveWorkflowTaskRequest request,
         CancellationToken ct)
     {
-        var response = await _mediator.Send(new ApproveWorkflowTaskCommand(taskId, request, CorrelationId), ct);
+        if (!TryBindActor(request.ActorId, out var actor, out var refusal))
+        {
+            return refusal!;
+        }
+
+        var response = await _mediator.Send(new ApproveWorkflowTaskCommand(taskId, request with { ActorId = actor }, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -208,7 +217,12 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         [FromBody] RejectWorkflowTaskRequest request,
         CancellationToken ct)
     {
-        var response = await _mediator.Send(new RejectWorkflowTaskCommand(taskId, request, CorrelationId), ct);
+        if (!TryBindActor(request.ActorId, out var actor, out var refusal))
+        {
+            return refusal!;
+        }
+
+        var response = await _mediator.Send(new RejectWorkflowTaskCommand(taskId, request with { ActorId = actor }, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -219,7 +233,12 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         [FromBody] DelegateWorkflowTaskRequest request,
         CancellationToken ct)
     {
-        var response = await _mediator.Send(new DelegateWorkflowTaskCommand(taskId, request, CorrelationId), ct);
+        if (!TryBindActor(request.ActorId, out var actor, out var refusal))
+        {
+            return refusal!;
+        }
+
+        var response = await _mediator.Send(new DelegateWorkflowTaskCommand(taskId, request with { ActorId = actor }, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -230,7 +249,12 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         [FromBody] RequestInfoWorkflowTaskRequest request,
         CancellationToken ct)
     {
-        var response = await _mediator.Send(new RequestInfoWorkflowTaskCommand(taskId, request, CorrelationId), ct);
+        if (!TryBindActor(request.ActorId, out var actor, out var refusal))
+        {
+            return refusal!;
+        }
+
+        var response = await _mediator.Send(new RequestInfoWorkflowTaskCommand(taskId, request with { ActorId = actor }, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -241,8 +265,37 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         [FromBody] CancelWorkflowTaskRequest request,
         CancellationToken ct)
     {
-        var response = await _mediator.Send(new CancelWorkflowTaskCommand(taskId, request, CorrelationId), ct);
+        if (!TryBindActor(request.ActorId, out var actor, out var refusal))
+        {
+            return refusal!;
+        }
+
+        var response = await _mediator.Send(new CancelWorkflowTaskCommand(taskId, request with { ActorId = actor }, CorrelationId), ct);
         return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// B4 — the actor of a task action is ALWAYS the signed-in user. A body may omit <c>actorId</c> (the server fills it
+    /// in) or repeat the caller's own id; naming anybody else is refused with 403 <c>WORKFLOW_ACTOR_MISMATCH</c> —
+    /// before, a person holding the approve permission could type someone else's id and decide that person's approval.
+    /// </summary>
+    private bool TryBindActor(string? claimed, out string actor, out IActionResult? refusal)
+    {
+        actor = _currentUser.UserId.ToString();
+        refusal = null;
+        if (_currentUser.UserId == Guid.Empty
+            || (!string.IsNullOrWhiteSpace(claimed)
+                && !(Guid.TryParse(claimed.Trim(), out var named) && named == _currentUser.UserId)))
+        {
+            refusal = CreateActionResultInstance(Response<WorkflowTaskTransitionResponse>.Fail(
+                "A task action is always taken as the signed-in user.",
+                403,
+                WorkflowReasonCodes.WorkflowActorMismatch,
+                CorrelationId));
+            return false;
+        }
+
+        return true;
     }
 
     private string CorrelationId =>

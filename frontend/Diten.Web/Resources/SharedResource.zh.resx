@@ -536,6 +536,7 @@
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>任务设置</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>工作流</value></data>
   <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>会议</value></data>
+  <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>工时表</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>用户</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>角色</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>角色权限</value></data>
@@ -820,6 +821,10 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>例外</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>字段定义</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>会议</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>我的工时表</value></data>
+  <data name="Nav.Page.TIMEAPPROVALS" xml:space="preserve"><value>工时表审批</value></data>
+  <data name="Nav.Page.TIMECATEGORIES" xml:space="preserve"><value>工作类别</value></data>
+  <data name="Nav.Page.TIMESETTINGS" xml:space="preserve"><value>工时记录设置</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>会议类型</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>会议系列</value></data>
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>会议报告</value></data>
@@ -925,4 +930,113 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>在选项卡之间切换（焦点位于选项卡上时）</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>编辑任务</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>返回任务列表</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>要导出的行数过多（超过 50,000 行）。请缩小筛选范围后重试。</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
+  <!-- BL-452 package 2 (WP-UI-EXPORT-02): list Action menu + controlled copy (PDF / print header block, footer). -->
+  <data name="Action" xml:space="preserve">
+    <value>操作</value>
+    <comment>List toolbar: the Action (export) dropdown button. BL-452 package 2 (finding 34, toolbar part).</comment>
+  </data>
+  <data name="ControlledCopy.Report" xml:space="preserve">
+    <value>报告</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Tenant" xml:space="preserve">
+    <value>公司</value>
+    <comment>BL-452 package 2 controlled copy header: label for the tenant's display name (the customer company).</comment>
+  </data>
+  <data name="ControlledCopy.Filters" xml:space="preserve">
+    <value>筛选条件</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Search" xml:space="preserve">
+    <value>搜索</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Sort" xml:space="preserve">
+    <value>排序</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortAsc" xml:space="preserve">
+    <value>升序</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortDesc" xml:space="preserve">
+    <value>降序</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Rows" xml:space="preserve">
+    <value>行数</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedBy" xml:space="preserve">
+    <value>创建人</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedAt" xml:space="preserve">
+    <value>创建时间</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.None" xml:space="preserve">
+    <value>无</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Uncontrolled" xml:space="preserve">
+    <value>本打印件为非受控副本 — {0}</value>
+    <comment>BL-452 package 2 controlled copy footer on every page; {0} = creation date-time with time zone.</comment>
+  </data>
+  <data name="ControlledCopy.Page" xml:space="preserve">
+    <value>第 {0} 页，共 {1} 页</value>
+    <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
+  </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>今天</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>月</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>周</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>日</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>上一个</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>下一个</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>全天</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>另外 {0} 项</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>没有可显示的内容</value>
+  </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>未定义工作日历——无法显示周末和节假日。</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>会议邀请</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>接受</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>拒绝</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>此会议与您的计划冲突</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>它与您已计划的时间块“{0}”（{1}）重叠。仍要接受吗？</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>仍然接受</value>
+  </data>
 </root>

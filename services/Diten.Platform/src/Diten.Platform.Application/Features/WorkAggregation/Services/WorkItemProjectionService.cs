@@ -34,6 +34,7 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
     private const string ActionDelegateKey = "WorkAggregation_Action_Delegate";
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledEvidenceKey = "WorkAggregation_ActionDisabled_EvidenceRequired";
+    private const string DisabledSelfApprovalKey = "WorkAggregation_ActionDisabled_SelfApproval";
     private const string WaitingEvidenceType = "evidenceRequired";
 
     public WorkItemProjectionDto? Project(
@@ -42,7 +43,8 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         WorkItemActor actor,
         string providerCode,
         string providerContractVersion,
-        ApprovalSourceContext? sourceContext = null)
+        ApprovalSourceContext? sourceContext = null,
+        ApprovalStepContext? stepContext = null)
     {
         // Delegated → hidden from this actor (a disposition, not active work).
         if (task.Status == ApprovalTaskStatus.Delegated)
@@ -95,7 +97,7 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         // Terminal items are read-only: no enabled inline state-changing action (contract invariant).
         var actions = isTerminal
             ? Array.Empty<WorkItemActionDto>()
-            : BuildActionableActions(task, actor);
+            : BuildActionableActions(task, instance, actor);
 
         var waitingContext = isWaiting
             ? new WorkItemWaitingContextDto(
@@ -160,7 +162,21 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             Summary: string.IsNullOrWhiteSpace(sourceContext?.Subtitle)
                 ? null
                 : WorkItemLabelDto.Display(sourceContext.Subtitle.Trim()),
-            Tags: sourceContext?.Chips is { Count: > 0 } chips ? chips.ToList() : null);
+            Tags: sourceContext?.Chips is { Count: > 0 } chips ? chips.ToList() : null,
+            // REQ-WCN-01 — both omitted when the step says nothing, so every other approval serializes as before.
+            StepName: string.IsNullOrWhiteSpace(stepContext?.StepName)
+                ? null
+                : WorkItemLabelDto.Display(stepContext.StepName.Trim()),
+            CandidatePositions: CandidatePositionsFor(stepContext));
+    }
+
+    private static IReadOnlyList<WorkItemLabelDto>? CandidatePositionsFor(ApprovalStepContext? stepContext)
+    {
+        var names = (stepContext?.CandidatePositionNames ?? [])
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => WorkItemLabelDto.Display(name.Trim()))
+            .ToList();
+        return names.Count > 0 ? names : null;
     }
 
     /*
@@ -199,23 +215,46 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
 
     // The single authoritative actions[] for an actionable approval task. Each action's enabled state is
     // resolved here (permission + evidence blocker); the browser never invents or re-derives eligibility.
-    private static IReadOnlyList<WorkItemActionDto> BuildActionableActions(ApprovalTask task, WorkItemActor actor)
+    private static IReadOnlyList<WorkItemActionDto> BuildActionableActions(
+        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor)
     {
         var evidencePending = task.Status == ApprovalTaskStatus.WaitingEvidence;
 
         return
         [
-            BuildApprove(task, actor, evidencePending),
+            BuildApprove(task, instance, actor, evidencePending),
             BuildDecision("reject", ActionRejectKey, WorkflowPermissions.TasksReject, actor,
                 requiresConfirmation: true, requiresReason: true, supportsBulk: true, riskLevel: "elevated"),
             BuildDecision("requestInfo", ActionRequestInfoKey, WorkflowPermissions.TasksRequestInfo, actor,
                 requiresConfirmation: false, requiresReason: true, supportsBulk: false, riskLevel: "normal"),
             BuildDecision("delegate", ActionDelegateKey, WorkflowPermissions.TasksDelegate, actor,
-                requiresConfirmation: true, requiresReason: false, supportsBulk: false, riskLevel: "normal")
+                // BL-491 — a delegation names its person (the dispatcher refuses one that does not), and may carry a
+                // note. The two arrive together: a note box on a window that could not name anybody invited text
+                // that could never be sent.
+                requiresConfirmation: true, requiresReason: false, supportsBulk: false, riskLevel: "normal",
+                acceptsNote: true, excludedTargets: DelegationExcludedTargets(instance, actor))
         ];
     }
 
-    private static WorkItemActionDto BuildApprove(ApprovalTask task, WorkItemActor actor, bool evidencePending)
+    /*
+     * BL-491 — who a delegation must not be offered: the delegator and the person who STARTED the workflow (a
+     * starter can never approve their own record). MOD-0023 refuses both when a delegation is sent; this only keeps
+     * the window from offering a choice that would be refused. It does NOT say who else is a valid delegate — that a
+     * target is a live person of this tenant is not checked anywhere yet (BL-494).
+     */
+    private static IReadOnlyList<string> DelegationExcludedTargets(WorkflowInstance instance, WorkItemActor actor)
+    {
+        var excluded = new List<string> { actor.UserId.ToString() };
+        if (instance.StartedByUserId is { } starter && starter != Guid.Empty && starter != actor.UserId)
+        {
+            excluded.Add(starter.ToString());
+        }
+
+        return excluded;
+    }
+
+    private static WorkItemActionDto BuildApprove(
+        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor, bool evidencePending)
     {
         var permitted = actor.Has(WorkflowPermissions.TasksApprove);
 
@@ -224,6 +263,15 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         {
             return Disabled("approve", ActionApproveKey, WorkAggregationReasonCodes.PermissionDenied,
                 DisabledPermissionKey, requiresConfirmation: true, requiresReason: task.CommentRequired,
+                requiresEvidence: task.EvidenceRequired, supportsBulk: true, riskLevel: "normal");
+        }
+
+        // B2 — the reader STARTED this approval. MOD-0023 refuses a starter's approve, so the button says so up front
+        // instead of being offered and then refused. Only decidable when the instance recorded its starter's id.
+        if (instance.StartedByUserId is { } starter && starter != Guid.Empty && starter == actor.UserId)
+        {
+            return Disabled("approve", ActionApproveKey, WorkAggregationReasonCodes.SelfApprovalNotAllowed,
+                DisabledSelfApprovalKey, requiresConfirmation: true, requiresReason: task.CommentRequired,
                 requiresEvidence: task.EvidenceRequired, supportsBulk: true, riskLevel: "normal");
         }
 
@@ -246,12 +294,20 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             RequiresReason: task.CommentRequired,
             RequiresEvidence: task.EvidenceRequired,
             SupportsBulk: true,
-            RiskLevel: "normal");
+            RiskLevel: "normal",
+            // REQ-WCN-01 (W-2) — an approver may add a note when none is demanded. A required comment keeps its own
+            // mandatory window, so the two flags are never set together.
+            AcceptsNote: AcceptsNoteWhen(requiresReason: task.CommentRequired));
     }
+
+    private static bool? AcceptsNoteWhen(bool requiresReason) => requiresReason ? null : true;
 
     private static WorkItemActionDto BuildDecision(
         string code, string labelKey, string permissionKey, WorkItemActor actor,
-        bool requiresConfirmation, bool requiresReason, bool supportsBulk, string riskLevel)
+        bool requiresConfirmation, bool requiresReason, bool supportsBulk, string riskLevel,
+        bool acceptsNote = false,
+        // BL-491 — non-null means "this action names a person"; the list is who must not be offered.
+        IReadOnlyList<string>? excludedTargets = null)
     {
         if (!actor.Has(permissionKey))
         {
@@ -271,7 +327,10 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             RequiresReason: requiresReason,
             RequiresEvidence: false,
             SupportsBulk: supportsBulk,
-            RiskLevel: riskLevel);
+            RiskLevel: riskLevel,
+            AcceptsNote: acceptsNote ? AcceptsNoteWhen(requiresReason) : null,
+            RequiresTargetPerson: excludedTargets is null ? null : true,
+            ExcludedTargetPrincipalIds: excludedTargets);
     }
 
     private static WorkItemActionDto Disabled(

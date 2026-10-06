@@ -35,6 +35,10 @@ public static class WorkAggregationReasonCodes
     /// <c>TaskWorkItemProvider</c>'s own reviewMeetingPolicy gate) — a closed task or someone else's task never
     /// publishes the policy or the action in the first place, so no reason code is needed for either case.</summary>
     public const string ReviewMeetingAlreadyScheduled = "REVIEW_MEETING_ALREADY_SCHEDULED";
+
+    /// <summary>WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — the reader STARTED this approval; MOD-0023 refuses a starter's
+    /// approve, so the button is shown closed with its reason rather than offered and then refused.</summary>
+    public const string SelfApprovalNotAllowed = "SELF_APPROVAL_NOT_ALLOWED";
 }
 
 // WC-D3 (DCP-004 §2 D3) — WHY a source is missing from the board.
@@ -118,6 +122,10 @@ public static class WorkItemContract
 
     // ownershipState / admissionState / taskLifecycle / executionState / timerState
     public const string NotApplicable = "notApplicable";
+
+    // timerState (MOD-0280-FU01 §19.2) — `paused` exists in the contract and is never emitted (BL-237).
+    public const string TimerRunning = "running";
+    public const string TimerInactive = "inactive";
 
     // normalizedStatus
     public const string StatusPending = "Pending";
@@ -262,7 +270,28 @@ public sealed record WorkItemActionDto(
     bool RequiresEvidence,
     bool SupportsBulk,
     string RiskLevel,
-    string? TargetStatus = null);
+    string? TargetStatus = null,
+    /// <summary>
+    /// REQ-WCN-01 (W-2) — this action ACCEPTS an optional note in its confirmation window. The server says so; the
+    /// browser never derives it from the action code. Never set together with <c>RequiresReason</c>: a required
+    /// reason already has its own mandatory window. Omitted when null, so every provider that says nothing
+    /// serializes exactly as before.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    bool? AcceptsNote = null,
+    /// <summary>
+    /// BL-491 — this action hands the work to a PERSON, and its window must ask who (sent back as
+    /// <c>targetPrincipalId</c>). The server says so; the browser never derives it from the action code. Omitted
+    /// when null, so every action that names nobody serializes exactly as before.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    bool? RequiresTargetPerson = null,
+    /// <summary>
+    /// BL-491 — the people that window must NOT offer, by user id: handing the work to them cannot go through.
+    /// Only ever set beside <c>RequiresTargetPerson</c>; omitted when null.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<string>? ExcludedTargetPrincipalIds = null);
 
 /// <summary>
 /// waitingContext { type, waitingOn?, reason?, since?, expectedUntil? } — present iff normalizedStatus == Waiting.
@@ -700,7 +729,66 @@ public sealed record WorkItemProjectionDto(
     /// says nothing, and the executable contract validates it only when present.
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemInquiryAnswerDto? InquiryAnswer = null);
+    WorkItemInquiryAnswerDto? InquiryAnswer = null,
+    /// <summary>
+    /// WP-TASK-CALENDAR-ENGINE-01 — the holder's personal TIME BLOCK, when the plan is one (week/day view): the UTC
+    /// start and the length. Absent for a day-only plan and for no plan. <see cref="PlannedDate"/> still carries
+    /// the day either way.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? PlannedStartAt = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    int? PlannedDurationMinutes = null,
+    /// <summary>
+    /// What is left of the ESTIMATE after the plan block (estimate − block, floored at 0) — DERIVED, never stored;
+    /// absent unless the item has both a block and an estimate. Not an SLA figure: nothing here counts toward the
+    /// due date.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    int? RemainingMinutes = null,
+    /// <summary>
+    /// MOD-0280-FU01 §5.1 item 3 / §19.2 — the block WC-1 already declares for the <c>timeTracking</c> capability
+    /// (<c>fixture-contract.js</c> <c>DATA_CAPABILITIES.timeTracking</c>). Container ⇔ capability, both ways, like every
+    /// other Phase 2 container: omitted unless <c>timeTracking</c> is declared. The reader's OWN draft minutes plus the
+    /// task's submitted and approved totals — never another person's draft (D11).
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemTimeEntriesDto? TimeEntries = null,
+    /// <summary>
+    /// The effort card's container — the one the WC-1 contract ties to <c>taskContext</c> (<c>DATA_CAPABILITIES.taskContext:
+    /// ['effort']</c>). Emitted exactly when <c>taskContext</c> is declared, so the pair is never half there: before this
+    /// field existed the capability went out without its container, and the browser's contract check DROPPED every task
+    /// that had an estimate or approved time from the board (live since 29c4b4a30; found by MOD-0280-FU01 T2b's guard).
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemEffortDto? Effort = null,
+    /// <summary>
+    /// REQ-WCN-01 (W-1) — the approval STEP's own name, read from the pinned template version (the source
+    /// <c>GetWorkflowInstanceHistoryHandler</c> reads). A DISPLAY label: a tenant administrator typed it. A badge on
+    /// the row and the detail page, never part of the title. Omitted when the step has no name of its own.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? StepName = null,
+    /// <summary>
+    /// REQ-WCN-01 (W-3) — the NAMES of the positions the step is waiting on, when the step names no person directly.
+    /// DISPLAY labels, read tenant-scoped in one read per page. A position that cannot be read is left out; when none
+    /// can, the field is omitted and the surface keeps today's wording. Never an id.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemLabelDto>? CandidatePositions = null);
+
+/// <summary>The effort card's two figures, in hours: what was estimated and what was APPROVED (D7). Two durations side by
+/// side; no ratio is computed here (pack §8.7).</summary>
+public sealed record WorkItemEffortDto(decimal Estimate, decimal Spent);
+
+/// <summary>MOD-0280-FU01 §19.2 — the <c>timeEntries</c> block. Three durations side by side; no ratio (pack §8.7).</summary>
+/// <param name="DraftMinutes">The READER's own minutes on this task in their unsubmitted drafts. For a CORRECTION draft it is
+/// only the change against the approved revision it corrects — so it can be NEGATIVE (the correction takes time away).</param>
+/// <param name="SubmittedMinutes">Everyone's minutes on this task in submitted, undecided weeks — not spent time yet. A
+/// submitted correction contributes only its change against the approved revision (never the approved minutes again), so
+/// this can be NEGATIVE too. <see cref="ApprovedMinutes"/> is never negative.</param>
+/// <param name="ApprovedMinutes">Everyone's approved minutes on this task — the task's spent time (D7).</param>
+public sealed record WorkItemTimeEntriesDto(int DraftMinutes, int SubmittedMinutes, int ApprovedMinutes);
 
 /// <summary>
 /// BL-439 — who answered a waiting task's question, when, and what they said. Derived from the transition log

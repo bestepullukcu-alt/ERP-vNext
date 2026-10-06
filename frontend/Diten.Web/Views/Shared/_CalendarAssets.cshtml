@@ -1,0 +1,38 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    WP-UI-CALENDAR-VIEW-01 — the ONE way a page gets a calendar: the vendored FullCalendar 6.1.15 (never a CDN),
+    the zone helper, the shared component, and the component's chrome strings. Included ONLY by pages that draw a
+    calendar, so the ~700 KB bundle stays off every other screen (the tenant shell deliberately does not load it).
+
+    The chrome strings come from SharedResource (7 languages) because the component is shared — the Task Center
+    today, the Meetings page next — and one translation must not live in two module resx files.
+*@
+<link rel="stylesheet" href="~/assets/vendor/libs/fullcalendar/fullcalendar.css" asp-append-version="true" />
+<script id="diten-calendar-l10n" type="application/json">
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
+    {
+        ["CalendarToday"] = SharedLocalizer["CalendarToday"].Value,
+        ["CalendarMonth"] = SharedLocalizer["CalendarMonth"].Value,
+        ["CalendarWeek"] = SharedLocalizer["CalendarWeek"].Value,
+        ["CalendarDay"] = SharedLocalizer["CalendarDay"].Value,
+        ["CalendarPrevious"] = SharedLocalizer["CalendarPrevious"].Value,
+        ["CalendarNext"] = SharedLocalizer["CalendarNext"].Value,
+        ["CalendarAllDay"] = SharedLocalizer["CalendarAllDay"].Value,
+        ["CalendarMore"] = SharedLocalizer["CalendarMore"].Value,
+        ["CalendarNoEvents"] = SharedLocalizer["CalendarNoEvents"].Value,
+        // WP-UI-MEETINGS-CALENDAR-01 — the unresolved-calendar sentence and the shared invitation card
+        // (shared/diten-invite-card.js): both pages that draw a calendar show them, so they are SharedResource too.
+        ["CalendarUnresolved"] = SharedLocalizer["CalendarUnresolved"].Value,
+        ["InviteCardType"] = SharedLocalizer["InviteCardType"].Value,
+        ["InviteAccept"] = SharedLocalizer["InviteAccept"].Value,
+        ["InviteDecline"] = SharedLocalizer["InviteDecline"].Value,
+        ["InviteOverlapTitle"] = SharedLocalizer["InviteOverlapTitle"].Value,
+        ["InviteOverlapText"] = SharedLocalizer["InviteOverlapText"].Value,
+        ["InviteAcceptAnyway"] = SharedLocalizer["InviteAcceptAnyway"].Value
+    }))
+</script>
+<script src="~/assets/vendor/libs/fullcalendar/fullcalendar.js" asp-append-version="true"></script>
+<script src="~/assets/js/shared/diten-zoned-time.js" asp-append-version="true"></script>
+<script src="~/assets/js/shared/diten-calendar.js" asp-append-version="true"></script>
+<script src="~/assets/js/shared/diten-invite-card.js" asp-append-version="true"></script>

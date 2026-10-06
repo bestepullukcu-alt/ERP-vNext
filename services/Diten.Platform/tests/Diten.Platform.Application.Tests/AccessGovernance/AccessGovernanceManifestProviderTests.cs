@@ -57,9 +57,50 @@ public sealed class AccessGovernanceManifestProviderTests
         Assert.All(Manifest.Pages, p => Assert.Equal(
             !string.Equals(p.PageCode, "PERMISSIONS", StringComparison.OrdinalIgnoreCase), p.IsNavigationVisible));
         Assert.All(Manifest.Pages, p => Assert.Null(p.ParentPageCode));
-        Assert.All(Manifest.Pages, p => Assert.Empty(p.Actions)); // read-only nav entries, no toolbar/row actions
 
         var codes = Manifest.Pages.Select(p => p.PageCode).ToList();
         Assert.Equal(codes.Count, codes.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+    }
+
+    // BL-458 / BL-452 package 3 — the page actions the catalog (and so the catalog→Auth permission sync) knows about.
+    // Written out by hand, per page, both directions; the key-for-key parity with AuthService's seed is held on the
+    // AuthService side (AccessGovernanceManifestSeedParityTests reads this provider's source).
+    private static readonly Dictionary<string, Dictionary<string, string>> ExpectedActions = new(StringComparer.Ordinal)
+    {
+        ["USERS"] = new(StringComparer.Ordinal)
+        {
+            ["CREATE"] = "auth.users.create",
+            ["EXPORT"] = "auth.users.export",
+            ["UPDATE"] = "auth.users.update",
+            ["ACCOUNT_KIND"] = "auth.users.account-kind.manage",
+            ["DELETE"] = "auth.users.delete"
+        },
+        ["ROLES"] = new(StringComparer.Ordinal)
+        {
+            ["CREATE"] = "auth.roles.create",
+            ["UPDATE"] = "auth.roles.update",
+            ["DELETE"] = "auth.roles.delete"
+        },
+        ["PERMISSIONS"] = new(StringComparer.Ordinal),
+        ["ROLE_PERMISSIONS"] = new(StringComparer.Ordinal) { ["ASSIGN_PERMISSION"] = "auth.roles.assign-permission" },
+        ["USER_ROLES"] = new(StringComparer.Ordinal) { ["ASSIGN_ROLE"] = "auth.users.assign-role" }
+    };
+
+    [Fact]
+    public void Page_actions_declare_the_auth_keys_exactly_both_directions()
+    {
+        foreach (var page in Manifest.Pages)
+        {
+            var expected = ExpectedActions[page.PageCode];
+            var declared = page.Actions.ToDictionary(a => a.ActionCode, a => a.PermissionKey, StringComparer.Ordinal);
+
+            Assert.Equal(page.Actions.Count, declared.Count); // unique action codes within the page
+            Assert.True(expected.OrderBy(x => x.Key).SequenceEqual(declared.OrderBy(x => x.Key)),
+                $"{page.PageCode}: declared [{string.Join(", ", declared.Select(x => x.Key + "=" + x.Value))}] "
+                + $"expected [{string.Join(", ", expected.Select(x => x.Key + "=" + x.Value))}]");
+        }
+
+        // Deleting is dangerous; nothing else is.
+        Assert.All(Manifest.Pages.SelectMany(p => p.Actions), a => Assert.Equal(a.ActionCode == "DELETE", a.IsDangerous));
     }
 }

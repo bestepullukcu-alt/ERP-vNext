@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.Web.Controllers.CRM;
@@ -13,7 +14,6 @@ namespace Diten.Web.Controllers.CRM;
 public sealed partial class ClaimsController
 {
     private const string V2 = "api/v2";
-    private const string ReferenceDataBase = "/api/v1/reference-data/sets";
 
     // ---------------- claims (list / detail / write / coverage / new version / closures) ----------------
 
@@ -149,7 +149,7 @@ public sealed partial class ClaimsController
     public async Task<IActionResult> V2LookupCountries(CancellationToken ct)
     {
         if (RequireJson(ReadPermission) is { } denied) return denied;
-        var countries = await ReadReferenceValuesAsync("COUNTRY_CODES", tenantScoped: false, ct);
+        var countries = await ReadReferenceValuesAsync("COUNTRY_CODES", ct);
         if (countries is null)
             return StatusCode(StatusCodes.Status503ServiceUnavailable,
                 new { errors = new[] { "reference_set_missing", "COUNTRY_CODES is not available." } });
@@ -157,7 +157,7 @@ public sealed partial class ClaimsController
         // WP-CL-FE-2 — display names from ICU in the request's UI culture (see ClaimDisplayNames; built by the shared
         // ReferenceValueSet, WP-KP-UI-1). `languages` stays the plain code array (FE-3 reads it); the named form is the
         // additional `languageDetails`. A code ICU does not know falls back to the BRD display name, then to the code.
-        var languages = await ReadReferenceValuesAsync("country-content-languages", tenantScoped: false, ct);
+        var languages = await ReadReferenceValuesAsync("country-content-languages", ct);
         var data = ReferenceValueSet.Countries(countries, languages).Select(c => new
         {
             code = c.Code,
@@ -172,15 +172,15 @@ public sealed partial class ClaimsController
 
     [HttpGet(V2 + "/lookups/closure-reasons")]
     public Task<IActionResult> V2LookupClosureReasons(CancellationToken ct) =>
-        ReferenceLookupAsync("claim-country-closure-reason", tenantScoped: true, ct);
+        ReferenceLookupAsync("claim-country-closure-reason", ct);
 
     [HttpGet(V2 + "/lookups/adaptation-types")]
     public Task<IActionResult> V2LookupAdaptationTypes(CancellationToken ct) =>
-        ReferenceLookupAsync("claim-adaptation-type", tenantScoped: true, ct);
+        ReferenceLookupAsync("claim-adaptation-type", ct);
 
     [HttpGet(V2 + "/lookups/evidence-types")]
     public Task<IActionResult> V2LookupEvidenceTypes(CancellationToken ct) =>
-        ReferenceLookupAsync("evidence-type", tenantScoped: false, ct);
+        ReferenceLookupAsync("evidence-type", ct);
 
     /// <summary>MDM global product selector (Knowledge pattern). Returns <c>{disabled, reason}</c> instead of a silent
     /// empty list when MDM is unreachable, the endpoint is missing or the caller lacks the MDM read permission.</summary>
@@ -297,35 +297,36 @@ public sealed partial class ClaimsController
         return names;
     }
 
-    private async Task<IActionResult> ReferenceLookupAsync(string setCode, bool tenantScoped, CancellationToken ct)
+    private async Task<IActionResult> ReferenceLookupAsync(string setCode, CancellationToken ct)
     {
         if (RequireJson(ReadPermission) is { } denied) return denied;
-        var values = await ReadReferenceValuesAsync(setCode, tenantScoped, ct);
+        var values = await ReadReferenceValuesAsync(setCode, ct);
         if (values is null)
             return StatusCode(StatusCodes.Status503ServiceUnavailable,
                 new { errors = new[] { "reference_set_missing", $"{setCode} is not available." } });
         return Ok(new { data = values.Select(v => new { code = v.Code, name = v.Name ?? v.Code }).ToList() });
     }
 
-    /// <summary>Published values of a BRD set, active only, in BRD order. A GLOBAL set is read WITHOUT scope_key, a
-    /// tenant set WITH the JWT tenant (never the client's) — the platform refuses the other shape. Null = unavailable.</summary>
-    private async Task<IReadOnlyList<ReferenceValueSet.Value>?> ReadReferenceValuesAsync(string setCode, bool tenantScoped,
-        CancellationToken ct)
+    /// <summary>Published values of a BRD set, active only, in BRD order. Null = unavailable.
+    /// <para>WP-BRD-TENANT-CRM-SETS — read through the shared <see cref="CrmReferenceSetReader"/>: the consumable-sets route
+    /// first (any tenant role; the Platform reads the set by its own scope — COUNTRY_CODES / country-content-languages /
+    /// evidence-type Global, the claim sets tenant), and for a set the Platform does not list the old consumer path with the
+    /// JWT tenant as scope_key (never the client's), keyless only on the global-set refusal. Parsed by the shared
+    /// <see cref="ReferenceValueSet"/> (WP-KP-UI-1).</para></summary>
+    private async Task<IReadOnlyList<ReferenceValueSet.Value>?> ReadReferenceValuesAsync(string setCode, CancellationToken ct)
     {
-        var path = $"{ReferenceDataBase}/{Uri.EscapeDataString(setCode)}/published-values";
-        if (tenantScoped)
-        {
-            path += $"?scope_key={Uri.EscapeDataString(GetTenantId() ?? string.Empty)}";
-        }
-
-        return ReferenceValueSet.Parse((await ReadDataAsync(path, ct)).Data);
+        using var response = await _referenceSets.ReadAsync(
+            setCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), GetTenantId(), ct);
+        return ReferenceValueSet.Parse((await ToGatewayDataAsync(response, ct)).Data);
     }
 
     private sealed record GatewayData(int Status, JsonElement? Data);
 
-    private async Task<GatewayData> ReadDataAsync(string path, CancellationToken ct)
+    private async Task<GatewayData> ReadDataAsync(string path, CancellationToken ct) =>
+        await ToGatewayDataAsync(await SendGatewayAsync(HttpMethod.Get, path, null, ct), ct);
+
+    private static async Task<GatewayData> ToGatewayDataAsync(HttpResponseMessage? response, CancellationToken ct)
     {
-        var response = await SendGatewayAsync(HttpMethod.Get, path, null, ct);
         if (response is null) return new GatewayData(502, null);
         var status = (int)response.StatusCode;
         if (!response.IsSuccessStatusCode) return new GatewayData(status, null);

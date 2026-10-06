@@ -131,6 +131,25 @@ public sealed class TaskItem : TenantScopedEntity
     /// <summary>Personal plan date; may differ from <see cref="DueAt"/> (surfaced as a conflict notice).</summary>
     public DateTimeOffset? PlannedDate { get; set; }
 
+    /// <summary>
+    /// WP-TASK-CALENDAR-ENGINE-01 — the start of the holder's personal time BLOCK, UTC. Null for a day-only plan
+    /// (month view), set for a block (week/day view). When set, <see cref="PlannedDate"/> is the tenant-local day
+    /// this instant falls on, so the two never disagree.
+    ///
+    /// <para>An ABSOLUTE instant, deliberately: if the working hours change later, an existing plan does not move —
+    /// it is reported as outside working hours instead (BL-451 decision note).</para>
+    /// </summary>
+    public DateTimeOffset? PlannedStartAt { get; set; }
+
+    /// <summary>
+    /// Length of the block in minutes — a multiple of 15, at least 15. Null exactly when
+    /// <see cref="PlannedStartAt"/> is null.
+    ///
+    /// <para>What is LEFT of the estimate after this block is derived (estimate − block) and never stored, the
+    /// same rule as remaining hours (pack §12 E4).</para>
+    /// </summary>
+    public int? PlannedDurationMinutes { get; set; }
+
     public decimal? EstimateHours { get; set; }
 
     /// <summary>Accumulated effort. ALWAYS 0 at create and never settable there (pack §12 Y1).</summary>
@@ -336,6 +355,19 @@ public sealed class TaskItem : TenantScopedEntity
     {
         WaitingReason = null;
         WaitingOnUserId = null;
+    }
+
+    /// <summary>
+    /// WP-TASK-CALENDAR-ENGINE-01 (CT acceptance, 2026-09-29) — a plan is a block of the HOLDER's own time. When the
+    /// holder changes (release to the pool, return to the requester, reassign), the old holder's day, start and length
+    /// must go with them: left behind they appeared on the new holder's calendar, made the new holder's plans at that
+    /// hour fail with TASK_PLAN_CONFLICT naming a block they never set, and could not be removed (unplan needs Planned).
+    /// </summary>
+    public void ClearPlan()
+    {
+        PlannedDate = null;
+        PlannedStartAt = null;
+        PlannedDurationMinutes = null;
     }
 
     // ── Closure ──────────────────────────────────────────────────────────────

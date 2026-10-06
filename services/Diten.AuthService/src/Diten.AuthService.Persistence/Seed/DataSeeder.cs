@@ -115,10 +115,23 @@ public static class DataSeeder
         "mdm.global-products.create"
     };
 
-    public static async Task SeedAsync(IMongoDatabase database)
+    /// <summary>
+    /// Opt-in switch for the five mock users per dev tenant (john.doe, jane.smith, …). Absent means false: the
+    /// mock users used to come back on EVERY Auth start whenever a tenant held only its admin — measured 2026-09-24,
+    /// in the middle of the owner's control round, right after the test users had been deleted on purpose. The
+    /// switch is read together with the Development environment in <c>DependencyInjection.AddPersistence</c>
+    /// (both must hold), the same gate Platform's <c>PositionSeed</c> uses; set it only in a local, never-committed
+    /// appsettings.Development.json.
+    /// </summary>
+    public const string MockUsersOptInConfigurationKey = "DevSeeds:MockUsers";
+
+    public static async Task SeedAsync(IMongoDatabase database, bool seedMockUsers = false)
     {
         try 
         {
+            // BL-452 package 3 — which tenants already hold auth.users.export, measured BEFORE this run writes anything.
+            var tenantsAlreadyOnExport = await SnapshotTenantsOnUsersExportAsync(database);
+
             Console.WriteLine("Seeding permissions...");
             await SeedPermissionsAsync(database);
             
@@ -126,7 +139,7 @@ public static class DataSeeder
             await SeedRolesAsync(database);
             
             Console.WriteLine("Seeding users...");
-            await SeedUsersAsync(database);
+            await SeedUsersAsync(database, seedMockUsers);
 
             Console.WriteLine("Seeding tenant-97c5 BRD consumer grant...");
             await SeedTenant97c5BusinessReferenceDataConsumerGrantAsync(database);
@@ -172,6 +185,9 @@ public static class DataSeeder
 
             Console.WriteLine("Reconciling tenant Admin self-service grants (backfill)...");
             await ReconcileTenantAdminSelfServiceGrantsAsync(database);
+
+            Console.WriteLine("Backfilling auth.users.export for roles that read users (one-way, once per tenant)...");
+            await BackfillUsersExportAsync(database, tenantsAlreadyOnExport);
 
             Console.WriteLine("Seeding completed successfully.");
         }
@@ -388,6 +404,9 @@ public static class DataSeeder
             new("auth", "users", "update", "Update User", "Permission to edit user information", moduleOverride: "access-governance"),
             new("auth", "users", "delete", "Delete User", "Permission to delete users", moduleOverride: "access-governance"),
             new("auth", "users", "assign-role", "Assign Role", "Permission to assign roles to users", moduleOverride: "access-governance"),
+            // BL-452 package 3 — exporting the Users list is its own right (was auth.users.read). Tenant Admin receives it
+            // through the access-governance breadth; existing reading roles get it once, by BackfillUsersExportAsync.
+            new("auth", "users", "export", "Export Users", "Permission to export the user list (CSV/Excel) as the screen shows it", moduleOverride: "access-governance"),
             new("auth", "users", "lookup-validation", "Lookup Validation", "Permission to validate tenant user references", moduleOverride: "access-governance"),
             // WP-INFRA-AUTH-ACCOUNT-KIND-01 — two keys, two natures. `auth.users.lookup` is an ORDINARY tenant key
             // (name search + account assertion for reference pickers; no email, no roles) and reaches the tenant Admin
@@ -1000,7 +1019,7 @@ public static class DataSeeder
         await AssignMod0251PlatformIntegrationGrantsAsync(permCol, rpCol, admin);
     }
 
-    private static async Task SeedUsersAsync(IMongoDatabase database)
+    private static async Task SeedUsersAsync(IMongoDatabase database, bool seedMockUsers)
     {
         var userCol = database.GetCollection<User>("users");
         var roleCol = database.GetCollection<Role>("roles");
@@ -1062,9 +1081,13 @@ public static class DataSeeder
             }
         }
 
-        // Seed 5 additional mock users for DefaultTenantId and Tenant97c5Id
-        await SeedMockUsersForTenantAsync(userCol, DefaultTenantId);
-        await SeedMockUsersForTenantAsync(userCol, Tenant97c5Id);
+        // Five mock users per dev tenant — OPT-IN only (MockUsersOptInConfigurationKey). Default: nothing is seeded,
+        // so a tenant that was emptied on purpose stays empty across restarts.
+        if (seedMockUsers)
+        {
+            await SeedMockUsersForTenantAsync(userCol, DefaultTenantId);
+            await SeedMockUsersForTenantAsync(userCol, Tenant97c5Id);
+        }
     }
 
     private static async Task SeedMockUsersForTenantAsync(IMongoCollection<User> userCol, Guid tenantId)
@@ -1233,6 +1256,73 @@ public static class DataSeeder
         }
 
         Console.WriteLine($"Reconciled {planned.Count} missing tenant self-service grant(s) across {affectedTenants.Count} tenant(s).");
+    }
+
+    private static async Task<IReadOnlySet<Guid>> SnapshotTenantsOnUsersExportAsync(IMongoDatabase database)
+    {
+        var export = await database.GetCollection<Permission>("permissions")
+            .Find(p => p.Key == UsersExportGrantBackfill.ExportKey && p.IsDeleted == false).FirstOrDefaultAsync();
+        if (export is null) return new HashSet<Guid>();
+
+        var (roles, grants) = await LoadRoleGrantsAsync(database);
+        return UsersExportGrantBackfill.TenantsAlreadyOnExport(roles, grants, export.Id);
+    }
+
+    // BL-452 package 3 — see UsersExportGrantBackfill: every role holding auth.users.read gets auth.users.export, in the
+    // tenants that were not on the export key when this run started. Additive, idempotent, System-sourced grants.
+    private static async Task BackfillUsersExportAsync(IMongoDatabase database, IReadOnlySet<Guid> tenantsAlreadyOnExport)
+    {
+        var permCol = database.GetCollection<Permission>("permissions");
+        var read = await permCol.Find(p => p.Key == UsersExportGrantBackfill.ReadKey && p.IsDeleted == false).FirstOrDefaultAsync();
+        var export = await permCol.Find(p => p.Key == UsersExportGrantBackfill.ExportKey && p.IsDeleted == false).FirstOrDefaultAsync();
+        if (read is null || export is null) return;
+
+        var (roles, grants) = await LoadRoleGrantsAsync(database);
+
+        // v2 — the persistent gate: a tenant marked once is never backfilled again (its revokes stick).
+        var marks = database.GetCollection<PermissionReconciliationMark>(PermissionReconciliationMark.CollectionName);
+        var marked = (await marks.Find(m => m.Key == UsersExportGrantBackfill.ExportKey).ToListAsync())
+            .Select(m => m.TenantId)
+            .ToHashSet();
+        var skip = marked.Concat(tenantsAlreadyOnExport).ToHashSet();
+
+        var planned = UsersExportGrantBackfill.PlanMissingGrants(roles, grants, read.Id, export.Id, skip);
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+        foreach (var g in planned)
+        {
+            await rpCol.InsertOneAsync(RolePermission.SystemGrant(g.RoleId, g.PermissionId, g.TenantId, SystemUser));
+        }
+
+        // Every tenant looked at in this run is marked — granted, skipped as already on the key, or with no reader at all.
+        var now = DateTime.UtcNow;
+        foreach (var tenantId in UsersExportGrantBackfill.TenantsToMark(roles, marked))
+        {
+            await marks.ReplaceOneAsync(
+                m => m.TenantId == tenantId && m.Key == UsersExportGrantBackfill.ExportKey,
+                new PermissionReconciliationMark { TenantId = tenantId, Key = UsersExportGrantBackfill.ExportKey, ReconciledAtUtc = now },
+                new ReplaceOptions { IsUpsert = true });
+        }
+
+        if (planned.Count == 0) return;
+
+        var versionService = new RoleAssignmentVersionRepository(database);
+        foreach (var tenantId in planned.Select(g => g.TenantId).ToHashSet())
+        {
+            await versionService.IncrementAsync(tenantId, CancellationToken.None);
+        }
+
+        Console.WriteLine($"Backfilled auth.users.export on {planned.Count} role(s) that read users.");
+    }
+
+    private static async Task<(List<TenantAdminSelfServiceReconciler.RoleRef> Roles, HashSet<(Guid RoleId, Guid PermissionId)> Grants)> LoadRoleGrantsAsync(IMongoDatabase database)
+    {
+        var roles = (await database.GetCollection<Role>("roles").Find(r => r.IsDeleted == false).ToListAsync())
+            .Select(r => new TenantAdminSelfServiceReconciler.RoleRef(r.Id, r.Name, r.TenantId))
+            .ToList();
+        var grants = (await database.GetCollection<RolePermission>("rolePermissions").Find(rp => rp.IsDeleted == false).ToListAsync())
+            .Select(rp => (rp.RoleId, rp.PermissionId))
+            .ToHashSet();
+        return (roles, grants);
     }
 
     private static async Task SeedTenant97c5BusinessReferenceDataConsumerGrantAsync(IMongoDatabase database)

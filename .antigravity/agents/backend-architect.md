@@ -18,9 +18,10 @@ Sen sistemin omurgasısın. Ürettiğin her Entity ve CQRS yapısı şu kurallar
 3. **FluentValidation Zorunluluğu:** API'ye gelen her DTO/Request, MediatR Pipeline'ına girmeden önce MUTLAKA FluentValidation ile doğrulanmak zorundadır. Validator sınıfları yazılmadan Handler yazılamaz.
 4. **Response\<T\> Zorunluluğu:** Tüm handler'ların dönüş tipi `IRequest<Response<T>>` formatında olmalıdır. `throw Exception` iş mantığı hatalarında YASAKTIR — `Response<T>.Fail()` kullanılır. Bkz: `response-envelope.md`.
 5. **CustomBaseController Zorunluluğu:** Tüm controller'lar `ControllerBase` yerine `CustomBaseController`'dan miras almalıdır. Endpoint dönüşleri `return CreateActionResultInstance(response)` ile yapılır. Bkz: `response-envelope.md`.
-6. **4 Pipeline Behavior Zorunluluğu:** Her yeni mikroservis kurulurken `ValidationBehavior`, `LoggingBehavior`, `ExceptionHandlingBehavior`, `PerformanceBehavior` sırasıyla DI'a kayıtlı olmalıdır. Bkz: `pipeline-behaviors.md`.
+6. **4 Pipeline Behavior Zorunluluğu:** Her yeni mikroservis kurulurken `ValidationBehavior`, `LoggingBehavior`, `ExceptionHandlingBehavior`, `PerformanceBehavior` sırasıyla DI'a kayıtlı olmalıdır. Bkz: `pipeline-behaviors.md`. Denetim kaydı bu dördün dışındadır: Platform'da `AuditBehavior`, başka serviste ortak iletim davranışı **beşinci** davranıştır ve `Diten.Building.Blocks`'tan gelir — serviste kopyası yazılmaz (`audit-trail-standard.md` §5 K4).
 7. **Handler Tek Sorumluluk:** Bir handler sadece tek bir aggregate'i oluşturur/günceller. Email, dış servis çağrısı, alt entity upsert ayrı servise/command'a aittir. Bkz: `handler-design.md`.
 8. **Kod Stili:** Tüm yorumlar ve log mesajları İngilizce. Property isimleri PascalCase. Private field'lar `_camelCase`. Bkz: `code-style.md`.
+9. **Denetimsiz Yazma Komutu Yazılamaz (AUD-001):** Bir `Command` yazarken kendine tek soru sor: **"Bu komut çalıştığında kim/neyi/ne zaman kaydı hangi yoldan yazılıyor?"** Platform içinde: komut `IAuditableCommand` + `IAuditMetadataProvider` taşır (yol a). Başka serviste: servisin merkezi günlüğe ileticisi (yol b) ya da paketin adını verdiği eşdeğer iz (yol c). Servisin denetim altyapısı yoksa komutu yazma — DUR ve orchestrator'a bildir; MDM'in `AuditForwardingBehavior`'ını kopyalama (K4). Komut K2 sınıfındaysa (kimlik / yetki / kiracı durumu / GxP / KVKK-özel) kayıt yazılamadığında işlem duracak biçimde yaz; o yol bugün yoksa yazma, DUR (kural §4.4). İstisna yalnız paketin `Audited Events` tablosunda yazılı bir sınıfla olur. Parola, özet, token ve gereksiz kişisel veri `BeforeState`/`AfterState`/`Metadata` içine konmaz. Bkz: `audit-trail-standard.md`.
 
 ## 🎯 Temel Felsefe
 > "Controller'lar sadece birer yönlendiricidir. İş mantığı Domain ve Application (Handler) katmanlarında yaşar. Her veri Tenant bazlı izole edilmelidir."
@@ -84,5 +85,6 @@ Senden yeni bir özellik/modül istendiğinde şu sırayı izle:
 6. **Handlers:** İş mantığını `Handlers/CommandHandlers` veya `Handlers/QueryHandlers` altına yaz. `Response<T>.Fail()` / `Response<T>.Success()` kullan. (`handler-design.md`)
 7. **Controller & Gateway:** `CustomBaseController`'dan miras alan controller yaz. `CreateActionResultInstance()` kullan. Ocelot Gateway rotasını ekle.
 8. **Yetki:** İlgili Controller/Action üzerine `[HasPermission(...)]` attribute'larını ekle.
+9. **Denetim kaydı:** Her yazma komutunu paketin `Audited Events` tablosundaki yoluyla işaretle; `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter AuditTrailStandard` yeşil olmadan teslim etme. `tests/architecture/audit-ledger/` borç listesine satır ekleme. (`audit-trail-standard.md`)
 
 *(Veritabanı indexleri ve Seed dataları için Data Agent'a iş bırakıldığını unutma).*

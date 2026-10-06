@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ApprovalsTitle" xml:space="preserve"><value>工时表审批</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>等待您决定的已提交周。只有没有标记的周可以一起批准。</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>人员</value></data>
+  <data name="ColWeek" xml:space="preserve"><value>周</value></data>
+  <data name="ColTotal" xml:space="preserve"><value>合计</value></data>
+  <data name="ColMarks" xml:space="preserve"><value>标记</value></data>
+  <data name="ColSubmitted" xml:space="preserve"><value>提交时间</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="QuickView" xml:space="preserve"><value>打开</value></data>
+  <data name="MarkFlagged" xml:space="preserve"><value>超过 11 小时的日子</value></data>
+  <data name="MarkAutoClosed" xml:space="preserve"><value>午夜被截断的计时器</value></data>
+  <data name="MarkOutsideHours" xml:space="preserve"><value>工作时间以外</value></data>
+  <data name="MarkHoliday" xml:space="preserve"><value>节假日工作</value></data>
+  <data name="CorrectionBadge" xml:space="preserve"><value>修订版 {0} 的更正</value></data>
+  <data name="NoMarks" xml:space="preserve"><value>无标记</value></data>
+  <data name="BulkApprove" xml:space="preserve"><value>批准所选</value></data>
+  <data name="BulkApproveConfirm" xml:space="preserve"><value>批准所选的 {0} 个周？带标记的周不会被批量批准。</value></data>
+  <data name="BulkApproveDone" xml:space="preserve"><value>已批准 {0} 个，跳过 {1} 个。</value></data>
+  <data name="BulkMarkedHint" xml:space="preserve"><value>带标记的周不能选择：请打开后逐一决定。</value></data>
+  <data name="BulkNothingSelected" xml:space="preserve"><value>请至少选择一个没有标记的周。</value></data>
+  <data name="DetailTitle" xml:space="preserve"><value>工时表周</value></data>
+  <data name="Revision" xml:space="preserve"><value>修订版 {0}</value></data>
+  <data name="SubmittedAt" xml:space="preserve"><value>提交于 {0}</value></data>
+  <data name="Approve" xml:space="preserve"><value>批准</value></data>
+  <data name="Reject" xml:space="preserve"><value>退回</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>批准这一周？</value></data>
+  <data name="RejectReason" xml:space="preserve"><value>为什么退回这一周？（必填）</value></data>
+  <data name="RejectReasonRequired" xml:space="preserve"><value>请填写退回这一周的原因。</value></data>
+  <data name="ApprovedToast" xml:space="preserve"><value>该周已批准。</value></data>
+  <data name="RejectedToast" xml:space="preserve"><value>该周已退回给本人。</value></data>
+  <data name="CorrectionChangesTitle" xml:space="preserve"><value>此更正改变了什么</value></data>
+  <data name="ColDay" xml:space="preserve"><value>日期</value></data>
+  <data name="ColWork" xml:space="preserve"><value>工作</value></data>
+  <data name="ColBefore" xml:space="preserve"><value>之前</value></data>
+  <data name="ColAfter" xml:space="preserve"><value>之后</value></data>
+  <data name="Added" xml:space="preserve"><value>新增</value></data>
+  <data name="Removed" xml:space="preserve"><value>删除</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>此更正相对已批准的周没有任何变化。</value></data>
+  <data name="CapturedValue" xml:space="preserve"><value>测得 {0}</value></data>
+  <data name="Corrected" xml:space="preserve"><value>已更正</value></data>
+  <data name="BackToList" xml:space="preserve"><value>返回审批列表</value></data>
+  <data name="UnreadableTask" xml:space="preserve"><value>无法访问的任务</value></data>
+  <data name="SourceManual" xml:space="preserve"><value>手动</value></data>
+  <data name="SourceTimer" xml:space="preserve"><value>计时器</value></data>
+  <data name="SourceMeeting" xml:space="preserve"><value>会议</value></data>
+  <data name="SourcePlan" xml:space="preserve"><value>来自计划</value></data>
+  <data name="ApproverCannotEdit" xml:space="preserve"><value>审批人不编辑周记录。若需更改，请退回并说明原因。</value></data>
+  <data name="WeekNotAvailable" xml:space="preserve"><value>这一周不在等待您的审批。</value></data>
+  <data name="DecisionNotAllowed" xml:space="preserve"><value>您无法对这一周作出决定。</value></data>
+  <data name="RowTotal" xml:space="preserve"><value>合计</value></data>
+  <data name="RowTarget" xml:space="preserve"><value>目标</value></data>
+  <data name="Loading" xml:space="preserve"><value>加载中…</value></data>
+  <data name="NoApprovals" xml:space="preserve"><value>没有等待您审批的周。</value></data>
+  <data name="ColumnWork" xml:space="preserve"><value>工作</value></data>
+  <data name="ColumnTotal" xml:space="preserve"><value>合计</value></data>
+  <data name="InForceNote" xml:space="preserve"><value>在此更正获批之前，已批准的修订版 {0} 保持有效。</value></data>
+  <data name="MarksTitle" xml:space="preserve"><value>标记</value></data>
+</root>

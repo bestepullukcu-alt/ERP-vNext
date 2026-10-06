@@ -536,6 +536,7 @@
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Configuración de tareas</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Flujo de trabajo</value></data>
   <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>Reuniones</value></data>
+  <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>Hojas de horas</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Usuarios</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roles</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Permisos de rol</value></data>
@@ -821,6 +822,10 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>Excepción</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Definiciones de campos</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Reuniones</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>Mi hoja de horas</value></data>
+  <data name="Nav.Page.TIMEAPPROVALS" xml:space="preserve"><value>Aprobaciones de hojas de horas</value></data>
+  <data name="Nav.Page.TIMECATEGORIES" xml:space="preserve"><value>Categorías de trabajo</value></data>
+  <data name="Nav.Page.TIMESETTINGS" xml:space="preserve"><value>Ajustes del registro de tiempo</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Tipos de reunión</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Series de reuniones</value></data>
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Informe de reuniones</value></data>
@@ -926,4 +931,113 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Moverse entre pestañas (con una pestaña enfocada)</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Editar la tarea</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Volver a la lista de tareas</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>Demasiadas filas para exportar (más de 50.000). Acote el filtro e inténtelo de nuevo.</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
+  <!-- BL-452 package 2 (WP-UI-EXPORT-02): list Action menu + controlled copy (PDF / print header block, footer). -->
+  <data name="Action" xml:space="preserve">
+    <value>Acciones</value>
+    <comment>List toolbar: the Action (export) dropdown button. BL-452 package 2 (finding 34, toolbar part).</comment>
+  </data>
+  <data name="ControlledCopy.Report" xml:space="preserve">
+    <value>Informe</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Tenant" xml:space="preserve">
+    <value>Empresa</value>
+    <comment>BL-452 package 2 controlled copy header: label for the tenant's display name (the customer company).</comment>
+  </data>
+  <data name="ControlledCopy.Filters" xml:space="preserve">
+    <value>Filtros</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Search" xml:space="preserve">
+    <value>Búsqueda</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Sort" xml:space="preserve">
+    <value>Orden</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortAsc" xml:space="preserve">
+    <value>ascendente</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortDesc" xml:space="preserve">
+    <value>descendente</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Rows" xml:space="preserve">
+    <value>Número de filas</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedBy" xml:space="preserve">
+    <value>Creado por</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedAt" xml:space="preserve">
+    <value>Creado el</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.None" xml:space="preserve">
+    <value>Ninguno</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Uncontrolled" xml:space="preserve">
+    <value>Esta impresión es una copia no controlada — {0}</value>
+    <comment>BL-452 package 2 controlled copy footer on every page; {0} = creation date-time with time zone.</comment>
+  </data>
+  <data name="ControlledCopy.Page" xml:space="preserve">
+    <value>Página {0} de {1}</value>
+    <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
+  </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>Hoy</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>Mes</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>Semana</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>Día</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>Anterior</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>Siguiente</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>Todo el día</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>+{0} más</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>Nada que mostrar</value>
+  </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>No hay un calendario laboral definido: no se pueden mostrar los fines de semana ni los festivos.</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>Invitación a reunión</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>Aceptar</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>Rechazar</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>Esta reunión se superpone con su plan</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>Se superpone con su bloque planificado «{0}» ({1}). ¿Aceptar de todos modos?</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>Aceptar De Todos Modos</value>
+  </data>
 </root>

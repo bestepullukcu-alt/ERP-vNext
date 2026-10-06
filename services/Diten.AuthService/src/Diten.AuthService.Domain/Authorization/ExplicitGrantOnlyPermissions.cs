@@ -41,9 +41,25 @@ public static class ExplicitGrantOnlyPermissions
     /// </summary>
     public const string WorkReportReadTenantWide = "platform.tasks.work-report.read-tenant-wide";
 
+    /// <summary>
+    /// MOD-0280-FU01 (Time Entry & Weekly Timesheet, pack D11) — worked-time totals across a team or the whole tenant.
+    /// Time entries are personal working-time data (Swiss ArGV 3 Art. 26 on behaviour monitoring, KVKK proportionality):
+    /// the approver sees only the weeks submitted to them, and a wider view is given by explicit assignment only, never
+    /// by the module-entitlement sync or the SuperAdmin full-catalog path (CT decision on the owner's delegation,
+    /// 2026-09-29).
+    /// </summary>
+    public const string TimeEntryTeamTotalsRead = "time-entry.team-totals.read";
+
+    /// <summary>
+    /// MOD-0280-FU01 (pack D11) — a per-person breakdown of worked time. Stricter than team totals: it names people, so
+    /// it is explicit-grant only and its use is logged (workcenter-reporting-and-time-decisions §5, Z-4).
+    /// </summary>
+    public const string TimeEntryPersonReportsRead = "time-entry.person-reports.read";
+
     public static readonly IReadOnlySet<string> Keys =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            PortfoliosAssignOwner, UsersAccountKindManage, TasksReadAll, WorkReportReadTenantWide
+            PortfoliosAssignOwner, UsersAccountKindManage, TasksReadAll, WorkReportReadTenantWide,
+            TimeEntryTeamTotalsRead, TimeEntryPersonReportsRead
         };
 }

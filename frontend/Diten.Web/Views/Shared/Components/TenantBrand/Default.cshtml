@@ -25,7 +25,9 @@
    • Mark span (collapsed/mini): favicon → else logo → else platform brand ICON (light/dark).
    • Full span (expanded): big logo → else platform brand LOGO (light/dark). (.menu-text auto-hides it when collapsed.)
    A tenant WITH its own favicon/logo is unchanged; only the no-logo default now mirrors the platform brand. *@
-<a href="/" class="app-brand-link tenant-brand-link">
+@* BL-452 package 2 — the tenant's display name for the controlled copy's header block (dt-defaults reads
+   [data-tenant-name]); absent when branding has no name, and the copy then says "—". *@
+<a href="/" class="app-brand-link tenant-brand-link" data-tenant-name="@Model.DisplayName">
     <span class="app-brand-logo demo tenant-brand-mark">
         @if (Model.HasFavicon)
         {

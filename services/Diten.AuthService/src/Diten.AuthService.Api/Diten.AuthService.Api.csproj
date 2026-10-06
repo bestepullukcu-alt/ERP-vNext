@@ -26,6 +26,8 @@
     <ProjectReference Include="..\Diten.AuthService.Application\Diten.AuthService.Application.csproj" />
     <ProjectReference Include="..\Diten.AuthService.Infrastructure\Diten.AuthService.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Diten.Platform.Common\src\Diten.Platform.Common\Diten.Platform.Common.csproj" />
+    <!-- BL-452 package 1: the shared list-export contract (CSV/XLSX writer, column whitelist, 50 000-row ceiling). -->
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.ListExport\Diten.BuildingBlocks.ListExport.csproj" />
   </ItemGroup>
 
 </Project>

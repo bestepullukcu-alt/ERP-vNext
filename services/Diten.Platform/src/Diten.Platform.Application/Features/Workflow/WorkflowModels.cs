@@ -68,6 +68,13 @@ public static class WorkflowReasonCodes
     /// <summary>BL-422 — an escalation run carried NowUtc; runs are evaluated against the server clock only.</summary>
     public const string WorkflowEscalationClockNotAccepted = "WORKFLOW_ESCALATION_CLOCK_NOT_ACCEPTED";
 
+    /// <summary>B4 — the request named an actor other than the signed-in user. The actor of a task action is ALWAYS the
+    /// authenticated user; a body may omit it, and may repeat it, but never name somebody else.</summary>
+    public const string WorkflowActorMismatch = "WORKFLOW_ACTOR_MISMATCH";
+
+    /// <summary>MOD-0280-FU01 R5 — the definition says a rejection must say why, and the reject carried no comment.</summary>
+    public const string WorkflowRejectCommentRequired = "WORKFLOW_REJECT_COMMENT_REQUIRED";
+
     /// <summary>WP-CL-BE-3 — the Platform transaction that carries a terminal transition and its completion event
     /// could not run (e.g. a MongoDB deployment without transactions). Nothing was written.</summary>
     public const string WorkflowTransactionUnavailable = "WORKFLOW_TRANSACTION_UNAVAILABLE";
@@ -323,14 +330,14 @@ public sealed record WorkflowInstanceHistoryEntryDto(
     DateTimeOffset OccurredAt);
 
 public sealed record ApproveWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
     string? EvidenceRef);
 
 public sealed record RejectWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
@@ -349,14 +356,14 @@ public sealed record WorkflowTaskTransitionResponse(
     string? CorrelationId);
 
 public sealed record DelegateWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string DelegatePrincipalId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment);
 
 public sealed record RequestInfoWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string? TargetPrincipalId,
     string ReasonCode,
     string IdempotencyKey,
@@ -364,7 +371,7 @@ public sealed record RequestInfoWorkflowTaskRequest(
     string? EvidenceRef);
 
 public sealed record CancelWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment);
