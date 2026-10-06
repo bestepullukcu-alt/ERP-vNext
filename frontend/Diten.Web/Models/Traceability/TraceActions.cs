@@ -58,7 +58,7 @@ public static class TraceActions
         ["CHANGEDECISION"] = TracePermissionKeys.LotsMigrate
     };
 
-    /// <summary>The action codes of the migration screen (slice P4) — in the table, never drawn by P3.</summary>
+    /// <summary>The action codes of the migration screen (slice P4) — drawn only by Elle Girilmiş Lotları Aktarma.</summary>
     public static readonly IReadOnlySet<string> MigrationOnly = new HashSet<string>(StringComparer.Ordinal)
     {
         "APPLYALLSUGGESTIONS", "CONFIRMMIGRATION", "APPLYSUGGESTION", "LINKEXISTINGLOT", "NEWLOTFROMTEXT", "MARKTYPO", "CHANGEDECISION"
@@ -76,4 +76,8 @@ public static class TraceActions
     /// <summary>The codes a page hands its script (the script asks <c>window.TraceActions.can(code)</c>, never a key).</summary>
     public static IReadOnlyDictionary<string, bool> AllowedFor(IPermissionSnapshot permissions)
         => KeyOf.Where(pair => !MigrationOnly.Contains(pair.Key)).ToDictionary(pair => pair.Key, pair => permissions.Has(pair.Value), StringComparer.Ordinal);
+
+    /// <summary>WP-0174-P4: the migration screen's codes only (its own <c>#trace-actions</c> table).</summary>
+    public static IReadOnlyDictionary<string, bool> MigrationAllowedFor(IPermissionSnapshot permissions)
+        => KeyOf.Where(pair => MigrationOnly.Contains(pair.Key)).ToDictionary(pair => pair.Key, pair => permissions.Has(pair.Value), StringComparer.Ordinal);
 }

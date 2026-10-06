@@ -133,4 +133,7 @@
   <data name="Serial.Unreadable" xml:space="preserve">
     <value>Kod okunamadı.</value>
   </data>
+  <data name="Lot.RetestRequired" xml:space="preserve">
+    <value>Bu lotun yeniden test tarihi geçmiş: kaydetmeden önce lot alanındaki uyarıyı onaylayın.</value>
+  </data>
 </root>

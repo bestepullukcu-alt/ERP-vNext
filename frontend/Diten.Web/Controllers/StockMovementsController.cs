@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Diten.Web.Models.Inventory;
+using Diten.Web.Models.Traceability;
 using Diten.Web.Services;
 using Diten.Web.Views.Inventory.StockMovements;
 using Microsoft.AspNetCore.Authorization;
@@ -28,13 +29,15 @@ public sealed partial class StockMovementsController : Controller
     private readonly IPermissionSnapshot _permissions;
     private readonly IStringLocalizer<StockMovementsIndex> _localizer;
     private readonly ILogger<StockMovementsController> _logger;
+    private readonly IStringLocalizer<Diten.Web.Views.Traceability.Lots.LotFieldIndex>? _lotField;
 
     public StockMovementsController(
         HttpClient httpClient,
         IConfiguration configuration,
         IPermissionSnapshot permissions,
         IStringLocalizer<StockMovementsIndex> localizer,
-        ILogger<StockMovementsController> logger)
+        ILogger<StockMovementsController> logger,
+        IStringLocalizer<Diten.Web.Views.Traceability.Lots.LotFieldIndex>? lotField = null)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"]
@@ -42,6 +45,7 @@ public sealed partial class StockMovementsController : Controller
         _permissions = permissions;
         _localizer = localizer;
         _logger = logger;
+        _lotField = lotField;
     }
 
     // UAS-001: the view draws _AccessDenied (and nothing else) without inventory.stock.read — no redirect.
@@ -76,6 +80,8 @@ public sealed partial class StockMovementsController : Controller
         var check = MovementRules.Check(model, model.Entry ? MovementRules.EntryTypes : MovementRules.ManualTypes, MovementKey(key));
         if (!check.IsValid)
             return FieldErrors(check.Errors);
+        if (await RetestRefusalAsync(model, cancellationToken) is { } retest)
+            return retest;
 
         var gateway = InventoryProxy.Gateway(_httpClient, _gatewayUrl, Request, User);
         if (gateway is null)
@@ -121,6 +127,8 @@ public sealed partial class StockMovementsController : Controller
         var check = MovementRules.Check(movement, MovementRules.ManualTypes, MovementKey(movementKey));
         if (!check.IsValid)
             return FieldErrors(check.Errors);
+        if (await RetestRefusalAsync(movement, cancellationToken) is { } retest)
+            return retest;
 
         var gateway = InventoryProxy.Gateway(_httpClient, _gatewayUrl, Request, User);
         if (gateway is null)
@@ -448,6 +456,28 @@ public sealed partial class StockMovementsController : Controller
     private static string ReversalKeyOf(Guid key) => "reversal-" + key.ToString("N");
 
     /// <summary>The MVC's own shape refusal: every field it could not accept, each with its sentence — nothing was posted.</summary>
+    /// <summary>
+    /// FU-0174-P3-07 (MOD-0174 K-F, ASSUMPTION-0174-06): an INBOUND movement into a registered lot whose retest date has
+    /// passed needs the form's explicit confirmation (header <see cref="LotRetestGate.Header"/>) — refused on the lot field
+    /// otherwise, before anything reaches the Gateway (the frozen movement request has no field for it).
+    /// </summary>
+    private async Task<IActionResult?> RetestRefusalAsync(MovementSubmitViewModel movement, CancellationToken cancellationToken)
+    {
+        if (MovementRules.DirectionOf(movement.MovementType) != MovementRules.Direction.Inbound) return null;
+        if (await LotRetestGate.AllowsAsync(movement.LotId?.Trim(), LotRetestGate.Confirmed(Request), _httpClient, _gatewayUrl, Request, User,
+                _permissions, cancellationToken))
+            return null;
+
+        var message = _lotField?[LotRetestGate.ErrorKey].Value ?? LotRetestGate.ErrorKey;
+        return new JsonResult(new
+        {
+            error = new { code = InventoryListAdapter.InvalidFilter, message, scope = MovementErrorFields.ScopeField },
+            fields = new Dictionary<string, string> { [MovementRules.Fields.Lot] = message },
+            contractVersion = InventoryProxy.ContractVersion
+        })
+        { StatusCode = StatusCodes.Status400BadRequest };
+    }
+
     private IActionResult FieldErrors(IReadOnlyDictionary<string, string> errors) =>
         new JsonResult(new
         {

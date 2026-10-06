@@ -60,6 +60,20 @@ public static class TraceL10nKeys
         "Total.PerUnit", "Hint.Reroot", "Action.TRACELOTDETAIL", "Empty.PickLot"
     ];
 
+    /// <summary>WP-0174-P4 — Elle Girilmiş Lotları Aktarma (resx family <c>LotMigrationIndex</c>, pack §11.6).</summary>
+    public static readonly IReadOnlyList<string> LotMigration =
+    [
+        .. Common,
+        "Action.APPLYALLSUGGESTIONS", "Action.CONFIRMMIGRATION", "Action.APPLYSUGGESTION", "Action.LINKEXISTINGLOT",
+        "Action.NEWLOTFROMTEXT", "Action.MARKTYPO", "Action.CHANGEDECISION",
+        "Banner.Done", "Kpi.Moves", "Col.Action",
+        "Suggest.Exact", "Suggest.CaseOnly", "Suggest.Similar", "Suggest.SimilarRow", "Suggest.None", "Suggest.NewDraft",
+        "Decision.Pending", "Decision.Linked", "Decision.New", "Decision.Typo",
+        "Pick.TitleLink", "Pick.TitleTypo", "Pick.Rows", "Pick.Lots",
+        "Confirm.Title", "Confirm.Count", "Confirm.Existing", "Confirm.New", "Confirm.Danger", "Confirm.Reason", "Confirm.Button",
+        "Toast.Done", "Validation.ReasonMin", "Cancel"
+    ];
+
     /// <summary>The Stock Ledger form's lot / serial vocabulary (resx family <c>LotFieldIndex</c>, owner decision 2026-10-06).</summary>
     public static readonly IReadOnlyList<string> LotField =
     [

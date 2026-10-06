@@ -4,6 +4,8 @@
 @inject IHtmlLocalizer<StockMovementsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Localizer["DetailsTitle"].Value;
     Layout = "_LayoutTenantShell";
@@ -144,7 +146,10 @@
                             <div class="backbone-preview-label">@Localizer["FieldLot"]</div>
                             <div class="backbone-preview-value mt-1">
                                 @Dash(Model.LotId)
-                                @if (!string.IsNullOrWhiteSpace(Model.LotId))
+                                @* W-UI-02: a TYPED lot text only (a registered lot id is not "unregistered"), until the P4 migration closes typing. *@
+                                @if (!string.IsNullOrWhiteSpace(Model.LotId) && !Diten.Web.Models.Inventory.MovementRules.IsRegisteredLotId(Model.LotId)
+                                     && !await Diten.Web.Models.Traceability.TraceMigrationStatus.IsClosedAsync(Http, Configuration["GatewayUrl"] ?? string.Empty,
+                                         Context.Request, User, Perms, Context.RequestAborted))
                                 {
                                     <span class="badge bg-label-secondary ms-1" title="@Localizer["HintLotUnregistered"]">@Localizer["LotUnregisteredBadge"]</span>
                                 }

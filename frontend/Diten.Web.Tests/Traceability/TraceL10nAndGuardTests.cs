@@ -20,7 +20,8 @@ public sealed class TraceL10nAndGuardTests
     private static readonly string Resources = Path.Combine(TraceViewRenderer.WebRoot, "Resources", "Views", "Traceability");
     private static readonly string Scripts = Path.Combine(TraceViewRenderer.WebRoot, "wwwroot", "assets", "js", "Traceability");
 
-    public static TheoryData<string> Families => new() { "Lots/LotsIndex", "Serials/SerialsIndex", "LotMovements/LotMovementsIndex", "LotTrace/LotTraceIndex", "Lots/LotFieldIndex" };
+    public static TheoryData<string> Families => new()
+        { "Lots/LotsIndex", "Serials/SerialsIndex", "LotMovements/LotMovementsIndex", "LotTrace/LotTraceIndex", "Lots/LotFieldIndex", "LotMigration/LotMigrationIndex" };
 
     /// <summary>Values that are the same word in both languages (codes, formats, a loan word) — named, not a loophole.</summary>
     private static readonly HashSet<string> SameInBoth = new(StringComparer.Ordinal)
@@ -62,7 +63,14 @@ public sealed class TraceL10nAndGuardTests
         foreach (var family in new[] { "Serials/SerialsIndex", "LotMovements/LotMovementsIndex", "LotTrace/LotTraceIndex" })
             Assert.All(TraceErrorMessages.AllKeys, k => Assert.Contains(k, Read(family, "en").Keys));
 
-        foreach (var (folder, family) in new[] { ("Lots", "Lots/LotsIndex"), ("Serials", "Serials/SerialsIndex"), ("LotMovements", "LotMovements/LotMovementsIndex"), ("LotTrace", "LotTrace/LotTraceIndex") })
+        // WP-0174-P4: the migration screen answers every P3 code plus the four migration codes, and draws its §14 actions.
+        var migration = Read("LotMigration/LotMigrationIndex", "en");
+        Assert.All(TraceErrorMessages.MigrationKeys, k => Assert.Contains(k, migration.Keys));
+        Assert.All(TraceActions.MigrationOnly, a => Assert.Contains("Action." + a, migration.Keys));
+        Assert.Contains("Lot.RetestRequired", Read("Lots/LotFieldIndex", "en").Keys); // FU-0174-P3-07 refusal
+
+        foreach (var (folder, family) in new[] { ("Lots", "Lots/LotsIndex"), ("Serials", "Serials/SerialsIndex"), ("LotMovements", "LotMovements/LotMovementsIndex"),
+                     ("LotTrace", "LotTrace/LotTraceIndex"), ("LotMigration", "LotMigration/LotMigrationIndex") })
         {
             var keys = Read(family, "en").Keys.ToHashSet(StringComparer.Ordinal);
             var asked = Directory.EnumerateFiles(Path.Combine(TraceViewRenderer.WebRoot, "Views", "Traceability", folder), "*.cshtml")
@@ -77,7 +85,8 @@ public sealed class TraceL10nAndGuardTests
     {
         var lists = new Dictionary<string, IReadOnlyList<string>>
         {
-            ["Lots"] = TraceL10nKeys.Lots, ["Serials"] = TraceL10nKeys.Serials, ["LotMovements"] = TraceL10nKeys.LotMovements, ["LotTrace"] = TraceL10nKeys.LotTrace
+            ["Lots"] = TraceL10nKeys.Lots, ["Serials"] = TraceL10nKeys.Serials, ["LotMovements"] = TraceL10nKeys.LotMovements, ["LotTrace"] = TraceL10nKeys.LotTrace,
+            ["LotMigration"] = TraceL10nKeys.LotMigration
         };
         foreach (var (folder, list) in lists)
         {

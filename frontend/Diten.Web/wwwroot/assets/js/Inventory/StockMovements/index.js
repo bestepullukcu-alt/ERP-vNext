@@ -24,6 +24,19 @@
 const StockMovementsList = (function () {
     let list = null;
 
+    // MOD-0174 P4 (W-UI-02 closure, CT K4-1): the "unregistered lot" badge belongs to a TYPED lot text only — a registered
+    // lot id is not "unregistered" — and disappears once the tenant's typed-lot migration closed typing (asked once, with the
+    // user's own trace.lots.read; unknown → today's behaviour).
+    const REGISTERED_LOT = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+    let lotTypingClosed = false;
+    const lotBadge = (data) => (!data || REGISTERED_LOT.test(data) || lotTypingClosed
+        ? ''
+        : ` <span class="badge bg-label-secondary ms-1" title="${esc(L().LotUnregisteredHint)}">${esc(L().LotUnregisteredBadge)}</span>`);
+    fetch('/LotMigration/status', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+        .then((response) => (response.ok ? response.json() : null))
+        .then((status) => { if (status?.closed) { lotTypingClosed = true; list?.dt?.rows().invalidate('data').draw(false); } })
+        .catch(() => { /* not answered: the badge keeps today's rule */ });
+
     const tableEl = document.querySelector('.datatables-stockmovements');
     const L = () => window.L10n || {};
     const byId = (id) => document.getElementById(id);
@@ -377,8 +390,8 @@ const StockMovementsList = (function () {
                         render: (data, type, full) => `<div class="d-flex flex-column"><span>${esc(full.toWarehouseLabel || full.toWarehouseId || '')}</span>`
                             + `<small class="text-muted">${esc(full.toLocationLabel || full.toLocationId || '')}</small></div>`
                     },
-                    // W-UI-02: until MOD-0174 registers lots, every lot is an "unregistered lot (pre-MOD-0174)".
-                    { targets: 8, render: (data) => data ? `${esc(data)} <span class="badge bg-label-secondary ms-1" title="${esc(L().LotUnregisteredHint)}">${esc(L().LotUnregisteredBadge)}</span>` : '' },
+                    // W-UI-02 badge: typed lot text only, until the migration closes typing (MOD-0174 P4).
+                    { targets: 8, render: (data) => (data ? `${esc(data)}${lotBadge(data)}` : '') },
                     {
                         targets: 9,
                         // "from → to" only when the movement names both and they differ (an outbound has no "to").

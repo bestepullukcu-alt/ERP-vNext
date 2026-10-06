@@ -39,6 +39,11 @@
     company.SelectHint = Localizer["CompanySelectHint"].Value;
     company.UnavailableText = Localizer["CompanyUnavailable"].Value;
 
+    // MOD-0174 P4 (W-UI-02 closure, CT K4-1): once the tenant's typed-lot migration closed typing, the typed-lot input and
+    // the "unregistered lot" badges are gone. Read with the user's own trace.lots.read; unknown → today's behaviour.
+    var typingClosed = company.Ready && await Diten.Web.Models.Traceability.TraceMigrationStatus.IsClosedAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Perms, Context.RequestAborted);
+
     string TypeGroup(string type) => MovementRules.DirectionOf(type) switch
     {
         MovementRules.Direction.Inbound => "GroupInbound",
@@ -304,13 +309,16 @@
                                     <label class="form-check-label" for="lotRetestConfirm">@LotField["Lot.RetestConfirm"]</label>
                                 </div>
                             </div>
-                            @* W-UI-02 (until P4 closes typing): a typed lot text is still accepted, shown with its badge. *@
-                            <button type="button" class="btn btn-sm btn-link px-0" id="btnTypedLot">@LotField["Lot.TypedBadge"]…</button>
-                            <div class="input-group input-group-sm mt-1 d-none" id="lotTypedGroup">
-                                <input id="lotIdTyped" type="text" class="form-control" maxlength="40" autocomplete="off" placeholder="@Localizer["PlaceholderLot"]" aria-label="@LotField["Lot.TypedBadge"]" />
-                                <span class="input-group-text"><span class="badge bg-label-secondary">@LotField["Lot.TypedBadge"]</span></span>
-                            </div>
-                            <div class="form-text d-none" id="lotTypedHint">@LotField["Lot.TypedHint"]</div>
+                            @if (!typingClosed)
+                            {
+                                @* W-UI-02 (until the P4 migration closes typing): a typed lot text is still accepted, shown with its badge. *@
+                                <button type="button" class="btn btn-sm btn-link px-0" id="btnTypedLot">@LotField["Lot.TypedBadge"]…</button>
+                                <div class="input-group input-group-sm mt-1 d-none" id="lotTypedGroup">
+                                    <input id="lotIdTyped" type="text" class="form-control" maxlength="40" autocomplete="off" placeholder="@Localizer["PlaceholderLot"]" aria-label="@LotField["Lot.TypedBadge"]" />
+                                    <span class="input-group-text"><span class="badge bg-label-secondary">@LotField["Lot.TypedBadge"]</span></span>
+                                </div>
+                                <div class="form-text d-none" id="lotTypedHint">@LotField["Lot.TypedHint"]</div>
+                            }
                             <div class="invalid-feedback d-block" data-error-for="lotId"></div>
                         </div>
                     </div>
@@ -438,7 +446,7 @@
                             {
                                 <dt class="col-5 fw-medium text-heading">@Localizer["ColLot"]</dt>
                                 @* MOD-0174 P3: the W-UI-02 badge belongs to a TYPED lot only — a registered lot id is not "unregistered". *@
-                                <dd class="col-7">@original.LotId @if (!MovementRules.IsRegisteredLotId(original.LotId)) { <span class="badge bg-label-secondary ms-1">@Localizer["LotUnregisteredBadge"]</span> }</dd>
+                                <dd class="col-7">@original.LotId @if (!MovementRules.IsRegisteredLotId(original.LotId) && !typingClosed) { <span class="badge bg-label-secondary ms-1">@Localizer["LotUnregisteredBadge"]</span> }</dd>
                             }
                         </dl>
                     </div>

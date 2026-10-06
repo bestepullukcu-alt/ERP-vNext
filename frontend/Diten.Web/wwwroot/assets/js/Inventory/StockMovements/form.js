@@ -689,7 +689,11 @@ const StockMovementForm = (function () {
             res = await fetch(form.dataset.postUrl, {
                 method: 'POST',
                 credentials: 'same-origin',
-                headers: { 'Content-Type': 'application/json', Accept: 'application/json', RequestVerificationToken: antiforgery() },
+                // FU-0174-P3-07 (K-F): the retest confirmation travels with the post — the MVC refuses a retest-past lot without it.
+                headers: {
+                    'Content-Type': 'application/json', Accept: 'application/json', RequestVerificationToken: antiforgery(),
+                    'X-Lot-Retest-Confirmed': byId('lotRetestConfirm')?.checked ? 'true' : 'false'
+                },
                 body: JSON.stringify(payload)
             });
             json = await res.json().catch(() => null);

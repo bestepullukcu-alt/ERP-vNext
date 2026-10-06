@@ -133,4 +133,7 @@
   <data name="Serial.Unreadable" xml:space="preserve">
     <value>The code could not be read.</value>
   </data>
+  <data name="Lot.RetestRequired" xml:space="preserve">
+    <value>This lot's retest date has passed: confirm the warning on the lot field before saving.</value>
+  </data>
 </root>

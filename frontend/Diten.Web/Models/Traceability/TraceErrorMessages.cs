@@ -9,7 +9,7 @@ namespace Diten.Web.Models.Traceability;
 /// </summary>
 public static class TraceErrorMessages
 {
-    /// <summary>Every TRACE / scope code the P3 screens can receive (the P4 migration codes come with P4).</summary>
+    /// <summary>Every TRACE / scope code the P3 screens can receive (the P4 migration codes: <see cref="MigrationCodes"/>).</summary>
     public static readonly IReadOnlyList<string> Codes =
     [
         "UNKNOWN_LOT", "LOT_ALREADY_EXISTS", "LOT_SKU_REQUIRED", "LOT_SKU_MISMATCH", "LOT_NUMBER_INVALID", "LOT_DATES_INVALID",
@@ -19,6 +19,10 @@ public static class TraceErrorMessages
         "LEGAL_ENTITY_MASTER_UNAVAILABLE", InventoryGatewayClient.CompanyNotSelected
     ];
 
+    /// <summary>WP-0174-P4 — the codes only <c>commitManualLotMigration</c> answers (LotMigration family only).</summary>
+    public static readonly IReadOnlyList<string> MigrationCodes =
+        ["MIGRATION_ALREADY_COMPLETED", "MIGRATION_STALE", "MIGRATION_DECISIONS_INCOMPLETE", "MIGRATION_TYPO_UNRESOLVED"];
+
     public const string Generic = "Error.Generic";
     public const string NoPermission = "Error.NoPermission";
     public const string SessionExpired = "Error.SessionExpired";
@@ -27,6 +31,12 @@ public static class TraceErrorMessages
 
     public static IEnumerable<string> AllKeys =>
         Codes.Select(code => "Error." + code).Concat([Generic, NoPermission, SessionExpired, ServiceUnavailable, Correlation]);
+
+    /// <summary>The migration screen's keys: every P3 key plus the four migration codes.</summary>
+    public static IEnumerable<string> MigrationKeys => AllKeys.Concat(MigrationCodes.Select(code => "Error." + code));
+
+    public static string KeyForMigration(string? code, int status)
+        => code is not null && MigrationCodes.Contains(code, StringComparer.Ordinal) ? "Error." + code : KeyFor(code, status);
 
     public static string KeyFor(string? code, int status)
     {

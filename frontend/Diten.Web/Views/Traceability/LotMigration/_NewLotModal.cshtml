@@ -1,0 +1,80 @@
+@using Diten.Web.Models.Traceability
+@using Diten.Web.Views.Traceability.LotMigration
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotMigrationIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.Views.Traceability.Lots.LotsIndex> LotForm
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    "Yeni lot olarak oluştur" (NEWLOTFROMTEXT, pack §11.5): the P3 quick-lot form — the same 9 fields and the same rules
+    (LotFormRules, checked by /LotMigration/validate-lot), item + SKU fixed by the row, lot number prefilled with the
+    normalised typed text (the user edits it when it fails the lot-number format). Nothing is created here: the lot is a
+    DECISION of the page and is created as Draft by the commit. Field labels / countries come from the lot form's own
+    vocabulary (LotsIndex) — one wording for one form.
+*@
+<div class="modal fade" id="modalMigrationNewLot" tabindex="-1" aria-labelledby="modalMigrationNewLotTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalMigrationNewLotTitle">@Localizer["NewLot.Title"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted" id="migrationNewLotSku"></p>
+                <p class="small text-muted d-none" id="migrationNewLotPrefilled">@Localizer["NewLot.Prefilled"]</p>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label for="migrationLotNumber" class="form-label fw-medium">@LotForm["Form.LotNumber"] <span class="text-danger">*</span></label>
+                        <input id="migrationLotNumber" type="text" class="form-control" maxlength="@LotFormRules.MaxLotNumberLength" autocomplete="off" />
+                        <div class="invalid-feedback d-block" data-newlot-error="lotNumber"></div>
+                    </div>
+                    <div class="col-6">
+                        <label for="migrationManufacturerLot" class="form-label">@LotForm["Form.ManufacturerLot"]</label>
+                        <input id="migrationManufacturerLot" type="text" class="form-control" maxlength="@LotFormRules.MaxAltLotLength" />
+                        <div class="invalid-feedback d-block" data-newlot-error="manufacturerLot"></div>
+                    </div>
+                    <div class="col-6">
+                        <label for="migrationSupplierLot" class="form-label">@LotForm["Form.SupplierLot"]</label>
+                        <input id="migrationSupplierLot" type="text" class="form-control" maxlength="@LotFormRules.MaxAltLotLength" />
+                        <div class="invalid-feedback d-block" data-newlot-error="supplierLot"></div>
+                    </div>
+                    <div class="col-4">
+                        <label for="migrationManufacturingDate" class="form-label">@LotForm["Form.ManufacturingDate"]</label>
+                        <input id="migrationManufacturingDate" type="date" class="form-control" />
+                        <div class="invalid-feedback d-block" data-newlot-error="manufacturingDate"></div>
+                    </div>
+                    <div class="col-4">
+                        <label for="migrationExpiryDate" class="form-label">@LotForm["Form.ExpiryDate"]</label>
+                        <input id="migrationExpiryDate" type="date" class="form-control" />
+                        <div class="invalid-feedback d-block" data-newlot-error="expiryDate"></div>
+                    </div>
+                    <div class="col-4">
+                        <label for="migrationRetestDate" class="form-label">@LotForm["Form.RetestDate"]</label>
+                        <input id="migrationRetestDate" type="date" class="form-control" />
+                        <div class="invalid-feedback d-block" data-newlot-error="retestDate"></div>
+                    </div>
+                    <div class="col-6">
+                        <label for="migrationCountry" class="form-label">@LotForm["Form.Country"]</label>
+                        <select id="migrationCountry" class="form-select">
+                            <option value=""></option>
+                            @foreach (var code in LotFormRules.Countries)
+                            {
+                                <option value="@code">@LotForm["Country." + code]</option>
+                            }
+                        </select>
+                        <div class="invalid-feedback d-block" data-newlot-error="countryOfOrigin"></div>
+                    </div>
+                    <div class="col-6">
+                        <label for="migrationCoa" class="form-label">@LotForm["Form.Coa"]</label>
+                        <input id="migrationCoa" type="text" class="form-control" maxlength="@LotFormRules.MaxCoaLength" />
+                        <div class="invalid-feedback d-block" data-newlot-error="coaReference"></div>
+                    </div>
+                </div>
+                <p class="small text-muted mt-3 mb-0">@Localizer["NewLot.DraftNote"]</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
+                <button type="button" class="btn btn-primary" id="btnMigrationNewLotApply">@Localizer["NewLot.Apply"]</button>
+            </div>
+        </div>
+    </div>
+</div>

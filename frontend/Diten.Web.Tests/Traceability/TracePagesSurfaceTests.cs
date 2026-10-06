@@ -12,7 +12,7 @@ namespace Diten.Web.Tests.Traceability;
 /// skeleton or button, never "403" / "Forbidden" text, no redirect;</item>
 /// <item>the shell: every page sets <c>Layout = "_LayoutTenantShell"</c> explicitly (grep), the lists are server-mode
 /// DataTables without a selection column;</item>
-/// <item>the slice boundary: LotMigration is the P4 page — its view does not exist yet and the test says so explicitly.</item>
+/// <item>WP-0174-P4: the 8th page — Elle Girilmiş Lotları Aktarma (/LotMigration, trace.lots.migrate) — is drawn: "grep 8".</item>
 /// </list>
 /// </summary>
 public sealed class TracePagesSurfaceTests : IClassFixture<WebApplicationFactory<Program>>
@@ -27,10 +27,11 @@ public sealed class TracePagesSurfaceTests : IClassFixture<WebApplicationFactory
         new("/Views/Traceability/Lots/Edit.cshtml", "trace.lots.update", ["formLot", "btnLotSubmit", "lotIfMatch", "<h5 class=\"mb-0\">"], () => LotFormPageViewModel.ForEdit(Guid.NewGuid().ToString())),
         new("/Views/Traceability/Serials/Index.cshtml", "trace.serials.read", ["dt-serials", "inlineFilterHost", "<h5 class=\"mb-0\">", "skeleton-loader"], () => LotPageViewModel.From(null)),
         new("/Views/Traceability/LotMovements/Index.cshtml", "trace.lots.read", ["dt-lotmovements", "lotMovementsLot", "<h5 class=\"mb-0\">", "modalLotReceipt"], () => LotPageViewModel.From(null)),
-        new("/Views/Traceability/LotTrace/Index.cshtml", "trace.lots.read", ["lottrace", "lotTraceLot", "<h5 class=\"mb-0\">"], () => LotPageViewModel.From(null))
+        new("/Views/Traceability/LotTrace/Index.cshtml", "trace.lots.read", ["lottrace", "lotTraceLot", "<h5 class=\"mb-0\">"], () => LotPageViewModel.From(null)),
+        new("/Views/Traceability/LotMigration/Index.cshtml", "trace.lots.migrate", ["dt-lotmigration", "migration-kpi", "btnConfirmMigration", "<h5 class=\"mb-0\">", "migration-antiforgery"], () => null)
     ];
 
-    public static TheoryData<int> PageIndexes => new() { 0, 1, 2, 3, 4, 5, 6 };
+    public static TheoryData<int> PageIndexes => new() { 0, 1, 2, 3, 4, 5, 6, 7 };
 
     private readonly WebApplicationFactory<Program> _factory;
 
@@ -84,7 +85,17 @@ public sealed class TracePagesSurfaceTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
-    public void Every_P3_page_sets_the_tenant_shell_explicitly_and_LotMigration_is_left_to_P4()
+    public async Task The_migration_list_is_client_mode_without_selection_bulk_or_export()
+    {
+        // Decisions are page state until the one commit (ASSUMPTION-0174-11): every group is loaded once, the table is client data.
+        var html = await TraceViewRenderer.RenderAsync(_factory, Pages[7].View, null, "trace.lots.migrate");
+        Assert.Contains("id=\"dt-lotmigration\" data-dt-standard=\"v2\" data-dt-data-mode=\"client\"", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("dt-checkboxes-select-all", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("bulkActionBar", html, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Every_page_sets_the_tenant_shell_explicitly_grep_8()
     {
         var root = Path.Combine(TraceViewRenderer.WebRoot, "Views", "Traceability");
         var layouts = Directory.EnumerateFiles(root, "*.cshtml", SearchOption.AllDirectories)
@@ -93,19 +104,16 @@ public sealed class TracePagesSurfaceTests : IClassFixture<WebApplicationFactory
             .OrderBy(f => f, StringComparer.Ordinal)
             .ToList();
         Assert.Equal(
-            ["LotMovements/Index.cshtml", "LotTrace/Index.cshtml", "Lots/Create.cshtml", "Lots/Details.cshtml", "Lots/Edit.cshtml", "Lots/Index.cshtml", "Serials/Index.cshtml"],
+            ["LotMigration/Index.cshtml", "LotMovements/Index.cshtml", "LotTrace/Index.cshtml", "Lots/Create.cshtml", "Lots/Details.cshtml", "Lots/Edit.cshtml",
+             "Lots/Index.cshtml", "Serials/Index.cshtml"],
             layouts);
-
-        // ⚠ OPEN, NOT SKIPPED: the 8th page (LOTMIGRATION, /LotMigration) is slice P4's — no view and no controller in P3.
-        Assert.False(Directory.Exists(Path.Combine(root, "LotMigration")), "LotMigration is P4: P3 must not draw it");
-        Assert.False(File.Exists(Path.Combine(TraceViewRenderer.WebRoot, "Controllers", "LotMigrationController.cs")));
         // Partials set no layout (pack §9).
         Assert.All(Directory.EnumerateFiles(root, "_*.cshtml", SearchOption.AllDirectories),
             f => Assert.DoesNotContain("Layout =", File.ReadAllText(f), StringComparison.Ordinal));
     }
 
     [Fact]
-    public void The_seven_drawn_routes_match_the_LOT_SERIAL_TRACKING_manifest_pages()
+    public void The_eight_drawn_routes_match_the_LOT_SERIAL_TRACKING_manifest_pages()
     {
         var manifest = File.ReadAllText(Path.Combine(TraceViewRenderer.RepoRoot(), "services", "Diten.InventoryService", "src",
             "Diten.InventoryService.Api", "ModuleRegistration", "LotSerialTrackingManifestProvider.cs"));
@@ -116,16 +124,16 @@ public sealed class TracePagesSurfaceTests : IClassFixture<WebApplicationFactory
         {
             ["/Lots"] = "Lots/Index.cshtml", ["/Lots/Details"] = "Lots/Details.cshtml", ["/Lots/Create"] = "Lots/Create.cshtml",
             ["/Lots/Edit"] = "Lots/Edit.cshtml", ["/LotMovements"] = "LotMovements/Index.cshtml", ["/Serials"] = "Serials/Index.cshtml",
-            ["/LotTrace"] = "LotTrace/Index.cshtml"
+            ["/LotTrace"] = "LotTrace/Index.cshtml", ["/LotMigration"] = "LotMigration/Index.cshtml"
         };
-        Assert.Equal(routes.Where(r => r != "/LotMigration").OrderBy(r => r), drawn.Keys.OrderBy(r => r));
+        Assert.Equal(routes.OrderBy(r => r), drawn.Keys.OrderBy(r => r));
         Assert.All(drawn.Values, v => Assert.True(File.Exists(Path.Combine(TraceViewRenderer.WebRoot, "Views", "Traceability", v)), v));
         // Each route's controller exists with its [Route] (the page answers at the manifest's address).
-        foreach (var (controller, route) in new[] { ("LotsController", "Lots"), ("SerialsController", "Serials"), ("LotMovementsController", "LotMovements"), ("LotTraceController", "LotTrace") })
+        foreach (var (controller, route) in new[] { ("LotsController", "Lots"), ("SerialsController", "Serials"), ("LotMovementsController", "LotMovements"),
+                     ("LotTraceController", "LotTrace"), ("LotMigrationController", "LotMigration") })
         {
             var source = File.ReadAllText(Path.Combine(TraceViewRenderer.WebRoot, "Controllers", controller + ".cs"));
             Assert.Contains($"[Route(\"{route}\")]", source, StringComparison.Ordinal);
         }
-        Assert.Contains("/LotMigration", routes); // open until P4 — measured, not skipped
     }
 }
