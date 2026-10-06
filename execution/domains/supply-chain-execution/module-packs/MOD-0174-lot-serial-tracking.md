@@ -572,12 +572,12 @@ registered provider, `…/Api/ModuleRegistration/ModuleRegistrationHostedService
 | Lot Gezgini · Lot Detayı | Durum Değiştir | `CHANGELOTSTATUS` | Row / detail | `trace.lots.change-status` | **yes** (Bloke) |
 | Lot Gezgini · Lot Detayı | Hareket Geçmişi | `LOTMOVES` | Row / detail | `trace.lots.read` | no |
 | Lot Gezgini · Lot Detayı | İzlenebilirlik | `LOTTRACEOPEN` | Row / detail | `trace.lots.read` | no |
-| Lot Detayı | Stok Defteri'nde aç | `OPENINLEDGER` | detail | `trace.lots.read` (FU-0174-CAT-01; the target page enforces `inventory.stock.read`) | no |
+| Lot Detayı | Stok Defteri'nde aç | `OPENINLEDGER` | detail | `trace.lots.read` | no |
 | Lot Detayı | Seri Gezgini'nde tümü | `VIEWALLSERIALS` | detail | `trace.serials.read` | no |
 | Seri Gezgini | Lot Detayı | `SERIALLOT` | RowAction | `trace.lots.read` | no |
 | Seri Gezgini | Hareket Geçmişi | `SERIALMOVES` | RowAction | `trace.lots.read` | no |
-| Lot Hareket Geçmişi | (row) Hareket fişi | `VIEWRECEIPT` | RowAction | `trace.lots.read` (FU-0174-CAT-01) | no |
-| Lot Hareket Geçmişi (fiş) | Stok Defteri'nde aç | `RECEIPTINLEDGER` | modal | `trace.lots.read` (FU-0174-CAT-01) | no |
+| Lot Hareket Geçmişi | (row) Hareket fişi | `VIEWRECEIPT` | RowAction | `trace.lots.read` | no |
+| Lot Hareket Geçmişi (fiş) | Stok Defteri'nde aç | `RECEIPTINLEDGER` | modal | `trace.lots.read` | no |
 | İzlenebilirlik | Lot Detayı | `TRACELOTDETAIL` | detail | `trace.lots.read` | no |
 | Aktarma | Tüm önerileri uygula | `APPLYALLSUGGESTIONS` | Toolbar | `trace.lots.migrate` | no |
 | Aktarma | Aktarımı Onayla | `CONFIRMMIGRATION` | Toolbar | `trace.lots.migrate` | **yes** |
@@ -887,7 +887,7 @@ holder of `trace.lots.create`, and `createLot` enforces the same key server-side
 LOT-SERIAL-TRACKING (`NEWLOT` / `LOTCREATE`). §14 row `NEWLOTQUICK` is superseded by this note. Follow-up FU-0174-CAT-02
 (Platform/Auth owner): the catalog sync must not move `Module` across namespace owners.
 
-### WP-0174-P3 (agent result 2026-10-06, pending CT) — UI: 7 pages + Stock Ledger lot field
+### WP-0174-P3 (CT-ACCEPTED 2026-10-06) — UI: 7 pages + Stock Ledger lot field
 
 Commit `04f516b17`: Lots Index / Details / Create / Edit + Durum Değiştir dialog, Serials, LotMovements, LotTrace — tenant
 shell, UAS-001 per page, every §14 button only with its key (Web table = manifest source, test); TRACE through a
@@ -905,6 +905,18 @@ empty 15-row length selector. Open for the CT: **InventoryService 506/507 since 
 `` `trace.lots.read` (FU-0174-CAT-01) `` of `OPENINLEDGER` / `VIEWRECEIPT` / `RECEIPTINLEDGER` no longer match the
 completeness test's row regex (measured: pack of `f6ef16913` → green). Evidence
 `docs/records/audits/2026-10/mod-0174-p3-evidence-2026-10-06.md`.
+**CT acceptance (K13):** F-1 was the CT's own error (`8b062d335` annotated three §14 cells and the Inventory suite was
+not re-run after the doc edit) — the annotations are removed from the cells (the re-key note stays in §19 P2);
+Inventory 507/507 again. Re-measured at `dd0f014e6` + this fix: Web 588/590 (only the 2 Nav-guard reds, P5), architecture
+18/18; files outside the Traceability family = the P3-only FU01 form files + `SharedResource.{en,tr}` (5 `Nav.*` keys
+only). CT sabotage: a date-expired lot made selectable (`LotFieldRules.cs:54`) → 1 red, restored. CT decisions:
+F-2 accepted (8th page = P4); F-3 owner decision recorded (§11.6 superseded for the lot-field keys → `LotFieldIndex`);
+**F-7 → FU-0174-P3-07 (P4 scope):** the K-F retest confirmation must also be enforced by the MVC form post
+(ASSUMPTION-0174-06), not only client-side; F-9 / F-6 / F-10 / F-11 / F-13 accepted as recorded; F-12 accepted for the
+short P3→P4 window (the LotMigration nav entry has no page until P4). **ASSUMPTION-0174-10 revised:**
+`Trace:EnforceRegisteredLots` is switched on together with the P4 migration commit (typing closes in the same step),
+not at P3 acceptance — switching it on earlier would refuse typed inbound lots before they can be migrated.
+Lesson (CT): re-run every test suite that reads a document after editing that document.
 
 ## 20. Follow-up Items
 
