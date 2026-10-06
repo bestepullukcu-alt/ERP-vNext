@@ -14,6 +14,12 @@ namespace Diten.InventoryService.Api.ModuleRegistration;
 /// (module-self-registration-standard §2d). The cross-module action <c>NEWLOTQUICK</c> (Stock Ledger form) belongs to
 /// the INVENTORY-LEDGER manifest and is added by slice P3. Routes are tenant routes, so every key is scoped Tenant (§2c).
 /// </para>
+/// <para>
+/// FU-0174-CAT-01 (WP-0174-P2): every key here is in the module's own namespace <c>trace.*</c>. The actions that open a
+/// Stock Ledger screen (<c>OPENINLEDGER</c>, <c>VIEWRECEIPT</c>, <c>RECEIPTINLEDGER</c>) carry <c>trace.lots.read</c>: the
+/// target page enforces its own <c>inventory.stock.read</c>. Declaring a MOD-0173 key here made the catalog sync attribute
+/// it to this module (the last manifest that syncs a key sets its Module).
+/// </para>
 /// </summary>
 public sealed class LotSerialTrackingManifestProvider : IModuleManifestProvider
 {
@@ -67,7 +73,7 @@ public sealed class LotSerialTrackingManifestProvider : IModuleManifestProvider
                         new ModuleManifestAction("CHANGELOTSTATUS", "Change status", TracePermissions.LotsChangeStatus, "RowAction", 30, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("LOTMOVES", "Movement history", TracePermissions.LotsRead, "RowAction", 40, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("LOTTRACEOPEN", "Traceability", TracePermissions.LotsRead, "RowAction", 50, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("OPENINLEDGER", "Open in Stock Ledger", InventoryPermissions.Read, "RowAction", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("OPENINLEDGER", "Open in Stock Ledger", TracePermissions.LotsRead, "RowAction", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("VIEWALLSERIALS", "All serials", TracePermissions.SerialsRead, "RowAction", 70, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
                     ]),
                 new ModuleManifestPage(
@@ -101,8 +107,8 @@ public sealed class LotSerialTrackingManifestProvider : IModuleManifestProvider
                     SortOrder: 14,
                     Actions:
                     [
-                        new ModuleManifestAction("VIEWRECEIPT", "Movement receipt", InventoryPermissions.Read, "RowAction", 10, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("RECEIPTINLEDGER", "Open in Stock Ledger", InventoryPermissions.Read, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("VIEWRECEIPT", "Movement receipt", TracePermissions.LotsRead, "RowAction", 10, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("RECEIPTINLEDGER", "Open in Stock Ledger", TracePermissions.LotsRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "SERIALS",

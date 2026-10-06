@@ -88,7 +88,7 @@ public sealed class LotSerialTrackingManifestCompletenessTests
 
             var toolbar = match.Groups["placement"].Value.Trim() == "Toolbar";
             var dangerous = match.Groups["danger"].Value.Contains("**yes**", StringComparison.Ordinal);
-            expected.AddRange(screens.Select(x => $"{PageOfScreen[x]}|{code}|{match.Groups["perm"].Value}|{toolbar}|{dangerous}"));
+            expected.AddRange(screens.Select(x => $"{PageOfScreen[x]}|{code}|{OwnNamespaceKey(match.Groups["perm"].Value)}|{toolbar}|{dangerous}"));
         }
 
         Assert.Equal(["NEWLOTQUICK"], crossModule); // the one cross-module action (INVENTORY-LEDGER pages, slice P3)
@@ -138,6 +138,14 @@ public sealed class LotSerialTrackingManifestCompletenessTests
         Assert.All(Constants(typeof(TracePermissions)), key => Assert.True(reachable.Contains(key), $"{key} is never surfaced by the manifest"));
         Assert.All(Constants(typeof(TracePermissions)), key => Assert.Matches(@"^trace\.[a-z]+\.[a-z\-]+$", key)); // PKS-001 shape, own namespace
     }
+
+    /// <summary>
+    /// FU-0174-CAT-01 (WP-0174-P2): a pack §14 button whose key belongs to another module (<c>inventory.stock.read</c> on the
+    /// "open in Stock Ledger" buttons) is declared here with <c>trace.lots.read</c> — the target page enforces its own key, and
+    /// a foreign key in this manifest moved its catalog attribution to this module.
+    /// </summary>
+    private static string OwnNamespaceKey(string packKey)
+        => packKey.StartsWith("trace.", StringComparison.Ordinal) ? packKey : TracePermissions.LotsRead;
 
     private static IEnumerable<string> Constants(Type type)
         => type.GetFields(BindingFlags.Public | BindingFlags.Static)
