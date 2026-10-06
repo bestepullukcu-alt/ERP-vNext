@@ -57,7 +57,7 @@ Backend'de **sıklıkla genişletme var** (`FrequencyExtendPlanner`, MOD-0155 FU
 | D3 | 17 planın 10'u **boş taslak** (0 hedef) — yarım kalan oturumlar birikiyor; temizleme / tek aktif taslak kuralı yok. |
 | D4 | Hedefler sekmesi "Seçilenler" listesi **ham GUID**; doktor satırında "BAĞLANTI" sütunu GUID (mobil D1 ile aynı konu). |
 | D5 | Detay açılışında ~100 istek (hesap başına `contacts` + `related-accounts`, bazıları iki kez). |
-| D6 | Dil / biçim: İngilizce etiketler (Accounts, Doctors, Specialty, Out-of-territory…), uzmanlık adları İngilizce, kurum türü kodu büyük harfle (HOSPİTAL, CLİNİC), tarih "5 Oct, 26", ülke adları İngilizce. |
+| D6 | Dil / biçim: İngilizce etiketler (Accounts, Doctors, Specialty, Out-of-territory…), uzmanlık adları İngilizce, kurum türü kodu büyük harfle (HOSPİTAL, CLİNİC), ülke adları İngilizce. Tarih biçimi ("5 Oct, 26" tarzı) **kullanıcı kararıyla kalır** (2026-10-06). |
 | D7 | **Ziyaret Planlama ve Ziyaret Yürütme menüde yok** (menüde yalnız Planlanan Ziyaretler, Dönemler, Dönem Kapasitesi, Sıklık Politikaları). |
 | D8 | Kayıtlarda manuel test kalıntısı: `asdasdasd` (2026-09-14, taslak). |
 
