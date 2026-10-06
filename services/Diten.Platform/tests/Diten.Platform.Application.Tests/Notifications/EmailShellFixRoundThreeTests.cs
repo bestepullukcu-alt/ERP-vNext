@@ -111,7 +111,7 @@ public sealed partial class EmailShellDispatchTests
         var closed = Waiting(rig, NotificationDispatchStatus.Failed, hoursAgo: 30);
         closed.PermanentlyFailedNotifiedAt = DateTimeOffset.UtcNow.AddHours(-29);
         closed.ErrorCode = "EarlierPermanent";
-        var sweep = new EmailDispatchSweepJob(
+        var sweep = TestSweeps.Create(
             rig.Dispatches,
             new RecordingScheduler(),
             NullLogger<EmailDispatchSweepJob>.Instance,

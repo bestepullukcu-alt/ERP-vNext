@@ -175,7 +175,7 @@ public sealed class NotificationsBatch2Tests
         await dispatches.CreateAsync(due2);
 
         var scheduler = new RecordingScheduler();
-        var sweep = new EmailDispatchSweepJob(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
+        var sweep = TestSweeps.Create(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
 
         await sweep.HandleAsync(new EmailDispatchSweepJobArgs(BatchSize: 50, MaxRetryCount: 5), new BackgroundJobContext());
 
@@ -200,7 +200,7 @@ public sealed class NotificationsBatch2Tests
         await dispatches.CreateAsync(queuedOnly);
 
         var scheduler = new RecordingScheduler();
-        var sweep = new EmailDispatchSweepJob(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
+        var sweep = TestSweeps.Create(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
 
         await sweep.HandleAsync(new EmailDispatchSweepJobArgs(), new BackgroundJobContext());
 
@@ -218,7 +218,7 @@ public sealed class NotificationsBatch2Tests
         await dispatches.CreateAsync(noNextRetry);
 
         var scheduler = new RecordingScheduler();
-        var sweep = new EmailDispatchSweepJob(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
+        var sweep = TestSweeps.Create(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
 
         await sweep.HandleAsync(new EmailDispatchSweepJobArgs(), new BackgroundJobContext());
 
@@ -236,7 +236,7 @@ public sealed class NotificationsBatch2Tests
         await dispatches.CreateAsync(retryable);
 
         var scheduler = new RecordingScheduler();
-        var sweep = new EmailDispatchSweepJob(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
+        var sweep = TestSweeps.Create(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
 
         await sweep.HandleAsync(new EmailDispatchSweepJobArgs(BatchSize: 50, MaxRetryCount: 5), new BackgroundJobContext());
 
@@ -255,7 +255,7 @@ public sealed class NotificationsBatch2Tests
         }
 
         var scheduler = new RecordingScheduler();
-        var sweep = new EmailDispatchSweepJob(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
+        var sweep = TestSweeps.Create(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
 
         await sweep.HandleAsync(new EmailDispatchSweepJobArgs(BatchSize: 3, MaxRetryCount: 5), new BackgroundJobContext());
 
@@ -272,7 +272,7 @@ public sealed class NotificationsBatch2Tests
         await dispatches.CreateAsync(CreateFailedDispatch(tenantB, retryCount: 0, nextRetryAt: DateTimeOffset.UtcNow.AddMinutes(-1)));
 
         var scheduler = new RecordingScheduler();
-        var sweep = new EmailDispatchSweepJob(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
+        var sweep = TestSweeps.Create(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
 
         await sweep.HandleAsync(new EmailDispatchSweepJobArgs(), new BackgroundJobContext());
 
@@ -290,7 +290,7 @@ public sealed class NotificationsBatch2Tests
         var dispatches = new InMemoryDispatches();
         await dispatches.CreateAsync(CreateFailedDispatch(tenantId, retryCount: 0, nextRetryAt: DateTimeOffset.UtcNow.AddMinutes(-1)));
         var scheduler = new RecordingScheduler { ThrowOnEnqueue = true };
-        var sweep = new EmailDispatchSweepJob(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
+        var sweep = TestSweeps.Create(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance);
 
         var exception = await Record.ExceptionAsync(() => sweep.HandleAsync(new EmailDispatchSweepJobArgs(), new BackgroundJobContext()));
 
@@ -501,7 +501,7 @@ public sealed class NotificationsBatch2Tests
         public Task<bool> TryUpdateAsync(NotificationDispatch dispatch, int expectedVersion, NotificationDispatchStatus expectedStatus, CancellationToken ct = default) =>
             Task.FromResult(true);
 
-        public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(int take, CancellationToken ct = default) =>
+        public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(DateTimeOffset idleBefore, int take, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<NotificationDispatchExpiryHandle>>([]);
 
         public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindRetryWindowExpiredAsync(DateTimeOffset queuedBefore, int take, CancellationToken ct = default) =>

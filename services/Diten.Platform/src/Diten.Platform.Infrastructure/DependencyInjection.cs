@@ -231,7 +231,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantUserCountReader, AuthTenantUserCountClient>();
         services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
-        services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();
+        // BL-454 slice 2 — the platform administrator invitation e-mail service is gone: no caller on any branch.
         /*
          * ⚠ These reference-validator clients carry NO tenant DelegatingHandler, and that is DELIBERATE.
          * A handler cannot see the request: IHttpClientFactory caches a client's handler chain in its OWN scope,

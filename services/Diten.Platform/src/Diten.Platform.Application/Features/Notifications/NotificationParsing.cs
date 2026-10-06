@@ -79,7 +79,10 @@ public static partial class NotificationParsing
         }
 
         var candidate = value.Trim();
-        return candidate.Contains(' ')
+        // BL-454 — the error code / message path uses the SAME secret detector as variables (provider-key shapes, JWT,
+        // PEM, credential links), plus its own older, broader guesses below.
+        return NotificationSecrets.IsSecretText(candidate)
+               || candidate.Contains(' ')
                || candidate.Contains('=')
                || candidate.StartsWith("sk-", StringComparison.OrdinalIgnoreCase)
                || candidate.StartsWith("SG.", StringComparison.OrdinalIgnoreCase)

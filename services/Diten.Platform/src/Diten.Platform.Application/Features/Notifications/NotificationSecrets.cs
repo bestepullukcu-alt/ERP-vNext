@@ -322,13 +322,15 @@ public static partial class NotificationSecrets
 
     // A secret's own shape, found anywhere in a text but never in the middle of a word: provider keys by their published
     // prefixes, and a three-part JWT.
-    // A Google API key is AIza and exactly 35 more key characters; a PEM private key is recognised by its BEGIN line,
-    // so a block with any body (one line or many) is the shape, and the word "AIza" on its own is not.
+    // A Google API key is AIza and 35 more key characters (whatever follows: over-matching only masks the whole variable,
+    // under-matching stores a key). A PEM or PGP private key is recognised by its BEGIN line wherever it stands — glued to
+    // a JSON "\n", to a preceding certificate, to any character — so a block with any body is the shape. "AIza" on its
+    // own, or short, is not.
     // Every quantifier is bounded and the search has a time limit (HasSecretShape fails closed on a timeout). A JWT is
     // recognised by its header and the start of its payload, so no length of payload escapes; a header longer than the
     // bound is itself the shape of a secret.
     [GeneratedRegex(
-        @"(?<![A-Za-z0-9_])(?:sk-[A-Za-z0-9_-]{9,512}|sk_(?:live|test)_[A-Za-z0-9]{8,512}|SG\.[A-Za-z0-9_.-]{9,512}|gh[pousr]_[A-Za-z0-9]{20,255}|xox[abprs]-[A-Za-z0-9-]{8,512}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}(?![0-9A-Za-z_-])|-----BEGIN [A-Z ]{0,40}PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{1,4095}\.[A-Za-z0-9_-]|eyJ[A-Za-z0-9_-]{4096})",
+        @"(?<![A-Za-z0-9_])(?:sk-[A-Za-z0-9_-]{9,512}|sk_(?:live|test)_[A-Za-z0-9]{8,512}|SG\.[A-Za-z0-9_.-]{9,512}|gh[pousr]_[A-Za-z0-9]{20,255}|xox[abprs]-[A-Za-z0-9-]{8,512}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|eyJ[A-Za-z0-9_-]{1,4095}\.[A-Za-z0-9_-]|eyJ[A-Za-z0-9_-]{4096})|-----BEGIN [A-Z ]{0,40}PRIVATE KEY(?: BLOCK)?-----",
         RegexOptions.CultureInvariant,
         matchTimeoutMilliseconds: ShapeSearchTimeoutMilliseconds)]
     private static partial Regex SecretShape();

@@ -444,7 +444,7 @@ public sealed class NotificationsSmtpProviderBodyAndAuthTests
         public Task<bool> TryUpdateAsync(NotificationDispatch dispatch, int expectedVersion, NotificationDispatchStatus expectedStatus, CancellationToken ct = default) =>
             Task.FromResult(true);
 
-        public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(int take, CancellationToken ct = default) =>
+        public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(DateTimeOffset idleBefore, int take, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<NotificationDispatchExpiryHandle>>([]);
 
         public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindRetryWindowExpiredAsync(DateTimeOffset queuedBefore, int take, CancellationToken ct = default) =>

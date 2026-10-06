@@ -41,106 +41,111 @@ public sealed class NotificationPermanentFailureEffects
         _userNotifications = userNotifications;
     }
 
+    /// <summary>The claim's <c>UpdatedBy</c>: this prefix, the attempt number, the claiming host.</summary>
+    public const string ClaimActorPrefix = "permanent-failure-effects#";
+
+    /// <summary>After this many failed attempts on one row the effects are given up — named, counted, logged.</summary>
+    public const int MaxAttempts = 5;
+
+    private static readonly Counter EffectsGivenUpCounter = Metrics.CreateCounter(
+        "notification_dispatch_permanent_effects_given_up",
+        "Permanent-failure effects (organizer notification, attendee badge) that kept failing and were given up.",
+        new CounterConfiguration { LabelNames = new[] { "template_key" } });
+
     /// <summary>
-    /// BL-454 — the effects, then the mark that they ran: <see cref="NotificationDispatch.PermanentlyFailedNotifiedAt"/>
-    /// goes from pending to the time, through a write conditional on the row as it is now. A row whose effects ran but
-    /// whose mark did not land stays pending and is re-driven: an effect may then repeat, never go missing.
+    /// BL-454 — the effects of a PENDING row, exactly once:
+    /// <list type="number">
+    ///   <item>CLAIM: a write conditional on the version read stamps <c>UpdatedAt</c> (when) and <c>UpdatedBy</c> (who,
+    ///     attempt number) and raises <c>Version</c>. A second run that read the same version loses here and does nothing.</item>
+    ///   <item>RUN the effects. If they fail, the marker stays pending — the row is re-driven by the sweep once it has been
+    ///     idle for the grace period; after <see cref="MaxAttempts"/> failed attempts the effects are given up, named and counted.</item>
+    ///   <item>MARK: the real time, conditional on the claimed version.</item>
+    /// </list>
+    /// A claim that went stale (its run died) is re-claimed after the grace period; only then can an effect repeat.
     /// </summary>
-    public async Task ApplyAndMarkAsync(
+    /// <returns>True when this call ran the effects.</returns>
+    public async Task<bool> ApplyAndMarkAsync(
         NotificationDispatch dispatch, bool silent, INotificationDispatchRepository repository, CancellationToken ct)
     {
-        await ApplyAsync(dispatch, silent, ct);
-        if (!NotificationDispatch.IsPermanentFailurePending(dispatch))
+        if (!NotificationDispatch.IsPermanentFailurePending(dispatch) || dispatch.Status != NotificationDispatchStatus.Failed)
         {
-            return;
+            return false;
         }
 
+        var attempt = NextAttempt(dispatch.UpdatedBy);
+        var readVersion = dispatch.Version;
+        dispatch.UpdatedAt = DateTimeOffset.UtcNow;
+        dispatch.UpdatedBy = $"{ClaimActorPrefix}{attempt}:{Environment.MachineName}";
+        dispatch.Version = readVersion + 1;
+        if (!await repository.TryUpdateAsync(dispatch, readVersion, dispatch.Status, ct))
+        {
+            _logger?.LogInformation(
+                "email.dispatch.permanently_failed.claim_lost DispatchId={DispatchId} TenantId={TenantId}",
+                dispatch.Id, dispatch.TenantId);
+            return false;
+        }
+
+        try
+        {
+            await RunAsync(dispatch, silent, ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            if (attempt < MaxAttempts)
+            {
+                // Not marked: still pending, re-driven after the grace period.
+                _logger?.LogWarning(
+                    ex,
+                    "email.dispatch.permanently_failed.effects_failed DispatchId={DispatchId} TenantId={TenantId} Attempt={Attempt} MaxAttempts={MaxAttempts}",
+                    dispatch.Id, dispatch.TenantId, attempt, MaxAttempts);
+                return false;
+            }
+
+            EffectsGivenUpCounter.WithLabels(dispatch.TemplateKey).Inc();
+            _logger?.LogError(
+                ex,
+                "email.dispatch.permanently_failed.effects_given_up DispatchId={DispatchId} TenantId={TenantId} Attempt={Attempt} Reason=EffectsKeptFailing",
+                dispatch.Id, dispatch.TenantId, attempt);
+        }
+
+        var claimedVersion = dispatch.Version;
         dispatch.PermanentlyFailedNotifiedAt = DateTimeOffset.UtcNow;
-        if (!await repository.TryUpdateAsync(dispatch, dispatch.Version, dispatch.Status, ct))
+        dispatch.Version = claimedVersion + 1;
+        if (!await repository.TryUpdateAsync(dispatch, claimedVersion, dispatch.Status, ct))
         {
             _logger?.LogWarning(
                 "email.dispatch.permanently_failed.mark_lost DispatchId={DispatchId} TenantId={TenantId}",
                 dispatch.Id, dispatch.TenantId);
         }
+
+        return true;
+    }
+
+    private static int NextAttempt(string? updatedBy)
+    {
+        if (updatedBy is null || !updatedBy.StartsWith(ClaimActorPrefix, StringComparison.Ordinal))
+        {
+            return 1;
+        }
+
+        var rest = updatedBy[ClaimActorPrefix.Length..];
+        var colon = rest.IndexOf(':');
+        return int.TryParse(colon < 0 ? rest : rest[..colon], out var previous) ? previous + 1 : 1;
     }
 
     /// <summary>
-    /// BL-406 — everything that happens ONCE, at the moment a dispatch's failure becomes permanent. Ops
-    /// log line + counter fire for EVERY permanently-failed dispatch (rule 3); the organizer notification + the
-    /// attendee "mail undelivered" badge fire ONLY for meeting-related mail (rule 1/2). Never allowed to fail the
-    /// primary transition above — this runs strictly after that transition and its own event has already
-    /// published.
+    /// The effects where nothing can re-drive them (a first send on a server where no retry job runs): run once, and a
+    /// failure is logged by name rather than thrown into the transition that already happened.
     /// </summary>
     public async Task ApplyAsync(NotificationDispatch dispatch, bool silent, CancellationToken ct)
     {
-        var isMeetingRelated = dispatch.TemplateKey.StartsWith(MeetingTemplateKeyPrefix, StringComparison.OrdinalIgnoreCase);
-
-        PermanentlyFailedCounter.WithLabels(dispatch.TemplateKey, isMeetingRelated ? "true" : "false").Inc();
-        _logger?.LogWarning(
-            "email.dispatch.permanently_failed DispatchId={DispatchId} TenantId={TenantId} TemplateKey={TemplateKey} "
-            + "IsMeetingRelated={IsMeetingRelated} RetryCount={RetryCount} ErrorCode={ErrorCode} Silent={Silent} CorrelationId={CorrelationId}",
-            dispatch.Id, dispatch.TenantId, dispatch.TemplateKey, isMeetingRelated, dispatch.RetryCount, dispatch.ErrorCode, silent, dispatch.CorrelationId);
-
-        // BL-454 — a SILENT close (a row far older than the retry window, closed the first time the jobs run) counts and
-        // logs, but tells no organizer and badges no attendee about mail that died long ago.
-        if (!isMeetingRelated || silent)
-        {
-            return;
-        }
-
-        if (dispatch.CausationId is not { } meetingId || dispatch.MeetingAttendeeUserId is not { } attendeeUserId)
-        {
-            // Meeting-templated mail with no (meetingId, attendeeUserId) attribution — cannot happen from
-            // MeetingInviteMailer's own 1:1 dispatch path, but a future producer reusing the same template key
-            // without setting both fields must not throw here; the ops log/counter above already fired.
-            _logger?.LogWarning(
-                "email.dispatch.permanently_failed.meeting_attribution_missing DispatchId={DispatchId} TenantId={TenantId}",
-                dispatch.Id, dispatch.TenantId);
-            return;
-        }
-
-        // K12's own posture, one level down: an organizer notification failing to write must never surface as
-        // this command failing (the dispatch's own Failed transition has already been committed and published
-        // above).
         try
         {
-            if (_meetingAttendees is not null)
-            {
-                await _meetingAttendees.MarkMailUndeliveredAsync(meetingId, attendeeUserId, DateTimeOffset.UtcNow, ct);
-            }
-
-            if (_meetings is null || _userNotifications is null)
-            {
-                return;
-            }
-
-            var meeting = await _meetings.GetByIdAsync(meetingId, ct);
-            if (meeting is null)
-            {
-                return;
-            }
-
-            // The dispatch is 1:1 (BL-406's own MeetingInviteMailer change) — its single `To` entry IS the
-            // attendee this failure is about. DisplayName falls back to the email so the organizer's notification
-            // never reads as blank.
-            var recipient = dispatch.To.Count > 0 ? dispatch.To[0] : null;
-            var personLabel = recipient?.DisplayName ?? recipient?.Email ?? attendeeUserId.ToString();
-
-            await _userNotifications.CreateAsync(
-                new UserNotification
-                {
-                    TenantId = dispatch.TenantId,
-                    UserId = meeting.OrganizerUserId,
-                    EventCode = MeetingUndeliveredEventCode,
-                    // Data the tenant typed (the meeting's own title) — no sentence composed here; a surface
-                    // resolves its label from EventCode + these two pieces of data, same posture as
-                    // TaskNotificationService.WriteInAppNotificationsAsync's own doc comment.
-                    Title = meeting.Title,
-                    Body = personLabel,
-                    TargetUrl = $"/Meetings/{meeting.Id}",
-                    Severity = UserNotificationSeverity.Warning
-                },
-                ct);
+            await RunAsync(dispatch, silent, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -150,8 +155,84 @@ public sealed class NotificationPermanentFailureEffects
         {
             _logger?.LogWarning(
                 ex,
-                "email.dispatch.permanently_failed.organizer_notification_write_failed DispatchId={DispatchId} MeetingId={MeetingId}",
-                dispatch.Id, meetingId);
+                "email.dispatch.permanently_failed.organizer_notification_write_failed DispatchId={DispatchId} TenantId={TenantId}",
+                dispatch.Id, dispatch.TenantId);
         }
+    }
+
+    /// <summary>
+    /// BL-406 — everything that happens ONCE when a dispatch's failure becomes permanent: for meeting mail the attendee's
+    /// "mail undelivered" badge and the organizer's notification (rule 1/2), then for EVERY permanent failure the ops log
+    /// line and counter (rule 3) — last, so a run that fails half way and is re-driven never counts twice. Throws when a
+    /// store write fails: the caller decides whether that is retried (pending) or logged (no re-drive possible).
+    /// </summary>
+    private async Task RunAsync(NotificationDispatch dispatch, bool silent, CancellationToken ct)
+    {
+        var isMeetingRelated = dispatch.TemplateKey.StartsWith(MeetingTemplateKeyPrefix, StringComparison.OrdinalIgnoreCase);
+
+        // BL-454 — a SILENT close (a row far older than the retry window, closed the first time the jobs run) counts and
+        // logs, but tells no organizer and badges no attendee about mail that died long ago.
+        if (isMeetingRelated && !silent)
+        {
+            await NotifyMeetingAsync(dispatch, ct);
+        }
+
+        PermanentlyFailedCounter.WithLabels(dispatch.TemplateKey, isMeetingRelated ? "true" : "false").Inc();
+        _logger?.LogWarning(
+            "email.dispatch.permanently_failed DispatchId={DispatchId} TenantId={TenantId} TemplateKey={TemplateKey} "
+            + "IsMeetingRelated={IsMeetingRelated} RetryCount={RetryCount} ErrorCode={ErrorCode} Silent={Silent} CorrelationId={CorrelationId}",
+            dispatch.Id, dispatch.TenantId, dispatch.TemplateKey, isMeetingRelated, dispatch.RetryCount, dispatch.ErrorCode, silent, dispatch.CorrelationId);
+    }
+
+    private async Task NotifyMeetingAsync(NotificationDispatch dispatch, CancellationToken ct)
+    {
+        if (dispatch.CausationId is not { } meetingId || dispatch.MeetingAttendeeUserId is not { } attendeeUserId)
+        {
+            // Meeting-templated mail with no (meetingId, attendeeUserId) attribution — cannot happen from
+            // MeetingInviteMailer's own 1:1 dispatch path, but a future producer reusing the same template key
+            // without setting both fields must not throw here; the ops log/counter still fire.
+            _logger?.LogWarning(
+                "email.dispatch.permanently_failed.meeting_attribution_missing DispatchId={DispatchId} TenantId={TenantId}",
+                dispatch.Id, dispatch.TenantId);
+            return;
+        }
+
+        if (_meetingAttendees is not null)
+        {
+            await _meetingAttendees.MarkMailUndeliveredAsync(meetingId, attendeeUserId, DateTimeOffset.UtcNow, ct);
+        }
+
+        if (_meetings is null || _userNotifications is null)
+        {
+            return;
+        }
+
+        var meeting = await _meetings.GetByIdAsync(meetingId, ct);
+        if (meeting is null)
+        {
+            return;
+        }
+
+        // The dispatch is 1:1 (BL-406's own MeetingInviteMailer change) — its single `To` entry IS the
+        // attendee this failure is about. DisplayName falls back to the email so the organizer's notification
+        // never reads as blank.
+        var recipient = dispatch.To.Count > 0 ? dispatch.To[0] : null;
+        var personLabel = recipient?.DisplayName ?? recipient?.Email ?? attendeeUserId.ToString();
+
+        await _userNotifications.CreateAsync(
+            new UserNotification
+            {
+                TenantId = dispatch.TenantId,
+                UserId = meeting.OrganizerUserId,
+                EventCode = MeetingUndeliveredEventCode,
+                // Data the tenant typed (the meeting's own title) — no sentence composed here; a surface
+                // resolves its label from EventCode + these two pieces of data, same posture as
+                // TaskNotificationService.WriteInAppNotificationsAsync's own doc comment.
+                Title = meeting.Title,
+                Body = personLabel,
+                TargetUrl = $"/Meetings/{meeting.Id}",
+                Severity = UserNotificationSeverity.Warning
+            },
+            ct);
     }
 }

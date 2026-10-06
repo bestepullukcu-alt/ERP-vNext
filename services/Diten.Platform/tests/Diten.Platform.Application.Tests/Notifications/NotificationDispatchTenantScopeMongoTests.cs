@@ -53,7 +53,7 @@ public sealed class NotificationDispatchTenantScopeMongoTests : IAsyncLifetime
         var second = await SeedMeetingInviteAsync(queuedHoursAgo: 30);
         Assert.False(ambient.IsResolved);
 
-        var sweep = new EmailDispatchSweepJob(
+        var sweep = TestSweeps.Create(
             _dispatches,
             new NothingScheduled(),
             NullLogger<EmailDispatchSweepJob>.Instance,

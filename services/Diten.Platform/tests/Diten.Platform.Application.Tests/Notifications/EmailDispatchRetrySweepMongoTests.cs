@@ -141,7 +141,7 @@ public sealed class EmailDispatchRetrySweepMongoTests : IAsyncLifetime
     private static async Task<IReadOnlyList<EmailDispatchJobArgs>> SweepAsync(NotificationDispatchRepository dispatches)
     {
         var scheduler = new RecordingScheduler();
-        await new EmailDispatchSweepJob(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance)
+        await TestSweeps.Create(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance)
             .HandleAsync(new EmailDispatchSweepJobArgs(BatchSize: 500, MaxRetryCount: 5), new BackgroundJobContext(), CancellationToken.None);
         return scheduler.Enqueued;
     }

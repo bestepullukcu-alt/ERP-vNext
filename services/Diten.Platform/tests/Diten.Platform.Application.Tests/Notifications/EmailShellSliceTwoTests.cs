@@ -52,7 +52,7 @@ public sealed partial class EmailShellDispatchTests
         second.TenantId = Guid.NewGuid();
         var ambient = new TenantContext();
         var mediator = new TenantRecordingMediator(ambient, new ValidatingMediator(rig.Dispatches), throwFor: first.Id);
-        var sweep = new EmailDispatchSweepJob(rig.Dispatches, new RecordingScheduler(), NullLogger<EmailDispatchSweepJob>.Instance,
+        var sweep = TestSweeps.Create(rig.Dispatches, new RecordingScheduler(), NullLogger<EmailDispatchSweepJob>.Instance,
             mediator, Options.Create(new EmailDispatchRetentionOptions { RetryWindowHours = 24 }), ambient);
 
         await sweep.HandleAsync(new EmailDispatchSweepJobArgs(), new BackgroundJobContext(), CancellationToken.None);
@@ -71,7 +71,7 @@ public sealed partial class EmailShellDispatchTests
         var rig = new Rig();
         var row = Waiting(rig, NotificationDispatchStatus.Failed, hoursAgo: 30);
         var logger = new LinesLogger<EmailDispatchSweepJob>();
-        var sweep = new EmailDispatchSweepJob(rig.Dispatches, new RecordingScheduler(), logger, new AlwaysRefusing(),
+        var sweep = TestSweeps.Create(rig.Dispatches, new RecordingScheduler(), logger, new AlwaysRefusing(),
             Options.Create(new EmailDispatchRetentionOptions { RetryWindowHours = 24 }));
 
         await sweep.HandleAsync(new EmailDispatchSweepJobArgs(), new BackgroundJobContext(), CancellationToken.None);
@@ -145,8 +145,9 @@ public sealed partial class EmailShellDispatchTests
         Assert.True(NotificationDispatch.IsPermanentFailurePending(row));
         Assert.Empty(meetings.Undelivered);
         Assert.Equal(before, Counter(key, meeting: true));
+        row.UpdatedAt = DateTimeOffset.UtcNow.AddMinutes(-30); // the effects grace has passed (FIX1: a fresh row is left alone)
 
-        var sweep = new EmailDispatchSweepJob(rig.Dispatches, new RecordingScheduler(), NullLogger<EmailDispatchSweepJob>.Instance,
+        var sweep = TestSweeps.Create(rig.Dispatches, new RecordingScheduler(), NullLogger<EmailDispatchSweepJob>.Instance,
             new ValidatingMediator(rig.Dispatches, meetings), Options.Create(new EmailDispatchRetentionOptions { RetryWindowHours = 24 }),
             new TenantContext(), meetings.Effects());
 
@@ -161,15 +162,15 @@ public sealed partial class EmailShellDispatchTests
     }
 
     [Fact]
-    public async Task A_pending_row_is_already_permanent_for_the_retry_and_the_window_queries()
+    public async Task A_pending_row_is_already_permanent_for_the_send_job()
     {
+        // FIX1 3e — the retry and window QUERIES are measured on a real MongoDB (NotificationDispatchRetentionMongoTests);
+        // what is left here is the job's own guard: a row handed to it while pending is not sent.
         var rig = new Rig();
         var template = rig.AddTemplate("en", "<p>x</p>", "x");
         var row = rig.AddFailedDispatch("{}", template.Id);
         row.PermanentlyFailedNotifiedAt = NotificationDispatch.PermanentFailurePending;
-        row.QueuedAt = DateTimeOffset.UtcNow.AddHours(-30);
 
-        Assert.Empty(await rig.Dispatches.FindRetryWindowExpiredAsync(DateTimeOffset.UtcNow.AddHours(-24), 50));
         await rig.Job().HandleAsync(new EmailDispatchJobArgs(rig.TenantId, row.Id), new BackgroundJobContext(), CancellationToken.None);
         Assert.Null(rig.Transport.LastSentMessage);
     }

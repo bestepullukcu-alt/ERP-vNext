@@ -3,6 +3,7 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Notifications.Commands;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Notifications;
+using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -36,33 +37,38 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
     private readonly INotificationDispatchRepository _dispatchRepository;
     private readonly IBackgroundJobScheduler _scheduler;
     private readonly ILogger<EmailDispatchSweepJob> _logger;
-    // BL-454 — trailing and OPTIONAL, the EmailDispatchJob precedent: both are registered in DI, so production always
-    // has them. A sweep built the old 3-argument way (existing tests) retries as before and closes nothing.
-    private readonly IMediator? _mediator;
+    // BL-454 — every dependency is REQUIRED: a container that cannot supply one fails to build instead of handing the
+    // sweep a silent null (which would skip the window close, the tenant scope or the effects re-drive). Test doubles
+    // pass each one explicitly.
+    private readonly IMediator _mediator;
     private readonly EmailDispatchRetentionOptions _retention;
     // BL-454 — the job runs outside any request: no tenant is resolved. Each closed row's command runs inside ITS
     // tenant (TenantScope, the MeetingSeriesSweepJob pattern), so the meeting stores the permanent-failure path writes
     // to (attendee badge, organizer notification) read the right tenant instead of throwing. Registered in DI.
-    private readonly ITenantContext? _tenantContext;
+    private readonly ITenantContext _tenantContext;
     // BL-454 — re-drives the permanent-failure effects of rows left pending (the publish threw before they ran).
-    private readonly Services.NotificationPermanentFailureEffects? _permanentFailure;
+    private readonly Services.NotificationPermanentFailureEffects _permanentFailure;
 
     public EmailDispatchSweepJob(
         INotificationDispatchRepository dispatchRepository,
         IBackgroundJobScheduler scheduler,
         ILogger<EmailDispatchSweepJob> logger,
-        IMediator? mediator = null,
-        IOptions<EmailDispatchRetentionOptions>? retention = null,
-        ITenantContext? tenantContext = null,
-        Services.NotificationPermanentFailureEffects? permanentFailure = null)
+        IMediator mediator,
+        IOptions<EmailDispatchRetentionOptions> retention,
+        ITenantContext tenantContext,
+        Services.NotificationPermanentFailureEffects permanentFailure)
     {
+        ArgumentNullException.ThrowIfNull(mediator);
+        ArgumentNullException.ThrowIfNull(retention);
+        ArgumentNullException.ThrowIfNull(tenantContext);
+        ArgumentNullException.ThrowIfNull(permanentFailure);
         _tenantContext = tenantContext;
         _permanentFailure = permanentFailure;
         _dispatchRepository = dispatchRepository;
         _scheduler = scheduler;
         _logger = logger;
         _mediator = mediator;
-        _retention = retention?.Value ?? new EmailDispatchRetentionOptions();
+        _retention = retention.Value ?? new EmailDispatchRetentionOptions();
     }
 
     /// <summary>
@@ -160,11 +166,6 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
 
     private async Task CloseExpiredAsync(DateTimeOffset asOfUtc, int batchSize, BackgroundJobContext context, CancellationToken ct)
     {
-        if (_mediator is null)
-        {
-            return;
-        }
-
         int windowHours;
         DateTimeOffset cutoff;
         DateTimeOffset silentBefore;
@@ -251,18 +252,15 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
     /// </summary>
     private async Task RedrivePendingEffectsAsync(DateTimeOffset asOfUtc, int batchSize, BackgroundJobContext context, CancellationToken ct)
     {
-        if (_permanentFailure is null)
-        {
-            return;
-        }
-
         IReadOnlyList<NotificationDispatchExpiryHandle> pending;
         DateTimeOffset silentBefore;
         try
         {
             var windowHours = EmailDispatchRetentionOptions.EffectiveWindowHours(_retention.RetryWindowHours);
             silentBefore = asOfUtc - TimeSpan.FromHours(windowHours * SilentWindowMultiple);
-            pending = await _dispatchRepository.FindPermanentFailurePendingAsync(batchSize, ct);
+            // The grace: a row written pending (or claimed) less than this long ago belongs to the run that wrote it.
+            var idleBefore = asOfUtc - TimeSpan.FromMinutes(EmailDispatchRetentionOptions.EffectiveGraceMinutes(_retention.EffectsGraceMinutes));
+            pending = await _dispatchRepository.FindPermanentFailurePendingAsync(idleBefore, batchSize, ct);
         }
         catch (OperationCanceledException)
         {
@@ -286,13 +284,18 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
                 using (TenantScopeFor(handle.TenantId))
                 {
                     var dispatch = await _dispatchRepository.GetByIdForTenantAsync(handle.TenantId, handle.DispatchId, ct);
-                    if (dispatch is null || !NotificationDispatch.IsPermanentFailurePending(dispatch))
+                    // Still pending AND still Failed: a row that was sent in between is owed no "not delivered" notice.
+                    if (dispatch is null
+                        || dispatch.Status != NotificationDispatchStatus.Failed
+                        || !NotificationDispatch.IsPermanentFailurePending(dispatch))
                     {
                         continue;
                     }
 
-                    await _permanentFailure.ApplyAndMarkAsync(dispatch, handle.QueuedAt < silentBefore, _dispatchRepository, ct);
-                    redriven++;
+                    if (await _permanentFailure.ApplyAndMarkAsync(dispatch, handle.QueuedAt < silentBefore, _dispatchRepository, ct))
+                    {
+                        redriven++;
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -319,8 +322,7 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
         }
     }
 
-    private IDisposable? TenantScopeFor(Guid tenantId) =>
-        _tenantContext is null ? null : TenantScope.Begin(_tenantContext, tenantId);
+    private IDisposable TenantScopeFor(Guid tenantId) => TenantScope.Begin(_tenantContext, tenantId);
 
     /// <summary>
     /// The close, through the real pipeline. A refusal by the validator (a stored code it will not accept) is answered
@@ -332,7 +334,7 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
     {
         try
         {
-            return await _mediator!.Send(Command(handle, message, isSilent), ct);
+            return await _mediator.Send(Command(handle, message, isSilent), ct);
         }
         catch (FluentValidation.ValidationException refusal)
         {
@@ -341,7 +343,7 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
                 handle.DispatchId,
                 handle.TenantId,
                 string.Join(",", refusal.Errors.Select(error => error.PropertyName).Distinct()));
-            return await _mediator!.Send(Command(handle, ClosingMessage(null), isSilent), ct);
+            return await _mediator.Send(Command(handle, ClosingMessage(null), isSilent), ct);
         }
     }
 
@@ -393,6 +395,17 @@ public sealed class EmailDispatchRetentionOptions
     public const int MaximumWindowHours = 720;
 
     public int RetryWindowHours { get; set; } = 24;
+
+    public const int MinimumGraceMinutes = 1;
+    public const int MaximumGraceMinutes = 240;
+
+    /// <summary>
+    /// BL-454 — how long a permanent row whose effects are pending (or claimed) is left to the run that owns it before the
+    /// sweep re-drives it: the transition's own run (a slow publish) or a claim whose run may still be going.
+    /// </summary>
+    public int EffectsGraceMinutes { get; set; } = 10;
+
+    public static int EffectiveGraceMinutes(int configured) => Math.Clamp(configured, MinimumGraceMinutes, MaximumGraceMinutes);
 
     /// <summary>The configured window held to 1..720 hours (30 days): a zero, negative or absurd value never empties or
     /// freezes the queue.</summary>

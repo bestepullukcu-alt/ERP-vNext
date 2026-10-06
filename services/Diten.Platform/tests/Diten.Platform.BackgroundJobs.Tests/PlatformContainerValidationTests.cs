@@ -214,10 +214,14 @@ public sealed class PlatformContainerValidationTests
         services.AddSingleton<Diten.BuildingBlocks.BackgroundJobs.IBackgroundJobScheduler>(scheduler);
         await using var provider = services.BuildServiceProvider();
 
-        var alpha = await SeedTenantRowAsync(provider, "Alpha");
-        var beta = await SeedTenantRowAsync(provider, "Beta");
+        // BL-454 FIX1 10 — the database is shared by every run of this test: a killed run's tenants are removed first,
+        // this run's rows are the most overdue (the sweep's batch is ordered by NextRetryAt) and only they are counted.
+        await RemoveOrphansAsync(provider);
+        SeededRow? alpha = null, beta = null;
         try
         {
+            alpha = await SeedTenantRowAsync(provider, "Alpha");
+            beta = await SeedTenantRowAsync(provider, "Beta");
             using var scope = provider.CreateScope();
             var sweep = scope.ServiceProvider.GetRequiredService<Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchSweepJob>();
             await sweep.HandleAsync(
@@ -248,14 +252,130 @@ public sealed class PlatformContainerValidationTests
         }
         finally
         {
-            await RemoveAsync(provider, alpha);
-            await RemoveAsync(provider, beta);
+            if (alpha is not null) await RemoveAsync(provider, alpha);
+            if (beta is not null) await RemoveAsync(provider, beta);
         }
+    }
+
+    [Fact]
+    public async Task The_resolved_sweep_holds_the_scopes_tenant_context_and_the_shared_permanent_failure_effects()
+    {
+        // BL-454 FIX1 5b — both are required constructor arguments now; measured on what the container hands over.
+        await using var provider = Composition.Value.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var sweep = scope.ServiceProvider.GetRequiredService<Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchSweepJob>();
+        var type = sweep.GetType();
+        const System.Reflection.BindingFlags Private = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+
+        Assert.Same(
+            scope.ServiceProvider.GetRequiredService<Diten.Platform.Common.Tenancy.ITenantContext>(),
+            type.GetField("_tenantContext", Private)!.GetValue(sweep));
+        Assert.IsType<Diten.Platform.Application.Features.Notifications.Services.NotificationPermanentFailureEffects>(
+            type.GetField("_permanentFailure", Private)!.GetValue(sweep));
+    }
+
+    [Fact]
+    public async Task Pending_effects_of_two_tenants_are_re_driven_by_the_production_sweep_each_inside_its_own_tenant()
+    {
+        // BL-454 FIX1 5b — the failing-provider case: two tenants' meeting mails whose last send failed and whose
+        // effects are pending. The production effects write the attendee badge through a TENANT repository, which reads
+        // the ambient tenant: the spy records which tenant each read saw. Without the sweep's scope the read throws,
+        // the effects fail and the rows stay pending.
+        var spy = new SpyTenantContext();
+        var services = new ServiceCollection();
+        foreach (var descriptor in Composition.Value)
+        {
+            if (descriptor.ServiceType != typeof(Diten.Platform.Application.Features.Notifications.Services.IMessagingProvider)
+                && descriptor.ServiceType != typeof(Diten.BuildingBlocks.BackgroundJobs.IBackgroundJobScheduler)
+                && descriptor.ServiceType != typeof(Diten.Platform.Common.Tenancy.ITenantContext))
+            {
+                ((ICollection<ServiceDescriptor>)services).Add(descriptor);
+            }
+        }
+
+        services.AddSingleton<Diten.Platform.Application.Features.Notifications.Services.IMessagingProvider>(new FailingProvider());
+        services.AddSingleton<Diten.BuildingBlocks.BackgroundJobs.IBackgroundJobScheduler>(new RecordingScheduler());
+        services.AddSingleton<Diten.Platform.Common.Tenancy.ITenantContext>(spy);
+        await using var provider = services.BuildServiceProvider();
+
+        await RemoveOrphansAsync(provider);
+        SeededRow? alpha = null, beta = null;
+        try
+        {
+            alpha = await SeedTenantRowAsync(provider, "Alpha", pendingMeetingEffects: true);
+            beta = await SeedTenantRowAsync(provider, "Beta", pendingMeetingEffects: true);
+            spy.Reads.Clear();
+            using var scope = provider.CreateScope();
+            var sweep = scope.ServiceProvider.GetRequiredService<Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchSweepJob>();
+
+            await sweep.HandleAsync(
+                new Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchSweepJobArgs(BatchSize: 500),
+                new Diten.BuildingBlocks.BackgroundJobs.BackgroundJobContext());
+
+            var dispatches = scope.ServiceProvider.GetRequiredService<Diten.Platform.Domain.Repositories.INotificationDispatchRepository>();
+            foreach (var row in new[] { alpha, beta })
+            {
+                var stored = (await dispatches.GetByIdForTenantAsync(row.TenantId, row.DispatchId))!;
+                Assert.False(Diten.Platform.Domain.Entities.Notifications.NotificationDispatch.IsPermanentFailurePending(stored));
+                Assert.Contains(row.TenantId, spy.Reads);
+            }
+
+            Assert.False(spy.IsResolved);
+        }
+        finally
+        {
+            if (alpha is not null) await RemoveAsync(provider, alpha);
+            if (beta is not null) await RemoveAsync(provider, beta);
+        }
+    }
+
+    /// <summary>Removes what a killed run of these tests left: every tenant under this file's own "s2-" slug prefix.</summary>
+    private static async Task RemoveOrphansAsync(IServiceProvider provider)
+    {
+        using var scope = provider.CreateScope();
+        var tenants = await scope.ServiceProvider.GetRequiredService<Diten.Platform.Domain.Repositories.ITenantRegistryRepository>().GetAllAsync();
+        foreach (var orphan in tenants.Where(t => t.Slug.StartsWith("s2-", StringComparison.Ordinal)))
+        {
+            await RemoveAsync(provider, new SeededRow(orphan.Id, Guid.Empty, Guid.Empty, string.Empty, string.Empty));
+        }
+    }
+
+    /// <summary>The real tenant context, recording the tenant every resolved read saw.</summary>
+    private sealed class SpyTenantContext : Diten.Platform.Common.Tenancy.ITenantContext
+    {
+        private readonly Diten.Platform.Common.Tenancy.TenantContext _inner = new();
+        public List<Guid> Reads { get; } = [];
+
+        public Guid TenantId
+        {
+            get
+            {
+                var id = _inner.TenantId; // throws when unresolved, as the real one does
+                lock (Reads) Reads.Add(id);
+                return id;
+            }
+        }
+
+        public bool IsResolved => _inner.IsResolved;
+        public bool IsPlatformContext => _inner.IsPlatformContext;
+        public Guid? TargetTenantId => _inner.TargetTenantId;
+        public void SetTenant(Guid tenantId) => _inner.SetTenant(tenantId);
+        public void SetPlatformContext(Guid targetTenantId) => _inner.SetPlatformContext(targetTenantId);
+        public void ClearTenant() => _inner.ClearTenant();
+    }
+
+    private sealed class FailingProvider : Diten.Platform.Application.Features.Notifications.Services.IMessagingProvider
+    {
+        public Diten.Platform.Domain.Enums.MessagingProviderCode ProviderCode => Diten.Platform.Domain.Enums.MessagingProviderCode.Fake;
+
+        public Task<Diten.Platform.Application.Features.Notifications.Services.MessagingProviderResult> SendEmailAsync(
+            Diten.Platform.Application.Features.Notifications.Services.MessagingProviderEmailRequest request, CancellationToken ct = default) =>
+            Task.FromResult(Diten.Platform.Application.Features.Notifications.Services.MessagingProviderResult.Fail("SMTP_REJECTED", "rejected"));
     }
 
     private sealed record SeededRow(Guid TenantId, Guid DispatchId, Guid TemplateId, string SenderName, string BodyMark);
 
-    private static async Task<SeededRow> SeedTenantRowAsync(IServiceProvider provider, string name)
+    private static async Task<SeededRow> SeedTenantRowAsync(IServiceProvider provider, string name, bool pendingMeetingEffects = false)
     {
         using var scope = provider.CreateScope();
         var sp = scope.ServiceProvider;
@@ -310,8 +430,19 @@ public sealed class PlatformContainerValidationTests
             VariablesJson = "{}",
             QueuedAt = DateTimeOffset.UtcNow,
             RetryCount = 1,
-            NextRetryAt = DateTimeOffset.UtcNow.AddMinutes(-1)
+            NextRetryAt = DateTimeOffset.UtcNow.AddDays(-7) // the most overdue: first in the sweep's batch
         };
+        if (pendingMeetingEffects)
+        {
+            // The last send failed and the publish after it threw: permanent, effects pending, idle for an hour.
+            dispatch.TemplateKey = "platform.meetings.invite";
+            dispatch.CausationId = Guid.NewGuid();
+            dispatch.MeetingAttendeeUserId = Guid.NewGuid();
+            dispatch.RetryCount = 5;
+            dispatch.NextRetryAt = null;
+            dispatch.PermanentlyFailedNotifiedAt = Diten.Platform.Domain.Entities.Notifications.NotificationDispatch.PermanentFailurePending;
+            dispatch.UpdatedAt = DateTimeOffset.UtcNow.AddHours(-1);
+        }
         await sp.GetRequiredService<Diten.Platform.Domain.Repositories.INotificationDispatchRepository>().CreateAsync(dispatch);
         return new SeededRow(tenantId, dispatch.Id, template.Id, senderName, bodyMark);
     }

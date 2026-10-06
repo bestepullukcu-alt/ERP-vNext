@@ -172,7 +172,8 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         var settings = await _settingsResolver.ResolveAsync(dispatch.TenantId, cancellationToken);
         if (!settings.IsSuccessful || settings.Data is null)
         {
-            return (MessagingProviderResult.Fail("SettingsUnresolved", "Tenant messaging settings could not be resolved."), null);
+            // BL-499 (2) — the row keeps the resolver's named reason (TENANT_SENDING_DISABLED …), not a generic one.
+            return (MessagingProviderResult.Fail(settings.ReasonCode ?? "SettingsUnresolved", "Tenant messaging settings could not be resolved."), null);
         }
 
         if (!Enum.TryParse<MessagingProviderCode>(settings.Data.ProviderCode, ignoreCase: true, out var providerCode))

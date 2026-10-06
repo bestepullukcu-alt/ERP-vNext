@@ -67,7 +67,11 @@ public sealed class NotificationDispatch : BaseEntity
     /// <summary>BL-454 — <see cref="PermanentlyFailedNotifiedAt"/> of a permanent row whose effects have not run yet.</summary>
     public static readonly DateTimeOffset PermanentFailurePending = DateTimeOffset.MinValue;
 
-    /// <summary>BL-454 — the row is permanent and its permanent-failure effects have not been applied.</summary>
+    /// <summary>
+    /// BL-454 — the row is permanent and its permanent-failure effects have not been applied. A run that takes them on
+    /// first CLAIMS the row (a write conditional on the version it read, stamping <c>UpdatedAt</c> / <c>UpdatedBy</c>
+    /// with when and who); only the winner runs them. See NotificationPermanentFailureEffects.ApplyAndMarkAsync.
+    /// </summary>
     public static bool IsPermanentFailurePending(NotificationDispatch dispatch) =>
         dispatch.PermanentlyFailedNotifiedAt == PermanentFailurePending;
 
@@ -82,6 +86,9 @@ public sealed class NotificationDispatch : BaseEntity
 
         Status = NotificationDispatchStatus.Sent;
         ReleaseVariables();
+        // BL-454 — a mail that went out after all owes no "not delivered" effects: a pending marker would keep it in the
+        // re-drive index and send the organizer a wrong notice.
+        PermanentlyFailedNotifiedAt = null;
         ProviderMessageId = providerMessageId;
         SentAt = now;
         UpdatedAt = now;

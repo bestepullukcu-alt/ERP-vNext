@@ -167,6 +167,7 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
     }
 
     public async Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(
+        DateTimeOffset idleBefore,
         int take,
         CancellationToken ct = default)
     {
@@ -184,7 +185,7 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
             .Include(x => x.QueuedAt);
 
         var rows = await _collection
-            .Find(PermanentFailurePendingFilter())
+            .Find(PermanentFailurePendingFilter(idleBefore))
             .Project<NotificationDispatch>(projection)
             .Limit(Math.Min(take, MaxSweepBatchSize))
             .ToListAsync(ct);
@@ -195,14 +196,19 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
     }
 
     /// <summary>
-    /// BL-454 — served by <c>ix_notification_dispatches_permanent_effects_pending</c>, whose partial filter is this very
-    /// equality: only pending rows are in that index, so the minute-by-minute scan reads nothing else.
+    /// BL-454 — served by <c>ix_notification_dispatches_permanent_effects_pending</c>, whose partial filter is the pending
+    /// equality: only pending rows are in that index, so the minute-by-minute scan reads nothing else; the idle cutoff is
+    /// checked on those few documents.
     /// </summary>
-    internal static FilterDefinition<NotificationDispatch> PermanentFailurePendingFilter() =>
+    internal static FilterDefinition<NotificationDispatch> PermanentFailurePendingFilter(DateTimeOffset idleBefore) =>
         Builders<NotificationDispatch>.Filter.And(
             ActiveFilter,
             Builders<NotificationDispatch>.Filter.Eq(x => x.Status, NotificationDispatchStatus.Failed),
-            Builders<NotificationDispatch>.Filter.Eq<DateTimeOffset?>(x => x.PermanentlyFailedNotifiedAt, NotificationDispatch.PermanentFailurePending));
+            Builders<NotificationDispatch>.Filter.Eq<DateTimeOffset?>(x => x.PermanentlyFailedNotifiedAt, NotificationDispatch.PermanentFailurePending),
+            // Idle: last touched before the cutoff, or never stamped at all (Lt alone would never match a null).
+            Builders<NotificationDispatch>.Filter.Or(
+                Builders<NotificationDispatch>.Filter.Eq(x => x.UpdatedAt, null),
+                Builders<NotificationDispatch>.Filter.Lt(x => x.UpdatedAt, idleBefore)));
 
     /// <summary>
     /// BL-454 — the window query, served by <c>ix_notification_dispatches_retry_window_waiting</c> (Status, QueuedAt;

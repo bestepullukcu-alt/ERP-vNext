@@ -189,18 +189,28 @@ public static class NotificationTemplateSeed
 
     /// <summary>(what the previous seed wrote, what the current seed writes) — one pair per upgraded row.</summary>
     internal static IReadOnlyList<(NotificationTemplate Previous, NotificationTemplate Current)> SeedUpgrades() =>
-        TenantLocales.Select(locale => (TaskAssignedV1(locale), TaskAssigned(locale))).ToList();
+        TenantLocales.Select(locale => (TaskAssignedV1(locale), TaskAssigned(locale)))
+            // BL-454 slice 2 — the tenant lifecycle mails existed in en and tr only (1.0.0); an untouched row of either
+            // is carried forward to the 1.1.0 shell form. The other five languages are new and simply inserted.
+            .Concat(LifecycleV1Locales.SelectMany(locale => new[]
+            {
+                (TenantInviteV1(locale), TenantInvite(locale)),
+                (TenantSuspendedV1(locale), TenantSuspended(locale)),
+                (TenantReactivatedV1(locale), TenantReactivated(locale))
+            }))
+            .ToList();
+
+    /// <summary>The two languages the 1.0.0 tenant lifecycle mails were written in.</summary>
+    internal static readonly string[] LifecycleV1Locales = ["en", "tr"];
 
     private static IReadOnlyList<NotificationTemplate> CreatePlatformDefaults()
     {
         return
         [
-            TenantInvite("en"),
-            TenantInvite("tr"),
-            TenantSuspended("en"),
-            TenantSuspended("tr"),
-            TenantReactivated("en"),
-            TenantReactivated("tr"),
+            // BL-454 slice 2 — the tenant lifecycle mails in all seven tenant languages, in the shell form.
+            .. TenantLocales.Select(TenantInvite),
+            .. TenantLocales.Select(TenantSuspended),
+            .. TenantLocales.Select(TenantReactivated),
 
             /*
              * MOD-0024 task notifications (WC-4), SEVEN languages each.
@@ -393,7 +403,12 @@ public static class NotificationTemplateSeed
         ];
     }
 
-    private static NotificationTemplate TenantInvite(string locale)
+    /// <summary>
+    /// The tenant lifecycle mails as 1.0.0 wrote them (en and tr only, no shell). Kept ONLY so an untouched 1.0.0 row
+    /// can be recognised and carried forward to <see cref="TenantInvite"/> / <see cref="TenantSuspended"/> /
+    /// <see cref="TenantReactivated"/>; never inserted any more.
+    /// </summary>
+    internal static NotificationTemplate TenantInviteV1(string locale)
     {
         var isTurkish = locale == "tr";
         return Create(
@@ -409,7 +424,7 @@ public static class NotificationTemplateSeed
             ["TenantId", "TenantDisplayName"]);
     }
 
-    private static NotificationTemplate TenantSuspended(string locale)
+    internal static NotificationTemplate TenantSuspendedV1(string locale)
     {
         var isTurkish = locale == "tr";
         return Create(
@@ -425,7 +440,7 @@ public static class NotificationTemplateSeed
             ["Reason", "SuspendedAtUtc"]);
     }
 
-    private static NotificationTemplate TenantReactivated(string locale)
+    internal static NotificationTemplate TenantReactivatedV1(string locale)
     {
         var isTurkish = locale == "tr";
         return Create(
@@ -439,6 +454,96 @@ public static class NotificationTemplateSeed
                 ? "Tenant erisiminiz yeniden acildi. Tarih: {{ReactivatedAtUtc}}"
                 : "Your tenant access has been reactivated. Date: {{ReactivatedAtUtc}}",
             ["ReactivatedAtUtc"]);
+    }
+
+    /// <summary>
+    /// BL-454 slice 2 — the tenant administrator's invitation, 1.1.0, in seven languages and in the shell form: a heading,
+    /// one sentence, the tenant's id, and why the reader got it. The content is what 1.0.0 said — the sign-in link and
+    /// the temporary password the producer also sends are NOT rendered here (WP-EMAIL-SHELL-01 stage D decides that).
+    /// The variables are unchanged.
+    /// </summary>
+    internal static NotificationTemplate TenantInvite(string locale)
+    {
+        var (subject, heading, sentence, idLabel, why) = locale switch
+        {
+            "en" => ("Your Diten tenant invitation", "You have been invited", "You have been invited to the {{TenantDisplayName}} tenant.", "Tenant ID", "You received this e-mail because you were added as an administrator of this tenant."),
+            "tr" => ("Diten kiracı davetiniz", "Davet edildiniz", "{{TenantDisplayName}} kiracısına davet edildiniz.", "Kiracı kimliği", "Bu e-postayı bu kiracının yöneticisi olarak eklendiğiniz için aldınız."),
+            "fr" => ("Votre invitation au locataire Diten", "Vous avez été invité", "Vous avez été invité dans le locataire {{TenantDisplayName}}.", "ID du locataire", "Vous recevez cet e-mail parce que vous avez été ajouté comme administrateur de ce locataire."),
+            "es" => ("Su invitación al inquilino de Diten", "Ha recibido una invitación", "Ha sido invitado al inquilino {{TenantDisplayName}}.", "ID del inquilino", "Recibe este correo porque se le ha añadido como administrador de este inquilino."),
+            "zh" => ("您的 Diten 租户邀请", "您已受到邀请", "您已被邀请加入租户 {{TenantDisplayName}}。", "租户 ID", "您收到此邮件，是因为您已被添加为该租户的管理员。"),
+            "ar" => ("دعوتك إلى مستأجر Diten", "لقد تمت دعوتك", "تمت دعوتك إلى المستأجر {{TenantDisplayName}}.", "معرّف المستأجر", "تلقيت هذه الرسالة لأنه تمت إضافتك مسؤولاً عن هذا المستأجر."),
+            "ru" => ("Ваше приглашение в арендатора Diten", "Вы приглашены", "Вас пригласили в арендатора {{TenantDisplayName}}.", "ID арендатора", "Вы получили это письмо, потому что вас добавили администратором этого арендатора."),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported tenant mail locale.")
+        };
+
+        return Lifecycle(
+            "tenant.invite.email", locale, subject, heading, sentence, why,
+            [new NotificationTemplateShellRow { Label = idLabel, ValueTemplate = "{{TenantId}}" }],
+            ["TenantId", "TenantDisplayName"]);
+    }
+
+    /// <summary>BL-454 slice 2 — the tenant's access suspended, 1.1.0, seven languages, shell form; content as 1.0.0.</summary>
+    internal static NotificationTemplate TenantSuspended(string locale)
+    {
+        var (subject, heading, sentence, reasonLabel, dateLabel, why) = locale switch
+        {
+            "en" => ("Diten tenant access suspended", "Tenant access suspended", "Your tenant access has been suspended.", "Reason", "Date", "You received this e-mail because you are an administrator of this tenant."),
+            "tr" => ("Diten kiracı erişimi askıya alındı", "Kiracı erişimi askıya alındı", "Kiracı erişiminiz askıya alındı.", "Neden", "Tarih", "Bu e-postayı bu kiracının yöneticisi olduğunuz için aldınız."),
+            "fr" => ("Accès au locataire Diten suspendu", "Accès au locataire suspendu", "Votre accès au locataire a été suspendu.", "Motif", "Date", "Vous recevez cet e-mail parce que vous êtes administrateur de ce locataire."),
+            "es" => ("Acceso al inquilino de Diten suspendido", "Acceso al inquilino suspendido", "Se ha suspendido su acceso al inquilino.", "Motivo", "Fecha", "Recibe este correo porque es administrador de este inquilino."),
+            "zh" => ("Diten 租户访问已暂停", "租户访问已暂停", "您的租户访问已被暂停。", "原因", "日期", "您收到此邮件，是因为您是该租户的管理员。"),
+            "ar" => ("تم تعليق الوصول إلى مستأجر Diten", "تم تعليق الوصول إلى المستأجر", "تم تعليق وصولك إلى المستأجر.", "السبب", "التاريخ", "تلقيت هذه الرسالة لأنك مسؤول عن هذا المستأجر."),
+            "ru" => ("Доступ к арендатору Diten приостановлен", "Доступ к арендатору приостановлен", "Ваш доступ к арендатору приостановлен.", "Причина", "Дата", "Вы получили это письмо, потому что вы администратор этого арендатора."),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported tenant mail locale.")
+        };
+
+        return Lifecycle(
+            "tenant.suspended.email", locale, subject, heading, sentence, why,
+            [
+                new NotificationTemplateShellRow { Label = reasonLabel, ValueTemplate = "{{Reason}}" },
+                new NotificationTemplateShellRow { Label = dateLabel, ValueTemplate = "{{SuspendedAtUtc}}" }
+            ],
+            ["Reason", "SuspendedAtUtc"]);
+    }
+
+    /// <summary>BL-454 slice 2 — the tenant's access reactivated, 1.1.0, seven languages, shell form; content as 1.0.0.</summary>
+    internal static NotificationTemplate TenantReactivated(string locale)
+    {
+        var (subject, heading, sentence, dateLabel, why) = locale switch
+        {
+            "en" => ("Diten tenant access reactivated", "Tenant access reactivated", "Your tenant access has been reactivated.", "Date", "You received this e-mail because you are an administrator of this tenant."),
+            "tr" => ("Diten kiracı erişimi yeniden açıldı", "Kiracı erişimi yeniden açıldı", "Kiracı erişiminiz yeniden açıldı.", "Tarih", "Bu e-postayı bu kiracının yöneticisi olduğunuz için aldınız."),
+            "fr" => ("Accès au locataire Diten rétabli", "Accès au locataire rétabli", "Votre accès au locataire a été rétabli.", "Date", "Vous recevez cet e-mail parce que vous êtes administrateur de ce locataire."),
+            "es" => ("Acceso al inquilino de Diten reactivado", "Acceso al inquilino reactivado", "Se ha reactivado su acceso al inquilino.", "Fecha", "Recibe este correo porque es administrador de este inquilino."),
+            "zh" => ("Diten 租户访问已恢复", "租户访问已恢复", "您的租户访问已恢复。", "日期", "您收到此邮件，是因为您是该租户的管理员。"),
+            "ar" => ("تمت إعادة تفعيل الوصول إلى مستأجر Diten", "تمت إعادة تفعيل الوصول إلى المستأجر", "تمت إعادة تفعيل وصولك إلى المستأجر.", "التاريخ", "تلقيت هذه الرسالة لأنك مسؤول عن هذا المستأجر."),
+            "ru" => ("Доступ к арендатору Diten восстановлен", "Доступ к арендатору восстановлен", "Ваш доступ к арендатору восстановлен.", "Дата", "Вы получили это письмо, потому что вы администратор этого арендатора."),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported tenant mail locale.")
+        };
+
+        return Lifecycle(
+            "tenant.reactivated.email", locale, subject, heading, sentence, why,
+            [new NotificationTemplateShellRow { Label = dateLabel, ValueTemplate = "{{ReactivatedAtUtc}}" }],
+            ["ReactivatedAtUtc"]);
+    }
+
+    /// <summary>
+    /// The one form of a tenant lifecycle mail: the sentence is the body, the rows carry the values (the shell writes them
+    /// into the HTML table and the text part alike), and every required variable is rendered at least once.
+    /// </summary>
+    private static NotificationTemplate Lifecycle(
+        string key, string locale, string subject, string heading, string sentence, string why,
+        List<NotificationTemplateShellRow> rows, string[] variables)
+    {
+        var template = Create(key, locale, subject, $"<p>{sentence}</p>", sentence, variables);
+        template.SemanticVersion = "1.1.0";
+        template.Shell = new NotificationTemplateShell
+        {
+            HeadingTemplate = heading,
+            InfoRows = rows,
+            FootnoteTemplate = why
+        };
+        return template;
     }
 
     /// <summary>

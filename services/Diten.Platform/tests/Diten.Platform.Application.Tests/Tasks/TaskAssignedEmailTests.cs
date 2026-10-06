@@ -154,7 +154,14 @@ public sealed class TaskAssignedEmailTests
     {
         var pairs = NotificationTemplateSeed.SeedUpgrades();
 
-        Assert.Equal(7, pairs.Count);
+        // platform.tasks.assigned in its 7 languages; BL-454 slice 2 stage C — the three tenant lifecycle mails in the
+        // two languages their 1.0.0 seed had (en, tr). The five new languages are inserts, not upgrades.
+        Assert.Equal(
+            new[]
+            {
+                ("platform.tasks.assigned", 7), ("tenant.invite.email", 2), ("tenant.reactivated.email", 2), ("tenant.suspended.email", 2)
+            },
+            pairs.GroupBy(p => p.Current.TemplateKey).Select(g => (g.Key, g.Count())).OrderBy(x => x.Key, StringComparer.Ordinal).ToArray());
         Assert.All(pairs, pair =>
         {
             Assert.Equal(pair.Previous.TemplateKey, pair.Current.TemplateKey);

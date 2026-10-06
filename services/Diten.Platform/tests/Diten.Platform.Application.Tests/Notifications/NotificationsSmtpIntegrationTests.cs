@@ -377,9 +377,9 @@ public sealed class NotificationsSmtpIntegrationTests
         public Task<bool> TryUpdateAsync(NotificationDispatch dispatch, int expectedVersion, NotificationDispatchStatus expectedStatus, CancellationToken ct = default) =>
             Task.FromResult(true);
 
-        public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(int take, CancellationToken ct = default) =>
+        public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(DateTimeOffset idleBefore, int take, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<NotificationDispatchExpiryHandle>>(Items
-                .Where(x => !x.IsDeleted && x.Status == NotificationDispatchStatus.Failed && NotificationDispatch.IsPermanentFailurePending(x))
+                .Where(x => !x.IsDeleted && x.Status == NotificationDispatchStatus.Failed && NotificationDispatch.IsPermanentFailurePending(x) && (x.UpdatedAt is null || x.UpdatedAt < idleBefore))
                 .Take(take)
                 .Select(x => new NotificationDispatchExpiryHandle(x.TenantId, x.Id, x.Status, x.Version, x.ErrorCode, x.QueuedAt))
                 .ToArray());

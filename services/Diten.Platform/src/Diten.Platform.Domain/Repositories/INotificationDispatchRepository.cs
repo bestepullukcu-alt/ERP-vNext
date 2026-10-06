@@ -44,20 +44,22 @@ public interface INotificationDispatchRepository
         CancellationToken ct = default);
 
     /// <summary>
+    /// BL-454 — cross-tenant scan for PERMANENT rows whose permanent-failure effects have not run
+    /// (<see cref="NotificationDispatch.PermanentFailurePending"/>) and that nobody has touched since
+    /// <paramref name="idleBefore"/> (<c>UpdatedAt</c>): the transition's own run, or a claim, gets that long before the
+    /// retry sweep re-drives the row. Still Failed only; a row that was sent after all is not owed any effect.
+    /// </summary>
+    Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(
+        DateTimeOffset idleBefore,
+        int take,
+        CancellationToken ct = default);
+
+    /// <summary>
     /// BL-454 — cross-tenant scan for dispatches still WAITING (<see cref="Diten.Platform.Domain.Enums.NotificationDispatchStatus.Queued"/>
     /// or <see cref="Diten.Platform.Domain.Enums.NotificationDispatchStatus.Failed"/>, never yet a permanent failure)
     /// that were queued before <paramref name="queuedBefore"/>: their retry window has passed and the sweep closes them,
     /// releasing their variables. Same minimal handles as <see cref="FindDueRetriesAsync"/>.
     /// </summary>
-    /// <summary>
-    /// BL-454 — cross-tenant scan for PERMANENT rows whose permanent-failure effects have not run
-    /// (<see cref="NotificationDispatch.PermanentFailurePending"/>): the event publish threw between the transition write
-    /// and the effects. The retry sweep re-drives them.
-    /// </summary>
-    Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(
-        int take,
-        CancellationToken ct = default);
-
     Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindRetryWindowExpiredAsync(
         DateTimeOffset queuedBefore,
         int take,
