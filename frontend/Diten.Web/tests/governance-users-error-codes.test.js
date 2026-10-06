@@ -349,3 +349,81 @@ describe("two sentences that must say exactly what they mean", () => {
     expect(new Set(sentences).size).toBe(LANGS.length);
   });
 });
+
+describe("BL-529 — the reset confirm says what the reset does", () => {
+  /** The production adminActions + runAdminAction; the confirm only records what it was asked to show. */
+  const confirmOptionsFor = (key, labels) => {
+    const seen = {};
+    const windowStub = { showConfirm: (_q, _onYes, options) => { seen.options = options; }, showToast: vi.fn() };
+    const source = slice("const adminActions = {", "const adminAction =");
+    // eslint-disable-next-line no-new-func
+    const { adminActions, runAdminAction } = new Function("L", "console", "window", "fetch", "list", "postHeaders", "showInviteLink",
+      "sayFailure", "refusal", source + "; return { adminActions, runAdminAction };")(
+      () => labels, quietConsole(), windowStub, vi.fn(), {}, () => ({}), vi.fn(), vi.fn(), vi.fn());
+    runAdminAction(adminActions[key])({ id: "1", row: { email: "a@b.test" } });
+    return seen.options;
+  };
+
+  test.each(LANGS)("[%s] the reset confirm carries the sentence that the old password and the sessions end", (lang) => {
+    const labels = resxValues(lang);
+    expect(labels.ResetPasswordConfirmText).toBeTruthy();
+    expect(confirmOptionsFor("reset", labels).subtext).toBe(labels.ResetPasswordConfirmText);
+  });
+
+  test("the sentence names both effects without overstating the second, and every language has its own", () => {
+    // The old password ends at once; an access token issued before the reset runs to its expiry (up to the session
+    // time), so the sentence promises "at the latest when the session time runs out" — never "signed out" right away.
+    expect(resxValues("en").ResetPasswordConfirmText).toMatch(/current password stops working immediately/);
+    expect(resxValues("en").ResetPasswordConfirmText).toMatch(/open sessions end at the latest when the session time runs out/);
+    expect(resxValues("en").ResetPasswordConfirmText).not.toMatch(/signed out/);
+    expect(resxValues("tr").ResetPasswordConfirmText).toMatch(/mevcut parolası hemen geçersiz olur/);
+    expect(resxValues("tr").ResetPasswordConfirmText).toMatch(/en geç oturum süresi dolduğunda kapanır/);
+    expect(resxValues("tr").ResetPasswordConfirmText).not.toMatch(/tümü kapanır/);
+    // es: the user is the one who sets the new password (the sentence names them, it does not address the reader).
+    expect(resxValues("es").ResetPasswordConfirmText).toMatch(/El usuario establece una nueva contraseña/);
+    const sentences = LANGS.map((lang) => resxValues(lang).ResetPasswordConfirmText);
+    expect(new Set(sentences).size).toBe(LANGS.length);
+    expect(read("Views", "Governance", "Users", "_IndexL10n.cshtml")).toMatch(/ResetPasswordConfirmText = Localizer\["ResetPasswordConfirmText"\]\.Value/);
+  });
+
+  test("the other admin actions keep their confirm as it was (no sentence)", () => {
+    const labels = resxValues("en");
+    for (const key of ["disable", "enable", "resend"]) {
+      expect(confirmOptionsFor(key, labels).subtext).toBeUndefined();
+    }
+  });
+});
+
+describe("BL-529 — your own row offers no reset", () => {
+  /** The production renderRowActions with every permission granted; the actions are returned as their keys. */
+  const actionKeysFor = (row, self) => {
+    const source = slice("const renderRowActions", "// ─── The list");
+    // eslint-disable-next-line no-new-func
+    const render = new Function("L", "window", "canUpdate", "canCreate", "canDelete", "isCurrentUser", "adminAction", "userStatusOf",
+      source + "; return renderRowActions;")(
+      () => ({}), { DitenDataTable: { renderActions: (actions) => actions.map((a) => a.key) } },
+      () => true, () => true, () => true, () => self, (key) => ({ key }), (full) => (full.isInvited ? "Invited" : "Active"));
+    return render(null, "display", row);
+  };
+
+  test("someone else's active row offers Reset; your own does not", () => {
+    const active = { id: "1", email: "a@b.test", isActive: true, mustChangePassword: false };
+    expect(actionKeysFor(active, false)).toContain("reset");
+    expect(actionKeysFor(active, true)).not.toContain("reset");
+  });
+
+  test("someone else's must-change row offers Resend; your own does not (a resend to it IS a reset)", () => {
+    const mustChange = { id: "1", email: "a@b.test", isActive: true, mustChangePassword: true };
+    expect(actionKeysFor(mustChange, false)).toContain("resend");
+    expect(actionKeysFor(mustChange, true)).not.toContain("resend");
+  });
+
+  test("the two new refusals read in every language", () => {
+    expect(BRIDGE()).toMatch(/USER_RESET_SELF: 'ErrorUserResetSelf'/);
+    expect(BRIDGE()).toMatch(/USER_RESET_CONFLICT: 'ErrorUserResetConflict'/);
+    for (const lang of LANGS) {
+      expect(resxValues(lang).ErrorUserResetSelf).toBeTruthy();
+      expect(resxValues(lang).ErrorUserResetConflict).toBeTruthy();
+    }
+  });
+});

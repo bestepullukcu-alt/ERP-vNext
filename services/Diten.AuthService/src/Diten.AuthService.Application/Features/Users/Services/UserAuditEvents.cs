@@ -41,6 +41,9 @@ public static class UserAuditEvents
     /// <summary>Platform AuditOutcome.Succeeded — only completed mutations are audited here.</summary>
     public const int OutcomeSucceeded = 1;
 
+    /// <summary>Platform AuditOutcome.Failed — BL-529: a reset that conflicted or failed after it ended sessions.</summary>
+    public const int OutcomeFailed = 2;
+
     /// <summary>Every user-lifecycle event and the Platform operation it is filed under. The forwarder refuses nothing else.</summary>
     public static readonly IReadOnlyDictionary<string, int> Operations = new Dictionary<string, int>(StringComparer.Ordinal)
     {

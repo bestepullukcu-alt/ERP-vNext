@@ -42,6 +42,14 @@ public sealed class MfaChallenge : EntityBase
     public string CreatedIp { get; private set; } = string.Empty;
     public string? UserAgent { get; private set; }
 
+    /// <summary>
+    /// BL-529 FIX2 — a keyed fingerprint of the password hash the challenge was issued against (never the hash itself).
+    /// A reset between the password step and the code step changes it, and the code no longer signs in.
+    /// </summary>
+    public string? PasswordFingerprint { get; private set; }
+
+    public void BindToPassword(string passwordFingerprint) => PasswordFingerprint = passwordFingerprint;
+
     public bool IsExpired => DateTime.UtcNow >= ExpiresAtUtc;
     public bool IsConsumed => ConsumedAtUtc.HasValue;
     public bool HasAttemptsRemaining => AttemptCount < MaxAttempts;

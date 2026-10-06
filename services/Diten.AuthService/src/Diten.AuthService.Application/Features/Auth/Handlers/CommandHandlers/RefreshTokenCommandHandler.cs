@@ -2,6 +2,7 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
+using Diten.AuthService.Application.Features.Auth.Services;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -60,6 +61,14 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
 
         if (existingToken.RevokedAt != null)
         {
+            // BL-529 FIX3 — a token ended by a password change or an administrator's reset is a stale tab, not a stolen
+            // token: it is refused and nothing else happens (ending every session here killed the session the owner had
+            // just opened with the new password). Reuse of a "rotated" (or otherwise revoked) token is still a theft signal.
+            if (SessionRevocationReasons.EndedByPasswordChange(existingToken.RevokedReason))
+            {
+                return Response<AuthResponse>.Fail("The session was ended. Please sign in again.", 401);
+            }
+
             await _refreshTokenRepository.RevokeAllByUserAsync(existingToken.UserId, existingToken.TenantId, ct);
             return Response<AuthResponse>.Fail("Security violation detected. Please sign in again.", 401);
         }
@@ -106,6 +115,13 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         if (user == null || !user.IsActive)
             return Response<AuthResponse>.Fail("User was not found or is inactive.", 401);
 
+        // BL-529 FIX3 — the token's authority is the password it was opened with: changed (reset) since, or never bound
+        // (minted before this rule) → refused, nothing issued.
+        if (!SessionPasswordBinding.Matches(existingToken, _refreshTokenHasher, user))
+        {
+            return Response<AuthResponse>.Fail("The session was ended. Please sign in again.", 401);
+        }
+
         var isPlatformActor = IsPlatformActor(actorType);
         if (isPlatformActor && !await _platformAdministratorStatusClient.IsActiveAsync(user.Email, ct))
         {
@@ -122,10 +138,15 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             await _platformAdministratorStatusClient.MarkLoginAcceptedAsync(user.Email, ct);
         }
 
-        return Response<AuthResponse>.Success(await GenerateNewTokens(user, existingToken, actorType, request, ct));
+        var renewed = await GenerateNewTokens(user, existingToken, actorType, request, ct);
+        return renewed is null
+            ? Response<AuthResponse>.Fail("The session was ended. Please sign in again.", 401)
+            : Response<AuthResponse>.Success(renewed);
     }
 
-    private async Task<AuthResponse> GenerateNewTokens(User user, RefreshToken oldToken, string? actorType, RefreshTokenCommand request, CancellationToken ct)
+    // BL-529 — null when the account's password changed while this refresh ran (an administrator's reset ended every
+    // session between the read above and the write below): the token just written is revoked again (IssuedSessionGuard).
+    private async Task<AuthResponse?> GenerateNewTokens(User user, RefreshToken oldToken, string? actorType, RefreshTokenCommand request, CancellationToken ct)
     {
         var tokenTenantId = oldToken.TenantId;
         var roles = await _userRoleRepository.GetRolesByUserAsync(user.Id, tokenTenantId, ct);
@@ -154,8 +175,14 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         var newRefreshTokenStr = _tokenService.GenerateRefreshToken();
         var newRefreshTokenHash = _refreshTokenHasher.Hash(newRefreshTokenStr);
 
-        oldToken.Revoke(newRefreshTokenHash, request.RequestIp, "rotated");
-        await _refreshTokenRepository.UpdateAsync(oldToken, ct);
+        // BL-529 FIX2 — the rotation is conditional on the presented token still being live. A whole-document write here
+        // un-revoked a token an administrator's reset had just ended (and erased its "admin-reset" reason); a refresh that
+        // read the token before that sweep then lived on. If it was revoked meanwhile, nothing is issued.
+        if (!await _refreshTokenRepository.TryRotateAsync(oldToken.Id, newRefreshTokenHash, request.RequestIp, ct))
+        {
+            _logger.LogWarning("Refresh refused: the token was revoked while the refresh ran. UserId={UserId}", user.Id);
+            return null;
+        }
 
         var newRefreshToken = new RefreshToken(
             user.Id,
@@ -169,7 +196,14 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             request.UserAgent,
             oldToken.SessionId,
             oldToken.DeviceId);
+        newRefreshToken.BindToPassword(oldToken.PasswordFingerprint!); // carried through rotation
         await _refreshTokenRepository.CreateAsync(newRefreshToken, ct);
+
+        if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, tokenTenantId, user.PasswordHash, newRefreshTokenStr, ct))
+        {
+            _logger.LogWarning("Refresh refused: the password changed while it ran. UserId={UserId}", user.Id);
+            return null;
+        }
 
         return new AuthResponse(
             accessToken,

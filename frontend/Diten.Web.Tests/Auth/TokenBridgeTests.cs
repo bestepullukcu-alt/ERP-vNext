@@ -401,7 +401,7 @@ public sealed class TokenBridgeTests
         public Task<AuthBridgeResult> LoginPlatformAsync(string email, string password, bool rememberMe = false, CancellationToken ct = default) => NotUsed();
         public Task<AuthBridgeResult> ChangePlatformPasswordAsync(string currentPassword, string newPassword, bool rememberMe = false, CancellationToken ct = default) => NotUsed();
         public Task<AuthBridgeResult> ChangeTenantPasswordAsync(string currentPassword, string newPassword, bool rememberMe = false, CancellationToken ct = default) => NotUsed();
-        public Task<bool> ForgotPlatformPasswordAsync(string email, CancellationToken ct = default) => throw Unexpected();
+        public Task<AuthBridgeResult> ForgotPlatformPasswordAsync(string email, CancellationToken ct = default) => throw Unexpected();
         public Task<AuthBridgeResult> ResetPlatformPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default) => NotUsed();
         public Task<AuthBridgeResult> ResetTenantPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default) => NotUsed();
         public Task LogoutAsync(string accessToken, string refreshToken, Guid? tenantId, CancellationToken ct = default) => throw Unexpected();

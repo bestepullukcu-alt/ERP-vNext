@@ -138,20 +138,108 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
            && (ex.WriteError.Message ?? string.Empty).Contains(
                Configurations.MongoDbIndexConfigurations.UserEmailIndexName, StringComparison.Ordinal);
 
-    public async Task<User> UpdateAsync(User user, CancellationToken ct)
-    {
-        return await ReplaceOneAsync(user, ct);
-    }
-
-    public async Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct)
+    public async Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct)
     {
         var filter = Builders<User>.Filter.And(
             Builders<User>.Filter.Eq(u => u.Id, user.Id),
             Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
             Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        var update = Builders<User>.Update
+            .Set(u => u.FailedLoginAttempts, user.FailedLoginAttempts)
+            .Set(u => u.LockoutEnd, user.LockoutEnd)
+            .Set(u => u.LastLoginAt, user.LastLoginAt);
 
-        await Collection.ReplaceOneAsync(filter, user, cancellationToken: ct);
-        return user;
+        await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+    }
+
+    public object CaptureState(User user) => user.ToBsonDocument();
+
+    public async Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        if (capturedState is not BsonDocument before)
+        {
+            throw new ArgumentException("The captured state does not come from this repository.", nameof(capturedState));
+        }
+
+        var filters = new List<FilterDefinition<User>>
+        {
+            Builders<User>.Filter.Eq(u => u.Id, user.Id),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false)
+        };
+        if (condition.PasswordHash is { } hash) filters.Add(Builders<User>.Filter.Eq(u => u.PasswordHash, hash));
+        if (condition.IsActive is { } active) filters.Add(Builders<User>.Filter.Eq(u => u.IsActive, active));
+        // BL-529 FIX7 — a field BL-529 ADDED is missing from every account written before it, and Eq(false) does not match a
+        // missing field: every such account (admin@diten.com included) failed this condition for good. "Not marked" is
+        // therefore "not true" — Ne(true) matches false, a missing field and null alike, which is exactly what the
+        // serializer reads them as (the property's default, false). One predicate, no Or/Exists pair, no backfill.
+        if (condition.DeactivatedByAdministrator is { } marked)
+        {
+            filters.Add(marked
+                ? Builders<User>.Filter.Eq(u => u.DeactivatedByAdministrator, true)
+                : Builders<User>.Filter.Ne(u => u.DeactivatedByAdministrator, true));
+        }
+        if (condition.PasswordResetTokenHash is { } link) filters.Add(Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, link));
+        var filter = Builders<User>.Filter.And(filters);
+
+        // Only the elements whose value differs from the state read — never the whole document.
+        var after = user.ToBsonDocument();
+        var changed = new BsonDocument(after.Elements
+            .Where(element => element.Name != "_id" && (!before.TryGetValue(element.Name, out var old) || !old.Equals(element.Value))));
+        if (changed.ElementCount == 0)
+        {
+            return await Collection.Find(filter).AnyAsync(ct);
+        }
+
+        // A raw $set of the serialized values: the field serializers already ran in ToBsonDocument (a null stays a BSON null).
+        UpdateDefinition<User> update = new BsonDocument("$set", changed);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.MatchedCount == 1;
+    }
+
+    public async Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct)
+    {
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.Id, userId),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        var update = Builders<User>.Update
+            .Set(u => u.PasswordResetTokenHash, tokenHash)
+            .Set(u => u.PasswordResetTokenExpiresAt, expiresAtUtc)
+            .Set(u => u.PasswordResetRequestedAt, DateTime.UtcNow)
+            .Set(u => u.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow);
+
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.MatchedCount == 1;
+    }
+
+    public async Task<LoginFailureOutcome> RecordLoginFailureAsync(
+        Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct)
+    {
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.Id, userId),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+
+        var counted = await Collection.FindOneAndUpdateAsync(
+            filter,
+            Builders<User>.Update.Inc(u => u.FailedLoginAttempts, 1),
+            new FindOneAndUpdateOptions<User> { ReturnDocument = ReturnDocument.After },
+            ct);
+        if (counted is null)
+        {
+            return new LoginFailureOutcome(0, null);
+        }
+
+        if (counted.FailedLoginAttempts < maxFailedAttempts)
+        {
+            return new LoginFailureOutcome(counted.FailedLoginAttempts, counted.LockoutEnd);
+        }
+
+        var lockoutEnd = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
+        await Collection.UpdateOneAsync(filter, Builders<User>.Update.Set(u => u.LockoutEnd, lockoutEnd), cancellationToken: ct);
+        return new LoginFailureOutcome(counted.FailedLoginAttempts, lockoutEnd);
     }
 
     public async Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
@@ -163,7 +251,7 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         );
         var update = Builders<User>.Update
             .Set(u => u.IsDeleted, true)
-            .Set(u => u.UpdatedAt, DateTimeOffset.UtcNow);
+            .Set(u => u.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow);
 
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }

@@ -242,7 +242,8 @@ const UsersList = (function () {
         USER_NOT_FOUND: 'ErrorUserNotFound', USER_ACCOUNT_KIND_INVALID: 'ErrorUserAccountKindInvalid', USER_SETUP_ALREADY_COMPLETED: 'ErrorUserSetupAlreadyCompleted',
         USER_PASSWORD_SETUP_PENDING: 'ErrorUserPasswordSetupPending', PERM_DENIED: 'ErrorUserAccountKindPermissionDenied', USER_EMAIL_REQUIRED: 'ErrorUserEmailRequired',
         USER_EMAIL_INVALID: 'ErrorUserEmailInvalid', USER_EMAIL_TOO_LONG: 'ErrorUserEmailTooLong', USER_FIRST_NAME_REQUIRED: 'ErrorUserFirstNameRequired', USER_FIRST_NAME_TOO_LONG: 'ErrorUserFirstNameTooLong',
-        USER_LAST_NAME_REQUIRED: 'ErrorUserLastNameRequired', USER_LAST_NAME_TOO_LONG: 'ErrorUserLastNameTooLong'
+        USER_LAST_NAME_REQUIRED: 'ErrorUserLastNameRequired', USER_LAST_NAME_TOO_LONG: 'ErrorUserLastNameTooLong',
+        USER_RESET_SELF: 'ErrorUserResetSelf', USER_RESET_CONFLICT: 'ErrorUserResetConflict'
     };
     // BL-459 — a code with numbered params adds a second sentence; without the numbers it is left out (no raw "{max}").
     const ERROR_PARAM_KEYS = { USER_QUOTA_EXCEEDED: { key: 'ErrorUserQuotaUsage', params: ['current', 'max'] } };
@@ -329,7 +330,8 @@ const UsersList = (function () {
         disable: { className: 'js-user-disable text-warning', icon: 'bx-minus-circle', text: 'Disable', url: (id) => `/Users/disable/${id}`, toast: 'UserDisabled', type: 'warning' },
         enable: { className: 'js-user-enable text-success', icon: 'bx-check-circle', text: 'Enable', url: (id) => `/Users/enable/${id}`, toast: 'UserEnabled', type: 'primary' },
         resend: { className: 'js-user-resend', icon: 'bx-mail-send', text: 'ResendInvitation', url: (id) => `/Users/resend-invite/${id}`, toast: 'InvitationResent', type: 'primary' },
-        reset: { className: 'js-user-reset', icon: 'bx-key', text: 'ResetPassword', url: (id) => `/Users/reset-password/${id}`, toast: 'PasswordReset', type: 'warning' }
+        // BL-529 — the reset INVALIDATES: the confirm says so (the old password stops working, the sessions end).
+        reset: { className: 'js-user-reset', icon: 'bx-key', text: 'ResetPassword', url: (id) => `/Users/reset-password/${id}`, toast: 'PasswordReset', type: 'warning', subtext: 'ResetPasswordConfirmText' }
     };
     const runAdminAction = (cfg) => ({ id, row }) => {
         if (!id) return;
@@ -350,7 +352,7 @@ const UsersList = (function () {
                 console.error('[Users] Admin action failed.', error);
                 sayFailure(error);
             }
-        }, { entityName: row?.email, type: cfg.type, icon: cfg.icon, confirmButtonText: L()[cfg.text] || '' });
+        }, { entityName: row?.email, subtext: cfg.subtext ? L()[cfg.subtext] : undefined, type: cfg.type, icon: cfg.icon, confirmButtonText: L()[cfg.text] || '' });
     };
     const adminAction = (key, full, rowJson, extraAttrs) => {
         const cfg = adminActions[key];
@@ -380,10 +382,12 @@ const UsersList = (function () {
         // activates itself when the person redeems the link.
         if (canUpdate() && !full.isActive && userStatusOf(full) !== 'Invited') actions.push(adminAction('enable', full, rowJson));
         // For an invited account resend is the ONLY way forward; the tooltip says why reset and activate are absent.
-        if (canCreate() && full.mustChangePassword) {
+        // BL-529 — nor reset yourself: a reset (and a resend to an account that is not a pending invitation, which IS a
+        // reset) ends your own password and sessions; AuthService refuses it (USER_RESET_SELF). Your own row offers neither.
+        if (canCreate() && full.mustChangePassword && !isCurrentUser(full)) {
             actions.push(adminAction('resend', full, rowJson, userStatusOf(full) === 'Invited' ? { title: L().InvitationPendingHint || '' } : null));
         }
-        if (canUpdate() && full.isActive && !full.mustChangePassword) actions.push(adminAction('reset', full, rowJson));
+        if (canUpdate() && full.isActive && !full.mustChangePassword && !isCurrentUser(full)) actions.push(adminAction('reset', full, rowJson));
         // Your own row offers no Delete (owner, 2026-09-24): the server refuses it anyway (BL-450), and a menu item that
         // only ever fails is not an action. The last-steward rule stays server-side — the list cannot know it.
         if (canDelete() && !isCurrentUser(full)) actions.push({ key: 'delete', className: 'delete-record text-danger', icon: 'bx bx-trash', text: L().Delete, attrs: { 'data-json': rowJson } });

@@ -47,14 +47,25 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
 
         await _passwordPolicyService.ValidateTenantPasswordAsync(_tenantContext.TenantId, user.Id, request.NewPassword, "change_password", ct);
         var newHashedPassword = _passwordHasher.Hash(request.NewPassword);
+        var verifiedHash = user.PasswordHash;
+        var state = _userRepository.CaptureState(user);
         user.UpdatePassword(newHashedPassword);
         user.ClearPasswordChangeRequirement();
 
-        await _userRepository.UpdateAsync(user, ct);
-        await _refreshTokenRepository.RevokeAllByUserAsync(userId, _tenantContext.TenantId, ct);
+        // BL-529 FIX2 — written only while the password is still the one just verified: an administrator's reset that
+        // landed meanwhile (the caller may hold an access token from before it) is never overwritten.
+        if (!await _userRepository.TryWriteChangesAsync(user, state, _tenantContext.TenantId, new UserWriteCondition(PasswordHash: verifiedHash), ct))
+            return PasswordChangedMeanwhile<NoContent>();
+        await _refreshTokenRepository.RevokeLiveSessionsAsync(userId, _tenantContext.TenantId, SessionRevocationReasons.PasswordChanged, ct);
         await _authAuditService.WriteAsync("tenant_password_changed", user.Id, _tenantContext.TenantId, "{}", ct);
 
         _logger.LogInformation("User changed password. UserId={UserId}", userId);
         return Response<NoContent>.Success(204);
     }
+
+    internal static Response<T> PasswordChangedMeanwhile<T>()
+        => Response<T>.Fail(
+            "The password changed while this request ran (for example an administrator reset it). Sign in again.",
+            [new ResponseError(AuthRefusalCodes.PasswordChangedMeanwhile)],
+            409);
 }

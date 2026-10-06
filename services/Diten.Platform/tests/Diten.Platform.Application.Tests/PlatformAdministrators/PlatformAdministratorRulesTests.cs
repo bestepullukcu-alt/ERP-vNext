@@ -159,6 +159,62 @@ public sealed class PlatformAdministratorRulesTests
         Assert.Single(response.Data!.Items);
     }
 
+    // ── BL-529 FIX2 — "Send setup link" to one's own record is refused before AuthService is called ──────────
+
+    [Fact]
+    public async Task Resend_invite_to_ones_own_record_is_refused_with_a_code_and_never_reaches_auth()
+    {
+        var repository = new InMemoryPlatformAdministratorRepository();
+        var self = await repository.CreateAsync(Administrator("tester@diten.com")); // the TestCurrentUserContext address
+        var provisioning = new TestPlatformAdministratorProvisioningService();
+        var handler = ResendHandler(repository, provisioning);
+
+        var response = await handler.Handle(new ResendPlatformAdministratorInviteCommand(self.Id, new PlatformAdministratorVersionRequest(self.Version)), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(Diten.Platform.Application.Security.ActorSafetyGuard.SelfResendInviteCode, response.ReasonCode);
+        Assert.Equal(0, provisioning.ProvisionCalls);
+    }
+
+    [Fact]
+    public async Task Resend_invite_to_another_administrator_still_provisions()
+    {
+        var repository = new InMemoryPlatformAdministratorRepository();
+        var other = await repository.CreateAsync(Administrator("other@diten.com"));
+        var provisioning = new TestPlatformAdministratorProvisioningService();
+        var handler = ResendHandler(repository, provisioning);
+
+        other.Version++; // the in-memory store expects the handler's bump to land on version + 1
+        var response = await handler.Handle(new ResendPlatformAdministratorInviteCommand(other.Id, new PlatformAdministratorVersionRequest(other.Version - 1)), CancellationToken.None);
+
+        Assert.Equal(1, provisioning.ProvisionCalls);
+        Assert.NotEqual(Diten.Platform.Application.Security.ActorSafetyGuard.SelfResendInviteCode, response.ReasonCode);
+    }
+
+    private static ResendPlatformAdministratorInviteHandler ResendHandler(
+        InMemoryPlatformAdministratorRepository repository, TestPlatformAdministratorProvisioningService provisioning)
+    {
+        var currentUser = new TestCurrentUserContext();
+        return new ResendPlatformAdministratorInviteHandler(
+            repository,
+            provisioning,
+            currentUser,
+            new Diten.Platform.Application.Security.ActorSafetyGuard(currentUser, repository),
+            NullLogger<ResendPlatformAdministratorInviteHandler>.Instance);
+    }
+
+    private static PlatformAdministrator Administrator(string email) => new()
+    {
+        Email = email,
+        NormalizedEmail = email,
+        UserName = email.Split('@')[0],
+        NormalizedUserName = email.Split('@')[0],
+        DisplayName = "Admin",
+        Roles = [AdministratorRole.SuperAdmin],
+        CreatedBy = "test"
+    };
+
     private sealed class TestCurrentUserContext : ICurrentUserContext
     {
         public Guid UserId { get; } = Guid.Parse("11111111-1111-1111-1111-111111111111");
@@ -245,8 +301,13 @@ public sealed class PlatformAdministratorRulesTests
 
     private sealed class TestPlatformAdministratorProvisioningService : IPlatformAdministratorProvisioningService
     {
-        public Task<PlatformAdministratorProvisioningResult> ProvisionAsync(PlatformAdministratorProvisioningRequest request, CancellationToken ct) =>
-            Task.FromResult(new PlatformAdministratorProvisioningResult(null, true));
+        public int ProvisionCalls { get; private set; }
+
+        public Task<PlatformAdministratorProvisioningResult> ProvisionAsync(PlatformAdministratorProvisioningRequest request, CancellationToken ct)
+        {
+            ProvisionCalls++;
+            return Task.FromResult(new PlatformAdministratorProvisioningResult(null, true));
+        }
 
         public Task SyncAsync(PlatformAdministratorProvisioningSyncRequest request, CancellationToken ct) => Task.CompletedTask;
     }

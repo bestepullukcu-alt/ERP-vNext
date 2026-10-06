@@ -52,7 +52,8 @@
   <data name="Recommended" xml:space="preserve"><value>Recommended</value></data>
   <data name="PasswordManagement" xml:space="preserve"><value>Account setup</value></data>
   <data name="ResendInvitation" xml:space="preserve"><value>Send Setup Link</value></data>
-  <data name="ResendInvitationHelp" xml:space="preserve"><value>Send a one-time setup link so the administrator can set a password.</value></data>
+  <data name="ResendInvitationHelp" xml:space="preserve"><value>Sends a one-time setup link. For an administrator who already has a password, the current password stops working immediately and open sessions end at the latest when the session time runs out.</value></data>
+  <data name="AdminSelfResetDenied" xml:space="preserve"><value>You cannot send a setup link to your own account — it would end your own password and sessions. Use Change password.</value></data>
   <data name="EmailUnlockTooltip" xml:space="preserve"><value>Unlock email address field for editing</value></data>
   <data name="ResendInviteSuccess" xml:space="preserve"><value>Setup link has been sent successfully.</value></data>
   <data name="SetupLinkTitle" xml:space="preserve"><value>Setup link</value></data>

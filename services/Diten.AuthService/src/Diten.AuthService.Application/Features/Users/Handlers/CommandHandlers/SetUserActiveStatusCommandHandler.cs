@@ -77,16 +77,22 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
             }
         }
 
+        var state = _userRepository.CaptureState(user);
         if (request.IsActive)
         {
-            user.Activate();
+            // BL-529 FIX3 — the mark moves only on a real switch: enabling an account that is already on changes nothing.
+            if (!wasActive) user.ActivateByAdministrator();
         }
         else
         {
-            user.Deactivate();
+            // The kebab's "Disable" is an explicit act, also on a pending invitation (FIX2 item 8): it marks the account,
+            // and a pending reset link goes with it (User.DeactivateByAdministrator).
+            user.DeactivateByAdministrator();
         }
 
-        await _userRepository.UpdateAsync(user, ct);
+        // BL-529 FIX3 — the switch, the mark and the link fields only; never a whole-document write from the copy read
+        // before the Platform seat call (which put back a password an administrator's reset replaced meanwhile).
+        await _userRepository.TryWriteChangesAsync(user, state, _tenantContext.TenantId, UserWriteCondition.None, ct);
 
         // Disabling must terminate active sessions immediately.
         if (!request.IsActive)
