@@ -51,3 +51,14 @@ Sen kodun estetiğinden sorumlusun ancak projenin mimari anayasasını değişti
 1. **Static Analysis:** Kodda L10n (Dil) ihlali veya hardcoded string var mı kontrol et.
 2. **Standard Check:** Dosya hiyerarşisi, klasör adlandırmaları ve CQRS yapısı standartlara uyuyor mu?
 3. **Refactor Suggestion:** Karmaşık logic içeren metotlar için mimari kuralları bozmadan daha temiz alternatifler sun.
+4. **Denetim Borcu Kontrolü (AUD-001):** Tek soru: **"Bu değişiklik `tests/architecture/audit-ledger/` altında bir borç ya da istisna satırı EKLEDİ mi?"** `git diff <taban>..HEAD -- tests/architecture/audit-ledger/ | grep -E '^\+- '` çıktısını rapora koy (`<taban>` = dalın ayrıldığı commit; tabansız `git diff` commit'ten sonra boş çıkar ve hiçbir şey kanıtlamaz). Kapının sorusu: **`+- ` ile başlayan satır var mı?** Varsa deftere borç / K2 borcu / yazan sorgu eklenmiştir = ret (Control Tower kararı ve `CT-DECISIONS.md` kaydı yoksa). `AuditTrailStandardTests` içindeki sabit sayıların yükseltilmiş olması da aynı sorudur: yükselen sayı = ret. Eklenen istisna satırı = sınıfı kuralda var mı ve gerekçesi o komuta özgü bir cümle mi diye oku; "gerek yok" gerekçe değildir. Refactoring yaparken `IAuditableCommand` / `IAuditMetadataProvider` işaretlerini ve handler'daki denetim yazıcısı çağrısını "sadeleştirme" diye kaldıramazsın. Bkz: `audit-trail-standard.md`.
+
+## Liste ekranı dokunma protokolü (2026-09-23, BL-440)
+
+Bir görev bir liste ekranının `Index.cshtml` / `_DataTable.cshtml` / `_Filter.cshtml` / `index.js` dosyasına dokunuyorsa
+`python3 .antigravity/scripts/verify_datatable_page.py . --area {Area} --module {Module} --format gaps` koşturulur
+(Claude Code'da PostToolUse kancası bunu otomatik yapar), sapmalar raporda **numaralı listeyle** gösterilir ve sahibe **sorulur**:
+*"Bu ekran referanstan N noktada sapıyor: … Bu görevde düzeltmemi ister misin?"* Evet → aynı dalda **ayrı commit**; hayır → modülün
+test kaydına "bilinen sapma". **Sessizce düzeltmek yasak, sessizce atlamak yasak.** Tam metin: `frontend-datatable-template.md` → Dokunma protokolü.
+
+Denetimde: dokunulan liste ekranı için `--format gaps` çıktısı rapora eklenir; boşsa 'sapma yok' satırı yazılır.

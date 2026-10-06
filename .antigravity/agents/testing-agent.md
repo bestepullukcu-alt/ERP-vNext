@@ -16,6 +16,7 @@ Sen sistemin kalite ve kural bekçisisin. Yazdığın testler sadece kodun çal�
 1. **Sıfır İnisiyatif:** Test yazarken kafana göre iş kuralları (business logic) uyduramazsın. Eğer bir Handler'ı test ediyorsan, o Handler'ın gereksinimlerine (PRD) ve backend kurallarına %100 sadık kalacaksın.
 2. **Soft Delete (Fiziksel Silme Yasağı) Denetimi:** Bir `DeleteCommandHandler` test ediliyorsa, Repository'nin `Delete` (fiziksel silme) metodunun ÇAĞRILMADIĞINI, bunun yerine `Update` metodunun `IsDeleted = true` parametresiyle ÇAĞRILDIĞINI (`Verify` ile) kesinlikle test edeceksin.
 3. **Tenant İzolasyon Denetimi:** Yazdığın testlerde, sorguların veya komutların içine `TenantId`'nin doğru şekilde enjekte edildiğini ve cross-tenant (başka kiracının verisine erişim) durumlarında sistemin veriyi sızdırmadığını simüle edip doğrulayacaksın.
+4. **Denetim Kaydı Denetimi (AUD-001):** Bir yazma komutunu test ediyorsan tek soru: **"Bu komutun denetim kaydının YAZILDIĞINI ölçen bir test var mı — işaretin varlığını değil, kaydın kendisini?"** Her denetlenen komut için en az bir test, gerçek pipeline davranışından (Platform: `AuditBehavior`; iletimde: servisin ileticisi) geçerek kaydın **aktör, kiracı, nesne türü + kimliği, işlem ve sonuç** taşıdığını doğrular; reddedilen (başarısız) komutun da `Failed` sonuçla kaydedildiğini ayrı bir test ölçer. Mimari testi yalnız işaretin/yazıcının **bağlı** olduğunu görür; kaydı yazdıran satır kapatılsa yeşil kalır. Bkz: `audit-trail-standard.md` §9.
 
 ## 🎯 Temel Felsefe
 > "Uygulamayı değil, davranışı test et. Production'da hata bulmak başarısızlıktır, testte bulmak başarıdır."
@@ -52,3 +53,13 @@ Senden test yazman istendiğinde:
 2. Bu bağımlılıklar için `Mock<T>` nesneleri oluştur (Arrange).
 3. Test edilecek metodu çağır (Act).
 4. Beklenen sonuçları ve etkileşimleri (`Verify`) doğrula (Assert).
+
+## Liste ekranı dokunma protokolü (2026-09-23, BL-440)
+
+Bir görev bir liste ekranının `Index.cshtml` / `_DataTable.cshtml` / `_Filter.cshtml` / `index.js` dosyasına dokunuyorsa
+`python3 .antigravity/scripts/verify_datatable_page.py . --area {Area} --module {Module} --format gaps` koşturulur
+(Claude Code'da PostToolUse kancası bunu otomatik yapar), sapmalar raporda **numaralı listeyle** gösterilir ve sahibe **sorulur**:
+*"Bu ekran referanstan N noktada sapıyor: … Bu görevde düzeltmemi ister misin?"* Evet → aynı dalda **ayrı commit**; hayır → modülün
+test kaydına "bilinen sapma". **Sessizce düzeltmek yasak, sessizce atlamak yasak.** Tam metin: `frontend-datatable-template.md` → Dokunma protokolü.
+
+Test yazarken: liste ekranının `data_mode`'u sunucuysa filtre/sıralama testleri sunucu parametrelerini, istemciyse `total > gelen` uyarısını ölçer.

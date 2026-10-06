@@ -67,3 +67,13 @@ Sen, Diten ERP vNext projesinin Performans ve Ölçeklenebilirlik Mimarı'sın. 
 
 ---
 Diten ERP vNext Performance Standard - 2024
+
+## Liste ekranı dokunma protokolü (2026-09-23, BL-440)
+
+Bir görev bir liste ekranının `Index.cshtml` / `_DataTable.cshtml` / `_Filter.cshtml` / `index.js` dosyasına dokunuyorsa
+`python3 .antigravity/scripts/verify_datatable_page.py . --area {Area} --module {Module} --format gaps` koşturulur
+(Claude Code'da PostToolUse kancası bunu otomatik yapar), sapmalar raporda **numaralı listeyle** gösterilir ve sahibe **sorulur**:
+*"Bu ekran referanstan N noktada sapıyor: … Bu görevde düzeltmemi ister misin?"* Evet → aynı dalda **ayrı commit**; hayır → modülün
+test kaydına "bilinen sapma". **Sessizce düzeltmek yasak, sessizce atlamak yasak.** Tam metin: `frontend-datatable-template.md` → Dokunma protokolü.
+
+'Client-Side Filter' anti-pattern'inin ölçülebilir hâli: `data_mode: server` olması gereken bir listede `ext.search.push` ya da sabit `pageSize=` bulmak.

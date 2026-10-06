@@ -46,6 +46,8 @@ domain: platform-shared-services
 service: Diten.Platform
 shell: platform-admin
 golden_reference: slim
+data_mode: client
+data_mode_max_rows: 200
 entity_base: GlobalEntity
 status: draft
 owner: ali.tufanoglu
@@ -66,6 +68,8 @@ form_field_count: 7
 | `service` | string | Zorunlu | Backend servis projesinin adi (`Diten.Platform`, `Diten.MdmService`, `Diten.DevEnablementService`, `Diten.AuthService`) |
 | `shell` | enum | Zorunlu | `platform-admin` \| `tenant` \| `none` — frontend layout zorunlulugunu turetir |
 | `golden_reference` | enum | DataTable modullerinde zorunlu | `slim` (≤8 form alani) \| `compact` (>8 form alani) \| `none` (DataTable disi modul) |
+| `data_mode` | enum | DataTable modullerinde zorunlu | `server` (sinirsiz varlik listesi — varsayilan) \| `client` (tasarimda sinirli kume; ust siniri `data_mode_max_rows` ile yazilir, oneri ≤ 200) — bkz. `frontend-datatable-template.md` → Veri modeli |
+| `screens` | list | Cok ekranli paketlerde | Paket birden fazla liste ekrani kapsiyorsa ekran basina karar: `- module: {Views klasor adi}` + `data_mode` (+ `data_mode_max_rows`). Paket duzeyi `data_mode` bes ekran icin tek sey soyleyemez; `verify_datatable_page.py` ekrani once `name`, sonra `screens[].module` ile bulur. Olculmeyen ekran yazilmaz. |
 | `entity_base` | enum | Zorunlu | `EntityBase` \| `BaseEntity` \| `GlobalEntity` — somut sinif adi (servis bazli) |
 | `status` | enum | Zorunlu | `draft` \| `approved` \| `ready-for-dev` \| `in-progress` \| `review` \| `done` \| `blocked` |
 | `owner` | string | Zorunlu | Sorumlu kisi veya ekip |
@@ -129,6 +133,31 @@ Form alan sayimi sadece kullanicinin create/edit formunda doldurdugu modul alanl
 |---|---|
 | `8 ve alti` | `golden_reference: slim` → Index icinde create/edit offcanvas + QuickView offcanvas |
 | `8'den fazla` | `golden_reference: compact` → ayri `Create/Edit/Details` sayfalari |
+
+---
+
+### Veri modeli karari (`data_mode`)
+
+`golden_reference` sayfanin **seklini**, `data_mode` sayfanin **verisini** belirler; ikisi birlikte yazilir. Sayfa `<table data-dt-data-mode="...">`
+ile ayni karari beyan eder; `verify_datatable_page.py --data-mode` pack ile sayfayi karsilastirir.
+
+| Kume | Karar |
+|---|---|
+| Kiracinin sinirsiz ekleyebildigi varlik (kullanici, urun, gorev, dokuman…) | `data_mode: server` |
+| Tasarimda sinirli kume (sistem sozlugu, yapilandirma, rol/izin) — ust sinir olculur | `data_mode: client` + `data_mode_max_rows: N` |
+
+Istemci modunda JS'te sabit `pageSize=` YASAKTIR; servis `total` doner ve ekran `total > gelen` durumunu gosterir.
+
+Cok ekranli paket (or. MOD-0018-FU9 bes ekran): karar ekran basina `screens:` altinda yazilir —
+
+```yaml
+screens:
+  - module: Users
+    data_mode: server
+  - module: Roles
+    data_mode: client
+    data_mode_max_rows: 50
+```
 
 ---
 
@@ -250,6 +279,7 @@ Frontmatter altinda asagidaki bolumler zorunludur:
 | 18 | `Ready-for-dev Checklist` | Status `ready-for-dev`'e gecmeden once onaylanacak madde listesi |
 | 19 | `Implementation Notes` | Master-plan saplamalari, kararlar, gelecek baglantilari |
 | 20 | `Follow-up Items` | Sonraki sprint/wave'e birakilan isler |
+| 21 | `Audited Events` (Denetlenen Olaylar) | Yeni paketlerde zorunlu; mevcut pakette yazma komutu ekleyen/degistiren ilk iste zorunlu (Bolum 10.1 gecis kurali). Paketin her yazma komutu icin: komut → olay adi → yol (a/b/c) ya da istisna sinifi + gerekce. Bkz. Bolum 10.1 ve `audit-trail-standard.md` (AUD-001) |
 
 ---
 
@@ -318,6 +348,37 @@ platform.administrators.assign-roles
 
 ---
 
+## 10.1 Audited Events (Denetlenen Olaylar) Bolumu Sablonu — ZORUNLU (AUD-001)
+
+Kural: [audit-trail-standard.md](audit-trail-standard.md). Paketin `Owned Objects` bolumunde sayilan **her yazma komutu** bu tabloda
+tam bir kez gecer. Tabloda olmayan komut yazilamaz; "sonra ekleriz" gecerli bir satir degildir.
+
+```text
+| Komut | Olay adi | Nesne (tur) | Yol | Onceki/sonraki ya da degisen alanlar | Istisna sinifi + gerekce |
+|---|---|---|---|---|---|
+| CreateSampleCommand   | sample.created   | Sample | a | AfterState: Code, Name          | — |
+| UpdateSampleCommand   | sample.updated   | Sample | a | Before/After: Name, Status      | — |
+| DeleteSampleCommand   | sample.deleted   | Sample | a | BeforeState: Code, Name         | — |
+| SaveSampleViewCommand | —                | —      | — | —                               | İ1 — yalniz kullanicinin kendi ekran gorunumunu degistirir |
+```
+
+- `Yol`: `a` Platform ici `IAuditableCommand` · `b` baska servisten merkezi gunluge iletim · `c` esdeger iz (adi yazilir ve
+  kuralin §5.c kabul kosullari tek tek isaretlenir). Servisin denetim altyapisi yoksa paket bunu **bagimlilik** olarak yazar;
+  altyapisiz servise `a`/`b` yazilamaz.
+- `Istisna sinifi`: yalniz kuraldaki `İ1…` siniflarindan biri. Sinif disi "denetlenmiyor" olamaz.
+- Kayda yazilMAyacak alanlar (parola, ozet, token, gereksiz kisisel veri) ayri satirda sayilir.
+- **K2 sinifi** (kimlik, yetki, kiraci durumu, GxP kaydi ya da KVKK ozel nitelikli veri degistiren komut): kayit yazilamazsa islem DURUR
+  (sahip karari 2026-10-02, kural §4.3–§4.4). Paket, komutun bunu hangi yolla sagladigini ve testini yazar. "En iyi caba" yazan
+  paket bu sinifta GECMEZ; kapali-basarisiz yol bugun yoksa komut pakete yazilmaz, Control Tower'a yazilir.
+- **Izi olmayan on servis** (CRM, HumanCapital, HCM, EnterpriseStrategy, PPM, Procurement, TalentEcosystem, DevEnablement,
+  ManagementGovernance, PVG): ortak iletici paketi gelene kadar pakete yeni yazma komutu yazilmaz (kural §5 K4).
+
+**Gecis kurali.** Bu bolum yeni paketlerde zorunludur. Mevcut bir pakette (2026-10-02'de 106 paketin hicbirinde yok), o modulde
+yazma komutu ekleyen ya da degistiren **ilk iste** zorunludur: bolum o isin ilk adiminda yazilir ve modulun MEVCUT yazma
+komutlarini da kapsar. Yazma komutuna dokunmayan is (ekran duzeltmesi, ceviri, sorgu) icin zorunlu degildir.
+
+---
+
 ## 11. Gateway / API Routing Decision Bolumu Sablonu
 
 ```text
@@ -346,6 +407,7 @@ Karar: Gateway degisikligi {gerekli | gereksiz}.
 - [ ] Platform/Admin modulde Lookup & Reference Data Decision yazili (mevcut `/api/lookups/{key}` kullanimi, yeni Platform lookup key ihtiyaci veya MDM/reference boundary gerekcesi)
 - [ ] Acceptance criteria test edilebilir maddeler
 - [ ] Test expectations build/verifier/RESX/smoke kapsiyor
+- [ ] Audited Events tablosu her yazma komutunu tam bir kez iceriyor: yol (a/b/c) ya da istisna sinifi + gerekce (AUD-001)
 ```
 
 ---
@@ -456,6 +518,8 @@ domain: platform-shared-services
 service: Diten.Platform
 shell: platform-admin
 golden_reference: slim
+data_mode: client
+data_mode_max_rows: 200
 entity_base: GlobalEntity
 status: draft
 owner: ali.tufanoglu
@@ -531,6 +595,11 @@ Slim partial seti:
 - Policy: `[Authorize(Policy = "PlatformActor")]`
 - Permission format: `platform.{resource}.{action}` (PKS-001 lowercase-dotted, >= 3 segments; tenant modules use `{module}.{resource}.{action}`)
 - Permissions: ...
+
+## Audited Events
+| Komut | Olay adi | Nesne (tur) | Yol | Onceki/sonraki ya da degisen alanlar | Istisna sinifi + gerekce |
+|---|---|---|---|---|---|
+| ... | ... | ... | a/b/c | ... | — |
 
 ## Gateway / API Routing Decision
 - Karar: gerekli/gereksiz

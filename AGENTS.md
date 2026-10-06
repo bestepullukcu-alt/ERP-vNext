@@ -4,7 +4,7 @@ Bu dosya, Claude Code, Codex ve diğer AI ajanlarının repo genelinde uyması g
 
 ⚠ **Claude Code bu dosyayı otomatik yüklemez** — yalnız `CLAUDE.md`'yi yükler. 2026-09-08'de
 canlı oturumda ölçüldü: bağlamdaki tek proje dosyası `MEMORY.md`'ydi; bu dosya da,
-`.antigravity/` altındaki 39 kural / 20 ajan / 18 akış da yoktu.
+`.antigravity/` altındaki 41 kural / 20 ajan / 18 akış da yoktu.
 
 Bu yüzden repo kökünde **kısa bir `CLAUDE.md`** durur ve tek işi okuyucuyu buraya
 göndermektir. Sembolik bağ denendi ve **geri alındı**: ekipte Windows kullanan var, ve
@@ -84,10 +84,12 @@ module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı v
 | MDM Service | 5059 | `services/Diten.MdmService/src/Diten.MdmService.Api` |
 | HCM Service | 5060 | `services/Diten.HcmService/src/Diten.HcmService.Api` |
 | SupplyChain Service | 5061 | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api` |
-| CRM Service | 5065 | `services/Diten.CrmService/src/Diten.CrmService.Api` |
+| Procurement Service | 5065 | `services/Diten.ProcurementService/src/Diten.ProcurementService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
-> **Not:** Mikroservis bandı `5065`'e kadar uzatılmıştır. `5061`, 2026-09-11 tarihli DCP-009 kararıyla `SupplyChain Service`'e; `5065`, ayrıca onaylanan CRM port disposition kararıyla `CRM Service`'e ayrılmıştır.
+> **Not (2026-09-11):** Mikroservis bandı 5011–5060'tan **5061'e uzatıldı** — `SupplyChain Service` (DCP-009, supply-chain-execution domain, kullanıcı onaylı). Sonraki mikroservisler 5062+ kullanır.
+> **Not (2026-09-16, revize 2026-09-17):** `Procurement Service` (DCP-010, procurement domain, kullanıcı onaylı) **port 5065**. İlk atama 5062'ydi; 2026-09-17 ölçümünde 5062 çakışması bulundu (OD-5): 5062'yi `Diten.DataKnowledgeService` (çalışıyor) + `Diten.PpmService` (config) kullanıyor; 5063 `HumanCapitalService`, 5064 `TalentEcosystemService`. En yeni servis (Procurement, henüz fleet'te çalışmıyor) en düşük boş porta (**5065**) taşındı — çalışan/başka-domain servisleri bozulmadı. **Sonraki mikroservisler 5066+ kullanır.**
+> ⚠ **Drift (EA reconciliation gerek):** yukarıdaki tablo `PpmService (5062)`, `DataKnowledgeService (5062, çalışıyor)`, `HumanCapitalService (5063)`, `TalentEcosystemService (5064)` satırlarını içermiyor; bu servisler §3 port authority'sine kayıtlı değil ve 5062 config-seviyesinde Ppm+Procurement tarafından çift-talep edildi. Bu satırların canonical port tahsisi + §3'e eklenmesi ilgili domain owner'lar/EA kararıdır (procurement sınırı dışı).
 
 **Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.
 
@@ -145,8 +147,12 @@ dotnet test tests/architecture/TenantArchitecture.ArchitectureTests
 
 ### DataTable Kontrat Doğrulama (Frontend)
 ```bash
-python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName} --reference slim|compact
+python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName} --reference slim|compact [--data-mode server|client] [--format gaps]
 ```
+
+> Eski bir liste ekranına dokunan görev **dokunma protokolüne** tabidir (`frontend-datatable-template.md` → Dokunma protokolü):
+> sapmalar `--format gaps` ile listelenir, sahibe sorulur, sessizce ne düzeltilir ne atlanır. Claude Code'da `.claude/settings.json`
+> PostToolUse kancası (`list_screen_touch_hook.py`) bunu düzenlemeden hemen sonra otomatik koşturur.
 
 ---
 
@@ -162,7 +168,8 @@ Bu kararlar repo genelinde **zorunludur**. Bir modül bunlardan muaf olmak ister
 | Auth | JWT + RBAC (`[HasPermission]`) | [.antigravity/rules/security-jwt.md](.antigravity/rules/security-jwt.md) |
 | Mimari | 5 katman (Api/Application/Domain/Persistence/Infrastructure) + CQRS (MediatR) | [.antigravity/rules/erp-architecture.md](.antigravity/rules/erp-architecture.md) |
 | API Yanıt | `Response<T>` envelope + `CustomBaseController` | [.antigravity/rules/response-envelope.md](.antigravity/rules/response-envelope.md) |
-| Pipeline Behaviors | 4 zorunlu (Validation, Logging, Exception, Performance) | [.antigravity/rules/pipeline-behaviors.md](.antigravity/rules/pipeline-behaviors.md) |
+| Pipeline Behaviors | 4 zorunlu (Validation, Logging, Exception, Performance) + denetim kaydı davranışı (Platform: `AuditBehavior`; diğer servisler: ortak iletici, AUD-001 K4) | [.antigravity/rules/pipeline-behaviors.md](.antigravity/rules/pipeline-behaviors.md) |
+| Denetim kaydı | Kiracı ya da platform verisini değiştiren **her komut denetlenir** (kim · neyi · ne zaman). Denetlenmemek istisnadır ve gerekçesiyle bildirilir; yeni denetimsiz komutu ve deftere eklenen borç satırını mimari testi + CI reddeder; kimlik / yetki / GxP sınıfında kayıt yazılamazsa işlem durmalıdır (karar K2; bugün hiçbir yol bunu teslim etmiyor, eksikler defterde `## K2 borcu` olarak sayılı — AUD-001 §4.4) | [.antigravity/rules/audit-trail-standard.md](.antigravity/rules/audit-trail-standard.md) |
 | Yerelleştirme | **Platform modülleri 2 dil** (en, tr) · **Tenant modülleri 7 dil** (en, tr, fr, es, zh, ar, ru) — `.resx` + `window.L10n` bridge. Ölçüldü 2026-09-07: `Views/Platform/*` 2 dosya, `Views/Organization/*` 7 dosya taşır. | [.antigravity/rules/localization-standard.md](.antigravity/rules/localization-standard.md) |
 | UI Layout | Admin modülleri `_LayoutPlatformAdmin.cshtml`; tenant modülleri `_LayoutTenantShell.cshtml`; `_Layout.cshtml` FROZEN | [.antigravity/rules/views-organization.md](.antigravity/rules/views-organization.md) |
 | DataTable | v2 kontratı zorunlu (`data-dt-standard="v2"`) + Golden Slim/Compact seçimi | [.antigravity/rules/frontend-datatable-template.md](.antigravity/rules/frontend-datatable-template.md) |
@@ -184,7 +191,7 @@ Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül 
 
 ## 6.1 Kural Haritası — hangi işte hangi kural
 
-`.antigravity/rules/` altında 39 kural var ve **hiçbiri otomatik yüklenmez.**
+`.antigravity/rules/` altında 41 kural var ve **hiçbiri otomatik yüklenmez.**
 `.antigravity/rules/GEMINI.md` yalnız Antigravity'de `always_on`'dur; Claude Code
 ve Codex o klasörü hiç okumaz. Bu dosya (`AGENTS.md` = `CLAUDE.md`) her üç araçta
 da yüklenen tek dosyadır, bu yüzden harita burada durur.
@@ -200,7 +207,8 @@ kuralların dosyasını aç** — harita kuralın yerini söyler, içeriğini de
 ### Backend / handler yazıyorsan
 `handler-design` · `repository-standard` · `response-envelope` ·
 `pipeline-behaviors` · `entity-base-template` · `entity-versioning` ·
-`mongo-indexing` · `api-conventions` · `routes` · `ports`
+`mongo-indexing` · `api-conventions` · `routes` · `ports` ·
+`audit-trail-standard` yazma komutu denetlenir; yol a/b/c ya da gerekçeli istisna (AUD-001)
 
 ### Ekran / sayfa yazıyorsan
 `frontend-standards` genel · `views-organization` dosya yerleşimi ·
@@ -215,16 +223,19 @@ create/edit → `frontend-form-template`
 
 ### Yetki, izin, lookup dokunuyorsan
 `permission-key-standard` izin anahtarı · `business-module-enforcement-standard`
-modül yetki zorlaması · `platform-lookups-reference-data` referans veri ·
+modül yetki zorlaması · `data-scope-enforcement` hangi satırları görür (SEC-002) ·
+`platform-lookups-reference-data` referans veri ·
 `platform-global-search-registry` Ctrl+K kaydı
 
 ### Yeni modül / pack açıyorsan
 `module-pack-standard` · `capability-pack-standard` ·
-`module-self-registration-standard` manifest
+`module-self-registration-standard` manifest ·
+`audit-trail-standard` pakette "Denetlenen Olaylar" bölümü (AUD-001)
 
 ### Ortam, çalıştırma, kayıt
 `dev-runbook` yerel ortam · `configuration-safety` ayar ve bağımlılık ·
-`logging-observability` log · `git-backup-policy` yedek ve isimlendirme
+`logging-observability` log · `git-backup-policy` yedek ve isimlendirme ·
+`status-reporting-and-evidence` çok modüllü durum raporu ve kanıt (REP-001)
 
 ### Mimari kararlar
 `erp-architecture` · `diten_standards`

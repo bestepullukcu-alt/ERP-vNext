@@ -22,6 +22,7 @@ Alan sayımı yalnızca kullanıcının formda doldurduğu modül alanlarıdır.
 > - **Delete Endpoint Ownership (ZORUNLU):** Tekil silme ve bulk silme çağrıları yalnızca modülün kendi resource endpoint’ine gider (`/api/{module}` ve `/api/{module}/bulk`). Kardeş modül endpoint’i kullanmak YASAKTIR.
 > - **Bulk Delete Confirmation Parity (ZORUNLU):** Bulk delete için generic/yanlış modal değil, tekil silme ile aynı görsel dilde confirm akışı (`window.showConfirm` standardı) kullanılmalıdır.
 > - **Save View CTA (ZORUNLU):** DataTable toolbar’ında `dt-save-filter-btn` başlangıçta `d-none` olsa bile render edilmek zorundadır; dirty-state olduğunda görünür olmalıdır.
+> - **İçe aktarma düğmesi YOK (sahip kararı 2026-09-24, BL-441):** Liste ekranına, toolbar'a veya Action menüsüne "İçe aktar" konmaz — "Yakında" diye de konmaz. İçe aktarma merkezi bir modülün işidir (şablon indir → doldur → yükle → doğrulama → hata raporu → denetim izi; SAP S/4HANA Migration Cockpit ve Oracle Fusion Import Management / FBDI deseni). Ajan sayfa başına sormaz; `createList` fabrikası da sunmaz.
 > - **`{AreaName}` = klasör gruplaması (Örn: `MDM`, `Identity`), ASP.NET Areas routing DEĞİLDİR.**
 >   - ✅ DOĞRU: `Views/MDM/SampleModule/Index.cshtml`
 >   - ❌ YANLIŞ: `Areas/MDM/Views/SampleModule/Index.cshtml`
@@ -65,6 +66,102 @@ Zorunlu uygulama:
 - Compact Details read-only section kartları `card backbone-preview-section` class'larını birlikte kullanır ve shared CSS standardı üzerinden standart `.card` shadow + no extra preview border davranışını alır. Page-level `box-shadow`, global `.card` override veya view içine özel shadow CSS yazılmaz.
 - Required marker ve input tipi ilgili alanın kendi bölümünde kalır; status/select/switch alanları classification kartına karıştırılmaz.
 - Teslimden önce `_Form.cshtml` ve `Details.cshtml` yan yana kontrol edilir: bölüm sayısı, bölüm başlıkları ve alanların bölüm sahipliği eşleşmelidir.
+
+---
+
+## Veri modeli (`data_mode`) — sunucu mu, istemci mi
+
+Module pack `golden_reference`'ın yanında **`data_mode: server | client`** taşır; sayfa aynı kararı `<table data-dt-data-mode="server|client">`
+ile beyan eder; `verify_datatable_page.py` ikisini karşılaştırır ve davranışı ölçer. Ayrım kümenin büyüklüğü değil, **sınırlı olup olmadığıdır**.
+
+| | `server` (varsayılan) | `client` (istisna) |
+|---|---|---|
+| Ne zaman | Kiracının **sınırsız ekleyebildiği** her varlık: kullanıcı, ürün, hesap, görev, doküman, toplantı… | Tasarımda **sınırlı** kümeler: sistem sözlükleri, yapılandırma listeleri, rol/izin tabloları — üst sınır ölçülür ve pack'e yazılır (öneri ≤ 200 satır) |
+| Veri | DataTables `start/length/search/order` + filtreler sunucuya; servis `total` döner; `serverSide: true` | Tüm küme tek istekte; **URL'de `pageSize=` YASAK**; servis `total` döner; `total > gelen` ise ekran bunu gösterir (sessiz kesme yasak) |
+| Filtre | sorgu parametresi | tarayıcıda (`ext.search`) |
+| Save View | aynı sözleşme; state sorguya çevrilir | aynı sözleşme; tarayıcıda uygulanır |
+| Referans | **Golden Compact** (`data_mode: server`) | **Golden Slim** (`data_mode: client`, `data_mode_max_rows: 200`) |
+
+### Sunucu modu sözleşmesi (BL-440 paket 3, WP-UI-LIST-SERVER-01)
+
+Sayfa yalnız `DitenDataTable.createList({ dataMode: 'server', … })` der; çeviriyi **fabrika** yapar (`diten-datatable.js`
+→ `toServerQuery` / `toDataTablesResponse`). Sayfa `serverSide`, `ajax.data`, `ext.search` ya da filtre `matches:` yazmaz.
+
+| | Tel üzerinde | Not |
+|---|---|---|
+| **İstek** (GET, düz sorgu) | `start` · `length` · `search` · `orderBy` · `orderDir` (`asc`\|`desc`) · `draw` · uygulanmış filtreler **anahtar adıyla** | `orderBy` = sıralanan sütunun `columns[i].data` adı. Çoklu filtre **tekrarlı** parametre (`status=Active&status=Passive`), tekli bir kez (`priority=70`), boş filtre gönderilmez. DataTables'ın `columns[i][…]`/`order[i][…]` gürültüsü **gönderilmez** |
+| **Cevap** (servis zarfı) | `{ …, data: { items: [...], total, filteredTotal } }` | `total` = kiracının tüm listesi, `filteredTotal` = arama+filtre sonrası. İkisi de **`TenantId` ile sınırlı** sorgudan sayılır |
+| **DataTables'a** (fabrika `ajax.dataFilter`) | `{ draw, recordsTotal: total, recordsFiltered: filteredTotal, data: items }` | `draw` isteğin kendi URL'inden okunur (geç gelen cevap kendi numarasını taşır). `filteredTotal > gelen` **sayfalamadır**, kayıp değil — istemci modundaki "`total > gelen` ise göster" kuralı burada uygulanmaz |
+| **Servis kuralları** | `orderBy` beyaz listesi dışı → **400** · `orderDir` asc/desc dışı → 400 · `length` 1…500 · arama büyük-küçük duyarsız ve **metin** (regex değil) | Eşit sıralama değerinde sayfalar arası kayma olmasın diye sıralama daima `Id` ile biter. Parametresiz çağrı eski şeklini korur (tüm liste, dizi) — başka tüketiciler (lookup proxy) onu okur |
+| **Davranış** | Apply/Reset → parametre değişir + yeni istek (Reset sayfa 1'e döner) · arama/sıralama sunucuya | Save View sözleşmesi **aynı** (`captureView`/`applyViewToTable`); filtre+arama+sıralama sunucuya gider, colVis/columnOrder tarayıcıda kalır. Kayıtlı görünümün filtreleri **ilk** isteğe biner |
+| **Sayfaya açık** | `handle.lastResponse` (son zarf) · `onResponse(json)` seçeneği | Özet/KPI buradan okunur; ikinci bir istek atılmaz |
+
+Doğrulayıcı üç beyanı karşılaştırır — pack `data_mode` (pack front matter'ından kendisi okur), `<table data-dt-data-mode>`,
+`createList({ dataMode })` — ve sunucu modunda "serverSide açık" + "tarayıcıda filtre kancası yok" kontrollerini fabrikadan çözer.
+
+> ⚠ ÖLÇÜLDÜ (2026-09-23): 138 listenin çoğu istemci modunda ve JS'inde sabit `pageSize=` taşıyor (200×45, 100×9, 500×5, 1000×4).
+> Kullanıcılar `pageSize=1000` → 1001. kullanıcı asla görünmez, hata da vermez. 13 liste `serverSide:true` ama kural bunu hiç yazmamıştı.
+> SAP SmartTable (büyüyen liste, OData `$top/$skip`) ve Oracle JET (DataProvider `fetchByOffset`) sunucuyu varsayılan alır; küçük
+> value-help'ler istemcide kalır. Blueprint'te satır yok; kural budur.
+
+### Dışa aktarma — dosya = ekran (BL-452 paket 1, WP-UI-EXPORT-01)
+
+Sahip kararı (2026-09-24): dışa aktarılan dosya ekranda görüneni taşır — **görünen sütunlar** (sırasıyla), **uygulanan filtre + arama +
+sıralama**, **eşleşen TÜM satırlar**. Sunucu modunda DataTables yalnız ekrandaki sayfayı tutar; kendi CSV/Excel düğmesi o sayfayı
+"liste" diye yazar (Kullanıcılar: 10 satır). Bu yüzden sunucu modundaki her liste dışa aktarmayı **sunucuya** bırakır:
+
+```js
+createList({ dataMode: 'server', ajax: { url: api + '/api/x' }, export: { mode: 'server', url: api + '/api/x/export', fileName: 'x' }, … })
+```
+
+| | Sözleşme | Not |
+|---|---|---|
+| **Uç nokta** | `GET {liste}/export?format=csv\|xlsx&columns=a,b,…` + listenin **kendi** `search`/`orderBy`/`orderDir`/filtre anahtarları | Dışa aktarma **ayrı bir sorgu değil, listenin sorgusudur** (aynı handler, aynı doğrulama, aynı 400 kodları). `start`/`length`/`draw` **parametre değildir** — imzada yoktur, gelse de bağlanamaz |
+| **Sütunlar** | `columns=` = görünen sütunların liste DTO alan adları, ekran sırasıyla (virgüllü ya da tekrarlı) | Servis beyaz liste tutar (`ListExportColumnSet`); bilinmeyen anahtar → **400 `EXPORT_COLUMNS_INVALID`**. `columns` yok = tüm dışa aktarılabilir sütunlar |
+| **Satır sınırı** | en çok **50 000** | Fazlası → **413 `EXPORT_TOO_LARGE`** (kesilmiş dosya asla), arka plan işi paket 4'te |
+| **Dosya** | CSV: `text/csv; charset=utf-8`, **UTF-8 BOM**, `,` ayırıcı, RFC 4180 tırnak · XLSX: tüm hücreler **metin** (ClosedXML) | CSV'de formül gibi başlayan hücre (`= + - @` TAB CR) başına `'` alır (CSV enjeksiyonu); düz sayı (`-5`) dokunulmaz; XLSX'te hücre metin tipli olduğu için formül çalışmaz, önek yok. Ad `{ekran}-{yyyyMMdd-HHmm}.{csv\|xlsx}` (UTC) |
+| **Dil** | Başlıklar ve durum/tür değerleri **istek kültüründe** (`Accept-Language`, 7 kiracı dili, yoksa İngilizce) | Servis resx'i ekranın resx'iyle **aynı kelimeler** — `tests/list-export-labels-match-screen.test.js` eşitliği tutar |
+| **Hata gövdesi** | `{ isSuccessful:false, statusCode, errors:[…], errorCodes:[{ code }] }` | Her serviste aynı şekil; fabrika 413 → `ExportTooLarge` uyarısı, 403 → `AccessDenied`, diğer → `ErrorOccurred` |
+| **Fabrika** | CSV/Excel → `fetch(export.url + sorgu, { credentials: 'include', X-Tenant-Id, Accept-Language })` → blob → kaydet | Sorgu tablonun **şu anki** durumundan kurulur (`toExportQuery`); `export` yoksa CSV/Excel DataTables'ın kendi düğmeleridir (istemci modu, 84 eski sayfa — değişmez) |
+| **Ortak kod** | `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ListExport` | Sözleşme sabitleri, sütun beyaz listesi, CSV/XLSX yazıcı, kültür çözümü. Referans uygulama: Golden Compact `/api/golden-reference-compact/export`; ilk ekran: Kullanıcılar `/api/users/export` |
+
+- `export.mode: 'server'` yalnız `dataMode: 'server'` ile kabul edilir; istemci modu listesi zaten tüm satırları tutar. Bilinmeyen mod ya da `url`'siz beyan fabrikada **hata fırlatır**.
+- **Bu pakette YOK:** PDF ve Yazdır istemci tarafında, yalnız yüklü sayfa (paket 2: kontrollü kopya — aşağıda, artık var) · ayrı dışa aktarma izin anahtarı (paket 3; bugün listeyi okuyan anahtar ya da modülün mevcut `*.export` anahtarı) · 50 000 üstü için arka plan işi (paket 4) · denetim kaydı (`IDataExportAuditWriter` bugün yalnız Platform'da).
+- Doğrulayıcı: `data_mode: server` olan sayfa `export: { mode: 'server', url }` beyan etmiyorsa **sapma** (`--format gaps` satırı); fabrikanın dışa aktarma dalı (sorguda `start/length/draw` yok) ayrıca ölçülür.
+
+#### Kontrollü kopya (BL-452 paket 2, WP-UI-EXPORT-02)
+
+PDF ve Yazdır çıktısı ekranı ve kaynağını söyler (GxP "uncontrolled when printed"; Veeva/MasterControl her çıktıya oluşturan, tarih,
+kaynak ve kontrolsüz kopya damgası basar). Tek yerde: `dt-defaults.js` → `runControlledCopy`; **hiçbir sayfa index.js'i bunun için değişmez.**
+
+| | Sözleşme | Not |
+|---|---|---|
+| **Başlık bloğu** | ekran adı (sayfa başlığı, " - Di10" soneki atılır) · şirket (kiracının marka adı, `TenantBrand` → `[data-tenant-name]`) · **Filtreler** (uygulanan filtreler, denetimin kendi etiketi + seçeneğin metniyle: "Durum: Davet edildi") · **Arama** · **Sıralama** (sütun başlığı + yön) · **Satır sayısı** · **Oluşturan** (`CurrentUser.email`) · **Oluşturma zamanı** (istek kültürü, saat dilimi adıyla) | Tek veri nesnesi `buildControlledCopy` → hem pdfmake doc-definition hem yazdır DOM'u; iki çıktı farklı hikâye anlatamaz |
+| **Altbilgi** | "Bu çıktı kontrolsüz kopyadır — {tarih}" + "Sayfa x / y" | PDF: pdfmake `footer(currentPage, pageCount)`. Yazdır: CSS `@page` kenar kutuları (`counter(page)`/`counter(pages)`) + gövde sonunda bir kez. ⚠ Firefox/Safari `@page` kenar kutusunu desteklemez: orada sayfa x/y yok, kontrolsüz kopya satırı gövde sonunda |
+| **Satır kaynağı** | Sunucu modu + `export: { mode: 'server' }`: fabrika `exportUrl('csv')` ile **paket 1 uç noktasını** ister (görünen sütunlar, filtre, arama, sıralama; `start/length` yok), RFC 4180 ayrıştırır (BOM, tırnaklı virgül, `""`, hücre içi satır sonu) → **eşleşen tüm satırlar**. 413 → `ExportTooLarge` uyarısı, çıktı **üretilmez** (açılmış yazdır penceresi kapanır). Diğer tüm listeler: DataTables'ın elindeki satırlar, bugünkü `exportOptions` ile (görünen sütunlar, seçili satırlar) | CSV başlık satırı = sütun başlıkları, servisin istek kültüründe |
+| **Dil** | Tüm metinler SharedResource `ControlledCopy.*` + `Action`/`Print`/`PDF`/`Copy`, 7 dilde; `_LayoutTenantShell` `l10nBridge` → `window.L10n`. Sayfanın kendi `L10n` anahtarı kazanır; köprü yoksa (Platform kabuğu) İngilizce yedek | Guard: `tests/controlled-copy-l10n-bridge.test.js` (dt-defaults okuduğu ⇔ köprü ⇔ 7 resx) |
+| **zh / ar sınırı** | `window.CurrentLanguage` zh ya da ar ise **PDF düğmesi yazdır penceresini açar** ve tarayıcının yazdır diyaloğunu çağırır (kullanıcı "PDF olarak kaydet") | Neden: vendored pdfmake 0.2.15 yalnız Roboto taşır — ölçüldü 2026-09-25: Arapça 0/256, CJK 0/20 992 kod noktası (Latin-1+Ext-A 192/192, Kiril 255/256). Font **gömülmez** (paket boyutu); sunucu tarafı PDF paket 4'ün notu |
+| **Kopyala / CSV / Excel** | değişmez (paket 1) | |
+| **İzin (paket 3)** | `toolbar.exportPermitted: false` → İşlem menüsünde Yazdır, CSV, Excel, PDF **ve Kopyala** yok; menü boş kalırsa İşlem düğmesi hiç çizilmez | Sahip 2026-09-25: Kopyala da veri çıkışıdır. Sunucudaki 403 derin bağlantı için kalır. Seçenek verilmezse izin var sayılır. |
+
+- Yazdır penceresi **tıklama anında** açılır (await'ten sonra açılan pencereyi tarayıcı engeller); stiller pencerenin kendi `<style>`'ında (FG-003: satır içi stil yok).
+- Doğrulayıcı: sunucu modu listede fabrika mekaniği "Server export PDF/print (BL-452 package 2)" — `controlledCopyRows` `exportUrl('csv')` + `parseCsv` kullanır ve tablo satırı okumaz, fabrika sağlayıcıyı yalnız `export` beyanında verir, `dt-defaults` PDF ve Yazdır girdileri ikisi de sağlayıcıyı tercih eder. Biri koparsa `N-1/N mechanics` + kırmızı satır.
+- Testler: `tests/list-controlled-copy-server-real-datatables.test.js` (Altın Compact, 37 satır CSV → doc-definition, 413, yazdır DOM'u, `ar`, gerçek pdfmake ile PDF'e basım) · `tests/list-controlled-copy-client-real-datatables.test.js` (Altın Slim, ağ isteği yok).
+
+## Dokunma protokolü — eski bir liste ekranına dokunan herkes için
+
+Eski liste ekranları (bugün 132'si sapmış) **program olarak göç ettirilmez**; her biri ya modül test turunda ya da **bir görev ona dokunduğunda** düşer.
+Bir görev bir liste ekranının `Index.cshtml`, `_DataTable.cshtml`, `_Filter.cshtml` ya da `index.js` dosyasına dokunuyorsa:
+
+1. Ajan `python3 .antigravity/scripts/verify_datatable_page.py . --area {Area} --module {Module} --format gaps` koşturur
+   (Claude Code'da `.claude/settings.json` PostToolUse kancası bunu düzenlemeden hemen sonra **otomatik** yapar ve sapmaları bağlama düşürür —
+   `.antigravity/` otomatik yüklenmediği için kural değil kanca güvence).
+2. Sapmaları raporunda **numaralı listeyle** gösterir ve sahibe **sorar**: *"Bu ekran referanstan N noktada sapıyor: … Bu görevde düzeltmemi ister misin?"*
+3. **Evet** → aynı dalda **ayrı commit** (görevin commit'ine karışmaz). **Hayır** → modülün test kaydına "bilinen sapma" olarak yazılır; iş bitmemiş sayılmaz.
+4. **Sessizce düzeltmek yasak** (kapsam disiplini) · **sessizce atlamak yasak** (sapma görünmez kalamaz).
+
+Bu protokol yalnız orchestrator'ın değil, liste dosyasına dokunan her ajanın (`frontend-ui-ux`, `code-quality-agent`, `testing-agent`,
+`module-pack-author`, `performance-optimizer`) yükümlülüğüdür.
 
 ---
 

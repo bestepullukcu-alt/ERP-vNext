@@ -13,7 +13,6 @@ Bu komut; yeni testler oluşturur, mevcut testleri çalıştırır veya test kap
 - `/test [dosya/özellik]` - Belirli bir hedef için Unit/Integration testleri üret
 - `/test coverage`       - Test kapsama raporunu göster
 - `/test tenant-safety`  - Sadece Tenant izolasyon testlerini çalıştır
-- `/test pre-mac-ui [module]` - UI draft'ı Mac koşusundan önce statik Pre-Mac UI Checklist'e göre kontrol et (aşağıda)
 
 ---
 
@@ -57,14 +56,3 @@ Yukarıdaki taklit (mock) kuralı birim testler içindir. **Gerçek Mongo'ya ba�
 
 ⚠ İhlal, testi kırmızıya döndürmez — **`mongod`'u öldürür** ve hata `Connection refused` diye okunur.
 Muhafız: `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests`
-
----
-
-## 🧪 Pre-Mac UI Checklist (`/test pre-mac-ui`)
-
-Bir UI draft Mac build/runtime koşusuna gönderilmeden **önce** (LANE içinde, kod çalıştırmadan):
-
-1. `.antigravity/agents/frontend-ui-ux.md` → **Pre-Mac UI Checklist** bölümündeki UI-PM-01…UI-PM-12 maddelerini draft'ın view ve JS dosyalarına statik olarak uygula (grep/okuma).
-2. Her madde için bir satır yaz: `item · PASS / FAIL / N/A · file:line kanıt`. N/A yalnızca madde deseni kullanılmıyorsa (ör. `ajax` yok → UI-PM-03).
-3. **FAIL varsa** draft önce LANE'de düzeltilir; Mac koşusu FAIL kalan bir checklist ile başlatılmaz.
-4. Checklist Mac §32.11 kabul koşusunun yerini **tutmaz**: odak, Escape, skeleton ve RTL maddeleri Mac'te Playwright ile ayrıca doğrulanır (klavye satırı + `ar` koşusu dahil).
