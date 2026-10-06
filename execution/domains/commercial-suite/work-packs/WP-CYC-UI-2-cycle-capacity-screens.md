@@ -85,3 +85,13 @@ Durma: önizleme ucu yeni alanları kabul etmiyorsa ya da şelale kalemi eksikse
   - doğrulayıcının varsayılan profilde doğrudan gateway (`window.API`) beklentisi — sayfa bilinçli aynı köken proxy kullanır (proxy profiliyle bu madde raporlanmaz);
   - tümünü seç sütunu, toplu işlem yapılandırması, toplu seçim bağlama, `/bulk` ucu, toplu silme tetikleyicisi, `reloadWithToast`, seçimi temizle — modülde silme yok (sonlandırma Kapat / Arşivle), toplu yüzey yok.
 - **E4:** CT, fleet sonrası (yeni kapasite canlı hesap; eski kapasite aynı sayı + legacy bandı).
+
+### §37 ek — E4 (CT, canlı, 2026-10-06) — **ACCEPTED (E4) + bulgular**
+- ✓ Liste: `tr-2026-q4`, TR, 6.543 ziyaret / temsilci, "4 dk eski model" rozeti, 1,00 FTE, 3 / 3, düzenlenebilir; hızlı bakış mevcut.
+- ✓ Ayrıntı: eski model bandı, takvim durumu, şelale (65 iş günü − 8 → 57 saha günü → 27.360 dk − 1.140 − 45 → 26.175 dk ÷ 4 dk → 6.543), ay ay grafik, arz / talep (176 / 6.543, %3), oturum listesi. **CRM hesap ucu da 6.543** (aynı sayı).
+- ✓ Düzenleme canlı önizleme (KAYDEDİLMEDİ): tipik 2 promo + 1 non-promo + 3 dk rapor → "2×3 + 1×1 + 3 = 10 dk", günlük sabit yol + sınav (17 dk) → 26.346 dk ÷ 10 → **2.635**; uyarı yok. Mongo: kayıt değişmedi (`UpdatedAt` null, tipik alan yok).
+- **Bulgular (→ WP-CYC-UI-FIX-2):**
+  4. Oturum tablosunda durumlar ham kod ("draft", "committed").
+  5. Eski model kayıtta şelale etiketi "Günlük sabit işler (yol, sınav)" — eski modelde rapor da günlük düşülüyor (etiket "yol, rapor, sınav" olmalı).
+  6. Başlıkta tarih biçimi "1.10.2026", diğer yerlerde "01 Eki 2026" (tutarsız).
+- Not: test verisi gerçekçi değil (promo 3 dk, non-promo 1 dk) — ekran hatası değil.

@@ -92,3 +92,12 @@ Durma: usage ziyaret sayısını oturum bağı dışında gerektiriyorsa; altın
   - doğrulayıcının varsayılan profilde doğrudan gateway (`window.API`) beklentisi — sayfa bilinçli aynı köken proxy kullanır (proxy profiliyle bu madde raporlanmaz);
   - tümünü seç sütunu, toplu işlem yapılandırması, toplu seçim bağlama, `/bulk` ucu, toplu silme tetikleyicisi, `reloadWithToast`, seçimi temizle — modülde silme yok (sonlandırma Kapat / Arşivle), toplu yüzey yok.
 - **E4:** CT, fleet sonrası.
+
+### §37 ek — E4 (CT, canlı, 2026-10-06) — **ACCEPTED (E4) + bulgular**
+- Fleet güncel dalla, kullanıcı oturumu; CT yerleşik tarayıcıda. Hiçbir kayıt yazılmadı.
+- ✓ Liste (geniş ekranda tüm sütunlar; dar ekranda duyarlı katlama), satır `tr-2026-q4`: 01 Eki – 31 Ara 2026, 92 gün, Ülke TR, Aktif, kapasite ✓, 0 kampanya, 176 planlanan ziyaret (`usage` + liste toplu alanları doğru).
+- ✓ Zaman çizelgesi (TR satırı, durum renkleri, açıklama, bugün çizgisi), ✓ hızlı bakış (tarih, kapsam, durum çizgisi, kapasite, sayılar), ✓ geçerli dönem bul (Ülke + TR + bugün → `tr-2026-q4`, düzey Ülke).
+- **Bulgular (→ WP-CYC-UI-FIX-2):**
+  1. Üst "Bugün geçerli dönem" kutusu birim vermeden çözüm istiyor → "aktif dönem yok" diyor; oysa bugünü kapsayan aktif TR dönemi var (yanıltıcı).
+  2. Zaman çizelgesi açılışta bugüne kaydırılmıyor (eksen başı 2025; 2026 Q4 en sağda).
+  3. Yükleme metni "Yukleniyor..." (TR diakritik eksik); bulucuda ülke adları İngilizce ("Turkey").
