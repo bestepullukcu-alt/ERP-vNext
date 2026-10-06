@@ -112,7 +112,9 @@ public sealed class MarkNotificationDispatchFailedHandler
         var isFirstPermanentFailure = request.IsPermanentFailure && dispatch.PermanentlyFailedNotifiedAt is null;
         if (isFirstPermanentFailure)
         {
-            dispatch.PermanentlyFailedNotifiedAt = DateTimeOffset.UtcNow;
+            // BL-454 — permanent from this write on, effects still to run: if the publish below throws, the retry
+            // sweep finds the row pending and applies them (EmailDispatchSweepJob.RedrivePendingEffectsAsync).
+            dispatch.PermanentlyFailedNotifiedAt = NotificationDispatch.PermanentFailurePending;
         }
 
         if (request.ExpectedVersion is not null)
@@ -144,7 +146,7 @@ public sealed class MarkNotificationDispatchFailedHandler
 
         if (isFirstPermanentFailure)
         {
-            await _effects.ApplyAsync(dispatch, request.Silent, ct);
+            await _effects.ApplyAndMarkAsync(dispatch, request.Silent, _repository, ct);
         }
 
         return Response<NotificationDispatchDto>.Success(dispatch.ToDto());

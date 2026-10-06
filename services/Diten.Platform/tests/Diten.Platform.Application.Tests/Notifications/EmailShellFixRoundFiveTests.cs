@@ -339,6 +339,8 @@ public sealed partial class EmailShellDispatchTests
             Task.FromResult(false);
         public Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindDueRetriesAsync(DateTimeOffset asOfUtc, int maxRetryCount, int take, CancellationToken ct = default) =>
             inner.FindDueRetriesAsync(asOfUtc, maxRetryCount, take, ct);
+        public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(int take, CancellationToken ct = default) =>
+            inner.FindPermanentFailurePendingAsync(take, ct);
         public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindRetryWindowExpiredAsync(DateTimeOffset queuedBefore, int take, CancellationToken ct = default) =>
             inner.FindRetryWindowExpiredAsync(queuedBefore, take, ct);
     }

@@ -49,6 +49,15 @@ public interface INotificationDispatchRepository
     /// that were queued before <paramref name="queuedBefore"/>: their retry window has passed and the sweep closes them,
     /// releasing their variables. Same minimal handles as <see cref="FindDueRetriesAsync"/>.
     /// </summary>
+    /// <summary>
+    /// BL-454 — cross-tenant scan for PERMANENT rows whose permanent-failure effects have not run
+    /// (<see cref="NotificationDispatch.PermanentFailurePending"/>): the event publish threw between the transition write
+    /// and the effects. The retry sweep re-drives them.
+    /// </summary>
+    Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(
+        int take,
+        CancellationToken ct = default);
+
     Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindRetryWindowExpiredAsync(
         DateTimeOffset queuedBefore,
         int take,

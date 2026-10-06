@@ -190,6 +190,186 @@ public sealed class PlatformContainerValidationTests
         Assert.NotNull(scope.ServiceProvider.GetRequiredService<Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchSweepJob>());
     }
 
+    [Fact]
+    public async Task Both_email_jobs_from_the_production_container_work_each_row_in_its_own_tenant()
+    {
+        // BL-454 slice 2 — the sweep and the retry job as production composes them, over two tenants' rows at once and
+        // in ONE scope (the worst case: a tenant left behind by one row would be read by the next). Each retry must be
+        // sent with ITS tenant's sender name and rendered from ITS tenant's template. Only the transport is replaced
+        // (nothing leaves the machine) and the scheduler, which records what the sweep enqueues instead of starting
+        // Hangfire. The rows, tenants, settings and templates this test writes are its own and are removed at the end.
+        var recorder = new RecordingProvider();
+        var scheduler = new RecordingScheduler();
+        var services = new ServiceCollection();
+        foreach (var descriptor in Composition.Value)
+        {
+            if (descriptor.ServiceType != typeof(Diten.Platform.Application.Features.Notifications.Services.IMessagingProvider)
+                && descriptor.ServiceType != typeof(Diten.BuildingBlocks.BackgroundJobs.IBackgroundJobScheduler))
+            {
+                ((ICollection<ServiceDescriptor>)services).Add(descriptor);
+            }
+        }
+
+        services.AddSingleton<Diten.Platform.Application.Features.Notifications.Services.IMessagingProvider>(recorder);
+        services.AddSingleton<Diten.BuildingBlocks.BackgroundJobs.IBackgroundJobScheduler>(scheduler);
+        await using var provider = services.BuildServiceProvider();
+
+        var alpha = await SeedTenantRowAsync(provider, "Alpha");
+        var beta = await SeedTenantRowAsync(provider, "Beta");
+        try
+        {
+            using var scope = provider.CreateScope();
+            var sweep = scope.ServiceProvider.GetRequiredService<Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchSweepJob>();
+            await sweep.HandleAsync(
+                new Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchSweepJobArgs(BatchSize: 500),
+                new Diten.BuildingBlocks.BackgroundJobs.BackgroundJobContext());
+
+            var mine = scheduler.Enqueued
+                .Where(args => args.DispatchId == alpha.DispatchId || args.DispatchId == beta.DispatchId)
+                .ToList();
+            Assert.Equal(2, mine.Count);
+
+            var job = scope.ServiceProvider.GetRequiredService<Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchJob>();
+            foreach (var args in mine)
+            {
+                await job.HandleAsync(args, new Diten.BuildingBlocks.BackgroundJobs.BackgroundJobContext(TenantId: args.TenantId));
+            }
+
+            foreach (var row in new[] { alpha, beta })
+            {
+                var sent = Assert.Single(recorder.Requests, request => request.DispatchId == row.DispatchId);
+                Assert.Equal(row.TenantId, sent.TenantId);
+                Assert.Contains(row.SenderName, sent.SenderName);
+                Assert.Contains(row.BodyMark, sent.BodyHtml);
+                Assert.DoesNotContain(row == alpha ? beta.BodyMark : alpha.BodyMark, sent.BodyHtml);
+            }
+
+            Assert.False(scope.ServiceProvider.GetRequiredService<Diten.Platform.Common.Tenancy.ITenantContext>().IsResolved);
+        }
+        finally
+        {
+            await RemoveAsync(provider, alpha);
+            await RemoveAsync(provider, beta);
+        }
+    }
+
+    private sealed record SeededRow(Guid TenantId, Guid DispatchId, Guid TemplateId, string SenderName, string BodyMark);
+
+    private static async Task<SeededRow> SeedTenantRowAsync(IServiceProvider provider, string name)
+    {
+        using var scope = provider.CreateScope();
+        var sp = scope.ServiceProvider;
+        var suffix = Guid.NewGuid().ToString("N")[..10];
+        var tenantId = Guid.NewGuid();
+        await sp.GetRequiredService<Diten.Platform.Domain.Repositories.ITenantRegistryRepository>().CreateAsync(new Diten.Platform.Domain.Entities.Tenant
+        {
+            Id = tenantId, Code = "S2" + suffix.ToUpperInvariant(), Slug = "s2-" + suffix, Name = "s2-" + suffix,
+            DisplayName = name + " Pharma " + suffix, Domain = "s2-" + suffix + ".test", Region = "EU", Environment = "Production"
+        });
+        var senderName = name + " Sender " + suffix;
+        await sp.GetRequiredService<Diten.Platform.Domain.Repositories.ITenantMessagingSettingsRepository>().CreateAsync(
+            new Diten.Platform.Domain.Entities.Notifications.TenantMessagingSettings
+            {
+                TenantId = tenantId,
+                IsPlatformDefault = false,
+                ProviderCode = Diten.Platform.Domain.Enums.MessagingProviderCode.Fake,
+                SenderEmail = "bildirim@s2.test",
+                SenderName = senderName,
+                IsEnabled = true
+            });
+        var bodyMark = name + " body " + suffix;
+        var templateKey = "platform.slice2.t" + suffix;
+        var template = await sp.GetRequiredService<Diten.Platform.Domain.Repositories.INotificationTemplateRepository>().CreateAsync(
+            new Diten.Platform.Domain.Entities.Notifications.NotificationTemplate
+            {
+                TenantId = tenantId,
+                IsPlatformDefault = false,
+                TemplateKey = templateKey,
+                Channel = Diten.Platform.Domain.Enums.NotificationChannelCode.Email,
+                Locale = "en",
+                SubjectTemplate = "Subject",
+                BodyHtmlTemplate = "<p>" + bodyMark + "</p>",
+                BodyTextTemplate = bodyMark,
+                Status = Diten.Platform.Domain.Enums.NotificationTemplateStatus.Active,
+                SemanticVersion = "1.0.0"
+            });
+        var dispatch = new Diten.Platform.Domain.Entities.Notifications.NotificationDispatch
+        {
+            TenantId = tenantId,
+            TemplateKey = templateKey,
+            TemplateId = template.Id,
+            TemplateSemanticVersion = "1.0.0",
+            Locale = "en",
+            Channel = Diten.Platform.Domain.Enums.NotificationChannelCode.Email,
+            ProviderCode = Diten.Platform.Domain.Enums.MessagingProviderCode.Fake,
+            Status = Diten.Platform.Domain.Enums.NotificationDispatchStatus.Failed,
+            To = [new Diten.Platform.Domain.Entities.Notifications.EmailRecipient { Email = "user@s2.test" }],
+            Subject = "Subject",
+            BodyHtmlPreview = "<p>stored preview</p>",
+            BodyTextPreview = "stored preview",
+            VariablesJson = "{}",
+            QueuedAt = DateTimeOffset.UtcNow,
+            RetryCount = 1,
+            NextRetryAt = DateTimeOffset.UtcNow.AddMinutes(-1)
+        };
+        await sp.GetRequiredService<Diten.Platform.Domain.Repositories.INotificationDispatchRepository>().CreateAsync(dispatch);
+        return new SeededRow(tenantId, dispatch.Id, template.Id, senderName, bodyMark);
+    }
+
+    private static async Task RemoveAsync(IServiceProvider provider, SeededRow row)
+    {
+        using var scope = provider.CreateScope();
+        var database = scope.ServiceProvider.GetRequiredService<MongoDB.Driver.IMongoDatabase>();
+        await database.GetCollection<Diten.Platform.Domain.Entities.Notifications.NotificationDispatch>(
+                Diten.Platform.Infrastructure.Persistence.Schema.PlatformCollections.NotificationDispatches)
+            .DeleteManyAsync(MongoDB.Driver.Builders<Diten.Platform.Domain.Entities.Notifications.NotificationDispatch>.Filter.Eq(x => x.TenantId, row.TenantId));
+        await database.GetCollection<Diten.Platform.Domain.Entities.Notifications.NotificationTemplate>(
+                Diten.Platform.Infrastructure.Persistence.Schema.PlatformCollections.NotificationTemplates)
+            .DeleteManyAsync(MongoDB.Driver.Builders<Diten.Platform.Domain.Entities.Notifications.NotificationTemplate>.Filter.Eq(x => x.TenantId, (Guid?)row.TenantId));
+        await database.GetCollection<Diten.Platform.Domain.Entities.Notifications.TenantMessagingSettings>(
+                Diten.Platform.Infrastructure.Persistence.Schema.PlatformCollections.TenantMessagingSettings)
+            .DeleteManyAsync(MongoDB.Driver.Builders<Diten.Platform.Domain.Entities.Notifications.TenantMessagingSettings>.Filter.Eq(x => x.TenantId, (Guid?)row.TenantId));
+        await scope.ServiceProvider.GetRequiredService<Diten.Platform.Domain.Repositories.ITenantRegistryRepository>().DeleteAsync(row.TenantId);
+    }
+
+    private sealed class RecordingProvider : Diten.Platform.Application.Features.Notifications.Services.IMessagingProvider
+    {
+        public List<Diten.Platform.Application.Features.Notifications.Services.MessagingProviderEmailRequest> Requests { get; } = [];
+        public Diten.Platform.Domain.Enums.MessagingProviderCode ProviderCode => Diten.Platform.Domain.Enums.MessagingProviderCode.Fake;
+
+        public Task<Diten.Platform.Application.Features.Notifications.Services.MessagingProviderResult> SendEmailAsync(
+            Diten.Platform.Application.Features.Notifications.Services.MessagingProviderEmailRequest request, CancellationToken ct = default)
+        {
+            lock (Requests)
+            {
+                Requests.Add(request);
+            }
+
+            return Task.FromResult(Diten.Platform.Application.Features.Notifications.Services.MessagingProviderResult.Success("s2-" + request.DispatchId.ToString("N")));
+        }
+    }
+
+    private sealed class RecordingScheduler : Diten.BuildingBlocks.BackgroundJobs.IBackgroundJobScheduler
+    {
+        public List<Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchJobArgs> Enqueued { get; } = [];
+
+        public Task<string> EnqueueAsync<TArgs, THandler>(TArgs args, Diten.BuildingBlocks.BackgroundJobs.BackgroundJobContext? context = null, CancellationToken cancellationToken = default)
+            where THandler : Diten.BuildingBlocks.BackgroundJobs.IBackgroundJobHandler<TArgs>
+        {
+            if (args is Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchJobArgs email)
+            {
+                Enqueued.Add(email);
+            }
+
+            return Task.FromResult("job");
+        }
+
+        public Task<string> ScheduleAsync<TArgs, THandler>(TArgs args, DateTimeOffset enqueueAtUtc, Diten.BuildingBlocks.BackgroundJobs.BackgroundJobContext? context = null, CancellationToken cancellationToken = default)
+            where THandler : Diten.BuildingBlocks.BackgroundJobs.IBackgroundJobHandler<TArgs> => Task.FromResult("job");
+
+        public Task RegisterRecurringAsync(Diten.BuildingBlocks.BackgroundJobs.RecurringJobRegistration registration, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    }
+
     /// <summary>
     /// Composed once per process — see the BSON note in the class summary. Building several providers from
     /// one collection is fine; calling <c>AddInfrastructure</c> more than once in a process is not.

@@ -42,6 +42,29 @@ public sealed class NotificationPermanentFailureEffects
     }
 
     /// <summary>
+    /// BL-454 — the effects, then the mark that they ran: <see cref="NotificationDispatch.PermanentlyFailedNotifiedAt"/>
+    /// goes from pending to the time, through a write conditional on the row as it is now. A row whose effects ran but
+    /// whose mark did not land stays pending and is re-driven: an effect may then repeat, never go missing.
+    /// </summary>
+    public async Task ApplyAndMarkAsync(
+        NotificationDispatch dispatch, bool silent, INotificationDispatchRepository repository, CancellationToken ct)
+    {
+        await ApplyAsync(dispatch, silent, ct);
+        if (!NotificationDispatch.IsPermanentFailurePending(dispatch))
+        {
+            return;
+        }
+
+        dispatch.PermanentlyFailedNotifiedAt = DateTimeOffset.UtcNow;
+        if (!await repository.TryUpdateAsync(dispatch, dispatch.Version, dispatch.Status, ct))
+        {
+            _logger?.LogWarning(
+                "email.dispatch.permanently_failed.mark_lost DispatchId={DispatchId} TenantId={TenantId}",
+                dispatch.Id, dispatch.TenantId);
+        }
+    }
+
+    /// <summary>
     /// BL-406 — everything that happens ONCE, at the moment a dispatch's failure becomes permanent. Ops
     /// log line + counter fire for EVERY permanently-failed dispatch (rule 3); the organizer notification + the
     /// attendee "mail undelivered" badge fire ONLY for meeting-related mail (rule 1/2). Never allowed to fail the

@@ -166,6 +166,44 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
             .ToArray();
     }
 
+    public async Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(
+        int take,
+        CancellationToken ct = default)
+    {
+        if (take <= 0)
+        {
+            return [];
+        }
+
+        var projection = Builders<NotificationDispatch>.Projection
+            .Include(x => x.Id)
+            .Include(x => x.TenantId)
+            .Include(x => x.Status)
+            .Include(x => x.Version)
+            .Include(x => x.ErrorCode)
+            .Include(x => x.QueuedAt);
+
+        var rows = await _collection
+            .Find(PermanentFailurePendingFilter())
+            .Project<NotificationDispatch>(projection)
+            .Limit(Math.Min(take, MaxSweepBatchSize))
+            .ToListAsync(ct);
+
+        return rows
+            .Select(x => new NotificationDispatchExpiryHandle(x.TenantId, x.Id, x.Status, x.Version, x.ErrorCode, x.QueuedAt))
+            .ToArray();
+    }
+
+    /// <summary>
+    /// BL-454 — served by <c>ix_notification_dispatches_permanent_effects_pending</c>, whose partial filter is this very
+    /// equality: only pending rows are in that index, so the minute-by-minute scan reads nothing else.
+    /// </summary>
+    internal static FilterDefinition<NotificationDispatch> PermanentFailurePendingFilter() =>
+        Builders<NotificationDispatch>.Filter.And(
+            ActiveFilter,
+            Builders<NotificationDispatch>.Filter.Eq(x => x.Status, NotificationDispatchStatus.Failed),
+            Builders<NotificationDispatch>.Filter.Eq<DateTimeOffset?>(x => x.PermanentlyFailedNotifiedAt, NotificationDispatch.PermanentFailurePending));
+
     /// <summary>
     /// BL-454 — the window query, served by <c>ix_notification_dispatches_retry_window_waiting</c> (Status, QueuedAt;
     /// partial on IsDeleted=false AND PermanentlyFailedNotifiedAt=null): both equalities match the partial filter, Status

@@ -2,6 +2,7 @@ using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Notifications.Commands;
 using Diten.Platform.Common.Tenancy;
+using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -43,6 +44,8 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
     // tenant (TenantScope, the MeetingSeriesSweepJob pattern), so the meeting stores the permanent-failure path writes
     // to (attendee badge, organizer notification) read the right tenant instead of throwing. Registered in DI.
     private readonly ITenantContext? _tenantContext;
+    // BL-454 — re-drives the permanent-failure effects of rows left pending (the publish threw before they ran).
+    private readonly Services.NotificationPermanentFailureEffects? _permanentFailure;
 
     public EmailDispatchSweepJob(
         INotificationDispatchRepository dispatchRepository,
@@ -50,9 +53,11 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
         ILogger<EmailDispatchSweepJob> logger,
         IMediator? mediator = null,
         IOptions<EmailDispatchRetentionOptions>? retention = null,
-        ITenantContext? tenantContext = null)
+        ITenantContext? tenantContext = null,
+        Services.NotificationPermanentFailureEffects? permanentFailure = null)
     {
         _tenantContext = tenantContext;
+        _permanentFailure = permanentFailure;
         _dispatchRepository = dispatchRepository;
         _scheduler = scheduler;
         _logger = logger;
@@ -84,6 +89,7 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
 
         // First close what the window has given up on, so the same pass never also enqueues a retry for it.
         await CloseExpiredAsync(asOfUtc, batchSize, context, cancellationToken);
+        await RedrivePendingEffectsAsync(asOfUtc, batchSize, context, cancellationToken);
 
         IReadOnlyList<NotificationDispatchRetryHandle> dueHandles;
         try
@@ -234,6 +240,81 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
                 silent,
                 lost,
                 windowHours,
+                context.EffectiveCorrelationId);
+        }
+    }
+
+    /// <summary>
+    /// BL-454 — a permanent row whose effects never ran (its marker still pending) gets them now, once, inside its own
+    /// tenant. Silent by the same rule as the close: a row older than <see cref="SilentWindowMultiple"/> windows tells
+    /// no organizer. The publish order of the transition is untouched; only the effects that missed it are caught up.
+    /// </summary>
+    private async Task RedrivePendingEffectsAsync(DateTimeOffset asOfUtc, int batchSize, BackgroundJobContext context, CancellationToken ct)
+    {
+        if (_permanentFailure is null)
+        {
+            return;
+        }
+
+        IReadOnlyList<NotificationDispatchExpiryHandle> pending;
+        DateTimeOffset silentBefore;
+        try
+        {
+            var windowHours = EmailDispatchRetentionOptions.EffectiveWindowHours(_retention.RetryWindowHours);
+            silentBefore = asOfUtc - TimeSpan.FromHours(windowHours * SilentWindowMultiple);
+            pending = await _dispatchRepository.FindPermanentFailurePendingAsync(batchSize, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                "email.dispatch.sweep.redrive_query_failed ExceptionType={ExceptionType} CorrelationId={CorrelationId}",
+                ex.GetType().Name,
+                context.EffectiveCorrelationId);
+            return;
+        }
+
+        var redriven = 0;
+        foreach (var handle in pending)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                using (TenantScopeFor(handle.TenantId))
+                {
+                    var dispatch = await _dispatchRepository.GetByIdForTenantAsync(handle.TenantId, handle.DispatchId, ct);
+                    if (dispatch is null || !NotificationDispatch.IsPermanentFailurePending(dispatch))
+                    {
+                        continue;
+                    }
+
+                    await _permanentFailure.ApplyAndMarkAsync(dispatch, handle.QueuedAt < silentBefore, _dispatchRepository, ct);
+                    redriven++;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(
+                    "email.dispatch.sweep.redrive_failed DispatchId={DispatchId} TenantId={TenantId} ExceptionType={ExceptionType}",
+                    handle.DispatchId,
+                    handle.TenantId,
+                    ex.GetType().Name);
+            }
+        }
+
+        if (pending.Count > 0)
+        {
+            _logger.LogInformation(
+                "email.dispatch.sweep.effects_redriven Found={Found} Redriven={Redriven} CorrelationId={CorrelationId}",
+                pending.Count,
+                redriven,
                 context.EffectiveCorrelationId);
         }
     }

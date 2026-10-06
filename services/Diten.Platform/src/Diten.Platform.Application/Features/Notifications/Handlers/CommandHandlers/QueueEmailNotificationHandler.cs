@@ -285,8 +285,9 @@ public sealed class QueueEmailNotificationHandler
         }
         else
         {
-            // BL-454 — no retry can run on this server: this failure IS the permanent one, marked once.
-            dispatch.PermanentlyFailedNotifiedAt = failedAt;
+            // BL-454 — no retry can run on this server: this failure IS the permanent one. Pending until its effects
+            // have run (below, after the publish); a handler built without the effects service has none to run.
+            dispatch.PermanentlyFailedNotifiedAt = _permanentFailure is null ? failedAt : NotificationDispatch.PermanentFailurePending;
         }
 
         await _dispatchRepository.UpdateAsync(dispatch, ct);
@@ -311,7 +312,7 @@ public sealed class QueueEmailNotificationHandler
             // organizer's notification and the attendee's "not delivered" badge.
             if (_permanentFailure is not null)
             {
-                await _permanentFailure.ApplyAsync(dispatch, silent: false, ct);
+                await _permanentFailure.ApplyAndMarkAsync(dispatch, silent: false, _dispatchRepository, ct);
             }
             else
             {
