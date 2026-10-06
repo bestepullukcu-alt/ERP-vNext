@@ -7,7 +7,7 @@
   <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
   <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
   <data name="CycleCapacitiesTitle" xml:space="preserve"><value>سعة الدورة</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>كم زيارة تتسع لها فترة الدورة. تقدير مبني على تقويم العمل المنشور وميزانية النشاط المُدخلة.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>عدد الزيارات التي يمكن للمندوب إجراؤها في فترة: تقدير مبني على تقويم العمل المنشور وميزانية النشاط المُدخلة. سعة واحدة لكل فترة.</value></data>
   <data name="ContractUnavailable" xml:space="preserve"><value>خدمة سعة الدورة غير متاحة.</value></data>
   <data name="CreateCycleCapacity" xml:space="preserve"><value>سعة جديدة</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>سعة دورة جديدة</value></data>
@@ -78,4 +78,134 @@
   <data name="FieldDays" xml:space="preserve"><value>الأيام الميدانية</value></data>
   <data name="VisitMinutes" xml:space="preserve"><value>دقائق الزيارة</value></data>
   <data name="NoFieldDays" xml:space="preserve"><value>لا توجد أيام ميدانية</value></data>
+  <data name="MaxPromoProducts" xml:space="preserve"><value>الحد الأقصى للمنتجات الترويجية لكل زيارة</value></data>
+  <data name="MaxNonPromoProducts" xml:space="preserve"><value>الحد الأقصى للمنتجات غير الترويجية لكل زيارة</value></data>
+  <data name="MaxProductsHint" xml:space="preserve"><value>من 1 إلى 10. إذا تُرك فارغًا تُحفظ القيمة المخزنة (3 في السجل الجديد).</value></data>
+  <data name="Err_max_products_out_of_range" xml:space="preserve"><value>يجب أن يكون عدد المنتجات لكل زيارة بين 1 و10.</value></data>
+  <data name="DetailsTitleFormat" xml:space="preserve"><value>السعة · {0}</value></data>
+  <data name="HoursMinutesFormat" xml:space="preserve"><value>{h} س {m} د</value></data>
+  <data name="UnitMinutesShort" xml:space="preserve"><value>د</value></data>
+  <data name="UnitDaysShort" xml:space="preserve"><value>يوم</value></data>
+  <data name="Total" xml:space="preserve"><value>الإجمالي</value></data>
+  <data name="Retry" xml:space="preserve"><value>أعد المحاولة</value></data>
+  <data name="ColPeriod" xml:space="preserve"><value>الفترة</value></data>
+  <data name="ColEstimatedVisits" xml:space="preserve"><value>الزيارات المقدّرة (لكل مندوب)</value></data>
+  <data name="ColTypicalVisit" xml:space="preserve"><value>الزيارة النموذجية</value></data>
+  <data name="ColAverageFte" xml:space="preserve"><value>متوسط FTE</value></data>
+  <data name="ColProductLimits" xml:space="preserve"><value>الحد الأقصى للمنتجات (ترويجي / غير ترويجي)</value></data>
+  <data name="FilterYear" xml:space="preserve"><value>السنة</value></data>
+  <data name="LegacyBadge" xml:space="preserve"><value>النموذج القديم</value></data>
+  <data name="StatusEditable" xml:space="preserve"><value>قابل للتعديل</value></data>
+  <data name="StatusNotCalculable" xml:space="preserve"><value>تعذّر الحساب</value></data>
+  <data name="Calculating" xml:space="preserve"><value>جارٍ الحساب…</value></data>
+  <data name="FormLiveHint" xml:space="preserve"><value>كلما غيّرت المدخلات، يعيد الخادم حساب الملخص على اليمين والجدول الشهري.</value></data>
+  <data name="ReadOnlyTitle" xml:space="preserve"><value>للقراءة فقط.</value></data>
+  <data name="ReadOnlyClosedBody" xml:space="preserve"><value>الفترة مغلقة: لا يمكن تغيير سعة فترة مغلقة ولا الخطط التي تستخدمها.</value></data>
+  <data name="ReadOnlyArchivedBody" xml:space="preserve"><value>هذه السعة مؤرشفة ولا يمكن تغييرها. أنشئ سعة جديدة للفترة بدلاً من ذلك.</value></data>
+  <data name="LegacyBandTitle" xml:space="preserve"><value>تُحسب هذه السعة بنموذج مدة الزيارة القديم.</value></data>
+  <data name="LegacyBandBody" xml:space="preserve"><value>املأ الزيارة النموذجية (عدد المنتجات الترويجية وغير الترويجية ودقائق التقرير لكل زيارة) واحفظ للانتقال إلى النموذج الجديد. الحفظ مع ترك الزيارة النموذجية فارغة يُبقي النموذج القديم.</value></data>
+  <data name="LegacyBandNumberMayChange" xml:space="preserve"><value>بعد الانتقال قد يتغير عدد الزيارات المقدّر: يُحتسب التقرير لكل زيارة بدلاً من كل يوم.</value></data>
+  <data name="PeriodLockedHint" xml:space="preserve"><value>لا يمكن تغيير الفترة بعد إنشاء السعة.</value></data>
+  <data name="PeriodPickHint" xml:space="preserve"><value>لا يمكن تغييرها بعد الإنشاء. لا يمكن الحفظ للفترات المغلقة أو التي لها سعة بالفعل.</value></data>
+  <data name="DailyTimeSection" xml:space="preserve"><value>الوقت اليومي</value></data>
+  <data name="DailyTimeHint" xml:space="preserve"><value>دقائق في اليوم. يُخصم التنقل والاختبار من كل يوم ميداني، ويجب أن يبقى مجموعهما أقل من يوم العمل.</value></data>
+  <data name="LegacyReportPerDay" xml:space="preserve"><value>النموذج القديم: تقرير لكل يوم</value></data>
+  <data name="VisitDurationSection" xml:space="preserve"><value>مدة الزيارة</value></data>
+  <data name="VisitDurationHint" xml:space="preserve"><value>دقائق لكل منتج × عدد المنتجات في الزيارة النموذجية + التقرير لكل زيارة. تُحسب السعة بمدة الزيارة النموذجية هذه.</value></data>
+  <data name="PerProductHint" xml:space="preserve"><value>دقائق لكل منتج.</value></data>
+  <data name="ReportMinutesPerVisit" xml:space="preserve"><value>التقرير لكل زيارة</value></data>
+  <data name="TypicalVisitTitle" xml:space="preserve"><value>الزيارة النموذجية</value></data>
+  <data name="TypicalVisitHint" xml:space="preserve"><value>كم منتجًا تغطيه الزيارة النموذجية. املأ العددين والتقرير لكل زيارة معًا.</value></data>
+  <data name="TypicalPromoCount" xml:space="preserve"><value>المنتجات الترويجية</value></data>
+  <data name="TypicalNonPromoCount" xml:space="preserve"><value>المنتجات غير الترويجية</value></data>
+  <data name="TypicalCountHint" xml:space="preserve"><value>لا يمكن أن يتجاوز حد المنتجات لكل زيارة.</value></data>
+  <data name="TypicalVisitMinutesLabel" xml:space="preserve"><value>مدة الزيارة النموذجية</value></data>
+  <data name="BufferInfo" xml:space="preserve"><value>لا يغيّر الهامش رقم السعة؛ بل يُضاف إلى المسار في تخطيط الزيارات.</value></data>
+  <data name="ProductLimitsSection" xml:space="preserve"><value>المنتجات لكل زيارة</value></data>
+  <data name="ProductLimitsHint" xml:space="preserve"><value>في التخطيط يمكن إضافة هذا العدد كحد أقصى من المنتجات إلى الزيارة. لا يمكن للزيارة النموذجية تجاوز هذه الحدود.</value></data>
+  <data name="LiveSummaryTitle" xml:space="preserve"><value>الحساب المباشر</value></data>
+  <data name="SummaryLoading" xml:space="preserve"><value>جارٍ الحساب…</value></data>
+  <data name="SummaryError" xml:space="preserve"><value>تعذّر تحميل الحساب. مدخلاتك محفوظة.</value></data>
+  <data name="SummaryIdle" xml:space="preserve"><value>اختر فترة لرؤية الحساب.</value></data>
+  <data name="VisitsPerRep" xml:space="preserve"><value>زيارة / مندوب</value></data>
+  <data name="RemainingMinutes" xml:space="preserve"><value>المتبقي للزيارات (د)</value></data>
+  <data name="DivideByTypicalVisit" xml:space="preserve"><value>÷ الزيارة النموذجية</value></data>
+  <data name="TimesAverageFte" xml:space="preserve"><value>× متوسط FTE</value></data>
+  <data name="BlocksTitle" xml:space="preserve"><value>يمنع الحفظ</value></data>
+  <data name="WarningsTitle" xml:space="preserve"><value>تحذيرات</value></data>
+  <data name="SummaryAllOk" xml:space="preserve"><value>لا توجد تحذيرات. الحساب جاهز للحفظ.</value></data>
+  <data name="TeamSupplyLater" xml:space="preserve"><value>الرقم لكل مندوب. سيأتي عرض الفريق (عدد المندوبين) في إصدار لاحق.</value></data>
+  <data name="ApplyToAllMonths" xml:space="preserve"><value>تطبيق على كل الأشهر</value></data>
+  <data name="PartialMonth" xml:space="preserve"><value>جزئي</value></data>
+  <data name="PartialMonthTitle" xml:space="preserve"><value>الشهر مقتطع عند حدود الفترة.</value></data>
+  <data name="MonthZeroedBadge" xml:space="preserve"><value>الشهر صفر</value></data>
+  <data name="FteSourceAuthored" xml:space="preserve"><value>مُدخل</value></data>
+  <data name="FteSourceDefault" xml:space="preserve"><value>افتراضي</value></data>
+  <data name="NoNumberBlocked" xml:space="preserve"><value>لا يُعرض رقم ما دامت المدخلات غير قابلة للحفظ — عالج البنود أدناه.</value></data>
+  <data name="CalendarResolvedShort" xml:space="preserve"><value>تم العثور على التقويم</value></data>
+  <data name="CalendarUnresolvedShort" xml:space="preserve"><value>لا يوجد تقويم</value></data>
+  <data name="CalendarForbiddenShort" xml:space="preserve"><value>لا صلاحية</value></data>
+  <data name="CalendarUnknownShort" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="GoToPeriod" xml:space="preserve"><value>الانتقال إلى الفترة</value></data>
+  <data name="ViewInputs" xml:space="preserve"><value>عرض المدخلات</value></data>
+  <data name="CalendarStatusTitle" xml:space="preserve"><value>حالة التقويم</value></data>
+  <data name="CalendarResolvedBody" xml:space="preserve"><value>تم العثور على تقويم العمل. عطلات نهاية الأسبوع والعطل الرسمية مستبعدة بالفعل من أيام العمل.</value></data>
+  <data name="CalculationUnavailableBody" xml:space="preserve"><value>لم يستجب الخادم. أعد تحميل الصفحة؛ وإذا استمرت المشكلة فتواصل مع المسؤول.</value></data>
+  <data name="NoNumberCalendar" xml:space="preserve"><value>لا رقم: لم يستجب التقويم.</value></data>
+  <data name="KpiVisits" xml:space="preserve"><value>الزيارات المقدّرة / مندوب</value></data>
+  <data name="KpiTypicalVisit" xml:space="preserve"><value>مدة الزيارة النموذجية</value></data>
+  <data name="BufferOnRoute" xml:space="preserve"><value>هامش {0} د (على المسار)</value></data>
+  <data name="KpiFieldOverWorking" xml:space="preserve"><value>الأيام الميدانية / أيام العمل</value></data>
+  <data name="KpiAverageFte" xml:space="preserve"><value>متوسط FTE</value></data>
+  <data name="WaterfallTitle" xml:space="preserve"><value>شلال الحساب</value></data>
+  <data name="WaterfallHint" xml:space="preserve"><value>إجمالي الفترة لكل مندوب. من أيام العمل حتى الدقائق المتبقية للزيارات، مقسومة على مدة الزيارة.</value></data>
+  <data name="WfWorkingDays" xml:space="preserve"><value>أيام العمل</value></data>
+  <data name="WfDeductedDays" xml:space="preserve"><value>الأيام المخصومة (اجتماع، تدريب، إجازة)</value></data>
+  <data name="WfFieldDays" xml:space="preserve"><value>الأيام الميدانية</value></data>
+  <data name="WfAvailableMinutes" xml:space="preserve"><value>الدقائق المتاحة</value></data>
+  <data name="WfDailyFixedMinutes" xml:space="preserve"><value>المهام اليومية الثابتة (التنقل، الاختبار)</value></data>
+  <data name="WfMicroTargetingMinutes" xml:space="preserve"><value>الاستهداف الدقيق</value></data>
+  <data name="WfRemainingMinutes" xml:space="preserve"><value>المتبقي للزيارات</value></data>
+  <data name="WfDivide" xml:space="preserve"><value>÷ {0} د زيارة نموذجية</value></data>
+  <data name="WfMultiply" xml:space="preserve"><value>× {0} متوسط FTE</value></data>
+  <data name="MonthlyChartTitle" xml:space="preserve"><value>السعة شهرًا بشهر</value></data>
+  <data name="ChartVisits" xml:space="preserve"><value>الزيارات</value></data>
+  <data name="ChartFieldDays" xml:space="preserve"><value>الأيام الميدانية</value></data>
+  <data name="SupplyDemandTitle" xml:space="preserve"><value>العرض / الطلب</value></data>
+  <data name="SupplyDemandPerRepNote" xml:space="preserve"><value>لكل مندوب: سعة كل شهر مقابل الزيارات المخططة في جلسات التخطيط للفترة. حجم الفريق غير مشمول بعد (إصدار لاحق).</value></data>
+  <data name="Planned" xml:space="preserve"><value>المخطط</value></data>
+  <data name="Capacity" xml:space="preserve"><value>السعة</value></data>
+  <data name="CapacityLegend" xml:space="preserve"><value>السعة (الممكنة)</value></data>
+  <data name="PlannedLegend" xml:space="preserve"><value>المخطط (الطلب)</value></data>
+  <data name="Overage" xml:space="preserve"><value>تجاوز</value></data>
+  <data name="OverWarning" xml:space="preserve"><value>في {0} تتجاوز الزيارات المخططة السعة. انقل الزيارات إلى أشهر أخرى في جلسات التخطيط أو راجع مدخلات السعة.</value></data>
+  <data name="FreeCapacity" xml:space="preserve"><value>السعة المتاحة (زيارات)</value></data>
+  <data name="SupplyUnavailableCalendar" xml:space="preserve"><value>لم يستجب التقويم، لذا لا توجد سعة للمقارنة: تُعرض الزيارات المخططة فقط.</value></data>
+  <data name="UsageUnavailable" xml:space="preserve"><value>تعذّرت قراءة بيانات تخطيط الفترة، لذا لا يمكن مقارنة العرض والطلب حاليًا.</value></data>
+  <data name="NoDemandYet" xml:space="preserve"><value>لم يتم تخطيط أي زيارات لهذه الفترة بعد.</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>جلسات التخطيط التي تستخدم هذه السعة</value></data>
+  <data name="NoSessions" xml:space="preserve"><value>لا توجد جلسة تخطيط تستخدم هذه الفترة بعد.</value></data>
+  <data name="SessionName" xml:space="preserve"><value>الجلسة</value></data>
+  <data name="SessionOwner" xml:space="preserve"><value>المسؤول</value></data>
+  <data name="SessionVisits" xml:space="preserve"><value>الزيارات المخططة</value></data>
+  <data name="Code_typical_visit_required" xml:space="preserve"><value>املأ الزيارة النموذجية (عدد الترويجي وغير الترويجي والتقرير لكل زيارة): السعة الجديدة تستخدم نموذج الزيارة النموذجية.</value></data>
+  <data name="Code_typical_visit_incomplete" xml:space="preserve"><value>الزيارة النموذجية غير مكتملة: املأ الحقول الثلاثة كلها أو اتركها كلها.</value></data>
+  <data name="Code_typical_visit_empty" xml:space="preserve"><value>يجب أن تغطي الزيارة النموذجية منتجًا واحدًا على الأقل.</value></data>
+  <data name="Code_typical_count_exceeds_max" xml:space="preserve"><value>عدد المنتجات النموذجي يتجاوز حد المنتجات لكل زيارة.</value></data>
+  <data name="Code_visit_minutes_zero" xml:space="preserve"><value>مدة الزيارة 0 دقيقة؛ أدخل الدقائق لكل منتج.</value></data>
+  <data name="Code_cycle_capacity_daily_spend_exceeds_day" xml:space="preserve"><value>المهام اليومية الثابتة تستهلك يوم العمل بالكامل؛ لا يبقى وقت للزيارات.</value></data>
+  <data name="Code_month_zeroed" xml:space="preserve"><value>الأيام المخصومة تتجاوز أيام العمل، لذا يُحتسب الشهر صفرًا.</value></data>
+  <data name="Code_micro_targeting_clipped" xml:space="preserve"><value>أيام الاستهداف الدقيق أكثر من الأيام الميدانية؛ يتم تجاهل الأيام الزائدة.</value></data>
+  <data name="Code_calendar_unresolved" xml:space="preserve"><value>لا يوجد تقويم عمل منشور لهذا البلد وهذه السنة.</value></data>
+  <data name="Code_calendar_forbidden" xml:space="preserve"><value>ليست لديك صلاحية قراءة تقويم العمل.</value></data>
+  <data name="Code_country_underivable" xml:space="preserve"><value>تعذّر تحديد بلد التقويم؛ اختر بلد تقويم.</value></data>
+  <data name="Code_cycle_capacity_months_required" xml:space="preserve"><value>لا توجد أشهر للحساب في الفترة.</value></data>
+  <data name="Code_cycle_capacity_period_not_found" xml:space="preserve"><value>لم يتم العثور على الفترة.</value></data>
+  <data name="Code_unknown" xml:space="preserve"><value>تعذّر إكمال الحساب.</value></data>
+  <data name="Err_typical_visit_empty" xml:space="preserve"><value>يجب أن تغطي الزيارة النموذجية منتجًا واحدًا على الأقل.</value></data>
+  <data name="Err_typical_visit_incomplete" xml:space="preserve"><value>املأ حقول الزيارة النموذجية الثلاثة كلها أو لا تملأ أيًا منها.</value></data>
+  <data name="Err_typical_count_exceeds_max" xml:space="preserve"><value>لا يمكن أن يتجاوز عدد المنتجات النموذجي حد المنتجات لكل زيارة.</value></data>
+  <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>قيمة FTE لأحد الأشهر خارج النطاق.</value></data>
+  <data name="Err_period_closed" xml:space="preserve"><value>الفترة مغلقة؛ لم يعد بالإمكان تغيير سعتها.</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>الانتقال إلى التفاصيل</value></data>
 </root>

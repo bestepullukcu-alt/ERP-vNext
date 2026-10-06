@@ -1,0 +1,110 @@
+@model Diten.Web.Models.CRM.LegalProfileEditViewModel
+@using Diten.Web.Views.CRM.LegalProfiles
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LegalProfilesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = Model.Id.HasValue;
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var backUrl = isEdit ? $"/CRM/LegalProfiles/{Model.Id}" : "/CRM/LegalProfiles";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/LegalProfiles">@Localizer["LegalProfilesTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="@backUrl" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="regulatoryTextForm" class="btn btn-primary" id="btnRegulatorySave">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+@* Submitted as JSON by RegulatoryTexts/form.js through the same-origin proxy (POST create / PUT update). CRM decides;
+   its refusals are shown localised under the field they name (data-error-for) or at the head of the form. *@
+<form id="regulatoryTextForm" class="needs-validation" novalidate
+      data-kind="country-legal-profile" data-endpoint="/CRM/LegalProfiles/api" data-resource="legal-profiles"
+      data-details-url="/CRM/LegalProfiles/" data-id="@Model.Id" data-has-product="false">
+    @Html.AntiForgeryToken()
+    <div id="regulatoryFormAlert" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            @* ① Identity — country × language. Fixed after create. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionIdentity"]</h6>
+                    @if (isEdit)
+                    {
+                        <p class="text-muted small mb-3"><i class="bx bx-lock-alt me-1"></i>@Localizer["IdentityLockedHint"] · @Model.ProfileCode · v@(Model.Version)</p>
+                    }
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="CountryCode" class="form-label fw-medium">@Localizer["Country"] <span class="text-danger">*</span></label>
+                            <select asp-for="CountryCode" class="form-select js-identity" data-field="countryCode"
+                                    data-selected="@Model.CountryCode" required disabled="@isEdit"></select>
+                            <div class="form-text d-none" data-note-for="countryCode"></div>
+                            <div class="invalid-feedback d-block" data-error-for="countryCode"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="LanguageCode" class="form-label fw-medium">@Localizer["Language"] <span class="text-danger">*</span></label>
+                            <select asp-for="LanguageCode" class="form-select js-identity" data-field="languageCode"
+                                    data-selected="@Model.LanguageCode" required disabled="@isEdit"></select>
+                            <div class="invalid-feedback d-block" data-error-for="languageCode"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* ② Legal texts — plain text (never HTML); paragraphs are kept as typed. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionLegal"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="LegalFooterText" class="form-label fw-medium">@Localizer["LegalFooterText"] <span class="text-danger">*</span></label>
+                            <textarea asp-for="LegalFooterText" class="form-control regulatory-text" data-field="legalFooterText" rows="6" dir="auto" required></textarea>
+                            <div class="invalid-feedback d-block" data-error-for="legalFooterText"></div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="MarketingAuthorizationHolder" class="form-label fw-medium">@Localizer["MarketingAuthorizationHolder"]</label>
+                            <textarea asp-for="MarketingAuthorizationHolder" class="form-control regulatory-text" data-field="marketingAuthorizationHolder" rows="3" dir="auto"></textarea>
+                            <div class="form-text">@Localizer["MarketingAuthorizationHolderHint"]</div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="AdverseEventReportingText" class="form-label fw-medium">@Localizer["AdverseEventReportingText"]</label>
+                            <textarea asp-for="AdverseEventReportingText" class="form-control regulatory-text" data-field="adverseEventReportingText" rows="4" dir="auto"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="PromotionalNotice" class="form-label fw-medium">@Localizer["PromotionalNotice"]</label>
+                            <textarea asp-for="PromotionalNotice" class="form-control regulatory-text" data-field="promotionalNotice" rows="3" dir="auto"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* ③ Page approval code — the format the page designer (KP-UI-3) stamps; the example is computed live. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionPageApproval"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="PageApprovalCodeFormat" class="form-label fw-medium">@Localizer["PageApprovalCodeFormat"]</label>
+                            <input asp-for="PageApprovalCodeFormat" class="form-control font-monospace" data-field="pageApprovalCodeFormat" maxlength="100" dir="ltr" placeholder="{CC}-{YYYY}-{SEQ}" />
+                            <div class="form-text">@Localizer["PageApprovalCodeFormatHint"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-label fw-medium">@Localizer["PageApprovalCodeExampleLabel"]</div>
+                            <div class="form-control-plaintext font-monospace" dir="ltr" data-code-format-preview data-template="@Localizer["PageApprovalCodeExampleTpl"].Value"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

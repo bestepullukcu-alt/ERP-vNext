@@ -754,8 +754,11 @@
   <data name="Nav.Page.CLAIMS" xml:space="preserve">
     <value>İddialar</value>
   </data>
-  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
-    <value>İçerik Kapsamları</value>
+  <data name="Nav.Page.SAFETYTEXTS" xml:space="preserve">
+    <value>Güvenlilik Metinleri</value>
+  </data>
+  <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
+    <value>Ülke Yasal Profilleri</value>
   </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>İçerik Setleri</value>

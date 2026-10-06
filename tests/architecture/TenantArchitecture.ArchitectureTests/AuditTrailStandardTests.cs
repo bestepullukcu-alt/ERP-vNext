@@ -56,7 +56,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
     {
         // measured 2026-10-02 — see docs/records/audits/2026-10/
         ["Diten.AuthService"] = new(Debt: 18, Exceptions: 0, K2Debt: 8),
-        ["Diten.CrmService"] = new(Debt: 188, Exceptions: 0),
+        ["Diten.CrmService"] = new(Debt: 169, Exceptions: 0),
         ["Diten.DevEnablementService"] = new(Debt: 8, Exceptions: 0),
         ["Diten.EnterpriseStrategyService"] = new(Debt: 36, Exceptions: 0, Indirect: 20),
         ["Diten.HcmService"] = new(Debt: 8, Exceptions: 0),

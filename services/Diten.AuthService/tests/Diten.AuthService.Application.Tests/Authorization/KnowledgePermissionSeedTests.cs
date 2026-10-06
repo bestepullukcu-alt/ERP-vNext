@@ -73,6 +73,32 @@ public sealed class KnowledgePermissionSeedTests
         Assert.Contains(expected, seederSource, StringComparison.Ordinal);
     }
 
+    // WP-KP-5a — the safety text / country legal profile keys are in the catalog (tenant-scoped "crm-knowledge")...
+    [Theory]
+    [InlineData("crm\", \"safety-text\", \"read")]
+    [InlineData("crm\", \"safety-text\", \"manage")]
+    [InlineData("crm\", \"safety-text\", \"submit")]
+    [InlineData("crm\", \"country-legal-profile\", \"read")]
+    [InlineData("crm\", \"country-legal-profile\", \"manage")]
+    [InlineData("crm\", \"country-legal-profile\", \"submit")]
+    public void Regulatory_text_permission_is_present_in_canonical_seed(string permissionConstructor)
+    {
+        var seederSource = File.ReadAllText(GetDataSeederPath());
+
+        Assert.Contains(permissionConstructor, seederSource, StringComparison.Ordinal);
+    }
+
+    // ...and granted to NO role by the seeder (the grants are the KP-5a-CFG user script).
+    [Theory]
+    [InlineData("\"crm.safety-text.")]
+    [InlineData("\"crm.country-legal-profile.")]
+    public void Regulatory_text_permission_is_not_granted_by_the_seeder(string grantedKeyPrefix)
+    {
+        var seederSource = File.ReadAllText(GetDataSeederPath());
+
+        Assert.DoesNotContain(grantedKeyPrefix, seederSource, StringComparison.Ordinal);
+    }
+
     private static string GetDataSeederPath()
     {
         var directory = Path.GetDirectoryName(typeof(DataSeeder).Assembly.Location)

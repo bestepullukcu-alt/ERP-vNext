@@ -1,0 +1,32 @@
+@using Diten.Web.Views.CRM.SafetyTexts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SafetyTextsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["SafetyTextsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    // UAS-001 — the controller answers 403 before this view is reached without crm.safety-text.read.
+    var canManage = ViewData["CanManage"] is true;
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/SafetyTexts/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["SafetyTextsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* No bulk action bar: the list has no selection column — a safety text is never bulk-deleted (it is archived). *@
+@* ② DataTable Card *@
+@* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-safetytexts" data-dt-standard="v2"> *@
+<div id="regulatoryListRoot" data-can-manage="@(canManage ? "true" : "false")">
+    <partial name="~/Views/CRM/SafetyTexts/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/SafetyTexts/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/SafetyTexts/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/SafetyTexts/index.js" asp-append-version="true"></script>
+}

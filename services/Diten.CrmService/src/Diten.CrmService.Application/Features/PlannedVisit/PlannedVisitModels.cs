@@ -34,7 +34,9 @@ public sealed record PlannedVisitListItemDto(
     string? FrequencyStatus,
     int Version,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    // WP-SB-3b — the frozen product list (additive; empty on a plan written before SB-3b).
+    IReadOnlyList<PlannedVisitContentItemDto>? ContentItems = null);
 
 public sealed record PlannedVisitListDto(IReadOnlyList<PlannedVisitListItemDto> Items, int TotalCount);
 
@@ -84,7 +86,32 @@ public sealed record PlannedVisitDetailDto(
     DateTimeOffset CreatedAt,
     string? CreatedBy,
     DateTimeOffset? UpdatedAt,
-    string? UpdatedBy);
+    string? UpdatedBy,
+    // WP-SB-3b — the frozen product list (additive; Content above stays the first promo item for mobile).
+    IReadOnlyList<PlannedVisitContentItemDto>? ContentItems = null);
+
+/// <summary>WP-SB-3b — one product of a planned visit, as frozen at plan time. No play / campaign id (ARCH GATE).</summary>
+public sealed record PlannedVisitContentItemDto(
+    Guid ProductId,
+    string? ProductCode,
+    string Role,
+    Guid JourneyId,
+    string? JourneyCode,
+    Guid StageId,
+    int StageIndex,
+    string? StageCode,
+    string? StageName,
+    Guid PathId,
+    string? PathCode,
+    string? PathVersion,
+    IReadOnlyList<PlannedVisitContentStepDto> Steps,
+    IReadOnlyList<PlannedVisitContentClaimDto> Claims,
+    IReadOnlyList<string> Warnings);
+
+public sealed record PlannedVisitContentStepDto(
+    Guid StepId, Guid ContentId, string? ContentCode, string? Title, string? Type, int? Minutes);
+
+public sealed record PlannedVisitContentClaimDto(Guid ClaimId, string? ClaimCode);
 
 public sealed record PlannedVisitResourceRefDto(string ResourceId, string ResourceType, string? DisplayName);
 

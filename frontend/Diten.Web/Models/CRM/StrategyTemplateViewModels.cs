@@ -57,6 +57,11 @@ public sealed class StrategyTemplateDetailViewModel
     public string? CreatedBy { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
     public string? UpdatedBy { get; set; }
+
+    // WP-SB-3-UIa — SB-3a product line summary (a pre-SB-3a line counts as promo).
+    public int PromoLineCount { get; set; }
+    public int NonPromoLineCount { get; set; }
+    public int LinesWithoutJourneyCount { get; set; }
 }
 
 public sealed class StrategyTemplateSegmentBindingViewModel
@@ -93,6 +98,18 @@ public sealed class StrategyTemplateProductLineViewModel
     public decimal TotalPercentage { get; set; }
     public int SortOrder { get; set; }
     public string? Notes { get; set; }
+
+    // WP-SB-3-UIa (SB-3a contract) — how the line is told and with which journey. They MUST stay on this model: the Edit
+    // page seeds ProductLinesJson by serialising it, so a field missing here is silently dropped on the next save.
+    public string? Role { get; set; }
+    public Guid? JourneyId { get; set; }
+
+    // Read-time journey hints (CRM fills them; the runtime ignores them on a write).
+    public string? JourneyCode { get; set; }
+    public string? JourneyName { get; set; }
+    public string? JourneyStatus { get; set; }
+    public bool JourneyMissing { get; set; }
+    public List<string>? JourneyWarnings { get; set; }
 }
 
 public sealed class StrategyTemplateSkuAllocationViewModel
@@ -113,6 +130,9 @@ public sealed class StrategyTemplateContentBindingViewModel
     public string? ContentVersionAtBinding { get; set; }
     public int SortOrder { get; set; }
     public string? Notes { get; set; }
+
+    /// <summary>WP-SB-3-UIa — a template-level binding of a type retired by SB-3a: kept and read, never added again.</summary>
+    public bool Retired { get; set; }
 }
 
 // ----- the read-only binding view (freshness hints) -----
@@ -170,6 +190,9 @@ public sealed class StrategyTemplateContentHintViewModel
     public string? CurrentStatus { get; set; }
     public bool Archived { get; set; }
     public bool Published { get; set; }
+
+    /// <summary>WP-SB-3-UIa — retired type (SB-3a): read only, never added again.</summary>
+    public bool Retired { get; set; }
 }
 
 /// <summary>
@@ -249,6 +272,10 @@ public sealed class StrategyTemplateEditViewModel
     public List<string> FrequencyTypes { get; set; } = new();
     public List<string> FrequencyPeriodTypes { get; set; } = new();
 
+    /// <summary>WP-SB-3-UIa — the SB-3a product line roles (CRM <c>StrategyProductLineRoles</c>; the strategy template
+    /// contract does not republish them). The first one is the default of a new line.</summary>
+    public List<string> ProductLineRoles { get; set; } = ["promo", "non-promo"];
+
     public int MaxSegmentBindings { get; set; }
     public int MaxProductLines { get; set; }
     public int MaxSkuAllocationsPerLine { get; set; }
@@ -264,6 +291,82 @@ public sealed class StrategyTemplateEditViewModel
 
     /// <summary>Set when the contract could not be read; the view shows it instead of a half-configured form.</summary>
     public string? ContractError { get; set; }
+
+    /// <summary>WP-SB-3-UIa — the runtime's refusals that belong to a place on the form (a product line, the retired
+    /// binding list), as <see cref="StrategyTemplateFormError"/> JSON; form.js renders each one, localised, under that
+    /// place. Server-rendered only — never trusted from a post (the controller overwrites it on every render).</summary>
+    [Microsoft.AspNetCore.Mvc.ModelBinding.BindNever]
+    public string? FormErrorsJson { get; set; }
+}
+
+/// <summary>WP-SB-3-UIa — one runtime refusal anchored to a place on the form. <see cref="Key"/> is the L10n key
+/// (<c>Err_{code}</c>), so the raw code is never shown. <see cref="LineIndex"/> is the posted product line the refusal
+/// names, or null when no line can be told apart (shown at the head of the product section).</summary>
+public sealed class StrategyTemplateFormError
+{
+    public string Code { get; set; } = string.Empty;
+    public string Key { get; set; } = string.Empty;
+    public string Scope { get; set; } = StrategyTemplateErrorMap.ScopeForm;
+    public int? LineIndex { get; set; }
+}
+
+/// <summary>
+/// WP-SB-3-UIa — the SB-3a refusal codes this form understands and where each one is shown. A code not listed here
+/// falls back to the generic summary with the runtime's own text, so a new code is never swallowed.
+/// </summary>
+public static class StrategyTemplateErrorMap
+{
+    public const string ScopeLine = "line";
+    public const string ScopeBindings = "bindings";
+    public const string ScopeForm = "form";
+
+    public static readonly IReadOnlyDictionary<string, string> Scopes = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["product_line_role_required"] = ScopeLine,
+        ["product_line_role_invalid"] = ScopeLine,
+        ["product_line_journey_required"] = ScopeLine,
+        ["journey_not_published"] = ScopeLine,
+        ["journey_product_mismatch"] = ScopeLine,
+        ["content_binding_type_retired"] = ScopeBindings,
+        ["bindings_frozen"] = ScopeForm
+    };
+
+    public static string KeyFor(string code) => "Err_" + code;
+}
+
+/// <summary>WP-SB-3-UIa — one option of a product line's journey picker (<c>api/line-journeys</c>).</summary>
+public sealed class StrategyTemplateLineJourneyOption
+{
+    public Guid JourneyId { get; set; }
+    public string JourneyCode { get; set; } = string.Empty;
+    public string JourneyName { get; set; } = string.Empty;
+    public string? LanguageCode { get; set; }
+    public string? JourneyVersion { get; set; }
+}
+
+/// <summary>WP-SB-3-UIa — the slice of the CRM journey list the line-journey filter reads.</summary>
+public sealed class StrategyTemplateJourneyApiModel
+{
+    public Guid JourneyId { get; set; }
+    public string JourneyCode { get; set; } = string.Empty;
+    public string JourneyName { get; set; } = string.Empty;
+    public Guid SubjectId { get; set; }
+    public string? LanguageCode { get; set; }
+    public string? JourneyVersion { get; set; }
+    public string JourneyStatus { get; set; } = string.Empty;
+    public bool IsArchived { get; set; }
+}
+
+/// <summary>WP-SB-3-UIa — the slice of the CRM subject list the line-journey filter reads (MOD-0162 SUBJECT-UI link).</summary>
+public sealed class StrategyTemplateSubjectApiModel
+{
+    public Guid SubjectId { get; set; }
+    public List<KnowledgeExternalReferenceViewModel> ExternalReferences { get; set; } = new();
+}
+
+public sealed class StrategyTemplateItemsApiModel<T>
+{
+    public List<T> Items { get; set; } = new();
 }
 
 // ----- gateway envelopes / contract -----

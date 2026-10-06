@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="StudioTitle" xml:space="preserve"><value>知识路径</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>知识路径是代表在医生拜访中于平板上展示的内容叙事：编排、页面设计、合规检查、MLR 审批与发布。只有已发布的路径才能在现场使用。</value></data>
+  <data name="NewPath" xml:space="preserve"><value>新建路径</value></data>
+  <data name="OpenPath" xml:space="preserve"><value>打开</value></data>
+  <data name="BackToList" xml:space="preserve"><value>返回知识路径</value></data>
+  <data name="SumTotal" xml:space="preserve"><value>总计</value></data>
+  <data name="SumTotalSub" xml:space="preserve"><value>全部路径</value></data>
+  <data name="SumDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="SumDraftSub" xml:space="preserve"><value>编排中</value></data>
+  <data name="SumPublished" xml:space="preserve"><value>已发布</value></data>
+  <data name="SumPublishedSub" xml:space="preserve"><value>现场使用中</value></data>
+  <data name="SumLegacy" xml:space="preserve"><value>未审批旧路径</value></data>
+  <data name="SumLegacySub" xml:space="preserve"><value>需绑定链</value></data>
+  <data name="ColPath" xml:space="preserve"><value>路径</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="ColCountryLanguage" xml:space="preserve"><value>国家 / 语言</value></data>
+  <data name="ColChain" xml:space="preserve"><value>链模板</value></data>
+  <data name="ColVersion" xml:space="preserve"><value>版本</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>国家</value></data>
+  <data name="FilterLanguage" xml:space="preserve"><value>语言</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="FilterLegacyOnly" xml:space="preserve"><value>仅未审批的旧路径</value></data>
+  <data name="EmptyFiltered" xml:space="preserve"><value>没有符合这些筛选条件的路径。</value></data>
+  <data name="LegacyBadge" xml:space="preserve"><value>未审批旧路径</value></data>
+  <data name="LegacyBadgeTip" xml:space="preserve"><value>未绑定链 — 不能在现场使用。</value></data>
+  <data name="LegacyBand" xml:space="preserve"><value>未审批的旧路径 — 绑定到链之前不能在现场使用。</value></data>
+  <data name="LegacyEditor" xml:space="preserve"><value>用旧编辑器打开</value></data>
+  <data name="LegacyStepsTitle" xml:space="preserve"><value>旧路径的步骤</value></data>
+  <data name="BindChain" xml:space="preserve"><value>绑定到链</value></data>
+  <data name="BindNoChain" xml:space="preserve"><value>此路径的主题没有已发布且有分支的链。</value></data>
+  <data name="IdentityNote" xml:space="preserve"><value>国家和语言是路径的身份，之后不可更改；如需其他国家，请改编为新路径。</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>请选择…</value></data>
+  <data name="VersionShort" xml:space="preserve"><value>v{0}</value></data>
+  <data name="RequiredMissing" xml:space="preserve"><value>请填写必填字段。</value></data>
+  <data name="CreateTitle" xml:space="preserve"><value>新建知识路径</value></data>
+  <data name="CreateIntro" xml:space="preserve"><value>先确定路径的身份。步骤来自所选的链模板；内容在工作区中添加。</value></data>
+  <data name="CreateSubmit" xml:space="preserve"><value>创建</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>身份</value></data>
+  <data name="SectionContext" xml:space="preserve"><value>国家和语言</value></data>
+  <data name="SectionDescription" xml:space="preserve"><value>说明</value></data>
+  <data name="SectionValidity" xml:space="preserve"><value>有效期</value></data>
+  <data name="SectionPreview" xml:space="preserve"><value>来自链</value></data>
+  <data name="FieldPathName" xml:space="preserve"><value>路径名称</value></data>
+  <data name="FieldPathNamePlaceholder" xml:space="preserve"><value>例如：ALMIBA — HD 简短提醒路径</value></data>
+  <data name="FieldChain" xml:space="preserve"><value>链模板</value></data>
+  <data name="FieldCountry" xml:space="preserve"><value>国家</value></data>
+  <data name="FieldLanguage" xml:space="preserve"><value>语言</value></data>
+  <data name="FieldObjective" xml:space="preserve"><value>目标</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>说明</value></data>
+  <data name="FieldEffectiveFrom" xml:space="preserve"><value>开始</value></data>
+  <data name="FieldEffectiveTo" xml:space="preserve"><value>结束</value></data>
+  <data name="NoChains" xml:space="preserve"><value>没有可用的链：需要已发布且有分支的链模板。</value></data>
+  <data name="CodeNote" xml:space="preserve"><value>路径代码（KP-…）自动分配。</value></data>
+  <data name="LanguageNote" xml:space="preserve"><value>单一语言规则：只能向路径添加该语言的内容。</value></data>
+  <data name="PreviewSubject" xml:space="preserve"><value>主题</value></data>
+  <data name="PreviewProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="PreviewAudience" xml:space="preserve"><value>受众</value></data>
+  <data name="PreviewSteps" xml:space="preserve"><value>步骤</value></data>
+  <data name="PreviewNote" xml:space="preserve"><value>主题、产品、受众和步骤来自链，无法更改。</value></data>
+  <data name="ContextLabel" xml:space="preserve"><value>路径身份与上下文</value></data>
+  <data name="CtxChain" xml:space="preserve"><value>链</value></data>
+  <data name="CtxCountry" xml:space="preserve"><value>国家</value></data>
+  <data name="CtxLanguage" xml:space="preserve"><value>语言</value></data>
+  <data name="CtxProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="CtxAudience" xml:space="preserve"><value>受众</value></data>
+  <data name="CtxChainTip" xml:space="preserve"><value>链已固定；其分支和步骤构成路径的骨架。</value></data>
+  <data name="CtxIdentityTip" xml:space="preserve"><value>路径的身份；如需其他国家请改编（即将推出）。</value></data>
+  <data name="CtxDerivedTip" xml:space="preserve"><value>来自链（只读）。</value></data>
+  <data name="OnField" xml:space="preserve"><value>现场 v{0}</value></data>
+  <data name="TabComposition" xml:space="preserve"><value>编排</value></data>
+  <data name="IntroComposition" xml:space="preserve"><value>构建路径叙事：为每个步骤添加内容和已批准的声明，并在步骤内排序。</value></data>
+  <data name="DismissIntro" xml:space="preserve"><value>知道了</value></data>
+  <data name="NextBind" xml:space="preserve"><value>下一步：将路径绑定到链</value></data>
+  <data name="NextFillSlots" xml:space="preserve"><value>下一步：补全 {0} 个未完成的步骤</value></data>
+  <data name="NextComplete" xml:space="preserve"><value>编排完成 — 页面设计将在后续版本提供。</value></data>
+  <data name="HelpBranch" xml:space="preserve"><value>分支</value></data>
+  <data name="HelpBranchText" xml:space="preserve"><value>独立的叙事线；分支来自链。</value></data>
+  <data name="HelpStep" xml:space="preserve"><value>步骤</value></data>
+  <data name="HelpStepText" xml:space="preserve"><value>链的一部分。通过齿轮图标设置必选、时长和前置条件。</value></data>
+  <data name="HelpItems" xml:space="preserve"><value>内容和声明</value></data>
+  <data name="HelpItemsText" xml:space="preserve"><value>为步骤添加知识内容和已批准的声明，并拖动以在步骤内排序。</value></data>
+  <data name="SkeletonNote" xml:space="preserve"><value>分支和步骤来自链；此处不可添加、删除或移动。</value></data>
+  <data name="FieldOrder" xml:space="preserve"><value>现场顺序：</value></data>
+  <data name="SequenceEmpty" xml:space="preserve"><value>尚无内容。</value></data>
+  <data name="ReadOnlyNoPermission" xml:space="preserve"><value>您没有编辑权限；编排为只读。</value></data>
+  <data name="ReadOnlyNotDraft" xml:space="preserve"><value>路径不是草稿；编排为只读。</value></data>
+  <data name="BranchTotal" xml:space="preserve"><value>{0} 项</value></data>
+  <data name="SlotRequired" xml:space="preserve"><value>必选</value></data>
+  <data name="SlotOptional" xml:space="preserve"><value>可选</value></data>
+  <data name="SlotLimit" xml:space="preserve"><value>至少 {0} / 至多 {1} 项</value></data>
+  <data name="SlotLimitOpen" xml:space="preserve"><value>至少 {0} 项，无上限</value></data>
+  <data name="FromChain" xml:space="preserve"><value>来自链</value></data>
+  <data name="Duration" xml:space="preserve"><value>≈ {0} 分钟</value></data>
+  <data name="Prerequisite" xml:space="preserve"><value>前置条件：{0}</value></data>
+  <data name="EmptySlot" xml:space="preserve"><value>尚无项目。</value></data>
+  <data name="AddToStep" xml:space="preserve"><value>添加内容或声明</value></data>
+  <data name="ContentKind" xml:space="preserve"><value>内容</value></data>
+  <data name="ClaimKind" xml:space="preserve"><value>声明</value></data>
+  <data name="ContentNotPublished" xml:space="preserve"><value>未发布 — 会阻止发布</value></data>
+  <data name="ClaimVersionLabel" xml:space="preserve"><value>版本 {0}</value></data>
+  <data name="ItemDrag" xml:space="preserve"><value>拖动以排序</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>上移</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>下移</value></data>
+  <data name="ItemSettings" xml:space="preserve"><value>步骤设置</value></data>
+  <data name="RemoveItem" xml:space="preserve"><value>从步骤移除</value></data>
+  <data name="RemoveConfirm" xml:space="preserve"><value>要从步骤中移除此项吗？</value></data>
+  <data name="SettingsRequired" xml:space="preserve"><value>必须展示</value></data>
+  <data name="SettingsDuration" xml:space="preserve"><value>预计时长（分钟）</value></data>
+  <data name="SettingsPrerequisite" xml:space="preserve"><value>前置条件</value></data>
+  <data name="SettingsNoPrerequisite" xml:space="preserve"><value>无</value></data>
+  <data name="SettingsMinMaxNote" xml:space="preserve"><value>最少 / 最多项数来自链，不可编辑。</value></data>
+  <data name="SettingsSave" xml:space="preserve"><value>应用</value></data>
+  <data name="Saved" xml:space="preserve"><value>已保存。</value></data>
+  <data name="Added" xml:space="preserve"><value>已添加。</value></data>
+  <data name="Removed" xml:space="preserve"><value>已移除。</value></data>
+  <data name="Loading" xml:space="preserve"><value>加载中…</value></data>
+  <data name="AddTitle" xml:space="preserve"><value>添加到步骤</value></data>
+  <data name="AddTarget" xml:space="preserve"><value>目标步骤：{0}</value></data>
+  <data name="AddTabContent" xml:space="preserve"><value>内容</value></data>
+  <data name="AddTabClaim" xml:space="preserve"><value>已批准声明</value></data>
+  <data name="AddSearch" xml:space="preserve"><value>搜索</value></data>
+  <data name="AddClaimSearch" xml:space="preserve"><value>搜索声明：文本或代码</value></data>
+  <data name="AddContentNote" xml:space="preserve"><value>只能添加路径语言（{0}）的已发布内容。</value></data>
+  <data name="AddClaimNote" xml:space="preserve"><value>只有在 {0} 有已批准版本的声明才能在现场使用。文本来自已批准的声明，不可更改。</value></data>
+  <data name="AddButton" xml:space="preserve"><value>添加</value></data>
+  <data name="CannotAdd" xml:space="preserve"><value>无法添加</value></data>
+  <data name="AddNone" xml:space="preserve"><value>没有匹配的记录。</value></data>
+  <data name="ClaimNoProduct" xml:space="preserve"><value>路径没有产品；无法添加声明。</value></data>
+  <data name="ClaimPermissionMissing" xml:space="preserve"><value>您没有查看声明的权限。</value></data>
+  <data name="ClaimOptionsUnavailable" xml:space="preserve"><value>当前无法读取声明。</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="Status_review" xml:space="preserve"><value>审核中</value></data>
+  <data name="Status_approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="Status_published" xml:space="preserve"><value>已发布</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>已撤回</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="Status_other" xml:space="preserve"><value>其他</value></data>
+  <data name="ClaimState_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="ClaimState_in-review" xml:space="preserve"><value>审核中</value></data>
+  <data name="ClaimState_approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="ClaimState_review-required" xml:space="preserve"><value>需复核</value></data>
+  <data name="ClaimState_inactive" xml:space="preserve"><value>未启用</value></data>
+  <data name="ClaimState_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="ClaimState_other" xml:space="preserve"><value>其他</value></data>
+  <data name="CType_presentation" xml:space="preserve"><value>演示文稿</value></data>
+  <data name="CType_brochure" xml:space="preserve"><value>宣传册</value></data>
+  <data name="CType_lesson" xml:space="preserve"><value>课程</value></data>
+  <data name="CType_faq" xml:space="preserve"><value>常见问题</value></data>
+  <data name="CType_clinical-summary" xml:space="preserve"><value>临床摘要</value></data>
+  <data name="CType_objection-handling" xml:space="preserve"><value>异议处理</value></data>
+  <data name="CType_quiz" xml:space="preserve"><value>测验</value></data>
+  <data name="CType_video" xml:space="preserve"><value>视频</value></data>
+  <data name="CType_pdf" xml:space="preserve"><value>PDF 文档</value></data>
+  <data name="CType_html-detail" xml:space="preserve"><value>HTML 详情</value></data>
+  <data name="CType_sop" xml:space="preserve"><value>标准操作规程</value></data>
+  <data name="CType_training-material" xml:space="preserve"><value>培训材料</value></data>
+  <data name="CType_message-script" xml:space="preserve"><value>话术脚本</value></data>
+  <data name="CType_knowledge-article" xml:space="preserve"><value>知识文章</value></data>
+  <data name="CType_assembled-presentation" xml:space="preserve"><value>组合演示文稿</value></data>
+  <data name="CType_other" xml:space="preserve"><value>其他内容</value></data>
+  <data name="Reason_not_approved" xml:space="preserve"><value>在路径所在国家未获批准</value></data>
+  <data name="Reason_no_country_version" xml:space="preserve"><value>路径所在国家没有版本</value></data>
+  <data name="Reason_language_mismatch" xml:space="preserve"><value>没有路径语言的文本</value></data>
+  <data name="AddReason_not_published" xml:space="preserve"><value>未发布</value></data>
+  <data name="AddReason_language" xml:space="preserve"><value>语言不同</value></data>
+  <data name="AddReason_product" xml:space="preserve"><value>产品不同</value></data>
+  <data name="AddReason_slot_full" xml:space="preserve"><value>步骤已满</value></data>
+  <data name="AddReason_on_path" xml:space="preserve"><value>已在路径中</value></data>
+  <data name="Conf_ok" xml:space="preserve"><value>已满足</value></data>
+  <data name="Conf_under" xml:space="preserve"><value>缺少项目</value></data>
+  <data name="Conf_over" xml:space="preserve"><value>项目过多</value></data>
+  <data name="Err_chain_template_invalid" xml:space="preserve"><value>无法使用此链：链必须已发布、未归档且有分支。</value></data>
+  <data name="Err_chain_template_required" xml:space="preserve"><value>此操作需要已绑定链的路径；请先绑定。</value></data>
+  <data name="Err_chain_subject_mismatch" xml:space="preserve"><value>该链属于与此路径不同的主题。</value></data>
+  <data name="Err_path_identity_locked" xml:space="preserve"><value>国家和语言是此路径的身份，不可更改；如需其他国家，请改编为新路径。</value></data>
+  <data name="Err_country_invalid" xml:space="preserve"><value>请选择有效的国家。</value></data>
+  <data name="Err_language_not_in_country" xml:space="preserve"><value>该语言不是所选国家的内容语言。</value></data>
+  <data name="Err_reference_set_unavailable" xml:space="preserve"><value>当前无法读取国家和语言列表，请稍后重试。</value></data>
+  <data name="Err_chain_slot_invalid" xml:space="preserve"><value>此项只能放在路径链的步骤上。</value></data>
+  <data name="Err_chain_slot_full" xml:space="preserve"><value>此步骤已达到最大项数。</value></data>
+  <data name="Err_chain_slot_move_forbidden" xml:space="preserve"><value>项目不能移动到其他分支或步骤；只能在步骤内调整顺序。</value></data>
+  <data name="Err_component_language_mismatch" xml:space="preserve"><value>此内容不是路径的语言。</value></data>
+  <data name="Err_claim_product_mismatch" xml:space="preserve"><value>此声明针对的产品与路径不同。</value></data>
+  <data name="Err_claim_ref_duplicate" xml:space="preserve"><value>此声明已在路径中。</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>操作未能完成。</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>服务当前无响应，请稍后重试。</value></data>
+  <data name="TabCompliance" xml:space="preserve"><value>合规检查</value></data>
+  <data name="TabMlr" xml:space="preserve"><value>MLR 审批</value></data>
+  <data name="TabOutput" xml:space="preserve"><value>输出与发布</value></data>
+  <data name="TabRevisions" xml:space="preserve"><value>修订</value></data>
+  <data name="TabPreview" xml:space="preserve"><value>现场预览</value></data>
+  <data name="TabUsage" xml:space="preserve"><value>使用情况</value></data>
+  <data name="SubmitOpen" xml:space="preserve"><value>提交审批</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>撤回审批</value></data>
+  <data name="WithdrawReviewConfirm" xml:space="preserve"><value>撤回进行中的审批轮次？路径将回到草稿。</value></data>
+  <data name="WithdrawReviewDone" xml:space="preserve"><value>审批轮次已撤回。</value></data>
+  <data name="StatusInReviewStep" xml:space="preserve"><value>审批中 · {0}</value></data>
+  <data name="NextFix" xml:space="preserve"><value>下一步：修复 {0} 个阻断问题，然后提交审批</value></data>
+  <data name="NextSubmit" xml:space="preserve"><value>草稿已就绪：可以提交审批</value></data>
+  <data name="NextWaiting" xml:space="preserve"><value>等待审批：{0}</value></data>
+  <data name="NextRender" xml:space="preserve"><value>下一步：生成已批准修订的输出</value></data>
+  <data name="NextRelease" xml:space="preserve"><value>下一步：发布已批准的修订</value></data>
+  <data name="NextPublisher" xml:space="preserve"><value>已批准：由发布负责人生成输出并发布</value></data>
+  <data name="NextLive" xml:space="preserve"><value>此版本已在现场使用</value></data>
+  <data name="ShowBlockers" xml:space="preserve"><value>显示阻断问题</value></data>
+  <data name="WizardOpen" xml:space="preserve"><value>绑定到链</value></data>
+  <data name="BlockerCount" xml:space="preserve"><value>{0} 个阻断问题</value></data>
+  <data name="ComplianceIntro" xml:space="preserve"><value>规则在编辑时即时运行，提交审批时作为阻断检查清单再次运行。阻断问题须先修复才能提交；警告不会阻止提交。行内按钮可跳转到对应项。</value></data>
+  <data name="ComplianceClean" xml:space="preserve"><value>合规检查通过。</value></data>
+  <data name="ColSeverity" xml:space="preserve"><value>严重程度</value></data>
+  <data name="ColRule" xml:space="preserve"><value>规则</value></data>
+  <data name="ColWhere" xml:space="preserve"><value>分支 › 步骤 › 项</value></data>
+  <data name="ColIssue" xml:space="preserve"><value>问题与修复</value></data>
+  <data name="GoToComposition" xml:space="preserve"><value>前往编排</value></data>
+  <data name="MapSteps" xml:space="preserve"><value>映射步骤</value></data>
+  <data name="FixPrefix" xml:space="preserve"><value>修复：{0}</value></data>
+  <data name="Sev_blocker" xml:space="preserve"><value>阻断</value></data>
+  <data name="Sev_warning" xml:space="preserve"><value>警告</value></data>
+  <data name="Rule_chain" xml:space="preserve"><value>链一致性</value></data>
+  <data name="Rule_published" xml:space="preserve"><value>内容已发布</value></data>
+  <data name="Rule_language" xml:space="preserve"><value>单一语言</value></data>
+  <data name="Rule_claim" xml:space="preserve"><value>声明可用性</value></data>
+  <data name="Rule_placement" xml:space="preserve"><value>步骤放置</value></data>
+  <data name="Comp_UnderMsg" xml:space="preserve"><value>{0}：至少需要 {1} 项，当前 {2} 项。</value></data>
+  <data name="Comp_UnderFix" xml:space="preserve"><value>在编排中为此步骤添加内容或声明。</value></data>
+  <data name="Comp_OverMsg" xml:space="preserve"><value>{0}：最多 {1} 项，当前 {2} 项。</value></data>
+  <data name="Comp_OverFix" xml:space="preserve"><value>从步骤中移除多余的项。</value></data>
+  <data name="Comp_NotPublishedMsg" xml:space="preserve"><value>“{0}”在知识库中的状态为{1}。</value></data>
+  <data name="Comp_NotPublishedFix" xml:space="preserve"><value>请发布该内容，或将其从步骤中移除。</value></data>
+  <data name="Comp_LanguageMsg" xml:space="preserve"><value>“{0}”为{1}；路径语言为{2}。</value></data>
+  <data name="Comp_LanguageFix" xml:space="preserve"><value>请使用该内容的{0}版本。</value></data>
+  <data name="Comp_ClaimNotApprovedMsg" xml:space="preserve"><value>{0} 在路径国家（{1}）未获批准。</value></data>
+  <data name="Comp_ClaimNotApprovedFix" xml:space="preserve"><value>请等待声明获批，或将其从步骤中移除。</value></data>
+  <data name="Comp_ClaimNoVersionMsg" xml:space="preserve"><value>{0} 没有{1}版本。</value></data>
+  <data name="Comp_ClaimNoVersionFix" xml:space="preserve"><value>请在声明管理中申请{0}版本，或将其从步骤中移除。</value></data>
+  <data name="Comp_ClaimLanguageMsg" xml:space="preserve"><value>{0} 没有路径语言（{1}）的文本。</value></data>
+  <data name="Comp_ClaimLanguageFix" xml:space="preserve"><value>请在国家版本中补充{0}文本，或将声明从步骤中移除。</value></data>
+  <data name="Comp_UnplacedMsg" xml:space="preserve"><value>“{0}”尚未放置到链步骤上。</value></data>
+  <data name="Comp_UnplacedFix" xml:space="preserve"><value>请用旧路径向导将其映射到链步骤，或将其移除。</value></data>
+  <data name="SubmitTitle" xml:space="preserve"><value>提交审批</value></data>
+  <data name="SubmitIntro" xml:space="preserve"><value>提交会将当前草稿冻结为修订 {0}，并启动医学 → 法务 → 注册流程。草稿仍可继续编辑。</value></data>
+  <data name="SubmitChecklist" xml:space="preserve"><value>检查清单</value></data>
+  <data name="SubmitNoBlockers" xml:space="preserve"><value>没有阻断规则。</value></data>
+  <data name="SubmitOpenRound" xml:space="preserve"><value>修订 {0} 正在审批（{1}）。该轮结束后才能提交新修订。</value></data>
+  <data name="SubmitChangesTitle" xml:space="preserve"><value>变更摘要（修订 {0} → 修订 {1}）</value></data>
+  <data name="SubmitFirstTitle" xml:space="preserve"><value>变更摘要</value></data>
+  <data name="SubmitFirstText" xml:space="preserve"><value>这是该路径的首个修订，暂无可比较内容。</value></data>
+  <data name="SubmitSend" xml:space="preserve"><value>提交修订 {0}</value></data>
+  <data name="SubmitBlocked" xml:space="preserve"><value>须先修复 {0} 个阻断问题才能提交。</value></data>
+  <data name="SubmitBlockedOpen" xml:space="preserve"><value>已有进行中的审批轮次。</value></data>
+  <data name="SubmitDone" xml:space="preserve"><value>已提交审批；工作项已进入任务中心。</value></data>
+  <data name="MlrTitle" xml:space="preserve"><value>审批流程 · 修订 {0} · v{1}</value></data>
+  <data name="MlrHistoryUnavailable" xml:space="preserve"><value>暂时无法读取审批历史；可读取后将显示决定。</value></data>
+  <data name="MlrSubmitted" xml:space="preserve"><value>提交</value></data>
+  <data name="MlrState_submitted" xml:space="preserve"><value>已提交</value></data>
+  <data name="MlrState_approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="MlrState_rejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="MlrState_pending" xml:space="preserve"><value>等待中</value></data>
+  <data name="MlrState_queued" xml:space="preserve"><value>排队中</value></data>
+  <data name="MlrState_cancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="MlrState_not-reached" xml:space="preserve"><value>未到达</value></data>
+  <data name="MlrQueuedNote" xml:space="preserve"><value>上一步批准后开启。</value></data>
+  <data name="MlrPendingNote" xml:space="preserve"><value>工作项在任务中心；作出决定后将开启下一步。</value></data>
+  <data name="MlrCandidates" xml:space="preserve"><value>候选人：{0}</value></data>
+  <data name="MlrStepN" xml:space="preserve"><value>第 {0} 步</value></data>
+  <data name="MlrUnnamedStep" xml:space="preserve"><value>未命名步骤</value></data>
+  <data name="MlrSummary" xml:space="preserve"><value>摘要</value></data>
+  <data name="MlrSumRevision" xml:space="preserve"><value>修订</value></data>
+  <data name="MlrSumSubmitter" xml:space="preserve"><value>提交人</value></data>
+  <data name="MlrSumSubmitted" xml:space="preserve"><value>提交时间</value></data>
+  <data name="MlrSumPending" xml:space="preserve"><value>当前等待</value></data>
+  <data name="MlrSumNone" xml:space="preserve"><value>无</value></data>
+  <data name="MlrSumDone" xml:space="preserve"><value>已完成</value></data>
+  <data name="MlrSumDoneValue" xml:space="preserve"><value>{0} / {1} 步</value></data>
+  <data name="MlrRulesTitle" xml:space="preserve"><value>规则</value></data>
+  <data name="MlrRules" xml:space="preserve"><value>顺序为医学 → 法务 → 注册。每一步在上一步批准后开启，并作为工作项进入任务中心。提交人不能批准自己的路径；拒绝须填写理由。</value></data>
+  <data name="SingleChannelNote" xml:space="preserve"><value>单一渠道：您的决定写入任务中心的审批工作流（MOD-0023）；在任务中心作出的决定也会显示在这里。</value></data>
+  <data name="ReviewerView" xml:space="preserve"><value>审阅视图</value></data>
+  <data name="OutputTitle" xml:space="preserve"><value>输出</value></data>
+  <data name="OutputNone" xml:space="preserve"><value>修订 {0} · 尚无输出</value></data>
+  <data name="OutputNoneText" xml:space="preserve"><value>存档 PDF 由已批准修订生成；HTML 现场演示将在后续阶段提供。</value></data>
+  <data name="OutputNothing" xml:space="preserve"><value>尚无输出。</value></data>
+  <data name="RenderButton" xml:space="preserve"><value>生成输出</value></data>
+  <data name="RenderDone" xml:space="preserve"><value>已生成存档 PDF。</value></data>
+  <data name="ArtifactView" xml:space="preserve"><value>查看</value></data>
+  <data name="ArtifactDownload" xml:space="preserve"><value>下载</value></data>
+  <data name="ArtifactFrom" xml:space="preserve"><value>来自已批准修订 {0}</value></data>
+  <data name="FingerprintLabel" xml:space="preserve"><value>指纹</value></data>
+  <data name="SizeKb" xml:space="preserve"><value>{0} KB</value></data>
+  <data name="SizeMb" xml:space="preserve"><value>{0} MB</value></data>
+  <data name="ReleaseTitle" xml:space="preserve"><value>发布</value></data>
+  <data name="ReleaseTitleRev" xml:space="preserve"><value>发布 · 修订 {0}</value></data>
+  <data name="PreconditionsTitle" xml:space="preserve"><value>发布前提条件</value></data>
+  <data name="ReleaseButton" xml:space="preserve"><value>发布</value></data>
+  <data name="ReleaseBlocked" xml:space="preserve"><value>暂不能发布：{0}</value></data>
+  <data name="ReleaseNoCandidate" xml:space="preserve"><value>没有等待发布的已批准修订。</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>发布 v{0}？它将成为现场使用的版本。</value></data>
+  <data name="ReleaseConfirmReplace" xml:space="preserve"><value>发布 v{0}？它将替换现场的 v{1}。</value></data>
+  <data name="ReleaseDone" xml:space="preserve"><value>已发布；路径已在现场使用。</value></data>
+  <data name="PreOk" xml:space="preserve"><value>已满足</value></data>
+  <data name="PreMissing" xml:space="preserve"><value>未满足</value></data>
+  <data name="Pre_approved" xml:space="preserve"><value>修订已获 MLR 批准</value></data>
+  <data name="Pre_approvedNo" xml:space="preserve"><value>修订 {0} 尚未获批。</value></data>
+  <data name="Pre_artifact" xml:space="preserve"><value>输出已就绪</value></data>
+  <data name="Pre_artifactNo" xml:space="preserve"><value>无输出：请先生成已批准修订的存档 PDF。</value></data>
+  <data name="Pre_published" xml:space="preserve"><value>所有内容均已发布</value></data>
+  <data name="Pre_publishedNo" xml:space="preserve"><value>路径中有内容未发布。</value></data>
+  <data name="Pre_language" xml:space="preserve"><value>单一语言</value></data>
+  <data name="Pre_languageNo" xml:space="preserve"><value>有内容与路径语言不一致。</value></data>
+  <data name="Pre_claims" xml:space="preserve"><value>所有声明均可用</value></data>
+  <data name="Pre_claimsNo" xml:space="preserve"><value>有声明在路径国家/语言中不可用。</value></data>
+  <data name="Pre_conformance" xml:space="preserve"><value>链一致性通过</value></data>
+  <data name="Pre_conformanceNo" xml:space="preserve"><value>有链步骤的项数不足或超出，或有步骤未放置。</value></data>
+  <data name="Pre_sod" xml:space="preserve"><value>发布人不是提交人</value></data>
+  <data name="Pre_sodNo" xml:space="preserve"><value>此修订由您提交，须由他人发布。</value></data>
+  <data name="LiveTitle" xml:space="preserve"><value>现场版本 · v{0}（修订 {1}）</value></data>
+  <data name="LiveSub" xml:space="preserve"><value>已发布 · {0} · {1}</value></data>
+  <data name="WithdrawReasonLabel" xml:space="preserve"><value>撤回理由</value></data>
+  <data name="WithdrawReasonPlaceholder" xml:space="preserve"><value>为何撤回此版本？（必填）</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>撤回</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>从现场撤回 v{0}？</value></data>
+  <data name="WithdrawDone" xml:space="preserve"><value>版本已撤回。</value></data>
+  <data name="WithdrawNote" xml:space="preserve"><value>已撤回的版本不能在旅程阶段中选择。</value></data>
+  <data name="WithdrawStagesTitle" xml:space="preserve"><value>请先将以下阶段绑定到其他版本：</value></data>
+  <data name="CardField" xml:space="preserve"><value>现场使用中</value></data>
+  <data name="CardApproval" xml:space="preserve"><value>审批中</value></data>
+  <data name="CardWorking" xml:space="preserve"><value>正在编辑</value></data>
+  <data name="CardNone" xml:space="preserve"><value>无</value></data>
+  <data name="CardRev" xml:space="preserve"><value>v{0} · 修订 {1}</value></data>
+  <data name="CardRevShort" xml:space="preserve"><value>修订 {0}</value></data>
+  <data name="CardVersion" xml:space="preserve"><value>v{0}</value></data>
+  <data name="CardDraft" xml:space="preserve"><value>v{0} · 草稿</value></data>
+  <data name="RevExplainVersion" xml:space="preserve"><value>版本</value></data>
+  <data name="RevExplainVersionText" xml:space="preserve"><value>（v1.0、v2.0）是路径的发布形态。</value></data>
+  <data name="RevExplainRevision" xml:space="preserve"><value>修订</value></data>
+  <data name="RevExplainRevisionText" xml:space="preserve"><value>（修订 1、2、3）是提交审批时冻结的版本副本。被拒绝的修订会修改后重新提交，因此一个版本可能有多个修订。</value></data>
+  <data name="RevHistoryTitle" xml:space="preserve"><value>修订历史</value></data>
+  <data name="RevHistoryNewest" xml:space="preserve"><value>最新在上</value></data>
+  <data name="RevChanges" xml:space="preserve"><value>{0} 处变更</value></data>
+  <data name="RevOpenNotes" xml:space="preserve"><value>{0} 条未解决备注</value></data>
+  <data name="OnFieldBadge" xml:space="preserve"><value>现场中</value></data>
+  <data name="DiffFrom" xml:space="preserve"><value>从</value></data>
+  <data name="DiffTo" xml:space="preserve"><value>到</value></data>
+  <data name="DiffShow" xml:space="preserve"><value>查看差异</value></data>
+  <data name="DiffDraft" xml:space="preserve"><value>当前草稿</value></data>
+  <data name="DiffTitle" xml:space="preserve"><value>{0} → {1}</value></data>
+  <data name="DiffNone" xml:space="preserve"><value>无变更。</value></data>
+  <data name="DiffPickTwo" xml:space="preserve"><value>请选择两个不同的修订。</value></data>
+  <data name="DiffWith" xml:space="preserve"><value>与修订 {0} 的差异</value></data>
+  <data name="Change_step-added" xml:space="preserve"><value>新增步骤</value></data>
+  <data name="Change_step-removed" xml:space="preserve"><value>移除步骤</value></data>
+  <data name="Change_step-moved" xml:space="preserve"><value>步骤移动</value></data>
+  <data name="Change_content-changed" xml:space="preserve"><value>内容更换</value></data>
+  <data name="Change_content-version-changed" xml:space="preserve"><value>内容版本变更</value></data>
+  <data name="Change_claim-added" xml:space="preserve"><value>新增声明</value></data>
+  <data name="Change_claim-removed" xml:space="preserve"><value>移除声明</value></data>
+  <data name="Change_claim-moved" xml:space="preserve"><value>声明移动</value></data>
+  <data name="Change_claim-version-changed" xml:space="preserve"><value>声明版本变更</value></data>
+  <data name="RevStatus_in-review" xml:space="preserve"><value>审批中</value></data>
+  <data name="RevStatus_approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="RevStatus_rejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="RevStatus_withdrawn" xml:space="preserve"><value>已撤回</value></data>
+  <data name="RevStatus_timed-out" xml:space="preserve"><value>已超时</value></data>
+  <data name="RevStatus_other" xml:space="preserve"><value>其他</value></data>
+  <data name="Release_released" xml:space="preserve"><value>已发布</value></data>
+  <data name="Release_withdrawn" xml:space="preserve"><value>已从现场撤回</value></data>
+  <data name="Release_other" xml:space="preserve"><value>其他</value></data>
+  <data name="PreviewDraft" xml:space="preserve"><value>草稿——批准后才会生成输出。</value></data>
+  <data name="PreviewNoOutput" xml:space="preserve"><value>已批准——生成输出后显示预览。</value></data>
+  <data name="PreviewCaption" xml:space="preserve"><value>修订 {0} · v{1} · 指纹 {2}</value></data>
+  <data name="PreviewPdfNote" xml:space="preserve"><value>已批准修订的存档 PDF；交互式 HTML 演示将在后续阶段提供。</value></data>
+  <data name="UsageJourneys" xml:space="preserve"><value>旅程阶段</value></data>
+  <data name="UsageTemplates" xml:space="preserve"><value>策略模板</value></data>
+  <data name="UsageNoJourneys" xml:space="preserve"><value>没有旅程阶段使用此路径。</value></data>
+  <data name="UsageNoTemplates" xml:space="preserve"><value>没有策略模板绑定此路径。</value></data>
+  <data name="UsageViewsLater" xml:space="preserve"><value>现场的页面浏览量与停留时长将在后续阶段提供。</value></data>
+  <data name="PinLatest" xml:space="preserve"><value>跟随最新发布版本</value></data>
+  <data name="PinVersion" xml:space="preserve"><value>固定为 v{0}</value></data>
+  <data name="Status_active" xml:space="preserve"><value>启用</value></data>
+  <data name="PersonYou" xml:space="preserve"><value>您</value></data>
+  <data name="PersonOther" xml:space="preserve"><value>注册用户</value></data>
+  <data name="CandidateOther" xml:space="preserve"><value>指定用户</value></data>
+  <data name="ReviewerTitle" xml:space="preserve"><value>审阅视图</value></data>
+  <data name="BackToWorkspace" xml:space="preserve"><value>返回工作区</value></data>
+  <data name="ReviewerHeader" xml:space="preserve"><value>审阅视图 · 修订 {0} · v{1}</value></data>
+  <data name="ReviewerFrozen" xml:space="preserve"><value>冻结修订 · 由 {0} 提交 · {1}</value></data>
+  <data name="ReviewerWaiting" xml:space="preserve"><value>{0} 步骤：等待中</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>点击声明块：其证据文档将在侧栏打开。</value></data>
+  <data name="ReviewerComposition" xml:space="preserve"><value>编排</value></data>
+  <data name="ReviewerItems" xml:space="preserve"><value>{0} 项</value></data>
+  <data name="ReviewerOpenNotes" xml:space="preserve"><value>{0} 条未解决备注</value></data>
+  <data name="ReviewerNoText" xml:space="preserve"><value>没有路径语言的文本。</value></data>
+  <data name="ContentVersionLabel" xml:space="preserve"><value>版本 {0}</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>证据</value></data>
+  <data name="EvidenceTitleFor" xml:space="preserve"><value>证据 · {0}</value></data>
+  <data name="EvidencePick" xml:space="preserve"><value>选择声明块以查看其证据。</value></data>
+  <data name="EvidenceOpen" xml:space="preserve"><value>打开 {0} 的证据</value></data>
+  <data name="EvidenceNone" xml:space="preserve"><value>此声明没有关联证据。</value></data>
+  <data name="EvidenceNoPermission" xml:space="preserve"><value>您无权查看声明证据。</value></data>
+  <data name="EvidenceUnavailable" xml:space="preserve"><value>暂时无法读取证据。</value></data>
+  <data name="NotesTitle" xml:space="preserve"><value>备注</value></data>
+  <data name="NotesIntro" xml:space="preserve"><value>备注随修订保存；未解决的备注会带入下一修订。</value></data>
+  <data name="NotesNone" xml:space="preserve"><value>此步骤没有备注。</value></data>
+  <data name="NoteTarget" xml:space="preserve"><value>备注位置</value></data>
+  <data name="NoteOnStep" xml:space="preserve"><value>步骤：{0}</value></data>
+  <data name="NoteOnBlock" xml:space="preserve"><value>块：{0}</value></data>
+  <data name="NotePlaceholder" xml:space="preserve"><value>要固定的备注</value></data>
+  <data name="NoteAdd" xml:space="preserve"><value>固定</value></data>
+  <data name="NoteAdded" xml:space="preserve"><value>备注已固定。</value></data>
+  <data name="NoteResolve" xml:space="preserve"><value>标记为已解决</value></data>
+  <data name="NoteResolved" xml:space="preserve"><value>已解决</value></data>
+  <data name="NoteResolvedBy" xml:space="preserve"><value>由 {0} 解决</value></data>
+  <data name="NoteCarried" xml:space="preserve"><value>来自修订 {0}</value></data>
+  <data name="DecisionTitle" xml:space="preserve"><value>决定</value></data>
+  <data name="DecisionTitleStep" xml:space="preserve"><value>决定 · {0}</value></data>
+  <data name="DecisionCommentLabel" xml:space="preserve"><value>备注/理由</value></data>
+  <data name="DecisionCommentPlaceholder" xml:space="preserve"><value>批准时可选；拒绝时必填</value></data>
+  <data name="DecisionApprove" xml:space="preserve"><value>批准</value></data>
+  <data name="DecisionReject" xml:space="preserve"><value>拒绝</value></data>
+  <data name="DecisionRejectNeedsComment" xml:space="preserve"><value>拒绝须填写理由。请写明哪个步骤或块需要修改以及如何修改。</value></data>
+  <data name="DecisionApproved" xml:space="preserve"><value>已记录批准（{0}）。下一步将在任务中心开启。</value></data>
+  <data name="DecisionRejected" xml:space="preserve"><value>已记录拒绝。提交人将修改后提交新修订。</value></data>
+  <data name="DecisionOwnRevision" xml:space="preserve"><value>此修订由您提交。提交人不能对自己的路径作出决定。</value></data>
+  <data name="DecisionClosed" xml:space="preserve"><value>此修订没有进行中的审批步骤。</value></data>
+  <data name="WizardTitle" xml:space="preserve"><value>绑定到链并提交审批</value></data>
+  <data name="WizardStepChain" xml:space="preserve"><value>选择链</value></data>
+  <data name="WizardStepMap" xml:space="preserve"><value>映射步骤</value></data>
+  <data name="WizardStepClaims" xml:space="preserve"><value>声明建议</value></data>
+  <data name="WizardStepSummary" xml:space="preserve"><value>摘要</value></data>
+  <data name="WizardChainIntro" xml:space="preserve"><value>路径将绑定的链模板。产品和受众来自链；国家和语言成为路径的身份。</value></data>
+  <data name="WizardBindNote" xml:space="preserve"><value>绑定后，此路径的链、国家和语言即固定。</value></data>
+  <data name="WizardBindNext" xml:space="preserve"><value>绑定并继续</value></data>
+  <data name="WizardMapIntro" xml:space="preserve"><value>将每个旧步骤映射到链步骤。没有对应的步骤不会被放置，在映射或移除前会阻止审批。</value></data>
+  <data name="WizardNoMatch" xml:space="preserve"><value>链中无对应</value></data>
+  <data name="WizardUnmapped" xml:space="preserve"><value>{0} 个步骤没有对应的链步骤：它们不会被放置，并会阻止审批。</value></data>
+  <data name="WizardMapNext" xml:space="preserve"><value>保存映射并继续</value></data>
+  <data name="WizardClaimsIntro" xml:space="preserve"><value>步骤内容引用的声明。请逐条接受或拒绝。</value></data>
+  <data name="WizardClaimsNote" xml:space="preserve"><value>不会自动绑定：只有您接受的声明才会添加到引用它的内容所在步骤。</value></data>
+  <data name="WizardAccept" xml:space="preserve"><value>接受</value></data>
+  <data name="WizardReject" xml:space="preserve"><value>拒绝</value></data>
+  <data name="WizardOnPath" xml:space="preserve"><value>已在路径中</value></data>
+  <data name="WizardFromStep" xml:space="preserve"><value>引用自：{0}</value></data>
+  <data name="WizardNeedsMapping" xml:space="preserve"><value>其步骤未映射，无法放置；请先映射步骤或拒绝。</value></data>
+  <data name="WizardNoSuggestions" xml:space="preserve"><value>步骤内容未引用任何声明。</value></data>
+  <data name="WizardUndecided" xml:space="preserve"><value>请对每条建议作出决定：还剩 {0} 条。</value></data>
+  <data name="WizardClaimsNext" xml:space="preserve"><value>应用决定并继续</value></data>
+  <data name="WizardFinish" xml:space="preserve"><value>完成</value></data>
+  <data name="WizardSummaryContext" xml:space="preserve"><value>国家 · 语言</value></data>
+  <data name="WizardSummaryMapped" xml:space="preserve"><value>已映射步骤</value></data>
+  <data name="WizardSummaryClaims" xml:space="preserve"><value>声明</value></data>
+  <data name="WizardMappedCount" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="WizardClaimsCount" xml:space="preserve"><value>已接受 {0} · 已拒绝 {1}</value></data>
+  <data name="WizardChainKept" xml:space="preserve"><value>此前已绑定</value></data>
+  <data name="WizardSummaryNote" xml:space="preserve"><value>在修订获批前路径处于未批准状态，不能在现场使用。您可以现在或稍后在工作区提交审批。</value></data>
+  <data name="Err_review_round_open" xml:space="preserve"><value>此路径已有进行中的审批轮次。</value></data>
+  <data name="Err_chain_conformance_failed" xml:space="preserve"><value>路径不符合其链（有步骤项数不足或超出）。</value></data>
+  <data name="Err_component_not_published" xml:space="preserve"><value>路径中有内容未发布。</value></data>
+  <data name="Err_claim_no_country_version" xml:space="preserve"><value>有声明在路径国家没有版本。</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>路径国家的审批模板尚未配置。请联系系统管理员。</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>审批工作流暂无响应，请稍后重试。</value></data>
+  <data name="Err_comment_required" xml:space="preserve"><value>拒绝须填写理由（最多 2000 个字符）。</value></data>
+  <data name="Err_sod_submitter_cannot_decide" xml:space="preserve"><value>此修订由您提交；提交人不能对其作出决定。</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>知识路径只能通过 MLR 流程批准，不能直接批准。</value></data>
+  <data name="Err_revision_not_approved" xml:space="preserve"><value>修订未获批准。</value></data>
+  <data name="Err_artifact_missing" xml:space="preserve"><value>此修订尚无输出。</value></data>
+  <data name="Err_revision_superseded" xml:space="preserve"><value>已有更新的修订取代此修订，请刷新页面。</value></data>
+  <data name="Err_revision_not_released" xml:space="preserve"><value>只有已发布的修订才能撤回。</value></data>
+  <data name="Err_sod_submitter_cannot_release" xml:space="preserve"><value>此修订由您提交，须由他人发布。</value></data>
+  <data name="Err_reason_required" xml:space="preserve"><value>撤回必须填写理由。</value></data>
+  <data name="Err_path_in_use" xml:space="preserve"><value>已发布的旅程阶段正在使用此路径，未执行撤回。</value></data>
+  <data name="Err_previous_path_in_use" xml:space="preserve"><value>被替换的版本仍固定在以下旅程阶段中：</value></data>
+  <data name="Err_artifact_store_unavailable" xml:space="preserve"><value>文档存储无响应，未生成输出。请稍后重试。</value></data>
+  <data name="Err_claim_not_approved" xml:space="preserve"><value>有声明在路径国家未获批准。</value></data>
+  <data name="Err_claim_language_mismatch" xml:space="preserve"><value>有声明没有路径语言的文本。</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>您不是此步骤的审阅人；决定权属于任务中心中分配给该步骤的岗位。</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>此修订没有待处理的审批步骤（可能刚刚结束）。</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>请选择批准或拒绝。</value></data>
+  <data name="Err_note_text_required" xml:space="preserve"><value>请填写备注内容。</value></data>
+  <data name="Err_note_not_found" xml:space="preserve"><value>未找到该备注，请刷新页面。</value></data>
+</root>

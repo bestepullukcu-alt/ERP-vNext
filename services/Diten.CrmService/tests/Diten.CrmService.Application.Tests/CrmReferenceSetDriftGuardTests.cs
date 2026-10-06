@@ -41,8 +41,6 @@ public sealed class CrmReferenceSetDriftGuardTests
     /// <summary>Constants that look like set codes by the rules above but are not reference set codes.</summary>
     private static readonly Dictionary<string, string> NotSetCodes = new(StringComparer.Ordinal)
     {
-        ["ClaimUsageItemTypes.ContentSet"] = "usage item type tag, not a reference set",
-        ["ContentCompositionAuditEntities.ContentSet"] = "audit entity type tag, not a reference set",
         ["SegmentAttributeValueSource.KindReferenceSet"] = "value-source kind name, not a reference set",
         ["ClaimReferenceSets.LanguagesAttribute"] = "attribute key on country-content-languages values",
         ["ClaimReferenceSets.VerbatimAdaptation"] = "value code of claim-adaptation-type",

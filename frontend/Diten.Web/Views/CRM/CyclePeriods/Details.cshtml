@@ -1,209 +1,227 @@
-@model Diten.Web.Models.CRM.CyclePeriodEditViewModel
+@model Diten.Web.Models.CRM.CyclePeriodDetailsViewModel
 @using Diten.Web.Views.CRM.CyclePeriods
-@using System.Globalization
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<CyclePeriodsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = SharedLocalizer["Details"].Value;
-    // The SAME shape the grid and the "in force today" badge use ("Jan 01, 26"), and pinned to en-US for the same
-    // reason: a window that reads one way on the list and another way here is a window nobody trusts. The request
-    // culture must not reach this format - under tr-TR "MMM" would render "Oca" and the two screens would disagree.
-    // The value is read as UtcDateTime for the same reason the grid formats in UTC: the window is a stored calendar
-    // DAY, and rendering it through a server offset east of Greenwich would show the day before.
-    const string DayFormat = "MMM dd, yy";
-    var dayCulture = CultureInfo.GetCultureInfo("en-US");
+    var p = Model.Period;
+    ViewData["Title"] = p.CycleName;
     Layout = "_LayoutTenantShell";
-    var canManage = ViewData["CanManage"] as bool? ?? false;
-    var statusClass = Model.IsActive ? "bg-label-success" : Model.IsClosed ? "bg-label-secondary" : "bg-label-warning";
-    var scopeRef = Model.ScopeType switch
-    {
-        "country" => Model.CountryScope,
-        "legal-entity" => Model.LegalEntityId?.ToString(),
-        "business-unit" => Model.BusinessUnitId,
-        _ => null
-    };
+    var status = CyclePeriodScreenRules.NormalizeStatus(p.CycleStatus);
+    var statusClass = status switch { "active" => "bg-label-success", "closed" => "bg-label-secondary", _ => "bg-label-warning" };
+    var start = CyclePeriodScreenRules.ToDay(p.StartDate);
+    var end = CyclePeriodScreenRules.ToDay(p.EndDate);
+    var scopeType = CyclePeriodScreenRules.NormalizeScope(p.ScopeType);
+    // Dates and numbers are formatted in the browser, in the reader's culture (data-day / data-number), from ISO values.
+    string Iso(DateOnly d) => CyclePeriodScreenRules.Iso(d);
+    string? IsoStamp(DateTimeOffset? d) => d?.ToUniversalTime().ToString("O");
 }
 
-<div class="cycle-period-details">
-    <div class="d-flex align-items-center justify-content-between mb-3">
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/crm-cycle-periods.css" asp-append-version="true" />
+}
+
+<div class="cycle-period-details" id="cyclePeriodDetails"
+     data-period-id="@p.CyclePeriodId" data-status="@status" data-code="@p.CycleCode" data-name="@p.CycleName">
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
         <div>
-            <h5 class="mb-0">@SharedLocalizer["Details"]</h5>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="/CRM/CyclePeriods">@Localizer["CyclePeriodsTitle"]</a>
-                    </li>
-                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="/CRM/CyclePeriods">@Localizer["CyclePeriodsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@p.CycleCode</li>
                 </ol>
             </nav>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <h5 class="mb-0">@p.CycleName</h5>
+                <span class="badge @statusClass">@Localizer["CycleStatus_" + status]</span>
+            </div>
+            <div class="text-muted small mt-1">
+                <span class="fw-medium text-heading">@p.CycleCode</span>
+                · <span data-day="@Iso(start)"></span> – <span data-day="@Iso(end)"></span>
+                · @Localizer["ScopeType_" + scopeType]@(string.IsNullOrWhiteSpace(Model.ScopeRef) ? "" : ": " + Model.ScopeRef)
+            </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex flex-wrap align-items-center gap-2">
             <a href="/CRM/CyclePeriods" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
-            @* A closed period accepts no mutation at all, so no edit affordance is offered for one. *@
-            @if (canManage && !Model.IsClosed)
+            @if (Model.Actions.Edit)
             {
-                <a href="/CRM/CyclePeriods/Edit/@Model.CyclePeriodId" class="btn btn-primary">@SharedLocalizer["Edit"]</a>
+                <button type="button" class="btn btn-outline-primary js-edit-period" data-id="@p.CyclePeriodId">
+                    <i class="icon-base bx bx-edit me-1"></i>@SharedLocalizer["Edit"]
+                </button>
+            }
+            @if (Model.Actions.Activate)
+            {
+                <button type="button" class="btn btn-success js-activate-period" data-id="@p.CyclePeriodId" data-name="@p.CycleName">
+                    <i class="icon-base bx bx-play-circle me-1"></i>@Localizer["ActivateCyclePeriod"]
+                </button>
+            }
+            @if (Model.Actions.Close)
+            {
+                <button type="button" class="btn btn-label-danger js-close-period" data-id="@p.CyclePeriodId" data-name="@p.CycleName">
+                    <i class="icon-base bx bx-lock-alt me-1"></i>@Localizer["CloseCyclePeriod"]
+                </button>
             }
         </div>
     </div>
 
+    @if (status == "closed")
+    {
+        <div class="alert alert-secondary" role="status">@Localizer["ClosedBanner"]</div>
+    }
+    <div id="detailsActionError" class="alert alert-danger d-none" role="alert"></div>
+
     <div class="row g-4">
-        <!-- Main Column (Left) -->
+        <!-- Main Column -->
         <div class="col-12 col-lg-8 d-flex flex-column gap-4">
             <section class="card backbone-preview-section p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SummarySection"]</h6>
                 <div class="row g-4">
                     <div class="col-12 col-md-6">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-purchase-tag-alt"></i>
-                            <div>
-                                <div class="backbone-preview-label">@Localizer["CycleCode"]</div>
-                                <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.CycleCode) ? "-" : Model.CycleCode)</div>
-                            </div>
+                        <div class="backbone-preview-label">@Localizer["Dates"]</div>
+                        <div class="backbone-preview-value mt-1"><span data-day="@Iso(start)"></span> – <span data-day="@Iso(end)"></span></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-label">@Localizer["DaysAndWorkingDays"]</div>
+                        <div class="backbone-preview-value mt-1">
+                            <span data-number="@CyclePeriodScreenRules.DayCount(start, end)"></span> @Localizer["DaysUnit"]
+                            · <span id="detailsWorkingDays">—</span> @Localizer["WorkingDaysUnit"]
                         </div>
                     </div>
                     <div class="col-12 col-md-6">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-file"></i>
-                            <div>
-                                <div class="backbone-preview-label">@Localizer["CycleName"]</div>
-                                <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.CycleName) ? "-" : Model.CycleName)</div>
-                            </div>
-                        </div>
+                        <div class="backbone-preview-label">@Localizer["YearAndSequence"]</div>
+                        <div class="backbone-preview-value mt-1"><span data-number="@p.Year" data-plain="1"></span> · <span data-number="@p.SequenceInYear"></span></div>
                     </div>
                     <div class="col-12 col-md-6">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-calendar"></i>
-                            <div>
-                                <div class="backbone-preview-label">@Localizer["Year"]</div>
-                                <div class="backbone-preview-value mt-1">@(Model.Year?.ToString() ?? "-")</div>
-                            </div>
+                        <div class="backbone-preview-label">@Localizer["Scope"]</div>
+                        <div class="backbone-preview-value mt-1">
+                            <span class="badge bg-label-primary">@Localizer["ScopeType_" + scopeType]</span>
+                            @if (string.IsNullOrWhiteSpace(Model.ScopeRef))
+                            {
+                                <span class="ms-1">@Localizer["ScopeTenantWide"]</span>
+                            }
+                            else if (!string.IsNullOrWhiteSpace(p.BusinessUnitCountryContext))
+                            {
+                                <span class="ms-1 text-muted">@p.BusinessUnitCountryContext</span><span class="text-muted"> / </span><span>@Model.ScopeRef</span>
+                            }
+                            else
+                            {
+                                <span class="ms-1">@Model.ScopeRef</span>
+                            }
                         </div>
+                        @if (!string.IsNullOrWhiteSpace(p.BusinessUnitSource))
+                        {
+                            <span class="badge bg-label-secondary mt-1">@Localizer["BusinessUnitSource_" + p.BusinessUnitSource]</span>
+                        }
                     </div>
-                    <div class="col-12 col-md-6">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-sort-a-z"></i>
-                            <div>
-                                <div class="backbone-preview-label">@Localizer["SequenceInYear"]</div>
-                                <div class="backbone-preview-value mt-1">@(Model.SequenceInYear?.ToString() ?? "-")</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-calendar-event"></i>
-                            <div>
-                                <div class="backbone-preview-label">@Localizer["StartDate"]</div>
-                                <div class="backbone-preview-value mt-1">@(Model.StartDate?.UtcDateTime.ToString(DayFormat, dayCulture) ?? "-")</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-calendar-check"></i>
-                            <div>
-                                @* Inclusive: the last day named is part of the period. *@
-                                <div class="backbone-preview-label">@Localizer["EndDate"]</div>
-                                <div class="backbone-preview-value mt-1">@(Model.EndDate?.UtcDateTime.ToString(DayFormat, dayCulture) ?? "-")</div>
-                            </div>
-                        </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-label">@SharedLocalizer["Description"]</div>
+                        <div class="backbone-preview-description mt-1">@(string.IsNullOrWhiteSpace(p.Description) ? Localizer["NoDescription"].Value : p.Description)</div>
                     </div>
                 </div>
+
+                @* Lifecycle line: draft → active → closed, with who / when. *@
+                <h6 class="text-uppercase text-heading fw-semibold mt-4 mb-3">@Localizer["LifecycleSection"]</h6>
+                <ol class="cp-lifecycle list-unstyled d-flex flex-wrap gap-4 mb-2">
+                    <li class="cp-step cp-step--done">
+                        <span class="cp-step-dot" aria-hidden="true"></span>
+                        <div>
+                            <div class="fw-medium">@Localizer["StatusDraft"]</div>
+                            <small class="text-muted">@(p.CreatedBy ?? "—") · <span data-stamp="@IsoStamp(p.CreatedAt)"></span></small>
+                        </div>
+                    </li>
+                    <li class="cp-step @(p.ActivatedAt is not null ? "cp-step--done" : status == "draft" ? "" : "cp-step--done")">
+                        <span class="cp-step-dot" aria-hidden="true"></span>
+                        <div>
+                            <div class="fw-medium">@Localizer["StatusActive"]</div>
+                            <small class="text-muted">
+                                @if (p.ActivatedAt is not null)
+                                {
+                                    @(p.ActivatedBy ?? "—")<text> · </text><span data-stamp="@IsoStamp(p.ActivatedAt)"></span>
+                                }
+                                else
+                                {
+                                    @Localizer["NotActivatedYet"]
+                                }
+                            </small>
+                        </div>
+                    </li>
+                    <li class="cp-step @(status == "closed" ? "cp-step--done" : "")">
+                        <span class="cp-step-dot" aria-hidden="true"></span>
+                        <div>
+                            <div class="fw-medium">@Localizer["StatusClosed"]</div>
+                            <small class="text-muted">
+                                @if (p.ClosedAt is not null)
+                                {
+                                    @(p.ClosedBy ?? "—")<text> · </text><span data-stamp="@IsoStamp(p.ClosedAt)"></span>
+                                }
+                                else
+                                {
+                                    @Localizer["NotClosedYet"]
+                                }
+                            </small>
+                        </div>
+                    </li>
+                </ol>
+                <p class="text-muted small mb-0">@Localizer["LifecycleNote"]</p>
             </section>
 
             <section class="card backbone-preview-section p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-3">@SharedLocalizer["Description"]</h6>
-                <div class="backbone-preview-description">@(string.IsNullOrWhiteSpace(Model.Description) ? "-" : Model.Description)</div>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["CalendarSummary"]</h6>
+                    <span id="calendarStatusBadge" class="badge bg-label-secondary">@SharedLocalizer["Loading"]</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0" id="calendarSummaryTable">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["Month"]</th>
+                                <th class="text-end">@Localizer["CalendarDays"]</th>
+                                <th class="text-end">@Localizer["WorkingDaysUnit"]</th>
+                                <th class="text-end">@Localizer["NonWorkingDays"]</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </section>
         </div>
 
-        <!-- Sidebar Column (Right) -->
-        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+        <!-- Linked records -->
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4" id="usageColumn" aria-busy="true">
             <section class="card backbone-preview-section p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ScopeSection"]</h6>
-                <div class="row g-4">
-                    <div class="col-12">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-target-lock"></i>
-                            <div>
-                                <div class="backbone-preview-label">@Localizer["ScopeType"]</div>
-                                <div class="backbone-preview-value mt-1">
-                                    <span class="badge bg-label-primary">@Localizer["ScopeType_" + Model.ScopeType]</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-map-pin"></i>
-                            <div>
-                                <div class="backbone-preview-label">@Localizer["ScopeRef"]</div>
-                                @* A business unit is shown with the country it was chosen under ("TR / alpha"). The
-                                   country is CONTEXT, not identity — the scope reference is the unit alone. *@
-                                <div class="backbone-preview-value mt-1">
-                                    @if (string.IsNullOrWhiteSpace(scopeRef))
-                                    {
-                                        @Localizer["ScopeTenantWide"].Value
-                                    }
-                                    else if (!string.IsNullOrWhiteSpace(Model.BusinessUnitCountryContext))
-                                    {
-                                        <span class="text-muted" title="@Localizer["BusinessUnitCountryContext"]">@Model.BusinessUnitCountryContext</span>
-                                        <span class="text-muted"> / </span>
-                                        <span>@scopeRef</span>
-                                    }
-                                    else
-                                    {
-                                        @scopeRef
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @if (!string.IsNullOrWhiteSpace(Model.BusinessUnitSource))
-                    {
-                        <div class="col-12">
-                            <div class="backbone-preview-field">
-                                <i class="bx bx-shape-square"></i>
-                                <div>
-                                    @* Provenance only: it says how the code was chosen, never which scope the period is
-                                       in. Two periods on the same code are the same scope whatever this says. *@
-                                    <div class="backbone-preview-label">@Localizer["BusinessUnitSourceLabel"]</div>
-                                    <div class="mt-1">
-                                        <span class="badge bg-label-secondary">@Localizer["BusinessUnitSource_" + Model.BusinessUnitSource]</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["CycleCapacity"]</h6>
+                <div id="usageCapacity" class="text-muted">@SharedLocalizer["Loading"]</div>
             </section>
-
             <section class="card backbone-preview-section p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LifecycleSection"]</h6>
-                <div class="row g-4">
-                    <div class="col-12">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-check-shield"></i>
-                            <div>
-                                <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
-                                <div class="mt-1">
-                                    <span class="badge @statusClass">@Localizer["CycleStatus_" + Model.CycleStatus]</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-git-branch"></i>
-                            <div>
-                                <div class="backbone-preview-label">@Localizer["Version"]</div>
-                                <div class="backbone-preview-value mt-1">@(Model.ExpectedVersion?.ToString() ?? "-")</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["PlannedVisits"] <span id="usageVisitTotal" class="badge bg-label-primary ms-1"></span></h6>
+                <div id="usageVisits" class="text-muted">@SharedLocalizer["Loading"]</div>
+            </section>
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["Campaigns"] <span id="usageCampaignTotal" class="badge bg-label-primary ms-1"></span></h6>
+                <div id="usageCampaigns" class="text-muted">@SharedLocalizer["Loading"]</div>
+            </section>
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["PlanningSessions"]</h6>
+                <div id="usageSessions" class="text-muted">@SharedLocalizer["Loading"]</div>
             </section>
         </div>
     </div>
 </div>
+
+@if (Model.CanManage)
+{
+    <partial name="~/Views/CRM/CyclePeriods/_PeriodPanel.cshtml" model="Model.ScopeOptions" />
+}
+
+<script id="cycleperiod-page-flags" type="application/json">{"canManage": @(Model.CanManage ? "true" : "false"), "canActivate": @(Model.CanActivate ? "true" : "false")}</script>
+
+@section Scripts {
+    <partial name="~/Views/CRM/CyclePeriods/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/CyclePeriods/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/CyclePeriods/shared.js" asp-append-version="true"></script>
+    @if (Model.CanManage)
+    {
+        <script src="~/assets/js/CRM/CyclePeriods/panel.js" asp-append-version="true"></script>
+    }
+    <script src="~/assets/js/CRM/CyclePeriods/details.js" asp-append-version="true"></script>
+}

@@ -39,9 +39,9 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string KnowledgePathRead = "crm.knowledge.path.read";
     private const string ContentEngagementJourneyRead = "crm.knowledge.content-engagement-journey.read";
     private const string ClaimRead = "crm.claim.read";
-    private const string ContentScopeRead = "crm.content-scope.read";
-    private const string ContentSetRead = "crm.content-set.read";
     private const string EligibilityRead = "crm.eligibility.read";
+    private const string SafetyTextRead = "crm.safety-text.read";
+    private const string CountryLegalProfileRead = "crm.country-legal-profile.read";
 
     // MOD-0165-FU03 (WP-FREQ-A). The canonical crm.visit-frequency-policy.* keys are not seeded yet, so — exactly like
     // the CrmService [HasPermission] guards and the Diten.Web console — the page's read gate runs on the documented
@@ -148,15 +148,23 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("MANAGE", "New Claim", "crm.claim.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("APPROVE", "Approve", "crm.claim.approve", "RowAction", 20, false, false, true)
                 ]),
-                // SCMM-14 (CAND-CAP-0011) Content Studio — reusable ContentScope + ContentSet (assembly draft) consoles.
-                new ModuleManifestPage("CONTENT_SCOPES", "Content Scopes", "/CRM/ContentScopes", ContentScopeRead, null, true, "List", 150,
+                // WP-KP-5a-UI — the Regulatory-approved master data the page designer's locked blocks will read
+                // (DESIGN-KP-STUDIO §2.4): safety texts (product × country × language) and country legal profiles
+                // (country × language). The approval itself is the MOD-0023 Regulatory task (K1); SUBMIT sends a draft
+                // to it. No delete surface (Archive).
+                new ModuleManifestPage("SAFETY_TEXTS", "Safety Texts", "/CRM/SafetyTexts", SafetyTextRead, null, true, "List", 150,
                 [
-                    new ModuleManifestAction("MANAGE", "New Scope", "crm.content-scope.manage", "Toolbar", 10, false, true, false)
+                    new ModuleManifestAction("MANAGE", "New Safety Text", "crm.safety-text.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("SUBMIT", "Submit for Approval", "crm.safety-text.submit", "RowAction", 20, false, false, true)
                 ]),
-                new ModuleManifestPage("CONTENT_SETS", "Content Sets", "/CRM/ContentSets", ContentSetRead, null, true, "List", 160,
+                new ModuleManifestPage("LEGAL_PROFILES", "Legal Profiles", "/CRM/LegalProfiles", CountryLegalProfileRead, null, true, "List", 160,
                 [
-                    new ModuleManifestAction("MANAGE", "New Content Set", "crm.content-set.manage", "Toolbar", 10, false, true, false)
+                    new ModuleManifestAction("MANAGE", "New Legal Profile", "crm.country-legal-profile.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("SUBMIT", "Submit for Approval", "crm.country-legal-profile.submit", "RowAction", 20, false, false, true)
                 ]),
+                // WP-SB-1R retired the Content Scopes page (CONTENT_SCOPES) and WP-KP-4 the Content Sets page
+                // (CONTENT_SETS): the Knowledge Path Studio (KNOWLEDGE_PATHS) took the content set's job. A re-registration
+                // of this manifest prunes both pages from the live menu.
                 // SCMM-11-UI (CAND-CAP-0011) eligibility policy authoring + evaluate. evaluate is a SEPARATE key from
                 // manage (author-vs-evaluator SoD); no delete surface (Archive).
                 new ModuleManifestPage("ELIGIBILITY_POLICIES", "Eligibility Policies", "/CRM/EligibilityPolicies", EligibilityRead, null, true, "List", 170,

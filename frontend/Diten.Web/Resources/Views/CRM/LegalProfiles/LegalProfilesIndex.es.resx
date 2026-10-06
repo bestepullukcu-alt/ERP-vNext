@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Abrir</value></data>
+  <data name="OpenDetails" xml:space="preserve"><value>Abrir detalle</value></data>
+  <data name="OnlyActive" xml:space="preserve"><value>Solo activos</value></data>
+  <data name="Code" xml:space="preserve"><value>Código</value></data>
+  <data name="Country" xml:space="preserve"><value>País</value></data>
+  <data name="Language" xml:space="preserve"><value>Idioma</value></data>
+  <data name="Version" xml:space="preserve"><value>Versión</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="Status_in-review" xml:space="preserve"><value>En revisión</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Activo</value></data>
+  <data name="Status_superseded" xml:space="preserve"><value>Sustituido</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="ArchivedFilter" xml:space="preserve"><value>Registros archivados</value></data>
+  <data name="ArchivedHidden" xml:space="preserve"><value>Ocultar archivados</value></data>
+  <data name="ArchivedShown" xml:space="preserve"><value>Mostrar archivados</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nuevo borrador</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar borrador</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Identidad</value></data>
+  <data name="IdentityLockedHint" xml:space="preserve"><value>La identidad no cambia tras la creación</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seleccione…</value></data>
+  <data name="CharCountTpl" xml:space="preserve"><value>{0} / {1} caracteres</value></data>
+  <data name="FieldRequired" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>Esta lista no se puede leer en este momento.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="NotFound" xml:space="preserve"><value>No se encontró el registro.</value></data>
+  <data name="Created" xml:space="preserve"><value>Borrador creado.</value></data>
+  <data name="Updated" xml:space="preserve"><value>Borrador guardado.</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>Historial de versiones</value></data>
+  <data name="ThisVersion" xml:space="preserve"><value>esta versión</value></data>
+  <data name="NoVersions" xml:space="preserve"><value>No hay otras versiones.</value></data>
+  <data name="DecisionRecord" xml:space="preserve"><value>Registro de decisiones</value></data>
+  <data name="NoDecisions" xml:space="preserve"><value>Aún no hay decisiones.</value></data>
+  <data name="DecisionPanelTitle" xml:space="preserve"><value>Decisión regulatoria</value></data>
+  <data name="DecisionComment" xml:space="preserve"><value>Comentario</value></data>
+  <data name="DecisionCommentHint" xml:space="preserve"><value>Opcional al aprobar; obligatorio al rechazar.</value></data>
+  <data name="DecisionCommentRequired" xml:space="preserve"><value>Escriba el motivo del rechazo.</value></data>
+  <data name="DecisionOutcome_approve" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="DecisionOutcome_reject" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="SubmittedTpl" xml:space="preserve"><value>Enviado por {0} · {1}</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Enviar a aprobación</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>¿Enviar este borrador a la aprobación regulatoria? No podrá modificarse durante la revisión.</value></data>
+  <data name="Withdraw" xml:space="preserve"><value>Retirar</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>¿Retirarlo de la revisión? Vuelve a borrador y se cancela la tarea de aprobación.</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Nueva versión</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>¿Abrir una nueva versión en borrador a partir de esta?</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archivar</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>¿Archivar este registro? Seguirá siendo legible pero ya no se podrá usar.</value></data>
+  <data name="Approve" xml:space="preserve"><value>Aprobar</value></data>
+  <data name="Reject" xml:space="preserve"><value>Rechazar</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Enviado a la aprobación regulatoria.</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>Retirado de la revisión.</value></data>
+  <data name="Approved" xml:space="preserve"><value>Aprobado: esta versión ya está activa.</value></data>
+  <data name="Rejected" xml:space="preserve"><value>Rechazado: el borrador vuelve a su autor.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivado.</value></data>
+  <data name="VersionCreated" xml:space="preserve"><value>Nueva versión en borrador creada.</value></data>
+  <data name="ReviewTemplateAdminNote" xml:space="preserve"><value>Pida a su administrador que defina la plantilla de aprobación regulatoria (KP-REG) para este país.</value></data>
+  <data name="Err_safety_text_open_draft_exists" xml:space="preserve"><value>Este producto, país e idioma ya tienen un borrador abierto o una versión en revisión.</value></data>
+  <data name="Err_legal_profile_open_draft_exists" xml:space="preserve"><value>Este país e idioma ya tienen un borrador abierto o una versión en revisión.</value></data>
+  <data name="Err_review_template_missing" xml:space="preserve"><value>No hay ninguna plantilla de aprobación regulatoria definida para este país.</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>Un rechazo requiere un comentario.</value></data>
+  <data name="Err_not_editable" xml:space="preserve"><value>Solo se puede modificar un borrador. Abra una nueva versión para cambiar un texto activo.</value></data>
+  <data name="Err_self_decision_forbidden" xml:space="preserve"><value>No puede decidir sobre un registro que envió usted, o esta tarea no le está asignada.</value></data>
+  <data name="Err_country_invalid" xml:space="preserve"><value>Este país no está en la lista de países.</value></data>
+  <data name="Err_language_not_in_country" xml:space="preserve"><value>Este idioma no es un idioma de contenido del país seleccionado.</value></data>
+  <data name="Err_reference_set_unavailable" xml:space="preserve"><value>La lista de países no se puede leer ahora; no se puede elegir el país.</value></data>
+  <data name="Err_product_not_found" xml:space="preserve"><value>Este producto no está en el catálogo de productos MDM.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>No se puede acceder al catálogo de productos (MDM) ahora; no se puede elegir el producto.</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>La decisión debe ser Aprobar o Rechazar.</value></data>
+  <data name="LegalProfilesTitle" xml:space="preserve"><value>Perfiles legales</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Textos legales aprobados por Asuntos Regulatorios por país e idioma: una sola versión activa por clave.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Nuevo perfil legal</value></data>
+  <data name="SectionLegal" xml:space="preserve"><value>Textos legales</value></data>
+  <data name="LegalFooterText" xml:space="preserve"><value>Pie legal</value></data>
+  <data name="MarketingAuthorizationHolder" xml:space="preserve"><value>Titular de la autorización de comercialización</value></data>
+  <data name="MarketingAuthorizationHolderHint" xml:space="preserve"><value>Nombre y dirección.</value></data>
+  <data name="AdverseEventReportingText" xml:space="preserve"><value>Texto de notificación de reacciones adversas</value></data>
+  <data name="PromotionalNotice" xml:space="preserve"><value>Aviso promocional</value></data>
+  <data name="SectionPageApproval" xml:space="preserve"><value>Código de aprobación de página</value></data>
+  <data name="PageApprovalCodeFormat" xml:space="preserve"><value>Formato del código</value></data>
+  <data name="PageApprovalCodeFormatHint" xml:space="preserve"><value>{CC} = país, {YYYY} = año, {SEQ} = número de secuencia.</value></data>
+  <data name="PageApprovalCodeExampleLabel" xml:space="preserve"><value>Ejemplo</value></data>
+  <data name="PageApprovalCodeExampleTpl" xml:space="preserve"><value>p. ej. {0}</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Usuario desconocido</value></data>
+</root>

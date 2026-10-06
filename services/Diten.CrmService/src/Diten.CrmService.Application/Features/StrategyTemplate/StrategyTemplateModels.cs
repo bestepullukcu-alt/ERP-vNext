@@ -43,7 +43,12 @@ public sealed record StrategyTemplateListItemDto(
     bool IsArchived,
     int Version,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    // WP-SB-3a — product line summary: lines told as promo / non-promo (a pre-SB-3a line counts as promo) and lines that
+    // carry no journey yet (fixed with a new version).
+    int PromoLineCount = 0,
+    int NonPromoLineCount = 0,
+    int LinesWithoutJourneyCount = 0);
 
 public sealed record StrategyTemplateListDto(
     IReadOnlyList<StrategyTemplateListItemDto> Items,
@@ -99,7 +104,12 @@ public sealed record StrategyTemplateDetailDto(
     DateTimeOffset CreatedAt,
     string? CreatedBy,
     DateTimeOffset? UpdatedAt,
-    string? UpdatedBy);
+    string? UpdatedBy,
+    // WP-SB-3a — product line summary: lines told as promo / non-promo (a pre-SB-3a line counts as promo) and lines that
+    // carry no journey yet (fixed with a new version).
+    int PromoLineCount = 0,
+    int NonPromoLineCount = 0,
+    int LinesWithoutJourneyCount = 0);
 
 public sealed record StrategyTemplateSegmentBindingDto(
     Guid BindingId,
@@ -129,7 +139,16 @@ public sealed record StrategyTemplateProductLineDto(
     IReadOnlyList<StrategyTemplateSkuAllocationDto> SkuAllocations,
     decimal TotalPercentage,
     int SortOrder,
-    string? Notes);
+    string? Notes,
+    // WP-SB-3a (DESIGN-SB-3 §3.1) — the role the line is told in (a pre-SB-3a line reads "promo"), its journey and the
+    // read-time journey hints (warnings, never blocks). JourneyMissing = a pre-SB-3a line without a journey.
+    string Role = Diten.CrmService.Domain.Entities.StrategyProductLineRoles.Promo,
+    Guid? JourneyId = null,
+    string? JourneyCode = null,
+    string? JourneyName = null,
+    string? JourneyStatus = null,
+    bool JourneyMissing = false,
+    IReadOnlyList<string>? JourneyWarnings = null);
 
 public sealed record StrategyTemplateSkuAllocationDto(
     Guid AllocationId,
@@ -145,7 +164,9 @@ public sealed record StrategyTemplateContentBindingDto(
     string? ContentCodeDisplay,
     string? ContentVersionAtBinding,
     int SortOrder,
-    string? Notes);
+    string? Notes,
+    // WP-SB-3a — the type is retired for new writes (the journey moved onto the product line); the binding still reads.
+    bool Retired = false);
 
 // ---------------------------------------------------------------------------------------------------------------
 // Write inputs. Child ids are optional on input: the runtime assigns them, so an id belonging to another template can
@@ -173,7 +194,10 @@ public sealed record StrategyTemplateProductLineInput(
     string SkuAllocationMode,
     IReadOnlyList<StrategyTemplateSkuAllocationInput>? SkuAllocations,
     int SortOrder,
-    string? Notes);
+    string? Notes,
+    // WP-SB-3a — required on a write (400 product_line_role_required / product_line_journey_required).
+    string? Role = null,
+    Guid? JourneyId = null);
 
 public sealed record StrategyTemplateSkuAllocationInput(
     Guid GskuId,
@@ -204,7 +228,12 @@ public sealed record StrategyTemplateBindingsDto(
     IReadOnlyList<StrategyTemplateSegmentBindingViewDto> SegmentBindings,
     StrategyTemplateFrequencyIntentViewDto FrequencyIntent,
     IReadOnlyList<StrategyTemplateProductLineViewDto> ProductLines,
-    IReadOnlyList<StrategyTemplateContentBindingViewDto> ContentBindings);
+    IReadOnlyList<StrategyTemplateContentBindingViewDto> ContentBindings,
+    // WP-SB-3a — product line summary: lines told as promo / non-promo (a pre-SB-3a line counts as promo) and lines that
+    // carry no journey yet (fixed with a new version).
+    int PromoLineCount = 0,
+    int NonPromoLineCount = 0,
+    int LinesWithoutJourneyCount = 0);
 
 public sealed record StrategyTemplateSegmentBindingViewDto(
     Guid BindingId,
@@ -243,7 +272,16 @@ public sealed record StrategyTemplateProductLineViewDto(
     IReadOnlyList<StrategyTemplateSkuAllocationDto> SkuAllocations,
     decimal TotalPercentage,
     bool ContainmentVerified,
-    int SortOrder);
+    int SortOrder,
+    // WP-SB-3a (DESIGN-SB-3 §3.1) — the role the line is told in (a pre-SB-3a line reads "promo"), its journey and the
+    // read-time journey hints (warnings, never blocks). JourneyMissing = a pre-SB-3a line without a journey.
+    string Role = Diten.CrmService.Domain.Entities.StrategyProductLineRoles.Promo,
+    Guid? JourneyId = null,
+    string? JourneyCode = null,
+    string? JourneyName = null,
+    string? JourneyStatus = null,
+    bool JourneyMissing = false,
+    IReadOnlyList<string>? JourneyWarnings = null);
 
 public sealed record StrategyTemplateContentBindingViewDto(
     Guid BindingId,
@@ -254,7 +292,9 @@ public sealed record StrategyTemplateContentBindingViewDto(
     string? CurrentStatus,
     bool Archived,
     bool Published,
-    int SortOrder);
+    int SortOrder,
+    // WP-SB-3a — retired for new writes; the existing binding is still read (and by the visit resolver until SB-3b).
+    bool Retired = false);
 
 // ---------------------------------------------------------------------------------------------------------------
 // WP-ST-SCOPE — the cascading scope selector's read model. A deliberate mirror of the campaign's, three feeds and three

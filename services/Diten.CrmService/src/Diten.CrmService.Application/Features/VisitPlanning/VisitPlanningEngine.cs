@@ -246,23 +246,20 @@ public sealed class VisitPlanningEngine
             session.Selection.SelectedContacts, session.Selection.SegmentId, visitPurpose, at, cancellationToken);
 
         // ④ CONTENT + DURATION per doctor (FU04) + build the candidate visit set.
+        // WP-SB-3b — the stage comes from the doctor's JourneyProgress per product (read by the resolver), projected over
+        // the doctor's plans that are not cancelled / archived (nothing is "completed" before SB-3c) and fall before the
+        // planning window: each of them that tells a product moves that product one stage (and one exposure) on.
+        var pendingPlans = (await _plannedVisits.ListAsync(tenantId, cancellationToken))
+            .Where(p => p.ContactId is not null && p.ContentItems.Count > 0 && !p.IsCancelled() && !p.IsArchived())
+            .ToList();
         var accountCache = new Dictionary<Guid, AccountEntity?>();
         var candidates = new List<Candidate>();
         var contentPreviews = new List<DoctorContentPreview>();
 
         foreach (var doctor in assessments)
         {
-            var priorStageIndex = await ResolvePriorStageIndexAsync(tenantId, doctor.ContactId, cancellationToken);
-            var content = await _content.ResolveAsync(
-                new VisitContentSequenceRequest(
-                    SubjectType: PlannedVisitTargetType.Contact,
-                    SubjectId: doctor.ContactId,
-                    SegmentId: session.Selection.SegmentId,
-                    StrategyTemplateId: session.Provenance.StrategyTemplateId,
-                    CyclePeriodId: session.CyclePeriodId,
-                    PriorStageIndex: priorStageIndex,
-                    EffectiveAt: at),
-                cancellationToken);
+            var pending = PendingBefore(pendingPlans, doctor.ContactId, weeksStart);
+            var content = await ResolveContentAsync(session, doctor.ContactId, pending, at, cancellationToken);
 
             var duration = content.VisitDurationMinutes > 0
                 ? content.VisitDurationMinutes
@@ -286,12 +283,15 @@ public sealed class VisitPlanningEngine
                 NonPromoItemCount: content.NonPromoItemCount,
                 ContentStatus: content.Status,
                 ConsentBlocked: doctor.ConsentBlocked,
-                Windows: doctor.AvailabilityWindows));
+                Windows: doctor.AvailabilityWindows,
+                Content: content,
+                ContentPending: pending));
 
             contentPreviews.Add(new DoctorContentPreview(
                 doctor.ContactId, doctor.AccountId, content.Status, content.JourneyId, content.StageId,
                 content.StageIndex, content.StageDisplayName, content.PromoItemCount, content.NonPromoItemCount,
-                duration, content.ReasonCodes, doctor.ConsentStatus, doctor.ConsentBlocked, doctor.ConsentReason));
+                duration, content.ReasonCodes, doctor.ConsentStatus, doctor.ConsentBlocked, doctor.ConsentReason,
+                content.Items ?? Array.Empty<VisitContentItem>()));
         }
 
         // Pharmacy targets (first-class; report-only duration) + bare account targets (no doctor selected under them).
@@ -390,6 +390,10 @@ public sealed class VisitPlanningEngine
                     weekIndex, candidate.TargetType, candidate.TargetId, candidate.ContactId, missed.Reason));
             }
         }
+
+        // WP-SB-3b — a doctor recurs across weeks (frequency-extend), so each placed visit tells what comes AFTER the
+        // doctor's earlier visits: the stored pending plans before its date plus this run's earlier visits.
+        placed = await ProjectContentAsync(session, placed, pendingPlans, at, cancellationToken);
 
         // ⑥ SUPPLY-vs-DEMAND — TRANSIENT summary (warning, never a block).
         var supplyDemand = await BuildSupplyDemandAsync(
@@ -494,17 +498,22 @@ public sealed class VisitPlanningEngine
         };
 
         // Content ref (FU04 result → FU01's own journey probe, so the same validation the create handler runs applies).
-        if (candidate.JourneyId is { } journeyId && journeyId != Guid.Empty)
+        // WP-SB-3b — the visit's own (projected) content; the singular ref is its first promo item (mobile contract).
+        var content = placed.Content ?? candidate.Content;
+        if (content?.JourneyId is { } journeyId && journeyId != Guid.Empty)
         {
             var journey = await _journeyProbe.ResolveAsync(
-                journeyId, candidate.StageId, PlannedVisitContentSource.Strategy,
+                journeyId, content.StageId, PlannedVisitContentSource.Strategy,
                 session.Provenance.StrategyTemplateId, cancellationToken);
             if (journey.ContentRef is { } contentRef)
             {
-                contentRef.StageIndex = candidate.StageIndex;
+                contentRef.StageIndex = content.StageIndex;
                 entity.Content = contentRef;
             }
         }
+
+        // WP-SB-3b — the product list FROZEN at plan time (a later path release does not change this plan).
+        entity.ContentItems = (content?.Items ?? Array.Empty<VisitContentItem>()).Select(ToContentItem).ToList();
 
         // Derived provenance — read-only, stored not enforced (mirrors the FU01 create handler exactly).
         entity.Frequency = await _frequencyProbe.ResolveAsync(entity, session.Selection.SegmentId, cancellationToken);
@@ -516,17 +525,105 @@ public sealed class VisitPlanningEngine
 
     // ── helpers ──────────────────────────────────────────────────────────────────────────────────────────────────
 
-    private async Task<int?> ResolvePriorStageIndexAsync(
-        Guid tenantId, Guid contactId, CancellationToken cancellationToken)
+    private Task<VisitContentSequenceResult> ResolveContentAsync(
+        PlanningSession session, Guid contactId, IReadOnlyList<VisitContentPendingExposure> pending, DateTimeOffset at,
+        CancellationToken cancellationToken)
+        => _content.ResolveAsync(
+            new VisitContentSequenceRequest(
+                SubjectType: PlannedVisitTargetType.Contact,
+                SubjectId: contactId,
+                SegmentId: session.Selection.SegmentId,
+                StrategyTemplateId: session.Provenance.StrategyTemplateId,
+                CyclePeriodId: session.CyclePeriodId,
+                PriorStageIndex: null, // WP-SB-3b — the stage comes from JourneyProgress (+ pending), not the last plan
+                EffectiveAt: at,
+                PendingExposures: pending),
+            cancellationToken);
+
+    /// <summary>WP-SB-3b — the doctor's stored plans before <paramref name="before"/> (not cancelled / archived) that tell
+    /// a product, counted per (product, journey).</summary>
+    private static IReadOnlyList<VisitContentPendingExposure> PendingBefore(
+        IReadOnlyList<PlannedVisitEntity> pendingPlans, Guid contactId, DateOnly before)
+        => Count(pendingPlans
+            .Where(p => p.ContactId == contactId && p.PlannedDate < before)
+            .SelectMany(p => p.ContentItems.Select(i => (i.ProductId, i.JourneyId))));
+
+    private static IReadOnlyList<VisitContentPendingExposure> Count(IEnumerable<(Guid ProductId, Guid JourneyId)> told)
+        => told
+            .GroupBy(t => t)
+            .Select(g => new VisitContentPendingExposure(g.Key.ProductId, g.Key.JourneyId, g.Count()))
+            .OrderBy(p => p.ProductId).ThenBy(p => p.JourneyId)
+            .ToList();
+
+    /// <summary>
+    /// WP-SB-3b — the content of every placed doctor visit, in date order per doctor: the stored pending plans before the
+    /// visit's date plus the doctor's earlier visits of THIS run project the stage / exposure on (CT rule). A visit whose
+    /// projection equals the one the candidate was resolved with keeps that result; any other is resolved again. The
+    /// slot duration stays the candidate's (the route was packed with it).
+    /// </summary>
+    private async Task<List<PlacedVisit>> ProjectContentAsync(
+        PlanningSession session, List<PlacedVisit> placed, IReadOnlyList<PlannedVisitEntity> pendingPlans,
+        DateTimeOffset at, CancellationToken cancellationToken)
     {
-        // Content auto-advances: the prior index is the doctor's last PlannedVisit content StageIndex (D-CONTENT-ADVANCE).
-        var plans = await _plannedVisits.ListAsync(tenantId, cancellationToken);
-        var last = plans
-            .Where(p => p.ContactId == contactId && p.Content?.StageIndex is not null && !p.IsCancelled())
-            .OrderByDescending(p => p.PlannedDate)
-            .FirstOrDefault();
-        return last?.Content?.StageIndex;
+        var earlierInRun = new Dictionary<Guid, List<(Guid ProductId, Guid JourneyId)>>();
+        var ordered = placed
+            .Select((p, i) => (Visit: p, Index: i))
+            .OrderBy(x => x.Visit.Date).ThenBy(x => x.Visit.SequenceOrder).ThenBy(x => x.Index)
+            .ToList();
+        var projected = new PlacedVisit[placed.Count];
+
+        foreach (var (visit, index) in ordered)
+        {
+            if (visit.Candidate.ContactId is not { } contactId || visit.Candidate.Content is not { } baseline
+                || visit.Candidate.TargetType != PlannedVisitTargetType.Contact)
+            {
+                projected[index] = visit;
+                continue;
+            }
+
+            if (!earlierInRun.TryGetValue(contactId, out var told))
+            {
+                told = new List<(Guid, Guid)>();
+                earlierInRun[contactId] = told;
+            }
+
+            var pending = Count(pendingPlans
+                .Where(p => p.ContactId == contactId && p.PlannedDate < visit.Date)
+                .SelectMany(p => p.ContentItems.Select(i => (i.ProductId, i.JourneyId)))
+                .Concat(told));
+            var content = pending.SequenceEqual(visit.Candidate.ContentPending ?? Array.Empty<VisitContentPendingExposure>())
+                ? baseline
+                : await ResolveContentAsync(session, contactId, pending, at, cancellationToken);
+
+            told.AddRange((content.Items ?? Array.Empty<VisitContentItem>()).Select(i => (i.ProductId, i.JourneyId)));
+            projected[index] = visit with { Content = content };
+        }
+
+        return projected.ToList();
     }
+
+    private static PlannedVisitContentItem ToContentItem(VisitContentItem item) => new()
+    {
+        ProductId = item.ProductId,
+        ProductCode = item.ProductCode,
+        Role = item.Role,
+        JourneyId = item.JourneyId,
+        JourneyCode = item.JourneyCode,
+        StageId = item.StageId,
+        StageIndex = item.StageIndex,
+        StageCode = item.StageCode,
+        StageName = item.StageName,
+        PathId = item.PathId,
+        PathCode = item.PathCode,
+        PathVersion = item.PathVersion,
+        Steps = item.Steps.Select(s => new PlannedVisitContentStep
+        {
+            StepId = s.StepId, ContentId = s.ContentId, ContentCode = s.ContentCode, Title = s.Title, Type = s.Type,
+            Minutes = s.Minutes
+        }).ToList(),
+        Claims = item.Claims.Select(c => new PlannedVisitContentClaim { ClaimId = c.ClaimId, ClaimCode = c.ClaimCode }).ToList(),
+        Warnings = item.Warnings.ToList()
+    };
 
     private async Task<(double Lat, double Long)> ResolveCoordinatesAsync(
         Guid tenantId, Guid? accountId, Dictionary<Guid, AccountEntity?> cache, CancellationToken cancellationToken)
@@ -550,10 +647,17 @@ public sealed class VisitPlanningEngine
         => new(
             targetType, targetId, accountId, null, null, lat, lng, duration,
             null, null, null, 0, 0, VisitContentSequenceStatus.NotApplicable, false,
-            Array.Empty<AvailabilityWindow>());
+            Array.Empty<AvailabilityWindow>(), null, null);
 
-    private static int DefaultDuration(CapacityEntity? capacity)
-        => capacity is null ? DefaultVisitDurationMinutes : Math.Max(1, ActivityTimeBudgetCalculator.VisitDuration(capacity, 0, 0));
+    /// <summary>WP-CAP-MODEL — a typical-model capacity plans an unsequenced visit at its TYPICAL visit length (the
+    /// same minutes the capacity divides by); a legacy row keeps today's value (the report charge only).
+    /// <para>Public only so the rule can be tested directly; it reads nothing but the capacity.</para></summary>
+    public static int DefaultDuration(CapacityEntity? capacity)
+        => capacity is null
+            ? DefaultVisitDurationMinutes
+            : Math.Max(1, capacity.UsesTypicalVisitModel()
+                ? capacity.TypicalVisitMinutes()
+                : ActivityTimeBudgetCalculator.VisitDuration(capacity, 0, 0));
 
     private static GeoPoint? ResolveStartLocation(VisitPlanGenerationOptions options)
         => options.StartLat is { } lat && options.StartLong is { } lng ? new GeoPoint(lat, lng) : null;
@@ -622,15 +726,20 @@ public sealed class VisitPlanningEngine
         int NonPromoItemCount,
         string ContentStatus,
         bool ConsentBlocked,
-        IReadOnlyList<AvailabilityWindow> Windows);
+        IReadOnlyList<AvailabilityWindow> Windows,
+        VisitContentSequenceResult? Content,
+        IReadOnlyList<VisitContentPendingExposure>? ContentPending);
 
+    /// <summary><see cref="Content"/> — WP-SB-3b: the visit's own content (projected over the doctor's earlier visits);
+    /// null for a non-doctor visit.</summary>
     private sealed record PlacedVisit(
         Candidate Candidate,
         int WeekNumber,
         DateOnly Date,
         string StartTime,
         string EndTime,
-        int SequenceOrder);
+        int SequenceOrder,
+        VisitContentSequenceResult? Content = null);
 
     private sealed record GenerationOutput(
         PlanningSession Session,
@@ -677,10 +786,16 @@ public sealed class VisitPlanningEngine
                 Guid.NewGuid(), p.WeekNumber, p.Candidate.TargetType, p.Candidate.TargetId,
                 p.Candidate.AccountId, p.Candidate.ContactId, p.Candidate.AccountContactLinkId,
                 p.Date.ToString("yyyy-MM-dd"), p.StartTime, p.EndTime, p.SequenceOrder,
-                p.Candidate.DurationMinutes, p.Candidate.JourneyId, p.Candidate.StageId, p.Candidate.StageIndex,
-                p.Candidate.PromoItemCount, p.Candidate.NonPromoItemCount, p.Candidate.ContentStatus,
+                p.Candidate.DurationMinutes,
+                p.Content?.JourneyId ?? p.Candidate.JourneyId,
+                p.Content is { } c1 ? c1.StageId : p.Candidate.StageId,
+                p.Content is { } c2 ? c2.StageIndex : p.Candidate.StageIndex,
+                p.Content?.PromoItemCount ?? p.Candidate.PromoItemCount,
+                p.Content?.NonPromoItemCount ?? p.Candidate.NonPromoItemCount,
+                p.Content?.Status ?? p.Candidate.ContentStatus,
                 p.Candidate.ContactId is { } cid && contactNames.TryGetValue(cid, out var info) ? info.Name : null,
-                p.Candidate.ContactId is { } cid2 && contactNames.TryGetValue(cid2, out var info2) ? info2.Specialty : null))
+                p.Candidate.ContactId is { } cid2 && contactNames.TryGetValue(cid2, out var info2) ? info2.Specialty : null,
+                p.Content?.Items ?? p.Candidate.Content?.Items ?? Array.Empty<VisitContentItem>()))
             .ToList();
 
         return new VisitPlanPreview(

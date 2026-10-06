@@ -72,11 +72,28 @@ public sealed class CycleCapacityDetailApiModel
     /// <summary>MOD-0155 FU06B — the between-visit buffer, server-defaulted and range-checked.</summary>
     public int BetweenVisitTimeMinutes { get; set; }
 
+    /// <summary>WP-SB-3a — per-visit product ceilings (3 / 3 on a pre-SB-3a record, CRM fills the effective value).</summary>
+    public int? MaxPromoProducts { get; set; }
+
+    public int? MaxNonPromoProducts { get; set; }
+
     public string? Description { get; set; }
     public List<CycleCapacityMonthApiModel> Months { get; set; } = [];
     public bool IsArchived { get; set; }
     public bool IsEditable { get; set; }
     public int Version { get; set; }
+
+    /// <summary>WP-CAP-MODEL — the typical visit (null on a legacy row).</summary>
+    public int? TypicalPromoCount { get; set; }
+
+    public int? TypicalNonPromoCount { get; set; }
+    public int? ReportMinutesPerVisit { get; set; }
+
+    /// <summary>WP-CAP-MODEL — <c>typical</c> / <c>legacy</c>.</summary>
+    public string VisitModel { get; set; } = string.Empty;
+
+    public int TypicalVisitMinutes { get; set; }
+    public int DailyFixedMinutes { get; set; }
 }
 
 public sealed class CycleCapacityMonthApiModel
@@ -139,6 +156,21 @@ public sealed class CycleCapacityPeriodSelectorItemApiModel
 public sealed class CycleCapacityContractApiModel
 {
     public CycleCapacityDefaultsApiModel? Defaults { get; set; }
+
+    /// <summary>WP-CYC-UI-2 (E9) — the published ceilings the form enforces.</summary>
+    public CycleCapacityContractLimitsApiModel? Limits { get; set; }
+}
+
+/// <summary>The contract's <c>limits</c> block, as much of it as the form needs.</summary>
+public sealed class CycleCapacityContractLimitsApiModel
+{
+    public int MaxMinutesPerDay { get; set; }
+    public int MaxMinutesPerVisit { get; set; }
+    public int MaxBufferMinutes { get; set; }
+    public int MinDailyWorkMinutes { get; set; }
+    public int MaxDailyWorkMinutes { get; set; }
+    public int MaxDeductionDays { get; set; }
+    public int MaxDescriptionLength { get; set; }
 }
 
 public sealed class CycleCapacityDefaultsApiModel

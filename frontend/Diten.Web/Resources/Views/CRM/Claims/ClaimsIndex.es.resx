@@ -178,4 +178,13 @@
   <data name="Err_country_not_closed" xml:space="preserve"><value>Este país no está marcado como no abierto.</value></data>
   <data name="Err_invalid_reference_value" xml:space="preserve"><value>Seleccione un motivo válido.</value></data>
   <data name="Err_required" xml:space="preserve"><value>Seleccione un motivo.</value></data>
+  <data name="QvUsage" xml:space="preserve"><value>Dónde se usa</value></data>
+  <data name="QvUsageNone" xml:space="preserve"><value>Ningún contenido, ruta de conocimiento o recorrido usa esta afirmación.</value></data>
+  <data name="QvUsageFailed" xml:space="preserve"><value>No se pudo cargar el uso.</value></data>
+  <data name="UsageGlobal" xml:space="preserve"><value>Global (afirmación central)</value></data>
+  <data name="UsageVia" xml:space="preserve"><value>a través de {0}</value></data>
+  <data name="UsageNeedsReview" xml:space="preserve"><value>La versión de la afirmación usada aquí debe revisarse.</value></data>
+  <data name="UsageType_content" xml:space="preserve"><value>Contenido</value></data>
+  <data name="UsageType_knowledge-path" xml:space="preserve"><value>Ruta de conocimiento</value></data>
+  <data name="UsageType_journey" xml:space="preserve"><value>Recorrido</value></data>
 </root>

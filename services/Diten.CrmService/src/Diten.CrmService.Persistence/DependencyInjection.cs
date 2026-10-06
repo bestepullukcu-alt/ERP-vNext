@@ -139,14 +139,18 @@ public static class DependencyInjection
         services.AddScoped<IClaimCountryVersionRepository, ClaimCountryVersionRepository>();
         // WP-CL-BE-4 — consumed-event inbox (claim workflow outcome consumer).
         services.AddScoped<ICrmEventInboxRepository, CrmEventInboxRepository>();
-        // SCMM-14 (CAND-CAP-0011) — reusable content scope + content-set assembly draft masters.
-        services.AddScoped<IContentScopeRepository, ContentScopeRepository>();
-        services.AddScoped<IContentSetRepository, ContentSetRepository>();
-        services.AddScoped<IContentSetRevisionRepository, ContentSetRevisionRepository>();
+        // WP-CLN-1 — the content scope / content set / set revision repositories are removed (retired by WP-KP-4;
+        // no set / revision data, one scope document left for CLN-2; the collections and indexes stay in place).
 
         // MOD-0162 FU04 — KnowledgePath master (steps embedded, D2 → one collection, one repository). No delete method
         // (soft archive). The read-only consumption seam a future MOD-0155/MOD-0309 consumer reads makes no decision.
         services.AddScoped<IKnowledgePathRepository, KnowledgePathRepository>();
+        // WP-KP-2 — frozen MLR review revisions of a knowledge path (own collection, no delete).
+        services.AddScoped<IKnowledgePathRevisionRepository, KnowledgePathRevisionRepository>();
+        // WP-KP-5a — the Regulatory-approved master texts (safety text, country legal profile): one collection each, no
+        // delete (archive).
+        services.AddScoped<ISafetyTextRepository, SafetyTextRepository>();
+        services.AddScoped<ICountryLegalProfileRepository, CountryLegalProfileRepository>();
         services.AddScoped<
             Application.Features.Knowledge.Path.IKnowledgePathReader,
             Application.Features.Knowledge.Path.KnowledgePathReader>();
@@ -195,6 +199,8 @@ public static class DependencyInjection
         // reports bindings only: no MicroTarget, no VisitFrequencyPolicy, no CampaignTarget is ever produced here.
         services.AddScoped<IStrategyTemplateRepository, StrategyTemplateRepository>();
         services.AddScoped<Application.Features.StrategyTemplate.Binding.StrategyTemplateBindingValidator>();
+        // WP-SB-3a — the read side of a product line's journey (name / status / hints); read-only.
+        services.AddScoped<Application.Features.StrategyTemplate.Binding.StrategyTemplateLineJourneyReader>();
         // WP-ST-SCOPE - the play scope write gate. Scoped like every other write-path component; it holds the shared
         // read-only reference/MDM seams (reused from the campaign/cycle-period path) and no repository. The scope-options
         // handler is a MediatR handler, auto-registered by assembly scan; its seams are already registered above/in
@@ -216,6 +222,11 @@ public static class DependencyInjection
         // business-unit vocabularies, and the fail-closed MDM check, in one place so create and draft-edit cannot
         // drift. Everything it does happens BEFORE any insert or replace.
         services.AddScoped<Application.Features.CyclePeriod.Services.CyclePeriodScopeWriteValidator>();
+        // WP-CYC-UI-1 - the read-only usage seam (capacity / campaigns / planning sessions / their committed visits that
+        // point AT a period). It cannot write, so the usage read and the list summaries never touch those aggregates.
+        services.AddScoped<
+            Application.Features.CyclePeriod.Read.ICyclePeriodUsageReader,
+            Repositories.CyclePeriodUsageReader>();
 
         // MOD-0155 FU06 - CycleCapacity: the visit-capacity model of ONE cycle period (one collection, month rows
         // EMBEDDED so the aggregate is a single document). No delete: retiring a capacity is the soft archive.
@@ -237,6 +248,10 @@ public static class DependencyInjection
         // MOD-0155 FU01 - PlannedVisit: the field team's planning atom (one collection). No delete: a plan is
         // cancelled/archived so its history stays readable. Single-document writes only, guarded by the Version token.
         services.AddScoped<IPlannedVisitRepository, PlannedVisitRepository>();
+
+        // WP-SB-3b - JourneyProgress (doctor x product x journey). Read by the visit content resolver; written only by
+        // the SB-3c visit completion (no endpoint writes it).
+        services.AddScoped<IJourneyProgressRepository, JourneyProgressRepository>();
 
         // MOD-0155 FU05 - PlanningSession staging store + the atomic apply/re-plan unit of work. The unit of work spans
         // planning_sessions + planned_visits in one all-or-nothing operation (transaction on a replica set, compensated
@@ -630,56 +645,13 @@ public static class DependencyInjection
         Map<ClaimLocalizedText>(_ => { });
         Map<ClaimReviewRound>(map => map.GetMemberMap(x => x.WorkflowInstanceId).SetSerializer(stringGuid));
 
-        // SCMM-14 (CAND-CAP-0011) — ContentScope has no Guid FK (only Id/TenantId on the base map); registered so the
-        // driver maps it explicitly rather than as an anonymous document.
-        Map<ContentScope>(_ => { });
-
-        // SCMM-14 (CAND-CAP-0011) — ContentSet. Its Guid FKs live in embedded value objects; each takes the string-Guid
-        // convention (the new-aggregate class-map trap) so a stored ref round-trips as a string subtype and any future
-        // by-ref filter compares string vs string, not string vs binary.
-        Map<ContentSet>(_ => { });
-        Map<ContentSetTemplateRef>(map =>
-            map.GetMemberMap(x => x.ConceptChainTemplateId).SetSerializer(stringGuid));
-        Map<ContentSetScopeRef>(map =>
-            map.GetMemberMap(x => x.ContentScopeId).SetSerializer(stringGuid));
-        Map<ContentArrangement>(map =>
-            map.GetMemberMap(x => x.TemplateStepId).SetSerializer(stringGuid));
-        Map<ContentSetComponent>(map =>
-        {
-            map.GetMemberMap(x => x.SelectionId).SetSerializer(stringGuid);
-            map.GetMemberMap(x => x.KnowledgeContentId).SetSerializer(stringGuid);
-        });
-        Map<ContentSetClaim>(map =>
-        {
-            map.GetMemberMap(x => x.SelectionId).SetSerializer(stringGuid);
-            map.GetMemberMap(x => x.ClaimId).SetSerializer(stringGuid);
-        });
-        Map<ContentSetEligibilitySnapshot>(_ => { });
-        Map<ContentSetEligibilityItem>(map =>
-        {
-            map.GetMemberMap(x => x.SelectionId).SetSerializer(stringGuid);
-            map.GetMemberMap(x => x.ItemId).SetSerializer(stringGuid);
-            map.GetMemberMap(x => x.PolicyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
-        });
-
-        // SCMM-15 (CAND-CAP-0011) — ContentSetRevision (frozen manifest). ContentSetId takes the string-Guid convention
-        // (the new-aggregate class-map trap); the snapshot value objects reuse the already-registered ContentSet* maps.
-        // ContentSetReviewDecision carries no Guid member — registered so the driver maps it explicitly, not anonymously.
-        // WP-SB-2 — the produced content / path ids take the string-Guid convention too (the new-field class-map trap).
-        Map<ContentSetRevision>(map =>
-        {
-            map.GetMemberMap(x => x.ContentSetId).SetSerializer(stringGuid);
-            map.GetMemberMap(x => x.ProducedKnowledgeContentId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
-            map.GetMemberMap(x => x.ProducedKnowledgePathId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
-        });
-        Map<ContentSetReviewDecision>(_ => { });
-        // SCMM-16B — the rendered-artifact pointer. ContentId is a FU01 content id and takes the same string-Guid
-        // convention (the new-aggregate class-map trap) so it round-trips as a string rather than a binary sub type.
-        Map<ContentSetRenderedArtifact>(map =>
-            map.GetMemberMap(x => x.ContentId).SetSerializer(stringGuid));
-        // SCMM-17 — the release state. The pinned released-artifact content id takes the same string-Guid convention.
-        Map<ContentSetReleaseState>(map =>
-            map.GetMemberMap(x => x.ReleasedArtifactContentId).SetSerializer(stringGuid));
+        // WP-KP-5a — the regulatory texts: the shared base (lifecycle, rounds, decisions) and the two kinds. Id / TenantId
+        // live on the EntityBase map; the safety text's product id takes the string-Guid convention (the new-aggregate
+        // trap); the review rounds reuse the ClaimReviewRound map above; the embedded decision is registered explicitly.
+        Map<RegulatoryText>(_ => { });
+        Map<RegulatoryTextDecision>(_ => { });
+        Map<SafetyText>(map => map.GetMemberMap(x => x.GlobalProductId).SetSerializer(stringGuid));
+        Map<CountryLegalProfile>(_ => { });
 
         Map<KnowledgeExternalReference>(_ => { });
 
@@ -755,6 +727,40 @@ public static class DependencyInjection
         // members serialize a string while the stored value is binary, and lookups silently return NOTHING (the
         // AccountTerritoryAssignment lesson). The embedded types MUST have their own class map registered or their Guid
         // members fall through to the global Standard serializer (binary sub-type 4).
+        // WP-KP-1 — the studio model embedded on a path (chain ref, step / claim arrangement, claims). Every id takes the
+        // string-Guid convention (the new-field class-map trap); a pre-KP-1 document has none of these elements and
+        // reads back as a legacy path (ChainTemplate / CountryCode / Arrangement null, Claims empty).
+        Map<KnowledgePathChainRef>(map => map.GetMemberMap(x => x.ConceptChainTemplateId).SetSerializer(stringGuid));
+        // WP-KP-2 — the revision aggregate and every embedded type: all ids take the string-Guid convention (the
+        // new-aggregate class-map trap — a missing map stores binary Guids and every PathId query returns nothing).
+        Map<KnowledgePathRevision>(map => map.GetMemberMap(x => x.PathId).SetSerializer(stringGuid));
+        Map<KnowledgePathRevisionSnapshot>(map =>
+        {
+            map.GetMemberMap(x => x.ConceptChainTemplateId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.ProductId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(x => x.AudienceProfileIds).SetSerializer(
+                new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+        });
+        Map<KnowledgePathRevisionStep>(map =>
+        {
+            map.GetMemberMap(x => x.StepId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.ContentId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.PrerequisiteStepId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
+        Map<KnowledgePathRevisionClaim>(map =>
+        {
+            map.GetMemberMap(x => x.ClaimId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.CountryVersionId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
+        Map<KnowledgePathRevisionConformance>(map => map.GetMemberMap(x => x.ChainStepId).SetSerializer(stringGuid));
+        Map<KnowledgePathRevisionPage>(map => map.GetMemberMap(x => x.PageId).SetSerializer(stringGuid));
+        Map<KnowledgePathRevisionNote>(map => map.GetMemberMap(x => x.NoteId).SetSerializer(stringGuid));
+        Map<KnowledgePathChangeSummary>(_ => { });
+        Map<KnowledgePathChange>(_ => { });
+        Map<KnowledgePathRenderedArtifact>(map => map.GetMemberMap(x => x.ContentId).SetSerializer(stringGuid));
+        Map<KnowledgePathReleaseState>(_ => { });
+        Map<KnowledgePathArrangement>(map => map.GetMemberMap(x => x.ChainStepId).SetSerializer(stringGuid));
+        Map<KnowledgePathClaim>(map => map.GetMemberMap(x => x.ClaimId).SetSerializer(stringGuid));
         Map<KnowledgePath>(map =>
         {
             map.GetMemberMap(p => p.SubjectId).SetSerializer(stringGuid);
@@ -881,6 +887,8 @@ public static class DependencyInjection
                 map.AutoMap();
                 map.GetMemberMap(l => l.LineId).SetSerializer(stringGuid);
                 map.GetMemberMap(l => l.GlobalProductId).SetSerializer(stringGuid);
+                // WP-SB-3a — the line's journey: string-Guid like its siblings, or a by-journey filter matches nothing.
+                map.GetMemberMap(l => l.JourneyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             });
         }
         if (!BsonClassMap.IsClassMapRegistered(typeof(StrategyTemplateSkuAllocation)))
@@ -1017,6 +1025,47 @@ public static class DependencyInjection
         {
             BsonClassMap.RegisterClassMap<PlannedVisitAvailabilitySnapshot>(map => map.AutoMap());
         }
+
+        // WP-SB-3b - the frozen per-product visit content (PlannedVisit.ContentItems) and its two embedded types. Every
+        // Guid takes the string-Guid convention (the embedded-type trap: an unmapped type stores its ids binary).
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitContentItem)))
+        {
+            BsonClassMap.RegisterClassMap<PlannedVisitContentItem>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(i => i.ProductId).SetSerializer(stringGuid);
+                map.GetMemberMap(i => i.JourneyId).SetSerializer(stringGuid);
+                map.GetMemberMap(i => i.StageId).SetSerializer(stringGuid);
+                map.GetMemberMap(i => i.PathId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitContentStep)))
+        {
+            BsonClassMap.RegisterClassMap<PlannedVisitContentStep>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(s => s.StepId).SetSerializer(stringGuid);
+                map.GetMemberMap(s => s.ContentId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitContentClaim)))
+        {
+            BsonClassMap.RegisterClassMap<PlannedVisitContentClaim>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(c => c.ClaimId).SetSerializer(stringGuid);
+            });
+        }
+
+        // WP-SB-3b - JourneyProgress: its key Guids (ContactId / ProductId / JourneyId) and the last report id take the
+        // string-Guid convention, or a by-key filter (string) would silently miss a binary stored value.
+        Map<JourneyProgress>(map =>
+        {
+            map.GetMemberMap(p => p.ContactId).SetSerializer(stringGuid);
+            map.GetMemberMap(p => p.ProductId).SetSerializer(stringGuid);
+            map.GetMemberMap(p => p.JourneyId).SetSerializer(stringGuid);
+            map.GetMemberMap(p => p.LastVisitReportId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
 
         // MOD-0155 FU05 - PlanningSession (thin staging aggregate) and its THREE embedded types + one embedded contact.
         // Every Guid FK on the root AND on each embedded type takes the string-Guid convention, or the ids
@@ -1628,18 +1677,6 @@ public static class DependencyInjection
                 Builders<ClaimCountryVersion>.IndexKeys.Ascending(v => v.TenantId).Ascending(v => v.ClaimId),
                 new CreateIndexOptions { Name = "ix_claim_country_versions_tenant_claim" }));
 
-            // SCMM-14 (CAND-CAP-0011) — content-scope + content-set indexes (tenant scoped). Codes are shared across
-            // versions / not unique ⇒ non-unique; uniqueness of the ACTIVE code is guarded in the create handlers.
-            var contentScopes = database.GetCollection<ContentScope>(ContentScopeRepository.CollectionName);
-            contentScopes.Indexes.CreateOne(new CreateIndexModel<ContentScope>(
-                Builders<ContentScope>.IndexKeys.Ascending(s => s.TenantId).Ascending(s => s.ScopeCode),
-                new CreateIndexOptions { Name = "ix_content_scopes_tenant_code" }));
-
-            var contentSets = database.GetCollection<ContentSet>(ContentSetRepository.CollectionName);
-            contentSets.Indexes.CreateOne(new CreateIndexModel<ContentSet>(
-                Builders<ContentSet>.IndexKeys.Ascending(s => s.TenantId).Ascending(s => s.SetCode),
-                new CreateIndexOptions { Name = "ix_content_sets_tenant_code" }));
-
             // MOD-0162 FU03 — concept-graph indexes (tenant scoped, soft-delete aware). EffectiveFrom / EffectiveTo /
             // ArchivedAt are DateTimeOffset (BSON array) and are deliberately NOT index keys (parallel-array trap); code
             // uniqueness is enforced in the create handlers (an archived code is reusable), so no partial $ne filter.
@@ -1686,6 +1723,25 @@ public static class DependencyInjection
             // (parallel-array trap); in-array StepOrder/StepCode uniqueness cannot be an index (the handler is the
             // defence) and (PathCode, PathVersion) uniqueness is enforced in the create handler (an archived code is
             // reusable), so no partial $ne filter that would crash-loop the service.
+            // WP-KP-2 — knowledge_path_revisions: one revision number per (tenant, path) — the store refuses a second
+            // submission racing for the same number.
+            // WP-KP-5a — one ACTIVE regulatory text per key (equality partial filter; never $ne).
+            var safetyTexts = database.GetCollection<SafetyText>(SafetyTextRepository.CollectionName);
+            // One OPEN version per key as well: the derived OpenKey with a $type partial filter (never $ne).
+            safetyTexts.Indexes.CreateOne(SafetyTextRepository.ActiveKeyIndex());
+            safetyTexts.Indexes.CreateOne(SafetyTextRepository.OpenKeyIndex(SafetyTextRepository.OpenKeyIndexName));
+            safetyTexts.Indexes.CreateOne(SafetyTextRepository.LookupIndex());
+            var legalProfiles = database.GetCollection<CountryLegalProfile>(CountryLegalProfileRepository.CollectionName);
+            legalProfiles.Indexes.CreateOne(CountryLegalProfileRepository.ActiveKeyIndex());
+            legalProfiles.Indexes.CreateOne(
+                CountryLegalProfileRepository.OpenKeyIndex(CountryLegalProfileRepository.OpenKeyIndexName));
+
+            var pathRevisions = database.GetCollection<KnowledgePathRevision>(KnowledgePathRevisionRepository.CollectionName);
+            pathRevisions.Indexes.CreateOne(new CreateIndexModel<KnowledgePathRevision>(
+                Builders<KnowledgePathRevision>.IndexKeys
+                    .Ascending(r => r.TenantId).Ascending(r => r.PathId).Ascending(r => r.RevisionNumber),
+                new CreateIndexOptions { Unique = true, Name = "ux_knowledge_path_revisions_tenant_path_number" }));
+
             var knowledgePaths = database.GetCollection<KnowledgePath>(KnowledgePathRepository.CollectionName);
             knowledgePaths.Indexes.CreateOne(new CreateIndexModel<KnowledgePath>(
                 Builders<KnowledgePath>.IndexKeys
@@ -1784,6 +1840,10 @@ public static class DependencyInjection
             // the create handler (an archived code is reusable, which a partial filter cannot express, and $ne in a
             // partial-index filter crash-loops the service at startup), so this is a plain lookup index rather than a
             // unique one.
+            // WP-SB-3b - journey_progress: the unique (tenant, contact, product, journey) key.
+            database.GetCollection<JourneyProgress>(JourneyProgressRepository.CollectionName)
+                .Indexes.CreateOne(JourneyProgressRepository.KeyIndex());
+
             var plannedVisits = database.GetCollection<PlannedVisit>(PlannedVisitRepository.CollectionName);
             plannedVisits.Indexes.CreateOne(new CreateIndexModel<PlannedVisit>(
                 Builders<PlannedVisit>.IndexKeys.Ascending(v => v.TenantId).Ascending(v => v.VisitCode),

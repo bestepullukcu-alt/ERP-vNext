@@ -51,10 +51,19 @@ public static class DependencyInjection
         // IKnowledgePathReader seam is never widened and no FU04 aggregate is ever mutated.
         services.AddScoped<Features.Knowledge.ContentEngagementJourney.ContentEngagementJourneyPathResolver>();
 
-        // WP-SB-2 — the content set release → knowledge bridge (assembled-presentation content + chain-ordered path).
-        // Writes only through the existing Knowledge commands (ISender); scoped so it shares the request's tenant/actor.
-        services.AddScoped<Features.ContentComposition.ContentSetRevisions.IContentSetReleaseProducer,
-            Features.ContentComposition.ContentSetRevisions.ContentSetReleaseProducer>();
+        // WP-KP-1 — the single chain context resolver (product + audience a chain template derives) of the knowledge
+        // path studio model.
+        services.AddScoped<Features.Knowledge.Chain.IChainContextResolver, Features.Knowledge.Chain.ChainContextResolver>();
+
+        // WP-KP-1 — the studio part of a knowledge path detail read (chain, derived context, claims, conformance).
+        services.AddScoped<Features.Knowledge.Path.KnowledgePathStudioReader>();
+        // WP-KP-2 — the path review: the single outcome applier (event consumer, reconcile, withdraw) + reconcile-on-read.
+        services.AddScoped<Features.Knowledge.Path.Review.KnowledgePathRevisionOutcomeApplier>();
+        services.AddScoped<Features.Knowledge.Path.Review.KnowledgePathReviewReconciler>();
+        // WP-KP-5a — the regulatory texts (safety text, country legal profile): the single outcome applier (event
+        // consumer, reconcile, withdraw) + reconcile-on-read.
+        services.AddScoped<Features.Knowledge.Regulatory.RegulatoryTextOutcomeApplier>();
+        services.AddScoped<Features.Knowledge.Regulatory.RegulatoryTextReviewReconciler>();
 
         // MOD-0155 FU01 — the four read-only PlannedVisit provenance probes. Each is a thin in-process wrapper over an
         // already-registered seam (frequency resolver, consent evaluator, journey reader, contact-availability repo):
@@ -80,6 +89,9 @@ public static class DependencyInjection
         // persists nothing and only READS the already-registered strategy / journey / segment / content-linkage seams
         // plus the CycleCapacity repo, then delegates the arithmetic to the pure FU06B ActivityTimeBudgetCalculator.
         services.AddScoped<Features.VisitContentSequence.VisitContentSequenceResolver>();
+        // WP-SB-3b — the resolver v2's extra READ seam: journey progress, knowledge paths, contact specialty, audience.
+        services.AddScoped<Features.VisitContentSequence.IVisitContentSourceReader,
+            Features.VisitContentSequence.VisitContentSourceReader>();
 
         // MOD-0155 FU05 — the MicroTarget Visit Planning Engine + its read-only selection helpers. The engine is a
         // sealed coordinator: it CONSUMES FU03 (IRouteOptimizer), FU04 (VisitContentSequenceResolver), FU06B

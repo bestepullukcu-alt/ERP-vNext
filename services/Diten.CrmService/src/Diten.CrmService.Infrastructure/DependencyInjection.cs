@@ -71,15 +71,13 @@ public static class DependencyInjection
         services.AddScoped<Application.Features.ConsentPreference.IContactConsentPreferenceReader,
             ConsentPreference.NullContactConsentPreferenceReader>();
 
-        // SCMM-16B (CAND-CAP-0011) — ContentSetRevision render pipeline. The PDF renderer is stateless (singleton). The
-        // artifact store is a typed Gateway client that forwards the caller's token to the MOD-0262-FU01 document
-        // repository (fail-closed: a store failure fails the render). Platform/FU01 is consumed as-is, never modified.
+        // WP-KP-3 — the knowledge path revision archive PDF (PDFsharp/MigraDoc; stateless). WP-KP-4 retired the content
+        // set renderer. The artifact store is a typed Gateway client that forwards the caller's token to the
+        // MOD-0262-FU01 document repository (fail-closed: a store failure fails the render). FU01 is consumed as-is.
         services.AddSingleton<
-            Application.Features.ContentComposition.ContentSetRevisions.Rendering.IContentSetRevisionRenderer,
-            ContentComposition.Rendering.PdfSharpContentSetRevisionRenderer>();
-        services.AddHttpClient<
-            Application.Features.ContentComposition.ContentSetRevisions.Rendering.IContentArtifactStore,
-            ContentComposition.Rendering.HttpContentArtifactStore>();
+            Application.Features.Knowledge.Path.Release.IKnowledgePathRevisionRenderer,
+            ContentComposition.Rendering.PdfSharpKnowledgePathRevisionRenderer>();
+        services.AddHttpClient<Application.Common.Artifacts.IContentArtifactStore, Artifacts.HttpContentArtifactStore>();
 
         // MOD-0167 FU02 - class-X criterion VALUE proof (MDM global product / product / brand) over the Gateway.
         // Deliberately cacheless, 3s budget, one transient retry; 404 makes the rule un-authorable (400) and an
@@ -157,6 +155,18 @@ public static class DependencyInjection
             Application.Features.ContentComposition.Claims.IClaimWorkflowClient,
             Workflow.GatewayClaimWorkflowClient>(client => client.Timeout = TimeSpan.FromSeconds(15));
         services.AddScoped<Application.Features.ContentComposition.Claims.ClaimReviewOutcomeApplier>();
+        // WP-KP-2 — knowledge path MLR review: its template / reconcile configuration (Crm:KnowledgePaths:Workflow) and the
+        // decision calls (tasks/mine, approve / reject with comment, history) on the SAME Gateway client (caller's token).
+        services.AddSingleton<
+            Application.Features.Knowledge.Path.Review.IKnowledgePathReviewSettings,
+            Workflow.ConfigurationKnowledgePathReviewSettings>();
+        // WP-KP-5a — the Regulatory round of the safety text / country legal profile (Crm:RegulatoryTexts:Workflow).
+        services.AddSingleton<
+            Application.Features.Knowledge.Regulatory.IRegulatoryTextReviewSettings,
+            Workflow.ConfigurationRegulatoryTextReviewSettings>();
+        services.AddScoped<Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient>(sp =>
+            (Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient)
+            sp.GetRequiredService<Application.Features.ContentComposition.Claims.IClaimWorkflowClient>());
         services.AddScoped<Application.Features.ContentComposition.Claims.ClaimReviewReconciler>();
         AddClaimWorkflowEventing(services, configuration);
 

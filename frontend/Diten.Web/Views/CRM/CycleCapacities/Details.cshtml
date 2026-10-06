@@ -6,309 +6,575 @@
 @inject IHtmlLocalizer<CycleCapacitiesIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = SharedLocalizer["Details"].Value;
     Layout = "_LayoutTenantShell";
     var canManage = ViewData["CanManage"] as bool? ?? false;
     var calc = ViewData["Calculation"] as CycleCapacityCalculationViewModel;
-    // The SAME shape the grid uses ("Jan 01, 26"), pinned to en-US and read as UtcDateTime: a period's window is a
-    // stored calendar DAY, and rendering it through a server offset east of Greenwich would show the day before.
-    const string DayFormat = "MMM dd, yy";
-    var dayCulture = CultureInfo.GetCultureInfo("en-US");
+    var summary = ViewData["Summary"] as CycleCapacitySummary ?? CycleCapacitySummary.Build(calc);
+    var waterfall = ViewData["Waterfall"] as CycleCapacityWaterfall;
+    var supplyDemand = ViewData["SupplyDemand"] as CycleCapacitySupplyDemand ?? new CycleCapacitySupplyDemand();
     var period = Model.CyclePeriod;
-    // Back returns the author where they came from; Edit carries the origin onward so Save and Cancel there do too.
+    var periodCode = period?.CycleCode ?? Model.CyclePeriodId?.ToString() ?? "-";
+    ViewData["Title"] = string.Format(CultureInfo.CurrentCulture, Localizer["DetailsTitleFormat"].Value, periodCode);
+    var culture = CultureInfo.CurrentCulture;
+    string N(int? v) => v.HasValue ? v.Value.ToString("N0", culture) : "—";
+    string F(decimal? v) => v.HasValue ? v.Value.ToString("N2", culture) : "—";
+    string MonthName(int year, int month) => new DateTime(year, month, 1).ToString("MMM yyyy", culture);
+    string HoursHint(int? minutes) => minutes.HasValue
+        ? Localizer["HoursMinutesFormat"].Value.Replace("{h}", (minutes.Value / 60).ToString("N0", culture)).Replace("{m}", (minutes.Value % 60).ToString("N0", culture))
+        : string.Empty;
     var fromCyclePeriods = string.Equals(Model.ReturnTo, "cycleperiods", StringComparison.OrdinalIgnoreCase);
     var backUrl = fromCyclePeriods ? "/CRM/CyclePeriods" : "/CRM/CycleCapacities";
-    var backLabel = fromCyclePeriods
-        ? Localizer["CyclePeriodsBreadcrumb"].Value
-        : Localizer["CycleCapacitiesTitle"].Value;
-    var editUrl = $"/CRM/CycleCapacities/Edit/{Model.CycleCapacityId}"
-                  + (fromCyclePeriods ? "?returnTo=cycleperiods" : string.Empty);
+    var backLabel = fromCyclePeriods ? Localizer["CyclePeriodsBreadcrumb"].Value : Localizer["CycleCapacitiesTitle"].Value;
+    var editUrl = $"/CRM/CycleCapacities/Edit/{Model.CycleCapacityId}" + (fromCyclePeriods ? "?returnTo=cycleperiods" : string.Empty);
+    var periodClosed = period?.IsClosed == true || !Model.IsEditable;
+    var maxChartVisits = Math.Max(1, calc?.Months.Select(m => m.TotalVisitNumber).DefaultIfEmpty(0).Max() ?? 1);
+    var maxChartField = Math.Max(1, calc?.Months.Select(m => m.FieldDays).DefaultIfEmpty(0).Max() ?? 1);
+    var maxSd = Math.Max(1, supplyDemand.Months.Select(m => Math.Max(m.Supply ?? 0, m.Demand)).DefaultIfEmpty(0).Max());
+    int Pct(int value, int max) => (int)Math.Round(Math.Clamp(value * 100.0 / max, 0, 100));
+    var (calTone, calIcon, calTitle, calBody) = summary.CalendarStatus switch
+    {
+        "resolved" => ("success", "bx-check-circle", Localizer["CalendarResolvedShort"].Value, Localizer["CalendarResolvedBody"].Value),
+        "calendar_forbidden" => ("danger", "bx-lock-alt", Localizer["CalendarForbiddenTitle"].Value, Localizer["CalendarForbiddenBody"].Value),
+        "calendar_unresolved" => ("warning", "bx-error", Localizer["CalendarUnresolvedTitle"].Value, Localizer["CalendarUnresolvedBody"].Value),
+        _ => ("secondary", "bx-error-circle", Localizer["CalculationUnavailable"].Value, Localizer["CalculationUnavailableBody"].Value)
+    };
+}
+
+@section Styles {
+    <style>
+        /* Page-only: the two small bar charts. Theme variables only — no fixed colour. */
+        .cc-chart { display: flex; align-items: flex-end; gap: .5rem; height: 11rem; border-block-end: 1px solid var(--bs-border-color); padding-block-start: .5rem; }
+        .cc-chart-col { flex: 1 1 0; display: flex; align-items: flex-end; justify-content: center; gap: .2rem; height: 100%; min-width: 0; }
+        .cc-bar { width: min(1.1rem, 40%); border-start-start-radius: .25rem; border-start-end-radius: .25rem; min-height: 2px; }
+        .cc-bar-primary { background: var(--bs-primary); }
+        .cc-bar-muted { background: rgba(var(--bs-primary-rgb), .3); }
+        .cc-bar-demand { background: var(--bs-info); }
+        .cc-bar-over { background: var(--bs-danger); }
+        .cc-axis { display: flex; gap: .5rem; }
+        .cc-axis > div { flex: 1 1 0; min-width: 0; text-align: center; font-size: .75rem; color: var(--bs-secondary-color); overflow-wrap: anywhere; }
+        .cc-swatch { display: inline-block; width: .65rem; height: .65rem; border-radius: .15rem; margin-inline-end: .35rem; vertical-align: middle; }
+        .cc-wf-bar { height: .5rem; border-radius: .25rem; background: var(--bs-primary); }
+        .cc-wf-bar.cc-wf-deduction { background: var(--bs-warning); }
+        .cc-wf-bar.cc-wf-subtotal { background: var(--bs-success); }
+    </style>
 }
 
 <div class="cycle-capacity-details">
-    <div class="d-flex align-items-center justify-content-between mb-3">
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 row-gap-4">
         <div>
-            <h5 class="mb-0">@SharedLocalizer["Details"]</h5>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <h5 class="mb-0">@Localizer["DetailsTitleFormat", periodCode]</h5>
+                @if (Model.IsArchived)
+                {
+                    <span class="badge bg-label-secondary">@Localizer["ArchivedOnly"]</span>
+                }
+                else if (periodClosed)
+                {
+                    <span class="badge bg-label-secondary"><i class="bx bx-lock-alt" aria-hidden="true"></i> @Localizer["PeriodClosedLock"]</span>
+                }
+                else
+                {
+                    <span class="badge bg-label-success">@Localizer["StatusEditable"]</span>
+                }
+                @if (Model.IsLegacyModel)
+                {
+                    <span class="badge bg-label-info">@Localizer["LegacyBadge"]</span>
+                }
+            </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="@backUrl">@backLabel</a>
-                    </li>
-                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                    <li class="breadcrumb-item"><a href="@backUrl">@backLabel</a></li>
+                    <li class="breadcrumb-item active text-primary">@periodCode</li>
                 </ol>
             </nav>
+            @if (period is not null)
+            {
+                <div class="text-muted small mt-1">
+                    @period.CycleName · @period.StartDate.UtcDateTime.ToString("d", culture) – @period.EndDate.UtcDateTime.ToString("d", culture)
+                    · <a href="/CRM/CyclePeriods/Details/@period.CyclePeriodId">@Localizer["GoToPeriod"]</a>
+                </div>
+            }
         </div>
         <div class="d-flex align-items-center gap-2">
             <a href="@backUrl" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
-            @* A capacity whose period is closed accepts no mutation, so no edit affordance is offered for one. *@
-            @if (canManage && Model.IsEditable && !Model.IsArchived)
+            @if (canManage && !Model.IsArchived)
             {
-                <a href="@editUrl" class="btn btn-primary">@SharedLocalizer["EditRecord"]</a>
+                @if (Model.IsEditable)
+                {
+                    <a href="@editUrl" class="btn btn-primary"><i class="bx bx-edit-alt me-1" aria-hidden="true"></i>@SharedLocalizer["EditRecord"]</a>
+                }
+                else
+                {
+                    @* A closed period's capacity accepts no change; its inputs can still be READ on the (read-only) form. *@
+                    <a href="@editUrl" class="btn btn-label-primary"><i class="bx bx-show me-1" aria-hidden="true"></i>@Localizer["ViewInputs"]</a>
+                }
             }
         </div>
     </div>
 
-    @* The permanent estimate notice — the third of the three places it appears (list, form, detail). *@
-    <div class="alert alert-warning d-flex align-items-start gap-2" role="alert">
-        <i class="bx bx-info-circle mt-1"></i>
+    <div class="alert alert-warning d-flex align-items-start gap-2" role="note">
+        <i class="bx bx-info-circle mt-1" aria-hidden="true"></i>
         <div>
             <strong>@Localizer["EstimateNoticeTitle"]</strong>
             <div class="small">@Localizer["EstimateNoticeBody"]</div>
         </div>
     </div>
 
-    @* Round-2 layout. The monthly plan is a full-width row of its OWN: at thirteen columns it was being asked
-       to live in two thirds of the page, which is what made the horizontal scroll unreadable in the first
-       place. The pinned period moves up to the sidebar, which now carries three context cards — what this
-       capacity belongs to, who works it, and what was noted about it. *@
-    <div class="row g-4">
-        <!-- Main Column (Left) -->
-        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+    @if (periodClosed && !Model.IsArchived)
+    {
+        <div class="alert alert-secondary d-flex align-items-start gap-2" role="status">
+            <i class="bx bx-lock-alt mt-1" aria-hidden="true"></i>
+            <div class="small">@Localizer["ReadOnlyClosedBody"]</div>
+        </div>
+    }
 
-            <!-- ② Activity minute budget -->
-            <section class="card backbone-preview-section p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ActivityBudgetSection"]</h6>
-                <div class="row g-4">
-                    @foreach (var item in new (string Label, string Value)[]
+    @if (Model.IsLegacyModel)
+    {
+        <div class="alert alert-info d-flex align-items-start gap-2" role="note" id="legacyModelBand">
+            <i class="bx bx-history mt-1" aria-hidden="true"></i>
+            <div>
+                <strong>@Localizer["LegacyBandTitle"]</strong>
+                <div class="small">@Localizer["LegacyBandBody"]</div>
+            </div>
+        </div>
+    }
+
+    @* Calendar status — resolved / not resolved / no permission, each told apart (K-4: no number without a calendar). *@
+    <section class="card mb-4" aria-labelledby="secCalendar" id="calendarStatusCard" data-calendar-status="@summary.CalendarStatus">
+        <div class="card-body p-4 d-flex align-items-start gap-3">
+            <span class="badge bg-label-@calTone p-2"><i class="bx @calIcon fs-4" aria-hidden="true"></i></span>
+            <div>
+                <h6 class="mb-1" id="secCalendar">@Localizer["CalendarStatusTitle"]: @calTitle</h6>
+                <div class="small text-muted">@calBody</div>
+                @if (summary.ReasonCodes.Count > 0 && summary.CalendarStatus != "resolved")
+                {
+                    <ul class="small text-muted ps-3 mb-0 mt-2">
+                        @foreach (var code in summary.ReasonCodes)
+                        {
+                            <li>@Localizer["Code_" + code]</li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </section>
+
+    @* KPI row. Every value is the CRM's; "—" where the calendar did not answer. *@
+    <div class="row g-4 mb-4" id="capacityKpis">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100"><div class="card-body">
+                <div class="text-muted small">@Localizer["KpiVisits"]</div>
+                <div class="h3 mb-0 mt-1 text-heading" data-kpi="visits">@N(summary.Visits)</div>
+                @if (!summary.HasNumber)
+                {
+                    <div class="small text-muted mt-1">@Localizer["NoNumberCalendar"]</div>
+                }
+            </div></div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100"><div class="card-body">
+                <div class="text-muted small">@Localizer["KpiTypicalVisit"]</div>
+                <div class="h3 mb-0 mt-1 text-heading">@N(summary.TypicalVisitMinutes ?? Model.TypicalVisitMinutes) <small class="fs-6 text-muted">@Localizer["UnitMinutesShort"]</small></div>
+                @if (!Model.IsLegacyModel && Model.TypicalPromoCount.HasValue && Model.TypicalNonPromoCount.HasValue && Model.ReportMinutesPerVisit.HasValue)
+                {
+                    <div class="small text-muted mt-1">@Model.TypicalPromoCount×@Model.PromoProductTime + @Model.TypicalNonPromoCount×@Model.NonPromoProductTime + @Model.ReportMinutesPerVisit</div>
+                }
+                <div class="small text-muted">@Localizer["BufferOnRoute", Model.BetweenVisitTimeMinutes ?? 0]</div>
+            </div></div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100"><div class="card-body">
+                <div class="text-muted small">@Localizer["KpiFieldOverWorking"]</div>
+                <div class="h3 mb-0 mt-1 text-heading">@N(summary.FieldDays) / @N(summary.WorkingDays)</div>
+            </div></div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100"><div class="card-body">
+                <div class="text-muted small">@Localizer["KpiAverageFte"]</div>
+                <div class="h3 mb-0 mt-1 text-heading">@F(summary.AverageFte)</div>
+            </div></div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        @* The waterfall, read off the CRM's totals. Without a resolved calendar there is no waterfall (K-4). *@
+        <div class="col-12 col-lg-7">
+            <section class="card h-100" aria-labelledby="secWaterfall" id="capacityWaterfall">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1" id="secWaterfall">@Localizer["WaterfallTitle"]</h6>
+                    <p class="text-muted small mb-4">@Localizer["WaterfallHint"]</p>
+                    @if (waterfall is null)
                     {
-                        (Localizer["DailyWorkMinutes"].Value, Model.DailyWorkMinutes?.ToString() ?? "-"),
-                        (Localizer["PromoProductTime"].Value, Model.PromoProductTime?.ToString() ?? "-"),
-                        (Localizer["NonPromoProductTime"].Value, Model.NonPromoProductTime?.ToString() ?? "-"),
-                        (Localizer["TravelingTime"].Value, Model.TravelingTime?.ToString() ?? "-"),
-                        (Localizer["ReportDuration"].Value, Model.ReportDuration?.ToString() ?? "-"),
-                        (Localizer["QuizDuration"].Value, Model.QuizDuration?.ToString() ?? "-"),
-                        (Localizer["BetweenVisitTimeMinutes"].Value, Model.BetweenVisitTimeMinutes?.ToString() ?? "-")
-                    })
+                        <div class="alert alert-secondary mb-0">@Localizer["NoNumberCalendar"]</div>
+                    }
+                    else
                     {
-                        <div class="col-12 col-md-4">
-                            <div class="backbone-preview-field">
-                                <i class="bx bx-time-five"></i>
-                                <div>
-                                    <div class="backbone-preview-label">@item.Label</div>
-                                    <div class="backbone-preview-value mt-1">@item.Value</div>
-                                </div>
+                        <ol class="list-unstyled mb-0">
+                            @foreach (var step in waterfall.Steps)
+                            {
+                                var unit = step.Unit == "days" ? Localizer["UnitDaysShort"].Value : Localizer["UnitMinutesShort"].Value;
+                                var barClass = step.IsDeduction ? "cc-wf-deduction" : step.IsSubtotal ? "cc-wf-subtotal" : string.Empty;
+                                <li class="mb-3" data-wf-step="@step.LabelKey">
+                                    <div class="d-flex justify-content-between small">
+                                        <span class="@(step.IsSubtotal ? "fw-semibold text-heading" : "text-muted")">@Localizer[step.LabelKey]</span>
+                                        <span class="fw-medium" title="@(step.Unit == "minutes" ? HoursHint(step.Value) : string.Empty)">@(step.IsDeduction ? "−" : string.Empty)@N(step.Value) @unit</span>
+                                    </div>
+                                    <div class="progress mt-1" style="height:.5rem" role="presentation">
+                                        <div class="cc-wf-bar @barClass" style="width:@step.Percent%"></div>
+                                    </div>
+                                </li>
+                            }
+                        </ol>
+                        <div class="border-top pt-3 d-flex flex-wrap align-items-end justify-content-between gap-2">
+                            <div class="small text-muted">
+                                <div>@Localizer["WfDivide", waterfall.TypicalVisitMinutes.ToString("N0", culture)]</div>
+                                <div>@Localizer["WfMultiply", waterfall.AverageFte.ToString("N2", culture)]</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="h3 mb-0 text-primary" data-wf-visits>@N(waterfall.Visits)</div>
+                                <div class="small text-muted">@Localizer["VisitsPerRep"]</div>
                             </div>
                         </div>
                     }
                 </div>
             </section>
+        </div>
 
-            <!-- ⑤ Notes -->
-            <section class="card backbone-preview-section p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["NotesSection"]</h6>
-                <div class="backbone-preview-field">
-                    <i class="bx bx-note"></i>
-                    <div>
-                        <div class="backbone-preview-label">@SharedLocalizer["Description"]</div>
-                        <div class="backbone-preview-value mt-1">
-                            @(string.IsNullOrWhiteSpace(Model.Description) ? "-" : Model.Description)
+        @* Month by month: visits and field days. Server-rendered from the CRM rows; axis labels in the reader's
+           language, colours from theme variables. *@
+        <div class="col-12 col-lg-5">
+            <section class="card h-100" aria-labelledby="secChart" id="capacityMonthlyChart">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0" id="secChart">@Localizer["MonthlyChartTitle"]</h6>
+                        <div class="small text-muted">
+                            <span><span class="cc-swatch cc-bar-primary" aria-hidden="true"></span>@Localizer["ChartVisits"]</span>
+                            <span class="ms-2"><span class="cc-swatch cc-bar-muted" aria-hidden="true"></span>@Localizer["ChartFieldDays"]</span>
                         </div>
                     </div>
+                    @if (calc is null || !calc.IsResolved || calc.Months.Count == 0)
+                    {
+                        <div class="alert alert-secondary mb-0">@Localizer["NoNumberCalendar"]</div>
+                    }
+                    else
+                    {
+                        <div class="cc-chart" role="img" aria-label="@Localizer["MonthlyChartTitle"]">
+                            @foreach (var m in calc.Months)
+                            {
+                                <div class="cc-chart-col" title="@MonthName(m.Year, m.MonthNumber): @Localizer["ChartVisits"] @N(m.TotalVisitNumber) · @Localizer["ChartFieldDays"] @N(m.FieldDays)">
+                                    <div class="cc-bar cc-bar-primary" style="height:@Pct(m.TotalVisitNumber, maxChartVisits)%"></div>
+                                    <div class="cc-bar cc-bar-muted" style="height:@Pct(m.FieldDays, maxChartField)%"></div>
+                                </div>
+                            }
+                        </div>
+                        <div class="cc-axis mt-1" aria-hidden="true">
+                            @foreach (var m in calc.Months)
+                            {
+                                <div>@MonthName(m.Year, m.MonthNumber)<br /><span class="fw-medium">@N(m.TotalVisitNumber)</span></div>
+                            }
+                        </div>
+                    }
                 </div>
             </section>
         </div>
+    </div>
 
-        <!-- Side Column (Right) — two context cards -->
-        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+    @* Supply vs demand (K-7) — per rep: the capacity's monthly visits against the planned visits of the period's
+       planning sessions. Team size is NOT part of it yet (a later package). *@
+    <section class="card mb-4" aria-labelledby="secSupply" id="capacitySupplyDemand">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
+                <h6 class="text-uppercase text-heading fw-semibold mb-0" id="secSupply">@Localizer["SupplyDemandTitle"]</h6>
+                @if (supplyDemand.UsageAvailable && supplyDemand.Percent.HasValue)
+                {
+                    <span class="small">@Localizer["Planned"] <strong>@N(supplyDemand.TotalDemand)</strong> / @Localizer["Capacity"] <strong>@N(supplyDemand.TotalSupply)</strong> · <strong>%@supplyDemand.Percent</strong></span>
+                }
+            </div>
+            <p class="text-muted small mb-3">@Localizer["SupplyDemandPerRepNote"]</p>
 
-            <!-- ① Pinned period -->
+            @if (!supplyDemand.UsageAvailable)
+            {
+                <div class="alert alert-secondary mb-0">@Localizer["UsageUnavailable"]</div>
+            }
+            else
+            {
+                @if (supplyDemand.Percent.HasValue)
+                {
+                    <div class="progress mb-2" style="height:.6rem" role="progressbar" aria-valuenow="@Math.Min(100, supplyDemand.Percent.Value)" aria-valuemin="0" aria-valuemax="100" aria-label="@Localizer["SupplyDemandTitle"]">
+                        <div class="progress-bar @(supplyDemand.TotalDemand > (supplyDemand.TotalSupply ?? 0) ? "bg-danger" : "bg-info")" style="width:@Math.Min(100, supplyDemand.Percent.Value)%"></div>
+                    </div>
+                    <div class="small text-muted mb-3">@Localizer["FreeCapacity"]: @N(supplyDemand.FreeCapacity)</div>
+                }
+                @if (!supplyDemand.SupplyAvailable)
+                {
+                    <div class="alert alert-warning small">@Localizer["SupplyUnavailableCalendar"]</div>
+                }
+
+                @if (supplyDemand.Months.Count == 0)
+                {
+                    <div class="text-muted small">@Localizer["NoDemandYet"]</div>
+                }
+                else
+                {
+                    <div class="cc-chart" role="img" aria-label="@Localizer["SupplyDemandTitle"]">
+                        @foreach (var m in supplyDemand.Months)
+                        {
+                            <div class="cc-chart-col" data-sd-month="@m.Year-@m.MonthNumber.ToString("00")" title="@MonthName(m.Year, m.MonthNumber): @Localizer["Capacity"] @N(m.Supply) · @Localizer["Planned"] @N(m.Demand)">
+                                @if (m.Supply.HasValue)
+                                {
+                                    <div class="cc-bar cc-bar-muted" style="height:@Pct(m.Supply.Value, maxSd)%"></div>
+                                }
+                                <div class="cc-bar @(m.IsOver ? "cc-bar-over" : "cc-bar-demand")" style="height:@Pct(m.Demand, maxSd)%"></div>
+                            </div>
+                        }
+                    </div>
+                    <div class="cc-axis mt-1">
+                        @foreach (var m in supplyDemand.Months)
+                        {
+                            <div>
+                                @MonthName(m.Year, m.MonthNumber)<br />
+                                <span class="fw-medium">@N(m.Demand) / @N(m.Supply)</span>
+                                @if (m.IsOver)
+                                {
+                                    <br /><span class="text-danger fw-medium">+@N(m.Overage)</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <div class="small text-muted mt-2">
+                        <span><span class="cc-swatch cc-bar-muted" aria-hidden="true"></span>@Localizer["CapacityLegend"]</span>
+                        <span class="ms-2"><span class="cc-swatch cc-bar-demand" aria-hidden="true"></span>@Localizer["PlannedLegend"]</span>
+                        <span class="ms-2"><span class="cc-swatch cc-bar-over" aria-hidden="true"></span>@Localizer["Overage"]</span>
+                    </div>
+                    @if (supplyDemand.OverMonths.Any())
+                    {
+                        <div class="alert alert-danger small mt-3 mb-0" role="alert" id="overageWarning">
+                            <strong>@Localizer["Overage"]:</strong>
+                            @Localizer["OverWarning", string.Join(", ", supplyDemand.OverMonths.Select(m => MonthName(m.Year, m.MonthNumber)))]
+                        </div>
+                    }
+                }
+
+                <h6 class="mt-4 mb-2">@Localizer["SessionsTitle"]</h6>
+                @if (supplyDemand.Sessions.Count == 0)
+                {
+                    <div class="text-muted small">@Localizer["NoSessions"]</div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">@Localizer["SessionName"]</th>
+                                    <th scope="col">@Localizer["SessionOwner"]</th>
+                                    <th scope="col">@SharedLocalizer["Status"]</th>
+                                    <th scope="col" class="text-end">@Localizer["SessionVisits"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var s in supplyDemand.Sessions)
+                                {
+                                    <tr>
+                                        <td>@(string.IsNullOrWhiteSpace(s.Name) ? "—" : s.Name)</td>
+                                        <td>@(string.IsNullOrWhiteSpace(s.OwnerDisplayName) ? "—" : s.OwnerDisplayName)</td>
+                                        <td><span class="badge bg-label-secondary">@(s.Status ?? "—")</span></td>
+                                        <td class="text-end">@N(s.CommittedVisitCount)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+        </div>
+    </section>
+
+    @* The INPUTS — the same section map as the form (period & calendar, daily time, visit duration, products per visit,
+       notes, monthly plan), read-only. *@
+    <div class="row g-4">
+        <div class="col-12 col-lg-6 d-flex flex-column gap-4">
             <section class="card backbone-preview-section p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["PinnedPeriodSection"]</h6>
                 <div class="row g-4">
                     <div class="col-12 col-md-6">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-calendar"></i>
-                            <div>
-                                <div class="backbone-preview-label">@Localizer["CyclePeriod"]</div>
-                                <div class="backbone-preview-value mt-1">
-                                    @(period is null ? "-" : $"{period.CycleCode} · {period.CycleName}")
-                                </div>
-                            </div>
-                        </div>
+                        <div class="backbone-preview-field"><i class="bx bx-calendar" aria-hidden="true"></i><div>
+                            <div class="backbone-preview-label">@Localizer["CyclePeriod"]</div>
+                            <div class="backbone-preview-value mt-1">@(period is null ? "-" : $"{period.CycleCode} · {period.CycleName}")</div>
+                        </div></div>
                     </div>
                     <div class="col-12 col-md-6">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-calendar-event"></i>
-                            <div>
-                                <div class="backbone-preview-label">@Localizer["PeriodWindow"]</div>
-                                <div class="backbone-preview-value mt-1">
-                                    @if (period is null)
-                                    {
-                                        <span>-</span>
-                                    }
-                                    else
-                                    {
-                                        <span>@period.StartDate.UtcDateTime.ToString(DayFormat, dayCulture) – @period.EndDate.UtcDateTime.ToString(DayFormat, dayCulture)</span>
-                                    }
-                                </div>
+                        <div class="backbone-preview-field"><i class="bx bx-map" aria-hidden="true"></i><div>
+                            <div class="backbone-preview-label">@Localizer["CalendarCountryCode"]</div>
+                            <div class="backbone-preview-value mt-1">
+                                @(string.IsNullOrWhiteSpace(Model.CalendarCountryCode) ? "-" : Model.CalendarCountryCode)
+                                @if (Model.CalendarCountryIsDerived)
+                                {
+                                    <span class="badge bg-label-secondary ms-2">@Localizer["CalendarCountryDerived"]</span>
+                                }
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-map"></i>
-                            <div>
-                                <div class="backbone-preview-label">@Localizer["CalendarCountryCode"]</div>
-                                <div class="backbone-preview-value mt-1">
-                                    @(string.IsNullOrWhiteSpace(Model.CalendarCountryCode) ? "-" : Model.CalendarCountryCode)
-                                    @if (Model.CalendarCountryIsDerived)
-                                    {
-                                        <span class="badge bg-label-secondary ms-2">@Localizer["CalendarCountryDerived"]</span>
-                                    }
-                                </div>
-                                @* Stated here as well as on the form: a reader must not mistake this for a second scope
-                                   on the capacity. *@
-                                <div class="text-muted small mt-1">@Localizer["CalendarCountryIsNotScope"]</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="backbone-preview-field">
-                            <i class="bx bx-check-shield"></i>
-                            <div>
-                                <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
-                                <div class="backbone-preview-value mt-1">
-                                    @if (Model.IsArchived)
-                                    {
-                                        <span class="badge bg-label-secondary">@Localizer["ArchivedOnly"]</span>
-                                    }
-                                    else if (period?.IsClosed == true)
-                                    {
-                                        <span class="badge bg-label-secondary">@Localizer["PeriodClosedLock"]</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-label-success">@SharedLocalizer["Active"]</span>
-                                    }
-                                </div>
-                            </div>
-                        </div>
+                            <div class="text-muted small mt-1">@Localizer["CalendarCountryIsNotScope"]</div>
+                        </div></div>
                     </div>
                 </div>
             </section>
 
-            <!-- ④ Field force -->
             <section class="card backbone-preview-section p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["FieldForceSection"]</h6>
-                @* FU07 moved the FTE onto each month. The card is KEPT — _Form and Details must declare the same
-                   section/card map — and now says where the number went. *@
-                <div class="backbone-preview-field">
-                    <i class="bx bx-group"></i>
-                    <div>
-                        <div class="backbone-preview-label">@Localizer["Fte"]</div>
-                        <div class="backbone-preview-value mt-1">@Localizer["FteMovedToMonthly"]</div>
-                        <div class="text-muted small mt-1">@Localizer["FteInterimHint"]</div>
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["DailyTimeSection"]</h6>
+                <div class="row g-4">
+                    @foreach (var item in new (string Label, int? Value)[]
+                    {
+                        (Localizer["DailyWorkMinutes"].Value, Model.DailyWorkMinutes),
+                        (Localizer["TravelingTime"].Value, Model.TravelingTime),
+                        (Localizer["QuizDuration"].Value, Model.QuizDuration)
+                    })
+                    {
+                        <div class="col-12 col-md-4">
+                            <div class="backbone-preview-field"><i class="bx bx-time-five" aria-hidden="true"></i><div>
+                                <div class="backbone-preview-label">@item.Label</div>
+                                <div class="backbone-preview-value mt-1">@N(item.Value) @Localizer["UnitMinutesShort"]</div>
+                            </div></div>
+                        </div>
+                    }
+                    @if (Model.IsLegacyModel)
+                    {
+                        <div class="col-12">
+                            <div class="text-muted small"><i class="bx bx-history" aria-hidden="true"></i> @Localizer["LegacyReportPerDay"]: @N(Model.ReportDuration) @Localizer["UnitMinutesShort"]</div>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["NotesSection"]</h6>
+                <div class="backbone-preview-field"><i class="bx bx-note" aria-hidden="true"></i><div>
+                    <div class="backbone-preview-label">@SharedLocalizer["Description"]</div>
+                    <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.Description) ? "-" : Model.Description)</div>
+                </div></div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-6 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["VisitDurationSection"]</h6>
+                <div class="row g-4">
+                    @foreach (var item in new (string Label, int? Value)[]
+                    {
+                        (Localizer["PromoProductTime"].Value, Model.PromoProductTime),
+                        (Localizer["NonPromoProductTime"].Value, Model.NonPromoProductTime),
+                        (Localizer["ReportMinutesPerVisit"].Value, Model.ReportMinutesPerVisit),
+                        (Localizer["TypicalPromoCount"].Value, Model.TypicalPromoCount),
+                        (Localizer["TypicalNonPromoCount"].Value, Model.TypicalNonPromoCount),
+                        (Localizer["BetweenVisitTimeMinutes"].Value, Model.BetweenVisitTimeMinutes)
+                    })
+                    {
+                        <div class="col-12 col-md-4">
+                            <div class="backbone-preview-field"><i class="bx bx-stopwatch" aria-hidden="true"></i><div>
+                                <div class="backbone-preview-label">@item.Label</div>
+                                <div class="backbone-preview-value mt-1">@N(item.Value)</div>
+                            </div></div>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ProductLimitsSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-package" aria-hidden="true"></i><div>
+                            <div class="backbone-preview-label">@Localizer["MaxPromoProducts"]</div>
+                            <div class="backbone-preview-value mt-1">@N(Model.MaxPromoProducts)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-package" aria-hidden="true"></i><div>
+                            <div class="backbone-preview-label">@Localizer["MaxNonPromoProducts"]</div>
+                            <div class="backbone-preview-value mt-1">@N(Model.MaxNonPromoProducts)</div>
+                        </div></div>
                     </div>
                 </div>
             </section>
         </div>
     </div>
 
-    @* The monthly plan, across the whole width. *@
-    <div class="row g-4">
+    @* The monthly plan, across the whole width: inputs and the CRM's figures in ONE table. *@
+    <div class="row g-4 mt-0">
         <div class="col-12">
-
-            <!-- ③ Monthly deductions and the estimate -->
-            <section class="card backbone-preview-section p-4">
+            <section class="card backbone-preview-section p-4 mb-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["MonthlyPlanSection"]</h6>
-                @* Every intermediate step is shown on purpose: a capacity figure nobody can trace is a figure nobody
-                   trusts. Working days come from the platform calendar and ALREADY exclude weekends and holidays. *@
                 <p class="text-muted small mb-4">@Localizer["EstimateSectionHint"]</p>
 
-                @if (calc is null)
+                @if (calc is null || !calc.IsResolved)
                 {
-                    <div class="alert alert-secondary mb-0">@Localizer["CalculationUnavailable"]</div>
-                }
-                else if (calc.IsForbidden)
-                {
-                    @* Deliberately distinguished from "no calendar": the calendar may well exist and the reader simply
-                       lacks the platform permission, which is a different fix (F-RBAC-WC). *@
-                    <div class="alert alert-danger mb-0">
-                        <div class="fw-semibold">@Localizer["CalendarForbiddenTitle"]</div>
-                        <div class="small">@Localizer["CalendarForbiddenBody"]</div>
-                        <div class="small text-muted mt-1">@calc.Reason</div>
-                    </div>
-                }
-                else if (!calc.IsResolved)
-                {
-                    @* Unresolved is not zero. No partial table is rendered, and no default month length is invented. *@
-                    <div class="alert alert-warning mb-0">
-                        <div class="fw-semibold">@Localizer["CalendarUnresolvedTitle"]</div>
-                        <div class="small">@Localizer["CalendarUnresolvedBody"]</div>
-                        <div class="small text-muted mt-1">@calc.Reason</div>
-                        @if (calc.ReasonCodes.Count > 0)
-                        {
-                            <div class="mt-2">
-                                @foreach (var code in calc.ReasonCodes)
-                                {
-                                    <span class="badge bg-label-secondary me-1">@code</span>
-                                }
-                            </div>
-                        }
-                    </div>
+                    <div class="alert alert-secondary mb-0">@Localizer["NoNumberCalendar"]</div>
                 }
                 else
                 {
-                    <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
-                        <span class="text-muted">@Localizer["TotalVisitNumber"]</span>
-                        <span class="badge bg-label-primary fs-6">@calc.TotalVisitNumber</span>
-                        @* FU07 — no cycle-wide FTE is shown any more, because there is no longer such a number: each
-                           month carries its own and they appear in the table. *@
-                        <small class="text-muted">@Localizer["MinutesPerVisit"]: @calc.MinutesPerVisit</small>
-                    </div>
-
                     <div class="table-responsive">
                         <table class="table table-sm align-middle mb-0 dt-frozen-table">
-                            @* ONE table, the same thirteen columns the form shows — read-only here. FU06 rendered the
-                               author's inputs and the resulting figures separately, so a reader had to line up two
-                               tables by eye to see why a month produced what it produced. *@
                             <thead>
-                                @* The same two frozen columns the form pins — the pages must read alike. *@
                                 <tr>
                                     <th scope="col" class="dt-frozen dt-frozen-1">@Localizer["Month"]</th>
-                                    <th scope="col" class="text-end dt-frozen dt-frozen-2">@Localizer["WorkingDays"]</th>
-                                    <th scope="col" class="text-end">@Localizer["NonWorkingDays"]</th>
                                     <th scope="col" class="text-end">@Localizer["MeetingDays"]</th>
                                     <th scope="col" class="text-end">@Localizer["TrainingDays"]</th>
                                     <th scope="col" class="text-end">@Localizer["VacationDays"]</th>
                                     <th scope="col" class="text-end">@Localizer["MicroTargetingDayCount"]</th>
                                     <th scope="col" class="text-end">@Localizer["MicroTargetingDuration"]</th>
                                     <th scope="col" class="text-end">@Localizer["Fte"]</th>
-                                    @* The same result block the form pins — the pages must read alike. *@
+                                    <th scope="col" class="text-end">@Localizer["WorkingDays"]</th>
+                                    <th scope="col" class="text-end">@Localizer["NonWorkingDays"]</th>
                                     <th scope="col" class="text-end dt-frozen dt-frozen-r4">@Localizer["DeductedDays"]</th>
                                     <th scope="col" class="text-end dt-frozen dt-frozen-r3">@Localizer["FieldDays"]</th>
-                                    <th scope="col" class="text-end dt-frozen dt-frozen-r2">@Localizer["VisitMinutes"]</th>
+                                    <th scope="col" class="text-end dt-frozen dt-frozen-r2">@Localizer["RemainingMinutes"]</th>
                                     <th scope="col" class="text-end dt-frozen dt-frozen-r1">@Localizer["TotalVisitNumber"]</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var month in calc.Months)
                                 {
+                                    var source = Model.Months.FirstOrDefault(r => r.Year == month.Year && r.MonthNumber == month.MonthNumber)?.FteSource;
+                                    var partial = month.CalendarDays > 0 && month.CalendarDays < DateTime.DaysInMonth(month.Year, month.MonthNumber);
                                     <tr>
                                         <td class="text-nowrap dt-frozen dt-frozen-1">
-                                            @CultureInfo.CurrentUICulture.DateTimeFormat.GetMonthName(month.MonthNumber) @month.Year
-                                            @if (month.IsFullyDeducted)
+                                            @MonthName(month.Year, month.MonthNumber)
+                                            @if (partial)
                                             {
-                                                @* Flagged, never hidden: zero visits is a real answer and the reader
-                                                   needs to see which month produced it. *@
-                                                <span class="badge bg-label-warning ms-2">@Localizer["NoFieldDays"]</span>
+                                                <span class="badge bg-label-info ms-1" title="@Localizer["PartialMonthTitle"]">@Localizer["PartialMonth"]</span>
+                                            }
+                                            @if (month.DeductedDays > month.WorkingDays)
+                                            {
+                                                <span class="badge bg-label-warning ms-1">@Localizer["MonthZeroedBadge"]</span>
                                             }
                                         </td>
-                                        <td class="text-end dt-frozen dt-frozen-2">@month.WorkingDays</td>
-                                        <td class="text-end">@month.NonWorkingDays</td>
-                                        <td class="text-end">@month.MeetingDays</td>
-                                        <td class="text-end">@month.TrainingDays</td>
-                                        <td class="text-end">@month.VacationDays</td>
-                                        <td class="text-end">@month.MicroTargetingDayCount</td>
-                                        <td class="text-end">@month.MicroTargetingDuration</td>
-                                        <td class="text-end">@month.Fte.ToString("0.00", CultureInfo.InvariantCulture)</td>
-                                        <td class="text-end dt-frozen dt-frozen-r4">@month.DeductedDays</td>
-                                        <td class="text-end dt-frozen dt-frozen-r3">@month.FieldDays</td>
-                                        <td class="text-end dt-frozen dt-frozen-r2">@month.VisitMinutes</td>
-                                        <td class="text-end fw-medium dt-frozen dt-frozen-r1">@month.TotalVisitNumber</td>
+                                        <td class="text-end">@N(month.MeetingDays)</td>
+                                        <td class="text-end">@N(month.TrainingDays)</td>
+                                        <td class="text-end">@N(month.VacationDays)</td>
+                                        <td class="text-end">@N(month.MicroTargetingDayCount)</td>
+                                        <td class="text-end">@N(month.MicroTargetingDuration)</td>
+                                        <td class="text-end text-nowrap">
+                                            @F(month.Fte)
+                                            <span class="badge @(string.Equals(source, "authored", StringComparison.OrdinalIgnoreCase) ? "bg-label-primary" : "bg-label-secondary") ms-1">@(string.Equals(source, "authored", StringComparison.OrdinalIgnoreCase) ? Localizer["FteSourceAuthored"] : Localizer["FteSourceDefault"])</span>
+                                        </td>
+                                        <td class="text-end">@N(month.WorkingDays)</td>
+                                        <td class="text-end">@N(month.NonWorkingDays)</td>
+                                        <td class="text-end dt-frozen dt-frozen-r4">@N(month.DeductedDays)</td>
+                                        <td class="text-end dt-frozen dt-frozen-r3">@N(month.FieldDays)</td>
+                                        <td class="text-end dt-frozen dt-frozen-r2" title="@HoursHint(month.RemainingMinutes)">@N(month.RemainingMinutes)</td>
+                                        <td class="text-end fw-medium dt-frozen dt-frozen-r1">@N(month.TotalVisitNumber)</td>
                                     </tr>
                                 }
                             </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="dt-frozen dt-frozen-1">@Localizer["Total"]</th>
+                                    <th colspan="8"></th>
+                                    <th class="text-end dt-frozen dt-frozen-r4">@N(calc.Totals?.DeductedDays)</th>
+                                    <th class="text-end dt-frozen dt-frozen-r3">@N(calc.Totals?.FieldDays)</th>
+                                    <th class="text-end dt-frozen dt-frozen-r2">@N(calc.Totals?.RemainingMinutes)</th>
+                                    <th class="text-end dt-frozen dt-frozen-r1">@N(calc.Totals?.Visits)</th>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 }

@@ -1,0 +1,31 @@
+@using Diten.Web.Views.CRM.KnowledgePaths
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgePathStudio> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* WP-KP-UI-2 — "Onaya gönder": the checklist from the compliance rows (a blocker keeps "Send" closed), the change
+   summary against the last revision, and the open-round notice (no second submission while a round is open). *@
+<div class="modal fade" id="kpSubmitModal" tabindex="-1" aria-labelledby="kpSubmitTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="kpSubmitTitle">@Localizer["SubmitTitle"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3" id="kpSubmitIntro"></p>
+                <div id="kpSubmitAlert" class="alert alert-danger d-none" role="alert"></div>
+                <div id="kpSubmitOpenRound" class="alert alert-info d-none" role="status"></div>
+                <h6 class="mb-2">@Localizer["SubmitChecklist"]</h6>
+                <ul class="list-group mb-3" id="kpSubmitChecklist"></ul>
+                <h6 class="mb-2" id="kpSubmitChangesTitle"></h6>
+                <div id="kpSubmitChanges" class="small" aria-live="polite"></div>
+            </div>
+            <div class="modal-footer">
+                <span class="small text-muted me-auto" id="kpSubmitBlocked"></span>
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                <button type="button" class="btn btn-primary" id="kpSubmitSend" disabled></button>
+            </div>
+        </div>
+    </div>
+</div>

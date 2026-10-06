@@ -234,7 +234,6 @@
   <data name="KnowledgePaths" xml:space="preserve"><value>Bilgi yolları</value></data>
   <data name="Journeys" xml:space="preserve"><value>Yolculuklar</value></data>
   <data name="Visits" xml:space="preserve"><value>Ziyaretler</value></data>
-  <data name="OutputsNoSource" xml:space="preserve"><value>Bu kayıtları zincir şablonuna bağlayan bir kaynak henüz yok.</value></data>
   <data name="DataFlow" xml:space="preserve"><value>Veri akışı</value></data>
   <data name="FlowSubject" xml:space="preserve"><value>Konu</value></data>
   <data name="FlowConceptGraph" xml:space="preserve"><value>Kavram grafiği</value></data>
@@ -273,4 +272,24 @@
   <data name="ChainStatusDraft" xml:space="preserve"><value>Taslak</value></data>
   <data name="ChainStatusPublished" xml:space="preserve"><value>Yayında</value></data>
   <data name="ChainStatusArchived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="OutputsAfterSave" xml:space="preserve"><value>Çıktılar şablon kaydedilince görünür.</value></data>
+  <data name="OutputsRestricted" xml:space="preserve"><value>Ayrıntılar gizli — okuma yetkiniz yok.</value></data>
+  <data name="OutputsChainVersion" xml:space="preserve"><value>zincir {0}</value></data>
+  <data name="OutputsCurrentRelease" xml:space="preserve"><value>güncel yayın</value></data>
+  <data name="OutputsStageCount" xml:space="preserve"><value>{0} aşama</value></data>
+  <data name="OutputsPathCount" xml:space="preserve"><value>{0} · {1} yayında</value></data>
+  <data name="OutputsPlannedVisits" xml:space="preserve"><value>{0} planlı ziyaret</value></data>
+  <data name="OutputsAllVersions" xml:space="preserve"><value>Diğer sürümleri de göster</value></data>
+  <data name="PathStatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="PathStatusReview" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="PathStatusApproved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="PathStatusPublished" xml:space="preserve"><value>Yayında</value></data>
+  <data name="PathStatusInactive" xml:space="preserve"><value>Etkin dışı</value></data>
+  <data name="PathStatusArchived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="JourneyStatus_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="JourneyStatus_review" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="JourneyStatus_approved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="JourneyStatus_published" xml:space="preserve"><value>Yayında</value></data>
+  <data name="JourneyStatus_inactive" xml:space="preserve"><value>Etkin dışı</value></data>
+  <data name="JourneyStatus_archived" xml:space="preserve"><value>Arşivlendi</value></data>
 </root>
