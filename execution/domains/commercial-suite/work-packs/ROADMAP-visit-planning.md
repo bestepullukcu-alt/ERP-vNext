@@ -5,7 +5,7 @@
 > Ayrıntılar: [durum analizi](VISIT-PLANNING-current-state-analysis.md) · [mockup brief](mockups/visit-planning/BRIEF-visit-planning-rep-week.md) · [mockup analizi](mockups/visit-planning/VISIT-PLANNING-mockup-analysis.md) · [mobil not](mobile/2026-10-06-visit-planning/MOBILE-NOTE-2026-10-06-visit-planning.md) · [mobil talepler](MOBILE-REQUESTS-2026-10-05-analysis.md)
 
 ## Neredeyiz
-**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** bitti (E2 + E4). Sıradaki: **Faz 2** (B-8 adlar · B-1 temsilci = oturum + sahiplik · B-2 bölge evreni · B-3 sunucu türetmesi) — paketlenmeyi bekliyor.
+**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** bitti (E2 + E4). ◐ **Faz 2** paketlendi ([WP-VP-2](WP-VP-2-rep-scope-names-territory-derivation.md)); ajan raporu bekleniyor.
 
 ## Yapılanlar (2026-10-06)
 | Ne | Kanıt |
@@ -57,7 +57,7 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 - ☑ D7 menü: Ziyaret Planlama + Ziyaret Yürütme
 - ☑ D6 / A5 bugünkü etiketlerin 7 dili
 
-### Faz 2 — backend temel (mobil de bekliyor)
+### Faz 2 — backend temel (mobil de bekliyor) — ◐ paketlendi 2026-10-06 tek pakette: [WP-VP-2](WP-VP-2-rep-scope-names-territory-derivation.md), worktree `C:\tmp\vp-2`. Yeni izin anahtarları `crm.planned-visit.read-all` + `crm.visit-plan.read-all` (yalnız açık grant; grant script'i kullanıcıda)
 - ☐ B-8 görünen adlar (D4; mobil D1)
 - ☐ B-1 temsilci = oturum + sahiplik (A2; mobil B01) + `resources/me` `displayName` (mobil R-M4)
 - ☐ B-2 hedef evreni = bölge ataması; ataması yoksa tümü + uyarı (K-5); bölge dışı işareti (A4)
