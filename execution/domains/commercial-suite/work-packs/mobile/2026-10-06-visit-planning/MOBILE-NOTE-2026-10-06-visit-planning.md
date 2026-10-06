@@ -41,7 +41,7 @@
 ## 4. Mobil uyum listesi — kontrol edin, eksikse düzeltin
 | # | Kontrol | Beklenen |
 |---|---|---|
-| M1 | Strateji şablonu / oyun / kampanya | Hiçbir ekranda ad, alan ya da seçici yok. Oluştur / düzenle isteğinde `strategyTemplateId`, `campaignId`, `segmentId` **gönderilmez**. ⚠ Bugün sunucu bu alanları **kabul ediyor ve kullanıyor**: kampanya doğrulanıp kaydediliyor, strateji içerik çözümünde, segment sıklık çözümünde kullanılıyor. Sunucunun bunları kendisi türetmesi backend işi (§5); o zamana kadar göndermeyin. |
+| M1 | Strateji şablonu / oyun / kampanya | Hiçbir ekranda ad, alan ya da seçici yok. **Oluştururken** `strategyTemplateId`, `campaignId`, `segmentId` gönderilmez. **Düzenlerken** okunan değer **aynen geri gönderilir** (PUT tam değiştirmedir; göndermemek bağı siler) — bkz. [yanıtlar §1](MOBILE-ANSWERS-2026-10-06.md). Sunucu türetmeye geçince (§5) gönderim bırakılır. |
 | M2 | Segment | Segment seçimi / filtresi / kapsamı **yok**. Backlog'daki segment işi kapanır. Rozet için alan gelince haber verilecek (§5). |
 | M3 | Temsilci / kaynak | `resourceId` yalnız `GET /api/crm/resources/me`'den. Kullanıcı listesinden temsilci seçtiren ekran olmaz. |
 | M4 | Hedef seçici (işyeri / kişi) | Bugün olduğu gibi çalışır. **Bölge ataması** uç noktası gelince (§5) yalnız temsilcinin bölgesindeki hedefler listelenir; bölge dışı ekleme uyarılı ayrı akış olur. |

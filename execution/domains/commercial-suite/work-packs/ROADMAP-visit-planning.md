@@ -5,7 +5,7 @@
 > Ayrıntılar: [durum analizi](VISIT-PLANNING-current-state-analysis.md) · [mockup brief](mockups/visit-planning/BRIEF-visit-planning-rep-week.md) · [mockup analizi](mockups/visit-planning/VISIT-PLANNING-mockup-analysis.md) · [mobil not](mobile/2026-10-06-visit-planning/MOBILE-NOTE-2026-10-06-visit-planning.md) · [mobil talepler](MOBILE-REQUESTS-2026-10-05-analysis.md)
 
 ## Neredeyiz
-**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). Sıradaki: mobil ekiplerin sorularını yanıtlamak → ardından **Faz 1 — VP-FIX-1**.
+**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). Sıradaki: **Faz 1 — VP-FIX-1**.
 
 ## Yapılanlar (2026-10-06)
 | Ne | Kanıt |
@@ -56,7 +56,7 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 
 ### Faz 2 — backend temel (mobil de bekliyor)
 - ☐ B-8 görünen adlar (D4; mobil D1)
-- ☐ B-1 temsilci = oturum + sahiplik (A2; mobil B01)
+- ☐ B-1 temsilci = oturum + sahiplik (A2; mobil B01) + `resources/me` `displayName` (mobil R-M4)
 - ☐ B-2 hedef evreni = bölge ataması; ataması yoksa tümü + uyarı (K-5); bölge dışı işareti (A4)
 - ☐ B-3 strateji / kampanya / segment sunucuda türetilir; segment dışının sessizce düşmesi kalkar (A3, A6)
 
@@ -75,7 +75,7 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 - ☐ C6 çok ziyaretli durakta doktor adları (Rota tasarımı değişmeden; kullanıcı onayıyla)
 
 ### Faz 5 — mobil
-- ☑ Mobil not iletildi (2026-10-06) · ◐ mobil ekiplerin soruları gelecek → CT yanıtlayacak, ardından VP-FIX-1
+- ☑ Mobil not iletildi (2026-10-06) · ☑ 3 soru yanıtlandı ([yanıtlar](mobile/2026-10-06-visit-planning/MOBILE-ANSWERS-2026-10-06.md)): düzenlemede değerleri geri gönder; `resources/me` tek kaynak + `displayName` gelecek (B-1); ad için ara istek kabul, adlar B-8 ile yanıta girecek
 - ☐ Faz 2–3 alanları kesinleşince sözleşme notu (+ SB-3-MOB)
 
 ### Faz 6 — Planlanan Ziyaretler sayfası
