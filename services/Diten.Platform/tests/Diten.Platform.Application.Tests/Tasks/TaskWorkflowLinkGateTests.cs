@@ -293,12 +293,13 @@ public sealed partial class TaskWorkflowLinkGateTests
                     Id = Unit, TenantId = TaskTestData.Tenant, Name = "HQ", Code = "HQ", LegalEntityId = Guid.NewGuid()
                 }),
                 fields, currentUser, approvals, reviews, NullLogger<UpdateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), writeGate: TaskWriteGateDoubles.Open);
             _transition = new TransitionTaskItemHandler(
                 _tasks, new TaskLifecycleService(), currentUser, new FakeChecklistRunRepository(), new TaskChecklistService(),
                 new WorkflowTransitionGate(Engine, NullLogger<WorkflowTransitionGate>.Instance),
                 new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
                 fields, new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance,
+                writeGate: TaskWriteGateDoubles.Open,
                 approvals: withWithdrawServices ? approvals : null,
                 reviews: withWithdrawServices ? reviews : null);
         }

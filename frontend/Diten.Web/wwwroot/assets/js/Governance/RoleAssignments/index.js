@@ -273,12 +273,26 @@ const RoleAssignments = (function () {
         return shared === 0 ? '' : segments.slice(0, shared).join('.') + '.*';
     };
 
+    /*
+     * Rİ4 (owner, 2026-10-02) — WHICH GROUPS THE READER CLOSED.
+     *
+     * Every grant re-reads the role and redraws the whole list (renderList), and a redrawn card is born open: the
+     * reader closed twenty groups to work in one, pressed a chip, and all twenty opened again. The choice is the
+     * reader's, so it is remembered by module for as long as the page lives — across redraws and across roles.
+     * It is not stored: a fresh page starts open, as before.
+     */
+    const collapsedModules = new Set();
+
     const wireGroupToggle = (card) => {
         const toggle = card.querySelector('.ra-group-toggle');
         const setExpanded = (expanded) => {
             card.classList.toggle('ra-collapsed', !expanded);
             toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            if (expanded) { collapsedModules.delete(card.dataset.module); }
+            else { collapsedModules.add(card.dataset.module); }
         };
+        // A card redrawn for a module the reader had closed is drawn closed.
+        if (collapsedModules.has(card.dataset.module)) { setExpanded(false); }
         const flip = () => setExpanded(card.classList.contains('ra-collapsed'));
         toggle.addEventListener('click', flip);
         toggle.addEventListener('keydown', (e) => {

@@ -30,6 +30,8 @@ Bu workflow, bir Excel planlama dosyasındaki verileri kullanarak Diten ERP vNex
 - **Referans Zorunluluğu:** Tüm teknik kararlar için `.antigravity/rules/` altındaki ilgili dosyalara (Örn: `erp-architecture.md`) Markdown linki verilmelidir.
 - **Modül Ayrımı:** Excel parser'dan gelen her bir modül (`MOD-xxx`), `module-packs/` altında kendi bağımsız `.md` dosyasına sahip olmalıdır. "Tek bir büyük dosya" yaklaşımı reddedilir.
 
+- **Denetim kaydı (AUD-001):** `domain-config.md`, domain'in servisinin denetim yolunu tek satırla söyler ve kurala link verir: Platform içi (`a`), ortak iletici (`b`, K4) ya da kabul edilmiş bir eşdeğer iz (`c`). Servisin izi yoksa (bkz. `tests/architecture/audit-ledger/`) bu bir **engel** olarak yazılır: o domain'de yazma komutu içeren module pack `ready-for-dev` olamaz. Üretilen her module pack `Audited Events` bölümünü taşır (`module-pack-standard.md` Bölüm 10.1).
+
 ### Faz 4: Sokratik Doğrulama & Güncelleme Yönetimi
 - AI, eksik gördüğü veya Excel'de çelişen durumları kullanıcıya raporlar.
 - **Akıllı Güncelleme Politikası:** Eğer Excel dosyası projenin ortasında güncellenirse, AI mevcut dosyaların üzerine körü körüne yazmaz.

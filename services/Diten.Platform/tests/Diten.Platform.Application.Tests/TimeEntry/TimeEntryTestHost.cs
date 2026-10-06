@@ -499,6 +499,7 @@ public sealed class TimeEntryHost : IDisposable
                 services.AddScoped<ITaskAssignmentScopeResolver, TaskAssignmentScopeResolver>();
                 services.AddScoped<ITaskTeamResolver, TaskTeamResolver>();
                 services.AddScoped<ITaskReadAccessPolicy, TaskReadAccessPolicy>();
+                services.AddScoped<ITaskWriteGate, TaskWriteGate>();
 
                 // ── T1b: MOD-0024's REAL transition path (TasksController → TransitionTaskItemHandler → the repository
                 //    choke point → the observer), so "start the task" is measured on the wire, not simulated ─────────

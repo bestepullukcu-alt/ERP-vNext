@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -37,6 +38,7 @@ public sealed class SegmentsController : Controller
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
     private readonly ILogger<SegmentsController> _logger;
+    private readonly CrmReferenceSetReader _referenceSets;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true };
 
     public SegmentsController(
@@ -50,6 +52,7 @@ public sealed class SegmentsController : Controller
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _sharedLocalizer = sharedLocalizer;
         _logger = logger;
+        _referenceSets = new CrmReferenceSetReader(httpClient, _gatewayUrl, logger);
     }
 
     // ---------------- Compact pages ----------------
@@ -278,9 +281,10 @@ public sealed class SegmentsController : Controller
             return StatusCode(StatusCodes.Status401Unauthorized, new { message = "Tenant context is required." });
         }
 
-        var path = $"/api/v1/reference-data/sets/{Uri.EscapeDataString(setCode)}"
-                   + $"/published-values?scope_key={Uri.EscapeDataString(tenantId)}";
-        var response = await SendGatewayAsync(HttpMethod.Get, path, null, ct);
+        // WP-BRD-TENANT-CRM-SETS — the shared CrmReferenceSetReader: consumable-sets route first (every tenant role), the
+        // old consumer path with the JWT tenant only for a set the Platform does not list.
+        var response = await _referenceSets.ReadAsync(
+            setCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), tenantId, ct);
         return await ToProxyResultAsync(response, ct);
     }
 

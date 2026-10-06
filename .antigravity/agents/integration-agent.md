@@ -73,4 +73,5 @@ Yeni bir modül eklendiğinde `ocelot.json`'a **iki explicit rota** eklenmelidir
 ## 🔄 GÖREV AKIŞI
 1. Yeni bir servis veya endpoint eklendiğinde Gateway (`ocelot.json`) route'larını anında güncelle.
 2. Servisler arası iç iletişim (Internal HTTP Client) veya Event Bus (RabbitMQ/Kafka) gerekiyorsa, iletişim protokollerini tanımla.
+   - **Denetim kaydı (AUD-001):** Kurduğun yol veri YAZIYORSA — olay tüketicisi, iç HTTP ucu (`/api/internal/...`), arka plan işi — tek soru: **"Bu tüketici bir kaydı değiştirdiğinde kim / neyi / ne zaman kaydı nereye düşüyor?"** Bu yollar MediatR komutu olmadığında mimari testi onları GÖRMEZ; kapı sensin. Cevap ya "tüketici bir MediatR komutu gönderiyor ve o komut denetleniyor" ya da adı konmuş bir kayıt yazımıdır; "olayı üreten taraf zaten denetledi" yalnız üreten tarafın kaydı gösterilirse kabul edilir. Servis kimliğiyle yapılan yazmada kayıt aktörü `System` + `SourceService` taşır. Bkz: `.antigravity/rules/audit-trail-standard.md` §2, §9.
 3. API dokümantasyonunda (Swagger) tüm servislerin Gateway üzerinden tek bir noktadan görünmesini sağla.

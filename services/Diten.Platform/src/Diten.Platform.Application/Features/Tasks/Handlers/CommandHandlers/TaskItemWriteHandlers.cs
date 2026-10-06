@@ -22,6 +22,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
     private readonly ITaskApprovalService _approvals;
     private readonly ITaskReviewService _reviews;
     private readonly TaskDocumentReferenceFreezer _documentFreezer;
+    private readonly ITaskWriteGate _writeGate;
     private readonly ILogger<UpdateTaskItemHandler> _logger;
 
     public UpdateTaskItemHandler(
@@ -39,8 +40,12 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         // a test that grepped DependencyInjection.cs for a string — a discipline problem patched with a
         // discipline check. Required turns it into an architectural one: forget the registration and the
         // container refuses to build the handler, which ValidateOnBuild surfaces at STARTUP.
-        TaskDocumentReferenceFreezer documentFreezer)
+        TaskDocumentReferenceFreezer documentFreezer,
+        // WP-WCN-TASK-REQUEST-01 FIX2 — required for the reason documentFreezer is: a gate that defaults to "allow"
+        // cannot be caught by review.
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _organizationUnits = organizationUnits;
         _fieldDefinitions = fieldDefinitions;
@@ -55,16 +60,43 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
     {
         var request = command.Request;
         var task = await _tasks.GetByIdAsync(command.Id, ct);
-        if (task is null)
+
+        // FIX2 — read (404) → person (403: the sender of an ACCEPTED request watches and comments, BL-509 decision 3;
+        // 409: the person a request waits on answers it first) → state → validation. One gate for every write.
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Change, ct) is { } refused)
         {
-            return Response<TaskItemEditResultDto>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return refused.ToResponse<TaskItemEditResultDto>(command.CorrelationId);
         }
 
         // A closed task is read-only — a terminal item exposes no state-changing action.
-        if (task.CompletedAt is not null || task.CancelledAt is not null)
+        if (task!.CompletedAt is not null || task.CancelledAt is not null)
         {
             return Response<TaskItemEditResultDto>.Fail(
                 "A closed task cannot be edited.", 409, TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        /*
+         * BL-509 — an UNANSWERED request keeps the shape it was sent with. An approval or a review is the sender
+         * naming who decides about work that is not theirs to direct (refused at creation, refused here too), and
+         * the unit is the sender's until somebody accepts: moving it into another company's unit would show the
+         * request to that company's managers before anybody said yes (owner decision 4).
+         */
+        if (TaskRequestPolicy.IsUnanswered(task))
+        {
+            if ((request.ApprovalRequired == true && !task.ApprovalRequired)
+                || (request.ReviewRequired && !task.ReviewRequired))
+            {
+                return Response<TaskItemEditResultDto>.Fail(
+                    "A request cannot carry an approval or a review.",
+                    400, TaskReasonCodes.RequestOptionNotSupported, command.CorrelationId);
+            }
+
+            if (request.OrganizationUnitId is { } movedTo && movedTo != task.OrganizationUnitId)
+            {
+                return Response<TaskItemEditResultDto>.Fail(
+                    "A request stays in the unit it was sent from until it is accepted.",
+                    409, TaskReasonCodes.RequestUnitFixed, command.CorrelationId);
+            }
         }
 
         if (request.OrganizationUnitId is { } unitId && unitId != task.OrganizationUnitId)
@@ -498,25 +530,32 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
 public sealed class DeleteTaskItemHandler : IRequestHandler<DeleteTaskItemCommand, Response<NoContent>>
 {
     private readonly ITaskItemRepository _tasks;
+    private readonly ITaskWriteGate _writeGate;
     private readonly ITaskApprovalService? _approvals;
     private readonly ITaskReviewService? _reviews;
 
     public DeleteTaskItemHandler(
         ITaskItemRepository tasks,
+        ITaskWriteGate writeGate,
         ITaskApprovalService? approvals = null,
         ITaskReviewService? reviews = null)
     {
         _tasks = tasks;
+        _writeGate = writeGate;
         _approvals = approvals;
         _reviews = reviews;
     }
 
     public async Task<Response<NoContent>> Handle(DeleteTaskItemCommand command, CancellationToken ct)
     {
+        // FIX2 — the delete key is a manager's; it still reaches only tasks its holder can read. FIX3 (CT decision) —
+        // and never an unanswered request its holder is the person asked (409: they read it to answer it, and a delete
+        // would make it vanish with no decline and no reason), nor a task they read only as a watcher or as the person
+        // a waiting task asks (403).
         var task = await _tasks.GetByIdAsync(command.Id, ct);
-        if (task is null)
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } refused)
         {
-            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return refused.ToResponse<NoContent>(command.CorrelationId);
         }
 
         if (await TaskWorkflowLinkGate.WithdrawAsync(task, _approvals, _reviews, ct) is { } refusedCode)
@@ -570,17 +609,20 @@ public sealed class BulkDeleteTaskItemHandler : IRequestHandler<BulkDeleteTaskIt
     internal const int MaxDeleteAttempts = 3;
 
     private readonly ITaskItemRepository _tasks;
+    private readonly ITaskWriteGate _writeGate;
     private readonly ITaskApprovalService? _approvals;
     private readonly ITaskReviewService? _reviews;
     private readonly ILogger<BulkDeleteTaskItemHandler>? _logger;
 
     public BulkDeleteTaskItemHandler(
         ITaskItemRepository tasks,
+        ITaskWriteGate writeGate,
         ITaskApprovalService? approvals = null,
         ITaskReviewService? reviews = null,
         ILogger<BulkDeleteTaskItemHandler>? logger = null)
     {
         _tasks = tasks;
+        _writeGate = writeGate;
         _approvals = approvals;
         _reviews = reviews;
         _logger = logger;
@@ -611,6 +653,15 @@ public sealed class BulkDeleteTaskItemHandler : IRequestHandler<BulkDeleteTaskIt
             // meanwhile — is simply not there: answered like a delete.
             var task = await _tasks.GetByIdAsync(id, ct);
             if (task is null)
+            {
+                return true;
+            }
+
+            // WP-WCN-TASK-REQUEST-01 FIX2 / FIX3 — the same single write gate as the one-task delete, BEFORE anything is
+            // withdrawn: a task the caller cannot read (or reads only as a watcher / as the person a waiting task asks, or
+            // is the person an unanswered request waits on) is skipped and answered like a delete — never named in
+            // SkippedIds, so the answer leaks nothing about it (the rule D2-FIX5 already keeps for unknown ids).
+            if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is not null)
             {
                 return true;
             }

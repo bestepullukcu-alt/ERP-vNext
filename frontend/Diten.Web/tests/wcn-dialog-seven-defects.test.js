@@ -16,6 +16,17 @@ const web = (...p) => path.join(repoRoot, "frontend", "Diten.Web", ...p);
 const APP = fs.readFileSync(web("wwwroot", "assets", "js", "WorkCenterNext", "app.js"), "utf8");
 // WP-WC-SHARED-UI-01 M2b (2026-09-11) — bindDialogSelect2's mechanism now lives here; app.js delegates to it.
 const SHARED = fs.readFileSync(web("wwwroot", "assets", "js", "shared", "diten-dialog.js"), "utf8");
+
+// FIX7 (item 4) — the WHOLE binder, up to its closing `return true;` — a fixed-length slice stopped reading it once the
+// function outgrew the number (3038 characters at FIX6) and a negative guard then passed on a part it never saw.
+const bindDialogSelect2Body = () => {
+  const start = SHARED.indexOf("const bindDialogSelect2 =");
+  const close = "return true;\n    };";
+  const end = SHARED.indexOf(close, start);
+  expect(start, "bindDialogSelect2 not found").toBeGreaterThanOrEqual(0);
+  expect(end, "the binder's closing return was not found").toBeGreaterThan(start);
+  return SHARED.slice(start, end + close.length);
+};
 const VIEW = fs.readFileSync(web("Views", "Shared", "_GlobalConfirmation.cshtml"), "utf8");
 const LANGS = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
 const resx = (lang) => fs.readFileSync(
@@ -188,7 +199,7 @@ describe("two dialog selects become the product's own picker", () => {
     expect(realCallSites, "a dialog select lost its picker").toBe(5);
 
     // The mechanism itself, read from shared/diten-dialog.js — not app.js, which no longer declares it.
-    const fn = SHARED.slice(SHARED.indexOf("const bindDialogSelect2 ="), SHARED.indexOf("const bindDialogSelect2 =") + 2600);
+    const fn = bindDialogSelect2Body();
     expect(fn, "the list is parented to the body again — it will open behind the dialog")
       .toContain("dropdownParent");
     expect(fn).toContain("closest('.swal2-popup')");
@@ -210,7 +221,7 @@ describe("two dialog selects become the product's own picker", () => {
   it("never wraps the dialog's own input slot", () => {
     // select2 hides the original in place and inserts its container as a SIBLING, so `Swal.getInput()` still
     // finds `.swal2-select`. Asserted live in the browser too — this pins the intent in code.
-    const fn = SHARED.slice(SHARED.indexOf("const bindDialogSelect2 ="), SHARED.indexOf("const bindDialogSelect2 =") + 2600);
+    const fn = bindDialogSelect2Body();
     expect(fn).not.toContain("wrap(");
     expect(fn).not.toContain("diten-field");
   });

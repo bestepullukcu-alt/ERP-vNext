@@ -155,9 +155,10 @@
         if (typeof confirm !== 'function') { return true; }
         const block = meeting.planOverlap;
         const zone = feed && feed.timeZoneId;
-        // showConfirm writes its sub-text as markup: the block title is text somebody typed, so it is escaped here.
+        // showConfirm writes its sub-text as TEXT (WP-SHARED-CONFIRM-XSS-01): the block title somebody typed goes in
+        // as it is — escaping it here would show the entities.
         const subtext = format(label('InviteOverlapText', o.labels),
-            esc(block.title), esc(formatHours(block.startAt, block.endAt, zone)));
+            block.title, formatHours(block.startAt, block.endAt, zone));
         return new Promise((resolve) => {
             confirm(label('InviteOverlapTitle', o.labels), () => resolve(true), {
                 type: 'warning',

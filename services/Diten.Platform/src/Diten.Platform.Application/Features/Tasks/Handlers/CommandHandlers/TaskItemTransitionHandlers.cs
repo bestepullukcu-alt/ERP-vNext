@@ -24,17 +24,31 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
     private readonly ITaskAssignmentRepository _assignments;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
+    // BL-509 — who a request may be accepted by, and where the task moves when it is. Null only in a test that
+    // builds this handler for a plain assignment; an Offered task is then REFUSED, never accepted unchecked.
+    private readonly ITaskRequestService? _requests;
+    // BL-509 — the request's first question is "may you read this at all" (404 otherwise). Null only where a test
+    // builds this handler for a plain assignment; an Offered task is then answered as one that does not exist.
+    private readonly ITaskReadAccessPolicy? _readAccess;
+
+    private readonly ITaskWriteGate _writeGate;
 
     public AcceptTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ITaskWriteGate writeGate,
+        ITaskRequestService? requests = null,
+        ITaskReadAccessPolicy? readAccess = null)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _assignments = assignments;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
+        _requests = requests;
+        _readAccess = readAccess;
     }
 
     public async Task<Response<NoContent>> Handle(AcceptTaskItemCommand command, CancellationToken ct)
@@ -43,6 +57,25 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        /*
+         * FIX3 — A REQUEST IS ANSWERED THROUGH ITS OWN RULE, asked in the same order decline and withdraw ask it
+         * (TaskRequestHandlers.cs): read (404) → the person it is addressed to (403) → still waiting (409) → the version
+         * read (409). Accepting is one of the two answers the person asked is there to give; the write gate's "answer
+         * first" (CT decision, blocker 2) would refuse the very answer it asks for, so it is asked of an ordinary
+         * acceptance only.
+         */
+        if (task.AssignmentTarget == TaskAssignmentTarget.Offered)
+        {
+            return await AcceptOfferAsync(task, command, ct);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         if (task.AssignmentTarget != TaskAssignmentTarget.Person || task.AssigneeUserId != _currentUser.UserId)
@@ -113,6 +146,106 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
 
         return Response<NoContent>.Success(204, command.CorrelationId);
     }
+
+    /// <summary>
+    /// BL-509 — accepting a REQUEST. The person it was addressed to takes the work on, and at that moment it stops
+    /// being an offer: they are the assignee of an ordinary Person task, already accepted, filed under their own
+    /// unit. Until this write nobody held it, which is what kept it out of their reports, calendar and reminders.
+    /// </summary>
+    private async Task<Response<NoContent>> AcceptOfferAsync(
+        TaskItem task, AcceptTaskItemCommand command, CancellationToken ct)
+    {
+        var me = _currentUser.UserId;
+
+        // Read, then who, then state — see TaskRequestHandlers.cs for why the order is part of the rule.
+        if (_readAccess is null || !await _readAccess.CanReadAsync(task, me, ct))
+        {
+            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        if (task.OfferedToUserId != me)
+        {
+            return Response<NoContent>.Fail(
+                "Only the person a request is addressed to can accept it.",
+                403, TaskReasonCodes.RequestNotAddressee, command.CorrelationId);
+        }
+
+        if (!TaskRequestPolicy.IsOfferedTo(task, me))
+        {
+            return Response<NoContent>.Fail(
+                "This request is no longer waiting for an answer.",
+                409, TaskReasonCodes.RequestNotPending, command.CorrelationId);
+        }
+
+        // Asked again NOW: the seat that made them reachable when the request was sent may have ended since, and
+        // the task needs a unit of theirs to move to.
+        var recipient = _requests is null ? null : await _requests.ResolveRecipientAsync(me, ct);
+        if (recipient is null)
+        {
+            return Response<NoContent>.Fail(
+                TaskRequestService.RecipientUnavailable.Message,
+                409, TaskReasonCodes.RequestRecipientUnavailable, command.CorrelationId);
+        }
+
+        // FIX2 (A5) — THE DECISION AND THE WRITE ARE ABOUT THE SAME DOCUMENT. The answer is decided on the task read
+        // above; the write used to be conditioned on the CLIENT's version only, so a client one version ahead of that
+        // read (an accept sent after the withdraw it raced with) replaced the newer document wholesale — the accept
+        // silently gone. The read version must be the client's, and the write is conditioned on it.
+        if (task.Version != command.Request.ExpectedVersion)
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        var sender = task.CreatedByUserId;
+
+        task.AssigneeUserId = me;
+        task.AssignmentTarget = TaskAssignmentTarget.Person;
+        task.OfferedToUserId = null;
+        task.OfferDeclineReason = null;
+        task.CloseAcceptanceGate(me);
+        // CT decision 4 — the sender's unit until it is accepted, the recipient's from then on, so the work is
+        // counted in the company of whoever does it.
+        if (recipient.OrganizationUnitId is { } homeUnit)
+        {
+            task.OrganizationUnitId = homeUnit;
+        }
+
+        // The same promotion an accepted assignment gets: Open work starts when it is taken on.
+        if (task.Lifecycle == TaskLifecycle.Open)
+        {
+            task.Lifecycle = TaskLifecycle.InProgress;
+        }
+
+        task.UpdatedBy = _currentUser.ActorName;
+        task.Declare(TaskTransitionKind.Accepted, me, command.Request.Note, command.Request.ReasonCode);
+
+        if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        await _assignments.CreateAsync(new TaskAssignment
+        {
+            TenantId = _tenantContext.TenantId,
+            TaskItemId = task.Id,
+            EventType = TaskAssignmentEventType.Accepted,
+            UserId = me,
+            ActorUserId = me,
+            ActorLegalEntityId = recipient.LegalEntityId,
+            TargetLegalEntityId = sender is { } from && _requests is not null
+                ? await _requests.LegalEntityOfAsync(from, ct)
+                : null,
+            ReasonCode = command.Request.ReasonCode,
+            Note = command.Request.Note,
+            CreatedBy = _currentUser.ActorName
+        }, ct);
+
+        return Response<NoContent>.Success(204, command.CorrelationId);
+    }
 }
 
 /// <summary>
@@ -165,13 +298,17 @@ public sealed class ReleaseTaskItemHandler : IRequestHandler<ReleaseTaskItemComm
     private readonly ITenantContext _tenantContext;
     private readonly ITaskReviewService? _reviews;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public ReleaseTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext,
+        ITaskWriteGate writeGate,
         ITaskReviewService? reviews = null)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _assignments = assignments;
         _currentUser = currentUser;
@@ -185,6 +322,13 @@ public sealed class ReleaseTaskItemHandler : IRequestHandler<ReleaseTaskItemComm
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         if (task.AssignmentTarget != TaskAssignmentTarget.PositionPool || task.AssigneeUserId is null)
@@ -298,6 +442,8 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     private readonly ITaskApprovalService? _approvals;
     private readonly ITaskReviewService? _reviews;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public TransitionTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
@@ -311,10 +457,12 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         ITaskFieldDefinitionService fieldDefinitions,
         ITaskAttachmentRepository attachments,
         ILogger<TransitionTaskItemHandler> logger,
+        ITaskWriteGate writeGate,
         IReviewMeetingGateReader? reviewMeetingGate = null,
         ITaskApprovalService? approvals = null,
         ITaskReviewService? reviews = null)
     {
+        _writeGate = writeGate;
         _approvals = approvals;
         _reviews = reviews;
         _logger = logger;
@@ -350,6 +498,46 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
         }
 
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
+        }
+
+        // FIX2 note — the cancel AUTHORITY (403) is asked before the task's STATE (409): who may not call this work off
+        // learns nothing about its lifecycle from the answer.
+        /*
+         * Cancelling is the REQUESTER's right, and this is where it is ENFORCED — the projection stops offering
+         * the button, but a caller can post straight here, and a hidden control is presentation while the refusal
+         * is the rule. Same shape as the workflow gate below: the projection explains, the handler refuses.
+         *
+         * 403, not 409: this is a refusal of AUTHORITY (you may not cancel someone else's work), not a state
+         * conflict (the task is in the wrong lifecycle). Conflating them would tell the caller to reload and
+         * retry, which would never help.
+         */
+        // BL-509 (decision 3) — once a request was accepted the work is its holder's: the sender no longer calls
+        // it off (before acceptance they withdraw, or cancel their own unanswered request). The delete key
+        // (ActorMayCancelAnyTask) still cancels an accepted request — but only for a holder of that key who passed
+        // the write gate above: who can read the task, is not the person an unanswered request waits on (409), and
+        // does not read it merely as a watcher or as the person a waiting task asks (403) — FIX3.
+        if (command.Target == TaskLifecycle.Cancelled
+            && !command.ActorMayCancelAnyTask
+            && TaskRequestPolicy.RefuseSenderOfAcceptedRequest(task, _currentUser.UserId) is { } senderRefused)
+        {
+            return Response<NoContent>.Fail(
+                senderRefused.Message, senderRefused.StatusCode, senderRefused.ReasonCode, command.CorrelationId);
+        }
+
+        if (command.Target == TaskLifecycle.Cancelled
+            && task.CreatedByUserId != _currentUser.UserId
+            && !command.ActorMayCancelAnyTask)
+        {
+            return Response<NoContent>.Fail(
+                "Only the requester can cancel this task.",
+                403, TaskReasonCodes.CancelNotRequester, command.CorrelationId);
+        }
+
         if (!_lifecycle.CanTransition(task, command.Target, out var reasonCode))
         {
             return Response<NoContent>.Fail(
@@ -365,7 +553,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
          * permission execute a colleague's task end to end, most visibly through Ekibim's (?scope=team) own
          * working "Tamamla" button on a subordinate's row — measured and recorded (BL-361/BL-362).
          *
-         * Cancel's own actor check, three lines above this comment's target, is left untouched: it asks a
+         * Cancel's own actor check (now asked before CanTransition, FIX2) is left untouched: it asks a
          * DIFFERENT question (the REQUESTER's right to call work off) and stays scoped to `Cancelled` only. This
          * is the sibling question for the two verbs that speak for the WORKER, never the requester.
          *
@@ -425,23 +613,6 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             }
         }
 
-        /*
-         * Cancelling is the REQUESTER's right, and this is where it is ENFORCED — the projection stops offering
-         * the button, but a caller can post straight here, and a hidden control is presentation while the refusal
-         * is the rule. Same shape as the workflow gate below: the projection explains, the handler refuses.
-         *
-         * 403, not 409: this is a refusal of AUTHORITY (you may not cancel someone else's work), not a state
-         * conflict (the task is in the wrong lifecycle). Conflating them would tell the caller to reload and
-         * retry, which would never help.
-         */
-        if (command.Target == TaskLifecycle.Cancelled
-            && task.CreatedByUserId != _currentUser.UserId
-            && !command.ActorMayCancelAnyTask)
-        {
-            return Response<NoContent>.Fail(
-                "Only the requester can cancel this task.",
-                403, TaskReasonCodes.CancelNotRequester, command.CorrelationId);
-        }
 
         // ── Workflow gate (pack §12 K2, charter Binding A) ────────────────────
         // Asked ONLY for approval-gated tasks, and only for the two transitions that mean "this work proceeds".
@@ -1044,6 +1215,8 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
     private readonly ITaskTypeRepository? _types;
     private readonly IReviewMeetingGateReader? _reviewMeetingGate;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public SubmitTaskForReviewHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
@@ -1051,9 +1224,11 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
         ITaskReviewService reviews,
         ITaskApprovalService reviewStates,
         ILogger<SubmitTaskForReviewHandler> logger,
+        ITaskWriteGate writeGate,
         ITaskTypeRepository? types = null,
         IReviewMeetingGateReader? reviewMeetingGate = null)
     {
+        _writeGate = writeGate;
         _reviewStates = reviewStates;
         _tasks = tasks;
         _lifecycle = lifecycle;
@@ -1070,6 +1245,13 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         /*
@@ -1116,17 +1298,19 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
          * nothing to press.
          *
          * Allowed ONLY when MOD-0023 says the current review was refused. That verdict is READ from the instance,
-         * never assumed from the lifecycle: a task still waiting on its reviewer takes the ordinary path below and
-         * is refused, because resubmitting work someone is holding right now would silently replace their review.
+         * never assumed from the lifecycle: a task still waiting on its reviewer is refused in the held-link block
+         * below with REVIEW_PENDING, because resubmitting work someone is holding right now would silently replace
+         * their review.
          */
         /*
          * D2-FIX3 item 2 — THE HELD LINK IS READ WHATEVER THE LIFECYCLE. This used to be asked only in PendingReview, so a
          * task whose review was still open but whose lifecycle had been rewound (a hand-over before D2-FIX3, or data left
          * that way) took the ordinary path: a new round started under a new key, the link was overwritten and the first
          * review stayed decidable with nobody reading it. Now a held review MOD-0023 has not closed refuses the submission
-         * in every lifecycle — in PendingReview through the lifecycle answer below, as before; elsewhere with
-         * REVIEW_PENDING. A closed one (refused, withdrawn, approved) lets a new round begin; the resubmission self-loop
-         * (PendingReview → PendingReview) still exists only in PendingReview — the lifecycle matrix is not touched.
+         * with REVIEW_PENDING in every lifecycle (in PendingReview too since the task-request merge — it answered the
+         * lifecycle's INVALID_STATE there before). A closed one (refused, withdrawn, approved) lets a new round begin; the
+         * resubmission self-loop (PendingReview → PendingReview) still exists only in PendingReview — the lifecycle matrix
+         * is not touched.
          */
         var resubmitting = false;
         if (task.ReviewWorkflowInstanceId is { } heldInstance)
@@ -1159,9 +1343,16 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
             }
 
             var (stillOpen, sentBack) = TaskReviewView.Resolve(task, states);
-            if (task.Lifecycle == TaskLifecycle.PendingReview)
+            /*
+             * WP-WCN-TASK-REQUEST-01 (merge) — a held review that is still open answers REVIEW_PENDING in PendingReview
+             * too. It answered the lifecycle's TASK_INVALID_STATE there ("not allowed in the current state"), which named
+             * no reason, and the screen's own sentence for this case ("this task already has an open review",
+             * reasonOverridesFor('submitReview')) was never reached. A review sent back is still the resubmission, and a
+             * CLOSED one in PendingReview still gets the lifecycle's answer below, as before.
+             */
+            if (task.Lifecycle == TaskLifecycle.PendingReview && sentBack)
             {
-                resubmitting = sentBack;
+                resubmitting = true;
             }
             else if (stillOpen)
             {
@@ -1290,13 +1481,17 @@ public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, R
     private readonly IWorkingHoursProvider _workingHours;
     private readonly ICalendarMeetingReader _meetings;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public PlanTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
         ICurrentUserContext currentUser,
         IWorkingHoursProvider workingHours,
-        ICalendarMeetingReader meetings)
+        ICalendarMeetingReader meetings,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
@@ -1333,6 +1528,13 @@ public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, R
         {
             return Response<PlanTaskItemResultDto>.Fail(
                 "Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<PlanTaskItemResultDto>(command.CorrelationId);
         }
 
         /*
@@ -1489,11 +1691,15 @@ public sealed class UnplanTaskItemHandler : IRequestHandler<UnplanTaskItemComman
     private readonly ITaskLifecycleService _lifecycle;
     private readonly ICurrentUserContext _currentUser;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public UnplanTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
@@ -1505,6 +1711,13 @@ public sealed class UnplanTaskItemHandler : IRequestHandler<UnplanTaskItemComman
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         if (task.AssigneeUserId is null || task.AssigneeUserId != _currentUser.UserId)
@@ -1562,6 +1775,8 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
     private readonly ITaskNotificationService _notifications;
     private readonly ILogger<InquireTaskItemHandler> _logger;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public InquireTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
@@ -1570,8 +1785,10 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
         IPositionRepository positions,
         IOrganizationUnitRepository organizationUnits,
         ITaskNotificationService notifications,
-        ILogger<InquireTaskItemHandler> logger)
+        ILogger<InquireTaskItemHandler> logger,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
@@ -1598,6 +1815,13 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         // Only the holder can declare a wait: it is a statement about their own work.
@@ -1696,9 +1920,10 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
 /// the task's history as <see cref="TaskTransitionKind.InquiryAnswered"/>, in their own words; the waiting story
 /// is cleared; the task returns to the lifecycle it had BEFORE it was parked; and the holder is told.</para>
 ///
-/// <para><b>The addressee gains nothing else.</b> This handler is the ONLY write they can reach: start, complete,
-/// cancel, reassign and return all keep asking their own holder/requester questions, which the addressee does
-/// not pass. The answer is not an act on the work — it is information handed back to the person doing it.</para>
+/// <para><b>The addressee gains nothing else.</b> This handler and a comment are the ONLY writes they can reach: the
+/// write gate refuses every change and every administrative verb to a reader by being asked (FIX3, item 8), and
+/// start, complete, cancel, reassign and return keep asking their own holder/requester questions besides. The answer
+/// is not an act on the work — it is information handed back to the person doing it.</para>
 /// </summary>
 public sealed class AnswerInquiryHandler : IRequestHandler<AnswerInquiryCommand, Response<NoContent>>
 {
@@ -1711,6 +1936,8 @@ public sealed class AnswerInquiryHandler : IRequestHandler<AnswerInquiryCommand,
     private readonly ITaskNotificationService _notifications;
     private readonly ILogger<AnswerInquiryHandler> _logger;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public AnswerInquiryHandler(
         ITaskItemRepository tasks,
         ITaskTransitionRepository transitions,
@@ -1719,8 +1946,10 @@ public sealed class AnswerInquiryHandler : IRequestHandler<AnswerInquiryCommand,
         IWorkflowTransitionGate workflowGate,
         ITaskDependencyRepository dependencies,
         ITaskNotificationService notifications,
-        ILogger<AnswerInquiryHandler> logger)
+        ILogger<AnswerInquiryHandler> logger,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _transitions = transitions;
         _lifecycle = lifecycle;
@@ -1753,6 +1982,16 @@ public sealed class AnswerInquiryHandler : IRequestHandler<AnswerInquiryCommand,
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        // FIX3 (item 8) — a COMMENT-kind write: the answer is information handed back, and the person asked usually
+        // reads the task only because it is asking them (an observer leg the gate refuses every change to). The person
+        // an unanswered request waits on still answers that request first (409).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Comment, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         /*
@@ -1876,18 +2115,27 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
     private readonly ITenantContext _tenantContext;
     private readonly ITaskReviewService? _reviews;
 
+    // BL-509 — the sender's home seat, asked only for a request sent before its origin unit was recorded.
+    private readonly ITaskRequestService? _requests;
+
+    private readonly ITaskWriteGate _writeGate;
+
     public ReturnTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext,
+        ITaskWriteGate writeGate,
+        ITaskRequestService? requests = null,
         ITaskReviewService? reviews = null)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _assignments = assignments;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
         _reviews = reviews;
+        _requests = requests;
     }
 
     public async Task<Response<NoContent>> Handle(ReturnTaskItemCommand command, CancellationToken ct)
@@ -1904,6 +2152,13 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         if (task.AssigneeUserId != _currentUser.UserId)
@@ -1936,6 +2191,29 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
         // the lifecycle rewind alone stopped meaning "unaccepted" when BL-042 gave acceptance its own field.)
         task.AssigneeUserId = task.CreatedByUserId;
         task.AssignmentTarget = TaskAssignmentTarget.Person;
+        // BL-509 — handed back, a request is over: the task is its sender's own again, and whatever they do with
+        // it next is an ordinary assignment. Left set, the mark would stop them directing work they now own.
+        // It also goes back to the unit it was SENT from: left in the recipient's unit, the sender's own work would
+        // stay filed — and counted, and readable through the unit scope — in another company.
+        if (task.IsRequest)
+        {
+            // FIX2 note — the unit it was sent from, while that unit still takes work; a unit archived since then
+            // would file the sender's own task where nobody can reach it: their current unit instead.
+            var recorded = task.RequestOriginUnitId is { } sentFrom
+                           && (_requests is null || await _requests.IsLiveUnitAsync(sentFrom, ct))
+                ? sentFrom
+                : (Guid?)null;
+            var origin = recorded
+                         ?? (_requests is not null && task.CreatedByUserId is { } sender
+                             ? (await _requests.HomeOfAsync(sender, ct))?.OrganizationUnitId
+                             : null);
+            if (origin is { } originUnit)
+            {
+                task.OrganizationUnitId = originUnit;
+            }
+        }
+
+        task.IsRequest = false;
         task.ReopenAcceptanceGate();
         // BL-439 — the lifecycle rewinds to Open, so any waiting story goes with it (see ReleaseTaskItemHandler).
         task.ClearWaiting();
@@ -1999,14 +2277,18 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
     private readonly ITenantContext _tenantContext;
     private readonly ITaskReviewService? _reviews;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public ReassignTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ITaskAssignmentGuard assignmentGuard,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext,
+        ITaskWriteGate writeGate,
         ITaskReviewService? reviews = null)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _assignments = assignments;
         _assignmentGuard = assignmentGuard;
@@ -2031,6 +2313,13 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
         }
 
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
+        }
+
         if (task.AssignmentTarget == TaskAssignmentTarget.PositionPool)
         {
             return Response<NoContent>.Fail(
@@ -2045,6 +2334,31 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
             return Response<NoContent>.Fail(
                 "Only the current assignee or the requester can reassign this task.",
                 403, TaskReasonCodes.ReassignNotPermitted, command.CorrelationId);
+        }
+
+        /*
+         * BL-509 — a REQUEST and this verb.
+         *
+         * Still waiting for an answer: refused. Assigning it to somebody else would pull it out from under the
+         * person who was asked without telling them; the sender withdraws first, which is an act with its own
+         * record.
+         *
+         * Accepted: the sender no longer directs the work (owner decision 3, TaskRequestPolicy). The holder's own
+         * delegation is untouched — it is their task now, and DelegationAllowed speaks for it below.
+         */
+        if (TaskRequestPolicy.IsPendingOffer(task))
+        {
+            return Response<NoContent>.Fail(
+                "This request is still waiting for an answer. Withdraw it first.",
+                409, TaskReasonCodes.RequestPending, command.CorrelationId);
+        }
+
+        if (!TaskRequestPolicy.SenderMayReassignAfterAcceptance
+            && TaskRequestPolicy.IsSenderOfAcceptedRequest(task, _currentUser.UserId))
+        {
+            return Response<NoContent>.Fail(
+                "This task was accepted as a request; it is its holder's to hand on.",
+                403, TaskReasonCodes.RequestSenderCannotDirect, command.CorrelationId);
         }
 
         /*
@@ -2114,6 +2428,14 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
          * (accepted = lifecycle past Open/Planned); once BL-042 moved the fact to its own field, the same line
          * did nothing and reassigned work went straight into the new holder's My Work, unaccepted.
          */
+        // BL-509 — an unanswered request the sender now ASSIGNS inside their own scope (the guard above has just
+        // said yes) is an order from here on, not a request: the mark and the decline note go with the offer.
+        if (task.AssignmentTarget == TaskAssignmentTarget.Offered)
+        {
+            task.IsRequest = false;
+            task.OfferDeclineReason = null;
+        }
+
         task.AssigneeUserId = command.Request.AssigneeUserId;
         task.AssignmentTarget = TaskAssignmentTarget.Person;
         task.ReopenAcceptanceGate();

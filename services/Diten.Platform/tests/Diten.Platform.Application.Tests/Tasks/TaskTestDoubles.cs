@@ -395,6 +395,18 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
                         && x.Lifecycle == Domain.Enums.Tasks.TaskLifecycle.Waiting)
             .ToList());
 
+    /// <summary>BL-509 — mirrors <c>TaskItemRepository.ListOfferedToAsync</c>, all three conditions included.</summary>
+    public Task<IReadOnlyList<TaskItem>> ListOfferedToAsync(Guid userId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskItem>>(_items
+            .Where(x => x.TenantId == TaskTestData.Tenant
+                        && !x.IsDeleted
+                        && x.OfferedToUserId == userId
+                        && x.AssignmentTarget == Domain.Enums.Tasks.TaskAssignmentTarget.Offered
+                        && x.AssigneeUserId is null
+                        && x.Lifecycle != Domain.Enums.Tasks.TaskLifecycle.Done
+                        && x.Lifecycle != Domain.Enums.Tasks.TaskLifecycle.Cancelled)
+            .ToList());
+
     public Task<IReadOnlyList<TaskItem>> ListByParentAsync(Guid parentTaskItemId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<TaskItem>>(_items
             .Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted && x.ParentTaskItemId == parentTaskItemId)
@@ -438,6 +450,13 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
                 ForcedUpdateConflicts--;
                 return Task.FromResult(false);
             }
+        }
+
+        // FIX3 — the real repository writes nothing when the entity was not read at the version the caller names
+        // (TaskStoreVersioning); the double keeps in step, so a handler test cannot pass a write production refuses.
+        if (task.Version != expectedVersion)
+        {
+            return Task.FromResult(false);
         }
 
         // The real repository stamps the passed entity BEFORE its conditional write (TaskRepositories.cs:79), so a
@@ -840,11 +859,14 @@ internal sealed class FakeTaskCommentRepository : ITaskCommentRepository
      * because a hand-copied clone silently drops every field added after it was written. Two doubles in this
      * suite have already hidden a defect exactly that way.
      */
-    public Task UpdateAsync(TaskComment comment, CancellationToken ct = default)
+    public Task<bool> UpdateAsync(TaskComment comment, int expectedVersion, CancellationToken ct = default)
     {
+        // FIX4 (item 5) — the same condition as the real repository: only over the version that was read.
         var index = _comments.FindIndex(c => c.Id == comment.Id);
-        if (index >= 0) { _comments[index] = Clone(comment); }
-        return Task.CompletedTask;
+        if (index < 0 || _comments[index].Version != expectedVersion) { return Task.FromResult(false); }
+        comment.Version = expectedVersion + 1;
+        _comments[index] = Clone(comment);
+        return Task.FromResult(true);
     }
 
     private static TaskComment Clone(TaskComment comment)

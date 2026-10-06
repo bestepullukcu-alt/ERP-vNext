@@ -40,6 +40,7 @@ public sealed class TaskAssignmentWriteGuardSourceTests
     private static readonly IReadOnlyDictionary<string, string> NotAnAssignment = new Dictionary<string, string>
     {
         [nameof(ClaimTaskItemHandler)] = "the caller takes pooled work for THEMSELVES",
+        [nameof(AcceptTaskItemHandler)] = "the caller takes a REQUEST addressed to them for THEMSELVES (BL-509)",
         [nameof(ReleaseTaskItemHandler)] = "the holder is cleared back to the pool; nobody is named",
         [nameof(ReturnTaskItemHandler)] = "work goes back to its REQUESTER, fixed by the task, not chosen"
     };

@@ -1358,6 +1358,7 @@
   <data name="RelatedTypeChild" xml:space="preserve"><value>Alt kayıt</value></data>
   <data name="RelatedTypeTransaction" xml:space="preserve"><value>İşlem</value></data>
   <data name="RelatedTypeDocument" xml:space="preserve"><value>Belge</value></data>
+  <data name="RelatedTaskNotAccessible" xml:space="preserve"><value>Erişiminiz olmayan bir görev</value></data>
   <data name="ComplianceTitle" xml:space="preserve"><value>Uyum ve kontroller</value></data>
   <data name="CompliancePolicy" xml:space="preserve"><value>Politika</value></data>
   <data name="ComplianceLimit" xml:space="preserve"><value>Onay limiti</value></data>

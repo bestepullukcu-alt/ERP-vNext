@@ -1358,6 +1358,7 @@
   <data name="RelatedTypeChild" xml:space="preserve"><value>فرع</value></data>
   <data name="RelatedTypeTransaction" xml:space="preserve"><value>معاملة</value></data>
   <data name="RelatedTypeDocument" xml:space="preserve"><value>مستند</value></data>
+  <data name="RelatedTaskNotAccessible" xml:space="preserve"><value>مهمة ليس لديك صلاحية الوصول إليها</value></data>
   <data name="ComplianceTitle" xml:space="preserve"><value>الامتثال والضوابط</value></data>
   <data name="CompliancePolicy" xml:space="preserve"><value>السياسة</value></data>
   <data name="ComplianceLimit" xml:space="preserve"><value>حد الموافقة</value></data>

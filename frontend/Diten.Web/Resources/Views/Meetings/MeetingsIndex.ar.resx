@@ -72,6 +72,14 @@
   <data name="PreviousMeetingLabel" xml:space="preserve"><value>الاجتماع السابق</value></data>
   <data name="FollowUpMeetingLabel" xml:space="preserve"><value>اجتماع المتابعة</value></data>
   <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>من الاجتماع السابق</value></data>
+  <data name="CarriedOpenActionLine" xml:space="preserve"><value>إجراء مفتوح من الاجتماع السابق</value></data>
+  <data name="LinkedTaskNotAccessible" xml:space="preserve"><value>مهمة ليس لديك صلاحية الوصول إليها</value></data>
+  <data name="LinkExistingTaskTruncated" xml:space="preserve"><value>تم البحث في جزء من القائمة فقط. إذا لم تجد المهمة المطلوبة هنا، فضيّق نطاق البحث.</value></data>
+  <data name="LinkExistingTaskListUnreadable" xml:space="preserve"><value>تعذّرت قراءة قائمة المهام. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
+  <data name="LinkExistingTaskListFailed" xml:space="preserve"><value>تعذّر تحميل قائمة المهام. حاول مرة أخرى.</value></data>
+  <data name="LinkExistingTaskSearching" xml:space="preserve"><value>جارٍ البحث…</value></data>
+  <data name="LinkExistingTaskNoResults" xml:space="preserve"><value>لا توجد مهمة مطابقة.</value></data>
+  <data name="LinkExistingTaskInputTooShort" xml:space="preserve"><value>اكتب حرفين على الأقل للبحث.</value></data>
   <data name="Yes" xml:space="preserve"><value>نعم</value></data>
   <data name="No" xml:space="preserve"><value>لا</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>معلومات الاجتماع</value></data>

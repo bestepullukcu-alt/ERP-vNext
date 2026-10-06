@@ -1358,6 +1358,7 @@
   <data name="RelatedTypeChild" xml:space="preserve"><value>Дочерняя</value></data>
   <data name="RelatedTypeTransaction" xml:space="preserve"><value>Операция</value></data>
   <data name="RelatedTypeDocument" xml:space="preserve"><value>Документ</value></data>
+  <data name="RelatedTaskNotAccessible" xml:space="preserve"><value>Задача, к которой у вас нет доступа</value></data>
   <data name="ComplianceTitle" xml:space="preserve"><value>Соответствие и контроль</value></data>
   <data name="CompliancePolicy" xml:space="preserve"><value>Политика</value></data>
   <data name="ComplianceLimit" xml:space="preserve"><value>Лимит согласования</value></data>

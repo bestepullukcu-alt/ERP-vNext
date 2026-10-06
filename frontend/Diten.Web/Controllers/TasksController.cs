@@ -144,7 +144,7 @@ public sealed class TasksController : Controller
     /// <para>The route parameter is named <c>transition</c>, not <c>action</c>: <c>action</c> is reserved by MVC
     /// routing and combining it with a constraint fails endpoint construction at startup.</para>
     /// </summary>
-    [HttpPost("api/{id:guid}/{transition:regex(^(accept|claim|release|plan|start|inquire|answer|submitReview|return|reassign|complete|cancel)$)}")]
+    [HttpPost("api/{id:guid}/{transition:regex(^(accept|decline|withdraw|offer|claim|release|plan|start|inquire|answer|submitReview|return|reassign|complete|cancel)$)}")]
     public Task<IActionResult> ApiTransition(Guid id, string transition)
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/{transition}", readBody: true);
 
@@ -611,7 +611,8 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiDecisionMakers()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/decision-makers", readBody: false);
 
-    /// <summary>MOD-0357 S4 — the "link an existing task" dialog's own search box (term, limit).</summary>
+    /// <summary>MOD-0357 S4 — the "link an existing task" picker's server search (term, limit): the term the reader types
+    /// in the dialog's search box is sent here (FIX6), and the answer is <c>{ items, truncated }</c> (FIX5).</summary>
     [HttpGet("api/link-candidates")]
     public Task<IActionResult> ApiLinkCandidates()
         => ProxyAsync(

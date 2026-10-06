@@ -691,7 +691,7 @@ public sealed class TaskInquiryAnswerTests
                     new FakePositionRepository([.. _positions]),
                     new FakeOrganizationUnitRepository([.. _units]),
                     Notifications,
-                    NullLogger<InquireTaskItemHandler>.Instance)
+                    NullLogger<InquireTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new InquireTaskItemCommand(Task.Id, new InquireTaskItemRequest(Task.Version, reason, waitingOn), "corr"),
                     CancellationToken.None);
@@ -699,7 +699,7 @@ public sealed class TaskInquiryAnswerTests
         public Task<Response<NoContent>> AnswerAsync(Guid actor, string answer, int? version = null)
             => new AnswerInquiryHandler(
                     Tasks, Tasks.Transitions, new TaskLifecycleService(), new FakeCurrentUserContext(actor),
-                    Gate, Dependencies, Notifications, NullLogger<AnswerInquiryHandler>.Instance)
+                    Gate, Dependencies, Notifications, NullLogger<AnswerInquiryHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new AnswerInquiryCommand(Task.Id, new AnswerInquiryRequest(version ?? Task.Version, answer), "corr"),
                     CancellationToken.None);
@@ -716,7 +716,7 @@ public sealed class TaskInquiryAnswerTests
                     new TaskFieldDefinitionService(
                         new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                     new FakeTaskAttachmentRepository(),
-                    NullLogger<TransitionTaskItemHandler>.Instance)
+                    NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new TransitionTaskItemCommand(
                         Task.Id, target, new TaskTransitionRequest(Task.Version, null, null), "corr",
@@ -726,7 +726,7 @@ public sealed class TaskInquiryAnswerTests
         public Task<Response<NoContent>> ReassignAsAsync(Guid actor, Guid newAssignee)
             => new ReassignTaskItemHandler(
                     Tasks, new FakeTaskAssignmentRepository(), TaskAssignmentGuards.AdmitAll(),
-                    new FakeCurrentUserContext(actor), new FakeTenantContext(TaskTestData.Tenant))
+                    new FakeCurrentUserContext(actor), new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new ReassignTaskItemCommand(
                         Task.Id, new ReassignTaskItemRequest(Task.Version, newAssignee, "Başkası baksın."), "corr"),
@@ -735,7 +735,7 @@ public sealed class TaskInquiryAnswerTests
         public Task<Response<NoContent>> ReturnAsAsync(Guid actor)
             => new ReturnTaskItemHandler(
                     Tasks, new FakeTaskAssignmentRepository(), new FakeCurrentUserContext(actor),
-                    new FakeTenantContext(TaskTestData.Tenant))
+                    new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new ReturnTaskItemCommand(Task.Id, new ReturnTaskItemRequest(Task.Version, "Benim işim değil."), "corr"),
                     CancellationToken.None);

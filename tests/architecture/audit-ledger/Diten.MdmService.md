@@ -10,12 +10,12 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 | iz | yol | tür | belirteç |
 |---|---|---|---|
 | mdm-merkezi-iletim | b | işaret | IAuditableCommand+IAuditMetadataProvider |
-| mdm-kisaltma-gecmisi | c | yazıcı | IProductAbbreviationHistoryRepository |
+| mdm-kisaltma-gecmisi | c | yazıcı | IProductAbbreviationHistoryRepository.AppendIfAbsentAsync |
 
 Ölçüm notları (2026-10-02; `yol = aday` kabul edilmemiş demektir ve o ize giden komut borçta kalır):
 
-* **mdm-merkezi-iletim** — `AuditForwardingBehavior` → `IPlatformAuditForwarder` → `POST /api/internal/audit/append`. En iyi çaba: iletim hatası yutulur.
-* **mdm-kisaltma-gecmisi** — `mdm_product_abbreviation_history`: aktör, olay, önce/sonra durum, korelasyon; yalnız ekleme; `…/product-abbreviations/{id}/evidence` ile okunur. CT onayı: 2026-10-02.
+> **mdm-merkezi-iletim** — `AuditForwardingBehavior` → `IPlatformAuditForwarder` → `POST /api/internal/audit/append`. En iyi çaba: iletim hatası yutulur.
+> **mdm-kisaltma-gecmisi** — `mdm_product_abbreviation_history`: aktör, olay, önce/sonra durum, korelasyon; yalnız ekleme; `…/product-abbreviations/{id}/evidence` ile okunur. CT onayı: 2026-10-02.
 
 ## İstisnalar
 

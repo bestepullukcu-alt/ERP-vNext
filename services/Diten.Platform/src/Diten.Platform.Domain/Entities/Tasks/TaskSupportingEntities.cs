@@ -25,6 +25,15 @@ public sealed class TaskAssignment : TenantScopedEntity
     /// <summary>Who performed it.</summary>
     public Guid? ActorUserId { get; set; }
 
+    /// <summary>
+    /// BL-509 — the legal entity of the ACTOR's home seat at that moment; null when they held none, and on every
+    /// row written before the request existed. An id, never a name: the company is read from the org master data.
+    /// </summary>
+    public Guid? ActorLegalEntityId { get; set; }
+
+    /// <summary>BL-509 — the legal entity of the TARGET user's home seat at that moment. Same rules as above.</summary>
+    public Guid? TargetLegalEntityId { get; set; }
+
     public DateTimeOffset OccurredAt { get; set; } = DateTimeOffset.UtcNow;
     public string? ReasonCode { get; set; }
     public string? Note { get; set; }

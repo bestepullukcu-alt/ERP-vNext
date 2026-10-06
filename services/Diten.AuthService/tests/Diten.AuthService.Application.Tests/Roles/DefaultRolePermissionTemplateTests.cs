@@ -577,6 +577,29 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.Contains("platform.tasks.work-report.read", viewerKeys); // ordinary read: Viewer read clause
     }
 
+    // WP-WCN-TASK-REQUEST-01 (BL-509, owner decision 2026-10-02) — sending a task request across the assignment
+    // scope is switched on by an explicit grant only. Placed under a module the Admin breadth clause DOES reach,
+    // beside the ordinary create key, so the exclusion is not vacuous: the sibling reaches Admin, the request key
+    // reaches no default role. Remove the key from ExplicitGrantOnlyPermissions.Keys and this test goes red.
+    [Fact]
+    public void Task_requests_create_enters_no_default_role_even_under_the_Admin_module_while_task_create_reaches_Admin()
+    {
+        var catalog = Catalog();
+        catalog.Add(new Permission("platform", "tasks", "create", "Create Task", null,
+            moduleOverride: "access-governance", scope: PermissionScope.Tenant));
+        catalog.Add(new Permission("platform", "tasks.requests", "create", "Send Task Request", null,
+            moduleOverride: "access-governance", scope: PermissionScope.Tenant));
+
+        var superAdminKeys = DefaultRolePermissionTemplate.SelectFor("SuperAdmin", catalog).Select(p => p.Key).ToList();
+        var adminKeys = DefaultRolePermissionTemplate.SelectFor("Admin", catalog).Select(p => p.Key).ToList();
+        var viewerKeys = DefaultRolePermissionTemplate.SelectFor("Viewer", catalog).Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("platform.tasks.requests.create", superAdminKeys);
+        Assert.DoesNotContain("platform.tasks.requests.create", adminKeys);
+        Assert.DoesNotContain("platform.tasks.requests.create", viewerKeys);
+        Assert.Contains("platform.tasks.create", adminKeys); // ordinary key: Admin breadth clause
+    }
+
     [Fact]
     public void Deleted_permissions_are_excluded()
     {

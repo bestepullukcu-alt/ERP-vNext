@@ -4851,7 +4851,12 @@
     const renderRelated = (item) => {
         if (!hasCap(item, 'relatedRecords') || !(item.relatedRecords || []).length) { return ''; }
         const typeKeys = { parent: 'RelatedTypeParent', child: 'RelatedTypeChild', transaction: 'RelatedTypeTransaction', document: 'RelatedTypeDocument' };
-        const rows = global.DitenRelatedRecords.renderRelatedRows(item.relatedRecords, {
+        // WP-WCN-TASK-REQUEST-01 FIX4 — a related task this reader may not read arrives with TASK_NOT_ACCESSIBLE where its
+        // title would be (the server never sends a refused title); it is shown as a sentence, never as the code.
+        const records = item.relatedRecords.map((record) => (record.title === 'TASK_NOT_ACCESSIBLE'
+            ? { ...record, title: t('RelatedTaskNotAccessible') }
+            : record));
+        const rows = global.DitenRelatedRecords.renderRelatedRows(records, {
             esc,
             resolveTypeLabel: (record) => t(typeKeys[record.type] || 'RelatedTypeDocument')
         });
@@ -6157,7 +6162,8 @@
         if (expectedVersion === null) { return; }
 
         const result = await global.TasksApi.transition(subtaskId, 'cancel', { expectedVersion });
-        if (!result.ok) { toast(global.TasksApi.failureMessage(result), 'error'); return; }
+        // FIX4 (item 7) — a cancel's own sentence for a workflow that could not be withdrawn.
+        if (!result.ok) { toast(global.TasksApi.failureMessage(result, global.TasksApi.reasonOverridesFor('cancel')), 'error'); return; }
         toast(tf('ToastSubtaskCancelled', title));
         await loadWorkItems();
         render();
@@ -8270,7 +8276,9 @@
          * answers with the assignment sentence, because every other action IS an assignment; inquire is the one
          * action that must ask for the other sentence, and it asks here, at its only call site.
          */
-        const overrides = action.code === 'inquire' ? global.TasksApi.INQUIRE_REASON_CODE_OVERRIDES : undefined;
+        // FIX4 (item 7) — and an act that withdraws the task's linked workflow (cancel, return, reassign, release,
+        // delete) asks for its own sentence: the one rule lives in TasksApi.reasonOverridesFor.
+        const overrides = global.TasksApi.reasonOverridesFor(action.code);
 
         // A 409 means two very different things, and they must not share a message. A CONCURRENCY conflict is
         // "someone changed it first, here is the fresh screen"; a workflow BLOCK is "the approver has not released
@@ -8431,7 +8439,7 @@
          */
         sharedConfirm({
             title: t('CommentWithdraw'),
-            subtext: `<div class="wcn-confirm-body">${esc(t('CommentWithdrawConfirm'))}</div>`,
+            subtextHtml: `<div class="wcn-confirm-body">${esc(t('CommentWithdrawConfirm'))}</div>`,
             type: 'danger',
             confirmText: t('CommentWithdraw'),
             onConfirm: async () => {
@@ -9411,8 +9419,10 @@
              */
             onCancel: options.onCancel,
             /*
-             * HTML, deliberately: the outcome sentence in front of a confirm is markup the caller already built,
-             * and the wrapper renders `subtext` as HTML for exactly this.
+             * TEXT. The shared confirm writes `subtext` as text (WP-SHARED-CONFIRM-XSS-01): a caller here hands
+             * over its words as they are and never escapes them first — the dialog would then show the entities.
+             * A body this module BUILT as markup (the outcome sentence in front of a confirm) goes through
+             * `subtextHtml` below, and every piece of data inside it is escaped where it is built.
              *
              * ⚠ AN INPUT PROMPT GETS NO GENERIC CONFIRMATION SENTENCE (2026-08-24, owner).
              *
@@ -9425,6 +9435,8 @@
              * bulk confirm and the subtask cancel in this very module still ask whether the reader is sure.
              */
             subtext: options.subtext !== undefined ? options.subtext : (options.input ? '' : undefined),
+            // Markup this module built itself; absent for every dialog that only has words to say.
+            subtextHtml: options.subtextHtml,
             type: options.type || 'info',
             confirmButtonText: options.confirmText,
             /*
@@ -9619,7 +9631,7 @@
         sharedConfirm({
             title: label,
             // What booking it does and does NOT do — the due date is the question a reader actually has here.
-            subtext: esc(subtextText),
+            subtext: subtextText,
             icon: inboxActionIcon(action),
             confirmText: t('PlanConfirm'),
             input: {
@@ -9679,7 +9691,7 @@
         const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
         sharedConfirm({
             title: label,
-            subtext: esc(t('MeetingTypeSubtext')),
+            subtext: t('MeetingTypeSubtext'),
             icon: inboxActionIcon(action),
             confirmText: t('PlanConfirm'),
             input: {
@@ -9853,7 +9865,7 @@
          */
         sharedConfirm({
             title: t('SnoozeTitle'),
-            subtext: esc(t('SnoozeSubtext')),
+            subtext: t('SnoozeSubtext'),
             /*
              * A MOON. The dialog's gravity is right as it stands — a plain primary confirmation — but the glyph
              * its type hands out is a question mark, which asks "are you sure?" while this dialog asks "until
@@ -10115,7 +10127,7 @@
         sharedConfirm({
             title: t('NewInSource'),
             // Where the record will LIVE, which is the thing a module picker leaves unsaid.
-            subtext: esc(t('NewInSourceSubtext')),
+            subtext: t('NewInSourceSubtext'),
             icon: 'bx-cube',
             // The button names CREATING, not opening: nothing is opened here any more (see below), and the old
             // 'NewOpenSource' label promised an act this dialog no longer performs.
@@ -10680,9 +10692,9 @@
                  * the kebab and lost their card-side prose. A confirm that says only "are you sure?" asks the
                  * reader to remember what they are sure ABOUT.
                  */
-                subtext: `${outcomeLead(action)}<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
+                subtextHtml: `${outcomeLead(action)}<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
                 // The object of the action, in the wrapper's own badge — the one mechanism the product keeps.
-                entityName: esc(item.title),
+                entityName: item.title,
                 // The wrapper picks the icon from the TYPE rather than taking one by name, so a destructive act
                 // gets the danger circle and its red button from a single word instead of three settings.
                 type: action.destructive ? 'danger' : 'info',

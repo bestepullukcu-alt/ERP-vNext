@@ -319,7 +319,7 @@ public sealed class TaskApprovalToggleTests
             approvals,
             reviews,
             NullLogger<UpdateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), writeGate: TaskWriteGateDoubles.Open);
         return (handler, tasks, approvals, reviews);
     }
 

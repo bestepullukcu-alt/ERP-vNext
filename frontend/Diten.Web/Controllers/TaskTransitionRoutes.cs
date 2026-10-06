@@ -26,7 +26,7 @@ public static class TaskTransitionRoutes
     /// Route-constraint pattern for the <c>transition</c> segment. MUST list exactly <see cref="All"/>.
     /// Anchored so a code is matched whole — an unanchored pattern would forward <c>cancel-everything</c>.
     /// </summary>
-    public const string Pattern = "^(accept|claim|release|plan|start|inquire|answer|submitReview|return|reassign|complete|cancel)$";
+    public const string Pattern = "^(accept|decline|withdraw|offer|claim|release|plan|start|inquire|answer|submitReview|return|reassign|complete|cancel)$";
 
     /// <summary>
     /// Every transition code the proxy forwards, in the order they appear in <see cref="Pattern"/>.
@@ -40,6 +40,11 @@ public static class TaskTransitionRoutes
     public static readonly IReadOnlyList<string> All =
     [
         "accept",
+        // BL-509 — the task request: declined by the person asked, withdrawn or addressed again by its sender.
+        // Platform's endpoints carry the keys and the handlers decide who; this tier only forwards.
+        "decline",
+        "withdraw",
+        "offer",
         "claim",
         "release",
         "plan",

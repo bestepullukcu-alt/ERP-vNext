@@ -269,7 +269,7 @@ public sealed class CreateWithChecklistTests
 
         var tick = await new SetChecklistItemStateHandler(
                 tasks, runs, new TaskChecklistService(), new FakeCurrentUserContext(TaskTestData.Me),
-                new FakeTaskAttachmentRepository())
+                new FakeTaskAttachmentRepository(), writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new SetChecklistItemStateCommand(
                     task.Id,
@@ -296,7 +296,7 @@ public sealed class CreateWithChecklistTests
 
         var response = await new AddChecklistItemHandler(
                 tasks, runs, new TaskChecklistService(),
-                new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant))
+                new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new AddChecklistItemCommand(
                     task.Id,
@@ -328,7 +328,7 @@ public sealed class CreateWithChecklistTests
                 new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
                 new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                 new FakeTaskAttachmentRepository(),
-                NullLogger<TransitionTaskItemHandler>.Instance)
+                NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new TransitionTaskItemCommand(
                     task.Id, TaskLifecycle.Done, new TaskTransitionRequest(task.Version, null, null), "corr"),
@@ -356,7 +356,7 @@ public sealed class CreateWithChecklistTests
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeTenantContext(TaskTestData.Tenant),
                 NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll())
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll(), writeGate: TaskWriteGateDoubles.Open)
             .Handle(new CreateTaskItemCommand(request, "corr"), CancellationToken.None);
 
     private static CreateTaskItemRequest Request(

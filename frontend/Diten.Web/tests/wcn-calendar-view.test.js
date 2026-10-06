@@ -1292,7 +1292,9 @@ describe("B — the invitations panel draws the ONE shared card", () => {
 
     expect(asked, "no warning before an overlapping accept").toHaveLength(1);
     expect(asked[0].title).toBe("InviteOverlapTitle");
-    expect(asked[0].options.subtext).toContain("Rapor &lt;b&gt;taslağı&lt;/b&gt;");
+    // Handed over as TEXT: the shared confirm escapes at its door (WP-SHARED-CONFIRM-XSS-01).
+    expect(asked[0].options.subtext).toContain("Rapor <b>taslağı</b>");
+    expect(asked[0].options.subtextHtml).toBeUndefined();
     expect(asked[0].options.subtext).toMatch(/14.00–14.30/);
     expect(calls.map((c) => c.actionCode)).toContain("acceptInvite");
   });

@@ -9,11 +9,11 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 
 | iz | yol | tür | belirteç |
 |---|---|---|---|
-| hcm-taslak-denetimi | aday | yazıcı | IDraftAuditService |
+| hcm-taslak-denetimi | aday | yazıcı | IDraftAuditService.EmitAsync |
 
 Ölçüm notları (2026-10-02; `yol = aday` kabul edilmemiş demektir ve o ize giden komut borçta kalır):
 
-* **hcm-taslak-denetimi** — Uygulaması yalnız uygulama günlüğüne yazar ("non-authoritative audit fallback").
+> **hcm-taslak-denetimi** — Uygulaması yalnız uygulama günlüğüne yazar ("non-authoritative audit fallback").
 
 ## İstisnalar
 
