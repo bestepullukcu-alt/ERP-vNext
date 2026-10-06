@@ -193,4 +193,5 @@
   <data name="SessionStatus_archived" xml:space="preserve"><value>Arşivlendi</value></data>
   <data name="GoToDetails" xml:space="preserve"><value>Ayrıntıya git</value></data>
   <data name="StatusLine" xml:space="preserve"><value>Durum çizgisi</value></data>
+  <data name="TodayActivePeriods" xml:space="preserve"><value>Bugün aktif dönemler</value></data>
 </root>

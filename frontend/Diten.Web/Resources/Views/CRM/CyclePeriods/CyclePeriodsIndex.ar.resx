@@ -193,4 +193,5 @@
   <data name="SessionStatus_archived" xml:space="preserve"><value>مؤرشفة</value></data>
   <data name="GoToDetails" xml:space="preserve"><value>الانتقال إلى التفاصيل</value></data>
   <data name="StatusLine" xml:space="preserve"><value>مسار الحالة</value></data>
+  <data name="TodayActivePeriods" xml:space="preserve"><value>الفترات النشطة اليوم</value></data>
 </root>

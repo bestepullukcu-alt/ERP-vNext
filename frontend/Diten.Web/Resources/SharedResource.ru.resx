@@ -1045,4 +1045,7 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Всё Равно Принять</value>
   </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Загрузка...</value>
+  </data>
 </root>

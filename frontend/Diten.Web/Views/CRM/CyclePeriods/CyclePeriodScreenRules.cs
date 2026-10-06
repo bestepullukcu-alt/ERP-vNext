@@ -274,6 +274,23 @@ public static class CyclePeriodScreenRules
             _ => new CyclePeriodFinderView("none", "secondary", "FinderNone")
         };
 
+    /// <summary>
+    /// WP-CYC-UI-FIX-2 — "today's active periods": EVERY active period whose window covers <paramref name="day"/>, at
+    /// every scope level (tenant, country, legal entity, business unit), ordered by scope precedence then reference.
+    /// <para>It replaces a unit-less resolve-active call, which only ever looked at the tenant-wide level and therefore
+    /// said "no active period" while a country-scoped one was in force. Read from the list rows the page already has —
+    /// no extra request. Which period applies to ONE unit is the effective-period finder's question, not this one.</para>
+    /// </summary>
+    public static IReadOnlyList<CyclePeriodTodayActive> ActiveOn(IReadOnlyList<CyclePeriodRow> rows, DateOnly day)
+        => rows
+            .Where(r => NormalizeStatus(r.CycleStatus) == Active && r.StartDate <= day && r.EndDate >= day)
+            .OrderBy(r => ScopeRank(NormalizeScope(r.ScopeType)))
+            .ThenBy(r => ScopeRefKey(r), StringComparer.OrdinalIgnoreCase)
+            .ThenBy(r => r.CycleCode, StringComparer.OrdinalIgnoreCase)
+            .Select(r => new CyclePeriodTodayActive(
+                r.CyclePeriodId, r.CycleCode, r.CycleName, NormalizeScope(r.ScopeType), LaneLabelRef(r), r.StartDate, r.EndDate))
+            .ToList();
+
     /// <summary>Open (draft or active) periods that have no live capacity — known only when the list carried the usage
     /// summary; a row whose summary is unknown is not listed (unknown is not "missing").</summary>
     public static IReadOnlyList<CyclePeriodRow> OpenWithoutCapacity(IReadOnlyList<CyclePeriodRow> rows)
@@ -384,6 +401,16 @@ public sealed record CyclePeriodRow(
     string? ScopeRef,
     string CycleStatus,
     bool? HasCapacity = null);
+
+/// <summary>WP-CYC-UI-FIX-2 — one of today's active periods, with the scope it answers for.</summary>
+public sealed record CyclePeriodTodayActive(
+    Guid CyclePeriodId,
+    string CycleCode,
+    string CycleName,
+    string ScopeType,
+    string? ScopeRef,
+    DateOnly StartDate,
+    DateOnly EndDate);
 
 public sealed record CyclePeriodTimeline(
     DateOnly AxisStart,

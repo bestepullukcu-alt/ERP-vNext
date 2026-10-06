@@ -54,10 +54,9 @@
     // the reader's own clock.
     // WP-CYC-UI-2: dates and numbers in the READER's language (document lang), not a fixed en-US.
     const lang = document.documentElement.lang || undefined;
-    const DAY_FORMAT = { month: 'short', day: '2-digit', year: '2-digit', timeZone: 'UTC' };
-    const STAMP_FORMAT = { month: 'short', day: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' };
-    const day = v => v ? new Date(v).toLocaleDateString(lang, DAY_FORMAT) : '—';
-    const stamp = v => v ? new Date(v).toLocaleString(lang, STAMP_FORMAT) : '—';
+    // WP-CYC-UI-FIX-2 — ONE date formatter for both cycle modules (cycle-dates.js): day + short month + year.
+    const day = window.CycleDates.day;
+    const stamp = window.CycleDates.stamp;
     const numberFormat = new Intl.NumberFormat(lang);
     const fteFormat = new Intl.NumberFormat(lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const norm = v => (typeof v === 'string' ? v.trim() : (v == null ? '' : String(v)));
