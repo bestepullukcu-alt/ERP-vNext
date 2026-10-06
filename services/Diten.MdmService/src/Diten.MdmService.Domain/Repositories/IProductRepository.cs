@@ -18,6 +18,21 @@ public interface IProductRepository : IRepository<Product>
     /// </summary>
     Task<bool> TryCreateAsync(Product product, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// WP-MDM-BRAND-ACCEPT-01 FIX2 (items 6, 7, 9) — inserts the product and reserves its external references in ONE
+    /// transaction: <see cref="BrandWriteOutcome.DuplicateCode"/> for a taken code, <see cref="BrandWriteOutcome.ReferenceInUse"/>
+    /// for a taken pair, <see cref="BrandWriteOutcome.Unavailable"/> when the store cannot write atomically.
+    /// </summary>
+    Task<BrandWriteOutcome> CreateWithReservationsAsync(Product product, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// FIX2 (items 5, 6) — replaces the product (tenant-scoped) and, in the same transaction, reserves the references the
+    /// edit ADDS and releases the ones it REMOVES. <see cref="BrandWriteOutcome.Stale"/> = not found in this tenant.
+    /// </summary>
+    Task<BrandWriteOutcome> UpdateWithReservationsAsync(
+        Product product, IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
+        CancellationToken cancellationToken = default);
+
     /// <summary>FIX1 (item 10) — the product counterpart of <see cref="IBrandRepository.FindByExternalReferenceAsync"/>.</summary>
     Task<Product?> FindByExternalReferenceAsync(
         string sourceSystem, string externalId, Guid? excludeId, CancellationToken cancellationToken = default);

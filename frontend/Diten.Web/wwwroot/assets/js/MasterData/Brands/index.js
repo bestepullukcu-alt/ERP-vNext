@@ -19,6 +19,8 @@ const BrandsList = (function () {
     const canCreate = flag('can-create');
     const canUpdate = flag('can-update');
     const canArchive = flag('can-archive');
+    // FIX2 (item 1) — the server export (BL-452) is offered only with mdm.brands.export.
+    const canExport = flag('can-export');
     const personalizationContext = { moduleKey: 'MasterData', pageKey: 'Brands' };
     // The data columns, in the order _DataTable.cshtml declares them (0 = control, 10 = actions). Save View, export and
     // the column chooser all read THESE indexes, so a saved view can never point at a shifted column.
@@ -174,9 +176,9 @@ const BrandsList = (function () {
     };
 
     /*
-     * No silent partial export: until the register has a server export (every matching row), each Print / CSV / Excel /
-     * PDF / Copy entry says plainly that it writes only the page on screen (the GSKU register's rule, read-only use of
-     * the shared buttons).
+     * No silent partial export: the server-export entries (FIX2, `.dt-server-export`) write every matching row; any entry
+     * that still writes only the page on screen (Copy) says so plainly (the GSKU register's rule, read-only use of the
+     * shared buttons).
      */
     const exportEntrySelector = '.dt-controlled-copy, .buttons-csv, .buttons-excel, .buttons-copy, .buttons-print, .buttons-pdf';
     const exportEntryIcon = '.bx-printer, .bx-file, .bxs-file-export, .bxs-file-pdf, .bx-copy';
@@ -200,13 +202,16 @@ const BrandsList = (function () {
         dataMode: 'server',
         ajax: { url: endpoint, type: 'GET', headers: getAuthHeaders(), error: onListError },
         onResponse: showIndicator,
+        // FIX2 (item 1, BL-452) — THE FILE IS THE SCREEN: CSV / Excel ask the server for every matching row.
+        export: canExport ? { mode: 'server', url: `${endpoint}/export`, fileName: 'brands' } : undefined,
         actions: { onRowAction: { archive } },
         quickView: { offcanvasId: 'offcanvasDetailsPreview', populate: populatePreview, actionKey: rowActionPresentation.details.key },
         toolbar: {
             addNewText: canCreate ? L.CreateBrand : '',
             onAddNew: () => { window.location.href = '/MasterData/Brands/Create'; },
             exportColumns: saveViewColumnIndexes,
-            colvisColumns: saveViewColumnIndexes
+            colvisColumns: saveViewColumnIndexes,
+            exportPermitted: canExport
         },
         filters: {
             hostId: 'inlineFilterHost',
@@ -215,9 +220,7 @@ const BrandsList = (function () {
             resetBtn: 'btnFilterReset',
             fields: [
                 { id: 'filterBrandStatus', key: 'brandStatus', kind: 'single' },
-                { id: 'filterIncludeArchived', key: 'includeArchived', kind: 'single' },
-                { id: 'filterBusinessUnitId', key: 'businessUnitId', kind: 'text' },
-                { id: 'filterTherapeuticAreaId', key: 'therapeuticAreaId', kind: 'text' }
+                { id: 'filterIncludeArchived', key: 'includeArchived', kind: 'single' }
             ]
         },
         savedView: {

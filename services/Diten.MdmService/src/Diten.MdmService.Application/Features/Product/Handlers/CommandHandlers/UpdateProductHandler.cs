@@ -59,18 +59,31 @@ public sealed class UpdateProductHandler : IRequestHandler<Commands.UpdateProduc
         // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 10) — where a reference came from is never re-stamped by an edit, and a
         // reference another product already carries is named.
         BrandProductExternalReferences.PreserveImportedAt(entity.ExternalReferences, storedReferences);
-        if (await BrandProductExternalReferences.FirstInUseAsync(entity.ExternalReferences, async (source, externalId) =>
-                (await _productRepository.FindByExternalReferenceAsync(source, externalId, entity.Id, cancellationToken))?.ProductCode)
-            is { } inUse)
+        // FIX2 (R4, item 5) — only references this edit ADDS are checked: a pair the product already carried is not
+        // re-litigated (legacy data may have left two products sharing one), and only those are reserved.
+        var (added, removed) = BrandProductExternalReferences.Diff(entity.ExternalReferences, storedReferences);
+        if (await FirstInUseAsync(added, entity.Id, cancellationToken) is { } inUse)
         {
             return BrandProductFailures.Fail<NoContent>(BrandProductReasonCodes.ExternalReferenceInUse, inUse.Message, inUse.StatusCode);
         }
 
-        var updated = await _productRepository.UpdateAsync(entity, cancellationToken);
-        return updated
-            ? Response<NoContent>.SuccessWithoutData(204)
-            : BrandProductFailures.Fail<NoContent>(BrandProductReasonCodes.ProductNotFound, "Product not found.", 404);
+        return await _productRepository.UpdateWithReservationsAsync(entity, added, removed, cancellationToken) switch
+        {
+            BrandWriteOutcome.Written => Response<NoContent>.SuccessWithoutData(204),
+            BrandWriteOutcome.ReferenceInUse => BrandProductFailures.Fail<NoContent>(
+                BrandProductReasonCodes.ExternalReferenceInUse,
+                (await FirstInUseAsync(added, entity.Id, cancellationToken))?.Message
+                ?? "One of the external references is already used by another product.",
+                409),
+            BrandWriteOutcome.Unavailable => BrandProductFailures.StoreUnavailable<NoContent>(),
+            _ => BrandProductFailures.Fail<NoContent>(BrandProductReasonCodes.ProductNotFound, "Product not found.", 404)
+        };
     }
+
+    private Task<(string Message, int StatusCode)?> FirstInUseAsync(
+        IReadOnlyList<Domain.Entities.BrandProductExternalReference> references, Guid productId, CancellationToken cancellationToken)
+        => BrandProductExternalReferences.FirstInUseAsync(references, async (source, externalId) =>
+            (await _productRepository.FindByExternalReferenceAsync(source, externalId, productId, cancellationToken))?.ProductCode);
 
     private async Task<(string ReasonCode, string Message, int StatusCode)?> ResolveBrandFailureAsync(
         Guid? requestedBrandId, Guid? currentBrandId, CancellationToken cancellationToken)
@@ -86,13 +99,8 @@ public sealed class UpdateProductHandler : IRequestHandler<Commands.UpdateProduc
             return (BrandProductReasonCodes.BrandNotFound, "Brand not found in this tenant.", 404);
         }
 
-        // An already-archived brand stays attached to products that were linked before it was archived — that
-        // history must not break. Only MOVING a product onto an archived brand is refused.
-        if (!brand.IsLinkable && requestedBrandId != currentBrandId)
-        {
-            return (BrandProductReasonCodes.BrandArchived, "An archived brand cannot receive new product links.", 409);
-        }
-
-        return null;
+        // A brand that stopped being linkable (archived, inactive, expired) stays attached to products that were linked
+        // before — that history must not break. Only MOVING a product onto such a brand is refused (FIX2 item 2).
+        return requestedBrandId == currentBrandId ? null : ProductBrandLink.Refusal(brand, DateTimeOffset.UtcNow);
     }
 }

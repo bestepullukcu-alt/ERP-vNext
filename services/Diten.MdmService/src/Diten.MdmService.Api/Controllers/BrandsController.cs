@@ -1,4 +1,7 @@
 using System.Security.Claims;
+using Diten.BuildingBlocks.ListExport;
+using Diten.MdmService.Api.Export;
+using Diten.MdmService.Application.Contracts.Audit;
 using Diten.MdmService.Application.Features.Brand;
 using Diten.MdmService.Application.Features.Brand.Commands;
 using Diten.MdmService.Application.Features.Brand.Queries;
@@ -22,10 +25,12 @@ namespace Diten.MdmService.Api.Controllers;
 public sealed class BrandsController : CustomBaseController
 {
     private readonly IMediator _mediator;
+    private readonly IRequestCorrelation _correlation;
 
-    public BrandsController(IMediator mediator)
+    public BrandsController(IMediator mediator, IRequestCorrelation correlation)
     {
         _mediator = mediator;
+        _correlation = correlation;
     }
 
     [HttpGet]
@@ -35,6 +40,59 @@ public sealed class BrandsController : CustomBaseController
         var response = await _mediator.Send(query, cancellationToken);
         return CreateActionResultInstance(response);
     }
+
+    /// <summary>
+    /// WP-MDM-BRAND-ACCEPT-01 FIX2 (item 1, BL-452) — THE FILE IS THE SCREEN: <c>GET api/mdm/brands/export?format=csv|xlsx
+    /// &amp;columns=…</c> plus the register's own search / orderBy / orderDir / brandStatus / includeArchived. The same
+    /// filters and the same 400 as the list; every matching row up to 50 000 (more is 413 EXPORT_TOO_LARGE, no partial
+    /// file). Its own key, mdm.brands.export (brand-product-master): reading a brand does not mean taking all of them away.
+    /// </summary>
+    [HttpGet("export")]
+    [HasPermission("mdm.brands.export")]
+    public async Task<IActionResult> Export(
+        [FromQuery] string? format,
+        [FromQuery] string[]? columns,
+        [FromQuery] string? search,
+        [FromQuery] string? orderBy,
+        [FromQuery] string? orderDir,
+        [FromQuery] string? brandStatus,
+        [FromQuery] bool includeArchived,
+        CancellationToken cancellationToken)
+    {
+        if (!ListExportContract.TryParseFormat(format, out var fileFormat))
+            return ExportRefusal(400, "format must be 'csv' or 'xlsx'.", ListExportContract.FormatInvalidCode);
+        if (!BrandExportColumns.Set.TryResolve(columns, out var exportColumns, out var columnsError))
+            return ExportRefusal(400, columnsError!, ListExportContract.ColumnsInvalidCode);
+
+        var response = await _mediator.Send(new GetBrandExportQuery(
+            new GetBrandListQuery
+            {
+                Search = search, OrderBy = orderBy, OrderDir = orderDir, BrandStatus = brandStatus, IncludeArchived = includeArchived
+            },
+            ListExportContract.MaxRows), cancellationToken);
+        if (!response.IsSuccessful)
+            return CreateActionResultInstance(response);
+
+        var matched = Math.Max(response.Data!.TotalCount, response.Data.Items.Count);
+        if (matched > ListExportContract.MaxRows)
+            return ExportRefusal(StatusCodes.Status413PayloadTooLarge,
+                $"{matched} records match; an export carries at most {ListExportContract.MaxRows}. Narrow the filter.", ListExportContract.TooLargeCode);
+
+        var culture = ListExportContract.ResolveCulture(Request.Headers.AcceptLanguage.ToString());
+        var content = ListExportWriter.Write(fileFormat, exportColumns, response.Data.Items, culture, BrandExportColumns.Label("Title", culture));
+        return File(content, ListExportContract.ContentType(fileFormat),
+            ListExportContract.FileName(BrandExportColumns.Screen, DateTimeOffset.UtcNow, fileFormat));
+    }
+
+    // The refusal body every list-export service speaks (isSuccessful, statusCode, errors, errorCodes[{ code }]).
+    private ObjectResult ExportRefusal(int statusCode, string message, string code) => StatusCode(statusCode, new
+    {
+        data = (object?)null,
+        statusCode,
+        isSuccessful = false,
+        errors = new[] { message },
+        errorCodes = new[] { new { code } }
+    });
 
     [HttpGet("{brandId:guid}")]
     [HasPermission("mdm.brands.read")]
@@ -80,11 +138,11 @@ public sealed class BrandsController : CustomBaseController
     }
 
     /// <summary>
-    /// WP-MDM-BRAND-ACCEPT-01 FIX1 (item 1) — ties the brand's history entry to the request: the caller's X-Correlation-Id
-    /// (the same header the Platform audit forwarder threads), else this request's trace identifier.
+    /// WP-MDM-BRAND-ACCEPT-01 FIX1 (item 1) — ties the brand's history entry to the request. FIX2 (M2) — the request's ONE
+    /// normalised id (Guid "D"): the caller's X-Correlation-Id when it is a Guid, else a fresh one — the same value the
+    /// central audit event carries.
     /// </summary>
-    private string CorrelationId =>
-        Request.Headers["X-Correlation-Id"].ToString() is { Length: > 0 } header ? header : HttpContext.TraceIdentifier;
+    private string CorrelationId => _correlation.CorrelationId.ToString("D");
 
     /// <summary>Audit identity only — authorization is enforced by [HasPermission], never by this value.</summary>
     private string? Actor =>

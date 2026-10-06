@@ -15,8 +15,9 @@ public static class BrandHistory
         {
             EventType = eventType,
             Actor = actor,
-            // A request without X-Correlation-Id still gets a value, so no entry is ever uncorrelated.
-            CorrelationId = string.IsNullOrWhiteSpace(correlationId) ? Guid.NewGuid().ToString("N") : correlationId.Trim(),
+            // A request without X-Correlation-Id still gets a value, so no entry is ever uncorrelated; FIX2 (M2) — always
+            // Guid "D", the form the central audit event carries.
+            CorrelationId = Contracts.Audit.RequestCorrelation.Normalize(correlationId),
             Before = before,
             After = BrandAuditSnapshot.Of(after),
             OccurredAtUtc = DateTimeOffset.UtcNow

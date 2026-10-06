@@ -75,7 +75,8 @@
     /*
      * Archive uses POST /archive — never HTTP DELETE. FIX1 (item 3): archiving is IRREVERSIBLE (no un-archive exists; the
      * owner decides later whether one should), so the confirmation says so and how many of the brand's products are
-     * still in use (read when this page was drawn).
+     * still in use. WP-MDM-BRAND-ACCEPT-01 FIX2 (M7) — that count is read FRESH when the dialog opens (a product linked or
+     * archived after this page was drawn is counted); when it cannot be read the dialog does not open.
      */
     const archiveSentence = liveProducts => {
         const consequence = liveProducts > 0
@@ -83,7 +84,21 @@
             : L.ArchiveBrandNoLiveProducts;
         return [L.ArchiveBrandIrreversible, consequence].filter(Boolean).join(' ');
     };
-    document.getElementById('archiveBrand')?.addEventListener('click', () => {
+    const readLiveProducts = async () => {
+        const detail = await envelope(await fetch(
+            `${endpoint}/${encodeURIComponent(page.brandId)}/detail`,
+            { credentials: 'same-origin', headers: getAuthHeaders() }));
+        const count = detail?.liveProductCount;
+        return Number.isInteger(count) ? count : 0;
+    };
+    document.getElementById('archiveBrand')?.addEventListener('click', async () => {
+        let liveProducts;
+        try {
+            liveProducts = await readLiveProducts();
+        } catch (error) {
+            window.showToast?.(error.message || L.ErrorState, 'error');
+            return;
+        }
         window.showConfirm?.(L.ArchiveBrand, async () => {
             try {
                 await envelope(await fetch(`${endpoint}/${page.brandId}/archive`, {
@@ -94,7 +109,7 @@
                 window.showToast?.(L.RecordArchived, 'success');
                 window.location.reload();
             } catch (error) { window.showToast?.(error.message || L.ErrorState, 'error'); }
-        }, { type: 'warning', subtext: archiveSentence(Number(page.liveProductCount) || 0), confirmButtonText: L.ArchiveBrand });
+        }, { type: 'warning', subtext: archiveSentence(liveProducts), confirmButtonText: L.ArchiveBrand });
     });
 
     loadProducts();

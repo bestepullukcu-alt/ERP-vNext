@@ -27,7 +27,18 @@ public interface IBrandRepository : IRepository<Brand>
     /// entry is written with it. <see cref="BrandWriteOutcome.Stale"/> means nothing was written.
     /// </summary>
     Task<BrandWriteOutcome> UpdateEditableFieldsWithHistoryAsync(
-        Brand proposed, int expectedVersion, BrandHistoryEntry history, CancellationToken cancellationToken = default);
+        Brand proposed, int expectedVersion, BrandHistoryEntry history, CancellationToken cancellationToken = default)
+        => UpdateEditableFieldsWithHistoryAsync(proposed, expectedVersion, history, [], [], cancellationToken);
+
+    /// <summary>
+    /// FIX2 (item 6) — the same conditional edit, also reserving the external references the edit ADDS and releasing the
+    /// ones it REMOVES (this brand's own reservations only), in the same transaction.
+    /// <see cref="BrandWriteOutcome.ReferenceInUse"/> means another record holds an added pair and nothing was written.
+    /// </summary>
+    Task<BrandWriteOutcome> UpdateEditableFieldsWithHistoryAsync(
+        Brand proposed, int expectedVersion, BrandHistoryEntry history,
+        IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// FIX1 (item 1) — sets the archive fields only, and only on a brand that is not archived yet and still at
@@ -49,10 +60,19 @@ public interface IBrandRepository : IRepository<Brand>
         string sourceSystem, string externalId, Guid? excludeId, CancellationToken cancellationToken = default);
 }
 
-/// <summary>The result of an atomic brand write.</summary>
+/// <summary>The result of an atomic brand (or product) write.</summary>
 public enum BrandWriteOutcome
 {
     Written,
     DuplicateCode,
-    Stale
+    Stale,
+
+    /// <summary>FIX2 (item 6) — another record of the tenant holds one of the external references; nothing written.</summary>
+    ReferenceInUse,
+
+    /// <summary>
+    /// FIX2 (items 7, 18) — the store could not write atomically (no transaction support outside Development, or the
+    /// transaction kept failing transiently); nothing written. Answered 503, never a silent partial write.
+    /// </summary>
+    Unavailable
 }

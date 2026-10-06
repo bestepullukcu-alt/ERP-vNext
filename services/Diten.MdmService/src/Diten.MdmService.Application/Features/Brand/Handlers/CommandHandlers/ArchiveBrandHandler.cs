@@ -59,6 +59,12 @@ public sealed class ArchiveBrandHandler : IRequestHandler<Commands.ArchiveBrandC
                 return Response<NoContent>.SuccessWithoutData(204);
             }
 
+            if (outcome == BrandWriteOutcome.Unavailable)
+            {
+                // FIX2 (items 7, 18) — nothing was archived: an archive without its history entry is never written.
+                return BrandProductFailures.StoreUnavailable<NoContent>();
+            }
+
             if (attempt == MaxAttempts)
             {
                 return BrandProductFailures.Fail<NoContent>(

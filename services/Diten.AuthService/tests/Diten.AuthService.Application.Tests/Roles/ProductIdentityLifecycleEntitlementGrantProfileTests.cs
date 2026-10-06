@@ -27,10 +27,13 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
         Assert.Equal(
             [ProductIdentityLifecycleEntitlementGrantProfile.ProductIdentityLifecycleOperationRecover],
             ProductIdentityLifecycleEntitlementGrantProfile.NonHumanPermissionKeys);
-        Assert.Equal(
-            [ProductIdentityLifecycleEntitlementGrantProfile.BrandsRead],
-            ProductIdentityLifecycleEntitlementGrantProfile.DeclaredCrossModuleDependencyKeys);
-        Assert.Equal(5, ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys.Count);
+        // FIX2 (item 1, CT model A) — Brand is its own module (brand-product-master); the product module declares
+        // no cross-module key and does not depend on mdm.brands.read.
+        Assert.Empty(ProductIdentityLifecycleEntitlementGrantProfile.DeclaredCrossModuleDependencyKeys);
+        Assert.Equal(4, ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys.Count);
+        Assert.DoesNotContain("mdm.brands.read", ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys);
+        Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys,
+            key => key.StartsWith("mdm.brands.", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -66,8 +69,8 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
             ProductIdentityLifecycleEntitlementGrantProfile.ProductIdentityLifecycleOperationRecover,
             ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles.SelectMany(role => role.PermissionKeys));
         Assert.DoesNotContain(
-            ProductIdentityLifecycleEntitlementGrantProfile.BrandsRead,
-            ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles.SelectMany(role => role.PermissionKeys));
+            ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles.SelectMany(role => role.PermissionKeys),
+            key => key.StartsWith("mdm.brands.", StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]
@@ -136,7 +139,8 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
         var resolved = ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(declared, global);
 
         Assert.Equal(ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys, resolved.Keys.ToHashSet(StringComparer.Ordinal));
-        Assert.Equal("brand-product-master", resolved[ProductIdentityLifecycleEntitlementGrantProfile.BrandsRead].Module);
+        Assert.Equal(4, resolved.Count);
+        Assert.DoesNotContain("mdm.brands.read", resolved.Keys);
         Assert.Equal("work-aggregation", resolved[ProductIdentityLifecycleEntitlementGrantProfile.WorkCenterInboxView].Module);
         Assert.Equal("workflow", resolved[ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart].Module);
         Assert.Equal("workflow", resolved[ProductIdentityLifecycleEntitlementGrantProfile.WorkflowTasksApprove].Module);
@@ -249,35 +253,51 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
     }
 
     [Theory]
-    [InlineData("missing")]
-    [InlineData("module")]
-    [InlineData("resource")]
-    [InlineData("action")]
-    [InlineData("scope")]
-    [InlineData("deleted")]
-    public void Brand_descriptor_uses_the_existing_exact_cross_module_dependency_contract(string drift)
+    [InlineData("mdm.brands.read")]
+    [InlineData("mdm.brands.create")]
+    [InlineData("mdm.brands.export")]
+    [InlineData("MDM.BRANDS.READ")]
+    public void Product_descriptor_carrying_a_brand_key_is_refused(string brandKey)
     {
-        var declared = ProductCatalog();
-        var brand = declared.Single(permission =>
-            permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.BrandsRead);
-        declared.Remove(brand);
-        if (drift != "missing")
-        {
-            declared.Add(new Permission(
-                "mdm",
-                drift == "resource" ? "brand" : "brands",
-                drift == "action" ? "view" : "read",
-                "Read Brands",
-                null,
-                moduleOverride: drift == "module" ? ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode : "brand-product-master",
-                scope: drift == "scope" ? PermissionScope.PlatformAdmin : PermissionScope.Tenant)
-            { IsDeleted = drift == "deleted" });
-        }
+        // FIX2 (item 1, CT model A) — a Brand key in the product module's declared set is a stale manifest.
+        Assert.True(ProductIdentityLifecycleEntitlementGrantProfile.IsBrandModuleKey(brandKey));
+        var keys = DeclaredKeys();
+        keys.Add(brandKey);
 
+        var error = Assert.Throws<InvalidOperationException>(() =>
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys));
+        Assert.Contains("no Brand", error.Message, StringComparison.Ordinal);
+
+        var separator = brandKey.LastIndexOf('.');
+        var declared = ProductCatalog();
+        declared.Add(new Permission(
+            "mdm",
+            brandKey["mdm.".Length..separator].ToLowerInvariant(),
+            brandKey[(separator + 1)..].ToLowerInvariant(),
+            brandKey,
+            null,
+            moduleOverride: "brand-product-master",
+            scope: PermissionScope.Tenant));
         Assert.Throws<InvalidOperationException>(() =>
             ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(
                 declared,
                 declared.Concat(SharedDependencies())));
+    }
+
+    [Fact]
+    public void Product_descriptor_without_any_brand_key_passes_the_exact_set()
+    {
+        var keys = DeclaredKeys();
+        Assert.DoesNotContain(keys, ProductIdentityLifecycleEntitlementGrantProfile.IsBrandModuleKey);
+        Assert.Equal(27, keys.Count);
+
+        ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys);
+        var declared = ProductCatalog();
+        var resolved = ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(
+            declared,
+            declared.Concat(SharedDependencies()));
+        Assert.Equal(ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys,
+            resolved.Keys.ToHashSet(StringComparer.Ordinal));
     }
 
     [Theory]
@@ -371,14 +391,6 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
             .Concat(ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys)
             .Concat(ProductIdentityLifecycleEntitlementGrantProfile.NonHumanPermissionKeys)
             .Select(ProductPermission)
-            .Append(new Permission(
-                "mdm",
-                "brands",
-                "read",
-                "Read Brands",
-                null,
-                moduleOverride: "brand-product-master",
-                scope: PermissionScope.Tenant))
             .ToList();
 
     private static List<string> DeclaredKeys()

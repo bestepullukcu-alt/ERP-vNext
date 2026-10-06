@@ -50,20 +50,48 @@ public static class BrandProductReasonCodes
     public const string ExternalReferenceInUse = "external_reference_in_use";
     public const string ListQueryInvalid = "list_query_invalid";
 
+    // WP-MDM-BRAND-ACCEPT-01 FIX2 — item 2: a new link to a brand that is not active or not inside its validity window
+    // (409); items 7, 18: the store could not write atomically, nothing was written (503).
+    public const string BrandNotLinkable = "brand_not_linkable";
+    public const string StoreUnavailable = "store_unavailable";
+
+    // FIX2 (M5) — a field-shape rule failed (400); the field follows the code (see BrandProductFieldRefusal).
+    public const string FieldInvalid = "field_invalid";
+
     public static readonly IReadOnlyList<string> All =
     [
         BrandNotFound, ProductNotFound, BrandCodeDuplicate, ProductCodeDuplicate, BrandArchived, RecordArchived,
         CodeImmutable, InvalidBrandStatus, InvalidProductStatus, InvalidProductType, InvalidDosageForm,
         InvalidUnitOfMeasure, InvalidAtcCode, ArchivedStatusNotAssignable, InvalidEffectiveWindow,
         ExternalReferencePrimaryConflict, ExternalReferenceDuplicate, IndicationRefDuplicate,
-        VersionConflict, ExpectedVersionRequired, ExternalReferenceInUse, ListQueryInvalid
+        VersionConflict, ExpectedVersionRequired, ExternalReferenceInUse, ListQueryInvalid,
+        BrandNotLinkable, StoreUnavailable, FieldInvalid
     ];
+}
+
+/// <summary>
+/// WP-MDM-BRAND-ACCEPT-01 FIX2 (M5) — a field-shape refusal: <c>field_invalid: {Field} — {detail}</c>. <c>{Field}</c> is the
+/// request's property name (BrandCode, Description, SourceSystem, …), the token a screen localizes; the detail is English
+/// for logs and API callers.
+/// </summary>
+public static class BrandProductFieldRefusal
+{
+    public static string Message(string field, string detail) => $"{BrandProductReasonCodes.FieldInvalid}: {field} — {detail}";
+
+    public static string Required(string field) => Message(field, "is required.");
+
+    public static string TooLong(string field, int maximum) => Message(field, $"must be at most {maximum} characters.");
 }
 
 public static class BrandProductFailures
 {
     public static Response<T> Fail<T>(string reasonCode, string message, int statusCode)
         => Response<T>.Fail($"{reasonCode}: {message}", statusCode);
+
+    /// <summary>FIX2 (items 7, 18) — the one answer for a write the store could not make atomically.</summary>
+    public static Response<T> StoreUnavailable<T>() => Fail<T>(
+        BrandProductReasonCodes.StoreUnavailable,
+        "The master data store cannot write this change safely right now. Nothing was saved; try again later.", 503);
 }
 
 /// <summary>
@@ -161,6 +189,22 @@ public static class BrandProductExternalReferences
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// FIX2 (R4, item 5) — what an edit changes in the record's references: <c>Added</c> = pairs the record did not carry
+    /// (only these are checked against other records and reserved), <c>Removed</c> = pairs it no longer carries (their
+    /// reservation, if this record holds one, is released). Pairs compare trimmed and case-insensitively — the same
+    /// rule as the in-use check — so re-casing a reference is neither an add nor a remove.
+    /// </summary>
+    public static (IReadOnlyList<BrandProductExternalReference> Added, IReadOnlyList<BrandProductExternalReference> Removed) Diff(
+        IReadOnlyCollection<BrandProductExternalReference> incoming, IReadOnlyCollection<BrandProductExternalReference> stored)
+    {
+        var storedKeys = stored.Select(x => PairKey(x.SourceSystem, x.ExternalId)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var incomingKeys = incoming.Select(x => PairKey(x.SourceSystem, x.ExternalId)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return (
+            incoming.Where(x => !storedKeys.Contains(PairKey(x.SourceSystem, x.ExternalId))).ToList(),
+            stored.Where(x => !incomingKeys.Contains(PairKey(x.SourceSystem, x.ExternalId))).ToList());
     }
 
     private static string PairKey(string sourceSystem, string externalId) => $"{sourceSystem.Trim()}\u001F{externalId.Trim()}";

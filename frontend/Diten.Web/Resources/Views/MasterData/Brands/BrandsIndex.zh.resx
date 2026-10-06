@@ -115,6 +115,9 @@
   <data name="Reason_expected_version_required" xml:space="preserve"><value>无法将此编辑与您打开的版本对应。请重新加载页面后重试。</value></data>
   <data name="Reason_external_reference_in_use" xml:space="preserve"><value>此外部引用已被另一条记录使用。</value></data>
   <data name="Reason_list_query_invalid" xml:space="preserve"><value>列表无法按此方式排序或分页。请重置视图后重试。</value></data>
+  <data name="Reason_brand_not_linkable" xml:space="preserve"><value>只有处于启用状态且在有效期内的品牌才能关联新产品。</value></data>
+  <data name="Reason_store_unavailable" xml:space="preserve"><value>目前无法安全保存此更改。未保存任何内容，请稍后重试。</value></data>
+  <data name="Reason_field_invalid" xml:space="preserve"><value>{0}：值缺失、过长或格式不正确。</value></data>
   <data name="RefusedStatus_400" xml:space="preserve"><value>请求未被接受。请检查输入后重试。</value></data>
   <data name="RefusedStatus_403" xml:space="preserve"><value>您无权执行此操作。</value></data>
   <data name="RefusedStatus_404" xml:space="preserve"><value>未找到该记录或您无权访问。</value></data>

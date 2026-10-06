@@ -2,6 +2,7 @@ using Diten.MdmService.Application.Common;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Repositories;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -12,22 +13,26 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
     /// <summary>WP-MDM-BRAND-ACCEPT-01 FIX1 (item 1) — the append-only brand trail.</summary>
     public const string HistoryCollectionName = "mdm_brand_history";
 
-    /// <summary>
-    /// How many times one write is run again after MongoDB reports a transient transaction error. Two creates of one code
-    /// in open transactions meet as a write conflict until the first commits; then the retry meets the unique index and
-    /// answers DuplicateCode. A short, growing pause lets the first one commit.
-    /// </summary>
-    private const int MaxTransactionAttempts = 10;
-
     private readonly IMongoClient _client;
     private readonly IMongoCollection<BrandHistoryEntry> _history;
+    private readonly ExternalReferenceReservations _reservations;
+    private readonly BrandProductStoreOptions _storeOptions;
+    private readonly ILogger<BrandRepository>? _logger;
 
-    public BrandRepository(IMongoDatabase database, ITenantContext tenantContext)
+    public BrandRepository(
+        IMongoDatabase database,
+        ITenantContext tenantContext,
+        BrandProductStoreOptions? storeOptions = null,
+        ILogger<BrandRepository>? logger = null)
         : base(database, tenantContext, "mdm_brands")
     {
         _client = database.Client;
         _history = database.GetCollection<BrandHistoryEntry>(HistoryCollectionName);
-        EnsureIndexes();
+        _reservations = new ExternalReferenceReservations(database, TenantId);
+        // FIX2 (item 7): no options = the production answer (refuse a write that cannot be atomic).
+        _storeOptions = storeOptions ?? new BrandProductStoreOptions();
+        _logger = logger;
+        IndexOnce.Ensure(database, "mdm_brands", EnsureIndexes);
     }
 
     public Task<BrandWriteOutcome> CreateWithHistoryAsync(
@@ -47,9 +52,15 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
                 else
                     await Collection.InsertOneAsync(session, brand, cancellationToken: cancellationToken);
             }
-            catch (Exception exception) when (IsDuplicateKey(exception))
+            catch (Exception exception) when (MasterDataAtomicWrite.IsDuplicateKey(exception))
             {
                 return BrandWriteOutcome.DuplicateCode;
+            }
+
+            if (!await _reservations.TryReserveAsync(session, ExternalReferenceReservation.RecordTypeBrand,
+                    brand.Id, brand.BrandCode, brand.ExternalReferences ?? [], cancellationToken))
+            {
+                return BrandWriteOutcome.ReferenceInUse;
             }
 
             await AppendAsync(session, Stamp(history, brand.Id, brand.Version), cancellationToken);
@@ -57,8 +68,15 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
         }, cancellationToken);
     }
 
+    /// <summary>An edit that changes no external reference (nothing to reserve or release).</summary>
     public Task<BrandWriteOutcome> UpdateEditableFieldsWithHistoryAsync(
         Brand proposed, int expectedVersion, BrandHistoryEntry history, CancellationToken cancellationToken = default)
+        => UpdateEditableFieldsWithHistoryAsync(proposed, expectedVersion, history, [], [], cancellationToken);
+
+    public Task<BrandWriteOutcome> UpdateEditableFieldsWithHistoryAsync(
+        Brand proposed, int expectedVersion, BrandHistoryEntry history,
+        IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
+        CancellationToken cancellationToken = default)
     {
         // Only the editable fields: IsArchived / ArchivedAt / ArchivedBy, the code, the creator and the tenant are never
         // part of an edit, so an edit racing an archive can never bring an archived brand back.
@@ -75,7 +93,7 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
             .Set(x => x.UpdatedBy, proposed.UpdatedBy)
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
             .Inc(x => x.Version, 1);
-        return ConditionalWriteAsync(proposed.Id, expectedVersion, update, history, cancellationToken);
+        return ConditionalWriteAsync(proposed.Id, proposed.BrandCode, expectedVersion, update, history, added, removed, cancellationToken);
     }
 
     public Task<BrandWriteOutcome> ArchiveWithHistoryAsync(
@@ -89,16 +107,20 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
             .Set(x => x.UpdatedBy, archived.UpdatedBy)
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
             .Inc(x => x.Version, 1);
-        return ConditionalWriteAsync(archived.Id, expectedVersion, update, history, cancellationToken);
+        // An archived brand keeps its references reserved: archive is irreversible and the pair stays its own.
+        return ConditionalWriteAsync(archived.Id, archived.BrandCode, expectedVersion, update, history, [], [], cancellationToken);
     }
 
+    /// <summary>
+    /// FIX2 (M3) — the trail in the order the versions were made. OccurredAtUtc is a clock reading (and a
+    /// DateTimeOffset whose offset changes how it sorts in BSON); ResultVersion is the chain itself.
+    /// </summary>
     public async Task<IReadOnlyList<BrandHistoryEntry>> GetHistoryAsync(Guid brandId, CancellationToken cancellationToken = default)
         => await _history.Find(
                 Builders<BrandHistoryEntry>.Filter.Eq(x => x.TenantId, TenantId)
                 & Builders<BrandHistoryEntry>.Filter.Eq(x => x.IsDeleted, false)
                 & Builders<BrandHistoryEntry>.Filter.Eq(x => x.BrandId, brandId))
-            .SortBy(x => x.OccurredAtUtc)
-            .ThenBy(x => x.ResultVersion)
+            .SortBy(x => x.ResultVersion)
             .ToListAsync(cancellationToken);
 
     public async Task<Brand?> FindByExternalReferenceAsync(
@@ -116,7 +138,8 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
     }
 
     private Task<BrandWriteOutcome> ConditionalWriteAsync(
-        Guid brandId, int expectedVersion, UpdateDefinition<Brand> update, BrandHistoryEntry history,
+        Guid brandId, string brandCode, int expectedVersion, UpdateDefinition<Brand> update, BrandHistoryEntry history,
+        IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
         CancellationToken cancellationToken)
     {
         var filter = TenantFilter
@@ -131,6 +154,13 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
             if (result.ModifiedCount != 1)
             {
                 return BrandWriteOutcome.Stale;
+            }
+
+            await _reservations.ReleaseAsync(session, ExternalReferenceReservation.RecordTypeBrand, brandId, removed, cancellationToken);
+            if (!await _reservations.TryReserveAsync(session, ExternalReferenceReservation.RecordTypeBrand,
+                    brandId, brandCode, added, cancellationToken))
+            {
+                return BrandWriteOutcome.ReferenceInUse;
             }
 
             await AppendAsync(session, Stamp(history, brandId, expectedVersion + 1), cancellationToken);
@@ -156,77 +186,15 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
             : _history.InsertOneAsync(session, entry, cancellationToken: cancellationToken);
 
     /// <summary>
-    /// Runs one brand write and its history entry as ONE transaction, committed only when the write happened. A server
-    /// without transactions (a standalone mongod — the driver refuses before asking) runs the same two writes in order,
-    /// brand first: the record is never lost on the replica sets this service runs on, and a standalone dev database keeps
-    /// working as it did. A transient transaction error (two writers on the same brand or code) is retried.
+    /// The brand write, its reservations and its history entry as ONE transaction (FIX2 items 7, 8, 18 — see
+    /// <see cref="MasterDataAtomicWrite"/>). A failed history insert (e.g. a duplicate ResultVersion) aborts the whole
+    /// transaction, so the brand is left exactly as it was.
     /// </summary>
-    private async Task<BrandWriteOutcome> AtomicallyAsync(
+    private Task<BrandWriteOutcome> AtomicallyAsync(
         Func<IClientSessionHandle?, Task<BrandWriteOutcome>> write, CancellationToken cancellationToken)
-    {
-        for (var attempt = 1; ; attempt++)
-        {
-            using var session = await _client.StartSessionAsync(cancellationToken: cancellationToken);
-            try
-            {
-                session.StartTransaction();
-            }
-            catch (NotSupportedException)
-            {
-                return await write(null);
-            }
+        => MasterDataAtomicWrite.RunAsync(_client, _storeOptions, _logger, write, cancellationToken);
 
-            try
-            {
-                var outcome = await write(session);
-                if (outcome == BrandWriteOutcome.Written)
-                {
-                    await session.CommitTransactionAsync(cancellationToken);
-                }
-                else
-                {
-                    await session.AbortTransactionAsync(cancellationToken);
-                }
-
-                return outcome;
-            }
-            catch (MongoException exception) when (
-                attempt < MaxTransactionAttempts && exception.HasErrorLabel("TransientTransactionError"))
-            {
-                await AbortQuietlyAsync(session);
-                await Task.Delay(TimeSpan.FromMilliseconds(15 * attempt), cancellationToken);
-            }
-            catch
-            {
-                await AbortQuietlyAsync(session);
-                throw;
-            }
-        }
-    }
-
-    private static async Task AbortQuietlyAsync(IClientSessionHandle session)
-    {
-        if (!session.IsInTransaction)
-        {
-            return;
-        }
-
-        try
-        {
-            await session.AbortTransactionAsync(CancellationToken.None);
-        }
-        catch (MongoException)
-        {
-            // The transaction is already gone server-side; nothing was committed.
-        }
-    }
-
-    internal static bool IsDuplicateKey(Exception exception) => exception switch
-    {
-        MongoWriteException write => write.WriteError?.Category == ServerErrorCategory.DuplicateKey,
-        MongoCommandException command => command.Code == 11000,
-        _ => false
-    };
+    internal static bool IsDuplicateKey(Exception exception) => MasterDataAtomicWrite.IsDuplicateKey(exception);
 
     internal static BsonRegularExpression ExactIgnoringCase(string value)
         => new($"^{Regex.Escape(value.Trim())}$", "i");

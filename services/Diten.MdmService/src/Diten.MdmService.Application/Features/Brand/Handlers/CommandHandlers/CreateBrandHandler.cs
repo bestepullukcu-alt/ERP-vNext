@@ -72,12 +72,30 @@ public sealed class CreateBrandHandler : IRequestHandler<Commands.CreateBrandCom
         }
 
         // FIX1 (items 1, 9) — the brand and its history entry land together; a concurrent create of the same code that
-        // passed the pre-check above is answered by the unique index as the same 409, never a 500.
+        // passed the pre-check above is answered by the unique index as the same 409, never a 500. FIX2 (item 6) — its
+        // references are reserved in the same transaction, so a concurrent create carrying the same pair loses as well.
         var outcome = await _repository.CreateWithHistoryAsync(
             entity,
             BrandHistory.Entry(Domain.Entities.BrandHistoryEntry.EventCreated, request.Actor, request.CorrelationId, (Domain.Entities.BrandAuditSnapshot?)null, entity),
             cancellationToken);
-        return outcome == BrandWriteOutcome.Written ? Response<Guid>.Success(entity.Id, 201) : Duplicate();
+        return outcome switch
+        {
+            BrandWriteOutcome.Written => Response<Guid>.Success(entity.Id, 201),
+            BrandWriteOutcome.ReferenceInUse => await ReferenceTakenAsync(entity.ExternalReferences),
+            BrandWriteOutcome.Unavailable => BrandProductFailures.StoreUnavailable<Guid>(),
+            _ => Duplicate()
+        };
+
+        // The reservation lost to a request that committed first: name its holder now that it is visible.
+        async Task<Response<Guid>> ReferenceTakenAsync(IReadOnlyList<Domain.Entities.BrandProductExternalReference> references)
+        {
+            var taken = await BrandProductExternalReferences.FirstInUseAsync(references, async (source, externalId) =>
+                (await _repository.FindByExternalReferenceAsync(source, externalId, null, cancellationToken))?.BrandCode);
+            return BrandProductFailures.Fail<Guid>(
+                BrandProductReasonCodes.ExternalReferenceInUse,
+                taken?.Message ?? "One of the external references is already used by another brand.",
+                409);
+        }
 
         static Response<Guid> Duplicate() => BrandProductFailures.Fail<Guid>(
             BrandProductReasonCodes.BrandCodeDuplicate,

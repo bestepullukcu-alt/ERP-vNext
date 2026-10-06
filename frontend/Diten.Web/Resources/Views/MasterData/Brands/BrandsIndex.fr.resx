@@ -115,6 +115,9 @@
   <data name="Reason_expected_version_required" xml:space="preserve"><value>La modification n'a pas pu être rattachée à la version que vous avez ouverte. Rechargez la page et réessayez.</value></data>
   <data name="Reason_external_reference_in_use" xml:space="preserve"><value>Cette référence externe est déjà utilisée par un autre enregistrement.</value></data>
   <data name="Reason_list_query_invalid" xml:space="preserve"><value>La liste n'a pas pu être triée ou paginée ainsi. Réinitialisez la vue et réessayez.</value></data>
+  <data name="Reason_brand_not_linkable" xml:space="preserve"><value>Seule une marque active et dans sa période de validité peut recevoir de nouveaux liens produit.</value></data>
+  <data name="Reason_store_unavailable" xml:space="preserve"><value>La modification n’a pas pu être enregistrée de manière sûre pour le moment. Rien n’a été enregistré ; réessayez plus tard.</value></data>
+  <data name="Reason_field_invalid" xml:space="preserve"><value>{0} : la valeur est manquante, trop longue ou dans un format incorrect.</value></data>
   <data name="RefusedStatus_400" xml:space="preserve"><value>La demande n'a pas été acceptée. Vérifiez les saisies et réessayez.</value></data>
   <data name="RefusedStatus_403" xml:space="preserve"><value>Vous n'avez pas l'autorisation d'effectuer cette action.</value></data>
   <data name="RefusedStatus_404" xml:space="preserve"><value>L'enregistrement est introuvable ou ne vous est pas accessible.</value></data>

@@ -204,3 +204,117 @@ describe("Brand register — references and dates (items 8, 13)", () => {
     LANGUAGES.forEach((language) => expect(keys(language), language).toEqual(english));
   });
 });
+
+/*
+ * WP-MDM-BRAND-ACCEPT-01 FIX2 — the shipped index.js / details.js:
+ *  - item 1: the server export is handed to the list component only with mdm.brands.export;
+ *  - M6: no business unit / therapeutic area free-text filter;
+ *  - M7: the archive confirmation reads the live product count FRESH; a failed read opens no confirmation.
+ */
+describe("Brand register — FIX2 server export and filters (item 1, M6)", () => {
+  test("with the export key the list component gets the server export and the toolbar may export", () => {
+    const options = loadRegister({ flags: { "can-export": true } }).register.buildListOptions();
+    expect(options.export).toBeDefined();
+    expect(options.export.mode).toBe("server");
+    expect(options.export.url).toBe("/MasterData/Brands/api/export");
+    expect(options.toolbar.exportPermitted).toBe(true);
+  });
+
+  test("without the export key there is no export and the toolbar may not export", () => {
+    const options = loadRegister({ flags: { "can-export": false } }).register.buildListOptions();
+    expect(options.export).toBeUndefined();
+    expect(options.toolbar.exportPermitted).toBe(false);
+  });
+
+  test("the filters offer no business unit or therapeutic area field", () => {
+    const options = loadRegister().register.buildListOptions();
+    const fields = [...options.filters.fields];
+    expect(fields.length).toBeGreaterThan(0);
+    fields.forEach((field) => {
+      expect(["businessUnitId", "therapeuticAreaId"]).not.toContain(field.key);
+      expect(["filterBusinessUnitId", "filterTherapeuticAreaId"]).not.toContain(field.id);
+    });
+  });
+});
+
+/** Runs the shipped details.js with an isolated DOM double; returns the archive click handler and the recorders. */
+const loadDetails = ({ pageCount = 0, detail }) => {
+  const calls = [];
+  let clickHandler = null;
+  const archiveButton = { addEventListener: (type, handler) => { if (type === "click") clickHandler = handler; } };
+  const L = {
+    ArchiveBrand: "Archive",
+    ArchiveBrandIrreversible: "Cannot be undone.",
+    ArchiveBrandLiveProducts: "{0} products are in use.",
+    ArchiveBrandNoLiveProducts: "No products are in use.",
+    ErrorState: "Something went wrong."
+  };
+  const window = {
+    BrandPage: { brandId: "11111111-1111-1111-1111-111111111111", liveProductCount: pageCount, canReadProducts: false },
+    BrandL10n: L,
+    showConfirm: (...args) => calls.push(["showConfirm", ...args]),
+    showToast: (...args) => calls.push(["showToast", ...args]),
+    location: { reload: () => {} }
+  };
+  const document = {
+    documentElement: { lang: "en" },
+    getElementById: (id) => (id === "archiveBrand" ? archiveButton : null),
+    querySelector: () => null
+  };
+  const fetch = async (url, init) => {
+    calls.push(["fetch", url, init]);
+    return detail(url);
+  };
+  vm.runInNewContext(read("wwwroot", "assets", "js", "MasterData", "Brands", "details.js"), {
+    window, document, fetch, console: { warn: () => {}, error: () => {} }, Intl, Date, Number, String, Object, Array, encodeURIComponent
+  });
+  return { click: () => clickHandler(), calls, hasHandler: () => typeof clickHandler === "function" };
+};
+
+const jsonResponse = (status, body) => ({ ok: status >= 200 && status < 300, status, json: async () => body });
+
+describe("Brand detail — FIX2 the archive count is read fresh (M7)", () => {
+  test("clicking archive reads /detail first and the confirmation counts what MDM says now, not the page", async () => {
+    const { click, calls, hasHandler } = loadDetails({
+      pageCount: 0,
+      detail: () => jsonResponse(200, { isSuccessful: true, data: { liveProductCount: 3 } })
+    });
+    expect(hasHandler()).toBe(true);
+
+    await click();
+
+    const order = calls.map((c) => c[0]);
+    expect(order).toEqual(["fetch", "showConfirm"]);
+    expect(calls[0][1]).toBe("/MasterData/Brands/api/11111111-1111-1111-1111-111111111111/detail");
+    const options = calls[1][3];
+    expect(options.subtext).toContain("3 products are in use.");
+    expect(options.subtext).not.toContain("No products are in use.");
+  });
+
+  test("a refused detail read shows the error and opens no confirmation", async () => {
+    const { click, calls } = loadDetails({
+      pageCount: 2,
+      detail: () => jsonResponse(503, { errors: ["MDM is not reachable right now."] })
+    });
+
+    await click();
+
+    expect(calls.map((c) => c[0])).toEqual(["fetch", "showToast"]);
+    expect(calls[1][1]).toBe("MDM is not reachable right now.");
+    expect(calls[1][2]).toBe("error");
+  });
+
+  test("a detail read that never arrives shows the error and opens no confirmation", async () => {
+    const { click, calls } = loadDetails({
+      pageCount: 2,
+      detail: () => { throw new Error("network down"); }
+    });
+
+    await click();
+
+    expect(calls.filter((c) => c[0] === "showConfirm")).toHaveLength(0);
+    const toast = calls.find((c) => c[0] === "showToast");
+    expect(toast).toBeDefined();
+    expect(toast[2]).toBe("error");
+  });
+});

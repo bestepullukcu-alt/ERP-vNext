@@ -302,9 +302,322 @@ public sealed class BrandsWebTests : IClassFixture<WebApplicationFactory<Program
         Assert.DoesNotMatch(new System.Text.RegularExpressions.Regex($"<input(?![^>]*type=\"hidden\")[^>]*value=\"{AreaId}\""), html);
     }
 
+    // ══ WP-MDM-BRAND-ACCEPT-01 FIX2 ═════════════════════════════════════════════════════════════════════════════════
+
+    // ── M2 — one correlation id per browser request, on every MDM call it makes ─────────────────────────────────────
+
+    [Fact]
+    public async Task Fix2_M2_a_Guid_correlation_id_reaches_MDM_as_the_same_Guid_in_D_form()
+    {
+        var incoming = Guid.Parse("0f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0");
+        var wire = new RecordingHandler(HttpStatusCode.OK, "{\"data\":{\"items\":[],\"totalCount\":0}}");
+        var controller = Controller(wire, "mdm.brands.read", "?length=20");
+        controller.Request.Headers["X-Correlation-Id"] = incoming.ToString("D").ToUpperInvariant();
+
+        await controller.List(CancellationToken.None);
+
+        Assert.Equal(incoming.ToString("D"), Assert.Single(wire.Headers)["X-Correlation-Id"]);
+    }
+
+    [Theory]
+    [InlineData("abc")]
+    [InlineData("")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Fix2_M2_a_correlation_id_that_is_not_a_Guid_is_replaced_by_a_fresh_Guid(string header)
+    {
+        var wire = new RecordingHandler(HttpStatusCode.OK, "{\"data\":{\"items\":[],\"totalCount\":0}}");
+        var controller = Controller(wire, "mdm.brands.read", "?length=20");
+        controller.Request.Headers["X-Correlation-Id"] = header;
+
+        await controller.List(CancellationToken.None);
+
+        var sent = Assert.Single(wire.Headers)["X-Correlation-Id"];
+        Assert.True(Guid.TryParseExact(sent, "D", out var parsed), sent);
+        Assert.NotEqual(Guid.Empty, parsed);
+        Assert.NotEqual(header, sent);
+    }
+
+    [Fact]
+    public async Task Fix2_M2_every_MDM_call_of_one_request_carries_the_same_correlation_id()
+    {
+        var wire = new RecordingHandler(HttpStatusCode.OK,
+            "{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"brandId\":\"11111111-1111-1111-1111-111111111111\",\"brandCode\":\"B\",\"version\":1}}");
+        var controller = Controller(wire, "mdm.brands.read", "");
+
+        await controller.Details(Guid.Parse("11111111-1111-1111-1111-111111111111"), CancellationToken.None);
+
+        Assert.True(wire.Headers.Count >= 2, $"expected at least two MDM calls, saw {wire.Headers.Count}");
+        var ids = wire.Headers.Select(x => x["X-Correlation-Id"]).Distinct().ToList();
+        Assert.True(Guid.TryParseExact(Assert.Single(ids), "D", out _));
+    }
+
+    // ── M5 — a field MDM refused is one sentence naming the field, in the reader's language ────────────────────────
+
+    private const string FieldRefusalFromMdm = "field_invalid: Description — must be at most 2000 characters.";
+
+    [Fact]
+    public void Fix2_M5_the_field_refusal_is_translated_with_the_localized_field_label_through_the_real_resx()
+    {
+        using var _ = UiCulture("tr");
+        var localizer = _factory.Services.GetRequiredService<IStringLocalizer<BrandsIndex>>();
+        var expected = string.Format(localizer["Reason_field_invalid"].Value, localizer["Description"].Value);
+
+        var fields = (IReadOnlyList<string>)Internal(typeof(MasterDataGatewayController), "FieldSentences")
+            .Invoke(null, [localizer, new[] { FieldRefusalFromMdm }])!;
+        var refusal = Internal(typeof(MasterDataGatewayController), "TranslateRefusal")
+            .Invoke(null, [localizer, new[] { FieldRefusalFromMdm }, 400])!;
+        var (sentence, code, unmapped) = ((string, string?, bool))refusal;
+
+        Assert.Equal(expected, Assert.Single(fields));
+        Assert.Equal(expected, sentence);
+        Assert.Equal("field_invalid", code);
+        Assert.False(unmapped);
+        Assert.Contains("Açıklama", sentence);
+        AssertNoCodeNoEnglish(sentence);
+    }
+
+    [Fact]
+    public async Task Fix2_M5_a_create_refused_by_MDM_for_a_field_shows_the_localized_field_sentence_in_the_re_rendered_form()
+    {
+        using var _ = UiCulture("tr");
+        var localizer = _factory.Services.GetRequiredService<IStringLocalizer<BrandsIndex>>();
+        var expected = string.Format(localizer["Reason_field_invalid"].Value, localizer["Description"].Value);
+        var wire = new RecordingHandler(HttpStatusCode.BadRequest,
+            $"{{\"isSuccessful\":false,\"statusCode\":400,\"errors\":[\"{FieldRefusalFromMdm}\"]}}");
+        var controller = Controller(wire, "mdm.brands.create", "", localizer: localizer);
+        var model = new BrandEditViewModel
+        {
+            BrandCode = "B", BrandName = "B", EffectiveFrom = DateTimeOffset.Now, Description = new string('x', 2000)
+        };
+
+        var result = await controller.Create(model, CancellationToken.None);
+
+        Assert.Equal("~/Views/MasterData/Brands/Create.cshtml", Assert.IsType<ViewResult>(result).ViewName);
+        var errors = controller.ModelState[string.Empty]!.Errors.Select(x => x.ErrorMessage).ToList();
+        Assert.Equal(expected, Assert.Single(errors));
+        AssertNoCodeNoEnglish(errors[0]);
+
+        var html = System.Net.WebUtility.HtmlDecode(
+            await RenderAsync("/Views/MasterData/Brands/_Form.cshtml", "mdm.brands.create", model, modelState: controller.ModelState));
+        Assert.Contains(expected, html);
+        AssertNoCodeNoEnglish(html);
+    }
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("tr")]
+    [InlineData("fr")]
+    [InlineData("es")]
+    [InlineData("zh")]
+    [InlineData("ar")]
+    [InlineData("ru")]
+    public void Fix2_the_new_refusal_sentences_exist_in_every_language_and_are_not_English_outside_en(string culture)
+    {
+        var localizer = _factory.Services.GetRequiredService<IStringLocalizer<BrandsIndex>>();
+        foreach (var key in new[] { "Reason_field_invalid", "Reason_brand_not_linkable", "Reason_store_unavailable" })
+        {
+            string english;
+            using (UiCulture("en")) english = localizer[key].Value;
+            LocalizedString value;
+            using (UiCulture(culture)) value = localizer[key];
+
+            Assert.False(value.ResourceNotFound, $"{key} missing in {culture}");
+            Assert.False(string.IsNullOrWhiteSpace(value.Value), $"{key} empty in {culture}");
+            if (culture != "en")
+            {
+                Assert.NotEqual(english, value.Value);
+            }
+
+            if (key == "Reason_field_invalid")
+            {
+                Assert.Contains("{0}", value.Value);
+            }
+        }
+    }
+
+    // ── item 1 — the server export ──────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Fix2_export_without_its_key_is_403_and_MDM_is_never_asked()
+    {
+        var wire = new RecordingHandler(HttpStatusCode.OK, "{}");
+        var controller = Controller(wire, "mdm.brands.read", "?format=csv", localizer: Sentences());
+
+        var result = await controller.Export(CancellationToken.None);
+
+        Assert.Equal(StatusCodes.Status403Forbidden, Assert.IsAssignableFrom<ObjectResult>(result).StatusCode);
+        Assert.Empty(wire.Urls);
+    }
+
+    [Fact]
+    public async Task Fix2_export_forwards_the_lists_filters_and_language_never_the_page_and_relays_the_file()
+    {
+        var file = new byte[] { 0x50, 0x4B, 0x03, 0x04, 0x00, 0xFF };
+        const string xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        var wire = new RecordingHandler(HttpStatusCode.OK, string.Empty, _ =>
+        {
+            var content = new ByteArrayContent(file);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(xlsx);
+            content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment") { FileName = "\"brands.xlsx\"" };
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = content };
+        });
+        var controller = Controller(wire, "mdm.brands.export", "?format=xlsx&columns=brandCode&columns=brandName&search=Asp%201"
+            + "&orderBy=brandName&orderDir=desc&brandStatus=active&includeArchived=true&start=40&length=20&draw=3"
+            + $"&businessUnitId={UnitId}&therapeuticAreaId={AreaId}");
+        controller.Request.Headers.AcceptLanguage = "tr-TR,tr;q=0.9";
+
+        var result = await controller.Export(CancellationToken.None);
+
+        Assert.Equal(
+            $"{Gateway}/api/mdm/brands/export?format=xlsx&columns=brandCode&columns=brandName&search=Asp%201&orderBy=brandName&orderDir=desc&brandStatus=active&includeArchived=true",
+            Assert.Single(wire.Urls));
+        var url = wire.Urls[0];
+        foreach (var dropped in new[] { "start=", "length=", "draw=", "businessUnitId", "therapeuticAreaId" })
+        {
+            Assert.DoesNotContain(dropped, url);
+        }
+
+        Assert.Equal("tr-TR,tr;q=0.9", wire.Headers[0]["Accept-Language"].Replace(" ", string.Empty));
+        var relayed = Assert.IsType<FileContentResult>(result);
+        Assert.Equal(file, relayed.FileContents);
+        Assert.Equal(xlsx, relayed.ContentType);
+        Assert.Equal("brands.xlsx", relayed.FileDownloadName);
+    }
+
+    [Theory]
+    [InlineData("mdm.brands.export", "true")]
+    [InlineData("mdm.brands.read", "false")]
+    public async Task Fix2_the_register_offers_the_file_entry_only_with_the_export_key(string permission, string expected)
+    {
+        var controller = Controller(new RecordingHandler(HttpStatusCode.OK, "{}"), $"{permission}", "");
+        // The register is read with mdm.brands.read; the export key is the only variable.
+        var principal = Principal("mdm.brands.read");
+        ((ClaimsIdentity)principal.Identity!).AddClaim(new Claim("permission", permission));
+        controller.ControllerContext.HttpContext.User = principal;
+
+        var page = Assert.IsType<ViewResult>(controller.Index());
+        var canExport = page.ViewData["CanExportBrand"];
+        var html = await RenderAsync("/Views/MasterData/Brands/Index.cshtml", "mdm.brands.read", model: null,
+            configure: viewData => viewData["CanExportBrand"] = canExport);
+
+        Assert.Contains($"data-can-export=\"{expected}\"", html);
+    }
+
+    // ── M6 — no free-text GUID filters, and the list does not forward them ──────────────────────────────────────
+
+    [Fact]
+    public async Task Fix2_M6_the_register_draws_no_business_unit_or_therapeutic_area_filter()
+    {
+        var html = await RenderAsync("/Views/MasterData/Brands/Index.cshtml", "mdm.brands.read", model: null);
+
+        Assert.Contains("id=\"filterBrandStatus\"", html);
+        Assert.DoesNotContain("filterBusinessUnitId", html);
+        Assert.DoesNotContain("filterTherapeuticAreaId", html);
+    }
+
+    [Fact]
+    public async Task Fix2_M6_the_list_does_not_forward_business_unit_or_therapeutic_area()
+    {
+        var wire = new RecordingHandler(HttpStatusCode.OK, "{\"data\":{\"items\":[],\"totalCount\":0}}");
+
+        await Controller(wire, "mdm.brands.read", $"?length=20&brandStatus=active&businessUnitId={UnitId}&therapeuticAreaId={AreaId}")
+            .List(CancellationToken.None);
+
+        Assert.Equal($"{Gateway}/api/mdm/brands?start=0&length=20&brandStatus=active", Assert.Single(wire.Urls));
+    }
+
+    // ── M9 — a cross-site POST cannot archive a product ─────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData(nameof(ProductsController.Archive))]
+    [InlineData(nameof(ProductsController.Create))]
+    public void Fix2_M9_the_product_archive_validates_the_anti_forgery_token(string action)
+    {
+        var writes = typeof(ProductsController).GetMethods(BindingFlags.Instance | BindingFlags.Public)
+            .Where(x => x.Name == action && x.GetCustomAttributes<HttpPostAttribute>().Any())
+            .ToList();
+        Assert.NotEmpty(writes);
+        Assert.All(writes, x => Assert.NotNull(x.GetCustomAttribute<ValidateAntiForgeryTokenAttribute>()));
+    }
+
+    [Fact]
+    public async Task Fix2_M9_the_product_list_and_detail_carry_the_anti_forgery_token_form()
+    {
+        var list = await RenderAsync("/Views/MasterData/Products/Index.cshtml", "mdm.products.read", model: null);
+        var detail = await RenderAsync("/Views/MasterData/Products/Details.cshtml", "mdm.products.read", new ProductPageViewModel
+        {
+            Product = new ProductDetailViewModel { ProductId = Guid.NewGuid(), ProductCode = "P-1", ProductName = "Product" }
+        });
+
+        foreach (var (html, formId) in new[] { (list, "productListToken"), (detail, "productDetailToken") })
+        {
+            var form = System.Text.RegularExpressions.Regex.Match(html,
+                $"<form id=\"{formId}\"[^>]*>(?<inner>[\\s\\S]*?)</form>");
+            Assert.True(form.Success, $"{formId} is not on the page");
+            Assert.Contains("name=\"__RequestVerificationToken\"", form.Groups["inner"].Value);
+        }
+    }
+
+    // ── item 2 — the product form offers only a brand MDM would link ────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("active", -30, null, true)]
+    [InlineData("active", -30, 0, true)]
+    [InlineData("active", 0, null, true)]
+    [InlineData("draft", -30, null, false)]
+    [InlineData("inactive", -30, null, false)]
+    [InlineData("active", -30, -1, false)]
+    [InlineData("active", 1, null, false)]
+    public void Fix2_item2_a_brand_is_linkable_only_when_active_and_inside_its_window_today(
+        string status, int fromDays, int? toDays, bool expected)
+    {
+        var today = new DateTime(2026, 10, 6);
+        var brand = new BrandDetailViewModel
+        {
+            BrandStatus = status,
+            EffectiveFrom = new DateTimeOffset(today.AddDays(fromDays), TimeSpan.Zero),
+            EffectiveTo = toDays is { } days ? new DateTimeOffset(today.AddDays(days), TimeSpan.Zero) : null
+        };
+
+        Assert.Equal(expected, (bool)Internal(typeof(ProductsController), "IsLinkableOn").Invoke(null, [brand, today])!);
+    }
+
+    private static MethodInfo Internal(Type type, string name)
+        => type.GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
+           ?? throw new InvalidOperationException($"{type.Name}.{name} not found.");
+
+    private static void AssertNoCodeNoEnglish(string text)
+    {
+        Assert.DoesNotContain("field_invalid", text);
+        Assert.DoesNotContain("must be at most", text);
+        Assert.DoesNotContain("2000 characters", text);
+    }
+
+    private static IDisposable UiCulture(string name) => new CultureScope(name);
+
+    private sealed class CultureScope : IDisposable
+    {
+        private readonly CultureInfo _culture = CultureInfo.CurrentCulture;
+        private readonly CultureInfo _uiCulture = CultureInfo.CurrentUICulture;
+
+        public CultureScope(string name)
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(name);
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(name);
+        }
+
+        public void Dispose()
+        {
+            CultureInfo.CurrentCulture = _culture;
+            CultureInfo.CurrentUICulture = _uiCulture;
+        }
+    }
+
     // ── helpers ───────────────────────────────────────────────────────────────────────────────────────────────────
 
-    private async Task<string> RenderAsync(string path, string permission, object? model)
+    private async Task<string> RenderAsync(
+        string path, string permission, object? model,
+        Action<ViewDataDictionary>? configure = null, ModelStateDictionary? modelState = null)
     {
         CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en");
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
@@ -319,11 +632,12 @@ public sealed class BrandsWebTests : IClassFixture<WebApplicationFactory<Program
             ?? throw new InvalidOperationException($"Could not load {path}.");
         var actionContext = new ActionContext(httpContext,
             new RouteData { Values = { ["controller"] = "Brands", ["action"] = "Index" } },
-            new ActionDescriptor(), new ModelStateDictionary());
+            new ActionDescriptor(), modelState ?? new ModelStateDictionary());
         var viewData = new ViewDataDictionary(services.GetRequiredService<IModelMetadataProvider>(), actionContext.ModelState)
         {
             Model = model
         };
+        configure?.Invoke(viewData);
         var tempData = new TempDataDictionary(httpContext, services.GetRequiredService<ITempDataProvider>());
         await using var writer = new StringWriter();
         var viewContext = new ViewContext(actionContext, view.View!, viewData, tempData, writer, new HtmlHelperOptions())
@@ -403,14 +717,24 @@ public sealed class BrandsWebTests : IClassFixture<WebApplicationFactory<Program
             => ProxyJsonAsync(HttpMethod.Put, "/api/mdm/brands/x", body, "mdm.brands.update", CancellationToken.None);
     }
 
-    private sealed class RecordingHandler(HttpStatusCode status, string body) : HttpMessageHandler
+    private sealed class RecordingHandler(
+        HttpStatusCode status, string body, Func<HttpRequestMessage, HttpResponseMessage>? respond = null) : HttpMessageHandler
     {
         public List<string> Urls { get; } = [];
         public List<string> Bodies { get; } = [];
 
+        /// <summary>FIX2 — every request's headers as sent (copied: the request is disposed after the call).</summary>
+        public List<Dictionary<string, string>> Headers { get; } = [];
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Urls.Add(request.RequestUri!.OriginalString);
+            Headers.Add(request.Headers.ToDictionary(x => x.Key, x => string.Join(",", x.Value), StringComparer.OrdinalIgnoreCase));
+            if (respond is not null)
+            {
+                return respond(request);
+            }
+
             if (request.Content is not null)
             {
                 Bodies.Add(await request.Content.ReadAsStringAsync(cancellationToken));

@@ -70,6 +70,28 @@ açıp eskisini pasife almaktır, yani canlıda ilk yazımda dikkat gerekir.
 hazırlanabilir, yüklenemez"* diyor: 38 doküman DRAFT, 50 birim *Proposed*, beş kapının
 beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı bekler.
 
+### 3 · Marka modülünün (`brand-product-master`) planlara eklenmesi
+
+| | |
+|---|---|
+| **Modül** | MOD-0290 — Marka / Ürün ana verisi (WP-MDM-BRAND-ACCEPT-01 FIX2, madde 1) |
+| **Ne zaman** | Marka işi (FIX2) birleştikten sonra |
+| **Yapılmazsa** | Durum bugünküyle aynıdır: yeni kiracının Admin rolü marka anahtarlarını (`mdm.brands.*`, `mdm.products.*`, `mdm.brands.export`) plan senkronundan **almaz**; Marka ekranı yalnız bugün elle hak verilmiş kiracılarda açılır. |
+| **Kim** | Platform yöneticisi. Dev'de sahip, canlıda sahibin onayıyla. |
+
+Marka işi birleşince Platform → Planlar'da `product-item-sku-master` içeren her plana
+`brand-product-master` eklenir. O zamana kadar durum bugünküyle aynıdır.
+
+Plan → modül üyeliği **veridir**: seed ya da Platform kodu değişmez (CONTROL TOWER kararı,
+2026-10-06). Kural: bugün `product-item-sku-master` içeren HER plan; CRM'in marka tüketen
+planları ayrıca değerlendirilmez — marka, ürün ana verisiyle aynı pakettir (SAP / Oracle'da
+da marka, malzeme ana verisinin parçasıdır).
+
+⚠ **Geçiş riski 🟡.** Ekleme yapılana kadar yeni kiracılar markayı görmez (sessiz, veri
+kaybı yok). `tenant-97c5`'in seed'deki sabit marka hakları (`DataSeeder`
+`BrandProductPermissionKeys`) dokunulmadan kalır; ekleme sonrası o kiracıda aynı anahtar
+hem sabit hem plan kaynaklı görünebilir — yinelenen yetki, fazladan erişim değildir.
+
 ---
 
 ## Tamamlananlar

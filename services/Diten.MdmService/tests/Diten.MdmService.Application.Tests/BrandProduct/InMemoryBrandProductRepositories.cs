@@ -41,8 +41,11 @@ internal sealed class InMemoryBrandRepository : IBrandRepository
         return Task.FromResult(BrandWriteOutcome.Written);
     }
 
+    // FIX2 (item 6) — the reservation itself is the store's (measured in BrandFix2HttpTests); the double keeps the edit.
     public Task<BrandWriteOutcome> UpdateEditableFieldsWithHistoryAsync(
-        Brand proposed, int expectedVersion, BrandHistoryEntry history, CancellationToken cancellationToken = default)
+        Brand proposed, int expectedVersion, BrandHistoryEntry history,
+        IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
+        CancellationToken cancellationToken = default)
     {
         var stored = Writable(proposed.Id, expectedVersion);
         if (stored is null)
@@ -241,6 +244,16 @@ internal sealed class InMemoryProductRepository : IProductRepository
         CreateAsync(product);
         return Task.FromResult(true);
     }
+
+    // FIX2 (item 6) — the reservation itself is the store's (measured in BrandFix2HttpTests); the double keeps the write.
+    public Task<BrandWriteOutcome> CreateWithReservationsAsync(Product product, CancellationToken cancellationToken = default)
+        => TryCreateAsync(product, cancellationToken)
+            .ContinueWith(x => x.Result ? BrandWriteOutcome.Written : BrandWriteOutcome.DuplicateCode, cancellationToken);
+
+    public async Task<BrandWriteOutcome> UpdateWithReservationsAsync(
+        Product product, IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
+        CancellationToken cancellationToken = default)
+        => await UpdateAsync(product, cancellationToken) ? BrandWriteOutcome.Written : BrandWriteOutcome.Stale;
 
     public Task<Product?> FindByExternalReferenceAsync(
         string sourceSystem, string externalId, Guid? excludeId, CancellationToken cancellationToken = default)

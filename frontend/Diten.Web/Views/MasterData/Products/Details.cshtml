@@ -142,6 +142,11 @@
     </div>
 </div>
 
+@* WP-MDM-BRAND-ACCEPT-01 FIX2 (M9) — the archive proxy validates this token; a cross-site POST cannot archive. *@
+<form id="productDetailToken" class="d-none" data-no-tracker>
+    @Html.AntiForgeryToken()
+</form>
+
 @section Scripts {
     <partial name="~/Views/MasterData/Products/_IndexL10n.cshtml" />
     <script>window.ProductPage = @Html.Raw(JsonSerializer.Serialize(new {

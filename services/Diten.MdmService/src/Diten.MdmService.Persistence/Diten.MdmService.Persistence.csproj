@@ -10,6 +10,11 @@
     <PackageReference Include="MongoDB.Driver" Version="2.27.0" />
   </ItemGroup>
   <ItemGroup>
+    <!-- WP-MDM-BRAND-ACCEPT-01 FIX2 — the tests measure the store's internal policy (atomic write, reservations, index guard). -->
+    <InternalsVisibleTo Include="Diten.MdmService.Api.Tests" />
+    <InternalsVisibleTo Include="Diten.MdmService.Application.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Diten.MdmService.Application\Diten.MdmService.Application.csproj" />
   </ItemGroup>
 </Project>

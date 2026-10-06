@@ -115,6 +115,9 @@
   <data name="Reason_expected_version_required" xml:space="preserve"><value>The edit could not be matched to the version you opened. Reload the page and try again.</value></data>
   <data name="Reason_external_reference_in_use" xml:space="preserve"><value>This external reference is already used by another record.</value></data>
   <data name="Reason_list_query_invalid" xml:space="preserve"><value>The list could not be sorted or paged this way. Reset the view and try again.</value></data>
+  <data name="Reason_brand_not_linkable" xml:space="preserve"><value>Only an active brand inside its validity period can receive new product links.</value></data>
+  <data name="Reason_store_unavailable" xml:space="preserve"><value>The change could not be saved safely right now. Nothing was saved; try again later.</value></data>
+  <data name="Reason_field_invalid" xml:space="preserve"><value>{0}: the value is missing, too long or in the wrong format.</value></data>
   <data name="RefusedStatus_400" xml:space="preserve"><value>The request was not accepted. Check the entries and try again.</value></data>
   <data name="RefusedStatus_403" xml:space="preserve"><value>You do not have permission for this action.</value></data>
   <data name="RefusedStatus_404" xml:space="preserve"><value>The record was not found or is not available to you.</value></data>

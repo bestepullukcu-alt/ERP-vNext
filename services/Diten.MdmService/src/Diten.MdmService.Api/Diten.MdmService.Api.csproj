@@ -17,6 +17,8 @@
     <ProjectReference Include="..\Diten.MdmService.Infrastructure\Diten.MdmService.Infrastructure.csproj" />
     <ProjectReference Include="..\Diten.MdmService.Persistence\Diten.MdmService.Persistence.csproj" />
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj" />
+    <!-- WP-MDM-BRAND-ACCEPT-01 FIX2 (item 1) — BL-452's shared list-export contract, for the brand register's server export. -->
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.ListExport\Diten.BuildingBlocks.ListExport.csproj" />
   </ItemGroup>
 
   <ItemGroup>

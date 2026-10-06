@@ -10,6 +10,9 @@
     let contract = null;
 
     const getAuthHeaders = () => ({ Accept: 'application/json' });
+    // FIX2 (M9) — the archive proxy requires the page's anti-forgery token.
+    const antiForgeryToken = () =>
+        document.querySelector('#productListToken input[name="__RequestVerificationToken"]')?.value || '';
     const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[ch]));
     const badge = (value, cls = 'primary') => `<span class="badge bg-label-${cls}">${esc(value || '—')}</span>`;
     const statusLabel = value => L[`Status_${value}`] || value || '—';
@@ -150,7 +153,11 @@
         if (!archive) return;
         window.showConfirm?.(L.ArchiveProductConfirm, async () => {
             try {
-                await envelope(await fetch(`${endpoint}/${archive.dataset.id}/archive`, { method: 'POST', credentials: 'same-origin', headers: getAuthHeaders() }));
+                await envelope(await fetch(`${endpoint}/${archive.dataset.id}/archive`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: Object.assign(getAuthHeaders(), { RequestVerificationToken: antiForgeryToken() })
+                }));
                 window.showToast?.(L.RecordArchived, 'success');
                 await loadRows();
             } catch (error) { window.showToast?.(error.message || L.ErrorState, 'error'); }

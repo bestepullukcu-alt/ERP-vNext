@@ -1,16 +1,30 @@
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Repositories;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace Diten.MdmService.Persistence.Repositories;
 
 public sealed class ProductRepository : RepositoryBase<Product>, IProductRepository
 {
-    public ProductRepository(IMongoDatabase database, ITenantContext tenantContext)
+    private readonly IMongoClient _client;
+    private readonly ExternalReferenceReservations _reservations;
+    private readonly BrandProductStoreOptions _storeOptions;
+    private readonly ILogger<ProductRepository>? _logger;
+
+    public ProductRepository(
+        IMongoDatabase database,
+        ITenantContext tenantContext,
+        BrandProductStoreOptions? storeOptions = null,
+        ILogger<ProductRepository>? logger = null)
         : base(database, tenantContext, "mdm_products")
     {
-        EnsureIndexes();
+        _client = database.Client;
+        _reservations = new ExternalReferenceReservations(database, TenantId);
+        _storeOptions = storeOptions ?? new BrandProductStoreOptions();
+        _logger = logger;
+        IndexOnce.Ensure(database, "mdm_products", EnsureIndexes);
     }
 
     public async Task<bool> ExistsByCodeAsync(string productCode, Guid? excludeId = null, CancellationToken cancellationToken = default)
@@ -54,6 +68,60 @@ public sealed class ProductRepository : RepositoryBase<Product>, IProductReposit
             // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 9) — the unique index answered a create that raced past the pre-check.
             return false;
         }
+    }
+
+    public Task<BrandWriteOutcome> CreateWithReservationsAsync(Product product, CancellationToken cancellationToken = default)
+    {
+        var now = DateTimeOffset.UtcNow;
+        product.TenantId = TenantId;
+        product.CreatedAt = now;
+        product.UpdatedAt = now;
+        product.IsDeleted = false;
+        return MasterDataAtomicWrite.RunAsync(_client, _storeOptions, _logger, async session =>
+        {
+            try
+            {
+                if (session is null)
+                    await Collection.InsertOneAsync(product, cancellationToken: cancellationToken);
+                else
+                    await Collection.InsertOneAsync(session, product, cancellationToken: cancellationToken);
+            }
+            catch (Exception exception) when (MasterDataAtomicWrite.IsDuplicateKey(exception))
+            {
+                return BrandWriteOutcome.DuplicateCode;
+            }
+
+            return await _reservations.TryReserveAsync(session, ExternalReferenceReservation.RecordTypeProduct,
+                product.Id, product.ProductCode, product.ExternalReferences ?? [], cancellationToken)
+                ? BrandWriteOutcome.Written
+                : BrandWriteOutcome.ReferenceInUse;
+        }, cancellationToken);
+    }
+
+    public Task<BrandWriteOutcome> UpdateWithReservationsAsync(
+        Product product, IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
+        CancellationToken cancellationToken = default)
+    {
+        product.TenantId = TenantId;
+        product.UpdatedAt = DateTimeOffset.UtcNow;
+        product.Version++;
+        var filter = TenantFilter & Builders<Product>.Filter.Eq(x => x.Id, product.Id);
+        return MasterDataAtomicWrite.RunAsync(_client, _storeOptions, _logger, async session =>
+        {
+            var result = session is null
+                ? await Collection.ReplaceOneAsync(filter, product, cancellationToken: cancellationToken)
+                : await Collection.ReplaceOneAsync(session, filter, product, cancellationToken: cancellationToken);
+            if (result.MatchedCount != 1)
+            {
+                return BrandWriteOutcome.Stale;
+            }
+
+            await _reservations.ReleaseAsync(session, ExternalReferenceReservation.RecordTypeProduct, product.Id, removed, cancellationToken);
+            return await _reservations.TryReserveAsync(session, ExternalReferenceReservation.RecordTypeProduct,
+                product.Id, product.ProductCode, added, cancellationToken)
+                ? BrandWriteOutcome.Written
+                : BrandWriteOutcome.ReferenceInUse;
+        }, cancellationToken);
     }
 
     public async Task<Product?> FindByExternalReferenceAsync(

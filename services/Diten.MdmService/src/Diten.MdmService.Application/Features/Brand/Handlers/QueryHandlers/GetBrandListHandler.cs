@@ -5,7 +5,9 @@ using MediatR;
 
 namespace Diten.MdmService.Application.Features.Brand.Handlers.QueryHandlers;
 
-public sealed class GetBrandListHandler : IRequestHandler<Queries.GetBrandListQuery, Response<BrandListResultDto>>
+public sealed class GetBrandListHandler
+    : IRequestHandler<Queries.GetBrandListQuery, Response<BrandListResultDto>>,
+      IRequestHandler<Queries.GetBrandExportQuery, Response<BrandListResultDto>>
 {
     private readonly IBrandRepository _repository;
     private readonly IProductRepository _products;
@@ -14,6 +16,23 @@ public sealed class GetBrandListHandler : IRequestHandler<Queries.GetBrandListQu
     {
         _repository = repository;
         _products = products;
+    }
+
+    /// <summary>
+    /// FIX2 (item 1, BL-452) — every matching row in the reader's order, cut at cap + 1. TotalCount is the full match count,
+    /// so the caller refuses an export larger than the cap without writing a partial file.
+    /// </summary>
+    public async Task<Response<BrandListResultDto>> Handle(Queries.GetBrandExportQuery request, CancellationToken cancellationToken)
+    {
+        var filter = request.Filter with { Start = null, Length = null };
+        if (InvalidPaging(filter) is { } invalid)
+        {
+            return BrandProductFailures.Fail<BrandListResultDto>(BrandProductReasonCodes.ListQueryInvalid, invalid, 400);
+        }
+
+        var matching = Sort(Filter(await _repository.GetAllAsync(cancellationToken), filter), filter.OrderBy, filter.OrderDir).ToList();
+        var rows = matching.Take(request.RowCap + 1).Select(BrandMappings.ToDetailDto).ToList();
+        return Response<BrandListResultDto>.Success(new BrandListResultDto(rows, matching.Count));
     }
 
     public async Task<Response<BrandListResultDto>> Handle(Queries.GetBrandListQuery request, CancellationToken cancellationToken)
@@ -25,6 +44,30 @@ public sealed class GetBrandListHandler : IRequestHandler<Queries.GetBrandListQu
 
         // The repository is already tenant-scoped, so cross-tenant rows can never enter this pipeline.
         var brands = await _repository.GetAllAsync(cancellationToken);
+        var filtered = Filter(brands, request);
+
+        if (request.Length is not { } length)
+        {
+            var items = filtered
+                .OrderBy(x => x.BrandName, StringComparer.OrdinalIgnoreCase)
+                .Select(BrandMappings.ToDetailDto)
+                .ToList();
+
+            return Response<BrandListResultDto>.Success(new BrandListResultDto(items, items.Count));
+        }
+
+        // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 6) — the register's page: sorted on the server, then cut on the server.
+        var matching = Sort(filtered, request.OrderBy, request.OrderDir).ToList();
+        var start = request.Start ?? 0;
+        var page = matching.Skip(start).Take(length).Select(BrandMappings.ToDetailDto).ToList();
+        return Response<BrandListResultDto>.Success(new BrandListResultDto(
+            page, matching.Count, start, length, await ArchivedWithLiveProductsAsync(brands, cancellationToken)));
+    }
+
+    /// <summary>The list's server-applied filters — one place, shared by the page and the export.</summary>
+    private static IEnumerable<Domain.Entities.Brand> Filter(
+        IReadOnlyList<Domain.Entities.Brand> brands, Queries.GetBrandListQuery request)
+    {
         IEnumerable<Domain.Entities.Brand> filtered = brands;
 
         if (!request.IncludeArchived)
@@ -56,22 +99,7 @@ public sealed class GetBrandListHandler : IRequestHandler<Queries.GetBrandListQu
             filtered = filtered.Where(x => x.TherapeuticAreaId == therapeuticAreaId);
         }
 
-        if (request.Length is not { } length)
-        {
-            var items = filtered
-                .OrderBy(x => x.BrandName, StringComparer.OrdinalIgnoreCase)
-                .Select(BrandMappings.ToDetailDto)
-                .ToList();
-
-            return Response<BrandListResultDto>.Success(new BrandListResultDto(items, items.Count));
-        }
-
-        // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 6) — the register's page: sorted on the server, then cut on the server.
-        var matching = Sort(filtered, request.OrderBy, request.OrderDir).ToList();
-        var start = request.Start ?? 0;
-        var page = matching.Skip(start).Take(length).Select(BrandMappings.ToDetailDto).ToList();
-        return Response<BrandListResultDto>.Success(new BrandListResultDto(
-            page, matching.Count, start, length, await ArchivedWithLiveProductsAsync(brands, cancellationToken)));
+        return filtered;
     }
 
     private static string? InvalidPaging(Queries.GetBrandListQuery request)

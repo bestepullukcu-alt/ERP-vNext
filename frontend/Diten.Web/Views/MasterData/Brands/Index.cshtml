@@ -24,6 +24,8 @@
     var canCreate = ViewData["CanCreateBrand"] as bool? == true;
     var canUpdate = ViewData["CanUpdateBrand"] as bool? == true;
     var canArchive = ViewData["CanArchiveBrand"] as bool? == true;
+    // WP-MDM-BRAND-ACCEPT-01 FIX2 (item 1) — without mdm.brands.export no file entry is drawn.
+    var canExport = ViewData["CanExportBrand"] as bool? == true;
 }
 
 @* Contract marker: <partial name="_Filter" /> *@
@@ -32,7 +34,8 @@
 <div class="mb-3" id="brandRegister"
      data-can-create="@canCreate.ToString().ToLowerInvariant()"
      data-can-update="@canUpdate.ToString().ToLowerInvariant()"
-     data-can-archive="@canArchive.ToString().ToLowerInvariant()">
+     data-can-archive="@canArchive.ToString().ToLowerInvariant()"
+     data-can-export="@canExport.ToString().ToLowerInvariant()">
     <h5 class="mb-0">@Localizer["BrandsTitle"]</h5>
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
 </div>

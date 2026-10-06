@@ -93,9 +93,10 @@ public sealed class UpdateBrandHandler : IRequestHandler<Commands.UpdateBrandCom
         // FIX1 (item 10) — where a reference came from is never re-stamped by an edit.
         BrandProductExternalReferences.PreserveImportedAt(entity.ExternalReferences, before.ExternalReferences);
 
-        if (await BrandProductExternalReferences.FirstInUseAsync(entity.ExternalReferences, async (source, externalId) =>
-                (await _repository.FindByExternalReferenceAsync(source, externalId, entity.Id, cancellationToken))?.BrandCode)
-            is { } inUse)
+        // FIX2 (R4, item 5) — only references this edit ADDS are checked against other brands: a pair the brand already
+        // carried is not re-litigated, so a description edit on a brand that legacy data left sharing a pair still saves.
+        var (added, removed) = BrandProductExternalReferences.Diff(entity.ExternalReferences, before.ExternalReferences);
+        if (await FirstInUseAsync(added, entity.Id, cancellationToken) is { } inUse)
         {
             return BrandProductFailures.Fail<NoContent>(BrandProductReasonCodes.ExternalReferenceInUse, inUse.Message, inUse.StatusCode);
         }
@@ -104,7 +105,22 @@ public sealed class UpdateBrandHandler : IRequestHandler<Commands.UpdateBrandCom
             entity,
             expectedVersion,
             BrandHistory.Entry(Domain.Entities.BrandHistoryEntry.EventUpdated, request.Actor, request.CorrelationId, before, entity),
+            added,
+            removed,
             cancellationToken);
+        if (outcome == BrandWriteOutcome.Unavailable)
+        {
+            return BrandProductFailures.StoreUnavailable<NoContent>();
+        }
+
+        if (outcome == BrandWriteOutcome.ReferenceInUse)
+        {
+            return BrandProductFailures.Fail<NoContent>(
+                BrandProductReasonCodes.ExternalReferenceInUse,
+                (await FirstInUseAsync(added, entity.Id, cancellationToken))?.Message ?? "One of the external references is already used by another brand.",
+                409);
+        }
+
         if (outcome == BrandWriteOutcome.Written)
         {
             return Response<NoContent>.SuccessWithoutData(204);
@@ -124,6 +140,11 @@ public sealed class UpdateBrandHandler : IRequestHandler<Commands.UpdateBrandCom
                 "Archived brands are read-only. Historical references stay intact.", 409)
             : Stale();
     }
+
+    private Task<(string Message, int StatusCode)?> FirstInUseAsync(
+        IReadOnlyList<Domain.Entities.BrandProductExternalReference> references, Guid brandId, CancellationToken cancellationToken)
+        => BrandProductExternalReferences.FirstInUseAsync(references, async (source, externalId) =>
+            (await _repository.FindByExternalReferenceAsync(source, externalId, brandId, cancellationToken))?.BrandCode);
 
     private static Response<NoContent> Stale() => BrandProductFailures.Fail<NoContent>(
         BrandProductReasonCodes.VersionConflict,

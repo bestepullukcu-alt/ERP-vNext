@@ -33,6 +33,8 @@ public sealed class BrandsController : MasterDataGatewayController
     private const string CreatePermission = "mdm.brands.create";
     private const string UpdatePermission = "mdm.brands.update";
     private const string ArchivePermission = "mdm.brands.archive";
+    // WP-MDM-BRAND-ACCEPT-01 FIX2 (item 1) — the server export's own key (brand-product-master).
+    private const string ExportPermission = "mdm.brands.export";
     private const string ProductReadPermission = "mdm.products.read";
     private const string LegalEntityLookupPath = "/api/legal-entities/lookup";
     private const string ViewRoot = "~/Views/MasterData/Brands";
@@ -69,6 +71,7 @@ public sealed class BrandsController : MasterDataGatewayController
         ViewData["CanCreateBrand"] = HasAnyPermission(CreatePermission);
         ViewData["CanUpdateBrand"] = HasAnyPermission(UpdatePermission);
         ViewData["CanArchiveBrand"] = HasAnyPermission(ArchivePermission);
+        ViewData["CanExportBrand"] = HasAnyPermission(ExportPermission);
         return View($"{ViewRoot}/Index.cshtml");
     }
 
@@ -268,12 +271,67 @@ public sealed class BrandsController : MasterDataGatewayController
             $"length={length.ToString(CultureInfo.InvariantCulture)}"
         };
         // Passed as typed; MDM is the one judge (an unknown sort key or direction is a 400, never a silent default).
-        foreach (var key in new[] { "search", "orderBy", "orderDir", "brandStatus", "businessUnitId", "therapeuticAreaId", "includeArchived" })
+        // FIX2 (M6) — the business unit / therapeutic area free-text GUID boxes are gone from the filter; with no master to
+        // pick from, those two filters are not offered (and not forwarded) until a picker exists.
+        foreach (var key in new[] { "search", "orderBy", "orderDir", "brandStatus", "includeArchived" })
         {
             var value = query[key].ToString().Trim();
             if (value.Length > 0)
             {
                 parts.Add($"{key}={Uri.EscapeDataString(value)}");
+            }
+        }
+
+        return string.Join("&", parts);
+    }
+
+    /// <summary>
+    /// FIX2 (item 1, BL-452) — the register's server export: every matching row as CSV / XLSX, written by MDM in the reader's
+    /// language. Without mdm.brands.export the page draws no file entry and this answers 403 (UAS-001: no redirect).
+    /// </summary>
+    [HttpGet("api/export")]
+    public async Task<IActionResult> Export(CancellationToken ct)
+    {
+        if (RequireJson(ExportPermission) is { } denied)
+        {
+            return denied;
+        }
+
+        var acceptLanguage = Request.Headers.AcceptLanguage.ToString();
+        var response = await SendGatewayAsync(HttpMethod.Get, $"/api/mdm/brands/export?{BuildExportQuery(Request.Query)}", null, ct,
+            request =>
+            {
+                if (acceptLanguage.Length > 0)
+                {
+                    request.Headers.TryAddWithoutValidation("Accept-Language", acceptLanguage);
+                }
+            });
+        if (response is null || !response.IsSuccessStatusCode)
+        {
+            return await RelayAsync(response, ct);
+        }
+
+        var content = await response.Content.ReadAsByteArrayAsync(ct);
+        var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
+        var fileName = response.Content.Headers.ContentDisposition?.FileNameStar
+                       ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"')
+                       ?? "brands";
+        return File(content, contentType, fileName);
+    }
+
+    /// <summary>The export's query: the list's own search / order / filters, the format and the columns. Never start / length.</summary>
+    internal static string BuildExportQuery(IQueryCollection query)
+    {
+        var parts = new List<string>();
+        foreach (var key in new[] { "format", "columns", "search", "orderBy", "orderDir", "brandStatus", "includeArchived" })
+        {
+            foreach (var raw in query[key])
+            {
+                var value = raw?.Trim() ?? string.Empty;
+                if (value.Length > 0)
+                {
+                    parts.Add($"{key}={Uri.EscapeDataString(value)}");
+                }
             }
         }
 

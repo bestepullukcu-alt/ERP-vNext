@@ -622,6 +622,9 @@
   <data name="Nav.Page.TASKEDIT" xml:space="preserve">
     <value>Modifier la tâche</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>Référentiel Marque et Produit</value>
+  </data>
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>Référentiel Produit / Article / SKU</value>
   </data>

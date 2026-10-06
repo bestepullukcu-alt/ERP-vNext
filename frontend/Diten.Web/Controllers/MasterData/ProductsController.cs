@@ -161,7 +161,9 @@ public sealed class ProductsController : MasterDataGatewayController
     public Task<IActionResult> Brands(CancellationToken ct)
         => ProxyGetAsync($"/api/mdm/brands{Request.QueryString}", BrandReadPermission, ct, ReadPermission);
 
+    // WP-MDM-BRAND-ACCEPT-01 FIX2 (M9) — a cross-site POST cannot archive: the page's anti-forgery token is required.
     [HttpPost("api/{productId:guid}/archive")]
+    [ValidateAntiForgeryToken]
     public Task<IActionResult> Archive(Guid productId, CancellationToken ct)
         => ProxyJsonAsync(HttpMethod.Post, $"/api/mdm/products/{productId}/archive", null, ArchivePermission, ct);
 
@@ -205,11 +207,20 @@ public sealed class ProductsController : MasterDataGatewayController
         var envelope = await response.Content
             .ReadFromJsonAsync<BrandProductGatewayResponse<BrandListResultViewModel>>(JsonOptions, cancellationToken);
 
+        // WP-MDM-BRAND-ACCEPT-01 FIX2 (item 2) — only a brand MDM would link: active, not archived and inside its validity
+        // window today (MDM refuses the rest with 409 brand_not_linkable). The brand list endpoint itself is unchanged, so
+        // the CRM pickers that read it keep showing what they showed.
+        var today = DateTimeOffset.UtcNow.UtcDateTime.Date;
         return (envelope?.Data?.Items ?? [])
-            .Where(x => !x.IsArchived)
+            .Where(x => !x.IsArchived && IsLinkableOn(x, today))
             .Select(x => new BrandOptionViewModel(x.BrandId, x.BrandCode, x.BrandName))
             .ToList();
     }
+
+    internal static bool IsLinkableOn(BrandDetailViewModel brand, DateTime today)
+        => string.Equals(brand.BrandStatus, "active", StringComparison.Ordinal)
+           && brand.EffectiveFrom.UtcDateTime.Date <= today
+           && (brand.EffectiveTo is null || brand.EffectiveTo.Value.UtcDateTime.Date >= today);
 
     private async Task<BrandOptionViewModel?> TryResolveBrandAsync(Guid? brandId, CancellationToken cancellationToken)
     {

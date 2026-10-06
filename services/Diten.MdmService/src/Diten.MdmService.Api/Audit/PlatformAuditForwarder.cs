@@ -56,9 +56,11 @@ public sealed class PlatformAuditForwarder : IPlatformAuditForwarder
         // BL-014 — thread the originating request's X-Correlation-Id so MDM audits correlate to the source request;
         // fall back to a fresh id when the header is absent or not a Guid (AuditAppendRequest.CorrelationId is a Guid).
         string? correlationHeader = httpContext?.Request.Headers["X-Correlation-Id"];
-        var correlationId = Guid.TryParse(correlationHeader, out var incomingCorrelation) && incomingCorrelation != Guid.Empty
-            ? incomingCorrelation
-            : Guid.NewGuid();
+        // FIX2 (M2) — the request's one normalised id when the pipeline supplied it (the brand history row carries the same).
+        var correlationId = request.CorrelationId
+            ?? (Guid.TryParse(correlationHeader, out var incomingCorrelation) && incomingCorrelation != Guid.Empty
+                ? incomingCorrelation
+                : Guid.NewGuid());
 
         var payload = new
         {

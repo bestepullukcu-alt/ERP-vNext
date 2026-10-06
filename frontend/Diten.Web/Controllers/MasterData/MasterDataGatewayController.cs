@@ -52,11 +52,16 @@ public abstract class MasterDataGatewayController : Controller
     }
 
     protected async Task<HttpResponseMessage?> SendGatewayAsync(
-        HttpMethod method, string path, object? body, CancellationToken cancellationToken)
+        HttpMethod method, string path, object? body, CancellationToken cancellationToken,
+        Action<HttpRequestMessage>? configure = null)
     {
         try
         {
             using var request = new HttpRequestMessage(method, $"{_gatewayUrl}{path}");
+            // WP-MDM-BRAND-ACCEPT-01 FIX2 (M2) — one correlation id per browser request, sent on every MDM call it makes, so
+            // the brand history row and the central audit event carry the same id the caller sent (or one made here).
+            request.Headers.TryAddWithoutValidation(CorrelationHeader, CorrelationId);
+            configure?.Invoke(request);
 
             var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
             if (!string.IsNullOrWhiteSpace(token))
@@ -87,6 +92,30 @@ public abstract class MasterDataGatewayController : Controller
             // The Authorization header is deliberately never logged.
             _logger.LogError(ex, "Master Data Gateway request failed: {Method} {Path}", method, path);
             return null;
+        }
+    }
+
+    internal const string CorrelationHeader = "X-Correlation-Id";
+    private static readonly object CorrelationItemKey = new();
+
+    /// <summary>
+    /// FIX2 (M2) — the caller's X-Correlation-Id when it is a Guid, otherwise a fresh Guid; Guid "D", kept for the rest of
+    /// this request. MDM normalises the same way, so a value that is not a Guid never reaches a record.
+    /// </summary>
+    protected string CorrelationId
+    {
+        get
+        {
+            if (HttpContext.Items.TryGetValue(CorrelationItemKey, out var stored) && stored is string known)
+            {
+                return known;
+            }
+
+            var resolved = Guid.TryParse(Request.Headers[CorrelationHeader].ToString().Trim(), out var incoming) && incoming != Guid.Empty
+                ? incoming.ToString("D")
+                : Guid.NewGuid().ToString("D");
+            HttpContext.Items[CorrelationItemKey] = resolved;
+            return resolved;
         }
     }
 
@@ -130,12 +159,48 @@ public abstract class MasterDataGatewayController : Controller
 
     private static readonly Regex ReasonCodePrefix = new("^(?<code>[a-z][a-z0-9_]*):", RegexOptions.CultureInvariant);
 
+    private static readonly Regex FieldRefusal = new(
+        "^field_invalid:\\s*(?<field>[A-Za-z][A-Za-z0-9]*)", RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// WP-MDM-BRAND-ACCEPT-01 FIX2 (M5) — MDM's field-shape refusals (<c>field_invalid: Description — …</c>), one sentence
+    /// per field in the reader's language, the field named by the form's own label. Empty when there are none.
+    /// </summary>
+    internal static IReadOnlyList<string> FieldSentences(IStringLocalizer localizer, IEnumerable<string> errors)
+    {
+        var template = localizer[$"Reason_{FieldInvalidCode}"];
+        if (template.ResourceNotFound)
+        {
+            return [];
+        }
+
+        return errors
+            .Select(error => FieldRefusal.Match(error ?? string.Empty))
+            .Where(match => match.Success)
+            .Select(match => match.Groups["field"].Value)
+            .Distinct(StringComparer.Ordinal)
+            .Select(field =>
+            {
+                var label = localizer[field];
+                return string.Format(template.Value, label.ResourceNotFound ? field : label.Value);
+            })
+            .ToList();
+    }
+
+    internal const string FieldInvalidCode = "field_invalid";
+
     /// <summary>The sentence for a refusal: the first error whose reason code has one, else the status sentence.</summary>
     internal static (string Sentence, string? ReasonCode, bool Unmapped) TranslateRefusal(
         IStringLocalizer localizer, IEnumerable<string> errors, int statusCode)
     {
+        var list = errors as IReadOnlyCollection<string> ?? errors.ToList();
+        if (FieldSentences(localizer, list) is { Count: > 0 } fields)
+        {
+            return (string.Join(" ", fields), FieldInvalidCode, false);
+        }
+
         string? firstCode = null;
-        foreach (var error in errors)
+        foreach (var error in list)
         {
             var match = ReasonCodePrefix.Match(error ?? string.Empty);
             if (!match.Success)
@@ -229,8 +294,14 @@ public abstract class MasterDataGatewayController : Controller
         if (RefusalLocalizer is { } localizer)
         {
             var status = response is null ? StatusCodes.Status502BadGateway : (int)response.StatusCode;
-            var (sentence, code, unmapped) = TranslateRefusal(
-                localizer, response is null ? [] : await ReadErrorsAsync(response, cancellationToken), status);
+            IReadOnlyList<string> errors = response is null ? [] : await ReadErrorsAsync(response, cancellationToken);
+            // FIX2 (M5) — each field MDM refused reaches the form as its own sentence.
+            if (FieldSentences(localizer, errors) is { Count: > 0 } fieldSentences)
+            {
+                return fieldSentences.ToList();
+            }
+
+            var (sentence, code, unmapped) = TranslateRefusal(localizer, errors, status);
             if (unmapped && code is not null)
             {
                 _logger.LogWarning("Master data refusal {ReasonCode} ({StatusCode}) has no sentence; the status sentence was shown.", code, status);

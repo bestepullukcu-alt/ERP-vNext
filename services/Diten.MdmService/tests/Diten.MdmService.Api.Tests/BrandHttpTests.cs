@@ -37,18 +37,20 @@ public sealed class BrandHttpTests(MdmHttpHost host)
     public async Task Every_brand_write_leaves_one_history_entry_with_actor_correlation_and_before_after()
     {
         var client = Steward();
-        var id = await CreateAsync(client, Code("HIST"), correlationId: "corr-create");
+        // FIX2 (M2) — correlation ids are Guids stored as "D".
+        var correlations = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+        var id = await CreateAsync(client, Code("HIST"), correlationId: correlations[0].ToString("N"));
         var updated = await SendAsync(client, HttpMethod.Put, $"/api/mdm/brands/{id}",
-            Body(Code("HIST"), name: "Renamed", expectedVersion: 0), "corr-update");
+            Body(Code("HIST"), name: "Renamed", expectedVersion: 0), correlations[1].ToString("D"));
         Assert.Equal(HttpStatusCode.NoContent, updated.StatusCode);
-        var archived = await SendAsync(client, HttpMethod.Post, $"/api/mdm/brands/{id}/archive", null, "corr-archive");
+        var archived = await SendAsync(client, HttpMethod.Post, $"/api/mdm/brands/{id}/archive", null, correlations[2].ToString("B"));
         Assert.Equal(HttpStatusCode.NoContent, archived.StatusCode);
 
         var history = await HistoryAsync(id);
         Assert.Equal([BrandHistoryEntry.EventCreated, BrandHistoryEntry.EventUpdated, BrandHistoryEntry.EventArchived],
             history.Select(x => x.EventType));
         Assert.All(history, x => Assert.Equal(_user.ToString("D"), x.Actor));
-        Assert.Equal(["corr-create", "corr-update", "corr-archive"], history.Select(x => x.CorrelationId));
+        Assert.Equal(correlations.Select(x => x.ToString("D")), history.Select(x => x.CorrelationId));
         Assert.Equal([0, 1, 2], history.Select(x => x.ResultVersion));
 
         // The edit's entry says what the brand WAS and what it BECAME.
@@ -326,7 +328,8 @@ public sealed class BrandHttpTests(MdmHttpHost host)
         edit.Id = brand.Id;
         edit.BrandName = "Hijacked";
         Assert.Equal(BrandWriteOutcome.Stale, await stranger.UpdateEditableFieldsWithHistoryAsync(edit, 0, Entry(BrandHistoryEntry.EventUpdated)));
-        Assert.False(await stranger.UpdateAsync(edit));
+        // FIX2 (M8) — the targeted archive write, not the generic whole-document UpdateAsync no handler may call.
+        Assert.Equal(BrandWriteOutcome.Stale, await stranger.ArchiveWithHistoryAsync(edit, 0, Entry(BrandHistoryEntry.EventArchived)));
 
         var stored = await mine.GetByIdAsync(brand.Id);
         Assert.Equal(brand.BrandName, stored!.BrandName);

@@ -37,3 +37,11 @@ public sealed record GetBrandListQuery : IRequest<Response<BrandListResultDto>>
     public static readonly IReadOnlyList<string> SortableFields =
         ["brandCode", "brandName", "brandStatus", "effectiveFrom", "effectiveTo", "isArchived", "updatedAt"];
 }
+
+/// <summary>
+/// WP-MDM-BRAND-ACCEPT-01 FIX2 (item 1, BL-452) — the register's export: the SAME filters, search and order as
+/// <see cref="GetBrandListQuery"/> (and the same 400 for a bad one), every matching row up to <paramref name="RowCap"/> + 1
+/// (one more than the cap, so the caller can tell "more than allowed"). Never bound from a list request: the list endpoint
+/// cannot be turned into an unpaged read by adding a parameter.
+/// </summary>
+public sealed record GetBrandExportQuery(GetBrandListQuery Filter, int RowCap) : IRequest<Response<BrandListResultDto>>;

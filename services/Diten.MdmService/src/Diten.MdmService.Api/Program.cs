@@ -374,12 +374,22 @@ builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.Ge
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IModuleManifestProvider, LegalEntityManifestProvider>();
 builder.Services.AddSingleton<IModuleManifestProvider, ProductItemSkuMasterManifestProvider>();
+// WP-MDM-BRAND-ACCEPT-01 FIX2 (item 1, CT model A) — Brand and Product are their own module (brand-product-master).
+builder.Services.AddSingleton<IModuleManifestProvider, BrandProductMasterManifestProvider>();
 apiStartupExecutionMode.AddModuleRegistrationHostedService(builder.Services);
 
 // MOD-0021 Faz 2 — forward MDM audit events to Platform's central store (S2S), reusing the same Platform base URL +
 // internal key as module self-registration. Actor/tenant are read from the current request's JWT.
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<Diten.MdmService.Application.Contracts.Audit.IPlatformAuditForwarder, Diten.MdmService.Api.Audit.PlatformAuditForwarder>();
+// WP-MDM-BRAND-ACCEPT-01 FIX2 (M2) — one normalised correlation id per request, shared by the brand history and the audit.
+builder.Services.AddScoped<Diten.MdmService.Application.Contracts.Audit.IRequestCorrelation, Diten.MdmService.Api.Audit.HttpRequestCorrelation>();
+// FIX2 (item 7) — a brand / product write that cannot be atomic is refused (503) everywhere but Development, where a
+// standalone mongod keeps working with ordered writes and a warning.
+builder.Services.AddSingleton(new Diten.MdmService.Persistence.Repositories.BrandProductStoreOptions
+{
+    AllowNonTransactionalWrites = builder.Environment.IsDevelopment()
+});
 
 var app = builder.Build();
 
