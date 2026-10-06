@@ -955,6 +955,59 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             : await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
     }
 
+    // BL-552: the lock goes back in the same write as the intent that says why the request ended unapplied. Only the
+    // request holding the lock, at the version it left (its base + 1), may give it back.
+    public async Task<GlobalProductLifecycleWriteResult> ReleaseLifecycleOperationAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(binding);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        var expectedOperation = binding.Kind switch
+        {
+            GlobalProductLifecycleOperationKind.Correction =>
+                ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired,
+            GlobalProductLifecycleOperationKind.Retirement =>
+                ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired,
+            _ => (ProductAuditOperation?)null
+        };
+        var contractError = expectedOperation.HasValue
+            ? ValidateAuditIntent(id, expectedVersion, expectedOperation.Value, auditIntent)
+            : "GLOBAL_PRODUCT_LIFECYCLE_RELEASE_CONTRACT_INVALID";
+        if (contractError is not null || binding.OperationId == Guid.Empty
+            || binding.BaseProductVersion + 1 != expectedVersion)
+            return new(false, null, contractError ?? "GLOBAL_PRODUCT_LIFECYCLE_RELEASE_CONTRACT_INVALID");
+        var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null)
+            return !replay.Succeeded || replay.GlobalProduct?.ActiveLifecycleOperation is null ? replay
+                : new(false, replay.GlobalProduct, "PRODUCT_IDENTITY_IDEMPOTENCY_CONFLICT");
+        var filter = ActiveTenantFilter
+            & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, binding.Kind)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, binding.OperationId)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.BaseProductVersion,
+                binding.BaseProductVersion)
+            & Builders<GlobalProduct>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var update = Builders<GlobalProduct>.Update
+            .Set(x => x.ActiveLifecycleOperation, null)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1)
+            .Push(x => x.AuditIntents, auditIntent);
+        var updated = await _globalProducts.FindOneAndUpdateAsync(filter, update,
+            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, updated);
+        var current = await GetByIdAsync(id, cancellationToken);
+        if (current is null) return new(false, null, "PRODUCT_IDENTITY_NOT_FOUND");
+        if (current.ActiveLifecycleOperation is null) return new(false, current, "GLOBAL_PRODUCT_LIFECYCLE_NOT_HELD");
+        if (current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate)
+            return new(false, current, "AUDIT_INTENT_CAPACITY_EXCEEDED");
+        return new(false, current, "GLOBAL_PRODUCT_LIFECYCLE_RELEASE_CONFLICT");
+    }
+
     public async Task<GlobalProductLifecycleWriteResult> ApplyRetirementDecisionAsync(
         Guid id,
         int expectedVersion,

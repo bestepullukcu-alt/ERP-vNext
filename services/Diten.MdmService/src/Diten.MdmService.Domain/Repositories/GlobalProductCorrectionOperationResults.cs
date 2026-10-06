@@ -37,7 +37,10 @@ public sealed record GlobalProductCorrectionMutation(
     long? DecisionTransitionSequence = null,
     string? DecisionTaskStatus = null,
     string? DecisionInstanceStatus = null,
-    bool ReleaseLease = false);
+    bool ReleaseLease = false,
+    // BL-552: how this write changes the retry streak (atomically, in the store), and when a start was sent.
+    RecoveryStreakWrite Streak = RecoveryStreakWrite.Reset,
+    long? LastStartSentAtUtcTicksV1 = null);
 
 public sealed record GlobalProductCorrectionRecoverablePage(
     IReadOnlyList<GlobalProductCorrectionOperation> Operations,

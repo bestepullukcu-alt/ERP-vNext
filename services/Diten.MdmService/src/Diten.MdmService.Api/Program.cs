@@ -660,7 +660,10 @@ public static class GlobalProductWorkflowExecutionConfigurationRegistrations
                 "GLOBAL_PRODUCT_CORRECTION_WORKER_CONFIGURATION_INVALID");
             return new GlobalProductCorrectionExecutionConfiguration(
                 TimeSpan.FromSeconds(options.LeaseSeconds),
-                TimeSpan.FromSeconds(options.RetryDelaySeconds));
+                TimeSpan.FromSeconds(options.RetryDelaySeconds),
+                options.QuarantineAfterFailedAttempts,
+                TimeSpan.FromSeconds(options.EffectiveMaxRetryDelaySeconds),
+                TimeSpan.FromSeconds(options.StartSettleSeconds));
         });
         services.AddScoped(sp =>
         {

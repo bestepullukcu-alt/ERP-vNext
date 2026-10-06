@@ -149,6 +149,15 @@ public interface IGlobalProductRepository
         LocalAuditIntent auditIntent,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("Global Product correction conflict recording is not implemented.");
+    // BL-552: a correction / retirement request that ends without its decision applied gives the Global Product's
+    // lock back in the same write as the intent that says why (…ManualReconciliationRequired).
+    Task<GlobalProductLifecycleWriteResult> ReleaseLifecycleOperationAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product lifecycle operation release is not implemented.");
     Task<ProductChildCreationAdmissionResult> AcquireChildCreationAdmissionAsync(
         Guid id,
         string creationCommandId,

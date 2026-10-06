@@ -23,6 +23,12 @@ public interface IGlobalProductCorrectionOperationRepository
         long nowUtcTicks,
         long leaseUntilUtcTicks,
         CancellationToken cancellationToken = default);
+    // BL-552: a claim the store did not answer within its bound is given back if (and only if) this owner holds it.
+    Task ReleaseIfOwnedAsync(Guid operationId, string leaseOwner, long leaseUntilUtcTicks,
+        CancellationToken cancellationToken = default) => Task.CompletedTask;
+    // BL-552: this tenant's stuck requests (lock held), and those of them only a person can settle (BL-530).
+    Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) => Task.FromResult(0L);
+    Task<long> CountNeedingAPersonAsync(CancellationToken cancellationToken = default) => Task.FromResult(0L);
     Task<bool> AdvanceAsync(
         GlobalProductCorrectionClaim claim,
         GlobalProductCorrectionMutation mutation,

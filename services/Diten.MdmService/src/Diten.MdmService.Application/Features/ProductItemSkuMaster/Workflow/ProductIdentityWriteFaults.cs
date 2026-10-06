@@ -11,13 +11,15 @@ namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 public static class ProductIdentityWriteFaults
 {
     public const string AuditCapacityReached = "AUDIT_INTENT_CAPACITY_REACHED";
+    // BL-552: the Global Product repository's name for the same capacity.
+    public const string AuditCapacityExceeded = "AUDIT_INTENT_CAPACITY_EXCEEDED";
 
     /// <summary>
     /// The write may go through later by itself: the audit intent capacity (the outbox drains it), the store, or a
     /// lease held by another worker for the moment. Waits at the ceiling — never quarantined.
     /// </summary>
     public static bool MayPassByItself(string? code) =>
-        code is AuditCapacityReached or ProductIdentityStore.Unavailable
+        code is AuditCapacityReached or AuditCapacityExceeded or ProductIdentityStore.Unavailable
         || code?.EndsWith("_BUSY", StringComparison.Ordinal) == true;
 
     /// <summary>
@@ -26,8 +28,11 @@ public static class ProductIdentityWriteFaults
     /// exists and still holds a lifecycle lock — its version or binding moved between the read and the write. Only a
     /// re-read can tell a race (gone on the next attempt) from a lasting mismatch (handed to a person at the limit), so
     /// it is retried and counted like any concurrent write; the rule of what may release the lock is unchanged.
+    /// BL-552: GLOBAL_PRODUCT_LIFECYCLE_RELEASE_CONFLICT is the Global Product's same miss.
     /// </summary>
     public static bool MetAConcurrentWrite(string? code) =>
         code?.EndsWith("_CONCURRENCY_CONFLICT", StringComparison.Ordinal) == true
-        || code == "GSKU_LIFECYCLE_RELEASE_CONFLICT";
+        || code is "GSKU_LIFECYCLE_RELEASE_CONFLICT" or GlobalProductReleaseConflict;
+
+    public const string GlobalProductReleaseConflict = "GLOBAL_PRODUCT_LIFECYCLE_RELEASE_CONFLICT";
 }

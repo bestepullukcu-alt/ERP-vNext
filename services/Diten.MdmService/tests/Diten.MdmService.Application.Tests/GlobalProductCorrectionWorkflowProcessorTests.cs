@@ -69,7 +69,9 @@ public sealed class GlobalProductCorrectionWorkflowProcessorTests : IAsyncLifeti
     }
 
     [Fact]
-    public async Task Maker_approval_is_quarantined_and_never_changes_product()
+    // BL-552: the maker decided their own request and the engine has closed it — no other decision will come. Not
+    // applied, and the product is given back (before: quarantined with the lock held for ever).
+    public async Task Maker_approval_ends_the_correction_unapplied_and_frees_the_product()
     {
         var product = await SeedAsync("Original Maker");
         var maker = Guid.NewGuid();
@@ -90,8 +92,10 @@ public sealed class GlobalProductCorrectionWorkflowProcessorTests : IAsyncLifeti
         Assert.False(recovered.Succeeded, recovered.ErrorCode);
         Assert.Equal(GlobalProductCorrectionCheckpoint.ManualReconciliationRequired,
             recovered.Operation!.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, recovered.Operation.RecoveryDisposition);
+        Assert.Equal(GlobalProductCorrectionWorkflowProcessor.SelfApprovalIgnored, recovered.Operation.LastFailureCode);
         Assert.Equal("Original Maker", persisted!.GlobalProductName);
-        Assert.NotNull(persisted.ActiveLifecycleOperation);
+        Assert.Null(persisted.ActiveLifecycleOperation);
     }
 
     [Fact]
@@ -112,15 +116,18 @@ public sealed class GlobalProductCorrectionWorkflowProcessorTests : IAsyncLifeti
         var plan = factory.Create(product, operationId, maker, "Recovered Change");
         Assert.True((await operationRepository.ReserveAsync(plan.Operation)).Succeeded);
 
+        // BL-552: the worker never starts a correction; it asks whether the maker's start arrived. "Nothing yet" inside
+        // the settle window keeps the request where it is (nothing taken, nothing given back).
         var background = await processor.RecoverAsync(plan.Operation, "worker",
             new(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1)), default);
+        await UntilDueAsync(background.Operation!);
         var interactive = await processor.StartInteractiveAsync(_tenantId, product.Id, 0, operationId, maker,
             "Recovered Change", "delegated-token",
             new(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1)), default);
 
         Assert.False(background.Succeeded);
-        Assert.Equal("GLOBAL_PRODUCT_CORRECTION_MAKER_REPLAY_REQUIRED", background.ErrorCode);
-        Assert.Equal(GlobalProductCorrectionCheckpoint.AwaitingMakerReplay, background.Operation!.Checkpoint);
+        Assert.Equal(GlobalProductCorrectionWorkflowProcessor.StartSettling, background.Operation!.LastFailureCode);
+        Assert.Equal(GlobalProductCorrectionCheckpoint.Prepared, background.Operation.Checkpoint);
         Assert.True(interactive.Succeeded, interactive.ErrorCode);
         Assert.Equal(GlobalProductCorrectionCheckpoint.AwaitingDecision, interactive.Operation!.Checkpoint);
         Assert.Equal(1, workflow.StartCalls);
@@ -252,7 +259,8 @@ public sealed class GlobalProductCorrectionWorkflowProcessorTests : IAsyncLifeti
             new GlobalProductRepository(_database, tenant), workflow, factory, TimeProvider.System);
         var background = await processor.RecoverAsync(operation, "worker",
             new(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1)), default);
-        Assert.Equal(GlobalProductCorrectionCheckpoint.AwaitingMakerReplay, background.Operation!.Checkpoint);
+        Assert.Equal(GlobalProductCorrectionCheckpoint.Prepared, background.Operation!.Checkpoint);
+        await UntilDueAsync(background.Operation);
 
         var replay = await processor.StartInteractiveAsync(_tenantId, product.Id, 0, operationId, maker,
             "Permanent Change", "delegated-token",
@@ -262,6 +270,9 @@ public sealed class GlobalProductCorrectionWorkflowProcessorTests : IAsyncLifeti
         Assert.Equal(GlobalProductCorrectionCheckpoint.ManualReconciliationRequired, replay.Operation!.Checkpoint);
         Assert.Equal("START_FORBIDDEN", replay.ErrorCode);
         Assert.Null(replay.Operation.NextAttemptAtUtcTicksV1);
+        // BL-552: the start was refused before anything was processed — the request ended and the product is free.
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, replay.Operation.RecoveryDisposition);
+        Assert.Null((await new GlobalProductRepository(_database, tenant).GetByIdAsync(product.Id))!.ActiveLifecycleOperation);
     }
 
     [Fact]
@@ -292,7 +303,8 @@ public sealed class GlobalProductCorrectionWorkflowProcessorTests : IAsyncLifeti
             .GetByIdAsync(product.Id);
 
         Assert.False(recovered.Succeeded);
-        Assert.Equal("GLOBAL_PRODUCT_CORRECTION_MANUAL_AUDIT_NOT_PERSISTED", recovered.ErrorCode);
+        // BL-552: the refused record write keeps the store's own code (the capacity: it waits, never stuck).
+        Assert.Equal("AUDIT_INTENT_CAPACITY_EXCEEDED", recovered.ErrorCode);
         Assert.Equal(GlobalProductCorrectionCheckpoint.DecisionObserved, recovered.Operation!.Checkpoint);
         Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable,
             recovered.Operation.RecoveryDisposition);
@@ -302,6 +314,11 @@ public sealed class GlobalProductCorrectionWorkflowProcessorTests : IAsyncLifeti
         Assert.DoesNotContain(persistedProduct.AuditIntents,
             audit => audit.Operation == ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired);
     }
+
+    // The maker's repeat before the worker's next attempt is due is answered "wait" (503): the test waits for it.
+    private static Task UntilDueAsync(GlobalProductCorrectionOperation operation) =>
+        Task.Delay(TimeSpan.FromTicks(Math.Max(0, (operation.NextAttemptAtUtcTicksV1 ?? 0) - DateTimeOffset.UtcNow.UtcTicks))
+            + TimeSpan.FromMilliseconds(5));
 
     public async Task DisposeAsync() => await Task.WhenAll(
         _products.DeleteManyAsync(x => x.TenantId == _tenantId),

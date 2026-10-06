@@ -120,6 +120,12 @@ public sealed class GlobalProductCorrectionOperationRepository(
         CancellationToken cancellationToken = default)
     {
         if (claim.TenantId != TenantId || !Allowed(claim.Checkpoint, mutation.NextCheckpoint)) return false;
+        // BL-552 (the GSKU FIX7 store invariant): manual reconciliation is never "retryable" — the worker does not scan
+        // that checkpoint and the gauge does not count it, so the pair would be a lock nobody sees. A request that has
+        // to wait goes to a checkpoint the worker scans; one that does not is stuck (ManualReconciliationRequired) or
+        // ended (None).
+        if (mutation.NextCheckpoint == GlobalProductCorrectionCheckpoint.ManualReconciliationRequired
+            && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable) return false;
         var filter = Active
             & Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.OperationId, claim.OperationId)
             & Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.OperationFingerprint, claim.OperationFingerprint)
@@ -149,10 +155,47 @@ public sealed class GlobalProductCorrectionOperationRepository(
         if (mutation.DecisionTransitionSequence.HasValue) update = update.Set(x => x.DecisionTransitionSequence, mutation.DecisionTransitionSequence);
         if (mutation.DecisionTaskStatus is not null) update = update.Set(x => x.DecisionTaskStatus, mutation.DecisionTaskStatus);
         if (mutation.DecisionInstanceStatus is not null) update = update.Set(x => x.DecisionInstanceStatus, mutation.DecisionInstanceStatus);
+        update = mutation.Streak switch
+        {
+            RecoveryStreakWrite.Increment => update.Inc(x => x.FailedAttemptCount, 1),
+            RecoveryStreakWrite.Keep => update,
+            _ => update.Set(x => x.FailedAttemptCount, 0)
+        };
+        if (mutation.LastStartSentAtUtcTicksV1.HasValue)
+            update = update.Set(x => x.LastStartSentAtUtcTicksV1, mutation.LastStartSentAtUtcTicksV1);
         if (mutation.ReleaseLease) update = update.Set(x => x.LeaseOwner, null).Set(x => x.LeaseUntilUtcTicksV1, null);
         var result = await _operations.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
         return result.ModifiedCount == 1;
     }
+
+    public Task ReleaseIfOwnedAsync(Guid operationId, string leaseOwner, long leaseUntilUtcTicks,
+        CancellationToken cancellationToken = default) =>
+        _operations.UpdateOneAsync(
+            Active & Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.OperationId, operationId)
+            & Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.LeaseOwner, leaseOwner)
+            & Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.LeaseUntilUtcTicksV1, leaseUntilUtcTicks),
+            Builders<GlobalProductCorrectionOperation>.Update.Set(x => x.LeaseOwner, null).Set(x => x.LeaseUntilUtcTicksV1, null),
+            cancellationToken: cancellationToken);
+
+    // BL-552: only what is STUCK — manual reconciliation with the product's lock held, or past the retry limit and
+    // still retrying (the processor's own constant, an equality match). A request that ended is not counted.
+    public Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(Active & (
+            (Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.Checkpoint, GlobalProductCorrectionCheckpoint.ManualReconciliationRequired)
+             & Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired))
+            | (Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.Retryable)
+               & Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.LastFailureCode,
+                   Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.GlobalProductCorrectionWorkflowProcessor.RetryLimitReached))),
+            cancellationToken: cancellationToken);
+
+    // BL-552: stuck (lock held) for a reason the requester's repeat cannot settle — a person has to (BL-530).
+    public Task<long> CountNeedingAPersonAsync(CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(Active
+            & Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.Checkpoint, GlobalProductCorrectionCheckpoint.ManualReconciliationRequired)
+            & Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+            & Builders<GlobalProductCorrectionOperation>.Filter.Nin(x => x.LastFailureCode,
+                Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.GlobalProductLifecycleStuckKinds.SettledByTheRequestersRepeat),
+            cancellationToken: cancellationToken);
 
     public async Task<GlobalProductCorrectionRecoverablePage> DiscoverRecoverableAsync(
         long nowUtcTicks,
@@ -162,8 +205,9 @@ public sealed class GlobalProductCorrectionOperationRepository(
     {
         if (limit is < 1 or > 100 || nowUtcTicks <= 0) throw new ArgumentOutOfRangeException(nameof(limit));
         var terminal = new[] { GlobalProductCorrectionCheckpoint.Completed,
-            GlobalProductCorrectionCheckpoint.ManualReconciliationRequired,
-            GlobalProductCorrectionCheckpoint.AwaitingMakerReplay };
+            GlobalProductCorrectionCheckpoint.ManualReconciliationRequired };
+        // BL-552: AwaitingMakerReplay is no longer skipped — the request parked there HOLDS the product's lock; the
+        // worker settles it (did the start arrive? then started, else the lock is given back).
         var filter = Active
             & Builders<GlobalProductCorrectionOperation>.Filter.Nin(x => x.Checkpoint, terminal)
             & Builders<GlobalProductCorrectionOperation>.Filter.Or(
@@ -239,6 +283,11 @@ public sealed class GlobalProductCorrectionOperationRepository(
                 or GlobalProductCorrectionCheckpoint.ManualReconciliationRequired) => true,
             (GlobalProductCorrectionCheckpoint.DecisionApplied, GlobalProductCorrectionCheckpoint.Completed
                 or GlobalProductCorrectionCheckpoint.ManualReconciliationRequired) => true,
+            // BL-552: the requester's same command reads the engine again and puts a stuck request back; one whose
+            // lock release has to wait goes back where the worker looks again.
+            (GlobalProductCorrectionCheckpoint.ManualReconciliationRequired, GlobalProductCorrectionCheckpoint.WorkflowStarted
+                or GlobalProductCorrectionCheckpoint.AwaitingDecision or GlobalProductCorrectionCheckpoint.DecisionObserved
+                or GlobalProductCorrectionCheckpoint.StartOutcomeUnknown) => true,
             _ => false
         };
 

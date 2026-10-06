@@ -41,6 +41,10 @@ public sealed class GlobalProductCorrectionOperation : EntityBase
     public string? DecisionTaskStatus { get; set; }
     public string? DecisionInstanceStatus { get; set; }
     public long? NextAttemptAtUtcTicksV1 { get; set; }
+    // BL-552 (the GSKU FIX3 rule): consecutive worker attempts that ended in a retry; any other write sets it back to 0.
+    public int FailedAttemptCount { get; set; }
+    // BL-552 (the GSKU FIX3 S8 rule): when a start was last sent — "nothing arrived" is trusted only after the settle window.
+    public long? LastStartSentAtUtcTicksV1 { get; set; }
     public string? LastFailureCode { get; set; }
     public string? LeaseOwner { get; set; }
     public long? LeaseUntilUtcTicksV1 { get; set; }

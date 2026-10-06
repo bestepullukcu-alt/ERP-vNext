@@ -441,6 +441,22 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
 - The "is stuck" Error line is written ONCE, when a request becomes stuck, with the cause the attempt before it met
   (the record then holds only `*_RETRY_LIMIT_REACHED`); while it keeps retrying at the ceiling the next cycles say
   "still stuck" as Information.
+- **Global Product correction (BL-552, flow `GLOBAL_PRODUCT_CORRECTION`)** follows every rule above, with the Global
+  Product as the locked record:
+  - **Cycle line and gauges:** the same cycle line and both gauges.
+  - **Settings:** `GlobalProductCorrectionWorkflowWorker` takes `QuarantineAfterFailedAttempts` (30),
+    `MaxRetryDelaySeconds` (900) and `StartSettleSeconds` (120), as the GSKU workers do.
+  - **Lock release:** the product's lock is given back by a conditional write — this request's binding, at its base
+    version + 1, in its tenant only. The write carries a `GlobalProductCorrectionManualReconciliationRequired` audit
+    intent.
+  - **Refused writes:** the product's audit cap (`AUDIT_INTENT_CAPACITY_EXCEEDED`) waits.
+    `GLOBAL_PRODUCT_LIFECYCLE_RELEASE_CONFLICT` is a counted retry.
+  - **Differences from the GSKU correction:**
+    - An approved name that another product took in the meantime stays STUCK for a person
+      (`GLOBAL_PRODUCT_CORRECTION_NAME_CONFLICT`, lock held, counted by `needing_a_person`). The requester's repeat
+      does not settle it.
+    - A correction its own maker decided ends unapplied and frees the product
+      (`GLOBAL_PRODUCT_CORRECTION_SELF_APPROVAL_IGNORED`). Before BL-552 it was stuck for ever.
 
 ### 6. Not covered here — open before a live bring-up
 
