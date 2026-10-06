@@ -27,13 +27,13 @@ def snapshot():
 
 
 with socket.socket() as port:
-    assert port.connect_ex(("127.0.0.1", 5061)) != 0, "5061 occupied"
+    assert port.connect_ex(("127.0.0.1", 5066)) != 0, "5066 occupied"
 before = snapshot()
 assert before["sce_shipment_source_links"] and before["sce_shipment_source_evidence"]
 env = dict(os.environ, Mongo__ConnectionString=uri, Mongo__DatabaseName=database,
            JwtSettings__Secret=uuid.uuid4().hex + uuid.uuid4().hex,
            JwtSettings__Issuer="source-restart-tests", JwtSettings__Audience="source-restart-tests",
-           ASPNETCORE_URLS="http://127.0.0.1:5061")
+           ASPNETCORE_URLS="http://127.0.0.1:5066")
 pids = []
 for iteration in range(2):
     with (out / "service.log").open("a") as log:
@@ -44,7 +44,7 @@ for iteration in range(2):
             for attempt in range(100):
                 assert process.poll() is None, "Service exited"
                 try:
-                    urllib.request.urlopen("http://127.0.0.1:5061/health", timeout=.5).close()
+                    urllib.request.urlopen("http://127.0.0.1:5066/health", timeout=.5).close()
                     break
                 except OSError:
                     time.sleep(.1)

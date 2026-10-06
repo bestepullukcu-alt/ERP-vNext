@@ -27,7 +27,7 @@ def call(method,path="",body=None,key=None,expected=200,schema=None,tenant=T,le=
     if auth: headers["Authorization"]="Bearer "+token(tenant,le,perms,SECRET+"bad" if bad_signature else SECRET)
     if corr is not None:headers["X-Correlation-Id"]=corr
     if key is not None:headers["Idempotency-Key"]=key
-    req=urllib.request.Request("http://127.0.0.1:5061/api/shipment-bundle/shipments"+path,
+    req=urllib.request.Request("http://127.0.0.1:5066/api/shipment-bundle/shipments"+path,
         data=json.dumps(body).encode() if body is not None else None,headers=headers,method=method)
     # Snapshot the serialized wire body before later caller mutations can alter evidence.
     request_snapshot=json.loads(req.data) if req.data is not None else None
@@ -46,21 +46,21 @@ def snapshot():
     return json.loads(subprocess.check_output(["mongosh",URI,"--quiet","--eval",js],text=True))
 def start():
     env=dict(os.environ, Mongo__ConnectionString=URI,Mongo__DatabaseName=DB,JwtSettings__Secret=SECRET,
-             JwtSettings__Issuer="mod0183-runtime",JwtSettings__Audience="mod0183-runtime",ASPNETCORE_URLS="http://127.0.0.1:5061")
+             JwtSettings__Issuer="mod0183-runtime",JwtSettings__Audience="mod0183-runtime",ASPNETCORE_URLS="http://127.0.0.1:5066")
     log=open(OUT/"service.log","a")
     p=subprocess.Popen(["dotnet",str(ROOT/"services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll")],
                        cwd=ROOT,env=env,stdout=log,stderr=subprocess.STDOUT)
     for _ in range(100):
         if p.poll() is not None:raise RuntimeError("Service exited; inspect service.log")
         try:
-            urllib.request.urlopen("http://127.0.0.1:5061/health",timeout=.5).close()
+            urllib.request.urlopen("http://127.0.0.1:5066/health",timeout=.5).close()
             return p
         except (OSError,urllib.error.URLError):time.sleep(.1)
     p.terminate();p.wait();raise RuntimeError("Startup timeout")
 def stop(p):p.terminate();p.wait(timeout=15)
 # Never replace an existing listener.
 with socket.socket() as s:
-    if s.connect_ex(("127.0.0.1",5061))==0:raise RuntimeError("5061 occupied; refusing to interfere")
+    if s.connect_ex(("127.0.0.1",5066))==0:raise RuntimeError("5066 occupied; refusing to interfere")
 p=start()
 try:
     body=contract["paths"]["/shipments"]["post"]["requestBody"]["content"]["application/json"]["example"]

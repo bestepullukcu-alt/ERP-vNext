@@ -18,7 +18,7 @@ def call(method='POST',path='',body=None,key='key',expected=201,t=T,l=L,permissi
     if auth: headers['Authorization']='Bearer '+token(t,l,permissions)
     headers.update(overrides or {})
     payload=json.dumps(body,ensure_ascii=True).encode() if body is not None else None
-    request=urllib.request.Request('http://127.0.0.1:5061/api/shipment-bundle/carriers'+path,data=payload,headers=headers,method=method)
+    request=urllib.request.Request('http://127.0.0.1:5066/api/shipment-bundle/carriers'+path,data=payload,headers=headers,method=method)
     # Capture immutable bytes at the transport boundary, before executing the request.
     sent=copy.deepcopy(json.loads(payload) if payload else None)
     try: response=urllib.request.urlopen(request)
@@ -39,17 +39,17 @@ def snapshot():
     return json.loads(subprocess.check_output(['mongosh',URI,'--quiet','--eval',js],text=True))
 def start():
     binary=ROOT/'services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll'
-    env=dict(os.environ,Mongo__ConnectionString=URI,Mongo__DatabaseName=DB,JwtSettings__Secret=SECRET,JwtSettings__Issuer='carrier-runtime',JwtSettings__Audience='carrier-runtime',ASPNETCORE_URLS='http://127.0.0.1:5061')
+    env=dict(os.environ,Mongo__ConnectionString=URI,Mongo__DatabaseName=DB,JwtSettings__Secret=SECRET,JwtSettings__Issuer='carrier-runtime',JwtSettings__Audience='carrier-runtime',ASPNETCORE_URLS='http://127.0.0.1:5066')
     log=open(OUT/'service.log','a'); p=subprocess.Popen([os.environ.get('DOTNET','/Users/natig/.dotnet/dotnet'),str(binary)],cwd=ROOT,env=env,stdout=log,stderr=subprocess.STDOUT)
     processes.append({'pid':p.pid,'binarySha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'startedAt':time.time()})
     for _ in range(150):
         if p.poll() is not None: raise RuntimeError('Service exited')
-        try: urllib.request.urlopen('http://127.0.0.1:5061/health',timeout=.5).close();return p
+        try: urllib.request.urlopen('http://127.0.0.1:5066/health',timeout=.5).close();return p
         except (OSError,urllib.error.URLError):time.sleep(.1)
     p.terminate();p.wait();raise RuntimeError('startup timeout')
 def stop(p):p.terminate();p.wait(timeout=15)
 with socket.socket() as s:
-    if s.connect_ex(('127.0.0.1',5061))==0:raise RuntimeError('5061 occupied')
+    if s.connect_ex(('127.0.0.1',5066))==0:raise RuntimeError('5066 occupied')
 p=start()
 try:
     body={'carrierCode':' C ','displayName':' ','supportedModes':['Road','Road'],'externalReference':None}

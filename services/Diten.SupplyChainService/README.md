@@ -1,6 +1,6 @@
 # MOD-0183 bounded Shipment Tracking & POD
 
-Five-layer .NET 8 service on 127.0.0.1:5061. Backend R1 core only, not complete
+Five-layer .NET 8 service on 127.0.0.1:5066. Backend R1 core only, not complete
 SHIPMENT-BUNDLE, module pack or DCP-009 acceptance.
 
 ## Configuration

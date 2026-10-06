@@ -12,7 +12,7 @@ def main():
     from http.server import ThreadingHTTPServer
     mock=ThreadingHTTPServer(("127.0.0.1",0),ReferenceHandler); threading.Thread(target=mock.serve_forever,daemon=True).start()
     # Production port is fixed by the approved service contract. No other DB or listener is used.
-    api_url="http://127.0.0.1:5061"; env=os.environ.copy(); env.update({"ASPNETCORE_URLS":api_url,"Mongo__ConnectionString":mongo,"Mongo__DatabaseName":"diten_mod0185_restart_probe","JwtSettings__Secret":SECRET.decode(),"JwtSettings__Issuer":"mod0185-runtime","JwtSettings__Audience":"mod0185-runtime","Loads__ReferenceBaseUrl":f"http://127.0.0.1:{mock.server_port}/"})
+    api_url="http://127.0.0.1:5066"; env=os.environ.copy(); env.update({"ASPNETCORE_URLS":api_url,"Mongo__ConnectionString":mongo,"Mongo__DatabaseName":"diten_mod0185_restart_probe","JwtSettings__Secret":SECRET.decode(),"JwtSettings__Issuer":"mod0185-runtime","JwtSettings__Audience":"mod0185-runtime","Loads__ReferenceBaseUrl":f"http://127.0.0.1:{mock.server_port}/"})
     logs=tempfile.TemporaryFile(mode="w+b"); processes=[]
     try:
         tenant,le,actor,correlation=[str(uuid.uuid4()) for _ in range(4)]; shipment=ReferenceHandler.shipment_id; carrier=ReferenceHandler.carrier_id

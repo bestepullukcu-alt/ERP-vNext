@@ -55,14 +55,14 @@ def request(url, method="GET", body=None, headers=None):
 def free_port():
     with socket.socket() as s: s.bind(("127.0.0.1",0)); return s.getsockname()[1]
 def main():
-    p=argparse.ArgumentParser(); p.add_argument("--mongo",default=os.getenv("MOD0185_TEST_MONGO")); p.add_argument("--api-base",default="http://127.0.0.1:5061"); p.add_argument("--evidence",required=True); p.add_argument("--start-local",action="store_true"); a=p.parse_args()
+    p=argparse.ArgumentParser(); p.add_argument("--mongo",default=os.getenv("MOD0185_TEST_MONGO")); p.add_argument("--api-base",default="http://127.0.0.1:5066"); p.add_argument("--evidence",required=True); p.add_argument("--start-local",action="store_true"); a=p.parse_args()
     if not a.mongo or "127.0.0.1:27785" not in a.mongo: raise SystemExit("Provide isolated MOD0185_TEST_MONGO on port 27785; no fallback is allowed.")
     if not a.start_local and not os.environ.get("MOD0185_PROBE_JWT_SECRET"): raise SystemExit("external API: set MOD0185_PROBE_JWT_SECRET to the lane signing value (never printed)")
     if not API_DLL.is_file(): raise SystemExit(f"Build API first; missing {API_DLL}")
     mock=None; api=None; logs=None
     try:
         if a.start_local:
-            if a.api_base != "http://127.0.0.1:5061": raise SystemExit("--start-local binds only approved service port 5061")
+            if a.api_base != "http://127.0.0.1:5066": raise SystemExit("--start-local binds only approved service port 5066")
             ReferenceHandler.shipment_id=str(uuid.uuid4()); ReferenceHandler.carrier_id=str(uuid.uuid4())
             mock=http.server.ThreadingHTTPServer(("127.0.0.1",free_port()),ReferenceHandler); mock_thread=threading.Thread(target=mock.serve_forever,daemon=True); mock_thread.start()
             logs=tempfile.TemporaryFile(mode="w+b")

@@ -1,9 +1,9 @@
 # Diten ERP - All-in-One Start Script for Windows with Watch (Hot Reload)
 Write-Host "🚀 Starting Diten ERP Multi-Service Suite with WATCH (Hot Reload) on Windows..." -ForegroundColor Cyan
 
-# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058, 5059, 5060, 5065)
-Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059, 5060, 5065..." -ForegroundColor Yellow
-Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059,5060,5065 -ErrorAction SilentlyContinue | 
+# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061, 5066)
+Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061, 5066..." -ForegroundColor Yellow
+Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059,5060,5061,5066 -ErrorAction SilentlyContinue | 
     Select-Object -ExpandProperty OwningProcess | 
     Unique | 
     ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
@@ -35,7 +35,7 @@ Launch-Service -Name "DevEnablement" -Path "services/Diten.DevEnablementService/
 Launch-Service -Name "Platform" -Path "services/Diten.Platform/src/Diten.Platform.API" -Port 5057
 Launch-Service -Name "Hcm" -Path "services/Diten.HcmService/src/Diten.HcmService.Api" -Port 5060
 Launch-Service -Name "Mdm" -Path "services/Diten.MdmService/src/Diten.MdmService.Api" -Port 5059
-Launch-Service -Name "Crm" -Path "services/Diten.CrmService/src/Diten.CrmService.Api" -Port 5065
+Launch-Service -Name "Crm" -Path "services/Diten.CrmService/src/Diten.CrmService.Api" -Port 5061
 Launch-Service -Name "Gateway" -Path "gateway/Diten.ApiGateway" -Port 5000
 Launch-Service -Name "Web" -Path "frontend/Diten.Web" -Port 5001
 

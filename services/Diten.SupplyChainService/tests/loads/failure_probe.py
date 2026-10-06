@@ -101,15 +101,15 @@ def main():
             auth={'Authorization':'Bearer '+token(tenant,le,actor),'X-Tenant-Id':tenant,'X-Legal-Entity-Id':le,'X-Correlation-Id':correlation,'Idempotency-Key':idempotency}
             body={'carrierId':str(uuid.uuid4()),'shipmentIds':[str(uuid.uuid4())],'mode':'Road','plannedDepartAt':'2030-01-01T00:00:00Z','stops':[{'sequence':1,'locationReferenceId':'','action':'Pickup'},{'sequence':2,'locationReferenceId':'dest','action':'Delivery'}]}
             before=scoped_counts(a.mongo, tenant, le, f'{name}-before')
-            env=os.environ.copy(); env.update({'ASPNETCORE_URLS':'http://127.0.0.1:5061','Mongo__ConnectionString':a.mongo,'Mongo__DatabaseName':'diten_mod0185_failure_probe','JwtSettings__Secret':SECRET.decode(),'JwtSettings__Issuer':'mod0185-runtime','JwtSettings__Audience':'mod0185-runtime','Loads__ReferenceBaseUrl':url})
+            env=os.environ.copy(); env.update({'ASPNETCORE_URLS':'http://127.0.0.1:5066','Mongo__ConnectionString':a.mongo,'Mongo__DatabaseName':'diten_mod0185_failure_probe','JwtSettings__Secret':SECRET.decode(),'JwtSettings__Issuer':'mod0185-runtime','JwtSettings__Audience':'mod0185-runtime','Loads__ReferenceBaseUrl':url})
             proc=subprocess.Popen(['dotnet',str(API_DLL)],cwd=ROOT,env=env,stdout=logs,stderr=subprocess.STDOUT)
             try:
                 deadline=time.time()+25
                 while time.time()<deadline:
                     try:
-                        if request('http://127.0.0.1:5061/health')[0]==200: break
+                        if request('http://127.0.0.1:5066/health')[0]==200: break
                     except Exception: time.sleep(.2)
-                status,headers,raw,_=request('http://127.0.0.1:5061/api/shipment-bundle/loads','POST',body,auth)
+                status,headers,raw,_=request('http://127.0.0.1:5066/api/shipment-bundle/loads','POST',body,auth)
                 payload=json.loads(raw)
                 after=scoped_counts(a.mongo, tenant, le, f'{name}-after')
                 delta=assert_no_partial(before, after)
