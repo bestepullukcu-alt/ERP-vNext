@@ -1298,17 +1298,19 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
          * nothing to press.
          *
          * Allowed ONLY when MOD-0023 says the current review was refused. That verdict is READ from the instance,
-         * never assumed from the lifecycle: a task still waiting on its reviewer takes the ordinary path below and
-         * is refused, because resubmitting work someone is holding right now would silently replace their review.
+         * never assumed from the lifecycle: a task still waiting on its reviewer is refused in the held-link block
+         * below with REVIEW_PENDING, because resubmitting work someone is holding right now would silently replace
+         * their review.
          */
         /*
          * D2-FIX3 item 2 — THE HELD LINK IS READ WHATEVER THE LIFECYCLE. This used to be asked only in PendingReview, so a
          * task whose review was still open but whose lifecycle had been rewound (a hand-over before D2-FIX3, or data left
          * that way) took the ordinary path: a new round started under a new key, the link was overwritten and the first
          * review stayed decidable with nobody reading it. Now a held review MOD-0023 has not closed refuses the submission
-         * in every lifecycle — in every lifecycle with REVIEW_PENDING (in PendingReview since the
-         * task-request merge; it answered the lifecycle's INVALID_STATE there before). A closed one (refused, withdrawn, approved) lets a new round begin; the resubmission self-loop
-         * (PendingReview → PendingReview) still exists only in PendingReview — the lifecycle matrix is not touched.
+         * with REVIEW_PENDING in every lifecycle (in PendingReview too since the task-request merge — it answered the
+         * lifecycle's INVALID_STATE there before). A closed one (refused, withdrawn, approved) lets a new round begin; the
+         * resubmission self-loop (PendingReview → PendingReview) still exists only in PendingReview — the lifecycle matrix
+         * is not touched.
          */
         var resubmitting = false;
         if (task.ReviewWorkflowInstanceId is { } heldInstance)
