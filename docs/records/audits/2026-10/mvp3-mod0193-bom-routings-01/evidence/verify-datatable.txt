@@ -1,0 +1,107 @@
+[shell] _DataTable.cshtml calls _ListShell — markers resolved from the model setup (TableId='dt-boms', DataMode='server', HasSelection=false) and frontend/Diten.Web/Views/Shared/Components/DataTable/_ListShell.cshtml
+[factory] index.js calls DitenDataTable.createList (dataMode='server') — 15/15 mechanics verified in frontend/Diten.Web/wwwroot/assets/js/diten-datatable.js
+
+Golden DataTable Verify Report
+================================
+Passed: 95
+Failed: 1
+
+[PASS] Index.cshtml exists
+[PASS] _Filter.cshtml exists
+[PASS] _DataTable.cshtml exists
+[PASS] _IndexL10n.cshtml exists
+[PASS] index.js exists
+[PASS] index.l10n.js exists
+[PASS] dt-defaults.js exists
+[PASS] backbone-custom.css exists
+[PASS] Compact reference has Create.cshtml
+[PASS] Compact reference has Edit.cshtml
+[PASS] Compact reference has Details.cshtml
+[PASS] Compact reference has _Form.cshtml
+[PASS] Data mode declared: server
+[PASS] Server mode: DataTables serverSide is on
+[PASS] Server mode: no client-side filter hook
+[PASS] Server mode: export declared server-side (BL-452 — CSV/Excel = every matching row, not the page)
+[PASS] No hard-coded page cap in the page's JS
+[PASS] Selection column ↔ bulk JS
+[PASS] Selection column ↔ bulk bar
+[PASS] Shaped placeholder: shared _TableSkeleton partial
+[PASS] List goes through the shared layer (createCrudTable / DtDefaults.create)
+[PASS] Index.cshtml includes <partial name="_Filter" />
+[PASS] Index.cshtml uses _LayoutTenantShell
+[PASS] Index.cshtml does NOT use legacy _LayoutBackbone
+[PASS] DataTable markup has #skeleton-loader
+[PASS] Compact Index does not include create/edit offcanvas
+[PASS] Compact _Form.cshtml matches Details.cshtml section/card map
+[PASS] Optional numeric/date fields use nullable ViewModel types
+[PASS] Required label markers match ViewModel required metadata
+[PASS] Index.cshtml shows @Localizer["PageDescription"]
+[PASS] _Filter.cshtml has #inlineFilterHost
+[PASS] _Filter.cshtml has #inlineFilterCollapse
+[PASS] _Filter.cshtml uses pt-0 pb-3 wrapper
+[PASS] _Filter.cshtml does not use pt-2
+[PASS] index.js does not add mx-* to inlineFilterHost
+[PASS] Inline filter host aligns with px-3
+[PASS] index.js references #btnFilterApply
+[PASS] index.js references #btnFilterReset
+[PASS] Apply click updates Save View visibility
+[PASS] Save View payload has non-empty default name
+[FAIL] personalizationClient sends tenant header only for tenant users
+  - Expected shared personalizationClient to send X-Tenant-Id for tenant_user Save View requests while omitting it for platform actors (file: frontend/Diten.Web/wwwroot/assets/js/personalization-client.js)
+[PASS] Reset click prevents native form reset
+[PASS] Reset click recalculates Save View dirty visibility
+[PASS] Reset baseline is factory table state
+[PASS] Reset click restores full factory table state
+[PASS] Filter control change does not toggle Save View
+[PASS] dt-defaults.js topStart rowClass matches golden toolbar contract
+[PASS] dt-defaults.js bottomStart rowClass matches golden toolbar contract
+[PASS] backbone-custom.css has MOD-0022 media query
+[PASS] Responsive toolbar reserves top safe-area (padding-top)
+[PASS] Export button height aligned (dt-export-collection-btn min-block-size)
+[PASS] backbone-custom.css has shared inline filter Select2 styling
+[PASS] Inline filter styling follows form-select-sm standard
+[PASS] Index.cshtml does not embed inline filter CSS in @section Styles
+[PASS] Index.cshtml does not embed toolbar CSS in @section Styles
+[PASS] Index.cshtml includes <partial name="_IndexL10n" />
+[PASS] Index.cshtml includes script: ~/assets/js/Manufacturing/Boms/index.l10n.js
+[PASS] Index.cshtml does not inline-assign window.L10n keys
+[PASS] _IndexL10n.cshtml renders application/json payload
+[PASS] index.l10n.js parses payload JSON
+[PASS] index.l10n.js merges payload into window.L10n
+[PASS] _IndexL10n.cshtml provides Active
+[PASS] _IndexL10n.cshtml provides Passive
+[PASS] _IndexL10n.cshtml provides Unknown
+[PASS] _IndexL10n.cshtml provides Actions
+[PASS] _IndexL10n.cshtml provides Edit
+[PASS] _IndexL10n.cshtml provides ViewDetails
+[PASS] _IndexL10n.cshtml provides QuickView
+[PASS] _IndexL10n.cshtml provides AreYouSure
+[PASS] _IndexL10n.cshtml provides Cancel
+[PASS] _IndexL10n.cshtml provides Search
+[PASS] _IndexL10n.cshtml provides Export
+[PASS] _IndexL10n.cshtml provides Import
+[PASS] _IndexL10n.cshtml provides Filter
+[PASS] _IndexL10n.cshtml provides Apply
+[PASS] _IndexL10n.cshtml provides Reset
+[PASS] _IndexL10n.cshtml provides ShowAll
+[PASS] _IndexL10n.cshtml provides SaveView
+[PASS] _IndexL10n.cshtml provides ColumnVisibility
+[PASS] _IndexL10n.cshtml provides Status
+[PASS] Index.cshtml has <table id="..." data-dt-standard="v2">
+[PASS] Index.cshtml includes script: ~/assets/js/Manufacturing/Boms/index.js
+[PASS] Index.cshtml has no inline onclick=
+[PASS] Index.cshtml does not define/call populateOffcanvas(...)
+[PASS] index.js uses DataTables v2 constructor (new DataTable(...))
+[PASS] index.js uses window.DtDefaults.create(...)
+[PASS] index.js uses DtDefaults.exportButtons(...)
+[PASS] index.js includes .js-quick-view selector
+[PASS] index.js uses event delegation (closest('.js-quick-view'))
+[PASS] index.js defines getAuthHeaders()
+[PASS] index.js uses getAuthHeaders() in fetch headers
+[PASS] index.js does not read HttpOnly auth cookies or build Bearer tokens
+[PASS] direct-gateway profile uses window.API service base
+[PASS] index.js does not use jQuery DataTable plugin (.(DataTable|dataTable)(...))
+[PASS] Bulk surface: not applicable — _DataTable declares HasSelection = false (no selection column, no bulk endpoint)
+[PASS] index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)
+
+Result: FAIL

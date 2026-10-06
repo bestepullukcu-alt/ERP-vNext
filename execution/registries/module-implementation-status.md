@@ -156,3 +156,12 @@ Ordered by how much they block verticals:
 ---
 
 *Maintenance: update a module's row here whenever its implementation state changes (new frontend, tests added, feature completed). This file — not the identity registry — is the home for status. See the registry's link to this file.*
+
+---
+
+## Supply Chain Execution — Manufacturing (MVP-3)
+
+| Module ID | Durum | % | Var olan | Eksik |
+|---|---|---|---|---|
+| MOD-0193 BOM & Routings | Backend+Frontend | 85 | `Diten.ManufacturingService` (5067): BomVersion (components + routing), Draft→Effective→Superseded, single-Effective unique index, cycle guard, frozen `current`/`version`/`explode` + v1.1.0 list/export/draft/release/delete/history; history in the same Mongo transaction (AUD-001 path c); 49 service tests (real replica set); `/Manufacturing/Boms` Golden Compact server-mode list + Create/Edit/Details, 7 languages; gateway `/api/bom` → 5067. Audit 2026-10-06. | Screens not driven in a browser; Platform self-registration + tenant entitlement not exercised; MOD-0290 validate permissive (F-0193-07); MOD-0209 format-only (F-0193-04); future-dated release (F-0193-01); item picker (F-0193-02) |
+

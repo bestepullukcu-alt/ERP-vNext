@@ -7,7 +7,7 @@ shell: tenant
 golden_reference: compact
 data_mode: server
 entity_base: EntityBase
-status: ready-for-dev
+status: review
 owner: supply-chain-execution (MVP-3 lane) / control-tower
 branch: claude/bold-bell-52tgsz
 started: 2026-10-06
@@ -19,7 +19,7 @@ approved_on: 2026-10-06
 
 # MOD-0193 — BOM & Routings
 
-> **Status guard.** `ready-for-dev` — DCP-009 `approved` (CT 2026-09-11) + bu pack `ready-for-dev` (ürün sahibi, 2026-10-06: "MVP-3 … tamamla", servis kararı "Ayrı servis") → **kod yetkili yalnız MOD-0193 için** (CAP-001 §7). DCP-009'un diğer üyeleri için `runtime_code_allowed` değişmez.
+> **Status guard.** `review` (2026-10-06 — built and CT-verified, owner acceptance pending; record `docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/`). Was `ready-for-dev` — DCP-009 `approved` (CT 2026-09-11) + bu pack `ready-for-dev` (ürün sahibi, 2026-10-06: "MVP-3 … tamamla", servis kararı "Ayrı servis") → **kod yetkili yalnız MOD-0193 için** (CAP-001 §7). DCP-009'un diğer üyeleri için `runtime_code_allowed` değişmez.
 > **Lane guard.** Bu pack MVP-3'tür. MVP-1 (0173–0177), MVP-2 (0140–0145), MVP-4 (0188–0192), MVP-5 (0178–0182), MVP-6 (0183–0187, 0147/0148) dosyalarına **dokunmaz** (ürün sahibi, 2026-10-06: "sadece mvp3 yapılacak diğer mvp'lere dokunma").
 > **Contract authority.** API yüzeyi `docs/analysis/contracts/bom.openapi.yaml`'dan türetilir (x-owner MOD-0193, FROZEN v1). Üç frozen operasyonun (`getCurrentBom`, `getBomVersion`, `explodeBom`) şekli değişmez; yönetim uçları **additive** (v1.1.0) eklenir. Uydurma yasak (K12).
 > **Identity guard.** Yeni `MOD-xxxx` basılmaz. `verify_module_id.py . --check-id MOD-0193 --name "BOM & Routings"` → **exit 0** (2026-10-06, kanıt §19).
@@ -53,11 +53,11 @@ Integration Contract = BOM (frozen). Rapor §14.7 / §23: **kimlik MOD-0290'da, 
 - **Commands:** `CreateBomDraftCommand`, `UpdateBomDraftCommand`, `ReleaseBomVersionCommand`, `DeleteBomDraftCommand`.
 - **Queries:** `GetBomListQuery`, `GetBomVersionQuery`, `GetCurrentBomQuery`, `ExplodeBomQuery`, `GetBomHistoryQuery`.
 - **API (frozen v1.0.0):** `GET /api/bom/{itemId}/current?asOfDate=` · `GET /api/bom/version/{bomVersionId}` · `POST /api/bom/explode`.
-- **API (additive v1.1.0):** `GET /api/bom/versions` (sayfalı liste) · `POST /api/bom/versions` (taslak) ·
+- **API (additive v1.1.0):** `GET /api/bom/versions` (platform server-mode liste sözleşmesi: `start/length/search/orderBy/orderDir/status` → `{ data: { items, total, filteredTotal } }`) · `GET /api/bom/versions/export` (BL-452, CSV/XLSX, 7 dil) · `POST /api/bom/versions` (taslak) ·
   `PUT /api/bom/version/{bomVersionId}` (taslak düzenle) · `POST /api/bom/version/{bomVersionId}/release` ·
   `DELETE /api/bom/version/{bomVersionId}` (yalnız taslak, soft) · `GET /api/bom/version/{bomVersionId}/history`.
 - **Frontend route:** `/Manufacturing/Boms` (tenant shell).
-- **Permissions:** `manufacturing.bom.read|create|update|release|delete`.
+- **Permissions:** `manufacturing.bom.read|create|update|release|delete|export` (export: BL-452 list export).
 
 ## 4. Entity Fields
 
@@ -199,7 +199,7 @@ L10n: tenant modülü → **7 dil**.
 ## 14. Authorization Convention
 
 `[Authorize]` + `[HasPermission("manufacturing.bom.{action}")]`, actions `read` (liste, sürüm, current, explode, geçmiş),
-`create`, `update`, `release`, `delete`. Actor: tenant user. Her uygulanan anahtar manifestte bildirilir (sayfa
+`create`, `update`, `release`, `delete`, `export`. Actor: tenant user. Her uygulanan anahtar manifestte bildirilir (sayfa
 `RequiredPermission` ya da action `PermissionKey`) — bildirilmeyen anahtar Auth'a ulaşmaz (MVP-6 recipe 6.4 dersi).
 
 ## 15. Gateway / API Routing Decision
@@ -296,3 +296,22 @@ okunur. Merkezi günlük ("bu kiracıda dün kim ne yaptı") bu izle cevaplanmaz
 | DeleteBomDraftCommand | `Deleted` | c |
 
 Sorgular (liste, sürüm, current, explode, geçmiş) yazmaz; `explode` POST olsa da kalıcı kayıt değiştirmez (sorgu türü).
+
+## 22. Implementation record (2026-10-06)
+
+Built on `claude/bold-bell-52tgsz` (commits `8269e7cbd` governance · `2e7a9d06b` service · `7ed5ee378` screens + gateway).
+CT verification record: `docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/REPORT.md`.
+
+| AC (§16) | evidence |
+|---|---|
+| 1–7 | `BomApiTests` (49/49, real replica set) + live gateway run 13/13 (E3) |
+| 8 | `Every_write_leaves_a_history_entry_readable_on_the_record`, `When_the_history_cannot_be_written_the_bom_is_not_written_either`; sabotage red |
+| 9 | `Another_tenant_or_legal_entity_never_sees_or_changes_a_bom`; sabotage red; live: other tenant / LE 404 |
+| 10 | Web build; `verify_datatable_page.py` 95 PASS (one shared, pre-existing FAIL); `BomsL10nTests` 3/3; Web suite 437/437 — **not driven in a browser** |
+| 11 | ocelot `/api/bom` pair → 5067; live gateway call; `OcelotConfigurationTests` knows 5067 |
+| 12 | architecture 39/39 |
+
+Deviations, stated: the list endpoint follows the platform list contract (BL-440) instead of the first draft's
+`page/pageSize`; the manifest's sidebar domain is `Manufacturing` (not `SupplyChainExecution`, which MVP-6's branch
+already adds — the same resx key twice would break the build at merge); `export` is a sixth permission (BL-452).
+

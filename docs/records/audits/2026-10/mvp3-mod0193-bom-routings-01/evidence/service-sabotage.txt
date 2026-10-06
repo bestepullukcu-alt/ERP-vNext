@@ -1,0 +1,5 @@
+  Failed Diten.ManufacturingService.Tests.Api.BomApiTests.Another_tenant_or_legal_entity_never_sees_or_changes_a_bom [101 ms]
+Failed!  - Failed:     1, Passed:    43, Skipped:     0, Total:    44, Duration: 2 s - Diten.ManufacturingService.Tests.dll (net8.0)
+  Failed Diten.ManufacturingService.Tests.Api.BomApiTests.When_the_history_cannot_be_written_the_bom_is_not_written_either [16 ms]
+  Failed Diten.ManufacturingService.Tests.Api.BomApiTests.Every_write_leaves_a_history_entry_readable_on_the_record [90 ms]
+Failed!  - Failed:     2, Passed:    42, Skipped:     0, Total:    44, Duration: 2 s - Diten.ManufacturingService.Tests.dll (net8.0)

@@ -105,4 +105,5 @@ DCP-002 preflight: MOD-0173/0174/0178 exit 0 (proven). Registry rows added 2026-
 - **Servis sapması (ürün sahibi kararı 2026-10-06):** MOD-0193 `Diten.SupplyChainService`'e değil **`Diten.ManufacturingService` (port 5067)**'e yazılır. Sebep: SupplyChainService yalnız MVP-6'nın birleşmemiş dalında (PR #134) var; oraya yazmak MVP-6'nın paylaşılan dosyalarına dokunmak demekti ve sahip "sadece MVP-3, diğer MVP'lere dokunma" dedi. Manufacturing Execution (0193–0197) ayrı bounded context olarak bu servise toplanır.
 - **OD-2 (BOM sırası) — MVP-3 için kapandı:** BOM contract-first, MVP-1 runtime'ını beklemez (BOM stoğa yazmaz/okumaz; G1 = contract freeze). Pharma composition: kimlik MOD-0290, miktar/formülasyon MOD-0193 (rapor §23.3).
 - **Bağımlılık waiver'ları:** W-0193-01 MOD-0209 Change Control (repo'da yok → `IChangeControlGate` seam), W-0193-02 MOD-0003 Data Contract Registry (planned/missing → contract repo'da pinli). Ayrıntı pack §7.
+- **MOD-0193 built (2026-10-06):** service + screens + gateway, CT-verified (E3 live gateway run 13/13; record `docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/`). Pack `review` — owner acceptance pending.
 
