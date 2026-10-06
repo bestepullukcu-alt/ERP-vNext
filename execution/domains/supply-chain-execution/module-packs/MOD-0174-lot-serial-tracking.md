@@ -955,6 +955,21 @@ the role screen (persisted after reload); after re-login the menu shows "Lot / S
 decisions: keep typed-lot entry open in the owner's tenant for now (no empty commit); leave the seed tenant's 6 G1 test
 groups unmigrated. No commit was made; W-UI-02 recorded in FU01 §19 as "mechanism delivered, closure per tenant".
 
+### WP-0174-P5 (agent result 2026-10-06, pending CT) — L10n fr / es / zh / ar / ru
+
+The six Traceability resx families (`LotsIndex` 217, `LotFieldIndex` 44, `SerialsIndex` 81, `LotMovementsIndex` 113,
+`LotTraceIndex` 102, `LotMigrationIndex` 134 keys) written in fr, es, zh, ar and ru from the en template (same keys, same
+order, placeholders kept) and the five Nav keys appended to `SharedResource.{fr,es,zh,ar,ru}` — commit `06b863752`;
+en / tr, code, views, scripts, manifest and FU01 resx unchanged. WP glossary for lot / serial terms; FU01 wording for
+stock statuses, movement types and the Stock Ledger. `TraceL10nAndGuardTests` now checks 7 files per family (key order,
+placeholders, no empty / TODO, no English copy outside the per-language `SameAsEnglish` allowlist with reasons, stale
+allowlist guard) and the Nav keys in 7 languages. Tests: Web 604/606 → **607/607** (the 2 Nav-guard reds green + 1 new),
+Inventory 530/530, architecture 18/18, build 0 new warnings; sabotages (a) fr key deleted, (b) ar value = en, (c)
+`Nav.Page.LOTMIGRATION` removed from zh → red, restored clean. Own Web 5195 → owner Gateway 5000: Lot Explorer and Lot
+Detail in ar (RTL) and ru, no header overflow. Open for the CT: FU01 term conflicts T-1…T-5 (ar `الدفعة` vs `التشغيلة`,
+ru Продукт / Товар, en movement-type wording) and findings F-1…F-4 (raw history values, ru column folding, shell
+"Search" placeholders). Evidence `docs/records/audits/2026-10/mod-0174-p5-evidence-2026-10-06.md`.
+
 ## 20. Follow-up Items
 
 - **W-UI-02 closure** in the FU01 pack (CT records after P4).
