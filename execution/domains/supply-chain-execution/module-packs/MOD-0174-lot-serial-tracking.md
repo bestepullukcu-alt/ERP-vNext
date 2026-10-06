@@ -875,7 +875,17 @@ covers the meaning. **FU-0174-INT-01 closed (CT break-glass, SOP §3.1):** the I
 sub-folder; it now finds `trace.openapi.yaml` by name under `docs/` (same as the Inventory `RepoPaths`) — gateway tests
 88/89 (only the known FU-INT1-01), repo architecture tests 18/18. The CT missed this in the INT acceptance (repo
 architecture tests were not run) — lesson: run them at every acceptance that adds a test file. Live checks after the
-fast-forward follow below.
+fast-forward (MVP-1 branch → `8b062d335`, 2026-10-06; Inventory PID 7660 → 27024, gateway 43076 → 43132, Web restarted):
+G1 regression run `G1CU5UK` 46/46 (ledger unchanged for typed / no-lot postings, `Trace:EnforceRegisteredLots` off);
+`GET :5000/api/trace/lots` with a real login → 200; read-only Auth catalog: `inventory.stock.read` back to Module
+`inventory-ledger` (the INVENTORY-LEDGER reconcile re-attributed it) → **FU-0174-CAT-01 closed live**.
+
+**CT-D5a (CT, 2026-10-06 — revises the `NEWLOTQUICK` part of CT-D5):** the "Yeni lot oluştur" shortcut is an in-form
+control of the Stock Ledger lot field, not a manifest action. It is NOT declared in the INVENTORY-LEDGER manifest (a
+`trace.*` key there would re-attribute `trace.lots.create` — FU-0174-CAT-01 mechanism); the view renders it only for a
+holder of `trace.lots.create`, and `createLot` enforces the same key server-side. The key stays declared by
+LOT-SERIAL-TRACKING (`NEWLOT` / `LOTCREATE`). §14 row `NEWLOTQUICK` is superseded by this note. Follow-up FU-0174-CAT-02
+(Platform/Auth owner): the catalog sync must not move `Module` across namespace owners.
 
 ## 20. Follow-up Items
 
