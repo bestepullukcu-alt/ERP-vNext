@@ -461,13 +461,14 @@ public sealed class PlatformAuthController : CustomBaseController
         await _passwordPolicyService.ValidateTenantPasswordAsync(PlatformTenantId, user.Id, request.NewPassword, "platform_reset_password", ct);
         var redeemedTokenHash = user.PasswordResetTokenHash!;
         var redeemState = _userRepository.CaptureState(user);
+        var wasActive = user.IsActive; // FIX9 (M4) — the switch as read: a plain deactivation landing meanwhile is not undone
         user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
         user.ClearPasswordChangeRequirement();
         user.Activate();
         user.ConfirmEmail();
         // BL-529 FIX2 — written only while this link is still the account's (not replaced by a newer reset, not used by a
         // parallel redemption).
-        if (!await _userRepository.TryWriteChangesAsync(user, redeemState, PlatformTenantId, new UserWriteCondition(PasswordResetTokenHash: redeemedTokenHash, DeactivatedByAdministrator: false), ct))
+        if (!await _userRepository.TryWriteChangesAsync(user, redeemState, PlatformTenantId, new UserWriteCondition(PasswordResetTokenHash: redeemedTokenHash, IsActive: wasActive, DeactivatedByAdministrator: false), ct))
         {
             return CreateActionResultInstance(Response<NoContent>.Fail("Password reset token is invalid or expired.", 400));
         }
