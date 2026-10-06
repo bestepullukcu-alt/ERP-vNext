@@ -23,6 +23,8 @@ public static class DependencyInjection
         // MOD-0290-FU02 — explicit Brand/Product class maps. Must run before any collection is resolved so the
         // write path and the query path agree on Guid representation from the very first request.
         Configurations.BrandProductClassMaps.Register();
+        // BL-552 FIX1 item 10 — the Global Product lifecycle request documents read a newer binary's fields.
+        Configurations.GlobalProductLifecycleClassMaps.Register();
 
         var connectionString = configuration["Mongo:ConnectionString"]
             ?? throw new InvalidOperationException("Configuration error: 'Mongo:ConnectionString' is missing.");

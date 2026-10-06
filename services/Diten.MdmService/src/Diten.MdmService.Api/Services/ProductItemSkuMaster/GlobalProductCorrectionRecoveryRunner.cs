@@ -1,4 +1,5 @@
 using Diten.MdmService.Api.Configuration;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Diten.MdmService.Domain.Enums;
@@ -59,9 +60,19 @@ public sealed class GlobalProductCorrectionRecoveryRunner(
                     var page = await repository.DiscoverRecoverableAsync(timeProvider.GetUtcNow().UtcTicks,
                         settings.BatchSize, operationCursor, cancellationToken);
                     var processor = scope.ServiceProvider.GetRequiredService<GlobalProductCorrectionWorkflowProcessor>();
+                    // BL-552 FIX1 item 8: the same legal-entity scope rule as every product-identity worker — an
+                    // out-of-scope (or suspended, fail-closed) product is not touched by this worker.
+                    var backgroundScope = scope.ServiceProvider.GetRequiredService<ProductIdentityBackgroundScope>();
+                    var scopeMode = await backgroundScope.ResolveAsync(cancellationToken);
                     foreach (var operation in page.Operations)
                     {
                         operations++;
+                        if (!await backgroundScope.InScopeAsync(scopeMode, operation.GlobalProductId, cancellationToken))
+                        {
+                            deferred++;
+                            cycle.NotClaimed();
+                            continue;
+                        }
                         try
                         {
                             var result = await processor.RecoverAsync(operation,

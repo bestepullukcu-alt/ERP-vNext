@@ -100,6 +100,9 @@ public sealed class GlobalProductRetirementRequestOperationRepository(
         GlobalProductRetirementRequestMutation mutation, CancellationToken cancellationToken = default)
     {
         if (claim.TenantId != TenantId || !Allowed(claim.Checkpoint, mutation.NextCheckpoint)) return false;
+        // BL-552 (the GSKU FIX7 store invariant): manual reconciliation is never "retryable" — a lock nobody sees.
+        if (mutation.NextCheckpoint == GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired
+            && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable) return false;
         var filter = Active
             & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.OperationId, claim.OperationId)
             & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.OperationFingerprint, claim.OperationFingerprint)
@@ -126,17 +129,52 @@ public sealed class GlobalProductRetirementRequestOperationRepository(
         if (mutation.DecisionTransitionSequence.HasValue) update = update.Set(x => x.DecisionTransitionSequence, mutation.DecisionTransitionSequence);
         if (mutation.DecisionTaskStatus is not null) update = update.Set(x => x.DecisionTaskStatus, mutation.DecisionTaskStatus);
         if (mutation.DecisionInstanceStatus is not null) update = update.Set(x => x.DecisionInstanceStatus, mutation.DecisionInstanceStatus);
+        update = mutation.Streak switch
+        {
+            RecoveryStreakWrite.Increment => update.Inc(x => x.FailedAttemptCount, 1),
+            RecoveryStreakWrite.Keep => update,
+            _ => update.Set(x => x.FailedAttemptCount, 0)
+        };
+        if (mutation.LastStartSentAtUtcTicksV1.HasValue)
+            update = update.Set(x => x.LastStartSentAtUtcTicksV1, mutation.LastStartSentAtUtcTicksV1);
         if (mutation.ReleaseLease) update = update.Set(x => x.LeaseOwner, null).Set(x => x.LeaseUntilUtcTicksV1, null);
         return (await _operations.UpdateOneAsync(filter, update, cancellationToken: cancellationToken)).ModifiedCount == 1;
     }
+
+    public Task ReleaseIfOwnedAsync(Guid operationId, string leaseOwner, long leaseUntilUtcTicks,
+        CancellationToken cancellationToken = default) =>
+        _operations.UpdateOneAsync(
+            Active & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.OperationId, operationId)
+            & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.LeaseOwner, leaseOwner)
+            & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.LeaseUntilUtcTicksV1, leaseUntilUtcTicks),
+            Builders<GlobalProductRetirementRequestOperation>.Update.Set(x => x.LeaseOwner, null).Set(x => x.LeaseUntilUtcTicksV1, null),
+            cancellationToken: cancellationToken);
+
+    // BL-552: only what is STUCK — manual reconciliation with the product's lock held, or past the retry limit and
+    // still retrying (the processor's own constant, an equality match). A request that ended is not counted.
+    public Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(Active & (
+            (Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.Checkpoint, GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired)
+             & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired))
+            | (Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.Retryable)
+               & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.LastFailureCode, GlobalProductRetirementRequestWorkflowProcessor.RetryLimitReached))),
+            cancellationToken: cancellationToken);
+
+    // BL-552: stuck (lock held) for a reason the requester's repeat cannot settle — a person has to (BL-530).
+    public Task<long> CountNeedingAPersonAsync(CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(Active
+            & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.Checkpoint, GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired)
+            & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+            & Builders<GlobalProductRetirementRequestOperation>.Filter.Nin(x => x.LastFailureCode, GlobalProductLifecycleStuckKinds.SettledByTheRequestersRepeat),
+            cancellationToken: cancellationToken);
 
     public async Task<GlobalProductRetirementRequestRecoverablePage> DiscoverRecoverableAsync(long nowUtcTicks,
         int limit, Guid? afterOperationId = null, CancellationToken cancellationToken = default)
     {
         if (nowUtcTicks <= 0 || limit is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(limit));
         var terminal = new[] { GlobalProductRetirementRequestCheckpoint.Completed,
-            GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired,
-            GlobalProductRetirementRequestCheckpoint.AwaitingMakerReplay };
+            GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired };
+        // BL-552: AwaitingMakerReplay is no longer skipped — the request parked there HOLDS the product's lock.
         var filter = Active & Builders<GlobalProductRetirementRequestOperation>.Filter.Nin(x => x.Checkpoint, terminal)
             & Builders<GlobalProductRetirementRequestOperation>.Filter.Or(
                 Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.NextAttemptAtUtcTicksV1, null),
@@ -191,10 +229,16 @@ public sealed class GlobalProductRetirementRequestOperationRepository(
         (GlobalProductRetirementRequestCheckpoint.Prepared, GlobalProductRetirementRequestCheckpoint.AwaitingMakerReplay) => true,
         (GlobalProductRetirementRequestCheckpoint.StartOutcomeUnknown, GlobalProductRetirementRequestCheckpoint.WorkflowStarted) => true,
         (GlobalProductRetirementRequestCheckpoint.AwaitingMakerReplay, GlobalProductRetirementRequestCheckpoint.WorkflowStarted) => true,
+        // BL-552 FIX1 item 9: a parked row whose start lookup could not answer waits where the worker looks.
+        (GlobalProductRetirementRequestCheckpoint.AwaitingMakerReplay, GlobalProductRetirementRequestCheckpoint.StartOutcomeUnknown) => true,
         (GlobalProductRetirementRequestCheckpoint.WorkflowStarted, GlobalProductRetirementRequestCheckpoint.AwaitingDecision) => true,
         (GlobalProductRetirementRequestCheckpoint.AwaitingDecision, GlobalProductRetirementRequestCheckpoint.DecisionObserved) => true,
         (GlobalProductRetirementRequestCheckpoint.DecisionObserved, GlobalProductRetirementRequestCheckpoint.DecisionApplied) => true,
         (GlobalProductRetirementRequestCheckpoint.DecisionApplied, GlobalProductRetirementRequestCheckpoint.Completed) => true,
+        // BL-552: the requester's same command puts a stuck request back; one whose release has to wait goes back
+        // where the worker looks again.
+        (GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired, GlobalProductRetirementRequestCheckpoint.WorkflowStarted or GlobalProductRetirementRequestCheckpoint.AwaitingDecision
+            or GlobalProductRetirementRequestCheckpoint.DecisionObserved or GlobalProductRetirementRequestCheckpoint.StartOutcomeUnknown) => true,
         (_, GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
         _ => false
     };

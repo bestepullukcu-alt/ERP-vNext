@@ -96,7 +96,8 @@ public sealed class GlobalProductRetirementRequestWorkflowProcessorTests
         Assert.False(result.Succeeded);
         Assert.Equal(GlobalProductRetirementRequestCheckpoint.DecisionObserved, operation.Checkpoint);
         Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, operation.RecoveryDisposition);
-        Assert.Equal("GLOBAL_PRODUCT_RETIREMENT_MANUAL_AUDIT_NOT_PERSISTED", operation.LastFailureCode);
+        // BL-552: the refused write keeps the store's own code (a concurrent write: retried, counted).
+        Assert.Equal("GLOBAL_PRODUCT_CONCURRENCY_CONFLICT", operation.LastFailureCode);
         Assert.Equal(1, products.ManualAuditAttempts);
     }
 
@@ -158,6 +159,16 @@ public sealed class GlobalProductRetirementRequestWorkflowProcessorTests
             GlobalProductActiveLifecycleOperationBinding binding, bool approved, LocalAuditIntent auditIntent,
             CancellationToken cancellationToken = default) => Task.FromResult(
                 new GlobalProductLifecycleWriteResult(false, product, "DEPENDENT_IDENTITIES_EXIST"));
+        // BL-552: an approved retirement that meets dependants ends and gives the lock back in the same write as its
+        // manual-reconciliation audit (the GSKU rule); that write is the one refused here.
+        public Task<GlobalProductLifecycleWriteResult> ReleaseLifecycleOperationAsync(Guid id, int expectedVersion,
+            GlobalProductActiveLifecycleOperationBinding binding, LocalAuditIntent auditIntent,
+            CancellationToken cancellationToken = default)
+        {
+            ManualAuditAttempts++;
+            return Task.FromResult(new GlobalProductLifecycleWriteResult(false, product,
+                "GLOBAL_PRODUCT_CONCURRENCY_CONFLICT"));
+        }
         public Task<GlobalProductLifecycleWriteResult> RecordRetirementConflictAsync(Guid id, int expectedVersion,
             GlobalProductActiveLifecycleOperationBinding binding, LocalAuditIntent auditIntent,
             CancellationToken cancellationToken = default)

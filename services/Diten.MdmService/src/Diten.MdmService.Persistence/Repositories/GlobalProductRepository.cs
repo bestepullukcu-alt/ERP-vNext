@@ -774,9 +774,7 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
                          x => x.LifecycleStatus,
                          ProductIdentityLifecycleStatus.IdentityApproved)
                      & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
-                     & Builders<GlobalProduct>.Filter.Size(
-                         x => x.ChildCreationAdmissions,
-                         0)
+                     & NoChildCreationAdmission
                      & Builders<GlobalProduct>.Filter.Where(
                          x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
         var update = Builders<GlobalProduct>.Update
@@ -841,7 +839,7 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             & Builders<GlobalProduct>.Filter.Eq(x => x.LifecycleStatus,
                 ProductIdentityLifecycleStatus.IdentityApproved)
             & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
-            & Builders<GlobalProduct>.Filter.Size(x => x.ChildCreationAdmissions, 0)
+            & NoChildCreationAdmission
             & Builders<GlobalProduct>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
         var update = Builders<GlobalProduct>.Update
             .Set(x => x.ActiveLifecycleOperation, binding)
@@ -1041,7 +1039,7 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
                 binding.BaseProductVersion)
             & Builders<GlobalProduct>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
         if (approved)
-            filter &= Builders<GlobalProduct>.Filter.Size(x => x.ChildCreationAdmissions, 0);
+            filter &= NoChildCreationAdmission;
         var update = Builders<GlobalProduct>.Update
             .Set(x => x.ActiveLifecycleOperation, null)
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
@@ -1495,7 +1493,22 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
 
         var existing = current.AuditIntents.SingleOrDefault(
             item => string.Equals(item.IdempotencyKey, auditIntent.IdempotencyKey, StringComparison.Ordinal));
-        if (existing is null) return null;
+        if (existing is null)
+        {
+            // BL-552 FIX1 item 1 (the GSKU PersistedWrite rule): the audit delivery worker moves a delivered intent to
+            // AuditIntentReceipts. A write whose intent was compacted is still this write — its exact repeat must be
+            // answered as done, not refused as a conflict (before: an interrupted request's repeat met "operation
+            // active" on its OWN lock and ended unseen, the lock held). A receipt of another write is a conflict.
+            var receipt = current.AuditIntentReceipts.SingleOrDefault(
+                item => string.Equals(item.IdempotencyKey, auditIntent.IdempotencyKey, StringComparison.Ordinal));
+            if (receipt is null) return null;
+            return receipt.IntentId == auditIntent.IntentId && receipt.TenantId == auditIntent.TenantId
+                   && !string.IsNullOrWhiteSpace(receipt.CentralAcknowledgement)
+                   && !string.IsNullOrWhiteSpace(receipt.CompactReceiptReference)
+                   && string.Equals(receipt.EvidenceHash, auditIntent.EvidenceHash, StringComparison.Ordinal)
+                ? new(true, current, IsReplay: true)
+                : new(false, current, "PRODUCT_IDENTITY_IDEMPOTENCY_CONFLICT");
+        }
 
         return existing.Operation == auditIntent.Operation
                && string.Equals(existing.EvidenceHash, auditIntent.EvidenceHash, StringComparison.Ordinal)
@@ -1584,6 +1597,12 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             _ => null
         };
     }
+
+    // BL-552 FIX1 item 12: "no child creation admitted" — an empty list, or no list at all (a product written before
+    // the field existed: in Mongo a missing field does not match $size 0, and such a product could take no lock).
+    private static FilterDefinition<GlobalProduct> NoChildCreationAdmission =>
+        Builders<GlobalProduct>.Filter.Size(x => x.ChildCreationAdmissions, 0)
+        | Builders<GlobalProduct>.Filter.Exists(x => x.ChildCreationAdmissions, false);
 
     private string? ValidateAuditIntent(
         Guid aggregateId,

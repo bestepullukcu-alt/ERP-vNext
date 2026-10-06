@@ -156,7 +156,27 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 // FIX3 S8: a start's "nothing arrived" is trusted after 2 s here (the fake engine answers at once).
                 ["GskuRetirementRequestWorkflowWorker__StartSettleSeconds"] = "2",
                 // FIX3 item 1: a low retry limit for the retirement request, so a test can reach it in a few cycles.
-                ["GskuRetirementRequestWorkflowWorker__QuarantineAfterFailedAttempts"] = "4"
+                ["GskuRetirementRequestWorkflowWorker__QuarantineAfterFailedAttempts"] = "4",
+                // BL-552 FIX1 items 4 and 7: the Global Product correction over HTTP and its runner. The hosted worker
+                // polls once an hour (its cycles are run by the tests themselves, through RunAsync).
+                ["GlobalProductCorrectionWorkflow__Enabled"] = "true",
+                ["GlobalProductCorrectionWorkflow__TemplateCode"] = "GP-CORRECTION",
+                ["GlobalProductCorrectionWorkflow__CandidatePrincipalIds__0"] = Approver.ToString("D"),
+                ["GlobalProductCorrectionWorkflowWorker__Enabled"] = "true",
+                ["GlobalProductCorrectionWorkflowWorker__PollIntervalSeconds"] = "3600",
+                ["GlobalProductCorrectionWorkflowWorker__LeaseSeconds"] = "10",
+                ["GlobalProductCorrectionWorkflowWorker__RetryDelaySeconds"] = "1",
+                ["GlobalProductCorrectionWorkflowWorker__MaxRetryDelaySeconds"] = "2",
+                ["GlobalProductCorrectionWorkflowWorker__StartSettleSeconds"] = "2",
+                ["GlobalProductCorrectionWorkflowWorker__QuarantineAfterFailedAttempts"] = "4",
+                // BL-552 flow 2: the Global Product retirement request's runner, driven by the tests the same way.
+                ["GlobalProductRetirementRequestWorkflowWorker__Enabled"] = "true",
+                ["GlobalProductRetirementRequestWorkflowWorker__PollIntervalSeconds"] = "3600",
+                ["GlobalProductRetirementRequestWorkflowWorker__LeaseSeconds"] = "10",
+                ["GlobalProductRetirementRequestWorkflowWorker__RetryDelaySeconds"] = "1",
+                ["GlobalProductRetirementRequestWorkflowWorker__MaxRetryDelaySeconds"] = "2",
+                ["GlobalProductRetirementRequestWorkflowWorker__StartSettleSeconds"] = "2",
+                ["GlobalProductRetirementRequestWorkflowWorker__QuarantineAfterFailedAttempts"] = "4"
             };
             foreach (var (key, value) in overrides)
             {

@@ -674,7 +674,10 @@ public static class GlobalProductWorkflowExecutionConfigurationRegistrations
                 "GLOBAL_PRODUCT_RETIREMENT_WORKER_CONFIGURATION_INVALID");
             return new GlobalProductRetirementRequestExecutionConfiguration(
                 TimeSpan.FromSeconds(options.LeaseSeconds),
-                TimeSpan.FromSeconds(options.RetryDelaySeconds));
+                TimeSpan.FromSeconds(options.RetryDelaySeconds),
+                options.QuarantineAfterFailedAttempts,
+                TimeSpan.FromSeconds(options.EffectiveMaxRetryDelaySeconds),
+                TimeSpan.FromSeconds(options.StartSettleSeconds));
         });
 
         return services;

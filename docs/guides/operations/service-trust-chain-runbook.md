@@ -451,12 +451,30 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
     intent.
   - **Refused writes:** the product's audit cap (`AUDIT_INTENT_CAPACITY_EXCEEDED`) waits.
     `GLOBAL_PRODUCT_LIFECYCLE_RELEASE_CONFLICT` is a counted retry.
-  - **Differences from the GSKU correction:**
-    - An approved name that another product took in the meantime stays STUCK for a person
-      (`GLOBAL_PRODUCT_CORRECTION_NAME_CONFLICT`, lock held, counted by `needing_a_person`). The requester's repeat
-      does not settle it.
-    - A correction its own maker decided ends unapplied and frees the product
-      (`GLOBAL_PRODUCT_CORRECTION_SELF_APPROVAL_IGNORED`). Before BL-552 it was stuck for ever.
+  - **An approved name another product took in the meantime:** the request ENDS unapplied and the product is given
+    back (`GLOBAL_PRODUCT_CORRECTION_NAME_CONFLICT`, the reason on record). The name stays unique; the maker opens a
+    new request with another name. Nothing waits for a person (BL-552 FIX1, CT decision — the GSKU "no longer
+    selectable" rule).
+  - **Different from the Global Product correction before BL-552 (not from GSKU, which does the same):**
+    - a correction its own maker decided ends unapplied and frees the product
+      (`GLOBAL_PRODUCT_CORRECTION_SELF_APPROVAL_IGNORED`); before, it was stuck for ever;
+    - an approved name that was taken ended stuck with the lock held; now it ends and frees the product.
+  - **Interrupted requests and audit delivery:** a repeat of a request cut off after it took the lock is recognised
+    even after the audit delivery worker compacted its intents into receipts; the product held by that very request
+    is its own lock, and the request goes on.
+  - **Status codes:** a request that ended on a refusal that passes by itself (the audit cap, the store) answers 503,
+    as every Global Product handler does.
+  - **Scope:** the worker follows the legal-entity scope rule of every product-identity worker (an out-of-scope or
+    suspended product is not touched).
+- **Global Product retirement request (BL-552, flow `GLOBAL_PRODUCT_RETIREMENT_REQUEST`)** follows the same rules as
+  the correction above, with the same settings on `GlobalProductRetirementRequestWorkflowWorker`:
+  - **Approval closed without a decision, or decided by its own maker:** the request ENDS and the product is given back
+    (it stays approved).
+  - **An approved retirement that meets a dependant** (an approved or draft child found after the request,
+    `DEPENDENT_IDENTITIES_EXIST` / `DRAFT_CHILD_CANCELLATION_REQUIRED`): the request ENDS "not applicable" and the
+    product is given back — the GSKU retirement request's rule. Before BL-552 it was stuck with the lock held.
+  - **Everything else** (lookup apart from start, settle window, write refusals, the limit's cause, the gauges, a
+    request cut off after the lock, compacted intents, scope, status codes) as for the correction.
 
 ### 6. Not covered here — open before a live bring-up
 

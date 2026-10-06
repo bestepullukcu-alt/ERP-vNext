@@ -14,7 +14,10 @@ public static class GlobalProductLifecycleStuckKinds
     [
         GlobalProductCorrectionWorkflowProcessor.RetryLimitReached,
         GlobalProductCorrectionWorkflowProcessor.EvidenceConflict,
-        GlobalProductCorrectionWorkflowProcessor.StartEvidenceInvalid
+        GlobalProductCorrectionWorkflowProcessor.StartEvidenceInvalid,
+        GlobalProductRetirementRequestWorkflowProcessor.RetryLimitReached,
+        GlobalProductRetirementRequestWorkflowProcessor.EvidenceConflict,
+        GlobalProductRetirementRequestWorkflowProcessor.StartEvidenceInvalid
     ];
 
     public static bool NeedsAPerson(string? code) => code is null || !SettledByTheRequestersRepeat.Contains(code);

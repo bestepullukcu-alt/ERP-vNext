@@ -137,12 +137,15 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
                 // A name taken by another product after the approval is the record's, not the engine's: a person.
                 if (signal.EngineSilent)
                     return Fail(operation, ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, 503);
-                if (token is null || step > 0 || operation.LastFailureCode == NameConflict
+                if (token is null || step > 0
                     || operation.RecoveryDisposition != ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
-                    return Fail(operation, reconciling && operation.RecoveryDisposition
+                {
+                    var code = reconciling && operation.RecoveryDisposition
                             == ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired
                         ? ManualReconciliationNeeded
-                        : operation.LastFailureCode ?? "GLOBAL_PRODUCT_CORRECTION_RECONCILIATION_REQUIRED", 409);
+                        : operation.LastFailureCode ?? "GLOBAL_PRODUCT_CORRECTION_RECONCILIATION_REQUIRED";
+                    return Fail(operation, code, StatusOf(code));
+                }
                 reconcile = reconciling = true;
             }
             if (stopAtAwaitingDecision && !reconciling
@@ -234,9 +237,19 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
             return await PreparedWithoutMakerAsync(operation, claim, now, execution, cancellationToken);
         var product = await products.GetByIdAsync(operation.GlobalProductId, cancellationToken);
         if (product is null) return await Ended(claim, "PRODUCT_IDENTITY_NOT_FOUND", now, cancellationToken);
+        // BL-552 FIX1 item 9: the settle window starts here, in a field nothing else refreshes — written (under this
+        // claim, kept) before the lock is taken and the start sent, so a request cut off after either is still read
+        // as "a start may be on its way" for exactly the window, and no longer.
+        if (!await operations.AdvanceAsync(claim, new(operation.Checkpoint, operation.RecoveryDisposition, now.UtcTicks,
+                operation.NextAttemptAtUtcTicksV1, operation.LastFailureCode, Streak: RecoveryStreakWrite.Keep,
+                LastStartSentAtUtcTicksV1: now.UtcTicks), cancellationToken))
+            return false;
         var admitted = await AcquireAsync(operation, product, now, cancellationToken);
-        // Not admitted (another request holds the product, its version moved): nothing was taken — the request ends.
-        if (!admitted.Succeeded) return await Ended(claim, admitted.ErrorCode, now, cancellationToken);
+        // BL-552 FIX1 item 1 (b): the product held by THIS request is its own lock (an earlier attempt took it and was
+        // cut off) — never "ended"; the request goes on. Not admitted otherwise (another request holds the product,
+        // its version moved): nothing was taken — the request ends.
+        if (!admitted.Succeeded && !HeldByThis(admitted.GlobalProduct ?? product, operation))
+            return await Ended(claim, admitted.ErrorCode, now, cancellationToken);
         var started = await workflowClient.StartAsync(operation.TenantId,
             requestFactory.Rehydrate(operation), token, cancellationToken);
         return await RecordStartAsync(operation, claim, started, fromStart: true, now, execution, cancellationToken);
@@ -265,7 +278,8 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
             // The maker's start went through before its request was cut off: the lock is taken (an exact repeat if it
             // already was) and the correction goes on as started.
             var admitted = await AcquireAsync(operation, product, now, cancellationToken);
-            if (!admitted.Succeeded) return await Stuck(claim, admitted.ErrorCode, now, cancellationToken);
+            if (!admitted.Succeeded && !HeldByThis(admitted.GlobalProduct ?? product, operation))
+                return await Stuck(claim, admitted.ErrorCode, now, cancellationToken);
             return await RecordStartAsync(operation, claim, found, fromStart: false, now, execution, cancellationToken);
         }
         if (found.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound)
@@ -432,7 +446,9 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
                 operation.ProposedGlobalProductName, now);
             var released = await products.ReleaseLifecycleOperationAsync(product.Id, expected, Binding(operation),
                 audit, cancellationToken);
-            if (!released.Succeeded)
+            // BL-552 FIX1 item 11: the lock already gone (given back by an earlier attempt whose own record was lost)
+            // is the end this request wanted — not a refusal.
+            if (!released.Succeeded && released.ErrorCode != "GLOBAL_PRODUCT_LIFECYCLE_NOT_HELD")
                 return await WriteRefusedAsync(operation, claim, released.ErrorCode, now, execution, cancellationToken);
         }
         log.LogInformation("Global Product correction {OperationId} of tenant {TenantId} ended without its decision applied ({ResultCode}); the product is free again.",
@@ -527,9 +543,21 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
         var expectedVersion = checked(operation.BaseProductVersion + 1);
         var binding = Binding(operation);
         var approved = operation.DecisionKind == ProductIdentityDecisionKind.Approved;
+        // BL-552 FIX1 item 2 (the GSKU alreadyApplied rule): the decision was written before and only its record here
+        // was lost — its intent may be compacted to a receipt by now. Applied once; the request goes on.
+        var appliedKey = $"global-product-correction:{operation.OperationId:D}:{(approved
+            ? ProductAuditOperation.GlobalProductCorrectionApplied : ProductAuditOperation.GlobalProductCorrectionRejected)}";
+        if (product.ActiveLifecycleOperation is null
+            && (product.AuditIntents.Any(x => x.IdempotencyKey == appliedKey)
+                || product.AuditIntentReceipts.Any(x => x.IdempotencyKey == appliedKey)))
+            return await AdvanceAsync(claim, GlobalProductCorrectionCheckpoint.DecisionApplied, null, now, true,
+                cancellationToken);
+        // BL-552 FIX1 item 3 (CT decision, the GSKU "no longer selectable" rule): an approved name another product took
+        // in the meantime cannot be applied — the request ends unapplied and the product is given back (the reason on
+        // record). The name stays unique; the maker opens a new request with another name.
         if (approved && await products.NameExistsOtherThanAsync(
                 operation.ProposedGlobalProductNameNormalized, operation.GlobalProductId, cancellationToken))
-            return await NameTakenAsync(operation, claim, product, expectedVersion, now, execution, cancellationToken);
+            return await EndAndReleaseAsync(operation, claim, NameConflict, now, execution, cancellationToken);
         var auditOperation = approved ? ProductAuditOperation.GlobalProductCorrectionApplied
             : ProductAuditOperation.GlobalProductCorrectionRejected;
         var audit = GlobalProductCorrectionAuditIntentFactory.Create(product, expectedVersion,
@@ -541,27 +569,10 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
             audit, cancellationToken);
         if (!result.Succeeded)
             return result.ErrorCode == NameConflict
-                ? await NameTakenAsync(operation, claim, product, expectedVersion, now, execution, cancellationToken)
+                ? await EndAndReleaseAsync(operation, claim, NameConflict, now, execution, cancellationToken)
                 : await WriteRefusedAsync(operation, claim, result.ErrorCode, now, execution, cancellationToken);
         return await AdvanceAsync(claim, GlobalProductCorrectionCheckpoint.DecisionApplied, null,
             now, true, cancellationToken);
-    }
-
-    // An approved name another product took in the meantime: recorded on the product (the lock kept) and handed to a
-    // person — the business rule is unchanged. A refused record write is classified like any other.
-    private async Task<bool> NameTakenAsync(GlobalProductCorrectionOperation operation,
-        GlobalProductCorrectionClaim claim, GlobalProduct product, int expectedVersion, DateTimeOffset now,
-        GlobalProductCorrectionExecutionConfiguration execution, CancellationToken cancellationToken)
-    {
-        var conflictAudit = GlobalProductCorrectionAuditIntentFactory.Create(product, expectedVersion,
-            operation.OperationId, operation.DecisionActorSubjectId!.Value,
-            ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired,
-            operation.ProposedGlobalProductName, now);
-        var conflict = await products.RecordCorrectionConflictAsync(product.Id, expectedVersion, Binding(operation),
-            conflictAudit, cancellationToken);
-        if (!conflict.Succeeded)
-            return await WriteRefusedAsync(operation, claim, conflict.ErrorCode, now, execution, cancellationToken);
-        return await Stuck(claim, NameConflict, now, cancellationToken);
     }
 
     // A refused product write (the shared classification): the capacity / store / a lease held elsewhere pass by
@@ -617,9 +628,22 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
             or ProductIdentityWorkflowTransportOutcome.NonTerminal)
            && ProductIdentityWorkflowFaultPolicy.Classify(call, outcome, code).Kind == ProductIdentityWorkflowFaultKind.ServiceWait;
 
+    // BL-552 FIX1 item 9: the window is read from fields no claim or retry refreshes — when a start was last sent
+    // (written before the lock is taken), else when the request was made (a row written before the field existed).
     private static bool Settling(GlobalProductCorrectionOperation operation, DateTimeOffset now,
         GlobalProductCorrectionExecutionConfiguration execution) =>
-        now.UtcTicks - (operation.LastStartSentAtUtcTicksV1 ?? operation.UpdatedAtUtcTicksV1) < execution.SettleWindow.Ticks;
+        now.UtcTicks - (operation.LastStartSentAtUtcTicksV1 ?? operation.CreatedAtUtcTicksV1) < execution.SettleWindow.Ticks;
+
+    private static bool HeldByThis(GlobalProduct? product, GlobalProductCorrectionOperation operation) =>
+        product?.ActiveLifecycleOperation is { } held && held == Binding(operation);
+
+    // BL-552 FIX1 item 11: the status an ended or stuck request answers with — a refusal that passes by itself (the
+    // audit cap, the store) is 503 as every other Global Product handler says it; a maker's code keeps its own
+    // (401 / 403 / 503); anything else is 409.
+    private static int StatusOf(string code) =>
+        ProductIdentityWriteFaults.MayPassByItself(code) ? 503
+        : ProductIdentityWorkflowMakerCodes.IsMakerCode(code) ? ProductIdentityWorkflowMakerCodes.StatusFor(code)
+        : 409;
 
     private sealed class ReconcileSignal
     {

@@ -274,7 +274,9 @@ public sealed class GlobalProductCorrectionOperationRepository(
                 or GlobalProductCorrectionCheckpoint.AwaitingMakerReplay
                 or GlobalProductCorrectionCheckpoint.ManualReconciliationRequired) => true,
             (GlobalProductCorrectionCheckpoint.AwaitingMakerReplay, GlobalProductCorrectionCheckpoint.WorkflowStarted
-                or GlobalProductCorrectionCheckpoint.ManualReconciliationRequired) => true,
+                or GlobalProductCorrectionCheckpoint.ManualReconciliationRequired
+                // BL-552 FIX1 item 9: a parked row whose start lookup could not answer waits where the worker looks.
+                or GlobalProductCorrectionCheckpoint.StartOutcomeUnknown) => true,
             (GlobalProductCorrectionCheckpoint.WorkflowStarted, GlobalProductCorrectionCheckpoint.AwaitingDecision
                 or GlobalProductCorrectionCheckpoint.ManualReconciliationRequired) => true,
             (GlobalProductCorrectionCheckpoint.AwaitingDecision, GlobalProductCorrectionCheckpoint.DecisionObserved
