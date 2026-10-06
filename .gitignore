@@ -29,3 +29,6 @@ TestResults/
 *.trx
 *.bak-*
 /rework-results.json
+
+# Per-developer Claude Code permission overrides — local only (R-5, PR #134).
+.claude/settings.local.json
