@@ -8063,6 +8063,31 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-561
+
+**Depolarda ortak `IsDeleted == false` koşulu, alanı hiç yazılmamış çok eski belgeyle eşleşmez (eksik alan ≠ false)**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma; genel kural) · BULAN: GP BL-552 akış 1 FIX1 eski belge denetimi (MDM sohbeti) · KAYIT: 2026-10-06
+
+BL-529 FIX6'da gerçek hata olarak çıkan sınıf: Mongo'da `Eq(field, false)` alanı OLMAYAN belgeyle eşleşmez. MDM depolarının neredeyse hepsi etkin kayıt süzgecinde `IsDeleted == false` kullanıyor;
+`EntityBase.IsDeleted` sürücü varsayılanıyla hep yazıldığından bugünkü belgelerde alan var, ama betikle içe aktarılmış ya da çok eski bir belgede yoksa kayıt sessizce "yok" sayılır (okunmaz, kilit
+alamaz, liste dışı kalır). Düzeltme: ortak süzgeç `Ne(IsDeleted, true)` olur ya da bir kerelik salt-okunur sayım ile alanı eksik belge olmadığı kanıtlanır (dev + canlı, sahip onayıyla).
+Karşılaştırma: SAP'de silme işareti (LVORM) boş = silinmemiş, karakter alanı hep var; Oracle'da `DELETED_FLAG` NULL = 'N' sayılır. Gelecek regresyon riski: 🟢 (bugün ölçülmüş belge yok; içe aktarma olursa 🟡).
+
+---
+
+### BL-562
+
+**Marka v2 ertelenenleri: arşivi geri alma, Global Ürün ↔ Marka bağı, marka değişikliğinde ikinci onay, tescil listesi**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) · BULAN: WP-MDM-BRAND-ACCEPT-01 FIX1 sahip kararı olguları · KAYIT: 2026-10-06 (sahip kararları CT'ye devretti)
+
+v1'de arşiv geri alınamaz (onayda uyarı var); geri alma ayrı izinli, denetimli bir komut olarak gelir (SAP silme işareti kaldırılabilir; Oracle öğe durumu Etkin'e dönebilir). Global Ürün'e isteğe bağlı Marka
+başvurusu (yalnız bağlanabilir markaya) sonraki bir GP turunda. Marka yazımlarında maker-checker v1'de yok (denetim izi var). Tescil (marka tescil) listesi Marka'nın değil, ileride RIM modülünün işi.
+Gelecek regresyon riski: 🟢.
+
+---
+
 ### BL-560
 
 **Tamamlanmamış güvenilir başlatmayı tüketici kimliksiz iptal edemiyor; kapatıldığını da kendi koduyla öğrenemiyor (anahtarla iptal + "kapatıldı" cevabı + MDM bağlantısı)**
