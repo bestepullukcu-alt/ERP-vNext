@@ -33,6 +33,14 @@ public sealed class GetProductLegalEntityScopeCreateOptionsHandler
         if (!access.Allowed)
             return Response<ProductLegalEntityScopeModels.CreateOptionsDto>.Fail(access.FailureCode!, access.StatusCode);
         var product = access.Product!;
+        // FIX2 (10): the product's code and name are Global Product data — shown only when the caller may also read the
+        // product itself (mdm.global-products.read, by their legal entities in an Enforced tenant); else as if missing.
+        var productRead = await _access.ResolveAsync(
+            request.GlobalProductId,
+            Features.ProductItemSkuMaster.Handlers.QueryHandlers.ProductLegalEntityScopeConsumerGuard.GlobalProductReadPermission,
+            cancellationToken);
+        if (!productRead.Allowed)
+            return Response<ProductLegalEntityScopeModels.CreateOptionsDto>.Fail(productRead.FailureCode!, productRead.StatusCode);
         var candidate = await _candidates.ResolveAsync(ModuleCode, ConfigurePermission, cancellationToken);
         if (!candidate.IsSuccessful)
             return Response<ProductLegalEntityScopeModels.CreateOptionsDto>.Fail(

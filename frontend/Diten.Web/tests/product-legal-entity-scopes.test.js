@@ -103,6 +103,19 @@ describe('MOD-0290-FU03 Product Legal Entity Scope Golden Slim contract', () => 
     expect(module.testHooks.lifecycleText(4)).toBe('fixture: retired');
   });
 
+  it('says a write refused by the scope rollout in the reader\'s words, never its code (FIX2 SC4)', () => {
+    const module = loadModule();
+    Object.assign(window.L10n, { ErrorFenceActive: 'fixture: fence up', ErrorWriterBusy: 'fixture: busy',
+      ErrorRolloutUnavailable: 'fixture: unreadable', ErrorConflict: 'fixture: conflict', ErrorGateway: 'fixture: gateway' });
+    const say = module.testHooks.failureText;
+
+    expect(say({ errors: ['PRODUCT_SCOPE_WRITE_FENCE_ACTIVE'] }, 409)).toBe('fixture: fence up');
+    expect(say({ Errors: ['PRODUCT_SCOPE_WRITER_LEASE_CONTENDED'] }, 409)).toBe('fixture: busy');
+    expect(say({ errors: ['PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID'] }, 503)).toBe('fixture: unreadable');
+    expect(say({ errors: ['SOME_UNKNOWN_CODE'] }, 409)).toBe('fixture: conflict');
+    expect(say(null, 500)).toBe('fixture: gateway');
+  });
+
   it('does not offer replace or end when a persisted policy has no current period', () => {
     const module = loadModule();
     const endedPolicy = { periods: [{ effectiveToUtc: '2026-08-27T00:00:00Z' }] };

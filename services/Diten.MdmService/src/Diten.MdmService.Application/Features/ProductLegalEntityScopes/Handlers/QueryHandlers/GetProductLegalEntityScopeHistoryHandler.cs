@@ -35,6 +35,9 @@ public sealed class GetProductLegalEntityScopeHistoryHandler
             return Response<IReadOnlyList<ProductLegalEntityScopeModels.PeriodDto>>.Fail(
                 "PRODUCT_SCOPE_POLICY_NOT_FOUND", 404);
         return Response<IReadOnlyList<ProductLegalEntityScopeModels.PeriodDto>>.Success(
-            policy.ScopePeriods.Select(CreateProductLegalEntityScopePolicyHandler.Map).ToArray());
+            policy.ScopePeriods
+                .Select(period => ProductLegalEntityScopeProductAccess.Mask(
+                    CreateProductLegalEntityScopePolicyHandler.Map(period), access.Context!))
+                .ToArray());
     }
 }

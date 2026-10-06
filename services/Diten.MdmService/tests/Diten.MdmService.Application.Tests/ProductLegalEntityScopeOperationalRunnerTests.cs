@@ -227,6 +227,134 @@ public sealed class ProductLegalEntityScopeOperationalRunnerTests
         }
     }
 
+    // ── FIX2 ──────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Activation_is_refused_while_a_named_debt_is_open_even_in_development()
+    {
+        // FIX2 (5) — CT decision: unguarded writers / unfenced recovery runners keep Enforced shut, in every environment.
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var actor = Guid.NewGuid();
+        var rollout = await BootstrapAsync(scope, actor);
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => Runner(scope,
+            Transition(scope, ProductLegalEntityScopeOperationalRunner.ActivateEnforcedAction, rollout.Id, 0, Guid.NewGuid(), actor),
+            debt: ProductLegalEntityScopeActivationDebt.Instance).RunAsync());
+
+        Assert.Equal("PRODUCT_SCOPE_ACTIVATION_BLOCKED_UNGUARDED_WRITERS", refused.Message);
+        var after = Assert.IsType<ProductLegalEntityScopeRolloutState>(await scope.RolloutRepository().GetAsync());
+        Assert.Equal(ProductLegalEntityScopeRolloutMode.Preparation, after.Mode);
+        Assert.Null(after.ActiveFence);
+        Assert.Null(after.LastFenceAbort);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task Either_debt_list_alone_keeps_activation_shut(bool writers, bool runners)
+    {
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var actor = Guid.NewGuid();
+        var rollout = await BootstrapAsync(scope, actor);
+        var debt = new Debt(writers ? ["SomeUnguardedCommand"] : [], runners ? ["SomeUnfencedRecoveryRunner"] : []);
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => Runner(scope,
+            Transition(scope, ProductLegalEntityScopeOperationalRunner.ActivateEnforcedAction, rollout.Id, 0, Guid.NewGuid(), actor),
+            debt: debt).RunAsync());
+
+        Assert.Equal(ProductLegalEntityScopeActivationDebt.ActivationBlockedCode, refused.Message);
+    }
+
+    [Fact]
+    public async Task With_both_debt_lists_empty_activation_goes_through()
+    {
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var actor = Guid.NewGuid();
+        var rollout = await BootstrapAsync(scope, actor);
+
+        await Runner(scope, Transition(scope, ProductLegalEntityScopeOperationalRunner.ActivateEnforcedAction, rollout.Id, 0, Guid.NewGuid(), actor),
+            debt: new Debt([], [])).RunAsync();
+
+        Assert.Equal(ProductLegalEntityScopeRolloutMode.Enforced, (await scope.RolloutRepository().GetAsync())!.Mode);
+    }
+
+    [Fact]
+    public async Task A_runner_composed_without_a_debt_registration_still_refuses_activation()
+    {
+        // Fail-closed: a composition that forgot the registration falls back to the production lists, never to "no debt".
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var actor = Guid.NewGuid();
+        var rollout = await BootstrapAsync(scope, actor);
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => Runner(scope,
+            Transition(scope, ProductLegalEntityScopeOperationalRunner.ActivateEnforcedAction, rollout.Id, 0, Guid.NewGuid(), actor),
+            registerDebt: false).RunAsync());
+
+        Assert.Equal(ProductLegalEntityScopeActivationDebt.ActivationBlockedCode, refused.Message);
+    }
+
+    [Fact]
+    public async Task Suspension_stays_open_while_the_debt_is_open()
+    {
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var actor = Guid.NewGuid();
+        var rollout = await BootstrapAsync(scope, actor);
+        await Runner(scope, Transition(scope, ProductLegalEntityScopeOperationalRunner.ActivateEnforcedAction, rollout.Id, 0, Guid.NewGuid(), actor)).RunAsync();
+
+        await Runner(scope, Transition(scope, ProductLegalEntityScopeOperationalRunner.SuspendFailClosedAction, rollout.Id, 1, Guid.NewGuid(), actor),
+            debt: ProductLegalEntityScopeActivationDebt.Instance).RunAsync();
+
+        Assert.Equal(ProductLegalEntityScopeRolloutMode.FailClosedSuspended, (await scope.RolloutRepository().GetAsync())!.Mode);
+    }
+
+    [Fact]
+    public async Task Two_runs_of_the_same_transition_at_once_never_let_the_loser_abandon_the_winners_fence()
+    {
+        // FIX2 (12): before, the fence token was the same for every attempt of a command. Run A took the fence, run B
+        // adopted it and bound it; A then failed its own bind and aborted "INVENTORY_DELTA" under the shared token —
+        // lifting B's fence, and B's commit failed. Now B takes the fence over under its own token; A's abort is a no-op.
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var actor = Guid.NewGuid();
+        var rollout = await BootstrapAsync(scope, actor);
+        var options = Transition(scope, ProductLegalEntityScopeOperationalRunner.ActivateEnforcedAction, rollout.Id, 0, Guid.NewGuid(), actor);
+        var atBind = new Pause();
+        var atCommit = new Pause();
+
+        var a = Task.Run(() => Runner(scope, options, decorate: inner => new PauseAt(inner, bind: atBind)).RunAsync());
+        await atBind.Reached.Task.WaitAsync(TimeSpan.FromSeconds(60));
+        var b = Task.Run(() => Runner(scope, options, decorate: inner => new PauseAt(inner, commit: atCommit)).RunAsync());
+        await atCommit.Reached.Task.WaitAsync(TimeSpan.FromSeconds(60));
+
+        atBind.Go.SetResult();
+        var loser = await Assert.ThrowsAsync<InvalidOperationException>(() => a.WaitAsync(TimeSpan.FromSeconds(60)));
+        atCommit.Go.SetResult();
+        await b.WaitAsync(TimeSpan.FromSeconds(60));
+
+        Assert.Equal("PRODUCT_SCOPE_INVENTORY_DELTA_DETECTED", loser.Message);
+        var after = Assert.IsType<ProductLegalEntityScopeRolloutState>(await scope.RolloutRepository().GetAsync());
+        Assert.Equal(ProductLegalEntityScopeRolloutMode.Enforced, after.Mode);
+        Assert.Null(after.ActiveFence);
+        Assert.Null(after.LastFenceAbort);
+    }
+
+    [Fact]
+    public async Task The_expired_leases_an_activation_fence_clears_are_counted()
+    {
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        using var metrics = new ProductLegalEntityScopeMetricRecorder();
+        var actor = Guid.NewGuid();
+        var rollout = await BootstrapAsync(scope, actor);
+        var stale = Lease(Guid.NewGuid(), actor);
+        stale.AcquiredAtUtc = stale.AcquiredAtUtc.AddMinutes(-10);
+        stale.ExpiresAtUtc = stale.AcquiredAtUtc.AddSeconds(ProductLegalEntityScopeWriterLease.DurationSeconds);
+        await scope.RolloutCollection.UpdateOneAsync(item => item.TenantId == scope.TenantId,
+            Builders<ProductLegalEntityScopeRolloutState>.Update.Push(item => item.ProductWriterLeases, stale));
+
+        await Runner(scope, Transition(scope, ProductLegalEntityScopeOperationalRunner.ActivateEnforcedAction, rollout.Id, 0, Guid.NewGuid(), actor)).RunAsync();
+
+        Assert.Equal(1, metrics.Sum(ProductLegalEntityScopeRolloutMetrics.LeaseCleared));
+    }
+
     // ── composition ─────────────────────────────────────────────────────────────────────────────────────────────
 
     private static ProductLegalEntityScopeOperationalRunner Runner(
@@ -234,10 +362,15 @@ public sealed class ProductLegalEntityScopeOperationalRunnerTests
         ProductLegalEntityScopeOperationalOptions options,
         string environment = "Development",
         Func<IProductLegalEntityScopeRolloutStateRepository, IProductLegalEntityScopeRolloutStateRepository>? decorate = null,
-        Func<IProductLegalEntityScopeOperationalReadinessRepository, IProductLegalEntityScopeOperationalReadinessRepository>? decorateReadiness = null)
+        Func<IProductLegalEntityScopeOperationalReadinessRepository, IProductLegalEntityScopeOperationalReadinessRepository>? decorateReadiness = null,
+        IProductLegalEntityScopeActivationDebt? debt = null,
+        bool registerDebt = true)
     {
         var services = new ServiceCollection();
         services.AddScoped<ITenantContext, TenantContext>();
+        // FIX2 (5): these tests exercise the transition itself — the debt gate is opened with a test double (both lists
+        // empty) unless a test asks for the production lists or for no registration at all.
+        if (registerDebt) services.AddSingleton(debt ?? new Debt([], []));
         services.AddScoped<IProductLegalEntityScopeRolloutStateRepository>(provider =>
         {
             var inner = new ProductLegalEntityScopeRolloutStateRepository(scope.Database, provider.GetRequiredService<ITenantContext>());
@@ -304,6 +437,37 @@ public sealed class ProductLegalEntityScopeOperationalRunnerTests
         public string ApplicationName { get; set; } = "Diten.MdmService.Api.Tests";
         public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
         public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
+    }
+
+    private sealed class Debt(IReadOnlyCollection<string> writers, IReadOnlyCollection<string> runners) : IProductLegalEntityScopeActivationDebt
+    {
+        public IReadOnlyCollection<string> UnguardedWriters { get; } = writers;
+        public IReadOnlyCollection<string> UnfencedRecoveryRunners { get; } = runners;
+    }
+
+    private sealed class Pause
+    {
+        public TaskCompletionSource Reached { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Go { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+
+    /// <summary>Holds a run just before it binds its snapshots, or just before it commits, until the test lets it go.</summary>
+    private sealed class PauseAt(IProductLegalEntityScopeRolloutStateRepository inner, Pause? bind = null, Pause? commit = null)
+        : DelegatingRolloutRepository(inner)
+    {
+        public override async Task<bool> BindFenceSnapshotsAsync(string fenceToken, ProductLegalEntityScopeInventorySnapshot first,
+            ProductLegalEntityScopeInventorySnapshot second, CancellationToken cancellationToken = default)
+        {
+            if (bind is not null) { bind.Reached.TrySetResult(); await bind.Go.Task; }
+            return await base.BindFenceSnapshotsAsync(fenceToken, first, second, cancellationToken);
+        }
+
+        public override async Task<ProductLegalEntityScopeRolloutStateWriteResult> CommitTransitionAsync(string fenceToken,
+            ProductLegalEntityScopeRolloutState requested, int expectedVersion, CancellationToken cancellationToken = default)
+        {
+            if (commit is not null) { commit.Reached.TrySetResult(); await commit.Go.Task; }
+            return await base.CommitTransitionAsync(fenceToken, requested, expectedVersion, cancellationToken);
+        }
     }
 
     /// <summary>The commit's answer is lost: nothing reaches the store, the caller hears "ambiguous".</summary>

@@ -67,31 +67,74 @@ public sealed class ProductLegalEntityScopeWriteAdmissionContractTests
         || ns.StartsWith("Diten.MdmService.Application.Features.ProductLegalEntityScopes", StringComparison.Ordinal);
 
     /// <summary>
-    /// WP-MDM-SCOPE-ACCEPT-01 FIX1 S8 — THE KNOWN GAP, NAMED (owner / CT decision pending): these product writers (GP /
-    /// GSKU / LSKU lifecycle and workflow commands) take neither the write fence nor a writer lease. While the scope stays
-    /// in Preparation (no tenant is Enforced; activation is development-only) nothing depends on them; before activation
-    /// is opened they must be guarded — and their files belong to the GP / GSKU / LSKU rounds. A NEW unguarded command
-    /// turns this test red; a guarded one must leave the list.
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX1 S8 — THE KNOWN GAP, NAMED: product writers that take neither the write fence nor a writer
+    /// lease. FIX2 (5): the list lives in production code (<see cref="ProductLegalEntityScopeActivationDebt"/>) — the same list
+    /// that keeps activation shut — so the rule is measured on what the product runs, never on a copy. A NEW unguarded
+    /// command turns this test red; a guarded one must leave the list.
     /// </summary>
-    private static readonly HashSet<string> KnownUnguardedLifecycleWriters = new(StringComparer.Ordinal)
+    private static IReadOnlySet<string> KnownUnguardedLifecycleWriters => ProductLegalEntityScopeActivationDebt.KnownUnguardedWriters;
+
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX2 (4) — every recovery runner of the MDM service either takes the shared worker scope rule
+    /// (<c>ProductIdentityBackgroundScope</c> / <c>LskuBackgroundScope</c>) or reads the fence itself; the ones that do
+    /// neither are NAMED in <see cref="ProductLegalEntityScopeActivationDebt.KnownUnfencedRecoveryRunners"/> (which keeps
+    /// activation shut). A new runner blind to the fence turns this red; a runner that learns the rule must leave the list.
+    /// </summary>
+    [Fact]
+    public void Every_recovery_runner_reads_the_fence_or_is_a_named_debt()
     {
-        "DispatchProductAbbreviationWorkItemActionCommand",
-        "RetireGlobalProductIdentityCommand",
-        "RetireGskuIdentityPairCommand",
-        "RetireLskuIdentityCommand",
-        "StartFirstGskuIdentityWorkflowCommand",
-        "StartGlobalProductCorrectionWorkflowCommand",
-        "StartGlobalProductIdentityWorkflowCommand",
-        "StartGlobalProductRetirementRequestWorkflowCommand",
-        "StartGskuCorrectionWorkflowCommand",
-        "StartGskuRetirementRequestWorkflowCommand",
-        "StartLskuIdentityWorkflowCommand",
-        "StartLskuRetirementRequestWorkflowCommand",
-        "UpdateGlobalProductDraftCommand",
-        "WithdrawFirstGskuIdentityApprovalCommand",
-        "WithdrawGlobalProductIdentityApprovalCommand",
-        "WithdrawLskuIdentityApprovalCommand"
-    };
+        var sourceRoot = Path.Combine(FindRepoRoot(), "services", "Diten.MdmService", "src");
+        var runners = Directory.EnumerateFiles(sourceRoot, "*RecoveryRunner.cs", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+                && !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .ToDictionary(path => Path.GetFileNameWithoutExtension(path), path => ReadsTheFence(File.ReadAllText(path)));
+        Assert.True(runners.Count >= 9, "Recovery runners not found under " + sourceRoot);
+
+        var blind = runners.Where(runner => !runner.Value
+                && !ProductLegalEntityScopeActivationDebt.KnownUnfencedRecoveryRunners.Contains(runner.Key))
+            .Select(runner => runner.Key).Order(StringComparer.Ordinal).ToArray();
+        var stale = ProductLegalEntityScopeActivationDebt.KnownUnfencedRecoveryRunners
+            .Where(name => !runners.TryGetValue(name, out var reads) || reads)
+            .Order(StringComparer.Ordinal).ToArray();
+
+        Assert.True(blind.Length == 0, "Recovery runner(s) that read neither the scope rule nor the fence: " + string.Join(", ", blind));
+        Assert.True(stale.Length == 0,
+            "These runners read the fence now (or are gone): remove them from KnownUnfencedRecoveryRunners: " + string.Join(", ", stale));
+    }
+
+    private static bool ReadsTheFence(string source)
+    {
+        var code = string.Join('\n', source.ReplaceLineEndings("\n").Split('\n')
+            .Select(line => line.TrimStart()).Where(line => !line.StartsWith("//", StringComparison.Ordinal)));
+        return code.Contains("ProductIdentityBackgroundScope", StringComparison.Ordinal)
+            || code.Contains("LskuBackgroundScope", StringComparison.Ordinal)
+            || code.Contains(".ActiveFence is null", StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX2 (5) — scope decision 5: activation and rollback only through an explicitly granted,
+    /// audited key a person cannot hold. MEASURED: the permission keys <c>mdm.product-legal-entity-scope-rollout.activate /
+    /// .rollback</c> exist (manifest; Auth grants them to a role a person can hold), so they must open NOTHING in MDM — no
+    /// endpoint, handler or runner may check them. The only transition path is the Development-only CLI (its own test).
+    /// When the non-human key is built (backlog), this test is where it is pinned.
+    /// </summary>
+    [Fact]
+    public void The_rollout_activate_and_rollback_permissions_open_no_path_a_person_can_use()
+    {
+        var root = FindRepoRoot();
+        var sourceRoot = Path.Combine(root, "services", "Diten.MdmService", "src");
+        var users = Directory.EnumerateFiles(sourceRoot, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+                && !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(path => File.ReadAllText(path).Contains("product-legal-entity-scope-rollout.", StringComparison.Ordinal))
+            .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
+            .ToArray();
+
+        Assert.Equal(["services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs"], users);
+        var controllers = ReadRepoFile("services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ProductLegalEntityScopesController.cs");
+        Assert.DoesNotContain("Activate", controllers, StringComparison.Ordinal);
+        Assert.DoesNotContain("Suspend", controllers, StringComparison.Ordinal);
+    }
 
     [Fact]
     public void Write_fence_behavior_is_registered_after_validation_and_before_audit_forwarding()

@@ -18,4 +18,9 @@
   <data name="LifecycleRetired" xml:space="preserve">
     <value>Kullanımdan Kaldırıldı</value>
   </data>
+  <data name="ErrorFenceActive" xml:space="preserve"><value>Kapsam uygulaması açılıyor ya da kapatılıyor; değişiklikler duraklatıldı. Birkaç dakika sonra yeniden deneyin.</value></data>
+  <data name="ErrorWriterBusy" xml:space="preserve"><value>Bu üründe başka bir değişiklik sürüyor. Kısa süre sonra yeniden deneyin.</value></data>
+  <data name="ErrorSuspended" xml:space="preserve"><value>Ürün kapsamı uygulaması askıya alındı; yeniden başlatılana kadar değişiklik kabul edilmez.</value></data>
+  <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>Bu kiracının ürün kapsamı ayarları okunamıyor. Yöneticinize başvurun.</value></data>
+  <data name="OtherLegalEntities" xml:space="preserve"><value>diğer şirketler: {0}</value></data>
 </root>

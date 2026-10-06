@@ -37,6 +37,31 @@ public sealed class ProductLegalEntityScopeWriteAdmissionMongoTests
         Environment.SetEnvironmentVariable("MDM_TEST_MONGO", _previousMongoConnection);
 
     [Fact]
+    public async Task A_product_writer_elsewhere_in_the_tenant_does_not_invalidate_a_running_Replace()
+    {
+        // WP-MDM-SCOPE-ACCEPT-01 FIX2 (1): before, a product lease moved the shared WriterLeaseGeneration that the guarded
+        // Replace conditions on — the Replace was rejected (409 PRODUCT_SCOPE_CONFLICT), its slot kept for 120 s, uncounted,
+        // and every Replace of the tenant refused meanwhile. Product leases now number their generations on their own.
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var scenario = await CreateGuardedReplaceScenarioAsync(scope);
+        var otherProduct = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
+        var writer = await scope.RolloutRepository().AcquireProductWriterLeaseAsync(new ProductLegalEntityScopeWriterLease
+        {
+            Token = Guid.NewGuid(), Generation = 1, CommandId = Guid.NewGuid(), ActorId = Guid.NewGuid(),
+            MutationKind = "CreateGskuDraft", PayloadFingerprint = new string('C', 64), Owner = "Diten.MDM:CreateGskuDraft",
+            AcquiredAtUtc = now, ExpiresAtUtc = now.AddSeconds(ProductLegalEntityScopeWriterLease.DurationSeconds),
+            ObjectKeys = [$"GlobalProductId:{otherProduct:D}"]
+        });
+        Assert.True(writer.Acquired, writer.FailureCode);
+
+        var result = await scenario.Repository.ReplaceAsync(scenario.Authority, scenario.Lease, scenario.Requested, 0);
+
+        Assert.True(result.Succeeded,
+            $"guarded result conflict={result.VersionConflict}, retain={result.LeaseRetentionRequired}, ambiguous={result.WriteOutcomeAmbiguous}");
+    }
+
+    [Fact]
     public async Task GuardedWrite_ExactHumanLeaseAndPreparation_AtomicallyReplacesAndPreservesUnknownBson()
     {
         await using var scope = await ProductScopeMongoScope.CreateAsync();
@@ -806,7 +831,9 @@ public sealed class ProductLegalEntityScopeWriteAdmissionMongoTests
             Owner = "Diten.MDM:ForegroundProductLegalEntityScopeReplace",
             AcquiredAtUtc = leaseAcquiredAtUtc,
             ExpiresAtUtc = leaseAcquiredAtUtc.AddSeconds(
-                ProductLegalEntityScopeWriterLease.DurationSeconds)
+                ProductLegalEntityScopeWriterLease.DurationSeconds),
+            // As the coordinator stamps a foreground Replace: keyed by its product and its command (FIX1 B4).
+            ObjectKeys = [.. mutation.ObjectKeys]
         };
         var acquired = await rolloutRepository.AcquireWriterLeaseAsync(leaseRequest);
         Assert.True(acquired.Acquired);

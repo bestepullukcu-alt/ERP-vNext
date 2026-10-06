@@ -39,8 +39,11 @@ public interface IProductLegalEntityScopeRolloutStateRepository
 
     /// <summary>
     /// WP-MDM-SCOPE-ACCEPT-01 FIX1 B4 — a product writer's lease, keyed by what it touches. The same command (identity
-    /// and payload) gets its own lease back; another command whose keys meet an UNEXPIRED lease is refused (busy);
-    /// an expired one is taken over (counted and recorded). No lease while a fence is up or the tenant is suspended.
+    /// and payload) gets its own lease back while it runs; once it has run out the repeat takes a FRESH lease (new
+    /// generation, new baseline) — or is refused when another command has taken the product over (FIX2 (2)). Another
+    /// command whose keys meet an UNEXPIRED lease is refused (busy); an expired one is taken over, and expired leases that
+    /// meet nobody are swept (both counted, FIX2 (5)). No lease while a fence is up or the tenant is suspended. The
+    /// product lease numbers its generations with the list's own revision — never the foreground slot's counter (FIX2 (1)).
     /// </summary>
     Task<ProductLegalEntityScopeWriterLeaseResult> AcquireProductWriterLeaseAsync(
         ProductLegalEntityScopeWriterLease requested,
@@ -101,10 +104,13 @@ public sealed record ProductLegalEntityScopeWriterLeaseResult(
     bool LegacyBypass = false,
     string? FailureCode = null,
     int TakenOver = 0,
-    bool Replay = false);
+    bool Replay = false,
+    int Swept = 0,
+    bool Renewed = false);
 
 public sealed record ProductLegalEntityScopeFenceResult(
     bool Acquired,
     ProductLegalEntityScopeActivationFence? Fence,
     ProductLegalEntityScopeRolloutState? Rollout,
-    string? FailureCode = null);
+    string? FailureCode = null,
+    int ClearedLeases = 0);

@@ -28,7 +28,10 @@ public sealed class EndProductLegalEntityScopePolicyHandler
         EndProductLegalEntityScopePolicyCommand request,
         CancellationToken cancellationToken)
     {
-        if ((await _rollout.GetAsync(cancellationToken))?.Mode != ProductLegalEntityScopeRolloutMode.Preparation)
+        var (readable, rollout) = await CreateProductLegalEntityScopePolicyHandler.TryReadRolloutAsync(
+            _rollout, "end", cancellationToken);
+        if (!readable) return CreateProductLegalEntityScopePolicyHandler.RolloutUnreadable();
+        if (rollout?.Mode != ProductLegalEntityScopeRolloutMode.Preparation)
             return CreateProductLegalEntityScopePolicyHandler.Fail("PRODUCT_SCOPE_ROLLOUT_NOT_PREPARATION");
         var policy = await _policies.GetByGlobalProductIdAsync(request.GlobalProductId, cancellationToken);
         if (policy is null)

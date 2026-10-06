@@ -18,4 +18,9 @@
   <data name="LifecycleRetired" xml:space="preserve">
     <value>Выведен из обращения</value>
   </data>
+  <data name="ErrorFenceActive" xml:space="preserve"><value>Применение области включается или отключается; изменения приостановлены. Повторите попытку через несколько минут.</value></data>
+  <data name="ErrorWriterBusy" xml:space="preserve"><value>Для этого продукта уже выполняется другое изменение. Повторите попытку чуть позже.</value></data>
+  <data name="ErrorSuspended" xml:space="preserve"><value>Применение области продукта приостановлено; изменения не принимаются до его возобновления.</value></data>
+  <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>Не удаётся прочитать настройки области продукта этого арендатора. Обратитесь к администратору.</value></data>
+  <data name="OtherLegalEntities" xml:space="preserve"><value>другие компании: {0}</value></data>
 </root>

@@ -187,57 +187,72 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
         }
     }
 
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX2 (7) — how many optimistic rounds one acquisition gets before it gives up. Every lease
+    /// change (another acquisition, a release) moves the revision and sends the losers round again; one round admits at
+    /// least one writer, so this many concurrent writers of one tenant all get through. Giving up answers its own code.
+    /// </summary>
+    internal const int MaximumLeaseAttempts = 32;
+
+    private const string LeaseContendedCode =
+        Application.Features.ProductLegalEntityScopes.ProductLegalEntityScopeWriteFenceCoordinator.LeaseContendedCode;
+
     public async Task<ProductLegalEntityScopeWriterLeaseResult> AcquireWriterLeaseAsync(
         ProductLegalEntityScopeWriterLease requested,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(requested);
         requested.EnsureValid();
-        var current = await GetAsync(cancellationToken);
-        if (current is null) return new(false, null, null, LegacyBypass: true);
-        if (current.ActiveFence is not null)
-            return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITE_FENCE_ACTIVE");
-        if (current.Mode == ProductLegalEntityScopeRolloutMode.FailClosedSuspended)
-            return new(false, null, current, FailureCode: "PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED");
         var now = requested.AcquiredAtUtc;
-        var takenOver = current.ActiveWriterLease;
-        if (takenOver is not null)
+        for (var attempt = 0; attempt < MaximumLeaseAttempts; attempt++)
         {
-            if (takenOver.SameCommandAs(requested)) return new(true, takenOver, current, Replay: true);
-            // WP-MDM-SCOPE-ACCEPT-01 FIX1 B4: an unexpired lease of another command keeps the slot; an expired one is
-            // taken over — matched by its own token, generation and expiry, so only the lease that was read is replaced.
-            if (!takenOver.IsExpiredAt(now))
+            var current = await GetAsync(cancellationToken);
+            if (current is null) return new(false, null, null, LegacyBypass: true);
+            if (current.ActiveFence is not null)
+                return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITE_FENCE_ACTIVE");
+            if (current.Mode == ProductLegalEntityScopeRolloutMode.FailClosedSuspended)
+                return new(false, null, current, FailureCode: "PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED");
+            var held = current.ActiveWriterLease;
+            var renewed = false;
+            if (held is not null)
+            {
+                // FIX2 (2): the same command gets its lease back only while it runs; once it has run out the repeat takes a
+                // fresh one below (new generation, new baseline) — never an expired lease another writer may also take.
+                if (held.SameCommandAs(requested) && !held.IsExpiredAt(now)) return new(true, held, current, Replay: true);
+                renewed = held.SameCommandAs(requested);
+                // WP-MDM-SCOPE-ACCEPT-01 FIX1 B4: an unexpired lease of another command keeps the slot; an expired one is
+                // taken over — matched by its own token and generation, so only the lease that was read is replaced.
+                if (!renewed && !held.IsExpiredForOthersAt(now))
+                    return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
+            }
+            if (current.ProductWriterLeases.Any(lease => !lease.IsExpiredForOthersAt(now) && lease.Overlaps(requested)))
                 return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
-        }
-        if (current.ProductWriterLeases.Any(lease => !lease.IsExpiredAt(now) && lease.Overlaps(requested)))
-            return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
 
-        requested.Generation = checked(current.WriterLeaseGeneration + 1);
-        requested.EnsureValid();
-        var generationFilter = current.WriterLeaseGeneration == 0
-            ? Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.WriterLeaseGeneration, 0)
-              | Builders<ProductLegalEntityScopeRolloutState>.Filter.Exists(
-                  nameof(ProductLegalEntityScopeRolloutState.WriterLeaseGeneration), false)
-            : Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(
-                item => item.WriterLeaseGeneration, current.WriterLeaseGeneration);
-        var filter = ActiveTenantFilter
-                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, current.Id)
-                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Version, current.Version)
-                     & generationFilter
-                     & SlotFilter(takenOver)
-                     & RevisionFilter(current.ProductWriterLeaseRevision)
-                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ActiveFence, null);
-        var update = Builders<ProductLegalEntityScopeRolloutState>.Update
-            .Set(item => item.ActiveWriterLease, requested)
-            .Set(item => item.WriterLeaseGeneration, requested.Generation);
-        var updated = await _states.FindOneAndUpdateAsync(
-            filter,
-            update,
-            new FindOneAndUpdateOptions<ProductLegalEntityScopeRolloutState> { ReturnDocument = ReturnDocument.After },
-            cancellationToken);
-        return updated is null
-            ? new(false, null, await GetAsync(cancellationToken), FailureCode: "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE")
-            : new(true, updated.ActiveWriterLease, updated, TakenOver: takenOver is null ? 0 : 1);
+            // The slot numbers its generations with WriterLeaseGeneration, which only the slot moves (FIX2 (1)): the
+            // guarded Replace conditions on it, and a product writer elsewhere in the tenant no longer invalidates it.
+            requested.Generation = checked(current.WriterLeaseGeneration + 1);
+            requested.EnsureValid();
+            var filter = ActiveTenantFilter
+                         & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, current.Id)
+                         & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Version, current.Version)
+                         & GenerationFilter(current.WriterLeaseGeneration)
+                         & SlotFilter(held)
+                         & RevisionFilter(current.ProductWriterLeaseRevision)
+                         & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ActiveFence, null);
+            var update = Builders<ProductLegalEntityScopeRolloutState>.Update
+                .Set(item => item.ActiveWriterLease, requested)
+                .Set(item => item.WriterLeaseGeneration, requested.Generation);
+            var updated = await _states.FindOneAndUpdateAsync(
+                filter,
+                update,
+                new FindOneAndUpdateOptions<ProductLegalEntityScopeRolloutState> { ReturnDocument = ReturnDocument.After },
+                cancellationToken);
+            if (updated is not null)
+                return new(true, updated.ActiveWriterLease, updated,
+                    TakenOver: held is null || renewed ? 0 : 1, Renewed: renewed);
+        }
+
+        return new(false, null, await GetAsync(cancellationToken), FailureCode: LeaseContendedCode);
     }
 
     public async Task<ProductLegalEntityScopeWriterLeaseResult> AcquireProductWriterLeaseAsync(
@@ -247,9 +262,9 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
         ArgumentNullException.ThrowIfNull(requested);
         requested.EnsureValid();
         var now = requested.AcquiredAtUtc;
-        // Optimistic: read, decide, write only if the list is still the one read (its revision). A writer that lost the
-        // race reads again; three rounds is far beyond what concurrent writers of one tenant produce.
-        for (var attempt = 0; attempt < 3; attempt++)
+        // Optimistic: read, decide, write only if the list (its revision) and the foreground slot are still the ones read.
+        // A writer that lost the race reads again.
+        for (var attempt = 0; attempt < MaximumLeaseAttempts; attempt++)
         {
             var current = await GetAsync(cancellationToken);
             if (current is null) return new(false, null, null, LegacyBypass: true);
@@ -257,37 +272,48 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
                 return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITE_FENCE_ACTIVE");
             if (current.Mode == ProductLegalEntityScopeRolloutMode.FailClosedSuspended)
                 return new(false, null, current, FailureCode: "PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED");
+            // FIX2 (2): the command's own lease comes back only while it runs; run out, it is replaced by a fresh one.
             var own = current.ProductWriterLeases.FirstOrDefault(lease => lease.SameCommandAs(requested));
-            if (own is not null) return new(true, own, current, Replay: true);
-            if (current.ActiveWriterLease is { } slot && !slot.IsExpiredAt(now) && slot.Overlaps(requested))
+            if (own is not null && !own.IsExpiredAt(now)) return new(true, own, current, Replay: true);
+            if (current.ActiveWriterLease is { } slot && !slot.IsExpiredForOthersAt(now) && slot.Overlaps(requested))
                 return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
-            var meeting = current.ProductWriterLeases.Where(lease => lease.Overlaps(requested)).ToList();
-            if (meeting.Any(lease => !lease.IsExpiredAt(now)))
+            var others = current.ProductWriterLeases.Where(lease => !ReferenceEquals(lease, own)).ToList();
+            var meeting = others.Where(lease => lease.Overlaps(requested)).ToList();
+            if (meeting.Any(lease => !lease.IsExpiredForOthersAt(now)))
+                return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
+            // FIX2 (5): an expired lease nobody meets (a failed create keyed only by its command) is swept, not kept.
+            var swept = others.Where(lease => !meeting.Contains(lease) && lease.IsExpiredForOthersAt(now)).ToList();
+            var leases = others.Where(lease => !meeting.Contains(lease) && !swept.Contains(lease)).ToList();
+            if (leases.Count >= ProductLegalEntityScopeRolloutState.MaximumProductWriterLeases)
                 return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
 
-            requested.Generation = checked(current.WriterLeaseGeneration + 1);
+            // FIX2 (1): the product lease's generation is the list's own revision. The foreground slot's counter
+            // (WriterLeaseGeneration, which the guarded Replace conditions on) is neither read nor moved here; the slot
+            // itself is matched exactly (SlotFilter), so a Replace taking an overlapping slot meanwhile still sends this
+            // writer round again.
+            var revision = checked(current.ProductWriterLeaseRevision + 1);
+            requested.Generation = revision;
             requested.EnsureValid();
-            var leases = current.ProductWriterLeases.Where(lease => !meeting.Contains(lease)).Append(requested).ToList();
+            leases.Add(requested);
             var filter = ActiveTenantFilter
                          & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, current.Id)
                          & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Mode, current.Mode)
                          & RevisionFilter(current.ProductWriterLeaseRevision)
-                         & GenerationFilter(current.WriterLeaseGeneration)
+                         & SlotFilter(current.ActiveWriterLease)
                          & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ActiveFence, null);
             var update = Builders<ProductLegalEntityScopeRolloutState>.Update
                 .Set(item => item.ProductWriterLeases, leases)
-                .Set(item => item.ProductWriterLeaseRevision, current.ProductWriterLeaseRevision + 1)
-                .Set(item => item.WriterLeaseGeneration, requested.Generation);
+                .Set(item => item.ProductWriterLeaseRevision, revision);
             var updated = await _states.FindOneAndUpdateAsync(
                 filter,
                 update,
                 new FindOneAndUpdateOptions<ProductLegalEntityScopeRolloutState> { ReturnDocument = ReturnDocument.After },
                 cancellationToken);
             if (updated is not null)
-                return new(true, requested, updated, TakenOver: meeting.Count);
+                return new(true, requested, updated, TakenOver: meeting.Count, Swept: swept.Count, Renewed: own is not null);
         }
 
-        return new(false, null, await GetAsync(cancellationToken), FailureCode: "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
+        return new(false, null, await GetAsync(cancellationToken), FailureCode: LeaseContendedCode);
     }
 
     public async Task<bool> BindProductWriterLeaseBaselineAsync(
@@ -441,16 +467,30 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
             return new(false, null, current, "PRODUCT_SCOPE_ROLLOUT_VERSION_CONFLICT");
         if (current.ActiveFence is not null)
         {
-            return ExactFence(current.ActiveFence, requested)
-                ? new(true, current.ActiveFence, current)
-                : new(false, null, current, "PRODUCT_SCOPE_ACTIVATION_FENCE_CONFLICT");
+            // FIX2 (12): a fence token is unique per attempt. The same command finding its own fence (a repeat, or a
+            // concurrent run of the same transition) takes it over under ITS token: the attempt it replaces can neither
+            // bind, commit nor abort it any more — a loser can never abandon the winner's fence.
+            if (!SameCommandFence(current.ActiveFence, requested))
+                return new(false, null, current, "PRODUCT_SCOPE_ACTIVATION_FENCE_CONFLICT");
+            var adopted = await _states.FindOneAndUpdateAsync(
+                ActiveTenantFilter
+                & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, expectedRolloutStateId)
+                & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Version, expectedVersion)
+                & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveFence.Token", current.ActiveFence.Token),
+                Builders<ProductLegalEntityScopeRolloutState>.Update.Set("ActiveFence.Token", requested.Token),
+                new FindOneAndUpdateOptions<ProductLegalEntityScopeRolloutState> { ReturnDocument = ReturnDocument.After },
+                cancellationToken);
+            return adopted?.ActiveFence is null
+                ? new(false, null, await GetAsync(cancellationToken), "PRODUCT_SCOPE_ACTIVATION_FENCE_CONFLICT")
+                : new(true, adopted.ActiveFence, adopted);
         }
         // WP-MDM-SCOPE-ACCEPT-01 FIX1 B4: a writer whose lease is still running holds the tenant; an expired lease does
         // not (its writer's right ended — and the two equal snapshots below catch a writer that still moved anything).
         var now = requested.AcquiredAtUtc;
-        if (current.ActiveWriterLease is { } slot && !slot.IsExpiredAt(now)
-            || current.ProductWriterLeases.Any(lease => !lease.IsExpiredAt(now)))
+        if (current.ActiveWriterLease is { } slot && !slot.IsExpiredForOthersAt(now)
+            || current.ProductWriterLeases.Any(lease => !lease.IsExpiredForOthersAt(now)))
             return new(false, null, current, "PRODUCT_SCOPE_WRITER_LEASE_ACTIVE");
+        var cleared = current.ProductWriterLeases.Count + (current.ActiveWriterLease is null ? 0 : 1);
         var filter = ActiveTenantFilter
                      & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, expectedRolloutStateId)
                      & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Version, expectedVersion)
@@ -467,9 +507,10 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
                 .Set(item => item.ProductWriterLeaseRevision, current.ProductWriterLeaseRevision + 1),
             new FindOneAndUpdateOptions<ProductLegalEntityScopeRolloutState> { ReturnDocument = ReturnDocument.After },
             cancellationToken);
+        // FIX2 (3): the expired leases the fence clears are reported (the caller counts them) — never removed silently.
         return updated is null
             ? new(false, null, await GetAsync(cancellationToken), "PRODUCT_SCOPE_ACTIVATION_FENCE_CONFLICT")
-            : new(true, updated.ActiveFence, updated);
+            : new(true, updated.ActiveFence, updated, ClearedLeases: cleared);
     }
 
     public async Task<bool> BindFenceSnapshotsAsync(
@@ -566,9 +607,9 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
         }
     }
 
-    private static bool ExactFence(ProductLegalEntityScopeActivationFence left, ProductLegalEntityScopeActivationFence right)
-        => string.Equals(left.Token, right.Token, StringComparison.Ordinal)
-           && string.Equals(left.Action, right.Action, StringComparison.Ordinal)
+    /// <summary>The same transition command (action, command, actor, reason) — whatever attempt token it carries.</summary>
+    private static bool SameCommandFence(ProductLegalEntityScopeActivationFence left, ProductLegalEntityScopeActivationFence right)
+        => string.Equals(left.Action, right.Action, StringComparison.Ordinal)
            && left.CommandId == right.CommandId && left.ActorId == right.ActorId
            && string.Equals(left.ReasonCode, right.ReasonCode, StringComparison.Ordinal);
 

@@ -4,6 +4,19 @@ public sealed class ProductLegalEntityScopeWriterLease
 {
     public const int DurationSeconds = 120;
 
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX2 (6) — the expiry is stamped by one MDM instance's clock and read by another's. Another
+    /// command (or a fence) treats a lease as gone only this much after its expiry, so a few seconds of drift between two
+    /// instances never lets two writers hold one product.
+    /// </summary>
+    public const int ClockSkewSeconds = 5;
+
+    /// <summary>
+    /// The longest lease a stored record may carry. A read accepts any duration up to this (a lease written while
+    /// <see cref="DurationSeconds"/> had another value stays readable); only a new lease is stamped with the constant.
+    /// </summary>
+    public const int MaximumDurationSeconds = 3600;
+
     public Guid Token { get; set; }
     public long Generation { get; set; }
     public Guid CommandId { get; set; }
@@ -28,7 +41,11 @@ public sealed class ProductLegalEntityScopeWriterLease
         => ObjectKeys.Count == 0 || other.ObjectKeys.Count == 0
            || ObjectKeys.Any(key => other.ObjectKeys.Contains(key, StringComparer.Ordinal));
 
+    /// <summary>The holder's own view: its lease has run out (a repeat of the command then takes a fresh lease).</summary>
     public bool IsExpiredAt(DateTimeOffset serverNowUtc) => ExpiresAtUtc <= serverNowUtc;
+
+    /// <summary>Everyone else's view: the lease is gone, clock drift included — only then is it taken over or swept.</summary>
+    public bool IsExpiredForOthersAt(DateTimeOffset serverNowUtc) => ExpiresAtUtc.AddSeconds(ClockSkewSeconds) <= serverNowUtc;
 
     public bool SameCommandAs(ProductLegalEntityScopeWriterLease other)
         => CommandId == other.CommandId && ActorId == other.ActorId
@@ -43,7 +60,8 @@ public sealed class ProductLegalEntityScopeWriterLease
             || !Exact(MutationKind, 128) || !Exact(PayloadFingerprint, 64)
             || !Exact(Owner, 160) || AcquiredAtUtc.Offset != TimeSpan.Zero
             || ExpiresAtUtc.Offset != TimeSpan.Zero
-            || ExpiresAtUtc != AcquiredAtUtc.AddSeconds(DurationSeconds)
+            || ExpiresAtUtc <= AcquiredAtUtc
+            || ExpiresAtUtc > AcquiredAtUtc.AddSeconds(MaximumDurationSeconds)
             || PreWriteStateHash is not null && !Exact(PreWriteStateHash, 64)
             || ObjectKeys is null || ObjectKeys.Count > MaximumObjectKeys
             || ObjectKeys.Any(key => !Exact(key, 96))

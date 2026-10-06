@@ -46,7 +46,8 @@ public sealed class CreateProductLegalEntityScopePolicyHandler
         CreateProductLegalEntityScopePolicyCommand request,
         CancellationToken cancellationToken)
     {
-        var rollout = await _rollout.GetAsync(cancellationToken);
+        var (readable, rollout) = await TryReadRolloutAsync(_rollout, "create", cancellationToken);
+        if (!readable) return RolloutUnreadable();
         if (rollout?.Mode != ProductLegalEntityScopeRolloutMode.Preparation)
             return Fail("PRODUCT_SCOPE_ROLLOUT_NOT_PREPARATION");
 
@@ -152,6 +153,28 @@ public sealed class CreateProductLegalEntityScopePolicyHandler
         period.LegalEntityIds,
         period.EffectiveFromUtc,
         period.EffectiveToUtc);
+
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX2 (11): a rollout record the repository refuses to read answers the guard's coded 503 —
+    /// never a generic 500 from a scope write.
+    /// </summary>
+    internal static async Task<(bool Readable, ProductLegalEntityScopeRolloutState? Rollout)> TryReadRolloutAsync(
+        IProductLegalEntityScopeRolloutStateRepository rollouts, string surface, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return (true, await rollouts.GetAsync(cancellationToken));
+        }
+        catch (InvalidOperationException)
+        {
+            ProductLegalEntityScopeRolloutMetrics.CountUnreadable(surface);
+            return (false, null);
+        }
+    }
+
+    internal static Response<ProductLegalEntityScopeModels.PolicyDto> RolloutUnreadable() =>
+        Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(
+            ProductLegalEntityScopeWriteFenceCoordinator.RolloutUnreadableCode, 503);
 
     internal static Response<ProductLegalEntityScopeModels.PolicyDto> Fail(string code) =>
         Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(code, 409);

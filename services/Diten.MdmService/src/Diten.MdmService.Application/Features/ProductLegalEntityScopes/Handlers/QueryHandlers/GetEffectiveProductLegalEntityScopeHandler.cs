@@ -37,6 +37,7 @@ public sealed class GetEffectiveProductLegalEntityScopeHandler
             rollout?.Mode.ToString() ?? "Uninitialized",
             policy is not null,
             policy?.Version,
-            current is null ? null : CreateProductLegalEntityScopePolicyHandler.Map(current)));
+            current is null ? null : ProductLegalEntityScopeProductAccess.Mask(
+                CreateProductLegalEntityScopePolicyHandler.Map(current), access.Context)));
     }
 }

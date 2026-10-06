@@ -299,6 +299,8 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddScoped<LskuRetirementRequestWorkflowProcessor>();
 builder.Services.AddSingleton<LskuRetirementRequestRecoveryRunner>();
 builder.Services.AddHostedService<LskuRetirementRequestRecoveryWorker>();
+// WP-MDM-SCOPE-ACCEPT-01 FIX2 (3): read-only gauges of what holds product writes (fence age, leases held).
+builder.Services.AddHostedService<ProductLegalEntityScopeHoldGaugeWorker>();
 
 if (!runProductLegalEntityScopeOperational
     && !runLskuIdentityWorkflowRecovery

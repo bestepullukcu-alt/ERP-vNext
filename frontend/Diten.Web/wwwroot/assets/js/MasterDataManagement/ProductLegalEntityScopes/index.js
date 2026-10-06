@@ -47,9 +47,25 @@ const ProductLegalEntityScopesList = (() => {
             503: L.ErrorProviderUnavailable, 504: L.ErrorProviderTimeout })[status] || L.ErrorGateway, 'error');
     };
 
+    const statusText = status => ({ 400: L.ErrorValidation, 403: L.ErrorForbidden, 404: L.ErrorNotFound, 409: L.ErrorConflict,
+        503: L.ErrorProviderUnavailable, 504: L.ErrorProviderTimeout })[status] || L.ErrorGateway;
+    // WP-MDM-SCOPE-ACCEPT-01 FIX2 (SC4): the scope rollout's refusals in the reader's words (seven languages) — never the
+    // stored code. An unknown code falls back to the sentence of its HTTP status.
+    const CODE_KEYS = Object.freeze({
+        PRODUCT_SCOPE_WRITE_FENCE_ACTIVE: 'ErrorFenceActive',
+        PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE: 'ErrorWriterBusy',
+        PRODUCT_SCOPE_WRITER_LEASE_CONTENDED: 'ErrorWriterBusy',
+        PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED: 'ErrorSuspended',
+        PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID: 'ErrorRolloutUnavailable',
+        PRODUCT_SCOPE_RECONCILIATION_REQUIRED: 'ReconciliationPending'
+    });
+    const failureText = (payload, status) => {
+        const code = payload?.errors?.[0] ?? payload?.Errors?.[0];
+        return L[CODE_KEYS[code]] || statusText(status);
+    };
     const errorMessage = async response => {
         await response.text().catch(() => '');
-        return ({ 400: L.ErrorValidation, 403: L.ErrorForbidden, 404: L.ErrorNotFound, 409: L.ErrorConflict, 503: L.ErrorProviderUnavailable, 504: L.ErrorProviderTimeout })[response.status] || L.ErrorGateway;
+        return statusText(response.status);
     };
     const formatDate = input => input ? new Intl.DateTimeFormat(document.documentElement.lang || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(input)) : (L.Unknown || '-');
     const productLabel = row => `${value(row, 'canonicalCode', 'CanonicalCode')} — ${value(row, 'globalProductName', 'GlobalProductName')}`;
@@ -83,7 +99,12 @@ const ProductLegalEntityScopesList = (() => {
             setText('oc-mode', period
                 ? (Number(value(period, 'mode', 'Mode')) === 1 ? L.GroupWide : L.Scoped)
                 : (policy ? L.Unknown : L.LegacyUnclassified));
-            setText('oc-legal-entities', (value(period, 'legalEntityIds', 'LegalEntityIds') || []).join(', ') || '-');
+            // FIX2 (10): companies the reader may not see arrive as a count, never as ids.
+            const hidden = Number(value(period, 'otherLegalEntityCount', 'OtherLegalEntityCount')) || 0;
+            setText('oc-legal-entities', [
+                (value(period, 'legalEntityIds', 'LegalEntityIds') || []).join(', '),
+                hidden > 0 ? String(L.OtherLegalEntities || '{0}').replace('{0}', String(hidden)) : ''
+            ].filter(Boolean).join(' · ') || '-');
             setText('oc-effective-from', formatDate(value(period, 'effectiveFromUtc', 'EffectiveFromUtc')));
             setText('oc-effective-to', formatDate(value(period, 'effectiveToUtc', 'EffectiveToUtc')));
             setText('oc-version', value(policy, 'version', 'Version'));
@@ -169,8 +190,8 @@ const ProductLegalEntityScopesList = (() => {
             method: 'POST', credentials: 'same-origin', headers: { ...getAuthHeaders(), RequestVerificationToken: antiForgeryToken }, body
         });
         const payload = await response.json().catch(() => null);
-        if (response.status === 202) { window.showToast?.(payload?.errors?.[0] || L.ReconciliationPending, 'warning'); return; }
-        if (!response.ok) { window.showToast?.(payload?.errors?.[0] || L.ErrorGateway, 'error'); return; }
+        if (response.status === 202) { window.showToast?.(L.ReconciliationPending, 'warning'); return; }
+        if (!response.ok) { window.showToast?.(failureText(payload, response.status), 'error'); return; }
         const nextToken = payload?.formAttemptToken;
         if (nextToken) document.getElementById('formAttemptToken').value = nextToken;
         bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).hide();
@@ -191,10 +212,10 @@ const ProductLegalEntityScopesList = (() => {
             const response = await fetch(`${endpoint}/end`, { method: 'POST', credentials: 'same-origin', headers: { ...getAuthHeaders(), RequestVerificationToken: antiForgeryToken }, body });
             const payload = await response.json().catch(() => null);
             if (response.status === 202) {
-                window.showToast?.(payload?.errors?.[0] || L.ReconciliationPending, 'warning');
+                window.showToast?.(L.ReconciliationPending, 'warning');
                 return;
             }
-            if (!response.ok) return window.showToast?.(payload?.errors?.[0] || payload?.Errors?.[0] || L.ErrorGateway, 'error');
+            if (!response.ok) return window.showToast?.(failureText(payload, response.status), 'error');
             if (payload?.formAttemptToken) document.getElementById('formAttemptToken').value = payload.formAttemptToken;
             list?.reload('RecordSaved');
         }, { type: 'warning', confirmButtonText: L.End });
@@ -278,7 +299,7 @@ const ProductLegalEntityScopesList = (() => {
     return {
         init: async () => { initSelectors(); bind(); await initDataTable(); },
         buildListOptions,
-        testHooks: { resolveManageMode, canEndPolicy, applyLegalEntitySelection, lifecycleText }
+        testHooks: { resolveManageMode, canEndPolicy, applyLegalEntitySelection, lifecycleText, failureText }
     };
 })();
 document.addEventListener('DOMContentLoaded', () => ProductLegalEntityScopesList.init());

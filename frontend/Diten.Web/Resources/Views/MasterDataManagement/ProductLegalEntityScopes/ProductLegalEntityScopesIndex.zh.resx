@@ -18,4 +18,9 @@
   <data name="LifecycleRetired" xml:space="preserve">
     <value>已停用</value>
   </data>
+  <data name="ErrorFenceActive" xml:space="preserve"><value>范围控制正在启用或停用，更改已暂停。请几分钟后重试。</value></data>
+  <data name="ErrorWriterBusy" xml:space="preserve"><value>此产品的另一项更改正在进行中。请稍后重试。</value></data>
+  <data name="ErrorSuspended" xml:space="preserve"><value>产品范围控制已暂停；恢复之前不接受更改。</value></data>
+  <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>无法读取此租户的产品范围设置。请联系管理员。</value></data>
+  <data name="OtherLegalEntities" xml:space="preserve"><value>其他公司：{0}</value></data>
 </root>

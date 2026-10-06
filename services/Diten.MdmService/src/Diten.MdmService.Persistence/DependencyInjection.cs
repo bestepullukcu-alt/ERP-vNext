@@ -74,6 +74,7 @@ public static class DependencyInjection
         services.AddScoped<IProductLegalEntityScopeGuardedWriteSession,
             ProductLegalEntityScopeGuardedWriteSession>();
         services.AddScoped<IProductLegalEntityScopeRolloutStateRepository, ProductLegalEntityScopeRolloutStateRepository>();
+        services.AddScoped<IProductLegalEntityScopeHoldInventoryRepository, ProductLegalEntityScopeHoldInventoryRepository>();
         services.AddScoped<IGlobalProductIdentityWorkflowOperationRepository,
             GlobalProductIdentityWorkflowOperationRepository>();
         services.AddScoped<IGlobalProductCorrectionOperationRepository,

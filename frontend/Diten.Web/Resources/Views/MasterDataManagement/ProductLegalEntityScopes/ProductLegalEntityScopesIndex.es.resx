@@ -18,4 +18,9 @@
   <data name="LifecycleRetired" xml:space="preserve">
     <value>Retirado</value>
   </data>
+  <data name="ErrorFenceActive" xml:space="preserve"><value>La aplicación del alcance se está activando o desactivando; los cambios están en pausa. Inténtelo de nuevo en unos minutos.</value></data>
+  <data name="ErrorWriterBusy" xml:space="preserve"><value>Hay otro cambio en curso para este producto. Inténtelo de nuevo en breve.</value></data>
+  <data name="ErrorSuspended" xml:space="preserve"><value>La aplicación del alcance de producto está suspendida; no se aceptan cambios hasta que se reanude.</value></data>
+  <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>No se puede leer la configuración de alcance de producto de este inquilino. Póngase en contacto con su administrador.</value></data>
+  <data name="OtherLegalEntities" xml:space="preserve"><value>otras empresas: {0}</value></data>
 </root>

@@ -235,10 +235,21 @@ public sealed class ProductLegalEntityScopeOperationalRunner
             return await BuildTransitionResultAsync(current, products, readinessRepository, facts, cancellationToken);
         }
 
+        // WP-MDM-SCOPE-ACCEPT-01 FIX2 (5) — CT decision: while a named debt is open (unguarded product writers, recovery
+        // runners blind to the fence) an Enforced tenant would have writers the scope does not see. The switch to
+        // Enforced is refused before anything is touched — in every environment, Development included. Suspension (the
+        // rollback direction) stays open.
+        if (facts.Action == ActivateEnforcedAction
+            && ProductLegalEntityScopeActivationDebt.BlocksActivation(
+                services.GetService<IProductLegalEntityScopeActivationDebt>() ?? ProductLegalEntityScopeActivationDebt.Instance))
+            throw new InvalidOperationException(ProductLegalEntityScopeActivationDebt.ActivationBlockedCode);
+
         var expectedMode = facts.Action == ActivateEnforcedAction
             ? ProductLegalEntityScopeRolloutMode.Preparation
             : ProductLegalEntityScopeRolloutMode.Enforced;
-        var token = CreateFenceToken(facts);
+        // FIX2 (12): the fence token is unique per ATTEMPT. A repeat (or a concurrent run) of the same command takes the
+        // fence over under its own token, so the attempt it replaced can no longer bind, commit or abort it.
+        var token = CreateFenceToken(facts, Guid.NewGuid());
         var fence = new ProductLegalEntityScopeActivationFence
         {
             Token = token, State = ProductLegalEntityScopeAdmissionState.Closing,
@@ -273,6 +284,7 @@ public sealed class ProductLegalEntityScopeOperationalRunner
             expectedMode, cancellationToken);
         if (!acquired.Acquired)
             throw new InvalidOperationException(acquired.FailureCode ?? "PRODUCT_SCOPE_ACTIVATION_FENCE_CONFLICT");
+        ProductLegalEntityScopeRolloutMetrics.CountCleared(acquired.ClearedLeases);
 
         ProductLegalEntityScopeInventorySnapshot second;
         ProductLegalEntityScopeInventorySnapshotRequest secondRequest;
@@ -383,10 +395,15 @@ public sealed class ProductLegalEntityScopeOperationalRunner
         var products = services.GetRequiredService<IGlobalProductRepository>();
         var current = await repository.GetAsync(cancellationToken)
             ?? throw new InvalidOperationException("PRODUCT_SCOPE_ROLLOUT_NOT_INITIALIZED");
-        var token = CreateFenceToken(facts);
-        if (current.ActiveFence is null || !string.Equals(current.ActiveFence.Token, token, StringComparison.Ordinal))
+        // FIX2 (12): the fence is found by its command (the token belongs to whichever attempt holds it now) and abandoned
+        // under the token read — never another command's fence.
+        if (current.ActiveFence is not { } fence || current.Id != facts.ExpectedRolloutStateId
+            || current.Version != facts.ExpectedRolloutVersion
+            || !string.Equals(fence.Action, facts.Action, StringComparison.Ordinal)
+            || fence.CommandId != facts.CommandId || fence.ActorId != facts.ActorId
+            || !string.Equals(fence.ReasonCode, facts.ReasonCode, StringComparison.Ordinal))
             throw new InvalidOperationException("PRODUCT_SCOPE_ACTIVATION_FENCE_NOT_FOUND");
-        await AbortFenceAsync(repository, token, facts, "OPERATOR_ABORT", cancellationToken);
+        await AbortFenceAsync(repository, fence.Token, facts, "OPERATOR_ABORT", cancellationToken);
         var after = await repository.GetAsync(cancellationToken)
             ?? throw new InvalidOperationException("PRODUCT_SCOPE_RECONCILIATION_REQUIRED");
         if (after.ActiveFence is not null)
@@ -407,7 +424,7 @@ public sealed class ProductLegalEntityScopeOperationalRunner
         facts.TenantId, rollout.Id, rollout.Mode, rollout.Version, facts.Action,
         facts.CommandId!.Value, facts.ActorId!.Value, facts.ReasonCode, _timeProvider.GetUtcNow());
 
-    private static string CreateFenceToken(ProductLegalEntityScopeOperationalFacts facts)
+    private static string CreateFenceToken(ProductLegalEntityScopeOperationalFacts facts, Guid attempt)
     {
         var payload = string.Join('\n',
             $"tenantId={facts.TenantId:D}",
@@ -416,7 +433,8 @@ public sealed class ProductLegalEntityScopeOperationalRunner
             $"action={facts.Action.ToUpperInvariant()}",
             $"commandId={facts.CommandId!.Value:D}",
             $"actorId={facts.ActorId!.Value:D}",
-            $"reasonCode={facts.ReasonCode}") + "\n";
+            $"reasonCode={facts.ReasonCode}",
+            $"attempt={attempt:D}") + "\n";
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));
     }
 

@@ -79,8 +79,70 @@ public sealed class ProductLegalEntityScopeReadAccessTests
 
         await world.CreateOptions(product);
 
-        Assert.All(world.Provider.PermissionKeys, key => Assert.Equal("mdm.product-legal-entity-scopes.configure", key));
-        Assert.NotEmpty(world.Provider.PermissionKeys);
+        // The companies offered come from the configure permission; FIX2 (10) also asks the Global Product read, only to
+        // decide whether the product's code and name may be shown.
+        Assert.Contains("mdm.product-legal-entity-scopes.configure", world.Provider.PermissionKeys);
+        Assert.All(world.Provider.PermissionKeys, key => Assert.Contains(key,
+            new[] { "mdm.product-legal-entity-scopes.configure", "mdm.global-products.read" }));
+    }
+
+    [Fact]
+    public async Task A_caller_of_company_A_does_not_see_the_other_companies_of_a_product_scoped_to_A_and_B()
+    {
+        // FIX2 (10): before, a product visible from A returned B's id on every read.
+        var world = World.Enforced(callerCompanies: [CompanyA]);
+        var product = world.AddProduct(CompanyA, CompanyB);
+
+        var policy = (await world.Policy(product)).Data!;
+        var history = (await world.History(product)).Data!;
+        var effective = (await world.Effective(product)).Data!;
+
+        foreach (var period in policy.Periods.Concat(history).Append(effective.CurrentPeriod!))
+        {
+            Assert.Equal([CompanyA], period.LegalEntityIds);
+            Assert.Equal(1, period.OtherLegalEntityCount);
+        }
+    }
+
+    [Fact]
+    public async Task In_preparation_the_scope_names_every_company_as_before()
+    {
+        var world = World.Preparation();
+        var product = world.AddProduct(CompanyA, CompanyB);
+
+        var period = Assert.Single((await world.Policy(product)).Data!.Periods);
+
+        Assert.Equal(new[] { CompanyA, CompanyB }.Order(), period.LegalEntityIds.Order());
+        Assert.Equal(0, period.OtherLegalEntityCount);
+    }
+
+    [Fact]
+    public async Task In_a_suspended_tenant_every_read_answers_like_a_missing_product()
+    {
+        // Test gap: S1 in FailClosedSuspended — nothing is shown, and the answer does not reveal the product exists.
+        var world = World.Suspended();
+        var product = world.AddProduct(CompanyA);
+
+        Assert.Equal((404, "GLOBAL_PRODUCT_NOT_FOUND"), Outcome(await world.Policy(product)));
+        Assert.Equal((404, "GLOBAL_PRODUCT_NOT_FOUND"), Outcome(await world.History(product)));
+        Assert.Equal((404, "GLOBAL_PRODUCT_NOT_FOUND"), Outcome(await world.Effective(product)));
+        Assert.Equal((404, "GLOBAL_PRODUCT_NOT_FOUND"), Outcome(await world.CreateOptions(product)));
+    }
+
+    [Fact]
+    public async Task The_create_options_show_a_products_code_and_name_only_to_a_caller_who_may_read_the_product()
+    {
+        // FIX2 (10): the code and the name are Global Product data. A caller who may configure scopes in A but read Global
+        // Products only in B hears what a missing product answers.
+        var world = World.Enforced(callerCompanies: [CompanyA], readCompanies: [CompanyB]);
+        var product = world.AddProduct(CompanyA);
+
+        Assert.Equal((404, "GLOBAL_PRODUCT_NOT_FOUND"), Outcome(await world.CreateOptions(product)));
+
+        var reader = World.Enforced(callerCompanies: [CompanyA]);
+        var visible = reader.AddProduct(CompanyA);
+        Assert.True((await reader.CreateOptions(visible)).IsSuccessful);
+        Assert.Contains("mdm.global-products.read", reader.Provider.PermissionKeys);
     }
 
     private static (int, string?) Outcome<T>(Diten.Shared.Core.Response<T> response) =>
@@ -94,21 +156,23 @@ public sealed class ProductLegalEntityScopeReadAccessTests
         private readonly TenantContext _tenant = new();
         private readonly IReadOnlyList<Guid> _companies;
 
-        private World(ProductLegalEntityScopeRolloutMode mode, IReadOnlyList<Guid> callerCompanies)
+        private World(ProductLegalEntityScopeRolloutMode mode, IReadOnlyList<Guid> callerCompanies, IReadOnlyList<Guid>? readCompanies = null)
         {
             _tenant.SetTenant(Tenant);
             _rollout = ProductLegalEntityScopeRolloutState.CreatePreparation(Tenant, Guid.NewGuid(), Guid.NewGuid(), Created);
             _rollout.Mode = mode;
             _companies = callerCompanies;
-            Provider = new Provider(callerCompanies);
+            Provider = new Provider(callerCompanies, readCompanies);
         }
 
         public Provider Provider { get; }
 
-        public static World Enforced(IReadOnlyList<Guid> callerCompanies) => new(ProductLegalEntityScopeRolloutMode.Enforced, callerCompanies);
+        public static World Enforced(IReadOnlyList<Guid> callerCompanies, IReadOnlyList<Guid>? readCompanies = null) =>
+            new(ProductLegalEntityScopeRolloutMode.Enforced, callerCompanies, readCompanies);
         public static World Preparation() => new(ProductLegalEntityScopeRolloutMode.Preparation, []);
+        public static World Suspended() => new(ProductLegalEntityScopeRolloutMode.FailClosedSuspended, [CompanyA]);
 
-        public Guid AddProduct(Guid company)
+        public Guid AddProduct(params Guid[] companies)
         {
             var id = Guid.NewGuid();
             _products[id] = new GlobalProduct
@@ -116,13 +180,13 @@ public sealed class ProductLegalEntityScopeReadAccessTests
                 Id = id, TenantId = Tenant, CanonicalCode = "GP-" + id.ToString("N")[..6], GlobalProductName = "Product",
                 GlobalProductNameNormalized = "PRODUCT", LifecycleStatus = ProductIdentityLifecycleStatus.Draft
             };
-            AddPolicyOnly(id, company);
+            AddPolicyOnly(id, companies);
             return id;
         }
 
-        public void AddPolicyOnly(Guid product, Guid company) =>
+        public void AddPolicyOnly(Guid product, params Guid[] companies) =>
             _policies[product] = ProductLegalEntityScopePolicy.Create(
-                Tenant, product, Guid.NewGuid(), ProductLegalEntityScopeMode.Scoped, [company], Guid.NewGuid(), Created);
+                Tenant, product, Guid.NewGuid(), ProductLegalEntityScopeMode.Scoped, companies, Guid.NewGuid(), Created);
 
         private ProductLegalEntityScopeProductAccess Access()
         {
@@ -163,7 +227,9 @@ public sealed class ProductLegalEntityScopeReadAccessTests
         }
     }
 
-    internal sealed class Provider(IReadOnlyList<Guid> companies) : ITrustedLegalEntityScopeProvider
+    /// <summary>The caller's companies per permission: <paramref name="readCompanies"/> (when given) for the Global Product
+    /// read, <paramref name="companies"/> for every other permission.</summary>
+    internal sealed class Provider(IReadOnlyList<Guid> companies, IReadOnlyList<Guid>? readCompanies = null) : ITrustedLegalEntityScopeProvider
     {
         public int Calls { get; private set; }
         public List<string> PermissionKeys { get; } = [];
@@ -174,7 +240,8 @@ public sealed class ProductLegalEntityScopeReadAccessTests
             Calls++;
             PermissionKeys.Add(permissionKey);
             return Task.FromResult(TrustedLegalEntityScopeProviderResult.Success(
-                expectedTenantId, expectedSubjectId, moduleCode, permissionKey, DateTimeOffset.UtcNow, companies));
+                expectedTenantId, expectedSubjectId, moduleCode, permissionKey, DateTimeOffset.UtcNow,
+                permissionKey == "mdm.global-products.read" && readCompanies is not null ? readCompanies : companies));
         }
     }
 

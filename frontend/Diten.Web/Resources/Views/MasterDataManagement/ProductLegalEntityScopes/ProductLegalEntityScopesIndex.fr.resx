@@ -18,4 +18,9 @@
   <data name="LifecycleRetired" xml:space="preserve">
     <value>Retiré</value>
   </data>
+  <data name="ErrorFenceActive" xml:space="preserve"><value>L'application du périmètre est en cours d'activation ou de désactivation ; les modifications sont suspendues. Réessayez dans quelques minutes.</value></data>
+  <data name="ErrorWriterBusy" xml:space="preserve"><value>Une autre modification de ce produit est en cours. Réessayez dans un instant.</value></data>
+  <data name="ErrorSuspended" xml:space="preserve"><value>L'application du périmètre produit est suspendue ; aucune modification n'est acceptée jusqu'à sa reprise.</value></data>
+  <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>Les paramètres de périmètre produit de ce locataire sont illisibles. Contactez votre administrateur.</value></data>
+  <data name="OtherLegalEntities" xml:space="preserve"><value>autres sociétés : {0}</value></data>
 </root>

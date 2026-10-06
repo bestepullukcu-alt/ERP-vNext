@@ -18,4 +18,9 @@
   <data name="LifecycleRetired" xml:space="preserve">
     <value>متوقف</value>
   </data>
+  <data name="ErrorFenceActive" xml:space="preserve"><value>يجري تفعيل تطبيق النطاق أو إيقافه؛ التغييرات متوقفة مؤقتًا. أعد المحاولة بعد بضع دقائق.</value></data>
+  <data name="ErrorWriterBusy" xml:space="preserve"><value>هناك تغيير آخر قيد التنفيذ على هذا المنتج. أعد المحاولة بعد قليل.</value></data>
+  <data name="ErrorSuspended" xml:space="preserve"><value>تطبيق نطاق المنتج معلّق؛ لا تُقبل التغييرات حتى يُستأنف.</value></data>
+  <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>تعذّرت قراءة إعدادات نطاق المنتج لهذا المستأجر. اتصل بالمسؤول.</value></data>
+  <data name="OtherLegalEntities" xml:space="preserve"><value>شركات أخرى: {0}</value></data>
 </root>

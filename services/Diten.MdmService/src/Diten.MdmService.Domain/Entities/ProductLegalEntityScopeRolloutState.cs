@@ -19,6 +19,13 @@ public sealed class ProductLegalEntityScopeRolloutState : EntityBase, IAuditInte
     /// </summary>
     public List<ProductLegalEntityScopeWriterLease> ProductWriterLeases { get; set; } = [];
 
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX2 (5) — the most product writers one tenant holds at once. A new writer beyond it is
+    /// refused as busy; the list (rewritten by every acquisition) never grows without bound. A stored list above it is
+    /// still readable.
+    /// </summary>
+    public const int MaximumProductWriterLeases = 256;
+
     /// <summary>Optimistic revision of <see cref="ProductWriterLeases"/>: every change of the list moves it by one.</summary>
     public long ProductWriterLeaseRevision { get; set; }
 

@@ -87,12 +87,21 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
         };
         // WP-MDM-SCOPE-ACCEPT-01 FIX1 B4: a lease per write, keyed by what it touches — writers of different products
         // proceed side by side; an expired lease of another command is taken over.
-        var acquired = await _rollouts.AcquireProductWriterLeaseAsync(requested, cancellationToken);
+        ProductLegalEntityScopeWriterLeaseResult acquired;
+        try
+        {
+            acquired = await _rollouts.AcquireProductWriterLeaseAsync(requested, cancellationToken);
+        }
+        catch (InvalidOperationException)
+        {
+            ProductLegalEntityScopeRolloutMetrics.CountUnreadable("write_admission");
+            return ProductLegalEntityScopeWriteAdmission.Denied(RolloutUnreadableCode, 503);
+        }
+        CountAcquisition(acquired, "writer");
+        if (acquired.LegacyBypass) return ProductLegalEntityScopeWriteAdmission.Legacy();
         if (!acquired.Acquired)
             return ProductLegalEntityScopeWriteAdmission.Denied(
                 acquired.FailureCode ?? "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
-        if (acquired.LegacyBypass) return ProductLegalEntityScopeWriteAdmission.Legacy();
-        ProductLegalEntityScopeRolloutMetrics.CountTakenOver(acquired.TakenOver, "writer");
 
         var lease = acquired.Lease!;
         // The proof is the state of the write's own objects (never a collection read in full). It is bound once, by the
@@ -106,8 +115,17 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
             {
                 if (!await _rollouts.BindProductWriterLeaseBaselineAsync(
                         lease.Token, lease.Generation, baseline.Hash, cancellationToken))
+                {
+                    // FIX2 (3): refused with the lease still in the list (its exit: expiry) — counted, never silent.
+                    ProductLegalEntityScopeRolloutMetrics.CountRetained("baseline_conflict");
                     return ProductLegalEntityScopeWriteAdmission.Denied("PRODUCT_SCOPE_WRITER_LEASE_BASELINE_CONFLICT");
+                }
                 lease.PreWriteStateHash = baseline.Hash;
+            }
+            else
+            {
+                // FIX2 (8): no proof of the write's objects — the write is admitted, but only a success frees its lease.
+                ProductLegalEntityScopeRolloutMetrics.CountBaselineUnverifiable();
             }
         }
 
@@ -158,8 +176,18 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
             ExpiresAtUtc = now.AddSeconds(ProductLegalEntityScopeWriterLease.DurationSeconds),
             ObjectKeys = [.. identity.ObjectKeys]
         };
-        var acquired = await _rollouts.AcquireWriterLeaseAsync(requested, cancellationToken);
-        ProductLegalEntityScopeRolloutMetrics.CountTakenOver(acquired.TakenOver, "replace");
+        ProductLegalEntityScopeWriterLeaseResult acquired;
+        try
+        {
+            acquired = await _rollouts.AcquireWriterLeaseAsync(requested, cancellationToken);
+        }
+        catch (InvalidOperationException)
+        {
+            // FIX2 (11): a rollout record that cannot be read refuses the Replace with the guard's coded 503.
+            ProductLegalEntityScopeRolloutMetrics.CountUnreadable("replace_admission");
+            return ProductLegalEntityScopeWriteAdmission.Denied(RolloutUnreadableCode, 503);
+        }
+        CountAcquisition(acquired, "replace");
         if (!acquired.Acquired || acquired.LegacyBypass || acquired.Lease is null)
         {
             return ProductLegalEntityScopeWriteAdmission.Denied(
@@ -175,6 +203,7 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
                 authority.PayloadFingerprint,
                 StringComparison.Ordinal))
         {
+            ProductLegalEntityScopeRolloutMetrics.CountRetained("replace_authority_mismatch");
             return ProductLegalEntityScopeWriteAdmission.Denied(
                 "PRODUCT_SCOPE_WRITER_LEASE_AUTHORITY_MISMATCH");
         }
@@ -190,6 +219,7 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
                     baseline.Hash,
                     cancellationToken))
             {
+                ProductLegalEntityScopeRolloutMetrics.CountRetained("replace_baseline_conflict");
                 return ProductLegalEntityScopeWriteAdmission.Denied(
                     "PRODUCT_SCOPE_WRITER_LEASE_BASELINE_CONFLICT");
             }
@@ -214,6 +244,10 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
             || result.WriteOutcomeAmbiguous
             || !result.Succeeded && !result.VerifiedZeroMutation)
         {
+            // FIX2 (3): the slot is kept until the same command repeats or it expires — counted, never silent.
+            ProductLegalEntityScopeRolloutMetrics.CountRetained(result.WriteOutcomeAmbiguous
+                ? "replace_ambiguous"
+                : result.LeaseRetentionRequired ? "replace_rejected" : "replace_failed");
             return;
         }
 
@@ -279,6 +313,18 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
         else
             ProductLegalEntityScopeRolloutMetrics.CountRetained("failed_changed");
     }
+
+    private static void CountAcquisition(ProductLegalEntityScopeWriterLeaseResult acquired, string by)
+    {
+        ProductLegalEntityScopeRolloutMetrics.CountTakenOver(acquired.TakenOver, by);
+        ProductLegalEntityScopeRolloutMetrics.CountSwept(acquired.Swept);
+        if (acquired.Renewed) ProductLegalEntityScopeRolloutMetrics.CountRenewed(by);
+        if (string.Equals(acquired.FailureCode, LeaseContendedCode, StringComparison.Ordinal))
+            ProductLegalEntityScopeRolloutMetrics.CountContended(by);
+    }
+
+    /// <summary>FIX2 (7): every optimistic round lost — not a conflict with another writer of the same objects.</summary>
+    public const string LeaseContendedCode = "PRODUCT_SCOPE_WRITER_LEASE_CONTENDED";
 
     private static bool ExactNestedMutation(
         IProductLegalEntityScopeInventoryMutation parent,

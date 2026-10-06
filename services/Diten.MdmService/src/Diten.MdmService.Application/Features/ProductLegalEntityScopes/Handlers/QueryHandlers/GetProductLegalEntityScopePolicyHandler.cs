@@ -32,7 +32,7 @@ public sealed class GetProductLegalEntityScopePolicyHandler
         var policy = await _policies.GetByGlobalProductIdAsync(request.GlobalProductId, cancellationToken);
         return policy is null
             ? Response<ProductLegalEntityScopeModels.PolicyDto>.Fail("PRODUCT_SCOPE_POLICY_NOT_FOUND", 404)
-            : Response<ProductLegalEntityScopeModels.PolicyDto>.Success(
-                CreateProductLegalEntityScopePolicyHandler.Map(policy));
+            : Response<ProductLegalEntityScopeModels.PolicyDto>.Success(ProductLegalEntityScopeProductAccess.Mask(
+                CreateProductLegalEntityScopePolicyHandler.Map(policy), access.Context!));
     }
 }
