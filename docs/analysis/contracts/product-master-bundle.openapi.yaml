@@ -6,8 +6,13 @@ info:
     Canonical kimlik (Model A: GlobalProduct→Gsku→Lsku→FinishedGood). Consumer'lar READ-ONLY.
     Model B (Product) bu contract'ta YOK (DEC-INV-17). Tenant+LegalEntity scoped (server-resolved).
     Mock: `prism mock product-master-bundle.openapi.yaml`.
-  version: 1.0.0
-  x-status: FROZEN
+    v1.1 (MOD-0290-FU04, 2026-10-06) — YALNIZ EKLEME: malzeme kalemleri (hammadde, ambalaj malzemesi, yarı mamul,
+    sarf) `SkuLevel: Item` ile; kalemde kalem kimliği = SKU kimliği. `itemId` v1.0'da Global Ürün kimliğidir; `Item`
+    seviyesinde kalemin kendi kimliğidir (skuLevel hangisi olduğunu söyler). Kalemler grup geneli ana veridir:
+    kalem satırlarına tüzel kişi süzmesi uygulanmaz; ürün satırlarının kapsamı aynen kalır.
+  version: 1.1.0
+  x-status: "FROZEN v1.0 · DRAFT v1.1 — v1.0 parçaları dondurulmuş ve değişmez; v1.1 eklemeleri (Item seviyesi, /items, /stockable-items, yeni durumlar) G3'te stok ekibinin `skuLevel=Item` cevabından sonra dondurulur (MOD-0290-FU04 §0 Karar 2). Tüketiciler v1.1 eklemelerine o zamana kadar bağlanmaz."
+  x-frozen-baseline: 1.0.0
   x-owner: MOD-0290
   x-decisions: [DEC-INV-17, 18]
 servers:
@@ -44,7 +49,8 @@ paths:
   /skus/{skuId}:
     get:
       operationId: getSku
-      summary: SKU (SkuId + SkuLevel → Gsku|Lsku|FinishedGood)
+      summary: SKU (SkuId + SkuLevel → Gsku|Lsku|FinishedGood|Item)
+      description: "v1.1 — level=Item: skuId == itemId (kalemin kendi kimliği); canonicalCode IT-…; packUomCode, packQuantity, gtin, marketCode null (kalem ambalaj / pazar seviyesi taşımaz)."
       parameters:
         - { name: skuId, in: path, required: true, schema: { type: string, format: uuid } }
         - { name: level, in: query, required: true, schema: { $ref: '#/components/schemas/SkuLevel' } }
@@ -69,6 +75,7 @@ paths:
     get:
       operationId: resolveSkuProduct
       summary: SKU → GlobalProduct resolve (D-SKU-LINK — kritik)
+      description: "v1.1 — level=Item: Global Ürün yoktur; dönen itemId kalemin kendi kimliğidir (= skuId)."
       parameters:
         - { name: skuId, in: path, required: true, schema: { type: string, format: uuid } }
         - { name: level, in: query, required: true, schema: { $ref: '#/components/schemas/SkuLevel' } }
@@ -101,6 +108,50 @@ paths:
                   - { fromUom: BOX, toUom: EA, numerator: "10", denominator: "1" }
                   - { fromUom: PALLET, toUom: BOX, numerator: "100", denominator: "1" }
                 contractVersion: v1
+  /items/{itemId}:
+    get:
+      operationId: getMaterialItem
+      summary: "v1.1 — Malzeme kalemi (hammadde / ambalaj / yarı mamul / sarf)"
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Kalem
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MaterialItemRef' }
+              example:
+                itemId: d4e5f6a7-0000-0000-0000-000000000003
+                canonicalCode: IT-000000000001
+                name: Amoksisilin trihidrat
+                itemType: RAW_MATERIAL
+                lifecycleStatus: Active
+                baseUomId: KGM
+                shelfLifeDays: null
+                retestDays: 365
+                minRemainingShelfLifeDays: 180
+                storageCondition: AMBIENT_15_25
+                lotControlled: true
+                serialControlled: false
+                contractVersion: v1.1
+        '404': { $ref: '#/components/responses/UnknownItem' }
+  /stockable-items:
+    get:
+      operationId: searchStockableItems
+      summary: "v1.1 — Stoklanabilir kalem araması (malzeme kalemi + Bitmiş Ürün aynı biçimde)"
+      parameters:
+        - { name: q, in: query, required: false, schema: { type: string, maxLength: 200 }, description: kod ya da ad }
+        - { name: skuLevel, in: query, required: false, schema: { $ref: '#/components/schemas/SkuLevel' } }
+        - { name: itemType, in: query, required: false, schema: { $ref: '#/components/schemas/ItemType' } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/LifecycleStatus' } }
+        - { name: page, in: query, required: false, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 25 } }
+      responses:
+        '200':
+          description: Sayfa
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StockableItemPage' }
   /validate:
     post:
       operationId: validateRefs
@@ -132,8 +183,54 @@ components:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
   schemas:
     Decimal: { type: string, pattern: '^-?\d+(\.\d+)?$' }
-    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood] }
-    LifecycleStatus: { type: string, enum: [Draft, Active, Archived] }
+    SkuLevel:
+      type: string
+      enum: [Gsku, Lsku, FinishedGood, Item]
+      description: "v1.1 `Item` ekledi — malzeme kalemi; kalem kimliği = SKU kimliği"
+    LifecycleStatus:
+      type: string
+      enum: [Draft, Active, Archived, PendingActivation, Inactive, Retired]
+      description: "v1.1 PendingActivation / Inactive / Retired ekledi (kalem yaşam döngüsü). Tüketici bilinmeyen değeri seçilemez saymalı."
+    ItemType: { type: string, enum: [RAW_MATERIAL, PACKAGING_MATERIAL, SEMI_FINISHED, CONSUMABLE], description: v1.1 }
+    MaterialItemRef:
+      type: object
+      description: v1.1 — malzeme kalemi
+      properties:
+        itemId: { type: string, format: uuid }
+        canonicalCode: { type: string, description: "IT-{12 hane}" }
+        name: { type: string }
+        itemType: { $ref: '#/components/schemas/ItemType' }
+        lifecycleStatus: { $ref: '#/components/schemas/LifecycleStatus' }
+        baseUomId: { type: string, description: "MOD-0048 item-uom (UN/ECE Rec 20)" }
+        shelfLifeDays: { type: integer, nullable: true }
+        retestDays: { type: integer, nullable: true }
+        minRemainingShelfLifeDays: { type: integer, nullable: true }
+        storageCondition: { type: string, nullable: true, description: "MOD-0048 storage-condition" }
+        lotControlled: { type: boolean }
+        serialControlled: { type: boolean }
+        contractVersion: { type: string }
+    StockableItemRef:
+      type: object
+      description: "v1.1 — kalem ve Bitmiş Ürün için tek biçim (FG'de stok alanları bugün null döner)"
+      properties:
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        itemId: { type: string, format: uuid }
+        canonicalCode: { type: string }
+        name: { type: string }
+        itemType: { type: string, nullable: true, description: "Item seviyesinde ItemType; FinishedGood için null" }
+        lifecycleStatus: { $ref: '#/components/schemas/LifecycleStatus' }
+        baseUomId: { type: string, nullable: true }
+        lotControlled: { type: boolean, nullable: true }
+        serialControlled: { type: boolean, nullable: true }
+    StockableItemPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/StockableItemRef' } }
+        page: { type: integer }
+        pageSize: { type: integer }
+        totalCount: { type: integer }
+        contractVersion: { type: string }
     ProductRef:
       type: object
       properties:
@@ -155,7 +252,7 @@ components:
         skuId: { type: string, format: uuid }
         skuLevel: { $ref: '#/components/schemas/SkuLevel' }
         canonicalCode: { type: string }
-        itemId: { type: string, format: uuid, description: 'resolved GlobalProduct (D-SKU-LINK)' }
+        itemId: { type: string, format: uuid, description: 'resolved GlobalProduct (D-SKU-LINK); v1.1 skuLevel=Item için kalemin kendi kimliği (= skuId)' }
         packUomCode: { type: string, nullable: true }
         packQuantity: { $ref: '#/components/schemas/Decimal' }
         gtin: { type: string, nullable: true }
