@@ -71,12 +71,29 @@ public sealed class RepairLskuChildAdmissionsHandler
             var current = versions.TryGetValue(orphan.GskuId, out var version) ? orphan with { GskuVersion = version } : orphan;
             // LSKU FIX2 item 5: an admission held only by a code consumed for an identity whose row never came — the
             // code is burned first (its own audited write on the reservation); a refused burn keeps the admission.
+            // FIX3 M6: a code reserved long ago and never consumed — consumed now for no identity (a fresh one no row
+            // will ever carry) so it can be burned like the others; a refused step keeps the admission.
+            if (current is { ReservationNeverConsumed: true, ReservationToBurnId: { } neverConsumedId,
+                             ReservationVersion: { } neverConsumedVersion })
+            {
+                var consumed = await _reservations.ConsumeForIdentityAsync(neverConsumedId, CodeBearingEntityType.Lsku,
+                    Guid.NewGuid(), neverConsumedVersion, $"admission-repair-consume:{neverConsumedId:N}",
+                    _actorContext.ActorId, current.CreationCommandId, cancellationToken);
+                if (!consumed.Succeeded || consumed.Reservation is not { ConsumedEntityId: { } noIdentity } taken)
+                {
+                    items.Add(new(orphan.GskuId, orphan.CreationCommandId, orphan.AcquiredAtUtc, false,
+                        BurnRefused + ":" + (consumed.ErrorCode ?? "UNKNOWN")));
+                    continue;
+                }
+                current = current with { ReservationIdentityId = noIdentity, ReservationVersion = taken.Version };
+            }
             if (current.ReservationToBurnId is { } reservationId
                 && current.ReservationIdentityId is { } identityId && current.ReservationVersion is { } reservationVersion)
             {
                 var burned = await _reservations.BurnIdentityBindingAsync(reservationId, identityId, reservationVersion,
                     $"admission-repair-burn:{reservationId:N}", _actorContext.ActorId, current.CreationCommandId,
-                    "ADMISSION_REPAIR_IDENTITY_NEVER_WRITTEN", cancellationToken);
+                    current.ReservationNeverConsumed ? "ADMISSION_REPAIR_CODE_NEVER_CONSUMED"
+                        : "ADMISSION_REPAIR_IDENTITY_NEVER_WRITTEN", cancellationToken);
                 if (!burned.Succeeded)
                 {
                     items.Add(new(orphan.GskuId, orphan.CreationCommandId, orphan.AcquiredAtUtc, false,

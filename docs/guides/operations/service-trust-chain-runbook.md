@@ -276,7 +276,22 @@ both workers (a non-default `--client-code` also gets both Platform entries). A 
 LSKU sections and is reported as "not a complete setup": move it aside and run the bootstrap again. One published
 approval definition per LSKU flow and tenant (step 4). The stuck child-creation admission gauge
 (`GSKU_CHILD_ADMISSION`, every child kind) runs on its own worker (`GskuChildAdmissionGauge:Enabled`, default on,
-`:IntervalSeconds` 300) — it does not need any LSKU worker to be on.
+`:IntervalSeconds` 300) — it does not need any LSKU worker to be on. It counts admissions on GSKUs only: the Global
+Product's own `ChildCreationAdmissions` (GSKU creation under a GP) are not counted by it.
+
+*LSKU gauges (FIX3 items 2, 12, 14, 15):* the same worker also records the `LSKU_IDENTITY` flow, so it is counted even
+while the identity worker is off; `mdm.product_identity.recovery.count_failed{flow}` = 1 says the last count failed.
+
+| gauge (`flow=LSKU_IDENTITY`) | counts | what to do |
+|---|---|---|
+| `manual_reconciliation` | stuck (manual reconciliation), parked for the maker (`AwaitingMakerReplay`), and a wait at its limit (Retryable with `LSKU_IDENTITY_WORKFLOW_RETRY_LIMIT_REACHED`: a provider or store that keeps refusing — e.g. a wrong service identity, 401/403 — keeps the approval waiting, counted, logged once) | remove the cause; the next worker attempt succeeds and the count resets |
+| `needing_a_person` | stuck operations their requester's repeat cannot settle, and a withdrawal whose cancel was left unanswered for more than an hour (`WithdrawalOutcomeUnknown` / parked for its maker) | ask the requester to repeat the same withdrawal; otherwise escalate |
+
+Operator repair of leaked admissions (`POST /api/lskus/operator/child-admission-repairs`, recover key): an admission is
+never released while a live row or a live code can still become the child. Past the cutoff the repair first BURNS a
+code that can no longer become one — consumed for an identity whose row never came, bound to a cancelled row, or
+reserved and never consumed — and only then releases the admission, with an audit intent on the GSKU in the same
+write. A refused burn keeps the admission and is reported (`LSKU_ADMISSION_REPAIR_BURN_REFUSED:<code>`).
 
 - **Tracked** (not secret): the three template codes and the identity reason code in MDM's
   `appsettings.Development.json`, and Platform's three `TrustedWorkflowStartAuthorization` entries for the default

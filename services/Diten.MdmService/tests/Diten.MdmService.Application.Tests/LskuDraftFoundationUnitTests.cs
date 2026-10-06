@@ -110,6 +110,12 @@ public sealed class LskuDraftFoundationUnitTests
         Assert.Equal(30, (int)ProductAuditOperation.LskuIdentityRejected);
         Assert.Equal(31, (int)ProductAuditOperation.LskuIdentityRetired);
         Assert.Equal(66, (int)ProductAuditOperation.LskuIdentityApprovalWithdrawn);
+        // LSKU FIX3 item 18: above GP flow 3's 79–81 (takeover 23fb2d85f), order kept.
+        Assert.Equal(82, (int)ProductAuditOperation.GskuChildCreationAdmissionReleased);
+        Assert.Equal(83, (int)ProductAuditOperation.LskuDraftCancelled);
+        Assert.Equal(84, (int)ProductAuditOperation.LskuIdentityDecisionNotApplicable);
+        Assert.Equal(85, (int)ProductAuditOperation.LskuRetirementManualReconciliationRequired);
+        Assert.Equal(86, (int)ProductAuditOperation.LskuIdentitySubmitAbandoned);
         Assert.Equal(67, (int)ProductAuditOperation.LskuRetirementRequested);
         Assert.Equal(68, (int)ProductAuditOperation.LskuRetirementRejected);
     }

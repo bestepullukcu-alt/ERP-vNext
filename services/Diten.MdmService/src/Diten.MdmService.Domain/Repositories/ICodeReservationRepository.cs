@@ -51,3 +51,10 @@ public interface ICodeReservationRepository
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("CODE_RESERVATION_BURN_NOT_IMPLEMENTED");
 }
+
+// LSKU FIX3 item 5 (c): the burn's named refusals (the burn reads "no live row bound" in its own transaction).
+public static class CodeReservationBurnCodes
+{
+    public const string BoundRowExists = "CODE_RESERVATION_BOUND_ROW_EXISTS";
+    public const string TransactionUnavailable = "CODE_RESERVATION_BURN_TRANSACTION_UNAVAILABLE";
+}

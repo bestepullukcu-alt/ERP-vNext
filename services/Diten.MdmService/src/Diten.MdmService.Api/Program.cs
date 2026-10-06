@@ -300,6 +300,7 @@ builder.Services.AddScoped(sp =>
 });
 builder.Services.AddScoped<LskuRetirementRequestWorkflowProcessor>();
 builder.Services.AddSingleton<GskuChildAdmissionGauge>();
+builder.Services.AddSingleton<LskuIdentityGauge>();
 builder.Services.AddOptions<GskuChildAdmissionGaugeOptions>()
     .Bind(builder.Configuration.GetSection(GskuChildAdmissionGaugeOptions.SectionName));
 builder.Services.AddHostedService<GskuChildAdmissionGaugeWorker>();

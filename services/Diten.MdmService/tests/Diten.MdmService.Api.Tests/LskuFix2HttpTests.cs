@@ -202,13 +202,14 @@ public sealed class LskuFix2HttpTests(MdmHttpHost host)
     [Fact]
     public async Task Item05_A_repeat_refused_early_burns_its_own_code_and_releases_its_admission()
     {
+        // FIX3 item 5: the seeded code is THIS request's (its actor) — another actor's code is IDEMPOTENCY_KEY_CONFLICT.
         var gsku = await ApprovedGskuAsync();
         var key = Guid.NewGuid();
         var commandId = key.ToString("D").ToUpperInvariant();
         var reservations = new CodeReservationRepository(host.Database, new Tenant(_tenant));
-        var reserved = await reservations.ReserveAsync(CodeBearingEntityType.Lsku, commandId, "test", commandId);
+        var reserved = await reservations.ReserveAsync(CodeBearingEntityType.Lsku, commandId, _maker.ToString("D"), commandId);
         Assert.True((await reservations.ConsumeForIdentityAsync(reserved.Id, CodeBearingEntityType.Lsku, Guid.NewGuid(),
-            reserved.Version, commandId, "test", commandId)).Succeeded);
+            reserved.Version, commandId, _maker.ToString("D"), commandId)).Succeeded);
         await PushAdmissionAsync(gsku, commandId, "SM", DateTimeOffset.UtcNow.AddMinutes(-1));
         await CreatedLskuAsync(gsku, "SM"); // Y
 
@@ -918,14 +919,15 @@ public sealed class LskuFix2HttpTests(MdmHttpHost host)
     [Fact]
     public async Task Item05_A_burn_the_store_refuses_is_named_and_the_admission_stays()
     {
+        // FIX3 item 5: the seeded code is THIS request's (its actor) — another actor's code is IDEMPOTENCY_KEY_CONFLICT.
         var gsku = await ApprovedGskuAsync();
         var key = "BR-" + Guid.NewGuid().ToString("N");
         var commandId = key.ToUpperInvariant();
         using var scope = TenantScope();
         var real = scope.ServiceProvider.GetRequiredService<ICodeReservationRepository>();
-        var reserved = await real.ReserveAsync(CodeBearingEntityType.Lsku, commandId, "test", commandId);
+        var reserved = await real.ReserveAsync(CodeBearingEntityType.Lsku, commandId, "lsku-fix2-handler-test", commandId);
         Assert.True((await real.ConsumeForIdentityAsync(reserved.Id, CodeBearingEntityType.Lsku, Guid.NewGuid(),
-            reserved.Version, commandId, "test", commandId)).Succeeded);
+            reserved.Version, commandId, "lsku-fix2-handler-test", commandId)).Succeeded);
         await PushAdmissionAsync(gsku, commandId, "BR", DateTimeOffset.UtcNow.AddMinutes(-1));
         await CreatedLskuAsync(gsku, "BR"); // another creation took the market
         var handler = CreateHandler(scope, reservations: Intercept<ICodeReservationRepository>(real,

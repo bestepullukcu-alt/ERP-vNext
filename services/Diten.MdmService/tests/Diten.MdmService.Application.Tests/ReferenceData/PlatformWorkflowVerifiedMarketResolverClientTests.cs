@@ -65,6 +65,22 @@ public sealed class PlatformWorkflowVerifiedMarketResolverClientTests
         Assert.Equal(expectedCode, result.FailureCode);
     }
 
+    // LSKU FIX3 item 6: Platform's JSON 404 with any reason but its own "market not offered" is a contract error
+    // (stuck with its cause), not a market the maker can put right.
+    [Theory]
+    [InlineData("REFERENCE_ROUTE_NOT_FOUND")]
+    [InlineData("NOT_FOUND")]
+    public async Task Resolve_json_404_with_another_reason_is_a_contract_error(string reason)
+    {
+        var result = await Client(
+            new CaptureHandler(_ => Failure(HttpStatusCode.NotFound, reason)),
+            new IdentityProvider()).ResolveLatestAsync(Guid.NewGuid(), "TR");
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal("REFERENCE_CONTRACT_MISMATCH", result.FailureCode);
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.ServiceUnavailable, null, 503, "REFERENCE_PROVIDER_UNAVAILABLE")]
     [InlineData(HttpStatusCode.ServiceUnavailable, "text/html", 503, "REFERENCE_PROVIDER_UNAVAILABLE")]
@@ -73,7 +89,10 @@ public sealed class PlatformWorkflowVerifiedMarketResolverClientTests
     [InlineData(HttpStatusCode.RequestTimeout, "text/html", 503, "REFERENCE_PROVIDER_UNAVAILABLE")]
     [InlineData(HttpStatusCode.TooManyRequests, "text/html", 503, "REFERENCE_PROVIDER_UNAVAILABLE")]
     [InlineData(HttpStatusCode.Forbidden, "text/html", 403, "REFERENCE_PROVIDER_FORBIDDEN")]
-    [InlineData(HttpStatusCode.NotFound, "text/html", 404, "REFERENCE_MARKET_NOT_FOUND")]
+    // LSKU FIX3 item 6: a 404 that is not Platform's JSON (an ingress/proxy page, a misrouted path) says nothing about
+    // the market — it waits, it never throws an approval away as "market not offered".
+    [InlineData(HttpStatusCode.NotFound, "text/html", 503, "REFERENCE_PROVIDER_UNAVAILABLE")]
+    [InlineData(HttpStatusCode.NotFound, null, 503, "REFERENCE_PROVIDER_UNAVAILABLE")]
     [InlineData(HttpStatusCode.Conflict, "text/html", 409, "REFERENCE_CONTRACT_MISMATCH")]
     public async Task Resolve_non_json_failure_preserves_transport_semantics(
         HttpStatusCode providerStatus,

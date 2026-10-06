@@ -14,4 +14,7 @@ public sealed record GskuOrphanChildAdmission(
     // the repair burns that reservation first, then releases.
     Guid? ReservationToBurnId = null,
     Guid? ReservationIdentityId = null,
-    int? ReservationVersion = null);
+    int? ReservationVersion = null,
+    // FIX3 M6: set when the admission is held only by a code RESERVED long ago and never consumed — the repair consumes
+    // it for no identity and burns it (codes are never handed out again), then releases.
+    bool ReservationNeverConsumed = false);

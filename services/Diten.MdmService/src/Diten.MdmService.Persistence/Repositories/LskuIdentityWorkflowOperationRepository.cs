@@ -421,9 +421,12 @@ public sealed class LskuIdentityWorkflowOperationRepository
         {
             update = update.Set(item => item.LeaseOwner, null).Set(item => item.LeaseUntilUtcTicksV1, null);
         }
+        if (mutation.WithdrawalUnansweredSinceUtcTicksV1.HasValue && !mutation.ClearWithdrawal)
+            update = update.Set(item => item.WithdrawalUnansweredSinceUtcTicksV1, mutation.WithdrawalUnansweredSinceUtcTicksV1);
         if (mutation.ClearWithdrawal)
         {
-            update = update.Unset(item => item.WithdrawalCommandId).Unset(item => item.WithdrawalFingerprint)
+            update = update.Unset(item => item.WithdrawalUnansweredSinceUtcTicksV1)
+                .Unset(item => item.WithdrawalCommandId).Unset(item => item.WithdrawalFingerprint)
                 .Unset(item => item.WithdrawalRequesterSubjectId).Unset(item => item.WithdrawalExpectedLskuVersion)
                 .Unset(item => item.WithdrawalReasonCode).Unset(item => item.WithdrawalComment)
                 .Unset(item => item.WithdrawalExpectedWorkflowInstanceVersion)
@@ -576,6 +579,18 @@ public sealed class LskuIdentityWorkflowOperationRepository
             LskuIdentityWorkflowCheckpoint.DecisionNotApplicable
         });
 
+    // FIX3 item 3: the submit a draft cancel closed at this version (the closure moved the draft to version + 1).
+    public async Task<LskuIdentityWorkflowOperation?> GetClosedByDraftCancelAsync(Guid lskuId, int expectedLskuVersion,
+        CancellationToken cancellationToken = default) =>
+        await _operations.Find(ActiveTenantFilter
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.LskuId, lskuId)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.ExpectedLskuVersion, expectedLskuVersion)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.Checkpoint,
+                    LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.LastFailureCode,
+                    "LSKU_IDENTITY_SUBMIT_CLOSED_BY_DRAFT_CANCEL"))
+            .FirstOrDefaultAsync(cancellationToken);
+
     public Task<bool> HasUnfinishedForLskuAsync(Guid lskuId, CancellationToken cancellationToken = default) =>
         _operations.Find(UnfinishedFor(lskuId)).AnyAsync(cancellationToken);
 
@@ -679,7 +694,13 @@ public sealed class LskuIdentityWorkflowOperationRepository
                 & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.Checkpoint, claim.Checkpoint)
                 & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LeaseOwner, claim.LeaseOwner)
                 & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LeaseGeneration, claim.LeaseGeneration)
-                & Builders<LskuIdentityWorkflowOperation>.Filter.Gt(x => x.LeaseUntilUtcTicksV1, updatedAtUtcTicks),
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Gt(x => x.LeaseUntilUtcTicksV1, updatedAtUtcTicks)
+                // FIX3 item 4: "nothing was sent" is decided on a document; the end is written only if its start-sent
+                // mark is still the one decided on (a start sent meanwhile fails it). Eq(null) also matches a document
+                // written before the field existed.
+                & (endCheckpoint == LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                    ? Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LastStartSentAtUtcTicksV1, operation.LastStartSentAtUtcTicksV1)
+                    : Builders<LskuIdentityWorkflowOperation>.Filter.Empty),
                 Builders<LskuIdentityWorkflowOperation>.Update
                     .Set(x => x.Checkpoint, endCheckpoint)
                     .Set(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.None)
@@ -861,7 +882,9 @@ public sealed class LskuIdentityWorkflowOperationRepository
         && existing.StartIdempotencyKey == candidate.StartIdempotencyKey
         && existing.OperationFingerprint == candidate.OperationFingerprint;
 
-    private static bool IsCoherentMutation(
+    // FIX3 item 1 (a): public (a pure function of its arguments — no guard is loosened) so the processor tests' fake
+    // store applies exactly the real store's rule to every write the processor makes.
+    public static bool IsCoherentMutation(
         LskuIdentityWorkflowClaim claim,
         LskuIdentityWorkflowCheckpointMutation mutation)
     {
@@ -961,7 +984,11 @@ public sealed class LskuIdentityWorkflowOperationRepository
         // delay and no count.
         if (mutation.NextCheckpoint == current
             && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable
-            && current is LskuIdentityWorkflowCheckpoint.DecisionObserved or LskuIdentityWorkflowCheckpoint.ApprovalValidated)
+            // FIX3 item 1 (the processor matrix found these): WorkflowStarted (its local pending write refused: the cap,
+            // the store, a concurrent write) and WithdrawalRequested (its preflight unanswered) retry where they stand
+            // too — their move rules below demand a full proof a retry never carries.
+            && current is LskuIdentityWorkflowCheckpoint.DecisionObserved or LskuIdentityWorkflowCheckpoint.ApprovalValidated
+                or LskuIdentityWorkflowCheckpoint.WorkflowStarted or LskuIdentityWorkflowCheckpoint.WithdrawalRequested)
             return mutation.NextAttemptAtUtcTicksV1 > mutation.UpdatedAtUtcTicks
                 && IsExactBounded(mutation.LastFailureCode, 128) && mutation.ReleaseLease
                 && !hasAnyStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof

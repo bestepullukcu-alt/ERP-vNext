@@ -71,9 +71,14 @@ public sealed class LskuIdentityWorkflowOperation : EntityBase
     public long? NextAttemptAtUtcTicksV1 { get; set; }
     // LSKU FIX1 B5 (the GSKU pattern): consecutive worker attempts that ended in a counted retry.
     public int FailedAttemptCount { get; set; }
-    // LSKU FIX2 item 8: written BEFORE a start is sent — "nothing was sent" (and so a submit that may be abandoned)
-    // is known only while this is null; after it, the lookup and the settle window decide.
+    // LSKU FIX2 item 8 / FIX3 M1: written BEFORE a start is sent. 0 (written at reservation) = tracked and NOTHING was
+    // sent — the only value that lets a submit be abandoned without asking the engine. > 0 = when a start was last
+    // sent. null (a document written before the field existed) = a start may have been sent: the lookup and the settle
+    // window decide, the window counted from the last update.
     public long? LastStartSentAtUtcTicksV1 { get; set; }
+    // FIX3 item 2: when this withdrawal's cancel was first left unanswered (WOU / parked for its maker) — the gauge's
+    // needing_a_person counts it past a threshold. A document without the field ages from its last update.
+    public long? WithdrawalUnansweredSinceUtcTicksV1 { get; set; }
     public string? LastFailureCode { get; set; }
     public string? LeaseOwner { get; set; }
     public long? LeaseUntilUtcTicksV1 { get; set; }

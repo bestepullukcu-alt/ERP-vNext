@@ -712,7 +712,7 @@ public sealed class GskuRepository : IGskuRepository
      * deleted draft holds nothing, B3) or a live code reservation of that kind (reserved, or consumed and not burned:
      * the command's repeat, or a write whose outcome is unknown, may still produce the child). Otherwise it is
      * released conditionally here, or swept by age (FindOrphan… / RepairOrphan…); one still held past the cutoff is
-     * counted (CountStaleChildCreationAdmissionsAsync, the gauge).
+     * counted (the tenant-free census, ChildCreationAdmissionCensusRepository — the GSKU_CHILD_ADMISSION gauge).
      */
     public async Task<GskuChildCreationAdmissionResult> ReleaseChildCreationAdmissionAsync(
         Guid id, GskuChildIdentityKind childKind, string creationCommandId,
@@ -760,9 +760,27 @@ public sealed class GskuRepository : IGskuRepository
             {
                 if (orphans.Count >= limit) return orphans;
                 var hold = await ChildHoldAsync(childKind, admission.CreationCommandId, cancellationToken);
-                if (!hold.Held)
+                // FIX3 M6: not held because its code is bound to a row that was cancelled (deleted) — a cancel that
+                // committed and then failed before its burn: the repair burns that code too, then releases.
+                if (!hold.Held && hold.Reservation is
+                    {
+                        ReservationState: CodeReservationState.Consumed,
+                        BindingState: CodeReservationBindingState.PendingIdentityWrite,
+                        ConsumedEntityId: { } deletedIdentity
+                    } boundToDeleted)
+                    orphans.Add(new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
+                        admission.RequestFingerprint, admission.AcquiredAtUtc,
+                        boundToDeleted.Id, deletedIdentity, boundToDeleted.Version));
+                else if (!hold.Held)
                     orphans.Add(new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
                         admission.RequestFingerprint, admission.AcquiredAtUtc));
+                // FIX3 M6: held only by a code reserved before the cutoff and never consumed — nothing can become the
+                // child without consuming it; the repair consumes and burns it, then releases.
+                else if (!hold.ByRow && hold.Reservation is { ReservationState: CodeReservationState.Reserved } reserved
+                         && reserved.ReservedAt < acquiredBeforeUtc)
+                    orphans.Add(new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
+                        admission.RequestFingerprint, admission.AcquiredAtUtc,
+                        reserved.Id, null, reserved.Version, ReservationNeverConsumed: true));
                 // LSKU FIX2 item 5: held ONLY by a code consumed for an identity whose row never came, older than the
                 // cutoff — the operator path burns that code first (the repair handler), then releases.
                 else if (!hold.ByRow && hold.Reservation is
@@ -872,17 +890,6 @@ public sealed class GskuRepository : IGskuRepository
                           & Builders<Lsku>.Filter.Eq(x => x.IsDeleted, true)).AnyAsync(ct)
             : _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<FinishedGood>.Filter.Eq(x => x.Id, identityId)
                                   & Builders<FinishedGood>.Filter.Eq(x => x.IsDeleted, true)).AnyAsync(ct);
-
-    // CT 2026-10-06: admissions of every child kind held past the cutoff in this tenant — swept ones and held ones
-    // alike; the gauge reads it (a creation never takes this long).
-    public async Task<long> CountStaleChildCreationAdmissionsAsync(DateTimeOffset acquiredBeforeUtc,
-        CancellationToken cancellationToken = default)
-    {
-        var holders = await _gskus.Find(ActiveFilter & Builders<Gsku>.Filter.ElemMatch(x => x.ChildCreationAdmissions,
-                x => x.AcquiredAtUtc < acquiredBeforeUtc))
-            .Project(x => x.ChildCreationAdmissions).ToListAsync(cancellationToken);
-        return holders.Sum(list => (long)list.Count(x => x.AcquiredAtUtc < acquiredBeforeUtc));
-    }
 
     private Task<bool> ChildRowExistsAsync(
         GskuChildIdentityKind childKind, string creationCommandId, CancellationToken cancellationToken) =>
@@ -1545,7 +1552,15 @@ public sealed class GskuRepository : IGskuRepository
             new CreateIndexModel<Gsku>(Builders<Gsku>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.CanonicalCode),
                 new CreateIndexOptions { Unique = true, Name = "ux_mdm_gskus_tenant_code" }),
             new CreateIndexModel<Gsku>(Builders<Gsku>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ProductDefinitionRevisionId),
-                new CreateIndexOptions { Name = "ix_mdm_gskus_tenant_revision" })
+                new CreateIndexOptions { Name = "ix_mdm_gskus_tenant_revision" }),
+            // FIX3 M5: the census (every tenant, every 300 s) reads only GSKUs holding an admission — a partial
+            // multikey index on the acquisition time instead of a scan of every GSKU.
+            new CreateIndexModel<Gsku>(Builders<Gsku>.IndexKeys.Ascending("ChildCreationAdmissions.AcquiredAtUtc"),
+                new CreateIndexOptions<Gsku>
+                {
+                    Name = "ix_mdm_gskus_child_admission_acquired",
+                    PartialFilterExpression = Builders<Gsku>.Filter.Exists("ChildCreationAdmissions.AcquiredAtUtc")
+                })
         ]);
     }
 

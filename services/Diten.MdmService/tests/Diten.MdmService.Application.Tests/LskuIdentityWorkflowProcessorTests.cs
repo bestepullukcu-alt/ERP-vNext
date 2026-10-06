@@ -111,19 +111,21 @@ public sealed class LskuIdentityWorkflowProcessorTests
      * (409) is stuck with its cause for a person; only a reference the maker can put right (404: retired / not offered)
      * makes the approval not applicable.
      */
+    // FIX3 item 6: only the provider's own "not offered" (404 + REFERENCE_MARKET_NOT_FOUND) is the maker's; a 404
+    // with any other reason is stuck, never throwing the approval away.
     [Theory]
-    [InlineData(404, "NotApplicable")]
-    [InlineData(409, "Stuck")]
-    [InlineData(401, "Wait")]
-    [InlineData(403, "Wait")]
-    [InlineData(503, "Wait")]
-    [InlineData(504, "Wait")]
+    [InlineData(404, "REFERENCE_MARKET_NOT_FOUND", "NotApplicable")]
+    [InlineData(404, "MARKET_404", "Stuck")]
+    [InlineData(409, "MARKET_409", "Stuck")]
+    [InlineData(401, "MARKET_401", "Wait")]
+    [InlineData(403, "MARKET_403", "Wait")]
+    [InlineData(503, "MARKET_503", "Wait")]
+    [InlineData(504, "MARKET_504", "Wait")]
     public async Task Market_failure_makes_the_approval_not_applicable_only_when_the_maker_can_put_it_right(
-        int statusCode, string expected)
+        int statusCode, string failureCode, string expected)
     {
         var harness = new Harness(ProductIdentityDecisionKind.Approved);
-        harness.Market.Result = VerifiedMarketReferenceResolveResult.Fail(
-            statusCode, $"MARKET_{statusCode}");
+        harness.Market.Result = VerifiedMarketReferenceResolveResult.Fail(statusCode, failureCode);
 
         var result = await harness.Processor.RecoverAsync(
             harness.Operation, "worker", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
@@ -146,7 +148,7 @@ public sealed class LskuIdentityWorkflowProcessorTests
                 ? ProductIdentityLifecycleStatus.Draft
                 : ProductIdentityLifecycleStatus.PendingIdentityApproval,
             harness.Lsku.LifecycleStatus);
-        Assert.Equal($"MARKET_{statusCode}", result.Operation.LastFailureCode);
+        Assert.Equal(failureCode, result.Operation.LastFailureCode);
         if (expected == "NotApplicable")
         {
             Assert.Single(harness.Lsku.AuditIntents,
@@ -503,6 +505,9 @@ public sealed class LskuIdentityWorkflowProcessorTests
             LskuIdentityWorkflowClaim claim, LskuIdentityWorkflowOperation operation, string reasonCode,
             LocalAuditIntent auditIntent, long updatedAtUtcTicks, CancellationToken cancellationToken = default)
         {
+            if (!Diten.MdmService.Persistence.Repositories.LskuIdentityWorkflowOperationRepository.IsAllowedTransition(
+                    claim.Checkpoint, LskuIdentityWorkflowCheckpoint.DecisionNotApplicable))
+                throw new Xunit.Sdk.XunitException($"The store refuses {claim.Checkpoint} -> DecisionNotApplicable.");
             if (Current is null || Lsku is null || Current.Checkpoint != claim.Checkpoint)
                 return Task.FromResult(new LskuIdentityWithdrawalWriteResult(false, false, Lsku, "LSKU_IDENTITY_STATE_CONFLICT"));
             Lsku.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
@@ -552,6 +557,16 @@ public sealed class LskuIdentityWorkflowProcessorTests
             CancellationToken cancellationToken = default)
         {
             LastMutation = mutation;
+            // FIX3 item 1 (a): the real store's rules — the pair its table allows, a coherent mutation, never
+            // "manual + retryable" — so every write any processor test drives is held to them (a refusal is a red test).
+            if (!Diten.MdmService.Persistence.Repositories.LskuIdentityWorkflowOperationRepository.IsAllowedTransition(
+                    claim.Checkpoint, mutation.NextCheckpoint)
+                || !Diten.MdmService.Persistence.Repositories.LskuIdentityWorkflowOperationRepository.IsCoherentMutation(
+                    claim, mutation)
+                || mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+                   && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable)
+                throw new Xunit.Sdk.XunitException(
+                    $"The store refuses {claim.Checkpoint} -> {mutation.NextCheckpoint} ({mutation.RecoveryDisposition}, {mutation.LastFailureCode}).");
             if (Current is null || Current.Checkpoint != claim.Checkpoint) return Task.FromResult(false);
             if (FailNextAdvanceTo == mutation.NextCheckpoint)
             {

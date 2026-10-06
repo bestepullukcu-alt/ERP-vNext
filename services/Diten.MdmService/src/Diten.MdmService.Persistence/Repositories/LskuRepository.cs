@@ -230,8 +230,13 @@ public sealed class LskuRepository : ILskuRepository
 
         try
         {
-            await _lskus.InsertOneAsync(lsku, cancellationToken: cancellationToken);
-            return new(true, lsku);
+            // A write conflict that is NOT the code being burned (another insert of the same market or key still in
+            // its transaction) is retried: the second attempt meets the committed row as an ordinary duplicate key.
+            LskuCreateResult inserted;
+            var attempt = 0;
+            do inserted = await InsertBoundToLiveCodeAsync(lsku, reservationFilter, cancellationToken);
+            while (inserted.ErrorCode == InsertConflictRetry && ++attempt < 3);
+            return inserted.ErrorCode == InsertConflictRetry ? new(false, null, "LSKU_DUPLICATE_CONFLICT") : inserted;
         }
         catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
@@ -274,6 +279,59 @@ public sealed class LskuRepository : ILskuRepository
             return AmbiguousWrite();
         }
     }
+
+    /*
+     * LSKU FIX3 item 5 (c), CT decision (A): the row goes in only with its code still live — in ONE transaction the
+     * reservation is written (conditioned on Consumed for this identity and not Burned) and the row inserted. The
+     * reservation write is UpdatedAt only: metadata, outside its Version and its audit-intent Pre/PostVersion chain;
+     * it exists to make an overlapping burn (CodeReservationRepository.BurnIdentityBindingAsync, which reads "no live
+     * row bound" in its own transaction) and this insert fail each other with a write conflict. A burn that committed
+     * first makes the condition fail: CODE_RESERVATION_BURNED, no row. Without transactions (a standalone mongod) no
+     * burn can happen at all (it is refused), so the plain insert is kept there.
+     */
+    // LSKU FIX3 5 (c) tests only: a barrier inside the insert's transaction, before its reservation write.
+    internal Func<Task>? BeforeReservationWriteForTests { get; set; }
+
+    private async Task<LskuCreateResult> InsertBoundToLiveCodeAsync(Lsku lsku, FilterDefinition<CodeReservation> reservationFilter,
+        CancellationToken cancellationToken)
+    {
+        using var session = await _lskus.Database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+        try
+        {
+            session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+            if (BeforeReservationWriteForTests is { } barrier) await barrier();
+            var touched = await _reservations.UpdateOneAsync(session,
+                reservationFilter & Builders<CodeReservation>.Filter.Ne(x => x.BindingState, CodeReservationBindingState.Burned),
+                Builders<CodeReservation>.Update.Set(x => x.UpdatedAt, DateTimeOffset.UtcNow),
+                cancellationToken: cancellationToken);
+            if (touched.MatchedCount != 1)
+            {
+                await session.AbortTransactionAsync(cancellationToken);
+                return new(false, null, "CODE_RESERVATION_BURNED");
+            }
+            await _lskus.InsertOneAsync(session, lsku, cancellationToken: cancellationToken);
+            await session.CommitTransactionAsync(cancellationToken);
+            return new(true, lsku);
+        }
+        catch (Exception exception) when (exception is NotSupportedException || exception is MongoCommandException { Code: 20 })
+        {
+            await _lskus.InsertOneAsync(lsku, cancellationToken: cancellationToken);
+            return new(true, lsku);
+        }
+        catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError")
+                                               && exception is not MongoWriteException)
+        {
+            // A write conflict: nothing of ours committed. A burn that won leaves the code burned; anything else
+            // (another insert in flight) is decided by trying again.
+            var code = await _reservations.Find(Builders<CodeReservation>.Filter.Eq(x => x.Id, lsku.CodeReservationId))
+                .FirstOrDefaultAsync(cancellationToken);
+            return code?.BindingState == CodeReservationBindingState.Burned
+                ? new(false, null, "CODE_RESERVATION_BURNED")
+                : new(false, null, InsertConflictRetry);
+        }
+    }
+
+    private const string InsertConflictRetry = "LSKU_INSERT_CONFLICT_RETRY";
 
     public Task<LskuLifecycleWriteResult> SubmitIdentityAsync(
         Guid id,

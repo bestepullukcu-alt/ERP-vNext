@@ -85,7 +85,9 @@ public sealed record LskuIdentityWorkflowCheckpointMutation(
     bool ClearDecision = false,
     RecoveryStreakWrite Streak = RecoveryStreakWrite.Reset,
     // LSKU FIX2 item 8: the start is about to be sent (kept on the same checkpoint, the lease is kept).
-    long? LastStartSentAtUtcTicksV1 = null);
+    long? LastStartSentAtUtcTicksV1 = null,
+    // FIX3 item 2: when the withdrawal's cancel was first left unanswered (kept once set; cleared with the withdrawal).
+    long? WithdrawalUnansweredSinceUtcTicksV1 = null);
 
 public sealed record LskuIdentityWithdrawalWriteResult(
     bool Succeeded,

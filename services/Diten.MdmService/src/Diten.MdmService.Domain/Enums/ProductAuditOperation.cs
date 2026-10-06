@@ -79,15 +79,18 @@ public enum ProductAuditOperation
     // The engine approved the pair's identity and MDM could not apply it: both are drafts again.
     ProductDefinitionRevisionIdentityDecisionNotApplicable = 77,
     GskuIdentityDecisionNotApplicable = 78,
+    // LSKU FIX3 item 18: 79–81 belong to GP flow 3 (GlobalProductIdentityDecisionNotApplicable, GlobalProductCorrectionEnded,
+    // GlobalProductRetirementEnded, takeover 23fb2d85f); the five LSKU values moved above them, order kept. Never
+    // persisted anywhere (this branch was never merged): no migration. FG's own new values start at 87.
     // LSKU FIX1 B1 (c): the operator repair gave back a creation admission whose child row never came.
-    GskuChildCreationAdmissionReleased = 79,
+    GskuChildCreationAdmissionReleased = 82,
     // LSKU FIX1 B3: a draft LSKU cancelled so it no longer holds its parent GSKU.
-    LskuDraftCancelled = 80,
+    LskuDraftCancelled = 83,
     // LSKU FIX1 B5: the engine approved the LSKU's identity and MDM could not apply it: the LSKU is a draft again.
-    LskuIdentityDecisionNotApplicable = 81,
+    LskuIdentityDecisionNotApplicable = 84,
     // LSKU FIX1 B2: a retirement request ended without its decision applied; the lock went back in the same write.
-    LskuRetirementManualReconciliationRequired = 82,
+    LskuRetirementManualReconciliationRequired = 85,
     // LSKU FIX1 B3: the engine refused the submit before starting anything; the draft's version moves so a resubmit
     // is a new operation.
-    LskuIdentitySubmitAbandoned = 83
+    LskuIdentitySubmitAbandoned = 86
 }

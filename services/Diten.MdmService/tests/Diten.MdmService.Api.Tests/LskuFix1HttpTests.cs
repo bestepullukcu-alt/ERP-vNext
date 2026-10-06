@@ -102,8 +102,9 @@ public sealed class LskuFix1HttpTests(MdmHttpHost host)
             .PostAsync("/api/lskus/operator/child-admission-repairs", null);
         Assert.Equal(0, (await Envelope.ReadAsync(repair)).GetProperty("data").GetProperty("released").GetInt32());
         Assert.Equal([commandId], await AdmissionsAsync(gsku));
-        var gskus = new GskuRepository(host.Database, new Tenant(_tenant));
-        Assert.Equal(1, await gskus.CountStaleChildCreationAdmissionsAsync(DateTimeOffset.UtcNow.AddMinutes(-15)));
+        // FIX3 M5: counted by the tenant-free census the gauge reads (other tenants of the shared host may add theirs).
+        Assert.True(await new ChildCreationAdmissionCensusRepository(host.Database)
+            .CountStaleAsync(DateTimeOffset.UtcNow.AddMinutes(-15)) >= 1);
     }
 
     [Fact]

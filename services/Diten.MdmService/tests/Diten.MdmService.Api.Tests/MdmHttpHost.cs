@@ -90,6 +90,9 @@ public sealed class MdmHttpHost : IAsyncLifetime
     public FakePlatformReferenceEndpoint PlatformReference { get; } = new();
     // LSKU FIX1: the verified market answers (create and approval time).
     public FakeMarkets Markets { get; } = new();
+
+    // LSKU FIX3 item 7: the hosted services the real Program registered (before the host removes them).
+    public List<Type> RegisteredHostedServices { get; } = [];
     public string MongoConnectionString => _runner?.ConnectionString ?? throw NotStarted();
 
     public WebApplicationFactory<GskusController> Factory => _factory ?? throw NotStarted();
@@ -193,8 +196,13 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 builder.ConfigureTestServices(services =>
                 {
                     // No background schedule (a test calls the runners) and no outbound push to Platform.
+                    // LSKU FIX3 item 7: what the REAL Program registered as hosted services is kept for the tests
+                    // (a worker whose registration is lost is a gauge nobody runs).
                     foreach (var hosted in services.Where(d => d.ServiceType == typeof(IHostedService)).ToList())
+                    {
+                        if (hosted.ImplementationType is { } type) RegisteredHostedServices.Add(type);
                         services.Remove(hosted);
+                    }
                     services.RemoveAll<IProductIdentityWorkflowClient>();
                     services.AddSingleton<IProductIdentityWorkflowClient>(Engine);
                     services.RemoveAll<IVerifiedGskuReferenceResolver>();

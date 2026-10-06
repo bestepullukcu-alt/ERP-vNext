@@ -77,6 +77,9 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
     private readonly Meter _meter = new(MeterName);
     private readonly ConcurrentDictionary<string, long> _manual = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, long> _person = new(StringComparer.Ordinal);
+    // FIX3 M4: 1 while the last count of a flow FAILED (a gauge that silently stops is no gauge) — alert on it.
+    public const string CountFailedGauge = "mdm.product_identity.recovery.count_failed";
+    private readonly ConcurrentDictionary<string, long> _countFailed = new(StringComparer.Ordinal);
 
     public ProductIdentityRecoveryMetrics()
     {
@@ -88,7 +91,15 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
             () => _person.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
             unit: "{operation}",
             description: "Stuck operations their requester's repeat cannot settle (a person has to, BL-530), per flow.");
+        _meter.CreateObservableGauge(CountFailedGauge,
+            () => _countFailed.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "{flow}",
+            description: "1 while the last count of a flow failed (its other gauges are stale), per flow.");
     }
+
+    public void RecordCountFailed(string flow, bool failed) => _countFailed[flow] = failed ? 1 : 0;
+
+    public long? CountFailed(string flow) => _countFailed.TryGetValue(flow, out var value) ? value : null;
 
     public void Record(string flow, long inManualReconciliation) => _manual[flow] = inManualReconciliation;
 

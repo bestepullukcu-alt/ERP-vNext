@@ -100,14 +100,15 @@ public sealed class CreateLskuDraftHandler
         var scopeFailure = await EvaluateGskuScopeAsync(command.GskuId, scope.Context!, cancellationToken);
         if (scopeFailure is not null)
         {
-            return await CleanUpThenAsync(command, commandId, admissionFingerprint, scopeFailure, cancellationToken);
+            return await CleanUpThenAsync(command, commandId, admissionFingerprint, scopeFailure, definite: true,
+                cancellationToken);
         }
 
         var gsku = await _gskus.GetReferenceableByIdAsync(command.GskuId, cancellationToken);
         if (gsku is null)
         {
             return await CleanUpThenAsync(command, commandId, admissionFingerprint,
-                Fail("GSKU_NOT_REFERENCEABLE", 404), cancellationToken);
+                Fail("GSKU_NOT_REFERENCEABLE", 404), definite: true, cancellationToken);
         }
 
         // LSKU FIX1 B1 (a): a market the GSKU already has is refused before an admission is taken, so a duplicate
@@ -116,15 +117,19 @@ public sealed class CreateLskuDraftHandler
         if (sameMarket is not null)
         {
             return await CleanUpThenAsync(command, commandId, admissionFingerprint,
-                Fail(sameMarket.IsDeleted ? "LSKU_IDENTITY_TOMBSTONED" : MarketAlreadyExists, 409), cancellationToken);
+                Fail(sameMarket.IsDeleted ? "LSKU_IDENTITY_TOMBSTONED" : MarketAlreadyExists, 409), definite: true,
+                cancellationToken);
         }
 
         var resolution = await _markets.ResolveLatestAsync(command.MarketCode, cancellationToken);
         if (!resolution.IsSuccessful || resolution.Selection is null)
         {
+            // FIX3 item 5 (b): only the provider's definite "not offered" ends this command's code; a provider that
+            // cannot answer now (503/504, anything else) never burns it — the command's repeat goes on with it.
             return await CleanUpThenAsync(command, commandId, admissionFingerprint, Fail(
                 resolution.FailureCode ?? "REFERENCE_PROVIDER_UNAVAILABLE",
-                resolution.StatusCode is 404 or 503 or 504 ? resolution.StatusCode : 503), cancellationToken);
+                resolution.StatusCode is 404 or 503 or 504 ? resolution.StatusCode : 503),
+                definite: resolution.StatusCode == 404, cancellationToken);
         }
 
         var admission = await _gskus.AcquireChildCreationAdmissionAsync(
@@ -211,7 +216,7 @@ public sealed class CreateLskuDraftHandler
             {
                 var burnRefusal = await AbandonCreationAsync(gsku.Id, reservation, identityId, commandId,
                     admissionFingerprint, MarketAlreadyExists, cancellationToken);
-                return Fail(burnRefusal ?? MarketAlreadyExists, 409);
+                return Fail(burnRefusal ?? MarketAlreadyExists, burnRefusal == CodeReservationBurnCodes.TransactionUnavailable ? 503 : 409);
             }
 
             if (!createResult.Succeeded || createResult.Lsku is null)
@@ -219,7 +224,7 @@ public sealed class CreateLskuDraftHandler
                 var code = createResult.ErrorCode ?? "LSKU_WRITE_FAILED";
                 var burnRefusal = await AbandonCreationAsync(gsku.Id, reservation, identityId, commandId,
                     admissionFingerprint, code, cancellationToken);
-                return Fail(burnRefusal ?? code, 409);
+                return Fail(burnRefusal ?? code, burnRefusal == CodeReservationBurnCodes.TransactionUnavailable ? 503 : 409);
             }
 
             return await ConfirmAndMapAsync(
@@ -381,8 +386,11 @@ public sealed class CreateLskuDraftHandler
         string reason,
         CancellationToken cancellationToken)
     {
-        // A row bound to this reservation (a replay the store answered as a conflict) keeps its code.
-        if (await _lskus.GetByReservationIdAsync(reservation.Id, cancellationToken) is null)
+        // A row bound to this reservation (a replay the store answered as a conflict) keeps its code; a code already
+        // burned (an overlapping burn won, FIX3 5c) needs no second burn.
+        if (await _lskus.GetByReservationIdAsync(reservation.Id, cancellationToken) is null
+            && (await _reservations.GetByIdAsync(reservation.Id, cancellationToken))?.BindingState
+                != CodeReservationBindingState.Burned)
         {
             var burned = await _reservations.BurnIdentityBindingAsync(
                 reservation.Id,
@@ -393,7 +401,9 @@ public sealed class CreateLskuDraftHandler
                 commandId,
                 reason,
                 cancellationToken);
-            if (!burned.Succeeded) return BurnRefused;
+            if (!burned.Succeeded)
+                return burned.ErrorCode == CodeReservationBurnCodes.TransactionUnavailable
+                    ? CodeReservationBurnCodes.TransactionUnavailable : BurnRefused;
         }
 
         await ReleaseAdmissionAsync(gskuId, commandId, admissionFingerprint, cancellationToken);
@@ -402,14 +412,37 @@ public sealed class CreateLskuDraftHandler
 
     // LSKU FIX2 item 5: this command's own traces — a code it consumed for an identity whose row never came, and its
     // admission — are finished before an early refusal is answered. A refused burn answers with its own code.
+    // FIX3 item 5 (a/b): only for THE SAME request. A live code of this key is ours only when this GSKU holds the
+    // key's admission with this request's fingerprint (GSKU + market) and the code was reserved by this actor; any
+    // other request with the key — another GSKU or market, another user — is IDEMPOTENCY_KEY_CONFLICT and touches
+    // nothing. And only a DEFINITE refusal burns; a wait (a provider 503/504) leaves the code to the command's repeat.
     private async Task<Response<ProductItemSkuMasterModels.LskuDraftDto>> CleanUpThenAsync(
         ProductItemSkuMasterModels.CreateLskuDraftRequest command,
         string commandId,
         string admissionFingerprint,
         Response<ProductItemSkuMasterModels.LskuDraftDto> refusal,
+        bool definite,
         CancellationToken cancellationToken)
     {
         var own = await _reservations.GetByReservationCommandAsync(CodeBearingEntityType.Lsku, commandId, cancellationToken);
+        var live = own is { ReservationState: CodeReservationState.Reserved }
+                   || own is { ReservationState: CodeReservationState.Consumed }
+                      && own.BindingState != CodeReservationBindingState.Burned;
+        if (live)
+        {
+            var parent = await _gskus.GetByIdAsync(command.GskuId, cancellationToken);
+            var admission = parent?.ChildCreationAdmissions.SingleOrDefault(x =>
+                x.ChildKind == GskuChildIdentityKind.Lsku && x.CreationCommandId == commandId);
+            if (admission is null || admission.RequestFingerprint != admissionFingerprint
+                || !string.Equals(own!.ReservedByActorId, _actorContext.ActorId, StringComparison.Ordinal))
+                return Fail("IDEMPOTENCY_KEY_CONFLICT", 409);
+        }
+
+        if (!definite)
+        {
+            if (!live) await ReleaseAdmissionAsync(command.GskuId, commandId, admissionFingerprint, cancellationToken);
+            return refusal;
+        }
         if (own is { ReservationState: CodeReservationState.Consumed,
                      BindingState: CodeReservationBindingState.PendingIdentityWrite,
                      ConsumedEntityId: { } identityId }
@@ -418,7 +451,9 @@ public sealed class CreateLskuDraftHandler
             var burned = await _reservations.BurnIdentityBindingAsync(own.Id, identityId, own.Version,
                 commandId + ":burn", _actorContext.ActorId, commandId,
                 refusal.Errors.FirstOrDefault() ?? "LSKU_CREATION_REFUSED", cancellationToken);
-            if (!burned.Succeeded) return Fail(BurnRefused, 409);
+            if (!burned.Succeeded)
+                return burned.ErrorCode == CodeReservationBurnCodes.TransactionUnavailable
+                    ? Fail(CodeReservationBurnCodes.TransactionUnavailable, 503) : Fail(BurnRefused, 409);
         }
 
         await ReleaseAdmissionAsync(command.GskuId, commandId, admissionFingerprint, cancellationToken);
