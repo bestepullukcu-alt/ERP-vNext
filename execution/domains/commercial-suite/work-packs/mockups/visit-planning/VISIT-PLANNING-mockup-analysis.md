@@ -20,14 +20,14 @@
 | §7 Durumlar | ✓ 9 durum (normal, boş, yükleniyor, hata, aktif dönem yok, kapasite yok, takvim okunamadı, bölge atanmamış, yetkisiz — iskelet yok) | — |
 | Rota | ✓ değişmiyor (ekran görüntüsü yer tutucu) | — |
 
-## 2. Mockup'tan çıkan kararlar (CT önerisiyle)
+## 2. Mockup'tan çıkan kararlar — **hepsi kullanıcı tarafından kararlaştırıldı (2026-10-06)**; MK-2/3/4/6/7/8 CT önerisiyle kabul
 | # | Konu | CT önerisi |
 |---|---|---|
-| MK-1 | Yeni plan sağ panel (drawer); kullanıcı "form benzer kalsın" demişti | **Mevcut sayfa formu kalır**, alanlar ve mesajlar mockup'taki gibi olur |
+| MK-1 | Yeni plan sağ panel (drawer); kullanıcı "form benzer kalsın" demişti | ~~Sayfa formu kalır~~ → **Kullanıcı kararı: mockup'taki gibi sağ panel** (2026-10-06) |
 | MK-2 | Bölge yok → boş liste | **K-5 uygulanır:** tüm hesaplar + sarı uyarı bandı; "Bölge dışı ekle" bu durumda gizlenir |
 | MK-3 | **Plan = dönem planı**: bir temsilcinin bir dönem için tek planı; içinde haftalar, her haftanın kendi durumu (geçmiş / onaylı / taslak / boş) | **Kabul.** K-2'nin doğal modeli. Backend'de bugün oturum tek durum taşıyor ve tüm haftaları birlikte yazıyor → B-4 |
 | MK-4 | Yeniden açma gerekçesi "yöneticinize iletilir" | Yönetici ilişkisi yok. Gerekçe **haftanın geçmişine ve denetim kaydına** yazılır; bildirim yönetici görünümüyle birlikte gelir |
-| MK-5 | "Ekip" anahtarı görünüyor | Yönetici görünümü gelene kadar **gizli** |
+| MK-5 | "Ekip" anahtarı görünüyor | ~~Gizli~~ → **Kullanıcı kararı: mockup'taki gibi görünür**; Ekip, yönetici görünümü gelene kadar etkin değil |
 | MK-6 | Kapasite aşılırsa onayda sığmayan hedefler sonraki haftalara kaydırılır | **Kabul**; kaydırma nedeni ve sonucu Haftalar'da listelenir |
 | MK-7 | Eczanede "dönemde 2" sabit | Eczane = hesap; sıklık **hesap politikasından** gelir, yoksa doktorlar gibi "dönemde 1 (varsayılan)" |
 | MK-8 | "Günde en çok 36 ziyaret" sabit yazı | Günlük üst sınır **dönem kapasitesinden türetilir** (günlük ziyaret dakikası ÷ tipik ziyaret süresi); metin sayıyı veriden alır |
@@ -39,7 +39,7 @@ Hata kodları durum analizindendir (A = kararlarla çelişen, B = otomatik hafta
 ### Faz 0 — veri ve kararlar (hemen, kod değil)
 - **0.1** Test temsilcisine bölge ataması (`bestepullukcu` → İstanbul + Kocaeli): kullanıcı Bölge Yönetimi → Kaynak atamaları sayfasından ya da CT script'i (önce deneme, `--apply` kullanıcıda).
 - **0.2** AUD-001 kararı (A / B / C) — yeni backend komutları buna takılır.
-- **0.3** D8: `asdasdasd` test kaydı silinsin mi?
+- **0.3** D8: `asdasdasd` test kaydı — ☑ arşivlendi (2026-10-06).
 
 ### Faz 1 — VP-FIX-1 (mockup'tan bağımsız düzeltmeler)
 D1 liste hedef sayısı · D2 onaylı plan kilidi (ekran + sunucu) · C2 hafta sonuna ziyaret · C3 çalışma takvimi 400 (tatiller) · A1 strateji seçicisini kaldır · D7 menü (Ziyaret Planlama + Ziyaret Yürütme) · D6 / A5 bugünkü etiketlerin 7 dili (tarih biçimi kalır).
@@ -59,7 +59,7 @@ D1 liste hedef sayısı · D2 onaylı plan kilidi (ekran + sunucu) · C2 hafta s
 - **D3** dönem başına tek plan + boş taslak silme; **D5** hedefler için toplu okuma ucu (~100 istek → birkaç).
 
 ### Faz 4 — Web arayüzü (mockup'a göre)
-- **VP-UI-1** liste + yeni plan formu (sayfa, MK-1) + detay üst kısım + durumlar.
+- **VP-UI-1** liste + yeni plan paneli (MK-1) + detay üst kısım + durumlar + Ekip anahtarı (MK-5).
 - **VP-UI-2** Hedefler sekmesi (bölge uyarısı K-5, bölge dışı ekleme penceresi).
 - **VP-UI-3** Haftalar sekmesi + doktor paneli + yeniden açma penceresi.
 - Rota'ya dokunulmaz. C6 (çok ziyaretli durakta doktor adları) Rota tasarımını değiştirmeden durak açılınca gösterilir — ayrı küçük iş, kullanıcı onayıyla.
