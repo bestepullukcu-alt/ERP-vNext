@@ -8063,6 +8063,108 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-565
+
+**Kayıt kodu standardı (RCS-001) mevcut modüllerde uygulanmıyor: Organizasyon Birimi, Pozisyon, Tüzel Kişilik, Görev Türü, Abonelik Planı ve PPM kodları elle ve gerekçesiz; ortak kod üretici yok**
+
+DURUM: AÇIK · SAHİP: CT (Platform + MDM; PPM kısmı PPM sahibinde / Codex) · BULAN: sahibin paylaştığı yönetim karar notu (Kodlama Standardı v1.0, 2026-09-04) ile kod karşılaştırması · KAYIT: 2026-10-07
+
+Yönetim kararı (RCS-001 §1–§4): `{ŞİRKET}-{TÜR}-{6+ hane, hiç sıfırlanmayan}` (`MG-ORG-000042`). Organizasyon Birimi + Pozisyon OTOMATİK (değiştirilemez). Tüzel Kişilik, Görev Türü, PPM Portföy / Program / Proje,
+Girişim / Yatırım Dosyası ve Abonelik Planı İKİSİ DE (öneri + gerekçeli değişiklik, denetimli). Müşteri, Kampanya, Ürün ve Doküman KALSIN. Mevcut kodlar değişmez; yalnız yeni kayıtlar.
+Ölçüm (2026-10-07, `chore/ct-round-2`): hiçbiri uygulanmıyor. Kodlar elle; OrgUnit / Position / LE / Plan / PPM serbestçe ve gerekçesiz değiştirilebiliyor; Görev Türü değişmez ama öneri yok; ortak üretici yok
+(dört ayrı sayaç: CRM hesap, CRM kampanya, MDM ürün, Doküman); hiçbir yerde `MG-` yok; normalleştirici Türkçe harf bırakıyor (`SATI-BÖLÜMÜ-1`).
+Yapılacak: (1) yönetim teyidi: RCS-001 §5'teki 12 öneri, özellikle sayaç kapsamı, transferde kodun kalıcılığı, şirketsiz kayıtlar, şirket kısa kodu; (2) ortak kod üretme servisi
+(önek ayarı, atomik sayaç, öneri, gerekçe + denetim); (3) Tüzel Kişiliğe kısa kod alanı; (4) türlerin bağlanması: önce Organizasyon Birimi + Pozisyon (organizasyon verisi girişi buna bağlı),
+sonra Tüzel Kişilik / Görev Türü / Abonelik Planı, en son PPM (Codex sahibiyle). Ayrıca notta sayılmayan elle kodlu türler (Marka, MDM marka ürünü vb.) için sınıf kararı. Karşılaştırma: SAP'de
+numara aralıkları (SNRO) nesne + şirket kodu başına tanımlanır, iç / dış numaralama seçilir; Oracle Fusion'da "Document Sequences" kategori + iş birimi başına. Gelecek regresyon riski: 🟡 (her yeni
+kayıt eski elle düzene ekleniyor; geç başladıkça "yeni kayıtlar" penceresi büyüyor).
+
+---
+
+### BL-564
+
+**`verify_module_id.py` yalnız bulunduğu dalın registry'sini okuyor: başka dalda alınmış bir modül kimliğine "OK" diyor (Marka ve kalem işinde iki kez)**
+
+DURUM: AÇIK · SAHİP: CT (belge / araç) · BULAN: WP-MDM-ITEM-MASTER-G0 (MDM sohbeti) · KAYIT: 2026-10-06
+
+MOD-0290-FU03 "Product Legal Entity Scope Assignment" paketi kapsam dalında duruyor, CT şeridinin registry'sinde satırı yoktu; araç FU03'ü kalem işi için de "OK" saydı. Aynı tuzak Marka paketlerinde
+(FU01 = ABB, FU02 = Market Supply ile çakışan adlandırma) çıkmıştı. Geçici önlem: şerit registry'sine FU03 AYRILMIŞ satır (`4f9c63309`). Düzeltme: `--check-id` aday kimliği `git log --all -S` ile
+tüm dallarda arar; başka paket izi varsa BLOCKED. Ayrıca sözleşme dosyası `docs/analysis/contracts/product-master-bundle.openapi.yaml` beş klasör kuralının dışında — §4 protokolüyle
+`docs/reference/architecture/contracts/`'a taşınmalı (ayrı küçük iş). Gelecek regresyon riski: 🔴 (kimlik çakışması sessiz).
+
+---
+
+### BL-563
+
+**Ürün kimliği denetim niyetleri canlıda merkeze ulaşmıyor: teslim işçisi kapalı, temporal cutover kapalı, niyetlerde sözleşme sürümü boş ve korelasyon GUID değil — FG taslak iptali bu yüzden canlıda sonuçlanamaz (BL-559 canlıda açık kalır)**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) + sahip (canlı ayar kararı, BL-536) · BULAN: WP-MDM-FG-ACCEPT-01 FIX1 madde 1 ölçümü · KAYIT: 2026-10-06
+
+MOD-0290 s21 FG taslak iptalini ancak doğrulanmış merkezi G4 makbuzuyla kesinleştiriyor ("PendingAudit is not final and does not free the parent"). Ölçüm: (a) `AuditIntentDeliveryWorker` varsayılan kapalı;
+(b) temporal-storage scalar cutover etkin değilken depo talep edilen yükü vermiyor (testte 14 keşif / 14 talep / 0 kabul); (c) FG oluşturma, LSKU ve GSKU dahil hiçbir ürün kimliği niyeti genel yoldan
+teslim edilemiyor (`ContractVersion` boş, `CorrelationId` GUID değil — MOD-0290 madde 10 bilinen borç). Sonuç: canlıda iptal edilen taslak FG PendingAudit kalır ve GSKU'yu engellemeye devam eder (güvenli,
+görünür, gösterge sayar; bugünle aynı). Düzeltme: ürün kimliği niyetlerinin sözleşme / korelasyon borcu kapanır, temporal cutover açılır, teslim işçisi canlıda açılır (sahip kararı). Ayrıca:
+FG / LSKU taslak iptali için tam `cancel-draft` izin anahtarları (v1 oluşturma anahtarıyla) ve sonuçlandırıcının "güncel kiracı Active" koşulu (yeni Platform okuması). Karşılaştırma: SAP'de
+değişiklik belgesi (CDHDR) işlemle aynı LUW'da yazılır, ayrı teslim beklemez; Oracle Fusion denetimi de işlem içi. Gelecek regresyon riski: 🟡 (FG canlıda kullanılmıyor; API açık).
+
+---
+
+### BL-561
+
+**Depolarda ortak `IsDeleted == false` koşulu, alanı hiç yazılmamış çok eski belgeyle eşleşmez (eksik alan ≠ false)**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma; genel kural) · BULAN: GP BL-552 akış 1 FIX1 eski belge denetimi (MDM sohbeti) · KAYIT: 2026-10-06
+
+BL-529 FIX6'da gerçek hata olarak çıkan sınıf: Mongo'da `Eq(field, false)` alanı OLMAYAN belgeyle eşleşmez. MDM depolarının neredeyse hepsi etkin kayıt süzgecinde `IsDeleted == false` kullanıyor;
+`EntityBase.IsDeleted` sürücü varsayılanıyla hep yazıldığından bugünkü belgelerde alan var, ama betikle içe aktarılmış ya da çok eski bir belgede yoksa kayıt sessizce "yok" sayılır (okunmaz, kilit
+alamaz, liste dışı kalır). Düzeltme: ortak süzgeç `Ne(IsDeleted, true)` olur ya da bir kerelik salt-okunur sayım ile alanı eksik belge olmadığı kanıtlanır (dev + canlı, sahip onayıyla).
+Karşılaştırma: SAP'de silme işareti (LVORM) boş = silinmemiş, karakter alanı hep var; Oracle'da `DELETED_FLAG` NULL = 'N' sayılır. Gelecek regresyon riski: 🟢 (bugün ölçülmüş belge yok; içe aktarma olursa 🟡).
+
+---
+
+### BL-562
+
+**Marka v2 ertelenenleri: arşivi geri alma, Global Ürün ↔ Marka bağı, marka değişikliğinde ikinci onay, tescil listesi**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) · BULAN: WP-MDM-BRAND-ACCEPT-01 FIX1 sahip kararı olguları · KAYIT: 2026-10-06 (sahip kararları CT'ye devretti)
+
+v1'de arşiv geri alınamaz (onayda uyarı var); geri alma ayrı izinli, denetimli bir komut olarak gelir (SAP silme işareti kaldırılabilir; Oracle öğe durumu Etkin'e dönebilir). Global Ürün'e isteğe bağlı Marka
+başvurusu (yalnız bağlanabilir markaya) sonraki bir GP turunda. Marka yazımlarında maker-checker v1'de yok (denetim izi var). Tescil (marka tescil) listesi Marka'nın değil, ileride RIM modülünün işi.
+Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-560
+
+**Tamamlanmamış güvenilir başlatmayı tüketici kimliksiz iptal edemiyor; kapatıldığını da kendi koduyla öğrenemiyor (anahtarla iptal + "kapatıldı" cevabı + MDM bağlantısı)**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 onay motoru + MDM devralma) · BULAN: WP-WF-ENGINE-RECOVERY-01 ölçümü (motor sohbeti) · KAYIT: 2026-10-06
+
+Tamamlanmamış güvenilir başlatmada start-result yalnız 409 WORKFLOW_START_NOT_COMPLETED dönüyor; örnek / görev kimliği ve sürüm yok (`GetTrustedWorkflowStartResultHandler.cs:44-51`).
+Mevcut iptal sözleşmesi (`TrustedWorkflowCancellationRequest`, `WorkflowModels.cs:356`) örnek + görev kimliği, iki sürüm ve Active örnek / Waiting* görev istiyor (`TrustedWorkflowCancellationCoordinator.cs:115-122`).
+Bu yüzden tüketici, terk etmeden önce tamamlanmamış başlatmayı iptal edemiyor. Bugünkü yol (WF-RECOVERY'de ölçülüp belgelenen A): yeniden oynat (koordinatör tamamlar) → preflight → cancel. Bedeli: tamamlanma ile
+iptal arasındaki kısa pencerede görev onaylayanlara görünür. WF-RECOVERY'nin süpürmesi süresi dolmuş rezervasyonu kapatır; start-result o anahtara bilinmeyen anahtarla aynı 404'ü verir. Tüketicinin "pencere
+sonrası NotFound → bitir + bırak" kuralı böylece doğru sonucu verir (ilke A), ama tüketici kapatıldığını adıyla öğrenmez. Düzeltme: Platform'da idempotency anahtarıyla iptal ucu (rezervasyonu motorun kendi
+kapatma yolu kapatır, görev yazılmışsa geri çekilir) + kapatılmış rezervasyon için start-result'ta adlı bir kod + MDM'nin bu kodu sonlandırmaya bağlaması (`PlatformProductIdentityWorkflowClient.cs:278`), birlikte.
+Karşılaştırma: SAP Business Workflow'da başlatılamamış iş akışı SWPR / SWIA ile mantıksal silinir; Oracle BPM'de örnek kimliği olmadan "abort by correlation key" yolu var. Gelecek regresyon riski: 🟢 (süpürme kapatıyor, tüketici kuralı doğru sonuç veriyor).
+
+---
+
+### BL-559
+
+**Taslak bir Bitmiş Ürün (FG) bağlı olduğu GSKU'yu düzeltmeye ve emekliye ayırmaya kalıcı kapatıyor: FG'nin çıkışı yok, GSKU onu engel sayıyor**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) — ara önlem kararı sahibin · BULAN: FG salt-okunur ön incelemesi (75c286f7d) · KAYIT: 2026-10-06
+
+FG bugün yalnız taslak temeli: iptal / gönder / emekli ucu yok (`FinishedGoodsController.cs:20-44`). `GskuRepository.FindRetirementBlockerAsync` (:745-762) Taslak dahil Emekli olmayan her FG'yi engel sayıyor →
+GSKU düzeltme başlatması (`GskuCorrectionWorkflowProcessor.cs:47`, karar anı :490) ve emeklilik talebi (`GskuRetirementRequestWorkflowProcessor.cs:42`) 409. FG ekranı menüde gizli ama API açık ve kiracı Admin
+şablonu `mdm.finished-goods.create` alıyor (`DefaultRolePermissionTemplate.cs:91-92`). Tek bir FG taslağı → o GSKU'da yanlış paket / ölçü kalıcı. Düzeltme: FG FIX1 (`scratchpad/fg-fix1-prompt.md` — denetimli taslak
+iptali, engel sorgusu yalnız sonuçlanmış iptali dışlar), LSKU FIX1 kabulünden sonra. **Ara önlem (sahip kararı):** FIX1 gelene kadar `mdm.finished-goods.create`'i varsayılan Admin şablonundan çıkarmak (Auth).
+Ayrıca: FG'nin P1A işlem deposu (bağlı değil) GSKU'nun FIX3–FIX7'de kaldırdığı kalıcı kilit kalıbını yeniden kuruyor — yaşam döngüsü turundan önce yeniden işlenmeli. Karşılaştırma: SAP MDG'de
+taslak alt nesne üst nesnenin değişikliğini engellemez (taslak kendi değişiklik talebinde yaşar); Oracle PIM'de taslak öğe üst öğeyi kilitlemez. Gelecek regresyon riski: 🔴 (API açık).
+
+---
+
 ### BL-558
 
 **"Son yönetici" koruması silinen kişi yönetici değilken de reddediyor (KR1)**

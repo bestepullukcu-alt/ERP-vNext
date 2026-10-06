@@ -12,6 +12,8 @@ public sealed record PlatformForcedChangePasswordRequest(string CurrentPassword,
 public sealed record TenantForcedChangePasswordRequest(string CurrentPassword, string NewPassword, bool RememberMe = false);
 public sealed record PlatformForgotPasswordRequest(string Email);
 public sealed record PlatformResetPasswordRequest(string Email, string Token, string NewPassword);
+// BL-529 — a platform administrator resets another platform administrator's password (by e-mail, the account's key here).
+public sealed record PlatformAdministratorResetRequest(string Email);
 public sealed record PlatformAdminProvisioningRequest(
     string Email,
     string UserName,

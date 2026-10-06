@@ -49,7 +49,7 @@ public sealed class RefreshTokenRepository : RepositoryBase<RefreshToken>, IRefr
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
 
-    public async Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
+    public async Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
     {
         var filter = Builders<RefreshToken>.Filter.And(
             Builders<RefreshToken>.Filter.Eq(t => t.UserId, userId),
@@ -58,6 +58,52 @@ public sealed class RefreshTokenRepository : RepositoryBase<RefreshToken>, IRefr
         );
 
         var update = Builders<RefreshToken>.Update.Set(t => t.RevokedAt, DateTime.UtcNow);
-        await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
+        var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
+        return result.IsModifiedCountAvailable ? result.ModifiedCount : 0;
+    }
+
+    public async Task<bool> RevokeIfLiveAsync(string token, string reason, CancellationToken ct)
+    {
+        var tokenHash = _refreshTokenHasher.Hash(token);
+        var filter = Builders<RefreshToken>.Filter.And(
+            Builders<RefreshToken>.Filter.Eq(t => t.Token, tokenHash),
+            Builders<RefreshToken>.Filter.Eq(t => t.RevokedAt, null));
+        var update = Builders<RefreshToken>.Update
+            .Set(t => t.RevokedAt, DateTime.UtcNow)
+            .Set(t => t.RevokedReason, reason);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.ModifiedCount == 1;
+    }
+
+    public async Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct)
+    {
+        var filter = Builders<RefreshToken>.Filter.And(
+            Builders<RefreshToken>.Filter.Eq(t => t.Id, tokenId),
+            Builders<RefreshToken>.Filter.Eq(t => t.RevokedAt, null));
+        var update = Builders<RefreshToken>.Update
+            .Set(t => t.RevokedAt, DateTime.UtcNow)
+            .Set(t => t.ReplacedByTokenHash, replacedByTokenHash)
+            .Set(t => t.RevokedByIp, revokedByIp)
+            .Set(t => t.RevokedReason, "rotated")
+            .Set(t => t.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow);
+
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.ModifiedCount == 1;
+    }
+
+    public async Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct)
+    {
+        var now = DateTime.UtcNow;
+        var filter = Builders<RefreshToken>.Filter.And(
+            Builders<RefreshToken>.Filter.Eq(t => t.UserId, userId),
+            Builders<RefreshToken>.Filter.Eq(t => t.TenantId, tenantId),
+            Builders<RefreshToken>.Filter.Eq(t => t.RevokedAt, null),
+            Builders<RefreshToken>.Filter.Gt(t => t.ExpiresAt, now));
+
+        var update = Builders<RefreshToken>.Update
+            .Set(t => t.RevokedAt, now)
+            .Set(t => t.RevokedReason, reason);
+        var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
+        return result.IsModifiedCountAvailable ? result.ModifiedCount : 0;
     }
 }

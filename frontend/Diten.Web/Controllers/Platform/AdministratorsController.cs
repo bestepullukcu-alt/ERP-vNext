@@ -145,7 +145,9 @@ public sealed class AdministratorsController : Controller
     {
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_gatewayUrl}/api/platform-auth/forgot-password")
+            // BL-529 — the administrator's reset, not the anonymous "forgot password": AuthService ends the old password and
+            // every session of that administrator, audits it, and refuses one's own account (409 USER_RESET_SELF).
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_gatewayUrl}/api/platform-auth/platform-admins/reset-password")
             {
                 Content = JsonContent.Create(new { email }, options: _jsonOptions)
             };

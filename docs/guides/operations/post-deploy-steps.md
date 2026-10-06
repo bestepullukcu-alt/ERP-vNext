@@ -72,6 +72,50 @@ beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı b
 
 ---
 
+### 3 · BL-529 — Auth: güvenilir vekiller ve herkes bir kez yeniden oturum açar
+
+| | |
+|---|---|
+| **Modül** | Auth (AuthService) — yöneticinin parola sıfırlaması, BL-529 |
+| **Ne zaman** | BL-529'u (WP-AUTH-ADMIN-RESET-01) taşıyan deploy'da |
+| **Yapılmazsa** | (1) Platform'un anonim parola kapılarında istemci başına hız sınırı **kapalı** kalır (e-posta başına sınır çalışır); Auth başlangıçta bir kez uyarı yazar. (2) Değişiklik değil, beklenen davranış: herkes bir kez yeniden oturum açar. |
+| **Kim** | Altyapı / deploy operatörü |
+
+1. **`ClientAddress:TrustedProxies`** (Auth yapılandırması): Auth'a doğrudan bağlanan **Web sunucusunun ve ağ
+   geçidinin** IP adreslerini, her birini ayrı bir öğe olarak ve adresin kanonik yazımıyla yazın (IPv4 dört sayı,
+   IPv6 sıkıştırılmış, ör. `::ffff:10.0.0.1`; aralık / CIDR ve `10.0.1` gibi kısaltmalar desteklenmez; geçersiz bir
+   değer Auth'u başlangıçta adını söyleyen bir hatayla durdurur). Web son kullanıcının adresini `X-Forwarded-For` ile zaten
+   iletiyor; Auth bu başlığı YALNIZ listedeki bir karşı taraftan gelirse okur. Liste boş kalırsa istemci başına sınır
+   kapalı kalır — herkes için tek kova hiçbir zaman oluşmaz. **Liste yalnız Auth başlarken okunur: listeyi değiştirdikten
+   sonra Auth yeniden başlatılmalıdır.** Listede olmayan bir karşı taraf `X-Forwarded-For` gönderirse Auth bunu
+   (karşı taraf başına bir kez) karşı tarafın adresini (`Peer …`) söyleyen bir uyarı olarak yazar — o adres de listeye
+   eklenmeli mi diye bakın. En çok 256 farklı karşı taraf adlandırılır; sonrası için bir kez "no further peers are
+   named" satırı yazılır ve Auth yeniden başlayana dek susar. Not: ağ geçidi (Ocelot) son kullanıcının adresini
+   başlığa kendisi eklemiyorsa, ağ geçidine doğrudan gelen isteklerde bu adres sahtelenebilir; Ocelot'a dokunulmadı.
+2. **Herkes bir kez yeniden oturum açar.** BL-529'dan önce basılmış yenileme belirteçleri parolaya bağlı değil; ilk
+   yenilemede 401 alırlar. Kullanıcı bir kez yeniden giriş yapar; destek ekibine önceden söyleyin.
+   Aynısı e-posta doğrulama kodları (MFA) için de geçerli: deploy'dan önce gönderilmiş, henüz girilmemiş bir kod bir kez
+   reddedilir; kullanıcı yeni bir kod ister (kodun ömrü en çok 15 dakika).
+3. **BL-529'dan önce pasife alınmış hesaplar işaretlenir (tek seferlik).** BL-529'dan önce bir yöneticinin pasife
+   aldığı hesapta "yönetici tarafından pasife alındı" işareti yok ve bekleyen parola bağlantısı silinmedi; süresi
+   dolmamış böyle bir bağlantı (kiracıda 7 gün, platformda 24 saat) hesabı yeniden açabilir. Araç
+   `services/Diten.AuthService/tools/Diten.AuthService.LegacyDeactivationMarker` bu hesaplara işareti koyar ve
+   bağlantılarını siler:
+   - **Hangi hesaplar:** silinmemiş, pasif (`IsActive=false`), işaretsiz ve **bekleyen davet olmayan** her hesap.
+     "Bekleyen davet" kodun kendi tanımıdır (`User.IsInvitationPending`): parola değişikliği zorunlu, e-posta
+     onaylanmamış ve hiç oturum açılmamış. **Bekleyen davetler belgelenmiş istisnadır:** hiç etkinleşmedikleri için
+     pasiftirler ve pasife alınmış bir davetten mekanik olarak ayrılamazlar; araç onlara dokunmaz.
+   - **Önce kuru koşu (varsayılan):** sayıyı ve kimlik listesini (kiracı kimliği, kullanıcı kimliği; kişisel veri yok)
+     yazar, hiçbir şey yazmaz. Listeyi okuyun; sonra `--apply` ile yazın. Araç idempotenttir: ikinci koşu bir şey bulmaz.
+   - **Bağlantı ortamdan okunur, komut satırından asla:** `DITEN_AUTH_MONGO_CONNECTION`, `DITEN_AUTH_MONGO_DATABASE`.
+   - Gerçek ortamda çalıştırmak sahibin kararıdır.
+
+**Belirti:** (1) Auth günlüğünde başlangıçta "`ClientAddress:TrustedProxies` is empty" uyarısı. (2) Deploy'dan sonra
+herkesin bir kez oturum açma sayfasına düşmesi — hata değil. (3) Araç koşulmadıysa kuru koşusu sıfırdan büyük bir sayı
+verir.
+
+---
+
 ## Tamamlananlar
 
 *(henüz yok)*

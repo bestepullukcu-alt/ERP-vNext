@@ -52,7 +52,8 @@
   <data name="Recommended" xml:space="preserve"><value>Önerilen</value></data>
   <data name="PasswordManagement" xml:space="preserve"><value>Hesap kurulumu</value></data>
   <data name="ResendInvitation" xml:space="preserve"><value>Kurulum Baglantisi Gonder</value></data>
-  <data name="ResendInvitationHelp" xml:space="preserve"><value>Yoneticinin parola belirlemesi icin tek kullanimlik kurulum baglantisi gonderin.</value></data>
+  <data name="ResendInvitationHelp" xml:space="preserve"><value>Tek kullanımlık bir kurulum bağlantısı gönderir. Parolası olan bir yöneticinin mevcut parolası hemen geçersiz olur; açık oturumları en geç oturum süresi dolduğunda kapanır.</value></data>
+  <data name="AdminSelfResetDenied" xml:space="preserve"><value>Kendi hesabınıza kurulum bağlantısı gönderemezsiniz — kendi parolanızı ve oturumlarınızı sonlandırır. Parolayı Değiştir'i kullanın.</value></data>
   <data name="EmailUnlockTooltip" xml:space="preserve"><value>E-posta alanının kilidini düzenlemek için açın</value></data>
   <data name="ResendInviteSuccess" xml:space="preserve"><value>Kurulum baglantisi basariyla gonderildi.</value></data>
   <data name="SetupLinkTitle" xml:space="preserve"><value>Kurulum baglantisi</value></data>

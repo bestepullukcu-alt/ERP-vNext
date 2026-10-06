@@ -191,7 +191,7 @@ Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül 
 
 ## 6.1 Kural Haritası — hangi işte hangi kural
 
-`.antigravity/rules/` altında 41 kural var ve **hiçbiri otomatik yüklenmez.**
+`.antigravity/rules/` altında 44 kural var ve **hiçbiri otomatik yüklenmez.**
 `.antigravity/rules/GEMINI.md` yalnız Antigravity'de `always_on`'dur; Claude Code
 ve Codex o klasörü hiç okumaz. Bu dosya (`AGENTS.md` = `CLAUDE.md`) her üç araçta
 da yüklenen tek dosyadır, bu yüzden harita burada durur.
@@ -202,7 +202,8 @@ kuralların dosyasını aç** — harita kuralın yerini söyler, içeriğini de
 ### Daima — istisnasız
 `multi-tenancy` kiracı izolasyonu · `security-jwt` token ve yetki ·
 `git-safety` dal ve commit güvenliği · `code-style` kod stili ·
-`docs-organization` belge nereye yazılır
+`docs-organization` belge nereye yazılır ·
+`cross-module-change-consent` kapsam dışı başka bir modülde düzeltme gerekirse durup sorar: "bunu da düzeltelim mi?" (XMC-001)
 
 ### Backend / handler yazıyorsan
 `handler-design` · `repository-standard` · `response-envelope` ·
@@ -230,7 +231,8 @@ modül yetki zorlaması · `data-scope-enforcement` hangi satırları görür (S
 ### Yeni modül / pack açıyorsan
 `module-pack-standard` · `capability-pack-standard` ·
 `module-self-registration-standard` manifest ·
-`audit-trail-standard` pakette "Denetlenen Olaylar" bölümü (AUD-001)
+`audit-trail-standard` pakette "Denetlenen Olaylar" bölümü (AUD-001) ·
+`record-coding-standard` kullanıcıya görünen kayıt kodu: `MG-ORG-000042` biçimi, OTOMATİK / İKİSİ DE / KALSIN (RCS-001)
 
 ### Ortam, çalıştırma, kayıt
 `dev-runbook` yerel ortam · `configuration-safety` ayar ve bağımlılık ·

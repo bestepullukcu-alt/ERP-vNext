@@ -19,7 +19,56 @@ public interface IUserRepository
     Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct);
     Task<long> GetCountByTenantAsync(Guid tenantId, CancellationToken ct);
     Task<User> CreateAsync(User user, CancellationToken ct);
-    Task<User> UpdateAsync(User user, CancellationToken ct);
-    Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct);
+    // BL-529 FIX4 — no whole-document update exists here any more: every write of an existing account is targeted
+    // (TryWriteChangesAsync and the purpose-built writes below), so a stale copy can never be written back.
     Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct);
+
+    /// <summary>
+    /// BL-529 — what a sign-in attempt writes, and ONLY that: the failed-attempt count, the lockout end and the last
+    /// sign-in time, as a targeted update of the user's own row. A sign-in never rewrites the whole account: a reset that
+    /// lands between the sign-in's read and its write would otherwise be undone (old hash, link and forced change back).
+    /// </summary>
+    Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct);
+
+    /// <summary>
+    /// BL-529 FIX3 — the state of <paramref name="user"/> as it was read, opaque to the caller; hand it back to
+    /// <see cref="TryWriteChangesAsync"/> after changing the entity.
+    /// </summary>
+    object CaptureState(User user);
+
+    /// <summary>
+    /// BL-529 FIX3 — writes ONLY the fields that changed since <paramref name="capturedState"/> (a targeted <c>$set</c>), and
+    /// only while the stored account still meets <paramref name="condition"/>. A whole-document write from a copy read
+    /// earlier put back whatever another writer changed meanwhile (an administrator's reset, a deactivation); this never
+    /// touches a field the caller did not change. False when the account is gone, deleted, or no longer meets the
+    /// condition — nothing is written then.
+    /// </summary>
+    Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct);
+
+    /// <summary>
+    /// BL-529 — issues a set-password link by writing ONLY the link fields (hash, expiry, request time). Never the password
+    /// hash: a "forgot password" that read the account before an administrator's reset must not write the old hash back.
+    /// </summary>
+    Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct);
+
+    /// <summary>
+    /// BL-529 — one failed sign-in: the counter is INCREMENTED in the store (<c>$inc</c>), never set from the copy the
+    /// attempt read, so parallel wrong passwords each count; reaching <paramref name="maxFailedAttempts"/> starts the
+    /// lockout. Returns the stored count and lockout end after the attempt.
+    /// </summary>
+    Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct);
+}
+
+public sealed record LoginFailureOutcome(int FailedLoginAttempts, DateTime? LockoutEnd);
+
+/// <summary>
+/// BL-529 FIX3 — what the stored account must still look like for a targeted write to land (null = not checked).
+/// </summary>
+public sealed record UserWriteCondition(
+    string? PasswordHash = null,
+    bool? IsActive = null,
+    bool? DeactivatedByAdministrator = null,
+    string? PasswordResetTokenHash = null)
+{
+    public static UserWriteCondition None { get; } = new();
 }

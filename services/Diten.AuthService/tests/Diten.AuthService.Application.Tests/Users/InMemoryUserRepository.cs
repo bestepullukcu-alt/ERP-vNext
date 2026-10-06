@@ -7,10 +7,30 @@ internal sealed class InMemoryUserRepository : IUserRepository
 {
     private readonly List<User> _users;
 
+    // BL-529 FIX4 — what the "store" holds, apart from the entity objects the callers mutate: the fields a
+    // UserWriteCondition checks. A conditional write is decided against THIS (as Mongo decides against the stored
+    // document), not against what the caller captured; another writer is simulated with ChangeStored.
+    private readonly Dictionary<Guid, Captured> _stored = new();
+
     public InMemoryUserRepository(IEnumerable<User> users)
     {
         _users = users.ToList();
+        foreach (var user in _users) _stored[user.Id] = Snapshot(user);
     }
+
+    /// <summary>Another writer changed the stored account (the entity the caller holds is left as it was).</summary>
+    public void ChangeStored(Guid userId, string? passwordHash = null, bool? isActive = null, bool? deactivatedByAdministrator = null, string? resetTokenHash = null)
+    {
+        var current = _stored[userId];
+        _stored[userId] = new Captured(
+            passwordHash ?? current.PasswordHash,
+            isActive ?? current.IsActive,
+            deactivatedByAdministrator ?? current.DeactivatedByAdministrator,
+            resetTokenHash ?? current.PasswordResetTokenHash);
+    }
+
+    private static Captured Snapshot(User user)
+        => new(user.PasswordHash, user.IsActive, user.DeactivatedByAdministrator, user.PasswordResetTokenHash);
 
     public Task<User?> GetByEmailAndTenantAsync(string email, Guid tenantId, CancellationToken ct)
     {
@@ -76,12 +96,83 @@ internal sealed class InMemoryUserRepository : IUserRepository
     public Task<User> CreateAsync(User user, CancellationToken ct)
     {
         _users.Add(user);
+        _stored[user.Id] = Snapshot(user);
         return Task.FromResult(user);
     }
 
-    public Task<User> UpdateAsync(User user, CancellationToken ct) => Task.FromResult(user);
+    /// <summary>BL-529 — how many conditional writes to refuse first (a password changed between the read and the write).</summary>
+    public int PasswordChangedConflicts { get; set; }
 
-    public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) => Task.FromResult(user);
+    public int ConditionalWrites { get; private set; }
+
+    public int LoginOutcomeWrites { get; private set; }
+
+    public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct)
+    {
+        LoginOutcomeWrites++;
+        return Task.CompletedTask;
+    }
+
+    /// <summary>BL-529 — the account write itself fails (the store is down) after the sessions were ended.</summary>
+    public bool ThrowOnConditionalWrite { get; set; }
+
+    public Action? OnConditionalWrite { get; set; }
+
+    // The in-memory store holds the entity itself, so the "stored" state a condition is checked against is the state the
+    // caller captured when it read the account — the same thing the real store compares to.
+    private sealed record Captured(string PasswordHash, bool IsActive, bool DeactivatedByAdministrator, string? PasswordResetTokenHash);
+
+    public object CaptureState(User user) => Snapshot(user);
+
+    public int Writes { get; private set; }
+
+    public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
+    {
+        var read = _stored.TryGetValue(user.Id, out var stored) ? stored : (Captured)capturedState;
+        ConditionalWrites++;
+        OnConditionalWrite?.Invoke();
+        if (ThrowOnConditionalWrite) throw new InvalidOperationException("user write failed");
+        if (PasswordChangedConflicts > 0 && condition.PasswordHash is not null)
+        {
+            // Another writer changed the password meanwhile: refused; a re-read (the same entity here) sees what is now stored.
+            PasswordChangedConflicts--;
+            _stored[user.Id] = Snapshot(user);
+            return Task.FromResult(false);
+        }
+
+        var holds = (condition.PasswordHash is null || condition.PasswordHash == read.PasswordHash)
+                    && (condition.IsActive is null || condition.IsActive == read.IsActive)
+                    && (condition.DeactivatedByAdministrator is null || condition.DeactivatedByAdministrator == read.DeactivatedByAdministrator)
+                    && (condition.PasswordResetTokenHash is null || condition.PasswordResetTokenHash == read.PasswordResetTokenHash);
+        if (holds)
+        {
+            Writes++;
+            _stored[user.Id] = Snapshot(user);
+        }
+
+        return Task.FromResult(holds);
+    }
+
+    public int ResetTokenWrites { get; private set; }
+
+    public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct)
+    {
+        var user = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
+        if (user is null) return Task.FromResult(false);
+        user.SetPasswordResetToken(tokenHash, expiresAtUtc);
+        _stored[user.Id] = Snapshot(user);
+        ResetTokenWrites++;
+        return Task.FromResult(true);
+    }
+
+    // Mirrors the store's $inc: the stored row counts, whatever copy the caller holds.
+    public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct)
+    {
+        var user = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
+        if (user is null) return Task.FromResult(new LoginFailureOutcome(0, null));
+        user.RecordLoginFailure(maxFailedAttempts, lockoutDurationMinutes);
+        return Task.FromResult(new LoginFailureOutcome(user.FailedLoginAttempts, user.LockoutEnd));
+    }
 
     public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
     {

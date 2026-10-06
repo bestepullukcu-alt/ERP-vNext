@@ -32,4 +32,8 @@
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.Email\Diten.BuildingBlocks.Email.csproj" />
     </ItemGroup>
 
+  <ItemGroup>
+    <!-- BL-529 FIX7 — ClientAddressResolver's concurrency test seam (AfterRoomFoundUnderLock). -->
+    <InternalsVisibleTo Include="Diten.AuthService.Application.Tests" />
+  </ItemGroup>
 </Project>

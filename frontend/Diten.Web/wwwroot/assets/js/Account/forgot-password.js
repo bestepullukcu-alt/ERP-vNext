@@ -24,7 +24,11 @@ const ForgotPasswordPage = (function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
             });
-            if (!response.ok) throw new Error('Request failed.');
+            // BL-529 FIX3 — a refusal says why (too many requests, in the reader's language) instead of a generic failure.
+            if (!response.ok) {
+                const body = await response.json().catch(() => null);
+                throw new Error(body?.detail || window.L10n?.ErrorGeneric || 'Request failed.');
+            }
             await Swal.fire({
                 title: window.L10n?.SentTitle || 'Check your email',
                 html: `<div class="mb-1 text-muted">${window.L10n?.SentMessage || 'If the email exists, reset instructions have been sent.'}</div>`,

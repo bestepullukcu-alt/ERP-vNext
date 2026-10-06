@@ -24,6 +24,10 @@ public sealed class AuthGateway : IAuthGateway
         ["password.new_required"] = "Password.Error.NewRequired",
         ["password.reset_email_required"] = "Password.Error.ResetEmailRequired",
         ["password.reset_token_required"] = "Password.Error.ResetTokenRequired",
+        // BL-529 FIX3 — the sign-in / password refusals (AuthService AuthRefusalCodes); AuthRefusalCodeContractTests.
+        ["AUTH_TOO_MANY_REQUESTS"] = "Auth.Error.TooManyRequests",
+        ["AUTH_PASSWORD_CHANGED_MEANWHILE"] = "Auth.Error.PasswordChangedMeanwhile",
+        ["AUTH_ACCOUNT_DEACTIVATED"] = "Auth.Error.AccountDeactivated",
     };
 
     // User-facing message when the auth service / gateway is unreachable. Plain (non-localized) by design — the
@@ -105,7 +109,9 @@ public sealed class AuthGateway : IAuthGateway
             ct: ct);
     }
 
-    public async Task<bool> ForgotPlatformPasswordAsync(string email, CancellationToken ct = default)
+    // BL-529 FIX3 — the answer is no longer thrown away: a rate-limited request (429 AUTH_TOO_MANY_REQUESTS) reaches the
+    // page in the reader's language instead of a "sent" that never happened.
+    public async Task<AuthBridgeResult> ForgotPlatformPasswordAsync(string email, CancellationToken ct = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/platform-auth/forgot-password")
         {
@@ -113,7 +119,9 @@ public sealed class AuthGateway : IAuthGateway
         };
         AddClientMetadataHeaders(request);
         var response = await _httpClient.SendAsync(request, ct);
-        return response.IsSuccessStatusCode;
+        return response.IsSuccessStatusCode
+            ? new AuthBridgeResult(true, null, null, null, null, null)
+            : new AuthBridgeResult(false, null, null, null, null, await TryReadErrorAsync(response, ct), StatusCode: (int)response.StatusCode);
     }
 
     public async Task<AuthBridgeResult> ResetPlatformPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default)
@@ -126,7 +134,7 @@ public sealed class AuthGateway : IAuthGateway
         var response = await _httpClient.SendAsync(request, ct);
         return response.IsSuccessStatusCode
             ? new AuthBridgeResult(true, null, null, null, null, null)
-            : new AuthBridgeResult(false, null, null, null, null, await TryReadErrorAsync(response, ct));
+            : new AuthBridgeResult(false, null, null, null, null, await TryReadErrorAsync(response, ct), StatusCode: (int)response.StatusCode);
     }
 
     public async Task<AuthBridgeResult> ResetTenantPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default)
@@ -141,7 +149,7 @@ public sealed class AuthGateway : IAuthGateway
         var response = await _httpClient.SendAsync(request, ct);
         return response.IsSuccessStatusCode
             ? new AuthBridgeResult(true, null, null, null, null, null)
-            : new AuthBridgeResult(false, null, null, null, null, await TryReadErrorAsync(response, ct));
+            : new AuthBridgeResult(false, null, null, null, null, await TryReadErrorAsync(response, ct), StatusCode: (int)response.StatusCode);
     }
 
     public Task<AuthBridgeResult> VerifyTenantMfaAsync(string challengeId, string code, CancellationToken ct = default)

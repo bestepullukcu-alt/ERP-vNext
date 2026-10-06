@@ -310,7 +310,15 @@ public sealed class TenantUserInvitationTests
             email,
             new FakeHostEnvironment(isDevelopment: true),
             UserAuditForTests.None(),
-            NullLogger<ResendUserInvitationCommandHandler>.Instance);
+            NullLogger<ResendUserInvitationCommandHandler>.Instance,
+            new FakePasswordHasher(),
+            new FakeRefreshTokenRepository(),
+            new NobodySignedIn());
+    }
+
+    private sealed class NobodySignedIn : ICurrentUserAccessor
+    {
+        public Guid? UserId => null;
     }
 
     private static TestTenantContext TenantContextFor(Guid tenantId)
@@ -377,10 +385,13 @@ public sealed class TenantUserInvitationTests
     private sealed class FakeRefreshTokenRepository : IRefreshTokenRepository
     {
         public (Guid userId, Guid tenantId)? RevokeAllCall { get; private set; }
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
+        public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => Task.FromResult(true);
+        public Task<bool> RevokeIfLiveAsync(string token, string reason, CancellationToken ct) => Task.FromResult(true);
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
         {
             RevokeAllCall = (userId, tenantId);
-            return Task.CompletedTask;
+            return Task.FromResult(0L);
         }
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();

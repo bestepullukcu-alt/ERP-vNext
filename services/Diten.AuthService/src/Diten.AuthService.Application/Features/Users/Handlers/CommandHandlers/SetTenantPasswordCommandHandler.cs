@@ -47,21 +47,46 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
             string.IsNullOrWhiteSpace(user.PasswordResetTokenHash) ||
             user.PasswordResetTokenExpiresAt is null ||
             user.PasswordResetTokenExpiresAt <= DateTime.UtcNow ||
-            !string.Equals(user.PasswordResetTokenHash, tokenHash, StringComparison.Ordinal) ||
+            // BL-529 FIX7 item 5 — constant-time, as the platform door (hygiene: the stored value is a keyed hash).
+            !System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+                System.Text.Encoding.UTF8.GetBytes(user.PasswordResetTokenHash),
+                System.Text.Encoding.UTF8.GetBytes(tokenHash)) ||
             !string.Equals(user.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase))
         {
             return Response<NoContent>.Fail(InvalidTokenMessage, 400);
         }
 
+        // BL-529 FIX2 — an account an administrator deactivated is not switched back on by a link (an invitation's
+        // included: the link activates the account, the deactivation would be undone from outside).
+        // FIX8 item 1 (b) — marked, or switched off before BL-529 (inactive, no mark, not a pending invitation). The link is
+        // kept: once an administrator activates the account, the same link sets the password.
+        if (user.IsDeactivatedByAdministrator())
+        {
+            return Response<NoContent>.Fail(
+                "This account has been deactivated by an administrator.",
+                [new ResponseError(AuthRefusalCodes.AccountDeactivated)],
+                409);
+        }
+
         await _passwordPolicyService.ValidateTenantPasswordAsync(user.TenantId, user.Id, request.NewPassword, "tenant_set_password", ct);
 
+        var state = _userRepository.CaptureState(user);
         user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
         user.ClearPasswordChangeRequirement(); // also clears the one-time token (single use)
+        // BL-529 — a password set through the link starts clean: the lockout the old password's failures (or an attacker
+        // guessing at it) built up does not outlive it.
+        user.ClearLockout();
         user.Activate();
         user.ConfirmEmail();
 
-        await _userRepository.UpdateForTenantAsync(user, user.TenantId, ct);
-        await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, user.TenantId, ct);
+        // BL-529 FIX2 — written only while this link is still the account's (not replaced by a newer reset, not used by a
+        // parallel redemption, not cleared by a deactivation). FIX4 — and while no administrator has deactivated it: a
+        // deactivation of a pending invitation keeps the link, so the link alone does not say it.
+        if (!await _userRepository.TryWriteChangesAsync(user, state, user.TenantId, new UserWriteCondition(PasswordResetTokenHash: tokenHash, DeactivatedByAdministrator: false), ct))
+        {
+            return Response<NoContent>.Fail(InvalidTokenMessage, 400);
+        }
+        await _refreshTokenRepository.RevokeLiveSessionsAsync(user.Id, user.TenantId, SessionRevocationReasons.PasswordChanged, ct);
 
         _logger.LogInformation("Tenant user set-password redeemed. Id={Id}", user.Id);
         return Response<NoContent>.Success(204);

@@ -11,6 +11,9 @@ namespace Diten.Platform.Application.Security;
 /// </summary>
 public sealed class ActorSafetyGuard : IActorSafetyGuard
 {
+    /// <summary>BL-529 FIX2 — the reason code of "Send setup link" on one's own account.</summary>
+    public const string SelfResendInviteCode = "PLATFORM_ADMINISTRATOR_SELF_RESET_FORBIDDEN";
+
     private readonly ICurrentUserContext _currentUser;
     private readonly IPlatformAdministratorRepository _administrators;
 
@@ -31,6 +34,14 @@ public sealed class ActorSafetyGuard : IActorSafetyGuard
         if (targetActorId != currentPlatformAdministratorId)
         {
             return null;
+        }
+
+        if (action == AdminSafetyAction.ResendInvite)
+        {
+            return Response<NoContent>.Fail(
+                "You cannot send a setup link to your own account — it would end your own password and sessions. Use Change password.",
+                409,
+                SelfResendInviteCode);
         }
 
         var message = action switch

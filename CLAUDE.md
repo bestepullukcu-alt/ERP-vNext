@@ -10,7 +10,7 @@ Read AGENTS.md
 ```
 
 ⚠ Claude Code **yalnız bu dosyayı** otomatik yükler. `AGENTS.md`, `.antigravity/rules/`
-(41 kural), `.antigravity/agents/` (20 ajan) ve `.antigravity/workflows/` (18 akış)
+(44 kural), `.antigravity/agents/` (20 ajan) ve `.antigravity/workflows/` (18 akış)
 **otomatik yüklenmez** — 2026-09-08'de canlı oturumda ölçüldü: bağlamdaki tek proje
 dosyası `MEMORY.md`'ydi.
 
@@ -35,6 +35,8 @@ set**. Tamamı için `AGENTS.md` §6.1 Kural Haritası.
 | **Ekran** | Yetkisiz kullanıcıya sayfa iskeleti çizilmez (UAS-001), yönlendirme yapılmaz. |
 | **Belge** | `docs/` köküne dosya konmaz; yeri `.antigravity/rules/docs-organization.md` beş soruyla belirlenir. |
 | **Test** | Kural, kendi kopyasıyla değil üretim koduyla ölçülür. Sabotaj kanıtı olmayan guard, guard değildir. |
+| **Başka modül** | İşin kapsamı dışındaki bir modülde düzeltme gerekirse dokunmadan önce sor: "bunu da düzeltelim mi?" (XMC-001). |
+| **Kayıt kodu** | Yeni kayıt türünün görünen kodu `MG-ORG-000042` biçiminde ortak servisten gelir (RCS-001). |
 
 ## Portlar
 

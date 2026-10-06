@@ -76,7 +76,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
     /// </summary>
     private static readonly (string Service, string Name, string Path, string Token)[] AcceptedTrails =
     [
-        ("Diten.AuthService", "auth-kullanici-iletimi", "b", "IUserAuditRecorder.RecordAsync"),
+        // BL-529 (2026-10-04) — every administrator password reset writes the same user audit row from inside the shared
+        // AdminPasswordReset.ResetAsync (in a finally); a handler that calls it is audited through it.
+        ("Diten.AuthService", "auth-kullanici-iletimi", "b", "IUserAuditRecorder.RecordAsync/AdminPasswordReset.ResetAsync"),
         ("Diten.MdmService", "mdm-merkezi-iletim", "b", "IAuditableCommand+IAuditMetadataProvider"),
         ("Diten.MdmService", "mdm-kisaltma-gecmisi", "c", "IProductAbbreviationHistoryRepository.AppendIfAbsentAsync"),
         ("Diten.Platform", "platform-merkezi", "a",

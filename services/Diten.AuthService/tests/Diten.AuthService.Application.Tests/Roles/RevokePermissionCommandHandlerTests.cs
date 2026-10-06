@@ -418,13 +418,16 @@ public sealed class RevokePermissionCommandHandlerTests
         public List<CancellationToken> RevokeTokens { get; } = [];
         public IReadOnlyList<Guid> RevokedUsers => RevokeCalls.Select(c => c.userId).ToList();
 
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
+        public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => Task.FromResult(true);
+        public Task<bool> RevokeIfLiveAsync(string token, string reason, CancellationToken ct) => Task.FromResult(true);
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
         {
             if (ThrowForUser == userId) throw new InvalidOperationException("refresh-token revoke failed");
             RevokeCalls.Add((userId, tenantId));
             RevokeTokens.Add(ct);
             callLog?.Add("token-revoke");
-            return Task.CompletedTask;
+            return Task.FromResult(0L);
         }
 
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();

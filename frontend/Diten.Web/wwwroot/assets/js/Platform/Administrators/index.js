@@ -565,7 +565,9 @@ const AdministratorsList = (function () {
             if (pwdMgmt) {
                 pwdMgmt.classList.remove('d-none');
                 const wrapperResend = document.getElementById('wrapperResendInvite');
-                wrapperResend?.classList.remove('d-none');
+                // BL-529 FIX2 — a setup link to an existing account resets its password: never offered on one's own
+                // record (Platform refuses it too: PLATFORM_ADMINISTRATOR_SELF_RESET_FORBIDDEN).
+                wrapperResend?.classList.toggle('d-none', isOwnRecord(data));
             }
 
             triggerFormTrackerUpdate();
@@ -657,12 +659,20 @@ const AdministratorsList = (function () {
         document.getElementById('oc-btn-edit').dataset.editId = data.id || '';
     };
 
-    const isRowProtected = (row) => {
+    // BL-529 FIX2 — "is this my own record?": the signed-in id is the AuthService account's, the row id is Platform's
+    // record id, so they never matched; the e-mail is the shared key.
+    const isOwnRecord = (row) => {
         if (!row) return false;
         const id = row.id || row.Id;
-        const currentUserId = window.CurrentUser?.id;
+        const email = String(row.email || row.Email || '').trim().toLowerCase();
+        const mine = String(window.CurrentUser?.email || '').trim().toLowerCase();
+        return id === window.CurrentUser?.id || (!!mine && email === mine);
+    };
+
+    const isRowProtected = (row) => {
+        if (!row) return false;
         const emailLower = String(row.email || row.Email || '').toLowerCase();
-        return id === currentUserId || emailLower === 'admin@diten.com';
+        return isOwnRecord(row) || emailLower === 'admin@diten.com';
     };
 
     const updateBulkDeleteButtonVisibility = () => {
@@ -725,14 +735,14 @@ const AdministratorsList = (function () {
                 headers: getAuthHeaders(true),
                 body: JSON.stringify({ version: Number(version || 0) })
             });
-            if (!response.ok) throw new Error(`${action} failed.`);
+            if (!response.ok) throw new Error(await readErrorMessage(response, L.ErrorOccurred));
             const json = await response.json().catch(() => null);
             const result = json?.data || json?.Data;
             showDevSetupLink(result?.setupUrl || result?.SetupUrl, result?.emailSent ?? result?.EmailSent);
             reloadWithSuccessToast(successKey);
         } catch (error) {
             console.error(error);
-            window.showToast?.(L.ErrorOccurred || '', 'error');
+            window.showToast?.(error?.message || L.ErrorOccurred || '', 'error');
         }
     };
     const changeStatus = async (id, action, version, reason) => {
@@ -759,6 +769,8 @@ const AdministratorsList = (function () {
             // instead of the localized `detail`. One shared rule now, in DitenHttp.
             if (window.DitenHttp.isJsonMediaType(response.headers.get('content-type'))) {
                 const json = await response.json();
+                const coded = refusalByCode(json);
+                if (coded) return coded;
                 if (Array.isArray(json?.errors) && json.errors.length) return localizeServerError(json.errors[0]);
                 if (json?.errors && typeof json.errors === 'object') {
                     const first = Object.values(json.errors).flat().find(Boolean);
@@ -774,6 +786,12 @@ const AdministratorsList = (function () {
         } catch {
             return fallback || L.ErrorOccurred || '';
         }
+    };
+    // BL-529 FIX3 — a coded refusal reads by its code in the reader's language; the server's English never reaches the screen.
+    const REASON_CODE_KEYS = { PLATFORM_ADMINISTRATOR_SELF_RESET_FORBIDDEN: 'AdminSelfResetDenied' };
+    const refusalByCode = (json) => {
+        const key = REASON_CODE_KEYS[json?.reason_code || json?.reasonCode || ''];
+        return key ? (L[key] || L.ErrorOccurred || '') : null;
     };
     const localizeServerError = (message) => {
         const text = String(message || '').trim();
@@ -920,9 +938,7 @@ const AdministratorsList = (function () {
                     responsivePriority: 3,
                     className: 'dt-checkboxes-cell cell-fit',
                     render: (data, type, row) => {
-                        const currentUserId = window.CurrentUser?.id;
-                        const emailLower = String(row?.email || row?.Email || '').toLowerCase();
-                        const isProtected = (row?.id || row?.Id) === currentUserId || emailLower === 'admin@diten.com';
+                        const isProtected = isRowProtected(row);
                         return `<input type="checkbox" class="dt-checkboxes form-check-input" value="${escapeHtml(data)}" ${isProtected ? 'data-protected="true"' : ''}>`;
                     }
                 },
@@ -935,9 +951,7 @@ const AdministratorsList = (function () {
                     render: (data, type, row) => {
                         const id = row.id || row.Id;
                         const rowJson = JSON.stringify(row);
-                        const currentUserId = window.CurrentUser?.id;
-                        const emailLower = String(row.email || row.Email || '').toLowerCase();
-                        const isProtected = id === currentUserId || emailLower === 'admin@diten.com';
+                        const isProtected = isRowProtected(row);
 
                         const actions = [
                             { key: 'quickView', className: 'js-quick-view', text: L.QuickView, icon: 'bx bx-show', attrs: { 'data-id': id, 'data-json': rowJson } },
@@ -1105,7 +1119,8 @@ const AdministratorsList = (function () {
                         reloadWithSuccessToast('ResendInviteSuccess');
                         getOcCreateEditInstance()?.hide();
                     } else {
-                        const errorMsg = Array.isArray(json.errors) ? json.errors[0] : (json.message || L.ErrorOccurred);
+                        const errorMsg = refusalByCode(json)
+                            || localizeServerError(Array.isArray(json.errors) ? json.errors[0] : (json.message || L.ErrorOccurred));
                         window.showToast?.(errorMsg, 'error');
                     }
                 } catch (error) {

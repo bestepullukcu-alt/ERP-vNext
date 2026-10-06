@@ -16,4 +16,18 @@ public interface IUserAuditRecorder
         Guid targetUserId,
         IReadOnlyDictionary<string, object?> metadata,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// BL-529 — the same row, with its real outcome for the central log: <paramref name="succeeded"/> false is filed as
+    /// Failed (a reset that conflicted or failed mid-way), not as Succeeded. A recorder that does not distinguish
+    /// outcomes records it as before.
+    /// </summary>
+    Task RecordAsync(
+        string eventName,
+        Guid tenantId,
+        Guid targetUserId,
+        IReadOnlyDictionary<string, object?> metadata,
+        bool succeeded,
+        CancellationToken ct)
+        => RecordAsync(eventName, tenantId, targetUserId, metadata, ct);
 }

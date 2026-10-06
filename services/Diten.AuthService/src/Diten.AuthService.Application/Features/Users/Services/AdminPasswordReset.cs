@@ -1,0 +1,166 @@
+using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Domain.Entities;
+
+namespace Diten.AuthService.Application.Features.Users.Services;
+
+/// <summary>
+/// BL-529 — WHAT AN ADMINISTRATOR'S PASSWORD RESET DOES TO THE ACCOUNT, in one place for every path that resets one
+/// (<see cref="AdminResetVia"/>): the tenant administrator's "Reset password" (<c>AdminResetPasswordCommandHandler</c>),
+/// "Resend invitation" of an account that is no longer a pending invitation (<c>ResendUserInvitationCommandHandler</c>),
+/// a platform administrator's reset of another platform administrator and the re-invitation of an existing platform
+/// account (<c>PlatformAuthController</c>), and the re-invitation of an existing account as tenant administrator
+/// (<c>InternalEventsController</c> tenant-admin-invited).
+///
+/// <para>The reset used to write a set-password link and stop there: the old password still logged in (and, because the
+/// account was marked "must change password", whoever knew it then chose the NEW password — the account taken over by the
+/// very person the reset was meant to lock out), and every open session went on refreshing. SAP (SU01) and Oracle both
+/// invalidate the old password the moment an administrator resets it.</para>
+///
+/// <para><b>Order</b> (BL-529 FIX2). The replacement hash is computed FIRST (BCrypt takes a few hundred milliseconds), then
+/// the account is written — conditionally on the password hash the reset read — and only THEN are the sessions ended. The
+/// other order (end the sessions, compute, write) left a window: a sign-in that wrote its session after the sweep and
+/// read the account before the write saw the old hash, passed <c>IssuedSessionGuard</c> and lived on. In this order a
+/// session written before the sweep is ended by it, and one written after it is checked against the NEW hash by
+/// <c>IssuedSessionGuard</c> (which reads the account after writing its token) and revoked there — one sweep suffices.</para>
+///
+/// <para><b>The write is conditional</b> on the password hash the reset read: a password changed in between (the user's own
+/// change, another reset) is never overwritten with a stale copy — the account is read again and the reset re-applied, at
+/// most <see cref="MaxAttempts"/> times. Sign-ins no longer write the whole account (<c>RecordLoginOutcomeAsync</c>), so
+/// a sign-in racing the reset cannot undo it either.</para>
+///
+/// <para><b>The audit row</b> (<see cref="UserAuditEvents.PasswordResetByAdmin"/>) is written in a <c>finally</c>: once a
+/// session was ended the row exists, whatever fails after (the account write, the e-mail). Ids, counts and the path
+/// only — never the token, the link or a password.</para>
+/// </summary>
+public static class AdminPasswordReset
+{
+    /// <summary>The <c>RevokedReason</c> every session ended by an administrator's reset carries.</summary>
+    public const string RevokeReason = Common.SessionRevocationReasons.AdminReset;
+
+    public const int MaxAttempts = 3;
+
+    /// <summary>A password nobody knows — the hash of a fresh random secret that is never shown, the same placeholder an
+    /// invitation starts with. The old password then fails exactly like a wrong one (401, the lockout counter counts).</summary>
+    public static string UnusableHash(IPasswordHasher passwordHasher, ITokenService tokenService)
+        => passwordHasher.Hash(tokenService.GenerateRefreshToken());
+
+    /// <summary>How a reset ended: done (<see cref="User"/> set), the account vanished, or it kept changing under it.</summary>
+    public sealed record Outcome(User? User, long SessionsRevoked, bool Conflict)
+    {
+        public bool Succeeded => User is not null && !Conflict;
+    }
+
+    /// <summary>
+    /// Resets <paramref name="user"/> (already read and checked by the caller): ends its live sessions in
+    /// <paramref name="tenantId"/>, replaces its password hash with <paramref name="replacementHash"/>, applies the path's
+    /// own changes (<paramref name="apply"/>: the link, the forced change, …) and writes the account — conditionally, read
+    /// again through <paramref name="reload"/> and re-applied when the password changed in between. Then
+    /// <paramref name="afterWrite"/> runs (the e-mail; returns whether it left). The audit row is written in every case.
+    /// </summary>
+    public static async Task<Outcome> ResetAsync(
+        User user,
+        Guid tenantId,
+        AdminResetVia via,
+        Func<User, string> replacementHash,
+        Action<User> apply,
+        Func<CancellationToken, Task<User?>> reload,
+        Func<User, CancellationToken, Task<bool>>? afterWrite,
+        IUserRepository users,
+        IRefreshTokenRepository refreshTokens,
+        IUserAuditRecorder audit,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        var targetUserId = user.Id;
+        long sessionsRevoked = 0;
+        var outcome = "failed";
+        var emailSent = false;
+
+        // FIX3 — the account's switch as the caller first saw it. A deactivation (or activation) that lands while the reset
+        // runs is never written over and never followed by a link: the reset stops as a conflict.
+        var wasActive = user.IsActive;
+        var wasMarked = user.DeactivatedByAdministrator;
+
+        try
+        {
+            User? current = user;
+            for (var attempt = 1; attempt <= MaxAttempts; attempt++)
+            {
+                if (current is null)
+                {
+                    outcome = "not_found";
+                    return new Outcome(null, sessionsRevoked, Conflict: false);
+                }
+
+                if (current.IsActive != wasActive || current.DeactivatedByAdministrator != wasMarked)
+                {
+                    break; // switched on or off meanwhile: conflict
+                }
+
+                var readHash = current.PasswordHash;
+                var state = users.CaptureState(current);
+                var newHash = replacementHash(current); // first: the slow part happens before anything is written
+                current.UpdatePassword(newHash);
+                apply(current);
+
+                // FIX3 — ONLY the fields the reset changed (hash, link, forced change, and what this path's apply changed),
+                // and only while the hash and the switch are still the ones read.
+                if (await users.TryWriteChangesAsync(current, state, tenantId,
+                        new UserWriteCondition(PasswordHash: readHash, IsActive: wasActive, DeactivatedByAdministrator: wasMarked), ct))
+                {
+                    // Only now, with the new hash stored: every session that exists ends here; any written later fails
+                    // IssuedSessionGuard against the new hash.
+                    sessionsRevoked += await refreshTokens.RevokeLiveSessionsAsync(current.Id, tenantId, RevokeReason, ct);
+                    outcome = "reset";
+                    if (afterWrite is not null)
+                    {
+                        emailSent = await afterWrite(current, ct);
+                    }
+
+                    return new Outcome(current, sessionsRevoked, Conflict: false);
+                }
+
+                current = await reload(ct);
+            }
+
+            outcome = "conflict";
+            return new Outcome(null, sessionsRevoked, Conflict: true);
+        }
+        finally
+        {
+            // CancellationToken.None: a caller that gave up after the write must not cost the row (the reset stands).
+            // The central log gets the real outcome — only a completed reset is "succeeded".
+            await audit.RecordAsync(UserAuditEvents.PasswordResetByAdmin, tenantId, targetUserId,
+                new Dictionary<string, object?>
+                {
+                    ["via"] = via.ToWire(),
+                    ["outcome"] = outcome,
+                    ["emailSent"] = emailSent,
+                    ["sessionsRevoked"] = sessionsRevoked
+                }, succeeded: outcome == "reset", CancellationToken.None);
+        }
+    }
+}
+
+/// <summary>BL-529 — the administrator reset paths, named in the audit row's <c>via</c>.</summary>
+public enum AdminResetVia
+{
+    UsersScreen,
+    ResendInvitation,
+    PlatformAdministratorReset,
+    PlatformAdministratorReinvite,
+    TenantAdministratorReinvite
+}
+
+public static class AdminResetViaExtensions
+{
+    public static string ToWire(this AdminResetVia via) => via switch
+    {
+        AdminResetVia.UsersScreen => "users-screen",
+        AdminResetVia.ResendInvitation => "resend-invitation",
+        AdminResetVia.PlatformAdministratorReset => "platform-administrator-reset",
+        AdminResetVia.PlatformAdministratorReinvite => "platform-administrator-reinvite",
+        AdminResetVia.TenantAdministratorReinvite => "tenant-administrator-reinvite",
+        _ => throw new ArgumentOutOfRangeException(nameof(via), via, null)
+    };
+}

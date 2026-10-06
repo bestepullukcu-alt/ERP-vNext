@@ -80,10 +80,56 @@ public sealed class User : EntityBase
     /// account and a provisioned admin with a temporary password are both confirmed), <see cref="LastLoginAt"/> null
     /// (the account has never been used). A method, not a property, so the Mongo class map never persists it.
     /// </summary>
+    /// <summary>
+    /// BL-529 FIX8 item 1 (b) — an account an administrator switched off, whether or not it carries the mark: marked (every
+    /// deactivation since BL-529), or inactive and NOT a pending invitation (a deactivation from before BL-529, which set
+    /// no mark). A set-password link never switches such an account on; only an administrator's activation does. A pending
+    /// invitation is inactive because it was never activated, and its link is what activates it.
+    /// </summary>
+    public bool IsDeactivatedByAdministrator() => DeactivatedByAdministrator || (!IsActive && !IsInvitationPending());
+
     public bool IsInvitationPending() => MustChangePassword && !EmailConfirmed && LastLoginAt is null;
+
+    /// <summary>
+    /// BL-529 FIX2 — an administrator switched this account off (as opposed to an invitation that is simply not active
+    /// yet). A set-password link does not switch such an account back on; only an administrator's activation does.
+    /// </summary>
+    public bool DeactivatedByAdministrator { get; private set; }
 
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
+
+    /// <summary>
+    /// BL-529 FIX2 — the administrator's deactivation: off, and marked so a link cannot undo it. FIX3 — a pending reset link
+    /// goes with it (whichever door deactivates: the kebab or the edit form); a pending INVITATION keeps its link (the
+    /// mark alone stops it, and "Resend invitation" lifts the mark).
+    /// </summary>
+    public void DeactivateByAdministrator()
+    {
+        IsActive = false;
+        DeactivatedByAdministrator = true;
+        if (!IsInvitationPending())
+        {
+            ClearPasswordResetToken();
+        }
+
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>BL-529 FIX3 — "Resend invitation" of a marked pending invitation: the administrator asks for it again.</summary>
+    public void LiftAdministratorDeactivation()
+    {
+        DeactivatedByAdministrator = false;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>BL-529 FIX2 — the administrator's activation lifts the mark.</summary>
+    public void ActivateByAdministrator()
+    {
+        IsActive = true;
+        DeactivatedByAdministrator = false;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
     public void ConfirmEmail() => EmailConfirmed = true;
     public void SetPlatformActorType(string actorType)
     {
@@ -121,6 +167,21 @@ public sealed class User : EntityBase
         LastLoginAt = DateTime.UtcNow;
         FailedLoginAttempts = 0;
         LockoutEnd = null;
+    }
+
+    /// <summary>BL-529 — a password set through a link starts clean: no failed-attempt count, no lockout.</summary>
+    public void ClearLockout()
+    {
+        FailedLoginAttempts = 0;
+        LockoutEnd = null;
+    }
+
+    /// <summary>BL-529 — an outstanding set-password / reset link stops working (a deactivated account keeps none).</summary>
+    public void ClearPasswordResetToken()
+    {
+        PasswordResetTokenHash = null;
+        PasswordResetTokenExpiresAt = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 
     public void RecordLoginFailure()
