@@ -11,7 +11,7 @@
 | **LOCATION** | Location Master | `location.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **TRACE-BUNDLE** | MOD-0174 | `trace.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **GRN-EVENT** | MOD-0142 | `grn-event.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
-| **BOM** | MOD-0193 | `bom.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
+| **BOM** | MOD-0193 | `bom.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 FROZEN** · v1.1.0 additive (2026-10-06, MVP-3: management surface; v1.0.0 operations unchanged) |
 | **DEMAND** | MOD-0188 | `demand.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **ATP-BUNDLE** | MOD-0172 | `atp-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 

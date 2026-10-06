@@ -4,7 +4,7 @@ info:
   description: >
     MOD-0193 BOM & Routings — Wave-0 frozen (v1). Manufacturing malzeme/rota yapısı.
     Ürün kimliği = PRODUCT-MASTER (item SoR). MVP-4 MRP tüketir. Tenant+LegalEntity scoped.
-  version: 1.0.0
+  version: 1.1.0 # 1.0.0 → 1.1.0 (2026-10-06, MOD-0193 MVP-3): management surface added (list / draft / update / release / delete / history) + optional BomView fields; the three v1.0.0 operations and their shapes are unchanged
   x-status: FROZEN
   x-owner: MOD-0193
   x-consumes: [PRODUCT-MASTER, ChangeControl]
@@ -42,6 +42,67 @@ paths:
       parameters: [{ name: bomVersionId, in: path, required: true, schema: { type: string } }]
       responses:
         '200': { description: BOM version, content: { application/json: { schema: { $ref: '#/components/schemas/BomView' } } } }
+        '404': { $ref: '#/components/responses/UnknownBom' }
+    put:
+      operationId: updateBomDraft
+      summary: (v1.1.0) Taslağı düzenle — yalnız Draft; rowVersion eşzamanlılık belirteci
+      parameters: [{ name: bomVersionId, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { allOf: [ { $ref: '#/components/schemas/BomDraftContent' }, { type: object, required: [rowVersion], properties: { rowVersion: { type: integer } } } ] } } }
+      responses:
+        '200': { description: Taslak, content: { application/json: { schema: { $ref: '#/components/schemas/BomView' } } } }
+        '404': { $ref: '#/components/responses/UnknownBom' }
+        '409': { description: 'BOM_NOT_DRAFT | CONCURRENCY_CONFLICT', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      operationId: deleteBomDraft
+      summary: (v1.1.0) Taslağı sil (soft) — Effective/Superseded silinemez
+      parameters:
+        - { name: bomVersionId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: rowVersion, in: query, required: true, schema: { type: integer } }
+      responses:
+        '204': { description: Silindi }
+        '404': { $ref: '#/components/responses/UnknownBom' }
+        '409': { description: 'BOM_NOT_DRAFT | CONCURRENCY_CONFLICT', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /versions:
+    get:
+      operationId: listBomVersions
+      summary: (v1.1.0) Sayfalı BOM sürüm listesi — Tenant+LE kapsamlı
+      parameters:
+        - { name: itemId, in: query, schema: { type: string, format: uuid } }
+        - { name: status, in: query, schema: { type: string, enum: [Draft, Effective, Superseded] } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 25 } }
+      responses:
+        '200': { description: Liste, content: { application/json: { schema: { $ref: '#/components/schemas/BomListResponse' } } } }
+    post:
+      operationId: createBomDraft
+      summary: (v1.1.0) Yeni taslak — revizyon no item başına sıradaki numara
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/BomDraftRequest' } } } }
+      responses:
+        '201': { description: Taslak, content: { application/json: { schema: { $ref: '#/components/schemas/BomView' } } } }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '422': { description: 'UNKNOWN_ITEM | SELF_REFERENCE', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /version/{bomVersionId}/release:
+    post:
+      operationId: releaseBomVersion
+      summary: (v1.1.0) Taslağı yürürlüğe al — önceki Effective aynı işlemde Superseded
+      parameters: [{ name: bomVersionId, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [changeControlRef, rowVersion], properties: { changeControlRef: { type: string, maxLength: 64 }, rowVersion: { type: integer } } } } }
+      responses:
+        '200': { description: Effective sürüm, content: { application/json: { schema: { $ref: '#/components/schemas/BomView' } } } }
+        '404': { $ref: '#/components/responses/UnknownBom' }
+        '409': { description: 'BOM_NOT_DRAFT | CONCURRENCY_CONFLICT | BOM_CYCLE', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '422': { description: CHANGE_CONTROL_REJECTED, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /version/{bomVersionId}/history:
+    get:
+      operationId: getBomHistory
+      summary: (v1.1.0) Sürüm geçmişi (AUD-001 yol c izi) — yalnız ekleme
+      parameters: [{ name: bomVersionId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: Geçmiş, content: { application/json: { schema: { $ref: '#/components/schemas/BomHistoryResponse' } } } }
         '404': { $ref: '#/components/responses/UnknownBom' }
   /explode:
     post:
@@ -101,8 +162,83 @@ components:
             routingId: { type: string }
             steps: { type: array, items: { $ref: '#/components/schemas/RoutingStep' } }
         contractVersion: { type: string }
+        description: { type: string, nullable: true, description: '(v1.1.0, optional)' }
+        changeControlRef: { type: string, nullable: true, description: '(v1.1.0, optional) MOD-0209 referansı; release ile dolar' }
+        rowVersion: { type: integer, description: '(v1.1.0, optional) eşzamanlılık belirteci; update/release/delete bunu ister' }
+    BomDraftContent:
+      type: object
+      required: [components]
+      properties:
+        description: { type: string, maxLength: 200, nullable: true }
+        components:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items:
+            type: object
+            required: [componentItemId, quantity, uomId, position]
+            properties:
+              componentItemId: { type: string, format: uuid }
+              quantity: { $ref: '#/components/schemas/Decimal' }
+              uomId: { type: string, maxLength: 32 }
+              position: { type: integer, minimum: 1, maximum: 9999 }
+              alternates: { type: array, maxItems: 10, items: { type: string, format: uuid }, nullable: true }
+        routing:
+          type: object
+          nullable: true
+          properties:
+            steps: { type: array, items: { type: object, required: [stepNo, operation], properties: { stepNo: { type: integer }, operation: { type: string, maxLength: 120 }, workCenter: { type: string, maxLength: 32, nullable: true } } } }
+    BomDraftRequest:
+      allOf:
+        - { $ref: '#/components/schemas/BomDraftContent' }
+        - { type: object, required: [itemId], properties: { itemId: { type: string, format: uuid } } }
+    BomListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              bomVersionId: { type: string }
+              itemId: { type: string, format: uuid }
+              version: { type: integer }
+              status: { type: string, enum: [Draft, Effective, Superseded] }
+              description: { type: string, nullable: true }
+              componentCount: { type: integer }
+              stepCount: { type: integer }
+              effectiveFrom: { type: string, format: date-time, nullable: true }
+              effectiveTo: { type: string, format: date-time, nullable: true }
+              updatedAt: { type: string, format: date-time }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+        contractVersion: { type: string }
+    BomHistoryResponse:
+      type: object
+      properties:
+        bomVersionId: { type: string }
+        entries:
+          type: array
+          items:
+            type: object
+            properties:
+              operation: { type: string, enum: [Created, Updated, Released, Superseded, Deleted] }
+              fromStatus: { type: string, nullable: true }
+              toStatus: { type: string, nullable: true }
+              changedFields: { type: array, items: { type: string } }
+              changeControlRef: { type: string, nullable: true }
+              actorId: { type: string, format: uuid }
+              actorDisplayName: { type: string }
+              correlationId: { type: string }
+              occurredAtUtc: { type: string, format: date-time }
+              outcome: { type: string }
+        contractVersion: { type: string }
     Error: { type: object, properties: { error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }, contractVersion: { type: string } } }
   responses:
+    InvalidRequest:
+      description: Doğrulama hatası
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INVALID_REQUEST, message: "quantity must be a positive decimal string.", correlationId: req-1 }, contractVersion: v1 } } }
     UnknownBom:
       description: BOM bulunamadı
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_BOM, message: "bom bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }
