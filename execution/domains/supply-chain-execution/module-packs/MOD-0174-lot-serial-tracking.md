@@ -849,6 +849,23 @@ Same mechanism in reverse for CT-D5 `NEWLOTQUICK` (a `trace.*` key on an INVENTO
 `trace.lots.create` to `inventory-ledger`): P3 must not add it to the INVENTORY-LEDGER manifest until the Platform guard
 exists — CT decision before P3.
 
+### WP-0174-P2 (agent result, pending CT, 2026-10-06) — ledger integration + FU-0174-CAT-01
+
+Commits `8f41b771b` (FU-0174-CAT-01: LOT-SERIAL-TRACKING declares only `trace.*`; the ledger-opening actions carry
+`trace.lots.read`; namespace test for both manifests) · `02a7fa54e` (in-process `ILotMasterClient` = `InventoryLotDirectory`,
+pre-check + re-check inside the posting transaction; §12 lot / serial rules in pack order; CT-D4; lot `StockTouchSeq`
+race technique; serial lifecycle; K-A `inventory_lot_positions`; CT-D1 (a) through SKU position, status change, sweeper,
+startup rebuild and getAvailability; `Trace:EnforceRegisteredLots` default false) · `5396a5278` (INVENTORY-BUNDLE 1.0.1,
+description-only note on `AvailabilityView.available`). Owner decisions 2026-10-06: ledger files beyond §5 —
+`PostMovementHandler`, `LedgerPosting`, `LedgerPostingOutcome`, `LedgerPostingResult` (in-transaction refusal → 422);
+the note on `AvailabilityView` (§8 cites the row-level `BalanceView.available`, which is unchanged); the S1 version test
+→ 1.0.1. Tests 453 → 507 (MOD-0173 subset 355 → 355 green; three MOD-0173 guards extended by name, not loosened), build
+0 warnings; six sabotages red → restored clean; own-port probe (5175, `diten_inventory_p2_itest`, own Prism) 27/27,
+owner PIDs unchanged. Slice assumptions ASSUMPTION-0174-P2-01…11. Open for the CT: live catalog attribution after the
+fast-forward (CAT-01), live end-to-end, §14 table text for the three re-keyed actions, reservation `availableAfter` now
+also lot-aware, FU-0174-INT-01 (the INT gateway test trips `DocsPathGuardTests`, pre-existing). Evidence
+`docs/records/audits/2026-10/mod-0174-p2-evidence-2026-10-06.md`.
+
 ## 20. Follow-up Items
 
 - **W-UI-02 closure** in the FU01 pack (CT records after P4).
