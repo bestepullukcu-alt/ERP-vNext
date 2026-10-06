@@ -8063,6 +8063,24 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-565
+
+**Kayıt kodu standardı (RCS-001) mevcut modüllerde uygulanmıyor: Organizasyon Birimi, Pozisyon, Tüzel Kişilik, Görev Türü, Abonelik Planı ve PPM kodları elle ve gerekçesiz; ortak kod üretici yok**
+
+DURUM: AÇIK · SAHİP: CT (Platform + MDM; PPM kısmı PPM sahibinde / Codex) · BULAN: sahibin paylaştığı yönetim karar notu (Kodlama Standardı v1.0, 2026-09-04) ile kod karşılaştırması · KAYIT: 2026-10-07
+
+Yönetim kararı (RCS-001 §1–§4): `{ŞİRKET}-{TÜR}-{6+ hane, hiç sıfırlanmayan}` (`MG-ORG-000042`). Organizasyon Birimi + Pozisyon OTOMATİK (değiştirilemez). Tüzel Kişilik, Görev Türü, PPM Portföy / Program / Proje,
+Girişim / Yatırım Dosyası ve Abonelik Planı İKİSİ DE (öneri + gerekçeli değişiklik, denetimli). Müşteri, Kampanya, Ürün ve Doküman KALSIN. Mevcut kodlar değişmez; yalnız yeni kayıtlar.
+Ölçüm (2026-10-07, `chore/ct-round-2`): hiçbiri uygulanmıyor. Kodlar elle; OrgUnit / Position / LE / Plan / PPM serbestçe ve gerekçesiz değiştirilebiliyor; Görev Türü değişmez ama öneri yok; ortak üretici yok
+(dört ayrı sayaç: CRM hesap, CRM kampanya, MDM ürün, Doküman); hiçbir yerde `MG-` yok; normalleştirici Türkçe harf bırakıyor (`SATI-BÖLÜMÜ-1`).
+Yapılacak: (1) yönetim teyidi: RCS-001 §5'teki 12 öneri, özellikle sayaç kapsamı, transferde kodun kalıcılığı, şirketsiz kayıtlar, şirket kısa kodu; (2) ortak kod üretme servisi
+(önek ayarı, atomik sayaç, öneri, gerekçe + denetim); (3) Tüzel Kişiliğe kısa kod alanı; (4) türlerin bağlanması: önce Organizasyon Birimi + Pozisyon (organizasyon verisi girişi buna bağlı),
+sonra Tüzel Kişilik / Görev Türü / Abonelik Planı, en son PPM (Codex sahibiyle). Ayrıca notta sayılmayan elle kodlu türler (Marka, MDM marka ürünü vb.) için sınıf kararı. Karşılaştırma: SAP'de
+numara aralıkları (SNRO) nesne + şirket kodu başına tanımlanır, iç / dış numaralama seçilir; Oracle Fusion'da "Document Sequences" kategori + iş birimi başına. Gelecek regresyon riski: 🟡 (her yeni
+kayıt eski elle düzene ekleniyor; geç başladıkça "yeni kayıtlar" penceresi büyüyor).
+
+---
+
 ### BL-564
 
 **`verify_module_id.py` yalnız bulunduğu dalın registry'sini okuyor: başka dalda alınmış bir modül kimliğine "OK" diyor (Marka ve kalem işinde iki kez)**
