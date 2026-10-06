@@ -316,6 +316,7 @@ public sealed class PlatformAuthController : CustomBaseController
         var state = _userRepository.CaptureState(user);
         user.SetUserName(request.UserName);
         var wasActive = user.IsActive;
+        var wasMarked = user.DeactivatedByAdministrator;
         user.UpdateProfile(firstName, lastName);
         // BL-529 FIX5 — Platform's sync switches the account on as an administrator does: the deactivation mark goes with it
         // (Activate() alone left a stored passive, marked account "active AND marked").
@@ -325,8 +326,10 @@ public sealed class PlatformAuthController : CustomBaseController
 
         // BL-529 FIX3 — only the fields this sync changes (name, profile, switch, actor type): a whole write from the copy
         // read above could put back a password hash an administrator's reset replaced meanwhile. FIX5 — and only while the
-        // switch is still the one read (a deactivation that landed meanwhile is not switched back on).
-        if (!await _userRepository.TryWriteChangesAsync(user, state, PlatformTenantId, new UserWriteCondition(IsActive: wasActive), ct))
+        // switch is still the one read (a deactivation that landed meanwhile is not switched back on). FIX6 — the switch is
+        // the flag AND the administrator's mark: a deactivation of an already passive account changes only the mark.
+        if (!await _userRepository.TryWriteChangesAsync(user, state, PlatformTenantId,
+                new UserWriteCondition(IsActive: wasActive, DeactivatedByAdministrator: wasMarked), ct))
         {
             return Conflict(new { message = "the account changed while it was being synced; try again" });
         }
@@ -423,7 +426,7 @@ public sealed class PlatformAuthController : CustomBaseController
         var linkMatches = user is not null &&
                           !string.IsNullOrWhiteSpace(user.PasswordResetTokenHash) &&
                           user.PasswordResetTokenExpiresAt > DateTime.UtcNow &&
-                          string.Equals(user.PasswordResetTokenHash, _refreshTokenHasher.Hash(request.Token), StringComparison.Ordinal);
+                          LinkHashesEqual(user.PasswordResetTokenHash, _refreshTokenHasher.Hash(request.Token));
         if (!linkMatches)
         {
             var asking = _clientAddress.Identify(HttpContext);
@@ -456,6 +459,11 @@ public sealed class PlatformAuthController : CustomBaseController
         await _refreshTokenRepository.RevokeLiveSessionsAsync(user.Id, PlatformTenantId, SessionRevocationReasons.PasswordChanged, ct);
         return CreateActionResultInstance(Response<NoContent>.Success(204));
     }
+
+    // BL-529 FIX6 — constant-time comparison (hygiene: the stored value is a keyed hash, so timing reveals nothing usable).
+    private static bool LinkHashesEqual(string? stored, string presented)
+        => stored is not null && System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+            System.Text.Encoding.UTF8.GetBytes(stored), System.Text.Encoding.UTF8.GetBytes(presented));
 
     private async Task<User?> ResolveCurrentPlatformUserAsync(CancellationToken ct)
     {

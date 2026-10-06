@@ -1313,6 +1313,94 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.False(after.DeactivatedByAdministrator); // never "active AND marked"
     }
 
+    // ── FIX6: Platform's sync holds on the mark too; an expired link is an invalid link on both doors ───────────────
+
+    [Fact]
+    public async Task A_deactivation_of_a_passive_account_landing_during_a_platform_sync_is_not_switched_back_on()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        var admin = await PlatformUserAsync(email);
+        await WriteAccountAsync(admin, a => a.Deactivate()); // passive, not marked: the sync reads IsActive = false
+
+        using var platform = _host.Client();
+        platform.DefaultRequestHeaders.Add("X-Internal-Api-Key", _host.InternalKey);
+        // The sync is held before its write; an administrator deactivates meanwhile — IsActive stays false, the mark is set.
+        var sync = await RaceAsync("write:" + admin.Id,
+            () => platform.PostAsJsonAsync("api/platform-auth/platform-admins/sync",
+                new { email, userName = email.Split('@')[0], displayName = "Synced Admin", actorType = "platform_admin", roles = new[] { "ReadOnly" } }),
+            async () => await WriteAccountAsync(await PlatformUserAsync(email), a => a.DeactivateByAdministrator()));
+
+        Assert.Equal(HttpStatusCode.Conflict, sync.StatusCode);
+        var after = await PlatformUserAsync(email);
+        Assert.False(after.IsActive);
+        Assert.True(after.DeactivatedByAdministrator);
+    }
+
+    [Fact]
+    public async Task An_expired_platform_link_is_refused_and_counted_as_an_invalid_one()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        await AssertOkAsync(await ProvisionPlatformAdminAsync(email)); // a fresh link …
+        var link = _host.PlatformEmails.LastTokenFor(email);
+        await ExpireLinkAsync(await PlatformUserAsync(email)); // … that has expired
+
+        var peer = RandomPeer();
+        for (var i = 0; i < Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerAddressLimit; i++)
+        {
+            Assert.Equal(HttpStatusCode.BadRequest,
+                (await PeerPostAsync(peer, "api/platform-auth/reset-password", new { email, token = link, newPassword = NewPassword })).StatusCode);
+        }
+
+        // Counted like any wrong link: past the (client, address) limit the same client is refused.
+        Assert.Equal((HttpStatusCode)429,
+            (await PeerPostAsync(peer, "api/platform-auth/reset-password", new { email, token = link, newPassword = NewPassword })).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await PlatformLoginAsync(email, NewPassword)).StatusCode);
+    }
+
+    [Fact]
+    public async Task An_expired_tenant_link_is_refused()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode);
+        await ExpireLinkAsync(await ReadUserAsync(user.Id));
+
+        Assert.Equal(HttpStatusCode.BadRequest, (await RedeemTenantLinkAsync(user.Email, NewPassword)).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await TenantLoginAsync(tenantId, user.Email, NewPassword)).StatusCode);
+    }
+
+    [Fact]
+    public async Task The_owner_gets_through_from_the_same_client_that_sent_the_junk()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        await AssertOkAsync(await ProvisionPlatformAdminAsync(email)); // a fresh link for the owner
+        var link = _host.PlatformEmails.LastTokenFor(email);
+        var shared = RandomPeer(); // one client — e.g. an office behind one address
+
+        HttpResponseMessage? junk = null;
+        for (var i = 0; i <= Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerAddressLimit; i++)
+        {
+            junk = await PeerPostAsync(shared, "api/platform-auth/reset-password", new { email, token = "junk", newPassword = NewPassword });
+        }
+
+        Assert.Equal((HttpStatusCode)429, junk!.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await PeerPostAsync(shared, "api/platform-auth/reset-password", new { email, token = link, newPassword = NewPassword })).StatusCode);
+    }
+
+    private async Task WriteAccountAsync(User account, Action<User> change)
+    {
+        using var scope = Scope(account.TenantId);
+        var repository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+        var state = repository.CaptureState(account);
+        change(account);
+        Assert.True(await repository.TryWriteChangesAsync(account, state, account.TenantId, UserWriteCondition.None, CancellationToken.None));
+    }
+
+    private async Task ExpireLinkAsync(User account)
+        => await _host.Database.GetCollection<User>("users").UpdateOneAsync(u => u.Id == account.Id,
+            Builders<User>.Update.Set(u => u.PasswordResetTokenExpiresAt, (DateTime?)DateTime.UtcNow.AddMinutes(-1)));
+
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────────────
 
     private sealed record Session(string AccessToken, string RefreshToken);

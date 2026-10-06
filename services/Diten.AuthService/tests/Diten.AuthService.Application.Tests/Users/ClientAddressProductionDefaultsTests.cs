@@ -142,6 +142,16 @@ public sealed class ClientAddressProductionDefaultsTests : IClassFixture<ClientA
         Assert.Contains(ClientAddressResolver.TrustedProxiesKey, error.Message, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("::ffff:10.0.0.1")]
+    [InlineData("fe80::1")]
+    [InlineData("10.0.0.5")]
+    public void An_address_in_its_canonical_form_is_accepted(string entry)
+    {
+        // FIX6 — "as written" is the canonical form (IPv6 compressed, an IPv4-mapped address included).
+        Assert.Equal([IPAddress.Parse(entry)], ClientAddressResolver.ParseTrustedProxies(Config(entry)));
+    }
+
     [Fact]
     public void Who_can_be_told_apart_depends_on_the_list_only()
     {

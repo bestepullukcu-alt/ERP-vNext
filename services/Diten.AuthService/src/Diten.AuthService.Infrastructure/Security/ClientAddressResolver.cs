@@ -19,9 +19,13 @@ public sealed class ClientAddressResolver
 {
     public const string TrustedProxiesKey = "ClientAddress:TrustedProxies";
 
+    /// <summary>BL-529 FIX6 — how many distinct peers are warned about; past it, one "limit reached" line and silence.</summary>
+    public const int MaxWarnedPeers = 256;
+
     private readonly HashSet<IPAddress> _trustedProxies;
     private readonly ILogger _logger;
     private readonly ConcurrentDictionary<IPAddress, byte> _warnedPeers = new();
+    private int _warnLimitReported;
 
     /// <param name="logger">FIX5 — for the one-time warning about an untrusted peer that forwards for others.</param>
     public ClientAddressResolver(IEnumerable<IPAddress> trustedProxies, ILogger? logger = null)
@@ -42,7 +46,8 @@ public sealed class ClientAddressResolver
     /// BL-529 FIX4 — reads and VALIDATES the configured list once, at registration: an entry that is not an IP address (a
     /// CIDR range, a typo) stops the start with a message naming it, instead of a 500 on the first password request. FIX5 —
     /// the entry must read back exactly as written: IPAddress.TryParse also accepts shorthand ("10.0.1" is 10.0.0.1),
-    /// which would trust an address nobody meant.
+    /// which would trust an address nobody meant. FIX6 — "as written" is the address's canonical form (IPv6 compressed,
+    /// e.g. "::ffff:10.0.0.1"), which the message now says.
     /// </summary>
     public static IReadOnlyList<IPAddress> ParseTrustedProxies(IConfiguration configuration)
     {
@@ -55,8 +60,9 @@ public sealed class ClientAddressResolver
                 || !string.Equals(address.ToString(), written, StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(
-                    $"{TrustedProxiesKey} contains '{entry}', which is not an IP address written in full. List each proxy's " +
-                    "address on its own, in full (ranges such as CIDR and shorthand such as 10.0.1 are not supported).");
+                    $"{TrustedProxiesKey} contains '{entry}', which is not an IP address in its canonical form. List each " +
+                    "proxy's address on its own, written as the address reads back (IPv4 as four numbers, IPv6 compressed); " +
+                    "ranges such as CIDR and shorthand such as 10.0.1 are not supported.");
             }
 
             parsed.Add(address);
@@ -91,14 +97,11 @@ public sealed class ClientAddressResolver
         if (!IsTrusted(peer))
         {
             // FIX5 — a peer outside the list that forwards for others is a proxy nobody listed: every client behind it shares
-            // its bucket. Said once per peer, so the list can be completed.
-            if (_trustedProxies.Count > 0 && context.Request.Headers.ContainsKey("X-Forwarded-For")
-                && _warnedPeers.TryAdd(Normalize(peer), 0))
+            // its bucket. Said once per peer, so the list can be completed. FIX6 — the line names the peer, and the record of
+            // warned peers is capped (anyone can send the header).
+            if (_trustedProxies.Count > 0 && context.Request.Headers.ContainsKey("X-Forwarded-For"))
             {
-                _logger.LogWarning(
-                    "A peer that is not in {Key} sent X-Forwarded-For; its clients share one rate-limit bucket. Add the proxy's " +
-                    "address to the list if it is one of ours.",
-                    TrustedProxiesKey);
+                WarnAboutUnlistedForwarder(Normalize(peer));
             }
 
             return Normalize(peer).ToString();
@@ -122,6 +125,43 @@ public sealed class ClientAddressResolver
         }
 
         return Normalize(peer).ToString(); // only trusted proxies on the way: the request came from them
+    }
+
+    /// <summary>FIX6 — how many peers have been warned about (never more than <see cref="MaxWarnedPeers"/>).</summary>
+    public int WarnedPeerCount => _warnedPeers.Count;
+
+    private void WarnAboutUnlistedForwarder(IPAddress peer)
+    {
+        if (_warnedPeers.ContainsKey(peer))
+        {
+            return;
+        }
+
+        bool named;
+        bool limitJustReached = false;
+        lock (_warnedPeers)
+        {
+            named = _warnedPeers.Count < MaxWarnedPeers && _warnedPeers.TryAdd(peer, 0);
+            if (!named && _warnedPeers.Count >= MaxWarnedPeers && _warnLimitReported == 0)
+            {
+                _warnLimitReported = 1;
+                limitJustReached = true;
+            }
+        }
+
+        if (named)
+        {
+            _logger.LogWarning(
+                "Peer {Peer} is not in {Key} but sent X-Forwarded-For; its clients share one rate-limit bucket. Add that " +
+                "address to the list if it is one of our proxies.",
+                peer.ToString(), TrustedProxiesKey);
+        }
+        else if (limitJustReached)
+        {
+            _logger.LogWarning(
+                "More than {Max} peers outside {Key} sent X-Forwarded-For; no further peers are named until Auth restarts.",
+                MaxWarnedPeers, TrustedProxiesKey);
+        }
     }
 
     private bool IsTrusted(IPAddress address) => _trustedProxies.Contains(Normalize(address));

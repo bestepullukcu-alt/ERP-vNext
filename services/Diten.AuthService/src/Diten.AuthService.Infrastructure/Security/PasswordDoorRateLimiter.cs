@@ -9,10 +9,13 @@ namespace Diten.AuthService.Infrastructure.Security;
 /// and <c>POST api/platform-auth/reset-password</c> (the set-password link). Both open without a tenant since BL-529, and
 /// both can be asked by anyone, endlessly — a flood of "forgot password" against one administrator is also how a stale
 /// write would be aimed at a reset.
-/// <para>Two fixed windows per door. The client is <see cref="ClientAddressResolver"/>'s answer (never a header the client
-/// wrote on its own). "Forgot password" counts per client and per e-mail address; the set-password link per client and per
-/// (client, address) — see the two methods. Every key is a SHA-256, never stored or logged in clear. The ASP.NET rate-limiting middleware is not used because its partition
-/// key cannot read the request body; the same <see cref="PartitionedRateLimiter"/> primitives are used here instead.</para>
+/// <para>Fixed windows. The client is <see cref="ClientAddressResolver"/>'s answer (never a header the client wrote on its
+/// own), and the per-client counts apply only while clients can be told apart (<see cref="ClientIdentity.Identified"/>).
+/// "Forgot password" counts per client and per e-mail address. The set-password link counts ONLY attempts whose link did
+/// not match: per client and per (client, address) when clients are told apart, otherwise per address bucket (FIX6) — see
+/// the two methods. Every key is a SHA-256, never stored or logged in clear. The ASP.NET rate-limiting middleware is not
+/// used because its partition key cannot read the request body; the same <see cref="PartitionedRateLimiter"/> primitives
+/// are used here instead.</para>
 /// </summary>
 public sealed class PasswordDoorRateLimiter : IDisposable
 {
@@ -22,6 +25,9 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     public const int DefaultPerAddressLimit = 5;
     public const int DefaultPerClientLimit = 30;
     public static readonly TimeSpan DefaultWindow = TimeSpan.FromMinutes(15);
+
+    /// <summary>BL-529 FIX6 — how many per-address buckets the set-password link has while clients cannot be told apart.</summary>
+    public const int UnidentifiedLinkBuckets = 4096;
 
     private readonly PartitionedRateLimiter<string> _perAddress;
     private readonly PartitionedRateLimiter<string> _perClient;
@@ -44,8 +50,9 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     /// "Forgot password": per client (when clients can be told apart), then per e-mail address — the target: a flood of
     /// mails at one administrator is capped whoever sends it. True = go on.
     /// <para>FIX5 — when clients can NOT be told apart there is no per-client count (it would be one bucket for everybody),
-    /// and the per-address partitions then grow with the addresses asked, not with real clients; each key is a fixed-length
-    /// hash and an idle partition is dropped by the limiter, so that growth is bounded by the window.</para>
+    /// and the per-address partitions then grow with the addresses asked. They are NOT bucketed here: a shared bucket would
+    /// let junk for other addresses cap mails to a real one. Each key is a fixed-length hash; the number of partitions is
+    /// not capped.</para>
     /// </summary>
     /// <param name="countPerClient">REQUIRED (FIX5) — the caller states whether the client is told apart
     /// (<see cref="ClientIdentity.Identified"/>); no default can quietly make a global bucket.</param>
@@ -57,14 +64,20 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     /// BL-529 FIX5 — the set-password link counts ONLY attempts whose link did not match. The link is 64 random bytes: no
     /// count protects it, and any count junk could raise would only be a lever to lock the owner out — so a request that
     /// carries the valid link is never counted and never refused (the caller compares the link FIRST). Invalid attempts are
-    /// counted per client and per (client, address) when clients are told apart, per address otherwise (harmless now: the
-    /// owner's valid link skips the count). True = answer as usual (400); false = 429.
+    /// counted per client and per (client, address) when clients are told apart. Otherwise per address, folded into
+    /// <see cref="UnidentifiedLinkBuckets"/> fixed buckets (FIX6): every junk address would else be a new partition, and a
+    /// shared bucket is harmless here because the owner's valid link skips the count. True = answer as usual (400);
+    /// false = 429.
     /// </summary>
     public bool TryCountInvalidLinkAttempt(string client, string? email, bool countPerClient)
         => countPerClient
             ? TryAcquire(_perClient, $"reset-password|client|{client}")
               && TryAcquire(_perAddress, $"reset-password|client-address|{client}|{Normalize(email)}")
-            : TryAcquire(_perAddress, $"reset-password|address|{Normalize(email)}");
+            : TryAcquire(_perAddress, $"reset-password|address-bucket|{AddressBucket(email)}");
+
+    /// <summary>FIX6 — the bucket an address falls in while clients cannot be told apart (0 … buckets − 1).</summary>
+    public static int AddressBucket(string? email)
+        => (int)(BitConverter.ToUInt32(SHA256.HashData(Encoding.UTF8.GetBytes(Normalize(email))), 0) % UnidentifiedLinkBuckets);
 
     public void Dispose()
     {

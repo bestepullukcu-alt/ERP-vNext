@@ -136,6 +136,65 @@ public sealed class PasswordDoorRateLimiterTests
         resolver.Resolve(Request("10.9.9.7", null)); // not forwarding: nothing to say
 
         Assert.Equal(2, logs.Entries.Count(e => e.Level == LogLevel.Warning));
+        // FIX6 — the line names the peer, so the operator knows which proxy to list.
+        Assert.Contains(logs.Entries, e => e.Level == LogLevel.Warning && e.Message.Contains("10.9.9.9", StringComparison.Ordinal));
+        Assert.Contains(logs.Entries, e => e.Level == LogLevel.Warning && e.Message.Contains("10.9.9.8", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void The_record_of_warned_peers_stops_growing_at_its_cap_and_says_so_once()
+    {
+        var logs = new CapturingLoggerProvider();
+        var resolver = new ClientAddressResolver([Proxy], logs.CreateLogger<ClientAddressResolver>());
+
+        for (var i = 0; i < ClientAddressResolver.MaxWarnedPeers + 50; i++)
+        {
+            resolver.Resolve(Request($"10.20.{i / 250}.{i % 250 + 1}", "198.51.100.1"));
+        }
+
+        Assert.Equal(ClientAddressResolver.MaxWarnedPeers, resolver.WarnedPeerCount);
+        var warnings = logs.Entries.Where(e => e.Level == LogLevel.Warning).ToArray();
+        Assert.Equal(ClientAddressResolver.MaxWarnedPeers + 1, warnings.Length); // one per named peer + one "limit reached"
+        Assert.Single(warnings, e => e.Message.Contains("no further peers are named", StringComparison.Ordinal));
+    }
+
+    // ── FIX6: the required argument stays required; the link door's unidentified count is bucketed ──────────────
+
+    [Theory]
+    [InlineData(nameof(PasswordDoorRateLimiter.TryAcquireForgotPassword))]
+    [InlineData(nameof(PasswordDoorRateLimiter.TryCountInvalidLinkAttempt))]
+    public void CountPerClient_has_no_default_value(string method)
+    {
+        // A default (FIX4 had "= true") would let a caller forget the question and quietly make one global bucket.
+        var parameter = typeof(PasswordDoorRateLimiter).GetMethod(method)!.GetParameters().Single(p => p.Name == "countPerClient");
+        Assert.False(parameter.HasDefaultValue, $"{method}(countPerClient) must be passed explicitly");
+    }
+
+    [Fact]
+    public void Unidentified_invalid_link_attempts_share_a_fixed_number_of_buckets_and_forgot_password_does_not()
+    {
+        var (first, second) = TwoAddressesInOneBucket();
+        using var limiter = new PasswordDoorRateLimiter(perAddressLimit: 1, perClientLimit: 100, TimeSpan.FromMinutes(5));
+
+        Assert.True(limiter.TryCountInvalidLinkAttempt("the-gateway", first, countPerClient: false));
+        Assert.False(limiter.TryCountInvalidLinkAttempt("the-gateway", second, countPerClient: false)); // same bucket
+
+        Assert.True(limiter.TryAcquireForgotPassword("the-gateway", first, countPerClient: false));
+        Assert.True(limiter.TryAcquireForgotPassword("the-gateway", second, countPerClient: false)); // per address, never bucketed
+
+        Assert.All(Enumerable.Range(0, 200).Select(i => PasswordDoorRateLimiter.AddressBucket($"a{i}@x.test")),
+            b => Assert.InRange(b, 0, PasswordDoorRateLimiter.UnidentifiedLinkBuckets - 1));
+    }
+
+    private static (string, string) TwoAddressesInOneBucket()
+    {
+        var seen = new Dictionary<int, string>();
+        for (var i = 0; ; i++)
+        {
+            var email = $"bucket{i}@x.test";
+            if (seen.TryGetValue(PasswordDoorRateLimiter.AddressBucket(email), out var other)) return (other, email);
+            seen[PasswordDoorRateLimiter.AddressBucket(email)] = email;
+        }
     }
 
     private static HttpContext Request(string peer, string? forwardedFor)
