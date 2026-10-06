@@ -918,6 +918,28 @@ short P3→P4 window (the LotMigration nav entry has no page until P4). **ASSUMP
 not at P3 acceptance — switching it on earlier would refuse typed inbound lots before they can be migrated.
 Lesson (CT): re-run every test suite that reads a document after editing that document.
 
+### WP-0174-P4 (agent result 2026-10-06, pending CT) — typed-lot migration, W-UI-02 closure
+
+**K4-1…K4-5 (CT, 2026-10-06)** — the BLOCKED of v1 (the Web could not learn the tenant's closure: `completed` only in
+`listManualLotGroups`, `trace.lots.migrate`) lifted: **K4-1** TRACE 1.2.0 `getManualLotMigrationStatus` (`trace.lots.read`),
+separate single-writer commit; **K4-2** typed postings and the commit serialise on the tenant's migration document
+(`InventoryLotDirectory` gate), re-key in a new ledger file; **K4-3** a migrated transaction reverses through its linked
+lot (`PostMovementHandler.cs`); **K4-4** typed texts of items that are not lot-controlled get no group, link or re-key, and
+closure refuses only a lot-controlled INBOUND typed text (supersedes the §12 "outbound only after migration close" row);
+**K4-5** the commit moves the linked transactions' serials to the lot. Commits `13e3e70c0` (TRACE 1.2.0 + 1.1.0 fixture
+diff test) · `259387167` (InventoryService: list / commit / links / status, `ManualLotMatcher`, `ManualLotMigrationPlan`,
+`LedgerProjectionReKey`, closure, read-side resolution of `getTransactions`) · `b310981c4` (Web: `/LotMigration` 8th page,
+W-UI-02 closure in the Stock Ledger form / Details / lists, FU-0174-P3-07 K-F on the form post). Tests: Inventory
+507 → 530, Web 588/590 → 604/606 (the 2 Nav-guard reds, P5), architecture 18/18, gateway 88/89 (FU-INT1-01), build 0 new
+warnings; seven sabotages (a)–(g) red → restored clean. E4 on an own chain (Prism 4027, Inventory 5176 on
+`diten_inventory_p4_itest`, gateway copy 5191 with every non-inventory route dead, Web 5196, own in-memory JWT secret): 4
+typed groups (same number, L-001/L001, new) → 5 transactions linked to 3 lots (2 new Draft), `inventory_transactions`
+hash equal before / after, balance totals equal, typed inbound → 422, form without typed input, no badges. The owner's
+fleet does not run P4 (migration route 404): read-only Mongo shows 6 typed groups / 36 transactions there. Open for the CT:
+W-UI-02 closure record in the FU01 pack (proposed text in the evidence §9); §12 / §11.5 / §11.6 texts (K4-4, client-mode
+list, banner without a user name, added keys). Slice assumptions ASSUMPTION-0174-P4-01…05. Evidence
+`docs/records/audits/2026-10/mod-0174-p4-evidence-2026-10-06.md`.
+
 ## 20. Follow-up Items
 
 - **W-UI-02 closure** in the FU01 pack (CT records after P4).
