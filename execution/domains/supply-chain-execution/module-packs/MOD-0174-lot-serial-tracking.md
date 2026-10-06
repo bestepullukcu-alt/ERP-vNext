@@ -969,6 +969,15 @@ Inventory 530/530, architecture 18/18, build 0 new warnings; sabotages (a) fr ke
 Detail in ar (RTL) and ru, no header overflow. Open for the CT: FU01 term conflicts T-1…T-5 (ar `الدفعة` vs `التشغيلة`,
 ru Продукт / Товар, en movement-type wording) and findings F-1…F-4 (raw history values, ru column folding, shell
 "Search" placeholders). Evidence `docs/records/audits/2026-10/mod-0174-p5-evidence-2026-10-06.md`.
+**CT acceptance (K13, 2026-10-06):** re-measured at `857c2a65e` — Web 607/607 (Nav guard green), diff = 30 new resx +
+5 SharedResource (only the 5 `Nav.*` rows) + test + evidence + pack; sample values match the glossary in all five
+languages. CT sabotage: `{0}` removed from a ru value (`LotsIndex.ru.resx:233`) → 1 red, restored. **Decisions on the
+findings → FU-0174-P5 (one follow-up WP, after MVP-1 core, FU01 resx = MOD-0173 owner):** T-1/T-2 unify the FU01 lot
+column to the MOD-0174 glossary (ar `التشغيلة`, tr "Lot" — the owner's term); T-4 ru `Товар` everywhere; T-5 align the
+en movement-type wording of P3 to FU01; F-1 lot history must render field names / statuses / actor names localized, not
+raw values (UX defect, also FU-LOC2-04 pattern); F-2 ru column priority (SKT before secondary columns); F-3 shell
+"Search" placeholders (shared layout owner); F-4 accepted. **MOD-0174 slices P1–P5 complete;** module status 90 %
+(W-UI-02 per-tenant closure, W-0174-01, FU-0174-* open).
 
 ## 20. Follow-up Items
 
