@@ -139,3 +139,43 @@ KORU/YAPMA: ekran tasarımı değişmez (Faz 4); YENİ YAZMA KOMUTU YOK (AUD-001
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — dotnet test frontend/Diten.Web.Tests (taban 652/0) · services/Diten.CrmService/tests/Diten.CrmService.Application.Tests (2248/0/5, PII flake bilinen) · Platform manifest testleri · tests/architecture/TenantArchitecture.ArchitectureTests (38/1, AUD-001 kırmızısı bilinen, SAYI ARTMAMALI); build 0 hata. Web, fleet açıkken bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad> kullan (derinlik 3). Yeni testler WP Acceptance 1–7. Sabotaj 1–5 (kırmızı kanıtla, geri al).
 Commit: "fix(crm,web,platform): WP-VP-FIX-1 — visit planning quick fixes (target count, committed lock, working days + calendar, strategy picker removed, menu, l10n)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), committed yazma yolları listesi, menü izni seçimi, TR etiketi eksik referans setleri. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-06)
+**Commit:** `b0fe13aa` (ajan `de9e04f1`, `test/crm-content-visit-e2e` üzerine rebase + ff). Push: test dalı.
+
+**CT K13 doğrulaması (kendi koşum, worktree):**
+| Paket | Taban | Sonuç |
+|---|---|---|
+| Web.Tests | 652/0 | **666/0** (+14) |
+| CRM Application.Tests | 2249/0/5 | **2254/0/5** (+5) |
+| Platform (Crm/Manifest/Nav) | 191/3 | **194/3** (+3; 3 kırmızı = yerel mongod yok, ortam, tabanda da var) |
+| Mimari | 38/1 | **38/1** — AUD-001 denetimsiz komut **26, değişmedi** (yeni yazma komutu yok) |
+
+**Kod okuması (CT):**
+- C2 / C3: `PlanningWorkingCalendar` gün başına `is-working-day`, mevcut seam (`WorkingCalendarWorkingDayCounter` artık `IWorkingDayChecker` da). İlk hatada Cmt / Paz yedeği; karışık sonuç yok. `OptimizationPeriod.NonWorkingDates` (ek, null = eski davranış). Önizleme yanıtına `calendarStatus` + `nonWorkingDates` (ek). Platform yanıt modeli `IsWorkingDay` alanını taşıyor (WorkingCalendarModels.cs:130) ✓.
+- D2: Web Details / Edit durumu sunucuda okur. Okunamazsa eski davranış, CRM 409 yine korur. İkinci uygula → 409 `planning_session_already_committed`.
+- D7: manifest iki sayfa; `crm.visit-report.read` 97c5 Admin'de verilmiş (ajan, salt okuma kanıtı).
+- D6: `api/reference-labels` → `CrmReferenceSetReader`.
+
+**CT sabotajı (ajanınkinden ayrı):**
+1. Yedekte Pazar'ı çıkar → `An_unreadable_calendar_falls_back_to_saturday_and_sunday_and_says_unresolved` **kırmızı**.
+2. Apply'daki `IsCommitted` korumasını kapat → `A_second_apply_of_a_committed_plan_is_refused_with_409_and_a_machine_code` **kırmızı**.
+
+İkisi de geri alındı, ağaç temiz.
+
+**Ajan raporundaki notlar → CT kararı:**
+- **Re-plan da tatil / hafta sonuna ziyaret koymuyor** (ortak üretim akışı) → **istenen davranış**, kabul.
+- **Düzenle formu saklı `strategyTemplateId`'yi artık koruyor** (önceden boş gidiyordu) → **kabul**. Mobil yanıtlarıyla aynı kural: okunan değer geri gönderilir; B-3'te sunucu türetir.
+- **Takvim istek sayısı** en fazla 42, sıralı → şimdilik kabul. Hız sorunu görülürse B-5'te toplu işlem.
+- **DataTable doğrulayıcısı 9 sapma** (tabanda da var) → ayrı paket yok. Liste **VP-UI-1**'de (Faz 4) yeniden yapılıyor; sapmalar orada kapanır.
+- **Referans setlerinde TR etiketi yok:** `account-type` (9 değer), `medical-specialty` (22 değer) → veri işi, yol haritasında **0.5**.
+
+**E4 (CT, bekliyor; fleet yeniden başlatılmalı — CRM + Platform manifest + Web değişti):**
+- Liste "122 doktor · 13 eczane".
+- `#0848afed` salt okunur.
+- Menüde Ziyaret Planlama + Ziyaret Yürütme.
+- Metinler Türkçe.
+- 29 Ekim haftasında Perşembe + hafta sonu boş (kaydetmeden önizleme).
+- Konsolda 400 yok.

@@ -5,7 +5,7 @@
 > Ayrıntılar: [durum analizi](VISIT-PLANNING-current-state-analysis.md) · [mockup brief](mockups/visit-planning/BRIEF-visit-planning-rep-week.md) · [mockup analizi](mockups/visit-planning/VISIT-PLANNING-mockup-analysis.md) · [mobil not](mobile/2026-10-06-visit-planning/MOBILE-NOTE-2026-10-06-visit-planning.md) · [mobil talepler](MOBILE-REQUESTS-2026-10-05-analysis.md)
 
 ## Neredeyiz
-**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ◐ **Faz 1 — VP-FIX-1** paketlendi; ajan raporu bekleniyor.
+**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** E2 kabul (`b0fe13aa`); ◐ E4 canlı kontrol bekliyor (fleet yeniden başlatılmalı).
 
 ## Yapılanlar (2026-10-06)
 | Ne | Kanıt |
@@ -46,7 +46,9 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 - ☑ **0.2** AUD-001 kararı: **A — CRM merkezi denetime bağlanır, ama en sonda** (Faz 8). O zamana kadar mimari test kırmızı kalır; dal `main`'e PR olmaz.
 - ☑ **0.3** D8 test kaydı arşivlendi.
 
-### Faz 1 — VP-FIX-1 (mockup'tan bağımsız) — ◐ paketlendi 2026-10-06, [WP](WP-VP-FIX-1-visit-planning-quick-fixes.md), worktree `C:\tmp\vp-fix-1`
+- ☐ **0.5** Referans setlerine TR etiketi (veri): `account-type` (9 değer) ve `medical-specialty` (22 değer) yalnız İngilizce → ekranda "Hospital", "Urology". MOD-0048 yayın akışıyla (yap-onayla) TR etiket sürümü; CT script / adım listesi hazırlar.
+
+### Faz 1 — VP-FIX-1 (mockup'tan bağımsız) — ☑ E2 kabul `b0fe13aa` (2026-10-06) · ◐ E4 bekliyor (fleet yeniden başlatma) · paketlendi 2026-10-06, [WP](WP-VP-FIX-1-visit-planning-quick-fixes.md), worktree `C:\tmp\vp-fix-1`
 - ☐ D1 liste hedef sayısı (hep 0)
 - ☐ D2 onaylı plan kilidi (ekran + sunucu)
 - ☐ C2 hafta sonuna ziyaret düşmesin
