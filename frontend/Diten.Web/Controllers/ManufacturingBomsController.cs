@@ -11,6 +11,9 @@ using Microsoft.Extensions.Localization;
 namespace Diten.Web.Controllers;
 
 // MOD-0193 BOM & Routings — tenant shell, Golden Compact (form fields > 8), server-mode list.
+// LEGAL ENTITY (MVP-1 pattern, M-3): the token carries none, so every BOM call names the legal entity the user chose on
+// the page — the adapter sends it as X-Legal-Entity-Id, the service proves it with MDM (fail-closed). The options come
+// from MDM's referenceable lookup (GET /api/legal-entities/lookup through the Gateway); choosing one is never the proof.
 // The list and its export are read by the browser straight through the Gateway (window.API.manufacturing +
 // /api/bom/versions[/export]); every write goes through this same-origin adapter, which forwards the caller's token and
 // tenant and turns the service's contract error ({ error: { code, message, correlationId } }) into the screen's words.
@@ -52,7 +55,12 @@ public sealed class ManufacturingBomsController : Controller
     public IActionResult Index() => View($"{ViewRoot}/Index.cshtml");
 
     [HttpGet("Create")]
-    public IActionResult Create() => View($"{ViewRoot}/Create.cshtml", NewModel());
+    public IActionResult Create([FromQuery] Guid? legalEntityId)
+    {
+        var model = NewModel();
+        model.LegalEntityId = legalEntityId is { } le && le != Guid.Empty ? le.ToString() : null;
+        return View($"{ViewRoot}/Create.cshtml", model);
+    }
 
     [HttpPost("Create")]
     [ValidateAntiForgeryToken]
@@ -69,11 +77,12 @@ public sealed class ManufacturingBomsController : Controller
             return View($"{ViewRoot}/Create.cshtml", model);
         }
 
-        var (status, body) = await SendAsync(HttpMethod.Post, "/api/bom/versions", ToDraftPayload(model, includeItem: true), ct);
+        var legalEntityId = Guid.Parse(model.LegalEntityId!);
+        var (status, body) = await SendAsync(HttpMethod.Post, "/api/bom/versions", ToDraftPayload(model, includeItem: true), ct, legalEntityId);
         if (status == 201 && Deserialize<BomApiView>(body) is { } created)
         {
             TempData["SuccessMessage"] = _localizer["FormTitleCreate"].Value;
-            return RedirectToAction(nameof(Details), new { id = created.BomVersionId });
+            return RedirectToAction(nameof(Details), new { id = created.BomVersionId, legalEntityId });
         }
 
         ModelState.AddModelError(string.Empty, ErrorText(status, body));
@@ -81,9 +90,15 @@ public sealed class ManufacturingBomsController : Controller
     }
 
     [HttpGet("Edit/{id:guid}")]
-    public async Task<IActionResult> Edit(Guid id, CancellationToken ct)
+    public async Task<IActionResult> Edit(Guid id, [FromQuery] Guid? legalEntityId, CancellationToken ct)
     {
-        var bom = await LoadAsync(id, ct);
+        if (legalEntityId is not { } le || le == Guid.Empty)
+        {
+            TempData["ErrorMessage"] = _localizer["ErrLegalEntityRequired"].Value;
+            return RedirectToAction(nameof(Index));
+        }
+
+        var bom = await LoadAsync(id, le, ct);
         if (bom is null)
         {
             TempData["ErrorMessage"] = _localizer["ErrUnknownBom"].Value;
@@ -93,7 +108,7 @@ public sealed class ManufacturingBomsController : Controller
         if (bom.Status != "Draft")
         {
             TempData["ErrorMessage"] = _localizer["NotDraftNotice"].Value;
-            return RedirectToAction(nameof(Details), new { id });
+            return RedirectToAction(nameof(Details), new { id, legalEntityId = le });
         }
 
         return View($"{ViewRoot}/Edit.cshtml", ToEditModel(bom));
@@ -116,13 +131,14 @@ public sealed class ManufacturingBomsController : Controller
             return View($"{ViewRoot}/Edit.cshtml", model);
         }
 
+        var legalEntityId = Guid.Parse(model.LegalEntityId!);
         var payload = ToDraftPayload(model, includeItem: false);
         payload["rowVersion"] = model.RowVersion;
-        var (status, body) = await SendAsync(HttpMethod.Put, $"/api/bom/version/{id}", payload, ct);
+        var (status, body) = await SendAsync(HttpMethod.Put, $"/api/bom/version/{id}", payload, ct, legalEntityId);
         if (status == 200)
         {
             TempData["SuccessMessage"] = _localizer["FormTitleEdit"].Value;
-            return RedirectToAction(nameof(Details), new { id });
+            return RedirectToAction(nameof(Details), new { id, legalEntityId });
         }
 
         ModelState.AddModelError(string.Empty, ErrorText(status, body));
@@ -130,51 +146,80 @@ public sealed class ManufacturingBomsController : Controller
     }
 
     [HttpGet("Details/{id:guid}")]
-    public async Task<IActionResult> Details(Guid id, CancellationToken ct)
+    public async Task<IActionResult> Details(Guid id, [FromQuery] Guid? legalEntityId, CancellationToken ct)
     {
-        var bom = await LoadAsync(id, ct);
+        if (legalEntityId is not { } le || le == Guid.Empty)
+        {
+            TempData["ErrorMessage"] = _localizer["ErrLegalEntityRequired"].Value;
+            return RedirectToAction(nameof(Index));
+        }
+
+        var bom = await LoadAsync(id, le, ct);
         if (bom is null)
         {
             TempData["ErrorMessage"] = _localizer["ErrUnknownBom"].Value;
             return RedirectToAction(nameof(Index));
         }
 
-        var (status, body) = await SendAsync(HttpMethod.Get, $"/api/bom/version/{id}/history", null, ct);
+        var (status, body) = await SendAsync(HttpMethod.Get, $"/api/bom/version/{id}/history", null, ct, le);
         var history = status == 200 ? Deserialize<BomHistoryApiResponse>(body)?.Entries : null;
         return View($"{ViewRoot}/Details.cshtml", new BomDetailsViewModel
         {
             Bom = bom,
             History = history ?? [],
-            HistoryLoaded = history is not null
+            HistoryLoaded = history is not null,
+            LegalEntityName = await LegalEntityNameAsync(le, ct)
         });
+    }
+
+    /// <summary>MDM's referenceable legal entities for the page's selector (an authoring lookup, never the proof).</summary>
+    [HttpGet("api/legal-entities")]
+    public async Task<IActionResult> LegalEntities(CancellationToken ct)
+    {
+        var (status, body) = await SendAsync(HttpMethod.Get, "/api/legal-entities/lookup", null, ct);
+        if (status != 200 || Deserialize<LegalEntityLookupEnvelope>(body)?.Data is not { } items)
+        {
+            return StatusCode(status is 401 or 403 ? status : StatusCodes.Status503ServiceUnavailable,
+                new { message = _localizer["LegalEntitiesUnavailable"].Value });
+        }
+
+        return Json(items
+            .Where(e => e.Referenceable && string.Equals(e.LifecycleState, "ACTIVE", StringComparison.OrdinalIgnoreCase) && e.LegalEntityId != Guid.Empty)
+            .Select(e => new { id = e.LegalEntityId, code = e.Code, name = string.IsNullOrWhiteSpace(e.DisplayName) ? e.LegalName ?? e.Code : e.DisplayName })
+            .OrderBy(e => e.name, StringComparer.CurrentCulture));
     }
 
     // ── JSON sub-actions for details.js / index.js (same origin, antiforgery header) ──
 
     [HttpPost("api/{id:guid}/release")]
     [ValidateAntiForgeryToken]
-    public Task<IActionResult> Release(Guid id, [FromBody] BomReleaseInput input, CancellationToken ct) =>
+    public Task<IActionResult> Release(Guid id, [FromQuery] Guid? legalEntityId, [FromBody] BomReleaseInput input, CancellationToken ct) =>
         CommandAsync(ReleasePermission, HttpMethod.Post, $"/api/bom/version/{id}/release",
-            new { changeControlRef = input.ChangeControlRef?.Trim(), rowVersion = input.RowVersion }, ct);
+            new { changeControlRef = input.ChangeControlRef?.Trim(), rowVersion = input.RowVersion }, legalEntityId, ct);
 
     [HttpPost("api/{id:guid}/delete")]
     [ValidateAntiForgeryToken]
-    public Task<IActionResult> Delete(Guid id, [FromQuery] int rowVersion, CancellationToken ct) =>
-        CommandAsync(DeletePermission, HttpMethod.Delete, $"/api/bom/version/{id}?rowVersion={rowVersion}", null, ct);
+    public Task<IActionResult> Delete(Guid id, [FromQuery] Guid? legalEntityId, [FromQuery] int rowVersion, CancellationToken ct) =>
+        CommandAsync(DeletePermission, HttpMethod.Delete, $"/api/bom/version/{id}?rowVersion={rowVersion}", null, legalEntityId, ct);
 
     [HttpPost("api/{itemId:guid}/explode")]
     [ValidateAntiForgeryToken]
-    public Task<IActionResult> Explode(Guid itemId, [FromBody] BomExplodeInput input, CancellationToken ct) =>
-        CommandAsync(ReadPermission, HttpMethod.Post, "/api/bom/explode", new { itemId, quantity = input.Quantity?.Trim() }, ct);
+    public Task<IActionResult> Explode(Guid itemId, [FromQuery] Guid? legalEntityId, [FromBody] BomExplodeInput input, CancellationToken ct) =>
+        CommandAsync(ReadPermission, HttpMethod.Post, "/api/bom/explode", new { itemId, quantity = input.Quantity?.Trim() }, legalEntityId, ct);
 
-    private async Task<IActionResult> CommandAsync(string permission, HttpMethod method, string path, object? payload, CancellationToken ct)
+    private async Task<IActionResult> CommandAsync(string permission, HttpMethod method, string path, object? payload, Guid? legalEntityId, CancellationToken ct)
     {
         if (!_permissions.Has(permission))
         {
             return StatusCode(StatusCodes.Status403Forbidden, new { message = _localizer["ErrDenied"].Value });
         }
 
-        var (status, body) = await SendAsync(method, path, payload, ct);
+        if (legalEntityId is not { } le || le == Guid.Empty)
+        {
+            return BadRequest(new { message = _localizer["ErrLegalEntityRequired"].Value });
+        }
+
+        var (status, body) = await SendAsync(method, path, payload, ct, le);
         if (status is >= 200 and < 300)
         {
             return string.IsNullOrWhiteSpace(body) ? StatusCode(status) : Content(body, "application/json");
@@ -185,7 +230,7 @@ public sealed class ManufacturingBomsController : Controller
 
     // ── Gateway call ──
 
-    private async Task<(int Status, string Body)> SendAsync(HttpMethod method, string path, object? payload, CancellationToken ct)
+    private async Task<(int Status, string Body)> SendAsync(HttpMethod method, string path, object? payload, CancellationToken ct, Guid? legalEntityId = null)
     {
         using var request = new HttpRequestMessage(method, $"{_gatewayUrl}{path}");
         var token = Services.Auth.AuthTokenCookies.GetAccessToken(Request);
@@ -198,6 +243,11 @@ public sealed class ManufacturingBomsController : Controller
         if (!string.IsNullOrWhiteSpace(tenantId))
         {
             request.Headers.TryAddWithoutValidation("X-Tenant-Id", tenantId);
+        }
+
+        if (legalEntityId is { } le)
+        {
+            request.Headers.TryAddWithoutValidation("X-Legal-Entity-Id", le.ToString());
         }
 
         var correlation = Guid.NewGuid().ToString();
@@ -221,10 +271,20 @@ public sealed class ManufacturingBomsController : Controller
         }
     }
 
-    private async Task<BomApiView?> LoadAsync(Guid id, CancellationToken ct)
+    private async Task<BomApiView?> LoadAsync(Guid id, Guid legalEntityId, CancellationToken ct)
     {
-        var (status, body) = await SendAsync(HttpMethod.Get, $"/api/bom/version/{id}", null, ct);
+        var (status, body) = await SendAsync(HttpMethod.Get, $"/api/bom/version/{id}", null, ct, legalEntityId);
         return status == 200 ? Deserialize<BomApiView>(body) : null;
+    }
+
+    /// <summary>The record's legal entity, by name for the Details page; the id when MDM cannot name it.</summary>
+    private async Task<string> LegalEntityNameAsync(Guid legalEntityId, CancellationToken ct)
+    {
+        var (status, body) = await SendAsync(HttpMethod.Get, "/api/legal-entities/lookup", null, ct);
+        var match = status == 200 ? Deserialize<LegalEntityLookupEnvelope>(body)?.Data?.FirstOrDefault(e => e.LegalEntityId == legalEntityId) : null;
+        return match is null
+            ? legalEntityId.ToString()
+            : $"{(string.IsNullOrWhiteSpace(match.DisplayName) ? match.LegalName ?? match.Code : match.DisplayName)} ({match.Code})";
     }
 
     private T? Deserialize<T>(string body)
@@ -256,6 +316,9 @@ public sealed class ManufacturingBomsController : Controller
             "CONCURRENCY_CONFLICT" => "ErrConcurrency",
             "CHANGE_CONTROL_REJECTED" => "ErrChangeControl",
             "INVALID_REQUEST" => "ErrInvalid",
+            "LEGAL_ENTITY_REQUIRED" => "ErrLegalEntityRequired",
+            "LEGAL_ENTITY_NOT_REFERENCEABLE" => "ErrLegalEntityNotReferenceable",
+            "DEPENDENCY_UNAVAILABLE" => "ErrDependencyUnavailable",
             _ => status switch
             {
                 401 or 403 => "ErrDenied",
@@ -314,6 +377,7 @@ public sealed class ManufacturingBomsController : Controller
     private static BomEditViewModel ToEditModel(BomApiView bom) => new()
     {
         BomVersionId = bom.BomVersionId,
+        LegalEntityId = bom.LegalEntityId.ToString(),
         ItemId = bom.ItemId.ToString(),
         Description = bom.Description,
         RowVersion = bom.RowVersion,

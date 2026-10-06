@@ -63,6 +63,39 @@ document.addEventListener('DOMContentLoaded', function () {
         reindex(body);
     });
 
+    // ── Legal entity: MDM's referenceable lookup (the service proves the choice again on save) ──
+    const formEl = document.getElementById('bomForm');
+    const select = document.querySelector('select#LegalEntityId');
+    const readOnlyName = document.getElementById('LegalEntityName');
+    const hint = document.getElementById('LegalEntityHint');
+    if (formEl && (select || readOnlyName)) {
+        fetch(formEl.getAttribute('data-legal-entities-url'), { credentials: 'same-origin' })
+            .then((res) => res.ok ? res.json() : Promise.reject(res))
+            .then((items) => {
+                const label = (e) => (e.code ? `${e.name} (${e.code})` : e.name);
+                if (readOnlyName) {
+                    const own = items.find((e) => e.id === readOnlyName.getAttribute('data-legal-entity-id'));
+                    if (own) readOnlyName.value = label(own);
+                    return;
+                }
+                items.forEach((e) => {
+                    const option = document.createElement('option');
+                    option.value = e.id;
+                    option.textContent = label(e);
+                    select.appendChild(option);
+                });
+                const wanted = select.getAttribute('data-selected') || new URLSearchParams(window.location.search).get('legalEntityId') || '';
+                select.value = items.some((e) => e.id === wanted) ? wanted : (items.length === 1 ? items[0].id : '');
+            })
+            .catch(() => {
+                if (hint) {
+                    hint.textContent = formEl.getAttribute('data-unavailable-text') || '';
+                    hint.classList.remove('text-muted');
+                    hint.classList.add('text-danger');
+                }
+            });
+    }
+
     // Client-side check before the round trip (MVP-6 recipe 3.8); the server stays authoritative.
     const form = document.getElementById('bomForm');
     form?.addEventListener('submit', (e) => {

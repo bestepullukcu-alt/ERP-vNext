@@ -78,4 +78,12 @@
   <data name="ErrPersistence" xml:space="preserve"><value>La modification n'a pas pu être enregistrée et rien n'a été écrit. Réessayez.</value></data>
   <data name="ErrInvalid" xml:space="preserve"><value>Vérifiez les valeurs saisies.</value></data>
   <data name="ErrDenied" xml:space="preserve"><value>Vous n'avez pas l'autorisation pour cette action.</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Entité juridique</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>Sélectionnez une entité juridique</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>La société à laquelle appartient cette formule. Elle ne peut plus être modifiée après la création du brouillon.</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Les entités juridiques n'ont pas pu être chargées. Rechargez la page pour réessayer.</value></data>
+  <data name="NoLegalEntities" xml:space="preserve"><value>Aucune entité juridique active ne vous est accessible.</value></data>
+  <data name="ErrLegalEntityRequired" xml:space="preserve"><value>Choisissez d'abord une entité juridique.</value></data>
+  <data name="ErrLegalEntityNotReferenceable" xml:space="preserve"><value>Cette entité juridique n'appartient pas à votre société ou n'est pas active.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>L'entité juridique n'a pas pu être vérifiée pour le moment ; rien n'a été enregistré. Réessayez.</value></data>
 </root>

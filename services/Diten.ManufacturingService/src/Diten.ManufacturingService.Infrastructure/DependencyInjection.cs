@@ -1,6 +1,7 @@
 using Diten.ManufacturingService.Application.Common;
 using Diten.ManufacturingService.Application.Interfaces;
 using Diten.ManufacturingService.Infrastructure.Authorization;
+using Diten.ManufacturingService.Infrastructure.LegalEntities;
 using Diten.ManufacturingService.Infrastructure.Middleware;
 using Diten.ManufacturingService.Infrastructure.ProductMaster;
 using Microsoft.AspNetCore.Authorization;
@@ -44,6 +45,10 @@ public static class DependencyInjection
             throw new InvalidOperationException($"ProductMaster:Mode '{mode}' is not supported (Permissive | Http).");
         }
 
+        // MDM legal-entity proof (MVP-1 pattern) — no permissive mode and no bypass: every request names a legal entity
+        // and MDM confirms it belongs to the tenant and is ACTIVE (fail-closed; LegalEntityValidationMiddleware).
+        services.AddHttpClient<ILegalEntityReferenceValidator, MdmLegalEntityReferenceValidator>();
+
         // MOD-0209 Change Control seam — waiver W-0193-01 (format-only until 0209 exists).
         services.AddSingleton<IChangeControlGate, FormatOnlyChangeControlGate>();
 
@@ -51,6 +56,8 @@ public static class DependencyInjection
     }
 
     public static IApplicationBuilder UseCorrelation(this IApplicationBuilder app) => app.UseMiddleware<CorrelationMiddleware>();
+
+    public static IApplicationBuilder UseLegalEntityValidation(this IApplicationBuilder app) => app.UseMiddleware<LegalEntityValidationMiddleware>();
 
     public static IApplicationBuilder UseTenantResolution(this IApplicationBuilder app)
     {

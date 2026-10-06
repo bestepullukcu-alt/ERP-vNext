@@ -78,4 +78,12 @@
   <data name="ErrPersistence" xml:space="preserve"><value>تعذّر حفظ التغيير ولم يُكتب شيء. حاول مجددًا.</value></data>
   <data name="ErrInvalid" xml:space="preserve"><value>تحقق من القيم المدخلة.</value></data>
   <data name="ErrDenied" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء.</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>الكيان القانوني</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>اختر كيانًا قانونيًا</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>الشركة التي تتبع لها هذه الوصفة. لا يمكن تغييرها بعد إنشاء المسودة.</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>تعذّر تحميل الكيانات القانونية. أعد تحميل الصفحة للمحاولة مجددًا.</value></data>
+  <data name="NoLegalEntities" xml:space="preserve"><value>لا يوجد كيان قانوني نشط متاح لك.</value></data>
+  <data name="ErrLegalEntityRequired" xml:space="preserve"><value>اختر كيانًا قانونيًا أولًا.</value></data>
+  <data name="ErrLegalEntityNotReferenceable" xml:space="preserve"><value>هذا الكيان القانوني لا يتبع شركتك أو غير نشط.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>تعذّر التحقق من الكيان القانوني الآن؛ لم يُحفظ شيء. حاول مجددًا.</value></data>
 </root>

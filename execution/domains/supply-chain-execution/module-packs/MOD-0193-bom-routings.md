@@ -124,6 +124,7 @@ ActorDisplayName, CorrelationId, OccurredAtUtc, Outcome`. Index: (Tenant, LE, Bo
 | MOD-0290 Product/Item/SKU Master | item kimliği (ana ürün + bileşen) | `canonical`; PRODUCT-MASTER-BUNDLE FROZEN; MdmService çalışıyor ama `/api/product-master/validate` canlı değil | **SATISFIED (contract)** — `IProductReferenceValidator` seam'i; varsayılan `Permissive`, `ProductMaster:Mode=Http` ile `POST /validate` (frozen) |
 | MOD-0209 Change Control | yürürlüğe almada değişiklik referansı | registry'de **yok**, kod **yok** | **WAIVED (W-0193-01)** — `IChangeControlGate` seam'i: biçim doğrulaması (zorunlu, ≤ 64); gerçek 0209 gelince seam değişir, BOM kodu değişmez |
 | MOD-0003 Data Contract Registry | contract sürüm kaydı | `planned / missing` | **WAIVED (W-0193-02)** — contract dosyası repo'da pinli, her yanıt `contractVersion: v1` taşır |
+| MDM Legal Entity master | legal entity kanıtı (her istek) | `GET /api/legal-entities/{id}/lookup-validation` + `/lookup` mevcut (MdmService) | **SATISFIED** — `MdmLegalEntityReferenceValidator` (CRM/Platform kopyalarıyla aynı profil) |
 | MOD-0040 Canonical ID & Correlation (Blueprint) | korelasyon kimliği | standart; ayrı runtime yok | **SATISFIED (convention)** — `X-Correlation-Id` (yoksa sunucu üretir), her hata gövdesinde `correlationId` |
 | MOD-0173 Inventory (MVP-1) | — | — | **Bağımlılık yok**: BOM stoğa yazmaz, okumaz ("after MVP-1" yalnız takvim sırası; G1 = contract freeze, karşılandı) |
 
@@ -136,8 +137,14 @@ kapanış tetiği = MOD-0209 / MOD-0003 module pack'i `ready-for-dev` · risk = 
 - Servis **`Diten.ManufacturingService`**, port **5067** (5066 MVP-6 SupplyChain'de; 5067 hiçbir servis config'inde yok —
   ölçüldü). Manufacturing Execution (0193–0197) için ayrı bounded context (ürün sahibi kararı 2026-10-06). Frontend
   yalnız Gateway (5000) üzerinden.
-- Tenant + Legal-Entity: JWT `tenant_id` / `legal_entity_id` (header eşleşmezse 400; eksikse 400); her sorguda
-  `TenantId` **ve** `LegalEntityId` **ve** `IsDeleted=false`. Cross-tenant/LE → 404 `UNKNOWN_BOM`.
+- **Tenant:** JWT `tenant_id` (header farklıysa 400). **Legal entity — MVP-1 deseni (M-3, 2026-10-06):** token'da legal
+  entity YOK ve okunmaz; dev bypass YOK. Çağıran seçer ve her istekte `X-Legal-Entity-Id` başlığıyla gönderir (yalnız GET'te
+  `legalEntityId` sorgusu da kabul — paylaşılan liste fabrikasının export indirmesi başlık taşıyamaz; ikisi gelirse eşit
+  olmalı). Servis her istekte MDM `GET /api/legal-entities/{id}/lookup-validation` (gateway üzerinden, çağıranın token'ı ile)
+  ile id'nin tenant'a ait, ACTIVE ve referenceable olduğunu kanıtlar — fail-closed, önbellek yok: eksik/bozuk → 400
+  `LEGAL_ENTITY_REQUIRED`, yabancı/pasif → 422 `LEGAL_ENTITY_NOT_REFERENCEABLE`, MDM'e ulaşılamaz → 503
+  `DEPENDENCY_UNAVAILABLE`. Her sorgu `TenantId` **ve** `LegalEntityId` **ve** `IsDeleted=false` ile sınırlıdır.
+  Sonuç: BOM kullanıcısı MDM'de `mdm.legal-entities.read` iznine de ihtiyaç duyar (CRM F-MDM-PERM ile aynı).
 - Mongo: GUID V3 subtype-4 (`GuidRepresentation.Standard`); **replica set zorunlu** (release + geçmiş tek işlem).
 - **Yanıt biçimi istisnası (AGENTS §6, gerekçeli):** bu modül `Response<T>` zarfı **kullanmaz**. Sebep: sahibi olduğu
   `bom.openapi.yaml` FROZEN v1 ve tüketicisi MVP-4 MRP — başarı gövdesi doğrudan `BomView`, hata gövdesi
@@ -193,7 +200,9 @@ L10n: tenant modülü → **7 dil**.
 - **İki kullanıcı aynı anda release** → tam biri başarılı; item başına tek `Effective` (unique kısmi index).
 - **Geçmiş yazılamazsa** (işlem hatası) → komut başarısız 503 `PERSISTENCE_UNAVAILABLE`, BOM da yazılmaz (K2 fail-closed).
 - **Yetkisiz aktör** → 403 (UI: iskelet yok, `_AccessDenied`).
-- **Cross-tenant / cross-LE** okuma/yazma → 404 `UNKNOWN_BOM`; header ≠ JWT → 400.
+- **Cross-tenant / cross-LE** okuma/yazma → 404 `UNKNOWN_BOM`; tenant header ≠ JWT → 400.
+- **Legal entity eksik / bozuk** → 400 `LEGAL_ENTITY_REQUIRED`; **başka tenant'ın ya da pasif legal entity** → 422
+  `LEGAL_ENTITY_NOT_REFERENCEABLE`; **MDM kapalı** → 503 `DEPENDENCY_UNAVAILABLE` — üçünde de hiçbir şey okunmaz/yazılmaz.
 - **Yürürlükte BOM yok** (`current`, `explode`) → 404 `UNKNOWN_BOM`.
 
 ## 14. Authorization Convention
@@ -224,9 +233,11 @@ Paylaşılan dosyaya yalnız bu iki rota eklenir (integration-agent rolü bu lan
 8. Her yazma komutu aynı işlemde bir `BomHistoryEntry` yazar; `GET …/history` bunu kiracı kullanıcısına (izin `read`)
    döner; Details ekranı geçmişi gösterir (AUD-001 yol c koşul 3).
 9. Başka kiracı / LE'nin BOM'u hiçbir uçta görünmez (404), listede çıkmaz.
-10. Web: `/Manufacturing/Boms` liste (server-side, filtre item/status), Create/Edit (bileşen + rota grid), Details
+10. Web: `/Manufacturing/Boms` — legal entity seçici (listenin kapsam filtresi; MDM lookup; tek ise otomatik), liste (server-side, filtre status), Create/Edit (bileşen + rota grid), Details
     (release, sil, geçmiş); `Layout = "_LayoutTenantShell"`; 7 dil `.resx` eşit anahtar; yetkisiz → `_AccessDenied`.
 11. Gateway: `/api/bom/**` → 5067; `OcelotConfigurationTests` 5067'yi tanır.
+11b. Legal entity (M-3): doğru legal entity ile create + list başarılı; başka tenant'ınki 422; eksik 400; MDM kapalı 503;
+    JWT claim'i ve dev bypass yok (`git grep 'legal_entity_id|DevBypassLegalEntityId' -- services/Diten.ManufacturingService` boş).
 12. Mimari testler (denetim defteri, kiracı-çelişki sitesi, JWT clock skew, Mongo test DB deseni) yeşil.
 
 ## 17. Test Expectations

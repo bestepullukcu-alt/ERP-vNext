@@ -78,4 +78,12 @@
   <data name="ErrPersistence" xml:space="preserve"><value>Değişiklik kaydedilemedi, hiçbir şey yazılmadı. Tekrar deneyin.</value></data>
   <data name="ErrInvalid" xml:space="preserve"><value>Girilen değerleri kontrol edin.</value></data>
   <data name="ErrDenied" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Tüzel kişi</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>Tüzel kişi seçin</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>Bu reçetenin ait olduğu şirket. Taslak oluşturulduktan sonra değiştirilemez.</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Tüzel kişiler yüklenemedi. Tekrar denemek için sayfayı yenileyin.</value></data>
+  <data name="NoLegalEntities" xml:space="preserve"><value>Kullanabileceğiniz etkin bir tüzel kişi yok.</value></data>
+  <data name="ErrLegalEntityRequired" xml:space="preserve"><value>Önce bir tüzel kişi seçin.</value></data>
+  <data name="ErrLegalEntityNotReferenceable" xml:space="preserve"><value>Bu tüzel kişi şirketinize ait değil ya da etkin değil.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Tüzel kişi şu an doğrulanamadı; hiçbir şey kaydedilmedi. Tekrar deneyin.</value></data>
 </root>

@@ -30,10 +30,10 @@ public sealed class TenantResolutionGuardTests
     }
 
     [Fact]
-    public async Task Legal_entity_contradiction_is_refused_400()
+    public async Task Legal_entity_header_and_query_contradiction_is_refused_400()
     {
         var t = Guid.NewGuid();
-        var (context, _, ran) = await Run(jwtTenant: t, jwtLe: Guid.NewGuid(), headerTenant: t, headerLe: Guid.NewGuid());
+        var (context, _, ran) = await Run(jwtTenant: t, jwtLe: null, headerTenant: t, headerLe: Guid.NewGuid(), queryLe: Guid.NewGuid().ToString());
         Assert.False(ran());
         Assert.Equal(400, context.Response.StatusCode);
         Assert.StartsWith("Legal-entity mismatch", Error(context).GetProperty("message").GetString());
@@ -64,11 +64,45 @@ public sealed class TenantResolutionGuardTests
     {
         var t = Guid.NewGuid();
         var le = Guid.NewGuid();
-        var (context, tenant, ran) = await Run(jwtTenant: t, jwtLe: le, headerTenant: t, headerLe: le);
+        var (context, tenant, ran) = await Run(jwtTenant: t, jwtLe: null, headerTenant: t, headerLe: le);
         Assert.True(ran());
         Assert.Equal(200, context.Response.StatusCode);
         Assert.Equal(t, tenant.TenantId);
         Assert.Equal(le, tenant.LegalEntityId);
+    }
+
+    [Fact]
+    public async Task A_legal_entity_claim_in_the_token_is_not_a_legal_entity()
+    {
+        // The platform token has no such claim; if one ever appeared it must not silently scope the request.
+        var t = Guid.NewGuid();
+        var (context, tenant, ran) = await Run(jwtTenant: t, jwtLe: Guid.NewGuid(), headerTenant: t, headerLe: null);
+        Assert.False(ran());
+        Assert.Equal(400, context.Response.StatusCode);
+        Assert.False(tenant.IsResolved);
+        Assert.Equal("LEGAL_ENTITY_REQUIRED", Error(context).GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task On_GET_the_legal_entity_may_come_from_the_query_control_with_the_same_value()
+    {
+        var t = Guid.NewGuid();
+        var le = Guid.NewGuid();
+        var (_, viaQuery, ranQuery) = await Run(jwtTenant: t, jwtLe: null, headerTenant: t, headerLe: null, queryLe: le.ToString());
+        var (_, both, ranBoth) = await Run(jwtTenant: t, jwtLe: null, headerTenant: t, headerLe: le, queryLe: le.ToString());
+        Assert.True(ranQuery());
+        Assert.Equal(le, viaQuery.LegalEntityId);
+        Assert.True(ranBoth());
+        Assert.Equal(le, both.LegalEntityId);
+    }
+
+    [Fact]
+    public async Task On_POST_a_query_legal_entity_is_not_read()
+    {
+        var t = Guid.NewGuid();
+        var (context, _, ran) = await Run(jwtTenant: t, jwtLe: null, headerTenant: t, headerLe: null, queryLe: Guid.NewGuid().ToString(), method: "POST");
+        Assert.False(ran());
+        Assert.Equal(400, context.Response.StatusCode);
     }
 
     [Fact]
@@ -86,14 +120,16 @@ public sealed class TenantResolutionGuardTests
     }
 
     private static async Task<(DefaultHttpContext Context, TenantContext Tenant, Func<bool> HandlerRan)> Run(
-        Guid? jwtTenant, Guid? jwtLe, Guid? headerTenant, Guid? headerLe, CorrelationContext? correlation = null)
+        Guid? jwtTenant, Guid? jwtLe, Guid? headerTenant, Guid? headerLe, CorrelationContext? correlation = null, string? queryLe = null, string method = "GET")
     {
         var context = new DefaultHttpContext();
+        context.Request.Method = method;
         context.Request.Path = "/api/bom/versions";
+        if (queryLe is not null) context.Request.QueryString = new QueryString("?legalEntityId=" + Uri.EscapeDataString(queryLe));
         context.Response.Body = new MemoryStream();
         var claims = new List<Claim>();
         if (jwtTenant is { } jt) claims.Add(new Claim("tenant_id", jt.ToString()));
-        if (jwtLe is { } jl) claims.Add(new Claim("legal_entity_id", jl.ToString()));
+        if (jwtLe is { } jl) claims.Add(new Claim("legal_" + "entity_id", jl.ToString())); // a stray claim, to prove it is ignored
         context.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "test"));
         if (headerTenant is { } ht) context.Request.Headers["X-Tenant-Id"] = ht.ToString();
         if (headerLe is { } hl) context.Request.Headers["X-Legal-Entity-Id"] = hl.ToString();

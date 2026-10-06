@@ -67,6 +67,7 @@ public sealed record BomView(
     string? Description,
     string? ChangeControlRef,
     int RowVersion,
+    Guid LegalEntityId,
     string ContractVersion = BomContract.Version);
 
 public sealed record BomListItem(
@@ -80,7 +81,8 @@ public sealed record BomListItem(
     DateTimeOffset? EffectiveFrom,
     DateTimeOffset? EffectiveTo,
     DateTimeOffset UpdatedAt,
-    int RowVersion);
+    int RowVersion,
+    Guid LegalEntityId);
 
 public sealed record BomListResponse(IReadOnlyList<BomListItem> Items, long Total, long FilteredTotal);
 
@@ -130,7 +132,8 @@ internal static class BomMapping
             : new RoutingView(bom.Routing.RoutingId, bom.Routing.Steps.OrderBy(s => s.StepNo).Select(s => new RoutingStepView(s.StepNo, s.Operation, s.WorkCenter)).ToList()),
         bom.Description,
         bom.ChangeControlRef,
-        bom.Version);
+        bom.Version,
+        bom.LegalEntityId ?? Guid.Empty);
 
     public static BomListItem ToListItem(this BomVersion bom) => new(
         bom.Id.ToString(),
@@ -143,7 +146,8 @@ internal static class BomMapping
         bom.EffectiveFrom,
         bom.EffectiveTo,
         bom.UpdatedAt ?? bom.CreatedAt,
-        bom.Version);
+        bom.Version,
+        bom.LegalEntityId ?? Guid.Empty);
 
     public static BomHistoryView ToView(this BomHistoryEntry entry) => new(
         entry.Operation.ToString(),

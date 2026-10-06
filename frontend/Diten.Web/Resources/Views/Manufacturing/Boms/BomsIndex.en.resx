@@ -78,4 +78,12 @@
   <data name="ErrPersistence" xml:space="preserve"><value>The change could not be saved and nothing was written. Try again.</value></data>
   <data name="ErrInvalid" xml:space="preserve"><value>Check the entered values.</value></data>
   <data name="ErrDenied" xml:space="preserve"><value>You do not have permission for this action.</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Legal entity</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>Select a legal entity</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>The company this formula belongs to. It cannot be changed after the draft is created.</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>The legal entities could not be loaded. Reload the page to try again.</value></data>
+  <data name="NoLegalEntities" xml:space="preserve"><value>No active legal entity is available to you.</value></data>
+  <data name="ErrLegalEntityRequired" xml:space="preserve"><value>Choose a legal entity first.</value></data>
+  <data name="ErrLegalEntityNotReferenceable" xml:space="preserve"><value>This legal entity does not belong to your company or is not active.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>The legal entity could not be checked right now; nothing was saved. Try again.</value></data>
 </root>

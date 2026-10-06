@@ -39,7 +39,7 @@
     return;
 }
 
-<div class="bom-details" data-bom-version-id="@bom.BomVersionId" data-item-id="@bom.ItemId" data-row-version="@bom.RowVersion" data-version="@bom.Version">
+<div class="bom-details" data-legal-entity-id="@bom.LegalEntityId" data-bom-version-id="@bom.BomVersionId" data-item-id="@bom.ItemId" data-row-version="@bom.RowVersion" data-version="@bom.Version">
     @Html.AntiForgeryToken()
     <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
@@ -59,7 +59,7 @@
             }
             @if (canEdit)
             {
-                <a href="/Manufacturing/Boms/Edit/@bom.BomVersionId" class="btn btn-label-primary"><i class="bx bx-edit me-1"></i>@Localizer["ActionEdit"]</a>
+                <a href="/Manufacturing/Boms/Edit/@bom.BomVersionId?legalEntityId=@bom.LegalEntityId" class="btn btn-label-primary"><i class="bx bx-edit me-1"></i>@Localizer["ActionEdit"]</a>
             }
             @if (canRelease)
             {
@@ -181,6 +181,13 @@
             <section class="card backbone-preview-section p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["HeaderSection"]</h6>
                 <div class="d-flex flex-column gap-4">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-buildings"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["LegalEntity"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@Model.LegalEntityName</div>
+                        </div>
+                    </div>
                     <div class="backbone-preview-field">
                         <i class="bx bx-package"></i>
                         <div>

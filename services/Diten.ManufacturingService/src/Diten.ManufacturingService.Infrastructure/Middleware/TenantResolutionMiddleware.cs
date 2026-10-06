@@ -7,8 +7,9 @@ using Microsoft.Extensions.Logging;
 namespace Diten.ManufacturingService.Infrastructure.Middleware;
 
 /// <summary>
-/// Tenant + Legal-Entity çözümleme. İkisi de SERVER-RESOLVED: önce JWT claim, sonra header; asla request payload'dan.
-/// Header ile token FARKLI tenant/LE gösteriyorsa istek 400 ile reddedilir (payload contradiction, BL-323 deseni).
+/// Tenant + Legal-Entity çözümleme. Tenant: JWT claim (yoksa header); header ile token FARKLI tenant gösteriyorsa 400
+/// (BL-323 deseni). Legal entity: çağıranın seçtiği <c>X-Legal-Entity-Id</c> (GET'te <c>legalEntityId</c> sorgusu da);
+/// JWT'den OKUNMAZ, dev bypass YOK. Aitlik + aktiflik <see cref="LegalEntityValidationMiddleware"/>'da MDM'den kanıtlanır.
 /// Cross-LE erişimi repository fail-closed 404 ile kapatır (MOD-0193 §8). Ret gövdesi BOM contract'ının Error şeklidir
 /// (<c>{ error: { code, message, correlationId }, contractVersion }</c>) — tek servis, tek hata biçimi.
 /// </summary>
@@ -17,7 +18,7 @@ public sealed class TenantResolutionMiddleware
     private const string TenantHeader = "X-Tenant-Id";
     private const string LegalEntityHeader = "X-Legal-Entity-Id";
     private const string TenantClaim = "tenant_id";
-    private const string LegalEntityClaim = "legal_entity_id";
+    private const string LegalEntityQuery = "legalEntityId";
 
     private readonly RequestDelegate _next;
     private readonly ILogger<TenantResolutionMiddleware> _logger;
@@ -74,36 +75,46 @@ public sealed class TenantResolutionMiddleware
             return;
         }
 
-        // ── Legal-Entity (server-resolved; claim → header → dev bypass) ──────────────
-        var jwtLe = ReadGuidClaim(context, LegalEntityClaim);
-        var headerLe = ReadGuidHeader(context, LegalEntityHeader);
-
-        if (jwtLe.HasValue && headerLe.HasValue && jwtLe.Value != headerLe.Value)
+        // ── Legal-Entity: chosen by the caller, proven by MDM (MVP-1 pattern, MOD-0193 pack §8) ──────────────
+        // The token carries no legal entity (the platform JWT has no such claim), and a dev bypass would make a page
+        // look scoped when it is not — so neither is read. The caller names the legal entity it works in:
+        //   • `X-Legal-Entity-Id` header, every request;
+        //   • on GET only, `legalEntityId` query — a browser download (the shared list factory's export) cannot set a
+        //     header. Both present → they must agree.
+        // LegalEntityValidationMiddleware then proves the id belongs to this tenant and is ACTIVE (fail-closed).
+        var headerLe = ReadGuidHeader(context, LegalEntityHeader, out var headerLeMalformed);
+        Guid? queryLe = null;
+        var queryLeMalformed = false;
+        if (HttpMethods.IsGet(context.Request.Method) && context.Request.Query.TryGetValue(LegalEntityQuery, out var raw))
         {
-            _logger.LogWarning(
-                "Legal-entity mismatch in ManufacturingService. HeaderLE={HeaderLe} JwtLE={JwtLe} Path={Path}",
-                headerLe, jwtLe, context.Request.Path);
-            await WriteError(context, correlation, StatusCodes.Status400BadRequest, "Legal-entity mismatch",
-                $"JWT legal-entity and '{LegalEntityHeader}' must match.");
+            queryLeMalformed = raw.Count != 1 || !Guid.TryParse(raw[0], out var parsed) || parsed == Guid.Empty;
+            queryLe = queryLeMalformed ? null : Guid.Parse(raw[0]!);
+        }
+
+        if (headerLeMalformed || queryLeMalformed)
+        {
+            await WriteError(context, correlation, StatusCodes.Status400BadRequest, "Invalid Legal-Entity",
+                $"'{LegalEntityHeader}' (or '{LegalEntityQuery}' on GET) must be one non-empty UUID.", "LEGAL_ENTITY_REQUIRED");
             return;
         }
 
-        var resolvedLe = jwtLe ?? headerLe;
-        if (resolvedLe is null && TryGetDevBypassGuid("TenantResolution:DevBypassLegalEntityId", out var bypassLe))
+        if (headerLe.HasValue && queryLe.HasValue && headerLe.Value != queryLe.Value)
         {
-            resolvedLe = bypassLe;
-            _logger.LogWarning("TenantResolution dev bypass applied (legal-entity). Path={Path} LegalEntityId={LegalEntityId}",
-                context.Request.Path, bypassLe);
+            _logger.LogWarning("Legal-entity mismatch in ManufacturingService. HeaderLE={HeaderLe} QueryLE={QueryLe} Path={Path}",
+                headerLe, queryLe, context.Request.Path);
+            await WriteError(context, correlation, StatusCodes.Status400BadRequest, "Legal-entity mismatch",
+                $"'{LegalEntityHeader}' and '{LegalEntityQuery}' must match.");
+            return;
         }
 
-        // FAIL-CLOSED (FAZ 2): Legal-Entity tenant-scoped her istekte ZORUNLU. Eksikse Guid.Empty'ye düşmek
-        // farklı LE'lerin kayıtlarını tek "boş" LE altında birbirine karıştırır (sessiz cross-LE sızıntısı).
-        // Bu yüzden LE claim/header (veya dev bypass) yoksa istek 400 ile reddedilir — Missing Tenant deseniyle aynı.
+        // FAIL-CLOSED: no legal entity → 400. Falling back to an empty one would pool every legal entity's records
+        // under one key (a silent cross-LE leak).
+        var resolvedLe = headerLe ?? queryLe;
         if (resolvedLe is null)
         {
             _logger.LogWarning("Legal-entity context missing. Path={Path}", context.Request.Path);
             await WriteError(context, correlation, StatusCodes.Status400BadRequest, "Missing Legal-Entity",
-                $"'{LegalEntityHeader}' header or JWT '{LegalEntityClaim}' claim is required.");
+                $"'{LegalEntityHeader}' header is required (GET may use '{LegalEntityQuery}').", "LEGAL_ENTITY_REQUIRED");
             return;
         }
 
@@ -118,12 +129,19 @@ public sealed class TenantResolutionMiddleware
     }
 
     private static Guid? ReadGuidHeader(HttpContext context, string header)
+        => ReadGuidHeader(context, header, out _);
+
+    private static Guid? ReadGuidHeader(HttpContext context, string header, out bool malformed)
     {
+        malformed = false;
         if (!context.Request.Headers.TryGetValue(header, out var headerValue) || string.IsNullOrWhiteSpace(headerValue))
         {
             return null;
         }
-        return Guid.TryParse(headerValue, out var value) ? value : null;
+
+        var parsed = Guid.Empty;
+        malformed = headerValue.Count != 1 || !Guid.TryParse(headerValue[0], out parsed) || parsed == Guid.Empty;
+        return malformed ? null : parsed;
     }
 
     private static bool IsBypassPath(PathString path)
@@ -133,12 +151,13 @@ public sealed class TenantResolutionMiddleware
                || path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static async Task WriteError(HttpContext context, ICorrelationContext correlation, int statusCode, string title, string detail)
+    private static async Task WriteError(HttpContext context, ICorrelationContext correlation, int statusCode, string title, string detail,
+        string code = "INVALID_REQUEST")
     {
         context.Response.StatusCode = statusCode;
         await context.Response.WriteAsJsonAsync(new
         {
-            error = new { code = "INVALID_REQUEST", message = $"{title}: {detail}", correlationId = correlation.CorrelationId },
+            error = new { code, message = $"{title}: {detail}", correlationId = correlation.CorrelationId },
             contractVersion = "v1"
         });
     }

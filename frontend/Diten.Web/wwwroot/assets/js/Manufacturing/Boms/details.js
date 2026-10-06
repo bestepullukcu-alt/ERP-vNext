@@ -9,6 +9,8 @@
     if (!root) return;
 
     const id = root.getAttribute('data-bom-version-id');
+    const legalEntityId = root.getAttribute('data-legal-entity-id');
+    const scoped = (path) => `${path}${path.includes('?') ? '&' : '?'}legalEntityId=${encodeURIComponent(legalEntityId)}`;
     const itemId = root.getAttribute('data-item-id');
     const rowVersion = Number(root.getAttribute('data-row-version'));
     const version = root.getAttribute('data-version');
@@ -20,7 +22,7 @@
 
     const toast = (message, type) => window.showToast?.(message, type);
     const token = () => root.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
-    const post = (path, body) => fetch(path, {
+    const post = (path, body) => fetch(scoped(path), {
         method: 'POST',
         credentials: 'same-origin',
         headers: Object.assign({ 'RequestVerificationToken': token() }, body ? { 'Content-Type': 'application/json' } : {}),

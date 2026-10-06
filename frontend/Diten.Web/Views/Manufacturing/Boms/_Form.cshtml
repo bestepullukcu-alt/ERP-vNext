@@ -9,7 +9,7 @@
     var action = isEdit ? "Edit" : "Create";
     var components = Model.Components is { Count: > 0 } ? Model.Components : [new Diten.Web.Models.Manufacturing.Boms.BomComponentInput { Position = 10 }];
     var steps = Model.Steps is { Count: > 0 } ? Model.Steps : [new Diten.Web.Models.Manufacturing.Boms.RoutingStepInput()];
-    var cancelHref = isEdit ? $"/Manufacturing/Boms/Details/{Model.BomVersionId}" : "/Manufacturing/Boms";
+    var cancelHref = isEdit ? $"/Manufacturing/Boms/Details/{Model.BomVersionId}?legalEntityId={Model.LegalEntityId}" : "/Manufacturing/Boms";
 }
 
 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -28,7 +28,8 @@
     </div>
 </div>
 
-<form id="bomForm" asp-controller="ManufacturingBoms" asp-action="@action" asp-route-id="@Model.BomVersionId" method="post" class="needs-validation" novalidate>
+<form id="bomForm" asp-controller="ManufacturingBoms" asp-action="@action" asp-route-id="@Model.BomVersionId" method="post" class="needs-validation" novalidate
+      data-legal-entities-url="/Manufacturing/Boms/api/legal-entities" data-unavailable-text="@Localizer["LegalEntitiesUnavailable"]">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="BomVersionId" />
     <input type="hidden" asp-for="RowVersion" />
@@ -119,6 +120,22 @@
                 <div class="card-body p-4">
                     <h6 class="card-section-title mb-4"><i class="bx bx-package"></i>@Localizer["HeaderSection"]</h6>
                     <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="LegalEntityId" class="form-label fw-medium">@Localizer["LegalEntity"] <span class="text-danger">*</span></label>
+                            @if (isEdit)
+                            {
+                                @* Fixed after creation: the record's scope. Carried back so the adapter names it. *@
+                                <input type="hidden" asp-for="LegalEntityId" required />
+                                <input id="LegalEntityName" class="form-control" value="@Model.LegalEntityId" readonly required data-legal-entity-id="@Model.LegalEntityId" />
+                            }
+                            else
+                            {
+                                <select asp-for="LegalEntityId" class="form-select" required data-selected="@Model.LegalEntityId">
+                                    <option value="">@Localizer["SelectLegalEntity"]</option>
+                                </select>
+                            }
+                            <span class="text-muted small mt-1 d-block" id="LegalEntityHint">@Localizer["LegalEntityHint"]</span>
+                        </div>
                         <div class="col-12">
                             <label asp-for="ItemId" class="form-label fw-medium">@Localizer["ItemId"] <span class="text-danger">*</span></label>
                             @if (isEdit)

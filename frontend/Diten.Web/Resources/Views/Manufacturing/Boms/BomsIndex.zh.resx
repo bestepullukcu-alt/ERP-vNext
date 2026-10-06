@@ -78,4 +78,12 @@
   <data name="ErrPersistence" xml:space="preserve"><value>无法保存更改，未写入任何内容。请重试。</value></data>
   <data name="ErrInvalid" xml:space="preserve"><value>请检查输入的值。</value></data>
   <data name="ErrDenied" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>法人实体</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>请选择法人实体</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>此配方所属的公司。草稿创建后无法更改。</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>无法加载法人实体。请刷新页面重试。</value></data>
+  <data name="NoLegalEntities" xml:space="preserve"><value>没有可供您使用的有效法人实体。</value></data>
+  <data name="ErrLegalEntityRequired" xml:space="preserve"><value>请先选择法人实体。</value></data>
+  <data name="ErrLegalEntityNotReferenceable" xml:space="preserve"><value>该法人实体不属于您的公司或未启用。</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>暂时无法验证法人实体；未保存任何内容。请重试。</value></data>
 </root>

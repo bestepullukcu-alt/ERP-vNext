@@ -15,6 +15,9 @@ public static class BomErrorCodes
     public const string ConcurrencyConflict = "CONCURRENCY_CONFLICT";
     public const string ChangeControlRejected = "CHANGE_CONTROL_REJECTED";
     public const string PersistenceUnavailable = "PERSISTENCE_UNAVAILABLE";
+    public const string LegalEntityRequired = "LEGAL_ENTITY_REQUIRED";
+    public const string LegalEntityNotReferenceable = "LEGAL_ENTITY_NOT_REFERENCEABLE";
+    public const string DependencyUnavailable = "DEPENDENCY_UNAVAILABLE";
     public const string InternalError = "INTERNAL_ERROR";
 
     public static string Message(string code) => code switch
@@ -28,6 +31,9 @@ public static class BomErrorCodes
         ChangeControlRejected => "The change control reference was not accepted.",
         PersistenceUnavailable => "The change could not be saved; nothing was written. Retry the request.",
         InternalError => "An unexpected internal error occurred.",
+        LegalEntityRequired => "Choose a legal entity: X-Legal-Entity-Id is required.",
+        LegalEntityNotReferenceable => "The legal entity does not belong to this tenant or is not active.",
+        DependencyUnavailable => "The legal entity could not be checked (master data unavailable); nothing was read or written.",
         _ => "Request validation failed."
     };
 }

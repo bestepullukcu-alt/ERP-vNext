@@ -4,6 +4,15 @@ info:
   description: >
     MOD-0193 BOM & Routings — Wave-0 frozen (v1). Manufacturing malzeme/rota yapısı.
     Ürün kimliği = PRODUCT-MASTER (item SoR). MVP-4 MRP tüketir. Tenant+LegalEntity scoped.
+
+    LEGAL ENTITY (v1.1.0 netleştirmesi, 2026-10-06 — MVP-1 deseni; v1.0.0 işlemlerinin istek/yanıt şekli DEĞİŞMEDİ):
+    tenant JWT'den gelir; legal entity'yi ÇAĞIRAN seçer ve HER istekte `X-Legal-Entity-Id` başlığıyla gönderir.
+    Yalnız GET isteklerinde `legalEntityId` sorgu parametresi de kabul edilir (başlık taşıyamayan tarayıcı indirmesi
+    için); ikisi birlikte gelirse eşit olmalıdır. JWT'de legal entity claim'i OKUNMAZ. Servis her istekte MDM
+    `GET /api/legal-entities/{id}/lookup-validation` ile id'nin JWT'deki tenant'a ait, ACTIVE ve referenceable
+    olduğunu kanıtlar (fail-closed). Hatalar (Error şekli): eksik/bozuk/çelişkili → 400 `LEGAL_ENTITY_REQUIRED` /
+    `INVALID_REQUEST`; yabancı/pasif/bilinmeyen → 422 `LEGAL_ENTITY_NOT_REFERENCEABLE`; MDM'e ulaşılamaz → 503
+    `DEPENDENCY_UNAVAILABLE` (hiçbir şey okunmaz/yazılmaz).
   version: 1.1.0 # 1.0.0 → 1.1.0 (2026-10-06, MOD-0193 MVP-3): management surface added (list / draft / update / release / delete / history) + optional BomView fields; the three v1.0.0 operations and their shapes are unchanged
   x-status: FROZEN
   x-owner: MOD-0193
@@ -69,6 +78,8 @@ paths:
       operationId: listBomVersions
       summary: (v1.1.0) BOM sürüm listesi — platform server-mode liste sözleşmesi (BL-440); Tenant+LE kapsamlı
       parameters:
+        - { $ref: '#/components/parameters/LegalEntityHeader' }
+        - { $ref: '#/components/parameters/LegalEntityQuery' }
         - { name: start, in: query, schema: { type: integer, minimum: 0, default: 0 } }
         - { name: length, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 25 } }
         - { name: search, in: query, description: 'açıklamada (büyük/küçük harf duyarsız) ya da tam itemId', schema: { type: string, maxLength: 100 } }
@@ -82,6 +93,7 @@ paths:
     post:
       operationId: createBomDraft
       summary: (v1.1.0) Yeni taslak — revizyon no item başına sıradaki numara
+      parameters: [{ $ref: '#/components/parameters/LegalEntityHeader' }]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/BomDraftRequest' } } } }
       responses:
         '201': { description: Taslak, content: { application/json: { schema: { $ref: '#/components/schemas/BomView' } } } }
@@ -92,6 +104,8 @@ paths:
       operationId: exportBomVersions
       summary: (v1.1.0) BL-452 — listenin kendi sorgusu, eşleşen her satır (en çok 50 000), görünen sütunlar, istek dilinde başlıklar
       parameters:
+        - { $ref: '#/components/parameters/LegalEntityHeader' }
+        - { $ref: '#/components/parameters/LegalEntityQuery' }
         - { name: format, in: query, schema: { type: string, enum: [csv, xlsx], default: csv } }
         - { name: columns, in: query, style: form, explode: true, schema: { type: array, items: { type: string, enum: [itemId, version, status, description, componentCount, stepCount, effectiveFrom, effectiveTo, updatedAt] } } }
         - { name: search, in: query, schema: { type: string } }
@@ -148,6 +162,19 @@ paths:
                 bomVersionId: bom-v3
                 contractVersion: v1
 components:
+  parameters:
+    LegalEntityHeader:
+      name: X-Legal-Entity-Id
+      in: header
+      required: false
+      description: çağıranın seçtiği legal entity (MDM'den doğrulanır). Başlık ya da (yalnız GET) legalEntityId sorgusu ZORUNLU.
+      schema: { type: string, format: uuid }
+    LegalEntityQuery:
+      name: legalEntityId
+      in: query
+      required: false
+      description: yalnız GET — başlık taşıyamayan istemci için X-Legal-Entity-Id'nin eşdeğeri; ikisi birlikte gelirse eşit olmalı.
+      schema: { type: string, format: uuid }
   securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
   schemas:
     Decimal: { type: string, pattern: '^-?\d+(\.\d+)?$' }
@@ -185,6 +212,7 @@ components:
         description: { type: string, nullable: true, description: '(v1.1.0, optional)' }
         changeControlRef: { type: string, nullable: true, description: '(v1.1.0, optional) MOD-0209 referansı; release ile dolar' }
         rowVersion: { type: integer, description: '(v1.1.0, optional) eşzamanlılık belirteci; update/release/delete bunu ister' }
+        legalEntityId: { type: string, format: uuid, description: '(v1.1.0, optional) kaydın legal entity''si — istekteki X-Legal-Entity-Id ile aynı' }
     BomDraftContent:
       type: object
       required: [components]
@@ -235,6 +263,7 @@ components:
                   effectiveTo: { type: string, format: date-time, nullable: true }
                   updatedAt: { type: string, format: date-time }
                   rowVersion: { type: integer }
+                  legalEntityId: { type: string, format: uuid }
             total: { type: integer, description: kapsamdaki tüm sürümler }
             filteredTotal: { type: integer, description: filtre + aramaya uyanlar }
         contractVersion: { type: string }

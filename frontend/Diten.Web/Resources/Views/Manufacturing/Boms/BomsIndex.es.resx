@@ -78,4 +78,12 @@
   <data name="ErrPersistence" xml:space="preserve"><value>No se pudo guardar el cambio y no se escribió nada. Inténtelo de nuevo.</value></data>
   <data name="ErrInvalid" xml:space="preserve"><value>Compruebe los valores introducidos.</value></data>
   <data name="ErrDenied" xml:space="preserve"><value>No tiene permiso para esta acción.</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Entidad jurídica</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>Seleccione una entidad jurídica</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>La empresa a la que pertenece esta fórmula. No se puede cambiar después de crear el borrador.</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>No se pudieron cargar las entidades jurídicas. Recargue la página para reintentar.</value></data>
+  <data name="NoLegalEntities" xml:space="preserve"><value>No tiene ninguna entidad jurídica activa disponible.</value></data>
+  <data name="ErrLegalEntityRequired" xml:space="preserve"><value>Elija primero una entidad jurídica.</value></data>
+  <data name="ErrLegalEntityNotReferenceable" xml:space="preserve"><value>Esta entidad jurídica no pertenece a su empresa o no está activa.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>No se pudo verificar la entidad jurídica en este momento; no se guardó nada. Inténtelo de nuevo.</value></data>
 </root>

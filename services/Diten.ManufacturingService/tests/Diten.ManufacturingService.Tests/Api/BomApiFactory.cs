@@ -24,7 +24,7 @@ namespace Diten.ManufacturingService.Tests.Api;
 /// database (MongoTestDatabaseGuard: no database per run); every test isolates itself with a fresh tenant +
 /// legal entity, which is also what the rule under test is about.
 /// </summary>
-public sealed class BomApiFactory : WebApplicationFactory<Program>
+public class BomApiFactory : WebApplicationFactory<Program>
 {
     public const string EnvironmentVariable = "MANUFACTURING_TEST_MONGO";
     public const string Database = "diten_manufacturing_tests";
@@ -35,7 +35,13 @@ public sealed class BomApiFactory : WebApplicationFactory<Program>
 
     public UnknownItemsValidator Products { get; } = new();
 
-    private static Dictionary<string, string?> Settings => new()
+    /// <summary>The MDM legal-entity proof, faked: valid unless a test marks the id foreign / MDM down.</summary>
+    public FakeLegalEntityValidator LegalEntities { get; } = new();
+
+    /// <summary>When false, the REAL MdmLegalEntityReferenceValidator stays registered (see <see cref="UnreachableMdmFactory"/>).</summary>
+    protected virtual bool FakeLegalEntities => true;
+
+    protected virtual Dictionary<string, string?> Settings => new()
     {
         ["Mongo:ConnectionString"] = Connection,
         ["Mongo:DatabaseName"] = Database,
@@ -43,7 +49,8 @@ public sealed class BomApiFactory : WebApplicationFactory<Program>
         ["JwtSettings:Issuer"] = Issuer,
         ["JwtSettings:Audience"] = Issuer,
         ["ProductMaster:Mode"] = "Permissive",
-        ["PlatformRegistration:InternalApiKey"] = ""
+        ["PlatformRegistration:InternalApiKey"] = "",
+        ["PlatformRegistration:BaseUrl"] = ""
     };
 
     protected override IHost CreateHost(IHostBuilder builder)
@@ -56,7 +63,15 @@ public sealed class BomApiFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
         builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(Settings));
-        builder.ConfigureServices(s => s.Replace(ServiceDescriptor.Singleton<IProductReferenceValidator>(Products)));
+        builder.ConfigureServices(s =>
+        {
+            s.Replace(ServiceDescriptor.Singleton<IProductReferenceValidator>(Products));
+            if (FakeLegalEntities)
+            {
+                s.RemoveAll<ILegalEntityReferenceValidator>();
+                s.AddSingleton<ILegalEntityReferenceValidator>(LegalEntities);
+            }
+        });
     }
 
     public IMongoDatabase Db() => Services.GetRequiredService<IMongoClient>().GetDatabase(Database);
@@ -66,13 +81,43 @@ public sealed class BomApiFactory : WebApplicationFactory<Program>
         var claims = new List<Claim>
         {
             new("tenant_id", tenant.ToString()),
-            new("legal_entity_id", legalEntity.ToString()),
             new("sub", actor.ToString()),
             new("name", "BOM Tester")
         };
         claims.AddRange((permissions ?? BomPermissions.All).Select(p => new Claim("permission", p)));
         return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(Issuer, Issuer, claims, expires: DateTime.UtcNow.AddMinutes(10),
             signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret)), SecurityAlgorithms.HmacSha256)));
+    }
+}
+
+/// <summary>
+/// The real MDM validator, pointed at a gateway address nothing listens on: every legal-entity proof is "could not ask".
+/// </summary>
+public sealed class UnreachableMdmFactory : BomApiFactory
+{
+    protected override bool FakeLegalEntities => false;
+
+    protected override Dictionary<string, string?> Settings
+    {
+        get
+        {
+            var settings = base.Settings;
+            settings["Gateway:BaseUrl"] = "http://127.0.0.1:9";
+            return settings;
+        }
+    }
+}
+
+/// <summary>Fake MDM: an id in <see cref="Foreign"/> is not this tenant's; <see cref="Down"/> = MDM unreachable.</summary>
+public sealed class FakeLegalEntityValidator : ILegalEntityReferenceValidator
+{
+    public HashSet<Guid> Foreign { get; } = [];
+    public int Calls;
+
+    public Task<LegalEntityValidation> ValidateAsync(Guid legalEntityId, CancellationToken ct)
+    {
+        Interlocked.Increment(ref Calls);
+        return Task.FromResult(Foreign.Contains(legalEntityId) ? LegalEntityValidation.NotReferenceable : LegalEntityValidation.Valid);
     }
 }
 
@@ -94,7 +139,7 @@ public sealed class BomCaller(BomApiFactory factory, Guid? tenant = null, Guid? 
     private readonly HttpClient _client = factory.CreateClient();
     private readonly IEnumerable<string>? _permissions = permissions;
 
-    public async Task<(int Status, JsonNode? Body, HttpResponseMessage Raw)> Send(HttpMethod method, string path, object? body = null, string? correlation = null, bool authenticated = true)
+    public async Task<(int Status, JsonNode? Body, HttpResponseMessage Raw)> Send(HttpMethod method, string path, object? body = null, string? correlation = null, bool authenticated = true, bool withLegalEntity = true)
     {
         using var request = new HttpRequestMessage(method, path);
         if (authenticated)
@@ -103,7 +148,10 @@ public sealed class BomCaller(BomApiFactory factory, Guid? tenant = null, Guid? 
         }
 
         request.Headers.TryAddWithoutValidation("X-Tenant-Id", Tenant.ToString());
-        request.Headers.TryAddWithoutValidation("X-Legal-Entity-Id", LegalEntity.ToString());
+        if (withLegalEntity)
+        {
+            request.Headers.TryAddWithoutValidation("X-Legal-Entity-Id", LegalEntity.ToString());
+        }
         if (correlation is not null)
         {
             request.Headers.TryAddWithoutValidation("X-Correlation-Id", correlation);

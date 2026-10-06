@@ -101,9 +101,9 @@ public class TenantContradictionSiteGuardTests
         // consumed; a missing legal-entity for a tenant-scoped request is also refused (fail-closed 400).
         // Behaviour test: services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Tenancy/LegalEntityResolutionGuardTests.cs.
         "services/Diten.ProcurementService/src/Diten.ProcurementService.Infrastructure/Middleware/TenantResolutionMiddleware.cs",
-        // MOD-0193 MVP-3 Manufacturing (BOM & Routings, 2026-10-06): the Procurement middleware's rule, carried over —
-        // Tenant + Legal-Entity from the JWT, a contradicting header refused 400, a missing legal entity refused 400;
-        // the refusal body is the BOM contract Error shape. Behaviour test:
+        // MOD-0193 MVP-3 Manufacturing (BOM & Routings, 2026-10-06): tenant from the JWT, a contradicting X-Tenant-Id
+        // refused 400; the legal entity is the caller's X-Legal-Entity-Id (never a token claim), missing → 400, and MDM
+        // proves it per request (LegalEntityValidationMiddleware). Refusals use the BOM contract Error shape. Behaviour test:
         // services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Tenancy/TenantResolutionGuardTests.cs.
         "services/Diten.ManufacturingService/src/Diten.ManufacturingService.Infrastructure/Middleware/TenantResolutionMiddleware.cs"
     ];

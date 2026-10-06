@@ -74,6 +74,8 @@ app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
 app.UseAuthentication();
 app.UseTenantResolution();
 app.UseAuthorization();
+// After authorization: only an authorized request makes MDM prove its legal entity (fail-closed, 422 / 503).
+app.UseLegalEntityValidation();
 
 app.MapGet("/health", () => Results.Ok(new { status = "up", module = "MOD-0193", service = "Diten.ManufacturingService" })).AllowAnonymous();
 app.MapControllers();

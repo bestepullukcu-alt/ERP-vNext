@@ -78,4 +78,12 @@
   <data name="ErrPersistence" xml:space="preserve"><value>Изменение не сохранено, ничего не записано. Повторите попытку.</value></data>
   <data name="ErrInvalid" xml:space="preserve"><value>Проверьте введённые значения.</value></data>
   <data name="ErrDenied" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>Выберите юридическое лицо</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>Компания, которой принадлежит эта рецептура. После создания черновика изменить нельзя.</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Не удалось загрузить юридические лица. Обновите страницу, чтобы повторить.</value></data>
+  <data name="NoLegalEntities" xml:space="preserve"><value>Нет доступных вам действующих юридических лиц.</value></data>
+  <data name="ErrLegalEntityRequired" xml:space="preserve"><value>Сначала выберите юридическое лицо.</value></data>
+  <data name="ErrLegalEntityNotReferenceable" xml:space="preserve"><value>Это юридическое лицо не принадлежит вашей компании или неактивно.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Сейчас не удалось проверить юридическое лицо; ничего не сохранено. Повторите попытку.</value></data>
 </root>

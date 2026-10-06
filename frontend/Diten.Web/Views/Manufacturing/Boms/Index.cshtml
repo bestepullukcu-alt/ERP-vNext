@@ -20,9 +20,20 @@
 @* Contract marker: <partial name="_Filter" /> *@
 <partial name="~/Views/Manufacturing/Boms/_Filter.cshtml" />
 
-<div class="mb-3">
-    <h5 class="mb-0">@Localizer["BomsTitle"]</h5>
-    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+<div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["BomsTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    @* The legal entity is the list's scope filter (MVP-1 pattern): every row, the export and every link below are of
+       the legal entity chosen here. Options: MDM's referenceable lookup; a single one is chosen automatically. *@
+    <div class="bom-legal-entity-scope">
+        <label for="bomLegalEntity" class="form-label fw-medium mb-1">@Localizer["LegalEntity"] <span class="text-danger">*</span></label>
+        <select id="bomLegalEntity" class="form-select" required aria-describedby="bomLegalEntityNote">
+            <option value="">@Localizer["SelectLegalEntity"]</option>
+        </select>
+        <div id="bomLegalEntityNote" class="form-text text-danger" hidden></div>
+    </div>
 </div>
 
 @* ② DataTable Card — no bulk action: a BOM version is deleted one draft at a time, with its row version. *@
