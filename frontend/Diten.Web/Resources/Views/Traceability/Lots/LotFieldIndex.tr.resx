@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+    <data name="Lot.BlockedDisabled" xml:space="preserve">
+    <value>Bloke — stok alamaz</value>
+  </data>
+  <data name="Lot.Created" xml:space="preserve">
+    <value>{0} lotu Taslak olarak oluşturuldu ve seçildi.</value>
+  </data>
+  <data name="Lot.ExpiredDisabled" xml:space="preserve">
+    <value>Süresi dolmuş — stok alamaz</value>
+  </data>
+  <data name="Lot.FromSource" xml:space="preserve">
+    <value>Lot, kaynak satırdan gelir.</value>
+  </data>
+  <data name="Lot.NewLot" xml:space="preserve">
+    <value>+ Yeni lot oluştur</value>
+  </data>
+  <data name="Lot.None" xml:space="preserve">
+    <value>Bu SKU için henüz kayıtlı lot yok.</value>
+  </data>
+  <data name="Lot.Picker" xml:space="preserve">
+    <value>Lot</value>
+  </data>
+  <data name="Lot.Placeholder" xml:space="preserve">
+    <value>Kayıtlı bir lot seçin</value>
+  </data>
+  <data name="Lot.RetestConfirm" xml:space="preserve">
+    <value>Yeniden test tarihi geçmiş olmasına rağmen bu lotu kullanmayı onaylıyorum.</value>
+  </data>
+  <data name="Lot.RetestConfirmRequired" xml:space="preserve">
+    <value>Yeniden test tarihi geçmiş lotun kullanımını onaylayın.</value>
+  </data>
+  <data name="Lot.RetestWarn" xml:space="preserve">
+    <value>Bu lotun yeniden test tarihi ({0}) geçti.</value>
+  </data>
+  <data name="Lot.TypedBadge" xml:space="preserve">
+    <value>Kayıtsız lot</value>
+  </data>
+  <data name="Lot.TypedHint" xml:space="preserve">
+    <value>Geçiş süresince elle yazılan lot metni hâlâ kabul edilir (W-UI-02); kayıtlı bir lot tercih edin.</value>
+  </data>
+  <data name="Lot.Unavailable" xml:space="preserve">
+    <value>Kayıtlı lotlar şu anda listelenemiyor.</value>
+  </data>
+  <data name="Serial.Add" xml:space="preserve">
+    <value>Ekle</value>
+  </data>
+  <data name="Serial.Added" xml:space="preserve">
+    <value>{0} seri eklendi.</value>
+  </data>
+  <data name="Serial.BadFormat" xml:space="preserve">
+    <value>Geçerli bir seri değil (3–24 karakter A–Z, 0–9, -): {0}</value>
+  </data>
+  <data name="Serial.CheckUnavailable" xml:space="preserve">
+    <value>Kod şu anda kontrol edilemiyor.</value>
+  </data>
+  <data name="Serial.Clear" xml:space="preserve">
+    <value>Temizle</value>
+  </data>
+  <data name="Serial.Counter" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Serial.CounterMore" xml:space="preserve">
+    <value>{0} seri eksik.</value>
+  </data>
+  <data name="Serial.CounterOk" xml:space="preserve">
+    <value>Seri adedi miktara eşit.</value>
+  </data>
+  <data name="Serial.CounterOver" xml:space="preserve">
+    <value>{0} seri fazla.</value>
+  </data>
+  <data name="Serial.Duplicates" xml:space="preserve">
+    <value>Listede zaten var, atlandı: {0}</value>
+  </data>
+  <data name="Serial.Empty" xml:space="preserve">
+    <value>Henüz seri eklenmedi.</value>
+  </data>
+  <data name="Serial.GtinSkippedWarning" xml:space="preserve">
+    <value>Ürünün ana veride GTIN'i yok: GTIN kontrol edilmedi; lot ve SKT kontrol edildi.</value>
+  </data>
+  <data name="Serial.Methods.Range" xml:space="preserve">
+    <value>Aralık</value>
+  </data>
+  <data name="Serial.Methods.Scan" xml:space="preserve">
+    <value>Barkod (karekod)</value>
+  </data>
+  <data name="Serial.Methods.Single" xml:space="preserve">
+    <value>Tek tek</value>
+  </data>
+  <data name="Serial.Mismatch.Expiry" xml:space="preserve">
+    <value>Kod başka bir SKT taşıyor.</value>
+  </data>
+  <data name="Serial.Mismatch.Gtin" xml:space="preserve">
+    <value>Kod başka bir ürüne ait (GTIN).</value>
+  </data>
+  <data name="Serial.Mismatch.Lot" xml:space="preserve">
+    <value>Kod başka bir lot taşıyor.</value>
+  </data>
+  <data name="Serial.RangeAdd" xml:space="preserve">
+    <value>Aralığı ekle</value>
+  </data>
+  <data name="Serial.RangeEnd" xml:space="preserve">
+    <value>Son seri</value>
+  </data>
+  <data name="Serial.RangeHint" xml:space="preserve">
+    <value>Aynı ön ek ve hane sayısı, en fazla 5.000.</value>
+  </data>
+  <data name="Serial.RangeMax" xml:space="preserve">
+    <value>Bir aralık en fazla 5.000 seri içerebilir.</value>
+  </data>
+  <data name="Serial.RangeOrder" xml:space="preserve">
+    <value>Son seri ilkinden küçük olamaz.</value>
+  </data>
+  <data name="Serial.RangePrefix" xml:space="preserve">
+    <value>İlk ve son seri aynı ön eke ve hane sayısına sahip olmalı.</value>
+  </data>
+  <data name="Serial.RangePreview" xml:space="preserve">
+    <value>{0} seri: {1} … {2}</value>
+  </data>
+  <data name="Serial.RangeStart" xml:space="preserve">
+    <value>İlk seri</value>
+  </data>
+  <data name="Serial.ScanHint" xml:space="preserve">
+    <value>GS1 / ITS karekodunu okutun veya yapıştırıp Enter'a basın.</value>
+  </data>
+  <data name="Serial.ScanNeedsLot" xml:space="preserve">
+    <value>Okutmadan önce lotu seçin.</value>
+  </data>
+  <data name="Serial.Unreadable" xml:space="preserve">
+    <value>Kod okunamadı.</value>
+  </data>
+</root>

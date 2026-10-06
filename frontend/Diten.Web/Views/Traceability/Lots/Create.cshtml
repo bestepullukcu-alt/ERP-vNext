@@ -1,0 +1,24 @@
+@model Diten.Web.Models.Traceability.LotFormPageViewModel
+@using Diten.Web.Views.Traceability.Lots
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["Form.TitleNew"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@* MOD-0174 P3 — Yeni Lot (LOTCREATE). UAS-001: without trace.lots.create only _AccessDenied, no form, no redirect. *@
+@if (!Perms.Has("trace.lots.create"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Form.TitleNew"].Value" />
+    return;
+}
+
+<partial name="~/Views/Traceability/Lots/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="~/Views/Traceability/Lots/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Traceability/Lots/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Traceability/trace-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Traceability/Lots/form.js" asp-append-version="true"></script>
+}

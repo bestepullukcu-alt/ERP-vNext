@@ -1,0 +1,181 @@
+@model Diten.Web.Models.Traceability.LotPageViewModel
+@using Diten.Web.Models.Traceability
+@using Diten.Web.Views.Traceability.Lots
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Detail.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0174 P3 — Lot Detayı (pack §11.3): one lot, in sections — Eldeki stok · Lot bilgileri · Stok dağılımı · Seri numaraları
+    · Değişiklik geçmişi. The data comes from ONE same-origin call (/Lots/data/{lotId}); details.js fills the sections.
+    UAS-001: nothing without trace.lots.read. Every button is a pack §14 action, drawn only for a holder of its key.
+*@
+@if (!Perms.Has("trace.lots.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Detail.Title"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Company.Label"].Value;
+    company.Placeholder = Localizer["Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Company.Required"].Value;
+    company.UnavailableText = Localizer["Company.Unavailable"].Value;
+    bool Can(string code) => TraceActions.Allowed(Perms, code);
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-3">
+    <div>
+        <h5 class="mb-0 d-flex align-items-center gap-2">
+            <span id="lot-title">@Localizer["Detail.Title"]</span>
+            <span id="lot-status-badge"></span>
+        </h5>
+        <nav aria-label="breadcrumb" class="text-muted">
+            <ol class="breadcrumb mb-0 py-0">
+                <li class="breadcrumb-item"><a href="/Lots">@Localizer["Page.Title"]</a></li>
+                <li class="breadcrumb-item active text-primary" id="lot-breadcrumb">@Localizer["Detail.Title"]</li>
+            </ol>
+        </nav>
+        <div id="lot-warnings" class="d-flex flex-wrap gap-2 mt-1"></div>
+    </div>
+    @if (company.Ready && Model.LotId is not null)
+    {
+        <div class="d-flex flex-wrap gap-2" id="lot-detail-actions">
+            @if (Can("EDITLOT"))
+            {
+                <a class="btn btn-sm btn-label-primary d-none" data-trace-action="EDITLOT" href="/Lots/Edit?lotId=@Model.LotId"><i class="bx bx-edit me-1"></i>@Localizer["Action.EDITLOT"]</a>
+            }
+            @if (Can("EDITRELEASEDLOT"))
+            {
+                <a class="btn btn-sm btn-label-primary d-none" data-trace-action="EDITRELEASEDLOT" href="/Lots/Edit?lotId=@Model.LotId"><i class="bx bx-edit me-1"></i>@Localizer["Action.EDITRELEASEDLOT"]</a>
+            }
+            @if (Can("CHANGELOTSTATUS"))
+            {
+                <button type="button" class="btn btn-sm btn-label-warning" data-trace-action="CHANGELOTSTATUS"><i class="bx bx-transfer me-1"></i>@Localizer["Action.CHANGELOTSTATUS"]</button>
+            }
+            @if (Can("LOTMOVES"))
+            {
+                <a class="btn btn-sm btn-label-secondary" data-trace-action="LOTMOVES" href="/LotMovements?lotId=@Model.LotId"><i class="bx bx-history me-1"></i>@Localizer["Action.LOTMOVES"]</a>
+            }
+            @if (Can("LOTTRACEOPEN"))
+            {
+                <a class="btn btn-sm btn-label-secondary" data-trace-action="LOTTRACEOPEN" href="/LotTrace?lotId=@Model.LotId"><i class="bx bx-git-branch me-1"></i>@Localizer["Action.LOTTRACEOPEN"]</a>
+            }
+            @if (Can("OPENINLEDGER"))
+            {
+                <a class="btn btn-sm btn-label-secondary" data-trace-action="OPENINLEDGER" href="/StockLedger?lotId=@Model.LotId"><i class="bx bx-package me-1"></i>@Localizer["Action.OPENINLEDGER"]</a>
+            }
+        </div>
+    }
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (!company.Ready)
+{
+    return;
+}
+
+@if (Model.LotId is null)
+{
+    <div class="alert alert-info" role="status" id="lot-missing">@Localizer["Empty.Lot"]</div>
+    return;
+}
+
+<div id="lot-detail" data-lot-id="@Model.LotId">
+    <div id="lot-detail-error" class="alert alert-danger d-none" role="alert">
+        <div data-alert-text></div>
+        <details class="small mt-1 d-none" data-alert-reference><summary>@Localizer["Error.Correlation"]</summary><span data-alert-correlation></span></details>
+    </div>
+    <div id="lot-unusable" class="alert alert-danger d-none" role="status"></div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4" id="lot-onhand">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-2"><i class="bx bx-package"></i>@Localizer["Detail.OnHand"]</h6>
+                    <div class="shimmer skeleton-row" data-skeleton></div>
+                    <div class="fs-4 fw-medium d-none" dir="ltr" data-value></div>
+                </div>
+            </section>
+            <section class="card mb-4" id="lot-info">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-3"><i class="bx bx-info-circle"></i>@Localizer["Detail.Info"]</h6>
+                    <div class="shimmer skeleton-row mb-2" data-skeleton></div>
+                    <dl class="row small mb-0 d-none" data-fields></dl>
+                </div>
+            </section>
+        </div>
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4" id="lot-stock">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-1"><i class="bx bx-map-alt"></i>@Localizer["Detail.StockDistribution"]</h6>
+                    <p class="card-section-desc mb-3">@Localizer["Detail.StockDistributionSub"]</p>
+                    <div class="shimmer skeleton-row" data-skeleton></div>
+                    <div class="table-responsive d-none" data-table>
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>@Localizer["Stock.Warehouse"]</th><th>@Localizer["Stock.Location"]</th><th>@Localizer["Stock.Status"]</th><th class="text-end">@Localizer["Stock.Quantity"]</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small mb-0 d-none" data-empty>@Localizer["Empty.Stock"]</p>
+                </div>
+            </section>
+            <section class="card mb-4 d-none" id="lot-serials">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="card-section-title mb-0"><i class="bx bx-barcode"></i>@Localizer["Detail.Serials"]</h6>
+                        @if (Can("VIEWALLSERIALS"))
+                        {
+                            <a class="btn btn-sm btn-label-secondary" data-trace-action="VIEWALLSERIALS" href="/Serials?lotId=@Model.LotId">@Localizer["Detail.SerialsAll"]</a>
+                        }
+                    </div>
+                    <div class="d-flex flex-wrap gap-2" data-list></div>
+                </div>
+            </section>
+            <section class="card mb-4" id="lot-history">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-1"><i class="bx bx-history"></i>@Localizer["Detail.History"]</h6>
+                    <p class="card-section-desc mb-3">@Localizer["Detail.HistorySub"]</p>
+                    <div class="shimmer skeleton-row" data-skeleton></div>
+                    <div class="table-responsive d-none" data-table>
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>@Localizer["History.Date"]</th><th>@Localizer["History.Who"]</th><th>@Localizer["History.Field"]</th><th>@Localizer["History.Change"]</th><th>@Localizer["History.Reason"]</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 mt-2 d-none" data-pager>
+                        <button type="button" class="btn btn-xs btn-label-secondary" data-page="prev">‹</button>
+                        <small class="text-muted align-self-center" data-page-text></small>
+                        <button type="button" class="btn btn-xs btn-label-secondary" data-page="next">›</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@if (Perms.Has("trace.lots.change-status"))
+{
+    <form id="lots-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+        <partial name="~/Views/Traceability/Lots/_StatusDialog.cshtml" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Traceability/Lots/_TraceActions.cshtml" />
+    <partial name="~/Views/Traceability/Lots/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Traceability/Lots/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Traceability/trace-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Traceability/Lots/status.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Traceability/Lots/details.js" asp-append-version="true"></script>
+}

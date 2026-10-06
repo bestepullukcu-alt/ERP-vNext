@@ -1,0 +1,48 @@
+@using Diten.Web.Views.Traceability.Lots
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    Lot Gezgini filters = listLots parameters (pack §11.3): product (Model A selector, server-searched), status (the four
+    contract values — a Select2 chip), "SKT şu tarihten önce" (expiryBefore), "Yalnız uyarısı olanlar" (warn). The text
+    search is the list's own search box (q: lot no, manufacturer / supplier lot).
+*@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-product">
+                        <select id="filterItemId" class="form-select form-select-sm" data-placeholder="@Localizer["Filter.Product"]" aria-label="@Localizer["Filter.Product"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["Filter.Status"]" aria-label="@Localizer["Filter.Status"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            @foreach (var status in Diten.Web.Models.Traceability.TraceListAdapter.LotStatuses)
+                            {
+                                <option value="@status">@Localizer["Status." + status]</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="filter-chip filter-expiry">
+                        <input id="filterExpiryBefore" type="date" class="form-control form-control-sm" aria-label="@Localizer["Filter.ExpiryBefore"]" title="@Localizer["Filter.ExpiryBefore"]" />
+                    </div>
+                    <div class="filter-chip filter-warn">
+                        @* A select, not a checkbox: the list factory reads a field's value, and a checkbox's value is constant. *@
+                        <select id="filterWarn" class="form-select form-select-sm select2" data-placeholder="@Localizer["Filter.WarnOnly"]" aria-label="@Localizer["Filter.WarnOnly"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="true">@Localizer["Filter.WarnOnly"]</option>
+                        </select>
+                    </div>
+                    <small id="lots-picker-unavailable" class="text-muted d-none"></small>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@Localizer["Filter.Clear"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

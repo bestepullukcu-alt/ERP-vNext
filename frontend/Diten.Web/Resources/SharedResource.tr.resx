@@ -986,4 +986,9 @@
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Envanter</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Stok Defteri</value></data>
   <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Lokasyonlar</value></data>
+  <data name="Nav.Module.LOTSERIALTRACKING" xml:space="preserve"><value>Lot / Seri Takibi</value></data>
+  <data name="Nav.Page.LOTS" xml:space="preserve"><value>Lot Gezgini</value></data>
+  <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Seri Gezgini</value></data>
+  <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>İzlenebilirlik</value></data>
+  <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Elle Girilmiş Lotları Aktarma</value></data>
 </root>

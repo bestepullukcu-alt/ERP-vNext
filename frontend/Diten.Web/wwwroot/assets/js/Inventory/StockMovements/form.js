@@ -36,6 +36,11 @@ const StockMovementForm = (function () {
     // Each inserted value is a bidi ISOLATE (FSI…PDI): "2 KOLI = 24 ADET" inside an Arabic sentence otherwise reorders
     // its numbers and codes. Invisible in left-to-right languages.
     const fmt = (text, ...args) => String(text || '').replace(/\{(\d)\}/g, (match, index) => `⁨${args[index] ?? ''}⁩`);
+    // MOD-0174 P3 — the lot field's own vocabulary (resx family LotFieldIndex, rendered by _Form as #lotfield-l10n).
+    const LOT_L10N = (() => {
+        try { return JSON.parse(byId('lotfield-l10n')?.textContent || '{}'); } catch (error) { return {}; }
+    })();
+    const lt = (key, ...args) => fmt(LOT_L10N[key], ...args);
 
     const lang = document.documentElement.lang || undefined;
     const numberFormat = new Intl.NumberFormat(lang, { maximumFractionDigits: 6 });
@@ -47,6 +52,10 @@ const StockMovementForm = (function () {
     const QUANTITY = /^\d+(\.\d{1,6})?$/;
     const ZERO = /^0+(\.0+)?$/;
     const LOT = /^[A-Z0-9./-]{1,40}$/;
+    // MOD-0174 P3 — the serial shape of the approved mockup (pack §12 UI rules): 3–24 of A–Z 0–9 -.
+    const SERIAL = /^[A-Z0-9-]{3,24}$/;
+    // A GS1 / ITS code typed or scanned into the "one by one" box goes through the code check (K-B).
+    const GS1 = /^\(01\)|^01\d{14}|\u001d/;
     const DIRECTION = {
         OPENING_BALANCE: 'in', COUNT_GAIN: 'in',
         COUNT_LOSS: 'out', SCRAP: 'out', WRITE_OFF: 'out',
@@ -63,7 +72,7 @@ const StockMovementForm = (function () {
     const el = {
         type: byId('movementType'), item: byId('itemId'), sku: byId('sku'), source: byId('source'),
         toWarehouse: byId('toWarehouseId'), toLocation: byId('toLocationId'), toStatus: byId('toStockStatus'),
-        lot: byId('lotId'), serials: byId('serialNumbers'), quantity: byId('quantity'), uom: byId('uomId'),
+        lot: byId('lotId'), lotTyped: byId('lotIdTyped'), serials: byId('serialNumbers'), quantity: byId('quantity'), uom: byId('uomId'),
         documentNo: byId('documentNo'), transactionDate: byId('transactionDate'), postingDate: byId('postingDate'),
         submit: byId('btnMovementSubmit')
     };
@@ -74,7 +83,9 @@ const StockMovementForm = (function () {
         baseQuantity: null,     // the server's base quantity for (quantity, unit), a decimal STRING
         busy: false,
         partial: false,         // KD-1: the reversal is posted, the corrected movement is not yet
-        lastBody: null
+        lastBody: null,
+        lots: new Map(),        // MOD-0174 P3: registered lot id → picker option { lotNumber, status, disabled, retestDue, … }
+        pendingLot: ''          // a lot to select once the SKU's lots are loaded (prefill, quick lot)
     };
 
     const direction = () => DIRECTION[el.type?.value] || null;
@@ -170,7 +181,8 @@ const StockMovementForm = (function () {
             const visible = !!shown[block.getAttribute('data-matrix')];
             block.classList.toggle('d-none', !visible);
             block.querySelectorAll('select, input, textarea').forEach((control) => {
-                control.required = visible && control.id !== 'lotId';
+                // The lot block's own controls (picker, typed text, retest confirmation) are required by the facts, not the matrix.
+                control.required = visible && !['lotId', 'lotIdTyped', 'lotRetestConfirm'].includes(control.id);
                 control.setAttribute('aria-required', control.required ? 'true' : 'false');
             });
         });
@@ -253,19 +265,70 @@ const StockMovementForm = (function () {
         fill(el.source, items, keep);
         setEnabled(el.source, items.length > 0);
         hint('source', data === null || data.available === false ? t('PickerUnavailable') : items.length === 0 ? t('HintSourceNone') : '');
+        relabelSources();
         onSourceChanged();
     };
 
-    // W-UI-02: the SKU's lots already in the ledger are SUGGESTED (datalist) so a known lot is chosen, not retyped.
-    const loadLots = async () => {
-        const list = byId('lotIdKnown');
-        if (!el.lot || !list) return;
-        list.innerHTML = '';
-        if (!el.sku.value) return;
-        const data = await lookup('lots', { sku: el.sku.value });
-        (data?.items || []).forEach((item) => list.append(new Option(item.text, item.value)));
+    // MOD-0174 P3 (pack §11.4): the SKU's REGISTERED lots — "lot no · SKT · status", sorted by SKT; Blocked / Expired
+    // listed but disabled with the reason (CT-D4). Same-origin /Lots/form/lots (TRACE listLots); the decision of what is
+    // selectable is the server's (LotFieldRules.PickerOptions), this file only draws it.
+    // A disabled lot shows its reason IN PLACE of the status ("Bloke — stok alamaz" already names the status).
+    const lotText = (o) => [o.lotNumber, o.expiryDate ? String(o.expiryDate).slice(0, 10) : null,
+        o.disabled && o.disabledReason ? o.disabledReason : o.statusText].filter(Boolean).join(' · ');
+    const typedLotOpen = () => !!byId('lotTypedGroup') && !byId('lotTypedGroup').classList.contains('d-none');
+    const currentLot = () => {
+        const typed = typedLotOpen() ? (el.lotTyped?.value || '').trim().toUpperCase() : '';
+        return typed || el.lot?.value || '';
     };
-    const normalizeLot = () => { if (el.lot) el.lot.value = el.lot.value.trim().toUpperCase(); };
+    const showTypedLot = (text) => {
+        byId('lotTypedGroup')?.classList.remove('d-none');
+        byId('lotTypedHint')?.classList.remove('d-none');
+        if (el.lotTyped && text !== undefined) el.lotTyped.value = text;
+    };
+    const loadLots = async () => {
+        if (!el.lot) return;
+        state.lots.clear();
+        const keep = state.pendingLot || el.lot.value || '';
+        el.lot.innerHTML = '';
+        el.lot.add(new Option('', ''));
+        if (!el.sku.value) { hint('lotId', ''); if (hasSelect2()) $(el.lot).trigger('change.select2'); onLotChanged(); return; }
+        const data = await getJson(`/Lots/form/lots?${new URLSearchParams({ sku: el.sku.value }).toString()}`);
+        const items = data?.items || [];
+        items.forEach((o) => {
+            state.lots.set(o.value, o);
+            const option = new Option(lotText(o), o.value, false, false);
+            option.disabled = !!o.disabled;
+            el.lot.add(option);
+        });
+        el.lot.value = keep && state.lots.has(keep) && !state.lots.get(keep).disabled ? keep : '';
+        state.pendingLot = '';
+        hint('lotId', data === null || data.available === false ? (data?.message || lt('Lot.Unavailable')) : items.length === 0 ? lt('Lot.None') : '');
+        if (hasSelect2()) $(el.lot).trigger('change.select2');
+        relabelSources();
+        onLotChanged();
+    };
+    // K-F: a lot whose retest date has passed — a warning and an explicit confirmation before it can be used.
+    const onLotChanged = () => {
+        const option = state.lots.get(el.lot?.value || '');
+        const warn = byId('lotRetestWarn');
+        if (warn) {
+            const show = !typedLotOpen() && !!option?.retestDue;
+            warn.classList.toggle('d-none', !show);
+            warn.querySelector('[data-retest-text]').textContent = show ? lt('Lot.RetestWarn', option.retestDate ? String(option.retestDate).slice(0, 10) : '') : '';
+            const box = byId('lotRetestConfirm');
+            if (box && !show) box.checked = false;
+        }
+        refreshEffect();
+    };
+    // A source row of a registered lot is named by its lot NUMBER, not its id (the ledger stores the id, ASSUMPTION-0174-03).
+    const relabelSources = () => {
+        Array.from(el.source?.options || []).forEach((option) => {
+            const row = state.sources.get(option.value);
+            const lot = row?.lotId ? state.lots.get(row.lotId) : null;
+            if (lot && option.text.includes(row.lotId)) option.text = option.text.replace(row.lotId, lot.lotNumber);
+        });
+        if (hasSelect2() && el.source) $(el.source).trigger('change.select2');
+    };
 
     const syncWarehouseFromSource = () => {
         const row = state.sources.get(el.source.value);
@@ -351,6 +414,110 @@ const StockMovementForm = (function () {
         hint('serialNumbers', state.baseQuantity !== null
             ? fmt(t('HintSerialCounter'), count, qty(state.baseQuantity))
             : fmt(t('HintSerialCounterUnknown'), count));
+        // MOD-0174 P3 (K-B): the counter turns green when the serial count equals the quantity (a COUNT, not arithmetic).
+        const node = form.querySelector('[data-hint-for="serialNumbers"]');
+        const equal = state.baseQuantity !== null && String(count) === String(state.baseQuantity);
+        node?.classList.toggle('text-success', equal);
+        if (node && state.baseQuantity !== null && !equal && /^\d+$/.test(String(state.baseQuantity))) {
+            const diff = count - Number(state.baseQuantity);
+            node.textContent += ' · ' + (diff > 0 ? lt('Serial.CounterOver', diff) : lt('Serial.CounterMore', -diff));
+        } else if (node && equal) {
+            node.textContent += ' · ' + lt('Serial.CounterOk');
+        }
+    };
+
+    // ── MOD-0174 P3 — serial entry, three methods (K-B); every one ADDS to the one list ─────────────────────
+    const serialMessage = (lines) => {
+        const box = byId('serialMessages');
+        if (box) box.textContent = lines.filter(Boolean).join(' ');
+    };
+    const addSerials = (list) => {
+        const existing = new Set(serialLines().map((s) => s.toUpperCase()));
+        const added = [];
+        const duplicates = [];
+        const bad = [];
+        list.forEach((raw) => {
+            const serial = String(raw || '').trim().toUpperCase();
+            if (!serial) return;
+            if (!SERIAL.test(serial)) { bad.push(serial); return; }
+            if (existing.has(serial)) { duplicates.push(serial); return; }
+            existing.add(serial);
+            added.push(serial);
+        });
+        if (added.length) el.serials.value = (el.serials.value.trim() ? el.serials.value.replace(/\s+$/, '') + '\n' : '') + added.join('\n');
+        serialMessage([
+            added.length ? lt('Serial.Added', added.length) : '',
+            duplicates.length ? lt('Serial.Duplicates', duplicates.slice(0, 5).join(', ')) : '',
+            bad.length ? lt('Serial.BadFormat', bad.slice(0, 5).join(', ')) : ''
+        ]);
+        updateSerialCounter();
+    };
+    // Barkod (karekod): the service checks GTIN · serial · SKT · lot against the selected SKU and REGISTERED lot.
+    const scanCode = async (code) => {
+        const lotId = typedLotOpen() ? '' : (el.lot?.value || '');
+        if (!lotId) { serialMessage([lt('Serial.ScanNeedsLot')]); return; }
+        let reply = null;
+        try {
+            const res = await fetch('/Lots/form/gs1', {
+                method: 'POST', credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json', RequestVerificationToken: antiforgery() },
+                body: JSON.stringify({ code, sku: el.sku.value, lotId })
+            });
+            reply = await res.json().catch(() => null);
+        } catch (error) {
+            reply = null;
+        }
+        const warning = byId('serialGtinWarning');
+        if (warning && reply?.gtinSkipped) { warning.textContent = reply.warning || ''; warning.classList.remove('d-none'); }
+        if (reply?.accepted && reply.serialNumber) { addSerials([reply.serialNumber]); return; }
+        serialMessage(reply?.messages?.length ? reply.messages : [lt('Serial.CheckUnavailable')]);
+    };
+    const addRange = async () => {
+        const start = (byId('serialRangeStart')?.value || '').trim();
+        const end = (byId('serialRangeEnd')?.value || '').trim();
+        const data = await getJson(`/Lots/form/range?${new URLSearchParams({ start, end }).toString()}`);
+        const preview = byId('serialRangePreview');
+        if (!data || data.error) { if (preview) preview.textContent = data?.error || lt('Serial.BadFormat', `${start} … ${end}`); return; }
+        const serials = data.serials || [];
+        if (preview) preview.textContent = lt('Serial.RangePreview', serials.length, serials[0] || '', serials[serials.length - 1] || '');
+        addSerials(serials);
+    };
+    const addSingle = () => {
+        const input = byId('serialSingle');
+        const text = (input?.value || '').trim();
+        if (!text) return;
+        if (GS1.test(text)) scanCode(text); else addSerials([text]);
+        if (input) input.value = '';
+    };
+    const bindSerialMethods = () => {
+        form.querySelectorAll('[data-serial-method]').forEach((button) => button.addEventListener('click', () => {
+            form.querySelectorAll('[data-serial-method]').forEach((b) => b.classList.toggle('active', b === button));
+            form.querySelectorAll('[data-serial-panel]').forEach((p) => p.classList.toggle('d-none', p.dataset.serialPanel !== button.dataset.serialMethod));
+        }));
+        const enter = (id, handler) => byId(id)?.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); handler(); } });
+        enter('serialSingle', addSingle);
+        enter('serialScan', () => { const input = byId('serialScan'); const code = (input?.value || '').trim(); if (code) scanCode(code); if (input) input.value = ''; });
+        enter('serialRangeEnd', addRange);
+        byId('btnSerialAdd')?.addEventListener('click', addSingle);
+        byId('btnSerialRange')?.addEventListener('click', addRange);
+    };
+
+    // ── MOD-0174 P3 — "+ Yeni lot oluştur" (CT-D5a): the quick lot is Draft and comes back selected ──────────────
+    const openQuickLot = () => {
+        if (!el.sku.value) { hint('lotId', t('HintSelectProductFirst')); return; }
+        window.QuickLot?.open({
+            itemId: el.item.value,
+            sku: el.sku.value,
+            itemText: el.item.selectedOptions[0]?.text || '',
+            skuText: el.sku.selectedOptions[0]?.text || '',
+            token: antiforgery(),
+            onCreated: async (created) => {
+                state.pendingLot = created.lotId;
+                if (typedLotOpen()) { byId('lotTypedGroup')?.classList.add('d-none'); byId('lotTypedHint')?.classList.add('d-none'); if (el.lotTyped) el.lotTyped.value = ''; }
+                await loadLots();
+                hint('lotId', lt('Lot.Created', created.lotNumber || ''));
+            }
+        });
     };
 
     // ── "Stock effect" (pack §12): before → after from the server; informational only ─────────────────────
@@ -376,7 +543,7 @@ const StockMovementForm = (function () {
             const data = await lookup('effect', {
                 itemId: el.item.value, sku: el.sku.value, type: el.type.value, quantity, uomId: el.uom.value,
                 source: el.source.value, toWarehouseId: el.toWarehouse.value, toLocationId: el.toLocation.value,
-                toStockStatus: el.toStatus.value, lotId: el.lot?.value || ''
+                toStockStatus: el.toStatus.value, lotId: currentLot()
             });
             loading.classList.add('d-none');
             const sides = data?.sides || [];
@@ -441,7 +608,7 @@ const StockMovementForm = (function () {
         }
         if (dir === 'in') {
             body.toStockStatus = el.toStatus.value;
-            body.lotId = (el.lot?.value || '').trim().toUpperCase();
+            body.lotId = currentLot();
         }
         if (state.facts?.serialControlled) body.serialNumbers = el.serials.value;
         return body;
@@ -467,8 +634,12 @@ const StockMovementForm = (function () {
         }
         if (dir === 'in') {
             required('toStockStatus', body.toStockStatus);
-            if (body.lotId && !LOT.test(body.lotId)) errors.lotId = t('ValLotFormat');
+            // A typed lot keeps the W-UI-02 shape; a registered lot is an id from the picker (pack §11.4).
+            if (body.lotId && typedLotOpen() && !LOT.test(body.lotId)) errors.lotId = t('ValLotFormat');
             if (!body.lotId && state.facts?.lotControlled) errors.lotId = t('ValRequired');
+            const picked = typedLotOpen() ? null : state.lots.get(body.lotId || '');
+            if (picked?.disabled) errors.lotId = picked.disabledReason || t('ValRequired');
+            else if (picked?.retestDue && !byId('lotRetestConfirm')?.checked) errors.lotId = lt('Lot.RetestConfirmRequired');
         }
         if (dir === 'wh' && source && body.toWarehouseId === source.warehouseId) errors.toWarehouseId = t('ValSameWarehouse');
         if (dir === 'loc' && source && body.toLocationId === source.locationId) errors.toLocationId = t('ValSameLocation');
@@ -621,6 +792,7 @@ const StockMovementForm = (function () {
         select2(el.sku, { minimumResultsForSearch: 8 });
         select2(el.source);
         select2(el.toWarehouse);
+        select2(el.lot, { allowClear: true });
         initTargetLocationPicker();
         select2(el.item, {
             minimumInputLength: 0,
@@ -647,8 +819,12 @@ const StockMovementForm = (function () {
         on(el.toWarehouse, () => { resetTargetLocation(); refreshEffect(); });
         on(el.toLocation, refreshEffect);
         on(el.toStatus, refreshEffect);
-        el.lot?.addEventListener('input', refreshEffect);
-        el.lot?.addEventListener('change', () => { normalizeLot(); refreshEffect(); });
+        on(el.lot, onLotChanged);
+        el.lotTyped?.addEventListener('input', refreshEffect);
+        el.lotTyped?.addEventListener('change', () => { el.lotTyped.value = el.lotTyped.value.trim().toUpperCase(); onLotChanged(); });
+        byId('btnTypedLot')?.addEventListener('click', () => { showTypedLot(); el.lotTyped?.focus(); onLotChanged(); });
+        byId('btnQuickLot')?.addEventListener('click', openQuickLot);
+        bindSerialMethods();
         on(el.uom, () => { refreshConversion(); refreshEffect(); });
         el.quantity?.addEventListener('input', () => { refreshConversion(); refreshEffect(); });
         el.serials?.addEventListener('input', updateSerialCounter);
@@ -668,7 +844,11 @@ const StockMovementForm = (function () {
         applyType();
         if (data.prefillToStatus) { el.toStatus.value = data.prefillToStatus; $(el.toStatus).trigger('change.select2'); }
         if (data.prefillQuantity) el.quantity.value = data.prefillQuantity;
-        if (data.prefillLot && el.lot) el.lot.value = data.prefillLot;
+        // A registered lot is selected once the SKU's lots are loaded; a typed one (W-UI-02) goes to the typed box with its badge.
+        if (data.prefillLot) {
+            if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(data.prefillLot)) state.pendingLot = data.prefillLot;
+            else showTypedLot(data.prefillLot);
+        }
         await loadTargetWarehouses();
         if (data.prefillToLocation && el.toWarehouse.value) {
             ensureOption(el.toLocation, data.prefillToLocation, data.prefillToLocationText || data.prefillToLocation);

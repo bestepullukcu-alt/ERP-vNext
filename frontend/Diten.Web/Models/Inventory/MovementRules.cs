@@ -74,11 +74,26 @@ public static partial class MovementRules
     {
         lot = null;
         if (string.IsNullOrWhiteSpace(raw)) return true;
+        // MOD-0174 P3 (pack §11.4): a REGISTERED lot travels as its canonical lower-case id (TRACE lotId, ASSUMPTION-0174-03)
+        // and is passed unchanged — upper-casing it would turn it into a typed text that names no lot.
+        if (IsRegisteredLotId(raw.Trim()))
+        {
+            lot = raw.Trim();
+            return true;
+        }
+
         var normalized = raw.Trim().ToUpperInvariant();
         if (normalized.Length > MaxLotLength || !LotPattern().IsMatch(normalized)) return false;
         lot = normalized;
         return true;
     }
+
+    /// <summary>
+    /// A registered MOD-0174 lot id: the canonical lower-case UUID the TRACE API returns (the W-UI-02 typed lot is
+    /// upper-case <c>[A-Z0-9./-]</c> text, so the two forms do not overlap — the service applies the same rule, P2).
+    /// </summary>
+    public static bool IsRegisteredLotId(string? value) =>
+        Guid.TryParseExact(value, "D", out var id) && string.Equals(value, id.ToString("D"), StringComparison.Ordinal);
 
     /// <summary>One serial number per line, trimmed; blank lines are dropped; a duplicate is refused.</summary>
     public static bool TryParseSerials(string? text, out IReadOnlyList<string> serials)

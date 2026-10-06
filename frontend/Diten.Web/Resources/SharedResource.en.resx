@@ -986,4 +986,9 @@
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Inventory</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Stock Ledger</value></data>
   <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Locations</value></data>
+  <data name="Nav.Module.LOTSERIALTRACKING" xml:space="preserve"><value>Lot / Serial Tracking</value></data>
+  <data name="Nav.Page.LOTS" xml:space="preserve"><value>Lot Explorer</value></data>
+  <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Serial Explorer</value></data>
+  <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>Traceability</value></data>
+  <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Typed Lot Migration</value></data>
 </root>

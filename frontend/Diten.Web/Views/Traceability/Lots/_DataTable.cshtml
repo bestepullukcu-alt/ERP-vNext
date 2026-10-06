@@ -1,0 +1,33 @@
+@using Diten.Web.Views.Traceability.Lots
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotsIndex> Localizer
+@{
+    // Lot Gezgini columns (pack §11.3, K-A "Eldeki Stok"). SERVER data through the proxy profile (/Lots/api → listLots).
+    // Durum + Eldeki Stok are the page's point: kept visible from tablet-landscape up (E4: at 1400 px responsive hid them).
+    // NO SELECTION COLUMN: a lot is never deleted and there is no bulk action (pack §4, §11.2).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-lots",
+        DataMode = "server",
+        Slug = "lots",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Col.LotNumber"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Col.Product"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.ManufacturerLot"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.SupplierLot"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.ManufacturingDate"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.ExpiryDate"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.RetestDate"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.Origin"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.Status"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Col.CoaRef"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.OnHand"].Value, CssClass = "min-tablet-l" }
+        ],
+        ActionsHeader = Localizer["Col.Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

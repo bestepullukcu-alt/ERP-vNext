@@ -4,6 +4,8 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<StockMovementsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject IHtmlLocalizer<Diten.Web.Views.Traceability.Lots.LotFieldIndex> LotField
+@inject Diten.Web.Services.IPermissionSnapshot Perms
 @inject HttpClient Http
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @*
@@ -279,12 +281,36 @@
                             <label for="lotId" class="form-label fw-medium">@Localizer["FieldLot"] <span class="text-danger d-none" data-lot-required>*</span></label>
                             <div class="diten-field">
                                 <i class="bx bx-purchase-tag-alt diten-field-icon" aria-hidden="true"></i>
-                                @* W-UI-02: known lots of the SKU are suggested first (datalist); a new one may be typed. *@
-                                <input id="lotId" type="text" class="form-control" list="lotIdKnown" maxlength="40" autocomplete="off"
-                                       placeholder="@Localizer["PlaceholderLot"]" />
-                                <datalist id="lotIdKnown"></datalist>
+                                @*
+                                    MOD-0174 P3 (pack §11.4): the REGISTERED lots of the SKU (lot no · SKT · status, sorted by SKT); Blocked and
+                                    Expired lots are listed but disabled with the reason (CT-D4). Inbound types only — the matrix hides this
+                                    block for outbound / transfers, whose lot is the source row's.
+                                *@
+                                <select id="lotId" class="form-select" data-placeholder="@LotField["Lot.Placeholder"]">
+                                    <option value=""></option>
+                                </select>
                             </div>
-                            <div class="form-text">@Localizer["HintLotUnregistered"]</div>
+                            @if (Perms.Has("trace.lots.create"))
+                            {
+                                @* CT-D5a: an in-form control of the lot field (not a manifest action), for a holder of trace.lots.create. *@
+                                <button type="button" class="btn btn-sm btn-link px-0" id="btnQuickLot">@LotField["Lot.NewLot"]</button>
+                            }
+                            <div class="form-text" data-hint-for="lotId"></div>
+                            @* K-F: a lot whose retest date passed — warning + explicit confirmation (ASSUMPTION-0174-06). *@
+                            <div class="alert alert-warning small py-2 px-3 mt-2 mb-0 d-none" id="lotRetestWarn" role="status">
+                                <div data-retest-text></div>
+                                <div class="form-check mt-1 mb-0">
+                                    <input class="form-check-input" type="checkbox" id="lotRetestConfirm" />
+                                    <label class="form-check-label" for="lotRetestConfirm">@LotField["Lot.RetestConfirm"]</label>
+                                </div>
+                            </div>
+                            @* W-UI-02 (until P4 closes typing): a typed lot text is still accepted, shown with its badge. *@
+                            <button type="button" class="btn btn-sm btn-link px-0" id="btnTypedLot">@LotField["Lot.TypedBadge"]…</button>
+                            <div class="input-group input-group-sm mt-1 d-none" id="lotTypedGroup">
+                                <input id="lotIdTyped" type="text" class="form-control" maxlength="40" autocomplete="off" placeholder="@Localizer["PlaceholderLot"]" aria-label="@LotField["Lot.TypedBadge"]" />
+                                <span class="input-group-text"><span class="badge bg-label-secondary">@LotField["Lot.TypedBadge"]</span></span>
+                            </div>
+                            <div class="form-text d-none" id="lotTypedHint">@LotField["Lot.TypedHint"]</div>
                             <div class="invalid-feedback d-block" data-error-for="lotId"></div>
                         </div>
                     </div>
@@ -318,6 +344,33 @@
                         </div>
                         <div class="col-12 d-none" data-serial-field>
                             <label for="serialNumbers" class="form-label fw-medium">@Localizer["FieldSerialNumbers"] <span class="text-danger">*</span></label>
+                            @*
+                                MOD-0174 P3 (K-B): three input methods that all ADD to the one serial list below — one by one (Enter adds),
+                                a range (same prefix + digits, ≤ 5,000, expanded by the server) and a GS1 / ITS code (checked by the service:
+                                GTIN · serial · SKT · lot; when the SKU has no GTIN the GTIN check is skipped and the warning stays visible).
+                            *@
+                            <ul class="nav nav-pills nav-sm gap-2 mb-2" role="tablist" id="serialMethods">
+                                <li class="nav-item"><button type="button" class="nav-link small border shadow-none active" data-serial-method="single">@LotField["Serial.Methods.Single"]</button></li>
+                                <li class="nav-item"><button type="button" class="nav-link small border shadow-none" data-serial-method="range">@LotField["Serial.Methods.Range"]</button></li>
+                                <li class="nav-item"><button type="button" class="nav-link small border shadow-none" data-serial-method="scan">@LotField["Serial.Methods.Scan"]</button></li>
+                            </ul>
+                            <div data-serial-panel="single" class="input-group input-group-sm mb-2">
+                                <input id="serialSingle" type="text" class="form-control" maxlength="200" autocomplete="off" aria-label="@LotField["Serial.Methods.Single"]" />
+                                <button type="button" class="btn btn-label-primary" id="btnSerialAdd">@LotField["Serial.Add"]</button>
+                            </div>
+                            <div data-serial-panel="range" class="d-none mb-2">
+                                <div class="input-group input-group-sm">
+                                    <input id="serialRangeStart" type="text" class="form-control" maxlength="24" autocomplete="off" placeholder="@LotField["Serial.RangeStart"]" aria-label="@LotField["Serial.RangeStart"]" />
+                                    <input id="serialRangeEnd" type="text" class="form-control" maxlength="24" autocomplete="off" placeholder="@LotField["Serial.RangeEnd"]" aria-label="@LotField["Serial.RangeEnd"]" />
+                                    <button type="button" class="btn btn-label-primary" id="btnSerialRange">@LotField["Serial.RangeAdd"]</button>
+                                </div>
+                                <small class="text-muted d-block mt-1" id="serialRangePreview">@LotField["Serial.RangeHint"]</small>
+                            </div>
+                            <div data-serial-panel="scan" class="d-none mb-2">
+                                <div class="alert alert-warning small py-2 px-3 mb-2 d-none" id="serialGtinWarning" role="status"></div>
+                                <input id="serialScan" type="text" class="form-control form-control-sm" maxlength="200" autocomplete="off" placeholder="@LotField["Serial.ScanHint"]" aria-label="@LotField["Serial.Methods.Scan"]" />
+                            </div>
+                            <div class="small mb-2" id="serialMessages" role="status"></div>
                             <div class="diten-field">
                                 <i class="bx bx-list-ol diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
                                 <textarea id="serialNumbers" class="form-control" rows="4" placeholder="@Localizer["PlaceholderSerials"]"></textarea>
@@ -384,7 +437,8 @@
                             @if (!string.IsNullOrWhiteSpace(original.LotId))
                             {
                                 <dt class="col-5 fw-medium text-heading">@Localizer["ColLot"]</dt>
-                                <dd class="col-7">@original.LotId <span class="badge bg-label-secondary ms-1">@Localizer["LotUnregisteredBadge"]</span></dd>
+                                @* MOD-0174 P3: the W-UI-02 badge belongs to a TYPED lot only — a registered lot id is not "unregistered". *@
+                                <dd class="col-7">@original.LotId @if (!MovementRules.IsRegisteredLotId(original.LotId)) { <span class="badge bg-label-secondary ms-1">@Localizer["LotUnregisteredBadge"]</span> }</dd>
                             }
                         </dl>
                     </div>
@@ -407,3 +461,10 @@
         </div>
     </div>
 </form>
+
+@* MOD-0174 P3 — the lot field's vocabulary (resx family LotFieldIndex; owner decision 2026-10-06), read by form.js. *@
+<script id="lotfield-l10n" type="application/json">@Json.Serialize(Diten.Web.Models.Traceability.TraceL10nKeys.LotField.ToDictionary(k => k, k => LotField[k].Value))</script>
+@if (Perms.Has("trace.lots.create"))
+{
+    <partial name="~/Views/Traceability/Lots/_LotQuickCreateModal.cshtml" />
+}
