@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Domain.Enums;
@@ -1039,6 +1040,13 @@ public static class DataSeeder
         await AssignMod0251PlatformIntegrationGrantsAsync(permCol, rpCol, admin);
     }
 
+    private static Application.Common.TenantContext SeedTenant()
+    {
+        var tenant = new Application.Common.TenantContext();
+        tenant.SetTenant(DefaultTenantId);
+        return tenant;
+    }
+
     private static async Task SeedUsersAsync(IMongoDatabase database, bool seedMockUsers)
     {
         var userCol = database.GetCollection<User>("users");
@@ -1075,15 +1083,25 @@ public static class DataSeeder
         }
         else
         {
+            // BL-529 FIX8 item 2 — runs at EVERY Auth start, in every environment. An administrator's deactivation of the
+            // seeded admin is not undone by a restart ("active AND marked" is never written), and only the fields the seed
+            // changes are written, only while the mark is the one read — never the whole document from this copy.
+            var userRepository = new Repositories.UserRepository(database, SeedTenant());
+            var state = userRepository.CaptureState(user);
             if (string.IsNullOrWhiteSpace(user.NormalizedUserName))
             {
                 user.SetUserName("admin");
             }
 
             user.SetPlatformActorType("platform_admin");
-            user.Activate();
+            if (!user.DeactivatedByAdministrator)
+            {
+                user.Activate();
+            }
+
             user.ConfirmEmail();
-            await userCol.ReplaceOneAsync(u => u.Id == user.Id, user);
+            await userRepository.TryWriteChangesAsync(user, state, DefaultTenantId,
+                new UserWriteCondition(DeactivatedByAdministrator: user.DeactivatedByAdministrator), CancellationToken.None);
         }
 
         var roles = await roleCol.Find(r => r.Name == "SuperAdmin").ToListAsync();

@@ -423,7 +423,10 @@ public sealed class PlatformAuthController : CustomBaseController
         // owner always gets through); only a link that does not match is counted, and only it can earn a 429. Platform's
         // status is asked only AFTER the link matched: an anonymous request with a wrong link never reaches Platform.
         var user = await _userRepository.GetByEmailAndTenantAsync(normalizedEmail, PlatformTenantId, ct);
+        // FIX8 item 6 — an empty or blank token is a link that does not match (counted), never a hashing exception (an
+        // uncounted 500 that would tell a live link apart).
         var linkMatches = user is not null &&
+                          !string.IsNullOrWhiteSpace(request.Token) &&
                           !string.IsNullOrWhiteSpace(user.PasswordResetTokenHash) &&
                           user.PasswordResetTokenExpiresAt > DateTime.UtcNow &&
                           LinkHashesEqual(user.PasswordResetTokenHash, _refreshTokenHasher.Hash(request.Token));
@@ -446,7 +449,8 @@ public sealed class PlatformAuthController : CustomBaseController
         // BL-529 FIX7 item 4 — as the tenant door: an account an administrator deactivated (an invitation's included — the
         // deactivation keeps its link) is not switched on by the link; "active AND marked" is never written. The link was
         // valid, so the attempt is not counted.
-        if (user.DeactivatedByAdministrator)
+        // FIX8 item 1 (b) — marked, or switched off before BL-529 (inactive, no mark, not a pending invitation).
+        if (user.IsDeactivatedByAdministrator())
         {
             return CreateActionResultInstance(Response<NoContent>.Fail(
                 "This account has been deactivated by an administrator.",

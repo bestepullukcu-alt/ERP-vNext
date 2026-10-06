@@ -80,6 +80,14 @@ public sealed class User : EntityBase
     /// account and a provisioned admin with a temporary password are both confirmed), <see cref="LastLoginAt"/> null
     /// (the account has never been used). A method, not a property, so the Mongo class map never persists it.
     /// </summary>
+    /// <summary>
+    /// BL-529 FIX8 item 1 (b) — an account an administrator switched off, whether or not it carries the mark: marked (every
+    /// deactivation since BL-529), or inactive and NOT a pending invitation (a deactivation from before BL-529, which set
+    /// no mark). A set-password link never switches such an account on; only an administrator's activation does. A pending
+    /// invitation is inactive because it was never activated, and its link is what activates it.
+    /// </summary>
+    public bool IsDeactivatedByAdministrator() => DeactivatedByAdministrator || (!IsActive && !IsInvitationPending());
+
     public bool IsInvitationPending() => MustChangePassword && !EmailConfirmed && LastLoginAt is null;
 
     /// <summary>

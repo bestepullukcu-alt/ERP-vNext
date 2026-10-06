@@ -94,9 +94,25 @@ beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı b
    başlığa kendisi eklemiyorsa, ağ geçidine doğrudan gelen isteklerde bu adres sahtelenebilir; Ocelot'a dokunulmadı.
 2. **Herkes bir kez yeniden oturum açar.** BL-529'dan önce basılmış yenileme belirteçleri parolaya bağlı değil; ilk
    yenilemede 401 alırlar. Kullanıcı bir kez yeniden giriş yapar; destek ekibine önceden söyleyin.
+   Aynısı e-posta doğrulama kodları (MFA) için de geçerli: deploy'dan önce gönderilmiş, henüz girilmemiş bir kod bir kez
+   reddedilir; kullanıcı yeni bir kod ister (kodun ömrü en çok 15 dakika).
+3. **BL-529'dan önce pasife alınmış hesaplar işaretlenir (tek seferlik).** BL-529'dan önce bir yöneticinin pasife
+   aldığı hesapta "yönetici tarafından pasife alındı" işareti yok ve bekleyen parola bağlantısı silinmedi; süresi
+   dolmamış böyle bir bağlantı (kiracıda 7 gün, platformda 24 saat) hesabı yeniden açabilir. Araç
+   `services/Diten.AuthService/tools/Diten.AuthService.LegacyDeactivationMarker` bu hesaplara işareti koyar ve
+   bağlantılarını siler:
+   - **Hangi hesaplar:** silinmemiş, pasif (`IsActive=false`), işaretsiz ve **bekleyen davet olmayan** her hesap.
+     "Bekleyen davet" kodun kendi tanımıdır (`User.IsInvitationPending`): parola değişikliği zorunlu, e-posta
+     onaylanmamış ve hiç oturum açılmamış. **Bekleyen davetler belgelenmiş istisnadır:** hiç etkinleşmedikleri için
+     pasiftirler ve pasife alınmış bir davetten mekanik olarak ayrılamazlar; araç onlara dokunmaz.
+   - **Önce kuru koşu (varsayılan):** sayıyı ve kimlik listesini (kiracı kimliği, kullanıcı kimliği; kişisel veri yok)
+     yazar, hiçbir şey yazmaz. Listeyi okuyun; sonra `--apply` ile yazın. Araç idempotenttir: ikinci koşu bir şey bulmaz.
+   - **Bağlantı ortamdan okunur, komut satırından asla:** `DITEN_AUTH_MONGO_CONNECTION`, `DITEN_AUTH_MONGO_DATABASE`.
+   - Gerçek ortamda çalıştırmak sahibin kararıdır.
 
 **Belirti:** (1) Auth günlüğünde başlangıçta "`ClientAddress:TrustedProxies` is empty" uyarısı. (2) Deploy'dan sonra
-herkesin bir kez oturum açma sayfasına düşmesi — hata değil.
+herkesin bir kez oturum açma sayfasına düşmesi — hata değil. (3) Araç koşulmadıysa kuru koşusu sıfırdan büyük bir sayı
+verir.
 
 ---
 

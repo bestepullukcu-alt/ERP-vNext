@@ -58,7 +58,9 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
 
         // BL-529 FIX2 — an account an administrator deactivated is not switched back on by a link (an invitation's
         // included: the link activates the account, the deactivation would be undone from outside).
-        if (user.DeactivatedByAdministrator)
+        // FIX8 item 1 (b) — marked, or switched off before BL-529 (inactive, no mark, not a pending invitation). The link is
+        // kept: once an administrator activates the account, the same link sets the password.
+        if (user.IsDeactivatedByAdministrator())
         {
             return Response<NoContent>.Fail(
                 "This account has been deactivated by an administrator.",

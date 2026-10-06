@@ -1524,10 +1524,208 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.False(after.DeactivatedByAdministrator);
     }
 
-    private Task UnsetAsync(string collection, Guid id, string field) =>
-        _host.Database.GetCollection<BsonDocument>(collection).UpdateOneAsync(
-            Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(id, GuidRepresentation.Standard)),
-            Builders<BsonDocument>.Update.Unset(field));
+    // FIX8 item 4 — the unset is measured: it touched exactly the one document, and the field is gone from it.
+    private async Task UnsetAsync(string collection, Guid id, string field)
+    {
+        var documents = _host.Database.GetCollection<BsonDocument>(collection);
+        var byId = Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(id, GuidRepresentation.Standard));
+        var result = await documents.UpdateOneAsync(byId, Builders<BsonDocument>.Update.Unset(field));
+        Assert.Equal(1, result.MatchedCount);
+        Assert.False((await documents.Find(byId).SingleAsync()).Contains(field), $"{field} is still on the document");
+    }
+
+    // ── FIX8 item 2: the seeder does not switch a marked admin back on ──────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_restart_does_not_switch_on_the_seeded_admin_an_administrator_deactivated()
+    {
+        // A fixed-name database of its own (the seeder writes the DefaultTenant admin: never the host's), emptied first.
+        const string seedDatabase = "bl529_fix8_seed";
+        await _host.Database.Client.DropDatabaseAsync(seedDatabase);
+        var database = _host.Database.Client.GetDatabase(seedDatabase);
+        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, seedMockUsers: false, logger: null, beforeSeedSteps: null);
+        var users = database.GetCollection<User>("users");
+        var admin = await users.Find(u => u.Email == "admin@diten.com").SingleAsync();
+        Assert.True(admin.IsActive); // non-vacuity: seeded on
+        await users.UpdateOneAsync(u => u.Id == admin.Id, Builders<User>.Update
+            .Set(u => u.IsActive, false).Set(u => u.DeactivatedByAdministrator, true));
+
+        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, seedMockUsers: false, logger: null, beforeSeedSteps: null);
+
+        var after = await users.Find(u => u.Id == admin.Id).SingleAsync();
+        Assert.False(after.IsActive);
+        Assert.True(after.DeactivatedByAdministrator);
+    }
+
+    // ── FIX8 item 3: the platform link's write holds on the mark too ───────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_platform_link_redeemed_while_the_account_is_marked_writes_nothing()
+    {
+        var email = $"pending.{Guid.NewGuid():N}@reset.test";
+        await AssertOkAsync(await ProvisionPlatformAdminAsync(email));
+        var before = await PlatformUserAsync(email);
+
+        // The redemption has checked the mark (not set yet) and is held at Platform's status check; the mark lands.
+        var redeem = await RaceAsync("status:" + email,
+            () => AnonymousPostAsync("api/platform-auth/reset-password", new { email, token = _host.PlatformEmails.LastTokenFor(email), newPassword = NewPassword }),
+            async () => await _host.Database.GetCollection<BsonDocument>("users").UpdateOneAsync(
+                Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(before.Id, GuidRepresentation.Standard)),
+                Builders<BsonDocument>.Update.Set(nameof(User.DeactivatedByAdministrator), true)));
+
+        Assert.Equal(HttpStatusCode.BadRequest, redeem.StatusCode);
+        var after = await PlatformUserAsync(email);
+        Assert.Equal(before.IsActive, after.IsActive);
+        Assert.Equal(before.PasswordHash, after.PasswordHash);
+        Assert.True(after.DeactivatedByAdministrator);
+    }
+
+    // ── FIX8 item 5: a reset of a passive account racing a deactivation that only marks it ─────────────────────────
+
+    [Fact]
+    public async Task A_reset_of_a_passive_account_racing_a_mark_only_deactivation_is_a_conflict()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        var byId = Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(user.Id, GuidRepresentation.Standard));
+        await _host.Database.GetCollection<BsonDocument>("users").UpdateOneAsync(byId, Builders<BsonDocument>.Update.Set(nameof(User.IsActive), false));
+
+        // The reset is held before its write; an administrator's deactivation lands — on a passive account it changes only the mark.
+        var reset = await RaceAsync("write:" + user.Id,
+            () => ResetOnUsersScreenAsync(tenantId, user.Id),
+            async () => await _host.Database.GetCollection<BsonDocument>("users").UpdateOneAsync(byId,
+                Builders<BsonDocument>.Update.Set(nameof(User.DeactivatedByAdministrator), true)));
+
+        Assert.Equal(HttpStatusCode.Conflict, reset.StatusCode);
+        Assert.Contains(UserErrorCodes.ResetConflict, await reset.Content.ReadAsStringAsync());
+        var after = await ReadUserAsync(user.Id);
+        Assert.Equal(user.PasswordHash, after.PasswordHash);
+        Assert.True(after.DeactivatedByAdministrator);
+    }
+
+    // ── FIX8 item 6: a blank token is a wrong link, never a 500 ─────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task A_blank_token_at_the_platform_door_is_a_wrong_link(string token)
+    {
+        var email = $"blank.{Guid.NewGuid():N}@reset.test";
+        await AssertOkAsync(await ProvisionPlatformAdminAsync(email)); // a live link exists
+
+        var response = await AnonymousPostAsync("api/platform-auth/reset-password", new { email, token, newPassword = NewPassword });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    // ── FIX8 item 1 (b): a link never switches on an account an administrator switched off before BL-529 ────────────
+
+    [Fact]
+    public async Task A_link_does_not_switch_on_an_account_deactivated_before_BL529_until_an_administrator_activates_it()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode); // a live link
+        var link = _host.TenantEmails.LastTokenFor(user.Email);
+        // What a deactivation before BL-529 left: inactive, the link kept, no mark, not a pending invitation.
+        var byId = Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(user.Id, GuidRepresentation.Standard));
+        await _host.Database.GetCollection<BsonDocument>("users").UpdateOneAsync(byId, Builders<BsonDocument>.Update
+            .Set(nameof(User.IsActive), false).Set(nameof(User.MustChangePassword), false));
+        await UnsetAsync("users", user.Id, nameof(User.DeactivatedByAdministrator));
+        Assert.False((await ReadUserAsync(user.Id)).IsInvitationPending()); // non-vacuity
+
+        HttpResponseMessage? refused = null;
+        for (var i = 0; i <= Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerAddressLimit; i++)
+        {
+            using var anonymous = _host.Client();
+            refused = await anonymous.PostAsJsonAsync("api/users/set-password", new { email = user.Email, token = link, newPassword = NewPassword });
+        }
+
+        Assert.Equal(HttpStatusCode.Conflict, refused!.StatusCode); // every time: the valid link is not counted
+        Assert.Contains(AuthRefusalCodes.AccountDeactivated, await refused.Content.ReadAsStringAsync());
+        Assert.False((await ReadUserAsync(user.Id)).IsActive);
+
+        // The administrator switches it on: the SAME link now sets the password.
+        using var admin = _host.Client(await TenantAdminTokenAsync(tenantId, "auth.users.update"), tenantId);
+        Assert.True((await admin.PostAsync($"api/users/{user.Id}/enable", null)).IsSuccessStatusCode);
+        using (var anonymous = _host.Client())
+        {
+            Assert.Equal(HttpStatusCode.NoContent,
+                (await anonymous.PostAsJsonAsync("api/users/set-password", new { email = user.Email, token = link, newPassword = NewPassword })).StatusCode);
+        }
+
+        Assert.True((await ReadUserAsync(user.Id)).IsActive);
+    }
+
+    [Fact]
+    public async Task A_platform_link_does_not_switch_on_an_account_deactivated_before_BL529()
+    {
+        var email = $"legacy.{Guid.NewGuid():N}@reset.test";
+        await AssertOkAsync(await ProvisionPlatformAdminAsync(email)); // a live link; the account is created active, e-mail confirmed
+        var admin = await PlatformUserAsync(email);
+        await _host.Database.GetCollection<BsonDocument>("users").UpdateOneAsync(
+            Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(admin.Id, GuidRepresentation.Standard)),
+            Builders<BsonDocument>.Update.Set(nameof(User.IsActive), false));
+        await UnsetAsync("users", admin.Id, nameof(User.DeactivatedByAdministrator));
+
+        var redeem = await AnonymousPostAsync("api/platform-auth/reset-password",
+            new { email, token = _host.PlatformEmails.LastTokenFor(email), newPassword = NewPassword });
+
+        Assert.Equal(HttpStatusCode.Conflict, redeem.StatusCode);
+        Assert.Contains(AuthRefusalCodes.AccountDeactivated, await redeem.Content.ReadAsStringAsync());
+        Assert.False((await PlatformUserAsync(email)).IsActive);
+    }
+
+    // ── FIX8 item 1 (a): the one-time marker of accounts deactivated before BL-529 ────────────────────────────────
+
+    [Fact]
+    public async Task The_legacy_deactivation_marker_lists_by_default_and_marks_only_deactivated_accounts_that_are_not_pending()
+    {
+        // A fixed-name database of its own (the marker reads every tenant's users), emptied first.
+        const string markerDatabase = "bl529_fix8_marker";
+        await _host.Database.Client.DropDatabaseAsync(markerDatabase);
+        var database = _host.Database.Client.GetDatabase(markerDatabase);
+        var users = database.GetCollection<User>("users");
+        var tenantId = Guid.NewGuid();
+
+        var legacy = new User($"legacy.{Guid.NewGuid():N}@reset.test", "hash", "Le", "Gacy", tenantId); // deactivated before BL-529
+        legacy.ConfirmEmail();
+        legacy.Deactivate();
+        legacy.SetPasswordResetToken("live-link-hash", DateTime.UtcNow.AddDays(3));
+        var pending = new User($"pending.{Guid.NewGuid():N}@reset.test", "hash", "Pen", "Ding", tenantId); // a pending invitation
+        pending.Deactivate();
+        pending.RequirePasswordChange(null);
+        pending.SetPasswordResetToken("invite-hash", DateTime.UtcNow.AddDays(3));
+        var active = new User($"active.{Guid.NewGuid():N}@reset.test", "hash", "Ac", "Tive", tenantId);
+        active.ConfirmEmail();
+        active.Activate();
+        await users.InsertManyAsync([legacy, pending, active]);
+        var raw = database.GetCollection<BsonDocument>("users");
+        await raw.UpdateManyAsync(Builders<BsonDocument>.Filter.Empty, Builders<BsonDocument>.Update.Unset(nameof(User.DeactivatedByAdministrator)));
+        Assert.Equal(3, await raw.CountDocumentsAsync(Builders<BsonDocument>.Filter.Exists(nameof(User.DeactivatedByAdministrator), false)));
+
+        var dryRun = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.RunAsync(database, apply: false);
+
+        Assert.True(dryRun.DryRun);
+        Assert.Equal([legacy.Id], dryRun.Found.Select(a => a.UserId));
+        Assert.Equal(0, dryRun.Marked);
+        Assert.Equal(3, await raw.CountDocumentsAsync(Builders<BsonDocument>.Filter.Exists(nameof(User.DeactivatedByAdministrator), false))); // nothing written
+
+        var applied = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.RunAsync(database, apply: true);
+
+        Assert.Equal(1, applied.Marked);
+        var marked = await users.Find(u => u.Id == legacy.Id).SingleAsync();
+        Assert.True(marked.DeactivatedByAdministrator);
+        Assert.Null(marked.PasswordResetTokenHash);
+        Assert.False(marked.IsActive);
+        var invitation = await users.Find(u => u.Id == pending.Id).SingleAsync();
+        Assert.False(invitation.DeactivatedByAdministrator);
+        Assert.Equal("invite-hash", invitation.PasswordResetTokenHash); // the pending invitation is untouched
+        Assert.False((await users.Find(u => u.Id == active.Id).SingleAsync()).DeactivatedByAdministrator);
+
+        var again = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.RunAsync(database, apply: true);
+        Assert.Empty(again.Found); // idempotent
+    }
 
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────────────
 
