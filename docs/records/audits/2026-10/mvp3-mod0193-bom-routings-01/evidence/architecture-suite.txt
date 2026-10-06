@@ -1,1 +1,38 @@
-Passed!  - Failed:     0, Passed:    39, Skipped:     0, Total:    39, Duration: 6 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+# architecture suite — feature/mvp3-bom-routings @ 35221a406 (after M-2 merge of origin/main b994c813a), SDK 10.0.112, 2026-10-06
+Failed!  - Failed:     1, Passed:    38, Skipped:     0, Total:    39
+  Failed TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt 
+  Error Message:
+   Denetlenmeyen ve hiçbir listede olmayan komut (26):
+  - Diten.CrmService: AddKnowledgePathClaimCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Path/Commands/KnowledgePathCommands.cs)
+  - Diten.CrmService: AddKnowledgePathRevisionNoteCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Path/Review/KnowledgePathReviewContracts.cs)
+  - Diten.CrmService: ArchiveCountryLegalProfileCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/CountryLegalProfileHandlers.cs)
+  - Diten.CrmService: ArchiveSafetyTextCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/SafetyTextHandlers.cs)
+  - Diten.CrmService: ArrangeKnowledgePathClaimCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Path/Commands/KnowledgePathCommands.cs)
+  - Diten.CrmService: BindKnowledgePathChainCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Path/Commands/KnowledgePathCommands.cs)
+  - Diten.CrmService: CreateCountryLegalProfileCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/CountryLegalProfileHandlers.cs)
+  - Diten.CrmService: CreateSafetyTextCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/SafetyTextHandlers.cs)
+  - Diten.CrmService: DecideCountryLegalProfileCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/CountryLegalProfileHandlers.cs)
+  - Diten.CrmService: DecideKnowledgePathRevisionCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Path/Review/KnowledgePathReviewContracts.cs)
+  - Diten.CrmService: DecideSafetyTextCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/SafetyTextHandlers.cs)
+  - Diten.CrmService: NewCountryLegalProfileVersionCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/CountryLegalProfileHandlers.cs)
+  - Diten.CrmService: NewSafetyTextVersionCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/SafetyTextHandlers.cs)
+  - Diten.CrmService: ReleaseKnowledgePathRevisionCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Path/Release/KnowledgePathReleaseContracts.cs)
+  - Diten.CrmService: RemoveKnowledgePathClaimCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Path/Commands/KnowledgePathCommands.cs)
+  - Diten.CrmService: RenderKnowledgePathRevisionCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Path/Release/KnowledgePathReleaseContracts.cs)
+  - Diten.CrmService: ResolveKnowledgePathRevisionNoteCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Path/Review/KnowledgePathReviewContracts.cs)
+  - Diten.CrmService: SubmitCountryLegalProfileCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/CountryLegalProfileHandlers.cs)
+  - Diten.CrmService: SubmitKnowledgePathReviewCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Path/Review/KnowledgePathReviewContracts.cs)
+  - Diten.CrmService: SubmitSafetyTextCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/SafetyTextHandlers.cs)
+  - Diten.CrmService: UpdateCountryLegalProfileCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/CountryLegalProfileHandlers.cs)
+  - Diten.CrmService: UpdateSafetyTextCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/SafetyTextHandlers.cs)
+  - Diten.CrmService: WithdrawCountryLegalProfileCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/CountryLegalProfileHandlers.cs)
+  - Diten.CrmService: WithdrawKnowledgePathReleaseCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Path/Release/KnowledgePathReleaseContracts.cs)
+  - Diten.CrmService: WithdrawKnowledgePathReviewCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Path/Review/KnowledgePathReviewContracts.cs)
+  - Diten.CrmService: WithdrawSafetyTextCommand — YENİ KOMUT DENETİMSİZ GELDİ (services/Diten.CrmService/src/Diten.CrmService.Application/Features/Knowledge/Regulatory/SafetyTextHandlers.cs)
+
+Kural: .antigravity/rules/audit-trail-standard.md
+Üç seçenekten biri:
+  (1) komutu DENETLE — yol a (Platform içi IAuditableCommand), b (merkezi günlüğe iletim) ya da c (eşdeğer iz);
+  (2) İSTİSNA olarak bildir — defterde '## İstisnalar' satırı: komut | kuraldaki sınıf (İ1…) | gerekçe;
+  (3) hiçbiri değilse bu yeni borçtur ve defter yeni borç KABUL ETMEZ: '## Bilinen borç' yalnız küçülür.
+Defter: tests/architecture/audit-ledger/<servis>.md

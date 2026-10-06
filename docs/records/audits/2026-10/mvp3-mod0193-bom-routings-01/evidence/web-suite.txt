@@ -1,1 +1,2 @@
-Passed!  - Failed:     0, Passed:   437, Skipped:     0, Total:   437, Duration: 14 s - Diten.Web.Tests.dll (net8.0)
+# web suite — feature/mvp3-bom-routings @ 35221a406 (after M-2 merge of origin/main b994c813a), SDK 10.0.112, 2026-10-06
+Passed!  - Failed:     0, Passed:   655, Skipped:     0, Total:   655

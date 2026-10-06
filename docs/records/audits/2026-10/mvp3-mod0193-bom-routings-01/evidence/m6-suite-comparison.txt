@@ -1,0 +1,15 @@
+# M-6 — suites on the branch vs origin/main baseline (same machine, same SDK 10.0.112, 2026-10-06T11:35:19Z)
+# main = worktree of origin/main b994c813a · branch = feature/mvp3-bom-routings @ 35221a406
+
+| suite | branch | main | new red |
+|---|---|---|---|
+| architecture | 38/39 | 38/39 | 0 |
+| tenancy | 3/3 | 3/3 | 0 |
+| gateway | 86/87 | 86/87 | 0 |
+| web | 655/655 | 652/652 | 0 |
+| service (ManufacturingService) | 69/69 | — (does not exist on main) | 0 |
+
+Reds present on BOTH sides (pre-existing on main, not MVP-3):
+- architecture: AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt — failure text byte-identical on both sides: 26 unaudited Diten.CrmService commands; 0 lines mention Manufacturing.
+- gateway: OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet — both sides list 5063 x46, 5064 x62, 5065 x14; 5067 (MVP-3) x0. 5065 is fixed by BL-470 PR #136 (separate).
+Web +3 tests on the branch (TRX diff) = MVP-3 BomsL10nTests: All_seven_languages_carry_the_same_keys_each_with_a_value, Every_key_the_bom_views_use_is_translated, Turkish_is_not_english_with_another_name.

@@ -1,1 +1,3 @@
-Passed!  - Failed:     0, Passed:    49, Skipped:     0, Total:    49, Duration: 2 s - Diten.ManufacturingService.Tests.dll (net8.0)
+# service suite — feature/mvp3-bom-routings @ 35221a406, MANUFACTURING_TEST_MONGO=rs1 (single-node replica set), SDK 10.0.112
+Passed!  - Failed:     0, Passed:    69, Skipped:     0, Total:    69
+tests listed: 0

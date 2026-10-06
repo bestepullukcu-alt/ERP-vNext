@@ -1,13 +1,17 @@
+# E3 — gateway-e2e.py: real Gateway 5000 -> ManufacturingService 5067 (+ MDM 5059 for every LE proof), Mongo replica set
+# 2026-10-06T11:36:00Z · feature/mvp3-bom-routings @ 35221a406 · tenant 00000000-0000-0000-0000-000000000001, two LEs created + activated in MDM by the script
 create v1 201 Draft 1
 release v1 200 Effective
 create v2 201 2
 release v2 200 Effective
 v1 now 200 Superseded True
-current 200 2 ['bomVersionId', 'changeControlRef', 'components', 'contractVersion', 'description', 'effectiveFrom', 'effectiveTo', 'itemId', 'routing', 'rowVersion', 'status', 'version']
+current 200 2 ['bomVersionId', 'changeControlRef', 'components', 'contractVersion', 'description', 'effectiveFrom', 'effectiveTo', 'itemId', 'legalEntityId', 'routing', 'rowVersion', 'status', 'version']
 explode 200 [('200.000', 'EA'), ('50.000', 'L')]
 list 200 2 2 ['Superseded', 'Effective']
 export xlsx 200 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet True
 history v1 200 ['Created', 'Released', 'Superseded']
-other tenant 404 UNKNOWN_BOM
-other LE 404 UNKNOWN_BOM
+other tenant 422 LEGAL_ENTITY_NOT_REFERENCEABLE
+other active LE, same tenant 404 UNKNOWN_BOM
+LE unknown to MDM 422 LEGAL_ENTITY_NOT_REFERENCEABLE
+no LE 400 LEGAL_ENTITY_REQUIRED
 create w/o permission 403
