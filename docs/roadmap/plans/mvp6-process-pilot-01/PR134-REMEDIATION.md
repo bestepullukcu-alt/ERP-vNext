@@ -427,3 +427,86 @@ git grep -ln 'legal_entity_id\|LegalEntityScope\|InternalTenantLegalEntityScope'
 
 Sır digest'leri `JwtSettings.Secret` değerinin sha256'sının ilk 8 hanesidir; hiçbir değer
 bu belgede yazılı değil.
+
+---
+
+## 6. A0.1 SONUCU — CT ölçtü, kapandı (2026-10-06)
+
+R-2'nin prompt'undaki A0.1 kapısı **CT tarafından ölçüldü ve geçti.** Lane artık A0.2'den
+başlar; endpoint arayışını tekrarlamasın.
+
+### Endpoint var ve gateway'den erişilebilir
+
+| | ölçüm |
+|---|---|
+| tanım | `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/LegalEntitiesController.cs:13` (`[Route("api/legal-entities")]`) + `:32` (`[HttpGet("lookup")]`) |
+| tam yol | `GET /api/legal-entities/lookup` |
+| gateway rotası | `/api/legal-entities/{everything}` → port **5059** (MDM) — catch-all taşıyor, adı geçmiyor |
+| izin | `[HasPermission("mdm.legal-entities.read")]` |
+
+### Dönen şema
+
+`Response<IReadOnlyList<LegalEntityLookupDto>>`,
+`LegalEntityModels.cs:98`:
+
+```
+LegalEntityId   Guid
+Code            string
+LegalName       string
+DisplayName     string?
+LifecycleState  string
+Referenceable   bool
+```
+
+### Tenant filtresi SUNUCU TARAFINDA — doğrulandı
+
+`LegalEntityRepository.cs:30-37`:
+
+```csharp
+var filter = Builders<LegalEntity>.Filter.And(
+    TenantFilter,
+    Builders<LegalEntity>.Filter.Eq(x => x.OperationalStatus, LegalEntityOperationalStatus.Active));
+```
+
+`TenantFilter`, `:11`'de enjekte edilen `ITenantContext`'ten gelir. İstemci endişesi değil.
+Handler (`GetLegalEntitiesLookupHandler.cs:21`) `TenantId` almaz — izolasyon repository'de.
+
+### Beklenmeyen kazanç: doğrulama uç noktası da var
+
+`LegalEntitiesController.cs:48`:
+
+```csharp
+[HttpGet("{legalEntityId:guid}/lookup-validation")]
+public async Task<IActionResult> ValidateReference(Guid legalEntityId, ...)
+```
+
+R-2'nin B.3'ü "SupplyChainService MDM'den tenant'a aitliğini doğrulayacak" diyor — **doğrulama
+uç noktası zaten mevcut.** Lane yenisini yazmaz, bunu çağırır ve fail-closed sarar.
+
+### MVP-1 referans deseni — dört Web controller'ı aynı yolu proxy ediyor
+
+```
+frontend/Diten.Web/Controllers/TasksController.cs:361
+frontend/Diten.Web/Controllers/WorkingCalendarOverridesController.cs:134
+frontend/Diten.Web/Controllers/OrganizationUnitsController.cs:74
+frontend/Diten.Web/Controllers/LegalEntitiesController.cs:114
+```
+
+Hepsi `[HttpGet("api/legal-entities")]` → `{gateway}/api/legal-entities/lookup`. SupplyChain'in
+5 controller'ı bu deseni birebir alacak.
+
+### Lane'in çözmesi gereken yeni kalem: izin
+
+`mdm.legal-entities.read` kataloğa `DataSeeder.cs:393` ile eklenmiş (`moduleOverride:
+"legal-entity"`) ama **SupplyChain rollerinin varsayılan şablonunda yok.** Shipments/Returns/
+Carriers/Loads/Claims kullanıcısı seçim listesini doldurabilmek için bu izni tutmak zorunda.
+
+Bu Q459'un aynı ailesinden: bir eylem, kendi anahtarının **yanı sıra** başka bir modülün
+anahtarını gerektiriyor. Lane bunu kendi başına çözmez — ölçer, raporlar, sahibe getirir.
+
+### Dikkat: yakın isimli ama YANLIŞ uç nokta
+
+`LegalEntityLookupsController.cs:14` → `[Route("api/legal-entities/lookups")]` **çoğul**, ve
+legal entity listesi döndürmez: Legal Entity sihirbazının referans açılır menülerini
+(legal-form, organization-role, control-type, accounting-standard, tax-regime) besler. Lane
+bunu `lookup` ile karıştırmasın.
