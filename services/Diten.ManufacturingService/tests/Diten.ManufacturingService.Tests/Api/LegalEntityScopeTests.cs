@@ -6,7 +6,7 @@ namespace Diten.ManufacturingService.Tests.Api;
 
 /// <summary>
 /// M-3 (MVP-1 legal-entity pattern) over HTTP against the real Program: the caller names its legal entity, MDM proves it,
-/// nothing is read or written otherwise. The token carries NO legal_entity_id claim and no dev bypass is configured.
+/// nothing is read or written otherwise. The token carries NO legal-entity claim and no dev bypass is configured.
 /// </summary>
 public sealed class LegalEntityScopeTests : IClassFixture<BomApiFixture>
 {
