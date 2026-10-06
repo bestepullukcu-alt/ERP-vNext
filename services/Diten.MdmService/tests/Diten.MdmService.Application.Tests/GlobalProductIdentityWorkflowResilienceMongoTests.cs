@@ -188,8 +188,9 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
         Assert.Equal(scheduled, stored.NextAttemptAtUtcTicksV1);
 
         // The worker's lookup then learns that nothing arrived. The chain answered for this operation: the streak of
-        // faults is over, and the operation is the maker's again.
-        _clock.Advance(TimeSpan.FromMinutes(1));
+        // faults is over, and the operation is the maker's again. (BL-552 flow 3: once the settle window of the
+        // maker's start — two minutes — has passed; inside it "nothing yet" is not trusted.)
+        _clock.Advance(TimeSpan.FromMinutes(2));
         _transport.StartResult = (_, _) => (Outcome.NotFound, "NOT_FOUND_NON_LEAKAGE");
         await RecoverAsync(services, stored);
 

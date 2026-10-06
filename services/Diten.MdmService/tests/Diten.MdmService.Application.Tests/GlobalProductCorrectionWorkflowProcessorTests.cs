@@ -268,7 +268,10 @@ public sealed class GlobalProductCorrectionWorkflowProcessorTests : IAsyncLifeti
 
         Assert.False(replay.Succeeded);
         Assert.Equal(GlobalProductCorrectionCheckpoint.ManualReconciliationRequired, replay.Operation!.Checkpoint);
-        Assert.Equal("START_FORBIDDEN", replay.ErrorCode);
+        // BL-552 flow 2 FIX1 item 6: a refusal of how the engine treats this service (an unknown 403 code) is the
+        // service's, not the maker's — "service unavailable, resubmit" (503), as the identity flow says it.
+        Assert.Equal(ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, replay.ErrorCode);
+        Assert.Equal(503, replay.StatusCode);
         Assert.Null(replay.Operation.NextAttemptAtUtcTicksV1);
         // BL-552: the start was refused before anything was processed — the request ended and the product is free.
         Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, replay.Operation.RecoveryDisposition);

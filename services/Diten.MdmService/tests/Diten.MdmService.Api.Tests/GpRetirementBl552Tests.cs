@@ -35,8 +35,8 @@ public sealed partial class GskuLifecycleHttpTests
         new(new GlobalProductRetirementRequestOperationRepository(host.Database, Tenant()),
             store ?? new GlobalProductRepository(host.Database, Tenant()), host.Engine,
             new GlobalProductRetirementRequestWorkflowStartRequestFactory(new(_gprTemplate, null, [_gpCandidate],
-                "RETIREMENT", false, false, null, _gpIdentityTemplate, null, _gpTemplate, null), TimeProvider.System),
-            TimeProvider.System);
+                "RETIREMENT", false, false, null, _gpIdentityTemplate, null, _gpTemplate, null), host.Clock),
+            host.Clock);
 
     // The maker's own call: the host's ordinary retry delay, so a request that met a fault answers instead of going
     // round again at once (the worker's attempts use GprTwoAttempts).
@@ -61,7 +61,7 @@ public sealed partial class GskuLifecycleHttpTests
                 or GlobalProductRetirementRequestCheckpoint.Completed) break;
             // The retirement store hands the worker an operation only once its next attempt is due (its claim and its
             // discovery both say so): the worker comes back then.
-            var due = (current.NextAttemptAtUtcTicksV1 ?? 0) - DateTimeOffset.UtcNow.UtcTicks;
+            var due = (current.NextAttemptAtUtcTicksV1 ?? 0) - host.Clock.GetUtcNow().UtcTicks;
             await Task.Delay(TimeSpan.FromTicks(Math.Max(0, due)) + TimeSpan.FromMilliseconds(5));
             await worker.RecoverAsync(current, $"gpr-worker-{run}", execution ?? GprTwoAttempts(), default);
         }
@@ -104,7 +104,7 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.Null(gp.ActiveLifecycleOperation);
         Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, gp.LifecycleStatus); // not retired
         Assert.Single(gp.AuditIntents,
-            x => x.Operation == ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired);
+            x => x.Operation == ProductAuditOperation.GlobalProductRetirementEnded);
         Assert.Equal((0L, 0L), await GprGaugesAsync());
     }
 
@@ -176,7 +176,7 @@ public sealed partial class GskuLifecycleHttpTests
         host.Engine.LookupFailureCode = code;
         try
         {
-            await Task.Delay(2100); // past the settle window: only the refusal can decide now
+            using var crossed8 = host.Clock.Shift(TimeSpan.FromSeconds(3)); // past the settle window: only the refusal can decide now
             var after = await GprWorkerRunsAsync(key, 3);
 
             Assert.Equal(GlobalProductRetirementRequestCheckpoint.StartOutcomeUnknown, after.Checkpoint);
@@ -217,7 +217,7 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.Equal(GlobalProductRetirementRequestWorkflowProcessor.StartSettling, settling.LastFailureCode);
         Assert.NotNull((await GpOf(product)).ActiveLifecycleOperation);
 
-        await Task.Delay(2100);
+        using var crossed9 = host.Clock.Shift(TimeSpan.FromSeconds(3));
         var ended = await GprWorkerRunsAsync(key, 2, execution: GprOneAttempt());
         Assert.Equal(GlobalProductRetirementRequestWorkflowProcessor.StartNotReceived, ended.LastFailureCode);
         Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, ended.RecoveryDisposition);
@@ -360,7 +360,7 @@ public sealed partial class GskuLifecycleHttpTests
     public async Task GPR_A_stuck_request_whose_release_has_to_wait_goes_back_to_the_worker_and_is_released(string code)
     {
         var (product, key) = await GprStuckOnARecordAnswerAsync();
-        await Task.Delay(2100); // past the settle window: "nothing under this key" is trusted
+        using var crossed10 = host.Clock.Shift(TimeSpan.FromSeconds(3)); // past the settle window: "nothing under this key" is trusted
 
         var startsBefore = host.Engine.StartCalls;
         var repeat = await GpRetireAsync(product, key,
@@ -410,7 +410,7 @@ public sealed partial class GskuLifecycleHttpTests
         var binding = gp.ActiveLifecycleOperation!;
         Assert.Equal(GlobalProductLifecycleOperationKind.Retirement, binding.Kind);
         LocalAuditIntent Audit(GlobalProduct p, int version) => GlobalProductRetirementRequestAuditIntentFactory.Create(p,
-            version, key, _maker, ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired,
+            version, key, _maker, ProductAuditOperation.GlobalProductRetirementEnded,
             GpRetirementReason, DateTimeOffset.UtcNow);
         var store = new GlobalProductRepository(host.Database, Tenant());
 
@@ -429,7 +429,7 @@ public sealed partial class GskuLifecycleHttpTests
         var after = await GpOf(product);
         Assert.Null(after.ActiveLifecycleOperation);
         Assert.Single(after.AuditIntents,
-            x => x.Operation == ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired);
+            x => x.Operation == ProductAuditOperation.GlobalProductRetirementEnded);
         Assert.True((await store.ReleaseLifecycleOperationAsync(product, gp.Version, binding, Audit(gp, gp.Version))).IsReplay);
     }
 

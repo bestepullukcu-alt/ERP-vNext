@@ -116,6 +116,32 @@ public static class ProductIdentityLifecycleAuditIntentFactory
             facts);
     }
 
+    // BL-552: the identity approval closed without an applicable decision; the product is a draft again.
+    public static LocalAuditIntent CreateDecisionNotApplicable(
+        GlobalProduct product,
+        int expectedVersion,
+        Guid operationId,
+        Guid workflowInstanceId,
+        Guid approvalTaskId,
+        Guid actorId,
+        string reasonCode,
+        DateTimeOffset timestampUtc)
+    {
+        var operationKey = $"workflow:{workflowInstanceId:D}:not-applicable";
+        var facts = EncodeFacts(
+            product.TenantId.ToString("D"), product.Id.ToString("D"), operationId.ToString("D"),
+            workflowInstanceId.ToString("D"), approvalTaskId.ToString("D"), actorId.ToString("D"), reasonCode);
+        return Create(
+            product,
+            ProductAuditOperation.GlobalProductIdentityDecisionNotApplicable,
+            expectedVersion,
+            actorId,
+            operationKey,
+            workflowInstanceId.ToString("D"),
+            timestampUtc,
+            facts);
+    }
+
     private static LocalAuditIntent Create(
         GlobalProduct product,
         ProductAuditOperation operation,

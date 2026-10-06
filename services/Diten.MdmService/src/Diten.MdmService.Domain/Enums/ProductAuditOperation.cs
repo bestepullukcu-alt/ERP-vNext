@@ -78,5 +78,13 @@ public enum ProductAuditOperation
     FinishedGoodRetirementCancelled = 76,
     // The engine approved the pair's identity and MDM could not apply it: both are drafts again.
     ProductDefinitionRevisionIdentityDecisionNotApplicable = 77,
-    GskuIdentityDecisionNotApplicable = 78
+    GskuIdentityDecisionNotApplicable = 78,
+    // BL-552: the engine closed the Global Product's identity approval without a decision (cancelled in the Task Center,
+    // timed out) or with its maker's own decision: no decision can be applied, the product is a draft again.
+    GlobalProductIdentityDecisionNotApplicable = 79,
+    // BL-552 flow 2 FIX1 item 12: a Global Product correction / retirement request ENDED without its decision applied —
+    // its lock given back, nothing held (the reason is in the intent's facts). Kept apart from
+    // …ManualReconciliationRequired so the central audit can tell "ended" from "stuck".
+    GlobalProductCorrectionEnded = 80,
+    GlobalProductRetirementEnded = 81
 }

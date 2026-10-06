@@ -106,6 +106,10 @@ public sealed class TrustedSourceAuditIntentContractTests
         yield return ["GlobalProductRetirementRequested", "45", AuditOperation.LifecycleTransition];
         yield return ["GlobalProductRetirementRejected", "46", AuditOperation.LifecycleTransition];
         yield return ["GlobalProductRetirementManualReconciliationRequired", "48", AuditOperation.LifecycleTransition];
+        // MDM BL-552 (additions only).
+        yield return ["GlobalProductIdentityDecisionNotApplicable", "79", AuditOperation.LifecycleTransition];
+        yield return ["GlobalProductCorrectionEnded", "80", AuditOperation.LifecycleTransition];
+        yield return ["GlobalProductRetirementEnded", "81", AuditOperation.LifecycleTransition];
     }
 
     [Theory]

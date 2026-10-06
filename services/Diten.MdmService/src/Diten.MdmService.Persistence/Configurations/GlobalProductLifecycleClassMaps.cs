@@ -28,8 +28,27 @@ public static class GlobalProductLifecycleClassMaps
                 map.AutoMap();
                 map.SetIgnoreExtraElements(true);
             });
+            TryRegister<GlobalProductIdentityWorkflowOperation>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+            });
+            // BL-552 flow 2 FIX1 item 10: measured, not assumed — a map registered elsewhere first (or an auto-map
+            // made by an earlier read) would win the race silently; the service does not start on one that does not
+            // ignore extra elements, because a rollback would then fail on every document a newer binary wrote.
+            Verify<GlobalProductCorrectionOperation>();
+            Verify<GlobalProductRetirementRequestOperation>();
+            Verify<GlobalProductIdentityWorkflowOperation>();
             _registered = true;
         }
+    }
+
+    // Public so a test can show it refuses a map that does not ignore extra elements (flow 2 FIX1 item 10).
+    public static void Verify<T>()
+    {
+        if (!BsonClassMap.LookupClassMap(typeof(T)).IgnoreExtraElements)
+            throw new InvalidOperationException(
+                $"BL-552: the class map of {typeof(T).Name} does not ignore extra elements; a rolled-back binary could not read documents a newer one wrote.");
     }
 
     private static void TryRegister<T>(Action<BsonClassMap<T>> configure)

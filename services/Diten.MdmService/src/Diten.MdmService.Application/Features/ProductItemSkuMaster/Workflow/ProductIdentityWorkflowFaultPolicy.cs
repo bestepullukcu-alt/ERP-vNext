@@ -206,5 +206,10 @@ public static class ProductIdentityWorkflowFaultPolicy
 /// <summary>Read from configuration: how long a waiting record may back off, and when waiting becomes an error.</summary>
 public sealed record ProductIdentityWorkflowServiceFaultSettings(TimeSpan MaxRetryDelay, int ErrorAfterAttempts)
 {
+    // BL-552 (read by the Global Product identity flow only): how long after a start "nothing arrived" is still not
+    // trusted, and how many worker retries in a row on an answer about the record before a person is needed.
+    public TimeSpan StartSettleWindow { get; init; } = TimeSpan.FromMinutes(2);
+    public int QuarantineAfterFailedAttempts { get; init; } = ProductIdentityRecoveryStreak.DefaultQuarantineAfterFailedAttempts;
+
     public static ProductIdentityWorkflowServiceFaultSettings Default { get; } = new(TimeSpan.FromMinutes(15), 5);
 }

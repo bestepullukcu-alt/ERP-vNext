@@ -50,6 +50,12 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         public bool ConflictRetried { get; set; }
         // The worker's schedule as this request found it (known only when the request began the withdrawal itself).
         public (bool Known, long? Ticks) ScheduleAtEntry { get; set; }
+        // BL-552: the submitter's repeat read the engine for a stuck submit (once per request), what it met, and
+        // whether the decision is to be read in this same request.
+        public bool Reconciled { get; set; }
+        public bool EngineSilent { get; set; }
+        public bool ObserveNow { get; set; }
+        public bool Restarted { get; set; }
     }
 
 
@@ -847,14 +853,18 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             cancellationToken.ThrowIfCancellationRequested();
             if (operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.Completed)
             {
-                return Success(operation, true);
+                // BL-552: a submit whose approval closed without an applicable decision ended with the product a draft
+                // again: its maker's repeat is told why, not "done".
+                return attempt.Interactive && operation.LastFailureCode is ClosedWithoutDecision or SelfApprovalIgnored
+                    ? Fail(operation, operation.LastFailureCode, 409)
+                    : Success(operation, true);
             }
             if (operation.Checkpoint is GlobalProductIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
                 or GlobalProductIdentityWorkflowCheckpoint.Superseded)
             {
                 return Success(operation, true);
             }
-            if (stopWhenAwaitingDecision
+            if (stopWhenAwaitingDecision && !attempt.ObserveNow
                 && operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision)
             {
                 return Success(operation, false);
@@ -864,9 +874,25 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             {
                 return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", 409);
             }
+            var reconcile = false;
             if (operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired)
             {
-                return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", 409);
+                // BL-552 (the GSKU identity E2 rule): a submit STUCK for a person has a way out — its submitter's same
+                // command reads the engine again (once) and puts it back where the engine and the product say it
+                // stands. One the repeat could not settle says so (a person, BL-530); an engine that could not be asked
+                // is a service fault (503). The worker never reconciles; a withdrawal's quarantine is not this one.
+                if (attempt.EngineSilent)
+                {
+                    return Fail(operation, ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, 503);
+                }
+                // Only a REPEAT reconciles: the request that just put the submit here does not settle it itself.
+                if (!attempt.Interactive || attempt.Reconciled || step > 0 || operation.WithdrawalCommandId.HasValue
+                    || operation.RecoveryDisposition != ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+                {
+                    return Fail(operation, attempt.Reconciled ? ManualReconciliationNeeded
+                        : "PRODUCT_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", 409);
+                }
+                reconcile = attempt.Reconciled = true;
             }
 
             var now = timeProvider.GetUtcNow();
@@ -894,6 +920,10 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             {
                 advanced = operation.Checkpoint switch
                 {
+                    GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired when reconcile =>
+                        operation.WorkflowInstanceId.HasValue
+                            ? await ReconcileAfterStartAsync(operation, claim, attempt, now, cancellationToken)
+                            : await ReconcileStartAsync(operation, claim, attempt, now, cancellationToken),
                     GlobalProductIdentityWorkflowCheckpoint.Prepared =>
                         await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown,
                             ProductIdentityWorkflowRecoveryDisposition.None, now, releaseLease: true,
@@ -903,7 +933,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                         await ResolveStartAsync(operation, claim, delegatedUserToken, attempt, now, retryDelay,
                             cancellationToken),
                     GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted =>
-                        await ApplyLocalPendingAsync(operation, claim, now, retryDelay, cancellationToken),
+                        await ApplyLocalPendingAsync(operation, claim, attempt, now, retryDelay, cancellationToken),
                     GlobalProductIdentityWorkflowCheckpoint.LocalPendingApplied =>
                         await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision,
                             ProductIdentityWorkflowRecoveryDisposition.None, now, releaseLease: true,
@@ -911,7 +941,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                     GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision =>
                         await ObserveDecisionAsync(operation, claim, attempt, now, retryDelay, cancellationToken),
                     GlobalProductIdentityWorkflowCheckpoint.DecisionObserved =>
-                        await ApplyDecisionAsync(operation, claim, now, retryDelay, cancellationToken),
+                        await ApplyDecisionAsync(operation, claim, attempt, now, retryDelay, cancellationToken),
                     GlobalProductIdentityWorkflowCheckpoint.DecisionApplied =>
                         await VerifyDecisionAppliedAndCompleteAsync(operation, claim, now, cancellationToken),
                     _ => false
@@ -939,9 +969,15 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             {
                 return Fail(operation, answer.Code, answer.Status) with { FaultScope = attempt.Scope };
             }
-            if (operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay)
+            // BL-552: the submitter's reconciling repeat that found nothing started IS the resubmit — it goes on.
+            if (operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay
+                && !(attempt.Reconciled && attempt.Interactive && !attempt.Restarted))
             {
                 return MakerAnswer(operation, attempt);
+            }
+            if (operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay)
+            {
+                attempt.Restarted = true;
             }
             if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks
                 && (!attempt.Interactive
@@ -967,7 +1003,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         // whether an earlier start arrived (the lookup below) and nothing more: whenever a start is known not to
         // have happened, the operation is the maker's to resubmit — it is never reported as "queued".
         var makerPresent = !string.IsNullOrWhiteSpace(delegatedUserToken);
-        (ProductIdentityWorkflowFaultDecision Fault, string? Code)? unansweredStart = null;
+        string? startCode = null;
         if (makerPresent)
         {
             var outcome = await workflowClient.StartAsync(
@@ -995,11 +1031,14 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                             outcome.ErrorCode, ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, fault,
                             attempt, now, cancellationToken);
                 }
-                // No answer, or one nobody could accept: the start may have arrived. Ask.
-                unansweredStart = (fault, outcome.ErrorCode);
+                // No answer, or one nobody could accept: the start may have arrived. Ask (below).
+                startCode = outcome.ErrorCode;
             }
         }
 
+        // BL-552: a start that went out and got no usable answer: "nothing arrived" is not trusted before the settle
+        // window has passed — the engine may still be on it.
+        long? startSentAt = makerPresent ? now.UtcTicks : null;
         var lookup = await workflowClient.GetStartResultAsync(
             operation.TenantId,
             new(operation.ObjectType, operation.ObjectId, operation.MakerSubjectId,
@@ -1010,19 +1049,28 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             return await PersistStartedAsync(operation, claim, lookup.Value, now, cancellationToken);
         }
 
-        if (lookup.Outcome is ProductIdentityWorkflowTransportOutcome.NotFound
-            or ProductIdentityWorkflowTransportOutcome.Incomplete)
+        // BL-552 — the LOOKUP's answer is read apart from the start's. Only "nothing under this key" after the settle
+        // window lets the draft go (the maker's to resubmit, an edit may set it aside); an answer that could not be
+        // read (Incomplete) says nothing about what the start did — the submit keeps its draft and is asked again.
+        if (lookup.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound
+            && (startSentAt.HasValue || StartSettling(operation, now)))
         {
-            // "Nothing arrived" is the engine answering for this operation, on the maker's path as on the worker's:
-            // the streak of faults ends here. The start that went unanswered is still what the maker met — it is
-            // said as a service fault, and the maker is told to resubmit.
-            if (unansweredStart is { } unanswered)
-            {
-                return await ToMakerAsync(operation, claim, ProductIdentityWorkflowCall.Start, unanswered.Code,
-                    ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, unanswered.Fault, attempt, now,
-                    cancellationToken, answeredSince: true);
-            }
+            return await StartSettlingAsync(operation, claim, attempt, now, startSentAt, cancellationToken, startCode);
+        }
+        if (lookup.Outcome == ProductIdentityWorkflowTransportOutcome.Incomplete)
+        {
+            return await WaitForServiceAsync(
+                operation, claim, GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown,
+                ProductIdentityWorkflowCall.StartResult, lookup.ErrorCode ?? StartLookupUnreadable,
+                new(ProductIdentityWorkflowFaultKind.ServiceWait), attempt, now, retryDelay, cancellationToken,
+                startSentAt);
+        }
 
+        if (lookup.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound)
+        {
+            // "Nothing arrived", the settle window passed (BL-552): the engine answering for this operation — the
+            // streak of faults ends here, and the submit is the maker's to resubmit (a start sent in THIS request is
+            // still settling, above).
             logger.LogWarning(
                 "Product identity workflow operation {OperationId} of tenant {TenantId} has no completed start at the approval engine ({ResultCode}); it is the maker's to resubmit.",
                 operation.OperationId, operation.TenantId,
@@ -1032,9 +1080,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
                 ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay,
                 now,
-                makerPresent
-                    ? ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit
-                    : lookup.ErrorCode ?? ProductIdentityWorkflowMakerCodes.MakerReplayRequired,
+                lookup.ErrorCode ?? ProductIdentityWorkflowMakerCodes.MakerReplayRequired,
                 releaseLease: true,
                 cancellationToken: cancellationToken,
                 serviceFaultCount: 0);
@@ -1047,11 +1093,293 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             return await WaitForServiceAsync(
                 operation, claim, GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown,
                 ProductIdentityWorkflowCall.StartResult, lookup.ErrorCode, lookupFault, attempt, now, retryDelay,
-                cancellationToken);
+                cancellationToken, startSentAt);
         }
 
-        return await QuarantineAsync(claim, lookup.ErrorCode, now, cancellationToken);
+        // BL-552: a refused LOOKUP (an answer about the record — a tenant mismatch, a refusal of who asks) says nothing
+        // about what the start did; the engine may hold an approval for this submit. Before, it was quarantined —
+        // and a submit in manual reconciliation does not hold the draft (Global Product's rule), so an edit could leave
+        // that approval without its product. Now the draft stays held and the engine is asked again; the worker's
+        // attempts are counted, and at the limit a person is needed (said once, counted by needing_a_person).
+        return await LookupRefusedAsync(operation, claim, lookup.ErrorCode, attempt, now, retryDelay, startSentAt,
+            cancellationToken);
     }
+
+    private Task<bool> StartSettlingAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        Attempt attempt,
+        DateTimeOffset now,
+        long? startSentAt,
+        CancellationToken cancellationToken,
+        string? startCode = null)
+    {
+        var sentAt = startSentAt ?? operation.LastStartSentAtUtcTicksV1 ?? operation.CreatedAtUtcTicksV1;
+        if (attempt.Interactive)
+        {
+            attempt.Answer = (ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, 503);
+        }
+        if (startSentAt.HasValue)
+        {
+            logger.LogWarning(
+                "Product identity workflow operation {OperationId} of tenant {TenantId} met a service fault at Start ({ResultCode}) and the engine has nothing under its key yet; the draft is held for the settle window.",
+                operation.OperationId, operation.TenantId, BoundedCode(startCode, StartSettlingCode));
+        }
+        return operations.AdvanceAsync(
+            claim,
+            new(
+                GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown,
+                ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks,
+                Math.Max(sentAt + faultSettings.StartSettleWindow.Ticks, now.UtcTicks + 1),
+                StartSettlingCode,
+                ReleaseLease: true,
+                Streak: RecoveryStreakWrite.Keep,
+                LastStartSentAtUtcTicksV1: startSentAt),
+            cancellationToken);
+    }
+
+    private async Task<bool> LookupRefusedAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        string? errorCode,
+        Attempt attempt,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        long? startSentAt,
+        CancellationToken cancellationToken)
+    {
+        if (attempt.Interactive)
+        {
+            // The maker is told the engine could not confirm the submit yet — not "resubmit", which would not help.
+            attempt.Answer = (StartLookupRefused, 409);
+        }
+        return await CountedRetryAsync(operation, claim, GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown,
+            BoundedCode(errorCode, StartLookupRefused), attempt, now, retryDelay, startSentAt, cancellationToken);
+    }
+
+    // BL-552: an answer about the record that a repeat may still change (a refused lookup, a concurrent write): only the
+    // worker's attempts count, in the store; at the limit the submit is stuck with its cause kept — a person's.
+    private async Task<bool> CountedRetryAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        GlobalProductIdentityWorkflowCheckpoint checkpoint,
+        string code,
+        Attempt attempt,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        long? startSentAt,
+        CancellationToken cancellationToken)
+    {
+        var counted = !attempt.Interactive;
+        var (exhausted, _, next) = ProductIdentityRecoveryStreak.Next(
+            counted ? operation.FailedAttemptCount : Math.Max(operation.FailedAttemptCount - 1, 0), now,
+            retryDelay, faultSettings.QuarantineAfterFailedAttempts, faultSettings.MaxRetryDelay);
+        if (counted && exhausted)
+        {
+            return await QuarantineAsync(claim, StuckOnRecordAnswer, now, cancellationToken);
+        }
+        return await operations.AdvanceAsync(
+            claim,
+            new(
+                checkpoint,
+                ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks,
+                attempt.Interactive ? operation.NextAttemptAtUtcTicksV1 ?? next : next,
+                code,
+                ReleaseLease: true,
+                Streak: counted ? RecoveryStreakWrite.Increment : RecoveryStreakWrite.Keep,
+                LastStartSentAtUtcTicksV1: startSentAt),
+            cancellationToken);
+    }
+
+    // BL-552 (flow 1 FIX1 item 9): the window is read from fields no claim or retry refreshes — when a start was last
+    // sent, else when the submit was made.
+    private bool StartSettling(GlobalProductIdentityWorkflowOperation operation, DateTimeOffset now) =>
+        now.UtcTicks - (operation.LastStartSentAtUtcTicksV1 ?? operation.CreatedAtUtcTicksV1)
+        < faultSettings.StartSettleWindow.Ticks;
+
+    /*
+     * BL-552 (the GSKU identity rule C(A) / E2) — the submitter's same command on a submit STUCK for a person.
+     * Before the engine's approval is on record: what the engine knows decides — the start arrived → it goes on as
+     * started; nothing under this submit's key (the settle window passed) → the maker's to resubmit, which this same
+     * request does (once); it cannot say → said as such (503), or a person (409).
+     */
+    private async Task<bool> ReconcileStartAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        Attempt attempt,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        var lookup = await workflowClient.GetStartResultAsync(
+            operation.TenantId,
+            new(operation.ObjectType, operation.ObjectId, operation.MakerSubjectId, operation.StartIdempotencyKey),
+            cancellationToken);
+        if (lookup.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
+        {
+            return await PersistStartedAsync(operation, claim, lookup.Value, now, cancellationToken);
+        }
+        if (lookup.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound && !StartSettling(operation, now))
+        {
+            logger.LogWarning(
+                "Product identity workflow operation {OperationId} of tenant {TenantId}: the submitter's repeat found nothing started at the engine; the submit is the maker's to resubmit.",
+                operation.OperationId, operation.TenantId);
+            return await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay, now,
+                ProductIdentityWorkflowMakerCodes.MakerReplayRequired, releaseLease: true,
+                cancellationToken: cancellationToken, serviceFaultCount: 0);
+        }
+        attempt.EngineSilent = lookup.Outcome is ProductIdentityWorkflowTransportOutcome.NotFound
+                                   or ProductIdentityWorkflowTransportOutcome.Incomplete
+                               || ProductIdentityWorkflowFaultPolicy.Classify(ProductIdentityWorkflowCall.StartResult,
+                                   lookup.Outcome, lookup.ErrorCode).Kind == ProductIdentityWorkflowFaultKind.ServiceWait;
+        await ReleaseClaimAsync(claim, operation, now);
+        return true;
+    }
+
+    /*
+     * After the engine's approval is on record: the engine is read again and the submit is put back where the product
+     * stands — a decision on record → applied again; the product pending under this approval → waiting for (or reading
+     * now, if the engine has closed it) its decision; the product still the submitted draft → started again (the
+     * pending write is made again). Anything else, or an engine that does not know the approval → a person (409).
+     */
+    private async Task<bool> ReconcileAfterStartAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        Attempt attempt,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        var outcome = await workflowClient.GetTerminalEvidenceAsync(
+            operation.TenantId,
+            new(operation.WorkflowInstanceId!.Value, operation.ObjectType, operation.ObjectId),
+            cancellationToken);
+        var closed = outcome.Outcome == ProductIdentityWorkflowTransportOutcome.Success
+                     || ProductIdentityWorkflowFaultPolicy.IsClosedWithoutDecision(outcome);
+        var open = outcome.Outcome is ProductIdentityWorkflowTransportOutcome.NonTerminal
+            or ProductIdentityWorkflowTransportOutcome.Incomplete;
+        var product = await products.GetByIdAsync(operation.GlobalProductId, cancellationToken);
+        GlobalProductIdentityWorkflowCheckpoint? reentry = !closed && !open ? null
+            : !CompleteStartProof(operation) || product is null ? null
+            : product.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
+              && product.Version == operation.ExpectedProductVersion + 1
+              && product.WorkflowBinding?.WorkflowInstanceId == operation.WorkflowInstanceId
+                ? operation.DecisionKind.HasValue
+                    ? GlobalProductIdentityWorkflowCheckpoint.DecisionObserved
+                    : GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
+            : product.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
+              && product.Version == operation.ExpectedProductVersion && !operation.DecisionKind.HasValue
+                ? GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted
+            : null;
+        if (reentry is null)
+        {
+            attempt.EngineSilent = !closed && !open && outcome.Outcome != ProductIdentityWorkflowTransportOutcome.NotFound
+                && ProductIdentityWorkflowFaultPolicy.Classify(ProductIdentityWorkflowCall.TerminalEvidence,
+                    outcome.Outcome, outcome.ErrorCode).Kind == ProductIdentityWorkflowFaultKind.ServiceWait;
+            await ReleaseClaimAsync(claim, operation, now);
+            return true;
+        }
+        logger.LogWarning(
+            "Product identity workflow operation {OperationId} of tenant {TenantId}: the submitter's repeat reconciled it at {Checkpoint} (the engine's approval is {State}).",
+            operation.OperationId, operation.TenantId, reentry, closed ? "closed" : "open");
+        attempt.ObserveNow = closed;
+        var started = reentry == GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted;
+        return await operations.AdvanceAsync(
+            claim,
+            new(
+                reentry.Value,
+                ProductIdentityWorkflowRecoveryDisposition.None,
+                now.UtcTicks,
+                WorkflowInstanceId: started ? operation.WorkflowInstanceId : null,
+                WorkflowTemplateId: started ? operation.WorkflowTemplateId : null,
+                WorkflowTemplateVersionId: started ? operation.WorkflowTemplateVersionId : null,
+                ApprovalTaskId: started ? operation.ApprovalTaskId : null,
+                AssignmentSnapshotId: started ? operation.AssignmentSnapshotId : null,
+                StartTransitionLogId: started ? operation.StartTransitionLogId : null,
+                WorkflowStartedAtUtcTicksV1: started ? operation.WorkflowStartedAtUtcTicksV1 : null,
+                ReleaseLease: true,
+                ServiceFaultCount: 0),
+            cancellationToken);
+    }
+
+    /*
+     * BL-552 (the GSKU identity E1 rule) — the engine closed the approval and no decision can be applied: cancelled in
+     * the Task Center or timed out (WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION), or decided by its own maker. Before, it
+     * was quarantined and the product stayed pending for ever. Now the product is a draft again, in one write with the
+     * intent that says why, and the submit ends (Completed, with the reason): the maker may edit and submit anew.
+     */
+    private async Task<bool> BackToDraftAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        Attempt attempt,
+        string reasonCode,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken)
+    {
+        var product = await products.GetByIdAsync(operation.GlobalProductId, cancellationToken);
+        if (product is null || !CompleteStartProof(operation))
+        {
+            return await QuarantineAsync(claim, "PRODUCT_IDENTITY_NOT_FOUND", now, cancellationToken);
+        }
+        var expectedVersion = checked(operation.ExpectedProductVersion + 1);
+        var audit = ProductIdentityLifecycleAuditIntentFactory.CreateDecisionNotApplicable(
+            product, expectedVersion, operation.OperationId, operation.WorkflowInstanceId!.Value,
+            operation.ApprovalTaskId!.Value, operation.MakerSubjectId, reasonCode, now);
+        var result = await products.ReturnIdentityToDraftAsync(product.Id, expectedVersion,
+            operation.WorkflowInstanceId.Value, operation.ApprovalTaskId.Value, audit, cancellationToken);
+        if (!result.Succeeded)
+        {
+            // The capacity, the store: they pass by themselves. Anything else is about the record: stuck, and its
+            // submitter's same command reads the engine again.
+            return await WriteRefusedAsync(operation, claim, result.ErrorCode, attempt, now, retryDelay,
+                cancellationToken);
+        }
+        logger.LogWarning(
+            "Product identity workflow operation {OperationId} of tenant {TenantId}: the approval was closed without a decision that can be applied ({ResultCode}); the product is a draft again.",
+            operation.OperationId, operation.TenantId, reasonCode);
+        return await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.Completed,
+            ProductIdentityWorkflowRecoveryDisposition.None, now, reasonCode, releaseLease: true,
+            cancellationToken: cancellationToken, serviceFaultCount: 0);
+    }
+
+    // BL-552 (the GSKU FIX5 item 3 rule): a refused product write. The audit cap and the store pass by themselves
+    // (wait, never stuck); a concurrent write is read and tried again (counted); anything else will not change by
+    // waiting: stuck at once, the draft held — a person (BL-530) or the submitter's same command.
+    private Task<bool> WriteRefusedAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        string? code,
+        Attempt attempt,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken) =>
+        ProductIdentityWriteFaults.MayPassByItself(code)
+            ? ScheduleRetryAsync(claim, operation.Checkpoint, code, now, retryDelay, cancellationToken)
+            : ProductIdentityWriteFaults.MetAConcurrentWrite(code)
+                ? CountedRetryAsync(operation, claim, operation.Checkpoint, BoundedCode(code, StuckOnRecordAnswer),
+                    attempt, now, retryDelay, null, cancellationToken)
+                : QuarantineAsync(claim, code, now, cancellationToken);
+
+    public const string ClosedWithoutDecision = "PRODUCT_IDENTITY_WORKFLOW_CLOSED_WITHOUT_DECISION";
+    public const string SelfApprovalIgnored = "PRODUCT_IDENTITY_WORKFLOW_SELF_APPROVAL_IGNORED";
+    public const string ManualReconciliationNeeded = "PRODUCT_IDENTITY_WORKFLOW_MANUAL_RECONCILIATION_NEEDED";
+    public const string StuckOnRecordAnswer = "PRODUCT_IDENTITY_WORKFLOW_STUCK_ON_RECORD_ANSWER";
+    public const string StartSettlingCode = "PRODUCT_IDENTITY_WORKFLOW_START_SETTLING";
+    public const string StartLookupRefused = "PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_REFUSED";
+    public const string StartLookupUnreadable = "PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_UNREADABLE";
+    public const string EvidenceConflict = "PRODUCT_IDENTITY_WORKFLOW_EVIDENCE_CONFLICT";
+    public const string StartProofInvalid = "PRODUCT_IDENTITY_WORKFLOW_START_PROOF_INVALID";
+
+    // BL-552: the stuck reasons the submitter's same command settles (it reads the engine again); every other one is a
+    // person's (BL-530) and is counted by needing_a_person.
+    public static readonly IReadOnlyList<string> SettledBySubmittersRepeat =
+    [
+        EvidenceConflict,
+        StartProofInvalid,
+        "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT"
+    ];
 
     private Task<bool> PersistStartedAsync(
         GlobalProductIdentityWorkflowOperation operation,
@@ -1092,6 +1420,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
     private async Task<bool> ApplyLocalPendingAsync(
         GlobalProductIdentityWorkflowOperation operation,
         GlobalProductIdentityWorkflowClaim claim,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
@@ -1136,19 +1465,20 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             cancellationToken);
         if (!result.Succeeded)
         {
-            return result.ErrorCode == "AUDIT_INTENT_CAPACITY_EXCEEDED"
-                ? await ScheduleRetryAsync(claim, operation.Checkpoint, result.ErrorCode, now, retryDelay,
-                    cancellationToken)
-                : await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+            return await WriteRefusedAsync(operation, claim, result.ErrorCode, attempt, now, retryDelay,
+                cancellationToken);
         }
         if (result.GlobalProduct is null
             || result.GlobalProduct.Version != operation.ExpectedProductVersion + 1
             || result.GlobalProduct.LifecycleStatus != ProductIdentityLifecycleStatus.PendingIdentityApproval
             || !ExactBinding(result.GlobalProduct.WorkflowBinding, binding)
+            // BL-552 flow 3 (flow 1 FIX1 item 1): the submit's intent, or its receipt once audit delivery compacted it.
             || result.GlobalProduct.AuditIntents.Count(intent =>
                 intent.Operation == ProductAuditOperation.GlobalProductIdentitySubmitted
                 && string.Equals(intent.IdempotencyKey, operation.StartIdempotencyKey,
-                    StringComparison.Ordinal)) != 1)
+                    StringComparison.Ordinal))
+               + result.GlobalProduct.AuditIntentReceipts.Count(receipt =>
+                   string.Equals(receipt.IdempotencyKey, operation.StartIdempotencyKey, StringComparison.Ordinal)) != 1)
         {
             return await QuarantineAsync(claim,
                 "PRODUCT_IDENTITY_WORKFLOW_LOCAL_PENDING_INCONSISTENT", now, cancellationToken);
@@ -1193,6 +1523,13 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 cancellationToken,
                 chainAnswered: true);
         }
+        // BL-552 — the engine's three answers: NOT_TERMINAL (an escalated approval included) waits, above;
+        // CLOSED_WITHOUT_DECISION ends the submit and the product is a draft again; TERMINAL_EVIDENCE_INCONSISTENT is
+        // stuck below (the product stays pending) and its submitter's same command reads the engine again.
+        if (ProductIdentityWorkflowFaultPolicy.IsClosedWithoutDecision(result))
+        {
+            return await BackToDraftAsync(operation, claim, attempt, ClosedWithoutDecision, now, retryDelay, cancellationToken);
+        }
         if (result.Outcome != ProductIdentityWorkflowTransportOutcome.Success)
         {
             // The decision is polled with the service's own token: the worker carries a waiting operation on.
@@ -1210,6 +1547,12 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         }
 
         var evidence = result.Value;
+        if (Guid.TryParse(evidence.ActorUserId, out var self) && self == operation.MakerSubjectId)
+        {
+            // BL-552: the maker decided their own submit and the engine has closed it — no other decision will come.
+            // It is not applied; the product is a draft again (before: quarantined, the product pending for ever).
+            return await BackToDraftAsync(operation, claim, attempt, SelfApprovalIgnored, now, retryDelay, cancellationToken);
+        }
         if (!TryMapDecision(evidence.TerminalAction, out var decision)
             || !ExactTerminalStatuses(decision, evidence.TaskStatus, evidence.InstanceStatus)
             || evidence.WorkflowInstanceId != operation.WorkflowInstanceId
@@ -1220,11 +1563,10 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             || !string.Equals(evidence.ObjectId, operation.ObjectId, StringComparison.Ordinal)
             || !string.Equals(evidence.ObjectRef, operation.ObjectRef, StringComparison.Ordinal)
             || !Guid.TryParse(evidence.ActorUserId, out var actorId) || actorId == Guid.Empty
-            || actorId == operation.MakerSubjectId
             || evidence.TransitionSequence <= 0
             || evidence.DecisionAt.Offset != TimeSpan.Zero)
         {
-            return await QuarantineAsync(claim, "PRODUCT_IDENTITY_WORKFLOW_EVIDENCE_CONFLICT", now, cancellationToken);
+            return await QuarantineAsync(claim, EvidenceConflict, now, cancellationToken);
         }
 
         return await operations.AdvanceAsync(
@@ -1257,6 +1599,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
     private async Task<bool> ApplyDecisionAsync(
         GlobalProductIdentityWorkflowOperation operation,
         GlobalProductIdentityWorkflowClaim claim,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
@@ -1277,10 +1620,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             operation.GlobalProductId, expectedVersion, evidence, audit, cancellationToken);
         if (!result.Succeeded)
         {
-            return result.ErrorCode == "AUDIT_INTENT_CAPACITY_EXCEEDED"
-                ? await ScheduleRetryAsync(claim, operation.Checkpoint, result.ErrorCode, now, retryDelay,
-                    cancellationToken)
-                : await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+            return await WriteRefusedAsync(operation, claim, result.ErrorCode, attempt, now, retryDelay,
+                cancellationToken);
         }
         if (!ExactDecisionResult(result.GlobalProduct, operation, evidence))
         {
@@ -1357,7 +1698,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        long? startSentAt = null)
     {
         var streak = FaultStreak(operation, now, countsAsWorkerAttempt: !attempt.Interactive);
         var code = BoundedCode(errorCode, "PRODUCT_IDENTITY_WORKFLOW_PROVIDER_UNAVAILABLE");
@@ -1377,7 +1719,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                     code,
                     ReleaseLease: true,
                     ServiceFaultCount: streak.Count,
-                    ServiceFaultSinceUtcTicksV1: streak.Since),
+                    ServiceFaultSinceUtcTicksV1: streak.Since,
+                    LastStartSentAtUtcTicksV1: startSentAt),
                 cancellationToken);
         }
 
@@ -1394,7 +1737,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 code,
                 ReleaseLease: true,
                 ServiceFaultCount: streak.Count,
-                ServiceFaultSinceUtcTicksV1: streak.Since),
+                ServiceFaultSinceUtcTicksV1: streak.Since,
+                LastStartSentAtUtcTicksV1: startSentAt),
             cancellationToken);
     }
 
@@ -1635,8 +1979,11 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             ? ProductAuditOperation.GlobalProductIdentityApproved
             : ProductAuditOperation.GlobalProductIdentityRejected;
         var expectedKey = $"workflow:{evidence.WorkflowInstanceId:D}:{evidence.TransitionSequence}";
+        // BL-552 flow 3: the decision's intent, or its receipt once audit delivery compacted it.
         return product.AuditIntents.Count(intent => intent.Operation == expectedOperation
-            && string.Equals(intent.IdempotencyKey, expectedKey, StringComparison.Ordinal)) == 1;
+                   && string.Equals(intent.IdempotencyKey, expectedKey, StringComparison.Ordinal))
+               + product.AuditIntentReceipts.Count(receipt =>
+                   string.Equals(receipt.IdempotencyKey, expectedKey, StringComparison.Ordinal)) == 1;
     }
 
     private static bool TryMapDecision(string action, out ProductIdentityDecisionKind decision)

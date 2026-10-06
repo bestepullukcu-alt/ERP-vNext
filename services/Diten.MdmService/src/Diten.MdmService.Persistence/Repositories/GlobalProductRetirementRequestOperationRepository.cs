@@ -221,25 +221,33 @@ public sealed class GlobalProductRetirementRequestOperationRepository(
         && value == value.Trim() && !value.Any(char.IsControl);
     private static bool ExactReason(string? value) => value is not null && value == value.Trim()
         && value.EnumerateRunes().Count() is >= 1 and <= 2000 && !value.Any(char.IsControl);
+    // BL-552 flow 2 FIX1 item 13: a strict table, as the correction's — a request reaches manual reconciliation only
+    // from a live checkpoint; a Completed one never goes back to stuck.
     private static bool Allowed(GlobalProductRetirementRequestCheckpoint current,
         GlobalProductRetirementRequestCheckpoint next) => current == next || (current, next) switch
     {
-        (GlobalProductRetirementRequestCheckpoint.Prepared, GlobalProductRetirementRequestCheckpoint.StartOutcomeUnknown) => true,
-        (GlobalProductRetirementRequestCheckpoint.Prepared, GlobalProductRetirementRequestCheckpoint.WorkflowStarted) => true,
-        (GlobalProductRetirementRequestCheckpoint.Prepared, GlobalProductRetirementRequestCheckpoint.AwaitingMakerReplay) => true,
-        (GlobalProductRetirementRequestCheckpoint.StartOutcomeUnknown, GlobalProductRetirementRequestCheckpoint.WorkflowStarted) => true,
-        (GlobalProductRetirementRequestCheckpoint.AwaitingMakerReplay, GlobalProductRetirementRequestCheckpoint.WorkflowStarted) => true,
-        // BL-552 FIX1 item 9: a parked row whose start lookup could not answer waits where the worker looks.
-        (GlobalProductRetirementRequestCheckpoint.AwaitingMakerReplay, GlobalProductRetirementRequestCheckpoint.StartOutcomeUnknown) => true,
-        (GlobalProductRetirementRequestCheckpoint.WorkflowStarted, GlobalProductRetirementRequestCheckpoint.AwaitingDecision) => true,
-        (GlobalProductRetirementRequestCheckpoint.AwaitingDecision, GlobalProductRetirementRequestCheckpoint.DecisionObserved) => true,
-        (GlobalProductRetirementRequestCheckpoint.DecisionObserved, GlobalProductRetirementRequestCheckpoint.DecisionApplied) => true,
-        (GlobalProductRetirementRequestCheckpoint.DecisionApplied, GlobalProductRetirementRequestCheckpoint.Completed) => true,
+        (GlobalProductRetirementRequestCheckpoint.Prepared, GlobalProductRetirementRequestCheckpoint.StartOutcomeUnknown
+            or GlobalProductRetirementRequestCheckpoint.WorkflowStarted
+            or GlobalProductRetirementRequestCheckpoint.AwaitingMakerReplay
+            or GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        (GlobalProductRetirementRequestCheckpoint.StartOutcomeUnknown, GlobalProductRetirementRequestCheckpoint.WorkflowStarted
+            or GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        (GlobalProductRetirementRequestCheckpoint.AwaitingMakerReplay, GlobalProductRetirementRequestCheckpoint.WorkflowStarted
+            or GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired
+            // BL-552 FIX1 item 9: a parked row whose start lookup could not answer waits where the worker looks.
+            or GlobalProductRetirementRequestCheckpoint.StartOutcomeUnknown) => true,
+        (GlobalProductRetirementRequestCheckpoint.WorkflowStarted, GlobalProductRetirementRequestCheckpoint.AwaitingDecision
+            or GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        (GlobalProductRetirementRequestCheckpoint.AwaitingDecision, GlobalProductRetirementRequestCheckpoint.DecisionObserved
+            or GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        (GlobalProductRetirementRequestCheckpoint.DecisionObserved, GlobalProductRetirementRequestCheckpoint.DecisionApplied
+            or GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        (GlobalProductRetirementRequestCheckpoint.DecisionApplied, GlobalProductRetirementRequestCheckpoint.Completed
+            or GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
         // BL-552: the requester's same command puts a stuck request back; one whose release has to wait goes back
         // where the worker looks again.
         (GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired, GlobalProductRetirementRequestCheckpoint.WorkflowStarted or GlobalProductRetirementRequestCheckpoint.AwaitingDecision
             or GlobalProductRetirementRequestCheckpoint.DecisionObserved or GlobalProductRetirementRequestCheckpoint.StartOutcomeUnknown) => true,
-        (_, GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
         _ => false
     };
 

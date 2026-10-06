@@ -59,7 +59,7 @@ public sealed class GlobalProductRetirementRequestWorkflowProcessorTests
     }
 
     [Fact]
-    public async Task Manual_checkpoint_is_not_entered_when_required_manual_audit_cannot_be_persisted()
+    public async Task A_refused_decision_write_keeps_the_request_where_it_was_and_retries_it()
     {
         var tenantId = Guid.NewGuid();
         var productId = Guid.NewGuid();
@@ -162,14 +162,6 @@ public sealed class GlobalProductRetirementRequestWorkflowProcessorTests
         // BL-552: an approved retirement that meets dependants ends and gives the lock back in the same write as its
         // manual-reconciliation audit (the GSKU rule); that write is the one refused here.
         public Task<GlobalProductLifecycleWriteResult> ReleaseLifecycleOperationAsync(Guid id, int expectedVersion,
-            GlobalProductActiveLifecycleOperationBinding binding, LocalAuditIntent auditIntent,
-            CancellationToken cancellationToken = default)
-        {
-            ManualAuditAttempts++;
-            return Task.FromResult(new GlobalProductLifecycleWriteResult(false, product,
-                "GLOBAL_PRODUCT_CONCURRENCY_CONFLICT"));
-        }
-        public Task<GlobalProductLifecycleWriteResult> RecordRetirementConflictAsync(Guid id, int expectedVersion,
             GlobalProductActiveLifecycleOperationBinding binding, LocalAuditIntent auditIntent,
             CancellationToken cancellationToken = default)
         {

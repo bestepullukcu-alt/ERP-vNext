@@ -67,6 +67,8 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
     {
         var harness = Harness.Create();
         var operation = harness.CreateOperation(GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown);
+        // BL-552 flow 3: "nothing arrived" is trusted once the settle window of the submit has passed.
+        operation.CreatedAtUtcTicksV1 = DateTimeOffset.UtcNow.AddMinutes(-10).UtcTicks;
         harness.Repository.Current = operation;
         harness.Client.StartResult = (_, _, _) => Task.FromResult(
             ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(
@@ -112,7 +114,9 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
     }
 
     [Fact]
-    public async Task Recover_TerminalEvidenceMakerViolation_QuarantinesWithoutMutation()
+    // BL-552 flow 3: the maker decided their own submit and the engine closed it — no other decision will come. It is
+    // not applied, and the product is a draft again (before: quarantined, the product pending for ever).
+    public async Task Recover_TerminalEvidenceMakerViolation_ReturnsTheProductToDraftWithoutApplyingIt()
     {
         var harness = Harness.CreatePending();
         harness.Client.Terminal = (_, _, _) => Task.FromResult(
@@ -122,10 +126,11 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         var result = await harness.Processor.RecoverAsync(
             harness.Repository.Current!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
 
-        Assert.False(result.Succeeded);
-        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
-            harness.Repository.Current!.Checkpoint);
+        Assert.True(result.Succeeded);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.Completed, harness.Repository.Current!.Checkpoint);
+        Assert.Equal(GlobalProductIdentityWorkflowProcessor.SelfApprovalIgnored, harness.Repository.Current.LastFailureCode);
         Assert.Equal(0, harness.Products.ReconcileCount);
+        Assert.Equal(1, harness.Products.ReturnToDraftCount);
     }
 
     [Theory]
@@ -642,6 +647,19 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
             product.WorkflowBinding = workflowBinding;
             SubmitMutationCount++;
             product.LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval;
+            product.Version++;
+            product.AuditIntents.Add(auditIntent);
+            return Task.FromResult(new GlobalProductLifecycleWriteResult(true, product));
+        }
+
+        public int ReturnToDraftCount { get; private set; }
+
+        public Task<GlobalProductLifecycleWriteResult> ReturnIdentityToDraftAsync(Guid id, int expectedVersion,
+            Guid workflowInstanceId, Guid approvalTaskId, LocalAuditIntent auditIntent,
+            CancellationToken cancellationToken = default)
+        {
+            ReturnToDraftCount++;
+            product.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
             product.Version++;
             product.AuditIntents.Add(auditIntent);
             return Task.FromResult(new GlobalProductLifecycleWriteResult(true, product));

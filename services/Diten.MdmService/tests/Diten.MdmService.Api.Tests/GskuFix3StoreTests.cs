@@ -280,16 +280,18 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.Equal(GlobalProductRepository.SubmitReplacedByEdit, setAside.LastFailureCode);
     }
 
-    // Global Product's accepted rule is kept: a submit in manual reconciliation does not lock the draft.
+    // BL-552 flow 3 (CT decision S2, GSKU's rule): a submit of this version in manual reconciliation now HOLDS the
+    // draft — the engine may hold its approval. (Before: Global Product's rule let the edit through.)
     [Fact]
-    public async Task GP_A_submit_in_manual_reconciliation_does_not_lock_the_draft()
+    public async Task GP_A_submit_in_manual_reconciliation_holds_the_draft()
     {
         var product = await SeedProductAsync(ProductIdentityLifecycleStatus.Draft);
         await InsertProductOperationAsync(product, 0, GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired, Guid.NewGuid());
 
         var result = await EditProductAsync(new GlobalProductRepository(host.Database, Tenant()), product, 0, "Edited after quarantine");
 
-        Assert.True(result.Succeeded, result.ErrorCode);
+        Assert.False(result.Succeeded);
+        Assert.Equal(GlobalProductRepository.IdentityReconciliationRequired, result.ErrorCode);
     }
 
     private async Task<GlobalProduct> ProductAsync(Guid id) =>

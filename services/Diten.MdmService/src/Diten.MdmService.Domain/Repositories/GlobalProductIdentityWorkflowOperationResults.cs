@@ -81,7 +81,11 @@ public sealed record GlobalProductIdentityWorkflowCheckpointMutation(
     // Why a withdrawal was refused for good (the approval was decided or closed first): the answer a repeat of the
     // same withdrawal reads. Its own field — LastFailureCode is rewritten by every decision poll.
     string? WithdrawalRefusalCode = null,
-    long? WithdrawalAwaitingRequesterSinceUtcTicksV1 = null);
+    long? WithdrawalAwaitingRequesterSinceUtcTicksV1 = null,
+    // BL-552: how this write changes the record-answer retry streak (atomically, in the store), and when a start was
+    // sent unanswered (the settle window).
+    RecoveryStreakWrite Streak = RecoveryStreakWrite.Reset,
+    long? LastStartSentAtUtcTicksV1 = null);
 
 public sealed record GlobalProductIdentityWorkflowTenantPartitionPage(
     IReadOnlyList<Guid> TenantIds,

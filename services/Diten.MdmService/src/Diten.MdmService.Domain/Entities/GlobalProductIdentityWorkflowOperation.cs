@@ -68,6 +68,12 @@ public sealed class GlobalProductIdentityWorkflowOperation : EntityBase, IProduc
     // Consecutive faults of the SERVICE chain (credential, token, setting, reachability) while this operation
     // waited, and when the first of them happened. Both are cleared by the first answer the chain gives again.
     public int ServiceFaultCount { get; set; }
+    // BL-552 (the GSKU FIX3 rule): consecutive worker attempts on an answer about the record (not a service fault) that
+    // ended in a retry; any other write sets it back to 0.
+    public int FailedAttemptCount { get; set; }
+    // BL-552 (the GSKU FIX3 S8 rule): when a start was last sent unanswered — "nothing arrived" is trusted only after
+    // the settle window.
+    public long? LastStartSentAtUtcTicksV1 { get; set; }
     public long? ServiceFaultSinceUtcTicksV1 { get; set; }
     public string? LeaseOwner { get; set; }
     public long? LeaseUntilUtcTicksV1 { get; set; }

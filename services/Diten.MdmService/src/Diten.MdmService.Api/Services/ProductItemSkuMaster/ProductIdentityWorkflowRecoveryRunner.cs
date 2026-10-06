@@ -20,8 +20,12 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
     IServiceScopeFactory scopeFactory,
     IOptions<ProductIdentityWorkflowWorkerOptions> options,
     TimeProvider timeProvider,
-    ILogger<ProductIdentityWorkflowRecoveryRunner> logger)
+    ILogger<ProductIdentityWorkflowRecoveryRunner> logger,
+    ProductIdentityRecoveryMetrics? metrics = null)
 {
+    // BL-552: the Global Product identity flow's name on the stuck gauges.
+    public const string Flow = "GLOBAL_PRODUCT_IDENTITY";
+
     public async Task<ProductIdentityWorkflowRecoveryRunResult> RunCycleAsync(
         CancellationToken cancellationToken = default)
     {
@@ -52,6 +56,8 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
         var completedCount = 0;
         var deferredCount = 0;
         var failedCount = 0;
+        long inManualReconciliation = 0;
+        long needingAPerson = 0;
         Guid? tenantCursor = null;
         var stopCycle = false;
         do
@@ -166,11 +172,42 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
 
                     operationCursor = page.NextCursor;
                 } while (operationCursor is not null && !skipTenant && !stopCycle);
+
             }
 
             tenantCursor = tenantPage.NextAfterTenantId;
         } while (tenantCursor.HasValue && !stopCycle);
 
+        // BL-552: what is stuck (held for a person), and of it what only a person can settle — in EVERY tenant that
+        // holds a stuck submit, not only those with work due this cycle (the work discovery skips manual
+        // reconciliation). Store reads only: counted even when the cycle stopped on a refused service identity.
+        Guid? stuckCursor = null;
+        do
+        {
+            GlobalProductIdentityWorkflowTenantPartitionPage stuckPage;
+            await using (var discoveryScope = scopeFactory.CreateAsyncScope())
+            {
+                stuckPage = await discoveryScope.ServiceProvider
+                    .GetRequiredService<IGlobalProductIdentityWorkflowTenantPartitionDiscovery>()
+                    .DiscoverStuckAsync(stuckCursor, settings.TenantPageSize, cancellationToken);
+            }
+            foreach (var tenantId in stuckPage.TenantIds)
+            {
+                await using var countScope = scopeFactory.CreateAsyncScope();
+                countScope.ServiceProvider.GetRequiredService<ITenantContext>().SetTenant(tenantId);
+                var counts = countScope.ServiceProvider.GetRequiredService<IGlobalProductIdentityWorkflowOperationRepository>();
+                inManualReconciliation += await counts.CountManualReconciliationAsync(cancellationToken);
+                needingAPerson += await counts.CountNeedingAPersonAsync(cancellationToken);
+            }
+            stuckCursor = stuckPage.NextAfterTenantId;
+        } while (stuckCursor.HasValue);
+        metrics?.Record(Flow, inManualReconciliation, needingAPerson);
+        if (needingAPerson > 0)
+        {
+            logger.LogWarning(
+                "{Flow} recovery cycle: {InManualReconciliation} submit(s) in manual reconciliation, {NeedingAPerson} needing a person.",
+                Flow, inManualReconciliation, needingAPerson);
+        }
         return new(tenantCount, operationCount, completedCount, deferredCount, failedCount);
     }
 }

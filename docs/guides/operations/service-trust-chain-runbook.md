@@ -446,9 +446,12 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
   - **Cycle line and gauges:** the same cycle line and both gauges.
   - **Settings:** `GlobalProductCorrectionWorkflowWorker` takes `QuarantineAfterFailedAttempts` (30),
     `MaxRetryDelaySeconds` (900) and `StartSettleSeconds` (120), as the GSKU workers do.
-  - **Lock release:** the product's lock is given back by a conditional write — this request's binding, at its base
-    version + 1, in its tenant only. The write carries a `GlobalProductCorrectionManualReconciliationRequired` audit
-    intent.
+  - **Lock release:** the product's lock is given back by a conditional write — this request's binding, at the
+    version the product is at, in its tenant only. The write carries the request's own ENDED audit operation
+    (`GlobalProductCorrectionEnded`, flow 2 FIX1 item 12) with the reason it ended in its facts, so central audit
+    tells "ended, nothing held" from "stuck". A stuck request writes no audit of its own. Platform maps the new
+    operations (`GlobalProductCorrectionEnded`, `GlobalProductRetirementEnded`,
+    `GlobalProductIdentityDecisionNotApplicable`) as lifecycle transitions; deploy Platform first.
   - **Refused writes:** the product's audit cap (`AUDIT_INTENT_CAPACITY_EXCEEDED`) waits.
     `GLOBAL_PRODUCT_LIFECYCLE_RELEASE_CONFLICT` is a counted retry.
   - **An approved name another product took in the meantime:** the request ENDS unapplied and the product is given
@@ -462,8 +465,16 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
   - **Interrupted requests and audit delivery:** a repeat of a request cut off after it took the lock is recognised
     even after the audit delivery worker compacted its intents into receipts; the product held by that very request
     is its own lock, and the request goes on.
-  - **Status codes:** a request that ended on a refusal that passes by itself (the audit cap, the store) answers 503,
-    as every Global Product handler does.
+  - **Status codes:** a refusal that passes by itself (the audit cap, the store) answers 503 and ENDS NOTHING: the
+    request waits, and the maker's same key goes through once it has passed (flow 2 FIX1 item 8). A start the engine
+    refused for the maker keeps the maker's code (session expired 401, no start permission 403); one refused for how
+    the engine treats this service (its trust, its grant — e.g. `WORKFLOW_TRUSTED_START_FORBIDDEN`) ends the request
+    with `PRODUCT_IDENTITY_WORKFLOW_SERVICE_UNAVAILABLE_RESUBMIT` (503), as the identity approval says it.
+  - **A request that never took the product** (cut off before its lock) holds nothing; the worker leaves it waiting
+    for its maker's same key (`*_AWAITING_MAKER`, looked at again at the retry ceiling).
+  - **Rows of the previous version (124e30acc and before):** a request it left stuck on a name conflict, with the
+    product one version past its base + 1 and the lock still held, is ENDED by its requester's same command: the
+    product is given back at its current version. Dev count at 2026-10-06: 0 such rows.
   - **Scope:** the worker follows the legal-entity scope rule of every product-identity worker (an out-of-scope or
     suspended product is not touched).
 - **Global Product retirement request (BL-552, flow `GLOBAL_PRODUCT_RETIREMENT_REQUEST`)** follows the same rules as
@@ -474,7 +485,24 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
     `DEPENDENT_IDENTITIES_EXIST` / `DRAFT_CHILD_CANCELLATION_REQUIRED`): the request ENDS "not applicable" and the
     product is given back — the GSKU retirement request's rule. Before BL-552 it was stuck with the lock held.
   - **Everything else** (lookup apart from start, settle window, write refusals, the limit's cause, the gauges, a
-    request cut off after the lock, compacted intents, scope, status codes) as for the correction.
+    request cut off after the lock, compacted intents, scope, status codes, the ended audit, the previous version's
+    rows) as for the correction. Its store refuses every move into manual reconciliation from a finished request.
+- **Global Product identity approval (BL-552 flow 3, flow `GLOBAL_PRODUCT_IDENTITY`)** follows the same pattern:
+  - **The engine's three answers:** an approval closed without a decision (or decided by its own maker) sends the
+    product back to draft (`GlobalProductIdentityDecisionNotApplicable`); one still open waits; contradicting evidence
+    is stuck and the submitter's same submit reads the engine again.
+  - **A submit stuck in manual reconciliation HOLDS THE DRAFT (CT decision S2, as GSKU):** an edit is refused
+    (`GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED`) and so is a new submit of the same version. The screen says
+    the existing "a submit is on its way" sentence. Ways out: the submitter's same submit (settles it), or a person
+    (BL-530) when the record's answer will not change. Both gauges count it (`needing_a_person` alert).
+  - **Settings:** `ProductIdentityWorkflowWorker` takes `QuarantineAfterFailedAttempts` (30) and `StartSettleSeconds`
+    (120).
+- **Rolling back past BL-552:** the request and operation documents gained fields (`FailedAttemptCount`,
+  `LastStartSentAtUtcTicksV1`). This binary reads documents with fields it does not know, and the service does not
+  start if that guard is missing (`GlobalProductLifecycleClassMaps`). A binary from BEFORE this guard (75c286f7d,
+  124e30acc) does not: **when rolling back to it, remove the new fields first**
+  (`$unset: { FailedAttemptCount: "", LastStartSentAtUtcTicksV1: "" }` on `mdm_global_product_correction_operations`,
+  `mdm_global_product_retirement_request_operations` and `mdm_global_product_identity_workflow_operations`).
 
 ### 6. Not covered here — open before a live bring-up
 

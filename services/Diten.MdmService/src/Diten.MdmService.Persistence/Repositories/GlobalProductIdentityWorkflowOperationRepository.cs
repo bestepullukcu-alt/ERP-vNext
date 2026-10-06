@@ -12,6 +12,7 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
 {
     public const string CollectionName = "mdm_global_product_identity_workflow_operations";
     public const string DraftChanged = "PRODUCT_IDENTITY_WORKFLOW_DRAFT_CHANGED";
+    public const string IdentityReconciliationRequired = GlobalProductRepository.IdentityReconciliationRequired;
     private readonly IMongoCollection<GlobalProductIdentityWorkflowOperation> _operations;
     private readonly Guid _tenantId;
 
@@ -106,6 +107,21 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
                 session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
                 try
                 {
+                    // BL-552 flow 3 (CT decision S2): a submit of this very version stuck in manual reconciliation holds
+                    // the draft — a new submit is refused until its submitter's same submit settles it (or a person).
+                    var stuck = await _operations.Find(session,
+                            ActiveTenantFilter
+                            & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.GlobalProductId, operation.GlobalProductId)
+                            & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.ExpectedProductVersion, operation.ExpectedProductVersion)
+                            & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.Checkpoint,
+                                GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+                            & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Ne(item => item.OperationId, operation.OperationId))
+                        .AnyAsync(cancellationToken);
+                    if (stuck)
+                    {
+                        await session.AbortTransactionAsync(cancellationToken);
+                        return new(false, false, null, IdentityReconciliationRequired);
+                    }
                     await _operations.InsertOneAsync(session, operation, cancellationToken: cancellationToken);
                     var product = Builders<GlobalProduct>.Filter.Eq(item => item.TenantId, _tenantId)
                                   & Builders<GlobalProduct>.Filter.Eq(item => item.IsDeleted, false)
@@ -384,6 +400,13 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         {
             return false;
         }
+        // BL-552 (the GSKU FIX7 store invariant): manual reconciliation is never "retryable" — the worker does not scan
+        // it and the gauge counts it only when it is held for a person: the pair would be a submit nobody sees.
+        if (mutation.NextCheckpoint == GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired
+            && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable)
+        {
+            return false;
+        }
 
         var filter = ActiveTenantFilter
                      & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(
@@ -453,6 +476,14 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
                 .Set(item => item.ServiceFaultCount, mutation.ServiceFaultCount.Value)
                 .Set(item => item.ServiceFaultSinceUtcTicksV1, mutation.ServiceFaultSinceUtcTicksV1);
         }
+        update = mutation.Streak switch
+        {
+            RecoveryStreakWrite.Increment => update.Inc(item => item.FailedAttemptCount, 1),
+            RecoveryStreakWrite.Keep => update,
+            _ => update.Set(item => item.FailedAttemptCount, 0)
+        };
+        if (mutation.LastStartSentAtUtcTicksV1.HasValue)
+            update = update.Set(item => item.LastStartSentAtUtcTicksV1, mutation.LastStartSentAtUtcTicksV1);
         if (mutation.ClearWithdrawal)
         {
             update = update
@@ -483,6 +514,23 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         var result = await _operations.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
         return result.ModifiedCount == 1;
     }
+
+    // BL-552: only what is STUCK — manual reconciliation held for a person. (A service fault is never quarantined in
+    // this flow: it waits, said by its own fault streak; a submit that ended is not counted.)
+    public Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(ActiveTenantFilter
+            & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.Checkpoint, GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+            & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired),
+            cancellationToken: cancellationToken);
+
+    // BL-552: stuck for a reason the submitter's repeat cannot settle — a person has to (BL-530).
+    public Task<long> CountNeedingAPersonAsync(CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(ActiveTenantFilter
+            & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.Checkpoint, GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+            & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+            & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Nin(item => item.LastFailureCode,
+                Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.GlobalProductIdentityWorkflowProcessor.SettledBySubmittersRepeat),
+            cancellationToken: cancellationToken);
 
     private FilterDefinition<GlobalProductIdentityWorkflowOperation> ActiveTenantFilter =>
         Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.TenantId, _tenantId)
@@ -578,6 +626,13 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
             (GlobalProductIdentityWorkflowCheckpoint.WithdrawalApplied,
                 GlobalProductIdentityWorkflowCheckpoint.Completed
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            // BL-552: an approval closed without an applicable decision ends here — the product is a draft again.
+            (GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision, GlobalProductIdentityWorkflowCheckpoint.Completed) => true,
+            // BL-552: the submitter's same command reads the engine again and puts a stuck submit back where it
+            // stands (started, pending, decided, or — nothing arrived — the maker's to resubmit).
+            (GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+                GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted or GlobalProductIdentityWorkflowCheckpoint.LocalPendingApplied or GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
+                or GlobalProductIdentityWorkflowCheckpoint.DecisionObserved or GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay) => true,
             _ => false
         };
 

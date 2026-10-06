@@ -72,4 +72,33 @@ public sealed class GlobalProductIdentityWorkflowTenantPartitionDiscoveryReposit
         var page = candidates.Distinct().ToArray();
         return new(page, candidates.Count == limit ? candidates[^1] : null);
     }
+
+    // BL-552 flow 3: tenants holding a submit stuck for a person (manual reconciliation), in tenant order — the same
+    // bounded stream as above; the counts themselves are made by the tenant-scoped repository.
+    public async Task<GlobalProductIdentityWorkflowTenantPartitionPage> DiscoverStuckAsync(
+        Guid? afterTenantId,
+        int limit,
+        CancellationToken cancellationToken = default)
+    {
+        if (afterTenantId == Guid.Empty || limit is < 1 or > 100)
+        {
+            throw new ArgumentOutOfRangeException(nameof(limit));
+        }
+        var filter = Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.IsDeleted, false)
+                     & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(
+                         item => item.Checkpoint, GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+                     & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(
+                         item => item.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired);
+        if (afterTenantId.HasValue)
+        {
+            filter &= Builders<GlobalProductIdentityWorkflowOperation>.Filter.Gt(item => item.TenantId, afterTenantId.Value);
+        }
+        var candidates = await _operations.Find(filter)
+            .SortBy(item => item.TenantId)
+            .Project(item => item.TenantId)
+            .Limit(limit)
+            .ToListAsync(cancellationToken);
+        var page = candidates.Distinct().ToArray();
+        return new(page, candidates.Count == limit ? candidates[^1] : null);
+    }
 }

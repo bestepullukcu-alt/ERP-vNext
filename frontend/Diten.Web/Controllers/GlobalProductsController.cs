@@ -510,7 +510,11 @@ public sealed class GlobalProductsController : Controller
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["GLOBAL_PRODUCT_IDENTITY_SUBMIT_IN_FLIGHT"] = "ErrorSubmitInFlight",
-            ["PRODUCT_IDENTITY_WORKFLOW_DRAFT_CHANGED"] = "ErrorDraftChanged"
+            ["PRODUCT_IDENTITY_WORKFLOW_DRAFT_CHANGED"] = "ErrorDraftChanged",
+            // BL-552 flow 3 (CT decision S2): a submit stuck in manual reconciliation holds the draft — the in-flight
+            // sentence (no new sentence); and a submit whose start the engine could not yet confirm holds it too.
+            ["GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED"] = "ErrorSubmitInFlight",
+            ["PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_REFUSED"] = "ErrorSubmitInFlight"
         };
 
     private static async Task<string?> SingleErrorCodeAsync(HttpResponseMessage response, CancellationToken cancellationToken)

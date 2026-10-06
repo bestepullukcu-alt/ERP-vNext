@@ -381,23 +381,24 @@ public sealed class GlobalProductLifecycleMongoTests : IAsyncLifetime
         Assert.Null(rejectedStored.ActiveLifecycleOperation);
         Assert.Equal(2, rejectedStored.Version);
 
-        var conflicted = await AdmitAsync();
-        var conflictAudit = GlobalProductRetirementRequestAuditIntentFactory.Create(conflicted.Product, 1,
-            conflicted.Binding.OperationId, actor,
-            ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired, reason,
-            Now.AddMinutes(1));
-        var conflict = await repository.RecordRetirementConflictAsync(
-            conflicted.Product.Id, 1, conflicted.Binding, conflictAudit);
-        var conflictReplay = await repository.RecordRetirementConflictAsync(
-            conflicted.Product.Id, 1, conflicted.Binding, conflictAudit);
-        Assert.True(conflict.Succeeded);
-        Assert.True(conflictReplay.Succeeded);
-        Assert.True(conflictReplay.IsReplay);
-        var conflictedStored = await repository.GetByIdAsync(conflicted.Product.Id);
-        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, conflictedStored!.LifecycleStatus);
-        Assert.Equal(conflicted.Binding, conflictedStored.ActiveLifecycleOperation);
-        Assert.Equal(2, conflictedStored.Version);
-        Assert.Equal(2, conflictedStored.AuditIntents.Count);
+        // BL-552 flow 2 FIX1 item 9: the name-conflict record (a held product moved on) is gone; a request that ends
+        // gives the product back in one write, with its own "ended" audit operation.
+        var ended = await AdmitAsync();
+        var endedAudit = GlobalProductRetirementRequestAuditIntentFactory.Create(ended.Product, 1,
+            ended.Binding.OperationId, actor, ProductAuditOperation.GlobalProductRetirementEnded, reason,
+            Now.AddMinutes(1), "DEPENDENT_IDENTITIES_EXIST");
+        var release = await repository.ReleaseLifecycleOperationAsync(
+            ended.Product.Id, 1, ended.Binding, endedAudit);
+        var releaseReplay = await repository.ReleaseLifecycleOperationAsync(
+            ended.Product.Id, 1, ended.Binding, endedAudit);
+        Assert.True(release.Succeeded);
+        Assert.True(releaseReplay.Succeeded);
+        Assert.True(releaseReplay.IsReplay);
+        var endedStored = await repository.GetByIdAsync(ended.Product.Id);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, endedStored!.LifecycleStatus);
+        Assert.Null(endedStored.ActiveLifecycleOperation);
+        Assert.Equal(2, endedStored.Version);
+        Assert.Equal(2, endedStored.AuditIntents.Count);
     }
 
     [Fact]

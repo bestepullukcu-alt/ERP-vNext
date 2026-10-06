@@ -15,6 +15,10 @@ public sealed class ProductIdentityWorkflowWorkerOptions
     // error from this many consecutive attempts on. Read by the worker AND by the interactive paths.
     public int ServiceFaultMaxRetryDelaySeconds { get; init; } = 900;
     public int ServiceFaultErrorAfterAttempts { get; init; } = 5;
+    // BL-552: the start's settle window, and the worker retries in a row on an answer about the record before the
+    // submit is handed to a person (0 = never).
+    public int StartSettleSeconds { get; init; } = 120;
+    public int QuarantineAfterFailedAttempts { get; init; } = 30;
 
     public void EnsureValidWhenEnabled()
     {

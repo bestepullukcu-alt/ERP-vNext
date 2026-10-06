@@ -14,7 +14,8 @@ public static class GlobalProductCorrectionAuditIntentFactory
         Guid actorId,
         ProductAuditOperation operation,
         string proposedName,
-        DateTimeOffset timestampUtc)
+        DateTimeOffset timestampUtc,
+        string? endReason = null)
     {
         ArgumentNullException.ThrowIfNull(product);
         if (product.Id == Guid.Empty || product.TenantId == Guid.Empty || operationId == Guid.Empty
@@ -22,13 +23,17 @@ public static class GlobalProductCorrectionAuditIntentFactory
             || operation is not (ProductAuditOperation.GlobalProductCorrectionRequested
                 or ProductAuditOperation.GlobalProductCorrectionApplied
                 or ProductAuditOperation.GlobalProductCorrectionRejected
-                or ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired))
+                or ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired
+                or ProductAuditOperation.GlobalProductCorrectionEnded))
             throw new ArgumentException("Global Product correction audit facts are invalid.");
         var key = $"global-product-correction:{operationId:D}:{operation}";
         var evidence = Encoding.UTF8.GetBytes(string.Join('\n',
             product.TenantId.ToString("D"), product.Id.ToString("D"), expectedVersion,
             operationId.ToString("D"), actorId.ToString("D"), operation,
-            Convert.ToBase64String(Encoding.UTF8.GetBytes(proposedName))));
+            Convert.ToBase64String(Encoding.UTF8.GetBytes(proposedName))
+            // BL-552 flow 2 FIX1 item 12: why an ended request ended is part of its facts — appended ONLY for an
+            // ended request, so every other intent's evidence (and its replay across a deploy) is unchanged.
+            ) + (endReason is null ? string.Empty : "\n" + endReason));
         var postVersion = checked(expectedVersion + 1);
         return new()
         {

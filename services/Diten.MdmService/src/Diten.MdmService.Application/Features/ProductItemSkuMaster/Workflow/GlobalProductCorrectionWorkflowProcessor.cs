@@ -134,7 +134,8 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
                 // A request STUCK (the product's lock held) has a way out — its requester's same command reads the
                 // engine again (ReconcileAsync). One that ENDED (lock given back) only answers why it ended. A repeat
                 // that could not settle it says so: a person has to (BL-530). The engine could not be asked: 503.
-                // A name taken by another product after the approval is the record's, not the engine's: a person.
+                // A name taken by another product after the approval ENDS the request (the product is given back), so
+                // it answers here like any ended request — not stuck, not a person's (BL-552 flow 2 FIX1 item 11).
                 if (signal.EngineSilent)
                     return Fail(operation, ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, 503);
                 if (token is null || step > 0
@@ -237,19 +238,24 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
             return await PreparedWithoutMakerAsync(operation, claim, now, execution, cancellationToken);
         var product = await products.GetByIdAsync(operation.GlobalProductId, cancellationToken);
         if (product is null) return await Ended(claim, "PRODUCT_IDENTITY_NOT_FOUND", now, cancellationToken);
-        // BL-552 FIX1 item 9: the settle window starts here, in a field nothing else refreshes — written (under this
-        // claim, kept) before the lock is taken and the start sent, so a request cut off after either is still read
-        // as "a start may be on its way" for exactly the window, and no longer.
-        if (!await operations.AdvanceAsync(claim, new(operation.Checkpoint, operation.RecoveryDisposition, now.UtcTicks,
-                operation.NextAttemptAtUtcTicksV1, operation.LastFailureCode, Streak: RecoveryStreakWrite.Keep,
-                LastStartSentAtUtcTicksV1: now.UtcTicks), cancellationToken))
-            return false;
         var admitted = await AcquireAsync(operation, product, now, cancellationToken);
         // BL-552 FIX1 item 1 (b): the product held by THIS request is its own lock (an earlier attempt took it and was
         // cut off) — never "ended"; the request goes on. Not admitted otherwise (another request holds the product,
         // its version moved): nothing was taken — the request ends.
         if (!admitted.Succeeded && !HeldByThis(admitted.GlobalProduct ?? product, operation))
-            return await Ended(claim, admitted.ErrorCode, now, cancellationToken);
+            // BL-552 flow 2 FIX1 item 8: a refusal that passes by itself (the audit cap, the store) took nothing and
+            // ends nothing — the request waits and the maker's same key gets through once it passes.
+            return ProductIdentityWriteFaults.MayPassByItself(admitted.ErrorCode)
+                ? await RetryAsync(operation, claim, operation.Checkpoint, admitted.ErrorCode, now, execution,
+                    cancellationToken, transient: true)
+                : await Ended(claim, admitted.ErrorCode, now, cancellationToken);
+        // BL-552 FIX1 item 9: the settle window starts here, in a field nothing else refreshes — written (under this
+        // claim, kept) once the lock is held and before the start is sent, so a request cut off after either is still
+        // read as "a start may be on its way" for exactly the window, and no longer.
+        if (!await operations.AdvanceAsync(claim, new(operation.Checkpoint, operation.RecoveryDisposition, now.UtcTicks,
+                operation.NextAttemptAtUtcTicksV1, operation.LastFailureCode, Streak: RecoveryStreakWrite.Keep,
+                LastStartSentAtUtcTicksV1: now.UtcTicks), cancellationToken))
+            return false;
         var started = await workflowClient.StartAsync(operation.TenantId,
             requestFactory.Rehydrate(operation), token, cancellationToken);
         return await RecordStartAsync(operation, claim, started, fromStart: true, now, execution, cancellationToken);
@@ -279,14 +285,24 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
             // already was) and the correction goes on as started.
             var admitted = await AcquireAsync(operation, product, now, cancellationToken);
             if (!admitted.Succeeded && !HeldByThis(admitted.GlobalProduct ?? product, operation))
-                return await Stuck(claim, admitted.ErrorCode, now, cancellationToken);
+                return ProductIdentityWriteFaults.MayPassByItself(admitted.ErrorCode)
+                    ? await RetryAsync(operation, claim, operation.Checkpoint, admitted.ErrorCode, now, execution,
+                        cancellationToken, transient: true)
+                    : await Stuck(claim, admitted.ErrorCode, now, cancellationToken);
             return await RecordStartAsync(operation, claim, found, fromStart: false, now, execution, cancellationToken);
         }
         if (found.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound)
             return Settling(operation, now, execution)
                 ? await RetryAsync(operation, claim, operation.Checkpoint, StartSettling, now, execution,
                     cancellationToken, transient: true)
-                : await EndAndReleaseAsync(operation, claim, StartNotReceived, now, execution, cancellationToken);
+                : HeldByThis(product, operation)
+                    ? await EndAndReleaseAsync(operation, claim, StartNotReceived, now, execution, cancellationToken)
+                    // BL-552 flow 2 FIX1 item 8: it never took the product, so nothing was started — it holds
+                    // nothing and waits for its maker's same key (looked at again only at the ceiling).
+                    : await operations.AdvanceAsync(claim, new(operation.Checkpoint,
+                        ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks,
+                        now.Add(execution.MaxRetryDelay ?? ProductIdentityRecoveryStreak.DefaultMaxRetryDelay).UtcTicks,
+                        AwaitingMaker, ReleaseLease: true, Streak: RecoveryStreakWrite.Keep), cancellationToken);
         return await RetryAsync(operation, claim, operation.Checkpoint, found.ErrorCode ?? StartLookupFailed,
             now, execution, cancellationToken,
             transient: Waits(ProductIdentityWorkflowCall.StartResult, found.Outcome, found.ErrorCode));
@@ -308,6 +324,14 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
         ReconcileSignal signal,
         CancellationToken cancellationToken)
     {
+        // BL-552 flow 2 FIX1 item 9: the previous version's conflict record (124e30acc and before) left the product
+        // held by this request one version past its base + 1. Nothing can be applied at that version: the repeat
+        // ends the request and gives the product back, keeping the reason it stopped on.
+        var held = await products.GetByIdAsync(operation.GlobalProductId, cancellationToken);
+        if (held?.ActiveLifecycleOperation == Binding(operation)
+            && held.Version > checked(operation.BaseProductVersion + 1))
+            return await EndAndReleaseAsync(operation, claim, operation.LastFailureCode ?? ProductMoved, now,
+                execution, cancellationToken);
         if (operation.DecisionKind.HasValue && operation.DecisionActorSubjectId.HasValue)
             return await AdvanceAsync(claim, GlobalProductCorrectionCheckpoint.DecisionObserved, null, now, true,
                 cancellationToken);
@@ -416,7 +440,12 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
         // The START was refused before anything was processed: nothing exists at the engine — the product is given
         // back and the reason recorded; the maker learns it from the answer.
         return await EndAndReleaseAsync(operation, claim,
-            fault.MakerCode ?? result.ErrorCode ?? "GLOBAL_PRODUCT_CORRECTION_START_REFUSED", now, execution,
+            // BL-552 flow 2 FIX1 item 6: the maker's own refusals keep their maker code (401 / 403); a refusal of how
+            // the engine treats this service (its trust, its grant) is the service's — resubmit (503), as the identity
+            // flow says it.
+            fault.MakerCode ?? (fault.Kind == ProductIdentityWorkflowFaultKind.ServiceWait
+                ? ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit
+                : result.ErrorCode ?? "GLOBAL_PRODUCT_CORRECTION_START_REFUSED"), now, execution,
             cancellationToken);
     }
 
@@ -440,10 +469,13 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
         var product = await products.GetByIdAsync(operation.GlobalProductId, cancellationToken);
         if (product?.ActiveLifecycleOperation is { } held && held == Binding(operation))
         {
-            var expected = checked(operation.BaseProductVersion + 1);
+            // BL-552 flow 2 FIX1 items 9 and 12: given back at the version the product is at (its base + 1, or one
+            // further for a row the previous version's name-conflict record moved on), with the request's own
+            // "ended" audit operation and the reason it ended in its facts.
+            var expected = product.Version;
             var audit = GlobalProductCorrectionAuditIntentFactory.Create(product, expected, operation.OperationId,
-                operation.MakerSubjectId, ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired,
-                operation.ProposedGlobalProductName, now);
+                operation.MakerSubjectId, ProductAuditOperation.GlobalProductCorrectionEnded,
+                operation.ProposedGlobalProductName, now, reason);
             var released = await products.ReleaseLifecycleOperationAsync(product.Id, expected, Binding(operation),
                 audit, cancellationToken);
             // BL-552 FIX1 item 11: the lock already gone (given back by an earlier attempt whose own record was lost)
@@ -541,6 +573,12 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
         if (product is null || !operation.DecisionActorSubjectId.HasValue)
             return await Stuck(claim, "GLOBAL_PRODUCT_CORRECTION_PRODUCT_DRIFT", now, cancellationToken);
         var expectedVersion = checked(operation.BaseProductVersion + 1);
+        // BL-552 flow 2 FIX1 item 9: held by this request but moved past its base + 1 — only the previous version's
+        // conflict record did that (a row of 124e30acc and before). Its decision cannot be applied at this version:
+        // the request ends and the product is given back.
+        if (HeldByThis(product, operation) && product.Version != expectedVersion)
+            return await EndAndReleaseAsync(operation, claim, operation.LastFailureCode ?? ProductMoved, now, execution,
+                cancellationToken);
         var binding = Binding(operation);
         var approved = operation.DecisionKind == ProductIdentityDecisionKind.Approved;
         // BL-552 FIX1 item 2 (the GSKU alreadyApplied rule): the decision was written before and only its record here
@@ -662,6 +700,9 @@ public sealed class GlobalProductCorrectionWorkflowProcessor(
     public const string StartEvidenceInvalid = "GLOBAL_PRODUCT_CORRECTION_START_EVIDENCE_INVALID";
     public const string ManualReconciliationNeeded = "GLOBAL_PRODUCT_CORRECTION_MANUAL_RECONCILIATION_NEEDED";
     public const string StartSettling = "GLOBAL_PRODUCT_CORRECTION_START_SETTLING";
+    // BL-552 flow 2 FIX1: a request that never took the product waits for its maker; one held but moved on ends.
+    public const string AwaitingMaker = "GLOBAL_PRODUCT_CORRECTION_AWAITING_MAKER";
+    public const string ProductMoved = "GLOBAL_PRODUCT_CORRECTION_PRODUCT_MOVED";
     public const string StartNotReceived = "GLOBAL_PRODUCT_CORRECTION_START_NOT_RECEIVED";
     public const string StartLookupFailed = "GLOBAL_PRODUCT_CORRECTION_START_LOOKUP_FAILED";
     public const string ClosedWithoutDecision = "GLOBAL_PRODUCT_CORRECTION_CLOSED_WITHOUT_DECISION";

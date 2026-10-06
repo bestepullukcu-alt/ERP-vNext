@@ -33,8 +33,8 @@ public sealed partial class GskuLifecycleHttpTests
         new(new GlobalProductCorrectionOperationRepository(host.Database, Tenant()),
             store ?? new GlobalProductRepository(host.Database, Tenant()), host.Engine,
             new GlobalProductCorrectionWorkflowStartRequestFactory(new(_gpTemplate, null, [_gpCandidate], "CORRECTION",
-                false, false, null, _gpIdentityTemplate, null), TimeProvider.System),
-            TimeProvider.System);
+                false, false, null, _gpIdentityTemplate, null), host.Clock),
+            host.Clock);
 
     // The maker's own call: the host's ordinary retry delay, so a request that met a fault answers instead of going
     // round again at once (the worker's attempts use GpTwoAttempts).
@@ -99,7 +99,7 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.Null(gp.ActiveLifecycleOperation);
         Assert.StartsWith("Product ", gp.GlobalProductName); // not applied
         Assert.Single(gp.AuditIntents,
-            x => x.Operation == ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired);
+            x => x.Operation == ProductAuditOperation.GlobalProductCorrectionEnded);
         Assert.Equal((0L, 0L), await GpCorrectionGaugesAsync());
     }
 
@@ -157,7 +157,7 @@ public sealed partial class GskuLifecycleHttpTests
         host.Engine.LookupFailureCode = code;
         try
         {
-            await Task.Delay(2100); // past the settle window: only the refusal can decide now
+            using var crossed1 = host.Clock.Shift(TimeSpan.FromSeconds(3)); // past the settle window: only the refusal can decide now
             var after = await GpWorkerRunsAsync(key, 3);
 
             Assert.Equal(GlobalProductCorrectionCheckpoint.StartOutcomeUnknown, after.Checkpoint);
@@ -201,7 +201,7 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.Equal(GlobalProductCorrectionWorkflowProcessor.StartSettling, settling.LastFailureCode);
         Assert.NotNull((await GpOf(product)).ActiveLifecycleOperation);
 
-        await Task.Delay(2100);
+        using var crossed2 = host.Clock.Shift(TimeSpan.FromSeconds(3));
         var ended = await GpWorkerRunsAsync(key, 2, execution: oneAttempt);
         Assert.Equal(GlobalProductCorrectionWorkflowProcessor.StartNotReceived, ended.LastFailureCode);
         Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, ended.RecoveryDisposition);
@@ -323,7 +323,7 @@ public sealed partial class GskuLifecycleHttpTests
     public async Task GPC_A_stuck_correction_whose_release_has_to_wait_goes_back_to_the_worker_and_is_released(string code)
     {
         var (product, key) = await GpStuckOnARecordAnswerAsync();
-        await Task.Delay(2100); // past the settle window: "nothing under this key" is trusted
+        using var crossed3 = host.Clock.Shift(TimeSpan.FromSeconds(3)); // past the settle window: "nothing under this key" is trusted
 
         var startsBefore = host.Engine.StartCalls;
         var repeat = await GpCorrectAsync(product, key,
@@ -374,7 +374,7 @@ public sealed partial class GskuLifecycleHttpTests
         var binding = gp.ActiveLifecycleOperation!;
         LocalAuditIntent Audit(GlobalProduct p, int version) =>
             GlobalProductCorrectionAuditIntentFactory.Create(p, version, key,
-                _maker, ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired, "x",
+                _maker, ProductAuditOperation.GlobalProductCorrectionEnded, "x",
                 DateTimeOffset.UtcNow);
         var store = new GlobalProductRepository(host.Database, Tenant());
 
@@ -399,7 +399,7 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.Null(after.ActiveLifecycleOperation);
         Assert.Equal(gp.Version + 1, after.Version);
         Assert.Single(after.AuditIntents,
-            x => x.Operation == ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired);
+            x => x.Operation == ProductAuditOperation.GlobalProductCorrectionEnded);
         // An exact repeat answers as the first did.
         Assert.True((await store.ReleaseLifecycleOperationAsync(product, gp.Version, binding, Audit(gp, gp.Version))).IsReplay);
     }

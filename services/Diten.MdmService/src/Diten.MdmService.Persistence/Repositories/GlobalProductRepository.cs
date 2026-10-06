@@ -436,8 +436,9 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             // reservation touches the product in its own. A submit on its way keeps the draft as submitted (before this,
             // an edit between the engine's start and the local "pending" write won, the submit was quarantined, and the
             // approver was left deciding facts the product no longer had). A submit the engine never received is set
-            // aside by the edit. A submit in manual reconciliation does NOT lock the draft: that is Global Product's
-            // accepted rule (the maker edits and submits anew) and it is kept.
+            // aside by the edit. BL-552 flow 3 (CT decision S2): a submit of this version in manual reconciliation
+            // now holds the draft too, as GSKU's does (before: the maker edited and submitted anew, and an approval the
+            // engine held for the stuck submit was left without its product).
             //
             // FIX4 item 6: only a product that HAS an identity operation needs the transaction. Any other edit is the
             // single write it always was (a plain mongod runs it) — conditioned on the reservation count read here, so a
@@ -499,6 +500,17 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
                         {
                             await session.AbortTransactionAsync(cancellationToken);
                             return new(false, await GetByIdAsync(id, cancellationToken), SubmitInFlight);
+                        }
+                        // BL-552 flow 3 (CT decision S2, the GSKU rule): a submit of THIS version stuck in manual
+                        // reconciliation holds the draft — the engine may hold its approval (certainly so when its
+                        // start proof could not be used). Its submitter's same submit settles it (nothing at the
+                        // engine → the draft opens; a start on record → the submit goes on); else a person (BL-530).
+                        // A stuck submit of an EARLIER version (an edit the previous rule allowed) does not.
+                        if (state.Kind == ProductIdentitySubmitStateKind.ReconciliationRequired
+                            && latest!.ExpectedProductVersion == expectedVersion)
+                        {
+                            await session.AbortTransactionAsync(cancellationToken);
+                            return new(false, await GetByIdAsync(id, cancellationToken), IdentityReconciliationRequired);
                         }
                         if (state.Kind == ProductIdentitySubmitStateKind.ResubmitRequired)
                         {
@@ -583,6 +595,8 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
 
     // FIX3 item 6: the edit's refusals (the same words as GSKU's, under Global Product's names).
     public const string SubmitInFlight = "GLOBAL_PRODUCT_IDENTITY_SUBMIT_IN_FLIGHT";
+    // BL-552 flow 3 (S2): the draft is held by a submit stuck in manual reconciliation.
+    public const string IdentityReconciliationRequired = "GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED";
     public const string SubmitReplacedByEdit = "PRODUCT_IDENTITY_SUBMIT_REPLACED_BY_EDIT";
 
     private static bool IsDuplicateKey(MongoException exception) =>
@@ -832,7 +846,11 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             || binding.BaseProductVersion != expectedVersion)
             return new(false, null, contractError ?? "GLOBAL_PRODUCT_LIFECYCLE_OPERATION_INVALID");
         var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
-        if (replay is not null) return replay;
+        // BL-552 flow 2 FIX1 item 7 (the GSKU CorrectionReplay rule): the admission's repeat is "done" only while the
+        // product is still held by this very binding — a lock given back since is not a lock this repeat may assume.
+        if (replay is not null)
+            return !replay.Succeeded || replay.GlobalProduct?.ActiveLifecycleOperation == binding ? replay
+                : new(false, replay.GlobalProduct, "PRODUCT_IDENTITY_IDEMPOTENCY_CONFLICT");
         var filter = ActiveTenantFilter
             & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
             & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
@@ -881,7 +899,11 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
                 || string.IsNullOrWhiteSpace(approvedNormalizedName))))
             return new(false, null, contractError ?? "GLOBAL_PRODUCT_CORRECTION_CONTRACT_INVALID");
         var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
-        if (replay is not null) return replay;
+        // BL-552 flow 2 FIX1 item 7: a decision's repeat is "done" only once the lock is gone (the decision
+        // write gives it back); with the lock still held the earlier write was not this one.
+        if (replay is not null)
+            return !replay.Succeeded || replay.GlobalProduct?.ActiveLifecycleOperation is null ? replay
+                : new(false, replay.GlobalProduct, "PRODUCT_IDENTITY_IDEMPOTENCY_CONFLICT");
         var filter = ActiveTenantFilter
             & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
             & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
@@ -920,37 +942,46 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         return await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
     }
 
-    public async Task<GlobalProductLifecycleWriteResult> RecordCorrectionConflictAsync(
+    // BL-552: Pending → Draft for an identity approval the engine closed without an applicable decision. Bound to the
+    // exact approval the product holds; an exact repeat answers as it did.
+    public async Task<GlobalProductLifecycleWriteResult> ReturnIdentityToDraftAsync(
         Guid id,
         int expectedVersion,
-        GlobalProductActiveLifecycleOperationBinding binding,
+        Guid workflowInstanceId,
+        Guid approvalTaskId,
         LocalAuditIntent auditIntent,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(binding);
         ArgumentNullException.ThrowIfNull(auditIntent);
-        var contractError = ValidateAuditIntent(id, expectedVersion,
-            ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired, auditIntent);
-        if (contractError is not null || binding.Kind != GlobalProductLifecycleOperationKind.Correction)
-            return new(false, null, contractError ?? "GLOBAL_PRODUCT_CORRECTION_CONTRACT_INVALID");
+        var contractError = workflowInstanceId == Guid.Empty || approvalTaskId == Guid.Empty
+            ? "GLOBAL_PRODUCT_IDENTITY_RETURN_CONTRACT_INVALID"
+            : ValidateAuditIntent(id, expectedVersion,
+                ProductAuditOperation.GlobalProductIdentityDecisionNotApplicable, auditIntent);
+        if (contractError is not null) return new(false, null, contractError);
         var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
         if (replay is not null) return replay;
         var filter = ActiveTenantFilter
-            & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
-            & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
-            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, binding.Kind)
-            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, binding.OperationId)
-            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.BaseProductVersion,
-                binding.BaseProductVersion)
-            & Builders<GlobalProduct>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.LifecycleStatus,
+                         ProductIdentityLifecycleStatus.PendingIdentityApproval)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.WorkflowBinding!.WorkflowInstanceId, workflowInstanceId)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.WorkflowBinding!.ApprovalTaskId, approvalTaskId)
+                     & Builders<GlobalProduct>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
         var update = Builders<GlobalProduct>.Update
+            .Set(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
             .Inc(x => x.Version, 1)
             .Push(x => x.AuditIntents, auditIntent);
         var updated = await _globalProducts.FindOneAndUpdateAsync(filter, update,
-            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
-        return updated is not null ? new(true, updated)
-            : await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
+            new FindOneAndUpdateOptions<GlobalProduct> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, updated);
+        var current = await GetByIdAsync(id, cancellationToken);
+        if (current is not null && current.Version == expectedVersion
+            && current.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
+            && current.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate)
+            return new(false, current, "WORKFLOW_BINDING_CONFLICT");
+        return await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
     }
 
     // BL-552: the lock goes back in the same write as the intent that says why the request ended unapplied. Only the
@@ -966,17 +997,18 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         ArgumentNullException.ThrowIfNull(auditIntent);
         var expectedOperation = binding.Kind switch
         {
-            GlobalProductLifecycleOperationKind.Correction =>
-                ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired,
-            GlobalProductLifecycleOperationKind.Retirement =>
-                ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired,
+            // BL-552 flow 2 FIX1 item 12: an ENDED request's own audit operation (not "manual reconciliation required").
+            GlobalProductLifecycleOperationKind.Correction => ProductAuditOperation.GlobalProductCorrectionEnded,
+            GlobalProductLifecycleOperationKind.Retirement => ProductAuditOperation.GlobalProductRetirementEnded,
             _ => (ProductAuditOperation?)null
         };
         var contractError = expectedOperation.HasValue
             ? ValidateAuditIntent(id, expectedVersion, expectedOperation.Value, auditIntent)
             : "GLOBAL_PRODUCT_LIFECYCLE_RELEASE_CONTRACT_INVALID";
+        // BL-552 flow 2 FIX1 item 9: the product's version is normally its base + 1; a row written by the previous
+        // version's name-conflict record is one further on. Either is this request's — the binding decides.
         if (contractError is not null || binding.OperationId == Guid.Empty
-            || binding.BaseProductVersion + 1 != expectedVersion)
+            || expectedVersion < binding.BaseProductVersion + 1)
             return new(false, null, contractError ?? "GLOBAL_PRODUCT_LIFECYCLE_RELEASE_CONTRACT_INVALID");
         var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
         if (replay is not null)
@@ -1025,7 +1057,11 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             || binding.OperationId == Guid.Empty || binding.BaseProductVersion + 1 != expectedVersion)
             return new(false, null, contractError ?? "GLOBAL_PRODUCT_RETIREMENT_CONTRACT_INVALID");
         var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
-        if (replay is not null) return replay;
+        // BL-552 flow 2 FIX1 item 7: a decision's repeat is "done" only once the lock is gone (the decision
+        // write gives it back); with the lock still held the earlier write was not this one.
+        if (replay is not null)
+            return !replay.Succeeded || replay.GlobalProduct?.ActiveLifecycleOperation is null ? replay
+                : new(false, replay.GlobalProduct, "PRODUCT_IDENTITY_IDEMPOTENCY_CONFLICT");
         if (approved && await FindRetirementBlockerAsync(id, cancellationToken) is { } blocker)
             return new(false, await GetByIdAsync(id, cancellationToken), blocker);
         var filter = ActiveTenantFilter
@@ -1046,37 +1082,6 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             .Inc(x => x.Version, 1)
             .Push(x => x.AuditIntents, auditIntent);
         if (approved) update = update.Set(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Retired);
-        var updated = await _globalProducts.FindOneAndUpdateAsync(filter, update,
-            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
-        return updated is not null ? new(true, updated)
-            : await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
-    }
-
-    public async Task<GlobalProductLifecycleWriteResult> RecordRetirementConflictAsync(
-        Guid id,
-        int expectedVersion,
-        GlobalProductActiveLifecycleOperationBinding binding,
-        LocalAuditIntent auditIntent,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        ArgumentNullException.ThrowIfNull(auditIntent);
-        var contractError = ValidateAuditIntent(id, expectedVersion,
-            ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired, auditIntent);
-        if (contractError is not null || binding.Kind != GlobalProductLifecycleOperationKind.Retirement)
-            return new(false, null, contractError ?? "GLOBAL_PRODUCT_RETIREMENT_CONTRACT_INVALID");
-        var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
-        if (replay is not null) return replay;
-        var filter = ActiveTenantFilter
-            & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
-            & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
-            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, binding.Kind)
-            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, binding.OperationId)
-            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.BaseProductVersion,
-                binding.BaseProductVersion)
-            & Builders<GlobalProduct>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
-        var update = Builders<GlobalProduct>.Update.Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
-            .Inc(x => x.Version, 1).Push(x => x.AuditIntents, auditIntent);
         var updated = await _globalProducts.FindOneAndUpdateAsync(filter, update,
             new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
         return updated is not null ? new(true, updated)
@@ -1502,7 +1507,14 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             var receipt = current.AuditIntentReceipts.SingleOrDefault(
                 item => string.Equals(item.IdempotencyKey, auditIntent.IdempotencyKey, StringComparison.Ordinal));
             if (receipt is null) return null;
+            // BL-552 flow 2 FIX1 item 14: compared as the intent branch compares, as far as a receipt can — its
+            // operation through the intent id (derived from the operation and the command key), its command id through
+            // the key (every Global Product intent's command id IS its key), its facts through the evidence, and its
+            // version only as a bound: a receipt keeps no versions (the shared delivery store writes none), so a write
+            // this repeat stands for cannot be newer than the aggregate it reads.
             return receipt.IntentId == auditIntent.IntentId && receipt.TenantId == auditIntent.TenantId
+                   && string.Equals(receipt.IdempotencyKey, auditIntent.CommandId, StringComparison.Ordinal)
+                   && current.Version >= auditIntent.PostVersion
                    && !string.IsNullOrWhiteSpace(receipt.CentralAcknowledgement)
                    && !string.IsNullOrWhiteSpace(receipt.CompactReceiptReference)
                    && string.Equals(receipt.EvidenceHash, auditIntent.EvidenceHash, StringComparison.Ordinal)

@@ -12,20 +12,25 @@ public static class GlobalProductRetirementRequestAuditIntentFactory
         => Create(product, expectedVersion, operationId, actorId, operation, string.Empty, timestampUtc);
 
     public static LocalAuditIntent Create(GlobalProduct product, int expectedVersion, Guid operationId,
-        Guid actorId, ProductAuditOperation operation, string requestReason, DateTimeOffset timestampUtc)
+        Guid actorId, ProductAuditOperation operation, string requestReason, DateTimeOffset timestampUtc,
+        string? endReason = null)
     {
         if (product.Id == Guid.Empty || product.TenantId == Guid.Empty || expectedVersion < 0
             || operationId == Guid.Empty || actorId == Guid.Empty || timestampUtc.Offset != TimeSpan.Zero
             || operation is not (ProductAuditOperation.GlobalProductRetirementRequested
                 or ProductAuditOperation.GlobalProductRetirementRejected
                 or ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired
-                or ProductAuditOperation.GlobalProductIdentityRetired))
+                or ProductAuditOperation.GlobalProductIdentityRetired
+                or ProductAuditOperation.GlobalProductRetirementEnded))
             throw new ArgumentException("Global Product retirement audit facts are invalid.");
         var key = $"global-product-retirement:{operationId:D}:{operation}";
         var postVersion = checked(expectedVersion + 1);
         var facts = Encoding.UTF8.GetBytes(string.Join('\n', product.TenantId, product.Id,
             expectedVersion, operationId, actorId, operation,
-            Convert.ToBase64String(Encoding.UTF8.GetBytes(requestReason))));
+            Convert.ToBase64String(Encoding.UTF8.GetBytes(requestReason))
+            // BL-552 flow 2 FIX1 item 12: why an ended request ended is part of its facts — appended ONLY for an
+            // ended request, so every other intent's evidence (and its replay across a deploy) is unchanged.
+            ) + (endReason is null ? string.Empty : "\n" + endReason));
         return new()
         {
             IntentId = DeterministicGuid($"{product.TenantId:D}|{product.Id:D}|{operation}|{operationId:D}"),

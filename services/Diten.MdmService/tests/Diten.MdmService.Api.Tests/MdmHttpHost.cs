@@ -85,6 +85,9 @@ public sealed class MdmHttpHost : IAsyncLifetime
     public Guid Approver { get; } = Guid.NewGuid();
 
     public FakeWorkflowEngine Engine { get; } = new();
+    // BL-552 flow 2 FIX1 item 15: the services' clock — the real one unless a test moves it on (Shift), so a window is
+    // crossed without sleeping through it.
+    public ShiftableClock Clock { get; } = new();
     public FakeReferenceData References { get; } = new();
     public RecordingAuditForwarder Audit { get; } = new();
     public FakePlatformReferenceEndpoint PlatformReference { get; } = new();
@@ -169,14 +172,31 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 ["GlobalProductCorrectionWorkflowWorker__MaxRetryDelaySeconds"] = "2",
                 ["GlobalProductCorrectionWorkflowWorker__StartSettleSeconds"] = "2",
                 ["GlobalProductCorrectionWorkflowWorker__QuarantineAfterFailedAttempts"] = "4",
-                // BL-552 flow 2: the Global Product retirement request's runner, driven by the tests the same way.
+                // BL-552 flow 2: the Global Product retirement request over HTTP (flow 2 FIX1 item 2) and its runner,
+                // driven by the tests the same way.
+                ["GlobalProductRetirementRequestWorkflow__Enabled"] = "true",
+                ["GlobalProductRetirementRequestWorkflow__TemplateCode"] = "GP-RETIREMENT",
+                ["GlobalProductRetirementRequestWorkflow__CandidatePrincipalIds__0"] = Approver.ToString("D"),
                 ["GlobalProductRetirementRequestWorkflowWorker__Enabled"] = "true",
                 ["GlobalProductRetirementRequestWorkflowWorker__PollIntervalSeconds"] = "3600",
                 ["GlobalProductRetirementRequestWorkflowWorker__LeaseSeconds"] = "10",
                 ["GlobalProductRetirementRequestWorkflowWorker__RetryDelaySeconds"] = "1",
                 ["GlobalProductRetirementRequestWorkflowWorker__MaxRetryDelaySeconds"] = "2",
                 ["GlobalProductRetirementRequestWorkflowWorker__StartSettleSeconds"] = "2",
-                ["GlobalProductRetirementRequestWorkflowWorker__QuarantineAfterFailedAttempts"] = "4"
+                ["GlobalProductRetirementRequestWorkflowWorker__QuarantineAfterFailedAttempts"] = "4",
+                // BL-552 flow 3: the Global Product identity approval over HTTP and its runner (driven by the tests).
+                ["ProductIdentityWorkflow__Enabled"] = "true",
+                ["ProductIdentityWorkflow__GlobalProductTemplateCode"] = "GP-IDENTITY",
+                ["ProductIdentityWorkflow__CandidatePrincipalIds__0"] = Approver.ToString("D"),
+                ["ProductIdentityWorkflow__ReasonCode"] = "GLOBAL_PRODUCT_IDENTITY_APPROVAL",
+                ["ProductIdentityWorkflowWorker__Enabled"] = "true",
+                ["ProductIdentityWorkflowWorker__LeaseOwner"] = "mdm-http-test-gp-identity",
+                ["ProductIdentityWorkflowWorker__PollIntervalSeconds"] = "3600",
+                ["ProductIdentityWorkflowWorker__LeaseSeconds"] = "10",
+                ["ProductIdentityWorkflowWorker__RetryDelaySeconds"] = "1",
+                ["ProductIdentityWorkflowWorker__ServiceFaultMaxRetryDelaySeconds"] = "2",
+                ["ProductIdentityWorkflowWorker__StartSettleSeconds"] = "2",
+                ["ProductIdentityWorkflowWorker__QuarantineAfterFailedAttempts"] = "4"
             };
             foreach (var (key, value) in overrides)
             {
@@ -205,6 +225,8 @@ public sealed class MdmHttpHost : IAsyncLifetime
                     services.AddSingleton<IProductIdentityWorkflowTransportReadiness, ReadyTransport>();
                     services.RemoveAll<IPlatformAuditForwarder>();
                     services.AddSingleton<IPlatformAuditForwarder>(Audit);
+                    services.RemoveAll<TimeProvider>();
+                    services.AddSingleton<TimeProvider>(Clock);
                 });
             });
             _ = _factory.Server;
@@ -329,4 +351,27 @@ internal static class Envelope
             : null;
 
     public static JsonContent Json(object value) => JsonContent.Create(value);
+}
+
+/// <summary>The real clock plus an offset a test sets for its own duration (Shift returns the reset).</summary>
+public sealed class ShiftableClock : TimeProvider
+{
+    private long _offsetTicks;
+
+    public override DateTimeOffset GetUtcNow() => base.GetUtcNow().AddTicks(Interlocked.Read(ref _offsetTicks));
+
+    public IDisposable Shift(TimeSpan by)
+    {
+        Interlocked.Add(ref _offsetTicks, by.Ticks);
+        return new Reset(this, by.Ticks);
+    }
+
+    private sealed class Reset(ShiftableClock clock, long ticks) : IDisposable
+    {
+        private int _done;
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _done, 1) == 0) Interlocked.Add(ref clock._offsetTicks, -ticks);
+        }
+    }
 }

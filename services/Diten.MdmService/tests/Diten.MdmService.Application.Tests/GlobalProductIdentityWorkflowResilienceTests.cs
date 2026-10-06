@@ -177,7 +177,10 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
     }
 
     [Fact]
-    public async Task Submit_OutcomeUnknownAndTheLookupSaysNothingArrived_IsTheMakersToResubmit()
+    // BL-552 flow 3: a start sent in THIS request and unanswered — "nothing under its key" right after it may only mean
+    // the engine is still on it. The draft is held for the settle window (before: handed back to the maker at once,
+    // and an edit could leave an approval the engine was still creating without its product).
+    public async Task Submit_OutcomeUnknownAndTheLookupSaysNothingYet_HoldsTheDraftForTheSettleWindow()
     {
         var harness = Harness.Create();
         harness.Client.Start = (_, _, _, _) =>
@@ -189,43 +192,36 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
 
         Assert.Equal(503, result.StatusCode);
         Assert.Equal(Resubmit, result.ErrorCode);
-        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown,
             harness.Repository.Current!.Checkpoint);
+        Assert.Equal(GlobalProductIdentityWorkflowProcessor.StartSettlingCode, harness.Repository.Current.LastFailureCode);
         Assert.Equal(1, harness.Client.StartCalls);
-        // The start that went unanswered is said as a service fault; the lookup's "nothing arrived" is the engine
-        // answering, so no streak is left on the operation.
-        Assert.Null(harness.Repository.Current.ServiceFaultSinceUtcTicksV1);
-        Assert.Equal(0, harness.Repository.Current.ServiceFaultCount);
         var line = Assert.Single(harness.Log.Entries);
         Assert.Contains("service fault at Start", line.Message, StringComparison.Ordinal);
         Assert.Contains("PRODUCT_WORKFLOW_TIMEOUT", line.Message, StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task Submit_OutcomeUnknownAndTheLookupSaysNothingArrived_EndsTheStreak_OnTheMakersPathAsOnTheWorkers()
+    // BL-552 flow 3: "nothing arrived", once the settle window of the last start has passed, is the engine answering
+    // for this operation — the streak of faults ends and the operation is the maker's again. (On the maker's own path a
+    // start is sent in the same request, so its "nothing yet" is inside the window: see the test above.)
+    public async Task Recover_OutcomeUnknownAndTheLookupSaysNothingArrived_AfterTheWindow_EndsTheStreak()
     {
         var harness = Harness.Create();
         var operation = harness.CreateOperation(GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown);
-        var since = DateTimeOffset.UtcNow.AddMinutes(-2).UtcTicks;
         operation.ServiceFaultCount = 3;
-        operation.ServiceFaultSinceUtcTicksV1 = since;
-        operation.UpdatedAtUtcTicksV1 = DateTimeOffset.UtcNow.AddMinutes(-1).UtcTicks;
+        operation.ServiceFaultSinceUtcTicksV1 = DateTimeOffset.UtcNow.AddMinutes(-2).UtcTicks;
+        operation.LastStartSentAtUtcTicksV1 = DateTimeOffset.UtcNow.AddMinutes(-10).UtcTicks;
         harness.Repository.Current = operation;
-        harness.Client.Start = (_, _, _, _) =>
-            Failed<ProductIdentityWorkflowStartResult>(Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
         harness.Client.StartResult = (_, _, _) =>
             Failed<ProductIdentityWorkflowStartResult>(Outcome.NotFound, "NOT_FOUND_NON_LEAKAGE");
 
-        await Submit(harness);
+        await harness.Processor.RecoverAsync(operation, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
 
-        // "Nothing arrived" is the engine answering for this operation: the streak ends, whoever asked.
         Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay, operation.Checkpoint);
         Assert.Equal(0, operation.ServiceFaultCount);
         Assert.Null(operation.ServiceFaultSinceUtcTicksV1);
-        // …and the maker is still told what they met: a service fault, said with the streak it belonged to.
-        var line = Assert.Single(harness.Log.Entries);
-        Assert.Contains("met a service fault at Start", line.Message, StringComparison.Ordinal);
-        Assert.Contains("worker attempt 3", line.Message, StringComparison.Ordinal);
+        Assert.Equal(0, harness.Client.StartCalls);
     }
 
     // ── the maker's resubmit ──────────────────────────────────────────────────────────────────────────────────────

@@ -26,7 +26,7 @@ public sealed partial class GskuLifecycleHttpTests
 {
     private GlobalProductCorrectionWorkflowStartRequestFactory GpCorrectionFactory() =>
         new(new(_gpTemplate, null, [_gpCandidate], "CORRECTION", false, false, null, _gpIdentityTemplate, null),
-            TimeProvider.System);
+            host.Clock);
 
     private string GpProposedName(Guid key) => $"Corrected {key:N}"[..20];
 
@@ -207,7 +207,7 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.StartsWith("Product ", gp.GlobalProductName);
         Assert.Equal(2, gp.Version); // the release only: no extra version jump
         Assert.Single(gp.AuditIntents,
-            x => x.Operation == ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired);
+            x => x.Operation == ProductAuditOperation.GlobalProductCorrectionEnded);
         Assert.Equal((0L, 0L), await GpCorrectionGaugesAsync());
 
         // The requester's repeat says why — without reading the engine (an ended request has nothing to reconcile).
@@ -252,7 +252,7 @@ public sealed partial class GskuLifecycleHttpTests
     private LocalAuditIntent GpReleaseAudit(GlobalProduct gp, Guid key, int version, Guid? tenant = null) =>
         GlobalProductCorrectionAuditIntentFactory.Create(
             tenant is { } foreign ? new GlobalProduct { Id = gp.Id, TenantId = foreign } : gp,
-            version, key, _maker, ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired,
+            version, key, _maker, ProductAuditOperation.GlobalProductCorrectionEnded,
             GpProposedName(key), DateTimeOffset.UtcNow);
 
     [Fact]
@@ -320,10 +320,10 @@ public sealed partial class GskuLifecycleHttpTests
     public async Task GPC1_After_the_window_the_worker_ends_a_lock_holding_request_nothing_arrived_for()
     {
         var (product, key) = await GpInterruptedAfterTheLockAsync();
-        await Task.Delay(2100);
+        using var crossed4 = host.Clock.Shift(TimeSpan.FromSeconds(3));
 
         Assert.Contains(key, (await new GlobalProductCorrectionOperationRepository(host.Database, Tenant())
-            .DiscoverRecoverableAsync(DateTimeOffset.UtcNow.UtcTicks, 100)).Operations.Select(x => x.OperationId));
+            .DiscoverRecoverableAsync(host.Clock.GetUtcNow().UtcTicks, 100)).Operations.Select(x => x.OperationId));
         var ended = await GpWorkerRunsAsync(key, 2);
 
         Assert.Equal(GlobalProductCorrectionWorkflowProcessor.StartNotReceived, ended.LastFailureCode);
@@ -344,10 +344,10 @@ public sealed partial class GskuLifecycleHttpTests
     {
         var (product, key) = await GpInterruptedAfterTheLockAsync();
         await GpParkAsAwaitingMakerReplayAsync(key);
-        await Task.Delay(2100);
+        using var crossed5 = host.Clock.Shift(TimeSpan.FromSeconds(3));
 
         var page = await new GlobalProductCorrectionOperationRepository(host.Database, Tenant())
-            .DiscoverRecoverableAsync(DateTimeOffset.UtcNow.UtcTicks, 100);
+            .DiscoverRecoverableAsync(host.Clock.GetUtcNow().UtcTicks, 100);
         Assert.Contains(key, page.Operations.Select(x => x.OperationId));
         await GpCorrection().RecoverAsync(page.Operations.Single(x => x.OperationId == key), "gp-worker", GpTwoAttempts(), default);
 
@@ -641,7 +641,7 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.NotNull((await GpOf(product)).ActiveLifecycleOperation);
         Assert.Equal(GlobalProductCorrectionCheckpoint.ManualReconciliationRequired, (await GpCorrectionOf(key)).Checkpoint);
 
-        await Task.Delay(2100);
+        using var crossed6 = host.Clock.Shift(TimeSpan.FromSeconds(3));
         var after = await GpCorrectAsync(product, key);
         Assert.Equal(409, after.StatusCode);
         Assert.Equal(GlobalProductCorrectionWorkflowProcessor.StartNotReceived, after.ErrorCode);
@@ -659,7 +659,7 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.Equal(GlobalProductCorrectionWorkflowProcessor.StartSettling, (await GpCorrectionOf(key)).LastFailureCode);
         Assert.NotNull((await GpOf(product)).ActiveLifecycleOperation);
 
-        await Task.Delay(2100);
+        using var crossed7 = host.Clock.Shift(TimeSpan.FromSeconds(3));
         await host.RunAsync<GlobalProductCorrectionRecoveryRunner>(runner => runner.RunCycleAsync());
         Assert.Equal(GlobalProductCorrectionWorkflowProcessor.StartNotReceived, (await GpCorrectionOf(key)).LastFailureCode);
         Assert.Null((await GpOf(product)).ActiveLifecycleOperation);

@@ -119,13 +119,6 @@ public interface IGlobalProductRepository
         LocalAuditIntent auditIntent,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("Global Product retirement workflow application is not implemented.");
-    Task<GlobalProductLifecycleWriteResult> RecordRetirementConflictAsync(
-        Guid id,
-        int expectedVersion,
-        GlobalProductActiveLifecycleOperationBinding binding,
-        LocalAuditIntent auditIntent,
-        CancellationToken cancellationToken = default) =>
-        throw new NotSupportedException("Global Product retirement conflict recording is not implemented.");
     Task<GlobalProductLifecycleWriteResult> AcquireLifecycleOperationAsync(
         Guid id,
         int expectedVersion,
@@ -142,13 +135,17 @@ public interface IGlobalProductRepository
         LocalAuditIntent auditIntent,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("Global Product correction application is not implemented.");
-    Task<GlobalProductLifecycleWriteResult> RecordCorrectionConflictAsync(
+    // BL-552: the identity approval closed at the engine without a decision that can be applied (cancelled in the Task
+    // Center, timed out, decided by its own maker): the pending product is a draft again, in the same write as the
+    // intent that says why (GlobalProductIdentityDecisionNotApplicable). Only the approval the product is bound to.
+    Task<GlobalProductLifecycleWriteResult> ReturnIdentityToDraftAsync(
         Guid id,
         int expectedVersion,
-        GlobalProductActiveLifecycleOperationBinding binding,
+        Guid workflowInstanceId,
+        Guid approvalTaskId,
         LocalAuditIntent auditIntent,
         CancellationToken cancellationToken = default) =>
-        throw new NotSupportedException("Global Product correction conflict recording is not implemented.");
+        throw new NotSupportedException("Global Product identity return to draft is not implemented.");
     // BL-552: a correction / retirement request that ends without its decision applied gives the Global Product's
     // lock back in the same write as the intent that says why (…ManualReconciliationRequired).
     Task<GlobalProductLifecycleWriteResult> ReleaseLifecycleOperationAsync(

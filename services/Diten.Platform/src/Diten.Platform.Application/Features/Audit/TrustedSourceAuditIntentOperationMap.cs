@@ -36,6 +36,11 @@ public static class TrustedSourceAuditIntentOperationMap
             [("GlobalProduct", "GlobalProductRetirementRequested")] = ("GlobalProduct", AuditOperation.LifecycleTransition),
             [("GlobalProduct", "GlobalProductRetirementRejected")] = ("GlobalProduct", AuditOperation.LifecycleTransition),
             [("GlobalProduct", "GlobalProductRetirementManualReconciliationRequired")] = ("GlobalProduct", AuditOperation.LifecycleTransition),
+            // MDM BL-552 (additions only): a correction / retirement request that ENDED (its lock given back), and an
+            // identity approval closed without an applicable decision (the product a draft again).
+            [("GlobalProduct", "GlobalProductCorrectionEnded")] = ("GlobalProduct", AuditOperation.LifecycleTransition),
+            [("GlobalProduct", "GlobalProductRetirementEnded")] = ("GlobalProduct", AuditOperation.LifecycleTransition),
+            [("GlobalProduct", "GlobalProductIdentityDecisionNotApplicable")] = ("GlobalProduct", AuditOperation.LifecycleTransition),
             [("ProductDefinitionRevision", "ProductDefinitionRevisionDraftCreated")] = ("ProductDefinitionRevision", AuditOperation.Create),
             [("ProductDefinitionRevision", "ProductDefinitionRevisionIdentitySubmitted")] = ("ProductDefinitionRevision", AuditOperation.LifecycleTransition),
             [("ProductDefinitionRevision", "ProductDefinitionRevisionIdentityApproved")] = ("ProductDefinitionRevision", AuditOperation.LifecycleTransition),

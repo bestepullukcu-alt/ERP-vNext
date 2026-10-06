@@ -33,6 +33,11 @@ public interface IGlobalProductIdentityWorkflowOperationRepository
         long leaseUntilUtcTicks,
         CancellationToken cancellationToken = default);
 
+    // BL-552: this tenant's stuck submits (manual reconciliation, or past the retry limit), and those of them only a
+    // person can settle (BL-530).
+    Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) => Task.FromResult(0L);
+    Task<long> CountNeedingAPersonAsync(CancellationToken cancellationToken = default) => Task.FromResult(0L);
+
     Task<bool> AdvanceAsync(
         GlobalProductIdentityWorkflowClaim claim,
         GlobalProductIdentityWorkflowCheckpointMutation mutation,

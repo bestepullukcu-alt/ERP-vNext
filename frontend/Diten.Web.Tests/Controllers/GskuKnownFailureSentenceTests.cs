@@ -156,6 +156,9 @@ public sealed class GskuKnownFailureSentenceTests
     [Theory]
     [InlineData("GLOBAL_PRODUCT_IDENTITY_SUBMIT_IN_FLIGHT", "ErrorSubmitInFlight")]
     [InlineData("PRODUCT_IDENTITY_WORKFLOW_DRAFT_CHANGED", "ErrorDraftChanged")]
+    // BL-552 flow 3 (S2): a draft held by a submit stuck in manual reconciliation — the in-flight sentence.
+    [InlineData("GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED", "ErrorSubmitInFlight")]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_REFUSED", "ErrorSubmitInFlight")]
     public async Task A_global_product_in_flight_refusal_is_said_in_words(string code, string key)
     {
         var wire = new ScriptedHandler((HttpStatusCode.Conflict, Envelope(code)));
@@ -175,6 +178,31 @@ public sealed class GskuKnownFailureSentenceTests
         Assert.Equal(StatusCodes.Status409Conflict, status);
         Assert.Equal($"localized:{key}", Assert.Single(errors));
         Assert.Single(wire.Keys);
+    }
+
+    // BL-552 flow 3 (S2): the SUBMIT of a draft held by a stuck submit is refused in the same words (the screen's
+    // submit button goes through this proxy too).
+    [Theory]
+    [InlineData("GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED")]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_REFUSED")]
+    public async Task A_global_product_submit_held_by_a_stuck_submit_is_said_in_words(string code)
+    {
+        var wire = new ScriptedHandler((HttpStatusCode.Conflict, Envelope(code)));
+        var gateway = new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?> { ["GatewayUrl"] = "https://gateway-fixture.invalid" }).Build();
+        var controller = new GlobalProductsController(new HttpClient(wire), gateway,
+            new PrefixLocalizer<Diten.Web.SharedResource>(), new PrefixLocalizer<Diten.Web.Views.MasterDataManagement.GlobalProducts.GlobalProductsIndex>(),
+            NullLogger<GlobalProductsController>.Instance)
+        {
+            ControllerContext = new ControllerContext { HttpContext = Context("mdm.global-products.submit",
+                new() { ["ExpectedVersion"] = "3", ["__RequestVerificationToken"] = "synthetic-csrf" }) }
+        };
+
+        var result = await controller.SubmitLifecycle(Guid.NewGuid(), 3, CancellationToken.None);
+
+        var (status, errors) = Read(result);
+        Assert.Equal(StatusCodes.Status409Conflict, status);
+        Assert.Equal("localized:ErrorSubmitInFlight", Assert.Single(errors));
     }
 
     private static string Envelope(string code) =>

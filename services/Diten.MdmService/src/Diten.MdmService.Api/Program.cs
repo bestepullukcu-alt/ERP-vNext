@@ -713,7 +713,11 @@ public static class GlobalProductWorkflowExecutionConfigurationRegistrations
             var options = sp.GetRequiredService<IOptions<ProductIdentityWorkflowWorkerOptions>>().Value;
             return new ProductIdentityWorkflowServiceFaultSettings(
                 TimeSpan.FromSeconds(options.ServiceFaultMaxRetryDelaySeconds),
-                options.ServiceFaultErrorAfterAttempts);
+                options.ServiceFaultErrorAfterAttempts)
+            {
+                StartSettleWindow = TimeSpan.FromSeconds(Math.Clamp(options.StartSettleSeconds, 1, 3_600)),
+                QuarantineAfterFailedAttempts = Math.Clamp(options.QuarantineAfterFailedAttempts, 0, 1_000)
+            };
         });
         services.AddScoped<GlobalProductIdentityWorkflowProcessor>();
         return services;
