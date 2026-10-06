@@ -16,7 +16,8 @@
      id="visit-planning-details"
      data-session-id="@Model.SessionId"
      data-can-generate="@Model.CanGenerate.ToString().ToLowerInvariant()"
-     data-can-apply="@Model.CanApply.ToString().ToLowerInvariant()">
+     data-can-apply="@Model.CanApply.ToString().ToLowerInvariant()"
+     data-read-only="@Model.IsReadOnly.ToString().ToLowerInvariant()">
 
     <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
         <div>
@@ -38,6 +39,14 @@
     </div>
 
     <div id="vp-detail-status" class="small text-muted mb-3"></div>
+
+    @* WP-VP-FIX-1 (D2) — a committed / archived plan: one line says why nothing can be changed. *@
+    @if (Model.IsReadOnly)
+    {
+        <div class="alert alert-info py-2 small mb-3" id="vp-readonly-notice" role="status"><i class="bx bx-lock-alt me-1"></i>@Localizer["ReadOnlyNotice"]</div>
+    }
+    @* WP-VP-FIX-1 (C3) — filled by details.js when the planner reports calendarStatus = unresolved. *@
+    <div id="vp-calendar-warning"></div>
 
     @* ── Plan summary — WCN-style SUMMARY card (icon/label/value grid). Absorbs the old Route card's range + working
        hours. PlanSection landmark kept for section-map parity. Hidden #vp-plan-title/#vp-plan-code kept so details.js
@@ -222,7 +231,10 @@
                             <div class="tab-pane fade show active" id="vp-subtab-doctors" role="tabpanel">
                                 <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
                                     <input type="text" class="form-control form-control-sm flex-grow-1" id="vp-doctor-search" placeholder="@Localizer["SearchDoctor"]" style="max-width:260px;">
-                                    <button type="button" class="btn btn-sm btn-label-secondary" id="vp-select-all-doctors"><i class="bx bx-check-double me-1"></i>@Localizer["SelectAllDoctors"]</button>
+                                    @if (Model.CanGenerate)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-label-secondary" id="vp-select-all-doctors"><i class="bx bx-check-double me-1"></i>@Localizer["SelectAllDoctors"]</button>
+                                    }
                                 </div>
                                 <div class="d-flex align-items-center gap-2 flex-wrap mb-3" id="vp-specialty-pills"></div>
                                 <div class="card-datatable table-responsive">
@@ -259,7 +271,10 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <span class="fw-semibold small">@Localizer["SelectedLabel"]</span>
-                                    <button type="button" class="btn btn-sm btn-text-secondary p-0" id="vp-clear-selection">@Localizer["ClearSelection"]</button>
+                                    @if (Model.CanGenerate)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-text-secondary p-0" id="vp-clear-selection">@Localizer["ClearSelection"]</button>
+                                    }
                                 </div>
                                 <div id="vp-selection-chips" class="d-flex flex-column gap-2"><div class="text-muted small">—</div></div>
                             </div>

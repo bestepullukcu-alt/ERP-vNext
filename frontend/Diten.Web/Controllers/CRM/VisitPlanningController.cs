@@ -1,9 +1,11 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,6 +29,12 @@ public sealed class VisitPlanningController : Controller
     private const string ApplyPermission = "crm.visit-plan.apply";
     private const string PlannedVisitManage = "crm.planned-visit.manage";
     private const string ViewRoot = "~/Views/CRM/VisitPlanning";
+
+    // WP-VP-FIX-1 (D6) — the MOD-0048 sets whose labels replace raw codes on the Targets + Route tabs.
+    internal const string AccountTypeSetCode = "account-type";
+    internal const string MedicalSpecialtySetCode = "medical-specialty";
+
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
@@ -75,12 +83,19 @@ public sealed class VisitPlanningController : Controller
         });
     }
 
+    // WP-VP-FIX-1 (D2) — a committed / archived plan has nothing left to edit: the Edit page sends the reader back to the
+    // (read-only) Details page instead of opening a form whose save CRM would refuse with 409.
     [HttpGet("Edit/{planningSessionId:guid}")]
-    public IActionResult Edit(Guid planningSessionId)
+    public async Task<IActionResult> Edit(Guid planningSessionId, CancellationToken ct)
     {
         if (!HasAnyPermission(GeneratePermission))
         {
             return StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        if (IsLockedStatus(await ReadSessionStatusAsync(planningSessionId, ct)))
+        {
+            return RedirectToAction(nameof(Details), new { planningSessionId });
         }
 
         return View($"{ViewRoot}/Edit.cshtml", new VisitPlanningSessionPageViewModel
@@ -91,21 +106,31 @@ public sealed class VisitPlanningController : Controller
         });
     }
 
+    // WP-VP-FIX-1 (D2) — a committed / archived plan is READ-ONLY: every write affordance (save as the week's plan, save
+    // targets, edit, generate route, re-plan, target checkboxes) is switched off server-side, the page says why, and the
+    // route stays viewable. CRM still refuses those writes on its own (409); this only stops offering them.
     [HttpGet("Details/{planningSessionId:guid}")]
-    public IActionResult Details(Guid planningSessionId)
+    public async Task<IActionResult> Details(Guid planningSessionId, CancellationToken ct)
     {
         if (!HasAnyPermission(ReadPermission))
         {
             return StatusCode(StatusCodes.Status403Forbidden);
         }
 
+        var readOnly = IsLockedStatus(await ReadSessionStatusAsync(planningSessionId, ct));
         return View($"{ViewRoot}/Details.cshtml", new VisitPlanningSessionPageViewModel
         {
             SessionId = planningSessionId,
-            CanGenerate = HasAnyPermission(GeneratePermission),
-            CanApply = HasAnyPermission(ApplyPermission) && HasAnyPermission(PlannedVisitManage)
+            IsReadOnly = readOnly,
+            CanGenerate = !readOnly && HasAnyPermission(GeneratePermission),
+            CanApply = !readOnly && HasAnyPermission(ApplyPermission) && HasAnyPermission(PlannedVisitManage)
         });
     }
+
+    /// <summary>committed / archived — the statuses a plan can no longer be edited, applied or re-targeted in.</summary>
+    internal static bool IsLockedStatus(string? status)
+        => string.Equals(status, "committed", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(status, "archived", StringComparison.OrdinalIgnoreCase);
 
     // ---------------- generation proxies ----------------
 
@@ -177,12 +202,55 @@ public sealed class VisitPlanningController : Controller
         => ProxyAsync(
             HttpMethod.Get, $"/api/crm/accounts/{accountId}/related-accounts{Request.QueryString}", null, ReadPermission, ct);
 
-    // Working calendar (weekend + holiday days) for the route tab. Best-effort: the Details view degrades to a Sat/Sun
-    // weekend fallback when this refuses (needs platform.working-calendar.override.read) or returns nothing.
-    [HttpGet("api/working-calendar")]
-    public Task<IActionResult> WorkingCalendar(CancellationToken ct)
-        => ProxyAsync(
-            HttpMethod.Get, $"/api/platform/working-calendars{Request.QueryString}", null, ReadPermission, ct);
+    // WP-VP-FIX-1 (C3) — there is no working-calendar proxy any more: the CRM planner reads the calendar itself (tenant
+    // seam) and returns calendarStatus + nonWorkingDates on the preview; the route tab renders from those.
+
+    // WP-VP-FIX-1 (D6) — code → label maps for the institution type (account-type) and the doctor's specialty
+    // (medical-specialty), read through the shared CrmReferenceSetReader so every tenant role gets them. A set that cannot
+    // be read is an empty map: the page then shows the stored code, exactly as before.
+    [HttpGet("api/reference-labels")]
+    public async Task<IActionResult> ReferenceLabels(CancellationToken ct)
+    {
+        if (!HasAnyPermission(ReadPermission))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = "Permission denied." });
+        }
+
+        var reader = new CrmReferenceSetReader(_httpClient, _gatewayUrl, _logger);
+        var accountTypes = await ReadLabelsAsync(reader, AccountTypeSetCode, ct);
+        var specialties = await ReadLabelsAsync(reader, MedicalSpecialtySetCode, ct);
+        return Ok(new { data = new { accountTypes, specialties } });
+    }
+
+    private async Task<Dictionary<string, string>> ReadLabelsAsync(
+        CrmReferenceSetReader reader, string setCode, CancellationToken ct)
+    {
+        var labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            using var response = await reader.ReadAsync(
+                setCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), GetTenantId(), ct);
+            if (response is null || !response.IsSuccessStatusCode)
+            {
+                return labels;
+            }
+
+            var payload = await response.Content.ReadFromJsonAsync<GatewayResponse<PublishedValuesModel>>(JsonOptions, ct);
+            foreach (var item in payload?.Data?.Items ?? [])
+            {
+                if (!string.IsNullOrWhiteSpace(item.Value) && !string.IsNullOrWhiteSpace(item.Text))
+                {
+                    labels[item.Value!] = item.Text!;
+                }
+            }
+        }
+        catch (Exception ex) when (ex is JsonException or HttpRequestException or NotSupportedException)
+        {
+            _logger.LogWarning(ex, "Reference set '{SetCode}' labels could not be read; codes are shown.", setCode);
+        }
+
+        return labels;
+    }
 
     [HttpGet("api/segments")]
     public Task<IActionResult> Segments(CancellationToken ct)
@@ -200,11 +268,7 @@ public sealed class VisitPlanningController : Controller
     public Task<IActionResult> Users(CancellationToken ct)
         => ProxyAsync(HttpMethod.Get, $"/api/users{Request.QueryString}", null, ReadPermission, ct);
 
-    // StrategyTemplate (MOD-0167) — read-only passthrough for the "play" picker. Degrades gracefully in the UI when the
-    // key/route is absent (empty picker + a note); the session's StrategyTemplateId stays optional on the backend.
-    [HttpGet("api/strategy-templates")]
-    public Task<IActionResult> StrategyTemplates(CancellationToken ct)
-        => ProxyAsync(HttpMethod.Get, $"/api/crm/strategy-templates{Request.QueryString}", null, ReadPermission, ct);
+    // WP-VP-FIX-1 (A1, K-3) — no strategy-template ("play") proxy: the rep never picks a play; it is derived server-side.
 
     // ---------------- proxy helpers ----------------
 
@@ -232,6 +296,33 @@ public sealed class VisitPlanningController : Controller
 
         var response = await SendGatewayAsync(method, path, rawBody, ct);
         return await ToProxyResultAsync(response, ct);
+    }
+
+    /// <summary>The session's status through the same Gateway read the page itself uses; null when it cannot be read (the
+    /// page then loads as before and shows the read error client-side).</summary>
+    private async Task<string?> ReadSessionStatusAsync(Guid planningSessionId, CancellationToken ct)
+    {
+        using var response = await SendGatewayAsync(
+            HttpMethod.Get, $"/api/crm/visit-plan/sessions/{planningSessionId}", null, ct);
+        if (response is null || !response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            return doc.RootElement.TryGetProperty("data", out var data)
+                   && data.ValueKind == JsonValueKind.Object
+                   && data.TryGetProperty("status", out var status)
+                   && status.ValueKind == JsonValueKind.String
+                ? status.GetString()
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     private async Task<string?> ReadBodyAsync(CancellationToken ct)

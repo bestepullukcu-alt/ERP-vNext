@@ -46,15 +46,19 @@
     const sPeriodId = s => s.cyclePeriodId || s.CyclePeriodId || '';
     const sRep = s => s.resourceDisplayName || s.resourceName || s.resourceId || '';
     const sStatus = s => norm(s.status || s.sessionStatus || 'draft');
+    // WP-VP-FIX-1 (D1) — the LIST DTO carries counts (selectedContactCount / selectedPharmacyCount), not the selection
+    // arrays the old reader looked for (which is why the column always read 0): "122 doctors · 13 pharmacies", or 0.
     const sTargets = s => {
-        if (typeof s.targetCount === 'number') return s.targetCount;
-        const c = Array.isArray(s.selectedContacts) ? s.selectedContacts.length : 0;
-        const a = Array.isArray(s.selectedAccountIds) ? s.selectedAccountIds.length : 0;
-        return c + a;
+        const doctors = Number(s.selectedContactCount) || 0;
+        const pharmacies = Number(s.selectedPharmacyCount) || 0;
+        if (!doctors && !pharmacies) return '0';
+        return (L.TargetCountFormat || '{0} · {1}').replace('{0}', doctors).replace('{1}', pharmacies);
     };
     const sUpdated = s => s.updatedAt || s.updatedOn || s.modifiedAt || s.lastModifiedAt || s.createdAt || null;
 
-    const statusLabel = v => ({ draft: L.StatusDraft, committed: L.StatusCommitted }[v] || v);
+    const statusLabel = v => ({ draft: L.StatusDraft, generated: L.StatusGenerated, committed: L.StatusCommitted, archived: L.StatusArchived }[v] || v);
+    // WP-VP-FIX-1 (D2) — a committed / archived plan is read-only: no route generation from its row.
+    const isLocked = status => status === 'committed' || status === 'archived';
     const statusTone = v => ({ committed: 'success', draft: 'primary' }[v] || 'secondary');
 
     const envelope = async response => {
@@ -131,11 +135,11 @@
         const id = esc(sid(row));
         const status = sStatus(row);
         const items = [{ key: 'quickView', className: 'js-quick-view me-1', icon: 'bx bx-show', attrs: { 'data-id': id, title: L.ViewDetails } }];
-        if (canGenerate) {
+        if (canGenerate && !isLocked(status)) {
             items.push({ className: 'js-route text-primary', icon: 'bx bx-map-alt', text: L.RouteAction, attrs: { 'data-id': id } });
         }
         items.push({ className: 'js-details', icon: 'bx bx-detail', text: L.Details, attrs: { 'data-id': id } });
-        if (canApply && status !== 'committed') {
+        if (canApply && !isLocked(status)) {
             items.push({ className: 'js-apply text-success', icon: 'bx bx-check-circle', text: L.Apply, attrs: { 'data-id': id } });
         }
         return window.DitenDataTable?.renderActions ? window.DitenDataTable.renderActions(items) : '';

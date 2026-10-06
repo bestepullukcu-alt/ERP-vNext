@@ -35,7 +35,15 @@ public sealed record VisitPlanPreview(
     IReadOnlyList<DoctorContentPreview> Content,
     IReadOnlyList<TerritoryWarning> TerritoryWarnings,
     SupplyDemandSummary SupplyDemand,
-    DateTimeOffset GeneratedAt);
+    DateTimeOffset GeneratedAt,
+    // WP-VP-FIX-1 (C3, additive) — whether the working calendar answered (resolved / unresolved + reason) and the run's
+    // non-working days (yyyy-MM-dd, every generated week): weekends + holidays, or the Sat/Sun fallback when unresolved.
+    PlanningCalendarStatusDto? CalendarStatus = null,
+    IReadOnlyList<string>? NonWorkingDates = null);
+
+/// <summary>WP-VP-FIX-1 — the working-calendar outcome of a run: <see cref="PlanningCalendarStatuses"/> + the reason code
+/// / text when the Sat/Sun fallback ran instead.</summary>
+public sealed record PlanningCalendarStatusDto(string Status, string? ReasonCode, string? Reason);
 
 /// <summary>One proposed visit slot in the preview grid — route-ordered, week-tagged. Nothing here is persisted until
 /// apply writes it onto an FU01 PlannedVisit atom.</summary>
@@ -156,4 +164,6 @@ public sealed record PlanningSessionListItemDto(
     int Version,
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt,
-    string? TargetWeekStart = null);
+    string? TargetWeekStart = null,
+    // WP-VP-FIX-1 (D1, additive) — the list's "N doctors · M pharmacies" column.
+    int SelectedPharmacyCount = 0);

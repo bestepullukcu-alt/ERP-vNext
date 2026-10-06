@@ -65,13 +65,7 @@
                             <div class="form-text">@Localizer["SegmentHint"]</div>
                             <div class="form-text text-muted">@Localizer["SegmentSingleNote"]</div>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label fw-medium" for="vp-strategy">@Localizer["StrategyTemplate"]</label>
-                            <select id="vp-strategy" class="form-select select2" data-placeholder="@Localizer["StrategyTemplateNone"]">
-                                <option value="">@Localizer["StrategyTemplateNone"]</option>
-                            </select>
-                            <div class="form-text" id="vp-strategy-note"></div>
-                        </div>
+                        @* WP-VP-FIX-1 (A1, K-3) — no strategy-template ("play") picker: the rep never chooses a play. *@
                     </div>
                     <div class="form-text mt-2" id="vp-form-status"></div>
                 </div>

@@ -760,6 +760,12 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>Ülke Yasal Profilleri</value>
   </data>
+  <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
+    <value>Ziyaret Planlama</value>
+  </data>
+  <data name="Nav.Page.VISITEXECUTION" xml:space="preserve">
+    <value>Ziyaret Yürütme</value>
+  </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>İçerik Setleri</value>
   </data>

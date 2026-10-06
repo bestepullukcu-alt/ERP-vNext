@@ -126,6 +126,11 @@ public static class DependencyInjection
             Application.Features.CycleCapacity.Read.IWorkingDayCounter,
             CycleCapacity.WorkingCalendarWorkingDayCounter>();
 
+        // WP-VP-FIX-1 - the same door + transport, per-day op is-working-day: the visit planner's non-working days.
+        services.AddHttpClient<
+            Application.Features.CycleCapacity.Read.IWorkingDayChecker,
+            CycleCapacity.WorkingCalendarWorkingDayCounter>();
+
         // MOD-0155 FU06 - the configured capacity defaults (8h day, interim FTE average). Singleton: configuration is
         // read once at startup, and the values are then COPIED onto each new capacity so an old estimate stays
         // reproducible after a setting changes.

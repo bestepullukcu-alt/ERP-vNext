@@ -700,6 +700,12 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>Profils juridiques</value>
   </data>
+  <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
+    <value>Planification des visites</value>
+  </data>
+  <data name="Nav.Page.VISITEXECUTION" xml:space="preserve">
+    <value>Exécution des visites</value>
+  </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>Ensembles de contenu</value>
   </data>

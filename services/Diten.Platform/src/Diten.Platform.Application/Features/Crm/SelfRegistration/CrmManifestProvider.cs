@@ -31,6 +31,10 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string StrategyTemplatesRead = "crm.strategy-template.read";
     private const string CampaignsRead = "crm.campaign.read";
     private const string PlannedVisitsRead = "crm.planned-visit.read";
+    private const string VisitPlanRead = "crm.visit-plan.read";
+    // WP-VP-FIX-1 — the canonical key (not the crm.territory.read fallback the Web console also accepts): it is granted
+    // to the 97c5 tenant Admin (manual-grant-mod0155, measured 2026-10-06), so the entry renders where the page opens.
+    private const string VisitReportRead = "crm.visit-report.read";
     private const string CyclePeriodsRead = "crm.cycle-period.read";
     private const string CycleCapacityRead = "crm.cycle-capacity.read";
     private const string ConsentRead = "crm.consent.read";
@@ -99,6 +103,19 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("MANAGE", "New Campaign", "crm.campaign.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("MANAGE_TARGETS", "Manage Targets", "crm.campaign.target.manage", "RowAction", 20, false, false, true),
                     new ModuleManifestAction("SNAPSHOT", "Take Snapshot", "crm.campaign.snapshot.create", "RowAction", 30, false, false, true)
+                ]),
+                // WP-VP-FIX-1 (D7) — MOD-0155 FU05 Visit Planning console (the rep's week plan → apply writes FU01 atoms)
+                // and FU02 Visit Execution calendar (record / amend the immutable Visit Report). Both pages existed with
+                // no sidebar entry. Planning sits right before Planned Visits (65), Execution right after it.
+                new ModuleManifestPage("VISIT_PLANNING", "Visit Planning", "/CRM/VisitPlanning", VisitPlanRead, null, true, "List", 64,
+                [
+                    new ModuleManifestAction("GENERATE", "Generate Plan", "crm.visit-plan.generate", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("APPLY", "Apply Plan", "crm.visit-plan.apply", "RowAction", 20, false, false, true)
+                ]),
+                new ModuleManifestPage("VISIT_EXECUTION", "Visit Execution", "/CRM/VisitExecution", VisitReportRead, null, true, "List", 66,
+                [
+                    new ModuleManifestAction("RECORD", "Record Visit", "crm.visit-report.record", "RowAction", 10, false, false, true),
+                    new ModuleManifestAction("AMEND", "Amend Report", "crm.visit-report.amend", "RowAction", 20, false, false, true)
                 ]),
                 // MOD-0155-FU01 Visit Planning / Planned Visit — the field team's planning atom. confirm is a SEPARATE
                 // key from manage (author-vs-confirmer SoD); there is no delete/bulk-delete surface (cancel/archive).

@@ -699,6 +699,12 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>الملفات القانونية</value>
   </data>
+  <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
+    <value>تخطيط الزيارات</value>
+  </data>
+  <data name="Nav.Page.VISITEXECUTION" xml:space="preserve">
+    <value>تنفيذ الزيارات</value>
+  </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>مجموعات المحتوى</value>
   </data>

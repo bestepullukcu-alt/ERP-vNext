@@ -209,6 +209,15 @@ public sealed class ApplyPlanningSessionHandler
             return Response<VisitPlanApplyResult>.Fail("Planning session not found.", 404);
         }
 
+        // WP-VP-FIX-1 (D2) — a second apply of an already-committed plan is refused with a machine code (the atoms exist;
+        // re-plan is the only path that touches them). Every other non-forward status keeps its plain 409.
+        if (session.IsCommitted())
+        {
+            return Response<VisitPlanApplyResult>.Fail(
+                new[] { PlanningSessionErrorCodes.AlreadyCommitted, "This plan is already committed; it cannot be applied again." },
+                409);
+        }
+
         if (!PlanningSessionStatus.CanTransition(session.Status, PlanningSessionStatus.Committed))
         {
             return Response<VisitPlanApplyResult>.Fail(
@@ -258,6 +267,13 @@ public sealed class ApplyPlanningSessionHandler
                 preview.Scheduled.Count, preview.Unscheduled.Count),
             200);
     }
+}
+
+/// <summary>WP-VP-FIX-1 — machine codes of the planning-session refusals (first entry of <c>errors[]</c>, message second —
+/// the claims v2 convention).</summary>
+public static class PlanningSessionErrorCodes
+{
+    public const string AlreadyCommitted = "planning_session_already_committed";
 }
 
 /// <summary>Re-plans a subset in place (D-REPLAN = A): re-runs the route for the affected contacts and replaces ONLY

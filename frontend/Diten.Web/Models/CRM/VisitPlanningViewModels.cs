@@ -15,4 +15,8 @@ public sealed class VisitPlanningSessionPageViewModel
     public Guid? SessionId { get; set; }
     public bool CanGenerate { get; set; }
     public bool CanApply { get; set; }
+
+    /// <summary>WP-VP-FIX-1 — the plan is committed / archived: no write affordance is rendered (the flags above are
+    /// already false) and the page states that it is read-only.</summary>
+    public bool IsReadOnly { get; set; }
 }

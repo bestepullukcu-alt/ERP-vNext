@@ -15,6 +15,8 @@ using Diten.CrmService.Application.Features.VisitContentSequence;
 using Diten.CrmService.Application.Features.VisitFrequencyPolicy.Queries;
 using Diten.CrmService.Application.Features.VisitFrequencyPolicy.Resolve;
 using Diten.CrmService.Application.Features.VisitPlanning;
+using Diten.CrmService.Application.Features.VisitPlanning.Commands;
+using Diten.CrmService.Application.Features.VisitPlanning.Handlers.CommandHandlers;
 using Diten.CrmService.Application.Tests.VisitContentSequence;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
@@ -364,6 +366,103 @@ public sealed class VisitPlanningTests
         Assert.Contains(0, result.WeekIndices);
     }
 
+    // ── WP-VP-FIX-1 — list count, committed lock, working days + calendar (production engine + real FU03 optimizer) ──
+
+    [Fact]
+    public async Task List_item_carries_the_pharmacy_count_next_to_the_doctor_count()
+    {
+        var env = Env.WithTwoDoctors();
+        env.Session.Selection.SelectedPharmacyIds = new List<Guid> { Id(71), Id(72), Id(73) };
+        var handler = new Diten.CrmService.Application.Features.VisitPlanning.Handlers.QueryHandlers.ListPlanningSessionsHandler(
+            TenantOf(Tenant), new FakePlanningSessionRepository(env.Session));
+
+        var list = await handler.Handle(
+            new Diten.CrmService.Application.Features.VisitPlanning.Queries.ListPlanningSessionsQuery(), default);
+
+        var item = Assert.Single(list.Data!.Items);
+        Assert.Equal(2, item.SelectedContactCount);
+        Assert.Equal(3, item.SelectedPharmacyCount);
+    }
+
+    [Fact]
+    public async Task A_second_apply_of_a_committed_plan_is_refused_with_409_and_a_machine_code()
+    {
+        var env = Env.WithTwoDoctors();
+        var repository = new FakePlanningSessionRepository(env.Session);
+        var handler = new ApplyPlanningSessionHandler(
+            TenantOf(Tenant), new NullActorContext(), repository, env.UnitOfWork, env.Engine);
+        var command = new ApplyPlanningSessionCommand(env.Session.Id, null, null, null, null, null);
+
+        var first = await handler.Handle(command, default);
+        Assert.True(first.IsSuccessful);
+        Assert.Equal(PlanningSessionStatus.Committed, env.Session.Status);
+
+        var second = await handler.Handle(command, default);
+
+        Assert.False(second.IsSuccessful);
+        Assert.Equal(409, second.StatusCode);
+        Assert.Equal(PlanningSessionErrorCodes.AlreadyCommitted, second.Errors![0]);
+        Assert.Equal(1, env.UnitOfWork.ApplyCalls); // nothing was written the second time
+    }
+
+    [Fact]
+    public async Task A_week_that_contains_a_weekend_gets_no_visit_on_saturday_or_sunday()
+    {
+        // The window opens on Saturday 2026-09-05, so the greedy optimizer's FIRST candidate day is a weekend day.
+        var env = Env.WithRealRoute(targetWeekStart: "2026-09-05");
+
+        var outcome = await env.Engine.PreviewAsync(env.Session, env.Options(), default);
+
+        Assert.True(outcome.Success);
+        var dates = outcome.Preview!.Scheduled.Select(s => DateOnly.Parse(s.PlannedDate)).ToList();
+        Assert.NotEmpty(dates);
+        Assert.All(dates, d => Assert.DoesNotContain(d.DayOfWeek, new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }));
+        Assert.Equal(new DateOnly(2026, 9, 7), dates.Min()); // the first working day of the window (Monday)
+        Assert.Equal(PlanningCalendarStatuses.Resolved, outcome.Preview.CalendarStatus!.Status);
+        Assert.Contains("2026-09-05", outcome.Preview.NonWorkingDates!);
+        Assert.Contains("2026-09-06", outcome.Preview.NonWorkingDates!);
+    }
+
+    [Fact]
+    public async Task A_weekday_holiday_from_the_calendar_gets_no_visit()
+    {
+        var env = Env.WithRealRoute(targetWeekStart: "2026-09-05");
+        env.WorkingDays.Holidays.Add(new DateOnly(2026, 9, 7)); // Monday is a public holiday
+
+        var outcome = await env.Engine.PreviewAsync(env.Session, env.Options(), default);
+
+        Assert.True(outcome.Success);
+        var dates = outcome.Preview!.Scheduled.Select(s => DateOnly.Parse(s.PlannedDate)).ToList();
+        Assert.NotEmpty(dates);
+        Assert.DoesNotContain(new DateOnly(2026, 9, 7), dates);
+        Assert.Equal(new DateOnly(2026, 9, 8), dates.Min());
+        Assert.Contains("2026-09-07", outcome.Preview.NonWorkingDates!);
+        Assert.Equal(PlanningCalendarStatuses.Resolved, outcome.Preview.CalendarStatus!.Status);
+        Assert.All(env.WorkingDays.Asked, a => Assert.Equal("TR", a.Country)); // the period's country, asked per day
+        Assert.Equal(env.WorkingDays.Asked.Count, env.WorkingDays.Asked.Select(a => a.Date).Distinct().Count()); // once each
+    }
+
+    [Fact]
+    public async Task An_unreadable_calendar_falls_back_to_saturday_and_sunday_and_says_unresolved()
+    {
+        var env = Env.WithRealRoute(targetWeekStart: "2026-09-05");
+        env.WorkingDays.Holidays.Add(new DateOnly(2026, 9, 7)); // never seen: the calendar refuses
+        env.WorkingDays.Refuse = true;
+
+        var outcome = await env.Engine.PreviewAsync(env.Session, env.Options(), default);
+
+        Assert.True(outcome.Success);
+        var preview = outcome.Preview!;
+        Assert.Equal(PlanningCalendarStatuses.Unresolved, preview.CalendarStatus!.Status);
+        Assert.Equal(CycleCapacityReasonCodes.CalendarForbidden, preview.CalendarStatus.ReasonCode);
+        var dates = preview.Scheduled.Select(s => DateOnly.Parse(s.PlannedDate)).ToList();
+        Assert.NotEmpty(dates);
+        Assert.All(dates, d => Assert.DoesNotContain(d.DayOfWeek, new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }));
+        Assert.Equal(new DateOnly(2026, 9, 7), dates.Min()); // the unknown holiday is NOT invented
+        Assert.Single(env.WorkingDays.Asked); // the first refusal stops the asking
+        Assert.All(preview.NonWorkingDates!, d => Assert.Contains(DateOnly.Parse(d).DayOfWeek, new[] { DayOfWeek.Saturday, DayOfWeek.Sunday }));
+    }
+
     // ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
     // Test environment + in-memory fakes
     // ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -389,6 +488,7 @@ public sealed class VisitPlanningTests
         public FakeAccountRelationshipRepository Relationships { get; } = new();
         public FakeAccountTerritoryAssignmentRepository Territory { get; } = new();
         public FakeApplyUnitOfWork UnitOfWork { get; } = new();
+        public FakeWorkingDayChecker WorkingDays { get; } = new();
 
         public VisitPlanningEngine Engine { get; }
         public PlanningSession Session { get; }
@@ -397,7 +497,7 @@ public sealed class VisitPlanningTests
         /// answers no-strategy / no-journey exactly as before.</summary>
         public VisitContentTestKit Kit { get; }
 
-        private Env(VisitContentTestKit? kit)
+        private Env(VisitContentTestKit? kit, bool realRoute = false)
         {
             Periods = new FakeCyclePeriodReader(CyclePeriodId);
             var tenant = TenantOf(Tenant);
@@ -416,9 +516,16 @@ public sealed class VisitPlanningTests
             var consentProbe = new PlannedVisitConsentProbe(Consent);
             var availabilityProbe = new PlannedVisitAvailabilityProbe(tenant, Availabilities);
 
+            // WP-VP-FIX-1 — the run's working days come from the (fake) platform calendar for the period's country.
+            var calendar = new PlanningWorkingCalendar(new FixedCountryResolver("TR"), WorkingDays);
+            IRouteOptimizer optimizer = realRoute
+                ? new GreedyTimeWindowRouteOptimizer(new DefaultRouteSettings())
+                : Optimizer;
+
             Engine = new VisitPlanningEngine(
-                tenant, actor, Periods, Capacities, estimator, resolver, Optimizer, selector, extend,
-                territoryGate, Accounts, Contacts, PlannedVisits, journeyProbe, frequencyProbe, consentProbe, availabilityProbe);
+                tenant, actor, Periods, Capacities, estimator, resolver, optimizer, selector, extend,
+                territoryGate, Accounts, Contacts, PlannedVisits, journeyProbe, frequencyProbe, consentProbe, availabilityProbe,
+                calendar);
 
             Session = new PlanningSession
             {
@@ -449,6 +556,14 @@ public sealed class VisitPlanningTests
         }
 
         public static Env WithTwoDoctors(VisitContentTestKit? kit = null) => new(kit);
+
+        /// <summary>WP-VP-FIX-1 — the production FU03 optimizer (real day enumeration) over the chosen week.</summary>
+        public static Env WithRealRoute(string targetWeekStart)
+        {
+            var env = new Env(null, realRoute: true);
+            env.Session.TargetWeekStart = targetWeekStart;
+            return env;
+        }
 
         /// <summary>WP-SB-3b — a stored plan of the doctor that already tells <paramref name="product"/>.</summary>
         public PlannedVisitEntity SeedPlanWithContent(
@@ -800,6 +915,60 @@ public sealed class VisitPlanningTests
     {
         public CycleCapacityCountryResolution Resolve(CyclePeriodSnapshot period, string? authoredCountryCode)
             => throw new NotSupportedException("capacity is null in these tests, so the estimator is never invoked");
+    }
+
+    private sealed class FixedCountryResolver(string country) : ICycleCapacityCountryResolver
+    {
+        public CycleCapacityCountryResolution Resolve(CyclePeriodSnapshot period, string? authoredCountryCode)
+            => new(country, IsDerived: true, null, null);
+    }
+
+    /// <summary>WP-VP-FIX-1 — the platform calendar: Sat/Sun + <see cref="Holidays"/> are non-working; <see cref="Refuse"/>
+    /// answers like a 403 (calendar_forbidden).</summary>
+    private sealed class FakeWorkingDayChecker : IWorkingDayChecker
+    {
+        public HashSet<DateOnly> Holidays { get; } = new();
+        public bool Refuse { get; set; }
+        public List<(string Country, DateOnly Date)> Asked { get; } = new();
+
+        public Task<WorkingDayCheckResult> IsWorkingDayAsync(
+            string countryCode, Guid? legalEntityId, DateOnly date, CancellationToken cancellationToken)
+        {
+            Asked.Add((countryCode, date));
+            if (Refuse)
+            {
+                return Task.FromResult(new WorkingDayCheckResult(
+                    CycleCapacityResolutions.CalendarForbidden, null,
+                    new[] { CycleCapacityReasonCodes.CalendarForbidden }, "forbidden"));
+            }
+
+            var working = date.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday) && !Holidays.Contains(date);
+            return Task.FromResult(new WorkingDayCheckResult(
+                CycleCapacityResolutions.Resolved, working, new[] { CycleCapacityReasonCodes.CapacityOk }, "ok"));
+        }
+    }
+
+    private sealed class DefaultRouteSettings : IRouteOptimizationDefaultsProvider
+    {
+        public RouteOptimizationDefaultsSet Current => RouteOptimizationDefaults.Set;
+    }
+
+    private sealed class FakePlanningSessionRepository(PlanningSession session) : IPlanningSessionRepository
+    {
+        public Task<PlanningSession?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken cancellationToken)
+            => Task.FromResult<PlanningSession?>(tenantId == session.TenantId && id == session.Id ? session : null);
+
+        public Task<IReadOnlyList<PlanningSession>> ListAsync(Guid tenantId, CancellationToken cancellationToken)
+            => Task.FromResult<IReadOnlyList<PlanningSession>>(new[] { session });
+
+        public Task<IReadOnlyList<PlanningSession>> ListByPeriodAndResourceAsync(
+            Guid tenantId, Guid cyclePeriodId, string resourceId, CancellationToken cancellationToken)
+            => Task.FromResult<IReadOnlyList<PlanningSession>>(new[] { session });
+
+        public Task InsertAsync(PlanningSession entity, CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public Task<bool> ReplaceAsync(PlanningSession entity, int expectedVersion, CancellationToken cancellationToken)
+            => Task.FromResult(true);
     }
 
     private sealed class FakeWorkingDayCounter : IWorkingDayCounter

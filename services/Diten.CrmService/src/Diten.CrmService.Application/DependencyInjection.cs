@@ -103,6 +103,8 @@ public static class DependencyInjection
         services.AddScoped<Features.VisitPlanning.PharmacyExpander>();
         services.AddScoped<Features.VisitPlanning.TerritoryGate>();
         services.AddScoped<Features.VisitPlanning.FrequencyExtendPlanner>();
+        // WP-VP-FIX-1 — the run's non-working days (platform working calendar via IWorkingDayChecker, Sat/Sun fallback).
+        services.AddScoped<Features.VisitPlanning.PlanningWorkingCalendar>();
         services.AddScoped<Features.VisitPlanning.VisitPlanningEngine>();
 
         return services;

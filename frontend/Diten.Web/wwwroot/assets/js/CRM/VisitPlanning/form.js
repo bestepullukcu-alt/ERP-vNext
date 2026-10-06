@@ -4,6 +4,8 @@
  * startDate→endDate as Monday-based spans, labelled by ISO-8601 week number ("36. Hafta · 31 Ağu – 6 Eyl 2026"), and
  * the chosen week's Monday (yyyy-MM-dd) is carried to Details as ?week. Segment is a multi-select (UI) but only the FIRST
  * is sent (backend SegmentId is single). Targets are chosen on Details; the saved session is target-less.
+ * WP-VP-FIX-1 (A1, K-3) — there is no strategy-template ("play") picker: the rep never chooses a play. An edit sends the
+ * session's own stored strategyTemplateId back unchanged (the server contract is the same until B-3).
  */
 (function (window, document) {
     'use strict';
@@ -16,6 +18,7 @@
     const mode = root.dataset.mode;
     const sessionId = root.dataset.sessionId || null;
     let currentVersion = null;
+    let storedStrategyTemplateId = null; // edit: the session's own value, sent back unchanged (no picker)
     let allPeriods = [];
 
     const el = id => document.getElementById(id);
@@ -150,13 +153,6 @@
         items(r.body).forEach(s => { const id = s.segmentId || s.id; if (id) picker.appendChild(opt(id, s.name || s.segmentName || s.code || id)); });
     });
 
-    const loadStrategyTemplates = () => api('/strategy-templates').then(r => {
-        const picker = el('vp-strategy'); const list = items(r.body);
-        list.forEach(s => { const id = s.strategyTemplateId || s.id; if (id) picker.appendChild(opt(id, s.name || s.templateName || s.code || id)); });
-        const note = el('vp-strategy-note');
-        if (note) note.textContent = (r.ok && list.length) ? '' : (L.StrategyTemplatesUnavailable || '');
-    }).catch(() => { const note = el('vp-strategy-note'); if (note) note.textContent = L.StrategyTemplatesUnavailable || ''; });
-
     // ── edit preselect ──
     const loadSession = () => {
         if (mode !== 'edit' || !sessionId) return Promise.resolve();
@@ -164,6 +160,7 @@
             if (!r.ok || !r.body || !r.body.data) return;
             const s = r.body.data;
             currentVersion = s.version;
+            storedStrategyTemplateId = s.strategyTemplateId || null;
             // Derive the country from the saved period (country-scoped → its country; tenant → any country enables it).
             const per = periodById(s.cyclePeriodId);
             const countrySel = el('vp-country');
@@ -182,7 +179,6 @@
             }
             if (s.resourceId) { el('vp-resource').value = s.resourceId; refreshSelect2('vp-resource'); }
             if (s.segmentId) { const seg = el('vp-segment'); Array.prototype.forEach.call(seg.options, o => { o.selected = (o.value === s.segmentId); }); refreshSelect2('vp-segment'); }
-            if (s.strategyTemplateId) { el('vp-strategy').value = s.strategyTemplateId; refreshSelect2('vp-strategy'); }
         });
     };
 
@@ -200,7 +196,7 @@
             selectedContacts: [],
             segmentId: firstSegment(),
             campaignId: null,
-            strategyTemplateId: el('vp-strategy').value || null
+            strategyTemplateId: storedStrategyTemplateId
         };
     };
 
@@ -240,6 +236,6 @@
     onChange('vp-country', () => filterPeriods(el('vp-country').value));
     onChange('vp-period', () => populateWeeks(el('vp-period').value));
 
-    Promise.all([loadCountries(), loadPeriods(), loadUsers(), loadSegments(), loadStrategyTemplates()])
+    Promise.all([loadCountries(), loadPeriods(), loadUsers(), loadSegments()])
         .then(() => { initSelect2(); filterPeriods(el('vp-country').value); return loadSession(); });
 })(window, document);

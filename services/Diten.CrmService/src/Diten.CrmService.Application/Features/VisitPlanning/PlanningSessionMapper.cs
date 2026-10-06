@@ -44,5 +44,6 @@ internal static class PlanningSessionMapper
         s.Version,
         s.CreatedAt,
         s.UpdatedAt,
-        s.TargetWeekStart);
+        s.TargetWeekStart,
+        s.Selection.SelectedPharmacyIds.Count);
 }

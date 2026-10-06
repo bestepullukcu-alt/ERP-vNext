@@ -2,8 +2,9 @@
  * MOD-0155-FU05 Visit Planning — session Details ("Road Map Details").
  * Targets are a master→detail pair of Golden-Compact DataTables (clinic/hospital accounts → their doctors); saving them
  * writes the session's selectedAccountIds + selectedContacts. The engine then previews a weekly road map: the route tab
- * shows the SELECTED week's Mon→Fri, Monday-first day tabs (weekends hidden, holidays disabled — from the working
- * calendar, Sat/Sun fallback), and visit cards. The default week is the calendar week containing the NEXT Monday.
+ * shows the SELECTED week's Mon→Fri, Monday-first day tabs (weekends hidden, holidays disabled — from the planner's
+ * nonWorkingDates, which the CRM planner reads from the working calendar; Sat/Sun fallback), and visit cards. The default
+ * week is the calendar week containing the NEXT Monday. A committed / archived plan opens read-only (data-read-only).
  */
 (function (window, document) {
     'use strict';
@@ -15,6 +16,9 @@
     const sessionId = root.dataset.sessionId;
     const canGenerate = root.dataset.canGenerate === 'true';
     const canApply = root.dataset.canApply === 'true';
+    // WP-VP-FIX-1 (D2) — committed / archived: the server already switched every write flag off; this also stops the
+    // route from being re-ordered (drag / arrows / map markers), which would only show an order that cannot be saved.
+    const readOnly = root.dataset.readOnly === 'true';
 
     const WORK_START = 9 * 60, WORK_END = 18 * 60;
     const CLINIC_TYPES = ['clinic', 'hospital'];
@@ -49,7 +53,7 @@
     const errorText = r => (r.body && r.body.errors && r.body.errors.length) ? r.body.errors.join(' · ') : (r.body && r.body.message) || ('HTTP ' + r.status);
     const setStatus = (text, isError) => { const n = el('vp-detail-status'); if (n) { n.textContent = text || ''; n.className = 'small mb-3 ' + (isError ? 'text-danger' : 'text-muted'); } };
 
-    const statusLabel = v => ({ draft: L.StatusDraft, committed: L.StatusCommitted }[v] || v || '—');
+    const statusLabel = v => ({ draft: L.StatusDraft, generated: L.StatusGenerated, committed: L.StatusCommitted, archived: L.StatusArchived }[v] || v || '—');
     const statusTone = v => ({ committed: 'success', draft: 'primary' }[v] || 'secondary');
     // ISO-8601 week number (Thursday-based, Monday start) — the same labelling Create uses.
     const isoWeek = date => { const d = new Date(date); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7)); const week1 = new Date(d.getFullYear(), 0, 4); return 1 + Math.round(((d - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7); };
@@ -106,38 +110,27 @@
     const FALLBACK_ABBR = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
     const dayAbbr = wd => L[DAY_ABBR[wd]] || FALLBACK_ABBR[wd];
 
-    // ── working calendar (weekends + holidays); Sat/Sun fallback ──
-    const WD_NAME = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
-    let wcWeekend = new Set([0, 6]);
-    let wcHolidays = new Set();
-    let wcYearLoaded = null, wcOk = false;
-    const parseWorkingCalendar = body => {
-        const d = (body && (body.data !== undefined ? body.data : body)) || {};
-        const cal = Array.isArray(d) ? d[0] : ((d.items && d.items[0]) || d);
-        if (!cal) return false;
-        const weekend = new Set();
-        (Array.isArray(cal.weekendDays || cal.WeekendDays || cal.weekend) ? (cal.weekendDays || cal.WeekendDays || cal.weekend) : []).forEach(w => {
-            if (typeof w === 'number') weekend.add(w);
-            else { const k = String(w).toLowerCase(); if (k in WD_NAME) weekend.add(WD_NAME[k]); else if (/^\d+$/.test(k)) weekend.add(parseInt(k, 10)); }
-        });
-        const holidays = new Set();
-        const days = cal.days || cal.Days || cal.holidays || cal.Holidays || cal.nonWorkingDays || cal.NonWorkingDays || [];
-        (Array.isArray(days) ? days : []).forEach(h => {
-            const raw = (h && (h.date || h.Date || h.day || h.holidayDate)) || (typeof h === 'string' ? h : null);
-            const t = h && (h.type || h.Type || h.dayType);
-            if (raw) { const s = ymd(raw); if (s && (!t || /holiday|public|nonwork|tatil/i.test(String(t)))) holidays.add(s); }
-        });
-        if (weekend.size) wcWeekend = weekend;
-        wcHolidays = holidays;
-        return true;
+    // ── working days (WP-VP-FIX-1 C3) — from the planner's preview, never from the browser: nonWorkingDates (weekends +
+    // holidays from the working calendar, or the Sat/Sun fallback) + calendarStatus. Until a preview arrives Sat/Sun count
+    // as non-working. An unresolved calendar is said once, above the page.
+    let nonWorkingDates = new Set();
+    const isNonWorking = date => lastPreview ? nonWorkingDates.has(ymd(date)) : (date.getDay() === 0 || date.getDay() === 6);
+    const renderCalendarWarning = p => {
+        const host = el('vp-calendar-warning'); if (!host) return;
+        const st = p && p.calendarStatus;
+        host.innerHTML = (st && st.status === 'unresolved')
+            ? '<div class="alert alert-warning py-2 small mb-3" role="status"><i class="bx bx-calendar-x me-1"></i>' + esc(L.CalendarUnresolvedWarning || '') + '</div>'
+            : '';
     };
-    const loadWorkingCalendar = year => {
-        if (wcYearLoaded === year) return Promise.resolve();
-        const country = (sessionData && (sessionData.countryCode || sessionData.country || sessionData.countryId)) || 'TR';
-        return api('/working-calendar?country=' + encodeURIComponent(country) + '&year=' + year)
-            .then(r => { wcOk = !!(r.ok && r.body && parseWorkingCalendar(r.body)); wcYearLoaded = year; })
-            .catch(() => { wcYearLoaded = year; wcWeekend = new Set([0, 6]); wcHolidays = new Set(); });
-    };
+
+    // ── reference labels (WP-VP-FIX-1 D6) — institution type + specialty shown by their MOD-0048 label, not the raw code.
+    let typeLabels = {}, specLabels = {};
+    const loadReferenceLabels = () => api('/reference-labels').then(r => {
+        const d = (r.ok && r.body && r.body.data) || {};
+        typeLabels = d.accountTypes || {}; specLabels = d.specialties || {};
+    }).catch(() => {});
+    const labelOf = (map, code) => map[code] || map[String(code).toLowerCase()] || null;
+    const typeLabel = code => code ? (labelOf(typeLabels, code) || code) : '';
 
     // ── road map ──
     const weeksOf = rows => Array.from(new Set(rows.map(r => r.weekNumber))).sort((a, b) => a - b);
@@ -381,6 +374,7 @@
     // One-shot after the first preview: if pharmacies are not already grouped with their clinic, re-plan in the grouped
     // order. Deterministic (grouping is a pure function of the clinic sequence + links), so refreshes stop reshuffling.
     const maybeAutoGroup = () => {
+        if (readOnly) return; // the committed order is shown as saved
         if (autoGroupDone || manualOrder || !scheduled.length || !Object.keys(selectedPharmacies).length) return;
         autoGroupDone = true;
         // The account_relationship is authoritative for pharmacy→clinic (proximity can pick the wrong clinic), so load
@@ -499,9 +493,9 @@
             const ph = isPharmacyAcc(p.acc);
             const icon = window.L.divIcon({ className: 'vp-map-pin' + (ph ? ' vp-map-pin--pharmacy' : ''), html: '<span>' + p.n + '</span>', iconSize: [26, 26], iconAnchor: [13, 13] });
             // Only clinic/hospital markers drag (and only when the plan is editable); a pharmacy follows its clinic.
-            const drag = !!canApply && !ph;
+            const drag = !!canApply && !ph && !readOnly;
             const m = window.L.marker([p.c.lat, p.c.lng], { icon: icon, draggable: drag }).addTo(map).bindTooltip(p.n + '. ' + p.name, { direction: 'top' });
-            if (drag) m.on('dragend', () => reorderFromMarker(accOrder, p.acc, m.getLatLng()));
+            if (drag && !readOnly) m.on('dragend', () => reorderFromMarker(accOrder, p.acc, m.getLatLng()));
         });
         // Fullscreen control (Leaflet bar button, top-right).
         const FsControl = window.L.Control.extend({
@@ -524,6 +518,7 @@
     const currentStopAccs = () => { const p = el('vp-map-panel'); return p ? Array.prototype.slice.call(p.querySelectorAll('.vp-stop')).map(li => li.dataset.acc) : []; };
     const applyStopOrder = () => { manualOrder = collectManualOrder(currentStopAccs()); manualIsUser = true; preview(); };
     const wireStopList = () => {
+        if (readOnly) return;
         const panel = el('vp-map-panel'); const list = panel && panel.querySelector('.vp-stop-list'); if (!list) return;
         if (window.Sortable) window.Sortable.create(list, { handle: '.vp-stop-handle', animation: 150, ghostClass: 'vp-block-ghost', onEnd: applyStopOrder });
         const move = (li, ref, before) => { if (ref) { li.parentNode.insertBefore(before ? li : ref, before ? ref : li); applyStopOrder(); } };
@@ -540,8 +535,9 @@
         // (a lock glyph instead). Only clinic/hospital stops are reorderable; the pharmacy follows via collectManualOrder.
         const stopRows = accBlocks.map((b, i) => {
             const ph = isPharmacyAcc(b.acc);
-            return '<li class="diten-checkitem vp-stop' + (ph ? ' vp-stop--locked' : '') + '" data-acc="' + esc(b.acc) + '">' +
-                (ph
+            const fixed = ph || readOnly; // a read-only plan's stops do not move either
+            return '<li class="diten-checkitem vp-stop' + (fixed ? ' vp-stop--locked' : '') + '" data-acc="' + esc(b.acc) + '">' +
+                (fixed
                     ? '<span class="diten-checkitem-grip" aria-hidden="true" style="cursor:default;opacity:.4;"><i class="bx bx-lock-alt"></i></span>'
                     : '<span class="diten-checkitem-grip vp-stop-handle" aria-hidden="true"><i class="bx bx-grid-vertical"></i></span>' +
                       '<span class="diten-checkitem-move">' +
@@ -619,7 +615,7 @@
             const specialty = v.specialty || fbSpec || '';
             const av = '<div class="avatar avatar-xs flex-shrink-0">' +
                 (photo ? '<img src="' + esc(photo) + '" alt="" class="rounded-circle">' : '<span class="avatar-initial rounded-circle bg-label-secondary"><i class="bx bx-user"></i></span>') + '</div>';
-            const spec = specialty ? '<span class="badge bg-label-info text-uppercase">' + esc(specialty) + '</span>' : '';
+            const spec = specialty ? '<span class="badge bg-label-info">' + esc(specLabel(specialty)) + '</span>' : '';
             holder.innerHTML = av + '<span class="fw-medium small text-truncate">' + esc(name) + '</span>' + spec;
         };
         paint('', '', '');
@@ -636,7 +632,8 @@
     const isPharmacyAcc = accId => !!selectedPharmacies[accId] || accTypeOf(accId) === 'pharmacy';
     const accountBlockHtml = (b, idx) => {
         const at = accTypeOf(b.acc);
-        const typeBadge = at ? '<span class="badge inbox-row__type inbox-row__badge-outline inbox-row__badge--type-default flex-shrink-0">' + esc(at) + '</span>' : '';
+        // The label is a MOD-0048 value (not a UI string), so it is not upper-cased by CSS (tr would print "HOSPİTAL").
+        const typeBadge = at ? '<span class="badge inbox-row__type inbox-row__badge-outline inbox-row__badge--type-default flex-shrink-0" style="text-transform:none;">' + esc(typeLabel(at)) + '</span>' : '';
         const countBadge = '<span class="badge bg-label-secondary flex-shrink-0">' + b.count + ' ' + esc(L.VisitsWord || 'ziyaret') + '</span>';
         const orderTxt = b.count > 1 ? ('#' + esc(b.firstOrder) + '–' + esc(b.lastOrder)) : ('#' + esc(b.firstOrder));
         // A single-visit stop has nothing to fold open — no chevron, not a toggle; its one contact is shown INLINE inside
@@ -651,7 +648,7 @@
         // Single-visit cards stack account → contact → time; multi-visit keep the default account → time.
         const timeOrder = single ? ' style="order:3;"' : '';
         // A pharmacy is locked to its clinic: no drag grip (a lock glyph), so it can only move by moving its clinic.
-        const locked = isPharmacyAcc(b.acc);
+        const locked = isPharmacyAcc(b.acc) || readOnly;
         const grip = locked
             ? '<i class="bx bx-lock-alt text-muted flex-shrink-0" style="opacity:.5;" aria-hidden="true"></i>'
             : '<i class="bx bx-grid-vertical text-muted vp-block-handle flex-shrink-0" role="button" aria-label="reorder" style="cursor:grab;"></i>';
@@ -675,13 +672,13 @@
         // Name/specialty come from the plan payload (link-independent); account-contacts is only a fallback + the photo.
         const dn = v.name || info.name || (L.ColContact || 'Doctor');
         const specialty = v.specialty || info.specialty;
-        const spec = specialty ? '<span class="badge bg-label-info text-uppercase">' + esc(specialty) + '</span>' : '';
+        const spec = specialty ? '<span class="badge bg-label-info">' + esc(specLabel(specialty)) + '</span>' : '';
         // Avatar: the contact photo when present, else a person-icon placeholder.
         const avatar = '<div class="avatar avatar-sm me-2 flex-shrink-0">' +
             (info.photo ? '<img src="' + esc(info.photo) + '" alt="" class="rounded-circle">' : '<span class="avatar-initial rounded-circle bg-label-secondary"><i class="bx bx-user"></i></span>') +
             '</div>';
         return '<article class="inbox-row p-2 vp-visit" data-cid="' + esc(v.contactId) + '">' +
-            '<div class="me-2 d-flex align-items-center flex-shrink-0"><i class="bx bx-grid-vertical text-muted vp-visit-handle" role="button" aria-label="reorder" style="cursor:grab;"></i></div>' +
+            (readOnly ? '' : '<div class="me-2 d-flex align-items-center flex-shrink-0"><i class="bx bx-grid-vertical text-muted vp-visit-handle" role="button" aria-label="reorder" style="cursor:grab;"></i></div>') +
             avatar +
             '<div class="inbox-row__main">' +
             '<div class="inbox-row__line inbox-row__line--primary d-flex align-items-center gap-2 flex-wrap">' +
@@ -705,7 +702,7 @@
     };
 
     const wireBlockSortable = (idx, detail) => {
-        if (!window.Sortable) return; // SortableJS included per-page on Details; if absent, cards just don't drag.
+        if (!window.Sortable || readOnly) return; // SortableJS included per-page on Details; if absent, cards just don't drag.
         window.Sortable.create(detail, {
             handle: '.vp-visit-handle', animation: 150, ghostClass: 'vp-visit-ghost',
             onEnd: () => {
@@ -744,8 +741,9 @@
             for (let i = 0; i < 7; i++) {
                 const date = new Date(mon.getTime() + i * 86400000);
                 const wd = date.getDay();
-                if (wcWeekend.has(wd)) continue; // weekend hidden
-                const isHoliday = wcHolidays.has(ymd(date));
+                const off = isNonWorking(date);
+                if (off && (wd === 0 || wd === 6)) continue; // a non-working weekend day is hidden
+                const isHoliday = off;                         // a non-working weekday is shown disabled
                 rendered.push({ order: i, disabled: isHoliday });
                 const chipLabel = dayAbbr(wd) + ' ' + date.getDate() + ' ' + date.toLocaleDateString('en-US', { month: 'short' }) + ', ' + String(date.getFullYear()).slice(-2);
                 html += '<li class="nav-item mb-1 mb-sm-0"><button type="button" class="nav-link small border shadow-none wc-tab-compact' + (isHoliday ? ' disabled' : '') + '" data-day="' + i + '"' + (isHoliday ? ' aria-disabled="true"' : '') + '>' +
@@ -772,7 +770,7 @@
         sel.classList.remove('d-none');
         sel.innerHTML = weeks.map(w => '<option value="' + w + '">' + esc(isoLabelOf(w)) + '</option>').join('');
         sel.value = String(defaultWeek(scheduled));
-        sel.onchange = () => { const w = parseInt(sel.value, 10); const mon = weekMonday(w); loadWorkingCalendar(mon ? mon.getFullYear() : new Date().getFullYear()).then(() => renderWeek(w)); };
+        sel.onchange = () => renderWeek(parseInt(sel.value, 10));
     };
 
     const renderPreview = p => {
@@ -787,14 +785,15 @@
         if (el('vp-territory-warnings')) el('vp-territory-warnings').innerHTML = (p.territoryWarnings || []).map(w =>
             '<span class="badge bg-label-warning me-1">' + (L.OutOfTerritory || 'Out of territory') + ': ' + esc(String(w.accountId || '').slice(0, 8)) + '</span>').join('');
 
+        nonWorkingDates = new Set(p.nonWorkingDates || []);
+        renderCalendarWarning(p);
         scheduled = p.scheduled || [];
         // Keep the current week on a re-preview (manual reorder); pick the default only on the first render.
         const weeks = weeksOf(scheduled);
         const def = (activeDayOrderVal != null && weeks.indexOf(activeWeek) > -1) ? activeWeek
             : (scheduled.length ? defaultWeek(scheduled) : 0);
-        const mon = weekMonday(def);
         buildWeekSelector();
-        loadWorkingCalendar(mon ? mon.getFullYear() : new Date().getFullYear()).then(() => renderWeek(def));
+        renderWeek(def);
     };
 
     const preview = () => {
@@ -868,7 +867,7 @@
                         if (type && CLINIC_TYPES.indexOf(type) === -1) return;
                         const item = { id: id, name: accName(a), type: accType(a), city: accCity(a), lat: accLat(a), lng: accLng(a) };
                         if (!accountSource.find(function (x) { return x.id === id; })) accountSource.push(item);
-                        results.push({ id: id, text: item.name + (item.type ? ' — ' + item.type : '') });
+                        results.push({ id: id, text: item.name + (item.type ? ' — ' + typeLabel(item.type) : '') });
                     });
                     return { results: results };
                 }
@@ -882,7 +881,7 @@
         columns: [{ data: 'name' }, { data: 'type' }, { data: 'city' }, { data: null }],
         columnDefs: [
             { targets: 0, render: (v, t) => t === 'display' ? '<span class="fw-medium text-heading">' + esc(v) + '</span>' : (v || '') },
-            { targets: 1, render: v => v ? '<span class="badge bg-label-info">' + esc(v) + '</span>' : '—' },
+            { targets: 1, render: (v, t) => t === 'display' ? (v ? '<span class="badge bg-label-info">' + esc(typeLabel(v)) + '</span>' : '—') : (v || '') },
             { targets: 2, render: v => esc(v || '—') },
             { targets: 3, orderable: false, searchable: false, className: 'cell-fit text-end', render: (v, t, row) => canGenerate ? '<button type="button" class="btn btn-sm btn-icon btn-label-danger js-remove-account" data-id="' + esc(row.id) + '" title="' + esc(L.RemoveTarget || 'Remove') + '"><i class="bx bx-x"></i></button>' : '' }
         ],
@@ -903,6 +902,8 @@
 
     // "general-surgery" / "general_surgery" → "General Surgery".
     const prettify = s => String(s || '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/\b\w/g, ch => ch.toUpperCase());
+    // Specialty: the medical-specialty label; a value the set does not know keeps its stored text (prettified as before).
+    const specLabel = code => code ? (labelOf(specLabels, code) || prettify(code)) : '';
     const contactsConfig = list => ({
         data: list, stateSave: false, searching: true, paging: true, pageLength: 10, lengthChange: false, info: true,
         buttons: [], // inline picker: no Action dropdown / column-visibility toolbar
@@ -910,7 +911,7 @@
         columnDefs: [
             { targets: 0, orderable: false, className: 'cell-fit', render: (v, t, row) => '<div class="form-check mb-0"><input class="form-check-input js-contact-check" type="checkbox" data-cid="' + esc(row.contactId) + '"' + (selectedContacts[selKey(activeAccountId, row.contactId)] ? ' checked' : '') + (canGenerate ? '' : ' disabled') + '></div>' },
             { targets: 1, render: (v, t) => t === 'display' ? '<span class="fw-medium">' + esc(v) + '</span>' : (v || '') },
-            { targets: 2, render: (v, t) => t === 'display' ? (v ? '<span class="badge bg-label-info">' + esc(prettify(v)) + '</span>' : '—') : (v || '') },
+            { targets: 2, render: (v, t) => t === 'display' ? (v ? '<span class="badge bg-label-info">' + esc(specLabel(v)) + '</span>' : '—') : (v || '') },
             { targets: 3, render: v => v ? '<span class="text-muted small font-monospace">' + esc(String(v).slice(0, 8)) + '</span>' : '—' }
         ],
         language: { emptyTable: L.PickAccountForContacts || '—' }
@@ -1005,7 +1006,7 @@
     const renderSelectionChips = () => {
         const host = el('vp-selection-chips'); if (!host) return;
         const parts = [];
-        Object.keys(selectedContacts).forEach(k => { const s = selectedContacts[k]; parts.push(chip('doctor', 'data-k="' + esc(k) + '"', cName(s.accountId, s.contactId), prettify(cSpec(s.accountId, s.contactId)))); });
+        Object.keys(selectedContacts).forEach(k => { const s = selectedContacts[k]; parts.push(chip('doctor', 'data-k="' + esc(k) + '"', cName(s.accountId, s.contactId), specLabel(cSpec(s.accountId, s.contactId)))); });
         Object.keys(selectedPharmacies).forEach(pid => parts.push(chip('pharmacy', 'data-pid="' + esc(pid) + '"', selectedPharmacies[pid].name || pid, L.StatPharmacies || 'pharmacy')));
         host.innerHTML = parts.length ? parts.join('') : '<div class="text-muted small">—</div>';
     };
@@ -1023,7 +1024,7 @@
         const specs = Array.from(new Set((list || []).map(c => c.specialty).filter(Boolean)));
         if (!specs.length) { host.innerHTML = ''; return; }
         const pill = (val, label, on) => '<button type="button" class="btn btn-sm ' + (on ? 'btn-primary' : 'btn-label-secondary') + ' vp-spec-pill" data-spec="' + esc(val) + '">' + esc(label) + '</button>';
-        host.innerHTML = '<span class="text-muted small me-1">' + esc(L.ColSpecialty || 'Specialty') + '</span>' + pill('', L.AllLabel || 'All', true) + specs.map(s => pill(s, prettify(s), false)).join('');
+        host.innerHTML = '<span class="text-muted small me-1">' + esc(L.ColSpecialty || 'Specialty') + '</span>' + pill('', L.AllLabel || 'All', true) + specs.map(s => pill(s, specLabel(s), false)).join('');
     };
     const selectAllDoctors = () => {
         if (!contactsDt || !activeAccountId) return;
@@ -1111,7 +1112,7 @@
     };
 
     const saveTargets = () => {
-        if (!sessionData) return;
+        if (!sessionData || readOnly) return;
         const contacts = Object.keys(selectedContacts)
             .filter(k => targetAccounts.some(a => a.id === selectedContacts[k].accountId))
             .map(k => selectedContacts[k]);
@@ -1131,6 +1132,7 @@
 
     // ── apply / replan ── (apply = "Bu haftanın planı olarak kaydet"; it persists the manual order on the session)
     const apply = () => {
+        if (readOnly) return Promise.resolve();
         // A wholly empty plan (no visits on any day) has nothing to commit — block it. Partly-empty weeks are fine.
         if (!scheduled.length) { window.showToast?.(L.EmptyPlanBlocked || 'This plan has no visits, so it cannot be saved.', 'error'); return Promise.resolve(); }
         const body = { planningSessionId: sessionId, expectedVersion: currentVersion };
@@ -1141,6 +1143,7 @@
         });
     };
     const replan = () => {
+        if (readOnly) return;
         if (!lastPreview) { window.showToast?.(L.PreviewFailed || '', 'error'); return; }
         const contactIds = (lastPreview.content || []).map(c => c.contactId).filter(Boolean);
         if (!contactIds.length) return;
@@ -1196,7 +1199,7 @@
     });
     // Account-block drag-reorder → re-issue a BACKEND preview with the new manual order. Wired ONCE on the host;
     // SortableJS delegates so it survives the per-render innerHTML swaps. Only .vp-block cards drag (via their grip).
-    if (window.Sortable && el('vp-visit-cards')) {
+    if (window.Sortable && el('vp-visit-cards') && !readOnly) {
         window.Sortable.create(el('vp-visit-cards'), {
             draggable: '.vp-tl-row--account', filter: '.vp-tl-row--pharmacy', handle: '.vp-block-handle', animation: 150, ghostClass: 'vp-block-ghost',
             onStart: evt => { draggingBlockIdx = parseInt(evt.item.dataset.idx, 10); crossDayMove = false; },
@@ -1257,7 +1260,7 @@
     if (canApply) { el('vp-apply')?.addEventListener('click', apply); el('vp-replan')?.addEventListener('click', replan); }
 
     // Boot: names → session header → account source + targets (master/detail) → default tab → route preview.
-    loadPeriods()
+    Promise.all([loadPeriods(), loadReferenceLabels()])
         .then(loadSession)
         .then(loadAccountSource)
         .then(seedTargets)

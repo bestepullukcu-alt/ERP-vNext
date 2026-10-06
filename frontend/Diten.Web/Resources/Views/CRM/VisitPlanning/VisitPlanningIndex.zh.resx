@@ -4,47 +4,19 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="PageTitle" xml:space="preserve"><value>Visit Planning</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Turn a rep's selection into a scheduled plan — pick a period, accounts and doctors, preview a Day/Week grid, then apply.</value></data>
-  <data name="EngineNotice" xml:space="preserve"><value>The engine reads content, route, cadence, capacity, consent, availability and territory from the shipped modules. It computes nothing itself: preview is a dry-run, apply writes the plan atoms.</value></data>
-  <data name="SessionsPanel" xml:space="preserve"><value>My draft plans</value></data>
-  <data name="NewSession" xml:space="preserve"><value>New session</value></data>
-  <data name="PeriodPanel" xml:space="preserve"><value>Period</value></data>
-  <data name="CyclePeriod" xml:space="preserve"><value>Cycle period</value></data>
-  <data name="Resource" xml:space="preserve"><value>Rep (resource id)</value></data>
-  <data name="ResourcePlaceholder" xml:space="preserve"><value>e.g. rep-1</value></data>
-  <data name="Segment" xml:space="preserve"><value>Segment filter</value></data>
-  <data name="NoSegmentFilter" xml:space="preserve"><value>No segment filter</value></data>
-  <data name="SegmentHint" xml:space="preserve"><value>Segment narrows the eligible doctor universe; the pick stays manual.</value></data>
-  <data name="AccountsPanel" xml:space="preserve"><value>Accounts (clinics / hospitals)</value></data>
-  <data name="AccountsHint" xml:space="preserve"><value>Out-of-territory accounts are warned, never hidden.</value></data>
-  <data name="ContactsPanel" xml:space="preserve"><value>Doctors</value></data>
-  <data name="ContactsHint" xml:space="preserve"><value>Manual multi-select from the eligible universe.</value></data>
-  <data name="SaveSelection" xml:space="preserve"><value>Save selection</value></data>
-  <data name="Preview" xml:space="preserve"><value>Preview</value></data>
-  <data name="SupplyDemandPanel" xml:space="preserve"><value>Supply vs demand</value></data>
-  <data name="NoPreviewYet" xml:space="preserve"><value>Run a preview to see the plan.</value></data>
-  <data name="ContentPanel" xml:space="preserve"><value>Content preview (per doctor)</value></data>
-  <data name="Doctor" xml:space="preserve"><value>Doctor</value></data>
-  <data name="Stage" xml:space="preserve"><value>Next stage</value></data>
-  <data name="Duration" xml:space="preserve"><value>Duration</value></data>
-  <data name="Consent" xml:space="preserve"><value>Consent</value></data>
-  <data name="GridPanel" xml:space="preserve"><value>Day / Week grid</value></data>
-  <data name="Week" xml:space="preserve"><value>Week</value></data>
-  <data name="Date" xml:space="preserve"><value>Date</value></data>
-  <data name="Slot" xml:space="preserve"><value>Slot</value></data>
-  <data name="Target" xml:space="preserve"><value>Target</value></data>
-  <data name="Order" xml:space="preserve"><value>Order</value></data>
-  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
-  <data name="Replan" xml:space="preserve"><value>Re-plan</value></data>
-  <data name="SavedSession" xml:space="preserve"><value>Session saved.</value></data>
-  <data name="PreviewFailed" xml:space="preserve"><value>Preview failed.</value></data>
-  <data name="Applied" xml:space="preserve"><value>Plan applied.</value></data>
-  <data name="Replanned" xml:space="preserve"><value>Subset re-planned.</value></data>
-  <data name="SelectSession" xml:space="preserve"><value>Select a session first.</value></data>
-  <data name="NoContentResolved" xml:space="preserve"><value>No content resolved (report-only).</value></data>
-  <data name="OutOfTerritory" xml:space="preserve"><value>Out of territory</value></data>
-  <data name="Unscheduled" xml:space="preserve"><value>Unscheduled</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>规划您的一周：选择周期和周次，添加要拜访的诊所和医生，生成路线，然后保存为本周计划。</value></data>
+  <data name="NewSession" xml:space="preserve"><value>新建计划</value></data>
+  <data name="CyclePeriod" xml:space="preserve"><value>周期</value></data>
+  <data name="SegmentHint" xml:space="preserve"><value>细分会缩小可选医生的范围；选择仍由您决定。</value></data>
+  <data name="AccountsPanel" xml:space="preserve"><value>机构（诊所 / 医院）</value></data>
+  <data name="AccountsHint" xml:space="preserve"><value>辖区外的客户会显示警告，但不会被隐藏。</value></data>
+  <data name="ContactsPanel" xml:space="preserve"><value>医生</value></data>
+  <data name="NoPreviewYet" xml:space="preserve"><value>生成路线以查看计划。</value></data>
+  <data name="Replan" xml:space="preserve"><value>重新规划</value></data>
+  <data name="PreviewFailed" xml:space="preserve"><value>无法生成路线。</value></data>
+  <data name="Applied" xml:space="preserve"><value>已保存为本周计划。</value></data>
+  <data name="Replanned" xml:space="preserve"><value>拜访已重新规划。</value></data>
+  <data name="OutOfTerritory" xml:space="preserve"><value>辖区外</value></data>
   <data name="SessionsTitle" xml:space="preserve"><value>我的草稿计划</value></data>
   <data name="Plan" xml:space="preserve"><value>计划</value></data>
   <data name="Rep" xml:space="preserve"><value>代表</value></data>
@@ -64,14 +36,10 @@
   <data name="TargetsSection" xml:space="preserve"><value>目标</value></data>
   <data name="RouteSection" xml:space="preserve"><value>路线</value></data>
   <data name="RepUser" xml:space="preserve"><value>代表（用户）</value></data>
-  <data name="StrategyTemplate" xml:space="preserve"><value>策略模板</value></data>
-  <data name="StrategyTemplateNone" xml:space="preserve"><value>无策略模板</value></data>
-  <data name="StrategyTemplatesUnavailable" xml:space="preserve"><value>策略模板不可用。</value></data>
   <data name="UsersUnavailable" xml:space="preserve"><value>用户目录不可用；请在平台上输入代表。</value></data>
   <data name="WeekLabel" xml:space="preserve"><value>周</value></data>
-  <data name="RouteHint" xml:space="preserve"><value>计划保存后可在详情中生成路线。</value></data>
   <data name="RouteEmpty" xml:space="preserve"><value>本周没有路线。</value></data>
-  <data name="SelectAccountFirst" xml:space="preserve"><value>请先选择诊所/医院</value></data>
+  <data name="SelectAccountFirst" xml:space="preserve"><value>请先选择诊所 / 医院</value></data>
   <data name="WeekScopeHint" xml:space="preserve"><value>此计划针对的周（路线视图的默认值）。</value></data>
   <data name="SaveTargets" xml:space="preserve"><value>保存目标</value></data>
   <data name="TargetsSaved" xml:space="preserve"><value>目标已保存。</value></data>
@@ -144,21 +112,18 @@
   <data name="Country" xml:space="preserve"><value>国家</value></data>
   <data name="SelectCountryFirst" xml:space="preserve"><value>请先选择国家</value></data>
   <data name="Segments" xml:space="preserve"><value>细分</value></data>
-  <data name="SegmentSingleNote" xml:space="preserve"><value>目前仅应用第一个细分（后端单细分）。</value></data>
+  <data name="SegmentSingleNote" xml:space="preserve"><value>目前仅应用所选的第一个细分。</value></data>
   <data name="WeekNumberLabel" xml:space="preserve"><value>第{0}周</value></data>
   <data name="ColSpecialty" xml:space="preserve"><value>专业</value></data>
   <data name="ResetOptimal" xml:space="preserve"><value>恢复最优路线</value></data>
   <data name="SaveWeekPlan" xml:space="preserve"><value>保存为本周计划</value></data>
-  <data name="SupplyLabel" xml:space="preserve">
-    <value>Supply</value>
-  </data>
-  <data name="DemandLabel" xml:space="preserve">
-    <value>Demand</value>
-  </data>
-  <data name="ScheduledLabel" xml:space="preserve">
-    <value>Scheduled</value>
-  </data>
-  <data name="UnscheduledLabel" xml:space="preserve">
-    <value>Unscheduled</value>
-  </data>
+  <data name="SupplyLabel" xml:space="preserve"><value>供给</value></data>
+  <data name="DemandLabel" xml:space="preserve"><value>需求</value></data>
+  <data name="ScheduledLabel" xml:space="preserve"><value>已安排</value></data>
+  <data name="UnscheduledLabel" xml:space="preserve"><value>未安排</value></data>
+  <data name="TargetCountFormat" xml:space="preserve"><value>{0} 名医生 · {1} 家药房</value></data>
+  <data name="ReadOnlyNotice" xml:space="preserve"><value>此计划已确认，仅可查看。</value></data>
+  <data name="CalendarUnresolvedWarning" xml:space="preserve"><value>无法读取工作日历；未考虑节假日。</value></data>
+  <data name="Status_generated" xml:space="preserve"><value>已生成</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>已归档</value></data>
 </root>

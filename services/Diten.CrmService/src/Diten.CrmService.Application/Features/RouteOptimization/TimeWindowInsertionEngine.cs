@@ -393,6 +393,12 @@ public static class TimeWindowInsertionEngine
 
         for (var d = period.DateFrom; d <= period.DateTo; d = d.AddDays(1))
         {
+            // WP-VP-FIX-1 — a weekend / holiday / closure the caller marked non-working is never a candidate day.
+            if (period.NonWorkingDates is { } nonWorking && nonWorking.Contains(d))
+            {
+                continue;
+            }
+
             dates.Add(d);
         }
 

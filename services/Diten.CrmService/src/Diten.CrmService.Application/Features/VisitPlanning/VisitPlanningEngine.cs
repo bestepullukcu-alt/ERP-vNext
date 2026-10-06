@@ -50,6 +50,7 @@ public sealed class VisitPlanningEngine
     private readonly PlannedVisitFrequencyProbe _frequencyProbe;
     private readonly PlannedVisitConsentProbe _consentProbe;
     private readonly PlannedVisitAvailabilityProbe _availabilityProbe;
+    private readonly PlanningWorkingCalendar _calendar;
 
     public VisitPlanningEngine(
         ITenantContext tenant,
@@ -68,7 +69,8 @@ public sealed class VisitPlanningEngine
         PlannedVisitJourneyProbe journeyProbe,
         PlannedVisitFrequencyProbe frequencyProbe,
         PlannedVisitConsentProbe consentProbe,
-        PlannedVisitAvailabilityProbe availabilityProbe)
+        PlannedVisitAvailabilityProbe availabilityProbe,
+        PlanningWorkingCalendar calendar)
     {
         _tenant = tenant;
         _actor = actor;
@@ -87,6 +89,7 @@ public sealed class VisitPlanningEngine
         _frequencyProbe = frequencyProbe;
         _consentProbe = consentProbe;
         _availabilityProbe = availabilityProbe;
+        _calendar = calendar;
     }
 
     /// <summary>Run the full ①–⑦ flow as a dry-run and return the transient preview. Persists NOTHING.</summary>
@@ -239,6 +242,13 @@ public sealed class VisitPlanningEngine
         // ② context: capacity (supply + between-visit buffer) + territory WARN (never a filter).
         var capacity = await _capacities.GetByCyclePeriodAsync(tenantId, session.CyclePeriodId, cancellationToken);
         var betweenVisit = capacity?.BetweenVisitTimeMinutes ?? 0;
+
+        // WP-VP-FIX-1 (C2 + C3) — only WORKING days are candidate days: the platform working calendar (weekends,
+        // holidays, closures) for the period's country, asked once per day for the whole run; when it cannot answer the
+        // Sat/Sun fallback runs and the result says so (calendarStatus = unresolved).
+        var calendar = await _calendar.ResolveAsync(
+            period, capacity?.CalendarCountryCode, weeks[0].From, weeks[^1].To, cancellationToken);
+        var nonWorking = calendar.NonWorkingDates.ToHashSet();
         var territoryWarnings = await _territory.WarnAsync(session.Selection.SelectedAccountIds, cancellationToken);
 
         // ③ CONTACT (doctor) selection — segment filter + consent gate + availability windows.
@@ -358,7 +368,7 @@ public sealed class VisitPlanningEngine
             var input = new RouteOptimizationInput(
                 routeVisits,
                 new RepWorkingHours(null, ResolveStartLocation(options)),
-                new OptimizationPeriod(window.From, window.To),
+                new OptimizationPeriod(window.From, window.To, nonWorking),
                 betweenVisit,
                 new TravelModelSpec(),
                 // Manual sequence (target ids) applies WITHIN this week's visit set; null ⇒ the greedy optimum. Frequency
@@ -401,7 +411,7 @@ public sealed class VisitPlanningEngine
 
         return GenerationResult.Succeeded(new GenerationOutput(
             session, period, periodStart, periodEnd, weeks.Count, placed, unscheduled, contentPreviews,
-            territoryWarnings, supplyDemand));
+            territoryWarnings, supplyDemand, calendar));
     }
 
     private async Task<SupplyDemandSummary> BuildSupplyDemandAsync(
@@ -751,7 +761,8 @@ public sealed class VisitPlanningEngine
         IReadOnlyList<UnscheduledPreview> Unscheduled,
         IReadOnlyList<DoctorContentPreview> Content,
         IReadOnlyList<TerritoryWarning> TerritoryWarnings,
-        SupplyDemandSummary SupplyDemand);
+        SupplyDemandSummary SupplyDemand,
+        PlanningCalendarResult Calendar);
 
     private sealed record GenerationResult(string? Error, GenerationOutput? Output)
     {
@@ -801,7 +812,9 @@ public sealed class VisitPlanningEngine
         return new VisitPlanPreview(
             g.Session.Id, g.Session.CyclePeriodId, g.Session.ResourceId,
             g.PeriodStart.ToString("yyyy-MM-dd"), g.PeriodEnd.ToString("yyyy-MM-dd"), g.WeekCount,
-            scheduled, g.Unscheduled, g.Content, g.TerritoryWarnings, g.SupplyDemand, DateTimeOffset.UtcNow);
+            scheduled, g.Unscheduled, g.Content, g.TerritoryWarnings, g.SupplyDemand, DateTimeOffset.UtcNow,
+            new PlanningCalendarStatusDto(g.Calendar.Status, g.Calendar.ReasonCode, g.Calendar.Reason),
+            g.Calendar.NonWorkingDates.OrderBy(d => d).Select(d => d.ToString("yyyy-MM-dd")).ToList());
     }
 }
 
