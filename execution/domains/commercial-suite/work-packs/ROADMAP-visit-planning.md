@@ -42,7 +42,7 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 
 ### Faz 0 — veri ve kararlar
 - ◐ **0.1** Beste'yi (`bestepullukcu@gmail.com`, sistemde "Admin User") İstanbul + Kocaeli'ye ata — **kullanıcı yapıyor** (adımlar aşağıda).
-- ☐ **0.2** AUD-001 kararı (A: CRM merkezi denetim şimdi · B: köprü borç · C: kırmızı kalsın).
+- ☑ **0.2** AUD-001 kararı: **A — CRM merkezi denetime bağlanır, ama en sonda** (Faz 8). O zamana kadar mimari test kırmızı kalır; dal `main`'e PR olmaz.
 - ☑ **0.3** D8 test kaydı arşivlendi.
 
 ### Faz 1 — VP-FIX-1 (mockup'tan bağımsız)
@@ -80,6 +80,12 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 
 ### Faz 6 — Planlanan Ziyaretler sayfası
 - ☐ Canlı analiz → (mockup?) → paketler: GUID (D1), tamamen İngilizce sayfa, sahiplik, T1–T3, `target_inactive`
+
+### Faz 8 — AUD-CRM-1: CRM'i merkezi denetim kaydına bağla (kullanıcı kararı: düzeltmelerden sonra, en son)
+- ☐ CRM denetim yayıncısını düzelt (kategori / işlem adı), merkezi kayda gönderimi aç, kabul edilmiş iz olarak sabitle
+- ☐ 26 işlem (bilgi yolu inceleme + Güvenlik Metni / Ülke Yasal Profili) + Faz 3'ün yeni işlemleri (haftayı onayla / yeniden aç…) bağlanır; yeniden açma gerekçesi (MK-4) denetim kaydına da yazılır
+- ☐ O zaman sorulacak iki karar: (1) doğrudan Platform merkezi kaydı mı, CRM kendi izi mi · (2) düzenlemeye tabi işlemde kayıt yazılamazsa işlem dursun mu
+- ☐ Mimari test (AUD-001) yeşil → ancak bundan sonra `main`'e PR
 
 ### Faz 7 — sonra
 - ☐ Yönetici görünümü (Ekip) · sıradaki içerik (SB-3c) · saha temsilcisi rolü (F-RBAC) · pozisyon tabanlı atama · check-in / anti-fraud (MOD-0280)
