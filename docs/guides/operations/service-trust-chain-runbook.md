@@ -264,6 +264,19 @@ rules as the Global Product. What differs is only their names:
 | GSKU identity | `FirstGskuIdentityWorkflow` | `FirstGskuIdentityWorkflowWorker` | `gsku` | `GSKU-IDENTITY` |
 | GSKU correction | `GskuCorrectionWorkflow` | `GskuCorrectionWorkflowWorker` | `GskuCorrection` | `GSKU-CORRECTION` |
 | GSKU retirement request | `GskuRetirementRequestWorkflow` | `GskuRetirementRequestWorkflowWorker` | `GskuRetirementRequest` | `GSKU-RETIREMENT-REQUEST` |
+| LSKU identity | `LskuIdentityWorkflow` | `LskuIdentityWorkflowWorker` | `lsku` | `LSKU-IDENTITY` |
+| LSKU retirement request | `LskuRetirementRequestWorkflow` | `LskuRetirementRequestWorkflowWorker` | `LskuRetirementRequest` | `LSKU-RETIREMENT-REQUEST` |
+
+*LSKU rows (WP-MDM-LSKU-ACCEPT-01 FIX1 B4, FIX2 item 12):* the same rules. Tracked: the two template codes, the identity
+reason code `LSKU_IDENTITY_APPROVAL` and the identity worker's `LeaseOwner` in MDM's `appsettings.Development.json`;
+Platform's two `TrustedWorkflowStartAuthorization` entries (`lsku` / `LSKU-IDENTITY`, `LskuRetirementRequest` /
+`LSKU-RETIREMENT-REQUEST`) for the default client — Platform matches the client, service, audience, object type and
+template code exactly. Written by the bootstrap: `Enabled` and `CandidatePrincipalIds` of both flows and `Enabled` of
+both workers (a non-default `--client-code` also gets both Platform entries). A local file written before FIX1 lacks the
+LSKU sections and is reported as "not a complete setup": move it aside and run the bootstrap again. One published
+approval definition per LSKU flow and tenant (step 4). The stuck child-creation admission gauge
+(`GSKU_CHILD_ADMISSION`, every child kind) runs on its own worker (`GskuChildAdmissionGauge:Enabled`, default on,
+`:IntervalSeconds` 300) — it does not need any LSKU worker to be on.
 
 - **Tracked** (not secret): the three template codes and the identity reason code in MDM's
   `appsettings.Development.json`, and Platform's three `TrustedWorkflowStartAuthorization` entries for the default

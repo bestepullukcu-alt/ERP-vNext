@@ -42,6 +42,11 @@ public interface ILskuIdentityWorkflowOperationRepository
         Task.FromResult(new LskuIdentityWithdrawalWriteResult(
             false, false, null, "LSKU_IDENTITY_WITHDRAWAL_NOT_IMPLEMENTED"));
 
+    // LSKU FIX2 item 10: the unfinished submits of a draft, for the cancel to settle or refuse one by one.
+    Task<IReadOnlyList<LskuIdentityWorkflowOperation>> GetUnfinishedForLskuAsync(Guid lskuId,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_IDENTITY_WORKFLOW_UNFINISHED_READ_NOT_IMPLEMENTED");
+
     // LSKU FIX1 B3: a draft is cancelled only while no submit of it is unfinished (the engine may hold its start).
     Task<bool> HasUnfinishedForLskuAsync(Guid lskuId, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("LSKU_IDENTITY_WORKFLOW_UNFINISHED_READ_NOT_IMPLEMENTED");

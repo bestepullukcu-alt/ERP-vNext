@@ -96,6 +96,9 @@ public sealed class LskuIdentityWorkflowStartRequestFactory(
             ProductDefinitionRevisionId = revision.Id,
             ExpectedLskuVersion = expectedVersion,
             MakerSubjectId = makerSubjectId,
+            // FIX2 item 13: 0 = "tracked, never sent" (positive proof); a document written before FIX2 lacks the field
+            // (null) and is treated as possibly sent — it is looked up, never abandoned on the absence of a value.
+            LastStartSentAtUtcTicksV1 = 0,
             WorkflowTemplateId = configuration.TemplateId,
             WorkflowTemplateCode = configuration.TemplateCode,
             CandidatePrincipalIds = [.. configuration.CandidatePrincipalIds],

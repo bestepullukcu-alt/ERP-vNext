@@ -66,4 +66,7 @@
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>L'approbation n'a pas pu être appliquée à ce LSKU, par exemple parce que son marché ou son parent n'est plus utilisable. Le LSKU est de nouveau un brouillon ; corrigez la cause et soumettez-le à nouveau.</value>
   </data>
+  <data name="ErrorSubmitTargetChanged" xml:space="preserve">
+    <value>Ce LSKU a été modifié ou annulé après le début de la soumission ; rien n'a donc été envoyé en approbation. Rouvrez le LSKU et soumettez-le s'il est toujours nécessaire.</value>
+  </data>
 </root>

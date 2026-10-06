@@ -133,8 +133,10 @@ public sealed class LskuRetirementRequestOperationMongoTests : IAsyncLifetime
             $"worker-{i}", now, now + TimeSpan.TicksPerSecond)));
         var first = Assert.Single(claims, x => x is not null)!;
         var mutation = new Diten.MdmService.Domain.Repositories.LskuRetirementRequestMutation(
-            LskuRetirementRequestCheckpoint.AwaitingMakerReplay,
-            ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay, now + 1, ReleaseLease: true);
+            // LSKU FIX2 item 2: a move the processor really makes (Prepared → AwaitingMakerReplay is no longer allowed —
+            // the transition census, LskuTransitionCensusTests).
+            LskuRetirementRequestCheckpoint.StartOutcomeUnknown,
+            ProductIdentityWorkflowRecoveryDisposition.None, now + 1, ReleaseLease: true);
         Assert.False(await repository.AdvanceAsync(first with { TenantId = Guid.NewGuid() }, mutation));
         Assert.False(await repository.AdvanceAsync(first with { OperationFingerprint = new string('f', 64) }, mutation));
         Assert.False(await repository.AdvanceAsync(first, mutation with { UpdatedAtUtcTicks = first.LeaseUntilUtcTicksV1 }));

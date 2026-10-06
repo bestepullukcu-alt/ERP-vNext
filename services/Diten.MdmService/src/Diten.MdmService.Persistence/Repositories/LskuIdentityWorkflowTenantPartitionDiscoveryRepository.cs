@@ -64,4 +64,28 @@ public sealed class LskuIdentityWorkflowTenantPartitionDiscoveryRepository
         var page = candidates.Distinct().ToArray();
         return new(page, candidates.Count == limit ? candidates[^1] : null);
     }
+
+    private static FilterDefinition<LskuIdentityWorkflowOperation> Stuck =>
+        Builders<LskuIdentityWorkflowOperation>.Filter.Ne(item => item.IsDeleted, true)
+        & ((Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.Checkpoint,
+                LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+            & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.RecoveryDisposition,
+                ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired))
+           | Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.Checkpoint,
+               LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay));
+
+    public Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(Stuck, cancellationToken: cancellationToken);
+
+    public Task<long> CountNeedingAPersonAsync(CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(
+            Builders<LskuIdentityWorkflowOperation>.Filter.Ne(item => item.IsDeleted, true)
+            & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.Checkpoint,
+                LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+            & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.RecoveryDisposition,
+                ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+            & Builders<LskuIdentityWorkflowOperation>.Filter.Nin(item => item.LastFailureCode,
+                Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.LskuLifecycleStuckKinds
+                    .IdentitySettledByTheRequestersRepeat),
+            cancellationToken: cancellationToken);
 }

@@ -207,6 +207,42 @@ public sealed class LskusController : Controller
             new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted }, cancellationToken);
     }
 
+    // LSKU FIX2 item 11 (B3): the draft cancel proxy — the create key (cancelling undoes a creation); the operation id
+    // is derived from the version and the reason, as every lifecycle request here.
+    [HttpPost("api/{id:guid}/draft/cancel")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CancelDraft(
+        Guid id,
+        [FromForm] int? expectedVersion,
+        [FromForm] string? reasonCode,
+        CancellationToken cancellationToken)
+    {
+        if (!Has(CreatePermission)) return Failure(HttpStatusCode.Forbidden);
+        if (id == Guid.Empty || expectedVersion is null or < 0
+            || !HasExactText(reasonCode, 128)
+            || !await HasOnlyFormFieldsAsync("ExpectedVersion", "ReasonCode"))
+        {
+            return Failure(HttpStatusCode.BadRequest);
+        }
+        if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
+            return Failure(HttpStatusCode.Unauthorized);
+
+        var operationId = CreateLifecycleOperationId(
+            tenantId, actor, "lsku", "draft-cancel", id, expectedVersion.Value, reasonCode!);
+        if (!RequestMessage(
+                HttpMethod.Post,
+                $"{_gateway}/api/lskus/{id:D}/draft/cancel",
+                JsonContent.Create(new { expectedVersion = expectedVersion.Value, reasonCode }, options: _json),
+                out var request))
+        {
+            return Failure(HttpStatusCode.Unauthorized);
+        }
+
+        request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"));
+        return await SendLifecycleRequestAsync(request, "draft-cancel",
+            new HashSet<int> { StatusCodes.Status200OK }, cancellationToken);
+    }
+
     private async Task<IActionResult> ExecuteLifecycleAsync(
         Guid id,
         int? expectedVersion,
@@ -345,6 +381,7 @@ public sealed class LskusController : Controller
     {
         ["LSKU_MARKET_ALREADY_EXISTS"] = "ErrorMarketAlreadyExists",
         ["LSKU_IDENTITY_SUBMIT_ABANDONED"] = "ErrorSubmitAbandoned",
+        ["LSKU_IDENTITY_SUBMIT_TARGET_CHANGED"] = "ErrorSubmitTargetChanged",
         ["LSKU_IDENTITY_DECISION_NOT_APPLICABLE"] = "ErrorDecisionNotApplicable"
     };
 

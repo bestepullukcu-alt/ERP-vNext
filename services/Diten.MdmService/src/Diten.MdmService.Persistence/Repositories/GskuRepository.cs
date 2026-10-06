@@ -759,9 +759,23 @@ public sealed class GskuRepository : IGskuRepository
                          x.ChildKind == childKind && x.AcquiredAtUtc < acquiredBeforeUtc))
             {
                 if (orphans.Count >= limit) return orphans;
-                if (!await ChildHeldAsync(childKind, admission.CreationCommandId, cancellationToken))
+                var hold = await ChildHoldAsync(childKind, admission.CreationCommandId, cancellationToken);
+                if (!hold.Held)
                     orphans.Add(new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
                         admission.RequestFingerprint, admission.AcquiredAtUtc));
+                // LSKU FIX2 item 5: held ONLY by a code consumed for an identity whose row never came, older than the
+                // cutoff — the operator path burns that code first (the repair handler), then releases.
+                else if (!hold.ByRow && hold.Reservation is
+                         {
+                             ReservationState: CodeReservationState.Consumed,
+                             BindingState: CodeReservationBindingState.PendingIdentityWrite,
+                             ConsumedEntityId: { } identity
+                         } stale
+                         && stale.ConsumedAt < acquiredBeforeUtc
+                         && !await IdentityRowExistsAsync(childKind, identity, cancellationToken))
+                    orphans.Add(new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
+                        admission.RequestFingerprint, admission.AcquiredAtUtc,
+                        stale.Id, identity, stale.Version));
             }
             if (holders.Count < HolderPageSize) break;
             after = holders[^1].Id;
@@ -822,16 +836,42 @@ public sealed class GskuRepository : IGskuRepository
     // CT 2026-10-06: what may still become a child of this command — its live row, or its live code reservation.
     private async Task<bool> ChildHeldAsync(
         GskuChildIdentityKind childKind, string creationCommandId, CancellationToken cancellationToken) =>
-        await ChildRowExistsAsync(childKind, creationCommandId, cancellationToken)
-        || await _reservations.Find(Builders<CodeReservation>.Filter.Eq(x => x.TenantId, _tenantId)
-                & Builders<CodeReservation>.Filter.Eq(x => x.IsDeleted, false)
+        (await ChildHoldAsync(childKind, creationCommandId, cancellationToken)).Held;
+
+    private sealed record ChildHold(bool Held, bool ByRow, CodeReservation? Reservation);
+
+    // A live row holds; so does a live reservation (reserved, or consumed and not burned) — except one bound to a row
+    // that was cancelled (deleted): that identity is over and its code is never handed out again (FIX2 item 4).
+    private async Task<ChildHold> ChildHoldAsync(
+        GskuChildIdentityKind childKind, string creationCommandId, CancellationToken cancellationToken)
+    {
+        if (await ChildRowExistsAsync(childKind, creationCommandId, cancellationToken)) return new(true, true, null);
+        var reservation = await _reservations.Find(Builders<CodeReservation>.Filter.Eq(x => x.TenantId, _tenantId)
+                & Builders<CodeReservation>.Filter.Ne(x => x.IsDeleted, true)
                 & Builders<CodeReservation>.Filter.Eq(x => x.ReservationCommandId, creationCommandId)
                 & Builders<CodeReservation>.Filter.Eq(x => x.EntityType, childKind == GskuChildIdentityKind.Lsku
                     ? CodeBearingEntityType.Lsku : CodeBearingEntityType.FinishedGood)
                 & (Builders<CodeReservation>.Filter.Eq(x => x.ReservationState, CodeReservationState.Reserved)
                    | (Builders<CodeReservation>.Filter.Eq(x => x.ReservationState, CodeReservationState.Consumed)
                       & Builders<CodeReservation>.Filter.Ne(x => x.BindingState, CodeReservationBindingState.Burned))))
-            .AnyAsync(cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken);
+        if (reservation is null) return new(false, false, null);
+        if (reservation.ConsumedEntityId is { } identity && await DeletedIdentityRowExistsAsync(childKind, identity, cancellationToken))
+            return new(false, false, reservation);
+        return new(true, false, reservation);
+    }
+
+    private Task<bool> IdentityRowExistsAsync(GskuChildIdentityKind childKind, Guid identityId, CancellationToken ct) =>
+        childKind == GskuChildIdentityKind.Lsku
+            ? _lskus.Find(Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<Lsku>.Filter.Eq(x => x.Id, identityId)).AnyAsync(ct)
+            : _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<FinishedGood>.Filter.Eq(x => x.Id, identityId)).AnyAsync(ct);
+
+    private Task<bool> DeletedIdentityRowExistsAsync(GskuChildIdentityKind childKind, Guid identityId, CancellationToken ct) =>
+        childKind == GskuChildIdentityKind.Lsku
+            ? _lskus.Find(Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<Lsku>.Filter.Eq(x => x.Id, identityId)
+                          & Builders<Lsku>.Filter.Eq(x => x.IsDeleted, true)).AnyAsync(ct)
+            : _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<FinishedGood>.Filter.Eq(x => x.Id, identityId)
+                                  & Builders<FinishedGood>.Filter.Eq(x => x.IsDeleted, true)).AnyAsync(ct);
 
     // CT 2026-10-06: admissions of every child kind held past the cutoff in this tenant — swept ones and held ones
     // alike; the gauge reads it (a creation never takes this long).
@@ -844,30 +884,15 @@ public sealed class GskuRepository : IGskuRepository
         return holders.Sum(list => (long)list.Count(x => x.AcquiredAtUtc < acquiredBeforeUtc));
     }
 
-    // The tenants that hold any admission — ids only, for the gauge's walk (as every recovery discovery).
-    public async Task<IReadOnlyList<Guid>> DiscoverTenantsWithChildAdmissionsAsync(Guid? afterTenantId, int limit,
-        CancellationToken cancellationToken = default)
-    {
-        if (limit is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(limit));
-        var filter = Builders<Gsku>.Filter.Eq(x => x.IsDeleted, false)
-            & Builders<Gsku>.Filter.SizeGt(x => x.ChildCreationAdmissions, 0);
-        if (afterTenantId.HasValue) filter &= Builders<Gsku>.Filter.Gt(x => x.TenantId, afterTenantId.Value);
-        var rows = await _gskus.Aggregate().Match(filter)
-            .AppendStage<BsonDocument>(new BsonDocument("$group", new BsonDocument("_id", "$TenantId")))
-            .Sort(new BsonDocumentSortDefinition<BsonDocument>(new BsonDocument("_id", 1)))
-            .Limit(limit).ToListAsync(cancellationToken);
-        return rows.Select(x => x["_id"].AsGuid).ToArray();
-    }
-
     private Task<bool> ChildRowExistsAsync(
         GskuChildIdentityKind childKind, string creationCommandId, CancellationToken cancellationToken) =>
         childKind == GskuChildIdentityKind.Lsku
             ? _lskus.Find(Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId)
-                          & Builders<Lsku>.Filter.Eq(x => x.IsDeleted, false)
+                          & Builders<Lsku>.Filter.Ne(x => x.IsDeleted, true)
                           & Builders<Lsku>.Filter.Eq(x => x.CreationCommandId, creationCommandId))
                 .AnyAsync(cancellationToken)
             : _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)
-                                  & Builders<FinishedGood>.Filter.Eq(x => x.IsDeleted, false)
+                                  & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
                                   & Builders<FinishedGood>.Filter.Eq(x => x.CreationCommandId, creationCommandId))
                 .AnyAsync(cancellationToken);
 
@@ -897,7 +922,7 @@ public sealed class GskuRepository : IGskuRepository
             & (fromRequest
                 ? Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, lifecycleBinding)
                 : Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null))
-            & Builders<Gsku>.Filter.Size(x => x.ChildCreationAdmissions, 0);
+            & NoChildCreationAdmission;
         var updated = await _gskus.FindOneAndUpdateAsync(filter,
             Builders<Gsku>.Update.Set(x => x.RetirementOperationId, operationId)
                 .Set(x => x.RetirementOperationFingerprint, operationFingerprint)
@@ -959,7 +984,7 @@ public sealed class GskuRepository : IGskuRepository
             & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
             & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, operationId)
             & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationFingerprint, operationFingerprint)
-            & Builders<Gsku>.Filter.Size(x => x.ChildCreationAdmissions, 0)
+            & NoChildCreationAdmission
             & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
         var updated = await _gskus.FindOneAndUpdateAsync(filter,
             Builders<Gsku>.Update.Set(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Retired)
@@ -986,7 +1011,7 @@ public sealed class GskuRepository : IGskuRepository
             & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
             & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
             & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, null)
-            & Builders<Gsku>.Filter.Size(x => x.ChildCreationAdmissions, 0)
+            & NoChildCreationAdmission
             & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
         var updated = await _gskus.FindOneAndUpdateAsync(filter,
             Builders<Gsku>.Update.Set(x => x.ActiveLifecycleOperation, binding)
@@ -1110,7 +1135,7 @@ public sealed class GskuRepository : IGskuRepository
             & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
             & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
             & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, null)
-            & Builders<Gsku>.Filter.Size(x => x.ChildCreationAdmissions, 0)
+            & NoChildCreationAdmission
             & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
         var updated = await _gskus.FindOneAndUpdateAsync(filter,
             Builders<Gsku>.Update.Set(x => x.ActiveLifecycleOperation, binding)
@@ -1152,7 +1177,7 @@ public sealed class GskuRepository : IGskuRepository
             & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, GskuLifecycleOperationKind.Correction)
             & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, binding.OperationId)
             & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.BaseGskuVersion, binding.BaseGskuVersion)
-            & Builders<Gsku>.Filter.Size(x => x.ChildCreationAdmissions, 0)
+            & NoChildCreationAdmission
             & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
         var update = Builders<Gsku>.Update.Set(x => x.ActiveLifecycleOperation, null)
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1)
@@ -1525,6 +1550,13 @@ public sealed class GskuRepository : IGskuRepository
     }
 
     private FilterDefinition<Gsku> TenantFilter => Builders<Gsku>.Filter.Eq(x => x.TenantId, _tenantId);
+    // LSKU FIX2 item 13 (CT addendum; GP flow 1 FIX1's shape): a GSKU written before ChildCreationAdmissions existed
+    // has no such field, and Mongo's $size 0 does not match a missing field — such a GSKU could take no lock or fence
+    // and could never be retired. "No admission" is an empty list OR no list at all.
+    private static FilterDefinition<Gsku> NoChildCreationAdmission =>
+        Builders<Gsku>.Filter.Size(x => x.ChildCreationAdmissions, 0)
+        | Builders<Gsku>.Filter.Exists(x => x.ChildCreationAdmissions, false);
+
     private FilterDefinition<Gsku> ActiveFilter => TenantFilter & Builders<Gsku>.Filter.Eq(x => x.IsDeleted, false);
     private FilterDefinition<Gsku> ReferenceableFilter =>
         ActiveFilter & Builders<Gsku>.Filter.Eq(

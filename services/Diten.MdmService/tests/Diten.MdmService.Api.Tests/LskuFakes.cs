@@ -16,6 +16,10 @@ public sealed class FakeMarkets : IVerifiedMarketReferenceResolver, IWorkflowVer
     /// <summary>Markets the provider answers "not found" for (retired since the LSKU was created).</summary>
     public ConcurrentDictionary<string, bool> Retired { get; } = new(StringComparer.Ordinal);
 
+    /// <summary>LSKU FIX2 item 7: the real client's other answers for a market (403 = this service refused, 409 = the
+    /// provider's contract), keyed by market code.</summary>
+    public ConcurrentDictionary<string, (int Status, string Code)> Refusals { get; } = new(StringComparer.Ordinal);
+
     public Task<VerifiedMarketReferenceResolveResult> ResolveLatestAsync(string marketCode,
         CancellationToken cancellationToken = default) => Task.FromResult(Resolve(marketCode));
 
@@ -23,7 +27,9 @@ public sealed class FakeMarkets : IVerifiedMarketReferenceResolver, IWorkflowVer
         CancellationToken cancellationToken = default) => Task.FromResult(Resolve(marketCode));
 
     private VerifiedMarketReferenceResolveResult Resolve(string marketCode) =>
-        Retired.ContainsKey(marketCode)
+        Refusals.TryGetValue(marketCode, out var refusal)
+            ? new(false, refusal.Status, refusal.Code, null)
+            : Retired.ContainsKey(marketCode)
             ? new(false, 404, "REFERENCE_MARKET_NOT_FOUND", null)
             : new(true, 200, null, new("market", marketCode, CatalogVersion, 1, "LATEST", ResolvedAt));
 }

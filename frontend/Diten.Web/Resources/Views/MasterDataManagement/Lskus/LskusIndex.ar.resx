@@ -66,4 +66,7 @@
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>تعذّر تطبيق الموافقة على هذا LSKU، على سبيل المثال لأن سوقه أو سجله الأصلي لم يعد قابلاً للاستخدام. عاد LSKU مسودة؛ صحّح السبب ثم أرسله مرة أخرى.</value>
   </data>
+  <data name="ErrorSubmitTargetChanged" xml:space="preserve">
+    <value>تغيّر هذا LSKU أو أُلغي بعد بدء الإرسال، لذلك لم يُرسل أي شيء للموافقة. افتح LSKU مرة أخرى وأرسله إذا كان لا يزال مطلوبًا.</value>
+  </data>
 </root>

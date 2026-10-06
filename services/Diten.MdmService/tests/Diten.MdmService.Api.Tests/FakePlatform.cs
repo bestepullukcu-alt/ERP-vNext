@@ -71,6 +71,12 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
     /// <summary>FIX5 item 2: the code a failing lookup answers with (MDM's own transport codes, e.g. an unreadable 502).</summary>
     public string? LookupFailureCode { get; set; }
 
+    /// <summary>LSKU FIX2 item 8: runs (once) at the start of the next start call — a gate for interleaving tests.</summary>
+    public Func<Task>? OnNextStart { get; set; }
+
+    /// <summary>LSKU FIX2: the next start lookup only (once) answers this, then the lookups answer as usual.</summary>
+    public (ProductIdentityWorkflowTransportOutcome Outcome, string Code)? NextLookupFailure { get; set; }
+
     /// <summary>The outcome the next cancellation answers with (once), instead of cancelling.</summary>
     public ProductIdentityWorkflowTransportOutcome? NextCancelFails { get; set; }
 
@@ -122,11 +128,16 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         instance.TaskVersion++;
     }
 
-    public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>> StartAsync(
+    public async Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>> StartAsync(
         Guid tenantId, ProductIdentityWorkflowStartRequest request, string delegatedUserToken,
         CancellationToken cancellationToken = default)
     {
         Interlocked.Increment(ref StartCalls);
+        if (OnNextStart is { } gate)
+        {
+            OnNextStart = null;
+            await gate();
+        }
         if (NextStartThrows)
         {
             NextStartThrows = false;
@@ -135,14 +146,14 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         if (NextStartFails is { } failure)
         {
             NextStartFails = null;
-            return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(
-                failure, "FAKE_ENGINE_START_REFUSED"));
+            return ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(
+                failure, "FAKE_ENGINE_START_REFUSED");
         }
         var scripted = NextStartFailure;
         NextStartFailure = null;
         if (scripted is { Created: false } refused)
-            return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(
-                refused.Outcome, refused.Code));
+            return ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(
+                refused.Outcome, refused.Code);
 
         var replay = _byKey.TryGetValue(request.IdempotencyKey, out var existing);
         var instance = existing ?? _byKey.GetOrAdd(request.IdempotencyKey, key =>
@@ -164,15 +175,17 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
             return created;
         });
         if (scripted is { Created: true } lost)
-            return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(
-                lost.Outcome, lost.Code));
-        return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Success(
-            StartResult(instance, replay)));
+            return ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(
+                lost.Outcome, lost.Code);
+        return ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Success(
+            StartResult(instance, replay));
     }
 
     public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>> GetStartResultAsync(
         Guid tenantId, ProductIdentityWorkflowStartResultRequest request, CancellationToken cancellationToken = default) =>
-        Task.FromResult(LookupFailure is { } lookupFailure
+        NextLookupFailure is { } once && (NextLookupFailure = null) is null
+            ? Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(once.Outcome, once.Code))
+            : Task.FromResult(LookupFailure is { } lookupFailure
             ? ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(lookupFailure, LookupFailureCode ?? "FAKE_ENGINE_LOOKUP_FAILED")
             : _byKey.TryGetValue(request.IdempotencyKey, out var instance)
                         && instance.ObjectType == request.ExpectedObjectType

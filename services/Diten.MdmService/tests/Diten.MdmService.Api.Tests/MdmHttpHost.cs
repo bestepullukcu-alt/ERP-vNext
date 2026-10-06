@@ -169,6 +169,8 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 ["LskuIdentityWorkflowWorker__LeaseOwner"] = "mdm-http-test-lsku",
                 ["LskuIdentityWorkflowWorker__LeaseSeconds"] = "10",
                 ["LskuIdentityWorkflowWorker__RetryDelaySeconds"] = "1",
+                // LSKU FIX2 item 10: "nothing arrived" is trusted after 2 s here.
+                ["LskuIdentityWorkflowWorker__StartSettleSeconds"] = "2",
                 ["LskuRetirementRequestWorkflow__Enabled"] = "true",
                 ["LskuRetirementRequestWorkflow__TemplateCode"] = "LSKU-RETIREMENT-REQUEST",
                 ["LskuRetirementRequestWorkflow__CandidatePrincipalIds__0"] = Approver.ToString("D"),

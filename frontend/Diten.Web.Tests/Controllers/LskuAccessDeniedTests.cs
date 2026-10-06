@@ -51,6 +51,31 @@ public sealed class LskuAccessDeniedTests(WebApplicationFactory<Program> factory
         }
     }
 
+    // LSKU FIX2 item 11: every action endpoint refuses a caller without its key with a 403 body — never a redirect,
+    // never a call to MDM (the handler behind is unreachable). The reader key alone opens none of them.
+    [Fact]
+    public async Task Every_action_endpoint_without_its_key_answers_a_403_body_and_never_reaches_mdm()
+    {
+        var controller = Controller("mdm.lskus.read");
+
+        var results = new (string Name, IActionResult Result)[]
+        {
+            ("CreateOptions", await controller.CreateOptions(CancellationToken.None)),
+            ("Create", await controller.Create(new Diten.Web.Models.Lskus.CreateLskuViewModel { GskuId = Guid.NewGuid(), MarketCode = "TR" },
+                "token", CancellationToken.None)),
+            ("Submit", await controller.SubmitLifecycle(Guid.NewGuid(), 0, CancellationToken.None)),
+            ("Withdraw", await controller.WithdrawIdentityApproval(Guid.NewGuid(), 1, "X", null, CancellationToken.None)),
+            ("RequestRetirement", await controller.RequestRetirement(Guid.NewGuid(), 1, "X", CancellationToken.None)),
+            ("Cancel", await controller.CancelDraft(Guid.NewGuid(), 0, "X", CancellationToken.None))
+        };
+
+        foreach (var (name, result) in results)
+        {
+            var body = Assert.IsType<ObjectResult>(result);
+            Assert.True(body.StatusCode == StatusCodes.Status403Forbidden, name);
+        }
+    }
+
     [Fact]
     public async Task With_the_layout_the_unauthorized_face_is_the_access_denied_surface_and_the_reader_gets_the_list()
     {

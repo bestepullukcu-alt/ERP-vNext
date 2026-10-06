@@ -1166,6 +1166,30 @@ public sealed class EntitlementPermissionSyncServiceTests
             ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.AdminRole));
     }
 
+    // WP-MDM-LSKU-ACCEPT-01 FIX2 item 12 (measured): the same for direct LSKU retirement — a historical human grant held
+    // by the Retirement Steward is removed by the sync (the key is owned by the profile and no role desires it), and the
+    // Admin role does not get it.
+    [Fact]
+    public async Task The_retirement_stewards_historical_direct_lsku_retire_grant_is_removed_by_the_sync()
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var declaredKeys = ProductIdentityDeclaredKeys(catalog);
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            declaredKeys, Actor);
+        var steward = roles.IdOf(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole);
+        var retire = catalog.Single(p => p.Key == "mdm.lskus.retire").Id;
+        rolePerms.Seed(RolePermission.ModuleGrant(steward, retire, TenantA, "historical",
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            declaredKeys, Actor);
+
+        Assert.DoesNotContain(rolePerms.Rows, row => row.RoleId == steward && row.PermissionId == retire);
+        Assert.DoesNotContain("mdm.lskus.retire",
+            ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.AdminRole));
+    }
+
     [Fact]
     public async Task Product_identity_lifecycle_profile_composes_exact_twenty_seven_eleven_roles_with_ABB_and_scope()
     {

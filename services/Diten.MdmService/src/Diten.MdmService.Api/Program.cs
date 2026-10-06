@@ -264,7 +264,8 @@ builder.Services.AddScoped(sp =>
 {
     var options = sp.GetRequiredService<IOptions<LskuIdentityWorkflowWorkerOptions>>().Value;
     return new LskuIdentityWorkflowExecutionConfiguration(
-        TimeSpan.FromSeconds(options.LeaseSeconds), TimeSpan.FromSeconds(options.RetryDelaySeconds));
+        TimeSpan.FromSeconds(options.LeaseSeconds), TimeSpan.FromSeconds(options.RetryDelaySeconds),
+        TimeSpan.FromSeconds(options.StartSettleSeconds));
 });
 builder.Services.AddScoped<LskuIdentityWorkflowProcessor>();
 builder.Services.AddSingleton<LskuIdentityWorkflowRecoveryRunner>();
@@ -299,6 +300,9 @@ builder.Services.AddScoped(sp =>
 });
 builder.Services.AddScoped<LskuRetirementRequestWorkflowProcessor>();
 builder.Services.AddSingleton<GskuChildAdmissionGauge>();
+builder.Services.AddOptions<GskuChildAdmissionGaugeOptions>()
+    .Bind(builder.Configuration.GetSection(GskuChildAdmissionGaugeOptions.SectionName));
+builder.Services.AddHostedService<GskuChildAdmissionGaugeWorker>();
 builder.Services.AddSingleton<LskuRetirementRequestRecoveryRunner>();
 builder.Services.AddHostedService<LskuRetirementRequestRecoveryWorker>();
 

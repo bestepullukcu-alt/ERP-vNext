@@ -59,6 +59,7 @@ public static class DependencyInjection
         services.AddScoped<ILskuRepository, LskuRepository>();
         services.AddScoped<ILskuIdentityWorkflowOperationRepository, LskuIdentityWorkflowOperationRepository>();
         services.AddScoped<ILskuIdentityWorkflowTenantPartitionDiscovery, LskuIdentityWorkflowTenantPartitionDiscoveryRepository>();
+        services.AddScoped<IChildCreationAdmissionCensus, ChildCreationAdmissionCensusRepository>();
         services.AddScoped<ILskuRetirementRequestOperationRepository, LskuRetirementRequestOperationRepository>();
         services.AddScoped<IProductAbbreviationRegisterRepository, ProductAbbreviationRegisterRepository>();
         services.AddScoped<IProductAbbreviationAllocationLedgerRepository, ProductAbbreviationAllocationLedgerRepository>();

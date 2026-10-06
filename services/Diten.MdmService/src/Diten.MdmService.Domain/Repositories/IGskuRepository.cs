@@ -121,9 +121,6 @@ public interface IGskuRepository
     Task<long> CountStaleChildCreationAdmissionsAsync(DateTimeOffset acquiredBeforeUtc,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
-    Task<IReadOnlyList<Guid>> DiscoverTenantsWithChildAdmissionsAsync(Guid? afterTenantId, int limit,
-        CancellationToken cancellationToken = default) =>
-        throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
     Task<FirstGskuIdentityRetirementWriteResult<Gsku>> CloseChildAdmissionFenceAsync(
         Guid id, int expectedVersion, Guid operationId, string operationFingerprint,
         CancellationToken cancellationToken = default) =>

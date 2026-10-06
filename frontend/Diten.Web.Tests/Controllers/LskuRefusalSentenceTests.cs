@@ -24,7 +24,7 @@ namespace Diten.Web.Tests.Controllers;
 public sealed class LskuRefusalSentenceTests
 {
     private static readonly string[] Languages = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
-    private static readonly string[] Keys = ["ErrorMarketAlreadyExists", "ErrorSubmitAbandoned", "ErrorDecisionNotApplicable"];
+    private static readonly string[] Keys = ["ErrorMarketAlreadyExists", "ErrorSubmitAbandoned", "ErrorDecisionNotApplicable", "ErrorSubmitTargetChanged"];
 
     [Fact]
     public async Task A_duplicate_market_is_said_in_its_own_sentence()
@@ -52,6 +52,23 @@ public sealed class LskuRefusalSentenceTests
         var result = await controller.SubmitLifecycle(Guid.NewGuid(), 0, CancellationToken.None);
 
         Assert.Equal("ErrorSubmitAbandoned", FirstError(result, 409));
+    }
+
+    // FIX2 item 12: a submit that ended because its DRAFT changed is not "the approval service refused" — its own sentence.
+    [Fact]
+    public async Task A_submit_whose_draft_changed_is_said_in_its_own_sentence()
+    {
+        var controller = Controller(Conflict("LSKU_IDENTITY_SUBMIT_TARGET_CHANGED"));
+        controller.ControllerContext.HttpContext.Request.ContentType = "application/x-www-form-urlencoded";
+        controller.ControllerContext.HttpContext.Request.Form = new FormCollection(new()
+        {
+            ["ExpectedVersion"] = "0",
+            ["__RequestVerificationToken"] = "x"
+        });
+
+        var result = await controller.SubmitLifecycle(Guid.NewGuid(), 0, CancellationToken.None);
+
+        Assert.Equal("ErrorSubmitTargetChanged", FirstError(result, 409));
     }
 
     [Fact]

@@ -83,7 +83,9 @@ public sealed record LskuIdentityWorkflowCheckpointMutation(
     // LSKU FIX1 B5: the requester's repeat puts a stuck operation back before its decision — the recorded decision
     // and approval proof go, the engine is read again.
     bool ClearDecision = false,
-    RecoveryStreakWrite Streak = RecoveryStreakWrite.Reset);
+    RecoveryStreakWrite Streak = RecoveryStreakWrite.Reset,
+    // LSKU FIX2 item 8: the start is about to be sent (kept on the same checkpoint, the lease is kept).
+    long? LastStartSentAtUtcTicksV1 = null);
 
 public sealed record LskuIdentityWithdrawalWriteResult(
     bool Succeeded,

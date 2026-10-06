@@ -277,6 +277,13 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
             null,
             cancellationToken);
 
+    public Task<CodeReservation?> GetByReservationCommandAsync(
+        CodeBearingEntityType entityType, string reservationCommandId, CancellationToken cancellationToken = default) =>
+        _collection.Find(ActiveTenantFilter
+                & Builders<CodeReservation>.Filter.Eq(x => x.EntityType, entityType)
+                & Builders<CodeReservation>.Filter.Eq(x => x.ReservationCommandId, reservationCommandId))
+            .FirstOrDefaultAsync(cancellationToken)!;
+
     // LSKU FIX1 B1 (b): the binding path already knows Burned; this is its first caller.
     public Task<ReservationOperationResult> BurnIdentityBindingAsync(
         Guid reservationId,

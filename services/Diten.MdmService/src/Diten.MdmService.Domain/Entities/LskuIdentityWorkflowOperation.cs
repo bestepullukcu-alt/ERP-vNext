@@ -71,6 +71,9 @@ public sealed class LskuIdentityWorkflowOperation : EntityBase
     public long? NextAttemptAtUtcTicksV1 { get; set; }
     // LSKU FIX1 B5 (the GSKU pattern): consecutive worker attempts that ended in a counted retry.
     public int FailedAttemptCount { get; set; }
+    // LSKU FIX2 item 8: written BEFORE a start is sent — "nothing was sent" (and so a submit that may be abandoned)
+    // is known only while this is null; after it, the lookup and the settle window decide.
+    public long? LastStartSentAtUtcTicksV1 { get; set; }
     public string? LastFailureCode { get; set; }
     public string? LeaseOwner { get; set; }
     public long? LeaseUntilUtcTicksV1 { get; set; }

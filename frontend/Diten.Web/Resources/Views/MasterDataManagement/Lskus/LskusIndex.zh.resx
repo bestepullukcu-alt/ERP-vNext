@@ -66,4 +66,7 @@
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>审批结果无法应用到此 LSKU，例如其市场或上级记录已不可用。该 LSKU 已恢复为草稿；请纠正原因后重新提交。</value>
   </data>
+  <data name="ErrorSubmitTargetChanged" xml:space="preserve">
+    <value>此 LSKU 在提交开始后已被更改或取消，因此未提交任何审批。请重新打开该 LSKU，如仍需要，请再次提交。</value>
+  </data>
 </root>

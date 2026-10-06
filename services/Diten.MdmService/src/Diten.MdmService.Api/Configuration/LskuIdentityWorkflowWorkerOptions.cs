@@ -9,11 +9,13 @@ public sealed class LskuIdentityWorkflowWorkerOptions
     public int OperationPageSize { get; init; } = 25;
     public int LeaseSeconds { get; init; } = 60;
     public int RetryDelaySeconds { get; init; } = 30;
+    // LSKU FIX2 item 10: how long after a start the engine's "nothing arrived" is not trusted.
+    public int StartSettleSeconds { get; init; } = 120;
     public string LeaseOwner { get; init; } = string.Empty;
 
     public void EnsureValidWhenEnabled()
     {
-        if (LeaseSeconds is < 10 or > 300 || RetryDelaySeconds is < 1 or > 3600)
+        if (LeaseSeconds is < 10 or > 300 || RetryDelaySeconds is < 1 or > 3600 || StartSettleSeconds is < 1 or > 3600)
             throw new InvalidOperationException("LSKU_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID");
         if (!Enabled) return;
         if (PollIntervalSeconds is < 1 or > 3600 || TenantPageSize is < 1 or > 100

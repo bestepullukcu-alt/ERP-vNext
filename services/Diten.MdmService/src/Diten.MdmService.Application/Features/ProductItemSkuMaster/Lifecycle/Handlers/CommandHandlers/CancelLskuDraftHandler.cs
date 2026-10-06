@@ -1,8 +1,10 @@
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.CommandHandlers;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Commands;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
@@ -26,6 +28,9 @@ public sealed class CancelLskuDraftHandler(
     IProductDefinitionRevisionRepository revisions,
     IGlobalProductRepository products,
     ILskuIdentityWorkflowOperationRepository identityOperations,
+    ICodeReservationRepository reservations,
+    LskuIdentityWorkflowProcessor identityProcessor,
+    LskuIdentityWorkflowExecutionConfiguration identityExecution,
     IProductLegalEntityScopeRolloutStateRepository rolloutStates,
     IProductLegalEntityScopePolicyRepository scopePolicies,
     ProductLegalEntityScopeCandidateFacade scopeCandidates,
@@ -48,13 +53,14 @@ public sealed class CancelLskuDraftHandler(
             rolloutStates, scopePolicies, scopeCandidates, tenantContext);
         var scope = await scopeGuard.ResolveContextAsync(LskuIdentityLifecyclePermissions.CancelDraft, cancellationToken);
         if (!scope.IsSuccessful) return Fail(scope.FailureCode!, scope.StatusCode);
-        var lsku = await lskus.GetByIdAsync(command.LskuId, cancellationToken);
+        // FIX2 item 6: a deleted (cancelled) LSKU is read too — the repeat of a cancel is a replay, not a 404.
+        var lsku = await lskus.GetByIdOrTombstoneAsync(command.LskuId, cancellationToken);
         var gsku = lsku is null ? null : await gskus.GetByIdAsync(lsku.GskuId, cancellationToken);
         var revision = gsku is null ? null
             : await revisions.GetByIdAsync(gsku.ProductDefinitionRevisionId, cancellationToken);
         var product = revision is null ? null
             : await products.GetByIdAsync(revision.GlobalProductId, cancellationToken);
-        if (lsku is null || gsku is null || revision is null || product is null)
+        if (lsku is null || lsku.TenantId != tenantContext.TenantId || gsku is null || revision is null || product is null)
             return Fail("LSKU_NOT_FOUND", 404);
         var decision = await scopeGuard.EvaluateAsync(scope.Context!, product.Id, cancellationToken);
         if (!decision.Allowed) return Fail("LSKU_NOT_FOUND", 404);
@@ -63,8 +69,15 @@ public sealed class CancelLskuDraftHandler(
         {
             if (lsku.LifecycleStatus != ProductIdentityLifecycleStatus.Draft)
                 return Fail("LSKU_NOT_A_DRAFT", 409);
-            if (await identityOperations.HasUnfinishedForLskuAsync(lsku.Id, cancellationToken))
-                return Fail("LSKU_SUBMIT_IN_FLIGHT", 409);
+            // FIX2 item 10: a submit waiting for its maker's replay whose start is known never to have reached the
+            // engine is closed by this cancel (a named end); any other unfinished submit refuses it — a stuck one is
+            // counted by the identity gauge (LSKU_IDENTITY).
+            foreach (var operation in await identityOperations.GetUnfinishedForLskuAsync(lsku.Id, cancellationToken))
+            {
+                var closed = await identityProcessor.CloseForDraftCancelAsync(operation,
+                    $"draft-cancel-{actor:N}", identityExecution.LeaseDuration, cancellationToken);
+                if (!closed.Closed) return Fail(closed.Code ?? "LSKU_SUBMIT_IN_FLIGHT", closed.Status);
+            }
         }
 
         var audit = LskuIdentityLifecycleAuditIntentFactory.CreateDraftCancelled(lsku, command.ExpectedVersion,
@@ -80,14 +93,26 @@ public sealed class CancelLskuDraftHandler(
                     _ => 409
                 });
 
-        // The admission a creation that never confirmed may still hold goes with the draft (a live row no longer
-        // carries its command). An admission already completed is simply not there.
+        // FIX2 item 4: the code bound to the cancelled row is finished (burned: never handed out again), so nothing of
+        // this creation can still become the child, and the admission it may still hold goes. A first try that threw
+        // after the cancel committed is completed by the replay (the same steps, each replay-safe).
+        var reservation = await reservations.GetByIdAsync(lsku.CodeReservationId, cancellationToken);
+        if (reservation is { ReservationState: CodeReservationState.Consumed,
+                             BindingState: CodeReservationBindingState.PendingIdentityWrite }
+            && reservation.ConsumedEntityId == lsku.Id)
+        {
+            var burned = await reservations.BurnIdentityBindingAsync(reservation.Id, lsku.Id, reservation.Version,
+                $"lsku-draft-cancel:{command.OperationId:D}:burn", actor.ToString("D"), command.OperationId.ToString("D"),
+                "LSKU_DRAFT_CANCELLED", cancellationToken);
+            if (!burned.Succeeded)
+                return Fail(CreateLskuDraftHandler.BurnRefused, 409);
+        }
         var fingerprint = GskuChildCreationAdmission.ComputeRequestFingerprint(
             lsku.GskuId, GskuChildIdentityKind.Lsku, lsku.CreationCommandId, lsku.MarketCode);
-        var released = gsku.ChildCreationAdmissions.Any(x =>
-                           x.ChildKind == GskuChildIdentityKind.Lsku && x.CreationCommandId == lsku.CreationCommandId)
-                       && (await gskus.ReleaseChildCreationAdmissionAsync(lsku.GskuId, GskuChildIdentityKind.Lsku,
-                           lsku.CreationCommandId, fingerprint, cancellationToken)).Succeeded;
+        var held = (await gskus.GetByIdAsync(lsku.GskuId, cancellationToken))?.ChildCreationAdmissions.Any(x =>
+            x.ChildKind == GskuChildIdentityKind.Lsku && x.CreationCommandId == lsku.CreationCommandId) == true;
+        var released = !held || (await gskus.ReleaseChildCreationAdmissionAsync(lsku.GskuId, GskuChildIdentityKind.Lsku,
+            lsku.CreationCommandId, fingerprint, cancellationToken)).Succeeded;
         return Response<LskuDraftCancellationResult>.Success(
             new(cancelled.Lsku.Id, cancelled.Lsku.Version, released, cancelled.IsReplay), 200);
     }
@@ -95,3 +120,4 @@ public sealed class CancelLskuDraftHandler(
     private static Response<LskuDraftCancellationResult> Fail(string code, int status) =>
         Response<LskuDraftCancellationResult>.Fail(code, status);
 }
+

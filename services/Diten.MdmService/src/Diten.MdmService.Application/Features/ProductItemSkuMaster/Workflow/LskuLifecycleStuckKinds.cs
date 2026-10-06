@@ -15,4 +15,14 @@ public static class LskuLifecycleStuckKinds
     ];
 
     public static bool NeedsAPerson(string? code) => code is null || !SettledByTheRequestersRepeat.Contains(code);
+
+    // LSKU FIX2 item 3: the identity flow's — the requester's same submit re-reads the engine (ReconcileAsync) and
+    // settles a provider contract mismatch, a start proof or evidence it could not read, a lookup the engine refused.
+    // A limit reached on an answer about the record (STUCK_ON_RECORD_ANSWER) and any other cause are a person's.
+    public static readonly IReadOnlyList<string> IdentitySettledByTheRequestersRepeat =
+    [
+        "REFERENCE_CONTRACT_MISMATCH",
+        "LSKU_IDENTITY_WORKFLOW_START_PROOF_INVALID",
+        "LSKU_IDENTITY_WORKFLOW_EVIDENCE_CONFLICT"
+    ];
 }

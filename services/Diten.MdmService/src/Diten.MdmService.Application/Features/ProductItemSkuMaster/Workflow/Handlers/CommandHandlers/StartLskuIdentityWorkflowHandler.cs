@@ -66,8 +66,13 @@ public sealed class StartLskuIdentityWorkflowHandler(
         if (result.Operation?.Checkpoint is LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
             or LskuIdentityWorkflowCheckpoint.DecisionNotApplicable)
             return Response<LskuIdentityWorkflowResult>.Fail(
-                [result.Operation.Checkpoint == LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
-                    ? SubmitAbandoned : DecisionNotApplicable,
+                [result.Operation.Checkpoint == LskuIdentityWorkflowCheckpoint.DecisionNotApplicable
+                    ? DecisionNotApplicable
+                    // FIX2 item 12: the draft changed (cancelled, edited) before any start — not an engine refusal.
+                    : result.Operation.LastFailureCode is LskuIdentityWorkflowProcessor.SubmitTargetChanged
+                        or LskuIdentityWorkflowProcessor.ClosedByDraftCancel
+                        ? LskuIdentityWorkflowProcessor.SubmitTargetChanged
+                        : SubmitAbandoned,
                  result.Operation.LastFailureCode ?? result.ErrorCode ?? SubmitAbandoned], 409);
         if (!result.Succeeded || result.Operation is null)
             return Fail(result.ErrorCode ?? "LSKU_IDENTITY_WORKFLOW_START_FAILED", result.StatusCode);

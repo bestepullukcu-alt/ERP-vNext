@@ -9,4 +9,9 @@ public sealed record GskuOrphanChildAdmission(
     GskuChildIdentityKind ChildKind,
     string CreationCommandId,
     string RequestFingerprint,
-    DateTimeOffset AcquiredAtUtc);
+    DateTimeOffset AcquiredAtUtc,
+    // LSKU FIX2 item 5: set when the admission is held only by a code consumed for an identity whose row never came —
+    // the repair burns that reservation first, then releases.
+    Guid? ReservationToBurnId = null,
+    Guid? ReservationIdentityId = null,
+    int? ReservationVersion = null);

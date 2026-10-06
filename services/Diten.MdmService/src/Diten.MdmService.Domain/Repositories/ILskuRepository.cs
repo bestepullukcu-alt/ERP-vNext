@@ -75,6 +75,21 @@ public interface ILskuRepository
         LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("LSKU_RETIREMENT_DECISION_NOT_IMPLEMENTED");
 
+    // LSKU FIX2 item 8: the submit fence (see LskuLifecycleOperationKind.IdentitySubmit). Taken only on the draft the
+    // submit was reserved for (same version, not deleted, no other fence); a replay of the same fence succeeds.
+    Task<LskuLifecycleWriteResult> FenceIdentitySubmitAsync(
+        Guid id, int expectedVersion, Guid operationId, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_IDENTITY_SUBMIT_FENCE_NOT_IMPLEMENTED");
+
+    // LSKU FIX2 item 10: the fence of a submit that ends before anything was started goes (only this operation's).
+    Task<LskuLifecycleWriteResult> ReleaseIdentitySubmitFenceAsync(
+        Guid id, Guid operationId, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_IDENTITY_SUBMIT_FENCE_NOT_IMPLEMENTED");
+
+    // LSKU FIX2 item 6: a tenant-bounded read that also returns a deleted (cancelled) LSKU — for a replay.
+    Task<Lsku?> GetByIdOrTombstoneAsync(Guid id, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_READ_CONTRACT_NOT_IMPLEMENTED");
+
     // LSKU FIX1 B3: a draft LSKU is cancelled (deleted with the intent that says so) so it no longer holds its GSKU.
     Task<LskuLifecycleWriteResult> CancelDraftAsync(
         Guid id, int expectedVersion, LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>

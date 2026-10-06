@@ -23,19 +23,23 @@ public sealed class RepairLskuChildAdmissionsHandler
     : IRequestHandler<RepairLskuChildAdmissionsCommand, Response<LskuChildAdmissionRepairResult>>
 {
     public const int MinimumAgeFloorMinutes = 5;
+    public const string BurnRefused = "LSKU_ADMISSION_REPAIR_BURN_REFUSED";
     public const int MaximumLimit = 500;
     private readonly IGskuRepository _gskus;
+    private readonly ICodeReservationRepository _reservations;
     private readonly ITenantContext _tenantContext;
     private readonly IProductIdentityActorContext _actorContext;
     private readonly TimeProvider _time;
 
     public RepairLskuChildAdmissionsHandler(
         IGskuRepository gskus,
+        ICodeReservationRepository reservations,
         ITenantContext tenantContext,
         IProductIdentityActorContext actorContext,
         TimeProvider time)
     {
         _gskus = gskus;
+        _reservations = reservations;
         _tenantContext = tenantContext;
         _actorContext = actorContext;
         _time = time;
@@ -65,6 +69,21 @@ public sealed class RepairLskuChildAdmissionsHandler
         foreach (var orphan in orphans)
         {
             var current = versions.TryGetValue(orphan.GskuId, out var version) ? orphan with { GskuVersion = version } : orphan;
+            // LSKU FIX2 item 5: an admission held only by a code consumed for an identity whose row never came — the
+            // code is burned first (its own audited write on the reservation); a refused burn keeps the admission.
+            if (current.ReservationToBurnId is { } reservationId
+                && current.ReservationIdentityId is { } identityId && current.ReservationVersion is { } reservationVersion)
+            {
+                var burned = await _reservations.BurnIdentityBindingAsync(reservationId, identityId, reservationVersion,
+                    $"admission-repair-burn:{reservationId:N}", _actorContext.ActorId, current.CreationCommandId,
+                    "ADMISSION_REPAIR_IDENTITY_NEVER_WRITTEN", cancellationToken);
+                if (!burned.Succeeded)
+                {
+                    items.Add(new(orphan.GskuId, orphan.CreationCommandId, orphan.AcquiredAtUtc, false,
+                        BurnRefused + ":" + (burned.ErrorCode ?? "UNKNOWN")));
+                    continue;
+                }
+            }
             var result = await _gskus.RepairOrphanChildCreationAdmissionAsync(
                 current, CreateIntent(current, now), cancellationToken);
             if (result.Gsku is not null)
@@ -84,8 +103,11 @@ public sealed class RepairLskuChildAdmissionsHandler
     {
         var tenantId = _tenantContext.TenantId;
         var facts = $"{tenantId:D}|{orphan.GskuId:D}|{(int)orphan.ChildKind}|{orphan.CreationCommandId}|{orphan.RequestFingerprint}|{orphan.AcquiredAtUtc:O}";
+        // LSKU FIX2 item 9: keyed by the admission INSTANCE (its acquisition time), not only by its command — a second
+        // leak of the same command (Acquire does not renew an existing admission's time; a new one follows a release)
+        // is a second repair with its own intent, never the first one's id with another evidence.
         var key = "admission-repair:" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-            $"{tenantId:D}|{orphan.GskuId:D}|{(int)orphan.ChildKind}|{orphan.CreationCommandId}"))).ToLowerInvariant();
+            $"{tenantId:D}|{orphan.GskuId:D}|{(int)orphan.ChildKind}|{orphan.CreationCommandId}|{orphan.AcquiredAtUtc.UtcTicks}"))).ToLowerInvariant();
         var postVersion = checked(orphan.GskuVersion + 1);
         return new LocalAuditIntent
         {

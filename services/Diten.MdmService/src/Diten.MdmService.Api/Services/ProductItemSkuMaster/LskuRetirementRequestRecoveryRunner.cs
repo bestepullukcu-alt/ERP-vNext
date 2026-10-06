@@ -22,8 +22,7 @@ public sealed record LskuRetirementRequestRecoveryRunResult(int TenantCount, int
  */
 public sealed class LskuRetirementRequestRecoveryRunner(IServiceScopeFactory scopeFactory,
     IOptions<LskuRetirementRequestWorkflowWorkerOptions> options, TimeProvider clock,
-    ILogger<LskuRetirementRequestRecoveryRunner> logger, ProductIdentityRecoveryMetrics? metrics = null,
-    GskuChildAdmissionGauge? admissions = null)
+    ILogger<LskuRetirementRequestRecoveryRunner> logger, ProductIdentityRecoveryMetrics? metrics = null)
 {
     public const string Flow = "LSKU_RETIREMENT_REQUEST";
 
@@ -120,17 +119,6 @@ public sealed class LskuRetirementRequestRecoveryRunner(IServiceScopeFactory sco
         cycle.Tenants = tenants;
         cycle.Log(logger, Flow);
         metrics?.Record(Flow, cycle.InManualReconciliation, cycle.NeedingAPerson);
-        // CT 2026-10-06: the stuck child-creation admissions (every child kind) are counted on this worker's cycle.
-        if (admissions is not null)
-        {
-            try { await admissions.RecordAsync(ct); }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
-            catch (Exception exception)
-            {
-                logger.LogError("{Flow}: the admission count failed with {ExceptionType}.", GskuChildAdmissionGauge.Flow,
-                    exception.GetType().Name);
-            }
-        }
         return new(tenants, count, completed, deferred, failed) { Cycle = cycle };
     }
 }

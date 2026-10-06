@@ -105,14 +105,21 @@ public sealed class LskuIdentityWorkflowProcessorTests
      * 8) now applies: a reference the maker can put right makes the approval NOT APPLICABLE — the LSKU is a draft again
      * with the reason on record, and the maker submits again once it is put right. A provider that cannot answer now
      * (503 / 504) still waits, and only a contract mismatch of the provider itself stays stuck (its own test below).
+     *
+     * LSKU FIX2 item 7 (the GSKU identity's provider classification): a provider that refuses THIS SERVICE (401 / 403)
+     * waits like one that cannot answer now (503 / 504) — the approver's decision is kept; a provider contract conflict
+     * (409) is stuck with its cause for a person; only a reference the maker can put right (404: retired / not offered)
+     * makes the approval not applicable.
      */
     [Theory]
-    [InlineData(404, false)]
-    [InlineData(409, false)]
-    [InlineData(503, true)]
-    [InlineData(504, true)]
-    public async Task Market_failure_makes_the_approval_not_applicable_unless_the_provider_only_has_to_answer_later(
-        int statusCode, bool retryable)
+    [InlineData(404, "NotApplicable")]
+    [InlineData(409, "Stuck")]
+    [InlineData(401, "Wait")]
+    [InlineData(403, "Wait")]
+    [InlineData(503, "Wait")]
+    [InlineData(504, "Wait")]
+    public async Task Market_failure_makes_the_approval_not_applicable_only_when_the_maker_can_put_it_right(
+        int statusCode, string expected)
     {
         var harness = new Harness(ProductIdentityDecisionKind.Approved);
         harness.Market.Result = VerifiedMarketReferenceResolveResult.Fail(
@@ -121,21 +128,27 @@ public sealed class LskuIdentityWorkflowProcessorTests
         var result = await harness.Processor.RecoverAsync(
             harness.Operation, "worker", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
 
-        Assert.Equal(retryable
-                ? LskuIdentityWorkflowCheckpoint.DecisionObserved
-                : LskuIdentityWorkflowCheckpoint.DecisionNotApplicable,
+        Assert.Equal(expected switch
+            {
+                "NotApplicable" => LskuIdentityWorkflowCheckpoint.DecisionNotApplicable,
+                "Stuck" => LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+                _ => LskuIdentityWorkflowCheckpoint.DecisionObserved
+            },
             result.Operation!.Checkpoint);
-        Assert.Equal(retryable
-                ? ProductIdentityWorkflowRecoveryDisposition.Retryable
-                : ProductIdentityWorkflowRecoveryDisposition.None,
+        Assert.Equal(expected switch
+            {
+                "NotApplicable" => ProductIdentityWorkflowRecoveryDisposition.None,
+                "Stuck" => ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired,
+                _ => ProductIdentityWorkflowRecoveryDisposition.Retryable
+            },
             result.Operation.RecoveryDisposition);
-        Assert.Equal(retryable
-                ? ProductIdentityLifecycleStatus.PendingIdentityApproval
-                : ProductIdentityLifecycleStatus.Draft,
+        Assert.Equal(expected == "NotApplicable"
+                ? ProductIdentityLifecycleStatus.Draft
+                : ProductIdentityLifecycleStatus.PendingIdentityApproval,
             harness.Lsku.LifecycleStatus);
-        if (!retryable)
+        Assert.Equal($"MARKET_{statusCode}", result.Operation.LastFailureCode);
+        if (expected == "NotApplicable")
         {
-            Assert.Equal($"MARKET_{statusCode}", result.Operation.LastFailureCode);
             Assert.Single(harness.Lsku.AuditIntents,
                 intent => intent.Operation == ProductAuditOperation.LskuIdentityDecisionNotApplicable);
         }

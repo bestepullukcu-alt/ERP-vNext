@@ -58,6 +58,24 @@ public sealed class TrustedSourceAuditOperationCoverageTests
         Assert.All(ReservedByMdm, name => Assert.True(Enum.IsDefined(typeof(ProductAuditOperation), Enum.Parse<ProductAuditOperation>(name))));
     }
 
+    // LSKU FIX2 (CT sabotage L15): a name in the map is not enough — an operation moved to another aggregate is still
+    // "mapped" by name and still refused at delivery. Every LSKU operation MDM can produce maps on the LSKU aggregate
+    // and every GSKU child-admission operation on the GSKU aggregate (the pair MDM's intent carries).
+    [Fact]
+    public void Every_lsku_and_gsku_admission_operation_maps_on_its_own_aggregate()
+    {
+        var produced = Enum.GetNames<ProductAuditOperation>().Except(ReservedByMdm, StringComparer.Ordinal).ToList();
+        var pairs = produced.Where(name => name.StartsWith("Lsku", StringComparison.Ordinal)).Select(name => ("Lsku", name))
+            .Concat(produced.Where(name => name.StartsWith("GskuChildCreation", StringComparison.Ordinal)).Select(name => ("Gsku", name)))
+            .ToList();
+        var unmapped = pairs.Where(pair => !TrustedSourceAuditIntentOperationMap.TryMap(pair.Item1, pair.Item2, out var entity, out _)
+                || entity != pair.Item1)
+            .Select(pair => $"{pair.Item1}/{pair.Item2}").ToList();
+
+        Assert.True(pairs.Count >= 13, $"only {pairs.Count} LSKU / GSKU-admission operations found");
+        Assert.True(unmapped.Count == 0, "Not mapped on their own aggregate: " + string.Join(", ", unmapped));
+    }
+
     [Fact]
     public void The_guard_is_not_vacuous()
     {

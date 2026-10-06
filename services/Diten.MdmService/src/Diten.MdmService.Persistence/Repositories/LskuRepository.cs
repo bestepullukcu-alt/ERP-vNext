@@ -403,6 +403,46 @@ public sealed class LskuRepository : ILskuRepository
             : "LSKU_RETIREMENT_DECISION_CONFLICT");
     }
 
+    public async Task<LskuLifecycleWriteResult> FenceIdentitySubmitAsync(
+        Guid id, int expectedVersion, Guid operationId, CancellationToken cancellationToken = default)
+    {
+        if (id == Guid.Empty || operationId == Guid.Empty || expectedVersion < 0)
+            return new(false, null, "LSKU_IDENTITY_SUBMIT_FENCE_CONTRACT_INVALID");
+        var fence = new LskuActiveLifecycleOperationBinding(LskuLifecycleOperationKind.IdentitySubmit, operationId, expectedVersion);
+        var updated = await _lskus.FindOneAndUpdateAsync(
+            ActiveFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Lsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Lsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
+            & (Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+               | Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, fence)),
+            Builders<Lsku>.Update.Set(x => x.ActiveLifecycleOperation, fence),
+            new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, updated);
+        var current = await GetByIdAsync(id, cancellationToken);
+        return new(false, current, current is null ? "LSKU_NOT_FOUND" : "LSKU_IDENTITY_SUBMIT_TARGET_CHANGED");
+    }
+
+    public async Task<LskuLifecycleWriteResult> ReleaseIdentitySubmitFenceAsync(
+        Guid id, Guid operationId, CancellationToken cancellationToken = default)
+    {
+        var updated = await _lskus.FindOneAndUpdateAsync(
+            ActiveFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, LskuLifecycleOperationKind.IdentitySubmit)
+            & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, operationId),
+            Builders<Lsku>.Update.Set(x => x.ActiveLifecycleOperation, null),
+            new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, updated);
+        var current = await GetByIdAsync(id, cancellationToken);
+        // Nothing of this operation's left to release is the end state asked for.
+        return current is null || current.ActiveLifecycleOperation?.OperationId != operationId
+            ? new(true, current, IsReplay: true)
+            : new(false, current, "LSKU_IDENTITY_SUBMIT_FENCE_CONFLICT");
+    }
+
+    public Task<Lsku?> GetByIdOrTombstoneAsync(Guid id, CancellationToken cancellationToken = default) =>
+        _lskus.Find(TenantIncludingDeletedFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id))
+            .FirstOrDefaultAsync(cancellationToken)!;
+
     public async Task<LskuLifecycleWriteResult> CancelDraftAsync(
         Guid id, int expectedVersion, LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
     {
@@ -428,6 +468,8 @@ public sealed class LskuRepository : ILskuRepository
         return new(false, current, current is null || current.IsDeleted ? "LSKU_NOT_FOUND"
             : current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate ? AuditCapacityReached
             : current.Version != expectedVersion ? "LSKU_CONCURRENCY_CONFLICT"
+            // LSKU FIX2 item 8: a submit holds the draft (its start may reach the engine) — the cancel waits for it.
+            : current.ActiveLifecycleOperation is not null ? "LSKU_SUBMIT_IN_FLIGHT"
             : "LSKU_NOT_A_DRAFT");
     }
 
@@ -583,7 +625,10 @@ public sealed class LskuRepository : ILskuRepository
             .Push(x => x.AuditIntents, auditIntent);
         if (workflowBinding is not null)
         {
-            update = update.Set(x => x.IdentityWorkflowBinding, workflowBinding);
+            // LSKU FIX2 item 8: the submit's fence goes when the LSKU becomes pending (only a submit fence or none).
+            update = update.Set(x => x.IdentityWorkflowBinding, workflowBinding).Set(x => x.ActiveLifecycleOperation, null);
+            filter &= Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+                      | Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, LskuLifecycleOperationKind.IdentitySubmit);
         }
         if (decisionEvidence is not null)
         {

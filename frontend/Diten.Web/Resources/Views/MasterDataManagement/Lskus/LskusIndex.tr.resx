@@ -66,4 +66,7 @@
   <data name="ErrorDecisionNotApplicable" xml:space="preserve">
     <value>Onay bu LSKU'ya uygulanamadı; örneğin pazarı ya da üst kaydı artık kullanılamıyor. LSKU yeniden taslak oldu; nedeni düzeltip yeniden gönderin.</value>
   </data>
+  <data name="ErrorSubmitTargetChanged" xml:space="preserve">
+    <value>Bu LSKU gönderim başladıktan sonra değişti ya da iptal edildi; bu yüzden onaya hiçbir şey gönderilmedi. LSKU'yu yeniden açın ve hâlâ gerekiyorsa gönderin.</value>
+  </data>
 </root>

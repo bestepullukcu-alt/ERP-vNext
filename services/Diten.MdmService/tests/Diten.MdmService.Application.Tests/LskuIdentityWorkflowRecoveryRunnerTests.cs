@@ -121,6 +121,10 @@ public sealed class LskuIdentityWorkflowRecoveryRunnerTests
         var tenantDiscovery = Proxy<ILskuIdentityWorkflowTenantPartitionDiscovery>((method, _) =>
             method.Name == nameof(ILskuIdentityWorkflowTenantPartitionDiscovery.DiscoverAsync)
                 ? Task.FromResult(new LskuIdentityWorkflowTenantPartitionPage([tenantId], null))
+                // FIX2 item 3: the cycle's gauge counts (tenant-free) are read once per cycle.
+                : method.Name is nameof(ILskuIdentityWorkflowTenantPartitionDiscovery.CountManualReconciliationAsync)
+                    or nameof(ILskuIdentityWorkflowTenantPartitionDiscovery.CountNeedingAPersonAsync)
+                ? Task.FromResult(1L)
                 : throw new InvalidOperationException($"Unexpected tenant discovery call: {method.Name}"));
         var processor = new LskuIdentityWorkflowProcessor(
             operationRepository,

@@ -20,7 +20,12 @@ public sealed record LskuIdentityWorkflowProcessingResult(
 
 public sealed record LskuIdentityWorkflowExecutionConfiguration(
     TimeSpan LeaseDuration,
-    TimeSpan RetryDelay);
+    TimeSpan RetryDelay,
+    // LSKU FIX2 item 10: how long after a start was sent the engine's "nothing under this key" is not trusted.
+    TimeSpan? StartSettleWindow = null)
+{
+    public TimeSpan SettleWindow => StartSettleWindow is { } window && window > TimeSpan.Zero ? window : TimeSpan.FromMinutes(2);
+}
 
 public sealed class LskuIdentityWorkflowProcessor(
     ILskuIdentityWorkflowOperationRepository operations,
@@ -31,9 +36,19 @@ public sealed class LskuIdentityWorkflowProcessor(
     IProductIdentityWorkflowClient workflowClient,
     LskuIdentityWorkflowStartRequestFactory requestFactory,
     TimeProvider timeProvider,
-    ILogger<LskuIdentityWorkflowProcessor>? logger = null)
+    ILogger<LskuIdentityWorkflowProcessor>? logger = null,
+    LskuIdentityWorkflowExecutionConfiguration? execution = null)
 {
     private readonly ILogger log = logger ?? NullLogger<LskuIdentityWorkflowProcessor>.Instance;
+    private TimeSpan SettleWindow => execution?.SettleWindow ?? TimeSpan.FromMinutes(2);
+
+    // A start sent less than the settle window ago may still be in the engine's hands (never sent: nothing to wait for).
+    private bool Settling(LskuIdentityWorkflowOperation operation, DateTimeOffset now) =>
+        operation.LastStartSentAtUtcTicksV1 is { } sent && sent > 0 && now.UtcTicks - sent < SettleWindow.Ticks;
+
+    // FIX2 item 13: only 0 proves "never sent" — written at reservation. A legacy operation (the field missing, read as
+    // null) may have sent its start before the field existed.
+    private static bool NeverSent(LskuIdentityWorkflowOperation operation) => operation.LastStartSentAtUtcTicksV1 == 0;
 
     // LSKU FIX1 B3 / B5 — the named ends and stuck reasons of the GSKU identity pattern.
     public const string StartRefused = "LSKU_IDENTITY_WORKFLOW_START_REFUSED";
@@ -130,6 +145,14 @@ public sealed class LskuIdentityWorkflowProcessor(
             return Fail("LSKU_IDENTITY_WORKFLOW_OPERATION_CONFLICT", 409);
         }
 
+        // LSKU FIX2 item 2 (found by the transition census): a submit whose WITHDRAWAL is under way belongs to the
+        // withdrawal path — a repeat of the original submit must not read a withdrawal's AwaitingMakerReplay as a start
+        // waiting for its replay (the store's table alone cannot tell the two apart: AMR → WorkflowStarted is allowed).
+        if (InWithdrawal(operation))
+        {
+            return Fail(operation, WithdrawalUnderWay, 409);
+        }
+
         var result = await ProcessAsync(
             operation,
             delegatedUserToken,
@@ -147,13 +170,7 @@ public sealed class LskuIdentityWorkflowProcessor(
         TimeSpan leaseDuration,
         TimeSpan retryDelay,
         CancellationToken cancellationToken = default) =>
-        operation.WithdrawalCommandId.HasValue && operation.Checkpoint is
-            LskuIdentityWorkflowCheckpoint.WithdrawalRequested
-            or LskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
-            or LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
-            or LskuIdentityWorkflowCheckpoint.WithdrawalObserved
-            or LskuIdentityWorkflowCheckpoint.WithdrawalApplied
-            or LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
+        InWithdrawal(operation)
             ? ProcessWithdrawalAsync(operation, null, leaseOwner, leaseDuration, retryDelay, cancellationToken)
             : ProcessAsync(operation, null, leaseOwner, leaseDuration, retryDelay,
                 stopWhenAwaitingDecision: false, cancellationToken);
@@ -424,6 +441,16 @@ public sealed class LskuIdentityWorkflowProcessor(
 
             operation = await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken)
                 ?? throw new InvalidOperationException("LSKU_IDENTITY_WORKFLOW_OPERATION_LOST");
+            // FIX2 (the GSKU identity rule, FirstGskuIdentityWorkflowProcessor.MakerAnswer): a start the engine sent
+            // back to the maker who is present is answered now — the refused call is not repeated in this request.
+            if (operation.Checkpoint == LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
+                && !string.IsNullOrWhiteSpace(delegatedUserToken))
+            {
+                var code = ProductIdentityWorkflowMakerCodes.IsMakerCode(operation.LastFailureCode)
+                    ? operation.LastFailureCode!
+                    : ProductIdentityWorkflowMakerCodes.MakerReplayRequired;
+                return Fail(operation, code, ProductIdentityWorkflowMakerCodes.StatusFor(code));
+            }
             if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks)
             {
                 return Fail(operation, operation.LastFailureCode ?? "LSKU_IDENTITY_WORKFLOW_RETRY_SCHEDULED", 503);
@@ -442,19 +469,32 @@ public sealed class LskuIdentityWorkflowProcessor(
         CancellationToken cancellationToken)
     {
         ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult> outcome;
-        // LSKU FIX1 B3: the FIRST start (nothing was sent yet) goes only to the draft it was reserved for — a draft
-        // cancelled or changed since the reservation ends the submit before the engine is asked (principle A: the
-        // engine holds nothing for it). A later attempt may follow a start that arrived, so it is never ended here.
-        if (!string.IsNullOrWhiteSpace(delegatedUserToken)
-            && operation.Checkpoint == LskuIdentityWorkflowCheckpoint.StartOutcomeUnknown
-            && operation.LastFailureCode is null
-            && !IsTheReservedDraft(await lskus.GetByIdAsync(operation.LskuId, cancellationToken), operation))
+        var startMayBeSent = !string.IsNullOrWhiteSpace(delegatedUserToken);
+        if (startMayBeSent)
         {
-            return await AdvanceAsync(claim, LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
-                ProductIdentityWorkflowRecoveryDisposition.None, now, SubmitTargetChanged, releaseLease: true,
-                cancellationToken: cancellationToken);
+            // LSKU FIX2 item 8: a start goes only to the draft it was reserved for, and only while that draft carries
+            // this submit's fence — taken atomically, so a draft cancel can no longer slip between the check and the
+            // send (the cancel is refused while the fence is held). Without the fence: if nothing was ever sent, the
+            // engine holds nothing — the submit ends; if a start was sent, it is not sent again — the engine is asked.
+            var fence = await lskus.FenceIdentitySubmitAsync(operation.LskuId, operation.ExpectedLskuVersion,
+                operation.OperationId, cancellationToken);
+            if (!fence.Succeeded)
+            {
+                if (NeverSent(operation))
+                    return await AdvanceAsync(claim, LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+                        ProductIdentityWorkflowRecoveryDisposition.None, now, SubmitTargetChanged, releaseLease: true,
+                        cancellationToken: cancellationToken);
+                startMayBeSent = false;
+            }
+            // Written BEFORE the start leaves: a request cut off after sending can never pass for "never sent".
+            else if (!await operations.AdvanceAsync(claim, new(operation.Checkpoint, operation.RecoveryDisposition,
+                         now.UtcTicks, LastFailureCode: operation.LastFailureCode, ReleaseLease: false,
+                         Streak: RecoveryStreakWrite.Keep, LastStartSentAtUtcTicksV1: now.UtcTicks), cancellationToken))
+            {
+                return false;
+            }
         }
-        if (!string.IsNullOrWhiteSpace(delegatedUserToken))
+        if (startMayBeSent)
         {
             outcome = await workflowClient.StartAsync(
                 operation.TenantId,
@@ -530,9 +570,55 @@ public sealed class LskuIdentityWorkflowProcessor(
         return await QuarantineAsync(claim, lookup.ErrorCode, now, cancellationToken);
     }
 
-    private static bool IsTheReservedDraft(Lsku? lsku, LskuIdentityWorkflowOperation operation) =>
-        lsku is { IsDeleted: false, LifecycleStatus: ProductIdentityLifecycleStatus.Draft }
-        && lsku.Version == operation.ExpectedLskuVersion;
+    private static bool InWithdrawal(LskuIdentityWorkflowOperation operation) =>
+        operation.WithdrawalCommandId.HasValue && operation.Checkpoint is
+            LskuIdentityWorkflowCheckpoint.WithdrawalRequested
+            or LskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
+            or LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+            or LskuIdentityWorkflowCheckpoint.WithdrawalObserved
+            or LskuIdentityWorkflowCheckpoint.WithdrawalApplied
+            or LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay;
+
+    public const string WithdrawalUnderWay = "LSKU_IDENTITY_WITHDRAWAL_UNDER_WAY";
+
+    public const string ClosedByDraftCancel = "LSKU_IDENTITY_SUBMIT_CLOSED_BY_DRAFT_CANCEL";
+
+    /*
+     * LSKU FIX2 item 10: a draft cancel meets a submit waiting for its maker's replay. If the engine is KNOWN to hold
+     * nothing for it — no start was ever sent, or the engine has nothing under its key after the settle window — the
+     * cancel closes it (a named end; its fence goes). Otherwise the cancel is refused: a start that may have arrived
+     * is never closed behind the engine's back (principle A).
+     */
+    public async Task<(bool Closed, string? Code, int Status)> CloseForDraftCancelAsync(
+        LskuIdentityWorkflowOperation operation, string leaseOwner, TimeSpan leaseDuration,
+        CancellationToken cancellationToken)
+    {
+        if (operation.Checkpoint != LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay)
+            return (false, "LSKU_SUBMIT_IN_FLIGHT", 409);
+        var now = timeProvider.GetUtcNow();
+        if (!NeverSent(operation))
+        {
+            if (Settling(operation, now)) return (false, "LSKU_SUBMIT_IN_FLIGHT", 409);
+            var lookup = await workflowClient.GetStartResultAsync(operation.TenantId,
+                new(operation.ObjectType, operation.ObjectId, operation.MakerSubjectId, operation.StartIdempotencyKey),
+                cancellationToken);
+            if (lookup.Outcome != ProductIdentityWorkflowTransportOutcome.NotFound)
+                return (false, lookup.Outcome == ProductIdentityWorkflowTransportOutcome.Success
+                    ? "LSKU_SUBMIT_IN_FLIGHT" : ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit,
+                    lookup.Outcome == ProductIdentityWorkflowTransportOutcome.Success ? 409 : 503);
+        }
+        var claim = await operations.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
+            [operation.Checkpoint], leaseOwner, now.UtcTicks, now.Add(leaseDuration).UtcTicks), cancellationToken);
+        if (claim is null) return (false, "LSKU_IDENTITY_WORKFLOW_BUSY", 409);
+        if (!await AdvanceAsync(claim, LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+                ProductIdentityWorkflowRecoveryDisposition.None, now, ClosedByDraftCancel, releaseLease: true,
+                cancellationToken: cancellationToken))
+            return (false, "LSKU_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
+        var released = await lskus.ReleaseIdentitySubmitFenceAsync(operation.LskuId, operation.OperationId, cancellationToken);
+        log.LogInformation("LSKU identity operation {OperationId} of tenant {TenantId} was closed by its draft's cancel ({ResultCode}).",
+            operation.OperationId, operation.TenantId, ClosedByDraftCancel);
+        return released.Succeeded ? (true, null, 200) : (false, released.ErrorCode, 409);
+    }
 
     private static bool RefusedBeforeProcessing(ProductIdentityWorkflowTransportOutcome outcome, string? code) =>
         outcome == ProductIdentityWorkflowTransportOutcome.Invalid
@@ -606,7 +692,8 @@ public sealed class LskuIdentityWorkflowProcessor(
                 cancellationToken);
             if (lookup.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
                 return await PersistStartedAsync(operation, claim, lookup.Value, now, cancellationToken);
-            if (lookup.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound)
+            // LSKU FIX2 item 10: "nothing under this key" is trusted only after the settle window (the retirement rule).
+            if (lookup.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound && !Settling(operation, now))
                 return await AbandonAsync(operation, claim, ReconciledNothingStarted, now, cancellationToken);
             return await StayStuckAsync(operation, claim, now, cancellationToken);
         }
@@ -995,26 +1082,31 @@ public sealed class LskuIdentityWorkflowProcessor(
             || gsku.ProductDefinitionRevisionId != operation.ProductDefinitionRevisionId
             || gsku.LifecycleStatus != ProductIdentityLifecycleStatus.IdentityApproved)
         {
-            return new(false, false, "LSKU_IDENTITY_PARENT_NOT_REFERENCEABLE");
+            return new(false, false, "LSKU_IDENTITY_PARENT_NOT_REFERENCEABLE", MakerFixable: true);
         }
         var revision = await revisions.GetByIdAsync(operation.ProductDefinitionRevisionId, cancellationToken);
         if (revision is null || revision.IsDeleted || revision.Id != operation.ProductDefinitionRevisionId
             || revision.LifecycleStatus != ProductIdentityLifecycleStatus.IdentityApproved)
         {
-            return new(false, false, "LSKU_IDENTITY_PARENT_NOT_REFERENCEABLE");
+            return new(false, false, "LSKU_IDENTITY_PARENT_NOT_REFERENCEABLE", MakerFixable: true);
         }
 
         var resolved = await marketResolver.ResolveLatestAsync(
             operation.TenantId, operation.MarketCode, cancellationToken);
         if (!resolved.IsSuccessful || resolved.Selection is null)
         {
+            // LSKU FIX2 item 7 — the GSKU rule (FirstGskuIdentityWorkflowProcessor: 503/504 transient, 401/403 the
+            // service's identity): the provider that cannot answer now, or refuses THIS SERVICE, waits — the
+            // approver's decision is kept. Only a market the provider no longer offers (404) is the maker's to put
+            // right (not applicable). Anything else (a contract mismatch of the provider) stays stuck with its cause.
             return new(
                 false,
-                resolved.StatusCode is 503 or 504,
+                resolved.StatusCode is 401 or 403 or 503 or 504,
                 BoundedCode(resolved.FailureCode,
                     resolved.StatusCode == 504
                         ? "REFERENCE_PROVIDER_TIMEOUT"
-                        : "REFERENCE_MARKET_NOT_FOUND"));
+                        : "REFERENCE_MARKET_NOT_FOUND"),
+                MakerFixable: resolved.StatusCode == 404);
         }
         var value = resolved.Selection;
         if (value.SetCode != "market" || value.ValueCode != operation.MarketCode
@@ -1047,10 +1139,10 @@ public sealed class LskuIdentityWorkflowProcessor(
         CancellationToken cancellationToken) =>
         validation.Retryable
             ? ScheduleRetryAsync(claim, operation.Checkpoint, validation.ErrorCode, now, retryDelay, cancellationToken)
-            : validation.ErrorCode == "REFERENCE_CONTRACT_MISMATCH"
-                ? QuarantineAsync(claim, validation.ErrorCode, now, cancellationToken)
-                : DecisionNotApplicableAsync(operation, claim, BoundedCode(validation.ErrorCode, DecisionNotApplicableCode),
-                    now, retryDelay, counted, cancellationToken);
+            : validation.MakerFixable
+                ? DecisionNotApplicableAsync(operation, claim, BoundedCode(validation.ErrorCode, DecisionNotApplicableCode),
+                    now, retryDelay, counted, cancellationToken)
+                : QuarantineAsync(claim, validation.ErrorCode, now, cancellationToken);
 
     // LSKU FIX1 B5 / S3 — the shared write-fault rule: the cap, the store and a lease held elsewhere wait (never
     // stuck); a concurrent write is retried and counted (stuck with its cause at the limit); anything else is stuck at
@@ -1496,5 +1588,7 @@ public sealed class LskuIdentityWorkflowProcessor(
         bool Succeeded,
         bool Retryable,
         string? ErrorCode,
-        ReferenceCatalogSelection? Selection = null);
+        ReferenceCatalogSelection? Selection = null,
+        // LSKU FIX2 item 7: a reference the maker can put right (market no longer offered, parent not referenceable).
+        bool MakerFixable = false);
 }

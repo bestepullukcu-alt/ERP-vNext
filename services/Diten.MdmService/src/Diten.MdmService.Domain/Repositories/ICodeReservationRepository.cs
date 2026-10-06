@@ -33,6 +33,11 @@ public interface ICodeReservationRepository
         string correlationId,
         CancellationToken cancellationToken = default);
 
+    // LSKU FIX2 item 5: the reservation a creation command made (tenant-bounded) — its own traces, for its cleanup.
+    Task<CodeReservation?> GetByReservationCommandAsync(
+        CodeBearingEntityType entityType, string reservationCommandId, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("CODE_RESERVATION_READ_NOT_IMPLEMENTED");
+
     // LSKU FIX1 B1 (b): a code consumed for an identity whose row was never written is burned — it is never handed out
     // again, and the reason is kept on the reservation.
     Task<ReservationOperationResult> BurnIdentityBindingAsync(

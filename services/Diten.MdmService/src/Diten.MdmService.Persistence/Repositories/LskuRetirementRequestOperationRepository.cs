@@ -217,12 +217,14 @@ public sealed class LskuRetirementRequestOperationRepository : ILskuRetirementRe
     private static bool ExactReason(string? value) => value is not null && value == value.Trim()
         && value.EnumerateRunes().Count() is >= 1 and <= 2000 && !value.Any(char.IsControl);
     // LSKU FIX1 S2: the transitions the processor really makes (the GSKU retirement request's list).
-    private static bool Allowed(LskuRetirementRequestCheckpoint a, LskuRetirementRequestCheckpoint b) => a == b || (a, b) switch
+    public static bool Allowed(LskuRetirementRequestCheckpoint a, LskuRetirementRequestCheckpoint b) => a == b || (a, b) switch
     {
-        (LskuRetirementRequestCheckpoint.Prepared, LskuRetirementRequestCheckpoint.WorkflowStarted or LskuRetirementRequestCheckpoint.StartOutcomeUnknown or LskuRetirementRequestCheckpoint.AwaitingMakerReplay or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
-        (LskuRetirementRequestCheckpoint.StartOutcomeUnknown, LskuRetirementRequestCheckpoint.WorkflowStarted or LskuRetirementRequestCheckpoint.AwaitingMakerReplay or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        // FIX2 item 2 (census): the processor never parks a request for its maker (AwaitingMakerReplay is only on older
+        // records, which leave it below) and a started request never goes stuck before its decision is awaited.
+        (LskuRetirementRequestCheckpoint.Prepared, LskuRetirementRequestCheckpoint.WorkflowStarted or LskuRetirementRequestCheckpoint.StartOutcomeUnknown or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        (LskuRetirementRequestCheckpoint.StartOutcomeUnknown, LskuRetirementRequestCheckpoint.WorkflowStarted or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
         (LskuRetirementRequestCheckpoint.AwaitingMakerReplay, LskuRetirementRequestCheckpoint.WorkflowStarted or LskuRetirementRequestCheckpoint.StartOutcomeUnknown or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
-        (LskuRetirementRequestCheckpoint.WorkflowStarted, LskuRetirementRequestCheckpoint.AwaitingDecision or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        (LskuRetirementRequestCheckpoint.WorkflowStarted, LskuRetirementRequestCheckpoint.AwaitingDecision) => true,
         (LskuRetirementRequestCheckpoint.AwaitingDecision, LskuRetirementRequestCheckpoint.DecisionObserved or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
         (LskuRetirementRequestCheckpoint.DecisionObserved, LskuRetirementRequestCheckpoint.DecisionApplied or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
         (LskuRetirementRequestCheckpoint.DecisionApplied, LskuRetirementRequestCheckpoint.Completed or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
