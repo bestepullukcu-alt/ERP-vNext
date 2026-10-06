@@ -19,6 +19,7 @@
 - **K-1:** Ekranı **temsilci kendi haftası için** kullanır. İleride ayrı bir **yönetici görünümü** gelecek; bu mockup onu çizmez ama yer bırakır (§6).
 - **K-2:** Bir hafta planlanıp onaylanınca **sonraki haftalar sıklığa göre otomatik** taslak olarak gelir; temsilci hafta hafta görür ve düzeltir.
 - **K-3:** Temsilci **strateji şablonu seçemez**, ekranda bu kavram geçmez.
+- **K-4:** Temsilci **segment seçmez**; sistem "Bu hafta görülmesi gerekenler" listesini önerir, segment yalnız bilgi rozeti (§2).
 
 ## ⛔ DOKUNMA (aynen kalır)
 1. **Rota sekmesi:** gün sekmeleri, hafta seçici, durak listesi (saat, kurum, doktor, ziyaret türü, yürüme / yol süresi, öğle arası), harita, sürüklenebilir durak sırası. Tasarımı değişmez, mockup'ta yeniden çizilmez; bağlam için ekran görüntüsü kullanılabilir.
@@ -39,14 +40,14 @@
 | Dönem (Cycle period) | seçim | **otomatik**: bugünün aktif dönemi, değiştirilebilir (yalnız aktif / gelecek dönemler) |
 | Hafta | seçim | **otomatik**: planı olmayan ilk hafta, değiştirilebilir; bugünden önceki haftalar seçilemez |
 | Temsilci (kullanıcı) | kullanıcı listesi | **oturumdaki kişi**, salt okunur (ad soyad) |
-| Segmentler | çoklu seçim (yalnız ilki uygulanıyor) | ⚠ **K-4, karar bekliyor** — aşağıya bak |
+| Segmentler | çoklu seçim (yalnız ilki uygulanıyor) | **kaldırılır** (K-4) |
 | Strateji şablonu | seçim | **kaldırılır** (K-3) |
 
-**⚠ K-4: segment ne olacak?** Bugün segment seçmek Hedefler'deki doktor listesini **değiştirmiyor**. Yalnız plan üretilirken seçilen doktorlardan segmentte olmayanları **sessizce düşürüyor** ve sıklığı segmente göre çözüyor (CT kod okuması).
-- **(a)** Segment alanı kalır ama anlamı değişir: seçilince segment üyesi doktorlar Hedefler'de **önceden işaretlenir**; temsilci kaldırıp ekleyebilir. Üye olmayan doktor düşürülmez, yalnız rozetle belirtilir.
-- **(b) — CT önerisi:** Segment alanı temsilciden kalkar. Bunun yerine Hedefler'de sistem "**Bu hafta görülmesi gerekenler**" listesini önerir (sıklık + son ziyaret + bölge ataması). Segment üyeliği doktor satırında salt okunur rozet olur.
-- Mockup **(b)**'yi çizsin; (a) için tek bir alternatif kare yeterli.
-
+**K-4 (kullanıcı kararı, 2026-10-06): segment alanı temsilcinin ekranından kalkar.**
+- Bugün segment seçmek Hedefler'deki doktor listesini **değiştirmiyor**. Yalnız plan üretilirken seçilen doktorlardan segmentte olmayanları **sessizce düşürüyor** ve sıklığı segmente göre çözüyor (CT kod okuması). Bu davranış da kalkar.
+- Yerine Hedefler'de sistem "**Bu hafta görülmesi gerekenler**" listesini önerir: sıklık + son ziyaret + bölge ataması (§4).
+- Segment üyeliği doktor satırında yalnız **salt okunur bilgi rozeti** olarak görünür; temsilci segment seçmez ve süzmez.
+- Sıklık, doktorun kendi üyeliklerinden sunucuda türetilir (temsilcinin seçimine bağlı değildir).
 ## 3) PLAN DETAYI — üst kısım
 - **Özet kartı:** aynı alanlar kalır, etiketler Türkçe ("Cycle period" → "Dönem").
 - **Eylemler:** durum bazlı, yalnız uygun olan görünür:
@@ -119,7 +120,7 @@ K-2'nin ekranı. Rota sekmesine dokunmaz; bir haftaya tıklayınca o haftanın R
 
 ## 9) MOCKUP'TA BEKLENEN EKRANLAR
 1. Liste: hedef sayısı, haftalar sütunu, boş taslak rozeti.
-2. Yeni taslak plan: otomatik alanlar, strateji şablonu yok; K-4 (b) ve alternatif (a) karesi.
+2. Yeni taslak plan: otomatik alanlar; strateji şablonu ve segment alanları yok.
 3. Plan detayı üst kısım: durum bazlı eylemler, haftalık ve dönem arz / talep.
 4. Hedefler sekmesi: bölge hesapları, sıklık / yapılan / kalan, adlı "Seçilenler", tahmini süre.
 5. Haftalar sekmesi: dönem şeridi, hafta kartı ayrıntısı, doktorun dönem paneli.
