@@ -315,14 +315,21 @@ public sealed class PlatformAuthController : CustomBaseController
         var (firstName, lastName) = SplitName(request.DisplayName, normalizedEmail);
         var state = _userRepository.CaptureState(user);
         user.SetUserName(request.UserName);
+        var wasActive = user.IsActive;
         user.UpdateProfile(firstName, lastName);
-        user.Activate();
+        // BL-529 FIX5 — Platform's sync switches the account on as an administrator does: the deactivation mark goes with it
+        // (Activate() alone left a stored passive, marked account "active AND marked").
+        user.ActivateByAdministrator();
         user.ConfirmEmail();
         user.SetPlatformActorType(NormalizeActorType(request.ActorType));
 
         // BL-529 FIX3 — only the fields this sync changes (name, profile, switch, actor type): a whole write from the copy
-        // read above could put back a password hash an administrator's reset replaced meanwhile.
-        await _userRepository.TryWriteChangesAsync(user, state, PlatformTenantId, UserWriteCondition.None, ct);
+        // read above could put back a password hash an administrator's reset replaced meanwhile. FIX5 — and only while the
+        // switch is still the one read (a deactivation that landed meanwhile is not switched back on).
+        if (!await _userRepository.TryWriteChangesAsync(user, state, PlatformTenantId, new UserWriteCondition(IsActive: wasActive), ct))
+        {
+            return Conflict(new { message = "the account changed while it was being synced; try again" });
+        }
 
         await SyncPlatformRolesAsync(user.Id, request.Roles, ct);
 
@@ -374,7 +381,8 @@ public sealed class PlatformAuthController : CustomBaseController
     public async Task<IActionResult> ForgotPassword([FromBody] PlatformForgotPasswordRequest request, CancellationToken ct)
     {
         var normalizedEmail = NormalizeEmail(request.Email);
-        if (!_passwordDoors.TryAcquireForgotPassword(_clientAddress.Resolve(HttpContext), normalizedEmail, _clientAddress.IdentifiesClients))
+        var asking = _clientAddress.Identify(HttpContext);
+        if (!_passwordDoors.TryAcquireForgotPassword(asking.Key, normalizedEmail, asking.Identified))
         {
             return TooManyRequests();
         }
@@ -407,17 +415,27 @@ public sealed class PlatformAuthController : CustomBaseController
     public async Task<IActionResult> ResetPassword([FromBody] PlatformResetPasswordRequest request, CancellationToken ct)
     {
         var normalizedEmail = NormalizeEmail(request.Email);
-        if (!_passwordDoors.TryAcquireLinkRedemption(_clientAddress.Resolve(HttpContext), normalizedEmail, _clientAddress.IdentifiesClients))
+
+        // BL-529 FIX5 — the link is compared FIRST. A request carrying the valid link is never counted and never refused (the
+        // owner always gets through); only a link that does not match is counted, and only it can earn a 429. Platform's
+        // status is asked only AFTER the link matched: an anonymous request with a wrong link never reaches Platform.
+        var user = await _userRepository.GetByEmailAndTenantAsync(normalizedEmail, PlatformTenantId, ct);
+        var linkMatches = user is not null &&
+                          !string.IsNullOrWhiteSpace(user.PasswordResetTokenHash) &&
+                          user.PasswordResetTokenExpiresAt > DateTime.UtcNow &&
+                          string.Equals(user.PasswordResetTokenHash, _refreshTokenHasher.Hash(request.Token), StringComparison.Ordinal);
+        if (!linkMatches)
         {
-            return TooManyRequests();
+            var asking = _clientAddress.Identify(HttpContext);
+            if (!_passwordDoors.TryCountInvalidLinkAttempt(asking.Key, normalizedEmail, asking.Identified))
+            {
+                return TooManyRequests();
+            }
+
+            return CreateActionResultInstance(Response<NoContent>.Fail("Password reset token is invalid or expired.", 400));
         }
 
-        var user = await _userRepository.GetByEmailAndTenantAsync(normalizedEmail, PlatformTenantId, ct);
-        if (user is null ||
-            !await _platformAdministratorStatusClient.IsActiveAsync(user.Email, ct) ||
-            string.IsNullOrWhiteSpace(user.PasswordResetTokenHash) ||
-            user.PasswordResetTokenExpiresAt <= DateTime.UtcNow ||
-            !string.Equals(user.PasswordResetTokenHash, _refreshTokenHasher.Hash(request.Token), StringComparison.Ordinal))
+        if (!await _platformAdministratorStatusClient.IsActiveAsync(user!.Email, ct))
         {
             return CreateActionResultInstance(Response<NoContent>.Fail("Password reset token is invalid or expired.", 400));
         }

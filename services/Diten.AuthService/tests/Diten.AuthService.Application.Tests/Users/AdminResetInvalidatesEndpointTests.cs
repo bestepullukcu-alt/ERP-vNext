@@ -74,7 +74,7 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
             // FIX4 — a configured trusted proxy (one no test request comes from): the per-client limit is ON, as in a
             // deployment with ClientAddress:TrustedProxies filled in. ClientAddressProductionDefaultsTests runs the empty list.
             services.AddSingleton(new Diten.AuthService.Infrastructure.Security.ClientAddressResolver(
-                [System.Net.IPAddress.Parse("10.255.255.254")], trustLoopback: false));
+                [System.Net.IPAddress.Parse("10.255.255.254")]));
         }
 
         public CapturingOtp Otp { get; } = new();
@@ -1270,6 +1270,47 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
 
         Assert.Equal(HttpStatusCode.Unauthorized, (await RefreshAsync(tenantId, oldTab)).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await RefreshAsync(tenantId, newSession)).StatusCode); // not swept as a theft
+    }
+
+    // ── FIX5: invalid links are counted per client when clients are told apart; Platform's sync switches on cleanly ─
+
+    [Fact]
+    public async Task One_client_sending_wrong_links_for_many_addresses_is_refused_past_its_limit()
+    {
+        var peer = RandomPeer();
+        HttpResponseMessage? last = null;
+        for (var i = 0; i <= Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerClientLimit; i++)
+        {
+            last = await PeerPostAsync(peer, "api/platform-auth/reset-password", new { email = $"nobody{i}.{Guid.NewGuid():N}@reset.test", token = "junk", newPassword = NewPassword });
+        }
+
+        Assert.Equal((HttpStatusCode)429, last!.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await PeerPostAsync(RandomPeer(), "api/platform-auth/reset-password",
+            new { email = $"nobody.{Guid.NewGuid():N}@reset.test", token = "junk", newPassword = NewPassword })).StatusCode); // another client
+    }
+
+    [Fact]
+    public async Task Platform_sync_of_a_passive_marked_account_switches_it_on_and_lifts_the_mark()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        var admin = await PlatformUserAsync(email);
+        using (var scope = Scope(PlatformTenantId))
+        {
+            var repository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            var state = repository.CaptureState(admin);
+            admin.DeactivateByAdministrator();
+            Assert.True(await repository.TryWriteChangesAsync(admin, state, PlatformTenantId, UserWriteCondition.None, CancellationToken.None));
+        }
+
+        using var platform = _host.Client();
+        platform.DefaultRequestHeaders.Add("X-Internal-Api-Key", _host.InternalKey);
+        var sync = await platform.PostAsJsonAsync("api/platform-auth/platform-admins/sync",
+            new { email, userName = email.Split('@')[0], displayName = "Synced Admin", actorType = "platform_admin", roles = new[] { "ReadOnly" } });
+
+        Assert.True(sync.IsSuccessStatusCode, $"{(int)sync.StatusCode}");
+        var after = await PlatformUserAsync(email);
+        Assert.True(after.IsActive);
+        Assert.False(after.DeactivatedByAdministrator); // never "active AND marked"
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────────────

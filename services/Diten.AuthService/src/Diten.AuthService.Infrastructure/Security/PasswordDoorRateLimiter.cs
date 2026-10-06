@@ -41,23 +41,30 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     public TimeSpan Window { get; }
 
     /// <summary>
-    /// "Forgot password": per client first (so the per-address partitions can only grow as fast as real clients do), then
-    /// per e-mail address (the target — a flood against one administrator is capped whoever sends it). True = go on.
+    /// "Forgot password": per client (when clients can be told apart), then per e-mail address — the target: a flood of
+    /// mails at one administrator is capped whoever sends it. True = go on.
+    /// <para>FIX5 — when clients can NOT be told apart there is no per-client count (it would be one bucket for everybody),
+    /// and the per-address partitions then grow with the addresses asked, not with real clients; each key is a fixed-length
+    /// hash and an idle partition is dropped by the limiter, so that growth is bounded by the window.</para>
     /// </summary>
-    /// <param name="countPerClient">false when the client cannot be told apart (FIX4: no trusted proxy configured outside
-    /// Development) — the per-client limit is then skipped rather than turned into one bucket for everybody.</param>
-    public bool TryAcquireForgotPassword(string client, string? email, bool countPerClient = true)
+    /// <param name="countPerClient">REQUIRED (FIX5) — the caller states whether the client is told apart
+    /// (<see cref="ClientIdentity.Identified"/>); no default can quietly make a global bucket.</param>
+    public bool TryAcquireForgotPassword(string client, string? email, bool countPerClient)
         => (!countPerClient || TryAcquire(_perClient, $"forgot-password|client|{client}"))
            && TryAcquire(_perAddress, $"forgot-password|address|{Normalize(email)}");
 
     /// <summary>
-    /// The set-password link: per client, then per (client, address). The e-mail is NEVER a key on its own here: the link
-    /// is a 256-bit secret, and counting by address alone let anyone who knows the address spend the owner's allowance
-    /// with junk requests and lock the owner's valid link out. True = go on.
+    /// BL-529 FIX5 — the set-password link counts ONLY attempts whose link did not match. The link is 64 random bytes: no
+    /// count protects it, and any count junk could raise would only be a lever to lock the owner out — so a request that
+    /// carries the valid link is never counted and never refused (the caller compares the link FIRST). Invalid attempts are
+    /// counted per client and per (client, address) when clients are told apart, per address otherwise (harmless now: the
+    /// owner's valid link skips the count). True = answer as usual (400); false = 429.
     /// </summary>
-    public bool TryAcquireLinkRedemption(string client, string? email, bool countPerClient = true)
-        => (!countPerClient || TryAcquire(_perClient, $"reset-password|client|{client}"))
-           && TryAcquire(_perAddress, $"reset-password|client-address|{client}|{Normalize(email)}");
+    public bool TryCountInvalidLinkAttempt(string client, string? email, bool countPerClient)
+        => countPerClient
+            ? TryAcquire(_perClient, $"reset-password|client|{client}")
+              && TryAcquire(_perAddress, $"reset-password|client-address|{client}|{Normalize(email)}")
+            : TryAcquire(_perAddress, $"reset-password|address|{Normalize(email)}");
 
     public void Dispose()
     {

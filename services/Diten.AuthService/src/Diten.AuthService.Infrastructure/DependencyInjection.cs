@@ -71,7 +71,9 @@ public static class DependencyInjection
         // FIX3 — the parameterless constructor is the production one (the other is for tests); stated, not left to DI.
         services.AddSingleton(_ => new Security.PasswordDoorRateLimiter());
         // FIX4 — the trusted-proxy list is read and validated HERE, at registration: a bad entry stops the start.
-        services.AddSingleton(Security.ClientAddressResolver.FromConfiguration(configuration, environment));
+        var trustedProxies = Security.ClientAddressResolver.ParseTrustedProxies(configuration);
+        services.AddSingleton(sp => new Security.ClientAddressResolver(
+            trustedProxies, sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Security.ClientAddressResolver>>()));
         services.AddHostedService<Security.ClientAddressStartupWarning>();
         services.AddScoped<ITenantUserInvitationEmailService, TenantUserInvitationEmailService>();
         services.AddScoped<IMfaChallengeService, MfaChallengeService>();

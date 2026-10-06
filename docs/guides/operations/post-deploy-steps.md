@@ -85,7 +85,9 @@ beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı b
    geçidinin** IP adreslerini, her birini ayrı bir öğe olarak yazın (aralık / CIDR desteklenmez; geçersiz bir değer
    Auth'u başlangıçta adını söyleyen bir hatayla durdurur). Web son kullanıcının adresini `X-Forwarded-For` ile zaten
    iletiyor; Auth bu başlığı YALNIZ listedeki bir karşı taraftan gelirse okur. Liste boş kalırsa istemci başına sınır
-   kapalı kalır — herkes için tek kova hiçbir zaman oluşmaz. Not: ağ geçidi (Ocelot) son kullanıcının adresini
+   kapalı kalır — herkes için tek kova hiçbir zaman oluşmaz. **Liste yalnız Auth başlarken okunur: listeyi değiştirdikten
+   sonra Auth yeniden başlatılmalıdır.** Listede olmayan bir karşı taraf `X-Forwarded-For` gönderirse Auth bunu
+   (karşı taraf başına bir kez) uyarı olarak yazar — o adres de listeye eklenmeli mi diye bakın. Not: ağ geçidi (Ocelot) son kullanıcının adresini
    başlığa kendisi eklemiyorsa, ağ geçidine doğrudan gelen isteklerde bu adres sahtelenebilir; Ocelot'a dokunulmadı.
 2. **Herkes bir kez yeniden oturum açar.** BL-529'dan önce basılmış yenileme belirteçleri parolaya bağlı değil; ilk
    yenilemede 401 alırlar. Kullanıcı bir kez yeniden giriş yapar; destek ekibine önceden söyleyin.
