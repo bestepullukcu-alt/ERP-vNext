@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- MOD-0193 BOM &amp; Routings screens — tenant module, 7 languages (localization-standard). -->
+  <data name="BomsTitle" xml:space="preserve"><value>Nomenclatures</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Formules et gammes versionnées, sous contrôle des modifications, pour chaque produit.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Nouveau brouillon</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Afficher</value></data>
+  <data name="ItemId" xml:space="preserve"><value>Article</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="ComponentCount" xml:space="preserve"><value>Composants</value></data>
+  <data name="StepCount" xml:space="preserve"><value>Étapes de gamme</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>En vigueur depuis</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>En vigueur jusqu'au</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Dernière modification</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="StatusEffective" xml:space="preserve"><value>En vigueur</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>Remplacée</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nouveau brouillon de nomenclature</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier le brouillon de nomenclature</value></data>
+  <data name="HeaderSection" xml:space="preserve"><value>Produit</value></data>
+  <data name="ComponentsSection" xml:space="preserve"><value>Composants</value></data>
+  <data name="RoutingSection" xml:space="preserve"><value>Gamme</value></data>
+  <data name="AddComponent" xml:space="preserve"><value>Ajouter un composant</value></data>
+  <data name="AddStep" xml:space="preserve"><value>Ajouter une étape</value></data>
+  <data name="ComponentItemId" xml:space="preserve"><value>Article composant</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="UomId" xml:space="preserve"><value>Unité</value></data>
+  <data name="Position" xml:space="preserve"><value>Position</value></data>
+  <data name="Alternates" xml:space="preserve"><value>Alternatives</value></data>
+  <data name="StepNo" xml:space="preserve"><value>Étape</value></data>
+  <data name="Operation" xml:space="preserve"><value>Opération</value></data>
+  <data name="WorkCenter" xml:space="preserve"><value>Poste de travail</value></data>
+  <data name="ItemIdHint" xml:space="preserve"><value>L'identifiant du produit dans le référentiel produit (MOD-0290).</value></data>
+  <data name="ComponentsHint" xml:space="preserve"><value>Les quantités s'entendent pour une unité du produit, en nombres décimaux (ex. 2.000).</value></data>
+  <data name="AlternatesHint" xml:space="preserve"><value>Identifiants d'articles séparés par des virgules</value></data>
+  <data name="RoutingHint" xml:space="preserve"><value>Facultatif. Les étapes s'exécutent dans l'ordre.</value></data>
+  <data name="ActionEdit" xml:space="preserve"><value>Modifier le brouillon</value></data>
+  <data name="ActionRelease" xml:space="preserve"><value>Mettre en vigueur</value></data>
+  <data name="ActionDelete" xml:space="preserve"><value>Supprimer le brouillon</value></data>
+  <data name="ReleaseTitle" xml:space="preserve"><value>Mettre cette version en vigueur</value></data>
+  <data name="ChangeControlRef" xml:space="preserve"><value>Référence de maîtrise des modifications</value></data>
+  <data name="ChangeControlRefHint" xml:space="preserve"><value>L'enregistrement de modification approuvé qui autorise cette formule (MOD-0209).</value></data>
+  <data name="ReleaseConfirmCheck" xml:space="preserve"><value>Je comprends que cette version entre en vigueur maintenant et que la version actuelle est remplacée.</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>Mettre en vigueur la version {0} ? Elle ne pourra plus être modifiée ni supprimée.</value></data>
+  <data name="ReleaseSuccess" xml:space="preserve"><value>La version est maintenant en vigueur.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Supprimer la version brouillon {0} ?</value></data>
+  <data name="HistorySection" xml:space="preserve"><value>Historique de la version</value></data>
+  <data name="HistoryOperation" xml:space="preserve"><value>Événement</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>Par</value></data>
+  <data name="HistoryWhen" xml:space="preserve"><value>Quand</value></data>
+  <data name="HistoryChangedFields" xml:space="preserve"><value>Modifié</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>Aucun historique enregistré.</value></data>
+  <data name="HistoryLoadFailed" xml:space="preserve"><value>L'historique n'a pas pu être chargé. Rechargez la page pour réessayer.</value></data>
+  <data name="OpCreated" xml:space="preserve"><value>Créée</value></data>
+  <data name="OpUpdated" xml:space="preserve"><value>Modifiée</value></data>
+  <data name="OpReleased" xml:space="preserve"><value>Mise en vigueur</value></data>
+  <data name="OpSuperseded" xml:space="preserve"><value>Remplacée</value></data>
+  <data name="OpDeleted" xml:space="preserve"><value>Supprimée</value></data>
+  <data name="NotDraftNotice" xml:space="preserve"><value>Seul un brouillon peut être modifié. Créez un nouveau brouillon pour changer une formule en vigueur.</value></data>
+  <data name="ExplodeSection" xml:space="preserve"><value>Calcul des besoins</value></data>
+  <data name="ExplodeQuantity" xml:space="preserve"><value>Quantité de produit</value></data>
+  <data name="ExplodeRun" xml:space="preserve"><value>Calculer</value></data>
+  <data name="RequiredQuantity" xml:space="preserve"><value>Requis</value></data>
+  <data name="ExplodeHint" xml:space="preserve"><value>Utilise la version en vigueur aujourd'hui.</value></data>
+  <data name="ErrUnknownBom" xml:space="preserve"><value>Cette version de nomenclature est introuvable.</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>Un ou plusieurs articles sont absents du référentiel produit.</value></data>
+  <data name="ErrSelfReference" xml:space="preserve"><value>Un produit ne peut pas être son propre composant.</value></data>
+  <data name="ErrBomCycle" xml:space="preserve"><value>Cette version ferait du produit son propre composant via une autre formule.</value></data>
+  <data name="ErrBomNotDraft" xml:space="preserve"><value>Seul un brouillon peut être modifié ou supprimé.</value></data>
+  <data name="ErrConcurrency" xml:space="preserve"><value>Quelqu'un d'autre a modifié cette version. Rechargez la page et réessayez.</value></data>
+  <data name="ErrChangeControl" xml:space="preserve"><value>La référence de maîtrise des modifications n'a pas été acceptée.</value></data>
+  <data name="ErrPersistence" xml:space="preserve"><value>La modification n'a pas pu être enregistrée et rien n'a été écrit. Réessayez.</value></data>
+  <data name="ErrInvalid" xml:space="preserve"><value>Vérifiez les valeurs saisies.</value></data>
+  <data name="ErrDenied" xml:space="preserve"><value>Vous n'avez pas l'autorisation pour cette action.</value></data>
+</root>

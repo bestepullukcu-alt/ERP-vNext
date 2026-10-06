@@ -1096,4 +1096,7 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Yine De Kabul Et</value>
   </data>
+  <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Üretim</value></data>
+  <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>Reçete ve Rotalar</value></data>
+  <data name="Nav.Page.BOMS" xml:space="preserve"><value>Ürün Reçeteleri</value></data>
 </root>

@@ -1,0 +1,319 @@
+@model Diten.Web.Models.Manufacturing.Boms.BomDetailsViewModel
+@using Diten.Web.Views.Manufacturing.Boms
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BomsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = SharedLocalizer["Details"].Value;
+    Layout = "_LayoutTenantShell";
+    var bom = Model.Bom;
+    var isDraft = bom.Status == "Draft";
+    var statusClass = bom.Status switch { "Draft" => "bg-label-secondary", "Effective" => "bg-label-success", "Superseded" => "bg-label-dark", _ => "bg-label-primary" };
+    var statusText = bom.Status switch
+    {
+        "Draft" => Localizer["StatusDraft"].Value,
+        "Effective" => Localizer["StatusEffective"].Value,
+        "Superseded" => Localizer["StatusSuperseded"].Value,
+        _ => bom.Status
+    };
+    string OperationText(string op) => op switch
+    {
+        "Created" => Localizer["OpCreated"].Value,
+        "Updated" => Localizer["OpUpdated"].Value,
+        "Released" => Localizer["OpReleased"].Value,
+        "Superseded" => Localizer["OpSuperseded"].Value,
+        "Deleted" => Localizer["OpDeleted"].Value,
+        _ => op
+    };
+    var canEdit = isDraft && Perms.Has("manufacturing.bom.update");
+    var canRelease = isDraft && Perms.Has("manufacturing.bom.release");
+    var canDelete = isDraft && Perms.Has("manufacturing.bom.delete");
+    var canExplode = bom.Status == "Effective";
+}
+
+@* UAS-001: a user without read permission sees one explanation inside the shell; no card, no redirect. *@
+@if (!Perms.Has("manufacturing.bom.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["BomsTitle"].Value" />
+    return;
+}
+
+<div class="bom-details" data-bom-version-id="@bom.BomVersionId" data-item-id="@bom.ItemId" data-row-version="@bom.RowVersion" data-version="@bom.Version">
+    @Html.AntiForgeryToken()
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@SharedLocalizer["Details"] · @Localizer["Version"] @bom.Version</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/Manufacturing/Boms">@Localizer["BomsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/Manufacturing/Boms" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
+            @if (canDelete)
+            {
+                <button type="button" class="btn btn-label-danger" id="btnDeleteBom"><i class="bx bx-trash me-1"></i>@Localizer["ActionDelete"]</button>
+            }
+            @if (canEdit)
+            {
+                <a href="/Manufacturing/Boms/Edit/@bom.BomVersionId" class="btn btn-label-primary"><i class="bx bx-edit me-1"></i>@Localizer["ActionEdit"]</a>
+            }
+            @if (canRelease)
+            {
+                <button type="button" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#bomReleaseOffcanvas" aria-controls="bomReleaseOffcanvas">
+                    <i class="bx bx-check-shield me-1"></i>@Localizer["ActionRelease"]
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) — the same order as the form: components, routing; then the history -->
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ComponentsSection"]</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["Position"]</th>
+                                <th>@Localizer["ComponentItemId"]</th>
+                                <th class="text-end">@Localizer["Quantity"]</th>
+                                <th>@Localizer["UomId"]</th>
+                                <th>@Localizer["Alternates"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var line in bom.Components.OrderBy(c => c.Position))
+                            {
+                                <tr>
+                                    <td>@line.Position</td>
+                                    <td class="text-break">@line.ComponentItemId</td>
+                                    <td class="text-end">@line.Quantity</td>
+                                    <td>@line.UomId</td>
+                                    <td class="text-break">@(line.Alternates is { Count: > 0 } ? string.Join(", ", line.Alternates) : "-")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["RoutingSection"]</h6>
+                @if (bom.Routing is { Steps.Count: > 0 })
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["StepNo"]</th>
+                                    <th>@Localizer["Operation"]</th>
+                                    <th>@Localizer["WorkCenter"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var step in bom.Routing.Steps.OrderBy(s => s.StepNo))
+                                {
+                                    <tr>
+                                        <td>@step.StepNo</td>
+                                        <td>@step.Operation</td>
+                                        <td>@(string.IsNullOrWhiteSpace(step.WorkCenter) ? "-" : step.WorkCenter)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">@SharedLocalizer["NotAvailable"]</p>
+                }
+            </section>
+
+            @* AUD-001 path c, condition 3: the trail is read on the record's own screen, with the record's read permission. *@
+            <div class="card backbone-preview-section p-4" id="bomHistory">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["HistorySection"]</h6>
+                @if (!Model.HistoryLoaded)
+                {
+                    <div class="alert alert-warning mb-0" role="alert">@Localizer["HistoryLoadFailed"]</div>
+                }
+                else if (Model.History.Count == 0)
+                {
+                    <p class="text-muted mb-0">@Localizer["HistoryEmpty"]</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["HistoryWhen"]</th>
+                                    <th>@Localizer["HistoryOperation"]</th>
+                                    <th>@Localizer["HistoryActor"]</th>
+                                    <th>@Localizer["HistoryChangedFields"]</th>
+                                    <th>@Localizer["ChangeControlRef"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var entry in Model.History)
+                                {
+                                    <tr>
+                                        <td class="text-nowrap"><time class="js-local-time" datetime="@entry.OccurredAtUtc.ToString("O")">@entry.OccurredAtUtc.ToString("u")</time></td>
+                                        <td>@OperationText(entry.Operation)</td>
+                                        <td>@entry.ActorDisplayName</td>
+                                        <td>@(entry.ChangedFields.Count > 0 ? string.Join(", ", entry.ChangedFields) : "-")</td>
+                                        <td>@(string.IsNullOrWhiteSpace(entry.ChangeControlRef) ? "-" : entry.ChangeControlRef)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Sidebar Column (Right) — the product and the version's state -->
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["HeaderSection"]</h6>
+                <div class="d-flex flex-column gap-4">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-package"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["ItemId"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@bom.ItemId</div>
+                        </div>
+                    </div>
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-check-shield"></i>
+                        <div>
+                            <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
+                            <div class="mt-1"><span class="badge @statusClass">@statusText</span></div>
+                        </div>
+                    </div>
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-note"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Description"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(bom.Description) ? "-" : bom.Description)</div>
+                        </div>
+                    </div>
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-calendar-check"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["EffectiveFrom"]</div>
+                            <div class="backbone-preview-value mt-1">
+                                @if (bom.EffectiveFrom is { } from)
+                                {
+                                    <time class="js-local-time" datetime="@from.ToString("O")">@from.ToString("u")</time>
+                                }
+                                else
+                                {
+                                    @("-")
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-calendar-x"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["EffectiveTo"]</div>
+                            <div class="backbone-preview-value mt-1">
+                                @if (bom.EffectiveTo is { } to)
+                                {
+                                    <time class="js-local-time" datetime="@to.ToString("O")">@to.ToString("u")</time>
+                                }
+                                else
+                                {
+                                    @("-")
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-file-find"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["ChangeControlRef"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(bom.ChangeControlRef) ? "-" : bom.ChangeControlRef)</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @if (canExplode)
+            {
+                <div class="card backbone-preview-section p-4" id="bomExplode">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["ExplodeSection"]</h6>
+                    <form id="bomExplodeForm" class="d-flex gap-2 align-items-end" novalidate>
+                        <div class="flex-grow-1">
+                            <label for="bomExplodeQuantity" class="form-label fw-medium">@Localizer["ExplodeQuantity"]</label>
+                            <input id="bomExplodeQuantity" class="form-control" required inputmode="decimal" pattern="^\d+(\.\d+)?$" value="1" />
+                        </div>
+                        <button type="submit" class="btn btn-label-primary">@Localizer["ExplodeRun"]</button>
+                    </form>
+                    <p class="text-muted small mt-2 mb-2">@Localizer["ExplodeHint"]</p>
+                    <div class="table-responsive" id="bomExplodeResult" hidden>
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["ComponentItemId"]</th>
+                                    <th class="text-end">@Localizer["RequiredQuantity"]</th>
+                                    <th>@Localizer["UomId"]</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (canRelease)
+    {
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="bomReleaseOffcanvas" aria-labelledby="bomReleaseOffcanvasLabel">
+            <div class="offcanvas-header border-bottom">
+                <h5 id="bomReleaseOffcanvasLabel" class="offcanvas-title">@Localizer["ReleaseTitle"]</h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+            </div>
+            <div class="offcanvas-body">
+                <form id="bomReleaseForm" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="bomChangeControlRef" class="form-label fw-medium">@Localizer["ChangeControlRef"] <span class="text-danger">*</span></label>
+                        <input id="bomChangeControlRef" class="form-control" required maxlength="64" autocomplete="off" />
+                        <span class="text-muted small mt-1 d-block">@Localizer["ChangeControlRefHint"]</span>
+                    </div>
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="bomReleaseAcknowledge" required />
+                        <label class="form-check-label" for="bomReleaseAcknowledge">@Localizer["ReleaseConfirmCheck"]</label>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">@Localizer["ActionRelease"]</button>
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script id="bom-details-l10n" type="application/json">
+        @Json.Serialize(new Dictionary<string, string>
+        {
+            ["ActionRelease"] = Localizer["ActionRelease"].Value,
+            ["ActionDelete"] = Localizer["ActionDelete"].Value,
+            ["ReleaseConfirm"] = Localizer["ReleaseConfirm"].Value,
+            ["ReleaseSuccess"] = Localizer["ReleaseSuccess"].Value,
+            ["DeleteConfirm"] = Localizer["DeleteConfirm"].Value,
+            ["RecordDeleted"] = SharedLocalizer["RecordDeleted"].Value,
+            ["ErrorOccurred"] = SharedLocalizer["ErrorOccurred"].Value,
+            ["ErrInvalid"] = Localizer["ErrInvalid"].Value
+        })
+    </script>
+    <script src="~/assets/js/Manufacturing/Boms/details.js" asp-append-version="true"></script>
+}

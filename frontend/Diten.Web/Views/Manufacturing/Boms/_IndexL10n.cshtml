@@ -1,0 +1,45 @@
+@using Diten.Web.Views.Manufacturing.Boms
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BomsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* Json.Serialize camel-cases these names; index.l10n.js turns them back into PascalCase keys (the golden pattern). *@
+<script id="boms-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Delete = Localizer["ActionDelete"].Value,
+        Edit = Localizer["ActionEdit"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        AddNew = Localizer["AddNew"].Value,
+        ItemId = Localizer["ItemId"].Value,
+        Version = Localizer["Version"].Value,
+        Description = Localizer["Description"].Value,
+        DeleteConfirm = Localizer["DeleteConfirm"].Value,
+        StatusDraft = Localizer["StatusDraft"].Value,
+        StatusEffective = Localizer["StatusEffective"].Value,
+        StatusSuperseded = Localizer["StatusSuperseded"].Value
+    })
+</script>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- MOD-0193 BOM &amp; Routings screens — tenant module, 7 languages (localization-standard). -->
+  <data name="BomsTitle" xml:space="preserve"><value>Bills of Materials</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Versioned, change-controlled formulas and routings for each product.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>New draft</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View</value></data>
+  <data name="ItemId" xml:space="preserve"><value>Item</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="ComponentCount" xml:space="preserve"><value>Components</value></data>
+  <data name="StepCount" xml:space="preserve"><value>Routing steps</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Effective from</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Effective to</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Last changed</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusEffective" xml:space="preserve"><value>Effective</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>Superseded</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New BOM draft</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit BOM draft</value></data>
+  <data name="HeaderSection" xml:space="preserve"><value>Product</value></data>
+  <data name="ComponentsSection" xml:space="preserve"><value>Components</value></data>
+  <data name="RoutingSection" xml:space="preserve"><value>Routing</value></data>
+  <data name="AddComponent" xml:space="preserve"><value>Add component</value></data>
+  <data name="AddStep" xml:space="preserve"><value>Add step</value></data>
+  <data name="ComponentItemId" xml:space="preserve"><value>Component item</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="UomId" xml:space="preserve"><value>Unit</value></data>
+  <data name="Position" xml:space="preserve"><value>Position</value></data>
+  <data name="Alternates" xml:space="preserve"><value>Alternates</value></data>
+  <data name="StepNo" xml:space="preserve"><value>Step</value></data>
+  <data name="Operation" xml:space="preserve"><value>Operation</value></data>
+  <data name="WorkCenter" xml:space="preserve"><value>Work center</value></data>
+  <data name="ItemIdHint" xml:space="preserve"><value>The product's id in the product master (MOD-0290).</value></data>
+  <data name="ComponentsHint" xml:space="preserve"><value>Quantities are per one unit of the product, as decimal numbers (e.g. 2.000).</value></data>
+  <data name="AlternatesHint" xml:space="preserve"><value>Item ids separated by commas</value></data>
+  <data name="RoutingHint" xml:space="preserve"><value>Optional. Steps run in step order.</value></data>
+  <data name="ActionEdit" xml:space="preserve"><value>Edit draft</value></data>
+  <data name="ActionRelease" xml:space="preserve"><value>Release</value></data>
+  <data name="ActionDelete" xml:space="preserve"><value>Delete draft</value></data>
+  <data name="ReleaseTitle" xml:space="preserve"><value>Release this version</value></data>
+  <data name="ChangeControlRef" xml:space="preserve"><value>Change control reference</value></data>
+  <data name="ChangeControlRefHint" xml:space="preserve"><value>The approved change record that authorises this formula (MOD-0209).</value></data>
+  <data name="ReleaseConfirmCheck" xml:space="preserve"><value>I understand this version becomes effective now and the current one is superseded.</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>Release version {0}? It cannot be edited or deleted afterwards.</value></data>
+  <data name="ReleaseSuccess" xml:space="preserve"><value>The version is now effective.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Delete draft version {0}?</value></data>
+  <data name="HistorySection" xml:space="preserve"><value>Version history</value></data>
+  <data name="HistoryOperation" xml:space="preserve"><value>Event</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>By</value></data>
+  <data name="HistoryWhen" xml:space="preserve"><value>When</value></data>
+  <data name="HistoryChangedFields" xml:space="preserve"><value>Changed</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>No history recorded.</value></data>
+  <data name="HistoryLoadFailed" xml:space="preserve"><value>The history could not be loaded. Reload the page to try again.</value></data>
+  <data name="OpCreated" xml:space="preserve"><value>Created</value></data>
+  <data name="OpUpdated" xml:space="preserve"><value>Edited</value></data>
+  <data name="OpReleased" xml:space="preserve"><value>Released</value></data>
+  <data name="OpSuperseded" xml:space="preserve"><value>Superseded</value></data>
+  <data name="OpDeleted" xml:space="preserve"><value>Deleted</value></data>
+  <data name="NotDraftNotice" xml:space="preserve"><value>Only a draft can be edited. Create a new draft to change an effective formula.</value></data>
+  <data name="ExplodeSection" xml:space="preserve"><value>Requirement check</value></data>
+  <data name="ExplodeQuantity" xml:space="preserve"><value>Product quantity</value></data>
+  <data name="ExplodeRun" xml:space="preserve"><value>Calculate</value></data>
+  <data name="RequiredQuantity" xml:space="preserve"><value>Required</value></data>
+  <data name="ExplodeHint" xml:space="preserve"><value>Uses the version effective today.</value></data>
+  <data name="ErrUnknownBom" xml:space="preserve"><value>This BOM version was not found.</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>One or more items are not in the product master.</value></data>
+  <data name="ErrSelfReference" xml:space="preserve"><value>A product cannot be its own component.</value></data>
+  <data name="ErrBomCycle" xml:space="preserve"><value>This version would make the product a component of itself through another formula.</value></data>
+  <data name="ErrBomNotDraft" xml:space="preserve"><value>Only a draft can be changed or deleted.</value></data>
+  <data name="ErrConcurrency" xml:space="preserve"><value>Someone else changed this version. Reload the page and try again.</value></data>
+  <data name="ErrChangeControl" xml:space="preserve"><value>The change control reference was not accepted.</value></data>
+  <data name="ErrPersistence" xml:space="preserve"><value>The change could not be saved and nothing was written. Try again.</value></data>
+  <data name="ErrInvalid" xml:space="preserve"><value>Check the entered values.</value></data>
+  <data name="ErrDenied" xml:space="preserve"><value>You do not have permission for this action.</value></data>
+</root>

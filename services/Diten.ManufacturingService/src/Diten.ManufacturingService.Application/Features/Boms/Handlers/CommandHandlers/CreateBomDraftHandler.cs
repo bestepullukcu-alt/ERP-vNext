@@ -46,6 +46,7 @@ public sealed class CreateBomDraftHandler(
                 Components = lines,
                 Routing = BomDraftSupport.ToRouting(body.Routing, null),
                 CreatedAt = now,
+                UpdatedAt = now,
                 CreatedBy = user.UserId,
                 Version = 1
             };

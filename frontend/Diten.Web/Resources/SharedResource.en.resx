@@ -1096,4 +1096,7 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Accept Anyway</value>
   </data>
+  <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Manufacturing</value></data>
+  <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>BOM &amp; Routings</value></data>
+  <data name="Nav.Page.BOMS" xml:space="preserve"><value>Bills of Materials</value></data>
 </root>

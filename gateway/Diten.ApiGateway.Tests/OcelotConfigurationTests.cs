@@ -11,9 +11,10 @@ namespace Diten.ApiGateway.Tests;
 public sealed class OcelotConfigurationTests
 {
     // Known downstream services as of this test's authoring: auth(5056), platform(5057), dev-enablement(5058),
-    // mdm(5059), hcm(5060), pvg(5011), crm(5061), ppm(5062), esbp/delivery-execution/uploads(5004). Adding a new backend is a deliberate, reviewed change to
+    // mdm(5059), hcm(5060), pvg(5011), crm(5061), ppm(5062), esbp/delivery-execution/uploads(5004),
+    // manufacturing(5067 — MOD-0193 BOM & Routings, MVP-3, 2026-10-06; AGENTS.md §3). Adding a new backend is a deliberate, reviewed change to
     // this set — an unrecognized port is far more likely a typo than a new service.
-    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060, 5061, 5062 };
+    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060, 5061, 5062, 5067 };
 
     private static readonly HashSet<string> PpmMethods = new(StringComparer.Ordinal)
     {

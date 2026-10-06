@@ -1036,4 +1036,7 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>仍然接受</value>
   </data>
+  <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>生产制造</value></data>
+  <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>物料清单与工艺路线</value></data>
+  <data name="Nav.Page.BOMS" xml:space="preserve"><value>物料清单</value></data>
 </root>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- MOD-0193 BOM &amp; Routings screens — tenant module, 7 languages (localization-standard). -->
+  <data name="BomsTitle" xml:space="preserve"><value>قوائم المواد</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>وصفات ومسارات مُصدَّرة وخاضعة للتحكم في التغيير لكل منتج.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>مسودة جديدة</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض</value></data>
+  <data name="ItemId" xml:space="preserve"><value>الصنف</value></data>
+  <data name="Version" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="ComponentCount" xml:space="preserve"><value>المكونات</value></data>
+  <data name="StepCount" xml:space="preserve"><value>خطوات المسار</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>آخر تغيير</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusEffective" xml:space="preserve"><value>سارية</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>مستبدلة</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>مسودة قائمة مواد جديدة</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل مسودة قائمة المواد</value></data>
+  <data name="HeaderSection" xml:space="preserve"><value>المنتج</value></data>
+  <data name="ComponentsSection" xml:space="preserve"><value>المكونات</value></data>
+  <data name="RoutingSection" xml:space="preserve"><value>المسار</value></data>
+  <data name="AddComponent" xml:space="preserve"><value>إضافة مكوّن</value></data>
+  <data name="AddStep" xml:space="preserve"><value>إضافة خطوة</value></data>
+  <data name="ComponentItemId" xml:space="preserve"><value>صنف المكوّن</value></data>
+  <data name="Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="UomId" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Position" xml:space="preserve"><value>الموضع</value></data>
+  <data name="Alternates" xml:space="preserve"><value>البدائل</value></data>
+  <data name="StepNo" xml:space="preserve"><value>الخطوة</value></data>
+  <data name="Operation" xml:space="preserve"><value>العملية</value></data>
+  <data name="WorkCenter" xml:space="preserve"><value>مركز العمل</value></data>
+  <data name="ItemIdHint" xml:space="preserve"><value>معرّف المنتج في البيانات الرئيسية للمنتج (MOD-0290).</value></data>
+  <data name="ComponentsHint" xml:space="preserve"><value>الكميات لكل وحدة واحدة من المنتج، بأرقام عشرية (مثل 2.000).</value></data>
+  <data name="AlternatesHint" xml:space="preserve"><value>معرّفات الأصناف مفصولة بفواصل</value></data>
+  <data name="RoutingHint" xml:space="preserve"><value>اختياري. تُنفَّذ الخطوات بترتيبها.</value></data>
+  <data name="ActionEdit" xml:space="preserve"><value>تعديل المسودة</value></data>
+  <data name="ActionRelease" xml:space="preserve"><value>اعتماد للسريان</value></data>
+  <data name="ActionDelete" xml:space="preserve"><value>حذف المسودة</value></data>
+  <data name="ReleaseTitle" xml:space="preserve"><value>اعتماد هذا الإصدار</value></data>
+  <data name="ChangeControlRef" xml:space="preserve"><value>مرجع التحكم في التغيير</value></data>
+  <data name="ChangeControlRefHint" xml:space="preserve"><value>سجل التغيير المعتمد الذي يجيز هذه الوصفة (MOD-0209).</value></data>
+  <data name="ReleaseConfirmCheck" xml:space="preserve"><value>أدرك أن هذا الإصدار يصبح ساريًا الآن وأن الإصدار الحالي يُستبدل.</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>اعتماد الإصدار {0}؟ لا يمكن تعديله أو حذفه بعد ذلك.</value></data>
+  <data name="ReleaseSuccess" xml:space="preserve"><value>أصبح الإصدار ساريًا الآن.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>حذف إصدار المسودة {0}؟</value></data>
+  <data name="HistorySection" xml:space="preserve"><value>سجل الإصدار</value></data>
+  <data name="HistoryOperation" xml:space="preserve"><value>الحدث</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>بواسطة</value></data>
+  <data name="HistoryWhen" xml:space="preserve"><value>متى</value></data>
+  <data name="HistoryChangedFields" xml:space="preserve"><value>ما تغيّر</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>لا يوجد سجل.</value></data>
+  <data name="HistoryLoadFailed" xml:space="preserve"><value>تعذّر تحميل السجل. أعد تحميل الصفحة للمحاولة مجددًا.</value></data>
+  <data name="OpCreated" xml:space="preserve"><value>أُنشئ</value></data>
+  <data name="OpUpdated" xml:space="preserve"><value>عُدّل</value></data>
+  <data name="OpReleased" xml:space="preserve"><value>اعتُمد</value></data>
+  <data name="OpSuperseded" xml:space="preserve"><value>استُبدل</value></data>
+  <data name="OpDeleted" xml:space="preserve"><value>حُذف</value></data>
+  <data name="NotDraftNotice" xml:space="preserve"><value>يمكن تعديل المسودة فقط. أنشئ مسودة جديدة لتغيير وصفة سارية.</value></data>
+  <data name="ExplodeSection" xml:space="preserve"><value>حساب الاحتياجات</value></data>
+  <data name="ExplodeQuantity" xml:space="preserve"><value>كمية المنتج</value></data>
+  <data name="ExplodeRun" xml:space="preserve"><value>احسب</value></data>
+  <data name="RequiredQuantity" xml:space="preserve"><value>المطلوب</value></data>
+  <data name="ExplodeHint" xml:space="preserve"><value>يستخدم الإصدار الساري اليوم.</value></data>
+  <data name="ErrUnknownBom" xml:space="preserve"><value>لم يُعثر على إصدار قائمة المواد هذا.</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>صنف واحد أو أكثر غير موجود في البيانات الرئيسية للمنتج.</value></data>
+  <data name="ErrSelfReference" xml:space="preserve"><value>لا يمكن أن يكون المنتج مكوّنًا لنفسه.</value></data>
+  <data name="ErrBomCycle" xml:space="preserve"><value>هذا الإصدار يجعل المنتج مكوّنًا لنفسه عبر وصفة أخرى.</value></data>
+  <data name="ErrBomNotDraft" xml:space="preserve"><value>يمكن تغيير المسودة أو حذفها فقط.</value></data>
+  <data name="ErrConcurrency" xml:space="preserve"><value>غيّر شخص آخر هذا الإصدار. أعد تحميل الصفحة وحاول مجددًا.</value></data>
+  <data name="ErrChangeControl" xml:space="preserve"><value>لم يُقبل مرجع التحكم في التغيير.</value></data>
+  <data name="ErrPersistence" xml:space="preserve"><value>تعذّر حفظ التغيير ولم يُكتب شيء. حاول مجددًا.</value></data>
+  <data name="ErrInvalid" xml:space="preserve"><value>تحقق من القيم المدخلة.</value></data>
+  <data name="ErrDenied" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء.</value></data>
+</root>

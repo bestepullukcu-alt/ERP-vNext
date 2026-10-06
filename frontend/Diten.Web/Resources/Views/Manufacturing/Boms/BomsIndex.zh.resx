@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- MOD-0193 BOM &amp; Routings screens — tenant module, 7 languages (localization-standard). -->
+  <data name="BomsTitle" xml:space="preserve"><value>物料清单</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>每个产品的版本化、受变更控制的配方和工艺路线。</value></data>
+  <data name="AddNew" xml:space="preserve"><value>新建草稿</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="QuickView" xml:space="preserve"><value>查看</value></data>
+  <data name="ItemId" xml:space="preserve"><value>物料</value></data>
+  <data name="Version" xml:space="preserve"><value>版本</value></data>
+  <data name="Description" xml:space="preserve"><value>描述</value></data>
+  <data name="ComponentCount" xml:space="preserve"><value>组件数</value></data>
+  <data name="StepCount" xml:space="preserve"><value>工艺步骤</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>生效起始</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>生效截止</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>最后修改</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="StatusEffective" xml:space="preserve"><value>生效</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>已替代</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新建物料清单草稿</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑物料清单草稿</value></data>
+  <data name="HeaderSection" xml:space="preserve"><value>产品</value></data>
+  <data name="ComponentsSection" xml:space="preserve"><value>组件</value></data>
+  <data name="RoutingSection" xml:space="preserve"><value>工艺路线</value></data>
+  <data name="AddComponent" xml:space="preserve"><value>添加组件</value></data>
+  <data name="AddStep" xml:space="preserve"><value>添加步骤</value></data>
+  <data name="ComponentItemId" xml:space="preserve"><value>组件物料</value></data>
+  <data name="Quantity" xml:space="preserve"><value>数量</value></data>
+  <data name="UomId" xml:space="preserve"><value>单位</value></data>
+  <data name="Position" xml:space="preserve"><value>位置</value></data>
+  <data name="Alternates" xml:space="preserve"><value>替代料</value></data>
+  <data name="StepNo" xml:space="preserve"><value>步骤</value></data>
+  <data name="Operation" xml:space="preserve"><value>工序</value></data>
+  <data name="WorkCenter" xml:space="preserve"><value>工作中心</value></data>
+  <data name="ItemIdHint" xml:space="preserve"><value>产品在产品主数据中的标识（MOD-0290）。</value></data>
+  <data name="ComponentsHint" xml:space="preserve"><value>数量按一单位产品计，使用小数（例如 2.000）。</value></data>
+  <data name="AlternatesHint" xml:space="preserve"><value>以逗号分隔的物料标识</value></data>
+  <data name="RoutingHint" xml:space="preserve"><value>可选。步骤按顺序执行。</value></data>
+  <data name="ActionEdit" xml:space="preserve"><value>编辑草稿</value></data>
+  <data name="ActionRelease" xml:space="preserve"><value>发布生效</value></data>
+  <data name="ActionDelete" xml:space="preserve"><value>删除草稿</value></data>
+  <data name="ReleaseTitle" xml:space="preserve"><value>发布此版本</value></data>
+  <data name="ChangeControlRef" xml:space="preserve"><value>变更控制编号</value></data>
+  <data name="ChangeControlRefHint" xml:space="preserve"><value>批准此配方的已批准变更记录（MOD-0209）。</value></data>
+  <data name="ReleaseConfirmCheck" xml:space="preserve"><value>我了解此版本将立即生效，当前版本将被替代。</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>发布版本 {0}？发布后将无法编辑或删除。</value></data>
+  <data name="ReleaseSuccess" xml:space="preserve"><value>该版本现已生效。</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>删除草稿版本 {0}？</value></data>
+  <data name="HistorySection" xml:space="preserve"><value>版本历史</value></data>
+  <data name="HistoryOperation" xml:space="preserve"><value>事件</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>操作人</value></data>
+  <data name="HistoryWhen" xml:space="preserve"><value>时间</value></data>
+  <data name="HistoryChangedFields" xml:space="preserve"><value>变更内容</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>无历史记录。</value></data>
+  <data name="HistoryLoadFailed" xml:space="preserve"><value>无法加载历史记录。请刷新页面重试。</value></data>
+  <data name="OpCreated" xml:space="preserve"><value>已创建</value></data>
+  <data name="OpUpdated" xml:space="preserve"><value>已编辑</value></data>
+  <data name="OpReleased" xml:space="preserve"><value>已发布生效</value></data>
+  <data name="OpSuperseded" xml:space="preserve"><value>已替代</value></data>
+  <data name="OpDeleted" xml:space="preserve"><value>已删除</value></data>
+  <data name="NotDraftNotice" xml:space="preserve"><value>只能编辑草稿。要更改生效配方，请新建草稿。</value></data>
+  <data name="ExplodeSection" xml:space="preserve"><value>需求计算</value></data>
+  <data name="ExplodeQuantity" xml:space="preserve"><value>产品数量</value></data>
+  <data name="ExplodeRun" xml:space="preserve"><value>计算</value></data>
+  <data name="RequiredQuantity" xml:space="preserve"><value>需求量</value></data>
+  <data name="ExplodeHint" xml:space="preserve"><value>使用今天生效的版本。</value></data>
+  <data name="ErrUnknownBom" xml:space="preserve"><value>未找到此物料清单版本。</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>一个或多个物料不在产品主数据中。</value></data>
+  <data name="ErrSelfReference" xml:space="preserve"><value>产品不能作为自身的组件。</value></data>
+  <data name="ErrBomCycle" xml:space="preserve"><value>此版本会通过其他配方使产品成为自身的组件。</value></data>
+  <data name="ErrBomNotDraft" xml:space="preserve"><value>只能更改或删除草稿。</value></data>
+  <data name="ErrConcurrency" xml:space="preserve"><value>其他人已更改此版本。请刷新页面后重试。</value></data>
+  <data name="ErrChangeControl" xml:space="preserve"><value>变更控制编号未被接受。</value></data>
+  <data name="ErrPersistence" xml:space="preserve"><value>无法保存更改，未写入任何内容。请重试。</value></data>
+  <data name="ErrInvalid" xml:space="preserve"><value>请检查输入的值。</value></data>
+  <data name="ErrDenied" xml:space="preserve"><value>您无权执行此操作。</value></data>
+</root>

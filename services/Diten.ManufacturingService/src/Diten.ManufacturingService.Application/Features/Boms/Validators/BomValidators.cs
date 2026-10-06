@@ -2,6 +2,7 @@ using Diten.ManufacturingService.Application.Common;
 using Diten.ManufacturingService.Application.Features.Boms.Commands;
 using Diten.ManufacturingService.Application.Features.Boms.Queries;
 using Diten.ManufacturingService.Domain.Entities;
+using Diten.ManufacturingService.Domain.Repositories;
 using Diten.ManufacturingService.Domain.Rules;
 using FluentValidation;
 
@@ -89,11 +90,25 @@ public sealed class ExplodeBomValidator : AbstractValidator<ExplodeBomQuery>
 
 public sealed class GetBomListValidator : AbstractValidator<GetBomListQuery>
 {
+    public static readonly IReadOnlyDictionary<string, BomListOrder> OrderKeys = new Dictionary<string, BomListOrder>(StringComparer.Ordinal)
+    {
+        ["updatedAt"] = BomListOrder.UpdatedAt,
+        ["itemId"] = BomListOrder.ItemId,
+        ["version"] = BomListOrder.Version,
+        ["status"] = BomListOrder.Status,
+        ["description"] = BomListOrder.Description,
+        ["effectiveFrom"] = BomListOrder.EffectiveFrom
+    };
+
     public GetBomListValidator()
     {
-        RuleFor(x => x.Page).GreaterThanOrEqualTo(1);
-        RuleFor(x => x.PageSize).InclusiveBetween(1, 100);
-        RuleFor(x => x.Status).Must(s => s is null || Enum.GetNames<BomStatus>().Contains(s, StringComparer.Ordinal))
+        RuleFor(x => x.Start).GreaterThanOrEqualTo(0).WithMessage("start must be 0 or more.");
+        RuleFor(x => x.Length).InclusiveBetween(1, 100).WithMessage("length must be between 1 and 100.").When(x => x.ExportRowCap is null);
+        RuleFor(x => x.Search).MaximumLength(100).WithMessage("search must be at most 100 characters.");
+        RuleForEach(x => x.Status).Must(s => Enum.GetNames<BomStatus>().Contains(s, StringComparer.Ordinal))
             .WithMessage("status must be Draft, Effective or Superseded.");
+        RuleFor(x => x.OrderBy).Must(o => o is null || OrderKeys.ContainsKey(o))
+            .WithMessage($"orderBy must be one of: {string.Join(", ", OrderKeys.Keys)}.");
+        RuleFor(x => x.OrderDir).Must(d => d is null || d is "asc" or "desc").WithMessage("orderDir must be asc or desc.");
     }
 }

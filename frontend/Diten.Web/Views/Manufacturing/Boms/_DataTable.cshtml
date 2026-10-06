@@ -1,0 +1,30 @@
+@using Diten.Web.Views.Manufacturing.Boms
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BomsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // The table card is a component (BL-440): the page describes it, _ListShell renders it. Server mode: the service
+    // pages, searches, sorts and filters (data_mode: server, MOD-0193 pack).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-boms",
+        DataMode = "server",
+        Slug = "boms",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ItemId"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Version"].Value },
+            new DataTableColumnViewModel { Header = SharedLocalizer["Status"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Description"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ComponentCount"].Value },
+            new DataTableColumnViewModel { Header = Localizer["StepCount"].Value },
+            new DataTableColumnViewModel { Header = Localizer["EffectiveFrom"].Value },
+            new DataTableColumnViewModel { Header = Localizer["UpdatedAt"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

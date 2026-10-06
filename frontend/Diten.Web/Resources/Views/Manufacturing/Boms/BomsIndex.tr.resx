@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- MOD-0193 BOM &amp; Routings screens — tenant module, 7 languages (localization-standard). -->
+  <data name="BomsTitle" xml:space="preserve"><value>Ürün Reçeteleri (BOM)</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Her ürün için sürümlü, değişiklik kontrollü reçete ve rotalar.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Yeni taslak</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="ItemId" xml:space="preserve"><value>Ürün</value></data>
+  <data name="Version" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="ComponentCount" xml:space="preserve"><value>Bileşen sayısı</value></data>
+  <data name="StepCount" xml:space="preserve"><value>Rota adımı</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Yürürlük başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Yürürlük bitişi</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Son değişiklik</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusEffective" xml:space="preserve"><value>Yürürlükte</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>Geçersiz kılındı</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni BOM taslağı</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>BOM taslağını düzenle</value></data>
+  <data name="HeaderSection" xml:space="preserve"><value>Ürün</value></data>
+  <data name="ComponentsSection" xml:space="preserve"><value>Bileşenler</value></data>
+  <data name="RoutingSection" xml:space="preserve"><value>Rota</value></data>
+  <data name="AddComponent" xml:space="preserve"><value>Bileşen ekle</value></data>
+  <data name="AddStep" xml:space="preserve"><value>Adım ekle</value></data>
+  <data name="ComponentItemId" xml:space="preserve"><value>Bileşen ürünü</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="UomId" xml:space="preserve"><value>Birim</value></data>
+  <data name="Position" xml:space="preserve"><value>Sıra</value></data>
+  <data name="Alternates" xml:space="preserve"><value>Alternatifler</value></data>
+  <data name="StepNo" xml:space="preserve"><value>Adım</value></data>
+  <data name="Operation" xml:space="preserve"><value>Operasyon</value></data>
+  <data name="WorkCenter" xml:space="preserve"><value>İş merkezi</value></data>
+  <data name="ItemIdHint" xml:space="preserve"><value>Ürünün ürün ana verisindeki kimliği (MOD-0290).</value></data>
+  <data name="ComponentsHint" xml:space="preserve"><value>Miktarlar 1 birim ürün içindir, ondalık sayı olarak (ör. 2.000).</value></data>
+  <data name="AlternatesHint" xml:space="preserve"><value>Virgülle ayrılmış ürün kimlikleri</value></data>
+  <data name="RoutingHint" xml:space="preserve"><value>İsteğe bağlı. Adımlar sıra numarasına göre işler.</value></data>
+  <data name="ActionEdit" xml:space="preserve"><value>Taslağı düzenle</value></data>
+  <data name="ActionRelease" xml:space="preserve"><value>Yürürlüğe al</value></data>
+  <data name="ActionDelete" xml:space="preserve"><value>Taslağı sil</value></data>
+  <data name="ReleaseTitle" xml:space="preserve"><value>Bu sürümü yürürlüğe al</value></data>
+  <data name="ChangeControlRef" xml:space="preserve"><value>Değişiklik kontrolü referansı</value></data>
+  <data name="ChangeControlRefHint" xml:space="preserve"><value>Bu reçeteyi yetkilendiren onaylı değişiklik kaydı (MOD-0209).</value></data>
+  <data name="ReleaseConfirmCheck" xml:space="preserve"><value>Bu sürümün şimdi yürürlüğe gireceğini ve mevcut sürümün geçersiz kılınacağını anlıyorum.</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>{0}. sürüm yürürlüğe alınsın mı? Sonrasında düzenlenemez ve silinemez.</value></data>
+  <data name="ReleaseSuccess" xml:space="preserve"><value>Sürüm yürürlüğe girdi.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>{0}. taslak sürüm silinsin mi?</value></data>
+  <data name="HistorySection" xml:space="preserve"><value>Sürüm geçmişi</value></data>
+  <data name="HistoryOperation" xml:space="preserve"><value>Olay</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>Yapan</value></data>
+  <data name="HistoryWhen" xml:space="preserve"><value>Ne zaman</value></data>
+  <data name="HistoryChangedFields" xml:space="preserve"><value>Değişen</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>Kayıtlı geçmiş yok.</value></data>
+  <data name="HistoryLoadFailed" xml:space="preserve"><value>Geçmiş yüklenemedi. Tekrar denemek için sayfayı yenileyin.</value></data>
+  <data name="OpCreated" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="OpUpdated" xml:space="preserve"><value>Düzenlendi</value></data>
+  <data name="OpReleased" xml:space="preserve"><value>Yürürlüğe alındı</value></data>
+  <data name="OpSuperseded" xml:space="preserve"><value>Geçersiz kılındı</value></data>
+  <data name="OpDeleted" xml:space="preserve"><value>Silindi</value></data>
+  <data name="NotDraftNotice" xml:space="preserve"><value>Yalnız taslak düzenlenebilir. Yürürlükteki reçeteyi değiştirmek için yeni taslak oluşturun.</value></data>
+  <data name="ExplodeSection" xml:space="preserve"><value>İhtiyaç hesabı</value></data>
+  <data name="ExplodeQuantity" xml:space="preserve"><value>Ürün miktarı</value></data>
+  <data name="ExplodeRun" xml:space="preserve"><value>Hesapla</value></data>
+  <data name="RequiredQuantity" xml:space="preserve"><value>Gereken</value></data>
+  <data name="ExplodeHint" xml:space="preserve"><value>Bugün yürürlükte olan sürümü kullanır.</value></data>
+  <data name="ErrUnknownBom" xml:space="preserve"><value>Bu BOM sürümü bulunamadı.</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>Bir veya daha fazla ürün, ürün ana verisinde yok.</value></data>
+  <data name="ErrSelfReference" xml:space="preserve"><value>Bir ürün kendi bileşeni olamaz.</value></data>
+  <data name="ErrBomCycle" xml:space="preserve"><value>Bu sürüm, ürünü başka bir reçete üzerinden kendi bileşeni yapar.</value></data>
+  <data name="ErrBomNotDraft" xml:space="preserve"><value>Yalnız taslak değiştirilebilir veya silinebilir.</value></data>
+  <data name="ErrConcurrency" xml:space="preserve"><value>Bu sürümü başka biri değiştirdi. Sayfayı yenileyip tekrar deneyin.</value></data>
+  <data name="ErrChangeControl" xml:space="preserve"><value>Değişiklik kontrolü referansı kabul edilmedi.</value></data>
+  <data name="ErrPersistence" xml:space="preserve"><value>Değişiklik kaydedilemedi, hiçbir şey yazılmadı. Tekrar deneyin.</value></data>
+  <data name="ErrInvalid" xml:space="preserve"><value>Girilen değerleri kontrol edin.</value></data>
+  <data name="ErrDenied" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+</root>

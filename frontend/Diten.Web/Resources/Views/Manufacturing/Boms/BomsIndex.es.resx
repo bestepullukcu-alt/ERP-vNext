@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- MOD-0193 BOM &amp; Routings screens — tenant module, 7 languages (localization-standard). -->
+  <data name="BomsTitle" xml:space="preserve"><value>Listas de materiales</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Fórmulas y rutas versionadas y con control de cambios para cada producto.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Nuevo borrador</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Ver</value></data>
+  <data name="ItemId" xml:space="preserve"><value>Artículo</value></data>
+  <data name="Version" xml:space="preserve"><value>Versión</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="ComponentCount" xml:space="preserve"><value>Componentes</value></data>
+  <data name="StepCount" xml:space="preserve"><value>Pasos de ruta</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Vigente desde</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Vigente hasta</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Último cambio</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusEffective" xml:space="preserve"><value>Vigente</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>Sustituida</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nuevo borrador de lista de materiales</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar borrador de lista de materiales</value></data>
+  <data name="HeaderSection" xml:space="preserve"><value>Producto</value></data>
+  <data name="ComponentsSection" xml:space="preserve"><value>Componentes</value></data>
+  <data name="RoutingSection" xml:space="preserve"><value>Ruta</value></data>
+  <data name="AddComponent" xml:space="preserve"><value>Añadir componente</value></data>
+  <data name="AddStep" xml:space="preserve"><value>Añadir paso</value></data>
+  <data name="ComponentItemId" xml:space="preserve"><value>Artículo componente</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Cantidad</value></data>
+  <data name="UomId" xml:space="preserve"><value>Unidad</value></data>
+  <data name="Position" xml:space="preserve"><value>Posición</value></data>
+  <data name="Alternates" xml:space="preserve"><value>Alternativos</value></data>
+  <data name="StepNo" xml:space="preserve"><value>Paso</value></data>
+  <data name="Operation" xml:space="preserve"><value>Operación</value></data>
+  <data name="WorkCenter" xml:space="preserve"><value>Centro de trabajo</value></data>
+  <data name="ItemIdHint" xml:space="preserve"><value>El identificador del producto en el maestro de productos (MOD-0290).</value></data>
+  <data name="ComponentsHint" xml:space="preserve"><value>Las cantidades son por una unidad del producto, en números decimales (p. ej. 2.000).</value></data>
+  <data name="AlternatesHint" xml:space="preserve"><value>Identificadores de artículos separados por comas</value></data>
+  <data name="RoutingHint" xml:space="preserve"><value>Opcional. Los pasos se ejecutan en orden.</value></data>
+  <data name="ActionEdit" xml:space="preserve"><value>Editar borrador</value></data>
+  <data name="ActionRelease" xml:space="preserve"><value>Poner en vigor</value></data>
+  <data name="ActionDelete" xml:space="preserve"><value>Eliminar borrador</value></data>
+  <data name="ReleaseTitle" xml:space="preserve"><value>Poner en vigor esta versión</value></data>
+  <data name="ChangeControlRef" xml:space="preserve"><value>Referencia de control de cambios</value></data>
+  <data name="ChangeControlRefHint" xml:space="preserve"><value>El registro de cambio aprobado que autoriza esta fórmula (MOD-0209).</value></data>
+  <data name="ReleaseConfirmCheck" xml:space="preserve"><value>Entiendo que esta versión entra en vigor ahora y que la actual queda sustituida.</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>¿Poner en vigor la versión {0}? Después no podrá editarse ni eliminarse.</value></data>
+  <data name="ReleaseSuccess" xml:space="preserve"><value>La versión está ahora vigente.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>¿Eliminar la versión borrador {0}?</value></data>
+  <data name="HistorySection" xml:space="preserve"><value>Historial de la versión</value></data>
+  <data name="HistoryOperation" xml:space="preserve"><value>Evento</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>Por</value></data>
+  <data name="HistoryWhen" xml:space="preserve"><value>Cuándo</value></data>
+  <data name="HistoryChangedFields" xml:space="preserve"><value>Cambiado</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>No hay historial registrado.</value></data>
+  <data name="HistoryLoadFailed" xml:space="preserve"><value>No se pudo cargar el historial. Recargue la página para reintentar.</value></data>
+  <data name="OpCreated" xml:space="preserve"><value>Creada</value></data>
+  <data name="OpUpdated" xml:space="preserve"><value>Editada</value></data>
+  <data name="OpReleased" xml:space="preserve"><value>Puesta en vigor</value></data>
+  <data name="OpSuperseded" xml:space="preserve"><value>Sustituida</value></data>
+  <data name="OpDeleted" xml:space="preserve"><value>Eliminada</value></data>
+  <data name="NotDraftNotice" xml:space="preserve"><value>Solo se puede editar un borrador. Cree un nuevo borrador para cambiar una fórmula vigente.</value></data>
+  <data name="ExplodeSection" xml:space="preserve"><value>Cálculo de necesidades</value></data>
+  <data name="ExplodeQuantity" xml:space="preserve"><value>Cantidad de producto</value></data>
+  <data name="ExplodeRun" xml:space="preserve"><value>Calcular</value></data>
+  <data name="RequiredQuantity" xml:space="preserve"><value>Necesario</value></data>
+  <data name="ExplodeHint" xml:space="preserve"><value>Usa la versión vigente hoy.</value></data>
+  <data name="ErrUnknownBom" xml:space="preserve"><value>No se encontró esta versión de la lista de materiales.</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>Uno o más artículos no están en el maestro de productos.</value></data>
+  <data name="ErrSelfReference" xml:space="preserve"><value>Un producto no puede ser su propio componente.</value></data>
+  <data name="ErrBomCycle" xml:space="preserve"><value>Esta versión haría del producto su propio componente a través de otra fórmula.</value></data>
+  <data name="ErrBomNotDraft" xml:space="preserve"><value>Solo se puede cambiar o eliminar un borrador.</value></data>
+  <data name="ErrConcurrency" xml:space="preserve"><value>Otra persona cambió esta versión. Recargue la página e inténtelo de nuevo.</value></data>
+  <data name="ErrChangeControl" xml:space="preserve"><value>La referencia de control de cambios no fue aceptada.</value></data>
+  <data name="ErrPersistence" xml:space="preserve"><value>No se pudo guardar el cambio y no se escribió nada. Inténtelo de nuevo.</value></data>
+  <data name="ErrInvalid" xml:space="preserve"><value>Compruebe los valores introducidos.</value></data>
+  <data name="ErrDenied" xml:space="preserve"><value>No tiene permiso para esta acción.</value></data>
+</root>
