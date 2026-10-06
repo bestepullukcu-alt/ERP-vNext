@@ -13,8 +13,21 @@
   <data name="GqmsDomain" xml:space="preserve"><value>Dominio de calidad</value></data>
   <data name="FunctionCode" xml:space="preserve"><value>Función</value></data>
   <data name="QualityEvent" xml:space="preserve"><value>Evento de calidad</value></data>
+  <data name="RequiresDeliverableOnCompletion" xml:space="preserve"><value>Requiere un archivo entregable para completarse</value></data>
   <data name="QualityEventYes" xml:space="preserve"><value>Evento de calidad</value></data>
   <data name="QualityEventNo" xml:space="preserve"><value>No es un evento de calidad</value></data>
+  <data name="ReviewMeetingRequirement" xml:space="preserve"><value>Reunión de revisión antes de la decisión</value></data>
+  <data name="ReviewMeetingRequirementHint" xml:space="preserve"><value>Indica si puede o debe celebrarse una reunión de revisión antes de que el revisor tome la decisión final sobre este tipo de trabajo.</value></data>
+  <data name="ReviewMeetingRequirementNotAllowed" xml:space="preserve"><value>No permitida</value></data>
+  <data name="ReviewMeetingRequirementOptional" xml:space="preserve"><value>Opcional</value></data>
+  <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>Obligatoria</value></data>
+  <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>La configuración de la reunión de revisión debe ser No permitida, Opcional u Obligatoria.</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Este tipo de tarea fue modificado por otra persona mientras usted lo editaba. Actualice la página e inténtelo de nuevo.</value></data>
+  <data name="InfoTaskTypeSavedInactiveBlockedDocuments" xml:space="preserve"><value>El tipo de tarea se guardó como inactivo: no todos los documentos vinculados están vigentes.</value></data>
+  <data name="InfoTaskTypeSavedInactiveUnverified" xml:space="preserve"><value>No se pudo verificar el estado del documento; el tipo de tarea se guardó como inactivo. Inténtelo activar más tarde.</value></data>
+  <data name="ErrorTaskTypeEnableBlockedDocuments" xml:space="preserve"><value>El tipo de tarea no se puede activar porque estos documentos no están vigentes:</value></data>
+  <data name="ErrorTaskTypeEnableRegisterUnavailable" xml:space="preserve"><value>No se pudo verificar el estado del documento. Inténtelo de nuevo más tarde.</value></data>
+  <data name="ErrorTaskTypeActiveDocumentBlocked" xml:space="preserve"><value>No se puede vincular un documento que no está vigente a un tipo de tarea activo. Desactive primero el tipo o espere a que el documento esté vigente.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>No es un registro</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Registro operativo</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>Registro de calidad GxP</value></data>
@@ -74,47 +87,6 @@
   <data name="FunctionCodeCTY" xml:space="preserve"><value>Operaciones de país (residual)</value></data>
   <data name="FunctionCodeMED" xml:space="preserve"><value>Asuntos médicos</value></data>
   <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>Ese no es uno de los códigos de función que usa esta organización.</value></data>
-  <data name="DocListTitle" xml:space="preserve"><value>Documentos controlados</value></data>
-  <data name="DocListDescription" xml:space="preserve"><value>La lista de referencia de documentos controlados que una tarea puede citar. Una lista, no un registro editable.</value></data>
-  <data name="DocListImportSection" xml:space="preserve"><value>Importar</value></data>
-  <data name="DocListVersionsSection" xml:space="preserve"><value>Versiones importadas</value></data>
-  <data name="DocListSearchSection" xml:space="preserve"><value>Buscar</value></data>
-  <data name="DocListFile" xml:space="preserve"><value>Archivo del registro (CSV)</value></data>
-  <data name="DocListSourceKey" xml:space="preserve"><value>Clave de origen</value></data>
-  <data name="DocListVersion" xml:space="preserve"><value>Versión de la lista</value></data>
-  <data name="DocListFileName" xml:space="preserve"><value>Archivo</value></data>
-  <data name="DocListImportedAt" xml:space="preserve"><value>Importado</value></data>
-  <data name="DocListEntries" xml:space="preserve"><value>entradas</value></data>
-  <data name="DocListLinkable" xml:space="preserve"><value>citables</value></data>
-  <data name="DocListBlocked" xml:space="preserve"><value>bloqueadas</value></data>
-  <data name="DocListUnreadColumns" xml:space="preserve"><value>Columnas no leídas</value></data>
-  <data name="DocListMissingColumns" xml:space="preserve"><value>Columnas ausentes</value></data>
-  <data name="DocListNone" xml:space="preserve"><value>ninguna</value></data>
-  <data name="DocListHash" xml:space="preserve"><value>Contenido</value></data>
-  <data name="DocListCopyHash" xml:space="preserve"><value>Copiar el hash completo</value></data>
-  <data name="DocListDryRun" xml:space="preserve"><value>Comprobar archivo</value></data>
-  <data name="DocListImport" xml:space="preserve"><value>Importar</value></data>
-  <data name="DocListDryRunFirst" xml:space="preserve"><value>Compruebe el archivo antes de importar.</value></data>
-  <data name="DocListFileChanged" xml:space="preserve"><value>El archivo cambió: compruébelo otra vez.</value></data>
-  <data name="DocListVersionRequired" xml:space="preserve"><value>La importación necesita una versión de lista.</value></data>
-  <data name="DocListFileRequired" xml:space="preserve"><value>Elija un archivo de registro.</value></data>
-  <data name="DocListImported" xml:space="preserve"><value>La lista se importó.</value></data>
-  <data name="DocListAlreadyImported" xml:space="preserve"><value>Este archivo ya está almacenado como versión {0}. No se añadió nada.</value></data>
-  <data name="DocListNotLinkable" xml:space="preserve"><value>No se puede citar</value></data>
-  <data name="DocListNoVersions" xml:space="preserve"><value>Todavía no se importó ninguna lista.</value></data>
-  <data name="DocListNoResults" xml:space="preserve"><value>Ningún documento coincide.</value></data>
-  <data name="DocListSearchPlaceholder" xml:space="preserve"><value>Buscar por código, título o UID…</value></data>
-  <data name="DocListDocTitle" xml:space="preserve"><value>Título</value></data>
-  <data name="DocListDocVersion" xml:space="preserve"><value>Versión</value></data>
-  <data name="DocListActions" xml:space="preserve">
-    <value>Acciones</value>
-  </data>
-  <data name="DocListWithdraw" xml:space="preserve"><value>Retirar</value></data>
-  <data name="DocListWithdrawn" xml:space="preserve"><value>Retirada</value></data>
-  <data name="DocListWithdrawReason" xml:space="preserve"><value>¿Por qué se retira?</value></data>
-  <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>Una retirada necesita un motivo.</value></data>
-  <data name="DocListWithdrawSubtext" xml:space="preserve"><value>La versión {0} deja de ser la lista citable. Se conserva y se marca, para que las referencias anteriores sigan siendo legibles.</value></data>
-  <data name="DocListImportDenied" xml:space="preserve"><value>Puede consultar esta lista pero no importarla.</value></data>
   <data name="ClosureOutcomesSection" xml:space="preserve">
     <value>Resultados de cierre</value>
   </data>

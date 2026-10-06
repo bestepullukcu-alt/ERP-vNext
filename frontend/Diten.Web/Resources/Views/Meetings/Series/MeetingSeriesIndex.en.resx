@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingSeriesTitle" xml:space="preserve"><value>Meeting Series</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Recurring cadence rules — each due occurrence is generated automatically as its own meeting.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Frequency</value></data>
+  <data name="FrequencyWeekly" xml:space="preserve"><value>Weekly</value></data>
+  <data name="FrequencyMonthly" xml:space="preserve"><value>Monthly</value></data>
+  <data name="FrequencyQuarterly" xml:space="preserve"><value>Quarterly</value></data>
+  <data name="FrequencyYearly" xml:space="preserve"><value>Yearly</value></data>
+  <data name="Interval" xml:space="preserve"><value>Interval</value></data>
+  <data name="IntervalHint" xml:space="preserve"><value>Every Nth period — 2 with Weekly means every two weeks.</value></data>
+  <data name="DurationMinutes" xml:space="preserve"><value>Duration (minutes)</value></data>
+  <data name="LeadTimeDays" xml:space="preserve"><value>Lead time (days)</value></data>
+  <data name="LeadTimeDaysHint" xml:space="preserve"><value>How many days before each occurrence it is generated, 1-90.</value></data>
+  <data name="ChainAsFollowUp" xml:space="preserve"><value>Chain as follow-up</value></data>
+  <data name="ChainAsFollowUpHint" xml:space="preserve"><value>Each new occurrence continues the previous one, carrying its still-open actions forward.</value></data>
+  <data name="IsActive" xml:space="preserve"><value>Active</value></data>
+  <data name="LastGeneratedAt" xml:space="preserve"><value>Last generated</value></data>
+  <data name="LastGeneratedAtNever" xml:space="preserve"><value>Never</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New Meeting Series</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Meeting Series</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Series Details</value></data>
+  <data name="ScheduleSection" xml:space="preserve"><value>Schedule</value></data>
+  <data name="ParticipantsSection" xml:space="preserve"><value>Participants</value></data>
+  <data name="FlagsSection" xml:space="preserve"><value>Settings</value></data>
+  <data name="DeleteConfirmTitle" xml:space="preserve"><value>Delete this series?</value></data>
+  <data name="DeleteConfirmText" xml:space="preserve"><value>This only removes the rule — meetings it already generated are not affected.</value></data>
+</root>

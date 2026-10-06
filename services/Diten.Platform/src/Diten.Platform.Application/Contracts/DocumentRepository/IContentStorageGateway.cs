@@ -69,7 +69,14 @@ public enum ContentStorageScope
 
     /// <summary>MOD-0024 Slice ATT-1 — task attachments/evidence/deliverables. Additive only, per this enum's own
     /// doc comment; the value is projected into the object key by name, never by ordinal.</summary>
-    TaskAttachments = 2
+    TaskAttachments = 2,
+
+    /// <summary>CAND-CAP-0011 / SCMM-16 (WP-SCMM-16A) — rendered structured-content &amp; messaging artifacts
+    /// (e.g. a composed ContentSetRevision PDF). Additive only, per this enum's own doc comment; the value is
+    /// projected into the object key by name (its own <c>content-messaging-artifacts</c> partition), never by
+    /// ordinal, so existing persisted keys are unaffected. The render service (SCMM-16B, CrmService) stores and
+    /// reads these through the existing MOD-0262-FU01 <c>/api/v1/document-repository</c> surface.</summary>
+    ContentMessagingArtifacts = 3
 }
 
 /// <summary>

@@ -369,7 +369,9 @@ public sealed class TaskNotificationService : ITaskNotificationService
                         UserId = recipient.UserId,
                         EventCode = eventCode,
                         Title = task.Title,
-                        TargetUrl = TaskDeepLink(task.Id),
+                        // BL-414 — the Task Center detail, not the record page: it opens for any reader the task
+                        // read rule admits (a mentioned watcher included), and the record page is one click away.
+                        TargetUrl = TaskLinks.Detail(task.Id),
                         Severity = UserNotificationSeverity.Info
                     },
                     ct);
@@ -387,13 +389,6 @@ public sealed class TaskNotificationService : ITaskNotificationService
                 eventCode, task.Id, recipients.Count);
         }
     }
-
-    /// <summary>
-    /// Where an in-app notification about a task points. Mirrors the deep link
-    /// <c>TaskWorkItemProvider</c> already publishes for the same records, so the bell and the work list send
-    /// the reader to the same place.
-    /// </summary>
-    private static string TaskDeepLink(Guid taskId) => $"/Tasks/{taskId}";
 
     /// <summary>
     /// The variables every task event declares. Kept in ONE place so a template rendering a blank is a

@@ -1,0 +1,31 @@
+@using Diten.Web.Views.Procurement.PurchaseOrders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PurchaseOrdersIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-purchase-orders" data-dt-standard="v2" class="datatables-purchase-orders table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
+                    <th>@Localizer["PoId"]</th>
+                    <th class="all">@Localizer["SupplierId"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th class="text-end">@Localizer["TotalAmount"]</th>
+                    <th>@Localizer["Currency"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

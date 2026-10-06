@@ -1,0 +1,29 @@
+@using Diten.Web.Views.CRM.ContentScopes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContentScopesIndex> Localizer
+
+<div class="card">
+    <div id="scopeError" class="alert alert-danger rounded-0 d-none mb-0" role="alert"></div>
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-content-scopes" data-dt-standard="v2" class="datatables-content-scopes table border-top w-100">
+            <thead><tr>
+                <th></th>
+                <th>@Localizer["ScopeCode"]</th>
+                <th class="all">@Localizer["ScopeName"]</th>
+                <th>@Localizer["ScopeVersion"]</th>
+                <th>@Localizer["Status"]</th>
+                <th>@Localizer["Channel"]</th>
+                <th>@Localizer["LanguageCode"]</th>
+                <th>@Localizer["Archived"]</th>
+                <th>@Localizer["UpdatedAt"]</th>
+                <th class="all text-end">@Localizer["Actions"]</th>
+            </tr></thead>
+        </table>
+    </div>
+</div>

@@ -121,9 +121,62 @@ public sealed class DocumentRegisterIngestTests
 
         Assert.Equal(6, first.Data!.Created);
         Assert.Equal(0, first.Data.Updated);
-        Assert.Equal(0, second.Data!.Created);   // re-import updates, never re-creates
-        Assert.Equal(6, second.Data.Updated);
+        Assert.Equal(0, first.Data.Unchanged);   // nothing existed yet — there is nothing to leave unchanged
+        Assert.Equal(0, second.Data!.Created);   // re-import never re-creates
+        /*
+         * WP-DM-DCP005-RETIRE-CSV-01, AC1 — MUTATION GUARD: before this WP, a byte-identical re-import reported
+         * `Updated: 6` here (IngestDocumentMasterRegisterHandler wrote and counted every existing row
+         * unconditionally). Reverting the WouldChange gate in IngestDocumentMasterRegisterHandler makes this
+         * assertion fail again — a re-import of the exact same CSV must report 0 updates and 6 unchanged, the
+         * same forecast DocumentRegisterImportPreviewService already makes for this file.
+         */
+        Assert.Equal(0, second.Data.Updated);
+        Assert.Equal(6, second.Data.Unchanged);
         Assert.Equal(6, f.Register.Items.Count);  // no duplicates
+    }
+
+    [Fact]
+    public async Task An_unchanged_row_is_never_rewritten()
+    {
+        /*
+         * WP-DM-DCP005-RETIRE-CSV-01, AC1 — the counting fix is only real if the row is also left untouched, not
+         * merely mis-labelled: UpdatedAt/UpdatedBy are set ONLY on the write path (see
+         * IngestDocumentMasterRegisterHandler's `else` branch), so a genuinely unchanged row must still read back
+         * with the values CreateAsync gave it on the first pass — null UpdatedAt/UpdatedBy — after a second,
+         * identical import.
+         */
+        var f = Fixture();
+
+        await f.Handler.Handle(Cmd(SampleCsv), CancellationToken.None);
+        var before = f.Register.Items.Single(x => x.PermanentUid == "UID-1");
+        Assert.Null(before.UpdatedAt);
+        Assert.Null(before.UpdatedBy);
+
+        await f.Handler.Handle(Cmd(SampleCsv), CancellationToken.None);
+        var after = f.Register.Items.Single(x => x.PermanentUid == "UID-1");
+        Assert.Null(after.UpdatedAt);
+        Assert.Null(after.UpdatedBy);
+    }
+
+    [Fact]
+    public async Task A_row_whose_mapped_fields_actually_changed_is_counted_and_written_as_Updated()
+    {
+        // The counterpart to the two tests above: a REAL change must still be written and still count as Updated,
+        // not swallowed by the new WouldChange gate.
+        var f = Fixture();
+        await f.Handler.Handle(Cmd(SampleCsv), CancellationToken.None);
+
+        // Anchored on the UID-1 row specifically — a bare "Draft Doc" replace also matches UID-2's
+        // "Final Draft Doc" and silently turns this into a two-row change.
+        var changed = SampleCsv.Replace("UID-1,C-1,Draft Doc,", "UID-1,C-1,Draft Doc Renamed,");
+        var second = await f.Handler.Handle(Cmd(changed), CancellationToken.None);
+
+        Assert.Equal(1, second.Data!.Updated);
+        Assert.Equal(5, second.Data.Unchanged);
+        var d1 = f.Register.Items.Single(x => x.PermanentUid == "UID-1");
+        Assert.Equal("Draft Doc Renamed", d1.DocumentTitle);
+        Assert.NotNull(d1.UpdatedAt);
+        Assert.Equal("test", d1.UpdatedBy);
     }
 
     [Fact]

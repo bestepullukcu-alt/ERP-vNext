@@ -53,11 +53,30 @@
                     </div>
                 </div>
             </div>
+            @* SCMM-10-MOD-C: Moderator + ForWhom are template-level (delivery identity), not per step. *@
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-user-voice"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["Moderator"]</div>
+                        <div id="pv-tpl-moderator" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-target-lock"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["ForWhom"]</div>
+                        <div id="pv-tpl-forwhom" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
     <section class="card backbone-preview-section p-4">
-        <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["OrderedConceptTypes"]</h6>
+        <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["Spine"]</h6>
         <ol id="pv-tpl-sequence" class="list-group list-group-numbered mb-0"></ol>
         <div id="pv-tpl-frozen" class="form-text text-warning d-none">@Localizer["PublishedSequenceFrozen"]</div>
     </section>
@@ -66,6 +85,13 @@
     <section class="card backbone-preview-section p-4">
         <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["Branches"]</h6>
         <div id="pv-tpl-branches" class="d-flex flex-column gap-3"></div>
+    </section>
+
+    @* WP-CT-FE-9 — unresolved non-conforming count (the editor's "Non-conforming" tab, read-only here): the BE-A
+       diagnostics over this template's spine minus its stored "Yok say" resolutions. Filled async by concept-slim.js. *@
+    <section class="card backbone-preview-section p-4" id="pv-tpl-nonconforming-section">
+        <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["TabNonConforming"]</h6>
+        <div id="pv-tpl-nonconforming" class="backbone-preview-value">-</div>
     </section>
 
     <section class="card backbone-preview-section p-4">

@@ -46,14 +46,25 @@ public interface ITaskLifecycleService
         bool reviewOutstanding = false,
         bool reviewRejected = false);
 
-    /// <summary>Remaining effort = Estimate − Spent, floored at 0. Derived, never stored (pack §12 E4).</summary>
-    decimal? CalculateRemainingHours(TaskItem task);
+    /// <summary>Remaining effort = Estimate − Spent, floored at 0. Derived, never stored (pack §12 E4).
+    /// <paramref name="spentHours"/> is the task's APPROVED time from MOD-0280-FU01 (<c>ITaskSpentTimeSource</c>, D7) —
+    /// never <c>TaskItem.SpentHours</c>, which nothing writes.</summary>
+    decimal? CalculateRemainingHours(TaskItem task, decimal spentHours);
 
     /// <summary>True when the task is in a terminal state (read-only, no state-changing action).</summary>
     bool IsTerminal(TaskItem task);
 
     /// <summary>Whether a transition is allowed; the reason code explains a refusal.</summary>
     bool CanTransition(TaskItem task, TaskLifecycle target, out string? reasonCode);
+
+    /// <summary>
+    /// BL-439 — where an ANSWERED question sends the task: back to the lifecycle it had when it was parked.
+    ///
+    /// <para><paramref name="enteredWaitingFrom"/> is the <c>FromLifecycle</c> of the most recent
+    /// <see cref="TaskTransitionKind.Waiting"/> entry in the task's own log — the entry is how Waiting is ENTERED,
+    /// so it is where the way back is read from. Nothing new is stored on the task for this.</para>
+    /// </summary>
+    TaskLifecycle ResolveInquiryReturn(TaskLifecycle? enteredWaitingFrom);
 }
 
 /// <summary>

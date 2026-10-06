@@ -46,6 +46,26 @@ public sealed class SegmentAttributeCatalogTests
     }
 
     [Fact]
+    public void Every_declared_attribute_carries_a_presentation_domain_from_the_closed_set()
+    {
+        var known = new[]
+        {
+            SegmentAttributeCatalog.DomainDoctorProfile,
+            SegmentAttributeCatalog.DomainConsent,
+            SegmentAttributeCatalog.DomainWorkplace,
+            SegmentAttributeCatalog.DomainCommercial,
+            SegmentAttributeCatalog.DomainActivity,
+            SegmentAttributeCatalog.DomainInstitution
+        };
+
+        Assert.All(SegmentAttributeCatalog.All, a =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(a.Domain));
+            Assert.Contains(a.Domain, known);
+        });
+    }
+
+    [Fact]
     public async Task The_published_catalog_matches_the_enforced_one_attribute_for_attribute()
     {
         var response = await Handler().Handle(new GetSegmentAttributeCatalogQuery(), default);
@@ -56,6 +76,7 @@ public sealed class SegmentAttributeCatalogTests
         foreach (var declared in SegmentAttributeCatalog.All)
         {
             var item = published.Attributes.Single(a => a.AttributeCode == declared.AttributeCode);
+            Assert.Equal(declared.Domain, item.Domain);
             Assert.Equal(declared.AttributeClass, item.Class);
             Assert.Equal(declared.DeclaredClass, item.DeclaredClass);
             Assert.Equal(declared.ValueType, item.ValueType);

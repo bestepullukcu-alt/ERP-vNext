@@ -81,6 +81,12 @@
   <data name="RecordCreated" xml:space="preserve">
     <value>تم إنشاء السجل بنجاح.</value>
   </data>
+  <data name="RecordActivated" xml:space="preserve">
+    <value>تم تفعيل السجل.</value>
+  </data>
+  <data name="SavedNotActivated" xml:space="preserve">
+    <value>تم الحفظ، لكن تعذّر التفعيل.</value>
+  </data>
   <data name="RecordDeleted" xml:space="preserve">
     <value>تم حذف السجل بنجاح.</value>
   </data>
@@ -272,9 +278,6 @@
   </data>
   <data name="Details" xml:space="preserve">
     <value>التفاصيل</value>
-  </data>
-  <data name="Close" xml:space="preserve">
-    <value>إغلاق</value>
   </data>
   <data name="BackToList" xml:space="preserve">
     <value>العودة إلى القائمة</value>
@@ -533,6 +536,7 @@
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>إعدادات المهام</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>سير العمل</value></data>
   <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>الاجتماعات</value></data>
+  <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>سجل ساعات العمل</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>المستخدمون</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>الأدوار</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>أذونات الأدوار</value></data>
@@ -686,6 +690,21 @@
   <data name="Nav.Page.KNOWLEDGECONCEPTS" xml:space="preserve">
     <value>Concepts</value>
   </data>
+  <data name="Nav.Page.CLAIMS" xml:space="preserve">
+    <value>الادعاءات</value>
+  </data>
+  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
+    <value>نطاقات المحتوى</value>
+  </data>
+  <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
+    <value>مجموعات المحتوى</value>
+  </data>
+  <data name="Nav.Page.VISITFREQUENCYPOLICIES" xml:space="preserve">
+    <value>سياسات تكرار الزيارة</value>
+  </data>
+  <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
+    <value>سياسات الأهلية</value>
+  </data>
   <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
     <value>مسارات المعرفة</value>
   </data>
@@ -799,9 +818,224 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>تجاوز</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>تعريفات الحقول</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>الاجتماعات</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>سجل ساعاتي</value></data>
+  <data name="Nav.Page.TIMEAPPROVALS" xml:space="preserve"><value>اعتماد سجلات الساعات</value></data>
+  <data name="Nav.Page.TIMECATEGORIES" xml:space="preserve"><value>فئات العمل</value></data>
+  <data name="Nav.Page.TIMESETTINGS" xml:space="preserve"><value>إعدادات تسجيل الوقت</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>أنواع الاجتماعات</value></data>
+  <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>سلاسل الاجتماعات</value></data>
+  <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>تقرير الاجتماعات</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>ليس لديك حق الوصول إلى {0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>اطلب من المسؤول منحك صلاحية الوصول إلى هذه الصفحة.</value></data>
+  <data name="Nav.Module.HUMANCAPITAL" xml:space="preserve"><value>رأس المال البشري</value></data>
+  <data name="Nav.Module.HCMEMPLOYEEMASTER" xml:space="preserve"><value>البيانات الرئيسية للموظفين</value></data>
+  <data name="Nav.Module.TALENTECOSYSTEM" xml:space="preserve"><value>منظومة المواهب</value></data>
+  <data name="Nav.Domain.HUMANCAPITAL" xml:space="preserve"><value>رأس المال البشري</value></data>
+  <data name="Nav.Domain.TALENTECOSYSTEM" xml:space="preserve"><value>منظومة المواهب</value></data>
+  <data name="Nav.Page.APPLICANTINTAKE" xml:space="preserve"><value>استقبال المتقدمين</value></data>
+  <data name="Nav.Page.CANDIDATEPIPELINE" xml:space="preserve"><value>مسار المرشحين</value></data>
+  <data name="Nav.Page.COMPENSATIONBENEFITS" xml:space="preserve"><value>التعويضات والمزايا</value></data>
+  <data name="Nav.Page.COMPETENCYSKILLS" xml:space="preserve"><value>الكفاءات والمهارات</value></data>
+  <data name="Nav.Page.DEVELOPMENTPLANS" xml:space="preserve"><value>خطط التطوير</value></data>
+  <data name="Nav.Page.EMPLOYEEONBOARDING" xml:space="preserve"><value>تأهيل الموظفين</value></data>
+  <data name="Nav.Page.EMPLOYEEPROJECTIONS" xml:space="preserve"><value>توقعات الموظفين</value></data>
+  <data name="Nav.Page.EMPLOYMENTCHANGES" xml:space="preserve"><value>تغييرات التوظيف</value></data>
+  <data name="Nav.Page.HEADCOUNTBUDGET" xml:space="preserve"><value>موازنة القوى العاملة</value></data>
+  <data name="Nav.Page.HRCASEMANAGEMENT" xml:space="preserve"><value>إدارة حالات الموارد البشرية</value></data>
+  <data name="Nav.Page.HRCOMPLIANCE" xml:space="preserve"><value>امتثال الموارد البشرية</value></data>
+  <data name="Nav.Page.HRDOCUMENTATION" xml:space="preserve"><value>توثيق الموارد البشرية</value></data>
+  <data name="Nav.Page.HRKPIANALYTICS" xml:space="preserve"><value>تحليلات مؤشرات أداء الموارد البشرية</value></data>
+  <data name="Nav.Page.LEARNINGTRAINING" xml:space="preserve"><value>التعلم والتدريب</value></data>
+  <data name="Nav.Page.OFFBOARDINGCASES" xml:space="preserve"><value>حالات إنهاء الخدمة</value></data>
+  <data name="Nav.Page.OFFERMANAGEMENT" xml:space="preserve"><value>إدارة العروض</value></data>
+  <data name="Nav.Page.PERFORMANCEREVIEWS" xml:space="preserve"><value>تقييمات الأداء</value></data>
+  <data name="Nav.Page.SELFSERVICE" xml:space="preserve"><value>الخدمة الذاتية</value></data>
+  <data name="Nav.Page.SENSITIVEACCESS" xml:space="preserve"><value>الوصول الحساس</value></data>
+  <data name="Nav.Page.SUCCESSION" xml:space="preserve"><value>التعاقب الوظيفي</value></data>
+  <data name="Nav.Page.TIMEATTENDANCELEAVE" xml:space="preserve"><value>الوقت والحضور والإجازات</value></data>
+  <data name="Nav.Page.WORKFORCEPLANNING" xml:space="preserve"><value>تخطيط القوى العاملة</value></data>
+  <data name="Nav.Page.EMPLOYEEMASTER" xml:space="preserve"><value>البيانات الرئيسية للموظفين</value></data>
+  <data name="Nav.Page.ASSOCIATIONMEMBERSHIPS" xml:space="preserve"><value>عضويات الجمعيات</value></data>
+  <data name="Nav.Page.ASSOCIATIONOPERATIONS" xml:space="preserve"><value>عمليات الجمعيات</value></data>
+  <data name="Nav.Page.CANDIDATECAREERPASSPORT" xml:space="preserve"><value>جواز المسار المهني للمرشح</value></data>
+  <data name="Nav.Page.CANDIDATEDISPUTES" xml:space="preserve"><value>نزاعات المرشحين</value></data>
+  <data name="Nav.Page.CANDIDATEPROFILES" xml:space="preserve"><value>ملفات المرشحين</value></data>
+  <data name="Nav.Page.CONSENTVISIBILITYPOLICIES" xml:space="preserve"><value>سياسات ظهور الموافقة</value></data>
+  <data name="Nav.Page.EARLYWARNINGSIGNALS" xml:space="preserve"><value>إشارات الإنذار المبكر</value></data>
+  <data name="Nav.Page.EXITREFERENCERECORDS" xml:space="preserve"><value>سجلات مراجع المغادرة</value></data>
+  <data name="Nav.Page.HIRINGRISKINDICATORS" xml:space="preserve"><value>مؤشرات مخاطر التوظيف</value></data>
+  <data name="Nav.Page.INDUSTRYKNOWLEDGENETWORK" xml:space="preserve"><value>شبكة المعرفة القطاعية</value></data>
+  <data name="Nav.Page.INDUSTRYSKILLPASSPORT" xml:space="preserve"><value>جواز المهارات القطاعية</value></data>
+  <data name="Nav.Page.INDUSTRYSUCCESSIONPOOL" xml:space="preserve"><value>مجمع التعاقب القطاعي</value></data>
+  <data name="Nav.Page.INDUSTRYTALENTPOOL" xml:space="preserve"><value>مجمع المواهب القطاعي</value></data>
+  <data name="Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK" xml:space="preserve"><value>شبكة توصيات الإرشاد</value></data>
+  <data name="Nav.Page.PAYBENCHMARKING" xml:space="preserve"><value>المقارنة المرجعية للأجور</value></data>
+  <data name="Nav.Page.PROFESSIONALREPUTATIONLEDGER" xml:space="preserve"><value>سجل السمعة المهنية</value></data>
+  <data name="Nav.Page.REFERENCEEXCHANGE" xml:space="preserve"><value>تبادل المراجع</value></data>
+  <data name="Nav.Page.REHIRERECOMMENDATIONS" xml:space="preserve"><value>توصيات إعادة التوظيف</value></data>
+  <data name="Nav.Page.RESTRICTEDINTEGRITYREGISTRY" xml:space="preserve"><value>سجل النزاهة المقيد</value></data>
+  <data name="Nav.Page.REVIEWBOARD" xml:space="preserve"><value>لجنة المراجعة</value></data>
+  <data name="Nav.Page.SECTORMOBILITYINTELLIGENCE" xml:space="preserve"><value>معلومات التنقل القطاعي</value></data>
+  <data name="Nav.Page.SECTORTALENTTRENDS" xml:space="preserve"><value>اتجاهات المواهب القطاعية</value></data>
+  <data name="Nav.Page.SKILLSGAPHEATMAP" xml:space="preserve"><value>خريطة حرارية لفجوة المهارات</value></data>
+  <data name="Nav.Page.TALENTDATAFOUNDATION" xml:space="preserve"><value>أساس بيانات المواهب</value></data>
+  <data name="Nav.Page.TALENTDEVELOPMENTNETWORK" xml:space="preserve"><value>شبكة تطوير المواهب</value></data>
+  <data name="Nav.Page.TALENTSUPPLYDEMANDFORECASTING" xml:space="preserve"><value>التنبؤ بعرض وطلب المواهب</value></data>
+  <data name="Nav.Page.TRUSTLEVELS" xml:space="preserve"><value>مستويات الثقة</value></data>
+  <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>سجل الشهادات الموثقة</value></data>
+  <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>المشاركون الموثقون</value></data>
+  <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>تحليلات القوى العاملة</value></data>
+  <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>المشتريات</value></data>
+  <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>الموردون</value></data>
+  <data name="Nav.Module.PROCUREMENTSUPPLIERS" xml:space="preserve"><value>الموردون</value></data>
+  <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>الموردون</value></data>
+  <data name="Nav.Module.SOURCING" xml:space="preserve"><value>التوريد</value></data>
+  <data name="Nav.Page.SOURCING" xml:space="preserve"><value>التوريد</value></data>
+  <data name="RfxUpdateNotSupported" xml:space="preserve"><value>تعديل RFx غير مدعوم؛ أنشئ RFx جديدًا أو أدِرْه عبر النشر والعرض والترسية.</value></data>
+  <data name="Nav.Module.REQUISITIONS" xml:space="preserve"><value>طلبات الشراء</value></data>
+  <data name="Nav.Page.REQUISITIONS" xml:space="preserve"><value>طلبات الشراء</value></data>
+  <data name="Nav.Module.PURCHASEORDERS" xml:space="preserve"><value>أوامر الشراء</value></data>
+  <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>أوامر الشراء</value></data>
+  <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>تعديل الطلب غير مدعوم؛ أنشئ طلبًا جديدًا أو أرسل هذا الطلب للموافقة.</value></data>
+  <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>تعديل أمر الشراء غير مدعوم؛ أنشئ أمر شراء جديدًا أو اعتمد هذا الأمر.</value></data>
+  <data name="Nav.Module.GRN" xml:space="preserve"><value>الاستلام (GRN)</value></data>
+  <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>مطابقة الفواتير</value></data>
+  <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>التقاط الفواتير والمطابقة الثلاثية</value></data>
+  <data name="Nav.Module.CONTRACTS" xml:space="preserve"><value>العقود</value></data>
+  <data name="Nav.Page.CONTRACTS" xml:space="preserve"><value>العقود ومكتبة البنود</value></data>
+  <data name="ContractEditDraftOnly" xml:space="preserve"><value>يمكن تحديث عقود المسودة فقط؛ تُدار العقود المفعّلة عبر إجراءات دورة الحياة وليس بالتعديل.</value></data>
+  <data name="Nav.Page.GRN" xml:space="preserve"><value>الاستلام (GRN)</value></data>
+  <data name="GrnUpdateNotSupported" xml:space="preserve"><value>تعديل الاستلام غير مدعوم؛ يتم تصحيح الاستلام المُرحَّل بحركة عكسية وليس بالتعديل.</value></data>
+  <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>تحديث الفاتورة غير مدعوم؛ صحّحها بإعادة تشغيل المطابقة الثلاثية أو بحل استثنائها، وليس عبر التعديل.</value></data>
+  <data name="Copied" xml:space="preserve"><value>تم النسخ</value></data>
+  <data name="Close" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="Shortcuts.DialogTitle" xml:space="preserve"><value>اختصارات لوحة المفاتيح</value></data>
+  <data name="Shortcuts.Close" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="Shortcuts.SilenceNote" xml:space="preserve"><value>لا تعمل الاختصارات أثناء الكتابة في حقل أو عند فتح مربع حوار أو لوحة جانبية.</value></data>
+  <data name="Shortcuts.ShowList" xml:space="preserve"><value>عرض هذه القائمة</value></data>
+  <data name="Shortcuts.Key.Space" xml:space="preserve"><value>مسافة</value></data>
+  <data name="Shortcuts.Scope.Global" xml:space="preserve"><value>في كل مكان</value></data>
+  <data name="Shortcuts.Scope.WorkCenter" xml:space="preserve"><value>مركز المهام</value></data>
+  <data name="Shortcuts.Scope.TaskDetails" xml:space="preserve"><value>تفاصيل المهمة</value></data>
+  <data name="Shortcuts.Wcn.Next" xml:space="preserve"><value>تحديد العنصر التالي</value></data>
+  <data name="Shortcuts.Wcn.Previous" xml:space="preserve"><value>تحديد العنصر السابق</value></data>
+  <data name="Shortcuts.Wcn.Open" xml:space="preserve"><value>فتح العنصر المحدد</value></data>
+  <data name="Shortcuts.Wcn.OpenFocused" xml:space="preserve"><value>فتح الصف الذي عليه التركيز</value></data>
+  <data name="Shortcuts.Wcn.Accept" xml:space="preserve"><value>قبول العنصر المحدد أو الموافقة عليه</value></data>
+  <data name="Shortcuts.Wcn.Reject" xml:space="preserve"><value>رفض العنصر المحدد أو إرجاعه</value></data>
+  <data name="Shortcuts.Wcn.ClearSelection" xml:space="preserve"><value>مسح التحديد</value></data>
+  <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>التنقل بين علامات التبويب (عند التركيز على علامة تبويب)</value></data>
+  <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>تعديل المهمة</value></data>
+  <data name="Shortcuts.Task.Back" xml:space="preserve"><value>العودة إلى قائمة المهام</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>عدد الصفوف المراد تصديرها كبير جدًا (أكثر من 50,000). ضيّق عامل التصفية ثم حاول مرة أخرى.</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
+  <!-- BL-452 package 2 (WP-UI-EXPORT-02): list Action menu + controlled copy (PDF / print header block, footer). -->
+  <data name="Action" xml:space="preserve">
+    <value>إجراءات</value>
+    <comment>List toolbar: the Action (export) dropdown button. BL-452 package 2 (finding 34, toolbar part).</comment>
+  </data>
+  <data name="ControlledCopy.Report" xml:space="preserve">
+    <value>تقرير</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Tenant" xml:space="preserve">
+    <value>الشركة</value>
+    <comment>BL-452 package 2 controlled copy header: label for the tenant's display name (the customer company).</comment>
+  </data>
+  <data name="ControlledCopy.Filters" xml:space="preserve">
+    <value>عوامل التصفية</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Search" xml:space="preserve">
+    <value>البحث</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Sort" xml:space="preserve">
+    <value>الترتيب</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortAsc" xml:space="preserve">
+    <value>تصاعدي</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortDesc" xml:space="preserve">
+    <value>تنازلي</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Rows" xml:space="preserve">
+    <value>عدد الصفوف</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedBy" xml:space="preserve">
+    <value>أنشأه</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedAt" xml:space="preserve">
+    <value>تاريخ الإنشاء</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.None" xml:space="preserve">
+    <value>لا يوجد</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Uncontrolled" xml:space="preserve">
+    <value>هذه النسخة المطبوعة نسخة غير خاضعة للرقابة — {0}</value>
+    <comment>BL-452 package 2 controlled copy footer on every page; {0} = creation date-time with time zone.</comment>
+  </data>
+  <data name="ControlledCopy.Page" xml:space="preserve">
+    <value>صفحة {0} من {1}</value>
+    <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
+  </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>شهر</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>أسبوع</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>يوم</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>السابق</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>التالي</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>طوال اليوم</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>+{0} أخرى</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>لا يوجد ما يُعرض</value>
+  </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>لم يتم تعريف تقويم العمل — لا يمكن عرض عطلات نهاية الأسبوع والعطلات الرسمية.</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>دعوة إلى اجتماع</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>قبول</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>رفض</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>هذا الاجتماع يتعارض مع خطتك</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>يتداخل مع الفترة المخططة «{0}» ({1}). هل تريد القبول على أي حال؟</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>القبول على أي حال</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>تنفيذ سلسلة الإمداد</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>إدارة شركات النقل</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>شركات النقل</value></data>
@@ -812,5 +1046,4 @@
   <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>التوجيه وتخطيط الحمولات</value></data>
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>الحمولات</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>إدارة المطالبات</value></data>
-  <data name="Nav.Page.CLAIMS" xml:space="preserve"><value>المطالبات</value></data>
 </root>

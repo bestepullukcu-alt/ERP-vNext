@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Status" xml:space="preserve"><value>状态</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>暂无记录。</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>出现错误，请重试。</value></data>
+  <data name="Filter" xml:space="preserve"><value>筛选</value></data>
+  <data name="Loading" xml:space="preserve"><value>加载中...</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>包含已归档</value></data>
+  <data name="Active" xml:space="preserve"><value>活动</value></data>
+  <data name="View" xml:space="preserve"><value>查看</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>查看详情</value></data>
+  <data name="Edit" xml:space="preserve"><value>编辑</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>确定吗？</value></data>
+  <data name="Search" xml:space="preserve"><value>搜索..</value></data>
+  <data name="Export" xml:space="preserve"><value>导出</value></data>
+  <data name="Reset" xml:space="preserve"><value>重置</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>显示全部</value></data>
+  <data name="SaveView" xml:space="preserve"><value>保存视图</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>列可见性</value></data>
+  <data name="Apply" xml:space="preserve"><value>应用</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>预览</value></data>
+  <data name="Passive" xml:space="preserve"><value>被动</value></data>
+  <data name="Unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>批量删除</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>删除所选记录？</value></data>
+  <data name="Description" xml:space="preserve"><value>描述</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>启用</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>停用</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="Template" xml:space="preserve"><value>模板</value></data>
+  <data name="Scope" xml:space="preserve"><value>范围</value></data>
+  <data name="Components" xml:space="preserve"><value>组件</value></data>
+  <data name="Claims" xml:space="preserve"><value>声明</value></data>
+  <data name="ProductRefs" xml:space="preserve"><value>产品引用</value></data>
+  <data name="MarketRefs" xml:space="preserve"><value>市场引用</value></data>
+  <data name="AudienceRefs" xml:space="preserve"><value>受众引用</value></data>
+  <data name="Channel" xml:space="preserve"><value>渠道</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>语言</value></data>
+  <data name="RefsTagHint" xml:space="preserve"><value>输入一个值并按回车以添加每个引用。</value></data>
+  <data name="ScopesTitle" xml:space="preserve"><value>内容范围</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>用于内容组装的可复用上下文/范围：产品、市场和受众引用，以及可选的渠道、语言和周期。</value></data>
+  <data name="ReusableNote" xml:space="preserve"><value>一次定义范围，可从多个内容集引用（按版本固定）。</value></data>
+  <data name="ScopeCode" xml:space="preserve"><value>范围代码</value></data>
+  <data name="ScopeCodeNote" xml:space="preserve"><value>稳定的业务键，在同一范围的各版本间共享。</value></data>
+  <data name="ScopeName" xml:space="preserve"><value>范围名称</value></data>
+  <data name="ScopeVersion" xml:space="preserve"><value>版本</value></data>
+  <data name="CreateScope" xml:space="preserve"><value>创建范围</value></data>
+  <data name="EditScope" xml:space="preserve"><value>编辑范围</value></data>
+  <data name="ArchiveScope" xml:space="preserve"><value>归档</value></data>
+  <data name="ArchiveScopeConfirm" xml:space="preserve"><value>归档此范围？这是软性生命周期操作；仍可读取。</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>记录已归档。</value></data>
+  <data name="ArchivedScopeReadOnly" xml:space="preserve"><value>此范围已归档且为只读。</value></data>
+  <data name="ReferencesSection" xml:space="preserve"><value>引用</value></data>
+  <data name="ContextSection" xml:space="preserve"><value>渠道、语言与周期</value></data>
+  <data name="PeriodFrom" xml:space="preserve"><value>周期起始</value></data>
+  <data name="PeriodTo" xml:space="preserve"><value>周期截止</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="Status_active" xml:space="preserve"><value>启用</value></data>
+</root>

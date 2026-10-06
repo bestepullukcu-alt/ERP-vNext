@@ -12,5 +12,11 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    @* ⚠ THE FORM'S OWN STRINGS TRAVEL WITH IT. `form.js` writes the option rows' "remove" button and their
+       placeholder from `window.L10n`; without this pair the create page published nothing and the button
+       rendered EMPTY (owner report, 2026-09-21). Details.cshtml already loads exactly these two lines — the
+       create and edit pages were the ones that forgot. *@
+    <partial name="~/Views/Organization/FieldDefinitions/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Organization/FieldDefinitions/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/Organization/FieldDefinitions/form.js" asp-append-version="true"></script>
 }

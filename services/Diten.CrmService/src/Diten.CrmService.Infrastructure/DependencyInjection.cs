@@ -1,3 +1,4 @@
+using MassTransit;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.ReferenceValidation;
 using Diten.CrmService.Application.Features.Account;
@@ -70,6 +71,16 @@ public static class DependencyInjection
         services.AddScoped<Application.Features.ConsentPreference.IContactConsentPreferenceReader,
             ConsentPreference.NullContactConsentPreferenceReader>();
 
+        // SCMM-16B (CAND-CAP-0011) — ContentSetRevision render pipeline. The PDF renderer is stateless (singleton). The
+        // artifact store is a typed Gateway client that forwards the caller's token to the MOD-0262-FU01 document
+        // repository (fail-closed: a store failure fails the render). Platform/FU01 is consumed as-is, never modified.
+        services.AddSingleton<
+            Application.Features.ContentComposition.ContentSetRevisions.Rendering.IContentSetRevisionRenderer,
+            ContentComposition.Rendering.PdfSharpContentSetRevisionRenderer>();
+        services.AddHttpClient<
+            Application.Features.ContentComposition.ContentSetRevisions.Rendering.IContentArtifactStore,
+            ContentComposition.Rendering.HttpContentArtifactStore>();
+
         // MOD-0167 FU02 - class-X criterion VALUE proof (MDM global product / product / brand) over the Gateway.
         // Deliberately cacheless, 3s budget, one transient retry; 404 makes the rule un-authorable (400) and an
         // unreachable dependency is a 503 with nothing persisted. It never derives membership.
@@ -131,6 +142,42 @@ public static class DependencyInjection
             Application.Features.RouteOptimization.IRouteOptimizationDefaultsProvider,
             RouteOptimization.ConfigurationRouteOptimizationDefaultsProvider>();
 
+        // WP-CL-BE-1 (claims v2) — the coverage matrix "expiring" window (Crm:Claims:ExpiringWindowDays, default 60).
+        services.AddSingleton<
+            Application.Features.ContentComposition.Claims.IClaimCoverageSettings,
+            ContentComposition.ConfigurationClaimCoverageSettings>();
+
+        // WP-CL-BE-4 — claims approval via MOD-0023: template codes / reconcile window (Crm:Claims:Workflow), the
+        // Gateway workflow client (caller's token + tenant forwarded, never a service token), the single outcome
+        // applier and reconcile-on-read, and the completion-event consumer (only when Eventing:Transport=RabbitMQ).
+        services.AddSingleton<
+            Application.Features.ContentComposition.Claims.IClaimWorkflowSettings,
+            ContentComposition.ConfigurationClaimWorkflowSettings>();
+        services.AddHttpClient<
+            Application.Features.ContentComposition.Claims.IClaimWorkflowClient,
+            Workflow.GatewayClaimWorkflowClient>(client => client.Timeout = TimeSpan.FromSeconds(15));
+        services.AddScoped<Application.Features.ContentComposition.Claims.ClaimReviewOutcomeApplier>();
+        services.AddScoped<Application.Features.ContentComposition.Claims.ClaimReviewReconciler>();
+        AddClaimWorkflowEventing(services, configuration);
+
+        // WP-CL-BE-5 — claim evidence via MOD-0031: the Gateway evidence client (caller's token + tenant, the BE-4
+        // pattern) and the read-time evidence reviewer (approved + changed document → review-required).
+        services.AddHttpClient<
+            Application.Features.ContentComposition.Claims.IClaimEvidenceClient,
+            Evidence.GatewayClaimEvidenceClient>(client => client.Timeout = TimeSpan.FromSeconds(15));
+        services.AddScoped<Application.Features.ContentComposition.Claims.ClaimEvidenceReviewer>();
+
+        // WP-SEG-DETAILS6 — S2S display-name reader onto AuthService's internal/users/display-names endpoint. It resolves
+        // the segment timeline's CreatedBy/ActivatedBy/UpdatedBy provenance ids to display names in ONE bulk call, using
+        // the shared internal API key (a direct call: the internal endpoints are NOT behind the Gateway JWT surface).
+        // Fail-closed — an unconfigured/unreachable AuthService leaves the names absent and the read still succeeds.
+        services.Configure<Auth.AuthServiceOptions>(configuration.GetSection(Auth.AuthServiceOptions.SectionName));
+        services.AddHttpClient<
+            Application.Common.IUserDisplayNameResolver,
+            Auth.AuthUserDisplayNameClient>();
+
+        // WP-BRD-TENANT-CRM-SETS — set codes the Platform does not list as consumable, remembered per process.
+        services.AddSingleton<ConsumableReferenceSetRouting>();
         services.AddHttpClient<IReferenceDataValidator, GatewayReferenceDataValidator>();
         // MOD-0150 FU04 — the same Gateway validator also reads per-value attributes (relationship-type metadata).
         services.AddScoped<Application.Common.ReferenceValidation.IReferenceMetadataReader>(
@@ -141,6 +188,44 @@ public static class DependencyInjection
             sp => (Application.Common.ReferenceValidation.IReferenceDataCatalogReader)sp.GetRequiredService<IReferenceDataValidator>());
 
         return services;
+    }
+
+    // WP-CL-BE-4 — the AuthService AddEntitlementEventing pattern. Transport=InMemory (default) ⇒ MassTransit is NOT
+    // registered at all, so a host without a broker starts exactly as before. RabbitMQ (same broker as Platform) ⇒ the
+    // claim-outcome consumer binds to Platform's EventTransportMessage exchange.
+    private static void AddClaimWorkflowEventing(IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<Eventing.CrmEventingOptions>(configuration.GetSection(Eventing.CrmEventingOptions.SectionName));
+        var options = configuration.GetSection(Eventing.CrmEventingOptions.SectionName).Get<Eventing.CrmEventingOptions>()
+                      ?? new Eventing.CrmEventingOptions();
+        if (!options.UseRabbitMq)
+        {
+            return;
+        }
+
+        services.AddMassTransit(x =>
+        {
+            x.AddConsumer<Eventing.ClaimWorkflowOutcomeConsumer>();
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host(options.Host, options.Port, options.VirtualHost, h =>
+                {
+                    h.Username(options.Username);
+                    h.Password(options.Password);
+                    if (options.UseTls)
+                    {
+                        h.UseSsl(s => s.Protocol = System.Security.Authentication.SslProtocols.Tls12);
+                    }
+                });
+
+                cfg.UseMessageRetry(r => r.Exponential(
+                    options.RetryCount,
+                    TimeSpan.FromSeconds(options.InitialRetryDelaySeconds),
+                    TimeSpan.FromSeconds(options.MaxRetryDelaySeconds),
+                    TimeSpan.FromSeconds(options.InitialRetryDelaySeconds)));
+                cfg.ConfigureEndpoints(context);
+            });
+        });
     }
 
     public static IApplicationBuilder UseTenantResolution(this IApplicationBuilder app)

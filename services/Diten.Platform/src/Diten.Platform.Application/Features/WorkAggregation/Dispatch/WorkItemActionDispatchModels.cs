@@ -89,7 +89,64 @@ public sealed record WorkItemActionPayloadDto(
     /// the dispatcher mints one when it does not, because the endpoint requires the field and a request that
     /// cannot be made is worse than one that is merely not idempotent.
     /// </summary>
-    string? IdempotencyKey = null);
+    string? IdempotencyKey = null,
+    /// <summary>
+    /// Faz 2a-rest — MOD-0024 only. Values for the task TYPE's CLOSURE-stage fields, read only by `complete`.
+    ///
+    /// <para>In this envelope's OWN neutral shape (<see cref="WorkItemFieldValueDto"/>), never
+    /// <c>Features.Tasks.TaskFieldValueDto</c> — WorkAggregation must not depend on one provider's type, the
+    /// same reason every other field here is a primitive rather than a module's own DTO.
+    /// <c>TaskWorkItemActionDispatcher</c> does the one translation this needs.</para>
+    ///
+    /// <para>Trailing and defaulted, so every caller written before this field existed keeps working. Ignored on
+    /// the way OUT to a remote module (<c>HttpWorkItemActionDispatcher</c> strips it unconditionally) —
+    /// MOD-0023 has no such field and must never be handed one.</para>
+    ///
+    /// <para><see cref="System.Text.Json.Serialization.JsonIgnoreAttribute"/> with
+    /// <see cref="System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull"/>: a request this field
+    /// does not carry must serialize BYTE-IDENTICAL to one from before this field existed.</para>
+    /// </summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemFieldValueDto>? ClosureFieldValues = null,
+    /// <summary>
+    /// BL-439 — MOD-0024 only. The addressee's ANSWER to the question a waiting task is asking, read only by
+    /// <c>answer</c>.
+    ///
+    /// <para>Its own field rather than a reuse of <see cref="Reason"/> or <see cref="Note"/>: a reason explains an
+    /// act, a note annotates one, and an answer is neither — it is the information the other person was waiting
+    /// for. Folding it into <c>reason</c> would have the history, the dispatcher and the next reader each guess
+    /// which of the three a given string was.</para>
+    ///
+    /// <para>Trailing, defaulted and omitted when null for the reason <see cref="ClosureFieldValues"/> gives: every
+    /// request that does not carry it serializes byte-identical to one from before it existed. Stripped on the way
+    /// out to a remote module (<c>HttpWorkItemActionDispatcher</c>), which has no such field.</para>
+    /// </summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? Answer = null,
+    /// <summary>
+    /// WP-TASK-CALENDAR-ENGINE-01 — MOD-0024 only, read only by <c>plan</c>: the START of a time block (a drop on
+    /// the week/day view). With it, <see cref="PlannedDate"/> is not needed — the day is derived from the start.
+    /// Trailing, defaulted and omitted when null, like the two above.
+    /// </summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? PlannedStartAt = null,
+    /// <summary>MOD-0024 only, read only by <c>plan</c>: the block's length in minutes (whole 15-minute steps).</summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    int? PlannedDurationMinutes = null);
+
+/// <summary>
+/// Faz 2a-rest — one configurable field's value, in THIS envelope's own neutral vocabulary.
+///
+/// <para><c>ValueType</c> is a plain string (the engine's <c>TaskFieldValueType</c> spelling, e.g. <c>"Text"</c>)
+/// rather than an enum: this namespace has no reason to know that vocabulary exists, and a provider-specific
+/// enum here would be the exact dependency <see cref="WorkItemActionPayloadDto.ClosureFieldValues"/>'s own note
+/// refuses.</para>
+/// </summary>
+public sealed record WorkItemFieldValueDto(string DefinitionCode, string ValueType, string? Value);
 
 /// <summary>The wire body of the single write endpoint.</summary>
 /// <param name="ProviderCode">
@@ -109,7 +166,42 @@ public sealed record WorkItemActionRequestDto(
 public sealed record WorkItemActionResultDto(
     string ItemId,
     string ProviderCode,
-    string ActionCode);
+    string ActionCode)
+{
+    /// <summary>
+    /// WP-TASK-CALENDAR-ENGINE-01 — non-blocking findings about a write that WAS carried out (today only MOD-0024's
+    /// plan: overlaps a meeting, outside working hours). Omitted when null, so every other action's answer is
+    /// byte-identical to before.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<WorkItemActionWarningDto>? Warnings { get; init; }
+
+    /// <summary>MOD-0024 plan only: what is left of the estimate after the block (derived, never stored).</summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public int? RemainingMinutes { get; init; }
+
+    /// <summary>MOD-0024 plan only: true when the block was cut at the end of the working day (CT acceptance). Omitted otherwise.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Truncated { get; init; }
+
+    /// <summary>
+    /// MOD-0024 plan only, on a 409 <c>TASK_PLAN_CONFLICT</c> refusal: the caller's OTHER block this one would have
+    /// overlapped (title and hours), so the refusal can say which one.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public WorkItemActionWarningDto? Conflict { get; init; }
+}
+
+/// <summary>A stable warning code, plus the facts a sentence about it needs (e.g. which meeting).</summary>
+public sealed record WorkItemActionWarningDto(
+    string Code,
+    string? Title = null,
+    DateTimeOffset? StartAt = null,
+    DateTimeOffset? EndAt = null);
 
 /// <summary>One dispatch, with the actor resolved SERVER-side.</summary>
 public sealed record WorkItemActionDispatchRequest(

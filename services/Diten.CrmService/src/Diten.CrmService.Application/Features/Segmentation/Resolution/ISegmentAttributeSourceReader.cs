@@ -11,10 +11,15 @@ namespace Diten.CrmService.Application.Features.Segmentation.Resolution;
 /// </summary>
 public interface ISegmentAttributeSourceReader
 {
+    /// <param name="preloadedLinks">WP-SEG-F: the active link set the resolver already read in bulk (to fill the contact
+    /// sample's workplace label). When supplied, the reader REUSES it instead of issuing its own <c>LoadLinksAsync</c>,
+    /// so a contact resolution reads the links exactly once no matter how many sources consume them. Null keeps the
+    /// original behaviour: the reader reads links itself, and only when the criteria tree actually needs them.</param>
     Task<SegmentAttributeContext> LoadAsync(
         Guid tenantId,
         Segment segment,
         IReadOnlyList<SegmentSubjectSnapshot> candidates,
         DateTimeOffset effectiveAt,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken,
+        IReadOnlyList<SegmentLinkProjection>? preloadedLinks = null);
 }

@@ -136,4 +136,127 @@
   <data name="Verdict" xml:space="preserve"><value>Результат</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
   <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="OpIs" xml:space="preserve"><value>равно</value></data>
+  <data name="OpIsNot" xml:space="preserve"><value>не равно</value></data>
+  <data name="OpIsAnyOf" xml:space="preserve"><value>любое из</value></data>
+  <data name="OpIsNoneOf" xml:space="preserve"><value>ни одно из</value></data>
+  <data name="OpContains" xml:space="preserve"><value>содержит</value></data>
+  <data name="OpMoreThan" xml:space="preserve"><value>больше чем</value></data>
+  <data name="OpAtLeast" xml:space="preserve"><value>не менее</value></data>
+  <data name="OpLessThan" xml:space="preserve"><value>меньше чем</value></data>
+  <data name="OpAtMost" xml:space="preserve"><value>не более</value></data>
+  <data name="OpBetween" xml:space="preserve"><value>между</value></data>
+  <data name="OpIsEmpty" xml:space="preserve"><value>пусто</value></data>
+  <data name="OpIsSet" xml:space="preserve"><value>задано</value></data>
+  <data name="DomainDoctorProfile" xml:space="preserve"><value>Профиль врача</value></data>
+  <data name="DomainConsent" xml:space="preserve"><value>Согласие</value></data>
+  <data name="DomainWorkplace" xml:space="preserve"><value>Место работы</value></data>
+  <data name="DomainCommercial" xml:space="preserve"><value>Коммерция</value></data>
+  <data name="DomainActivity" xml:space="preserve"><value>Активность</value></data>
+  <data name="DomainInstitution" xml:space="preserve"><value>Учреждение</value></data>
+  <data name="DomainOther" xml:space="preserve"><value>Прочее</value></data>
+  <data name="SourceReferenceSet" xml:space="preserve"><value>Справочный набор</value></data>
+  <data name="SourceCatalogList" xml:space="preserve"><value>Список каталога</value></data>
+  <data name="SourcePicker" xml:space="preserve"><value>Выбор</value></data>
+  <data name="SourceFreeText" xml:space="preserve"><value>Свободный текст</value></data>
+  <data name="BoolTrue" xml:space="preserve"><value>Да</value></data>
+  <data name="BoolFalse" xml:space="preserve"><value>Нет</value></data>
+  <data name="OrTypeValue" xml:space="preserve"><value>или введите значение</value></data>
+  <data name="BlockMatchEvery" xml:space="preserve"><value>ВСЕ из них</value></data>
+  <data name="BlockMatchAny" xml:space="preserve"><value>ЛЮБОЕ из них</value></data>
+  <data name="BlockNode" xml:space="preserve"><value>Блок</value></data>
+  <data name="BlockMatchLabel" xml:space="preserve"><value>совпадение</value></data>
+  <data name="AddCondition" xml:space="preserve"><value>Добавить условие</value></data>
+  <data name="RemoveBlock" xml:space="preserve"><value>Удалить блок</value></data>
+  <data name="AddBlock" xml:space="preserve"><value>Добавить блок</value></data>
+  <data name="AndAlso" xml:space="preserve"><value>И ТАКЖЕ</value></data>
+  <data name="AndAlsoHelp" xml:space="preserve"><value>каждый блок также должен совпадать</value></data>
+  <data name="SubjectNounAccount" xml:space="preserve"><value>Организации</value></data>
+  <data name="SubjectNounContact" xml:space="preserve"><value>Контакты</value></data>
+  <data name="ReadsWhere" xml:space="preserve"><value>где</value></data>
+  <data name="ReadsAs" xml:space="preserve"><value>Читается как</value></data>
+  <data name="JoinerAnd" xml:space="preserve"><value>и</value></data>
+  <data name="JoinerOr" xml:space="preserve"><value>или</value></data>
+  <data name="AnyValuePlaceholder" xml:space="preserve"><value>любое значение</value></data>
+  <data name="MatchThisAlone" xml:space="preserve"><value>соответствуют этому одному</value></data>
+  <data name="ReachSection" xml:space="preserve"><value>Кого это охватывает сейчас</value></data>
+  <data name="ReachIdleHelp" xml:space="preserve"><value>Добавьте условие, чтобы увидеть охват.</value></data>
+  <data name="ReachTotalLabel" xml:space="preserve"><value>охвачено сейчас</value></data>
+  <data name="ReachSampleLabel" xml:space="preserve"><value>Примеры участников</value></data>
+  <data name="ReachTooWide" xml:space="preserve"><value>Правило слишком широкое для предпросмотра — сузьте его.</value></data>
+  <data name="ReachNoSample" xml:space="preserve"><value>Пока нет участников для выборки.</value></data>
+  <data name="ActivationChecklist" xml:space="preserve"><value>Чек-лист активации</value></data>
+  <data name="ChecklistName" xml:space="preserve"><value>Имя указано</value></data>
+  <data name="ChecklistRule" xml:space="preserve"><value>Хотя бы одно условие</value></data>
+  <data name="ChecklistReach" xml:space="preserve"><value>Охватывает хотя бы одного участника</value></data>
+  <data name="ChecklistEffective" xml:space="preserve"><value>Дата начала указана</value></data>
+  <data name="TemplatesTitle" xml:space="preserve"><value>Начать с шаблона</value></data>
+  <data name="ShowStoredRule" xml:space="preserve"><value>Показать сохранённое правило</value></data>
+  <data name="MatchModeDerivedHelp" xml:space="preserve"><value>Блоки всегда объединяются через И ТАКЖЕ.</value></data>
+  <data name="TplSpecialty" xml:space="preserve"><value>Врачи по специальности</value></data>
+  <data name="TplAccountType" xml:space="preserve"><value>Организации по типу</value></data>
+  <data name="TplConsentReachable" xml:space="preserve"><value>Доступные по согласию</value></data>
+  <data name="TplHasCoverage" xml:space="preserve"><value>Есть покрытие территории</value></data>
+  <data name="Section1Title" xml:space="preserve"><value>Что это за сегмент?</value></data>
+  <data name="Section1Help" xml:space="preserve"><value>Назовите его, выберите, кого он группирует и как определяется членство.</value></data>
+  <data name="Section2Title" xml:space="preserve"><value>Кто в него входит?</value></data>
+  <data name="Section2Help" xml:space="preserve"><value>Создайте правило. Блоки всегда объединяются союзом «И ТАКЖЕ».</value></data>
+  <data name="Section3Title" xml:space="preserve"><value>Исключения и срок действия</value></data>
+  <data name="Section3Help" xml:space="preserve"><value>Кого всегда включать или никогда не включать, и когда сегмент действителен.</value></data>
+  <data name="SubjectSectionLabel" xml:space="preserve"><value>Кого он группирует?</value></data>
+  <data name="SubjectPillContact" xml:space="preserve"><value>Врачи / контакты</value></data>
+  <data name="SubjectPillAccount" xml:space="preserve"><value>Учреждения / организации</value></data>
+  <data name="MembershipSectionLabel" xml:space="preserve"><value>Как определяется членство?</value></data>
+  <data name="MembershipRuleTitle" xml:space="preserve"><value>По правилу</value></data>
+  <data name="MembershipRuleHelp" xml:space="preserve"><value>Участники вычисляются по правилу и автоматически остаются актуальными.</value></data>
+  <data name="MembershipListTitle" xml:space="preserve"><value>По фиксированному списку</value></data>
+  <data name="MembershipListHelp" xml:space="preserve"><value>Вы сами выбираете людей; список меняется только когда вы его меняете.</value></data>
+  <data name="MembershipHybridTitle" xml:space="preserve"><value>Правило с исключениями</value></data>
+  <data name="MembershipHybridHelp" xml:space="preserve"><value>Правило определяет основу, плюс люди, которых вы всегда или никогда не включаете.</value></data>
+  <data name="BlockToggleEvery" xml:space="preserve"><value>все</value></data>
+  <data name="BlockToggleAny" xml:space="preserve"><value>любое</value></data>
+  <data name="BlockHeadLead" xml:space="preserve"><value>Включить людей, где</value></data>
+  <data name="BlockHeadTail" xml:space="preserve"><value>условие ниже истинно</value></data>
+  <data name="ValuePick" xml:space="preserve"><value>Выберите одно или несколько</value></data>
+  <data name="ValueSet" xml:space="preserve"><value>Установить на</value></data>
+  <data name="ValueLabel" xml:space="preserve"><value>Значение</value></data>
+  <data name="HowStoredTitle" xml:space="preserve"><value>Как это хранится</value></data>
+  <data name="PreviewSample50" xml:space="preserve"><value>Предпросмотр выборки из 50</value></data>
+  <data name="ChecklistFreezeNote" xml:space="preserve"><value>Активация фиксирует это правило как новую версию. Изменения черновика не влияют на активные кампании.</value></data>
+  <data name="EmptyRuleHelp" xml:space="preserve"><value>Начните с типовой аудитории или добавьте первое условие.</value></data>
+  <data name="AddBlockLong" xml:space="preserve"><value>+ Добавить ещё один блок — люди должны также ему соответствовать</value></data>
+  <data name="WhatAnswersSection" xml:space="preserve"><value>На что отвечает этот сегмент</value></data>
+  <data name="ReadsStatic" xml:space="preserve"><value>Членство — это фиксированный список, введённый вручную ниже: ничего не выводится из данных.</value></data>
+  <data name="ReadsDynamic" xml:space="preserve"><value>Участники — те, кого сохранённое правило выбирает из «живых» данных; список никогда не хранится.</value></data>
+  <data name="ReadsHybrid" xml:space="preserve"><value>Участники — те, кого выбирает правило, плюс включённые вручную и минус исключённые вручную.</value></data>
+  <data name="HideStoredRule" xml:space="preserve"><value>Скрыть сохранённое правило</value></data>
+  <data name="ResolveIdleTitle" xml:space="preserve"><value>Членство в этой сессии ещё не вычислено</value></data>
+  <data name="ResolveIdleHelp" xml:space="preserve"><value>Вычисление читает «живые» данные по сохранённому правилу и ничего не хранит. Отклонённые кандидаты перечислены с причиной.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Вычисление членства по «живым» данным…</value></data>
+  <data name="DroppedCandidates" xml:space="preserve"><value>Отклонённые кандидаты</value></data>
+  <data name="DroppedCandidatesIntro" xml:space="preserve"><value>Почему каждый кандидат не прошёл</value></data>
+  <data name="DraftPreviewNote" xml:space="preserve"><value>Этот сегмент всё ещё черновик: число отражает сегодняшние данные и не может использоваться как аудитория до активации.</value></data>
+  <data name="SecondaryLabel" xml:space="preserve"><value>Специальность · место работы</value></data>
+  <data name="FromManual" xml:space="preserve"><value>из ручных строк</value></data>
+  <data name="KeptIn" xml:space="preserve"><value>включены</value></data>
+  <data name="KeptOut" xml:space="preserve"><value>исключены</value></data>
+  <data name="TimelineCreated" xml:space="preserve"><value>Создан</value></data>
+  <data name="TimelineNotActivated" xml:space="preserve"><value>Ещё не активирован</value></data>
+  <data name="TimelineUsable" xml:space="preserve"><value>Доступен</value></data>
+  <data name="TimelineSupersedes" xml:space="preserve"><value>Заменяет предыдущую версию</value></data>
+  <data name="NoEndDate" xml:space="preserve"><value>без даты окончания</value></data>
+  <data name="StoredNoteTitleStatic" xml:space="preserve"><value>Что хранится</value></data>
+  <data name="StoredNoteTitleDynamic" xml:space="preserve"><value>Почему число меняется</value></data>
+  <data name="StoredNoteBodyStatic" xml:space="preserve"><value>Хранятся только строки, введённые вручную, и их причины. Потребители ссылаются на сегмент, а не копируют имена.</value></data>
+  <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>Сегмент хранит правило, а не список участников. Каждое вычисление заново читает «живые» данные, поэтому число меняется вместе с данными.</value></data>
+  <data name="ClassificationNote" xml:space="preserve"><value>Режим сопоставления определяет, как объединяются блоки верхнего уровня правила.</value></data>
+  <data name="ConsumersSection" xml:space="preserve"><value>Используется как аудитория в</value></data>
+  <data name="ConsumersNoneYet" xml:space="preserve"><value>Пока нет</value></data>
+  <data name="ConsumersNote" xml:space="preserve"><value>Пока ни одна кампания или набор контента не ссылается на этот сегмент. Потребители появятся здесь, как только начнут его использовать.</value></data>
+  <data name="Specialty" xml:space="preserve"><value>Специальность</value></data>
+  <data name="Workplace" xml:space="preserve"><value>Место работы</value></data>
+  <data name="ShowingFirstOfMembers" xml:space="preserve"><value>Показаны первые {0} из {1} участников.</value></data>
+  <data name="NothingStoredRecomputed" xml:space="preserve"><value>Здесь ничего не сохраняется — результат пересчитывается при каждом вызове.</value></data>
+  <data name="OpenFullResult" xml:space="preserve"><value>Открыть полный результат</value></data>
+  <data name="SampleCapNote" xml:space="preserve"><value>Это максимум, который возвращает это представление. Уточните правило, чтобы сузить результат.</value></data>
 </root>

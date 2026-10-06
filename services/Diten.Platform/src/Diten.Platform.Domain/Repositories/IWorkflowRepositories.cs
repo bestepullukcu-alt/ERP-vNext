@@ -52,6 +52,30 @@ public interface IWorkflowInstanceRepository
     Task<bool> UpdateAsync(WorkflowInstance instance, int expectedVersion, CancellationToken ct = default);
     Task<bool> UpdateEscalationOrTimeoutAsync(WorkflowInstance instance, int expectedVersion, CancellationToken ct = default) =>
         UpdateAsync(instance, expectedVersion, ct);
+
+    // WP-CL-BE-3 — the terminal transition writes inside the Platform transaction that also carries the completion
+    // outbox event. The Mongo repository overrides this with a session write; the default only serves in-memory
+    // test doubles, which have no session to join.
+    Task<bool> UpdateAsync(IPlatformTransactionSession session, WorkflowInstance instance, int expectedVersion,
+        CancellationToken ct = default) =>
+        UpdateAsync(instance, expectedVersion, ct);
+
+    // WP-CL-BE-3 — batch status read for cross-service reconciliation (tenant scoped). Default = in-memory filter
+    // for test doubles; the Mongo repository uses the {TenantId, ObjectType, ObjectId} index.
+    async Task<IReadOnlyList<WorkflowInstance>> ListByObjectIdsAsync(
+        string objectType,
+        IReadOnlyCollection<string> objectIds,
+        CancellationToken ct = default) =>
+        (await GetAllForTenantAsync(ct))
+            .Where(x => string.Equals(x.ObjectType, objectType, StringComparison.Ordinal) && objectIds.Contains(x.ObjectId))
+            .ToList();
+
+    // BL-484 — GetByIdAsync for several instances in ONE read (tenant scoped, non-deleted): an id that is not a live
+    // instance of this tenant is simply absent. Default = in-memory filter for test doubles.
+    async Task<IReadOnlyList<WorkflowInstance>> ListByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken ct = default) =>
+        (await GetAllForTenantAsync(ct)).Where(x => ids.Contains(x.Id)).ToList();
 }
 
 public interface IApprovalTaskRepository
@@ -60,6 +84,28 @@ public interface IApprovalTaskRepository
     Task<ApprovalTask?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<ApprovalTask?> GetFirstByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default);
     Task<ApprovalTask?> GetActiveByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default);
+
+    /// <summary>
+    /// BL-484 — <see cref="GetActiveByInstanceIdAsync"/> for several instances in ONE read: every open task of these
+    /// instances, NEWEST FIRST (ties by id, the same order the single read uses), so the first one listed for an instance
+    /// is the one <see cref="GetActiveByInstanceIdAsync"/> answers. The default asks one instance at a time (what an
+    /// in-memory double needs); the store overrides it.
+    /// </summary>
+    async Task<IReadOnlyList<ApprovalTask>> ListActiveByInstanceIdsAsync(
+        IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)
+    {
+        var active = new List<ApprovalTask>();
+        foreach (var instanceId in workflowInstanceIds.Distinct())
+        {
+            if (await GetActiveByInstanceIdAsync(instanceId, ct) is { } task)
+            {
+                active.Add(task);
+            }
+        }
+
+        return active;
+    }
+
     Task<IReadOnlyList<ApprovalTask>> ListByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default);
     Task<IReadOnlyList<ApprovalTask>> GetAllForTenantAsync(CancellationToken ct = default);
     Task<IReadOnlyList<ApprovalTask>> ListOverdueTasksAsync(
@@ -69,6 +115,11 @@ public interface IApprovalTaskRepository
         GetAllForTenantAsync(ct);
     Task<bool> UpdateAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default);
     Task<bool> UpdateEscalationAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default) =>
+        UpdateAsync(task, expectedVersion, ct);
+
+    // WP-CL-BE-3 — terminal transition write inside the Platform transaction (see IWorkflowInstanceRepository).
+    Task<bool> UpdateAsync(IPlatformTransactionSession session, ApprovalTask task, int expectedVersion,
+        CancellationToken ct = default) =>
         UpdateAsync(task, expectedVersion, ct);
 }
 
@@ -83,6 +134,11 @@ public interface IWorkflowTransitionLogRepository
 {
     Task<WorkflowTransitionLog> CreateAsync(WorkflowTransitionLog log, CancellationToken ct = default);
     Task<WorkflowTransitionLog> AppendAsync(WorkflowTransitionLog log, CancellationToken ct = default) =>
+        CreateAsync(log, ct);
+
+    // WP-CL-BE-3 — terminal transition log inside the Platform transaction (see IWorkflowInstanceRepository).
+    Task<WorkflowTransitionLog> CreateAsync(IPlatformTransactionSession session, WorkflowTransitionLog log,
+        CancellationToken ct = default) =>
         CreateAsync(log, ct);
     Task<WorkflowTransitionLog?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<WorkflowTransitionLog?> FindByIdempotencyAsync(

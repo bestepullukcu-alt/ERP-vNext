@@ -1,11 +1,15 @@
 using Diten.AuthService.Api.Controllers.Common;
+using Diten.AuthService.Api.Export;
 using Diten.AuthService.Api.Models;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Users.Commands;
+using Diten.AuthService.Application.Features.Users.Models;
+using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Application.Features.Users.Queries;
 using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Infrastructure.Authorization;
+using Diten.BuildingBlocks.ListExport;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,10 +30,96 @@ public sealed class UsersController : CustomBaseController
 
     [HttpGet]
     [HasPermission("auth.users.read")]
-    public async Task<IActionResult> GetAll(int page = 1, int pageSize = 20, CancellationToken ct = default)
+    public async Task<IActionResult> GetAll(
+        int page = 1,
+        int pageSize = 20,
+        [FromQuery] int start = 0,
+        [FromQuery] int length = UserListRules.DefaultLength,
+        [FromQuery] string? search = null,
+        [FromQuery] string? orderBy = null,
+        [FromQuery] string? orderDir = null,
+        [FromQuery] string[]? status = null,
+        [FromQuery] Guid[]? roleId = null,
+        [FromQuery] string[]? accountKind = null,
+        CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetAllUsersQuery(page, pageSize), ct);
-        return Ok(result);
+        // WP-AUTH-USERS-LIST-QUERY-01 — any of the list parameters selects the server-side list contract
+        // ({ success, data: { items, total, filteredTotal, summary } }). None of them = the legacy page/pageSize call,
+        // which keeps answering the PaginatedResult its callers were written against.
+        if (!ListParameters.Any(Request.Query.ContainsKey))
+        {
+            var legacy = await _mediator.Send(new GetAllUsersQuery(page, pageSize), ct);
+            var data = legacy.Data!;
+            return Ok(new PaginatedResult<UserDto>(data.Items, data.Total, Math.Max(page, 1), pageSize < 1 ? UserListRules.DefaultLength : pageSize));
+        }
+
+        var list = new UserListRequest(start, length, search, orderBy, orderDir, status, roleId, accountKind);
+        var result = await _mediator.Send(new GetAllUsersQuery(List: list), ct);
+        return result.IsSuccessful
+            ? Ok(new { success = true, data = result.Data })
+            : CreateActionResultInstance(result);
+    }
+
+    private static readonly string[] ListParameters =
+        ["start", "length", "search", "orderBy", "orderDir", "status", "roleId", "accountKind"];
+
+    /// <summary>
+    /// BL-452 package 1 — THE FILE IS THE SCREEN: <c>GET api/users/export?format=csv|xlsx&amp;columns=…</c> plus the list's own
+    /// search / orderBy / orderDir / status / roleId / accountKind. It runs the list's query (GetAllUsersQuery) with the
+    /// same validation and the same <c>USERS_LIST_*</c> codes, so the file cannot disagree with what the reader filtered.
+    /// <para>⚠ <c>start</c> and <c>length</c> are deliberately NOT parameters here: the file holds every matching row, not the
+    /// page on screen. A caller that sends them anyway gets them ignored — they cannot even bind.</para>
+    /// <para>Its own key, <c>auth.users.export</c> (BL-452 package 3): exporting is a right separate from reading the screen.</para>
+    /// </summary>
+    [HttpGet("export")]
+    // BL-452 package 3 — exporting is its own right, separate from reading the screen (SAP/Oracle: a download is a role grant).
+    [HasPermission("auth.users.export")]
+    public async Task<IActionResult> Export(
+        [FromQuery] string? format = null,
+        [FromQuery] string[]? columns = null,
+        [FromQuery] string? search = null,
+        [FromQuery] string? orderBy = null,
+        [FromQuery] string? orderDir = null,
+        [FromQuery] string[]? status = null,
+        [FromQuery] Guid[]? roleId = null,
+        [FromQuery] string[]? accountKind = null,
+        CancellationToken ct = default)
+    {
+        if (!ListExportContract.TryParseFormat(format, out var fileFormat))
+        {
+            return CreateActionResultInstance(Response<UserListResult>.Fail("format must be 'csv' or 'xlsx'.",
+                [new ResponseError(ListExportContract.FormatInvalidCode)], 400));
+        }
+
+        if (!UserExportColumns.Set.TryResolve(columns, out var exportColumns, out var columnsError))
+        {
+            return CreateActionResultInstance(Response<UserListResult>.Fail(columnsError!,
+                [new ResponseError(ListExportContract.ColumnsInvalidCode)], 400));
+        }
+
+        var list = new UserListRequest(Search: search, OrderBy: orderBy, OrderDir: orderDir, Status: status, RoleId: roleId, AccountKind: accountKind);
+        var result = await _mediator.Send(new GetAllUsersQuery(List: list, ExportRowCap: ListExportContract.MaxRows), ct);
+        if (!result.IsSuccessful)
+        {
+            return CreateActionResultInstance(result);
+        }
+
+        var matched = result.Data!.FilteredTotal;
+        if (matched > ListExportContract.MaxRows)
+        {
+            return CreateActionResultInstance(Response<UserListResult>.Fail(
+                $"{matched} users match; an export carries at most {ListExportContract.MaxRows}. Narrow the filter.",
+                [new ResponseError(ListExportContract.TooLargeCode, new Dictionary<string, string>
+                {
+                    ["max"] = ListExportContract.MaxRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ["matched"] = matched.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                })], StatusCodes.Status413PayloadTooLarge));
+        }
+
+        var culture = ListExportContract.ResolveCulture(Request.Headers.AcceptLanguage.ToString());
+        var content = ListExportWriter.Write(fileFormat, exportColumns, result.Data.Items, culture, UserExportColumns.Label("Title", culture));
+        return File(content, ListExportContract.ContentType(fileFormat),
+            ListExportContract.FileName(UserExportColumns.Screen, DateTimeOffset.UtcNow, fileFormat));
     }
 
     [HttpGet("{id:guid}")]
@@ -85,6 +175,17 @@ public sealed class UsersController : CustomBaseController
         // TraceIdentifier IS the correlation id here: CorrelationIdMiddleware assigns it from X-Correlation-Id
         // (or mints one) before this action runs, so the audit row and the request log share it.
         var result = await _mediator.Send(new SetAccountKindCommand(id, request.Kind, HttpContext.TraceIdentifier), ct);
+        return CreateActionResultInstance(result);
+    }
+
+    // GET api/users/{id}/display-label → { userId, displayLabel, labelState }; a display/history label ONLY — never
+    // eligibility, activity, or authorization evidence (see UserDisplayLabelDto remarks). 404 for a missing user AND
+    // for another tenant's user, byte-identical (same shape as account-assertion).
+    [HttpGet("{id:guid}/display-label")]
+    [HasPermission("auth.users.lookup")]
+    public async Task<IActionResult> GetDisplayLabel(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetUserDisplayLabelQuery(id), ct);
         return CreateActionResultInstance(result);
     }
 
@@ -153,7 +254,12 @@ public sealed class UsersController : CustomBaseController
     [HasPermission("auth.users.update")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserRequest request, CancellationToken ct)
     {
-        var command = new UpdateUserCommand(id, request.FirstName, request.LastName, request.IsActive);
+        // WP-AUTH-USER-KIND-UPDATE-01 — the classification right is read from the principal's claims exactly as Create
+        // reads it, never from the body; the handler refuses a kind CHANGE without it (403 PERM_DENIED).
+        var callerCanManageAccountKind = User.HasClaim("permission", ExplicitGrantOnlyPermissions.UsersAccountKindManage);
+        var command = new UpdateUserCommand(
+            id, request.FirstName, request.LastName, request.IsActive,
+            request.AccountKind, callerCanManageAccountKind, HttpContext.TraceIdentifier);
         var result = await _mediator.Send(command, ct);
         return CreateActionResultInstance(result);
     }

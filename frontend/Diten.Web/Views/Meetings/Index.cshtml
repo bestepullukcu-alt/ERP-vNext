@@ -24,6 +24,17 @@
         <h5 class="mb-0">@Localizer["MeetingsTitle"]</h5>
         <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
     </div>
+    <div class="d-flex align-items-center gap-2">
+    @* S3b 2c (WP-UI-MEETINGS-CALENDAR-01) — list ⇄ calendar. The open one is in the URL (?view=calendar); the list is
+       the default. Meetings/calendar.js owns the switch. *@
+    <div class="btn-group mc-view-switch" role="group" aria-label="@Localizer["ViewSwitchLabel"]">
+        <button type="button" class="btn btn-sm btn-label-secondary active" data-mc-view="list" aria-pressed="true">
+            <i class="bx bx-list-ul me-1"></i>@Localizer["ViewList"]
+        </button>
+        <button type="button" class="btn btn-sm btn-label-secondary" data-mc-view="calendar" aria-pressed="false">
+            <i class="bx bx-calendar me-1"></i>@Localizer["ViewCalendar"]
+        </button>
+    </div>
     @* S8 — the manifest's own TYPES_MANAGE toolbar action (SelfRegistration/MeetingManifestProvider.cs) now
        links to the meeting-type setting screen instead of being an unreachable declaration. *@
     @if (Perms.Has("platform.meetings.types-manage"))
@@ -32,15 +43,61 @@
             <i class="bx bx-purchase-tag me-1"></i>@Localizer["ManageTypes"]
         </a>
     }
+    @* S11 — the manifest's own SERIES_MANAGE toolbar action, same shape TYPES_MANAGE already takes above. *@
+    @if (Perms.Has("platform.meetings.series-manage"))
+    {
+        <a href="/Meetings/Series" class="btn btn-label-secondary">
+            <i class="bx bx-repeat me-1"></i>@Localizer["ManageSeries"]
+        </a>
+    }
+    </div>
 </div>
 
 @* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-meetings" data-dt-standard="v2"> *@
-<partial name="~/Views/Meetings/_DataTable.cshtml" />
+<div data-mc-list-section>
+    <partial name="~/Views/Meetings/_DataTable.cshtml" />
+</div>
+
+@* S3b 2c — the calendar view: the pending invitations on the left (the shared invitation card), the shared
+   calendar on the right, read-only. Hidden until the switch (or ?view=calendar) opens it. *@
+<div class="d-none" data-mc-calendar-section>
+    <div class="mc-calendar-layout">
+        <aside class="card mc-invites" aria-label="@Localizer["CalendarInvitesTitle"]">
+            <h6 class="mc-invites-title">
+                <span>@Localizer["CalendarInvitesTitle"]</span>
+                <span class="mc-invites-count" data-mc-invite-count>0</span>
+            </h6>
+            <div class="mc-invites-list" data-mc-invite-list></div>
+        </aside>
+        <section class="card mc-calendar-main">
+            <div class="mc-calendar-toolbar">
+                <div class="mc-calendar-legend" role="note">
+                    <span class="mc-calendar-lg"><span class="mc-calendar-swatch mc-calendar-swatch-accepted"></span>@Localizer["CalendarLegendAccepted"]</span>
+                    <span class="mc-calendar-lg"><span class="mc-calendar-swatch mc-calendar-swatch-pending"></span>@Localizer["CalendarLegendPending"]</span>
+                    <span class="mc-calendar-lg"><span class="mc-calendar-swatch mc-calendar-swatch-other"></span>@Localizer["CalendarLegendOther"]</span>
+                </div>
+                <button type="button" class="btn btn-icon btn-sm btn-label-secondary" data-mc-calendar-filter
+                        title="@SharedLocalizer["Filter"]" aria-controls="inlineFilterCollapse">
+                    <i class="icon-base bx bx-filter-alt icon-sm"></i>
+                </button>
+            </div>
+            <div data-mc-calendar-filter-slot></div>
+            <div data-mc-calendar-notes></div>
+            <div data-mc-calendar-host></div>
+        </section>
+    </div>
+</div>
 
 @section Scripts {
     @* Contract marker: <partial name="_IndexL10n" /> *@
     <partial name="~/Views/Meetings/_IndexL10n.cshtml" />
     <script src="~/assets/js/Meetings/index.l10n.js" asp-append-version="true"></script>
+    @* DitenModal: the calendar's answer errors and confirmations go through it, and the tenant shell does not load
+       it (same fix as Views/Tasks/Create.cshtml) — without it a refused answer was silent (CT acceptance). *@
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
     <script src="~/assets/js/Meetings/api.js" asp-append-version="true"></script>
     <script src="~/assets/js/Meetings/index.js" asp-append-version="true"></script>
+    @* The calendar view only: the vendored FullCalendar, the zone helper, the shared calendar and invitation card. *@
+    <partial name="~/Views/Shared/_CalendarAssets.cshtml" />
+    <script src="~/assets/js/Meetings/calendar.js" asp-append-version="true"></script>
 }

@@ -1,0 +1,71 @@
+@model Diten.Web.Models.CRM.EligibilityPolicyEditViewModel
+@using Diten.Web.Security
+@using Diten.Web.Views.CRM.EligibilityPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EligibilityPoliciesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["EditPolicy"].Value;
+    Layout = "_LayoutTenantShell";
+    var canArchiveNow = PermissionClaims.HasPermission(User, "crm.eligibility.manage") && !Model.IsArchived;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0 d-flex align-items-center gap-2">
+            @Localizer["EditPolicy"]
+            @if (Model.IsPublished)
+            {
+                <span class="badge bg-label-success">@Localizer["Status_" + Model.Status]</span>
+            }
+            @if (Model.IsArchived)
+            {
+                <span class="badge bg-label-secondary">@Localizer["StatusArchived"]</span>
+            }
+        </h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/EligibilityPolicies">@Localizer["PoliciesTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Model.PolicyCode</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/EligibilityPolicies" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        @if (canArchiveNow)
+        {
+            <button type="button" id="btnArchivePolicy" class="btn btn-label-warning"
+                    data-id="@Model.EligibilityPolicyId" data-confirm="@Localizer["ArchivePolicyConfirm"]"
+                    data-ok="@Localizer["RecordArchived"]" data-fail="@Localizer["ErrorState"]">
+                <i class="bx bx-archive-in me-1"></i>@Localizer["ArchivePolicy"]
+            </button>
+        }
+        @if (!Model.IsReadOnly)
+        {
+            <button type="submit" form="policyForm" class="btn btn-primary">@Localizer["Save"]</button>
+        }
+    </div>
+</div>
+
+@if (Model.IsArchived)
+{
+    <div class="alert alert-secondary" role="alert"><i class="bx bx-archive me-1"></i>@Localizer["ArchivedPolicyReadOnly"]</div>
+}
+else if (Model.IsPublished)
+{
+    <div class="alert alert-info" role="alert"><i class="bx bx-lock-alt me-1"></i>@Localizer["PublishedPolicyReadOnly"]</div>
+}
+
+<form asp-action="Edit" asp-route-id="@Model.EligibilityPolicyId" method="post" id="policyForm" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <partial name="~/Views/CRM/EligibilityPolicies/_Form.cshtml" model="Model" />
+</form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/CRM/EligibilityPolicies/form.js" asp-append-version="true"></script>
+}

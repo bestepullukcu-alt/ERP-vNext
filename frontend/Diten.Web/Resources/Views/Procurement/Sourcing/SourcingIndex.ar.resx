@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SourcingTitle" xml:space="preserve"><value>التوريد (RFQ/RFP)</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>أحداث RFx (RFQ/RFP/RFI): دعوة الموردين وجمع العروض والتقييم والترسية.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>إضافة RFx</value></data>
+  <data name="EditItem" xml:space="preserve"><value>تعديل RFx</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إضافة RFx</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل RFx</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض</value></data>
+  <data name="Actions" xml:space="preserve"><value>إجراءات</value></data>
+  <data name="RfxId" xml:space="preserve"><value>معرّف RFx</value></data>
+  <data name="RfxTitle" xml:space="preserve"><value>العنوان</value></data>
+  <data name="RfxTitlePlaceholder" xml:space="preserve"><value>مثال: تجديد المواد الخام للربع الرابع</value></data>
+  <data name="Type" xml:space="preserve"><value>النوع</value></data>
+  <data name="ClosesAt" xml:space="preserve"><value>يُغلق في</value></data>
+  <data name="TypeRFQ" xml:space="preserve"><value>طلب عرض سعر (RFQ)</value></data>
+  <data name="TypeRFP" xml:space="preserve"><value>طلب عرض فني (RFP)</value></data>
+  <data name="TypeRFI" xml:space="preserve"><value>طلب معلومات (RFI)</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusPublished" xml:space="preserve"><value>منشور</value></data>
+  <data name="StatusEvaluating" xml:space="preserve"><value>قيد التقييم</value></data>
+  <data name="StatusAwarded" xml:space="preserve"><value>تمت الترسية</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="RfxSection" xml:space="preserve"><value>تفاصيل RFx</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>بنود RFx</value></data>
+  <data name="InvitedSection" xml:space="preserve"><value>الموردون المدعوون</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>التكامل</value></data>
+  <data name="AddLine" xml:space="preserve"><value>إضافة بند</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>معرّف الصنف</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>مثال: b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>مثال: 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>وحدة القياس</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>مثال: BOX</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>مطلوب بند واحد على الأقل (الصنف، الكمية، وحدة القياس).</value></data>
+  <data name="InvitedSuppliers" xml:space="preserve"><value>الموردون المدعوون</value></data>
+  <data name="InvitedSuppliersPlaceholder" xml:space="preserve"><value>اختر أو اكتب معرّفات الموردين</value></data>
+  <data name="InvitedSuppliersHint" xml:space="preserve"><value>يتم التحقق من معرّفات الموردين مقابل بيانات الموردين الرئيسية (fail-closed).</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>النظام المصدر</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>مثال: SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>مرجع خارجي</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>مثال: ERP-RFX-9001</value></data>
+  <data name="BidsSection" xml:space="preserve"><value>العروض</value></data>
+  <data name="BidId" xml:space="preserve"><value>معرّف العرض</value></data>
+  <data name="BidSupplierId" xml:space="preserve"><value>المورّد</value></data>
+  <data name="BidLinesSummary" xml:space="preserve"><value>البنود</value></data>
+  <data name="BidEvaluationScore" xml:space="preserve"><value>الدرجة</value></data>
+  <data name="ActionPublish" xml:space="preserve"><value>نشر</value></data>
+  <data name="ActionSubmitBid" xml:space="preserve"><value>تقديم عرض</value></data>
+  <data name="ActionAward" xml:space="preserve"><value>الترسية</value></data>
+  <data name="ConfirmPublish" xml:space="preserve"><value>هل تريد نشر RFx للموردين المدعوين؟</value></data>
+  <data name="PublishSuccess" xml:space="preserve"><value>تم نشر RFx.</value></data>
+  <data name="BidSuccess" xml:space="preserve"><value>تم تقديم العرض.</value></data>
+  <data name="AwardSuccess" xml:space="preserve"><value>تم تسجيل الترسية.</value></data>
+  <data name="BidSupplierPlaceholder" xml:space="preserve"><value>اختر المورّد</value></data>
+  <data name="BidLines" xml:space="preserve"><value>بنود العرض</value></data>
+  <data name="BidUnitPrice" xml:space="preserve"><value>سعر الوحدة</value></data>
+  <data name="BidUnitPricePlaceholder" xml:space="preserve"><value>مثال: 12.5000</value></data>
+  <data name="BidLeadTimeDays" xml:space="preserve"><value>مدة التوريد (أيام)</value></data>
+  <data name="BidLeadTimeDaysPlaceholder" xml:space="preserve"><value>مثال: 14</value></data>
+  <data name="AwardedBid" xml:space="preserve"><value>العرض الفائز</value></data>
+  <data name="AwardedBidPlaceholder" xml:space="preserve"><value>اختر العرض الفائز</value></data>
+  <data name="AwardRationale" xml:space="preserve"><value>المبرر</value></data>
+  <data name="AwardRationalePlaceholder" xml:space="preserve"><value>مثال: أقل تكلفة إجمالية للملكية</value></data>
+</root>

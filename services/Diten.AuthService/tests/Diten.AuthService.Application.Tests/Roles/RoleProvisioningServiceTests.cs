@@ -45,6 +45,22 @@ public sealed class RoleProvisioningServiceTests
         Assert.All(rolePerms.Assigned, rp => Assert.Null(rp.SourceModuleCode));
     }
 
+    // BL-412 — default role provisioning is system-initiated: its grants keep the system actor ("system") and never
+    // name a person. The service has no ICurrentUserAccessor, so a request principal cannot leak in.
+    [Fact]
+    public async Task Baseline_grants_are_stamped_by_the_system_actor_not_a_person()
+    {
+        var catalog = Catalog();
+        var rolePerms = new FakeRolePermissionRepository(catalog);
+        var service = new RoleProvisioningService(new FakeRoleRepository(), new FakePermissionRepository(catalog), rolePerms);
+
+        await service.EnsureDefaultRolesAsync(TenantA, CancellationToken.None);
+
+        Assert.NotEmpty(rolePerms.Assigned);
+        Assert.All(rolePerms.Assigned, rp => Assert.Equal("system", rp.AssignedBy));
+        Assert.All(rolePerms.Assigned, rp => Assert.Equal("system", rp.CreatedBy));
+    }
+
     [Fact]
     public async Task Platform_permissions_are_never_granted_to_tenant_roles()
     {
@@ -159,7 +175,7 @@ public sealed class RoleProvisioningServiceTests
         public Task<IEnumerable<Role>> GetAllByTenantAsync(Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task<Role> CreateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
         public Task<Role> UpdateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
-        public Task DeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, Guid tenantId, string deletedBy, CancellationToken ct) => throw new NotSupportedException();
     }
 
     private sealed class FakePermissionRepository(List<Permission> catalog) : IPermissionRepository

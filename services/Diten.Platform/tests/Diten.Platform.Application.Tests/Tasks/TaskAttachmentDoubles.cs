@@ -37,6 +37,9 @@ internal sealed class FakeTaskAttachmentRepository : ITaskAttachmentRepository
             !a.IsDeleted && a.TaskId == taskId && a.ChecklistRunItemCode == checklistItemCode
             && a.Kind == TaskAttachmentKind.Evidence));
 
+    public Task<int> CountDeliverablesAsync(Guid taskId, CancellationToken ct = default) =>
+        Task.FromResult(Items.Count(a => !a.IsDeleted && a.TaskId == taskId && a.Kind == TaskAttachmentKind.Deliverable));
+
     public Task<bool> SoftDeleteAsync(Guid id, string deletedBy, CancellationToken ct = default)
     {
         var item = Items.FirstOrDefault(a => a.Id == id && !a.IsDeleted);

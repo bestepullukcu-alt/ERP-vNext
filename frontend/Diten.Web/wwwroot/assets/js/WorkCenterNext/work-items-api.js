@@ -247,6 +247,51 @@
     };
 
     /*
+     * BL-414 — ONE work item by id: GET /WorkCenterNext/api/work-items/{id}.
+     *
+     * The detail page asks this only when the reader's own list does not hold the item — a watched task, a
+     * subordinate's task opened from Ekibim, a link from a notification. The SERVER decides who may read it (the
+     * task read rule) and answers a missing and an unreadable task with the same 404, so there is nothing here to
+     * tell apart: anything but a 200 carrying an item is "no item".
+     *
+     * The item goes through the SAME adapt → validate → presentation path as the list (mapPayload), so a task
+     * fetched by id and the same task on the list are the same object on screen.
+     */
+    const itemEndpoint = (itemId) => `${ENDPOINT}/${encodeURIComponent(itemId)}`;
+
+    // The envelope's `data` is the item itself here, never a board.
+    const unwrapItem = (payload) => (payload && payload.data && typeof payload.data === 'object'
+        && !Array.isArray(payload.data) ? payload.data : null);
+
+    const fetchWorkItem = async (itemId) => {
+        let response;
+        try {
+            response = await global.fetch(itemEndpoint(itemId), {
+                method: 'GET',
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin'
+            });
+        } catch (_) {
+            return { status: STATUS.UNAVAILABLE, httpStatus: 0, item: null, errors: [] };
+        }
+
+        if (!response.ok) {
+            return { status: classify(response.status), httpStatus: response.status, item: null, errors: [] };
+        }
+
+        let payload = null;
+        try {
+            payload = await response.json();
+        } catch (_) {
+            return { status: STATUS.ERROR, httpStatus: response.status, item: null, errors: [] };
+        }
+
+        const raw = unwrapItem(payload);
+        const mapped = mapPayload(raw ? [raw] : []);
+        return { status: STATUS.OK, httpStatus: response.status, item: mapped.items[0] || null, errors: mapped.errors };
+    };
+
+    /*
      * BL-023 — does the caller have anybody reporting to them?
      *
      * Asked as its OWN question rather than inferred from an empty team list: "nobody reports to you" and "your
@@ -327,7 +372,36 @@
         };
     };
 
+    /*
+     * WP-UI-CALENDAR-VIEW-01 — the calendar feed, same-origin (WorkCenterNextController.Calendar forwards it to
+     * the gateway; the browser never names a module route). Result shape is dispatchAction's ({ ok, status, reasonCode, data }) so a refusal
+     * (WORK_CALENDAR_RANGE_INVALID) goes through the same TasksApi.failureMessage bridge as every other code.
+     */
+    const CALENDAR_ENDPOINT = '/WorkCenterNext/api/calendar';
+
+    const fetchCalendar = async (from, to) => {
+        let response;
+        try {
+            response = await global.fetch(
+                `${CALENDAR_ENDPOINT}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+                { method: 'GET', headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+        } catch (_) {
+            return { ok: false, status: 0, reasonCode: 'UNAVAILABLE', data: null };
+        }
+
+        let body = null;
+        try { body = await response.json(); } catch (_) { /* an empty body is still an answer */ }
+        return {
+            ok: response.ok,
+            status: response.status,
+            reasonCode: body?.reason_code ?? body?.reasonCode ?? null,
+            data: body?.data ?? null
+        };
+    };
+
     global.WorkCenterNextApi = {
+        CALENDAR_ENDPOINT,
+        fetchCalendar,
         ENDPOINT,
         TEAM_AVAILABILITY_ENDPOINT,
         fetchTeamAvailability,
@@ -341,6 +415,8 @@
         unwrapUnavailable,
         classify,
         fetchWorkItems,
+        itemEndpoint,
+        fetchWorkItem,
         actionEndpoint,
         dispatchAction
     };

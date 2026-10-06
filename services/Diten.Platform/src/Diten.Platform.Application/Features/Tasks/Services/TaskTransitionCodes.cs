@@ -43,6 +43,12 @@ public static class TaskTransitionCodes
             // others name an act ("started", "cancelled"), this one names what changed.
             [TaskTransitionKind.Edited] = "edited",
 
+            // BL-439 — the question a waiting task was parked on was answered by the person it was asked of.
+            [TaskTransitionKind.InquiryAnswered] = "inquiryAnswered",
+
+            // WP-TASK-CALENDAR-ENGINE-01 — the plan day and block were cleared (POST {id}/unplan).
+            [TaskTransitionKind.Unplanned] = "unplanned",
+
             [TaskTransitionKind.Unknown] = "unknown"
         };
 

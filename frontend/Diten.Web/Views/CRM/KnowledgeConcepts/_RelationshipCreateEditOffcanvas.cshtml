@@ -129,9 +129,15 @@
                     <select id="relDirection" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]"></select>
                 </div>
 
+                @* SCMM-09-UI-refine (Not 2): Priority is a Low/Medium/High picker; the stored value stays the backend int
+                   (High=10, Medium=20, Low=30 — smaller wins first, so High sits on top). *@
                 <div class="col-12 col-md-6">
                     <label for="relPriority" class="form-label fw-medium">@Localizer["Priority"]</label>
-                    <input type="number" id="relPriority" class="form-control" min="0" step="1" value="0" />
+                    <select id="relPriority" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]">
+                        <option value="10">@Localizer["PriorityHigh"]</option>
+                        <option value="20">@Localizer["PriorityMedium"]</option>
+                        <option value="30">@Localizer["PriorityLow"]</option>
+                    </select>
                     <div class="form-text">@Localizer["PriorityNote"]</div>
                 </div>
 

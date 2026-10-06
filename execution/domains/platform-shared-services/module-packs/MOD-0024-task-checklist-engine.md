@@ -258,7 +258,7 @@ Diten.Platform tenant-aware runtime posture only; no entity class may be created
 | `relatedRecords` | No | Read-only provider/source record links; never implicit blockers | Provider |
 | `personal` | Yes | Pin/snooze/seen/plan/reminder/note | WorkCenter overlay |
 | `relatedWorkItems` | No | Minimal related item references | Provider/aggregation |
-| `reviewMeetingPolicy` | No | `{ requirement: notAllowed|optional|required, meetingId?, scheduledAt? }`; review/approval collaboration policy | Provider |
+| `reviewMeetingPolicy` | No | `{ requirement: notAllowed|optional|required, meetingId?, scheduledAt? }`; per-task projection — the TYPE carries the requirement only (`TaskType.ReviewMeetingRequirement`), `meetingId`/`scheduledAt` resolve from a related record | Provider |
 | `source` | Yes | Stable provider code/contract version, source system, object type/ID, optional process instance, deep link | Provider/aggregation |
 | `expectation` | Fixture only | Expected resolver result | Test fixture |
 
@@ -311,8 +311,10 @@ A task/review provider may require or allow a review meeting before the reviewer
 
 - `notAllowed`: no meeting command is projected.
 - `optional`: `approve/signoff` and `scheduleReviewMeeting` may both be enabled.
-- `required`: before a meeting is scheduled, `approve/signoff` remains visible but disabled with
-  `REVIEW_MEETING_REQUIRED`; `scheduleReviewMeeting` is the primary enabled command.
+- `required`: until the linked review meeting's minutes are PUBLISHED, `approve/signoff` remains visible but
+  disabled with `REVIEW_MEETING_REQUIRED`; `scheduleReviewMeeting` is the primary enabled command while nothing is
+  scheduled. (Owner decision 2026-09-13, matching MOD-0357 K3: a scheduled meeting proves nothing was reviewed; the
+  published minutes are the evidence. This line previously said "before a meeting is scheduled".)
 - Scheduling a meeting never approves the work item and does not synthesize a task lifecycle transition.
 - After Calendar returns an authoritative meeting reference, a new projection may carry `meetingId` and
   `scheduledAt`; the provider/aggregation then decides whether the decision action becomes enabled.

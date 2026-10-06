@@ -69,13 +69,12 @@ public sealed record UpdateConceptRelationshipRequest(
     string? Status = null,
     DateTimeOffset? EffectiveTo = null);
 
-// SCMM-10 (③, RM2) branch request shapes — parallel branches with per-step cardinality + moderator/for-whom refs.
+// SCMM-10 (③, RM2) branch request shapes — parallel branches with per-step cardinality (structure only). Moderator /
+// for-whom moved to the template level (WP-A, D-a/D-e).
 public sealed record ConceptChainStepRequest(
     Guid ConceptTypeId,
     int MinSelection = 1,
-    int? MaxSelection = null,
-    IReadOnlyList<string>? AllowedRoleRefs = null,
-    IReadOnlyList<string>? AudienceDimensionRefs = null);
+    int? MaxSelection = null);
 
 public sealed record ConceptChainBranchRequest(
     string BranchCode,
@@ -93,7 +92,10 @@ public sealed record CreateConceptChainTemplateRequest(
     string? Status = null,
     string? ChainVersion = null,
     DateTimeOffset? EffectiveTo = null,
-    IReadOnlyList<ConceptChainBranchRequest>? Branches = null);
+    IReadOnlyList<ConceptChainBranchRequest>? Branches = null,
+    string? ModeratorRoleType = null,
+    IReadOnlyList<Guid>? ForWhomAudienceProfileIds = null,
+    IReadOnlyList<Guid>? IgnoredNonConformingRelationshipIds = null);
 
 public sealed record UpdateConceptChainTemplateRequest(
     string ChainName,
@@ -103,7 +105,18 @@ public sealed record UpdateConceptChainTemplateRequest(
     string? Status = null,
     string? ChainVersion = null,
     DateTimeOffset? EffectiveTo = null,
-    IReadOnlyList<ConceptChainBranchRequest>? Branches = null);
+    IReadOnlyList<ConceptChainBranchRequest>? Branches = null,
+    string? ModeratorRoleType = null,
+    IReadOnlyList<Guid>? ForWhomAudienceProfileIds = null,
+    IReadOnlyList<Guid>? IgnoredNonConformingRelationshipIds = null);
+
+// WP-CT-BE-A — supplied-spine conformance diagnostics (read-only; the draft editor posts its live, unsaved spine).
+public sealed record ChainTemplateConformanceDiagnosticsRequest(
+    Guid SubjectId,
+    IReadOnlyList<Guid>? OrderedConceptTypeIds = null);
+
+// WP-CT-BE-B — replaces the template's ignored ("Yok say") relationship set.
+public sealed record ChainTemplateConformanceResolutionsRequest(IReadOnlyList<Guid>? IgnoredRelationshipIds = null);
 
 public sealed record CreateContentConceptLinkRequest(
     Guid KnowledgeContentId,

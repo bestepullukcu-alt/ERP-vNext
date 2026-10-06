@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Diten.ProcurementService.Api</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MediatR" Version="12.3.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference
+            Include="..\Diten.ProcurementService.Application\Diten.ProcurementService.Application.csproj" />
+        <ProjectReference
+            Include="..\Diten.ProcurementService.Infrastructure\Diten.ProcurementService.Infrastructure.csproj" />
+        <ProjectReference
+            Include="..\Diten.ProcurementService.Persistence\Diten.ProcurementService.Persistence.csproj" />
+        <ProjectReference
+            Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+        <ProjectReference
+            Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>

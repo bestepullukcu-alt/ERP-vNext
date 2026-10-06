@@ -5,6 +5,7 @@ domain: developer-enablement
 service: Diten.DevEnablementService
 shell: tenant
 golden_reference: compact
+data_mode: server
 entity_base: EntityBase
 status: in-progress
 owner: developer-enablement

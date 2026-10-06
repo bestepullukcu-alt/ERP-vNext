@@ -50,8 +50,11 @@ public class GatewayTenantResolutionTests
         Assert.True(nextCalled);
     }
 
+    // Since cccd541f the gateway refuses a token whose tenant is contradicted by X-Tenant-Id instead of silently
+    // overwriting the header (TenantContradictionGuardTests holds the full contract). This test still expected the
+    // old overwrite, so the Phase 1 gate had been red on main since 2026-08-30.
     [Fact]
-    public async Task JwtTenant_OverridesConflictingHeader()
+    public async Task JwtTenant_ContradictedByHeader_IsRefused400()
     {
         var jwtTenant = Guid.NewGuid();
         var headerTenant = Guid.NewGuid();
@@ -74,8 +77,8 @@ public class GatewayTenantResolutionTests
 
         await middleware.InvokeAsync(context);
 
-        Assert.True(nextCalled);
-        Assert.Equal(jwtTenant.ToString(), context.Request.Headers["X-Tenant-Id"].ToString());
+        Assert.False(nextCalled);
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
     }
 
     private static IConfiguration TestConfiguration { get; } = new ConfigurationBuilder().Build();

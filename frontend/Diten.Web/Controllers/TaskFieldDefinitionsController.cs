@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Web.Models;
 using Diten.Web.Models.TaskFieldDefinitions;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -174,13 +175,15 @@ public sealed class TaskFieldDefinitionsController : Controller
         section = model.Section,
         importance = model.Importance,
         isRequired = model.IsRequired,
-        sortOrder = model.SortOrder,
+        // BL-388 — the form keeps SortOrder optional (UI-020), the API contract's SortOrder is a plain int: empty means 0.
+        sortOrder = model.SortOrder ?? 0,
         optionsSourceKind = model.OptionsSourceKind,
         optionsSourceKey = Nullable(model.OptionsSourceKey),
         appliesToModuleCode = Nullable(model.AppliesToModuleCode),
         classification = model.Classification,
         defaultAccessState = model.DefaultAccessState,
-        isActive = model.IsActive
+        isActive = model.IsActive,
+        stage = model.Stage
     };
 
     /// <summary>
@@ -195,14 +198,16 @@ public sealed class TaskFieldDefinitionsController : Controller
         section = model.Section,
         importance = model.Importance,
         isRequired = model.IsRequired,
-        sortOrder = model.SortOrder,
+        // BL-388 — the form keeps SortOrder optional (UI-020), the API contract's SortOrder is a plain int: empty means 0.
+        sortOrder = model.SortOrder ?? 0,
         optionsSourceKind = model.OptionsSourceKind,
         optionsSourceKey = Nullable(model.OptionsSourceKey),
         appliesToModuleCode = Nullable(model.AppliesToModuleCode),
         classification = model.Classification,
         defaultAccessState = model.DefaultAccessState,
         isActive = model.IsActive,
-        expectedVersion = model.ExpectedVersion
+        expectedVersion = model.ExpectedVersion,
+        stage = model.Stage
     };
 
     private static string? Nullable(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
@@ -236,7 +241,15 @@ public sealed class TaskFieldDefinitionsController : Controller
         }
         catch { }
 
+        // BL-388/BL-398 — ASP.NET's OWN 400 is not the Platform envelope. When a request body cannot even be
+        // bound (a null for a non-nullable field, a wrong type) the API answers before any handler runs, with a
+        // ProblemDetails whose `errors` is a field → messages dictionary; the envelope read above cannot bind
+        // that shape. Reader shared across five Task-screen controllers (GatewayProblemDetailsReader) so a sixth
+        // one written by copying this cannot copy a gap along with it.
         var raw = await response.Content.ReadAsStringAsync();
+        if (GatewayProblemDetailsReader.TryReadErrors(raw, out var problemErrors))
+            return problemErrors.Count > 0 ? problemErrors : [_sharedLocalizer["GatewayError"].Value];
+
         return [string.IsNullOrWhiteSpace(raw) ? _sharedLocalizer["GatewayError"].Value : raw];
     }
 

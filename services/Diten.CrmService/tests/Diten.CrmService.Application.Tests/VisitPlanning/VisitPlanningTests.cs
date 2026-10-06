@@ -680,6 +680,11 @@ public sealed class VisitPlanningTests
         public Task<IReadOnlyList<KnowledgeContentDto>> ResolvePublishedContentAsync(
             KnowledgeContentLinkageCriteria criteria, CancellationToken ct)
             => Task.FromResult<IReadOnlyList<KnowledgeContentDto>>(Array.Empty<KnowledgeContentDto>());
+
+        // SCMM-13 — variant resolution is not exercised by the visit-planning fake.
+        public Task<KnowledgeContentVariantResolution> ResolveVariantAsync(
+            Guid contentSetId, string languageCode, CancellationToken cancellationToken)
+            => Task.FromResult(KnowledgeContentVariantResolution.Unresolved("not-supported-in-fake"));
     }
 
     private sealed class FakeCountryResolver : ICycleCapacityCountryResolver

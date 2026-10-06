@@ -102,6 +102,18 @@
         ChecklistMoveUp = Localizer["ChecklistMoveUp"].Value,
         ChecklistMoveDown = Localizer["ChecklistMoveDown"].Value,
 
+        @* WP-PSS-MOD0024-ATTACHMENTS-UX-01 — the Attachments card's own JS vocabulary. The card's heading and
+           description, and the three add-row labels, stay server-rendered in _Form.cshtml (like the checklist
+           card's own CardChecklistTitle/Description); only what form-page.js builds at runtime — the pending
+           row's kind label and remove button, and the partial-upload-failure dialog — needs to reach it here. *@
+        AttachmentKindAttachment = Localizer["AttachmentKindAttachment"].Value,
+        AttachmentKindEvidence = Localizer["AttachmentKindEvidence"].Value,
+        AttachmentKindDeliverable = Localizer["AttachmentKindDeliverable"].Value,
+        AttachmentRemoveButton = Localizer["AttachmentRemoveButton"].Value,
+        AttachmentUploadPartialTitle = Localizer["AttachmentUploadPartialTitle"].Value,
+        AttachmentUploadPartialBody = Localizer["AttachmentUploadPartialBody"].Value,
+        AttachmentUploadRetryLink = Localizer["AttachmentUploadRetryLink"].Value,
+
         // Phase 5 — the configurable fields the form renders from the tenant's own definitions. The field LABELS
         // are tenant content and come from the definition itself; only the control's own furniture is translated
         // here (a picker's placeholder, and the two words a yes/no field offers).
@@ -171,6 +183,9 @@
         // "an error occurred" cannot tell a user waiting for their manager from one whose request was rejected.
         ErrorConcurrencyRefreshed = Localizer["ErrorConcurrencyRefreshed"].Value,
         ErrorChecklistIncomplete = Localizer["ErrorChecklistIncomplete"].Value,
+        ErrorClosureFieldRequired = Localizer["ErrorClosureFieldRequired"].Value,
+        ErrorOrganizationUnitNotFound = Localizer["ErrorOrganizationUnitNotFound"].Value,
+        ErrorOrganizationUnitOutOfScope = Localizer["ErrorOrganizationUnitOutOfScope"].Value,
         ErrorDependencyBlocked = Localizer["ErrorDependencyBlocked"].Value,
         ErrorSubtaskBlocked = Localizer["ErrorSubtaskBlocked"].Value,
         ErrorCommentTaskClosed = Localizer["ErrorCommentTaskClosed"].Value,
@@ -180,9 +195,22 @@
         // generic "an error occurred".
         ErrorCommentNotAuthor = Localizer["ErrorCommentNotAuthor"].Value,
         ErrorCommentWithdrawn = Localizer["ErrorCommentWithdrawn"].Value,
+        // WP-PSS-MOD0024-TASK-MENTIONS-01 — @mention refusals. Same rule as the pair above: unlisted here, the
+        // codes api.js already maps would reach the reader as the generic "an error occurred".
+        ErrorMentionNotVisible = Localizer["ErrorMentionNotVisible"].Value,
+        ErrorMentionLimitExceeded = Localizer["ErrorMentionLimitExceeded"].Value,
         // Naming an ineligible person when parking a task. This bridge does NOT auto-enumerate its resx.
         ErrorWaitingOnNotAssignable = Localizer["ErrorWaitingOnNotAssignable"].Value,
         ErrorPlanDateRequired = Localizer["ErrorPlanDateRequired"].Value,
+        // WP-TASK-CALENDAR-ENGINE-01 — the plan block's refusals and the two warnings on a saved plan. This bridge
+        // does NOT auto-enumerate its resx; plan-calendar-code-bridge.test.js pins each line here.
+        ErrorPlanNotHolder = Localizer["ErrorPlanNotHolder"].Value,
+        ErrorPlanConflict = Localizer["ErrorPlanConflict"].Value,
+        ErrorPlanDurationInvalid = Localizer["ErrorPlanDurationInvalid"].Value,
+        ErrorUnplanNotAllowed = Localizer["ErrorUnplanNotAllowed"].Value,
+        ErrorCalendarRangeInvalid = Localizer["ErrorCalendarRangeInvalid"].Value,
+        WarningPlanOverlapsMeeting = Localizer["WarningPlanOverlapsMeeting"].Value,
+        WarningPlanOutsideWorkingHours = Localizer["WarningPlanOutsideWorkingHours"].Value,
         // WC-1 — the personal overlay's three refusals. This bridge does NOT auto-enumerate its resx (unlike
         // _L10n.cshtml, which does), so a code mapped in api.js without a line here reaches the reader as the
         // generic "an error occurred" — twice already the missing half of exactly this pair.
@@ -203,10 +231,22 @@
         ErrorApprovalPending = Localizer["ErrorApprovalPending"].Value,
         // 409 REVIEW_PENDING — the OTHER gate. Cleared by the reviewer, not the approver.
         ErrorReviewPending = Localizer["ErrorReviewPending"].Value,
+        // WP-WCN-KANBAN-01 Dilim 4 — two more reason codes the Kanban drop path can reach, mapped in
+        // Tasks/api.js's REASON_CODE_MESSAGE_KEYS but unbridged until now (the fallback was the generic error).
+        // PERM_DENIED reuses ErrorNoAccess below instead of a third key here — see api.js's own comment on it.
+        ErrorDeliverableRequired = Localizer["ErrorDeliverableRequired"].Value,
+        ErrorReviewMeetingRequired = Localizer["ErrorReviewMeetingRequired"].Value,
         // 409 TASK_INVALID_STATE — measured live when the subtask checkbox met a not-started child.
         ErrorTaskInvalidState = Localizer["ErrorTaskInvalidState"].Value,
         ErrorCancelNotRequester = Localizer["ErrorCancelNotRequester"].Value,
+        // WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — approval / review routed back to the person starting it.
+        ErrorApprovalManagerIsSelf = Localizer["ErrorApprovalManagerIsSelf"].Value,
+        ErrorReviewerIsSubmitter = Localizer["ErrorReviewerIsSubmitter"].Value,
         ErrorWaitingReasonRequired = Localizer["ErrorWaitingReasonRequired"].Value,
+        // BL-439 — the answer to a waiting task's question: empty, too long, or no longer the reader's to give.
+        ErrorInquiryAnswerRequired = Localizer["ErrorInquiryAnswerRequired"].Value,
+        ErrorInquiryAnswerTooLong = Localizer["ErrorInquiryAnswerTooLong"].Value,
+        ErrorInquiryNotAddressee = Localizer["ErrorInquiryNotAddressee"].Value,
         ErrorTitleRequired = Localizer["ErrorTitleRequired"].Value,
         ErrorTitleTooLong = Localizer["ErrorTitleTooLong"].Value,
         ErrorHandoverReasonRequired = Localizer["ErrorHandoverReasonRequired"].Value,
@@ -233,6 +273,19 @@
         ErrorAttachmentNotFound = Localizer["ErrorAttachmentNotFound"].Value,
         ErrorAttachmentChecklistItemNotFound = Localizer["ErrorAttachmentChecklistItemNotFound"].Value,
         ErrorChecklistEvidenceRequired = Localizer["ErrorChecklistEvidenceRequired"].Value,
-        ErrorAttachmentInvalid = Localizer["ErrorAttachmentInvalid"].Value
+        ErrorAttachmentInvalid = Localizer["ErrorAttachmentInvalid"].Value,
+        @* MOD-0024 — handing work on (Tasks/reassign.js). The dialog writes every one of these. *@
+        ReassignAction = Localizer["ReassignAction"].Value,
+        ReassignTitle = Localizer["ReassignTitle"].Value,
+        ReassignHint = Localizer["ReassignHint"].Value,
+        ReassignAssigneeLabel = Localizer["ReassignAssigneeLabel"].Value,
+        ReassignAssigneePlaceholder = Localizer["ReassignAssigneePlaceholder"].Value,
+        ReassignReasonLabel = Localizer["ReassignReasonLabel"].Value,
+        ReassignReasonPlaceholder = Localizer["ReassignReasonPlaceholder"].Value,
+        ReassignAssigneeRequired = Localizer["ReassignAssigneeRequired"].Value,
+        ReassignReasonRequired = Localizer["ReassignReasonRequired"].Value,
+        ReassignDone = Localizer["ReassignDone"].Value,
+        ReassignNoPeople = Localizer["ReassignNoPeople"].Value,
+        AssignmentReadOnlyHint = Localizer["AssignmentReadOnlyHint"].Value
     })
 </script>

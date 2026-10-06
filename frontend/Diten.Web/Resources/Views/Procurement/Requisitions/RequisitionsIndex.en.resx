@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="RequisitionsTitle" xml:space="preserve"><value>Requisitions</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Purchase requisitions: capture demand lines, justify, and submit for approval.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Add Requisition</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Edit Requisition</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Add Requisition</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Requisition</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="RequisitionId" xml:space="preserve"><value>Requisition ID</value></data>
+  <data name="LineCount" xml:space="preserve"><value>Lines</value></data>
+  <data name="NeedBy" xml:space="preserve"><value>Need By</value></data>
+  <data name="Justification" xml:space="preserve"><value>Justification</value></data>
+  <data name="JustificationPlaceholder" xml:space="preserve"><value>e.g. production raw material replenishment</value></data>
+  <data name="JustificationHint" xml:space="preserve"><value>Optional note explaining why this requisition is needed.</value></data>
+  <data name="RequisitionSection" xml:space="preserve"><value>Requisition Details</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Requisition Lines</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Add Line</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>Item ID</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>e.g. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>SKU ID</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>e.g. c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>e.g. 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>UoM</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>e.g. BOX</value></data>
+  <data name="LineNeedBy" xml:space="preserve"><value>Need By</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>At least one line is required (item, quantity, unit of measure).</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusSubmitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Approved</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="StatusConverted" xml:space="preserve"><value>Converted</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="ActionSubmit" xml:space="preserve"><value>Submit for Approval</value></data>
+  <data name="ConfirmSubmit" xml:space="preserve"><value>Submit this requisition for approval?</value></data>
+  <data name="SubmitSuccess" xml:space="preserve"><value>Requisition submitted for approval.</value></data>
+</root>

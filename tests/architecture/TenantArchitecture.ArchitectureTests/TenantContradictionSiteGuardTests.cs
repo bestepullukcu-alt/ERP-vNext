@@ -69,7 +69,7 @@ public class TenantContradictionSiteGuardTests
     /// pinned as an exact floor AND ceiling on purpose — the failure this prevents is a ninth site appearing and
     /// inheriting neither the rule nor the decision, which is exactly how the five-site drift happened.
     /// </summary>
-    private const int KnownTenantResolutionSites = 8;
+    private const int KnownTenantResolutionSites = 9;
 
     /// <summary>Sites that refuse the contradiction. Measured, not aspirational.</summary>
     private static readonly string[] EnforcesTheRule =
@@ -95,7 +95,12 @@ public class TenantContradictionSiteGuardTests
         // MOD-0117 PPM reads tenant identity from the authenticated JWT and refuses a contradicting header before
         // its application-level tenant context is consumed. Behaviour test: services/Diten.PpmService/tests/
         // Diten.PpmService.Tests/TenantResolutionMiddlewareTests.cs.
-        "services/Diten.PpmService/src/Diten.PpmService.Api/Security/TenantResolutionMiddleware.cs"
+        "services/Diten.PpmService/src/Diten.PpmService.Api/Security/TenantResolutionMiddleware.cs",
+        // MOD-0140 DCP-010 Procurement: resolves Tenant + Legal-Entity from the authenticated JWT claims and
+        // refuses a contradicting X-Tenant-Id / X-Legal-Entity-Id header (400) before the tenant context is
+        // consumed; a missing legal-entity for a tenant-scoped request is also refused (fail-closed 400).
+        // Behaviour test: services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Tenancy/LegalEntityResolutionGuardTests.cs.
+        "services/Diten.ProcurementService/src/Diten.ProcurementService.Infrastructure/Middleware/TenantResolutionMiddleware.cs"
     ];
 
     /// <summary>

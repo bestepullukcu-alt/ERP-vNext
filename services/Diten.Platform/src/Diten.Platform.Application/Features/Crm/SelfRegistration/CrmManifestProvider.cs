@@ -38,6 +38,17 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string KnowledgeConceptRead = "crm.knowledge.concept.read";
     private const string KnowledgePathRead = "crm.knowledge.path.read";
     private const string ContentEngagementJourneyRead = "crm.knowledge.content-engagement-journey.read";
+    private const string ClaimRead = "crm.claim.read";
+    private const string ContentScopeRead = "crm.content-scope.read";
+    private const string ContentSetRead = "crm.content-set.read";
+    private const string EligibilityRead = "crm.eligibility.read";
+
+    // MOD-0165-FU03 (WP-FREQ-A). The canonical crm.visit-frequency-policy.* keys are not seeded yet, so — exactly like
+    // the CrmService [HasPermission] guards and the Diten.Web console — the page's read gate runs on the documented
+    // fallback (crm.territory.read). Using the fallback here means the sidebar entry actually renders for a CRM user
+    // today; it flips to the canonical key when MOD-0165-FU-RBAC lands. The action descriptors below carry the
+    // canonical write/resolve keys so an RBAC admin can grant them ahead of that follow-up.
+    private const string VisitFrequencyPolicyReadFallback = TerritoryRead;
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -129,6 +140,39 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 [
                     new ModuleManifestAction("MANAGE", "New Journey", "crm.knowledge.content-engagement-journey.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("PUBLISH", "Publish", "crm.knowledge.content-engagement-journey.publish", "RowAction", 20, false, false, true)
+                ]),
+                // SCMM-12 (CAND-CAP-0011) Claim authoring console. approve is a SEPARATE key from manage (author-vs-
+                // approver SoD); there is no delete surface (closing a claim is Archive).
+                new ModuleManifestPage("CLAIMS", "Claims", "/CRM/Claims", ClaimRead, null, true, "List", 140,
+                [
+                    new ModuleManifestAction("MANAGE", "New Claim", "crm.claim.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("APPROVE", "Approve", "crm.claim.approve", "RowAction", 20, false, false, true)
+                ]),
+                // SCMM-14 (CAND-CAP-0011) Content Studio — reusable ContentScope + ContentSet (assembly draft) consoles.
+                new ModuleManifestPage("CONTENT_SCOPES", "Content Scopes", "/CRM/ContentScopes", ContentScopeRead, null, true, "List", 150,
+                [
+                    new ModuleManifestAction("MANAGE", "New Scope", "crm.content-scope.manage", "Toolbar", 10, false, true, false)
+                ]),
+                new ModuleManifestPage("CONTENT_SETS", "Content Sets", "/CRM/ContentSets", ContentSetRead, null, true, "List", 160,
+                [
+                    new ModuleManifestAction("MANAGE", "New Content Set", "crm.content-set.manage", "Toolbar", 10, false, true, false)
+                ]),
+                // SCMM-11-UI (CAND-CAP-0011) eligibility policy authoring + evaluate. evaluate is a SEPARATE key from
+                // manage (author-vs-evaluator SoD); no delete surface (Archive).
+                new ModuleManifestPage("ELIGIBILITY_POLICIES", "Eligibility Policies", "/CRM/EligibilityPolicies", EligibilityRead, null, true, "List", 170,
+                [
+                    new ModuleManifestAction("MANAGE", "New Policy", "crm.eligibility.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("EVALUATE", "Evaluate", "crm.eligibility.evaluate", "Toolbar", 20, false, true, false)
+                ]),
+                // MOD-0165-FU03 (WP-FREQ-A) Visit Frequency / Call-Cycle Policy console. Archive closes a policy as
+                // readable history; Delete is the WP-FREQ-A soft-delete that removes it from the working set (both soft,
+                // no hard delete). resolve is a SEPARATE read op from manage. Read gate = territory.read fallback until
+                // MOD-0165-FU-RBAC seeds the canonical keys (see VisitFrequencyPolicyReadFallback).
+                new ModuleManifestPage("VISIT_FREQUENCY_POLICIES", "Visit Frequency Policies", "/CRM/VisitFrequencyPolicies", VisitFrequencyPolicyReadFallback, null, true, "List", 180,
+                [
+                    new ModuleManifestAction("MANAGE", "New Policy", "crm.visit-frequency-policy.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("RESOLVE", "Resolve", "crm.visit-frequency-policy.resolve", "Toolbar", 20, false, true, false),
+                    new ModuleManifestAction("DELETE", "Delete", "crm.visit-frequency-policy.manage", "RowAction", 30, false, false, true)
                 ])
             ]);
 }

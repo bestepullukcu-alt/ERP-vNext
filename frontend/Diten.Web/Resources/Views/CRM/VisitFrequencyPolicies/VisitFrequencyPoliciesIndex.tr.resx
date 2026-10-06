@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PoliciesTitle" xml:space="preserve"><value>Ziyaret Sıklığı Politikaları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Çağrı döngüsü / ziyaret sıklığı politikalarını tanımlayın — bir hedef ne sıklıkla ziyaret edilmeli.</value></data>
+  <data name="ArchiveVsDeleteNote" xml:space="preserve"><value>Arşivle politikayı okunabilir geçmiş olarak tutar; Sil onu çalışma listesinden kaldırır. İkisi de yumuşaktır.</value></data>
+  <data name="PoliciesTab" xml:space="preserve"><value>Politikalar</value></data>
+  <data name="ResolveTab" xml:space="preserve"><value>Çözümleme</value></data>
+  <data name="ResolvePlaceholder" xml:space="preserve"><value>Çözümleme paneli sonraki bir güncellemede gelecek.</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Target" xml:space="preserve"><value>Hedef</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Sıklık</value></data>
+  <data name="Priority" xml:space="preserve"><value>Öncelik</value></data>
+  <data name="Source" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="NewPolicy" xml:space="preserve"><value>Yeni Politika</value></data>
+  <data name="EditorPlaceholder" xml:space="preserve"><value>Politika düzenleyici sonraki bir güncellemede gelecek.</value></data>
+  <data name="DetailsPlaceholder" xml:space="preserve"><value>Detay görünümü sonraki bir güncellemede gelecek.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı görünüm</value></data>
+  <data name="Archive" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Bu politika arşivlensin mi? Geçmiş olarak okunabilir kalır.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Bu politika silinsin mi? Listeden kaldırılacak.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Politika arşivlendi.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Henüz sıklık politikası yok.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Bir şeyler ters gitti. Lütfen tekrar deneyin.</value></data>
+  <data name="PerPeriod" xml:space="preserve"><value>/</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Arşivlenmiş</value></data>
+  <!-- WP-FREQ-B editor -->
+  <data name="EditorSave" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="EditorSectionIdentity" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="EditorSectionTarget" xml:space="preserve"><value>Hedef</value></data>
+  <data name="EditorSectionContext" xml:space="preserve"><value>Bağlam</value></data>
+  <data name="EditorSectionFrequency" xml:space="preserve"><value>Sıklık kontrolü</value></data>
+  <data name="EditorSectionPriority" xml:space="preserve"><value>Çakışma önceliği</value></data>
+  <data name="EditorSectionSource" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="EditorSectionEffective" xml:space="preserve"><value>Geçerlilik</value></data>
+  <data name="EditorSectionNotes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="EditorHelpIdentity" xml:space="preserve"><value>Bu politika için sabit bir kod ve görünen ad.</value></data>
+  <data name="EditorHelpTarget" xml:space="preserve"><value>Politikanın kime uygulandığı. Önce tür, sonra hedef seçin.</value></data>
+  <data name="EditorHelpContext" xml:space="preserve"><value>İsteğe bağlı köken ve kapsam. Kısıt istemiyorsanız boş bırakın.</value></data>
+  <data name="EditorHelpFrequency" xml:space="preserve"><value>Dönem başına kaç ziyaret gerektiği.</value></data>
+  <data name="EditorHelpPriority" xml:space="preserve"><value>İki politika çakışırsa küçük ağırlık kazanır.</value></data>
+  <data name="EditorHelpEffective" xml:space="preserve"><value>Bu politikanın ne zaman geçerli olduğu. Süresiz için bitişi boş bırakın.</value></data>
+  <data name="EditorHelpNotes" xml:space="preserve"><value>Serbest not. Özel sıklık için zorunludur.</value></data>
+  <data name="FieldPolicyCode" xml:space="preserve"><value>Politika kodu</value></data>
+  <data name="FieldPolicyName" xml:space="preserve"><value>Politika adı</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="FieldStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="FieldTargetType" xml:space="preserve"><value>Hedef türü</value></data>
+  <data name="FieldTarget" xml:space="preserve"><value>Hedef</value></data>
+  <data name="FieldBusinessUnit" xml:space="preserve"><value>İş birimi</value></data>
+  <data name="FieldTerritory" xml:space="preserve"><value>Saha alanı</value></data>
+  <data name="FieldSegment" xml:space="preserve"><value>Segment</value></data>
+  <data name="FieldCampaign" xml:space="preserve"><value>Kampanya</value></data>
+  <data name="FieldBrand" xml:space="preserve"><value>Marka</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="FieldCyclePeriod" xml:space="preserve"><value>Cycle dönemi</value></data>
+  <data name="FieldFrequencyType" xml:space="preserve"><value>Sıklık türü</value></data>
+  <data name="FieldRequiredVisitCount" xml:space="preserve"><value>Gerekli ziyaret</value></data>
+  <data name="FieldPeriodType" xml:space="preserve"><value>Dönem</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="FieldEffectiveFrom" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="FieldEffectiveTo" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="FieldNotes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçin…</value></data>
+  <data name="ContextNone" xml:space="preserve"><value>— yok —</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>Model seçin</value></data>
+  <data name="SelectTerritoryNode" xml:space="preserve"><value>Alan seçin</value></data>
+  <data name="Selected" xml:space="preserve"><value>Seçilen</value></data>
+  <data name="TargetIdManual" xml:space="preserve"><value>Kimlik girin (GUID)</value></data>
+  <data name="TargetLockNote" xml:space="preserve"><value>Kod ve hedef oluşturulduktan sonra değiştirilemez.</value></data>
+  <data name="SourceNote" xml:space="preserve"><value>Bu sıklığın nereden geldiği. Yalnız köken — sıklığı etkilemez.</value></data>
+  <data name="FreqReadsAsLabel" xml:space="preserve"><value>Şöyle okunur</value></data>
+  <data name="FreqSentenceEmpty" xml:space="preserve"><value>Bir sayı ve dönem belirleyin.</value></data>
+  <data name="Required" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="TargetRequired" xml:space="preserve"><value>Bir hedef seçin.</value></data>
+  <data name="TargetIdInvalid" xml:space="preserve"><value>Geçerli bir kimlik gerekli.</value></data>
+  <data name="CountPositive" xml:space="preserve"><value>Sıfırdan büyük olmalı.</value></data>
+  <data name="PeriodComboInvalid" xml:space="preserve"><value>Bu dönem seçilen sıklık için geçerli değil.</value></data>
+  <data name="BandRequired" xml:space="preserve"><value>Bir öncelik bandı seçin.</value></data>
+  <data name="EffectiveOrder" xml:space="preserve"><value>Bitiş, başlangıçtan önce olamaz.</value></data>
+  <data name="CycleRequired" xml:space="preserve"><value>Cycle tabanlı sıklık için bir cycle dönemi gerekli.</value></data>
+  <data name="CampaignRequired" xml:space="preserve"><value>Bir kampanya gerekli.</value></data>
+  <data name="SegmentRequired" xml:space="preserve"><value>Segmentasyon kaynağı için bir segment gerekli.</value></data>
+  <data name="NotesRequired" xml:space="preserve"><value>Özel sıklık not gerektirir.</value></data>
+  <data name="FixErrors" xml:space="preserve"><value>Lütfen işaretli alanları düzeltin.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>Düzenleyici hazırlanamadı.</value></data>
+  <data name="Band_override-all" xml:space="preserve"><value>Her şeyin üstünde</value></data>
+  <data name="Band_campaign-level" xml:space="preserve"><value>Kampanya seviyesi</value></data>
+  <data name="Band_standard" xml:space="preserve"><value>Standart</value></data>
+  <data name="Band_baseline" xml:space="preserve"><value>Temel</value></data>
+  <data name="Band_last-resort" xml:space="preserve"><value>Son çare</value></data>
+  <data name="Band_override-all_Desc" xml:space="preserve"><value>Kampanya ve segment kuralları dahil hepsini geçersiz kılar.</value></data>
+  <data name="Band_campaign-level_Desc" xml:space="preserve"><value>Kampanya döneminde standart kuralların önüne geçer.</value></data>
+  <data name="Band_standard_Desc" xml:space="preserve"><value>Normal segment ve hedef kuralları için önerilen seviye.</value></data>
+  <data name="Band_baseline_Desc" xml:space="preserve"><value>Bölge geneli için taban frekans; daha dar kurallar bunu geçer.</value></data>
+  <data name="Band_last-resort_Desc" xml:space="preserve"><value>Başka hiçbir kural denk gelmezse devreye girer.</value></data>
+  <data name="Period_day" xml:space="preserve"><value>gün</value></data>
+  <data name="Period_week" xml:space="preserve"><value>hafta</value></data>
+  <data name="Period_month" xml:space="preserve"><value>ay</value></data>
+  <data name="Period_quarter" xml:space="preserve"><value>çeyrek</value></data>
+  <data name="Period_cycle" xml:space="preserve"><value>dönem</value></data>
+  <data name="Period_campaign-period" xml:space="preserve"><value>kampanya dönemi</value></data>
+  <data name="Period_custom" xml:space="preserve"><value>özel dönem</value></data>
+  <!-- WP-FREQ-C details quick-view + resolve panel -->
+  <data name="NoEndDate" xml:space="preserve"><value>Bitiş yok</value></data>
+  <data name="DetailTrail" xml:space="preserve"><value>Kayıt izi</value></data>
+  <data name="DetailCreated" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="DetailUpdated" xml:space="preserve"><value>Güncellendi</value></data>
+  <data name="DetailArchived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="Tl_created" xml:space="preserve"><value>Taslak oluşturuldu</value></data>
+  <data name="Tl_published" xml:space="preserve"><value>Yayına alındı</value></data>
+  <data name="Tl_deactivated" xml:space="preserve"><value>Geçici kapatıldı</value></data>
+  <data name="Tl_reactivated" xml:space="preserve"><value>Yeniden yayında</value></data>
+  <data name="Tl_weight_changed" xml:space="preserve"><value>Ağırlık değişti</value></data>
+  <data name="Tl_archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="Tl_next_eval" xml:space="preserve"><value>Sonraki değerlendirme</value></data>
+  <data name="FieldConceptNode" xml:space="preserve"><value>Konsept düğümü</value></data>
+  <data name="FieldAudienceProfile" xml:space="preserve"><value>Hedef kitle</value></data>
+  <data name="ResolveInputSection" xml:space="preserve"><value>Çözümleme girdisi</value></data>
+  <data name="ResolveResultSection" xml:space="preserve"><value>Sonuç</value></data>
+  <data name="ResolveContextHelp" xml:space="preserve"><value>İsteğe bağlı bağlam eşleşmeyi daraltır. Yok saymak için boş bırakın.</value></data>
+  <data name="ResolveEffectiveAt" xml:space="preserve"><value>Geçerlilik tarihi</value></data>
+  <data name="ResolveAction" xml:space="preserve"><value>Çözümle</value></data>
+  <data name="ResolveReadOnlyNote" xml:space="preserve"><value>Salt-okunur önizleme — çözümleme hiçbir şey yazmaz.</value></data>
+  <data name="ResolveResultEmpty" xml:space="preserve"><value>Bir hedef seçip Çözümle'ye basın.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Çözümleniyor…</value></data>
+  <data name="ResolveSelectedPolicy" xml:space="preserve"><value>Seçilen politika</value></data>
+  <data name="ResolveCandidates" xml:space="preserve"><value>Aday politikalar</value></data>
+  <data name="ResolveNoCandidates" xml:space="preserve"><value>Aday politika yok.</value></data>
+  <data name="ResolveReasonCodes" xml:space="preserve"><value>Neden kodları</value></data>
+  <data name="ResolveSelectionReason" xml:space="preserve"><value>Seçim nedeni</value></data>
+  <data name="ResolveNoSelected" xml:space="preserve"><value>Bu bağlamda bu hedefi yöneten bir politika yok.</value></data>
+  <data name="ResolveSpecificity" xml:space="preserve"><value>Özgüllük</value></data>
+  <data name="ResolveSelectedBadge" xml:space="preserve"><value>Seçildi</value></data>
+  <data name="ResolveEliminated" xml:space="preserve"><value>Elendi</value></data>
+  <data name="ResolveTargetTypeRequired" xml:space="preserve"><value>Bir hedef türü seçin.</value></data>
+  <data name="Verdict_resolved" xml:space="preserve"><value>Çözümlendi</value></data>
+  <data name="Verdict_unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="Verdict_conflict" xml:space="preserve"><value>Çakışma</value></data>
+  <data name="Verdict_not_applicable" xml:space="preserve"><value>Uygulanamaz</value></data>
+  <data name="Reason_frequency_policy_resolved" xml:space="preserve"><value>Sıklık politikası çözümlendi</value></data>
+  <data name="Reason_frequency_unknown" xml:space="preserve"><value>Sıklık bilinmiyor</value></data>
+  <data name="Reason_no_matching_policy" xml:space="preserve"><value>Eşleşen politika yok</value></data>
+  <data name="Reason_policy_not_effective" xml:space="preserve"><value>Politika bu tarihte geçerli değil</value></data>
+  <data name="Reason_policy_inactive" xml:space="preserve"><value>Politika pasif</value></data>
+  <data name="Reason_policy_archived" xml:space="preserve"><value>Politika arşivlenmiş</value></data>
+  <data name="Reason_policy_conflict" xml:space="preserve"><value>Öncelik bandı eşitliği — sabit kimlikle çözüldü</value></data>
+  <data name="Reason_policy_selected_by_priority" xml:space="preserve"><value>Önceliğe göre seçildi</value></data>
+  <data name="Reason_policy_selected_by_specificity" xml:space="preserve"><value>Özgüllüğe göre seçildi</value></data>
+  <data name="Reason_policy_selected_by_latest_effective_from" xml:space="preserve"><value>En son başlangıç tarihine göre seçildi</value></data>
+  <data name="Reason_campaign_context_missing" xml:space="preserve"><value>Kampanya bağlamı eksik</value></data>
+  <data name="Reason_segment_context_missing" xml:space="preserve"><value>Segment bağlamı eksik</value></data>
+  <data name="Reason_cycle_context_missing" xml:space="preserve"><value>Cycle bağlamı eksik</value></data>
+  <data name="Reason_business_scope_mismatch" xml:space="preserve"><value>İş kapsamı uyuşmuyor</value></data>
+  <data name="Reason_contact_location_context_absent" xml:space="preserve"><value>Kişi-konum bağlamı yok</value></data>
+  <!-- WP-FREQ-E list console (mockup columns + subtitles) -->
+  <data name="Policy" xml:space="preserve"><value>Politika</value></data>
+  <data name="Validity" xml:space="preserve"><value>Geçerlilik</value></data>
+  <data name="Weight" xml:space="preserve"><value>Ağırlık</value></data>
+  <data name="ValidityOpenEnded" xml:space="preserve"><value>süresiz</value></data>
+  <data name="FreqBounded" xml:space="preserve"><value>dönem sınırlı</value></data>
+  <data name="FreqOpenEnded" xml:space="preserve"><value>süresiz geçerli</value></data>
+  <data name="Source_campaign" xml:space="preserve"><value>Kampanya kararı</value></data>
+  <data name="Source_segmentation" xml:space="preserve"><value>Segmentasyon ekibi</value></data>
+  <data name="Source_manual" xml:space="preserve"><value>Elle girildi</value></data>
+  <data name="Source_legacy-import" xml:space="preserve"><value>Eski sistemden</value></data>
+  <data name="Source_business-rule" xml:space="preserve"><value>Otomatik iş kuralı</value></data>
+  <data name="Source_manager-override" xml:space="preserve"><value>Saha yöneticisi</value></data>
+  <data name="Source_other" xml:space="preserve"><value>Diğer</value></data>
+  <!-- WP-FREQ-F2 editor page -->
+  <data name="EditPolicy" xml:space="preserve"><value>Politikayı Düzenle</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="ArchivedReadonly" xml:space="preserve"><value>Arşivlenmiş politika salt-okunurdur; düzenlenemez.</value></data>
+  <data name="NotesHelp" xml:space="preserve"><value>Dahili not — planlama motoru okumaz.</value></data>
+  <data name="TargetListsNote" xml:space="preserve"><value>Listeler sistem tanımlarından gelir</value></data>
+  <data name="TargetPickHint" xml:space="preserve"><value>Listeden ara ve seç</value></data>
+  <data name="ScopeToggle" xml:space="preserve"><value>Nerede geçerli olsun?</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>opsiyonel — boş bırakılan her alan “tümü” demektir</value></data>
+  <data name="ScopeGroupOrg" xml:space="preserve"><value>Organizasyon</value></data>
+  <data name="ScopeGroupScope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="ScopeGroupProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="ScopeGroupPeriod" xml:space="preserve"><value>Dönem</value></data>
+  <data name="ScopePickBrandFirst" xml:space="preserve"><value>Önce marka seçin</value></data>
+  <data name="NoConstraint" xml:space="preserve"><value>kısıtlama yok</value></data>
+  <data name="ScopePickCyclePeriodFirst" xml:space="preserve"><value>Önce cycle seçin</value></data>
+  <data name="ScopeAllTargets" xml:space="preserve"><value>tüm hedefler</value></data>
+  <data name="ScopeClear" xml:space="preserve"><value>Kapsamı temizle</value></data>
+  <data name="FreqResolvedLabel" xml:space="preserve"><value>Çözülen cadence</value></data>
+  <data name="EffectiveNote" xml:space="preserve"><value>Bitiş boş bırakılırsa politika süresiz geçerlidir; aynı hedefe daha yeni bir başlangıç tarihi çakışmada öne geçer.</value></data>
+  <data name="EditorSectionConflict" xml:space="preserve"><value>Çakışma olursa</value></data>
+  <data name="ConflictIntro" xml:space="preserve"><value>Aynı hedefe başka bir kural da denk gelirse hangisinin kazanacağını bu seçim belirler.</value></data>
+  <data name="ConflictWeightLabel" xml:space="preserve"><value>Bu kuralın ağırlığı</value></data>
+  <data name="ConflictSourceLabel" xml:space="preserve"><value>Bu kural nereden geliyor?</value></data>
+  <data name="LifecycleTitle" xml:space="preserve"><value>Yaşam döngüsü</value></data>
+  <data name="LifecycleDraftHelp" xml:space="preserve"><value>plana girmez</value></data>
+  <data name="LifecycleActiveHelp" xml:space="preserve"><value>plana giriyor</value></data>
+  <data name="LifecycleInactiveHelp" xml:space="preserve"><value>şimdilik durduruldu</value></data>
+  <data name="LifecycleArchivedHelp" xml:space="preserve"><value>okunur, silinmez</value></data>
+  <!-- WP-FREQ-F3 target chip subtext -->
+  <data name="MostSpecific" xml:space="preserve"><value>en spesifik</value></data>
+  <data name="Broadest" xml:space="preserve"><value>en geniş</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>Silme yok. Kapatma Archive ile yapılır; kayıt geçmişte okunur kalır ve planlama motoru tarafından değerlendirilmez.</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Bu politika ne yapacak?</value></data>
+  <data name="Scope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="SummaryOnSaveLabel" xml:space="preserve"><value>Kaydedilince</value></data>
+  <data name="ChecklistTitle" xml:space="preserve"><value>Kaydetmeden önce</value></data>
+  <data name="SaveActivate" xml:space="preserve"><value>Kaydet ve aktive et</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Taslak olarak kaydet</value></data>
+  <data name="SaveInactive" xml:space="preserve"><value>Yayından kaldır</value></data>
+  <data name="ArchiveAction" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="VisitsWord" xml:space="preserve"><value>ziyaret</value></data>
+  <data name="ScopeNoConstraint" xml:space="preserve"><value>kısıt yok</value></data>
+  <data name="ScopeConstraintUnit" xml:space="preserve"><value>kısıt</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>"{name}" hedeflerine {cadence} planlanacak — {scope}.</value></data>
+  <data name="SummaryScopeAll" xml:space="preserve"><value>tüm kapsamda</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>Bu politika</value></data>
+  <data name="ChecklistReady" xml:space="preserve"><value>hazır</value></data>
+  <data name="ChecklistWarnWord" xml:space="preserve"><value>uyarı</value></data>
+  <data name="ChkTarget" xml:space="preserve"><value>Hedef seçildi</value></data>
+  <data name="ChkFrequency" xml:space="preserve"><value>Frekans geçerli</value></data>
+  <data name="ChkPeriod" xml:space="preserve"><value>Dönem tutarlı</value></data>
+  <data name="ChkScopeNarrowed" xml:space="preserve"><value>Kapsam daraltıldı</value></data>
+  <data name="ChkScopeNone" xml:space="preserve"><value>Kapsam kısıtı yok</value></data>
+  <data name="ChkWeight" xml:space="preserve"><value>Çakışma ağırlığı seçildi</value></data>
+  <data name="ChkWillDraft" xml:space="preserve"><value>Taslak olarak kalacak</value></data>
+  <data name="ChkWillActive" xml:space="preserve"><value>Yayına alınacak</value></data>
+  <data name="ChkWillInactive" xml:space="preserve"><value>Yayından kaldırılacak</value></data>
+  <data name="ChkWillArchived" xml:space="preserve"><value>Arşivlenecek</value></data>
+  <data name="ChkTargetEmptyDesc" xml:space="preserve"><value>Hangi kayda uygulanacağı henüz seçilmedi.</value></data>
+  <data name="ChkFreqEmptyDesc" xml:space="preserve"><value>Frekans henüz tamamlanmadı.</value></data>
+  <data name="ChkPeriodEmptyDesc" xml:space="preserve"><value>Frekans ve dönem birlikte seçilmeli.</value></data>
+  <data name="ChkScopeAllDesc" xml:space="preserve"><value>Politika bu hedef tipindeki tüm kayıtlara uygulanır.</value></data>
+  <data name="ChkWeightEmptyDesc" xml:space="preserve"><value>Bir çakışma ağırlığı bandı seçin.</value></data>
+  <data name="ChkWillDraftDesc" xml:space="preserve"><value>Taslak kurallar plana girmez; hazır olduğunda yayına alırsınız.</value></data>
+  <data name="ChkWillActiveDesc" xml:space="preserve"><value>Kural yayına alınır ve plana girer.</value></data>
+  <data name="ChkWillInactiveDesc" xml:space="preserve"><value>Kural saklanır ama artık uygulanmaz.</value></data>
+  <data name="ChkWillArchivedDesc" xml:space="preserve"><value>Kural emekliye ayrılır ve salt-okunur olur.</value></data>
+  <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>Tüm iş birimleri</value></data>
+  <data name="ScopeSegmentIndependent" xml:space="preserve"><value>Segmentten bağımsız</value></data>
+  <data name="ScopeCampaignIndependent" xml:space="preserve"><value>Kampanyadan bağımsız</value></data>
+  <data name="ScopeAllBrands" xml:space="preserve"><value>Tüm markalar</value></data>
+  <data name="ScopeAllProducts" xml:space="preserve"><value>Tüm ürünler</value></data>
+  <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>Tüm cycle dönemleri</value></data>
+  <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
+  <data name="EditorSectionTargetLong" xml:space="preserve"><value>HEDEF — KİME UYGULANIYOR</value></data>
+  <data name="EditorSectionFrequencyLong" xml:space="preserve"><value>FREKANS — ASIL DEĞER</value></data>
+  <data name="TargetPickedWhich" xml:space="preserve"><value>Hangi kayıt</value></data>
+  <data name="TargetChange" xml:space="preserve"><value>Değiştir…</value></data>
+  <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>İş birimi ve saha alanı — boş bırakılırsa kısıt yok</value></data>
+  <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>Segment ve kampanya — boş bırakılırsa kısıt yok</value></data>
+  <data name="ScopeGroupProductDesc" xml:space="preserve"><value>Marka ve ürün — önce marka, sonra ürün</value></data>
+  <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>Cycle dönemi — cycle tabanlı sıklıkta zorunludur</value></data>
+  <!-- WP-FREQ-DET-B details separate page -->
+  <data name="DetailPageTitle" xml:space="preserve"><value>Politika Detayı</value></data>
+  <data name="EditAction" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="StatusFlowTitle" xml:space="preserve"><value>Durum akışı</value></data>
+  <data name="ImpactTitle" xml:space="preserve"><value>Etki</value></data>
+  <data name="ImpactTargetsLine" xml:space="preserve"><value>{0} hedef bu politikayı alıyor</value></data>
+  <data name="ImpactVisitsLine" xml:space="preserve"><value>{0} planlanan ziyaret / çeyrek</value></data>
+  <data name="ConflictsTitle" xml:space="preserve"><value>Bu hedefte çakışan politikalar</value></data>
+  <data name="ConflictsCandidateCount" xml:space="preserve"><value>{0} aday</value></data>
+  <data name="ConflictsEmpty" xml:space="preserve"><value>Bu hedef için çakışan politika yok.</value></data>
+  <data name="CandidateBadge" xml:space="preserve"><value>Aday</value></data>
+  <data name="TargetsWord" xml:space="preserve"><value>hedef</value></data>
+  <data name="TargetType_segment" xml:space="preserve"><value>Segment</value></data>
+  <data name="TargetType_account" xml:space="preserve"><value>Kurum</value></data>
+  <data name="TargetType_contact" xml:space="preserve"><value>Kişiye özel</value></data>
+  <data name="TargetType_campaign-target" xml:space="preserve"><value>Kampanya hedefi</value></data>
+  <data name="SpecNarrowest" xml:space="preserve"><value>en dar kapsam</value></data>
+  <data name="SpecBroadest" xml:space="preserve"><value>en geniş kapsam</value></data>
+  <data name="ResolveWhoTitle" xml:space="preserve"><value>Kimi soruyorsunuz?</value></data>
+  <data name="ResolveWhoDesc" xml:space="preserve"><value>Bir hedef seçin; o hedefe şu anda kaç ziyaret düştüğünü ve bunun hangi kuraldan geldiğini gösterelim.</value></data>
+  <data name="ResolveScenarioLabel" xml:space="preserve"><value>Kim / ne</value></data>
+  <data name="ResolveScenario_contact_territory" xml:space="preserve"><value>Bir doktor — belirli hastanede</value></data>
+  <data name="ResolveScenario_contact" xml:space="preserve"><value>Bir doktor — tüm hastaneler</value></data>
+  <data name="ResolveScenario_account" xml:space="preserve"><value>Bir kurum/hesap</value></data>
+  <data name="ResolveScenario_account-contact-link" xml:space="preserve"><value>Kişi-kurum bağı</value></data>
+  <data name="ResolveScenario_segment" xml:space="preserve"><value>Segmentteki tüm hedefler</value></data>
+  <data name="ResolveScenario_campaign-target" xml:space="preserve"><value>Kampanya hedefi</value></data>
+  <data name="ResolveScenario_territory-node" xml:space="preserve"><value>Saha alanı</value></data>
+  <data name="ResolveScenario_concept-node" xml:space="preserve"><value>Konsept düğümü</value></data>
+  <data name="ResolveScenario_audience-profile" xml:space="preserve"><value>Hedef kitle profili</value></data>
+  <data name="ResolveRecordLabel" xml:space="preserve"><value>Kayıt</value></data>
+  <data name="ResolveChange" xml:space="preserve"><value>değiştir</value></data>
+  <data name="ResolveCyclePeriod" xml:space="preserve"><value>Dönem</value></data>
+  <data name="ResolveDateLabel" xml:space="preserve"><value>Tarih</value></data>
+  <data name="ResolveShowFrequency" xml:space="preserve"><value>Frekansı göster</value></data>
+  <data name="ResolveRuleSimpleTitle" xml:space="preserve"><value>Kural basit</value></data>
+  <data name="ResolveRuleSimpleBody" xml:space="preserve"><value>Bir hedefe birden fazla politika denk gelirse, en dar kapsamlı olan kazanır: kişiye özel kural, kampanya kuralını; kampanya kuralı da segment kuralını geçer. Kapsam eşitse yüksek öncelik, öncelik de eşitse en yeni başlangıç tarihi kazanır.</value></data>
+  <data name="ResolveAnswerLabel" xml:space="preserve"><value>Cevap</value></data>
+  <data name="ResolveHeadlineResolved" xml:space="preserve"><value>{1} {0} ziyaret</value></data>
+  <data name="ResolveHeadlineUnknown" xml:space="preserve"><value>Tanımlı frekans yok</value></data>
+  <data name="ResolveHeadlineConflict" xml:space="preserve"><value>Çakışma</value></data>
+  <data name="ResolveHeadlineNotApplicable" xml:space="preserve"><value>Uygulanmaz</value></data>
+  <data name="ResolveCadence_day" xml:space="preserve"><value>günde</value></data>
+  <data name="ResolveCadence_week" xml:space="preserve"><value>haftada</value></data>
+  <data name="ResolveCadence_month" xml:space="preserve"><value>ayda</value></data>
+  <data name="ResolveCadence_quarter" xml:space="preserve"><value>çeyrekte</value></data>
+  <data name="ResolveCadence_cycle" xml:space="preserve"><value>cycle başına</value></data>
+  <data name="ResolveCadence_campaign-period" xml:space="preserve"><value>kampanya döneminde</value></data>
+  <data name="ResolveCadence_custom" xml:space="preserve"><value>özel dönemde</value></data>
+  <data name="ResolveExplainResolved" xml:space="preserve"><value>Bu hedefe uygun bir kural bulundu; en dar kapsamlı olan uygulandı.</value></data>
+  <data name="ResolveExplainUnknown" xml:space="preserve"><value>Bu hedefe hiçbir politika denk gelmiyor; planlayıcı sistem varsayılanını kullanır.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>Aynı kapsamda iki kural vardı; daha yüksek öncelikli olan uygulandı. Diğerini gözden geçirmek isteyebilirsiniz.</value></data>
+  <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>Bu istek için çözümleme uygulanmıyor.</value></data>
+  <data name="ResolveExplainDateOut" xml:space="preserve"><value>Hedefe uyan kurallar var ama seçtiğiniz tarih hiçbirinin geçerlilik aralığına girmiyor.</value></data>
+  <data name="ResolveHeadlineDateOut" xml:space="preserve"><value>Bu tarihte geçerli kural yok</value></data>
+  <data name="ResolveVerdictBadge_resolved" xml:space="preserve"><value>net sonuç</value></data>
+  <data name="ResolveVerdictBadge_conflict" xml:space="preserve"><value>çakışma çözüldü</value></data>
+  <data name="ResolveVerdictBadge_dateout" xml:space="preserve"><value>tarih dışında</value></data>
+  <data name="ResolveVerdictBadge_unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="ResolveWinnerTitle" xml:space="preserve"><value>Bu frekansı veren kural</value></data>
+  <data name="ResolveOpenPolicy" xml:space="preserve"><value>Politikayı aç</value></data>
+  <data name="ResolveLadderTitle" xml:space="preserve"><value>Bu hedefe denk gelen diğer kurallar</value></data>
+  <data name="ResolveLadderSort" xml:space="preserve"><value>dardan genişe sıralı</value></data>
+  <data name="ResolveLadderEmpty" xml:space="preserve"><value>Bu hedefe denk gelen başka kural yok.</value></data>
+  <data name="ResolveTagSelected" xml:space="preserve"><value>seçildi</value></data>
+  <data name="ResolveTagNotEffective" xml:space="preserve"><value>tarih dışı</value></data>
+  <data name="ResolveTagInactive" xml:space="preserve"><value>devrede değil</value></data>
+  <data name="ResolveTagFallback" xml:space="preserve"><value>yedek</value></data>
+  <data name="ResolveWhyNotEffective" xml:space="preserve"><value>Kural var ama seçtiğiniz tarihte geçerli değil.</value></data>
+  <data name="ResolveWhySpecificityLost" xml:space="preserve"><value>Daha dar kapsamlı bir kural olduğu için bu kural uygulanmadı.</value></data>
+  <data name="ResolveWhyBroader" xml:space="preserve"><value>Bölge/segment kuralı, daha dar kurallardan geniş kapsamlı.</value></data>
+  <data name="ResolveWhyLastResort" xml:space="preserve"><value>Daha dar bir kural bulunmazsa bu kural devreye girer.</value></data>
+  <data name="ResolveWhySelSpecificity" xml:space="preserve"><value>En dar kapsamlı kural olduğu için seçildi.</value></data>
+  <data name="ResolveWhySelPriority" xml:space="preserve"><value>Önceliğe göre seçildi.</value></data>
+  <data name="ResolveWhyContextMissing" xml:space="preserve"><value>Seçilen bağlamda geçerli değil ({0} eksik).</value></data>
+  <data name="ResolveCandSegmentAll" xml:space="preserve"><value>Segmentteki tüm hedefler</value></data>
+  <data name="ResolveNextTitle" xml:space="preserve"><value>Ne yapmalıyım?</value></data>
+  <data name="ResolveDo_resolved_1" xml:space="preserve"><value>Bir şey yapmanız gerekmiyor</value></data>
+  <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>Planlayıcı bu hedefe bu frekansı uygulayacak.</value></data>
+  <data name="ResolveDo_resolved_2" xml:space="preserve"><value>Frekans yanlış geliyorsa</value></data>
+  <data name="ResolveDo_resolved_2d" xml:space="preserve"><value>Uygulanan kuralı açıp ziyaret sayısını değiştirin ya da kuralı arşivleyin.</value></data>
+  <data name="ResolveDo_conflict_1" xml:space="preserve"><value>İki kural aynı kapsamda</value></data>
+  <data name="ResolveDo_conflict_1d" xml:space="preserve"><value>Kalıcı çözüm için birinin kapsamını daraltın veya önceliğini düşürün.</value></data>
+  <data name="ResolveDo_conflict_2" xml:space="preserve"><value>Şimdilik sorun yok</value></data>
+  <data name="ResolveDo_conflict_2d" xml:space="preserve"><value>Planlayıcı yüksek öncelikli kuralı kullanıyor; plan üretilmeye devam eder.</value></data>
+  <data name="ResolveDo_unknown_1" xml:space="preserve"><value>Bu hedef kapsama girmiyor</value></data>
+  <data name="ResolveDo_unknown_1d" xml:space="preserve"><value>Segment veya bölge seviyesinde bir yedek kural tanımlamanız önerilir.</value></data>
+  <data name="ResolveDo_unknown_2" xml:space="preserve"><value>Hızlı çözüm</value></data>
+  <data name="ResolveDo_unknown_2d" xml:space="preserve"><value>Segment için tek bir politika, altındaki tüm hedefleri kapsar.</value></data>
+  <data name="ResolveDo_na_1" xml:space="preserve"><value>Uygulanmaz</value></data>
+  <data name="ResolveDo_na_1d" xml:space="preserve"><value>Bu hedef tipi için çözümleme geçerli değil.</value></data>
+  <data name="TargetType_account-contact-link" xml:space="preserve"><value>Kişiye özel</value></data>
+  <data name="TargetType_concept-node" xml:space="preserve"><value>Konsept</value></data>
+  <data name="TargetType_territory-node" xml:space="preserve"><value>Saha alanı</value></data>
+  <data name="TargetType_audience-profile" xml:space="preserve"><value>Hedef kitle</value></data>
+</root>

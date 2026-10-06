@@ -1,4 +1,5 @@
 using System.Reflection;
+using Diten.Platform.Application.Features.Meetings.Providers;
 using Diten.Platform.Application.Features.Tasks.Providers;
 using Diten.Platform.Application.Features.WorkAggregation.Dispatch;
 using Diten.Platform.Application.Features.WorkAggregation.Providers;
@@ -53,12 +54,14 @@ public sealed class WorkItemBridgeSingletonGuardTests
     ];
 
     /// <summary>
-    /// The complete, deliberate set. Two in-process providers for the two modules that live inside Platform, and
-    /// ONE network provider that serves every module that does not — by configuration row, not by class.
+    /// The complete, deliberate set. In-process providers for the modules that live inside Platform — Tasks,
+    /// Workflow, and (MOD-0357 S5c) Meetings — and ONE network provider that serves every module that does not —
+    /// by configuration row, not by class.
     /// </summary>
     private static readonly Type[] ExpectedProviders =
     [
         typeof(HttpWorkItemProvider),
+        typeof(MeetingWorkItemProvider),
         typeof(TaskWorkItemProvider),
         typeof(WorkflowApprovalWorkItemProvider)
     ];
@@ -67,6 +70,7 @@ public sealed class WorkItemBridgeSingletonGuardTests
     private static readonly Type[] ExpectedDispatchers =
     [
         typeof(HttpWorkItemActionDispatcher),
+        typeof(MeetingWorkItemActionDispatcher),
         typeof(TaskWorkItemActionDispatcher),
         typeof(WorkflowApprovalWorkItemActionDispatcher)
     ];

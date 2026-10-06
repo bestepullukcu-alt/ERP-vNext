@@ -106,6 +106,9 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>El puesto seleccionado no puede recibir tareas. Elija un puesto activo.</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Otra persona modificó esta tarea antes. La pantalla ya muestra el estado actual.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Falta marcar un elemento obligatorio de la lista de verificación, por lo que la tarea no puede completarse.</value></data>
+  <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>Un campo de cierre obligatorio sigue vacío, por lo que la tarea no puede completarse.</value></data>
+  <data name="ErrorOrganizationUnitNotFound" xml:space="preserve"><value>No se encontró la unidad organizativa indicada.</value></data>
+  <data name="ErrorOrganizationUnitOutOfScope" xml:space="preserve"><value>Esa unidad organizativa está fuera de su alcance.</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>Una tarea de la que esta depende aún no ha terminado, por lo que no puede avanzar.</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>Una subtarea sigue abierta, por lo que esta tarea aún no puede completarse.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Esta tarea está cerrada, por lo que ya no admite comentarios.</value></data>
@@ -114,8 +117,12 @@
   <data name="ErrorDueDateRequired" xml:space="preserve"><value>La fecha de vencimiento es obligatoria.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>La tarea está esperando la decisión de la persona que aprueba.</value></data>
   <data name="ErrorReviewPending" xml:space="preserve"><value>La tarea espera la respuesta del revisor.</value></data>
+  <data name="ErrorDeliverableRequired" xml:space="preserve"><value>Debe adjuntar el archivo de entrega antes de completar esta tarea.</value></data>
+  <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>Este paso no se puede cerrar hasta que se publique el acta de la reunión de revisión vinculada.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>Esta tarea no se puede completar en este estado. Iníciela primero.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Solo quien solicitó esta tarea puede cancelarla. Si no quiere el trabajo, devuélvalo.</value></data>
+  <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>No puede ser el aprobador de una aprobación que usted solicita. Elija a otra persona como responsable de la aprobación.</value></data>
+  <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>No puede revisar su propio envío. Pida a otra persona que revise esta tarea.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Indique qué está esperando la tarea.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>Se requiere un título.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>El título puede tener como máximo 200 caracteres.</value></data>
@@ -150,6 +157,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>Observadores</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>Lista de control</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>Los pasos de esta tarea. Los elementos se marcan después de crear la tarea; un elemento bloqueante impide cerrarla.</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>Adjuntos</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>Archivos de esta tarea: las instrucciones para abrirla, o una evidencia y un entregable para guardar de inmediato. Se suben una vez creada la tarea.</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Archivo</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Tipo</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Adjunto</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Evidencia</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Entregable</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Agregar archivo</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>Quitar</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>Tarea creada: algunos archivos no se subieron</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>La tarea se creó, pero los siguientes archivos no se pudieron subir. Agréguelos de nuevo desde la tarjeta de Adjuntos de la tarea:</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>Ir a la tarea</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Escriba un elemento y pulse Intro</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>Añadir</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Haga clic en la etiqueta para cambiar el nivel. Todavía no hay lista de plantillas.</value></data>
@@ -201,6 +220,12 @@
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>Este comentario ya fue retirado.</value>
   </data>
+  <data name="ErrorMentionNotVisible" xml:space="preserve">
+    <value>Una de las personas mencionadas no puede ver esta tarea. Agréguela primero como observador.</value>
+  </data>
+  <data name="ErrorMentionLimitExceeded" xml:space="preserve">
+    <value>Un comentario puede mencionar como máximo a 10 personas.</value>
+  </data>
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>Esa persona no puede indicarse aquí.</value>
   </data>
@@ -217,4 +242,46 @@
   <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>Este elemento requiere evidencia antes de poder completarse.</value></data>
   <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>No se pudo subir este archivo. Compruebe su tipo y tamaño e inténtelo de nuevo.</value></data>
   <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Los adjuntos, incluida la evidencia, se pueden añadir una vez creada la tarea.</value></data>
+  <data name="ReassignAction" xml:space="preserve"><value>Transferir</value></data>
+  <data name="ReassignTitle" xml:space="preserve"><value>Entregar esta tarea a otra persona</value></data>
+  <data name="ReassignHint" xml:space="preserve"><value>La nueva persona responsable ve la tarea de inmediato. El motivo queda en el historial.</value></data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve"><value>Nueva persona responsable</value></data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve"><value>Elija una persona</value></data>
+  <data name="ReassignReasonLabel" xml:space="preserve"><value>Motivo de la entrega</value></data>
+  <data name="ReassignReasonPlaceholder" xml:space="preserve"><value>p. ej. De permiso hasta el 5 de octubre; Ayşe se encarga de la auditoría.</value></data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve"><value>Elija quién asume la tarea.</value></data>
+  <data name="ReassignReasonRequired" xml:space="preserve"><value>Escriba por qué cambia de responsable.</value></data>
+  <data name="ReassignDone" xml:space="preserve"><value>La tarea se ha entregado.</value></data>
+  <data name="ReassignNoPeople" xml:space="preserve"><value>No hay nadie más a quien entregar esta tarea.</value></data>
+  <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>Una asignación no se edita: se entrega, con un motivo que permanece en el historial.</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>Escriba una respuesta antes de enviar.</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>La respuesta es demasiado larga. No debe superar los 4000 caracteres.</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>Esta pregunta ya no le espera: fue respondida o retirada. Actualice la lista.</value>
+  </data>
+  <data name="ErrorPlanNotHolder" xml:space="preserve">
+    <value>Solo la persona que tiene esta tarea puede planificarla. Como solicitante, indique su expectativa con la fecha de vencimiento.</value>
+  </data>
+  <data name="ErrorPlanConflict" xml:space="preserve">
+    <value>Este horario se solapa con otra tarea que ya ha planificado. Elija otro horario o mueva la otra tarea.</value>
+  </data>
+  <data name="ErrorPlanDurationInvalid" xml:space="preserve">
+    <value>La duración planificada debe ser de al menos 15 minutos, en intervalos de 15 minutos.</value>
+  </data>
+  <data name="ErrorUnplanNotAllowed" xml:space="preserve">
+    <value>Solo una tarea planificada que no se haya iniciado puede quitarse del calendario.</value>
+  </data>
+  <data name="ErrorCalendarRangeInvalid" xml:space="preserve">
+    <value>El calendario puede mostrar como máximo 42 días a la vez. Elija un intervalo de fechas más corto.</value>
+  </data>
+  <data name="WarningPlanOverlapsMeeting" xml:space="preserve">
+    <value>Guardado, pero este horario se solapa con la reunión «{0}».</value>
+  </data>
+  <data name="WarningPlanOutsideWorkingHours" xml:space="preserve">
+    <value>Guardado, pero este horario está fuera de su horario laboral.</value>
+  </data>
 </root>

@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -35,6 +36,7 @@ public sealed class KnowledgeConceptsController : Controller
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
     private readonly ILogger<KnowledgeConceptsController> _logger;
+    private readonly CrmReferenceSetReader _referenceSets;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true };
 
     public KnowledgeConceptsController(
@@ -48,6 +50,7 @@ public sealed class KnowledgeConceptsController : Controller
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _sharedLocalizer = sharedLocalizer;
         _logger = logger;
+        _referenceSets = new CrmReferenceSetReader(httpClient, _gatewayUrl, logger);
     }
 
     // ---------------- Pages (tabbed console + ConceptNode Compact page-set) ----------------
@@ -157,6 +160,22 @@ public sealed class KnowledgeConceptsController : Controller
         return View($"{ViewRoot}/Details.cshtml", model);
     }
 
+    // ---------------- Chain Template Compact create/edit (SCMM-10-UI-refine Not 5) ----------------
+    // Golden Compact full-page (Claims/Node pattern) replacing the Slim offcanvas. The branch/step builder is
+    // JS-driven (template-form.js) and submits through the same-origin concept-chain-templates proxy above.
+
+    [HttpGet("Templates/Create")]
+    public IActionResult TemplateCreate() =>
+        RequirePage(TemplateManagePermission, ManagePermission, ManageFallback) ?? View($"{ViewRoot}/TemplateCreate.cshtml");
+
+    [HttpGet("Templates/Edit/{id:guid}")]
+    public IActionResult TemplateEdit(Guid id)
+    {
+        if (RequirePage(TemplateManagePermission, ManagePermission, ManageFallback) is { } denied) return denied;
+        ViewData["TemplateId"] = id;
+        return View($"{ViewRoot}/TemplateEdit.cshtml");
+    }
+
     // ---------------- Same-origin browser proxy (FU03 allowlist only) ----------------
 
     [HttpGet("api/contract")]
@@ -218,10 +237,66 @@ public sealed class KnowledgeConceptsController : Controller
     public Task<IActionResult> ArchiveRelationship(Guid relationshipId, CancellationToken ct) =>
         ProxyJsonAsync(HttpMethod.Post, $"/api/crm/knowledge/concept-relationships/{relationshipId}/archive", null, ManagePermission, ct, ManageFallback);
 
-    // Concept chain templates (Slim tab).
+    // Concept chain templates (Slim LIST tab; create/edit are the Compact full-page below — SCMM-10-UI-refine Not 5).
     [HttpGet("api/concept-chain-templates")]
     public Task<IActionResult> TemplateList(CancellationToken ct) =>
         ProxyGetAsync($"/api/crm/knowledge/concept-chain-templates{Request.QueryString}", ReadPermission, ct, ReadFallback);
+
+    // Single template read — the Compact edit page loads the row fresh (the list stays a separate tab).
+    [HttpGet("api/concept-chain-templates/{templateId:guid}")]
+    public Task<IActionResult> TemplateGet(Guid templateId, CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/knowledge/concept-chain-templates/{templateId}", ReadPermission, ct, ReadFallback);
+
+    // ForWhom / audience picker source for the Chain Template Identity & Classification section (SCMM-10-MOD-C:
+    // template-level ForWhom = AudienceProfile refs) — read-only FU02 reference, same allowlist pattern as subjects /
+    // concept-types.
+    [HttpGet("api/audience-profiles")]
+    public Task<IActionResult> AudienceProfileList(CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/knowledge/audience-profiles{Request.QueryString}", ReadPermission, ct, ReadFallback);
+
+    // SCMM-10-MOD-C: Moderator picker source for the Chain Template Identity & Classification section. Read-only MOD-0048
+    // published values for the content-moderator-role reference set (WP-B seed: position / client / system-auto); the
+    // browser stores the stable ValueCode → ModeratorRoleType and resolves the display name live. scope_key is the JWT
+    // tenant, never taken from the client. Same read gate as the other allowlisted references on this controller, so any
+    // user who can open the template form can populate the moderator dropdown. Mirrors KnowledgeController.ReferenceValues
+    // (that proxy lives under CRM/Knowledge; the template page is CRM/KnowledgeConcepts, so it needs its own same-base
+    // allowlist entry).
+    // WP-CT-FE-10 (#4) — actor display name for the chain template "Versions" timeline (UpdatedBy/CreatedBy hold a user
+    // id). Read-only: AuthService /api/users/{id} (itself gated by auth.users.read on the caller's token), same lookup as
+    // the ConsentPreferences audit names. Only a display name ("First Last", else the email) leaves this proxy — never
+    // the full user record. Any failure (403 / 404 / empty) returns 404 so the page simply hides the line.
+    [HttpGet("api/users/{userId:guid}")]
+    public async Task<IActionResult> UserDisplayName(Guid userId, CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied) return denied;
+        var response = await SendGatewayAsync(HttpMethod.Get, $"/api/users/{userId}", null, ct);
+        if (response is null || !response.IsSuccessStatusCode) return NotFound();
+        try
+        {
+            var user = (await response.Content.ReadFromJsonAsync<ConceptGatewayResponse<ActorNameDto>>(_json, ct))?.Data;
+            var name = $"{user?.FirstName} {user?.LastName}".Trim();
+            var display = string.IsNullOrWhiteSpace(name) ? user?.Email : name;
+            return string.IsNullOrWhiteSpace(display) ? NotFound() : Ok(new { data = new { displayName = display } });
+        }
+        catch (JsonException)
+        {
+            return NotFound();
+        }
+    }
+
+    private sealed record ActorNameDto(string? FirstName, string? LastName, string? Email);
+
+    // WP-BRD-TENANT-CRM-SETS — the moderator source above (content-moderator-role) is read through the shared
+    // CrmReferenceSetReader: consumable-sets route first, so a non-admin template author gets the dropdown too. The
+    // Platform answer is passed through unchanged.
+    [HttpGet("api/reference-data/{setCode}/values")]
+    public async Task<IActionResult> ReferenceValues(string setCode, CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied) return denied;
+        var response = await _referenceSets.ReadAsync(
+            setCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), GetTenantId(), ct);
+        return await ToProxyResultAsync(response, ct);
+    }
 
     [HttpPost("api/concept-chain-templates")]
     public Task<IActionResult> CreateTemplate([FromBody] JsonElement body, CancellationToken ct) =>
@@ -230,6 +305,18 @@ public sealed class KnowledgeConceptsController : Controller
     [HttpPut("api/concept-chain-templates/{templateId:guid}")]
     public Task<IActionResult> UpdateTemplate(Guid templateId, [FromBody] JsonElement body, CancellationToken ct) =>
         ProxyJsonAsync(HttpMethod.Put, $"/api/crm/knowledge/concept-chain-templates/{templateId}", body, TemplateManagePermission, ct, ManagePermission, ManageFallback);
+
+    // WP-CT-FE-5 — the editor's "Non-conforming" tab. Diagnostics is a READ over a supplied (possibly unsaved) spine
+    // (POST only because the spine travels in the body; nothing is written — WP-CT-BE-A). Resolutions record the
+    // "Yok say" set on a saved, non-published template (published → 409 from the service — WP-CT-BE-B); relationships
+    // are never touched (D8).
+    [HttpPost("api/concept-chain-templates/conformance-diagnostics")]
+    public Task<IActionResult> TemplateConformanceDiagnostics([FromBody] JsonElement body, CancellationToken ct) =>
+        ProxyJsonAsync(HttpMethod.Post, "/api/crm/knowledge/concept-chain-templates/conformance-diagnostics", body, ReadPermission, ct, ReadFallback);
+
+    [HttpPut("api/concept-chain-templates/{templateId:guid}/conformance-resolutions")]
+    public Task<IActionResult> TemplateConformanceResolutions(Guid templateId, [FromBody] JsonElement body, CancellationToken ct) =>
+        ProxyJsonAsync(HttpMethod.Put, $"/api/crm/knowledge/concept-chain-templates/{templateId}/conformance-resolutions", body, TemplateManagePermission, ct, ManagePermission, ManageFallback);
 
     [HttpPost("api/concept-chain-templates/{templateId:guid}/archive")]
     public Task<IActionResult> ArchiveTemplate(Guid templateId, CancellationToken ct) =>

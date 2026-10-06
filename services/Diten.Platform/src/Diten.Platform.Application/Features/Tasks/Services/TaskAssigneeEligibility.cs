@@ -75,6 +75,21 @@ public static class TaskAssigneeEligibility
     /// <paramref name="activeAssignments"/> must come from <see cref="ITaskSeatDirectory"/> — there is no "as of"
     /// parameter because the caller no longer chooses the moment; the directory does.
     /// </summary>
+    /// <summary>
+    /// BL-355 — the UNIT-ONLY sibling of <see cref="Judge"/>: may work be filed into this organization unit
+    /// directly, with no position or seat involved?
+    ///
+    /// <para>Kept here rather than asked of <see cref="TaskAssignmentScope.Allows"/> at its own call site, so
+    /// <c>Allows()</c> still has exactly the one external caller <c>TaskAssignmentWriteGuardSourceTests</c>
+    /// measures — a unit-filing question is answered by the SAME rule a seat-filing question is, not by a second
+    /// place that happens to call the same method.</para>
+    ///
+    /// <para>No position is named, so leg (2) of <c>Allows</c> (the subordinate-position leg) can never apply;
+    /// only the legal-entity and granted-unit legs can admit a bare unit.</para>
+    /// </summary>
+    public static bool AllowsUnit(Guid organizationUnitId, Guid legalEntityId, TaskAssignmentScope scope)
+        => scope.Allows(positionId: Guid.Empty, organizationUnitId, legalEntityId);
+
     public static HashSet<Guid> ResolveAssignableUserIds(
         IEnumerable<PositionAssignment> activeAssignments,
         IEnumerable<Position> positions,

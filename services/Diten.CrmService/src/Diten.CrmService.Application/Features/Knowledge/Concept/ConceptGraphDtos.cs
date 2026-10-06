@@ -73,13 +73,12 @@ public sealed record ConceptRelationshipDto(
 
 public sealed record ConceptRelationshipListDto(IReadOnlyList<ConceptRelationshipDto> Items, int Total);
 
-/// <summary>SCMM-10 (③, RM2) read model for one branch step: the concept type plus cardinality + moderator/for-whom refs.</summary>
+/// <summary>SCMM-10 (③, RM2) read model for one branch step: the concept type plus cardinality (structure only).
+/// Moderator / for-whom moved to the template level (WP-A, D-a/D-e).</summary>
 public sealed record ConceptChainStepDto(
     Guid ConceptTypeId,
     int MinSelection,
-    int? MaxSelection,
-    IReadOnlyList<string> AllowedRoleRefs,
-    IReadOnlyList<string> AudienceDimensionRefs);
+    int? MaxSelection);
 
 /// <summary>SCMM-10 (③, RM2) read model for one parallel branch.</summary>
 public sealed record ConceptChainBranchDto(
@@ -90,7 +89,8 @@ public sealed record ConceptChainBranchDto(
 
 /// <summary>MOD-0162 FU03 read model for a chain template. <c>OrderedConceptTypes</c> is the frozen (once published)
 /// spine sequence of ConceptType ids. <c>Branches</c> is the SCMM-10 (③) rich structure — always present on read: a
-/// legacy flat template is migrated read-time to a single branch. <c>ChainVersion</c> is the business version.</summary>
+/// legacy flat template is migrated read-time to a single branch. <c>ChainVersion</c> is the business version.
+/// <c>IgnoredNonConformingRelationshipIds</c> (WP-CT-BE-B) are the "Yok say" resolutions (empty on legacy rows).</summary>
 public sealed record ConceptChainTemplateDto(
     Guid ConceptChainTemplateId,
     Guid SubjectId,
@@ -99,6 +99,8 @@ public sealed record ConceptChainTemplateDto(
     string? Description,
     IReadOnlyList<Guid> OrderedConceptTypes,
     IReadOnlyList<ConceptChainBranchDto> Branches,
+    string? ModeratorRoleType,
+    IReadOnlyList<Guid> ForWhomAudienceProfileIds,
     string Status,
     string ChainVersion,
     DateTimeOffset EffectiveFrom,
@@ -109,7 +111,8 @@ public sealed record ConceptChainTemplateDto(
     string? UpdatedBy,
     DateTimeOffset? ArchivedAt,
     string? ArchivedBy,
-    bool IsArchived);
+    bool IsArchived,
+    IReadOnlyList<Guid> IgnoredNonConformingRelationshipIds);
 
 public sealed record ConceptChainTemplateListDto(IReadOnlyList<ConceptChainTemplateDto> Items, int Total);
 

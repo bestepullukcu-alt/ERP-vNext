@@ -38,7 +38,29 @@ describe("WorkCenterNext resolvers", () => {
   });
 
   it("never sends trigger-only fixtures into Task Detail", () => {
-    const trigger = global.WorkCenterNextFixtures.triggerOnly[0];
+    // MOD-0357 S5c retired the showcase's own triggerOnly sample (meetingInvite is now a real,
+    // dispatchable work item — see MeetingWorkItemProvider). This contract is about the SHAPE
+    // (`fixtureKind: 'triggerOnly'`), not about any one sample, so the test builds its own instead of
+    // depending on production fixture content that no longer exists.
+    const f = global.WorkCenterNextFixtureFactory;
+    const trigger = {
+      fixtureKind: "triggerOnly",
+      id: "TRG-TEST-01",
+      triggerType: "meetingInvite",
+      title: f.resource("InboxTitleMeetingInvite"),
+      summary: f.resource("InboxTitleMeetingInviteSummary"),
+      source: f.source("calendar", "MeetingInvitation", "MTG-TEST-01", { deepLink: "/Calendar/Meetings/MTG-TEST-01" }),
+      systemState: "fresh",
+      concurrency: { kind: "etag", token: "meeting-test" },
+      actions: [
+        f.action("acceptMeeting", { label: f.resource("ActAccept") }),
+        f.action("declineMeeting", { label: f.resource("ActReject"), requiresReason: true })
+      ],
+      primaryActionCode: "acceptMeeting",
+      secondaryActionCodes: [],
+      overflowActionCodes: ["declineMeeting"],
+      responseBehavior: "remove"
+    };
     expect(global.WorkCenterNextTaskDetailResolver.resolveTaskDetailSurface(trigger).invalid).toBe(true);
     expect(global.WorkCenterNextTriggerResponseResolver.resolveTriggerResponse(trigger)).toMatchObject({
       invalid: false,

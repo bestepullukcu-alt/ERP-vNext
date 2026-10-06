@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PoliciesTitle" xml:space="preserve"><value>Politiques de fréquence de visite</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Définissez les politiques de cycle d'appels / fréquence de visite — à quelle fréquence une cible doit être visitée.</value></data>
+  <data name="ArchiveVsDeleteNote" xml:space="preserve"><value>Archiver conserve la politique comme historique lisible ; Supprimer la retire de la liste de travail. Les deux sont réversibles en douceur.</value></data>
+  <data name="PoliciesTab" xml:space="preserve"><value>Politiques</value></data>
+  <data name="ResolveTab" xml:space="preserve"><value>Résolution</value></data>
+  <data name="ResolvePlaceholder" xml:space="preserve"><value>Le panneau de résolution arrivera dans une prochaine mise à jour.</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="Target" xml:space="preserve"><value>Cible</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Fréquence</value></data>
+  <data name="Priority" xml:space="preserve"><value>Priorité</value></data>
+  <data name="Source" xml:space="preserve"><value>Source</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="NewPolicy" xml:space="preserve"><value>Nouvelle politique</value></data>
+  <data name="EditorPlaceholder" xml:space="preserve"><value>L'éditeur de politique arrivera dans une prochaine mise à jour.</value></data>
+  <data name="DetailsPlaceholder" xml:space="preserve"><value>La vue détaillée arrivera dans une prochaine mise à jour.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archiver</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Archiver cette politique ? Elle reste lisible comme historique.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Supprimer cette politique ? Elle sera retirée de la liste.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Politique archivée.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aucune politique de fréquence pour l'instant.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Une erreur s'est produite. Veuillez réessayer.</value></data>
+  <data name="PerPeriod" xml:space="preserve"><value>par</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Actif</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Inactif</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Archivé</value></data>
+  <!-- WP-FREQ-B editor -->
+  <data name="EditorSave" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="EditorSectionIdentity" xml:space="preserve"><value>Identité</value></data>
+  <data name="EditorSectionTarget" xml:space="preserve"><value>Cible</value></data>
+  <data name="EditorSectionContext" xml:space="preserve"><value>Contexte</value></data>
+  <data name="EditorSectionFrequency" xml:space="preserve"><value>Contrôle de fréquence</value></data>
+  <data name="EditorSectionPriority" xml:space="preserve"><value>Priorité de conflit</value></data>
+  <data name="EditorSectionSource" xml:space="preserve"><value>Source</value></data>
+  <data name="EditorSectionEffective" xml:space="preserve"><value>Période de validité</value></data>
+  <data name="EditorSectionNotes" xml:space="preserve"><value>Notes</value></data>
+  <data name="EditorHelpIdentity" xml:space="preserve"><value>Un code stable et un nom affiché pour cette politique.</value></data>
+  <data name="EditorHelpTarget" xml:space="preserve"><value>À qui la politique s'applique. Choisissez un type, puis la cible.</value></data>
+  <data name="EditorHelpContext" xml:space="preserve"><value>Provenance et portée facultatives. Laissez vide pour aucune restriction.</value></data>
+  <data name="EditorHelpFrequency" xml:space="preserve"><value>Nombre de visites requises par période.</value></data>
+  <data name="EditorHelpPriority" xml:space="preserve"><value>Si deux politiques se chevauchent, le poids le plus petit l'emporte.</value></data>
+  <data name="EditorHelpEffective" xml:space="preserve"><value>Quand cette politique est valide. Laissez la fin vide pour une durée illimitée.</value></data>
+  <data name="EditorHelpNotes" xml:space="preserve"><value>Notes libres. Obligatoires pour une fréquence personnalisée.</value></data>
+  <data name="FieldPolicyCode" xml:space="preserve"><value>Code de politique</value></data>
+  <data name="FieldPolicyName" xml:space="preserve"><value>Nom de politique</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="FieldStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="FieldTargetType" xml:space="preserve"><value>Type de cible</value></data>
+  <data name="FieldTarget" xml:space="preserve"><value>Cible</value></data>
+  <data name="FieldBusinessUnit" xml:space="preserve"><value>Unité d'affaires</value></data>
+  <data name="FieldTerritory" xml:space="preserve"><value>Territoire</value></data>
+  <data name="FieldSegment" xml:space="preserve"><value>Segment</value></data>
+  <data name="FieldCampaign" xml:space="preserve"><value>Campagne</value></data>
+  <data name="FieldBrand" xml:space="preserve"><value>Marque</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="FieldCyclePeriod" xml:space="preserve"><value>Période de cycle</value></data>
+  <data name="FieldFrequencyType" xml:space="preserve"><value>Type de fréquence</value></data>
+  <data name="FieldRequiredVisitCount" xml:space="preserve"><value>Visites requises</value></data>
+  <data name="FieldPeriodType" xml:space="preserve"><value>Période</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Source</value></data>
+  <data name="FieldEffectiveFrom" xml:space="preserve"><value>Valide à partir du</value></data>
+  <data name="FieldEffectiveTo" xml:space="preserve"><value>Valide jusqu'au</value></data>
+  <data name="FieldNotes" xml:space="preserve"><value>Notes</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Sélectionner…</value></data>
+  <data name="ContextNone" xml:space="preserve"><value>— aucun —</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>Choisir un modèle</value></data>
+  <data name="SelectTerritoryNode" xml:space="preserve"><value>Choisir un nœud</value></data>
+  <data name="Selected" xml:space="preserve"><value>Sélectionné</value></data>
+  <data name="TargetIdManual" xml:space="preserve"><value>Saisir un id (GUID)</value></data>
+  <data name="TargetLockNote" xml:space="preserve"><value>Le code et la cible ne peuvent pas être modifiés après la création.</value></data>
+  <data name="SourceNote" xml:space="preserve"><value>D'où vient cette fréquence. Provenance seulement — n'affecte pas la fréquence.</value></data>
+  <data name="FreqReadsAsLabel" xml:space="preserve"><value>Se lit comme</value></data>
+  <data name="FreqSentenceEmpty" xml:space="preserve"><value>Définissez un nombre et une période.</value></data>
+  <data name="Required" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="TargetRequired" xml:space="preserve"><value>Choisissez une cible.</value></data>
+  <data name="TargetIdInvalid" xml:space="preserve"><value>Un id valide est requis.</value></data>
+  <data name="CountPositive" xml:space="preserve"><value>Doit être supérieur à zéro.</value></data>
+  <data name="PeriodComboInvalid" xml:space="preserve"><value>Cette période n'est pas valide pour la fréquence choisie.</value></data>
+  <data name="BandRequired" xml:space="preserve"><value>Choisissez une bande de priorité.</value></data>
+  <data name="EffectiveOrder" xml:space="preserve"><value>La fin ne peut pas précéder le début.</value></data>
+  <data name="CycleRequired" xml:space="preserve"><value>Une période de cycle est requise pour une fréquence par cycle.</value></data>
+  <data name="CampaignRequired" xml:space="preserve"><value>Une campagne est requise.</value></data>
+  <data name="SegmentRequired" xml:space="preserve"><value>Un segment est requis pour une source de segmentation.</value></data>
+  <data name="NotesRequired" xml:space="preserve"><value>Une fréquence personnalisée exige des notes.</value></data>
+  <data name="FixErrors" xml:space="preserve"><value>Veuillez corriger les champs signalés.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>L'éditeur n'a pas pu être préparé.</value></data>
+  <data name="Band_override-all" xml:space="preserve"><value>Prime sur tout</value></data>
+  <data name="Band_campaign-level" xml:space="preserve"><value>Niveau campagne</value></data>
+  <data name="Band_standard" xml:space="preserve"><value>Standard</value></data>
+  <data name="Band_baseline" xml:space="preserve"><value>Référence</value></data>
+  <data name="Band_last-resort" xml:space="preserve"><value>Dernier recours</value></data>
+  <data name="Band_override-all_Desc" xml:space="preserve"><value>Remplace toutes les autres règles, y compris celles de campagne et de segment.</value></data>
+  <data name="Band_campaign-level_Desc" xml:space="preserve"><value>Prime sur les règles standard pendant une période de campagne.</value></data>
+  <data name="Band_standard_Desc" xml:space="preserve"><value>Le niveau recommandé pour les règles normales de segment et de cible.</value></data>
+  <data name="Band_baseline_Desc" xml:space="preserve"><value>Fréquence de base à l'échelle de la région ; les règles plus précises la remplacent.</value></data>
+  <data name="Band_last-resort_Desc" xml:space="preserve"><value>S'applique uniquement si aucune autre règle ne correspond.</value></data>
+  <data name="Period_day" xml:space="preserve"><value>Jour</value></data>
+  <data name="Period_week" xml:space="preserve"><value>Semaine</value></data>
+  <data name="Period_month" xml:space="preserve"><value>Mois</value></data>
+  <data name="Period_quarter" xml:space="preserve"><value>Trimestre</value></data>
+  <data name="Period_cycle" xml:space="preserve"><value>Cycle</value></data>
+  <data name="Period_campaign-period" xml:space="preserve"><value>Période de campagne</value></data>
+  <data name="Period_custom" xml:space="preserve"><value>Période personnalisée</value></data>
+  <!-- WP-FREQ-C details quick-view + resolve panel -->
+  <data name="NoEndDate" xml:space="preserve"><value>Aucune date de fin</value></data>
+  <data name="DetailTrail" xml:space="preserve"><value>Journal d'audit</value></data>
+  <data name="DetailCreated" xml:space="preserve"><value>Créé</value></data>
+  <data name="DetailUpdated" xml:space="preserve"><value>Mis à jour</value></data>
+  <data name="DetailArchived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="Tl_created" xml:space="preserve"><value>Brouillon créé</value></data>
+  <data name="Tl_published" xml:space="preserve"><value>Publié</value></data>
+  <data name="Tl_deactivated" xml:space="preserve"><value>Désactivé</value></data>
+  <data name="Tl_reactivated" xml:space="preserve"><value>Réactivé</value></data>
+  <data name="Tl_weight_changed" xml:space="preserve"><value>Poids modifié</value></data>
+  <data name="Tl_archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="Tl_next_eval" xml:space="preserve"><value>Prochaine évaluation</value></data>
+  <data name="FieldConceptNode" xml:space="preserve"><value>Nœud de concept</value></data>
+  <data name="FieldAudienceProfile" xml:space="preserve"><value>Profil d'audience</value></data>
+  <data name="ResolveInputSection" xml:space="preserve"><value>Paramètres de résolution</value></data>
+  <data name="ResolveResultSection" xml:space="preserve"><value>Résultat</value></data>
+  <data name="ResolveContextHelp" xml:space="preserve"><value>Le contexte facultatif affine la correspondance. Laissez vide pour l'ignorer.</value></data>
+  <data name="ResolveEffectiveAt" xml:space="preserve"><value>Date d'effet</value></data>
+  <data name="ResolveAction" xml:space="preserve"><value>Résoudre</value></data>
+  <data name="ResolveReadOnlyNote" xml:space="preserve"><value>Aperçu en lecture seule — la résolution n'écrit rien.</value></data>
+  <data name="ResolveResultEmpty" xml:space="preserve"><value>Choisissez une cible et cliquez sur Résoudre.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Résolution…</value></data>
+  <data name="ResolveSelectedPolicy" xml:space="preserve"><value>Politique sélectionnée</value></data>
+  <data name="ResolveCandidates" xml:space="preserve"><value>Politiques candidates</value></data>
+  <data name="ResolveNoCandidates" xml:space="preserve"><value>Aucune politique candidate.</value></data>
+  <data name="ResolveReasonCodes" xml:space="preserve"><value>Codes de motif</value></data>
+  <data name="ResolveSelectionReason" xml:space="preserve"><value>Motif de sélection</value></data>
+  <data name="ResolveNoSelected" xml:space="preserve"><value>Aucune politique ne régit cette cible dans ce contexte.</value></data>
+  <data name="ResolveSpecificity" xml:space="preserve"><value>Spécificité</value></data>
+  <data name="ResolveSelectedBadge" xml:space="preserve"><value>Sélectionnée</value></data>
+  <data name="ResolveEliminated" xml:space="preserve"><value>Éliminée</value></data>
+  <data name="ResolveTargetTypeRequired" xml:space="preserve"><value>Choisissez un type de cible.</value></data>
+  <data name="Verdict_resolved" xml:space="preserve"><value>Résolu</value></data>
+  <data name="Verdict_unknown" xml:space="preserve"><value>Inconnu</value></data>
+  <data name="Verdict_conflict" xml:space="preserve"><value>Conflit</value></data>
+  <data name="Verdict_not_applicable" xml:space="preserve"><value>Non applicable</value></data>
+  <data name="Reason_frequency_policy_resolved" xml:space="preserve"><value>Politique de fréquence résolue</value></data>
+  <data name="Reason_frequency_unknown" xml:space="preserve"><value>Fréquence inconnue</value></data>
+  <data name="Reason_no_matching_policy" xml:space="preserve"><value>Aucune politique correspondante</value></data>
+  <data name="Reason_policy_not_effective" xml:space="preserve"><value>Politique non effective à cette date</value></data>
+  <data name="Reason_policy_inactive" xml:space="preserve"><value>Politique inactive</value></data>
+  <data name="Reason_policy_archived" xml:space="preserve"><value>Politique archivée</value></data>
+  <data name="Reason_policy_conflict" xml:space="preserve"><value>Égalité de bande de priorité — résolue par identifiant stable</value></data>
+  <data name="Reason_policy_selected_by_priority" xml:space="preserve"><value>Sélectionnée par priorité</value></data>
+  <data name="Reason_policy_selected_by_specificity" xml:space="preserve"><value>Sélectionnée par spécificité</value></data>
+  <data name="Reason_policy_selected_by_latest_effective_from" xml:space="preserve"><value>Sélectionnée par la date d'effet la plus récente</value></data>
+  <data name="Reason_campaign_context_missing" xml:space="preserve"><value>Contexte de campagne manquant</value></data>
+  <data name="Reason_segment_context_missing" xml:space="preserve"><value>Contexte de segment manquant</value></data>
+  <data name="Reason_cycle_context_missing" xml:space="preserve"><value>Contexte de cycle manquant</value></data>
+  <data name="Reason_business_scope_mismatch" xml:space="preserve"><value>Périmètre métier incohérent</value></data>
+  <data name="Reason_contact_location_context_absent" xml:space="preserve"><value>Contexte de localisation du contact absent</value></data>
+  <!-- WP-FREQ-E list console (mockup columns + subtitles) -->
+  <data name="Policy" xml:space="preserve"><value>Politique</value></data>
+  <data name="Validity" xml:space="preserve"><value>Validité</value></data>
+  <data name="Weight" xml:space="preserve"><value>Poids</value></data>
+  <data name="ValidityOpenEnded" xml:space="preserve"><value>sans échéance</value></data>
+  <data name="FreqBounded" xml:space="preserve"><value>à durée limitée</value></data>
+  <data name="FreqOpenEnded" xml:space="preserve"><value>valable sans échéance</value></data>
+  <data name="Source_campaign" xml:space="preserve"><value>Décision de campagne</value></data>
+  <data name="Source_segmentation" xml:space="preserve"><value>Équipe de segmentation</value></data>
+  <data name="Source_manual" xml:space="preserve"><value>Saisie manuelle</value></data>
+  <data name="Source_legacy-import" xml:space="preserve"><value>Depuis l'ancien système</value></data>
+  <data name="Source_business-rule" xml:space="preserve"><value>Règle métier automatique</value></data>
+  <data name="Source_manager-override" xml:space="preserve"><value>Responsable terrain</value></data>
+  <data name="Source_other" xml:space="preserve"><value>Autre</value></data>
+  <!-- WP-FREQ-F2 editor page -->
+  <data name="EditPolicy" xml:space="preserve"><value>Modifier la politique</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Retour à la liste</value></data>
+  <data name="ArchivedReadonly" xml:space="preserve"><value>Cette politique est archivée et en lecture seule ; elle ne peut pas être modifiée.</value></data>
+  <data name="NotesHelp" xml:space="preserve"><value>Note interne — le moteur de planification ne la lit pas.</value></data>
+  <data name="TargetListsNote" xml:space="preserve"><value>Les listes proviennent des définitions du système</value></data>
+  <data name="TargetPickHint" xml:space="preserve"><value>Rechercher et sélectionner dans la liste</value></data>
+  <data name="ScopeToggle" xml:space="preserve"><value>Où s'applique-t-elle ?</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>facultatif — tout champ laissé vide signifie « tout »</value></data>
+  <data name="ScopeGroupOrg" xml:space="preserve"><value>Organisation</value></data>
+  <data name="ScopeGroupScope" xml:space="preserve"><value>Portée</value></data>
+  <data name="ScopeGroupProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="ScopeGroupPeriod" xml:space="preserve"><value>Période</value></data>
+  <data name="ScopePickBrandFirst" xml:space="preserve"><value>Choisissez d'abord une marque</value></data>
+  <data name="NoConstraint" xml:space="preserve"><value>aucune restriction</value></data>
+  <data name="ScopePickCyclePeriodFirst" xml:space="preserve"><value>Choisissez d'abord un cycle</value></data>
+  <data name="ScopeAllTargets" xml:space="preserve"><value>toutes les cibles</value></data>
+  <data name="ScopeClear" xml:space="preserve"><value>Effacer la portée</value></data>
+  <data name="FreqResolvedLabel" xml:space="preserve"><value>Cadence résolue</value></data>
+  <data name="EffectiveNote" xml:space="preserve"><value>Si la date de fin est vide, la politique est valable indéfiniment ; en cas de conflit, une date de début plus récente pour la même cible l'emporte.</value></data>
+  <data name="EditorSectionConflict" xml:space="preserve"><value>En cas de conflit</value></data>
+  <data name="ConflictIntro" xml:space="preserve"><value>Si une autre règle s'applique aussi à la même cible, ce choix détermine laquelle l'emporte.</value></data>
+  <data name="ConflictWeightLabel" xml:space="preserve"><value>Poids de cette règle</value></data>
+  <data name="ConflictSourceLabel" xml:space="preserve"><value>D'où vient cette règle ?</value></data>
+  <data name="LifecycleTitle" xml:space="preserve"><value>Cycle de vie</value></data>
+  <data name="LifecycleDraftHelp" xml:space="preserve"><value>non incluse dans la planification</value></data>
+  <data name="LifecycleActiveHelp" xml:space="preserve"><value>incluse dans la planification</value></data>
+  <data name="LifecycleInactiveHelp" xml:space="preserve"><value>suspendue pour l'instant</value></data>
+  <data name="LifecycleArchivedHelp" xml:space="preserve"><value>lecture seule, non supprimée</value></data>
+  <!-- WP-FREQ-F3 target chip subtext -->
+  <data name="MostSpecific" xml:space="preserve"><value>le plus spécifique</value></data>
+  <data name="Broadest" xml:space="preserve"><value>le plus large</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>Il n'y a pas de suppression. La clôture se fait par archivage ; l'enregistrement reste consultable dans l'historique et n'est pas évalué par le moteur de planification.</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Que fera cette politique ?</value></data>
+  <data name="Scope" xml:space="preserve"><value>Portée</value></data>
+  <data name="SummaryOnSaveLabel" xml:space="preserve"><value>À l'enregistrement</value></data>
+  <data name="ChecklistTitle" xml:space="preserve"><value>Avant d'enregistrer</value></data>
+  <data name="SaveActivate" xml:space="preserve"><value>Enregistrer et activer</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Enregistrer comme brouillon</value></data>
+  <data name="SaveInactive" xml:space="preserve"><value>Dépublier</value></data>
+  <data name="ArchiveAction" xml:space="preserve"><value>Archiver</value></data>
+  <data name="VisitsWord" xml:space="preserve"><value>visites</value></data>
+  <data name="ScopeNoConstraint" xml:space="preserve"><value>aucune contrainte</value></data>
+  <data name="ScopeConstraintUnit" xml:space="preserve"><value>contraintes</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>Les cibles « {name} » seront planifiées à {cadence} — {scope}.</value></data>
+  <data name="SummaryScopeAll" xml:space="preserve"><value>sur toute la portée</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>Cette politique</value></data>
+  <data name="ChecklistReady" xml:space="preserve"><value>prêt</value></data>
+  <data name="ChecklistWarnWord" xml:space="preserve"><value>avertissements</value></data>
+  <data name="ChkTarget" xml:space="preserve"><value>Cible sélectionnée</value></data>
+  <data name="ChkFrequency" xml:space="preserve"><value>Fréquence valide</value></data>
+  <data name="ChkPeriod" xml:space="preserve"><value>Période cohérente</value></data>
+  <data name="ChkScopeNarrowed" xml:space="preserve"><value>Portée restreinte</value></data>
+  <data name="ChkScopeNone" xml:space="preserve"><value>Aucune contrainte de portée</value></data>
+  <data name="ChkWeight" xml:space="preserve"><value>Poids de conflit choisi</value></data>
+  <data name="ChkWillDraft" xml:space="preserve"><value>Restera un brouillon</value></data>
+  <data name="ChkWillActive" xml:space="preserve"><value>Sera publiée</value></data>
+  <data name="ChkWillInactive" xml:space="preserve"><value>Sera dépubliée</value></data>
+  <data name="ChkWillArchived" xml:space="preserve"><value>Sera archivée</value></data>
+  <data name="ChkTargetEmptyDesc" xml:space="preserve"><value>L'enregistrement auquel elle s'applique n'est pas encore choisi.</value></data>
+  <data name="ChkFreqEmptyDesc" xml:space="preserve"><value>La fréquence n'est pas encore complète.</value></data>
+  <data name="ChkPeriodEmptyDesc" xml:space="preserve"><value>Sélectionnez à la fois une fréquence et une période.</value></data>
+  <data name="ChkScopeAllDesc" xml:space="preserve"><value>Cette politique s'applique à tous les enregistrements de ce type de cible.</value></data>
+  <data name="ChkWeightEmptyDesc" xml:space="preserve"><value>Choisissez une bande de poids de conflit.</value></data>
+  <data name="ChkWillDraftDesc" xml:space="preserve"><value>Les règles brouillon n'entrent pas dans le plan ; publiez-les quand elles sont prêtes.</value></data>
+  <data name="ChkWillActiveDesc" xml:space="preserve"><value>La règle est publiée et entre dans le plan.</value></data>
+  <data name="ChkWillInactiveDesc" xml:space="preserve"><value>La règle est conservée mais n'est plus appliquée.</value></data>
+  <data name="ChkWillArchivedDesc" xml:space="preserve"><value>La règle est retirée et devient en lecture seule.</value></data>
+  <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>Toutes les unités commerciales</value></data>
+  <data name="ScopeSegmentIndependent" xml:space="preserve"><value>Indépendant du segment</value></data>
+  <data name="ScopeCampaignIndependent" xml:space="preserve"><value>Indépendant de la campagne</value></data>
+  <data name="ScopeAllBrands" xml:space="preserve"><value>Toutes les marques</value></data>
+  <data name="ScopeAllProducts" xml:space="preserve"><value>Tous les produits</value></data>
+  <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>Toutes les périodes de cycle</value></data>
+  <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
+  <data name="EditorSectionTargetLong" xml:space="preserve"><value>CIBLE — À QUI ELLE S'APPLIQUE</value></data>
+  <data name="EditorSectionFrequencyLong" xml:space="preserve"><value>FRÉQUENCE — LA VALEUR RÉELLE</value></data>
+  <data name="TargetPickedWhich" xml:space="preserve"><value>Quel enregistrement</value></data>
+  <data name="TargetChange" xml:space="preserve"><value>Modifier…</value></data>
+  <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>Unité commerciale et secteur — laisser vide pour aucune contrainte</value></data>
+  <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>Segment et campagne — laisser vide pour aucune contrainte</value></data>
+  <data name="ScopeGroupProductDesc" xml:space="preserve"><value>Marque et produit — choisissez d'abord une marque, puis un produit</value></data>
+  <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>Période de cycle — requise pour une fréquence basée sur le cycle</value></data>
+  <!-- WP-FREQ-DET-B details separate page -->
+  <data name="DetailPageTitle" xml:space="preserve"><value>Détails de la politique</value></data>
+  <data name="EditAction" xml:space="preserve"><value>Modifier</value></data>
+  <data name="StatusFlowTitle" xml:space="preserve"><value>Flux d'état</value></data>
+  <data name="ImpactTitle" xml:space="preserve"><value>Impact</value></data>
+  <data name="ImpactTargetsLine" xml:space="preserve"><value>{0} cibles reçoivent cette politique</value></data>
+  <data name="ImpactVisitsLine" xml:space="preserve"><value>{0} visites planifiées / trimestre</value></data>
+  <data name="ConflictsTitle" xml:space="preserve"><value>Politiques en concurrence pour cette cible</value></data>
+  <data name="ConflictsCandidateCount" xml:space="preserve"><value>{0} candidates</value></data>
+  <data name="ConflictsEmpty" xml:space="preserve"><value>Aucune politique concurrente pour cette cible.</value></data>
+  <data name="CandidateBadge" xml:space="preserve"><value>Candidate</value></data>
+  <data name="TargetsWord" xml:space="preserve"><value>cibles</value></data>
+  <data name="TargetType_segment" xml:space="preserve"><value>Segment</value></data>
+  <data name="TargetType_account" xml:space="preserve"><value>Compte</value></data>
+  <data name="TargetType_contact" xml:space="preserve"><value>Contact</value></data>
+  <data name="TargetType_campaign-target" xml:space="preserve"><value>Cible de campagne</value></data>
+  <data name="SpecNarrowest" xml:space="preserve"><value>portée la plus étroite</value></data>
+  <data name="SpecBroadest" xml:space="preserve"><value>portée la plus large</value></data>
+  <data name="ResolveWhoTitle" xml:space="preserve"><value>Sur qui vous renseignez-vous ?</value></data>
+  <data name="ResolveWhoDesc" xml:space="preserve"><value>Choisissez une cible ; nous montrerons combien de visites elle reçoit actuellement et de quelle règle cela provient.</value></data>
+  <data name="ResolveScenarioLabel" xml:space="preserve"><value>Qui / quoi</value></data>
+  <data name="ResolveScenario_contact_territory" xml:space="preserve"><value>Un médecin — dans un hôpital précis</value></data>
+  <data name="ResolveScenario_contact" xml:space="preserve"><value>Un médecin — tous les hôpitaux</value></data>
+  <data name="ResolveScenario_account" xml:space="preserve"><value>Un établissement/compte</value></data>
+  <data name="ResolveScenario_account-contact-link" xml:space="preserve"><value>Lien personne–établissement</value></data>
+  <data name="ResolveScenario_segment" xml:space="preserve"><value>Toutes les cibles d’un segment</value></data>
+  <data name="ResolveScenario_campaign-target" xml:space="preserve"><value>Cible de campagne</value></data>
+  <data name="ResolveScenario_territory-node" xml:space="preserve"><value>Zone de territoire</value></data>
+  <data name="ResolveScenario_concept-node" xml:space="preserve"><value>Nœud de concept</value></data>
+  <data name="ResolveScenario_audience-profile" xml:space="preserve"><value>Profil d’audience</value></data>
+  <data name="ResolveRecordLabel" xml:space="preserve"><value>Enregistrement</value></data>
+  <data name="ResolveChange" xml:space="preserve"><value>changer</value></data>
+  <data name="ResolveCyclePeriod" xml:space="preserve"><value>Période</value></data>
+  <data name="ResolveDateLabel" xml:space="preserve"><value>Date</value></data>
+  <data name="ResolveShowFrequency" xml:space="preserve"><value>Afficher la fréquence</value></data>
+  <data name="ResolveRuleSimpleTitle" xml:space="preserve"><value>La règle est simple</value></data>
+  <data name="ResolveRuleSimpleBody" xml:space="preserve"><value>Si plusieurs politiques correspondent à une cible, la portée la plus étroite l’emporte : une règle propre à une personne bat une règle de campagne, et une règle de campagne bat une règle de segment. À portée égale, la priorité la plus élevée l’emporte ; à priorité égale, la date de début la plus récente l’emporte.</value></data>
+  <data name="ResolveAnswerLabel" xml:space="preserve"><value>Réponse</value></data>
+  <data name="ResolveHeadlineResolved" xml:space="preserve"><value>{0} visites {1}</value></data>
+  <data name="ResolveHeadlineUnknown" xml:space="preserve"><value>Aucune fréquence définie</value></data>
+  <data name="ResolveHeadlineConflict" xml:space="preserve"><value>Conflit</value></data>
+  <data name="ResolveHeadlineNotApplicable" xml:space="preserve"><value>Non applicable</value></data>
+  <data name="ResolveCadence_day" xml:space="preserve"><value>par jour</value></data>
+  <data name="ResolveCadence_week" xml:space="preserve"><value>par semaine</value></data>
+  <data name="ResolveCadence_month" xml:space="preserve"><value>par mois</value></data>
+  <data name="ResolveCadence_quarter" xml:space="preserve"><value>par trimestre</value></data>
+  <data name="ResolveCadence_cycle" xml:space="preserve"><value>par cycle</value></data>
+  <data name="ResolveCadence_campaign-period" xml:space="preserve"><value>par période de campagne</value></data>
+  <data name="ResolveCadence_custom" xml:space="preserve"><value>par période personnalisée</value></data>
+  <data name="ResolveExplainResolved" xml:space="preserve"><value>Une règle correspondante a été trouvée pour cette cible ; la plus étroite a été appliquée.</value></data>
+  <data name="ResolveExplainUnknown" xml:space="preserve"><value>Aucune politique ne correspond à cette cible ; le planificateur utilise la valeur par défaut du système.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>Deux règles partageaient la même portée ; celle de priorité supérieure a été appliquée. Vous pourriez vouloir revoir l’autre.</value></data>
+  <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>La résolution ne s’applique pas à cette demande.</value></data>
+  <data name="ResolveExplainDateOut" xml:space="preserve"><value>Des règles correspondent à la cible, mais la date choisie ne tombe dans la période de validité d’aucune d’elles.</value></data>
+  <data name="ResolveHeadlineDateOut" xml:space="preserve"><value>Aucune règle valide à cette date</value></data>
+  <data name="ResolveVerdictBadge_resolved" xml:space="preserve"><value>résultat net</value></data>
+  <data name="ResolveVerdictBadge_conflict" xml:space="preserve"><value>conflit résolu</value></data>
+  <data name="ResolveVerdictBadge_dateout" xml:space="preserve"><value>hors période</value></data>
+  <data name="ResolveVerdictBadge_unknown" xml:space="preserve"><value>Inconnu</value></data>
+  <data name="ResolveWinnerTitle" xml:space="preserve"><value>La règle qui fixe cette fréquence</value></data>
+  <data name="ResolveOpenPolicy" xml:space="preserve"><value>Ouvrir la politique</value></data>
+  <data name="ResolveLadderTitle" xml:space="preserve"><value>Autres règles correspondant à cette cible</value></data>
+  <data name="ResolveLadderSort" xml:space="preserve"><value>du plus étroit au plus large</value></data>
+  <data name="ResolveLadderEmpty" xml:space="preserve"><value>Aucune autre règle ne correspond à cette cible.</value></data>
+  <data name="ResolveTagSelected" xml:space="preserve"><value>sélectionnée</value></data>
+  <data name="ResolveTagNotEffective" xml:space="preserve"><value>hors période</value></data>
+  <data name="ResolveTagInactive" xml:space="preserve"><value>non appliquée</value></data>
+  <data name="ResolveTagFallback" xml:space="preserve"><value>de secours</value></data>
+  <data name="ResolveWhyNotEffective" xml:space="preserve"><value>La règle existe mais n'est pas en vigueur à la date choisie.</value></data>
+  <data name="ResolveWhySpecificityLost" xml:space="preserve"><value>Une règle de portée plus étroite s'est appliquée, donc cette règle n'a pas été utilisée.</value></data>
+  <data name="ResolveWhyBroader" xml:space="preserve"><value>Règle de région/segment — de portée plus large que les règles plus étroites.</value></data>
+  <data name="ResolveWhyLastResort" xml:space="preserve"><value>Cette règle s'applique par défaut si aucune règle plus étroite n'est trouvée.</value></data>
+  <data name="ResolveWhySelSpecificity" xml:space="preserve"><value>Sélectionnée car c'est la règle de portée la plus étroite.</value></data>
+  <data name="ResolveWhySelPriority" xml:space="preserve"><value>Sélectionnée selon la priorité.</value></data>
+  <data name="ResolveWhyContextMissing" xml:space="preserve"><value>Non valable dans le contexte sélectionné ({0} manquant).</value></data>
+  <data name="ResolveCandSegmentAll" xml:space="preserve"><value>Toutes les cibles du segment</value></data>
+  <data name="ResolveNextTitle" xml:space="preserve"><value>Que dois-je faire ?</value></data>
+  <data name="ResolveDo_resolved_1" xml:space="preserve"><value>Rien à faire</value></data>
+  <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>Le planificateur appliquera cette fréquence à cette cible.</value></data>
+  <data name="ResolveDo_resolved_2" xml:space="preserve"><value>Si la fréquence semble incorrecte</value></data>
+  <data name="ResolveDo_resolved_2d" xml:space="preserve"><value>Ouvrez la règle appliquée et modifiez le nombre de visites, ou archivez la règle.</value></data>
+  <data name="ResolveDo_conflict_1" xml:space="preserve"><value>Deux règles partagent la même portée</value></data>
+  <data name="ResolveDo_conflict_1d" xml:space="preserve"><value>Pour une solution durable, réduisez la portée de l’une ou baissez sa priorité.</value></data>
+  <data name="ResolveDo_conflict_2" xml:space="preserve"><value>Pas de problème pour l’instant</value></data>
+  <data name="ResolveDo_conflict_2d" xml:space="preserve"><value>Le planificateur utilise la règle de priorité supérieure ; la planification continue.</value></data>
+  <data name="ResolveDo_unknown_1" xml:space="preserve"><value>Cette cible n’est pas couverte</value></data>
+  <data name="ResolveDo_unknown_1d" xml:space="preserve"><value>Envisagez de définir une règle de secours au niveau du segment ou du territoire.</value></data>
+  <data name="ResolveDo_unknown_2" xml:space="preserve"><value>Solution rapide</value></data>
+  <data name="ResolveDo_unknown_2d" xml:space="preserve"><value>Une seule politique pour le segment couvre toutes les cibles qu’il contient.</value></data>
+  <data name="ResolveDo_na_1" xml:space="preserve"><value>Non applicable</value></data>
+  <data name="ResolveDo_na_1d" xml:space="preserve"><value>La résolution n’est pas valide pour ce type de cible.</value></data>
+  <data name="TargetType_account-contact-link" xml:space="preserve"><value>Spécifique à la personne</value></data>
+  <data name="TargetType_concept-node" xml:space="preserve"><value>Concept</value></data>
+  <data name="TargetType_territory-node" xml:space="preserve"><value>Territoire</value></data>
+  <data name="TargetType_audience-profile" xml:space="preserve"><value>Audience</value></data>
+</root>

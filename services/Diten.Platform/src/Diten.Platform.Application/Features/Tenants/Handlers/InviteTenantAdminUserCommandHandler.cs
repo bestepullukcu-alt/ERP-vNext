@@ -55,7 +55,8 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
         var operationId = $"tenant-admin-user:{user.Id}:invite";
         var sourceReference = user.Id.ToString();
         var correlationId = Guid.NewGuid().ToString();
-        var reservedQuotaThisAttempt = false;
+        // BL-459 F1 — users.max is a COUNT of AuthService's Active + Invited users: the consume below only asks whether
+        // one more fits, it reserves nothing, so a failed invitation has nothing to give back.
 
         if (!TenantAdminUserSupport.CountsTowardsUsersQuota(user))
         {
@@ -90,10 +91,6 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
                         return Response<TenantAdminUserDto>.Fail(consumeResponse.Errors, consumeResponse.StatusCode);
                     }
                 }
-                else
-                {
-                    reservedQuotaThisAttempt = true;
-                }
             }
             catch (Exception ex)
             {
@@ -113,11 +110,6 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
         }
         catch (Exception ex)
         {
-            if (reservedQuotaThisAttempt)
-            {
-                await ReleaseReservedQuotaAsync(tenant.Id, operationId, sourceReference, correlationId, CancellationToken.None);
-            }
-
             // Previously swallowed silently — left us blind to the real provisioning failure. Log it now.
             _logger.LogError(
                 ex,
@@ -143,11 +135,6 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
         }
         catch (Exception ex)
         {
-            if (reservedQuotaThisAttempt)
-            {
-                await ReleaseReservedQuotaAsync(tenant.Id, operationId, sourceReference, correlationId, CancellationToken.None);
-            }
-
             _logger.LogError(
                 ex,
                 "Tenant admin invitation state update failed. TenantId={TenantId} AdminUserId={AdminUserId}",
@@ -172,36 +159,6 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
         }
 
         return Response<TenantAdminUserDto>.Success(dto);
-    }
-
-    private async Task ReleaseReservedQuotaAsync(
-        Guid tenantId,
-        string operationId,
-        string sourceReference,
-        string correlationId,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            await _quotaService.ReleaseAsync(new ReleaseQuotaRequest(
-                tenantId,
-                QuotaKeys.UsersMax,
-                1,
-                "TenantAdminUserInviteRollback",
-                $"{operationId}:rollback",
-                sourceReference,
-                "Tenant admin invitation failed after users quota reservation.",
-                _currentUser.ActorName,
-                correlationId), cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(
-                ex,
-                "Tenant admin users quota rollback failed. TenantId={TenantId} OperationId={OperationId}",
-                tenantId,
-                operationId);
-        }
     }
 
     private async Task<Response<IReadOnlyList<QuotaStatusDto>>> SyncUsersQuotaStateAsync(

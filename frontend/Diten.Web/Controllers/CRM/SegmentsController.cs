@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -37,6 +38,7 @@ public sealed class SegmentsController : Controller
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
     private readonly ILogger<SegmentsController> _logger;
+    private readonly CrmReferenceSetReader _referenceSets;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true };
 
     public SegmentsController(
@@ -50,6 +52,7 @@ public sealed class SegmentsController : Controller
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _sharedLocalizer = sharedLocalizer;
         _logger = logger;
+        _referenceSets = new CrmReferenceSetReader(httpClient, _gatewayUrl, logger);
     }
 
     // ---------------- Compact pages ----------------
@@ -206,6 +209,17 @@ public sealed class SegmentsController : Controller
             HttpMethod.Post, $"/api/crm/segments/{segmentId}/membership/evaluate", body,
             ResolvePermission, ct, ReadPermission, ReadFallback);
 
+    /// <summary>The DRAFT-rule reach preview (SEG-C). A POST that writes NOTHING and carries no segmentId — the
+    /// unsaved criteria travel in the body, and the response is the live "who this reaches now" report (total,
+    /// per-condition funnel and a bounded member sample). It runs on the same <c>crm.segment.resolve</c> key as
+    /// <c>/resolve</c> because a member sample is member identity (PII); under the documented DEV-ONLY fallback that
+    /// collapses onto read.</summary>
+    [HttpPost("api/preview")]
+    public Task<IActionResult> Preview([FromBody] JsonElement body, CancellationToken ct) =>
+        ProxyJsonAsync(
+            HttpMethod.Post, "/api/crm/segments/preview", body,
+            ResolvePermission, ct, ReadPermission, ReadFallback);
+
     [HttpGet("api/segments/{segmentId:guid}/targets")]
     public Task<IActionResult> TargetList(Guid segmentId, CancellationToken ct) =>
         ProxyGetAsync(
@@ -267,9 +281,10 @@ public sealed class SegmentsController : Controller
             return StatusCode(StatusCodes.Status401Unauthorized, new { message = "Tenant context is required." });
         }
 
-        var path = $"/api/v1/reference-data/sets/{Uri.EscapeDataString(setCode)}"
-                   + $"/published-values?scope_key={Uri.EscapeDataString(tenantId)}";
-        var response = await SendGatewayAsync(HttpMethod.Get, path, null, ct);
+        // WP-BRD-TENANT-CRM-SETS — the shared CrmReferenceSetReader: consumable-sets route first (every tenant role), the
+        // old consumer path with the JWT tenant only for a set the Platform does not list.
+        var response = await _referenceSets.ReadAsync(
+            setCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), tenantId, ct);
         return await ToProxyResultAsync(response, ct);
     }
 
@@ -296,6 +311,15 @@ public sealed class SegmentsController : Controller
     public Task<IActionResult> TerritoryNodes(Guid modelId, CancellationToken ct) =>
         ProxyGetAsync(
             $"/api/crm/territory-models/{modelId}/nodes{Request.QueryString}", "crm.territory.read", ct, ReadFallback);
+
+    /// <summary>WP-SEG-DETAILS8 — territory.node reverse lookup by ids (?ids=guid,guid). Edit uses it to re-establish the
+    /// model context for a saved node so the model+node cascade comes back SELECTED instead of showing a raw id. It reuses
+    /// the MOD-0151 bulk read that lives under the existing territory-models Gateway wildcard, so no new Gateway route is
+    /// added; nothing is written.</summary>
+    [HttpGet("api/territory-nodes")]
+    public Task<IActionResult> TerritoryNodesByIds(CancellationToken ct) =>
+        ProxyGetAsync(
+            $"/api/crm/territory-models/nodes/by-ids{Request.QueryString}", "crm.territory.read", ct, ReadFallback);
 
     /// <summary>consent.scope-product picker. Existing MDM product list.</summary>
     [HttpGet("api/mdm-products")]

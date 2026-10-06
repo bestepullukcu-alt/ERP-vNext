@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using MediatR;
 
@@ -70,6 +71,13 @@ public sealed record ReleaseTaskItemCommand(Guid Id, TaskTransitionRequest Reque
 /// transition matrix would otherwise have to special-case for every other caller of <c>Target</c>.</para>
 /// </summary>
 public sealed record PlanTaskItemCommand(Guid Id, PlanTaskItemRequest Request, string CorrelationId)
+    : IRequest<Response<PlanTaskItemResultDto>>;
+
+/// <summary>
+/// WP-TASK-CALENDAR-ENGINE-01 — take a task off the holder's calendar: clear the plan day and block and return the
+/// lifecycle to before the plan (Planned → Open). Holder only (BL-449), and only from Planned.
+/// </summary>
+public sealed record UnplanTaskItemCommand(Guid Id, TaskTransitionRequest Request, string CorrelationId)
     : IRequest<Response<NoContent>>;
 
 /// <summary>
@@ -107,6 +115,18 @@ public sealed record TransitionTaskItemCommand(
 /// only an optional reason code.</para>
 /// </summary>
 public sealed record InquireTaskItemCommand(Guid Id, InquireTaskItemRequest Request, string CorrelationId)
+    : IRequest<Response<NoContent>>;
+
+/// <summary>
+/// BL-439 — the addressee of a waiting task's question answers it. The second half of "Bilgi bekle": the answer
+/// lands in the task's history, the waiting story is cleared, and the task returns to the lifecycle it had before
+/// it was parked.
+///
+/// <para>Its own command, not a <see cref="TransitionTaskItemCommand"/>, because the actor is NOT the holder and
+/// must not become one: every generic transition asks a holder/requester question this person cannot pass, and
+/// widening those gates to admit them would hand them start/complete/cancel along with the answer.</para>
+/// </summary>
+public sealed record AnswerInquiryCommand(Guid Id, AnswerInquiryRequest Request, string CorrelationId)
     : IRequest<Response<NoContent>>;
 
 /// <summary>
@@ -277,7 +297,7 @@ public sealed record BulkDeleteTaskFieldDefinitionCommand(
 // ── DCP-005 slice 1: task types ─────────────────────────────────────────────
 
 public sealed record CreateTaskTypeCommand(
-    CreateTaskTypeRequest Request, string CorrelationId) : IRequest<Response<Guid>>;
+    CreateTaskTypeRequest Request, string CorrelationId) : IRequest<Response<CreateTaskTypeResultDto>>;
 
 public sealed record UpdateTaskTypeCommand(
     Guid Id, UpdateTaskTypeRequest Request, string CorrelationId) : IRequest<Response<NoContent>>;
@@ -290,17 +310,7 @@ public sealed record SetTaskTypeActiveCommand(
     Guid Id, SetTaskTypeActiveRequest Request, string CorrelationId) : IRequest<Response<NoContent>>;
 
 
-// ── DCP-005 slice 2: the document reference list ────────────────────────────
-
-public sealed record DryRunDocumentReferenceListCommand(
-    ImportDocumentReferenceListRequest Request, string CorrelationId)
-    : IRequest<Response<DocumentReferenceListDryRunResult>>;
-
-public sealed record ImportDocumentReferenceListCommand(
-    ImportDocumentReferenceListRequest Request, string CorrelationId)
-    : IRequest<Response<DocumentReferenceListVersionDto>>;
-
-
-public sealed record WithdrawDocumentListVersionCommand(
-    Guid Id, WithdrawDocumentListVersionRequest Request, string CorrelationId)
-    : IRequest<Response<NoContent>>;
+// WP-DM-DCP005-DEADCODE-01 — DryRunDocumentReferenceListCommand, ImportDocumentReferenceListCommand and
+// WithdrawDocumentListVersionCommand (DCP-005 slice 2, the CSV document reference list) were removed here:
+// their handlers, endpoints and calling screen are all gone (WP-DM-DCP005-RETIRE-CSV-01), and a repo-wide
+// search found no other caller of any of the three.

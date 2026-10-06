@@ -81,6 +81,12 @@
   <data name="RecordCreated" xml:space="preserve">
     <value>记录已成功创建。</value>
   </data>
+  <data name="RecordActivated" xml:space="preserve">
+    <value>记录已激活。</value>
+  </data>
+  <data name="SavedNotActivated" xml:space="preserve">
+    <value>已保存，但无法激活。</value>
+  </data>
   <data name="RecordDeleted" xml:space="preserve">
     <value>记录已成功删除。</value>
   </data>
@@ -272,9 +278,6 @@
   </data>
   <data name="Details" xml:space="preserve">
     <value>详情</value>
-  </data>
-  <data name="Close" xml:space="preserve">
-    <value>关闭</value>
   </data>
   <data name="BackToList" xml:space="preserve">
     <value>返回列表</value>
@@ -533,6 +536,7 @@
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>任务设置</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>工作流</value></data>
   <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>会议</value></data>
+  <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>工时表</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>用户</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>角色</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>角色权限</value></data>
@@ -686,6 +690,21 @@
   <data name="Nav.Page.KNOWLEDGECONCEPTS" xml:space="preserve">
     <value>Concepts</value>
   </data>
+  <data name="Nav.Page.CLAIMS" xml:space="preserve">
+    <value>声明</value>
+  </data>
+  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
+    <value>内容范围</value>
+  </data>
+  <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
+    <value>内容集</value>
+  </data>
+  <data name="Nav.Page.VISITFREQUENCYPOLICIES" xml:space="preserve">
+    <value>拜访频率策略</value>
+  </data>
+  <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
+    <value>资格策略</value>
+  </data>
   <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
     <value>知识路径</value>
   </data>
@@ -799,9 +818,224 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>例外</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>字段定义</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>会议</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>我的工时表</value></data>
+  <data name="Nav.Page.TIMEAPPROVALS" xml:space="preserve"><value>工时表审批</value></data>
+  <data name="Nav.Page.TIMECATEGORIES" xml:space="preserve"><value>工作类别</value></data>
+  <data name="Nav.Page.TIMESETTINGS" xml:space="preserve"><value>工时记录设置</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>会议类型</value></data>
+  <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>会议系列</value></data>
+  <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>会议报告</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>您无权访问{0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>请联系管理员为您授予此页面的访问权限。</value></data>
+  <data name="Nav.Module.HUMANCAPITAL" xml:space="preserve"><value>人力资本</value></data>
+  <data name="Nav.Module.HCMEMPLOYEEMASTER" xml:space="preserve"><value>员工主数据</value></data>
+  <data name="Nav.Module.TALENTECOSYSTEM" xml:space="preserve"><value>人才生态系统</value></data>
+  <data name="Nav.Domain.HUMANCAPITAL" xml:space="preserve"><value>人力资本</value></data>
+  <data name="Nav.Domain.TALENTECOSYSTEM" xml:space="preserve"><value>人才生态系统</value></data>
+  <data name="Nav.Page.APPLICANTINTAKE" xml:space="preserve"><value>申请人受理</value></data>
+  <data name="Nav.Page.CANDIDATEPIPELINE" xml:space="preserve"><value>候选人管道</value></data>
+  <data name="Nav.Page.COMPENSATIONBENEFITS" xml:space="preserve"><value>薪酬与福利</value></data>
+  <data name="Nav.Page.COMPETENCYSKILLS" xml:space="preserve"><value>胜任力与技能</value></data>
+  <data name="Nav.Page.DEVELOPMENTPLANS" xml:space="preserve"><value>发展计划</value></data>
+  <data name="Nav.Page.EMPLOYEEONBOARDING" xml:space="preserve"><value>员工入职</value></data>
+  <data name="Nav.Page.EMPLOYEEPROJECTIONS" xml:space="preserve"><value>员工预测</value></data>
+  <data name="Nav.Page.EMPLOYMENTCHANGES" xml:space="preserve"><value>雇佣变更</value></data>
+  <data name="Nav.Page.HEADCOUNTBUDGET" xml:space="preserve"><value>编制预算</value></data>
+  <data name="Nav.Page.HRCASEMANAGEMENT" xml:space="preserve"><value>人力资源案例管理</value></data>
+  <data name="Nav.Page.HRCOMPLIANCE" xml:space="preserve"><value>人力资源合规</value></data>
+  <data name="Nav.Page.HRDOCUMENTATION" xml:space="preserve"><value>人力资源文档</value></data>
+  <data name="Nav.Page.HRKPIANALYTICS" xml:space="preserve"><value>人力资源KPI分析</value></data>
+  <data name="Nav.Page.LEARNINGTRAINING" xml:space="preserve"><value>学习与培训</value></data>
+  <data name="Nav.Page.OFFBOARDINGCASES" xml:space="preserve"><value>离职案例</value></data>
+  <data name="Nav.Page.OFFERMANAGEMENT" xml:space="preserve"><value>录用管理</value></data>
+  <data name="Nav.Page.PERFORMANCEREVIEWS" xml:space="preserve"><value>绩效评估</value></data>
+  <data name="Nav.Page.SELFSERVICE" xml:space="preserve"><value>自助服务</value></data>
+  <data name="Nav.Page.SENSITIVEACCESS" xml:space="preserve"><value>敏感访问</value></data>
+  <data name="Nav.Page.SUCCESSION" xml:space="preserve"><value>继任</value></data>
+  <data name="Nav.Page.TIMEATTENDANCELEAVE" xml:space="preserve"><value>考勤与休假</value></data>
+  <data name="Nav.Page.WORKFORCEPLANNING" xml:space="preserve"><value>劳动力规划</value></data>
+  <data name="Nav.Page.EMPLOYEEMASTER" xml:space="preserve"><value>员工主数据</value></data>
+  <data name="Nav.Page.ASSOCIATIONMEMBERSHIPS" xml:space="preserve"><value>协会会员</value></data>
+  <data name="Nav.Page.ASSOCIATIONOPERATIONS" xml:space="preserve"><value>协会运营</value></data>
+  <data name="Nav.Page.CANDIDATECAREERPASSPORT" xml:space="preserve"><value>候选人职业护照</value></data>
+  <data name="Nav.Page.CANDIDATEDISPUTES" xml:space="preserve"><value>候选人争议</value></data>
+  <data name="Nav.Page.CANDIDATEPROFILES" xml:space="preserve"><value>候选人档案</value></data>
+  <data name="Nav.Page.CONSENTVISIBILITYPOLICIES" xml:space="preserve"><value>同意可见性政策</value></data>
+  <data name="Nav.Page.EARLYWARNINGSIGNALS" xml:space="preserve"><value>预警信号</value></data>
+  <data name="Nav.Page.EXITREFERENCERECORDS" xml:space="preserve"><value>离职参考记录</value></data>
+  <data name="Nav.Page.HIRINGRISKINDICATORS" xml:space="preserve"><value>招聘风险指标</value></data>
+  <data name="Nav.Page.INDUSTRYKNOWLEDGENETWORK" xml:space="preserve"><value>行业知识网络</value></data>
+  <data name="Nav.Page.INDUSTRYSKILLPASSPORT" xml:space="preserve"><value>行业技能护照</value></data>
+  <data name="Nav.Page.INDUSTRYSUCCESSIONPOOL" xml:space="preserve"><value>行业继任人才库</value></data>
+  <data name="Nav.Page.INDUSTRYTALENTPOOL" xml:space="preserve"><value>行业人才库</value></data>
+  <data name="Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK" xml:space="preserve"><value>导师推荐网络</value></data>
+  <data name="Nav.Page.PAYBENCHMARKING" xml:space="preserve"><value>薪酬基准分析</value></data>
+  <data name="Nav.Page.PROFESSIONALREPUTATIONLEDGER" xml:space="preserve"><value>职业声誉账簿</value></data>
+  <data name="Nav.Page.REFERENCEEXCHANGE" xml:space="preserve"><value>背景调查交换</value></data>
+  <data name="Nav.Page.REHIRERECOMMENDATIONS" xml:space="preserve"><value>再雇佣建议</value></data>
+  <data name="Nav.Page.RESTRICTEDINTEGRITYREGISTRY" xml:space="preserve"><value>受限诚信登记册</value></data>
+  <data name="Nav.Page.REVIEWBOARD" xml:space="preserve"><value>审查委员会</value></data>
+  <data name="Nav.Page.SECTORMOBILITYINTELLIGENCE" xml:space="preserve"><value>行业流动情报</value></data>
+  <data name="Nav.Page.SECTORTALENTTRENDS" xml:space="preserve"><value>行业人才趋势</value></data>
+  <data name="Nav.Page.SKILLSGAPHEATMAP" xml:space="preserve"><value>技能差距热力图</value></data>
+  <data name="Nav.Page.TALENTDATAFOUNDATION" xml:space="preserve"><value>人才数据基础</value></data>
+  <data name="Nav.Page.TALENTDEVELOPMENTNETWORK" xml:space="preserve"><value>人才发展网络</value></data>
+  <data name="Nav.Page.TALENTSUPPLYDEMANDFORECASTING" xml:space="preserve"><value>人才供需预测</value></data>
+  <data name="Nav.Page.TRUSTLEVELS" xml:space="preserve"><value>信任级别</value></data>
+  <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>已验证认证登记册</value></data>
+  <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>已验证参与者</value></data>
+  <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>劳动力分析</value></data>
+  <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>采购</value></data>
+  <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>供应商</value></data>
+  <data name="Nav.Module.PROCUREMENTSUPPLIERS" xml:space="preserve"><value>供应商</value></data>
+  <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>供应商</value></data>
+  <data name="Nav.Module.SOURCING" xml:space="preserve"><value>寻源</value></data>
+  <data name="Nav.Page.SOURCING" xml:space="preserve"><value>寻源</value></data>
+  <data name="RfxUpdateNotSupported" xml:space="preserve"><value>不支持修改 RFx；请新建 RFx，或通过发布、报价和授标进行管理。</value></data>
+  <data name="Nav.Module.REQUISITIONS" xml:space="preserve"><value>采购申请</value></data>
+  <data name="Nav.Page.REQUISITIONS" xml:space="preserve"><value>采购申请</value></data>
+  <data name="Nav.Module.PURCHASEORDERS" xml:space="preserve"><value>采购订单</value></data>
+  <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>采购订单</value></data>
+  <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>不支持修改采购申请；请新建申请，或提交此申请以供审批。</value></data>
+  <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>不支持修改采购订单；请新建采购订单，或批准此订单。</value></data>
+  <data name="Nav.Module.GRN" xml:space="preserve"><value>收货 (GRN)</value></data>
+  <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>发票匹配</value></data>
+  <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>发票采集与三方匹配</value></data>
+  <data name="Nav.Module.CONTRACTS" xml:space="preserve"><value>合同</value></data>
+  <data name="Nav.Page.CONTRACTS" xml:space="preserve"><value>合同与条款库</value></data>
+  <data name="ContractEditDraftOnly" xml:space="preserve"><value>仅可更新草稿合同；已激活的合同通过生命周期操作管理，而非编辑。</value></data>
+  <data name="Nav.Page.GRN" xml:space="preserve"><value>收货 (GRN)</value></data>
+  <data name="GrnUpdateNotSupported" xml:space="preserve"><value>不支持修改收货单；已过账的收货通过冲销移动更正，而非编辑。</value></data>
+  <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>不支持更新发票；请通过重新运行三方匹配或解决其异常来更正，而不是通过编辑。</value></data>
+  <data name="Copied" xml:space="preserve"><value>已复制</value></data>
+  <data name="Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Shortcuts.DialogTitle" xml:space="preserve"><value>键盘快捷键</value></data>
+  <data name="Shortcuts.Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Shortcuts.SilenceNote" xml:space="preserve"><value>在字段中输入时，或对话框、侧边面板打开时，快捷键不会生效。</value></data>
+  <data name="Shortcuts.ShowList" xml:space="preserve"><value>显示此列表</value></data>
+  <data name="Shortcuts.Key.Space" xml:space="preserve"><value>空格</value></data>
+  <data name="Shortcuts.Scope.Global" xml:space="preserve"><value>全局</value></data>
+  <data name="Shortcuts.Scope.WorkCenter" xml:space="preserve"><value>任务中心</value></data>
+  <data name="Shortcuts.Scope.TaskDetails" xml:space="preserve"><value>任务详情</value></data>
+  <data name="Shortcuts.Wcn.Next" xml:space="preserve"><value>选择下一项</value></data>
+  <data name="Shortcuts.Wcn.Previous" xml:space="preserve"><value>选择上一项</value></data>
+  <data name="Shortcuts.Wcn.Open" xml:space="preserve"><value>打开所选项</value></data>
+  <data name="Shortcuts.Wcn.OpenFocused" xml:space="preserve"><value>打开当前聚焦的行</value></data>
+  <data name="Shortcuts.Wcn.Accept" xml:space="preserve"><value>接受或审批所选项</value></data>
+  <data name="Shortcuts.Wcn.Reject" xml:space="preserve"><value>拒绝或退回所选项</value></data>
+  <data name="Shortcuts.Wcn.ClearSelection" xml:space="preserve"><value>清除选择</value></data>
+  <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>在选项卡之间切换（焦点位于选项卡上时）</value></data>
+  <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>编辑任务</value></data>
+  <data name="Shortcuts.Task.Back" xml:space="preserve"><value>返回任务列表</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>要导出的行数过多（超过 50,000 行）。请缩小筛选范围后重试。</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
+  <!-- BL-452 package 2 (WP-UI-EXPORT-02): list Action menu + controlled copy (PDF / print header block, footer). -->
+  <data name="Action" xml:space="preserve">
+    <value>操作</value>
+    <comment>List toolbar: the Action (export) dropdown button. BL-452 package 2 (finding 34, toolbar part).</comment>
+  </data>
+  <data name="ControlledCopy.Report" xml:space="preserve">
+    <value>报告</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Tenant" xml:space="preserve">
+    <value>公司</value>
+    <comment>BL-452 package 2 controlled copy header: label for the tenant's display name (the customer company).</comment>
+  </data>
+  <data name="ControlledCopy.Filters" xml:space="preserve">
+    <value>筛选条件</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Search" xml:space="preserve">
+    <value>搜索</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Sort" xml:space="preserve">
+    <value>排序</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortAsc" xml:space="preserve">
+    <value>升序</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortDesc" xml:space="preserve">
+    <value>降序</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Rows" xml:space="preserve">
+    <value>行数</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedBy" xml:space="preserve">
+    <value>创建人</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedAt" xml:space="preserve">
+    <value>创建时间</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.None" xml:space="preserve">
+    <value>无</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Uncontrolled" xml:space="preserve">
+    <value>本打印件为非受控副本 — {0}</value>
+    <comment>BL-452 package 2 controlled copy footer on every page; {0} = creation date-time with time zone.</comment>
+  </data>
+  <data name="ControlledCopy.Page" xml:space="preserve">
+    <value>第 {0} 页，共 {1} 页</value>
+    <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
+  </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>今天</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>月</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>周</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>日</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>上一个</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>下一个</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>全天</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>另外 {0} 项</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>没有可显示的内容</value>
+  </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>未定义工作日历——无法显示周末和节假日。</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>会议邀请</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>接受</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>拒绝</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>此会议与您的计划冲突</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>它与您已计划的时间块“{0}”（{1}）重叠。仍要接受吗？</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>仍然接受</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>供应链执行</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>承运商管理</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>承运商</value></data>
@@ -812,5 +1046,4 @@
   <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>路线与装载计划</value></data>
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>装载计划</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>索赔管理</value></data>
-  <data name="Nav.Page.CLAIMS" xml:space="preserve"><value>索赔</value></data>
 </root>

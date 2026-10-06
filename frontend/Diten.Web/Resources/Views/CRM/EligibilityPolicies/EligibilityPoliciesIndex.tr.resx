@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivli</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Henüz politika yok.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Bir şeyler ters gitti. Lütfen tekrar deneyin.</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrele</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor...</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Arşivlenenleri dahil et</value></data>
+  <data name="Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="View" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ayrıntıları görüntüle</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Emin misiniz?</value></data>
+  <data name="Search" xml:space="preserve"><value>Ara..</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa aktar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümünü Göster</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü Kaydet</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütun Görünürlüğü</value></data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı görünüm</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>Önizleme</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Toplu sil</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili kayıtlar silinsin mi?</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="EffectiveSection" xml:space="preserve"><value>Geçerlilik Aralığı</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Geçerlilik Başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Geçerlilik Bitişi</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçin...</value></data>
+  <data name="PoliciesTitle" xml:space="preserve"><value>Uygunluk Politikaları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Uygunluk politikalarını (bağlam koşulları) yaz ve bir bağlamı bir politikaya karşı değerlendir.</value></data>
+  <data name="FailClosedNote" xml:space="preserve"><value>Değerlendirme ayrık ve fail-closed'dur — Uygun olmayan sonuç her zaman gerekçesini gösterir.</value></data>
+  <data name="PoliciesTab" xml:space="preserve"><value>Politikalar</value></data>
+  <data name="EvaluateTab" xml:space="preserve"><value>Değerlendir</value></data>
+  <data name="PolicyCode" xml:space="preserve"><value>Politika Kodu</value></data>
+  <data name="PolicyCodeNote" xml:space="preserve"><value>Bir politikanın sürümleri arasında paylaşılan kararlı iş anahtarı.</value></data>
+  <data name="PolicyName" xml:space="preserve"><value>Politika Adı</value></data>
+  <data name="PolicyVersion" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="CreatePolicy" xml:space="preserve"><value>Politika Oluştur</value></data>
+  <data name="EditPolicy" xml:space="preserve"><value>Politikayı Düzenle</value></data>
+  <data name="ArchivePolicy" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="ArchivePolicyConfirm" xml:space="preserve"><value>Bu politika arşivlensin mi? Bu yumuşak bir yaşam döngüsü işlemidir; okunabilir kalır.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Politika arşivlendi.</value></data>
+  <data name="ArchivedPolicyReadOnly" xml:space="preserve"><value>Bu politika arşivli ve salt okunur.</value></data>
+  <data name="PublishedPolicyReadOnly" xml:space="preserve"><value>Bu politika yayımlanmış: koşulları dondurulmuş ve burada salt görüntülenir.</value></data>
+  <data name="StatusEditableNote" xml:space="preserve"><value>Yalnız yazar durumları (draft / review / inactive). Yayınlama ayrı bir aşamadır.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusReview" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="StatusPublished" xml:space="preserve"><value>Yayımlandı</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Arşivli</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Status_review" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="Status_approved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="Status_published" xml:space="preserve"><value>Yayımlandı</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Arşivli</value></data>
+  <data name="Conditions" xml:space="preserve"><value>Koşullar</value></data>
+  <data name="ConditionsSection" xml:space="preserve"><value>Koşullar</value></data>
+  <data name="ConditionsNote" xml:space="preserve"><value>Her koşul bir bağlam boyutunun değerlerini içerir ya da hariç tutar. Zorunlu bir koşul, boyut eksikse engeller.</value></data>
+  <data name="ConditionsEmpty" xml:space="preserve"><value>Koşul yok — politika her bağlamla eşleşir.</value></data>
+  <data name="AddCondition" xml:space="preserve"><value>Koşul ekle</value></data>
+  <data name="Dimension" xml:space="preserve"><value>Boyut</value></data>
+  <data name="Match" xml:space="preserve"><value>Eşleşme</value></data>
+  <data name="Values" xml:space="preserve"><value>Değerler</value></data>
+  <data name="Required" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="Remove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="Match_includes" xml:space="preserve"><value>İçerir</value></data>
+  <data name="Match_excludes" xml:space="preserve"><value>Hariç tutar</value></data>
+  <data name="Dim_audience" xml:space="preserve"><value>Kitle</value></data>
+  <data name="Dim_product" xml:space="preserve"><value>Ürün</value></data>
+  <data name="Dim_market" xml:space="preserve"><value>Pazar</value></data>
+  <data name="Dim_channel" xml:space="preserve"><value>Kanal</value></data>
+  <data name="Dim_language" xml:space="preserve"><value>Dil</value></data>
+  <data name="Dim_period" xml:space="preserve"><value>Dönem</value></data>
+  <data name="EvaluateInputSection" xml:space="preserve"><value>Değerlendirme Girdisi</value></data>
+  <data name="EvaluateResultSection" xml:space="preserve"><value>Sonuç</value></data>
+  <data name="Policy" xml:space="preserve"><value>Politika</value></data>
+  <data name="PolicyPickerPlaceholder" xml:space="preserve"><value>Politika ara...</value></data>
+  <data name="Context" xml:space="preserve"><value>Bağlam</value></data>
+  <data name="AddContext" xml:space="preserve"><value>Boyut ekle</value></data>
+  <data name="PinnedSelections" xml:space="preserve"><value>Sabitlenen seçimler</value></data>
+  <data name="PinnedPlaceholder" xml:space="preserve"><value>Opsiyonel — değerlendirme günlüğüne yazılır</value></data>
+  <data name="EvaluateAt" xml:space="preserve"><value>Değerlendirme tarihi</value></data>
+  <data name="EvaluateAction" xml:space="preserve"><value>Değerlendir</value></data>
+  <data name="EvaluateReadOnlyNote" xml:space="preserve"><value>Salt okunur — değerlendirme hiçbir şey kaydetmez.</value></data>
+  <data name="EvaluateResultEmpty" xml:space="preserve"><value>Bir politika ve bağlam seç, sonra değerlendir.</value></data>
+  <data name="State" xml:space="preserve"><value>Durum</value></data>
+  <data name="Reason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="Eligible" xml:space="preserve"><value>Uygun</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Engellendi</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>Belirsiz</value></data>
+  <data name="BlockingLevelContext" xml:space="preserve"><value>Engel: bağlam (zorunlu bir boyut eksik)</value></data>
+  <data name="BlockingLevelPolicy" xml:space="preserve"><value>Engel: politika (bir koşul ihlal edildi)</value></data>
+  <data name="SelectPolicyFirst" xml:space="preserve"><value>Önce bir politika seçin.</value></data>
+  <data name="ContextRequired" xml:space="preserve"><value>Değerleriyle en az bir bağlam boyutu ekleyin.</value></data>
+</root>

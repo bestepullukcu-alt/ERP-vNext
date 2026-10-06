@@ -206,7 +206,8 @@ public sealed class TaskWaitingAndCancelAuthorityTests
                         // assignment picker uses; these tests never name one, so empty directories are
                         // the honest arrangement.
                         new FakePositionAssignmentRepository(), new FakePositionRepository(),
-                        new FakeOrganizationUnitRepository())
+                        new FakeOrganizationUnitRepository(),
+                        new FakeTaskNotificationService(), NullLogger<InquireTaskItemHandler>.Instance)
             .Handle(
                 new InquireTaskItemCommand(task.Id, new InquireTaskItemRequest(task.Version, reason), "corr-inquire"),
                 CancellationToken.None);
@@ -232,7 +233,10 @@ public sealed class TaskWaitingAndCancelAuthorityTests
             // Not blocked: these tests are about the cancel-authority rule, not the approval gate, and cancelling
             // never consults the gate anyway (it is not "this work proceeds").
             new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(),
-            new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance);
+            new FakeTaskNotificationService(),
+            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
+            new FakeTaskAttachmentRepository(),
+            NullLogger<TransitionTaskItemHandler>.Instance);
 
     private static TaskWorkItemProvider Provider(FakeTaskItemRepository tasks)
         => new(tasks,

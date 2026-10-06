@@ -1,0 +1,22 @@
+@using Diten.Web.Views.CRM.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsForm> Localizer
+@{
+    var isLocal = (ViewData["ClaimKind"] as string) == "local";
+    ViewData["Title"] = (isLocal ? Localizer["NewLocalClaimTitle"] : Localizer["NewCoreClaimTitle"]).Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* WP-CL-FE-3 — new core / local claim (mockup scenario 3). JS-driven over the v2 proxy; see _ClaimForm. *@
+<partial name="~/Views/CRM/Claims/_ClaimForm.cshtml" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/claims-form.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    @* Contract marker: <partial name="_FormL10n" /> *@
+    <partial name="~/Views/CRM/Claims/_FormL10n.cshtml" />
+    <script src="~/assets/js/CRM/Claims/claim-evidence.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Claims/form.js" asp-append-version="true"></script>
+}

@@ -35,7 +35,35 @@ public sealed record KnowledgeContentDto(
     string? UpdatedBy,
     DateTimeOffset? ArchivedAt,
     string? ArchivedBy,
-    bool IsArchived);
+    bool IsArchived,
+    // SCMM-13 language-variant linkage (additive tail — see KnowledgeContent §13).
+    Guid ContentSetId,
+    bool IsSourceLanguage,
+    string TranslationStatus,
+    // WP-CL-BE-6 claim references (additive tail). The detail read enriches each ref with the claim's current status.
+    IReadOnlyList<KnowledgeContentClaimRefDto>? ClaimRefs = null);
+
+/// <summary>WP-CL-BE-6 — one claim a content uses. <see cref="ClaimStatus"/> / <see cref="CountryVersionStatus"/> are
+/// the CURRENT statuses of the bound claim record / country version (filled on the detail read; null on list reads or
+/// when the record no longer resolves). <see cref="ClaimNeedsReview"/> is true when the bound record is
+/// <c>review-required</c> (usable, but a newer core version exists).</summary>
+public sealed record KnowledgeContentClaimRefDto(
+    string ClaimCode,
+    Guid ClaimId,
+    Guid? CountryVersionId,
+    string? CountryCode,
+    string? ClaimStatus = null,
+    string? CountryVersionStatus = null,
+    bool ClaimNeedsReview = false);
+
+/// <summary>WP-CL-BE-6 — write shape of one claim reference. <see cref="CountryVersionId"/> set ⇒ country-specific
+/// content (<see cref="CountryCode"/> may be omitted — it is taken from the version, and must match it when given);
+/// empty ⇒ global content bound to the core claim.</summary>
+public sealed record KnowledgeContentClaimRefInput(
+    string ClaimCode,
+    Guid ClaimId,
+    Guid? CountryVersionId = null,
+    string? CountryCode = null);
 
 public sealed record KnowledgeContentListDto(IReadOnlyList<KnowledgeContentDto> Items, int Total);
 

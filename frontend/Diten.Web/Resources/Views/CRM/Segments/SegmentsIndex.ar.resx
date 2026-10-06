@@ -136,4 +136,127 @@
   <data name="Verdict" xml:space="preserve"><value>النتيجة</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
   <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="OpIs" xml:space="preserve"><value>يساوي</value></data>
+  <data name="OpIsNot" xml:space="preserve"><value>لا يساوي</value></data>
+  <data name="OpIsAnyOf" xml:space="preserve"><value>أي مما يلي</value></data>
+  <data name="OpIsNoneOf" xml:space="preserve"><value>لا شيء مما يلي</value></data>
+  <data name="OpContains" xml:space="preserve"><value>يحتوي على</value></data>
+  <data name="OpMoreThan" xml:space="preserve"><value>أكبر من</value></data>
+  <data name="OpAtLeast" xml:space="preserve"><value>لا يقل عن</value></data>
+  <data name="OpLessThan" xml:space="preserve"><value>أقل من</value></data>
+  <data name="OpAtMost" xml:space="preserve"><value>لا يزيد عن</value></data>
+  <data name="OpBetween" xml:space="preserve"><value>بين</value></data>
+  <data name="OpIsEmpty" xml:space="preserve"><value>فارغ</value></data>
+  <data name="OpIsSet" xml:space="preserve"><value>محدد</value></data>
+  <data name="DomainDoctorProfile" xml:space="preserve"><value>ملف الطبيب</value></data>
+  <data name="DomainConsent" xml:space="preserve"><value>الموافقة</value></data>
+  <data name="DomainWorkplace" xml:space="preserve"><value>مكان العمل</value></data>
+  <data name="DomainCommercial" xml:space="preserve"><value>تجاري</value></data>
+  <data name="DomainActivity" xml:space="preserve"><value>النشاط</value></data>
+  <data name="DomainInstitution" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="DomainOther" xml:space="preserve"><value>أخرى</value></data>
+  <data name="SourceReferenceSet" xml:space="preserve"><value>مجموعة مرجعية</value></data>
+  <data name="SourceCatalogList" xml:space="preserve"><value>قائمة الكتالوج</value></data>
+  <data name="SourcePicker" xml:space="preserve"><value>أداة اختيار</value></data>
+  <data name="SourceFreeText" xml:space="preserve"><value>نص حر</value></data>
+  <data name="BoolTrue" xml:space="preserve"><value>نعم</value></data>
+  <data name="BoolFalse" xml:space="preserve"><value>لا</value></data>
+  <data name="OrTypeValue" xml:space="preserve"><value>أو اكتب قيمة</value></data>
+  <data name="BlockMatchEvery" xml:space="preserve"><value>كل هذه</value></data>
+  <data name="BlockMatchAny" xml:space="preserve"><value>أي منها</value></data>
+  <data name="BlockNode" xml:space="preserve"><value>كتلة</value></data>
+  <data name="BlockMatchLabel" xml:space="preserve"><value>تطابق</value></data>
+  <data name="AddCondition" xml:space="preserve"><value>إضافة شرط</value></data>
+  <data name="RemoveBlock" xml:space="preserve"><value>إزالة الكتلة</value></data>
+  <data name="AddBlock" xml:space="preserve"><value>إضافة كتلة</value></data>
+  <data name="AndAlso" xml:space="preserve"><value>وأيضًا</value></data>
+  <data name="AndAlsoHelp" xml:space="preserve"><value>يجب أن تتطابق كل كتلة أيضًا</value></data>
+  <data name="SubjectNounAccount" xml:space="preserve"><value>الحسابات</value></data>
+  <data name="SubjectNounContact" xml:space="preserve"><value>جهات الاتصال</value></data>
+  <data name="ReadsWhere" xml:space="preserve"><value>حيث</value></data>
+  <data name="ReadsAs" xml:space="preserve"><value>يُقرأ كالتالي</value></data>
+  <data name="JoinerAnd" xml:space="preserve"><value>و</value></data>
+  <data name="JoinerOr" xml:space="preserve"><value>أو</value></data>
+  <data name="AnyValuePlaceholder" xml:space="preserve"><value>أي قيمة</value></data>
+  <data name="MatchThisAlone" xml:space="preserve"><value>تطابق هذا وحده</value></data>
+  <data name="ReachSection" xml:space="preserve"><value>من يصل إليه الآن</value></data>
+  <data name="ReachIdleHelp" xml:space="preserve"><value>أضف شرطًا لمعرفة من يصل إليه.</value></data>
+  <data name="ReachTotalLabel" xml:space="preserve"><value>يتم الوصول إليهم الآن</value></data>
+  <data name="ReachSampleLabel" xml:space="preserve"><value>أعضاء عينة</value></data>
+  <data name="ReachTooWide" xml:space="preserve"><value>القاعدة واسعة جدًا للمعاينة — قم بتضييقها.</value></data>
+  <data name="ReachNoSample" xml:space="preserve"><value>لا يوجد أعضاء للعينة بعد.</value></data>
+  <data name="ActivationChecklist" xml:space="preserve"><value>قائمة التحقق للتفعيل</value></data>
+  <data name="ChecklistName" xml:space="preserve"><value>تم تعيين الاسم</value></data>
+  <data name="ChecklistRule" xml:space="preserve"><value>شرط واحد على الأقل</value></data>
+  <data name="ChecklistReach" xml:space="preserve"><value>يصل إلى عضو واحد على الأقل</value></data>
+  <data name="ChecklistEffective" xml:space="preserve"><value>تم تعيين تاريخ البدء</value></data>
+  <data name="TemplatesTitle" xml:space="preserve"><value>ابدأ من قالب</value></data>
+  <data name="ShowStoredRule" xml:space="preserve"><value>إظهار القاعدة المخزنة</value></data>
+  <data name="MatchModeDerivedHelp" xml:space="preserve"><value>تُدمج الكتل دائمًا باستخدام ”وأيضًا“.</value></data>
+  <data name="TplSpecialty" xml:space="preserve"><value>الأطباء حسب التخصص</value></data>
+  <data name="TplAccountType" xml:space="preserve"><value>الحسابات حسب النوع</value></data>
+  <data name="TplConsentReachable" xml:space="preserve"><value>يمكن الوصول إليهم حسب الموافقة</value></data>
+  <data name="TplHasCoverage" xml:space="preserve"><value>لديه تغطية إقليمية</value></data>
+  <data name="Section1Title" xml:space="preserve"><value>ما هذا القطاع؟</value></data>
+  <data name="Section1Help" xml:space="preserve"><value>سمِّه، واختر من يجمعهم وكيفية تحديد العضوية.</value></data>
+  <data name="Section2Title" xml:space="preserve"><value>من ينتمي إليه؟</value></data>
+  <data name="Section2Help" xml:space="preserve"><value>أنشئ القاعدة. تُدمج الكتل دائمًا بـ «وأيضًا».</value></data>
+  <data name="Section3Title" xml:space="preserve"><value>الاستثناءات والصلاحية</value></data>
+  <data name="Section3Help" xml:space="preserve"><value>الأشخاص الذين يُضمَّنون دائمًا أو لا يُضمَّنون أبدًا، ومتى يكون القطاع قابلاً للاستخدام.</value></data>
+  <data name="SubjectSectionLabel" xml:space="preserve"><value>من يجمع؟</value></data>
+  <data name="SubjectPillContact" xml:space="preserve"><value>الأطباء / جهات الاتصال</value></data>
+  <data name="SubjectPillAccount" xml:space="preserve"><value>المؤسسات / الحسابات</value></data>
+  <data name="MembershipSectionLabel" xml:space="preserve"><value>كيف تُحدَّد العضوية؟</value></data>
+  <data name="MembershipRuleTitle" xml:space="preserve"><value>بقاعدة</value></data>
+  <data name="MembershipRuleHelp" xml:space="preserve"><value>يُحدَّد الأعضاء من قاعدة ويظلون محدَّثين تلقائيًا.</value></data>
+  <data name="MembershipListTitle" xml:space="preserve"><value>بقائمة ثابتة</value></data>
+  <data name="MembershipListHelp" xml:space="preserve"><value>تختار الأشخاص بنفسك؛ لا تتغير القائمة إلا عندما تغيّرها.</value></data>
+  <data name="MembershipHybridTitle" xml:space="preserve"><value>قاعدة، مع استثناءات</value></data>
+  <data name="MembershipHybridHelp" xml:space="preserve"><value>تحدد القاعدة الأساس، بالإضافة إلى أشخاص تُضمِّنهم دائمًا أو لا تُضمِّنهم أبدًا.</value></data>
+  <data name="BlockToggleEvery" xml:space="preserve"><value>الكل</value></data>
+  <data name="BlockToggleAny" xml:space="preserve"><value>أيّ</value></data>
+  <data name="BlockHeadLead" xml:space="preserve"><value>أدرج الأشخاص حيث</value></data>
+  <data name="BlockHeadTail" xml:space="preserve"><value>يكون الشرط أدناه صحيحًا</value></data>
+  <data name="ValuePick" xml:space="preserve"><value>اختر واحدًا أو أكثر</value></data>
+  <data name="ValueSet" xml:space="preserve"><value>اضبط على</value></data>
+  <data name="ValueLabel" xml:space="preserve"><value>القيمة</value></data>
+  <data name="HowStoredTitle" xml:space="preserve"><value>كيفية التخزين</value></data>
+  <data name="PreviewSample50" xml:space="preserve"><value>معاينة عينة من 50</value></data>
+  <data name="ChecklistFreezeNote" xml:space="preserve"><value>التفعيل يجمّد هذه القاعدة كإصدار جديد. لا تؤثر تعديلات المسودة على الحملات النشطة.</value></data>
+  <data name="EmptyRuleHelp" xml:space="preserve"><value>ابدأ من جمهور شائع، أو أضف أول شرط لك.</value></data>
+  <data name="AddBlockLong" xml:space="preserve"><value>+ أضف كتلة أخرى — يجب أن يستوفيها الأشخاص أيضًا</value></data>
+  <data name="WhatAnswersSection" xml:space="preserve"><value>ما الذي تجيب عنه هذه الشريحة</value></data>
+  <data name="ReadsStatic" xml:space="preserve"><value>العضوية هي القائمة الثابتة المكتوبة يدويًا أدناه — لا شيء مشتق من البيانات.</value></data>
+  <data name="ReadsDynamic" xml:space="preserve"><value>الأعضاء هم من تختارهم القاعدة المحفوظة من البيانات الحية — ولا تُخزَّن القائمة أبدًا.</value></data>
+  <data name="ReadsHybrid" xml:space="preserve"><value>الأعضاء هم من تختارهم القاعدة، إضافةً إلى من أُبقي عليهم يدويًا وناقص من استُبعدوا يدويًا.</value></data>
+  <data name="HideStoredRule" xml:space="preserve"><value>إخفاء القاعدة المحفوظة</value></data>
+  <data name="ResolveIdleTitle" xml:space="preserve"><value>لم يتم حل العضوية في هذه الجلسة</value></data>
+  <data name="ResolveIdleHelp" xml:space="preserve"><value>يقرأ الحل البيانات الحية وفق القاعدة المحفوظة ولا يخزّن شيئًا. تُدرَج المرشحون المستبعدون مع السبب.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>جارٍ حل العضوية مقابل البيانات الحية…</value></data>
+  <data name="DroppedCandidates" xml:space="preserve"><value>المرشحون المستبعدون</value></data>
+  <data name="DroppedCandidatesIntro" xml:space="preserve"><value>سبب عدم اجتياز كل مرشح</value></data>
+  <data name="DraftPreviewNote" xml:space="preserve"><value>لا تزال هذه الشريحة مسودة: يعكس العدد بيانات اليوم ولا يمكن استخدامها كجمهور حتى يتم تفعيلها.</value></data>
+  <data name="SecondaryLabel" xml:space="preserve"><value>التخصص · مكان العمل</value></data>
+  <data name="FromManual" xml:space="preserve"><value>من الصفوف اليدوية</value></data>
+  <data name="KeptIn" xml:space="preserve"><value>مُضمَّن</value></data>
+  <data name="KeptOut" xml:space="preserve"><value>مُستبعَد</value></data>
+  <data name="TimelineCreated" xml:space="preserve"><value>تم الإنشاء</value></data>
+  <data name="TimelineNotActivated" xml:space="preserve"><value>لم يُفعَّل بعد</value></data>
+  <data name="TimelineUsable" xml:space="preserve"><value>قابل للاستخدام</value></data>
+  <data name="TimelineSupersedes" xml:space="preserve"><value>يحل محل الإصدار السابق</value></data>
+  <data name="NoEndDate" xml:space="preserve"><value>بلا تاريخ انتهاء</value></data>
+  <data name="StoredNoteTitleStatic" xml:space="preserve"><value>ما الذي يُخزَّن</value></data>
+  <data name="StoredNoteTitleDynamic" xml:space="preserve"><value>لماذا يتغير العدد</value></data>
+  <data name="StoredNoteBodyStatic" xml:space="preserve"><value>تُخزَّن فقط الصفوف المكتوبة يدويًا وأسبابها. تشير الجهات المستهلكة إلى الشريحة بدلاً من نسخ الأسماء.</value></data>
+  <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>تخزّن الشريحة القاعدة وليس قائمة الأعضاء. كل عملية حل تعيد قراءة البيانات الحية، لذا يتغير العدد مع تغير البيانات.</value></data>
+  <data name="ClassificationNote" xml:space="preserve"><value>يحدد وضع المطابقة كيفية دمج الكتل العليا المستوى في القاعدة.</value></data>
+  <data name="ConsumersSection" xml:space="preserve"><value>مُستخدَم كجمهور بواسطة</value></data>
+  <data name="ConsumersNoneYet" xml:space="preserve"><value>لا يوجد بعد</value></data>
+  <data name="ConsumersNote" xml:space="preserve"><value>لا توجد بعد أي حملة أو مجموعة محتوى تستهدف هذه الشريحة. سيتم إدراج المستهلكين هنا بمجرد الإشارة إليها.</value></data>
+  <data name="Specialty" xml:space="preserve"><value>التخصص</value></data>
+  <data name="Workplace" xml:space="preserve"><value>مكان العمل</value></data>
+  <data name="ShowingFirstOfMembers" xml:space="preserve"><value>عرض أول {0} من {1} عضوًا.</value></data>
+  <data name="NothingStoredRecomputed" xml:space="preserve"><value>لا يُخزَّن أي شيء هنا — تُعاد حوسبة النتيجة عند كل طلب.</value></data>
+  <data name="OpenFullResult" xml:space="preserve"><value>فتح النتيجة الكاملة</value></data>
+  <data name="SampleCapNote" xml:space="preserve"><value>هذا هو الحد الأقصى الذي تُرجعه هذه الشاشة. حسِّن القاعدة لتضييق النتيجة.</value></data>
 </root>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ContractsTitle" xml:space="preserve"><value>Sözleşme ve Clause Kütüphanesi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Satın alma ve tedarik sözleşmeleri: tedarikçi ve ihale bağlayın, clause ekleyin ve taslaktan aktife yaşam döngüsünü yönetin.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Sözleşme Ekle</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Sözleşmeyi Düzenle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Sözleşme Ekle</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Sözleşmeyi Düzenle</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="ContractId" xml:space="preserve"><value>Sözleşme No</value></data>
+  <data name="ContractTitle" xml:space="preserve"><value>Başlık</value></data>
+  <data name="ContractTitlePlaceholder" xml:space="preserve"><value>örn. 2026 Hammadde Çerçeve Sözleşmesi</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>Tedarikçi</value></data>
+  <data name="SupplierIdPlaceholder" xml:space="preserve"><value>Tedarikçi seçin veya kimlik girin</value></data>
+  <data name="SupplierIdHint" xml:space="preserve"><value>Tedarikçi kimlikleri tedarikçi ana verisine karşı doğrulanır (fail-closed).</value></data>
+  <data name="RfxId" xml:space="preserve"><value>RFx / İhale</value></data>
+  <data name="RfxIdPlaceholder" xml:space="preserve"><value>örn. RFX-4001</value></data>
+  <data name="RfxIdHint" xml:space="preserve"><value>İsteğe bağlı; verilirse tedarik ihalesine karşı doğrulanır.</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Başlangıç Tarihi</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Bitiş Tarihi</value></data>
+  <data name="EffectiveToHint" xml:space="preserve"><value>İsteğe bağlı; başlangıç tarihinde veya sonrasında olmalıdır.</value></data>
+  <data name="Currency" xml:space="preserve"><value>Para Birimi</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>örn. USD</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>Boş bırakılırsa yasal işletme temel para birimi kullanılır.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusExpired" xml:space="preserve"><value>Süresi Doldu</value></data>
+  <data name="StatusTerminated" xml:space="preserve"><value>Feshedildi</value></data>
+  <data name="ContractSection" xml:space="preserve"><value>Sözleşme Bilgileri</value></data>
+  <data name="ClausesSection" xml:space="preserve"><value>Clause'lar</value></data>
+  <data name="EvidenceSection" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="AddClauseRef" xml:space="preserve"><value>Clause Ekle</value></data>
+  <data name="ClauseRefClauseId" xml:space="preserve"><value>Clause No</value></data>
+  <data name="ClauseRefClauseIdPlaceholder" xml:space="preserve"><value>örn. CL-PAYMENT-30</value></data>
+  <data name="ClauseRefDeviation" xml:space="preserve"><value>Sapma</value></data>
+  <data name="ClauseRefDeviationText" xml:space="preserve"><value>Sapma Notları</value></data>
+  <data name="ClauseRefDeviationTextPlaceholder" xml:space="preserve"><value>Standart clause'tan sapmayı açıklayın</value></data>
+  <data name="ClausesHint" xml:space="preserve"><value>Kütüphaneden standart clause'ları referans alın; standart metinden sapmayı işaretleyin.</value></data>
+  <data name="EvidenceRefs" xml:space="preserve"><value>Kanıt Referansları</value></data>
+  <data name="EvidenceRefsPlaceholder" xml:space="preserve"><value>Kanıt referans kimlikleri ekleyin</value></data>
+  <data name="EvidenceRefsHint" xml:space="preserve"><value>Yalnızca doküman referansları (MOD-0029/0031); ikili dosyalar burada saklanmaz.</value></data>
+  <data name="EditDraftOnlyNotice" xml:space="preserve"><value>Yalnızca taslak sözleşmeler düzenlenebilir. Aktifleştirilmiş sözleşmeler yaşam döngüsü işlemleriyle yönetilir.</value></data>
+  <data name="ApprovalSection" xml:space="preserve"><value>Onay İzi</value></data>
+  <data name="WorkflowInstanceId" xml:space="preserve"><value>İş Akışı Örneği</value></data>
+  <data name="ActionActivate" xml:space="preserve"><value>Aktifleştir</value></data>
+  <data name="ActionTerminate" xml:space="preserve"><value>Feshet</value></data>
+  <data name="ConfirmActivate" xml:space="preserve"><value>Bu sözleşme aktifleştirilsin ve onay izi başlatılsın mı?</value></data>
+  <data name="ConfirmTerminate" xml:space="preserve"><value>Bu aktif sözleşme feshedilsin mi? Bu işlem geri alınamaz.</value></data>
+  <data name="ActivateSuccess" xml:space="preserve"><value>Sözleşme aktifleştirildi.</value></data>
+  <data name="TerminateSuccess" xml:space="preserve"><value>Sözleşme feshedildi.</value></data>
+  <data name="ClauseLibrary" xml:space="preserve"><value>Clause Kütüphanesi</value></data>
+  <data name="ClauseId" xml:space="preserve"><value>Clause No</value></data>
+  <data name="ClauseCategory" xml:space="preserve"><value>Kategori</value></data>
+  <data name="ClauseCategoryPlaceholder" xml:space="preserve"><value>örn. Ödeme Koşulları</value></data>
+  <data name="ClauseTitle" xml:space="preserve"><value>Başlık</value></data>
+  <data name="ClauseTitlePlaceholder" xml:space="preserve"><value>örn. 30 gün vadeli ödeme</value></data>
+  <data name="ClauseBody" xml:space="preserve"><value>Metin</value></data>
+  <data name="ClauseBodyPlaceholder" xml:space="preserve"><value>Standart clause metnini girin</value></data>
+  <data name="AddClause" xml:space="preserve"><value>Clause Ekle</value></data>
+  <data name="ClauseCreated" xml:space="preserve"><value>Clause kütüphaneye eklendi.</value></data>
+</root>

@@ -48,8 +48,8 @@ public sealed class StrategyTemplateNoWriteGuardTests
         var path = _paths.Add(StrategyTemplateTestDoubles.TenantA);
         var policy = _policies.Add(StrategyTemplateTestDoubles.TenantA);
 
-        var create = new CreateStrategyTemplateHandler(tenant, actor, _templates, Bindings(), _references);
-        var update = new UpdateStrategyTemplateHandler(tenant, actor, _templates, Bindings(), _references);
+        var create = new CreateStrategyTemplateHandler(tenant, actor, _templates, Bindings(), _references, StrategyTemplateTestDoubles.DefaultScope());
+        var update = new UpdateStrategyTemplateHandler(tenant, actor, _templates, Bindings(), _references, StrategyTemplateTestDoubles.DefaultScope());
         var activate = new ActivateStrategyTemplateHandler(tenant, actor, _templates, Bindings());
         var newVersion = new CreateStrategyTemplateVersionHandler(tenant, actor, _templates);
         var archive = new ArchiveStrategyTemplateHandler(tenant, actor, _templates);
@@ -89,7 +89,7 @@ public sealed class StrategyTemplateNoWriteGuardTests
     {
         var tenant = StrategyTemplateTestDoubles.Tenant(StrategyTemplateTestDoubles.TenantA);
         var create = new CreateStrategyTemplateHandler(
-            tenant, new NullActorContext(), _templates, Bindings(), _references);
+            tenant, new NullActorContext(), _templates, Bindings(), _references, StrategyTemplateTestDoubles.DefaultScope());
         var policy = _policies.Add(StrategyTemplateTestDoubles.TenantA);
 
         var intents = new[]
@@ -207,7 +207,7 @@ public sealed class StrategyTemplateNoWriteGuardTests
         var tenant = StrategyTemplateTestDoubles.Tenant(StrategyTemplateTestDoubles.TenantA);
         var segment = _segments.Add(StrategyTemplateTestDoubles.TenantA);
         var create = new CreateStrategyTemplateHandler(
-            tenant, new NullActorContext(), _templates, Bindings(), _references);
+            tenant, new NullActorContext(), _templates, Bindings(), _references, StrategyTemplateTestDoubles.DefaultScope());
         var created = await create.Handle(
             StrategyTemplateTestBuilders.NewTemplate(
                 segment.Id,

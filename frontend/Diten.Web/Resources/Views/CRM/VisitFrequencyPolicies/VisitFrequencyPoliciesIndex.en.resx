@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PoliciesTitle" xml:space="preserve"><value>Visit Frequency Policies</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Author call-cycle / visit frequency policies — how often a target should be visited.</value></data>
+  <data name="ArchiveVsDeleteNote" xml:space="preserve"><value>Archive keeps a policy as readable history; Delete removes it from the working list. Both are soft.</value></data>
+  <data name="PoliciesTab" xml:space="preserve"><value>Policies</value></data>
+  <data name="ResolveTab" xml:space="preserve"><value>Resolve</value></data>
+  <data name="ResolvePlaceholder" xml:space="preserve"><value>The resolve panel is coming in a later update.</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Target" xml:space="preserve"><value>Target</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Frequency</value></data>
+  <data name="Priority" xml:space="preserve"><value>Priority</value></data>
+  <data name="Source" xml:space="preserve"><value>Source</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="NewPolicy" xml:space="preserve"><value>New Policy</value></data>
+  <data name="EditorPlaceholder" xml:space="preserve"><value>The policy editor is coming in a later update.</value></data>
+  <data name="DetailsPlaceholder" xml:space="preserve"><value>The details view is coming in a later update.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archive</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Archive this policy? It stays readable as history.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Delete this policy? It will be removed from the list.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Policy archived.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No frequency policies yet.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Something went wrong. Please try again.</value></data>
+  <data name="PerPeriod" xml:space="preserve"><value>per</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Active</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Archived</value></data>
+  <!-- WP-FREQ-B editor -->
+  <data name="EditorSave" xml:space="preserve"><value>Save</value></data>
+  <data name="EditorSectionIdentity" xml:space="preserve"><value>Identity</value></data>
+  <data name="EditorSectionTarget" xml:space="preserve"><value>Target</value></data>
+  <data name="EditorSectionContext" xml:space="preserve"><value>Context</value></data>
+  <data name="EditorSectionFrequency" xml:space="preserve"><value>Frequency control</value></data>
+  <data name="EditorSectionPriority" xml:space="preserve"><value>Conflict priority</value></data>
+  <data name="EditorSectionSource" xml:space="preserve"><value>Source</value></data>
+  <data name="EditorSectionEffective" xml:space="preserve"><value>Effective window</value></data>
+  <data name="EditorSectionNotes" xml:space="preserve"><value>Notes</value></data>
+  <data name="EditorHelpIdentity" xml:space="preserve"><value>A stable code and a display name for this policy.</value></data>
+  <data name="EditorHelpTarget" xml:space="preserve"><value>Who the policy applies to. Pick a type, then the target.</value></data>
+  <data name="EditorHelpContext" xml:space="preserve"><value>Optional provenance and scope. Leave empty for no restriction.</value></data>
+  <data name="EditorHelpFrequency" xml:space="preserve"><value>How many visits are required per period.</value></data>
+  <data name="EditorHelpPriority" xml:space="preserve"><value>When two policies overlap, the smaller weight wins.</value></data>
+  <data name="EditorHelpEffective" xml:space="preserve"><value>When this policy is valid. Leave the end empty for open-ended.</value></data>
+  <data name="EditorHelpNotes" xml:space="preserve"><value>Free-form notes. Required for a custom frequency.</value></data>
+  <data name="FieldPolicyCode" xml:space="preserve"><value>Policy code</value></data>
+  <data name="FieldPolicyName" xml:space="preserve"><value>Policy name</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="FieldStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="FieldTargetType" xml:space="preserve"><value>Target type</value></data>
+  <data name="FieldTarget" xml:space="preserve"><value>Target</value></data>
+  <data name="FieldBusinessUnit" xml:space="preserve"><value>Business unit</value></data>
+  <data name="FieldTerritory" xml:space="preserve"><value>Territory</value></data>
+  <data name="FieldSegment" xml:space="preserve"><value>Segment</value></data>
+  <data name="FieldCampaign" xml:space="preserve"><value>Campaign</value></data>
+  <data name="FieldBrand" xml:space="preserve"><value>Brand</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="FieldCyclePeriod" xml:space="preserve"><value>Cycle period</value></data>
+  <data name="FieldFrequencyType" xml:space="preserve"><value>Frequency type</value></data>
+  <data name="FieldRequiredVisitCount" xml:space="preserve"><value>Required visits</value></data>
+  <data name="FieldPeriodType" xml:space="preserve"><value>Period</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Source</value></data>
+  <data name="FieldEffectiveFrom" xml:space="preserve"><value>Effective from</value></data>
+  <data name="FieldEffectiveTo" xml:space="preserve"><value>Effective to</value></data>
+  <data name="FieldNotes" xml:space="preserve"><value>Notes</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Select…</value></data>
+  <data name="ContextNone" xml:space="preserve"><value>— none —</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>Select model</value></data>
+  <data name="SelectTerritoryNode" xml:space="preserve"><value>Select node</value></data>
+  <data name="Selected" xml:space="preserve"><value>Selected</value></data>
+  <data name="TargetIdManual" xml:space="preserve"><value>Enter id (GUID)</value></data>
+  <data name="TargetLockNote" xml:space="preserve"><value>Code and target cannot be changed after creation.</value></data>
+  <data name="SourceNote" xml:space="preserve"><value>Where this frequency came from. Provenance only — it does not affect the frequency.</value></data>
+  <data name="FreqReadsAsLabel" xml:space="preserve"><value>Reads as</value></data>
+  <data name="FreqSentenceEmpty" xml:space="preserve"><value>Set a count and a period.</value></data>
+  <data name="Required" xml:space="preserve"><value>Required</value></data>
+  <data name="TargetRequired" xml:space="preserve"><value>Pick a target.</value></data>
+  <data name="TargetIdInvalid" xml:space="preserve"><value>A valid id is required.</value></data>
+  <data name="CountPositive" xml:space="preserve"><value>Must be greater than zero.</value></data>
+  <data name="PeriodComboInvalid" xml:space="preserve"><value>This period is not valid for the chosen frequency.</value></data>
+  <data name="BandRequired" xml:space="preserve"><value>Pick a priority band.</value></data>
+  <data name="EffectiveOrder" xml:space="preserve"><value>The end cannot be before the start.</value></data>
+  <data name="CycleRequired" xml:space="preserve"><value>A cycle period is required for cycle-based frequency.</value></data>
+  <data name="CampaignRequired" xml:space="preserve"><value>A campaign is required.</value></data>
+  <data name="SegmentRequired" xml:space="preserve"><value>A segment is required for a segmentation source.</value></data>
+  <data name="NotesRequired" xml:space="preserve"><value>A custom frequency requires notes.</value></data>
+  <data name="FixErrors" xml:space="preserve"><value>Please fix the highlighted fields.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>The editor could not be prepared.</value></data>
+  <data name="Band_override-all" xml:space="preserve"><value>Overrides everything</value></data>
+  <data name="Band_campaign-level" xml:space="preserve"><value>Campaign level</value></data>
+  <data name="Band_standard" xml:space="preserve"><value>Standard</value></data>
+  <data name="Band_baseline" xml:space="preserve"><value>Baseline</value></data>
+  <data name="Band_last-resort" xml:space="preserve"><value>Last resort</value></data>
+  <data name="Band_override-all_Desc" xml:space="preserve"><value>Overrides every other rule, including campaign and segment rules.</value></data>
+  <data name="Band_campaign-level_Desc" xml:space="preserve"><value>Takes precedence over standard rules during a campaign period.</value></data>
+  <data name="Band_standard_Desc" xml:space="preserve"><value>The recommended level for normal segment and target rules.</value></data>
+  <data name="Band_baseline_Desc" xml:space="preserve"><value>Region-wide floor frequency; narrower rules override it.</value></data>
+  <data name="Band_last-resort_Desc" xml:space="preserve"><value>Applies only when no other rule matches.</value></data>
+  <data name="Period_day" xml:space="preserve"><value>Day</value></data>
+  <data name="Period_week" xml:space="preserve"><value>Week</value></data>
+  <data name="Period_month" xml:space="preserve"><value>Month</value></data>
+  <data name="Period_quarter" xml:space="preserve"><value>Quarter</value></data>
+  <data name="Period_cycle" xml:space="preserve"><value>Cycle</value></data>
+  <data name="Period_campaign-period" xml:space="preserve"><value>Campaign period</value></data>
+  <data name="Period_custom" xml:space="preserve"><value>Custom period</value></data>
+  <!-- WP-FREQ-C details quick-view + resolve panel -->
+  <data name="NoEndDate" xml:space="preserve"><value>No end date</value></data>
+  <data name="DetailTrail" xml:space="preserve"><value>Audit trail</value></data>
+  <data name="DetailCreated" xml:space="preserve"><value>Created</value></data>
+  <data name="DetailUpdated" xml:space="preserve"><value>Updated</value></data>
+  <data name="DetailArchived" xml:space="preserve"><value>Archived</value></data>
+  <data name="Tl_created" xml:space="preserve"><value>Draft created</value></data>
+  <data name="Tl_published" xml:space="preserve"><value>Published</value></data>
+  <data name="Tl_deactivated" xml:space="preserve"><value>Deactivated</value></data>
+  <data name="Tl_reactivated" xml:space="preserve"><value>Reactivated</value></data>
+  <data name="Tl_weight_changed" xml:space="preserve"><value>Weight changed</value></data>
+  <data name="Tl_archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="Tl_next_eval" xml:space="preserve"><value>Next evaluation</value></data>
+  <data name="FieldConceptNode" xml:space="preserve"><value>Concept node</value></data>
+  <data name="FieldAudienceProfile" xml:space="preserve"><value>Audience profile</value></data>
+  <data name="ResolveInputSection" xml:space="preserve"><value>Resolve input</value></data>
+  <data name="ResolveResultSection" xml:space="preserve"><value>Result</value></data>
+  <data name="ResolveContextHelp" xml:space="preserve"><value>Optional context narrows the match. Leave empty to ignore.</value></data>
+  <data name="ResolveEffectiveAt" xml:space="preserve"><value>Effective at</value></data>
+  <data name="ResolveAction" xml:space="preserve"><value>Resolve</value></data>
+  <data name="ResolveReadOnlyNote" xml:space="preserve"><value>Read-only preview — resolve never writes anything.</value></data>
+  <data name="ResolveResultEmpty" xml:space="preserve"><value>Pick a target and press Resolve.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Resolving…</value></data>
+  <data name="ResolveSelectedPolicy" xml:space="preserve"><value>Selected policy</value></data>
+  <data name="ResolveCandidates" xml:space="preserve"><value>Candidate policies</value></data>
+  <data name="ResolveNoCandidates" xml:space="preserve"><value>No candidate policies.</value></data>
+  <data name="ResolveReasonCodes" xml:space="preserve"><value>Reason codes</value></data>
+  <data name="ResolveSelectionReason" xml:space="preserve"><value>Selection reason</value></data>
+  <data name="ResolveNoSelected" xml:space="preserve"><value>No policy governs this target in this context.</value></data>
+  <data name="ResolveSpecificity" xml:space="preserve"><value>Specificity</value></data>
+  <data name="ResolveSelectedBadge" xml:space="preserve"><value>Selected</value></data>
+  <data name="ResolveEliminated" xml:space="preserve"><value>Eliminated</value></data>
+  <data name="ResolveTargetTypeRequired" xml:space="preserve"><value>Pick a target type.</value></data>
+  <data name="Verdict_resolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="Verdict_unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Verdict_conflict" xml:space="preserve"><value>Conflict</value></data>
+  <data name="Verdict_not_applicable" xml:space="preserve"><value>Not applicable</value></data>
+  <data name="Reason_frequency_policy_resolved" xml:space="preserve"><value>Frequency policy resolved</value></data>
+  <data name="Reason_frequency_unknown" xml:space="preserve"><value>Frequency unknown</value></data>
+  <data name="Reason_no_matching_policy" xml:space="preserve"><value>No matching policy</value></data>
+  <data name="Reason_policy_not_effective" xml:space="preserve"><value>Policy not effective at this date</value></data>
+  <data name="Reason_policy_inactive" xml:space="preserve"><value>Policy inactive</value></data>
+  <data name="Reason_policy_archived" xml:space="preserve"><value>Policy archived</value></data>
+  <data name="Reason_policy_conflict" xml:space="preserve"><value>Priority-band tie — resolved by stable id</value></data>
+  <data name="Reason_policy_selected_by_priority" xml:space="preserve"><value>Selected by priority</value></data>
+  <data name="Reason_policy_selected_by_specificity" xml:space="preserve"><value>Selected by specificity</value></data>
+  <data name="Reason_policy_selected_by_latest_effective_from" xml:space="preserve"><value>Selected by latest effective-from</value></data>
+  <data name="Reason_campaign_context_missing" xml:space="preserve"><value>Campaign context missing</value></data>
+  <data name="Reason_segment_context_missing" xml:space="preserve"><value>Segment context missing</value></data>
+  <data name="Reason_cycle_context_missing" xml:space="preserve"><value>Cycle context missing</value></data>
+  <data name="Reason_business_scope_mismatch" xml:space="preserve"><value>Business scope mismatch</value></data>
+  <data name="Reason_contact_location_context_absent" xml:space="preserve"><value>Contact-location context absent</value></data>
+  <!-- WP-FREQ-E list console (mockup columns + subtitles) -->
+  <data name="Policy" xml:space="preserve"><value>Policy</value></data>
+  <data name="Validity" xml:space="preserve"><value>Validity</value></data>
+  <data name="Weight" xml:space="preserve"><value>Weight</value></data>
+  <data name="ValidityOpenEnded" xml:space="preserve"><value>open-ended</value></data>
+  <data name="FreqBounded" xml:space="preserve"><value>time-bound</value></data>
+  <data name="FreqOpenEnded" xml:space="preserve"><value>open-ended</value></data>
+  <data name="Source_campaign" xml:space="preserve"><value>Campaign decision</value></data>
+  <data name="Source_segmentation" xml:space="preserve"><value>Segmentation team</value></data>
+  <data name="Source_manual" xml:space="preserve"><value>Entered manually</value></data>
+  <data name="Source_legacy-import" xml:space="preserve"><value>From legacy system</value></data>
+  <data name="Source_business-rule" xml:space="preserve"><value>Automated business rule</value></data>
+  <data name="Source_manager-override" xml:space="preserve"><value>Field manager</value></data>
+  <data name="Source_other" xml:space="preserve"><value>Other</value></data>
+  <!-- WP-FREQ-F2 editor page -->
+  <data name="EditPolicy" xml:space="preserve"><value>Edit Policy</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Back to list</value></data>
+  <data name="ArchivedReadonly" xml:space="preserve"><value>This policy is archived and read-only; it cannot be edited.</value></data>
+  <data name="NotesHelp" xml:space="preserve"><value>Internal note — the planning engine does not read it.</value></data>
+  <data name="TargetListsNote" xml:space="preserve"><value>Lists come from system definitions</value></data>
+  <data name="TargetPickHint" xml:space="preserve"><value>Search and select from the list</value></data>
+  <data name="ScopeToggle" xml:space="preserve"><value>Where should it apply?</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>optional — any field left empty means “all”</value></data>
+  <data name="ScopeGroupOrg" xml:space="preserve"><value>Organization</value></data>
+  <data name="ScopeGroupScope" xml:space="preserve"><value>Scope</value></data>
+  <data name="ScopeGroupProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="ScopeGroupPeriod" xml:space="preserve"><value>Period</value></data>
+  <data name="ScopePickBrandFirst" xml:space="preserve"><value>Pick a brand first</value></data>
+  <data name="NoConstraint" xml:space="preserve"><value>no constraint</value></data>
+  <data name="ScopePickCyclePeriodFirst" xml:space="preserve"><value>Pick a cycle first</value></data>
+  <data name="ScopeAllTargets" xml:space="preserve"><value>all targets</value></data>
+  <data name="ScopeClear" xml:space="preserve"><value>Clear scope</value></data>
+  <data name="FreqResolvedLabel" xml:space="preserve"><value>Resolved cadence</value></data>
+  <data name="EffectiveNote" xml:space="preserve"><value>If the end date is left empty the policy is valid indefinitely; on a clash a newer start date for the same target wins.</value></data>
+  <data name="EditorSectionConflict" xml:space="preserve"><value>If there is a conflict</value></data>
+  <data name="ConflictIntro" xml:space="preserve"><value>If another rule also applies to the same target, this choice decides which one wins.</value></data>
+  <data name="ConflictWeightLabel" xml:space="preserve"><value>This rule's weight</value></data>
+  <data name="ConflictSourceLabel" xml:space="preserve"><value>Where does this rule come from?</value></data>
+  <data name="LifecycleTitle" xml:space="preserve"><value>Lifecycle</value></data>
+  <data name="LifecycleDraftHelp" xml:space="preserve"><value>not included in planning</value></data>
+  <data name="LifecycleActiveHelp" xml:space="preserve"><value>included in planning</value></data>
+  <data name="LifecycleInactiveHelp" xml:space="preserve"><value>stopped for now</value></data>
+  <data name="LifecycleArchivedHelp" xml:space="preserve"><value>read-only, not deleted</value></data>
+  <!-- WP-FREQ-F3 target chip subtext -->
+  <data name="MostSpecific" xml:space="preserve"><value>most specific</value></data>
+  <data name="Broadest" xml:space="preserve"><value>broadest</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>There is no delete. Closing is done with Archive; the record stays readable in history and is not evaluated by the planning engine.</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>What will this policy do?</value></data>
+  <data name="Scope" xml:space="preserve"><value>Scope</value></data>
+  <data name="SummaryOnSaveLabel" xml:space="preserve"><value>On save</value></data>
+  <data name="ChecklistTitle" xml:space="preserve"><value>Before you save</value></data>
+  <data name="SaveActivate" xml:space="preserve"><value>Save and activate</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Save as draft</value></data>
+  <data name="SaveInactive" xml:space="preserve"><value>Unpublish</value></data>
+  <data name="ArchiveAction" xml:space="preserve"><value>Archive</value></data>
+  <data name="VisitsWord" xml:space="preserve"><value>visits</value></data>
+  <data name="ScopeNoConstraint" xml:space="preserve"><value>no constraint</value></data>
+  <data name="ScopeConstraintUnit" xml:space="preserve"><value>constraints</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>"{name}" targets will be visited {cadence} — {scope}.</value></data>
+  <data name="SummaryScopeAll" xml:space="preserve"><value>across all scope</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>This policy</value></data>
+  <data name="ChecklistReady" xml:space="preserve"><value>ready</value></data>
+  <data name="ChecklistWarnWord" xml:space="preserve"><value>warnings</value></data>
+  <data name="ChkTarget" xml:space="preserve"><value>Target selected</value></data>
+  <data name="ChkFrequency" xml:space="preserve"><value>Frequency valid</value></data>
+  <data name="ChkPeriod" xml:space="preserve"><value>Period consistent</value></data>
+  <data name="ChkScopeNarrowed" xml:space="preserve"><value>Scope narrowed</value></data>
+  <data name="ChkScopeNone" xml:space="preserve"><value>No scope constraint</value></data>
+  <data name="ChkWeight" xml:space="preserve"><value>Conflict weight chosen</value></data>
+  <data name="ChkWillDraft" xml:space="preserve"><value>Will stay draft</value></data>
+  <data name="ChkWillActive" xml:space="preserve"><value>Will be published</value></data>
+  <data name="ChkWillInactive" xml:space="preserve"><value>Will be unpublished</value></data>
+  <data name="ChkWillArchived" xml:space="preserve"><value>Will be archived</value></data>
+  <data name="ChkTargetEmptyDesc" xml:space="preserve"><value>Which record it applies to is not chosen yet.</value></data>
+  <data name="ChkFreqEmptyDesc" xml:space="preserve"><value>The frequency is not complete yet.</value></data>
+  <data name="ChkPeriodEmptyDesc" xml:space="preserve"><value>Pick both a frequency and a period.</value></data>
+  <data name="ChkScopeAllDesc" xml:space="preserve"><value>This policy applies to every record of this target type.</value></data>
+  <data name="ChkWeightEmptyDesc" xml:space="preserve"><value>Pick a conflict weight band.</value></data>
+  <data name="ChkWillDraftDesc" xml:space="preserve"><value>Draft rules do not enter the plan; publish them when ready.</value></data>
+  <data name="ChkWillActiveDesc" xml:space="preserve"><value>The rule goes live and enters the plan.</value></data>
+  <data name="ChkWillInactiveDesc" xml:space="preserve"><value>The rule is kept but no longer applied.</value></data>
+  <data name="ChkWillArchivedDesc" xml:space="preserve"><value>The rule is retired and becomes read-only.</value></data>
+  <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>All business units</value></data>
+  <data name="ScopeSegmentIndependent" xml:space="preserve"><value>Segment-independent</value></data>
+  <data name="ScopeCampaignIndependent" xml:space="preserve"><value>Campaign-independent</value></data>
+  <data name="ScopeAllBrands" xml:space="preserve"><value>All brands</value></data>
+  <data name="ScopeAllProducts" xml:space="preserve"><value>All products</value></data>
+  <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>All cycle periods</value></data>
+  <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
+  <data name="EditorSectionTargetLong" xml:space="preserve"><value>TARGET — WHO IT APPLIES TO</value></data>
+  <data name="EditorSectionFrequencyLong" xml:space="preserve"><value>FREQUENCY — THE ACTUAL VALUE</value></data>
+  <data name="TargetPickedWhich" xml:space="preserve"><value>Which record</value></data>
+  <data name="TargetChange" xml:space="preserve"><value>Change…</value></data>
+  <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>Business unit and territory — leave empty for no constraint</value></data>
+  <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>Segment and campaign — leave empty for no constraint</value></data>
+  <data name="ScopeGroupProductDesc" xml:space="preserve"><value>Brand and product — pick a brand first, then a product</value></data>
+  <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>Cycle period — required for cycle-based frequency</value></data>
+  <!-- WP-FREQ-DET-B details separate page -->
+  <data name="DetailPageTitle" xml:space="preserve"><value>Policy Details</value></data>
+  <data name="EditAction" xml:space="preserve"><value>Edit</value></data>
+  <data name="StatusFlowTitle" xml:space="preserve"><value>Status flow</value></data>
+  <data name="ImpactTitle" xml:space="preserve"><value>Impact</value></data>
+  <data name="ImpactTargetsLine" xml:space="preserve"><value>{0} targets receive this policy</value></data>
+  <data name="ImpactVisitsLine" xml:space="preserve"><value>{0} planned visits / quarter</value></data>
+  <data name="ConflictsTitle" xml:space="preserve"><value>Policies competing for this target</value></data>
+  <data name="ConflictsCandidateCount" xml:space="preserve"><value>{0} candidates</value></data>
+  <data name="ConflictsEmpty" xml:space="preserve"><value>No competing policies for this target.</value></data>
+  <data name="CandidateBadge" xml:space="preserve"><value>Candidate</value></data>
+  <data name="TargetsWord" xml:space="preserve"><value>targets</value></data>
+  <data name="TargetType_segment" xml:space="preserve"><value>Segment</value></data>
+  <data name="TargetType_account" xml:space="preserve"><value>Account</value></data>
+  <data name="TargetType_contact" xml:space="preserve"><value>Contact</value></data>
+  <data name="TargetType_campaign-target" xml:space="preserve"><value>Campaign target</value></data>
+  <data name="SpecNarrowest" xml:space="preserve"><value>narrowest scope</value></data>
+  <data name="SpecBroadest" xml:space="preserve"><value>broadest scope</value></data>
+  <data name="ResolveWhoTitle" xml:space="preserve"><value>Who are you asking about?</value></data>
+  <data name="ResolveWhoDesc" xml:space="preserve"><value>Pick a target; we’ll show how many visits it gets right now and which rule that comes from.</value></data>
+  <data name="ResolveScenarioLabel" xml:space="preserve"><value>Who / what</value></data>
+  <data name="ResolveScenario_contact_territory" xml:space="preserve"><value>A doctor — at a specific hospital</value></data>
+  <data name="ResolveScenario_contact" xml:space="preserve"><value>A doctor — all hospitals</value></data>
+  <data name="ResolveScenario_account" xml:space="preserve"><value>An organization/account</value></data>
+  <data name="ResolveScenario_account-contact-link" xml:space="preserve"><value>Person–organization link</value></data>
+  <data name="ResolveScenario_segment" xml:space="preserve"><value>All targets in a segment</value></data>
+  <data name="ResolveScenario_campaign-target" xml:space="preserve"><value>Campaign target</value></data>
+  <data name="ResolveScenario_territory-node" xml:space="preserve"><value>Territory area</value></data>
+  <data name="ResolveScenario_concept-node" xml:space="preserve"><value>Concept node</value></data>
+  <data name="ResolveScenario_audience-profile" xml:space="preserve"><value>Audience profile</value></data>
+  <data name="ResolveRecordLabel" xml:space="preserve"><value>Record</value></data>
+  <data name="ResolveChange" xml:space="preserve"><value>change</value></data>
+  <data name="ResolveCyclePeriod" xml:space="preserve"><value>Period</value></data>
+  <data name="ResolveDateLabel" xml:space="preserve"><value>Date</value></data>
+  <data name="ResolveShowFrequency" xml:space="preserve"><value>Show frequency</value></data>
+  <data name="ResolveRuleSimpleTitle" xml:space="preserve"><value>The rule is simple</value></data>
+  <data name="ResolveRuleSimpleBody" xml:space="preserve"><value>If more than one policy matches a target, the narrowest scope wins: a person-specific rule beats a campaign rule, and a campaign rule beats a segment rule. On equal scope the higher priority wins, and on equal priority the newest start date wins.</value></data>
+  <data name="ResolveAnswerLabel" xml:space="preserve"><value>Answer</value></data>
+  <data name="ResolveHeadlineResolved" xml:space="preserve"><value>{0} visits {1}</value></data>
+  <data name="ResolveHeadlineUnknown" xml:space="preserve"><value>No defined frequency</value></data>
+  <data name="ResolveHeadlineConflict" xml:space="preserve"><value>Conflict</value></data>
+  <data name="ResolveHeadlineNotApplicable" xml:space="preserve"><value>Not applicable</value></data>
+  <data name="ResolveCadence_day" xml:space="preserve"><value>per day</value></data>
+  <data name="ResolveCadence_week" xml:space="preserve"><value>per week</value></data>
+  <data name="ResolveCadence_month" xml:space="preserve"><value>per month</value></data>
+  <data name="ResolveCadence_quarter" xml:space="preserve"><value>per quarter</value></data>
+  <data name="ResolveCadence_cycle" xml:space="preserve"><value>per cycle</value></data>
+  <data name="ResolveCadence_campaign-period" xml:space="preserve"><value>per campaign period</value></data>
+  <data name="ResolveCadence_custom" xml:space="preserve"><value>per custom period</value></data>
+  <data name="ResolveExplainResolved" xml:space="preserve"><value>A matching rule was found for this target; the narrowest one was applied.</value></data>
+  <data name="ResolveExplainUnknown" xml:space="preserve"><value>No policy matches this target; the planner uses the system default.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>Two rules shared the same scope; the higher-priority one was applied. You may want to review the other.</value></data>
+  <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>Resolution does not apply to this request.</value></data>
+  <data name="ResolveExplainDateOut" xml:space="preserve"><value>There are rules that match the target, but the date you chose falls outside every rule's effective range.</value></data>
+  <data name="ResolveHeadlineDateOut" xml:space="preserve"><value>No rule is valid on this date</value></data>
+  <data name="ResolveVerdictBadge_resolved" xml:space="preserve"><value>clear result</value></data>
+  <data name="ResolveVerdictBadge_conflict" xml:space="preserve"><value>conflict resolved</value></data>
+  <data name="ResolveVerdictBadge_dateout" xml:space="preserve"><value>out of date range</value></data>
+  <data name="ResolveVerdictBadge_unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="ResolveWinnerTitle" xml:space="preserve"><value>The rule that sets this frequency</value></data>
+  <data name="ResolveOpenPolicy" xml:space="preserve"><value>Open policy</value></data>
+  <data name="ResolveLadderTitle" xml:space="preserve"><value>Other rules that match this target</value></data>
+  <data name="ResolveLadderSort" xml:space="preserve"><value>ordered narrow to broad</value></data>
+  <data name="ResolveLadderEmpty" xml:space="preserve"><value>No other rules match this target.</value></data>
+  <data name="ResolveTagSelected" xml:space="preserve"><value>selected</value></data>
+  <data name="ResolveTagNotEffective" xml:space="preserve"><value>out of date range</value></data>
+  <data name="ResolveTagInactive" xml:space="preserve"><value>not in effect</value></data>
+  <data name="ResolveTagFallback" xml:space="preserve"><value>fallback</value></data>
+  <data name="ResolveWhyNotEffective" xml:space="preserve"><value>The rule exists but is not effective on the date you chose.</value></data>
+  <data name="ResolveWhySpecificityLost" xml:space="preserve"><value>A narrower-scope rule applied instead, so this rule was not used.</value></data>
+  <data name="ResolveWhyBroader" xml:space="preserve"><value>A region/segment rule — broader in scope than the narrower rules.</value></data>
+  <data name="ResolveWhyLastResort" xml:space="preserve"><value>This rule applies as a fallback when no narrower rule is found.</value></data>
+  <data name="ResolveWhySelSpecificity" xml:space="preserve"><value>Selected because it is the narrowest-scope rule.</value></data>
+  <data name="ResolveWhySelPriority" xml:space="preserve"><value>Selected by priority.</value></data>
+  <data name="ResolveWhyContextMissing" xml:space="preserve"><value>Not valid in the selected context ({0} missing).</value></data>
+  <data name="ResolveCandSegmentAll" xml:space="preserve"><value>All targets in the segment</value></data>
+  <data name="ResolveNextTitle" xml:space="preserve"><value>What should I do?</value></data>
+  <data name="ResolveDo_resolved_1" xml:space="preserve"><value>Nothing to do</value></data>
+  <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>The planner will apply this frequency to this target.</value></data>
+  <data name="ResolveDo_resolved_2" xml:space="preserve"><value>If the frequency looks wrong</value></data>
+  <data name="ResolveDo_resolved_2d" xml:space="preserve"><value>Open the applied rule and change the visit count, or archive the rule.</value></data>
+  <data name="ResolveDo_conflict_1" xml:space="preserve"><value>Two rules share the same scope</value></data>
+  <data name="ResolveDo_conflict_1d" xml:space="preserve"><value>For a lasting fix, narrow one’s scope or lower its priority.</value></data>
+  <data name="ResolveDo_conflict_2" xml:space="preserve"><value>No problem for now</value></data>
+  <data name="ResolveDo_conflict_2d" xml:space="preserve"><value>The planner uses the higher-priority rule; planning continues.</value></data>
+  <data name="ResolveDo_unknown_1" xml:space="preserve"><value>This target is not covered</value></data>
+  <data name="ResolveDo_unknown_1d" xml:space="preserve"><value>Consider defining a fallback rule at the segment or territory level.</value></data>
+  <data name="ResolveDo_unknown_2" xml:space="preserve"><value>Quick fix</value></data>
+  <data name="ResolveDo_unknown_2d" xml:space="preserve"><value>A single policy for the segment covers all targets under it.</value></data>
+  <data name="ResolveDo_na_1" xml:space="preserve"><value>Not applicable</value></data>
+  <data name="ResolveDo_na_1d" xml:space="preserve"><value>Resolution is not valid for this target type.</value></data>
+  <data name="TargetType_account-contact-link" xml:space="preserve"><value>Person-specific</value></data>
+  <data name="TargetType_concept-node" xml:space="preserve"><value>Concept</value></data>
+  <data name="TargetType_territory-node" xml:space="preserve"><value>Territory</value></data>
+  <data name="TargetType_audience-profile" xml:space="preserve"><value>Audience</value></data>
+</root>

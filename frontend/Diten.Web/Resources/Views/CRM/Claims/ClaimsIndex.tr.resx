@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>İddialar</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Yönetişimli iddia metnini niteleyicileri, uygulanabilirliği, kanıtları ve yeniden kullanılabilir bileşenleriyle yazın.</value></data>
+  <data name="ApprovalFreezeNote" xml:space="preserve"><value>Bir iddiayı onaylamak yönetişimli gövdesini (metin, niteleyiciler, uygulanabilirlik, kanıt, bileşenler) dondurur; değişiklik artık yeni bir sürüm gerektirir.</value></data>
+  <data name="ClaimCode" xml:space="preserve"><value>İddia Kodu</value></data>
+  <data name="ClaimName" xml:space="preserve"><value>İddia Adı</value></data>
+  <data name="ClaimVersion" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Geçerlilik Başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Geçerlilik Bitişi</value></data>
+  <data name="Approved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivli</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="CreateClaim" xml:space="preserve"><value>İddia Oluştur</value></data>
+  <data name="EditClaim" xml:space="preserve"><value>İddiayı Düzenle</value></data>
+  <data name="ApproveClaim" xml:space="preserve"><value>Onayla</value></data>
+  <data name="ApproveClaimConfirm" xml:space="preserve"><value>Bu iddia onaylansın mı? Yönetişimli gövdesi dondurulacak; sonraki değişiklik yeni sürüm gerektirir.</value></data>
+  <data name="ArchiveClaim" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="ArchiveClaimConfirm" xml:space="preserve"><value>Bu iddia arşivlensin mi? Bu yumuşak bir yaşam döngüsü işlemidir; okunabilir kalır.</value></data>
+  <data name="RecordApproved" xml:space="preserve"><value>İddia onaylandı.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>İddia arşivlendi.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Henüz iddia yok.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Bir şeyler ters gitti. Lütfen tekrar deneyin.</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrele</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor...</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Arşivlenenleri dahil et</value></data>
+  <data name="Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="View" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ayrıntıları görüntüle</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Emin misiniz?</value></data>
+  <data name="Search" xml:space="preserve"><value>Ara..</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa aktar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümünü Göster</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü Kaydet</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütun Görünürlüğü</value></data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Arşivli</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik ve Metin</value></data>
+  <data name="ClaimCodeNote" xml:space="preserve"><value>Bir iddianın sürümleri arasında paylaşılan kararlı iş anahtarı.</value></data>
+  <data name="ClaimText" xml:space="preserve"><value>İddia Metni</value></data>
+  <data name="ClaimTextNote" xml:space="preserve"><value>Yönetişimli metin. İddia onaylandığında dondurulur.</value></data>
+  <data name="ApplicabilitySection" xml:space="preserve"><value>Uygulanabilirlik</value></data>
+  <data name="ProductRefs" xml:space="preserve"><value>Ürün Referansları</value></data>
+  <data name="MarketRefs" xml:space="preserve"><value>Pazar Referansları</value></data>
+  <data name="AudienceRefs" xml:space="preserve"><value>Kitle Referansları</value></data>
+  <data name="EligibilityPolicyId" xml:space="preserve"><value>Uygunluk Politikası Kimliği</value></data>
+  <data name="EligibilityPolicyIdNote" xml:space="preserve"><value>Uygunluk politikasına isteğe bağlı referans; burada değerlendirme yapılmaz.</value></data>
+  <data name="RefsTagHint" xml:space="preserve"><value>Bir değer yazıp her referansı eklemek için Enter'a basın.</value></data>
+  <data name="EffectiveSection" xml:space="preserve"><value>Geçerlilik Aralığı</value></data>
+  <data name="ComponentsSection" xml:space="preserve"><value>Yönetişimli Gövde</value></data>
+  <data name="Qualifiers" xml:space="preserve"><value>Niteleyiciler</value></data>
+  <data name="EvidenceRefs" xml:space="preserve"><value>Kanıt Referansları</value></data>
+  <data name="EvidenceRefsNote" xml:space="preserve"><value>Opak kanıt referansları; olduğu gibi saklanır (çözümleme yok).</value></data>
+  <data name="ComponentRefs" xml:space="preserve"><value>Bileşenler</value></data>
+  <data name="ComponentRefsNote" xml:space="preserve"><value>Kimlikle referans verilen yeniden kullanılabilir bilgi içeriği (yalnız yeniden kullanım; yeni bileşen oluşturulmaz).</value></data>
+  <data name="ComponentPickerPlaceholder" xml:space="preserve"><value>Bileşenleri seçin...</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="StatusEditableNote" xml:space="preserve"><value>Oluşturma ve düzenleme yalnız taslak veya pasif taşır; bu geçişler için Onayla ve Arşivle'yi kullanın.</value></data>
+  <data name="ArchivedClaimReadOnly" xml:space="preserve"><value>Bu iddia arşivli ve salt okunur.</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı görünüm</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Toplu sil</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili kayıtlar silinsin mi?</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>İddia önizleme</value></data>
+  <data name="ApprovedBodyFrozenNote" xml:space="preserve"><value>Bu iddia onaylı: yönetişimli gövde dondurulmuş. Metni değiştirmek için yeni bir sürüm oluşturun.</value></data>
+  <data name="ListDescription" xml:space="preserve"><value>Şirket genelinde tek iddia kütüphanesi: çekirdek iddialar, ülke sürümleri ve dayandıkları kanıtlar.</value></data>
+  <data name="ApprovalViaWorkflowNote" xml:space="preserve"><value>İddialar yalnız onay akışıyla onaylanır (Onaya gönder).</value></data>
+  <data name="BreadcrumbCrm" xml:space="preserve"><value>CRM</value></data>
+  <data name="NewCoreClaim" xml:space="preserve"><value>Yeni çekirdek iddia</value></data>
+  <data name="NewLocalClaim" xml:space="preserve"><value>Yeni yerel iddia</value></data>
+  <data name="ReadOnlyNote" xml:space="preserve"><value>Salt okuma yetkisi: kayıtları görüntüleyebilir ve dışa aktarabilirsiniz.</value></data>
+  <data name="ColClaim" xml:space="preserve"><value>İddia</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="ColKind" xml:space="preserve"><value>Tür</value></data>
+  <data name="ColAudience" xml:space="preserve"><value>Kitle</value></data>
+  <data name="ColCountryStatus" xml:space="preserve"><value>Ülke durumu</value></data>
+  <data name="ColEvidence" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="ColApproved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>Kullanım</value></data>
+  <data name="KindCore" xml:space="preserve"><value>Çekirdek</value></data>
+  <data name="KindLocal" xml:space="preserve"><value>Yerel</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>eksik</value></data>
+  <data name="ApprovedOfCountries" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="CoreVersionLine" xml:space="preserve"><value>Çekirdek v{0}</value></data>
+  <data name="LocalLine" xml:space="preserve"><value>Yerel · {0}</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>Gözden geçirilmeli</value></data>
+  <data name="State_expiring" xml:space="preserve"><value>Süresi doluyor</value></data>
+  <data name="State_closed" xml:space="preserve"><value>Kapatıldı</value></data>
+  <data name="State_not-opened" xml:space="preserve"><value>Açılmadı</value></data>
+  <data name="State_not-applicable" xml:space="preserve"><value>Kapsam dışı</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="State_archived" xml:space="preserve"><value>Arşiv</value></data>
+  <data name="ClosedTooltip" xml:space="preserve"><value>Kapatıldı · {0}</value></data>
+  <data name="NotOpenedTooltip" xml:space="preserve"><value>Açılmadı · henüz karar yok</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>Ülke</value></data>
+  <data name="FilterLanguage" xml:space="preserve"><value>Dil</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="FilterAudience" xml:space="preserve"><value>Kitle</value></data>
+  <data name="FilterKind" xml:space="preserve"><value>Çekirdek / yerel</value></data>
+  <data name="FlagEvidenceMissing" xml:space="preserve"><value>Kanıtı eksik</value></data>
+  <data name="FlagReviewRequired" xml:space="preserve"><value>Gözden geçirilmeli</value></data>
+  <data name="FlagExpiring" xml:space="preserve"><value>Süresi doluyor</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Yeni sürüm</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Bu iddiadan yeni bir taslak sürüm açılacak.</value></data>
+  <data name="RecordNewVersion" xml:space="preserve"><value>Yeni sürüm açıldı.</value></data>
+  <data name="QvCoreText" xml:space="preserve"><value>Çekirdek metin</value></data>
+  <data name="QvLocalText" xml:space="preserve"><value>Yerel metin</value></data>
+  <data name="QvResponsibleTeam" xml:space="preserve"><value>Sorumlu ekip</value></data>
+  <data name="QvCountryVersions" xml:space="preserve"><value>Ülke sürümleri</value></data>
+  <data name="QvNoCountryVersions" xml:space="preserve"><value>Henüz ülke sürümü yok.</value></data>
+  <data name="QvLanguages" xml:space="preserve"><value>Diller</value></data>
+  <data name="QvAudienceCount" xml:space="preserve"><value>Kitle profilleri</value></data>
+  <data name="QvOpenDetails" xml:space="preserve"><value>Ayrıntıyı aç</value></data>
+  <data name="QvClose" xml:space="preserve"><value>Kapat</value></data>
+  <data name="QvLoadFailed" xml:space="preserve"><value>Ülke sürümleri yüklenemedi.</value></data>
+  <data name="EmptyLibraryTitle" xml:space="preserve"><value>Kütüphanede henüz iddia yok</value></data>
+  <data name="EmptyLibraryText" xml:space="preserve"><value>İddialar şirket genelinde tek kütüphanede tutulur. Önce global çekirdek iddiayı oluşturun; ülke sürümleri onun üzerinden açılır.</value></data>
+  <data name="NoMatchTitle" xml:space="preserve"><value>Filtrelerle eşleşen iddia yok</value></data>
+  <data name="NoMatchText" xml:space="preserve"><value>Arama metnini ya da filtreleri değiştirin.</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>Filtreleri temizle</value></data>
+  <data name="CounterUnavailable" xml:space="preserve"><value>Şu anda alınamıyor</value></data>
+  <data name="ShowInactive" xml:space="preserve"><value>Arşivlenmiş ve eskimiş sürümleri de göster</value></data>
+  <data name="LiveOnly" xml:space="preserve"><value>Yalnız güncel kayıtlar</value></data>
+  <data name="TabList" xml:space="preserve"><value>Liste</value></data>
+  <data name="TabCoverage" xml:space="preserve"><value>Kapsama matrisi</value></data>
+  <data name="CoverageDescription" xml:space="preserve"><value>Her iddia ülkeler boyunca: onaylı, sürüyor, açılmadı ya da gerekçesiyle kapatıldı.</value></data>
+  <data name="ColumnSummary" xml:space="preserve"><value>{0} onaylı · {1} açık iş</value></data>
+  <data name="RowSubline" xml:space="preserve"><value>{0} · {1} kanıt · {2} kullanım</value></data>
+  <data name="CellExpiringNote" xml:space="preserve"><value>Geçerlilik yakında bitiyor</value></data>
+  <data name="CellCoreChangedNote" xml:space="preserve"><value>Çekirdek değişti</value></data>
+  <data name="CellEvidenceChangedNote" xml:space="preserve"><value>Kanıt değişti</value></data>
+  <data name="ActionOpenCountryVersion" xml:space="preserve"><value>Ülke sürümü aç</value></data>
+  <data name="ActionMarkNotOpened" xml:space="preserve"><value>Açılmayacak olarak işaretle</value></data>
+  <data name="ActionReopen" xml:space="preserve"><value>Yeniden aç</value></data>
+  <data name="ActionEditVersion" xml:space="preserve"><value>Düzenle / görüntüle</value></data>
+  <data name="CoreNotApprovedTooltip" xml:space="preserve"><value>Önce çekirdek onaylanmalı</value></data>
+  <data name="CellActionsLabel" xml:space="preserve"><value>{0} için işlemler</value></data>
+  <data name="CloseModalTitle" xml:space="preserve"><value>{0} açılmayacak olarak işaretle</value></data>
+  <data name="CloseReasonLabel" xml:space="preserve"><value>Neden</value></data>
+  <data name="CloseConfirm" xml:space="preserve"><value>İşaretle</value></data>
+  <data name="ReopenModalTitle" xml:space="preserve"><value>{0} yeniden aç</value></data>
+  <data name="ReopenNoteLabel" xml:space="preserve"><value>Not (isteğe bağlı)</value></data>
+  <data name="ToastClosed" xml:space="preserve"><value>Ülke açılmayacak olarak işaretlendi.</value></data>
+  <data name="ToastReopened" xml:space="preserve"><value>Ülke yeniden açıldı.</value></data>
+  <data name="CoverageEmptyTitle" xml:space="preserve"><value>Henüz iddia yok</value></data>
+  <data name="CoverageEmptyText" xml:space="preserve"><value>Ülkeler boyunca kapsamını görmek için bir çekirdek iddia oluşturun.</value></data>
+  <data name="LegendTitle" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Kod, ad ya da metinle arayın</value></data>
+  <data name="Reason_no-license" xml:space="preserve"><value>Ruhsat yok</value></data>
+  <data name="Reason_regulation-disallows" xml:space="preserve"><value>Yerel mevzuat izin vermiyor</value></data>
+  <data name="Reason_business-decision" xml:space="preserve"><value>İş kararı</value></data>
+  <data name="Err_country_has_version" xml:space="preserve"><value>Bu ülkenin zaten bir sürümü var; açılmayacak olarak işaretlemeden önce arşivleyin.</value></data>
+  <data name="Err_not_applicable" xml:space="preserve"><value>Bu ülke bu iddianın kapsamı dışında.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>Gerekli bir referans listesi henüz yayınlanmadı. Yöneticinize başvurun.</value></data>
+  <data name="Err_country_already_closed" xml:space="preserve"><value>Bu ülke zaten açılmayacak olarak işaretli.</value></data>
+  <data name="Err_country_not_closed" xml:space="preserve"><value>Bu ülke açılmayacak olarak işaretli değil.</value></data>
+  <data name="Err_invalid_reference_value" xml:space="preserve"><value>Geçerli bir neden seçin.</value></data>
+  <data name="Err_required" xml:space="preserve"><value>Bir neden seçin.</value></data>
+</root>

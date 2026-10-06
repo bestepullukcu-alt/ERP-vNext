@@ -3,6 +3,8 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.DocumentManagementContract;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Services;
+using Diten.Platform.Application.Features.WorkAggregation.Calendar;
+using Diten.Platform.Application.Features.WorkingHours;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -162,6 +164,10 @@ public sealed class ReleaseTaskItemHandler : IRequestHandler<ReleaseTaskItemComm
         // invisible TODAY — which is precisely why it must not be left behind (BL-051).
         task.AssigneeUserId = null;
         task.ReopenAcceptanceGate();
+        // BL-439 — rewinding out of Waiting drops the waiting story too, as every other way out does (ClearWaiting):
+        // a question left on a task nobody is waiting with any more is a read grant waiting to be revived.
+        task.ClearWaiting();
+        task.ClearPlan(); // the plan was the previous holder's time (CT acceptance, calendar engine)
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
         task.Declare(
@@ -214,7 +220,22 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
 
     /// <summary>WC-4 — the shared notification path; see ITaskNotificationService for the four rules it holds.</summary>
     private readonly ITaskNotificationService _notifications;
+
+    /// <summary>Faz 2a — gates CLOSURE-stage field values; see <see cref="ITaskFieldDefinitionService.ValidateClosureFieldsAsync"/>.</summary>
+    private readonly ITaskFieldDefinitionService _fieldDefinitions;
+    private readonly ITaskAttachmentRepository _attachments;
     private readonly ILogger<TransitionTaskItemHandler> _logger;
+
+    /// <summary>MOD-0357 S9 (owner, 2026-09-13) — the shared review-meeting gate re-check; see the type's own
+    /// doc comment. Independent of <see cref="_workflowGate"/>: this never touches MOD-0023.
+    ///
+    /// <para>OPTIONAL for the same reason every other MOD-0357 seam on sibling constructors in this feature is:
+    /// every test written before S9 constructs this handler directly and predates the parameter. A null reader
+    /// fails CLOSED exactly like <see cref="_workflowGate"/>'s own outage case — but only a task whose TYPE says
+    /// Required ever asks it anything, and no pre-S9 test's task type does, so the compatibility is real, not
+    /// just compiled: nothing pre-S9 exercises the branch that would notice.</para>
+    /// </summary>
+    private readonly IReviewMeetingGateReader? _reviewMeetingGate;
 
     public TransitionTaskItemHandler(
         ITaskItemRepository tasks,
@@ -226,18 +247,24 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         ITaskDependencyRepository dependencies,
         ITaskTypeRepository types,
         ITaskNotificationService notifications,
-        ILogger<TransitionTaskItemHandler> logger)
+        ITaskFieldDefinitionService fieldDefinitions,
+        ITaskAttachmentRepository attachments,
+        ILogger<TransitionTaskItemHandler> logger,
+        IReviewMeetingGateReader? reviewMeetingGate = null)
     {
         _logger = logger;
         _notifications = notifications;
         _dependencies = dependencies;
         _types = types;
+        _fieldDefinitions = fieldDefinitions;
+        _attachments = attachments;
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
         _checklists = checklists;
         _checklistService = checklistService;
         _workflowGate = workflowGate;
+        _reviewMeetingGate = reviewMeetingGate;
     }
 
     /// <summary>Which half of the outcome dictionary this transition is closing into, or null when it closes
@@ -313,6 +340,24 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                     "A blocking checklist item is still open.",
                     409, TaskReasonCodes.ChecklistIncomplete, command.CorrelationId);
             }
+
+            /*
+             * WP-PSS-MOD0024-ATTACHMENTS-UX-01 — the SAME shape as the checklist evidence gate (ATT-1): a type
+             * flag read once, enforced HERE (not only in the projection, which merely disables the client's
+             * button — pack §12 E1) and checked by a COUNT, not a list. Absent type (no TaskTypeId, or a type
+             * that no longer resolves) never gates — there is nothing configured to ask for.
+             */
+            var taskType = task.TaskTypeId is { } typeId ? await _types.GetByIdAsync(typeId, ct) : null;
+            if (taskType is { RequiresDeliverableOnCompletion: true })
+            {
+                var deliverableCount = await _attachments.CountDeliverablesAsync(task.Id, ct);
+                if (deliverableCount == 0)
+                {
+                    return Response<NoContent>.Fail(
+                        "This task's type requires a deliverable file before it can be completed.",
+                        409, TaskReasonCodes.DeliverableRequired, command.CorrelationId);
+                }
+            }
         }
 
         /*
@@ -360,6 +405,24 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                     gate.BlockingReasonCode ?? TaskReasonCodes.ApprovalPending,
                     command.CorrelationId);
             }
+        }
+
+        // ── Review-meeting gate (MOD-0357 S9, owner 2026-09-13; CT fix-up F1 2026-09-15) ────────────────
+        // An INDEPENDENT check, deliberately its own `if` block rather than folded into the approval gate above:
+        // the two ask different questions of different systems (MOD-0023's own decision vs. a RecordLink read
+        // this module owns), and merging them would make one look like a special case of the other.
+        //
+        // Asked on → Done ONLY — the task's own DECISION. Never on → InProgress: scheduling and holding the review
+        // meeting is part of the work, so starting (or resuming) must stay possible while the minutes are still to
+        // come. The other decision path, submit-for-review, asks the same rule in SubmitTaskForReviewHandler.
+        //
+        // AFTER the approval gate so the reason matches the projection's precedence (approval first, then the
+        // review meeting). Never calls IWorkflowTransitionGate or ITaskApprovalService: a LOCAL MOD-0024
+        // precondition, not a second approval engine — see ReviewMeetingDecisionGate.
+        if (command.Target == TaskLifecycle.Done
+            && await ReviewMeetingDecisionGate.BlocksDecisionAsync(task, _types, _reviewMeetingGate, ct))
+        {
+            return ReviewMeetingDecisionGate.Refusal(command.CorrelationId);
         }
 
         /*
@@ -440,7 +503,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
          */
         if (command.Target is TaskLifecycle.InProgress or TaskLifecycle.Done)
         {
-            var blocker = await FindUnsatisfiedDependencyAsync(task, command.Target, ct);
+            var blocker = await FindUnsatisfiedDependencyAsync(_dependencies, _tasks, task, command.Target, ct);
             if (blocker is not null)
             {
                 return Response<NoContent>.Fail(
@@ -524,6 +587,33 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             }
         }
 
+        /*
+         * Faz 2a — THE CLOSING NARRATIVE AND THE CLOSURE-STAGE FIELDS. Both ask only of `complete`/`cancel`;
+         * every other transition leaves `ClosureNote` and `FieldValues` exactly as it found them.
+         */
+        string? closureNote = null;
+        IReadOnlyList<TaskFieldValue>? closureFieldValues = null;
+        if (ClosureDispositionFor(command.Target) is not null)
+        {
+            closureNote = string.IsNullOrWhiteSpace(command.Request.Note) ? null : command.Request.Note.Trim();
+            if (closureNote is { Length: > TaskFieldLimits.MaxDescriptionLength })
+            {
+                return Response<NoContent>.Fail(
+                    $"The closing note exceeds {TaskFieldLimits.MaxDescriptionLength} characters.",
+                    400, TaskReasonCodes.ClosureNoteTooLong, command.CorrelationId);
+            }
+
+            var closureFields = await _fieldDefinitions.ValidateClosureFieldsAsync(
+                command.Request.ClosureFieldValues, task.FieldValues, ct);
+            if (!closureFields.IsValid)
+            {
+                return Response<NoContent>.Fail(
+                    closureFields.Message!, 400, closureFields.ReasonCode!, command.CorrelationId);
+            }
+
+            closureFieldValues = closureFields.Values;
+        }
+
         var previousLifecycle = task.Lifecycle;
         task.Lifecycle = command.Target;
         /*
@@ -553,18 +643,38 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         task.Declare(
             KindFor(previousLifecycle, command.Target),
             _currentUser.UserId,
-            reason: null,
+            // Faz 2a — THE COPY IN THE TRANSITION LOG. Every other act that carries a reason in the actor's own
+            // words (wait, return, reassign) leaves one on its TaskTransition entry; closing a task never did —
+            // MEASURED: this line read `reason: null` unconditionally, so a closing note reached the task and
+            // stopped there. `closureNote` is null for every transition but complete/cancel, so nothing changes
+            // for plan/start/resume/submit-for-review, which never carried a Note worth keeping anyway.
+            reason: closureNote,
             reasonCode: command.Request.ReasonCode);
+
+        if (closureFieldValues is not null)
+        {
+            // Faz 2a — MERGE, never replace. Entry-stage values (and any closure value from an earlier failed
+            // attempt whose code is not in THIS payload) are left exactly as they were.
+            var closureCodes = closureFieldValues
+                .Select(value => value.DefinitionCode)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            task.FieldValues = task.FieldValues
+                .Where(value => !closureCodes.Contains(value.DefinitionCode))
+                .Concat(closureFieldValues)
+                .ToList();
+        }
 
         switch (command.Target)
         {
             case TaskLifecycle.Done:
                 task.CompletedAt = DateTimeOffset.UtcNow;
                 task.ClosureReasonCode = command.Request.ReasonCode;
+                task.ClosureNote = closureNote;
                 break;
             case TaskLifecycle.Cancelled:
                 task.CancelledAt = DateTimeOffset.UtcNow;
                 task.ClosureReasonCode = command.Request.ReasonCode;
+                task.ClosureNote = closureNote;
                 break;
             case TaskLifecycle.InProgress when task.StartAt is null:
                 task.StartAt = DateTimeOffset.UtcNow;
@@ -647,6 +757,8 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                 continue;
             }
 
+            // BL-439 — a cancelled child keeps no waiting story, the same rule the parent's own exit follows.
+            child.ClearWaiting();
             child.Lifecycle = TaskLifecycle.Cancelled;
             child.CancelledAt = DateTimeOffset.UtcNow;
             /*
@@ -686,13 +798,18 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     /// <para>An edge whose far end cannot be read blocks NOTHING. That mirrors the projection, which drops such an
     /// edge rather than showing an unnamed blocker: refusing on a predecessor the caller cannot see or reach would
     /// park the task with no way to clear it.</para>
+    ///
+    /// <para>Static and internal so <see cref="AnswerInquiryHandler"/> asks the SAME rule when an answer returns a
+    /// task to InProgress (BL-439) — a second copy is how two gates come to disagree.</para>
     /// </summary>
-    private async Task<TaskItem?> FindUnsatisfiedDependencyAsync(
+    internal static async Task<TaskItem?> FindUnsatisfiedDependencyAsync(
+        ITaskDependencyRepository dependencies,
+        ITaskItemRepository tasks,
         TaskItem task,
         TaskLifecycle target,
         CancellationToken ct)
     {
-        var edges = await _dependencies.ListByTaskIdAsync(task.Id, ct);
+        var edges = await dependencies.ListByTaskIdAsync(task.Id, ct);
         if (edges.Count == 0)
         {
             return null;
@@ -711,7 +828,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         }
 
         // One batched read for every predecessor involved, never one per edge.
-        var predecessors = (await _tasks.ListByIdsAsync(
+        var predecessors = (await tasks.ListByIdsAsync(
                 relevant.Select(edge => edge.DependsOnTaskItemId).Distinct().ToList(), ct))
             .ToDictionary(item => item.Id);
 
@@ -747,13 +864,23 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
     private readonly ITaskApprovalService _reviewStates;
     private readonly ILogger<SubmitTaskForReviewHandler> _logger;
 
+    /// <summary>MOD-0357 S9 (CT fix-up F1, 2026-09-15) — submitting for review is a DECISION the review-meeting
+    /// gate holds back, so this handler asks the same shared rule TransitionTaskItemHandler asks on → Done (see
+    /// <see cref="ReviewMeetingDecisionGate"/>). OPTIONAL for the same reason as that handler's own seam: every
+    /// test written before this constructs the handler directly. A null seam fails CLOSED — but only for a task
+    /// that carries a type, and no pre-existing submit test's task does.</summary>
+    private readonly ITaskTypeRepository? _types;
+    private readonly IReviewMeetingGateReader? _reviewMeetingGate;
+
     public SubmitTaskForReviewHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
         ICurrentUserContext currentUser,
         ITaskReviewService reviews,
         ITaskApprovalService reviewStates,
-        ILogger<SubmitTaskForReviewHandler> logger)
+        ILogger<SubmitTaskForReviewHandler> logger,
+        ITaskTypeRepository? types = null,
+        IReviewMeetingGateReader? reviewMeetingGate = null)
     {
         _reviewStates = reviewStates;
         _tasks = tasks;
@@ -761,6 +888,8 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
         _currentUser = currentUser;
         _reviews = reviews;
         _logger = logger;
+        _types = types;
+        _reviewMeetingGate = reviewMeetingGate;
     }
 
     public async Task<Response<NoContent>> Handle(SubmitTaskForReviewCommand command, CancellationToken ct)
@@ -797,6 +926,18 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
         }
 
         /*
+         * B2 follow-up — the submitter starts the review, and MOD-0023 never lets whoever started an instance approve
+         * it. A review routed back to its own submitter could therefore never be closed. Refused BEFORE anything is
+         * opened in MOD-0023.
+         */
+        if (task.ReviewerCandidateUserId is { } reviewer && reviewer == _currentUser.UserId)
+        {
+            return Response<NoContent>.Fail(
+                "You cannot review your own submission.",
+                409, TaskReasonCodes.ReviewerIsSubmitter, command.CorrelationId);
+        }
+
+        /*
          * RESUBMISSION after a refusal. A task refused by its reviewer stays in PendingReview on the record while
          * the projection reports it as InProgress — the work is back with its holder — so the lifecycle matrix,
          * which has no PendingReview → PendingReview edge, would refuse the second round and leave the work with
@@ -818,6 +959,20 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
             return Response<NoContent>.Fail(
                 "This transition is not allowed in the task's current state.",
                 409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        /*
+         * Review-meeting gate (MOD-0357 S9, CT fix-up F1 2026-09-15) — the same shared rule → Done asks in
+         * TransitionTaskItemHandler: a type that requires a review meeting cannot hand its work to a reviewer until
+         * a non-cancelled linked meeting has published minutes. Applies to a resubmission after a refusal too, so
+         * the projection's hint and this refusal agree on every path that leads here.
+         *
+         * BEFORE TryStartReviewAsync, and that placement is the approval boundary: a refused submit opens no
+         * MOD-0023 instance, so nothing is left behind in MOD-0023 and no review outcome is touched.
+         */
+        if (await ReviewMeetingDecisionGate.BlocksDecisionAsync(task, _types, _reviewMeetingGate, ct))
+        {
+            return ReviewMeetingDecisionGate.Refusal(command.CorrelationId);
         }
 
         /*
@@ -867,21 +1022,229 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
 }
 
 /// <summary>
-/// Set (or move) a personal plan date. The FIRST plan (Open → Planned) and a RE-plan (Planned → Planned) are the
-/// same write — both just record a date — so one handler covers both rather than the create/update split every
+/// Set (or move) a personal plan — a DAY, or a time BLOCK on that day. The FIRST plan (Open → Planned) and a RE-plan
+/// (Planned → Planned) are the same write, so one handler covers both rather than the create/update split every
 /// other transition has.
 ///
 /// <para>Deliberately NOT routed through <see cref="TransitionTaskItemCommand"/>: the date is required here and
 /// meaningless for the other nine transitions, and Planned→Planned is a self-loop no other caller of that
 /// command needs (see <see cref="TaskLifecycleService.CanTransition"/>).</para>
+///
+/// <para><b>WP-TASK-CALENDAR-ENGINE-01 — the block.</b> A block is an absolute UTC start + a length (a whole number
+/// of 15-minute steps; the estimate, else 60 minutes, when none is given). Its day is derived in the tenant's time
+/// zone. It is cut at the end of the day's working window, and what is left of the estimate is ANSWERED
+/// (<c>remainingMinutes</c>), never stored. Two blocks of the same holder may not overlap — a hard 409; a meeting
+/// or the edge of the working day only WARNS, and the plan is saved. The working window comes from
+/// <see cref="IWorkingHoursProvider"/> and nowhere else.</para>
 /// </summary>
-public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, Response<NoContent>>
+public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, Response<PlanTaskItemResultDto>>
+{
+    private readonly ITaskItemRepository _tasks;
+    private readonly ITaskLifecycleService _lifecycle;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly IWorkingHoursProvider _workingHours;
+    private readonly ICalendarMeetingReader _meetings;
+
+    public PlanTaskItemHandler(
+        ITaskItemRepository tasks,
+        ITaskLifecycleService lifecycle,
+        ICurrentUserContext currentUser,
+        IWorkingHoursProvider workingHours,
+        ICalendarMeetingReader meetings)
+    {
+        _tasks = tasks;
+        _lifecycle = lifecycle;
+        _currentUser = currentUser;
+        _workingHours = workingHours;
+        _meetings = meetings;
+    }
+
+    public async Task<Response<PlanTaskItemResultDto>> Handle(PlanTaskItemCommand command, CancellationToken ct)
+    {
+        var request = command.Request;
+
+        // A JSON body that omits both fields leaves them null (or, from an older client, the date at its zero
+        // value) — nobody types year 1, so both read as "not supplied" and get our own reason code instead of a
+        // framework-shaped validation error.
+        var plannedDate = request.PlannedDate is { } date && date != default ? date : (DateTimeOffset?)null;
+        var plannedStartAt = request.PlannedStartAt is { } start && start != default ? start : (DateTimeOffset?)null;
+        if (plannedDate is null && plannedStartAt is null)
+        {
+            return Response<PlanTaskItemResultDto>.Fail(
+                "A planned date is required.", 400, TaskReasonCodes.PlanDateRequired, command.CorrelationId);
+        }
+
+        // A length only means something for a block, and a block is whole 15-minute steps.
+        if (request.DurationMinutes is { } asked
+            && (plannedStartAt is null || !TaskPlanBlockRules.IsValidDuration(asked)))
+        {
+            return Response<PlanTaskItemResultDto>.Fail(
+                "A block length must be a whole number of 15-minute steps, at least 15 minutes, and needs a start.",
+                400, TaskReasonCodes.PlanDurationInvalid, command.CorrelationId);
+        }
+
+        var task = await _tasks.GetByIdAsync(command.Id, ct);
+        if (task is null)
+        {
+            return Response<PlanTaskItemResultDto>.Fail(
+                "Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        /*
+         * BL-449 (owner, 2026-09-29) — ONLY THE HOLDER PLANS. A plan is a block of the holder's own time, so it is
+         * theirs to place; the requester states their expectation with the due date. This replaces BL-361's
+         * "holder or requester" rule, and TaskWorkItemProvider stops offering `plan` on the requester's row in the
+         * same change so the button and the rule cannot disagree.
+         */
+        if (task.AssigneeUserId is null || task.AssigneeUserId != _currentUser.UserId)
+        {
+            return Response<PlanTaskItemResultDto>.Fail(
+                "Only the person holding this task may plan it.",
+                403, TaskReasonCodes.PlanNotHolder, command.CorrelationId);
+        }
+
+        if (!_lifecycle.CanTransition(task, TaskLifecycle.Planned, out var reasonCode))
+        {
+            return Response<PlanTaskItemResultDto>.Fail(
+                "This transition is not allowed in the task's current state.",
+                409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        /*
+         * Validation stays deliberately LOOSE about WHEN: nothing compares the plan against DueAt or against today.
+         * A plan after the source due date is a real situation — "I won't make it, planning for the 5th instead" —
+         * and refusing it would force the user to pick an earlier date just to get the write accepted. A date in
+         * the past is accepted for the same reason. The screen surfaces the mismatch (renderPlanDates /
+         * wcn-date-conflict). If a future reader is tempted to add a range check here, this is the comment telling
+         * them not to. What IS refused is about the holder's TIME, below: two blocks in the same hour.
+         */
+        var warnings = new List<TaskPlanWarningDto>();
+        int? remainingMinutes = null;
+        var truncated = false;
+
+        if (plannedStartAt is null)
+        {
+            // A DAY plan. Moving a block back to a day-only plan clears the block: one plan, one shape.
+            task.PlannedDate = plannedDate;
+            task.PlannedStartAt = null;
+            task.PlannedDurationMinutes = null;
+        }
+        else
+        {
+            var startUtc = plannedStartAt.Value.ToUniversalTime();
+            var utcDay = DateOnly.FromDateTime(startUtc.UtcDateTime);
+
+            // ±1 day around the UTC date covers every tenant offset; the provider's own zone picks the local day.
+            var hours = await _workingHours.GetWorkingWindowsAsync(
+                _currentUser.UserId, utcDay.AddDays(-1), utcDay.AddDays(1), ct);
+            var localDay = hours.LocalDateOf(startUtc);
+
+            var fit = TaskPlanBlockRules.Fit(
+                startUtc,
+                request.DurationMinutes ?? TaskPlanBlockRules.DefaultDuration(task.EstimateHours),
+                hours.DayOf(localDay));
+            var endUtc = startUtc.AddMinutes(fit.DurationMinutes);
+
+            var conflict = await FindConflictAsync(task, startUtc, endUtc, ct);
+            if (conflict is not null)
+            {
+                return Response<PlanTaskItemResultDto>.FailWithData(
+                    $"This block overlaps \"{conflict.Title}\", which you have planned for the same time.",
+                    409,
+                    TaskReasonCodes.PlanConflict,
+                    new PlanTaskItemResultDto(
+                        task.Id, task.PlannedDate, task.PlannedStartAt, task.PlannedDurationMinutes,
+                        RemainingMinutes: null, Truncated: false, Warnings: [], Conflict: conflict),
+                    command.CorrelationId);
+            }
+
+            if (fit.OutsideWorkingHours)
+            {
+                warnings.Add(new TaskPlanWarningDto(TaskPlanWarningCodes.OutsideWorkingHours));
+            }
+
+            foreach (var meeting in await _meetings.ListMineAsync(_currentUser.UserId, startUtc, endUtc, ct))
+            {
+                warnings.Add(new TaskPlanWarningDto(
+                    TaskPlanWarningCodes.OverlapsMeeting, meeting.Title, meeting.StartAt, meeting.EndAt));
+            }
+
+            task.PlannedStartAt = startUtc;
+            task.PlannedDurationMinutes = fit.DurationMinutes;
+            task.PlannedDate = LocalMidnight(localDay, hours.TimeZone);
+            remainingMinutes = TaskPlanBlockRules.RemainingMinutes(task.EstimateHours, fit.DurationMinutes);
+            truncated = fit.Truncated;
+        }
+
+        task.Lifecycle = TaskLifecycle.Planned;
+        task.UpdatedBy = _currentUser.ActorName;
+        /*
+         * Declared even for a RE-plan, where Planned → Planned moves nothing the diff can see. Moving a date IS a
+         * transition — "this slipped twice" is a fact the history has to be able to tell — so the intent is what
+         * makes the entry, and the repository writes it because something was declared rather than because
+         * something differed.
+         */
+        task.Declare(TaskTransitionKind.Planned, _currentUser.UserId);
+
+        if (!await _tasks.UpdateAsync(task, request.ExpectedVersion, ct))
+        {
+            return Response<PlanTaskItemResultDto>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        return Response<PlanTaskItemResultDto>.Success(
+            new PlanTaskItemResultDto(
+                task.Id, task.PlannedDate, task.PlannedStartAt, task.PlannedDurationMinutes,
+                remainingMinutes, truncated, warnings),
+            200,
+            command.CorrelationId);
+    }
+
+    /// <summary>
+    /// The first of the holder's OTHER live blocks this one would overlap. Scoped by the repository to the tenant and
+    /// by the query to the holder — somebody else's calendar is never consulted. Day-only plans have no hours and
+    /// never conflict; closed work no longer occupies its hour.
+    /// </summary>
+    private async Task<TaskPlanConflictDto?> FindConflictAsync(
+        TaskItem task, DateTimeOffset startUtc, DateTimeOffset endUtc, CancellationToken ct)
+    {
+        var other = (await _tasks.ListByAssigneeAsync(_currentUser.UserId, ct))
+            .Where(t => t.Id != task.Id
+                        && !_lifecycle.IsTerminal(t)
+                        && t.PlannedStartAt is not null
+                        && t.PlannedDurationMinutes is not null)
+            .Select(t => (Task: t, Start: t.PlannedStartAt!.Value, End: t.PlannedStartAt!.Value.AddMinutes(t.PlannedDurationMinutes!.Value)))
+            .Where(b => TaskPlanBlockRules.Overlaps(startUtc, endUtc, b.Start, b.End))
+            .OrderBy(b => b.Start)
+            .FirstOrDefault();
+
+        return other.Task is null ? null : new TaskPlanConflictDto(other.Task.Id, other.Task.Title, other.Start, other.End);
+    }
+
+    /// <summary>The start of a local day as an instant carrying that day's offset, so its date reads as the local day.</summary>
+    private static DateTimeOffset LocalMidnight(DateOnly localDay, TimeZoneInfo timeZone)
+    {
+        var midnight = localDay.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified);
+        return new DateTimeOffset(midnight, timeZone.GetUtcOffset(midnight));
+    }
+}
+
+/// <summary>
+/// WP-TASK-CALENDAR-ENGINE-01 — take a task off the holder's calendar. Clears the plan day and block and returns the
+/// lifecycle to before the plan (Planned → Open, a move the lifecycle matrix already allows).
+///
+/// <para>Holder only, like plan (BL-449). Only from <see cref="TaskLifecycle.Planned"/>: an Open task was never
+/// planned, and a started/waiting/closed task cannot go back to before its plan — both answer
+/// <c>TASK_UNPLAN_NOT_ALLOWED</c> rather than silently clearing a date.</para>
+/// </summary>
+public sealed class UnplanTaskItemHandler : IRequestHandler<UnplanTaskItemCommand, Response<NoContent>>
 {
     private readonly ITaskItemRepository _tasks;
     private readonly ITaskLifecycleService _lifecycle;
     private readonly ICurrentUserContext _currentUser;
 
-    public PlanTaskItemHandler(
+    public UnplanTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
         ICurrentUserContext currentUser)
@@ -891,68 +1254,34 @@ public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, R
         _currentUser = currentUser;
     }
 
-    public async Task<Response<NoContent>> Handle(PlanTaskItemCommand command, CancellationToken ct)
+    public async Task<Response<NoContent>> Handle(UnplanTaskItemCommand command, CancellationToken ct)
     {
-        // A JSON body that omits `plannedDate` deserializes this to DateTimeOffset's zero value rather than
-        // throwing — nobody types year 1, so treating the zero value as "not supplied" is safe and gives the
-        // caller our own reason code instead of a framework-shaped validation error.
-        if (command.Request.PlannedDate == default)
-        {
-            return Response<NoContent>.Fail(
-                "A planned date is required.", 400, TaskReasonCodes.PlanDateRequired, command.CorrelationId);
-        }
-
         var task = await _tasks.GetByIdAsync(command.Id, ct);
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
         }
 
-        /*
-         * BL-361 — a plan date is a PERSONAL note about when the work will happen, so both the person doing the
-         * work and the person who asked for it may set one; a bystander with no stake in either direction may not.
-         * Wider than Start/Complete/SubmitReview on purpose — this is the one verb in the group the requester also
-         * legitimately touches (their own outbox row offers `plan`, see TaskWorkItemProvider), so the rule matches
-         * what the projection already shows rather than narrowing it.
-         */
-        if (task.AssigneeUserId != _currentUser.UserId
-            && (task.CreatedByUserId is null || task.CreatedByUserId != _currentUser.UserId))
+        if (task.AssigneeUserId is null || task.AssigneeUserId != _currentUser.UserId)
         {
             return Response<NoContent>.Fail(
-                "Only the assignee or the requester may perform this action.",
-                403, DocumentManagementReasonCodes.PermissionDenied, command.CorrelationId);
+                "Only the person holding this task may change its plan.",
+                403, TaskReasonCodes.PlanNotHolder, command.CorrelationId);
         }
 
-        if (!_lifecycle.CanTransition(task, TaskLifecycle.Planned, out var reasonCode))
+        if (task.Lifecycle != TaskLifecycle.Planned || !_lifecycle.CanTransition(task, TaskLifecycle.Open, out _))
         {
             return Response<NoContent>.Fail(
-                "This transition is not allowed in the task's current state.",
-                409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
+                "Only a planned task that has not started can be taken off the calendar.",
+                409, TaskReasonCodes.UnplanNotAllowed, command.CorrelationId);
         }
 
-        /*
-         * Validation here is deliberately LOOSE: nothing compares PlannedDate against DueAt or against today.
-         *
-         * A plan after the source due date is a real situation — "I won't make it, planning for the 5th instead"
-         * — and refusing it would force the user to pick an earlier date just to get the write accepted, which is
-         * a lie the system would be asking for. The screen already surfaces the mismatch as a visible warning
-         * (renderPlanDates / wcn-date-conflict); that is the right place for the judgement, not a blocked write.
-         *
-         * A date in the past is accepted for the same reason: PlannedDate is a personal note, not a commitment
-         * the system enforces. The ONLY thing refused is no date at all (checked above).
-         *
-         * If a future reader is tempted to add a range check here, that is this comment telling them not to.
-         */
-        task.Lifecycle = TaskLifecycle.Planned;
-        task.PlannedDate = command.Request.PlannedDate;
+        task.Lifecycle = TaskLifecycle.Open;
+        task.PlannedDate = null;
+        task.PlannedStartAt = null;
+        task.PlannedDurationMinutes = null;
         task.UpdatedBy = _currentUser.ActorName;
-        /*
-         * Declared even for a RE-plan, where Planned → Planned moves nothing the diff can see. Moving a date IS a
-         * transition — "this slipped twice" is a fact the history has to be able to tell — so the intent is what
-         * makes the entry, and the repository writes it because something was declared rather than because
-         * something differed.
-         */
-        task.Declare(TaskTransitionKind.Planned, _currentUser.UserId);
+        task.Declare(TaskTransitionKind.Unplanned, _currentUser.UserId, command.Request.Note, command.Request.ReasonCode);
 
         if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
         {
@@ -985,6 +1314,8 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
     private readonly ITaskSeatDirectory _seats;
     private readonly IPositionRepository _positions;
     private readonly IOrganizationUnitRepository _organizationUnits;
+    private readonly ITaskNotificationService _notifications;
+    private readonly ILogger<InquireTaskItemHandler> _logger;
 
     public InquireTaskItemHandler(
         ITaskItemRepository tasks,
@@ -992,7 +1323,9 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
         ICurrentUserContext currentUser,
         ITaskSeatDirectory seats,
         IPositionRepository positions,
-        IOrganizationUnitRepository organizationUnits)
+        IOrganizationUnitRepository organizationUnits,
+        ITaskNotificationService notifications,
+        ILogger<InquireTaskItemHandler> logger)
     {
         _tasks = tasks;
         _lifecycle = lifecycle;
@@ -1000,6 +1333,8 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
         _seats = seats;
         _positions = positions;
         _organizationUnits = organizationUnits;
+        _notifications = notifications;
+        _logger = logger;
     }
 
     public async Task<Response<NoContent>> Handle(InquireTaskItemCommand command, CancellationToken ct)
@@ -1048,7 +1383,10 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
          */
         if (command.Request.WaitingOnUserId is { } waitingOn)
         {
-            if (waitingOn == Guid.Empty)
+            // BL-439 — nor the holder themselves. Waiting on yourself is not a wait anyone can end but you, and
+            // naming yourself would make you the addressee of your own question — the one person who may answer
+            // it — which turns `answer` into a way round every gate `resume` asks.
+            if (waitingOn == Guid.Empty || waitingOn == _currentUser.UserId)
             {
                 return Response<NoContent>.Fail(
                     "The person being waited on is not valid.",
@@ -1085,7 +1423,187 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
                 409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
         }
 
+        /*
+         * BL-439 — THE PERSON BEING ASKED IS TOLD. Until this line the question was stored ("who" and "why") and
+         * shown only on the ASKER's own card; nothing reached the one person who could unblock the work. Their
+         * Task Center inbox now carries the question as its own item (TaskWorkItemProvider), and this is what
+         * tells them it is there — through the module's one notification road, after the write committed, and
+         * never able to fail it.
+         *
+         * Nobody named, nobody told: a wait on a supplier has no addressee here.
+         */
+        if (task.WaitingOnUserId is { } asked)
+        {
+            await TaskNotificationSafely.NotifyAsync(
+                _notifications, _logger, task, TaskNotificationEvents.InquiryAsked,
+                [asked], _currentUser.UserId, ct);
+        }
+
         return Response<NoContent>.Success(204, command.CorrelationId);
+    }
+}
+
+/// <summary>
+/// BL-439 — the ANSWER: the second half of "Bilgi bekle" (Oracle BPM "Request Information → Submit Information",
+/// SAP Inbox "Clarification").
+///
+/// <para>The person a waiting task names in <see cref="TaskItem.WaitingOnUserId"/> answers it. The answer goes into
+/// the task's history as <see cref="TaskTransitionKind.InquiryAnswered"/>, in their own words; the waiting story
+/// is cleared; the task returns to the lifecycle it had BEFORE it was parked; and the holder is told.</para>
+///
+/// <para><b>The addressee gains nothing else.</b> This handler is the ONLY write they can reach: start, complete,
+/// cancel, reassign and return all keep asking their own holder/requester questions, which the addressee does
+/// not pass. The answer is not an act on the work — it is information handed back to the person doing it.</para>
+/// </summary>
+public sealed class AnswerInquiryHandler : IRequestHandler<AnswerInquiryCommand, Response<NoContent>>
+{
+    private readonly ITaskItemRepository _tasks;
+    private readonly ITaskTransitionRepository _transitions;
+    private readonly ITaskLifecycleService _lifecycle;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly IWorkflowTransitionGate _workflowGate;
+    private readonly ITaskDependencyRepository _dependencies;
+    private readonly ITaskNotificationService _notifications;
+    private readonly ILogger<AnswerInquiryHandler> _logger;
+
+    public AnswerInquiryHandler(
+        ITaskItemRepository tasks,
+        ITaskTransitionRepository transitions,
+        ITaskLifecycleService lifecycle,
+        ICurrentUserContext currentUser,
+        IWorkflowTransitionGate workflowGate,
+        ITaskDependencyRepository dependencies,
+        ITaskNotificationService notifications,
+        ILogger<AnswerInquiryHandler> logger)
+    {
+        _tasks = tasks;
+        _transitions = transitions;
+        _lifecycle = lifecycle;
+        _currentUser = currentUser;
+        _workflowGate = workflowGate;
+        _dependencies = dependencies;
+        _notifications = notifications;
+        _logger = logger;
+    }
+
+    public async Task<Response<NoContent>> Handle(AnswerInquiryCommand command, CancellationToken ct)
+    {
+        var answer = command.Request.Answer?.Trim();
+        if (string.IsNullOrWhiteSpace(answer))
+        {
+            // An empty answer unblocks nothing — the holder would be told "answered" and learn nothing.
+            return Response<NoContent>.Fail(
+                "Write the answer.", 400, TaskReasonCodes.InquiryAnswerRequired, command.CorrelationId);
+        }
+
+        if (answer.Length > TaskFieldLimits.MaxDescriptionLength)
+        {
+            return Response<NoContent>.Fail(
+                $"The answer exceeds {TaskFieldLimits.MaxDescriptionLength} characters.",
+                400, TaskReasonCodes.InquiryAnswerTooLong, command.CorrelationId);
+        }
+
+        // Tenant-bound read: another tenant's task is simply not found here, whoever is asking.
+        var task = await _tasks.GetByIdAsync(command.Id, ct);
+        if (task is null)
+        {
+            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        /*
+         * FAIL-CLOSED: only the person the task is asking, and only while it is still asking. The same predicate
+         * the read rule and the projection ask (TaskInquiryRules.IsAskedOf), so the person who sees the question,
+         * the person who may open the task and the person who may answer are one person.
+         *
+         * Before any write, so a refused answer leaves the task byte-identical — no history entry, no notice.
+         */
+        if (!TaskInquiryRules.IsAskedOf(task, _currentUser.UserId))
+        {
+            return Response<NoContent>.Fail(
+                "Only the person this task is waiting on can answer it.",
+                403, TaskReasonCodes.InquiryNotAddressee, command.CorrelationId);
+        }
+
+        /*
+         * WHERE THE TASK GOES BACK TO — read from the log entry that parked it. Entering Waiting is recorded as a
+         * TaskTransitionKind.Waiting entry carrying the lifecycle it left, so the way out is read from the same
+         * place rather than stored a second time on the task.
+         */
+        var history = await _transitions.ListByTaskIdAsync(task.Id, ct);
+        var parkedFrom = history
+            .Where(transition => transition.Kind == TaskTransitionKind.Waiting)
+            .OrderByDescending(transition => transition.CreatedAt)
+            .Select(transition => (TaskLifecycle?)transition.FromLifecycle)
+            .FirstOrDefault();
+
+        var returnTo = _lifecycle.ResolveInquiryReturn(parkedFrom);
+
+        /*
+         * ⚠ BACK INTO RUNNING WORK ASKS THE SAME GATES `resume` ASKS — the approval gate (MOD-0023, fail-closed)
+         * and the dependency rule. The task was InProgress when it was parked, but the world may have moved while
+         * it waited: approval switched on, a blocking predecessor added. Without this, an answer would walk the task
+         * past a gate the holder's own resume is refused by — the answer must never be a way round `resume`.
+         *
+         * A blocked return lands in OPEN rather than refusing the answer: the answer is information and it arrived;
+         * what the gate refuses is RUNNING, and Open is the state from which the holder starts again through every
+         * gate, with the reason shown beside the button.
+         */
+        if (returnTo == TaskLifecycle.InProgress && await ResumeIsBlockedAsync(task, command.CorrelationId, ct))
+        {
+            returnTo = TaskLifecycle.Open;
+        }
+
+        task.Lifecycle = returnTo;
+        task.ClearWaiting();
+        task.UpdatedBy = _currentUser.ActorName;
+        // The answer travels into the history for the reason the question did: the waiting story is cleared
+        // right here, and "what did they tell us" must still have an answer next month.
+        task.Declare(TaskTransitionKind.InquiryAnswered, _currentUser.UserId, answer);
+
+        if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        /*
+         * The HOLDER is told — the person whose work was blocked, and (since only the holder may park a task) the
+         * one who asked. Through the module's existing road, never able to fail the answer that already landed.
+         */
+        if (task.AssigneeUserId is { } holder)
+        {
+            await TaskNotificationSafely.NotifyAsync(
+                _notifications, _logger, task, TaskNotificationEvents.InquiryAnswered,
+                [holder], _currentUser.UserId, ct);
+        }
+
+        return Response<NoContent>.Success(204, command.CorrelationId);
+    }
+
+    /// <summary>The two gates <see cref="TransitionTaskItemHandler"/> asks before → InProgress, asked the same way.</summary>
+    private async Task<bool> ResumeIsBlockedAsync(TaskItem task, string correlationId, CancellationToken ct)
+    {
+        if (task.ApprovalRequired)
+        {
+            var gate = await _workflowGate.EvaluateAsync(new WorkflowGateRequest(
+                ObjectType: TaskApprovalService.ApprovalObjectType,
+                ObjectId: task.Id.ToString(),
+                ObjectRef: TaskApprovalService.BuildObjectRef(task.Id),
+                RequestedTransition: "start",
+                RequestedTargetState: TaskLifecycle.InProgress.ToString(),
+                ActorId: _currentUser.UserId.ToString(),
+                ReasonCode: null,
+                CorrelationId: correlationId), ct);
+
+            if (gate.IsBlocked)
+            {
+                return true;
+            }
+        }
+
+        return await TransitionTaskItemHandler.FindUnsatisfiedDependencyAsync(
+            _dependencies, _tasks, task, TaskLifecycle.InProgress, ct) is not null;
     }
 }
 
@@ -1163,6 +1681,9 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
         task.AssigneeUserId = task.CreatedByUserId;
         task.AssignmentTarget = TaskAssignmentTarget.Person;
         task.ReopenAcceptanceGate();
+        // BL-439 — the lifecycle rewinds to Open, so any waiting story goes with it (see ReleaseTaskItemHandler).
+        task.ClearWaiting();
+        task.ClearPlan(); // the plan was the previous holder's time (CT acceptance, calendar engine)
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
         /*
@@ -1330,6 +1851,9 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
         task.AssigneeUserId = command.Request.AssigneeUserId;
         task.AssignmentTarget = TaskAssignmentTarget.Person;
         task.ReopenAcceptanceGate();
+        // BL-439 — the lifecycle rewinds to Open, so any waiting story goes with it (see ReleaseTaskItemHandler).
+        task.ClearWaiting();
+        task.ClearPlan(); // the plan was the previous holder's time (CT acceptance, calendar engine)
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
         task.Declare(TaskTransitionKind.Reassigned, _currentUser.UserId, reason);

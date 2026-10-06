@@ -1,0 +1,12 @@
+@using Diten.Web.Views.Meetings.MinutesEditor
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MinutesEditorIndex> EditorLocalizer
+
+@* MOD-0357 S6 — one row per invited person, Present/Absent/Excused. Rows are drawn client-side
+   (minutes-editor.js), from the meeting's own attendee list — this partial is the section shell only.
+   Contract marker: id="attendanceList". *@
+<section class="card p-4">
+    <h6 class="card-section-title mb-3"><i class="bx bx-group"></i>@EditorLocalizer["AttendanceSection"]</h6>
+    <ul class="list-group" id="attendanceList"></ul>
+    <p class="text-muted small mb-0 mt-2 d-none" id="noAttendeesHint">@EditorLocalizer["NoAttendeesHint"]</p>
+</section>

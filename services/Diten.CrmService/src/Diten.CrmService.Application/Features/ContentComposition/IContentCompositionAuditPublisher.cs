@@ -23,4 +23,7 @@ public interface IContentCompositionAuditPublisher
 public static class ContentCompositionAuditEntities
 {
     public const string Claim = "Claim";
+    public const string ClaimCountryVersion = "ClaimCountryVersion";
+    public const string ContentScope = "ContentScope";
+    public const string ContentSet = "ContentSet";
 }

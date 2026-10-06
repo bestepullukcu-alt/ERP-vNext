@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Записей пока нет.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Что-то пошло не так. Повторите попытку.</value></data>
+  <data name="Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка...</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Включая архивные</value></data>
+  <data name="Active" xml:space="preserve"><value>Активные</value></data>
+  <data name="View" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Вы уверены?</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск..</value></data>
+  <data name="Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сброс</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Показать все</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить вид</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Видимость столбцов</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>Предпросмотр</value></data>
+  <data name="Passive" xml:space="preserve"><value>Пассивный</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Удалить выбранные записи?</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активно</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="Template" xml:space="preserve"><value>Шаблон</value></data>
+  <data name="Scope" xml:space="preserve"><value>Область</value></data>
+  <data name="Components" xml:space="preserve"><value>Компоненты</value></data>
+  <data name="Claims" xml:space="preserve"><value>Заявления</value></data>
+  <data name="ProductRefs" xml:space="preserve"><value>Ссылки на продукты</value></data>
+  <data name="MarketRefs" xml:space="preserve"><value>Ссылки на рынки</value></data>
+  <data name="AudienceRefs" xml:space="preserve"><value>Ссылки на аудитории</value></data>
+  <data name="Channel" xml:space="preserve"><value>Канал</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>Язык</value></data>
+  <data name="RefsTagHint" xml:space="preserve"><value>Введите значение и нажмите Enter, чтобы добавить каждую ссылку.</value></data>
+  <data name="SetsTitle" xml:space="preserve"><value>Наборы контента</value></data>
+  <data name="ContentStudioTitle" xml:space="preserve"><value>Студия контента</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Черновики сборки: компоненты и заявления, размещённые по шаблону композиции в необязательной области.</value></data>
+  <data name="DraftNote" xml:space="preserve"><value>Это изменяемые черновики. Заморозка, рендеринг и выпуск — последующие этапы.</value></data>
+  <data name="SetCode" xml:space="preserve"><value>Код набора</value></data>
+  <data name="SetName" xml:space="preserve"><value>Название набора</value></data>
+  <data name="CreateSet" xml:space="preserve"><value>Создать набор</value></data>
+  <data name="EditSet" xml:space="preserve"><value>Редактировать набор</value></data>
+  <data name="OpenWorkspace" xml:space="preserve"><value>Открыть рабочую область</value></data>
+  <data name="CloneSet" xml:space="preserve"><value>Клонировать в черновик</value></data>
+  <data name="CloneSetCodePrompt" xml:space="preserve"><value>Новый код набора для клона:</value></data>
+  <data name="CloneSetNamePrompt" xml:space="preserve"><value>Новое название набора (необязательно):</value></data>
+  <data name="RecordCloned" xml:space="preserve"><value>Черновик клонирован.</value></data>
+  <data name="ArchiveSet" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="ArchiveSetConfirm" xml:space="preserve"><value>Архивировать этот набор контента? Это мягкое действие; он остаётся доступным для чтения.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Набор контента архивирован.</value></data>
+  <data name="ArchivedSetReadOnly" xml:space="preserve"><value>Этот набор контента в архиве и доступен только для чтения.</value></data>
+  <data name="CompositionSection" xml:space="preserve"><value>Композиция</value></data>
+  <data name="TemplatePickerPlaceholder" xml:space="preserve"><value>Найдите шаблон композиции...</value></data>
+  <data name="TemplatePinNote" xml:space="preserve"><value>Версия шаблона закрепляется при создании набора.</value></data>
+  <data name="ScopePickerPlaceholder" xml:space="preserve"><value>Найдите область контента (необязательно)...</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>Необязательно. Его версия закрепляется при выборе.</value></data>
+  <data name="PinnedNote" xml:space="preserve"><value>Шаблон и область закрепляются по версии при выборе — здесь они не меняются.</value></data>
+  <data name="NoScope" xml:space="preserve"><value>Без области</value></data>
+  <data name="ApplyEligibility" xml:space="preserve"><value>Проверить допустимость</value></data>
+  <data name="EligibilityApplied" xml:space="preserve"><value>Снимок допустимости обновлён.</value></data>
+  <data name="EligibilitySummary" xml:space="preserve"><value>Допустимость (последний запуск):</value></data>
+  <data name="Eligible" xml:space="preserve"><value>Допустимо</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>Не определено</value></data>
+  <data name="NotEvaluated" xml:space="preserve"><value>Не оценено</value></data>
+  <data name="AddComponent" xml:space="preserve"><value>Добавить компонент</value></data>
+  <data name="AddClaim" xml:space="preserve"><value>Добавить заявление</value></data>
+  <data name="ComponentPickerPlaceholder" xml:space="preserve"><value>Найдите компонент контента...</value></data>
+  <data name="ClaimPickerPlaceholder" xml:space="preserve"><value>Найдите заявление...</value></data>
+  <data name="Remove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="Position" xml:space="preserve"><value>Позиция</value></data>
+  <data name="UpdatePosition" xml:space="preserve"><value>Обновить позицию</value></data>
+  <data name="Branch" xml:space="preserve"><value>Ветвь</value></data>
+  <data name="Step" xml:space="preserve"><value>Шаг</value></data>
+  <data name="Min" xml:space="preserve"><value>Мин</value></data>
+  <data name="Max" xml:space="preserve"><value>Макс</value></data>
+  <data name="EmptyArrangement" xml:space="preserve"><value>В этом шаблоне нет шагов для размещения.</value></data>
+  <data name="NoComponents" xml:space="preserve"><value>В этом слоте пока нет компонентов.</value></data>
+  <data name="NoClaims" xml:space="preserve"><value>В этом слоте пока нет заявлений.</value></data>
+  <data name="AddedOn" xml:space="preserve"><value>Добавлено</value></data>
+  <data name="NeedsAssessmentWarn" xml:space="preserve"><value>Источник этого компонента изменился — перевод требует оценки.</value></data>
+</root>

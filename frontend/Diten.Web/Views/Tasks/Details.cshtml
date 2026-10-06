@@ -31,8 +31,9 @@
            otherwise, and a button that says Save while saving nothing is the kind of thing a reader trusts
            once. This page is READ-ONLY (see the note above) — the label now matches what the link does. *@
         <div class="d-flex align-items-center gap-2">
-            <a href="/Tasks" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
-            <a href="/Tasks/@taskId/Edit" class="btn btn-primary">@SharedLocalizer["Edit"]</a>
+            @* data-task-back / data-task-edit: the `Esc` and `e` shortcuts press these same links (details-page.js). *@
+            <a href="/Tasks" class="btn btn-label-secondary" data-task-back aria-keyshortcuts="Escape">@SharedLocalizer["Back"]</a>
+            <a href="/Tasks/@taskId/Edit" class="btn btn-primary" data-task-edit aria-keyshortcuts="e">@SharedLocalizer["Edit"]</a>
         </div>
     </div>
 
@@ -45,6 +46,8 @@
 
 @section Scripts {
     <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
+    @* WP-UI-SHORTCUTS-01 (BL-438) — the shared keyboard-shortcut layer and its `?` list strings. *@
+    <partial name="~/Views/Shared/_DitenShortcuts.cshtml" />
     <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>

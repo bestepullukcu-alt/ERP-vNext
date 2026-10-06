@@ -1,0 +1,173 @@
+@model Diten.Web.Models.Procurement.Sourcing.SourcingEditViewModel
+@using Diten.Web.Views.Procurement.Sourcing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SourcingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+    var lines = (Model.Lines is { Count: > 0 }) ? Model.Lines : [new Diten.Web.Models.Procurement.Sourcing.SourcingLineInput()];
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/Sourcing">@Localizer["SourcingTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/Sourcing" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="sourcingForm" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+
+<form id="sourcingForm" asp-controller="Sourcing" asp-action="@action" asp-route-id="@Model.RfxId" method="post"
+    class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="RfxId" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-file"></i>@Localizer["RfxSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Type" class="form-label fw-medium">@Localizer["Type"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-category diten-field-icon" aria-hidden="true"></i>
+                                <select asp-for="Type" class="select2 form-select" required>
+                                    <option value="RFQ">@Localizer["TypeRFQ"]</option>
+                                    <option value="RFP">@Localizer["TypeRFP"]</option>
+                                    <option value="RFI">@Localizer["TypeRFI"]</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="Type" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="ClosesAt" class="form-label fw-medium">@Localizer["ClosesAt"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="ClosesAt" type="datetime-local" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Title" class="form-label fw-medium">@Localizer["RfxTitle"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-purchase-tag-alt diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="Title" class="form-control" maxlength="200" placeholder="@Localizer["RfxTitlePlaceholder"]" required />
+                            </div>
+                            <span asp-validation-for="Title" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="card-section-title mb-0"><i class="bx bx-list-ul"></i>@Localizer["LinesSection"]</h6>
+                        <button type="button" class="btn btn-sm btn-label-primary" id="btnAddLine">
+                            <i class="bx bx-plus me-1"></i>@Localizer["AddLine"]
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0" id="rfxLinesTable">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["LineItemId"] <span class="text-danger">*</span></th>
+                                    <th>@Localizer["LineQuantity"] <span class="text-danger">*</span></th>
+                                    <th>@Localizer["LineUomId"] <span class="text-danger">*</span></th>
+                                    <th class="cell-fit"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="rfxLinesBody" data-line-prefix="Lines">
+                                @for (var i = 0; i < lines.Count; i++)
+                                {
+                                    <tr class="rfx-line-row">
+                                        <td>
+                                            <input asp-for="Lines[i].ItemId" class="form-control form-control-sm rfx-line-input" data-line-field="ItemId" placeholder="@Localizer["LineItemIdPlaceholder"]" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="Lines[i].Quantity" class="form-control form-control-sm rfx-line-input" data-line-field="Quantity" inputmode="decimal" pattern="^-?\d+(\.\d+)?$" placeholder="@Localizer["LineQuantityPlaceholder"]" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="Lines[i].UomId" class="form-control form-control-sm rfx-line-input" data-line-field="UomId" placeholder="@Localizer["LineUomIdPlaceholder"]" />
+                                        </td>
+                                        <td class="cell-fit">
+                                            <button type="button" class="btn btn-icon btn-sm btn-label-danger rfx-line-remove" title="@SharedLocalizer["Delete"]">
+                                                <i class="bx bx-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small mt-2 mb-0">@Localizer["LinesHint"]</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-group"></i>@Localizer["InvitedSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="InvitedSupplierIds" class="form-label fw-medium">@Localizer["InvitedSuppliers"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-store diten-field-icon" aria-hidden="true"></i>
+                                <select asp-for="InvitedSupplierIds" class="select2 form-select" id="invitedSupplierIds" multiple="multiple" data-placeholder="@Localizer["InvitedSuppliersPlaceholder"]">
+                                    @foreach (var sid in Model.InvitedSupplierIds ?? [])
+                                    {
+                                        <option value="@sid" selected>@sid</option>
+                                    }
+                                </select>
+                            </div>
+                            <span class="text-muted small mt-1 d-block">@Localizer["InvitedSuppliersHint"]</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-server"></i>@Localizer["IntegrationSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="SourceSystem" class="form-label fw-medium">@Localizer["SourceSystem"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-data diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="SourceSystem" class="form-control" maxlength="120" placeholder="@Localizer["SourceSystemPlaceholder"]" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ExternalRef" class="form-label fw-medium">@Localizer["ExternalRef"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-link diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="ExternalRef" class="form-control" maxlength="120" placeholder="@Localizer["ExternalRefPlaceholder"]" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+</form>

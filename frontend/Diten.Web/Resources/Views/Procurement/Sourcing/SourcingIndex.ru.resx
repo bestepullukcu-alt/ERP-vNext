@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SourcingTitle" xml:space="preserve"><value>Источники (RFQ/RFP)</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>События RFx (RFQ/RFP/RFI): приглашайте поставщиков, собирайте предложения, оценивайте и присуждайте.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Добавить RFx</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Изменить RFx</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Добавить RFx</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить RFx</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="RfxId" xml:space="preserve"><value>ID RFx</value></data>
+  <data name="RfxTitle" xml:space="preserve"><value>Название</value></data>
+  <data name="RfxTitlePlaceholder" xml:space="preserve"><value>напр. Пополнение сырья Q4</value></data>
+  <data name="Type" xml:space="preserve"><value>Тип</value></data>
+  <data name="ClosesAt" xml:space="preserve"><value>Закрытие</value></data>
+  <data name="TypeRFQ" xml:space="preserve"><value>Запрос цен (RFQ)</value></data>
+  <data name="TypeRFP" xml:space="preserve"><value>Запрос предложений (RFP)</value></data>
+  <data name="TypeRFI" xml:space="preserve"><value>Запрос информации (RFI)</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusPublished" xml:space="preserve"><value>Опубликован</value></data>
+  <data name="StatusEvaluating" xml:space="preserve"><value>Оценка</value></data>
+  <data name="StatusAwarded" xml:space="preserve"><value>Присуждён</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Отменён</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Закрыт</value></data>
+  <data name="RfxSection" xml:space="preserve"><value>Сведения о RFx</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Строки RFx</value></data>
+  <data name="InvitedSection" xml:space="preserve"><value>Приглашённые поставщики</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Интеграция</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Добавить строку</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>ID позиции</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>напр. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>напр. 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>Ед. изм.</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>напр. BOX</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>Требуется минимум одна строка (позиция, количество, единица измерения).</value></data>
+  <data name="InvitedSuppliers" xml:space="preserve"><value>Приглашённые поставщики</value></data>
+  <data name="InvitedSuppliersPlaceholder" xml:space="preserve"><value>Выберите или введите ID поставщиков</value></data>
+  <data name="InvitedSuppliersHint" xml:space="preserve"><value>ID поставщиков проверяются по мастер-данным поставщиков (fail-closed).</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Исходная система</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>напр. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>Внешняя ссылка</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>напр. ERP-RFX-9001</value></data>
+  <data name="BidsSection" xml:space="preserve"><value>Предложения</value></data>
+  <data name="BidId" xml:space="preserve"><value>ID предложения</value></data>
+  <data name="BidSupplierId" xml:space="preserve"><value>Поставщик</value></data>
+  <data name="BidLinesSummary" xml:space="preserve"><value>Строки</value></data>
+  <data name="BidEvaluationScore" xml:space="preserve"><value>Оценка</value></data>
+  <data name="ActionPublish" xml:space="preserve"><value>Опубликовать</value></data>
+  <data name="ActionSubmitBid" xml:space="preserve"><value>Подать предложение</value></data>
+  <data name="ActionAward" xml:space="preserve"><value>Присудить</value></data>
+  <data name="ConfirmPublish" xml:space="preserve"><value>Опубликовать этот RFx для приглашённых поставщиков?</value></data>
+  <data name="PublishSuccess" xml:space="preserve"><value>RFx опубликован.</value></data>
+  <data name="BidSuccess" xml:space="preserve"><value>Предложение подано.</value></data>
+  <data name="AwardSuccess" xml:space="preserve"><value>Присуждение записано.</value></data>
+  <data name="BidSupplierPlaceholder" xml:space="preserve"><value>Выберите поставщика</value></data>
+  <data name="BidLines" xml:space="preserve"><value>Строки предложения</value></data>
+  <data name="BidUnitPrice" xml:space="preserve"><value>Цена за единицу</value></data>
+  <data name="BidUnitPricePlaceholder" xml:space="preserve"><value>напр. 12.5000</value></data>
+  <data name="BidLeadTimeDays" xml:space="preserve"><value>Срок поставки (дни)</value></data>
+  <data name="BidLeadTimeDaysPlaceholder" xml:space="preserve"><value>напр. 14</value></data>
+  <data name="AwardedBid" xml:space="preserve"><value>Победившее предложение</value></data>
+  <data name="AwardedBidPlaceholder" xml:space="preserve"><value>Выберите победившее предложение</value></data>
+  <data name="AwardRationale" xml:space="preserve"><value>Обоснование</value></data>
+  <data name="AwardRationalePlaceholder" xml:space="preserve"><value>напр. наименьшая совокупная стоимость владения</value></data>
+</root>

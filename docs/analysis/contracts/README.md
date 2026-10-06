@@ -28,6 +28,21 @@ MVP-6'yı "ilk giden lane" yapmak için, tükettiği ama sahibi olmadığı iki 
 
 > ⚠ Bu iki dosya MVP-6'nın tükettiği **minimal yüzeydir**, producer'ın tam contract'ı değil. MVP-5/MVP-2 kendi tam producer contract'ını yazarken bu slice'ı **kapsamalı** (superset), daraltmamalı.
 
+### MVP-2 Procurement (P2P) owned contract'lar (DCP-010, 2026-09-16)
+
+Procurement domain'inin (Diten.ProcurementService, port 5062) sahibi olduğu contract'lar. `x-status: REVIEW` = freeze-ready, owner+consumer review bekliyor; review PASS sonrası `FROZEN v1` (§Freeze süreci). Blueprint P2P bundle kodlarıyla hizalı.
+
+| Contract | Owner | Min contract | Format | Durum |
+|---|---|---|---|---|
+| **SUPPLIER** | MOD-0140 | P2P-BUNDLE | `supplier.openapi.yaml` (v1.1.0) | ✅ (A) consumer slice **FROZEN** (MVP-6 için, şekil değişmedi) + (B) producer surface **REVIEW** — SUPERSET, additive (K16) |
+| **REQUISITION-PO** | MOD-0141 | PO-BUNDLE | `requisition-po.openapi.yaml` (v1.0.0) | 🔶 **REVIEW** · freeze-ready |
+| **GRN-EVENT** | MOD-0142 | GRN-BUNDLE | `grn-event.openapi.yaml` (v1.0.0) | ✅ **FROZEN** (owned; INVENTORY POST /movements'e post eder — değişmedi) |
+| **INVOICE-MATCH** | MOD-0143 | MATCH-BUNDLE | `invoice-match.openapi.yaml` (v1.0.0) | 🔶 **REVIEW** · freeze-ready · ASSUMPTION-P2P-01 (tolerance policy-driven) |
+| **CONTRACTING** | MOD-0144 | CLM-CONTRACT-BUNDLE | `contracting.openapi.yaml` (v1.0.0) | 🔶 **REVIEW** · freeze-ready |
+| **SOURCING** | MOD-0145 | SOURCING-BUNDLE | `sourcing.openapi.yaml` (v1.0.0) | 🔶 **REVIEW** · freeze-ready |
+
+> Procurement CONSUME eder (değiştirmez): **INVENTORY-BUNDLE** (0173, GRN post), **PRODUCT-MASTER-BUNDLE** (0290, item kimliği), **LOCATION** (GRN warehouse/location). Consumed frozen contract redefine edilmez (K16); envanter yalnız MOD-0173'e post edilir (shadow stock YOK).
+
 İskeletler: [wave0-contracts](../wave0-contracts-product-master-and-inventory.md) · INVENTORY detay: [inventory-bundle-contract-detailed-v0.1](../inventory-bundle-contract-detailed-v0.1.md)
 
 ## Mock nasıl çalıştırılır (developer)

@@ -54,6 +54,11 @@ public sealed class HangfireBackgroundJobScheduler : IBackgroundJobScheduler
         registration.Validate();
         if (!registration.Descriptor.IsEnabled)
         {
+            // S10 live pass (2026-09-13): returning here used to leave a job that had EVER been enabled in Hangfire's
+            // own storage, still firing on its cron after the flag was switched off (measured: the meeting series sweep
+            // kept retrying hourly until it was deleted by hand). "Disabled" has to mean "not scheduled", so the
+            // recurring entry is removed; a job that was never registered makes this a no-op.
+            _recurringJobManager.RemoveIfExists(registration.Descriptor.Id);
             return Task.CompletedTask;
         }
 

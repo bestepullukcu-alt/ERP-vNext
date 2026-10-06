@@ -81,6 +81,12 @@
   <data name="RecordCreated" xml:space="preserve">
     <value>Kayıt başarıyla oluşturuldu.</value>
   </data>
+  <data name="RecordActivated" xml:space="preserve">
+    <value>Kayıt aktifleştirildi.</value>
+  </data>
+  <data name="SavedNotActivated" xml:space="preserve">
+    <value>Kaydedildi, ancak aktifleştirilemedi.</value>
+  </data>
   <data name="RecordDeleted" xml:space="preserve">
     <value>Kayıt başarıyla silindi.</value>
   </data>
@@ -591,6 +597,7 @@
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Görev Tanımları</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>İş Akışı</value></data>
   <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>Toplantılar</value></data>
+  <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>Zaman Çizelgesi</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Kullanıcılar</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roller</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Rol İzinleri</value></data>
@@ -744,6 +751,21 @@
   <data name="Nav.Page.KNOWLEDGECONCEPTS" xml:space="preserve">
     <value>Kavramlar</value>
   </data>
+  <data name="Nav.Page.CLAIMS" xml:space="preserve">
+    <value>İddialar</value>
+  </data>
+  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
+    <value>İçerik Kapsamları</value>
+  </data>
+  <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
+    <value>İçerik Setleri</value>
+  </data>
+  <data name="Nav.Page.VISITFREQUENCYPOLICIES" xml:space="preserve">
+    <value>Ziyaret Sıklığı Politikaları</value>
+  </data>
+  <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
+    <value>Uygunluk Politikaları</value>
+  </data>
   <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
     <value>Bilgi Yolları</value>
   </data>
@@ -857,9 +879,223 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>İstisna</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Alan Tanımları</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Toplantılar</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>Zaman Çizelgem</value></data>
+  <data name="Nav.Page.TIMEAPPROVALS" xml:space="preserve"><value>Zaman Çizelgesi Onayları</value></data>
+  <data name="Nav.Page.TIMECATEGORIES" xml:space="preserve"><value>İş Kategorileri</value></data>
+  <data name="Nav.Page.TIMESETTINGS" xml:space="preserve"><value>Zaman Kaydı Ayarları</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Toplantı Türleri</value></data>
+  <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Toplantı Serileri</value></data>
+  <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Toplantı Raporu</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>{0} için erişim yetkiniz yok</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Bu sayfaya erişim için yöneticinizden yetki isteyin.</value></data>
+  <data name="Nav.Module.HUMANCAPITAL" xml:space="preserve"><value>İnsan Sermayesi</value></data>
+  <data name="Nav.Module.HCMEMPLOYEEMASTER" xml:space="preserve"><value>Çalışan Ana Verisi</value></data>
+  <data name="Nav.Module.TALENTECOSYSTEM" xml:space="preserve"><value>Yetenek Ekosistemi</value></data>
+  <data name="Nav.Domain.HUMANCAPITAL" xml:space="preserve"><value>İnsan Sermayesi</value></data>
+  <data name="Nav.Domain.TALENTECOSYSTEM" xml:space="preserve"><value>Yetenek Ekosistemi</value></data>
+  <data name="Nav.Page.APPLICANTINTAKE" xml:space="preserve"><value>Aday Başvuru Alımı</value></data>
+  <data name="Nav.Page.CANDIDATEPIPELINE" xml:space="preserve"><value>Aday Hattı</value></data>
+  <data name="Nav.Page.COMPENSATIONBENEFITS" xml:space="preserve"><value>Ücret ve Yan Haklar</value></data>
+  <data name="Nav.Page.COMPETENCYSKILLS" xml:space="preserve"><value>Yetkinlik ve Beceriler</value></data>
+  <data name="Nav.Page.DEVELOPMENTPLANS" xml:space="preserve"><value>Gelişim Planları</value></data>
+  <data name="Nav.Page.EMPLOYEEONBOARDING" xml:space="preserve"><value>Çalışan Oryantasyonu</value></data>
+  <data name="Nav.Page.EMPLOYEEPROJECTIONS" xml:space="preserve"><value>Çalışan Projeksiyonları</value></data>
+  <data name="Nav.Page.EMPLOYMENTCHANGES" xml:space="preserve"><value>İstihdam Değişiklikleri</value></data>
+  <data name="Nav.Page.HEADCOUNTBUDGET" xml:space="preserve"><value>Kadro Bütçesi</value></data>
+  <data name="Nav.Page.HRCASEMANAGEMENT" xml:space="preserve"><value>İK Vaka Yönetimi</value></data>
+  <data name="Nav.Page.HRCOMPLIANCE" xml:space="preserve"><value>İK Uyumu</value></data>
+  <data name="Nav.Page.HRDOCUMENTATION" xml:space="preserve"><value>İK Dokümantasyonu</value></data>
+  <data name="Nav.Page.HRKPIANALYTICS" xml:space="preserve"><value>İK KPI Analitiği</value></data>
+  <data name="Nav.Page.LEARNINGTRAINING" xml:space="preserve"><value>Öğrenme ve Eğitim</value></data>
+  <data name="Nav.Page.OFFBOARDINGCASES" xml:space="preserve"><value>İşten Ayrılış Vakaları</value></data>
+  <data name="Nav.Page.OFFERMANAGEMENT" xml:space="preserve"><value>Teklif Yönetimi</value></data>
+  <data name="Nav.Page.PERFORMANCEREVIEWS" xml:space="preserve"><value>Performans Değerlendirmeleri</value></data>
+  <data name="Nav.Page.SELFSERVICE" xml:space="preserve"><value>Self Servis</value></data>
+  <data name="Nav.Page.SENSITIVEACCESS" xml:space="preserve"><value>Hassas Erişim</value></data>
+  <data name="Nav.Page.SUCCESSION" xml:space="preserve"><value>Yedekleme Planlaması</value></data>
+  <data name="Nav.Page.TIMEATTENDANCELEAVE" xml:space="preserve"><value>Zaman, Devam ve İzin</value></data>
+  <data name="Nav.Page.WORKFORCEPLANNING" xml:space="preserve"><value>İş Gücü Planlaması</value></data>
+  <data name="Nav.Page.EMPLOYEEMASTER" xml:space="preserve"><value>Çalışan Ana Verisi</value></data>
+  <data name="Nav.Page.ASSOCIATIONMEMBERSHIPS" xml:space="preserve"><value>Dernek Üyelikleri</value></data>
+  <data name="Nav.Page.ASSOCIATIONOPERATIONS" xml:space="preserve"><value>Dernek Operasyonları</value></data>
+  <data name="Nav.Page.CANDIDATECAREERPASSPORT" xml:space="preserve"><value>Aday Kariyer Pasaportu</value></data>
+  <data name="Nav.Page.CANDIDATEDISPUTES" xml:space="preserve"><value>Aday İtirazları</value></data>
+  <data name="Nav.Page.CANDIDATEPROFILES" xml:space="preserve"><value>Aday Profilleri</value></data>
+  <data name="Nav.Page.CONSENTVISIBILITYPOLICIES" xml:space="preserve"><value>Onay Görünürlük Politikaları</value></data>
+  <data name="Nav.Page.EARLYWARNINGSIGNALS" xml:space="preserve"><value>Erken Uyarı Sinyalleri</value></data>
+  <data name="Nav.Page.EXITREFERENCERECORDS" xml:space="preserve"><value>Çıkış Referans Kayıtları</value></data>
+  <data name="Nav.Page.HIRINGRISKINDICATORS" xml:space="preserve"><value>İşe Alım Risk Göstergeleri</value></data>
+  <data name="Nav.Page.INDUSTRYKNOWLEDGENETWORK" xml:space="preserve"><value>Sektör Bilgi Ağı</value></data>
+  <data name="Nav.Page.INDUSTRYSKILLPASSPORT" xml:space="preserve"><value>Sektör Beceri Pasaportu</value></data>
+  <data name="Nav.Page.INDUSTRYSUCCESSIONPOOL" xml:space="preserve"><value>Sektör Yedekleme Havuzu</value></data>
+  <data name="Nav.Page.INDUSTRYTALENTPOOL" xml:space="preserve"><value>Sektör Yetenek Havuzu</value></data>
+  <data name="Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK" xml:space="preserve"><value>Mentorluk Öneri Ağı</value></data>
+  <data name="Nav.Page.PAYBENCHMARKING" xml:space="preserve"><value>Ücret Kıyaslama</value></data>
+  <data name="Nav.Page.PROFESSIONALREPUTATIONLEDGER" xml:space="preserve"><value>Profesyonel İtibar Defteri</value></data>
+  <data name="Nav.Page.REFERENCEEXCHANGE" xml:space="preserve"><value>Referans Değişimi</value></data>
+  <data name="Nav.Page.REHIRERECOMMENDATIONS" xml:space="preserve"><value>Yeniden İşe Alım Önerileri</value></data>
+  <data name="Nav.Page.RESTRICTEDINTEGRITYREGISTRY" xml:space="preserve"><value>Kısıtlı Bütünlük Sicili</value></data>
+  <data name="Nav.Page.REVIEWBOARD" xml:space="preserve"><value>Değerlendirme Kurulu</value></data>
+  <data name="Nav.Page.SECTORMOBILITYINTELLIGENCE" xml:space="preserve"><value>Sektör Hareketlilik İstihbaratı</value></data>
+  <data name="Nav.Page.SECTORTALENTTRENDS" xml:space="preserve"><value>Sektör Yetenek Trendleri</value></data>
+  <data name="Nav.Page.SKILLSGAPHEATMAP" xml:space="preserve"><value>Beceri Açığı Isı Haritası</value></data>
+  <data name="Nav.Page.TALENTDATAFOUNDATION" xml:space="preserve"><value>Yetenek Veri Temeli</value></data>
+  <data name="Nav.Page.TALENTDEVELOPMENTNETWORK" xml:space="preserve"><value>Yetenek Geliştirme Ağı</value></data>
+  <data name="Nav.Page.TALENTSUPPLYDEMANDFORECASTING" xml:space="preserve"><value>Yetenek Arz Talep Tahmini</value></data>
+  <data name="Nav.Page.TRUSTLEVELS" xml:space="preserve"><value>Güven Düzeyleri</value></data>
+  <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>Doğrulanmış Sertifika Sicili</value></data>
+  <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>Doğrulanmış Katılımcılar</value></data>
+  <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>İş Gücü Analitiği</value></data>
+  <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>Satın Alma</value></data>
+  <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>Tedarikçiler</value></data>
+  <data name="Nav.Module.PROCUREMENTSUPPLIERS" xml:space="preserve"><value>Tedarikçiler</value></data>
+  <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>Tedarikçiler</value></data>
+  <data name="Nav.Module.SOURCING" xml:space="preserve"><value>Tedarik</value></data>
+  <data name="Nav.Page.SOURCING" xml:space="preserve"><value>Tedarik</value></data>
+  <data name="RfxUpdateNotSupported" xml:space="preserve"><value>RFx güncelleme desteklenmiyor; yeni bir RFx oluşturun veya yayınla/teklif/kazanan akışıyla yönetin.</value></data>
+  <data name="Nav.Module.REQUISITIONS" xml:space="preserve"><value>Talepler</value></data>
+  <data name="Nav.Page.REQUISITIONS" xml:space="preserve"><value>Talepler</value></data>
+  <data name="Nav.Module.PURCHASEORDERS" xml:space="preserve"><value>Satın Alma Siparişleri</value></data>
+  <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>Satın Alma Siparişleri</value></data>
+  <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>Talep güncelleme desteklenmiyor; yeni bir talep oluşturun veya bunu onaya gönderin.</value></data>
+  <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>Satın alma siparişi güncelleme desteklenmiyor; yeni bir sipariş oluşturun veya bunu onaylayın.</value></data>
+  <data name="Nav.Module.GRN" xml:space="preserve"><value>Mal Kabul</value></data>
+  <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>Fatura Eşleştirme</value></data>
+  <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>Fatura Yakalama ve 3-Yönlü Eşleştirme</value></data>
+  <data name="Nav.Module.CONTRACTS" xml:space="preserve"><value>Sözleşmeler</value></data>
+  <data name="Nav.Page.CONTRACTS" xml:space="preserve"><value>Sözleşme ve Clause Kütüphanesi</value></data>
+  <data name="ContractEditDraftOnly" xml:space="preserve"><value>Yalnızca taslak sözleşmeler güncellenebilir; aktifleştirilmiş bir sözleşme düzenlemeyle değil yaşam döngüsü işlemleriyle yönetilir.</value></data>
+  <data name="Nav.Page.GRN" xml:space="preserve"><value>Mal Kabul</value></data>
+  <data name="GrnUpdateNotSupported" xml:space="preserve"><value>GRN güncellemesi desteklenmez; kaydedilmiş bir mal kabul, düzenleme ile değil ters bir hareketle düzeltilir.</value></data>
+  <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>Fatura güncelleme desteklenmez; düzeltme, düzenleme ile değil 3-yönlü eşleştirmeyi yeniden çalıştırarak veya istisnasını çözerek yapılır.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Kopyalandı</value></data>
+  <data name="Shortcuts.DialogTitle" xml:space="preserve"><value>Klavye kısayolları</value></data>
+  <data name="Shortcuts.Close" xml:space="preserve"><value>Kapat</value></data>
+  <data name="Shortcuts.SilenceNote" xml:space="preserve"><value>Bir alana yazarken ya da bir diyalog veya yan panel açıkken kısayollar çalışmaz.</value></data>
+  <data name="Shortcuts.ShowList" xml:space="preserve"><value>Bu listeyi göster</value></data>
+  <data name="Shortcuts.Key.Space" xml:space="preserve"><value>Boşluk</value></data>
+  <data name="Shortcuts.Scope.Global" xml:space="preserve"><value>Her yerde</value></data>
+  <data name="Shortcuts.Scope.WorkCenter" xml:space="preserve"><value>Görev Merkezi</value></data>
+  <data name="Shortcuts.Scope.TaskDetails" xml:space="preserve"><value>Görev detayı</value></data>
+  <data name="Shortcuts.Wcn.Next" xml:space="preserve"><value>Sonraki kaydı seç</value></data>
+  <data name="Shortcuts.Wcn.Previous" xml:space="preserve"><value>Önceki kaydı seç</value></data>
+  <data name="Shortcuts.Wcn.Open" xml:space="preserve"><value>Seçili kaydı aç</value></data>
+  <data name="Shortcuts.Wcn.OpenFocused" xml:space="preserve"><value>Odaktaki satırı aç</value></data>
+  <data name="Shortcuts.Wcn.Accept" xml:space="preserve"><value>Seçili kaydı kabul et veya onayla</value></data>
+  <data name="Shortcuts.Wcn.Reject" xml:space="preserve"><value>Seçili kaydı reddet veya iade et</value></data>
+  <data name="Shortcuts.Wcn.ClearSelection" xml:space="preserve"><value>Seçimi temizle</value></data>
+  <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Sekmeler arasında geç (odak bir sekmedeyken)</value></data>
+  <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Görevi düzenle</value></data>
+  <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Görev listesine dön</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>Dışa aktarılacak satır sayısı çok fazla (50.000'den fazla). Süzgeci daraltıp yeniden deneyin.</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
+  <!-- BL-452 package 2 (WP-UI-EXPORT-02): list Action menu + controlled copy (PDF / print header block, footer). -->
+  <data name="Action" xml:space="preserve">
+    <value>İşlem</value>
+    <comment>List toolbar: the Action (export) dropdown button. BL-452 package 2 (finding 34, toolbar part).</comment>
+  </data>
+  <data name="ControlledCopy.Report" xml:space="preserve">
+    <value>Rapor</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Tenant" xml:space="preserve">
+    <value>Şirket</value>
+    <comment>BL-452 package 2 controlled copy header: label for the tenant's display name (the customer company).</comment>
+  </data>
+  <data name="ControlledCopy.Filters" xml:space="preserve">
+    <value>Filtreler</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Search" xml:space="preserve">
+    <value>Arama</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Sort" xml:space="preserve">
+    <value>Sıralama</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortAsc" xml:space="preserve">
+    <value>artan</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortDesc" xml:space="preserve">
+    <value>azalan</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Rows" xml:space="preserve">
+    <value>Satır sayısı</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedBy" xml:space="preserve">
+    <value>Oluşturan</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedAt" xml:space="preserve">
+    <value>Oluşturma zamanı</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.None" xml:space="preserve">
+    <value>Yok</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Uncontrolled" xml:space="preserve">
+    <value>Bu çıktı kontrolsüz kopyadır — {0}</value>
+    <comment>BL-452 package 2 controlled copy footer on every page; {0} = creation date-time with time zone.</comment>
+  </data>
+  <data name="ControlledCopy.Page" xml:space="preserve">
+    <value>Sayfa {0} / {1}</value>
+    <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
+  </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>Bugün</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>Ay</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>Hafta</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>Gün</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>Önceki</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>Sonraki</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>Tüm gün</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>+{0} daha</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>Gösterilecek kayıt yok</value>
+  </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>Çalışma takvimi tanımlı değil — hafta sonu ve tatiller gösterilemiyor.</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>Toplantı daveti</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>Kabul Et</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>Reddet</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>Bu toplantı planınızla çakışıyor</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>Planlı bloğunuz "{0}" ({1}) ile çakışıyor. Yine de kabul edilsin mi?</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>Yine De Kabul Et</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Tedarik Zinciri Yürütme</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Taşıyıcı Yönetimi</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Taşıyıcılar</value></data>
@@ -870,5 +1106,4 @@
   <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>Rota ve Yük Planlama</value></data>
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Yükler</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Hasar Talebi Yönetimi</value></data>
-  <data name="Nav.Page.CLAIMS" xml:space="preserve"><value>Hasar Talepleri</value></data>
 </root>

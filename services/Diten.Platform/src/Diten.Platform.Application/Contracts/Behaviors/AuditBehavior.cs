@@ -5,6 +5,7 @@ using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Comman
 using Diten.Platform.Application.Features.SubscriptionPlans.Commands;
 using Diten.Platform.Application.Features.ModuleCatalog.Commands;
 using Diten.Platform.Application.Features.ModuleRegistration;
+using Diten.Platform.Common.Authorization;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -15,15 +16,18 @@ public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
 {
     private const string SourceService = "Diten.Platform";
     private readonly IAuditService _auditService;
+    private readonly ITenantAuthorizationContext _principal;
     private readonly AuditBehaviorOptions _options;
     private readonly ILogger<AuditBehavior<TRequest, TResponse>> _logger;
 
     public AuditBehavior(
         IAuditService auditService,
+        ITenantAuthorizationContext principal,
         AuditBehaviorOptions options,
         ILogger<AuditBehavior<TRequest, TResponse>> logger)
     {
         _auditService = auditService;
+        _principal = principal;
         _options = options;
         _logger = logger;
     }
@@ -163,10 +167,27 @@ public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
         IReadOnlyDictionary<string, object?>? behaviorMetadata,
         CancellationToken cancellationToken)
     {
+        /*
+         * BL-409 — WHO DID IT COMES FROM THE PRINCIPAL. Before this, the request's default (System) was written for
+         * every audited command, so a GxP record could not tell a tenant user from a platform administrator from a
+         * background job. No principal → System; a principal → its token's actor type (AuditActorTypeResolver).
+         */
+        var actorType = AuditActorTypeResolver.ForCommand(_principal);
+        if (actorType == AuditActorType.Unknown)
+        {
+            // Not a refusal: command availability is out of BL-409's scope. AuditService refuses an Unknown actor,
+            // so this line is how that missing record is found — no claim value is logged.
+            _logger.LogWarning(
+                "Audited command {RequestType} was made by an authenticated principal with no recognised actor type (BL-409). "
+                + "The audit service refuses an Unknown actor, so no audit record is written; the command is not blocked.",
+                typeof(TRequest).Name);
+        }
+
         var appendRequest = new AuditAppendRequest
         {
             CorrelationId = metadata.CorrelationId ?? Guid.NewGuid(),
             RequestType = typeof(TRequest).Name,
+            ActorType = actorType,
             Category = metadata.Category,
             EntityType = metadata.EntityType,
             EntityId = metadata.EntityId,

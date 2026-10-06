@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingSeriesTitle" xml:space="preserve"><value>会议系列</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>周期性节奏规则——每个到期的实例都会自动生成为一次独立会议。</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Frequency" xml:space="preserve"><value>频率</value></data>
+  <data name="FrequencyWeekly" xml:space="preserve"><value>每周</value></data>
+  <data name="FrequencyMonthly" xml:space="preserve"><value>每月</value></data>
+  <data name="FrequencyQuarterly" xml:space="preserve"><value>每季度</value></data>
+  <data name="FrequencyYearly" xml:space="preserve"><value>每年</value></data>
+  <data name="Interval" xml:space="preserve"><value>间隔</value></data>
+  <data name="IntervalHint" xml:space="preserve"><value>每隔 N 个周期——按“每周”选择 2 表示每两周一次。</value></data>
+  <data name="DurationMinutes" xml:space="preserve"><value>时长（分钟）</value></data>
+  <data name="LeadTimeDays" xml:space="preserve"><value>提前天数</value></data>
+  <data name="LeadTimeDaysHint" xml:space="preserve"><value>每次实例在其发生前多少天生成，1-90。</value></data>
+  <data name="ChainAsFollowUp" xml:space="preserve"><value>作为后续会议串联</value></data>
+  <data name="ChainAsFollowUpHint" xml:space="preserve"><value>每个新实例延续上一个实例，并将其仍未完成的事项一并带入。</value></data>
+  <data name="IsActive" xml:space="preserve"><value>启用</value></data>
+  <data name="LastGeneratedAt" xml:space="preserve"><value>上次生成</value></data>
+  <data name="LastGeneratedAtNever" xml:space="preserve"><value>从未生成</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新建会议系列</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑会议系列</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>系列信息</value></data>
+  <data name="ScheduleSection" xml:space="preserve"><value>日程</value></data>
+  <data name="ParticipantsSection" xml:space="preserve"><value>参与者</value></data>
+  <data name="FlagsSection" xml:space="preserve"><value>设置</value></data>
+  <data name="DeleteConfirmTitle" xml:space="preserve"><value>删除此系列？</value></data>
+  <data name="DeleteConfirmText" xml:space="preserve"><value>此操作仅删除该规则——已生成的会议不受影响。</value></data>
+</root>

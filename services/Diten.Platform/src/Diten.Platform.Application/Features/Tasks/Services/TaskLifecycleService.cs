@@ -14,11 +14,13 @@ namespace Diten.Platform.Application.Features.Tasks.Services;
 public sealed class TaskLifecycleService : ITaskLifecycleService
 {
     // Contract normalizedStatus values (fixture-contract.js NORMALIZED_STATUSES).
-    private const string Pending = "Pending";
-    private const string InProgress = "InProgress";
-    private const string Waiting = "Waiting";
-    private const string Done = "Done";
-    private const string Cancelled = "Cancelled";
+    // internal, not private: TaskWorkItemProvider.BuildActions reuses these exact strings for
+    // WorkItemActionDto.TargetStatus (WP-WCN-KANBAN-01) rather than re-declaring its own copies.
+    internal const string Pending = "Pending";
+    internal const string InProgress = "InProgress";
+    internal const string Waiting = "Waiting";
+    internal const string Done = "Done";
+    internal const string Cancelled = "Cancelled";
 
     public TaskLifecycle ResolveInitialLifecycle(bool approvalRequired)
         // An approval-gated task is NOT startable yet. It stays Open and is projected as Waiting + an approval
@@ -133,7 +135,7 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
         };
     }
 
-    public decimal? CalculateRemainingHours(TaskItem task)
+    public decimal? CalculateRemainingHours(TaskItem task, decimal spentHours)
     {
         ArgumentNullException.ThrowIfNull(task);
         if (task.EstimateHours is null)
@@ -141,7 +143,8 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
             return null;
         }
 
-        var remaining = task.EstimateHours.Value - task.SpentHours;
+        // MOD-0280-FU01 D7 — the approved time, handed in by the caller; TaskItem.SpentHours is never read here.
+        var remaining = task.EstimateHours.Value - spentHours;
         return remaining < 0 ? 0 : remaining;
     }
 
@@ -210,4 +213,25 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
         return allowed;
     }
 
+    public TaskLifecycle ResolveInquiryReturn(TaskLifecycle? enteredWaitingFrom)
+        => enteredWaitingFrom switch
+        {
+            /*
+             * Exactly the three states CanTransition lets INTO Waiting. The task picks up where it was: an
+             * unstarted task is still unstarted, a planned one keeps its plan, and work that was running runs.
+             *
+             * Returning to InProgress does not re-ask the approval or dependency gates, and does not need to —
+             * the task was already InProgress when it was parked, which it could only have reached through them.
+             */
+            TaskLifecycle.Open or TaskLifecycle.Planned or TaskLifecycle.InProgress => enteredWaitingFrom.Value,
+
+            /*
+             * NO RECORD of how the wait began (a task parked before the log existed, or a log that cannot be
+             * read). OPEN, because it is the one answer that can never skip a gate: an Open task has to be
+             * started again, through every gate `start` asks. InProgress would have been the shorter guess and
+             * the unsafe one — a task parked before its approval came through would be answered straight into
+             * running work.
+             */
+            _ => TaskLifecycle.Open
+        };
 }

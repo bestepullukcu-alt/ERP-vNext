@@ -27,6 +27,10 @@
     };
     const seenIds = readSeenIds();
     let workCenterDt = null;
+    // WP-WCN-KANBAN-01 Dilim 3a — true for the same synchronous window a genuine drag's trailing click would
+    // land in (mouseup → onEnd → the browser's own click, all before the next macrotask). The row-click handler
+    // checks it so a drag that ends over the dragged card's own position does not also open its detail page.
+    let kanbanDragSuppressClick = false;
 
     if (!data) {
         return;
@@ -45,10 +49,20 @@
     // Mirrors TaskCommentLimits.MaxTextLength. Checked here so an over-long comment is refused before a round
     // trip; the server refuses it too, because a client-side check is a courtesy and not a rule.
     const COMMENT_MAX_LENGTH = 2000;
+    // Mirrors TaskCommentLimits.MaxMentionsPerComment (WP-PSS-MOD0024-TASK-MENTIONS-01 K4) — a courtesy check,
+    // same reasoning as the length limit above; the server enforces it regardless.
+    const COMMENT_MAX_MENTIONS = 10;
+    /*
+     * Per-task, not per-comment: one composer per task in this list, and its draft @mentions live outside the
+     * text the same way a select2 multi-value does — a separate set the composer renders as chips, cleared
+     * only when the comment is actually posted (or the composer is abandoned). Keyed by task id so `render()`
+     * re-drawing the whole list does not lose an in-progress draft's mentions.
+     */
+    const commentMentionState = new Map();
     const STATUS_KIND = { 'Pending': 'primary', 'In Progress': 'info', 'Waiting': 'warning', 'Done': 'success', 'Cancelled': 'secondary' };
     const STATUS_KEY = { 'Pending': 'StatusPending', 'In Progress': 'StatusInProgress', 'Waiting': 'StatusWaiting', 'Done': 'StatusDone', 'Cancelled': 'StatusCancelled' };
-    const TYPE_KEY = { approval: 'TypeApproval', task: 'TypeTask', review: 'TypeReview', issue: 'TypeIssue', exception: 'TypeException', meetingInvite: 'ChipMeetingInvite' };
-    const TYPE_ICON_MAP = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt', meetingInvite: 'bx-calendar-event' };
+    const TYPE_KEY = { approval: 'TypeApproval', task: 'TypeTask', review: 'TypeReview', issue: 'TypeIssue', exception: 'TypeException', meetingInvite: 'ChipMeetingInvite', inquiry: 'TypeInquiry' };
+    const TYPE_ICON_MAP = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt', meetingInvite: 'bx-calendar-event', inquiry: 'bx-question-mark' };
     const SIGNAL_ICON = { blocked: 'bx-lock-alt', 'sla-risk': 'bx-time-five', escalated: 'bx-up-arrow-alt',
         snoozed: 'bx-moon' };
     const MODE_KEY = { direct: 'ModeDirect', approval: 'ModeApproval', groupQueue: 'ModeGroupQueue', offered: 'ModeOffered' };
@@ -144,6 +158,7 @@
         modeFilter: 'all',
         moduleFilter: [],
         slaFilter: [],           // multi-select SLA state (empty = all) — replaces headings
+        assigneeFilter: [],      // BL-448 — Başlattıklarım: who holds it (display names; empty = all)
         pinnedFilter: false,     // show only pinned
         typeFilter: new Set(),   // multi-select type chips (empty = all)
         signalFilter: new Set(), // multi-select signal chips (empty = all)
@@ -155,6 +170,8 @@
         // The row just added, so the reader can see WHERE it landed. Cleared after one paint — a permanent
         // highlight would become another status colour nobody declared.
         flashSubtaskId: null,
+        // REQ-WCN-01 (W-4) — the item whose successful decision is being re-read (see renderUnsafe's detail branch).
+        settlingDecisionId: null,
         /*
          * WHICH CAPPED LISTS THE READER HAS OPENED, by list key ('subtasks' | 'activity').
          *
@@ -200,8 +217,18 @@
         sortDir: 'asc',
         pageLength: 10,
         listPage: 0,
-        // `YYYY-MM`, or null for "the month we are in" — see `calendarAnchor`.
-        calendarMonth: null,
+        // WP-UI-CALENDAR-VIEW-01 — the calendar's view and anchor day (null = today), mirrored into the URL.
+        calendarView: 'month',
+        calendarDate: null,
+        // The planning board's left panel, and the feed it counts from. `calendarFeedKey` is the range the feed
+        // answers ("from|to"): a re-render of the same range does not ask again.
+        calendarPanel: 'unplanned',
+        calendarFeed: null,
+        calendarFeedKey: null,
+        calendarFeedError: null,
+        calendarRange: null,
+        // The tenant zone when only the plan dialog needed it (the feed was never loaded on this view).
+        calendarZoneOnly: null,
         tableColumnVisibility: [true, true, true, true, true, true, true, true],
         loadState: 'loading',
         loadError: null,
@@ -283,9 +310,11 @@
         // link nobody would type. Anything unparseable stays on page 1 rather than blanking the list.
         const page = parseInt(params.get('page'), 10);
         state.listPage = Number.isFinite(page) && page > 0 ? page - 1 : 0;
-        // Shape-checked rather than whitelisted: any month is legitimate, but only `YYYY-MM` is a month.
-        const month = params.get('month');
-        state.calendarMonth = month && /^\d{4}-\d{2}$/.test(month) ? month : null;
+        // WP-UI-CALENDAR-VIEW-01 — the calendar's view is whitelisted; its day is shape-checked.
+        const calView = params.get('calview');
+        state.calendarView = calView && ['month', 'week', 'day'].indexOf(calView) >= 0 ? calView : 'month';
+        const calDate = params.get('caldate');
+        state.calendarDate = calDate && /^\d{4}-\d{2}-\d{2}$/.test(calDate) ? calDate : null;
         if (state.tab !== 'islerim') { state.segment = 'aktif'; }
     };
 
@@ -312,8 +341,9 @@
         put('sort', state.sortKey, 'sla');
         put('dir', state.sortDir, 'asc');
         put('page', state.listPage > 0 ? String(state.listPage + 1) : '', '');
-        // Only when the reader has moved off the current month — the default stays out of the URL.
-        put('month', state.calendarMonth || '', '');
+        // Only while the calendar is the view — its defaults (month, today) stay out of the URL.
+        put('calview', state.view === 'calendar' ? state.calendarView : '', 'month');
+        put('caldate', state.view === 'calendar' ? (state.calendarDate || '') : '', '');
         global.history.replaceState({ workCenterNext: true }, '', url.pathname + url.search + url.hash);
     };
 
@@ -675,23 +705,16 @@
         persistSeenIds(seenIds);
     };
 
-    // ── Timesheet helpers (task work loop, live browser clock) ────────────────
-    const foldTimer = (item) => {
-        const ts = item.timesheet;
-        if (ts && ts.running && ts.startedAt) {
-            ts.loggedMinutes += (Date.now() - ts.startedAt) / 60000;
-            ts.running = false; ts.startedAt = null;
-        }
-    };
+    // ── Time (MOD-0280-FU01 T2b) ──────────────────────────────────────────────
+    /*
+     * ⚠ THE BROWSER TIMER IS GONE (2026-09-30, T2b). `foldTimer` added browser time to an in-memory field that never
+     * reached a server, and the mapper invented a 37-minute start anchor on every load. The timer is now Platform's
+     * (MOD-0280-FU01 D2): the card shows the real `timeEntries` block and offers the provider's own startTimer /
+     * stopTimer actions; the top-bar chip shows the running one. Nothing here measures time.
+     */
     const formatMinutes = (mins) => {
         const total = Math.max(0, Math.floor(mins));
         return tf('TimeHM', Math.floor(total / 60), total % 60);
-    };
-    const formatSegment = (ms) => {
-        const s = Math.max(0, Math.floor(ms / 1000));
-        const mm = String(Math.floor(s / 60)).padStart(2, '0');
-        const ss = String(s % 60).padStart(2, '0');
-        return `${mm}:${ss}`;
     };
 
     // ── Filtering / ordering ──────────────────────────────────────────────────
@@ -834,6 +857,7 @@
         if (state.modeFilter !== 'all' && item.assignmentMode !== state.modeFilter) { return false; }
         if (state.slaFilter.length && !state.slaFilter.includes(item.slaState)) { return false; }
         if (state.pinnedFilter && !item.pinned) { return false; }
+        if (state.assigneeFilter.length && !state.assigneeFilter.includes(item.assignee)) { return false; }
         if (state.tab === 'havuz' && state.group !== 'all') {
             // The unnamed bucket matches items with NO queue name, which no plain string comparison can express.
             const matches = state.group === GROUP_UNNAMED ? !item.group : item.group === state.group;
@@ -843,7 +867,7 @@
         const q = foldForSearch(state.search.trim());   // ignore leading/trailing space
         if (q) {
             const hay = foldForSearch(
-                item.title + ' ' + item.summary + ' ' + item.sourceModule + ' ' + item.sourceId + ' ' + item.requester);
+                item.title + ' ' + item.summary + ' ' + item.sourceModule + ' ' + item.sourceId + ' ' + item.requester + ' ' + (item.assignee || ''));
             if (!hay.includes(q)) { return false; }
         }
         return true;
@@ -851,7 +875,10 @@
 
     const activeItems = () => state.items.filter((item) => {
         if (!inTab(item, state.tab)) { return false; }
-        if (SEGMENTS[state.tab] && data.segmentFor(item) !== state.segment) { return false; }
+        // WP-WCN-KANBAN-01 Dilim 2 — the Kanban board is not filtered by segment: its columns ARE the status
+        // axis SEGMENTS narrows (İşlerim's "Aktif" segment hides Bekletiliyor, which would silently empty the
+        // board's own Bekletiliyor column). The segment bar itself is hidden in this view — see buildSegments.
+        if (state.view !== 'kanban' && SEGMENTS[state.tab] && data.segmentFor(item) !== state.segment) { return false; }
         return passesFilters(item);
     });
 
@@ -876,6 +903,14 @@
         if (a.escalated && !b.escalated) return -1;
         if (!a.escalated && b.escalated) return 1;
         return SLA_ORDER.indexOf(a.slaState) - SLA_ORDER.indexOf(b.slaState);
+    };
+
+    const assigneeOptions = () => {
+        const names = [];
+        tabItems().forEach((item) => {
+            if (item.assigneeNameKnown && item.assignee && names.indexOf(item.assignee) < 0) { names.push(item.assignee); }
+        });
+        return names.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
     };
 
     const moduleOptions = () => {
@@ -906,6 +941,17 @@
         && i.lifecycle !== 'Done' && i.lifecycle !== 'Cancelled').length;
 
     const delegatorByName = (name) => data.delegators.find((d) => d.name === name) || null;
+
+    /*
+     * DCP-004 amendment 2026-09-15 (UAS-001 §6) — may this user create a task? Read from the permission snapshot the
+     * host view loads (_PermissionBootstrap → window.Permissions). FAIL-CLOSED: a page without the snapshot reads as
+     * "not held", so a missing partial hides the entry rather than showing a button the server will refuse.
+     * UX only — POST api/v1/tasks is the authority.
+     */
+    const TASK_CREATE_PERMISSION = 'platform.tasks.create';
+    const canCreateSelfTask = () =>
+        !!(global.Permissions && typeof global.Permissions.has === 'function'
+            && global.Permissions.has(TASK_CREATE_PERMISSION));
 
     const buildHeader = () => {
         const urgent = ownUrgentCount();
@@ -940,6 +986,7 @@
         // (issue/approval) are born in the source (spec v3 §5, note/meeting rule).
         const createItem = (val, icon, label) =>
             `<li><button type="button" class="dropdown-item wcn-dd-item" data-wcn-new="${val}"><i class="bx ${icon}"></i><span>${esc(label)}</span></button></li>`;
+        const canCreateTask = canCreateSelfTask();
 
         return `<div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center gap-3 mb-3 wcn-header">
             <div class="wcn-header-title">
@@ -971,7 +1018,14 @@
                         <i class="icon-base bx bx-plus icon-sm me-1"></i><span>${esc(t('NewButton'))}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end wcn-dd-menu">
-                        ${createItem('task', 'bx-task', t('NewSelfTask'))}
+                        ${/*
+                           * DCP-004 amendment 2026-09-15 (UAS-001 §6) — HIDDEN, not disabled, without
+                           * platform.tasks.create. Every tenant user opens this page now and most cannot create a
+                           * task; a button that can only fail sends them into a second error. The divider below goes
+                           * with it so the menu does not open on a dangling rule. UX only: POST api/v1/tasks still
+                           * demands the key.
+                           */ ''}
+                        ${canCreateTask ? createItem('task', 'bx-task', t('NewSelfTask')) : ''}
                         ${/*
                            * ⚠ "HIZLI NOT" AND "TOPLANTI PLANLA" WERE REMOVED, NOT DISABLED (2026-08-24).
                            *
@@ -987,7 +1041,7 @@
                            * through `TasksApi.addPersonalNote` (real), and the "Onay toplantısı planla" ACTION
                            * has a contract behind it (`reviewMeetingPolicy`). Neither was touched.
                            */ ''}
-                        <li><hr class="dropdown-divider"></li>
+                        ${canCreateTask ? '<li><hr class="dropdown-divider"></li>' : ''}
                         ${createItem('source', 'bx-link-external', t('NewInSource'))}
                     </ul>
                 </div>
@@ -1044,6 +1098,22 @@
                 <strong>${esc(t('PartialBoardBanner'))}</strong>
                 <span class="wcn-partial-board-detail">${esc(detail)}</span>
             </span>
+        </div>`;
+    };
+
+    /*
+     * BL-379 — a NON-BLOCKING sibling to buildPartialBoardBanner above: that one says a SOURCE is missing,
+     * this one says some of what a source DID send could not be shown because it failed the WC-1 contract.
+     * Deliberately its own note rather than a synthesized entry in state.unavailableSources — that banner's
+     * shape is "provider + reason", and a contract rejection is neither a provider nor one of its own reasons.
+     */
+    const buildContractRejectedNote = () => {
+        const errors = state.contractRejectedErrors;
+        if (!Array.isArray(errors) || errors.length === 0) { return ''; }
+        const count = new Set(errors.map((error) => error.fixtureId)).size;
+        return `<div class="wcn-partial-board wcn-contract-rejected" role="status" aria-live="polite">
+            <i class="bx bx-error-circle"></i>
+            <span class="wcn-partial-board-text">${esc(tf('WorkItemsContractRejected', count))}</span>
         </div>`;
     };
 
@@ -1175,7 +1245,12 @@
             </li>`;
         };
         const allowedViews = TAB_VIEWS[state.tab] || TAB_VIEWS.islerim;
-        const views = `<div class="d-flex align-items-center gap-2 ms-auto wcn-view-tools"><div class="btn-group btn-group-sm wcn-views" role="group" aria-label="${esc(t('ViewLabel'))}">${allowedViews.map((v) => viewBtn(v, VIEW_META[v], VIEW_KEY[v])).join('')}</div><div class="dropdown d-none d-lg-block"><button type="button" class="btn btn-icon btn-sm btn-label-secondary wcn-keyboard-help" data-bs-toggle="dropdown" aria-expanded="false" aria-label="${esc(t('KeyboardHint'))}"><i class="bx bx-bxs-keyboard"></i></button><div class="dropdown-menu dropdown-menu-end wcn-keyboard-menu"><span>${esc(t('KeyboardHint'))}</span></div></div></div>`;
+        /*
+         * WP-UI-SHORTCUTS-01 (BL-438) — the keyboard button opens the shared `?` list. It was a dropdown that printed
+         * `KeyboardHint` (four of the seven keys) and was hidden below `lg`; the list is now generated from what is
+         * registered, and the button shows at every width. `KeyboardHint` stays as its name and tooltip.
+         */
+        const views = `<div class="d-flex align-items-center gap-2 ms-auto wcn-view-tools"><div class="btn-group btn-group-sm wcn-views" role="group" aria-label="${esc(t('ViewLabel'))}">${allowedViews.map((v) => viewBtn(v, VIEW_META[v], VIEW_KEY[v])).join('')}</div><button type="button" class="btn btn-icon btn-sm btn-label-secondary wcn-keyboard-help" data-wcn-shortcuts aria-haspopup="dialog" aria-keyshortcuts="?" title="${esc(t('KeyboardHint'))}" aria-label="${esc(t('KeyboardHint'))}"><i class="bx bx-bxs-keyboard"></i></button></div>`;
         return `<div class="card mb-3 wcn-tabcard">
             <div class="card-body p-3 d-flex align-items-center gap-3 flex-wrap">
                 <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist" aria-label="${esc(t('TabsLabel'))}">
@@ -1189,6 +1264,9 @@
     // Segment bar = STATUS (only İşlerim). Aktif / Bekleyen / Planlı — a status
     // change moves the segment, never the tab (Fable's law).
     const buildSegments = () => {
+        // WP-WCN-KANBAN-01 Dilim 2 — the Kanban board does not apply the segment filter (see activeItems), so
+        // the chips that would narrow it are hidden rather than drawn and ignored.
+        if (state.view === 'kanban') { return ''; }
         const segs = SEGMENTS[state.tab];
         if (!segs) { return ''; }
         const btn = (seg) =>
@@ -1209,7 +1287,9 @@
         { key: 'review', labelKey: 'TypeReview', icon: TYPE_ICON_MAP.review },
         { key: 'issue', labelKey: 'TypeIssue', icon: TYPE_ICON_MAP.issue },
         { key: 'exception', labelKey: 'TypeException', icon: TYPE_ICON_MAP.exception },
-        { key: 'meetingInvite', labelKey: 'ChipMeetingInvite', icon: 'bx-calendar-event' }
+        { key: 'meetingInvite', labelKey: 'ChipMeetingInvite', icon: 'bx-calendar-event' },
+        // BL-439 — a question somebody else's task is asking the reader: a first decision (answer), like the rest.
+        { key: 'inquiry', labelKey: 'TypeInquiry', icon: TYPE_ICON_MAP.inquiry }
     ];
     const INBOX_RISK = ['sla-risk', 'escalated'];   // "Bloke" is post-acceptance → not here
 
@@ -1297,7 +1377,8 @@
             + (state.priorityFilter !== 'all' ? 1 : 0)
             + (state.modeFilter !== 'all' ? 1 : 0)
             + (state.slaFilter.length ? 1 : 0)
-            + (state.pinnedFilter ? 1 : 0);
+            + (state.pinnedFilter ? 1 : 0)
+            + (state.assigneeFilter.length ? 1 : 0);
     };
 
     const toggleTableFilter = () => {
@@ -1403,6 +1484,7 @@
         else if (which === 'worktype') { state.typeFilter = new Set(Array.isArray(value) ? value : (value && value !== 'all' ? [value] : [])); }
         else if (which === 'sla') { state.slaFilter = Array.isArray(value) ? value.slice() : (value && value !== 'all' ? [value] : []); }
         else if (which === 'pinned') { state.pinnedFilter = !!value; }
+        else if (which === 'assignee') { state.assigneeFilter = Array.isArray(value) ? value.slice() : (value && value !== 'all' ? [value] : []); }
         state.listPage = 0;
     };
 
@@ -1420,7 +1502,7 @@
             `<option value="${esc(m)}"${selectedModules.includes(m) ? ' selected' : ''}>${esc(m)}</option>`).join('');
         const wtSel = Array.isArray(draft.worktype) ? draft.worktype : (draft.worktype && draft.worktype !== 'all' ? [draft.worktype] : []);
         const wtLabel = (k) => k === 'meetingInvite' ? t('ChipMeetingInvite') : t(TYPE_KEY[k]);
-        const wtOpts = ['task', 'approval', 'review', 'meetingInvite', 'issue', 'exception'].map((k) =>
+        const wtOpts = ['task', 'approval', 'review', 'meetingInvite', 'inquiry', 'issue', 'exception'].map((k) =>
                 `<option value="${k}"${wtSel.includes(k) ? ' selected' : ''}>${esc(wtLabel(k))}</option>`).join('');
         // İş türü duplicates the visible type chips → hidden in İşlerim (kept in Havuz/Geçmiş
         // where the chips curate differently). Atama modu is dead in İşlerim (everything is
@@ -1429,6 +1511,14 @@
         const hideMode = state.tab === 'inbox' || state.tab === 'islerim';
         const slaSel = state.slaFilter.slice();
         const slaOpts = SLA_ORDER.map((k) => `<option value="${k}"${slaSel.includes(k) ? ' selected' : ''}>${esc(t(SLA_GROUP_KEY[k]))}</option>`).join('');
+        /*
+         * BL-448 — WHO HOLDS IT, on Başlattıklarım only. The owner asked "Ali'ye verdiklerim hangileri" and had no
+         * way to ask the list. Options are the holders actually present in the tab (nothing to pick from an empty
+         * list), by display name, which is also what the row chip shows. Elsewhere the axis is meaningless: in
+         * İşlerim the holder is always the reader, in Havuz nobody holds anything yet.
+         */
+        const assigneeOpts = state.tab === 'baslattiklarim' ? assigneeOptions().map((name) =>
+            `<option value="${esc(name)}"${state.assigneeFilter.includes(name) ? ' selected' : ''}>${esc(name)}</option>`).join('') : null;
 
         return `<div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3" id="wcnFilterPanel">
             ${hideWorktype ? '' : `<div class="filter-chip">
@@ -1451,6 +1541,9 @@
                     <option value=""></option>
                     ${['direct', 'approval', 'groupQueue', 'offered'].map((m) => `<option value="${m}"${draft.mode === m ? ' selected' : ''}>${esc(t(MODE_KEY[m]))}</option>`).join('')}
                 </select>
+            </div>`}
+            ${assigneeOpts === null ? '' : `<div class="filter-chip">
+                <select class="form-select form-select-sm select2 wcn-select" multiple="multiple" data-wcn-filter="assignee" data-placeholder="${esc(t('DetailAssignee'))}" aria-label="${esc(t('DetailAssignee'))}">${assigneeOpts}</select>
             </div>`}
             ${state.tab === 'inbox' ? '' : `<label class="filter-chip d-inline-flex align-items-center gap-2 mb-0">
                 <input type="checkbox" class="form-check-input mt-0" data-wcn-filter="pinned"${state.pinnedFilter ? ' checked' : ''} aria-label="${esc(t('FilterPinned'))}">
@@ -1490,8 +1583,57 @@
         if (!signal) { return ''; }
         return signal.count > 1 ? tf('ReturnedCount', signal.count) : t('ReturnedLabel');
     };
+    /*
+     * ── THE ANSWERED SIGNAL (BL-439) ─────────────────────────────────────────────────────────────────────
+     *
+     * The other half of the waiting chip. Read through helpers for the reason `returnedSignal` is: `at` is the
+     * guard the contract requires, so a malformed block draws nothing rather than an empty chip.
+     *
+     * ⚠ `answeredBy` IS STILL A PERSON OBJECT HERE. toPresentation flattens assignee/requester to strings, but
+     * it leaves this block alone — so the name is read off `.displayName`, with the same "Me" / name-unavailable
+     * fallbacks every other person gets, never a GUID.
+     */
+    const inquiryAnsweredSignal = (item) =>
+        (item && item.inquiryAnswer && item.inquiryAnswer.at) ? item.inquiryAnswer : null;
+
+    const inquiryAnsweredText = (item) => {
+        const signal = inquiryAnsweredSignal(item);
+        return signal ? (data.resolveLabel(signal.answer) || '') : '';
+    };
+
+    const inquiryAnsweredName = (item) => {
+        const signal = inquiryAnsweredSignal(item);
+        if (!signal) { return ''; }
+        const person = signal.answeredBy || null;
+        return person?.displayName
+            || (person?.isCurrentUser ? t('PersonSelf') : t('PersonNameUnavailable'));
+    };
+
+    const inquiryAnsweredChipText = (item) =>
+        (inquiryAnsweredSignal(item) ? tf('InquiryAnsweredBy', inquiryAnsweredName(item)) : '');
+
     const sourceTitle = (item) => [item.sourceModuleId, item.sourceModuleName, item.sourceObjectType]
         .filter(Boolean).join(' · ');
+
+    /*
+     * REQ-WCN-01 (W-1) — WHICH STEP of the approval this is, as a BADGE beside the title on the row and on the detail
+     * page. Never part of the title itself: the title is what is being decided, the step is where the decision
+     * stands. An item whose provider names no step draws nothing.
+     */
+    const stepBadge = (item) => (item && item.stepNameText
+        ? `<span class="wcn-badge wcn-badge-secondary" data-wcn-step-badge title="${esc(t('ApprovalStepBadgeTitle'))}">${esc(item.stepNameText)}</span>`
+        : '');
+
+    /*
+     * REQ-WCN-01 (W-3) — WHO an approval is waiting on when nobody is named directly: the step's candidate positions,
+     * by NAME. One whole sentence from the resource table ("Onay bekleyen: {0}"); the names are a plain list — no
+     * "and"/"or" is composed here, because which of the two it is belongs to MOD-0023, not to this sentence. Empty
+     * when the projection carries none — the caller then keeps today's "unassigned" word.
+     */
+    const awaitingPositionsText = (item) => {
+        const names = (item && item.candidatePositionNames) || [];
+        return names.length ? tf('ApprovalAwaitingPositions', names.join(', ')) : '';
+    };
 
     const rowChips = (item) => [
         chip('module', 'bx-cube', item.sourceModule, sourceTitle(item)),
@@ -1528,13 +1670,38 @@
         returnedSignal(item) && !isTerminal(item)
             ? chip('warning', 'bx-undo', returnedChipText(item), returnedReasonText(item))
             : '',
+        /*
+         * BL-439 — YOUR QUESTION WAS ANSWERED: "X cevapladı", with the answer itself as the tooltip — the same
+         * "chip clips, title carries the full sentence" rule the waiting and returned chips follow. The server
+         * sends it only while the answer is the latest word and never on finished work.
+         */
+        inquiryAnsweredSignal(item)
+            ? chip('success', 'bx-reply', inquiryAnsweredChipText(item), inquiryAnsweredText(item))
+            : '',
         // Why the leading action cannot be used, ON the row rather than only in the button's tooltip. A blocked
         // item whose reason needs a hover reads as simply broken.
         blockedPrimaryReason(item) ? chip('secondary', 'bx-lock-alt', blockedPrimaryReason(item)) : '',
         isSnoozed(item) ? chip('secondary', 'bx-moon', tf('SnoozedUntil', item.snoozedUntil)) : '',
         (item.systemState && SYSSTATE[item.systemState]) ? chip(SYSSTATE[item.systemState].kind, SYSSTATE[item.systemState].icon, t(SYSSTATE[item.systemState].key)) : '',
-        item.requester ? chip('requester', 'bx-user', item.requester) : ''
+        personChip(item)
     ].join('');
+
+    /*
+     * WHO the row names. On work the reader RAISED and handed to somebody else (Başlattıklarım), the one fact
+     * the row must carry is who has it now — the requester chip would only say "Ben". Measured live 2026-09-24
+     * (owner): "Ali'ye görev atadım, listede hangisi Ali'de belli değil" — every row read the same. So a task
+     * the reader raised, held by a NAMED somebody else, shows the holder (title: Atanan); every other row keeps
+     * the requester chip exactly as before (inbox work, self-assigned work, questions, approvals).
+     *
+     * `raisedByViewer` / `viewerRole` / `assigneeNameKnown` are set by toPresentation BEFORE assignee/requester
+     * are flattened to strings (mock-data.js) — the person objects are gone by the time this runs.
+     */
+    const personChip = (item) => {
+        const heldByNamedOther = item.raisedByViewer && item.viewerRole !== 'Owner'
+            && item.assigneeNameKnown && item.assignee;
+        if (heldByNamedOther) { return chip('requester', 'bx-user-check', item.assignee, t('DetailAssignee')); }
+        return item.requester ? chip('requester', 'bx-user', item.requester) : '';
+    };
 
     const rowHtml = (item, opts) => {
         const compact = opts && opts.compact;
@@ -1598,19 +1765,39 @@
         const onBehalfBadge = item.delegator
             ? `<span class="wcn-badge wcn-badge-delegation" title="${esc(tf('OnBehalfOf', item.delegator))}"><i class="bx bx-user-voice"></i>${esc(tf('OnBehalfShort', item.delegator))}</span>`
             : '';
+        // MOD-0357 S5c — tür · zaman · organizatör (pack), all three already flattened by toPresentation:
+        // sourceType is the MEETING's own type name (Source.ObjectType), dueAt is its start, requester is
+        // whoever organized it. No meeting-specific field was added to the wire for this — every one of the
+        // three already exists for every provider.
         const summary = item.itemType === 'meetingInvite'
-            ? [item.meetingStart && item.meetingEnd ? `${item.meetingStart}–${item.meetingEnd}` : '', item.meetingLocation, item.requester].filter(Boolean).join(' · ')
+            ? [item.sourceType, item.dueAt, item.requester].filter(Boolean).join(' · ')
             : item.summary;
+        /*
+         * BL-437 — WHY THIS IS HERE, AND WHERE IT COMES FROM. An approval row used to read "Onay: task-review
+         * 3f2c…" and nothing else; the owner could not tell which task had come back to them, or why. The
+         * provider now sends the sentence ("Ayşe bu görevi onayına gönderdi") and the task's own address, and the
+         * row says both where the summary would sit — an approval carries no summary of its own.
+         *
+         * An <a>, not a button: it NAVIGATES, exactly like the row's edit link, and the row's click handler
+         * already leaves anchors alone. No href → no link (the rule the source card learned the hard way).
+         */
+        const arrivalHref = item.arrivalReasonText ? sourceHref(item) : '';
+        const summaryHtml = item.arrivalReasonText
+            ? `${esc(item.arrivalReasonText)}${arrivalHref
+                ? ` · <a href="${esc(arrivalHref)}" data-wcn-arrival-link="${esc(item.id)}">${esc(t('DetailOpenSource'))}</a>`
+                : ''}`
+            : esc(summary);
         return `<div class="wcn-row${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}" tabindex="0">
             <span class="wcn-row-accent wcn-row-accent-${SLA_KIND[item.slaState] || 'secondary'}" aria-hidden="true"></span>
             <div class="wcn-row-body">
                 <div class="wcn-row-top">
                     ${item.isUnread ? '<span class="wcn-row-unread-dot" aria-hidden="true"></span>' : ''}
                     <span class="wcn-row-title">${esc(item.title)}</span>
+                    ${stepBadge(item)}
                     ${onBehalfBadge}
                     ${inbox ? '' : `<span class="wcn-badge wcn-badge-${STATUS_KIND[displayStatus(item)]}">${esc(statusLabel(item))}</span>`}
                 </div>
-                ${compact ? '' : `<p class="wcn-row-summary">${esc(summary)}</p>`}
+                ${compact ? '' : `<p class="wcn-row-summary">${summaryHtml}</p>`}
                 <div class="wcn-row-chips">${rowChips(item)}</div>
             </div>
             <div class="wcn-row-actions">${editBtn}${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>
@@ -1624,8 +1811,8 @@
      * action two pictures — measured: the rail drew `bx-user-pin` for "Yeniden ata" while the dialog it opened
      * drew a speech bubble. If an action has no entry here, ADD IT HERE; do not work around it at a call site.
      *
-     * `logTime` and `requestInfo` were added for exactly that reason: both open a dialog, neither was listed,
-     * and both would otherwise have fallen through to the generic arrow.
+     * `requestInfo` was added for exactly that reason: it opens a dialog, was not listed, and would otherwise
+     * have fallen through to the generic arrow.
      */
     /*
      * ⚠ THE MAP DECIDES, NEVER THE CALL SITE. A glyph chosen where the button is drawn is how one action ends
@@ -1642,8 +1829,12 @@
     const inboxActionIcon = (action) => ({
         accept: 'bx-check', approve: 'bx-check-shield', signoff: 'bx-check-circle',
         reject: 'bx-x-circle', decline: 'bx-x-circle', cancel: 'bx-x-circle', return: 'bx-undo',
+        // MOD-0357 S5c — same tone as accept/decline above, the codes just differ (acceptInvite/declineInvite).
+        acceptInvite: 'bx-check', declineInvite: 'bx-x-circle',
         inquire: 'bx-question-mark', requestInfo: 'bx-question-mark',
-        reassign: 'bx-user-pin', plan: 'bx-calendar-plus', logTime: 'bx-time-five',
+        // BL-439 — the other half of `inquire`: the addressee replies.
+        answer: 'bx-reply',
+        reassign: 'bx-user-pin', plan: 'bx-calendar-plus',
         scheduleReviewMeeting: 'bx-calendar-event',
         /*
          * ── THE LIFECYCLE VERBS (2026-08-25, BL-245) ────────────────────────────────────────────────────
@@ -1655,6 +1846,8 @@
          */
         // One movement, one glyph: resuming is starting again, and a reader who learned one knows the other.
         start: 'bx-play', resume: 'bx-play',
+        // MOD-0280-FU01 T2b — the holder's timer on the card.
+        startTimer: 'bx-play-circle', stopTimer: 'bx-stop-circle',
         // NOT `bx-check` — that is `accept`, which means "I take this on". Finishing is the second tick.
         complete: 'bx-check-double',
         // Taking work out of a pool, and putting it back. A pair, drawn as a pair.
@@ -1741,6 +1934,21 @@
     const needsSourceRecovery = (item) =>
         ['stale', 'sourceUnavailable', 'reconciliationRequired'].includes(item.systemState);
 
+    /*
+     * MOD-0357 S5c — the ONE item type today whose provider actually emits `secondaryActionCodes`
+     * (pack §3: "primary=acceptInvite, secondary=declineInvite"). Every other provider's non-primary
+     * actions stay in the ··· overflow (see the comment above `actionCluster`); a meeting invite's
+     * Reddet is a plain, un-confirmed, un-reasoned action (K-series: no dialog, no reason) that the
+     * pack explicitly wants ONE VISIBLE CLICK away, not a deliberate second click behind a menu.
+     * Gated on itemType so no other provider's row shape changes.
+     */
+    const secondaryInlineAction = (item) => {
+        if (item.itemType !== 'meetingInvite') { return null; }
+        const code = (item.secondaryActionCodes || [])[0];
+        if (!code) { return null; }
+        return itemActions(item).find((action) => action.code === code) || null;
+    };
+
     // Inbox is a decision queue, not a second task-detail surface. Each row answers
     // what needs attention, why it is here and when it matters. The primary action
     // appears once; less frequent actions stay behind a compact overflow menu.
@@ -1759,16 +1967,25 @@
         // et…); every other action — including reject — lives behind the ··· overflow,
         // so a destructive choice takes a deliberate second click. Same shape in the
         // inbox rows and the Table view's İşlemler column.
+        //
+        // meetingInvite is the one exception (see secondaryInlineAction): Reddet is promoted next to
+        // Kabul et instead of into the overflow, so it is excluded from `overflow` below too.
         const primary = rowPrimaryAction(actions);
-        const overflow = actions.filter((action) => !primary || action.key !== primary.key);
+        const secondary = secondaryInlineAction(item);
+        const overflow = actions
+            .filter((action) => !primary || action.key !== primary.key)
+            .filter((action) => !secondary || action.key !== secondary.key);
         const interactionLocked = state.submittingItemId === item.id;
         const primaryButton = primary
             ? `<button type="button" class="btn btn-sm btn-label-${primary.kind} wcn-inbox-action-primary" data-wcn-action="${primary.key}" data-wcn-id="${item.id}"${interactionLocked || primary.disabled ? ' disabled' : ''}${primary.disabled && primary.disabledReason ? ` title="${esc(primary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(primary)} me-1"></i>${esc(actionLabel(primary))}</button>`
             : '';
+        const secondaryButton = secondary
+            ? `<button type="button" class="btn btn-sm btn-label-${secondary.kind} wcn-inbox-action-secondary" data-wcn-action="${secondary.key}" data-wcn-id="${item.id}"${interactionLocked || secondary.disabled ? ' disabled' : ''}${secondary.disabled && secondary.disabledReason ? ` title="${esc(secondary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(secondary)} me-1"></i>${esc(actionLabel(secondary))}</button>`
+            : '';
         const overflowMenu = overflow.length
             ? `<div class="dropdown"><button type="button" class="btn btn-icon wcn-inbox-action-more dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ActionsLabel'))}" aria-label="${esc(t('ActionsLabel'))}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><ul class="dropdown-menu dropdown-menu-end">${actionMenuBody(item, overflow)}</ul></div>`
             : '';
-        return `<span class="wcn-inbox-actions">${primaryButton}${overflowMenu}</span>`;
+        return `<span class="wcn-inbox-actions">${primaryButton}${secondaryButton}${overflowMenu}</span>`;
     };
 
     // Table view "İşlemler" cell — same decision-queue shape as the list rows: the
@@ -1804,7 +2021,10 @@
         }
         const actions = itemActions(item);
         const primary = rowPrimaryAction(actions);
-        const rest = actions.filter((action) => !primary || action.key !== primary.key);
+        const secondary = secondaryInlineAction(item);
+        const rest = actions
+            .filter((action) => !primary || action.key !== primary.key)
+            .filter((action) => !secondary || action.key !== secondary.key);
         const interactionLocked = state.submittingItemId === item.id;
         // Stale source → refresh is the primary; real actions come back after it clears.
         const primaryButton = needsSourceRecovery(item)
@@ -1812,9 +2032,12 @@
             : (primary
                 ? `<button type="button" class="btn btn-sm btn-label-${primary.kind} wcn-inbox-action-primary" data-wcn-action="${primary.key}" data-wcn-id="${item.id}"${interactionLocked || primary.disabled ? ' disabled' : ''}${primary.disabled && primary.disabledReason ? ` title="${esc(primary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(primary)} me-1"></i>${esc(actionLabel(primary))}</button>`
                 : '');
+        const secondaryButton = !needsSourceRecovery(item) && secondary
+            ? `<button type="button" class="btn btn-sm btn-label-${secondary.kind} wcn-inbox-action-secondary" data-wcn-action="${secondary.key}" data-wcn-id="${item.id}"${interactionLocked || secondary.disabled ? ' disabled' : ''}${secondary.disabled && secondary.disabledReason ? ` title="${esc(secondary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(secondary)} me-1"></i>${esc(actionLabel(secondary))}</button>`
+            : '';
         const viewItem = `<li><button type="button" class="dropdown-item wcn-menu-item" data-wcn-detail="${item.id}"><i class="bx bx-show"></i><span>${esc(t('RowView'))}</span></button></li>`;
         const kebab = `<div class="dropdown"><button type="button" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ActionsLabel'))}" aria-label="${esc(t('ActionsLabel'))}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><ul class="dropdown-menu dropdown-menu-end m-0">${actionMenuBody(item, needsSourceRecovery(item) ? [] : rest, viewItem)}</ul></div>`;
-        return `<div class="d-flex align-items-center justify-content-end wcn-table-actions">${primaryButton}${kebab}</div>`;
+        return `<div class="d-flex align-items-center justify-content-end gap-1 wcn-table-actions">${primaryButton}${secondaryButton}${kebab}</div>`;
     };
 
     const inboxRowHtml = (item) => {
@@ -1900,20 +2123,24 @@
     };
 
     // ── Split-detail view ─────────────────────────────────────────────────────
-    // Compact, self-contained card for the Split master list — and the future
-    // Calendar view's "unplanned work" rail (drag onto the calendar to schedule).
+    // Compact, self-contained card for the Split master list — and the Calendar view's left panel (drag onto the
+    // calendar to schedule, WP-UI-CALENDAR-VIEW-01).
     // Vertical layout so it never truncates like the wide list row did in a narrow
     // column: a priority accent stripe, type, 2-line title, SLA/blocked chips, source.
-    const splitCard = (item) => {
+    // `extras` (HTML) and `planDrag` are the calendar panel's only additions: its flags and buttons below the meta
+    // row, and the marker that lets the card be dropped on the calendar. The card itself is not rewritten.
+    const splitCard = (item, extras = '', planDrag = false) => {
         const selected = item.id === state.selectedId;
         const terminal = item.lifecycle === 'Done' || item.lifecycle === 'Cancelled';
         const typeKind = item.itemType === 'meetingInvite' ? 'meeting' : item.itemType;
         const isMeeting = item.itemType === 'meetingInvite';
+        // MOD-0357 S5c — tür · zaman (organizatör is already the row's own metaLine second half elsewhere via
+        // `item.requester`, kept here too so this card reads the same three facts the list row does).
         const metaLine = isMeeting
-            ? [item.meetingStart && item.meetingEnd ? `${item.meetingStart}–${item.meetingEnd}` : '', item.meetingLocation].filter(Boolean).join(' · ')
+            ? [item.sourceType, item.dueAt, item.requester].filter(Boolean).join(' · ')
             : [item.sourceModule, item.requester].filter(Boolean).join(' · ');
         const pinBtn = terminal ? '' : `<button type="button" class="wcn-splitcard-pin${item.pinned ? ' pinned' : ''}" data-wcn-pin="${item.id}" title="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-label="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-pressed="${item.pinned}"><i class="bx ${item.pinned ? 'bxs-pin' : 'bx-pin'}"></i></button>`;
-        return `<article class="card wcn-splitcard${hasPriority(item) ? ` wcn-splitcard-p-${PRIORITY_KIND[item.priority]}` : ''}${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}" tabindex="0" role="button" draggable="true" aria-label="${esc(tf('TableOpenRow', item.title))}">
+        return `<article class="card wcn-splitcard${hasPriority(item) ? ` wcn-splitcard-p-${PRIORITY_KIND[item.priority]}` : ''}${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}"${planDrag ? ` data-wcn-plan-drag="${esc(item.id)}"` : ''} tabindex="0" role="button" draggable="true" aria-label="${esc(tf('TableOpenRow', item.title))}">
             <div class="wcn-splitcard-head">
                 <span class="wcn-inbox-type wcn-inbox-type-${typeKind}">${esc(typeLabel(item))}</span>
                 <span class="wcn-splitcard-head-end">
@@ -1927,6 +2154,7 @@
                 ${isBlocked(item) ? `<span class="wcn-chip wcn-chip-danger"><i class="bx bx-lock-alt"></i>${esc(t('BlockedLabel'))}</span>` : ''}
                 ${item.delegator ? `<span class="wcn-chip wcn-chip-delegation"><i class="bx bx-user-voice"></i>${esc(tf('OnBehalfShort', item.delegator))}</span>` : ''}
             </div>
+            ${extras}
             <div class="wcn-splitcard-foot"><i class="bx bx-cube"></i><span>${esc(metaLine)}</span></div>
         </article>`;
     };
@@ -2017,15 +2245,32 @@
     };
 
     const guidanceFor = (item) => {
+        /*
+         * BL-439 — a QUESTION addressed to the reader says who is asking and what, in one sentence, before
+         * anything else: it is the whole reason the page is open. `requester` is already the asker's name
+         * (toPresentation), and the question is the item's own summary.
+         */
+        if (item.itemType === 'inquiry') {
+            return item.summary
+                ? { kind: 'primary', text: tf('GuidanceInquiryAsked', item.requester || t('PersonNameUnavailable'), item.summary) }
+                : { kind: 'primary', key: 'GuidanceInquiryAskedNoText' };
+        }
         if (item.admissionState === 'pendingAcceptance') { return { kind: 'primary', key: 'GuidancePendingAcceptance' }; }
         if (item.admissionState === 'pendingClaim') { return { kind: 'primary', key: 'GuidancePendingClaim' }; }
         if (item.gates?.approval?.status === 'pending') { return { kind: 'warning', key: 'GuidanceApprovalPending' }; }
         if (item.gates?.review?.status === 'pending') { return { kind: 'warning', key: 'GuidanceReviewPending' }; }
-        if (item.lifecycle === 'Waiting') {
-            // The holder's own sentence when they gave one — nothing here is invented on their behalf.
-            return waitingSentence(item)
-                ? { kind: 'warning', text: tf('GuidanceWaitingBecause', waitingSentence(item)) }
-                : { kind: 'warning', key: 'GuidanceWaiting' };
+        /*
+         * BL-444 (owner, 2026-09-25) — NO banner for a paused task. The lifecycle strip directly below already says
+         * "paused now: {who} — {why}" and the waiting note repeats the sentence in the notes block; a third copy in the
+         * guidance banner (and a fourth in the resolver's notice) made the page say the same thing four times. Two
+         * surfaces stay: the strip (state) and the note (row chip). The GuidanceWaiting* strings are kept in the resx.
+         */
+        // BL-439 — the other half: the question this task was parked on came back answered.
+        if (inquiryAnsweredSignal(item)) {
+            const answerText = inquiryAnsweredText(item);
+            return answerText
+                ? { kind: 'success', text: tf('GuidanceInquiryAnswered', inquiryAnsweredName(item), answerText) }
+                : { kind: 'success', text: inquiryAnsweredChipText(item) };
         }
         return null;
     };
@@ -2074,6 +2319,7 @@
         plan: 'OutcomePlan',
         start: 'OutcomeStart',
         inquire: 'OutcomeInquire',
+        answer: 'OutcomeAnswer',
         return: 'OutcomeReturn',
         reassign: 'OutcomeReassign',
         complete: 'OutcomeComplete',
@@ -2287,15 +2533,18 @@
         const all = itemActions(item);
         const actions = all.filter((a) => {
             /*
-             * ⚠ "Süre gir" IS DRAWN BY THE TIMESHEET CARD, NOT HERE (2026-08-24, Tur B). It is a personal
-             * measurement, not a lifecycle move — it changes no state — so standing it beside Complete and
-             * Pause misfiled it. The card owns it now; leaving it in both places would be one action with two
-             * homes, which is how the two drift.
+             * BL-486 — THE TIMER IS DRAWN BY THE TIME CARD, NOT HERE. Start / Stop is a measurement, not a
+             * lifecycle move, and the card paints it beside the figures it changes; the rail and the narrow bar's
+             * ··· menu repeated the same button. Only where the card is actually drawn: a surface without the card
+             * keeps the action, or it would have no home at all.
              *
-             * ⚠ THE ACTION ITSELF IS UNTOUCHED: same projection entry, same key, same handler, same dialog.
-             * Only where the button is painted moved.
+             * KNOWN AND ACCEPTED: the card lives on the "Genel" tab, so on "Etkinlik" the timer is one tab away.
+             * Manual time entry has been on the card alone since Tur B for the same reason — time is a measurement,
+             * not a gate. (A tab switch does not re-render, so the rail cannot take the button back per tab.)
+             *
+             * The action itself is untouched: same projection entry, same key, same dispatch.
              */
-            if (a.key === 'logTime') { return false; }
+            if (TIMER_ACTION_KEYS.includes(a.key) && timeCardDrawn(item)) { return false; }
             if (!a.disabled || a.disabledReason) { return true; }
             if (!reportedUnexplainedActions.has(a.code)) {
                 reportedUnexplainedActions.add(a.code);
@@ -2898,7 +3147,10 @@
          * until somebody notices. It says so in a word rather than with a dash, because "—" reads as "not
          * recorded" and this is recorded: it is recorded as nobody.
          */
-        const assignee = field('bx-user', 'DetailAssignee', item.assignee || t('SummaryUnassigned'),
+        // REQ-WCN-01 (W-3) — an approval nobody is named on says WHICH POSITIONS it waits for, when the projection
+        // knows. Without them the word stays "unassigned", exactly as before.
+        const assignee = field('bx-user', 'DetailAssignee',
+            item.assignee || awaitingPositionsText(item) || t('SummaryUnassigned'),
             item.assignee ? '' : 'backbone-preview-field-muted');
 
         /*
@@ -4307,97 +4559,121 @@
          * Still an <input>, deliberately. Making it a textarea would change what Enter does — a behaviour
          * change wearing a styling change's clothes.
          */
+        /*
+         * WP-PSS-MOD0024-TASK-MENTIONS-01 — @mention chips.
+         *
+         * MentionedUserIds is structured data the server validates (K2/K4); the chip tray is the composer's
+         * OWN reflection of that draft state, not something parsed back out of the text box. Typing "@" is a
+         * shortcut into the SAME reusable person picker (`bindDialogSelect2`) every other picker dialog in this
+         * screen already uses — no new picker widget, per the module pack's explicit instruction.
+         */
+        const mentions = commentMentionState.get(item.id) || [];
+        const chips = mentions.length
+            ? `<div class="wcn-mention-chips">${mentions.map((m) => `<span class="wcn-mention-chip">`
+                + `<i class="bx bx-at" aria-hidden="true"></i>${esc(m.displayName)}`
+                + `<button type="button" class="wcn-mention-chip-remove" data-wcn-mention-remove="${esc(m.id)}" `
+                + `data-wcn-mention-task="${item.id}" aria-label="${esc(t('MentionRemove'))}" title="${esc(t('MentionRemove'))}">`
+                + `<i class="bx bx-x" aria-hidden="true"></i></button></span>`).join('')}</div>`
+            : '';
+
         return `<div class="wcn-composer">
             <div class="diten-field wcn-composer-field">
                 <i class="bx bx-message-rounded diten-field-icon" aria-hidden="true"></i>
                 <input type="text" class="form-control" data-wcn-comment-input placeholder="${esc(t('CommentPlaceholder'))}">
             </div>
+            <button type="button" class="btn btn-outline-secondary wcn-composer-mention" data-wcn-mention-add="${item.id}"
+                    aria-label="${esc(t('MentionAdd'))}" title="${esc(t('MentionAdd'))}">
+                <i class="bx bx-at" aria-hidden="true"></i>
+            </button>
             <button type="button" class="btn btn-primary wcn-composer-post" data-wcn-comment-post="${item.id}">
                 <i class="bx bx-send" aria-hidden="true"></i><span>${esc(t('CommentPost'))}</span>
             </button>
+            ${chips}
         </div>`;
     };
 
-    // Lightweight timesheet (task only) — total logged + live segment when running.
+    /*
+     * MOD-0280-FU01 T2b (pack §19.2) — the task's time, from the provider's REAL `timeEntries` block: the reader's own
+     * draft, and the task's submitted and approved totals (D7). Numbers only; nothing is measured in the browser.
+     * The fixture showcase carries an ARRAY of entries (contract only requires the container) — its minutes read as
+     * draft, so the showcase still draws a card.
+     */
+    const timeEntriesOf = (item) => {
+        const te = item.timeEntries;
+        if (Array.isArray(te)) {
+            return { draft: te.reduce((sum, e) => sum + (Number(e && e.minutes) || 0), 0), submitted: 0, approved: 0 };
+        }
+        if (te && typeof te === 'object') {
+            return {
+                draft: Number(te.draftMinutes) || 0,
+                submitted: Number(te.submittedMinutes) || 0,
+                approved: Number(te.approvedMinutes) || 0
+            };
+        }
+        return null;
+    };
+
+    const TIMER_ACTION_KEYS = ['startTimer', 'stopTimer'];
+
+    // The time card (task only). Drawn only where the provider declares timeTracking — a confident zero on a task
+    // whose time is not tracked would read as "nobody worked on this".
+    // ONE answer to "is the time card on this page", read by the card AND by actionTiers (which leaves the timer
+    // to the card only where there is one).
+    const timeCardDrawn = (item) => hasCap(item, 'timeTracking')
+        && item.itemType === 'task' && item.lifecycle !== 'PendingAcceptance'
+        && !!timeEntriesOf(item);
+
     const renderTimesheet = (item) => {
-        // The capability gate came first, like every other block: without it this card rendered "0h 0m" for every
-        // real task, because `item.timesheet` is null when the provider does not declare timeTracking and the
-        // fallback below quietly supplied zeroes. A confident zero is worse than no card — it reads as "nobody has
-        // worked on this" rather than "this system does not track that".
-        if (!hasCap(item, 'timeTracking')) { return ''; }
-        if (item.itemType !== 'task' || item.lifecycle === 'PendingAcceptance') { return ''; }
-        const ts = item.timesheet || { loggedMinutes: 0, running: false };
+        if (!timeCardDrawn(item)) { return ''; }
+        const te = timeEntriesOf(item);
+        const figure = (value, labelKey, cls) => `<span class="wcn-ts-figure ${cls}">
+                <span class="wcn-ts-total">${esc(formatMinutes(value))}</span>
+                <span class="wcn-ts-sub">${esc(t(labelKey))}</span>
+            </span>`;
         /*
-         * ⚠ THE TICKING READOUT WAS REMOVED (2026-08-24, Tur C) — it was telling a lie.
-         *
-         * MEASURED: it showed 37:29, the page was refreshed, and it came back at 37:15 — not continuing, but
-         * STARTING OVER. The cause is two layers deep: the mapper invents an anchor
-         * (`startedAt: Date.now() - 37min`) on every load, and `TaskItem` has no timer-start field at all —
-         * the projection carries `TimerState` (running/paused) and nothing to count from.
-         *
-         * So the number could never be right, on a fixture or on a real task. A readout that ticks convincingly
-         * and resets on refresh is worse than no readout: a reader trusts it and reports the wrong hours.
-         *
-         * ⚠ WHAT STAYS, because it is real: the TOTAL (`loggedMinutes`, stored, survives refresh), the task's
-         * STATE, and "Süre gir" — the only path that writes anything durable. The hint below now says plainly
-         * that elapsed time is not recorded.
-         *
-         * ⚠ NO ENTITY FIELD, NO MIGRATION. The honest fix belongs to MOD-0280 (blueprint, EA-TBD). This round
-         * stops lying; it does not build the feature. See BL-234.
+         * The timer buttons are the provider's own actions (startTimer / stopTimer): offered only to the holder, on
+         * InProgress, with the timer switched on for their legal entity. They do not move the task's lifecycle — the
+         * timer is a measurement, the task's state stays where its own actions put it.
          */
-        const live = '';
+        const timerButtons = itemActions(item)
+            .filter((a) => TIMER_ACTION_KEYS.includes(a.key))
+            .map((a) => `<button type="button" class="btn btn-sm ${a.key === 'stopTimer' ? 'btn-label-danger' : 'btn-label-primary'} wcn-ts-timer"
+                       data-wcn-action="${esc(a.key)}" data-wcn-id="${esc(item.id)}"${a.disabled ? ' disabled' : ''}${
+                           actionReasonId(item, a) ? ` aria-describedby="${esc(actionReasonId(item, a))}"` : ''}>
+                    <i class="bx ${inboxActionIcon(a)} me-1"></i>${esc(actionLabel(a))}
+               </button>`)
+            .join('');
         /*
-         * ── WHAT THIS CARD MAY AND MAY NOT CARRY (2026-08-24, Tur B) ──────────────────────────────────────
-         *
-         * The owner's complaint was that the card states a total and then falls silent — pausing means going
-         * to another card. The obvious fix is a start/pause button here, and it is the WRONG one.
-         *
-         * MEASURED: the timer is not an independent control. It is a SIDE EFFECT of the task's state —
-         *     'start'    → the task becomes "Devam ediyor" AND the timer runs
-         *     'complete' → the task ends              AND the timer folds
-         * (`pause` was in this list until 2026-08-24 — it never existed on the server; see BL-237.)
-         *     'complete' → the task ends              AND the timer folds
-         * Putting start/pause here would open a SECOND way to change the task's lifecycle, from inside a card
-         * that reads as a readout. This session already refused exactly that for document approval — do not
-         * create a second authority.
-         *
-         * ⚠ WHAT DOES BELONG HERE IS "Süre gir". Logging minutes by hand does NOT change the task's state; it
-         * is a personal measurement, not a lifecycle move. It sits in the action rail today, beside Complete
-         * and Pause, which is company it does not keep.
-         *
-         * The card also SAYS what the timer is doing and why, so the reader stops looking for a button that is
-         * deliberately elsewhere.
+         * BL-486 — the rail leaves the timer to this card, so the card owes what the rail said: WHY a dimmed
+         * button is dimmed. The shared sentence (`actionReasonNote`), not a second one — a button that sits
+         * disabled and says nothing is the defect BL-208 closed on the narrow bar.
          */
-        const logAction = itemActions(item).find((a) => a.key === 'logTime' && !a.disabled);
-        const logButton = logAction
-            ? `<button type="button" class="btn btn-sm btn-label-secondary wcn-ts-log"
-                       data-wcn-action="${esc(logAction.key)}" data-wcn-id="${esc(item.id)}">
-                    <i class="bx ${inboxActionIcon(logAction)} me-1"></i>${esc(actionLabel(logAction))}
-               </button>`
-            : '';
-        /*
-         * ⚠ THE STATE LINE NAMES THE TASK, NOT A TIMER (2026-08-24, Tur C). It used to read "Devam ediyor —
-         * sayaç işliyor", which contradicted the hint below it the moment the ticking readout was removed:
-         * one line claimed a timer was running while the next said elapsed time is not recorded. Only the
-         * task's own state survives — that part is true and comes from the projection.
-         */
-        const stateKey = ts.running ? 'TimerStateRunning'
+        const timerReasons = itemActions(item)
+            .filter((a) => TIMER_ACTION_KEYS.includes(a.key))
+            .map((a) => actionReasonNote(item, a))
+            .join('');
+        // The running line is the SERVER's timer state for this reader (D2, §19.2); a paused TASK (Waiting, PendingReview
+        // — ResolveExecutionState) still says so, because that state is real even though nothing pauses a timer.
+        const stateKey = item.timerState === 'running' ? 'TimerRunningNow'
             : item.executionState === 'paused' ? 'TimerStatePaused'
             : null;
-        const stateLine = stateKey
+        const runningLine = stateKey
             ? `<p class="wcn-ts-state">${esc(t(stateKey))}</p>`
             : '';
         return `<div class="wcn-detail-section">
             ${cardHead('bx-stopwatch', 'TimesheetLabel')}
             <div class="wcn-timesheet">
                 <span class="wcn-ts-icon"><i class="bx bx-time"></i></span>
-                <span class="wcn-ts-total">${esc(formatMinutes(ts.loggedMinutes))}</span>
-                <span class="wcn-ts-sub">${esc(t('TimeLoggedLabel'))}</span>
-                ${live}
+                ${figure(te.draft, 'TimeDraftLabel', 'wcn-ts-draft')}
+                ${figure(te.submitted, 'TimeSubmittedLabel', 'wcn-ts-submitted')}
+                ${figure(te.approved, 'TimeApprovedLabel', 'wcn-ts-approved')}
             </div>
-            ${stateLine}
-            <p class="wcn-block-hint"><i class="bx bx-info-circle"></i>${esc(t('TimerFollowsStatusHint'))}</p>
-            ${logButton}
+            ${runningLine}
+            <div class="wcn-ts-actions">
+                ${timerButtons}
+                <a class="btn btn-sm btn-text-secondary wcn-ts-sheet" href="/TimeEntry">${esc(t('OpenMyTimesheet'))}</a>
+            </div>
+            ${timerReasons}
         </div>`;
     };
 
@@ -4488,6 +4764,50 @@
         </section>`;
     };
 
+
+    /*
+     * ── THE CLOSURE BLOCK (MOD-0024 Task Closure & Reporting, Faz 2a) ────────────────────────────────────────
+     *
+     * The step-bar caption already prints the outcome's WORDS beside the closing date (`closedAs`, above) — this
+     * card is the REST of the envelope: the closing narrative, the CLOSURE-stage field values, and how many
+     * Deliverable/Evidence attachments this closed task carries. No card at all when none of the three exists,
+     * which is every task before this slice and every task whose type asks nothing at closure — the same
+     * "a capability with no data is not a capability worth announcing" rule every conditional card here follows.
+     *
+     * `closure.fields` arrives in `WorkItemBusinessFieldDto`'s own shape — the SAME one `businessContext` ships
+     * — so the value is read by its REAL wire name, `valueType`/`redacted` (not the `kind`/`restricted` a
+     * neighbouring helper reads; those never match this contract either, a pre-existing mismatch this slice does
+     * not touch).
+     */
+    const renderClosure = (item) => {
+        if (!isTerminal(item) || !item.closure) { return ''; }
+        const closure = item.closure;
+        const fields = closure.fields || [];
+        const deliverables = closure.deliverables || [];
+        if (!closure.note && !fields.length && !deliverables.length) { return ''; }
+
+        const fieldValue = (field) => {
+            if (field.redacted) { return `<span class="text-muted">${esc(t('RedactedValue'))}</span>`; }
+            if (field.valueType === 'boolean') { return esc(t(field.value === 'true' ? 'Yes' : 'No')); }
+            return esc(data.resolveLabel(field.value) || field.value || '—');
+        };
+        const fieldRows = fields.map((field) =>
+            `<div class="wcn-fact"><span>${esc(data.resolveLabel(field.label))}</span><strong>${fieldValue(field)}</strong></div>`
+        ).join('');
+
+        // One sentence per KIND present — "3 deliverables", never a duplicate of the attachment card's own rows.
+        const deliverableKey = { Deliverable: 'ClosureDeliverableCount', Evidence: 'ClosureEvidenceCount' };
+        const deliverableRows = deliverables
+            .map((group) => `<li>${esc(tf(deliverableKey[group.kind] || 'ClosureDeliverableCount', group.count))}</li>`)
+            .join('');
+
+        return `<section class="wcn-detail-section wcn-business-section">
+            ${sectionHead('bx-flag-alt', 'ClosureSectionTitle')}
+            ${closure.note ? `<p class="mb-3">${esc(closure.note)}</p>` : ''}
+            ${fieldRows ? `<div class="wcn-facts-grid mb-3">${fieldRows}</div>` : ''}
+            ${deliverableRows ? `<ul class="text-muted small mb-0">${deliverableRows}</ul>` : ''}
+        </section>`;
+    };
 
     const renderBusinessContext = (item) => {
         if (!hasCap(item, 'businessContext')) { return ''; }
@@ -4748,7 +5068,10 @@
         const snoozeNote = isSnoozed(item)
             ? `<div class="wcn-parked wcn-parked-snooze" role="note"><i class="bx bx-moon"></i><span>${esc(tf('SnoozedUntil', item.snoozedUntil))}</span></div>`
             : '';
-        const notices = surface.notices.map((notice) =>
+        // BL-444 — when the holder's own sentence (person and/or reason) is on the page, the resolver's generic
+        // "waiting for external input / approval / review" notice is the same fact a third time and is not drawn.
+        // Without a sentence it is the only line naming the wait, so it stays.
+        const notices = surface.notices.filter((notice) => !(waitingText && notice.code === 'waiting')).map((notice) =>
             `<div class="wcn-parked wcn-parked-info" role="note"><i class="bx bx-info-circle"></i><span>${esc(t(notice.labelKey))}</span></div>`
         ).join('');
         /*
@@ -5144,6 +5467,7 @@
             // FIRST, always: "what is this?" is the question a detail page owes its reader before "what can you
             // do about it?" — which is what the page used to open with.
             card(renderSummary(item)),
+            card(renderClosure(item)),
             card(renderBusinessContext(item)),
             card(renderSubtasks(item)),
             card(renderDependencies(item)),
@@ -5270,9 +5594,15 @@
          *    and the breadcrumb's Task Center link additionally restores the list AS THE USER LEFT IT (tab,
          *    segment, filters). Two controls, one destination, one of them worse — so only the breadcrumb stays.
          */
+        // REQ-WCN-01 (W-1) — the step badge sits BESIDE the heading, never inside it: the heading stays the task's
+        // name and nothing else. Without a step the heading is drawn exactly as before.
+        const heading = `<h5 class="mb-0">${esc(item.title)}</h5>`;
+        const headingWithStep = stepBadge(item)
+            ? `<div class="d-flex align-items-center flex-wrap gap-2">${heading}${stepBadge(item)}</div>`
+            : heading;
         const pageHeader = `<div class="d-flex align-items-center justify-content-between mb-3">
             <div>
-                <h5 class="mb-0">${esc(item.title)}</h5>
+                ${headingWithStep}
                 <nav aria-label="${esc(t('BreadcrumbLabel'))}">
                     <ol class="breadcrumb mb-0">
                         <li class="breadcrumb-item"><a href="${esc(listReturnUrl())}">${esc(t('Title'))}</a></li>
@@ -6030,106 +6360,554 @@
      */
 
     /*
-     * Which month the grid is showing. `state.calendarMonth` is a `YYYY-MM` string or null for "today's month",
-     * so the default costs no state and the URL stays clean until the reader actually moves.
+     * ══ THE CALENDAR VIEW (WP-UI-CALENDAR-VIEW-01, calendar 2b) ═════════════════════════════════════════════
+     *
+     * The hand-written month grid that lived here (renderCalendar, BL-256) is GONE: one month, due dates only, no
+     * hours. Every tab now draws the ONE shared component (shared/diten-calendar.js over the vendored FullCalendar).
+     *
+     * • İşlerim is the PLANNING board: the reader's planned work and meetings from the calendar feed
+     *   (GET /WorkCenterNext/api/calendar → api/v1/work/calendar), a left panel of what still needs a slot
+     *   (Planlanmamış · Planı geçmiş · Davetler, counts from the feed), and drag to plan: a day in the month view is
+     *   a day plan, a time in the week/day view is a block; moving is a re-plan, stretching changes the length,
+     *   dragging back to the panel is `unplan`.
+     * • Every other tab is READ-ONLY: the tab's own items by due date (and the reader's plan date where it differs)
+     *   — the job the old grid did, on the same component.
+     *
+     * ⚠ NO RULE LIVES HERE. Whether two blocks collide, where the working day ends, what is left of the estimate —
+     * all of it is the engine's answer (WP-TASK-CALENDAR-ENGINE-01). This file SHOWS it: a 409 is reverted and
+     * named, a warning is said and marked, a cut block says how much is left.
+     *
+     * ⚠ THE WRITES GO THROUGH THE ONE ACTION ADDRESS (WC-D2): `plan` / `unplan` on
+     * /WorkCenterNext/api/work-items/{id}/actions/…, the same seam every other button on this page uses.
      */
-    const calendarAnchor = () => {
-        const iso = state.calendarMonth && /^\d{4}-\d{2}$/.test(state.calendarMonth)
-            ? state.calendarMonth + '-01'
-            : data.todayIso.slice(0, 7) + '-01';
-        return new Date(iso + 'T00:00:00');
-    };
-    const shiftMonth = (delta) => {
-        const at = calendarAnchor();
-        const next = new Date(at.getFullYear(), at.getMonth() + delta, 1);
-        const key = `${next.getFullYear()}-${pad2(next.getMonth() + 1)}`;
-        // Back to the default rather than storing today's own month: same state, one less thing in the URL.
-        state.calendarMonth = key === data.todayIso.slice(0, 7) ? null : key;
+    // What an event on the planning board IS. Read through this map rather than spelled at each comparison.
+    const CAL_KIND = { task: 'task', meeting: 'meeting' };
+    const CALENDAR_PANELS = ['unplanned', 'planPassed', 'invites'];
+    const isPlanningCalendar = () => state.tab === 'islerim';
+
+    /** The item's plan action when the reader may press it (the engine projects `plan` to the HOLDER only, BL-449). */
+    const usablePlanAction = (item) => {
+        const action = actionByKey(item, 'plan');
+        return action && !action.disabled ? action : null;
     };
 
-    const renderCalendar = () => {
-        const items = activeItems();
-        /*
-         * ⚠ AN EMPTY MONTH IS NOT A CALENDAR. This drew the grid unconditionally, so a filter that matched
-         * nothing produced 31 blank boxes and no sentence — the reader could not tell "nothing is due" from
-         * "the page failed". Same empty-state language as every other view.
-         */
-        if (!items.length) { return emptyState(); }
-        state.visibleOrder = items.map((i) => i.id);
-        const lang = (document.documentElement.lang || 'tr').slice(0, 2);
-        const today = new Date(data.todayIso + 'T00:00:00');
-        const at = calendarAnchor();
-        const year = at.getFullYear();
-        const month = at.getMonth();
-        const first = new Date(year, month, 1);
-        const startDow = (first.getDay() + 6) % 7;               // Monday = 0
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        let monthTitle;
-        try { monthTitle = new Intl.DateTimeFormat(lang, { month: 'long', year: 'numeric' }).format(first); }
-        catch (e) { monthTitle = (month + 1) + '/' + year; }
-        const wd = [];
-        for (let i = 0; i < 7; i++) {
-            try { wd.push(new Intl.DateTimeFormat(lang, { weekday: 'short' }).format(new Date(2024, 0, 1 + i))); }
-            catch (e) { wd.push(''); }
+    /** A block's default length: the estimate rounded UP to a 15-minute step, else 60 — the engine's own rule. */
+    const defaultBlockMinutes = (item) => {
+        const hours = Number(item?.estimateHours ?? item?.effort?.estimate ?? 0);
+        if (!(hours > 0)) { return 60; }
+        return Math.ceil((hours * 60) / 15) * 15;
+    };
+
+    /** The feed's zone when the feed has answered with one the browser knows; null otherwise. */
+    const feedZone = () => {
+        const zone = state.calendarFeed?.timeZoneId;
+        return zone && global.DitenZonedTime && global.DitenZonedTime.isValidZone(zone) ? zone : null;
+    };
+
+    /*
+     * THE zone every conversion on this page uses (v2 F10). While a calendar is mounted it is the component's own
+     * (`calendarController.zone` — what the drawn times were converted with); otherwise the feed's. Two sources
+     * would let a drop drawn in one zone be written in another.
+     */
+    const calendarZone = () => (calendarController ? calendarController.zone : feedZone());
+
+    /*
+     * The planning board may WRITE only once it knows where it is (v2 F1): the feed has answered and its zone is
+     * one the browser can convert in. Before that — or after a 500 on the first read — a drop at "10:00" would be
+     * read as 10:00 UTC (13:00 in Istanbul). Nothing drags and nothing drops until then.
+     */
+    const planningReady = () => isPlanningCalendar() && !!feedZone();
+
+    /*
+     * THE one "today" on the calendar page (v2 F4): the tenant's calendar day right now, in the feed's zone — the
+     * same day the engine counts `planPassedCount` in and the calendar highlights. Only before the feed has
+     * answered does it fall back to the page's own today.
+     */
+    const calendarToday = () => {
+        const zone = feedZone();
+        return zone ? global.DitenZonedTime.localDate(Date.now(), zone) : data.todayIso;
+    };
+
+    /** The three left-panel lists. The COUNTS come from the feed; these are the cards the counts describe. */
+    const calendarPanelItems = (panel) => {
+        const today = calendarToday();
+        switch (panel) {
+            case 'planPassed':
+                return state.items.filter((i) => usablePlanAction(i) && i.plannedDate && i.plannedDate < today);
+            case 'invites':
+                return state.items.filter((i) => i.itemType === 'meetingInvite');
+            default:
+                return state.items.filter((i) => usablePlanAction(i) && !i.plannedDate);
         }
-        // Cluster items by day: source due + personal plan (distinct kinds).
-        const byDay = {};
-        items.forEach((i) => {
-            if (i.dueAt) { (byDay[i.dueAt] = byDay[i.dueAt] || []).push({ item: i, kind: 'due' }); }
-            if (i.plannedDate && i.plannedDate !== i.dueAt) { (byDay[i.plannedDate] = byDay[i.plannedDate] || []).push({ item: i, kind: 'plan' }); }
-        });
-        const cells = [];
-        for (let b = 0; b < startDow; b++) { cells.push('<div class="wcn-cal-cell wcn-cal-empty"></div>'); }
-        for (let d = 1; d <= daysInMonth; d++) {
-            const iso = `${year}-${pad2(month + 1)}-${pad2(d)}`;
-            const isToday = iso === data.todayIso;
-            const entries = (byDay[iso] || []).map((e) =>
-                `<div class="wcn-cal-item wcn-cal-${e.kind}" data-wcn-row="${e.item.id}" title="${esc(e.item.title)}" tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', e.item.title))}">
-                    <span class="wcn-cal-dot"></span><span class="wcn-cal-item-text">${esc(e.item.title)}</span>
-                </div>`).join('');
-            cells.push(`<div class="wcn-cal-cell${isToday ? ' wcn-cal-today' : ''}">
-                <span class="wcn-cal-day">${d}</span>${entries}
-            </div>`);
+    };
+
+    const PANEL_COUNT_FIELD = { unplanned: 'unplannedCount', planPassed: 'planPassedCount', invites: 'pendingInviteCount' };
+    const PANEL_LABEL_KEY = { unplanned: 'CalPanelUnplanned', planPassed: 'CalPanelPlanPassed', invites: 'CalPanelInvites' };
+
+    /** The feed task for an item id, when the feed carries it (remainingMinutes, conflict). */
+    const feedTask = (id) => (state.calendarFeed?.tasks || []).find((task) => task.taskId === id) || null;
+
+    const inviteButtons = (item) => ['acceptInvite', 'declineInvite']
+        .map((code) => actionByKey(item, code))
+        .filter(Boolean)
+        .map((action) => `<button type="button" class="btn btn-xs btn-label-${action.code === 'acceptInvite' ? 'success' : 'secondary'} wcn-calcard-btn" data-wcn-action="${esc(action.key)}" data-wcn-id="${esc(item.id)}"${action.disabled ? ' disabled' : ''}>${esc(actionLabel(action))}</button>`)
+        .join('');
+
+    /*
+     * WP-UI-MEETINGS-CALENDAR-01 (B) — an INVITATION in the panel is drawn by the one shared card
+     * (shared/diten-invite-card.js), the same function the Meetings page's "pending invitations" panel calls. This
+     * page keeps only its wiring: the answer buttons carry `data-wcn-action` into the SAME performAction every other
+     * button goes through, and the card opens the item like any row. Never draggable — an invitation is answered.
+     */
+    const feedMeeting = (id) => (state.calendarFeed?.meetings || []).find((meeting) => meeting.meetingId === id) || null;
+
+    const inviteCard = (item) => global.DitenInviteCard.render({
+        id: item.id,
+        title: item.title,
+        typeName: item.sourceType,
+        // The feed's instant when the meeting is in the visible range (date AND time), else the item's own day.
+        when: feedMeeting(item.id)?.startAt || item.dueAt,
+        zone: feedZone(),
+        organizerName: item.requester,
+        attrs: { 'data-wcn-row': item.id, tabindex: '0', role: 'button', 'aria-label': tf('TableOpenRow', item.title) },
+        buttons: ['acceptInvite', 'declineInvite']
+            .map((code) => actionByKey(item, code))
+            .filter(Boolean)
+            .map((action) => ({
+                tone: action.code === 'acceptInvite' ? 'accept' : 'decline',
+                label: actionLabel(action),
+                attrs: { 'data-wcn-action': action.key, 'data-wcn-id': item.id },
+                disabled: !!action.disabled
+            }))
+    });
+
+    /** What a panel card carries beyond splitCard itself: flags and its own buttons (the card is not rewritten). */
+    const calendarCardExtras = (item, panel) => {
+        const chips = [];
+        const estimate = Number(item.estimateHours ?? item.effort?.estimate ?? 0);
+        if (estimate > 0) {
+            chips.push(`<span class="wcn-chip wcn-chip-secondary wcn-calchip-estimate"><i class="bx bx-time"></i>${esc(tf('CalChipEstimate', estimate))}</span>`);
         }
-        /*
-         * ── WHAT IS NOT ON THIS SCREEN (2026-08-25, BL-256) ───────────────────────────────────────────────
-         *
-         * MEASURED before the month control existed: 30 items in the list, 6 in the grid — the other 24 sat in
-         * July and September with nothing on screen saying so. A month view that shows a fifth of the list and
-         * stays silent is the same lie this session removed from the chips and the columns.
-         *
-         * ⚠ THE SENTENCE STAYS EVEN THOUGH THE ARROWS EXIST. Navigation answers "let me look"; this answers
-         * "is there anything to look for" — and a reader should not have to click through months to find out.
-         *
-         * ⚠ DATELESS ITEMS ARE COUNTED SEPARATELY because no amount of navigating will ever reach them.
-         * Measured at ZERO on live data today (every task carries a `dueAt`), which is exactly why it is
-         * written as a condition rather than assumed away.
-         */
-        const monthKey = `${year}-${pad2(month + 1)}`;
-        const dateOf = (i) => i.dueAt || i.plannedDate || null;
-        const dateless = items.filter((i) => !dateOf(i)).length;
-        const elsewhere = items.filter((i) => { const d = dateOf(i); return d && String(d).slice(0, 7) !== monthKey; }).length;
-        const outside = elsewhere || dateless
-            ? `<p class="wcn-cal-outside" role="note"><i class="bx bx-info-circle" aria-hidden="true"></i>${
-                esc(dateless ? tf('CalOutsideAndUndated', elsewhere, dateless) : tf('CalOutside', elsewhere))}</p>`
+        if (panel === 'planPassed') {
+            chips.push(`<span class="wcn-chip wcn-chip-warning wcn-calchip-passed"><i class="bx bx-calendar-exclamation"></i>${esc(tf('CalChipPlanPassed', item.plannedDate))}</span>`);
+        }
+        const remaining = feedTask(item.id)?.remainingMinutes;
+        if (remaining > 0) {
+            chips.push(`<span class="wcn-chip wcn-chip-info wcn-calchip-remaining">${esc(tf('CalChipRemaining', remaining))}</span>`);
+        }
+        const plan = usablePlanAction(item);
+        const buttons = panel === 'invites'
+            ? inviteButtons(item)
+            : (plan ? `<button type="button" class="btn btn-xs btn-label-primary wcn-calcard-btn" data-wcn-action="${esc(plan.key)}" data-wcn-id="${esc(item.id)}"><i class="bx ${inboxActionIcon(plan)}"></i>${esc(actionLabel(plan))}</button>` : '');
+        return `<div class="wcn-calcard-extras">${chips.join('')}${buttons}</div>`;
+    };
+
+    const renderCalendarPanel = () => {
+        const feed = state.calendarFeed;
+        const tabs = CALENDAR_PANELS.map((panel) => {
+            const active = state.calendarPanel === panel;
+            const count = feed ? Number(feed[PANEL_COUNT_FIELD[panel]] ?? 0) : '–';
+            return `<button type="button" class="wcn-calpanel-tab${active ? ' active' : ''}" role="tab" aria-selected="${active}" data-wcn-calpanel="${panel}">${esc(t(PANEL_LABEL_KEY[panel]))}<span class="wcn-calpanel-count" data-wcn-calpanel-count="${panel}">${esc(count)}</span></button>`;
+        }).join('');
+        const items = calendarPanelItems(state.calendarPanel);
+        const cards = items.length
+            ? items.map((item) => (state.calendarPanel === 'invites'
+                ? inviteCard(item)
+                : splitCard(item, calendarCardExtras(item, state.calendarPanel), state.calendarPanel !== 'invites' && planningReady()))).join('')
+            : `<p class="wcn-calpanel-empty">${esc(t('CalPanelEmpty'))}</p>`;
+        return `<aside class="card wcn-calpanel" data-wcn-calpanel-dropzone aria-label="${esc(t('CalPanelTitle'))}">
+            <div class="wcn-calpanel-tabs" role="tablist">${tabs}</div>
+            <p class="wcn-calpanel-hint">${esc(t('CalPanelHint'))}</p>
+            <div class="wcn-calpanel-list">${cards}</div>
+        </aside>`;
+    };
+
+    const renderCalendarLegend = () => {
+        const entries = isPlanningCalendar()
+            ? [['task', 'CalLegendTask'], ['task-block', 'CalLegendBlock'], ['meeting-accepted', 'CalLegendMeetingAccepted'],
+                ['meeting-pending', 'CalLegendMeetingPending'], ['conflict', 'CalLegendConflict'], ['offhours', 'CalLegendOffHours'],
+                ['holiday', 'CalLegendHoliday']]
+            : [['due', 'CalLegendDue'], ['plan', 'CalLegendPlan']];
+        return `<div class="wcn-calview-legend" role="note">${entries
+            .map(([kind, key]) => `<span class="wcn-calview-lg"><span class="wcn-calview-swatch wcn-calview-swatch-${kind}"></span>${esc(t(key))}</span>`)
+            .join('')}</div>`;
+    };
+
+    const renderCalendarView = () => {
+        const planning = isPlanningCalendar();
+        if (!planning && !activeItems().length) { return emptyState(); }
+        const note = planning && state.calendarFeedError
+            ? `<p class="wcn-calview-note" role="alert"><i class="bx bx-error-circle"></i>${esc(state.calendarFeedError)}</p>`
             : '';
-        const isCurrent = monthKey === data.todayIso.slice(0, 7);
-        const nav = `<span class="wcn-cal-nav btn-group btn-group-sm">
-            <button type="button" class="btn btn-label-secondary btn-icon" data-wcn-cal-month="prev" aria-label="${esc(t('CalPrevMonth'))}"><i class="bx bx-chevron-left"></i></button>
-            <button type="button" class="btn btn-label-secondary${isCurrent ? ' disabled' : ''}" data-wcn-cal-month="today"${isCurrent ? ' disabled' : ''}>${esc(t('CalToday'))}</button>
-            <button type="button" class="btn btn-label-secondary btn-icon" data-wcn-cal-month="next" aria-label="${esc(t('CalNextMonth'))}"><i class="bx bx-chevron-right"></i></button>
-        </span>`;
-        return `<div class="wcn-calendar">
-            <div class="wcn-cal-head">
-                <span class="wcn-cal-month">${esc(monthTitle)}</span>${nav}
-                <span class="wcn-cal-legend"><span class="wcn-cal-lg wcn-cal-due"></span>${esc(t('CalLegendDue'))} <span class="wcn-cal-lg wcn-cal-plan"></span>${esc(t('CalLegendPlan'))}</span>
-            </div>
-            <div class="wcn-cal-weekdays">${wd.map((w) => `<span>${esc(w)}</span>`).join('')}</div>
-            <div class="wcn-cal-grid">${cells.join('')}</div>
-            ${outside}
+        // D1 — the same sentence the Meetings calendar shows, from the one shared implementation.
+        const unresolved = planning && state.calendarFeed && global.DitenCalendar?.unresolvedNotice
+            ? global.DitenCalendar.unresolvedNotice(state.calendarFeed.days)
+            : '';
+        return `<div class="wcn-calview ${planning ? 'wcn-calview-planning' : 'wcn-calview-readonly'}">
+            ${planning ? renderCalendarPanel() : ''}
+            <section class="card wcn-calview-main">
+                ${renderCalendarLegend()}${note}${unresolved}
+                <div class="wcn-calview-host" data-wcn-calendar-host></div>
+            </section>
         </div>`;
     };
 
+    /* ── events handed to the component ─────────────────────────────────────────────────────────────────── */
+
+    const planningEvents = () => {
+        const feed = state.calendarFeed;
+        if (!feed) { return []; }
+        const tasks = (feed.tasks || []).map((task) => {
+            const item = itemById(task.taskId);
+            const classNames = ['dc-task'];
+            if (task.plannedStartAt) { classNames.push('dc-task-block'); }
+            if (task.conflict) { classNames.push('dc-conflict'); }
+            if ((task.warnings || []).length) { classNames.push('dc-warned'); }
+            const base = {
+                id: task.taskId,
+                title: task.title,
+                kind: CAL_KIND.task,
+                // Per-event `editable` overrides the calendar's own in FullCalendar, so readiness is asked here too.
+                editable: !!(item && usablePlanAction(item)) && planningReady(),
+                classNames,
+                extendedProps: { defaultMinutes: defaultBlockMinutes(item), remainingMinutes: task.remainingMinutes }
+            };
+            return task.plannedStartAt
+                ? Object.assign(base, { allDay: false, startUtc: task.plannedStartAt, endUtc: task.plannedEndAt })
+                : Object.assign(base, { allDay: true, date: task.plannedDate });
+        });
+        const meetings = (feed.meetings || []).map((meeting) => ({
+            id: 'meeting:' + meeting.meetingId,
+            title: meeting.title,
+            kind: CAL_KIND.meeting,
+            editable: false,
+            allDay: false,
+            startUtc: meeting.startAt,
+            endUtc: meeting.endAt,
+            classNames: ['dc-meeting', meeting.response === 'accepted' ? 'dc-meeting-accepted' : 'dc-meeting-pending'],
+            extendedProps: { meetingId: meeting.meetingId, response: meeting.response }
+        }));
+        return tasks.concat(meetings);
+    };
+
+    /** Read-only tabs: the tab's items by due date, and the reader's own plan date where it differs. */
+    const readOnlyEvents = () => {
+        const events = [];
+        activeItems().forEach((item) => {
+            if (item.dueAt) {
+                events.push({ id: 'due:' + item.id, title: item.title, kind: 'due', allDay: true, date: item.dueAt, classNames: ['dc-due'], extendedProps: { itemId: item.id } });
+            }
+            if (item.plannedDate && item.plannedDate !== item.dueAt) {
+                events.push({ id: 'plan:' + item.id, title: item.title, kind: 'plan', allDay: true, date: item.plannedDate, classNames: ['dc-plan'], extendedProps: { itemId: item.id } });
+            }
+        });
+        return events;
+    };
+
+    /** Buttons and chips inside a calendar event: the block's own "Planla", a cut block's remaining time, an invite's answers. */
+    const calendarEventExtras = (event) => {
+        const kind = event.extendedProps.kind;
+        if (kind === CAL_KIND.meeting) {
+            const invite = event.extendedProps.response === 'pending' ? itemById(event.extendedProps.meetingId) : null;
+            return invite ? `<span class="dc-event-actions">${inviteButtons(invite)}</span>` : '';
+        }
+        if (kind !== CAL_KIND.task) { return ''; }
+        const parts = [];
+        const remaining = event.extendedProps.remainingMinutes;
+        if (remaining > 0) { parts.push(`<span class="dc-event-chip">${esc(tf('CalChipRemaining', remaining))}</span>`); }
+        /*
+         * BL-471 — the mark is a fact of the DATA, not of the session: the feed computes each block's warnings at
+         * read time with the engine's rule (GetMyWorkCalendarHandler.WarningsFor), so it survives a reload and
+         * appears for a meeting that arrived after the plan was written. The browser only says the sentence.
+         */
+        const warnings = (feedTask(event.id) || {}).warnings || [];
+        if (warnings.length) {
+            const messages = warnings.map((w) => global.TasksApi?.planWarningMessage?.(w) || w.code);
+            parts.push(`<span class="dc-event-warning" title="${esc(messages.join(' · '))}"><i class="bx bx-error"></i></span>`);
+        }
+        const item = itemById(event.id);
+        const plan = item && usablePlanAction(item);
+        if (plan) {
+            parts.push(`<button type="button" class="btn btn-xs dc-event-plan" data-wcn-action="${esc(plan.key)}" data-wcn-id="${esc(item.id)}" aria-label="${esc(actionLabel(plan))}"><i class="bx ${inboxActionIcon(plan)}"></i></button>`);
+        }
+        return parts.length ? `<span class="dc-event-actions">${parts.join('')}</span>` : '';
+    };
+
+    /* ── the feed ───────────────────────────────────────────────────────────────────────────────────────── */
+
+    /*
+     * STALE ANSWERS ARE DROPPED (v2 F8), the same guard loadWorkItems has: a reader who pages week → week → week
+     * sends three reads, and the answers can arrive in any order. Only the LAST request may write; an earlier
+     * range answering late must not paint last week's plan over this week. Returns whether it wrote.
+     */
+    let calendarFeedGeneration = 0;
+    const loadCalendarFeed = async (from, to) => {
+        const key = `${from}|${to}`;
+        const generation = ++calendarFeedGeneration;
+        state.calendarRange = { from, to };
+        const result = await global.WorkCenterNextApi.fetchCalendar(from, to);
+        if (generation !== calendarFeedGeneration) { return false; }
+        if (result.ok && result.data) {
+            state.calendarFeed = result.data;
+            state.calendarFeedError = null;
+        } else {
+            state.calendarFeedError = global.TasksApi?.failureMessage ? global.TasksApi.failureMessage(result) : t('ErrorTitle');
+        }
+        state.calendarFeedKey = key;
+        return true;
+    };
+
+    /** After a write: re-read the projection AND the feed, then draw once. */
+    const refreshCalendar = async () => {
+        await loadWorkItems();
+        if (state.calendarRange) { await loadCalendarFeed(state.calendarRange.from, state.calendarRange.to); }
+        render();
+    };
+
+    /* ── the writes ─────────────────────────────────────────────────────────────────────────────────────── */
+
+    const conflictRange = (conflict) => {
+        const zone = calendarZone();
+        const lang = (document.documentElement.lang || 'tr').slice(0, 2);
+        try {
+            const format = new Intl.DateTimeFormat(lang, { timeZone: zone, hour: '2-digit', minute: '2-digit' });
+            return `${format.format(new Date(conflict.startAt))}–${format.format(new Date(conflict.endAt))}`;
+        } catch (_) {
+            return '';
+        }
+    };
+
+    /**
+     * One answer for every plan/unplan write the calendar (or the plan dialog) makes. Returns the stitch outcome
+     * the action path already speaks ({ outcome, reasonCode }).
+     */
+    const settlePlanWrite = async (item, result, revert) => {
+        if (result.ok) {
+            const data = result.data || {};
+            const warnings = data.warnings || [];
+            // The block's mark comes back with the feed re-read below (BL-471); only the toasts are this answer's.
+            await refreshCalendar();
+            /*
+             * A task or meeting title is text somebody typed. The shared toast turns its whole message into text at
+             * its own door (BL-493, _GlobalNotification.cshtml), so the titles go in AS TYPED — escaping here too
+             * would put `&lt;` and `&amp;` on the reader's screen. (v2 F5 used to escape at each call site.)
+             */
+            toast(tf('CalPlanSaved', item.title));
+            /*
+             * WP-UI-MEETINGS-CALENDAR-01 (D2) — a cut block with NO estimate has nothing "left": the engine answers
+             * `remainingMinutes: null`, and "0 min left" (measured live) said something false. Only an estimate
+             * gives a remainder; without one the sentence is just that the block was cut.
+             */
+            if (data.truncated) {
+                toast(data.remainingMinutes == null ? t('CalTruncatedNoEstimate') : tf('CalTruncated', data.remainingMinutes), 'warning');
+            }
+            warnings
+                .map((w) => global.TasksApi?.planWarningMessage?.(w) || w.code)
+                .forEach((message) => toast(message, 'info'));
+            return { outcome: 'done' };
+        }
+
+        safeRevert(revert);
+        if (result.reasonCode === 'TASK_PLAN_CONFLICT' && result.data && result.data.conflict) {
+            toast(tf('CalConflictWith', result.data.conflict.title, conflictRange(result.data.conflict)), 'error');
+            return { outcome: 'refused', reasonCode: result.reasonCode };
+        }
+        if (global.TasksApi.isConcurrencyConflict(result)) {
+            await refreshCalendar();
+            toast(t('ErrorConcurrencyRefreshed'), 'error');
+            return { outcome: 'refused', reasonCode: result.reasonCode };
+        }
+        toast(global.TasksApi.failureMessage(result), 'error');
+        return { outcome: 'refused', reasonCode: result.reasonCode };
+    };
+
+    const expectedVersion = (item) => Number(item.concurrency?.token ?? 0);
+
+    /**
+     * A day plan, dressed with the tenant offset so the day is the day the reader chose. A DAY needs no zone to
+     * mean something (v2 F6): when the zone is not known the bare "YYYY-MM-DD" goes, exactly as before the
+     * calendar existed. Only a TIME needs the zone.
+     */
+    const dayPlanBody = (item, date, zone = calendarZone()) => ({
+        expectedVersion: expectedVersion(item),
+        plannedDate: zone ? global.DitenZonedTime.toOffsetIso(date, zone) : date
+    });
+
+    /** FullCalendar's revert, which is a no-op — never a throw — once the calendar that offered it is gone (v2 F7). */
+    const safeRevert = (revert) => {
+        if (typeof revert !== 'function') { return; }
+        try { revert(); } catch (error) { console.warn('[WorkCenterNext] calendar revert skipped.', error); }
+    };
+
+    /*
+     * ONE WRITE PER ITEM AT A TIME (v2 F7). A second drag of the same card while the first plan is still on its way
+     * would post with the SAME expectedVersion and lose to itself (409) — or, worse, win in the wrong order. The
+     * second gesture is reverted and says nothing; the first one's answer redraws the board.
+     */
+    const planWritesInFlight = new Set();
+
+    const blockPlanBody = (item, startUtc, minutes) => ({
+        expectedVersion: expectedVersion(item),
+        plannedStartAt: startUtc,
+        plannedDurationMinutes: minutes
+    });
+
+    const guardedWrite = async (item, actionCode, buildBody, revert) => {
+        if (planWritesInFlight.has(item.id)) { safeRevert(revert); return { outcome: 'cancelled' }; }
+        let body;
+        try {
+            body = buildBody();
+        } catch (error) {
+            // A conversion that cannot be made (a zone or a date the browser refuses) moves NOTHING: the block goes
+            // back first, then the reader is told (v2 F10).
+            safeRevert(revert);
+            console.error('[WorkCenterNext] plan body could not be built.', error);
+            toast(t('CalZoneUnavailable'), 'error');
+            return { outcome: 'refused' };
+        }
+        planWritesInFlight.add(item.id);
+        try {
+            const result = await global.WorkCenterNextApi.dispatchAction(item.id, actionCode, item.source?.providerCode, body);
+            return await settlePlanWrite(item, result, revert);
+        } finally {
+            planWritesInFlight.delete(item.id);
+        }
+    };
+
+    const writePlan = (item, buildBody, revert) => guardedWrite(item, 'plan', buildBody, revert);
+
+    const writeUnplan = (item, revert) =>
+        guardedWrite(item, 'unplan', () => ({ expectedVersion: expectedVersion(item) }), revert);
+
+    /* ── mounting ───────────────────────────────────────────────────────────────────────────────────────── */
+
+    let calendarController = null;
+    // What the mounted calendar was built for; a different answer means a rebuild rather than a reuse.
+    let calendarMountKey = null;
+
+    const unmountCalendarView = () => {
+        if (calendarController) {
+            calendarController.destroy();
+            calendarController = null;
+        }
+        calendarMountKey = null;
+        global.__wcnCalendar = null;
+    };
+
+    /*
+     * ⚠ ONE FULLCALENDAR PER VISIT, NOT PER RENDER (v2 F12). `render()` rebuilds the page with innerHTML, which used
+     * to destroy the calendar and build a new one — after every plan the week view jumped back to 08:00. The host
+     * element is lifted out BEFORE the swap and put back into the new placeholder after it, so the same instance
+     * (view, date, scroll) survives and only its data is replaced (`setData`). It is rebuilt only when what it was
+     * built FOR changes: the tab's mode, or the zone its times were converted in.
+     */
+    const detachCalendarHost = () => {
+        if (!calendarController || !calendarController.host || !calendarController.host.parentNode) { return null; }
+        const host = calendarController.host;
+        const scrolls = Array.from(host.querySelectorAll('.fc-scroller')).map((el) => [el.scrollTop, el.scrollLeft]);
+        host.parentNode.removeChild(host);
+        return { host, scrolls };
+    };
+
+    const calendarKeyFor = () => `${isPlanningCalendar() ? 'plan' : 'read'}|${isPlanningCalendar() ? (feedZone() || '-') : 'UTC'}`;
+
+    const reattachCalendar = (root, kept) => {
+        const placeholder = root.querySelector('[data-wcn-calendar-host]');
+        if (!placeholder || !kept) { return false; }
+        placeholder.parentNode.replaceChild(kept.host, placeholder);
+        const planning = isPlanningCalendar();
+        calendarController.setEditable(planning && planningReady());
+        calendarController.setData(planning ? planningEvents() : readOnlyEvents(), planning && state.calendarFeed ? state.calendarFeed.days : []);
+        kept.host.querySelectorAll('.fc-scroller').forEach((el, i) => {
+            if (kept.scrolls[i]) { el.scrollTop = kept.scrolls[i][0]; el.scrollLeft = kept.scrolls[i][1]; }
+        });
+        calendarController.calendar.updateSize();
+        return true;
+    };
+
+    const mountCalendarView = (root, kept) => {
+        if (kept && calendarController && calendarMountKey === calendarKeyFor() && reattachCalendar(root, kept)) { return; }
+        unmountCalendarView();
+        const host = root.querySelector('[data-wcn-calendar-host]');
+        if (!host || !global.DitenCalendar) { return; }
+        const planning = isPlanningCalendar();
+        const feed = state.calendarFeed;
+        const zone = planning ? (feedZone() || 'UTC') : 'UTC';
+        // The first datesSet of a new calendar is its OWN opening, not the reader moving (v2 F9): it must not put
+        // the view or the day into the URL.
+        let opening = true;
+        let openedRange = null;   // the last range FullCalendar reported
+        calendarController = global.DitenCalendar.create(host, {
+            zone,
+            view: state.calendarView,
+            // The tenant's today (v2 F4) unless the reader navigated somewhere.
+            date: state.calendarDate || calendarToday(),
+            editable: planning && planningReady(),
+            events: planning ? planningEvents() : readOnlyEvents(),
+            days: planning && feed ? feed.days : [],
+            renderExtras: calendarEventExtras,
+            onRangeChange: (range) => {
+                // A datesSet for the SAME range is FullCalendar re-announcing itself (a re-render, a size change —
+                // measured live: the opening range was reported twice and the second one wrote caldate), not the
+                // reader moving. Only a different range counts (v2 F9, CT live fix).
+                const rangeKey = `${range.view}|${range.from}|${range.to}`;
+                if (!opening && rangeKey !== openedRange) {
+                    state.calendarView = range.view;
+                    state.calendarDate = range.date;
+                    syncUrl();
+                }
+                openedRange = rangeKey;
+                opening = false;
+                if (!planning) { return; }
+                const key = `${range.from}|${range.to}`;
+                if (state.calendarFeedKey === key) { return; }
+                state.calendarFeedKey = key;
+                loadCalendarFeed(range.from, range.to).then((wrote) => { if (wrote) { render(); } });
+            },
+            onEventClick: (id, kind) => {
+                const itemId = kind === CAL_KIND.meeting ? id.replace(/^meeting:/, '') : id.replace(/^(due|plan):/, '');
+                if (itemById(itemId)) { openDetailPage(itemId); }
+            },
+            onEventMove: ({ id, kind, allDay, date, startUtc, durationMinutes, revert }) => {
+                const item = itemById(id);
+                if (kind !== CAL_KIND.task || !item || !usablePlanAction(item) || !planningReady()) { safeRevert(revert); return; }
+                /*
+                 * A moved BLOCK keeps its STORED length (v2 F11). FullCalendar measures the dragged event in wall-clock
+                 * minutes, and a block that spans a DST jump is an hour longer or shorter on the wall than it really
+                 * is — moving it must not quietly change what the reader planned. A day plan dragged into the hours
+                 * has no stored length and takes the component's (the estimate, else 60).
+                 */
+                const stored = feedTask(id)?.plannedDurationMinutes;
+                writePlan(item, () => (allDay
+                    ? dayPlanBody(item, date)
+                    : blockPlanBody(item, startUtc, stored || durationMinutes)), revert);
+            },
+            onEventResize: ({ id, startUtc, durationMinutes, revert }) => {
+                const item = itemById(id);
+                if (!item || !usablePlanAction(item) || !planningReady()) { safeRevert(revert); return; }
+                writePlan(item, () => blockPlanBody(item, startUtc, durationMinutes), revert);
+            },
+            // A function: the panel is redrawn on every render while the calendar instance is kept (F12).
+            dropOutTarget: () => root.querySelector('[data-wcn-calpanel-dropzone]'),
+            onDragOut: ({ id, kind }) => {
+                const item = itemById(id);
+                if (kind !== CAL_KIND.task || !item || !usablePlanAction(item) || !planningReady()) { return; }
+                writeUnplan(item);
+            },
+            onExternalDrop: ({ itemId, allDay, date, startUtc }) => {
+                const item = itemById(itemId);
+                if (!item || !usablePlanAction(item) || !planningReady()) { return; }
+                writePlan(item, () => (allDay ? dayPlanBody(item, date) : blockPlanBody(item, startUtc, defaultBlockMinutes(item))));
+            }
+        });
+        calendarMountKey = calendarKeyFor();
+        /*
+         * TEST-ONLY observation seam, the same kind as `__wcnLastActionOutcome`: this module has no exports, and a
+         * FullCalendar interaction (move, resize, drag out) has no other handle a test can reach. Nothing reads it;
+         * it is cleared on unmount.
+         */
+        global.__wcnCalendar = calendarController;
+    };
 
     const renderKanban = () => {
         const items = activeItems();
@@ -6142,38 +6920,68 @@
          * labelled with the current segment. Measured on İşlerim: a single "Aktif 30" column — a board that is
          * a list with extra furniture. A board whose shape changes with the tab is two boards under one name.
          *
-         * ⚠ THE SEGMENT FILTER STILL APPLIES; it just stops deciding the columns. `activeItems()` has already
-         * narrowed to "Aktif", and the board arranges THAT by stage.
+         * ⚠ THE SEGMENT FILTER DOES NOT APPLY HERE (WP-WCN-KANBAN-01 Dilim 2) — see `activeItems`. The board
+         * arranges the tab's WHOLE non-terminal set by stage; narrowing it by segment first would silently
+         * empty a real column (İşlerim's "Aktif" segment excludes Bekletiliyor).
          *
          * ⚠ FLOW ORDER, NOT ALPHABETICAL — Pending → In Progress → Waiting → Done → Cancelled is the order the
          * work moves in, and a board read left-to-right is the only reason to prefer it over a list.
          *
          * ⚠ AN EMPTY STAGE IS DRAWN; AN IMPOSSIBLE ONE IS NOT — and the difference was measured, not assumed.
-         * `inTab` sorts terminal work into History and non-terminal work everywhere else, so Done and Cancelled
-         * CANNOT occur outside History and the other three cannot occur inside it. Drawing all five everywhere
-         * would put two or three permanently empty columns on every board — the same promise-of-a-population
-         * this session removed from the chips and the table's columns. So: a stage this tab can reach is drawn
-         * even at zero (the flow stays readable); a stage it can never reach is left out.
+         * `inTab` sorts terminal work into History and non-terminal work everywhere else, so Done/Cancelled
+         * CANNOT hold an item outside History and the other three cannot hold one inside it. Drawing all five
+         * everywhere would put permanently empty columns on every board — the same promise-of-a-population this
+         * session removed from the chips and the table's columns. So a stage this tab can reach is drawn even at
+         * zero; a stage it can never reach is left out — WITH ONE EXCEPTION, below.
+         *
+         * ⚠ İŞLERİM/BAŞLATTIKLARIM DRAW TWO THIN, CARDLESS DROP ZONES (WP-WCN-KANBAN-01 Dilim 2, owner decision
+         * 2026-09-16/17) — Tamamlandı and İptal never hold a card here (still true: `inTab` still excludes
+         * terminal work), but the column itself is now drawn, narrow and body-less, as the landing target Dilim
+         * 3's drag wires up ("Geçmiş'e taşındı" on drop). Havuz keeps today's shape exactly — no terminal columns
+         * at all — and History is untouched: its five/two columns, its cards, and `KanbanReadonly`'s note are
+         * still exactly what they were.
          */
         const FLOW = ['Pending', 'In Progress', 'Waiting', 'Done', 'Cancelled'];
         const TERMINAL_STATES = ['Done', 'Cancelled'];
-        const reachable = (st) => (state.tab === 'history'
+        const isHistory = state.tab === 'history';
+        const showsDropZones = state.tab === 'islerim' || state.tab === 'baslattiklarim';
+        const reachable = (st) => (isHistory
             ? TERMINAL_STATES.indexOf(st) >= 0
-            : TERMINAL_STATES.indexOf(st) < 0);
+            : TERMINAL_STATES.indexOf(st) < 0 || showsDropZones);
         const cols = FLOW.filter(reachable)
-            .map((st) => ({ label: t(STATUS_KEY[st]), items: items.filter((i) => i.status === st) }));
+            .map((st) => ({
+                status: st,
+                label: t(STATUS_KEY[st]),
+                items: items.filter((i) => i.status === st),
+                dropZone: showsDropZones && TERMINAL_STATES.indexOf(st) >= 0
+            }));
         // Every reachable stage empty means the board has nothing to arrange — the product's empty-state
-        // sentence, not five empty columns with a heading each.
+        // sentence, not a wall of empty columns and drop zones with a heading each.
         if (!cols.some((col) => col.items.length)) { return emptyState(); }
         const colHtml = cols.map((col) => {
+            if (col.dropZone) {
+                // No count badge: it would always read 0 (a real card never lands here before Dilim 3b exists),
+                // and a "0" beside Tamamlandı/İptal reads as a real, countable column rather than a target.
+                // The empty `.wcn-kcol-body` is WP-WCN-KANBAN-01 Dilim 3a: Sortable needs a list to bind and a
+                // region to accept a drop into, even though no card is ever rendered inside it.
+                // Dilim 5 — the idle hint ("Tamamlandı'ya bırak"), centered in the zone that is ALWAYS empty
+                // today (see the comment above: no card is ever rendered here before Dilim 3b's projection
+                // exists). One localized template with a `{0}` slot for the column's own already-translated
+                // label, the same `.replace('{0}', …)` convention `document-references.js` already uses — the
+                // sentence can be built in whatever order a language needs around the column name.
+                return `<div class="wcn-kcol wcn-kcol-dropzone" data-wcn-status="${esc(col.status)}">
+                    <header class="wcn-kcol-head"><span>${esc(col.label)}</span></header>
+                    <div class="wcn-kcol-body"><p class="wcn-kcol-drophint">${esc(t('KanbanDropHint').replace('{0}', col.label))}</p></div>
+                </div>`;
+            }
             const cards = col.items.slice().sort(bySla).map((item) => { state.visibleOrder.push(item.id); return kanbanCard(item); }).join('');
-            return `<div class="wcn-kcol">
+            return `<div class="wcn-kcol" data-wcn-status="${esc(col.status)}">
                 <header class="wcn-kcol-head"><span>${esc(col.label)}</span><span class="wcn-kcol-count">${col.items.length}</span></header>
                 <div class="wcn-kcol-body">${cards}</div>
             </div>`;
         }).join('');
         return `<div class="wcn-kanban">
-            <div class="wcn-viewnote"><i class="bx bx-info-circle"></i><span>${esc(t('KanbanReadonly'))}</span></div>
+            ${isHistory ? `<div class="wcn-viewnote"><i class="bx bx-info-circle"></i><span>${esc(t('KanbanReadonly'))}</span></div>` : ''}
             <div class="wcn-kboard">${colHtml}</div>
         </div>`;
     };
@@ -6339,22 +7147,95 @@
     };
 
 
-    // ── Kanban view (READ-ONLY, spec v3) — columns by status; WorkCenter doesn't
-    // own status so cards don't drag between columns. Personal plan/pin only. ───
+    // ── Kanban view — columns by status. A card is draggable when it has at least one ENABLED action whose
+    // targetStatus leads to a DIFFERENT column (see kanbanDragTargets below); dropping runs that action through
+    // performAction, the same address a button press reaches (WP-WCN-KANBAN-01 Dilim 3b, see bindKanbanDrag).
     const kanbanCard = (item) => {
         const prim = primaryAction(item);
         const quick = prim
             ? `<button type="button" class="wcn-quick btn btn-sm btn-label-${prim.kind}" data-wcn-action="${prim.key}" data-wcn-id="${item.id}">${esc(t(prim.labelKey))}</button>`
             : '';
-        return `<div class="wcn-kcard${item.isUnread ? ' unread' : ''}${item.id === state.selectedId ? ' selected' : ''}" data-wcn-row="${item.id}" tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', item.title))}">
+        // MOD-0357 S5c — Reddet stays visible next to Kabul et here too (see secondaryInlineAction).
+        const sec = secondaryInlineAction(item);
+        const quickSecondary = sec
+            ? `<button type="button" class="wcn-quick btn btn-sm btn-label-${sec.kind}" data-wcn-action="${sec.key}" data-wcn-id="${item.id}">${esc(actionLabel(sec))}</button>`
+            : '';
+        // WP-WCN-KANBAN-01 Dilim 3b — the SAME `state.submittingItemId` every other action-in-flight lock in
+        // this file already reads (submitRealTransition/applyAction set it, performAction's own guard refuses a
+        // second action on the same item while it is set). A processing card offers no handle: neither a second
+        // drag nor a second drop-triggered action can start on it before the first one resolves.
+        const processing = state.submittingItemId === item.id;
+        const draggable = !processing && kanbanDragTargets(item).length > 0;
+        /*
+         * WP-WCN-KANBAN-01 Dilim 4 — the person the demo card's "assigned" row becomes here, measured against
+         * what toPresentation ACTUALLY carries (mock-data.js personName): `item.assignee`/`item.requester` are
+         * already-resolved display-name strings, never person objects, and never avatar image URLs — this
+         * projection has no photo, so the circle is always initials, never an <img>. The assignee (who is
+         * DOING the work) is shown; the requester only stands in when nobody holds it yet (an unclaimed pool
+         * card). Comment/attachment COUNTS from the demo card are not drawn at all: the projection carries
+         * `attachments.items` (a list to render or count elsewhere) and a `checklist`/`subtasks` shape, but no
+         * standalone comment-count field — inventing one here would be drawing data that does not exist.
+         *
+         * CT fix — `item.assignee`/`item.requester` are NOT always a name: mock-data.js's personName() can leave
+         * the translated "name unavailable" LABEL in that string when the person exists but the server sent no
+         * displayName (today's real projection, with no user-directory seam). A truthy-string check drew that
+         * label as if it were someone's name. `assigneeNameKnown`/`requesterNameKnown` are recorded by
+         * toPresentation BEFORE it overwrites the person object with either the name or the label, so this reads
+         * that fact instead of pattern-matching the rendered text.
+         */
+        const personName = (item.assigneeNameKnown && item.assignee)
+            ? item.assignee
+            : (item.requesterNameKnown && item.requester) ? item.requester : '';
+        const personRow = personName
+            ? `<div class="wcn-kcard-person" title="${esc(personName)}">
+                <span class="diten-opt-avatar wcn-kcard-avatar" aria-hidden="true">${esc(personInitials(personName))}</span>
+                <span>${esc(personName)}</span>
+            </div>`
+            : '';
+        return `<div class="wcn-kcard${item.isUnread ? ' unread' : ''}${item.id === state.selectedId ? ' selected' : ''}${processing ? ' wcn-kcard-processing' : ''}" data-wcn-row="${item.id}"${draggable ? ' data-wcn-draggable="1"' : ''} tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', item.title))}">
             <div class="wcn-kcard-title">${esc(item.title)}</div>
             <div class="wcn-kcard-chips">
                 ${chip('module', 'bx-cube', item.sourceModule)}
                 ${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}
                 ${priorityChip(item)}
             </div>
-            ${quick ? `<div class="wcn-kcard-actions">${quick}</div>` : ''}
+            ${processing
+                ? `<div class="wcn-kcard-processing-note" role="status"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span>${esc(t('KanbanProcessing'))}</span></div>`
+                : (quick ? `<div class="wcn-kcard-actions">${quick}${quickSecondary}</div>` : '')}
+            ${personRow}
         </div>`;
+    };
+
+    /*
+     * The WIRE's normalizedStatus ("InProgress") is not the COLUMN's key ("In Progress", the one
+     * `item.status`/`data-wcn-status` actually use — see toPresentation's own `item.status =` line). Every
+     * targetStatus comparison in this file has to go through the SAME display form or "In Progress" would never
+     * match its own column and every card reaching it would read as permanently unreachable.
+     */
+    const kanbanColumnKey = (normalizedStatus) => (normalizedStatus === 'InProgress' ? 'In Progress' : normalizedStatus);
+
+    /*
+     * WP-WCN-KANBAN-01 Dilim 3a — the column keys this item's ENABLED actions can drag it to, own column
+     * excluded (dropping on the column you are already in is not a move). A DISABLED action's targetStatus is
+     * deliberately excluded here — see kanbanColumnHint, which reads it separately to explain a pale column,
+     * never to make it accept a drop.
+     */
+    const kanbanDragTargets = (item) => (item.actions || [])
+        .filter((a) => a.enabled && a.targetStatus)
+        .map((a) => kanbanColumnKey(a.targetStatus))
+        .filter((status) => status !== item.status);
+
+    /*
+     * The hint text for a PALE column during a drag: this item's disabledReason for the one action (if there is
+     * exactly one) that targets it. Two or more actions targeting the same column with different reasons would
+     * be ambiguous to summarize in one line, so nothing is shown rather than picking one arbitrarily; zero
+     * actions targeting it means the column is simply unreachable from here, not blocked, so nothing is shown
+     * either.
+     */
+    const kanbanColumnHint = (item, columnStatus) => {
+        const matches = (item.actions || []).filter((a) => a.targetStatus && kanbanColumnKey(a.targetStatus) === columnStatus);
+        if (matches.length !== 1 || matches[0].enabled) { return null; }
+        return matches[0].disabledReason || null;
     };
 
 
@@ -6401,8 +7282,8 @@
 
     // ── Empty states ──────────────────────────────────────────────────────────
     const emptyState = () => {
-        // Meeting invitations are trigger-only projections. They use a dedicated
-        // empty state but never enter the task-detail resolver or task lifecycle.
+        // MOD-0357 S5c — a real MeetingWorkItemProvider row now, same as any other item type; this dedicated
+        // empty state is just the nicer message for "no pending invites" over the generic one.
         if (state.typeFilter.has('meetingInvite')) {
             return `<div class="card wcn-empty">
                 <i class="bx bx-calendar-event"></i>
@@ -6685,12 +7566,27 @@
             if (state.loadState === 'loading') { root.innerHTML = renderLoadingState(); return; }
             if (state.loadState === 'error') { root.innerHTML = renderErrorState(); return; }
 
-            const item = itemById(root.dataset.wcnItemId || '');
+            const requestedId = root.dataset.wcnItemId || '';
+            const item = itemById(requestedId);
             state.selectedId = item ? item.id : null;
             if (item) { markSeen(item); }
+            // BL-379 — the requested item may be missing from state.items because the CONTRACT rejected it
+            // (fixture-contract.js), not because it does not exist. "Bulunamadı" is the wrong sentence for a
+            // row the server sent but the validator refused; a reader chasing a real, existing task deserves the
+            // more specific one.
+            const wasRejectedByContract = !item && Array.isArray(state.contractRejectedErrors)
+                && state.contractRejectedErrors.some((error) => error.fixtureId === requestedId);
+            const notFoundKey = wasRejectedByContract ? 'DetailItemRejectedByContract' : 'DetailItemNotFound';
+            /*
+             * REQ-WCN-01 (W-4) — a decision on THIS item is being settled and its re-read came back without it.
+             * The page is about to be left for the list; answering a successful decision with "not found" in the
+             * meantime is the defect. The page stays as it is — submitRealTransition decides what happens next and
+             * clears the mark if the reader is staying after all.
+             */
+            if (!item && !wasRejectedByContract && state.settlingDecisionId === requestedId) { return; }
             root.innerHTML = item
                 ? detailHtml(item)
-                : `<section class="card backbone-preview-section"><div class="wcn-detail-empty"><i class="bx bx-error-circle"></i><p>${esc(t('DetailItemNotFound'))}</p><a class="btn btn-label-secondary" href="${esc(listReturnUrl())}">${esc(t('DetailBackToList'))}</a></div></section>`;
+                : `<section class="card backbone-preview-section"><div class="wcn-detail-empty"><i class="bx bx-error-circle"></i><p>${esc(t(notFoundKey))}</p><a class="btn btn-label-secondary" href="${esc(listReturnUrl())}">${esc(t('DetailBackToList'))}</a></div></section>`;
             setupTimerTick();
             // Which arrow may act is derived from POSITION, after the list exists — the same rule, from the same
             // function, that the create form uses. A first row's ↑ and a last row's ↓ are disabled, and a
@@ -6715,7 +7611,7 @@
             case 'focus': main = renderFocus(items); break;
             case 'split': main = renderSplit(items); break;
             case 'kanban': main = renderKanban(); break;
-            case 'calendar': main = renderCalendar(); break;
+            case 'calendar': main = renderCalendarView(); break;
             default: main = renderList(items);
         }
         /*
@@ -6736,11 +7632,15 @@
         const workspace = workspaceToolbar
             + `<div class="wcn-layout-wrap">${mainPanel}${sidePanel}</div>`;
 
-        root.innerHTML = buildHeader() + buildPartialBoardBanner() + buildDelegationBanner() + buildTabs()
-            + buildFilterRow() + workspace;
+        // v2 F12 — the calendar's own DOM (and its FullCalendar instance) is lifted out before the page is rebuilt.
+        const keptCalendar = state.view === 'calendar' ? detachCalendarHost() : null;
+        root.innerHTML = buildHeader() + buildPartialBoardBanner() + buildContractRejectedNote() + buildDelegationBanner()
+            + buildTabs() + buildFilterRow() + workspace;
         setupTimerTick();
         mountPanelSelect2();
         if (state.view === 'table') { mountWorkCenterDataTable(renderedItems); }
+        if (state.view === 'kanban') { bindKanbanDrag(root); }
+        if (state.view === 'calendar') { mountCalendarView(root, keptCalendar); } else { unmountCalendarView(); }
         restoreFocus(snap);
         syncUrl();
     };
@@ -6827,18 +7727,6 @@
             // Triage-inbox admission — take on a directly-assigned item; it moves
             // from the Inbox to İşlerim but stays at its current lifecycle stage.
             case 'accept':
-                if (item.itemType === 'meetingInvite') {
-                    item.dismissed = true;
-                    state.meetings.push({
-                        id: item.sourceId,
-                        title: item.title,
-                        start: item.meetingStart || '09:00',
-                        end: item.meetingEnd || '10:00',
-                        location: item.meetingLocation || '—',
-                        owner: item.requester
-                    });
-                    return 'removed';
-                }
                 item.accepted = true;
                 item.admissionState = 'admitted';
                 item.ownershipState = 'owned';
@@ -6900,10 +7788,10 @@
                 item.waitingOn = null; item.snoozedUntil = null;
                 setProjectionState(item, 'InProgress', 'InProgress', 'Devam ediyor');
                 item.executionState = 'active';
-                item.timerState = 'running';
-                item.timesheet = item.timesheet || { running: false, startedAt: null, loggedMinutes: 0 };
-                item.timesheet.running = true; item.timesheet.startedAt = Date.now();
-                return 'timerStart';
+                // The showcase mirrors the server: Start runs the holder's timer only where time is tracked (WC-1
+                // refuses a running timer without the capability). No browser clock, no invented anchor.
+                item.timerState = hasCap(item, 'timeTracking') ? 'running' : 'notApplicable';
+                return 'updated';
             /*
              * ⚠ `pause` WAS REMOVED (2026-08-24, BL-237). MEASURED: `TasksController`'s transition list is
              * accept · claim · release · plan · start · inquire · submitReview · return · reassign · complete ·
@@ -6917,7 +7805,6 @@
              * wants "pause my own work" as its own thing.
              */
             case 'complete':
-                foldTimer(item);
                 item.waitingOn = null; item.snoozedUntil = null;
                 item.executionState = 'notStarted';
                 item.timerState = 'inactive';
@@ -6962,7 +7849,6 @@
             case 'moved': toast(tf('ToastMovedToWorkCenter', label)); break;
             case 'removed': toast(tf('ToastItemRemoved', label)); break;
             case 'toReview': toast(tf('ToastSentToReview', item.title)); break;
-            case 'timerStart': toast(tf('ToastTimerStarted', item.title)); break;
             case 'resolved': toast(tf('ToastAction', label)); break;
             default: toast(reason ? tf('ToastActionReason', label, reason) : tf('ToastAction', label));
         }
@@ -7035,6 +7921,12 @@
          */
         inquire: ({ expectedVersion, reason, waitingOnUserId }) =>
             ({ expectedVersion, reason, waitingOnUserId: waitingOnUserId || undefined }),
+        /*
+         * BL-439 — the addressee's ANSWER, sent as `answer`, never as `reason`: the server's union payload has its
+         * own field for it (WorkItemActionPayloadDto.Answer), because an answer is neither an explanation of an
+         * act nor a note on one. The dialog collects it in the same textarea every reason uses.
+         */
+        answer: ({ expectedVersion, reason }) => ({ expectedVersion, answer: reason }),
         return: ({ expectedVersion, reason }) => ({ expectedVersion, reason }),
         // Plus the person being handed the work — see the picker in the reason dialog.
         reassign: ({ expectedVersion, reason, assigneeUserId }) => ({ expectedVersion, assigneeUserId, reason }),
@@ -7051,9 +7943,12 @@
          *
          * This map's own comment names the lesson it then failed: a value that lives in two places and is
          * declared in neither drifts. `null` was not even in two places; it was in one, and declared as a fact.
+         *
+         * Faz 2a-rest — `closureFieldValues` rides beside them, `undefined` (never sent) for the nine actions
+         * that never collect one. `complete` is the only caller that ever supplies it.
          */
-        __default: ({ expectedVersion, reason, outcomeCode }) =>
-            ({ expectedVersion, reasonCode: outcomeCode || null, note: reason || null })
+        __default: ({ expectedVersion, reason, outcomeCode, closureFieldValues }) =>
+            ({ expectedVersion, reasonCode: outcomeCode || null, note: reason || null, closureFieldValues })
     };
 
     /*
@@ -7074,6 +7969,96 @@
         if (!slot) { return []; }
         const offered = item && item.taskType && item.taskType[slot];
         return Array.isArray(offered) ? offered : [];
+    };
+
+    /*
+     * ── CLOSURE-STAGE FIELDS (Faz 2a-rest, MOD-0024 Task Closure & Reporting) ───────────────────────────────
+     *
+     * `GET /field-definitions` answers ONE catalogue to both the create form and this window — there is no
+     * second endpoint — so the applicability rule below is the SAME two clauses Tasks/form-page.js's own
+     * `applicableDefinitions` already enforces (live, active, claimed by no OTHER module), with the stage test
+     * flipped. It is written again HERE rather than shared because this page never loads form-page.js — that
+     * script also boots a create-form page nobody asked for (a `DOMContentLoaded` listener, a task-type fetch,
+     * reads of `#taskForm`) — but the TWO CLAUSES are asserted identical to form-page.js's own, by source, in
+     * `tasks-closure-fields-wcn.test.js`: a change to one without the other fails there, not in review.
+     *
+     * ⚠ MUST MIRROR `TASK_MODULE_CODE` in Tasks/form-page.js. Not imported (same reason), asserted equal by
+     * the same test.
+     */
+    const TASK_MODULE_CODE = 'tasks';
+    const closureFieldDefinitionsFor = (rows) => (rows || []).filter((definition) =>
+        definition
+        && definition.isActive !== false
+        && definition.stage === 'Closure'
+        && (!definition.appliesToModuleCode || definition.appliesToModuleCode === TASK_MODULE_CODE));
+
+    /**
+     * The full catalogue, asked fresh each time the complete dialog opens — a small, tenant-wide list, and the
+     * same freshness the create form gets on every one of ITS page loads. Never cached: an administrator who
+     * just added a required field should not have the OLD catalogue govern the very next completion.
+     */
+    const fetchClosureFieldDefinitions = async () => {
+        // Defensive, not load-bearing in production: every real host loads Tasks/api.js (app.js already leans
+        // on it elsewhere — attachmentContentUrl, assignablePeople). A minimal double that omits this method
+        // must degrade to "this type asks nothing", not throw.
+        if (typeof global.TasksApi?.fieldDefinitions !== 'function') { return []; }
+        const result = await global.TasksApi.fieldDefinitions();
+        return result.ok && Array.isArray(result.data) ? closureFieldDefinitionsFor(result.data) : [];
+    };
+
+    /*
+     * Resolve every option-driven closure field's list BEFORE rendering — the exact rule
+     * Tasks/form-page.js's `loadCustomFieldOptions` already follows for the create form, repeated here for the
+     * same "this page does not load that script" reason `closureFieldDefinitionsFor` gives.
+     */
+    const loadClosureFieldOptions = async (definitions) => {
+        const byCode = {};
+
+        const personLabels = { nameUnavailable: t('PersonNameUnavailable') };
+        let personOptions = null; // fetched at most once, and only if a Person field is actually present
+
+        await Promise.all(definitions.map(async (definition) => {
+            const kind = global.TaskForm.customFieldControlKind(definition);
+            if (kind === 'person') {
+                if (!personOptions) {
+                    // `data` IS the array — TasksApi.assignablePeople unwraps `{ people, excluded }` internally
+                    // (BL-113); a caller that re-unwraps it is the exact defect that once took the whole page
+                    // down on `people.map is not a function`.
+                    const people = await global.TasksApi.assignablePeople();
+                    personOptions = (people.ok ? people.data : []).map((row) => ({
+                        value: row.userId || row.id,
+                        label: global.TaskForm.formatPersonLabel(row, personLabels.nameUnavailable)
+                    }));
+                }
+                byCode[definition.code] = personOptions;
+                return;
+            }
+            if (kind !== 'select' && kind !== 'record') { return; }
+
+            const result = kind === 'record'
+                ? await global.TasksApi.fieldRecords(definition.code)
+                : await global.TasksApi.fieldOptions(definition.code);
+
+            if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+                byCode[definition.code] = result.data;
+                return;
+            }
+            global.console?.warn?.(
+                `[WorkCenterNext] options for closure field "${definition.code}" could not be resolved `
+                + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
+        }));
+
+        return byCode;
+    };
+
+    /** The server search a record-backed closure field runs — the same call form-page.js's own picker makes. */
+    const searchClosureFieldRecords = async (code, term) => {
+        const result = await global.TasksApi.fieldRecords(code, { term });
+        if (result.ok) { return result.data || []; }
+        global.console?.warn?.(
+            `[WorkCenterNext] searching records for closure field "${code}" failed `
+            + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
+        return [];
     };
 
     /** One outcome's words: a system outcome through the resource table, a tenant outcome as typed. */
@@ -7101,7 +8086,76 @@
     const buildTransitionBody = (actionCode, parts) =>
         (TRANSITION_BODIES[actionCode] || TRANSITION_BODIES.__default)(parts);
 
-    const submitRealTransition = async (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode) => {
+    /*
+     * ══ MOD-0280-FU01 T2b — THE CARD'S TIMER ═══════════════════════════════════════════════════════════════════
+     *
+     * startTimer / stopTimer travel the same dispatch address as every action; the TimeEntry handlers decide. What
+     * is added here is only what a timer needs AFTER the write: the top-bar chip is told to ask again (it owns the
+     * running display), and a start that SWITCHED the timer away from another task offers "Undo" until the server's
+     * own undo window closes (TimerSegmentDto.undoUntilUtc) — the undo itself is TimeEntry's endpoint.
+     */
+    const TIMER_REASON_KEYS = {
+        TIMER_DISABLED_FOR_LEGAL_ENTITY: 'TimerErrDisabled',
+        TIMER_TASK_NOT_HELD: 'TimerErrNotHeld',
+        TIMER_TASK_NOT_IN_PROGRESS: 'TimerErrNotInProgress',
+        TIMER_NOT_RUNNING: 'TimerErrNotRunning',
+        TIMER_CONCURRENCY_CONFLICT: 'TimerErrConflict',
+        TIMER_UNDO_EXPIRED: 'TimerErrUndoExpired'
+    };
+
+    let timerUndoTimeout = null;
+    const hideTimerUndo = () => {
+        if (timerUndoTimeout) { global.clearTimeout(timerUndoTimeout); timerUndoTimeout = null; }
+        const bar = global.document.getElementById('wcnTimerUndo');
+        if (bar) { bar.remove(); }
+    };
+
+    const undoTimerSwitch = async (switchToken) => {
+        hideTimerUndo();
+        let result = { ok: false, reasonCode: null };
+        try {
+            const response = await global.fetch('/TimeEntry/api/timer/undo-switch', {
+                method: 'POST', credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ switchToken })
+            });
+            const body = await response.json().catch(() => null);
+            result = { ok: response.ok, reasonCode: body && (body.reason_code || body.reasonCode) };
+        } catch (error) { /* network: said below */ }
+        global.DitenTimerChip?.refresh?.();
+        await loadWorkItems();
+        render();
+        toast(result.ok ? t('TimerUndone') : t(TIMER_REASON_KEYS[result.reasonCode] || 'TimerErrGeneric'), result.ok ? 'success' : 'error');
+    };
+
+    const showTimerUndo = (running) => {
+        hideTimerUndo();
+        const until = Date.parse(running.undoUntilUtc);
+        const left = until - Date.now();
+        if (!running.switchToken || !(left > 0)) { return; }
+        const bar = global.document.createElement('div');
+        bar.id = 'wcnTimerUndo';
+        bar.className = 'wcn-timer-undo';
+        bar.setAttribute('role', 'status');
+        bar.innerHTML = `<span>${esc(t('TimerSwitchedText'))}</span>
+            <button type="button" class="btn btn-sm btn-label-primary" data-wcn-timer-undo>${esc(t('TimerUndo'))}</button>`;
+        bar.querySelector('[data-wcn-timer-undo]').addEventListener('click', () => undoTimerSwitch(running.switchToken));
+        global.document.body.appendChild(bar);
+        timerUndoTimeout = global.setTimeout(hideTimerUndo, left);
+    };
+
+    const afterTimerAction = async (code) => {
+        // The chip re-reads (forced); the shared read then hands this page the same answer — one request.
+        const refreshed = global.DitenTimerChip?.refresh?.();
+        if (code !== 'startTimer' || !global.DitenTimerShared) { return; }
+        await refreshed;
+        const read = await global.DitenTimerShared.read(!refreshed);
+        const running = read && read.ok && read.data ? read.data.running : null;
+        if (running && running.switchToken) { showTimerUndo(running); }
+    };
+
+    const submitRealTransition = async (
+        item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         const label = actionLabel(action);
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
@@ -7118,22 +8172,52 @@
          * The body's shape still comes from the vocabulary above, never from a guess at this call site — the
          * server now reads those same field names off one payload and builds the module's DTO itself.
          */
-        const result = await global.WorkCenterNextApi.dispatchAction(
-            item.id,
+        const body = buildTransitionBody(
             action.code,
-            item.source?.providerCode,
-            buildTransitionBody(
-                action.code, { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode }));
+            { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues });
+        // BL-491 — the person an action flagged by the server hands the work to, in the field the dispatcher reads.
+        // Added only for such an action, so every other request is byte for byte what it was.
+        if (action.targetPerson && assigneeUserId) { body.targetPrincipalId = assigneeUserId; }
+        const result = await global.WorkCenterNextApi.dispatchAction(
+            item.id, action.code, item.source?.providerCode, body);
 
         state.submittingItemId = null;
         state.submittingActionCode = null;
 
         if (result.ok) {
+            // W-4 — while the re-read is in flight, a detail page whose item disappears must not draw "not found".
+            state.settlingDecisionId = item.id;
             await loadWorkItems();
+            /*
+             * REQ-WCN-01 (W-4) — THE DECISION TOOK THE ITEM OFF THE BOARD. On the detail page a decided approval is
+             * no longer projected, and re-rendering would answer a successful decision with "not found". The reader
+             * goes back to the list they came from, and the success is said THERE.
+             *
+             * Only when the re-read genuinely answered without the item: a failed read, or an item the contract
+             * refused, stays on this page with its own message. An item that is still projected (a MOD-0024 task)
+             * stays exactly as before.
+             */
+            if (leftTheBoardOnDetail(item)) {
+                rememberFlashToast(tf('ToastActionApplied', label, item.title));
+                global.location.assign(listUrlAfterDecision());
+                return { outcome: 'done' };
+            }
+            state.settlingDecisionId = null;
             render();
             // The task's TITLE, never its id — a GUID means nothing to the person reading the toast.
             toast(tf('ToastActionApplied', label, item.title));
-            return;
+            if (TIMER_ACTION_KEYS.includes(action.code)) { await afterTimerAction(action.code); }
+            return { outcome: 'done' };
+        }
+
+        // A timer refusal is the TimeEntry handler's (switched off, not held, not in progress…) — said in its own words;
+        // the chip re-reads too, since a refusal usually means the timer changed elsewhere.
+        if (TIMER_ACTION_KEYS.includes(action.code)) {
+            global.DitenTimerChip?.refresh?.();
+            await loadWorkItems();
+            render();
+            toast(t(TIMER_REASON_KEYS[result.reasonCode] || 'TimerErrGeneric'), 'error');
+            return { outcome: 'refused', reasonCode: result.reasonCode };
         }
 
         /*
@@ -7152,7 +8236,7 @@
             await loadWorkItems();
             render();
             toast(t('ErrorConcurrencyRefreshed'), 'error');
-            return;
+            return { outcome: 'refused', reasonCode: result.reasonCode || 'TASK_CONCURRENCY_CONFLICT' };
         }
 
         if (global.TasksApi.isTransitionBlocked(result)) {
@@ -7161,11 +8245,12 @@
             await loadWorkItems();
             render();
             toast(global.TasksApi.failureMessage(result, overrides), 'error');
-            return;
+            return { outcome: 'refused', reasonCode: result.reasonCode };
         }
 
         render();
         toast(global.TasksApi.failureMessage(result, overrides), 'error');
+        return { outcome: 'refused', reasonCode: result.reasonCode };
     };
 
     /*
@@ -7207,6 +8292,19 @@
             return;
         }
 
+        /*
+         * BL-400 (WP-PSS-MOD0024-FOLLOWUPS-02) — existing @mentions arrive PRE-FILLED, and a newly added one is
+         * sent alongside the text. Backend rule (already built and tested): the update carries the FULL
+         * replacement set, and the server notifies only whoever is NEW in it.
+         *
+         * The tray and its "@" trigger are built here, inside the shared confirm's own popup (`input.onOpen`),
+         * reusing `pickMentionAsync` — the SAME picker the compose box uses — rather than a second copy (the
+         * WP's own instruction). Local state, not `commentMentionState`: that map is the COMPOSE box's draft,
+         * and a task can have a comment being edited while an unrelated new comment is half-typed above it.
+         */
+        let mentions = (entry.mentioned || []).map((m) => ({ id: m.id, displayName: m.displayName }));
+        const originalMentionIds = mentions.map((m) => m.id).slice().sort();
+
         // The shared confirm's TEXTAREA, seeded with what the comment says now — an edit box that starts empty
         // asks the author to retype a sentence they only wanted to fix.
         sharedConfirm({
@@ -7216,13 +8314,60 @@
                 label: t('CommentEditLabel'),
                 placeholder: entry.text || '',
                 value: entry.text || '',
-                validate: (value) => (String(value || '').trim() ? null : t('ErrorCommentTextInvalid'))
+                validate: (value) => (String(value || '').trim() ? null : t('ErrorCommentTextInvalid')),
+                onOpen: (box, popup) => {
+                    if (!box || !popup) { return; }
+
+                    const tray = document.createElement('div');
+                    tray.className = 'wcn-mention-chips';
+                    box.insertAdjacentElement('afterend', tray);
+
+                    const addBtn = document.createElement('button');
+                    addBtn.type = 'button';
+                    addBtn.className = 'btn btn-outline-secondary wcn-composer-mention mt-2';
+                    addBtn.setAttribute('aria-label', t('MentionAdd'));
+                    addBtn.title = t('MentionAdd');
+                    addBtn.innerHTML = '<i class="bx bx-at" aria-hidden="true"></i>';
+                    tray.insertAdjacentElement('afterend', addBtn);
+
+                    const renderTray = () => {
+                        tray.innerHTML = mentions.map((m) => `<span class="wcn-mention-chip">`
+                            + `<i class="bx bx-at" aria-hidden="true"></i>${esc(m.displayName)}`
+                            + `<button type="button" class="wcn-mention-chip-remove" data-wcn-edit-mention-remove="${esc(m.id)}" `
+                            + `aria-label="${esc(t('MentionRemove'))}" title="${esc(t('MentionRemove'))}">`
+                            + `<i class="bx bx-x" aria-hidden="true"></i></button></span>`).join('');
+                    };
+                    renderTray();
+
+                    tray.addEventListener('click', (event) => {
+                        const removeEl = event.target.closest('[data-wcn-edit-mention-remove]');
+                        if (!removeEl) { return; }
+                        const id = removeEl.getAttribute('data-wcn-edit-mention-remove');
+                        mentions = mentions.filter((m) => String(m.id) !== String(id));
+                        renderTray();
+                    });
+
+                    addBtn.addEventListener('click', async () => {
+                        if (mentions.length >= COMMENT_MAX_MENTIONS) {
+                            toast(tf('MentionLimitExceededClient', COMMENT_MAX_MENTIONS), 'error');
+                            return;
+                        }
+                        const chosen = await pickMentionAsync(taskId, mentions.map((m) => m.id));
+                        if (!chosen) { return; }
+                        mentions = [...mentions, { id: chosen.id, displayName: chosen.displayName }];
+                        renderTray();
+                    });
+                }
             },
             onConfirm: async (value) => {
                 const text = String(value || '').trim();
-                if (!text || text === entry.text) { return; }
+                const mentionedUserIds = mentions.map((m) => m.id);
+                const mentionsChanged = JSON.stringify(mentionedUserIds.slice().sort())
+                    !== JSON.stringify(originalMentionIds);
+                if (!text || (text === entry.text && !mentionsChanged)) { return; }
                 await afterPhase2Write(
-                    await global.TasksApi.updateComment(taskId, commentId, { text }), 'ToastCommentEdited');
+                    await global.TasksApi.updateComment(taskId, commentId, { text, mentionedUserIds }),
+                    'ToastCommentEdited');
             }
         });
     };
@@ -7242,7 +8387,7 @@
          */
         sharedConfirm({
             title: t('CommentWithdraw'),
-            subtext: `<div class="wcn-confirm-body">${esc(t('CommentWithdrawConfirm'))}</div>`,
+            subtextHtml: `<div class="wcn-confirm-body">${esc(t('CommentWithdrawConfirm'))}</div>`,
             type: 'danger',
             confirmText: t('CommentWithdraw'),
             onConfirm: async () => {
@@ -7484,6 +8629,179 @@
         });
     };
 
+    /*
+     * WP-WCN-KANBAN-01 Dilim 3a/3b — sürükleme başlar, sütunlar izin verir ya da soluklaşır, ve bırakınca
+     * gerçek işlem çalışır (Dilim 3b): the drop resolves to the same `performAction` a button press would call
+     * — one candidate runs it directly, two or more open a picker — and its own outcome (done/refused/
+     * cancelled) is what decides what the reader sees next; nothing here re-implements that.
+     *
+     * İşlerim/Başlattıklarım only — Havuz and Geçmiş keep today's read-only board (CT decision 2026-09-17) — and
+     * never in the Team scope: a colleague's work is not this reader's to drag.
+     */
+    const bindKanbanDrag = (root) => {
+        if (!global.Sortable || !root || state.view !== 'kanban') { return; }
+        if (state.tab !== 'islerim' && state.tab !== 'baslattiklarim') { return; }
+        if (state.scope === 'team') { return; }
+        root.querySelectorAll('.wcn-kcol-body').forEach((list) => {
+            // The board is rebuilt on every render, so this is a fresh element each time; the flag stops a
+            // second Sortable binding to the SAME node if render is ever called twice without replacing it.
+            if (list.dataset.wcnSortable === '1') { return; }
+            list.dataset.wcnSortable = '1';
+            global.Sortable.create(list, {
+                group: 'wcn-kanban',
+                animation: 150,
+                forceFallback: true,
+                fallbackTolerance: 3,
+                // A card with nothing to drag it TO (no enabled action reaches another column) gets no handle
+                // and no drag cursor — `filter` excludes it from Sortable's own draggable set entirely.
+                draggable: '.wcn-kcard[data-wcn-draggable="1"]',
+                filter: '.wcn-kcard:not([data-wcn-draggable="1"])',
+                ghostClass: 'wcn-kcard-ghost',
+                // CT fix, WP-WCN-KANBAN-01 Dilim 4 correction round — `forceFallback` means Sortable repositions
+                // this clone on every mousemove; `.wcn-kcard`'s own `transition: all .12s ease` (the hover/
+                // select animation) was applying to it too, so the clone visibly trailed .12s behind the
+                // pointer. Naming our own class here (rather than leaning on Sortable's default
+                // `fallbackClass: 'sortable-fallback'`) keeps the CSS hook self-documenting and independent of
+                // the library's own defaults. See backbone-custom.css's `.wcn-kcard-dragging` rule.
+                fallbackClass: 'wcn-kcard-dragging',
+                // Dilim 5 — a bare list under one minimal card's worth of content used the library's own 5px
+                // default (measured: `emptyInsertThreshold: 5` in sortable.js), which made the empty drop
+                // zones (and any short column) hard to land a card in without hunting for that exact 5px band.
+                // 48 is `.wcn-kcol-body`'s own new `min-block-size` (4.5rem = 72px at the 16px root, ~48px at
+                // the smaller end of the page's actual root-font range) — the threshold now covers roughly the
+                // zone's own guaranteed empty height, not an arbitrary bigger number.
+                emptyInsertThreshold: 48,
+                onStart: (event) => {
+                    const item = itemById(event.item.getAttribute('data-wcn-row'));
+                    if (!item) { return; }
+                    const allowed = new Set(kanbanDragTargets(item));
+                    root.querySelectorAll('.wcn-kcol[data-wcn-status]').forEach((col) => {
+                        const status = col.getAttribute('data-wcn-status');
+                        // The card's OWN column is never pale, whatever the allowed set says — dropping back
+                        // where it already is is not a move to refuse. (Sabotage-guarded: remove this line and
+                        // a card's own column greys itself out from under it.)
+                        if (status === item.status) { return; }
+                        if (allowed.has(status)) {
+                            // Dilim 5 — the column WAS only ever marked by elimination (not pale = allowed);
+                            // a reader had to check every other column to know one was a valid target. Now the
+                            // allowed column says so itself. (Sabotage-guarded: remove this line and no column
+                            // ever reads as a target, only as "not yet ruled out".)
+                            col.classList.add('wcn-kcol-target');
+                            return;
+                        }
+                        col.classList.add('wcn-kcol-pale');
+                        // A pale column whose ONE reason is a disabled action's own refusal explains itself —
+                        // the same localized sentence the button would have shown, read from the wire.
+                        const hint = kanbanColumnHint(item, status);
+                        if (hint) { col.querySelector('.wcn-kcol-head')?.setAttribute('title', hint); }
+                    });
+                },
+                onMove: (event) => {
+                    const col = event.to && event.to.closest ? event.to.closest('.wcn-kcol[data-wcn-status]') : null;
+                    return !!col && !col.classList.contains('wcn-kcol-pale');
+                },
+                onEnd: (event) => {
+                    // The trailing click a real drag's mouseup fires next must not reopen the card's detail
+                    // page — cleared on the next tick, well after that click would already have run.
+                    kanbanDragSuppressClick = true;
+                    global.setTimeout(() => { kanbanDragSuppressClick = false; }, 0);
+
+                    const item = itemById(event.item.getAttribute('data-wcn-row'));
+                    const targetCol = event.to && event.to.closest ? event.to.closest('.wcn-kcol[data-wcn-status]') : null;
+                    const targetStatus = targetCol ? targetCol.getAttribute('data-wcn-status') : null;
+
+                    /*
+                     * WP-WCN-KANBAN-01 Dilim 3b — NO OPTIMISTIC MOVE. The card is redrawn back into its own
+                     * column from the untouched projection BEFORE anything below runs — clearing every
+                     * wcn-kcol-pale class and title the drag added, exactly as Dilim 3a already did. Whatever
+                     * happens next (a run, a picker, nothing) starts from the server's own truth, never from
+                     * wherever Sortable's own DOM manipulation left the card mid-drag.
+                     */
+                    render();
+
+                    if (!item || !targetStatus || targetStatus === item.status) { return; }
+
+                    const candidates = (item.actions || [])
+                        .filter((a) => a.enabled && a.targetStatus && kanbanColumnKey(a.targetStatus) === targetStatus);
+                    // onMove already refuses a drop on a column with no allowed action — this is the defensive
+                    // twin for whatever reaches onEnd anyway (a fallback drag path with no onMove gate, a stale
+                    // pale class). Silent: the card is already back where it started.
+                    if (!candidates.length) { return; }
+
+                    if (candidates.length === 1) {
+                        runKanbanDrop(item, candidates[0]);
+                        return;
+                    }
+                    openKanbanActionPicker(item, candidates);
+                }
+            });
+        });
+    };
+
+    /*
+     * WP-WCN-KANBAN-01 Dilim 3b — the SAME address a button press reaches: `performAction(item, action.key)`.
+     * Its own outcome decides everything from here:
+     *   done     — submitRealTransition already re-read the projection and re-rendered; the only thing left is
+     *              the Kanban-specific sentence when the card left the active board for Geçmiş.
+     *   refused  — submitRealTransition already re-rendered (the card is back in its own column) and already
+     *              toasted the server's own localized reason (TasksApi.failureMessage) — nothing to add.
+     *   cancelled — a dialog the action opened (e.g. a reason box) was dismissed; silent, nothing to add.
+     * A REJECTED promise is not a modelled outcome — TasksApi's own fetch wrapper fails closed into `{ ok:
+     * false, reasonCode: 'UNAVAILABLE' }` rather than throwing, so a rejection here is an unexpected bug or a
+     * genuine network-level throw. Either way `state.submittingItemId` must not survive it — a card `render()`
+     * never got to clear would stay "processing" forever, undraggable, for a request that already died.
+     */
+    // The wire's own spelling (TaskLifecycleService: "Done"/"Cancelled"), not the column key — targetStatus on
+    // the action is never "In Progress"-with-a-space to begin with (see kanbanColumnKey).
+    const KANBAN_HISTORY_STATUSES = ['Done', 'Cancelled'];
+
+    const runKanbanDrop = (item, action) => {
+        performAction(item, action.key).then((result) => {
+            if (result && result.outcome === 'done' && KANBAN_HISTORY_STATUSES.includes(action.targetStatus)) {
+                toast(t('KanbanMovedToHistory'));
+            }
+        }).catch((error) => {
+            console.error('WorkCenterNext Kanban drop failed.', error);
+            state.submittingItemId = null;
+            state.submittingActionCode = null;
+            toast(t('ErrorTitle'), 'error');
+            render();
+        });
+    };
+
+    /*
+     * The picker for a column TWO OR MORE enabled actions lead to. Reuses `sharedConfirm`'s existing `select`
+     * input — the SAME shape `openMeetingScheduler`'s meeting-type step already draws — rather than inventing a
+     * new dialog kind for one more list of choices. Esc and an outside click are `sharedConfirm`'s own existing
+     * dismissal (no `onCancel` is passed, so a dismissal is the silent no-op Dilim 3b asks for; the card is
+     * already back in its own column from the `render()` `onEnd` ran before opening this).
+     */
+    const openKanbanActionPicker = (item, candidates) => {
+        if (!global.Swal) { return; }
+        const options = {};
+        candidates.forEach((a) => { options[a.code] = actionLabel(a); });
+        sharedConfirm({
+            title: t('KanbanActionPickerTitle'),
+            icon: 'question',
+            // ConfirmProceed ("Evet, uygula") — the product's own generic confirm button, already in all seven
+            // languages. `PlanConfirm` ("Tarihi Ayarla") was the wrong dialog's text, left over from copying
+            // openDatePicker's shape rather than its meaning.
+            confirmText: t('ConfirmProceed'),
+            input: {
+                type: 'select',
+                label: t('KanbanActionPickerTitle'),
+                options,
+                // Its own sentence, not the dialog's title repeated: the title asks the question, this says
+                // what an EMPTY answer is missing.
+                validate: (value) => (value ? null : t('KanbanActionPickerRequired'))
+            },
+            onConfirm: (code) => {
+                const chosen = candidates.find((a) => a.code === code);
+                if (chosen) { runKanbanDrop(item, chosen); }
+            }
+        });
+    };
+
     const completeSubtask = async (subtaskId) => {
         // The subtask is its own row in state when it is also assigned to me, and then it carries its own
         // concurrency token.
@@ -7567,6 +8885,7 @@
         if (value.length > COMMENT_MAX_LENGTH) { toast(tf('CommentTooLong', COMMENT_MAX_LENGTH), 'error'); return; }
 
         const item = itemById(taskId);
+        const mentionedUserIds = (commentMentionState.get(taskId) || []).map((m) => m.id);
         if (!isDispatchableItem(item)) {
             /*
              * Showcase items have no engine behind them, so a comment on one is a demonstration and stays local.
@@ -7577,19 +8896,104 @@
                 item.activity.unshift({
                     actor: data.currentUser.name, kind: 'comment', text: value, atMs: data.referenceDate(item.provenance)
                 });
+                commentMentionState.delete(taskId);
                 render();
                 toast(t('ToastCommentPosted'));
             }
             return;
         }
 
-        const result = await global.TasksApi.addComment(taskId, { text: value });
+        const result = await global.TasksApi.addComment(
+            taskId, mentionedUserIds.length ? { text: value, mentionedUserIds } : { text: value });
         // A DIFFERENT key from the fixture branch above: this comment really was posted to the engine, and
         // 'ToastCommentPosted' says "(mock)" in all seven languages — correct for the local-only path, a lie
         // here.
         if (await afterPhase2Write(result, 'ToastCommentPostedReal')) {
             consumeEntryBox('data-wcn-comment-input');
+            // Cleared only on SUCCESS: a refused mention (K2/K4) must leave the draft chips exactly where the
+            // author left them, or the correction they need to make (drop one name, add a watcher first) is
+            // undone by the very refusal that asked for it.
+            commentMentionState.delete(taskId);
         }
+    };
+
+    /*
+     * WP-PSS-MOD0024-TASK-MENTIONS-01/FOLLOWUPS-02 — the @mention picker, ONE implementation for both the new
+     * comment composer and the edit dialog (BL-400 — do not write a second picker copy).
+     *
+     * Goes through `sharedConfirm`, NOT a raw `Swal.fire` — this screen already guards the exact count of raw
+     * dialogs it allows (`wcn-dialog-*` test files), because each one it does not is a chance to re-diverge in
+     * appearance from the rest of the product. One person per confirm; the trigger (button or "@") can be used
+     * again to add another, up to the cap — a repeatable single-select stays inside the shared component's
+     * existing `input: { type: 'select' }` shape rather than asking it to grow a multi-select nobody else needs.
+     *
+     * Returns the CHOSEN candidate (`{id, displayName}`) or `null` on cancel/nothing-to-offer — the caller (the
+     * composer or the edit dialog) decides what to do with it; this function knows nothing about either.
+     */
+    const pickMentionAsync = async (taskId, alreadyMentionedIds) => {
+        const res = await global.TasksApi.mentionCandidates(taskId, '');
+        const candidates = res.ok ? (res.data || []) : [];
+        if (!candidates.length) { toast(t('MentionNoCandidates'), 'info'); return null; }
+
+        const already = new Set((alreadyMentionedIds || []).map(String));
+        const offered = candidates.filter((c) => !already.has(String(c.id)));
+        if (!offered.length) { toast(t('MentionAllAlreadyAdded'), 'info'); return null; }
+
+        const options = {};
+        offered.forEach((c) => { options[c.id] = c.displayName; });
+
+        return new Promise((resolve) => {
+            sharedConfirm({
+                title: t('MentionPickerTitle'),
+                confirmText: t('MentionAddConfirm'),
+                input: {
+                    type: 'select',
+                    options,
+                    label: t('MentionPickerTitle'),
+                    placeholder: t('MentionNoneChosen'),
+                    validate: (value) => (value ? null : t('MentionNoneChosen')),
+                    onOpen: (box, popup) => { bindDialogSelect2(box, popup); }
+                },
+                onConfirm: (value) => {
+                    const chosen = offered.find((c) => String(c.id) === String(value));
+                    resolve(chosen || null);
+                },
+                onCancel: () => resolve(null)
+            });
+        });
+    };
+
+    /** The compose-box trigger: adds to the DRAFT tray beside the "+ Yeni" composer. */
+    const openMentionPicker = async (taskId) => {
+        const item = itemById(taskId);
+        if (!item || !isDispatchableItem(item)) { return; }
+
+        // The "@" that triggered this (if any) already did its job by opening the picker; it does not belong
+        // in the text too — the chip tray is where a mention lives on screen from here on.
+        const inp = document.querySelector('#wcnApp [data-wcn-comment-input]');
+        if (inp && inp.value.endsWith('@')) { inp.value = inp.value.slice(0, -1); }
+
+        const existing = commentMentionState.get(taskId) || [];
+        if (existing.length >= COMMENT_MAX_MENTIONS) {
+            toast(tf('MentionLimitExceededClient', COMMENT_MAX_MENTIONS), 'error');
+            return;
+        }
+
+        const chosen = await pickMentionAsync(taskId, existing.map((m) => m.id));
+        if (!chosen) { return; }
+
+        commentMentionState.set(taskId, [...existing, { id: chosen.id, displayName: chosen.displayName }]);
+        render();
+        const refocus = document.querySelector('#wcnApp [data-wcn-comment-input]');
+        if (refocus) { refocus.focus(); }
+    };
+
+    /// Drops one draft mention chip. Never touches the server — the mention is not yet part of any posted
+    /// comment, so there is nothing for the engine to be told.
+    const removeMention = (taskId, userId) => {
+        const existing = commentMentionState.get(taskId) || [];
+        commentMentionState.set(taskId, existing.filter((m) => String(m.id) !== String(userId)));
+        render();
     };
 
     const addSubtask = async (parentId, title) => {
@@ -7667,10 +9071,10 @@
         }
     };
 
-    const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode) => {
+    const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         if (isDispatchableItem(item)) {
-            submitRealTransition(item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode);
-            return;
+            return submitRealTransition(
+                item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues);
         }
 
         /*
@@ -7688,23 +9092,27 @@
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
         render();
-        global.setTimeout(() => {
-            const outcome = applyTransition(item, action.key);
-            markSeen(item);
-            item.activity = item.activity || [];
-            // atMs, not a pre-computed `ago` — ACTIVITY_RELATIVE_TIME_FORBIDDEN, same reasoning as applyPlan.
-            item.activity.push({
-                actor: data.currentUser.name,
-                kind: 'event',
-                eventKey: 'AuditActionStamp',
-                actionLabel: label,
-                atMs: data.referenceDate(item.provenance)
-            });
-            state.submittingItemId = null;
-            state.submittingActionCode = null;
-            render();
-            toastForOutcome(outcome, label, reason, item);
-        }, 350);
+        return new Promise((resolve) => {
+            global.setTimeout(() => {
+                const outcome = applyTransition(item, action.key);
+                markSeen(item);
+                item.activity = item.activity || [];
+                // atMs, not a pre-computed `ago` — ACTIVITY_RELATIVE_TIME_FORBIDDEN, same reasoning as applyPlan.
+                item.activity.push({
+                    actor: data.currentUser.name,
+                    kind: 'event',
+                    eventKey: 'AuditActionStamp',
+                    actionLabel: label,
+                    atMs: data.referenceDate(item.provenance)
+                });
+                state.submittingItemId = null;
+                state.submittingActionCode = null;
+                render();
+                toastForOutcome(outcome, label, reason, item);
+                // A showcase fixture has no engine to refuse it — the local mutation above always succeeds.
+                resolve({ outcome: 'done' });
+            }, 350);
+        });
     };
 
     // Plan / re-plan for a SHOWCASE item only — sets the PERSONAL planned date (spec v2 §4), which is distinct
@@ -7725,75 +9133,147 @@
     };
 
     /*
-     * Plan / re-plan for a REAL task — posts to the engine and applies NOTHING optimistically. The date is only
+     * Plan / re-plan for a REAL task — posts to the engine and applies NOTHING optimistically. The plan is only
      * ever shown once the server has actually stored it and the projection has been re-read; a request that fails
      * must leave the screen exactly as it was, or a rejected write would look identical to an accepted one.
+     *
+     * WP-UI-CALENDAR-VIEW-01 — the dialog now asks for a DAY, an optional START TIME and a LENGTH: no time is a
+     * day plan (`plannedDate`), a time is a block (`plannedStartAt` + `plannedDurationMinutes`). The answer is
+     * settled by the SAME function the calendar's drag uses (settlePlanWrite): a conflict names the other block,
+     * a warning is said, a cut block says what is left.
      */
-    const submitPlan = async (item, dateStr) => {
-        // Through the SAME single address as every other action (WC-D2). `plan` is a projected action code like
-        // the rest; its own client method existed only because /Tasks/api was the only door.
-        const result = await global.WorkCenterNextApi.dispatchAction(item.id, 'plan', item.source?.providerCode, {
-            expectedVersion: Number(item.concurrency?.token ?? 0),
-            plannedDate: dateStr
-        });
-        await afterPhase2Write(result, 'ToastPlanSaved', dateStr);
-    };
-
-    const openDatePicker = (item, action) => {
-        const label = actionLabel(action);
-        const real = isDispatchableItem(item);
-        if (!global.Swal) {
-            if (real) { submitPlan(item, item.dueAt || data.todayIso).catch(reportSwalFailure); return; }
-            applyPlan(item, item.dueAt || data.todayIso, label);
-            return;
+    const submitPlan = async (item, choice, knownZone) => {
+        const zone = knownZone === undefined ? await ensureCalendarZone() : knownZone;
+        /*
+         * Only a TIME needs the zone (v2 F6). A day plan goes whatever the feed says — dressed with the offset when
+         * the zone is known, bare "YYYY-MM-DD" when it is not — because the day means the same thing either way.
+         */
+        if (choice.time && !zone) {
+            toast(t('CalZoneUnavailable'), 'error');
+            return { outcome: 'refused' };
         }
         /*
-         * ── THROUGH THE SHARED COMPONENT (2026-08-24, A3) ────────────────────────────────────────────────
-         *
-         * This was a raw `Swal.fire` with its own `<input class="form-control">` in a `html` string, which is
-         * why it rendered a 38px title, an 18px description and a RED dismiss button beside the snooze
-         * dialog's 18/13/neutral. It asks for ONE value, so it is a confirmation, so it goes through the
-         * component that owns what a confirmation looks like.
-         *
-         * ⚠ NO NEW SEAM WAS OPENED. `inputType: 'text'` + `onOpen` + `validate` is exactly the path the snooze
-         * dialog already takes, flatpickr and all — see `openSnooze`.
+         * CT acceptance (v2 open point): without the zone the dialog cannot show an existing block's time, so a
+         * reader who only changes the day would send a DAY plan — and the engine clears the block by design. The
+         * block is not the reader's to lose silently: when one exists, a day plan is refused too until the zone
+         * can be read.
          */
-        const seed = item.plannedDate || item.dueAt;
-        sharedConfirm({
-            title: label,
-            subtext: outcomeLead(action),
-            // The rail button's own glyph — one dictionary, so the button and the dialog it opens agree.
-            icon: inboxActionIcon(action),
-            confirmText: t('PlanConfirm'),
-            input: {
-                type: 'text',
-                label: t('PlanDateLabel'),
-                // A REAL EXAMPLE, not the field's own name repeated: the box says what a date looks like here.
-                placeholder: t('DatePlaceholder'),
-                onOpen: (input) => {
-                    if (!input) { return; }
-                    // ⚠ NO WRAPPER — the glyph is painted ON the box. See `.wcn-date-input` and the warning at
-                    // `openSnooze`: a wrapper makes `Swal.getInput()` null and takes the validator, the focus
-                    // and the Enter key with it.
-                    input.classList.add('wcn-date-input');
-                    if (global.flatpickr) {
-                        // Re-planning opens the picker seeded with the EXISTING plan, so moving a date is an
-                        // edit of it rather than starting blank; falling back to the source due date only when
-                        // there is no plan yet.
-                        global.flatpickr(input, { dateFormat: 'Y-m-d', defaultDate: seed || undefined, disableMobile: true });
-                    } else {
-                        input.type = 'date';
-                        if (seed) { input.value = seed; }
-                    }
-                },
-                validate: (value) => (value ? null : t('PlanDateLabel'))
-            },
-            onConfirm: (value) => {
-                if (!value) { return; }
-                const applied = real ? submitPlan(item, value) : applyPlan(item, value, label);
-                if (applied && typeof applied.catch === 'function') { applied.catch(reportSwalFailure); }
+        if (!choice.time && !zone && (feedTask(item.id)?.plannedStartAt || item.plannedStartAt)) {
+            toast(t('CalZoneUnavailable'), 'error');
+            return { outcome: 'refused' };
+        }
+        return writePlan(item, () => (choice.time
+            ? blockPlanBody(item, global.DitenZonedTime.toUtcIso(`${choice.day}T${choice.time}`, zone), choice.minutes)
+            : dayPlanBody(item, choice.day, zone)));
+    };
+
+    /**
+     * The tenant zone a typed time is read in. From the calendar feed when it is loaded; otherwise one day of the
+     * feed is asked for its zone (the list and detail views never load it). Null when it cannot be learned —
+     * a time read in a guessed zone would plan the wrong hour.
+     */
+    const ensureCalendarZone = async () => {
+        if (calendarZone()) { return calendarZone(); }
+        if (state.calendarZoneOnly) { return state.calendarZoneOnly; }
+        if (!global.WorkCenterNextApi.fetchCalendar || !global.DitenZonedTime) { return null; }
+        const result = await global.WorkCenterNextApi.fetchCalendar(data.todayIso, data.todayIso);
+        const zone = result.ok && result.data ? result.data.timeZoneId : null;
+        if (zone && global.DitenZonedTime.isValidZone(zone)) { state.calendarZoneOnly = zone; return zone; }
+        return null;
+    };
+
+    const PLAN_DURATIONS = Array.from({ length: 32 }, (_, i) => (i + 1) * 15);   // 15 min … 8 h
+    const PLAN_TIMES = Array.from({ length: 96 }, (_, i) => `${pad2(Math.floor(i / 4))}:${pad2((i % 4) * 15)}`);
+
+    /**
+     * The existing plan (or the due date) the dialog opens with: day, wall-clock time in the tenant zone, length.
+     * It is given the zone that was LEARNED FIRST (v2 F2): seeded without one, an existing block opened as "no
+     * time", and confirming a changed day silently turned the block into a day plan.
+     */
+    const planSeed = (item, zone) => {
+        const task = feedTask(item.id);
+        const startUtc = task?.plannedStartAt || item.plannedStartAt || null;
+        const wall = startUtc && zone && global.DitenZonedTime ? global.DitenZonedTime.toWall(startUtc, zone) : null;
+        return {
+            day: wall ? wall.slice(0, 10) : (item.plannedDate || item.dueAt || ''),
+            time: wall ? wall.slice(11, 16) : '',
+            minutes: task?.plannedDurationMinutes || item.plannedDurationMinutes || defaultBlockMinutes(item)
+        };
+    };
+
+    const openDatePicker = async (item, action) => {
+        const label = actionLabel(action);
+        const real = isDispatchableItem(item);
+        // The zone first, the seed second (v2 F2) — see planSeed. A showcase fixture has no engine and no zone.
+        const zone = real ? await ensureCalendarZone() : null;
+        if (!global.Swal) {
+            if (real) {
+                return submitPlan(item, { day: item.dueAt || data.todayIso, time: '', minutes: defaultBlockMinutes(item) }, zone)
+                    .catch((error) => { reportSwalFailure(error); return { outcome: 'refused' }; });
             }
-        });
+            applyPlan(item, item.dueAt || data.todayIso, label);
+            return Promise.resolve({ outcome: 'done' });
+        }
+        /*
+         * ── A FORM, NOT A CONFIRMATION (WP-UI-CALENDAR-VIEW-01) ───────────────────────────────────────────
+         *
+         * This was a `sharedConfirm` with one text input — a date. It now asks three things (day, start time,
+         * length), and `showConfirm` carries exactly one value (BL-146), so it joins the three other dialogs this
+         * module cannot express as a confirmation: a raw `Swal.fire`, DRESSED with the declared package
+         * (`dialogLook()`), never an appearance of its own. It is not a new kind of dialog.
+         *
+         * The day field is the shared DitenDateField (flatpickr, typed-text guard, the icon that opens it) — not a
+         * picker of its own. A showcase fixture only ever stored a day, and still does.
+         */
+        const seed = planSeed(item, zone);
+        const timeOptions = [`<option value="">${esc(t('PlanTimeNone'))}</option>`]
+            .concat(PLAN_TIMES.map((time) => `<option value="${time}"${time === seed.time ? ' selected' : ''}>${time}</option>`))
+            .join('');
+        const durationOptions = PLAN_DURATIONS
+            .map((minutes) => `<option value="${minutes}"${minutes === seed.minutes ? ' selected' : ''}>${esc(tf('PlanDurationOption', minutes))}</option>`)
+            .join('');
+        const timeFields = real
+            ? `<label class="form-label d-block text-start" for="wcnPlanTime">${esc(t('PlanTimeLabel'))}</label>`
+                // Without the tenant zone a time cannot be read correctly, so it is not offered; a day still is (F6).
+                + `<select id="wcnPlanTime" class="form-select"${zone ? '' : ' disabled'}>${timeOptions}</select>`
+                + `<label class="form-label d-block text-start" for="wcnPlanDuration">${esc(t('PlanDurationLabel'))}</label>`
+                + `<select id="wcnPlanDuration" class="form-select"${seed.time ? '' : ' disabled'}>${durationOptions}</select>`
+                + `<p class="wcn-plan-form-hint">${esc(t('PlanTimeHint'))}</p>`
+            : '';
+        return global.Swal.fire(Object.assign({
+            title: dialogIcon('info', inboxActionIcon(action)) + '<span>' + esc(label) + '</span>',
+            html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
+                + `<div class="wcn-plan-form">`
+                + `<label class="form-label d-block text-start" for="wcnPlanDay">${esc(t('PlanDateLabel'))}</label>`
+                + `<div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>`
+                + `<input type="text" id="wcnPlanDay" class="form-control flatpickr-date" value="${esc(seed.day)}" placeholder="${esc(t('DatePlaceholder'))}"></div>`
+                + timeFields
+                + `</div>`,
+            showCancelButton: true,
+            confirmButtonText: t('PlanConfirm'),
+            cancelButtonText: t('DialogDismiss'),
+            didOpen: (popup) => {
+                if (global.DitenDateField) { global.DitenDateField.enhance(popup); }
+                const time = document.getElementById('wcnPlanTime');
+                const duration = document.getElementById('wcnPlanDuration');
+                // A length only means something for a block: it is offered once a start time is chosen.
+                if (time && duration) { time.addEventListener('change', () => { duration.disabled = !time.value; }); }
+            },
+            preConfirm: () => {
+                const day = String(document.getElementById('wcnPlanDay')?.value || '').trim();
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+                    global.Swal.showValidationMessage(t('PlanDateLabel'));
+                    return false;
+                }
+                const time = String(document.getElementById('wcnPlanTime')?.value || '');
+                const minutes = Number(document.getElementById('wcnPlanDuration')?.value || defaultBlockMinutes(item));
+                return { day, time, minutes };
+            }
+        }, dialogLook())).then((res) => {
+            if (!res || !res.isConfirmed || !res.value) { return { outcome: 'cancelled' }; }
+            if (!real) { applyPlan(item, res.value.day, label); return { outcome: 'done' }; }
+            return submitPlan(item, res.value, zone);
+        }).catch((error) => { reportSwalFailure(error); return { outcome: 'refused' }; });
     };
 
     // Swal's own promise chain runs well after the click that opened it, outside onClick's try/catch — so a
@@ -7879,8 +9359,18 @@
         }
         confirm(options.title, options.onConfirm, {
             /*
-             * HTML, deliberately: the outcome sentence in front of a confirm is markup the caller already built,
-             * and the wrapper renders `subtext` as HTML for exactly this.
+             * WP-PSS-MOD0024-FOLLOWUPS-02 — passed straight through. `window.showConfirm` already supports a
+             * dismiss callback (`_GlobalConfirmation.cshtml`'s `Swal.fire(...).then`), but this wrapper never
+             * forwarded it, so no caller here could tell a cancel apart from doing nothing. A caller that needs
+             * to know (the @mention picker, reused for both compose and edit) can now ask for it without a
+             * second dialog implementation.
+             */
+            onCancel: options.onCancel,
+            /*
+             * TEXT. The shared confirm writes `subtext` as text (WP-SHARED-CONFIRM-XSS-01): a caller here hands
+             * over its words as they are and never escapes them first — the dialog would then show the entities.
+             * A body this module BUILT as markup (the outcome sentence in front of a confirm) goes through
+             * `subtextHtml` below, and every piece of data inside it is escaped where it is built.
              *
              * ⚠ AN INPUT PROMPT GETS NO GENERIC CONFIRMATION SENTENCE (2026-08-24, owner).
              *
@@ -7893,6 +9383,8 @@
              * bulk confirm and the subtask cancel in this very module still ask whether the reader is sure.
              */
             subtext: options.subtext !== undefined ? options.subtext : (options.input ? '' : undefined),
+            // Markup this module built itself; absent for every dialog that only has words to say.
+            subtextHtml: options.subtextHtml,
             type: options.type || 'info',
             confirmButtonText: options.confirmText,
             /*
@@ -7987,9 +9479,12 @@
         });
     };
 
-    // Review meeting is a collaboration command, not a lifecycle transition. The
-    // mock applies an explicit replacement projection after Calendar returns.
-    const applyReviewMeeting = (item, whenStr, label) => {
+    /*
+     * MOD-0357 S4 — review meeting is a collaboration command, not a lifecycle transition. A SHOWCASE fixture
+     * has no backing record anywhere (WC-D2's own rule, above), so it keeps the local demonstration this action
+     * always drew: an explicit replacement projection, applied here and nowhere else.
+     */
+    const applyReviewMeetingFixture = (item, whenStr, label) => {
         const [date, time] = String(whenStr).split(' ');
         const startTime = time || '09:00';
         const endHour = String(Math.min(23, parseInt(startTime, 10) + 1)).padStart(2, '0');
@@ -8024,15 +9519,67 @@
         toast(tf('ToastReviewMeeting', `${date} ${startTime}`));
     };
 
-    const openMeetingScheduler = (item, action) => {
-        const label = actionLabel(action);
-        if (!global.Swal) { applyReviewMeeting(item, `${item.dueAt || data.todayIso} 09:00`, label); return; }
-        // Same journey as the plan dialog above, and for the same reason: one value, so one confirmation.
+    // BL-… precedent (Platform/Workflow/workflow.api.js) — the caller-supplied idempotency key this bridge's own
+    // K11 needs; MeetingsController never derives one for THIS endpoint the way meeting create derives its own.
+    const newIdempotencyKey = () => {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') { return crypto.randomUUID(); }
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            const v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        });
+    };
+
+    /*
+     * A REAL task: posts to MOD-0357's own bridge endpoint (K3) and re-reads the projection, exactly the
+     * `submitRealTransition` shape above — nothing applied optimistically, the refreshed projection is the only
+     * source of the new state, and it is the projection that drops `scheduleReviewMeeting` once the write lands
+     * (TaskWorkItemProvider, S4).
+     */
+    const submitReviewMeeting = async (item, meetingTypeId, whenStr) => {
+        const [date, time] = String(whenStr).split(' ');
+        const startTime = time || '09:00';
+        const endHour = String(Math.min(23, parseInt(startTime, 10) + 1)).padStart(2, '0');
+        const endMinute = startTime.slice(3) || '00';
+
+        state.submittingItemId = item.id;
+        state.submittingActionCode = 'scheduleReviewMeeting';
+        render();
+
+        const result = await global.MeetingsApi.scheduleReviewMeetingForTask(item.id, {
+            meetingTypeId,
+            startAt: `${date}T${startTime}:00`,
+            endAt: `${date}T${endHour}:${endMinute}:00`,
+            title: null,
+            idempotencyKey: newIdempotencyKey()
+        });
+
+        state.submittingItemId = null;
+        state.submittingActionCode = null;
+
+        if (!result.ok) {
+            render();
+            toast(global.MeetingsApi.failureMessage(result), 'error');
+            return { outcome: 'refused', reasonCode: result.reasonCode };
+        }
+
+        await loadWorkItems();
+        render();
+        toast(tf('ToastReviewMeeting', `${date} ${startTime}`));
+        return { outcome: 'done' };
+    };
+
+    // The date/time step, shared by both the fixture path and the real one — only what happens ON CONFIRM
+    // differs, via `onWhenChosen`. `subtextText` arrives ALREADY resolved — each caller reads its own key by a
+    // literal `t(...)` call, which is what the l10n guard (wcn-dialog-seven-defects.test.js) scans app.js for.
+    const openMeetingDateTimePicker = (item, action, label, subtextText, onWhenChosen) => {
         const seed = item.dueAt || data.todayIso;
+        let resolveOutcome;
+        const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
         sharedConfirm({
             title: label,
             // What booking it does and does NOT do — the due date is the question a reader actually has here.
-            subtext: esc(t('MeetingWhenSubtext')),
+            subtext: subtextText,
             icon: inboxActionIcon(action),
             confirmText: t('PlanConfirm'),
             input: {
@@ -8051,49 +9598,64 @@
                 validate: (value) => (value ? null : t('PlanDateLabel'))
             },
             onConfirm: (value) => {
-                if (value) { applyReviewMeeting(item, String(value).replace('T', ' '), label); }
-            }
+                if (!value) { resolveOutcome({ outcome: 'cancelled' }); return; }
+                Promise.resolve(onWhenChosen(String(value).replace('T', ' ')))
+                    .then((resolved) => resolveOutcome(resolved || { outcome: 'done' }))
+                    .catch(() => resolveOutcome({ outcome: 'refused' }));
+            },
+            onCancel: () => resolveOutcome({ outcome: 'cancelled' })
         });
+        return outcome;
     };
 
-    // Log time — manual minutes entry into the timesheet (task only).
-    const openLogTime = (item, action) => {
+    const openMeetingScheduler = async (item, action) => {
         const label = actionLabel(action);
-        if (!global.Swal) { return; }
+
+        if (isFixtureShowcase(item)) {
+            if (!global.showConfirm) {
+                applyReviewMeetingFixture(item, `${item.dueAt || data.todayIso} 09:00`, label);
+                return { outcome: 'done' };
+            }
+            return openMeetingDateTimePicker(item, action, label, t('MeetingWhenSubtext'),
+                (whenStr) => { applyReviewMeetingFixture(item, whenStr, label); return { outcome: 'done' }; });
+        }
+
+        // A REAL task needs a REAL meeting type — the receiving side's own CreateMeetingRequest requires one
+        // (pack §7); there is no per-type default to fall back to here the way the meeting→task direction has.
+        const typesResult = await global.MeetingsApi.lookupTypes();
+        if (!typesResult.ok) {
+            toast(global.MeetingsApi.failureMessage(typesResult), 'error');
+            return { outcome: 'refused', reasonCode: typesResult.reasonCode };
+        }
+        const types = Array.isArray(typesResult.data) ? typesResult.data : [];
+        if (types.length === 0) {
+            toast(t('MeetingNoTypesAvailable'), 'error');
+            return { outcome: 'refused' };
+        }
+        const typeOptions = {};
+        types.forEach((type) => { typeOptions[type.id] = type.name; });
+
+        let resolveOutcome;
+        const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
         sharedConfirm({
             title: label,
-            /*
-             * ITS OWN SENTENCE, saying what the box cannot: that this ADDS to what is already logged and does
-             * not touch the running timer. The generic "are you sure?" it used to wear said nothing at all
-             * above a field asking "how many minutes?".
-             */
-            subtext: esc(t('LogTimeSubtext')),
+            subtext: t('MeetingTypeSubtext'),
             icon: inboxActionIcon(action),
-            confirmText: t('LogTimeConfirm'),
+            confirmText: t('PlanConfirm'),
             input: {
-                type: 'number',
-                label: t('LogTimeLabel'),
-                // Already a real example ("örn. 30"), so it was kept rather than replaced.
-                placeholder: t('LogTimePlaceholder'),
-                // The glyph is painted ON the box, exactly as the date field does it — no wrapper, nothing for
-                // the library's slot walk to trip over.
-                onOpen: (input) => { if (input) { input.classList.add('wcn-time-input'); } },
-                validate: (value) => {
-                    const m = parseInt(value, 10);
-                    return (!m || m <= 0) ? t('LogTimeLabel') : null;
-                }
+                type: 'select',
+                label: t('MeetingTypeLabel'),
+                options: typeOptions,
+                validate: (value) => (value ? null : t('MeetingTypeLabel'))
             },
-            onConfirm: (value) => {
-                const mins = parseInt(value, 10);
-                if (mins > 0) {
-                    item.timesheet = item.timesheet || { running: false, startedAt: null, loggedMinutes: 0 };
-                    item.timesheet.loggedMinutes += mins;
-                    item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, atMs: data.referenceDate(item.provenance) });
-                    render();
-                    toast(tf('ToastTimeLogged', formatMinutes(mins)));
-                }
-            }
+            onConfirm: (meetingTypeId) => {
+                if (!meetingTypeId) { resolveOutcome({ outcome: 'cancelled' }); return; }
+                openMeetingDateTimePicker(item, action, label, t('MeetingScheduleSubtext'),
+                    (whenStr) => submitReviewMeeting(item, meetingTypeId, whenStr)).then(resolveOutcome);
+            },
+            onCancel: () => resolveOutcome({ outcome: 'cancelled' })
         });
+        return outcome;
     };
 
     /*
@@ -8251,7 +9813,7 @@
          */
         sharedConfirm({
             title: t('SnoozeTitle'),
-            subtext: esc(t('SnoozeSubtext')),
+            subtext: t('SnoozeSubtext'),
             /*
              * A MOON. The dialog's gravity is right as it stands — a plain primary confirmation — but the glyph
              * its type hands out is a question mark, which asks "are you sure?" while this dialog asks "until
@@ -8381,7 +9943,10 @@
 
     const uploadAttachment = async (taskId, payload) => {
         const result = await global.TasksApi.addAttachment(taskId, payload);
-        await afterPhase2Write(result, 'ToastAttachmentAdded');
+        // Returned so a caller that must NOT proceed on failure (the Complete window's own upload-then-transition
+        // sequence, WP-PSS-MOD0024-ATTACHMENTS-UX-01) can tell. Every EARLIER caller ignored the return value, so
+        // this is additive.
+        return afterPhase2Write(result, 'ToastAttachmentAdded');
     };
 
     const removeAttachmentRow = async (taskId, attachmentId) => {
@@ -8510,7 +10075,7 @@
         sharedConfirm({
             title: t('NewInSource'),
             // Where the record will LIVE, which is the thing a module picker leaves unsaid.
-            subtext: esc(t('NewInSourceSubtext')),
+            subtext: t('NewInSourceSubtext'),
             icon: 'bx-cube',
             // The button names CREATING, not opening: nothing is opened here any more (see below), and the old
             // 'NewOpenSource' label promised an act this dialog no longer performs.
@@ -8569,19 +10134,58 @@
      * pushed onto `state.notes` and nothing else. Its `?` icon — the defect the owner photographed — is gone
      * with it rather than repainted.
      */
+    // WP-WCN-KANBAN-01 Dilim 1 — the stitch. Every branch below resolves the same Promise<{ outcome, reasonCode? }>
+    // the caller awaits: 'done' (applied), 'cancelled' (the reader dismissed a dialog, no request sent) or
+    // 'refused' (the engine said no; reasonCode is its code when one exists). The button path is UNCHANGED —
+    // it never reads the resolved value, so every dialog, toast and re-render below fires exactly as before.
+    const inviteChecksInFlight = new Set();
+
     const performAction = async (item, actionKey) => {
         const action = actionByKey(item, actionKey);
-        if (!item || !action || action.disabled || state.submittingItemId === item.id) { return; }
+        if (!item || !action || action.disabled || state.submittingItemId === item.id) {
+            return { outcome: 'cancelled' };
+        }
         // The engine now stores the personal plan date (POST .../plan), so the picker opens for a real task too —
         // openDatePicker itself decides whether to write to the engine or, for a showcase item, only locally.
-        if (action.input === 'date') { openDatePicker(item, action); return; }
-        if (action.input === 'meeting') { openMeetingScheduler(item, action); return; }
-        if (action.input === 'minutes') { openLogTime(item, action); return; }
+        /*
+         * WP-UI-MEETINGS-CALENDAR-01 (B) — accepting an invitation that collides with one of MY plan blocks asks first,
+         * naming the block (owner 2026-09-17: a warning, never a refusal). The collision is the feed's `overlapsPlan`
+         * (the engine's half-open rule); the question is the shared card's, so both pages ask it the same way.
+         */
+        if (action.code === 'acceptInvite' && global.DitenInviteCard) {
+            // A second click while the question (or its feed read) is still open is dropped, not sent twice.
+            if (inviteChecksInFlight.has(item.id)) { return { outcome: 'cancelled' }; }
+            inviteChecksInFlight.add(item.id);
+            let go;
+            try {
+                go = await global.DitenInviteCard.confirmAcceptOverlap({
+                    meetingId: item.id,
+                    when: feedMeeting(item.id)?.startAt || item.dueAt,
+                    feed: feedMeeting(item.id) ? state.calendarFeed : null,
+                    fetchCalendar: global.WorkCenterNextApi?.fetchCalendar
+                });
+            } finally {
+                inviteChecksInFlight.delete(item.id);
+            }
+            if (!go) { return { outcome: 'cancelled' }; }
+        }
+        if (action.input === 'date') { return openDatePicker(item, action); }
+        if (action.input === 'meeting') { return openMeetingScheduler(item, action); }
 
         // Reason-capturing action (reject/return/inquire/dispute/delegate/reassign):
         // a mandatory-rationale textarea, which also serves as the confirm step.
-        if (action.reason) {
-            if (!global.Swal) { return; }
+        /*
+         * BL-491 — an action the SERVER flags as naming a person (`requiresTargetPerson` → `action.targetPerson`)
+         * opens this same window for its picker, even when it demands no reason: a delegation sent without its
+         * delegate is refused every time. Never derived from the action code.
+         */
+        if (action.reason || action.targetPerson) {
+            if (!global.Swal) { return { outcome: 'cancelled' }; }
+            const asksTarget = !!action.targetPerson;
+            // The text box is mandatory only for an action that REQUIRES a reason. A person-naming action without
+            // one gets the optional note the server flagged (`acceptsNote`), or no text box at all.
+            const reasonRequired = !!action.reason;
+            const offersText = reasonRequired || !!action.note;
 
             /*
              * BL-043 — `reassign` also has to name the PERSON. The dialog used to ask only for a rationale, so
@@ -8591,7 +10195,7 @@
              * the list the server validates against — offering anyone else would build a dialog whose confirm is
              * refused, which is the shape of defect this ticket exists to close.
              */
-            const needsAssignee = ASSIGNEE_REQUIRED_ACTIONS.includes(action.code);
+            const needsAssignee = ASSIGNEE_REQUIRED_ACTIONS.includes(action.code) || asksTarget;
             /*
              * `inquire` may ALSO name a person, and must not require one — see WAITING_ON_ACTIONS. One fetch
              * serves both: the picker's list is the same list either way, because the server validates both
@@ -8601,22 +10205,50 @@
             const offersWaitingOn = WAITING_ON_ACTIONS.includes(action.code);
             let people = [];
             if (needsAssignee || offersWaitingOn) {
-                const res = await global.TasksApi.assignablePeople();
-                // `data` IS the array — unwrapped once in TasksApi (BL-113). This line was wrong for three
-                // rounds while each caller unwrapped the envelope in its own hand-written expression.
+                /*
+                 * BL-491 — WHICH LIST. Handing a task to somebody is an ASSIGNMENT and is limited to the reader's
+                 * company scope. Handing over an APPROVAL is not: approval authority belongs to the process, not
+                 * to the requester (BL-057 — a record produced in one legal entity is properly approved in
+                 * another). So a person-naming approval action reads the decision-makers list; the assignment
+                 * list would silently leave out every approver outside the reader's own company.
+                 */
+                const res = asksTarget
+                    ? await global.TasksApi.decisionMakers()
+                    : await global.TasksApi.assignablePeople();
+                /*
+                 * A read that FAILED is not an empty list. "Nobody this can be delegated to" printed over a 403 or
+                 * a dropped connection is a false sentence; the failure says what it was, and no window opens.
+                 */
+                if (!res.ok && asksTarget) {
+                    toast(global.TasksApi.failureMessage(res), 'error');
+                    return { outcome: 'refused' };
+                }
+                // `data` IS the array for both lists — unwrapped once in TasksApi (BL-113). This line was wrong for
+                // three rounds while each caller unwrapped the envelope in its own hand-written expression.
                 people = res.ok ? res.data : [];
+                // BL-491 — the people the server says this action cannot be handed to (the reader, and whoever
+                // started the workflow) are never offered.
+                if (asksTarget && action.excludedTargetIds.length) {
+                    people = people.filter((person) =>
+                        !action.excludedTargetIds.includes(String(personUserId(person) || '').toLowerCase()));
+                }
                 if (!people.length && needsAssignee) {
                     // Refusing beats opening a dialog that cannot be confirmed.
-                    toast(t('ReassignNoAssignableUsers'), 'error');
-                    return;
+                    toast(t(asksTarget ? 'DelegateNoEligiblePeople' : 'ReassignNoAssignableUsers'), 'error');
+                    return { outcome: 'refused' };
                 }
             }
 
-            const options = people
+            // BL-439 — nobody waits on themselves: the holder is dropped from the "waiting on" list (the server
+            // refuses it too). The reassign picker is untouched — handing work on is a different question.
+            const offered = offersWaitingOn && item.assigneeId
+                ? people.filter((person) => personUserId(person) !== item.assigneeId)
+                : people;
+            const options = offered
                 .map((person) => `<option value="${esc(personUserId(person))}">${esc(person.displayName || personUserId(person))}</option>`)
                 .join('');
             const assigneeField = needsAssignee
-                ? `<label class="form-label d-block text-start" for="wcnReassignAssignee">${esc(t('ReassignAssigneeLabel'))}</label>`
+                ? `<label class="form-label d-block text-start" for="wcnReassignAssignee">${esc(t(asksTarget ? 'DelegateTargetLabel' : 'ReassignAssigneeLabel'))}</label>`
                   + `<select id="wcnReassignAssignee" class="form-select">`
                   + `<option value="">${esc(t('ReassignAssigneePlaceholder'))}</option>${options}</select>`
                 : '';
@@ -8626,7 +10258,30 @@
              * "you have not chosen yet". An empty list simply draws no field: nobody to name is not an error
              * here, unlike the required case above.
              */
-            const waitingOnField = offersWaitingOn && people.length
+            /*
+             * BL-439 — the ANSWER dialog asks for an answer, not a reason, and shows the QUESTION it answers. The
+             * question is the item's own summary (the asker's sentence, already resolved by toPresentation); it is
+             * quoted above the textarea so the reader writes looking at what was asked rather than from memory.
+             * Every other reason-capturing action keeps its labels exactly as they were.
+             */
+            const isAnswer = action.code === 'answer';
+            const questionQuote = isAnswer && item.summary
+                ? `<p class="form-label d-block text-start mb-1">${esc(t('InquiryQuestionLabel'))}</p>`
+                  + `<blockquote class="wcn-dialog-lead text-start">${esc(item.summary)}</blockquote>`
+                : '';
+            const textLabel = isAnswer ? t('InquiryAnswerLabel')
+                : reasonRequired ? t('ReasonLabel') : t('ApprovalNoteLabel');
+            const textPlaceholder = isAnswer ? t('InquiryAnswerPlaceholder')
+                : reasonRequired ? t('ReasonPlaceholder') : t('ApprovalNotePlaceholder');
+            const textField = offersText
+                ? `<label class="form-label d-block text-start" for="wcnReasonText">${esc(textLabel)}</label>`
+                  // The server's ceiling for an answer is a task description's (4000); saying so here means the
+                  // textarea stops the reader rather than a 400 after they have written it.
+                  + `<textarea id="wcnReasonText" class="form-control" rows="3"${isAnswer ? ' maxlength="4000"' : ''} `
+                  + `placeholder="${esc(textPlaceholder)}"></textarea>`
+                : '';
+
+            const waitingOnField = offersWaitingOn && offered.length
                 ? `<label class="form-label d-block text-start" for="wcnWaitingOn">${esc(t('WaitingOnLabel'))}</label>`
                   + `<select id="wcnWaitingOn" class="form-select">`
                   + `<option value="">${esc(t('WaitingOnNobody'))}</option>${options}</select>`
@@ -8637,7 +10292,7 @@
              * cannot go through `showConfirm` — but every reason it looked wrong was appearance, not structure,
              * and appearance is now something it can ask for by name.
              */
-            global.Swal.fire(Object.assign({
+            return global.Swal.fire(Object.assign({
                 /*
                  * ⚠ THE ICON RIDES THE TITLE HERE TOO (2026-08-24, option B). The shared confirm composes the
                  * two into one slot because the popup is a grid with one slot per row; a raw dialog that kept
@@ -8660,11 +10315,10 @@
                  * The CIRCLE and its colour are still `type`'s — `info`, untouched.
                  */
                 html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
+                    + questionQuote
                     + assigneeField
                     + waitingOnField
-                    + `<label class="form-label d-block text-start" for="wcnReasonText">${esc(t('ReasonLabel'))}</label>`
-                    + `<textarea id="wcnReasonText" class="form-control" rows="3" `
-                    + `placeholder="${esc(t('ReasonPlaceholder'))}"></textarea>`,
+                    + textField,
                 showCancelButton: true,
                 confirmButtonText: t('ReasonConfirm'),
                 cancelButtonText: t('DialogDismiss'),
@@ -8675,7 +10329,11 @@
                 },
                 preConfirm: () => {
                     const reason = String(document.getElementById('wcnReasonText')?.value || '').trim();
-                    if (!reason) { global.Swal.showValidationMessage(t('ReasonRequired')); return false; }
+                    // An optional note (BL-491) is never validated: empty is a real answer.
+                    if (!reason && reasonRequired) {
+                        global.Swal.showValidationMessage(t(isAnswer ? 'InquiryAnswerRequired' : 'ReasonRequired'));
+                        return false;
+                    }
 
                     if (!needsAssignee) {
                         // Empty is a real answer here, so it is passed through untouched and NOT validated.
@@ -8685,15 +10343,16 @@
 
                     const assigneeUserId = String(document.getElementById('wcnReassignAssignee')?.value || '').trim();
                     // Cannot be confirmed without a person: the server requires it and a silent 400 helps nobody.
-                    if (!assigneeUserId) { global.Swal.showValidationMessage(t('ReassignAssigneeRequired')); return false; }
+                    const personRequiredKey = asksTarget ? 'DelegateTargetRequired' : 'ReassignAssigneeRequired';
+                    if (!assigneeUserId) { global.Swal.showValidationMessage(t(personRequiredKey)); return false; }
                     return { reason, assigneeUserId };
                 }
             }, dialogLook())).then((res) => {
                 if (res.isConfirmed && res.value) {
-                    applyAction(item, action, res.value.reason, res.value.assigneeUserId, res.value.waitingOnUserId);
+                    return applyAction(item, action, res.value.reason, res.value.assigneeUserId, res.value.waitingOnUserId);
                 }
+                return { outcome: 'cancelled' };
             });
-            return;
         }
 
         /*
@@ -8711,8 +10370,36 @@
          * product declares.
          */
         const closureOutcomes = closureOutcomesFor(item, action);
-        if (closureOutcomes.length) {
-            if (!global.Swal) { return; }
+        /*
+         * Faz 2a-rest — fetched ONLY for `complete` (the pack's own boundary: the cancel window never offers
+         * these fields), and only a catalogue read — nothing is asked of the server until the dialog confirms.
+         * An empty result (no closure field configured, the state every type is in before this slice and every
+         * type nobody has touched since) falls straight through to the SAME branches below, byte for byte.
+         */
+        const closureFields = action.code === 'complete' ? await fetchClosureFieldDefinitions() : [];
+        /*
+         * WP-PSS-MOD0024-ATTACHMENTS-UX-01 — "Çıktı / Kanıt ekle", in the SAME raw dialog (BL-146 exception:
+         * `sharedConfirm` supports a textarea and nothing else, so a file input needs this route regardless of
+         * whether the type has closure outcomes or fields). NEVER for `cancel` — calling work off asks for
+         * nothing to attach.
+         */
+        const canAttachOnComplete = action.code === 'complete' && isDispatchableItem(item);
+        const existingAttachments = Array.isArray(item.attachments?.items) ? item.attachments.items : [];
+        const deliverableRequired = canAttachOnComplete
+            && !!item.taskType?.requiresDeliverableOnCompletion
+            && !existingAttachments.some((a) => a.kind === 'Deliverable');
+        if (closureOutcomes.length || closureFields.length || canAttachOnComplete) {
+            if (!global.Swal) { return { outcome: 'cancelled' }; }
+
+            /*
+             * THE SAME "required item still open" WARNING the plain confirm below gives complete — carried over
+             * here because this branch now answers for EVERY complete on a dispatchable item, not only the ones
+             * with a closure outcome or field configured, and this dialog replaces that one for those calls.
+             */
+            const stillOpen = action.code === 'complete' ? openRequiredItems(item) : [];
+            const requiredWarning = stillOpen.length
+                ? `<div class="wcn-confirm-warning">${esc(tf('ConfirmRequiredOpen', stillOpen.length))}</div>`
+                : '';
 
             const outcomeOptions = closureOutcomes
                 .map((outcome) => `<option value="${esc(outcome.code)}">${esc(outcomeText(outcome))}</option>`)
@@ -8728,18 +10415,56 @@
                 return chosen && chosen.requiresReason ? t('ClosureReasonLabelRequired') : t('ClosureReasonLabel');
             };
 
-            global.Swal.fire(Object.assign({
-                title: dialogIcon(action.destructive ? 'danger' : 'info', inboxActionIcon(action))
-                    + '<span>' + esc(actionLabel(action)) + '</span>',
-                html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
-                    + `<label class="form-label d-block text-start" for="wcnClosureOutcome">`
+            /*
+             * Faz 2a-rest — the outcome select/reason box are drawn ONLY when the type actually has outcomes;
+             * the fields container is drawn ONLY when it has closure fields. A type with just one of the two
+             * gets just that one half, never an empty control for the other.
+             */
+            const outcomeBlock = closureOutcomes.length
+                ? `<label class="form-label d-block text-start" for="wcnClosureOutcome">`
                     + `${esc(t('ClosureOutcomeLabel'))}</label>`
                     + `<select id="wcnClosureOutcome" class="form-select">`
                     + `<option value="">${esc(t('ClosureOutcomePlaceholder'))}</option>${outcomeOptions}</select>`
                     + `<label class="form-label d-block text-start" id="wcnClosureReasonLabel" `
                     + `for="wcnClosureReason">${esc(labelFor(''))}</label>`
                     + `<textarea id="wcnClosureReason" class="form-control" rows="3" `
-                    + `placeholder="${esc(t('ClosureReasonPlaceholder'))}"></textarea>`,
+                    + `placeholder="${esc(t('ClosureReasonPlaceholder'))}"></textarea>`
+                : '';
+            // The REAL renderer's own row markup lands inside this row on open — see didOpen below.
+            const fieldsBlock = closureFields.length
+                ? `<div class="row g-3 text-start" id="wcnClosureFieldsRow"></div>`
+                : '';
+
+            /*
+             * "Çıktı / Kanıt ekle" — a file plus its kind, Deliverable by default (this is the CLOSING act; a
+             * plain "Attachment" reads as instructions, which is the create form's own affordance, not this
+             * one). The label itself says "required" when the type's flag has nothing to point at yet, so the
+             * requirement is read before it can be missed rather than discovered from a refusal after confirm.
+             */
+            const attachmentBlock = canAttachOnComplete
+                ? `<label class="form-label d-block text-start" for="wcnCompleteAttachFile">`
+                    + `${esc(t(deliverableRequired ? 'CompleteAttachFileRequiredLabel' : 'CompleteAttachFileLabel'))}</label>`
+                    + `<input type="file" id="wcnCompleteAttachFile" class="form-control">`
+                    + `<label class="form-label d-block text-start" for="wcnCompleteAttachKind">`
+                    + `${esc(t('AttachmentKindLabel'))}</label>`
+                    + `<select id="wcnCompleteAttachKind" class="form-select">`
+                    + `<option value="Deliverable" selected>${esc(attachmentKindLabel('Deliverable'))}</option>`
+                    + `<option value="Evidence">${esc(attachmentKindLabel('Evidence'))}</option>`
+                    + `</select>`
+                : '';
+
+            // Resolved BEFORE the dialog opens: `renderCustomFields` either offers an option-driven field
+            // complete or not at all, and there is no later moment to hand it a list that was still in flight.
+            const closureFieldOptions = closureFields.length ? await loadClosureFieldOptions(closureFields) : {};
+
+            return global.Swal.fire(Object.assign({
+                title: dialogIcon(action.destructive ? 'danger' : 'info', inboxActionIcon(action))
+                    + '<span>' + esc(actionLabel(action)) + '</span>',
+                html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
+                    + requiredWarning
+                    + outcomeBlock
+                    + fieldsBlock
+                    + attachmentBlock,
                 showCancelButton: true,
                 confirmButtonText: tf('ConfirmProceedNamed', actionLabel(action).toLocaleLowerCase('tr')),
                 cancelButtonText: t('DialogDismiss'),
@@ -8758,10 +10483,34 @@
                             if (label) { label.textContent = labelFor(picker.value); }
                         });
                     }
+
+                    // Faz 2a-rest — the SAME renderer the create form uses, reached through the SAME shared
+                    // script (Tasks/form.js, already loaded by this view). Never a second one (YAPMA).
+                    const fieldsRow = document.getElementById('wcnClosureFieldsRow');
+                    if (fieldsRow && closureFields.length) {
+                        /*
+                         * ⚠ `TasksL10n.t`, NOT this dialog's OWN `t`. These four are the create form's OWN
+                         * vocabulary for the SAME renderer — already loaded here (`Tasks/index.l10n.js`, before
+                         * `Tasks/api.js`, in both Index.cshtml and Details.cshtml) — and duplicating them into
+                         * WorkCenterNextIndex's resx would be a second place for one translation to live.
+                         */
+                        const formT = (key) => global.TasksL10n?.t?.(key) ?? key;
+                        global.TaskForm.renderCustomFields(fieldsRow, closureFields, closureFieldOptions, {
+                            optionPlaceholder: formT('customFieldOptionPlaceholder'),
+                            booleanYes: formT('customFieldBooleanYes'),
+                            booleanNo: formT('customFieldBooleanNo'),
+                            recordSearchPlaceholder: formT('customFieldRecordSearchPlaceholder'),
+                            // Labels a TENANT typed, and labels the type's own closure-outcome dictionary
+                            // already resolves through THIS dialog's `t` — a resource-keyed field label is the
+                            // one case needing a translator, and it is WCN's own strings it would ever name.
+                            translate: t
+                        });
+                        global.TaskForm.enhanceSelects?.(fieldsRow, { searchRecords: searchClosureFieldRecords });
+                    }
                 },
                 preConfirm: () => {
                     const outcomeCode = String(document.getElementById('wcnClosureOutcome')?.value || '').trim();
-                    if (!outcomeCode) {
+                    if (closureOutcomes.length && !outcomeCode) {
                         global.Swal.showValidationMessage(t('ClosureOutcomeRequired'));
                         return false;
                     }
@@ -8781,21 +10530,72 @@
                         return false;
                     }
 
-                    return { outcomeCode, reason };
+                    /*
+                     * Faz 2a-rest — the SAME COURTESY for closure fields: the server enforces
+                     * TASK_CLOSURE_FIELD_REQUIRED independently (a client can always reach the dispatch route
+                     * without this dialog), so a client-side miss here costs nothing but a round trip.
+                     */
+                    const fieldsRow = document.getElementById('wcnClosureFieldsRow');
+                    let closureFieldValues;
+                    if (fieldsRow && closureFields.length) {
+                        const values = global.TaskForm.readCustomFieldValues(fieldsRow, closureFields);
+                        const { valid, errors } = global.TaskForm.validateCustomFields(closureFields, values);
+                        if (!valid) {
+                            global.Swal.showValidationMessage(t('ClosureFieldRequired'));
+                            const missing = closureFields.find((definition) => errors.includes(definition.code));
+                            if (missing) {
+                                document.querySelector(`[data-custom-field="${missing.code}"]`)?.focus?.();
+                            }
+                            return false;
+                        }
+                        closureFieldValues = values.map((value) => ({
+                            definitionCode: value.definitionCode, valueType: value.valueType, value: value.value
+                        }));
+                    }
+
+                    /*
+                     * The client-side half of the SAME gate `TransitionTaskItemHandler` enforces
+                     * (TASK_DELIVERABLE_REQUIRED): a courtesy, not the rule — the engine refuses the write on its
+                     * own if this dialog is ever bypassed.
+                     */
+                    let attachment = null;
+                    if (canAttachOnComplete) {
+                        const file = document.getElementById('wcnCompleteAttachFile')?.files?.[0] || null;
+                        if (deliverableRequired && !file) {
+                            global.Swal.showValidationMessage(t('CompleteAttachFileRequired'));
+                            return false;
+                        }
+                        if (file) {
+                            attachment = { file, kind: document.getElementById('wcnCompleteAttachKind')?.value || 'Deliverable' };
+                        }
+                    }
+
+                    return { outcomeCode, reason, closureFieldValues, attachment };
                 }
-            }, dialogLook())).then((res) => {
-                if (res.isConfirmed && res.value) {
-                    applyAction(item, action, res.value.reason, undefined, undefined, res.value.outcomeCode);
+            }, dialogLook())).then(async (res) => {
+                if (!res.isConfirmed || !res.value) { return { outcome: 'cancelled' }; }
+                /*
+                 * UPLOAD FIRST, WHILE THE TASK IS STILL OPEN — then, and only on success, transition. A failed
+                 * upload must not complete the task: the reader asked for both, and completing anyway would
+                 * silently drop the half that failed. `uploadAttachment` is the SAME call the paperclip on the
+                 * detail page and its own dialog use (YAPMA: never a second upload path) — it already shows its
+                 * own toast and refreshes the board, so a failure here has already been reported to the reader.
+                 */
+                if (res.value.attachment) {
+                    const uploaded = await uploadAttachment(item.id, res.value.attachment);
+                    if (!uploaded) { return { outcome: 'refused' }; }
                 }
+                return applyAction(
+                    item, action, res.value.reason, undefined, undefined, res.value.outcomeCode,
+                    res.value.closureFieldValues);
             });
-            return;
         }
 
         // High-consequence action (approve/sign-off/complete): explicit confirm so
         // an accidental click — or the `a` keyboard shortcut on a six-figure
         // approval — can't fire irreversibly (spec v2 §6, P1 fix).
         if (action.confirm) {
-            if (!global.Swal) { return; }
+            if (!global.Swal) { return { outcome: 'cancelled' }; }
             /*
              * The sentence no longer quotes the title: the badge below carries it, in the product's own framed
              * chip. Two places saying the same name is how one of them goes stale.
@@ -8820,7 +10620,19 @@
             const requiredWarning = stillOpen.length
                 ? `<div class="wcn-confirm-warning">${esc(tf('ConfirmRequiredOpen', stillOpen.length))}</div>`
                 : '';
+            /*
+             * REQ-WCN-01 (W-2) — an OPTIONAL note, in this same confirm. Offered only when the SERVER flagged the
+             * action (`acceptsNote` → `action.note`); an action that REQUIRES a reason never reaches this branch —
+             * its mandatory window above is untouched. The shared confirm's own textarea, no validator: empty is a
+             * real answer, and an empty note sends exactly the body this confirm always sent.
+             */
+            const offersNote = !!action.note && !action.reason;
+            let resolveOutcome;
+            const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
             sharedConfirm({
+                input: offersNote
+                    ? { label: t('ApprovalNoteLabel'), placeholder: t('ApprovalNotePlaceholder') }
+                    : undefined,
                 title: actionLabel(action),
                 /*
                  * The action's OUTCOME sentence leads the confirm — this is where `OutcomeCancel` ("cancels the
@@ -8828,9 +10640,9 @@
                  * the kebab and lost their card-side prose. A confirm that says only "are you sure?" asks the
                  * reader to remember what they are sure ABOUT.
                  */
-                subtext: `${outcomeLead(action)}<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
+                subtextHtml: `${outcomeLead(action)}<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
                 // The object of the action, in the wrapper's own badge — the one mechanism the product keeps.
-                entityName: esc(item.title),
+                entityName: item.title,
                 // The wrapper picks the icon from the TYPE rather than taking one by name, so a destructive act
                 // gets the danger circle and its red button from a single word instead of three settings.
                 type: action.destructive ? 'danger' : 'info',
@@ -8842,12 +10654,16 @@
                  * title, the rail button and this button all read the same string.
                  */
                 confirmText: tf('ConfirmProceedNamed', actionLabel(action).toLocaleLowerCase('tr')),
-                onConfirm: () => applyAction(item, action)
+                onConfirm: (value) => {
+                    const note = offersNote ? String(value || '').trim() : '';
+                    resolveOutcome(note ? applyAction(item, action, note) : applyAction(item, action));
+                },
+                onCancel: () => resolveOutcome({ outcome: 'cancelled' })
             });
-            return;
+            return outcome;
         }
 
-        applyAction(item, action);
+        return applyAction(item, action);
     };
 
     const executeTriggerAction = (trigger, action, reason) => {
@@ -8898,7 +10714,8 @@
 
 
     // ── Keyboard (spec §4: j/k move · a accept · r reject · Enter open · Esc) ──
-    const isTyping = (target) => target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
+    // The shortcuts themselves are registered with the shared layer (registerShortcuts, below); the typing guard
+    // that used to live here is the layer's silence rule now (assets/js/shared/diten-shortcuts.js).
 
     const moveSelection = (delta) => {
         if (!state.visibleOrder.length) { return; }
@@ -8936,6 +10753,69 @@
         return '/WorkCenterNext';
     };
 
+    /*
+     * REQ-WCN-01 (W-4) — a success said on the NEXT page. The detail page stores the sentence, the list shows it once
+     * on boot and forgets it. Session-scoped and same-tab; when storage is unavailable the redirect still happens
+     * and only the sentence is lost.
+     */
+    const FLASH_TOAST_KEY = 'wcn:flash-toast';
+    // A success belongs to the navigation that follows it. One that was never shown (the tab went elsewhere, the
+    // navigation was aborted) must not surface minutes later on an unrelated visit to the list.
+    const FLASH_TOAST_TTL_MS = 20000;
+
+    const rememberFlashToast = (message) => {
+        try {
+            global.sessionStorage?.setItem(FLASH_TOAST_KEY, JSON.stringify({ message: String(message || ''), at: Date.now() }));
+        } catch (error) { /* see above */ }
+    };
+
+    const showFlashToast = () => {
+        let message = '';
+        try {
+            const stored = global.sessionStorage?.getItem(FLASH_TOAST_KEY) || '';
+            global.sessionStorage?.removeItem(FLASH_TOAST_KEY);
+            const parsed = stored ? JSON.parse(stored) : null;
+            const age = parsed ? Date.now() - Number(parsed.at) : NaN;
+            if (parsed && typeof parsed.message === 'string' && age >= 0 && age <= FLASH_TOAST_TTL_MS) {
+                message = parsed.message;
+            }
+        } catch (error) { /* storage disabled, or not ours — nothing to show */ }
+        if (message) { toast(message); }
+    };
+
+    /*
+     * Where a decided item's reader goes. The remembered URL is the last LIST the reader looked at — except when a
+     * detail page was opened from another detail page (a subtask's "open full detail"), where it is a detail URL:
+     * landing there would show the success on nobody's page and leave it for a later visit. Then the plain list.
+     */
+    const listUrlAfterDecision = () => {
+        const url = listReturnUrl();
+        return url.startsWith('/WorkCenterNext/Details') ? '/WorkCenterNext' : url;
+    };
+
+    /**
+     * The detail page's own item is gone from a re-read in which ITS OWN PROVIDER ANSWERED. Not when the read failed,
+     * not when the contract refused the item, not when the board came back partial and the provider that did not
+     * answer is the item's own, and not when the single-item read failed for any reason other than a 404 — in every
+     * one of those the item may still exist, and a "success, back to the list" would be a claim nobody checked.
+     *
+     * ANOTHER provider being down says nothing about this item (measured live, 2026-10-01: with one unrelated
+     * provider unavailable the first version of this rule never returned anybody to the list).
+     */
+    const leftTheBoardOnDetail = (item) => {
+        const root = document.getElementById('wcnApp');
+        if (!root || root.dataset.wcnPage !== 'detail' || !item || root.dataset.wcnItemId !== item.id) { return false; }
+        if (state.loadState !== 'ready' || itemById(item.id)) { return false; }
+        const ownProvider = item.source && item.source.providerCode;
+        if (Array.isArray(state.unavailableSources)
+            && state.unavailableSources.some((source) => !ownProvider || source.providerCode === ownProvider)) {
+            return false;
+        }
+        if (lastDetailReadHttpStatus !== null && lastDetailReadHttpStatus !== 404) { return false; }
+        return !(Array.isArray(state.contractRejectedErrors)
+            && state.contractRejectedErrors.some((error) => error.fixtureId === item.id));
+    };
+
     const openDetailPage = (id) => {
         if (!id) { return; }
         rememberListUrl();
@@ -8955,7 +10835,7 @@
 
     // ASYNC: posting a comment on Enter is awaited, so a failed post cannot swallow its own rejection and look
     // like a key that was never wired — the exact shape the subtask writer shipped broken in.
-    const onKeydown = async (event) => {
+    const onFieldKeydown = async (event) => {
         /*
          * ENTER ADDS THE SUBTASK — before the typing guard, because this fires INSIDE a text field.
          *
@@ -8985,6 +10865,21 @@
             event.preventDefault();
             const post = document.querySelector('#wcnApp [data-wcn-comment-post]');
             if (post) { await postComment(post.getAttribute('data-wcn-comment-post'), event.target.value); }
+            return;
+        }
+        /*
+         * WP-PSS-MOD0024-TASK-MENTIONS-01 — typing "@" is a SHORTCUT into the same picker the toolbar button
+         * opens, not an inline-text autocomplete. The character is removed from the box the moment the picker
+         * opens: the chip tray is where a mention lives on screen, and a bare "@" left sitting in the text would
+         * be a leftover from a control that already did its job.
+         */
+        if (event.key === '@' && event.target.matches && event.target.matches('[data-wcn-comment-input]')) {
+            const post = document.querySelector('#wcnApp [data-wcn-comment-post]');
+            const taskId = post && post.getAttribute('data-wcn-comment-post');
+            if (taskId) {
+                event.preventDefault();
+                await openMentionPicker(taskId);
+            }
             return;
         }
         if (event.key === 'Enter' && event.target.matches && event.target.matches('[data-diten-check-input]')) {
@@ -9052,55 +10947,115 @@
 
         if (event.key === 'Escape' && event.target.matches && event.target.matches('[data-wcn-search]')) {
             if (state.search) { event.preventDefault(); state.search = ''; render(); }
-            return;
         }
-        if (isTyping(event.target) || event.metaKey || event.ctrlKey || event.altKey) { return; }
-        const key = event.key.toLowerCase();
-        /*
-         * Arrow / Home / End across a tab strip.
-         *
-         * Widened from `[data-wcn-tab]` (the list page's ownership strip) to ANY `[role=tab]`, and scoped to the
-         * strip the focused tab actually lives in. Two reasons: the detail page's new strip gets the same
-         * keyboard behaviour for free rather than a second copy of it, and the old global query would have
-         * walked between two strips as if they were one list the moment a page carried both.
-         */
-        const activeTab = event.target.closest && event.target.closest('[role="tab"]');
-        if (activeTab && (key === 'arrowleft' || key === 'arrowright' || key === 'home' || key === 'end')) {
-            const strip = activeTab.closest('[role="tablist"]') || document.getElementById('wcnApp');
-            const tabs = Array.from(strip.querySelectorAll('[role="tab"]'));
-            let index = tabs.indexOf(activeTab);
-            index = key === 'home' ? 0 : key === 'end' ? tabs.length - 1
-                : (index + (key === 'arrowright' ? 1 : -1) + tabs.length) % tabs.length;
-            event.preventDefault(); tabs[index].focus(); tabs[index].click(); return;
-        }
-        if (key === 'j') { event.preventDefault(); moveSelection(1); return; }
-        if (key === 'k') { event.preventDefault(); moveSelection(-1); return; }
-        if (key === 'escape') { state.selectedId = null; render(); return; }
+    };
 
+    /*
+     * ── THE PAGE'S SHORTCUTS, DECLARED TO THE SHARED LAYER (WP-UI-SHORTCUTS-01, BL-438) ───────────────────
+     *
+     * These keys used to be the tail of this page's own keydown handler (then `onKeydown`), behind its own copy of
+     * the typing/modifier guard. They are now registered with `DitenShortcuts`, which owns the one `document`
+     * listener, the silence rule (field, open modal/offcanvas/SweetAlert, Ctrl/Cmd/Alt) and the `?` list — so the
+     * list prints exactly what is bound.
+     *
+     * What `onFieldKeydown` keeps above is NOT a shortcut: Enter/@/Escape INSIDE a field and Enter/Space on a
+     * `role=button` are how those controls commit, and the layer is silent in fields by design.
+     *
+     * Each handler is the old branch, moved whole: same keys, same order of checks, same preventDefault calls.
+     */
+    const SHORTCUT_SCOPE = 'workcenter';
+    // A `role=button` field row answers Enter/Space itself (onFieldKeydown above); the shortcut must not also open.
+    const isFieldButton = (event) => !!(event.target.closest && event.target.closest('[data-wcn-action][role="button"]'));
+
+    const openShortcut = (event) => {
+        const key = event.key.toLowerCase();
+        if ((key === 'enter' || key === ' ') && isFieldButton(event)) { return false; }
         const focusedRow = event.target.closest && event.target.closest('[data-wcn-row]');
         if (focusedRow && !event.target.closest('button,input,a') && (key === 'enter' || key === ' ')) {
             event.preventDefault();
             state.selectedId = focusedRow.getAttribute('data-wcn-row');
             const focusedItem = itemById(state.selectedId);
             if (focusedItem) { markSeen(focusedItem); }
-            openDetailPage(state.selectedId); return;
+            openDetailPage(state.selectedId); return undefined;
         }
+        const item = itemById(state.selectedId);
+        if (!item || key === ' ') { return undefined; }
+        event.preventDefault();
+        openDetailPage(state.selectedId);
+        return undefined;
+    };
 
+    const roleShortcut = (role) => (event) => {
         const item = itemById(state.selectedId);
         if (!item) { return; }
-        if (key === 'enter' || key === 'o') {
-            event.preventDefault();
-            openDetailPage(state.selectedId);
+        const action = actionByRole(item, role);
+        if (action) { event.preventDefault(); performAction(item, action.key); }
+    };
+
+    const registerShortcuts = () => {
+        const layer = global.DitenShortcuts;
+        if (!layer) {
+            console.error('[WorkCenterNext] window.DitenShortcuts is unavailable — no keyboard shortcuts on this page. '
+                + 'The host view must include Views/Shared/_DitenShortcuts.cshtml before app.js.');
             return;
         }
-        if (key === 'a') { const a = actionByRole(item, 'accept'); if (a) { event.preventDefault(); performAction(item, a.key); } return; }
-        if (key === 'r') { const r = actionByRole(item, 'reject'); if (r) { event.preventDefault(); performAction(item, r.key); } return; }
+        layer.unregister(SHORTCUT_SCOPE);
+        layer.register(SHORTCUT_SCOPE, [
+            /*
+             * Arrow / Home / End across a tab strip.
+             *
+             * Widened from `[data-wcn-tab]` (the list page's ownership strip) to ANY `[role=tab]`, and scoped to
+             * the strip the focused tab actually lives in. Two reasons: the detail page's new strip gets the same
+             * keyboard behaviour for free rather than a second copy of it, and the old global query would have
+             * walked between two strips as if they were one list the moment a page carried both.
+             */
+            {
+                keys: ['ArrowLeft', 'ArrowRight', 'Home', 'End'],
+                actionKey: 'Wcn.Tabs',
+                when: (event) => !!(event.target.closest && event.target.closest('[role="tab"]')),
+                handler: (event) => {
+                    const key = event.key.toLowerCase();
+                    const activeTab = event.target.closest('[role="tab"]');
+                    const strip = activeTab.closest('[role="tablist"]') || document.getElementById('wcnApp');
+                    const tabs = Array.from(strip.querySelectorAll('[role="tab"]'));
+                    let index = tabs.indexOf(activeTab);
+                    index = key === 'home' ? 0 : key === 'end' ? tabs.length - 1
+                        : (index + (key === 'arrowright' ? 1 : -1) + tabs.length) % tabs.length;
+                    event.preventDefault(); tabs[index].focus(); tabs[index].click();
+                }
+            },
+            { keys: ['j'], actionKey: 'Wcn.Next', handler: (event) => { event.preventDefault(); moveSelection(1); } },
+            { keys: ['k'], actionKey: 'Wcn.Previous', handler: (event) => { event.preventDefault(); moveSelection(-1); } },
+            { keys: ['Enter', 'o'], actionKey: 'Wcn.Open', handler: openShortcut },
+            { keys: [' '], actionKey: 'Wcn.OpenFocused', handler: openShortcut },
+            { keys: ['a'], actionKey: 'Wcn.Accept', handler: roleShortcut('accept') },
+            { keys: ['r'], actionKey: 'Wcn.Reject', handler: roleShortcut('reject') },
+            { keys: ['Escape'], actionKey: 'Wcn.ClearSelection', handler: () => { state.selectedId = null; render(); } }
+        ], { titleKey: 'Shortcuts.Scope.WorkCenter' });
     };
 
     // ── Event delegation ──────────────────────────────────────────────────────
+    /*
+     * WP-UI-CALENDAR-VIEW-01 — a panel card dragged onto the calendar. The card carries its id on the drag in the
+     * component's own type, and DitenCalendar resolves where it landed (see diten-calendar.js on why this is HTML5
+     * drag rather than FullCalendar's Draggable). An invitation is not plannable and carries nothing.
+     */
+    const onCalendarCardDragStart = (event) => {
+        const card = event.target && event.target.closest ? event.target.closest('[data-wcn-calpanel-dropzone] [data-wcn-plan-drag]') : null;
+        if (!card || !event.dataTransfer || !global.DitenCalendar) { return; }
+        event.dataTransfer.setData(global.DitenCalendar.DRAG_TYPE, card.getAttribute('data-wcn-plan-drag'));
+        event.dataTransfer.effectAllowed = 'move';
+    };
+
     const onClick = async (event) => {
         const root = event.target.closest('#wcnApp');
         if (!root && !event.target.closest('.wcn-bulkbar')) { /* still allow bulkbar inside app */ }
+
+        // The toolbar's keyboard button — the same list `?` opens (WP-UI-SHORTCUTS-01).
+        if (event.target.closest('[data-wcn-shortcuts]')) {
+            if (global.DitenShortcuts) { global.DitenShortcuts.open(); }
+            return;
+        }
 
         const jumpEl = event.target.closest('[data-wcn-jump]');
         if (jumpEl) {
@@ -9170,10 +11125,10 @@
         }
         if (event.target.closest('[data-wcn-chip-clear]')) { state.typeFilter.clear(); state.signalFilter.clear(); render(); return; }
         if (event.target.closest('[data-wcn-search-clear]')) { state.search = ''; render(); return; }
-        const calMonthEl = event.target.closest('[data-wcn-cal-month]');
-        if (calMonthEl) {
-            const dir = calMonthEl.getAttribute('data-wcn-cal-month');
-            if (dir === 'today') { state.calendarMonth = null; } else { shiftMonth(dir === 'next' ? 1 : -1); }
+        // WP-UI-CALENDAR-VIEW-01 — the planning board's panel tabs.
+        const calPanelEl = event.target.closest('[data-wcn-calpanel]');
+        if (calPanelEl) {
+            state.calendarPanel = calPanelEl.getAttribute('data-wcn-calpanel');
             render();
             return;
         }
@@ -9198,7 +11153,7 @@
             return;
         }
         if (event.target.closest('[data-wcn-filter-reset]')) {
-            state.moduleFilter = []; state.priorityFilter = 'all'; state.modeFilter = 'all';
+            state.moduleFilter = []; state.priorityFilter = 'all'; state.modeFilter = 'all'; state.assigneeFilter = [];
             state.typeFilter.clear(); state.signalFilter.clear(); state.search = '';
             state.sortKey = 'sla'; state.sortDir = 'asc';
             state.tableColumnVisibility = [true, true, true, true, true, true, true, true];
@@ -9209,7 +11164,8 @@
         const newEl = event.target.closest('[data-wcn-new]');
         if (newEl) {
             const kind = newEl.getAttribute('data-wcn-new');
-            if (kind === 'task') { openSelfTask(); }
+            // The entry is not rendered without the key; this refuses a stale menu the same way (UAS-001 §6).
+            if (kind === 'task') { if (canCreateSelfTask()) { openSelfTask(); } }
             else if (kind === 'source') { openCreateInSource(); }
             return;
         }
@@ -9246,7 +11202,14 @@
         const actionEl = event.target.closest('[data-wcn-action]');
         if (actionEl) {
             event.stopPropagation();
-            performAction(itemById(actionEl.getAttribute('data-wcn-id')), actionEl.getAttribute('data-wcn-action'));
+            /*
+             * WP-WCN-KANBAN-01 Dilim 1 — the click path calls performAction exactly as it always did; nothing
+             * here reads or awaits the resolved value, so the button's own behaviour is unchanged. The global is
+             * a TEST-ONLY observation seam (module has no exports): performAction's Promise<{outcome,...}> has no
+             * other exit from a DOM click, and tests await it after `.click()` to assert the branch it resolved.
+             */
+            global.__wcnLastActionOutcome = performAction(
+                itemById(actionEl.getAttribute('data-wcn-id')), actionEl.getAttribute('data-wcn-action'));
             return;
         }
 
@@ -9480,7 +11443,7 @@
         }
         /*
          * The quick-add BUTTON is gone: `data-wcn-subtask-add` now lives on the input itself and Enter submits
-         * (onKeydown). A click path is kept for anything that still carries the attribute on a button — the
+         * (onFieldKeydown). A click path is kept for anything that still carries the attribute on a button — the
          * subtask create panel does — so both surfaces reach the one write path.
          */
         const subAddEl = event.target.closest('button[data-wcn-subtask-add]');
@@ -9519,6 +11482,18 @@
             await withdrawComment(
                 commentWithdrawEl.getAttribute('data-wcn-comment-task'),
                 commentWithdrawEl.getAttribute('data-wcn-comment-withdraw'));
+            return;
+        }
+        const mentionAddEl = event.target.closest('[data-wcn-mention-add]');
+        if (mentionAddEl) {
+            await openMentionPicker(mentionAddEl.getAttribute('data-wcn-mention-add'));
+            return;
+        }
+        const mentionRemoveEl = event.target.closest('[data-wcn-mention-remove]');
+        if (mentionRemoveEl) {
+            removeMention(
+                mentionRemoveEl.getAttribute('data-wcn-mention-task'),
+                mentionRemoveEl.getAttribute('data-wcn-mention-remove'));
             return;
         }
         const commentEl = event.target.closest('[data-wcn-comment-post]');
@@ -9610,7 +11585,7 @@
         }
 
         if (event.target.closest('[data-wcn-clear-filters]')) {
-            state.moduleFilter = []; state.priorityFilter = 'all'; state.modeFilter = 'all';
+            state.moduleFilter = []; state.priorityFilter = 'all'; state.modeFilter = 'all'; state.assigneeFilter = [];
             state.typeFilter.clear(); state.signalFilter.clear(); state.search = ''; render(); return;
         }
 
@@ -9626,7 +11601,7 @@
         // it into the split-detail navigation, which would re-render and kill the
         // dropdown before Bootstrap can open it.
         const onControl = event.target.closest('button, a, [data-bs-toggle], .dropdown-menu, [data-wcn-check], .wcn-td-check');
-        if (rowEl && state.view !== 'table' && !onControl) {
+        if (rowEl && state.view !== 'table' && !onControl && !kanbanDragSuppressClick) {
             state.selectedId = rowEl.getAttribute('data-wcn-row');
             const it = itemById(state.selectedId);
             if (it) { markSeen(it); }
@@ -9738,6 +11713,37 @@
      */
     let loadGeneration = 0;
 
+    /*
+     * BL-414 — the id the detail page was opened for, or '' on the list page. Read from the same server-rendered
+     * attribute (Details.cshtml) renderUnsafe resolves its item by.
+     */
+    const requestedDetailId = () => {
+        const root = document.getElementById('wcnApp');
+        return root && root.dataset.wcnPage === 'detail' ? (root.dataset.wcnItemId || '') : '';
+    };
+
+    /*
+     * BL-414 — the ONE item the detail page was opened for, when the list just read does not hold it.
+     *
+     * Null when there is nothing to ask (the list page; an item already on the list; an id the contract already
+     * rejected from the list, whose BL-379 sentence is the more specific one) and null when the server has no
+     * item for this reader. The server answers a missing and an unreadable task with the same 404, so both leave
+     * the page's not-found answer exactly as it was.
+     */
+    // The HTTP answer of the last single-item read, or null when none was needed (the list held the item).
+    let lastDetailReadHttpStatus = null;
+
+    const readDetailItemMissingFrom = async (api, result) => {
+        lastDetailReadHttpStatus = null;
+        const id = requestedDetailId();
+        if (!id || result.items.some((item) => item.id === id)) { return null; }
+        if (Array.isArray(result.errors) && result.errors.some((error) => error.fixtureId === id)) { return null; }
+        const single = await api.fetchWorkItem(id);
+        // W-4 reads this: only a 404 says the item is GONE. A network failure or a 5xx says nothing about the item.
+        lastDetailReadHttpStatus = single.status === api.STATUS.OK ? 200 : single.httpStatus;
+        return single.status === api.STATUS.OK ? single : null;
+    };
+
     const loadWorkItems = async () => {
         const generation = ++loadGeneration;
         const isStale = () => generation !== loadGeneration;
@@ -9790,12 +11796,45 @@
         // A newer read has been issued while this one was in flight: its answer is the current one, and this
         // answer describes a state that no longer exists. Drop it without touching the screen.
         if (isStale()) { return; }
+        /*
+         * BL-414 — THE DETAIL PAGE IS THE TASK'S RECORD VIEW, NOT A WINDOW ONTO MY LIST.
+         *
+         * MEASURED: this page resolved its item ONLY out of the list above, and that list holds the reader's own
+         * work (assigned, own-pool, opened). Every other reader the task read rule admits — a watcher, a mentioned
+         * person, a manager with scope, a read-all holder — got "not found" here while /Tasks/{id} opened for them.
+         * So did a manager opening a subordinate's task from Ekibim: this page boots without the list's URL state
+         * (boot skips hydrateStateFromUrl, openDetailPage carries no scope), so it always reads the SELF list.
+         *
+         * So when the list does not hold the requested id, the page asks the server for that ONE item. The fetched
+         * item joins state.items on THIS page only — the detail page draws no list, so no tab and no scope gains a
+         * row, and a write's re-read (which comes back through here) fetches it again.
+         */
+        const detailRead = result.status === api.STATUS.OK ? await readDetailItemMissingFrom(api, result) : null;
+        if (isStale()) { return; }
         if (result.status === api.STATUS.OK) {
-            state.items = result.items;
+            state.items = detailRead && detailRead.item ? result.items.concat([detailRead.item]) : result.items;
             // WC-D3 — a PARTIAL board is a success with rows on it, not an error state. The list is kept and the
             // gap is stated; collapsing this into loadError would throw away rows that did arrive, which is the
             // very failure the backend change stopped doing.
             state.unavailableSources = result.unavailableSources || [];
+            /*
+             * BL-379 — a board that silently drops contract-invalid items is the exact defect this closes. The
+             * validator (fixture-contract.js) is never loosened and a rejected item never joins state.items, but
+             * the drop can no longer be silent: every rejection is named on the console (fixtureId + code, so a
+             * specific row can be traced) and counted for a non-blocking on-screen note (buildContractRejectedNote).
+             */
+            // BL-414 — an item fetched by id that the contract refuses is reported on the SAME channel as a list row.
+            const rejected = (Array.isArray(result.errors) ? result.errors : [])
+                .concat((detailRead && detailRead.errors) || []);
+            if (rejected.length > 0) {
+                rejected.forEach((error) => {
+                    console.warn(
+                        `[WorkCenterNext] work item rejected by contract: fixtureId=${error.fixtureId} code=${error.code}`);
+                });
+                state.contractRejectedErrors = rejected;
+            } else {
+                state.contractRejectedErrors = [];
+            }
             // Triggers/meetings/notes have no provider yet — they stay empty until one lands (DEC-1).
             state.triggers = [];
             state.meetings = [];
@@ -9806,6 +11845,7 @@
             // Nothing arrived at all, so there is no partial board to qualify — the error state speaks for the
             // whole read. A stale banner from the previous load would be describing data that is no longer here.
             state.unavailableSources = [];
+            state.contractRejectedErrors = [];
             state.loadState = 'error';
             state.loadError = result.status; // forbidden | unauthorized | unavailable | error
         }
@@ -9822,14 +11862,16 @@
      */
     // `bootstrap` joins the list because the subtask quick-edit panel is an offcanvas: without it the row
     // click does nothing at all, which is the same silent failure as a missing TasksApi.
-    const WRITE_DEPENDENCIES = ['TasksApi', 'TaskForm', 'bootstrap'];
+    // `MeetingsApi` joins it for the review-meeting scheduler (S10B live pass): a host view that forgot
+    // assets/js/Meetings/api.js left that dialog dead with no message at all.
+    const WRITE_DEPENDENCIES = ['TasksApi', 'TaskForm', 'bootstrap', 'MeetingsApi'];
 
     const reportMissingWriteDependencies = () => {
         const missing = WRITE_DEPENDENCIES.filter((name) => !global[name]);
         if (!missing.length) { return; }
         console.error(
             `[WorkCenterNext] Missing required script(s): ${missing.join(', ')}. Every write on this page will `
-            + 'fail silently. The host view must load assets/js/Tasks/api.js and assets/js/Tasks/form.js '
+            + 'fail silently. The host view must load assets/js/Tasks/api.js, assets/js/Tasks/form.js and assets/js/Meetings/api.js '
             + '(see Views/WorkCenterNext/Index.cshtml).');
     };
 
@@ -9842,6 +11884,8 @@
         if (root.dataset.wcnPage !== 'detail') {
             hydrateStateFromUrl();
             state.viewsByTab[state.tab] = state.view;
+            // REQ-WCN-01 (W-4) — a decision taken on the detail page reports its success here.
+            showFlashToast();
         }
         // The detail page used to declare itself 'ready' here, before loadWorkItems had fetched anything — so the
         // first paint had no items and announced the task did not exist. It stays 'loading' until the projection
@@ -9889,12 +11933,18 @@
         document.addEventListener('click', onClickWrapped);
         document.addEventListener('change', onChange);
         document.addEventListener('input', onInput);
-        document.addEventListener('keydown', onKeydown);
+        // In-field commits only (Enter/@/Escape in a field, Enter/Space on a role=button) — not shortcuts.
+        document.addEventListener('keydown', onFieldKeydown);
+        document.addEventListener('dragstart', onCalendarCardDragStart);
+        registerShortcuts();
         global.__wcnTeardown = () => {
+            document.removeEventListener('dragstart', onCalendarCardDragStart);
+            unmountCalendarView();
             document.removeEventListener('click', onClickWrapped);
             document.removeEventListener('change', onChange);
             document.removeEventListener('input', onInput);
-            document.removeEventListener('keydown', onKeydown);
+            document.removeEventListener('keydown', onFieldKeydown);
+            if (global.DitenShortcuts) { global.DitenShortcuts.unregister(SHORTCUT_SCOPE); }
             stopTimerTick();
         };
         // The quick-create offcanvas announces a new task instead of touching state directly, so this module

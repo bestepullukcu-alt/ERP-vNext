@@ -156,6 +156,64 @@ describe("WorkCenterNext work-items API seam (WC-1b)", () => {
   });
 
   /*
+   * ── BL-414 — ONE ITEM BY ID ─────────────────────────────────────────────────────────────────────────────────
+   *
+   * The detail page's second read, for an item the reader's own list does not hold. Same proxy, same mapper, and
+   * the server's 404 (missing OR unreadable — the same bytes) is simply "no item".
+   */
+  it("reads ONE item by id through the same-origin proxy and the same mapper", async () => {
+    const calls = [];
+    global.fetch = (url, opts) => {
+      calls.push({ url, opts });
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ data: projectionItem(), isSuccessful: true })
+      });
+    };
+
+    const result = await global.WorkCenterNextApi.fetchWorkItem("11111111-1111-1111-1111-111111111111");
+
+    expect(calls[0].url).toBe("/WorkCenterNext/api/work-items/11111111-1111-1111-1111-111111111111");
+    expect(calls[0].url).not.toMatch(/5056|5057|localhost/);
+    expect(calls[0].opts.credentials).toBe("same-origin");
+    expect(result.status).toBe(global.WorkCenterNextApi.STATUS.OK);
+    expect(result.errors).toEqual([]);
+    // The shared presentation mapper ran: the item has the same shape a list row has.
+    expect(result.item.id).toBe("11111111-1111-1111-1111-111111111111");
+    expect(result.item.itemType).toBe("approval");
+  });
+
+  it("encodes the id into the path rather than splicing it in raw", () => {
+    expect(global.WorkCenterNextApi.itemEndpoint("a/b?c")).toBe("/WorkCenterNext/api/work-items/a%2Fb%3Fc");
+  });
+
+  it("answers 'no item' for the 404 a missing or unreadable task gets", async () => {
+    global.fetch = () => Promise.resolve({
+      ok: false, status: 404, json: () => Promise.resolve({ reason_code: "TASK_NOT_FOUND" })
+    });
+
+    const result = await global.WorkCenterNextApi.fetchWorkItem("11111111-1111-1111-1111-111111111111");
+
+    expect(result.item).toBeNull();
+    expect(result.httpStatus).toBe(404);
+    expect(result.status).toBe(global.WorkCenterNextApi.STATUS.ERROR);
+  });
+
+  it("drops an item the contract refuses and says why, exactly as the list does", async () => {
+    global.fetch = () => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ data: projectionItem({ primaryActionCode: "notOffered" }) })
+    });
+
+    const result = await global.WorkCenterNextApi.fetchWorkItem("11111111-1111-1111-1111-111111111111");
+
+    expect(result.item).toBeNull();
+    expect(result.errors.map((error) => error.code)).toContain("PRIMARY_ACTION_REFERENCE_INVALID");
+  });
+
+  /*
    * ── WC-D3 (DCP-004 §2 D3) — A PARTIAL BOARD REACHES THE SHELL AS A PARTIAL BOARD ──────────────────────────
    *
    * The server answers `{ items, unavailableSources }` now, because a provider that failed or timed out used to

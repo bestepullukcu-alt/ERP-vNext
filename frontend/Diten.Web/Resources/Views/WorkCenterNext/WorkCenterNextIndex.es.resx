@@ -237,8 +237,8 @@
     <value>Actuar</value>
   </data>
   <data name="RowView" xml:space="preserve"><value>Ver</value></data>
-  <data name="ActReviewMeeting" xml:space="preserve"><value>Programar reunión de aprobación</value></data>
-  <data name="ToastReviewMeeting" xml:space="preserve"><value>Reunión de aprobación programada: {0}</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Programar reunión de revisión</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Reunión de revisión programada: {0}</value></data>
   <data name="IsTitleElimination" xml:space="preserve"><value>Preparar la cédula de eliminación intercompañía</value></data>
   <data name="IsSummaryElimination" xml:space="preserve"><value>Eliminar los saldos intercompañía antes de la consolidación.</value></data>
   <data name="IsTitlePricingRegression" xml:space="preserve"><value>Investigar la regresión de la regla de precios</value></data>
@@ -539,9 +539,6 @@
   <data name="ActResume" xml:space="preserve">
     <value>Reanudar</value>
   </data>
-  <data name="ActLogTime" xml:space="preserve">
-    <value>Registrar tiempo</value>
-  </data>
   <data name="StepBarLabel" xml:space="preserve">
     <value>Ciclo de vida</value>
   </data>
@@ -575,12 +572,6 @@
   <data name="TimesheetLabel" xml:space="preserve">
     <value>Tiempo</value>
   </data>
-  <data name="TimeLoggedLabel" xml:space="preserve">
-    <value>registrado</value>
-  </data>
-  <data name="TimerRunning" xml:space="preserve">
-    <value>en marcha</value>
-  </data>
   <data name="AwaitingReview" xml:space="preserve">
     <value>Esperando revisión</value>
   </data>
@@ -593,26 +584,8 @@
   <data name="PlanConfirm" xml:space="preserve">
     <value>Establecer fecha</value>
   </data>
-  <data name="LogTimeLabel" xml:space="preserve">
-    <value>Minutos</value>
-  </data>
-  <data name="LogTimePlaceholder" xml:space="preserve">
-    <value>p. ej. 30</value>
-  </data>
-  <data name="LogTimeConfirm" xml:space="preserve">
-    <value>Registrar</value>
-  </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · planificado para {1} (mock)</value>
-  </data>
-  <data name="ToastPlanSaved" xml:space="preserve">
-    <value>Plan guardado para el {0}</value>
-  </data>
-  <data name="ToastTimerStarted" xml:space="preserve">
-    <value>{0} · temporizador iniciado (mock)</value>
-  </data>
-  <data name="ToastTimeLogged" xml:space="preserve">
-    <value>{0} registrado (mock)</value>
   </data>
   <data name="ToastSentToReview" xml:space="preserve">
     <value>{0} · enviado a revisión (mock)</value>
@@ -895,6 +868,18 @@
   <data name="MeetingWhenLabel" xml:space="preserve">
     <value>Fecha y hora de la reunión</value>
   </data>
+  <data name="MeetingTypeLabel" xml:space="preserve">
+    <value>Tipo de reunión</value>
+  </data>
+  <data name="MeetingTypeSubtext" xml:space="preserve">
+    <value>Elija el tipo de reunión que se va a programar.</value>
+  </data>
+  <data name="MeetingNoTypesAvailable" xml:space="preserve">
+    <value>Todavía no hay tipos de reunión configurados. Pida a un administrador que agregue uno.</value>
+  </data>
+  <data name="MeetingScheduleSubtext" xml:space="preserve">
+    <value>Esto crea una reunión real en Reuniones, vinculada a esta tarea.</value>
+  </data>
   <data name="MeetingTitlePlaceholder" xml:space="preserve">
     <value>Revisión de cierre del T3</value>
   </data>
@@ -903,9 +888,6 @@
   </data>
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>¿Qué módulo?</value>
-  </data>
-  <data name="LogTimeSubtext" xml:space="preserve">
-    <value>Se suma al tiempo ya registrado en esta tarea; no inicia ni detiene el cronómetro.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>La conexión con el calendario aún no existe: este registro solo aparece en esta pantalla y se pierde al cerrar la página. La fecha límite no cambia.</value>
@@ -918,15 +900,6 @@
   </data>
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>Todos los campos</value>
-  </data>
-  <data name="TimerStateRunning" xml:space="preserve">
-    <value>En curso</value>
-  </data>
-  <data name="TimerStatePaused" xml:space="preserve">
-    <value>En pausa</value>
-  </data>
-  <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>El tiempo transcurrido no se registra: introduce manualmente el tiempo dedicado.</value>
   </data>
   <data name="SubtaskStartedNotCompleted" xml:space="preserve">
     <value>La subtarea se inició pero no se pudo completar: {0}</value>
@@ -1015,6 +988,30 @@
   <data name="CommentPost" xml:space="preserve">
     <value>Enviar</value>
   </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>Mencionar a alguien</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>Quitar mención</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>Mencionar personas</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>Añadir</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>Elija al menos una persona.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>Todavía no hay nadie a quien mencionar en esta tarea.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>Ya se agregaron todas las personas que se pueden mencionar.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>Un comentario puede mencionar como máximo a {0} personas.</value>
+  </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>Escribe algo antes de publicar</value>
   </data>
@@ -1039,20 +1036,20 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Solo lectura — el estado cambia en el origen; aquí solo plan/fijado personal.</value>
   </data>
-  <data name="CalPrevMonth" xml:space="preserve">
-    <value>Mes anterior</value>
+  <data name="KanbanActionPickerTitle" xml:space="preserve">
+    <value>¿Qué acción debería ejecutarse?</value>
   </data>
-  <data name="CalNextMonth" xml:space="preserve">
-    <value>Mes siguiente</value>
+  <data name="KanbanActionPickerRequired" xml:space="preserve">
+    <value>Elige una acción.</value>
   </data>
-  <data name="CalToday" xml:space="preserve">
-    <value>Hoy</value>
+  <data name="KanbanProcessing" xml:space="preserve">
+    <value>Procesando…</value>
   </data>
-  <data name="CalOutside" xml:space="preserve">
-    <value>{0} elementos están en otros meses.</value>
+  <data name="KanbanMovedToHistory" xml:space="preserve">
+    <value>Movido al historial</value>
   </data>
-  <data name="CalOutsideAndUndated" xml:space="preserve">
-    <value>{0} elementos están en otros meses; {1} no tienen fecha y nunca aparecen en el calendario.</value>
+  <data name="KanbanDropHint" xml:space="preserve">
+    <value>Soltar aquí: {0}</value>
   </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Vencim. origen</value>
@@ -1374,6 +1371,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>Colaboración y registros</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>Detalles del elemento de trabajo</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>No se encontró el elemento de trabajo solicitado.</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>Este elemento de trabajo no se pudo mostrar porque no superó la validación del contrato.</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>Volver al centro de trabajo</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Su autoridad sobre este elemento ha finalizado.</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Una dependencia requerida está incompleta.</value></data>
@@ -1432,8 +1430,17 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Se detectó una diferencia de 84.750 TRY con el libro mayor.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Reunión de revisión del presupuesto del T3</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 de julio de 2026, 14:00–15:00 · Teams · Organiza: Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>{name} le ha enviado esta tarea para su aprobación</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>Esta tarea se le ha enviado para su aprobación</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Aprobación: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Pending" xml:space="preserve">
+    <value>Pendiente</value>
   </data>
   <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
     <value>Pendiente de aprobación</value>
@@ -1476,6 +1483,9 @@
   </data>
   <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
     <value>Falta la evidencia requerida.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_SelfApproval" xml:space="preserve">
+    <value>Usted inició esta aprobación; otra persona debe decidirla.</value>
   </data>
   <data name="NoAccessTitle" xml:space="preserve">
     <value>No tiene acceso al Centro de tareas</value>
@@ -1542,6 +1552,15 @@
   </data>
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>A la espera de…</value>
+  </data>
+  <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
+    <value>Programar reunión de revisión</value>
+  </data>
+  <data name="WorkAggregation_Action_AcceptInvite" xml:space="preserve">
+    <value>Aceptar</value>
+  </data>
+  <data name="WorkAggregation_Action_DeclineInvite" xml:space="preserve">
+    <value>Rechazar</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>Devolver</value>
@@ -1832,6 +1851,9 @@
   <data name="AuditEventPlanned" xml:space="preserve">
     <value>Tarea planificada</value>
   </data>
+  <data name="AuditEventUnplanned" xml:space="preserve">
+    <value>Tarea retirada del calendario</value>
+  </data>
   <data name="AuditEventStarted" xml:space="preserve">
     <value>Trabajo iniciado</value>
   </data>
@@ -1894,6 +1916,12 @@
   </data>
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>Una subtarea sigue abierta</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>Ya hay una reunión de revisión programada</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingRequired" xml:space="preserve">
+    <value>Esta decisión permanece bloqueada hasta que se publique el acta de la reunión de revisión vinculada.</value>
   </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Lista de verificación actualizada.</value>
@@ -2158,6 +2186,9 @@
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>Algunas fuentes no respondieron: esta lista puede estar incompleta.</value>
   </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>{0} elemento(s) de trabajo no se pudieron mostrar debido a un error de contrato.</value>
+  </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>Algunas fuentes no respondieron, por lo que este recuento puede estar incompleto.</value>
   </data>
@@ -2203,6 +2234,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>Cerrado como: {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>Cierre</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>{0} entregable(s) adjunto(s).</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>{0} archivo(s) de evidencia adjunto(s).</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>¿Cómo terminó este trabajo?</value>
   </data>
@@ -2223,6 +2263,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>Este resultado exige un motivo.</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>Este campo es obligatorio para poder completar la tarea.</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>Completado según lo solicitado</value>
@@ -2274,6 +2317,201 @@
   <data name="AttachmentUploadedBy" xml:space="preserve"><value>Subido por {0} · {1}</value></data>
   <data name="ToastAttachmentAdded" xml:space="preserve"><value>Adjunto añadido.</value></data>
   <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Adjunto eliminado.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Agregue un entregable o una evidencia (opcional)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>El tipo de esta tarea requiere un archivo entregable</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Elija un archivo antes de completar esta tarea.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>Añadir evidencia</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} archivo(s) de evidencia</value></data>
+  <data name="TypeInquiry" xml:space="preserve">
+    <value>Pregunta</value>
+  </data>
+  <data name="WorkAggregation_Title_Inquiry" xml:space="preserve">
+    <value>Pregunta · {title}</value>
+  </data>
+  <data name="WorkAggregation_Action_Answer" xml:space="preserve">
+    <value>Responder</value>
+  </data>
+  <data name="OutcomeAnswer" xml:space="preserve">
+    <value>Registra su respuesta en el historial de la tarea y la devuelve a su estado anterior</value>
+  </data>
+  <data name="InquiryQuestionLabel" xml:space="preserve">
+    <value>Pregunta formulada</value>
+  </data>
+  <data name="InquiryAnswerLabel" xml:space="preserve">
+    <value>Su respuesta</value>
+  </data>
+  <data name="InquiryAnswerPlaceholder" xml:space="preserve">
+    <value>Escriba la información solicitada…</value>
+  </data>
+  <data name="InquiryAnswerRequired" xml:space="preserve">
+    <value>Escriba una respuesta antes de enviar.</value>
+  </data>
+  <data name="InquiryAnsweredBy" xml:space="preserve">
+    <value>{0} respondió</value>
+  </data>
+  <data name="GuidanceInquiryAsked" xml:space="preserve">
+    <value>{0} le pregunta: {1}</value>
+  </data>
+  <data name="GuidanceInquiryAskedNoText" xml:space="preserve">
+    <value>Alguien espera su respuesta en esta tarea.</value>
+  </data>
+  <data name="GuidanceInquiryAnswered" xml:space="preserve">
+    <value>{0} respondió: {1}</value>
+  </data>
+  <data name="AuditEventInquiryAnswered" xml:space="preserve">
+    <value>Pregunta respondida</value>
+  </data>
+  <data name="CalPanelTitle" xml:space="preserve">
+    <value>Trabajo por planificar</value>
+  </data>
+  <data name="CalPanelUnplanned" xml:space="preserve">
+    <value>Sin planificar</value>
+  </data>
+  <data name="CalPanelPlanPassed" xml:space="preserve">
+    <value>Plan vencido</value>
+  </data>
+  <data name="CalPanelInvites" xml:space="preserve">
+    <value>Invitaciones</value>
+  </data>
+  <data name="CalPanelEmpty" xml:space="preserve">
+    <value>No hay nada aquí.</value>
+  </data>
+  <data name="CalPanelHint" xml:space="preserve">
+    <value>Arrastre una tarjeta al calendario: un día en la vista de mes, una hora en la vista de semana o día. Arrastre un bloque planificado de vuelta aquí para quitarlo.</value>
+  </data>
+  <data name="CalChipEstimate" xml:space="preserve">
+    <value>Estimación {0} h</value>
+  </data>
+  <data name="CalChipPlanPassed" xml:space="preserve">
+    <value>Planificado para {0}</value>
+  </data>
+  <data name="CalChipRemaining" xml:space="preserve">
+    <value>Quedan {0} min</value>
+  </data>
+  <data name="CalLegendTask" xml:space="preserve">
+    <value>Día planificado</value>
+  </data>
+  <data name="CalLegendBlock" xml:space="preserve">
+    <value>Bloque planificado</value>
+  </data>
+  <data name="CalLegendMeetingAccepted" xml:space="preserve">
+    <value>Reunión (aceptada)</value>
+  </data>
+  <data name="CalLegendMeetingPending" xml:space="preserve">
+    <value>Reunión (sin responder)</value>
+  </data>
+  <data name="CalLegendConflict" xml:space="preserve">
+    <value>Se solapa con otro bloque</value>
+  </data>
+  <data name="CalLegendOffHours" xml:space="preserve">
+    <value>Fuera del horario laboral</value>
+  </data>
+  <data name="CalLegendHoliday" xml:space="preserve">
+    <value>Festivo</value>
+  </data>
+  <data name="CalPlanSaved" xml:space="preserve">
+    <value>«{0}» planificado.</value>
+  </data>
+  <data name="CalTruncated" xml:space="preserve">
+    <value>Recortado al final de la jornada — quedan {0} min.</value>
+  </data>
+  <data name="CalConflictWith" xml:space="preserve">
+    <value>Se solapa con «{0}» {1}. Elija otra hora.</value>
+  </data>
+  <data name="CalZoneUnavailable" xml:space="preserve">
+    <value>No se pudo leer la zona horaria de la empresa; la hora no se guardó. Inténtelo de nuevo.</value>
+  </data>
+  <data name="PlanTimeLabel" xml:space="preserve">
+    <value>Hora de inicio</value>
+  </data>
+  <data name="PlanTimeNone" xml:space="preserve">
+    <value>Sin hora (todo el día)</value>
+  </data>
+  <data name="PlanDurationLabel" xml:space="preserve">
+    <value>Duración</value>
+  </data>
+  <data name="PlanDurationOption" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="PlanTimeHint" xml:space="preserve">
+    <value>Las horas están en la zona horaria de la empresa. Un bloque que supere el final de la jornada se recorta allí.</value>
+  </data>
+  <data name="CalTruncatedNoEstimate" xml:space="preserve">
+    <value>Recortado al final del día.</value>
+  </data>
+  <data name="TimeDraftLabel" xml:space="preserve">
+    <value>mi borrador</value>
+  </data>
+  <data name="TimeSubmittedLabel" xml:space="preserve">
+    <value>enviado</value>
+  </data>
+  <data name="TimeApprovedLabel" xml:space="preserve">
+    <value>aprobado</value>
+  </data>
+  <data name="TimerRunningNow" xml:space="preserve">
+    <value>Su temporizador está en marcha en esta tarea.</value>
+  </data>
+  <data name="OpenMyTimesheet" xml:space="preserve">
+    <value>Abrir Mi hoja de horas</value>
+  </data>
+  <data name="TimerSwitchedText" xml:space="preserve">
+    <value>Su temporizador pasó a esta tarea.</value>
+  </data>
+  <data name="TimerUndo" xml:space="preserve">
+    <value>Deshacer</value>
+  </data>
+  <data name="TimerUndone" xml:space="preserve">
+    <value>El temporizador volvió a la tarea anterior.</value>
+  </data>
+  <data name="TimerErrDisabled" xml:space="preserve">
+    <value>El temporizador no está activado para su entidad jurídica. Registre el tiempo en Mi hoja de horas.</value>
+  </data>
+  <data name="TimerErrNotHeld" xml:space="preserve">
+    <value>El temporizador solo funciona en una tarea que usted tiene asignada.</value>
+  </data>
+  <data name="TimerErrNotInProgress" xml:space="preserve">
+    <value>El temporizador solo funciona en una tarea en curso.</value>
+  </data>
+  <data name="TimerErrNotRunning" xml:space="preserve">
+    <value>El temporizador de esta tarea ya no está en marcha.</value>
+  </data>
+  <data name="TimerErrConflict" xml:space="preserve">
+    <value>El temporizador cambió mientras tanto. La página se actualizó.</value>
+  </data>
+  <data name="TimerErrUndoExpired" xml:space="preserve">
+    <value>Es demasiado tarde para deshacer ese cambio.</value>
+  </data>
+  <data name="TimerErrGeneric" xml:space="preserve">
+    <value>No se pudo cambiar el temporizador. Inténtelo de nuevo.</value>
+  </data>
+  <data name="WorkAggregation_Action_StartTimer" xml:space="preserve">
+    <value>Iniciar temporizador</value>
+  </data>
+  <data name="WorkAggregation_Action_StopTimer" xml:space="preserve">
+    <value>Detener temporizador</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>En pausa</value>
+  </data>
+  <data name="ApprovalAwaitingPositions" xml:space="preserve">
+    <value>Pendiente de aprobación de: {0}</value>
+  </data>
+  <data name="ApprovalNoteLabel" xml:space="preserve">
+    <value>Nota (opcional)</value>
+  </data>
+  <data name="ApprovalNotePlaceholder" xml:space="preserve">
+    <value>Añada una nota para el registro…</value>
+  </data>
+  <data name="ApprovalStepBadgeTitle" xml:space="preserve">
+    <value>Paso de aprobación</value>
+  </data>
+  <data name="DelegateTargetLabel" xml:space="preserve">
+    <value>Delegar en</value>
+  </data>
+  <data name="DelegateTargetRequired" xml:space="preserve">
+    <value>Elija a quién se delega esta aprobación.</value>
+  </data>
+  <data name="DelegateNoEligiblePeople" xml:space="preserve">
+    <value>No hay nadie en quien se pueda delegar esta aprobación.</value>
+  </data>
 </root>

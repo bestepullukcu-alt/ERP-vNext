@@ -10,7 +10,7 @@ Read AGENTS.md
 ```
 
 ⚠ Claude Code **yalnız bu dosyayı** otomatik yükler. `AGENTS.md`, `.antigravity/rules/`
-(39 kural), `.antigravity/agents/` (20 ajan) ve `.antigravity/workflows/` (18 akış)
+(41 kural), `.antigravity/agents/` (20 ajan) ve `.antigravity/workflows/` (18 akış)
 **otomatik yüklenmez** — 2026-09-08'de canlı oturumda ölçüldü: bağlamdaki tek proje
 dosyası `MEMORY.md`'ydi.
 

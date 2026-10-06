@@ -1,0 +1,111 @@
+@model Diten.Web.Models.CRM.ContentScopeEditViewModel
+@using Diten.Web.Views.CRM.ContentScopes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContentScopesIndex> Localizer
+@{
+    var isEdit = Model.ContentScopeId != Guid.Empty;
+    var ro = Model.IsArchived;   // an archived scope is read-only
+}
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+<input type="hidden" asp-for="ContentScopeId" />
+<input type="hidden" asp-for="IsArchived" />
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ScopeCode" class="form-label fw-medium">@Localizer["ScopeCode"] <span class="text-danger">*</span></label>
+                        <input asp-for="ScopeCode" class="form-control" readonly="@isEdit" maxlength="120" required />
+                        <span asp-validation-for="ScopeCode" class="text-danger small mt-1"></span>
+                        <small class="text-muted">@Localizer["ScopeCodeNote"]</small>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ScopeName" class="form-label fw-medium">@Localizer["ScopeName"] <span class="text-danger">*</span></label>
+                        <input asp-for="ScopeName" class="form-control" readonly="@ro" maxlength="240" required />
+                        <span asp-validation-for="ScopeName" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ScopeVersion" class="form-label fw-medium">@Localizer["ScopeVersion"]</label>
+                        <input asp-for="ScopeVersion" class="form-control" readonly="@ro" maxlength="60" />
+                    </div>
+                    @if (!ro)
+                    {
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Status" class="form-label fw-medium">@Localizer["Status"]</label>
+                            <select asp-for="Status" class="select2 form-select">
+                                @foreach (var s in Model.Statuses)
+                                {
+                                    <option value="@s" selected="@(s == Model.Status)">@Localizer["Status_" + s]</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                        <textarea asp-for="Description" class="form-control" rows="2" maxlength="2000" readonly="@ro"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ReferencesSection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-medium" for="scopeProductRefs">@Localizer["ProductRefs"]</label>
+                        <select id="scopeProductRefs" name="ProductRefs" class="scope-tags form-select" multiple @(ro ? "disabled" : "")>
+                            @foreach (var v in Model.ProductRefs) { <option value="@v" selected>@v</option> }
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-medium" for="scopeMarketRefs">@Localizer["MarketRefs"]</label>
+                        <select id="scopeMarketRefs" name="MarketRefs" class="scope-tags form-select" multiple @(ro ? "disabled" : "")>
+                            @foreach (var v in Model.MarketRefs) { <option value="@v" selected>@v</option> }
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-medium" for="scopeAudienceRefs">@Localizer["AudienceRefs"]</label>
+                        <select id="scopeAudienceRefs" name="AudienceRefs" class="scope-tags form-select" multiple @(ro ? "disabled" : "")>
+                            @foreach (var v in Model.AudienceRefs) { <option value="@v" selected>@v</option> }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-muted"><i class="bx bx-info-circle me-1"></i>@Localizer["RefsTagHint"]</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ContextSection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="Channel" class="form-label fw-medium">@Localizer["Channel"]</label>
+                        <input asp-for="Channel" class="form-control" readonly="@ro" maxlength="120" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="LanguageCode" class="form-label fw-medium">@Localizer["LanguageCode"]</label>
+                        <input asp-for="LanguageCode" class="form-control" readonly="@ro" maxlength="35" placeholder="en" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="PeriodFrom" class="form-label fw-medium">@Localizer["PeriodFrom"]</label>
+                        <input asp-for="PeriodFrom" type="text" class="form-control flatpickr-date" value="@(Model.PeriodFrom?.ToString("yyyy-MM-dd"))" readonly="@ro" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="PeriodTo" class="form-label fw-medium">@Localizer["PeriodTo"]</label>
+                        <input asp-for="PeriodTo" type="text" class="form-control flatpickr-date" value="@(Model.PeriodTo?.ToString("yyyy-MM-dd"))" readonly="@ro" />
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

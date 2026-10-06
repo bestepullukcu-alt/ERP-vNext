@@ -4,13 +4,7 @@
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
 <div class="card">
-    <div id="skeleton-loader" class="p-4" style="display: none;">
-        <div class="shimmer skeleton-row" style="width: 100%; height: 32px; margin-bottom: 2rem;"></div>
-        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
-        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
-        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
-        <div class="shimmer skeleton-row" style="width: 100%; height: 24px;"></div>
-    </div>
+    <partial name="_TableSkeleton" />
 
     <div class="card-datatable table-responsive">
         <table id="dt-position-assignments" data-dt-standard="v2" class="datatables-position-assignments table border-top">

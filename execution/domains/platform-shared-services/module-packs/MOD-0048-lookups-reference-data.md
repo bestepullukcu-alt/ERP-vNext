@@ -556,6 +556,27 @@ Smoke tests:
 - If `FeatureCategory` is already owned by PSS-007, PSS-011 should consume it as a lookup source and not fork the entity or repository.
 - Platform lookup values used in business logic should also have Domain enums/constants where applicable; avoid magic strings in handlers.
 - Use structured parsing/providers for locale/timezone/currency sources instead of ad hoc string manipulation when a platform API exists.
+- **WP-BRD-TENANT-CRM-SETS (2026-10-02) — consumable reference sets for every tenant role.** New route
+  `GET /api/lookups/reference-data/consumable-sets/{setCode}/published-values` (`ConsumableReferenceDataController`,
+  `[Authorize]` + `[LoginOnly]`, under the existing `/api/lookups/{everything}` gateway route — no gateway change).
+  - Caller tenant comes from the validated token (`actor_type = tenant_user` + one `tenant_id`; `/api/lookups` is a bypass
+    path of `TenantResolutionMiddleware`); a contradicting `X-Tenant-Id` → 400 `tenant_mismatch`; platform actor / no
+    tenant → 400 `tenant_context_required`; no token → 401. A client `scope_key` is ignored.
+  - Allow-list: `BusinessReferenceData:ConsumableSets` (Platform API `appsettings.json`) with the same code default
+    (`BusinessReferenceDataConsumableSetsOptions.DefaultConsumableSets`) = every set CRM consumes (40). Set code is matched
+    trim + case-insensitive and read under its listed spelling. Not listed → 404 `reference_set_not_tenant_accessible`.
+  - Read by the set's own BRD `ScopeType`: caller's tenant holds the set → read there (`global` without scope key, any other
+    scope with `scope_key` = server-resolved tenant); otherwise only a `global` set of the reference tenant
+    (`BusinessReferenceData:CatalogLoad:TenantId`, the same source as the `sets/{setCode}` stopgap) is served. Another
+    tenant's tenant-scoped set is never returned. Missing / retired / unpublished / no effective version → 404
+    `reference_set_not_published` (never 500). Response = `Response<BusinessReferenceDataPublishedValuesModel>`, unchanged.
+  - `Platform.BusinessReferenceData.Consumer.Read` is still NOT granted to tenant roles; `api/v1/reference-data/...` and the
+    `sets/{setCode}` route (three Global sets) are unchanged.
+  - CRM `GatewayReferenceDataValidator` reads the consumable route first (`ReferenceData:ConsumableSetsPathTemplate`);
+    `reference_set_not_tenant_accessible` → old consumer path + per-process memory; `reference_set_not_published` → SetMissing.
+  - Guards: `BusinessReferenceDataConsumableSetsTests` (appsettings ≡ code default, no environment override),
+    `ConsumableReferenceDataHttpMongoTests` (HTTP + Mongo, isolation with two tenants + reference tenant),
+    CRM `CrmReferenceSetDriftGuardTests` (every CRM set code ⊆ Platform list). Follow-up F-2: HCM uses the same old pattern.
 
 ## Follow-up Items
 - MDM domain should receive separate module packs for General Reference, Financial Reference, Territory Reference, and ERP Account/classification references.

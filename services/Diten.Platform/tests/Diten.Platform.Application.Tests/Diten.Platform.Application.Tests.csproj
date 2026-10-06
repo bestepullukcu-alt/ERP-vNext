@@ -4,6 +4,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <!-- BL-395: Persistence/LockProofChild.cs supplies Main, so the machine-wide Mongo test lock can be proved from
+         a second real process (dotnet Diten.Platform.Application.Tests.dll lock-proof …). vstest never calls Main. -->
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
   <ItemGroup>

@@ -33,6 +33,10 @@
   <data name="Importance" xml:space="preserve"><value>Важность</value></data>
   <data name="ImportanceSecondary" xml:space="preserve"><value>Второстепенная</value></data>
   <data name="ImportancePrimary" xml:space="preserve"><value>Основная</value></data>
+  <data name="Stage" xml:space="preserve"><value>Когда запрашивается</value></data>
+  <data name="StageEntry" xml:space="preserve"><value>Создание</value></data>
+  <data name="StageClosure" xml:space="preserve"><value>Закрытие</value></data>
+  <data name="StageHint" xml:space="preserve"><value>Запрашивается в форме создания/редактирования (Создание), либо только в окне закрытия при завершении или отмене задачи (Закрытие).</value></data>
   <data name="SortOrder" xml:space="preserve"><value>Порядок</value></data>
   <data name="OptionsSourceKind" xml:space="preserve"><value>Источник вариантов</value></data>
   <data name="OptionsSourceNone" xml:space="preserve"><value>Нет</value></data>

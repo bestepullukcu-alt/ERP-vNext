@@ -90,6 +90,7 @@ public sealed class CommitDocumentRegisterImportHandler(
             TotalRows = ingest.Data!.TotalRows,
             Created = ingest.Data.Created,
             Updated = ingest.Data.Updated,
+            Unchanged = ingest.Data.Unchanged,
             Blocked = ingest.Data.Blocked,
             CorrelationId = request.CorrelationId,
             CreatedBy = actor
@@ -99,7 +100,7 @@ public sealed class CommitDocumentRegisterImportHandler(
         return Response<DocumentRegisterImportCommitResult>.Success(
             new DocumentRegisterImportCommitResult(
                 batch.Id, batch.ContentHash, batch.AppliedAt,
-                batch.TotalRows, batch.Created, batch.Updated, batch.Blocked, ingest.Data.Errors),
+                batch.TotalRows, batch.Created, batch.Updated, batch.Unchanged, batch.Blocked, ingest.Data.Errors),
             201, request.CorrelationId);
     }
 }
@@ -114,7 +115,8 @@ public sealed class GetDocumentRegisterImportHistoryHandler(IDocumentRegisterImp
         var rows = await batches.ListAsync(ct);
         return Response<IReadOnlyList<DocumentRegisterImportBatchDto>>.Success(
             rows.Select(b => new DocumentRegisterImportBatchDto(
-                b.Id, b.FileName, b.ContentHash, b.Actor, b.AppliedAt, b.TotalRows, b.Created, b.Updated, b.Blocked))
+                b.Id, b.FileName, b.ContentHash, b.Actor, b.AppliedAt, b.TotalRows, b.Created, b.Updated,
+                b.Unchanged, b.Blocked))
                 .ToList(),
             200, request.CorrelationId);
     }

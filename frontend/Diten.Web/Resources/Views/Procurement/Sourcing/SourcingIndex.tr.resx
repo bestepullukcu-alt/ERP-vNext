@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SourcingTitle" xml:space="preserve"><value>Tedarik (RFQ/RFP)</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>RFx etkinlikleri (RFQ/RFP/RFI): tedarikçi davet edin, teklif toplayın, değerlendirin ve kazananı seçin.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>RFx Ekle</value></data>
+  <data name="EditItem" xml:space="preserve"><value>RFx Düzenle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>RFx Ekle</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>RFx Düzenle</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="RfxId" xml:space="preserve"><value>RFx No</value></data>
+  <data name="RfxTitle" xml:space="preserve"><value>Başlık</value></data>
+  <data name="RfxTitlePlaceholder" xml:space="preserve"><value>örn. Q4 hammadde ikmali</value></data>
+  <data name="Type" xml:space="preserve"><value>Tür</value></data>
+  <data name="ClosesAt" xml:space="preserve"><value>Kapanış</value></data>
+  <data name="TypeRFQ" xml:space="preserve"><value>Fiyat Teklifi (RFQ)</value></data>
+  <data name="TypeRFP" xml:space="preserve"><value>Teklif Talebi (RFP)</value></data>
+  <data name="TypeRFI" xml:space="preserve"><value>Bilgi Talebi (RFI)</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusPublished" xml:space="preserve"><value>Yayınlandı</value></data>
+  <data name="StatusEvaluating" xml:space="preserve"><value>Değerlendiriliyor</value></data>
+  <data name="StatusAwarded" xml:space="preserve"><value>Kazanan Seçildi</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Kapatıldı</value></data>
+  <data name="RfxSection" xml:space="preserve"><value>RFx Bilgileri</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>RFx Satırları</value></data>
+  <data name="InvitedSection" xml:space="preserve"><value>Davetli Tedarikçiler</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Entegrasyon</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Satır Ekle</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>Ürün No</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>örn. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>örn. 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>Birim</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>örn. BOX</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>En az bir satır zorunludur (ürün, miktar, ölçü birimi).</value></data>
+  <data name="InvitedSuppliers" xml:space="preserve"><value>Davetli Tedarikçiler</value></data>
+  <data name="InvitedSuppliersPlaceholder" xml:space="preserve"><value>Tedarikçi No seçin veya yazın</value></data>
+  <data name="InvitedSuppliersHint" xml:space="preserve"><value>Tedarikçi No'lar tedarikçi ana verisine göre doğrulanır (fail-closed).</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Kaynak Sistem</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>örn. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>Dış Referans</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>örn. ERP-RFX-9001</value></data>
+  <data name="BidsSection" xml:space="preserve"><value>Teklifler</value></data>
+  <data name="BidId" xml:space="preserve"><value>Teklif No</value></data>
+  <data name="BidSupplierId" xml:space="preserve"><value>Tedarikçi</value></data>
+  <data name="BidLinesSummary" xml:space="preserve"><value>Satırlar</value></data>
+  <data name="BidEvaluationScore" xml:space="preserve"><value>Skor</value></data>
+  <data name="ActionPublish" xml:space="preserve"><value>Yayınla</value></data>
+  <data name="ActionSubmitBid" xml:space="preserve"><value>Teklif Ver</value></data>
+  <data name="ActionAward" xml:space="preserve"><value>Kazananı Seç</value></data>
+  <data name="ConfirmPublish" xml:space="preserve"><value>Bu RFx davetli tedarikçilere yayınlansın mı?</value></data>
+  <data name="PublishSuccess" xml:space="preserve"><value>RFx yayınlandı.</value></data>
+  <data name="BidSuccess" xml:space="preserve"><value>Teklif kaydedildi.</value></data>
+  <data name="AwardSuccess" xml:space="preserve"><value>Kazanan kaydedildi.</value></data>
+  <data name="BidSupplierPlaceholder" xml:space="preserve"><value>Tedarikçi seçin</value></data>
+  <data name="BidLines" xml:space="preserve"><value>Teklif Satırları</value></data>
+  <data name="BidUnitPrice" xml:space="preserve"><value>Birim Fiyat</value></data>
+  <data name="BidUnitPricePlaceholder" xml:space="preserve"><value>örn. 12.5000</value></data>
+  <data name="BidLeadTimeDays" xml:space="preserve"><value>Teslim Süresi (gün)</value></data>
+  <data name="BidLeadTimeDaysPlaceholder" xml:space="preserve"><value>örn. 14</value></data>
+  <data name="AwardedBid" xml:space="preserve"><value>Kazanan Teklif</value></data>
+  <data name="AwardedBidPlaceholder" xml:space="preserve"><value>Kazanan teklifi seçin</value></data>
+  <data name="AwardRationale" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="AwardRationalePlaceholder" xml:space="preserve"><value>örn. en düşük toplam sahip olma maliyeti</value></data>
+</root>

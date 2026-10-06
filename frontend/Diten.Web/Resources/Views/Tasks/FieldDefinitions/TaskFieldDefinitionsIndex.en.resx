@@ -33,6 +33,10 @@
   <data name="Importance" xml:space="preserve"><value>Importance</value></data>
   <data name="ImportanceSecondary" xml:space="preserve"><value>Secondary</value></data>
   <data name="ImportancePrimary" xml:space="preserve"><value>Primary</value></data>
+  <data name="Stage" xml:space="preserve"><value>When</value></data>
+  <data name="StageEntry" xml:space="preserve"><value>Entry</value></data>
+  <data name="StageClosure" xml:space="preserve"><value>Closure</value></data>
+  <data name="StageHint" xml:space="preserve"><value>Asked on the create/edit form (Entry), or only in the closure window when the task is completed or cancelled (Closure).</value></data>
   <data name="SortOrder" xml:space="preserve"><value>Sort order</value></data>
   <data name="OptionsSourceKind" xml:space="preserve"><value>Options source</value></data>
   <data name="OptionsSourceNone" xml:space="preserve"><value>None</value></data>

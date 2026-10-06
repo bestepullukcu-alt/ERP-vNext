@@ -49,32 +49,50 @@
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <label class="form-label fw-medium" for="pCode">@Localizer["Code"] <span class="text-danger">*</span></label>
-                                <input type="text" id="pCode" class="form-control" maxlength="80" placeholder="@Localizer["CodePlaceholder"]" data-required required />
+                                <div class="diten-field">
+                                    <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="pCode" class="form-control" maxlength="80" placeholder="@Localizer["CodePlaceholder"]" data-required required />
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-medium" for="pName">@Localizer["Name"] <span class="text-danger">*</span></label>
-                                <input type="text" id="pName" class="form-control" maxlength="160" placeholder="@Localizer["NamePlaceholder"]" data-required required />
+                                <div class="diten-field">
+                                    <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="pName" class="form-control" maxlength="160" placeholder="@Localizer["NamePlaceholder"]" data-required required />
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-medium" for="pOrgUnitId">@Localizer["OrgUnit"] <span class="text-danger">*</span></label>
-                                <select id="pOrgUnitId" class="form-select" data-required required><option value="">@Localizer["SelectOrgUnit"]</option></select>
+                                <div class="diten-field">
+                                    <i class="bx bx-sitemap diten-field-icon" aria-hidden="true"></i>
+                                    <select id="pOrgUnitId" class="form-select" data-required required><option value="">@Localizer["SelectOrgUnit"]</option></select>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-medium" for="pReportsToId">@Localizer["ReportsTo"]</label>
-                                <select id="pReportsToId" class="form-select"><option value="">@Localizer["NoReportsTo"]</option></select>
+                                <div class="diten-field">
+                                    <i class="bx bx-chevrons-up diten-field-icon" aria-hidden="true"></i>
+                                    <select id="pReportsToId" class="form-select"><option value="">@Localizer["NoReportsTo"]</option></select>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-medium" for="pJobTitle">@Localizer["JobTitle"]</label>
-                                <input type="text" id="pJobTitle" class="form-control" maxlength="160" placeholder="@Localizer["JobTitlePlaceholder"]" />
+                                <div class="diten-field">
+                                    <i class="bx bx-briefcase diten-field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="pJobTitle" class="form-control" maxlength="160" placeholder="@Localizer["JobTitlePlaceholder"]" />
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-medium" for="pPositionType">@Localizer["PositionType"]</label>
-                                <select id="pPositionType" class="form-select">
-                                    <option value="Permanent">@Localizer["PositionTypePermanent"]</option>
-                                    <option value="Temporary">@Localizer["PositionTypeTemporary"]</option>
-                                    <option value="Contractor">@Localizer["PositionTypeContractor"]</option>
-                                    <option value="Intern">@Localizer["PositionTypeIntern"]</option>
-                                </select>
+                                <div class="diten-field">
+                                    <i class="bx bx-category diten-field-icon" aria-hidden="true"></i>
+                                    <select id="pPositionType" class="form-select">
+                                        <option value="Permanent">@Localizer["PositionTypePermanent"]</option>
+                                        <option value="Temporary">@Localizer["PositionTypeTemporary"]</option>
+                                        <option value="Contractor">@Localizer["PositionTypeContractor"]</option>
+                                        <option value="Intern">@Localizer["PositionTypeIntern"]</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -89,24 +107,36 @@
                         <div class="row g-4">
                             <div class="col-12">
                                 <label class="form-label fw-medium" for="pStatus">@Localizer["StatusLabel"]</label>
-                                <select id="pStatus" class="form-select">
-                                    <option value="Draft">@Localizer["StatusDraft"]</option>
-                                    <option value="Active">@Localizer["StatusActive"]</option>
-                                    <option value="Frozen">@Localizer["StatusFrozen"]</option>
-                                    <option value="Closed">@Localizer["StatusClosed"]</option>
-                                </select>
+                                <div class="diten-field">
+                                    <i class="bx bx-check-circle diten-field-icon" aria-hidden="true"></i>
+                                    <select id="pStatus" class="form-select">
+                                        <option value="Draft">@Localizer["StatusDraft"]</option>
+                                        <option value="Active">@Localizer["StatusActive"]</option>
+                                        <option value="Frozen">@Localizer["StatusFrozen"]</option>
+                                        <option value="Closed">@Localizer["StatusClosed"]</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-medium" for="pFte">@Localizer["Fte"]</label>
-                                <input type="number" id="pFte" class="form-control" min="0" step="0.1" placeholder="@Localizer["FtePlaceholder"]" />
+                                <div class="diten-field">
+                                    <i class="bx bx-pie-chart-alt diten-field-icon" aria-hidden="true"></i>
+                                    <input type="number" id="pFte" class="form-control" min="0" step="0.1" placeholder="@Localizer["FtePlaceholder"]" />
+                                </div>
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-medium" for="pEffectiveFrom">@Localizer["EffectiveFrom"]</label>
-                                <input type="text" id="pEffectiveFrom" class="form-control flatpickr-date" autocomplete="off" placeholder="@Localizer["DatePlaceholder"]" />
+                                <div class="diten-field">
+                                    <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="pEffectiveFrom" class="form-control flatpickr-date" autocomplete="off" placeholder="@Localizer["DatePlaceholder"]" />
+                                </div>
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-medium" for="pEffectiveTo">@Localizer["EffectiveTo"]</label>
-                                <input type="text" id="pEffectiveTo" class="form-control flatpickr-date" autocomplete="off" placeholder="@Localizer["DatePlaceholder"]" />
+                                <div class="diten-field">
+                                    <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="pEffectiveTo" class="form-control flatpickr-date" autocomplete="off" placeholder="@Localizer["DatePlaceholder"]" />
+                                </div>
                             </div>
                         </div>
                     </div>

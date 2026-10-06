@@ -20,5 +20,8 @@ public sealed record UserDto(
     string? SetupUrl = null,
     // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the account-kind FACT as the enum NAME ("Unknown" | "Human" | "Service"),
     // never the number. Defaults to Unknown so the auth-flow constructions that do not carry it stay truthful.
-    string AccountKind = "Unknown"
+    string AccountKind = "Unknown",
+    // WP-AUTH-INVITED-LIFECYCLE-01 — the derived lifecycle status for the Users screen: "Invited" | "Inactive" |
+    // "Active" (UserLifecycle.StatusOf). Null on the auth-flow constructions, which never show a user list.
+    string? Status = null
 );

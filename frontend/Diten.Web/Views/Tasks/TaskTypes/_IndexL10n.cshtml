@@ -54,6 +54,12 @@
         Update = SharedLocalizer["Update"].Value,
         FormTitleCreate = Localizer["FormTitleCreate"].Value,
         FormTitleEdit = Localizer["FormTitleEdit"].Value,
-        FormValidationError = SharedLocalizer["ValidationFailed"].Value
+        FormValidationError = SharedLocalizer["ValidationFailed"].Value,
+        // WP-DM-DCP005-KURAL4-UI-01 (Kural 4 v2, sahip 2026-09-15) — the /active toggle's OWN two refusal
+        // sentences, read client-side off the proxied response's reason_code (index.js). The blocked-documents
+        // key here is the ACTIVATE wording, deliberately distinct from TaskTypesController's OWN mapping of the
+        // identical wire code to the edit-time sentence.
+        ErrorTaskTypeEnableBlockedDocuments = Localizer["ErrorTaskTypeEnableBlockedDocuments"].Value,
+        ErrorTaskTypeEnableRegisterUnavailable = Localizer["ErrorTaskTypeEnableRegisterUnavailable"].Value
     })
 </script>

@@ -12,6 +12,12 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <!-- WP-UI-LIST-SERVER-01 — the real-Mongo list tests (ServerList/). Same isolated-provider pattern as AuthService's
+         Testing/AccountKindAcceptance.cs: EphemeralMongo.Core starts a test-owned throwaway mongod (random port, temp
+         data directory) — never the shared localhost:27017. 1.1.3, not 3.x, for the same reason as there: 3.x needs
+         MongoDB.Driver >= 2.28.0 (strong-named) while src pins 2.27.0. Mvc.Testing hosts the REAL Api in-process. -->
+    <PackageReference Include="EphemeralMongo.Core" Version="1.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.11" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.5.23" />

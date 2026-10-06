@@ -7,7 +7,18 @@ public sealed record GovernedAuditAppendRequest
 {
     public Guid CorrelationId { get; init; }
     public string RequestType { get; init; } = string.Empty;
-    public string ActorType { get; init; } = "TenantUser";
+    /// <summary>
+    /// BL-421 — OPTIONAL, and never the source of the actor. The event is recorded as the authenticated caller; a value
+    /// naming another actor type is refused (<see cref="GovernedAuditAppendValidation.ActorTypeMismatch"/>) and an
+    /// omitted one means "the caller". It used to default to "TenantUser", which made an omitted value
+    /// indistinguishable from a declared one.
+    /// </summary>
+    public string? ActorType { get; init; }
+
+    /// <summary>
+    /// BL-421 — OPTIONAL, and never the source of the actor: a value other than the caller's user id is refused
+    /// (<see cref="GovernedAuditAppendValidation.ActorIdMismatch"/>).
+    /// </summary>
     public Guid? ActorId { get; init; }
     public Guid? TargetTenantId { get; init; }
     public string Category { get; init; } = string.Empty;
@@ -95,7 +106,8 @@ public static class GovernedAuditAppendValidation
             errors.Add("target_tenant_mismatch");
         }
 
-        if (!TryParseActorType(request.ActorType, out _))
+        // BL-421 — the actor type is optional (omitted = the caller); only a supplied value has to parse.
+        if (!string.IsNullOrWhiteSpace(request.ActorType) && !TryParseActorType(request.ActorType, out _))
         {
             errors.Add("actor_type_invalid");
         }
@@ -118,6 +130,45 @@ public static class GovernedAuditAppendValidation
         if (!HasSafeMetadataKeys(request.Metadata))
         {
             errors.Add("metadata_contains_prohibited_key");
+        }
+
+        return errors;
+    }
+
+    /// <summary>BL-421 — the body names an actor type other than the authenticated caller's (400).</summary>
+    public const string ActorTypeMismatch = "actor_type_mismatch";
+
+    /// <summary>BL-421 — the body names a user other than the authenticated caller (400).</summary>
+    public const string ActorIdMismatch = "actor_id_mismatch";
+
+    /// <summary>
+    /// BL-421 — the caller cannot be named: not authenticated, no recognised actor type, or no user id (403). The audit
+    /// service refuses an Unknown actor anyway; this makes the refusal explicit instead of a dropped event.
+    /// </summary>
+    public const string ActorUnresolved = "actor_unresolved";
+
+    /// <summary>
+    /// BL-421 — the actor fields a body MAY carry, compared with the authenticated caller. They are never a second source
+    /// of truth: the append records the caller either way. A value naming anyone else is refused rather than rewritten,
+    /// so a caller sending the wrong actor learns it. (An unparseable actor type is already <c>actor_type_invalid</c>.)
+    /// </summary>
+    public static IReadOnlyList<string> ValidateActor(
+        GovernedAuditAppendRequest request,
+        AuditActorType callerActorType,
+        Guid callerUserId)
+    {
+        var errors = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(request.ActorType)
+            && TryParseActorType(request.ActorType, out var declaredActorType)
+            && declaredActorType != callerActorType)
+        {
+            errors.Add(ActorTypeMismatch);
+        }
+
+        if (request.ActorId.HasValue && request.ActorId.Value != callerUserId)
+        {
+            errors.Add(ActorIdMismatch);
         }
 
         return errors;

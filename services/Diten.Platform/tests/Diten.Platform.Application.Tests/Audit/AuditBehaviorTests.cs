@@ -1,6 +1,7 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Contracts.Behaviors;
+using Diten.Platform.Common.Authorization;
 using Diten.Platform.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -66,7 +67,7 @@ public sealed class AuditBehaviorTests
         var auditService = new CapturingAuditService();
         var behavior = new AuditBehavior<
             global::Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands.AddTenantModuleEntitlementCommand,
-            Response<Guid>>(auditService, new AuditBehaviorOptions(), NullLogger<AuditBehavior<
+            Response<Guid>>(auditService, new AnonymousTenantAuthorizationContext(), new AuditBehaviorOptions(), NullLogger<AuditBehavior<
                 global::Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands.AddTenantModuleEntitlementCommand,
                 Response<Guid>>>.Instance);
         var handlerCalls = 0;
@@ -357,6 +358,7 @@ public sealed class AuditBehaviorTests
     {
         return new AuditBehavior<TRequest, Response<NoContent>>(
             auditService,
+            new AnonymousTenantAuthorizationContext(),
             options ?? new AuditBehaviorOptions(),
             logger ?? new CapturingLogger<AuditBehavior<TRequest, Response<NoContent>>>());
     }

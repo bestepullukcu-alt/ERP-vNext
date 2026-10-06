@@ -13,8 +13,21 @@
   <data name="GqmsDomain" xml:space="preserve"><value>Quality domain</value></data>
   <data name="FunctionCode" xml:space="preserve"><value>Function</value></data>
   <data name="QualityEvent" xml:space="preserve"><value>Quality event</value></data>
+  <data name="RequiresDeliverableOnCompletion" xml:space="preserve"><value>Requires a deliverable file to complete</value></data>
   <data name="QualityEventYes" xml:space="preserve"><value>Quality event</value></data>
   <data name="QualityEventNo" xml:space="preserve"><value>Not a quality event</value></data>
+  <data name="ReviewMeetingRequirement" xml:space="preserve"><value>Review meeting before decision</value></data>
+  <data name="ReviewMeetingRequirementHint" xml:space="preserve"><value>Whether a review meeting may or must be held before the reviewer makes the final decision on work of this type.</value></data>
+  <data name="ReviewMeetingRequirementNotAllowed" xml:space="preserve"><value>Not allowed</value></data>
+  <data name="ReviewMeetingRequirementOptional" xml:space="preserve"><value>Optional</value></data>
+  <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>Required</value></data>
+  <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>The review meeting setting must be Not allowed, Optional or Required.</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>This task type was changed by someone else while you were editing it. Reload the page and try again.</value></data>
+  <data name="InfoTaskTypeSavedInactiveBlockedDocuments" xml:space="preserve"><value>The task type was saved as inactive: not all linked documents are effective.</value></data>
+  <data name="InfoTaskTypeSavedInactiveUnverified" xml:space="preserve"><value>Document status could not be verified; the task type was saved as inactive. Try activating it later.</value></data>
+  <data name="ErrorTaskTypeEnableBlockedDocuments" xml:space="preserve"><value>The task type cannot be activated because these documents are not effective:</value></data>
+  <data name="ErrorTaskTypeEnableRegisterUnavailable" xml:space="preserve"><value>Document status could not be verified. Please try again later.</value></data>
+  <data name="ErrorTaskTypeActiveDocumentBlocked" xml:space="preserve"><value>A document that is not effective cannot be linked to an active task type. Deactivate the type first or wait until the document is effective.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>Not a record</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Operational record</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>GxP quality record</value></data>
@@ -74,47 +87,6 @@
   <data name="FunctionCodeCTY" xml:space="preserve"><value>Country Operations (residual)</value></data>
   <data name="FunctionCodeMED" xml:space="preserve"><value>Medical Affairs</value></data>
   <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>That is not one of the business function codes this organisation uses.</value></data>
-  <data name="DocListTitle" xml:space="preserve"><value>Controlled documents</value></data>
-  <data name="DocListDescription" xml:space="preserve"><value>The controlled-document reference list a task may cite. A lookup, not an editable register.</value></data>
-  <data name="DocListImportSection" xml:space="preserve"><value>Import</value></data>
-  <data name="DocListVersionsSection" xml:space="preserve"><value>Imported versions</value></data>
-  <data name="DocListSearchSection" xml:space="preserve"><value>Search</value></data>
-  <data name="DocListFile" xml:space="preserve"><value>Register file (CSV)</value></data>
-  <data name="DocListSourceKey" xml:space="preserve"><value>Source key</value></data>
-  <data name="DocListVersion" xml:space="preserve"><value>List version</value></data>
-  <data name="DocListFileName" xml:space="preserve"><value>File</value></data>
-  <data name="DocListImportedAt" xml:space="preserve"><value>Imported</value></data>
-  <data name="DocListEntries" xml:space="preserve"><value>entries</value></data>
-  <data name="DocListLinkable" xml:space="preserve"><value>citable</value></data>
-  <data name="DocListBlocked" xml:space="preserve"><value>blocked</value></data>
-  <data name="DocListUnreadColumns" xml:space="preserve"><value>Columns not read</value></data>
-  <data name="DocListMissingColumns" xml:space="preserve"><value>Missing columns</value></data>
-  <data name="DocListNone" xml:space="preserve"><value>none</value></data>
-  <data name="DocListHash" xml:space="preserve"><value>Content</value></data>
-  <data name="DocListCopyHash" xml:space="preserve"><value>Copy the full hash</value></data>
-  <data name="DocListDryRun" xml:space="preserve"><value>Check file</value></data>
-  <data name="DocListImport" xml:space="preserve"><value>Import</value></data>
-  <data name="DocListDryRunFirst" xml:space="preserve"><value>Check the file before importing.</value></data>
-  <data name="DocListFileChanged" xml:space="preserve"><value>The file changed — check it again before importing.</value></data>
-  <data name="DocListVersionRequired" xml:space="preserve"><value>An import needs a list version.</value></data>
-  <data name="DocListFileRequired" xml:space="preserve"><value>Choose a register file.</value></data>
-  <data name="DocListImported" xml:space="preserve"><value>The list was imported.</value></data>
-  <data name="DocListAlreadyImported" xml:space="preserve"><value>This exact file is already stored as version {0}. Nothing was added.</value></data>
-  <data name="DocListNotLinkable" xml:space="preserve"><value>Cannot be cited</value></data>
-  <data name="DocListNoVersions" xml:space="preserve"><value>No list imported yet.</value></data>
-  <data name="DocListNoResults" xml:space="preserve"><value>No document matches.</value></data>
-  <data name="DocListSearchPlaceholder" xml:space="preserve"><value>Search by code, title or UID…</value></data>
-  <data name="DocListDocTitle" xml:space="preserve"><value>Title</value></data>
-  <data name="DocListDocVersion" xml:space="preserve"><value>Version</value></data>
-  <data name="DocListActions" xml:space="preserve">
-    <value>Actions</value>
-  </data>
-  <data name="DocListWithdraw" xml:space="preserve"><value>Withdraw</value></data>
-  <data name="DocListWithdrawn" xml:space="preserve"><value>Withdrawn</value></data>
-  <data name="DocListWithdrawReason" xml:space="preserve"><value>Why is it being withdrawn?</value></data>
-  <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>A withdrawal needs a reason.</value></data>
-  <data name="DocListWithdrawSubtext" xml:space="preserve"><value>Version {0} stops being the list tasks may cite. It is kept, marked, so earlier references stay readable.</value></data>
-  <data name="DocListImportDenied" xml:space="preserve"><value>You can read this list but not import it.</value></data>
   <data name="ClosureOutcomesSection" xml:space="preserve">
     <value>Closure outcomes</value>
   </data>

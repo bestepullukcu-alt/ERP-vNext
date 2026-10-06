@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>لا توجد سياسات بعد.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>حدث خطأ ما. يرجى المحاولة مرة أخرى.</value></data>
+  <data name="Filter" xml:space="preserve"><value>تصفية</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل...</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>تضمين المؤرشفة</value></data>
+  <data name="Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="View" xml:space="preserve"><value>عرض</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>هل أنت متأكد؟</value></data>
+  <data name="Search" xml:space="preserve"><value>بحث..</value></data>
+  <data name="Export" xml:space="preserve"><value>تصدير</value></data>
+  <data name="Reset" xml:space="preserve"><value>إعادة تعيين</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>عرض الكل</value></data>
+  <data name="SaveView" xml:space="preserve"><value>حفظ العرض</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>إظهار الأعمدة</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>معاينة</value></data>
+  <data name="Passive" xml:space="preserve"><value>سلبي</value></data>
+  <data name="Unknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>حذف جماعي</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>حذف السجلات المحددة؟</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="EffectiveSection" xml:space="preserve"><value>نافذة السريان</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر...</value></data>
+  <data name="PoliciesTitle" xml:space="preserve"><value>سياسات الأهلية</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>حرِّر سياسات الأهلية (شروط السياق) وقيِّم سياقًا مقابل سياسة.</value></data>
+  <data name="FailClosedNote" xml:space="preserve"><value>التقييم منفصل وآمن عند الفشل — تُظهر النتيجة غير المؤهلة سببها دائمًا.</value></data>
+  <data name="PoliciesTab" xml:space="preserve"><value>السياسات</value></data>
+  <data name="EvaluateTab" xml:space="preserve"><value>تقييم</value></data>
+  <data name="PolicyCode" xml:space="preserve"><value>رمز السياسة</value></data>
+  <data name="PolicyCodeNote" xml:space="preserve"><value>مفتاح عمل ثابت مشترك بين إصدارات السياسة.</value></data>
+  <data name="PolicyName" xml:space="preserve"><value>اسم السياسة</value></data>
+  <data name="PolicyVersion" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="CreatePolicy" xml:space="preserve"><value>إنشاء سياسة</value></data>
+  <data name="EditPolicy" xml:space="preserve"><value>تعديل السياسة</value></data>
+  <data name="ArchivePolicy" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="ArchivePolicyConfirm" xml:space="preserve"><value>هل تؤرشف هذه السياسة؟ إجراء دورة حياة مرن؛ تظل قابلة للقراءة.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت أرشفة السياسة.</value></data>
+  <data name="ArchivedPolicyReadOnly" xml:space="preserve"><value>هذه السياسة مؤرشفة وللقراءة فقط.</value></data>
+  <data name="PublishedPolicyReadOnly" xml:space="preserve"><value>هذه السياسة منشورة: شروطها مجمَّدة وهي للعرض فقط هنا.</value></data>
+  <data name="StatusEditableNote" xml:space="preserve"><value>حالات التأليف فقط (مسودة/مراجعة/غير نشط). النشر مرحلة منفصلة.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="StatusPublished" xml:space="preserve"><value>منشور</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Status_review" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="Status_approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="Status_published" xml:space="preserve"><value>منشور</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Conditions" xml:space="preserve"><value>الشروط</value></data>
+  <data name="ConditionsSection" xml:space="preserve"><value>الشروط</value></data>
+  <data name="ConditionsNote" xml:space="preserve"><value>يتضمّن كل شرط أو يستبعد قيم بُعد سياقي. يحجب الشرط المطلوب عند غياب البُعد.</value></data>
+  <data name="ConditionsEmpty" xml:space="preserve"><value>لا شروط — تطابق السياسة أي سياق.</value></data>
+  <data name="AddCondition" xml:space="preserve"><value>إضافة شرط</value></data>
+  <data name="Dimension" xml:space="preserve"><value>البُعد</value></data>
+  <data name="Match" xml:space="preserve"><value>المطابقة</value></data>
+  <data name="Values" xml:space="preserve"><value>القيم</value></data>
+  <data name="Required" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="Remove" xml:space="preserve"><value>إزالة</value></data>
+  <data name="Match_includes" xml:space="preserve"><value>يتضمّن</value></data>
+  <data name="Match_excludes" xml:space="preserve"><value>يستبعد</value></data>
+  <data name="Dim_audience" xml:space="preserve"><value>الجمهور</value></data>
+  <data name="Dim_product" xml:space="preserve"><value>المنتج</value></data>
+  <data name="Dim_market" xml:space="preserve"><value>السوق</value></data>
+  <data name="Dim_channel" xml:space="preserve"><value>القناة</value></data>
+  <data name="Dim_language" xml:space="preserve"><value>اللغة</value></data>
+  <data name="Dim_period" xml:space="preserve"><value>الفترة</value></data>
+  <data name="EvaluateInputSection" xml:space="preserve"><value>مدخل التقييم</value></data>
+  <data name="EvaluateResultSection" xml:space="preserve"><value>النتيجة</value></data>
+  <data name="Policy" xml:space="preserve"><value>السياسة</value></data>
+  <data name="PolicyPickerPlaceholder" xml:space="preserve"><value>ابحث عن سياسة...</value></data>
+  <data name="Context" xml:space="preserve"><value>السياق</value></data>
+  <data name="AddContext" xml:space="preserve"><value>إضافة بُعد</value></data>
+  <data name="PinnedSelections" xml:space="preserve"><value>التحديدات المثبَّتة</value></data>
+  <data name="PinnedPlaceholder" xml:space="preserve"><value>اختياري — يُدرَج في سجل التقييم</value></data>
+  <data name="EvaluateAt" xml:space="preserve"><value>تقييم في (تاريخ)</value></data>
+  <data name="EvaluateAction" xml:space="preserve"><value>تقييم</value></data>
+  <data name="EvaluateReadOnlyNote" xml:space="preserve"><value>للقراءة فقط — لا يحفظ التقييم شيئًا.</value></data>
+  <data name="EvaluateResultEmpty" xml:space="preserve"><value>اختر سياسة وسياقًا ثم قيِّم.</value></data>
+  <data name="State" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="Eligible" xml:space="preserve"><value>مؤهل</value></data>
+  <data name="Blocked" xml:space="preserve"><value>محظور</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>غير محسوم</value></data>
+  <data name="BlockingLevelContext" xml:space="preserve"><value>محجوب عند: السياق (بُعد مطلوب مفقود)</value></data>
+  <data name="BlockingLevelPolicy" xml:space="preserve"><value>محجوب عند: السياسة (شرط مُنتهَك)</value></data>
+  <data name="SelectPolicyFirst" xml:space="preserve"><value>اختر سياسة أولاً.</value></data>
+  <data name="ContextRequired" xml:space="preserve"><value>أضف بُعد سياق واحدًا على الأقل بقيم.</value></data>
+</root>

@@ -1,0 +1,866 @@
+/**
+ * WP-FREQ-B — Visit Frequency Policy Create/Edit offcanvas editor (MOD-0165-FU03, frontend only).
+ *
+ * Same design language as the Segment editor (segment-create.css), distilled into `vfp-*` classes ALL nested under the
+ * `.vfp-create-scope` wrapper so the mockup palette never leaks to the app shell or any other page. It is a SEPARATE
+ * file — segment-create.css is reused as the reference pattern, never edited. Neutrals bind to the app's light/dark-aware
+ * Bootstrap variables (theme-aware), accent is `--bs-primary`, and the only literal white left is a foreground on an
+ * accent fill (checkmarks / active chips), correct in both themes. WP-FREQ-F2: the editor is now a SEPARATE page, so
+ * this file is linked from Create.cshtml / Edit.cshtml (via _Editor.cshtml); the retired offcanvas rules are kept below
+ * for reference. segment-create.css remains the untouched reference pattern.
+ */
+
+.vfp-create-scope {
+    --vfp-accent: var(--bs-primary);
+    --vfp-accent-hover: color-mix(in srgb, var(--bs-primary), #000 12%);
+    --vfp-accent-ring: rgba(var(--bs-primary-rgb), 0.14);
+    --vfp-card-bg: var(--bs-card-bg);
+    --vfp-control-bg: var(--bs-card-bg);
+    --vfp-card-border: var(--bs-border-color);
+    --vfp-heading: var(--bs-heading-color);
+    --vfp-text: var(--bs-body-color);
+    --vfp-muted: var(--bs-secondary-color);
+    --vfp-label: var(--bs-body-color);
+    --vfp-input-border: var(--bs-border-color);
+    --vfp-readonly-bg: var(--bs-secondary-bg);
+    -webkit-font-smoothing: antialiased;
+    color: var(--vfp-text);
+}
+
+/* Inter belongs ONLY to the mockup content (every inner node carries a vfp-* class); the app card chrome carries none
+   and keeps the shell font. */
+.vfp-create-scope [class^="vfp-"],
+.vfp-create-scope [class*=" vfp-"] {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+}
+
+/* WP-FREQ-F5 — the blanket Inter rule above matches the LAYOUT containers (`.vfp-editor-page`,
+   `.vfp-editor-layout`, `.vfp-editor-main`, `.vfp-side-sticky`), so the app card chrome — which carries no
+   vfp-* class — INHERITED Inter from them: the 8 section titles (`h6.text-heading`) and the Identity app
+   fields read in Inter instead of the shell font (Public Sans), unlike /Tasks/Create. Resetting the card +
+   card-body back to the shell font puts the chrome (h6 heading, form-label, form-control) on the app font by
+   inheritance, while every vfp-* mockup-content node inside re-asserts Inter via the blanket rule above (a
+   direct class match beats an inherited value at equal specificity). */
+.vfp-create-scope .card,
+.vfp-create-scope .card-body {
+    font-family: var(--bs-body-font-family);
+}
+
+/* a wider offcanvas so the two-column context grid breathes */
+.offcanvas.vfp-offcanvas {
+    width: min(560px, 96vw);
+}
+
+/* ------------------------------------------------------------------ section shell
+   WP-FREQ-F4: the editor sections + right-panel cards now use the app's own `.card > .card-body`
+   shell (same as /Tasks/Create) with an `h6.text-uppercase.text-heading` + `bx dt-card-icon`
+   heading — so the card background binds to `--bs-card-bg` and matches every other app page. The
+   old `.vfp-section*` shell (custom box + numbered "01" badge + custom title) is retired; only the
+   inner `.vfp-*` mockup content styles below survive. `.vfp-create-scope` must NOT set a background
+   on `.card`/`.card-body`/`h6`, or the app card chrome would be overridden. */
+
+/* ------------------------------------------------------------------ fields */
+.vfp-create-scope .vfp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+}
+.vfp-create-scope .vfp-field-full {
+    grid-column: 1 / -1;
+}
+.vfp-create-scope .vfp-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--vfp-label);
+}
+.vfp-create-scope .vfp-req {
+    color: var(--bs-danger);
+}
+.vfp-create-scope .vfp-help {
+    font-size: 12px;
+    color: var(--vfp-muted);
+    margin-top: 6px;
+}
+.vfp-create-scope .vfp-input,
+.vfp-create-scope .vfp-textarea,
+.vfp-create-scope .vfp-select {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 14px;
+    color: var(--vfp-text);
+    background: var(--vfp-control-bg);
+    border: 1px solid var(--vfp-input-border);
+    border-radius: 6px;
+    outline: none;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+.vfp-create-scope .vfp-textarea {
+    line-height: 1.6;
+    resize: vertical;
+    min-height: 64px;
+}
+.vfp-create-scope .vfp-input:focus,
+.vfp-create-scope .vfp-textarea:focus,
+.vfp-create-scope .vfp-select:focus {
+    border-color: var(--vfp-accent);
+    box-shadow: 0 0 0 3px var(--vfp-accent-ring);
+}
+.vfp-create-scope .vfp-input[readonly] {
+    color: var(--bs-secondary-color);
+    background: var(--vfp-readonly-bg);
+}
+.vfp-create-scope .vfp-input::placeholder,
+.vfp-create-scope .vfp-textarea::placeholder {
+    color: var(--bs-secondary-color);
+}
+
+/* ------------------------------------------------------------------ hidden radio input (target-type compact chips)
+   The target-type chips (`.vfp-chip-card`) still hide their native radio and show selection via the chip fill. */
+.vfp-create-scope .vfp-radio-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ WP-FREQ-F12 — conflict priority band list
+   The priority bands are a VERTICAL stacked radio-card list (full-width rows: a visible radio + a bold title + a
+   description; the selected row is highlighted in the accent). No value badge (mockup). The radio VALUE stays the
+   contract band weight, so buildPayload / checkedValue('vfpPriority') read it exactly as before. */
+.vfp-create-scope .vfp-bandlist {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.vfp-create-scope .vfp-band-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--bs-border-color);
+    border-radius: 9px;
+    cursor: pointer;
+    margin: 0;
+}
+.vfp-create-scope .vfp-band-card:hover {
+    border-color: var(--bs-primary);
+}
+.vfp-create-scope .vfp-band-radio {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin: 2px 0 0;
+    accent-color: var(--bs-primary);
+    cursor: pointer;
+}
+.vfp-create-scope .vfp-band-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.vfp-create-scope .vfp-band-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+.vfp-create-scope .vfp-band-desc {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--vfp-muted);
+}
+.vfp-create-scope .vfp-band-card:has(.vfp-band-radio:checked) {
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border-color: var(--vfp-accent);
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.1);
+}
+.vfp-create-scope .vfp-band-card:has(.vfp-band-radio:checked) .vfp-band-title {
+    color: var(--bs-primary);
+}
+
+/* ------------------------------------------------------------------ target-type compact chips (WP-FREQ-F3)
+   The target type selector is a single-row, flex-wrap set of compact chips (specificity order, most-specific → broadest,
+   with a small subtext on the first + last). The priority-band selector uses the vertical `.vfp-band-card` list above. */
+.vfp-create-scope .vfp-chipgrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.vfp-create-scope .vfp-chip-card {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1px;
+    /* WP-FREQ-F7 — chips share the row equally and fill it (flex:1 1 0); they wrap when the min-width no longer
+       fits, and each wrapped line stays fully filled. */
+    flex: 1 1 0;
+    min-width: 70px;
+    padding: 8px 12px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    background: var(--vfp-card-bg);
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    margin: 0;
+    line-height: 1.3;
+    transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+.vfp-create-scope .vfp-chip-card:hover {
+    border-color: var(--bs-primary);
+}
+.vfp-create-scope .vfp-chip-title {
+    font-size: 12px;
+    font-weight: 400;
+    color: inherit;
+    white-space: nowrap;
+}
+.vfp-create-scope .vfp-chip-sub {
+    font-size: 10px;
+    color: var(--bs-secondary-color);
+    opacity: 0.85;
+}
+.vfp-create-scope .vfp-chip-card:has(> .vfp-radio-input:checked) {
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border-color: var(--bs-primary);
+}
+.vfp-create-scope .vfp-chip-card:has(> .vfp-radio-input:checked) .vfp-chip-sub {
+    color: var(--bs-primary);
+    opacity: 0.75;
+}
+
+/* ------------------------------------------------------------------ WP-FREQ-F11 — resolved cadence (single row)
+   The resolved cadence renders as ONE row: an uppercase accent label, the 18px value (#vfpFreqSentence) and, pushed to
+   the far end, a monospace meta (#vfpFreqRaw = "frequencyType · count · periodType"). */
+.vfp-create-scope .vfp-cadence {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 12px;
+    padding: 16px 18px;
+    background: var(--bs-primary-bg-subtle);
+    border: 1px solid var(--bs-primary-border-subtle);
+    border-radius: 6px;
+}
+.vfp-create-scope .vfp-cadence-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bs-primary);
+}
+.vfp-create-scope .vfp-cadence-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+}
+.vfp-create-scope .vfp-cadence-meta {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: var(--bs-primary);
+    white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ source note */
+.vfp-create-scope .vfp-inline-note {
+    padding: 10px 12px;
+    margin-top: 8px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    background: var(--bs-info-bg-subtle);
+    color: var(--bs-info-text-emphasis);
+    border: 1px solid var(--bs-info-border-subtle);
+}
+
+/* ------------------------------------------------------------------ validation + errors */
+.vfp-create-scope .vfp-error {
+    display: none;
+    font-size: 12px;
+    color: var(--bs-danger);
+    margin-top: 5px;
+}
+.vfp-create-scope .vfp-error.is-shown {
+    display: block;
+}
+.vfp-create-scope .vfp-form-error {
+    display: none;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    background: var(--bs-danger-bg-subtle);
+    color: var(--bs-danger-text-emphasis);
+    border: 1px solid var(--bs-danger-border-subtle);
+}
+.vfp-create-scope .vfp-form-error.is-shown {
+    display: block;
+}
+
+/* the picked-entity name chip (shows the resolved name, never a GUID) */
+.vfp-create-scope .vfp-picked {
+    display: none;
+    margin-top: 6px;
+    font-size: 12.5px;
+    color: var(--vfp-muted);
+}
+.vfp-create-scope .vfp-picked.is-shown {
+    display: block;
+}
+
+/* ------------------------------------------------------------------ WP-FREQ-F7 target section (mockup + app field/font)
+   The HEDEF section's mockup-content (`.vfp-*`) nodes go back to the shell font (WP-FREQ-F5 already reset the app card
+   chrome; this extends that to the section's inner vfp-* nodes so the whole card reads in the app font like
+   /Tasks/Create). Only the code badges stay monospace. */
+.vfp-create-scope .vfp-target-section [class^="vfp-"],
+.vfp-create-scope .vfp-target-section [class*=" vfp-"] {
+    font-family: var(--bs-body-font-family);
+}
+.vfp-create-scope .vfp-target-section .vfp-picked-code,
+.vfp-create-scope .vfp-target-section .vfp-picked-ext,
+.vfp-create-scope .vfp-target-section .vfp-code-hint {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* WP-FREQ-F11/F12 — the FREKANS + GEÇERLİLİK + ÇAKIŞMA sections put their mockup-content (`.vfp-*`) nodes back on the
+   shell font (same reset as the HEDEF `.vfp-target-section`), so the whole card reads in the app font like
+   /Tasks/Create. Only the resolved-cadence meta stays monospace. */
+.vfp-create-scope .vfp-app-section [class^="vfp-"],
+.vfp-create-scope .vfp-app-section [class*=" vfp-"] {
+    font-family: var(--bs-body-font-family);
+}
+.vfp-create-scope .vfp-app-section .vfp-cadence-meta {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* a plain <select class="form-select"> inside .diten-field is not covered by backbone-custom's
+   `.diten-field .form-control` padding rule (that rule targets .form-control + select2's rendered box, not a bare
+   .form-select), so make room for the leading icon here. */
+.vfp-create-scope .diten-field .form-select {
+    padding-inline-start: calc(0.9375rem + 1rem + 0.5rem);
+}
+
+/* "Hangi kayıt" dashed box — empty shows the app select; picked shows the chip (select hidden via .vfp-hidden).
+   WP-FREQ-F9 — the fill is now the body background (was --bs-tertiary-bg) so the box reads as part of the form
+   surface rather than a sunken panel. */
+.vfp-create-scope .vfp-picked-box {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 6px;
+    background: var(--bs-body-bg);
+}
+.vfp-create-scope .vfp-picked-box-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+.vfp-create-scope .vfp-picked-box-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+}
+.vfp-create-scope .vfp-picked-box-hint {
+    font-size: 11px;
+    color: var(--bs-secondary-color);
+}
+.vfp-create-scope .vfp-picked-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+}
+.vfp-create-scope .vfp-picked-code {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    white-space: nowrap;
+}
+.vfp-create-scope .vfp-picked-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--bs-body-color);
+}
+.vfp-create-scope .vfp-picked-ext {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+.vfp-create-scope .vfp-picked-change {
+    margin-left: auto;
+    padding: 4px 12px;
+    font-size: 13px;
+    color: var(--bs-body-color);
+    background: transparent;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    cursor: pointer;
+}
+/* when an external code is shown it already carries the margin-left:auto, so the button sits right after it */
+.vfp-create-scope .vfp-picked-ext + .vfp-picked-change {
+    margin-left: 0;
+}
+.vfp-create-scope .vfp-picked-change:hover {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+.vfp-create-scope .vfp-picked-change:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------ footer actions */
+.vfp-offcanvas .vfp-footer {
+    gap: 8px;
+}
+.vfp-create-scope .vfp-hidden {
+    display: none !important;
+}
+
+/* select2 dropped inside the scope should fill its cell */
+.vfp-create-scope .select2-container {
+    width: 100% !important;
+}
+
+/* ================================================================== WP-FREQ-F2 — separate-page editor layout
+   The offcanvas rules above stay for reference; the editor now renders as a full page. The `.vfp-create-scope` wrapper
+   still confines the mockup palette; the shell (breadcrumb/buttons) uses app chrome. Two columns on desktop, one on
+   phone. */
+.vfp-editor-page {
+    display: block;
+}
+.vfp-create-scope.vfp-editor-page .vfp-editor-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.vfp-editor-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 20px;
+    align-items: start;
+}
+@media (max-width: 991.98px) {
+    .vfp-editor-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+.vfp-create-scope .vfp-grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+/* WP-FREQ-F15 — header live "Zorunlu: N/M" required-field badge (sits left of "Listeye Dön"). Amber pill (warning
+   tokens) while any required field is missing, green (success tokens) once all are satisfied. form.js fills it read-only
+   (no validate() call); it stays hidden until the first fill so no empty pill flashes before the script runs. */
+.vfp-create-scope .vfp-required-badge {
+    display: none;
+    align-items: center;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    background: var(--bs-warning-bg-subtle);
+    color: var(--bs-warning-text-emphasis);
+    border: 1px solid var(--bs-warning-border-subtle);
+}
+.vfp-create-scope .vfp-required-badge.is-shown {
+    display: inline-flex;
+}
+.vfp-create-scope .vfp-required-badge.is-complete {
+    background: var(--bs-success-bg-subtle);
+    color: var(--bs-success-text-emphasis);
+    border-color: var(--bs-success-border-subtle);
+}
+
+/* WP-FREQ-F14 — GEÇERLİLİK (04) + ÇAKIŞMA (05) kartları `row g-4` içinde `col-12 col-xl-6` yan yana. Kartlardan
+   `mb-4` kaldırıldı; dikey boşluğu row g-4 gap yönetir. Geniş ekranda iki kart eşit yükseklik olsun diye col
+   içindeki `.card` yüksekliği %100'e sabitlenir (tema-nötr; app card chrome'a dokunmaz). */
+.vfp-create-scope .vfp-effective-conflict-row > [class*="col-"] > .card {
+    height: 100%;
+    margin-bottom: 0;
+}
+
+/* WP-FREQ-F7 — the HEDEF section aside note now carries the app `.wcn-act-outcome` class (size + muted colour from
+   backbone-custom.css). It still sits inside the uppercase app-card h6, so the inherited transform/spacing/weight are
+   reset back to a plain note (the old `.vfp-section-aside` shell is retired). */
+.vfp-create-scope h6 .wcn-act-outcome {
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 400;
+}
+
+/* -------------------------------------------------------- collapsible scope block */
+.vfp-create-scope .vfp-scope {
+    margin-top: 16px;
+    border-top: 1px dashed var(--vfp-card-border);
+    padding-top: 14px;
+}
+.vfp-create-scope .vfp-scope-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--vfp-heading);
+    font-size: 13.5px;
+    font-weight: 600;
+    text-align: left;
+}
+.vfp-create-scope .vfp-scope-caret {
+    transition: transform 0.15s ease;
+    color: var(--vfp-muted);
+}
+.vfp-create-scope .vfp-scope-toggle.is-open .vfp-scope-caret {
+    transform: rotate(90deg);
+}
+.vfp-create-scope .vfp-scope-hint {
+    margin-left: auto;
+    font-size: 11.5px;
+    font-weight: 400;
+    color: var(--vfp-muted);
+}
+.vfp-create-scope .vfp-scope-body {
+    margin-top: 14px;
+}
+.vfp-create-scope .vfp-scope-group {
+    margin-bottom: 18px;
+}
+/* WP-FREQ-F8 — sub-group heading: a title-case bold title with an INLINE muted description on the same line, and a
+   bottom divider under the whole head (was an uppercase heading + a block description line, no divider). */
+.vfp-create-scope .vfp-scope-group-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    padding-bottom: 7px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--vfp-card-border);
+}
+.vfp-create-scope .vfp-scope-group-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--vfp-heading);
+}
+/* WP-FREQ-F8 — the description now sits inline beside the title. */
+.vfp-create-scope .vfp-scope-group-desc {
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--vfp-muted);
+}
+/* WP-FREQ-F8 — Saha alanı cell: TerritoryModel + TerritoryNode side by side (was stacked). The model→node cascade
+   in form.js is unchanged; only the two selects' layout moved. */
+.vfp-create-scope .vfp-territory-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+/* WP-FREQ-F7 — the payload field-name hint beside each scope field label (monospace via the target-section rule). */
+.vfp-create-scope .vfp-code-hint {
+    font-size: 10.5px;
+    color: var(--bs-secondary-color);
+    opacity: 0.8;
+}
+.vfp-create-scope .vfp-product-hint {
+    color: var(--bs-warning-text-emphasis, var(--vfp-muted));
+}
+/* WP-FREQ-F10 — the KAPSAM summary is a two-column grid (mockup birebir): a left column stacking the uppercase "KAPSAM"
+   label over the chip row (or the "all targets" fallback while empty), and a bottom-aligned "clear scope" button in the
+   auto column. The box background is now bg-body (var(--bs-body-bg)). Each chip is a bordered card-bg pill of a muted
+   label + a bold heading-color value (label:value). #vfpScopeChips / #vfpScopeClear ids are unchanged, so form.js's chip
+   render + clear toggle keep working as-is. */
+.vfp-create-scope .vfp-scope-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 10px 12px;
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+}
+.vfp-create-scope .vfp-scope-summary-main {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+.vfp-create-scope .vfp-scope-summary-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
+.vfp-create-scope .vfp-scope-all {
+    font-size: 12px;
+    color: var(--bs-secondary-color);
+}
+/* the "all targets" fallback disappears as soon as at least one scope chip is rendered */
+.vfp-create-scope .vfp-scope-chips:not(:empty) ~ .vfp-scope-all {
+    display: none;
+}
+.vfp-create-scope .vfp-scope-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+.vfp-create-scope .vfp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    padding: 4px 9px;
+    font-size: 12px;
+    border-radius: 5px;
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    overflow: hidden;
+}
+.vfp-create-scope .vfp-chip-label {
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+.vfp-create-scope .vfp-chip-value {
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.vfp-create-scope .vfp-scope-clear {
+    align-self: end;
+    white-space: nowrap;
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    border: 1px solid var(--bs-border-color);
+    background: var(--bs-card-bg);
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+}
+
+.vfp-create-scope .vfp-inline-note--muted {
+    background: var(--bs-secondary-bg);
+    color: var(--vfp-muted);
+    border-color: var(--vfp-card-border);
+}
+
+/* -------------------------------------------------------- archived read-only banner */
+.vfp-create-scope .vfp-archived-note {
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    background: var(--bs-secondary-bg);
+    color: var(--vfp-muted);
+    border: 1px solid var(--vfp-card-border);
+}
+
+/* -------------------------------------------------------- right sticky panel */
+.vfp-editor-side {
+    position: relative;
+}
+.vfp-side-sticky {
+    position: sticky;
+    top: 84px;
+    display: flex;
+    flex-direction: column;
+    /* the right-panel cards now carry the app `.card mb-4` bottom margin themselves, so no extra
+       flex gap — keeps the vertical rhythm identical to the left column's `.card mb-4` stack. */
+    gap: 0;
+}
+@media (max-width: 991.98px) {
+    .vfp-side-sticky { position: static; }
+}
+/* WP-FREQ-F4: the right-panel cards + their titles now use the app `.card > .card-body` shell +
+   `h6.text-uppercase.text-heading` heading (like the left sections), so the old `.vfp-side-card` /
+   `.vfp-side-title` / `.vfp-side-title--row` shell is retired. The inner content styles
+   (lifecycle / summary / checklist) below are unchanged. */
+
+/* lifecycle selector */
+.vfp-create-scope .vfp-lifecycle {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.vfp-create-scope .vfp-life-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 11px;
+    border: 1.5px solid var(--bs-border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 0;
+}
+.vfp-create-scope .vfp-life-row input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+.vfp-create-scope .vfp-life-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    margin-top: 4px;
+    flex: none;
+    background: var(--bs-secondary-color);
+}
+.vfp-create-scope .vfp-life-row[data-status="active"] .vfp-life-dot { background: var(--bs-success); }
+.vfp-create-scope .vfp-life-row[data-status="inactive"] .vfp-life-dot { background: var(--bs-warning); }
+.vfp-create-scope .vfp-life-row[data-status="archived"] .vfp-life-dot { background: var(--bs-secondary); }
+.vfp-create-scope .vfp-life-name {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--vfp-heading);
+}
+.vfp-create-scope .vfp-life-help {
+    display: block;
+    font-size: 11.5px;
+    color: var(--vfp-muted);
+}
+.vfp-create-scope .vfp-life-row:has(input:checked) {
+    border-color: var(--vfp-accent);
+    background: rgba(var(--bs-primary-rgb), 0.06);
+}
+/* create mode: inactive/archived visible but not selectable (a new record cannot start there) */
+.vfp-create-scope .vfp-life-row.vfp-life-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+.vfp-create-scope .vfp-life-row.vfp-life-disabled:hover {
+    border-color: var(--bs-border-color);
+}
+/* WP-FREQ-F15 — the lifecycle "no delete / Archive" note is an amber callout box (warning tokens, theme-aware
+   light+dark). "Archive" is emphasised in the markup (_Editor.cshtml). */
+.vfp-create-scope .vfp-life-note {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    text-wrap: pretty;
+    background: var(--bs-warning-bg-subtle);
+    border: 1px solid var(--bs-warning-border-subtle);
+    color: var(--bs-warning-text-emphasis);
+}
+
+/* live summary */
+.vfp-create-scope .vfp-summary-sentence {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--vfp-text);
+    margin: 0 0 12px;
+}
+.vfp-create-scope .vfp-summary-sentence:empty { display: none; }
+.vfp-create-scope .vfp-summary-kv {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 12px;
+    margin: 0;
+}
+.vfp-create-scope .vfp-summary-kv dt {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--vfp-muted);
+}
+.vfp-create-scope .vfp-summary-kv dd {
+    font-size: 12.5px;
+    color: var(--vfp-text);
+    margin: 0;
+    text-align: right;
+    word-break: break-word;
+}
+
+/* checklist */
+.vfp-create-scope .vfp-check-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 999px;
+    /* the badge lives inside the uppercase app-card h6 now; keep its own casing */
+    text-transform: none;
+    letter-spacing: normal;
+}
+.vfp-create-scope .vfp-check-badge.is-ready {
+    background: var(--bs-success-bg-subtle);
+    color: var(--bs-success-text-emphasis);
+}
+.vfp-create-scope .vfp-check-badge.is-warn {
+    background: var(--bs-warning-bg-subtle);
+    color: var(--bs-warning-text-emphasis);
+}
+/* WP-FREQ-F13 — each checklist row is a ✓/! icon + a two-line body (bold-ish title over a muted, live subtext). Only two
+   states remain (satisfied = success ✓, attention = warning !); the grey neutral "info" state is retired (mockup). */
+.vfp-create-scope .vfp-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.vfp-create-scope .vfp-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--vfp-text);
+}
+.vfp-create-scope .vfp-check i { font-size: 15px; flex: none; line-height: 1.35; }
+.vfp-create-scope .vfp-check.is-ok i { color: var(--bs-success); }
+.vfp-create-scope .vfp-check.is-warn i { color: var(--bs-warning); }
+.vfp-create-scope .vfp-check-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+.vfp-create-scope .vfp-check-title {
+    color: var(--vfp-text);
+    line-height: 1.35;
+}
+.vfp-create-scope .vfp-check-desc {
+    font-size: 11.5px;
+    color: var(--vfp-muted);
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+/* footer actions */
+.vfp-editor-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+/* WP-FREQ-F15 — the `.vfp-btn-armed` accent ring (box-shadow) is removed; #vfpSaveDraft no longer shows a halo.
+   form.js still toggles the class to track the selected lifecycle, but it now carries no visual — button function
+   and state are unchanged. */

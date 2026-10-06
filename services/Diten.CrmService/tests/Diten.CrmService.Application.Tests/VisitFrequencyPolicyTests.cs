@@ -48,6 +48,9 @@ public sealed class VisitFrequencyPolicyTests
         public ArchiveVisitFrequencyPolicyHandler Archive()
             => new(Tenant(TenantId), new NullActorContext(), Repo);
 
+        public DeleteVisitFrequencyPolicyHandler Delete()
+            => new(Tenant(TenantId), new NullActorContext(), Repo);
+
         public ResolveVisitFrequencyPolicyHandler Resolver()
             => new(Tenant(TenantId), new VisitFrequencyPolicyResolver(Tenant(TenantId), Repo));
 
@@ -402,6 +405,66 @@ public sealed class VisitFrequencyPolicyTests
     }
 
     [Fact]
+    public async Task Delete_Removes_From_List_Get_And_Resolve()
+    {
+        var f = new Fixture(TenantA);
+        var target = Guid.NewGuid();
+        var created = await f.Create().Handle(Cmd(target), default);
+        var policyId = created.Data;
+
+        var delete = await f.Delete().Handle(new DeleteVisitFrequencyPolicyCommand(policyId), default);
+        Assert.Equal(200, delete.StatusCode);
+
+        // Soft-deleted: the row is flagged, not removed, but every read filters IsDeleted=false.
+        var row = Assert.Single(f.Repo.Items);
+        Assert.True(row.IsDeleted);
+        Assert.NotNull(row.DeletedAt);
+
+        var list = await f.List().Handle(new ListVisitFrequencyPoliciesQuery(), default);
+        Assert.Empty(list.Data!.Items);
+
+        var read = await f.Get().Handle(new GetVisitFrequencyPolicyQuery(policyId), default);
+        Assert.Equal(404, read.StatusCode);
+
+        var resolve = await f.Resolver().Handle(
+            new ResolveVisitFrequencyPolicyQuery(FrequencyTargetType.AccountContactLink, target, Jun1), default);
+        Assert.Equal(FrequencyStatus.Unknown, resolve.Data!.FrequencyStatus);
+    }
+
+    [Fact]
+    public async Task Delete_Is_Distinct_From_Archive_Which_Stays_Readable()
+    {
+        var f = new Fixture(TenantA);
+        // Archive keeps the row listed as history; delete removes it from the working set — the two are not the same.
+        var archived = await f.Create().Handle(Cmd(Guid.NewGuid(), code: "ARCH"), default);
+        await f.Archive().Handle(new ArchiveVisitFrequencyPolicyCommand(archived.Data), default);
+
+        var deleted = await f.Create().Handle(Cmd(Guid.NewGuid(), code: "DEL"), default);
+        await f.Delete().Handle(new DeleteVisitFrequencyPolicyCommand(deleted.Data), default);
+
+        var list = await f.List().Handle(new ListVisitFrequencyPoliciesQuery(), default);
+        var only = Assert.Single(list.Data!.Items);
+        Assert.Equal("ARCH", only.PolicyCode);   // archived history remains listed
+        Assert.Equal("archived", only.Status);   // ...as archived
+    }
+
+    [Fact]
+    public async Task Delete_Unknown_Policy_Returns_404()
+    {
+        var f = new Fixture(TenantA);
+        var r = await f.Delete().Handle(new DeleteVisitFrequencyPolicyCommand(Guid.NewGuid()), default);
+        Assert.Equal(404, r.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_Without_Tenant_Returns_400()
+    {
+        var handler = new DeleteVisitFrequencyPolicyHandler(new TenantContext(), new NullActorContext(), new FakeRepo());
+        var r = await handler.Handle(new DeleteVisitFrequencyPolicyCommand(Guid.NewGuid()), default);
+        Assert.Equal(400, r.StatusCode);
+    }
+
+    [Fact]
     public async Task CrossTenant_Get_Returns_404()
     {
         var f = new Fixture(TenantA);
@@ -465,6 +528,32 @@ public sealed class VisitFrequencyPolicyTests
     }
 
     [Fact]
+    public void Contract_Exposes_Priority_Bands_From_Domain_With_Real_Weights()
+    {
+        // WP-FREQ-B: the contract additively carries the suggested priority bands so the authoring UI can render named
+        // bands WITHOUT hardcoding the numbers. The client must receive the DOMAIN weights ("smaller wins"), never the
+        // mockup's inverted "larger wins" numbers (600/400/200/100/50).
+        var handler = new GetVisitFrequencyContractHandler(Tenant(TenantA));
+        var r = handler.Handle(new GetVisitFrequencyContractQuery(), default).GetAwaiter().GetResult();
+
+        var bands = r.Data!.Vocabulary.PriorityBands;
+        Assert.Equal(FrequencyPriorityBands.All.Count, bands.Count);
+        Assert.Equal(5, bands.Count); // WP-FREQ-F1: five conceptual weight tiers
+        Assert.All(bands, b => Assert.True(b.Value >= 1));
+        Assert.Contains(bands, b => b.Code == "override-all" && b.Value == FrequencyPriorityBands.OverrideAll);
+        Assert.Contains(bands, b => b.Code == "campaign-level" && b.Value == FrequencyPriorityBands.CampaignLevel);
+        Assert.Contains(bands, b => b.Code == "standard" && b.Value == FrequencyPriorityBands.Standard);
+        Assert.Contains(bands, b => b.Code == "baseline" && b.Value == FrequencyPriorityBands.Baseline);
+        Assert.Contains(bands, b => b.Code == "last-resort" && b.Value == FrequencyPriorityBands.LastResort);
+        // override-all is the strongest tier, so its weight is the smallest (smaller wins).
+        Assert.Equal(bands.Min(b => b.Value), bands.Single(b => b.Code == "override-all").Value);
+        // last-resort is the weakest tier, so its weight is the largest.
+        Assert.Equal(bands.Max(b => b.Value), bands.Single(b => b.Code == "last-resort").Value);
+        // The mockup's inverted sentinel numbers must never reach the client as real bands.
+        Assert.DoesNotContain(bands, b => b.Value == 50);
+    }
+
+    [Fact]
     public void Resolve_Result_Has_No_Route_Visit_Due_LastVisit_Consent_Fields()
     {
         // Response shape guard: the resolve result type must never leak a consumer-domain field.
@@ -473,6 +562,113 @@ public sealed class VisitFrequencyPolicyTests
         {
             Assert.DoesNotContain(banned, props);
         }
+    }
+
+    // ---------------- Audit trail events (WP-FREQ-DET-C) ----------------
+
+    private sealed class NamedActor : IActorContext
+    {
+        public string? ActorName => "Dr. Ayse Yilmaz";
+    }
+
+    [Fact]
+    public async Task Create_Active_Appends_Created_Then_Published()
+    {
+        var f = new Fixture(TenantA);
+        var r = await f.Create().Handle(Cmd(Guid.NewGuid(), status: FrequencyPolicyStatus.Active), default);
+        Assert.Equal(201, r.StatusCode);
+        var row = Assert.Single(f.Repo.Items);
+        Assert.Equal(
+            new[] { FrequencyPolicyEventType.Created, FrequencyPolicyEventType.Published },
+            row.Events.Select(e => e.Type).ToArray());
+        Assert.All(row.Events, e => Assert.Equal(row.CreatedAt, e.At));
+    }
+
+    [Fact]
+    public async Task Create_Draft_Appends_Only_Created()
+    {
+        var f = new Fixture(TenantA);
+        var r = await f.Create().Handle(Cmd(Guid.NewGuid(), status: FrequencyPolicyStatus.Draft), default);
+        Assert.Equal(201, r.StatusCode);
+        var row = Assert.Single(f.Repo.Items);
+        var evt = Assert.Single(row.Events);
+        Assert.Equal(FrequencyPolicyEventType.Created, evt.Type);
+    }
+
+    [Fact]
+    public async Task Update_Draft_To_Active_Appends_Published_With_Actor()
+    {
+        var repo = new FakeRepo();
+        var create = new CreateVisitFrequencyPolicyHandler(Tenant(TenantA), new NamedActor(), repo);
+        var update = new UpdateVisitFrequencyPolicyHandler(Tenant(TenantA), new NamedActor(), repo);
+        var created = await create.Handle(Cmd(Guid.NewGuid(), status: FrequencyPolicyStatus.Draft), default);
+
+        var r = await update.Handle(new UpdateVisitFrequencyPolicyCommand(
+            created.Data, "Renamed", FrequencyType.Weekly, 2, FrequencyPeriodType.Week, Jan1, 300,
+            FrequencySource.Manual, Status: FrequencyPolicyStatus.Active), default);
+        Assert.Equal(200, r.StatusCode);
+
+        var row = Assert.Single(repo.Items);
+        var published = Assert.Single(row.Events, e => e.Type == FrequencyPolicyEventType.Published);
+        Assert.Equal("Dr. Ayse Yilmaz", published.By);
+        Assert.Equal(FrequencyPolicyStatus.Draft, published.FromValue);
+        Assert.Equal(FrequencyPolicyStatus.Active, published.ToValue);
+    }
+
+    [Fact]
+    public async Task Update_Active_To_Inactive_Appends_Deactivated()
+    {
+        var f = new Fixture(TenantA);
+        var created = await f.Create().Handle(Cmd(Guid.NewGuid(), status: FrequencyPolicyStatus.Active), default);
+        var r = await f.Update().Handle(new UpdateVisitFrequencyPolicyCommand(
+            created.Data, "P", FrequencyType.Weekly, 2, FrequencyPeriodType.Week, Jan1, 300,
+            FrequencySource.Manual, Status: FrequencyPolicyStatus.Inactive), default);
+        Assert.Equal(200, r.StatusCode);
+        var row = Assert.Single(f.Repo.Items);
+        Assert.Contains(row.Events, e => e.Type == FrequencyPolicyEventType.Deactivated);
+    }
+
+    [Fact]
+    public async Task Update_Priority_Change_Appends_WeightChanged_With_Band_Codes()
+    {
+        var f = new Fixture(TenantA);
+        // Created at priority 300 (campaign-level band); update to 500 (standard band).
+        var created = await f.Create().Handle(Cmd(Guid.NewGuid(), priority: 300, status: FrequencyPolicyStatus.Active), default);
+        var r = await f.Update().Handle(new UpdateVisitFrequencyPolicyCommand(
+            created.Data, "P", FrequencyType.Weekly, 2, FrequencyPeriodType.Week, Jan1, 500,
+            FrequencySource.Manual, Status: FrequencyPolicyStatus.Active), default);
+        Assert.Equal(200, r.StatusCode);
+
+        var row = Assert.Single(f.Repo.Items);
+        var weight = Assert.Single(row.Events, e => e.Type == FrequencyPolicyEventType.WeightChanged);
+        Assert.Equal("campaign-level", weight.FromValue);
+        Assert.Equal("standard", weight.ToValue);
+    }
+
+    [Fact]
+    public async Task Update_No_Status_Or_Weight_Change_Appends_Nothing()
+    {
+        var f = new Fixture(TenantA);
+        var created = await f.Create().Handle(Cmd(Guid.NewGuid(), priority: 300, status: FrequencyPolicyStatus.Active), default);
+        var row = f.Repo.Items.Single();
+        var before = row.Events.Count;
+
+        // Rename only — same status and same weight.
+        await f.Update().Handle(new UpdateVisitFrequencyPolicyCommand(
+            created.Data, "Renamed", FrequencyType.Weekly, 2, FrequencyPeriodType.Week, Jan1, 300,
+            FrequencySource.Manual, Status: FrequencyPolicyStatus.Active), default);
+        Assert.Equal(before, row.Events.Count);
+    }
+
+    [Fact]
+    public async Task Archive_Appends_Archived_Event()
+    {
+        var f = new Fixture(TenantA);
+        var created = await f.Create().Handle(Cmd(Guid.NewGuid(), status: FrequencyPolicyStatus.Active), default);
+        await f.Archive().Handle(new ArchiveVisitFrequencyPolicyCommand(created.Data), default);
+        var row = Assert.Single(f.Repo.Items);
+        var archived = Assert.Single(row.Events, e => e.Type == FrequencyPolicyEventType.Archived);
+        Assert.Equal(row.ArchivedAt, archived.At);
     }
 
     // ---------------- Fake repository ----------------

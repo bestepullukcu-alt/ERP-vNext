@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ContractsTitle" xml:space="preserve"><value>合同与条款库</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>采购与寻源合同：关联供应商和授标、附加条款，并管理从草稿到生效的生命周期。</value></data>
+  <data name="AddNew" xml:space="preserve"><value>添加合同</value></data>
+  <data name="EditItem" xml:space="preserve"><value>编辑合同</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>添加合同</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑合同</value></data>
+  <data name="QuickView" xml:space="preserve"><value>查看</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="ContractId" xml:space="preserve"><value>合同编号</value></data>
+  <data name="ContractTitle" xml:space="preserve"><value>标题</value></data>
+  <data name="ContractTitlePlaceholder" xml:space="preserve"><value>例如：2026 年原材料框架协议</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>供应商</value></data>
+  <data name="SupplierIdPlaceholder" xml:space="preserve"><value>选择或输入供应商编号</value></data>
+  <data name="SupplierIdHint" xml:space="preserve"><value>供应商编号将根据供应商主数据进行校验（fail-closed）。</value></data>
+  <data name="RfxId" xml:space="preserve"><value>RFx / 授标</value></data>
+  <data name="RfxIdPlaceholder" xml:space="preserve"><value>例如：RFX-4001</value></data>
+  <data name="RfxIdHint" xml:space="preserve"><value>可选；如提供，将根据寻源授标进行校验。</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>生效日期</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>失效日期</value></data>
+  <data name="EffectiveToHint" xml:space="preserve"><value>可选；必须等于或晚于生效开始日期。</value></data>
+  <data name="Currency" xml:space="preserve"><value>币种</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>例如：USD</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>留空则使用法人实体基准币种。</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>审核中</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>生效</value></data>
+  <data name="StatusExpired" xml:space="preserve"><value>已过期</value></data>
+  <data name="StatusTerminated" xml:space="preserve"><value>已终止</value></data>
+  <data name="ContractSection" xml:space="preserve"><value>合同详情</value></data>
+  <data name="ClausesSection" xml:space="preserve"><value>条款</value></data>
+  <data name="EvidenceSection" xml:space="preserve"><value>证据</value></data>
+  <data name="AddClauseRef" xml:space="preserve"><value>添加条款</value></data>
+  <data name="ClauseRefClauseId" xml:space="preserve"><value>条款编号</value></data>
+  <data name="ClauseRefClauseIdPlaceholder" xml:space="preserve"><value>例如：CL-PAYMENT-30</value></data>
+  <data name="ClauseRefDeviation" xml:space="preserve"><value>偏离</value></data>
+  <data name="ClauseRefDeviationText" xml:space="preserve"><value>偏离说明</value></data>
+  <data name="ClauseRefDeviationTextPlaceholder" xml:space="preserve"><value>描述与标准条款的偏离</value></data>
+  <data name="ClausesHint" xml:space="preserve"><value>引用条款库中的标准条款；标记任何与标准文本的偏离。</value></data>
+  <data name="EvidenceRefs" xml:space="preserve"><value>证据引用</value></data>
+  <data name="EvidenceRefsPlaceholder" xml:space="preserve"><value>添加证据引用编号</value></data>
+  <data name="EvidenceRefsHint" xml:space="preserve"><value>仅文档引用（MOD-0029/0031）；此处不存储二进制文件。</value></data>
+  <data name="EditDraftOnlyNotice" xml:space="preserve"><value>仅可编辑草稿合同。已生效的合同通过生命周期操作进行管理。</value></data>
+  <data name="ApprovalSection" xml:space="preserve"><value>审批记录</value></data>
+  <data name="WorkflowInstanceId" xml:space="preserve"><value>工作流实例</value></data>
+  <data name="ActionActivate" xml:space="preserve"><value>激活</value></data>
+  <data name="ActionTerminate" xml:space="preserve"><value>终止</value></data>
+  <data name="ConfirmActivate" xml:space="preserve"><value>激活此合同并启动其审批记录？</value></data>
+  <data name="ConfirmTerminate" xml:space="preserve"><value>终止此生效合同？此操作无法撤销。</value></data>
+  <data name="ActivateSuccess" xml:space="preserve"><value>合同已激活。</value></data>
+  <data name="TerminateSuccess" xml:space="preserve"><value>合同已终止。</value></data>
+  <data name="ClauseLibrary" xml:space="preserve"><value>条款库</value></data>
+  <data name="ClauseId" xml:space="preserve"><value>条款编号</value></data>
+  <data name="ClauseCategory" xml:space="preserve"><value>类别</value></data>
+  <data name="ClauseCategoryPlaceholder" xml:space="preserve"><value>例如：付款条件</value></data>
+  <data name="ClauseTitle" xml:space="preserve"><value>标题</value></data>
+  <data name="ClauseTitlePlaceholder" xml:space="preserve"><value>例如：30 天账期付款</value></data>
+  <data name="ClauseBody" xml:space="preserve"><value>正文</value></data>
+  <data name="ClauseBodyPlaceholder" xml:space="preserve"><value>输入标准条款文本</value></data>
+  <data name="AddClause" xml:space="preserve"><value>添加条款</value></data>
+  <data name="ClauseCreated" xml:space="preserve"><value>条款已添加到条款库。</value></data>
+</root>

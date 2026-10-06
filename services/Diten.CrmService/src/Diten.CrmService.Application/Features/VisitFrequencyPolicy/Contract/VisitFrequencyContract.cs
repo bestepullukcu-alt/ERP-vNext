@@ -47,14 +47,19 @@ public sealed record VisitFrequencyVocabulary(
     IReadOnlyList<string> FrequencyTypes,
     IReadOnlyList<string> PeriodTypes,
     IReadOnlyList<string> Sources,
-    IReadOnlyList<string> Statuses)
+    IReadOnlyList<string> Statuses,
+    // WP-FREQ-B (additive): the suggested priority bands (code + authored weight, smaller wins) surfaced so an
+    // authoring UI renders priority as named bands without hardcoding the numbers. Behaviour is unchanged — the
+    // resolver and the write validation still treat Priority as an authored positive integer.
+    IReadOnlyList<FrequencyPriorityBand> PriorityBands)
 {
     public static VisitFrequencyVocabulary Current => new(
         FrequencyTargetType.All,
         FrequencyType.All,
         FrequencyPeriodType.All,
         FrequencySource.All,
-        FrequencyPolicyStatus.All);
+        FrequencyPolicyStatus.All,
+        FrequencyPriorityBands.All);
 }
 
 public sealed class GetVisitFrequencyContractHandler

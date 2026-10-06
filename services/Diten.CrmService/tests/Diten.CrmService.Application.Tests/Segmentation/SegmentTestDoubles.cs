@@ -27,6 +27,38 @@ internal static class SegmentTestDoubles
     }
 }
 
+/// <summary>User display-name resolver double (WP-SEG-DETAILS6). Counts calls and records the exact id set it was asked
+/// about, so "ONE bulk call for the distinct provenance ids" and "fail-closed → no names" are both PROVABLE. With no
+/// seeded names it resolves nothing, which is the fail-closed path.</summary>
+internal sealed class FakeUserDisplayNameResolver : IUserDisplayNameResolver
+{
+    public Dictionary<Guid, string> Names { get; } = new();
+    public int Calls { get; private set; }
+    public List<Guid> LastRequestedIds { get; } = new();
+
+    public Task<IReadOnlyDictionary<Guid, string>> ResolveAsync(
+        IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken = default)
+    {
+        Calls++;
+        LastRequestedIds.Clear();
+        LastRequestedIds.AddRange(userIds);
+
+        var map = userIds
+            .Where(id => Names.ContainsKey(id))
+            .Distinct()
+            .ToDictionary(id => id, id => Names[id]);
+        return Task.FromResult<IReadOnlyDictionary<Guid, string>>(map);
+    }
+}
+
+/// <summary>Actor context stub with a fixed identity, so a provenance id (the actor's <c>sub</c>) can be seeded for the
+/// display-name resolution test.</summary>
+internal sealed class FixedActorContext : IActorContext
+{
+    public FixedActorContext(string? actorName) => ActorName = actorName;
+    public string? ActorName { get; }
+}
+
 /// <summary>Segment store. Replace honours the optimistic token, so a concurrency conflict is reproducible.</summary>
 internal sealed class FakeSegmentRepository : ISegmentRepository
 {

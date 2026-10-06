@@ -56,23 +56,37 @@
                             <label asp-for="Code" class="form-label fw-medium">@Localizer["Code"] <span class="text-danger">*</span></label>
                             @if (isEdit)
                             {
-                                @* ⚠ DISABLED, NOT merely un-submitted. Stored values join to their definition,
-                                   and the FU02 update request has no code member — so an edited code would be
-                                   discarded in silence while the screen reported a saved change. The hidden
-                                   OriginalCode above lets the model refuse a crafted post as well. *@
-                                <input asp-for="Code" class="form-control" disabled required data-code-immutable />
+                                @* ⚠ READONLY, NOT DISABLED — AND THE DIFFERENCE IS THE WHOLE BUG (owner report,
+                                   2026-09-21). A disabled input POSTS NOTHING, so every edit arrived with an
+                                   empty Code, [Required] failed, and the page came back with the code field
+                                   red: this form could not save a single change since it was written. Readonly
+                                   is just as uneditable and still posts, so the model's own immutability guard
+                                   (OriginalCode vs Code) finally has both sides to compare — a crafted post is
+                                   still refused, with a message, which is what that guard was written for.
+                                   `bg-label-secondary` is the product's existing immutable-field look: Bootstrap 5
+                                   dropped the [readonly] background rule, so Users and Roles both paint it. *@
+                                <div class="diten-field">
+                                    <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                                    <input asp-for="Code" class="form-control bg-label-secondary" readonly required data-code-immutable />
+                                </div>
                                 <div class="form-text">@Localizer["CodeImmutableHelp"]</div>
                             }
                             else
                             {
-                                <input asp-for="Code" class="form-control" maxlength="64" placeholder="@Localizer["CodePlaceholder"]" required />
+                                <div class="diten-field">
+                                    <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                                    <input asp-for="Code" class="form-control" maxlength="64" placeholder="@Localizer["CodePlaceholder"]" required />
+                                </div>
                                 <div class="form-text">@Localizer["CodeImmutableHelp"]</div>
                                 <span asp-validation-for="Code" class="text-danger small mt-1"></span>
                             }
                         </div>
                         <div class="col-12 col-md-6">
                             <label asp-for="Name" class="form-label fw-medium">@Localizer["Name"] <span class="text-danger">*</span></label>
-                            <input asp-for="Name" class="form-control" maxlength="200" placeholder="@Localizer["NamePlaceholder"]" required />
+                            <div class="diten-field">
+                                <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="Name" class="form-control" maxlength="200" placeholder="@Localizer["NamePlaceholder"]" required />
+                            </div>
                             <span asp-validation-for="Name" class="text-danger small mt-1"></span>
                         </div>
                     </div>
@@ -87,24 +101,30 @@
                             <label asp-for="DataType" class="form-label fw-medium">@Localizer["DataType"] <span class="text-danger">*</span></label>
                             @* The eight FU02 types and no others. The stored value is matched to an option by
                                form.js rather than reconstructed from the string — see optionValueFor there. *@
-                            <select asp-for="DataType" class="select2 form-select" data-field-data-type required>
-                                <option value="Text">@Localizer["FieldTypeText"]</option>
-                                <option value="MultilineText">@Localizer["FieldTypeMultilineText"]</option>
-                                <option value="Integer">@Localizer["FieldTypeInteger"]</option>
-                                <option value="Decimal">@Localizer["FieldTypeDecimal"]</option>
-                                <option value="Boolean">@Localizer["FieldTypeBoolean"]</option>
-                                <option value="Date">@Localizer["FieldTypeDate"]</option>
-                                <option value="SingleSelect">@Localizer["FieldTypeSingleSelect"]</option>
-                                <option value="Reference">@Localizer["FieldTypeReference"]</option>
-                            </select>
+                            <div class="diten-field">
+                                <i class="bx bx-category diten-field-icon" aria-hidden="true"></i>
+                                <select asp-for="DataType" class="select2 form-select" data-field-data-type required>
+                                    <option value="Text">@Localizer["FieldTypeText"]</option>
+                                    <option value="MultilineText">@Localizer["FieldTypeMultilineText"]</option>
+                                    <option value="Integer">@Localizer["FieldTypeInteger"]</option>
+                                    <option value="Decimal">@Localizer["FieldTypeDecimal"]</option>
+                                    <option value="Boolean">@Localizer["FieldTypeBoolean"]</option>
+                                    <option value="Date">@Localizer["FieldTypeDate"]</option>
+                                    <option value="SingleSelect">@Localizer["FieldTypeSingleSelect"]</option>
+                                    <option value="Reference">@Localizer["FieldTypeReference"]</option>
+                                </select>
+                            </div>
                             <div class="form-text">@Localizer["TypeChangeHelp"]</div>
                         </div>
                         <div class="col-12 col-md-6" data-constraint-group="Reference">
                             <label asp-for="ReferenceTarget" class="form-label fw-medium">@Localizer["ReferenceTarget"]</label>
-                            <select asp-for="ReferenceTarget" class="form-select" data-reference-target>
-                                <option value="OrganizationUnit">@Localizer["ReferenceTargetOrganizationUnit"]</option>
-                                <option value="Position">@Localizer["ReferenceTargetPosition"]</option>
-                            </select>
+                            <div class="diten-field">
+                                <i class="bx bx-link-alt diten-field-icon" aria-hidden="true"></i>
+                                <select asp-for="ReferenceTarget" class="form-select" data-reference-target>
+                                    <option value="OrganizationUnit">@Localizer["ReferenceTargetOrganizationUnit"]</option>
+                                    <option value="Position">@Localizer["ReferenceTargetPosition"]</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -118,19 +138,31 @@
                     <div class="row g-3">
                         <div class="col-12 col-md-6" data-constraint-group="length">
                             <label asp-for="MinLength" class="form-label fw-medium">@Localizer["MinLength"]</label>
-                            <input asp-for="MinLength" type="number" class="form-control" min="0" max="4000" />
+                            <div class="diten-field">
+                                <i class="bx bx-ruler diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="MinLength" type="number" class="form-control" min="0" max="4000" />
+                            </div>
                         </div>
                         <div class="col-12 col-md-6" data-constraint-group="length">
                             <label asp-for="MaxLength" class="form-label fw-medium">@Localizer["MaxLength"]</label>
-                            <input asp-for="MaxLength" type="number" class="form-control" min="0" max="4000" />
+                            <div class="diten-field">
+                                <i class="bx bx-ruler diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="MaxLength" type="number" class="form-control" min="0" max="4000" />
+                            </div>
                         </div>
                         <div class="col-12 col-md-6" data-constraint-group="range">
                             <label asp-for="MinValue" class="form-label fw-medium">@Localizer["MinValue"]</label>
-                            <input asp-for="MinValue" type="number" step="any" class="form-control" />
+                            <div class="diten-field">
+                                <i class="bx bx-math diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="MinValue" type="number" step="any" class="form-control" />
+                            </div>
                         </div>
                         <div class="col-12 col-md-6" data-constraint-group="range">
                             <label asp-for="MaxValue" class="form-label fw-medium">@Localizer["MaxValue"]</label>
-                            <input asp-for="MaxValue" type="number" step="any" class="form-control" />
+                            <div class="diten-field">
+                                <i class="bx bx-math diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="MaxValue" type="number" step="any" class="form-control" />
+                            </div>
                         </div>
                         <div class="col-12" data-constraint-group="options">
                             <label class="form-label fw-medium">@Localizer["OptionsLabel"]</label>
@@ -159,7 +191,10 @@
                     <div class="row g-3">
                         <div class="col-12">
                             <label asp-for="DisplayOrder" class="form-label fw-medium">@Localizer["DisplayOrder"]</label>
-                            <input asp-for="DisplayOrder" type="number" class="form-control" min="0" max="999" />
+                            <div class="diten-field">
+                                <i class="bx bx-sort-a-z diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="DisplayOrder" type="number" class="form-control" min="0" max="999" />
+                            </div>
                         </div>
                         <div class="col-12">
                             <div class="form-check form-switch mt-2">
@@ -187,12 +222,15 @@
                     <div class="row g-3">
                         <div class="col-12">
                             <label asp-for="Classification" class="form-label fw-medium">@Localizer["Classification"]</label>
-                            <select asp-for="Classification" class="select2 form-select">
-                                <option value="Normal">@Localizer["ClassificationNormal"]</option>
-                                <option value="Internal">@Localizer["ClassificationInternal"]</option>
-                                <option value="Confidential">@Localizer["ClassificationConfidential"]</option>
-                                <option value="Restricted">@Localizer["ClassificationRestricted"]</option>
-                            </select>
+                            <div class="diten-field">
+                                <i class="bx bx-shield diten-field-icon" aria-hidden="true"></i>
+                                <select asp-for="Classification" class="select2 form-select">
+                                    <option value="Normal">@Localizer["ClassificationNormal"]</option>
+                                    <option value="Internal">@Localizer["ClassificationInternal"]</option>
+                                    <option value="Confidential">@Localizer["ClassificationConfidential"]</option>
+                                    <option value="Restricted">@Localizer["ClassificationRestricted"]</option>
+                                </select>
+                            </div>
                             <div class="form-text">@Localizer["ClassificationHelp"]</div>
                         </div>
                         @if (isEdit)

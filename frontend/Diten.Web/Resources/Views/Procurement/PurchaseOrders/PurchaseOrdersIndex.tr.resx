@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PurchaseOrdersTitle" xml:space="preserve"><value>Satın Alma Siparişleri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Satın alma siparişleri: onaylı ihtiyacı tedarikçilere sipariş edin, satırları fiyatlandırın ve onaylayın.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Sipariş Ekle</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Sipariş Düzenle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Sipariş Ekle</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Sipariş Düzenle</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="PoId" xml:space="preserve"><value>Sipariş No</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>Tedarikçi</value></data>
+  <data name="TotalAmount" xml:space="preserve"><value>Toplam Tutar</value></data>
+  <data name="Currency" xml:space="preserve"><value>Para Birimi</value></data>
+  <data name="PurchaseOrderSection" xml:space="preserve"><value>Sipariş Bilgileri</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Sipariş Satırları</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Entegrasyon</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Satır Ekle</value></data>
+  <data name="SupplierPlaceholder" xml:space="preserve"><value>Tedarikçi seçin</value></data>
+  <data name="SupplierHint" xml:space="preserve"><value>Tedarikçi, tedarikçi ana verisine göre doğrulanır (fail-closed).</value></data>
+  <data name="RequisitionRef" xml:space="preserve"><value>Talep Referansı</value></data>
+  <data name="RequisitionRefPlaceholder" xml:space="preserve"><value>örn. REQ-3001</value></data>
+  <data name="RequisitionRefHint" xml:space="preserve"><value>Onaylı bir talebe isteğe bağlı referans.</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>örn. TRY</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>Para birimi, tüzel kişilik temel para birimiyle eşleşmelidir.</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>Ürün No</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>örn. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>SKU No</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>örn. c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>örn. 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>Birim</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>örn. BOX</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>Birim Fiyat</value></data>
+  <data name="LineUnitPricePlaceholder" xml:space="preserve"><value>örn. 12.5000</value></data>
+  <data name="LineAmount" xml:space="preserve"><value>Satır Tutarı</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>En az bir satır zorunludur (ürün, miktar, ölçü birimi, birim fiyat). Satır ve toplam tutarlar sunucu tarafından hesaplanır.</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Kaynak Sistem</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>örn. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>Dış Referans</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>örn. ERP-PO-9001</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="StatusPartiallyReceived" xml:space="preserve"><value>Kısmen Teslim Alındı</value></data>
+  <data name="StatusReceived" xml:space="preserve"><value>Teslim Alındı</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Kapatıldı</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+  <data name="ActionApprove" xml:space="preserve"><value>Onayla</value></data>
+  <data name="ConfirmApprove" xml:space="preserve"><value>Bu satın alma siparişi onaylansın mı? Onaylı siparişler mal kabule açılır.</value></data>
+  <data name="ApproveSuccess" xml:space="preserve"><value>Satın alma siparişi onaylandı.</value></data>
+</root>

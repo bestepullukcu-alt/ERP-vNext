@@ -1,0 +1,727 @@
+/**
+ * WP-SEG-DETAILS — Segment Details "birebir görsel port" (MOD-0167-FU02, frontend only).
+ *
+ * The mockup (C:\tmp\mockup-segment-details.html) is 100% inline-style + oklch + Inter. This stylesheet distils those
+ * inline styles into `segd-*` classes, ALL nested under the `.segment-details-scope` wrapper so the palette and the
+ * Inter font never leak to the app shell (sidebar / topbar) or any other page. It is linked ONLY from Details.cshtml.
+ *
+ * SEG-A3→A6 dersleri, tek seferde:
+ *  - Tema-duyarlı: the mockup's neutral oklch values were FIXED light-mode colours (white surfaces + dark text). Every
+ *    surface / text / border here is bound to the app's light/dark-aware Bootstrap variables (`--bs-card-bg`,
+ *    `--bs-body-bg`, `--bs-tertiary-bg`, `--bs-secondary-bg`, `--bs-heading-color`, `--bs-body-color`,
+ *    `--bs-secondary-color`, `--bs-border-color`), so both themes resolve correctly and there is NO literal white/dark.
+ *  - Accent tema-duyarlı: the mockup's purple(285) → `var(--bs-primary)` / `rgba(var(--bs-primary-rgb),α)`; the
+ *    green(152) / red(25,40) / amber(75,85) verdict-mode-status badges → Bootstrap subtle/emphasis pairs (dark-readable).
+ *    The only literal `oklch(1 0 0)` left are white FOREGROUNDS on an accent/success FILL (part of the accent system).
+ *  - Font ayrımı: the root does NOT set Inter, so the app-card chrome (.card / .card-body / h6.text-heading / .bx)
+ *    inherits the app font (Public Sans). Inter is re-applied BELOW only to the inner mockup content (every `segd-*`
+ *    node), and `.segd-mono` is excluded so its deliberate monospace survives.
+ *  - Scope izolasyon: NO `.card` / global theme override anywhere; everything is prefixed `.segment-details-scope`.
+ *
+ * Behaviour is untouched: details.js still owns the 3-state toggle, the SAVED `/resolve` fetch, the manual-member load
+ * and the lifecycle actions (activate / new-version). This file only changes how the markup looks.
+ */
+
+.segment-details-scope {
+    -webkit-font-smoothing: antialiased;
+    color: var(--bs-body-color);
+}
+
+/* Inter belongs ONLY to the mockup content. Every inner element carries a `segd-*` class; the app card chrome carries
+   none, so this rule can never reach it. `.segd-mono` is excluded so code/id monospace survives, and `.bx` glyphs keep
+   the boxicons font from their own rule. */
+.segment-details-scope [class^="segd-"]:not(.segd-mono),
+.segment-details-scope [class*=" segd-"]:not(.segd-mono) {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+}
+.segment-details-scope .segd-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ------------------------------------------------------------------ page header */
+.segment-details-scope .segd-crumb {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: var(--bs-secondary-color);
+    margin-bottom: 7px;
+}
+.segment-details-scope .segd-crumb-sep {
+    color: var(--bs-border-color);
+}
+.segment-details-scope .segd-titlerow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+.segment-details-scope .segd-title {
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: -0.015em;
+    color: var(--bs-heading-color);
+    margin: 0;
+}
+.segment-details-scope .segd-headerline {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--bs-secondary-color);
+    margin-top: 7px;
+    max-width: 640px;
+}
+
+/* ------------------------------------------------------------------ stats grid */
+.segment-details-scope .segd-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+    margin-top: 4px;
+}
+.segment-details-scope .segd-stat {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 10px;
+    padding: 14px 16px;
+    /* WP-SEG-DETAILS3: lift the card off the page so it reads as a distinct surface in light mode (where card-bg is
+       near the page white). Theme-aware shadow (body-color-rgb resolves per theme); no literal colour. */
+    box-shadow: 0 1px 2px rgba(var(--bs-body-color-rgb), 0.05), 0 2px 6px rgba(var(--bs-body-color-rgb), 0.04);
+}
+.segment-details-scope .segd-stat-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+    margin-bottom: 7px;
+}
+.segment-details-scope .segd-stat-valrow {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+}
+.segment-details-scope .segd-stat-value {
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    color: var(--bs-heading-color);
+}
+.segment-details-scope .segd-stat-unit {
+    font-size: 12.5px;
+    color: var(--bs-secondary-color);
+}
+.segment-details-scope .segd-stat-note {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--bs-secondary-color);
+    margin-top: 5px;
+}
+
+/* ------------------------------------------------------------------ reads-as box + identity */
+.segment-details-scope .segd-reads-as {
+    padding: 14px 16px;
+    background: var(--bs-primary-bg-subtle);
+    border: 1px solid var(--bs-primary-border-subtle);
+    border-radius: 9px;
+    margin-bottom: 16px;
+}
+.segment-details-scope .segd-reads-as-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bs-primary);
+    margin-bottom: 6px;
+}
+.segment-details-scope .segd-reads-as-text {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--bs-primary-text-emphasis);
+}
+.segment-details-scope .segd-idgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px 24px;
+}
+.segment-details-scope .segd-id-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+    margin-bottom: 4px;
+}
+.segment-details-scope .segd-id-value {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--bs-body-color);
+    word-break: break-word;
+}
+
+/* ------------------------------------------------------------------ criteria tree */
+.segment-details-scope .segd-crit-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.segment-details-scope .segd-crit-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.segment-details-scope .segd-crit-intro {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--bs-secondary-color);
+    margin-bottom: 16px;
+}
+.segment-details-scope .segd-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.segment-details-scope .segd-joiner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+}
+.segment-details-scope .segd-joiner-line {
+    height: 1px;
+    flex: 1;
+    background: var(--bs-border-color);
+}
+.segment-details-scope .segd-joiner-line-short {
+    width: 24px;
+    flex: none;
+}
+.segment-details-scope .segd-joiner-pill {
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    border-radius: 999px;
+}
+.segment-details-scope .segd-group {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.segment-details-scope .segd-group-nested {
+    margin-top: 8px;
+}
+.segment-details-scope .segd-group-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bs-body-bg);
+    border-bottom: 1px solid var(--bs-border-color);
+}
+.segment-details-scope .segd-group-tag {
+    padding: 2px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+    background: var(--bs-secondary-bg);
+    border-radius: 4px;
+}
+.segment-details-scope .segd-group-op {
+    padding: 2px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    border-radius: 4px;
+}
+.segment-details-scope .segd-group-not {
+    padding: 2px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--bs-warning-text-emphasis);
+    background: var(--bs-warning-bg-subtle);
+    border-radius: 4px;
+}
+.segment-details-scope .segd-group-body {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.segment-details-scope .segd-pred {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 11px 12px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    background: var(--bs-card-bg);
+}
+.segment-details-scope .segd-pred-human {
+    flex: 1 1 240px;
+    min-width: 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--bs-body-color);
+}
+.segment-details-scope .segd-pred-badges {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+.segment-details-scope .segd-tag {
+    padding: 3px 9px;
+    font-size: 11.5px;
+    border-radius: 4px;
+}
+.segment-details-scope .segd-tag-attr {
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.1);
+}
+.segment-details-scope .segd-tag-op {
+    color: var(--bs-info-text-emphasis);
+    background: var(--bs-info-bg-subtle);
+}
+.segment-details-scope .segd-tag-val {
+    color: var(--bs-body-color);
+    background: var(--bs-secondary-bg);
+}
+.segment-details-scope .segd-tag-not {
+    color: var(--bs-warning-text-emphasis);
+    background: var(--bs-warning-bg-subtle);
+}
+
+/* toggle button + stored JSON */
+.segment-details-scope .segd-ghost-btn {
+    padding: 5px 11px;
+    font-size: 12.5px;
+    color: var(--bs-secondary-color);
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.segment-details-scope .segd-ghost-btn:hover {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+.segment-details-scope .segd-json-pre {
+    margin: 14px 0 0;
+    padding: 14px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--bs-body-color);
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    overflow: auto;
+    max-height: 22rem;
+}
+
+/* ------------------------------------------------------------------ empty / idle states */
+.segment-details-scope .segd-empty {
+    padding: 24px 20px;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 9px;
+    text-align: center;
+}
+.segment-details-scope .segd-empty-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    margin-bottom: 4px;
+}
+.segment-details-scope .segd-empty-help {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--bs-secondary-color);
+    max-width: 440px;
+    margin: 0 auto;
+}
+
+/* ------------------------------------------------------------------ resolve section */
+.segment-details-scope .segd-resolve-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+.segment-details-scope .segd-resolve-headtext {
+    flex: 1 1 320px;
+    min-width: 0;
+}
+.segment-details-scope .segd-resolve-title {
+    display: block;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    margin-bottom: 4px;
+}
+.segment-details-scope .segd-resolve-desc {
+    display: block;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--bs-secondary-color);
+}
+.segment-details-scope .segd-btn {
+    flex: none;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: oklch(1 0 0);
+    background: var(--bs-primary);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.segment-details-scope .segd-btn:hover {
+    background: color-mix(in srgb, var(--bs-primary), #000 12%);
+}
+.segment-details-scope .segd-running {
+    display: flex;
+    gap: 11px;
+    align-items: center;
+    padding: 22px 20px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 9px;
+    background: var(--bs-tertiary-bg);
+}
+.segment-details-scope .segd-spinner {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 999px;
+    border: 2px solid rgba(var(--bs-primary-rgb), 0.25);
+    border-top-color: var(--bs-primary);
+    animation: segdspin 0.7s linear infinite;
+}
+.segment-details-scope .segd-running-text {
+    font-size: 13.5px;
+    color: var(--bs-body-color);
+}
+@keyframes segdspin { to { transform: rotate(360deg); } }
+
+/* summary chips */
+.segment-details-scope .segd-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 14px;
+}
+.segment-details-scope .segd-chip-stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: var(--bs-secondary-bg);
+}
+.segment-details-scope .segd-chip-stat .segd-chip-value {
+    font-size: 16px;
+    font-weight: 650;
+    color: var(--bs-body-color);
+}
+.segment-details-scope .segd-chip-stat .segd-chip-label {
+    font-size: 12.5px;
+    color: var(--bs-secondary-color);
+}
+.segment-details-scope .segd-chip-included {
+    background: var(--bs-success-bg-subtle);
+}
+.segment-details-scope .segd-chip-included .segd-chip-value {
+    color: var(--bs-success-text-emphasis);
+}
+.segment-details-scope .segd-chip-dropped {
+    background: var(--bs-danger-bg-subtle);
+}
+.segment-details-scope .segd-chip-dropped .segd-chip-value {
+    color: var(--bs-danger-text-emphasis);
+}
+.segment-details-scope .segd-chip-manual {
+    background: rgba(var(--bs-primary-rgb), 0.12);
+}
+.segment-details-scope .segd-chip-manual .segd-chip-value {
+    color: var(--bs-primary);
+}
+.segment-details-scope .segd-resolvedat {
+    font-size: 12.5px;
+    color: var(--bs-secondary-color);
+    margin-left: auto;
+}
+/* WP-SEG-DETAILS3: the draft caveat under the preview chips — full-width, quiet, tema-duyarlı. */
+.segment-details-scope .segd-draft-note {
+    flex: 1 1 100%;
+    margin-top: 2px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--bs-secondary-color);
+}
+
+/* ------------------------------------------------------------------ flex "tables" (resolve + manual) */
+.segment-details-scope .segd-table {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.segment-details-scope .segd-thead {
+    display: flex;
+    gap: 12px;
+    padding: 9px 14px;
+    /* WP-SEG-DETAILS3: the header row sits on the body surface (was tertiary), tema-duyarlı. */
+    background: var(--bs-body-bg);
+    border-bottom: 1px solid var(--bs-border-color);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
+.segment-details-scope .segd-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+.segment-details-scope .segd-row:last-child {
+    border-bottom: none;
+}
+.segment-details-scope .segd-row.is-archived {
+    opacity: 0.55;
+}
+.segment-details-scope .segd-col-person { flex: 1 1 190px; min-width: 0; display: flex; gap: 10px; align-items: center; }
+.segment-details-scope .segd-col-secondary { flex: 1 1 170px; min-width: 0; font-size: 12.5px; line-height: 1.45; color: var(--bs-secondary-color); }
+.segment-details-scope .segd-col-verdict { flex: 0 0 104px; }
+.segment-details-scope .segd-col-mode { flex: 0 0 120px; }
+.segment-details-scope .segd-col-source { flex: 0 0 120px; font-size: 12px; color: var(--bs-secondary-color); }
+.segment-details-scope .segd-col-reasons { flex: 1 1 150px; min-width: 0; font-size: 11.5px; line-height: 1.5; color: var(--bs-secondary-color); }
+.segment-details-scope .segd-col-reason { flex: 1 1 170px; min-width: 0; }
+.segment-details-scope .segd-col-from { flex: 0 0 100px; font-size: 12.5px; color: var(--bs-secondary-color); }
+
+.segment-details-scope .segd-avatar {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+    font-size: 11px;
+    font-weight: 600;
+}
+.segment-details-scope .segd-avatar-out {
+    background: var(--bs-danger-bg-subtle);
+    color: var(--bs-danger-text-emphasis);
+}
+.segment-details-scope .segd-person-body { flex: 1; min-width: 0; }
+.segment-details-scope .segd-name {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--bs-heading-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.segment-details-scope .segd-subid {
+    display: block;
+    font-size: 11.5px;
+    color: var(--bs-secondary-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.segment-details-scope .segd-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    border-radius: 999px;
+}
+.segment-details-scope .segd-badge-ok {
+    color: var(--bs-success-text-emphasis);
+    background: var(--bs-success-bg-subtle);
+}
+.segment-details-scope .segd-badge-no {
+    color: var(--bs-danger-text-emphasis);
+    background: var(--bs-danger-bg-subtle);
+}
+.segment-details-scope .segd-badge-unknown {
+    color: var(--bs-secondary-color);
+    background: var(--bs-secondary-bg);
+}
+.segment-details-scope .segd-reason-code {
+    display: block;
+    font-size: 11.5px;
+    color: var(--bs-secondary-color);
+}
+.segment-details-scope .segd-reason-text {
+    display: block;
+    font-size: 12.5px;
+    color: var(--bs-secondary-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.segment-details-scope .segd-tfoot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--bs-body-bg);
+    font-size: 12.5px;
+    color: var(--bs-secondary-color);
+}
+.segment-details-scope .segd-empty-row {
+    padding: 18px 14px;
+    font-size: 13px;
+    color: var(--bs-secondary-color);
+    text-align: center;
+}
+.segment-details-scope .segd-error-row {
+    padding: 18px 14px;
+    font-size: 13px;
+    color: var(--bs-danger-text-emphasis);
+    text-align: center;
+}
+
+/* dropped-candidates sub-table (amber-tinted) */
+.segment-details-scope .segd-excluded {
+    margin-top: 16px;
+    border: 1px solid var(--bs-warning-border-subtle);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.segment-details-scope .segd-excluded-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: baseline;
+    padding: 11px 14px;
+    background: var(--bs-warning-bg-subtle);
+    border-bottom: 1px solid var(--bs-warning-border-subtle);
+}
+.segment-details-scope .segd-excluded-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bs-warning-text-emphasis);
+}
+.segment-details-scope .segd-excluded-intro {
+    font-size: 12.5px;
+    color: var(--bs-secondary-color);
+}
+.segment-details-scope .segd-x-name { flex: 1 1 180px; min-width: 0; font-size: 13px; font-weight: 500; color: var(--bs-heading-color); }
+.segment-details-scope .segd-x-secondary { flex: 1 1 170px; min-width: 0; font-size: 12.5px; color: var(--bs-secondary-color); }
+.segment-details-scope .segd-x-code { flex: 0 0 160px; font-size: 11.5px; color: var(--bs-warning-text-emphasis); }
+.segment-details-scope .segd-x-reason { flex: 1 1 180px; min-width: 0; font-size: 12.5px; color: var(--bs-secondary-color); }
+
+/* ------------------------------------------------------------------ right rail */
+.segment-details-scope .segd-rail {
+    position: sticky;
+    top: 18px;
+}
+.segment-details-scope .segd-timeline {
+    display: flex;
+    flex-direction: column;
+}
+.segment-details-scope .segd-tl-item {
+    display: flex;
+    gap: 11px;
+}
+.segment-details-scope .segd-tl-marker {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 14px;
+}
+.segment-details-scope .segd-tl-dot {
+    width: 9px;
+    height: 9px;
+    margin-top: 4px;
+    border-radius: 999px;
+    background: var(--bs-secondary-color);
+}
+.segment-details-scope .segd-tl-dot-active { background: var(--bs-success); }
+.segment-details-scope .segd-tl-dot-pending { background: var(--bs-warning); }
+.segment-details-scope .segd-tl-line {
+    flex: 1;
+    width: 1.5px;
+    background: var(--bs-border-color);
+}
+.segment-details-scope .segd-tl-body {
+    flex: 1;
+    min-width: 0;
+    padding-bottom: 14px;
+}
+.segment-details-scope .segd-tl-title {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+.segment-details-scope .segd-tl-title-active { color: var(--bs-success-text-emphasis); }
+.segment-details-scope .segd-tl-title-pending { color: var(--bs-warning-text-emphasis); }
+.segment-details-scope .segd-tl-detail {
+    display: block;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--bs-secondary-color);
+    margin-top: 2px;
+}
+.segment-details-scope .segd-class-list {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+.segment-details-scope .segd-class-row {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    justify-content: space-between;
+}
+.segment-details-scope .segd-class-label {
+    font-size: 13px;
+    color: var(--bs-secondary-color);
+}
+.segment-details-scope .segd-class-value {
+    flex: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--bs-body-color);
+    text-align: right;
+}
+.segment-details-scope .segd-class-note {
+    margin-top: 13px;
+    padding-top: 13px;
+    border-top: 1px solid var(--bs-border-color);
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--bs-secondary-color);
+}
+/* utility */
+.segment-details-scope .segd-hidden {
+    display: none !important;
+}

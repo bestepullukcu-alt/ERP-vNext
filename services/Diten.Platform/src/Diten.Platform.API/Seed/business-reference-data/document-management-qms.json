@@ -87,6 +87,18 @@
         { "value_code": "10 Years", "display_name": "10 Years", "description": "Retain for ten years.", "is_active": true, "sort_order": 50 },
         { "value_code": "Permanent", "display_name": "Permanent", "description": "Permanent retention.", "is_active": true, "sort_order": 60 }
       ]
+    },
+    {
+      "set_code": "content-moderator-role",
+      "set_name": "Content Moderator Role",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "SCMM-10 (MOD-0162) ConceptChainTemplate Moderator = who presents the content, as a role type. Tenant-scoped; consumed by the Chain Template Identity & Classification Moderator selector. Phase 2 adds a Position reference when the type is 'position'.",
+      "values": [
+        { "value_code": "position", "display_name": "Position", "description": "Presented by whoever holds a given organizational position (Phase 2 binds the specific position, MOD-0288).", "is_active": true, "sort_order": 10 },
+        { "value_code": "client", "display_name": "Client", "description": "Presented by the client/customer side.", "is_active": true, "sort_order": 20 },
+        { "value_code": "system-auto", "display_name": "System (Auto-assigned)", "description": "Presented/assigned automatically by the system.", "is_active": true, "sort_order": 30 }
+      ]
     }
   ]
 }

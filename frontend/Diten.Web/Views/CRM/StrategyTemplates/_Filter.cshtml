@@ -25,6 +25,10 @@
                     <div class="filter-chip">
                         <select id="filterBusinessUnitId" class="form-select form-select-sm select2" data-placeholder="@Localizer["BusinessUnitId"]"><option value="">@SharedLocalizer["ShowAll"]</option></select>
                     </div>
+                    @* Country (single-select, fed from scope-options country feed — WP-ST-LIST) *@
+                    <div class="filter-chip">
+                        <select id="filterCountryScope" class="form-select form-select-sm select2" data-placeholder="@Localizer["ScopeTypeCountry"]"><option value="">@Localizer["AllCountries"]</option></select>
+                    </div>
                     @* Include archived (single-select) *@
                     <div class="filter-chip">
                         <select id="filterIncludeArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["IncludeArchived"]">
@@ -33,7 +37,8 @@
                         </select>
                     </div>
 
-                    <div class="ms-auto d-flex gap-3">
+                    <div class="ms-auto d-flex align-items-center gap-3">
+                        <span id="strategyTemplateCount" class="text-muted small" aria-live="polite"></span>
                         <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
                         <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
                     </div>

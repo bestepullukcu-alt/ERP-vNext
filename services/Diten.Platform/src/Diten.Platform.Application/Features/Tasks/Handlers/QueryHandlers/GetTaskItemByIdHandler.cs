@@ -19,6 +19,14 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
     private readonly ITaskFieldDefinitionRepository _fieldDefinitions;
     private readonly IActorPermissionContext _actor;
 
+    /// <summary>BL-349 — who may read THIS task, not merely who may reach the endpoint.</summary>
+    private readonly ITaskReadAccessPolicy _readAccess;
+    private readonly ICurrentUserContext _currentUser;
+
+    /// <summary>MOD-0280-FU01 D7 — where the task's spent time comes from. Optional only so hand-built handlers in older
+    /// tests compile; absent, the task simply has no approved time — <c>TaskItem.SpentHours</c> is never the fallback.</summary>
+    private readonly ITaskSpentTimeSource? _spentTime;
+
     public GetTaskItemByIdHandler(
         ITaskItemRepository tasks,
         ITaskWatcherRepository watchers,
@@ -26,8 +34,12 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
         ITaskLifecycleService lifecycle,
         ITaskApprovalService approvals,
         ITaskFieldDefinitionRepository fieldDefinitions,
-        IActorPermissionContext actor)
+        IActorPermissionContext actor,
+        ITaskReadAccessPolicy readAccess,
+        ICurrentUserContext currentUser,
+        ITaskSpentTimeSource? spentTime = null)
     {
+        _spentTime = spentTime;
         _tasks = tasks;
         _watchers = watchers;
         _dependencies = dependencies;
@@ -35,6 +47,8 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
         _approvals = approvals;
         _fieldDefinitions = fieldDefinitions;
         _actor = actor;
+        _readAccess = readAccess;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<TaskItemDetailDto>> Handle(GetTaskItemByIdQuery request, CancellationToken ct)
@@ -44,6 +58,15 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
         {
             // Cross-tenant reads land here too: the repository filter hides the row, so the caller learns
             // nothing about its existence (no metadata leak).
+            return Response<TaskItemDetailDto>.Fail(
+                "Task not found.", 404, TaskReasonCodes.NotFound, request.CorrelationId);
+        }
+
+        if (!await _readAccess.CanReadAsync(task, _currentUser.UserId, ct))
+        {
+            // BL-349 — the SAME 404 a genuinely missing task returns (byte-identical Message/StatusCode/
+            // ReasonCode): a real task the caller has no relationship to must not be distinguishable from one
+            // that does not exist at all.
             return Response<TaskItemDetailDto>.Fail(
                 "Task not found.", 404, TaskReasonCodes.NotFound, request.CorrelationId);
         }
@@ -82,10 +105,14 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
             ? null
             : (await _fieldDefinitions.ListAllAsync(ct)).ToDictionary(d => d.Code, StringComparer.OrdinalIgnoreCase);
 
+        var spentHours = _spentTime is null
+            ? 0m
+            : (await _spentTime.ApprovedMinutesAsync([task.Id], ct)).GetValueOrDefault(task.Id) / 60m;
+
         return Response<TaskItemDetailDto>.Success(
             TaskItemMapper.ToDetail(
                 task, _lifecycle, approvalOutstanding, approvalRejected, watchers, dependencies,
-                _actor, definitions, reviewOutstanding, reviewRejected),
+                _actor, definitions, spentHours, reviewOutstanding, reviewRejected),
             correlationId: request.CorrelationId);
     }
 }

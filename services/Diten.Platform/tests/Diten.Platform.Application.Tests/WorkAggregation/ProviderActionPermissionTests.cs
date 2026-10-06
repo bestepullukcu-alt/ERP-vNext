@@ -131,9 +131,11 @@ public sealed class ProviderActionPermissionTests
         Assert.Contains(TaskPermissions.Update, declared);
         Assert.Contains(TaskPermissions.Claim, declared);
         Assert.Contains(TaskPermissions.Complete, declared);
-        // Read/create/delete gate ENDPOINTS, not projected actions — declaring them here would ask the API layer
-        // to evaluate claims it does not need.
-        Assert.DoesNotContain(TaskPermissions.Read, declared);
+        // BL-439 — Read now gates a PROJECTED action too: `answer`, the one act the person a waiting task is asking
+        // can take, needs nothing beyond reading the task. Declared because BuildActions consults it.
+        Assert.Contains(TaskPermissions.Read, declared);
+        // Create still gates an ENDPOINT only — declaring it here would ask the API layer to evaluate a claim it
+        // does not need.
         Assert.DoesNotContain(TaskPermissions.Create, declared);
     }
 

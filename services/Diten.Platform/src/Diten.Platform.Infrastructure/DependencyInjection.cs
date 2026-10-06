@@ -129,6 +129,9 @@ public static class DependencyInjection
         services.Configure<TenantManagementOptions>(configuration.GetSection(TenantManagementOptions.SectionName));
         services.Configure<AuditRetentionSeedOptions>(configuration.GetSection(AuditRetentionSeedOptions.SectionName));
         services.Configure<BusinessReferenceDataCatalogLoadOptions>(configuration.GetSection(BusinessReferenceDataCatalogLoadOptions.SectionName));
+        // WP-BRD-TENANT-CRM-SETS — the reference sets every tenant user may read on api/lookups/reference-data/consumable-sets.
+        services.Configure<Diten.Platform.Application.Features.BusinessReferenceData.Services.BusinessReferenceDataConsumableSetsOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.BusinessReferenceData.Services.BusinessReferenceDataConsumableSetsOptions.SectionName));
         services.Configure<BusinessReferenceDataProviderOptions>(configuration.GetSection(BusinessReferenceDataProviderOptions.SectionName));
         services.AddSingleton<IValidateOptions<BusinessReferenceDataProviderOptions>, BusinessReferenceDataProviderOptionsValidator>();
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
@@ -227,6 +230,8 @@ public static class DependencyInjection
         services.AddScoped<IAuthPermissionModulesClient, AuthPermissionModulesClient>();
         // MOD-0024 §K6.4 — display-name resolution for task assignees/requesters (best-effort S2S).
         services.AddScoped<IUserDisplayNameResolver, AuthUserDisplayNameClient>();
+        // BL-459 — the tenant users summary counts AuthService's users, not only Platform's AdminUsers list.
+        services.AddScoped<ITenantUserCountReader, AuthTenantUserCountClient>();
         services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
         services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();
@@ -277,6 +282,10 @@ public static class DependencyInjection
          * being called telling Platform where to send a caller's JWT.
          */
         services.AddRemoteWorkItemProviders(configuration);
+
+        // BL-384 — unknown elements are ignored on read, so a rolled-back build can read documents a newer build
+        // wrote. Conventions bind when a class map is first built, so this stays the first BSON registration.
+        PlatformBsonConventions.Register();
 
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
         BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
@@ -383,11 +392,33 @@ public static class DependencyInjection
         services.AddScoped<IMeetingAttendeeRepository, MeetingAttendeeRepository>();
         services.AddScoped<IAgendaItemRepository, AgendaItemRepository>();
         services.AddScoped<IMeetingTypeRepository, MeetingTypeRepository>();
+        // MOD-0357 S6 — the minutes-version collection's own storage (K4, append-only).
+        services.AddScoped<IMeetingMinutesVersionRepository, MeetingMinutesVersionRepository>();
+        // MOD-0357 S11 — the recurring cadence rule's own storage.
+        services.AddScoped<IMeetingSeriesRepository, MeetingSeriesRepository>();
+        // MOD-0280-FU01 T1a (ADR-004) — the time-entry module's own storage (time_entry_* collections).
+        services.AddScoped<ITimesheetWeekRepository, TimesheetWeekRepository>();
+        services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
+        services.AddScoped<IWorkCategoryRepository, WorkCategoryRepository>();
+        services.AddScoped<ITimeEntrySettingsRepository, TimeEntrySettingsRepository>();
+        services.AddScoped<ILegalEntityTimeSettingRepository, LegalEntityTimeSettingRepository>();
+        services.AddScoped<ITaskTimeTotalRepository, TaskTimeTotalRepository>();
+        // MOD-0280-FU01 T1b — the timer's segments and the meeting-suggestion decisions.
+        services.AddScoped<ITimerSegmentRepository, TimerSegmentRepository>();
+        services.AddScoped<ITimeSuggestionRepository, TimeSuggestionRepository>();
+        // MOD-0280-FU01 T3 — the at-most-once notification marks, and the deep links its e-mails carry.
+        services.AddScoped<ITimeEntryNotificationMarkRepository, TimeEntryNotificationMarkRepository>();
+        services.AddScoped<Diten.Platform.Application.Features.TimeEntry.Services.ITimeEntryLinks, TimeEntryLinks>();
+        // MOD-0357 S5 — needs AuthServiceOptions.FrontendBaseUrl for the "Toplantıyı aç" deep link, which is
+        // why the implementation lives here rather than beside ITaskNotificationService in Application.
+        services.AddScoped<Diten.Platform.Application.Features.Meetings.Services.IMeetingInviteMailer,
+            MeetingInviteMailer>();
         services.AddScoped<ITaskWatcherRepository, TaskWatcherRepository>();
         services.AddScoped<ITaskCommentRepository, TaskCommentRepository>();
         services.AddScoped<ITaskPersonalOverlayRepository, TaskPersonalOverlayRepository>();
         services.AddScoped<ITaskTypeRepository, TaskTypeRepository>();
-        services.AddScoped<IDocumentReferenceListRepository, DocumentReferenceListRepository>();
+        // WP-DM-DCP005-DEADCODE-01 — IDocumentReferenceListRepository's registration was removed here along
+        // with the interface and its implementation (zero live callers, measured).
         services.AddScoped<ITaskFieldDefinitionRepository, TaskFieldDefinitionRepository>();
         services.AddScoped<IChecklistTemplateRepository, ChecklistTemplateRepository>();
         services.AddScoped<IChecklistRunRepository, ChecklistRunRepository>();
@@ -467,6 +498,8 @@ public static class DependencyInjection
         services.AddScoped<IDocumentObsoleteCopyFindingRepository, DocumentObsoleteCopyFindingRepository>();
         // MOD-0029-FU14 — external document register / monitoring check / impact assessment / internal link repositories.
         services.AddScoped<IExternalDocumentRegisterRepository, ExternalDocumentRegisterRepository>();
+        // MOD-0031 slice 1 — evidence links (object ↔ controlled document version / external document).
+        services.AddScoped<IEvidenceLinkRepository, EvidenceLinkRepository>();
         services.AddScoped<IExternalDocumentMonitoringCheckRepository, ExternalDocumentMonitoringCheckRepository>();
         services.AddScoped<IExternalDocumentImpactAssessmentRepository, ExternalDocumentImpactAssessmentRepository>();
         services.AddScoped<IExternalDocumentInternalLinkRepository, ExternalDocumentInternalLinkRepository>();

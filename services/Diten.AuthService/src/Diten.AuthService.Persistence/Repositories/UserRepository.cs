@@ -1,4 +1,5 @@
 using Diten.AuthService.Application.Common;
+using Diten.AuthService.Application.Common.Exceptions;
 using Diten.AuthService.Application.Common.Interfaces;
 using System.Text.RegularExpressions;
 using Diten.AuthService.Domain.Entities;
@@ -115,9 +116,24 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
 
     public async Task<User> CreateAsync(User user, CancellationToken ct)
     {
-        await InsertOneAsync(user, ct);
+        try
+        {
+            await InsertOneAsync(user, ct);
+        }
+        catch (MongoWriteException ex) when (IsUserEmailIndexViolation(ex))
+        {
+            // WP-AUTH-INVITED-LIFECYCLE-01 — a live user took this address after the handler's probe. Typed, so the
+            // application answers 409 USER_EMAIL_TAKEN; any OTHER duplicate key (id, user name) still propagates.
+            throw new DuplicateUserEmailException(ex);
+        }
+
         return user;
     }
+
+    private static bool IsUserEmailIndexViolation(MongoWriteException ex)
+        => ex.WriteError?.Category == ServerErrorCategory.DuplicateKey
+           && (ex.WriteError.Message ?? string.Empty).Contains(
+               Configurations.MongoDbIndexConfigurations.UserEmailIndexName, StringComparison.Ordinal);
 
     public async Task<User> UpdateAsync(User user, CancellationToken ct)
     {

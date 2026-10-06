@@ -1,0 +1,249 @@
+@model Diten.Web.Models.Procurement.Contracts.ContractEditViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Procurement.Contracts.ContractsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = SharedLocalizer["Details"].Value;
+    Layout = "_LayoutTenantShell";
+
+    var status = Model.Status ?? "Draft";
+    var statusClass = status switch
+    {
+        "Draft" => "bg-label-secondary",
+        "InReview" => "bg-label-warning",
+        "Active" => "bg-label-success",
+        "Expired" => "bg-label-dark",
+        "Terminated" => "bg-label-danger",
+        _ => "bg-label-primary"
+    };
+    var statusText = status switch
+    {
+        "Draft" => Localizer["StatusDraft"].Value,
+        "InReview" => Localizer["StatusInReview"].Value,
+        "Active" => Localizer["StatusActive"].Value,
+        "Expired" => Localizer["StatusExpired"].Value,
+        "Terminated" => Localizer["StatusTerminated"].Value,
+        _ => status
+    };
+
+    var canEdit = Perms.Has("procurement.contracts.update") && status == "Draft";
+    var canActivate = Perms.Has("procurement.contracts.activate") && (status == "Draft" || status == "InReview");
+    var canTerminate = Perms.Has("procurement.contracts.update") && status == "Active";
+}
+
+<div class="contracts-details" data-contract-id="@Model.ContractId">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@SharedLocalizer["Details"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="/Contracts">@Localizer["ContractsTitle"]</a>
+                    </li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/Contracts" class="btn btn-label-secondary">
+                @SharedLocalizer["Back"]
+            </a>
+            @if (canEdit)
+            {
+                <a href="/Contracts/Edit/@Model.ContractId" class="btn btn-label-primary">
+                    <i class="bx bx-edit me-1"></i>@SharedLocalizer["EditRecord"]
+                </a>
+            }
+            @if (canActivate)
+            {
+                <button type="button" class="btn btn-primary" id="btnActivateContract">
+                    <i class="bx bx-check-circle me-1"></i>@Localizer["ActionActivate"]
+                </button>
+            }
+            @if (canTerminate)
+            {
+                <button type="button" class="btn btn-danger" id="btnTerminateContract">
+                    <i class="bx bx-x-circle me-1"></i>@Localizer["ActionTerminate"]
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="row g-4">
+    <!-- Main Column (Left) -->
+    <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ContractSection"]</h6>
+            <div class="row g-4">
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-purchase-tag-alt"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["ContractId"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.ContractId) ? "-" : Model.ContractId)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-check-shield"></i>
+                        <div>
+                            <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
+                            <div class="mt-1"><span class="badge @statusClass">@statusText</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-purchase-tag"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["ContractTitle"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.Title) ? "-" : Model.Title)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-store"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["SupplierId"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.SupplierId) ? "-" : Model.SupplierId)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-collection"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["RfxId"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.RfxId) ? "-" : Model.RfxId)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-calendar"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["EffectiveFrom"]</div>
+                            <div class="backbone-preview-value mt-1">@(Model.EffectiveFrom.HasValue ? Model.EffectiveFrom.Value.ToString("yyyy-MM-dd") : "-")</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-calendar-check"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["EffectiveTo"]</div>
+                            <div class="backbone-preview-value mt-1">@(Model.EffectiveTo.HasValue ? Model.EffectiveTo.Value.ToString("yyyy-MM-dd") : "-")</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-dollar-circle"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Currency"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.Currency) ? "-" : Model.Currency)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClausesSection"]</h6>
+            @if (Model.Clauses is { Count: > 0 } && Model.Clauses.Any(c => !string.IsNullOrWhiteSpace(c.ClauseId)))
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["ClauseRefClauseId"]</th>
+                                <th>@Localizer["ClauseRefDeviation"]</th>
+                                <th>@Localizer["ClauseRefDeviationText"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var clause in Model.Clauses.Where(c => !string.IsNullOrWhiteSpace(c.ClauseId)))
+                            {
+                                <tr>
+                                    <td class="fw-medium text-heading text-break">@clause.ClauseId</td>
+                                    <td>
+                                        @if (clause.Deviation)
+                                        {
+                                            <span class="badge bg-label-warning">@Localizer["ClauseRefDeviation"]</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td class="text-break">@(string.IsNullOrWhiteSpace(clause.DeviationText) ? "-" : clause.DeviationText)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">@SharedLocalizer["NotAvailable"]</p>
+            }
+        </section>
+    </div>
+
+    <!-- Sidebar Column (Right) -->
+    <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["EvidenceSection"]</h6>
+            @if (Model.EvidenceRefs is { Count: > 0 })
+            {
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var evRef in Model.EvidenceRefs)
+                    {
+                        <span class="badge bg-label-primary">@evRef</span>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">@SharedLocalizer["NotAvailable"]</p>
+            }
+        </section>
+    </div>
+    </div>
+
+    @* Approval trail — additive card (NOT a <section> so it stays out of the _Form↔Details section parity map). *@
+    <div class="card mt-4">
+        <div class="card-body p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ApprovalSection"]</h6>
+            <div class="backbone-preview-field">
+                <i class="bx bx-git-branch"></i>
+                <div>
+                    <div class="backbone-preview-label">@Localizer["WorkflowInstanceId"]</div>
+                    <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.WorkflowInstanceId) ? SharedLocalizer["NotAvailable"].Value : Model.WorkflowInstanceId)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script id="contracts-details-l10n" type="application/json">
+        @Json.Serialize(new
+        {
+            ActionActivate = Localizer["ActionActivate"].Value,
+            ActionTerminate = Localizer["ActionTerminate"].Value,
+            ConfirmActivate = Localizer["ConfirmActivate"].Value,
+            ConfirmTerminate = Localizer["ConfirmTerminate"].Value,
+            ActivateSuccess = Localizer["ActivateSuccess"].Value,
+            TerminateSuccess = Localizer["TerminateSuccess"].Value,
+            AreYouSure = SharedLocalizer["AreYouSure"].Value,
+            RecordSaved = SharedLocalizer["RecordSaved"].Value,
+            ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+            NotAvailable = SharedLocalizer["NotAvailable"].Value
+        })
+    </script>
+    <script src="~/assets/js/Procurement/Contracts/details.js" asp-append-version="true"></script>
+}

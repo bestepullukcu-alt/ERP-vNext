@@ -50,6 +50,12 @@ public static class TaskItemMapper
         /// </summary>
         IActorPermissionContext actor,
         IReadOnlyDictionary<string, TaskFieldDefinition>? definitions,
+        /// <summary>
+        /// MOD-0280-FU01 D7 — the task's APPROVED time in hours, read by the caller from <c>ITaskSpentTimeSource</c>.
+        /// Required on purpose: <c>TaskItem.SpentHours</c> has no writer (always 0), and a default would quietly put
+        /// that zero back on the wire.
+        /// </summary>
+        decimal spentHours,
         bool reviewOutstanding = false,
         bool reviewRejected = false) => new(
         task.Id,
@@ -67,8 +73,8 @@ public static class TaskItemMapper
         task.StartAt,
         task.PlannedDate,
         task.EstimateHours,
-        task.SpentHours,
-        lifecycle.CalculateRemainingHours(task),
+        spentHours,
+        lifecycle.CalculateRemainingHours(task, spentHours),
         task.Tags,
         task.ReviewRequired,
         task.ApprovalRequired,
@@ -126,5 +132,6 @@ public static class TaskItemMapper
                 r.DocumentUid, r.DocumentCode, r.Title, r.DocumentVersion, r.Status, r.ReferencedAt,
                 r.ListVersionId))
             .ToList(),
-        task.TaskTypeId);
+        task.TaskTypeId,
+        task.ClosureNote);
 }

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="GrnTitle" xml:space="preserve"><value>Receiving (GRN)</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Goods receipt notes: record physical receipts against a PO and post each line to inventory.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Record Receipt</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Edit GRN</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Record Receipt</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit GRN</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="GrnId" xml:space="preserve"><value>GRN ID</value></data>
+  <data name="PoId" xml:space="preserve"><value>Purchase Order</value></data>
+  <data name="PoIdPlaceholder" xml:space="preserve"><value>e.g. PO-5001</value></data>
+  <data name="PoIdHint" xml:space="preserve"><value>Optional link to the upstream purchase order.</value></data>
+  <data name="ReceivedAt" xml:space="preserve"><value>Received At</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusPosted" xml:space="preserve"><value>Posted</value></data>
+  <data name="StatusReversed" xml:space="preserve"><value>Reversed</value></data>
+  <data name="ReceiptSection" xml:space="preserve"><value>Receipt Details</value></data>
+  <data name="WarehouseId" xml:space="preserve"><value>Warehouse</value></data>
+  <data name="WarehouseIdPlaceholder" xml:space="preserve"><value>e.g. wh-01</value></data>
+  <data name="LocationId" xml:space="preserve"><value>Location</value></data>
+  <data name="LocationIdPlaceholder" xml:space="preserve"><value>e.g. loc-A-12-3</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Receipt Lines</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Add Line</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>Item ID</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>e.g. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>SKU ID</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>e.g. c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineSkuLevel" xml:space="preserve"><value>SKU Level</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Select</value></data>
+  <data name="SkuLevelGsku" xml:space="preserve"><value>Global SKU</value></data>
+  <data name="SkuLevelLsku" xml:space="preserve"><value>Local SKU</value></data>
+  <data name="SkuLevelFinishedGood" xml:space="preserve"><value>Finished Good</value></data>
+  <data name="LineLotNumber" xml:space="preserve"><value>Lot Number</value></data>
+  <data name="LineLotNumberPlaceholder" xml:space="preserve"><value>e.g. L2026-0455</value></data>
+  <data name="LineSerialIds" xml:space="preserve"><value>Serial IDs</value></data>
+  <data name="LineSerialIdsPlaceholder" xml:space="preserve"><value>Comma-separated serials</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>e.g. 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>UoM</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>e.g. BOX</value></data>
+  <data name="LineToStockStatus" xml:space="preserve"><value>To Stock Status</value></data>
+  <data name="StockAvailable" xml:space="preserve"><value>Available</value></data>
+  <data name="StockQualityInspection" xml:space="preserve"><value>Quality Inspection</value></data>
+  <data name="StockQuarantine" xml:space="preserve"><value>Quarantine</value></data>
+  <data name="LinePoLineId" xml:space="preserve"><value>PO Line</value></data>
+  <data name="LinePoLineIdPlaceholder" xml:space="preserve"><value>e.g. 3</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>At least one line is required (item, SKU, level, quantity, unit of measure, stock status).</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Integration</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Source System</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>e.g. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>External Reference</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>e.g. ERP-GRN-9001</value></data>
+  <data name="LineInventoryTransactionId" xml:space="preserve"><value>Inventory Transaction</value></data>
+  <data name="LineLotId" xml:space="preserve"><value>Lot</value></data>
+  <data name="InventoryRefHint" xml:space="preserve"><value>Inventory transaction and lot IDs are read-only references to the inventory system of record; the stock balance lives in inventory, not in the GRN.</value></data>
+  <data name="ActionReverse" xml:space="preserve"><value>Reverse</value></data>
+  <data name="ConfirmReverse" xml:space="preserve"><value>Reverse this GRN? A reversing inventory movement will be posted.</value></data>
+  <data name="ReverseSuccess" xml:space="preserve"><value>GRN reversed.</value></data>
+</root>

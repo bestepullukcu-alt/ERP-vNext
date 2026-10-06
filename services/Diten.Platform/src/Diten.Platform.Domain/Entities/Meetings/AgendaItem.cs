@@ -22,4 +22,14 @@ public sealed class AgendaItem : TenantScopedEntity
     /// from an agenda item (that is S4, "meeting → task"); the field exists so S4 has somewhere to put it without
     /// a schema change.</summary>
     public Guid? RecordLinkId { get; set; }
+
+    /// <summary>
+    /// MOD-0357 S7 (K6) — set ONLY on a line carried forward from a continuation source's still-open linked
+    /// tasks, to the SOURCE meeting's id. Distinct from <see cref="RecordLinkId"/> on purpose: a manually typed
+    /// line later linked to an existing task (S4 "link existing task") also gets a <see cref="RecordLinkId"/>,
+    /// and would be indistinguishable from a carried-forward line without this field — the "önceki
+    /// toplantıdan" badge and the previous-meeting cross-link both read THIS field, never infer it from
+    /// <see cref="RecordLinkId"/> alone.
+    /// </summary>
+    public Guid? CarriedFromMeetingId { get; set; }
 }

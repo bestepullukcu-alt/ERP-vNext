@@ -318,6 +318,94 @@ public sealed class WorkflowTaskTransitionTests
         Assert.False(validation.IsValid);
     }
 
+    // BL-491 — the starter can never approve their own workflow, so the task must not be handed to them either:
+    // refused at the delegation, with nothing written.
+    [Fact]
+    public async Task Delegate_to_the_person_who_started_the_workflow_is_refused_and_nothing_is_written()
+    {
+        var f = Fixture(TenantA);
+        var runtime = await f.SeedRuntimeAsync(startedBy: "submitter-001");
+        var snapshotId = runtime.Task.AssignmentSnapshotId;
+
+        var response = await f.Delegate.Handle(
+            Delegate(runtime.Task.Id, delegatePrincipalId: "submitter-001"), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.SodViolation, response.ReasonCode);
+        Assert.Equal(snapshotId, runtime.Task.AssignmentSnapshotId);
+        Assert.Equal(AssignedActor, runtime.Task.AssigneeRef);
+        Assert.Single(f.Snapshots.Items);
+        Assert.DoesNotContain(f.Logs.Items, log => log.Action == WorkflowTransitionAction.Delegate);
+    }
+
+    // The starter is known by USER ID on every instance started from now on; the comparison is the approve gate's own.
+    [Fact]
+    public async Task Delegate_to_the_starter_is_refused_by_user_id_whatever_the_spelling_of_the_id()
+    {
+        var starter = Guid.NewGuid();
+        var f = Fixture(TenantA);
+        var runtime = await f.SeedRuntimeAsync();
+        runtime.Instance.StartedByUserId = starter;
+
+        var response = await f.Delegate.Handle(
+            Delegate(runtime.Task.Id, delegatePrincipalId: starter.ToString().ToUpperInvariant()), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(WorkflowReasonCodes.SodViolation, response.ReasonCode);
+        Assert.Single(f.Snapshots.Items);
+    }
+
+    // A user id is one person however it is spelled: the "not yourself" rule holds, and the delegate's task is written
+    // under the spelling their own token carries — the only one the next gate will match.
+    [Theory]
+    [InlineData("D")]
+    [InlineData("N")]
+    [InlineData("B")]
+    public async Task Delegate_to_yourself_in_another_spelling_of_your_own_user_id_is_blocked(string format)
+    {
+        var me = Guid.NewGuid();
+        var f = Fixture(TenantA);
+        var runtime = await f.SeedRuntimeAsync();
+        runtime.Snapshot.ResolvedPrincipalId = me.ToString();
+
+        var response = await f.Delegate.Handle(
+            Delegate(runtime.Task.Id, actorId: me.ToString(), delegatePrincipalId: me.ToString(format).ToUpperInvariant()),
+            CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(WorkflowReasonCodes.WorkflowDelegateSameActorInvalid, response.ReasonCode);
+        Assert.Single(f.Snapshots.Items);
+    }
+
+    [Fact]
+    public async Task A_delegate_named_by_user_id_is_stored_in_the_spelling_their_token_carries()
+    {
+        var delegateUser = Guid.NewGuid();
+        var f = Fixture(TenantA);
+        var runtime = await f.SeedRuntimeAsync();
+
+        var response = await f.Delegate.Handle(
+            Delegate(runtime.Task.Id, delegatePrincipalId: delegateUser.ToString("B").ToUpperInvariant()), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(delegateUser.ToString(), runtime.Task.AssigneeRef);
+        Assert.Equal(delegateUser.ToString(), f.Snapshots.Items.Single(x => x.Id == runtime.Task.AssignmentSnapshotId).ResolvedPrincipalId);
+    }
+
+    // Somebody the task is not with is told only that — never who started the workflow.
+    [Fact]
+    public async Task A_non_assigned_actor_naming_the_starter_is_denied_as_a_non_assigned_actor()
+    {
+        var f = Fixture(TenantA);
+        var runtime = await f.SeedRuntimeAsync(startedBy: "submitter-001");
+
+        var response = await f.Delegate.Handle(
+            Delegate(runtime.Task.Id, actorId: "somebody-else", delegatePrincipalId: "submitter-001"), CancellationToken.None);
+
+        Assert.Equal(WorkflowReasonCodes.WorkflowActorDenied, response.ReasonCode);
+    }
+
     [Fact]
     public async Task Non_assigned_actor_delegate_is_blocked()
     {

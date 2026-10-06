@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MinutesTitle" xml:space="preserve"><value>Procès-verbal</value></data>
+  <data name="MeetingTitleLabel" xml:space="preserve"><value>Réunion</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="StatusPublishedPrefix" xml:space="preserve"><value>Publié v</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Enregistrer le brouillon</value></data>
+  <data name="Publish" xml:space="preserve"><value>Publier</value></data>
+  <data name="PublishCorrection" xml:space="preserve"><value>Publier la correction</value></data>
+  <data name="AttendanceSection" xml:space="preserve"><value>Présence</value></data>
+  <data name="NoAttendeesHint" xml:space="preserve"><value>Aucun participant à cette réunion.</value></data>
+  <data name="AttendancePresent" xml:space="preserve"><value>Présent</value></data>
+  <data name="AttendanceAbsent" xml:space="preserve"><value>Absent</value></data>
+  <data name="AttendanceExcused" xml:space="preserve"><value>Excusé</value></data>
+  <data name="DecisionsSection" xml:space="preserve"><value>Décisions</value></data>
+  <data name="AddDecision" xml:space="preserve"><value>Ajouter une décision</value></data>
+  <data name="RemoveDecision" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="NoDecisionsHint" xml:space="preserve"><value>Aucune décision enregistrée pour le moment.</value></data>
+  <data name="DecisionTextPlaceholder" xml:space="preserve"><value>Décrivez la décision...</value></data>
+  <data name="DecidedByLabel" xml:space="preserve"><value>Décidé par</value></data>
+  <data name="DecidedByPlaceholder" xml:space="preserve"><value>Non précisé</value></data>
+  <data name="CreateTaskFromDecision" xml:space="preserve"><value>Créer une tâche</value></data>
+  <data name="AddedLaterBadge" xml:space="preserve"><value>Ajouté après publication</value></data>
+  <data name="HistorySection" xml:space="preserve"><value>Historique des versions</value></data>
+  <data name="HistoryDraftLabel" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="HistoryPublishedPrefix" xml:space="preserve"><value>Publié v</value></data>
+  <data name="HistoryCorrectionOfPrefix" xml:space="preserve"><value>Correction de v</value></data>
+  <data name="PublishConfirmTitle" xml:space="preserve"><value>Publier le procès-verbal ?</value></data>
+  <data name="PublishConfirmText" xml:space="preserve"><value>Une fois publiée, cette version est verrouillée. Les corrections créent une nouvelle version.</value></data>
+  <data name="CorrectionReasonLabel" xml:space="preserve"><value>Motif de la correction</value></data>
+  <data name="CorrectionReasonPlaceholder" xml:space="preserve"><value>Pourquoi cette correction est-elle nécessaire ?</value></data>
+  <data name="CorrectionReasonRequired" xml:space="preserve"><value>Un motif de correction est requis.</value></data>
+  <data name="ToastDraftSaved" xml:space="preserve"><value>Brouillon enregistré</value></data>
+  <data name="ToastPublished" xml:space="preserve"><value>Procès-verbal publié</value></data>
+  <data name="ToastCorrected" xml:space="preserve"><value>Correction publiée</value></data>
+</root>

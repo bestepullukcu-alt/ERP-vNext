@@ -31,6 +31,11 @@ const loadModules = () => {
   loadScript("wwwroot/assets/js/shared/diten-dialog.js");
   loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
   loadScript("wwwroot/assets/js/shared/diten-related-records.js");
+  // WP-UI-SHORTCUTS-01 — the shared shortcut layer app.js registers its keys with (Views/Shared/_DitenShortcuts).
+  loadScript("wwwroot/assets/js/shared/diten-shortcuts.js");
+  // WP-UI-CALENDAR-VIEW-01 — the zone helper both host views load (Index via _CalendarAssets, Details directly):
+  // the plan dialog reads a typed start time in the tenant zone through it.
+  loadScript("wwwroot/assets/js/shared/diten-zoned-time.js");
   loadScript(SCRIPT_ROOT + "fixture-contract.js");
   loadScript(SCRIPT_ROOT + "task-detail-resolver.js");
   loadScript(SCRIPT_ROOT + "trigger-response-resolver.js");
@@ -49,12 +54,18 @@ const loadModules = () => {
  * @param {object}  [config.wcn]              Translator override — see the default below.
  * @param {Function} [config.now]             "Today", for surfaces whose wording is measured against it.
  * @param {object[]} [config.unavailableSources] Providers the board is missing — WC-D3's partial-board answer.
- * @returns {Promise<{created: object[], posted: object[], checklistAdds: object[], attachmentAdds: object[]}>}
- *   What the write stubs recorded.
+ * @param {object[]} [config.errors]             BL-379 — contract-validation errors the stub answers alongside
+ *                                                a partial board (fixtureId/code pairs), independent of items.
+ * @param {object[]} [config.byId]               BL-414 — the items the single-item read (GET work-items/{id})
+ *                                                answers with: what the server's read rule admits THIS reader to.
+ *                                                Any other id answers 404, as the endpoint does for a missing or
+ *                                                unreadable task.
+ * @returns {Promise<{created: object[], posted: object[], checklistAdds: object[], attachmentAdds: object[],
+ *   fetchedById: string[]}>} What the write stubs recorded, and which ids the page asked the single read for.
  */
 const bootSurface = ({
   rootAttrs = "", items = [], neverResolve = false, withoutTasksScripts = false, wcn = null, now = null,
-  unavailableSources = []
+  unavailableSources = [], errors = [], byId = []
 } = {}) => {
   // A previous boot leaves its modules on `global`; app.js would then read the OLD data module and the new DOM.
   ["WorkCenterNextData", "WorkCenterNextApi", "WorkCenterNextContract", "WorkCenterNextFixtures"]
@@ -108,7 +119,22 @@ const bootSurface = ({
   global.WorkCenterNextApi.fetchWorkItems = neverResolve
     ? () => new Promise(() => { /* a request that never settles — the page must stay in its loading state */ })
     // A partial board is still STATUS.OK with rows; the missing providers ride alongside (work-items-api §WC-D3).
-    : () => Promise.resolve({ status: "ok", httpStatus: 200, items: mapped.items, errors: [], unavailableSources });
+    : () => Promise.resolve({ status: "ok", httpStatus: 200, items: mapped.items, errors, unavailableSources });
+
+  /*
+   * BL-414 — the single-item read, stubbed at the SAME seam and on the same terms as the list. `byId` must satisfy
+   * the contract for the same reason `items` must; an id not in it answers the endpoint's 404. Every call is
+   * recorded, so a test can prove the page asked only when the list did not already hold the item.
+   */
+  expect(global.WorkCenterNextApi.mapPayload(byId).errors).toEqual([]);
+  const fetchedById = [];
+  global.WorkCenterNextApi.fetchWorkItem = (id) => {
+    fetchedById.push(id);
+    const raw = byId.find((candidate) => candidate.id === id);
+    if (!raw) { return Promise.resolve({ status: "error", httpStatus: 404, item: null, errors: [] }); }
+    const single = global.WorkCenterNextApi.mapPayload([raw]);
+    return Promise.resolve({ status: "ok", httpStatus: 200, item: single.items[0] || null, errors: single.errors });
+  };
 
   const created = [];
   const posted = [];
@@ -123,7 +149,7 @@ const bootSurface = ({
     delete global.TasksApi;
     delete global.TaskForm;
     loadScript(SCRIPT_ROOT + "app.js");
-    return new Promise((resolve) => setTimeout(() => resolve({ created, posted, checklistAdds, attachmentAdds }), 0));
+    return new Promise((resolve) => setTimeout(() => resolve({ created, posted, checklistAdds, attachmentAdds, fetchedById }), 0));
   }
 
   global.TasksApi = {
@@ -158,7 +184,7 @@ const bootSurface = ({
 
   loadScript(SCRIPT_ROOT + "app.js");
   // boot() is async (it awaits loadWorkItems); let its microtasks drain before anyone asserts on the DOM.
-  return new Promise((resolve) => setTimeout(() => resolve({ created, posted, checklistAdds, attachmentAdds }), 0));
+  return new Promise((resolve) => setTimeout(() => resolve({ created, posted, checklistAdds, attachmentAdds, fetchedById }), 0));
 };
 
 const app = () => document.getElementById("wcnApp");

@@ -44,13 +44,21 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
             ["claim"] = TaskPermissions.Claim,
             ["release"] = TaskPermissions.Claim,
             ["plan"] = TaskPermissions.Update,
+            // WP-TASK-CALENDAR-ENGINE-01 — the calendar's "take it off" (TasksController.Unplan carries Update).
+            ["unplan"] = TaskPermissions.Update,
             ["start"] = TaskPermissions.Update,
             ["submitReview"] = TaskPermissions.Update,
             ["complete"] = TaskPermissions.Complete,
             ["inquire"] = TaskPermissions.Update,
             ["return"] = TaskPermissions.Update,
             ["reassign"] = TaskPermissions.Assign,
-            ["cancel"] = TaskPermissions.Cancel
+            ["cancel"] = TaskPermissions.Cancel,
+            // BL-439 — the addressee's answer. READ, the key TasksController's `answer` endpoint carries: the rule
+            // that matters is "this task is asking you", which AnswerInquiryHandler enforces, not a key.
+            ["answer"] = TaskPermissions.Read,
+            // MOD-0280-FU01 T2b — the holder's timer; TimeEntryController's timer/start and timer/stop carry this key.
+            ["startTimer"] = TimeEntry.TimeEntryPermissions.TimesheetsUpdate,
+            ["stopTimer"] = TimeEntry.TimeEntryPermissions.TimesheetsUpdate
         };
 
     public IReadOnlyCollection<string> SupportedActionCodes { get; } = Permissions.Keys.ToArray();
@@ -87,18 +95,24 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
                     new ReleaseTaskItemCommand(request.ItemId, transition, request.CorrelationId), ct), request);
 
             case "plan":
-                // The one action with a REQUIRED field of its own. Refused here rather than sent on as a default
-                // date: a plan nobody chose is worse than a refusal that says what is missing.
-                if (payload.PlannedDate is not { } plannedDate)
+                // The one action with a REQUIRED field of its own — a day, or a block start. Refused here rather
+                // than sent on as a default date: a plan nobody chose is worse than a refusal that says what is
+                // missing.
+                if (payload.PlannedDate is null && payload.PlannedStartAt is null)
                 {
                     return WorkItemActionDispatchResults.PayloadInvalid(request, nameof(payload.PlannedDate));
                 }
 
-                return Map(await _mediator.Send(
+                return MapPlan(await _mediator.Send(
                     new PlanTaskItemCommand(
                         request.ItemId,
-                        new PlanTaskItemRequest(version, plannedDate),
+                        new PlanTaskItemRequest(
+                            version, payload.PlannedDate, payload.PlannedStartAt, payload.PlannedDurationMinutes),
                         request.CorrelationId), ct), request);
+
+            case "unplan":
+                return Map(await _mediator.Send(
+                    new UnplanTaskItemCommand(request.ItemId, transition, request.CorrelationId), ct), request);
 
             case "start":
                 return Map(await _mediator.Send(
@@ -110,9 +124,16 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
                     new SubmitTaskForReviewCommand(request.ItemId, transition, request.CorrelationId), ct), request);
 
             case "complete":
+                /*
+                 * Faz 2a-rest — THE ONLY ACTION THAT CARRIES CLOSURE-STAGE FIELD VALUES. `cancel` shares
+                 * `transition` below unchanged and on purpose (pack §11 / YAPMA): the closure window never
+                 * offers these fields on cancel, so nothing this dispatcher does needs to either.
+                 */
                 return Map(await _mediator.Send(
                     new TransitionTaskItemCommand(
-                        request.ItemId, TaskLifecycle.Done, transition, request.CorrelationId), ct), request);
+                        request.ItemId, TaskLifecycle.Done,
+                        transition with { ClosureFieldValues = MapClosureFieldValues(payload.ClosureFieldValues) },
+                        request.CorrelationId), ct), request);
 
             case "inquire":
                 if (string.IsNullOrWhiteSpace(payload.Reason))
@@ -124,6 +145,20 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
                     new InquireTaskItemCommand(
                         request.ItemId,
                         new InquireTaskItemRequest(version, payload.Reason!, payload.WaitingOnUserId),
+                        request.CorrelationId), ct), request);
+
+            case "answer":
+                // Refused here rather than sent on empty, like inquire's reason: the handler would refuse it too,
+                // but the envelope's own code names the missing FIELD, which is the more useful answer.
+                if (string.IsNullOrWhiteSpace(payload.Answer))
+                {
+                    return WorkItemActionDispatchResults.PayloadInvalid(request, nameof(payload.Answer));
+                }
+
+                return Map(await _mediator.Send(
+                    new AnswerInquiryCommand(
+                        request.ItemId,
+                        new AnswerInquiryRequest(version, payload.Answer!),
                         request.CorrelationId), ct), request);
 
             case "return":
@@ -171,6 +206,18 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
                         request.CorrelationId,
                         request.Actor.Has(TaskPermissions.Delete)), ct), request);
 
+            // MOD-0280-FU01 T2b — the SAME commands TimeEntryController sends; every timer rule (held, InProgress,
+            // switched on for the legal entity) stays in their handlers and comes back as their own reason code.
+            case "startTimer":
+                return Map(await _mediator.Send(
+                    new TimeEntry.Commands.StartTimerCommand(
+                        new TimeEntry.StartTimerRequest(request.ItemId, null), request.CorrelationId), ct), request);
+
+            case "stopTimer":
+                return Map(await _mediator.Send(
+                    // The card's own task: a stale card must not stop a timer that has moved to another task.
+                    new TimeEntry.Commands.StopTimerCommand(request.CorrelationId, request.ItemId), ct), request);
+
             default:
                 return WorkItemActionDispatchResults.ActionUnknown(request);
         }
@@ -178,4 +225,76 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
 
     private Response<WorkItemActionResultDto> Map<T>(Response<T> inner, WorkItemActionDispatchRequest request)
         => WorkItemActionDispatchResults.From(inner, request, ProviderCode);
+
+    /// <summary>
+    /// A plan's answer carries what the calendar needs next — the warnings on a saved plan and what is left of the
+    /// estimate — so it is not reduced to "done" on the way out. A refusal passes through untouched.
+    /// </summary>
+    private Response<WorkItemActionResultDto> MapPlan(
+        Response<PlanTaskItemResultDto> inner, WorkItemActionDispatchRequest request)
+    {
+        var mapped = Map(inner, request);
+
+        // A block conflict names the OTHER block (the caller's own task), so the calendar can say which one.
+        if (!inner.IsSuccessful && inner.Data?.Conflict is { } conflict)
+        {
+            return Response<WorkItemActionResultDto>.FailWithData(
+                mapped.Errors.FirstOrDefault() ?? "The action was refused.",
+                mapped.StatusCode,
+                mapped.ReasonCode,
+                new WorkItemActionResultDto(request.ItemId.ToString(), ProviderCode, request.ActionCode)
+                {
+                    Conflict = new WorkItemActionWarningDto(
+                        TaskReasonCodes.PlanConflict, conflict.Title, conflict.StartAt, conflict.EndAt)
+                },
+                mapped.CorrelationId);
+        }
+
+        if (!inner.IsSuccessful || inner.Data is not { } plan || mapped.Data is null)
+        {
+            return mapped;
+        }
+
+        return Response<WorkItemActionResultDto>.Success(
+            mapped.Data with
+            {
+                Warnings = plan.Warnings
+                    .Select(w => new WorkItemActionWarningDto(w.Code, w.Title, w.StartAt, w.EndAt))
+                    .ToList(),
+                RemainingMinutes = plan.RemainingMinutes,
+                // CT acceptance: the Task Center's path must also learn that the block was cut at the day end.
+                Truncated = plan.Truncated ? true : null
+            },
+            mapped.StatusCode,
+            mapped.CorrelationId);
+    }
+
+    /// <summary>
+    /// Faz 2a-rest — the one translation from the dispatch envelope's NEUTRAL field-value shape
+    /// (<see cref="WorkItemFieldValueDto"/>) to MOD-0024's own (<see cref="TaskFieldValueDto"/>).
+    ///
+    /// <para>A value whose <c>ValueType</c> this engine does not recognise is DROPPED rather than thrown on — a
+    /// malformed or stale client must not turn a 400 ("this closure field is required") into a 500. Dropping it
+    /// is safe: <c>ValidateClosureFieldsAsync</c> then sees the field as simply unsupplied and refuses exactly
+    /// as it would if the client had sent nothing for it.</para>
+    /// </summary>
+    private static IReadOnlyList<TaskFieldValueDto>? MapClosureFieldValues(
+        IReadOnlyList<WorkItemFieldValueDto>? values)
+    {
+        if (values is null)
+        {
+            return null;
+        }
+
+        var mapped = new List<TaskFieldValueDto>(values.Count);
+        foreach (var value in values)
+        {
+            if (Enum.TryParse<TaskFieldValueType>(value.ValueType, ignoreCase: true, out var valueType))
+            {
+                mapped.Add(new TaskFieldValueDto(value.DefinitionCode, valueType, value.Value));
+            }
+        }
+
+        return mapped;
+    }
 }

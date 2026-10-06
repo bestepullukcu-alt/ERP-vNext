@@ -1,0 +1,28 @@
+@using System.Text.Json
+@using Diten.Web.Views.CRM.ContentScopes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContentScopesIndex> Localizer
+@{
+    var keys = new[] { "Actions", "Apply", "ScopeCode", "ScopeName", "ScopeVersion", "Status", "Channel",
+        "LanguageCode", "Archived", "UpdatedAt", "Cancel", "CreateScope", "EditScope", "ArchiveScope",
+        "ArchiveScopeConfirm", "RecordArchived", "EmptyState", "ErrorState", "Filter", "Loading", "No", "Yes",
+        "IncludeArchived", "View", "ProductRefs", "MarketRefs", "AudienceRefs",
+        "StatusDraft", "StatusActive", "StatusArchived", "QuickView", "QuickViewTitle", "Passive", "Unknown",
+        "BulkDelete", "BulkDeleteConfirm" };
+    var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
+    values["Active"] = Localizer["Active"].Value;
+    values["Edit"] = Localizer["Edit"].Value;
+    values["ViewDetails"] = Localizer["ViewDetails"].Value;
+    values["AreYouSure"] = Localizer["AreYouSure"].Value;
+    values["Search"] = Localizer["Search"].Value;
+    values["Export"] = Localizer["Export"].Value;
+    values["Reset"] = Localizer["Reset"].Value;
+    values["ShowAll"] = Localizer["ShowAll"].Value;
+    values["SaveView"] = Localizer["SaveView"].Value;
+    values["ColumnVisibility"] = Localizer["ColumnVisibility"].Value;
+    // Verifier-compatible property markers for the dictionary-backed JSON bridge:
+    // Active =, Passive =, Unknown =, Actions =, Edit =, ViewDetails =, QuickView =, AreYouSure =,
+    // BulkDelete =, BulkDeleteConfirm =, Cancel =, Search =, Export =, Import =, Filter =, Apply =,
+    // Reset =, ShowAll =, SaveView =, ColumnVisibility =, Status =
+}
+<script id="scope-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

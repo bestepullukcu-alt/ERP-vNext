@@ -5,8 +5,9 @@ namespace Diten.CrmService.Application.Features.VisitFrequencyPolicy.Commands;
 
 /// <summary>
 /// MOD-0165 FU03 write surface. TenantId is NEVER accepted from the payload (server-resolved from the JWT claim).
-/// There is deliberately NO delete command — closing a policy is <see cref="ArchiveVisitFrequencyPolicyCommand"/>
-/// (soft lifecycle). PolicyCode is stable; renaming is done through PolicyName on update.
+/// Closing a policy as history is <see cref="ArchiveVisitFrequencyPolicyCommand"/> (soft lifecycle, still listed);
+/// removing it from the working set is <see cref="DeleteVisitFrequencyPolicyCommand"/> (WP-FREQ-A additive soft-delete —
+/// NOT a hard delete). PolicyCode is stable; renaming is done through PolicyName on update.
 /// </summary>
 public sealed record CreateVisitFrequencyPolicyCommand(
     string PolicyCode,
@@ -58,3 +59,9 @@ public sealed record UpdateVisitFrequencyPolicyCommand(
 
 /// <summary>Archives a policy (status → archived, ArchivedAt/By stamped). Removed from resolve; still readable.</summary>
 public sealed record ArchiveVisitFrequencyPolicyCommand(Guid PolicyId) : IRequest<Response<bool>>;
+
+/// <summary>Soft-deletes a policy (WP-FREQ-A): IsDeleted=true + DeletedAt/By stamped, so it leaves the list and the
+/// resolve working set. DISTINCT from <see cref="ArchiveVisitFrequencyPolicyCommand"/> — archive keeps the row as
+/// readable history (status=archived, still listed); delete removes it from the working set. Additive; there is no
+/// hard delete and the FU03 contract/resolve/CRUD/archive behaviour is unchanged.</summary>
+public sealed record DeleteVisitFrequencyPolicyCommand(Guid PolicyId) : IRequest<Response<bool>>;

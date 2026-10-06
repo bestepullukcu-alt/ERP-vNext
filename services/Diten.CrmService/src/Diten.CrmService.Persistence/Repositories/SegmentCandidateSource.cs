@@ -138,8 +138,10 @@ public sealed class SegmentCandidateSource : ISegmentCandidateSource
             .Distinct()
             .ToList();
 
-        // ONE further bulk read for the linked account type. Still bulk, still no per-candidate query.
+        // ONE further bulk read for the linked account type AND name. Still bulk, still no per-candidate query: the
+        // name (WP-SEG-F workplace label) is one more projection field on the SAME read that already fetches the type.
         var accountTypes = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        var accountNames = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         if (accountIds.Count > 0)
         {
             var accounts = await _database.GetCollection<BsonDocument>(AccountsCollection)
@@ -149,12 +151,14 @@ public sealed class SegmentCandidateSource : ISegmentCandidateSource
                     { "IsDeleted", false },
                     { "_id", new BsonDocument("$in", new BsonArray(accountIds)) }
                 })
-                .Project(Builders<BsonDocument>.Projection.Include("AccountType"))
+                .Project(Builders<BsonDocument>.Projection.Include("AccountType").Include("AccountName"))
                 .ToListAsync(cancellationToken);
 
             foreach (var account in accounts)
             {
-                accountTypes[account["_id"].ToString()!] = ReadString(account, "AccountType");
+                var id = account["_id"].ToString()!;
+                accountTypes[id] = ReadString(account, "AccountType");
+                accountNames[id] = ReadString(account, "AccountName");
             }
         }
 
@@ -167,7 +171,8 @@ public sealed class SegmentCandidateSource : ISegmentCandidateSource
                     ParseGuid(l.GetValue("AccountId", BsonNull.Value)),
                     ReadString(l, "RoleCode") ?? string.Empty,
                     l.GetValue("IsPrimary", false).ToBoolean(),
-                    accountId is null ? null : accountTypes.GetValueOrDefault(accountId));
+                    accountId is null ? null : accountTypes.GetValueOrDefault(accountId),
+                    accountId is null ? null : accountNames.GetValueOrDefault(accountId));
             })
             .ToList();
     }

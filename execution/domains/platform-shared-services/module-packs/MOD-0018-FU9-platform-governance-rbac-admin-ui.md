@@ -9,6 +9,12 @@ owner: platform-team
 branch: feature/governance/access-governance-execution
 golden_reference: slim
 form_field_count: 0
+# Ekran basina veri modu (BL-440, sahip karari 2026-09-24): bu paket bes ekrani kapsar, `data_mode` tek deger olamaz.
+# `verify_datatable_page.py` `screens[].module` = Views/{Area}/{Module} klasor adiyla eslesir. Olculmeyen ekran yazilmaz;
+# Roles/Permissions/... dokunuldugunda olculur ve buraya eklenir.
+screens:
+  - module: Users
+    data_mode: server
 dates:
   started: 2026-06-11
 ---

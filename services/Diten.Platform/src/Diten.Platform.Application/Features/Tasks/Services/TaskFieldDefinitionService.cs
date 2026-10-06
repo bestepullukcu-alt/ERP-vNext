@@ -42,6 +42,22 @@ public interface ITaskFieldDefinitionService
         CancellationToken ct = default,
         bool enforceRequired = true,
         IReadOnlyList<TaskFieldValue>? existing = null);
+
+    /// <summary>
+    /// Faz 2a — validate values for CLOSURE-stage fields only, at <c>complete</c>/<c>cancel</c>.
+    ///
+    /// <para>A separate method rather than a parameter on <see cref="ValidateAndMaterializeAsync"/>: that method
+    /// REPLACES the whole field set on a full edit, while closing only ever ADDS to it — the task's entry-stage
+    /// values (and any closure value from an earlier, failed close attempt) must survive untouched. Returns only
+    /// the NEWLY materialized closure values; the caller merges them into <c>TaskItem.FieldValues</c> by code.
+    /// </para>
+    /// </summary>
+    /// <param name="existingValues">The task's current field values, so a REQUIRED closure field already
+    /// satisfied by an earlier attempt (one that failed for an unrelated reason, say) is not re-demanded.</param>
+    Task<TaskFieldValidationResult> ValidateClosureFieldsAsync(
+        IReadOnlyList<TaskFieldValueDto>? values,
+        IReadOnlyList<TaskFieldValue> existingValues,
+        CancellationToken ct = default);
 }
 
 public sealed record TaskFieldValidationResult(
@@ -75,7 +91,17 @@ public sealed class TaskFieldDefinitionService : ITaskFieldDefinitionService
         bool enforceRequired = true,
         IReadOnlyList<TaskFieldValue>? existing = null)
     {
-        var active = await _definitions.ListActiveAsync(ct);
+        /*
+         * Faz 2a — ENTRY-STAGE ONLY. A Closure field is withheld from the create/edit form (pack §4: "Closure
+         * alanları oluştur/düzenle formunda GÖRÜNMEZ"), so it must be withheld here too — this is the method
+         * that decides what a create/update payload may be asked for and refused over. Were a Closure field left
+         * in, a type with one Required closure field would refuse every ORDINARY create, for a field nobody on
+         * that form could ever see or fill. Closure fields get their own gate in
+         * <see cref="ValidateClosureFieldsAsync"/>, asked only at complete/cancel.
+         */
+        var active = (await _definitions.ListActiveAsync(ct))
+            .Where(definition => definition.Stage == TaskFieldStage.Entry)
+            .ToList();
 
         /*
          * BL-024 Phase 2 — values the caller MAY NOT WRITE are carried through from the stored task.
@@ -277,6 +303,94 @@ public sealed class TaskFieldDefinitionService : ITaskFieldDefinitionService
          * definition one the caller may not write, and any attempt to write one was already refused above.
          */
         return new TaskFieldValidationResult(true, [.. materialized, .. preserved], null, null);
+    }
+
+    public async Task<TaskFieldValidationResult> ValidateClosureFieldsAsync(
+        IReadOnlyList<TaskFieldValueDto>? values,
+        IReadOnlyList<TaskFieldValue> existingValues,
+        CancellationToken ct = default)
+    {
+        var closureDefinitions = (await _definitions.ListActiveAsync(ct))
+            .Where(definition => definition.Stage == TaskFieldStage.Closure)
+            .ToDictionary(definition => definition.Code, StringComparer.OrdinalIgnoreCase);
+
+        var existingByCode = existingValues.ToDictionary(
+            value => value.DefinitionCode, value => value.Value, StringComparer.OrdinalIgnoreCase);
+
+        var materialized = new List<TaskFieldValue>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var supplied in values ?? [])
+        {
+            if (string.IsNullOrWhiteSpace(supplied.DefinitionCode))
+            {
+                return Invalid(TaskReasonCodes.FieldValueInvalid, "A closure field value is missing its definition code.");
+            }
+
+            // Unknown code = a field nobody defined as a CLOSURE field (it may exist as an Entry field under the
+            // same code, which is exactly the confusion refusing it here prevents): accepting it would smuggle an
+            // ad-hoc column into the engine, which K1 forbids, the same as the entry-stage path above.
+            if (!closureDefinitions.TryGetValue(supplied.DefinitionCode, out var definition))
+            {
+                return Invalid(
+                    TaskReasonCodes.FieldDefinitionUnknown,
+                    $"'{supplied.DefinitionCode}' is not an active closure-stage field.");
+            }
+
+            if (!seen.Add(definition.Code))
+            {
+                return Invalid(TaskReasonCodes.FieldValueInvalid, $"Duplicate value for '{definition.Code}'.");
+            }
+
+            if (supplied.ValueType != definition.ValueType)
+            {
+                return Invalid(
+                    TaskReasonCodes.FieldValueInvalid,
+                    $"Field '{definition.Code}' expects {definition.ValueType}, got {supplied.ValueType}.");
+            }
+
+            if (supplied.Value is { Length: > TaskFieldLimits.MaxTextLengthPerField })
+            {
+                return Invalid(
+                    TaskReasonCodes.FieldLimitExceeded,
+                    $"Field '{definition.Code}' exceeds {TaskFieldLimits.MaxTextLengthPerField} characters.");
+            }
+
+            if (!IsWellFormed(definition.ValueType, supplied.Value))
+            {
+                return Invalid(
+                    TaskReasonCodes.FieldValueInvalid,
+                    $"Field '{definition.Code}' value is not a valid {definition.ValueType}.");
+            }
+
+            materialized.Add(new TaskFieldValue
+            {
+                DefinitionCode = definition.Code,
+                ValueType = definition.ValueType,
+                Value = supplied.Value,
+                Classification = definition.Classification,
+                AccessState = definition.DefaultAccessState,
+                Redacted = false
+            });
+        }
+
+        /*
+         * ⚠ REQUIRED, AND IDEMPOTENT. A value supplied THIS round, or one already sitting on the task from an
+         * earlier close attempt (rejected for an unrelated reason — a concurrency conflict, an unchosen outcome),
+         * both satisfy the requirement. Without the second half, a task whose type demands BOTH an outcome and a
+         * closure field would force the field into every retry, including a retry that is correcting only the
+         * outcome.
+         */
+        var missing = closureDefinitions.Values.FirstOrDefault(definition =>
+            definition.IsRequired
+            && !seen.Contains(definition.Code)
+            && string.IsNullOrWhiteSpace(existingByCode.GetValueOrDefault(definition.Code)));
+
+        return missing is null
+            ? new TaskFieldValidationResult(true, materialized, null, null)
+            : Invalid(
+                TaskReasonCodes.ClosureFieldRequired,
+                $"Closure field '{missing.Code}' is required to close this task.");
     }
 
     private static bool IsRecordBacked(TaskFieldDefinition definition) =>

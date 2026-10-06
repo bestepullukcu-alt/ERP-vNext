@@ -37,7 +37,11 @@ if (!builder.Environment.IsProduction() && !string.IsNullOrWhiteSpace(devUrls))
 // owns the port (in-process it IS the server; out-of-process it assigns one and proxies), and self-binding it
 // collides with the module — the app failed to start (500.30 in-process, 502 with SocketException 10013
 // out-of-process). Binding is left to the host: ASPNETCORE_URLS in dev (launchSettings), the ANCM binding under IIS.
-builder.WebHost.UseKestrel();
+// Header cap raised to 64 KB (Kestrel default is 32 KB) — a tenant-admin JWT emits one `permission` claim per
+// grant, so a broadly-granted admin's token + its chunked access_token cookie can exceed 32 KB and the request
+// fails with HTTP 431 (seen on /CRM/Accounts server-side DataTable Ajax). Every other service and the gateway
+// already set this; CrmService used a bare UseKestrel() and was the only one still on the 32 KB default.
+builder.WebHost.UseKestrel(options => options.Limits.MaxRequestHeadersTotalSize = 64 * 1024);
 builder.WebHost.UseIIS();
 builder.WebHost.UseIISIntegration();
 

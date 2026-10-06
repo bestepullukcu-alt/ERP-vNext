@@ -237,8 +237,8 @@
     <value>اتخاذ إجراء</value>
   </data>
   <data name="RowView" xml:space="preserve"><value>عرض</value></data>
-  <data name="ActReviewMeeting" xml:space="preserve"><value>جدولة اجتماع الموافقة</value></data>
-  <data name="ToastReviewMeeting" xml:space="preserve"><value>تم جدولة اجتماع الموافقة: {0}</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>جدولة اجتماع مراجعة</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>تم جدولة اجتماع مراجعة: {0}</value></data>
   <data name="IsTitleElimination" xml:space="preserve"><value>إعداد جدول الاستبعاد بين الشركات</value></data>
   <data name="IsSummaryElimination" xml:space="preserve"><value>استبعاد الأرصدة بين الشركات قبل التوحيد.</value></data>
   <data name="IsTitlePricingRegression" xml:space="preserve"><value>التحقيق في تراجع قاعدة التسعير</value></data>
@@ -539,9 +539,6 @@
   <data name="ActResume" xml:space="preserve">
     <value>استئناف</value>
   </data>
-  <data name="ActLogTime" xml:space="preserve">
-    <value>تسجيل الوقت</value>
-  </data>
   <data name="StepBarLabel" xml:space="preserve">
     <value>دورة الحياة</value>
   </data>
@@ -575,12 +572,6 @@
   <data name="TimesheetLabel" xml:space="preserve">
     <value>الوقت</value>
   </data>
-  <data name="TimeLoggedLabel" xml:space="preserve">
-    <value>مسجّل</value>
-  </data>
-  <data name="TimerRunning" xml:space="preserve">
-    <value>قيد التشغيل</value>
-  </data>
   <data name="AwaitingReview" xml:space="preserve">
     <value>بانتظار المراجعة</value>
   </data>
@@ -593,26 +584,8 @@
   <data name="PlanConfirm" xml:space="preserve">
     <value>تعيين التاريخ</value>
   </data>
-  <data name="LogTimeLabel" xml:space="preserve">
-    <value>دقائق</value>
-  </data>
-  <data name="LogTimePlaceholder" xml:space="preserve">
-    <value>مثال 30</value>
-  </data>
-  <data name="LogTimeConfirm" xml:space="preserve">
-    <value>تسجيل</value>
-  </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · مجدول ليوم {1} (تجريبي)</value>
-  </data>
-  <data name="ToastPlanSaved" xml:space="preserve">
-    <value>تم حفظ الخطة لـ {0}</value>
-  </data>
-  <data name="ToastTimerStarted" xml:space="preserve">
-    <value>{0} · بدأ المؤقّت (تجريبي)</value>
-  </data>
-  <data name="ToastTimeLogged" xml:space="preserve">
-    <value>تم تسجيل {0} (تجريبي)</value>
   </data>
   <data name="ToastSentToReview" xml:space="preserve">
     <value>{0} · أُرسل للمراجعة (تجريبي)</value>
@@ -895,6 +868,18 @@
   <data name="MeetingWhenLabel" xml:space="preserve">
     <value>تاريخ الاجتماع ووقته</value>
   </data>
+  <data name="MeetingTypeLabel" xml:space="preserve">
+    <value>نوع الاجتماع</value>
+  </data>
+  <data name="MeetingTypeSubtext" xml:space="preserve">
+    <value>اختر نوع الاجتماع المطلوب جدولته.</value>
+  </data>
+  <data name="MeetingNoTypesAvailable" xml:space="preserve">
+    <value>لا توجد أنواع اجتماعات مُهيَّأة بعد. اطلب من أحد المسؤولين إضافة نوع.</value>
+  </data>
+  <data name="MeetingScheduleSubtext" xml:space="preserve">
+    <value>ينشئ هذا اجتماعًا حقيقيًا في وحدة الاجتماعات، مرتبطًا بهذه المهمة.</value>
+  </data>
   <data name="MeetingTitlePlaceholder" xml:space="preserve">
     <value>مراجعة إقفال الربع الثالث</value>
   </data>
@@ -903,9 +888,6 @@
   </data>
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>أي وحدة؟</value>
-  </data>
-  <data name="LogTimeSubtext" xml:space="preserve">
-    <value>يُضاف إلى الوقت المسجَّل مسبقًا على هذه المهمة؛ ولا يبدأ المؤقّت أو يوقفه.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>لم يتم بعد إعداد الاتصال بالتقويم: يظهر هذا السجل على هذه الشاشة فقط ويُفقد عند إغلاق الصفحة. لا يتغيّر تاريخ الاستحقاق.</value>
@@ -918,15 +900,6 @@
   </data>
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>كل الحقول</value>
-  </data>
-  <data name="TimerStateRunning" xml:space="preserve">
-    <value>قيد التنفيذ</value>
-  </data>
-  <data name="TimerStatePaused" xml:space="preserve">
-    <value>موقوف مؤقتًا</value>
-  </data>
-  <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>لا يُسجَّل الوقت المنقضي — أدخل الوقت الذي قضيته يدويًا.</value>
   </data>
   <data name="SubtaskStartedNotCompleted" xml:space="preserve">
     <value>بدأت المهمة الفرعية لكن تعذّر إكمالها: {0}</value>
@@ -1015,6 +988,30 @@
   <data name="CommentPost" xml:space="preserve">
     <value>نشر</value>
   </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>أشر إلى شخص</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>إزالة الإشارة</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>الإشارة إلى أشخاص</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>إضافة</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>اختر شخصًا واحدًا على الأقل.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>لا يوجد أحد للإشارة إليه في هذه المهمة حتى الآن.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>تمت إضافة جميع من يمكن الإشارة إليهم بالفعل.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>يمكن أن يشير التعليق إلى {0} أشخاص كحد أقصى.</value>
+  </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>اكتب شيئًا قبل النشر</value>
   </data>
@@ -1039,20 +1036,20 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>للقراءة فقط — تتغيّر الحالة في المصدر؛ هنا فقط الخطة/التثبيت الشخصي.</value>
   </data>
-  <data name="CalPrevMonth" xml:space="preserve">
-    <value>الشهر السابق</value>
+  <data name="KanbanActionPickerTitle" xml:space="preserve">
+    <value>ما الإجراء الذي يجب تشغيله؟</value>
   </data>
-  <data name="CalNextMonth" xml:space="preserve">
-    <value>الشهر التالي</value>
+  <data name="KanbanActionPickerRequired" xml:space="preserve">
+    <value>اختر إجراءً.</value>
   </data>
-  <data name="CalToday" xml:space="preserve">
-    <value>اليوم</value>
+  <data name="KanbanProcessing" xml:space="preserve">
+    <value>جارٍ المعالجة…</value>
   </data>
-  <data name="CalOutside" xml:space="preserve">
-    <value>{0} عنصرًا في أشهر أخرى.</value>
+  <data name="KanbanMovedToHistory" xml:space="preserve">
+    <value>تم النقل إلى السجل</value>
   </data>
-  <data name="CalOutsideAndUndated" xml:space="preserve">
-    <value>{0} عنصرًا في أشهر أخرى؛ و{1} بلا تاريخ ولا تظهر في التقويم أبدًا.</value>
+  <data name="KanbanDropHint" xml:space="preserve">
+    <value>أفلت هنا: {0}</value>
   </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>استحقاق المصدر</value>
@@ -1374,6 +1371,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>التعاون والسجلات</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>تفاصيل عنصر العمل</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>تعذر العثور على عنصر العمل المطلوب.</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>تعذر عرض عنصر العمل هذا لأنه لم يجتز التحقق من العقد.</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>العودة إلى مركز العمل</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>انتهت صلاحيتك على هذا العنصر.</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>لم يكتمل أحد الاعتماديات المطلوبة.</value></data>
@@ -1432,8 +1430,17 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>تم العثور على فرق قدره 84,750 ليرة مع دفتر الأستاذ العام.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>اجتماع مراجعة ميزانية الربع الثالث</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 يوليو 2026، 14:00–15:00 · Teams · المنظم: Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>هذه المهمة مُرسلة إليك من {name} للموافقة عليها</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>هذه المهمة مُرسلة إليك للموافقة عليها</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>موافقة: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Pending" xml:space="preserve">
+    <value>قيد الانتظار</value>
   </data>
   <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
     <value>بانتظار الموافقة</value>
@@ -1476,6 +1483,9 @@
   </data>
   <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
     <value>الإثبات المطلوب غير متوفر.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_SelfApproval" xml:space="preserve">
+    <value>أنت من بدأ هذه الموافقة، لذا يجب أن يتخذ شخص آخر القرار.</value>
   </data>
   <data name="NoAccessTitle" xml:space="preserve">
     <value>ليس لديك حق الوصول إلى مركز المهام</value>
@@ -1542,6 +1552,15 @@
   </data>
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>في انتظار…</value>
+  </data>
+  <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
+    <value>جدولة اجتماع مراجعة</value>
+  </data>
+  <data name="WorkAggregation_Action_AcceptInvite" xml:space="preserve">
+    <value>قبول</value>
+  </data>
+  <data name="WorkAggregation_Action_DeclineInvite" xml:space="preserve">
+    <value>رفض</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>إعادة</value>
@@ -1832,6 +1851,9 @@
   <data name="AuditEventPlanned" xml:space="preserve">
     <value>خُطِّطت المهمة</value>
   </data>
+  <data name="AuditEventUnplanned" xml:space="preserve">
+    <value>أُزيلت المهمة من التقويم</value>
+  </data>
   <data name="AuditEventStarted" xml:space="preserve">
     <value>بدأ العمل</value>
   </data>
@@ -1894,6 +1916,12 @@
   </data>
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>ما تزال إحدى المهام الفرعية مفتوحة</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>تمت جدولة اجتماع مراجعة بالفعل</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingRequired" xml:space="preserve">
+    <value>يظل هذا القرار مقفلاً حتى يتم نشر محضر اجتماع المراجعة المرتبط.</value>
   </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>تم تحديث قائمة التحقق.</value>
@@ -2158,6 +2186,9 @@
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>لم تستجب بعض المصادر — قد تكون هذه القائمة غير مكتملة.</value>
   </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>تعذر عرض {0} من عناصر العمل بسبب خطأ في العقد.</value>
+  </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>لم تستجب بعض المصادر، لذا قد يكون هذا العدد غير مكتمل.</value>
   </data>
@@ -2203,6 +2234,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>أُغلق بالنتيجة: {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>الإغلاق</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>تم إرفاق {0} من المخرجات.</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>تم إرفاق {0} من ملفات الإثبات.</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>كيف انتهى هذا العمل؟</value>
   </data>
@@ -2223,6 +2263,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>تتطلب هذه النتيجة ذكر سبب.</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>يجب تعبئة هذا الحقل قبل إتمام المهمة.</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>أُنجز كما طُلب</value>
@@ -2274,6 +2317,201 @@
   <data name="AttachmentUploadedBy" xml:space="preserve"><value>رفعه {0} · {1}</value></data>
   <data name="ToastAttachmentAdded" xml:space="preserve"><value>تمت إضافة المرفق.</value></data>
   <data name="ToastAttachmentRemoved" xml:space="preserve"><value>تمت إزالة المرفق.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>أضف ملف مخرج أو دليل (اختياري)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>يتطلب نوع هذه المهمة ملف مخرج</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>اختر ملفًا قبل إكمال هذه المهمة.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>إضافة إثبات</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} ملف إثبات</value></data>
+  <data name="TypeInquiry" xml:space="preserve">
+    <value>سؤال</value>
+  </data>
+  <data name="WorkAggregation_Title_Inquiry" xml:space="preserve">
+    <value>سؤال · {title}</value>
+  </data>
+  <data name="WorkAggregation_Action_Answer" xml:space="preserve">
+    <value>أجب</value>
+  </data>
+  <data name="OutcomeAnswer" xml:space="preserve">
+    <value>تسجّل إجابتك في سجل المهمة وتعيد المهمة إلى حالتها السابقة</value>
+  </data>
+  <data name="InquiryQuestionLabel" xml:space="preserve">
+    <value>السؤال المطروح</value>
+  </data>
+  <data name="InquiryAnswerLabel" xml:space="preserve">
+    <value>إجابتك</value>
+  </data>
+  <data name="InquiryAnswerPlaceholder" xml:space="preserve">
+    <value>اكتب المعلومات المطلوبة…</value>
+  </data>
+  <data name="InquiryAnswerRequired" xml:space="preserve">
+    <value>اكتب إجابة قبل الإرسال.</value>
+  </data>
+  <data name="InquiryAnsweredBy" xml:space="preserve">
+    <value>أجاب {0}</value>
+  </data>
+  <data name="GuidanceInquiryAsked" xml:space="preserve">
+    <value>يسألك {0}: {1}</value>
+  </data>
+  <data name="GuidanceInquiryAskedNoText" xml:space="preserve">
+    <value>هناك من ينتظر إجابتك على هذه المهمة.</value>
+  </data>
+  <data name="GuidanceInquiryAnswered" xml:space="preserve">
+    <value>أجاب {0}: {1}</value>
+  </data>
+  <data name="AuditEventInquiryAnswered" xml:space="preserve">
+    <value>تمت الإجابة عن السؤال</value>
+  </data>
+  <data name="CalPanelTitle" xml:space="preserve">
+    <value>أعمال بانتظار التخطيط</value>
+  </data>
+  <data name="CalPanelUnplanned" xml:space="preserve">
+    <value>غير مخطط</value>
+  </data>
+  <data name="CalPanelPlanPassed" xml:space="preserve">
+    <value>فات موعد الخطة</value>
+  </data>
+  <data name="CalPanelInvites" xml:space="preserve">
+    <value>الدعوات</value>
+  </data>
+  <data name="CalPanelEmpty" xml:space="preserve">
+    <value>لا يوجد شيء هنا.</value>
+  </data>
+  <data name="CalPanelHint" xml:space="preserve">
+    <value>اسحب بطاقة إلى التقويم: إلى يوم في عرض الشهر، أو إلى ساعة في عرض الأسبوع أو اليوم. اسحب كتلة مخططة إلى هنا لإزالتها.</value>
+  </data>
+  <data name="CalChipEstimate" xml:space="preserve">
+    <value>التقدير {0} س</value>
+  </data>
+  <data name="CalChipPlanPassed" xml:space="preserve">
+    <value>مخطط في {0}</value>
+  </data>
+  <data name="CalChipRemaining" xml:space="preserve">
+    <value>متبقٍ {0} د</value>
+  </data>
+  <data name="CalLegendTask" xml:space="preserve">
+    <value>يوم مخطط</value>
+  </data>
+  <data name="CalLegendBlock" xml:space="preserve">
+    <value>كتلة زمنية مخططة</value>
+  </data>
+  <data name="CalLegendMeetingAccepted" xml:space="preserve">
+    <value>اجتماع (مقبول)</value>
+  </data>
+  <data name="CalLegendMeetingPending" xml:space="preserve">
+    <value>اجتماع (بلا رد)</value>
+  </data>
+  <data name="CalLegendConflict" xml:space="preserve">
+    <value>يتداخل مع كتلة أخرى</value>
+  </data>
+  <data name="CalLegendOffHours" xml:space="preserve">
+    <value>خارج ساعات العمل</value>
+  </data>
+  <data name="CalLegendHoliday" xml:space="preserve">
+    <value>عطلة</value>
+  </data>
+  <data name="CalPlanSaved" xml:space="preserve">
+    <value>تم تخطيط «{0}».</value>
+  </data>
+  <data name="CalTruncated" xml:space="preserve">
+    <value>قُطع عند نهاية يوم العمل — متبقٍ {0} د.</value>
+  </data>
+  <data name="CalConflictWith" xml:space="preserve">
+    <value>يتداخل مع «{0}» {1}. اختر وقتًا آخر.</value>
+  </data>
+  <data name="CalZoneUnavailable" xml:space="preserve">
+    <value>تعذّرت قراءة المنطقة الزمنية للشركة، فلم يُحفظ الوقت. حاول مرة أخرى.</value>
+  </data>
+  <data name="PlanTimeLabel" xml:space="preserve">
+    <value>وقت البدء</value>
+  </data>
+  <data name="PlanTimeNone" xml:space="preserve">
+    <value>بدون وقت (اليوم كله)</value>
+  </data>
+  <data name="PlanDurationLabel" xml:space="preserve">
+    <value>المدة</value>
+  </data>
+  <data name="PlanDurationOption" xml:space="preserve">
+    <value>{0} د</value>
+  </data>
+  <data name="PlanTimeHint" xml:space="preserve">
+    <value>الأوقات بتوقيت المنطقة الزمنية للشركة. تُقطع الكتلة التي تتجاوز نهاية يوم العمل عند تلك النقطة.</value>
+  </data>
+  <data name="CalTruncatedNoEstimate" xml:space="preserve">
+    <value>تم قطعه عند نهاية اليوم.</value>
+  </data>
+  <data name="TimeDraftLabel" xml:space="preserve">
+    <value>مسودتي</value>
+  </data>
+  <data name="TimeSubmittedLabel" xml:space="preserve">
+    <value>مُرسَل</value>
+  </data>
+  <data name="TimeApprovedLabel" xml:space="preserve">
+    <value>معتمد</value>
+  </data>
+  <data name="TimerRunningNow" xml:space="preserve">
+    <value>مؤقتك يعمل على هذه المهمة.</value>
+  </data>
+  <data name="OpenMyTimesheet" xml:space="preserve">
+    <value>فتح سجل ساعاتي</value>
+  </data>
+  <data name="TimerSwitchedText" xml:space="preserve">
+    <value>انتقل مؤقتك إلى هذه المهمة.</value>
+  </data>
+  <data name="TimerUndo" xml:space="preserve">
+    <value>تراجع</value>
+  </data>
+  <data name="TimerUndone" xml:space="preserve">
+    <value>عاد المؤقت إلى المهمة السابقة.</value>
+  </data>
+  <data name="TimerErrDisabled" xml:space="preserve">
+    <value>المؤقت غير مفعّل لكيانك القانوني. أدخل الوقت في سجل ساعاتي.</value>
+  </data>
+  <data name="TimerErrNotHeld" xml:space="preserve">
+    <value>يعمل المؤقت فقط على مهمة مسندة إليك.</value>
+  </data>
+  <data name="TimerErrNotInProgress" xml:space="preserve">
+    <value>يعمل المؤقت فقط على مهمة قيد التنفيذ.</value>
+  </data>
+  <data name="TimerErrNotRunning" xml:space="preserve">
+    <value>لم يعد مؤقت هذه المهمة يعمل.</value>
+  </data>
+  <data name="TimerErrConflict" xml:space="preserve">
+    <value>تغيّر المؤقت في هذه الأثناء. تم تحديث الصفحة.</value>
+  </data>
+  <data name="TimerErrUndoExpired" xml:space="preserve">
+    <value>فات أوان التراجع عن هذا التبديل.</value>
+  </data>
+  <data name="TimerErrGeneric" xml:space="preserve">
+    <value>تعذر تغيير المؤقت. حاول مرة أخرى.</value>
+  </data>
+  <data name="WorkAggregation_Action_StartTimer" xml:space="preserve">
+    <value>تشغيل المؤقت</value>
+  </data>
+  <data name="WorkAggregation_Action_StopTimer" xml:space="preserve">
+    <value>إيقاف المؤقت</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>موقوف مؤقتًا</value>
+  </data>
+  <data name="ApprovalAwaitingPositions" xml:space="preserve">
+    <value>بانتظار موافقة: {0}</value>
+  </data>
+  <data name="ApprovalNoteLabel" xml:space="preserve">
+    <value>ملاحظة (اختيارية)</value>
+  </data>
+  <data name="ApprovalNotePlaceholder" xml:space="preserve">
+    <value>أضف ملاحظة للسجل…</value>
+  </data>
+  <data name="ApprovalStepBadgeTitle" xml:space="preserve">
+    <value>خطوة الموافقة</value>
+  </data>
+  <data name="DelegateTargetLabel" xml:space="preserve">
+    <value>تفويض إلى</value>
+  </data>
+  <data name="DelegateTargetRequired" xml:space="preserve">
+    <value>اختر الشخص الذي تُفوَّض إليه هذه الموافقة.</value>
+  </data>
+  <data name="DelegateNoEligiblePeople" xml:space="preserve">
+    <value>لا يوجد أحد يمكن تفويض هذه الموافقة إليه.</value>
+  </data>
 </root>

@@ -112,4 +112,5 @@
   <data name="ExportTooManyRows" xml:space="preserve"><value>يتضمن هذا التقرير مهامَّ أكثر مما يمكن أن يحمله تصدير واحد. ضيِّق الفترة أو عوامل التصفية ثم أعد المحاولة.</value></data>
   <data name="ExportForbidden" xml:space="preserve"><value>ليس لديك إذن بتصدير هذا التقرير.</value></data>
   <data name="ExportFailed" xml:space="preserve"><value>تعذّر إعداد ملف التصدير.</value></data>
+  <data name="ExportAuditNotRecorded" xml:space="preserve"><value>تعذّر تسجيل التصدير في سجل التدقيق، ولذلك لم يتم تسليم الملف. يرجى المحاولة مرة أخرى بعد قليل.</value></data>
 </root>

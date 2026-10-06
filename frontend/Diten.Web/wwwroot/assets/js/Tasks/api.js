@@ -72,6 +72,11 @@
         ORGANIZATION_UNIT_UNRESOLVED: 'errorOrganizationUnitUnresolved',
         TASK_ALREADY_CLAIMED: 'errorAlreadyClaimed',
         POSITION_NOT_ASSIGNABLE: 'errorPositionNotAssignable',
+        // BL-355 — an organization unit named directly in the request: does not exist in this tenant, or exists
+        // but is not the caller's to file into. Reached only by a client posting straight to the API; the create
+        // form never sends this field (pack §12 K6).
+        TASK_ORGANIZATION_UNIT_NOT_FOUND: 'errorOrganizationUnitNotFound',
+        TASK_ORGANIZATION_UNIT_OUT_OF_SCOPE: 'errorOrganizationUnitOutOfScope',
         // MOD-0024's own refusals.
         TASK_CONCURRENCY_CONFLICT: 'errorConcurrencyRefreshed',
         CHECKLIST_INCOMPLETE: 'errorChecklistIncomplete',
@@ -84,6 +89,13 @@
          * and "start it first" is exactly that.
          */
         TASK_INVALID_STATE: 'errorTaskInvalidState',
+        /*
+         * Faz 2a-rest — a CLOSURE-stage field marked Required was not supplied. Reached only when the closure
+         * window's own client-side check (ClosureFieldRequired, in WorkCenterNextIndex's own resx) is somehow
+         * skipped — a stale screen, the dispatch route hit directly — so the server's refusal still reads as a
+         * sentence rather than "an error occurred".
+         */
+        TASK_CLOSURE_FIELD_REQUIRED: 'errorClosureFieldRequired',
         // Commenting on a closed task, and a comment that is empty or over the length limit.
         TASK_COMMENT_TASK_CLOSED: 'errorCommentTaskClosed',
         TASK_COMMENT_TEXT_INVALID: 'errorCommentTextInvalid',
@@ -92,6 +104,10 @@
         // missing half of twice already.
         TASK_COMMENT_NOT_AUTHOR: 'errorCommentNotAuthor',
         TASK_COMMENT_WITHDRAWN: 'errorCommentWithdrawn',
+        // WP-PSS-MOD0024-TASK-MENTIONS-01 — mapped the moment the codes were written, not after somebody reads
+        // "İşlem sırasında bir hata oluştu" for a limit or a visibility rule they can actually act on.
+        TASK_MENTION_NOT_VISIBLE: 'errorMentionNotVisible',
+        TASK_MENTION_LIMIT_EXCEEDED: 'errorMentionLimitExceeded',
         /*
          * BL-351 — TASK_ASSIGNEE_NOT_ASSIGNABLE is NOT mapped here. It is the SAME server code for two
          * different refusals: the assignment guard (assign/reassign, mapped below beside its siblings) and
@@ -114,6 +130,17 @@
         TASK_SNOOZE_DATE_INVALID: 'errorSnoozeDateInvalid',
         // A plan write with no date at all (a 400, not a 409 — it never reaches BLOCKING_REASON_CODES).
         TASK_PLAN_DATE_REQUIRED: 'errorPlanDateRequired',
+        /*
+         * WP-TASK-CALENDAR-ENGINE-01 — the plan block's refusals, mapped the moment the codes were written.
+         * TASK_PLAN_NOT_HOLDER (BL-449): only the holder plans; TASK_PLAN_CONFLICT: two of the holder's own blocks
+         * in the same hour (the response data names the other one); TASK_UNPLAN_NOT_ALLOWED: nothing to take back.
+         * WORK_CALENDAR_RANGE_INVALID is the calendar feed's own 400.
+         */
+        TASK_PLAN_NOT_HOLDER: 'errorPlanNotHolder',
+        TASK_PLAN_CONFLICT: 'errorPlanConflict',
+        TASK_PLAN_DURATION_INVALID: 'errorPlanDurationInvalid',
+        TASK_UNPLAN_NOT_ALLOWED: 'errorUnplanNotAllowed',
+        WORK_CALENDAR_RANGE_INVALID: 'errorCalendarRangeInvalid',
         /*
          * CREATE WITH NO DUE DATE. Measured on both surfaces: the main create endpoint and the subtask panel
          * refuse identically (`400 VALIDATION_REQUEST_DUE_AT_NOT_NULL`, "A due date is required."), so the rule
@@ -164,6 +191,32 @@
          * the approval sentence would send the holder to the wrong person.
          */
         REVIEW_PENDING: 'errorReviewPending',
+        /*
+         * WP-WCN-KANBAN-01 Dilim 4 — two more codes the Kanban drop path can now reach (a disabled action's own
+         * reasonCode, dispatched anyway because a drag races the projection) that were unmapped until measured
+         * here: the refusal fell through to the generic "İşlem sırasında bir hata oluştu", which names nothing
+         * the reader can act on.
+         */
+        // TransitionTaskItemHandler's own refusal AT THE MOMENT complete is dispatched (TaskModels.cs
+        // TaskReasonCodes.DeliverableRequired) — a 409, not a pre-computed disabled reason. CT correction:
+        // this file previously said "the SAME reason the projection disables complete with", which measured
+        // false — TaskWorkItemProvider never sets this as a DisabledReasonCode (unlike REVIEW_MEETING_REQUIRED
+        // just below, which genuinely does), so there is no greyed button carrying this code today; only the
+        // dispatch-time gate throws it, the same placement CHECKLIST_EVIDENCE_REQUIRED uses.
+        TASK_DELIVERABLE_REQUIRED: 'errorDeliverableRequired',
+        // ReviewMeetingDecisionGate's refusal on submitReview/complete — the type requires a review meeting and
+        // no linked meeting has published minutes yet. TaskWorkItemProvider ALSO sets this as the action's own
+        // DisabledReasonCode (TaskReasonCodes.ReviewMeetingRequired), so this is genuinely "the same reason the
+        // projection disables the button with, seen from the dispatch side".
+        REVIEW_MEETING_REQUIRED: 'errorReviewMeetingRequired',
+        // CT correction — PERM_DENIED is NOT its own sentence. It is a distinct code from the projection's own
+        // WorkAggregationReasonCodes.PermissionDenied ("PERMISSION_DENIED", a disabled-reason label the server
+        // renders inline and this file never looks up by code), and every tenant language's ErrorPermDenied
+        // text was a word-for-word duplicate of ErrorNoAccess (tr: byte-identical) — the same 403 sentence
+        // failureMessage already falls back to below when a result carries no reasonCode. Routing it through the
+        // reasonCode branch was pointless duplication with its own translation-drift risk; it now reuses the
+        // one 403 sentence instead of a second copy of it.
+        PERM_DENIED: 'errorNoAccess',
         // An unmet predecessor. Same string the PROJECTION uses to disable the button, deliberately: the greyed
         // control and this refusal are one fact seen from two sides.
         DEPENDENCY_BLOCKED: 'errorDependencyBlocked',
@@ -172,7 +225,20 @@
         // Cancelling is the requester's right: an assignee gets 403 with this code. failureMessage checks the
         // reason code BEFORE the status, so this replaces the generic "you are not allowed" with the reason.
         TASK_CANCEL_NOT_REQUESTER: 'errorCancelNotRequester',
+        // WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — MOD-0023 never lets whoever started an approval or review decide it, so
+        // routing one back to its own starter is refused up front (400 on create/edit, 409 on submit for review).
+        TASK_APPROVAL_MANAGER_IS_SELF: 'errorApprovalManagerIsSelf',
+        TASK_REVIEWER_IS_SUBMITTER: 'errorReviewerIsSubmitter',
         TASK_WAITING_REASON_REQUIRED: 'errorWaitingReasonRequired',
+        /*
+         * BL-439 — AnswerInquiryHandler's three refusals. NOT_ADDRESSEE is the one a real reader meets: the
+         * question was answered or withdrawn while their screen still showed it, so the sentence says that and
+         * tells them to refresh, rather than the generic 403 ("you are not allowed"), which would send them looking
+         * for a permission that could never help.
+         */
+        TASK_INQUIRY_ANSWER_REQUIRED: 'errorInquiryAnswerRequired',
+        TASK_INQUIRY_ANSWER_TOO_LONG: 'errorInquiryAnswerTooLong',
+        TASK_INQUIRY_NOT_ADDRESSEE: 'errorInquiryNotAddressee',
         /*
          * BL-040/BL-048 — codes DERIVED from a FluentValidation rule, not curated by hand.
          *
@@ -248,6 +314,10 @@
         'CHECKLIST_INCOMPLETE',
         'DEPENDENCY_BLOCKED',
         'SUBTASK_BLOCKED',
+        // WP-WCN-KANBAN-01 Dilim 4 — both RULES about the task's/type's own state, not a race: the completion
+        // gate and the review-meeting gate, the same two the projection's disabled reasons already name.
+        'TASK_DELIVERABLE_REQUIRED',
+        'REVIEW_MEETING_REQUIRED',
         'TASK_COMMENT_TASK_CLOSED',
         // Both RULES about the task's state, not a race — see the map above.
         'TASK_ATTACHMENT_TASK_CLOSED',
@@ -257,8 +327,31 @@
         'WORKFLOW_REJECTED',
         'WORKFLOW_CANCELLED',
         'WORKFLOW_NOT_TERMINAL_APPROVED',
-        'WorkflowGateEvaluationFailed'
+        'WorkflowGateEvaluationFailed',
+        // WP-TASK-CALENDAR-ENGINE-01 — RULES about the holder's calendar and the task's state, not a race.
+        'TASK_PLAN_CONFLICT',
+        'TASK_UNPLAN_NOT_ALLOWED'
     ]);
+
+    /*
+     * WP-TASK-CALENDAR-ENGINE-01 — a plan that WAS saved can still carry warnings (`warnings[]` on the plan answer,
+     * or on the work-item action answer). Not failures, so they never pass through failureMessage; the calendar
+     * turns each into its sentence here. `{0}` is the meeting title where the warning names one.
+     */
+    const PLAN_WARNING_MESSAGE_KEYS = {
+        TASK_PLAN_OVERLAPS_MEETING: 'warningPlanOverlapsMeeting',
+        TASK_PLAN_OUTSIDE_WORKING_HOURS: 'warningPlanOutsideWorkingHours'
+    };
+
+    const planWarningMessage = (warning) => {
+        const t = (key) => global.TasksL10n?.t?.(key) ?? key;
+        const key = PLAN_WARNING_MESSAGE_KEYS[warning?.code];
+        if (!key) {
+            global.console?.warn?.(`[TasksApi] no message key for plan warning "${warning?.code}".`);
+            return null;
+        }
+        return String(t(key)).replace('{0}', warning?.title ?? '');
+    };
 
     const isTransitionBlocked = (result) =>
         result?.status === 409 && BLOCKING_REASON_CODES.has(result?.reasonCode);
@@ -303,6 +396,8 @@
 
     global.TasksApi = {
         REASON_CODE_MESSAGE_KEYS,
+        PLAN_WARNING_MESSAGE_KEYS,
+        planWarningMessage,
         INQUIRE_REASON_CODE_OVERRIDES,
         BLOCKING_REASON_CODES,
         isTransitionBlocked,
@@ -386,7 +481,26 @@
                 data: Array.isArray(res.data?.people) ? res.data.people : []
             });
         },
-        decisionMakers: () => request('GET', '/decision-makers'),
+        /*
+         * The SAME rule for the second list (BL-491). It answered the raw `{ people, excluded }` object while it
+         * had one caller that opened it by hand; a second caller (the Task Center's delegate window) is exactly
+         * how the envelope gets opened wrongly somewhere. `data` is the array here too.
+         */
+        decisionMakers: async () => {
+            const res = await request('GET', '/decision-makers');
+            return Object.assign({}, res, {
+                data: Array.isArray(res.data?.people) ? res.data.people : []
+            });
+        },
+        /** MOD-0357 S4 — the "link an existing task" dialog's own search box. `data` is already the plain
+         * array (`TaskLinkCandidateDto[]`), never wrapped — unlike {@link assignablePeople} above. */
+        linkCandidates: (term, limit) => {
+            const params = new URLSearchParams();
+            if (term) { params.set('term', term); }
+            if (limit) { params.set('limit', String(limit)); }
+            const query = params.toString();
+            return request('GET', query ? `/link-candidates?${query}` : '/link-candidates');
+        },
         /*
          * BL-023 — is this person ABOVE me? Asked so the submit button can say what it will DO before it is
          * pressed. The server answers from the same reporting-chain scope it uses when it opens the request, so
@@ -408,17 +522,25 @@
         // and two people reordering at once interleave into an order neither of them chose.
         reorderChecklist: (taskId, payload) => request('PUT', `/${taskId}/checklist/order`, payload),
         // Comments are POST-only, deliberately: they are immutable, so there is no update or delete to call.
+        // `payload` may carry `mentionedUserIds` (WP-PSS-MOD0024-TASK-MENTIONS-01 K1-K4) alongside `text`.
         addComment: (taskId, payload) => request('POST', `/${taskId}/comments`, payload),
         /*
          * ⚠ THIS LINE USED TO SAY: "Comments are POST-only, deliberately: they are immutable, so there is no
          * update or delete to call." That decision is not gone, it is COMPLETED — the compromise it was waiting
          * for is the trail. An edit stamps `editedAt` and the feed shows it; a withdrawal is a TOMBSTONE that
          * clears the words and keeps the row. Only the author may call either; the server decides that.
+         *
+         * `payload.mentionedUserIds` is the FULL replacement set for this comment, not a delta — the server
+         * diffs it against what is already stored and only notifies whoever is newly named.
          */
         updateComment: (taskId, commentId, payload) =>
             request('PUT', `/${taskId}/comments/${encodeURIComponent(commentId)}`, payload),
         withdrawComment: (taskId, commentId) =>
             request('DELETE', `/${taskId}/comments/${encodeURIComponent(commentId)}`),
+        // Who the @ picker may offer for THIS task (K2) — assignee, pool, creator, watchers, parent holder.
+        // Never the whole tenant directory: an id this endpoint does not offer is refused server-side too.
+        mentionCandidates: (taskId, query) =>
+            request('GET', `/${taskId}/mention-candidates?q=${encodeURIComponent(query || '')}`),
 
         // ── The personal overlay (WC-1) ──────────────────────────────────────
         //

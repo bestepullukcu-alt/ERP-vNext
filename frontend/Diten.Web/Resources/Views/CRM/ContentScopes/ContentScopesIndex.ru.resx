@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Записей пока нет.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Что-то пошло не так. Повторите попытку.</value></data>
+  <data name="Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка...</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Включая архивные</value></data>
+  <data name="Active" xml:space="preserve"><value>Активные</value></data>
+  <data name="View" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Вы уверены?</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск..</value></data>
+  <data name="Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сброс</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Показать все</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить вид</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Видимость столбцов</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>Предпросмотр</value></data>
+  <data name="Passive" xml:space="preserve"><value>Пассивный</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Удалить выбранные записи?</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активно</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="Template" xml:space="preserve"><value>Шаблон</value></data>
+  <data name="Scope" xml:space="preserve"><value>Область</value></data>
+  <data name="Components" xml:space="preserve"><value>Компоненты</value></data>
+  <data name="Claims" xml:space="preserve"><value>Заявления</value></data>
+  <data name="ProductRefs" xml:space="preserve"><value>Ссылки на продукты</value></data>
+  <data name="MarketRefs" xml:space="preserve"><value>Ссылки на рынки</value></data>
+  <data name="AudienceRefs" xml:space="preserve"><value>Ссылки на аудитории</value></data>
+  <data name="Channel" xml:space="preserve"><value>Канал</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>Язык</value></data>
+  <data name="RefsTagHint" xml:space="preserve"><value>Введите значение и нажмите Enter, чтобы добавить каждую ссылку.</value></data>
+  <data name="ScopesTitle" xml:space="preserve"><value>Области контента</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Повторно используемый контекст/область для сборки контента: ссылки на продукт, рынок и аудиторию, с необязательными каналом, языком и периодом.</value></data>
+  <data name="ReusableNote" xml:space="preserve"><value>Определите область один раз и ссылайтесь на неё из многих наборов контента (закрепляется по версии).</value></data>
+  <data name="ScopeCode" xml:space="preserve"><value>Код области</value></data>
+  <data name="ScopeCodeNote" xml:space="preserve"><value>Устойчивый бизнес-ключ, общий для версий одной области.</value></data>
+  <data name="ScopeName" xml:space="preserve"><value>Название области</value></data>
+  <data name="ScopeVersion" xml:space="preserve"><value>Версия</value></data>
+  <data name="CreateScope" xml:space="preserve"><value>Создать область</value></data>
+  <data name="EditScope" xml:space="preserve"><value>Редактировать область</value></data>
+  <data name="ArchiveScope" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="ArchiveScopeConfirm" xml:space="preserve"><value>Архивировать эту область? Это мягкое действие; она остаётся доступной для чтения.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Запись архивирована.</value></data>
+  <data name="ArchivedScopeReadOnly" xml:space="preserve"><value>Эта область в архиве и доступна только для чтения.</value></data>
+  <data name="ReferencesSection" xml:space="preserve"><value>Ссылки</value></data>
+  <data name="ContextSection" xml:space="preserve"><value>Канал, язык и период</value></data>
+  <data name="PeriodFrom" xml:space="preserve"><value>Период с</value></data>
+  <data name="PeriodTo" xml:space="preserve"><value>Период до</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Активно</value></data>
+</root>

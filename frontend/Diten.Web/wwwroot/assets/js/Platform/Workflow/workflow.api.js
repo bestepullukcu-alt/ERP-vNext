@@ -104,6 +104,13 @@
         };
     };
 
+    /** B4 — a copy of the payload without any actor field (actorId / ActorId). */
+    const withoutActor = (payload) => {
+        if (!payload || typeof payload !== 'object') return payload;
+        const { actorId, ActorId, ...rest } = payload;
+        return rest;
+    };
+
     window.WorkflowApi = {
         newGuid,
         // Definitions
@@ -118,13 +125,15 @@
         listInstances: () => send('/instances', 'GET'),
         getInstance: (id) => send(`/instances/${id}`, 'GET'),
         startInstance: (payload) => send('/instances', 'POST', payload, payload?.idempotencyKey),
-        // Tasks
+        // Tasks — WP-WORKFLOW-APPROVAL-STATUS-01 (B4): the actor of a task action is ALWAYS the signed-in user, taken by
+        // the server from the session. The client never sends one: any actorId a caller put in the payload is dropped
+        // here, so this screen cannot act "as" anybody (the server would refuse a different one with 403 anyway).
         listTasks: () => send('/tasks', 'GET'),
-        approveTask: (taskId, payload) => send(`/tasks/${taskId}/approve`, 'POST', payload, payload?.idempotencyKey),
-        rejectTask: (taskId, payload) => send(`/tasks/${taskId}/reject`, 'POST', payload, payload?.idempotencyKey),
-        delegateTask: (taskId, payload) => send(`/tasks/${taskId}/delegate`, 'POST', payload, payload?.idempotencyKey),
-        requestInfoTask: (taskId, payload) => send(`/tasks/${taskId}/request-info`, 'POST', payload, payload?.idempotencyKey),
-        cancelTask: (taskId, payload) => send(`/tasks/${taskId}/cancel`, 'POST', payload, payload?.idempotencyKey),
+        approveTask: (taskId, payload) => send(`/tasks/${taskId}/approve`, 'POST', withoutActor(payload), payload?.idempotencyKey),
+        rejectTask: (taskId, payload) => send(`/tasks/${taskId}/reject`, 'POST', withoutActor(payload), payload?.idempotencyKey),
+        delegateTask: (taskId, payload) => send(`/tasks/${taskId}/delegate`, 'POST', withoutActor(payload), payload?.idempotencyKey),
+        requestInfoTask: (taskId, payload) => send(`/tasks/${taskId}/request-info`, 'POST', withoutActor(payload), payload?.idempotencyKey),
+        cancelTask: (taskId, payload) => send(`/tasks/${taskId}/cancel`, 'POST', withoutActor(payload), payload?.idempotencyKey),
         // SLA rules
         listSlaRules: (templateId) => send(`/sla-rules${templateId ? `?templateId=${encodeURIComponent(templateId)}` : ''}`, 'GET'),
         createSlaRule: (payload) => send('/sla-rules', 'POST', payload),

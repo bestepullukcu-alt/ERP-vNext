@@ -191,12 +191,16 @@ public sealed class NavManifestL10nGuardTests
         // named args + const-referenced page code (TaskManifestProvider)
         var tasks = Single(manifests, "TaskManifestProvider.cs");
         Assert.Equal("tasks", tasks.ModuleCode);
-        // All FOUR nav-visible Tasks pages, not a sample: they are the whole of what the "Görev Tanımları" module
+        // All THREE nav-visible Tasks pages, not a sample: they are the whole of what the "Görev Tanımları" module
         // shows in the sidebar, and every one of them was measured untranslated at some point.
+        //
+        // ⚠ WAS FOUR. TASK_DOCUMENT_LIST (the CSV controlled-document list) was retired with its screen
+        // (WP-DM-DCP005-RETIRE-CSV-01, BL-369) — its page registration is gone from TaskManifestProvider, so it
+        // must not be asserted present here either.
         Assert.Contains("TASK_RECURRENCE_RULES", tasks.NavVisiblePageCodes);   // live defect #2
         Assert.Contains("TASK_FIELD_DEFINITIONS", tasks.NavVisiblePageCodes);
         Assert.Contains("TASK_TYPES", tasks.NavVisiblePageCodes);
-        Assert.Contains("TASK_DOCUMENT_LIST", tasks.NavVisiblePageCodes);
+        Assert.DoesNotContain("TASK_DOCUMENT_LIST", tasks.NavVisiblePageCodes);
         // The work surfaces stay out of the menu — that is what makes this module a settings module, and what the
         // rename to "Görev Tanımları" says out loud.
         Assert.DoesNotContain("TASK_CREATE", tasks.NavVisiblePageCodes);       // IsNavigationVisible: false

@@ -4,6 +4,7 @@ using Diten.AuthService.Application.Features.Users.Commands;
 using Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
+using Diten.AuthService.Application.Tests.Testing;
 
 namespace Diten.AuthService.Application.Tests.Users;
 
@@ -146,7 +147,7 @@ public sealed class RevokeRoleCommandHandlerTests
             refreshTokens,
             version ?? new FakeRoleAssignmentVersionService(),
             tenantContext,
-            new NoOpRbacAuditRecorder(),
+            UserAuditForTests.None(),
             NullLogger<RevokeRoleCommandHandler>.Instance);
     }
 
@@ -166,7 +167,7 @@ public sealed class RevokeRoleCommandHandlerTests
         public Task<Role> CreateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
         public Task<Role> UpsertSystemRoleAsync(string name, string displayName, string? description, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task<Role> UpdateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
-        public Task DeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, Guid tenantId, string deletedBy, CancellationToken ct) => throw new NotSupportedException();
     }
 
     private sealed class FakeUserRoleRepository(List<string>? callLog = null) : IUserRoleRepository

@@ -70,6 +70,7 @@ public static class DependencyInjection
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+        services.AddScoped<IUserListReader, UserListReader>();
         services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
         services.AddScoped<IRoleAssignmentVersionService, RoleAssignmentVersionRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
@@ -85,7 +86,10 @@ public static class DependencyInjection
         try
         {
             MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
-            DataSeeder.SeedAsync(database).GetAwaiter().GetResult();
+            // Mock users only when BOTH hold: Development AND the opt-in key (see DataSeeder.MockUsersOptInConfigurationKey).
+            var seedMockUsers = environment.IsDevelopment()
+                && configuration.GetValue<bool>(DataSeeder.MockUsersOptInConfigurationKey);
+            DataSeeder.SeedAsync(database, seedMockUsers).GetAwaiter().GetResult();
         }
         catch (Exception ex)
         {

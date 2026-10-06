@@ -15,6 +15,11 @@
         "ArchiveStrategyTemplate", "ArchiveStrategyTemplateConfirm", "ActivateStrategyTemplate",
         "ActivateStrategyTemplateConfirm", "NewVersion", "NewVersionConfirm", "EmptyState", "ErrorState", "Loading",
         "RecordArchived", "RecordActivated", "IncludeArchived", "Frozen", "Editable", "Superseded", "SelectOption",
+        // WP-ST-LIST — consolidated list columns + scope label map + country filter.
+        "Play", "Scope", "ScopeTypeTenant", "ScopeTypeCountry", "ScopeTypeLegalEntity", "ScopeTypeBusinessUnit",
+        "AllCompany", "AllCountries", "NewPlay", "PlaysHeading", "PlaysUnit", "SkuUnit",
+        // WP-ST-LIST2 — SEGMENT badge labels (contact=kişi / account=kurum).
+        "SubjectTypeContact", "SubjectTypeAccount",
         // Binding-editor labels: form.js reads them from this same bridge, so Create/Edit load it too.
         "RecordCreated", "RecordUpdated", "SegmentSection", "FrequencySection", "ProductSection", "ContentSection",
         "AddSegmentBinding", "AddProductLine", "AddSkuAllocation", "AddContentBinding", "Remove", "SortOrder",
@@ -22,9 +27,55 @@
         "FrequencyPolicy", "FrequencyType", "RequiredVisitCount", "PeriodType", "IntentNote",
         "DeclaredIntentNotBindingHelp", "GlobalProduct", "Gsku", "Percentage", "LineWeightPercentage",
         "SkuAllocationMode", "TotalPercentage", "TotalMustBe100", "ContainmentNotVerifiedHelp", "NoProductLines",
+        // WP-ST-EDIT-P — flat product section: Σ badge label, "Eşit dağıt" button, and the Σ≠100 warning ({total}/{diff}).
+        "ProductWeightTotalLabel", "EqualDistribute", "ProductTotalWarning",
+        // WP-ST-EDIT-Q — searchable "Ürün ekle…" picker placeholder (form.js reads it for the picker head).
+        "ProductAddPicker",
+        // WP-ST-EDIT-R — per-line optional SKU free-text (form.js reads placeholder + column-header aria-label).
+        "SkuOptionalPlaceholder", "ProductColSku",
         "ContentRefType", "ContentRef", "NoContentBindings", "ContentPublishedOnlyHelp", "PickerUnavailable",
+        // WP-ST-EDIT-U — compact content cards + inline picker (form.js reads the pin, kind labels and picker labels).
+        "ContentPinned", "ContentKindKnowledgePath", "ContentKindJourney", "ContentPickerClose", "ContentPickerEmpty",
+        // WP-ST-EDIT-V — content checkbox grid (form.js reads the status badge labels + the empty-grid message).
+        "ContentStatusPublished", "ContentStatusDraft", "ContentStatusArchived", "ContentGridEmpty",
+        // WP-ST-DETAIL-2 — Detay version-history panel (details.js reads the current marker + version status labels).
+        "CurrentVersion", "VerStatusActive", "VerStatusDraft", "VerStatusArchived",
+        // WP-ST-DETAIL-3 — Detay human summary (details.js composes it from the resolved scope + counts).
+        "DetailSummaryTpl",
+        // WP-ST-DETAIL-4 — version-history timeline sub-lines (details.js).
+        "LastUpdatedTpl", "VersionFrozenNote",
         "GskuPickerUnavailable", "LimitReached", "FrozenBindingsHelp", "StatusSeparateEndpointHelp",
-        "NoMembersEverHelp", "ApplyIsMicroTargetHelp"
+        "NoMembersEverHelp", "ApplyIsMicroTargetHelp",
+        // WP-ST-EDIT-A — KAPSAM scope cascade (Campaign resx keys mirrored; form.js reads them from this bridge).
+        "ScopeSection", "ScopeType", "ScopeType_tenant", "ScopeType_country", "ScopeType_legal-entity",
+        "ScopeType_business-unit", "CountryScope", "LegalEntity", "BusinessUnit", "BusinessUnitCountryFilter",
+        "ScopeHelp", "ScopeEditableHint", "ReferenceSetUnpublished", "DependencyUnavailable", "NoTerritoryPlanMatches",
+        "ResolvedScope",
+        // WP-ST-EDIT-E — ScopeType segmented-button sub-labels + resolved-scope empty text.
+        "ScopeTypeSub_tenant", "ScopeTypeSub_country", "ScopeTypeSub_legal-entity", "ScopeTypeSub_business-unit",
+        "ResolvedScopeNone",
+        // WP-ST-EDIT-B — Düzenle right sticky panel (live summary + BÖLÜMLER checklist + YAŞAM DÖNGÜSÜ) + Frekans info.
+        "WhatTitle", "RecipeWhere", "RecipeWho", "RecipeHowOften", "RecipeWhat", "RecipeStory", "RecipeNone",
+        "StatSegments", "StatProductLines", "StatWeightTotal", "StatContents", "SectionsTitle",
+        "ChkSecIdentity", "ChkSecScope", "ChkSecSegments", "ChkSecFrequency", "ChkSecProducts", "ChkSecContent",
+        "MdmValidation", "LifecycleActionsTitle", "LifecycleDraftTab", "LifecycleActiveTab", "SaveDraft",
+        // WP-ST-EDIT-W — dynamic primary Save labels (form.js swaps them by readiness + status).
+        "SaveActive", "SaveAndActivate", "SaveBlocked",
+        "NewVersionDetailTpl", "SidePanelFootNote", "FreqInfoStrong", "FreqInfoBody", "FreqInfoLink",
+        "SummarySentenceTpl", "SummaryEmptyName", "FrequencyNone", "FrequencyPolicyRef", "FrequencyDeclared",
+        "VisitsPerPeriodTpl", "ReadyCountTpl", "ChkIdentityEmptyDesc", "ChkScopeTenantDesc", "ChkSegmentsEmptyDesc",
+        "ChkSegmentsCountDesc", "ChkFrequencyNoneDesc", "ChkFrequencyPolicyDesc", "ChkFrequencyDeclaredDesc",
+        "ChkFrequencyIncompleteDesc", "ChkProductsEmptyDesc", "ChkProductsWeightOffDesc", "ChkProductsOkDesc",
+        "ChkContentEmptyDesc", "ChkContentCountDesc", "ChkMdmNeutralDesc", "ChkMdmOkDesc", "ChkMdmMissingDesc",
+        // WP-ST-EDIT-G — Segment section: type badges, role-toggle labels, count summary + picker labels.
+        "SegTypeContact", "SegTypeAccount", "BindingRole_primary", "BindingRole_secondary", "BindingRole_exclusion-note",
+        "SegmentSummaryTpl", "SegmentPickerClose", "SegmentPickerEmpty",
+        // WP-ST-EDIT-M — Frekans MODE choice-box labels (title + sub) + friendly FrequencyType_/PeriodType_ labels.
+        "FrequencyMode_policy-reference", "FrequencyMode_declared-intent", "FrequencyMode_none",
+        "FrequencyModeSub_policy-reference", "FrequencyModeSub_declared-intent", "FrequencyModeSub_none",
+        "FrequencyType_weekly", "FrequencyType_biweekly", "FrequencyType_monthly", "FrequencyType_cycle-based",
+        "FrequencyType_custom", "PeriodType_day", "PeriodType_week", "PeriodType_month", "PeriodType_quarter",
+        "PeriodType_cycle", "PeriodType_campaign-period", "PeriodType_custom"
     };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
     // Verifier-compatible property markers for the dictionary-backed JSON bridge (each token below is `Key =`):

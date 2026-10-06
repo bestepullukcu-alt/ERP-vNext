@@ -12,16 +12,25 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// platform-admin provisioning path or the seed — so this one reads the production SOURCE (comments stripped):</para>
 /// <list type="number">
 /// <item>The <c>AccountKind.Human</c> / <c>AccountKind.Service</c> literals appear in NO src file except the
-/// SetAccountKind handler (which today parses the name and needs neither, but is the one place allowed to).</item>
+/// account-kind writer (which today parses the name and needs neither, but is the one place allowed to).</item>
 /// <item>Each of the four automatic creation paths states <c>AccountKind.Unknown</c> explicitly.</item>
 /// <item><c>SetAccountKind(</c> is called only from the known sites, and in the four automatic paths its argument
 /// is literally <c>AccountKind.Unknown</c>.</item>
 /// </list>
 /// <para>K1-c sabotage: add <c>user.SetAccountKind(AccountKind.Human)</c> to RegisterCommandHandler → rules 1 and 3 go red.</para>
+///
+/// <para>WP-AUTH-USER-KIND-UPDATE-01 — an existing account's kind now has TWO doors (the account-kind endpoint and
+/// the edit form's UpdateUser) and ONE writer, <c>AccountKindWriter</c>. Rule 4 counts it: the writer is the only
+/// file that calls <c>SetAccountKind(</c> on an existing account (exactly once), and each door reaches it through
+/// <c>_kindWriter.Apply(</c> + <c>_kindWriter.RecordAsync(</c> exactly once, never calls the entity itself and holds
+/// no audit recorder of its own. Sabotage: put <c>user.SetAccountKind(newKind);</c> back into
+/// UpdateUserCommandHandler → rules 3 and 4 go red.</para>
 /// </summary>
 public sealed class AccountKindCreationPathsGuardTests
 {
     private const string SetHandler = "Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/SetAccountKindCommandHandler.cs";
+    private const string UpdateHandler = "Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/UpdateUserCommandHandler.cs";
+    private const string KindWriter = "Diten.AuthService.Application/Features/Users/Services/AccountKindWriter.cs";
     private const string CreateHandler = "Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/CreateUserCommandHandler.cs";
 
     private static readonly string[] AutomaticCreationPaths =
@@ -35,6 +44,8 @@ public sealed class AccountKindCreationPathsGuardTests
     private static readonly Regex ClassifyingLiteral = new(@"\bAccountKind\.(Human|Service)\b", RegexOptions.Compiled);
     private static readonly Regex UnknownLiteral = new(@"\bAccountKind\.Unknown\b", RegexOptions.Compiled);
     private static readonly Regex SetCall = new(@"\.SetAccountKind\s*\(\s*([^)]*)\)", RegexOptions.Compiled);
+    private static readonly Regex ApplyCall = new(@"\b_kindWriter\.Apply\s*\(", RegexOptions.Compiled);
+    private static readonly Regex RecordCall = new(@"\b_kindWriter\.RecordAsync\s*\(", RegexOptions.Compiled);
     private static readonly Regex UnknownArgument = new(@"^(Diten\.AuthService\.Domain\.Enums\.)?AccountKind\.Unknown$", RegexOptions.Compiled);
 
     [Fact]
@@ -43,12 +54,12 @@ public sealed class AccountKindCreationPathsGuardTests
         var offenders = SourceFiles()
             .Where(f => ClassifyingLiteral.IsMatch(WithoutComments(File.ReadAllText(f.Full))))
             .Select(f => f.Relative)
-            .Where(r => r != SetHandler)
+            .Where(r => r != KindWriter)
             .OrderBy(r => r, StringComparer.Ordinal)
             .ToArray();
 
         Assert.True(offenders.Length == 0,
-            "a production file classifies an account as Human/Service by literal — only the SetAccountKind handler may. "
+            "a production file classifies an account as Human/Service by literal — only the account-kind writer may. "
             + "Classification is an explicit, permission-gated act (owner decision 2026-09-11):\n" + string.Join("\n", offenders));
     }
 
@@ -67,7 +78,7 @@ public sealed class AccountKindCreationPathsGuardTests
     [Fact]
     public void SetAccountKind_is_called_only_from_known_sites_and_automatic_paths_pass_Unknown()
     {
-        var allowedCallers = new HashSet<string>(StringComparer.Ordinal) { SetHandler, CreateHandler };
+        var allowedCallers = new HashSet<string>(StringComparer.Ordinal) { KindWriter, CreateHandler };
         allowedCallers.UnionWith(AutomaticCreationPaths);
 
         var unexpected = new List<string>();
@@ -105,12 +116,42 @@ public sealed class AccountKindCreationPathsGuardTests
     }
 
     [Fact]
+    public void Both_doors_write_an_existing_accounts_kind_through_the_one_writer()
+    {
+        var writerCalls = SetCall.Matches(WithoutComments(File.ReadAllText(Path.Combine(SrcRoot(), KindWriter)))).Count;
+        Assert.True(writerCalls == 1, $"the account-kind writer must call SetAccountKind exactly once; found {writerCalls}");
+
+        foreach (var door in new[] { SetHandler, UpdateHandler })
+        {
+            var body = WithoutComments(File.ReadAllText(Path.Combine(SrcRoot(), door)));
+            Assert.True(SetCall.Matches(body).Count == 0,
+                $"{door} writes the kind on the entity itself — a second write path beside AccountKindWriter");
+            Assert.True(ApplyCall.Matches(body).Count == 1,
+                $"{door} must change the kind through AccountKindWriter.Apply exactly once");
+            Assert.True(RecordCall.Matches(body).Count == 1,
+                $"{door} must write the kind audit row through AccountKindWriter.RecordAsync exactly once");
+            Assert.False(body.Contains("IRbacAuditRecorder", StringComparison.Ordinal),
+                $"{door} holds its own audit recorder — the kind row must be the writer's, not a second copy");
+        }
+
+        // No third door: the writer's Apply is reached from exactly these two handlers.
+        var callers = SourceFiles()
+            .Where(f => ApplyCall.IsMatch(WithoutComments(File.ReadAllText(f.Full))))
+            .Select(f => f.Relative)
+            .OrderBy(r => r, StringComparer.Ordinal)
+            .ToArray();
+        Assert.Equal(new[] { SetHandler, UpdateHandler }.OrderBy(r => r, StringComparer.Ordinal).ToArray(), callers);
+    }
+
+    [Fact]
     public void The_scan_sees_the_production_tree()
     {
         // A scan that finds nothing is green forever and believed; pin a floor.
         var files = SourceFiles().ToArray();
         Assert.True(files.Length > 100, $"the src scan collapsed to {files.Length} files");
         Assert.Contains(files, f => f.Relative == SetHandler);
+        Assert.Contains(files, f => f.Relative == UpdateHandler);
+        Assert.Contains(files, f => f.Relative == KindWriter);
         Assert.All(AutomaticCreationPaths, p => Assert.Contains(files, f => f.Relative == p));
     }
 

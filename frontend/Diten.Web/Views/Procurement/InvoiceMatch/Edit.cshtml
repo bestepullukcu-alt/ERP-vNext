@@ -1,0 +1,18 @@
+@model Diten.Web.Models.Procurement.InvoiceMatch.InvoiceMatchEditViewModel
+@using Diten.Web.Views.Procurement.InvoiceMatch
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InvoiceMatchIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+@* Parity-only shell: the MATCH contract exposes no invoice update endpoint (capture + match + resolve only).
+   The controller POST surfaces a localized InvoiceUpdateNotSupported message (ASSUMPTION-P2P-FE-01). *@
+<partial name="~/Views/Procurement/InvoiceMatch/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/Procurement/InvoiceMatch/form.js" asp-append-version="true"></script>
+}

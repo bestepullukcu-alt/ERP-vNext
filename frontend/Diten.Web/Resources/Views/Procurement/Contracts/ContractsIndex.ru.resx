@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ContractsTitle" xml:space="preserve"><value>Контракты и библиотека положений</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Закупочные и снабженческие контракты: свяжите поставщика и решение о присуждении, добавьте положения и управляйте жизненным циклом от черновика до активного.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Добавить контракт</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Изменить контракт</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Добавить контракт</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить контракт</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="ContractId" xml:space="preserve"><value>Номер контракта</value></data>
+  <data name="ContractTitle" xml:space="preserve"><value>Название</value></data>
+  <data name="ContractTitlePlaceholder" xml:space="preserve"><value>напр. Рамочное соглашение по сырью 2026</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>Поставщик</value></data>
+  <data name="SupplierIdPlaceholder" xml:space="preserve"><value>Выберите или введите ID поставщика</value></data>
+  <data name="SupplierIdHint" xml:space="preserve"><value>ID поставщиков проверяются по мастер-данным поставщиков (fail-closed).</value></data>
+  <data name="RfxId" xml:space="preserve"><value>RFx / Присуждение</value></data>
+  <data name="RfxIdPlaceholder" xml:space="preserve"><value>напр. RFX-4001</value></data>
+  <data name="RfxIdHint" xml:space="preserve"><value>Необязательно; при указании проверяется по решению о присуждении.</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует по</value></data>
+  <data name="EffectiveToHint" xml:space="preserve"><value>Необязательно; должно быть не раньше даты начала.</value></data>
+  <data name="Currency" xml:space="preserve"><value>Валюта</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>напр. USD</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>Оставьте пустым, чтобы использовать базовую валюту юридического лица.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>На рассмотрении</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активный</value></data>
+  <data name="StatusExpired" xml:space="preserve"><value>Истёк</value></data>
+  <data name="StatusTerminated" xml:space="preserve"><value>Расторгнут</value></data>
+  <data name="ContractSection" xml:space="preserve"><value>Сведения о контракте</value></data>
+  <data name="ClausesSection" xml:space="preserve"><value>Положения</value></data>
+  <data name="EvidenceSection" xml:space="preserve"><value>Доказательства</value></data>
+  <data name="AddClauseRef" xml:space="preserve"><value>Добавить положение</value></data>
+  <data name="ClauseRefClauseId" xml:space="preserve"><value>Номер положения</value></data>
+  <data name="ClauseRefClauseIdPlaceholder" xml:space="preserve"><value>напр. CL-PAYMENT-30</value></data>
+  <data name="ClauseRefDeviation" xml:space="preserve"><value>Отклонение</value></data>
+  <data name="ClauseRefDeviationText" xml:space="preserve"><value>Примечания об отклонении</value></data>
+  <data name="ClauseRefDeviationTextPlaceholder" xml:space="preserve"><value>Опишите отклонение от стандартного положения</value></data>
+  <data name="ClausesHint" xml:space="preserve"><value>Ссылайтесь на стандартные положения из библиотеки; отмечайте любое отклонение от стандартного текста.</value></data>
+  <data name="EvidenceRefs" xml:space="preserve"><value>Ссылки на доказательства</value></data>
+  <data name="EvidenceRefsPlaceholder" xml:space="preserve"><value>Добавьте идентификаторы ссылок на доказательства</value></data>
+  <data name="EvidenceRefsHint" xml:space="preserve"><value>Только ссылки на документы (MOD-0029/0031); бинарные файлы здесь не хранятся.</value></data>
+  <data name="EditDraftOnlyNotice" xml:space="preserve"><value>Редактировать можно только черновики контрактов. Активированные контракты управляются действиями жизненного цикла.</value></data>
+  <data name="ApprovalSection" xml:space="preserve"><value>Журнал согласования</value></data>
+  <data name="WorkflowInstanceId" xml:space="preserve"><value>Экземпляр рабочего процесса</value></data>
+  <data name="ActionActivate" xml:space="preserve"><value>Активировать</value></data>
+  <data name="ActionTerminate" xml:space="preserve"><value>Расторгнуть</value></data>
+  <data name="ConfirmActivate" xml:space="preserve"><value>Активировать этот контракт и запустить журнал согласования?</value></data>
+  <data name="ConfirmTerminate" xml:space="preserve"><value>Расторгнуть этот активный контракт? Это действие нельзя отменить.</value></data>
+  <data name="ActivateSuccess" xml:space="preserve"><value>Контракт активирован.</value></data>
+  <data name="TerminateSuccess" xml:space="preserve"><value>Контракт расторгнут.</value></data>
+  <data name="ClauseLibrary" xml:space="preserve"><value>Библиотека положений</value></data>
+  <data name="ClauseId" xml:space="preserve"><value>Номер положения</value></data>
+  <data name="ClauseCategory" xml:space="preserve"><value>Категория</value></data>
+  <data name="ClauseCategoryPlaceholder" xml:space="preserve"><value>напр. Условия оплаты</value></data>
+  <data name="ClauseTitle" xml:space="preserve"><value>Название</value></data>
+  <data name="ClauseTitlePlaceholder" xml:space="preserve"><value>напр. Оплата в течение 30 дней</value></data>
+  <data name="ClauseBody" xml:space="preserve"><value>Текст</value></data>
+  <data name="ClauseBodyPlaceholder" xml:space="preserve"><value>Введите текст стандартного положения</value></data>
+  <data name="AddClause" xml:space="preserve"><value>Добавить положение</value></data>
+  <data name="ClauseCreated" xml:space="preserve"><value>Положение добавлено в библиотеку.</value></data>
+</root>

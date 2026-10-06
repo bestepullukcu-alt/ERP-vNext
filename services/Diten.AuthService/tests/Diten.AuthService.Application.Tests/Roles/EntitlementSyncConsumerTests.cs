@@ -255,6 +255,23 @@ public sealed class EntitlementSyncConsumerTests
         Assert.Null(sync.Granted);
     }
 
+    // BL-412 — the consumer is system-initiated: whatever it asks the sync service to write is stamped with its own
+    // constant actor, on the grant, revoke and reconcile paths alike — never a person.
+    [Theory]
+    [InlineData("tenant.entitlement.added.v1", "MDM")]
+    [InlineData("tenant.entitlement.disabled.v1", "MDM")]
+    [InlineData("tenant.subscription.changed.v1", "")]
+    public async Task Every_sync_call_carries_the_entitlement_sync_actor(string eventName, string moduleCode)
+    {
+        var sync = new FakeSync();
+        var consumer = Build(sync, new FakeInbox(firstDelivery: true), new FakeEntitlementClient(["MDM"]));
+
+        await consumer.ConsumeAsync(Message(eventName, TenantA, moduleCode));
+
+        Assert.NotEmpty(sync.Actors);
+        Assert.All(sync.Actors, actor => Assert.Equal("entitlement-sync", actor));
+    }
+
     // ── harness ──
 
     private static EntitlementSyncConsumer Build(FakeSync sync, FakeInbox inbox, FakeEntitlementClient? client = null)
@@ -273,16 +290,19 @@ public sealed class EntitlementSyncConsumerTests
         public (Guid tenantId, string moduleCode)? Revoked { get; private set; }
         public (Guid tenantId, string[] codes)? Synced { get; private set; }
         public int SyncCount { get; private set; }
+        public List<string> Actors { get; } = [];
 
         public Task GrantModuleAsync(Guid tenantId, string moduleCode, string actor, CancellationToken ct = default)
         {
             Granted = (tenantId, moduleCode);
+            Actors.Add(actor);
             return Task.CompletedTask;
         }
 
         public Task RevokeModuleAsync(Guid tenantId, string moduleCode, string actor, CancellationToken ct = default)
         {
             Revoked = (tenantId, moduleCode);
+            Actors.Add(actor);
             return Task.CompletedTask;
         }
 
@@ -290,12 +310,14 @@ public sealed class EntitlementSyncConsumerTests
         {
             Synced = (tenantId, entitledModuleCodes.ToArray());
             SyncCount++;
+            Actors.Add(actor);
             return Task.CompletedTask;
         }
 
         public Task GrantModuleWithKeysAsync(Guid tenantId, string moduleCode, IReadOnlyCollection<string> permissionKeys, string actor, CancellationToken ct = default)
         {
             Granted = (tenantId, moduleCode);
+            Actors.Add(actor);
             return Task.CompletedTask;
         }
 
@@ -303,6 +325,7 @@ public sealed class EntitlementSyncConsumerTests
         {
             Synced = (tenantId, modules.Select(m => m.ModuleCode).ToArray());
             SyncCount++;
+            Actors.Add(actor);
             return Task.CompletedTask;
         }
     }

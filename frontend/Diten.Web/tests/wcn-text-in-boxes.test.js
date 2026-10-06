@@ -94,8 +94,17 @@ describe("the object of a confirmation is named once, in a box", () => {
      * MUTATION GUARD: stop passing `entityName` and this goes red.
      */
     const onAction = APP.slice(APP.indexOf("const stillOpen = action.code === 'complete'"), APP.indexOf("const executeTriggerAction"));
-    expect(onAction).toContain("entityName: esc(item.title)");
-    const bridge = APP.slice(APP.indexOf("const sharedConfirm"), APP.indexOf("const sharedConfirm") + 4000);
+    // Handed over as it is: the shared confirm writes the badge as text (WP-SHARED-CONFIRM-XSS-01); escaping the
+    // title here would show "R&amp;D" to the reader.
+    expect(onAction).toContain("entityName: item.title,");
+    /*
+     * ⚠ READ TO THE NEXT DECLARATION, not a fixed length (WP-PSS-MOD0024-FOLLOWUPS-02 grew this function by a
+     * comment and a passthrough field, which pushed `entityName` past a `+ 4000` window — the exact fragility
+     * `wcn-detail-three-regions.test.js`'s sibling slice already learned not to use, for the same reason: a
+     * length is an assumption about the code's shape, and it rots the day the function gains a line.
+     */
+    const bridgeStart = APP.indexOf("const sharedConfirm");
+    const bridge = APP.slice(bridgeStart, APP.indexOf("\n    const ", bridgeStart + 30));
     expect(bridge).toContain("entityName: options.entityName");
   });
 

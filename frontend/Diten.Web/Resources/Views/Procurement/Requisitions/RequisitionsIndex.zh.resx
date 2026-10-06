@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="RequisitionsTitle" xml:space="preserve"><value>采购申请</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>采购申请：录入需求明细、说明理由并提交审批。</value></data>
+  <data name="AddNew" xml:space="preserve"><value>新增申请</value></data>
+  <data name="EditItem" xml:space="preserve"><value>编辑申请</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新增申请</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑申请</value></data>
+  <data name="QuickView" xml:space="preserve"><value>查看</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="RequisitionId" xml:space="preserve"><value>申请编号</value></data>
+  <data name="LineCount" xml:space="preserve"><value>明细数</value></data>
+  <data name="NeedBy" xml:space="preserve"><value>需求日期</value></data>
+  <data name="Justification" xml:space="preserve"><value>理由</value></data>
+  <data name="JustificationPlaceholder" xml:space="preserve"><value>例如：生产原材料补给</value></data>
+  <data name="JustificationHint" xml:space="preserve"><value>可选说明，解释为何需要此申请。</value></data>
+  <data name="RequisitionSection" xml:space="preserve"><value>申请信息</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>申请明细</value></data>
+  <data name="AddLine" xml:space="preserve"><value>添加明细</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>物料编号</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>例如：b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>SKU 编号</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>例如：c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>数量</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>例如：100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>单位</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>例如：BOX</value></data>
+  <data name="LineNeedBy" xml:space="preserve"><value>需求日期</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>至少需要一行（物料、数量、计量单位）。</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="StatusSubmitted" xml:space="preserve"><value>已提交</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="StatusConverted" xml:space="preserve"><value>已转换</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="ActionSubmit" xml:space="preserve"><value>提交审批</value></data>
+  <data name="ConfirmSubmit" xml:space="preserve"><value>提交此申请以供审批？</value></data>
+  <data name="SubmitSuccess" xml:space="preserve"><value>申请已提交审批。</value></data>
+</root>

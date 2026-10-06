@@ -29,9 +29,9 @@
   <data name="LanguageCode" xml:space="preserve"><value>Language</value></data>
   <data name="ContentVersion" xml:space="preserve"><value>Content Version</value></data>
   <data name="Summary" xml:space="preserve"><value>Summary</value></data>
-  <data name="SubjectId" xml:space="preserve"><value>Subject</value></data>
-  <data name="TopicId" xml:space="preserve"><value>Topic</value></data>
-  <data name="AudienceProfileId" xml:space="preserve"><value>Audience Profile</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Тема</value></data>
+  <data name="TopicId" xml:space="preserve"><value>Раздел</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>Профиль аудитории</value></data>
   <data name="ConceptNodeId" xml:space="preserve"><value>Concept Node</value></data>
   <data name="BrandId" xml:space="preserve"><value>Brand</value></data>
   <data name="ProductId" xml:space="preserve"><value>Product</value></data>
@@ -82,26 +82,26 @@
   <data name="ContentPointerRequired" xml:space="preserve"><value>At least one content pointer is required.</value></data>
   <data name="ValidationRequired" xml:space="preserve"><value>This field is required.</value></data>
   <data name="TaxonomyTab" xml:space="preserve"><value>Taxonomy</value></data>
-  <data name="SubjectsTab" xml:space="preserve"><value>Subjects</value></data>
-  <data name="TopicsTab" xml:space="preserve"><value>Topics</value></data>
-  <data name="ProfilesTab" xml:space="preserve"><value>Audience Profiles</value></data>
-  <data name="CreateSubject" xml:space="preserve"><value>Create Subject</value></data>
-  <data name="CreateTopic" xml:space="preserve"><value>Create Topic</value></data>
-  <data name="CreateProfile" xml:space="preserve"><value>Create Profile</value></data>
-  <data name="EditSubject" xml:space="preserve"><value>Edit Subject</value></data>
-  <data name="EditTopic" xml:space="preserve"><value>Edit Topic</value></data>
-  <data name="EditProfile" xml:space="preserve"><value>Edit Profile</value></data>
-  <data name="ArchiveSubject" xml:space="preserve"><value>Archive Subject</value></data>
-  <data name="ArchiveTopic" xml:space="preserve"><value>Archive Topic</value></data>
-  <data name="ArchiveProfile" xml:space="preserve"><value>Archive Profile</value></data>
+  <data name="SubjectsTab" xml:space="preserve"><value>Темы</value></data>
+  <data name="TopicsTab" xml:space="preserve"><value>Разделы</value></data>
+  <data name="ProfilesTab" xml:space="preserve"><value>Профили аудитории</value></data>
+  <data name="CreateSubject" xml:space="preserve"><value>Создать тему</value></data>
+  <data name="CreateTopic" xml:space="preserve"><value>Создать раздел</value></data>
+  <data name="CreateProfile" xml:space="preserve"><value>Создать профиль аудитории</value></data>
+  <data name="EditSubject" xml:space="preserve"><value>Изменить тему</value></data>
+  <data name="EditTopic" xml:space="preserve"><value>Изменить раздел</value></data>
+  <data name="EditProfile" xml:space="preserve"><value>Изменить профиль аудитории</value></data>
+  <data name="ArchiveSubject" xml:space="preserve"><value>Архивировать тему</value></data>
+  <data name="ArchiveTopic" xml:space="preserve"><value>Архивировать раздел</value></data>
+  <data name="ArchiveProfile" xml:space="preserve"><value>Архивировать профиль аудитории</value></data>
   <data name="ArchiveTaxonomyConfirm" xml:space="preserve"><value>Archive this row? Existing content keeps its classification; only new attachment is blocked.</value></data>
   <data name="Name" xml:space="preserve"><value>Name</value></data>
   <data name="Code" xml:space="preserve"><value>Code</value></data>
   <data name="SortOrder" xml:space="preserve"><value>Sort Order</value></data>
   <data name="Status" xml:space="preserve"><value>Статус</value></data>
   <data name="Description" xml:space="preserve"><value>Description</value></data>
-  <data name="ProfileType" xml:space="preserve"><value>Profile Type</value></data>
-  <data name="ParentTopicId" xml:space="preserve"><value>Parent Topic ID</value></data>
+  <data name="ProfileType" xml:space="preserve"><value>Тип профиля</value></data>
+  <data name="ParentTopicId" xml:space="preserve"><value>Родительский раздел</value></data>
   <data name="Active" xml:space="preserve"><value>Активный</value></data>
   <data name="Passive" xml:space="preserve"><value>Пассивный</value></data>
   <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
@@ -126,4 +126,68 @@
   <data name="ConceptTypeId" xml:space="preserve"><value>Concept Type</value></data>
   <data name="ConceptNodeSubjectNote" xml:space="preserve"><value>The node list follows the Subject and Concept Type chosen above.</value></data>
   <data name="ConceptNodePickerUnavailable" xml:space="preserve"><value>The concept node list could not be loaded, so the current value is kept as-is.</value></data>
+  <data name="Dimensions" xml:space="preserve"><value>Измерения</value></data>
+  <data name="AddDimension" xml:space="preserve"><value>Добавить ось</value></data>
+  <data name="DimensionsNote" xml:space="preserve"><value>Нацельте эту аудиторию по осям справочных данных (или произвольной оси).</value></data>
+  <data name="DimensionsEmpty" xml:space="preserve"><value>Осей пока нет — профиль охватывает всех.</value></data>
+  <data name="Axis" xml:space="preserve"><value>Ось</value></data>
+  <data name="Values" xml:space="preserve"><value>Значения</value></data>
+  <data name="RemoveDimension" xml:space="preserve"><value>Удалить ось</value></data>
+  <data name="Deprecated" xml:space="preserve"><value>устарело</value></data>
+  <data name="AxisAccountType" xml:space="preserve"><value>Тип счёта</value></data>
+  <data name="AxisContactType" xml:space="preserve"><value>Тип контакта</value></data>
+  <data name="AxisMedicalSpecialty" xml:space="preserve"><value>Медицинская специальность</value></data>
+  <data name="AxisCustom" xml:space="preserve"><value>Произвольная</value></data>
+  <data name="SelectValues" xml:space="preserve"><value>Выберите значения</value></data>
+  <data name="CustomAxisPlaceholder" xml:space="preserve"><value>Код оси (напр. регион)</value></data>
+  <data name="CustomValuesPlaceholder" xml:space="preserve"><value>Введите значение и нажмите Enter</value></data>
+  <data name="SubjectSource" xml:space="preserve"><value>Источник темы</value></data>
+  <data name="FromGlobalProduct" xml:space="preserve"><value>Из Global Product</value></data>
+  <data name="CustomSubject" xml:space="preserve"><value>Произвольный</value></data>
+  <data name="SelectGlobalProduct" xml:space="preserve"><value>Выберите Global Product</value></data>
+  <data name="GlobalProductSubjectHint" xml:space="preserve"><value>Связывает тему с эталонной записью MDM и предзаполняет имя (редактируемое).</value></data>
+  <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>Список Global Product недоступен; введите произвольный субъект.</value></data>
+  <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>Служба Global Product недоступна; введите произвольный субъект.</value></data>
+  <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>У вас нет прав для просмотра Global Products; введите произвольный субъект.</value></data>
+  <data name="Reorder" xml:space="preserve"><value>Изменить порядок</value></data>
+  <data name="ReorderSubjects" xml:space="preserve"><value>Изменить порядок тем</value></data>
+  <data name="ReorderTopics" xml:space="preserve"><value>Изменить порядок разделов</value></data>
+  <data name="ReorderProfiles" xml:space="preserve"><value>Изменить порядок профилей аудитории</value></data>
+  <data name="ReorderHelp" xml:space="preserve"><value>Перетащите строки, чтобы изменить порядок, затем сохраните.</value></data>
+  <data name="SaveOrder" xml:space="preserve"><value>Сохранить порядок</value></data>
+  <data name="ClaimsSection" xml:space="preserve"><value>Утверждения</value></data>
+  <data name="ClaimRefsLabel" xml:space="preserve"><value>Утверждения, используемые в этом материале</value></data>
+  <data name="ClaimRefsPlaceholder" xml:space="preserve"><value>Поиск утверждений…</value></data>
+  <data name="ClaimRefsHelp" xml:space="preserve"><value>Базовое — глобальное утверждение; строка страны — утверждённый текст этой страны. Для публикации утверждения должны быть утверждены, а для страны — иметь текст на языке материала.</value></data>
+  <data name="ClaimRefsProductFirst" xml:space="preserve"><value>Сначала выберите продукт — утверждения показываются по продукту материала.</value></data>
+  <data name="ClaimRefsNone" xml:space="preserve"><value>Для этого продукта нет утверждений.</value></data>
+  <data name="ClaimRefsLoading" xml:space="preserve"><value>Загрузка утверждений…</value></data>
+  <data name="ClaimOptionsUnavailable" xml:space="preserve"><value>Сейчас не удаётся загрузить утверждения. Выбранные утверждения сохраняются.</value></data>
+  <data name="ClaimPermissionMissing" xml:space="preserve"><value>У вас нет права просматривать утверждения. Выбранные утверждения сохраняются.</value></data>
+  <data name="ClaimEndpointMissing" xml:space="preserve"><value>Сервис утверждений недоступен. Выбранные утверждения сохраняются.</value></data>
+  <data name="ClaimCore" xml:space="preserve"><value>Базовое</value></data>
+  <data name="ClaimStatus_approved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="ClaimStatus_in-review" xml:space="preserve"><value>На согласовании</value></data>
+  <data name="ClaimStatus_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="ClaimStatus_review-required" xml:space="preserve"><value>Требует пересмотра</value></data>
+  <data name="ClaimStatus_inactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="ClaimStatus_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="ClaimReason_not_approved" xml:space="preserve"><value>Не утверждено — публикация будет отклонена</value></data>
+  <data name="ClaimReason_language_mismatch" xml:space="preserve"><value>Нет текста на языке материала</value></data>
+  <data name="ClaimRefNotInList" xml:space="preserve"><value>Недоступно для текущего продукта или языка</value></data>
+  <data name="ClaimRefsUnusableWarning" xml:space="preserve"><value>Некоторые выбранные утверждения пока нельзя опубликовать. Сохранить можно; публикация будет отклонена, пока они не утверждены и не имеют текста на языке материала.</value></data>
+  <data name="ClaimRefsStaleWarning" xml:space="preserve"><value>Некоторые выбранные утверждения не соответствуют текущему продукту или языку. Они сохранены — удалите их, если они больше не применимы.</value></data>
+  <data name="ClaimError_claim_refs_too_many" xml:space="preserve"><value>К одному материалу можно привязать не более 20 утверждений.</value></data>
+  <data name="ClaimError_claim_ref_invalid" xml:space="preserve"><value>Выбор утверждения неполный или недопустимый; выберите его снова.</value></data>
+  <data name="ClaimError_claim_ref_duplicate" xml:space="preserve"><value>Одно и то же утверждение выбрано для этой страны несколько раз.</value></data>
+  <data name="ClaimError_claim_not_found" xml:space="preserve"><value>Выбранное утверждение больше не существует.</value></data>
+  <data name="ClaimError_claim_ref_mismatch" xml:space="preserve"><value>Выбор больше не соответствует записи утверждения; обновите список и выберите снова.</value></data>
+  <data name="ClaimError_claim_country_version_not_found" xml:space="preserve"><value>Страновая версия утверждения больше не существует.</value></data>
+  <data name="ClaimError_claim_product_mismatch" xml:space="preserve"><value>Утверждение относится к другому продукту, чем этот материал.</value></data>
+  <data name="ClaimError_claim_not_approved" xml:space="preserve"><value>Утверждение не утверждено; материал нельзя опубликовать.</value></data>
+  <data name="ClaimError_claim_language_mismatch" xml:space="preserve"><value>В страновой версии утверждения нет текста на языке материала; материал нельзя опубликовать.</value></data>
+  <data name="ClaimError_dependency_unavailable" xml:space="preserve"><value>Сервис утверждений сейчас недоступен; повторите попытку позже.</value></data>
+  <data name="LinkedClaims" xml:space="preserve"><value>Связанные утверждения</value></data>
+  <data name="NoLinkedClaims" xml:space="preserve"><value>К этому материалу не привязаны утверждения.</value></data>
+  <data name="ClaimNeedsReview" xml:space="preserve"><value>Требует пересмотра — утверждение изменилось после утверждения этой связи.</value></data>
 </root>

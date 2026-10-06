@@ -15,6 +15,7 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
     private readonly IRbacAuditRecorder _rbacAudit;
+    private readonly ICurrentUserAccessor _currentUser;
 
     public AssignPermissionCommandHandler(
         IRoleRepository roleRepository,
@@ -22,7 +23,8 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
         IRolePermissionRepository rolePermissionRepository,
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
-        IRbacAuditRecorder rbacAudit)
+        IRbacAuditRecorder rbacAudit,
+        ICurrentUserAccessor currentUser)
     {
         _roleRepository = roleRepository;
         _permissionRepository = permissionRepository;
@@ -30,10 +32,17 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
         _versionService = versionService;
         _tenantContext = tenantContext;
         _rbacAudit = rbacAudit;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<NoContent>> Handle(AssignPermissionCommand request, CancellationToken ct)
     {
+        // BL-412 — this is the person path (POST api/roles/{id}/permissions), so the grant row names the person: the
+        // same actor id the RBAC audit row carries (ICurrentUserAccessor, read once here). Without an actor nothing is
+        // written — "System" is reserved for seed/provisioning/sync, which never reach this handler.
+        if (_currentUser.UserId is not { } actorId)
+            return Response<NoContent>.Fail("An authenticated user is required to grant a permission.", 401);
+
         var role = await _roleRepository.GetByIdAndTenantAsync(request.RoleId, _tenantContext.TenantId, ct);
         if (role == null) return Response<NoContent>.Fail("Role not found.", 404);
 
@@ -51,7 +60,8 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
             return Response<NoContent>.Fail("This permission cannot be assigned to a tenant role.", 403);
         }
 
-        await _rolePermissionRepository.AssignAsync(new RolePermission(request.RoleId, request.PermissionId, _tenantContext.TenantId, "System"), ct);
+        await _rolePermissionRepository.AssignAsync(
+            RolePermission.ManualGrant(request.RoleId, request.PermissionId, _tenantContext.TenantId, actorId.ToString()), ct);
 
         // FU13 — bump the tenant role-assignment version so every holder's cached snapshot is invalidated at once.
         await _versionService.IncrementAsync(_tenantContext.TenantId, ct);

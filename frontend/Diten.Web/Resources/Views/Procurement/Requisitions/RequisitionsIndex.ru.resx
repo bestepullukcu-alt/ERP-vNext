@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="RequisitionsTitle" xml:space="preserve"><value>Заявки на закупку</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Заявки на закупку: внесите строки потребности, обоснуйте и отправьте на утверждение.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Добавить заявку</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Изменить заявку</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Добавить заявку</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить заявку</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="RequisitionId" xml:space="preserve"><value>Номер заявки</value></data>
+  <data name="LineCount" xml:space="preserve"><value>Строки</value></data>
+  <data name="NeedBy" xml:space="preserve"><value>Требуется к</value></data>
+  <data name="Justification" xml:space="preserve"><value>Обоснование</value></data>
+  <data name="JustificationPlaceholder" xml:space="preserve"><value>напр. пополнение производственного сырья</value></data>
+  <data name="JustificationHint" xml:space="preserve"><value>Необязательная заметка с пояснением, зачем нужна эта заявка.</value></data>
+  <data name="RequisitionSection" xml:space="preserve"><value>Сведения о заявке</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Строки заявки</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Добавить строку</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>Номер позиции</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>напр. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>Номер SKU</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>напр. c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>напр. 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>Ед. изм.</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>напр. BOX</value></data>
+  <data name="LineNeedBy" xml:space="preserve"><value>Требуется к</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>Требуется хотя бы одна строка (позиция, количество, единица измерения).</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusSubmitted" xml:space="preserve"><value>Отправлена</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Утверждена</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Отклонена</value></data>
+  <data name="StatusConverted" xml:space="preserve"><value>Преобразована</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Отменена</value></data>
+  <data name="ActionSubmit" xml:space="preserve"><value>Отправить на утверждение</value></data>
+  <data name="ConfirmSubmit" xml:space="preserve"><value>Отправить эту заявку на утверждение?</value></data>
+  <data name="SubmitSuccess" xml:space="preserve"><value>Заявка отправлена на утверждение.</value></data>
+</root>

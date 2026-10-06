@@ -75,10 +75,48 @@
     // ─── Reference labels (subjects / types / nodes) ─────────────────────────
     // Subjects and nodes are read-only references here: FU02 owns Subject, and ConceptNode is the Compact surface.
     const subjectMap = {}, typeMap = {}, nodeMap = {};
+    // SCMM-09-UI-refine-fix (Not 3): the concept-type NAME alone (no "code — " prefix), kept beside typeMap so the
+    // auto-filled connection name reads as prose ("Hasta Profili → Fayda"), not a code label.
+    const typeNameMap = {};
+    // SCMM-10-MOD-C: template-level Moderator (content-moderator-role ValueCode) + ForWhom (AudienceProfile id) label
+    // resolution for the read-only Chain Template quick view.
+    const audienceMap = {}, moderatorMap = {};
     const subjectOptions = [], nodeRows = [];
     const labelSubject = id => subjectMap[id] || id || '';
     const labelType = id => typeMap[id] || id || '';
     const labelNode = id => nodeMap[id]?.label || id || '';
+    const labelAudience = id => audienceMap[id] || id || '';
+    const labelModerator = code => moderatorMap[code] || code || '';
+    // A node's concept-type display name, or '' when it cannot be resolved (never fall back to the node label — a
+    // wrong auto-name is worse than none).
+    const nodeTypeName = nodeId => typeNameMap[nodeMap[nodeId]?.conceptTypeId] || '';
+
+    // SCMM-09-UI-refine (Not 2): Priority is edited as Low/Medium/High but stored as the backend int. The three
+    // buckets (High=10, Medium=20, Low=30) are the select's option values, so save needs no mapping; on edit an
+    // arbitrary stored number snaps to the nearest bucket, and a new connection defaults to Medium.
+    const PRIORITY_BUCKETS = [10, 20, 30];
+    const nearestPriorityBucket = n => {
+        const x = Number(n);
+        if (!Number.isFinite(x)) return 20;
+        return PRIORITY_BUCKETS.reduce((a, b) => (Math.abs(b - x) < Math.abs(a - x) ? b : a));
+    };
+
+    // SCMM-09-UI-refine (Not 3): the connection name auto-fills to "{from} → {to}" while the user has not typed one.
+    // A manual edit (input event) sets the dirty flag and auto-fill backs off; the field stays editable.
+    let relNameDirty = false;
+    const autoFillRelationshipName = () => {
+        if (relNameDirty) return;
+        const from = norm(document.getElementById('relFromNodeId')?.value);
+        const to = norm(document.getElementById('relToNodeId')?.value);
+        if (!from || !to) return;
+        // SCMM-09-UI-refine-fix (Not 3): compose from the endpoints' concept-type NAMES ("Hasta Profili → Fayda"),
+        // not the node code labels. If either type is unresolved, leave the name empty rather than write a half/wrong one.
+        const fromType = nodeTypeName(from);
+        const toType = nodeTypeName(to);
+        if (!fromType || !toType) return;
+        const el = document.getElementById('relRelationshipName');
+        if (el) el.value = `${fromType} → ${toType}`;
+    };
 
     const loadSubjects = async () => {
         try {
@@ -98,11 +136,29 @@
             (data?.items || []).forEach(n => {
                 nodeMap[n.conceptNodeId] = {
                     label: `${n.conceptNodeCode} — ${n.conceptNodeName}`,
+                    // SCMM-09-UI-refine-fix (Not 3): carry conceptTypeId so the auto-name can resolve the type's name.
+                    conceptTypeId: n.conceptTypeId,
                     subjectId: n.subjectId, isArchived: !!n.isArchived
                 };
                 nodeRows.push(n);
             });
         } catch (e) { /* the From/To pickers stay empty; the backend still rejects an unresolved node */ }
+    };
+    // SCMM-10-MOD-C: read-only label sources for the Chain Template quick view's template-level Moderator / ForWhom.
+    const loadAudiences = async () => {
+        try {
+            const data = await envelope(await fetch(`${base}/audience-profiles?includeArchived=true`, { credentials: 'same-origin', headers }));
+            (data?.items || []).forEach(a => { audienceMap[a.audienceProfileId] = `${a.profileCode} — ${a.profileName}`; });
+        } catch (e) { /* the quick view falls back to the raw id */ }
+    };
+    const loadModeratorRoles = async () => {
+        try {
+            const data = await envelope(await fetch(`${base}/reference-data/content-moderator-role/values`, { credentials: 'same-origin', headers }));
+            (data?.items || []).forEach(v => {
+                const code = norm(v.code || v.valueCode || v.value);
+                if (code) moderatorMap[code] = norm(v.label || v.displayName || v.text) || code;
+            });
+        } catch (e) { /* the quick view falls back to the raw ValueCode */ }
     };
 
     // ─── Per-tab specification ───────────────────────────────────────────────
@@ -144,13 +200,20 @@
         },
         'concept-chain-templates': {
             tableId: 'dt-concept-chain-templates', hostId: 'templatesFilterHost', collapseId: 'templatesFilterCollapse',
-            skeletonId: 'templates-skeleton-loader', pageKey: 'KnowledgeConceptChainTemplates',
+            // WP-CT-FE-1: new column layout → new pageKey, so a view saved against the old indexes can never hide or
+            // reorder the wrong columns (colVis is index-keyed).
+            skeletonId: 'templates-skeleton-loader', pageKey: 'KnowledgeConceptChainTemplatesV2',
             idField: 'conceptChainTemplateId', nameField: 'chainName',
             createText: () => L.CreateTemplate, editText: () => L.EditTemplate,
             archiveText: () => L.ArchiveTemplate, archiveConfirm: () => L.ArchiveTemplateConfirm,
             emptyText: () => L.TemplatesEmptyState,
-            canvasId: 'offcanvasTemplateCreateEdit',
-            totalColumns: 13, managedColumns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], order: [[11, 'desc']],
+            // No canvasId: the Chain Template create/edit is the Golden Compact page (SCMM-10-UI-refine), not an
+            // offcanvas — this tab keeps only the list + read-only quick view and navigates to that page.
+            // WP-CT-FE-1 (mockup v2 Ekran 1): 1 Subject · 2 Name · 3 Code · 4 Spine · 5 Branches · 6 Moderator ·
+            // 7 ForWhom · 8 Status+version; 9–13 (length / effective window / archived / updated) stay reachable via
+            // colVis but are hidden in the factory state.
+            totalColumns: 15, managedColumns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], order: [[13, 'desc']],
+            hiddenColumns: [9, 10, 11, 12, 13],
             archivedId: 'filterTemplatesArchived',
             filterFields: {
                 subjectId: { id: 'filterTemplatesSubjectId', multi: true, field: 'subjectId', options: () => subjectOptions },
@@ -339,7 +402,11 @@
         SPECS[kind].managedColumns.forEach(ci => { try { r[ci] = !!api.column(ci).visible(); } catch (e) { /* stale index */ } });
         return r;
     };
-    const defaultColVis = kind => SPECS[kind].managedColumns.reduce((a, ci) => { a[ci] = true; return a; }, {});
+    // A spec may keep detail columns hidden in its factory state (still toggleable through colVis).
+    const defaultColVis = kind => SPECS[kind].managedColumns.reduce((a, ci) => {
+        a[ci] = !(SPECS[kind].hiddenColumns || []).includes(ci);
+        return a;
+    }, {});
     const captureColOrder = (kind, api) => {
         try {
             const o = api?.colReorder?.order?.();
@@ -369,8 +436,8 @@
         columnOrder: Array.isArray(v?.columnOrder) ? v.columnOrder : naturalOrder(kind),
         order: Array.isArray(v?.order) ? v.order : SPECS[kind].order
     });
-    // Reset is the FACTORY state (empty filters, no search, all managed columns visible, natural column order,
-    // the default sort) — deliberately not "back to the saved view".
+    // Reset is the FACTORY state (empty filters, no search, the managed columns' default visibility, natural column
+    // order, the default sort) — deliberately not "back to the saved view".
     const resetBaseline = kind => ({
         filters: emptyFilters(kind), search: '', colVis: defaultColVis(kind),
         columnOrder: naturalOrder(kind), order: SPECS[kind].order
@@ -455,6 +522,48 @@
         return window.DitenDataTable?.renderActions ? window.DitenDataTable.renderActions(items) : '';
     };
 
+    // ─── WP-CT-FE-9: chain template quick view, aligned with the editor ────────
+    // Local helpers (this module never imports template-form.js): DAL A/B/C… (26+ → number), the ×N / ×min–max chip.
+    const pvBranchLetter = bi => (bi < 26 ? String.fromCharCode(65 + bi) : String(bi + 1));
+    const pvFmt = (template, ...args) => String(template || '').replace(/\{(\d)\}/g, (_, i) => String(args[Number(i)] ?? ''));
+    const pvChipLabel = s => {
+        const min = s.minSelection ?? 1;
+        const max = s.maxSelection ?? null;
+        return max === min ? `×${min}` : `×${min}–${max == null ? '∞' : max}`;
+    };
+    // The unresolved non-conforming count: the BE-A diagnostics over the template's spine (a READ — the backend
+    // classifier is the single source) minus its stored "Yok say" resolutions. Read-only: no ignore / undo / PUT here.
+    // A newer preview (another row) wins: a late answer for an older row is dropped (sequence + row id).
+    let pvDiagSeq = 0;
+    const fillTemplateNonConforming = async row => {
+        const host = document.getElementById('pv-tpl-nonconforming');
+        const section = document.getElementById('pv-tpl-nonconforming-section');
+        if (!host) return;
+        section?.classList.remove('d-none');
+        const seq = ++pvDiagSeq;
+        const rowId = row.conceptChainTemplateId;
+        const spine = Array.isArray(row.orderedConceptTypes) ? row.orderedConceptTypes : [];
+        if (!row.subjectId || spine.length < 2) { host.innerHTML = '<span class="text-muted">—</span>'; return; }
+        host.innerHTML = `<span class="text-muted small"><span class="spinner-border spinner-border-sm me-2"></span>${esc(L.Loading || '')}</span>`;
+        try {
+            const data = await envelope(await fetch(`${base}/concept-chain-templates/conformance-diagnostics`, {
+                method: 'POST', credentials: 'same-origin', headers: jsonHeaders,
+                body: JSON.stringify({ subjectId: row.subjectId, orderedConceptTypeIds: spine })
+            }));
+            if (seq !== pvDiagSeq || previewRef?.id !== rowId) return;
+            const ignored = new Set((row.ignoredNonConformingRelationshipIds || []).map(String));
+            const open = (data?.items || []).filter(i => i.result !== 'conforming' && !ignored.has(String(i.conceptRelationshipId))).length;
+            host.innerHTML = open > 0
+                ? `<span class="badge bg-label-warning">${esc(pvFmt(L.UnresolvedCount || '{0}', open))}</span>`
+                : `<span class="badge bg-label-success"><i class="bx bx-check me-1"></i>${esc(L.NonConformingEmpty || '')}</span>`;
+        } catch (error) {
+            if (seq !== pvDiagSeq || previewRef?.id !== rowId) return;
+            // A user without the diagnostics permission gets the whole section hidden rather than an error.
+            if (error?.status === 403) { section?.classList.add('d-none'); return; }
+            host.innerHTML = `<span class="text-muted small">${esc(L.ErrorState || '')}</span>`;
+        }
+    };
+
     // ─── Columns ─────────────────────────────────────────────────────────────
     const statusBadge = v => badge(v, v === 'archived' ? 'secondary' : (v === 'active' || v === 'published' ? 'success' : 'primary'));
     const archivedBadge = v => badge(v ? L.Yes : L.No, v ? 'warning' : 'success');
@@ -472,16 +581,74 @@
     const conformanceBadge = v => v
         ? `<span class="badge bg-label-success">${esc(L.Conforming || 'Conforming')}</span>`
         : `<span class="badge bg-label-warning" title="${esc(L.NonConformingNote || '')}">${esc(L.NonConforming || 'Non-conforming')}</span>`;
-    const sequenceCell = (ids, row) => {
+    // ─── WP-CT-FE-1: enriched Chain Template list cells ──────────────────────
+    // Every reference resolves to a NAME or falls back to "—" — a raw id never reaches the cell.
+    const dash = '<span class="text-muted">—</span>';
+    const subjectCell = id => subjectMap[id] ? `<span class="text-muted">${esc(subjectMap[id])}</span>` : dash;
+    // Spine = the ordered TYPE names, joined with arrows. An unresolved type shows "—" in its slot.
+    const spineCell = ids => {
         const list = Array.isArray(ids) ? ids : [];
-        if (!list.length) return '<span class="text-muted">—</span>';
-        // SCMM-10 (③): a multi-branch template shows a branch-count badge before the spine (no extra column).
-        const branchCount = Array.isArray(row?.branches) ? row.branches.length : 0;
-        const branchBadge = branchCount > 1
-            ? `<span class="badge bg-label-info me-2"><i class="bx bx-git-branch me-1"></i>${branchCount} ${esc(L.BranchCountLabel || '')}</span>`
-            : '';
-        return `<span>${branchBadge}${list.map(id => esc(labelType(id))).join(' <i class="bx bx-chevron-right"></i> ')}</span>`;
+        if (!list.length) return dash;
+        return `<span>${list.map(id => typeNameMap[id] ? esc(typeNameMap[id]) : '—').join(' <i class="bx bx-right-arrow-alt text-muted"></i> ')}</span>`;
     };
+    // The branch count is its own column now (was a badge inside the sequence cell). A legacy flat template reads
+    // back as one branch (read-time migration), so this is ≥ 1 for any saved template.
+    const branchCountOf = row => Array.isArray(row?.branches) ? row.branches.length : 0;
+    const branchCell = row => `<span class="badge bg-label-info"><i class="bx bx-git-branch me-1"></i>${branchCountOf(row)}</span>`;
+    const moderatorCell = code => norm(code) ? esc(labelModerator(norm(code))) : dash;
+    // For-whom: the first resolved audience name, then a "+N" badge; the title lists every resolved name. Unresolved
+    // ids are counted but never printed.
+    const forWhomCell = ids => {
+        const list = Array.isArray(ids) ? ids : [];
+        if (!list.length) return dash;
+        const names = list.map(id => audienceMap[id]).filter(Boolean);
+        const first = names.length ? `<span>${esc(names[0])}</span>` : '';
+        const rest = list.length - (names.length ? 1 : 0);
+        const more = rest > 0 ? ` <span class="badge bg-label-secondary">${names.length ? '+' : ''}${rest}</span>` : '';
+        return `<span title="${esc(names.join(', '))}">${first}${more}</span>`;
+    };
+    // WP-CT-FE-10 (#3): the editor already writes "v1"/"v2" — keep a leading v/V as is, add one only when missing.
+    const versionLabel = v => { const x = norm(v); return !x ? '' : (/^v/i.test(x) ? x : `v${x}`); };
+    const versionBare = v => norm(v).replace(/^v/i, '');   // for "v{0}" templates (PublishedSiblingHint)
+    // WP-CT-FE-10 (#7a): chain status DISPLAY label (7 languages); the raw code stays the value / filter / sort key and
+    // an unknown code (review, approved, inactive…) is shown as is.
+    const CHAIN_STATUS_KEYS = { draft: 'ChainStatusDraft', published: 'ChainStatusPublished', archived: 'ChainStatusArchived' };
+    const chainStatusLabel = code => L[CHAIN_STATUS_KEYS[norm(code)]] || norm(code);
+    const chainStatusBadge = code => badge(chainStatusLabel(code), code === 'archived' ? 'secondary' : (code === 'published' ? 'success' : 'primary'));
+    const isEffectiveNow = r => {
+        const now = Date.now();
+        const from = r.effectiveFrom ? new Date(r.effectiveFrom).getTime() : -Infinity;
+        const to = r.effectiveTo ? new Date(r.effectiveTo).getTime() : Infinity;
+        return from <= now && now <= to;
+    };
+    // A non-published row's published sibling: same subject + chainCode, published, not archived. Every row of the tab
+    // is loaded client-side (no server paging), so the lookup is complete. Prefer the one effective now, else the
+    // highest version.
+    const publishedSibling = row => {
+        const siblings = state['concept-chain-templates'].rows.filter(r =>
+            r !== row && !r.isArchived && norm(r.status) === 'published'
+            && r.chainCode === row.chainCode && r.subjectId === row.subjectId);
+        if (!siblings.length) return null;
+        return siblings.find(isEffectiveNow)
+            || siblings.slice().sort((a, b) => norm(b.chainVersion).localeCompare(norm(a.chainVersion), undefined, { numeric: true }))[0];
+    };
+    const statusVersionCell = row => {
+        const status = norm(row.status);
+        const ver = versionLabel(row.chainVersion);
+        let html = `${chainStatusBadge(status)}${ver ? ` <span class="text-muted small ms-1">${esc(ver)}</span>` : ''}`;
+        if (status !== 'published' && !row.isArchived) {
+            const sib = publishedSibling(row);
+            if (sib && norm(sib.chainVersion)) {
+                const hint = (L.PublishedSiblingHint || 'v{0}').replace('{0}', versionBare(sib.chainVersion));
+                html += `<div class="small text-success text-nowrap"><i class="bx bx-check-circle me-1"></i>${esc(hint)}</div>`;
+            }
+        }
+        return html;
+    };
+    // Row → the existing Compact editor route (an archived row is view-only: plain name, no link).
+    const chainNameCell = (v, row) => row.isArchived
+        ? nameCell(v)
+        : `<a href="${esc(templateEditUrl(row.conceptChainTemplateId))}" class="fw-medium text-heading">${esc(v)}</a>`;
 
     const columnsFor = kind => {
         const ctrl = { data: null, defaultContent: '' };
@@ -527,23 +694,31 @@
             ]
         };
 
+        // WP-CT-FE-1 (mockup v2 Ekran 1). Display renders resolve names; sort / filter / export read plain text so
+        // search matches what the user sees and sorting stays stable.
+        const plain = (display, text) => (v, t, row) => t === 'display' ? display(v, row) : text(v, row);
+        const joinNames = (ids, map, sep) => (Array.isArray(ids) ? ids : []).map(id => map[id] || '').filter(Boolean).join(sep);
         return {
-            columns: [ctrl, { data:'chainCode' }, { data:'chainName' }, { data:'subjectId' },
-                { data:'orderedConceptTypes' }, { data:'orderedConceptTypes' }, { data:'chainVersion' },
-                { data:'status' }, { data:'effectiveFrom' }, { data:'effectiveTo' }, { data:'isArchived' },
-                { data:'updatedAt' }, act],
+            columns: [ctrl, { data:'subjectId' }, { data:'chainName' }, { data:'chainCode' },
+                { data:'orderedConceptTypes' }, { data:'branches' }, { data:'moderatorRoleType' },
+                { data:'forWhomAudienceProfileIds' }, { data:'status' }, { data:'orderedConceptTypes' },
+                { data:'effectiveFrom' }, { data:'effectiveTo' }, { data:'isArchived' }, { data:'updatedAt' }, act],
             columnDefs: [
                 { targets:0, className:'control', orderable:false, render:() => '' },
-                { targets:2, render:v => nameCell(v) },
-                { targets:3, render:v => refCell(v, labelSubject) },
-                { targets:4, orderable:false, render:(v, t, row) => sequenceCell(v, row) },
-                { targets:5, render:v => esc(String((v || []).length)) },
-                { targets:6, render:v => muted(v) },
-                { targets:7, render:v => statusBadge(v) },
-                { targets:[8, 9], render:v => dtStamp(v) },
-                { targets:10, render:v => archivedBadge(v) },
-                { targets:11, render:v => stamp(v) },
-                actionDef(12)
+                { targets:1, render:plain(v => subjectCell(v), v => subjectMap[v] || '') },
+                { targets:2, render:plain((v, row) => chainNameCell(v, row), v => norm(v)) },
+                { targets:3, render:v => muted(v) },
+                { targets:4, orderable:false, render:plain(v => spineCell(v), v => joinNames(v, typeNameMap, ' → ')) },
+                { targets:5, className:'text-center', render:plain((v, row) => branchCell(row), (v, row) => branchCountOf(row)) },
+                { targets:6, render:plain(v => moderatorCell(v), v => norm(v) ? labelModerator(norm(v)) : '') },
+                { targets:7, render:plain(v => forWhomCell(v), v => joinNames(v, audienceMap, ', ')) },
+                { targets:8, render:plain((v, row) => statusVersionCell(row), (v, row) => `${norm(v)} ${versionLabel(row.chainVersion)}`.trim()) },
+                { targets:9, render:v => esc(String((v || []).length)) },
+                { targets:[10, 11], render:v => dtStamp(v) },
+                { targets:12, render:v => archivedBadge(v) },
+                { targets:13, render:v => stamp(v) },
+                { targets:[9, 10, 11, 12, 13], visible:false },
+                actionDef(14)
             ]
         };
     };
@@ -605,7 +780,10 @@
             const data = await envelope(await fetch(`${base}/${kind}?includeArchived=true`, { credentials: 'same-origin', headers }));
             state[kind].rows = data?.items || [];
             if (kind === 'concept-types') {
-                state[kind].rows.forEach(t => { typeMap[t.conceptTypeId] = `${t.conceptTypeCode} — ${t.conceptTypeName}`; });
+                state[kind].rows.forEach(t => {
+                    typeMap[t.conceptTypeId] = `${t.conceptTypeCode} — ${t.conceptTypeName}`;
+                    typeNameMap[t.conceptTypeId] = t.conceptTypeName;   // name-only, for the Not-3 auto-name
+                });
             }
             if (state[kind].table) {
                 state[kind].table.clear();
@@ -648,6 +826,13 @@
         if (current && !list.some(o => String(o.value) === String(current))) list.unshift({ value: current, text: currentLabel || current });
         el.innerHTML = (withEmpty ? '<option value=""></option>' : '') + list.map(o => `<option value="${esc(o.value)}">${esc(o.text)}</option>`).join('');
     };
+    // SCMM-09-UI-refine (Not 4): a per-select description lookup so the RelationshipType / Direction pickers explain
+    // each option. Descriptions are 7-language resx (RelTypeDesc_* / DirectionDesc_*); an option with no description
+    // (e.g. a custom relationship type) renders as its plain label.
+    const OPTION_DESC = {
+        relRelationshipType: v => L['RelTypeDesc_' + v],
+        relDirection: v => L['DirectionDesc_' + v]
+    };
     const initFormSelect2 = canvasId => {
         const jq = window.jQuery;
         if (!jq?.fn?.select2) return;
@@ -656,7 +841,20 @@
             if ($s.hasClass('select2-hidden-accessible')) $s.select2('destroy');
             // select2 only clears into an empty option, so allowClear is offered exactly when the list carries one.
             const clearable = !this.required && this.options.length > 0 && this.options[0].value === '';
-            $s.select2({ dropdownParent: jq(`#${canvasId}`), placeholder: $s.data('placeholder') || '', width: '100%', allowClear: clearable });
+            const descFn = OPTION_DESC[this.id];
+            const options = { dropdownParent: jq(`#${canvasId}`), placeholder: $s.data('placeholder') || '', width: '100%', allowClear: clearable };
+            if (descFn) {
+                options.templateResult = opt => {
+                    if (!opt.id) return opt.text;
+                    const d = descFn(opt.id);
+                    if (!d) return opt.text;
+                    const $wrap = jq('<span>');
+                    $wrap.append(jq('<span class="fw-medium">').text(opt.text));
+                    $wrap.append(jq('<small class="d-block text-muted">').text(d));
+                    return $wrap;
+                };
+            }
+            $s.select2(options);
         });
     };
     const setDisabled = (id, disabled) => {
@@ -824,6 +1022,8 @@
     const openRelationshipForm = row => {
         const form = document.getElementById('conceptRelationshipForm');
         form.reset();
+        // A stored name (edit) is treated as user-owned → never auto-overwritten; a new connection starts clean.
+        relNameDirty = !!(row && row.relationshipName);
         showAlert('conceptRelationshipFormAlert', '');
         fillFormSelect('relSubjectId', liveSubjects(row?.subjectId), true, row?.subjectId, labelSubject(row?.subjectId));
         fillFormSelect('relRelationshipType', vocab('relationshipTypes'), true, row?.relationshipType, row?.relationshipType);
@@ -838,7 +1038,7 @@
         setValue('relRelationshipCode', row ? row.relationshipCode : nextCode('concept-relationships', 'relationshipCode'));
         setValue('relRelationshipName', row?.relationshipName || '');
         setValue('relDirection', row?.direction || 'outbound');
-        setValue('relPriority', row?.priority ?? 0);
+        setValue('relPriority', nearestPriorityBucket(row && row.priority != null ? row.priority : 20));
         setValue('relStatus', row?.status || 'active');
         setValue('relEffectiveFrom', row ? toDateInput(row.effectiveFrom) : todayInput());
         setValue('relEffectiveTo', toDateInput(row?.effectiveTo));
@@ -917,206 +1117,29 @@
         return !!id;
     };
 
-    // ─── Tab 4 · ConceptChainTemplate branched builder (SCMM-10 ③) ───────────
+    // SCMM-10-UI-refine (Not 5): the Chain Template create/edit builder moved OUT of this Slim module to the Golden
+    // Compact full page (Templates/Create · Templates/Edit → template-form.js). This module keeps only the template
+    // LIST + read-only quick view and, from that surface, navigates to the Compact page. typeOptionsFor stays because
+    // the ConceptRelationship "new node" picker (tab 3) shares it.
     const typeOptionsFor = subjectId => state['concept-types'].rows
         .filter(t => String(t.subjectId) === String(subjectId) && !t.isArchived)
         .map(t => ({ value: t.conceptTypeId, text: `${t.conceptTypeCode} — ${t.conceptTypeName}` }));
+    const templateCreateUrl = () => '/CRM/KnowledgeConcepts/Templates/Create';
+    const templateEditUrl = id => `/CRM/KnowledgeConcepts/Templates/Edit/${encodeURIComponent(id)}`;
 
-    // Builder model: [{ name, steps:[{ conceptTypeId, min, max, roles:[], audiences:[] }] }].
-    let branches = [];
-    let templateReadOnly = false;
-    // Moderator / for-whom refs are opaque config strings (D8 — no engine); the editor takes them comma-separated.
-    const splitRefs = v => norm(v).split(',').map(x => x.trim()).filter(Boolean);
-    // The spine (OrderedConceptTypes) is the DISTINCT type ids across every branch step, first-occurrence order — it is
-    // sent alongside Branches so conformance + backward-compat keep working (SCMM-10 contract).
-    const spineFromBranches = () => {
-        const seen = new Set();
-        const out = [];
-        branches.forEach(b => b.steps.forEach(s => {
-            const id = String(s.conceptTypeId || '');
-            if (id && !seen.has(id)) { seen.add(id); out.push(id); }
-        }));
-        return out;
-    };
-    const bumpVersion = v => {
-        const m = /^v?(\d+)(?:\.(\d+))?$/i.exec(norm(v));
-        if (!m) return norm(v) ? `${norm(v)}-2` : 'v2';
-        const major = parseInt(m[1], 10);
-        return m[2] != null ? `v${major}.${parseInt(m[2], 10) + 1}` : `v${major + 1}`;
-    };
-    const renderBranches = () => {
-        const host = document.getElementById('tplBranches');
-        const empty = document.getElementById('tplBranchesEmpty');
-        if (!host) return;
-        const subjectId = norm(document.getElementById('tplSubjectId').value);
-        const ro = templateReadOnly;
-        host.innerHTML = branches.map((b, bi) => {
-            const steps = b.steps.map((s, si) => `
-                <li class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-center gap-2">
-                        <span class="fw-medium text-truncate">${esc(labelType(s.conceptTypeId))}</span>
-                        <span class="d-flex gap-1 flex-shrink-0">
-                            <button type="button" class="btn btn-icon btn-sm btn-label-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="-1" title="${esc(L.MoveUp || '')}" ${ro || si === 0 ? 'disabled' : ''}><i class="bx bx-up-arrow-alt"></i></button>
-                            <button type="button" class="btn btn-icon btn-sm btn-label-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="1" title="${esc(L.MoveDown || '')}" ${ro || si === b.steps.length - 1 ? 'disabled' : ''}><i class="bx bx-down-arrow-alt"></i></button>
-                            <button type="button" class="btn btn-icon btn-sm btn-label-danger js-step-remove" data-b="${bi}" data-s="${si}" title="${esc(L.RemoveStep || '')}" ${ro ? 'disabled' : ''}><i class="bx bx-x"></i></button>
-                        </span>
-                    </div>
-                    <div class="row g-2 mt-1">
-                        <div class="col-6 col-md-3"><label class="form-label small mb-0">${esc(L.MinSelection || 'Min')}</label><input type="number" min="0" step="1" class="form-control form-control-sm js-step-min" data-b="${bi}" data-s="${si}" value="${esc(String(s.min ?? 1))}" ${ro ? 'disabled' : ''}></div>
-                        <div class="col-6 col-md-3"><label class="form-label small mb-0">${esc(L.MaxSelection || 'Max')}</label><input type="number" min="1" step="1" class="form-control form-control-sm js-step-max" data-b="${bi}" data-s="${si}" value="${s.max == null ? '' : esc(String(s.max))}" ${ro ? 'disabled' : ''}></div>
-                        <div class="col-12 col-md-3"><label class="form-label small mb-0">${esc(L.Moderator || '')}</label><input type="text" class="form-control form-control-sm js-step-roles" data-b="${bi}" data-s="${si}" value="${esc((s.roles || []).join(', '))}" placeholder="${esc(L.RefsCommaHint || '')}" ${ro ? 'disabled' : ''}></div>
-                        <div class="col-12 col-md-3"><label class="form-label small mb-0">${esc(L.ForWhom || '')}</label><input type="text" class="form-control form-control-sm js-step-aud" data-b="${bi}" data-s="${si}" value="${esc((s.audiences || []).join(', '))}" placeholder="${esc(L.RefsCommaHint || '')}" ${ro ? 'disabled' : ''}></div>
-                    </div>
-                </li>`).join('');
-            const opts = typeOptionsFor(subjectId).filter(o => !b.steps.some(s => String(s.conceptTypeId) === String(o.value)));
-            return `
-                <div class="card border shadow-none">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
-                            <input type="text" class="form-control form-control-sm js-branch-name" data-b="${bi}" value="${esc(b.name || '')}" placeholder="${esc(L.BranchNamePlaceholder || '')}" ${ro ? 'disabled' : ''} style="max-width:18rem">
-                            <button type="button" class="btn btn-icon btn-sm btn-label-danger js-branch-remove" data-b="${bi}" title="${esc(L.RemoveBranch || '')}" ${ro ? 'disabled' : ''}><i class="bx bx-trash"></i></button>
-                        </div>
-                        <ol class="list-group list-group-numbered mb-2">${steps || `<li class="list-group-item text-muted">${esc(L.BranchStepsEmpty || '')}</li>`}</ol>
-                        <div class="d-flex gap-2">
-                            <select class="form-select form-select-sm js-branch-type-picker" data-b="${bi}" ${ro ? 'disabled' : ''}>
-                                <option value=""></option>
-                                ${opts.map(o => `<option value="${esc(o.value)}">${esc(o.text)}</option>`).join('')}
-                            </select>
-                            <button type="button" class="btn btn-sm btn-label-primary js-branch-add-step" data-b="${bi}" ${ro ? 'disabled' : ''}><i class="bx bx-plus"></i></button>
-                        </div>
-                    </div>
-                </div>`;
-        }).join('');
-        empty?.classList.toggle('d-none', branches.length > 0);
-        setValue('tplOrderedConceptTypes', spineFromBranches().join(','));
-    };
-    const openTemplateForm = row => {
-        const form = document.getElementById('conceptTemplateForm');
-        form.reset();
-        showAlert('conceptTemplateFormAlert', '');
-        document.getElementById('tplSequenceError')?.classList.add('d-none');
-        fillFormSelect('tplSubjectId', liveSubjects(row?.subjectId), true, row?.subjectId, labelSubject(row?.subjectId));
-        fillFormSelect('tplStatus', liveStatuses('chainStatuses'), false, row?.status, row?.status);
-        initFormSelect2('offcanvasTemplateCreateEdit');
-
-        setValue('templateFormId', row?.conceptChainTemplateId || '');
-        setValue('tplSubjectId', row?.subjectId || '');
-        setValue('tplChainCode', row ? row.chainCode : nextCode('concept-chain-templates', 'chainCode'));
-        setValue('tplChainName', row?.chainName || '');
-        setValue('tplDescription', row?.description || '');
-        setValue('tplChainVersion', row?.chainVersion || '');
-        setValue('tplStatus', row?.status || 'draft');
-        setValue('tplEffectiveFrom', row ? toDateInput(row.effectiveFrom) : todayInput());
-        setValue('tplEffectiveTo', toDateInput(row?.effectiveTo));
-
-        // The backend always returns branches (a legacy flat template read-migrates to a single branch), so the builder
-        // loads them directly. A brand-new create starts with one empty branch for convenience.
-        branches = (row?.branches || []).map(b => ({
-            name: b.branchName || '',
-            steps: (b.steps || []).map(s => ({
-                conceptTypeId: s.conceptTypeId,
-                min: s.minSelection ?? 1,
-                max: s.maxSelection ?? null,
-                roles: (s.allowedRoleRefs || []).slice(),
-                audiences: (s.audienceDimensionRefs || []).slice()
-            }))
-        }));
-        if (!row && branches.length === 0) branches = [{ name: '', steps: [] }];
-
-        // A published chain freezes its structure; the builder is read-only and "New version" clones it into a draft.
-        const frozen = norm(row?.status) === 'published';
-        templateReadOnly = frozen;
-        document.getElementById('conceptTemplateFrozenNote')?.classList.toggle('d-none', !frozen);
-        document.getElementById('btnTplNewVersion')?.classList.toggle('d-none', !frozen);
-        document.getElementById('btnSaveConceptTemplate')?.classList.toggle('d-none', frozen);
-        renderBranches();
-        setDisabled('btnTplAddBranch', frozen);
-        // SubjectId and the chain code are stable across versions and are not in the update contract.
-        setDisabled('tplSubjectId', !!row);
-        setReadOnly('tplChainCode', !!row);
-        document.getElementById('tplChainCodeHint')?.classList.toggle('d-none', !!row);
-        document.getElementById('offcanvasTemplateCreateEditLabel').textContent = row ? (L.EditTemplate || L.Edit) : (L.CreateTemplate || '');
-        canvasOf('concept-chain-templates')?.show();
-    };
-    // SCMM-10 (③): "New version" clones the published template's structure into a fresh DRAFT create form (same code +
-    // subject, bumped version, new effective window). The user edits + publishes it as a NON-overlapping version (V13).
-    const startNewTemplateVersion = () => {
-        templateReadOnly = false;
-        setValue('templateFormId', '');
-        setValue('tplStatus', 'draft');
-        setValue('tplEffectiveFrom', todayInput());
-        setValue('tplEffectiveTo', '');
-        setValue('tplChainVersion', bumpVersion(document.getElementById('tplChainVersion').value));
-        setDisabled('tplSubjectId', false);   // same subject, but must be sent on create
-        setReadOnly('tplChainCode', false);    // same code, new version
-        document.getElementById('conceptTemplateFrozenNote')?.classList.add('d-none');
-        document.getElementById('btnTplNewVersion')?.classList.add('d-none');
-        document.getElementById('btnSaveConceptTemplate')?.classList.remove('d-none');
-        renderBranches();
-        setDisabled('btnTplAddBranch', false);
-        document.getElementById('offcanvasTemplateCreateEditLabel').textContent = L.CreateTemplate || '';
-    };
-    const submitTemplateForm = async () => {
-        const id = norm(document.getElementById('templateFormId').value);
-        const error = document.getElementById('tplSequenceError');
-        const spine = spineFromBranches();
-        // The backend requires the spine (min 2 DISTINCT types across all branches); keep the builder honest first.
-        if (spine.length < 2) {
-            if (error) { error.textContent = L.SequenceMinTwo || ''; error.classList.remove('d-none'); }
-            throw Object.assign(new Error(L.SequenceMinTwo || ''), { handled: true });
-        }
-        error?.classList.add('d-none');
-
-        // Send BOTH the spine and the rich branch structure (SCMM-10 contract; update = full replace).
-        const branchPayload = branches
-            .filter(b => b.steps.length > 0)
-            .map((b, i) => ({
-                branchCode: `BR${i + 1}`,
-                branchName: norm(b.name) || null,
-                sortOrder: i,
-                steps: b.steps.map(s => ({
-                    conceptTypeId: String(s.conceptTypeId),
-                    minSelection: Number.isFinite(Number(s.min)) ? Number(s.min) : 1,
-                    maxSelection: (s.max === '' || s.max == null) ? null : Number(s.max),
-                    allowedRoleRefs: s.roles || [],
-                    audienceDimensionRefs: s.audiences || []
-                }))
-            }));
-
-        const payload = {
-            chainName: norm(document.getElementById('tplChainName').value),
-            orderedConceptTypes: spine,
-            branches: branchPayload,
-            effectiveFrom: fromDateInput(document.getElementById('tplEffectiveFrom').value),
-            description: norm(document.getElementById('tplDescription').value) || null,
-            status: norm(document.getElementById('tplStatus').value) || null,
-            chainVersion: norm(document.getElementById('tplChainVersion').value) || null,
-            effectiveTo: fromDateInput(document.getElementById('tplEffectiveTo').value)
-        };
-        if (!id) {
-            payload.subjectId = norm(document.getElementById('tplSubjectId').value);
-            payload.chainCode = norm(document.getElementById('tplChainCode').value);
-        }
-        await envelope(await fetch(id ? `${base}/concept-chain-templates/${id}` : `${base}/concept-chain-templates`, {
-            method: id ? 'PUT' : 'POST', credentials: 'same-origin', headers: jsonHeaders, body: JSON.stringify(payload)
-        }));
-        return !!id;
-    };
-
+    // The Chain Template create/edit moved to its own Compact page (SCMM-10-UI-refine), so it is no longer an
+    // offcanvas form here — only ConceptType and ConceptRelationship remain in-module.
     const OPEN_FORM = {
         'concept-types': openTypeForm,
-        'concept-relationships': openRelationshipForm,
-        'concept-chain-templates': openTemplateForm
+        'concept-relationships': openRelationshipForm
     };
     const SUBMIT_FORM = {
         'concept-types': submitTypeForm,
-        'concept-relationships': submitRelationshipForm,
-        'concept-chain-templates': submitTemplateForm
+        'concept-relationships': submitRelationshipForm
     };
     const ALERT_ID = {
         'concept-types': 'conceptTypeFormAlert',
-        'concept-relationships': 'conceptRelationshipFormAlert',
-        'concept-chain-templates': 'conceptTemplateFormAlert'
+        'concept-relationships': 'conceptRelationshipFormAlert'
     };
 
     // ─── Read-only quick view (shared preview canvas) ────────────────────────
@@ -1176,30 +1199,44 @@
             setText('pv-tpl-name', row.chainName);
             setText('pv-tpl-subject', labelSubject(row.subjectId));
             setText('pv-tpl-version', row.chainVersion);
-            setBadge('pv-tpl-status', row.status, row.status === 'published' ? 'success' : 'secondary');
+            setBadge('pv-tpl-status', chainStatusLabel(row.status), row.status === 'published' ? 'success' : 'secondary');
             const seq = document.getElementById('pv-tpl-sequence');
             if (seq) {
                 seq.innerHTML = (row.orderedConceptTypes || [])
-                    .map(id => `<li class="list-group-item">${esc(labelType(id))}</li>`).join('')
+                    .map(id => `<li class="list-group-item">${esc(typeNameMap[id] || labelType(id))}</li>`).join('')
                     || `<li class="list-group-item text-muted">${esc(L.SequenceEmpty || '')}</li>`;
             }
             document.getElementById('pv-tpl-frozen')?.classList.toggle('d-none', norm(row.status) !== 'published');
-            // SCMM-10 (③) — branch structure (read-only): each branch's steps with cardinality + moderator/for-whom.
+            // SCMM-10-MOD-C — Moderator/ForWhom are TEMPLATE-level (delivery identity), no longer per step.
+            setText('pv-tpl-moderator', norm(row.moderatorRoleType) ? labelModerator(row.moderatorRoleType) : '');
+            const fwHost = document.getElementById('pv-tpl-forwhom');
+            if (fwHost) {
+                const ids = Array.isArray(row.forWhomAudienceProfileIds) ? row.forWhomAudienceProfileIds : [];
+                fwHost.innerHTML = ids.length
+                    ? ids.map(id => `<span class="badge bg-label-secondary me-1">${esc(labelAudience(id))}</span>`).join('')
+                    : `<span class="text-muted">—</span>`;
+            }
+            // SCMM-10 (③) — branch structure (read-only). WP-CT-FE-9: same language as the editor — "DAL A · name ·
+            // N adım" header and the ×N / ×min–max chip per step.
             const brHost = document.getElementById('pv-tpl-branches');
             if (brHost) {
                 const list = Array.isArray(row.branches) ? row.branches : [];
-                brHost.innerHTML = list.length ? list.map(b => {
-                    const steps = (b.steps || []).map(s => {
-                        const card = `${s.minSelection ?? 1}–${s.maxSelection == null ? '∞' : s.maxSelection}`;
-                        const roles = (s.allowedRoleRefs || []).length ? ` · ${esc(L.Moderator || '')}: ${esc((s.allowedRoleRefs || []).join(', '))}` : '';
-                        const aud = (s.audienceDimensionRefs || []).length ? ` · ${esc(L.ForWhom || '')}: ${esc((s.audienceDimensionRefs || []).join(', '))}` : '';
-                        return `<li class="list-group-item"><span class="fw-medium">${esc(labelType(s.conceptTypeId))}</span> <span class="text-muted small">(${esc(card)})${roles}${aud}</span></li>`;
-                    }).join('');
+                brHost.innerHTML = list.length ? list.map((b, bi) => {
+                    const stepList = b.steps || [];
+                    const steps = stepList.map(s =>
+                        `<li class="list-group-item d-flex align-items-center gap-2"><span class="fw-medium me-auto">${esc(typeNameMap[s.conceptTypeId] || labelType(s.conceptTypeId))}</span><span class="badge bg-label-secondary">${esc(pvChipLabel(s))}</span></li>`
+                    ).join('');
                     return `<div class="card border shadow-none"><div class="card-body p-3">
-                        <div class="fw-medium mb-2">${esc(b.branchName || b.branchCode || '')}</div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-label-primary text-uppercase fw-semibold flex-shrink-0">${esc(L.BranchLabelPrefix || 'Branch')} ${esc(pvBranchLetter(bi))}</span>
+                            <span class="fw-medium text-truncate flex-grow-1">${esc(b.branchName || b.branchCode || '')}</span>
+                            <span class="small text-muted text-nowrap">${esc(pvFmt(L.StepCountLabel || '{0}', stepList.length))}</span>
+                        </div>
                         <ol class="list-group list-group-numbered mb-0">${steps}</ol></div></div>`;
                 }).join('') : `<span class="text-muted">—</span>`;
             }
+            // WP-CT-FE-9 — unresolved non-conforming count, filled async (the synchronous fill never waits for it).
+            void fillTemplateNonConforming(row);
             setText('pv-tpl-description', row.description);
             setText('pv-tpl-from', stamp(row.effectiveFrom));
             setText('pv-tpl-to', row.effectiveTo ? stamp(row.effectiveTo) : '');
@@ -1216,9 +1253,16 @@
 
     // ─── Delegated interactions ──────────────────────────────────────────────
     document.addEventListener('click', async event => {
-        // Create lives in each table's toolbar (.add-new slot) tagged with data-concept-create.
+        // Create lives in each table's toolbar (.add-new slot) tagged with data-concept-create. The Chain Template
+        // create is a full page (SCMM-10-UI-refine); the other two stay as in-module offcanvas forms.
         const create = event.target.closest('[data-concept-create]');
-        if (create) { event.preventDefault(); OPEN_FORM[create.getAttribute('data-concept-create')](null); return; }
+        if (create) {
+            event.preventDefault();
+            const kind = create.getAttribute('data-concept-create');
+            if (kind === 'concept-chain-templates') { window.location.href = templateCreateUrl(); return; }
+            OPEN_FORM[kind](null);
+            return;
+        }
 
         const view = event.target.closest('.js-concept-view');
         if (view) {
@@ -1230,6 +1274,7 @@
         const edit = event.target.closest('.js-concept-edit');
         if (edit) {
             event.preventDefault();
+            if (edit.dataset.kind === 'concept-chain-templates') { window.location.href = templateEditUrl(edit.dataset.id); return; }
             const row = findRow(edit.dataset.kind, edit.dataset.id);
             if (row) OPEN_FORM[edit.dataset.kind](row);
             return;
@@ -1238,6 +1283,7 @@
         if (previewEdit && previewRef) {
             event.preventDefault();
             const { kind, id } = previewRef;
+            if (kind === 'concept-chain-templates') { window.location.href = templateEditUrl(id); return; }
             const row = findRow(kind, id);
             if (!row) return;
             // Wait for the preview to finish closing: opening the form while the first canvas is still animating
@@ -1266,64 +1312,6 @@
                     if (kind === 'concept-types' || kind === 'concept-chain-templates') await load('concept-relationships');
                 } catch (error) { window.showToast?.(error.message || L.ErrorState, 'error'); }
             }, { entityName: archive.dataset.name, type: 'warning', confirmButtonText: spec.archiveText() });
-            return;
-        }
-
-        // SCMM-10 (③) branched builder (tab 4).
-        const addBranch = event.target.closest('#btnTplAddBranch');
-        if (addBranch) {
-            event.preventDefault();
-            if (templateReadOnly) return;
-            branches.push({ name: '', steps: [] });
-            renderBranches();
-            return;
-        }
-        const newVersion = event.target.closest('#btnTplNewVersion');
-        if (newVersion) {
-            event.preventDefault();
-            startNewTemplateVersion();
-            return;
-        }
-        const branchRemove = event.target.closest('.js-branch-remove');
-        if (branchRemove) {
-            event.preventDefault();
-            if (templateReadOnly) return;
-            branches.splice(Number(branchRemove.dataset.b), 1);
-            renderBranches();
-            return;
-        }
-        const addStep = event.target.closest('.js-branch-add-step');
-        if (addStep) {
-            event.preventDefault();
-            if (templateReadOnly) return;
-            const bi = Number(addStep.dataset.b);
-            const picker = document.querySelector(`.js-branch-type-picker[data-b="${bi}"]`);
-            const value = norm(picker?.value);
-            if (!value || branches[bi].steps.some(s => String(s.conceptTypeId) === value)) return;
-            branches[bi].steps.push({ conceptTypeId: value, min: 1, max: null, roles: [], audiences: [] });
-            renderBranches();
-            return;
-        }
-        const stepMove = event.target.closest('.js-step-move');
-        if (stepMove) {
-            event.preventDefault();
-            if (templateReadOnly) return;
-            const bi = Number(stepMove.dataset.b);
-            const si = Number(stepMove.dataset.s);
-            const target = si + Number(stepMove.dataset.delta);
-            const steps = branches[bi].steps;
-            if (target < 0 || target >= steps.length) return;
-            const [item] = steps.splice(si, 1);
-            steps.splice(target, 0, item);
-            renderBranches();
-            return;
-        }
-        const stepRemove = event.target.closest('.js-step-remove');
-        if (stepRemove) {
-            event.preventDefault();
-            if (templateReadOnly) return;
-            branches[Number(stepRemove.dataset.b)].steps.splice(Number(stepRemove.dataset.s), 1);
-            renderBranches();
             return;
         }
 
@@ -1361,33 +1349,15 @@
             if (window.jQuery) window.jQuery(el).on('change', handler);
         };
         bind('relSubjectId', () => { refreshRelationshipNodePickers(null); refreshRelationshipNewNodePickers(); });
-        // SCMM-10 (③): changing the subject resets the branch builder (types are subject-scoped).
-        bind('tplSubjectId', () => { branches = [{ name: '', steps: [] }]; renderBranches(); });
+        // SCMM-09-UI-refine (Not 3): From/To drive the auto-filled connection name; a manual edit stops the auto-fill.
+        bind('relFromNodeId', autoFillRelationshipName);
+        bind('relToNodeId', autoFillRelationshipName);
+        document.getElementById('relRelationshipName')?.addEventListener('input', () => { relNameDirty = true; });
         // SCMM-09 (①): subject drives the cycle-safe parent-type picker on the ConceptType form.
         bind('typeSubjectId', () => refreshTypeParentPicker());
         // SCMM-09 (②): connection-mode radios toggle the existing/new-node blocks.
         document.querySelectorAll('input[name="relMode"]').forEach(radio =>
             radio.addEventListener('change', () => setRelationshipMode(radio.value)));
-    };
-
-    // SCMM-10 (③): keep the branch-step model in sync as the user types (no re-render, so focus is never lost).
-    const bindTemplateBuilderInputs = () => {
-        const host = document.getElementById('tplBranches');
-        if (!host) return;
-        host.addEventListener('input', event => {
-            const el = event.target;
-            if (!el?.dataset || el.dataset.b == null) return;
-            const bi = Number(el.dataset.b);
-            if (!branches[bi]) return;
-            if (el.classList.contains('js-branch-name')) { branches[bi].name = el.value; return; }
-            if (el.dataset.s == null) return;
-            const step = branches[bi].steps[Number(el.dataset.s)];
-            if (!step) return;
-            if (el.classList.contains('js-step-min')) step.min = el.value === '' ? 0 : Number(el.value);
-            else if (el.classList.contains('js-step-max')) step.max = el.value === '' ? null : Number(el.value);
-            else if (el.classList.contains('js-step-roles')) step.roles = splitRefs(el.value);
-            else if (el.classList.contains('js-step-aud')) step.audiences = splitRefs(el.value);
-        });
     };
 
     // SCMM-09 (①): keep the native colour picker and the hex text input in sync (either can drive the value).
@@ -1403,6 +1373,8 @@
     };
 
     KINDS.forEach(kind => {
+        // The Chain Template create/edit is a separate Compact page now; only the two offcanvas forms bind here.
+        if (!SUBMIT_FORM[kind]) return;
         const form = document.querySelector(`#${SPECS[kind].canvasId} form`);
         form?.addEventListener('submit', async event => {
             event.preventDefault();
@@ -1440,13 +1412,12 @@
     registerTableFilter();
     bindSubjectCascade();
     bindTypeColorSync();
-    bindTemplateBuilderInputs();
     (async () => {
         L = window.ConceptL10n || window.L10n || {};
         // The contract first (it supplies every vocabulary the filters and forms pick from), then the read-only
         // references, then the types — the other two tabs label their columns with type and node names.
         await loadContract();
-        await Promise.all([loadSubjects(), loadNodes()]);
+        await Promise.all([loadSubjects(), loadNodes(), loadAudiences(), loadModeratorRoles()]);
         await load('concept-types');
         await Promise.all([load('concept-relationships'), load('concept-chain-templates')]);
     })();

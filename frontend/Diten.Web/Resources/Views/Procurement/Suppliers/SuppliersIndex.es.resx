@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SuppliersTitle" xml:space="preserve"><value>Proveedores</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Maestro de proveedores con incorporación, KYC, cribado de sanciones y seguimiento de documentos.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Añadir proveedor</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Editar proveedor</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Añadir proveedor</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar proveedor</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Ver</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>ID de proveedor</value></data>
+  <data name="Name" xml:space="preserve"><value>Nombre</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>p. ej. Medip-Kim Pharma S.A.</value></data>
+  <data name="Country" xml:space="preserve"><value>País</value></data>
+  <data name="CountryPlaceholder" xml:space="preserve"><value>p. ej. tr</value></data>
+  <data name="TaxId" xml:space="preserve"><value>NIF</value></data>
+  <data name="TaxIdPlaceholder" xml:space="preserve"><value>p. ej. 1234567890</value></data>
+  <data name="PrimaryContact" xml:space="preserve"><value>Contacto principal</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Activo</value></data>
+  <data name="StatusOnHold" xml:space="preserve"><value>En espera</value></data>
+  <data name="StatusBlocked" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Inactivo</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="OnboardingSection" xml:space="preserve"><value>Incorporación</value></data>
+  <data name="ContactSection" xml:space="preserve"><value>Contacto principal</value></data>
+  <data name="SourcingSection" xml:space="preserve"><value>Abastecimiento</value></data>
+  <data name="KycLegalName" xml:space="preserve"><value>Razón social KYC</value></data>
+  <data name="KycLegalNamePlaceholder" xml:space="preserve"><value>p. ej. Medip-Kim Pharma S.A.</value></data>
+  <data name="KycRegistrationNo" xml:space="preserve"><value>Número de registro</value></data>
+  <data name="KycRegistrationNoPlaceholder" xml:space="preserve"><value>p. ej. TR-00099</value></data>
+  <data name="DocumentType" xml:space="preserve"><value>Tipo de documento</value></data>
+  <data name="DocumentTypePlaceholder" xml:space="preserve"><value>p. ej. certificado-fiscal</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Enviar para aprobación</value></data>
+  <data name="ContactType" xml:space="preserve"><value>Tipo de contacto</value></data>
+  <data name="ContactTypePrimary" xml:space="preserve"><value>Principal</value></data>
+  <data name="ContactTypeBilling" xml:space="preserve"><value>Facturación</value></data>
+  <data name="ContactTypeQuality" xml:space="preserve"><value>Calidad</value></data>
+  <data name="ContactTypeLogistics" xml:space="preserve"><value>Logística</value></data>
+  <data name="ContactEmail" xml:space="preserve"><value>Correo electrónico</value></data>
+  <data name="ContactEmailPlaceholder" xml:space="preserve"><value>p. ej. ventas@proveedor.example</value></data>
+  <data name="ContactPhone" xml:space="preserve"><value>Teléfono</value></data>
+  <data name="ContactPhonePlaceholder" xml:space="preserve"><value>p. ej. +90 212 000 0000</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Sistema de origen</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>p. ej. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>Referencia externa</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>p. ej. ERP-SUP-2001</value></data>
+  <data name="OnboardingStatus" xml:space="preserve"><value>Estado de incorporación</value></data>
+  <data name="KycOutcome" xml:space="preserve"><value>Resultado KYC</value></data>
+  <data name="SanctionsOutcome" xml:space="preserve"><value>Resultado de sanciones</value></data>
+</root>

@@ -19,7 +19,12 @@
 </div>
 
 @section Scripts {
+    @* DCP-004 amendment 2026-09-15 — the same permission snapshot the list page loads, because app.js renders both
+       surfaces from one bundle and must answer "may this user create?" the same way on each. UX only. *@
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="_L10n" />
+    @* WP-UI-SHORTCUTS-01 (BL-438) — the shared keyboard-shortcut layer and its `?` list strings. *@
+    <partial name="~/Views/Shared/_DitenShortcuts.cshtml" />
     @* app.js performs the SAME writes here as on the list page — transitions, checklist ticks, subtask creation —
        and every one of them goes through TasksApi/TaskForm. Omitting these made each write throw on an undefined
        global inside an async click handler, which surfaces as nothing at all: no request, no toast, no warning.
@@ -27,6 +32,9 @@
     <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
     <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
+    <!-- S10B live pass (2026-09-13): app.js calls MeetingsApi for "schedule review meeting"; without this script the
+         scheduler threw on an undefined global and the dialog silently never opened. -->
+    <script src="~/assets/js/Meetings/api.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-checkitem.js" asp-append-version="true"></script>
     @* The date fields' picker. Tasks/form.js binds NO date itself — its enhanceDates delegates here and
@@ -34,6 +42,9 @@
        offcanvas drew a calendar icon over a plain text box and the user typed the due date by hand.
        flatpickr itself comes from _LayoutTenantShell, so this is the only half that was missing. *@
     <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
+    @* WP-UI-CALENDAR-VIEW-01 — the plan dialog reads a typed start time in the TENANT zone. Only the small zone
+       helper; the calendar itself (and FullCalendar) is not drawn on this page and is not loaded here. *@
+    <script src="~/assets/js/shared/diten-zoned-time.js" asp-append-version="true"></script>
     @* The checklist row can be DRAGGED here now, as it always could on the create form. The LOCAL copy, exactly
        as Views/Tasks/Create.cshtml loads it — this page's layout is _LayoutTenantShell, which never carried the
        CDN tag in _Layout.cshtml at all, so there was nothing here to reuse. Measured: `window.Sortable` was

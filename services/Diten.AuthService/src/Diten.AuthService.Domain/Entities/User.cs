@@ -72,6 +72,16 @@ public sealed class User : EntityBase
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
+    /// <summary>
+    /// WP-AUTH-INVITED-LIFECYCLE-01 — the account was INVITED and its owner has never set a password: it holds only
+    /// the unusable placeholder hash, so it cannot sign in whatever <see cref="IsActive"/> says. Derived, never stored.
+    /// Each fact rules out one look-alike: <see cref="MustChangePassword"/> (not a normal account),
+    /// <see cref="EmailConfirmed"/> false (redeeming the set-password link confirms it; an admin reset of a redeemed
+    /// account and a provisioned admin with a temporary password are both confirmed), <see cref="LastLoginAt"/> null
+    /// (the account has never been used). A method, not a property, so the Mongo class map never persists it.
+    /// </summary>
+    public bool IsInvitationPending() => MustChangePassword && !EmailConfirmed && LastLoginAt is null;
+
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
     public void ConfirmEmail() => EmailConfirmed = true;

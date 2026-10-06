@@ -23,10 +23,12 @@ public static class VisitFrequencyResolveEngine
     public static VisitFrequencyResolveResult Resolve(
         ResolveVisitFrequencyPolicyQuery request,
         IReadOnlyCollection<Vfp> activeCandidates,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        IReadOnlySet<Guid>? contextSegmentIds = null)
     {
         var effectiveAt = request.EffectiveAt ?? now;
-        var acceptedTargets = BuildAcceptedTargets(request);
+        var segmentContext = ResolveSegmentContext(request, contextSegmentIds);
+        var acceptedTargets = BuildAcceptedTargets(request, segmentContext);
         var reasonCodes = new List<string>();
 
         // Step 2 — target match. Only policies whose (TargetType, TargetId) is a requested target pair are considered.
@@ -39,7 +41,7 @@ public static class VisitFrequencyResolveEngine
         var eligible = new List<Vfp>();
         foreach (var policy in targetMatched)
         {
-            var elimination = Eliminate(policy, request, effectiveAt);
+            var elimination = Eliminate(policy, request, effectiveAt, segmentContext);
             if (elimination is null)
             {
                 eligible.Add(policy);
@@ -131,9 +133,12 @@ public static class VisitFrequencyResolveEngine
     }
 
     /// <summary>The set of (targetType, targetId) pairs the request is willing to match: the primary target plus any
-    /// caller-supplied context id interpreted as its own target type. Nothing is derived from the account/contact
-    /// master or a segment membership — the caller supplies the ids.</summary>
-    private static HashSet<(string, Guid)> BuildAcceptedTargets(ResolveVisitFrequencyPolicyQuery request)
+    /// context id interpreted as its own target type. Every segment id in <paramref name="segmentContext"/> is accepted
+    /// as a <c>segment</c> target — that set is either the single explicit <c>request.SegmentId</c> (default) or, for a
+    /// contact target, the caller-derived active memberships unioned with the explicit id. The remaining scope axes
+    /// (territory / campaign / concept / audience) stay single, caller-supplied ids; nothing else is derived here.</summary>
+    private static HashSet<(string, Guid)> BuildAcceptedTargets(
+        ResolveVisitFrequencyPolicyQuery request, IReadOnlySet<Guid> segmentContext)
     {
         var set = new HashSet<(string, Guid)>
         {
@@ -148,7 +153,14 @@ public static class VisitFrequencyResolveEngine
             }
         }
 
-        Add(FrequencyTargetType.Segment, request.SegmentId);
+        foreach (var segmentId in segmentContext)
+        {
+            if (segmentId != Guid.Empty)
+            {
+                set.Add((FrequencyTargetType.Segment, segmentId));
+            }
+        }
+
         Add(FrequencyTargetType.TerritoryNode, request.TerritoryNodeId);
         Add(FrequencyTargetType.CampaignTarget, request.CampaignId);
         Add(FrequencyTargetType.ConceptNode, request.ConceptNodeId);
@@ -156,9 +168,31 @@ public static class VisitFrequencyResolveEngine
         return set;
     }
 
+    /// <summary>The segment ids that count as "in context" for this resolve. When the caller supplies a set (the
+    /// resolver's <c>{request.SegmentId} ∪ derived contact memberships</c>) it is used verbatim; when nothing is passed
+    /// the context is the single explicit <c>request.SegmentId</c>, so a caller that supplies no set behaves EXACTLY as
+    /// before (single-segment context). The engine derives nothing itself — it stays a pure function of its inputs.</summary>
+    private static IReadOnlySet<Guid> ResolveSegmentContext(
+        ResolveVisitFrequencyPolicyQuery request, IReadOnlySet<Guid>? provided)
+    {
+        if (provided is not null)
+        {
+            return provided;
+        }
+
+        var set = new HashSet<Guid>();
+        if (request.SegmentId is { } sid && sid != Guid.Empty)
+        {
+            set.Add(sid);
+        }
+
+        return set;
+    }
+
     /// <summary>Returns the elimination reason code, or null if the policy is eligible. Effective window first, then
     /// each business-scope constraint the policy declares (a null policy field imposes no constraint).</summary>
-    private static string? Eliminate(Vfp policy, ResolveVisitFrequencyPolicyQuery request, DateTimeOffset effectiveAt)
+    private static string? Eliminate(
+        Vfp policy, ResolveVisitFrequencyPolicyQuery request, DateTimeOffset effectiveAt, IReadOnlySet<Guid> segmentContext)
     {
         if (!policy.IsEffectiveAt(effectiveAt))
         {
@@ -175,7 +209,7 @@ public static class VisitFrequencyResolveEngine
             return FrequencyReasonCodes.CampaignContextMissing;
         }
 
-        if (policy.SegmentId is { } sid && request.SegmentId != sid)
+        if (policy.SegmentId is { } sid && !segmentContext.Contains(sid))
         {
             return FrequencyReasonCodes.SegmentContextMissing;
         }

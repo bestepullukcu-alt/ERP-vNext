@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="GrnTitle" xml:space="preserve"><value>收货 (GRN)</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>收货单：按采购订单登记实物收货，并将每一行过账到库存。</value></data>
+  <data name="AddNew" xml:space="preserve"><value>登记收货</value></data>
+  <data name="EditItem" xml:space="preserve"><value>编辑收货单</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>登记收货</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑收货单</value></data>
+  <data name="QuickView" xml:space="preserve"><value>查看</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="GrnId" xml:space="preserve"><value>收货单号</value></data>
+  <data name="PoId" xml:space="preserve"><value>采购订单</value></data>
+  <data name="PoIdPlaceholder" xml:space="preserve"><value>例如 PO-5001</value></data>
+  <data name="PoIdHint" xml:space="preserve"><value>到上游采购订单的可选链接。</value></data>
+  <data name="ReceivedAt" xml:space="preserve"><value>收货时间</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="StatusPosted" xml:space="preserve"><value>已过账</value></data>
+  <data name="StatusReversed" xml:space="preserve"><value>已冲销</value></data>
+  <data name="ReceiptSection" xml:space="preserve"><value>收货明细</value></data>
+  <data name="WarehouseId" xml:space="preserve"><value>仓库</value></data>
+  <data name="WarehouseIdPlaceholder" xml:space="preserve"><value>例如 wh-01</value></data>
+  <data name="LocationId" xml:space="preserve"><value>库位</value></data>
+  <data name="LocationIdPlaceholder" xml:space="preserve"><value>例如 loc-A-12-3</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>收货行</value></data>
+  <data name="AddLine" xml:space="preserve"><value>添加行</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>物料 ID</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>例如 b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>SKU ID</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>例如 c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineSkuLevel" xml:space="preserve"><value>SKU 级别</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>请选择</value></data>
+  <data name="SkuLevelGsku" xml:space="preserve"><value>全局 SKU</value></data>
+  <data name="SkuLevelLsku" xml:space="preserve"><value>本地 SKU</value></data>
+  <data name="SkuLevelFinishedGood" xml:space="preserve"><value>成品</value></data>
+  <data name="LineLotNumber" xml:space="preserve"><value>批号</value></data>
+  <data name="LineLotNumberPlaceholder" xml:space="preserve"><value>例如 L2026-0455</value></data>
+  <data name="LineSerialIds" xml:space="preserve"><value>序列号</value></data>
+  <data name="LineSerialIdsPlaceholder" xml:space="preserve"><value>以逗号分隔的序列号</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>数量</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>例如 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>计量单位</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>例如 BOX</value></data>
+  <data name="LineToStockStatus" xml:space="preserve"><value>入库状态</value></data>
+  <data name="StockAvailable" xml:space="preserve"><value>可用</value></data>
+  <data name="StockQualityInspection" xml:space="preserve"><value>质检</value></data>
+  <data name="StockQuarantine" xml:space="preserve"><value>隔离</value></data>
+  <data name="LinePoLineId" xml:space="preserve"><value>采购订单行</value></data>
+  <data name="LinePoLineIdPlaceholder" xml:space="preserve"><value>例如 3</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>至少需要一行（物料、SKU、级别、数量、计量单位、库存状态）。</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>集成</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>源系统</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>例如 SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>外部参考</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>例如 ERP-GRN-9001</value></data>
+  <data name="LineInventoryTransactionId" xml:space="preserve"><value>库存事务</value></data>
+  <data name="LineLotId" xml:space="preserve"><value>批次</value></data>
+  <data name="InventoryRefHint" xml:space="preserve"><value>库存事务和批次 ID 是对库存记录系统的只读引用；库存余额存放于库存中，而非收货单中。</value></data>
+  <data name="ActionReverse" xml:space="preserve"><value>冲销</value></data>
+  <data name="ConfirmReverse" xml:space="preserve"><value>要冲销此收货单吗？将过账一笔冲销库存移动。</value></data>
+  <data name="ReverseSuccess" xml:space="preserve"><value>收货单已冲销。</value></data>
+</root>

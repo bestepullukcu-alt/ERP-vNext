@@ -1,0 +1,51 @@
+@*
+    THE LIST'S OWN SHAPE WHILE IT LOADS — shared partial (owner report, 2026-09-21).
+
+    ⚠ WHY A SHAPE AND NOT FIVE BARS. A skeleton's only job is to say "something of THIS shape is coming". The
+    five generic bars every list used to draw said nothing: the same five bars appeared whether the answer was a
+    table, a panel or a tree, and they sat ABOVE the real table header, so when the data arrived the toolbar and
+    the pager popped in underneath and the page grew downwards. The owner's words: "anlaşılmıyor, sayfa geldikten
+    sonra yukarıdan aşağı yükleniyor." The Role Permissions screen already does this right — its skeleton is
+    shaped like its own panels — and that is the half of it worth copying.
+
+    ⚠ NO NEW SKELETON LANGUAGE (backbone-custom.css). The blocks are still `.shimmer` + `.skeleton-row`, the
+    product's only placeholder vocabulary. Everything added here is LAYOUT — where those same blocks sit so the
+    group reads as a toolbar, a header, rows and a footer. A second animation or a second grey would be the
+    thing that warning forbids.
+
+    ⚠ IT IS VISIBLE FROM THE SERVER'S FIRST PAINT, AND THAT IS THE WHOLE MECHANISM. It carries no
+    `.backbone-skeleton` (which hides), so it is on screen before a single line of JavaScript has run — which is
+    when a placeholder is actually needed. The CSS beside it hides the real table for as long as this element is
+    a sibling, and `dt-defaults.js` REMOVES this element once the table has drawn; the table then appears
+    because its selector no longer matches.
+
+    ⚠ WHY NOT A LOADING HOOK. The first version asked DataTables to show it from a `preXhr` option — and
+    DataTables has no such option (`preXhr` is an EVENT; its registered init callbacks are drawCallback,
+    initComplete, preDrawCallback, rowCallback and the state ones, measured in the vendored source). That
+    function was never called once, on any page, which is why the owner still saw the spinner. A placeholder
+    that depends on nothing cannot fail that way.
+
+    ⚠ `data-table-skeleton` IS THE OPT-IN: a list still carrying the old hidden block keeps its old behaviour
+    exactly, and nothing is migrated by surprise.
+*@
+<div id="skeleton-loader" class="dt-skeleton p-4" data-table-skeleton aria-hidden="true">
+    <div class="dt-skeleton-toolbar">
+        <span class="shimmer skeleton-row dt-skeleton-search"></span>
+        <span class="shimmer skeleton-row dt-skeleton-button"></span>
+        <span class="shimmer skeleton-row dt-skeleton-button"></span>
+    </div>
+    <div class="shimmer skeleton-row dt-skeleton-head"></div>
+    @for (var row = 0; row < 6; row++)
+    {
+        <div class="dt-skeleton-row">
+            <span class="shimmer skeleton-row dt-skeleton-cell dt-skeleton-cell--sm"></span>
+            <span class="shimmer skeleton-row dt-skeleton-cell dt-skeleton-cell--lg"></span>
+            <span class="shimmer skeleton-row dt-skeleton-cell"></span>
+            <span class="shimmer skeleton-row dt-skeleton-cell dt-skeleton-cell--sm"></span>
+        </div>
+    }
+    <div class="dt-skeleton-footer">
+        <span class="shimmer skeleton-row dt-skeleton-info"></span>
+        <span class="shimmer skeleton-row dt-skeleton-pager"></span>
+    </div>
+</div>

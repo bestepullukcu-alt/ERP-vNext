@@ -58,21 +58,24 @@
                     <div class="invalid-feedback"></div>
                 </div>
 
-                @* WP-INFRA-AUTH-ACCOUNT-KIND-01 — account classification on create. UAS-001 shape: a caller without
+                @* WP-INFRA-AUTH-ACCOUNT-KIND-01 — account classification. UAS-001 shape: a caller without
                    auth.users.account-kind.manage gets NO control here (not a disabled one), and the backend refuses a
-                   supplied kind from such a caller with 403 anyway — this gate is display only. Shown only on create
-                   (toggled in index.js): UpdateUser carries no kind, the quick view's "Change type" is the edit path.
+                   supplied kind CHANGE from such a caller with 403 anyway — this gate is display only.
+                   WP-AUTH-USER-KIND-UPDATE-01 — the same select on create AND edit, saved by the form's own button:
+                   UpdateUser carries the kind and takes it through the same writer + audit row as the quick view's
+                   "Change type". On edit the empty option means "back to Unknown" (the proxy sends it as such).
                    Deliberately not a .diten-field wrapper: the offcanvas icon map pins the three typed fields. *@
                 @if (Perms.Has("auth.users.account-kind.manage"))
                 {
                     <div class="col-12" id="userAccountKindRow">
                         <label for="userAccountKind" class="form-label fw-medium">@Localizer["AccountKind"]</label>
-                        <select id="userAccountKind" name="AccountKind" class="form-select">
+                        <select id="userAccountKind" name="AccountKind" class="form-select select2-offcanvas">
                             <option value="">@Localizer["AccountKindUnknown"]</option>
                             <option value="Human">@Localizer["AccountKindHuman"]</option>
                             <option value="Service">@Localizer["AccountKindService"]</option>
                         </select>
-                        <div class="form-text">@Localizer["AccountKindCreateHint"]</div>
+                        @* "Leave unset…" is a create-time sentence; on edit the empty option is a choice, so the hint hides. *@
+                        <div class="form-text" id="userAccountKindCreateHint">@Localizer["AccountKindCreateHint"]</div>
                     </div>
                 }
 
@@ -90,6 +93,12 @@
                         <input asp-for="IsActive" id="userIsActive" class="form-check-input" role="switch" />
                         <label for="userIsActive" class="form-check-label ms-2">@SharedLocalizer["Active"]</label>
                     </div>
+                </div>
+                @* WP-AUTH-INVITED-LIFECYCLE-01 — an invited account is activated by its owner redeeming the link, never
+                   from here: index.js hides the switch above for it and shows this sentence instead. AuthService refuses
+                   the activation too (409 USER_INVITATION_PENDING), so the hidden switch is not the only defence. *@
+                <div class="col-12 d-none" id="userInvitePendingRow">
+                    <div class="form-text">@Localizer["InvitationPendingHint"]</div>
                 </div>
             </div>
         </form>

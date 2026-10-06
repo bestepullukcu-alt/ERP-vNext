@@ -106,6 +106,9 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>所选职位无法接收任务。请选择一个有效职位。</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>其他人已先修改该任务，页面已刷新为最新状态。</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>必填的清单项尚未勾选，无法完成该任务。</value></data>
+  <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>必填的关闭字段仍为空，任务无法完成。</value></data>
+  <data name="ErrorOrganizationUnitNotFound" xml:space="preserve"><value>未找到指定的组织单元。</value></data>
+  <data name="ErrorOrganizationUnitOutOfScope" xml:space="preserve"><value>该组织单元不在您的范围内。</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>该任务所依赖的任务尚未完成，因此无法推进。</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>仍有子任务未完成，因此该任务暂时无法完成。</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>该任务已关闭，无法再添加评论。</value></data>
@@ -114,8 +117,12 @@
   <data name="ErrorDueDateRequired" xml:space="preserve"><value>必须填写截止日期。</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>该任务正在等待审批人的决定。</value></data>
   <data name="ErrorReviewPending" xml:space="preserve"><value>该任务正在等待审阅人答复。</value></data>
+  <data name="ErrorDeliverableRequired" xml:space="preserve"><value>完成此任务前，您必须先添加交付文件。</value></data>
+  <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>在关联的评审会议纪要发布之前，此步骤无法关闭。</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>该任务在当前状态下无法完成，请先启动它。</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>只有提出该任务的人才能取消它。如果您不想接手，请退回。</value></data>
+  <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>您不能审批自己发起的审批。请选择其他人作为审批负责人。</value></data>
+  <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>您不能审阅自己提交的工作。请让其他人审阅此任务。</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>请说明该任务在等待什么。</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>请填写标题。</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>标题最多 200 个字符。</value></data>
@@ -150,6 +157,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>关注者</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>检查清单</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>本任务的步骤。条目在任务创建后勾选；存在阻断条目时任务无法关闭。</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>附件</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>此任务的文件——用于打开任务的说明文件，或需要立即保存的证据和交付物。任务创建后上传。</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>文件</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>类型</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>附件</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>证据</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>交付物</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>添加文件</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>移除</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>任务已创建——部分文件未能上传</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>任务已创建，但以下文件未能上传。请从任务自己的附件卡片中重新添加：</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>前往任务</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>输入条目后按 Enter</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>添加</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>点击标签可更改级别。目前还没有模板列表。</value></data>
@@ -201,6 +220,12 @@
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>该评论已被撤回。</value>
   </data>
+  <data name="ErrorMentionNotVisible" xml:space="preserve">
+    <value>您提到的其中一人无法查看此任务。请先将其添加为观察者。</value>
+  </data>
+  <data name="ErrorMentionLimitExceeded" xml:space="preserve">
+    <value>一条评论最多可提及 10 人。</value>
+  </data>
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>此处无法指定该人员。</value>
   </data>
@@ -217,4 +242,46 @@
   <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>该条目需要提供证明文件才能完成。</value></data>
   <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>该文件无法上传。请检查文件类型和大小后重试。</value></data>
   <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>任务创建后即可添加附件（含证明文件）。</value></data>
+  <data name="ReassignAction" xml:space="preserve"><value>移交</value></data>
+  <data name="ReassignTitle" xml:space="preserve"><value>将此任务移交他人</value></data>
+  <data name="ReassignHint" xml:space="preserve"><value>新负责人会立即看到该任务。移交原因将保留在任务历史中。</value></data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve"><value>新负责人</value></data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve"><value>选择一位人员</value></data>
+  <data name="ReassignReasonLabel" xml:space="preserve"><value>移交原因</value></data>
+  <data name="ReassignReasonPlaceholder" xml:space="preserve"><value>例如：10 月 5 日前休假，审核由 Ayşe 接手。</value></data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve"><value>请选择由谁接手该任务。</value></data>
+  <data name="ReassignReasonRequired" xml:space="preserve"><value>请说明任务为何移交。</value></data>
+  <data name="ReassignDone" xml:space="preserve"><value>任务已移交。</value></data>
+  <data name="ReassignNoPeople" xml:space="preserve"><value>没有其他人可以接手此任务。</value></data>
+  <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>分配不是编辑出来的，而是移交的；移交原因会保留在任务历史中。</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>发送前请先填写回答。</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>回答过长，请控制在 4000 个字符以内。</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>此问题已不再等待您的回答：它已被回答或撤回。请刷新列表。</value>
+  </data>
+  <data name="ErrorPlanNotHolder" xml:space="preserve">
+    <value>只有负责此任务的人员才能安排计划。作为请求人，请通过截止日期表达您的期望。</value>
+  </data>
+  <data name="ErrorPlanConflict" xml:space="preserve">
+    <value>该时间段与您已计划的另一项任务重叠。请选择其他时间，或移动另一项任务。</value>
+  </data>
+  <data name="ErrorPlanDurationInvalid" xml:space="preserve">
+    <value>计划时长至少为 15 分钟，并以 15 分钟为单位。</value>
+  </data>
+  <data name="ErrorUnplanNotAllowed" xml:space="preserve">
+    <value>只有已计划且尚未开始的任务才能从日历中移除。</value>
+  </data>
+  <data name="ErrorCalendarRangeInvalid" xml:space="preserve">
+    <value>日历一次最多显示 42 天。请选择更短的日期范围。</value>
+  </data>
+  <data name="WarningPlanOverlapsMeeting" xml:space="preserve">
+    <value>已保存，但该时间段与会议“{0}”重叠。</value>
+  </data>
+  <data name="WarningPlanOutsideWorkingHours" xml:space="preserve">
+    <value>已保存，但该时间段不在您的工作时间内。</value>
+  </data>
 </root>

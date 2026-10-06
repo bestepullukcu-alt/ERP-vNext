@@ -898,6 +898,15 @@ The schema is laid down correctly **in Phase 1** (pool fields, `Classification`/
 1. **MOD-0018** — seed/grant the `platform.tasks.*` keys; confirm `Scope=Tenant`.
 2. **integration-agent** — the `/api/v1/tasks/{everything}` Ocelot route.
 3. **Attachments** — a separate slice bound to an approved document/storage provider (§12 Y4).
+   → **Slice ATT-1 — ✅ DELIVERED 2026-09-12 (CT verified; branch `feature/pss/mod-0024-att1-task-attachments`, commit `a5fcb330`).** Live: evidence-required item refused 409 → evidence uploaded → completed 204; plain attachment uploaded, listed, downloaded by name, soft-deleted; `.exe` refused 400 by the store. Files land under `<storage root>/tenant-<id>/company-.../task-attachments/<taskId>/versions/<versionId>/<file>`; soft-deleted rows keep their bytes (AD-6). CT added the missing real-Mongo repository test. Original scope note below.
+   → **Slice ATT-1 — ready-for-dev (CT, 2026-09-11; owner decision BL-370).** The approved provider now exists on main:
+   MOD-0262-FU01 Document Binary Store (`Contracts/DocumentRepository/IContentStorageGateway`, `Features/DocumentRepository/Services/DocumentRepositoryService`,
+   `api/v1/document-repository/*`, local-filesystem provider, tenant-isolated keys, SHA-256, allow-list, audit). ATT-1 = task attachments consuming that store:
+   own collection `task_attachments` (`TaskAttachment`: TaskId · ChecklistRunItemCode? · Kind Evidence|Deliverable|Attachment · ContentRef · Note · UploadedBy/At · DeletedAt),
+   `TaskItem` gains no field; add/remove by holder or requester with `platform.tasks.update`, read/download with `platform.tasks.read` + task visibility; immutable after
+   Done/Cancelled; `ChecklistRunItem.EvidenceRequired` finally ENFORCED (item cannot complete without ≥1 Evidence attachment on it → 409 CHECKLIST_EVIDENCE_REQUIRED);
+   `ContentStorageScope.TaskAttachments` (additive); Web proxy streams multipart up and bytes down (no base64, AD-4); Task Center detail "Ekler" section + per-item
+   "Kanıt ekle"; seven languages. No purge path. Deliverables text/closure narrative stay with the closure envelope (Faz 2).
 4. **BL-024** — field-level authorization for configurable fields.
 5. **BL-025** — in-app channel + header bell (email-only until then).
 6. **BL-023 / BL-016 (Outbox)** — team scope and creator-scope surfaces build on this slice.
@@ -906,3 +915,168 @@ The schema is laid down correctly **in Phase 1** (pool fields, `Classification`/
    `WorkflowCandidateResolver`.
 8. ~~**Backlog hygiene** — `BL-016` is used twice.~~ **DONE (2026-07-25):** the Meeting-invite/Calendar item was
    renumbered to **BL-026**; `BL-016` now unambiguously means "Başlattıklarım / Outbox".
+
+## 21. Task Comment @Mentions — WP-PSS-MOD0024-TASK-MENTIONS-01 (owner-approved 2026-09-14)
+
+> **Built on top of BL-034 item 7** (comments, §20's predecessor list did not carry a comment section because
+> comments postdated this pack's Phase 1 write-up) **and BL-349** (`ITaskReadAccessPolicy`, commit `7a63bb66`).
+> The comment type's own doc used to say "no mentions are parsed, because there is no notification channel to
+> deliver one (WC-4)" — superseded here: `ITaskNotificationService` (WC-4) already dispatches in-app + email,
+> so a mention now has somewhere to go.
+
+**K1 — Who may tag: no new permission.** Identical authority to commenting itself
+(`TaskCommentAuthority`/the `platform.tasks.read`-gated endpoint) — mentioning is part of writing a comment, not
+a separate act.
+
+**K2 — Who may be tagged: `ITaskReadAccessPolicy.CanReadAsync(task, candidateId, ct)` must answer true.**
+The candidate-LIST endpoint (`GET {id}/mention-candidates`) enumerates only the policy's DATA legs — assignee,
+pool holders, creator, watchers, the parent task's assignee/pool holders
+(`ITaskReadAccessPolicy.ResolveDataLegCandidatesAsync`, a refactor of `CanReadAsync`'s own legs, not a second
+copy) — because the scope and `ReadAll` legs answer only for the CURRENT caller (documented on the interface
+before this slice existed) and would otherwise vary the candidate list by who is composing the comment. The
+WRITE path validates every submitted id against the full `CanReadAsync` (so the scope/`ReadAll` legs still
+protect the caller's own edge cases). An unreadable candidate refuses the WHOLE write with
+`TASK_MENTION_NOT_VISIBLE` (400) — never a silent drop — naming what to do next ("add them as a watcher first").
+
+**K3 — Notification.** New event `platform.tasks.mentioned`, in-app + email via the existing WC-4 dispatcher
+(`ITaskNotificationService`), 7 languages. Self-mention sends nothing (the service's own actor exclusion, not
+re-implemented at the call site). A mentioned person is excluded from the general `platform.tasks.commented`
+audience for that same comment — one write, one email per reader, never two. Editing a comment replaces its
+mention set wholesale; only NEWLY added ids are notified (a diff against what the comment already stored), and
+a refused edit (K2/K4) leaves both the text and the stored mentions untouched. A withdrawn/edited comment's
+mention notification is never retracted (matches the existing "editing sends nothing" rule for the base
+comment event).
+
+**K4 — Data.** `TaskComment.MentionedUserIds : IReadOnlyList<Guid>` (structured, never parsed from display
+text), capped at 10 per comment (`TaskCommentLimits.MaxMentionsPerComment`), enforced server-side
+(`TASK_MENTION_LIMIT_EXCEEDED`, 400) before any visibility check runs.
+
+### Repo scope (additive to §5)
+- `Domain/Entities/Tasks/TaskSupportingEntities.cs` — `TaskComment.MentionedUserIds`.
+- `Application/Features/Tasks/Services/TaskReadAccessPolicy.cs` — `ResolveDataLegCandidatesAsync` (interface +
+  impl; `CanReadAsync` refactored to call it, not duplicated).
+- `Application/Features/Tasks/{TaskModels.cs, Queries/TaskItemQueries.cs}` — DTOs, reason codes, event code,
+  `GetTaskMentionCandidatesQuery`.
+- `Application/Features/Tasks/Handlers/QueryHandlers/GetTaskMentionCandidatesHandler.cs` — new.
+- `Application/Features/Tasks/Handlers/CommandHandlers/TaskCommentHandlers.cs` — mention validation +
+  notification wiring in `AddTaskCommentHandler`/`UpdateTaskCommentHandler`; new `TaskMentionValidation` helper.
+- `Application/Features/Tasks/SelfRegistration/TaskManifestProvider.cs` — `platform.tasks.mentioned` event.
+- `Infrastructure/Persistence/Configurations/NotificationTemplateSeed.cs` — 7-language template.
+- `API/Controllers/TasksController.cs` — `GET {id}/mention-candidates`.
+- Frontend: `Tasks/api.js` (client + reason codes), `Controllers/TasksController.cs` proxy route,
+  `WorkCenterNext/app.js` (chip tray + picker, reusing `sharedConfirm`/`bindDialogSelect2` — **no new raw
+  dialog**), `backbone-custom.css` (`.wcn-mention-*`, FG-003), `TasksIndex.*.resx` (error strings) +
+  `WorkCenterNextIndex.*.resx` (UI strings), both 7 languages.
+
+### Acceptance criteria
+- [x] Tagging a visible watcher succeeds; sends exactly one `platform.tasks.mentioned` notification and excludes
+  that person from the same comment's `platform.tasks.commented` audience.
+- [x] Tagging someone `CanReadAsync` refuses is rejected 400 `TASK_MENTION_NOT_VISIBLE`; nothing is persisted,
+  nothing is sent.
+- [x] Self-mention is accepted (stored) and sends zero notifications.
+- [x] 11 mentions refused 400 `TASK_MENTION_LIMIT_EXCEEDED` before any visibility check; exactly 10 is accepted.
+- [x] Editing to add a new mention notifies only the newly-added id(s); editing without changing mentions sends
+  nothing; a refused edit leaves the stored text and mentions unchanged.
+- [x] `GET {id}/mention-candidates` 404s identically to a missing task for a caller `CanReadAsync` refuses
+  (BL-349 parity); an id whose name cannot be resolved is omitted, never a raw GUID; `q` filters case-insensitively.
+- [x] `platform.tasks.mentioned` seeded in all 7 languages, wired into the existing template-parity guard
+  (`TaskNotificationTemplateTests`).
+- [x] No new permission key exists anywhere in the diff.
+- [ ] **Frontend `/Tasks/Details` (legacy single-item view) does not get mention UI this round** — the mock/legacy
+  screen `/WorkCenter` stays frozen (§4/§6) and the plain `/Tasks/Details` page was out of scope per the WP;
+  only WorkCenterNext's comment composer was wired. Flagged, not silently dropped — a follow-up if that screen is
+  ever un-deprecated.
+- [ ] **Editing a comment to add a mention has no dedicated UI affordance yet** — the backend fully supports it
+  (`UpdateTaskCommentRequest.MentionedUserIds`, tested against real handlers), but WCN's edit dialog
+  (`sharedConfirm`'s textarea seam) was not extended to expose the mention picker during an edit — only during
+  the initial post. A real, additive gap, not a silent one.
+
+### Test gate
+Real handler + real Mongo (`TaskMentionTests.cs`, `TaskReadAccessPolicyTests.cs`, `TaskCommentOrderMongoTests.cs`
+round-trip + backward-compat $unset test), plus the existing `TaskNotificationTemplateTests` 7-language guard
+extended to `platform.tasks.mentioned`. Frontend: `wcn-dialog-*` mutation guards updated (bindDialogSelect2 call
+count 4→5, documented) rather than bypassed with a new raw dialog. `Diten.Platform.Application.Tests` Tasks
+suite: 1373/1373 green (was ~1370 per §17's stated baseline) — no existing test touched except the two
+constructor-signature call sites (`TaskCommentTests`, `TaskCommentTrailTests`, `TaskReadAccessWiringTests`) that
+had to learn the new constructor parameter.
+
+## 22. Kişisel plan bloğu (takvim) — WP-TASK-CALENDAR-ENGINE-01 (owner-approved 2026-09-29)
+
+> **Sahip kararları:** 2026-09-17 takvim tasarım konuşması; 2026-09-29 BL-451 (üç kabulün üçü de evet + karar
+> notu: tek dikiş `IWorkingHoursProvider`) ve BL-449 (`plan` yalnız işi tutan kişide). Bu bölüm **motor** dilimidir
+> (2a); takvim ekranı, FullCalendar ve WCN görünümleri 2b'nin işidir, burada yoktur.
+>
+> **Codex sınırı:** MOD-0024 yalnız **tek kişisel plan bloğu** tutar (bir görev = en çok bir gün ya da bir blok,
+> sahibi işi tutan kişi). Çok bloklu planlama, kapasite, kaynak yüklemesi ve zaman girişi DCP-003 / MOD-0117 (PPM,
+> Codex) ve DEC-002 / MOD-0280 (zaman girişi) yolundadır; bu bölüm onlara dokunmaz ve onların yerine geçmez.
+
+### Alanlar (`TaskItem`, hepsi opsiyonel; eski kayıtlar olduğu gibi okunur, migration yok)
+| alan | tip | anlam |
+|---|---|---|
+| `PlannedDate` | `DateTimeOffset?` | plan GÜNÜ (mevcut). Blokta kiracı saat dilimindeki yerel güne eşitlenir (yerel gece yarısı + o günün ofseti). |
+| `PlannedStartAt` | `DateTimeOffset?` (UTC) | blok başlangıcı. Gün planında null. Mutlak an: saatler sonradan değişirse plan taşınmaz, uyarı çıkar. |
+| `PlannedDurationMinutes` | `int?` | blok uzunluğu; 15'in katı, en az 15. `PlannedStartAt` ile birlikte null/dolu. |
+| *(remainingMinutes)* | türetilmiş | tahmin − blok (0'da tabanlanır). **Kaydedilmez**; plan yanıtında, projeksiyonda ve takvim akışında hesaplanır. |
+
+`Tenant.DefaultWorkdayStart` / `DefaultWorkdayEnd` (`TimeOnly`, varsayılan 09:00 / 18:00, öğle arası düşülmez) —
+mevcut kiracı ayarları API'si (`GET/PUT api/admin/tenants/{id}/settings`, mevcut PlatformActor politikası; yeni izin
+anahtarı yok) üzerinden okunur/yazılır; ikisi birlikte ya da hiç, başlangıç < bitiş.
+
+### Kurallar
+- **A — plan biçimleri.** `POST api/v1/tasks/{id}/plan` → `{expectedVersion, plannedDate}` (gün) ya da
+  `{expectedVersion, plannedStartAt, durationMinutes?}` (blok). Süre yoksa tahmin (15'e yukarı yuvarlanır), o da
+  yoksa 60 dk. Blok, başladığı günün çalışma penceresinin sonunu aşarsa orada kesilir (tam 15 dk adımına aşağı);
+  kalan `remainingMinutes` olarak döner. Plan asla başlatmaz (Open/Planned → Planned). Yanıt artık **200 + gövde**
+  (`PlanTaskItemResultDto`: kaydedilen gün/blok, `remainingMinutes`, `truncated`, `warnings[]`); gün planı body'si
+  tek başına eskisi gibi çalışır.
+- **A — unplan.** `POST api/v1/tasks/{id}/unplan` (ve Görev Merkezi eylemi `unplan`): gün + blok temizlenir,
+  Planned → Open; yalnız Planned'dan (aksi halde 409 `TASK_UNPLAN_NOT_ALLOWED`). Geçiş kaydı yeni tür
+  `Unplanned` / tel kodu `unplanned` (WCN `ACTIVITY_EVENT_CODES` + `AuditEventUnplanned` 7 dil).
+- **B — kim planlar (BL-449).** `plan` ve `unplan` yalnız `AssigneeUserId == çağıran`; talep sahibi dahil başkası
+  403 `TASK_PLAN_NOT_HOLDER`. Projeksiyon aynı kuralı söyler: talep sahibinin (Başlattıklarım / Ekibim) satırında
+  `plan` yoktur. BL-361'in "tutan veya talep sahibi" kuralı bu fiil için geri alınmıştır.
+- **C — çakışma.** Aynı kişinin tuttuğu, kapanmamış iki görevin blokları üst üste binerse **sert ret**
+  409 `TASK_PLAN_CONFLICT`; yanıt verisi `conflict {taskId, title, startAt, endAt}` taşır. Yarı açık aralık
+  (10:00'da biten ile 10:00'da başlayan çakışmaz). Gün planları çakışma sayılmaz. Başka kişinin bloğu sayılmaz.
+  Kabul edilmiş ya da yanıtlanmamış toplantıyla çakışma **ret değil**: plan kaydolur, `warnings[]` içinde
+  `TASK_PLAN_OVERLAPS_MEETING` (toplantı başlığı + saatleri) döner; reddedilen ya da iptal edilen toplantı sayılmaz.
+  Çalışma penceresi dışı (akşam, hafta sonu, tatil) → `TASK_PLAN_OUTSIDE_WORKING_HOURS` uyarısı; blok kesilmez.
+- **D — çalışma saati dikişi.** `IWorkingHoursProvider.GetWorkingWindowsAsync(userId, from, to)` → gün başına
+  pencereler (UTC), gün tipi (`workingDay` / `weekend` / `holiday` + ad), `resolvedFrom`, `calendarUnresolved`.
+  Zincir: kişi → atama → birim → tüzel kişi (`IWorkingHoursRing`, v1'de kayıtlı halka yok) → kiracı varsayılanı.
+  Gün tipi `IWorkingCalendarProvider`'dan (kiracı ülkesi + kişinin birincil biriminin birimi/tüzel kişisi);
+  çözülemezse çalışma günü sayılır ve `calendarUnresolved=true`. Saat dilimi: kiracının çalışma zamanı ayarı
+  (`Settings.Timezone`), boşsa `DefaultTimezone`; çözülemeyen kimlik UTC. **Koruma:** kiracı saat alanlarını
+  sağlayıcı ve kiracı ayarları ekranının iki işleyicisi dışında hiçbir tip okuyamaz (IL taraması); görev/takvim
+  kodunda sabit duvar saati yasak (kaynak taraması).
+- **E — takvim akışı.** `GET api/v1/work/calendar?from=YYYY-MM-DD&to=YYYY-MM-DD` (`[LoginOnly]`, en çok 42 gün;
+  aksi 400 `WORK_CALENDAR_RANGE_INVALID`): çağıranın tuttuğu kapanmamış planlı görevleri (gün ya da blok, bitiş,
+  `remainingMinutes`, `dueAt`, başlık, öncelik, `conflict`), kabul edilmiş/bekleyen toplantıları (reddedilen yok),
+  günleri ve pencereleri, kiracı saat dilimi kimliğini ve sol panel sayılarını (`unplannedCount`,
+  `planPassedCount`, `pendingInviteCount`) döner. Listeler mevcut `GET api/v1/work-items/mine` akışında kalır.
+  Saatler UTC. Kapsam dışında tek kayıt dönmez (kiracı depoda, kişi sorguda).
+- **F — kodlu metinler.** `TASK_PLAN_NOT_HOLDER`, `TASK_PLAN_CONFLICT`, `TASK_PLAN_DURATION_INVALID`,
+  `TASK_UNPLAN_NOT_ALLOWED`, `WORK_CALENDAR_RANGE_INVALID` ve iki uyarı kodu Görev Merkezi hata köprüsünde
+  (`Tasks/api.js` → `_IndexL10n.cshtml` → `TasksIndex.*.resx`, 7 dil). Uyarılar `TasksApi.planWarningMessage`.
+
+### Kabul kriterleri
+- [x] Gün planı; blok planı ve yerel güne eşitlenen `PlannedDate` (22:00Z = İstanbul'da ertesi gün).
+- [x] Süre yoksa tahmin (yukarı yuvarlanmış), o da yoksa 60 dk; 15'in katı olmayan süre 400.
+- [x] Gün sonunda kesme; `remainingMinutes` yanıtta ve projeksiyonda, ham belgede yok.
+- [x] Unplan (doğrudan ve Görev Merkezi eylemi); plan edilmemişte 409.
+- [x] Talep sahibi plan/unplan → 403 `TASK_PLAN_NOT_HOLDER`; talep sahibinin satırında `plan` yok, tutanın satırında var.
+- [x] İki blok çakışması 409 (diğer bloğu adıyla); arka arkaya bloklar, gün planları ve başka kişinin bloğu çakışmaz.
+- [x] Toplantı (kabul/bekleyen) → 200 + uyarı; reddedilen uyarmaz. Pencere dışı/hafta sonu → 200 + uyarı.
+- [x] Takvim akışı: görevler, toplantılar, pencereler, tatil adı, saat dilimi, sayılar; başka kişinin kaydı yok;
+  başka kiracının jetonu 0 kayıt; reddedilen toplantı yok; >42 gün / ters / eksik aralık 400; tam 42 gün 200.
+- [x] Kiracı pencere değişince plan kuralı ve akış birlikte değişir (dikiş gerçek); `TimeOnly` Mongo gidiş-dönüşü,
+  alanı olmayan eski kayıt varsayılanı okur.
+- [x] Korumalar: tek okuyucu (IL), sabit saat yasağı, kod ⇔ köprü ⇔ yük ⇔ 7 dil resx.
+- [ ] **Ağ geçidi rotası** `/api/v1/work/calendar` Ocelot'ta yok (`ocelot.json` korumalı yol, integration-agent);
+  2b ekranı bu rotayı ister. Bu dilimde açılmadı.
+
+### Test gate
+`TaskPlanCalendarHttpMongoTests` (atılabilir mongod, gerçek rotalar/JWT/kiracı çözümü/Mongo depoları),
+`TaskCalendarGuardTests`, `TaskPlanBlockRulesTests`, `plan-calendar-code-bridge.test.js`; BL-361 testleri BL-449'a
+çevrildi (`TaskOutboxTests`, `TaskTeamScopeTests`, `TaskLifecycleAuthorityHttpTests`), WCN golden fikstürü
+(`task-provider-review-meeting-matrix.json`) talep sahibi satırlarından `plan` düşürülerek yeniden üretildi.

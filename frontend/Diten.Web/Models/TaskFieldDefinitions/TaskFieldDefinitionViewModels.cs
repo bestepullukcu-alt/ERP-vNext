@@ -43,6 +43,12 @@ public sealed class TaskFieldDefinitionEditViewModel : IValidatableObject
 
     public string? OptionsSourceKey { get; set; }
 
+    /// <summary>
+    /// Faz 2a — <c>Entry</c> (the create/edit form) or <c>Closure</c> (the closure window only). Defaults to
+    /// Entry, the value every definition written before this field existed behaves as.
+    /// </summary>
+    public string Stage { get; set; } = "Entry";
+
     public string? AppliesToModuleCode { get; set; }
 
     /// <summary>Stored, never evaluated — field-level authorization is BL-024.</summary>

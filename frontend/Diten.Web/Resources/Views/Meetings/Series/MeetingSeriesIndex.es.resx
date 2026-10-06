@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingSeriesTitle" xml:space="preserve"><value>Series de reuniones</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Reglas de cadencia recurrente — cada ocurrencia debida se genera automáticamente como su propia reunión.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Frecuencia</value></data>
+  <data name="FrequencyWeekly" xml:space="preserve"><value>Semanal</value></data>
+  <data name="FrequencyMonthly" xml:space="preserve"><value>Mensual</value></data>
+  <data name="FrequencyQuarterly" xml:space="preserve"><value>Trimestral</value></data>
+  <data name="FrequencyYearly" xml:space="preserve"><value>Anual</value></data>
+  <data name="Interval" xml:space="preserve"><value>Intervalo</value></data>
+  <data name="IntervalHint" xml:space="preserve"><value>Cada N periodos — 2 con Semanal significa cada dos semanas.</value></data>
+  <data name="DurationMinutes" xml:space="preserve"><value>Duración (minutos)</value></data>
+  <data name="LeadTimeDays" xml:space="preserve"><value>Tiempo de antelación (días)</value></data>
+  <data name="LeadTimeDaysHint" xml:space="preserve"><value>Cuántos días antes de cada ocurrencia se genera, 1-90.</value></data>
+  <data name="ChainAsFollowUp" xml:space="preserve"><value>Encadenar como seguimiento</value></data>
+  <data name="ChainAsFollowUpHint" xml:space="preserve"><value>Cada nueva ocurrencia continúa la anterior, trasladando sus acciones aún abiertas.</value></data>
+  <data name="IsActive" xml:space="preserve"><value>Activa</value></data>
+  <data name="LastGeneratedAt" xml:space="preserve"><value>Última generación</value></data>
+  <data name="LastGeneratedAtNever" xml:space="preserve"><value>Nunca</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nueva serie de reuniones</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar serie de reuniones</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Detalles de la serie</value></data>
+  <data name="ScheduleSection" xml:space="preserve"><value>Calendario</value></data>
+  <data name="ParticipantsSection" xml:space="preserve"><value>Participantes</value></data>
+  <data name="FlagsSection" xml:space="preserve"><value>Ajustes</value></data>
+  <data name="DeleteConfirmTitle" xml:space="preserve"><value>¿Eliminar esta serie?</value></data>
+  <data name="DeleteConfirmText" xml:space="preserve"><value>Esto solo elimina la regla — las reuniones ya generadas no se ven afectadas.</value></data>
+</root>

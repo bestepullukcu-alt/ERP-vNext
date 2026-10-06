@@ -12,6 +12,20 @@ public sealed record GetTaskItemByIdQuery(Guid Id, string CorrelationId)
     : IRequest<Response<TaskItemDetailDto>>;
 
 /// <summary>
+/// Who this task's comment box may @mention (WP-PSS-MOD0024-TASK-MENTIONS-01 K2) — the assignee, the pool
+/// holders, the creator, the watchers, and the parent task's assignee/pool holders
+/// (<see cref="Services.ITaskReadAccessPolicy.ResolveDataLegCandidatesAsync"/>). Deliberately NOT the same
+/// membership <c>CanReadAsync</c> would grant the CALLER through scope or <c>ReadAll</c> — those two legs only
+/// answer for the caller asking, never for an arbitrary other person, so a candidate list built from them would
+/// silently vary with who is composing the comment.
+///
+/// <para><paramref name="SearchText"/> filters by display name, case-insensitively; null/empty returns the
+/// whole (small, task-scoped) set.</para>
+/// </summary>
+public sealed record GetTaskMentionCandidatesQuery(Guid TaskItemId, string? SearchText, string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskMentionCandidateDto>>>;
+
+/// <summary>
 /// Positions a task may be pooled to (pack §12 K4). Returns the organization unit CODE and NAME alongside the
 /// position, because <c>PositionDto</c> exposes only <c>OrganizationUnitId</c> — without the unit label a picker
 /// cannot tell "QA Specialist — Facility A" from "QA Specialist — Facility B" and work lands in the wrong pool.
@@ -183,20 +197,10 @@ public sealed record GetClosureOutcomeCatalogQuery(string CorrelationId)
     : IRequest<Response<IReadOnlyList<TaskClosureOutcomeDto>>>;
 
 
-// ── DCP-005 slice 2: the document reference list ────────────────────────────
-
-public sealed record GetDocumentReferenceListVersionsQuery(string CorrelationId)
-    : IRequest<Response<IReadOnlyList<DocumentReferenceListVersionDto>>>;
-
-/// <summary>
-/// Search the CURRENT list. Blocked rows come back like any other — the caller shows them and refuses them.
-///
-/// <para>DCP-005 Step 2 — the CSV register this reads is retired as the picker's source (see
-/// <see cref="SearchDocumentCitationsQuery"/> below) but stays live for the admin import page
-/// (<c>/Tasks/DocumentList</c>, BL-369 retires it separately).</para>
-/// </summary>
-public sealed record SearchDocumentReferencesQuery(string? Term, int Limit, string CorrelationId)
-    : IRequest<Response<IReadOnlyList<DocumentReferenceEntryDto>>>;
+// WP-DM-DCP005-DEADCODE-01 — GetDocumentReferenceListVersionsQuery and SearchDocumentReferencesQuery (the CSV
+// document reference list's own reads) were removed here: their handlers, endpoints and calling screen are all
+// gone (WP-DM-DCP005-RETIRE-CSV-01), and a repo-wide search found no other caller of either. The register's own
+// SearchDocumentCitationsQuery below is the current, live picker source and is untouched.
 
 /// <summary>
 /// DCP-005 Step 2 — the picker's source, now the live Document Master Register instead of the CSV list. A thin
@@ -220,3 +224,12 @@ public sealed record SearchDocumentCitationsQuery(string? Term, int Limit, strin
 public sealed record GetTaskTypeGoverningDocumentsQuery(
     Guid TaskTypeId, string? OrganizationCode, string CorrelationId)
     : IRequest<Response<TaskTypeGoverningDocumentsDto>>;
+
+/// <summary>
+/// MOD-0357 S4 — the "link an existing task" picker's own typeahead (pack §7 "two narrow touches"). Tenant-
+/// scoped, title-contains, cancelled tasks excluded (a called-off task is not something a meeting should link
+/// forward to), capped at <see cref="Limit"/>. Mirrors <see cref="SearchDocumentReferencesQuery"/>'s shape —
+/// the closest existing term+limit lookup — rather than opening a second one.
+/// </summary>
+public sealed record GetTaskLinkCandidatesQuery(string? Term, int Limit, string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskLinkCandidateDto>>>;

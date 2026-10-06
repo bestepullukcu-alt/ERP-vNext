@@ -1,33 +1,34 @@
 @using Diten.Web.Views.Governance.Users
+@using Diten.Web.Models.DataTable
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<UsersIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // The table card is a component (BL-440): the page describes it, _ListShell renders it. The page keeps its
+    // own words — every header is localized HERE, the shell produces no text.
+    //
+    // SERVER data (BL-440 package 5): AuthService pages, sorts and filters; the JS declares the same mode.
+    //
+    // NO SELECTION COLUMN, deliberately (K17): AuthService has no bulk endpoint for users, so a checkbox would select
+    // into nothing — the very defect this screen had (bulk JS bound to a column its markup never drew).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-users",
+        DataMode = "server",
+        Slug = "users",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Email"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["FirstName"].Value },
+            new DataTableColumnViewModel { Header = Localizer["LastName"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Roles"].Value },
+            // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the account FACT AuthService asserts (Unknown/Human/Service). Display only.
+            new DataTableColumnViewModel { Header = Localizer["AccountKind"].Value },
+            new DataTableColumnViewModel { Header = SharedLocalizer["Status"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
 
-<div class="card">
-    <div id="skeleton-loader" class="backbone-skeleton p-4">
-        <div class="shimmer skeleton-row skeleton-row-lg"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row skeleton-row-last"></div>
-    </div>
-
-    <div class="card-datatable table-responsive">
-        <table id="dt-users" data-dt-standard="v2" class="datatables-users table border-top">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th class="all">@Localizer["Email"]</th>
-                    <th>@Localizer["FirstName"]</th>
-                    <th>@Localizer["LastName"]</th>
-                    <th>@Localizer["Roles"]</th>
-                    @* WP-INFRA-AUTH-ACCOUNT-KIND-01 — the account FACT AuthService asserts (Unknown/Human/Service).
-                       Display only; classification itself is the explicit-grant-only account-kind.manage key. *@
-                    <th>@Localizer["AccountKind"]</th>
-                    <th>@SharedLocalizer["Status"]</th>
-                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

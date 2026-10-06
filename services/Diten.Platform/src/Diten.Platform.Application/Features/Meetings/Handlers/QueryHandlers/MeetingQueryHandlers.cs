@@ -56,8 +56,16 @@ public sealed class GetMeetingByIdHandler : IRequestHandler<GetMeetingByIdQuery,
         var type = await _types.GetByIdAsync(meeting.MeetingTypeId, ct);
         var agendaItems = await _agendaItems.ListByMeetingIdAsync(query.Id, ct);
 
+        // MOD-0357 S7 — both cross-links resolved for display; neither failure (a dangling ancestor, no
+        // continuation yet) is an error for THIS read, so both are simply null rather than refused.
+        var followUpOf = meeting.FollowUpOfMeetingId is { } followUpId
+            ? await _meetings.GetByIdAsync(followUpId, ct)
+            : null;
+        var followedBy = await _meetings.FindByFollowUpOfMeetingIdAsync(query.Id, ct);
+
         return Response<MeetingDto>.Success(
-            MeetingEligibility.ToDto(meeting, type?.Name ?? string.Empty, attendees, agendaItems), 200, query.CorrelationId);
+            MeetingEligibility.ToDto(meeting, type?.Name ?? string.Empty, attendees, agendaItems, followUpOfMeetingTitle: followUpOf?.Title, followedByMeeting: followedBy),
+            200, query.CorrelationId);
     }
 }
 
@@ -105,6 +113,9 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
 
         var types = await _types.ListAsync(ct);
         var typeNameById = types.ToDictionary(t => t.Id, t => t.Name);
+        // MOD-0357 S7 — `all` already holds every meeting in the tenant; titles for FollowUpOfMeetingId are
+        // resolved from THAT same in-memory list, never a second query per row.
+        var titleById = all.ToDictionary(m => m.Id, m => m.Title);
 
         var hasReadAll = _permissions.IsPlatformActor || _permissions.Has(MeetingPermissions.ReadAll);
         var callerId = _currentUser.UserId;
@@ -137,7 +148,9 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
                 m.Id, m.Title, m.MeetingTypeId, typeNameById.GetValueOrDefault(m.MeetingTypeId, string.Empty),
                 m.StartAt, m.EndAt, m.OrganizerUserId, m.Lifecycle,
                 attendeesByMeeting.GetValueOrDefault(m.Id, []).Contains(callerId),
-                hasLinkedTasks.Contains(m.Id)))
+                hasLinkedTasks.Contains(m.Id),
+                m.FollowUpOfMeetingId,
+                m.FollowUpOfMeetingId is { } sourceId ? titleById.GetValueOrDefault(sourceId) : null))
             .ToList();
 
         return Response<MeetingListResultDto>.Success(new MeetingListResultDto(items, totalCount), 200, query.CorrelationId);
@@ -209,7 +222,9 @@ public sealed class GetLinkedTasksHandler : IRequestHandler<GetLinkedTasksQuery,
             .Select(x =>
             {
                 var summary = resolved[x.TaskId];
-                return new LinkedTaskDto(x.Link.Id, x.Link.LinkType, x.TaskId.ToString(), summary.Title, summary.Link);
+                return new LinkedTaskDto(
+                    x.Link.Id, x.Link.LinkType, x.TaskId.ToString(), summary.Title, summary.Link,
+                    x.Link.CreatedAfterMinutesPublished);
             })
             .ToList();
 
@@ -262,6 +277,62 @@ public sealed class GetMeetingAttendeeLookupHandler
         => _mediator.Send(new GetTaskAssignmentPersonLookupQuery(query.CorrelationId, TaskPersonLookupPurpose.Decision), ct);
 }
 
+/// <summary>S6 — every minutes version for this meeting, newest first. Same D3 visibility gate every other
+/// meeting-scoped read applies (organizer ∨ attendee ∨ <c>read-all</c>) — a caller with no relationship to the
+/// meeting gets 404, never a metadata leak, exactly like <c>GetLinkedTasksHandler</c>.</summary>
+public sealed class GetMeetingMinutesHandler : IRequestHandler<GetMeetingMinutesQuery, Response<MeetingMinutesDto>>
+{
+    private readonly IMeetingRepository _meetings;
+    private readonly IMeetingAttendeeRepository _attendees;
+    private readonly IMeetingMinutesVersionRepository _minutes;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly IActorPermissionContext _permissions;
+    private readonly IUserDisplayNameResolver _displayNames;
+
+    public GetMeetingMinutesHandler(
+        IMeetingRepository meetings,
+        IMeetingAttendeeRepository attendees,
+        IMeetingMinutesVersionRepository minutes,
+        ICurrentUserContext currentUser,
+        IActorPermissionContext permissions,
+        IUserDisplayNameResolver displayNames)
+    {
+        _meetings = meetings;
+        _attendees = attendees;
+        _minutes = minutes;
+        _currentUser = currentUser;
+        _permissions = permissions;
+        _displayNames = displayNames;
+    }
+
+    public async Task<Response<MeetingMinutesDto>> Handle(GetMeetingMinutesQuery query, CancellationToken ct)
+    {
+        var meeting = await _meetings.GetByIdAsync(query.MeetingId, ct);
+        if (meeting is null)
+        {
+            return Response<MeetingMinutesDto>.Fail(
+                "The meeting does not exist.", 404, MeetingReasonCodes.NotFound, query.CorrelationId);
+        }
+
+        var attendeeIds = (await _attendees.ListByMeetingIdAsync(query.MeetingId, ct)).Select(a => a.UserId).ToHashSet();
+        var hasReadAll = _permissions.IsPlatformActor || _permissions.Has(MeetingPermissions.ReadAll);
+        if (!MeetingEligibility.CanView(meeting, _currentUser.UserId, hasReadAll, attendeeIds))
+        {
+            return Response<MeetingMinutesDto>.Fail(
+                "The meeting does not exist.", 404, MeetingReasonCodes.NotFound, query.CorrelationId);
+        }
+
+        var versions = await _minutes.ListByMeetingIdAsync(query.MeetingId, ct);
+        var dtos = new List<MeetingMinutesVersionDto>(versions.Count);
+        foreach (var version in versions)
+        {
+            dtos.Add(await MinutesEligibility.ToDtoAsync(version, _displayNames, ct));
+        }
+
+        return Response<MeetingMinutesDto>.Success(new MeetingMinutesDto(dtos), 200, query.CorrelationId);
+    }
+}
+
 /// <summary>S3 — the type dropdown's own data source (pack §12: the type must resolve and be active).</summary>
 public sealed class GetMeetingTypeLookupHandler
     : IRequestHandler<GetMeetingTypeLookupQuery, Response<IReadOnlyList<MeetingTypeLookupItemDto>>>
@@ -280,5 +351,57 @@ public sealed class GetMeetingTypeLookupHandler
             .ToList();
 
         return Response<IReadOnlyList<MeetingTypeLookupItemDto>>.Success(items, 200, query.CorrelationId);
+    }
+}
+
+// ── S11 — recurring meeting series ──────────────────────────────────────────────────────────────────────────
+
+public sealed class GetMeetingSeriesListHandler
+    : IRequestHandler<GetMeetingSeriesListQuery, Response<IReadOnlyList<MeetingSeriesDto>>>
+{
+    private readonly IMeetingSeriesRepository _series;
+    private readonly IMeetingTypeRepository _types;
+
+    public GetMeetingSeriesListHandler(IMeetingSeriesRepository series, IMeetingTypeRepository types)
+    {
+        _series = series;
+        _types = types;
+    }
+
+    public async Task<Response<IReadOnlyList<MeetingSeriesDto>>> Handle(
+        GetMeetingSeriesListQuery query, CancellationToken ct)
+    {
+        var all = await _series.ListAllAsync(ct);
+        var types = await _types.ListAsync(ct);
+        var typeNameById = types.ToDictionary(t => t.Id, t => t.Name);
+
+        IReadOnlyList<MeetingSeriesDto> dtos = all
+            .Select(s => MeetingSeriesMapping.ToDto(s, typeNameById.GetValueOrDefault(s.MeetingTypeId)))
+            .ToList();
+        return Response<IReadOnlyList<MeetingSeriesDto>>.Success(dtos, 200, query.CorrelationId);
+    }
+}
+
+public sealed class GetMeetingSeriesByIdHandler : IRequestHandler<GetMeetingSeriesByIdQuery, Response<MeetingSeriesDto>>
+{
+    private readonly IMeetingSeriesRepository _series;
+    private readonly IMeetingTypeRepository _types;
+
+    public GetMeetingSeriesByIdHandler(IMeetingSeriesRepository series, IMeetingTypeRepository types)
+    {
+        _series = series;
+        _types = types;
+    }
+
+    public async Task<Response<MeetingSeriesDto>> Handle(GetMeetingSeriesByIdQuery query, CancellationToken ct)
+    {
+        var series = await _series.GetByIdAsync(query.Id, ct);
+        if (series is null)
+        {
+            return Response<MeetingSeriesDto>.Fail("The meeting series does not exist.", 404, MeetingReasonCodes.SeriesNotFound, query.CorrelationId);
+        }
+
+        var type = await _types.GetByIdAsync(series.MeetingTypeId, ct);
+        return Response<MeetingSeriesDto>.Success(MeetingSeriesMapping.ToDto(series, type?.Name), 200, query.CorrelationId);
     }
 }

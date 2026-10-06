@@ -11,6 +11,7 @@ Human Capital Management owns internal HCM domain applications and governance co
 ## Current Module Packs
 
 - `MOD-0251 Core HR / Employee Master` - approved for the reduced P2 draft/reference-validation slice. The slice is implemented and browser-validated for create, save/update with ETag, reload, person/organization-unit/position/legal-entity reference validation, and non-submit review.
+- `MOD-0280-FU01 Time Entry & Weekly Timesheet` - `ready-for-dev` (2026-09-29); runs in `Diten.Platform` per ADR-004; no runtime yet.
 
 ## Current Runtime Position
 

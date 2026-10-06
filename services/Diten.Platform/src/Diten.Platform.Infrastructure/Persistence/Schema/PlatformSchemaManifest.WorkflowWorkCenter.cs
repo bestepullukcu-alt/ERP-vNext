@@ -265,6 +265,14 @@ public static partial class PlatformSchemaManifest
                             .Ascending(x => x.CreatedByUserId)
                             .Ascending(x => x.IsDeleted),
                         new CreateIndexOptions { Name = "ix_task_items_tenant_creator" }),
+                    // BL-439 — the question inbox: what ListWaitingOnUserAsync reads (tasks parked waiting on a user).
+                    new CreateIndexModel<TaskItem>(
+                        Builders<TaskItem>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.WaitingOnUserId)
+                            .Ascending(x => x.Lifecycle)
+                            .Ascending(x => x.IsDeleted),
+                        new CreateIndexOptions { Name = "ix_task_items_tenant_waiting_on" }),
                     new CreateIndexModel<TaskItem>(
                         Builders<TaskItem>.IndexKeys
                             .Ascending(x => x.TenantId)

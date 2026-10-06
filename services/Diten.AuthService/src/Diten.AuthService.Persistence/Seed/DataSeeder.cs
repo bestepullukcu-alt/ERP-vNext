@@ -115,10 +115,23 @@ public static class DataSeeder
         "mdm.global-products.create"
     };
 
-    public static async Task SeedAsync(IMongoDatabase database)
+    /// <summary>
+    /// Opt-in switch for the five mock users per dev tenant (john.doe, jane.smith, …). Absent means false: the
+    /// mock users used to come back on EVERY Auth start whenever a tenant held only its admin — measured 2026-09-24,
+    /// in the middle of the owner's control round, right after the test users had been deleted on purpose. The
+    /// switch is read together with the Development environment in <c>DependencyInjection.AddPersistence</c>
+    /// (both must hold), the same gate Platform's <c>PositionSeed</c> uses; set it only in a local, never-committed
+    /// appsettings.Development.json.
+    /// </summary>
+    public const string MockUsersOptInConfigurationKey = "DevSeeds:MockUsers";
+
+    public static async Task SeedAsync(IMongoDatabase database, bool seedMockUsers = false)
     {
         try 
         {
+            // BL-452 package 3 — which tenants already hold auth.users.export, measured BEFORE this run writes anything.
+            var tenantsAlreadyOnExport = await SnapshotTenantsOnUsersExportAsync(database);
+
             Console.WriteLine("Seeding permissions...");
             await SeedPermissionsAsync(database);
             
@@ -126,7 +139,7 @@ public static class DataSeeder
             await SeedRolesAsync(database);
             
             Console.WriteLine("Seeding users...");
-            await SeedUsersAsync(database);
+            await SeedUsersAsync(database, seedMockUsers);
 
             Console.WriteLine("Seeding tenant-97c5 BRD consumer grant...");
             await SeedTenant97c5BusinessReferenceDataConsumerGrantAsync(database);
@@ -139,6 +152,18 @@ public static class DataSeeder
 
             Console.WriteLine("Seeding tenant-97c5 CRM knowledge (WP-SCMM-05-S1) grants...");
             await SeedTenant97c5CrmKnowledgeGrantAsync(database);
+
+            Console.WriteLine("Seeding tenant-97c5 CRM claim (WP-SCMM-12-API) grants...");
+            await SeedTenant97c5CrmClaimGrantAsync(database);
+
+            Console.WriteLine("Seeding tenant-97c5 CRM content-assembly (WP-SCMM-14) grants...");
+            await SeedTenant97c5CrmContentAssemblyGrantAsync(database);
+
+            Console.WriteLine("Seeding tenant-97c5 CRM eligibility (WP-SCMM-11-follow-API) grants...");
+            await SeedTenant97c5CrmEligibilityGrantAsync(database);
+
+            Console.WriteLine("Seeding tenant-97c5 CRM planned-visit (WP-MOB-B03) grants...");
+            await SeedTenant97c5CrmPlannedVisitGrantAsync(database);
 
             Console.WriteLine("Seeding tenant-97c5 workflow operator grant...");
             await SeedTenant97c5WorkflowGrantAsync(database);
@@ -160,6 +185,9 @@ public static class DataSeeder
 
             Console.WriteLine("Reconciling tenant Admin self-service grants (backfill)...");
             await ReconcileTenantAdminSelfServiceGrantsAsync(database);
+
+            Console.WriteLine("Backfilling auth.users.export for roles that read users (one-way, once per tenant)...");
+            await BackfillUsersExportAsync(database, tenantsAlreadyOnExport);
 
             Console.WriteLine("Seeding completed successfully.");
         }
@@ -185,6 +213,8 @@ public static class DataSeeder
         await ReconcilePermissionModulesAsync(col, permissions);
         await ReconcilePermissionSegmentsFromSeedAsync(col, permissions);
         await ReconcilePermissionScopesAsync(col, permissions);
+        // BL-411 — allowlisted PlatformAdmin → Tenant correction for synced-only keys the seed-list reconcile cannot reach.
+        await ApplyTenantRouteScopeCorrectionsAsync(col);
         await ReconcilePermissionModuleCasingAsync(col);
         await ReconcileServiceNamespaceModuleAttributionAsync(col);
         await ReconcilePermissionSegmentSpellingAsync(col);
@@ -374,6 +404,9 @@ public static class DataSeeder
             new("auth", "users", "update", "Update User", "Permission to edit user information", moduleOverride: "access-governance"),
             new("auth", "users", "delete", "Delete User", "Permission to delete users", moduleOverride: "access-governance"),
             new("auth", "users", "assign-role", "Assign Role", "Permission to assign roles to users", moduleOverride: "access-governance"),
+            // BL-452 package 3 — exporting the Users list is its own right (was auth.users.read). Tenant Admin receives it
+            // through the access-governance breadth; existing reading roles get it once, by BackfillUsersExportAsync.
+            new("auth", "users", "export", "Export Users", "Permission to export the user list (CSV/Excel) as the screen shows it", moduleOverride: "access-governance"),
             new("auth", "users", "lookup-validation", "Lookup Validation", "Permission to validate tenant user references", moduleOverride: "access-governance"),
             // WP-INFRA-AUTH-ACCOUNT-KIND-01 — two keys, two natures. `auth.users.lookup` is an ORDINARY tenant key
             // (name search + account assertion for reference pickers; no email, no roles) and reaches the tenant Admin
@@ -475,6 +508,32 @@ public static class DataSeeder
             new("crm", "knowledge.path", "read", "CRM Knowledge Path Read", "Permission to view SCMM knowledge paths and the path contract", moduleOverride: "crm-knowledge"),
             new("crm", "knowledge.path", "manage", "CRM Knowledge Path Manage", "Permission to author SCMM knowledge paths and their steps", moduleOverride: "crm-knowledge"),
             new("crm", "knowledge.path", "publish", "CRM Knowledge Path Publish", "Permission to publish SCMM knowledge paths (freezes the step set)", moduleOverride: "crm-knowledge"),
+
+            // SCMM-12-API (CAND-CAP-0011) — Claim HTTP surface. Tenant-scoped keys (module code "crm-content-composition"
+            // ∉ PlatformAdminModules → Scope=Tenant). Canonical crm.claim.* keys for the ContentComposition claim console.
+            new("crm", "claim", "read", "CRM Claim Read", "Permission to view SCMM claims", moduleOverride: "crm-content-composition"),
+            new("crm", "claim", "manage", "CRM Claim Manage", "Permission to create/update/archive SCMM claims", moduleOverride: "crm-content-composition"),
+            new("crm", "claim", "approve", "CRM Claim Approve", "Permission to approve SCMM claims (draft to approved)", moduleOverride: "crm-content-composition"),
+
+            // SCMM-14 (CAND-CAP-0011) — ContentScope + ContentSet (assembly) HTTP surface. Tenant-scoped keys (same
+            // module code "crm-content-composition" ∉ PlatformAdminModules → Scope=Tenant).
+            new("crm", "content-scope", "read", "CRM Content Scope Read", "Permission to view SCMM content scopes", moduleOverride: "crm-content-composition"),
+            new("crm", "content-scope", "manage", "CRM Content Scope Manage", "Permission to create/update/archive SCMM content scopes", moduleOverride: "crm-content-composition"),
+            new("crm", "content-set", "read", "CRM Content Set Read", "Permission to view SCMM content-set assembly drafts", moduleOverride: "crm-content-composition"),
+            new("crm", "content-set", "manage", "CRM Content Set Manage", "Permission to author SCMM content-set drafts (create/clone/arrange/apply-eligibility/archive)", moduleOverride: "crm-content-composition"),
+
+            // SCMM-11-follow-API (CAND-CAP-0011) — eligibility policy authoring + evaluate HTTP surface. evaluate is a
+            // SEPARATE key from manage (author-vs-evaluator SoD).
+            new("crm", "eligibility", "read", "CRM Eligibility Read", "Permission to view SCMM eligibility policies", moduleOverride: "crm-content-composition"),
+            new("crm", "eligibility", "manage", "CRM Eligibility Manage", "Permission to create/update/archive SCMM eligibility policies", moduleOverride: "crm-content-composition"),
+            new("crm", "eligibility", "evaluate", "CRM Eligibility Evaluate", "Permission to evaluate a context against an SCMM eligibility policy", moduleOverride: "crm-content-composition"),
+
+            // WP-MOB-B03 (MOD-0155 FU01 F-RBAC) — PlannedVisit canonical keys. Tenant-scoped (module code
+            // "crm-planned-visit" ∉ PlatformAdminModules → Scope=Tenant). They replace the DEV-ONLY crm.territory.*
+            // fallback PlannedVisitsController ran on. confirm is a SEPARATE key from manage (author-vs-confirmer SoD).
+            new("crm", "planned-visit", "read", "CRM Planned Visit Read", "Permission to view CRM planned visits and the planned-visit contract", moduleOverride: "crm-planned-visit"),
+            new("crm", "planned-visit", "manage", "CRM Planned Visit Manage", "Permission to create/update/cancel/archive CRM planned visits", moduleOverride: "crm-planned-visit"),
+            new("crm", "planned-visit", "confirm", "CRM Planned Visit Confirm", "Permission to confirm CRM planned visits (separate from manage for SoD)", moduleOverride: "crm-planned-visit"),
 
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),
@@ -869,6 +928,66 @@ public static class DataSeeder
         }
     }
 
+    /// <summary>
+    /// BL-411 (CT benchmark D3) — applies <see cref="TenantRouteScopeCorrections"/>: the allowlisted, idempotent
+    /// PlatformAdmin → Tenant correction for the two MOD-0024 template keys that a scope-less A1 auto-registration sync
+    /// stamped PlatformAdmin before the Tasks manifest (route-derived Tenant) reached Auth.
+    ///
+    /// <para>The seed-list Scope reconcile above cannot reach them (synced-only keys), and the catalog sync never
+    /// downgrades. This is NOT a general downgrade: it reads the whole collection so the planner — not the query — is
+    /// the single place that decides which rows qualify (allowlisted key, currently PlatformAdmin, tenant registered
+    /// route). Each write repeats the PlatformAdmin condition server-side, so a second run modifies nothing and a plan
+    /// made from a stale read never overwrites a writer that landed first. Scope + UpdatedAt/UpdatedBy only: Key, Module,
+    /// IsDeleted and every rolePermissions row are untouched.</para>
+    ///
+    /// <para>⚠ GRANTS (CT decision 2026-09-15, accepted as intended). The correction run itself adds or removes no grant.
+    /// Its effect on grants comes LATER: once the two keys are Tenant, the next entitlement sync for a tenant entitled to
+    /// <c>tasks</c> gives that tenant's Admin role both keys (Admin receives the module's full permission set;
+    /// ModulePermissionResolver no longer excludes them as platform-scoped), while Viewer receives neither (Viewer
+    /// receives read actions only). MOD-0024 templates are tenant configuration maintained by the tenant's
+    /// administrators. Pinned by TenantRouteScopeCorrectionMongoTests.</para>
+    ///
+    /// <para>Returns the rows actually changed; each is logged once, on the run that changes it.</para>
+    /// </summary>
+    public static async Task<IReadOnlyList<TenantRouteScopeCorrections.Correction>> ApplyTenantRouteScopeCorrectionsAsync(IMongoCollection<Permission> col)
+    {
+        var all = await col.Find(FilterDefinition<Permission>.Empty).ToListAsync();
+        return await ApplyPlannedTenantRouteScopeCorrectionsAsync(col, TenantRouteScopeCorrections.Plan(all));
+    }
+
+    /// <summary>
+    /// BL-411 — writes a plan made by <see cref="TenantRouteScopeCorrections.Plan"/>. Split out so a test can hold a plan
+    /// across a second writer: the server-side PlatformAdmin condition is what keeps a stale plan from overwriting it.
+    /// </summary>
+    public static async Task<IReadOnlyList<TenantRouteScopeCorrections.Correction>> ApplyPlannedTenantRouteScopeCorrectionsAsync(
+        IMongoCollection<Permission> col,
+        IReadOnlyList<TenantRouteScopeCorrections.Correction> plan)
+    {
+        var applied = new List<TenantRouteScopeCorrections.Correction>();
+
+        foreach (var correction in plan)
+        {
+            var filter = Builders<Permission>.Filter.And(
+                Builders<Permission>.Filter.Eq(x => x.Id, correction.PermissionId),
+                Builders<Permission>.Filter.Eq(x => x.Key, correction.PermissionKey),
+                Builders<Permission>.Filter.Eq(x => x.Scope, PermissionScope.PlatformAdmin));
+            var update = Builders<Permission>.Update
+                .Set(x => x.Scope, PermissionScope.Tenant)
+                .Set(x => x.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow)
+                .Set(x => x.UpdatedBy, SystemUser);
+
+            var result = await col.UpdateOneAsync(filter, update);
+            if (result.ModifiedCount == 1)
+            {
+                applied.Add(correction);
+                Console.WriteLine(
+                    $"BL-411 scope correction: {correction.PermissionKey} PlatformAdmin -> Tenant (registered route {correction.RegisteredRoutePath}).");
+            }
+        }
+
+        return applied;
+    }
+
     private static async Task SeedRolesAsync(IMongoDatabase database)
     {
         var roleCol = database.GetCollection<Role>("roles");
@@ -891,7 +1010,7 @@ public static class DataSeeder
         await AssignMod0251PlatformIntegrationGrantsAsync(permCol, rpCol, admin);
     }
 
-    private static async Task SeedUsersAsync(IMongoDatabase database)
+    private static async Task SeedUsersAsync(IMongoDatabase database, bool seedMockUsers)
     {
         var userCol = database.GetCollection<User>("users");
         var roleCol = database.GetCollection<Role>("roles");
@@ -953,9 +1072,13 @@ public static class DataSeeder
             }
         }
 
-        // Seed 5 additional mock users for DefaultTenantId and Tenant97c5Id
-        await SeedMockUsersForTenantAsync(userCol, DefaultTenantId);
-        await SeedMockUsersForTenantAsync(userCol, Tenant97c5Id);
+        // Five mock users per dev tenant — OPT-IN only (MockUsersOptInConfigurationKey). Default: nothing is seeded,
+        // so a tenant that was emptied on purpose stays empty across restarts.
+        if (seedMockUsers)
+        {
+            await SeedMockUsersForTenantAsync(userCol, DefaultTenantId);
+            await SeedMockUsersForTenantAsync(userCol, Tenant97c5Id);
+        }
     }
 
     private static async Task SeedMockUsersForTenantAsync(IMongoCollection<User> userCol, Guid tenantId)
@@ -1124,6 +1247,73 @@ public static class DataSeeder
         }
 
         Console.WriteLine($"Reconciled {planned.Count} missing tenant self-service grant(s) across {affectedTenants.Count} tenant(s).");
+    }
+
+    private static async Task<IReadOnlySet<Guid>> SnapshotTenantsOnUsersExportAsync(IMongoDatabase database)
+    {
+        var export = await database.GetCollection<Permission>("permissions")
+            .Find(p => p.Key == UsersExportGrantBackfill.ExportKey && p.IsDeleted == false).FirstOrDefaultAsync();
+        if (export is null) return new HashSet<Guid>();
+
+        var (roles, grants) = await LoadRoleGrantsAsync(database);
+        return UsersExportGrantBackfill.TenantsAlreadyOnExport(roles, grants, export.Id);
+    }
+
+    // BL-452 package 3 — see UsersExportGrantBackfill: every role holding auth.users.read gets auth.users.export, in the
+    // tenants that were not on the export key when this run started. Additive, idempotent, System-sourced grants.
+    private static async Task BackfillUsersExportAsync(IMongoDatabase database, IReadOnlySet<Guid> tenantsAlreadyOnExport)
+    {
+        var permCol = database.GetCollection<Permission>("permissions");
+        var read = await permCol.Find(p => p.Key == UsersExportGrantBackfill.ReadKey && p.IsDeleted == false).FirstOrDefaultAsync();
+        var export = await permCol.Find(p => p.Key == UsersExportGrantBackfill.ExportKey && p.IsDeleted == false).FirstOrDefaultAsync();
+        if (read is null || export is null) return;
+
+        var (roles, grants) = await LoadRoleGrantsAsync(database);
+
+        // v2 — the persistent gate: a tenant marked once is never backfilled again (its revokes stick).
+        var marks = database.GetCollection<PermissionReconciliationMark>(PermissionReconciliationMark.CollectionName);
+        var marked = (await marks.Find(m => m.Key == UsersExportGrantBackfill.ExportKey).ToListAsync())
+            .Select(m => m.TenantId)
+            .ToHashSet();
+        var skip = marked.Concat(tenantsAlreadyOnExport).ToHashSet();
+
+        var planned = UsersExportGrantBackfill.PlanMissingGrants(roles, grants, read.Id, export.Id, skip);
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+        foreach (var g in planned)
+        {
+            await rpCol.InsertOneAsync(RolePermission.SystemGrant(g.RoleId, g.PermissionId, g.TenantId, SystemUser));
+        }
+
+        // Every tenant looked at in this run is marked — granted, skipped as already on the key, or with no reader at all.
+        var now = DateTime.UtcNow;
+        foreach (var tenantId in UsersExportGrantBackfill.TenantsToMark(roles, marked))
+        {
+            await marks.ReplaceOneAsync(
+                m => m.TenantId == tenantId && m.Key == UsersExportGrantBackfill.ExportKey,
+                new PermissionReconciliationMark { TenantId = tenantId, Key = UsersExportGrantBackfill.ExportKey, ReconciledAtUtc = now },
+                new ReplaceOptions { IsUpsert = true });
+        }
+
+        if (planned.Count == 0) return;
+
+        var versionService = new RoleAssignmentVersionRepository(database);
+        foreach (var tenantId in planned.Select(g => g.TenantId).ToHashSet())
+        {
+            await versionService.IncrementAsync(tenantId, CancellationToken.None);
+        }
+
+        Console.WriteLine($"Backfilled auth.users.export on {planned.Count} role(s) that read users.");
+    }
+
+    private static async Task<(List<TenantAdminSelfServiceReconciler.RoleRef> Roles, HashSet<(Guid RoleId, Guid PermissionId)> Grants)> LoadRoleGrantsAsync(IMongoDatabase database)
+    {
+        var roles = (await database.GetCollection<Role>("roles").Find(r => r.IsDeleted == false).ToListAsync())
+            .Select(r => new TenantAdminSelfServiceReconciler.RoleRef(r.Id, r.Name, r.TenantId))
+            .ToList();
+        var grants = (await database.GetCollection<RolePermission>("rolePermissions").Find(rp => rp.IsDeleted == false).ToListAsync())
+            .Select(rp => (rp.RoleId, rp.PermissionId))
+            .ToHashSet();
+        return (roles, grants);
     }
 
     private static async Task SeedTenant97c5BusinessReferenceDataConsumerGrantAsync(IMongoDatabase database)
@@ -1345,6 +1535,210 @@ public static class DataSeeder
         }
 
         Console.WriteLine($"Granted {granted} missing crm.knowledge.* permission(s) to tenant-97c5 Admin role.");
+    }
+
+    /// <summary>
+    /// WP-SCMM-12-API — grants the CAND-CAP-0011 <c>crm.claim.*</c> permissions to the tenant-97c5 Admin role (mirrors
+    /// <see cref="SeedTenant97c5CrmKnowledgeGrantAsync"/>). Enables the authenticated claim console (create / list /
+    /// approve / archive) for the CRM-tenant Admin. Idempotent: existing grants are skipped; explicit 3-key allowlist.
+    /// </summary>
+    private static async Task SeedTenant97c5CrmClaimGrantAsync(IMongoDatabase database)
+    {
+        var roleCol = database.GetCollection<Role>("roles");
+        var permCol = database.GetCollection<Permission>("permissions");
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+
+        var adminRole = await roleCol
+            .Find(r => r.TenantId == Tenant97c5Id && r.Name == DefaultRolePermissionTemplate.AdminRole && !r.IsDeleted)
+            .FirstOrDefaultAsync();
+        if (adminRole is null)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM claim grant: Admin role not found.");
+            return;
+        }
+
+        var claimKeys = new[]
+        {
+            "crm.claim.read",
+            "crm.claim.manage",
+            "crm.claim.approve"
+        };
+        var claimPerms = await permCol
+            .Find(p => !p.IsDeleted && claimKeys.Contains(p.Key))
+            .ToListAsync();
+        if (claimPerms.Count == 0)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM claim grant: no crm.claim.* permissions in catalog.");
+            return;
+        }
+
+        var granted = 0;
+        foreach (var permission in claimPerms)
+        {
+            var exists = await rpCol.Find(rp =>
+                    rp.TenantId == Tenant97c5Id
+                    && rp.RoleId == adminRole.Id
+                    && rp.PermissionId == permission.Id
+                    && !rp.IsDeleted)
+                .AnyAsync();
+            if (exists)
+            {
+                continue;
+            }
+
+            await rpCol.InsertOneAsync(RolePermission.SystemGrant(adminRole.Id, permission.Id, Tenant97c5Id, SystemUser));
+            granted++;
+        }
+
+        Console.WriteLine($"Granted {granted} missing crm.claim.* permission(s) to tenant-97c5 Admin role.");
+    }
+
+    // WP-SCMM-14 (CAND-CAP-0011) — grant the ContentScope + ContentSet (assembly) permissions to the tenant-97c5 Admin
+    // role so the content-studio authoring surface works. Idempotent, explicit key allowlist, GUID-safe
+    // (RolePermission.SystemGrant). Same shape as the SCMM-12-API claim grant.
+    private static async Task SeedTenant97c5CrmContentAssemblyGrantAsync(IMongoDatabase database)
+    {
+        var roleCol = database.GetCollection<Role>("roles");
+        var permCol = database.GetCollection<Permission>("permissions");
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+
+        var adminRole = await roleCol
+            .Find(r => r.TenantId == Tenant97c5Id && r.Name == DefaultRolePermissionTemplate.AdminRole && !r.IsDeleted)
+            .FirstOrDefaultAsync();
+        if (adminRole is null)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM content-assembly grant: Admin role not found.");
+            return;
+        }
+
+        var keys = new[]
+        {
+            "crm.content-scope.read",
+            "crm.content-scope.manage",
+            "crm.content-set.read",
+            "crm.content-set.manage"
+        };
+        var perms = await permCol.Find(p => !p.IsDeleted && keys.Contains(p.Key)).ToListAsync();
+        if (perms.Count == 0)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM content-assembly grant: no crm.content-scope/set.* permissions in catalog.");
+            return;
+        }
+
+        var granted = 0;
+        foreach (var permission in perms)
+        {
+            var exists = await rpCol.Find(rp =>
+                    rp.TenantId == Tenant97c5Id
+                    && rp.RoleId == adminRole.Id
+                    && rp.PermissionId == permission.Id
+                    && !rp.IsDeleted)
+                .AnyAsync();
+            if (exists)
+            {
+                continue;
+            }
+
+            await rpCol.InsertOneAsync(RolePermission.SystemGrant(adminRole.Id, permission.Id, Tenant97c5Id, SystemUser));
+            granted++;
+        }
+
+        Console.WriteLine($"Granted {granted} missing crm.content-scope/set.* permission(s) to tenant-97c5 Admin role.");
+    }
+
+    // WP-SCMM-11-follow-API (CAND-CAP-0011) — grant the eligibility policy read/manage/evaluate permissions to the
+    // tenant-97c5 Admin role so the eligibility HTTP surface (policy CRUD + evaluate) works. Idempotent, explicit key
+    // allowlist, GUID-safe (RolePermission.SystemGrant). Same shape as the SCMM-12-API / SCMM-14 grants.
+    private static async Task SeedTenant97c5CrmEligibilityGrantAsync(IMongoDatabase database)
+    {
+        var roleCol = database.GetCollection<Role>("roles");
+        var permCol = database.GetCollection<Permission>("permissions");
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+
+        var adminRole = await roleCol
+            .Find(r => r.TenantId == Tenant97c5Id && r.Name == DefaultRolePermissionTemplate.AdminRole && !r.IsDeleted)
+            .FirstOrDefaultAsync();
+        if (adminRole is null)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM eligibility grant: Admin role not found.");
+            return;
+        }
+
+        var keys = new[] { "crm.eligibility.read", "crm.eligibility.manage", "crm.eligibility.evaluate" };
+        var perms = await permCol.Find(p => !p.IsDeleted && keys.Contains(p.Key)).ToListAsync();
+        if (perms.Count == 0)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM eligibility grant: no crm.eligibility.* permissions in catalog.");
+            return;
+        }
+
+        var granted = 0;
+        foreach (var permission in perms)
+        {
+            var exists = await rpCol.Find(rp =>
+                    rp.TenantId == Tenant97c5Id
+                    && rp.RoleId == adminRole.Id
+                    && rp.PermissionId == permission.Id
+                    && !rp.IsDeleted)
+                .AnyAsync();
+            if (exists)
+            {
+                continue;
+            }
+
+            await rpCol.InsertOneAsync(RolePermission.SystemGrant(adminRole.Id, permission.Id, Tenant97c5Id, SystemUser));
+            granted++;
+        }
+
+        Console.WriteLine($"Granted {granted} missing crm.eligibility.* permission(s) to tenant-97c5 Admin role.");
+    }
+
+    // WP-MOB-B03 — grant crm.planned-visit.read/manage/confirm to the tenant-97c5 Admin role: the SAME role that today
+    // holds the DEV-ONLY crm.territory.* fallback PlannedVisitsController ran on, so switching the controller to the
+    // canonical keys causes NO access regression. Idempotent, explicit key allowlist, GUID-safe
+    // (RolePermission.SystemGrant). Same shape as the eligibility grant.
+    private static async Task SeedTenant97c5CrmPlannedVisitGrantAsync(IMongoDatabase database)
+    {
+        var roleCol = database.GetCollection<Role>("roles");
+        var permCol = database.GetCollection<Permission>("permissions");
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+
+        var adminRole = await roleCol
+            .Find(r => r.TenantId == Tenant97c5Id && r.Name == DefaultRolePermissionTemplate.AdminRole && !r.IsDeleted)
+            .FirstOrDefaultAsync();
+        if (adminRole is null)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM planned-visit grant: Admin role not found.");
+            return;
+        }
+
+        var keys = new[] { "crm.planned-visit.read", "crm.planned-visit.manage", "crm.planned-visit.confirm" };
+        var perms = await permCol.Find(p => !p.IsDeleted && keys.Contains(p.Key)).ToListAsync();
+        if (perms.Count == 0)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM planned-visit grant: no crm.planned-visit.* permissions in catalog.");
+            return;
+        }
+
+        var granted = 0;
+        foreach (var permission in perms)
+        {
+            var exists = await rpCol.Find(rp =>
+                    rp.TenantId == Tenant97c5Id
+                    && rp.RoleId == adminRole.Id
+                    && rp.PermissionId == permission.Id
+                    && !rp.IsDeleted)
+                .AnyAsync();
+            if (exists)
+            {
+                continue;
+            }
+
+            await rpCol.InsertOneAsync(RolePermission.SystemGrant(adminRole.Id, permission.Id, Tenant97c5Id, SystemUser));
+            granted++;
+        }
+
+        Console.WriteLine($"Granted {granted} missing crm.planned-visit.* permission(s) to tenant-97c5 Admin role.");
     }
 
     // MOD-0290-FU02-RBAC — grant the Brand/Product master permissions to the tenant-97c5 operator so the

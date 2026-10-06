@@ -14,6 +14,7 @@ public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
     private readonly IRbacAuditRecorder _rbacAudit;
+    private readonly ICurrentUserAccessor _currentUser;
     private readonly ILogger<CreateRoleCommandHandler> _logger;
 
     public CreateRoleCommandHandler(
@@ -21,21 +22,31 @@ public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
         IRbacAuditRecorder rbacAudit,
+        ICurrentUserAccessor currentUser,
         ILogger<CreateRoleCommandHandler> logger)
     {
         _roleRepository = roleRepository;
         _versionService = versionService;
         _tenantContext = tenantContext;
         _rbacAudit = rbacAudit;
+        _currentUser = currentUser;
         _logger = logger;
     }
 
     public async Task<Response<RoleDto>> Handle(CreateRoleCommand request, CancellationToken ct)
     {
+        // BL-412 — a role created through POST api/roles records the person who created it (same actor id as the
+        // role_created audit row). System roles are created by UpsertSystemRoleAsync/DataSeeder, never here.
+        if (_currentUser.UserId is not { } actorId)
+            return Response<RoleDto>.Fail("An authenticated user is required to create a role.", 401);
+
         var existing = await _roleRepository.GetByNameAndTenantAsync(request.Name, _tenantContext.TenantId, ct);
         if (existing != null) return Response<RoleDto>.Fail("Role name is already in use.", 409);
 
-        var role = new Role(request.Name, request.DisplayName, request.Description, _tenantContext.TenantId);
+        var role = new Role(request.Name, request.DisplayName, request.Description, _tenantContext.TenantId)
+        {
+            CreatedBy = actorId.ToString()
+        };
         var created = await _roleRepository.CreateAsync(role, ct);
 
         // FU13 — a role mutation changes the tenant's authorization surface; bump to invalidate cached snapshots.

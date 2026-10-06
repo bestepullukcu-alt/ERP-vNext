@@ -89,12 +89,63 @@ public sealed class KnowledgeContent : EntityBase
 
     public List<KnowledgeExternalReference> ExternalReferences { get; set; } = new();
 
+    // ---- SCMM-13 (docx §13) language-variant linkage --------------------------------------------------------------
+    // "Source and target language variants are distinct versioned records under a shared logical component." The
+    // logical component is <see cref="ContentSetId"/>; source + every target translation share it. Each variant stays a
+    // distinct record (own Id / ContentCode / LanguageCode / ContentVersion). Exactly one variant per set is the source
+    // and at most one active (non-archived) variant exists per language. This is an ADDITIVE extension of the FU02
+    // component (D02c reuse) — no new aggregate.
+
+    /// <summary>Logical component this variant belongs to (source + its translations share it). A legacy row (this
+    /// field unset / <see cref="Guid.Empty"/>) is its own single-language component — see <see cref="EnsureVariantDefaults"/>.</summary>
+    public Guid ContentSetId { get; set; }
+
+    /// <summary>True on the one source-language variant of the set; false on a translation target.</summary>
+    public bool IsSourceLanguage { get; set; }
+
+    /// <summary><see cref="ContentTranslationStatuses"/> — <c>current</c> on the source and on an up-to-date target;
+    /// <c>needs_assessment</c> on a target after the source's governed body changed (docx: "a source edit opens
+    /// translation assessment").</summary>
+    public string TranslationStatus { get; set; } = ContentTranslationStatuses.Current;
+
+    // ---- WP-CL-BE-6 (claims v2, D4) — the claims this content uses --------------------------------------------------
+    /// <summary>Claims this content uses (at most <see cref="KnowledgeContentClaimRef.MaxPerContent"/>). A
+    /// country-specific content binds a claim COUNTRY VERSION; a global/core content binds the core claim only. A
+    /// pre-BE-6 document lacks the field and reads back empty — and an empty list means "no claim gate", exactly the
+    /// old behaviour.</summary>
+    public List<KnowledgeContentClaimRef> ClaimRefs { get; set; } = new();
+
+    /// <summary>WP-SB-2 — set only on the assembled presentation a Content Studio release produced (provenance). Null
+    /// on every other content, and on documents written before WP-SB-2.</summary>
+    public KnowledgeStudioOrigin? StudioOrigin { get; set; }
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTimeOffset? ArchivedAt { get; set; }
     public string? ArchivedBy { get; set; }
 
     public bool IsArchived() => ArchivedAt is not null;
+
+    /// <summary>SCMM-13 READ-TIME MIGRATION (idempotent). A row written before variant linkage existed has no
+    /// <see cref="ContentSetId"/> (deserializes to <see cref="Guid.Empty"/>): it is its own single-language component,
+    /// so it becomes its own source (<c>ContentSetId = Id</c>, <c>IsSourceLanguage = true</c>, <c>TranslationStatus =
+    /// current</c>). Also normalises a blank translation status to <c>current</c>. Applied at the read boundary
+    /// (repository), never rewriting history until the row is next saved. Safe to call repeatedly.</summary>
+    public void EnsureVariantDefaults()
+    {
+        if (ContentSetId == Guid.Empty)
+        {
+            ContentSetId = Id;
+            IsSourceLanguage = true;
+            TranslationStatus = ContentTranslationStatuses.Current;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(TranslationStatus))
+        {
+            TranslationStatus = ContentTranslationStatuses.Current;
+        }
+    }
 
     /// <summary>Available for consumption: published status AND effective at the instant. Read-only helper; this class
     /// draws no visit/route/recommendation conclusion.</summary>
@@ -121,6 +172,41 @@ public sealed class KnowledgeExternalReference
     public bool IsPrimary { get; set; }
 }
 
+/// <summary>
+/// WP-CL-BE-6 — one claim a <see cref="KnowledgeContent"/> uses. <see cref="ClaimCode"/> is the logical claim (stable
+/// across versions; the usage read keys on it), <see cref="ClaimId"/> the claim RECORD bound at save time. When
+/// <see cref="CountryVersionId"/> is set the content is country-specific and binds that
+/// <see cref="ClaimCountryVersion"/> (<see cref="CountryCode"/> is then that version's country); when it is empty the
+/// content is global and binds the core claim. A reference only — no claim wording is copied here.
+/// </summary>
+public sealed class KnowledgeContentClaimRef
+{
+    public const int MaxPerContent = 20;
+
+    public string ClaimCode { get; set; } = string.Empty;
+    public Guid ClaimId { get; set; }
+    public Guid? CountryVersionId { get; set; }
+
+    /// <summary>A <c>COUNTRY_CODES</c> value (upper case); set exactly when <see cref="CountryVersionId"/> is.</summary>
+    public string? CountryCode { get; set; }
+}
+
+/// <summary>WP-CL-BE-6 — coded failures of the content ↔ claim link (rendered as the <c>[code, message]</c> error pair,
+/// like the claims v2 surface).</summary>
+public static class KnowledgeContentClaimErrors
+{
+    public const string ClaimRefsTooMany = "claim_refs_too_many";
+    public const string ClaimRefInvalid = "claim_ref_invalid";
+    public const string ClaimRefDuplicate = "claim_ref_duplicate";
+    public const string ClaimNotFound = "claim_not_found";
+    public const string ClaimRefMismatch = "claim_ref_mismatch";
+    public const string CountryVersionNotFound = "claim_country_version_not_found";
+    public const string ClaimProductMismatch = "claim_product_mismatch";
+    public const string ClaimNotApproved = "claim_not_approved";
+    public const string ClaimLanguageMismatch = "claim_language_mismatch";
+    public const string DependencyUnavailable = "dependency_unavailable";
+}
+
 /// <summary>What kind of content this is. In-domain (structural) vocabulary — validated here rather than through MOD-0048,
 /// so the runtime never fails open on an unpublished set. Surfaced on the contract so an authoring UI needs no hardcoded
 /// list. MOD-0048 publish is a separate operator follow-up (F-RD).</summary>
@@ -141,10 +227,14 @@ public static class KnowledgeContentTypes
     public const string MessageScript = "message-script";
     public const string KnowledgeArticle = "knowledge-article";
 
+    /// <summary>WP-SB-2 — the single presentation a Content Studio release assembles from a content set (the rendered
+    /// PDF is its asset).</summary>
+    public const string AssembledPresentation = "assembled-presentation";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
         Presentation, Brochure, Lesson, Faq, ClinicalSummary, ObjectionHandling, Quiz, Video, Pdf, HtmlDetail, Sop,
-        TrainingMaterial, MessageScript, KnowledgeArticle
+        TrainingMaterial, MessageScript, KnowledgeArticle, AssembledPresentation
     };
 
     public static bool IsValid(string? value)
@@ -176,6 +266,25 @@ public static class KnowledgeContentStatuses
         => string.IsNullOrWhiteSpace(value) ? Draft : value.Trim().ToLowerInvariant();
 }
 
+/// <summary>SCMM-13 translation status of a language variant. In-domain (structural) — validated here, never through an
+/// unpublished reference set. <c>current</c>: up to date with its source (and the source itself). <c>needs_assessment</c>:
+/// a target whose source's governed body changed after it was translated (docx: "a source edit opens translation
+/// assessment"). There is no auto-translation and no silent state change; the transition back to <c>current</c> is the
+/// explicit mark-assessed command.</summary>
+public static class ContentTranslationStatuses
+{
+    public const string Current = "current";
+    public const string NeedsAssessment = "needs_assessment";
+
+    public static readonly IReadOnlyList<string> All = new[] { Current, NeedsAssessment };
+
+    public static bool IsValid(string? value)
+        => !string.IsNullOrWhiteSpace(value) && All.Contains(value.Trim().ToLowerInvariant());
+
+    public static string Normalize(string? value)
+        => string.IsNullOrWhiteSpace(value) ? Current : value.Trim().ToLowerInvariant();
+}
+
 /// <summary>How the content was authored. In-domain (structural).</summary>
 public static class KnowledgeContentSources
 {
@@ -186,9 +295,12 @@ public static class KnowledgeContentSources
     public const string External = "external";
     public const string Other = "other";
 
+    /// <summary>WP-SB-2 — produced by a Content Studio set release.</summary>
+    public const string ContentStudio = "content-studio";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
-        Manual, Campaign, LegacyImport, Training, External, Other
+        Manual, Campaign, LegacyImport, Training, External, Other, ContentStudio
     };
 
     public static bool IsValid(string? value)
@@ -207,6 +319,14 @@ public static class KnowledgeReasonCodes
     public const string ContentUpdated = "knowledge_content_updated";
     public const string ContentArchived = "knowledge_content_archived";
     public const string ContentDuplicateCode = "knowledge_content_duplicate_code";
+
+    // SCMM-13 language-variant lifecycle.
+    public const string ContentVariantCreated = "knowledge_content_variant_created";
+    public const string ContentTranslationAssessmentOpened = "knowledge_content_translation_assessment_opened";
+    public const string ContentTranslationAssessed = "knowledge_content_translation_assessed";
+
+    // WP-CL-BE-6 — the content's claim references changed (ids and counts only, never wording).
+    public const string ContentClaimRefsChanged = "knowledge_content_claim_refs_changed";
 
     public const string SubjectCreated = "knowledge_subject_created";
     public const string SubjectUpdated = "knowledge_subject_updated";

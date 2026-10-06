@@ -72,6 +72,36 @@ public class WorkCenterNextController : Controller
         return ProxyGetAsync(upstream);
     }
 
+    /// <summary>
+    /// BL-414 — ONE work item by id, for the detail page when the item is not on the reader's own list (a watched
+    /// task, a subordinate's task opened from Ekibim, a link from a notification).
+    ///
+    /// <para>Same proxy, same verbatim status pass-through: Platform's 404 for a missing or unreadable task reaches
+    /// the browser unchanged. GUID-constrained, so nothing but an id is ever spliced into the upstream path.</para>
+    /// </summary>
+    [HttpGet("/WorkCenterNext/api/work-items/{itemId:guid}")]
+    public Task<IActionResult> WorkItem(Guid itemId)
+        => ProxyGetAsync($"{_gatewayUrl}/api/v1/work-items/{itemId:D}");
+
+    /// <summary>
+    /// WP-UI-CALENDAR-VIEW-01 — the calendar feed (<c>GET api/v1/work/calendar</c>, WP-TASK-CALENDAR-ENGINE-01): the
+    /// caller's planned work, own meetings, working windows and the tenant zone for a local-date range.
+    ///
+    /// <para>Same proxy, same verbatim status + body pass-through as the list: Platform's coded 400
+    /// (<c>WORK_CALENDAR_RANGE_INVALID</c>) reaches the browser unchanged so the page can say it in seven languages.
+    /// The two dates are forwarded escaped and otherwise untouched — the range rule is the server's, not this
+    /// tier's; an absent one is simply not forwarded and the server answers why.</para>
+    /// </summary>
+    [HttpGet("/WorkCenterNext/api/calendar")]
+    public Task<IActionResult> Calendar([FromQuery] string? from = null, [FromQuery] string? to = null)
+    {
+        var query = new List<string>(2);
+        if (!string.IsNullOrWhiteSpace(from)) { query.Add("from=" + Uri.EscapeDataString(from)); }
+        if (!string.IsNullOrWhiteSpace(to)) { query.Add("to=" + Uri.EscapeDataString(to)); }
+        var upstream = $"{_gatewayUrl}/api/v1/work/calendar" + (query.Count > 0 ? "?" + string.Join("&", query) : string.Empty);
+        return ProxyGetAsync(upstream);
+    }
+
     /// <summary>BL-023 — does the caller have a team? Drives whether the scope option is enabled.</summary>
     [HttpGet("/WorkCenterNext/api/team-availability")]
     public Task<IActionResult> TeamAvailability()

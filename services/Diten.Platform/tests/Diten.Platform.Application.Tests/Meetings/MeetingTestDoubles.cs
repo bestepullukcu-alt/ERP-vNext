@@ -108,6 +108,10 @@ internal sealed class FakeRecordLinkRepository : IRecordLinkRepository
         return await CreateAsync(candidate, ct);
     }
 
+    public Task<RecordLink?> FindByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
+        => Task.FromResult(_items.FirstOrDefault(x =>
+            x.TenantId == TaskTestData.Tenant && !x.IsDeleted && x.IdempotencyKey == idempotencyKey));
+
     public Task<IReadOnlyList<RecordLink>> ListBySourceAsync(
         IReadOnlyCollection<Guid> sourceRecordIds, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<RecordLink>>(

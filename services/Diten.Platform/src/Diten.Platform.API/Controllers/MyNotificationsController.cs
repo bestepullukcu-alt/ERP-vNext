@@ -1,4 +1,5 @@
 using Diten.Platform.API.Controllers.Common;
+using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.Notifications.Commands;
 using Diten.Platform.Application.Features.Notifications.Queries;
 using MediatR;
@@ -41,6 +42,7 @@ public sealed class MyNotificationsController : CustomBaseController
 
     /// <summary>The caller's own notifications, unread first, newest first within each group.</summary>
     [HttpGet]
+    [LoginOnly("The caller's own notifications; no user id is accepted (see class note).")]
     public async Task<IActionResult> GetMine(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -55,6 +57,7 @@ public sealed class MyNotificationsController : CustomBaseController
     /// the endpoint cannot be used to discover that a notification exists.
     /// </summary>
     [HttpPost("{id:guid}/read")]
+    [LoginOnly("Marks one of the caller's own notifications read; another user's id answers as missing.")]
     public async Task<IActionResult> MarkRead(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new MarkMyNotificationReadCommand(id), ct);
@@ -63,6 +66,7 @@ public sealed class MyNotificationsController : CustomBaseController
 
     /// <summary>Mark every unread notification of the caller read.</summary>
     [HttpPost("read-all")]
+    [LoginOnly("Marks the caller's own notifications read; no subject can be named.")]
     public async Task<IActionResult> MarkAllRead(CancellationToken ct)
     {
         var response = await _mediator.Send(new MarkAllMyNotificationsReadCommand(), ct);

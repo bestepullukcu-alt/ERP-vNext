@@ -106,6 +106,9 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>Seçilen pozisyon görev alamaz. Aktif bir pozisyon seçin.</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Bu görevi başka biri sizden önce değiştirdi. Ekran güncel durumla yenilendi.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Zorunlu bir kontrol listesi maddesi hâlâ işaretli değil, görev tamamlanamaz.</value></data>
+  <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>Zorunlu bir kapanış alanı hâlâ boş, görev tamamlanamaz.</value></data>
+  <data name="ErrorOrganizationUnitNotFound" xml:space="preserve"><value>Belirtilen organizasyon birimi bulunamadı.</value></data>
+  <data name="ErrorOrganizationUnitOutOfScope" xml:space="preserve"><value>O organizasyon birimi kapsam dışında.</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>Bu görevin bağlı olduğu bir görev henüz bitmedi, bu yüzden ilerleyemez.</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>Bir alt görev hâlâ açık, bu yüzden bu görev henüz tamamlanamaz.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Bu görev kapandı, artık yorum yazılamaz.</value></data>
@@ -114,8 +117,12 @@
   <data name="ErrorDueDateRequired" xml:space="preserve"><value>Son tarih zorunludur.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>Görev, onaylayan kişinin kararını bekliyor.</value></data>
   <data name="ErrorReviewPending" xml:space="preserve"><value>Görev, incelemeyi yapan kişinin yanıtını bekliyor.</value></data>
+  <data name="ErrorDeliverableRequired" xml:space="preserve"><value>Bu görevi tamamlamadan önce teslimat dosyasını eklemelisiniz.</value></data>
+  <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>Bağlı inceleme toplantısının tutanağı yayımlanmadan bu adım kapatılamaz.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>Bu görev bu durumdayken tamamlanamaz. Önce başlatın.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Bu görevi yalnızca talep eden kişi iptal edebilir. İşi istemiyorsanız iade edin.</value></data>
+  <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>Talep ettiğiniz bir onayın onaylayıcısı siz olamazsınız. Onay yöneticisi olarak başka birini seçin.</value></data>
+  <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>Kendi gönderdiğiniz işi inceleyemezsiniz. Bu görevi incelemesi için başka birini seçin.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Görevin neyi beklediğini yazın.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>Başlık girin.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>Başlık en fazla 200 karakter olabilir.</value></data>
@@ -150,6 +157,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>İzleyiciler</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>Kontrol listesi</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>Bu görevin adımları. Maddeler görev açıldıktan sonra işaretlenir; engelleyici bir madde tamamlanmadan görev kapanmaz.</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>Ekler</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>Bu göreve ait dosyalar — açarken gereken talimat, ya da hemen kaydedilecek kanıt ve çıktı. Görev oluşturulduktan sonra yüklenir.</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Dosya</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Tür</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Ek</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Çıktı</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Dosya ekle</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>Görev oluşturuldu — bazı dosyalar yüklenemedi</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>Görev oluşturuldu, ancak aşağıdaki dosyalar yüklenemedi. Görevin kendi Ekler kartından tekrar ekleyin:</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>Göreve git</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Madde yaz ve Enter'a bas</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>Ekle</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Seviyeyi değiştirmek için etikete tıklayın. Şablon listesi henüz yok.</value></data>
@@ -201,6 +220,12 @@
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>Bu yorum zaten kaldırılmış.</value>
   </data>
+  <data name="ErrorMentionNotVisible" xml:space="preserve">
+    <value>Bahsettiğiniz kişilerden biri bu görevi göremiyor. Önce onu izleyici olarak ekleyin.</value>
+  </data>
+  <data name="ErrorMentionLimitExceeded" xml:space="preserve">
+    <value>Bir yorumda en fazla 10 kişi etiketlenebilir.</value>
+  </data>
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>Bu kişi burada belirtilemez.</value>
   </data>
@@ -217,4 +242,46 @@
   <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>Bu madde tamamlanmadan önce kanıt gerektiriyor.</value></data>
   <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>Bu dosya yüklenemedi. Türünü ve boyutunu kontrol edip tekrar deneyin.</value></data>
   <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Ekler (kanıt dahil) görev oluşturulduktan sonra eklenebilir.</value></data>
+  <data name="ReassignAction" xml:space="preserve"><value>Devret</value></data>
+  <data name="ReassignTitle" xml:space="preserve"><value>Görevi başka birine devret</value></data>
+  <data name="ReassignHint" xml:space="preserve"><value>Yeni sorumlu görevi hemen görür. Gerekçe görevin geçmişinde saklanır.</value></data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve"><value>Yeni sorumlu</value></data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve"><value>Bir kişi seçin</value></data>
+  <data name="ReassignReasonLabel" xml:space="preserve"><value>Devir gerekçesi</value></data>
+  <data name="ReassignReasonPlaceholder" xml:space="preserve"><value>örn. 5 Ekim'e kadar izindeyim, denetimi Ayşe yürütecek.</value></data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve"><value>Görevi kimin devralacağını seçin.</value></data>
+  <data name="ReassignReasonRequired" xml:space="preserve"><value>Görevin neden el değiştirdiğini yazın.</value></data>
+  <data name="ReassignDone" xml:space="preserve"><value>Görev devredildi.</value></data>
+  <data name="ReassignNoPeople" xml:space="preserve"><value>Bu görevin devredilebileceği başka kimse yok.</value></data>
+  <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>Atama düzenlenmez; gerekçesiyle birlikte devredilir ve gerekçe görevin geçmişinde kalır.</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>Göndermeden önce bir cevap yazın.</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>Cevap çok uzun. 4000 karakteri geçmemeli.</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>Bu soru artık sizi beklemiyor; cevaplanmış ya da geri çekilmiş. Listeyi yenileyin.</value>
+  </data>
+  <data name="ErrorPlanNotHolder" xml:space="preserve">
+    <value>Bu görevi yalnızca görevi yürüten kişi planlayabilir. Talep sahibi olarak beklentinizi son tarihle belirtin.</value>
+  </data>
+  <data name="ErrorPlanConflict" xml:space="preserve">
+    <value>Bu saat, daha önce planladığınız başka bir görevle çakışıyor. Başka bir saat seçin ya da diğer görevi taşıyın.</value>
+  </data>
+  <data name="ErrorPlanDurationInvalid" xml:space="preserve">
+    <value>Planlanan süre en az 15 dakika olmalı ve 15 dakikalık adımlarla girilmelidir.</value>
+  </data>
+  <data name="ErrorUnplanNotAllowed" xml:space="preserve">
+    <value>Yalnızca planlanmış ve henüz başlamamış bir görev takvimden çıkarılabilir.</value>
+  </data>
+  <data name="ErrorCalendarRangeInvalid" xml:space="preserve">
+    <value>Takvim bir seferde en fazla 42 gün gösterebilir. Daha kısa bir tarih aralığı seçin.</value>
+  </data>
+  <data name="WarningPlanOverlapsMeeting" xml:space="preserve">
+    <value>Kaydedildi, ancak bu saat “{0}” toplantısıyla çakışıyor.</value>
+  </data>
+  <data name="WarningPlanOutsideWorkingHours" xml:space="preserve">
+    <value>Kaydedildi, ancak bu saat çalışma saatlerinizin dışında.</value>
+  </data>
 </root>

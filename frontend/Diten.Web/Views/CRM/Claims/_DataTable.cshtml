@@ -1,0 +1,31 @@
+@using Diten.Web.Views.CRM.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsIndex> Localizer
+
+@* WP-CL-FE-1 — standard DataTable v2 (inline filter, column visibility, search, export, row action menu). Columns follow
+   mockup scenario 1; the country chips follow the COUNTRY_CODES order read from the lookup. *@
+<div class="card claims-v2-scope" id="claimTableCard">
+    <div id="claimError" class="alert alert-danger rounded-0 d-none mb-0" role="alert"></div>
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-claims" data-dt-standard="v2" class="datatables-claims table border-top w-100">
+            <thead><tr>
+                <th></th>
+                <th class="all">@Localizer["ColClaim"]</th>
+                <th>@Localizer["ColProduct"]</th>
+                <th>@Localizer["ColKind"]</th>
+                <th>@Localizer["ColAudience"]</th>
+                <th>@Localizer["ColCountryStatus"]</th>
+                <th>@Localizer["ColEvidence"]</th>
+                <th>@Localizer["ColApproved"]</th>
+                <th>@Localizer["ColUsage"]</th>
+                <th class="all text-end">@Localizer["Actions"]</th>
+            </tr></thead>
+        </table>
+    </div>
+</div>

@@ -106,6 +106,9 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>Выбранная должность не может получать задачи. Выберите активную должность.</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Задачу раньше вас изменил другой сотрудник. Экран обновлён до текущего состояния.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Обязательный пункт чек-листа ещё не отмечен, поэтому задачу нельзя завершить.</value></data>
+  <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>Обязательное поле закрытия всё ещё не заполнено, поэтому задачу нельзя завершить.</value></data>
+  <data name="ErrorOrganizationUnitNotFound" xml:space="preserve"><value>Указанное организационное подразделение не найдено.</value></data>
+  <data name="ErrorOrganizationUnitOutOfScope" xml:space="preserve"><value>Это подразделение находится вне вашей области действия.</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>Задача, от которой зависит эта, ещё не завершена, поэтому продвинуться нельзя.</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>Подзадача ещё открыта, поэтому эту задачу пока нельзя завершить.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Задача закрыта, комментировать её больше нельзя.</value></data>
@@ -114,8 +117,12 @@
   <data name="ErrorDueDateRequired" xml:space="preserve"><value>Требуется срок выполнения.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>Задача ожидает решения согласующего.</value></data>
   <data name="ErrorReviewPending" xml:space="preserve"><value>Задача ожидает ответа проверяющего.</value></data>
+  <data name="ErrorDeliverableRequired" xml:space="preserve"><value>Прежде чем завершить эту задачу, необходимо прикрепить файл результата.</value></data>
+  <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>Этот шаг нельзя закрыть, пока не опубликован протокол связанного совещания по проверке.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>Задачу нельзя завершить в текущем состоянии. Сначала запустите её.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Отменить эту задачу может только тот, кто её запросил. Если вы не хотите эту работу, верните её.</value></data>
+  <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>Вы не можете утверждать согласование, которое запрашиваете сами. Выберите другого ответственного за согласование.</value></data>
+  <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>Вы не можете проверять собственную работу. Попросите другого сотрудника проверить эту задачу.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Укажите, чего ожидает задача.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>Укажите название.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>Название может содержать не более 200 символов.</value></data>
@@ -150,6 +157,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>Наблюдатели</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>Контрольный список</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>Шаги этой задачи. Пункты отмечаются после создания задачи; блокирующий пункт не даёт её закрыть.</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>Вложения</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>Файлы для этой задачи — инструкция для её выполнения или доказательство и результат, которые нужно сохранить сразу. Загружаются после создания задачи.</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Файл</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Тип</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Вложение</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Доказательство</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Результат</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Добавить файл</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>Удалить</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>Задача создана — некоторые файлы не загружены</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>Задача создана, но следующие файлы не удалось загрузить. Добавьте их снова на карточке вложений самой задачи:</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>Перейти к задаче</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Введите пункт и нажмите Enter</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>Добавить</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Нажмите на метку, чтобы изменить уровень. Списка шаблонов пока нет.</value></data>
@@ -201,6 +220,12 @@
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>Этот комментарий уже отозван.</value>
   </data>
+  <data name="ErrorMentionNotVisible" xml:space="preserve">
+    <value>Один из упомянутых вами людей не может видеть эту задачу. Сначала добавьте его как наблюдателя.</value>
+  </data>
+  <data name="ErrorMentionLimitExceeded" xml:space="preserve">
+    <value>В комментарии можно упомянуть не более 10 человек.</value>
+  </data>
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>Этого человека здесь указать нельзя.</value>
   </data>
@@ -217,4 +242,46 @@
   <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>Этот пункт нельзя завершить без подтверждающего документа.</value></data>
   <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>Не удалось загрузить файл. Проверьте его тип и размер и повторите попытку.</value></data>
   <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Вложения, включая подтверждающие документы, можно добавить после создания задачи.</value></data>
+  <data name="ReassignAction" xml:space="preserve"><value>Передать</value></data>
+  <data name="ReassignTitle" xml:space="preserve"><value>Передать задачу другому сотруднику</value></data>
+  <data name="ReassignHint" xml:space="preserve"><value>Новый исполнитель увидит задачу сразу. Причина сохраняется в истории задачи.</value></data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve"><value>Новый исполнитель</value></data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve"><value>Выберите сотрудника</value></data>
+  <data name="ReassignReasonLabel" xml:space="preserve"><value>Причина передачи</value></data>
+  <data name="ReassignReasonPlaceholder" xml:space="preserve"><value>напр. В отпуске до 5 октября, аудит ведёт Айше.</value></data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve"><value>Выберите, кто примет задачу.</value></data>
+  <data name="ReassignReasonRequired" xml:space="preserve"><value>Укажите, почему задача передаётся.</value></data>
+  <data name="ReassignDone" xml:space="preserve"><value>Задача передана.</value></data>
+  <data name="ReassignNoPeople" xml:space="preserve"><value>Больше некому передать эту задачу.</value></data>
+  <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>Назначение не редактируют — его передают, а причина остаётся в истории задачи.</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>Напишите ответ перед отправкой.</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>Ответ слишком длинный. Не более 4000 символов.</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>Этот вопрос больше не ждёт вашего ответа: на него уже ответили или его отозвали. Обновите список.</value>
+  </data>
+  <data name="ErrorPlanNotHolder" xml:space="preserve">
+    <value>Планировать эту задачу может только её исполнитель. Как инициатор, укажите ожидаемый срок через дату выполнения.</value>
+  </data>
+  <data name="ErrorPlanConflict" xml:space="preserve">
+    <value>Это время пересекается с другой задачей, которую вы уже запланировали. Выберите другое время или перенесите другую задачу.</value>
+  </data>
+  <data name="ErrorPlanDurationInvalid" xml:space="preserve">
+    <value>Запланированная длительность должна быть не менее 15 минут и кратна 15 минутам.</value>
+  </data>
+  <data name="ErrorUnplanNotAllowed" xml:space="preserve">
+    <value>Убрать из календаря можно только запланированную задачу, работа над которой ещё не началась.</value>
+  </data>
+  <data name="ErrorCalendarRangeInvalid" xml:space="preserve">
+    <value>Календарь может показывать не более 42 дней за раз. Выберите более короткий период.</value>
+  </data>
+  <data name="WarningPlanOverlapsMeeting" xml:space="preserve">
+    <value>Сохранено, но это время пересекается с совещанием «{0}».</value>
+  </data>
+  <data name="WarningPlanOutsideWorkingHours" xml:space="preserve">
+    <value>Сохранено, но это время выходит за рамки вашего рабочего времени.</value>
+  </data>
 </root>

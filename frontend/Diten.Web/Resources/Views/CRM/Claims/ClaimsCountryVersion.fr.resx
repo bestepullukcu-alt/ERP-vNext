@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>Allégations</value></data>
+  <data name="PageTitleCreate" xml:space="preserve"><value>Ouvrir la version pays · {0}</value></data>
+  <data name="PageTitleEdit" xml:space="preserve"><value>Version pays · {0}</value></data>
+  <data name="CancelAction" xml:space="preserve"><value>Annuler</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Enregistrer le brouillon</value></data>
+  <data name="SubmitLocal" xml:space="preserve"><value>Envoyer en revue locale</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>Retirer de la revue</value></data>
+  <data name="OpenNewVersion" xml:space="preserve"><value>Ouvrir une nouvelle version</value></data>
+  <data name="ReadOnlyNote" xml:space="preserve"><value>Accès en lecture seule : vous pouvez consulter cette version pays.</value></data>
+  <data name="CoreCardTitle" xml:space="preserve"><value>Allégation de base · lecture seule</value></data>
+  <data name="CoreQualifierLabel" xml:space="preserve"><value>Qualificatif</value></data>
+  <data name="CoreAudienceLabel" xml:space="preserve"><value>Audience</value></data>
+  <data name="CoreEvidenceCount" xml:space="preserve"><value>{0} preuves</value></data>
+  <data name="VersionLabel" xml:space="preserve"><value>v{0}</value></data>
+  <data name="CountryCardTitle" xml:space="preserve"><value>Pays</value></data>
+  <data name="CountryLanguages" xml:space="preserve"><value>Langues du pays</value></data>
+  <data name="FromCountryMaster" xml:space="preserve"><value>· d'après le référentiel pays</value></data>
+  <data name="TextsTitle" xml:space="preserve"><value>Texte et qualificatifs · par langue</value></data>
+  <data name="CoreReferenceText" xml:space="preserve"><value>Base (en)</value></data>
+  <data name="CoreReferenceQualifier" xml:space="preserve"><value>Qualificatif de base</value></data>
+  <data name="LocalTextLabel" xml:space="preserve"><value>Texte de l'allégation · {0}</value></data>
+  <data name="LocalQualifiersLabel" xml:space="preserve"><value>Qualificatifs locaux · {0}</value></data>
+  <data name="QualifierPlaceholder" xml:space="preserve"><value>Ajouter un qualificatif</value></data>
+  <data name="AddAction" xml:space="preserve"><value>Ajouter</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>Retirer</value></data>
+  <data name="LanguageMissing" xml:space="preserve"><value>Texte manquant</value></data>
+  <data name="CharCount" xml:space="preserve"><value>{0} caractères</value></data>
+  <data name="AdaptationTitle" xml:space="preserve"><value>Adaptation</value></data>
+  <data name="AdaptationHint" xml:space="preserve"><value>Une version pays peut être restreinte ou atténuée par rapport à la base ; elle ne peut pas en élargir la portée.</value></data>
+  <data name="AdaptationTypeLabel" xml:space="preserve"><value>Type d'adaptation</value></data>
+  <data name="AdaptationReasonLabel" xml:space="preserve"><value>Motif de l'adaptation</value></data>
+  <data name="AdaptationReasonHint" xml:space="preserve"><value>Obligatoire sauf pour une traduction littérale.</value></data>
+  <data name="Adapt_verbatim" xml:space="preserve"><value>Traduction littérale</value></data>
+  <data name="Adapt_narrowed" xml:space="preserve"><value>Restreinte</value></data>
+  <data name="Adapt_softened" xml:space="preserve"><value>Atténuée</value></data>
+  <data name="ValidityTitle" xml:space="preserve"><value>Validité</value></data>
+  <data name="ValidFromLabel" xml:space="preserve"><value>Valable à partir du</value></data>
+  <data name="ValidToLabel" xml:space="preserve"><value>Valable jusqu'au</value></data>
+  <data name="AudienceTitle" xml:space="preserve"><value>Public cible</value></data>
+  <data name="AudienceHint" xml:space="preserve"><value>Seules les audiences de l'allégation de base peuvent être choisies (restriction).</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Sélectionner</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>Preuves</value></data>
+  <data name="AddLocalEvidence" xml:space="preserve"><value>Ajouter une preuve locale</value></data>
+  <data name="InheritedEvidenceTitle" xml:space="preserve"><value>De l'allégation de base (lecture seule)</value></data>
+  <data name="LocalEvidenceTitle" xml:space="preserve"><value>Preuves locales</value></data>
+  <data name="LocalEvidenceEmpty" xml:space="preserve"><value>Aucune preuve locale. Liez ici des documents locaux comme le RCP {0}.</value></data>
+  <data name="InheritedEvidenceEmpty" xml:space="preserve"><value>L'allégation de base n'a encore aucune preuve.</value></data>
+  <data name="EvidenceSaveFirst" xml:space="preserve"><value>Enregistrez d'abord le brouillon ; la preuve se lie à une version pays enregistrée.</value></data>
+  <data name="EvidenceLockedNote" xml:space="preserve"><value>Les preuves ne changent que sur un brouillon ; ouvrez une nouvelle version.</value></data>
+  <data name="EvidenceTextFirst" xml:space="preserve"><value>Saisissez et enregistrez d'abord le texte de cette langue ; les phrases étayées y sont marquées.</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>Prêt pour la revue</value></data>
+  <data name="ReadyCoreApproved" xml:space="preserve"><value>Allégation de base approuvée</value></data>
+  <data name="ReadyAllLanguages" xml:space="preserve"><value>Texte dans chaque langue</value></data>
+  <data name="ReadyAdaptationReason" xml:space="preserve"><value>Motif de l'adaptation</value></data>
+  <data name="ReadyValidity" xml:space="preserve"><value>Début de validité</value></data>
+  <data name="ReadyEvidence" xml:space="preserve"><value>Au moins 1 preuve</value></data>
+  <data name="ReadySaved" xml:space="preserve"><value>Enregistré</value></data>
+  <data name="ReadyMissing" xml:space="preserve"><value>manquant</value></data>
+  <data name="FlowTitle" xml:space="preserve"><value>Circuit d'approbation local</value></data>
+  <data name="FlowSequentialNote" xml:space="preserve"><value>Séquentiel · configuré dans les paramètres d'approbation</value></data>
+  <data name="FlowNoCandidates" xml:space="preserve"><value>Aucun poste candidat</value></data>
+  <data name="FlowReason_WorkflowTemplateMissing" xml:space="preserve"><value>Aucun circuit local n'est défini pour ce pays. Contactez votre administrateur.</value></data>
+  <data name="FlowReason_WorkflowTemplateNotPublished" xml:space="preserve"><value>Le circuit local existe mais n'est pas encore publié.</value></data>
+  <data name="FlowReason_WorkflowPermissionMissing" xml:space="preserve"><value>Vous ne pouvez pas consulter les paramètres du circuit.</value></data>
+  <data name="FlowReason_WorkflowUnavailable" xml:space="preserve"><value>Le circuit ne peut pas être affiché pour le moment.</value></data>
+  <data name="StatusCardTitle" xml:space="preserve"><value>Carte de statut</value></data>
+  <data name="LockInReview" xml:space="preserve"><value>En revue : la version pays est verrouillée jusqu'à la fin ou au retrait du circuit local.</value></data>
+  <data name="LockApproved" xml:space="preserve"><value>Approuvée : texte et preuves verrouillés. Ouvrez une nouvelle version pour les modifier.</value></data>
+  <data name="LockReviewRequired" xml:space="preserve"><value>À revoir : la base ou un document lié a changé. Ouvrez une nouvelle version pour la mettre à jour.</value></data>
+  <data name="LockInactive" xml:space="preserve"><value>Cet enregistrement n'est plus actuel (remplacé ou archivé).</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Envoyer cette version pays en revue locale ? Elle sera verrouillée jusqu'à la fin du circuit.</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Retirer cette version pays de la revue ? Elle redevient un brouillon.</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Ouvrir une nouvelle version pays brouillon à partir de celle-ci ?</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>Brouillon enregistré.</value></data>
+  <data name="ToastSubmitted" xml:space="preserve"><value>Envoyée en revue locale.</value></data>
+  <data name="ToastWithdrawn" xml:space="preserve"><value>Retirée de la revue.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Impossible de charger la version pays.</value></data>
+  <data name="ErrorGeneric" xml:space="preserve"><value>Une erreur s'est produite. Veuillez réessayer.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement…</value></data>
+  <data name="KindCoreBadge" xml:space="preserve"><value>Base</value></data>
+  <data name="KindLocalBadge" xml:space="preserve"><value>Locale</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>En revue</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Approuvée</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>À revoir</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="State_archived" xml:space="preserve"><value>Archivée</value></data>
+  <data name="Err_core_not_approved" xml:space="preserve"><value>L'allégation de base doit être approuvée avant la version pays.</value></data>
+  <data name="Err_country_closed" xml:space="preserve"><value>Ce pays est marqué comme non ouvert pour cette allégation. Rouvrez-le d'abord dans la matrice.</value></data>
+  <data name="Err_country_version_exists" xml:space="preserve"><value>Ce pays a déjà une version en cours. Ouvrez-la depuis la matrice.</value></data>
+  <data name="Err_languages_incomplete" xml:space="preserve"><value>Saisissez le texte dans chaque langue de contenu du pays.</value></data>
+  <data name="Err_audience_not_narrowing" xml:space="preserve"><value>Seules les audiences de la base peuvent être choisies.</value></data>
+  <data name="Err_adaptation_reason_required" xml:space="preserve"><value>Saisissez le motif de l'adaptation (obligatoire sauf traduction littérale).</value></data>
+  <data name="Err_texts_required" xml:space="preserve"><value>Saisissez au moins un texte.</value></data>
+  <data name="Err_language_not_allowed" xml:space="preserve"><value>Cette langue n'est pas une langue de contenu du pays.</value></data>
+  <data name="Err_duplicate_language" xml:space="preserve"><value>Une langue apparaît deux fois.</value></data>
+  <data name="Err_invalid_validity" xml:space="preserve"><value>La fin de validité doit suivre le début.</value></data>
+  <data name="Err_invalid_reference_value" xml:space="preserve"><value>Choisissez une valeur valide.</value></data>
+  <data name="Err_open_version_exists" xml:space="preserve"><value>Ce pays a déjà une version brouillon ou en revue.</value></data>
+  <data name="Err_invalid_state" xml:space="preserve"><value>Action impossible dans l'état actuel.</value></data>
+  <data name="Err_invalid_status" xml:space="preserve"><value>Action impossible dans le statut actuel.</value></data>
+  <data name="Err_evidence_required" xml:space="preserve"><value>Au moins une preuve (héritée ou locale) est requise avant l'envoi en revue.</value></data>
+  <data name="Err_evidence_locked" xml:space="preserve"><value>Les preuves ne changent que sur un brouillon. Ouvrez une nouvelle version.</value></data>
+  <data name="Err_evidence_unavailable" xml:space="preserve"><value>Le service des preuves est injoignable. Rien n'a été modifié ; réessayez plus tard.</value></data>
+  <data name="Err_in_review_locked" xml:space="preserve"><value>La version pays est en revue. Retirez-la de la revue pour la modifier.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>Aucun circuit local n'est défini pour ce pays. Contactez votre administrateur.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>Vous n'êtes pas autorisé à lancer le circuit d'approbation.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>Le service d'approbation est injoignable. Rien n'a été modifié ; réessayez plus tard.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>Le circuit d'approbation a refusé la demande.</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>La revue ne peut plus être retirée : un approbateur a déjà agi.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>Aucune revue ouverte à retirer.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>Une liste de référence requise n'est pas encore publiée. Contactez votre administrateur.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Un service requis est injoignable. Rien n'a été modifié ; réessayez plus tard.</value></data>
+  <data name="Err_not_applicable" xml:space="preserve"><value>Ce pays est hors du périmètre de cette allégation.</value></data>
+  <data name="Err_required" xml:space="preserve"><value>Renseignez les champs obligatoires.</value></data>
+</root>

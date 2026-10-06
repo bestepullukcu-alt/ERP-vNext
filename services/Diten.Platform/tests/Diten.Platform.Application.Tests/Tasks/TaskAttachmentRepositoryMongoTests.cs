@@ -104,6 +104,29 @@ public sealed class TaskAttachmentRepositoryMongoTests : IAsyncLifetime
         Assert.Equal(0, await _repository.CountEvidenceForChecklistItemAsync(TaskId, ItemCode));
     }
 
+    /// <summary>
+    /// CT 2026-09-13 — TaskType.RequiresDeliverableOnCompletion gates "complete" on CountDeliverablesAsync, and every
+    /// gate test drove the fake repository, which filters in its own LINQ. This runs the production query: only this
+    /// task's live Deliverable rows in this tenant count — not Evidence, not a plain Attachment, not a removed file,
+    /// not another task's deliverable, not another tenant's.
+    /// </summary>
+    [Fact]
+    public async Task The_deliverable_gate_counts_only_live_deliverables_of_this_task_in_this_tenant()
+    {
+        var live = Row(TenantId, TaskAttachmentKind.Deliverable, itemCode: null);
+        var removed = Row(TenantId, TaskAttachmentKind.Deliverable, itemCode: null);
+        var otherTenant = Row(OtherTenantId, TaskAttachmentKind.Deliverable, itemCode: null);
+        var otherTask = Row(TenantId, TaskAttachmentKind.Deliverable, itemCode: null);
+        otherTask.TaskId = Guid.NewGuid();
+        var evidence = Row(TenantId, TaskAttachmentKind.Evidence);
+        var plain = Row(TenantId, TaskAttachmentKind.Attachment, itemCode: null);
+        await Collection.InsertManyAsync([live, removed, otherTenant, otherTask, evidence, plain]);
+
+        Assert.True(await _repository.SoftDeleteAsync(removed.Id, "ct"));
+
+        Assert.Equal(1, await _repository.CountDeliverablesAsync(TaskId));
+    }
+
     [Fact]
     public async Task The_two_declared_indexes_exist_on_the_collection()
     {

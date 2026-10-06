@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MinutesTitle" xml:space="preserve"><value>Tutanak</value></data>
+  <data name="MeetingTitleLabel" xml:space="preserve"><value>Toplantı</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusPublishedPrefix" xml:space="preserve"><value>Yayımlandı v</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Taslağı Kaydet</value></data>
+  <data name="Publish" xml:space="preserve"><value>Yayımla</value></data>
+  <data name="PublishCorrection" xml:space="preserve"><value>Düzeltme Yayımla</value></data>
+  <data name="AttendanceSection" xml:space="preserve"><value>Katılım</value></data>
+  <data name="NoAttendeesHint" xml:space="preserve"><value>Bu toplantıda katılımcı yok.</value></data>
+  <data name="AttendancePresent" xml:space="preserve"><value>Katıldı</value></data>
+  <data name="AttendanceAbsent" xml:space="preserve"><value>Katılmadı</value></data>
+  <data name="AttendanceExcused" xml:space="preserve"><value>Mazeretli</value></data>
+  <data name="DecisionsSection" xml:space="preserve"><value>Kararlar</value></data>
+  <data name="AddDecision" xml:space="preserve"><value>Karar Ekle</value></data>
+  <data name="RemoveDecision" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="NoDecisionsHint" xml:space="preserve"><value>Henüz kayıtlı karar yok.</value></data>
+  <data name="DecisionTextPlaceholder" xml:space="preserve"><value>Kararı yazın...</value></data>
+  <data name="DecidedByLabel" xml:space="preserve"><value>Karar veren</value></data>
+  <data name="DecidedByPlaceholder" xml:space="preserve"><value>Belirtilmedi</value></data>
+  <data name="CreateTaskFromDecision" xml:space="preserve"><value>Görev Oluştur</value></data>
+  <data name="AddedLaterBadge" xml:space="preserve"><value>Sonradan eklendi</value></data>
+  <data name="HistorySection" xml:space="preserve"><value>Sürüm Geçmişi</value></data>
+  <data name="HistoryDraftLabel" xml:space="preserve"><value>Taslak</value></data>
+  <data name="HistoryPublishedPrefix" xml:space="preserve"><value>Yayımlandı v</value></data>
+  <data name="HistoryCorrectionOfPrefix" xml:space="preserve"><value>Düzeltme — v</value></data>
+  <data name="PublishConfirmTitle" xml:space="preserve"><value>Tutanak yayımlansın mı?</value></data>
+  <data name="PublishConfirmText" xml:space="preserve"><value>Yayımlandıktan sonra bu sürüm kilitlenir. Düzeltmeler yeni bir sürüm oluşturur.</value></data>
+  <data name="CorrectionReasonLabel" xml:space="preserve"><value>Düzeltme gerekçesi</value></data>
+  <data name="CorrectionReasonPlaceholder" xml:space="preserve"><value>Bu düzeltme neden gerekli?</value></data>
+  <data name="CorrectionReasonRequired" xml:space="preserve"><value>Düzeltme gerekçesi zorunludur.</value></data>
+  <data name="ToastDraftSaved" xml:space="preserve"><value>Taslak kaydedildi</value></data>
+  <data name="ToastPublished" xml:space="preserve"><value>Tutanak yayımlandı</value></data>
+  <data name="ToastCorrected" xml:space="preserve"><value>Düzeltme yayımlandı</value></data>
+</root>

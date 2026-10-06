@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MinutesTitle" xml:space="preserve"><value>会议纪要</value></data>
+  <data name="MeetingTitleLabel" xml:space="preserve"><value>会议</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="StatusPublishedPrefix" xml:space="preserve"><value>已发布 v</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>保存草稿</value></data>
+  <data name="Publish" xml:space="preserve"><value>发布</value></data>
+  <data name="PublishCorrection" xml:space="preserve"><value>发布更正</value></data>
+  <data name="AttendanceSection" xml:space="preserve"><value>出席情况</value></data>
+  <data name="NoAttendeesHint" xml:space="preserve"><value>此会议没有参会人员。</value></data>
+  <data name="AttendancePresent" xml:space="preserve"><value>出席</value></data>
+  <data name="AttendanceAbsent" xml:space="preserve"><value>缺席</value></data>
+  <data name="AttendanceExcused" xml:space="preserve"><value>请假</value></data>
+  <data name="DecisionsSection" xml:space="preserve"><value>决定事项</value></data>
+  <data name="AddDecision" xml:space="preserve"><value>添加决定</value></data>
+  <data name="RemoveDecision" xml:space="preserve"><value>删除</value></data>
+  <data name="NoDecisionsHint" xml:space="preserve"><value>尚未记录任何决定。</value></data>
+  <data name="DecisionTextPlaceholder" xml:space="preserve"><value>描述该决定……</value></data>
+  <data name="DecidedByLabel" xml:space="preserve"><value>决定人</value></data>
+  <data name="DecidedByPlaceholder" xml:space="preserve"><value>未指定</value></data>
+  <data name="CreateTaskFromDecision" xml:space="preserve"><value>创建任务</value></data>
+  <data name="AddedLaterBadge" xml:space="preserve"><value>发布后添加</value></data>
+  <data name="HistorySection" xml:space="preserve"><value>版本历史</value></data>
+  <data name="HistoryDraftLabel" xml:space="preserve"><value>草稿</value></data>
+  <data name="HistoryPublishedPrefix" xml:space="preserve"><value>已发布 v</value></data>
+  <data name="HistoryCorrectionOfPrefix" xml:space="preserve"><value>更正自 v</value></data>
+  <data name="PublishConfirmTitle" xml:space="preserve"><value>发布会议纪要？</value></data>
+  <data name="PublishConfirmText" xml:space="preserve"><value>发布后该版本将被锁定。更正会生成新版本。</value></data>
+  <data name="CorrectionReasonLabel" xml:space="preserve"><value>更正原因</value></data>
+  <data name="CorrectionReasonPlaceholder" xml:space="preserve"><value>为什么需要此更正？</value></data>
+  <data name="CorrectionReasonRequired" xml:space="preserve"><value>需要填写更正原因。</value></data>
+  <data name="ToastDraftSaved" xml:space="preserve"><value>草稿已保存</value></data>
+  <data name="ToastPublished" xml:space="preserve"><value>会议纪要已发布</value></data>
+  <data name="ToastCorrected" xml:space="preserve"><value>更正已发布</value></data>
+</root>

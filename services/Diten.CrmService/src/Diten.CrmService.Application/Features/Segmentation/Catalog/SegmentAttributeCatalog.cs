@@ -42,6 +42,16 @@ public static class SegmentAttributeCatalog
     public const string ReferenceKindProduct = "product";
     public const string ReferenceKindBrand = "brand";
 
+    // --- presentation domains (optgroup a criteria editor renders an attribute under) --------------------------
+    // PRESENTATION-ONLY: a business-language grouping for the editor's optgroups. Never read by validation or
+    // evaluation — it groups nothing the runtime enforces. Closed set so the UI can render stable optgroups.
+    public const string DomainDoctorProfile = "doctor-profile";
+    public const string DomainConsent = "consent";
+    public const string DomainWorkplace = "workplace";
+    public const string DomainCommercial = "commercial";
+    public const string DomainActivity = "activity";
+    public const string DomainInstitution = "institution";
+
     // --- attribute codes -------------------------------------------------------------------------------------
     public const string AccountType = "account.type";
     public const string AccountCategory = "account.category";
@@ -160,90 +170,103 @@ public static class SegmentAttributeCatalog
             ConsentEligibilityStatus.Unknown,
             ConsentEligibilityStatus.NotApplicable);
 
+    /// <summary>WP-SEG-G — the consent.eligibility PARAMETERS (channel + purpose) are a closed in-domain vocabulary too,
+    /// so they ride on the catalog as enum value-sources exactly like the verdict does. The values are taken from the
+    /// MOD-0164 <see cref="ConsentChannel.All"/> / <see cref="ConsentPurpose.All"/> constants (never hardcoded here), so
+    /// the criteria editor offers the SAME list Consent &amp; Preferences authoring uses. Additive and descriptive: it
+    /// narrows nothing, and a free-typed value stays valid.</summary>
+    private static readonly IReadOnlyDictionary<string, SegmentAttributeValueSource> ConsentEligibilityParameterValueSources =
+        new Dictionary<string, SegmentAttributeValueSource>(StringComparer.OrdinalIgnoreCase)
+        {
+            [ParameterChannel] = SegmentAttributeValueSource.Enum(ConsentChannel.All.ToArray()),
+            [ParameterPurpose] = SegmentAttributeValueSource.Enum(ConsentPurpose.All.ToArray())
+        };
+
     private static readonly IReadOnlyList<SegmentAttributeDefinition> Definitions = new List<SegmentAttributeDefinition>
     {
         // ---- N: native Account attributes (Phase-1 pushdown) ----
-        Native(AccountType, "Account.AccountType (MOD-0149)", SegmentValueTypes.String, EqualityWithNullOps, AccountOnly,
+        Native(AccountType, DomainInstitution, "Account.AccountType (MOD-0149)", SegmentValueTypes.String, EqualityWithNullOps, AccountOnly,
             valueSource: AccountTypeValues),
-        Native(AccountCategory, "Account.AccountCategory (MOD-0149)", SegmentValueTypes.String, EqualityWithNullOps, AccountOnly,
+        Native(AccountCategory, DomainInstitution, "Account.AccountCategory (MOD-0149)", SegmentValueTypes.String, EqualityWithNullOps, AccountOnly,
             valueSource: AccountCategoryValues),
-        Native(AccountStatus, "Account.Status (MOD-0149)", SegmentValueTypes.String, EqualityWithNullOps, AccountOnly,
+        Native(AccountStatus, DomainInstitution, "Account.Status (MOD-0149)", SegmentValueTypes.String, EqualityWithNullOps, AccountOnly,
             valueSource: AccountStatusValues),
-        Native(AccountCountry, "Account.CountryRef (MOD-0149)", SegmentValueTypes.String, EqualityOps, AccountOnly,
+        Native(AccountCountry, DomainWorkplace, "Account.CountryRef (MOD-0149)", SegmentValueTypes.String, EqualityOps, AccountOnly,
             valueSource: CountryValues),
-        Native(AccountCity, "Account.CityRef (MOD-0149)", SegmentValueTypes.String, EqualityOps, AccountOnly,
+        Native(AccountCity, DomainWorkplace, "Account.CityRef (MOD-0149)", SegmentValueTypes.String, EqualityOps, AccountOnly,
             valueSource: CityValues),
-        Native(AccountDistrict, "Account.DistrictRef (MOD-0149)", SegmentValueTypes.String, EqualityOps, AccountOnly,
+        Native(AccountDistrict, DomainWorkplace, "Account.DistrictRef (MOD-0149)", SegmentValueTypes.String, EqualityOps, AccountOnly,
             valueSource: DistrictValues),
-        Native(AccountParentAccount, "Account.ParentAccountId (MOD-0149)", SegmentValueTypes.Guid,
+        Native(AccountParentAccount, DomainInstitution, "Account.ParentAccountId (MOD-0149)", SegmentValueTypes.Guid,
             new[] { SegmentOperators.Eq, SegmentOperators.Ne, SegmentOperators.IsNull, SegmentOperators.IsNotNull },
             AccountOnly,
             valueSource: SegmentAttributeValueSource.EntityPicker(SegmentAttributeValueSource.EntityAccount)),
         // A date needs a picker, not a value list: the ValueType already tells the UI that.
-        Native(AccountCreatedAt, "Account.CreatedAt (MOD-0149)", SegmentValueTypes.Date, DateOps, AccountOnly),
+        Native(AccountCreatedAt, DomainActivity, "Account.CreatedAt (MOD-0149)", SegmentValueTypes.Date, DateOps, AccountOnly),
         // Deliberately FREE TEXT: the key is tenant-authored and so is the value. There is no MOD-0048 set behind an
         // AccountAttributeValue, and inventing one here would be a second source of truth (see F-TIER).
-        Native(AccountAttribute, "AccountAttributeValue (MOD-0149)", SegmentValueTypes.String, TextOps, AccountOnly,
+        Native(AccountAttribute, DomainInstitution, "AccountAttributeValue (MOD-0149)", SegmentValueTypes.String, TextOps, AccountOnly,
             requiredParameters: new[] { ParameterAttributeCode }),
 
         // ---- N: native Contact attributes ----
-        Native(ContactType, "Contact.ContactType (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
+        Native(ContactType, DomainDoctorProfile, "Contact.ContactType (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
             valueSource: ContactTypeValues),
-        Native(ContactStatus, "Contact.Status (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
+        Native(ContactStatus, DomainDoctorProfile, "Contact.Status (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
             valueSource: ContactStatusValues),
-        Native(ContactGender, "Contact.Gender (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
+        Native(ContactGender, DomainDoctorProfile, "Contact.Gender (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
             valueSource: GenderValues),
         // The same set the concept graph specialty nodes must come from (F-CONCEPT-DATA): offering it here is what
         // keeps contact.specialty and concept.affinity talking about the same codes.
-        Native(ContactSpecialty, "Contact.Specialty (MOD-0150)", SegmentValueTypes.String, TextOps, ContactOnly,
+        Native(ContactSpecialty, DomainDoctorProfile, "Contact.Specialty (MOD-0150)", SegmentValueTypes.String, TextOps, ContactOnly,
             valueSource: SpecialtyValues),
-        Native(ContactProfessionalTitle, "Contact.ProfessionalTitle (MOD-0150)", SegmentValueTypes.String, TextOps, ContactOnly,
+        Native(ContactProfessionalTitle, DomainDoctorProfile, "Contact.ProfessionalTitle (MOD-0150)", SegmentValueTypes.String, TextOps, ContactOnly,
             valueSource: ProfessionalTitleValues),
-        Native(ContactDepartment, "Contact.Department (MOD-0150)", SegmentValueTypes.String, TextOps, ContactOnly,
+        Native(ContactDepartment, DomainDoctorProfile, "Contact.Department (MOD-0150)", SegmentValueTypes.String, TextOps, ContactOnly,
             valueSource: DepartmentValues),
-        Native(ContactCountry, "Contact.CountryRef (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
+        Native(ContactCountry, DomainWorkplace, "Contact.CountryRef (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
             valueSource: CountryValues),
-        Native(ContactCity, "Contact.CityRef (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
+        Native(ContactCity, DomainWorkplace, "Contact.CityRef (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
             valueSource: CityValues),
-        Native(ContactDistrict, "Contact.DistrictRef (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
+        Native(ContactDistrict, DomainWorkplace, "Contact.DistrictRef (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
             valueSource: DistrictValues),
-        Native(ContactPreferredLanguage, "Contact.PreferredLanguage (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
+        Native(ContactPreferredLanguage, DomainDoctorProfile, "Contact.PreferredLanguage (MOD-0150)", SegmentValueTypes.String, EqualityOps, ContactOnly,
             valueSource: PreferredLanguageValues),
-        Native(ContactCreatedAt, "Contact.CreatedAt (MOD-0150)", SegmentValueTypes.Date, DateOps, ContactOnly),
+        Native(ContactCreatedAt, DomainActivity, "Contact.CreatedAt (MOD-0150)", SegmentValueTypes.Date, DateOps, ContactOnly),
 
         // ---- J: in-service join through AccountContactLink (one bulk read) ----
-        Join(ContactAccountRole, "AccountContactLink.RoleCode, active link (MOD-0150)", SegmentValueTypes.String,
+        Join(ContactAccountRole, DomainInstitution, "AccountContactLink.RoleCode, active link (MOD-0150)", SegmentValueTypes.String,
             MembershipOps, ContactOnly, valueSource: ContactRoleValues),
         // Bool: the ValueType is the whole instruction the UI needs.
-        Join(ContactIsPrimary, "AccountContactLink.IsPrimary, active link (MOD-0150)", SegmentValueTypes.Bool,
+        Join(ContactIsPrimary, DomainInstitution, "AccountContactLink.IsPrimary, active link (MOD-0150)", SegmentValueTypes.Bool,
             new[] { SegmentOperators.Eq }, ContactOnly),
-        Join(ContactAccountType, "linked Account.AccountType (MOD-0149/0150)", SegmentValueTypes.String,
+        Join(ContactAccountType, DomainInstitution, "linked Account.AccountType (MOD-0149/0150)", SegmentValueTypes.String,
             MembershipOps, ContactOnly, valueSource: AccountTypeValues),
 
         // ---- D: derived in-service (one bulk read per source; uncertainty eliminates, never 503) ----
-        Derived(TerritoryHasCoverage, "MOD-0151 AccountCurrentCoverageResolver", SegmentValueTypes.Bool,
+        Derived(TerritoryHasCoverage, DomainWorkplace, "MOD-0151 AccountCurrentCoverageResolver", SegmentValueTypes.Bool,
             new[] { SegmentOperators.Eq }, BothSubjects),
-        Derived(TerritoryNode, "MOD-0151 current coverage (TerritoryNodeId)", SegmentValueTypes.Guid,
+        Derived(TerritoryNode, DomainWorkplace, "MOD-0151 current coverage (TerritoryNodeId)", SegmentValueTypes.Guid,
             GuidRefOps, BothSubjects,
             valueSource: SegmentAttributeValueSource.EntityPicker(SegmentAttributeValueSource.EntityTerritoryNode)),
-        Derived(TerritoryModel, "MOD-0151 current coverage (TerritoryModelId)", SegmentValueTypes.Guid,
+        Derived(TerritoryModel, DomainWorkplace, "MOD-0151 current coverage (TerritoryModelId)", SegmentValueTypes.Guid,
             GuidRefOps, BothSubjects,
             valueSource: SegmentAttributeValueSource.EntityPicker(SegmentAttributeValueSource.EntityTerritoryModel)),
-        Derived(ConsentEligibility, "MOD-0164 consent/preference evaluation (allowed|blocked|unknown|not_applicable)",
+        Derived(ConsentEligibility, DomainConsent, "MOD-0164 consent/preference evaluation (allowed|blocked|unknown|not_applicable)",
             SegmentValueTypes.String, MembershipOps, BothSubjects,
             requiredParameters: new[] { ParameterChannel, ParameterPurpose },
-            valueSource: ConsentEligibilityValues),
-        Derived(ConsentScopeProduct, "MOD-0164 consent scope (product); the VALUE is proven in MDM (fail-closed)",
+            valueSource: ConsentEligibilityValues,
+            parameterValueSources: ConsentEligibilityParameterValueSources),
+        Derived(ConsentScopeProduct, DomainConsent, "MOD-0164 consent scope (product); the VALUE is proven in MDM (fail-closed)",
             SegmentValueTypes.Guid, GuidRefOps, BothSubjects,
             referenceKind: ReferenceKindProduct,
             valueSource: SegmentAttributeValueSource.EntityPicker(SegmentAttributeValueSource.EntityMdmProduct)),
-        Derived(ConsentScopeBrand, "MOD-0164 consent scope (brand); the VALUE is proven in MDM (fail-closed)",
+        Derived(ConsentScopeBrand, DomainConsent, "MOD-0164 consent scope (brand); the VALUE is proven in MDM (fail-closed)",
             SegmentValueTypes.Guid, GuidRefOps, BothSubjects,
             referenceKind: ReferenceKindBrand,
             valueSource: SegmentAttributeValueSource.EntityPicker(SegmentAttributeValueSource.EntityMdmBrand)),
 
         // ---- D: ConceptGraph-derived product affinity (D-PRODUCT). READ-ONLY consumption of MOD-0162 FU03. ----
-        Derived(ConceptAffinity,
+        Derived(ConceptAffinity, DomainCommercial,
             "MOD-0162 FU03 ConceptGraph (READ-ONLY): global-product node, bounded addresses/belongs-to traversal, "
             + "reference-data-value specialty nodes, matched against the candidate contact.specialty. The VALUE is "
             + "proven in MDM (fail-closed); an empty graph is an EMPTY ANSWER with a reason code, never a 503.",
@@ -266,24 +289,25 @@ public static class SegmentAttributeCatalog
     public static bool IsDeclared(string? attributeCode) => Find(attributeCode) is not null;
 
     private static SegmentAttributeDefinition Native(
-        string code, string source, string valueType, IReadOnlyList<string> operators,
+        string code, string domain, string source, string valueType, IReadOnlyList<string> operators,
         IReadOnlyList<string> subjectTypes, IReadOnlyList<string>? requiredParameters = null,
         SegmentAttributeValueSource? valueSource = null)
-        => new(code, ClassNative, source, valueType, operators, requiredParameters ?? Array.Empty<string>(),
+        => new(code, domain, ClassNative, source, valueType, operators, requiredParameters ?? Array.Empty<string>(),
             Array.Empty<string>(), subjectTypes, null, valueSource ?? SegmentAttributeValueSource.FreeText);
 
     private static SegmentAttributeDefinition Join(
-        string code, string source, string valueType, IReadOnlyList<string> operators,
+        string code, string domain, string source, string valueType, IReadOnlyList<string> operators,
         IReadOnlyList<string> subjectTypes, SegmentAttributeValueSource? valueSource = null)
-        => new(code, ClassJoin, source, valueType, operators, Array.Empty<string>(), Array.Empty<string>(),
+        => new(code, domain, ClassJoin, source, valueType, operators, Array.Empty<string>(), Array.Empty<string>(),
             subjectTypes, null, valueSource ?? SegmentAttributeValueSource.FreeText);
 
     private static SegmentAttributeDefinition Derived(
-        string code, string source, string valueType, IReadOnlyList<string> operators,
+        string code, string domain, string source, string valueType, IReadOnlyList<string> operators,
         IReadOnlyList<string> subjectTypes, IReadOnlyList<string>? requiredParameters = null,
         IReadOnlyList<string>? optionalParameters = null, string? referenceKind = null,
-        SegmentAttributeValueSource? valueSource = null)
-        => new(code, ClassDerived, source, valueType, operators, requiredParameters ?? Array.Empty<string>(),
+        SegmentAttributeValueSource? valueSource = null,
+        IReadOnlyDictionary<string, SegmentAttributeValueSource>? parameterValueSources = null)
+        => new(code, domain, ClassDerived, source, valueType, operators, requiredParameters ?? Array.Empty<string>(),
             optionalParameters ?? Array.Empty<string>(), subjectTypes, referenceKind,
-            valueSource ?? SegmentAttributeValueSource.FreeText);
+            valueSource ?? SegmentAttributeValueSource.FreeText, parameterValueSources);
 }

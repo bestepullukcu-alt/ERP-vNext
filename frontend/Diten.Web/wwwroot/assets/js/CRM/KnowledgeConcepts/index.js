@@ -34,6 +34,18 @@
     const getAuthHeaders = () => ({ Accept: 'application/json' });
     const esc = v => String(v ?? '').replace(/[&<>'"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[ch]));
     const badge = (v, cls = 'primary') => `<span class="badge bg-label-${cls}">${esc(v || '—')}</span>`;
+    // SCMM-09-UI-refine (Not 1): the Concept Type cell is a badge painted in the type's own colour. Pick a readable
+    // text colour from the background's luminance; a type with no colour falls back to the neutral label badge.
+    const contrastText = c => {
+        const m = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.exec(String(c ?? '').trim());
+        if (!m) return '#fff';
+        let h = m[1]; if (h.length === 3) h = h.split('').map(x => x + x).join('');
+        const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+        return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#000' : '#fff';
+    };
+    const typeBadge = (label, color) => color
+        ? `<span class="badge" style="background:${esc(color)};color:${contrastText(color)};border:1px solid rgba(0,0,0,.1)">${esc(label || '—')}</span>`
+        : badge(label || '—', 'secondary');
     const date = v => v ? new Date(v).toLocaleString() : '—';
     const norm = v => (typeof v === 'string' ? v.trim() : (v == null ? '' : String(v)));
     const normArr = v => Array.isArray(v) ? Array.from(new Set(v.map(x => norm(x)).filter(Boolean))) : (norm(v) ? [norm(v)] : []);
@@ -116,16 +128,22 @@
     const loadFilterOptions = async () => {
         fillSelect('filterStatus', (contract?.vocabularies?.conceptStatuses || []).map(v => ({ value: v, text: v })), false);
         fillSelect('filterExternalRefType', (contract?.vocabularies?.externalRefTypes || []).map(v => ({ value: v, text: v })), true);
-        const fetchList = async (path, idKey, codeKey, nameKey, map) => {
+        // colorKey (optional): when supplied the map stores { name, color } so the Concept Type column can paint a
+        // coloured badge; without it the map stores the plain display name (Subject column stays a plain label).
+        const fetchList = async (path, idKey, codeKey, nameKey, map, colorKey) => {
             try {
                 const data = await envelope(await fetch(`${endpoint}/${path}?includeArchived=true`, { credentials: 'same-origin', headers: getAuthHeaders() }));
                 const items = data?.items || [];
-                items.forEach(x => { if (x[idKey]) map[x[idKey]] = x[nameKey] || x[codeKey] || x[idKey]; });
+                items.forEach(x => {
+                    if (!x[idKey]) return;
+                    const label = x[nameKey] || x[codeKey] || x[idKey];
+                    map[x[idKey]] = colorKey ? { name: label, color: x[colorKey] || null } : label;
+                });
                 return items.map(x => ({ value: x[idKey], text: `${x[codeKey]} — ${x[nameKey]}` }));
             } catch (e) { return []; }
         };
         fillSelect('filterSubjectId', await fetchList('subjects', 'subjectId', 'subjectCode', 'subjectName', subjectMap), true);
-        fillSelect('filterConceptTypeId', await fetchList('concept-types', 'conceptTypeId', 'conceptTypeCode', 'conceptTypeName', typeMap), true);
+        fillSelect('filterConceptTypeId', await fetchList('concept-types', 'conceptTypeId', 'conceptTypeCode', 'conceptTypeName', typeMap, 'color'), true);
         initSelect2();
     };
 
@@ -262,10 +280,10 @@
             { targets: 0, className: 'control', orderable: false, render: () => '' },
             { targets: 2, render: v => `<span class="fw-medium text-heading">${esc(v)}</span>` },
             { targets: 3, render: v => {
-                const name = typeMap[v];
-                if (!name) return badge(v || '—', 'secondary');
-                const tone = { 'indication': 'primary', 'patient profile': 'info', 'product': 'success' }[String(name).trim().toLowerCase()] || 'secondary';
-                return badge(name, tone);
+                const t = typeMap[v];
+                if (!t) return badge(v || '—', 'secondary');
+                // typeMap now carries { name, color } for concept types → a badge in the type's own colour.
+                return typeBadge(t.name || v, t.color);
             } },
             { targets: 4, render: v => badge(v, v === 'archived' ? 'secondary' : (v === 'active' ? 'success' : 'primary')) },
             { targets: 5, render: v => esc(subjectMap[v] || v || '—') },

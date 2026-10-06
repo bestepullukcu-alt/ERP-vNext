@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Workflow.Commands;
 using Diten.Platform.Domain.Entities.Workflow;
@@ -18,28 +19,54 @@ public sealed class RunWorkflowEscalationsHandler
     private readonly IWorkflowTransitionLogRepository _logs;
     private readonly IPositionAssignmentRepository? _positionAssignmentRepository;
     private readonly IRuntimeAssignmentSnapshotRepository? _assignmentSnapshotRepository;
+    private readonly TimeProvider _clock;
+    private readonly IPositionRepository? _positionRepository;
+    private readonly WorkflowTerminalTransitionWriter _terminal;
 
     public RunWorkflowEscalationsHandler(
         IApprovalTaskRepository tasks,
         IWorkflowInstanceRepository instances,
         ISlaEscalationRuleRepository rules,
         IWorkflowTransitionLogRepository logs,
+        TimeProvider clock,
         IPositionAssignmentRepository? positionAssignmentRepository = null,
-        IRuntimeAssignmentSnapshotRepository? assignmentSnapshotRepository = null)
+        IRuntimeAssignmentSnapshotRepository? assignmentSnapshotRepository = null,
+        IPositionRepository? positionRepository = null,
+        IPlatformTransactionExecutor? transactions = null,
+        ITransactionalIntegrationEventWriter? events = null,
+        IWorkflowTemplateRepository? templates = null)
     {
         _tasks = tasks;
         _instances = instances;
         _rules = rules;
         _logs = logs;
+        _clock = clock ?? throw new ArgumentNullException(nameof(clock));
         _positionAssignmentRepository = positionAssignmentRepository;
         _assignmentSnapshotRepository = assignmentSnapshotRepository;
+        _positionRepository = positionRepository;
+        // WP-CL-BE-3 — a timeout is TERMINAL: it commits with the completion event in one transaction.
+        _terminal = new WorkflowTerminalTransitionWriter(tasks, instances, logs, transactions, events, templates);
     }
 
     public async Task<Response<RunWorkflowEscalationsResponse>> Handle(
         RunWorkflowEscalationsCommand request,
         CancellationToken ct)
     {
-        var now = (request.Request.NowUtc ?? DateTimeOffset.UtcNow).ToUniversalTime();
+        // BL-422 — WHAT "OVERDUE" MEANS IS THE SERVER'S CALL. NowUtc used to be honoured, so anyone holding
+        // platform.workflow.escalations.run could escalate or time out tasks in their tenant that were not due yet by
+        // sending a date in the future — and the transition log would record it as the system acting on time. A value
+        // is REFUSED rather than ignored so a client still sending it finds out. The recurring sweep sends none, and
+        // tests move time through the injected TimeProvider, not through the request.
+        if (request.Request.NowUtc.HasValue)
+        {
+            return Response<RunWorkflowEscalationsResponse>.Fail(
+                "NowUtc is not accepted: escalations are evaluated against the server clock.",
+                400,
+                WorkflowReasonCodes.WorkflowEscalationClockNotAccepted,
+                request.CorrelationId);
+        }
+
+        var now = _clock.GetUtcNow();
         var maxItems = request.Request.MaxItems.GetValueOrDefault(100);
         var overdueTasks = await _tasks.ListOverdueTasksAsync(now, maxItems, ct);
         var results = new List<WorkflowEscalationResultDto>();
@@ -157,6 +184,7 @@ public sealed class RunWorkflowEscalationsHandler
             var resolvedEscalationCandidates = await WorkflowCandidateResolver.ResolveAsync(
                 rule.EscalationPrincipalIds,
                 _positionAssignmentRepository,
+                _positionRepository,
                 ct);
 
             if (resolvedEscalationCandidates.Count == 0)
@@ -200,6 +228,50 @@ public sealed class RunWorkflowEscalationsHandler
         }
 
         instance.LastTransitionAt = now;
+        if (timeoutDue)
+        {
+            // WP-CL-BE-3 — TimedOut is terminal: task, instance, log and the completion event commit together.
+            var timeoutLog = new WorkflowTransitionLog
+            {
+                TenantId = task.TenantId,
+                WorkflowInstanceId = instance.Id,
+                ApprovalTaskId = task.Id,
+                Action = action,
+                FromState = previousTaskStatus.ToString(),
+                ToState = task.Status.ToString(),
+                FromStatus = previousInstanceStatus.ToString(),
+                ToStatus = instance.Status.ToString(),
+                ActorId = SystemActor,
+                ActorRef = SystemActor,
+                ReasonCode = WorkflowReasonCodes.WorkflowTimeoutProcessed,
+                IdempotencyKey = idempotencyKey,
+                CorrelationId = correlationId,
+                SequenceNo = await _logs.GetLatestSequenceNoAsync(instance.Id, ct) + 1
+            };
+            var terminal = await _terminal.CommitAsync(task, task.Version, instance, instance.Version, timeoutLog,
+                escalationWrite: true, completedBy: null, WorkflowReasonCodes.WorkflowTimeoutProcessed,
+                correlationId, ct);
+            if (terminal.Outcome != WorkflowTerminalWriteOutcome.Committed)
+            {
+                return Skipped(task, action, previousTaskStatus, instance,
+                    terminal.Outcome == WorkflowTerminalWriteOutcome.TransactionUnavailable
+                        ? WorkflowReasonCodes.WorkflowTransactionUnavailable
+                        : WorkflowReasonCodes.WorkflowTransitionConflict);
+            }
+
+            return new WorkflowEscalationResultDto(
+                instance.Id,
+                task.Id,
+                action.ToString(),
+                previousTaskStatus.ToString(),
+                task.Status.ToString(),
+                previousInstanceStatus.ToString(),
+                instance.Status.ToString(),
+                WorkflowReasonCodes.WorkflowTimeoutProcessed,
+                false,
+                terminal.Log!.Id);
+        }
+
         var taskVersion = task.Version;
         var instanceVersion = instance.Version;
         if (!await _tasks.UpdateEscalationAsync(task, taskVersion, ct) ||

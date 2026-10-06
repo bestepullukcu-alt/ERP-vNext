@@ -1,0 +1,45 @@
+@using Diten.Web.Views.TimeEntry
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TimeEntryIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    MOD-0280-FU01 T2a (pack §21.2 U1, §9) — the top-bar timer chip, next to the notification bell.
+
+    Drawn for a person who may use the timer (time-entry.timesheets.update); for anyone else this partial renders
+    NOTHING. It starts hidden and shared/timer-chip.js shows it ONLY while a timer runs; when the timer is switched off
+    for the person's legal entity the script removes it entirely. The layout holds exactly ONE include line for it.
+*@
+@if (Perms.Has("time-entry.timesheets.update"))
+{
+    var userId = User.FindFirst("sub")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+    var chipL10n = new Dictionary<string, object>
+    {
+        ["UnreadableTask"] = Localizer["UnreadableTask"].Value,
+        ["OpenTask"] = Localizer["OpenTask"].Value,
+        ["TimerStopped"] = Localizer["TimerStopped"].Value,
+        ["TimerStopFailed"] = Localizer["TimerStopFailed"].Value,
+        ["MidnightNotice"] = Localizer["MidnightNotice"].Value,
+        ["CategoryLabels"] = new Dictionary<string, string>
+        {
+            ["TimeEntry.Category.ADMINISTRATION"] = Localizer["TimeEntry.Category.ADMINISTRATION"].Value,
+            ["TimeEntry.Category.INTERNAL_MEETING"] = Localizer["TimeEntry.Category.INTERNAL_MEETING"].Value,
+            ["TimeEntry.Category.TRAINING"] = Localizer["TimeEntry.Category.TRAINING"].Value,
+            ["TimeEntry.Category.SUPPORT"] = Localizer["TimeEntry.Category.SUPPORT"].Value,
+            ["TimeEntry.Category.TRAVEL"] = Localizer["TimeEntry.Category.TRAVEL"].Value
+        }
+    };
+    <li class="nav-item me-3 me-xl-2 time-entry-timer-chip" id="timeEntryTimerChip" hidden
+        data-user="@userId" data-l10n="@System.Text.Json.JsonSerializer.Serialize(chipL10n)">
+        <span class="time-entry-timer-chip-body" role="group" aria-label="@Localizer["TimerChipLabel"]">
+            <a class="time-entry-timer-chip-link" data-timer-link href="/TimeEntry">
+                <i class="bx bx-time-five time-entry-timer-chip-icon" aria-hidden="true"></i>
+                <span class="time-entry-timer-chip-title" data-timer-title></span>
+                <span class="time-entry-timer-chip-elapsed" data-timer-elapsed></span>
+            </a>
+            <button type="button" class="btn btn-sm btn-label-danger time-entry-timer-chip-stop" data-timer-stop>@Localizer["TimerChipStop"]</button>
+        </span>
+        @* NOT deferred: it defines the shared timer read (window.DitenTimerShared) before My Timesheet's own scripts run,
+           so one page load sends one timer request (v3 M5). It touches no DOM until DOMContentLoaded. *@
+        <script src="~/assets/js/shared/timer-chip.js" asp-append-version="true"></script>
+    </li>
+}

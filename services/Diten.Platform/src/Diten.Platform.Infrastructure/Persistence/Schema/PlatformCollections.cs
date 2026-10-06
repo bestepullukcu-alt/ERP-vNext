@@ -109,6 +109,8 @@ public static class PlatformCollections
     public const string DocumentManagementVariantReviewEvidence = "document_management_variant_review_evidence";
     public const string DocumentReferenceEntries = "document_reference_entries";
     public const string DocumentReferenceListVersions = "document_reference_list_versions";
+    /// <summary>MOD-0031 Evidence Linking (slice 1) — object ↔ document/version evidence links.</summary>
+    public const string EvidenceLinks = "evidence_links";
     public const string FeatureCategories = "platform_feature_categories";
     public const string InterfaceActiveSnapshots = "platform_interface_active_snapshots";
     public const string InterfaceDefinitions = "platform_interface_definitions";
@@ -122,6 +124,23 @@ public static class PlatformCollections
     public const string MeetingAttendees = "meeting_attendees";
     public const string MeetingAgendaItems = "meeting_agenda_items";
     public const string MeetingTypes = "meeting_types";
+    // MOD-0357 S6 — one row per version of a meeting's minutes; append-only (see MeetingMinutesVersion.cs).
+    public const string MeetingMinutesVersions = "meeting_minutes_versions";
+    // MOD-0357 S11 — one row per recurring cadence rule (see MeetingSeries.cs).
+    public const string MeetingSeries = "meeting_series";
+    // MOD-0280-FU01 T1a (ADR-004) — the time-entry module's own collections; the `time_entry_` prefix is the
+    // extraction unit's boundary (pack §2.4).
+    public const string TimeEntryTimesheetWeeks = "time_entry_timesheet_weeks";
+    public const string TimeEntryEntries = "time_entry_entries";
+    public const string TimeEntryTaskTotals = "time_entry_task_totals";
+    public const string TimeEntryWorkCategories = "time_entry_work_categories";
+    public const string TimeEntrySettings = "time_entry_settings";
+    public const string TimeEntryLegalEntitySettings = "time_entry_legal_entity_settings";
+    // MOD-0280-FU01 T1b — capture: the timer's raw segments and the person's meeting-suggestion decisions.
+    public const string TimeEntryTimerSegments = "time_entry_timer_segments";
+    public const string TimeEntrySuggestions = "time_entry_suggestions";
+    // MOD-0280-FU01 T3 — "this notification was handed over once" (pack §21.3 N6).
+    public const string TimeEntryNotificationMarks = "time_entry_notification_marks";
     public const string ModuleCatalog = "platform_module_catalog";
     public const string ModuleDomains = "platform_module_domains";
     public const string ModulePageActionDescriptors = "platform_module_page_action_descriptors";

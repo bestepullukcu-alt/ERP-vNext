@@ -1,0 +1,26 @@
+@using Diten.Web.Views.Meetings.MinutesEditor
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MinutesEditorIndex> EditorLocalizer
+
+@* MOD-0357 S6 (pack K4 — "kararlar, görev DEĞİL, ayrı satır") — decision rows are drawn client-side
+   (minutes-editor.js): text, decided-by, a "Görev oluştur" affordance, and (once one exists) the task it
+   produced, via DitenRelatedRecords. Contract marker: id="decisionsList". *@
+<section class="card p-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="card-section-title mb-0"><i class="bx bx-list-check"></i>@EditorLocalizer["DecisionsSection"]</h6>
+        <button type="button" class="btn btn-label-primary btn-sm d-none" id="btnAddDecision">
+            <i class="bx bx-plus me-1"></i>@EditorLocalizer["AddDecision"]
+        </button>
+    </div>
+    <div id="decisionsList" class="d-flex flex-column gap-3"></div>
+    <p class="text-muted small mb-0 mt-2 d-none" id="noDecisionsHint">@EditorLocalizer["NoDecisionsHint"]</p>
+
+    @* K4/ADR-003 — a task created from a decision AFTER that decision's version published is never linked
+       back onto the (now frozen) decision row itself (the source guard). It is still real and still belongs
+       to this meeting, so it is listed here instead — the one place an "added later" task is discoverable.
+       Contract marker: id="addedLaterTasksList". *@
+    <div id="addedLaterTasksSection" class="mt-3 pt-3 border-top d-none">
+        <div class="text-muted small mb-2">@EditorLocalizer["AddedLaterBadge"]</div>
+        <div id="addedLaterTasksList" class="wcn-related-list"></div>
+    </div>
+</section>

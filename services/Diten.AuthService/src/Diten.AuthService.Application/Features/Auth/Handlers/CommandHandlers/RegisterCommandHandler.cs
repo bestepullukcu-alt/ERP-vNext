@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
@@ -11,6 +12,15 @@ namespace Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
 
 public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Response<AuthResponse>>
 {
+    // BL-412 (CT benchmark D6, 21 CFR Part 11 attributability) — anonymous self-registration has no current user.
+    // The default-role row is written by TENANT POLICY (it picks Viewer, the registrant picks nothing), so it carries
+    // the same lowercase non-person actor every other system writer uses. Stamping the new user's own id there would
+    // read as a self-granted role in an access / segregation-of-duties review. SystemGrantPathsActorGuardTests pins it.
+    private const string SystemActor = "system";
+
+    // The attributable act is the registration itself: one Auth audit event whose actor IS the new user.
+    private const string SelfRegisteredEvent = "tenant_user_self_registered";
+
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IUserRoleRepository _userRoleRepository;
@@ -22,6 +32,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
     private readonly ITenantLoginSettingsClient _tenantLoginSettingsClient;
     private readonly IPasswordPolicyService _passwordPolicyService;
     private readonly ITenantContext _tenantContext;
+    private readonly IAuthAuditService _authAuditService;
     private readonly ILogger<RegisterCommandHandler> _logger;
 
     public RegisterCommandHandler(
@@ -36,6 +47,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         ITenantLoginSettingsClient tenantLoginSettingsClient,
         IPasswordPolicyService passwordPolicyService,
         ITenantContext tenantContext,
+        IAuthAuditService authAuditService,
         ILogger<RegisterCommandHandler> logger)
     {
         _userRepository = userRepository;
@@ -49,6 +61,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         _tenantLoginSettingsClient = tenantLoginSettingsClient;
         _passwordPolicyService = passwordPolicyService;
         _tenantContext = tenantContext;
+        _authAuditService = authAuditService;
         _logger = logger;
     }
 
@@ -80,7 +93,25 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         // stated here so the intent is readable (and guarded), not merely inherited from the constructor.
         user.SetAccountKind(AccountKind.Unknown);
         var created = await _userRepository.CreateAsync(user, ct);
-        await _userRoleRepository.AssignAsync(new UserRole(created.Id, role.Id, _tenantContext.TenantId, "System"), ct);
+        await _userRoleRepository.AssignAsync(new UserRole(created.Id, role.Id, _tenantContext.TenantId, SystemActor), ct);
+
+        // BL-412 (D6) — written through the existing Auth audit store (authAuditLogs), like the sibling login and
+        // password handlers, right after the state change it records. The actor is the registrant; the metadata says
+        // the default role came from tenant policy so the "system" on the role row and this event tell one story.
+        // IDs and the role name only — no email or person name (the RbacAuditRecorder no-PII rule).
+        await _authAuditService.WriteAsync(
+            SelfRegisteredEvent,
+            created.Id,
+            _tenantContext.TenantId,
+            JsonSerializer.Serialize(new
+            {
+                actorId = created.Id,
+                defaultRoleId = role.Id,
+                defaultRole = role.Name,
+                roleAssignedBy = SystemActor,
+                reason = $"self-registration; default role {role.Name} assigned by tenant policy"
+            }),
+            ct);
 
         var roles = new[] { role.Name };
         var accessToken = _tokenService.GenerateAccessToken(created, roles, Array.Empty<string>(), settings.SessionTimeoutMinutes);

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="InvoiceMatchTitle" xml:space="preserve"><value>Captura de facturas y conciliación de 3 vías</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Capture las facturas de proveedores contra un pedido y ejecute la conciliación de 3 vías (Pedido ↔ Recepción ↔ Factura); las facturas no conciliadas van a la cola de excepciones.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Capturar factura</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Editar factura</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Capturar factura</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar factura</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Ver</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="InvoiceId" xml:space="preserve"><value>ID de factura</value></data>
+  <data name="PoId" xml:space="preserve"><value>Orden de compra</value></data>
+  <data name="PoIdPlaceholder" xml:space="preserve"><value>p. ej. PO-5001</value></data>
+  <data name="PoIdHint" xml:space="preserve"><value>La orden de compra previa con la que se concilia esta factura.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Motivo</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>Proveedor</value></data>
+  <data name="SupplierIdPlaceholder" xml:space="preserve"><value>p. ej. SUP-2001</value></data>
+  <data name="InvoiceNumber" xml:space="preserve"><value>Número de factura</value></data>
+  <data name="InvoiceNumberPlaceholder" xml:space="preserve"><value>p. ej. INV-2026-771</value></data>
+  <data name="Currency" xml:space="preserve"><value>Moneda</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>p. ej. TRY</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>Debe coincidir con la moneda del pedido (una discrepancia se rechaza).</value></data>
+  <data name="InvoiceSection" xml:space="preserve"><value>Factura</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Líneas de factura</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Agregar línea</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>ID de artículo</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>p. ej. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Cantidad</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>p. ej. 100.000</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>Precio unitario</value></data>
+  <data name="LineUnitPricePlaceholder" xml:space="preserve"><value>p. ej. 12.5000</value></data>
+  <data name="LineAmount" xml:space="preserve"><value>Importe de línea</value></data>
+  <data name="LineAmountPlaceholder" xml:space="preserve"><value>p. ej. 1250.0000</value></data>
+  <data name="LinePoLineId" xml:space="preserve"><value>Línea de pedido</value></data>
+  <data name="LinePoLineIdPlaceholder" xml:space="preserve"><value>p. ej. 3</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>Se requiere al menos una línea; cada línea necesita un artículo, cantidad y precio unitario. Los importes son decimales, nunca de coma flotante.</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Integración</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Sistema de origen</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>p. ej. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>Referencia externa</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>p. ej. ERP-INV-9001</value></data>
+  <data name="TotalAmount" xml:space="preserve"><value>Importe total</value></data>
+  <data name="MoneyHint" xml:space="preserve"><value>Los importes son cadenas decimales (no se usa coma flotante); el total lo calcula el servidor.</value></data>
+  <data name="StatusCaptured" xml:space="preserve"><value>Capturada</value></data>
+  <data name="StatusMatched" xml:space="preserve"><value>Conciliada</value></data>
+  <data name="StatusMatchedWithinTolerance" xml:space="preserve"><value>Conciliada (dentro de tolerancia)</value></data>
+  <data name="StatusException" xml:space="preserve"><value>Excepción</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Rechazada</value></data>
+  <data name="StatusClearedForPayment" xml:space="preserve"><value>Autorizada para pago</value></data>
+  <data name="ExStatusOpen" xml:space="preserve"><value>Abierta</value></data>
+  <data name="ExStatusResolved" xml:space="preserve"><value>Resuelta</value></data>
+  <data name="ReasonQtyMismatch" xml:space="preserve"><value>Discrepancia de cantidad</value></data>
+  <data name="ReasonPriceMismatch" xml:space="preserve"><value>Discrepancia de precio</value></data>
+  <data name="ReasonAmountMismatch" xml:space="preserve"><value>Discrepancia de importe</value></data>
+  <data name="ReasonNoReceipt" xml:space="preserve"><value>Sin recepción</value></data>
+  <data name="ReasonNoPo" xml:space="preserve"><value>Sin orden de compra</value></data>
+  <data name="ReasonDuplicateInvoice" xml:space="preserve"><value>Factura duplicada</value></data>
+  <data name="ReasonCurrencyMismatch" xml:space="preserve"><value>Discrepancia de moneda</value></data>
+  <data name="ActionRunMatch" xml:space="preserve"><value>Ejecutar conciliación de 3 vías</value></data>
+  <data name="ConfirmRunMatch" xml:space="preserve"><value>¿Ejecutar la conciliación de 3 vías de esta factura con su pedido y recepciones?</value></data>
+  <data name="MatchSuccess" xml:space="preserve"><value>Conciliación de 3 vías completada.</value></data>
+  <data name="ActionResolve" xml:space="preserve"><value>Resolver</value></data>
+  <data name="ResolveTitle" xml:space="preserve"><value>Resolver excepción</value></data>
+  <data name="ResolveDecisionLabel" xml:space="preserve"><value>Decisión</value></data>
+  <data name="DecisionApprove" xml:space="preserve"><value>Aprobar</value></data>
+  <data name="DecisionReject" xml:space="preserve"><value>Rechazar</value></data>
+  <data name="DecisionToleranceOverride" xml:space="preserve"><value>Anulación de tolerancia</value></data>
+  <data name="ResolveSuccess" xml:space="preserve"><value>Excepción resuelta.</value></data>
+  <data name="MatchResultSection" xml:space="preserve"><value>Resultado de conciliación</value></data>
+  <data name="MatchResultHint" xml:space="preserve"><value>Ejecute la conciliación de 3 vías para evaluar esta factura con su pedido y recepciones; las diferencias fuera de tolerancia abren una excepción.</value></data>
+  <data name="MatchResultLabel" xml:space="preserve"><value>Resultado</value></data>
+  <data name="VarianceField" xml:space="preserve"><value>Campo</value></data>
+  <data name="VarianceExpected" xml:space="preserve"><value>Esperado</value></data>
+  <data name="VarianceActual" xml:space="preserve"><value>Real</value></data>
+  <data name="VarianceWithinTolerance" xml:space="preserve"><value>Dentro de tolerancia</value></data>
+  <data name="ExceptionSection" xml:space="preserve"><value>Excepción</value></data>
+  <data name="ExceptionId" xml:space="preserve"><value>ID de excepción</value></data>
+  <data name="WithinToleranceYes" xml:space="preserve"><value>Sí</value></data>
+  <data name="WithinToleranceNo" xml:space="preserve"><value>No</value></data>
+</root>

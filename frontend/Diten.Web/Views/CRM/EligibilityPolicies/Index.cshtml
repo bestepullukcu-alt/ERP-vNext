@@ -1,0 +1,84 @@
+@using Diten.Web.Security
+@using Diten.Web.Views.CRM.EligibilityPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EligibilityPoliciesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PoliciesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canEvaluate = PermissionClaims.HasPermission(User, "crm.eligibility.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PoliciesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    <small class="text-muted"><i class="bx bx-info-circle me-1"></i>@Localizer["FailClosedNote"]</small>
+</div>
+
+@* Tabbed console: the policy list + (permission-gated) a read-only evaluate/preview panel. UAS-001: the evaluate tab
+   is only drawn for a user granted crm.eligibility.evaluate. *@
+<div class="nav-align-top mb-3">
+    <ul class="nav nav-pills gap-2 flex-wrap" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-policies" role="tab">
+                <i class="bx bx-shield-quarter me-1"></i>@Localizer["PoliciesTab"]
+            </button>
+        </li>
+        @if (canEvaluate)
+        {
+            <li class="nav-item" role="presentation">
+                <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-evaluate" role="tab">
+                    <i class="bx bx-check-shield me-1"></i>@Localizer["EvaluateTab"]
+                </button>
+            </li>
+        }
+    </ul>
+</div>
+
+<div class="tab-content p-0">
+    <div class="tab-pane fade show active" id="tab-policies" role="tabpanel">
+        @* Contract marker: <partial name="_Filter" /> *@
+        <partial name="~/Views/CRM/EligibilityPolicies/_Filter.cshtml" />
+        <partial name="~/Views/CRM/EligibilityPolicies/_DataTable.cshtml" />
+    </div>
+
+    @if (canEvaluate)
+    {
+        <div class="tab-pane fade" id="tab-evaluate" role="tabpanel">
+            <partial name="~/Views/CRM/EligibilityPolicies/_Evaluate.cshtml" />
+        </div>
+    }
+</div>
+
+@* Read-only Quick View — the primary row action opens this offcanvas and index.js fills it from the DataTable row. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="policyPreviewTitle">
+    <div class="offcanvas-header p-4">
+        <div class="min-w-0">
+            <h5 id="policyPreviewTitle" class="offcanvas-title mb-0 text-truncate">-</h5>
+            <small id="policyPreviewSubtitle" class="text-muted d-block text-truncate">-</small>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <dl class="row mb-0 small">
+            <dt class="col-5 text-muted">@Localizer["Status"]</dt><dd class="col-7" id="pvStatus">-</dd>
+            <dt class="col-5 text-muted">@Localizer["PolicyVersion"]</dt><dd class="col-7" id="pvVersion">-</dd>
+            <dt class="col-5 text-muted">@Localizer["EffectiveFrom"]</dt><dd class="col-7" id="pvEffFrom">-</dd>
+            <dt class="col-5 text-muted">@Localizer["Conditions"]</dt><dd class="col-7" id="pvConditions">-</dd>
+        </dl>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+        <a href="#" id="policyPreviewEdit" class="btn btn-primary">@Localizer["EditPolicy"]</a>
+    </div>
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/EligibilityPolicies/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/EligibilityPolicies/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/EligibilityPolicies/index.js" asp-append-version="true"></script>
+    @if (canEvaluate)
+    {
+        <script src="~/assets/js/CRM/EligibilityPolicies/evaluate.js" asp-append-version="true"></script>
+    }
+}

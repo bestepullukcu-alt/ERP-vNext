@@ -36,7 +36,15 @@ public sealed record NotificationEventDispatchRequest(
     IReadOnlyList<EmailRecipientDto>? Cc = null,
     IReadOnlyList<EmailRecipientDto>? Bcc = null,
     string? CorrelationId = null,
-    Guid? CausationId = null);
+    Guid? CausationId = null,
+    /// <summary>MOD-0357 S5b — ADDITIVE ONLY, forwarded unchanged into <see cref="QueueEmailNotificationRequest.Attachments"/>
+    /// and never inspected by this adapter itself (source-agnostic resolver, per this type's own doc comment).</summary>
+    IReadOnlyList<MessagingProviderAttachment>? Attachments = null,
+    /// <summary>BL-406 — ADDITIVE ONLY. Set by <c>MeetingInviteMailer</c> to the single recipient's UserId when
+    /// (and only when) this dispatch is for exactly one meeting attendee; forwarded unchanged into
+    /// <see cref="QueueEmailNotificationRequest.MeetingAttendeeUserId"/> and never inspected here (source-agnostic
+    /// resolver, per this type's own doc comment).</summary>
+    Guid? MeetingAttendeeUserId = null);
 
 public interface INotificationEventDispatchAdapter
 {
@@ -135,7 +143,9 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
             To: request.To,
             Cc: request.Cc,
             Bcc: request.Bcc,
-            CausationId: request.CausationId);
+            CausationId: request.CausationId,
+            Attachments: request.Attachments,
+            MeetingAttendeeUserId: request.MeetingAttendeeUserId);
 
         var command = new QueueEmailNotificationCommand(request.TenantId, queueRequest, request.CorrelationId);
         var response = await _mediator.Send(command, ct);

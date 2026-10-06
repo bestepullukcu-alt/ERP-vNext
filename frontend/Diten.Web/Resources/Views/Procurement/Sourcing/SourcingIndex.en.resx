@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SourcingTitle" xml:space="preserve"><value>Sourcing (RFQ/RFP)</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>RFx events (RFQ/RFP/RFI): invite suppliers, collect bids, evaluate, and award.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Add RFx</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Edit RFx</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Add RFx</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit RFx</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="RfxId" xml:space="preserve"><value>RFx ID</value></data>
+  <data name="RfxTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="RfxTitlePlaceholder" xml:space="preserve"><value>e.g. Raw material replenishment Q4</value></data>
+  <data name="Type" xml:space="preserve"><value>Type</value></data>
+  <data name="ClosesAt" xml:space="preserve"><value>Closes At</value></data>
+  <data name="TypeRFQ" xml:space="preserve"><value>Request for Quote (RFQ)</value></data>
+  <data name="TypeRFP" xml:space="preserve"><value>Request for Proposal (RFP)</value></data>
+  <data name="TypeRFI" xml:space="preserve"><value>Request for Information (RFI)</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusPublished" xml:space="preserve"><value>Published</value></data>
+  <data name="StatusEvaluating" xml:space="preserve"><value>Evaluating</value></data>
+  <data name="StatusAwarded" xml:space="preserve"><value>Awarded</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="RfxSection" xml:space="preserve"><value>RFx Details</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>RFx Lines</value></data>
+  <data name="InvitedSection" xml:space="preserve"><value>Invited Suppliers</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Integration</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Add Line</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>Item ID</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>e.g. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>e.g. 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>UoM</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>e.g. BOX</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>At least one line is required (item, quantity, unit of measure).</value></data>
+  <data name="InvitedSuppliers" xml:space="preserve"><value>Invited Suppliers</value></data>
+  <data name="InvitedSuppliersPlaceholder" xml:space="preserve"><value>Select or type supplier IDs</value></data>
+  <data name="InvitedSuppliersHint" xml:space="preserve"><value>Supplier IDs are validated against the supplier master (fail-closed).</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Source System</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>e.g. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>External Reference</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>e.g. ERP-RFX-9001</value></data>
+  <data name="BidsSection" xml:space="preserve"><value>Bids</value></data>
+  <data name="BidId" xml:space="preserve"><value>Bid ID</value></data>
+  <data name="BidSupplierId" xml:space="preserve"><value>Supplier</value></data>
+  <data name="BidLinesSummary" xml:space="preserve"><value>Lines</value></data>
+  <data name="BidEvaluationScore" xml:space="preserve"><value>Score</value></data>
+  <data name="ActionPublish" xml:space="preserve"><value>Publish</value></data>
+  <data name="ActionSubmitBid" xml:space="preserve"><value>Submit Bid</value></data>
+  <data name="ActionAward" xml:space="preserve"><value>Award</value></data>
+  <data name="ConfirmPublish" xml:space="preserve"><value>Publish this RFx to the invited suppliers?</value></data>
+  <data name="PublishSuccess" xml:space="preserve"><value>RFx published.</value></data>
+  <data name="BidSuccess" xml:space="preserve"><value>Bid submitted.</value></data>
+  <data name="AwardSuccess" xml:space="preserve"><value>Award recorded.</value></data>
+  <data name="BidSupplierPlaceholder" xml:space="preserve"><value>Select supplier</value></data>
+  <data name="BidLines" xml:space="preserve"><value>Bid Lines</value></data>
+  <data name="BidUnitPrice" xml:space="preserve"><value>Unit Price</value></data>
+  <data name="BidUnitPricePlaceholder" xml:space="preserve"><value>e.g. 12.5000</value></data>
+  <data name="BidLeadTimeDays" xml:space="preserve"><value>Lead Time (days)</value></data>
+  <data name="BidLeadTimeDaysPlaceholder" xml:space="preserve"><value>e.g. 14</value></data>
+  <data name="AwardedBid" xml:space="preserve"><value>Winning Bid</value></data>
+  <data name="AwardedBidPlaceholder" xml:space="preserve"><value>Select winning bid</value></data>
+  <data name="AwardRationale" xml:space="preserve"><value>Rationale</value></data>
+  <data name="AwardRationalePlaceholder" xml:space="preserve"><value>e.g. lowest total cost of ownership</value></data>
+</root>

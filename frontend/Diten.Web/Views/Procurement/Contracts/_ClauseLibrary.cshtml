@@ -1,0 +1,72 @@
+@using Diten.Web.Views.Procurement.Contracts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContractsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    var canCreateClause = Perms.Has("procurement.clauses.create");
+}
+
+@* MOD-0144 Clause Library — standard clause surface (GET/POST /api/contracts/clauses). Additive card below the
+   primary Contracts DataTable; keeps the compact verifier scoped to the contract list. Clauses are immutable
+   (ASSUMPTION-0144-03): read + create only, no edit/delete. *@
+<div class="card mt-4" id="clauseLibraryCard">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="mb-0">@Localizer["ClauseLibrary"]</h5>
+        @if (canCreateClause)
+        {
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#clauseModal">
+                <i class="bx bx-plus me-1"></i>@Localizer["AddClause"]
+            </button>
+        }
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0" id="clauseLibraryTable">
+                <thead>
+                    <tr>
+                        <th>@Localizer["ClauseId"]</th>
+                        <th>@Localizer["ClauseCategory"]</th>
+                        <th>@Localizer["ClauseTitle"]</th>
+                        <th>@Localizer["ClauseBody"]</th>
+                    </tr>
+                </thead>
+                <tbody id="clauseLibraryBody">
+                    <tr><td colspan="4" class="text-muted text-center">@SharedLocalizer["NotAvailable"]</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if (canCreateClause)
+{
+    <div class="modal fade" id="clauseModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@Localizer["AddClause"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium" for="clauseCategory">@Localizer["ClauseCategory"] <span class="text-danger">*</span></label>
+                        <input id="clauseCategory" class="form-control" maxlength="120" placeholder="@Localizer["ClauseCategoryPlaceholder"]" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium" for="clauseTitle">@Localizer["ClauseTitle"] <span class="text-danger">*</span></label>
+                        <input id="clauseTitle" class="form-control" maxlength="200" placeholder="@Localizer["ClauseTitlePlaceholder"]" />
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label fw-medium" for="clauseBody">@Localizer["ClauseBody"] <span class="text-danger">*</span></label>
+                        <textarea id="clauseBody" class="form-control" rows="4" placeholder="@Localizer["ClauseBodyPlaceholder"]"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="button" class="btn btn-primary" id="btnSubmitClause">@Localizer["AddClause"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PurchaseOrdersTitle" xml:space="preserve"><value>Órdenes de compra</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Órdenes de compra: pida la demanda aprobada a los proveedores, valore las líneas y apruebe.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Agregar orden de compra</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Editar orden de compra</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Agregar orden de compra</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar orden de compra</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Ver</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="PoId" xml:space="preserve"><value>N.º de orden</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>Proveedor</value></data>
+  <data name="TotalAmount" xml:space="preserve"><value>Importe total</value></data>
+  <data name="Currency" xml:space="preserve"><value>Moneda</value></data>
+  <data name="PurchaseOrderSection" xml:space="preserve"><value>Detalles de la orden</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Líneas de la orden</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Integración</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Agregar línea</value></data>
+  <data name="SupplierPlaceholder" xml:space="preserve"><value>Seleccione proveedor</value></data>
+  <data name="SupplierHint" xml:space="preserve"><value>El proveedor se valida contra el maestro de proveedores (fail-closed).</value></data>
+  <data name="RequisitionRef" xml:space="preserve"><value>Referencia de solicitud</value></data>
+  <data name="RequisitionRefPlaceholder" xml:space="preserve"><value>p. ej. REQ-3001</value></data>
+  <data name="RequisitionRefHint" xml:space="preserve"><value>Referencia opcional a una solicitud aprobada.</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>p. ej. TRY</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>La moneda debe coincidir con la moneda base de la entidad legal.</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>N.º de artículo</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>p. ej. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>N.º de SKU</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>p. ej. c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Cantidad</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>p. ej. 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>Unidad</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>p. ej. BOX</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>Precio unitario</value></data>
+  <data name="LineUnitPricePlaceholder" xml:space="preserve"><value>p. ej. 12.5000</value></data>
+  <data name="LineAmount" xml:space="preserve"><value>Importe de línea</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>Se requiere al menos una línea (artículo, cantidad, unidad de medida, precio unitario). Los importes de línea y total los calcula el servidor.</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Sistema de origen</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>p. ej. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>Referencia externa</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>p. ej. ERP-PO-9001</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="StatusPartiallyReceived" xml:space="preserve"><value>Parcialmente recibida</value></data>
+  <data name="StatusReceived" xml:space="preserve"><value>Recibida</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Cerrada</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="ActionApprove" xml:space="preserve"><value>Aprobar</value></data>
+  <data name="ConfirmApprove" xml:space="preserve"><value>¿Aprobar esta orden de compra? Las órdenes aprobadas quedan abiertas para la recepción de mercancías.</value></data>
+  <data name="ApproveSuccess" xml:space="preserve"><value>Orden de compra aprobada.</value></data>
+</root>

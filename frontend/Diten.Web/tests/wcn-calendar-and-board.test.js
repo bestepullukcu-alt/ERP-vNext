@@ -5,7 +5,7 @@ const { bootSurface, app } = require("./wcn-boot");
 /*
  * THE LIST PAGE'S FOURTH ROUND — the two view modes that were arranging the work wrongly.
  *
- *   ① the calendar drew one month, offered no way out of it, and said nothing about the rest
+ *   ① (moved) the calendar — now the shared component, see wcn-calendar-view.test.js
  *   ② the board changed shape with the tab: lifecycle columns on some, a single segment column on others
  */
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
@@ -80,88 +80,11 @@ const click = async (sel) => {
   await new Promise((x) => setTimeout(x, 0));
 };
 
-const THIS_MONTH = [row(1, { due: "2026-08-10T00:00:00+00:00" }), row(2, { due: "2026-08-20T00:00:00+00:00" })];
-const NEXT_MONTH = [row(3, { due: "2026-09-05T00:00:00+00:00" }), row(4, { due: "2026-09-06T00:00:00+00:00" }),
-  row(5, { due: "2026-09-07T00:00:00+00:00" })];
-
-describe("① the calendar can be navigated, and says what is off-screen", () => {
-  it("opens on the month we are in", async () => {
-    await boot(THIS_MONTH.concat(NEXT_MONTH));
-    await view("calendar");
-    expect(app().querySelectorAll(".wcn-cal-item").length, "the default month is not today's").toBe(2);
-    // "Today" is where we already are, so the control that goes there is off.
-    expect(app().querySelector('[data-wcn-cal-month="today"]').disabled).toBe(true);
-  });
-
-  it("moves a month at a time, and comes back", async () => {
-    await boot(THIS_MONTH.concat(NEXT_MONTH));
-    await view("calendar");
-    // MUTATION GUARD: remove the month control and this goes red on the missing button.
-    await click('[data-wcn-cal-month="next"]');
-    expect(app().querySelectorAll(".wcn-cal-item").length, "next month is not reachable").toBe(3);
-    await click('[data-wcn-cal-month="prev"]');
-    expect(app().querySelectorAll(".wcn-cal-item").length).toBe(2);
-  });
-
-  it("carries the month in the URL, and leaves the default out of it", async () => {
-    await boot(THIS_MONTH.concat(NEXT_MONTH));
-    await view("calendar");
-    const month = () => new URL(global.location.href).searchParams.get("month");
-    expect(month(), "the default month cluttered the URL").toBeNull();
-    await click('[data-wcn-cal-month="next"]');
-    expect(month()).toBe("2026-09");
-    await click('[data-wcn-cal-month="today"]');
-    expect(month(), "returning to today left the parameter behind").toBeNull();
-  });
-
-  it("SAYS how many items are in other months — even though the arrows exist", async () => {
-    /*
-     * MEASURED before any of this: 30 items in the list, 6 in the grid, and nothing on screen about the other
-     * 24. Navigation answers "let me look"; this answers "is there anything to look for", and a reader should
-     * not have to click through months to find out.
-     *
-     * MUTATION GUARD: drop the sentence and this goes red.
-     */
-    await boot(THIS_MONTH.concat(NEXT_MONTH));
-    await view("calendar");
-    const said = app().querySelector(".wcn-cal-outside");
-    expect(said, "the calendar went quiet about the rest of the list").not.toBeNull();
-    expect(said.textContent).toContain("CalOutside");
-  });
-
-  it("counts ITEMS, not entries — one task can occupy two days", async () => {
-    /*
-     * A task with a personal plan on a different day draws TWICE (due + plan, legended apart). The sentence
-     * counts the things, so "shown + elsewhere" equals the list. Measured live: July drew 4 entries for 3
-     * items, and 3 + 27 = 30 = the list.
-     */
-    await boot([row(1, { due: "2026-08-10T00:00:00+00:00", planned: "2026-08-12" })].concat(NEXT_MONTH));
-    await view("calendar");
-    expect(app().querySelectorAll(".wcn-cal-item").length, "the plan marker is not drawn").toBe(2);
-    const ids = [...app().querySelectorAll(".wcn-cal-item")].map((e) => e.getAttribute("data-wcn-row"));
-    expect(new Set(ids).size).toBe(1);
-  });
-
-  it("names an undated item separately, because no navigation can ever reach it", () => {
-    /*
-     * MEASURED at ZERO on live data — every task carries a `dueAt` — which is precisely why it is a condition
-     * in the code rather than an assumption. A task without a date cannot appear on any month.
-     */
-    const cal = APP.split("const renderCalendar = ")[1].split("\n    const ")[0];
-    expect(cal).toContain("const dateless = items.filter((i) => !dateOf(i)).length");
-    expect(cal).toContain("CalOutsideAndUndated");
-  });
-
-  it("speaks all of it in seven languages", () => {
-    ["CalPrevMonth", "CalNextMonth", "CalToday", "CalOutside", "CalOutsideAndUndated"].forEach((key) => {
-      LANGS.forEach((lang) => {
-        const resx = fs.readFileSync(
-          web("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`), "utf8");
-        expect(resx, `${lang} is missing ${key}`).toContain(`name="${key}"`);
-      });
-    });
-  });
-});
+/*
+ * ① WAS THE HAND-WRITTEN MONTH GRID (BL-256). It is gone (WP-UI-CALENDAR-VIEW-01): every tab's calendar is the
+ * shared component now, and what this section proved — navigation, the month in the URL, the view's languages —
+ * is proved against the real FullCalendar in wcn-calendar-view.test.js.
+ */
 
 describe("② the board's columns are the flow, on every tab", () => {
   const MIXED = [
@@ -202,17 +125,54 @@ describe("② the board's columns are the flow, on every tab", () => {
     expect(heads, "an empty-but-reachable stage was dropped").toContain(0);
   });
 
-  it("leaves out a stage this tab can never reach", async () => {
+  it("draws Tamamlandı/İptal as thin, cardless drop zones rather than leaving them out", async () => {
     /*
      * MEASURED, not assumed: `inTab` sorts terminal work into History and non-terminal work everywhere else,
-     * so Done and Cancelled CANNOT occur on İşlerim. Drawing all five everywhere would put two permanently
-     * empty columns on every board — the same promise-of-a-population this session removed from the chips and
-     * the table's columns.
+     * so Done and Cancelled CANNOT hold a CARD on İşlerim — that has not changed. What changed
+     * (WP-WCN-KANBAN-01 Dilim 2, owner decision 2026-09-16/17) is that the two columns are drawn anyway, narrow
+     * and body-less, as the landing target Dilim 3's drag wires up: dropping a card here moves it to Geçmiş.
+     * This used to assert exactly 3 columns (Pending/In Progress/Waiting) and nothing for Done/Cancelled at
+     * all — that was the promise-of-a-population rule BEFORE a drop target existed to need one.
      */
     await boot(MIXED);
     await view("kanban");
-    expect([...app().querySelectorAll(".wcn-kcol")].length, "impossible stages were drawn").toBe(3);
+    const cols = [...app().querySelectorAll(".wcn-kcol")];
+    expect(cols.length, "İşlerim draws three real stages plus two drop zones").toBe(5);
+    const dropZones = [...app().querySelectorAll(".wcn-kcol-dropzone")];
+    expect(dropZones.length).toBe(2);
+    // The harness's `t` echoes the resource key back (no real translation loaded) — so the assertion checks the
+    // KEYS, the same thing every other label assertion in this file checks.
+    const dropZoneLabels = dropZones.map((el) => el.querySelector(".wcn-kcol-head span").textContent.trim());
+    expect(dropZoneLabels).toEqual(["StatusDone", "StatusCancelled"]);
+    // A drop zone is cardless: never a card, never a count badge (it would always read 0). WP-WCN-KANBAN-01
+    // Dilim 5 draws one thing inside the body now — the idle "drop here" hint — so the body is no longer
+    // literally empty, but it is still exactly ONE element and that element is the hint, not a card.
+    dropZones.forEach((el) => {
+      const body = el.querySelector(".wcn-kcol-body");
+      expect(body, "a drop zone needs a body for Sortable to bind to").not.toBeNull();
+      expect(body.children.length, "only the idle hint lives here, never a second element").toBe(1);
+      expect(body.querySelector(".wcn-kcol-drophint")).not.toBeNull();
+      expect(el.querySelector(".wcn-kcard")).toBeNull();
+      expect(el.querySelector(".wcn-kcol-count")).toBeNull();
+    });
     expect(APP).toContain("const TERMINAL_STATES = ['Done', 'Cancelled']");
+  });
+
+  it("Havuz keeps today's shape — no terminal columns at all", async () => {
+    // The drop-zone policy is İşlerim/Başlattıklarım only; Havuz is untouched (owner decision, same source).
+    // `tabFor` (mock-data.js) routes a row to Havuz only via admissionState pendingClaim/pendingOffer — a plain
+    // `row()` (direct assignment, admitted) lands on İşlerim, so the pool needs its own fixtures here.
+    const pool = (n, status) => Object.assign(row(n, { status }), {
+      assignmentMode: "groupQueue", admissionState: "pendingClaim",
+      pool: { id: `pos-${n}`, label: { kind: "display", text: `Kuyruk ${n}`, locale: "und" } }
+    });
+    const MIXED_POOL = [pool(11, "Pending"), pool(12, "InProgress"), pool(13, "InProgress")];
+    await bootSurface({ rootAttrs: 'data-wcn-page="list"', items: MIXED_POOL, now: () => new Date(TODAY + "T12:00:00") });
+    app().querySelector('[data-wcn-tab="havuz"]').click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await view("kanban");
+    expect([...app().querySelectorAll(".wcn-kcol")].length).toBe(3);
+    expect(app().querySelectorAll(".wcn-kcol-dropzone").length).toBe(0);
   });
 
   it("falls back to the empty-state sentence when every reachable stage is empty", () => {
@@ -221,9 +181,94 @@ describe("② the board's columns are the flow, on every tab", () => {
     expect(fn).toContain("if (!cols.some((col) => col.items.length)) { return emptyState(); }");
   });
 
-  it("keeps the segment as a FILTER — it just stops deciding the columns", async () => {
-    // `activeItems()` has already narrowed to the segment; the board arranges THAT by stage.
-    const fn = APP.split("const renderKanban = ")[1].split("\n    const ")[0];
-    expect(fn).toContain("const items = activeItems();");
+  /*
+   * ── THE SEGMENT DOES NOT FILTER THE BOARD (WP-WCN-KANBAN-01 Dilim 2, CT 2026-09-17) ────────────────────────
+   *
+   * Superseded "keeps the segment as a FILTER — it just stops deciding the columns": that sentence was true of
+   * the BL-257 rule (segment still narrowed `activeItems()`, only stopped choosing the columns) and is false of
+   * this one. A source-text grep for `const items = activeItems();` cannot tell the two rules apart — both call
+   * that line — so this asserts the actual DOM difference instead: a Bekletiliyor item the "Aktif" segment would
+   * hide from the LIST is still a CARD on the board, in its real column, count included.
+   */
+  it("does not filter the board by segment, even though the list still does", async () => {
+    const waitingItem = Object.assign(row(4, { due: "2026-08-13T00:00:00+00:00", status: "Waiting" }), {
+      waitingContext: { type: "externalInformation", waitingOn: null }
+    });
+    const withWaiting = MIXED.concat([waitingItem]);
+    await boot(withWaiting);
+    // Default segment on a fresh İşlerim boot is "Aktif" (state.segment initializes to 'aktif'), which excludes
+    // Waiting (segmentFor: normalizedStatus === 'Waiting' → 'bekleyen') — MUTATION GUARD for the list half below.
+    expect(app().querySelector('[data-wcn-seg="aktif"]').classList.contains("active")).toBe(true);
+
+    await view("list");
+    expect(app().querySelector('.wcn-row[data-wcn-row="cccccccc-0000-0000-0000-000000000004"]'),
+      "the Aktif segment did not narrow the list").toBeNull();
+
+    await view("kanban");
+    const waitingCard = app().querySelector(
+      '.wcn-kcol-body .wcn-kcard[data-wcn-row="cccccccc-0000-0000-0000-000000000004"]');
+    expect(waitingCard, "the board applied the segment filter and hid a real column's card").not.toBeNull();
+    const waitingCol = waitingCard.closest(".wcn-kcol");
+    expect(waitingCol.querySelector(".wcn-kcol-head span").textContent.trim()).toBe("StatusWaiting");
+    expect(Number(waitingCol.querySelector(".wcn-kcol-count").textContent)).toBe(1);
+  });
+
+  it("hides the segment chips in the board view, and restores them in the list view", async () => {
+    await boot(MIXED);
+    expect(app().querySelector(".wcn-segments"), "İşlerim's list view lost its segment bar").not.toBeNull();
+
+    await view("kanban");
+    expect(app().querySelector(".wcn-segments"), "the segment chips survived into the board view").toBeNull();
+
+    await view("list");
+    expect(app().querySelector(".wcn-segments"), "the segment bar did not come back in the list view")
+      .not.toBeNull();
+  });
+
+  it("Başlattıklarım draws the same two cardless, countless drop zones as İşlerim", async () => {
+    // tabFor (mock-data.js) routes a row to Başlattıklarım only via viewerRelation "initiator".
+    const initiated = (n, status) => Object.assign(row(n, { status }), { viewerRelation: "initiator" });
+    const MIXED_OUTBOX = [initiated(21, "Pending"), initiated(22, "InProgress")];
+    await bootSurface({
+      rootAttrs: 'data-wcn-page="list"', items: MIXED_OUTBOX, now: () => new Date(TODAY + "T12:00:00")
+    });
+    app().querySelector('[data-wcn-tab="baslattiklarim"]').click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await view("kanban");
+
+    const dropZones = [...app().querySelectorAll(".wcn-kcol-dropzone")];
+    expect(dropZones.length).toBe(2);
+    const labels = dropZones.map((el) => el.querySelector(".wcn-kcol-head span").textContent.trim());
+    expect(labels).toEqual(["StatusDone", "StatusCancelled"]);
+    dropZones.forEach((el) => {
+      const body = el.querySelector(".wcn-kcol-body");
+      expect(body, "a drop zone needs a body for Sortable to bind to").not.toBeNull();
+      expect(body.children.length, "only the idle hint lives here, never a second element").toBe(1);
+      expect(body.querySelector(".wcn-kcol-drophint")).not.toBeNull();
+      expect(el.querySelector(".wcn-kcard")).toBeNull();
+      expect(el.querySelector(".wcn-kcol-count")).toBeNull();
+    });
+  });
+
+  it("shows the read-only note on Geçmiş's board and nowhere else", async () => {
+    await boot(MIXED);
+    await view("kanban");
+    expect(app().querySelector(".wcn-viewnote"), "İşlerim's board is not read-only, it has no drag yet — "
+      + "but it is not History's ARCHIVE either, and the note must not claim it is").toBeNull();
+
+    // A terminal item carries no state-changing action — the contract refuses one (TERMINAL_STATE_CHANGING_ACTION).
+    const terminal = (n, status) => Object.assign(row(n, { status }), {
+      actions: [], primaryActionCode: null, overflowActionCodes: []
+    });
+    const closed = [terminal(31, "Done"), terminal(32, "Cancelled")];
+    await bootSurface({
+      rootAttrs: 'data-wcn-page="list"', items: closed, now: () => new Date(TODAY + "T12:00:00")
+    });
+    app().querySelector('[data-wcn-tab="history"]').click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await view("kanban");
+    const note = app().querySelector(".wcn-viewnote");
+    expect(note, "Geçmiş's board lost its read-only note").not.toBeNull();
+    expect(note.textContent).toContain("KanbanReadonly");
   });
 });

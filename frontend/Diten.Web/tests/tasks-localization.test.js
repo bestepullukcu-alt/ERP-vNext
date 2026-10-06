@@ -18,10 +18,25 @@ const readEntries = (locale) => {
   return entries;
 };
 
+/** The same parse, against the product's shared resource file. */
+const readSharedEntries = (locale) => {
+  const file = path.join(RESX_DIR, "..", "..", `SharedResource.${locale}.resx`);
+  const entries = {};
+  if (!fs.existsSync(file)) { return entries; }
+  const pattern = /<data name="([^"]+)"[^>]*>\s*<value>([\s\S]*?)<\/value>/g;
+  const xml = fs.readFileSync(file, "utf8");
+  let match;
+  while ((match = pattern.exec(xml)) !== null) { entries[match[1]] = match[2]; }
+  return entries;
+};
+
 describe("MOD-0024 task localization", () => {
   const byLocale = {};
+  /** The product-wide strings the bridge also publishes — see the note in the mapping test below. */
+  const sharedByLocale = {};
   beforeAll(() => {
     LOCALES.forEach((locale) => { byLocale[locale] = readEntries(locale); });
+    LOCALES.forEach((locale) => { sharedByLocale[locale] = readSharedEntries(locale); });
   });
 
   it("ships a resx for every supported tenant language", () => {
@@ -203,16 +218,27 @@ describe("MOD-0024 task localization", () => {
     });
 
     it("maps each used key back to a resx entry in all 7 languages", () => {
-      // The resx keys stay PascalCase; only the wire form is camelCase. Map back before checking.
+      /*
+       * The resx keys stay PascalCase; only the wire form is camelCase. Map back before checking.
+       *
+       * ⚠ THE MODULE'S FILE **OR** THE SHARED ONE (2026-09-23). The bridge publishes some of its entries from
+       * `SharedLocalizer` — "Cancel" is one, and it is the same word on every screen in the product. Looking
+       * only in TasksIndex reported such a key as having no home at all, which pushed the next author towards
+       * copying a shared word into this module's file: seven more rows to translate, and two answers to one
+       * question. Both files are consulted, and the seven-language demand is unchanged wherever the key lives.
+       */
       const resxNames = new Map(Object.keys(byLocale.en).map((k) => [toSerializedName(k), k]));
+      const sharedNames = new Map(Object.keys(sharedByLocale.en).map((k) => [toSerializedName(k), k]));
       const missing = [];
 
       usedKeys().forEach((key) => {
         const resxKey = resxNames.get(key);
-        if (!resxKey) { missing.push(`resx/<none>/${key}`); return; }
+        const sharedKey = sharedNames.get(key);
+        if (!resxKey && !sharedKey) { missing.push(`resx/<none>/${key}`); return; }
+        const [table, name] = resxKey ? [byLocale, resxKey] : [sharedByLocale, sharedKey];
         LOCALES.forEach((locale) => {
-          if (!Object.prototype.hasOwnProperty.call(byLocale[locale], resxKey)) {
-            missing.push(`${locale}/${resxKey}`);
+          if (!Object.prototype.hasOwnProperty.call(table[locale], name)) {
+            missing.push(`${locale}/${name}`);
           }
         });
       });

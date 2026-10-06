@@ -1,0 +1,521 @@
+@using Diten.Web.Views.CRM.VisitFrequencyPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitFrequencyPoliciesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* WP-FREQ-F2 — the create/edit editor as a SEPARATE full Golden Compact page (the FREQ-B offcanvas is retired). ONE
+   body, two modes: Create (empty) and Edit (form.js GET → fill). The reused form.js (contract-driven target/frequency/
+   period/source + the 5 priority bands, entity pickers, cadence, all validation, create/update payload) drives this DOM
+   exactly as it drove the offcanvas — only the layout + the right-hand lifecycle/summary/checklist panel are new. The
+   editor is scoped under `.vfp-create-scope` so the mockup palette never leaks; segment-create.css is the reference
+   pattern, never edited. Vocabulary (target/frequency/period/source/status) AND the bands come from /contract — nothing
+   is a hardcoded vocabulary; only the closed lifecycle statuses + the band CODE→label map are shipped as strings. *@
+
+@{
+    var mode = (ViewData["Mode"] as string) ?? "create";
+    var policyId = ViewData["PolicyId"] as string;
+    var isEdit = string.Equals(mode, "edit", StringComparison.OrdinalIgnoreCase);
+
+    // Band DISPLAY labels + descriptions keyed by the contract band CODE (structural, stable). The bands + their weights
+    // still arrive from /contract at runtime; this only translates a known code to a phrase. Dictionary keys are NOT
+    // camelCased by Json.Serialize, so the PascalCase keys form.js reads survive as authored.
+    var bandCodes = new[] { "override-all", "campaign-level", "standard", "baseline", "last-resort" };
+    var periodCodes = new[] { "day", "week", "month", "quarter", "cycle", "campaign-period", "custom" };
+    var sourceCodes = new[] { "campaign", "segmentation", "manual", "legacy-import", "business-rule", "manager-override", "other" };
+
+    var l10n = new Dictionary<string, object>
+    {
+        ["NewPolicy"] = Localizer["NewPolicy"].Value,
+        ["Edit"] = SharedLocalizer["EditRecord"].Value,
+        ["ErrorState"] = Localizer["ErrorState"].Value,
+        ["PerPeriod"] = Localizer["PerPeriod"].Value,
+        ["RecordCreated"] = SharedLocalizer["RecordCreated"].Value,
+        ["RecordUpdated"] = SharedLocalizer["RecordUpdated"].Value,
+        ["RecordArchived"] = Localizer["RecordArchived"].Value,
+        ["ArchiveConfirm"] = Localizer["ArchiveConfirm"].Value,
+        ["SelectOption"] = Localizer["SelectOption"].Value,
+        ["ContextNone"] = Localizer["ContextNone"].Value,
+        ["SelectTerritoryModel"] = Localizer["SelectTerritoryModel"].Value,
+        ["SelectTerritoryNode"] = Localizer["SelectTerritoryNode"].Value,
+        ["Selected"] = Localizer["Selected"].Value,
+        ["TargetIdManual"] = Localizer["TargetIdManual"].Value,
+        ["TargetChange"] = Localizer["TargetChange"].Value,
+        // target-type chip specificity subtext (first = most specific, last = broadest)
+        ["MostSpecific"] = Localizer["MostSpecific"].Value,
+        ["Broadest"] = Localizer["Broadest"].Value,
+        ["FreqSentenceEmpty"] = Localizer["FreqSentenceEmpty"].Value,
+        ["Required"] = Localizer["Required"].Value,
+        ["TargetRequired"] = Localizer["TargetRequired"].Value,
+        ["TargetIdInvalid"] = Localizer["TargetIdInvalid"].Value,
+        ["CountPositive"] = Localizer["CountPositive"].Value,
+        ["PeriodComboInvalid"] = Localizer["PeriodComboInvalid"].Value,
+        ["BandRequired"] = Localizer["BandRequired"].Value,
+        ["EffectiveOrder"] = Localizer["EffectiveOrder"].Value,
+        ["CycleRequired"] = Localizer["CycleRequired"].Value,
+        ["CampaignRequired"] = Localizer["CampaignRequired"].Value,
+        ["SegmentRequired"] = Localizer["SegmentRequired"].Value,
+        ["NotesRequired"] = Localizer["NotesRequired"].Value,
+        ["FixErrors"] = Localizer["FixErrors"].Value,
+        ["ContractUnavailable"] = Localizer["ContractUnavailable"].Value,
+        ["VisitsWord"] = Localizer["VisitsWord"].Value,
+        ["FreqResolvedLabel"] = Localizer["FreqResolvedLabel"].Value,
+        // scope chip summary + per-select "all / independent" placeholders
+        ["ScopeNoConstraint"] = Localizer["ScopeNoConstraint"].Value,
+        ["ScopeConstraintUnit"] = Localizer["ScopeConstraintUnit"].Value,
+        ["ScopePickBrandFirst"] = Localizer["ScopePickBrandFirst"].Value,
+        ["ContextNone"] = Localizer["ContextNone"].Value,
+        ["ScopeAllBusinessUnits"] = Localizer["ScopeAllBusinessUnits"].Value,
+        ["ScopeSegmentIndependent"] = Localizer["ScopeSegmentIndependent"].Value,
+        ["ScopeCampaignIndependent"] = Localizer["ScopeCampaignIndependent"].Value,
+        ["ScopeAllBrands"] = Localizer["ScopeAllBrands"].Value,
+        ["ScopeAllProducts"] = Localizer["ScopeAllProducts"].Value,
+        ["ScopeAllCyclePeriods"] = Localizer["ScopeAllCyclePeriods"].Value,
+        // scope chip field labels (reused for the chip "label: value")
+        ["FieldBusinessUnit"] = Localizer["FieldBusinessUnit"].Value,
+        ["FieldTerritory"] = Localizer["FieldTerritory"].Value,
+        ["FieldSegment"] = Localizer["FieldSegment"].Value,
+        ["FieldCampaign"] = Localizer["FieldCampaign"].Value,
+        ["FieldBrand"] = Localizer["FieldBrand"].Value,
+        ["FieldProduct"] = Localizer["FieldProduct"].Value,
+        ["FieldCyclePeriod"] = Localizer["FieldCyclePeriod"].Value,
+        // right panel — summary
+        ["SummarySentenceTpl"] = Localizer["SummarySentenceTpl"].Value,
+        ["SummaryScopeAll"] = Localizer["SummaryScopeAll"].Value,
+        ["SummaryEmptyName"] = Localizer["SummaryEmptyName"].Value,
+        ["SummaryOpenEnded"] = Localizer["ValidityOpenEnded"].Value,
+        // right panel — checklist
+        ["ChecklistReady"] = Localizer["ChecklistReady"].Value,
+        ["ChecklistWarnWord"] = Localizer["ChecklistWarnWord"].Value,
+        ["ChkTarget"] = Localizer["ChkTarget"].Value,
+        ["ChkFrequency"] = Localizer["ChkFrequency"].Value,
+        ["ChkPeriod"] = Localizer["ChkPeriod"].Value,
+        ["ChkScopeNarrowed"] = Localizer["ChkScopeNarrowed"].Value,
+        ["ChkScopeNone"] = Localizer["ChkScopeNone"].Value,
+        ["ChkWeight"] = Localizer["ChkWeight"].Value,
+        ["ChkWillDraft"] = Localizer["ChkWillDraft"].Value,
+        ["ChkWillActive"] = Localizer["ChkWillActive"].Value,
+        ["ChkWillInactive"] = Localizer["ChkWillInactive"].Value,
+        ["ChkWillArchived"] = Localizer["ChkWillArchived"].Value,
+        // WP-FREQ-F13 — checklist live sub-descriptions (static templates; dynamic parts come from form state)
+        ["ChkTargetEmptyDesc"] = Localizer["ChkTargetEmptyDesc"].Value,
+        ["ChkFreqEmptyDesc"] = Localizer["ChkFreqEmptyDesc"].Value,
+        ["ChkPeriodEmptyDesc"] = Localizer["ChkPeriodEmptyDesc"].Value,
+        ["ChkScopeAllDesc"] = Localizer["ChkScopeAllDesc"].Value,
+        ["ChkWeightEmptyDesc"] = Localizer["ChkWeightEmptyDesc"].Value,
+        ["ChkWillDraftDesc"] = Localizer["ChkWillDraftDesc"].Value,
+        ["ChkWillActiveDesc"] = Localizer["ChkWillActiveDesc"].Value,
+        ["ChkWillInactiveDesc"] = Localizer["ChkWillInactiveDesc"].Value,
+        ["ChkWillArchivedDesc"] = Localizer["ChkWillArchivedDesc"].Value,
+        ["statusLabels"] = new Dictionary<string, string>
+        {
+            ["draft"] = Localizer["Status_draft"].Value,
+            ["active"] = Localizer["Status_active"].Value,
+            ["inactive"] = Localizer["Status_inactive"].Value,
+            ["archived"] = Localizer["Status_archived"].Value
+        }
+    };
+    foreach (var code in bandCodes)
+    {
+        l10n[$"Band_{code}"] = Localizer[$"Band_{code}"].Value;
+        l10n[$"Band_{code}_Desc"] = Localizer[$"Band_{code}_Desc"].Value;
+    }
+    foreach (var code in periodCodes)
+    {
+        l10n[$"Period_{code}"] = Localizer[$"Period_{code}"].Value;
+    }
+    foreach (var code in sourceCodes)
+    {
+        l10n[$"Source_{code}"] = Localizer[$"Source_{code}"].Value;
+    }
+}
+
+<div class="vfp-create-scope vfp-editor-page">
+    @* WP-FREQ-F15 — header aligned to the Task Create pattern (Tasks/ChecklistTemplates/_Form.cshtml):
+       h5 title ON TOP, breadcrumb BELOW (mb-0). The right actions group holds the live "Zorunlu: N/M"
+       required badge to the LEFT of "Listeye Dön". #vfpEditorTitle is preserved (form.js setTitle reads it). *@
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0" id="vfpEditorTitle">@(isEdit ? Localizer["EditPolicy"].Value : Localizer["NewPolicy"].Value)</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/VisitFrequencyPolicies">@Localizer["PoliciesTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@(isEdit ? Localizer["EditPolicy"].Value : Localizer["NewPolicy"].Value)</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="vfp-required-badge" id="vfpRequiredBadge"></span>
+            <a href="/CRM/VisitFrequencyPolicies" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+        </div>
+    </div>
+
+    <div class="vfp-archived-note vfp-hidden" id="vfpArchivedNote" role="alert">
+        <i class="bx bx-lock-alt me-1"></i>@Localizer["ArchivedReadonly"]
+    </div>
+
+    <form id="vfpEditorForm" data-endpoint="/CRM/VisitFrequencyPolicies/api"
+          data-mode="@(isEdit ? "edit" : "create")" data-policy-id="@(policyId ?? string.Empty)" novalidate>
+        <div id="vfpFormError" class="vfp-form-error" role="alert"></div>
+
+        <div class="vfp-editor-layout">
+            @* ───────────────────────── LEFT: the 5 form sections ───────────────────────── *@
+            <div class="vfp-editor-main">
+
+                @* 01 — Identity (code / name / description / internal notes) *@
+                <section class="card mb-4">
+                    <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-info-circle dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionIdentity"]</h6>
+                    <p class="text-muted small mb-3">@Localizer["EditorHelpIdentity"]</p>
+                    @* WP-FREQ-F5 — Identity fields now use the app field pattern (/Tasks/Create): `form-label fw-medium`
+                       label + `.diten-field` icon wrapper + `.form-control`. Element ids (vfpPolicyCode/vfpPolicyName/
+                       vfpDescription/vfpNotes), the vfp-error/vfp-help divs and #vfpTargetLockNote are PRESERVED — form.js
+                       reads them by id, never by the old vfp-input/vfp-textarea class. *@
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="vfpPolicyCode">@Localizer["FieldPolicyCode"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control" id="vfpPolicyCode" autocomplete="off">
+                            </div>
+                            <div class="vfp-error" id="vfpPolicyCodeError"></div>
+                            <div class="vfp-help vfp-hidden" id="vfpTargetLockNote">@Localizer["TargetLockNote"]</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="vfpPolicyName">@Localizer["FieldPolicyName"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control" id="vfpPolicyName" autocomplete="off">
+                            </div>
+                            <div class="vfp-error" id="vfpPolicyNameError"></div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="vfpDescription">@Localizer["FieldDescription"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                                <textarea class="form-control" id="vfpDescription" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="vfpNotes">@Localizer["FieldNotes"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-note diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                                <textarea class="form-control" id="vfpNotes" rows="2" placeholder="@Localizer["NotesHelp"]"></textarea>
+                            </div>
+                            <div class="vfp-error" id="vfpNotesError"></div>
+                        </div>
+                    </div>
+                    </div>
+                </section>
+
+                @* 02 — Target (who it applies to) + collapsible "where does it apply?" scope
+                   WP-FREQ-F7 — HEDEF section aligned to the mockup + the app field/font pattern (task-create). The
+                   `.vfp-target-section` wrapper (below) puts the section's mockup-content nodes back on the shell font
+                   (the code badges stay monospace). buildPayload / data-role="targetId" / every context select id are
+                   PRESERVED — only markup, classes and copy changed. *@
+                <section class="card mb-4">
+                    <div class="card-body p-4 vfp-target-section">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-target-lock dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionTargetLong"]<span class="wcn-act-outcome ms-auto">@Localizer["TargetListsNote"]</span></h6>
+                    <p class="text-muted small mb-3">@Localizer["EditorHelpTarget"]</p>
+                    <label class="form-label fw-medium">@Localizer["FieldTargetType"] <span class="text-danger">*</span></label>
+                    <div class="vfp-chipgrid" id="vfpTargetTypeCards"></div>
+
+                    @* "Hangi kayıt" dashed box — empty shows the app select (rendered by form.js into #vfpTargetPicker);
+                       once picked, form.js hides the select and shows the chip (code badge + name + external code +
+                       "Değiştir…"). The [data-role="targetId"] control form.js reads is unchanged. *@
+                    <label class="form-label fw-medium mt-3" for="vfpTargetPicker">@Localizer["FieldTarget"] <span class="text-danger">*</span></label>
+                    <div class="vfp-picked-box">
+                        <div class="vfp-picked-box-head">
+                            <span class="vfp-picked-box-title">@Localizer["TargetPickedWhich"]</span>
+                            <span class="vfp-picked-box-hint">@Localizer["TargetPickHint"]</span>
+                        </div>
+                        <div id="vfpTargetPicker"></div>
+                        <div class="vfp-picked" id="vfpTargetPicked"></div>
+                    </div>
+                    <div class="vfp-error" id="vfpTargetError"></div>
+
+                    <div class="vfp-scope">
+                        <button type="button" class="vfp-scope-toggle" id="vfpScopeToggle" aria-expanded="false" aria-controls="vfpScopeBody">
+                            <i class="bx bx-chevron-right vfp-scope-caret"></i>
+                            <span class="vfp-scope-toggle-label">@Localizer["ScopeToggle"]</span>
+                            <span class="vfp-scope-hint">@Localizer["ScopeOptionalNote"]</span>
+                        </button>
+                        @* WP-FREQ-F8 — scope sub-groups now use the mockup layout: a title-case bold heading with an
+                           INLINE muted description on the same line and a bottom divider (`.vfp-scope-group-head`); the
+                           app field pattern (`form-label fw-medium` + `form-select`); the Saha alanı cell puts model|node
+                           SIDE BY SIDE (`.vfp-territory-pair`, cascade model→node unchanged); a static "no constraint"
+                           hint under each unconstrained select; and a bordered KAPSAM summary box. Every select id
+                           (vfpBusinessUnit/vfpTerritoryModel/vfpTerritoryNode/vfpSegment/vfpCampaign/vfpBrand/vfpProduct/
+                           vfpCyclePeriod) plus #vfpScopeChips/#vfpScopeClear/#vfpProductHint are PRESERVED — form.js reads
+                           them by id, and cascade/buildPayload are untouched. *@
+                        <div class="vfp-scope-body vfp-hidden" id="vfpScopeBody">
+                            <div class="vfp-scope-group">
+                                <div class="vfp-scope-group-head">
+                                    <span class="vfp-scope-group-title">@Localizer["ScopeGroupOrg"]</span>
+                                    <span class="vfp-scope-group-desc">@Localizer["ScopeGroupOrgDesc"]</span>
+                                </div>
+                                <div class="vfp-grid">
+                                    <div>
+                                        <label class="form-label fw-medium" for="vfpBusinessUnit">@Localizer["FieldBusinessUnit"] <span class="vfp-code-hint">BusinessUnit</span></label>
+                                        <select class="form-select select2" id="vfpBusinessUnit"></select>
+                                        <div class="vfp-help">@Localizer["NoConstraint"]</div>
+                                    </div>
+                                    <div>
+                                        <label class="form-label fw-medium" for="vfpTerritoryModel">@Localizer["FieldTerritory"] <span class="vfp-code-hint">TerritoryNodeId</span></label>
+                                        <div class="vfp-territory-pair">
+                                            <select class="form-select select2" id="vfpTerritoryModel"></select>
+                                            <select class="form-select select2" id="vfpTerritoryNode"></select>
+                                        </div>
+                                        <div class="vfp-help">@Localizer["NoConstraint"]</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="vfp-scope-group">
+                                <div class="vfp-scope-group-head">
+                                    <span class="vfp-scope-group-title">@Localizer["ScopeGroupScope"]</span>
+                                    <span class="vfp-scope-group-desc">@Localizer["ScopeGroupScopeDesc"]</span>
+                                </div>
+                                <div class="vfp-grid">
+                                    <div>
+                                        <label class="form-label fw-medium" for="vfpSegment">@Localizer["FieldSegment"] <span class="vfp-code-hint">SegmentId</span></label>
+                                        <select class="form-select select2" id="vfpSegment"></select>
+                                        <div class="vfp-help">@Localizer["NoConstraint"]</div>
+                                        <div class="vfp-error" id="vfpSegmentError"></div>
+                                    </div>
+                                    <div>
+                                        <label class="form-label fw-medium" for="vfpCampaign">@Localizer["FieldCampaign"] <span class="vfp-code-hint">CampaignId</span></label>
+                                        <select class="form-select select2" id="vfpCampaign"></select>
+                                        <div class="vfp-help">@Localizer["NoConstraint"]</div>
+                                        <div class="vfp-error" id="vfpCampaignError"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="vfp-scope-group">
+                                <div class="vfp-scope-group-head">
+                                    <span class="vfp-scope-group-title">@Localizer["ScopeGroupProduct"]</span>
+                                    <span class="vfp-scope-group-desc">@Localizer["ScopeGroupProductDesc"]</span>
+                                </div>
+                                <div class="vfp-grid">
+                                    <div>
+                                        <label class="form-label fw-medium" for="vfpBrand">@Localizer["FieldBrand"] <span class="vfp-code-hint">BrandId</span></label>
+                                        <select class="form-select select2" id="vfpBrand"></select>
+                                        <div class="vfp-help">@Localizer["NoConstraint"]</div>
+                                    </div>
+                                    <div>
+                                        <label class="form-label fw-medium" for="vfpProduct">@Localizer["FieldProduct"] <span class="vfp-code-hint">ProductId</span></label>
+                                        <select class="form-select select2" id="vfpProduct" disabled></select>
+                                        <div class="vfp-help vfp-product-hint" id="vfpProductHint">@Localizer["ScopePickBrandFirst"]</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="vfp-scope-group">
+                                <div class="vfp-scope-group-head">
+                                    <span class="vfp-scope-group-title">@Localizer["ScopeGroupPeriod"]</span>
+                                    <span class="vfp-scope-group-desc">@Localizer["ScopeGroupPeriodDesc"]</span>
+                                </div>
+                                <div class="vfp-grid">
+                                    <div>
+                                        <label class="form-label fw-medium" for="vfpCyclePeriod">@Localizer["FieldCyclePeriod"] <span class="vfp-code-hint">CyclePeriodId</span></label>
+                                        <select class="form-select select2" id="vfpCyclePeriod"></select>
+                                        <div class="vfp-help">@Localizer["ScopePickCyclePeriodFirst"]</div>
+                                        <div class="vfp-error" id="vfpCyclePeriodError"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            @* WP-FREQ-F10 — KAPSAM özet kutusu grid'e getirildi: sol kolon KAPSAM label + #vfpScopeChips
+                               (label:value çipler) + boşken "tüm hedefler" fallback; sağda align-self-end "Kapsamı temizle".
+                               id'ler (#vfpScopeChips/#vfpScopeClear) korunur — form.js chip render + clear aynı çalışır. *@
+                            <div class="vfp-scope-summary">
+                                <div class="vfp-scope-summary-main">
+                                    <span class="vfp-scope-summary-label">@Localizer["Scope"]</span>
+                                    <div class="vfp-scope-chips" id="vfpScopeChips"></div>
+                                    <span class="vfp-scope-all">@Localizer["ScopeAllTargets"]</span>
+                                </div>
+                                <button type="button" class="vfp-scope-clear vfp-hidden" id="vfpScopeClear">@Localizer["ScopeClear"]</button>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </section>
+
+                @* 03 — Frequency (the actual value)
+                   WP-FREQ-F11 — FREKANS section aligned to the mockup + the app field/font pattern (task-create). The
+                   heading uses the new long key (EditorSectionFrequencyLong), the three fields become app fields
+                   (FrequencyType/PeriodType = search-enabled `form-select select2` per WP-FREQ-F9; RequiredVisitCount =
+                   `form-control` number in a `.diten-field` icon wrapper), and the resolved cadence renders as a single
+                   row (label + 18px value + monospace meta). Field ids (vfpFrequencyType/vfpRequiredVisitCount/
+                   vfpPeriodType/vfpFreqSentence/vfpFreqRaw) + error ids are PRESERVED — form.js reads them by id and
+                   buildPayload / the FrequencyType×PeriodType allow-map are untouched. The `.vfp-app-section` wrapper
+                   puts the card content back on the shell font (only the cadence meta stays monospace). *@
+                <section class="card mb-4">
+                    <div class="card-body p-4 vfp-app-section">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-repeat dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionFrequencyLong"]</h6>
+                    <p class="text-muted small mb-3">@Localizer["EditorHelpFrequency"]</p>
+                    <div class="vfp-grid vfp-grid-3">
+                        <div>
+                            <label class="form-label fw-medium" for="vfpFrequencyType">@Localizer["FieldFrequencyType"] <span class="text-danger">*</span></label>
+                            <select class="form-select select2" id="vfpFrequencyType"></select>
+                            <div class="vfp-error" id="vfpFreqError"></div>
+                        </div>
+                        <div>
+                            <label class="form-label fw-medium" for="vfpRequiredVisitCount">@Localizer["FieldRequiredVisitCount"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                                <input type="number" min="1" step="1" class="form-control" id="vfpRequiredVisitCount" autocomplete="off">
+                            </div>
+                            <div class="vfp-error" id="vfpCountError"></div>
+                        </div>
+                        <div>
+                            <label class="form-label fw-medium" for="vfpPeriodType">@Localizer["FieldPeriodType"] <span class="text-danger">*</span></label>
+                            <select class="form-select select2" id="vfpPeriodType"></select>
+                            <div class="vfp-error" id="vfpPeriodError"></div>
+                        </div>
+                    </div>
+                    <div class="vfp-cadence">
+                        <span class="vfp-cadence-label">@Localizer["FreqResolvedLabel"]</span>
+                        <span class="vfp-cadence-value" id="vfpFreqSentence">@Localizer["FreqSentenceEmpty"]</span>
+                        <span class="vfp-cadence-meta" id="vfpFreqRaw"></span>
+                    </div>
+                    </div>
+                </section>
+
+                @* WP-FREQ-F14 — GEÇERLİLİK (04) + ÇAKIŞMA (05) kartları yan yana: iki section.card bir `row g-4`
+                   içinde `col-12 col-xl-6` sütunlara alındı (geniş ekranda yan yana, dar ekranda alt alta). Kart iç
+                   içeriği/başlık/ikon/alanlar/tüm id AYNEN korundu; yalnız iki kartı saran 2-kolon wrapper eklendi.
+                   Çift dikey boşluk olmasın diye kartlardan `mb-4` kaldırıldı (row g-4 gap yönetir) ve col içinde
+                   `.card{height:100%}` ile eşit yükseklik css'e taşındı. *@
+                <div class="row g-4 vfp-effective-conflict-row">
+                <div class="col-12 col-xl-6">
+                @* 04 — Effective window
+                   WP-FREQ-F12 — GEÇERLİLİK fields now use the app field pattern (task-create): `form-label fw-medium`
+                   label + `.diten-field` (bx-calendar icon) + `form-control` date input. EffectiveTo carries the
+                   "open-ended" placeholder. Ids (vfpEffectiveFrom/vfpEffectiveTo/vfpEffectiveError) are PRESERVED. The
+                   `.vfp-app-section` wrapper keeps the card content on the shell font. *@
+                <section class="card">
+                    <div class="card-body p-4 vfp-app-section">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-calendar dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionEffective"]</h6>
+                    <p class="text-muted small mb-3">@Localizer["EditorHelpEffective"]</p>
+                    <div class="vfp-grid">
+                        <div>
+                            <label class="form-label fw-medium" for="vfpEffectiveFrom">@Localizer["FieldEffectiveFrom"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                <input type="date" class="form-control" id="vfpEffectiveFrom">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label fw-medium" for="vfpEffectiveTo">@Localizer["FieldEffectiveTo"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                <input type="date" class="form-control" id="vfpEffectiveTo" placeholder="@Localizer["ValidityOpenEnded"]">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vfp-error" id="vfpEffectiveError"></div>
+                    <div class="vfp-inline-note vfp-inline-note--muted">@Localizer["EffectiveNote"]</div>
+                    </div>
+                </section>
+                </div>
+                <div class="col-12 col-xl-6">
+                @* 05 — Conflict priority (contract bands + source)
+                   WP-FREQ-F12 — the priority bands render as a VERTICAL stacked radio-card list (full-width rows: a
+                   visible radio + a bold title + a description; the selected row is highlighted in the accent). The
+                   value badge is gone (mockup). form.js's renderBandCards emits this markup; each radio still carries
+                   the CONTRACT band weight as its value, so checkedValue('vfpPriority') / buildPayload are unchanged.
+                   Source is a search-enabled `form-select select2` (WP-FREQ-F9 pattern). Ids (vfpBandCards/vfpSource/
+                   vfpPriorityError/vfpSourceError/vfpSourceNote) are PRESERVED. `.vfp-app-section` keeps the content on
+                   the shell font. *@
+                <section class="card">
+                    <div class="card-body p-4 vfp-app-section">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-git-merge dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionConflict"]</h6>
+                    <p class="text-muted small mb-3">@Localizer["ConflictIntro"]</p>
+                    <label class="form-label fw-medium">@Localizer["ConflictWeightLabel"] <span class="text-danger">*</span></label>
+                    <div class="vfp-bandlist" id="vfpBandCards"></div>
+                    <div class="vfp-error" id="vfpPriorityError"></div>
+                    <div class="mt-3">
+                        <label class="form-label fw-medium" for="vfpSource">@Localizer["ConflictSourceLabel"] <span class="text-danger">*</span></label>
+                        <select class="form-select select2" id="vfpSource"></select>
+                        <div class="vfp-error" id="vfpSourceError"></div>
+                        <div class="vfp-inline-note" id="vfpSourceNote">@Localizer["SourceNote"]</div>
+                    </div>
+                    </div>
+                </section>
+                </div>
+                </div>
+            </div>
+
+            @* ───────────────────────── RIGHT: sticky lifecycle / summary / checklist ───────────────────────── *@
+            <aside class="vfp-editor-side">
+                <div class="vfp-side-sticky">
+                    @* Lifecycle status selector *@
+                    <section class="card mb-4">
+                        <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-been-here dt-card-icon" aria-hidden="true"></i>@Localizer["LifecycleTitle"]</h6>
+                        <div class="vfp-lifecycle" id="vfpLifecycle">
+                            <label class="vfp-life-row" data-status="draft">
+                                <input type="radio" name="vfpLifecycle" value="draft">
+                                <span class="vfp-life-dot"></span>
+                                <span class="vfp-life-text"><span class="vfp-life-name">@Localizer["Status_draft"]</span><span class="vfp-life-help">@Localizer["LifecycleDraftHelp"]</span></span>
+                            </label>
+                            <label class="vfp-life-row" data-status="active">
+                                <input type="radio" name="vfpLifecycle" value="active">
+                                <span class="vfp-life-dot"></span>
+                                <span class="vfp-life-text"><span class="vfp-life-name">@Localizer["Status_active"]</span><span class="vfp-life-help">@Localizer["LifecycleActiveHelp"]</span></span>
+                            </label>
+                            <label class="vfp-life-row" data-status="inactive">
+                                <input type="radio" name="vfpLifecycle" value="inactive">
+                                <span class="vfp-life-dot"></span>
+                                <span class="vfp-life-text"><span class="vfp-life-name">@Localizer["Status_inactive"]</span><span class="vfp-life-help">@Localizer["LifecycleInactiveHelp"]</span></span>
+                            </label>
+                            <label class="vfp-life-row" data-status="archived">
+                                <input type="radio" name="vfpLifecycle" value="archived">
+                                <span class="vfp-life-dot"></span>
+                                <span class="vfp-life-text"><span class="vfp-life-name">@Localizer["Status_archived"]</span><span class="vfp-life-help">@Localizer["LifecycleArchivedHelp"]</span></span>
+                            </label>
+                        </div>
+                        @* WP-FREQ-F15 — the lifecycle note renders as an amber callout (see .vfp-life-note in css).
+                           The literal product term "Archive" is emphasised: the value is HTML-encoded first, then the
+                           token is wrapped in <strong> (a safe no-op in languages that translate the term). *@
+                        <div class="vfp-life-note">@Html.Raw(System.Net.WebUtility.HtmlEncode(Localizer["LifecycleNote"].Value).Replace("Archive", "<strong>Archive</strong>"))</div>
+                        <input type="hidden" id="vfpStatus" value="draft">
+                        </div>
+                    </section>
+
+                    @* Live "what will this policy do" summary *@
+                    <section class="card mb-4">
+                        <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-bulb dt-card-icon" aria-hidden="true"></i>@Localizer["SummaryTitle"]</h6>
+                        <p class="vfp-summary-sentence" id="vfpSummarySentence"></p>
+                        <dl class="vfp-summary-kv">
+                            <dt>@Localizer["Target"]</dt><dd id="vfpSumTarget">—</dd>
+                            <dt>@Localizer["Frequency"]</dt><dd id="vfpSumFrequency">—</dd>
+                            <dt>@Localizer["Scope"]</dt><dd id="vfpSumScope">—</dd>
+                            <dt>@Localizer["Validity"]</dt><dd id="vfpSumValidity">—</dd>
+                            <dt>@Localizer["Weight"]</dt><dd id="vfpSumWeight">—</dd>
+                            <dt>@Localizer["SummaryOnSaveLabel"]</dt><dd id="vfpSumStatus">—</dd>
+                        </dl>
+                        </div>
+                    </section>
+
+                    @* Before-you-save checklist *@
+                    <section class="card mb-4">
+                        <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-check-shield dt-card-icon" aria-hidden="true"></i>@Localizer["ChecklistTitle"]<span class="vfp-check-badge ms-auto" id="vfpCheckBadge"></span></h6>
+                        <ul class="vfp-checklist" id="vfpChecklist"></ul>
+                        </div>
+                    </section>
+
+                    @* Footer actions *@
+                    <div class="vfp-editor-footer">
+                        <button type="button" class="btn btn-primary w-100" id="vfpSaveActivate">@Localizer["SaveActivate"]</button>
+                        <button type="button" class="btn btn-label-secondary w-100" id="vfpSaveDraft">@Localizer["SaveDraft"]</button>
+                        <button type="button" class="btn btn-label-warning w-100 vfp-hidden" id="vfpSaveInactive">@Localizer["SaveInactive"]</button>
+                        <button type="button" class="btn btn-label-danger w-100 vfp-hidden" id="vfpArchive">@Localizer["ArchiveAction"]</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </form>
+</div>
+
+@* Editor L10n bridge (code-keyed, PascalCase preserved). Rendered next to the form so form.js can read it as it loads. *@
+<script id="vfp-editor-l10n" type="application/json">@Html.Raw(Json.Serialize(l10n))</script>

@@ -22,7 +22,12 @@ public sealed record CreateStrategyTemplateRequest(
     List<StrategyTemplateSegmentBindingRequest>? SegmentBindings,
     StrategyTemplateFrequencyIntentRequest? FrequencyIntent,
     List<StrategyTemplateProductLineRequest>? ProductLines,
-    List<StrategyTemplateContentBindingRequest>? ContentBindings);
+    List<StrategyTemplateContentBindingRequest>? ContentBindings,
+    // WP-ST-SCOPE — the play's scope (tenant / country / legal-entity / business-unit). Optional: an absent ScopeType is
+    // derived from BusinessUnitId, so a pre-scope client keeps working unchanged.
+    string? ScopeType = null,
+    string? CountryScope = null,
+    Guid? LegalEntityId = null);
 
 /// <summary>
 /// Updates a strategy template. <c>TemplateCode</c> and <c>SubjectType</c> are absent because they are immutable, and
@@ -42,7 +47,12 @@ public sealed record UpdateStrategyTemplateRequest(
     StrategyTemplateFrequencyIntentRequest? FrequencyIntent,
     List<StrategyTemplateProductLineRequest>? ProductLines,
     List<StrategyTemplateContentBindingRequest>? ContentBindings,
-    int? ExpectedVersion);
+    int? ExpectedVersion,
+    // WP-ST-SCOPE — the play's scope. Editable metadata, correctable even on a frozen version. Optional: an absent
+    // ScopeType derives from BusinessUnitId exactly as on create.
+    string? ScopeType = null,
+    string? CountryScope = null,
+    Guid? LegalEntityId = null);
 
 /// <summary>One bound segment. The lineage id, the version stamp and the display code are NOT accepted here: the
 /// runtime reads them from the segment itself, so they can neither be forged nor become a second source of truth.</summary>

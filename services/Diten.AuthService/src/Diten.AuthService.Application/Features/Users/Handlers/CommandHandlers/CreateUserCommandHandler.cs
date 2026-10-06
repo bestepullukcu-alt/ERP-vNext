@@ -1,7 +1,9 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
+using Diten.AuthService.Application.Common.Exceptions;
 using Diten.AuthService.Application.Features.Users.Commands;
+using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Domain.Enums;
 using MediatR;
@@ -23,6 +25,8 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
     private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IHostEnvironment _environment;
     private readonly ITenantUserInvitationEmailService _invitationEmailService;
+    private readonly IUserAuditRecorder _audit;
+    private readonly IUserQuotaClient _quota;
     private readonly ILogger<CreateUserCommandHandler> _logger;
 
     public CreateUserCommandHandler(
@@ -34,6 +38,8 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
         IRefreshTokenHasher refreshTokenHasher,
         IHostEnvironment environment,
         ITenantUserInvitationEmailService invitationEmailService,
+        IUserAuditRecorder audit,
+        IUserQuotaClient quota,
         ILogger<CreateUserCommandHandler> logger)
     {
         _userRepository = userRepository;
@@ -44,6 +50,8 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
         _refreshTokenHasher = refreshTokenHasher;
         _environment = environment;
         _invitationEmailService = invitationEmailService;
+        _audit = audit;
+        _quota = quota;
         _logger = logger;
     }
 
@@ -65,11 +73,34 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
         }
 
         var existing = await _userRepository.GetByEmailAndTenantAsync(request.Email, _tenantContext.TenantId, ct);
-        if (existing != null) return Response<UserDto>.Fail("Email is already in use.", 409);
+        // WP-AUTH-INVITED-LIFECYCLE-01 — a LIVE user only: the probe and the users e-mail unique index both ignore
+        // soft-deleted accounts, so a deleted user's address opens a NEW account (owner decision A — the old record
+        // and its history stay; its roles belong to the old id and are never carried over). The index is still the
+        // last word: a concurrent insert that wins the race surfaces here as 409 too, not as a 500.
+        if (existing != null) return UserLifecycle.EmailTakenRefusal<UserDto>();
 
-        return string.IsNullOrWhiteSpace(request.Password)
-            ? await CreateByInvitationAsync(request, ct)
-            : await CreateSelfServiceAsync(request, ct);
+        // BL-459 — the plan's user limit, BEFORE anything is written: at the limit nothing is created and no invitation
+        // leaves. users.max is Platform's live count of this tenant's Active + Invited users (F1): the question reserves
+        // nothing, so a create that fails afterwards has nothing to give back. Platform unreachable / usage unknown = the
+        // create proceeds (the client logged quota_unavailable) — owner decision.
+        var seat = await _quota.TryConsumeUserSeatAsync(_tenantContext.TenantId, $"user-create:{Guid.NewGuid():N}", ct);
+        if (seat.Outcome == UserQuotaOutcome.LimitExceeded)
+        {
+            _logger.LogInformation("User create refused at the plan's user limit. TenantId={TenantId} Max={Max} Current={Current}",
+                _tenantContext.TenantId, seat.Limit, seat.Current);
+            return UserLifecycle.QuotaExceededRefusal<UserDto>(seat.Limit, seat.Current);
+        }
+
+        try
+        {
+            return string.IsNullOrWhiteSpace(request.Password)
+                ? await CreateByInvitationAsync(request, ct)
+                : await CreateSelfServiceAsync(request, ct);
+        }
+        catch (DuplicateUserEmailException)
+        {
+            return UserLifecycle.EmailTakenRefusal<UserDto>();
+        }
     }
 
     // The kind the new account gets: the caller's explicit, permitted choice, else Unknown. Parsed from the NAME the
@@ -99,9 +130,13 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
 
         _logger.LogInformation("User created (self-service). Id={Id} AccountKind={AccountKind}", created.Id, created.AccountKind);
 
+        // BL-456 — the account exists: audit it (authAuditLogs + Platform central log). Never fails the create.
+        await _audit.RecordAsync(UserAuditEvents.Created, _tenantContext.TenantId, created.Id,
+            new Dictionary<string, object?> { ["accountKind"] = created.AccountKind.ToString() }, ct);
+
         return Response<UserDto>.Success(
             new UserDto(created.Id, created.Email, created.FirstName, created.LastName, created.IsActive, new List<string>(), created.TenantId,
-                AccountKind: created.AccountKind.ToString()),
+                AccountKind: created.AccountKind.ToString(), Status: UserLifecycle.StatusOf(created)),
             201);
     }
 
@@ -121,7 +156,22 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
 
         var created = await _userRepository.CreateAsync(user, ct);
 
-        var setupDelivery = await SendInvitationAsync(created.Email, setupToken, ct);
+        (string? SetupUrl, bool EmailSent) setupDelivery = (null, false);
+        try
+        {
+            setupDelivery = await SendInvitationAsync(created.Email, setupToken, ct);
+        }
+        finally
+        {
+            // BL-456 — the user exists from CreateAsync on, so the audit row must exist even when the e-mail throws
+            // (production re-throws an SMTP failure). Ids and facts only; the invitee's address stays out (no PII).
+            await _audit.RecordAsync(UserAuditEvents.Invited, _tenantContext.TenantId, created.Id,
+                new Dictionary<string, object?>
+                {
+                    ["accountKind"] = created.AccountKind.ToString(),
+                    ["emailSent"] = setupDelivery.EmailSent
+                }, ct);
+        }
 
         _logger.LogInformation(
             "User invited (set-password). Id={Id} EmailSent={EmailSent}", created.Id, setupDelivery.EmailSent);
@@ -134,7 +184,7 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
         return Response<UserDto>.Success(
             new UserDto(created.Id, created.Email, created.FirstName, created.LastName, created.IsActive, new List<string>(), created.TenantId,
                 created.LastLoginAt, created.FailedLoginAttempts, created.MustChangePassword, "TenantPolicy", setupDelivery.SetupUrl,
-                created.AccountKind.ToString()),
+                created.AccountKind.ToString(), UserLifecycle.StatusOf(created)),
             201);
     }
 

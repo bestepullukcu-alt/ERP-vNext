@@ -1,3 +1,4 @@
+using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.SavedViews.Commands;
 using Diten.Platform.Application.Features.SavedViews.Queries;
 using Diten.Platform.Application.Features.SavedViews.Requests;
@@ -21,6 +22,7 @@ public sealed class SavedViewsController : ControllerBase
     }
 
     [HttpGet]
+    [LoginOnly("The caller's own saved table views (personalization); the owner is resolved server-side.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetViews([FromQuery] string moduleKey, [FromQuery] string pageKey)
@@ -30,6 +32,7 @@ public sealed class SavedViewsController : ControllerBase
     }
 
     [HttpPost]
+    [LoginOnly("Creates a saved view owned by the caller (personalization); the owner is resolved server-side.")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -47,6 +50,7 @@ public sealed class SavedViewsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [LoginOnly("Updates a saved view; the handler resolves the owner server-side and answers another user's view as missing.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -71,6 +75,7 @@ public sealed class SavedViewsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [LoginOnly("Deletes a saved view; the handler resolves the owner server-side and answers another user's view as missing.")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

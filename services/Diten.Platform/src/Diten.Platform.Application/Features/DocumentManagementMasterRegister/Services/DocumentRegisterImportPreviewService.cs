@@ -102,39 +102,13 @@ public sealed class DocumentRegisterImportPreviewService
                 continue;
             }
 
-            if (WouldChange(existing, src, attempt.Status!.Value)) { updated++; } else { unchanged++; }
+            if (DocumentRegisterIngestMapping.WouldChange(existing, src, attempt.Status!.Value)) { updated++; } else { unchanged++; }
         }
 
         return new DocumentRegisterImportPreview(
             fileName, hash, parsed.Entries.Count, created, updated, unchanged, blocked,
             parsed.MissingColumns, errors, lifecycleDistribution, citableYes, citableNo,
             alreadyImported is not null, alreadyImported?.AppliedAt, alreadyImported?.Actor);
-    }
-
-    /// <summary>
-    /// True when committing <paramref name="src"/> would change any field <c>DocumentRegisterIngestMapping.Apply</c>
-    /// actually sets. Scoped to exactly those fields (not the whole entity) — comparing unrelated data (ownership,
-    /// dates, …) that Apply never touches would report "changed" for rows the import cannot possibly affect.
-    /// </summary>
-    private static bool WouldChange(
-        DocumentMasterRegisterEntry existing, DocumentReferenceEntry src, ControlledDocumentLifecycleStatus mappedStatus)
-    {
-        var mappedCode = string.IsNullOrWhiteSpace(src.DocumentCode) ? null : src.DocumentCode.Trim();
-        var mappedCitable = src.LinkableInErp;
-        var mappedCompatibility = !src.LinkableInErp
-            ? DocumentLinkScopeCompatibilityStatus.Invalid
-            : DocumentLinkScopeCompatibilityStatus.Unvalidated;
-        var mappedReason = !src.LinkableInErp
-            ? src.LinkBlockedReason
-            : (DocumentRegisterIngestMapping.IsExecutedRecord(src.Status) ? DocumentRegisterIngestMapping.ExecutedRecordStatusReason : null);
-
-        return existing.DocumentCode != mappedCode
-            || existing.DocumentTitle != src.Title
-            || existing.CurrentVersionLabel != src.DocumentVersion
-            || existing.LifecycleStatus != mappedStatus
-            || existing.CitableByQualityDecision != mappedCitable
-            || existing.LinkScopeCompatibilityStatus != mappedCompatibility
-            || existing.StatusReason != mappedReason;
     }
 
     private readonly struct ControlledDocumentLifecycleMapAttempt

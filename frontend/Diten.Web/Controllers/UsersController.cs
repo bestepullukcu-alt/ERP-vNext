@@ -20,6 +20,8 @@ namespace Diten.Web.Controllers;
 // server-side from the auth cookie, the upstream status passes through verbatim, and the browser never
 // addresses a service port. Create additionally forwards an optional AccountKind; AuthService refuses it
 // with 403 unless the caller holds auth.users.account-kind.manage (explicit-grant-only).
+// WP-AUTH-USER-KIND-UPDATE-01 — Edit forwards it too (the edit form's select, saved by "Update"); AuthService
+// refuses a kind CHANGE without the same key, and takes it through the same writer + audit row as account-kind.
 [Authorize]
 [Route("Users")]
 public sealed class UsersController : Controller
@@ -85,7 +87,7 @@ public sealed class UsersController : Controller
             // it is null in Production, so nothing leaks to the UI there.
             return response.IsSuccessStatusCode
                 ? Json(new { success = true, setupUrl = await ExtractSetupUrlAsync(response) })
-                : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+                : await GatewayFailureAsync(response);
         }
         catch (Exception ex)
         {
@@ -108,17 +110,38 @@ public sealed class UsersController : Controller
 
         try
         {
-            var payload = new UserUpdatePayload { FirstName = model.FirstName, LastName = model.LastName, IsActive = model.IsActive };
+            var payload = new UserUpdatePayload
+            {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                IsActive = model.IsActive,
+                AccountKind = ReadEditAccountKind()
+            };
             var response = await _httpClient.PutAsJsonAsync($"{_gatewayUrl}/api/users/{id}", payload, _jsonOptions);
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+                : await GatewayFailureAsync(response);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Users edit failed for {UserId}.", id);
             return Json(new { success = false, errors = BuildExceptionErrors(ex) });
         }
+    }
+
+    /*
+     * WP-AUTH-USER-KIND-UPDATE-01 — what the edit form says about the kind, as the enum NAME or null.
+     * ABSENT field (Razor drew no select: the reader lacks auth.users.account-kind.manage) ⇒ null ⇒ AuthService
+     * leaves the kind alone. PRESENT and empty ⇒ "Unknown": on edit the select's empty option is a real choice
+     * (back to unconfirmed), not "unset" as on create — dropping it would silently keep a Human/Service kind.
+     */
+    private string? ReadEditAccountKind()
+    {
+        if (!Request.HasFormContentType || !Request.Form.ContainsKey("AccountKind"))
+            return null;
+
+        var value = Request.Form["AccountKind"].ToString().Trim();
+        return string.IsNullOrWhiteSpace(value) ? "Unknown" : value;
     }
 
     [HttpGet("get/{id:guid}")]
@@ -152,7 +175,11 @@ public sealed class UsersController : Controller
                     lastLoginAt = model.LastLoginAt,
                     failedLoginAttempts = model.FailedLoginAttempts,
                     mustChangePassword = model.MustChangePassword,
-                    mfaStatus = model.MfaStatus
+                    mfaStatus = model.MfaStatus,
+                    accountKind = model.AccountKind,
+                    // Finding 22: the DERIVED status (Invited · Inactive · Active) must reach the edit form, or it
+                    // falls back to IsActive and draws the activation switch for an invited account.
+                    status = model.Status
                 }
             });
         }
@@ -294,7 +321,7 @@ public sealed class UsersController : Controller
             // return no body, so ExtractSetupUrlAsync yields null there. Always null in prod.
             return response.IsSuccessStatusCode
                 ? Json(new { success = true, setupUrl = await ExtractSetupUrlAsync(response) })
-                : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+                : await GatewayFailureAsync(response);
         }
         catch (Exception ex)
         {
@@ -330,6 +357,56 @@ public sealed class UsersController : Controller
     {
         var message = ex.GetBaseException().Message;
         return [string.IsNullOrWhiteSpace(message) ? _sharedLocalizer["GatewayError"].Value : message];
+    }
+
+    /*
+     * WP-AUTH-INVITED-LIFECYCLE-01 — a failed hop as the screen reads it: the gateway's text (English fallback) PLUS
+     * the first stable code from the Response envelope's errorCodes, so index.js can show the sentence in the
+     * reader's language (USER_EMAIL_TAKEN, USER_INVITATION_PENDING, …). Text-only failures carry errorCode = null.
+     */
+    // BL-459 — errorParams: the code's own string params (e.g. USER_QUOTA_EXCEEDED { max, current }); null when none.
+    private async Task<IActionResult> GatewayFailureAsync(HttpResponseMessage response)
+        => Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response), errorCode = await ExtractGatewayErrorCodeAsync(response), errorParams = await ExtractGatewayErrorParamsAsync(response) });
+
+    private static async Task<string?> ExtractGatewayErrorCodeAsync(HttpResponseMessage response)
+        => (await ExtractGatewayErrorCodeWithParamsAsync(response)).Code;
+
+    private static async Task<Dictionary<string, string>?> ExtractGatewayErrorParamsAsync(HttpResponseMessage response)
+        => (await ExtractGatewayErrorCodeWithParamsAsync(response)).Params;
+
+    private static async Task<(string? Code, Dictionary<string, string>? Params)> ExtractGatewayErrorCodeWithParamsAsync(HttpResponseMessage response)
+    {
+        try
+        {
+            var raw = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(raw)) return (null, null);
+            using var doc = JsonDocument.Parse(raw);
+            if (doc.RootElement.ValueKind == JsonValueKind.Object
+                && doc.RootElement.TryGetProperty("errorCodes", out var codes)
+                && codes.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var entry in codes.EnumerateArray())
+                {
+                    if (entry.ValueKind == JsonValueKind.Object
+                        && entry.TryGetProperty("code", out var code)
+                        && code.ValueKind == JsonValueKind.String
+                        && !string.IsNullOrWhiteSpace(code.GetString()))
+                    {
+                        Dictionary<string, string>? parameters = null;
+                        if (entry.TryGetProperty("params", out var ps) && ps.ValueKind == JsonValueKind.Object)
+                        {
+                            parameters = ps.EnumerateObject()
+                                .Where(p => p.Value.ValueKind == JsonValueKind.String)
+                                .ToDictionary(p => p.Name, p => p.Value.GetString()!, StringComparer.Ordinal);
+                        }
+
+                        return (code.GetString(), parameters is { Count: > 0 } ? parameters : null);
+                    }
+                }
+            }
+        }
+        catch { }
+        return (null, null);
     }
 
     private async Task<List<string>> ExtractGatewayErrorsAsync(HttpResponseMessage response)

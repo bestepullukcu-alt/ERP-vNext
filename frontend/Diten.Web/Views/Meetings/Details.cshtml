@@ -32,6 +32,11 @@
         </div>
         <div class="d-flex align-items-center gap-2" id="detailsActionBar">
             <a href="/Meetings" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
+            <a href="/Meetings/@meetingId/Minutes" class="btn btn-label-secondary d-none" id="btnOpenMinutes"><i class="bx bx-file me-1"></i>@Localizer["Minutes"]</a>
+            @* MOD-0357 S7 — openable on a Cancelled or Completed meeting too: continuing does not undo a
+               cancellation, and Completed is the common case a follow-up gets scheduled from. Only a meeting that
+               ALREADY has a follow-up hides this (see the FollowedByMeetingId toggle in form.js). *@
+            <button type="button" class="btn btn-label-secondary d-none" id="btnScheduleFollowUp"><i class="bx bx-calendar-plus me-1"></i>@Localizer["ScheduleFollowUp"]</button>
             <button type="button" class="btn btn-label-secondary d-none" id="btnReassignOrganizer">@Localizer["ReassignOrganizer"]</button>
             <button type="button" class="btn btn-label-danger d-none" id="btnCancelMeeting">@Localizer["CancelMeeting"]</button>
             <a href="#" class="btn btn-primary d-none" id="btnEditMeeting">@SharedLocalizer["Edit"]</a>
@@ -59,6 +64,17 @@
                             <div class="backbone-preview-label">@Localizer["CancellationReason"]</div>
                             <div class="backbone-preview-value mt-1" id="dCancellationReason">-</div>
                         </div>
+                        @* MOD-0357 S7 — cross-links, both directions. Never both visible at once for a single
+                           meeting in practice (a follow-up's own source is a different meeting than one it was
+                           itself followed by), but the markup does not assume that. *@
+                        <div class="col-12 col-md-6 d-none" id="dFollowUpOfRow">
+                            <div class="backbone-preview-label">@Localizer["PreviousMeetingLabel"]</div>
+                            <div class="backbone-preview-value mt-1"><a href="#" id="dFollowUpOfLink">-</a></div>
+                        </div>
+                        <div class="col-12 col-md-6 d-none" id="dFollowedByRow">
+                            <div class="backbone-preview-label">@Localizer["FollowUpMeetingLabel"]</div>
+                            <div class="backbone-preview-value mt-1"><a href="#" id="dFollowedByLink">-</a></div>
+                        </div>
                     </div>
                 </section>
 
@@ -75,7 +91,13 @@
                 </section>
 
                 <section class="card p-4">
-                    <h6 class="card-section-title mb-4"><i class="bx bx-task"></i>@Localizer["LinkedTasks"]</h6>
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="card-section-title mb-0"><i class="bx bx-task"></i>@Localizer["LinkedTasks"]</h6>
+                        <div class="d-flex gap-2 meeting-task-add d-none" id="taskAddRow">
+                            <button type="button" class="btn btn-label-primary btn-sm text-nowrap" id="btnCreateTaskFromMeeting">@Localizer["CreateTaskFromMeeting"]</button>
+                            <button type="button" class="btn btn-label-secondary btn-sm text-nowrap" id="btnLinkExistingTask">@Localizer["LinkExistingTask"]</button>
+                        </div>
+                    </div>
                     <div class="wcn-related-list" id="linkedTasksList"></div>
                     <p class="text-muted small mb-0 d-none" id="noLinkedTasksHint">@Localizer["NoLinkedTasks"]</p>
                 </section>
@@ -107,11 +129,19 @@
     <script src="~/assets/js/Meetings/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
     <script src="~/assets/js/Meetings/api.js" asp-append-version="true"></script>
+    @* MOD-0357 S4 — the bridge's assignee/link-candidate pickers reach MOD-0024 through its own client, the
+       same one WorkCenterNext uses; Meetings and Tasks share no assembly, so this is the same-origin proxy,
+       not a service-to-service call. *@
+    <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
     @* WP-WC-SHARED-UI-01, E2 — the add-attendee picker and dropdown-search adapter now delegate here. *@
     <script src="~/assets/js/shared/diten-person-picker.js" asp-append-version="true"></script>
     @* WP-WC-SHARED-UI-01, E3 — the linked-tasks row markup now delegates here. *@
     <script src="~/assets/js/shared/diten-related-records.js" asp-append-version="true"></script>
     @* WP-WC-SHARED-UI-01, M2 — the reassign-organizer dialog's select2 is bound through here. *@
     <script src="~/assets/js/shared/diten-dialog.js" asp-append-version="true"></script>
+    @* MOD-0357 S6 — the "create task from meeting" dialog body, shared with the Minutes editor. *@
+    <script src="~/assets/js/Meetings/task-from-meeting-dialog.js" asp-append-version="true"></script>
+    @* MOD-0357 S7 — the "schedule follow-up" dialog body. *@
+    <script src="~/assets/js/Meetings/follow-up-dialog.js" asp-append-version="true"></script>
     <script src="~/assets/js/Meetings/form.js" asp-append-version="true"></script>
 }

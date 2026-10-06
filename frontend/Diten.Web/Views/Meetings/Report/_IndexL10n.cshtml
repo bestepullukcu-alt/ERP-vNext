@@ -1,0 +1,67 @@
+@using Diten.Web.Views.Meetings.Report
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MeetingReportIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0357 S12 (pack §23) — the l10n payload the report page loads. Contract marker: id="meeting-report-l10n". *@
+<script id="meeting-report-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Title = Localizer["Title"].Value,
+        PageDescription = Localizer["PageDescription"].Value,
+        From = Localizer["From"].Value,
+        To = Localizer["To"].Value,
+        FilterMeetingType = Localizer["FilterMeetingType"].Value,
+        FilterOrganizer = Localizer["FilterOrganizer"].Value,
+        ExportButton = Localizer["ExportButton"].Value,
+        ExportCsv = Localizer["ExportCsv"].Value,
+        ExportJson = Localizer["ExportJson"].Value,
+        ExportMeetingsHeader = Localizer["ExportMeetingsHeader"].Value,
+        ExportDecisionsHeader = Localizer["ExportDecisionsHeader"].Value,
+        ExportActionsHeader = Localizer["ExportActionsHeader"].Value,
+        TileMeetingCount = Localizer["TileMeetingCount"].Value,
+        TileAttendanceRate = Localizer["TileAttendanceRate"].Value,
+        TileDecisionCount = Localizer["TileDecisionCount"].Value,
+        TileOpenActions = Localizer["TileOpenActions"].Value,
+        TileOverdueActions = Localizer["TileOverdueActions"].Value,
+        MeetingListTitle = Localizer["MeetingListTitle"].Value,
+        DecisionsTitle = Localizer["DecisionsTitle"].Value,
+        ActionsTitle = Localizer["ActionsTitle"].Value,
+        ColMeetingTitle = Localizer["ColMeetingTitle"].Value,
+        ColMeetingType = Localizer["ColMeetingType"].Value,
+        ColStartAt = Localizer["ColStartAt"].Value,
+        ColOrganizer = Localizer["ColOrganizer"].Value,
+        ColAttendance = Localizer["ColAttendance"].Value,
+        ColDecisionMeeting = Localizer["ColDecisionMeeting"].Value,
+        ColDecisionCode = Localizer["ColDecisionCode"].Value,
+        ColDecisionText = Localizer["ColDecisionText"].Value,
+        ColDecisionBy = Localizer["ColDecisionBy"].Value,
+        ColActionTitle = Localizer["ColActionTitle"].Value,
+        ColActionLifecycle = Localizer["ColActionLifecycle"].Value,
+        ColActionDueAt = Localizer["ColActionDueAt"].Value,
+        ColActionOrigin = Localizer["ColActionOrigin"].Value,
+        ColActionCurrent = Localizer["ColActionCurrent"].Value,
+        LifecycleOpen = Localizer["LifecycleOpen"].Value,
+        LifecyclePlanned = Localizer["LifecyclePlanned"].Value,
+        LifecycleInProgress = Localizer["LifecycleInProgress"].Value,
+        LifecycleWaiting = Localizer["LifecycleWaiting"].Value,
+        LifecyclePendingReview = Localizer["LifecyclePendingReview"].Value,
+        LifecycleDone = Localizer["LifecycleDone"].Value,
+        LifecycleCancelled = Localizer["LifecycleCancelled"].Value,
+        BadgeOverdue = Localizer["BadgeOverdue"].Value,
+        EmptyMeetings = Localizer["EmptyMeetings"].Value,
+        EmptyDecisions = Localizer["EmptyDecisions"].Value,
+        EmptyActions = Localizer["EmptyActions"].Value,
+        Loading = Localizer["Loading"].Value,
+        ExportAuditNotRecorded = Localizer["ExportAuditNotRecorded"].Value,
+        ExportTooLarge = Localizer["ExportTooLarge"].Value,
+        ExportSnapshotNote = Localizer["ExportSnapshotNote"].Value,
+        ScopeTenant = Localizer["ScopeTenant"].Value,
+        ScopeScoped = Localizer["ScopeScoped"].Value,
+        ErrorNoAccess = Localizer["ErrorNoAccess"].Value,
+
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        Apply = SharedLocalizer["Apply"].Value
+    })
+</script>

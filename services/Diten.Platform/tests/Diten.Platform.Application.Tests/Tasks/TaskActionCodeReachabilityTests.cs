@@ -20,9 +20,14 @@ public sealed class TaskActionCodeReachabilityTests
 {
     /// <summary>
     /// Codes the provider emits that are NOT transitions and so are never posted to the transition route.
-    /// Empty today; an entry here is a claim that the client reaches the code some other way.
+    /// An entry here is a claim that the client reaches the code some other way.
     /// </summary>
-    private static readonly HashSet<string> NotTransitionRoutes = new(StringComparer.Ordinal);
+    private static readonly HashSet<string> NotTransitionRoutes = new(StringComparer.Ordinal)
+    {
+        // MOD-0357 S4 — moves nothing on TaskItem.Lifecycle; it posts to Platform's OWN
+        // "api/v1/meetings/tasks/{taskId}/schedule-review-meeting" endpoint, never to the Tasks transition proxy.
+        "scheduleReviewMeeting",
+    };
 
     [Fact]
     public void Every_action_code_the_provider_projects_is_forwarded_by_the_web_proxy()

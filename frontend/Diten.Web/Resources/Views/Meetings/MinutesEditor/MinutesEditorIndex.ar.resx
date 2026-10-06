@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MinutesTitle" xml:space="preserve"><value>المحضر</value></data>
+  <data name="MeetingTitleLabel" xml:space="preserve"><value>الاجتماع</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusPublishedPrefix" xml:space="preserve"><value>تم النشر - الإصدار </value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>حفظ المسودة</value></data>
+  <data name="Publish" xml:space="preserve"><value>نشر</value></data>
+  <data name="PublishCorrection" xml:space="preserve"><value>نشر التصحيح</value></data>
+  <data name="AttendanceSection" xml:space="preserve"><value>الحضور</value></data>
+  <data name="NoAttendeesHint" xml:space="preserve"><value>لا يوجد حاضرون في هذا الاجتماع.</value></data>
+  <data name="AttendancePresent" xml:space="preserve"><value>حاضر</value></data>
+  <data name="AttendanceAbsent" xml:space="preserve"><value>غائب</value></data>
+  <data name="AttendanceExcused" xml:space="preserve"><value>معذور</value></data>
+  <data name="DecisionsSection" xml:space="preserve"><value>القرارات</value></data>
+  <data name="AddDecision" xml:space="preserve"><value>إضافة قرار</value></data>
+  <data name="RemoveDecision" xml:space="preserve"><value>إزالة</value></data>
+  <data name="NoDecisionsHint" xml:space="preserve"><value>لا توجد قرارات مسجلة حتى الآن.</value></data>
+  <data name="DecisionTextPlaceholder" xml:space="preserve"><value>صف القرار...</value></data>
+  <data name="DecidedByLabel" xml:space="preserve"><value>اتخذه</value></data>
+  <data name="DecidedByPlaceholder" xml:space="preserve"><value>غير محدد</value></data>
+  <data name="CreateTaskFromDecision" xml:space="preserve"><value>إنشاء مهمة</value></data>
+  <data name="AddedLaterBadge" xml:space="preserve"><value>أُضيفت بعد النشر</value></data>
+  <data name="HistorySection" xml:space="preserve"><value>سجل الإصدارات</value></data>
+  <data name="HistoryDraftLabel" xml:space="preserve"><value>مسودة</value></data>
+  <data name="HistoryPublishedPrefix" xml:space="preserve"><value>تم النشر - الإصدار </value></data>
+  <data name="HistoryCorrectionOfPrefix" xml:space="preserve"><value>تصحيح للإصدار </value></data>
+  <data name="PublishConfirmTitle" xml:space="preserve"><value>هل تريد نشر المحضر؟</value></data>
+  <data name="PublishConfirmText" xml:space="preserve"><value>بعد النشر، يتم قفل هذا الإصدار. التصحيحات تُنشئ إصدارًا جديدًا.</value></data>
+  <data name="CorrectionReasonLabel" xml:space="preserve"><value>سبب التصحيح</value></data>
+  <data name="CorrectionReasonPlaceholder" xml:space="preserve"><value>لماذا هذا التصحيح ضروري؟</value></data>
+  <data name="CorrectionReasonRequired" xml:space="preserve"><value>سبب التصحيح مطلوب.</value></data>
+  <data name="ToastDraftSaved" xml:space="preserve"><value>تم حفظ المسودة</value></data>
+  <data name="ToastPublished" xml:space="preserve"><value>تم نشر المحضر</value></data>
+  <data name="ToastCorrected" xml:space="preserve"><value>تم نشر التصحيح</value></data>
+</root>

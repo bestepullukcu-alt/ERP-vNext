@@ -29,10 +29,34 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>الأعمدة</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>لا يتم التحقق هنا من انتماء SKU إلى المنتج المختار — يرجى التأكد بنفسك.</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>المحتوى</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>لا يمكن ربط سوى محتوى منشور وغير مؤرشف، مثبّت على تلك النسخة.</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>لا يمكن ربط سوى knowledge-path أو content-engagement-journey منشور؛ تُثبَّت المراجع على النسخة (pinned).</value></data>
   <data name="ContentRef" xml:space="preserve"><value>المحتوى</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>نوع المحتوى</value></data>
-  <data name="ContentSection" xml:space="preserve"><value>أي محتوى</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>المحتوى — أي حكاية</value></data>
+  <data name="ContentPinned" xml:space="preserve"><value>مثبَّت</value></data>
+  <data name="ContentKindKnowledgePath" xml:space="preserve"><value>مسار معرفي</value></data>
+  <data name="ContentKindJourney" xml:space="preserve"><value>رحلة</value></data>
+  <data name="ContentPickerClose" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="ContentPickerEmpty" xml:space="preserve"><value>لا مزيد من المحتوى للإضافة.</value></data>
+  <data name="ContentStatusPublished" xml:space="preserve"><value>منشور · مثبَّت</value></data>
+  <data name="ContentStatusDraft" xml:space="preserve"><value>مسودة · غير قابل للتحديد</value></data>
+  <data name="ContentStatusArchived" xml:space="preserve"><value>مؤرشف · غير قابل للتحديد</value></data>
+  <data name="ContentGridEmpty" xml:space="preserve"><value>لا يوجد محتوى متاح للربط.</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>سجل الإصدارات</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>الحالي</value></data>
+  <data name="VerStatusActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="VerStatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="VerStatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="UseInCampaign" xml:space="preserve"><value>استخدام في حملة</value></data>
+  <data name="UseInCampaignSoon" xml:space="preserve"><value>سيتوفر مع تكامل الحملات.</value></data>
+  <data name="DetailReadOnlyNote" xml:space="preserve"><value>للقراءة فقط — أنشئ إصدارًا جديدًا للتعديل.</value></data>
+  <data name="NoSkuSpecified" xml:space="preserve"><value>لم يُحدَّد SKU</value></data>
+  <data name="DetailScopeLegalEntity" xml:space="preserve"><value>الكيان القانوني</value></data>
+  <data name="DetailScopeBusinessUnit" xml:space="preserve"><value>وحدة الأعمال / الإقليم</value></data>
+  <data name="LastUpdatedTpl" xml:space="preserve"><value>آخر تحديث {date}</value></data>
+  <data name="VersionFrozenNote" xml:space="preserve"><value>الروابط غير قابلة للتغيير؛ للعرض فقط.</value></data>
+  <data name="DetailSummaryTpl" xml:space="preserve"><value>الوصول إلى {segments} شريحة ضمن {scope}، مع {products} منتجات (Σ{weight}%) و{contents} محتوى مثبَّت.</value></data>
+  <data name="ContentNoDeleteNote" xml:space="preserve"><value>لا حذف — تُؤرشَف المخططات فقط؛ الإصدارات النشطة غير قابلة للتغيير.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>إنشاء قالب استراتيجية</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>الإيقاع المُصرَّح يسجّل نية المؤلف فقط. غير مُلزِم ولا يقرأه محرّك تحديد التكرار.</value></data>
   <data name="Description" xml:space="preserve"><value>الوصف</value></data>
@@ -48,7 +72,7 @@
   <data name="FrequencyIntentHelp" xml:space="preserve"><value>أشر إلى سياسة نشطة قائمة، أو صرّح بإيقاع غير مُلزِم، أو اختر «لا شيء». لا تُكتب أي سياسة من هنا.</value></data>
   <data name="FrequencyIntentMode" xml:space="preserve"><value>نية التكرار</value></data>
   <data name="FrequencyPolicy" xml:space="preserve"><value>سياسة تكرار الزيارة</value></data>
-  <data name="FrequencySection" xml:space="preserve"><value>كم مرة — نية التكرار</value></data>
+  <data name="FrequencySection" xml:space="preserve"><value>نية التكرار — كم مرة</value></data>
   <data name="FrequencyType" xml:space="preserve"><value>التكرار</value></data>
   <data name="Frozen" xml:space="preserve"><value>مجمّد</value></data>
   <data name="FrozenBindingsHelp" xml:space="preserve"><value>هذا المخطط فعّال، لذا رُوابطه مجمّدة. أنشئ إصدارًا جديدًا لتغييرها؛ يبقى الاسم والملاحظات قابلين للتعديل.</value></data>
@@ -66,18 +90,30 @@
   <data name="NewVersion" xml:space="preserve"><value>إصدار جديد</value></data>
   <data name="NewVersionConfirm" xml:space="preserve"><value>إنشاء نسخة مسودة جديدة من هذا المخطط؟ تبقى النسخة الحالية قابلة للقراءة.</value></data>
   <data name="No" xml:space="preserve"><value>لا</value></data>
-  <data name="NoContentBindings" xml:space="preserve"><value>لم يُربط محتوى. عندها لا يملك المخطط بُعدًا للمحتوى.</value></data>
+  <data name="NoContentBindings" xml:space="preserve"><value>لا يوجد محتوى بعد — اختر الحكاية التي سيرويها هذا المخطط.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>المخطط يربط هوية الشريحة، ولا يعرض أو يعدّ الأشخاص داخلها إطلاقًا.</value></data>
-  <data name="NoProductLines" xml:space="preserve"><value>لا توجد خطوط منتج. عندها لا يملك المخطط بُعدًا للمنتج.</value></data>
-  <data name="NoSegmentBindings" xml:space="preserve"><value>لم تُربط أي شريحة. المخطط بلا شريحة لا يجيب عن سؤال «من؟».</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>لا توجد خطوط منتج بعد — أضف المنتجات التي يحملها هذا المخطط.</value></data>
+  <data name="NoSegmentBindings" xml:space="preserve"><value>لا توجد شريحة بعد — اختر لمن ينطبق المخطط.</value></data>
   <data name="Notes" xml:space="preserve"><value>ملاحظات</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>خطط قابلة لإعادة الاستخدام تربط شريحة ونية تكرار ومزيج منتج/SKU ومحتوى. القالب يربط ولا ينتج شيئًا.</value></data>
+  <data name="AllCompany" xml:space="preserve"><value>الشركة بأكملها</value></data>
+  <data name="AllCountries" xml:space="preserve"><value>جميع الدول</value></data>
+  <data name="NewPlay" xml:space="preserve"><value>خطة جديدة</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>قوالب تربط النطاق والشريحة ووزن المنتج والمحتوى. لا حذف — الأرشفة فقط.</value></data>
+  <data name="Play" xml:space="preserve"><value>خطة</value></data>
+  <data name="PlaysHeading" xml:space="preserve"><value>الخطط الاستراتيجية</value></data>
+  <data name="PlaysUnit" xml:space="preserve"><value>خطة</value></data>
+  <data name="Scope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="ScopeTypeBusinessUnit" xml:space="preserve"><value>وحدة الأعمال</value></data>
+  <data name="ScopeTypeCountry" xml:space="preserve"><value>الدولة</value></data>
+  <data name="ScopeTypeLegalEntity" xml:space="preserve"><value>الكيان القانوني</value></data>
+  <data name="ScopeTypeTenant" xml:space="preserve"><value>المستأجر</value></data>
+  <data name="SkuUnit" xml:space="preserve"><value>SKU</value></data>
   <data name="Passive" xml:space="preserve"><value>غير نشط</value></data>
   <data name="Percentage" xml:space="preserve"><value>النسبة %</value></data>
   <data name="PeriodType" xml:space="preserve"><value>الفترة</value></data>
   <data name="PickerUnavailable" xml:space="preserve"><value>لا تملك صلاحية استعراض هذه القائمة.</value></data>
   <data name="ProductLineCount" xml:space="preserve"><value>خطوط المنتج</value></data>
-  <data name="ProductSection" xml:space="preserve"><value>ماذا — مزيج المنتج و SKU</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>المنتج + SKU% — ماذا</value></data>
   <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
   <data name="RecordActivated" xml:space="preserve"><value>تم التفعيل.</value></data>
   <data name="RecordArchived" xml:space="preserve"><value>تمت الأرشفة.</value></data>
@@ -92,7 +128,7 @@
   <data name="Segment" xml:space="preserve"><value>الشريحة</value></data>
   <data name="SegmentBindingCount" xml:space="preserve"><value>الشرائح</value></data>
   <data name="SegmentBindingHelp" xml:space="preserve"><value>الشريحة المرتبطة مثبّتة على تلك النسخة بالذات. القائمة تعداد فقط — لا يُطبَّق اتحاد ولا استبعاد هنا.</value></data>
-  <data name="SegmentSection" xml:space="preserve"><value>من — الشرائح</value></data>
+  <data name="SegmentSection" xml:space="preserve"><value>الشرائح — من</value></data>
   <data name="SelectOption" xml:space="preserve"><value>اختر…</value></data>
   <data name="ShowAll" xml:space="preserve"><value>الكل</value></data>
   <data name="SkuAllocationCount" xml:space="preserve"><value>صفوف SKU</value></data>
@@ -104,16 +140,131 @@
   <data name="StrategyTemplatesTitle" xml:space="preserve"><value>قوالب الاستراتيجية</value></data>
   <data name="SubjectType" xml:space="preserve"><value>نوع الموضوع</value></data>
   <data name="SubjectTypeHelp" xml:space="preserve"><value>ما يستهدفه المخطط. غير قابل للتغيير بعد الإنشاء؛ وكل شريحة مرتبطة يجب أن تطابقه.</value></data>
+  <data name="SubjectTypeContact" xml:space="preserve"><value>شخص</value></data>
+  <data name="SubjectTypeAccount" xml:space="preserve"><value>مؤسسة</value></data>
   <data name="Superseded" xml:space="preserve"><value>تم استبداله</value></data>
   <data name="TemplateCode" xml:space="preserve"><value>الرمز</value></data>
   <data name="TemplateCodeHelp" xml:space="preserve"><value>مفتاح عمل ثابت. لا يُعاد تسميته — غيّر الاسم بدلاً من ذلك.</value></data>
   <data name="TemplateName" xml:space="preserve"><value>الاسم</value></data>
   <data name="TemplateStatus" xml:space="preserve"><value>الحالة</value></data>
   <data name="TemplateVersion" xml:space="preserve"><value>الإصدار</value></data>
-  <data name="TotalMustBe100" xml:space="preserve"><value>يجب أن يبلغ مجموع حصص SKU في كل خط موزَّع 100.00 بالضبط. لا يتم أي تقريب أو تسوية نيابة عنك.</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>يجب أن يبلغ مجموع حصص جميع خطوط المنتج 100.00 بالضبط. لا يتم أي تقريب أو تسوية نيابة عنك.</value></data>
   <data name="TotalPercentage" xml:space="preserve"><value>الإجمالي</value></data>
   <data name="Unknown" xml:space="preserve"><value>غير معروف</value></data>
   <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
   <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>النطاق — أين</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>مستوى النطاق</value></data>
+  <data name="ScopeType_tenant" xml:space="preserve"><value>المستأجر بالكامل</value></data>
+  <data name="ScopeType_country" xml:space="preserve"><value>الدولة</value></data>
+  <data name="ScopeType_legal-entity" xml:space="preserve"><value>الكيان القانوني</value></data>
+  <data name="ScopeType_business-unit" xml:space="preserve"><value>وحدة الأعمال</value></data>
+  <data name="ScopeTypeSub_tenant" xml:space="preserve"><value>الشركة بالكامل</value></data>
+  <data name="ScopeTypeSub_country" xml:space="preserve"><value>سوق واحد</value></data>
+  <data name="ScopeTypeSub_legal-entity" xml:space="preserve"><value>كيان قانوني</value></data>
+  <data name="ScopeTypeSub_business-unit" xml:space="preserve"><value>وحدة أعمال · إقليم</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>الدولة</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>الكيان القانوني</value></data>
+  <data name="BusinessUnit" xml:space="preserve"><value>وحدة الأعمال</value></data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>تصفية وحدات الأعمال حسب الدولة</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>يحدد النطاق الذي تنطبق عليه هذه الاستراتيجية: المستأجر بالكامل، أو دولة واحدة أو كيان قانوني أو وحدة أعمال.</value></data>
+  <data name="ScopeEditableHint" xml:space="preserve"><value>يمكن تغيير النطاق. يُحتفظ فقط بمرجع المستوى المختار.</value></data>
+  <data name="ReferenceSetUnpublished" xml:space="preserve"><value>مجموعة المراجع المحوكمة غير منشورة بعد. يجب أن ينشرها المشغل.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>لم تستجب التبعية، لذا تعذر تحميل هذه القائمة.</value></data>
+  <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>لا توجد خطة إقليمية مطابقة، لذا تُعرض القائمة المنشورة الكاملة.</value></data>
+  <data name="ResolvedScope" xml:space="preserve"><value>النطاق المحلول</value></data>
+  <data name="ResolvedScopeNone" xml:space="preserve"><value>لم يُحل بعد</value></data>
+  <data name="WhatTitle" xml:space="preserve"><value>ماذا ستفعل هذه الخطة؟</value></data>
+  <data name="RecipeWhere" xml:space="preserve"><value>أين</value></data>
+  <data name="RecipeWho" xml:space="preserve"><value>من</value></data>
+  <data name="RecipeHowOften" xml:space="preserve"><value>كم مرة</value></data>
+  <data name="RecipeWhat" xml:space="preserve"><value>ماذا</value></data>
+  <data name="RecipeStory" xml:space="preserve"><value>القصة</value></data>
+  <data name="RecipeNone" xml:space="preserve"><value>—</value></data>
+  <data name="StatSegments" xml:space="preserve"><value>شرائح</value></data>
+  <data name="StatProductLines" xml:space="preserve"><value>أسطر المنتجات</value></data>
+  <data name="StatWeightTotal" xml:space="preserve"><value>الوزن %</value></data>
+  <data name="StatContents" xml:space="preserve"><value>محتويات</value></data>
+  <data name="SectionsTitle" xml:space="preserve"><value>الأقسام</value></data>
+  <data name="ChkSecIdentity" xml:space="preserve"><value>الهوية</value></data>
+  <data name="ChkSecScope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="ChkSecSegments" xml:space="preserve"><value>الشرائح</value></data>
+  <data name="ChkSecFrequency" xml:space="preserve"><value>التكرار</value></data>
+  <data name="ChkSecProducts" xml:space="preserve"><value>المنتجات + SKU%</value></data>
+  <data name="ChkSecContent" xml:space="preserve"><value>المحتوى</value></data>
+  <data name="MdmValidation" xml:space="preserve"><value>التحقق من MDM</value></data>
+  <data name="LifecycleActionsTitle" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="LifecycleDraftTab" xml:space="preserve"><value>مسودة</value></data>
+  <data name="LifecycleActiveTab" xml:space="preserve"><value>نشط</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>حفظ المسودة</value></data>
+  <data name="SaveActive" xml:space="preserve"><value>حفظ (نشط)</value></data>
+  <data name="SaveAndActivate" xml:space="preserve"><value>حفظ وتفعيل</value></data>
+  <data name="SaveBlocked" xml:space="preserve"><value>حفظ (محظور)</value></data>
+  <data name="NewVersionDetailTpl" xml:space="preserve"><value>يُجمّد الخطة الحالية ويفتح نسخة جديدة</value></data>
+  <data name="SidePanelFootNote" xml:space="preserve"><value>لا ينتج StrategyTemplate شيئًا بمفرده — بل يربط شريحة وسياسة تكرار زيارة ومنتجات ومحتوى معتمد في قالب واحد. يتم التنفيذ عبر CyclePeriod وCampaign.</value></data>
+  <data name="FreqInfoStrong" xml:space="preserve"><value>تُدار التكرار في سياسات تكرار الزيارة</value></data>
+  <data name="FreqInfoBody" xml:space="preserve"><value> — هذا الحقل مرجعي فقط. يُحفظ تكرار الزيارة الفعلي لكل هدف/شريحة في وحدة منفصلة.</value></data>
+  <data name="FreqInfoLink" xml:space="preserve"><value>فتح السياسات ↗</value></data>
+  <data name="FreqOpenPolicySingle" xml:space="preserve"><value>فتح السياسة</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>«{name}» يستهدف {who} عبر {what} — {howoften}.</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>هذه الخطة</value></data>
+  <data name="FrequencyNone" xml:space="preserve"><value>غير محدد</value></data>
+  <data name="FrequencyPolicyRef" xml:space="preserve"><value>مرتبط بسياسة</value></data>
+  <data name="FrequencyDeclared" xml:space="preserve"><value>نية معلنة</value></data>
+  <data name="VisitsPerPeriodTpl" xml:space="preserve"><value>{count} زيارة / {period}</value></data>
+  <data name="ReadyCountTpl" xml:space="preserve"><value>{done}/{total} جاهز</value></data>
+  <data name="ChkIdentityEmptyDesc" xml:space="preserve"><value>الرمز والاسم مطلوبان.</value></data>
+  <data name="ChkScopeTenantDesc" xml:space="preserve"><value>المستأجر بالكامل — لم يُضيَّق النطاق.</value></data>
+  <data name="ChkSegmentsEmptyDesc" xml:space="preserve"><value>اربط شريحة واحدة على الأقل.</value></data>
+  <data name="ChkSegmentsCountDesc" xml:space="preserve"><value>تم ربط {n} شريحة.</value></data>
+  <data name="ChkFrequencyNoneDesc" xml:space="preserve"><value>المؤشر فارغ — هذا اختياري.</value></data>
+  <data name="ChkFrequencyPolicyDesc" xml:space="preserve"><value>مرتبط بسياسة تكرار زيارة.</value></data>
+  <data name="ChkFrequencyDeclaredDesc" xml:space="preserve"><value>نية معلنة (غير مُلزِمة).</value></data>
+  <data name="ChkFrequencyIncompleteDesc" xml:space="preserve"><value>نية التكرار غير مكتملة.</value></data>
+  <data name="ChkProductsEmptyDesc" xml:space="preserve"><value>أضف سطر منتج واحدًا على الأقل.</value></data>
+  <data name="ChkProductsWeightOffDesc" xml:space="preserve"><value>توزيع SKU ليس 100%.</value></data>
+  <data name="ChkProductsOkDesc" xml:space="preserve"><value>{n} سطر منتج.</value></data>
+  <data name="ChkContentEmptyDesc" xml:space="preserve"><value>المحتوى اختياري.</value></data>
+  <data name="ChkContentCountDesc" xml:space="preserve"><value>تم ربط {n} محتوى.</value></data>
+  <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>يتحقق التشغيل بمجرد اختيار منتج.</value></data>
+  <data name="ChkMdmOkDesc" xml:space="preserve"><value>جميع الأسطر تحتوي على منتج.</value></data>
+  <data name="ChkMdmMissingDesc" xml:space="preserve"><value>بعض الأسطر بلا منتج.</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>من الذي تستهدفه هذه الخطة، وبأي قصة، وبأي وزن للمنتجات؟</value></data>
+  <data name="SegTypeContact" xml:space="preserve"><value>شخص / طبيب</value></data>
+  <data name="SegTypeAccount" xml:space="preserve"><value>مؤسسة / حساب</value></data>
+  <data name="BindingRole_primary" xml:space="preserve"><value>أساسي</value></data>
+  <data name="BindingRole_secondary" xml:space="preserve"><value>ثانوي</value></data>
+  <data name="BindingRole_exclusion-note" xml:space="preserve"><value>ملاحظة استثناء</value></data>
+  <data name="SegmentSummaryTpl" xml:space="preserve"><value>{n} شريحة · نوع {type}</value></data>
+  <data name="SegmentPickerClose" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="SegmentPickerEmpty" xml:space="preserve"><value>لا مزيد من الشرائح لإضافتها.</value></data>
+  <!-- WP-ST-EDIT-M — تسميات مربع اختيار وضع نية التكرار (عنوان + عنوان فرعي) + تسميات FrequencyType/PeriodType الودّية. -->
+  <data name="FrequencyMode_policy-reference" xml:space="preserve"><value>مؤشر إلى سياسة</value></data>
+  <data name="FrequencyMode_declared-intent" xml:space="preserve"><value>نية معلنة</value></data>
+  <data name="FrequencyMode_none" xml:space="preserve"><value>لا شيء</value></data>
+  <data name="FrequencyModeSub_policy-reference" xml:space="preserve"><value>يقرأه المحرك</value></data>
+  <data name="FrequencyModeSub_declared-intent" xml:space="preserve"><value>توثيق فقط</value></data>
+  <data name="FrequencyModeSub_none" xml:space="preserve"><value>لا يوجد مرجع</value></data>
+  <data name="FrequencyType_weekly" xml:space="preserve"><value>أسبوعي</value></data>
+  <data name="FrequencyType_biweekly" xml:space="preserve"><value>كل أسبوعين</value></data>
+  <data name="FrequencyType_monthly" xml:space="preserve"><value>شهري</value></data>
+  <data name="FrequencyType_cycle-based" xml:space="preserve"><value>حسب الدورة</value></data>
+  <data name="FrequencyType_custom" xml:space="preserve"><value>مخصص</value></data>
+  <data name="PeriodType_day" xml:space="preserve"><value>يوم</value></data>
+  <data name="PeriodType_week" xml:space="preserve"><value>أسبوع</value></data>
+  <data name="PeriodType_month" xml:space="preserve"><value>شهر</value></data>
+  <data name="PeriodType_quarter" xml:space="preserve"><value>ربع سنة</value></data>
+  <data name="PeriodType_cycle" xml:space="preserve"><value>دورة</value></data>
+  <data name="PeriodType_campaign-period" xml:space="preserve"><value>فترة الحملة</value></data>
+  <data name="PeriodType_custom" xml:space="preserve"><value>مخصص</value></data>
+  <data name="ProductWeightTotalLabel" xml:space="preserve"><value>إجمالي المنتجات</value></data>
+  <data name="ProductCatalogHelp" xml:space="preserve"><value>يتم التحقق من المنتجات مقابل كتالوج MDM Global Product.</value></data>
+  <data name="ProductAddPicker" xml:space="preserve"><value>إضافة منتج…</value></data>
+  <data name="SkuOptionalPlaceholder" xml:space="preserve"><value>اختياري</value></data>
+  <data name="ProductColProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="ProductColSku" xml:space="preserve"><value>SKU</value></data>
+  <data name="ProductColWeight" xml:space="preserve"><value>النسبة</value></data>
+  <data name="EqualDistribute" xml:space="preserve"><value>توزيع بالتساوي</value></data>
+  <data name="ProductTotalWarning" xml:space="preserve"><value>نسبة المنتج ليست 100٪. الإجمالي المحسوب {total}٪ — بفارق {diff} نقطة. صحّح الصفوف للحفظ.</value></data>
 </root>

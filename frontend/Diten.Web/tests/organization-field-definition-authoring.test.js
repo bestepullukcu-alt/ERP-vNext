@@ -56,7 +56,29 @@ const csharpCodeOnly = (text) =>
 
 // ── RULE 1 — the code cannot be typed into on edit ────────────────────────────────────────────────────────
 describe("rule 1: Code is immutable after creation", () => {
-  test("the edit branch of _Form.cshtml renders Code as a disabled control", () => {
+  /*
+   * ⚠ THIS TEST USED TO DEMAND `disabled`, AND THAT DEMAND WAS THE DEFECT (owner report, 2026-09-21).
+   *
+   * Its reasoning was that a readonly input "is still submitted" — which is true, and is exactly what an
+   * immutable field NEEDS to be. A disabled control is not successful: the browser sends nothing for it. So
+   * every edit reached the controller with an empty `Code`, its `[Required]` failed, `ModelState.IsValid` was
+   * false, and the page came back with the code box red. The form could not save a single change from the day
+   * it was written, and this test held that shut.
+   *
+   * The other half of the old reasoning — that readonly "reads as editable" — was a real observation about an
+   * unpainted box, and it is answered rather than ignored: `bg-label-secondary` is the product's existing
+   * immutable-field look, the one the Users and Roles screens already paint for the same reason (Bootstrap 5
+   * dropped the [readonly] background rule).
+   *
+   * What the rule actually is, and what is asserted below: the box cannot be typed into, it POSTS what it
+   * shows, it looks unlike an editable box, and no script quietly turns it back into one. The server-side half
+   * of the guard is unchanged and still tested two tests down.
+   *
+   * The end-to-end proof that a disabled box breaks the save lives in
+   * `frontend/Diten.Web.Tests/Forms/OrganizationFieldDefinitionEditPostsCodeTests.cs`, which renders this view
+   * for real and validates the model the way the controller does.
+   */
+  test("the edit branch of _Form.cshtml renders Code uneditable but still posting", () => {
     const source = razorCodeOnly(read(FORM_CSHTML));
 
     // The `isEdit` branch, up to its `else`. Reading the branch rather than the whole file is what makes this
@@ -66,18 +88,18 @@ describe("rule 1: Code is immutable after creation", () => {
 
     const codeInput = branch[1].match(/<input[^>]*asp-for="Code"[^>]*>/);
     expect(codeInput).not.toBeNull();
-    expect(codeInput[0]).toMatch(/\bdisabled\b/);
-
-    // ⚠ A `readonly` input is still submitted and still focusable in a way that reads as editable to the
-    // user. This screen uses `disabled` on purpose, and swapping it back is the regression.
-    expect(codeInput[0]).not.toMatch(/\breadonly\b/);
+    expect(codeInput[0]).toMatch(/\breadonly\b/);
+    expect(codeInput[0], "a disabled control posts nothing, so every save fails [Required]")
+      .not.toMatch(/\bdisabled\b/);
+    expect(codeInput[0], "an unpainted readonly box reads as editable — the owner clicked into one and nothing happened")
+      .toMatch(/bg-label-secondary/);
   });
 
-  test("no script re-enables the immutable code input", () => {
-    // A disabled attribute is one `removeAttribute` away from being decoration.
+  test("no script turns the immutable code input back into an editable one", () => {
+    // The attribute is one `removeAttribute` away from being decoration — whichever attribute it is.
     [INDEX_JS, FORM_JS].forEach((file) => {
       const source = read(file).replace(/\/\*[\s\S]*?\*\//g, "");
-      expect(source).not.toMatch(/data-code-immutable[\s\S]{0,200}(disabled\s*=\s*false|removeAttribute\(\s*['"]disabled)/);
+      expect(source).not.toMatch(/data-code-immutable[\s\S]{0,200}(disabled\s*=\s*false|readOnly\s*=\s*false|removeAttribute\(\s*['"](disabled|readonly))/i);
     });
   });
 

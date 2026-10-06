@@ -40,6 +40,12 @@ public sealed class SegmentDetailViewModel
     public string? CreatedBy { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
     public string? UpdatedBy { get; set; }
+
+    // WP-SEG-DETAILS6 — additive, nullable display names bound from the gateway response. The timeline shows these when
+    // present and otherwise a date only; the raw *By ids are never rendered.
+    public string? CreatedByName { get; set; }
+    public string? ActivatedByName { get; set; }
+    public string? UpdatedByName { get; set; }
 }
 
 /// <summary>One node of the embedded criteria tree. A flat list plus ParentNodeId, exactly as the runtime stores it.</summary>
@@ -57,6 +63,11 @@ public sealed class SegmentCriteriaNodeViewModel
     public bool Negate { get; set; }
     public int SortOrder { get; set; }
     public string? Label { get; set; }
+
+    // WP-SEG-DETAILS8 — additive, nullable value → display-name map bound from the gateway response. Populated only for
+    // territory-node criteria whose ids the backend resolved; the human criteria sentence shows the name instead of a raw
+    // id, and a missing entry keeps the raw id hidden (fail-closed). The stored Values are never altered.
+    public Dictionary<string, string>? ValueLabels { get; set; }
 }
 
 // ----- gateway envelopes / contract -----

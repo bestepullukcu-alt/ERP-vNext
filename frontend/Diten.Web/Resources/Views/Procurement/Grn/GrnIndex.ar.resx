@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="GrnTitle" xml:space="preserve"><value>الاستلام (GRN)</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إشعارات استلام البضائع: سجّل الاستلامات الفعلية مقابل أمر شراء ورحّل كل سطر إلى المخزون.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>تسجيل استلام</value></data>
+  <data name="EditItem" xml:space="preserve"><value>تعديل الاستلام</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>تسجيل استلام</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل الاستلام</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="GrnId" xml:space="preserve"><value>رقم الاستلام</value></data>
+  <data name="PoId" xml:space="preserve"><value>أمر الشراء</value></data>
+  <data name="PoIdPlaceholder" xml:space="preserve"><value>مثال PO-5001</value></data>
+  <data name="PoIdHint" xml:space="preserve"><value>رابط اختياري إلى أمر الشراء المصدر.</value></data>
+  <data name="ReceivedAt" xml:space="preserve"><value>تاريخ الاستلام</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusPosted" xml:space="preserve"><value>مُرحَّل</value></data>
+  <data name="StatusReversed" xml:space="preserve"><value>مُعكوس</value></data>
+  <data name="ReceiptSection" xml:space="preserve"><value>تفاصيل الاستلام</value></data>
+  <data name="WarehouseId" xml:space="preserve"><value>المستودع</value></data>
+  <data name="WarehouseIdPlaceholder" xml:space="preserve"><value>مثال wh-01</value></data>
+  <data name="LocationId" xml:space="preserve"><value>الموقع</value></data>
+  <data name="LocationIdPlaceholder" xml:space="preserve"><value>مثال loc-A-12-3</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>سطور الاستلام</value></data>
+  <data name="AddLine" xml:space="preserve"><value>إضافة سطر</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>معرّف الصنف</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>مثال b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>معرّف SKU</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>مثال c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineSkuLevel" xml:space="preserve"><value>مستوى SKU</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>اختر</value></data>
+  <data name="SkuLevelGsku" xml:space="preserve"><value>SKU عالمي</value></data>
+  <data name="SkuLevelLsku" xml:space="preserve"><value>SKU محلي</value></data>
+  <data name="SkuLevelFinishedGood" xml:space="preserve"><value>منتج نهائي</value></data>
+  <data name="LineLotNumber" xml:space="preserve"><value>رقم الدفعة</value></data>
+  <data name="LineLotNumberPlaceholder" xml:space="preserve"><value>مثال L2026-0455</value></data>
+  <data name="LineSerialIds" xml:space="preserve"><value>الأرقام التسلسلية</value></data>
+  <data name="LineSerialIdsPlaceholder" xml:space="preserve"><value>أرقام تسلسلية مفصولة بفواصل</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>مثال 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>وحدة القياس</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>مثال BOX</value></data>
+  <data name="LineToStockStatus" xml:space="preserve"><value>حالة المخزون</value></data>
+  <data name="StockAvailable" xml:space="preserve"><value>متاح</value></data>
+  <data name="StockQualityInspection" xml:space="preserve"><value>فحص الجودة</value></data>
+  <data name="StockQuarantine" xml:space="preserve"><value>الحجر</value></data>
+  <data name="LinePoLineId" xml:space="preserve"><value>سطر أمر الشراء</value></data>
+  <data name="LinePoLineIdPlaceholder" xml:space="preserve"><value>مثال 3</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>يلزم سطر واحد على الأقل (الصنف، SKU، المستوى، الكمية، وحدة القياس، حالة المخزون).</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>التكامل</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>النظام المصدر</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>مثال SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>مرجع خارجي</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>مثال ERP-GRN-9001</value></data>
+  <data name="LineInventoryTransactionId" xml:space="preserve"><value>حركة المخزون</value></data>
+  <data name="LineLotId" xml:space="preserve"><value>الدفعة</value></data>
+  <data name="InventoryRefHint" xml:space="preserve"><value>معرّفات حركة المخزون والدفعة هي مراجع للقراءة فقط إلى نظام سجل المخزون؛ رصيد المخزون موجود في المخزون وليس في الاستلام.</value></data>
+  <data name="ActionReverse" xml:space="preserve"><value>عكس</value></data>
+  <data name="ConfirmReverse" xml:space="preserve"><value>هل تريد عكس هذا الاستلام؟ سيتم ترحيل حركة مخزون عكسية.</value></data>
+  <data name="ReverseSuccess" xml:space="preserve"><value>تم عكس الاستلام.</value></data>
+</root>

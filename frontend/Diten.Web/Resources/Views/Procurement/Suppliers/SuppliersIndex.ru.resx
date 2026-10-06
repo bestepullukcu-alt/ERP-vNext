@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SuppliersTitle" xml:space="preserve"><value>Поставщики</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Справочник поставщиков с онбордингом, KYC, проверкой санкций и отслеживанием документов.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Добавить поставщика</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Изменить поставщика</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Добавить поставщика</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить поставщика</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>ID поставщика</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>напр. Medip-Kim Pharma АО</value></data>
+  <data name="Country" xml:space="preserve"><value>Страна</value></data>
+  <data name="CountryPlaceholder" xml:space="preserve"><value>напр. tr</value></data>
+  <data name="TaxId" xml:space="preserve"><value>ИНН</value></data>
+  <data name="TaxIdPlaceholder" xml:space="preserve"><value>напр. 1234567890</value></data>
+  <data name="PrimaryContact" xml:space="preserve"><value>Основной контакт</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активный</value></data>
+  <data name="StatusOnHold" xml:space="preserve"><value>На удержании</value></data>
+  <data name="StatusBlocked" xml:space="preserve"><value>Заблокирован</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Неактивный</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="OnboardingSection" xml:space="preserve"><value>Онбординг</value></data>
+  <data name="ContactSection" xml:space="preserve"><value>Основной контакт</value></data>
+  <data name="SourcingSection" xml:space="preserve"><value>Снабжение</value></data>
+  <data name="KycLegalName" xml:space="preserve"><value>Юридическое наименование (KYC)</value></data>
+  <data name="KycLegalNamePlaceholder" xml:space="preserve"><value>напр. Medip-Kim Pharma АО</value></data>
+  <data name="KycRegistrationNo" xml:space="preserve"><value>Регистрационный номер</value></data>
+  <data name="KycRegistrationNoPlaceholder" xml:space="preserve"><value>напр. TR-00099</value></data>
+  <data name="DocumentType" xml:space="preserve"><value>Тип документа</value></data>
+  <data name="DocumentTypePlaceholder" xml:space="preserve"><value>напр. налоговый сертификат</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Отправить на утверждение</value></data>
+  <data name="ContactType" xml:space="preserve"><value>Тип контакта</value></data>
+  <data name="ContactTypePrimary" xml:space="preserve"><value>Основной</value></data>
+  <data name="ContactTypeBilling" xml:space="preserve"><value>Биллинг</value></data>
+  <data name="ContactTypeQuality" xml:space="preserve"><value>Качество</value></data>
+  <data name="ContactTypeLogistics" xml:space="preserve"><value>Логистика</value></data>
+  <data name="ContactEmail" xml:space="preserve"><value>Эл. почта</value></data>
+  <data name="ContactEmailPlaceholder" xml:space="preserve"><value>напр. sales@supplier.example</value></data>
+  <data name="ContactPhone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="ContactPhonePlaceholder" xml:space="preserve"><value>напр. +90 212 000 0000</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Исходная система</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>напр. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>Внешняя ссылка</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>напр. ERP-SUP-2001</value></data>
+  <data name="OnboardingStatus" xml:space="preserve"><value>Статус онбординга</value></data>
+  <data name="KycOutcome" xml:space="preserve"><value>Результат KYC</value></data>
+  <data name="SanctionsOutcome" xml:space="preserve"><value>Результат проверки санкций</value></data>
+</root>

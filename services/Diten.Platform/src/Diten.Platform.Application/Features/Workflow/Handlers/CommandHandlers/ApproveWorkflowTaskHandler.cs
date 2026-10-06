@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Workflow.Commands;
 using Diten.Platform.Domain.Enums.Workflow;
@@ -17,7 +18,11 @@ public sealed class ApproveWorkflowTaskHandler
         IRuntimeAssignmentSnapshotRepository snapshotRepository,
         IWorkflowTransitionLogRepository logRepository,
         IWorkflowTemplateVersionRepository? versionRepository = null,
-        IPositionAssignmentRepository? positionAssignmentRepository = null)
+        IPositionAssignmentRepository? positionAssignmentRepository = null,
+        IPositionRepository? positionRepository = null,
+        IPlatformTransactionExecutor? transactions = null,
+        ITransactionalIntegrationEventWriter? events = null,
+        IWorkflowTemplateRepository? templates = null)
     {
         _support = new WorkflowTaskTransitionSupport(
             taskRepository,
@@ -25,14 +30,16 @@ public sealed class ApproveWorkflowTaskHandler
             snapshotRepository,
             logRepository,
             versionRepository,
-            positionAssignmentRepository);
+            positionAssignmentRepository,
+            // WP-CL-BE-3 — position status for next-step candidates; transaction + outbox for the final approval.
+            new WorkflowTransitionSeams(positionRepository, transactions, events, templates));
     }
 
     public Task<Response<WorkflowTaskTransitionResponse>> Handle(ApproveWorkflowTaskCommand request, CancellationToken ct) =>
         _support.TransitionAsync(
             request.TaskId,
             WorkflowTransitionAction.Approve,
-            request.Request.ActorId,
+            request.Request.ActorId!,
             request.Request.ReasonCode,
             request.Request.IdempotencyKey,
             request.Request.Comment,

@@ -34,6 +34,8 @@ public sealed record CreateUserRequest(string Email, string? Password, string Fi
 // WP-INFRA-AUTH-ACCOUNT-KIND-01 — body of POST api/users/{id}/account-kind. Kind is the enum NAME, case-insensitive.
 public sealed record SetAccountKindRequest(string Kind);
 public sealed record SetTenantPasswordRequest(string Email, string Token, string NewPassword);
-public sealed record UpdateUserRequest(string FirstName, string LastName, bool IsActive);
+// WP-AUTH-USER-KIND-UPDATE-01 — AccountKind is optional (enum NAME). Omitted ⇒ untouched; a CHANGE needs
+// auth.users.account-kind.manage as well, else 403 PERM_DENIED (same rule as create).
+public sealed record UpdateUserRequest(string FirstName, string LastName, bool IsActive, string? AccountKind = null);
 public sealed record CreateRoleRequest(string Name, string DisplayName, string? Description);
 public sealed record UpdateRoleRequest(string DisplayName, string? Description);

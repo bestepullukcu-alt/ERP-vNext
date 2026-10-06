@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado el</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aún no hay políticas.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Algo salió mal. Inténtelo de nuevo.</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrar</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando...</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Incluir archivadas</value></data>
+  <data name="Active" xml:space="preserve"><value>Activas</value></data>
+  <data name="View" xml:space="preserve"><value>Ver</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>¿Está seguro?</value></data>
+  <data name="Search" xml:space="preserve"><value>Buscar..</value></data>
+  <data name="Export" xml:space="preserve"><value>Exportar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Mostrar todo</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Guardar vista</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Visibilidad de columnas</value></data>
+  <data name="Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>Vista previa</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasivo</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Desconocido</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Eliminación masiva</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>¿Eliminar los registros seleccionados?</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="EffectiveSection" xml:space="preserve"><value>Ventana de vigencia</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Vigente desde</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Vigente hasta</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seleccionar...</value></data>
+  <data name="PoliciesTitle" xml:space="preserve"><value>Políticas de elegibilidad</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Redacte políticas de elegibilidad (condiciones de contexto) y evalúe un contexto contra una política.</value></data>
+  <data name="FailClosedNote" xml:space="preserve"><value>La evaluación es disjunta y fail-closed — un resultado no-Elegible siempre muestra su motivo.</value></data>
+  <data name="PoliciesTab" xml:space="preserve"><value>Políticas</value></data>
+  <data name="EvaluateTab" xml:space="preserve"><value>Evaluar</value></data>
+  <data name="PolicyCode" xml:space="preserve"><value>Código de política</value></data>
+  <data name="PolicyCodeNote" xml:space="preserve"><value>Clave de negocio estable, compartida entre las versiones de una política.</value></data>
+  <data name="PolicyName" xml:space="preserve"><value>Nombre de política</value></data>
+  <data name="PolicyVersion" xml:space="preserve"><value>Versión</value></data>
+  <data name="CreatePolicy" xml:space="preserve"><value>Crear política</value></data>
+  <data name="EditPolicy" xml:space="preserve"><value>Editar política</value></data>
+  <data name="ArchivePolicy" xml:space="preserve"><value>Archivar</value></data>
+  <data name="ArchivePolicyConfirm" xml:space="preserve"><value>¿Archivar esta política? Es una acción de ciclo de vida suave; permanece legible.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Política archivada.</value></data>
+  <data name="ArchivedPolicyReadOnly" xml:space="preserve"><value>Esta política está archivada y es de solo lectura.</value></data>
+  <data name="PublishedPolicyReadOnly" xml:space="preserve"><value>Esta política está publicada: sus condiciones están congeladas y aquí es de solo lectura.</value></data>
+  <data name="StatusEditableNote" xml:space="preserve"><value>Solo estados de autoría (borrador / revisión / inactiva). Publicar es una etapa aparte.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusReview" xml:space="preserve"><value>En revisión</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="StatusPublished" xml:space="preserve"><value>Publicada</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Inactiva</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="Status_review" xml:space="preserve"><value>En revisión</value></data>
+  <data name="Status_approved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="Status_published" xml:space="preserve"><value>Publicada</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Inactiva</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="Conditions" xml:space="preserve"><value>Condiciones</value></data>
+  <data name="ConditionsSection" xml:space="preserve"><value>Condiciones</value></data>
+  <data name="ConditionsNote" xml:space="preserve"><value>Cada condición incluye o excluye los valores de una dimensión de contexto. Una condición requerida bloquea si falta la dimensión.</value></data>
+  <data name="ConditionsEmpty" xml:space="preserve"><value>Sin condiciones — la política coincide con cualquier contexto.</value></data>
+  <data name="AddCondition" xml:space="preserve"><value>Añadir condición</value></data>
+  <data name="Dimension" xml:space="preserve"><value>Dimensión</value></data>
+  <data name="Match" xml:space="preserve"><value>Coincidencia</value></data>
+  <data name="Values" xml:space="preserve"><value>Valores</value></data>
+  <data name="Required" xml:space="preserve"><value>Requerido</value></data>
+  <data name="Remove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="Match_includes" xml:space="preserve"><value>Incluye</value></data>
+  <data name="Match_excludes" xml:space="preserve"><value>Excluye</value></data>
+  <data name="Dim_audience" xml:space="preserve"><value>Audiencia</value></data>
+  <data name="Dim_product" xml:space="preserve"><value>Producto</value></data>
+  <data name="Dim_market" xml:space="preserve"><value>Mercado</value></data>
+  <data name="Dim_channel" xml:space="preserve"><value>Canal</value></data>
+  <data name="Dim_language" xml:space="preserve"><value>Idioma</value></data>
+  <data name="Dim_period" xml:space="preserve"><value>Período</value></data>
+  <data name="EvaluateInputSection" xml:space="preserve"><value>Entrada de evaluación</value></data>
+  <data name="EvaluateResultSection" xml:space="preserve"><value>Resultado</value></data>
+  <data name="Policy" xml:space="preserve"><value>Política</value></data>
+  <data name="PolicyPickerPlaceholder" xml:space="preserve"><value>Buscar una política...</value></data>
+  <data name="Context" xml:space="preserve"><value>Contexto</value></data>
+  <data name="AddContext" xml:space="preserve"><value>Añadir dimensión</value></data>
+  <data name="PinnedSelections" xml:space="preserve"><value>Selecciones fijadas</value></data>
+  <data name="PinnedPlaceholder" xml:space="preserve"><value>Opcional — reflejado en el registro de evaluación</value></data>
+  <data name="EvaluateAt" xml:space="preserve"><value>Evaluar en (fecha)</value></data>
+  <data name="EvaluateAction" xml:space="preserve"><value>Evaluar</value></data>
+  <data name="EvaluateReadOnlyNote" xml:space="preserve"><value>Solo lectura — evaluar no guarda nada.</value></data>
+  <data name="EvaluateResultEmpty" xml:space="preserve"><value>Elija una política y un contexto, luego evalúe.</value></data>
+  <data name="State" xml:space="preserve"><value>Estado</value></data>
+  <data name="Reason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="Eligible" xml:space="preserve"><value>Elegible</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>Sin resolver</value></data>
+  <data name="BlockingLevelContext" xml:space="preserve"><value>Bloqueado en: contexto (falta una dimensión requerida)</value></data>
+  <data name="BlockingLevelPolicy" xml:space="preserve"><value>Bloqueado en: política (se viola una condición)</value></data>
+  <data name="SelectPolicyFirst" xml:space="preserve"><value>Seleccione primero una política.</value></data>
+  <data name="ContextRequired" xml:space="preserve"><value>Añada al menos una dimensión de contexto con valores.</value></data>
+</root>

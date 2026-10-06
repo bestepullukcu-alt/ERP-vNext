@@ -64,10 +64,17 @@ describe("the dead renders are gone, not just unwired", () => {
      * guard that matches a generic name across the whole tree reports another module's healthy code as a
      * leftover; it is checked inside WorkCenterNext instead, below.
      */
-    "runBulk", "runBulkWithProgress", "performBulk",
-    // Permanently empty once the code that fed them was deleted a round earlier.
-    "renderNotes", "renderAgenda"
+    "runBulk", "runBulkWithProgress", "performBulk"
   ];
+
+  /*
+   * Same guard, narrower field. `renderNotes` and `renderAgenda` were emptied here a round earlier, but the
+   * names are ordinary English: another module may legitimately ship its own. Measured 2026-09-21 — CRM's
+   * `VisitFrequencyPolicies/details.js` (merged from main) defines its own `renderNotes`, and the tree-wide
+   * scan reported that healthy code as OUR leftover. Same reasoning the list above already applies to
+   * `bulkBar`: a generic name is checked inside WorkCenterNext, a distinctive one across the tree.
+   */
+  const DELETED_IN_THIS_MODULE = ["renderNotes", "renderAgenda"];
 
   it("names none of them anywhere under wwwroot or Views", () => {
     const files = shipped();
@@ -78,6 +85,18 @@ describe("the dead renders are gone, not just unwired", () => {
         return f.indexOf("vendor") < 0 && new RegExp(`\\b${fn}\\b`).test(code(text));
       }).map((f) => path.relative(web(), f));
       expect(hits, `${fn} still has a caller or a definition`).toEqual([]);
+    });
+  });
+
+  it("names the generic ones nowhere inside WorkCenterNext", () => {
+    const mine = shipped().filter((f) => f.indexOf(path.join("WorkCenterNext")) >= 0);
+    expect(mine.length, "the WorkCenterNext file set went empty — the filter, not the module, is broken")
+      .toBeGreaterThan(1);
+    DELETED_IN_THIS_MODULE.forEach((fn) => {
+      const hits = mine
+        .filter((f) => new RegExp(`\\b${fn}\\b`).test(code(fs.readFileSync(f, "utf8"))))
+        .map((f) => path.relative(web(), f));
+      expect(hits, `${fn} still has a caller or a definition in WorkCenterNext`).toEqual([]);
     });
   });
 
@@ -138,17 +157,9 @@ describe("the effort card was connected, not invented", () => {
 });
 
 describe("the timesheet card gained a control, not an authority", () => {
-  it("draws Log time, and the rail no longer does", () => {
-    /*
-     * MUTATION GUARD: put `logTime` back in the rail and this goes red.
-     *
-     * Logging minutes changes no state — it is a personal measurement, not a lifecycle move — so standing it
-     * beside Complete and Pause misfiled it. One action, one home.
-     */
-    const card = APP.slice(APP.indexOf("const renderTimesheet"), APP.indexOf("const renderTimesheet") + 5200);
-    expect(card).toContain("wcn-ts-log");
-    expect(card).toContain("a.key === 'logTime'");
-    expect(code(APP), "the rail draws it again").toContain("if (a.key === 'logTime') { return false; }");
+  it("no longer draws the fake Log time button anywhere (BL-485)", () => {
+    // The dialog wrote an in-memory activity and toasted "(mock)"; real time is recorded on My Timesheet.
+    expect(code(APP)).not.toMatch(/logTime|openLogTime|wcn-ts-log/);
   });
 
   it("does NOT move start or pause into the card", () => {
@@ -163,7 +174,8 @@ describe("the timesheet card gained a control, not an authority", () => {
   });
 
   it("says what the timer is doing, in all seven languages", () => {
-    ["TimerStateRunning", "TimerStatePaused", "TimerFollowsStatusHint"].forEach((key) => {
+    // MOD-0280-FU01 T2b — the running line is the server's timer state; the paused line is the task's own state.
+    ["TimerRunningNow", "TimerStatePaused", "TimeDraftLabel", "TimeSubmittedLabel", "TimeApprovedLabel"].forEach((key) => {
       /*
        * ⚠ BY NAME, NOT BY CALL SHAPE. Two of the three are chosen through a computed `stateKey` and reach the
        * translator as `t(stateKey)`, so asserting on `t('TimerStateRunning')` would fail on working code —

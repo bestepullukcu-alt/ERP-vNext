@@ -2,9 +2,13 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using Diten.AuthService.Application.Common;
+using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 using Diten.AuthService.Application.Tests.Testing;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
+using Diten.AuthService.Domain.Enums;
 using Diten.AuthService.Persistence.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
@@ -364,6 +368,104 @@ public sealed class AccountKindEndpointTests : IClassFixture<AccountKindAcceptan
         {
             Assert.Equal("Service", doc.RootElement.GetProperty("data").GetProperty("accountKind").GetString());
         }
+    }
+
+    // ── WP-AUTH-USER-KIND-UPDATE-01 — the edit form's "Update" (PUT api/users/{id}) carries the kind ─────────
+
+    [Fact]
+    public async Task Update_changing_the_kind_without_the_manage_right_is_403_PERM_DENIED_and_nothing_is_written()
+    {
+        var subject = await NewSubjectAsync("upd-denied");
+        using var editor = _host.Client(await TokenWithAsync(_seed.Creator.Id, "auth.users.update"), _seed.TenantId);
+
+        var response = await editor.PutAsJsonAsync($"api/users/{subject}", new { firstName = "Changed", lastName = "Name", isActive = false, accountKind = "Human" });
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        using (var doc = JsonDocument.Parse(body))
+        {
+            Assert.Equal(CreateUserCommandHandler.PermissionDeniedCode, doc.RootElement.GetProperty("errorCodes")[0].GetProperty("code").GetString());
+        }
+
+        var stored = await _host.Database.GetCollection<User>("users").Find(u => u.Id == subject).SingleAsync();
+        Assert.Equal(AccountKind.Unknown, stored.AccountKind);
+        Assert.Equal("Sub", stored.FirstName); // the profile half was refused too
+    }
+
+    [Fact]
+    public async Task Update_with_the_manage_right_changes_the_kind_and_writes_the_same_audit_row_as_the_endpoint()
+    {
+        const string correlationId = "acc-kind-update-0001";
+        var subject = await NewSubjectAsync("upd-allowed");
+        using var editor = _host.Client(
+            await TokenWithAsync(_seed.KindAdmin.Id, "auth.users.update", ExplicitGrantOnlyPermissions.UsersAccountKindManage),
+            _seed.TenantId, correlationId);
+        var audit = _host.Database.GetCollection<AuthAuditLog>("authAuditLogs");
+
+        var response = await editor.PutAsJsonAsync($"api/users/{subject}", new { firstName = "Sub", lastName = "Ject", isActive = false, accountKind = "service" });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using (var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
+        {
+            Assert.Equal("Service", doc.RootElement.GetProperty("data").GetProperty("accountKind").GetString());
+        }
+
+        var stored = await _host.Database.GetCollection<User>("users").Find(u => u.Id == subject).SingleAsync();
+        Assert.Equal(AccountKind.Service, stored.AccountKind);
+
+        var rows = await audit.Find(a => a.EventName == SetAccountKindCommandHandler.AuditEventName && a.TenantId == _seed.TenantId).ToListAsync();
+        var row = Assert.Single(rows, r => r.Metadata.Contains(subject.ToString()));
+        Assert.Equal(_seed.KindAdmin.Id, row.UserId);
+        using var meta = JsonDocument.Parse(row.Metadata);
+        Assert.Equal("Unknown", meta.RootElement.GetProperty("previousKind").GetString());
+        Assert.Equal("Service", meta.RootElement.GetProperty("newKind").GetString());
+        Assert.Equal(correlationId, meta.RootElement.GetProperty("correlationId").GetString());
+
+        // Re-sending the same kind is a 200 and no second row.
+        var again = await editor.PutAsJsonAsync($"api/users/{subject}", new { firstName = "Sub", lastName = "Ject", isActive = false, accountKind = "Service" });
+        Assert.Equal(HttpStatusCode.OK, again.StatusCode);
+        var after = await audit.Find(a => a.EventName == SetAccountKindCommandHandler.AuditEventName && a.TenantId == _seed.TenantId).ToListAsync();
+        Assert.Single(after, r => r.Metadata.Contains(subject.ToString()));
+    }
+
+    [Fact]
+    public async Task Update_resending_the_current_kind_needs_no_manage_right()
+    {
+        var subject = await NewSubjectAsync("upd-same");
+        using var editor = _host.Client(await TokenWithAsync(_seed.Creator.Id, "auth.users.update"), _seed.TenantId);
+
+        var response = await editor.PutAsJsonAsync($"api/users/{subject}", new { firstName = "Renamed", lastName = "Ject", isActive = false, accountKind = "Unknown" });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var stored = await _host.Database.GetCollection<User>("users").Find(u => u.Id == subject).SingleAsync();
+        Assert.Equal("Renamed", stored.FirstName);
+        Assert.Equal(AccountKind.Unknown, stored.AccountKind);
+    }
+
+    /// <summary>
+    /// A fresh Unknown subject of the disposable tenant, created through the real create endpoint — as an INVITATION,
+    /// so it is inactive until its owner sets a password. The PUTs above therefore send <c>isActive: false</c>: that is
+    /// what the edit form posts for an invited account, and switching it on is refused (409 USER_INVITATION_PENDING,
+    /// WP-AUTH-INVITED-LIFECYCLE-01) — a rule of its own, covered by UserLifecycleMongoTests, not by these kind tests.
+    /// </summary>
+    private async Task<Guid> NewSubjectAsync(string slug)
+    {
+        using var creator = _host.Client(_seed.CreatorToken, _seed.TenantId);
+        var response = await creator.PostAsJsonAsync("api/users",
+            new { email = $"{slug}.{Guid.NewGuid():N}@acceptance.invalid", firstName = "Sub", lastName = "Ject" });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        return doc.RootElement.GetProperty("data").GetProperty("id").GetGuid();
+    }
+
+    /// <summary>A real host-signed token for a seeded actor carrying exactly <paramref name="permissionKeys"/>.</summary>
+    private async Task<string> TokenWithAsync(Guid actorId, params string[] permissionKeys)
+    {
+        using var scope = _host.Factory.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<TenantContext>().SetTenant(_seed.TenantId);
+        var actor = await scope.ServiceProvider.GetRequiredService<IUserRepository>().GetByIdAndTenantAsync(actorId, _seed.TenantId, CancellationToken.None)
+            ?? throw new InvalidOperationException("seeded actor vanished");
+        return scope.ServiceProvider.GetRequiredService<ITokenService>().GenerateAccessToken(actor, ["ad-hoc-editor"], permissionKeys, expiresInMinutes: 60);
     }
 
     private static Guid[] Ids(string lookupBody)

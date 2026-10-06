@@ -1881,7 +1881,10 @@ describe("the actions card puts its weight where the decision is", () => {
      * goes through the shared confirm, so its lead sentence rides `subtext` instead of a hand-built `html`
      * string. The claim under test is unchanged: the PRIMARY's prose reaches its dialog.
      */
-    expect(src, "the plan dialog lost its lead").toMatch(/subtext: outcomeLead\(action\)/);
+    // ⚠ UPDATED AGAIN (WP-UI-CALENDAR-VIEW-01): the plan dialog is a form now (day + time + length), so its
+    // lead sentence is the first block of its `html`, exactly like the closure and reason forms.
+    const plan = src.slice(src.indexOf("const openDatePicker"), src.indexOf("const openDatePicker") + 5000);
+    expect(plan, "the plan dialog lost its lead").toMatch(/\$\{outcomeLead\(action\)\}/);
   });
 
   it("never draws a disabled action it cannot explain", async () => {
@@ -2895,9 +2898,14 @@ describe("the page reaches the product's one confirm implementation", () => {
      * a file input, a kind select and a note textarea is three fields, not one. Reported here rather than
      * growing the shared component, matching every prior entry in this list.
      */
-    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(3);
+    /*
+     * ⚠ FOUR (WP-UI-CALENDAR-VIEW-01). The PLAN dialog joins the same category: it now asks for a day, a start
+     * time and a length (a day plan or a time block), and the shared wrapper carries one value (BL-146). It is
+     * dressed with the declared package like the other three — not a new kind of dialog.
+     */
+    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(4);
     expect((src.match(/dialogLook\(\)/g) || []).length,
-      "a raw dialog is drawing itself again").toBe(3);
+      "a raw dialog is drawing itself again").toBe(4);
   });
 });
 
@@ -3181,7 +3189,8 @@ describe("the person picker on the waiting dialog", () => {
       /ASSIGNEE_REQUIRED_ACTIONS = \[[^\]]*inquire/);
 
     // The optional branch returns whatever was chosen — including nothing — without validating it.
-    const dialog = src.slice(src.indexOf("const offersWaitingOn"), src.indexOf("const offersWaitingOn") + 4000);
+    // The window grew when the same dialog learned to name a delegate (BL-491); the reach follows it.
+    const dialog = src.slice(src.indexOf("const offersWaitingOn"), src.indexOf("const offersWaitingOn") + 6000);
     expect(dialog).toContain("wcnWaitingOn");
     const optionalBranch = dialog.slice(dialog.indexOf("if (!needsAssignee)"));
     expect(optionalBranch.slice(0, 400), "an empty choice is being refused")
@@ -3327,6 +3336,115 @@ describe("a comment can be rewritten and withdrawn, and says so", () => {
       .forEach((key) => ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) =>
         expect(read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`),
           `${lang} has no ${key}`).toContain(`name="${key}"`)));
+  });
+});
+
+/*
+ * BL-400 (WP-PSS-MOD0024-FOLLOWUPS-02) — editing a comment's @mentions goes through the SAME picker the new
+ * comment box uses (`pickMentionAsync`), not a second implementation. `global.showConfirm` is called TWICE for
+ * this flow — once for the edit's own text box, once (nested) for the mention picker the tray's "@" button
+ * opens — so the mock below tells the two apart by call order, the same technique this file already uses for
+ * `onCancel` capture elsewhere.
+ */
+describe("BL-400 — editing a comment reuses the compose @mention picker", () => {
+  const mentionedComment = (extra) => Object.assign({
+    id: "c1", kind: "comment", text: "muhasebeye sordum", actor: "Diten Admin", editable: true,
+    at: "2026-08-10T09:00:00+00:00", mentioned: [{ id: "watcher-1", displayName: "Nöbetçi Watcher" }]
+  }, extra || {});
+  const withFeed = (entries) => projectionItem({
+    workItemCapabilities: ["planning", "execution", "subtasks", "activity"],
+    subtasks: { mode: "full", items: [] },
+    activity: entries
+  });
+
+  afterEach(() => { delete global.showConfirm; });
+
+  it("pre-fills the tray with the comment's existing mentions", async () => {
+    await boot(withFeed([mentionedComment()]));
+    let editOptions;
+    global.showConfirm = (title, callback, options) => { editOptions = options; };
+
+    app().querySelector("[data-wcn-comment-edit]").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(editOptions, "editComment never called the shared confirm").toBeTruthy();
+    const popup = document.createElement("div");
+    const box = document.createElement("textarea");
+    box.className = "swal2-textarea"; // real Swal2's class for a prose input — the shared wrapper's own selector looks for it
+    popup.appendChild(box);
+    editOptions.didOpen(popup);
+
+    expect(popup.querySelector(".wcn-mention-chips").textContent).toContain("Nöbetçi Watcher");
+  });
+
+  it("sends the untouched existing mention PLUS a newly added one, together, on save", async () => {
+    await boot(withFeed([mentionedComment()]));
+    let editCallback;
+    let editOptions;
+    let pickerCallback;
+    let calls = 0;
+    global.showConfirm = (title, callback, options) => {
+      calls += 1;
+      if (calls === 1) { editCallback = callback; editOptions = options; } else { pickerCallback = callback; }
+    };
+    global.TasksApi.mentionCandidates = () =>
+      Promise.resolve({ ok: true, data: [{ id: "u-2", displayName: "Rıza Kaya" }] });
+    let updateArgs = null;
+    global.TasksApi.updateComment = (taskId, commentId, payload) => {
+      updateArgs = [taskId, commentId, payload];
+      return Promise.resolve({ ok: true, status: 204 });
+    };
+
+    app().querySelector("[data-wcn-comment-edit]").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const popup = document.createElement("div");
+    const box = document.createElement("textarea");
+    box.className = "swal2-textarea"; // real Swal2's class for a prose input — the shared wrapper's own selector looks for it
+    popup.appendChild(box);
+    editOptions.didOpen(popup);
+
+    // The tray's own "@" button opens the SAME picker the compose box uses (a second `showConfirm` call).
+    popup.querySelector(".wcn-composer-mention").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(calls, "the tray's add button did not open the shared picker").toBe(2);
+    pickerCallback("u-2");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // The newly-added chip must be ON SCREEN before the author saves, not only in the payload.
+    expect(popup.querySelector(".wcn-mention-chips").textContent).toContain("Rıza Kaya");
+
+    await editCallback("değiştirilmiş yorum");
+
+    expect(updateArgs).not.toBeNull();
+    const [, , payload] = updateArgs;
+    expect(new Set(payload.mentionedUserIds)).toEqual(new Set(["watcher-1", "u-2"]));
+  });
+
+  it("removing the pre-filled mention before saving sends the SHRUNK set, not the original", async () => {
+    await boot(withFeed([mentionedComment()]));
+    let editCallback;
+    let editOptions;
+    global.showConfirm = (title, callback, options) => { editCallback = callback; editOptions = options; };
+    let updateArgs = null;
+    global.TasksApi.updateComment = (taskId, commentId, payload) => {
+      updateArgs = [taskId, commentId, payload];
+      return Promise.resolve({ ok: true, status: 204 });
+    };
+
+    app().querySelector("[data-wcn-comment-edit]").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const popup = document.createElement("div");
+    const box = document.createElement("textarea");
+    box.className = "swal2-textarea"; // real Swal2's class for a prose input — the shared wrapper's own selector looks for it
+    popup.appendChild(box);
+    editOptions.didOpen(popup);
+    popup.querySelector("[data-wcn-edit-mention-remove]").click();
+
+    await editCallback("değiştirilmiş yorum");
+
+    expect(updateArgs[2].mentionedUserIds).toEqual([]);
   });
 });
 

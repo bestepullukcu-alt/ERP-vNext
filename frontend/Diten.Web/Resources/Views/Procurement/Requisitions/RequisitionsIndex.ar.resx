@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="RequisitionsTitle" xml:space="preserve"><value>طلبات الشراء</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>طلبات الشراء: أدخل بنود الطلب وبرّرها وأرسلها للموافقة.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>إضافة طلب</value></data>
+  <data name="EditItem" xml:space="preserve"><value>تعديل الطلب</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إضافة طلب</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل الطلب</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="RequisitionId" xml:space="preserve"><value>رقم الطلب</value></data>
+  <data name="LineCount" xml:space="preserve"><value>عدد البنود</value></data>
+  <data name="NeedBy" xml:space="preserve"><value>تاريخ الحاجة</value></data>
+  <data name="Justification" xml:space="preserve"><value>المبرر</value></data>
+  <data name="JustificationPlaceholder" xml:space="preserve"><value>مثال: تجديد المواد الخام للإنتاج</value></data>
+  <data name="JustificationHint" xml:space="preserve"><value>ملاحظة اختيارية توضح سبب الحاجة إلى هذا الطلب.</value></data>
+  <data name="RequisitionSection" xml:space="preserve"><value>تفاصيل الطلب</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>بنود الطلب</value></data>
+  <data name="AddLine" xml:space="preserve"><value>إضافة بند</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>رقم الصنف</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>مثال: b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>رقم SKU</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>مثال: c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>مثال: 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>وحدة القياس</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>مثال: BOX</value></data>
+  <data name="LineNeedBy" xml:space="preserve"><value>تاريخ الحاجة</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>مطلوب بند واحد على الأقل (الصنف، الكمية، وحدة القياس).</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusSubmitted" xml:space="preserve"><value>مُرسَل</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="StatusConverted" xml:space="preserve"><value>مُحوَّل</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="ActionSubmit" xml:space="preserve"><value>إرسال للموافقة</value></data>
+  <data name="ConfirmSubmit" xml:space="preserve"><value>هل تريد إرسال هذا الطلب للموافقة؟</value></data>
+  <data name="SubmitSuccess" xml:space="preserve"><value>تم إرسال الطلب للموافقة.</value></data>
+</root>

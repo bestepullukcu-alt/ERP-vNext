@@ -505,6 +505,23 @@ window.DtDefaults = (function () {
     function create(userConfig) {
         var merged = $.extend(true, {}, baseConfig, userConfig);
         var l = L();
+
+        /*
+         * ── ONE LOADING LANGUAGE AT A TIME (owner report, 2026-09-21) ────────────────────────────────────
+         *
+         * The product had already chosen the skeleton: `backbone-custom.css` carries a "NO NEW SKELETON
+         * LANGUAGE" warning and 226 views ship placeholder markup. What it did not have was a working way to
+         * SHOW one on a list — so every list opened with the theme's `sk-fold` cube instead, which is what the
+         * owner saw and asked about.
+         *
+         * ⚠ AND THE FIRST FIX FOR IT DID NOT RUN. MEASURED in the vendored DataTables: `preXhr` is an EVENT,
+         * not an init option — the options registered as callbacks are drawCallback, initComplete,
+         * preDrawCallback, rowCallback and the state ones. Setting `merged.preXhr` therefore called nothing,
+         * on any page, and the tests that drove that function directly were green the whole time. So the
+         * mechanism moved out of JavaScript: `_TableSkeleton.cshtml` renders the placeholder VISIBLE, a CSS
+         * sibling rule keeps the table (and the cube inside it) out of the page while that element is there,
+         * and the block below removes the element once the table has drawn. Nothing has to fire.
+         */
         merged.language.searchPlaceholder = merged.language.searchPlaceholder || l.Search || sharedL10n().Search || 'Search...';
 
         // DataTables i18n mapping. Each slot left undefined is a slot DataTables fills with its own English —
@@ -515,6 +532,13 @@ window.DtDefaults = (function () {
         var infoEmpty = dtText('DtInfoEmpty');
         var infoFiltered = dtText('DtInfoFiltered');
         var emptyTable = dtText('DtEmptyTable');
+        /*
+         * ⚠ AND THE THIRD VOICE GOES QUIET. Left unset, DataTables writes its own English "Loading..." into the
+         * body while the skeleton is drawn above it — an untranslated sentence on every list in the product.
+         * The skeleton already says "this is loading", so the row says nothing rather than saying it in the
+         * wrong language. No new resource key: there is nothing to translate.
+         */
+        merged.language.loadingRecords = merged.language.loadingRecords || '';
         if (noRecords) merged.language.zeroRecords = noRecords;
         if (info) merged.language.info = info;
         if (infoEmpty) merged.language.infoEmpty = infoEmpty;
@@ -538,12 +562,42 @@ window.DtDefaults = (function () {
             delete merged.buttons;
         }
 
+        /*
+         * ⚠ REVEALING THE TABLE IS ONE ACT, AND EVERY EXIT HAS TO PERFORM IT (2026-09-23, owner report).
+         *
+         * MEASURED: the shaped placeholder hides the table through a CSS sibling rule, so what reveals the table
+         * is REMOVING the element — hiding it is not enough. Only `initComplete` removed it, and DataTables does
+         * not call `initComplete` when the first ajax FAILS. With the golden reference pages' service down, the
+         * placeholder stayed in the DOM, the rule kept matching, and the page showed nothing at all. Before the
+         * shaped placeholder existed the same failure left an empty table on screen — so the change turned
+         * "service down" into "page down".
+         *
+         * Now the draw path and the ajax error path perform the same act. A list that still carries the old
+         * hidden block keeps falling through to the fade, exactly as before.
+         */
+        var revealTable = function () {
+            // `document`, never `global`: the browser has no `global` (only Node does — which is why vitest stayed green
+            // while every list page threw ReferenceError inside initComplete, 2026-09-23 14:16–15:00).
+            var shaped = document.querySelector('#skeleton-loader[data-table-skeleton]');
+            if (shaped) {
+                shaped.remove();
+                return true;
+            }
+            try { $('#skeleton-loader').fadeOut(200); } catch (e) { }
+            return false;
+        };
+
         // Centralized Ajax error handler (helps diagnose DataTables "Ajax error" tn/7 quickly)
         // Note: DataTables treats `ajax: { ... }` as an $.ajax config object.
         if (merged.ajax && typeof merged.ajax === 'object') {
             merged.ajax.xhrFields = $.extend(true, {}, merged.ajax.xhrFields, { withCredentials: true });
-            merged.ajax.error = merged.ajax.error || function (xhr, textStatus, errorThrown) {
-                try { $('#skeleton-loader').fadeOut(200); } catch (e) { }
+            // A page that brings its own handler keeps it — but the placeholder is removed on failure regardless,
+            // or that page would show a placeholder forever when its service is down.
+            var pageAjaxError = typeof merged.ajax.error === 'function' ? merged.ajax.error : null;
+            merged.ajax.error = pageAjaxError
+                ? function (xhr, textStatus, errorThrown) { revealTable(); return pageAjaxError.call(this, xhr, textStatus, errorThrown); }
+                : function (xhr, textStatus, errorThrown) {
+                revealTable();
 
                 var status = xhr && xhr.status ? xhr.status : 0;
                 var url = merged.ajax && merged.ajax.url ? merged.ajax.url : '(unknown url)';
@@ -574,19 +628,26 @@ window.DtDefaults = (function () {
             };
         }
 
-        // AJAX isteği başladığında skeleton'ı göster (Eğer varsa)
-        var originalPreXhr = merged.preXhr;
-        merged.preXhr = function (settings, data) {
-            $('#skeleton-loader').fadeIn(100);
-            if (typeof originalPreXhr === 'function') {
-                originalPreXhr.call(this, settings, data);
-            }
-        };
-
         // Auto-hide skeleton + apply class fixes
         var originalInitComplete = merged.initComplete;
         merged.initComplete = function (settings, json) {
-            $('#skeleton-loader').fadeOut(300);
+            /*
+             * ⚠ REMOVED, NOT HIDDEN. The CSS keeps the table out of the page for as long as this element is its
+             * sibling, so taking the element away IS what reveals the table — one act, no second class to get
+             * out of step with. A list still carrying the old hidden block falls through to the fadeOut below,
+             * exactly as before.
+             */
+            if (revealTable()) {
+                /*
+                 * A table that was not rendered has no column widths worth keeping. DataTables recomputes on
+                 * demand, so ask it once, now that the table is actually on screen.
+                 */
+                try {
+                    var api = new DataTable.Api(settings);
+                    api.columns.adjust();
+                    if (api.responsive && typeof api.responsive.recalc === 'function') { api.responsive.recalc(); }
+                } catch (e) { }
+            }
             applySneatClassFixes();
             if (typeof originalInitComplete === 'function') {
                 originalInitComplete.call(this, settings, json);
@@ -596,7 +657,13 @@ window.DtDefaults = (function () {
         // Redraw durumunda class fixleri tazele
         var originalDrawCallback = merged.drawCallback;
         merged.drawCallback = function (settings) {
-            $('#skeleton-loader').fadeOut(200);
+            /*
+             * ⚠ NOT A REVEAL EXIT. DataTables draws the table ONCE, EMPTY, before the ajax request is answered
+             * (measured on 2.1.8: first drawCallback fires with the response still pending). Revealing here took
+             * the shaped placeholder away at init and every list opened on the three dots instead of its shape —
+             * the owner saw it the same afternoon it shipped (2026-09-23). The answer arrives through
+             * initComplete (success) or ajax.error (failure); those two are the only exits.
+             */
             applySneatClassFixes();
             if (typeof originalDrawCallback === 'function') {
                 originalDrawCallback.call(this, settings);
@@ -639,65 +706,346 @@ window.DtDefaults = (function () {
     };
 
     function buildExportOptions(columns) {
-        return $.extend(true, {}, commonExportOptionsBase, { columns: columns });
+        var allowed = Array.isArray(columns) ? columns.slice() : [];
+        return $.extend(true, {}, commonExportOptionsBase, { columns: exportableColumns(allowed) });
     }
 
-    function customizePrintWindow(win, titleText) {
+    /*
+     * K16 (Kullanıcılar testi, 2026-09-23): a column the reader HID still came out in CSV/Excel/PDF/print, because
+     * the export was a fixed index list. The file must be what the screen shows: the page's allowed columns AND
+     * only those currently visible. DataTables detaches a hidden column's header cell from the document, so a
+     * header node that is not connected is a hidden column — no API round-trip, and no dependence on CSS
+     * visibility (a table inside a collapsed tab would otherwise export nothing). A call with no node (older
+     * Buttons builds, unit harnesses) falls back to the index rule alone.
+     */
+    function exportableColumns(allowed) {
+        return function (idx, data, node) {
+            if (allowed.length && allowed.indexOf(idx) < 0) return false;
+            if (node && typeof node.isConnected === 'boolean') return node.isConnected;
+            return true;
+        };
+    }
+
+    /*
+     * BL-452 package 2 — THE CONTROLLED COPY (owner decision 2026-09-24). A printed or PDF'd list says what it is and
+     * where it came from: the screen, the tenant, the applied filters and search, the sort, the row count, who made it
+     * and when (with the time zone) — and every page says "uncontrolled copy" with its page number (GxP "uncontrolled
+     * when printed"; Veeva and MasterControl stamp creator, date, source and the uncontrolled mark on every printout).
+     *
+     * ONE data object (`buildControlledCopy`) feeds BOTH outputs: the pdfmake doc-definition and the print window's
+     * DOM are two renderings of the same lines, so the PDF and the printout cannot tell different stories.
+     *
+     * Rows: a list that hands `controlledCopy.rows` (the factory, on a server-mode list with `export: { mode: 'server' }`)
+     * gives every matching row from the service; everything else prints what DataTables holds, exactly as before.
+     * Words: SharedResource through `window.L10n` (the tenant shell's l10n bridge), English only as the last fallback.
+     */
+    var CONTROLLED_COPY_FALLBACK = {
+        ControlledCopyReport: 'Report',
+        ControlledCopyTenant: 'Company',
+        ControlledCopyFilters: 'Filters',
+        ControlledCopySearch: 'Search',
+        ControlledCopySort: 'Sort',
+        ControlledCopySortAsc: 'ascending',
+        ControlledCopySortDesc: 'descending',
+        ControlledCopyRows: 'Rows',
+        ControlledCopyCreatedBy: 'Created by',
+        ControlledCopyCreatedAt: 'Created at',
+        ControlledCopyNone: 'None',
+        ControlledCopyUncontrolled: 'This printout is an uncontrolled copy — {0}',
+        ControlledCopyPage: 'Page {0} of {1}'
+    };
+    var _lastControlledCopy = null;
+
+    function ccText(key) { return L()[key] || CONTROLLED_COPY_FALLBACK[key]; }
+    function fillTemplate(template, a, b) { return String(template).split('{0}').join(String(a)).split('{1}').join(b === undefined ? '' : String(b)); }
+    function cellText(value) { return value === null || value === undefined ? '' : String(value); }
+
+    // "25.09.2026 14:05 GMT+3 (Europe/Istanbul)" — the reader's culture, and the zone said out loud.
+    function controlledCopyStamp(date) {
+        var zone = '';
+        try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { zone = ''; }
+        var text;
+        try {
+            text = new Intl.DateTimeFormat(window.CurrentLanguage || undefined, {
+                year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
+            }).format(date);
+        } catch (e) {
+            text = date.toISOString();
+        }
+        return zone ? text + ' (' + zone + ')' : text;
+    }
+
+    // The screen's name is the page title without the product suffix ("Kullanıcılar - Di10" → "Kullanıcılar").
+    function screenTitle() {
+        var raw = String(document.title || '').replace(/\s+-\s+[^-]*$/, '').trim();
+        return raw || ccText('ControlledCopyReport');
+    }
+
+    // The tenant shell's brand carries the tenant's display name (TenantBrand view component).
+    function tenantName() {
+        var el = document.querySelector('[data-tenant-name]');
+        return el ? String(el.getAttribute('data-tenant-name') || '').trim() : '';
+    }
+
+    // The sorted columns by their header text and direction, read from the table as the reader sees it.
+    function describeSort(dt) {
+        var order;
+        try { order = dt.order() || []; } catch (e) { return []; }
+        var list = Array.isArray(order[0]) || (order[0] && typeof order[0] === 'object') ? order : (order.length ? [order] : []);
+        return list.map(function (entry) {
+            var idx = Array.isArray(entry) ? entry[0] : (entry.idx !== undefined ? entry.idx : entry.column);
+            var dir = Array.isArray(entry) ? entry[1] : entry.dir;
+            var header = null;
+            try { header = dt.column(idx).header(); } catch (e) { header = null; }
+            var label = header ? String(header.textContent || '').trim() : '';
+            if (!label) return '';
+            return label + ' (' + ccText(String(dir).toLowerCase() === 'desc' ? 'ControlledCopySortDesc' : 'ControlledCopySortAsc') + ')';
+        }).filter(Boolean);
+    }
+
+    /**
+     * The controlled copy as data: { title, tenant, lines: [{ key, label, value }], header, body, rowCount, createdBy,
+     * createdAt, uncontrolled, pageTemplate, dir }. `input` = { header, body, filters: [{ label, values }], search, sort }.
+     */
+    function buildControlledCopy(input) {
+        input = input || {};
+        var none = ccText('ControlledCopyNone');
+        var stamp = controlledCopyStamp(input.now || new Date());
+        var header = (input.header || []).map(cellText);
+        var width = header.length;
+        var body = (input.body || []).map(function (row) {
+            var cells = (row || []).map(cellText);
+            if (!width) return cells;
+            while (cells.length < width) cells.push('');
+            return cells.slice(0, width);
+        });
+        var filters = (input.filters || []).filter(function (f) { return f && f.label && f.values && f.values.length; });
+        var sort = Array.isArray(input.sort) ? input.sort : [];
+        var tenant = input.tenant !== undefined ? input.tenant : tenantName();
+        var createdBy = input.createdBy !== undefined ? input.createdBy : ((window.CurrentUser && window.CurrentUser.email) || '');
+        var search = cellText(input.search).trim();
+        return {
+            title: input.title || screenTitle(),
+            tenant: tenant,
+            lines: [
+                { key: 'tenant', label: ccText('ControlledCopyTenant'), value: tenant || '—' },
+                { key: 'filters', label: ccText('ControlledCopyFilters'), value: filters.length ? filters.map(function (f) { return f.label + ': ' + f.values.join(', '); }).join('; ') : none },
+                { key: 'search', label: ccText('ControlledCopySearch'), value: search || none },
+                { key: 'sort', label: ccText('ControlledCopySort'), value: sort.length ? sort.join(', ') : none },
+                { key: 'rows', label: ccText('ControlledCopyRows'), value: String(body.length) },
+                { key: 'createdBy', label: ccText('ControlledCopyCreatedBy'), value: createdBy || '—' },
+                { key: 'createdAt', label: ccText('ControlledCopyCreatedAt'), value: stamp }
+            ],
+            header: header,
+            body: body,
+            rowCount: body.length,
+            createdBy: createdBy,
+            createdAt: stamp,
+            uncontrolled: fillTemplate(ccText('ControlledCopyUncontrolled'), stamp),
+            pageTemplate: ccText('ControlledCopyPage'),
+            dir: document.documentElement.getAttribute('dir') === 'rtl' ? 'rtl' : 'ltr'
+        };
+    }
+
+    // The pdfmake rendering of the copy. The footer is pdfmake's per-page callback: uncontrolled mark + page x/y.
+    function controlledCopyDocDefinition(copy) {
+        var content = [
+            { text: copy.tenant || '', style: 'ccKicker' },
+            { text: copy.title, style: 'ccTitle' },
+            {
+                table: { widths: ['auto', '*'], body: copy.lines.map(function (line) { return [{ text: line.label, style: 'ccLabel' }, { text: line.value, style: 'ccValue' }]; }) },
+                layout: 'noBorders',
+                margin: [0, 6, 0, 12]
+            }
+        ];
+        if (copy.header.length) {
+            content.push({
+                table: {
+                    headerRows: 1,
+                    widths: copy.header.map(function () { return '*'; }),
+                    body: [copy.header.map(function (h) { return { text: h, style: 'ccHead' }; })].concat(copy.body)
+                },
+                layout: 'lightHorizontalLines'
+            });
+        }
+        return {
+            pageSize: 'A4',
+            pageOrientation: copy.header.length > 5 ? 'landscape' : 'portrait',
+            pageMargins: [32, 40, 32, 44],
+            info: { title: copy.title, author: copy.createdBy, subject: copy.uncontrolled },
+            content: content,
+            footer: function (currentPage, pageCount) {
+                return {
+                    margin: [32, 12, 32, 0],
+                    columns: [
+                        { text: copy.uncontrolled, style: 'ccFooter' },
+                        { text: fillTemplate(copy.pageTemplate, currentPage, pageCount), style: 'ccFooter', alignment: 'right', width: 'auto' }
+                    ]
+                };
+            },
+            defaultStyle: { fontSize: 8 },
+            styles: {
+                ccKicker: { fontSize: 8, bold: true, color: '#696cff' },
+                ccTitle: { fontSize: 16, bold: true, color: '#111827', margin: [0, 2, 0, 0] },
+                ccLabel: { bold: true, color: '#334155' },
+                ccValue: { color: '#17202a' },
+                ccHead: { bold: true, color: '#334155', fillColor: '#f8fafc' },
+                ccFooter: { fontSize: 7, color: '#6b7280' }
+            }
+        };
+    }
+
+    function cssString(text) { return '"' + String(text).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\r\n]+/g, ' ') + '"'; }
+
+    // "Sayfa {0} / {1}" → "Sayfa " counter(page) " / " counter(pages) — the page number in the reader's words.
+    function pageCounterContent(template) {
+        return String(template).split(/(\{0\}|\{1\})/).filter(function (part) { return part !== ''; }).map(function (part) {
+            if (part === '{0}') return 'counter(page)';
+            if (part === '{1}') return 'counter(pages)';
+            return cssString(part);
+        }).join(' ');
+    }
+
+    // The print window's rendering of the copy. Stays in the window's own <style> (FG-003: no inline style).
+    function writeControlledPrint(win, copy) {
         var doc = win.document;
-        var safeTitle = titleText || document.title || 'Report';
-        var printedAt = new Date().toLocaleString();
+        doc.open();
+        doc.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title></title></head><body></body></html>');
+        doc.close();
+        doc.documentElement.setAttribute('lang', window.CurrentLanguage || '');
+        doc.documentElement.setAttribute('dir', copy.dir);
+        doc.title = copy.title;
+
         var rootStyles = window.getComputedStyle(document.documentElement);
         var primaryColor = (rootStyles.getPropertyValue('--bs-primary') || '').trim() || '#696cff';
-        var primaryRgb = (rootStyles.getPropertyValue('--bs-primary-rgb') || '').trim() || '105, 108, 255';
-        var moduleName = safeTitle.split(' - ')[0].trim() || safeTitle;
-
-        doc.title = safeTitle;
-
         var style = doc.createElement('style');
-        style.type = 'text/css';
         style.textContent = [
-            '@page { size: auto; margin: 16mm; }',
-            'html, body { background: #f4f6f8 !important; color: #17202a !important; font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important; }',
-            'body { margin: 0 !important; padding: 24px !important; }',
+            '@page { size: auto; margin: 16mm 16mm 20mm; @bottom-left { content: ' + cssString(copy.uncontrolled) + '; font-size: 9px; color: #6b7280; } @bottom-right { content: ' + pageCounterContent(copy.pageTemplate) + '; font-size: 9px; color: #6b7280; } }',
+            'html, body { background: #f4f6f8; color: #17202a; font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }',
+            'body { margin: 0; padding: 24px; }',
             '.print-shell { max-width: 1100px; margin: 0 auto; background: #ffffff; border: 1px solid #e9edf3; border-radius: 16px; padding: 22px 28px; box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08); }',
-            '.print-header { display: block; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e9edf3; }',
+            '.print-header { margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e9edf3; }',
             '.print-kicker { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: ' + primaryColor + '; margin-bottom: 6px; }',
             '.print-title { margin: 0; font-size: 28px; line-height: 1.15; font-weight: 700; color: #111827; }',
-            '.print-meta { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid #e9edf3; font-size: 13px; color: #6b7280; }',
-            'table { width: 100% !important; border-collapse: collapse !important; margin: 0 !important; }',
-            'thead th { background: #f8fafc !important; color: #334155 !important; font-size: 12px !important; font-weight: 700 !important; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #dbe3ee !important; padding: 12px 14px !important; }',
-            'tbody td { padding: 12px 14px !important; border-bottom: 1px solid #e9edf3 !important; color: #17202a !important; vertical-align: middle !important; }',
-            'tbody tr:nth-child(even) td { background: #fcfdfd !important; }',
-            '.dt-print-view h1 { display: none !important; }',
-            '.dt-print-view table.dataTable thead th, .dt-print-view table.dataTable tbody td { box-shadow: none !important; }',
-            '.dt-print-view table.dataTable tbody tr.selected td { background: #fff7ed !important; }',
-            '@media print { html, body { background: #fff !important; } body { padding: 0 !important; } .print-shell { max-width: none; border: 0; border-radius: 0; box-shadow: none; padding: 0; } .print-header { margin-bottom: 12px; } }'
+            '.print-meta { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 10px 0 0; padding-top: 10px; border-top: 1px solid #e9edf3; font-size: 13px; }',
+            '.print-meta dt { font-weight: 600; color: #334155; }',
+            '.print-meta dd { margin: 0; color: #4b5563; }',
+            'table { width: 100%; border-collapse: collapse; margin: 0; }',
+            'thead th { background: #f8fafc; color: #334155; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #dbe3ee; padding: 12px 14px; text-align: start; }',
+            'tbody td { padding: 12px 14px; border-bottom: 1px solid #e9edf3; color: #17202a; vertical-align: middle; }',
+            'tbody tr:nth-child(even) td { background: #fcfdfd; }',
+            '.print-footer { margin: 16px 0 0; font-size: 12px; color: #6b7280; }',
+            '@media print { html, body { background: #fff; } body { padding: 0; } .print-shell { max-width: none; border: 0; border-radius: 0; box-shadow: none; padding: 0; } thead { display: table-header-group; } }'
         ].join('\n');
-
         doc.head.appendChild(style);
 
-        var body = doc.body;
-        var table = body.querySelector('table');
-        var shell = doc.createElement('div');
-        shell.className = 'print-shell';
-
-        var header = doc.createElement('div');
-        header.className = 'print-header';
-        header.innerHTML =
-            '<div>' +
-            '  <div class="print-kicker">' + moduleName + '</div>' +
-            '  <h1 class="print-title">' + safeTitle + '</h1>' +
-            '  <p class="print-meta">Generated ' + printedAt + '</p>' +
-            '</div>';
-
+        var el = function (tag, className, text) {
+            var node = doc.createElement(tag);
+            if (className) node.className = className;
+            if (text !== undefined) node.textContent = text;
+            return node;
+        };
+        var shell = el('div', 'print-shell');
+        var header = el('header', 'print-header');
+        header.appendChild(el('div', 'print-kicker', copy.tenant || ''));
+        header.appendChild(el('h1', 'print-title', copy.title));
+        var meta = el('dl', 'print-meta');
+        copy.lines.forEach(function (line) {
+            var term = el('dt', null, line.label);
+            var value = el('dd', null, line.value);
+            term.setAttribute('data-line', line.key);
+            value.setAttribute('data-line', line.key);
+            meta.appendChild(term);
+            meta.appendChild(value);
+        });
+        header.appendChild(meta);
         shell.appendChild(header);
 
-        if (table) {
+        if (copy.header.length) {
+            var table = el('table', 'print-table');
+            var headRow = el('tr');
+            copy.header.forEach(function (h) { headRow.appendChild(el('th', null, h)); });
+            var thead = el('thead');
+            thead.appendChild(headRow);
+            var tbody = el('tbody');
+            copy.body.forEach(function (row) {
+                var tr = el('tr');
+                row.forEach(function (cell) { tr.appendChild(el('td', null, cell)); });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(thead);
+            table.appendChild(tbody);
             shell.appendChild(table);
         }
+        shell.appendChild(el('p', 'print-footer', copy.uncontrolled));
+        doc.body.appendChild(shell);
+    }
 
-        body.innerHTML = '';
-        body.appendChild(shell);
+    /*
+     * Decision C (vendored pdfmake 0.2.15 ships Roboto only: 0 of 256 Arabic and 0 of 20 992 CJK code points, measured
+     * 2026-09-25). A Chinese or Arabic PDF from pdfmake would print blank boxes, so in those two languages the PDF entry
+     * opens the print window and the browser saves the PDF with its own fonts. No font is embedded (bundle size); a
+     * server-side PDF is BL-452 package 4's note.
+     */
+    function pdfNeedsBrowserPrint(lang) {
+        var code = String(lang || '').toLowerCase().split('-')[0];
+        return code === 'zh' || code === 'ar';
+    }
+
+    function controlledCopyFileName(title) {
+        var stem = String(title || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '') || 'report';
+        var now = new Date();
+        var pad = function (n) { return String(n).padStart(2, '0'); };
+        return stem + '-' + now.getUTCFullYear() + pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) + '-' + pad(now.getUTCHours()) + pad(now.getUTCMinutes()) + '.pdf';
+    }
+
+    /**
+     * Print or PDF, one path. `source` = { rows() → Promise<{ header, body } | null>, meta(dt) → { filters, search } }:
+     * `rows` present = the server's rows (null = refused, the provider already told the reader); absent = the rows
+     * DataTables holds, through the same exportOptions the buttons always used.
+     */
+    async function runControlledCopy(kind, dt, exportOptions, source) {
+        source = source || {};
+        var viaPrint = kind === 'print' || pdfNeedsBrowserPrint(window.CurrentLanguage);
+        // Opened NOW, inside the click: a window opened after an await is a popup the browser blocks.
+        var win = viaPrint ? window.open('', '_blank') : null;
+        if (viaPrint && !win) { window.showToast?.('ErrorOccurred', 'error'); return null; }
+        var rows = null;
+        try {
+            rows = typeof source.rows === 'function' ? await source.rows() : dt.buttons.exportData(exportOptions);
+        } catch (error) {
+            console.error('[DtDefaults] Controlled copy rows failed.', error);
+            window.showToast?.('ErrorOccurred', 'error');
+            rows = null;
+        }
+        if (!rows) {
+            if (win) { try { win.close(); } catch (e) { } }
+            return null;
+        }
+        var meta = (typeof source.meta === 'function' ? source.meta(dt) : null) || {};
+        var copy = buildControlledCopy({
+            header: rows.header,
+            body: rows.body,
+            filters: meta.filters,
+            search: meta.search !== undefined ? meta.search : dt.search(),
+            sort: describeSort(dt)
+        });
+        var result = { requested: kind, output: viaPrint ? 'print' : 'pdf', copy: copy, docDefinition: null, window: win };
+        if (viaPrint) {
+            writeControlledPrint(win, copy);
+            try { win.focus(); if (kind === 'pdf') win.print(); } catch (e) { }
+        } else {
+            var pdfMake = window.pdfMake;
+            if (!pdfMake || typeof pdfMake.createPdf !== 'function') {
+                console.error('[DtDefaults] pdfmake is not loaded — the PDF cannot be built.');
+                window.showToast?.('ErrorOccurred', 'error');
+                return null;
+            }
+            result.docDefinition = controlledCopyDocDefinition(copy);
+            pdfMake.createPdf(result.docDefinition).download(controlledCopyFileName(copy.title));
+        }
+        _lastControlledCopy = result;
+        return result;
     }
 
     /**
@@ -722,27 +1070,59 @@ window.DtDefaults = (function () {
 
         var exportOptions = buildExportOptions(exportColumns);
 
+        /*
+         * BL-452 package 1 — THE FILE IS THE SCREEN. On a server-mode list DataTables holds only the page on screen, so
+         * its own csv/excel buttons would write those 10 rows and call it the list. A list that declares a server export
+         * hands `options.serverExport(format)`: CSV and Excel then ask the service for every matching row (visible
+         * columns, applied filter, search and order) instead. Without it — every client-mode page, every page that never
+         * heard of this — the two buttons are exactly the DataTables buttons they always were.
+         *
+         * BL-452 package 2 — PDF and print are the CONTROLLED COPY on every list (runControlledCopy): the header block and
+         * the uncontrolled-copy footer always; the rows from `options.controlledCopy.rows` when the list hands it (the
+         * factory on a server export — every matching row from the service), else the rows DataTables holds. Copy is
+         * unchanged.
+         */
+        var serverExport = typeof options.serverExport === 'function' ? options.serverExport : null;
+        var controlledCopy = options.controlledCopy || {};
+        var csvText = '<span class="d-flex align-items-center"><i class="icon-base bx bx-file me-2"></i>CSV</span>';
+        var excelText = '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-export me-2"></i>Excel</span>';
+        var csvBtn = serverExport
+            ? { text: csvText, className: 'dropdown-item dt-server-export', attr: { 'data-export-format': 'csv' }, action: function () { serverExport('csv'); } }
+            : { extend: 'csv', text: csvText, className: 'dropdown-item', exportOptions: exportOptions };
+        var excelBtn = serverExport
+            ? { text: excelText, className: 'dropdown-item dt-server-export', attr: { 'data-export-format': 'xlsx' }, action: function () { serverExport('xlsx'); } }
+            : { extend: 'excel', text: excelText, className: 'dropdown-item', exportOptions: exportOptions };
+
+        /*
+         * BL-452 (standard 1) — the file is a right of its own: a page passing `exportPermitted: false` (the reader lacks
+         * its {module}.export key) gets no Print / CSV / Excel / PDF entry at all — not a disabled one, not one that
+         * answers 403 — and no Copy either (owner, 2026-09-25: Copy puts the table's rows on the clipboard, which is the data
+         * leaving the screen just like a CSV). With nothing left in it, the Action button itself is not drawn (unless the page
+         * adds its own module items to that menu). Omitted = permitted: every page that never heard of this keeps its menu.
+         */
+        var exportPermitted = options.exportPermitted !== false;
+
         var exportBtn = {
             extend: 'collection',
             className: 'btn btn-label-secondary dropdown-toggle dt-export-collection-btn',
             text: '<span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-cog icon-sm"></i> <span class="d-none d-sm-inline-block">' + (l.Action || 'Action') + '</span></span>',
             buttons: [
                 {
-                    extend: 'print',
                     text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-printer me-2"></i>' + (l.Print || 'Print') + '</span>',
-                    className: 'dropdown-item',
-                    exportOptions: exportOptions,
-                    title: document.title || 'Report',
-                    autoPrint: false,
-                    customize: function (win) {
-                        customizePrintWindow(win, document.title || 'Report');
-                    }
+                    className: 'dropdown-item dt-controlled-copy',
+                    attr: { 'data-export-format': 'print' },
+                    action: function (e, dt) { return runControlledCopy('print', dt, exportOptions, controlledCopy); }
                 },
-                { extend: 'csv', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-file me-2"></i>CSV</span>', className: 'dropdown-item', exportOptions: exportOptions },
-                { extend: 'excel', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-export me-2"></i>Excel</span>', className: 'dropdown-item', exportOptions: exportOptions },
-                { extend: 'pdf', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-pdf me-2"></i>' + (l.PDF || 'PDF') + '</span>', className: 'dropdown-item', exportOptions: exportOptions },
+                csvBtn,
+                excelBtn,
+                {
+                    text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-pdf me-2"></i>' + (l.PDF || 'PDF') + '</span>',
+                    className: 'dropdown-item dt-controlled-copy',
+                    attr: { 'data-export-format': 'pdf' },
+                    action: function (e, dt) { return runControlledCopy('pdf', dt, exportOptions, controlledCopy); }
+                },
                 { extend: 'copy', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-copy me-2"></i>' + (l.Copy || 'Copy') + '</span>', className: 'dropdown-item', exportOptions: exportOptions }
-            ]
+            ].filter(function () { return exportPermitted; })
         };
 
         // Module-supplied entries for the Action dropdown (e.g. MOD-0150 Contacts template download / server-side
@@ -753,7 +1133,7 @@ window.DtDefaults = (function () {
             : [];
         var importBtn = extraButtons && extraButtons.importBtn;
 
-        if (moduleItems.length || importBtn) {
+        if ((moduleItems.length || importBtn) && exportBtn.buttons.length) {
             exportBtn.buttons.push({ text: '<hr class="my-0">', className: 'dropdown-item p-0 pe-none bg-transparent border-0', action: function() {} });
         }
 
@@ -795,7 +1175,8 @@ window.DtDefaults = (function () {
             ]
         };
 
-        var group1 = [exportBtn];
+        // BL-452 — an Action menu with no entry is not drawn (a reader without the export right, no module items).
+        var group1 = exportBtn.buttons.length ? [exportBtn] : [];
         var group2 = [];
         
         if (!options.skipColVis) {
@@ -805,9 +1186,7 @@ window.DtDefaults = (function () {
         if (extraButtons && extraButtons.filterBtn) group2.push(extraButtons.filterBtn);
         if (extraButtons && extraButtons.saveFilterBtn) group2.push(extraButtons.saveFilterBtn);
 
-        var features = [
-            { buttons: group1 }
-        ];
+        var features = group1.length ? [{ buttons: group1 }] : [];
 
         // Only emit the secondary group when it actually has buttons. An empty group (e.g. a
         // table with skipColVis and no filter/save button, like Admin Users) would otherwise
@@ -906,6 +1285,14 @@ window.DtDefaults = (function () {
     return {
         create: create,
         exportButtons: exportButtons,
+        controlledCopy: {
+            build: buildControlledCopy,
+            docDefinition: controlledCopyDocDefinition,
+            writePrint: writeControlledPrint,
+            pdfNeedsBrowserPrint: pdfNeedsBrowserPrint,
+            run: runControlledCopy,
+            get last() { return _lastControlledCopy; }
+        },
         responsiveRenderer: responsiveRenderer,
         updateVisualState: updateVisualState,
         refreshButtonGroupRadii: refreshButtonGroupRadii,

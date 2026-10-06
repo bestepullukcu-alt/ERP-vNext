@@ -1,0 +1,40 @@
+@using Diten.Web.Views.Meetings.Series
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MeetingSeriesIndex> Localizer
+
+@* MOD-0357 S11 — this screen's OWN l10n payload (window.MeetingSeriesL10n). Shared/common keys (Name,
+   MeetingType, StartAt, EndAt, Location, Organizer, Attendees, Save, Cancel, Yes, No, the reason-code bridge
+   sentences, …) are NOT repeated here — they already live in the general Meetings payload
+   (Views/Meetings/_IndexL10n.cshtml → window.MeetingsL10n), loaded alongside this one on every Series page, the
+   same convention MeetingTypes' own _IndexL10n.cshtml already follows. Contract marker: id="meeting-series-l10n". *@
+<script id="meeting-series-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        MeetingSeriesTitle = Localizer["MeetingSeriesTitle"].Value,
+        PageDescription = Localizer["PageDescription"].Value,
+        Actions = Localizer["Actions"].Value,
+        Frequency = Localizer["Frequency"].Value,
+        FrequencyWeekly = Localizer["FrequencyWeekly"].Value,
+        FrequencyMonthly = Localizer["FrequencyMonthly"].Value,
+        FrequencyQuarterly = Localizer["FrequencyQuarterly"].Value,
+        FrequencyYearly = Localizer["FrequencyYearly"].Value,
+        Interval = Localizer["Interval"].Value,
+        IntervalHint = Localizer["IntervalHint"].Value,
+        DurationMinutes = Localizer["DurationMinutes"].Value,
+        LeadTimeDays = Localizer["LeadTimeDays"].Value,
+        LeadTimeDaysHint = Localizer["LeadTimeDaysHint"].Value,
+        ChainAsFollowUp = Localizer["ChainAsFollowUp"].Value,
+        ChainAsFollowUpHint = Localizer["ChainAsFollowUpHint"].Value,
+        IsActive = Localizer["IsActive"].Value,
+        LastGeneratedAt = Localizer["LastGeneratedAt"].Value,
+        LastGeneratedAtNever = Localizer["LastGeneratedAtNever"].Value,
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+        IdentitySection = Localizer["IdentitySection"].Value,
+        ScheduleSection = Localizer["ScheduleSection"].Value,
+        ParticipantsSection = Localizer["ParticipantsSection"].Value,
+        FlagsSection = Localizer["FlagsSection"].Value,
+        DeleteConfirmTitle = Localizer["DeleteConfirmTitle"].Value,
+        DeleteConfirmText = Localizer["DeleteConfirmText"].Value
+    })
+</script>

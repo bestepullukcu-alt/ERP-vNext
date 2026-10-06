@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Domain.Entities.Meetings;
 using Diten.Platform.Domain.Repositories;
 
@@ -10,11 +11,10 @@ namespace Diten.Platform.Application.Features.Meetings.RecordLinks;
 /// and keeping every registered resolver in one folder is what makes "which module codes are covered" a
 /// one-directory question instead of a repo-wide grep.
 ///
-/// <para><b>Deep link.</b> The pack's own draft named `/WorkCenterNext?item=` as "whatever the existing deep
-/// link pattern is" — measured, no such pattern exists anywhere in the backend today.
-/// <c>TaskWorkItemProvider</c>'s own `Source.DeepLink` for a task is `/Tasks/{id}` (its real detail page), so
-/// that is the pattern reused here; see this WP's report for the discrepancy, unresolved by this slice
-/// (frontend is protected, out of scope to change).</para>
+/// <para><b>Link.</b> <see cref="TaskLinks.Detail"/> — the Task Center detail, which opens for any reader the task
+/// read rule admits (BL-414). It used to reuse the work item's own <c>Source.DeepLink</c>, the record page; that
+/// link is the way OUT of the Task Center to the record and stays so (<see cref="TaskLinks.Record"/>), but a
+/// meeting's related-task row sends the reader TO the task, which is the detail's job.</para>
 /// </summary>
 public sealed class TaskRelatedRecordResolver : IRelatedRecordResolver
 {
@@ -35,6 +35,6 @@ public sealed class TaskRelatedRecordResolver : IRelatedRecordResolver
         var tasks = await _tasks.ListByIdsAsync(ids, ct);
         return tasks.ToDictionary(
             task => task.Id,
-            task => new RelatedRecordSummary(task.Title, $"/Tasks/{task.Id}"));
+            task => new RelatedRecordSummary(task.Title, TaskLinks.Detail(task.Id)));
     }
 }

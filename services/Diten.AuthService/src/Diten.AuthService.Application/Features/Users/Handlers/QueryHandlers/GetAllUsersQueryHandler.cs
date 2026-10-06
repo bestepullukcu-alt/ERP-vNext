@@ -1,41 +1,79 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
+using Diten.AuthService.Application.Features.Users.Models;
 using Diten.AuthService.Application.Features.Users.Queries;
+using Diten.AuthService.Application.Features.Users.Services;
 using MediatR;
 
 namespace Diten.AuthService.Application.Features.Users.Handlers.QueryHandlers;
 
-public sealed class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, PaginatedResult<UserDto>>
+public sealed class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, Response<UserListResult>>
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IUserRoleRepository _userRoleRepository;
+    private readonly IUserListReader _reader;
     private readonly ITenantContext _tenantContext;
 
-    public GetAllUsersQueryHandler(
-        IUserRepository userRepository,
-        IUserRoleRepository userRoleRepository,
-        ITenantContext tenantContext)
+    public GetAllUsersQueryHandler(IUserListReader reader, ITenantContext tenantContext)
     {
-        _userRepository = userRepository;
-        _userRoleRepository = userRoleRepository;
+        _reader = reader;
         _tenantContext = tenantContext;
     }
 
-    public async Task<PaginatedResult<UserDto>> Handle(GetAllUsersQuery request, CancellationToken ct)
+    public async Task<Response<UserListResult>> Handle(GetAllUsersQuery request, CancellationToken ct)
     {
-        var users = await _userRepository.GetAllByTenantAsync(_tenantContext.TenantId, request.Page, request.PageSize, ct);
-        var total = await _userRepository.GetCountByTenantAsync(_tenantContext.TenantId, ct);
+        var tenantId = _tenantContext.TenantId;
 
-        var dtos = new List<UserDto>();
-        foreach (var user in users)
+        UserListCriteria criteria;
+        if (request.List is null)
         {
-            var roles = await _userRoleRepository.GetRolesByUserAsync(user.Id, _tenantContext.TenantId, ct);
-            dtos.Add(new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId,
-                user.LastLoginAt, user.FailedLoginAttempts, user.MustChangePassword, "TenantPolicy",
-                AccountKind: user.AccountKind.ToString()));
+            criteria = UserListRules.Legacy(request.Page, request.PageSize);
+        }
+        else
+        {
+            var built = request.ExportRowCap is { } rowCap
+                ? UserListRules.TryBuildExport(request.List, rowCap, out criteria, out var failure)
+                : UserListRules.TryBuild(request.List, out criteria, out failure);
+            if (!built)
+            {
+                return failure!;
+            }
+
+            // The role filter is resolved to a user-id set first; the users query then restricts to it (`_id in`).
+            if (request.List.RoleId is { Count: > 0 } roleIds)
+            {
+                var holders = await _reader.GetUserIdsHoldingAnyRoleAsync(tenantId, roleIds, ct);
+                criteria = criteria with { RestrictToUserIds = holders };
+            }
         }
 
-        return new PaginatedResult<UserDto>(dtos, total, request.Page, request.PageSize);
+        var page = await _reader.SearchAsync(tenantId, criteria, ct);
+
+        // BL-452 — more matches than the export may carry: the caller refuses the file (413), so the rows are not dressed.
+        // Two ways to know: the count said so (the reader then read nothing), or the read — asked for cap + 1 rows — brought
+        // back more than the cap because rows arrived between the count and the read. Either way: never a truncated file.
+        if (request.ExportRowCap is { } cap && (page.FilteredTotal > cap || page.Items.Count > cap))
+        {
+            var matched = Math.Max(page.FilteredTotal, page.Items.Count);
+            return Response<UserListResult>.Success(new UserListResult([], matched, matched, null));
+        }
+
+        // ONE query for the roles of the whole page — the loop that used to ask per user is gone.
+        var roles = await _reader.GetRoleNamesForUsersAsync(tenantId, page.Items.Select(u => u.Id).ToList(), ct);
+        var items = page.Items
+            .Select(user => new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive,
+                roles.TryGetValue(user.Id, out var names) ? names : [], user.TenantId,
+                user.LastLoginAt, user.FailedLoginAttempts, user.MustChangePassword, "TenantPolicy",
+                AccountKind: user.AccountKind.ToString(), Status: UserLifecycle.StatusOf(user)))
+            .ToList();
+
+        if (request.List is null || request.ExportRowCap is not null)
+        {
+            // Legacy: no filter, so what matched is the total. The summary was never part of this call.
+            // Export: the file has no header chips — the summary would be three queries for nothing.
+            return Response<UserListResult>.Success(new UserListResult(items, page.FilteredTotal, page.FilteredTotal, null));
+        }
+
+        var summary = await _reader.GetSummaryAsync(tenantId, ct);
+        return Response<UserListResult>.Success(new UserListResult(items, summary.Total, page.FilteredTotal, summary));
     }
 }

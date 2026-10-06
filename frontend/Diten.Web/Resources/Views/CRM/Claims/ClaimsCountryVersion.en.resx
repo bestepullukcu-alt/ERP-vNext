@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>Claims</value></data>
+  <data name="PageTitleCreate" xml:space="preserve"><value>Open country version · {0}</value></data>
+  <data name="PageTitleEdit" xml:space="preserve"><value>Country version · {0}</value></data>
+  <data name="CancelAction" xml:space="preserve"><value>Cancel</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Save draft</value></data>
+  <data name="SubmitLocal" xml:space="preserve"><value>Send for local review</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>Withdraw from review</value></data>
+  <data name="OpenNewVersion" xml:space="preserve"><value>Open new version</value></data>
+  <data name="ReadOnlyNote" xml:space="preserve"><value>Read-only access: you can view this country version.</value></data>
+  <data name="CoreCardTitle" xml:space="preserve"><value>Core claim · read-only</value></data>
+  <data name="CoreQualifierLabel" xml:space="preserve"><value>Qualifier</value></data>
+  <data name="CoreAudienceLabel" xml:space="preserve"><value>Audience</value></data>
+  <data name="CoreEvidenceCount" xml:space="preserve"><value>{0} evidence</value></data>
+  <data name="VersionLabel" xml:space="preserve"><value>v{0}</value></data>
+  <data name="CountryCardTitle" xml:space="preserve"><value>Country</value></data>
+  <data name="CountryLanguages" xml:space="preserve"><value>Country languages</value></data>
+  <data name="FromCountryMaster" xml:space="preserve"><value>· from the country master</value></data>
+  <data name="TextsTitle" xml:space="preserve"><value>Text and qualifiers · per language</value></data>
+  <data name="CoreReferenceText" xml:space="preserve"><value>Core (en)</value></data>
+  <data name="CoreReferenceQualifier" xml:space="preserve"><value>Core qualifier</value></data>
+  <data name="LocalTextLabel" xml:space="preserve"><value>Claim text · {0}</value></data>
+  <data name="LocalQualifiersLabel" xml:space="preserve"><value>Local qualifiers · {0}</value></data>
+  <data name="QualifierPlaceholder" xml:space="preserve"><value>Add a qualifier</value></data>
+  <data name="AddAction" xml:space="preserve"><value>Add</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>Remove</value></data>
+  <data name="LanguageMissing" xml:space="preserve"><value>Text missing</value></data>
+  <data name="CharCount" xml:space="preserve"><value>{0} characters</value></data>
+  <data name="AdaptationTitle" xml:space="preserve"><value>Adaptation</value></data>
+  <data name="AdaptationHint" xml:space="preserve"><value>A country version may be narrowed or softened compared with the core claim; it cannot widen its scope.</value></data>
+  <data name="AdaptationTypeLabel" xml:space="preserve"><value>Adaptation type</value></data>
+  <data name="AdaptationReasonLabel" xml:space="preserve"><value>Adaptation reason</value></data>
+  <data name="AdaptationReasonHint" xml:space="preserve"><value>Required unless the text is a verbatim translation.</value></data>
+  <data name="Adapt_verbatim" xml:space="preserve"><value>Verbatim translation</value></data>
+  <data name="Adapt_narrowed" xml:space="preserve"><value>Narrowed</value></data>
+  <data name="Adapt_softened" xml:space="preserve"><value>Softened</value></data>
+  <data name="ValidityTitle" xml:space="preserve"><value>Validity</value></data>
+  <data name="ValidFromLabel" xml:space="preserve"><value>Valid from</value></data>
+  <data name="ValidToLabel" xml:space="preserve"><value>Valid to</value></data>
+  <data name="AudienceTitle" xml:space="preserve"><value>Target audience</value></data>
+  <data name="AudienceHint" xml:space="preserve"><value>Only the core claim's audiences can be chosen (narrowing).</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Select</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>Evidence</value></data>
+  <data name="AddLocalEvidence" xml:space="preserve"><value>Add local evidence</value></data>
+  <data name="InheritedEvidenceTitle" xml:space="preserve"><value>From the core claim (read-only)</value></data>
+  <data name="LocalEvidenceTitle" xml:space="preserve"><value>Local evidence</value></data>
+  <data name="LocalEvidenceEmpty" xml:space="preserve"><value>No local evidence. Link local documents such as the {0} SmPC here.</value></data>
+  <data name="InheritedEvidenceEmpty" xml:space="preserve"><value>The core claim has no evidence yet.</value></data>
+  <data name="EvidenceSaveFirst" xml:space="preserve"><value>Save the draft first; evidence is linked to a saved country version.</value></data>
+  <data name="EvidenceLockedNote" xml:space="preserve"><value>Evidence can change only on a draft; open a new version to change it.</value></data>
+  <data name="EvidenceTextFirst" xml:space="preserve"><value>Enter and save the text of this language first; the supported phrases are marked on it.</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>Ready for review</value></data>
+  <data name="ReadyCoreApproved" xml:space="preserve"><value>Core claim approved</value></data>
+  <data name="ReadyAllLanguages" xml:space="preserve"><value>Text in every language</value></data>
+  <data name="ReadyAdaptationReason" xml:space="preserve"><value>Adaptation reason</value></data>
+  <data name="ReadyValidity" xml:space="preserve"><value>Validity start</value></data>
+  <data name="ReadyEvidence" xml:space="preserve"><value>At least 1 evidence</value></data>
+  <data name="ReadySaved" xml:space="preserve"><value>Saved</value></data>
+  <data name="ReadyMissing" xml:space="preserve"><value>missing</value></data>
+  <data name="FlowTitle" xml:space="preserve"><value>Local approval flow</value></data>
+  <data name="FlowSequentialNote" xml:space="preserve"><value>Sequential · configured in the approval settings</value></data>
+  <data name="FlowNoCandidates" xml:space="preserve"><value>No candidate position</value></data>
+  <data name="FlowReason_WorkflowTemplateMissing" xml:space="preserve"><value>No local approval flow is defined for this country yet. Ask your administrator.</value></data>
+  <data name="FlowReason_WorkflowTemplateNotPublished" xml:space="preserve"><value>The local approval flow exists but is not published yet.</value></data>
+  <data name="FlowReason_WorkflowPermissionMissing" xml:space="preserve"><value>You cannot view approval flow settings.</value></data>
+  <data name="FlowReason_WorkflowUnavailable" xml:space="preserve"><value>The approval flow cannot be shown right now.</value></data>
+  <data name="StatusCardTitle" xml:space="preserve"><value>Status</value></data>
+  <data name="LockInReview" xml:space="preserve"><value>In review: the country version is locked until the local approval flow completes or is withdrawn.</value></data>
+  <data name="LockApproved" xml:space="preserve"><value>Approved: text and evidence are locked. Open a new version to change them.</value></data>
+  <data name="LockReviewRequired" xml:space="preserve"><value>Needs review: the core or a linked document changed. Open a new version to update it.</value></data>
+  <data name="LockInactive" xml:space="preserve"><value>This record is no longer current (superseded or archived).</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Send this country version for local review? It will be locked until the flow completes.</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Withdraw this country version from review? It returns to draft.</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Open a new draft country version from this one?</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>Draft saved.</value></data>
+  <data name="ToastSubmitted" xml:space="preserve"><value>Sent for local review.</value></data>
+  <data name="ToastWithdrawn" xml:space="preserve"><value>Withdrawn from review.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>The country version could not be loaded.</value></data>
+  <data name="ErrorGeneric" xml:space="preserve"><value>Something went wrong. Please try again.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="KindCoreBadge" xml:space="preserve"><value>Core</value></data>
+  <data name="KindLocalBadge" xml:space="preserve"><value>Local</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>In review</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>Needs review</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="State_archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="Err_core_not_approved" xml:space="preserve"><value>The core claim must be approved before the country version.</value></data>
+  <data name="Err_country_closed" xml:space="preserve"><value>This country is marked as not to be opened for this claim. Reopen it on the coverage matrix first.</value></data>
+  <data name="Err_country_version_exists" xml:space="preserve"><value>This country already has a current version. Open it from the coverage matrix.</value></data>
+  <data name="Err_languages_incomplete" xml:space="preserve"><value>Enter the text in every content language of the country.</value></data>
+  <data name="Err_audience_not_narrowing" xml:space="preserve"><value>Only the core claim's audiences can be chosen.</value></data>
+  <data name="Err_adaptation_reason_required" xml:space="preserve"><value>Enter the adaptation reason (required unless verbatim).</value></data>
+  <data name="Err_texts_required" xml:space="preserve"><value>Enter at least one text.</value></data>
+  <data name="Err_language_not_allowed" xml:space="preserve"><value>This language is not a content language of the country.</value></data>
+  <data name="Err_duplicate_language" xml:space="preserve"><value>A language appears twice.</value></data>
+  <data name="Err_invalid_validity" xml:space="preserve"><value>The validity end must be after the start.</value></data>
+  <data name="Err_invalid_reference_value" xml:space="preserve"><value>Select a valid value.</value></data>
+  <data name="Err_open_version_exists" xml:space="preserve"><value>This country already has an open draft or in-review version.</value></data>
+  <data name="Err_invalid_state" xml:space="preserve"><value>This action is not possible in the current state.</value></data>
+  <data name="Err_invalid_status" xml:space="preserve"><value>This action is not possible in the current status.</value></data>
+  <data name="Err_evidence_required" xml:space="preserve"><value>Add at least one piece of evidence (inherited or local) before sending for review.</value></data>
+  <data name="Err_evidence_locked" xml:space="preserve"><value>Evidence can change only on a draft. Open a new version.</value></data>
+  <data name="Err_evidence_unavailable" xml:space="preserve"><value>The evidence service cannot be reached. Nothing was changed; try again later.</value></data>
+  <data name="Err_in_review_locked" xml:space="preserve"><value>The country version is in review. Withdraw it from review to change it.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>No local approval flow is defined for this country. Ask your administrator.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>You are not allowed to start the approval flow.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>The approval service cannot be reached. Nothing was changed; try again later.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>The approval flow refused the request.</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>The review cannot be withdrawn any more: an approver has already acted.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>There is no open review to withdraw.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>A required reference list is not published yet. Ask your administrator.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>A required service cannot be reached. Nothing was changed; try again later.</value></data>
+  <data name="Err_not_applicable" xml:space="preserve"><value>This country is out of scope for this claim.</value></data>
+  <data name="Err_required" xml:space="preserve"><value>Fill in the required fields.</value></data>
+</root>

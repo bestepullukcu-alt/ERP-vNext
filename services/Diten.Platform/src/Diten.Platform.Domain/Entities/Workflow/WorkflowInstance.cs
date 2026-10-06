@@ -29,9 +29,36 @@ public sealed class WorkflowInstance : TenantScopedEntity
     public string? CorrelationId { get; set; }
     public string? IdempotencyKey { get; set; }
     public string? StartedBy { get; set; }
+
+    /// <summary>WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — the starter's USER ID. <see cref="StartedBy"/> holds the actor
+    /// NAME (an e-mail), while an approver is identified by user id, so the "the starter may not approve" check compared
+    /// two different things and never fired. Additive: instances started before this field existed keep null and keep
+    /// the old comparison — no migration.</summary>
+    public Guid? StartedByUserId { get; set; }
     public DateTimeOffset? StartedAt { get; set; }
     public DateTimeOffset? DueAt { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }
     public DateTimeOffset? LastTransitionAt { get; set; }
     public DateTimeOffset? DeletedAt { get; set; }
+
+    // WP-CL-BE-3 — snapshot of the definition's business key at start, so the completion event can name the template
+    // without a second read. Null on instances started before this field existed.
+    public string? TemplateCode { get; set; }
+
+    // WP-CL-BE-3 — how the approval reads in WorkCenterNext when the object's owner module has no in-process
+    // resolver (cross-service starters such as CRM). Written once at start, never changed. Optional.
+    public WorkflowDisplayContextSnapshot? DisplayContext { get; set; }
+}
+
+/// <summary>
+/// WP-CL-BE-3 — the starter's own words for what is being approved: display only, never a decision input. The deep
+/// link is an app-relative path (validated at start), never an absolute URL.
+/// </summary>
+public sealed class WorkflowDisplayContextSnapshot
+{
+    public string? Title { get; set; }
+    public string? Subtitle { get; set; }
+    public string? SourceModule { get; set; }
+    public string? DeepLinkUrl { get; set; }
+    public List<string> Chips { get; set; } = [];
 }

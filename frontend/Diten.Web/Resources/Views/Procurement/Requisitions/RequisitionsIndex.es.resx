@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="RequisitionsTitle" xml:space="preserve"><value>Solicitudes de compra</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Solicitudes de compra: registre líneas de demanda, justifique y envíe para aprobación.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Agregar solicitud</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Editar solicitud</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Agregar solicitud</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar solicitud</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Ver</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="RequisitionId" xml:space="preserve"><value>N.º de solicitud</value></data>
+  <data name="LineCount" xml:space="preserve"><value>Líneas</value></data>
+  <data name="NeedBy" xml:space="preserve"><value>Necesario para</value></data>
+  <data name="Justification" xml:space="preserve"><value>Justificación</value></data>
+  <data name="JustificationPlaceholder" xml:space="preserve"><value>p. ej. reposición de materia prima de producción</value></data>
+  <data name="JustificationHint" xml:space="preserve"><value>Nota opcional que explica por qué se necesita esta solicitud.</value></data>
+  <data name="RequisitionSection" xml:space="preserve"><value>Detalles de la solicitud</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Líneas de la solicitud</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Agregar línea</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>N.º de artículo</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>p. ej. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>N.º de SKU</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>p. ej. c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Cantidad</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>p. ej. 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>Unidad</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>p. ej. BOX</value></data>
+  <data name="LineNeedBy" xml:space="preserve"><value>Necesario para</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>Se requiere al menos una línea (artículo, cantidad, unidad de medida).</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusSubmitted" xml:space="preserve"><value>Enviada</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Rechazada</value></data>
+  <data name="StatusConverted" xml:space="preserve"><value>Convertida</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="ActionSubmit" xml:space="preserve"><value>Enviar para aprobación</value></data>
+  <data name="ConfirmSubmit" xml:space="preserve"><value>¿Enviar esta solicitud para aprobación?</value></data>
+  <data name="SubmitSuccess" xml:space="preserve"><value>Solicitud enviada para aprobación.</value></data>
+</root>

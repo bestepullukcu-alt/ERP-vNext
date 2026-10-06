@@ -11,16 +11,20 @@
     </div>
     <div class="card-datatable table-responsive">
         <table id="dt-concept-chain-templates" data-dt-standard="v2" class="datatables-concept-chain-templates table border-top w-100">
+            @* WP-CT-FE-1 (mockup v2, Ekran 1): Konu · Zincir adı · Kod · Omurga · Dal · Moderatör · Kime · Durum+sürüm.
+               The detail columns after that stay available through colVis but are hidden by default (concept-slim.js). *@
             <thead><tr>
                 <th></th>
-                <th>@Localizer["ChainCode"]</th>
-                <th class="all">@Localizer["ChainName"]</th>
                 <th>@Localizer["SubjectId"]</th>
+                <th class="all">@Localizer["ChainName"]</th>
+                <th>@Localizer["ChainCode"]</th>
                 @* The expected TYPE sequence — the chain order lives here, not on the type's SortOrder. *@
-                <th>@Localizer["OrderedConceptTypes"]</th>
+                <th>@Localizer["Spine"]</th>
+                <th>@Localizer["BranchCount"]</th>
+                <th>@Localizer["Moderator"]</th>
+                <th>@Localizer["ForWhom"]</th>
+                <th>@Localizer["StatusVersion"]</th>
                 <th>@Localizer["SequenceLength"]</th>
-                <th>@Localizer["ChainVersion"]</th>
-                <th>@Localizer["Status"]</th>
                 <th>@Localizer["EffectiveFrom"]</th>
                 <th>@Localizer["EffectiveTo"]</th>
                 <th>@Localizer["Archived"]</th>

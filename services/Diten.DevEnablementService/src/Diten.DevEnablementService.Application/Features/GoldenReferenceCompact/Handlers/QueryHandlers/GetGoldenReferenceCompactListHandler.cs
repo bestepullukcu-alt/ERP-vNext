@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Diten.DevEnablementService.Application.Features.GoldenReferenceCompact.Handlers.QueryHandlers;
 
-public sealed class GetGoldenReferenceCompactListHandler : IRequestHandler<GetGoldenReferenceCompactListQuery, Response<IReadOnlyList<GoldenReferenceCompactListItemDto>>>
+public sealed class GetGoldenReferenceCompactListHandler : IRequestHandler<GetGoldenReferenceCompactListQuery, Response<GoldenReferenceCompactListPageDto>>
 {
     private readonly IGoldenReferenceCompactRepository _repository;
 
@@ -14,10 +14,33 @@ public sealed class GetGoldenReferenceCompactListHandler : IRequestHandler<GetGo
         _repository = repository;
     }
 
-    public async Task<Response<IReadOnlyList<GoldenReferenceCompactListItemDto>>> Handle(GetGoldenReferenceCompactListQuery request, CancellationToken cancellationToken)
+    public async Task<Response<GoldenReferenceCompactListPageDto>> Handle(GetGoldenReferenceCompactListQuery request, CancellationToken cancellationToken)
     {
-        var entities = await _repository.GetAllAsync(cancellationToken);
-        var list = entities.Select(x => new GoldenReferenceCompactListItemDto(
+        // The validator already refused an unknown column; this is the same table, not a second opinion.
+        if (!GoldenReferenceCompactListSort.TryResolve(request.OrderBy, out var sortField))
+            return Response<GoldenReferenceCompactListPageDto>.Fail($"'orderBy' '{request.OrderBy}' is not a sortable column.", 400);
+
+        // BL-452 export: the first row onwards, capped — never the page the caller may have been looking at. A cap below 1
+        // would read as "no paging" in the repository and lift the very ceiling it exists to enforce.
+        if (request.ExportRowCap is < 1)
+            throw new ArgumentOutOfRangeException(nameof(request), request.ExportRowCap, "ExportRowCap must be at least 1.");
+        var criteria = new GoldenReferenceCompactListCriteria(
+            Start: request.ExportRowCap is null ? request.Start ?? 0 : 0,
+            Length: request.ExportRowCap is { } rowCap ? rowCap + 1 : request.Length, // cap + 1: a late row is seen, not cut off
+            Search: request.Search,
+            SortField: sortField,
+            Descending: string.Equals(request.OrderDir, "desc", StringComparison.OrdinalIgnoreCase),
+            IsActive: request.Status?
+                .Select(value => GoldenReferenceCompactListSort.TryStatus(value, out var active) ? (bool?)active : null)
+                .Where(value => value.HasValue).Select(value => value!.Value).ToList(),
+            ReferenceTypes: Clean(request.ReferenceType),
+            Categories: Clean(request.Category),
+            Owners: Clean(request.Owner),
+            Priority: request.Priority,
+            RefuseAbove: request.ExportRowCap);
+
+        var page = await _repository.QueryAsync(criteria, cancellationToken);
+        var items = page.Items.Select(x => new GoldenReferenceCompactListItemDto(
             x.Id,
             x.Code,
             x.Name,
@@ -32,6 +55,9 @@ public sealed class GetGoldenReferenceCompactListHandler : IRequestHandler<GetGo
             x.ExpirationDate,
             x.Priority,
             x.IsActive)).ToList();
-        return Response<IReadOnlyList<GoldenReferenceCompactListItemDto>>.Success(list);
+        return Response<GoldenReferenceCompactListPageDto>.Success(new GoldenReferenceCompactListPageDto(items, page.Total, page.FilteredTotal));
     }
+
+    private static IReadOnlyList<string>? Clean(IReadOnlyList<string>? values) =>
+        values?.Where(v => !string.IsNullOrWhiteSpace(v)).Select(v => v.Trim()).Distinct().ToList();
 }

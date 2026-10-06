@@ -1,0 +1,147 @@
+@model Diten.Web.Models.Procurement.Requisitions.RequisitionsEditViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Procurement.Requisitions.RequisitionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = SharedLocalizer["Details"].Value;
+    Layout = "_LayoutTenantShell";
+
+    var status = Model.Status ?? "Draft";
+    var statusClass = status switch
+    {
+        "Draft" => "bg-label-secondary",
+        "Submitted" => "bg-label-primary",
+        "Approved" => "bg-label-success",
+        "Rejected" => "bg-label-danger",
+        "Converted" => "bg-label-info",
+        "Cancelled" => "bg-label-dark",
+        _ => "bg-label-primary"
+    };
+    var statusText = status switch
+    {
+        "Draft" => Localizer["StatusDraft"].Value,
+        "Submitted" => Localizer["StatusSubmitted"].Value,
+        "Approved" => Localizer["StatusApproved"].Value,
+        "Rejected" => Localizer["StatusRejected"].Value,
+        "Converted" => Localizer["StatusConverted"].Value,
+        "Cancelled" => Localizer["StatusCancelled"].Value,
+        _ => status
+    };
+
+    var canSubmit = Perms.Has("procurement.requisitions.submit") && status == "Draft";
+}
+
+<div class="requisition-details" data-requisition-id="@Model.RequisitionId">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@SharedLocalizer["Details"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="/Requisitions">@Localizer["RequisitionsTitle"]</a>
+                    </li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/Requisitions" class="btn btn-label-secondary">
+                @SharedLocalizer["Back"]
+            </a>
+            @if (canSubmit)
+            {
+                <button type="button" class="btn btn-primary" id="btnSubmitRequisition">
+                    <i class="bx bx-send me-1"></i>@Localizer["ActionSubmit"]
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="row g-4">
+    <!-- Main Column (Left) — LinesSection (matches _Form order) -->
+    <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LinesSection"]</h6>
+            @if (Model.Lines is { Count: > 0 })
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["LineItemId"]</th>
+                                <th>@Localizer["LineSkuId"]</th>
+                                <th>@Localizer["LineQuantity"]</th>
+                                <th>@Localizer["LineUomId"]</th>
+                                <th>@Localizer["LineNeedBy"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var line in Model.Lines)
+                            {
+                                <tr>
+                                    <td class="text-break">@(string.IsNullOrWhiteSpace(line.ItemId) ? "-" : line.ItemId)</td>
+                                    <td class="text-break">@(string.IsNullOrWhiteSpace(line.SkuId) ? "-" : line.SkuId)</td>
+                                    <td>@(string.IsNullOrWhiteSpace(line.Quantity) ? "-" : line.Quantity)</td>
+                                    <td>@(string.IsNullOrWhiteSpace(line.UomId) ? "-" : line.UomId)</td>
+                                    <td>@(string.IsNullOrWhiteSpace(line.NeedBy) ? "-" : line.NeedBy)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">@SharedLocalizer["NotAvailable"]</p>
+            }
+        </section>
+    </div>
+
+    <!-- Sidebar Column (Right) — RequisitionSection (matches _Form order) -->
+    <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["RequisitionSection"]</h6>
+            <div class="d-flex flex-column gap-4">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-purchase-tag-alt"></i>
+                    <div>
+                        <div class="backbone-preview-label">@Localizer["RequisitionId"]</div>
+                        <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.RequisitionId) ? "-" : Model.RequisitionId)</div>
+                    </div>
+                </div>
+                <div class="backbone-preview-field">
+                    <i class="bx bx-check-shield"></i>
+                    <div>
+                        <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
+                        <div class="mt-1"><span class="badge @statusClass">@statusText</span></div>
+                    </div>
+                </div>
+                <div class="backbone-preview-field">
+                    <i class="bx bx-note"></i>
+                    <div>
+                        <div class="backbone-preview-label">@Localizer["Justification"]</div>
+                        <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.Justification) ? "-" : Model.Justification)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script id="requisition-details-l10n" type="application/json">
+        @Json.Serialize(new
+        {
+            ActionSubmit = Localizer["ActionSubmit"].Value,
+            ConfirmSubmit = Localizer["ConfirmSubmit"].Value,
+            SubmitSuccess = Localizer["SubmitSuccess"].Value,
+            AreYouSure = SharedLocalizer["AreYouSure"].Value,
+            RecordSaved = SharedLocalizer["RecordSaved"].Value,
+            ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+            NotAvailable = SharedLocalizer["NotAvailable"].Value
+        })
+    </script>
+    <script src="~/assets/js/Procurement/Requisitions/details.js" asp-append-version="true"></script>
+}

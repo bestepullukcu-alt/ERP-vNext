@@ -1,0 +1,45 @@
+@using Diten.Web.Views.Procurement.InvoiceMatch
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InvoiceMatchIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Exception Status (Multi-select) — MatchExceptionStatus enum *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="Open">@Localizer["ExStatusOpen"]</option>
+                            <option value="Resolved">@Localizer["ExStatusResolved"]</option>
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Reason Code (Multi-select) — ExceptionReason enum (contract listMatchExceptions reasonCode) *@
+                    <div class="filter-chip filter-reason">
+                        <select id="filterReasonCode" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["ReasonCode"]">
+                            <option value="QtyMismatch">@Localizer["ReasonQtyMismatch"]</option>
+                            <option value="PriceMismatch">@Localizer["ReasonPriceMismatch"]</option>
+                            <option value="AmountMismatch">@Localizer["ReasonAmountMismatch"]</option>
+                            <option value="NoReceipt">@Localizer["ReasonNoReceipt"]</option>
+                            <option value="NoPo">@Localizer["ReasonNoPo"]</option>
+                            <option value="DuplicateInvoice">@Localizer["ReasonDuplicateInvoice"]</option>
+                            <option value="CurrencyMismatch">@Localizer["ReasonCurrencyMismatch"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,188 @@
+@model Diten.Web.Models.Procurement.Contracts.ContractEditViewModel
+@using Diten.Web.Views.Procurement.Contracts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContractsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+    var isDraft = string.Equals(Model.Status, "Draft", StringComparison.OrdinalIgnoreCase);
+    var clauses = (Model.Clauses is { Count: > 0 }) ? Model.Clauses : [new Diten.Web.Models.Procurement.Contracts.ContractClauseInput()];
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/Contracts">@Localizer["ContractsTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/Contracts" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="contractForm" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+
+@if (isEdit && !isDraft)
+{
+    <div class="alert alert-warning" role="alert">
+        <i class="bx bx-info-circle me-1"></i>@Localizer["EditDraftOnlyNotice"]
+    </div>
+}
+
+<form id="contractForm" asp-controller="Contracts" asp-action="@action" asp-route-id="@Model.ContractId" method="post"
+    class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="ContractId" />
+    <input type="hidden" asp-for="Status" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-file"></i>@Localizer["ContractSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="Title" class="form-label fw-medium">@Localizer["ContractTitle"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-purchase-tag-alt diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="Title" class="form-control" maxlength="200" placeholder="@Localizer["ContractTitlePlaceholder"]" required />
+                            </div>
+                            <span asp-validation-for="Title" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="SupplierId" class="form-label fw-medium">@Localizer["SupplierId"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-store diten-field-icon" aria-hidden="true"></i>
+                                <select asp-for="SupplierId" class="select2 form-select" id="supplierId" data-placeholder="@Localizer["SupplierIdPlaceholder"]" required>
+                                    @if (!string.IsNullOrWhiteSpace(Model.SupplierId))
+                                    {
+                                        <option value="@Model.SupplierId" selected>@Model.SupplierId</option>
+                                    }
+                                </select>
+                            </div>
+                            <span asp-validation-for="SupplierId" class="text-danger small mt-1"></span>
+                            <span class="text-muted small mt-1 d-block">@Localizer["SupplierIdHint"]</span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="RfxId" class="form-label fw-medium">@Localizer["RfxId"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-collection diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="RfxId" class="form-control" maxlength="120" placeholder="@Localizer["RfxIdPlaceholder"]" />
+                            </div>
+                            <span class="text-muted small mt-1 d-block">@Localizer["RfxIdHint"]</span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="EffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="EffectiveFrom" type="date" class="form-control" required />
+                            </div>
+                            <span asp-validation-for="EffectiveFrom" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="EffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar-check diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="EffectiveTo" type="date" class="form-control" />
+                            </div>
+                            <span class="text-muted small mt-1 d-block">@Localizer["EffectiveToHint"]</span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="Currency" class="form-label fw-medium">@Localizer["Currency"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-dollar-circle diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="Currency" class="form-control" maxlength="8" placeholder="@Localizer["CurrencyPlaceholder"]" />
+                            </div>
+                            <span class="text-muted small mt-1 d-block">@Localizer["CurrencyHint"]</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="card-section-title mb-0"><i class="bx bx-list-ul"></i>@Localizer["ClausesSection"]</h6>
+                        <button type="button" class="btn btn-sm btn-label-primary" id="btnAddClause">
+                            <i class="bx bx-plus me-1"></i>@Localizer["AddClauseRef"]
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0" id="clauseRefsTable">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["ClauseRefClauseId"] <span class="text-danger">*</span></th>
+                                    <th class="cell-fit text-center">@Localizer["ClauseRefDeviation"]</th>
+                                    <th>@Localizer["ClauseRefDeviationText"]</th>
+                                    <th class="cell-fit"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="clauseRefsBody" data-line-prefix="Clauses">
+                                @for (var i = 0; i < clauses.Count; i++)
+                                {
+                                    <tr class="clause-ref-row">
+                                        <td>
+                                            <input asp-for="Clauses[i].ClauseId" class="form-control form-control-sm clause-ref-input" data-line-field="ClauseId" placeholder="@Localizer["ClauseRefClauseIdPlaceholder"]" />
+                                        </td>
+                                        <td class="cell-fit text-center">
+                                            @* Plain checkbox (no asp-for): form.js assigns the indexed name so cloned rows bind; unchecked posts nothing → Deviation=false. *@
+                                            <input type="checkbox" class="form-check-input clause-ref-deviation" name="Clauses[@i].Deviation" data-line-field="Deviation" value="true" checked="@clauses[i].Deviation" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="Clauses[i].DeviationText" class="form-control form-control-sm clause-ref-input" data-line-field="DeviationText" placeholder="@Localizer["ClauseRefDeviationTextPlaceholder"]" />
+                                        </td>
+                                        <td class="cell-fit">
+                                            <button type="button" class="btn btn-icon btn-sm btn-label-danger clause-ref-remove" title="@SharedLocalizer["Delete"]">
+                                                <i class="bx bx-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small mt-2 mb-0">@Localizer["ClausesHint"]</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-paperclip"></i>@Localizer["EvidenceSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="EvidenceRefs" class="form-label fw-medium">@Localizer["EvidenceRefs"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-link diten-field-icon" aria-hidden="true"></i>
+                                <select asp-for="EvidenceRefs" class="select2 form-select" id="evidenceRefs" multiple="multiple" data-placeholder="@Localizer["EvidenceRefsPlaceholder"]">
+                                    @foreach (var evRef in Model.EvidenceRefs ?? [])
+                                    {
+                                        <option value="@evRef" selected>@evRef</option>
+                                    }
+                                </select>
+                            </div>
+                            <span class="text-muted small mt-1 d-block">@Localizer["EvidenceRefsHint"]</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+</form>

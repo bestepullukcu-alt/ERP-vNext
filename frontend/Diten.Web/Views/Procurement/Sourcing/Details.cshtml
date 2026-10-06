@@ -1,0 +1,341 @@
+@model Diten.Web.Models.Procurement.Sourcing.SourcingEditViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Procurement.Sourcing.SourcingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = SharedLocalizer["Details"].Value;
+    Layout = "_LayoutTenantShell";
+
+    var status = Model.Status ?? "Draft";
+    var statusClass = status switch
+    {
+        "Draft" => "bg-label-secondary",
+        "Published" => "bg-label-primary",
+        "Evaluating" => "bg-label-warning",
+        "Awarded" => "bg-label-success",
+        "Cancelled" => "bg-label-danger",
+        "Closed" => "bg-label-dark",
+        _ => "bg-label-primary"
+    };
+    var statusText = status switch
+    {
+        "Draft" => Localizer["StatusDraft"].Value,
+        "Published" => Localizer["StatusPublished"].Value,
+        "Evaluating" => Localizer["StatusEvaluating"].Value,
+        "Awarded" => Localizer["StatusAwarded"].Value,
+        "Cancelled" => Localizer["StatusCancelled"].Value,
+        "Closed" => Localizer["StatusClosed"].Value,
+        _ => status
+    };
+    var typeText = Model.Type switch
+    {
+        "RFQ" => Localizer["TypeRFQ"].Value,
+        "RFP" => Localizer["TypeRFP"].Value,
+        "RFI" => Localizer["TypeRFI"].Value,
+        _ => Model.Type
+    };
+
+    var canPublish = Perms.Has("procurement.sourcing.publish") && status == "Draft";
+    var canBid = Perms.Has("procurement.sourcing.bid") && status == "Published";
+    var canAward = Perms.Has("procurement.sourcing.award") && (status == "Published" || status == "Evaluating");
+}
+
+<div class="sourcing-details" data-rfx-id="@Model.RfxId">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@SharedLocalizer["Details"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="/Sourcing">@Localizer["SourcingTitle"]</a>
+                    </li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/Sourcing" class="btn btn-label-secondary">
+                @SharedLocalizer["Back"]
+            </a>
+            @if (canPublish)
+            {
+                <button type="button" class="btn btn-primary" id="btnPublishRfx">
+                    <i class="bx bx-broadcast me-1"></i>@Localizer["ActionPublish"]
+                </button>
+            }
+            @if (canBid)
+            {
+                <button type="button" class="btn btn-label-primary" data-bs-toggle="modal" data-bs-target="#bidModal">
+                    <i class="bx bx-plus me-1"></i>@Localizer["ActionSubmitBid"]
+                </button>
+            }
+            @if (canAward)
+            {
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#awardModal">
+                    <i class="bx bx-trophy me-1"></i>@Localizer["ActionAward"]
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="row g-4">
+    <!-- Main Column (Left) -->
+    <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["RfxSection"]</h6>
+            <div class="row g-4">
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-purchase-tag-alt"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["RfxId"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.RfxId) ? "-" : Model.RfxId)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-check-shield"></i>
+                        <div>
+                            <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
+                            <div class="mt-1"><span class="badge @statusClass">@statusText</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-category"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Type"]</div>
+                            <div class="backbone-preview-value mt-1">@typeText</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-calendar"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["ClosesAt"]</div>
+                            <div class="backbone-preview-value mt-1">@(Model.ClosesAt.HasValue ? Model.ClosesAt.Value.ToString("yyyy-MM-dd HH:mm") : "-")</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-purchase-tag"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["RfxTitle"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.Title) ? "-" : Model.Title)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LinesSection"]</h6>
+            @if (Model.Lines is { Count: > 0 })
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["LineItemId"]</th>
+                                <th>@Localizer["LineQuantity"]</th>
+                                <th>@Localizer["LineUomId"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var line in Model.Lines)
+                            {
+                                <tr>
+                                    <td class="text-break">@(string.IsNullOrWhiteSpace(line.ItemId) ? "-" : line.ItemId)</td>
+                                    <td>@(string.IsNullOrWhiteSpace(line.Quantity) ? "-" : line.Quantity)</td>
+                                    <td>@(string.IsNullOrWhiteSpace(line.UomId) ? "-" : line.UomId)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">@SharedLocalizer["NotAvailable"]</p>
+            }
+        </section>
+    </div>
+
+    <!-- Sidebar Column (Right) -->
+    <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["InvitedSection"]</h6>
+            @if (Model.InvitedSupplierIds is { Count: > 0 })
+            {
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var sid in Model.InvitedSupplierIds)
+                    {
+                        <span class="badge bg-label-primary">@sid</span>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">@SharedLocalizer["NotAvailable"]</p>
+            }
+        </section>
+
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IntegrationSection"]</h6>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-data"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["SourceSystem"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.SourceSystem) ? "-" : Model.SourceSystem)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-link"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["ExternalRef"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.ExternalRef) ? "-" : Model.ExternalRef)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    </div>
+
+    @* Bids sub-list — additive card (NOT a <section> so it stays out of the _Form↔Details section parity map). *@
+    <div class="card mt-4">
+        <div class="card-body p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["BidsSection"]</h6>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0" id="bidsTable">
+                    <thead>
+                        <tr>
+                            <th>@Localizer["BidId"]</th>
+                            <th>@Localizer["BidSupplierId"]</th>
+                            <th>@Localizer["BidLinesSummary"]</th>
+                            <th>@Localizer["BidEvaluationScore"]</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bidsBody">
+                        <tr><td colspan="4" class="text-muted text-center">@SharedLocalizer["NotAvailable"]</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Submit Bid modal (procurement.sourcing.bid). Data-entry modal; the confirm/success surfaces use the premium helpers. *@
+@if (canBid)
+{
+    <div class="modal fade" id="bidModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@Localizer["ActionSubmitBid"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium" for="bidSupplierId">@Localizer["BidSupplierId"] <span class="text-danger">*</span></label>
+                        <select id="bidSupplierId" class="form-select">
+                            <option value="">@Localizer["BidSupplierPlaceholder"]</option>
+                            @foreach (var sid in Model.InvitedSupplierIds ?? [])
+                            {
+                                <option value="@sid">@sid</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <label class="form-label fw-medium mb-0">@Localizer["BidLines"]</label>
+                        <button type="button" class="btn btn-sm btn-label-primary" id="btnAddBidLine"><i class="bx bx-plus me-1"></i>@Localizer["AddLine"]</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0" id="bidLinesTable">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["LineItemId"] <span class="text-danger">*</span></th>
+                                    <th>@Localizer["BidUnitPrice"] <span class="text-danger">*</span></th>
+                                    <th>@Localizer["BidLeadTimeDays"]</th>
+                                    <th class="cell-fit"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="bidLinesBody">
+                                <tr class="bid-line-row">
+                                    <td><input class="form-control form-control-sm bid-line-input" data-bid-field="itemId" placeholder="@Localizer["LineItemIdPlaceholder"]" /></td>
+                                    <td><input class="form-control form-control-sm bid-line-input" data-bid-field="unitPrice" inputmode="decimal" pattern="^-?\d+(\.\d+)?$" placeholder="@Localizer["BidUnitPricePlaceholder"]" /></td>
+                                    <td><input class="form-control form-control-sm bid-line-input" data-bid-field="leadTimeDays" inputmode="numeric" placeholder="@Localizer["BidLeadTimeDaysPlaceholder"]" /></td>
+                                    <td class="cell-fit"><button type="button" class="btn btn-icon btn-sm btn-label-danger bid-line-remove" title="@SharedLocalizer["Delete"]"><i class="bx bx-trash"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="button" class="btn btn-primary" id="btnSubmitBid">@Localizer["ActionSubmitBid"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Award modal (procurement.sourcing.award). *@
+@if (canAward)
+{
+    <div class="modal fade" id="awardModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@Localizer["ActionAward"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium" for="awardedBidId">@Localizer["AwardedBid"] <span class="text-danger">*</span></label>
+                        <select id="awardedBidId" class="form-select">
+                            <option value="">@Localizer["AwardedBidPlaceholder"]</option>
+                        </select>
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label fw-medium" for="awardRationale">@Localizer["AwardRationale"]</label>
+                        <textarea id="awardRationale" class="form-control" rows="3" maxlength="1000" placeholder="@Localizer["AwardRationalePlaceholder"]"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="button" class="btn btn-success" id="btnSubmitAward">@Localizer["ActionAward"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script id="sourcing-details-l10n" type="application/json">
+        @Json.Serialize(new
+        {
+            ActionPublish = Localizer["ActionPublish"].Value,
+            ConfirmPublish = Localizer["ConfirmPublish"].Value,
+            PublishSuccess = Localizer["PublishSuccess"].Value,
+            BidSuccess = Localizer["BidSuccess"].Value,
+            AwardSuccess = Localizer["AwardSuccess"].Value,
+            AreYouSure = SharedLocalizer["AreYouSure"].Value,
+            RecordSaved = SharedLocalizer["RecordSaved"].Value,
+            ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+            FormValidationError = SharedLocalizer["ValidationFailed"].Value,
+            NotAvailable = SharedLocalizer["NotAvailable"].Value,
+            Delete = SharedLocalizer["Delete"].Value
+        })
+    </script>
+    <script src="~/assets/js/Procurement/Sourcing/details.js" asp-append-version="true"></script>
+}

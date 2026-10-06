@@ -224,6 +224,74 @@ public sealed class TaskReviewerRequiredHttpTests
         Assert.Equal(TaskLifecycle.InProgress, harness.Tasks.Items.Single().Lifecycle);
     }
 
+    // ── WP-WORKFLOW-APPROVAL-STATUS-01 (B2 follow-up): nobody routes an approval or a review back to themselves ──
+
+    [Fact]
+    public async Task Creating_an_approval_with_MYSELF_as_the_manager_is_400_and_nothing_is_stored()
+    {
+        // The creator starts the approval and MOD-0023 never lets a starter decide: accepted, it would wait forever.
+        var harness = new Harness();
+
+        var response = await harness.CreateAsync(reviewRequired: false, reviewer: null, approvalRequired: true, approvalManager: TaskTestData.Me);
+
+        Assert.Equal(400, response.StatusCode);
+        Assert.Equal(TaskReasonCodes.ApprovalManagerIsSelf, response.ReasonCode);
+        Assert.Empty(harness.Tasks.Items);
+
+        // Non-vacuity: somebody else as the manager is accepted.
+        Assert.True((await harness.CreateAsync(reviewRequired: false, reviewer: null, approvalRequired: true, approvalManager: TaskTestData.Rival)).IsSuccessful);
+    }
+
+    [Fact]
+    public async Task Switching_approval_on_with_MYSELF_as_the_manager_is_400()
+    {
+        var harness = new Harness();
+        await harness.CreateAsync(reviewRequired: false, reviewer: null);
+        var stored = harness.Tasks.Items.Single();
+
+        var response = await harness.UpdateAsync(stored.Id, stored.Version, reviewRequired: false, reviewer: null,
+            approvalRequired: true, approvalManager: TaskTestData.Me);
+
+        Assert.Equal(400, response.StatusCode);
+        Assert.Equal(TaskReasonCodes.ApprovalManagerIsSelf, response.ReasonCode);
+        Assert.False(harness.Tasks.Items.Single().ApprovalRequired);
+    }
+
+    /// <summary>
+    /// CT acceptance (2026-09-29): re-pointing a RUNNING approval to the editor themselves was guarded in the handler but
+    /// by no test — removing the check passed the whole suite. Somebody else is still accepted (non-vacuity).
+    /// </summary>
+    [Fact]
+    public async Task Re_pointing_an_approval_to_MYSELF_is_400_and_the_manager_is_unchanged()
+    {
+        var harness = new Harness();
+        Assert.True((await harness.CreateAsync(reviewRequired: false, reviewer: null, approvalRequired: true, approvalManager: TaskTestData.Rival)).IsSuccessful);
+        var stored = harness.Tasks.Items.Single();
+
+        var response = await harness.UpdateAsync(stored.Id, stored.Version, reviewRequired: false, reviewer: null,
+            approvalRequired: true, approvalManager: TaskTestData.Me);
+
+        Assert.Equal(400, response.StatusCode);
+        Assert.Equal(TaskReasonCodes.ApprovalManagerIsSelf, response.ReasonCode);
+        Assert.Equal(TaskTestData.Rival, harness.Tasks.Items.Single().ApprovalManagerUserId);
+    }
+
+    [Fact]
+    public async Task Submitting_work_for_review_by_MYSELF_is_409_and_nothing_is_opened_in_MOD_0023()
+    {
+        var harness = new Harness();
+        await harness.CreateAsync(reviewRequired: true, reviewer: TaskTestData.Me);
+        var stored = harness.Tasks.Items.Single();
+        stored.Lifecycle = TaskLifecycle.InProgress;
+
+        var response = await harness.SubmitReviewAsync(stored.Id, stored.Version);
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(TaskReasonCodes.ReviewerIsSubmitter, response.ReasonCode);
+        Assert.Equal(TaskLifecycle.InProgress, harness.Tasks.Items.Single().Lifecycle);
+        Assert.Empty(harness.Reviews.Started);
+    }
+
     // ── harness ──────────────────────────────────────────────────────────────
 
     /// <summary>
@@ -298,7 +366,8 @@ public sealed class TaskReviewerRequiredHttpTests
                 new TaskChecklistService(),
                 // Permits everything, so any refusal below is MOD-0024's own rule.
                 new PassingWorkflowGate(),
-                new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance);
+                new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance);
 
             var correlation = new CorrelationContext();
             correlation.SetCorrelationId("corr");
@@ -313,7 +382,8 @@ public sealed class TaskReviewerRequiredHttpTests
 
         public FakeTaskReviewService Reviews { get; }
 
-        public async Task<Response<Guid>> CreateAsync(bool reviewRequired, Guid? reviewer)
+        public async Task<Response<Guid>> CreateAsync(
+            bool reviewRequired, Guid? reviewer, bool approvalRequired = false, Guid? approvalManager = null)
             => Unwrap<Guid>(await _controller.Create(
                 new CreateTaskItemRequest(
                     Title: "İncelenecek iş",
@@ -329,8 +399,8 @@ public sealed class TaskReviewerRequiredHttpTests
                     EstimateHours: null,
                     Tags: null,
                     ReviewRequired: reviewRequired,
-                    ApprovalRequired: false,
-                    ApprovalManagerUserId: null,
+                    ApprovalRequired: approvalRequired,
+                    ApprovalManagerUserId: approvalManager,
                     EmailNotificationsEnabled: false,
                     DelegationAllowed: false,
                     FieldValues: null,
@@ -339,7 +409,8 @@ public sealed class TaskReviewerRequiredHttpTests
                 CancellationToken.None));
 
         public async Task<Response<NoContent>> UpdateAsync(
-            Guid id, int expectedVersion, bool reviewRequired, Guid? reviewer)
+            Guid id, int expectedVersion, bool reviewRequired, Guid? reviewer,
+            bool? approvalRequired = null, Guid? approvalManager = null)
             => Unwrap<NoContent>(await _controller.Update(
                 id,
                 new UpdateTaskItemRequest(
@@ -357,6 +428,8 @@ public sealed class TaskReviewerRequiredHttpTests
                     DelegationAllowed: false,
                     FieldValues: null,
                     ExpectedVersion: expectedVersion,
+                    ApprovalRequired: approvalRequired,
+                    ApprovalManagerUserId: approvalManager,
                     ReviewerCandidateUserId: reviewer),
                 CancellationToken.None));
 

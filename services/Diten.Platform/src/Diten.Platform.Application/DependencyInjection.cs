@@ -24,6 +24,7 @@ using Diten.Platform.Common.Catalog;
 using Diten.Platform.Contracts.Events;
 using FluentValidation;
 using MediatR;
+using Diten.Platform.Application.Features.TimeEntry;
 using Microsoft.Extensions.DependencyInjection;
 using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions;
 
@@ -76,6 +77,10 @@ public static class DependencyInjection
         // accepts exactly who the pickers offer.
         services.AddScoped<Features.Tasks.Services.ITaskAssignmentGuard,
             Features.Tasks.Services.TaskAssignmentGuard>();
+        // BL-349 at the READ — who may see one task's detail/attachments, a different question from who it is
+        // assigned to. ONE rule, asked by every read-side endpoint that resolves a single task by id.
+        services.AddScoped<Features.Tasks.Services.ITaskReadAccessPolicy,
+            Features.Tasks.Services.TaskReadAccessPolicy>();
         // BL-023 — turns that resolver's DESCENT into "my team". Walks nothing of its own.
         services.AddScoped<Features.Tasks.Services.ITaskTeamResolver,
             Features.Tasks.Services.TaskTeamResolver>();
@@ -86,6 +91,11 @@ public static class DependencyInjection
         services.AddScoped<IPlatformLookupProvider, PlatformLookupProvider>();
         // Working Calendar read-only working-day seam — the capability's actual product; consumers call THIS in-process.
         services.AddScoped<Features.WorkingCalendar.Provider.IWorkingCalendarProvider, Features.WorkingCalendar.Provider.WorkingCalendarProvider>();
+        // WP-TASK-CALENDAR-ENGINE-01 — the one working-hours seam (no IWorkingHoursRing is registered in v1: every
+        // person resolves to the tenant default) and the read-only "my meetings" reader the plan rule and the
+        // calendar feed share.
+        services.AddScoped<Features.WorkingHours.IWorkingHoursProvider, Features.WorkingHours.WorkingHoursProvider>();
+        services.AddScoped<Features.WorkAggregation.Calendar.ICalendarMeetingReader, Features.WorkAggregation.Calendar.CalendarMeetingReader>();
         services.AddScoped<Features.ModuleCatalog.Services.IModuleTaxonomyResolver, Features.ModuleCatalog.Services.ModuleTaxonomyResolver>();
         services.AddScoped<IBusinessReferenceDataValidationService, BusinessReferenceDataValidationService>();
         services.AddScoped<IBusinessReferenceDataPublicationEligibility, RuntimeBusinessReferenceDataPublicationEligibility>();
@@ -184,6 +194,12 @@ public static class DependencyInjection
             Features.DocumentManagementControlledCopy.Services.ControlledCopyWithdrawalPortAdapter>();
         // MOD-0029-FU14 — external document register / monitoring / impact assessment orchestration.
         services.AddScoped<Features.DocumentManagementExternalDocuments.Services.ExternalDocumentRegisterService>();
+        // MOD-0031 slice 1 — the evidence-linking read gate over the existing MOD-0029 access evaluator (read-only).
+        services.AddScoped<Features.EvidenceLinking.Services.IEvidenceDocumentAccessGate,
+            Features.EvidenceLinking.Services.EvidenceDocumentAccessGate>();
+        // WP-CL-BE-5 — computed current-document state of evidence links (read-only over existing DocMgmt reads).
+        services.AddScoped<Features.EvidenceLinking.Services.IEvidenceDocumentStateResolver,
+            Features.EvidenceLinking.Services.EvidenceDocumentStateResolver>();
         // MOD-0029-FU15 — retention schedule, litigation hold and disposition (no purge engine; evaluation is opt-in).
         services.AddScoped<Features.DocumentManagementRetention.Services.DocumentRetentionTriggerDateResolver>();
         services.AddScoped<Features.DocumentManagementRetention.Services.DocumentLegalHoldEvaluator>();
@@ -289,6 +305,8 @@ public static class DependencyInjection
         services.AddScoped<IAuditRetentionPolicyResolver, AuditRetentionPolicyResolver>();
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IAuditMetaAuditWriter, AuditMetaAuditWriter>();
+        // BL-347 — tenant-side data export audit (MOD-0024 work report; MOD-0357 S12 meeting report next).
+        services.AddScoped<IDataExportAuditWriter, DataExportAuditWriter>();
         services.AddScoped<IGlobalApplicabilityTransactionCoordinator, GlobalApplicabilityTransactionCoordinator>();
         services.AddScoped<IJobExecutionLogWriter, JobExecutionLogWriter>();
         services.AddScoped<SchedulerSmokeTestJob>();
@@ -305,6 +323,11 @@ public static class DependencyInjection
         // is decided by BackgroundJobs:RegisterStandardJobs + EnabledJobs, both of which default to off.
         services.AddScoped<Features.Tasks.BackgroundJobs.TaskRecurrenceSweepJob>();
         services.AddScoped<Features.Tasks.BackgroundJobs.TaskDueSoonSweepJob>();
+        // S10 live pass (2026-09-13): both handlers below were referenced by PlatformRecurringJobRegistrar but never
+        // registered, so the executor's GetRequiredService threw on every run the moment their flag was switched on.
+        // BackgroundJobHandlerRegistrationTests now fails for any IBackgroundJobHandler<> left out of this list.
+        services.AddScoped<Features.Meetings.BackgroundJobs.MeetingSeriesSweepJob>();
+        services.AddScoped<Features.WorkingCalendarImport.HolidayAutoFetchJob>();
         services.AddSingleton<IRecurringJobRegistrar, PlatformRecurringJobRegistrar>();
 
         // A3 — workflow transition gate (defence-in-depth): business modules inject this and must check it
@@ -318,6 +341,14 @@ public static class DependencyInjection
             Features.WorkAggregation.Services.WorkItemProjectionService>();
         services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
             Features.WorkAggregation.Providers.WorkflowApprovalWorkItemProvider>();
+        // BL-437 — source owners that say what an approval is about (title, requester, link). Collected by the
+        // approval provider as an IEnumerable, so another module adds its own line here and nothing else.
+        services.AddScoped<Features.WorkAggregation.Services.IApprovalSourceResolver,
+            Features.Tasks.Providers.TaskApprovalSourceResolver>();
+        // WP-CL-BE-3 — the starter's display-context snapshot for objects owned by ANOTHER service (CRM claims). A
+        // fallback: the provider never lets it answer for a type an owner above claims.
+        services.AddScoped<Features.WorkAggregation.Services.IApprovalSourceResolver,
+            Features.WorkAggregation.Services.SnapshotApprovalSourceResolver>();
         /*
          * MOD-0357 S1 — the one bridge collection's read side. `IRecordLinkService` is used both here (through
          * TaskWorkItemProvider's `relatedRecords` projection) and by MOD-0357's own future "linked records"
@@ -340,6 +371,9 @@ public static class DependencyInjection
         // WC-1's own code is untouched, which is exactly what the IWorkItemProvider seam exists for.
         services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
             Features.Tasks.Providers.TaskWorkItemProvider>();
+        // MOD-0357 S5c — the THIRD work-item provider: the actor's own pending meeting invitations (K5).
+        services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
+            Features.Meetings.Providers.MeetingWorkItemProvider>();
 
         /*
          * WC-D2 (DCP-004 §2 D2) — the WRITE half, registered as its own IEnumerable beside the read providers.
@@ -356,6 +390,8 @@ public static class DependencyInjection
             Features.WorkAggregation.Providers.WorkflowApprovalWorkItemActionDispatcher>();
         services.AddScoped<Features.WorkAggregation.Dispatch.IWorkItemActionDispatcher,
             Features.Tasks.Providers.TaskWorkItemActionDispatcher>();
+        services.AddScoped<Features.WorkAggregation.Dispatch.IWorkItemActionDispatcher,
+            Features.Meetings.Providers.MeetingWorkItemActionDispatcher>();
 
         // MOD-0024 Task Engine services. The lifecycle service is the SINGLE owner of the lifecycle→normalized
         // map, so the API and the Task Center projection can never disagree.
@@ -396,6 +432,12 @@ public static class DependencyInjection
 
         services.AddScoped<Features.Tasks.Services.ITaskApprovalService,
             Features.Tasks.Services.TaskApprovalService>();
+        // MOD-0357 S9 (owner, 2026-09-13) — the review-meeting gate reader shared by TaskWorkItemProvider's
+        // projection hint and the two decision handlers' re-check (TransitionTaskItemHandler → Done,
+        // SubmitTaskForReviewHandler), so they can never drift on what "unlocked" means. Reads
+        // RecordLink/Meeting/MeetingMinutesVersion only; never MOD-0023's own services.
+        services.AddScoped<Features.Tasks.Services.IReviewMeetingGateReader,
+            Features.Tasks.Services.ReviewMeetingGateReader>();
         // Phase 3b — the REVIEW handoff: the same engine asked a second question, never a second engine.
         services.AddScoped<Features.Tasks.Services.ITaskReviewService,
             Features.Tasks.Services.TaskReviewService>();
@@ -434,6 +476,9 @@ public static class DependencyInjection
         // MOD-0149 — Commercial Suite CRM (Account Foundation). Reconciles the CRM catalog identity + /CRM/Accounts page
         // descriptor (nav-visible=false; static tenant-shell menu owns nav until the MOD-0285 migration).
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Crm.SelfRegistration.CrmManifestProvider>();
+        // HR nav-wiring gap #4 (WP-HR-nav-B) — Talent Ecosystem (TEP): 30 nav pages (TepShellMetadata shell excluded).
+        // Route source = Diten.Web TalentEcosystem/* controllers; readPerm = Diten.TalentEcosystemService backend keys.
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.TalentEcosystem.SelfRegistration.TalentEcosystemManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Ppm.SelfRegistration.PpmManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.WorkingCalendar.SelfRegistration.WorkingCalendarManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.WorkingCalendarImport.WorkingCalendarImportManifestProvider>();
@@ -448,6 +493,16 @@ public static class DependencyInjection
         // MOD-0357 S2 — Meetings. See MeetingManifestProvider's own doc comment for a reported, unresolved
         // conflict this registration creates with NavManifestL10nGuardTests (frontend/**, protected this WP).
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Meetings.SelfRegistration.MeetingManifestProvider>();
+
+        // MOD-0280-FU01 T1a (ADR-004) — Time Entry & Weekly Timesheet, its own module inside Platform: ports, services,
+        // the approval source resolver, the decision sweep job and the manifest. One call, shared with the module's tests.
+        services.AddTimeEntryModule();
+
+        // HR nav wiring (gap #4) — Human Capital (23 DitenHumanCapitalService pages) + the distinct MOD-0251 Employee
+        // Master (DitenHcmService). Two ModuleCodes → two providers (one manifest document per provider). Entitlement +
+        // RBAC grant (WP-C) and the seven-language Nav.Page.* labels (WP-D) land separately.
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.HumanCapital.SelfRegistration.HumanCapitalManifestProvider>();
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.HumanCapital.SelfRegistration.HcmEmployeeMasterManifestProvider>();
 
         return services;
     }

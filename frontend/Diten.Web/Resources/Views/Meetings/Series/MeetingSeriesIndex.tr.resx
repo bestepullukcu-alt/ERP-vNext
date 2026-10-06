@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingSeriesTitle" xml:space="preserve"><value>Toplantı Serileri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Yinelenen kadans kuralları — vadesi gelen her örnek kendi toplantısı olarak otomatik üretilir.</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Sıklık</value></data>
+  <data name="FrequencyWeekly" xml:space="preserve"><value>Haftalık</value></data>
+  <data name="FrequencyMonthly" xml:space="preserve"><value>Aylık</value></data>
+  <data name="FrequencyQuarterly" xml:space="preserve"><value>Üç Aylık</value></data>
+  <data name="FrequencyYearly" xml:space="preserve"><value>Yıllık</value></data>
+  <data name="Interval" xml:space="preserve"><value>Aralık</value></data>
+  <data name="IntervalHint" xml:space="preserve"><value>Her N. dönemde bir — Haftalık ile 2, iki haftada bir demektir.</value></data>
+  <data name="DurationMinutes" xml:space="preserve"><value>Süre (dakika)</value></data>
+  <data name="LeadTimeDays" xml:space="preserve"><value>Hazırlık süresi (gün)</value></data>
+  <data name="LeadTimeDaysHint" xml:space="preserve"><value>Her örneğin, gerçekleşmesinden kaç gün önce üretileceği, 1-90.</value></data>
+  <data name="ChainAsFollowUp" xml:space="preserve"><value>Devam toplantısı olarak zincirle</value></data>
+  <data name="ChainAsFollowUpHint" xml:space="preserve"><value>Her yeni örnek bir öncekinin devamı olur ve hâlâ açık olan işlerini taşır.</value></data>
+  <data name="IsActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="LastGeneratedAt" xml:space="preserve"><value>Son üretilen</value></data>
+  <data name="LastGeneratedAtNever" xml:space="preserve"><value>Hiç</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni Toplantı Serisi</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Toplantı Serisini Düzenle</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Seri Bilgileri</value></data>
+  <data name="ScheduleSection" xml:space="preserve"><value>Takvim</value></data>
+  <data name="ParticipantsSection" xml:space="preserve"><value>Katılımcılar</value></data>
+  <data name="FlagsSection" xml:space="preserve"><value>Ayarlar</value></data>
+  <data name="DeleteConfirmTitle" xml:space="preserve"><value>Bu seri silinsin mi?</value></data>
+  <data name="DeleteConfirmText" xml:space="preserve"><value>Bu yalnızca kuralı kaldırır — kuralın şimdiye kadar ürettiği toplantılar etkilenmez.</value></data>
+</root>

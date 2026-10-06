@@ -64,7 +64,111 @@ public static class WorkflowReasonCodes
     public const string WorkflowEscalationIdempotent = "WORKFLOW_ESCALATION_IDEMPOTENT";
     public const string WorkflowTimeoutProcessed = "WORKFLOW_TIMEOUT_PROCESSED";
     public const string WorkflowNoOverdueTasks = "WORKFLOW_NO_OVERDUE_TASKS";
+
+    /// <summary>BL-422 — an escalation run carried NowUtc; runs are evaluated against the server clock only.</summary>
+    public const string WorkflowEscalationClockNotAccepted = "WORKFLOW_ESCALATION_CLOCK_NOT_ACCEPTED";
+
+    /// <summary>B4 — the request named an actor other than the signed-in user. The actor of a task action is ALWAYS the
+    /// authenticated user; a body may omit it, and may repeat it, but never name somebody else.</summary>
+    public const string WorkflowActorMismatch = "WORKFLOW_ACTOR_MISMATCH";
+
+    /// <summary>MOD-0280-FU01 R5 — the definition says a rejection must say why, and the reject carried no comment.</summary>
+    public const string WorkflowRejectCommentRequired = "WORKFLOW_REJECT_COMMENT_REQUIRED";
+
+    /// <summary>WP-CL-BE-3 — the Platform transaction that carries a terminal transition and its completion event
+    /// could not run (e.g. a MongoDB deployment without transactions). Nothing was written.</summary>
+    public const string WorkflowTransactionUnavailable = "WORKFLOW_TRANSACTION_UNAVAILABLE";
+
+    /// <summary>WP-CL-BE-3 — batch status read asked for more object ids than the ceiling.</summary>
+    public const string WorkflowBatchLimitExceeded = "WORKFLOW_BATCH_LIMIT_EXCEEDED";
 }
+
+/// <summary>
+/// WP-CL-BE-3 — terminal outcomes as they travel to other services (completion event + batch read). Lower-case,
+/// stable, independent of the enum's C# spelling.
+/// </summary>
+public static class WorkflowOutcomes
+{
+    public const string Approved = "approved";
+    public const string Rejected = "rejected";
+    public const string Cancelled = "cancelled";
+    public const string TimedOut = "timed-out";
+
+    /// <summary>The outcome of a TERMINAL instance status; null while the instance is still running.</summary>
+    public static string? For(WorkflowInstanceStatus status) => status switch
+    {
+        WorkflowInstanceStatus.Completed or WorkflowInstanceStatus.Approved => Approved,
+        WorkflowInstanceStatus.Rejected => Rejected,
+        WorkflowInstanceStatus.Cancelled => Cancelled,
+        WorkflowInstanceStatus.TimedOut => TimedOut,
+        _ => null
+    };
+}
+
+/// <summary>
+/// WP-CL-BE-3 — how an approval started by another service reads in WorkCenterNext. Optional on start; snapshotted on
+/// the instance and never changed afterwards. Display only: it drives no decision.
+/// <list type="bullet">
+/// <item><c>Title</c> ≤200, <c>Subtitle</c> ≤300, <c>SourceModule</c> ≤64 (e.g. "crm").</item>
+/// <item><c>DeepLinkUrl</c> ≤500 and an APP-RELATIVE path only ("/Crm/Claims/Detail/…"): an absolute URL, a
+/// protocol-relative "//host" or a <c>javascript:</c> link is refused with 400.</item>
+/// <item><c>Chips</c> ≤5 short labels (≤32 each), e.g. "TR", "v1.0".</item>
+/// </list>
+/// </summary>
+public sealed record WorkflowDisplayContext(
+    string? Title = null,
+    string? Subtitle = null,
+    string? SourceModule = null,
+    string? DeepLinkUrl = null,
+    IReadOnlyList<string>? Chips = null)
+{
+    public const int MaxTitle = 200;
+    public const int MaxSubtitle = 300;
+    public const int MaxSourceModule = 64;
+    public const int MaxDeepLinkUrl = 500;
+    public const int MaxChips = 5;
+    public const int MaxChip = 32;
+
+    /// <summary>App-relative path: starts with a single "/", no scheme, no backslash, no control characters.</summary>
+    public static bool IsRelativePath(string? url) =>
+        url is not null
+        && url.Length > 0
+        && url[0] == '/'
+        && !url.StartsWith("//", StringComparison.Ordinal)
+        && !url.Contains('\\')
+        && !url.Contains("://", StringComparison.Ordinal)
+        && !url.Contains(':', StringComparison.Ordinal) // javascript:, data:, mailto: … even after a leading slash
+        && !url.Any(char.IsControl);
+
+    public WorkflowDisplayContextSnapshot ToSnapshot() => new()
+    {
+        Title = Clean(Title),
+        Subtitle = Clean(Subtitle),
+        SourceModule = Clean(SourceModule),
+        DeepLinkUrl = Clean(DeepLinkUrl),
+        Chips = (Chips ?? []).Select(Clean).OfType<string>().ToList()
+    };
+
+    public static WorkflowDisplayContext? From(WorkflowDisplayContextSnapshot? snapshot) => snapshot is null
+        ? null
+        : new WorkflowDisplayContext(snapshot.Title, snapshot.Subtitle, snapshot.SourceModule, snapshot.DeepLinkUrl,
+            snapshot.Chips.ToList());
+
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
+
+/// <summary>WP-CL-BE-3 — one instance in the batch status read (newest first per object).</summary>
+public sealed record WorkflowInstanceStatusDto(
+    Guid WorkflowInstanceId,
+    string Status,
+    string? Outcome,
+    string CurrentStageCode,
+    string CurrentStepCode,
+    DateTimeOffset? StartedAt,
+    DateTimeOffset? CompletedAt);
+
+/// <summary>WP-CL-BE-3 — every instance of one object (empty list when none).</summary>
+public sealed record WorkflowObjectInstancesDto(string ObjectId, IReadOnlyList<WorkflowInstanceStatusDto> Instances);
 
 public enum WorkflowTransitionGateDecision
 {
@@ -151,7 +255,9 @@ public sealed record StartWorkflowInstanceRequest(
     string? IdempotencyKey,
     bool CommentRequired,
     bool EvidenceRequired,
-    DateTimeOffset? DueAt);
+    DateTimeOffset? DueAt,
+    // WP-CL-BE-3 — optional, trailing: a pre-existing caller binds exactly as before. See WorkflowDisplayContext.
+    WorkflowDisplayContext? DisplayContext = null);
 
 public sealed record StartWorkflowInstanceResponse(
     Guid WorkflowInstanceId,
@@ -181,7 +287,11 @@ public sealed record WorkflowInstanceDto(
     DateTimeOffset? DueAt,
     DateTimeOffset? CompletedAt,
     DateTimeOffset? LastTransitionAt,
-    string? CorrelationId);
+    string? CorrelationId,
+    // WP-CL-BE-3 — additive, trailing.
+    string? TemplateCode = null,
+    string? Outcome = null,
+    WorkflowDisplayContext? DisplayContext = null);
 
 public sealed record WorkflowTaskDto(
     Guid Id,
@@ -198,15 +308,36 @@ public sealed record WorkflowTaskDto(
     string? ActionedBy,
     string? ActionReasonCode);
 
+/// <summary>
+/// WP-CL-BE-3a — one row of an instance's transition history (<c>GET instances/{id}/history</c>), in
+/// <see cref="SequenceNo"/> order. <see cref="Action"/> is the lower-case kebab transition (start / approve / reject /
+/// delegate / request-info / cancel / escalate / timeout). From/To stage+step come from the approval task the row
+/// acted on; <see cref="StepName"/> from the pinned template version. <see cref="Comment"/> is the actor's comment /
+/// rejection reason text — returned ONLY here, never on events or logs.
+/// </summary>
+public sealed record WorkflowInstanceHistoryEntryDto(
+    long SequenceNo,
+    string Action,
+    string? ActorId,
+    string? ActorDisplay,
+    string? FromStageCode,
+    string? FromStepCode,
+    string? ToStageCode,
+    string? ToStepCode,
+    string? StepName,
+    string? Comment,
+    string? ReasonCode,
+    DateTimeOffset OccurredAt);
+
 public sealed record ApproveWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
     string? EvidenceRef);
 
 public sealed record RejectWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
@@ -225,14 +356,14 @@ public sealed record WorkflowTaskTransitionResponse(
     string? CorrelationId);
 
 public sealed record DelegateWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string DelegatePrincipalId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment);
 
 public sealed record RequestInfoWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string? TargetPrincipalId,
     string ReasonCode,
     string IdempotencyKey,
@@ -240,7 +371,7 @@ public sealed record RequestInfoWorkflowTaskRequest(
     string? EvidenceRef);
 
 public sealed record CancelWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment);
@@ -290,6 +421,12 @@ public sealed record SlaEscalationRuleDto(
     string RuleVersion,
     DateTimeOffset CreatedAt);
 
+/// <summary>
+/// MOD-0023 manual escalation run. <c>NowUtc</c> is NOT an input (BL-422): a run is always evaluated against the server
+/// clock, and a request that carries a value is refused 400 with
+/// <see cref="WorkflowReasonCodes.WorkflowEscalationClockNotAccepted"/>. The member stays on the contract so a client
+/// still sending it is told, instead of being silently ignored; the recurring sweep passes <c>null</c>.
+/// </summary>
 public sealed record RunWorkflowEscalationsRequest(
     DateTimeOffset? NowUtc,
     int? MaxItems,
@@ -362,7 +499,10 @@ public static class WorkflowDefinitionMapper
         instance.DueAt,
         instance.CompletedAt,
         instance.LastTransitionAt,
-        instance.CorrelationId);
+        instance.CorrelationId,
+        instance.TemplateCode,
+        WorkflowOutcomes.For(instance.Status),
+        WorkflowDisplayContext.From(instance.DisplayContext));
 
     public static WorkflowTaskDto ToTask(ApprovalTask task) => new(
         task.Id,

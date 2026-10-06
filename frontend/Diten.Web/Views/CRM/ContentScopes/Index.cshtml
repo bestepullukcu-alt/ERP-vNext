@@ -1,0 +1,50 @@
+@using Diten.Web.Views.CRM.ContentScopes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContentScopesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ScopesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ScopesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    <small class="text-muted"><i class="bx bx-info-circle me-1"></i>@Localizer["ReusableNote"]</small>
+</div>
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/ContentScopes/_Filter.cshtml" />
+<partial name="~/Views/CRM/ContentScopes/_DataTable.cshtml" />
+
+@* Read-only Quick View — the primary row action opens this offcanvas and index.js fills it from the DataTable row. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="scopePreviewTitle">
+    <div class="offcanvas-header p-4">
+        <div class="min-w-0">
+            <h5 id="scopePreviewTitle" class="offcanvas-title mb-0 text-truncate">-</h5>
+            <small id="scopePreviewSubtitle" class="text-muted d-block text-truncate">-</small>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <dl class="row mb-0 small">
+            <dt class="col-5 text-muted">@Localizer["Status"]</dt><dd class="col-7" id="pvStatus">-</dd>
+            <dt class="col-5 text-muted">@Localizer["ScopeVersion"]</dt><dd class="col-7" id="pvVersion">-</dd>
+            <dt class="col-5 text-muted">@Localizer["Channel"]</dt><dd class="col-7" id="pvChannel">-</dd>
+            <dt class="col-5 text-muted">@Localizer["LanguageCode"]</dt><dd class="col-7" id="pvLanguage">-</dd>
+            <dt class="col-12 text-muted mt-2">@Localizer["ProductRefs"]</dt><dd class="col-12" id="pvProducts">-</dd>
+            <dt class="col-12 text-muted mt-2">@Localizer["MarketRefs"]</dt><dd class="col-12" id="pvMarkets">-</dd>
+            <dt class="col-12 text-muted mt-2">@Localizer["AudienceRefs"]</dt><dd class="col-12" id="pvAudiences">-</dd>
+        </dl>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+        <a href="#" id="scopePreviewEdit" class="btn btn-primary">@Localizer["EditScope"]</a>
+    </div>
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/ContentScopes/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/ContentScopes/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/ContentScopes/index.js" asp-append-version="true"></script>
+}

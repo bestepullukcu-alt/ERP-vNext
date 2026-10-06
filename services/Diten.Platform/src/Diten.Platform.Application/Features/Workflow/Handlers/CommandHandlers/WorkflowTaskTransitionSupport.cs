@@ -13,6 +13,8 @@ internal sealed class WorkflowTaskTransitionSupport
     private readonly IWorkflowTransitionLogRepository _logRepository;
     private readonly IWorkflowTemplateVersionRepository? _versionRepository;
     private readonly IPositionAssignmentRepository? _positionAssignmentRepository;
+    private readonly IPositionRepository? _positionRepository;
+    private readonly WorkflowTerminalTransitionWriter _terminal;
 
     public WorkflowTaskTransitionSupport(
         IApprovalTaskRepository taskRepository,
@@ -20,7 +22,8 @@ internal sealed class WorkflowTaskTransitionSupport
         IRuntimeAssignmentSnapshotRepository snapshotRepository,
         IWorkflowTransitionLogRepository logRepository,
         IWorkflowTemplateVersionRepository? versionRepository = null,
-        IPositionAssignmentRepository? positionAssignmentRepository = null)
+        IPositionAssignmentRepository? positionAssignmentRepository = null,
+        WorkflowTransitionSeams? seams = null)
     {
         _taskRepository = taskRepository;
         _instanceRepository = instanceRepository;
@@ -28,6 +31,10 @@ internal sealed class WorkflowTaskTransitionSupport
         _logRepository = logRepository;
         _versionRepository = versionRepository;
         _positionAssignmentRepository = positionAssignmentRepository;
+        _positionRepository = seams?.Positions;
+        _terminal = new WorkflowTerminalTransitionWriter(
+            taskRepository, instanceRepository, logRepository,
+            seams?.Transactions, seams?.Events, seams?.Templates);
     }
 
     public async Task<Response<WorkflowTaskTransitionResponse>> TransitionAsync(
@@ -108,9 +115,7 @@ internal sealed class WorkflowTaskTransitionSupport
                 correlationId);
         }
 
-        if (action == WorkflowTransitionAction.Approve &&
-            !string.IsNullOrWhiteSpace(instance.StartedBy) &&
-            string.Equals(instance.StartedBy, actorId, StringComparison.Ordinal))
+        if (action == WorkflowTransitionAction.Approve && IsStarter(instance, actorId))
         {
             return Response<WorkflowTaskTransitionResponse>.Fail(
                 "Submitter cannot approve their own workflow.",
@@ -138,6 +143,7 @@ internal sealed class WorkflowTaskTransitionSupport
             nextCandidates = await WorkflowCandidateResolver.ResolveAsync(
                 nextStep.CandidatePrincipalIds,
                 _positionAssignmentRepository,
+                _positionRepository,
                 ct);
             if (nextCandidates.Count == 0)
             {
@@ -194,6 +200,19 @@ internal sealed class WorkflowTaskTransitionSupport
                     : "lexicographic_first_principal_after_runtime_resolution"
             };
             nextTask.AssignmentSnapshotId = nextSnapshot.Id;
+        }
+
+        if (nextStep is null)
+        {
+            // WP-CL-BE-3 — final approval or rejection makes the instance TERMINAL: task, instance, log and the
+            // completion event commit in one Platform transaction.
+            var terminalLog = NewLog(task, instance, action, previousTaskStatus, previousInstanceStatus, actorId,
+                reasonCode, idempotencyKey, comment, evidenceRef, correlationId,
+                await _logRepository.GetLatestSequenceNoAsync(instance.Id, ct) + 1);
+            var terminal = await _terminal.CommitAsync(task, task.Version, instance, instance.Version, terminalLog,
+                escalationWrite: false, actorId, reasonCode, correlationId, ct);
+            return TerminalResponse(terminal, task, instance, previousTaskStatus, previousInstanceStatus, action,
+                correlationId);
         }
 
         var taskVersion = task.Version;
@@ -317,7 +336,10 @@ internal sealed class WorkflowTaskTransitionSupport
         CancellationToken ct)
     {
         actorId = actorId.Trim();
-        delegatePrincipalId = delegatePrincipalId.Trim();
+        // BL-491 — every later gate compares principals letter for letter, so a user id written in another spelling
+        // (upper case, braces, no dashes) would pass the "not yourself" check below and then leave the task with a
+        // principal nobody's token ever matches. A user id is kept in ONE spelling; any other principal is untouched.
+        delegatePrincipalId = CanonicalPrincipal(delegatePrincipalId.Trim());
         reasonCode = reasonCode.Trim();
         idempotencyKey = idempotencyKey.Trim();
 
@@ -357,6 +379,18 @@ internal sealed class WorkflowTaskTransitionSupport
         if (!string.Equals(snapshot.ResolvedPrincipalId, actorId, StringComparison.Ordinal))
         {
             return ActorDenied(correlationId);
+        }
+
+        // BL-491 — the approve gate refuses the starter (SOD_VIOLATION), so a task delegated TO the starter would sit
+        // with the one person who can never approve it. The same rule, at the gate that would create that lock —
+        // asked after the assignment check, so somebody the task is not with learns nothing about who started it.
+        if (IsStarter(instance, delegatePrincipalId))
+        {
+            return Response<WorkflowTaskTransitionResponse>.Fail(
+                "A workflow task cannot be delegated to the person who started the workflow.",
+                409,
+                WorkflowReasonCodes.SodViolation,
+                correlationId);
         }
 
         var previousTaskStatus = task.Status;
@@ -481,7 +515,8 @@ internal sealed class WorkflowTaskTransitionSupport
         string idempotencyKey,
         string? comment,
         string correlationId,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool allowEscalated = false)
     {
         actorId = actorId.Trim();
         reasonCode = reasonCode.Trim();
@@ -505,7 +540,10 @@ internal sealed class WorkflowTaskTransitionSupport
 
         var task = context.Task!;
         var instance = context.Instance!;
-        if (!IsOpen(task))
+        // B3 — an ESCALATED task is still open (nobody decided; it only moved to somebody else), but only the OWNING
+        // module's in-process withdraw may call it off (allowEscalated). The public cancel endpoint never sets it, so
+        // an escalated approval cannot be cancelled by whoever holds the cancel permission.
+        if (!IsOpen(task) && !(allowEscalated && task.Status == ApprovalTaskStatus.Escalated))
         {
             return InvalidState(correlationId);
         }
@@ -552,6 +590,18 @@ internal sealed class WorkflowTaskTransitionSupport
         string correlationId,
         CancellationToken ct)
     {
+        if (WorkflowOutcomes.For(instance.Status) is not null)
+        {
+            // WP-CL-BE-3 — cancel makes the instance TERMINAL: one transaction with the completion event.
+            var terminalLog = NewLog(task, instance, action, previousTaskStatus, previousInstanceStatus, actorId,
+                reasonCode, idempotencyKey, comment, evidenceRef, correlationId,
+                await _logRepository.GetLatestSequenceNoAsync(instance.Id, ct) + 1);
+            var terminal = await _terminal.CommitAsync(task, task.Version, instance, instance.Version, terminalLog,
+                escalationWrite: false, actorId, reasonCode, correlationId, ct);
+            return TerminalResponse(terminal, task, instance, previousTaskStatus, previousInstanceStatus, action,
+                correlationId);
+        }
+
         var taskVersion = task.Version;
         var instanceVersion = instance.Version;
         if (!await _taskRepository.UpdateAsync(task, taskVersion, ct) ||
@@ -654,8 +704,94 @@ internal sealed class WorkflowTaskTransitionSupport
         return TransitionContext.Success(task, instance, snapshot);
     }
 
+    private static WorkflowTransitionLog NewLog(
+        ApprovalTask task,
+        WorkflowInstance instance,
+        WorkflowTransitionAction action,
+        ApprovalTaskStatus previousTaskStatus,
+        WorkflowInstanceStatus previousInstanceStatus,
+        string actorId,
+        string reasonCode,
+        string idempotencyKey,
+        string? comment,
+        string? evidenceRef,
+        string correlationId,
+        long sequenceNo) => new()
+    {
+        TenantId = task.TenantId,
+        WorkflowInstanceId = instance.Id,
+        ApprovalTaskId = task.Id,
+        Action = action,
+        FromState = previousTaskStatus.ToString(),
+        ToState = task.Status.ToString(),
+        FromStatus = previousInstanceStatus.ToString(),
+        ToStatus = instance.Status.ToString(),
+        ActorId = actorId,
+        ActorRef = actorId,
+        ReasonCode = reasonCode,
+        IdempotencyKey = idempotencyKey,
+        Comment = comment,
+        EvidenceRef = evidenceRef,
+        CorrelationId = correlationId,
+        SequenceNo = sequenceNo
+    };
+
+    private static Response<WorkflowTaskTransitionResponse> TerminalResponse(
+        WorkflowTerminalWriteResult result,
+        ApprovalTask task,
+        WorkflowInstance instance,
+        ApprovalTaskStatus previousTaskStatus,
+        WorkflowInstanceStatus previousInstanceStatus,
+        WorkflowTransitionAction action,
+        string correlationId) => result.Outcome switch
+    {
+        WorkflowTerminalWriteOutcome.Committed => Response<WorkflowTaskTransitionResponse>.Success(
+            new WorkflowTaskTransitionResponse(
+                instance.Id,
+                task.Id,
+                previousTaskStatus.ToString(),
+                task.Status.ToString(),
+                previousInstanceStatus.ToString(),
+                instance.Status.ToString(),
+                action.ToString(),
+                false,
+                result.Log!.Id,
+                correlationId),
+            correlationId: correlationId),
+        WorkflowTerminalWriteOutcome.TransactionUnavailable => Response<WorkflowTaskTransitionResponse>.Fail(
+            "The workflow transition could not be committed. Nothing was written.",
+            503,
+            WorkflowReasonCodes.WorkflowTransactionUnavailable,
+            correlationId),
+        _ => Response<WorkflowTaskTransitionResponse>.Fail(
+            "Workflow transition conflict.",
+            409,
+            WorkflowReasonCodes.WorkflowTransitionConflict,
+            correlationId)
+    };
+
     private static bool IsOpen(ApprovalTask task) =>
         task.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence;
+
+    /// <summary>A principal that is a user id, in the one spelling tokens and snapshots carry it; anything else as given.</summary>
+    internal static string CanonicalPrincipal(string principalId) =>
+        Guid.TryParse(principalId, out var userId) ? userId.ToString() : principalId;
+
+
+    /// <summary>
+    /// B2 — did <paramref name="actorId"/> start this instance? Decided by the starter's USER ID when the instance has
+    /// one (every instance started from now on); an older instance has only the actor name and keeps the old comparison.
+    /// </summary>
+    internal static bool IsStarter(WorkflowInstance instance, string actorId)
+    {
+        if (instance.StartedByUserId is { } starter)
+        {
+            return Guid.TryParse(actorId, out var actor) && actor == starter;
+        }
+
+        return !string.IsNullOrWhiteSpace(instance.StartedBy)
+               && string.Equals(instance.StartedBy, actorId, StringComparison.Ordinal);
+    }
 
     private static Response<WorkflowTaskTransitionResponse> InvalidState(string correlationId) =>
         Response<WorkflowTaskTransitionResponse>.Fail(

@@ -29,9 +29,9 @@
   <data name="LanguageCode" xml:space="preserve"><value>Language</value></data>
   <data name="ContentVersion" xml:space="preserve"><value>Content Version</value></data>
   <data name="Summary" xml:space="preserve"><value>Summary</value></data>
-  <data name="SubjectId" xml:space="preserve"><value>Subject</value></data>
-  <data name="TopicId" xml:space="preserve"><value>Topic</value></data>
-  <data name="AudienceProfileId" xml:space="preserve"><value>Audience Profile</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>الموضوع</value></data>
+  <data name="TopicId" xml:space="preserve"><value>العنوان</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>ملف الجمهور</value></data>
   <data name="ConceptNodeId" xml:space="preserve"><value>Concept Node</value></data>
   <data name="BrandId" xml:space="preserve"><value>Brand</value></data>
   <data name="ProductId" xml:space="preserve"><value>Product</value></data>
@@ -82,26 +82,26 @@
   <data name="ContentPointerRequired" xml:space="preserve"><value>At least one content pointer is required.</value></data>
   <data name="ValidationRequired" xml:space="preserve"><value>This field is required.</value></data>
   <data name="TaxonomyTab" xml:space="preserve"><value>Taxonomy</value></data>
-  <data name="SubjectsTab" xml:space="preserve"><value>Subjects</value></data>
-  <data name="TopicsTab" xml:space="preserve"><value>Topics</value></data>
-  <data name="ProfilesTab" xml:space="preserve"><value>Audience Profiles</value></data>
-  <data name="CreateSubject" xml:space="preserve"><value>Create Subject</value></data>
-  <data name="CreateTopic" xml:space="preserve"><value>Create Topic</value></data>
-  <data name="CreateProfile" xml:space="preserve"><value>Create Profile</value></data>
-  <data name="EditSubject" xml:space="preserve"><value>Edit Subject</value></data>
-  <data name="EditTopic" xml:space="preserve"><value>Edit Topic</value></data>
-  <data name="EditProfile" xml:space="preserve"><value>Edit Profile</value></data>
-  <data name="ArchiveSubject" xml:space="preserve"><value>Archive Subject</value></data>
-  <data name="ArchiveTopic" xml:space="preserve"><value>Archive Topic</value></data>
-  <data name="ArchiveProfile" xml:space="preserve"><value>Archive Profile</value></data>
+  <data name="SubjectsTab" xml:space="preserve"><value>المواضيع</value></data>
+  <data name="TopicsTab" xml:space="preserve"><value>العناوين</value></data>
+  <data name="ProfilesTab" xml:space="preserve"><value>ملفات الجمهور</value></data>
+  <data name="CreateSubject" xml:space="preserve"><value>إنشاء موضوع</value></data>
+  <data name="CreateTopic" xml:space="preserve"><value>إنشاء عنوان</value></data>
+  <data name="CreateProfile" xml:space="preserve"><value>إنشاء ملف جمهور</value></data>
+  <data name="EditSubject" xml:space="preserve"><value>تعديل الموضوع</value></data>
+  <data name="EditTopic" xml:space="preserve"><value>تعديل العنوان</value></data>
+  <data name="EditProfile" xml:space="preserve"><value>تعديل ملف الجمهور</value></data>
+  <data name="ArchiveSubject" xml:space="preserve"><value>أرشفة الموضوع</value></data>
+  <data name="ArchiveTopic" xml:space="preserve"><value>أرشفة العنوان</value></data>
+  <data name="ArchiveProfile" xml:space="preserve"><value>أرشفة ملف الجمهور</value></data>
   <data name="ArchiveTaxonomyConfirm" xml:space="preserve"><value>Archive this row? Existing content keeps its classification; only new attachment is blocked.</value></data>
   <data name="Name" xml:space="preserve"><value>Name</value></data>
   <data name="Code" xml:space="preserve"><value>Code</value></data>
   <data name="SortOrder" xml:space="preserve"><value>Sort Order</value></data>
   <data name="Status" xml:space="preserve"><value>الحالة</value></data>
   <data name="Description" xml:space="preserve"><value>Description</value></data>
-  <data name="ProfileType" xml:space="preserve"><value>Profile Type</value></data>
-  <data name="ParentTopicId" xml:space="preserve"><value>Parent Topic ID</value></data>
+  <data name="ProfileType" xml:space="preserve"><value>نوع الملف</value></data>
+  <data name="ParentTopicId" xml:space="preserve"><value>العنوان الأصلي</value></data>
   <data name="Active" xml:space="preserve"><value>نشط</value></data>
   <data name="Passive" xml:space="preserve"><value>غير نشط</value></data>
   <data name="Unknown" xml:space="preserve"><value>غير معروف</value></data>
@@ -122,8 +122,72 @@
   <data name="Deactivate" xml:space="preserve"><value>إلغاء التفعيل</value></data>
   <data name="Restore" xml:space="preserve"><value>استعادة</value></data>
   <data name="RestoredAsInactive" xml:space="preserve"><value>تمت الاستعادة كغير نشط.</value></data>
-  <data name="ParentSubjectId" xml:space="preserve"><value>الموضوع الأصل</value></data>
+  <data name="ParentSubjectId" xml:space="preserve"><value>الموضوع الأصلي</value></data>
   <data name="ConceptTypeId" xml:space="preserve"><value>Concept Type</value></data>
   <data name="ConceptNodeSubjectNote" xml:space="preserve"><value>The node list follows the Subject and Concept Type chosen above.</value></data>
   <data name="ConceptNodePickerUnavailable" xml:space="preserve"><value>The concept node list could not be loaded, so the current value is kept as-is.</value></data>
+  <data name="Dimensions" xml:space="preserve"><value>الأبعاد</value></data>
+  <data name="AddDimension" xml:space="preserve"><value>إضافة محور</value></data>
+  <data name="DimensionsNote" xml:space="preserve"><value>استهدف هذا الجمهور بمحاور البيانات المرجعية (أو محور مخصص).</value></data>
+  <data name="DimensionsEmpty" xml:space="preserve"><value>لا محاور بعد — يستهدف هذا الملف الجميع.</value></data>
+  <data name="Axis" xml:space="preserve"><value>المحور</value></data>
+  <data name="Values" xml:space="preserve"><value>القيم</value></data>
+  <data name="RemoveDimension" xml:space="preserve"><value>إزالة المحور</value></data>
+  <data name="Deprecated" xml:space="preserve"><value>مهمَل</value></data>
+  <data name="AxisAccountType" xml:space="preserve"><value>نوع الحساب</value></data>
+  <data name="AxisContactType" xml:space="preserve"><value>نوع جهة الاتصال</value></data>
+  <data name="AxisMedicalSpecialty" xml:space="preserve"><value>التخصص الطبي</value></data>
+  <data name="AxisCustom" xml:space="preserve"><value>مخصص</value></data>
+  <data name="SelectValues" xml:space="preserve"><value>اختر القيم</value></data>
+  <data name="CustomAxisPlaceholder" xml:space="preserve"><value>رمز المحور (مثل المنطقة)</value></data>
+  <data name="CustomValuesPlaceholder" xml:space="preserve"><value>اكتب قيمة واضغط Enter</value></data>
+  <data name="SubjectSource" xml:space="preserve"><value>مصدر الموضوع</value></data>
+  <data name="FromGlobalProduct" xml:space="preserve"><value>من Global Product</value></data>
+  <data name="CustomSubject" xml:space="preserve"><value>مخصص</value></data>
+  <data name="SelectGlobalProduct" xml:space="preserve"><value>اختر Global Product</value></data>
+  <data name="GlobalProductSubjectHint" xml:space="preserve"><value>يربط الموضوع بسجله الرئيسي في MDM ويملأ الاسم مسبقًا (قابل للتعديل).</value></data>
+  <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>قائمة Global Product غير متاحة؛ أدخل موضوعًا مخصصًا.</value></data>
+  <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>خدمة Global Product غير متوفرة؛ أدخل موضوعًا مخصصًا.</value></data>
+  <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>ليس لديك إذن لتصفح Global Products؛ أدخل موضوعًا مخصصًا.</value></data>
+  <data name="Reorder" xml:space="preserve"><value>إعادة الترتيب</value></data>
+  <data name="ReorderSubjects" xml:space="preserve"><value>إعادة ترتيب المواضيع</value></data>
+  <data name="ReorderTopics" xml:space="preserve"><value>إعادة ترتيب العناوين</value></data>
+  <data name="ReorderProfiles" xml:space="preserve"><value>إعادة ترتيب ملفات الجمهور</value></data>
+  <data name="ReorderHelp" xml:space="preserve"><value>اسحب الصفوف لتغيير ترتيبها ثم احفظ.</value></data>
+  <data name="SaveOrder" xml:space="preserve"><value>حفظ الترتيب</value></data>
+  <data name="ClaimsSection" xml:space="preserve"><value>الادعاءات</value></data>
+  <data name="ClaimRefsLabel" xml:space="preserve"><value>الادعاءات المستخدمة في هذا المحتوى</value></data>
+  <data name="ClaimRefsPlaceholder" xml:space="preserve"><value>ابحث عن ادعاء…</value></data>
+  <data name="ClaimRefsHelp" xml:space="preserve"><value>الأساسي هو الادعاء العام؛ وصف الدولة هو النص المعتمد لتلك الدولة. يتطلب النشر ادعاءات معتمدة، ولصف الدولة نصًا بلغة المحتوى.</value></data>
+  <data name="ClaimRefsProductFirst" xml:space="preserve"><value>اختر منتجًا أولاً — تُعرض الادعاءات حسب منتج المحتوى.</value></data>
+  <data name="ClaimRefsNone" xml:space="preserve"><value>لا توجد ادعاءات لهذا المنتج.</value></data>
+  <data name="ClaimRefsLoading" xml:space="preserve"><value>جارٍ تحميل الادعاءات…</value></data>
+  <data name="ClaimOptionsUnavailable" xml:space="preserve"><value>تعذر تحميل الادعاءات الآن. يتم الاحتفاظ بالادعاءات المحددة.</value></data>
+  <data name="ClaimPermissionMissing" xml:space="preserve"><value>ليس لديك إذن لقراءة الادعاءات. يتم الاحتفاظ بالادعاءات المحددة.</value></data>
+  <data name="ClaimEndpointMissing" xml:space="preserve"><value>خدمة الادعاءات غير متاحة. يتم الاحتفاظ بالادعاءات المحددة.</value></data>
+  <data name="ClaimCore" xml:space="preserve"><value>أساسي</value></data>
+  <data name="ClaimStatus_approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="ClaimStatus_in-review" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="ClaimStatus_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="ClaimStatus_review-required" xml:space="preserve"><value>تحتاج إلى مراجعة</value></data>
+  <data name="ClaimStatus_inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="ClaimStatus_archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="ClaimReason_not_approved" xml:space="preserve"><value>غير معتمد — سيُرفض النشر</value></data>
+  <data name="ClaimReason_language_mismatch" xml:space="preserve"><value>لا يوجد نص بلغة المحتوى</value></data>
+  <data name="ClaimRefNotInList" xml:space="preserve"><value>غير متاح للمنتج أو اللغة الحاليين</value></data>
+  <data name="ClaimRefsUnusableWarning" xml:space="preserve"><value>بعض الادعاءات المحددة لا يمكن نشرها بعد. يمكنك الحفظ؛ يُرفض النشر حتى تُعتمد ويكون لها نص بلغة المحتوى.</value></data>
+  <data name="ClaimRefsStaleWarning" xml:space="preserve"><value>بعض الادعاءات المحددة لا تطابق المنتج أو اللغة الحاليين. تم الاحتفاظ بها — أزلها إن لم تعد تنطبق.</value></data>
+  <data name="ClaimError_claim_refs_too_many" xml:space="preserve"><value>يمكن ربط 20 ادعاءً كحد أقصى بمحتوى واحد.</value></data>
+  <data name="ClaimError_claim_ref_invalid" xml:space="preserve"><value>اختيار أحد الادعاءات غير مكتمل أو غير صالح؛ اختره مرة أخرى.</value></data>
+  <data name="ClaimError_claim_ref_duplicate" xml:space="preserve"><value>تم اختيار الادعاء نفسه أكثر من مرة لهذه الدولة.</value></data>
+  <data name="ClaimError_claim_not_found" xml:space="preserve"><value>الادعاء المحدد لم يعد موجودًا.</value></data>
+  <data name="ClaimError_claim_ref_mismatch" xml:space="preserve"><value>لم يعد الاختيار يطابق سجل الادعاء؛ أعد تحميل الادعاءات واختر مجددًا.</value></data>
+  <data name="ClaimError_claim_country_version_not_found" xml:space="preserve"><value>نسخة الدولة للادعاء لم تعد موجودة.</value></data>
+  <data name="ClaimError_claim_product_mismatch" xml:space="preserve"><value>الادعاء يخص منتجًا غير منتج هذا المحتوى.</value></data>
+  <data name="ClaimError_claim_not_approved" xml:space="preserve"><value>الادعاء غير معتمد؛ لا يمكن نشر المحتوى.</value></data>
+  <data name="ClaimError_claim_language_mismatch" xml:space="preserve"><value>لا يوجد نص بلغة المحتوى في نسخة الدولة للادعاء؛ لا يمكن نشر المحتوى.</value></data>
+  <data name="ClaimError_dependency_unavailable" xml:space="preserve"><value>خدمة الادعاءات غير متاحة حاليًا؛ حاول لاحقًا.</value></data>
+  <data name="LinkedClaims" xml:space="preserve"><value>الادعاءات المرتبطة</value></data>
+  <data name="NoLinkedClaims" xml:space="preserve"><value>لا توجد ادعاءات مرتبطة بهذا المحتوى.</value></data>
+  <data name="ClaimNeedsReview" xml:space="preserve"><value>تحتاج إلى مراجعة — تغيّر الادعاء بعد اعتماد هذا الربط.</value></data>
 </root>

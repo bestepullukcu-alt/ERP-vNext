@@ -7,6 +7,7 @@
     const requiredKeys = [
         'Active', 'Actions', 'AddNew', 'Apply', 'AreYouSure', 'BulkDeactivate',
         'BulkDeactivateConfirm', 'BulkDeactivateSuccess', 'BulkDelete', 'BulkDeleteConfirm',
+        'OptionRemove', 'OptionPlaceholder',
         'Cancel', 'Classification', 'ClassificationConfidential', 'ClassificationInternal',
         'ClassificationNormal', 'ClassificationRestricted', 'Code', 'ColumnVisibility',
         'DataType', 'Deactivate', 'DeactivateConfirm', 'DefinitionLimitReached', 'Details',

@@ -81,6 +81,12 @@
   <data name="RecordCreated" xml:space="preserve">
     <value>L'enregistrement a été créé avec succès.</value>
   </data>
+  <data name="RecordActivated" xml:space="preserve">
+    <value>L'enregistrement a été activé.</value>
+  </data>
+  <data name="SavedNotActivated" xml:space="preserve">
+    <value>Enregistré, mais l'activation a échoué.</value>
+  </data>
   <data name="RecordDeleted" xml:space="preserve">
     <value>L'enregistrement a été supprimé avec succès.</value>
   </data>
@@ -272,9 +278,6 @@
   </data>
   <data name="Details" xml:space="preserve">
     <value>Détails</value>
-  </data>
-  <data name="Close" xml:space="preserve">
-    <value>Fermer</value>
   </data>
   <data name="BackToList" xml:space="preserve">
     <value>Retour à la liste</value>
@@ -533,6 +536,7 @@
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Paramètres des tâches</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Flux de travail</value></data>
   <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>Réunions</value></data>
+  <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>Feuilles de temps</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Utilisateurs</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Rôles</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Autorisations de rôle</value></data>
@@ -687,6 +691,21 @@
   <data name="Nav.Page.KNOWLEDGECONCEPTS" xml:space="preserve">
     <value>Concepts</value>
   </data>
+  <data name="Nav.Page.CLAIMS" xml:space="preserve">
+    <value>Allégations</value>
+  </data>
+  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
+    <value>Portées de contenu</value>
+  </data>
+  <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
+    <value>Ensembles de contenu</value>
+  </data>
+  <data name="Nav.Page.VISITFREQUENCYPOLICIES" xml:space="preserve">
+    <value>Politiques de fréquence de visite</value>
+  </data>
+  <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
+    <value>Politiques d'éligibilité</value>
+  </data>
   <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
     <value>Parcours de connaissances</value>
   </data>
@@ -800,9 +819,224 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>Dérogation</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Définitions de champs</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Réunions</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>Ma feuille de temps</value></data>
+  <data name="Nav.Page.TIMEAPPROVALS" xml:space="preserve"><value>Approbations des feuilles de temps</value></data>
+  <data name="Nav.Page.TIMECATEGORIES" xml:space="preserve"><value>Catégories de travail</value></data>
+  <data name="Nav.Page.TIMESETTINGS" xml:space="preserve"><value>Paramètres de saisie des temps</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Types de réunion</value></data>
+  <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Séries de réunions</value></data>
+  <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Rapport de réunion</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>Vous n'avez pas accès à {0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Demandez à votre administrateur de vous accorder l'accès à cette page.</value></data>
+  <data name="Nav.Module.HUMANCAPITAL" xml:space="preserve"><value>Capital humain</value></data>
+  <data name="Nav.Module.HCMEMPLOYEEMASTER" xml:space="preserve"><value>Référentiel des employés</value></data>
+  <data name="Nav.Module.TALENTECOSYSTEM" xml:space="preserve"><value>Écosystème de talents</value></data>
+  <data name="Nav.Domain.HUMANCAPITAL" xml:space="preserve"><value>Capital humain</value></data>
+  <data name="Nav.Domain.TALENTECOSYSTEM" xml:space="preserve"><value>Écosystème de talents</value></data>
+  <data name="Nav.Page.APPLICANTINTAKE" xml:space="preserve"><value>Réception des candidatures</value></data>
+  <data name="Nav.Page.CANDIDATEPIPELINE" xml:space="preserve"><value>Pipeline de candidats</value></data>
+  <data name="Nav.Page.COMPENSATIONBENEFITS" xml:space="preserve"><value>Rémunération et avantages</value></data>
+  <data name="Nav.Page.COMPETENCYSKILLS" xml:space="preserve"><value>Compétences et aptitudes</value></data>
+  <data name="Nav.Page.DEVELOPMENTPLANS" xml:space="preserve"><value>Plans de développement</value></data>
+  <data name="Nav.Page.EMPLOYEEONBOARDING" xml:space="preserve"><value>Intégration des employés</value></data>
+  <data name="Nav.Page.EMPLOYEEPROJECTIONS" xml:space="preserve"><value>Projections d'effectifs</value></data>
+  <data name="Nav.Page.EMPLOYMENTCHANGES" xml:space="preserve"><value>Changements d'emploi</value></data>
+  <data name="Nav.Page.HEADCOUNTBUDGET" xml:space="preserve"><value>Budget des effectifs</value></data>
+  <data name="Nav.Page.HRCASEMANAGEMENT" xml:space="preserve"><value>Gestion des dossiers RH</value></data>
+  <data name="Nav.Page.HRCOMPLIANCE" xml:space="preserve"><value>Conformité RH</value></data>
+  <data name="Nav.Page.HRDOCUMENTATION" xml:space="preserve"><value>Documentation RH</value></data>
+  <data name="Nav.Page.HRKPIANALYTICS" xml:space="preserve"><value>Analytique des KPI RH</value></data>
+  <data name="Nav.Page.LEARNINGTRAINING" xml:space="preserve"><value>Apprentissage et formation</value></data>
+  <data name="Nav.Page.OFFBOARDINGCASES" xml:space="preserve"><value>Dossiers de départ</value></data>
+  <data name="Nav.Page.OFFERMANAGEMENT" xml:space="preserve"><value>Gestion des offres</value></data>
+  <data name="Nav.Page.PERFORMANCEREVIEWS" xml:space="preserve"><value>Évaluations de performance</value></data>
+  <data name="Nav.Page.SELFSERVICE" xml:space="preserve"><value>Libre-service</value></data>
+  <data name="Nav.Page.SENSITIVEACCESS" xml:space="preserve"><value>Accès sensible</value></data>
+  <data name="Nav.Page.SUCCESSION" xml:space="preserve"><value>Relève</value></data>
+  <data name="Nav.Page.TIMEATTENDANCELEAVE" xml:space="preserve"><value>Temps, présence et congés</value></data>
+  <data name="Nav.Page.WORKFORCEPLANNING" xml:space="preserve"><value>Planification des effectifs</value></data>
+  <data name="Nav.Page.EMPLOYEEMASTER" xml:space="preserve"><value>Référentiel des employés</value></data>
+  <data name="Nav.Page.ASSOCIATIONMEMBERSHIPS" xml:space="preserve"><value>Adhésions aux associations</value></data>
+  <data name="Nav.Page.ASSOCIATIONOPERATIONS" xml:space="preserve"><value>Opérations des associations</value></data>
+  <data name="Nav.Page.CANDIDATECAREERPASSPORT" xml:space="preserve"><value>Passeport de carrière du candidat</value></data>
+  <data name="Nav.Page.CANDIDATEDISPUTES" xml:space="preserve"><value>Litiges des candidats</value></data>
+  <data name="Nav.Page.CANDIDATEPROFILES" xml:space="preserve"><value>Profils des candidats</value></data>
+  <data name="Nav.Page.CONSENTVISIBILITYPOLICIES" xml:space="preserve"><value>Politiques de visibilité du consentement</value></data>
+  <data name="Nav.Page.EARLYWARNINGSIGNALS" xml:space="preserve"><value>Signaux d'alerte précoce</value></data>
+  <data name="Nav.Page.EXITREFERENCERECORDS" xml:space="preserve"><value>Dossiers de référence de départ</value></data>
+  <data name="Nav.Page.HIRINGRISKINDICATORS" xml:space="preserve"><value>Indicateurs de risque d'embauche</value></data>
+  <data name="Nav.Page.INDUSTRYKNOWLEDGENETWORK" xml:space="preserve"><value>Réseau de connaissances sectorielles</value></data>
+  <data name="Nav.Page.INDUSTRYSKILLPASSPORT" xml:space="preserve"><value>Passeport de compétences sectorielles</value></data>
+  <data name="Nav.Page.INDUSTRYSUCCESSIONPOOL" xml:space="preserve"><value>Vivier de relève sectoriel</value></data>
+  <data name="Nav.Page.INDUSTRYTALENTPOOL" xml:space="preserve"><value>Vivier de talents sectoriel</value></data>
+  <data name="Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK" xml:space="preserve"><value>Réseau de recommandation de mentorat</value></data>
+  <data name="Nav.Page.PAYBENCHMARKING" xml:space="preserve"><value>Analyse comparative des salaires</value></data>
+  <data name="Nav.Page.PROFESSIONALREPUTATIONLEDGER" xml:space="preserve"><value>Registre de réputation professionnelle</value></data>
+  <data name="Nav.Page.REFERENCEEXCHANGE" xml:space="preserve"><value>Échange de références</value></data>
+  <data name="Nav.Page.REHIRERECOMMENDATIONS" xml:space="preserve"><value>Recommandations de réembauche</value></data>
+  <data name="Nav.Page.RESTRICTEDINTEGRITYREGISTRY" xml:space="preserve"><value>Registre d'intégrité restreint</value></data>
+  <data name="Nav.Page.REVIEWBOARD" xml:space="preserve"><value>Comité d'examen</value></data>
+  <data name="Nav.Page.SECTORMOBILITYINTELLIGENCE" xml:space="preserve"><value>Intelligence de mobilité sectorielle</value></data>
+  <data name="Nav.Page.SECTORTALENTTRENDS" xml:space="preserve"><value>Tendances des talents sectoriels</value></data>
+  <data name="Nav.Page.SKILLSGAPHEATMAP" xml:space="preserve"><value>Carte thermique des écarts de compétences</value></data>
+  <data name="Nav.Page.TALENTDATAFOUNDATION" xml:space="preserve"><value>Socle de données sur les talents</value></data>
+  <data name="Nav.Page.TALENTDEVELOPMENTNETWORK" xml:space="preserve"><value>Réseau de développement des talents</value></data>
+  <data name="Nav.Page.TALENTSUPPLYDEMANDFORECASTING" xml:space="preserve"><value>Prévision de l'offre et de la demande de talents</value></data>
+  <data name="Nav.Page.TRUSTLEVELS" xml:space="preserve"><value>Niveaux de confiance</value></data>
+  <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>Registre des certifications vérifiées</value></data>
+  <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>Participants vérifiés</value></data>
+  <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>Analytique des effectifs</value></data>
+  <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>Achats</value></data>
+  <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>Fournisseurs</value></data>
+  <data name="Nav.Module.PROCUREMENTSUPPLIERS" xml:space="preserve"><value>Fournisseurs</value></data>
+  <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>Fournisseurs</value></data>
+  <data name="Nav.Module.SOURCING" xml:space="preserve"><value>Sourcing</value></data>
+  <data name="Nav.Page.SOURCING" xml:space="preserve"><value>Sourcing</value></data>
+  <data name="RfxUpdateNotSupported" xml:space="preserve"><value>La modification d'un RFx n'est pas prise en charge ; créez un nouveau RFx ou gérez-le via la publication, l'offre et l'attribution.</value></data>
+  <data name="Nav.Module.REQUISITIONS" xml:space="preserve"><value>Demandes d'achat</value></data>
+  <data name="Nav.Page.REQUISITIONS" xml:space="preserve"><value>Demandes d'achat</value></data>
+  <data name="Nav.Module.PURCHASEORDERS" xml:space="preserve"><value>Bons de commande</value></data>
+  <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>Bons de commande</value></data>
+  <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>La modification d'une demande n'est pas prise en charge ; créez une nouvelle demande ou soumettez celle-ci pour approbation.</value></data>
+  <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>La modification d'un bon de commande n'est pas prise en charge ; créez un nouveau bon de commande ou approuvez celui-ci.</value></data>
+  <data name="Nav.Module.GRN" xml:space="preserve"><value>Réception (BR)</value></data>
+  <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>Rapprochement de factures</value></data>
+  <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>Saisie de factures et rapprochement à 3 voies</value></data>
+  <data name="Nav.Module.CONTRACTS" xml:space="preserve"><value>Contrats</value></data>
+  <data name="Nav.Page.CONTRACTS" xml:space="preserve"><value>Contrats et bibliothèque de clauses</value></data>
+  <data name="ContractEditDraftOnly" xml:space="preserve"><value>Seuls les contrats en brouillon peuvent être mis à jour ; un contrat activé se gère via les actions de cycle de vie, pas par modification.</value></data>
+  <data name="Nav.Page.GRN" xml:space="preserve"><value>Réception (BR)</value></data>
+  <data name="GrnUpdateNotSupported" xml:space="preserve"><value>La modification d'un BR n'est pas prise en charge ; une réception postée se corrige par un mouvement de contre-passation, pas par une modification.</value></data>
+  <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>La mise à jour d'une facture n'est pas prise en charge ; corrigez-la en relançant le rapprochement à 3 voies ou en résolvant son exception, pas par une modification.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Copié</value></data>
+  <data name="Close" xml:space="preserve"><value>Fermer</value></data>
+  <data name="Shortcuts.DialogTitle" xml:space="preserve"><value>Raccourcis clavier</value></data>
+  <data name="Shortcuts.Close" xml:space="preserve"><value>Fermer</value></data>
+  <data name="Shortcuts.SilenceNote" xml:space="preserve"><value>Les raccourcis sont inactifs pendant la saisie dans un champ ou lorsqu'une boîte de dialogue ou un panneau latéral est ouvert.</value></data>
+  <data name="Shortcuts.ShowList" xml:space="preserve"><value>Afficher cette liste</value></data>
+  <data name="Shortcuts.Key.Space" xml:space="preserve"><value>Espace</value></data>
+  <data name="Shortcuts.Scope.Global" xml:space="preserve"><value>Partout</value></data>
+  <data name="Shortcuts.Scope.WorkCenter" xml:space="preserve"><value>Centre des tâches</value></data>
+  <data name="Shortcuts.Scope.TaskDetails" xml:space="preserve"><value>Détails de la tâche</value></data>
+  <data name="Shortcuts.Wcn.Next" xml:space="preserve"><value>Sélectionner l'élément suivant</value></data>
+  <data name="Shortcuts.Wcn.Previous" xml:space="preserve"><value>Sélectionner l'élément précédent</value></data>
+  <data name="Shortcuts.Wcn.Open" xml:space="preserve"><value>Ouvrir l'élément sélectionné</value></data>
+  <data name="Shortcuts.Wcn.OpenFocused" xml:space="preserve"><value>Ouvrir la ligne active</value></data>
+  <data name="Shortcuts.Wcn.Accept" xml:space="preserve"><value>Accepter ou approuver l'élément sélectionné</value></data>
+  <data name="Shortcuts.Wcn.Reject" xml:space="preserve"><value>Rejeter ou renvoyer l'élément sélectionné</value></data>
+  <data name="Shortcuts.Wcn.ClearSelection" xml:space="preserve"><value>Effacer la sélection</value></data>
+  <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Passer d'un onglet à l'autre (sur un onglet actif)</value></data>
+  <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Modifier la tâche</value></data>
+  <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Retour à la liste des tâches</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>Trop de lignes à exporter (plus de 50 000). Affinez le filtre et réessayez.</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
+  <!-- BL-452 package 2 (WP-UI-EXPORT-02): list Action menu + controlled copy (PDF / print header block, footer). -->
+  <data name="Action" xml:space="preserve">
+    <value>Actions</value>
+    <comment>List toolbar: the Action (export) dropdown button. BL-452 package 2 (finding 34, toolbar part).</comment>
+  </data>
+  <data name="ControlledCopy.Report" xml:space="preserve">
+    <value>Rapport</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Tenant" xml:space="preserve">
+    <value>Société</value>
+    <comment>BL-452 package 2 controlled copy header: label for the tenant's display name (the customer company).</comment>
+  </data>
+  <data name="ControlledCopy.Filters" xml:space="preserve">
+    <value>Filtres</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Search" xml:space="preserve">
+    <value>Recherche</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Sort" xml:space="preserve">
+    <value>Tri</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortAsc" xml:space="preserve">
+    <value>croissant</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortDesc" xml:space="preserve">
+    <value>décroissant</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Rows" xml:space="preserve">
+    <value>Nombre de lignes</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedBy" xml:space="preserve">
+    <value>Créé par</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedAt" xml:space="preserve">
+    <value>Créé le</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.None" xml:space="preserve">
+    <value>Aucun</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Uncontrolled" xml:space="preserve">
+    <value>Cette impression est une copie non contrôlée — {0}</value>
+    <comment>BL-452 package 2 controlled copy footer on every page; {0} = creation date-time with time zone.</comment>
+  </data>
+  <data name="ControlledCopy.Page" xml:space="preserve">
+    <value>Page {0} sur {1}</value>
+    <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
+  </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>Aujourd’hui</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>Mois</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>Semaine</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>Jour</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>Précédent</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>Suivant</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>Toute la journée</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>+{0} de plus</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>Rien à afficher</value>
+  </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>Aucun calendrier de travail n’est défini — les week-ends et les jours fériés ne peuvent pas être affichés.</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>Invitation à une réunion</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>Accepter</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>Refuser</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>Cette réunion chevauche votre planning</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>Elle chevauche votre bloc planifié « {0} » ({1}). Accepter quand même ?</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>Accepter Quand Même</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Exécution de la chaîne d’approvisionnement</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestion des transporteurs</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transporteurs</value></data>
@@ -813,5 +1047,4 @@
   <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>Itinéraires et planification des chargements</value></data>
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Chargements</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Gestion des réclamations</value></data>
-  <data name="Nav.Page.CLAIMS" xml:space="preserve"><value>Réclamations</value></data>
 </root>

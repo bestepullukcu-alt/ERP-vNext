@@ -237,8 +237,8 @@
     <value>Действовать</value>
   </data>
   <data name="RowView" xml:space="preserve"><value>Просмотр</value></data>
-  <data name="ActReviewMeeting" xml:space="preserve"><value>Назначить встречу для согласования</value></data>
-  <data name="ToastReviewMeeting" xml:space="preserve"><value>Встреча для согласования назначена: {0}</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Назначить совещание по обзору</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Совещание по обзору назначено: {0}</value></data>
   <data name="IsTitleElimination" xml:space="preserve"><value>Подготовить таблицу внутригрупповых исключений</value></data>
   <data name="IsSummaryElimination" xml:space="preserve"><value>Исключить внутригрупповые остатки перед консолидацией.</value></data>
   <data name="IsTitlePricingRegression" xml:space="preserve"><value>Расследовать регрессию правила ценообразования</value></data>
@@ -539,9 +539,6 @@
   <data name="ActResume" xml:space="preserve">
     <value>Продолжить</value>
   </data>
-  <data name="ActLogTime" xml:space="preserve">
-    <value>Учесть время</value>
-  </data>
   <data name="StepBarLabel" xml:space="preserve">
     <value>Жизненный цикл</value>
   </data>
@@ -575,12 +572,6 @@
   <data name="TimesheetLabel" xml:space="preserve">
     <value>Время</value>
   </data>
-  <data name="TimeLoggedLabel" xml:space="preserve">
-    <value>учтено</value>
-  </data>
-  <data name="TimerRunning" xml:space="preserve">
-    <value>идёт</value>
-  </data>
   <data name="AwaitingReview" xml:space="preserve">
     <value>Ожидает проверки</value>
   </data>
@@ -593,26 +584,8 @@
   <data name="PlanConfirm" xml:space="preserve">
     <value>Задать дату</value>
   </data>
-  <data name="LogTimeLabel" xml:space="preserve">
-    <value>Минуты</value>
-  </data>
-  <data name="LogTimePlaceholder" xml:space="preserve">
-    <value>напр. 30</value>
-  </data>
-  <data name="LogTimeConfirm" xml:space="preserve">
-    <value>Учесть</value>
-  </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · запланировано на {1} (макет)</value>
-  </data>
-  <data name="ToastPlanSaved" xml:space="preserve">
-    <value>План сохранён на {0}</value>
-  </data>
-  <data name="ToastTimerStarted" xml:space="preserve">
-    <value>{0} · таймер запущен (макет)</value>
-  </data>
-  <data name="ToastTimeLogged" xml:space="preserve">
-    <value>учтено {0} (макет)</value>
   </data>
   <data name="ToastSentToReview" xml:space="preserve">
     <value>{0} · отправлено на проверку (макет)</value>
@@ -895,6 +868,18 @@
   <data name="MeetingWhenLabel" xml:space="preserve">
     <value>Дата и время встречи</value>
   </data>
+  <data name="MeetingTypeLabel" xml:space="preserve">
+    <value>Тип совещания</value>
+  </data>
+  <data name="MeetingTypeSubtext" xml:space="preserve">
+    <value>Выберите тип совещания для планирования.</value>
+  </data>
+  <data name="MeetingNoTypesAvailable" xml:space="preserve">
+    <value>Типы совещаний ещё не настроены. Попросите администратора добавить тип.</value>
+  </data>
+  <data name="MeetingScheduleSubtext" xml:space="preserve">
+    <value>Это создаёт реальное совещание в модуле «Совещания», связанное с этой задачей.</value>
+  </data>
   <data name="MeetingTitlePlaceholder" xml:space="preserve">
     <value>Обзор закрытия III квартала</value>
   </data>
@@ -903,9 +888,6 @@
   </data>
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>Какой модуль?</value>
-  </data>
-  <data name="LogTimeSubtext" xml:space="preserve">
-    <value>Добавляется к уже учтённому времени по этой задаче; таймер не запускается и не останавливается.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>Связь с календарём ещё не настроена: эта запись видна только на этом экране и исчезнет при закрытии страницы. Срок не меняется.</value>
@@ -918,15 +900,6 @@
   </data>
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>Все поля</value>
-  </data>
-  <data name="TimerStateRunning" xml:space="preserve">
-    <value>В работе</value>
-  </data>
-  <data name="TimerStatePaused" xml:space="preserve">
-    <value>Приостановлено</value>
-  </data>
-  <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>Затраченное время не записывается — вводите его вручную.</value>
   </data>
   <data name="SubtaskStartedNotCompleted" xml:space="preserve">
     <value>Подзадача запущена, но завершить её не удалось: {0}</value>
@@ -1015,6 +988,30 @@
   <data name="CommentPost" xml:space="preserve">
     <value>Отправить</value>
   </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>Упомянуть кого-то</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>Убрать упоминание</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>Упомянуть людей</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>Выберите хотя бы одного человека.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>В этой задаче пока нет никого, кого можно упомянуть.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>Все, кого можно упомянуть, уже добавлены.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>В комментарии можно упомянуть не более {0} человек.</value>
+  </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>Напишите что-нибудь перед отправкой</value>
   </data>
@@ -1039,20 +1036,20 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Только чтение — статус меняется в источнике; здесь только личный план/закрепление.</value>
   </data>
-  <data name="CalPrevMonth" xml:space="preserve">
-    <value>Предыдущий месяц</value>
+  <data name="KanbanActionPickerTitle" xml:space="preserve">
+    <value>Какое действие выполнить?</value>
   </data>
-  <data name="CalNextMonth" xml:space="preserve">
-    <value>Следующий месяц</value>
+  <data name="KanbanActionPickerRequired" xml:space="preserve">
+    <value>Выберите действие.</value>
   </data>
-  <data name="CalToday" xml:space="preserve">
-    <value>Сегодня</value>
+  <data name="KanbanProcessing" xml:space="preserve">
+    <value>Обработка…</value>
   </data>
-  <data name="CalOutside" xml:space="preserve">
-    <value>Ещё {0} задач в других месяцах.</value>
+  <data name="KanbanMovedToHistory" xml:space="preserve">
+    <value>Перемещено в Историю</value>
   </data>
-  <data name="CalOutsideAndUndated" xml:space="preserve">
-    <value>Ещё {0} задач в других месяцах; у {1} нет даты, и они никогда не появятся в календаре.</value>
+  <data name="KanbanDropHint" xml:space="preserve">
+    <value>Перетащите сюда: {0}</value>
   </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Срок источника</value>
@@ -1374,6 +1371,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>Совместная работа и записи</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>Сведения о рабочем элементе</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>Запрошенный рабочий элемент не найден.</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>Этот рабочий элемент не может быть показан, так как он не прошёл проверку контракта.</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>Вернуться в рабочий центр</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Ваши полномочия по этому элементу завершены.</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Обязательная зависимость не завершена.</value></data>
@@ -1432,8 +1430,17 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Обнаружено расхождение 84 750 лир с главной книгой.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Встреча по корректировке бюджета за 3 квартал</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 июля 2026, 14:00–15:00 · Teams · Организатор: Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>От {name}: задача передана вам на согласование</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>Задача передана вам на согласование</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Согласование: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Pending" xml:space="preserve">
+    <value>Ожидает</value>
   </data>
   <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
     <value>Ожидает согласования</value>
@@ -1476,6 +1483,9 @@
   </data>
   <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
     <value>Отсутствует обязательное подтверждение.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_SelfApproval" xml:space="preserve">
+    <value>Вы начали это согласование, поэтому решение должен принять другой сотрудник.</value>
   </data>
   <data name="NoAccessTitle" xml:space="preserve">
     <value>У вас нет доступа к Центру задач</value>
@@ -1542,6 +1552,15 @@
   </data>
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>Ожидание…</value>
+  </data>
+  <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
+    <value>Запланировать совещание по обзору</value>
+  </data>
+  <data name="WorkAggregation_Action_AcceptInvite" xml:space="preserve">
+    <value>Принять</value>
+  </data>
+  <data name="WorkAggregation_Action_DeclineInvite" xml:space="preserve">
+    <value>Отклонить</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>Вернуть</value>
@@ -1832,6 +1851,9 @@
   <data name="AuditEventPlanned" xml:space="preserve">
     <value>Задача запланирована</value>
   </data>
+  <data name="AuditEventUnplanned" xml:space="preserve">
+    <value>Задача убрана из календаря</value>
+  </data>
   <data name="AuditEventStarted" xml:space="preserve">
     <value>Работа начата</value>
   </data>
@@ -1894,6 +1916,12 @@
   </data>
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>Подзадача ещё открыта</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>Совещание по обзору уже запланировано</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingRequired" xml:space="preserve">
+    <value>Это решение остаётся заблокированным до тех пор, пока не будет опубликован протокол связанного совещания по обзору.</value>
   </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Чек-лист обновлён.</value>
@@ -2158,6 +2186,9 @@
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>Некоторые источники не ответили — список может быть неполным.</value>
   </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>Не удалось показать {0} рабочих элементов из-за ошибки контракта.</value>
+  </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>Некоторые источники не ответили, поэтому это число может быть неполным.</value>
   </data>
@@ -2203,6 +2234,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>Закрыто с результатом: {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>Закрытие</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>Приложено результатов работы: {0}.</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>Приложено файлов с доказательствами: {0}.</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>Чем завершилась эта работа?</value>
   </data>
@@ -2223,6 +2263,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>Этот результат требует указания причины.</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>Это поле обязательно для завершения задачи.</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>Выполнено как запрошено</value>
@@ -2274,6 +2317,201 @@
   <data name="AttachmentUploadedBy" xml:space="preserve"><value>Загрузил(а) {0} · {1}</value></data>
   <data name="ToastAttachmentAdded" xml:space="preserve"><value>Вложение добавлено.</value></data>
   <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Вложение удалено.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Добавьте файл результата или доказательства (необязательно)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>Тип этой задачи требует файл результата</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Выберите файл перед завершением этой задачи.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>Добавить подтверждение</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>Файлов подтверждения: {0}</value></data>
+  <data name="TypeInquiry" xml:space="preserve">
+    <value>Вопрос</value>
+  </data>
+  <data name="WorkAggregation_Title_Inquiry" xml:space="preserve">
+    <value>Вопрос · {title}</value>
+  </data>
+  <data name="WorkAggregation_Action_Answer" xml:space="preserve">
+    <value>Ответить</value>
+  </data>
+  <data name="OutcomeAnswer" xml:space="preserve">
+    <value>Записывает ваш ответ в историю задачи и возвращает её в прежнее состояние</value>
+  </data>
+  <data name="InquiryQuestionLabel" xml:space="preserve">
+    <value>Заданный вопрос</value>
+  </data>
+  <data name="InquiryAnswerLabel" xml:space="preserve">
+    <value>Ваш ответ</value>
+  </data>
+  <data name="InquiryAnswerPlaceholder" xml:space="preserve">
+    <value>Напишите запрошенную информацию…</value>
+  </data>
+  <data name="InquiryAnswerRequired" xml:space="preserve">
+    <value>Напишите ответ перед отправкой.</value>
+  </data>
+  <data name="InquiryAnsweredBy" xml:space="preserve">
+    <value>{0} ответил(а)</value>
+  </data>
+  <data name="GuidanceInquiryAsked" xml:space="preserve">
+    <value>{0} спрашивает вас: {1}</value>
+  </data>
+  <data name="GuidanceInquiryAskedNoText" xml:space="preserve">
+    <value>По этой задаче ждут вашего ответа.</value>
+  </data>
+  <data name="GuidanceInquiryAnswered" xml:space="preserve">
+    <value>{0} ответил(а): {1}</value>
+  </data>
+  <data name="AuditEventInquiryAnswered" xml:space="preserve">
+    <value>Ответ на вопрос получен</value>
+  </data>
+  <data name="CalPanelTitle" xml:space="preserve">
+    <value>Работа для планирования</value>
+  </data>
+  <data name="CalPanelUnplanned" xml:space="preserve">
+    <value>Не запланировано</value>
+  </data>
+  <data name="CalPanelPlanPassed" xml:space="preserve">
+    <value>План просрочен</value>
+  </data>
+  <data name="CalPanelInvites" xml:space="preserve">
+    <value>Приглашения</value>
+  </data>
+  <data name="CalPanelEmpty" xml:space="preserve">
+    <value>Здесь ничего нет.</value>
+  </data>
+  <data name="CalPanelHint" xml:space="preserve">
+    <value>Перетащите карточку в календарь: на день в режиме месяца, на время в режиме недели или дня. Чтобы снять блок с плана, перетащите его обратно сюда.</value>
+  </data>
+  <data name="CalChipEstimate" xml:space="preserve">
+    <value>Оценка {0} ч</value>
+  </data>
+  <data name="CalChipPlanPassed" xml:space="preserve">
+    <value>План на {0}</value>
+  </data>
+  <data name="CalChipRemaining" xml:space="preserve">
+    <value>Осталось {0} мин</value>
+  </data>
+  <data name="CalLegendTask" xml:space="preserve">
+    <value>План на день</value>
+  </data>
+  <data name="CalLegendBlock" xml:space="preserve">
+    <value>Запланированный блок</value>
+  </data>
+  <data name="CalLegendMeetingAccepted" xml:space="preserve">
+    <value>Совещание (принято)</value>
+  </data>
+  <data name="CalLegendMeetingPending" xml:space="preserve">
+    <value>Совещание (без ответа)</value>
+  </data>
+  <data name="CalLegendConflict" xml:space="preserve">
+    <value>Пересекается с другим блоком</value>
+  </data>
+  <data name="CalLegendOffHours" xml:space="preserve">
+    <value>Нерабочее время</value>
+  </data>
+  <data name="CalLegendHoliday" xml:space="preserve">
+    <value>Праздник</value>
+  </data>
+  <data name="CalPlanSaved" xml:space="preserve">
+    <value>«{0}» запланировано.</value>
+  </data>
+  <data name="CalTruncated" xml:space="preserve">
+    <value>Обрезано в конце рабочего дня — осталось {0} мин.</value>
+  </data>
+  <data name="CalConflictWith" xml:space="preserve">
+    <value>Пересекается с «{0}» {1}. Выберите другое время.</value>
+  </data>
+  <data name="CalZoneUnavailable" xml:space="preserve">
+    <value>Не удалось прочитать часовой пояс компании, время не сохранено. Повторите попытку.</value>
+  </data>
+  <data name="PlanTimeLabel" xml:space="preserve">
+    <value>Время начала</value>
+  </data>
+  <data name="PlanTimeNone" xml:space="preserve">
+    <value>Без времени (весь день)</value>
+  </data>
+  <data name="PlanDurationLabel" xml:space="preserve">
+    <value>Длительность</value>
+  </data>
+  <data name="PlanDurationOption" xml:space="preserve">
+    <value>{0} мин</value>
+  </data>
+  <data name="PlanTimeHint" xml:space="preserve">
+    <value>Время указано в часовом поясе компании. Блок, выходящий за конец рабочего дня, обрезается.</value>
+  </data>
+  <data name="CalTruncatedNoEstimate" xml:space="preserve">
+    <value>Обрезано в конце рабочего дня.</value>
+  </data>
+  <data name="TimeDraftLabel" xml:space="preserve">
+    <value>мой черновик</value>
+  </data>
+  <data name="TimeSubmittedLabel" xml:space="preserve">
+    <value>отправлено</value>
+  </data>
+  <data name="TimeApprovedLabel" xml:space="preserve">
+    <value>утверждено</value>
+  </data>
+  <data name="TimerRunningNow" xml:space="preserve">
+    <value>Ваш таймер работает по этой задаче.</value>
+  </data>
+  <data name="OpenMyTimesheet" xml:space="preserve">
+    <value>Открыть «Мой табель»</value>
+  </data>
+  <data name="TimerSwitchedText" xml:space="preserve">
+    <value>Ваш таймер переключился на эту задачу.</value>
+  </data>
+  <data name="TimerUndo" xml:space="preserve">
+    <value>Отменить</value>
+  </data>
+  <data name="TimerUndone" xml:space="preserve">
+    <value>Таймер вернулся к предыдущей задаче.</value>
+  </data>
+  <data name="TimerErrDisabled" xml:space="preserve">
+    <value>Таймер не включён для вашего юридического лица. Внесите время в «Мой табель».</value>
+  </data>
+  <data name="TimerErrNotHeld" xml:space="preserve">
+    <value>Таймер работает только на задаче, закреплённой за вами.</value>
+  </data>
+  <data name="TimerErrNotInProgress" xml:space="preserve">
+    <value>Таймер работает только на задаче в работе.</value>
+  </data>
+  <data name="TimerErrNotRunning" xml:space="preserve">
+    <value>Таймер этой задачи больше не работает.</value>
+  </data>
+  <data name="TimerErrConflict" xml:space="preserve">
+    <value>Таймер за это время изменился. Страница обновлена.</value>
+  </data>
+  <data name="TimerErrUndoExpired" xml:space="preserve">
+    <value>Отменить это переключение уже поздно.</value>
+  </data>
+  <data name="TimerErrGeneric" xml:space="preserve">
+    <value>Не удалось изменить таймер. Попробуйте ещё раз.</value>
+  </data>
+  <data name="WorkAggregation_Action_StartTimer" xml:space="preserve">
+    <value>Запустить таймер</value>
+  </data>
+  <data name="WorkAggregation_Action_StopTimer" xml:space="preserve">
+    <value>Остановить таймер</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>Приостановлено</value>
+  </data>
+  <data name="ApprovalAwaitingPositions" xml:space="preserve">
+    <value>Ожидает утверждения: {0}</value>
+  </data>
+  <data name="ApprovalNoteLabel" xml:space="preserve">
+    <value>Примечание (необязательно)</value>
+  </data>
+  <data name="ApprovalNotePlaceholder" xml:space="preserve">
+    <value>Добавьте примечание для записи…</value>
+  </data>
+  <data name="ApprovalStepBadgeTitle" xml:space="preserve">
+    <value>Этап утверждения</value>
+  </data>
+  <data name="DelegateTargetLabel" xml:space="preserve">
+    <value>Делегировать</value>
+  </data>
+  <data name="DelegateTargetRequired" xml:space="preserve">
+    <value>Выберите, кому делегируется это согласование.</value>
+  </data>
+  <data name="DelegateNoEligiblePeople" xml:space="preserve">
+    <value>Это согласование некому делегировать.</value>
+  </data>
 </root>

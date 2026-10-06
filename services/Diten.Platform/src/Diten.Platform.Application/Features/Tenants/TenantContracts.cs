@@ -149,19 +149,31 @@ public sealed record TenantAdminUserUpsertRequest(
     string Name,
     string Email);
 
+/// <param name="DefaultWorkdayStart">
+/// WP-TASK-CALENDAR-ENGINE-01 — the tenant's default working window (the last ring of the working-hours chain,
+/// read by nothing but <c>IWorkingHoursProvider</c>). Trailing, so existing callers are unchanged.
+/// </param>
 public sealed record TenantSettingsDto(
     Guid TenantId,
     string Region,
     string Language,
     string Timezone,
     string Currency,
-    string Environment);
+    string Environment,
+    TimeOnly? DefaultWorkdayStart = null,
+    TimeOnly? DefaultWorkdayEnd = null);
 
+/// <param name="DefaultWorkdayStart">
+/// Optional, with <paramref name="DefaultWorkdayEnd"/>: both or neither, start before end. Omitted = unchanged, so
+/// a client written before these fields existed cannot clear them.
+/// </param>
 public sealed record TenantSettingsUpdateRequest(
     string Language,
     string Timezone,
     string Currency,
-    string Environment);
+    string Environment,
+    TimeOnly? DefaultWorkdayStart = null,
+    TimeOnly? DefaultWorkdayEnd = null);
 
 public sealed record TenantUpdateRequest(
     string Name,

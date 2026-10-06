@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="InvoiceMatchTitle" xml:space="preserve"><value>Saisie de factures et rapprochement à 3 voies</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Saisissez les factures fournisseurs par rapport à une commande et lancez le rapprochement à 3 voies (Commande ↔ BR ↔ Facture) ; les factures non rapprochées vont dans la file d'attente des exceptions.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Saisir une facture</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Modifier la facture</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Saisir une facture</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier la facture</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Voir</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="InvoiceId" xml:space="preserve"><value>N° de facture</value></data>
+  <data name="PoId" xml:space="preserve"><value>Bon de commande</value></data>
+  <data name="PoIdPlaceholder" xml:space="preserve"><value>p. ex. PO-5001</value></data>
+  <data name="PoIdHint" xml:space="preserve"><value>Le bon de commande amont auquel cette facture est rapprochée.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Motif</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>Fournisseur</value></data>
+  <data name="SupplierIdPlaceholder" xml:space="preserve"><value>p. ex. SUP-2001</value></data>
+  <data name="InvoiceNumber" xml:space="preserve"><value>Numéro de facture</value></data>
+  <data name="InvoiceNumberPlaceholder" xml:space="preserve"><value>p. ex. INV-2026-771</value></data>
+  <data name="Currency" xml:space="preserve"><value>Devise</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>p. ex. TRY</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>Doit correspondre à la devise du bon de commande (une différence est rejetée).</value></data>
+  <data name="InvoiceSection" xml:space="preserve"><value>Facture</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Lignes de facture</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Ajouter une ligne</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>ID d'article</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>p. ex. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>p. ex. 100.000</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>Prix unitaire</value></data>
+  <data name="LineUnitPricePlaceholder" xml:space="preserve"><value>p. ex. 12.5000</value></data>
+  <data name="LineAmount" xml:space="preserve"><value>Montant de la ligne</value></data>
+  <data name="LineAmountPlaceholder" xml:space="preserve"><value>p. ex. 1250.0000</value></data>
+  <data name="LinePoLineId" xml:space="preserve"><value>Ligne de commande</value></data>
+  <data name="LinePoLineIdPlaceholder" xml:space="preserve"><value>p. ex. 3</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>Au moins une ligne est requise ; chaque ligne nécessite un article, une quantité et un prix unitaire. Les montants sont décimaux, jamais flottants.</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Intégration</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Système source</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>p. ex. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>Référence externe</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>p. ex. ERP-INV-9001</value></data>
+  <data name="TotalAmount" xml:space="preserve"><value>Montant total</value></data>
+  <data name="MoneyHint" xml:space="preserve"><value>Les montants sont des chaînes décimales (pas de flottant) ; le total est calculé par le serveur.</value></data>
+  <data name="StatusCaptured" xml:space="preserve"><value>Saisie</value></data>
+  <data name="StatusMatched" xml:space="preserve"><value>Rapprochée</value></data>
+  <data name="StatusMatchedWithinTolerance" xml:space="preserve"><value>Rapprochée (dans la tolérance)</value></data>
+  <data name="StatusException" xml:space="preserve"><value>Exception</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Rejetée</value></data>
+  <data name="StatusClearedForPayment" xml:space="preserve"><value>Approuvée pour paiement</value></data>
+  <data name="ExStatusOpen" xml:space="preserve"><value>Ouvert</value></data>
+  <data name="ExStatusResolved" xml:space="preserve"><value>Résolu</value></data>
+  <data name="ReasonQtyMismatch" xml:space="preserve"><value>Écart de quantité</value></data>
+  <data name="ReasonPriceMismatch" xml:space="preserve"><value>Écart de prix</value></data>
+  <data name="ReasonAmountMismatch" xml:space="preserve"><value>Écart de montant</value></data>
+  <data name="ReasonNoReceipt" xml:space="preserve"><value>Aucune réception</value></data>
+  <data name="ReasonNoPo" xml:space="preserve"><value>Aucun bon de commande</value></data>
+  <data name="ReasonDuplicateInvoice" xml:space="preserve"><value>Facture en double</value></data>
+  <data name="ReasonCurrencyMismatch" xml:space="preserve"><value>Écart de devise</value></data>
+  <data name="ActionRunMatch" xml:space="preserve"><value>Lancer le rapprochement à 3 voies</value></data>
+  <data name="ConfirmRunMatch" xml:space="preserve"><value>Lancer le rapprochement à 3 voies de cette facture avec sa commande et ses réceptions ?</value></data>
+  <data name="MatchSuccess" xml:space="preserve"><value>Rapprochement à 3 voies terminé.</value></data>
+  <data name="ActionResolve" xml:space="preserve"><value>Résoudre</value></data>
+  <data name="ResolveTitle" xml:space="preserve"><value>Résoudre l'exception</value></data>
+  <data name="ResolveDecisionLabel" xml:space="preserve"><value>Décision</value></data>
+  <data name="DecisionApprove" xml:space="preserve"><value>Approuver</value></data>
+  <data name="DecisionReject" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="DecisionToleranceOverride" xml:space="preserve"><value>Dérogation de tolérance</value></data>
+  <data name="ResolveSuccess" xml:space="preserve"><value>Exception résolue.</value></data>
+  <data name="MatchResultSection" xml:space="preserve"><value>Résultat du rapprochement</value></data>
+  <data name="MatchResultHint" xml:space="preserve"><value>Lancez le rapprochement à 3 voies pour évaluer cette facture avec sa commande et ses réceptions ; les écarts hors tolérance ouvrent une exception.</value></data>
+  <data name="MatchResultLabel" xml:space="preserve"><value>Résultat</value></data>
+  <data name="VarianceField" xml:space="preserve"><value>Champ</value></data>
+  <data name="VarianceExpected" xml:space="preserve"><value>Attendu</value></data>
+  <data name="VarianceActual" xml:space="preserve"><value>Réel</value></data>
+  <data name="VarianceWithinTolerance" xml:space="preserve"><value>Dans la tolérance</value></data>
+  <data name="ExceptionSection" xml:space="preserve"><value>Exception</value></data>
+  <data name="ExceptionId" xml:space="preserve"><value>N° d'exception</value></data>
+  <data name="WithinToleranceYes" xml:space="preserve"><value>Oui</value></data>
+  <data name="WithinToleranceNo" xml:space="preserve"><value>Non</value></data>
+</root>

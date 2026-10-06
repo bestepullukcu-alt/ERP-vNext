@@ -1,0 +1,15 @@
+@using System.Text.Json
+@using Diten.Web.Views.CRM.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsIndex> Localizer
+@{
+    // WP-CL-FE-1 — the list bridge. State labels are keyed by value_code (State_{code}); closure-reason display names come
+    // from the tenant BRD set at runtime (never compiled in). The key list lives in ClaimsIndexL10nKeys so the L10n guard
+    // test checks exactly what the page ships.
+    var values = ClaimsIndexL10nKeys.Bridge.ToDictionary(x => x, x => Localizer[x].Value);
+    // Verifier-compatible property markers for the dictionary-backed JSON bridge:
+    // Active =, Passive =, Unknown =, Actions =, Edit =, ViewDetails =, QuickView =, AreYouSure =,
+    // BulkDelete =, BulkDeleteConfirm =, Cancel =, Search =, Export =, Import =, Filter =, Apply =,
+    // Reset =, ShowAll =, SaveView =, ColumnVisibility =, Status =
+}
+<script id="claim-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

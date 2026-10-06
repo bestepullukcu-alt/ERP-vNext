@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ApprovalsTitle" xml:space="preserve"><value>Zaman çizelgesi onayları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kararınızı bekleyen gönderilmiş haftalar. Yalnız işaretsiz haftalar birlikte onaylanabilir.</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>Kişi</value></data>
+  <data name="ColWeek" xml:space="preserve"><value>Hafta</value></data>
+  <data name="ColTotal" xml:space="preserve"><value>Toplam</value></data>
+  <data name="ColMarks" xml:space="preserve"><value>İşaretler</value></data>
+  <data name="ColSubmitted" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aç</value></data>
+  <data name="MarkFlagged" xml:space="preserve"><value>11 saati aşan gün</value></data>
+  <data name="MarkAutoClosed" xml:space="preserve"><value>Gece yarısı kesilen sayaç</value></data>
+  <data name="MarkOutsideHours" xml:space="preserve"><value>Çalışma saatleri dışında</value></data>
+  <data name="MarkHoliday" xml:space="preserve"><value>Tatilde çalışma</value></data>
+  <data name="CorrectionBadge" xml:space="preserve"><value>{0}. revizyonun düzeltmesi</value></data>
+  <data name="NoMarks" xml:space="preserve"><value>İşaret yok</value></data>
+  <data name="BulkApprove" xml:space="preserve"><value>Seçilenleri onayla</value></data>
+  <data name="BulkApproveConfirm" xml:space="preserve"><value>Seçilen {0} hafta onaylansın mı? İşaretli haftalar toplu onaylanmaz.</value></data>
+  <data name="BulkApproveDone" xml:space="preserve"><value>{0} onaylandı, {1} atlandı.</value></data>
+  <data name="BulkMarkedHint" xml:space="preserve"><value>İşaretli haftalar seçilemez: açıp tek tek karar verin.</value></data>
+  <data name="BulkNothingSelected" xml:space="preserve"><value>En az bir işaretsiz hafta seçin.</value></data>
+  <data name="DetailTitle" xml:space="preserve"><value>Zaman çizelgesi haftası</value></data>
+  <data name="Revision" xml:space="preserve"><value>{0}. revizyon</value></data>
+  <data name="SubmittedAt" xml:space="preserve"><value>Gönderildi: {0}</value></data>
+  <data name="Approve" xml:space="preserve"><value>Onayla</value></data>
+  <data name="Reject" xml:space="preserve"><value>Geri gönder</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>Bu hafta onaylansın mı?</value></data>
+  <data name="RejectReason" xml:space="preserve"><value>Hafta neden geri gönderiliyor? (zorunlu)</value></data>
+  <data name="RejectReasonRequired" xml:space="preserve"><value>Haftanın neden geri gönderildiğini yazın.</value></data>
+  <data name="ApprovedToast" xml:space="preserve"><value>Hafta onaylandı.</value></data>
+  <data name="RejectedToast" xml:space="preserve"><value>Hafta kişiye geri gönderildi.</value></data>
+  <data name="CorrectionChangesTitle" xml:space="preserve"><value>Bu düzeltme neyi değiştiriyor</value></data>
+  <data name="ColDay" xml:space="preserve"><value>Gün</value></data>
+  <data name="ColWork" xml:space="preserve"><value>İş</value></data>
+  <data name="ColBefore" xml:space="preserve"><value>Önce</value></data>
+  <data name="ColAfter" xml:space="preserve"><value>Sonra</value></data>
+  <data name="Added" xml:space="preserve"><value>eklendi</value></data>
+  <data name="Removed" xml:space="preserve"><value>kaldırıldı</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>Bu düzeltme onaylı haftaya göre hiçbir şeyi değiştirmiyor.</value></data>
+  <data name="CapturedValue" xml:space="preserve"><value>ölçülen {0}</value></data>
+  <data name="Corrected" xml:space="preserve"><value>düzeltildi</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Onaylara dön</value></data>
+  <data name="UnreadableTask" xml:space="preserve"><value>Erişilemeyen görev</value></data>
+  <data name="SourceManual" xml:space="preserve"><value>Elle</value></data>
+  <data name="SourceTimer" xml:space="preserve"><value>Sayaç</value></data>
+  <data name="SourceMeeting" xml:space="preserve"><value>Toplantı</value></data>
+  <data name="SourcePlan" xml:space="preserve"><value>Plandan</value></data>
+  <data name="ApproverCannotEdit" xml:space="preserve"><value>Onaylayan haftayı düzenlemez. Bir şey değişmeliyse gerekçesiyle geri gönderin.</value></data>
+  <data name="WeekNotAvailable" xml:space="preserve"><value>Bu hafta onayınızı beklemiyor.</value></data>
+  <data name="DecisionNotAllowed" xml:space="preserve"><value>Bu hafta için karar veremezsiniz.</value></data>
+  <data name="RowTotal" xml:space="preserve"><value>Toplam</value></data>
+  <data name="RowTarget" xml:space="preserve"><value>Hedef</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="NoApprovals" xml:space="preserve"><value>Onayınızı bekleyen hafta yok.</value></data>
+  <data name="ColumnWork" xml:space="preserve"><value>İş</value></data>
+  <data name="ColumnTotal" xml:space="preserve"><value>Toplam</value></data>
+  <data name="InForceNote" xml:space="preserve"><value>Bu düzeltme onaylanana kadar onaylı {0}. revizyon geçerli kalır.</value></data>
+  <data name="MarksTitle" xml:space="preserve"><value>İşaretler</value></data>
+</root>

@@ -1,0 +1,165 @@
+@model Diten.Web.Models.Procurement.PurchaseOrders.PurchaseOrdersEditViewModel
+@using Diten.Web.Views.Procurement.PurchaseOrders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PurchaseOrdersIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+    var lines = (Model.Lines is { Count: > 0 }) ? Model.Lines : [new Diten.Web.Models.Procurement.PurchaseOrders.PurchaseOrderLineInput()];
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/PurchaseOrders">@Localizer["PurchaseOrdersTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/PurchaseOrders" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="purchaseOrderForm" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+
+<form id="purchaseOrderForm" asp-controller="PurchaseOrders" asp-action="@action" asp-route-id="@Model.PoId" method="post"
+    class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="PoId" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="card-section-title mb-0"><i class="bx bx-list-ul"></i>@Localizer["LinesSection"]</h6>
+                        <button type="button" class="btn btn-sm btn-label-primary" id="btnAddLine">
+                            <i class="bx bx-plus me-1"></i>@Localizer["AddLine"]
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0" id="poLinesTable">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["LineItemId"] <span class="text-danger">*</span></th>
+                                    <th>@Localizer["LineSkuId"]</th>
+                                    <th>@Localizer["LineQuantity"] <span class="text-danger">*</span></th>
+                                    <th>@Localizer["LineUomId"] <span class="text-danger">*</span></th>
+                                    <th>@Localizer["LineUnitPrice"] <span class="text-danger">*</span></th>
+                                    <th class="cell-fit"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="poLinesBody" data-line-prefix="Lines">
+                                @for (var i = 0; i < lines.Count; i++)
+                                {
+                                    <tr class="po-line-row">
+                                        <td>
+                                            <input asp-for="Lines[i].ItemId" class="form-control form-control-sm po-line-input" data-line-field="ItemId" placeholder="@Localizer["LineItemIdPlaceholder"]" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="Lines[i].SkuId" class="form-control form-control-sm po-line-input" data-line-field="SkuId" placeholder="@Localizer["LineSkuIdPlaceholder"]" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="Lines[i].Quantity" class="form-control form-control-sm po-line-input" data-line-field="Quantity" inputmode="decimal" pattern="^-?\d+(\.\d+)?$" placeholder="@Localizer["LineQuantityPlaceholder"]" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="Lines[i].UomId" class="form-control form-control-sm po-line-input" data-line-field="UomId" placeholder="@Localizer["LineUomIdPlaceholder"]" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="Lines[i].UnitPrice" class="form-control form-control-sm po-line-input" data-line-field="UnitPrice" inputmode="decimal" pattern="^-?\d+(\.\d+)?$" placeholder="@Localizer["LineUnitPricePlaceholder"]" />
+                                        </td>
+                                        <td class="cell-fit">
+                                            <button type="button" class="btn btn-icon btn-sm btn-label-danger po-line-remove" title="@SharedLocalizer["Delete"]">
+                                                <i class="bx bx-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small mt-2 mb-0">@Localizer["LinesHint"]</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-file"></i>@Localizer["PurchaseOrderSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="SupplierId" class="form-label fw-medium">@Localizer["SupplierId"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-store diten-field-icon" aria-hidden="true"></i>
+                                <select asp-for="SupplierId" class="select2 form-select" id="supplierId" data-placeholder="@Localizer["SupplierPlaceholder"]" required>
+                                    <option value=""></option>
+                                    @if (!string.IsNullOrWhiteSpace(Model.SupplierId))
+                                    {
+                                        <option value="@Model.SupplierId" selected>@Model.SupplierId</option>
+                                    }
+                                </select>
+                            </div>
+                            <span asp-validation-for="SupplierId" class="text-danger small mt-1"></span>
+                            <span class="text-muted small mt-1 d-block">@Localizer["SupplierHint"]</span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="RequisitionId" class="form-label fw-medium">@Localizer["RequisitionRef"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-purchase-tag-alt diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="RequisitionId" class="form-control" maxlength="120" placeholder="@Localizer["RequisitionRefPlaceholder"]" />
+                            </div>
+                            <span class="text-muted small mt-1 d-block">@Localizer["RequisitionRefHint"]</span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Currency" class="form-label fw-medium">@Localizer["Currency"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-dollar-circle diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="Currency" class="form-control" maxlength="8" placeholder="@Localizer["CurrencyPlaceholder"]" required />
+                            </div>
+                            <span asp-validation-for="Currency" class="text-danger small mt-1"></span>
+                            <span class="text-muted small mt-1 d-block">@Localizer["CurrencyHint"]</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-server"></i>@Localizer["IntegrationSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="SourceSystem" class="form-label fw-medium">@Localizer["SourceSystem"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-data diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="SourceSystem" class="form-control" maxlength="120" placeholder="@Localizer["SourceSystemPlaceholder"]" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ExternalRef" class="form-label fw-medium">@Localizer["ExternalRef"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-link diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="ExternalRef" class="form-control" maxlength="120" placeholder="@Localizer["ExternalRefPlaceholder"]" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+</form>

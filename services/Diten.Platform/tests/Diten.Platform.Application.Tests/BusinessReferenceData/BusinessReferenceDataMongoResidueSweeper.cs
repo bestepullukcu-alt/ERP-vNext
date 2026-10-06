@@ -7,6 +7,14 @@ namespace Diten.Platform.Application.Tests.BusinessReferenceData;
 /// <summary>
 /// Owns only abandoned real-Mongo databases created by the BRD test harness.
 /// The marker is test infrastructure, not part of the BusinessReferenceData schema profile.
+///
+/// ⚠ BL-482 (BRD half, 2026-10-01): NO HARNESS CALLS THIS ANY MORE. BusinessReferenceDataTestHarness now opens
+/// fixed-name scoped databases through MongoIntegrationHarness and never creates a Guid-named one, so nothing here
+/// runs against the shared mongod. Its only callers are its own tests, on a private mongod. It was the second half
+/// of the red baseline: every test class called <see cref="SweepAsync"/> from its own thread and they dropped the
+/// same stale database at the same moment ("database is currently being dropped"). Kept, with its tests, rather
+/// than deleted: whether to retire it — and what removes the Guid-named databases earlier runs left on the shared
+/// mongod — is the owner's decision, not this change's.
 /// </summary>
 internal static partial class BusinessReferenceDataMongoResidueSweeper
 {
@@ -35,6 +43,11 @@ internal static partial class BusinessReferenceDataMongoResidueSweeper
     public static async Task<IReadOnlyList<string>> SweepAsync(IMongoClient client)
     {
         ArgumentNullException.ThrowIfNull(client);
+
+        // BL-395: this drops ANOTHER run's database once it is a minute old — a live one, if that run is still going
+        // in a second process. Holding the machine-wide lock means there is no second process to drop from.
+        // CreateDatabaseAsync reaches this before it creates anything.
+        await Persistence.PlatformMongoTestLock.EnsureHeldAsync();
 
         using var cursor = await client.ListDatabaseNamesAsync();
         var databaseNames = await cursor.ToListAsync();

@@ -1,7 +1,20 @@
 'use strict';
 
 (function (global) {
-    const WORK_INTENTS = ['task', 'approval', 'review', 'issue', 'exception'];
+    /*
+     * MOD-0357 S5c — `meetingInvite` ADDED (CT decision, 2026-09-11), the SIXTH value and the first contract
+     * change this array has taken since WC-1. `review`/`issue`/`exception` are still fixture-only placeholders
+     * (no provider emits them); `meetingInvite` is not — `MeetingWorkItemProvider` is a REAL source. The name
+     * is not new: app.js's own icon/chip/filter maps (`TYPE_ICON_MAP`, `TYPE_KEY`) and the trigger-only
+     * showcase this replaces already spelled it exactly this way.
+     */
+    /*
+     * BL-439 — `inquiry` ADDED (CT decision, 2026-09-23), the SEVENTH value: the QUESTION a waiting task is asking
+     * the reader, in their inbox with exactly one action (`answer`). Its own intent rather than a `task`, because
+     * the reader does not hold the work — every task-shaped surface (lifecycle strip, checklist, closure) would
+     * offer them acts they may not take. A REAL source, like `meetingInvite`: TaskWorkItemProvider emits it.
+     */
+    const WORK_INTENTS = ['task', 'approval', 'review', 'issue', 'exception', 'meetingInvite', 'inquiry'];
     const ASSIGNMENT_MODES = ['direct', 'approval', 'groupQueue', 'offered'];
     const OWNERSHIP_STATES = ['unowned', 'assigned', 'owned', 'notApplicable'];
     const ADMISSION_STATES = ['pendingAcceptance', 'pendingClaim', 'pendingOffer', 'admitted', 'notApplicable'];
@@ -149,6 +162,10 @@
         // A FIELD EDIT (2026-08-23) — the task stayed where it was and something about it changed. It is the one
         // code whose sentence names WHAT changed rather than which act occurred.
         'edited',
+        // BL-439 — the person a waiting task was asking answered; the entry's reason is their answer.
+        'inquiryAnswered',
+        // WP-TASK-CALENDAR-ENGINE-01 — the holder took the task off their calendar (POST {id}/unplan).
+        'unplanned',
         'unknown'
     ];
 
@@ -246,6 +263,30 @@
             if ('expectedVersion' in action || 'expectedConcurrencyToken' in action || 'requiresConcurrency' in action) {
                 push(errors, fixture, 'ACTION_CONCURRENCY_DUPLICATE', path);
             }
+            // REQ-WCN-01 (W-2) — OPTIONAL: the server says which action accepts an optional note. Validated only when
+            // present, so an item from a provider (or a server) that has never heard of it is never dropped. It
+            // cannot sit beside a required reason: that window is already mandatory.
+            if (action.acceptsNote !== undefined && action.acceptsNote !== null) {
+                if (typeof action.acceptsNote !== 'boolean') {
+                    push(errors, fixture, 'ACTION_ACCEPTS_NOTE_INVALID', `${path}.acceptsNote`);
+                } else if (action.acceptsNote && action.requiresReason === true) {
+                    push(errors, fixture, 'ACTION_NOTE_WITH_REQUIRED_REASON', `${path}.acceptsNote`);
+                }
+            }
+            // BL-491 — OPTIONAL, the same way: the server says which action names a person, and whom its window must
+            // not offer. Validated only when present. The excluded ids mean nothing without the flag beside them.
+            if (action.requiresTargetPerson !== undefined && action.requiresTargetPerson !== null
+                && typeof action.requiresTargetPerson !== 'boolean') {
+                push(errors, fixture, 'ACTION_TARGET_PERSON_INVALID', `${path}.requiresTargetPerson`);
+            }
+            if (action.excludedTargetPrincipalIds !== undefined && action.excludedTargetPrincipalIds !== null) {
+                const ids = action.excludedTargetPrincipalIds;
+                if (!Array.isArray(ids) || ids.some((id) => typeof id !== 'string' || !id)) {
+                    push(errors, fixture, 'ACTION_EXCLUDED_TARGETS_INVALID', `${path}.excludedTargetPrincipalIds`);
+                } else if (action.requiresTargetPerson !== true) {
+                    push(errors, fixture, 'ACTION_EXCLUDED_TARGETS_WITHOUT_TARGET', `${path}.excludedTargetPrincipalIds`);
+                }
+            }
         });
         if (enabledInlineActions(fixture).length && (!fixture.concurrency || !fixture.concurrency.kind || !fixture.concurrency.token)) {
             push(errors, fixture, 'CONCURRENCY_REQUIRED_FOR_ENABLED_INLINE_ACTION', 'concurrency');
@@ -335,6 +376,49 @@
             push(errors, fixture, 'SOURCE_REQUIRED', 'source');
         }
         if (fixture.actionDepth === 'deeplink' && !isSafeLink(fixture.source?.deepLink)) { push(errors, fixture, 'DEEPLINK_REQUIRED', 'source.deepLink'); }
+        /*
+         * MOD-0357 S5c — a meeting invite is nothing BUT a deep link and a deadline: there is no detail page of
+         * its own to fall back on the way a task or an approval has, and no third answer besides Accept/Decline
+         * (K5 — no "maybe"). So both are required regardless of `actionDepth` (the rule above only fires when
+         * `actionDepth === 'deeplink'`, and this card's actions stay inline), and the action set is closed to
+         * exactly the two codes the card offers, in the exact placement the card was built for.
+         */
+        if (fixture.workIntent === 'meetingInvite') {
+            if (!isSafeLink(fixture.source?.deepLink)) {
+                push(errors, fixture, 'MEETING_INVITE_DEEPLINK_REQUIRED', 'source.deepLink');
+            }
+            if (!fixture.dueAt || Number.isNaN(new Date(fixture.dueAt).getTime())) {
+                push(errors, fixture, 'MEETING_INVITE_DUE_AT_REQUIRED', 'dueAt');
+            }
+            const inviteCodes = (fixture.actions || []).map((action) => action.code);
+            if (inviteCodes.length !== 2 || !inviteCodes.includes('acceptInvite') || !inviteCodes.includes('declineInvite')) {
+                push(errors, fixture, 'MEETING_INVITE_ACTIONS_INVALID', 'actions');
+            }
+            if (fixture.primaryActionCode !== 'acceptInvite') {
+                push(errors, fixture, 'MEETING_INVITE_PRIMARY_ACTION_INVALID', 'primaryActionCode');
+            }
+            if (!(fixture.secondaryActionCodes || []).includes('declineInvite')) {
+                push(errors, fixture, 'MEETING_INVITE_SECONDARY_ACTION_INVALID', 'secondaryActionCodes');
+            }
+        }
+        /*
+         * BL-439 — a question is ONE decision: answer it. The action set is closed to exactly that code, as the
+         * primary, for the reason the invite's is closed to its two: the card was built for that shape, and a
+         * question that grew a `complete` or a `cancel` would be handing the reader the task itself.
+         *
+         * The question text rides `summary` and is NOT required here, deliberately: InquireTaskItemHandler already
+         * refuses a wait without a reason, and requiring it again would DROP the card — the one way to make sure
+         * the addressee never learns there is a question at all.
+         */
+        if (fixture.workIntent === 'inquiry') {
+            const inquiryCodes = (fixture.actions || []).map((action) => action.code);
+            if (inquiryCodes.length !== 1 || inquiryCodes[0] !== 'answer') {
+                push(errors, fixture, 'INQUIRY_ACTIONS_INVALID', 'actions');
+            }
+            if (fixture.primaryActionCode !== 'answer') {
+                push(errors, fixture, 'INQUIRY_PRIMARY_ACTION_INVALID', 'primaryActionCode');
+            }
+        }
         if ((fixture.normalizedStatus === 'Waiting') !== !!fixture.waitingContext) { push(errors, fixture, 'WAITING_CONTEXT_BIDIRECTIONAL', 'waitingContext'); }
         // An unknown type is a CONTRACT error, not a rendering quirk: the shell can only translate what it is
         // told about, so a type nobody declared reaches the user as silence.
@@ -343,6 +427,21 @@
         }
         if (fixture.waitingContext && !isPersonRef(fixture.waitingContext.waitingOn)) {
             push(errors, fixture, 'WAITING_CONTEXT_WAITING_ON_INVALID', 'waitingContext.waitingOn');
+        }
+        // BL-437 — why the item reached the reader. Optional (a provider that cannot say stays silent), but when
+        // present it must be a real label: a malformed one would render as a raw key or as nothing at all.
+        if (fixture.arrivalReason !== undefined && fixture.arrivalReason !== null && !isLabel(fixture.arrivalReason)) {
+            push(errors, fixture, 'ARRIVAL_REASON_INVALID', 'arrivalReason');
+        }
+        // REQ-WCN-01 (W-1, W-3) — the approval step's name and the positions it waits on. Both OPTIONAL and validated
+        // only when present (an older item without them is never refused), but when present they must be real
+        // labels: a malformed one would put a raw key — or an id — on screen.
+        if (fixture.stepName !== undefined && fixture.stepName !== null && !isLabel(fixture.stepName)) {
+            push(errors, fixture, 'STEP_NAME_INVALID', 'stepName');
+        }
+        if (fixture.candidatePositions !== undefined && fixture.candidatePositions !== null
+            && (!Array.isArray(fixture.candidatePositions) || !fixture.candidatePositions.every(isLabel))) {
+            push(errors, fixture, 'CANDIDATE_POSITIONS_INVALID', 'candidatePositions');
         }
         if (fixture.personal?.snoozedUntil && fixture.normalizedStatus === 'Waiting' && fixture.waitingContext?.type === 'personalSnooze') {
             push(errors, fixture, 'SNOOZE_MUST_NOT_CREATE_WAITING', 'personal.snoozedUntil');
@@ -456,6 +555,24 @@
             }
         }
         /*
+         * inquiryAnswer — BL-439: the question this task was parked on was answered, and that is still the latest
+         * word. Validated WHEN PRESENT, never required (the BL-038 rule: validateItems DROPS what it rejects).
+         * `at` is required with the block — an answer that cannot say when cannot be ordered against the next
+         * wait; `answeredBy` is a typed person or nothing, and `answer` is a label (the answerer's own words).
+         */
+        if (fixture.inquiryAnswer !== undefined && fixture.inquiryAnswer !== null) {
+            const answered = fixture.inquiryAnswer;
+            if (Number.isNaN(new Date(answered.at).getTime())) {
+                push(errors, fixture, 'INQUIRY_ANSWER_AT_INVALID', 'inquiryAnswer');
+            }
+            if (!isPersonRef(answered.answeredBy)) {
+                push(errors, fixture, 'INQUIRY_ANSWER_BY_INVALID', 'inquiryAnswer');
+            }
+            if (answered.answer !== undefined && answered.answer !== null && !isLabel(answered.answer)) {
+                push(errors, fixture, 'INQUIRY_ANSWER_TEXT_INVALID', 'inquiryAnswer');
+            }
+        }
+        /*
          * closure — WHAT the closure decided, the other half of `closedAt`.
          *
          * Declared here for the reason its sibling above gives: an undeclared field is a field that changes
@@ -549,10 +666,36 @@
             if (requirement !== 'notAllowed' && !meetingAction) {
                 push(errors, fixture, 'REVIEW_MEETING_ACTION_REQUIRED', 'actions');
             }
-            if (requirement === 'required' && !fixture.reviewMeetingPolicy.meetingId) {
-                const decision = byCode.get('approve') || byCode.get('signoff');
-                if (!decision || decision.enabled || decision.disabledReasonCode !== 'REVIEW_MEETING_REQUIRED') {
-                    push(errors, fixture, 'REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION', 'actions');
+            /*
+             * MOD-0357 S9 (owner, 2026-09-13) — the gate holds until MINUTES publish, not merely until a meeting
+             * gets linked. Checked by `minutesPublished`, never by `meetingId` alone: a meeting can be linked for
+             * a long time before its minutes publish, and the earlier version of this rule (meetingId present ⇒
+             * "fine") would have waved every merely-scheduled meeting through.
+             *
+             * WHICH action is the decision depends on whose vocabulary the item speaks (CT fix-up F1, 2026-09-15):
+             *
+             * - A MOD-0024 task (`workIntent: 'task'`): the decision is `submitReview` / `complete`. Whichever of
+             *   them is present must NOT be enabled. Its disabled reason may legitimately be an earlier gate
+             *   (APPROVAL_PENDING, REVIEW_PENDING) — the projection shows only the first unmet reason. An Open task
+             *   carries no decision action yet, which is valid. `start` is NOT a decision and is never checked
+             *   here: scheduling and holding the meeting is part of the work, so the work must be able to begin.
+             * - A MOD-0023 review/approval item: the decision is `approve` / `signoff`, which must be present and
+             *   disabled with REVIEW_MEETING_REQUIRED (the INBOX-REVIEW-REQUIRED-MEETING showcase).
+             */
+            if (requirement === 'required' && fixture.reviewMeetingPolicy.minutesPublished !== true) {
+                if (fixture.workIntent === 'task') {
+                    const decisionEnabled = ['submitReview', 'complete'].some((code) => {
+                        const decision = byCode.get(code);
+                        return Boolean(decision && decision.enabled);
+                    });
+                    if (decisionEnabled) {
+                        push(errors, fixture, 'REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION', 'actions');
+                    }
+                } else {
+                    const decision = byCode.get('approve') || byCode.get('signoff');
+                    if (!decision || decision.enabled || decision.disabledReasonCode !== 'REVIEW_MEETING_REQUIRED') {
+                        push(errors, fixture, 'REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION', 'actions');
+                    }
                 }
             }
         }

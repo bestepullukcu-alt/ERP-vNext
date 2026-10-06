@@ -65,4 +65,33 @@ public sealed class HangfireBackgroundJobSchedulerTests
             It.IsAny<RecurringJobOptions>()),
             Times.Once);
     }
+
+    [Fact]
+    public async Task Scheduler_removes_a_disabled_recurring_job_instead_of_leaving_it_scheduled()
+    {
+        var client = new Mock<IBackgroundJobClient>();
+        var recurring = new Mock<IRecurringJobManager>();
+        var scheduler = new HangfireBackgroundJobScheduler(
+            client.Object,
+            recurring.Object,
+            Options.Create(new BackgroundJobSchedulerOptions()));
+        var descriptor = new BackgroundJobDescriptor(
+            "Diten.Platform.SchedulerSmokeTestJob",
+            "Diten.Platform",
+            "SchedulerSmokeTestJob",
+            "MOD-0026",
+            "* * * * *",
+            IsEnabled: false);
+
+        await scheduler.RegisterRecurringAsync(new RecurringJobRegistration(
+            descriptor,
+            typeof(SchedulerSmokeTestJob),
+            typeof(SchedulerSmokeTestJobArgs),
+            new SchedulerSmokeTestJobArgs(false)));
+
+        // S10 live pass: a flag switched off must take the job out of Hangfire, not just skip re-adding it.
+        recurring.Verify(x => x.RemoveIfExists("Diten.Platform.SchedulerSmokeTestJob"), Times.Once);
+        recurring.Verify(x => x.AddOrUpdate(
+            It.IsAny<string>(), It.IsAny<Job>(), It.IsAny<string>(), It.IsAny<RecurringJobOptions>()), Times.Never);
+    }
 }
