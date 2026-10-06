@@ -179,3 +179,19 @@ Commit: "fix(crm,web,platform): WP-VP-FIX-1 — visit planning quick fixes (targ
 - Metinler Türkçe.
 - 29 Ekim haftasında Perşembe + hafta sonu boş (kaydetmeden önizleme).
 - Konsolda 400 yok.
+### §37 ek — E4 ACCEPTED (CT canlı, 2026-10-06; fleet yeniden başlatıldı, kullanıcı girişi, ayrı sekme, kayıt yok)
+| Kontrol | Sonuç |
+|---|---|
+| Menü | ✓ "Ziyaret Planlama" (`/CRM/VisitPlanning`) · "Planlanan Ziyaretler" · "Ziyaret Yürütme" (`/CRM/VisitExecution`) sırasıyla |
+| Liste Hedefler | ✓ `#0848afed` "122 doktor · 13 eczane"; `#ad5fd16c` "11 doktor · 0 eczane"; boş taslaklar "0" |
+| Onaylı plan | ✓ "Bu plan onaylı ve salt okunur."; Düzenle / kaydet / hedefleri kaydet / route / re-plan düğmeleri yok; hedef kutuları kapalı (açık kalan 3 kutu yalnız rota görünüm anahtarları: harita, ziyaret no, yol süreleri) |
+| Takvim | ✓ önizleme `calendarStatus = resolved`; `nonWorkingDates` hafta sonları + **2026-10-29**. Ziyaret günleri: 5 / 6 / 7 / 8 Eki + **26 Eki Pzt (34)**. Önceki **25 Eki Pazar ziyareti yok**; 29 Ekim boş |
+| 400 / 404 | ✓ temiz yüklemede başarısız istek yok; `working-calendar` isteği yok (konsoldaki eski hatalar önceki sayfalardan) |
+| Metinler | ✓ Türkçe ("Dönem", "Kurumlar (klinik / hastane)", "Bölge dışı hesaplar gizlenmez; uyarıyla gösterilir.", "Doktorlar", "Uzmanlık"); form: strateji şablonu yok |
+| Referans etiketleri | ⚠ Bilinen (0.5): "Hospital", "Urology"… set TR etiketi yok |
+
+**Küçük gözlemler (Faz 4 / B paketlerine):**
+- Liste başlığı hâlâ "Taslak planlarım" (onaylı planı da içeriyor) → VP-UI-1 "Benim planlarım".
+- Ziyaret Yürütme sayfa başlığı "Ziyaret Raporu", menü "Ziyaret Yürütme" → tek ad (Faz 6'da).
+- Segment notu "seçebileceğiniz doktorları daraltır" gerçeği yansıtmıyor (plan anında düşürüyor) → B-3'te alan zaten kalkıyor.
+- Gün dağılımı hâlâ dengesiz (57 / 51 / 27 / 7 / 0) ve süre 3 dk → B-5 / B-7 (beklenen).

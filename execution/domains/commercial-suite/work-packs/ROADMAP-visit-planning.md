@@ -5,7 +5,7 @@
 > Ayrıntılar: [durum analizi](VISIT-PLANNING-current-state-analysis.md) · [mockup brief](mockups/visit-planning/BRIEF-visit-planning-rep-week.md) · [mockup analizi](mockups/visit-planning/VISIT-PLANNING-mockup-analysis.md) · [mobil not](mobile/2026-10-06-visit-planning/MOBILE-NOTE-2026-10-06-visit-planning.md) · [mobil talepler](MOBILE-REQUESTS-2026-10-05-analysis.md)
 
 ## Neredeyiz
-**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** E2 kabul (`b0fe13aa`); ◐ E4 canlı kontrol bekliyor (fleet yeniden başlatılmalı).
+**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** bitti (E2 + E4). Sıradaki: **Faz 2** (B-8 adlar · B-1 temsilci = oturum + sahiplik · B-2 bölge evreni · B-3 sunucu türetmesi) — paketlenmeyi bekliyor.
 
 ## Yapılanlar (2026-10-06)
 | Ne | Kanıt |
@@ -48,14 +48,14 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 
 - ☐ **0.5** Referans setlerine TR etiketi (veri): `account-type` (9 değer) ve `medical-specialty` (22 değer) yalnız İngilizce → ekranda "Hospital", "Urology". MOD-0048 yayın akışıyla (yap-onayla) TR etiket sürümü; CT script / adım listesi hazırlar.
 
-### Faz 1 — VP-FIX-1 (mockup'tan bağımsız) — ☑ E2 kabul `b0fe13aa` (2026-10-06) · ◐ E4 bekliyor (fleet yeniden başlatma) · paketlendi 2026-10-06, [WP](WP-VP-FIX-1-visit-planning-quick-fixes.md), worktree `C:\tmp\vp-fix-1`
-- ☐ D1 liste hedef sayısı (hep 0)
-- ☐ D2 onaylı plan kilidi (ekran + sunucu)
-- ☐ C2 hafta sonuna ziyaret düşmesin
-- ☐ C3 çalışma takvimi 400 (tatiller)
-- ☐ A1 strateji şablonu seçicisini kaldır
-- ☐ D7 menü: Ziyaret Planlama + Ziyaret Yürütme
-- ☐ D6 / A5 bugünkü etiketlerin 7 dili
+### Faz 1 — VP-FIX-1 (mockup'tan bağımsız) — ☑ E2 kabul `b0fe13aa` · ☑ **E4 kabul** (2026-10-06) · paketlendi 2026-10-06, [WP](WP-VP-FIX-1-visit-planning-quick-fixes.md), worktree `C:\tmp\vp-fix-1`
+- ☑ D1 liste hedef sayısı (hep 0)
+- ☑ D2 onaylı plan kilidi (ekran + sunucu)
+- ☑ C2 hafta sonuna ziyaret düşmesin
+- ☑ C3 çalışma takvimi 400 (tatiller)
+- ☑ A1 strateji şablonu seçicisini kaldır
+- ☑ D7 menü: Ziyaret Planlama + Ziyaret Yürütme
+- ☑ D6 / A5 bugünkü etiketlerin 7 dili
 
 ### Faz 2 — backend temel (mobil de bekliyor)
 - ☐ B-8 görünen adlar (D4; mobil D1)
