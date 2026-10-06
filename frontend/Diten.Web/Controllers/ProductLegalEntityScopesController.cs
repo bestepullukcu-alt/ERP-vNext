@@ -41,10 +41,20 @@ public sealed class ProductLegalEntityScopesController : Controller
         _localizer = localizer;
     }
 
+    /// <summary>
+    /// UAS-001 / WP-MDM-SCOPE-ACCEPT-01 FIX1 B5 — a signed-in reader without the permission gets a 403 INSIDE the shell (the
+    /// view draws only the _AccessDenied partial, no page skeleton). The former redirect went to an AccessDeniedPath this
+    /// app does not configure (302 → 404).
+    /// </summary>
     [HttpGet("")]
     public IActionResult Index()
     {
-        if (!Has(ReadPermission)) return Forbid();
+        ViewData["CanReadProductScope"] = Has(ReadPermission);
+        if (!Has(ReadPermission))
+        {
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+            return View("~/Views/MasterDataManagement/ProductLegalEntityScopes/Index.cshtml");
+        }
         ViewData["CanConfigureProductScope"] = Has(ConfigurePermission);
         ViewData["CanReplaceProductScope"] = Has(ReplacePermission);
         ViewData["CanEndProductScope"] = Has(EndPermission);
@@ -53,35 +63,71 @@ public sealed class ProductLegalEntityScopesController : Controller
         return View("~/Views/MasterDataManagement/ProductLegalEntityScopes/Index.cshtml");
     }
 
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX1 (BL-440 list standard) — the list component's server request (start, length, search,
+    /// orderBy, orderDir) becomes MDM's Global Product page query (the Global Product page's own translation, one rule for
+    /// both lists); MDM's page becomes the component's envelope { data: { items, total, filteredTotal } }. MDM is the judge
+    /// of the order (unknown key = 400) and of which products the caller may see.
+    /// </summary>
     [HttpGet("api")]
-    public Task<IActionResult> Products(CancellationToken cancellationToken) =>
-        Has(ReadPermission)
-            ? Proxy(HttpMethod.Get, $"{_gateway}/api/global-products{Request.QueryString}", null, cancellationToken)
-            : Task.FromResult<IActionResult>(Forbid());
+    public async Task<IActionResult> Products(CancellationToken cancellationToken)
+    {
+        if (!Has(ReadPermission)) return Denied();
+        if (!TryRequest(HttpMethod.Get, $"{_gateway}/api/global-products?{GlobalProductsController.BuildListQuery(Request.Query)}", null, out var request))
+            return Unauthorized();
+        using (request)
+        using (var response = await _http.SendAsync(request, cancellationToken))
+        {
+            if (!response.IsSuccessStatusCode) return Failure(response.StatusCode);
+            try
+            {
+                using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+                var root = document.RootElement;
+                if (root.ValueKind != JsonValueKind.Object
+                    || !(root.TryGetProperty("data", out var page) || root.TryGetProperty("Data", out page))
+                    || page.ValueKind != JsonValueKind.Object
+                    || !(page.TryGetProperty("items", out var items) || page.TryGetProperty("Items", out items))
+                    || items.ValueKind != JsonValueKind.Array
+                    || !(page.TryGetProperty("totalCount", out var count) || page.TryGetProperty("TotalCount", out count))
+                    || !count.TryGetInt64(out var total) || total < 0)
+                    return Failure(HttpStatusCode.BadGateway);
+                return new ContentResult
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    ContentType = "application/json",
+                    Content = JsonSerializer.Serialize(new { success = true, data = new { items = items.Clone(), total, filteredTotal = total } }, _json)
+                };
+            }
+            catch (JsonException)
+            {
+                return Failure(HttpStatusCode.BadGateway);
+            }
+        }
+    }
 
     [HttpGet("api/{globalProductId:guid}")]
     public Task<IActionResult> Policy(Guid globalProductId, CancellationToken cancellationToken) =>
         Has(ReadPermission)
             ? Proxy(HttpMethod.Get, PolicyUrl(globalProductId), null, cancellationToken)
-            : Task.FromResult<IActionResult>(Forbid());
+            : Task.FromResult(Denied());
 
     [HttpGet("api/{globalProductId:guid}/history")]
     public Task<IActionResult> History(Guid globalProductId, CancellationToken cancellationToken) =>
         Has(ReadPermission)
             ? Proxy(HttpMethod.Get, $"{PolicyUrl(globalProductId)}/history", null, cancellationToken)
-            : Task.FromResult<IActionResult>(Forbid());
+            : Task.FromResult(Denied());
 
     [HttpGet("api/{globalProductId:guid}/effective")]
     public Task<IActionResult> Effective(Guid globalProductId, CancellationToken cancellationToken) =>
         Has(ReadPermission)
             ? Proxy(HttpMethod.Get, $"{PolicyUrl(globalProductId)}/effective", null, cancellationToken)
-            : Task.FromResult<IActionResult>(Forbid());
+            : Task.FromResult(Denied());
 
     [HttpGet("api/{globalProductId:guid}/create-options")]
     public Task<IActionResult> CreateOptions(Guid globalProductId, CancellationToken cancellationToken) =>
         Has(ConfigurePermission)
             ? Proxy(HttpMethod.Get, $"{PolicyUrl(globalProductId)}/create-options", null, cancellationToken)
-            : Task.FromResult<IActionResult>(Forbid());
+            : Task.FromResult(Denied());
 
     [HttpPost("api")]
     [ValidateAntiForgeryToken]
@@ -106,7 +152,7 @@ public sealed class ProductLegalEntityScopesController : Controller
         [FromForm] string? formAttemptToken,
         CancellationToken cancellationToken)
     {
-        if (!Has(EndPermission)) return Forbid();
+        if (!Has(EndPermission)) return Denied();
         if (!TryAttempt(formAttemptToken, out var operationKey)) return InvalidAttempt();
         if (!ModelState.IsValid || model.GlobalProductId == Guid.Empty) return ValidationFailure();
         return await SendWrite(model.GlobalProductId, "/end", new { expectedVersion = model.ExpectedVersion }, operationKey, formAttemptToken!, cancellationToken);
@@ -120,7 +166,7 @@ public sealed class ProductLegalEntityScopesController : Controller
         bool requireExpectedVersion,
         CancellationToken cancellationToken)
     {
-        if (!Has(permission)) return Forbid();
+        if (!Has(permission)) return Denied();
         if (!TryAttempt(formAttemptToken, out var operationKey)) return InvalidAttempt();
         if (!ModelState.IsValid || model.GlobalProductId == Guid.Empty || model.Mode is < 1 or > 2 || requireExpectedVersion && !model.ExpectedVersion.HasValue)
             return ValidationFailure();
@@ -246,6 +292,14 @@ public sealed class ProductLegalEntityScopesController : Controller
         catch (CryptographicException) { return false; }
         catch (JsonException) { return false; }
     }
+
+    /// <summary>FIX1 B5 — a coded 403 for the page's own calls; never a redirect.</summary>
+    private IActionResult Denied() => StatusCode(StatusCodes.Status403Forbidden, new
+    {
+        success = false,
+        errors = new[] { _localizer["ErrorForbidden"].Value },
+        errorCode = "PRODUCT_SCOPE_PERMISSION_DENIED"
+    });
 
     private IActionResult InvalidAttempt() => BadRequest(new { success = false, errors = new[] { _localizer["ErrorInvalidFormAttempt"].Value } });
     private IActionResult ValidationFailure() => BadRequest(new { success = false, errors = new[] { _localizer["ErrorValidation"].Value } });

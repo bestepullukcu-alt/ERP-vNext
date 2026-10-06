@@ -57,7 +57,18 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
         if (!Guid.TryParse(_actor.ActorId, out var actorId) || actorId == Guid.Empty)
             return ProductLegalEntityScopeWriteAdmission.Denied("PRODUCT_SCOPE_WRITE_ACTOR_INVALID");
 
-        var current = await _rollouts.GetAsync(cancellationToken);
+        ProductLegalEntityScopeRolloutState? current;
+        try
+        {
+            current = await _rollouts.GetAsync(cancellationToken);
+        }
+        catch (InvalidOperationException)
+        {
+            // WP-MDM-SCOPE-ACCEPT-01 FIX1 B2: a rollout record that cannot be read refuses the write with a coded 503 —
+            // never an unhandled exception for every product write of the tenant.
+            ProductLegalEntityScopeRolloutMetrics.CountUnreadable("write_admission");
+            return ProductLegalEntityScopeWriteAdmission.Denied(RolloutUnreadableCode, 503);
+        }
         if (current is null) return ProductLegalEntityScopeWriteAdmission.Legacy();
         if (current.Mode == ProductLegalEntityScopeRolloutMode.Enforced
             && identity.EnforcedGlobalProductCreateProhibited)
@@ -71,27 +82,40 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
             ActorId = actorId, MutationKind = identity.Kind,
             PayloadFingerprint = identity.PayloadFingerprint,
             Owner = $"Diten.MDM:{identity.Kind}", AcquiredAtUtc = now,
-            ExpiresAtUtc = now.AddSeconds(ProductLegalEntityScopeWriterLease.DurationSeconds)
+            ExpiresAtUtc = now.AddSeconds(ProductLegalEntityScopeWriterLease.DurationSeconds),
+            ObjectKeys = [.. identity.ObjectKeys]
         };
-        var acquired = await _rollouts.AcquireWriterLeaseAsync(requested, cancellationToken);
+        // WP-MDM-SCOPE-ACCEPT-01 FIX1 B4: a lease per write, keyed by what it touches — writers of different products
+        // proceed side by side; an expired lease of another command is taken over.
+        var acquired = await _rollouts.AcquireProductWriterLeaseAsync(requested, cancellationToken);
         if (!acquired.Acquired)
             return ProductLegalEntityScopeWriteAdmission.Denied(
                 acquired.FailureCode ?? "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
         if (acquired.LegacyBypass) return ProductLegalEntityScopeWriteAdmission.Legacy();
+        ProductLegalEntityScopeRolloutMetrics.CountTakenOver(acquired.TakenOver, "writer");
 
-        var baseline = await _readiness.CaptureMutationStateHashAsync(cancellationToken);
         var lease = acquired.Lease!;
-        if (!lease.BaselineBound
-            && !await _rollouts.BindWriterLeaseBaselineAsync(
-                lease.Token, lease.Generation, baseline, cancellationToken))
-            return ProductLegalEntityScopeWriteAdmission.Denied("PRODUCT_SCOPE_WRITER_LEASE_BASELINE_CONFLICT");
-        if (lease.BaselineBound && !string.Equals(lease.PreWriteStateHash, baseline, StringComparison.Ordinal))
-            return ProductLegalEntityScopeWriteAdmission.Denied("PRODUCT_SCOPE_WRITER_LEASE_PAYLOAD_DRIFT");
+        // The proof is the state of the write's own objects (never a collection read in full). It is bound once, by the
+        // first attempt. A repeat of the same command finds its lease and is admitted as it is: while the lease was held
+        // nobody else could write those objects, so what moved since is this command's own unfinished write — which the
+        // repeat finishes (FIX1 B4; before, a 202 left the tenant's every write refused as PAYLOAD_DRIFT).
+        if (!lease.BaselineBound)
+        {
+            var baseline = await _readiness.CaptureObjectStateHashAsync(identity.ObjectIds, cancellationToken);
+            if (baseline.Verifiable)
+            {
+                if (!await _rollouts.BindProductWriterLeaseBaselineAsync(
+                        lease.Token, lease.Generation, baseline.Hash, cancellationToken))
+                    return ProductLegalEntityScopeWriteAdmission.Denied("PRODUCT_SCOPE_WRITER_LEASE_BASELINE_CONFLICT");
+                lease.PreWriteStateHash = baseline.Hash;
+            }
+        }
 
-        lease.PreWriteStateHash ??= baseline;
-        var context = new LeaseContext(_tenant.TenantId, lease, mutation);
+        var context = new LeaseContext(_tenant.TenantId, lease, mutation) { ObjectIds = identity.ObjectIds };
         return ProductLegalEntityScopeWriteAdmission.Owned(context);
     }
+
+    public const string RolloutUnreadableCode = "PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID";
 
     public async Task<ProductLegalEntityScopeWriteAdmission> EnterForegroundReplaceAsync(
         ProductLegalEntityScopeVerifiedWriterAuthority authority,
@@ -131,9 +155,11 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
             PayloadFingerprint = identity.PayloadFingerprint,
             Owner = "Diten.MDM:ForegroundProductLegalEntityScopeReplace",
             AcquiredAtUtc = now,
-            ExpiresAtUtc = now.AddSeconds(ProductLegalEntityScopeWriterLease.DurationSeconds)
+            ExpiresAtUtc = now.AddSeconds(ProductLegalEntityScopeWriterLease.DurationSeconds),
+            ObjectKeys = [.. identity.ObjectKeys]
         };
         var acquired = await _rollouts.AcquireWriterLeaseAsync(requested, cancellationToken);
+        ProductLegalEntityScopeRolloutMetrics.CountTakenOver(acquired.TakenOver, "replace");
         if (!acquired.Acquired || acquired.LegacyBypass || acquired.Lease is null)
         {
             return ProductLegalEntityScopeWriteAdmission.Denied(
@@ -153,27 +179,25 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
                 "PRODUCT_SCOPE_WRITER_LEASE_AUTHORITY_MISMATCH");
         }
 
-        var baseline = await _readiness.CaptureMutationStateHashAsync(cancellationToken);
-        if (!lease.BaselineBound
-            && !await _rollouts.BindWriterLeaseBaselineAsync(
-                lease.Token,
-                lease.Generation,
-                baseline,
-                cancellationToken))
+        // FIX1 B4: the proof is the product's own state; a repeat of the same command is admitted as it is (see EnterAsync).
+        if (!lease.BaselineBound)
         {
-            return ProductLegalEntityScopeWriteAdmission.Denied(
-                "PRODUCT_SCOPE_WRITER_LEASE_BASELINE_CONFLICT");
-        }
-        if (lease.BaselineBound
-            && !string.Equals(lease.PreWriteStateHash, baseline, StringComparison.Ordinal))
-        {
-            return ProductLegalEntityScopeWriteAdmission.Denied(
-                "PRODUCT_SCOPE_WRITER_LEASE_PAYLOAD_DRIFT");
+            var baseline = await _readiness.CaptureObjectStateHashAsync(identity.ObjectIds, cancellationToken);
+            if (!baseline.Verifiable
+                || !await _rollouts.BindWriterLeaseBaselineAsync(
+                    lease.Token,
+                    lease.Generation,
+                    baseline.Hash,
+                    cancellationToken))
+            {
+                return ProductLegalEntityScopeWriteAdmission.Denied(
+                    "PRODUCT_SCOPE_WRITER_LEASE_BASELINE_CONFLICT");
+            }
+            lease.PreWriteStateHash = baseline.Hash;
         }
 
-        lease.PreWriteStateHash ??= baseline;
         return ProductLegalEntityScopeWriteAdmission.Owned(
-            new LeaseContext(_tenant.TenantId, lease, mutation));
+            new LeaseContext(_tenant.TenantId, lease, mutation) { ObjectIds = identity.ObjectIds });
     }
 
     public async Task CompleteForegroundReplaceAsync(
@@ -228,18 +252,32 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
             context.Depth--;
             return;
         }
-        if (exceptionalOrCancelled || statusCode == 202) return;
+        // Principle A: the lease is released only when the system KNOWS the write is over — it succeeded, or it failed and
+        // its objects are exactly as they were. Otherwise it is kept (counted), and its exits are named: the same command
+        // repeated (it gets this lease back and finishes), or the lease's expiry (another writer, or a fence, takes over).
+        if (exceptionalOrCancelled || statusCode == 202)
+        {
+            ProductLegalEntityScopeRolloutMetrics.CountRetained(exceptionalOrCancelled ? "exception" : "ambiguous");
+            return;
+        }
         if (succeeded)
         {
-            await _rollouts.ReleaseWriterLeaseAsync(
+            await _rollouts.ReleaseProductWriterLeaseAsync(
                 context.Lease.Token, context.Lease.Generation, cancellationToken);
             return;
         }
 
-        var after = await _readiness.CaptureMutationStateHashAsync(cancellationToken);
-        if (string.Equals(after, context.Lease.PreWriteStateHash, StringComparison.Ordinal))
-            await _rollouts.ReleaseWriterLeaseAsync(
+        if (context.Lease.PreWriteStateHash is null)
+        {
+            ProductLegalEntityScopeRolloutMetrics.CountRetained("failed_unverifiable");
+            return;
+        }
+        var after = await _readiness.CaptureObjectStateHashAsync(context.ObjectIds, cancellationToken);
+        if (after.Verifiable && string.Equals(after.Hash, context.Lease.PreWriteStateHash, StringComparison.Ordinal))
+            await _rollouts.ReleaseProductWriterLeaseAsync(
                 context.Lease.Token, context.Lease.Generation, cancellationToken);
+        else
+            ProductLegalEntityScopeRolloutMetrics.CountRetained("failed_changed");
     }
 
     private static bool ExactNestedMutation(
@@ -264,6 +302,7 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
         public ProductLegalEntityScopeWriterLease Lease { get; } = lease;
         public IProductLegalEntityScopeInventoryMutation Mutation { get; } = mutation;
         public int Depth { get; set; } = 1;
+        public IReadOnlyList<Guid> ObjectIds { get; init; } = [];
     }
 
     private sealed class AmbientLeaseScope(LeaseContext? previous, LeaseContext? installed) : IDisposable
@@ -282,7 +321,11 @@ public sealed record ProductLegalEntityScopeWriteAdmission(
     bool IsAllowed, bool OwnsLease, bool LegacyBypass, string? FailureCode,
     ProductLegalEntityScopeWriteFenceCoordinator.LeaseContext? Context)
 {
-    public static ProductLegalEntityScopeWriteAdmission Denied(string code) => new(false, false, false, code, null);
+    /// <summary>The HTTP status of a refusal: 409 (busy, fenced, suspended) unless the refusal says otherwise (503).</summary>
+    public int StatusCode { get; init; } = 409;
+
+    public static ProductLegalEntityScopeWriteAdmission Denied(string code, int statusCode = 409) =>
+        new(false, false, false, code, null) { StatusCode = statusCode };
     public static ProductLegalEntityScopeWriteAdmission Legacy() => new(true, false, true, null, null);
     internal static ProductLegalEntityScopeWriteAdmission Nested(ProductLegalEntityScopeWriteFenceCoordinator.LeaseContext context) => new(true, false, false, null, context);
     internal static ProductLegalEntityScopeWriteAdmission Owned(ProductLegalEntityScopeWriteFenceCoordinator.LeaseContext context) => new(true, true, false, null, context);

@@ -1,22 +1,30 @@
 @using Diten.Web.Views.MasterDataManagement.ProductLegalEntityScopes
+@using Diten.Web.Models.DataTable
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<ProductLegalEntityScopesIndex> Localizer
-<div class="card">
-    <div id="skeleton-loader" class="backbone-skeleton p-4">
-        <div class="shimmer skeleton-row skeleton-row-lg"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row skeleton-row-last"></div>
-    </div>
-    <div class="card-datatable table-responsive">
-        <table id="dt-product-legal-entity-scopes" class="datatables-product-legal-entity-scopes table border-top" data-dt-standard="v2">
-            <thead><tr>
-                <th></th>
-                <th>@Localizer["CanonicalCode"]</th>
-                <th class="all">@Localizer["GlobalProduct"]</th>
-                <th>@Localizer["LifecycleStatus"]</th>
-                <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
-            </tr></thead>
-        </table>
-    </div>
-</div>
+@{
+    // WP-MDM-SCOPE-ACCEPT-01 FIX1 (BL-440 golden reference): the table card is the shared component — the page describes
+    // it, _ListShell renders it with the shared shaped skeleton. Every header is localized HERE.
+    //
+    // SERVER data: MDM pages, searches, filters and sorts the Global Products (orderBy whitelist: canonicalCode,
+    // globalProductName, lifecycleStatus); index.js declares the same mode.
+    //
+    // NO SELECTION COLUMN, deliberately: a product's legal-entity scope is never changed in bulk (GxP — every scope change
+    // is its own audited command), so a checkbox would select into nothing.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-product-legal-entity-scopes",
+        DataMode = "server",
+        Slug = "product-legal-entity-scopes",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["CanonicalCode"].Value },
+            new DataTableColumnViewModel { Header = Localizer["GlobalProduct"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["LifecycleStatus"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

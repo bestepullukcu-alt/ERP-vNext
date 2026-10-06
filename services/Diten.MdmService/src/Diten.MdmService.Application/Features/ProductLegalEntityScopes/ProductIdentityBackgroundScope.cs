@@ -38,6 +38,9 @@ public sealed class ProductIdentityBackgroundScope(
             if (rollout is null) return TenantMode.Everything;
             rollout.EnsureValid();
             if (rollout.IsDeleted || rollout.TenantId != tenantContext.TenantId) return TenantMode.Nothing;
+            // WP-MDM-SCOPE-ACCEPT-01 FIX1 B3: while an activation / suspension fence is up the inventory is being
+            // measured twice and must not move — no worker writes until the fence commits or is aborted.
+            if (rollout.ActiveFence is not null) return TenantMode.Nothing;
             return rollout.Mode switch
             {
                 ProductLegalEntityScopeRolloutMode.Preparation => TenantMode.Everything,

@@ -495,6 +495,11 @@ internal sealed class ScopeReadinessRepository : IProductLegalEntityScopeOperati
 
     public Task<string> CaptureMutationStateHashAsync(
         CancellationToken cancellationToken = default) => Task.FromResult(new string('A', 64));
+
+    // WP-MDM-SCOPE-ACCEPT-01 FIX1 B4: the proof is the write's own objects (here: unchanged, provable).
+    public Task<ProductLegalEntityScopeObjectState> CaptureObjectStateHashAsync(
+        IReadOnlyCollection<Guid> objectIds,
+        CancellationToken cancellationToken = default) => Task.FromResult(new ProductLegalEntityScopeObjectState(new string('A', 64), true));
 }
 
 internal sealed class ScopePolicyRepository : IProductLegalEntityScopePolicyRepository

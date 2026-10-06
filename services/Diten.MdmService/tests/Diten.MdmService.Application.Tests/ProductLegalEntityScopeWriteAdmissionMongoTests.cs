@@ -651,17 +651,17 @@ public sealed class ProductLegalEntityScopeWriteAdmissionMongoTests
             new ProductLegalEntityScopeOperationalReadinessRepository(scope.Database, tenant),
             new Actor(Guid.NewGuid().ToString("D")), tenant, new FixedClock());
 
+        // WP-MDM-SCOPE-ACCEPT-01 FIX1 B4: a product writer's lease lives in the per-object list (ProductWriterLeases).
         var first = await coordinator.EnterAsync(Command(Guid.NewGuid()), CancellationToken.None);
         await coordinator.CompleteAsync(first, false, 409, false, CancellationToken.None);
-        Assert.Null((await repository.GetAsync())!.ActiveWriterLease);
+        Assert.Empty((await repository.GetAsync())!.ProductWriterLeases);
 
         foreach (var (status, exceptional) in new[] { (202, false), (500, true), (499, true) })
         {
             var admission = await coordinator.EnterAsync(Command(Guid.NewGuid()), CancellationToken.None);
             await coordinator.CompleteAsync(admission, false, status, exceptional, CancellationToken.None);
-            Assert.NotNull((await repository.GetAsync())!.ActiveWriterLease);
-            var lease = (await repository.GetAsync())!.ActiveWriterLease!;
-            Assert.True(await repository.ReleaseWriterLeaseAsync(lease.Token, lease.Generation));
+            var lease = Assert.Single((await repository.GetAsync())!.ProductWriterLeases);
+            Assert.True(await repository.ReleaseProductWriterLeaseAsync(lease.Token, lease.Generation));
         }
     }
 
@@ -689,9 +689,18 @@ public sealed class ProductLegalEntityScopeWriteAdmissionMongoTests
                 { "CentralAcknowledgement", "receipt-progress" }
             }));
         await coordinator.CompleteAsync(deliveryOnly, false, 409, false, CancellationToken.None);
-        Assert.Null((await repository.GetAsync())!.ActiveWriterLease);
+        Assert.Empty((await repository.GetAsync())!.ProductWriterLeases);
 
-        var partialMutation = await coordinator.EnterAsync(Command(Guid.NewGuid()), CancellationToken.None);
+        // FIX1 B4: what proves a write changed something is its OWN object (here the LSKU's GSKU), not the tenant.
+        var partialCommand = Command(Guid.NewGuid());
+        var partialMutation = await coordinator.EnterAsync(partialCommand, CancellationToken.None);
+        await scope.Database.GetCollection<BsonDocument>("mdm_lskus").InsertOneAsync(new BsonDocument
+        {
+            { "_id", new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard) },
+            { "TenantId", new BsonBinaryData(scope.TenantId, GuidRepresentation.Standard) },
+            { "GskuId", new BsonBinaryData(partialCommand.Request.GskuId, GuidRepresentation.Standard) },
+            { "IsDeleted", false }
+        });
         await collection.UpdateOneAsync(
             Builders<BsonDocument>.Filter.Eq("_id", rollout.Id),
             Builders<BsonDocument>.Update.Push("AuditIntents", new BsonDocument
@@ -704,7 +713,9 @@ public sealed class ProductLegalEntityScopeWriteAdmissionMongoTests
                 { "CommandId", Guid.NewGuid().ToString("D") }, { "EvidenceHash", new string('A', 64) }
             }));
         await coordinator.CompleteAsync(partialMutation, false, 409, false, CancellationToken.None);
-        Assert.NotNull((await repository.GetAsync())!.ActiveWriterLease);
+        Assert.Single((await repository.GetAsync())!.ProductWriterLeases);
+        await scope.Database.GetCollection<BsonDocument>("mdm_lskus").DeleteManyAsync(
+            new BsonDocument("TenantId", new BsonBinaryData(scope.TenantId, GuidRepresentation.Standard)));
     }
 
     [Fact]

@@ -92,17 +92,53 @@ public sealed class ProductLegalEntityScopeOperationalReadinessRepository
         return new ProductLegalEntityScopeOperationalReadiness(rollout, descendantIntegrity, audit);
     }
 
-    public async Task<string> CaptureMutationStateHashAsync(
+    public async Task<ProductLegalEntityScopeObjectState> CaptureObjectStateHashAsync(
+        IReadOnlyCollection<Guid> objectIds,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(objectIds);
+        var ids = objectIds.Where(id => id != Guid.Empty).Distinct().OrderBy(id => id).ToArray();
+        if (ids.Length == 0) return new(string.Empty, false);
+        var values = new BsonArray(ids.Select(id => new BsonBinaryData(id, GuidRepresentation.Standard)));
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        foreach (var collection in MutationCollections)
+        foreach (var (collection, fields) in ObjectFields)
         {
             Append(hash, $"collection={collection}\n");
-            await AppendCollectionAsync(hash, collection, MutationProjection, cancellationToken);
+            var filter = new BsonDocument
+            {
+                { "TenantId", new BsonBinaryData(_tenantId, GuidRepresentation.Standard) },
+                { "$or", new BsonArray(fields.Select(field => new BsonDocument(field, new BsonDocument("$in", values)))) }
+            };
+            using var cursor = await _database.GetCollection<BsonDocument>(collection)
+                .Find(filter)
+                .Sort(new BsonDocument("_id", 1))
+                .ToCursorAsync(cancellationToken);
+            while (await cursor.MoveNextAsync(cancellationToken))
+            {
+                foreach (var document in cursor.Current)
+                    Append(hash, Canonicalize(MutationProjection(document)) + "\n");
+            }
         }
-        return Convert.ToHexString(hash.GetHashAndReset());
+        return new(Convert.ToHexString(hash.GetHashAndReset()), true);
     }
+
+    /// <summary>
+    /// The product documents a write can touch, by the ids that name them: the document itself (_id) or its parent's
+    /// id. One write's proof reads only these — never a collection in full.
+    /// </summary>
+    private static readonly (string Collection, string[] Fields)[] ObjectFields =
+    [
+        ("mdm_code_reservations", ["_id"]),
+        (GlobalProducts, ["_id"]),
+        (Revisions, ["_id", "GlobalProductId"]),
+        (Gskus, ["_id", "CodeReservationId", "ProductDefinitionRevisionId"]),
+        (Lskus, ["_id", "GskuId"]),
+        (FinishedGoods, ["_id", "GskuId"]),
+        (AbbreviationRegister, ["_id", "GlobalProductId"]),
+        (AbbreviationLedger, ["_id", "GlobalProductId", "RegisterEntryId"]),
+        (AbbreviationHistory, ["RegisterEntryId", "GlobalProductId"]),
+        (ScopePolicies, ["_id", "GlobalProductId"])
+    ];
 
     public async Task<ProductLegalEntityScopeInventorySnapshot> CaptureInventorySnapshotAsync(
         ProductLegalEntityScopeInventorySnapshotRequest request,
@@ -403,11 +439,6 @@ public sealed class ProductLegalEntityScopeOperationalReadinessRepository
         { "IsDeleted", false }
     };
 
-    private static readonly string[] MutationCollections =
-    [
-        "mdm_code_reservations", GlobalProducts, Revisions, Gskus, Lskus, FinishedGoods,
-        AbbreviationRegister, AbbreviationLedger, AbbreviationHistory, ScopePolicies, RolloutStates
-    ];
 
     private static readonly (string Category, string Collection)[] DescendantCollections =
     [

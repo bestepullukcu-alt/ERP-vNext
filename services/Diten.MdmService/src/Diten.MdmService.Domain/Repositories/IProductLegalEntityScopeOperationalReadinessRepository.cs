@@ -9,9 +9,16 @@ public interface IProductLegalEntityScopeOperationalReadinessRepository
         int maximumSampleSize,
         CancellationToken cancellationToken = default);
 
-    Task<string> CaptureMutationStateHashAsync(
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX1 B4 — the state of what ONE write touches: the tenant's documents of the product
+    /// collections whose id or parent id is one of <paramref name="objectIds"/> (indexed lookups, no collection read in
+    /// full). <c>Verifiable</c> is false when the write names no object (then nothing proves it changed nothing).
+    /// </summary>
+    Task<ProductLegalEntityScopeObjectState> CaptureObjectStateHashAsync(
+        IReadOnlyCollection<Guid> objectIds,
         CancellationToken cancellationToken = default) =>
-        Task.FromException<string>(new InvalidOperationException("PRODUCT_SCOPE_MUTATION_SNAPSHOT_NOT_SUPPORTED"));
+        Task.FromResult(new ProductLegalEntityScopeObjectState(string.Empty, false));
+
 
     Task<ProductLegalEntityScopeInventorySnapshot> CaptureInventorySnapshotAsync(
         ProductLegalEntityScopeInventorySnapshotRequest request,
@@ -63,3 +70,5 @@ public sealed record ProductLegalEntityScopeAuditCategory(
     bool HasMoreMalformed,
     IReadOnlyList<Guid> UnacknowledgedIntentIds,
     bool HasMoreUnacknowledged);
+
+public sealed record ProductLegalEntityScopeObjectState(string Hash, bool Verifiable);

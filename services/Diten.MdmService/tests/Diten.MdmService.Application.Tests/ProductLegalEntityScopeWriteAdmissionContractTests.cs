@@ -28,22 +28,25 @@ public sealed class ProductLegalEntityScopeWriteAdmissionContractTests
     {
         var marker = typeof(IProductLegalEntityScopeInventoryMutation);
         var applicationTypes = marker.Assembly.GetTypes();
-        var commandNamespaces = new HashSet<string>(StringComparer.Ordinal)
-        {
-            "Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands",
-            "Diten.MdmService.Application.Features.ProductAbbreviationRegister.Commands",
-            "Diten.MdmService.Application.Features.ProductLegalEntityScopes.Commands"
-        };
+        // WP-MDM-SCOPE-ACCEPT-01 FIX1 S8: EVERY product command namespace — the Lifecycle and Workflow ones too (before,
+        // three namespaces were scanned and seventeen writers were never looked at).
         var discoveredCommands = applicationTypes
             .Where(type => type.IsClass && !type.IsAbstract
-                && type.Namespace is not null && commandNamespaces.Contains(type.Namespace)
+                && type.Namespace is not null && IsProductCommandNamespace(type.Namespace)
+                && type.Name.EndsWith("Command", StringComparison.Ordinal)
                 && typeof(IBaseRequest).IsAssignableFrom(type))
             .ToArray();
         var unclassified = discoveredCommands
-            .Where(type => !marker.IsAssignableFrom(type))
+            .Where(type => !marker.IsAssignableFrom(type) && !KnownUnguardedLifecycleWriters.Contains(type.Name))
             .Select(type => type.FullName)
             .OrderBy(name => name, StringComparer.Ordinal)
             .ToArray();
+        var stale = KnownUnguardedLifecycleWriters
+            .Where(name => !discoveredCommands.Any(type => type.Name == name && !marker.IsAssignableFrom(type)))
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToArray();
+        Assert.True(stale.Length == 0,
+            "These writers are guarded now (or gone): remove them from KnownUnguardedLifecycleWriters: " + string.Join(", ", stale));
         var actual = discoveredCommands
             .Where(marker.IsAssignableFrom)
             .Where(type => type.IsClass && !type.IsAbstract && marker.IsAssignableFrom(type))
@@ -57,6 +60,38 @@ public sealed class ProductLegalEntityScopeWriteAdmissionContractTests
         Assert.Equal(ExactMutationCommands.OrderBy(name => name, StringComparer.Ordinal), actual);
         Assert.Equal(18, ExactMutationCommands.Distinct(StringComparer.Ordinal).Count());
     }
+
+    private static bool IsProductCommandNamespace(string ns) =>
+        ns.StartsWith("Diten.MdmService.Application.Features.ProductItemSkuMaster", StringComparison.Ordinal)
+        || ns.StartsWith("Diten.MdmService.Application.Features.ProductAbbreviationRegister", StringComparison.Ordinal)
+        || ns.StartsWith("Diten.MdmService.Application.Features.ProductLegalEntityScopes", StringComparison.Ordinal);
+
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX1 S8 — THE KNOWN GAP, NAMED (owner / CT decision pending): these product writers (GP /
+    /// GSKU / LSKU lifecycle and workflow commands) take neither the write fence nor a writer lease. While the scope stays
+    /// in Preparation (no tenant is Enforced; activation is development-only) nothing depends on them; before activation
+    /// is opened they must be guarded — and their files belong to the GP / GSKU / LSKU rounds. A NEW unguarded command
+    /// turns this test red; a guarded one must leave the list.
+    /// </summary>
+    private static readonly HashSet<string> KnownUnguardedLifecycleWriters = new(StringComparer.Ordinal)
+    {
+        "DispatchProductAbbreviationWorkItemActionCommand",
+        "RetireGlobalProductIdentityCommand",
+        "RetireGskuIdentityPairCommand",
+        "RetireLskuIdentityCommand",
+        "StartFirstGskuIdentityWorkflowCommand",
+        "StartGlobalProductCorrectionWorkflowCommand",
+        "StartGlobalProductIdentityWorkflowCommand",
+        "StartGlobalProductRetirementRequestWorkflowCommand",
+        "StartGskuCorrectionWorkflowCommand",
+        "StartGskuRetirementRequestWorkflowCommand",
+        "StartLskuIdentityWorkflowCommand",
+        "StartLskuRetirementRequestWorkflowCommand",
+        "UpdateGlobalProductDraftCommand",
+        "WithdrawFirstGskuIdentityApprovalCommand",
+        "WithdrawGlobalProductIdentityApprovalCommand",
+        "WithdrawLskuIdentityApprovalCommand"
+    };
 
     [Fact]
     public void Write_fence_behavior_is_registered_after_validation_and_before_audit_forwarding()

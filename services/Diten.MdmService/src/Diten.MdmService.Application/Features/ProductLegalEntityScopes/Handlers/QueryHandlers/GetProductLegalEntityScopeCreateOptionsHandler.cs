@@ -11,16 +11,16 @@ public sealed class GetProductLegalEntityScopeCreateOptionsHandler
 {
     private const string ModuleCode = "product-item-sku-master";
     private const string ConfigurePermission = "mdm.product-legal-entity-scopes.configure";
-    private readonly IGlobalProductRepository _products;
+    private readonly ProductLegalEntityScopeProductAccess _access;
     private readonly ILegalEntityRepository _legalEntities;
     private readonly ProductLegalEntityScopeCandidateFacade _candidates;
 
     public GetProductLegalEntityScopeCreateOptionsHandler(
-        IGlobalProductRepository products,
+        ProductLegalEntityScopeProductAccess access,
         ILegalEntityRepository legalEntities,
         ProductLegalEntityScopeCandidateFacade candidates)
     {
-        _products = products;
+        _access = access;
         _legalEntities = legalEntities;
         _candidates = candidates;
     }
@@ -29,9 +29,10 @@ public sealed class GetProductLegalEntityScopeCreateOptionsHandler
         GetProductLegalEntityScopeCreateOptionsQuery request,
         CancellationToken cancellationToken)
     {
-        var product = await _products.GetByIdAsync(request.GlobalProductId, cancellationToken);
-        if (product is null)
-            return Response<ProductLegalEntityScopeModels.CreateOptionsDto>.Fail("GLOBAL_PRODUCT_NOT_FOUND", 404);
+        var access = await _access.ResolveAsync(request.GlobalProductId, ConfigurePermission, cancellationToken);
+        if (!access.Allowed)
+            return Response<ProductLegalEntityScopeModels.CreateOptionsDto>.Fail(access.FailureCode!, access.StatusCode);
+        var product = access.Product!;
         var candidate = await _candidates.ResolveAsync(ModuleCode, ConfigurePermission, cancellationToken);
         if (!candidate.IsSuccessful)
             return Response<ProductLegalEntityScopeModels.CreateOptionsDto>.Fail(

@@ -38,6 +38,11 @@ public static class ProductLegalEntityScopeAuditIntentFactory
         };
     }
 
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX1 S7 — the policy's evidence states WHAT changed: the scope in force before and after the
+    /// command (its mode and its legal entities, sorted), next to who, which command, which version and when. A
+    /// central record of "scope replaced" with no "from what to what" proved nothing about the change.
+    /// </summary>
     public static LocalAuditIntent Create(
         ProductLegalEntityScopePolicy policy,
         ProductAuditOperation operation,
@@ -45,7 +50,9 @@ public static class ProductLegalEntityScopeAuditIntentFactory
         int postVersion,
         Guid commandId,
         Guid actorId,
-        DateTimeOffset timestampUtc)
+        DateTimeOffset timestampUtc,
+        ProductLegalEntityScopePeriod? before,
+        ProductLegalEntityScopePeriod? after)
     {
         var evidence = string.Join('|',
             policy.TenantId.ToString("D"),
@@ -55,7 +62,9 @@ public static class ProductLegalEntityScopeAuditIntentFactory
             preVersion,
             postVersion,
             commandId.ToString("D"),
-            timestampUtc.ToString("O"));
+            timestampUtc.ToString("O"),
+            "before=" + ScopeFacts(before),
+            "after=" + ScopeFacts(after));
 
         return new LocalAuditIntent
         {
@@ -80,4 +89,11 @@ public static class ProductLegalEntityScopeAuditIntentFactory
             IdempotencyKey = commandId.ToString("D")
         };
     }
+
+    /// <summary>"none", or "{mode}:{id,id,…}" with the ids sorted — the same text for the same scope, however it was sent.</summary>
+    public static string ScopeFacts(ProductLegalEntityScopePeriod? period)
+        => period is null
+            ? "none"
+            : ((int)period.Mode).ToString(System.Globalization.CultureInfo.InvariantCulture) + ":"
+              + string.Join(',', period.LegalEntityIds.OrderBy(id => id).Select(id => id.ToString("D")));
 }

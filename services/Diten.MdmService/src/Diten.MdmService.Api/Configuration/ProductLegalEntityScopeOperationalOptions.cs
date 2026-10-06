@@ -12,4 +12,10 @@ public sealed class ProductLegalEntityScopeOperationalOptions
     public Guid? ExpectedRolloutStateId { get; set; }
     public int? ExpectedRolloutVersion { get; set; }
     public string ReasonCode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX1 B3 — with ActivateEnforced / SuspendFailClosed and the SAME command, actor, reason and
+    /// expected rollout as the transition that took a fence: abandon that fence (recorded on the rollout), writes reopen.
+    /// </summary>
+    public bool Abort { get; set; }
 }

@@ -19,6 +19,7 @@ public sealed class CreateProductLegalEntityScopePolicyHandler
     private readonly ProductLegalEntityScopeCandidateFacade _candidates;
     private readonly ITenantContext _tenant;
     private readonly IProductIdentityActorContext _actor;
+    private readonly TimeProvider _clock;
 
     public CreateProductLegalEntityScopePolicyHandler(
         IProductLegalEntityScopePolicyRepository policies,
@@ -27,8 +28,11 @@ public sealed class CreateProductLegalEntityScopePolicyHandler
         ILegalEntityRepository legalEntities,
         ProductLegalEntityScopeCandidateFacade candidates,
         ITenantContext tenant,
-        IProductIdentityActorContext actor)
+        IProductIdentityActorContext actor,
+        TimeProvider? clock = null)
     {
+        // WP-MDM-SCOPE-ACCEPT-01 FIX1 S12: "now" from the TimeProvider (tests set it), not DateTimeOffset.UtcNow.
+        _clock = clock ?? TimeProvider.System;
         _policies = policies;
         _rollout = rollout;
         _products = products;
@@ -61,7 +65,7 @@ public sealed class CreateProductLegalEntityScopePolicyHandler
                 trusted.ErrorCode!, trusted.StatusCode);
 
         var actorId = ParseActor(_actor.ActorId);
-        var now = DateTimeOffset.UtcNow;
+        var now = _clock.GetUtcNow();
         var policy = ProductLegalEntityScopePolicy.Create(
             _tenant.TenantId,
             request.GlobalProductId,
@@ -72,7 +76,7 @@ public sealed class CreateProductLegalEntityScopePolicyHandler
             now);
         policy.AuditIntents.Add(ProductLegalEntityScopeAuditIntentFactory.Create(
             policy, ProductAuditOperation.ProductLegalEntityScopePolicyCreated,
-            -1, 0, request.CommandId, actorId, now));
+            -1, 0, request.CommandId, actorId, now, before: null, after: policy.GetEffectivePeriod(now)));
 
         ProductLegalEntityScopePolicyWriteResult result;
         try

@@ -81,6 +81,7 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
         }
 
         var now = DateTimeOffset.UtcNow;
+        var before = policy.GetEffectivePeriod(now);
         try
         {
             policy.ReplaceCurrent(request.Request.ExpectedVersion, request.CommandId,
@@ -92,7 +93,8 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
         }
         policy.AuditIntents.Add(ProductLegalEntityScopeAuditIntentFactory.Create(
             policy, ProductAuditOperation.ProductLegalEntityScopePolicyReplaced,
-            request.Request.ExpectedVersion, policy.Version, request.CommandId, authority.SubjectId, now));
+            request.Request.ExpectedVersion, policy.Version, request.CommandId, authority.SubjectId, now,
+            before, policy.GetEffectivePeriod(now)));
 
         var admission = await _coordinator.EnterForegroundReplaceAsync(
             authority,

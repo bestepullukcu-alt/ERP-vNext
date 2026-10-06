@@ -1,104 +1,50 @@
-/* MOD-0290-FU03 Product Legal Entity Scope Assignment — Golden Slim, same-origin only. */
+/* MOD-0290-FU03 Product Legal Entity Scope Assignment — same-origin only.
+ *
+ * WP-MDM-SCOPE-ACCEPT-01 FIX1 (BL-440 golden reference): the page stands on the list component (DitenDataTable.createList,
+ * SERVER mode). The factory owns the table, the inline filter, Save View (same moduleKey/pageKey and the same five
+ * columns as before, so saved views still load), the toolbar and the server wire (start/length/search/orderBy/orderDir/
+ * lifecycleStatus → the MVC proxy → MDM). This file keeps only the page's own business: the quick view with the product's
+ * policy, configure / replace / end with their attempt token and anti-forgery, the legal-entity selector.
+ * No selection column (HasSelection = false): a product's scope is only ever changed one product at a time (GxP).
+ */
 const ProductLegalEntityScopesList = (() => {
     'use strict';
 
     const endpoint = '/MasterDataManagement/ProductLegalEntityScopes/api';
-    const tableEl = document.querySelector('.datatables-product-legal-entity-scopes');
-    const host = document.querySelector('[data-can-configure]');
+    const tableEl = document.getElementById('dt-product-legal-entity-scopes');
+    const host = document.getElementById('product-legal-entity-scopes');
     const canConfigure = host?.dataset.canConfigure === 'true';
     const canReplace = host?.dataset.canReplace === 'true';
     const canEnd = host?.dataset.canEnd === 'true';
     const L = window.L10n || {};
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
-    const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'MasterDataManagement', pageKey: 'ProductLegalEntityScopes' };
+    const saveViewColumnIndexes = [1, 2, 3];
     const baseOrder = [[1, 'asc']];
-    const totalColumnCount = 5;
-    const visibleColumns = [1, 2, 3];
-    let dt = null;
-    let defaultViewRecord = null;
-    let defaultViewState = null;
-    let saveViewArmed = false;
+    let list = null;
     let writeMode = 'create';
 
     const value = (item, camel, pascal) => item?.[camel] ?? item?.[pascal];
     const unwrap = payload => payload?.data ?? payload?.Data ?? payload;
     const escapeHtml = input => String(input ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
-    const emptyFilters = () => ({ search: '' });
-    const defaultColVis = () => visibleColumns.reduce((result, index) => ({ ...result, [index]: true }), {});
-    const normalizeView = input => ({
-        filters: { ...emptyFilters(), ...(input?.filters || {}) },
-        search: String(input?.search || ''),
-        colVis: input?.colVis || defaultColVis(),
-        columnOrder: Array.isArray(input?.columnOrder) && input.columnOrder.length === totalColumnCount ? input.columnOrder : Array.from({ length: totalColumnCount }, (_, index) => index),
-        order: Array.isArray(input?.order) && input.order.length ? input.order : baseOrder
+    // The lifecycle in the reader's words (seven languages) — never the stored code.
+    const LIFECYCLE_KEYS = Object.freeze({
+        Draft: 'LifecycleDraft', 1: 'LifecycleDraft',
+        PendingIdentityApproval: 'LifecyclePendingIdentityApproval', 2: 'LifecyclePendingIdentityApproval',
+        IdentityApproved: 'LifecycleIdentityApproved', 3: 'LifecycleIdentityApproved',
+        Retired: 'LifecycleRetired', 4: 'LifecycleRetired'
     });
-    const createInitialTableState = saved => {
-        const state = normalizeView(saved || getResetBaselineState());
-        const input = document.getElementById('productScopeSearch');
-        if (input) input.value = state.filters.search || state.search;
-        return {
-            state,
-            search: { search: state.search },
-            order: state.order,
-            colReorder: { columns: ':gt(0):not(:last-child)', order: state.columnOrder }
-        };
-    };
-    const getCurrentView = api => normalizeView({
-        filters: { search: document.getElementById('productScopeSearch')?.value || '' },
-        search: api.search(),
-        colVis: visibleColumns.reduce((result, index) => ({ ...result, [index]: api.column(index).visible() }), {}),
-        columnOrder: api.colReorder?.order?.() || Array.from({ length: totalColumnCount }, (_, index) => index),
-        order: api.order()
-    });
-    const getResetBaselineState = () => normalizeView({
-        filters: emptyFilters(), search: '', colVis: defaultColVis(),
-        columnOrder: Array.from({ length: totalColumnCount }, (_, index) => index), order: baseOrder
-    });
-    const setSaveFilterVisible = visible => {
-        document.querySelector('.dt-save-filter-btn')?.classList.toggle('d-none', !visible);
-        window.DtDefaults?.refreshButtonGroupRadii?.();
-    };
-    const isDirtyComparedToDefault = api => JSON.stringify(getCurrentView(api)) !== JSON.stringify(defaultViewState || getResetBaselineState());
-    const applySavedTableState = (api, state) => {
-        const normalized = normalizeView(state);
-        const input = document.getElementById('productScopeSearch');
-        if (input) input.value = normalized.filters.search || normalized.search;
-        api.search(normalized.search);
-        visibleColumns.forEach(index => api.column(index).visible(normalized.colVis[index] !== false, false));
-        api.colReorder?.order?.(normalized.columnOrder, true);
-        api.order(normalized.order);
-    };
-    const loadDefaultView = async () => {
-        if (!personalizationClient?.getViews) return null;
-        try {
-            const response = await personalizationClient.getViews(personalizationContext.moduleKey, personalizationContext.pageKey);
-            const records = Array.isArray(response) ? response : (response?.data || response?.Data || []);
-            defaultViewRecord = records.find(item => item?.isDefault || item?.IsDefault) || records[0] || null;
-            const raw = defaultViewRecord?.viewDefinition ?? defaultViewRecord?.ViewDefinition;
-            defaultViewState = raw ? normalizeView(typeof raw === 'string' ? JSON.parse(raw) : raw) : null;
-            return defaultViewState;
-        } catch { return null; }
-    };
-    const saveDefaultView = async api => {
-        if (!personalizationClient?.saveView) return;
-        const state = getCurrentView(api);
-        const payload = {
-            moduleKey: personalizationContext.moduleKey,
-            pageKey: personalizationContext.pageKey,
-            viewName: (defaultViewRecord?.viewName || defaultViewRecord?.ViewName || L.SaveView || 'Default'),
-            isDefault: true,
-            visibility: 'private',
-            viewDefinition: state
-        };
-        const id = defaultViewRecord?.id || defaultViewRecord?.Id || defaultViewRecord?._id;
-        const response = id && personalizationClient.updateView
-            ? await personalizationClient.updateView(id, payload)
-            : await personalizationClient.saveView(payload);
-        defaultViewRecord = response?.data || response?.Data || response || payload;
-        defaultViewState = state;
-        setSaveFilterVisible(false);
-        window.showToast?.(L.Saved, 'success');
+    const lifecycleText = status => L[LIFECYCLE_KEYS[status]] || L.Unknown || '-';
+    // A failed LIST read speaks the page's own sentences (seven languages), never DtDefaults' English.
+    const onListError = function (xhr) {
+        const status = Number(xhr?.status) || 0;
+        if (status === 401) {
+            if (!this?._retried) window.DtDefaults?.handleUnauthorized?.(this);
+            return;
+        }
+        if (xhr?.statusText === 'abort') return;
+        window.showToast?.(({ 400: L.ErrorValidation, 403: L.ErrorForbidden, 404: L.ErrorNotFound, 409: L.ErrorConflict,
+            503: L.ErrorProviderUnavailable, 504: L.ErrorProviderTimeout })[status] || L.ErrorGateway, 'error');
     };
 
     const errorMessage = async response => {
@@ -141,7 +87,6 @@ const ProductLegalEntityScopesList = (() => {
             setText('oc-effective-from', formatDate(value(period, 'effectiveFromUtc', 'EffectiveFromUtc')));
             setText('oc-effective-to', formatDate(value(period, 'effectiveToUtc', 'EffectiveToUtc')));
             setText('oc-version', value(policy, 'version', 'Version'));
-            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasDetailsPreview')).show();
         } catch (error) { window.showToast?.(error.message || L.ErrorGateway, 'error'); }
     };
 
@@ -229,7 +174,7 @@ const ProductLegalEntityScopesList = (() => {
         const nextToken = payload?.formAttemptToken;
         if (nextToken) document.getElementById('formAttemptToken').value = nextToken;
         bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).hide();
-        window.showToast?.(L.Saved, 'success');
+        list?.reload('RecordSaved');
     };
     const endPolicy = async row => {
         const policy = await fetchPolicy(productId(row));
@@ -251,66 +196,78 @@ const ProductLegalEntityScopesList = (() => {
             }
             if (!response.ok) return window.showToast?.(payload?.errors?.[0] || payload?.Errors?.[0] || L.ErrorGateway, 'error');
             if (payload?.formAttemptToken) document.getElementById('formAttemptToken').value = payload.formAttemptToken;
-            window.showToast?.(L.Saved, 'success');
+            list?.reload('RecordSaved');
         }, { type: 'warning', confirmButtonText: L.End });
     };
 
-    const query = data => {
-        const pageSize = Math.max(10, Math.min(Number(data.length) || 20, 100));
-        const result = new URLSearchParams({ pageNumber: String(Math.floor((Number(data.start) || 0) / pageSize) + 1), pageSize: String(pageSize) });
-        const search = data.search?.value || document.getElementById('productScopeSearch')?.value || '';
-        if (search.trim()) result.set('search', search.trim());
-        return result.toString();
-    };
-    const initTable = async () => {
-        if (!tableEl || !window.DtDefaults) return;
-        const saved = await loadDefaultView();
-        const initial = createInitialTableState(saved);
-        const buttons = {
-            filterBtn: { text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>', className: 'btn btn-icon btn-label-secondary dt-filter-btn', attr: { title: L.Filter, 'aria-label': L.Filter }, action: () => bootstrap.Collapse.getOrCreateInstance(document.getElementById('inlineFilterCollapse'), { toggle: false }).toggle() },
-            saveFilterBtn: { text: `<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">${escapeHtml(L.SaveView)}</span>`, className: 'btn btn-label-primary dt-save-filter-btn d-none', action: (event, api) => saveDefaultView(api || dt) }
-        };
-        const config = window.DtDefaults.create({
-            processing: true, serverSide: true, stateSave: false, search: initial.search, order: initial.order,
-            colReorder: initial.colReorder,
-            ajax: (data, callback) => fetch(`${endpoint}?${query(data)}`, { credentials: 'same-origin', headers: getAuthHeaders() })
-                .then(response => response.ok ? response.json() : Promise.reject(new Error(L.ErrorGateway)))
-                .then(payload => { const page = unwrap(payload); callback({ data: value(page, 'items', 'Items') || [], recordsTotal: value(page, 'totalCount', 'TotalCount') || 0, recordsFiltered: value(page, 'totalCount', 'TotalCount') || 0 }); })
-                .catch(error => { window.showToast?.(error.message, 'error'); callback({ data: [], recordsTotal: 0, recordsFiltered: 0 }); }),
-            columns: [{ data: 'id' }, { data: 'canonicalCode' }, { data: 'globalProductName' }, { data: 'lifecycleStatus' }, { data: null }],
-            columnDefs: [
-                { targets: 0, className: 'control', searchable: false, orderable: false, render: () => '' },
-                { targets: 1, render: data => `<span class="fw-medium text-heading">${escapeHtml(data)}</span>` },
-                { targets: 2, render: escapeHtml }, { targets: 3, render: escapeHtml },
-                { targets: -1, searchable: false, orderable: false, className: 'cell-fit all text-end pe-3', render: (data, type, row) => window.DitenDataTable.renderActions([
-                    { key: 'details', className: 'js-quick-view', text: L.ViewDetails, icon: 'bx bx-show', attrs: { 'data-id': productId(row) } },
-                    ...(canConfigure || canReplace ? [{ key: 'manage', className: 'js-scope-manage', text: L.Configure, icon: 'bx bx-link', attrs: { 'data-id': productId(row) } }] : []),
-                    ...(canEnd ? [{ key: 'end', className: 'js-scope-end', text: L.End, icon: 'bx bx-stop-circle', attrs: { 'data-id': productId(row) } }] : [])
-                ]) }
+    const renderActions = row => window.DitenDataTable.renderActions([
+        { key: 'quickView', className: 'js-quick-view', text: L.ViewDetails, icon: 'bx bx-show', attrs: { 'data-id': productId(row) } },
+        ...(canConfigure || canReplace ? [{ key: 'manage', className: 'js-scope-manage', text: L.Configure, icon: 'bx bx-link', attrs: { 'data-id': productId(row) } }] : []),
+        ...(canEnd ? [{ key: 'end', className: 'js-scope-end', text: L.End, icon: 'bx bx-stop-circle', attrs: { 'data-id': productId(row) } }] : [])
+    ]);
+    const reportFailure = error => window.showToast?.(error?.message || L.ErrorGateway, 'error');
+
+    // The createList options of the page — one place, so the wire and the saved-view keys are measurable.
+    const buildListOptions = () => ({
+        tableEl,
+        dataMode: 'server',
+        ajax: { url: endpoint, type: 'GET', headers: getAuthHeaders(), error: onListError },
+        quickView: { offcanvasId: 'offcanvasDetailsPreview', populate: row => { void showDetail(row); }, actionKey: 'quickView' },
+        actions: {
+            onRowAction: {
+                manage: ({ row }) => { void managePolicy(row).catch(reportFailure); },
+                end: ({ row }) => { void endPolicy(row).catch(reportFailure); }
+            }
+        },
+        toolbar: {
+            addNewText: '',
+            exportColumns: saveViewColumnIndexes,
+            colvisColumns: saveViewColumnIndexes
+        },
+        filters: {
+            hostId: 'inlineFilterHost',
+            collapseId: 'inlineFilterCollapse',
+            applyBtn: 'btnFilterApply',
+            resetBtn: 'btnFilterReset',
+            fields: [{ id: 'filterLifecycleStatus', key: 'lifecycleStatus', kind: 'single' }]
+        },
+        // Same keys as before the migration: every saved view of this page still loads.
+        savedView: {
+            moduleKey: personalizationContext.moduleKey,
+            pageKey: personalizationContext.pageKey,
+            saveViewColumnIndexes,
+            defaultVisibleColumnIndexes: saveViewColumnIndexes,
+            baseOrder
+        },
+        config: {
+            pageLength: 20,
+            colReorder: { columns: ':gt(0):not(:last-child)' },
+            // `data` names are MDM's orderBy whitelist (canonicalCode, globalProductName, lifecycleStatus).
+            columns: [
+                { data: 'id', name: 'control' },
+                { data: 'canonicalCode', name: 'canonicalCode' },
+                { data: 'globalProductName', name: 'globalProductName' },
+                { data: 'lifecycleStatus', name: 'lifecycleStatus' },
+                { data: null, name: 'action' }
             ],
-            buttons: window.DtDefaults.exportButtons(null, {}, buttons, { exportColumns: visibleColumns, colvisColumns: visibleColumns }),
-            initComplete: function () { const api = this.api(); applySavedTableState(api, initial.state); setTimeout(() => { saveViewArmed = true; }, 0); },
-            drawCallback: function () { window.DtDefaults.updateVisualState(this.api(), 0); }
-        });
-        dt = new DataTable(tableEl, config);
-        $(tableEl).on('column-reorder.dt columns-reordered.dt search.dt order.dt column-visibility.dt', () => { if (saveViewArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt)); });
+            columnDefs: [
+                { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
+                { targets: 1, render: data => `<span class="fw-medium text-heading">${escapeHtml(data)}</span>` },
+                { targets: 2, render: escapeHtml },
+                { targets: 3, render: data => escapeHtml(lifecycleText(data)) },
+                { targets: -1, searchable: false, orderable: false, className: 'cell-fit all text-end pe-3', render: (data, type, row) => renderActions(row) }
+            ]
+        }
+    });
+
+    const initDataTable = async () => {
+        if (!tableEl || !window.DitenDataTable?.createList) return;
+        list = await window.DitenDataTable.createList(buildListOptions());
     };
-    const rowFor = target => dt?.row(target.closest('tr')).data();
     const bind = () => {
         document.getElementById('scopeMode')?.addEventListener('change', syncScopeMode);
         document.getElementById('legalEntityIds')?.addEventListener('change', updateRequiredProgress);
-        document.getElementById('btnSaveProductScope')?.addEventListener('click', submitForm);
-        document.getElementById('btnFilterApply')?.addEventListener('click', () => { dt?.search(document.getElementById('productScopeSearch')?.value || '').draw(); if (dt) setSaveFilterVisible(isDirtyComparedToDefault(dt)); });
-        document.getElementById('btnFilterReset')?.addEventListener('click', event => { event.preventDefault(); if (dt) { applySavedTableState(dt, getResetBaselineState()); dt.draw(); setSaveFilterVisible(isDirtyComparedToDefault(dt)); } });
-        document.addEventListener('click', event => {
-            const quickView = event.target.closest('.js-quick-view');
-            const action = quickView || event.target.closest('.js-scope-manage,.js-scope-end');
-            if (!action || !action.closest('.datatables-product-legal-entity-scopes')) return;
-            const row = rowFor(action); if (!row) return;
-            if (action.classList.contains('js-quick-view')) showDetail(row);
-            else if (action.classList.contains('js-scope-manage')) void managePolicy(row).catch(error => window.showToast?.(error.message || L.ErrorGateway, 'error'));
-            else void endPolicy(row).catch(error => window.showToast?.(error.message || L.ErrorGateway, 'error'));
-        });
+        document.getElementById('btnSaveProductScope')?.addEventListener('click', () => { void submitForm().catch(reportFailure); });
     };
     const initSelectors = () => {
         const $legalEntities = $('#legalEntityIds');
@@ -319,8 +276,9 @@ const ProductLegalEntityScopesList = (() => {
         }
     };
     return {
-        init: async () => { initSelectors(); bind(); await initTable(); },
-        testHooks: { createInitialTableState, resolveManageMode, canEndPolicy, applyLegalEntitySelection }
+        init: async () => { initSelectors(); bind(); await initDataTable(); },
+        buildListOptions,
+        testHooks: { resolveManageMode, canEndPolicy, applyLegalEntitySelection, lifecycleText }
     };
 })();
 document.addEventListener('DOMContentLoaded', () => ProductLegalEntityScopesList.init());

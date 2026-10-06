@@ -49,6 +49,7 @@ public sealed class EndProductLegalEntityScopePolicyHandler
 
         var actorId = CreateProductLegalEntityScopePolicyHandler.ParseActor(_actor.ActorId);
         var now = DateTimeOffset.UtcNow;
+        var before = policy.GetEffectivePeriod(now);
         try
         {
             policy.EndCurrent(request.Request.ExpectedVersion, request.CommandId, actorId, now);
@@ -59,7 +60,8 @@ public sealed class EndProductLegalEntityScopePolicyHandler
         }
         policy.AuditIntents.Add(ProductLegalEntityScopeAuditIntentFactory.Create(
             policy, ProductAuditOperation.ProductLegalEntityScopePolicyEnded,
-            request.Request.ExpectedVersion, policy.Version, request.CommandId, actorId, now));
+            request.Request.ExpectedVersion, policy.Version, request.CommandId, actorId, now,
+            before, after: null));
         ProductLegalEntityScopePolicyWriteResult result;
         try
         {

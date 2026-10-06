@@ -92,6 +92,19 @@ public sealed class ProductLegalEntityScopeConsumerGuard
     private readonly ProductLegalEntityScopeCandidateFacade _candidates;
     private readonly ITenantContext _tenantContext;
     private readonly ProductLegalEntityScopeEvaluator _evaluator = new();
+    private readonly TimeProvider _clock = TimeProvider.System;
+
+    /// <summary>WP-MDM-SCOPE-ACCEPT-01 FIX1 S12 — the guard's "now" from a <see cref="TimeProvider"/> (tests set it).</summary>
+    public ProductLegalEntityScopeConsumerGuard(
+        IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+        IProductLegalEntityScopePolicyRepository policies,
+        ProductLegalEntityScopeCandidateFacade candidates,
+        ITenantContext tenantContext,
+        TimeProvider clock)
+        : this(rolloutStates, policies, candidates, tenantContext)
+    {
+        _clock = clock ?? throw new ArgumentNullException(nameof(clock));
+    }
 
     public ProductLegalEntityScopeConsumerGuard(
         IProductLegalEntityScopeRolloutStateRepository rolloutStates,
@@ -114,14 +127,27 @@ public sealed class ProductLegalEntityScopeConsumerGuard
             return ProductLegalEntityScopeConsumerContextResult.Fail(400, "TENANT_CONTEXT_REQUIRED");
         }
 
-        var rollout = await _rolloutStates.GetAsync(cancellationToken);
+        ProductLegalEntityScopeRolloutState? rollout;
+        try
+        {
+            rollout = await _rolloutStates.GetAsync(cancellationToken);
+        }
+        catch (InvalidOperationException)
+        {
+            // WP-MDM-SCOPE-ACCEPT-01 FIX1 B2: the repository refuses a record it cannot read; the guard answers with the
+            // same coded 503 as for a record it reads but finds invalid — never an unhandled exception for every read.
+            ProductLegalEntityScopeRolloutMetrics.CountUnreadable("read_guard");
+            return ProductLegalEntityScopeConsumerContextResult.Fail(
+                503,
+                "PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID");
+        }
         if (rollout is null)
         {
             return ProductLegalEntityScopeConsumerContextResult.Success(new(
                 _tenantContext.TenantId,
                 ProductLegalEntityScopeRolloutMode.Preparation,
                 null,
-                DateTimeOffset.UtcNow,
+                _clock.GetUtcNow(),
                 []));
         }
 
@@ -142,7 +168,7 @@ public sealed class ProductLegalEntityScopeConsumerGuard
                 "PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID");
         }
 
-        var now = DateTimeOffset.UtcNow;
+        var now = _clock.GetUtcNow();
         if (rollout.Mode != ProductLegalEntityScopeRolloutMode.Enforced)
         {
             return ProductLegalEntityScopeConsumerContextResult.Success(new(

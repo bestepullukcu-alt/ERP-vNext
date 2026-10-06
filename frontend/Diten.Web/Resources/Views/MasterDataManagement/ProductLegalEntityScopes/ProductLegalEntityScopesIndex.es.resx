@@ -6,4 +6,16 @@
   <data name="QuickView"><value>Vista rápida</value></data><data name="Unknown"><value>Desconocido</value></data><data name="PolicyStatus"><value>Estado de la política</value></data><data name="EffectiveFrom"><value>Vigente desde</value></data><data name="EffectiveTo"><value>Vigente hasta</value></data><data name="Version"><value>Versión</value></data>
   <data name="Configure"><value>Configurar</value></data><data name="Replace"><value>Reemplazar</value></data><data name="End"><value>Finalizar</value></data><data name="EndConfirmation"><value>¿Finalizar el período actual del ámbito del producto?</value></data><data name="ViewDetails"><value>Ver detalles</value></data><data name="LegacyUnclassified"><value>Sin configurar</value></data><data name="Configured"><value>Configurado</value></data>
   <data name="ErrorGateway"><value>No se pudo completar la solicitud.</value></data><data name="ErrorValidation"><value>Revise los campos obligatorios.</value></data><data name="ErrorConflict"><value>El ámbito cambió o entra en conflicto con los datos actuales.</value></data><data name="ErrorNotFound"><value>No se encontró el producto o la política.</value></data><data name="ErrorForbidden"><value>No tiene permiso.</value></data><data name="ErrorProviderUnavailable"><value>El proveedor del ámbito no está disponible.</value></data><data name="ErrorProviderTimeout"><value>El proveedor del ámbito agotó el tiempo.</value></data><data name="ErrorInvalidFormAttempt"><value>El intento del formulario no es válido o ha caducado.</value></data><data name="Saved"><value>Ámbito del producto guardado.</value></data><data name="ReconciliationPending"><value>El cambio está pendiente de conciliación.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve">
+    <value>Borrador</value>
+  </data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve">
+    <value>Aprobación de identidad pendiente</value>
+  </data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve">
+    <value>Identidad aprobada</value>
+  </data>
+  <data name="LifecycleRetired" xml:space="preserve">
+    <value>Retirado</value>
+  </data>
 </root>
