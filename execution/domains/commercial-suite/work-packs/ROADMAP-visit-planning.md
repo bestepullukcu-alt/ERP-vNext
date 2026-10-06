@@ -63,6 +63,12 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 - ☐ B-2 hedef evreni = bölge ataması; ataması yoksa tümü + uyarı (K-5); bölge dışı işareti (A4)
 - ☐ B-3 strateji / kampanya / segment sunucuda türetilir; segment dışının sessizce düşmesi kalkar (A3, A6)
 
+### Faz 2b — mobil iş yeri listesi talebi (2026-10-06; [talep](mobile/2026-10-06-account-list/BACKEND-CRM-ACCOUNT-LIST-ACTIVE-CONTACTS-REQUIREMENTS.md) · [CT yanıtı](mobile/2026-10-06-account-list/MOBILE-ANSWERS-2026-10-06-account-list.md)) — WP-VP-2 kabulünden hemen sonra (aynı hesap deposu / kapsam okuyucusuna dokunuyor)
+- ☐ **M-ACC-1** (R1 + R2): `activeContactCount` (sayfa başına tek toplama, `/contacts` aktif kuralıyla birebir) + `hasActiveContacts=true|false` filtresi (VE; `total` filtreli; geçersiz → 400). Hem `GET /api/crm/accounts` hem B-2'nin `visit-plan/my-accounts` ucu. Sayım `crm.account.read` altında.
+- ☐ **M-ACC-2** (R3-a): `GET /api/crm/accounts/filter-options` (`crm.account.read`): hesaplarda bulunan bölge düğümleri + iş yeri türleri; bölgesi atanmış temsilcide yalnız kendi bölgesi.
+- ☐ R4 → **0.5** (uç açık, eksik TR etiket verisi). Mobil bilgilendirildi.
+- ☐ Faz 2 + 2b bitince mobil **sözleşme notu** (adlar, sahiplik, `resources/me` adı, `my-accounts`, sayım / filtre / seçenekler).
+
 ### Faz 3 — planlama motoru
 - ☐ B-4 dönem planı + hafta durumu / onay / yeniden aç / otomatik sonraki hafta; sıklık yok = dönemde 1; eşit dağılım; eczane sıklığı (B1–B3, MK-3/4/7)
 - ☐ B-5 gün dengeleme, hafta sonu / tatil / yarım gün, kaydırma + nedenler (C1–C3, MK-6/8/9)
