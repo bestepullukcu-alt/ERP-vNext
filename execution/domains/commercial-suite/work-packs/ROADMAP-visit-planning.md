@@ -41,7 +41,8 @@
 Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 
 ### Faz 0 — veri ve kararlar
-- ◐ **0.1** Beste'yi (`bestepullukcu@gmail.com`, sistemde "Admin User") İstanbul + Kocaeli'ye ata — **kullanıcı yapıyor** (adımlar aşağıda).
+- ◐ **0.1** Beste'yi (`bestepullukcu@gmail.com`, sistemde "Admin User") **İstanbul ilçelerine** ata — kullanıcı yapıyor. ⚠ İl (area) düzeyine atama reddedildi: kural `medical-representative` → yalnız **zone / microzone** (`TerritoryPositionPolicy`; area-manager → area, regional-manager → region). Kural doğru, değişmez. Test için 5 ilçe: Şişli (birincil), Kağıthane, Beyoğlu, Beşiktaş, Fatih.
+- ☐ **0.4** Hesapları ilçeye bağla (veri): bugün 43.374 hesabın hepsi **il** düzeyinde bağlı → ilçeye atanan temsilcinin hesap listesi boş kalır. Hesaptaki ilçe adı (`AddressLine`) ile ilçe düğümü eşleşmesi: **Türkiye %77, İstanbul 8.548 / 8.864, Kocaeli 513 / 824**; eşleşmeyen il düzeyinde kalır. CT script'i (önce deneme, `--apply` kullanıcıda), geçmiş korunur. **B-2'den önce gerekli.**
 - ☑ **0.2** AUD-001 kararı: **A — CRM merkezi denetime bağlanır, ama en sonda** (Faz 8). O zamana kadar mimari test kırmızı kalır; dal `main`'e PR olmaz.
 - ☑ **0.3** D8 test kaydı arşivlendi.
 
