@@ -1,0 +1,39 @@
+@using Diten.Web.Views.Manufacturing.Boms
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BomsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["BomsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* UAS-001 — signed in but no read permission: the 403 surface INSIDE the shell and nothing else. No redirect.
+   The service's [HasPermission("manufacturing.bom.read")] stays authoritative. *@
+@if (!Perms.Has("manufacturing.bom.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["BomsTitle"].Value" />
+    return;
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Manufacturing/Boms/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["BomsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* ② DataTable Card — no bulk action: a BOM version is deleted one draft at a time, with its row version. *@
+@* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-boms" data-dt-standard="v2"> *@
+<partial name="~/Views/Manufacturing/Boms/_DataTable.cshtml" />
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Manufacturing/Boms/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Manufacturing/Boms/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Manufacturing/Boms/index.js" asp-append-version="true"></script>
+}

@@ -1,3 +1,5 @@
+using Diten.BuildingBlocks.ListExport;
+using Diten.ManufacturingService.Api.Export;
 using Diten.ManufacturingService.Application.Features.Boms;
 using Diten.ManufacturingService.Application.Features.Boms.Commands;
 using Diten.ManufacturingService.Application.Features.Boms.Queries;
@@ -18,10 +20,51 @@ namespace Diten.ManufacturingService.Api.Controllers;
 [Route("api/bom")]
 public sealed class BomController(IMediator mediator) : CustomBaseController
 {
+    /// <summary>
+    /// listBomVersions (v1.1.0) — the platform server-mode list contract (BL-440): <c>start/length/search/orderBy/orderDir</c>
+    /// + <c>status</c> (repeatable) and <c>itemId</c>; answers <c>{ data: { items, total, filteredTotal }, contractVersion }</c>,
+    /// the shape the shared list factory reads.
+    /// </summary>
     [HttpGet("versions")]
     [HasPermission(BomPermissions.Read)]
-    public async Task<IActionResult> List([FromQuery] Guid? itemId, [FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 25, CancellationToken ct = default) =>
-        CreateActionResultInstance(await mediator.Send(new GetBomListQuery(itemId, status, page, pageSize), ct));
+    public async Task<IActionResult> List(
+        [FromQuery] Guid? itemId, [FromQuery] string[]? status, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] string? orderDir,
+        [FromQuery] int start = 0, [FromQuery] int length = 25, CancellationToken ct = default)
+    {
+        var response = await mediator.Send(new GetBomListQuery(itemId, status, search, orderBy, orderDir, start, length), ct);
+        return response.IsSuccessful
+            ? Ok(new { data = response.Data, contractVersion = ContractErrors.BomContractVersion })
+            : CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// exportBomVersions (v1.1.0) — BL-452: the list's own query (same validator, same filters, search and order), every
+    /// matching row up to 50 000, the visible columns in screen order, headers in the request culture. More → 413.
+    /// </summary>
+    [HttpGet("versions/export")]
+    [HasPermission(BomPermissions.Export)]
+    public async Task<IActionResult> Export(
+        [FromQuery] string? format, [FromQuery] string[]? columns, [FromQuery] Guid? itemId, [FromQuery] string[]? status,
+        [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] string? orderDir, CancellationToken ct)
+    {
+        if (!ListExportContract.TryParseFormat(format, out var fileFormat))
+            return StatusCode(400, ContractError(ListExportContract.FormatInvalidCode, "format must be 'csv' or 'xlsx'."));
+        if (!BomExportColumns.Set.TryResolve(columns, out var exportColumns, out var columnsError))
+            return StatusCode(400, ContractError(ListExportContract.ColumnsInvalidCode, columnsError!));
+
+        var response = await mediator.Send(new GetBomListQuery(itemId, status, search, orderBy, orderDir, ExportRowCap: ListExportContract.MaxRows), ct);
+        if (!response.IsSuccessful)
+            return CreateActionResultInstance(response);
+
+        var matched = Math.Max(response.Data!.FilteredTotal, response.Data.Items.Count);
+        if (matched > ListExportContract.MaxRows)
+            return StatusCode(StatusCodes.Status413PayloadTooLarge, ContractError(ListExportContract.TooLargeCode,
+                $"{matched} BOM versions match; an export carries at most {ListExportContract.MaxRows}. Narrow the filter."));
+
+        var culture = ListExportContract.ResolveCulture(Request.Headers.AcceptLanguage.ToString());
+        var content = ListExportWriter.Write(fileFormat, exportColumns, response.Data.Items, culture, BomExportColumns.Label("Title", culture));
+        return File(content, ListExportContract.ContentType(fileFormat), ListExportContract.FileName(BomExportColumns.Screen, DateTimeOffset.UtcNow, fileFormat));
+    }
 
     [HttpPost("versions")]
     [HasPermission(BomPermissions.Create)]

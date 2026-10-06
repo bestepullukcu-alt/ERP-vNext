@@ -1,0 +1,143 @@
+@model Diten.Web.Models.Manufacturing.Boms.BomEditViewModel
+@using Diten.Web.Views.Manufacturing.Boms
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BomsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+    var components = Model.Components is { Count: > 0 } ? Model.Components : [new Diten.Web.Models.Manufacturing.Boms.BomComponentInput { Position = 10 }];
+    var steps = Model.Steps is { Count: > 0 } ? Model.Steps : [new Diten.Web.Models.Manufacturing.Boms.RoutingStepInput()];
+    var cancelHref = isEdit ? $"/Manufacturing/Boms/Details/{Model.BomVersionId}" : "/Manufacturing/Boms";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Manufacturing/Boms">@Localizer["BomsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="@cancelHref" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="bomForm" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+<form id="bomForm" asp-controller="ManufacturingBoms" asp-action="@action" asp-route-id="@Model.BomVersionId" method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="BomVersionId" />
+    <input type="hidden" asp-for="RowVersion" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left): components + routing -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="card-section-title mb-0"><i class="bx bx-layer"></i>@Localizer["ComponentsSection"]</h6>
+                        <button type="button" class="btn btn-sm btn-label-primary bom-add-row" data-target-body="bomComponentsBody">
+                            <i class="bx bx-plus me-1"></i>@Localizer["AddComponent"]
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["Position"] <span class="text-danger">*</span></th>
+                                    <th>@Localizer["ComponentItemId"] <span class="text-danger">*</span></th>
+                                    <th>@Localizer["Quantity"] <span class="text-danger">*</span></th>
+                                    <th>@Localizer["UomId"] <span class="text-danger">*</span></th>
+                                    <th>@Localizer["Alternates"]</th>
+                                    <th class="cell-fit"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="bomComponentsBody" data-row-prefix="Components">
+                                @for (var i = 0; i < components.Count; i++)
+                                {
+                                    <tr class="bom-row">
+                                        <td><input name="Components[@i].Position" value="@components[i].Position" type="number" min="1" max="9999" required class="form-control form-control-sm bom-input" data-field="Position" /></td>
+                                        <td><input name="Components[@i].ComponentItemId" value="@components[i].ComponentItemId" required pattern="^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$" class="form-control form-control-sm bom-input" data-field="ComponentItemId" /></td>
+                                        <td><input name="Components[@i].Quantity" value="@components[i].Quantity" required inputmode="decimal" pattern="^\d+(\.\d+)?$" class="form-control form-control-sm bom-input" data-field="Quantity" /></td>
+                                        <td><input name="Components[@i].UomId" value="@components[i].UomId" required maxlength="32" class="form-control form-control-sm bom-input" data-field="UomId" /></td>
+                                        <td><input name="Components[@i].Alternates" value="@components[i].Alternates" placeholder="@Localizer["AlternatesHint"]" class="form-control form-control-sm bom-input" data-field="Alternates" /></td>
+                                        <td class="cell-fit"><button type="button" class="btn btn-icon btn-sm btn-label-danger bom-remove-row" title="@SharedLocalizer["Delete"]"><i class="bx bx-trash"></i></button></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small mt-2 mb-0">@Localizer["ComponentsHint"]</p>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="card-section-title mb-0"><i class="bx bx-git-branch"></i>@Localizer["RoutingSection"]</h6>
+                        <button type="button" class="btn btn-sm btn-label-primary bom-add-row" data-target-body="bomStepsBody">
+                            <i class="bx bx-plus me-1"></i>@Localizer["AddStep"]
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["StepNo"]</th>
+                                    <th>@Localizer["Operation"]</th>
+                                    <th>@Localizer["WorkCenter"]</th>
+                                    <th class="cell-fit"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="bomStepsBody" data-row-prefix="Steps" data-allow-empty="true">
+                                @for (var i = 0; i < steps.Count; i++)
+                                {
+                                    <tr class="bom-row">
+                                        <td><input name="Steps[@i].StepNo" value="@steps[i].StepNo" type="number" min="1" max="9999" class="form-control form-control-sm bom-input" data-field="StepNo" /></td>
+                                        <td><input name="Steps[@i].Operation" value="@steps[i].Operation" maxlength="120" class="form-control form-control-sm bom-input" data-field="Operation" /></td>
+                                        <td><input name="Steps[@i].WorkCenter" value="@steps[i].WorkCenter" maxlength="32" class="form-control form-control-sm bom-input" data-field="WorkCenter" /></td>
+                                        <td class="cell-fit"><button type="button" class="btn btn-icon btn-sm btn-label-danger bom-remove-row" title="@SharedLocalizer["Delete"]"><i class="bx bx-trash"></i></button></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small mt-2 mb-0">@Localizer["RoutingHint"]</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right): the product -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-package"></i>@Localizer["HeaderSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="ItemId" class="form-label fw-medium">@Localizer["ItemId"] <span class="text-danger">*</span></label>
+                            @if (isEdit)
+                            {
+                                <input asp-for="ItemId" class="form-control" readonly required />
+                            }
+                            else
+                            {
+                                <input asp-for="ItemId" class="form-control" required pattern="^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$" />
+                            }
+                            <span class="text-muted small mt-1 d-block">@Localizer["ItemIdHint"]</span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" maxlength="200"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

@@ -1036,4 +1036,7 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Всё Равно Принять</value>
   </data>
+  <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Производство</value></data>
+  <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>Спецификации и маршруты</value></data>
+  <data name="Nav.Page.BOMS" xml:space="preserve"><value>Спецификации</value></data>
 </root>

@@ -115,7 +115,8 @@ public sealed class BomCaller(BomApiFactory factory, Guid? tenant = null, Guid? 
         }
 
         var response = await _client.SendAsync(request);
-        var text = await response.Content.ReadAsStringAsync();
+        var json = response.Content.Headers.ContentType?.MediaType == "application/json";
+        var text = json ? await response.Content.ReadAsStringAsync() : string.Empty;
         return ((int)response.StatusCode, string.IsNullOrWhiteSpace(text) ? null : JsonNode.Parse(text), response);
     }
 

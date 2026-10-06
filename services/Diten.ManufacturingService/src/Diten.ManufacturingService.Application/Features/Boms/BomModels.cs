@@ -79,9 +79,10 @@ public sealed record BomListItem(
     int StepCount,
     DateTimeOffset? EffectiveFrom,
     DateTimeOffset? EffectiveTo,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    int RowVersion);
 
-public sealed record BomListResponse(IReadOnlyList<BomListItem> Items, long Total, int Page, int PageSize, string ContractVersion = BomContract.Version);
+public sealed record BomListResponse(IReadOnlyList<BomListItem> Items, long Total, long FilteredTotal);
 
 public sealed record BomRequirementView(Guid ComponentItemId, string RequiredQuantity, string UomId);
 
@@ -141,7 +142,8 @@ internal static class BomMapping
         bom.Routing?.Steps.Count ?? 0,
         bom.EffectiveFrom,
         bom.EffectiveTo,
-        bom.UpdatedAt ?? bom.CreatedAt);
+        bom.UpdatedAt ?? bom.CreatedAt,
+        bom.Version);
 
     public static BomHistoryView ToView(this BomHistoryEntry entry) => new(
         entry.Operation.ToString(),

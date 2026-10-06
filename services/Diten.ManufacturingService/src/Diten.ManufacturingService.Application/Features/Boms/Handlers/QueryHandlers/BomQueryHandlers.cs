@@ -13,10 +13,14 @@ public sealed class GetBomListHandler(IBomRepository repository, ITenantContext 
 {
     public async Task<Response<BomListResponse>> Handle(GetBomListQuery request, CancellationToken ct)
     {
-        var status = request.Status is null ? (BomStatus?)null : Enum.Parse<BomStatus>(request.Status);
-        var (items, total) = await repository.ListAsync(tenant.TenantId, tenant.LegalEntityId,
-            new BomListFilter(request.ItemId, status, request.Page, request.PageSize), ct);
-        return Response<BomListResponse>.Success(new BomListResponse(items.Select(b => b.ToListItem()).ToList(), total, request.Page, request.PageSize));
+        var statuses = (request.Status ?? []).Select(Enum.Parse<BomStatus>).Distinct().ToList();
+        var order = request.OrderBy is null ? BomListOrder.UpdatedAt : Validators.GetBomListValidator.OrderKeys[request.OrderBy];
+        var descending = request.OrderBy is null ? request.OrderDir != "asc" : request.OrderDir == "desc";
+        var filter = request.ExportRowCap is { } cap
+            ? new BomListFilter(request.ItemId, statuses, request.Search, order, descending, 0, cap + 1)
+            : new BomListFilter(request.ItemId, statuses, request.Search, order, descending, request.Start, request.Length);
+        var page = await repository.ListAsync(tenant.TenantId, tenant.LegalEntityId, filter, ct);
+        return Response<BomListResponse>.Success(new BomListResponse(page.Items.Select(b => b.ToListItem()).ToList(), page.Total, page.FilteredTotal));
     }
 }
 

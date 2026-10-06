@@ -214,12 +214,12 @@ public sealed class BomApiTests : IClassFixture<BomApiFixture>
             Assert.Equal(404, (await stranger.Send(HttpMethod.Delete, $"/api/bom/version/{id}?rowVersion=1")).Status);
             Assert.Equal(404, (await stranger.Send(HttpMethod.Get, $"/api/bom/{item}/current")).Status);
             var list = await stranger.Send(HttpMethod.Get, "/api/bom/versions");
-            Assert.Equal(0, (long)list.Body!["total"]!);
+            Assert.Equal(0, (long)list.Body!["data"]!["total"]!);
         }
 
         var mine = await owner.Send(HttpMethod.Get, $"/api/bom/version/{id}");
         Assert.Equal("Draft", (string)mine.Body!["status"]!);
-        Assert.Equal(2, (long)(await owner.Send(HttpMethod.Get, "/api/bom/versions")).Body!["total"]!);
+        Assert.Equal(2, (long)(await owner.Send(HttpMethod.Get, "/api/bom/versions")).Body!["data"]!["total"]!);
     }
 
     [SkippableFact]
@@ -320,6 +320,119 @@ public sealed class BomApiTests : IClassFixture<BomApiFixture>
             Assert.Equal("INVALID_REQUEST", (string)r.Body!["error"]!["code"]!);
             Assert.False(string.IsNullOrWhiteSpace((string)r.Body!["error"]!["correlationId"]!));
         }
+    }
+}
+
+public sealed class BomListAndExportTests : IClassFixture<BomApiFixture>
+{
+    private readonly BomApiFactory _factory;
+
+    public BomListAndExportTests(BomApiFixture fixture)
+    {
+        Skip.If(BomApiFactory.Connection is null, $"{BomApiFactory.EnvironmentVariable} is not set — no isolated Mongo replica set.");
+        _factory = fixture.Factory!;
+    }
+
+    private async Task<(BomCaller Caller, Guid Effective, Guid Draft)> Seed()
+    {
+        var caller = new BomCaller(_factory);
+        var effective = Guid.NewGuid();
+        await caller.Release(await caller.CreateDraft(effective, (Guid.NewGuid(), "1", "EA", 10)));
+        var draft = Guid.NewGuid();
+        for (var i = 0; i < 3; i++)
+        {
+            await caller.CreateDraft(draft, (Guid.NewGuid(), "1", "EA", 10));
+        }
+
+        return (caller, effective, draft);
+    }
+
+    [SkippableFact]
+    public async Task List_speaks_the_server_mode_contract_total_filtered_and_a_page()
+    {
+        var (caller, _, draft) = await Seed();
+
+        var page = await caller.Send(HttpMethod.Get, "/api/bom/versions?start=1&length=2&orderBy=version&orderDir=asc&status=Draft");
+        var data = page.Body!["data"]!;
+
+        Assert.Equal(200, page.Status);
+        Assert.Equal(4, (long)data["total"]!);
+        Assert.Equal(3, (long)data["filteredTotal"]!);
+        var items = data["items"]!.AsArray();
+        Assert.Equal([2, 3], items.Select(i => (int)i!["version"]!).ToArray());
+        Assert.All(items, i => Assert.Equal(draft, (Guid)i!["itemId"]!));
+    }
+
+    [SkippableFact]
+    public async Task Search_matches_the_description_or_an_exact_item_id()
+    {
+        var (caller, effective, _) = await Seed();
+
+        var byItem = await caller.Send(HttpMethod.Get, $"/api/bom/versions?search={effective}");
+        var byText = await caller.Send(HttpMethod.Get, "/api/bom/versions?search=FORM");
+        var none = await caller.Send(HttpMethod.Get, "/api/bom/versions?search=no-such-thing");
+
+        Assert.Equal(1, (long)byItem.Body!["data"]!["filteredTotal"]!);
+        Assert.Equal(4, (long)byText.Body!["data"]!["filteredTotal"]!);
+        Assert.Equal(0, (long)none.Body!["data"]!["filteredTotal"]!);
+    }
+
+    [SkippableFact]
+    public async Task An_unknown_order_key_or_status_is_refused_not_ignored()
+    {
+        var caller = new BomCaller(_factory);
+        var badOrder = await caller.Send(HttpMethod.Get, "/api/bom/versions?orderBy=tenantId");
+        var badStatus = await caller.Send(HttpMethod.Get, "/api/bom/versions?status=Archived");
+        var badLength = await caller.Send(HttpMethod.Get, "/api/bom/versions?length=1000");
+
+        foreach (var r in new[] { badOrder, badStatus, badLength })
+        {
+            Assert.Equal(400, r.Status);
+            Assert.Equal("INVALID_REQUEST", (string)r.Body!["error"]!["code"]!);
+        }
+    }
+
+    [SkippableFact]
+    public async Task Export_writes_every_matching_row_with_the_requested_columns_in_the_callers_language()
+    {
+        var (caller, _, _) = await Seed();
+
+        var (status, _, raw) = await caller.Send(HttpMethod.Get, "/api/bom/versions/export?format=csv&columns=version,status&status=Draft&orderBy=version&orderDir=asc");
+        var turkish = await SendWithLanguage(caller, "/api/bom/versions/export?format=csv&columns=status&status=Effective", "tr-TR");
+
+        Assert.Equal(200, status);
+        Assert.Equal("text/csv", raw.Content.Headers.ContentType!.MediaType);
+        var lines = (await raw.Content.ReadAsStringAsync()).TrimStart('\uFEFF').Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(l => l.TrimEnd('\r')).ToArray();
+        Assert.Equal(["Version,Status", "1,Draft", "2,Draft", "3,Draft"], lines);
+        Assert.Contains("Yürürlükte", turkish);
+        Assert.DoesNotContain("Effective", turkish);
+    }
+
+    [SkippableFact]
+    public async Task Export_refuses_an_unknown_column_and_needs_its_own_permission()
+    {
+        var caller = new BomCaller(_factory);
+        var reader = new BomCaller(_factory, permissions: [Diten.ManufacturingService.Infrastructure.Authorization.BomPermissions.Read]);
+
+        var leak = await caller.Send(HttpMethod.Get, "/api/bom/versions/export?columns=tenantId");
+        var denied = await reader.Send(HttpMethod.Get, "/api/bom/versions/export");
+
+        Assert.Equal(400, leak.Status);
+        Assert.Equal("EXPORT_COLUMNS_INVALID", (string)leak.Body!["error"]!["code"]!);
+        Assert.Equal(403, denied.Status);
+    }
+
+    private async Task<string> SendWithLanguage(BomCaller caller, string path, string language)
+    {
+        using var client = _factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, path);
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", BomApiFactory.Token(caller.Tenant, caller.LegalEntity, caller.Actor));
+        request.Headers.TryAddWithoutValidation("X-Tenant-Id", caller.Tenant.ToString());
+        request.Headers.TryAddWithoutValidation("X-Legal-Entity-Id", caller.LegalEntity.ToString());
+        request.Headers.TryAddWithoutValidation("Accept-Language", language);
+        using var response = await client.SendAsync(request);
+        Assert.Equal(200, (int)response.StatusCode);
+        return await response.Content.ReadAsStringAsync();
     }
 }
 

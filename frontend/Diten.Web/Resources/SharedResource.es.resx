@@ -1037,4 +1037,7 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Aceptar De Todos Modos</value>
   </data>
+  <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Fabricación</value></data>
+  <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>Listas de materiales y rutas</value></data>
+  <data name="Nav.Page.BOMS" xml:space="preserve"><value>Listas de materiales</value></data>
 </root>

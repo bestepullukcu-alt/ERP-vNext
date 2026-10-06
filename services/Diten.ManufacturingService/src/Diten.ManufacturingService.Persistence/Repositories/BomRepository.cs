@@ -53,28 +53,51 @@ public sealed class BomRepository(IMongoDatabase database) : IBomRepository
         return last + 1;
     }
 
-    public async Task<(IReadOnlyList<BomVersion> Items, long Total)> ListAsync(Guid tenantId, Guid legalEntityId, BomListFilter filter, CancellationToken ct)
+    public async Task<BomListPage> ListAsync(Guid tenantId, Guid legalEntityId, BomListFilter filter, CancellationToken ct)
     {
-        var query = Scope(tenantId, legalEntityId);
+        var scope = Scope(tenantId, legalEntityId);
+        var query = scope;
         if (filter.ItemId is { } itemId)
         {
             query &= F.Eq(b => b.ItemId, itemId);
         }
 
-        if (filter.Status is { } status)
+        if (filter.Statuses.Count > 0)
         {
-            query &= F.Eq(b => b.Status, status);
+            query &= F.In(b => b.Status, filter.Statuses);
         }
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var term = filter.Search.Trim();
+            var text = F.Regex(b => b.Description, new MongoDB.Bson.BsonRegularExpression(System.Text.RegularExpressions.Regex.Escape(term), "i"));
+            query &= Guid.TryParse(term, out var searchedItem) ? text | F.Eq(b => b.ItemId, searchedItem) : text;
+        }
+
+        var sort = Builders<BomVersion>.Sort;
+        SortDefinition<BomVersion> primary = filter.OrderBy switch
+        {
+            BomListOrder.ItemId => filter.Descending ? sort.Descending(b => b.ItemId) : sort.Ascending(b => b.ItemId),
+            BomListOrder.Version => filter.Descending ? sort.Descending(b => b.RevisionNo) : sort.Ascending(b => b.RevisionNo),
+            BomListOrder.Status => filter.Descending ? sort.Descending(b => b.Status) : sort.Ascending(b => b.Status),
+            BomListOrder.Description => filter.Descending ? sort.Descending(b => b.Description) : sort.Ascending(b => b.Description),
+            BomListOrder.EffectiveFrom => filter.Descending ? sort.Descending(b => b.EffectiveFrom) : sort.Ascending(b => b.EffectiveFrom),
+            _ => filter.Descending ? sort.Descending(b => b.UpdatedAt) : sort.Ascending(b => b.UpdatedAt)
+        };
+        // A stable tiebreak: the same query always pages the same way.
+        var order = sort.Combine(primary, sort.Ascending(b => b.Id));
 
         return await Guard(async () =>
         {
-            var total = await _boms.CountDocumentsAsync(query, cancellationToken: ct);
-            var items = await _boms.Find(query)
-                .Sort(Builders<BomVersion>.Sort.Descending(b => b.UpdatedAt).Descending(b => b.CreatedAt).Descending(b => b.RevisionNo))
-                .Skip((filter.Page - 1) * filter.PageSize)
-                .Limit(filter.PageSize)
-                .ToListAsync(ct);
-            return ((IReadOnlyList<BomVersion>)items, total);
+            var total = await _boms.CountDocumentsAsync(scope, cancellationToken: ct);
+            var filtered = await _boms.CountDocumentsAsync(query, cancellationToken: ct);
+            var find = _boms.Find(query).Sort(order).Skip(filter.Skip);
+            if (filter.Take is { } take)
+            {
+                find = find.Limit(take);
+            }
+
+            return new BomListPage(await find.ToListAsync(ct), total, filtered);
         });
     }
 

@@ -1036,4 +1036,7 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>القبول على أي حال</value>
   </data>
+  <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>التصنيع</value></data>
+  <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>قوائم المواد والمسارات</value></data>
+  <data name="Nav.Page.BOMS" xml:space="preserve"><value>قوائم المواد</value></data>
 </root>

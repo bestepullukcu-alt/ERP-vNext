@@ -12,6 +12,7 @@ public static class BomPermissions
     public const string Update = "manufacturing.bom.update";
     public const string Release = "manufacturing.bom.release";
     public const string Delete = "manufacturing.bom.delete";
+    public const string Export = "manufacturing.bom.export";
 
-    public static readonly string[] All = [Read, Create, Update, Release, Delete];
+    public static readonly string[] All = [Read, Create, Update, Release, Delete, Export];
 }
