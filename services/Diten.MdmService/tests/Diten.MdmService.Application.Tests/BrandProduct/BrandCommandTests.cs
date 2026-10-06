@@ -177,7 +177,7 @@ public sealed class BrandCommandTests
         Assert.Equal("tester", stored.ArchivedBy);
         Assert.False(stored.IsDeleted); // technical soft-delete is untouched
 
-        var read = await new GetBrandByIdHandler(repository)
+        var read = await new GetBrandByIdHandler(repository, NoProducts())
             .Handle(new GetBrandByIdQuery(brand.Id), CancellationToken.None);
         Assert.True(read.IsSuccessful);
     }
@@ -268,13 +268,13 @@ public sealed class BrandCommandTests
         var theirs = BrandProductTestData.Brand(otherTenantId, code: "BR-THEIRS", name: "Theirs");
         var repository = new InMemoryBrandRepository(tenantId, [mine, theirs]);
 
-        var list = await new GetBrandListHandler(repository)
+        var list = await new GetBrandListHandler(repository, NoProducts())
             .Handle(new GetBrandListQuery(), CancellationToken.None);
 
         Assert.True(list.IsSuccessful);
         Assert.Equal("BR-MINE", Assert.Single(list.Data!.Items).BrandCode);
 
-        var read = await new GetBrandByIdHandler(repository)
+        var read = await new GetBrandByIdHandler(repository, NoProducts())
             .Handle(new GetBrandByIdQuery(theirs.Id), CancellationToken.None);
         Assert.Equal(404, read.StatusCode);
     }
@@ -287,7 +287,7 @@ public sealed class BrandCommandTests
         var active = BrandProductTestData.Brand(tenantId, code: "BR-A", name: "Active");
         var archived = BrandProductTestData.Brand(tenantId, code: "BR-B", name: "Archived", isArchived: true);
         var repository = new InMemoryBrandRepository(tenantId, [active, archived]);
-        var handler = new GetBrandListHandler(repository);
+        var handler = new GetBrandListHandler(repository, NoProducts());
 
         var defaultList = await handler.Handle(new GetBrandListQuery(), CancellationToken.None);
         Assert.Single(defaultList.Data!.Items);
@@ -305,7 +305,7 @@ public sealed class BrandCommandTests
             BrandProductTestData.Brand(tenantId, code: "BR-A", name: "Almiba"),
             BrandProductTestData.Brand(tenantId, code: "BR-B", name: "Betamed")
         ]);
-        var handler = new GetBrandListHandler(repository);
+        var handler = new GetBrandListHandler(repository, NoProducts());
 
         var bySearch = await handler.Handle(new GetBrandListQuery { Search = "almi" }, CancellationToken.None);
         Assert.Equal("Almiba", Assert.Single(bySearch.Data!.Items).BrandName);
@@ -313,4 +313,7 @@ public sealed class BrandCommandTests
         var byStatus = await handler.Handle(new GetBrandListQuery { BrandStatus = "draft" }, CancellationToken.None);
         Assert.Empty(byStatus.Data!.Items);
     }
+
+    // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 3) — the reads count a brand's products; these tests hold none.
+    private static InMemoryProductRepository NoProducts() => new(Guid.NewGuid(), []);
 }

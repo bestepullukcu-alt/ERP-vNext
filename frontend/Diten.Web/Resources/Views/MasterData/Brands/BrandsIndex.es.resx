@@ -88,9 +88,49 @@
   <data name="OwnerCompanyId" xml:space="preserve"><value>Empresa propietaria</value></data>
   <data name="BusinessUnitId" xml:space="preserve"><value>Unidad de negocio</value></data>
   <data name="ReferencesSection" xml:space="preserve"><value>Referencias</value></data>
-  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>Los identificadores de referencia se muestran tal cual; aún no se resuelve ningún registro maestro.</value></data>
+  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>Las referencias que ningún registro maestro resuelve aquí se conservan tal cual y se muestran como «no se pudo resolver».</value></data>
   <data name="ProductsTab" xml:space="preserve"><value>Productos</value></data>
   <data name="ProductsTabUnavailable" xml:space="preserve"><value>Los productos no se pueden listar aquí sin permiso de lectura de productos.</value></data>
   <data name="ArchiveNoCascadeHelp" xml:space="preserve"><value>Archivar una marca nunca archiva ni elimina sus productos.</value></data>
   <data name="SearchPlaceholder" xml:space="preserve"><value>Código o nombre…</value></data>
+  <data name="Reason_brand_not_found" xml:space="preserve"><value>Esta marca no existe o no está disponible para usted.</value></data>
+  <data name="Reason_product_not_found" xml:space="preserve"><value>Este producto no existe o no está disponible para usted.</value></data>
+  <data name="Reason_brand_code_duplicate" xml:space="preserve"><value>Ya existe una marca con este código. Los códigos siguen reservados incluso después de archivar.</value></data>
+  <data name="Reason_product_code_duplicate" xml:space="preserve"><value>Ya existe un producto con este código. Los códigos siguen reservados incluso después de archivar.</value></data>
+  <data name="Reason_brand_archived" xml:space="preserve"><value>Esta marca está archivada; no se puede vincular ningún producto nuevo a ella.</value></data>
+  <data name="Reason_record_archived" xml:space="preserve"><value>Este registro está archivado y ya no se puede modificar.</value></data>
+  <data name="Reason_code_immutable" xml:space="preserve"><value>El código no se puede cambiar después de crear el registro.</value></data>
+  <data name="Reason_invalid_brand_status" xml:space="preserve"><value>Elija un estado de marca válido.</value></data>
+  <data name="Reason_invalid_product_status" xml:space="preserve"><value>Elija un estado de producto válido.</value></data>
+  <data name="Reason_invalid_product_type" xml:space="preserve"><value>Elija un tipo de producto válido.</value></data>
+  <data name="Reason_invalid_dosage_form" xml:space="preserve"><value>Elija una forma farmacéutica válida.</value></data>
+  <data name="Reason_invalid_unit_of_measure" xml:space="preserve"><value>Elija una unidad de medida válida.</value></data>
+  <data name="Reason_invalid_atc_code" xml:space="preserve"><value>Introduzca un código ATC válido.</value></data>
+  <data name="Reason_archived_status_not_assignable" xml:space="preserve"><value>El estado archivado solo se asigna al archivar.</value></data>
+  <data name="Reason_invalid_effective_window" xml:space="preserve"><value>La fecha de fin no puede ser anterior a la fecha de inicio.</value></data>
+  <data name="Reason_external_reference_primary_conflict" xml:space="preserve"><value>Solo una referencia externa por sistema de origen puede ser principal.</value></data>
+  <data name="Reason_external_reference_duplicate" xml:space="preserve"><value>La misma referencia externa se ha introducido dos veces.</value></data>
+  <data name="Reason_indication_ref_duplicate" xml:space="preserve"><value>La misma indicación se ha introducido dos veces.</value></data>
+  <data name="Reason_version_conflict" xml:space="preserve"><value>Alguien modificó este registro después de que usted lo abriera. Vuelva a cargarlo y repita su cambio.</value></data>
+  <data name="Reason_expected_version_required" xml:space="preserve"><value>No se pudo asociar la edición con la versión que abrió. Vuelva a cargar la página e inténtelo de nuevo.</value></data>
+  <data name="Reason_external_reference_in_use" xml:space="preserve"><value>Esta referencia externa ya la usa otro registro.</value></data>
+  <data name="Reason_list_query_invalid" xml:space="preserve"><value>La lista no se pudo ordenar ni paginar de esta forma. Restablezca la vista e inténtelo de nuevo.</value></data>
+  <data name="RefusedStatus_400" xml:space="preserve"><value>La solicitud no fue aceptada. Revise los datos e inténtelo de nuevo.</value></data>
+  <data name="RefusedStatus_403" xml:space="preserve"><value>No tiene permiso para esta acción.</value></data>
+  <data name="RefusedStatus_404" xml:space="preserve"><value>No se encontró el registro o no está disponible para usted.</value></data>
+  <data name="RefusedStatus_409" xml:space="preserve"><value>El registro ha cambiado o está en un estado que no lo permite. Vuelva a cargar e inténtelo de nuevo.</value></data>
+  <data name="RefusedStatus_502" xml:space="preserve"><value>No se pudo contactar con el servicio. Inténtelo de nuevo en breve.</value></data>
+  <data name="RefusedStatus_503" xml:space="preserve"><value>El servicio no está disponible temporalmente. Inténtelo de nuevo en breve.</value></data>
+  <data name="RefusedStatus_504" xml:space="preserve"><value>El servicio no respondió a tiempo. Inténtelo de nuevo en breve.</value></data>
+  <data name="RefusedStatus_Other" xml:space="preserve"><value>No se pudo completar la solicitud. Inténtelo de nuevo en breve.</value></data>
+  <data name="ArchiveBrandIrreversible" xml:space="preserve"><value>El archivado no se puede deshacer.</value></data>
+  <data name="ArchiveBrandLiveProducts" xml:space="preserve"><value>{0} productos de esta marca están en uso; conservan la marca, pero no se podrá vincular ningún producto nuevo a ella.</value></data>
+  <data name="ArchiveBrandNoLiveProducts" xml:space="preserve"><value>Ningún producto de esta marca está en uso.</value></data>
+  <data name="ArchivedWithLiveProducts" xml:space="preserve"><value>Marcas archivadas con productos en uso</value></data>
+  <data name="ArchivedBrandLiveProducts" xml:space="preserve"><value>{0} productos de esta marca siguen en uso.</value></data>
+  <data name="LiveProductCount" xml:space="preserve"><value>Productos en uso</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>No se pudo resolver</value></data>
+  <data name="OwnerCompaniesUnavailable" xml:space="preserve"><value>No se pudo leer la lista de empresas; se conserva el propietario actual.</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve"><value>Solo la página actual</value></data>
+  <data name="ExcludeArchivedOption" xml:space="preserve"><value>Sin archivados</value></data>
 </root>

@@ -106,4 +106,5 @@
   <data name="ProductType_service" xml:space="preserve"><value>Service</value></data>
   <data name="ProductType_training-material" xml:space="preserve"><value>Training Material</value></data>
   <data name="ProductType_other" xml:space="preserve"><value>Other</value></data>
+  <data name="BrandArchivedNotice" xml:space="preserve"><value>This brand is archived. The product keeps it, but no new product can be linked to it.</value></data>
 </root>

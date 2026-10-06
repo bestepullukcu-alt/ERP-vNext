@@ -317,8 +317,19 @@ public sealed class RecordingAuditForwarder : IPlatformAuditForwarder
 {
     public ConcurrentQueue<AuditForwardRequest> Forwarded { get; } = new();
 
+    /// <summary>
+    /// WP-MDM-BRAND-ACCEPT-01 FIX1 (item 1) — a hand-over to Platform that FAILS (as it does when Platform is down). Off by
+    /// default; a test that turns it on turns it off again.
+    /// </summary>
+    public bool ThrowOnForward { get; set; }
+
     public Task ForwardAsync(AuditForwardRequest request, CancellationToken ct = default)
     {
+        if (ThrowOnForward)
+        {
+            throw new HttpRequestException("Platform audit endpoint unavailable (test).");
+        }
+
         Forwarded.Enqueue(request);
         return Task.CompletedTask;
     }

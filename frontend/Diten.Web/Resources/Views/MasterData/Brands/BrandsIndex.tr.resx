@@ -88,9 +88,49 @@
   <data name="OwnerCompanyId" xml:space="preserve"><value>Sahip Şirket</value></data>
   <data name="BusinessUnitId" xml:space="preserve"><value>İş Birimi</value></data>
   <data name="ReferencesSection" xml:space="preserve"><value>Referanslar</value></data>
-  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>Referans kimlikleri olduğu gibi gösterilir; henüz bir master kayıt çözümlenmez.</value></data>
+  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>Burada hiçbir ana kaydın çözümlemediği referanslar olduğu gibi korunur ve “çözümlenemedi” olarak gösterilir.</value></data>
   <data name="ProductsTab" xml:space="preserve"><value>Ürünler</value></data>
   <data name="ProductsTabUnavailable" xml:space="preserve"><value>Ürün okuma yetkisi olmadan ürünler burada listelenemez.</value></data>
   <data name="ArchiveNoCascadeHelp" xml:space="preserve"><value>Marka arşivlemek ürünlerini asla arşivlemez veya silmez.</value></data>
   <data name="SearchPlaceholder" xml:space="preserve"><value>Kod veya ad…</value></data>
+  <data name="Reason_brand_not_found" xml:space="preserve"><value>Bu marka yok ya da sizin erişiminize açık değil.</value></data>
+  <data name="Reason_product_not_found" xml:space="preserve"><value>Bu ürün yok ya da sizin erişiminize açık değil.</value></data>
+  <data name="Reason_brand_code_duplicate" xml:space="preserve"><value>Bu kodla bir marka zaten var. Kodlar arşivlendikten sonra da ayrılmış kalır.</value></data>
+  <data name="Reason_product_code_duplicate" xml:space="preserve"><value>Bu kodla bir ürün zaten var. Kodlar arşivlendikten sonra da ayrılmış kalır.</value></data>
+  <data name="Reason_brand_archived" xml:space="preserve"><value>Bu marka arşivlendi; ona yeni ürün bağlanamaz.</value></data>
+  <data name="Reason_record_archived" xml:space="preserve"><value>Bu kayıt arşivlendi ve artık değiştirilemez.</value></data>
+  <data name="Reason_code_immutable" xml:space="preserve"><value>Kod, kayıt oluşturulduktan sonra değiştirilemez.</value></data>
+  <data name="Reason_invalid_brand_status" xml:space="preserve"><value>Geçerli bir marka durumu seçin.</value></data>
+  <data name="Reason_invalid_product_status" xml:space="preserve"><value>Geçerli bir ürün durumu seçin.</value></data>
+  <data name="Reason_invalid_product_type" xml:space="preserve"><value>Geçerli bir ürün türü seçin.</value></data>
+  <data name="Reason_invalid_dosage_form" xml:space="preserve"><value>Geçerli bir farmasötik form seçin.</value></data>
+  <data name="Reason_invalid_unit_of_measure" xml:space="preserve"><value>Geçerli bir ölçü birimi seçin.</value></data>
+  <data name="Reason_invalid_atc_code" xml:space="preserve"><value>Geçerli bir ATC kodu girin.</value></data>
+  <data name="Reason_archived_status_not_assignable" xml:space="preserve"><value>Arşivlendi durumu yalnızca arşivleme ile verilir.</value></data>
+  <data name="Reason_invalid_effective_window" xml:space="preserve"><value>Bitiş tarihi başlangıç tarihinden önce olamaz.</value></data>
+  <data name="Reason_external_reference_primary_conflict" xml:space="preserve"><value>Her kaynak sistem için yalnızca bir dış referans birincil olabilir.</value></data>
+  <data name="Reason_external_reference_duplicate" xml:space="preserve"><value>Aynı dış referans iki kez girildi.</value></data>
+  <data name="Reason_indication_ref_duplicate" xml:space="preserve"><value>Aynı endikasyon iki kez girildi.</value></data>
+  <data name="Reason_version_conflict" xml:space="preserve"><value>Siz açtıktan sonra bu kaydı başka biri değiştirdi. Kaydı yeniden yükleyin ve değişikliğinizi tekrar yapın.</value></data>
+  <data name="Reason_expected_version_required" xml:space="preserve"><value>Düzenleme, açtığınız sürümle eşleştirilemedi. Sayfayı yeniden yükleyip tekrar deneyin.</value></data>
+  <data name="Reason_external_reference_in_use" xml:space="preserve"><value>Bu dış referans başka bir kayıtta zaten kullanılıyor.</value></data>
+  <data name="Reason_list_query_invalid" xml:space="preserve"><value>Liste bu şekilde sıralanamadı ya da sayfalanamadı. Görünümü sıfırlayıp tekrar deneyin.</value></data>
+  <data name="RefusedStatus_400" xml:space="preserve"><value>İstek kabul edilmedi. Girdileri kontrol edip tekrar deneyin.</value></data>
+  <data name="RefusedStatus_403" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="RefusedStatus_404" xml:space="preserve"><value>Kayıt bulunamadı ya da sizin erişiminize açık değil.</value></data>
+  <data name="RefusedStatus_409" xml:space="preserve"><value>Kayıt değişti ya da buna izin vermeyen bir durumda. Yeniden yükleyip tekrar deneyin.</value></data>
+  <data name="RefusedStatus_502" xml:space="preserve"><value>Servise ulaşılamadı. Biraz sonra tekrar deneyin.</value></data>
+  <data name="RefusedStatus_503" xml:space="preserve"><value>Servis geçici olarak kullanılamıyor. Biraz sonra tekrar deneyin.</value></data>
+  <data name="RefusedStatus_504" xml:space="preserve"><value>Servis zamanında yanıt vermedi. Biraz sonra tekrar deneyin.</value></data>
+  <data name="RefusedStatus_Other" xml:space="preserve"><value>İstek tamamlanamadı. Biraz sonra tekrar deneyin.</value></data>
+  <data name="ArchiveBrandIrreversible" xml:space="preserve"><value>Arşivleme geri alınamaz.</value></data>
+  <data name="ArchiveBrandLiveProducts" xml:space="preserve"><value>Bu markanın {0} ürünü kullanımda; markayı korurlar, ancak markaya yeni ürün bağlanamaz.</value></data>
+  <data name="ArchiveBrandNoLiveProducts" xml:space="preserve"><value>Bu markanın kullanımda ürünü yok.</value></data>
+  <data name="ArchivedWithLiveProducts" xml:space="preserve"><value>Kullanımda ürünü olan arşivli markalar</value></data>
+  <data name="ArchivedBrandLiveProducts" xml:space="preserve"><value>Bu markanın {0} ürünü hâlâ kullanımda.</value></data>
+  <data name="LiveProductCount" xml:space="preserve"><value>Kullanımdaki ürünler</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>Çözümlenemedi</value></data>
+  <data name="OwnerCompaniesUnavailable" xml:space="preserve"><value>Şirket listesi okunamadı; mevcut sahip korunuyor.</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve"><value>Yalnızca geçerli sayfa</value></data>
+  <data name="ExcludeArchivedOption" xml:space="preserve"><value>Arşivliler hariç</value></data>
 </root>

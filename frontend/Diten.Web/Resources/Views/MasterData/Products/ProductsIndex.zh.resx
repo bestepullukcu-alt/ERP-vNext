@@ -106,4 +106,5 @@
   <data name="ProductType_service" xml:space="preserve"><value>服务</value></data>
   <data name="ProductType_training-material" xml:space="preserve"><value>培训材料</value></data>
   <data name="ProductType_other" xml:space="preserve"><value>其他</value></data>
+  <data name="BrandArchivedNotice" xml:space="preserve"><value>该品牌已归档。本产品保留该品牌，但无法再关联新产品。</value></data>
 </root>

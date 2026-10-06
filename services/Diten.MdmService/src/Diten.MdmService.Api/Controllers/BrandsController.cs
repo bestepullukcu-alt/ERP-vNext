@@ -59,7 +59,7 @@ public sealed class BrandsController : CustomBaseController
     [HasPermission("mdm.brands.create")]
     public async Task<IActionResult> Create([FromBody] BrandWriteRequest request, CancellationToken cancellationToken)
     {
-        var response = await _mediator.Send(new CreateBrandCommand(request, Actor), cancellationToken);
+        var response = await _mediator.Send(new CreateBrandCommand(request, Actor, CorrelationId), cancellationToken);
         return CreateActionResultInstance(response);
     }
 
@@ -67,7 +67,7 @@ public sealed class BrandsController : CustomBaseController
     [HasPermission("mdm.brands.update")]
     public async Task<IActionResult> Update(Guid brandId, [FromBody] BrandWriteRequest request, CancellationToken cancellationToken)
     {
-        var response = await _mediator.Send(new UpdateBrandCommand(brandId, request, Actor), cancellationToken);
+        var response = await _mediator.Send(new UpdateBrandCommand(brandId, request, Actor, CorrelationId), cancellationToken);
         return CreateActionResultInstance(response);
     }
 
@@ -75,9 +75,16 @@ public sealed class BrandsController : CustomBaseController
     [HasPermission("mdm.brands.archive")]
     public async Task<IActionResult> Archive(Guid brandId, CancellationToken cancellationToken)
     {
-        var response = await _mediator.Send(new ArchiveBrandCommand(brandId, Actor), cancellationToken);
+        var response = await _mediator.Send(new ArchiveBrandCommand(brandId, Actor, CorrelationId), cancellationToken);
         return CreateActionResultInstance(response);
     }
+
+    /// <summary>
+    /// WP-MDM-BRAND-ACCEPT-01 FIX1 (item 1) — ties the brand's history entry to the request: the caller's X-Correlation-Id
+    /// (the same header the Platform audit forwarder threads), else this request's trace identifier.
+    /// </summary>
+    private string CorrelationId =>
+        Request.Headers["X-Correlation-Id"].ToString() is { Length: > 0 } header ? header : HttpContext.TraceIdentifier;
 
     /// <summary>Audit identity only — authorization is enforced by [HasPermission], never by this value.</summary>
     private string? Actor =>

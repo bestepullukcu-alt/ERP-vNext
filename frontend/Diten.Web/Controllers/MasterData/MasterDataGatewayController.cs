@@ -2,9 +2,11 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Diten.Web.Models.MasterData;
 using Diten.Web.Security;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace Diten.Web.Controllers.MasterData;
 
@@ -95,7 +97,7 @@ public abstract class MasterDataGatewayController : Controller
             return denied;
         }
 
-        return await ToProxyResultAsync(await SendGatewayAsync(HttpMethod.Get, path, null, cancellationToken), cancellationToken);
+        return await RelayAsync(await SendGatewayAsync(HttpMethod.Get, path, null, cancellationToken), cancellationToken);
     }
 
     protected async Task<IActionResult> ProxyJsonAsync(
@@ -110,10 +112,98 @@ public abstract class MasterDataGatewayController : Controller
         // rather than forwarded for the backend to ignore.
         if (body.HasValue && ContainsTenantId(body.Value))
         {
-            return BadRequest(new { errors = new[] { "TenantId is server-resolved and must not be supplied." } });
+            return RefusalLocalizer is null
+                ? BadRequest(new { errors = new[] { "TenantId is server-resolved and must not be supplied." } })
+                : Refusal(StatusCodes.Status400BadRequest, null);
         }
 
-        return await ToProxyResultAsync(await SendGatewayAsync(method, path, body, cancellationToken), cancellationToken);
+        return await RelayAsync(await SendGatewayAsync(method, path, body, cancellationToken), cancellationToken);
+    }
+
+    // ── WP-MDM-BRAND-ACCEPT-01 FIX1 (item 7) — a refusal reaches the reader as a sentence in their language ─────────────
+    // MDM writes "brand_code_duplicate: A brand with this code …" (BrandProductFailures). A screen that names a localizer
+    // here (Brands) answers every refusal with the sentence for that code — `Reason_{code}` — and, for a code without
+    // one, the sentence for the HTTP status (`RefusedStatus_{status}`) marked `unmapped` so the page warns in the
+    // console. Never the code, never MDM's English. Null (Products today) relays MDM's answer exactly as before.
+
+    protected virtual IStringLocalizer? RefusalLocalizer => null;
+
+    private static readonly Regex ReasonCodePrefix = new("^(?<code>[a-z][a-z0-9_]*):", RegexOptions.CultureInvariant);
+
+    /// <summary>The sentence for a refusal: the first error whose reason code has one, else the status sentence.</summary>
+    internal static (string Sentence, string? ReasonCode, bool Unmapped) TranslateRefusal(
+        IStringLocalizer localizer, IEnumerable<string> errors, int statusCode)
+    {
+        string? firstCode = null;
+        foreach (var error in errors)
+        {
+            var match = ReasonCodePrefix.Match(error ?? string.Empty);
+            if (!match.Success)
+            {
+                continue;
+            }
+
+            var code = match.Groups["code"].Value;
+            firstCode ??= code;
+            var sentence = localizer[$"Reason_{code}"];
+            if (!sentence.ResourceNotFound)
+            {
+                return (sentence.Value, code, false);
+            }
+        }
+
+        // `Unmapped` means a CODE arrived that has no sentence (a missing mapping); a refusal without any code is simply
+        // answered by its status.
+        return (StatusSentence(localizer, statusCode), firstCode, firstCode is not null);
+    }
+
+    internal static string StatusSentence(IStringLocalizer localizer, int statusCode)
+    {
+        var sentence = localizer[$"RefusedStatus_{statusCode}"];
+        return sentence.ResourceNotFound ? localizer["RefusedStatus_Other"].Value : sentence.Value;
+    }
+
+    private IActionResult Refusal(int statusCode, IEnumerable<string>? errors)
+    {
+        var (sentence, code, unmapped) = TranslateRefusal(RefusalLocalizer!, errors ?? [], statusCode);
+        if (unmapped && code is not null)
+        {
+            _logger.LogWarning("Master data refusal {ReasonCode} ({StatusCode}) has no sentence; the status sentence was shown.", code, statusCode);
+        }
+
+        return new ObjectResult(new { success = false, errors = new[] { sentence }, reasonCode = code, unmapped })
+        {
+            StatusCode = statusCode
+        };
+    }
+
+    protected async Task<IActionResult> RelayAsync(HttpResponseMessage? response, CancellationToken cancellationToken)
+    {
+        if (RefusalLocalizer is null || (response is not null && response.IsSuccessStatusCode))
+        {
+            return await ToProxyResultAsync(response, cancellationToken);
+        }
+
+        if (response is null)
+        {
+            return Refusal(StatusCodes.Status502BadGateway, null);
+        }
+
+        return Refusal((int)response.StatusCode, await ReadErrorsAsync(response, cancellationToken));
+    }
+
+    private async Task<IReadOnlyList<string>> ReadErrorsAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var envelope = await response.Content
+                .ReadFromJsonAsync<BrandProductGatewayResponse<object>>(JsonOptions, cancellationToken);
+            return envelope?.Errors ?? [];
+        }
+        catch
+        {
+            return [];
+        }
     }
 
     protected static async Task<IActionResult> ToProxyResultAsync(HttpResponseMessage? response, CancellationToken cancellationToken)
@@ -135,6 +225,20 @@ public abstract class MasterDataGatewayController : Controller
     /// <summary>Surfaces backend reason codes verbatim so the operator sees why a write was refused.</summary>
     protected async Task<List<string>> ExtractErrorsAsync(HttpResponseMessage? response, string fallbackMessage, CancellationToken cancellationToken)
     {
+        // FIX1 (item 7) — a screen with a refusal localizer shows the sentence, not the code and MDM's English.
+        if (RefusalLocalizer is { } localizer)
+        {
+            var status = response is null ? StatusCodes.Status502BadGateway : (int)response.StatusCode;
+            var (sentence, code, unmapped) = TranslateRefusal(
+                localizer, response is null ? [] : await ReadErrorsAsync(response, cancellationToken), status);
+            if (unmapped && code is not null)
+            {
+                _logger.LogWarning("Master data refusal {ReasonCode} ({StatusCode}) has no sentence; the status sentence was shown.", code, status);
+            }
+
+            return [sentence];
+        }
+
         if (response is null)
         {
             return [fallbackMessage];
@@ -191,7 +295,9 @@ public abstract class MasterDataGatewayController : Controller
     protected IActionResult? RequireJson(string permission, params string[] alternatives)
         => HasAnyPermission([permission, .. alternatives])
             ? null
-            : StatusCode(StatusCodes.Status403Forbidden, new { message = "Permission denied." });
+            : RefusalLocalizer is null
+                ? StatusCode(StatusCodes.Status403Forbidden, new { message = "Permission denied." })
+                : Refusal(StatusCodes.Status403Forbidden, null);
 
     private static bool ContainsTenantId(JsonElement element)
         => element.ValueKind == JsonValueKind.Object

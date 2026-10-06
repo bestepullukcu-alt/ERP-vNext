@@ -106,4 +106,5 @@
   <data name="ProductType_service" xml:space="preserve"><value>خدمة</value></data>
   <data name="ProductType_training-material" xml:space="preserve"><value>مادة تدريبية</value></data>
   <data name="ProductType_other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="BrandArchivedNotice" xml:space="preserve"><value>هذه العلامة التجارية مؤرشفة. يحتفظ المنتج بها، لكن لا يمكن ربط أي منتج جديد بها.</value></data>
 </root>

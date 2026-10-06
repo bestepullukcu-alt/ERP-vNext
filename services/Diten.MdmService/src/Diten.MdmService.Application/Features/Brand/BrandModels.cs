@@ -22,7 +22,10 @@ public sealed record BrandWriteRequest(
     Guid? TherapeuticAreaId,
     DateTimeOffset EffectiveFrom,
     DateTimeOffset? EffectiveTo,
-    IReadOnlyList<BrandProductExternalReferenceDto>? ExternalReferences);
+    IReadOnlyList<BrandProductExternalReferenceDto>? ExternalReferences,
+    // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 2) — the version the edit was made on. Required on update (a stale one is 409
+    // version_conflict and nothing is written); ignored on create.
+    int? ExpectedVersion = null);
 
 public sealed record BrandDetailDto(
     Guid BrandId,
@@ -43,9 +46,22 @@ public sealed record BrandDetailDto(
     string? UpdatedBy,
     int Version,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    // FIX1 (item 3) — the brand's products that are NOT archived; read on the detail only (null in a list row).
+    int? LiveProductCount = null);
 
-public sealed record BrandListResultDto(IReadOnlyList<BrandDetailDto> Items, int TotalCount);
+/// <summary>
+/// The brand list. <c>TotalCount</c> counts every row that matches the filters. FIX1 (item 6) — a PAGED read (one that
+/// sends <c>length</c>) returns only that page in <c>Items</c>, says which page it is, and carries the
+/// <c>ArchivedWithLiveProducts</c> indicator (FIX1 item 3: archived brands that still have products in use); a read
+/// without <c>length</c> returns every matching row exactly as before, and those three stay null.
+/// </summary>
+public sealed record BrandListResultDto(
+    IReadOnlyList<BrandDetailDto> Items,
+    int TotalCount,
+    int? Start = null,
+    int? Length = null,
+    int? ArchivedWithLiveProducts = null);
 
 /// <summary>Brand-scoped product row for the Brand detail Products tab. Read-only projection; no mutation here.</summary>
 public sealed record BrandProductRowDto(

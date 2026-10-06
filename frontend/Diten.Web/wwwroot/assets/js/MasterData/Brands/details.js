@@ -10,13 +10,27 @@
     const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[ch]));
     const badge = (value, cls = 'primary') => `<span class="badge bg-label-${cls}">${esc(value || '—')}</span>`;
     const statusLabel = value => L[`Status_${value}`] || value || '—';
-    const dateTime = value => value ? new Date(value).toLocaleString() : '—';
+    // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 13) — in the interface language, not the browser's.
+    const dateTime = value => value
+        ? new Intl.DateTimeFormat(document.documentElement.lang || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
+        : '—';
 
+    // FIX1 (item 7) — the proxy answers every refusal with a sentence in the reader's language; a refusal whose code has
+    // no sentence yet comes with `unmapped` (the status sentence is shown) and the console says so.
+    const failureSentence = (body, status) => {
+        if (body?.unmapped === true) console.warn('Brands: a refusal without a sentence mapping', status);
+        const errors = Array.isArray(body?.errors) ? body.errors.filter(Boolean) : [];
+        return errors[0] || L[`RefusedStatus_${status}`] || L.RefusedStatus_Other || L.ErrorState;
+    };
     const envelope = async response => {
         const body = await response.json().catch(() => ({}));
-        if (!response.ok) throw Object.assign(new Error((body.errors || [L.ErrorState]).join(' · ')), { status: response.status, body });
+        if (!response.ok) throw Object.assign(new Error(failureSentence(body, response.status)), { status: response.status, body });
         return body.data;
     };
+
+    // FIX1 (item 11) — the archive proxy validates the page's anti-forgery token.
+    const antiForgeryToken = () =>
+        document.querySelector('#brandDetailToken input[name="__RequestVerificationToken"]')?.value || '';
 
     // Products tab — READ-ONLY. Rows link to the product detail page, which owns product actions; nothing here
     // mutates a product, and archiving this brand never cascades to them.
@@ -58,15 +72,29 @@
         }
     };
 
-    // Archive uses POST /archive — never HTTP DELETE.
+    /*
+     * Archive uses POST /archive — never HTTP DELETE. FIX1 (item 3): archiving is IRREVERSIBLE (no un-archive exists; the
+     * owner decides later whether one should), so the confirmation says so and how many of the brand's products are
+     * still in use (read when this page was drawn).
+     */
+    const archiveSentence = liveProducts => {
+        const consequence = liveProducts > 0
+            ? String(L.ArchiveBrandLiveProducts || '').replace('{0}', String(liveProducts))
+            : L.ArchiveBrandNoLiveProducts;
+        return [L.ArchiveBrandIrreversible, consequence].filter(Boolean).join(' ');
+    };
     document.getElementById('archiveBrand')?.addEventListener('click', () => {
-        window.showConfirm?.(L.ArchiveBrandConfirm, async () => {
+        window.showConfirm?.(L.ArchiveBrand, async () => {
             try {
-                await envelope(await fetch(`${endpoint}/${page.brandId}/archive`, { method: 'POST', credentials: 'same-origin', headers: getAuthHeaders() }));
+                await envelope(await fetch(`${endpoint}/${page.brandId}/archive`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: Object.assign(getAuthHeaders(), { RequestVerificationToken: antiForgeryToken() })
+                }));
                 window.showToast?.(L.RecordArchived, 'success');
                 window.location.reload();
             } catch (error) { window.showToast?.(error.message || L.ErrorState, 'error'); }
-        }, { type: 'warning', confirmButtonText: L.ArchiveBrand });
+        }, { type: 'warning', subtext: archiveSentence(Number(page.liveProductCount) || 0), confirmButtonText: L.ArchiveBrand });
     });
 
     loadProducts();

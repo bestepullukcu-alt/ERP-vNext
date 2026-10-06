@@ -12,10 +12,11 @@
                     <select id="filterBrandStatus" class="form-select form-select-sm filter-chip" aria-label="@Localizer["BrandStatus"]"></select>
                     <input id="filterBusinessUnitId" class="form-control form-control-sm filter-chip" type="text" placeholder="@Localizer["BusinessUnitId"]" />
                     <input id="filterTherapeuticAreaId" class="form-control form-control-sm filter-chip" type="text" placeholder="@Localizer["TherapeuticAreaId"]" />
-                    <div class="form-check form-switch ms-1">
-                        <input id="filterIncludeArchived" class="form-check-input" type="checkbox" />
-                        <label class="form-check-label" for="filterIncludeArchived">@Localizer["IncludeArchived"]</label>
-                    </div>
+                    @* FIX1 (item 6) — a select the list component reads as one value (a checkbox would always read "on"). *@
+                    <select id="filterIncludeArchived" class="form-select form-select-sm filter-chip" aria-label="@Localizer["IncludeArchived"]">
+                        <option value="false">@Localizer["ExcludeArchivedOption"]</option>
+                        <option value="true">@Localizer["IncludeArchived"]</option>
+                    </select>
                     <button type="button" id="btnFilterApply" class="btn btn-sm btn-primary">@Localizer["Apply"]</button>
                     <button type="reset" id="btnFilterReset" class="btn btn-sm btn-label-secondary">@Localizer["Reset"]</button>
                 </div>

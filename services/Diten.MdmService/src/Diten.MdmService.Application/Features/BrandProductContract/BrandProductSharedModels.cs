@@ -42,12 +42,21 @@ public static class BrandProductReasonCodes
     public const string ExternalReferenceDuplicate = "external_reference_duplicate";
     public const string IndicationRefDuplicate = "indication_ref_duplicate";
 
+    // WP-MDM-BRAND-ACCEPT-01 FIX1 — item 2: an edit made on an older read (409) and an edit that does not say which read
+    // it was made on (400); item 10: an external reference another record already carries (409); item 6: a list sort key
+    // or paging value the server does not accept (400).
+    public const string VersionConflict = "version_conflict";
+    public const string ExpectedVersionRequired = "expected_version_required";
+    public const string ExternalReferenceInUse = "external_reference_in_use";
+    public const string ListQueryInvalid = "list_query_invalid";
+
     public static readonly IReadOnlyList<string> All =
     [
         BrandNotFound, ProductNotFound, BrandCodeDuplicate, ProductCodeDuplicate, BrandArchived, RecordArchived,
         CodeImmutable, InvalidBrandStatus, InvalidProductStatus, InvalidProductType, InvalidDosageForm,
         InvalidUnitOfMeasure, InvalidAtcCode, ArchivedStatusNotAssignable, InvalidEffectiveWindow,
-        ExternalReferencePrimaryConflict, ExternalReferenceDuplicate, IndicationRefDuplicate
+        ExternalReferencePrimaryConflict, ExternalReferenceDuplicate, IndicationRefDuplicate,
+        VersionConflict, ExpectedVersionRequired, ExternalReferenceInUse, ListQueryInvalid
     ];
 }
 
@@ -113,6 +122,48 @@ public static class BrandProductExternalReferences
             .ToList();
 
     public static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    /// <summary>
+    /// WP-MDM-BRAND-ACCEPT-01 FIX1 (item 10) — an edit never re-stamps where a reference came from: a reference the record
+    /// already carried (same source system and external id) keeps its stored <c>ImportedAt</c>, whatever the request says;
+    /// only a reference new to the record takes the request's value (or now).
+    /// </summary>
+    public static void PreserveImportedAt(
+        IEnumerable<BrandProductExternalReference> incoming, IEnumerable<BrandProductExternalReference> stored)
+    {
+        var known = stored
+            .GroupBy(x => PairKey(x.SourceSystem, x.ExternalId), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(x => x.Key, x => x.First().ImportedAt, StringComparer.OrdinalIgnoreCase);
+        foreach (var reference in incoming)
+        {
+            if (known.TryGetValue(PairKey(reference.SourceSystem, reference.ExternalId), out var importedAt))
+            {
+                reference.ImportedAt = importedAt;
+            }
+        }
+    }
+
+    /// <summary>
+    /// FIX1 (item 10) — the first reference of the request that ANOTHER record already carries (the message names that
+    /// record; the caller adds <see cref="BrandProductReasonCodes.ExternalReferenceInUse"/>), asked through
+    /// <paramref name="ownerOf"/> (which answers the other record's code, or null). Null when every reference is free.
+    /// Answers in request order, so the same request always names the same conflict.
+    /// </summary>
+    public static async Task<(string Message, int StatusCode)?> FirstInUseAsync(
+        IEnumerable<BrandProductExternalReference> references, Func<string, string, Task<string?>> ownerOf)
+    {
+        foreach (var reference in references)
+        {
+            if (await ownerOf(reference.SourceSystem, reference.ExternalId) is { } owner)
+            {
+                return ($"The external reference {reference.SourceSystem}/{reference.ExternalId} is already used by {owner}.", 409);
+            }
+        }
+
+        return null;
+    }
+
+    private static string PairKey(string sourceSystem, string externalId) => $"{sourceSystem.Trim()}\u001F{externalId.Trim()}";
 }
 
 /// <summary>

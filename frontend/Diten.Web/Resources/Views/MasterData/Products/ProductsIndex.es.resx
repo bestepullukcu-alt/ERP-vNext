@@ -106,4 +106,5 @@
   <data name="ProductType_service" xml:space="preserve"><value>Servicio</value></data>
   <data name="ProductType_training-material" xml:space="preserve"><value>Material formativo</value></data>
   <data name="ProductType_other" xml:space="preserve"><value>Otro</value></data>
+  <data name="BrandArchivedNotice" xml:space="preserve"><value>Esta marca está archivada. El producto la conserva, pero no se puede vincular ningún producto nuevo a ella.</value></data>
 </root>

@@ -50,7 +50,12 @@ const GATED = {
   // the catalogue and choosing a type from it are different actions, and choosing needs only meetings.read).
   "Meetings/MeetingTypes/Index.cshtml": "platform.meetings.types-manage",
   "Meetings/MeetingTypes/Create.cshtml": "platform.meetings.types-manage",
-  "Meetings/MeetingTypes/Edit.cshtml": "platform.meetings.types-manage"
+  "Meetings/MeetingTypes/Edit.cshtml": "platform.meetings.types-manage",
+  // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 5) — the Brand pages.
+  "MasterData/Brands/Index.cshtml": "mdm.brands.read",
+  "MasterData/Brands/Create.cshtml": "mdm.brands.create",
+  "MasterData/Brands/Edit.cshtml": "mdm.brands.update",
+  "MasterData/Brands/Details.cshtml": "mdm.brands.read"
 };
 
 describe("the gate stands in front of the page, not beside it", () => {

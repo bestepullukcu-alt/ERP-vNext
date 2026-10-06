@@ -106,4 +106,5 @@
   <data name="ProductType_service" xml:space="preserve"><value>Услуга</value></data>
   <data name="ProductType_training-material" xml:space="preserve"><value>Учебный материал</value></data>
   <data name="ProductType_other" xml:space="preserve"><value>Другое</value></data>
+  <data name="BrandArchivedNotice" xml:space="preserve"><value>Этот бренд в архиве. Продукт сохраняет его, но привязать к нему новый продукт нельзя.</value></data>
 </root>

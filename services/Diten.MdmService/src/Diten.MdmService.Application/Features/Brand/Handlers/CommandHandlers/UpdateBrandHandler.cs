@@ -35,6 +35,20 @@ public sealed class UpdateBrandHandler : IRequestHandler<Commands.UpdateBrandCom
 
         var r = request.Request;
 
+        // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 2) — an edit says which read it was made on; one made on an older read than the
+        // stored brand is refused (409) and writes nothing, instead of silently overwriting the newer change.
+        if (r.ExpectedVersion is not { } expectedVersion || expectedVersion < 0)
+        {
+            return BrandProductFailures.Fail<NoContent>(
+                BrandProductReasonCodes.ExpectedVersionRequired,
+                "ExpectedVersion must be a non-negative integer.", 400);
+        }
+
+        if (entity.Version != expectedVersion)
+        {
+            return Stale();
+        }
+
         if (BrandProductVocabulary.IsArchivedStatus(r.BrandStatus))
         {
             return BrandProductFailures.Fail<NoContent>(
@@ -73,12 +87,45 @@ public sealed class UpdateBrandHandler : IRequestHandler<Commands.UpdateBrandCom
                 409);
         }
 
+        var before = BrandAuditSnapshotSource.Copy(entity);
         BrandMappings.Apply(entity, r);
         entity.UpdatedBy = request.Actor;
+        // FIX1 (item 10) — where a reference came from is never re-stamped by an edit.
+        BrandProductExternalReferences.PreserveImportedAt(entity.ExternalReferences, before.ExternalReferences);
 
-        var updated = await _repository.UpdateAsync(entity, cancellationToken);
-        return updated
-            ? Response<NoContent>.SuccessWithoutData(204)
-            : BrandProductFailures.Fail<NoContent>(BrandProductReasonCodes.BrandNotFound, "Brand not found.", 404);
+        if (await BrandProductExternalReferences.FirstInUseAsync(entity.ExternalReferences, async (source, externalId) =>
+                (await _repository.FindByExternalReferenceAsync(source, externalId, entity.Id, cancellationToken))?.BrandCode)
+            is { } inUse)
+        {
+            return BrandProductFailures.Fail<NoContent>(BrandProductReasonCodes.ExternalReferenceInUse, inUse.Message, inUse.StatusCode);
+        }
+
+        var outcome = await _repository.UpdateEditableFieldsWithHistoryAsync(
+            entity,
+            expectedVersion,
+            BrandHistory.Entry(Domain.Entities.BrandHistoryEntry.EventUpdated, request.Actor, request.CorrelationId, before, entity),
+            cancellationToken);
+        if (outcome == BrandWriteOutcome.Written)
+        {
+            return Response<NoContent>.SuccessWithoutData(204);
+        }
+
+        // The conditional write lost: a brand that is gone (or another tenant's) stays 404; one still there was changed
+        // or archived after this edit's read.
+        var current = await _repository.GetByIdAsync(request.BrandId, cancellationToken);
+        if (current is null)
+        {
+            return BrandProductFailures.Fail<NoContent>(BrandProductReasonCodes.BrandNotFound, "Brand not found.", 404);
+        }
+
+        return current.IsArchived
+            ? BrandProductFailures.Fail<NoContent>(
+                BrandProductReasonCodes.RecordArchived,
+                "Archived brands are read-only. Historical references stay intact.", 409)
+            : Stale();
     }
+
+    private static Response<NoContent> Stale() => BrandProductFailures.Fail<NoContent>(
+        BrandProductReasonCodes.VersionConflict,
+        "The brand has changed since it was loaded. Reload it and apply the edit again.", 409);
 }

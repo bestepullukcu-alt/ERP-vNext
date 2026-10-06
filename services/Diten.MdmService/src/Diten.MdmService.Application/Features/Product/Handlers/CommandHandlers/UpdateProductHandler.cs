@@ -53,8 +53,18 @@ public sealed class UpdateProductHandler : IRequestHandler<Commands.UpdateProduc
             return BrandProductFailures.Fail<NoContent>(brandFailure.ReasonCode, brandFailure.Message, brandFailure.StatusCode);
         }
 
+        var storedReferences = entity.ExternalReferences.ToList();
         ProductMappings.Apply(entity, r);
         entity.UpdatedBy = request.Actor;
+        // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 10) — where a reference came from is never re-stamped by an edit, and a
+        // reference another product already carries is named.
+        BrandProductExternalReferences.PreserveImportedAt(entity.ExternalReferences, storedReferences);
+        if (await BrandProductExternalReferences.FirstInUseAsync(entity.ExternalReferences, async (source, externalId) =>
+                (await _productRepository.FindByExternalReferenceAsync(source, externalId, entity.Id, cancellationToken))?.ProductCode)
+            is { } inUse)
+        {
+            return BrandProductFailures.Fail<NoContent>(BrandProductReasonCodes.ExternalReferenceInUse, inUse.Message, inUse.StatusCode);
+        }
 
         var updated = await _productRepository.UpdateAsync(entity, cancellationToken);
         return updated

@@ -227,7 +227,7 @@ public sealed class ProductsController : MasterDataGatewayController
         var brand = (await response.Content
             .ReadFromJsonAsync<BrandProductGatewayResponse<BrandDetailViewModel>>(JsonOptions, cancellationToken))?.Data;
 
-        return brand is null ? null : new BrandOptionViewModel(brand.BrandId, brand.BrandCode, brand.BrandName);
+        return brand is null ? null : new BrandOptionViewModel(brand.BrandId, brand.BrandCode, brand.BrandName, brand.IsArchived);
     }
 
     private async Task<ProductDetailViewModel?> LoadProductAsync(Guid productId, CancellationToken cancellationToken)

@@ -42,6 +42,34 @@ public sealed class ProductRepository : RepositoryBase<Product>, IProductReposit
         return await Collection.Find(filter).SortBy(x => x.ProductName).ToListAsync(cancellationToken);
     }
 
+    public async Task<bool> TryCreateAsync(Product product, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await CreateAsync(product, cancellationToken);
+            return true;
+        }
+        catch (Exception exception) when (BrandRepository.IsDuplicateKey(exception))
+        {
+            // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 9) — the unique index answered a create that raced past the pre-check.
+            return false;
+        }
+    }
+
+    public async Task<Product?> FindByExternalReferenceAsync(
+        string sourceSystem, string externalId, Guid? excludeId, CancellationToken cancellationToken = default)
+    {
+        var filter = TenantFilter & Builders<Product>.Filter.ElemMatch(x => x.ExternalReferences,
+            Builders<BrandProductExternalReference>.Filter.Regex(x => x.SourceSystem, BrandRepository.ExactIgnoringCase(sourceSystem))
+            & Builders<BrandProductExternalReference>.Filter.Regex(x => x.ExternalId, BrandRepository.ExactIgnoringCase(externalId)));
+        if (excludeId is { } id)
+        {
+            filter &= Builders<Product>.Filter.Ne(x => x.Id, id);
+        }
+
+        return await Collection.Find(filter).SortBy(x => x.ProductCode).Limit(1).FirstOrDefaultAsync(cancellationToken);
+    }
+
     private void EnsureIndexes()
     {
         // Same reasoning as BrandRepository: plain unique index, no partial filter, no `$ne`.

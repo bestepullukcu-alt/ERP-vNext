@@ -14,6 +14,9 @@ namespace Diten.MdmService.Persistence.Configurations;
 // (AccountTerritoryAssignment: "Assigned To" silently stayed "—"). Pinning every Guid to Standard here makes
 // the write path and the query path agree by construction.
 //
+// Id and TenantId are EntityBase's members: they are NOT re-mapped here (the driver refuses a base-class member in a
+// derived map) — the global GuidSerializer(Standard) registered by AddPersistence pins them to Standard already.
+//
 // SetIgnoreExtraElements(true) is the forward-compatibility guard: a document written by a later slice (extra
 // fields) must still deserialise instead of throwing on an unknown element.
 public static class BrandProductClassMaps
@@ -34,8 +37,6 @@ public static class BrandProductClassMaps
             {
                 map.AutoMap();
                 map.SetIgnoreExtraElements(true);
-                map.MapIdMember(x => x.Id).SetSerializer(StandardGuidSerializer);
-                map.MapMember(x => x.TenantId).SetSerializer(StandardGuidSerializer);
                 map.MapMember(x => x.OwnerCompanyId).SetSerializer(NullableStandardGuidSerializer);
                 map.MapMember(x => x.BusinessUnitId).SetSerializer(NullableStandardGuidSerializer);
                 map.MapMember(x => x.TherapeuticAreaId).SetSerializer(NullableStandardGuidSerializer);
@@ -45,8 +46,6 @@ public static class BrandProductClassMaps
             {
                 map.AutoMap();
                 map.SetIgnoreExtraElements(true);
-                map.MapIdMember(x => x.Id).SetSerializer(StandardGuidSerializer);
-                map.MapMember(x => x.TenantId).SetSerializer(StandardGuidSerializer);
                 map.MapMember(x => x.BrandId).SetSerializer(NullableStandardGuidSerializer);
                 map.MapMember(x => x.TherapeuticAreaId).SetSerializer(NullableStandardGuidSerializer);
             });
@@ -55,6 +54,23 @@ public static class BrandProductClassMaps
             {
                 map.AutoMap();
                 map.SetIgnoreExtraElements(true);
+            });
+
+            // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 1) — the brand trail, pinned the same way as the brand it records.
+            TryRegister<BrandHistoryEntry>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+                map.MapMember(x => x.BrandId).SetSerializer(StandardGuidSerializer);
+            });
+
+            TryRegister<BrandAuditSnapshot>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+                map.MapMember(x => x.OwnerCompanyId).SetSerializer(NullableStandardGuidSerializer);
+                map.MapMember(x => x.BusinessUnitId).SetSerializer(NullableStandardGuidSerializer);
+                map.MapMember(x => x.TherapeuticAreaId).SetSerializer(NullableStandardGuidSerializer);
             });
 
             _registered = true;
@@ -78,9 +94,12 @@ public static class BrandProductClassMaps
         {
             BsonClassMap.RegisterClassMap(configure);
         }
-        catch (ArgumentException)
+        catch (ArgumentException) when (BsonClassMap.IsClassMapRegistered(typeof(T)))
         {
-            // Lost a registration race — the existing map is equivalent, so this is safe to ignore.
+            // Lost a registration race — the existing map is equivalent, so this is safe to ignore. ANY other
+            // ArgumentException is a broken map and must stop the start: WP-MDM-BRAND-ACCEPT-01 FIX1 found these maps
+            // re-mapping Id / TenantId, which EntityBase declares — the driver refused with an ArgumentException that
+            // this catch swallowed, so no Brand / Product map was ever registered and SetIgnoreExtraElements never held.
         }
     }
 }

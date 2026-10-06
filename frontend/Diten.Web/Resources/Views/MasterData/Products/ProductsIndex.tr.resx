@@ -106,4 +106,5 @@
   <data name="ProductType_service" xml:space="preserve"><value>Hizmet</value></data>
   <data name="ProductType_training-material" xml:space="preserve"><value>Eğitim Materyali</value></data>
   <data name="ProductType_other" xml:space="preserve"><value>Diğer</value></data>
+  <data name="BrandArchivedNotice" xml:space="preserve"><value>Bu marka arşivlendi. Ürün markayı korur, ancak markaya yeni ürün bağlanamaz.</value></data>
 </root>

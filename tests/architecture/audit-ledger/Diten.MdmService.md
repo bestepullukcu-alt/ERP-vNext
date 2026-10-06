@@ -39,9 +39,7 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 
 Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da silinen komutun satırı çıkarılır (test bunu zorlar).
 
-- ArchiveBrandCommand
 - ArchiveProductCommand
-- CreateBrandCommand
 - CreateFinishedGoodDraftCommand
 - CreateFirstGskuDraftCommand
 - CreateFirstGskuDraftFacadeCommand
@@ -49,6 +47,5 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - CreateLskuDraftCommand
 - CreateProductCommand
 - ReserveCanonicalCodeCommand
-- UpdateBrandCommand
 - UpdateGskuDraftCommand
 - UpdateProductCommand

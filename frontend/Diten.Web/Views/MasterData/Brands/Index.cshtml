@@ -5,27 +5,63 @@
 @{
     ViewData["Title"] = Localizer["BrandsTitle"].Value;
     Layout = "_LayoutTenantShell";
-    var canCreate = Perms.Has("mdm.brands.create");
+}
+
+@*
+    WP-MDM-BRAND-ACCEPT-01 FIX1 (item 5, UAS-001) — nothing of the register is drawn without mdm.brands.read: no filter
+    bar, no heading, no indicator, no skeleton. BrandsController.Index answers 403 with this surface (never a redirect,
+    never the layout-less status page). The snapshot OR the controller's own reader (PermissionClaims) admits, so this
+    page never refuses someone the controller let in (GSKU FIX5 EK11). Display only — MDM's [HasPermission] decides.
+*@
+@if (!Perms.Has("mdm.brands.read") && !Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.brands.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["BrandsTitle"].Value" />
+    return;
+}
+
+@{
+    // FIX1 (item 13) — decided by the controller through PermissionClaims, the same gate the proxies use.
+    var canCreate = ViewData["CanCreateBrand"] as bool? == true;
+    var canUpdate = ViewData["CanUpdateBrand"] as bool? == true;
+    var canArchive = ViewData["CanArchiveBrand"] as bool? == true;
 }
 
 @* Contract marker: <partial name="_Filter" /> *@
 <partial name="~/Views/MasterData/Brands/_Filter.cshtml" />
 
-<div class="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
-    <div>
-        <h5 class="mb-0">@Localizer["BrandsTitle"]</h5>
-        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
-    </div>
-    @if (canCreate)
-    {
-        <a class="btn btn-primary" href="/MasterData/Brands/Create" id="btnCreateBrand">
-            <i class="bx bx-plus me-1"></i>@Localizer["CreateBrand"]
-        </a>
-    }
+<div class="mb-3" id="brandRegister"
+     data-can-create="@canCreate.ToString().ToLowerInvariant()"
+     data-can-update="@canUpdate.ToString().ToLowerInvariant()"
+     data-can-archive="@canArchive.ToString().ToLowerInvariant()">
+    <h5 class="mb-0">@Localizer["BrandsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
 </div>
 
-@* Contract markers rendered by _DataTable: skeleton-loader + data-dt-standard=v2 *@
+@* FIX1 (item 3) — archived brands whose products are still in use are counted where the register is read. *@
+<div class="row g-3 mb-3">
+    <div class="col-sm-6 col-lg-4">
+        <div class="card kpi-card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <span class="badge bg-label-warning rounded p-2"><i class="bx bx-archive bx-sm"></i></span>
+                <div>
+                    <small class="text-muted d-block">@Localizer["ArchivedWithLiveProducts"]</small>
+                    <h4 class="mb-0" id="kpiArchivedWithLiveProducts">—</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* FIX1 (item 11) — the archive proxy validates this token; a cross-site POST cannot archive. *@
+<form id="brandListToken" class="d-none" data-no-tracker>
+    @Html.AntiForgeryToken()
+</form>
+
+@* Contract markers rendered by _DataTable: list shell (server data) + shaped skeleton + data-dt-standard=v2 *@
 <partial name="~/Views/MasterData/Brands/_DataTable.cshtml" />
+
+@* FIX1 (item 6) — the row's quick view: contract marker id="offcanvasDetailsPreview" (rendered by the partial). *@
+<partial name="~/Views/MasterData/Brands/_DetailsQuickView.cshtml" />
 
 @section Scripts {
     <partial name="_IndexL10n" />

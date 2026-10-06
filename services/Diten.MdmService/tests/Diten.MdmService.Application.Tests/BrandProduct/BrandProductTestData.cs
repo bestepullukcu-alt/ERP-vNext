@@ -16,7 +16,9 @@ internal static class BrandProductTestData
         string status = BrandProductVocabulary.StatusActive,
         DateTimeOffset? effectiveFrom = null,
         DateTimeOffset? effectiveTo = null,
-        IReadOnlyList<BrandProductExternalReferenceDto>? externalReferences = null)
+        IReadOnlyList<BrandProductExternalReferenceDto>? externalReferences = null,
+        // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 2) — an edit says which read it was made on; seeded brands are at version 0.
+        int? expectedVersion = 0)
         => new(
             BrandCode: code,
             BrandName: name,
@@ -27,7 +29,8 @@ internal static class BrandProductTestData
             TherapeuticAreaId: null,
             EffectiveFrom: effectiveFrom ?? From,
             EffectiveTo: effectiveTo,
-            ExternalReferences: externalReferences);
+            ExternalReferences: externalReferences,
+            ExpectedVersion: expectedVersion);
 
     public static ProductWriteRequest ProductRequest(
         string code = "PR-001",

@@ -33,9 +33,7 @@ public sealed class CreateProductHandler : IRequestHandler<Commands.CreateProduc
         var code = ProductMappings.NormalizeCode(r.ProductCode);
         if (await _productRepository.ExistsByCodeAsync(code, cancellationToken: cancellationToken))
         {
-            return BrandProductFailures.Fail<Guid>(
-                BrandProductReasonCodes.ProductCodeDuplicate,
-                "A product with this code already exists in this tenant.", 409);
+            return Duplicate();
         }
 
         var entity = new Domain.Entities.Product
@@ -46,8 +44,22 @@ public sealed class CreateProductHandler : IRequestHandler<Commands.CreateProduc
         };
         ProductMappings.Apply(entity, r);
 
-        var created = await _productRepository.CreateAsync(entity, cancellationToken);
-        return Response<Guid>.Success(created.Id, 201);
+        // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 10) — a reference another product already carries is named, never shared.
+        if (await BrandProductExternalReferences.FirstInUseAsync(entity.ExternalReferences, async (source, externalId) =>
+                (await _productRepository.FindByExternalReferenceAsync(source, externalId, null, cancellationToken))?.ProductCode)
+            is { } inUse)
+        {
+            return BrandProductFailures.Fail<Guid>(BrandProductReasonCodes.ExternalReferenceInUse, inUse.Message, inUse.StatusCode);
+        }
+
+        // FIX1 (item 9) — a concurrent create of the same code that passed the pre-check is the same 409, never a 500.
+        return await _productRepository.TryCreateAsync(entity, cancellationToken)
+            ? Response<Guid>.Success(entity.Id, 201)
+            : Duplicate();
+
+        static Response<Guid> Duplicate() => BrandProductFailures.Fail<Guid>(
+            BrandProductReasonCodes.ProductCodeDuplicate,
+            "A product with this code already exists in this tenant.", 409);
     }
 
     /// <summary>

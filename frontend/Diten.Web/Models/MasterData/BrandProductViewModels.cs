@@ -99,6 +99,14 @@ public sealed class BrandEditViewModel : IValidatableObject
     public string? ContractError { get; set; }
     public bool IsArchived { get; set; }
 
+    // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 2) — the version this edit was made on; posted back with the form and sent as
+    // ExpectedVersion, so an edit made on an older read is refused (409) instead of overwriting a newer one.
+    public int? ExpectedVersion { get; set; }
+
+    // FIX1 (item 8) — the owner company is picked by NAME; the GUID never reaches the reader.
+    public IReadOnlyList<LegalEntityOptionViewModel> OwnerCompanies { get; set; } = [];
+    public bool OwnerCompaniesUnavailable { get; set; }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (EffectiveFrom.HasValue && EffectiveTo.HasValue && EffectiveTo.Value.Date < EffectiveFrom.Value.Date)
@@ -129,7 +137,13 @@ public sealed class BrandDetailViewModel
     public int Version { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
+
+    /// <summary>FIX1 (item 3) — products of this brand that are not archived (detail read only).</summary>
+    public int? LiveProductCount { get; set; }
 }
+
+/// <summary>FIX1 (item 8) — one legal entity of the owner-company picker: shown as code and name, never as its id.</summary>
+public sealed record LegalEntityOptionViewModel(Guid LegalEntityId, string Code, string Name);
 
 public sealed class BrandListResultViewModel
 {
@@ -143,6 +157,14 @@ public sealed class BrandPageViewModel
     public BrandProductContractViewModel Contract { get; set; } = new();
     public bool CanManage { get; set; }
     public bool CanReadProducts { get; set; }
+
+    // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 13) — decided by the controller through PermissionClaims, the same gate the
+    // proxies enforce, so the page never offers an action the proxy then refuses.
+    public bool CanUpdate { get; set; }
+    public bool CanArchive { get; set; }
+
+    /// <summary>FIX1 (item 8) — the owner company's code and name; null when it could not be resolved.</summary>
+    public string? OwnerCompanyName { get; set; }
 }
 
 #endregion
@@ -225,7 +247,8 @@ public sealed class ProductEditViewModel : IValidatableObject
     }
 }
 
-public sealed record BrandOptionViewModel(Guid BrandId, string BrandCode, string BrandName);
+// WP-MDM-BRAND-ACCEPT-01 FIX1 (item 3) — IsArchived lets the product page say the brand was archived.
+public sealed record BrandOptionViewModel(Guid BrandId, string BrandCode, string BrandName, bool IsArchived = false);
 
 public sealed class ProductDetailViewModel
 {
