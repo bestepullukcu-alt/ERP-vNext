@@ -30,6 +30,7 @@ Backend'de **sıklıkla genişletme var** (`FrequencyExtendPlanner`, MOD-0155 FU
 | A3 | **Segment** seçici temsilciye açık ("pick stays manual") | Segment yönetici / pazarlama kavramı; temsilcinin evreni = kendi bölgesi / atanmış doktorları |
 | A4 | Hesap ekleme 43K hesabın tamamından ("bölge dışı uyarılır, gizlenmez") | Temsilcinin evreni bölge ataması olmalı; bölge dışı istisna |
 | A5 | Liste ve detayda yönetici kavramları / İngilizce: "Turn a rep's selection…", "Cycle period", "Route oluştur", "Re-plan", "New session" | Temsilci diliyle yeniden yazılmalı |
+| A6 | Sunucu `campaignId` / `strategyTemplateId` / `segmentId` alanlarını **istemciden kabul edip kullanıyor** (`CreatePlannedVisitHandler`: kampanya doğrulanıp kaydediliyor, strateji içerik çözümünde, segment sıklık çözümünde) | K-3 / K-4 sunucu tarafında da uygulanmalı: istemci değeri reddedilir / yok sayılır, doktordan türetilir |
 
 ### 2.2 Otomatik haftalar (K-2)
 | # | Bulgu |
