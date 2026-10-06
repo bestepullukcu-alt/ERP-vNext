@@ -585,6 +585,13 @@ label in the tenant nav. Nothing in this pack depends on it.
   must register every typed lot (business key Tenant+Item+LotNumber) and map ledger rows before its own freeze;
   typos create separate lots that only a REVERSAL + re-post can fix. Owner: Ali. Expiry: MOD-0174 lots API live
   → picker becomes mandatory and typing is removed.
+  **Status 2026-10-06 — mechanism delivered, closure per tenant (owner decision):** MOD-0174 P1–P4 are CT-accepted and
+  live on the owner's fleet: registered-lot picker + quick lot on the form, the typed-lot migration screen
+  (`/LotMigration`) and the per-tenant closure flag `ManualLotEntryClosed` (one irreversible commit per tenant links the
+  typed lots and closes typing; transactions are never changed). The waiver now ends **per tenant, when its owner commits
+  the migration**: the owner's working tenant has 0 typed groups and the owner decided to keep typing open for now
+  (2026-10-06); the seed tenant `…0001` keeps its 6 G1 test groups (36 transactions) unmigrated. W-UI-02 stays OPEN
+  until the owner closes it per tenant; MVP-1 closure must record each tenant's state.
 - **OD-UI-3.** As proposed above: InventoryGovernance untouched until FU01 ships, then retired (separate WP).
 - **KD-1 / KD-2 — deviations not accepted; compliant mapping chosen (owner, 2026-10-01).** This supersedes the
   KD-1/KD-2 deviation text in §11/§16: the full Compact file set is delivered and the verifier runs with

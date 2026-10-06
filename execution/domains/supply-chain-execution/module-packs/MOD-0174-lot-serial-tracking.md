@@ -949,6 +949,11 @@ changed. CT sabotage: non-lot-tracked products admitted to the migration groups 
 (decisions live in the page); F-3 / F-4 / F-5 / F-6 / F-7 / F-10 / F-12 accepted as recorded; F-13 = W-0174-01. The
 owner's live migration (6 groups / 36 transactions measured read-only) is an **owner action on the screen** after the
 fast-forward, measured by the CT; W-UI-02 is closed in the FU01 pack after that run.
+**Live run 2026-10-06 (owner session, CT in the browser):** the owner's role Admin was granted the 8 `trace.*` keys on
+the role screen (persisted after reload); after re-login the menu shows "Lot / Seri Takibi" and `/LotMigration` opens —
+**0 groups** in the owner's tenant (36 companies; the 6 groups measured earlier are in the seed tenant `…0001`). Owner
+decisions: keep typed-lot entry open in the owner's tenant for now (no empty commit); leave the seed tenant's 6 G1 test
+groups unmigrated. No commit was made; W-UI-02 recorded in FU01 §19 as "mechanism delivered, closure per tenant".
 
 ## 20. Follow-up Items
 
