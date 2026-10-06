@@ -9,6 +9,7 @@ using Diten.AuthService.Application.Tests.Testing;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Diten.AuthService.Application.Tests.Users;
@@ -1400,6 +1401,133 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
     private async Task ExpireLinkAsync(User account)
         => await _host.Database.GetCollection<User>("users").UpdateOneAsync(u => u.Id == account.Id,
             Builders<User>.Update.Set(u => u.PasswordResetTokenExpiresAt, (DateTime?)DateTime.UtcNow.AddMinutes(-1)));
+
+    // ── FIX7 item 1: an account written before BL-529 has no DeactivatedByAdministrator field at all ───────────────
+
+    [Fact]
+    public async Task Platform_sync_of_an_account_written_before_BL529_succeeds()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        var admin = await PlatformUserAsync(email);
+        await UnsetAsync("users", admin.Id, nameof(User.DeactivatedByAdministrator));
+
+        using var platform = _host.Client();
+        platform.DefaultRequestHeaders.Add("X-Internal-Api-Key", _host.InternalKey);
+        var sync = await platform.PostAsJsonAsync("api/platform-auth/platform-admins/sync",
+            new { email, userName = email.Split('@')[0], displayName = "Legacy Admin", actorType = "platform_admin", roles = new[] { "ReadOnly" } });
+
+        Assert.Equal(HttpStatusCode.NoContent, sync.StatusCode);
+        Assert.True((await PlatformUserAsync(email)).IsActive);
+    }
+
+    [Fact]
+    public async Task Users_screen_reset_of_an_account_written_before_BL529_succeeds()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        await UnsetAsync("users", user.Id, nameof(User.DeactivatedByAdministrator));
+
+        Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode);
+        Assert.NotEqual(user.PasswordHash, (await ReadUserAsync(user.Id)).PasswordHash);
+    }
+
+    [Fact]
+    public async Task The_tenant_link_of_an_account_written_before_BL529_sets_the_password()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode);
+        await UnsetAsync("users", user.Id, nameof(User.DeactivatedByAdministrator));
+
+        Assert.Equal(HttpStatusCode.NoContent, (await RedeemTenantLinkAsync(user.Email, NewPassword)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await TenantLoginAsync(tenantId, user.Email, NewPassword)).StatusCode);
+    }
+
+    [Fact]
+    public async Task A_session_stored_without_its_binding_field_is_refused_once()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        var stored = await _host.Database.GetCollection<RefreshToken>("refreshTokens")
+            .Find(t => t.UserId == user.Id && t.RevokedAt == null).SingleAsync();
+        await UnsetAsync("refreshTokens", stored.Id, nameof(RefreshToken.PasswordFingerprint));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await RefreshAsync(tenantId, session)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await TenantLoginAsync(tenantId, user.Email, OldPassword)).StatusCode);
+    }
+
+    [Fact]
+    public async Task An_mfa_code_whose_challenge_has_no_binding_field_is_refused()
+    {
+        var user = await SeedTenantUserAsync(MfaTenantId);
+        var challenge = await MfaChallengeAsync(user.Email);
+        var code = _host.Otp.LastCodeFor(user.Email);
+        await _host.Database.GetCollection<BsonDocument>("mfaChallenges").UpdateManyAsync(
+            Builders<BsonDocument>.Filter.Eq("UserId", new BsonBinaryData(user.Id, GuidRepresentation.Standard)),
+            Builders<BsonDocument>.Update.Unset(nameof(MfaChallenge.PasswordFingerprint)));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await VerifyMfaAsync(challenge, code)).StatusCode);
+    }
+
+    // ── FIX7 item 4: a marked platform account is not switched on by its link ─────────────────────────────────────
+
+    [Fact]
+    public async Task A_marked_platform_account_is_not_switched_on_by_its_link_and_the_attempts_are_not_counted()
+    {
+        // A pending platform invitation (never redeemed) holding its link, with the administrator's mark on it — the state
+        // the item names, written directly (the paths that lead to it are not this test's subject). Platform still reports
+        // the administrator active.
+        var email = $"pending.{Guid.NewGuid():N}@reset.test";
+        await AssertOkAsync(await ProvisionPlatformAdminAsync(email));
+        var link = _host.PlatformEmails.LastTokenFor(email);
+        var pending = await PlatformUserAsync(email);
+        await _host.Database.GetCollection<BsonDocument>("users").UpdateOneAsync(
+            Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(pending.Id, GuidRepresentation.Standard)),
+            Builders<BsonDocument>.Update.Set(nameof(User.IsActive), false).Set(nameof(User.DeactivatedByAdministrator), true));
+        Assert.NotNull((await PlatformUserAsync(email)).PasswordResetTokenHash); // non-vacuity: the link is the account's
+        var peer = RandomPeer();
+
+        HttpResponseMessage? last = null;
+        for (var i = 0; i <= Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerAddressLimit; i++)
+        {
+            last = await PeerPostAsync(peer, "api/platform-auth/reset-password", new { email, token = link, newPassword = NewPassword });
+        }
+
+        Assert.Equal(HttpStatusCode.Conflict, last!.StatusCode); // never 429: a valid link is not counted
+        Assert.Contains(AuthRefusalCodes.AccountDeactivated, await last.Content.ReadAsStringAsync());
+        var after = await PlatformUserAsync(email);
+        Assert.False(after.IsActive);
+        Assert.True(after.DeactivatedByAdministrator);
+    }
+
+    // ── FIX7 item 6: the sync's IsActive condition (CT G3) ─────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_plain_deactivation_landing_during_a_platform_sync_is_not_overwritten()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        var admin = await PlatformUserAsync(email);
+        Assert.True(admin.IsActive);
+        using var platform = _host.Client();
+        platform.DefaultRequestHeaders.Add("X-Internal-Api-Key", _host.InternalKey);
+
+        // The sync is held before its write; a write that switches the account off WITHOUT the mark lands meanwhile.
+        var sync = await RaceAsync("write:" + admin.Id,
+            () => platform.PostAsJsonAsync("api/platform-auth/platform-admins/sync",
+                new { email, userName = email.Split('@')[0], displayName = "Synced Admin", actorType = "platform_admin", roles = new[] { "ReadOnly" } }),
+            async () => await WriteAccountAsync(await PlatformUserAsync(email), a => a.Deactivate()));
+
+        Assert.Equal(HttpStatusCode.Conflict, sync.StatusCode);
+        var after = await PlatformUserAsync(email);
+        Assert.False(after.IsActive); // the racer's value stands
+        Assert.False(after.DeactivatedByAdministrator);
+    }
+
+    private Task UnsetAsync(string collection, Guid id, string field) =>
+        _host.Database.GetCollection<BsonDocument>(collection).UpdateOneAsync(
+            Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(id, GuidRepresentation.Standard)),
+            Builders<BsonDocument>.Update.Unset(field));
 
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────────────
 

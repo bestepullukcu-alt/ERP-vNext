@@ -158,6 +158,81 @@ public sealed class PasswordDoorRateLimiterTests
         Assert.Single(warnings, e => e.Message.Contains("no further peers are named", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public void Many_peers_at_once_name_exactly_the_cap_and_one_limit_line()
+    {
+        // FIX7 item 3 (a) — the cap holds under concurrency (the lock), not only one request at a time.
+        var logs = new CapturingLoggerProvider();
+        var resolver = new ClientAddressResolver([Proxy], logs.CreateLogger<ClientAddressResolver>());
+
+        Parallel.For(0, 1000, new ParallelOptions { MaxDegreeOfParallelism = 16 },
+            i => resolver.Resolve(Request($"10.30.{i / 250}.{i % 250 + 1}", "198.51.100.1")));
+
+        Assert.Equal(ClientAddressResolver.MaxWarnedPeers, resolver.WarnedPeerCount);
+        var warnings = logs.Entries.Where(e => e.Level == LogLevel.Warning).ToArray();
+        Assert.Equal(ClientAddressResolver.MaxWarnedPeers + 1, warnings.Length);
+        Assert.Single(warnings, e => e.Message.Contains("no further peers are named", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Two_new_peers_at_the_last_free_place_take_it_one_at_a_time()
+    {
+        // FIX7 item 3 (a), deterministic: at 255, the first new peer is held INSIDE the lock between "there is room" and the
+        // add; the second must not get in meanwhile (it would also find room, and both would be named: 257).
+        var logs = new CapturingLoggerProvider();
+        var resolver = new ClientAddressResolver([Proxy], logs.CreateLogger<ClientAddressResolver>());
+        for (var i = 0; i < ClientAddressResolver.MaxWarnedPeers - 1; i++)
+        {
+            resolver.Resolve(Request($"10.50.{i / 250}.{i % 250 + 1}", "198.51.100.1"));
+        }
+
+        using var holding = new ManualResetEventSlim();
+        using var secondGotIn = new ManualResetEventSlim();
+        var firstHeld = 0;
+        resolver.AfterRoomFoundUnderLock = () =>
+        {
+            if (Interlocked.Exchange(ref firstHeld, 1) == 0)
+            {
+                holding.Set();
+                secondGotIn.Wait(TimeSpan.FromSeconds(2)); // with the lock it never comes: the wait runs out
+            }
+            else
+            {
+                secondGotIn.Set();
+            }
+        };
+
+        var first = Task.Run(() => resolver.Resolve(Request("10.51.0.1", "198.51.100.1")));
+        Assert.True(holding.Wait(TimeSpan.FromSeconds(10))); // non-vacuity: the first one is held at the last free place
+        var second = Task.Run(() => resolver.Resolve(Request("10.51.0.2", "198.51.100.1")));
+        Task.WaitAll(first, second);
+
+        Assert.False(secondGotIn.IsSet);
+        Assert.Equal(ClientAddressResolver.MaxWarnedPeers, resolver.WarnedPeerCount);
+        Assert.Single(logs.Entries, e => e.Message.Contains("no further peers are named", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void The_same_peer_racing_at_the_last_free_place_spends_no_limit_line()
+    {
+        // FIX7 item 3 (b) — at 255 named peers, the same new peer from many requests at once takes the last place once; no
+        // "past the limit" line is written while only 256 peers have been seen.
+        var logs = new CapturingLoggerProvider();
+        var resolver = new ClientAddressResolver([Proxy], logs.CreateLogger<ClientAddressResolver>());
+        for (var i = 0; i < ClientAddressResolver.MaxWarnedPeers - 1; i++)
+        {
+            resolver.Resolve(Request($"10.40.{i / 250}.{i % 250 + 1}", "198.51.100.1"));
+        }
+
+        Parallel.For(0, 64, new ParallelOptions { MaxDegreeOfParallelism = 16 },
+            _ => resolver.Resolve(Request("10.41.0.1", "198.51.100.1")));
+        resolver.Resolve(Request("10.41.0.1", "198.51.100.2")); // and once more, plainly after: still the same peer
+
+        Assert.Equal(ClientAddressResolver.MaxWarnedPeers, resolver.WarnedPeerCount);
+        Assert.DoesNotContain(logs.Entries, e => e.Message.Contains("no further peers are named", StringComparison.Ordinal));
+        Assert.Equal(ClientAddressResolver.MaxWarnedPeers, logs.Entries.Count(e => e.Level == LogLevel.Warning));
+    }
+
     // ── FIX6: the required argument stays required; the link door's unidentified count is bucketed ──────────────
 
     [Theory]

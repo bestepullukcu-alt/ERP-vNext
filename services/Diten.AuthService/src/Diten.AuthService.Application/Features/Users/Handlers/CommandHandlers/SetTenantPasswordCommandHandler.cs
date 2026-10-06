@@ -47,7 +47,10 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
             string.IsNullOrWhiteSpace(user.PasswordResetTokenHash) ||
             user.PasswordResetTokenExpiresAt is null ||
             user.PasswordResetTokenExpiresAt <= DateTime.UtcNow ||
-            !string.Equals(user.PasswordResetTokenHash, tokenHash, StringComparison.Ordinal) ||
+            // BL-529 FIX7 item 5 — constant-time, as the platform door (hygiene: the stored value is a keyed hash).
+            !System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+                System.Text.Encoding.UTF8.GetBytes(user.PasswordResetTokenHash),
+                System.Text.Encoding.UTF8.GetBytes(tokenHash)) ||
             !string.Equals(user.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase))
         {
             return Response<NoContent>.Fail(InvalidTokenMessage, 400);

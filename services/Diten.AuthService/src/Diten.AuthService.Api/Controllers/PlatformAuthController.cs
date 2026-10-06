@@ -443,6 +443,17 @@ public sealed class PlatformAuthController : CustomBaseController
             return CreateActionResultInstance(Response<NoContent>.Fail("Password reset token is invalid or expired.", 400));
         }
 
+        // BL-529 FIX7 item 4 — as the tenant door: an account an administrator deactivated (an invitation's included — the
+        // deactivation keeps its link) is not switched on by the link; "active AND marked" is never written. The link was
+        // valid, so the attempt is not counted.
+        if (user.DeactivatedByAdministrator)
+        {
+            return CreateActionResultInstance(Response<NoContent>.Fail(
+                "This account has been deactivated by an administrator.",
+                [new ResponseError(AuthRefusalCodes.AccountDeactivated)],
+                409));
+        }
+
         await _passwordPolicyService.ValidateTenantPasswordAsync(PlatformTenantId, user.Id, request.NewPassword, "platform_reset_password", ct);
         var redeemedTokenHash = user.PasswordResetTokenHash!;
         var redeemState = _userRepository.CaptureState(user);
@@ -452,7 +463,7 @@ public sealed class PlatformAuthController : CustomBaseController
         user.ConfirmEmail();
         // BL-529 FIX2 — written only while this link is still the account's (not replaced by a newer reset, not used by a
         // parallel redemption).
-        if (!await _userRepository.TryWriteChangesAsync(user, redeemState, PlatformTenantId, new UserWriteCondition(PasswordResetTokenHash: redeemedTokenHash), ct))
+        if (!await _userRepository.TryWriteChangesAsync(user, redeemState, PlatformTenantId, new UserWriteCondition(PasswordResetTokenHash: redeemedTokenHash, DeactivatedByAdministrator: false), ct))
         {
             return CreateActionResultInstance(Response<NoContent>.Fail("Password reset token is invalid or expired.", 400));
         }

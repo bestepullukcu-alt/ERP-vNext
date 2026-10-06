@@ -98,7 +98,7 @@ public sealed class ClientAddressProductionDefaultsTests : IClassFixture<ClientA
     {
         for (var i = 0; i <= PasswordDoorRateLimiter.DefaultPerClientLimit; i++)
         {
-            var junk = await LinkAsync($"nobody{i}.{Guid.NewGuid():N}@defaults.test", "junk");
+            var junk = await LinkAsync(FreshBucketEmail("nobody"), "junk");
             Assert.Equal(HttpStatusCode.BadRequest, junk.StatusCode); // never 429: no shared per-client bucket
         }
     }
@@ -176,6 +176,26 @@ public sealed class ClientAddressProductionDefaultsTests : IClassFixture<ClientA
         Assert.Empty(ClientAddressResolver.ParseTrustedProxies(production));
     }
 
+    // FIX7 item 2 — the host is shared by the class and so is its limiter: while clients are not told apart the link door
+    // counts per address BUCKET (4096 of them), and a bucket another test already spent would answer 429 at random (~1 run
+    // in 120). Every address a link test uses is picked from a bucket no earlier test of the class touched.
+    private static readonly HashSet<int> UsedBuckets = [];
+
+    private static string FreshBucketEmail(string prefix)
+    {
+        lock (UsedBuckets)
+        {
+            while (true)
+            {
+                var email = $"{prefix}.{Guid.NewGuid():N}@defaults.test";
+                if (UsedBuckets.Add(PasswordDoorRateLimiter.AddressBucket(email)))
+                {
+                    return email;
+                }
+            }
+        }
+    }
+
     private async Task<HttpResponseMessage> LinkAsync(string email, string token, string newPassword = "Junk!Passw0rd-529")
     {
         using var client = _host.Client();
@@ -184,7 +204,7 @@ public sealed class ClientAddressProductionDefaultsTests : IClassFixture<ClientA
 
     private async Task<string> ProvisionedAdministratorAsync()
     {
-        var email = $"padmin.{Guid.NewGuid():N}@defaults.test";
+        var email = FreshBucketEmail("padmin");
         using var platform = _host.Client();
         platform.DefaultRequestHeaders.Add("X-Internal-Api-Key", _host.InternalKey);
         var provisioned = await platform.PostAsJsonAsync("api/platform-auth/platform-admins/provision",

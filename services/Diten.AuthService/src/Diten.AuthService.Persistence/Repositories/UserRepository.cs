@@ -167,7 +167,16 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         };
         if (condition.PasswordHash is { } hash) filters.Add(Builders<User>.Filter.Eq(u => u.PasswordHash, hash));
         if (condition.IsActive is { } active) filters.Add(Builders<User>.Filter.Eq(u => u.IsActive, active));
-        if (condition.DeactivatedByAdministrator is { } marked) filters.Add(Builders<User>.Filter.Eq(u => u.DeactivatedByAdministrator, marked));
+        // BL-529 FIX7 — a field BL-529 ADDED is missing from every account written before it, and Eq(false) does not match a
+        // missing field: every such account (admin@diten.com included) failed this condition for good. "Not marked" is
+        // therefore "not true" — Ne(true) matches false, a missing field and null alike, which is exactly what the
+        // serializer reads them as (the property's default, false). One predicate, no Or/Exists pair, no backfill.
+        if (condition.DeactivatedByAdministrator is { } marked)
+        {
+            filters.Add(marked
+                ? Builders<User>.Filter.Eq(u => u.DeactivatedByAdministrator, true)
+                : Builders<User>.Filter.Ne(u => u.DeactivatedByAdministrator, true));
+        }
         if (condition.PasswordResetTokenHash is { } link) filters.Add(Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, link));
         var filter = Builders<User>.Filter.And(filters);
 

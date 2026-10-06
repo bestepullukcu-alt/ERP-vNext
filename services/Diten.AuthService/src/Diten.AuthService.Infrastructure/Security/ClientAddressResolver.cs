@@ -130,19 +130,32 @@ public sealed class ClientAddressResolver
     /// <summary>FIX6 — how many peers have been warned about (never more than <see cref="MaxWarnedPeers"/>).</summary>
     public int WarnedPeerCount => _warnedPeers.Count;
 
+    /// <summary>FIX7 item 3 — TEST SEAM: runs inside the lock, after a new peer was found to fit and before it is added, so a
+    /// test can hold one thread there and see whether another gets in (it must not). Never set in production.</summary>
+    internal Action? AfterRoomFoundUnderLock { get; set; }
+
     private void WarnAboutUnlistedForwarder(IPAddress peer)
     {
-        if (_warnedPeers.ContainsKey(peer))
-        {
-            return;
-        }
-
-        bool named;
+        // FIX7 — no unlocked "already named?" shortcut: the one check is the one under the lock (an unlisted forwarder is
+        // rare; the lock costs nothing that matters, and two checks hid each other from the tests).
+        bool named = false;
         bool limitJustReached = false;
         lock (_warnedPeers)
         {
-            named = _warnedPeers.Count < MaxWarnedPeers && _warnedPeers.TryAdd(peer, 0);
-            if (!named && _warnedPeers.Count >= MaxWarnedPeers && _warnLimitReported == 0)
+            // FIX7 item 3 — the limit line is for a NEW peer that cannot be added. A peer already named (another thread named
+            // it a moment ago) is neither named again nor counted as "past the limit": at 255 two requests from the same
+            // unlisted peer used to spend the one limit line while only 256 peers had been seen.
+            if (_warnedPeers.ContainsKey(peer))
+            {
+                return;
+            }
+
+            if (_warnedPeers.Count < MaxWarnedPeers)
+            {
+                AfterRoomFoundUnderLock?.Invoke();
+                named = _warnedPeers.TryAdd(peer, 0);
+            }
+            else if (_warnLimitReported == 0)
             {
                 _warnLimitReported = 1;
                 limitJustReached = true;
