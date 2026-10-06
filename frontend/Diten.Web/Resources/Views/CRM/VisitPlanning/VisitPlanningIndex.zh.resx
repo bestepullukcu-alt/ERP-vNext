@@ -7,7 +7,6 @@
   <data name="PageDescription" xml:space="preserve"><value>规划您的一周：选择周期和周次，添加要拜访的诊所和医生，生成路线，然后保存为本周计划。</value></data>
   <data name="NewSession" xml:space="preserve"><value>新建计划</value></data>
   <data name="CyclePeriod" xml:space="preserve"><value>周期</value></data>
-  <data name="SegmentHint" xml:space="preserve"><value>细分会缩小可选医生的范围；选择仍由您决定。</value></data>
   <data name="AccountsPanel" xml:space="preserve"><value>机构（诊所 / 医院）</value></data>
   <data name="AccountsHint" xml:space="preserve"><value>辖区外的客户会显示警告，但不会被隐藏。</value></data>
   <data name="ContactsPanel" xml:space="preserve"><value>医生</value></data>
@@ -36,7 +35,6 @@
   <data name="TargetsSection" xml:space="preserve"><value>目标</value></data>
   <data name="RouteSection" xml:space="preserve"><value>路线</value></data>
   <data name="RepUser" xml:space="preserve"><value>代表（用户）</value></data>
-  <data name="UsersUnavailable" xml:space="preserve"><value>用户目录不可用；请在平台上输入代表。</value></data>
   <data name="WeekLabel" xml:space="preserve"><value>周</value></data>
   <data name="RouteEmpty" xml:space="preserve"><value>本周没有路线。</value></data>
   <data name="SelectAccountFirst" xml:space="preserve"><value>请先选择诊所 / 医院</value></data>
@@ -103,7 +101,6 @@
   <data name="ColType" xml:space="preserve"><value>类型</value></data>
   <data name="ColCity" xml:space="preserve"><value>城市 / 区域</value></data>
   <data name="ColContact" xml:space="preserve"><value>医生</value></data>
-  <data name="ColLinked" xml:space="preserve"><value>关联</value></data>
   <data name="ColSelected" xml:space="preserve"><value>已选</value></data>
   <data name="AddAccount" xml:space="preserve"><value>添加诊所/医院</value></data>
   <data name="RemoveTarget" xml:space="preserve"><value>移除</value></data>
@@ -111,8 +108,6 @@
   <data name="PickAccountForContacts" xml:space="preserve"><value>选择一个客户以查看其医生。</value></data>
   <data name="Country" xml:space="preserve"><value>国家</value></data>
   <data name="SelectCountryFirst" xml:space="preserve"><value>请先选择国家</value></data>
-  <data name="Segments" xml:space="preserve"><value>细分</value></data>
-  <data name="SegmentSingleNote" xml:space="preserve"><value>目前仅应用所选的第一个细分。</value></data>
   <data name="WeekNumberLabel" xml:space="preserve"><value>第{0}周</value></data>
   <data name="ColSpecialty" xml:space="preserve"><value>专业</value></data>
   <data name="ResetOptimal" xml:space="preserve"><value>恢复最优路线</value></data>
@@ -126,4 +121,7 @@
   <data name="CalendarUnresolvedWarning" xml:space="preserve"><value>无法读取工作日历；未考虑节假日。</value></data>
   <data name="Status_generated" xml:space="preserve"><value>已生成</value></data>
   <data name="Status_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="RepSelfHint" xml:space="preserve"><value>计划为当前登录的代表制定。</value></data>
+  <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>您尚未分配辖区；正在显示所有客户。请联系您的经理。</value></data>
+  <data name="AddOutOfTerritory" xml:space="preserve"><value>添加辖区外客户</value></data>
 </root>

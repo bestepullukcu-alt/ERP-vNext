@@ -13,11 +13,16 @@ public sealed class ListPlannedVisitsHandler : IRequestHandler<ListPlannedVisits
 {
     private readonly ITenantContext _tenant;
     private readonly IPlannedVisitRepository _repository;
+    private readonly ICallerScope _caller;
+    private readonly VisitTargetNameReader _names;
 
-    public ListPlannedVisitsHandler(ITenantContext tenant, IPlannedVisitRepository repository)
+    public ListPlannedVisitsHandler(
+        ITenantContext tenant, IPlannedVisitRepository repository, ICallerScope caller, VisitTargetNameReader names)
     {
         _tenant = tenant;
         _repository = repository;
+        _caller = caller;
+        _names = names;
     }
 
     public async Task<Response<PlannedVisitListDto>> Handle(
@@ -29,7 +34,9 @@ public sealed class ListPlannedVisitsHandler : IRequestHandler<ListPlannedVisits
         }
 
         var rows = await _repository.ListAsync(tenantId, cancellationToken);
-        IEnumerable<Domain.Entities.PlannedVisit> query = rows;
+        // WP-VP-2 (B-1) — without crm.planned-visit.read-all the caller sees only plans whose resource is themselves.
+        IEnumerable<Domain.Entities.PlannedVisit> query = rows
+            .Where(v => _caller.MayAccess(PlannedVisitPermissions.ReadAll, v.Resource.ResourceId));
 
         if (!request.IncludeArchived)
         {
@@ -84,7 +91,14 @@ public sealed class ListPlannedVisitsHandler : IRequestHandler<ListPlannedVisits
             query = query.Where(v => v.PlannedDate <= to);
         }
 
-        var items = query.Select(PlannedVisitMapper.ToListItem).ToList();
+        // WP-VP-2 (B-8) — names for the whole page in one read per master.
+        var page = query.ToList();
+        var names = await _names.ReadAsync(
+            tenantId,
+            page.Select(v => v.AccountId).Concat(page.Where(v => v.TargetType != PlannedVisitTargetType.Contact).Select(v => (Guid?)v.TargetId)),
+            page.Select(v => v.ContactId),
+            cancellationToken);
+        var items = page.Select(v => PlannedVisitMapper.ToListItem(v, names)).ToList();
         return Response<PlannedVisitListDto>.Success(new PlannedVisitListDto(items, items.Count));
     }
 }

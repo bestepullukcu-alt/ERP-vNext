@@ -39,6 +39,26 @@ public static class PlannedVisitMapper
         p.Version, p.CreatedAt, p.CreatedBy, p.UpdatedAt, p.UpdatedBy,
         ToContentItems(p.ContentItems));
 
+    /// <summary>WP-VP-2 (B-8) — a list row with its read-time names.</summary>
+    public static PlannedVisitListItemDto ToListItem(PlannedVisitEntity p, VisitTargetNames names)
+    {
+        var (target, account, contact, inactive) = names.For(p.TargetType, p.TargetId, p.AccountId, p.ContactId);
+        return ToListItem(p) with
+        {
+            TargetDisplayName = target, AccountDisplayName = account, ContactDisplayName = contact, TargetInactive = inactive
+        };
+    }
+
+    /// <summary>WP-VP-2 (B-8) — the detail with its read-time names.</summary>
+    public static PlannedVisitDetailDto ToDetail(PlannedVisitEntity p, VisitTargetNames names)
+    {
+        var (target, account, contact, inactive) = names.For(p.TargetType, p.TargetId, p.AccountId, p.ContactId);
+        return ToDetail(p) with
+        {
+            TargetDisplayName = target, AccountDisplayName = account, ContactDisplayName = contact, TargetInactive = inactive
+        };
+    }
+
     /// <summary>WP-SB-3b — the frozen product list (never null on the wire: empty for an older plan).</summary>
     public static IReadOnlyList<PlannedVisitContentItemDto> ToContentItems(IEnumerable<PlannedVisitContentItem>? items)
         => (items ?? Enumerable.Empty<PlannedVisitContentItem>())

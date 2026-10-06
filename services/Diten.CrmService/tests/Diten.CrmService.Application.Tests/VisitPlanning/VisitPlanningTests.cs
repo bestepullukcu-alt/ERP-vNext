@@ -144,18 +144,18 @@ public sealed class VisitPlanningTests
         Assert.Single(build.Atoms);
     }
 
-    // ── AC-SELECT — segment filters, consent gate is excluded-not-dropped ────────────────────────────────────────
+    // ── AC-SELECT — WP-VP-2 (K-4): no segment filter any more; consent gate is excluded-not-dropped ──────────────
 
     [Fact]
-    public async Task Segment_non_member_is_not_offered()
+    public async Task A_doctor_outside_the_stored_segment_is_no_longer_dropped()
     {
         var env = Env.WithTwoDoctors();
-        env.Session.Selection.SegmentId = Id(77);
-        env.Segments.Member = false; // neither doctor is a member
+        env.Session.Selection.SegmentId = Id(77); // an older record's stored segment — read, never used
+        env.Segments.Member = false;              // neither doctor is a member of anything
 
         var preview = (await env.Engine.PreviewAsync(env.Session, env.Options(), default)).Preview!;
-        Assert.Empty(preview.Content); // segment NARROWED the universe to nobody
-        Assert.Empty(preview.Scheduled);
+        Assert.Equal(2, preview.Content.Count);   // both doctors are assessed
+        Assert.Equal(2, preview.Scheduled.Count); // and placed
     }
 
     [Fact]
@@ -303,7 +303,7 @@ public sealed class VisitPlanningTests
     }
 
     [Fact]
-    public void The_mobile_planned_visit_contract_only_gains_trailing_content_items()
+    public void The_mobile_planned_visit_contract_only_gains_trailing_fields()
     {
         static string[] Shape(Type t) => t.GetConstructors().Single().GetParameters().Select(p => p.Name!).ToArray();
 
@@ -314,13 +314,19 @@ public sealed class VisitPlanningTests
         }, Shape(typeof(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitContentRefDto)));
 
         var detail = Shape(typeof(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitDetailDto));
-        Assert.Equal(46, detail.Length);
-        Assert.Equal("ContentItems", detail[^1]);
+        // WP-SB-3b added ContentItems; WP-VP-2 (B-8) appended the four read-time name fields after it.
+        Assert.Equal(50, detail.Length);
+        Assert.Equal(new[] { "ContentItems", "TargetDisplayName", "AccountDisplayName", "ContactDisplayName", "TargetInactive" },
+            detail[^5..]);
         Assert.Equal(new[] { "Content", "Selection", "Availability", "Version", "CreatedAt", "CreatedBy", "UpdatedAt", "UpdatedBy" },
             detail[37..45]);
 
         var list = Shape(typeof(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitListItemDto));
-        Assert.Equal(new[] { "Version", "CreatedAt", "UpdatedAt", "ContentItems" }, list[^4..]);
+        Assert.Equal(new[]
+        {
+            "Version", "CreatedAt", "UpdatedAt", "ContentItems",
+            "TargetDisplayName", "AccountDisplayName", "ContactDisplayName", "TargetInactive"
+        }, list[^8..]);
     }
 
     [Fact]
@@ -374,7 +380,7 @@ public sealed class VisitPlanningTests
         var env = Env.WithTwoDoctors();
         env.Session.Selection.SelectedPharmacyIds = new List<Guid> { Id(71), Id(72), Id(73) };
         var handler = new Diten.CrmService.Application.Features.VisitPlanning.Handlers.QueryHandlers.ListPlanningSessionsHandler(
-            TenantOf(Tenant), new FakePlanningSessionRepository(env.Session));
+            TenantOf(Tenant), new FakePlanningSessionRepository(env.Session), Diten.CrmService.Application.Tests.VisitScope.TestCallerScope.Unrestricted());
 
         var list = await handler.Handle(
             new Diten.CrmService.Application.Features.VisitPlanning.Queries.ListPlanningSessionsQuery(), default);
@@ -390,7 +396,8 @@ public sealed class VisitPlanningTests
         var env = Env.WithTwoDoctors();
         var repository = new FakePlanningSessionRepository(env.Session);
         var handler = new ApplyPlanningSessionHandler(
-            TenantOf(Tenant), new NullActorContext(), repository, env.UnitOfWork, env.Engine);
+            TenantOf(Tenant), new NullActorContext(), repository, env.UnitOfWork, env.Engine,
+            Diten.CrmService.Application.Tests.VisitScope.TestCallerScope.Unrestricted());
         var command = new ApplyPlanningSessionCommand(env.Session.Id, null, null, null, null, null);
 
         var first = await handler.Handle(command, default);
@@ -490,6 +497,9 @@ public sealed class VisitPlanningTests
         public FakeApplyUnitOfWork UnitOfWork { get; } = new();
         public FakeWorkingDayChecker WorkingDays { get; } = new();
 
+        /// <summary>WP-VP-2 (B-3) — the server-derived play / campaign (default: none).</summary>
+        public Diten.CrmService.Application.Tests.VisitScope.FixedProvenanceDeriver Deriver { get; } = new();
+
         public VisitPlanningEngine Engine { get; }
         public PlanningSession Session { get; }
 
@@ -507,7 +517,7 @@ public sealed class VisitPlanningTests
             var resolver = Kit.CreateResolver(tenant, Segments, Capacities);
 
             var estimator = new CycleCapacityEstimator(new FakeCountryResolver(), new FakeWorkingDayCounter());
-            var selector = new EligibleContactSelector(tenant, Segments, Consent, Availabilities);
+            var selector = new EligibleContactSelector(tenant, Consent, Availabilities);
             var extend = new FrequencyExtendPlanner(Frequency);
             var territoryGate = new TerritoryGate(tenant, Territory);
 
@@ -525,7 +535,7 @@ public sealed class VisitPlanningTests
             Engine = new VisitPlanningEngine(
                 tenant, actor, Periods, Capacities, estimator, resolver, optimizer, selector, extend,
                 territoryGate, Accounts, Contacts, PlannedVisits, journeyProbe, frequencyProbe, consentProbe, availabilityProbe,
-                calendar);
+                calendar, Deriver);
 
             Session = new PlanningSession
             {
@@ -552,6 +562,8 @@ public sealed class VisitPlanningTests
             if (kit is not null)
             {
                 Session.Provenance.StrategyTemplateId = kit.StrategyId;
+                // WP-VP-2 (B-3) — the play now reaches the resolver through the doctor-derived provenance.
+                Deriver.Play = new DerivedPlay(kit.StrategyId, null, Array.Empty<Guid>(), null);
             }
         }
 

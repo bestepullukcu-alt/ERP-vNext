@@ -144,7 +144,7 @@ public sealed class VisitPlanningQuickFixesWebTests
     // ============================================================ 7 · A1 strategy picker removed
 
     [Fact]
-    public void The_strategy_template_picker_and_its_proxy_are_gone_but_details_still_sends_the_stored_value_back()
+    public void The_strategy_template_picker_and_its_proxy_are_gone()
     {
         Assert.Null(typeof(VisitPlanningController).GetMethod("StrategyTemplates"));
         Assert.DoesNotContain("strategy-templates", File.ReadAllText(Path.Combine(WebRoot(), "Controllers", "CRM", "VisitPlanningController.cs")));
@@ -156,11 +156,10 @@ public sealed class VisitPlanningQuickFixesWebTests
         var formJs = Asset("form.js");
         Assert.DoesNotContain("/strategy-templates", formJs);
         Assert.DoesNotContain("vp-strategy", formJs);
-        Assert.Contains("strategyTemplateId: storedStrategyTemplateId", formJs);
-
-        Assert.Contains("strategyTemplateId: sessionData.strategyTemplateId || null", Asset("details.js"));
-        // The segment field stays (K-4 goes with B-3).
-        Assert.Contains("id=\"vp-segment\"", form);
+        // WP-VP-2 (B-3) superseded the back-send: the form sends no play at all (the server derives it), and the
+        // segment field went with K-4 (WP-VP-2 VisitPlanningPhase2WebTests pins both).
+        Assert.DoesNotContain("strategyTemplateId", formJs);
+        Assert.DoesNotContain("id=\"vp-segment\"", form);
         Assert.All(Languages, l => Assert.False(Resx(l).ContainsKey("StrategyTemplate"), l));
     }
 

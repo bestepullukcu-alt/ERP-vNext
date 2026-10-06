@@ -110,7 +110,11 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 new ModuleManifestPage("VISIT_PLANNING", "Visit Planning", "/CRM/VisitPlanning", VisitPlanRead, null, true, "List", 64,
                 [
                     new ModuleManifestAction("GENERATE", "Generate Plan", "crm.visit-plan.generate", "Toolbar", 10, false, true, false),
-                    new ModuleManifestAction("APPLY", "Apply Plan", "crm.visit-plan.apply", "RowAction", 20, false, false, true)
+                    new ModuleManifestAction("APPLY", "Apply Plan", "crm.visit-plan.apply", "RowAction", 20, false, false, true),
+                    // WP-VP-2 (B-1) — manifest home of the explicit-grant-only tenant-wide read (Tier-3), the
+                    // platform.tasks.read-all precedent: a declared AUTHORITY so an authorized person can grant it to a
+                    // tenant role; the entitlement sync and the full-catalog path never grant it (ExplicitGrantOnly).
+                    new ModuleManifestAction("READ_ALL", "Read All Visit Plans (Tenant-Wide)", "crm.visit-plan.read-all", "Toolbar", 30, false, true, false)
                 ]),
                 new ModuleManifestPage("VISIT_EXECUTION", "Visit Execution", "/CRM/VisitExecution", VisitReportRead, null, true, "List", 66,
                 [
@@ -122,7 +126,9 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 new ModuleManifestPage("PLANNED_VISITS", "Planned Visits", "/CRM/PlannedVisits", PlannedVisitsRead, null, true, "List", 65,
                 [
                     new ModuleManifestAction("MANAGE", "New Planned Visit", "crm.planned-visit.manage", "Toolbar", 10, false, true, false),
-                    new ModuleManifestAction("CONFIRM", "Confirm", "crm.planned-visit.confirm", "RowAction", 20, false, false, true)
+                    new ModuleManifestAction("CONFIRM", "Confirm", "crm.planned-visit.confirm", "RowAction", 20, false, false, true),
+                    // WP-VP-2 (B-1) — explicit-grant-only tenant-wide read of planned visits + visit reports (see above).
+                    new ModuleManifestAction("READ_ALL", "Read All Planned Visits (Tenant-Wide)", "crm.planned-visit.read-all", "Toolbar", 30, false, true, false)
                 ]),
                 new ModuleManifestPage("CYCLE_PERIODS", "Cycle Periods", "/CRM/CyclePeriods", CyclePeriodsRead, null, true, "List", 70,
                 [

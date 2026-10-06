@@ -28,6 +28,8 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         // MOD-0150 FU07 — provenance actor (CreatedBy/UpdatedBy) resolved from the caller principal, never a payload.
         services.AddScoped<IActorContext, HttpActorContext>();
+        // WP-VP-2 (B-1) — caller resource + permission seam for visit ownership (planned visits, sessions, reports).
+        services.AddScoped<ICallerScope, HttpCallerScope>();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
         services.AddScoped<Application.Features.Territory.ITerritoryLifecycleAuditPublisher,

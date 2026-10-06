@@ -78,6 +78,22 @@ public sealed class VisitPlanningController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new ListPlanningSessionsQuery(cyclePeriodId, resourceId, status), cancellationToken));
 
+    /// <summary>WP-VP-2 (B-2) — the accounts the caller's current territory assignments cover (READ query; K-5: no
+    /// assignment ⇒ every tenant account with <c>territoryStatus = unassigned</c>). <c>resourceId</c> is honoured only for
+    /// a <c>crm.visit-plan.read-all</c> holder.</summary>
+    [HttpGet("api/crm/visit-plan/my-accounts")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> MyAccounts(
+        [FromQuery] string? search,
+        [FromQuery] string? type,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 25,
+        [FromQuery] string? resourceId = null,
+        CancellationToken cancellationToken = default)
+        => CreateActionResultInstance(await _mediator.Send(
+            new Application.Features.VisitPlanning.MyAccounts.GetMyAccountsQuery(search, type, page, pageSize, resourceId),
+            cancellationToken));
+
     [HttpGet("api/crm/visit-plan/sessions/{planningSessionId:guid}")]
     [HasPermission(Perms.Read)]
     public async Task<IActionResult> GetSession(Guid planningSessionId, CancellationToken cancellationToken)

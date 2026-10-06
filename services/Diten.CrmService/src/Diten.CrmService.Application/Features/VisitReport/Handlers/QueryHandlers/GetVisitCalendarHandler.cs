@@ -20,10 +20,15 @@ public sealed class GetVisitCalendarHandler : IRequestHandler<GetVisitCalendarQu
     private readonly ITenantContext _tenant;
     private readonly IPlannedVisitRepository _plannedVisits;
     private readonly IVisitReportRepository _reports;
+    private readonly ICallerScope _caller;
+    private readonly Diten.CrmService.Application.Features.PlannedVisit.VisitTargetNameReader _names;
 
     public GetVisitCalendarHandler(
-        ITenantContext tenant, IPlannedVisitRepository plannedVisits, IVisitReportRepository reports)
+        ITenantContext tenant, IPlannedVisitRepository plannedVisits, IVisitReportRepository reports,
+        ICallerScope caller, Diten.CrmService.Application.Features.PlannedVisit.VisitTargetNameReader names)
     {
+        _caller = caller;
+        _names = names;
         _tenant = tenant;
         _plannedVisits = plannedVisits;
         _reports = reports;
@@ -53,7 +58,9 @@ public sealed class GetVisitCalendarHandler : IRequestHandler<GetVisitCalendarQu
 
         var atoms = await _plannedVisits.ListAsync(tenantId, cancellationToken);
         IEnumerable<Domain.Entities.PlannedVisit> window = atoms
-            .Where(v => !v.IsArchived() && v.PlannedDate >= fromDate && v.PlannedDate <= toDate);
+            .Where(v => !v.IsArchived() && v.PlannedDate >= fromDate && v.PlannedDate <= toDate)
+            // WP-VP-2 (B-1) — the calendar shows the caller's own plans unless they hold read-all.
+            .Where(v => _caller.MayAccess(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitPermissions.ReadAll, v.Resource.ResourceId));
 
         if (VisitReportValidation.Trim(request.ResourceId) is { } resourceId)
         {
@@ -67,12 +74,23 @@ public sealed class GetVisitCalendarHandler : IRequestHandler<GetVisitCalendarQu
             .GroupBy(r => r.PlannedVisitId)
             .ToDictionary(g => g.Key, g => g.First());
 
+        // WP-VP-2 (B-8) — the card's target name, one read per master for the whole window.
+        var names = await _names.ReadAsync(
+            tenantId,
+            visits.Select(v => v.AccountId).Concat(visits.Where(v => v.TargetType != PlannedVisitTargetType.Contact).Select(v => (Guid?)v.TargetId)),
+            visits.Select(v => v.ContactId),
+            cancellationToken);
+
         var items = visits
             .OrderBy(v => v.PlannedDate)
             .ThenBy(v => v.Slot.SequenceOrder ?? int.MaxValue)
             .ThenBy(v => v.Slot.SlotStartTime ?? v.PlannedStartTime ?? string.Empty, StringComparer.Ordinal)
             .ThenBy(v => v.VisitCode, StringComparer.Ordinal)
-            .Select(v => ToCalendarItem(v, reportsByPlan.GetValueOrDefault(v.Id)))
+            .Select(v => ToCalendarItem(v, reportsByPlan.GetValueOrDefault(v.Id)) with
+            {
+                TargetDisplayName = names.For(v.TargetType, v.TargetId, v.AccountId, v.ContactId).Target,
+                TargetInactive = names.For(v.TargetType, v.TargetId, v.AccountId, v.ContactId).TargetInactive
+            })
             .ToList();
 
         var dto = new VisitCalendarDto(

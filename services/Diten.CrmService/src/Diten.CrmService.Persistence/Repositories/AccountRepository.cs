@@ -14,6 +14,19 @@ public sealed class AccountRepository : IAccountRepository
         _collection = database.GetCollection<Account>("accounts");
     }
 
+    /// <summary>WP-VP-2 (B-8) — one <c>$in</c> read for a page's display names.</summary>
+    public async Task<IReadOnlyList<Account>> ListByIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken)
+    {
+        if (ids is null || ids.Count == 0)
+        {
+            return Array.Empty<Account>();
+        }
+
+        var filter = ActiveTenant(tenantId) & Builders<Account>.Filter.In(a => a.Id, ids);
+        return await _collection.Find(filter).ToListAsync(cancellationToken);
+    }
+
     private static FilterDefinition<Account> ActiveTenant(Guid tenantId)
         => Builders<Account>.Filter.Where(a => a.TenantId == tenantId && !a.IsDeleted);
 

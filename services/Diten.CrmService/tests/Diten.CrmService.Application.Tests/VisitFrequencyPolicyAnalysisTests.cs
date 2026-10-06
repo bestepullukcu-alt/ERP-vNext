@@ -486,7 +486,7 @@ public sealed class VisitFrequencyPolicyAnalysisTests
 
         var counter = new VisitFrequencyTargetImpactCounter(
             new FakeSegmentRepository(), Membership(new FakeCandidateSource()),
-            campaignTargets, new FakeAccountTerritoryAssignmentRepo(), new FakeTerritoryModelRepo());
+            campaignTargets, new FakeAccountTerritoryAssignmentRepo(), new FakeTerritoryModelRepo(), new FakeTerritoryNodeRepo());
 
         var impact = await counter.CountAsync(
             TenantA, Policy(TenantA, FrequencyTargetType.CampaignTarget, campaignId), DateTimeOffset.UtcNow, default);
@@ -513,7 +513,7 @@ public sealed class VisitFrequencyPolicyAnalysisTests
 
         var counter = new VisitFrequencyTargetImpactCounter(
             new FakeSegmentRepository(), Membership(new FakeCandidateSource()),
-            new FakeCampaignTargetRepo(), assignments, models);
+            new FakeCampaignTargetRepo(), assignments, models, new FakeTerritoryNodeRepo());
 
         var impact = await counter.CountAsync(
             TenantA, Policy(TenantA, FrequencyTargetType.TerritoryNode, node, territoryNodeId: node),
@@ -540,7 +540,7 @@ public sealed class VisitFrequencyPolicyAnalysisTests
         campaignTargets = new FakeCampaignTargetRepo();
         assignments = new FakeAccountTerritoryAssignmentRepo();
         return new VisitFrequencyTargetImpactCounter(
-            segments, Membership(candidates), campaignTargets, assignments, new FakeTerritoryModelRepo());
+            segments, Membership(candidates), campaignTargets, assignments, new FakeTerritoryModelRepo(), new FakeTerritoryNodeRepo());
     }
 
     // Overload used where the segment/campaign/territory data is irrelevant.

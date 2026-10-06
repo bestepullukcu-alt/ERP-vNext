@@ -72,6 +72,9 @@ public static class DependencyInjection
         services.AddScoped<Features.PlannedVisit.Provenance.PlannedVisitFrequencyProbe>();
         services.AddScoped<Features.PlannedVisit.Provenance.PlannedVisitConsentProbe>();
         services.AddScoped<Features.PlannedVisit.Provenance.PlannedVisitJourneyProbe>();
+        // WP-VP-2 — server-side play / campaign derivation (B-3) + read-time target names (B-8).
+        services.AddScoped<Features.PlannedVisit.Provenance.IVisitProvenanceDeriver, Features.PlannedVisit.Provenance.VisitProvenanceDeriver>();
+        services.AddScoped<Features.PlannedVisit.VisitTargetNameReader>();
         services.AddScoped<Features.PlannedVisit.Provenance.PlannedVisitAvailabilityProbe>();
         services.AddScoped<Features.PlannedVisit.Handlers.CommandHandlers.PlannedVisitWriteGuards>();
 

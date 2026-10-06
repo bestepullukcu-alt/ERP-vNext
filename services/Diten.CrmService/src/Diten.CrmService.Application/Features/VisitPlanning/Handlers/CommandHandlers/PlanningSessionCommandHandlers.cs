@@ -14,10 +14,15 @@ public sealed class CreatePlanningSessionHandler : IRequestHandler<CreatePlannin
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IPlanningSessionRepository _repository;
+    private readonly ICallerScope _caller;
+    private readonly IUserDisplayNameResolver _userNames;
 
     public CreatePlanningSessionHandler(
-        ITenantContext tenant, IActorContext actor, IPlanningSessionRepository repository)
+        ITenantContext tenant, IActorContext actor, IPlanningSessionRepository repository,
+        ICallerScope caller, IUserDisplayNameResolver userNames)
     {
+        _caller = caller;
+        _userNames = userNames;
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
@@ -35,9 +40,13 @@ public sealed class CreatePlanningSessionHandler : IRequestHandler<CreatePlannin
             return Response<Guid>.Fail("CyclePeriodId is required.", 400);
         }
 
-        if (string.IsNullOrWhiteSpace(request.ResourceId))
+        // WP-VP-2 (B-1, K-1) — the rep plans their OWN week: the resource is the caller. Only a read-all holder may plan
+        // for another rep; a different resource from anyone else is 403 resource_not_caller.
+        var (resourceAllowed, resourceId) = _caller.ResolveWriteResource(VisitPlanningPermissions.ReadAll, request.ResourceId);
+        if (!resourceAllowed || resourceId is null)
         {
-            return Response<Guid>.Fail("ResourceId is required.", 400);
+            return Response<Guid>.Fail(
+                new[] { VisitOwnership.ResourceNotCaller, "A plan can only be created for the signed-in resource." }, 403);
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -48,19 +57,20 @@ public sealed class CreatePlanningSessionHandler : IRequestHandler<CreatePlannin
             Id = Guid.NewGuid(),
             TenantId = tenantId,
             CyclePeriodId = request.CyclePeriodId,
-            ResourceId = request.ResourceId.Trim(),
-            ResourceType = PlanningSessionResourceTypes.Normalize(request.ResourceType),
-            ResourceDisplayName = string.IsNullOrWhiteSpace(request.ResourceDisplayName)
-                ? null : request.ResourceDisplayName.Trim(),
+            ResourceId = resourceId,
+            ResourceType = _caller.HasPermission(VisitPlanningPermissions.ReadAll)
+                ? PlanningSessionResourceTypes.Normalize(request.ResourceType)
+                : PlanningSessionResourceTypes.User,
+            // The name comes from the user directory, never from the client.
+            ResourceDisplayName = await Features.PlannedVisit.Provenance.PlannedVisitProvenance.ResourceDisplayNameAsync(
+                _userNames, resourceId, null, cancellationToken),
             Status = PlanningSessionStatus.Draft,
+            // WP-VP-2 (B-3, K-3 / K-4) — segment / campaign / strategy are DERIVED per doctor at planning time; the
+            // request's values are ignored and never stored.
             Selection = BuildSelection(
-                request.SelectedAccountIds, request.SelectedPharmacyIds, request.SelectedContacts,
-                request.SegmentId, request.CampaignId),
+                request.SelectedAccountIds, request.SelectedPharmacyIds, request.SelectedContacts, null, null),
             Provenance = new PlanningSessionProvenance
             {
-                SegmentId = request.SegmentId,
-                CampaignId = request.CampaignId,
-                StrategyTemplateId = request.StrategyTemplateId,
                 DecidedAt = now,
                 DecidedBy = actor
             },
@@ -101,10 +111,12 @@ public sealed class UpdatePlanningSessionSelectionHandler
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IPlanningSessionRepository _repository;
+    private readonly ICallerScope _caller;
 
     public UpdatePlanningSessionSelectionHandler(
-        ITenantContext tenant, IActorContext actor, IPlanningSessionRepository repository)
+        ITenantContext tenant, IActorContext actor, IPlanningSessionRepository repository, ICallerScope caller)
     {
+        _caller = caller;
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
@@ -119,7 +131,8 @@ public sealed class UpdatePlanningSessionSelectionHandler
         }
 
         var session = await _repository.GetByIdAsync(tenantId, request.PlanningSessionId, cancellationToken);
-        if (session is null)
+        // WP-VP-2 (B-1) — another rep's session is as absent as a missing one.
+        if (session is null || !_caller.MayAccess(VisitPlanningPermissions.ReadAll, session.ResourceId))
         {
             return Response<bool>.Fail("Planning session not found.", 404);
         }
@@ -130,12 +143,11 @@ public sealed class UpdatePlanningSessionSelectionHandler
                 $"A {session.Status} session cannot have its selection edited.", 409);
         }
 
+        // WP-VP-2 (B-3) — the request's segment / campaign / strategy are ignored: whatever an older record stored is kept
+        // as read-only history (and no longer used), nothing new is written.
         session.Selection = CreatePlanningSessionHandler.BuildSelection(
             request.SelectedAccountIds, request.SelectedPharmacyIds, request.SelectedContacts,
-            request.SegmentId, request.CampaignId);
-        session.Provenance.SegmentId = request.SegmentId;
-        session.Provenance.CampaignId = request.CampaignId;
-        session.Provenance.StrategyTemplateId = request.StrategyTemplateId;
+            session.Selection.SegmentId, session.Selection.CampaignId);
         if (!string.IsNullOrWhiteSpace(request.TargetWeekStart))
             session.TargetWeekStart = request.TargetWeekStart.Trim();
 
@@ -180,14 +192,17 @@ public sealed class ApplyPlanningSessionHandler
     private readonly IPlanningSessionRepository _repository;
     private readonly IPlanningSessionApplyUnitOfWork _unitOfWork;
     private readonly VisitPlanningEngine _engine;
+    private readonly ICallerScope _caller;
 
     public ApplyPlanningSessionHandler(
         ITenantContext tenant,
         IActorContext actor,
         IPlanningSessionRepository repository,
         IPlanningSessionApplyUnitOfWork unitOfWork,
-        VisitPlanningEngine engine)
+        VisitPlanningEngine engine,
+        ICallerScope caller)
     {
+        _caller = caller;
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
@@ -204,7 +219,7 @@ public sealed class ApplyPlanningSessionHandler
         }
 
         var session = await _repository.GetByIdAsync(tenantId, request.PlanningSessionId, cancellationToken);
-        if (session is null)
+        if (session is null || !_caller.MayAccess(VisitPlanningPermissions.ReadAll, session.ResourceId))
         {
             return Response<VisitPlanApplyResult>.Fail("Planning session not found.", 404);
         }
@@ -285,13 +300,16 @@ public sealed class ReplanPlanningSessionHandler
     private readonly IPlanningSessionRepository _repository;
     private readonly IPlanningSessionApplyUnitOfWork _unitOfWork;
     private readonly VisitPlanningEngine _engine;
+    private readonly ICallerScope _caller;
 
     public ReplanPlanningSessionHandler(
         ITenantContext tenant,
         IPlanningSessionRepository repository,
         IPlanningSessionApplyUnitOfWork unitOfWork,
-        VisitPlanningEngine engine)
+        VisitPlanningEngine engine,
+        ICallerScope caller)
     {
+        _caller = caller;
         _tenant = tenant;
         _repository = repository;
         _unitOfWork = unitOfWork;
@@ -312,7 +330,7 @@ public sealed class ReplanPlanningSessionHandler
         }
 
         var session = await _repository.GetByIdAsync(tenantId, request.PlanningSessionId, cancellationToken);
-        if (session is null)
+        if (session is null || !_caller.MayAccess(VisitPlanningPermissions.ReadAll, session.ResourceId))
         {
             return Response<VisitPlanApplyResult>.Fail("Planning session not found.", 404);
         }

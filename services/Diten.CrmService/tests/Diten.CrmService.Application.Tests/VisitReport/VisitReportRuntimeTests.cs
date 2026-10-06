@@ -7,6 +7,7 @@ using Diten.CrmService.Application.Features.VisitReport.Handlers.QueryHandlers;
 using Diten.CrmService.Application.Features.VisitReport.Queries;
 using Diten.CrmService.Domain.Entities;
 using MongoDB.Bson.Serialization;
+using Diten.CrmService.Application.Tests.VisitScope;
 using Xunit;
 using VisitReportEntity = Diten.CrmService.Domain.Entities.VisitReport;
 using PlanAtom = Diten.CrmService.Domain.Entities.PlannedVisit;
@@ -39,20 +40,26 @@ public sealed class VisitReportRuntimeTests
 
         public Fixture(Guid? tenant = null) => TenantId = tenant ?? TenantA;
 
+        // WP-VP-2 — the caller (default: read-all, the pre-VP-2 tenant-wide behaviour).
+        public ICallerScope Caller { get; set; } = TestCallerScope.Unrestricted();
+
         public RecordVisitOutcomeHandler RecordOutcome(Guid? tenant = null)
-            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Reports, Plans);
+            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Reports, Plans, Caller);
 
         public SubmitVisitReportHandler Submit(Guid? tenant = null)
-            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Reports, Plans);
+            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Reports, Plans, Caller);
 
         public AmendVisitReportHandler Amend(Guid? tenant = null)
-            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Reports);
+            => new(Tenant(tenant ?? TenantId), new NullActorContext(), Reports, Plans, Caller);
 
         public GetVisitCalendarHandler Calendar(Guid? tenant = null)
-            => new(Tenant(tenant ?? TenantId), Plans, Reports);
+            => new(Tenant(tenant ?? TenantId), Plans, Reports, Caller,
+                new Diten.CrmService.Application.Features.PlannedVisit.VisitTargetNameReader(
+                    new Diten.CrmService.Application.Tests.PlannedVisit.FakeAccountRepository(),
+                    new Diten.CrmService.Application.Tests.PlannedVisit.FakeContactRepository()));
 
-        public GetVisitReportByIdHandler Get(Guid? tenant = null) => new(Tenant(tenant ?? TenantId), Reports);
-        public ListVisitReportsHandler List(Guid? tenant = null) => new(Tenant(tenant ?? TenantId), Reports);
+        public GetVisitReportByIdHandler Get(Guid? tenant = null) => new(Tenant(tenant ?? TenantId), Reports, Plans, Caller);
+        public ListVisitReportsHandler List(Guid? tenant = null) => new(Tenant(tenant ?? TenantId), Reports, Plans, Caller);
         public GetVisitReportContractHandler Contract() => new(Tenant(TenantId));
 
         public Guid SeedPlan(string resourceId = "rep-1", DateOnly? date = null, int? plannedStageIndex = null)

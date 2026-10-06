@@ -23,7 +23,7 @@ public sealed class CrmManifestVisitPlanningTests
         Assert.True(page.SortOrder < Assert.Single(Manifest.Pages, p => p.PageCode == "PLANNED_VISITS").SortOrder);
 
         Assert.Equal(
-            new[] { "crm.visit-plan.generate", "crm.visit-plan.apply" },
+            new[] { "crm.visit-plan.generate", "crm.visit-plan.apply", "crm.visit-plan.read-all" },
             page.Actions.OrderBy(a => a.SortOrder).Select(a => a.PermissionKey).ToArray());
     }
 
@@ -41,6 +41,19 @@ public sealed class CrmManifestVisitPlanningTests
             new[] { "crm.visit-report.record", "crm.visit-report.amend" },
             page.Actions.OrderBy(a => a.SortOrder).Select(a => a.PermissionKey).ToArray());
         Assert.All(page.Actions, a => Assert.True(a.IsRowAction));
+    }
+
+    // WP-VP-2 (B-1) — the two explicit-grant-only tenant-wide reads have a manifest home (Toolbar authority).
+    [Theory]
+    [InlineData("VISIT_PLANNING", "crm.visit-plan.read-all")]
+    [InlineData("PLANNED_VISITS", "crm.planned-visit.read-all")]
+    public void The_read_all_keys_are_declared_as_page_actions(string pageCode, string key)
+    {
+        var page = Assert.Single(Manifest.Pages, p => p.PageCode == pageCode);
+        var action = Assert.Single(page.Actions, a => a.ActionCode == "READ_ALL");
+        Assert.Equal(key, action.PermissionKey);
+        Assert.True(action.IsToolbarAction);
+        Assert.False(action.IsDangerous);
     }
 
     [Fact]

@@ -146,9 +146,21 @@ public sealed record PlanningSessionDto(
     DateTimeOffset CreatedAt,
     string? CreatedBy,
     DateTimeOffset? UpdatedAt,
-    string? UpdatedBy);
+    string? UpdatedBy,
+    // WP-VP-2 (B-8, additive) — the selected accounts / pharmacies with their names (the id arrays above are unchanged).
+    IReadOnlyList<PlanningSessionNamedRefDto>? SelectedAccounts = null,
+    IReadOnlyList<PlanningSessionNamedRefDto>? SelectedPharmacies = null);
 
-public sealed record PlanningSessionContactDto(Guid ContactId, Guid? AccountId, Guid? AccountContactLinkId);
+public sealed record PlanningSessionContactDto(
+    Guid ContactId,
+    Guid? AccountId,
+    Guid? AccountContactLinkId,
+    // WP-VP-2 (B-8, additive) — read-time names.
+    string? ContactDisplayName = null,
+    string? AccountDisplayName = null);
+
+/// <summary>WP-VP-2 (B-8) — a selected account / pharmacy with its read-time name (null when it cannot be found).</summary>
+public sealed record PlanningSessionNamedRefDto(Guid Id, string? DisplayName);
 
 public sealed record PlanningSessionListDto(IReadOnlyList<PlanningSessionListItemDto> Items, int TotalCount);
 

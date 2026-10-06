@@ -13,10 +13,12 @@ public sealed class GeneratePlanPreviewHandler : IRequestHandler<GeneratePlanPre
     private readonly ITenantContext _tenant;
     private readonly IPlanningSessionRepository _repository;
     private readonly VisitPlanningEngine _engine;
+    private readonly ICallerScope _caller;
 
     public GeneratePlanPreviewHandler(
-        ITenantContext tenant, IPlanningSessionRepository repository, VisitPlanningEngine engine)
+        ITenantContext tenant, IPlanningSessionRepository repository, VisitPlanningEngine engine, ICallerScope caller)
     {
+        _caller = caller;
         _tenant = tenant;
         _repository = repository;
         _engine = engine;
@@ -31,7 +33,7 @@ public sealed class GeneratePlanPreviewHandler : IRequestHandler<GeneratePlanPre
         }
 
         var session = await _repository.GetByIdAsync(tenantId, request.PlanningSessionId, cancellationToken);
-        if (session is null)
+        if (session is null || !_caller.MayAccess(VisitPlanningPermissions.ReadAll, session.ResourceId))
         {
             return Response<VisitPlanPreview>.Fail("Planning session not found.", 404);
         }
@@ -54,8 +56,11 @@ public sealed class ListPlanningSessionsHandler
     private readonly ITenantContext _tenant;
     private readonly IPlanningSessionRepository _repository;
 
-    public ListPlanningSessionsHandler(ITenantContext tenant, IPlanningSessionRepository repository)
+    private readonly ICallerScope _caller;
+
+    public ListPlanningSessionsHandler(ITenantContext tenant, IPlanningSessionRepository repository, ICallerScope caller)
     {
+        _caller = caller;
         _tenant = tenant;
         _repository = repository;
     }
@@ -70,7 +75,8 @@ public sealed class ListPlanningSessionsHandler
 
         var rows = await _repository.ListAsync(tenantId, cancellationToken);
 
-        IEnumerable<Domain.Entities.PlanningSession> filtered = rows;
+        // WP-VP-2 (B-1) — without read-all only the caller's own sessions are listed.
+        IEnumerable<Domain.Entities.PlanningSession> filtered = rows.Where(s => _caller.MayAccess(VisitPlanningPermissions.ReadAll, s.ResourceId));
         if (request.CyclePeriodId is { } periodId && periodId != Guid.Empty)
         {
             filtered = filtered.Where(s => s.CyclePeriodId == periodId);
@@ -99,10 +105,17 @@ public sealed class GetPlanningSessionByIdHandler
     private readonly ITenantContext _tenant;
     private readonly IPlanningSessionRepository _repository;
 
-    public GetPlanningSessionByIdHandler(ITenantContext tenant, IPlanningSessionRepository repository)
+    private readonly ICallerScope _caller;
+    private readonly Features.PlannedVisit.VisitTargetNameReader _names;
+
+    public GetPlanningSessionByIdHandler(
+        ITenantContext tenant, IPlanningSessionRepository repository, ICallerScope caller,
+        Features.PlannedVisit.VisitTargetNameReader names)
     {
         _tenant = tenant;
         _repository = repository;
+        _caller = caller;
+        _names = names;
     }
 
     public async Task<Response<PlanningSessionDto>> Handle(
@@ -114,8 +127,20 @@ public sealed class GetPlanningSessionByIdHandler
         }
 
         var session = await _repository.GetByIdAsync(tenantId, request.PlanningSessionId, cancellationToken);
-        return session is null
-            ? Response<PlanningSessionDto>.Fail("Planning session not found.", 404)
-            : Response<PlanningSessionDto>.Success(PlanningSessionMapper.ToDto(session), 200);
+        if (session is null || !_caller.MayAccess(VisitPlanningPermissions.ReadAll, session.ResourceId))
+        {
+            return Response<PlanningSessionDto>.Fail("Planning session not found.", 404);
+        }
+
+        // WP-VP-2 (B-8) — names of every selected doctor / account / pharmacy, one read per master.
+        var selection = session.Selection;
+        var names = await _names.ReadAsync(
+            tenantId,
+            selection.SelectedAccountIds.Concat(selection.SelectedPharmacyIds)
+                .Concat(selection.SelectedContacts.Select(c => c.AccountId ?? Guid.Empty))
+                .Select(id => (Guid?)id),
+            selection.SelectedContacts.Select(c => (Guid?)c.ContactId),
+            cancellationToken);
+        return Response<PlanningSessionDto>.Success(PlanningSessionMapper.ToDto(session, names), 200);
     }
 }

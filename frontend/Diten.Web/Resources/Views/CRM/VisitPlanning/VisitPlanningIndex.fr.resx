@@ -7,7 +7,6 @@
   <data name="PageDescription" xml:space="preserve"><value>Planifiez votre semaine : choisissez la période et la semaine, ajoutez les cliniques et les médecins à visiter, générez l'itinéraire puis enregistrez-le comme planning de la semaine.</value></data>
   <data name="NewSession" xml:space="preserve"><value>Nouveau plan</value></data>
   <data name="CyclePeriod" xml:space="preserve"><value>Période de cycle</value></data>
-  <data name="SegmentHint" xml:space="preserve"><value>Le segment restreint les médecins sélectionnables ; le choix vous appartient.</value></data>
   <data name="AccountsPanel" xml:space="preserve"><value>Établissements (cliniques / hôpitaux)</value></data>
   <data name="AccountsHint" xml:space="preserve"><value>Les comptes hors territoire sont signalés par un avertissement, jamais masqués.</value></data>
   <data name="ContactsPanel" xml:space="preserve"><value>Médecins</value></data>
@@ -36,7 +35,6 @@
   <data name="TargetsSection" xml:space="preserve"><value>Cibles</value></data>
   <data name="RouteSection" xml:space="preserve"><value>Itinéraire</value></data>
   <data name="RepUser" xml:space="preserve"><value>Représentant (utilisateur)</value></data>
-  <data name="UsersUnavailable" xml:space="preserve"><value>L'annuaire des utilisateurs n'est pas disponible ; saisissez le représentant sur la plateforme.</value></data>
   <data name="WeekLabel" xml:space="preserve"><value>Semaine</value></data>
   <data name="RouteEmpty" xml:space="preserve"><value>Aucun itinéraire pour cette semaine.</value></data>
   <data name="SelectAccountFirst" xml:space="preserve"><value>Sélectionnez d'abord une clinique / un hôpital</value></data>
@@ -103,7 +101,6 @@
   <data name="ColType" xml:space="preserve"><value>Type</value></data>
   <data name="ColCity" xml:space="preserve"><value>Ville / Territoire</value></data>
   <data name="ColContact" xml:space="preserve"><value>Médecin</value></data>
-  <data name="ColLinked" xml:space="preserve"><value>Lien</value></data>
   <data name="ColSelected" xml:space="preserve"><value>Sélectionné</value></data>
   <data name="AddAccount" xml:space="preserve"><value>Ajouter clinique / hôpital</value></data>
   <data name="RemoveTarget" xml:space="preserve"><value>Retirer</value></data>
@@ -111,8 +108,6 @@
   <data name="PickAccountForContacts" xml:space="preserve"><value>Sélectionnez un compte pour voir ses médecins.</value></data>
   <data name="Country" xml:space="preserve"><value>Pays</value></data>
   <data name="SelectCountryFirst" xml:space="preserve"><value>Sélectionnez d'abord un pays</value></data>
-  <data name="Segments" xml:space="preserve"><value>Segments</value></data>
-  <data name="SegmentSingleNote" xml:space="preserve"><value>Pour l'instant, seul le premier segment sélectionné est appliqué.</value></data>
   <data name="WeekNumberLabel" xml:space="preserve"><value>Semaine {0}</value></data>
   <data name="ColSpecialty" xml:space="preserve"><value>Spécialité</value></data>
   <data name="ResetOptimal" xml:space="preserve"><value>Revenir à l'itinéraire optimal</value></data>
@@ -126,4 +121,7 @@
   <data name="CalendarUnresolvedWarning" xml:space="preserve"><value>Le calendrier de travail n'a pas pu être lu ; les jours fériés n'ont pas été pris en compte.</value></data>
   <data name="Status_generated" xml:space="preserve"><value>Généré</value></data>
   <data name="Status_archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="RepSelfHint" xml:space="preserve"><value>Les plans sont établis pour le représentant connecté.</value></data>
+  <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>Aucun territoire ne vous est attribué ; tous les comptes sont affichés. Contactez votre responsable.</value></data>
+  <data name="AddOutOfTerritory" xml:space="preserve"><value>Ajouter un compte hors territoire</value></data>
 </root>

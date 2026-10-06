@@ -7,7 +7,6 @@
   <data name="PageDescription" xml:space="preserve"><value>Спланируйте неделю: выберите период и неделю, добавьте клиники и врачей для визитов, постройте маршрут и сохраните его как план недели.</value></data>
   <data name="NewSession" xml:space="preserve"><value>Новый план</value></data>
   <data name="CyclePeriod" xml:space="preserve"><value>Период цикла</value></data>
-  <data name="SegmentHint" xml:space="preserve"><value>Сегмент сужает круг врачей для выбора; выбор остаётся за вами.</value></data>
   <data name="AccountsPanel" xml:space="preserve"><value>Учреждения (клиники / больницы)</value></data>
   <data name="AccountsHint" xml:space="preserve"><value>Учреждения вне территории помечаются предупреждением и не скрываются.</value></data>
   <data name="ContactsPanel" xml:space="preserve"><value>Врачи</value></data>
@@ -36,7 +35,6 @@
   <data name="TargetsSection" xml:space="preserve"><value>Цели</value></data>
   <data name="RouteSection" xml:space="preserve"><value>Маршрут</value></data>
   <data name="RepUser" xml:space="preserve"><value>Представитель (пользователь)</value></data>
-  <data name="UsersUnavailable" xml:space="preserve"><value>Каталог пользователей недоступен; укажите представителя на платформе.</value></data>
   <data name="WeekLabel" xml:space="preserve"><value>Неделя</value></data>
   <data name="RouteEmpty" xml:space="preserve"><value>На эту неделю маршрута нет.</value></data>
   <data name="SelectAccountFirst" xml:space="preserve"><value>Сначала выберите клинику / больницу</value></data>
@@ -103,7 +101,6 @@
   <data name="ColType" xml:space="preserve"><value>Тип</value></data>
   <data name="ColCity" xml:space="preserve"><value>Город / Территория</value></data>
   <data name="ColContact" xml:space="preserve"><value>Врач</value></data>
-  <data name="ColLinked" xml:space="preserve"><value>Связь</value></data>
   <data name="ColSelected" xml:space="preserve"><value>Выбрано</value></data>
   <data name="AddAccount" xml:space="preserve"><value>Добавить клинику / больницу</value></data>
   <data name="RemoveTarget" xml:space="preserve"><value>Убрать</value></data>
@@ -111,8 +108,6 @@
   <data name="PickAccountForContacts" xml:space="preserve"><value>Выберите аккаунт, чтобы увидеть его врачей.</value></data>
   <data name="Country" xml:space="preserve"><value>Страна</value></data>
   <data name="SelectCountryFirst" xml:space="preserve"><value>Сначала выберите страну</value></data>
-  <data name="Segments" xml:space="preserve"><value>Сегменты</value></data>
-  <data name="SegmentSingleNote" xml:space="preserve"><value>Пока применяется только первый выбранный сегмент.</value></data>
   <data name="WeekNumberLabel" xml:space="preserve"><value>Неделя {0}</value></data>
   <data name="ColSpecialty" xml:space="preserve"><value>Специальность</value></data>
   <data name="ResetOptimal" xml:space="preserve"><value>Вернуть оптимальный маршрут</value></data>
@@ -126,4 +121,7 @@
   <data name="CalendarUnresolvedWarning" xml:space="preserve"><value>Не удалось прочитать рабочий календарь; праздники не учтены.</value></data>
   <data name="Status_generated" xml:space="preserve"><value>Сформирован</value></data>
   <data name="Status_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="RepSelfHint" xml:space="preserve"><value>Планы составляются для вошедшего в систему представителя.</value></data>
+  <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>Вам не назначена территория; показаны все учреждения. Обратитесь к руководителю.</value></data>
+  <data name="AddOutOfTerritory" xml:space="preserve"><value>Добавить учреждение вне территории</value></data>
 </root>

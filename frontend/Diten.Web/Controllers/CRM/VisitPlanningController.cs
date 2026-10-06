@@ -252,9 +252,14 @@ public sealed class VisitPlanningController : Controller
         return labels;
     }
 
-    [HttpGet("api/segments")]
-    public Task<IActionResult> Segments(CancellationToken ct)
-        => ProxyAsync(HttpMethod.Get, $"/api/crm/segments{Request.QueryString}", null, ReadPermission, ct);
+    // WP-VP-2 (B-3, K-4) — no segment proxy: the rep never picks a segment; the play is derived from the doctor.
+
+    // WP-VP-2 (B-2) — "my accounts": the accounts the caller's current territory assignments cover (territoryStatus
+    // assigned | unassigned — K-5: unassigned lists every account and the page warns). The Targets "add clinic /
+    // hospital" search reads THIS; the separate "add out-of-territory" search keeps using api/accounts.
+    [HttpGet("api/my-accounts")]
+    public Task<IActionResult> MyAccounts(CancellationToken ct)
+        => ProxyAsync(HttpMethod.Get, $"/api/crm/visit-plan/my-accounts{Request.QueryString}", null, ReadPermission, ct);
 
     // Cycle-period scope options — its resolved COUNTRY_CODES `countries` list feeds the Country dropdown, so the codes
     // match the periods' CountryScope exactly. Degrades to an empty picker if it refuses.
@@ -262,11 +267,11 @@ public sealed class VisitPlanningController : Controller
     public Task<IActionResult> ScopeOptions(CancellationToken ct)
         => ProxyAsync(HttpMethod.Get, $"/api/crm/cycle-periods/scope-options{Request.QueryString}", null, ReadPermission, ct);
 
-    // The rep is a real user (MOD-0151 person resource). Read-only passthrough to the platform user directory so the
-    // create/edit form can offer a user picker; the selected id still populates the session's string ResourceId.
-    [HttpGet("api/users")]
-    public Task<IActionResult> Users(CancellationToken ct)
-        => ProxyAsync(HttpMethod.Get, $"/api/users{Request.QueryString}", null, ReadPermission, ct);
+    // WP-VP-2 (B-1, K-1) — the rep is the signed-in user: no user-directory proxy, no picker. The form shows who it is
+    // from resources/me (resourceId + displayName); CRM writes the caller as the plan's resource.
+    [HttpGet("api/me")]
+    public Task<IActionResult> Me(CancellationToken ct)
+        => ProxyAsync(HttpMethod.Get, "/api/crm/resources/me", null, ReadPermission, ct);
 
     // WP-VP-FIX-1 (A1, K-3) — no strategy-template ("play") proxy: the rep never picks a play; it is derived server-side.
 

@@ -135,6 +135,8 @@
             + '    <div class="d-flex justify-content-between align-items-start">'
             + '      <div class="small fw-semibold">' + esc(it.visitCode) + '</div>' + stateBadge(it.reportState)
             + '    </div>'
+            // WP-VP-2 (B-8) — the target's read-time name under the visit code (doctor / institution).
+            + (it.targetDisplayName ? '    <div class="small">' + esc(it.targetDisplayName) + '</div>' : '')
             + '    <div class="small text-muted">' + esc(time) + ' · ' + esc(it.targetType) + ' ' + esc(stage) + '</div>'
             + (it.executionOutcome ? '<div class="small">' + esc(it.executionOutcome) + '</div>' : '')
             + actions

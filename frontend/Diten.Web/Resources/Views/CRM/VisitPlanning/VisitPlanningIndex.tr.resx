@@ -7,7 +7,6 @@
   <data name="PageDescription" xml:space="preserve"><value>Haftanızı planlayın: dönemi ve haftayı seçin, ziyaret edeceğiniz klinik ve doktorları ekleyin, rotayı oluşturun ve haftanın planı olarak kaydedin.</value></data>
   <data name="NewSession" xml:space="preserve"><value>Yeni plan</value></data>
   <data name="CyclePeriod" xml:space="preserve"><value>Dönem</value></data>
-  <data name="SegmentHint" xml:space="preserve"><value>Segment, seçebileceğiniz doktorları daraltır; seçim yine sizindir.</value></data>
   <data name="AccountsPanel" xml:space="preserve"><value>Kurumlar (klinik / hastane)</value></data>
   <data name="AccountsHint" xml:space="preserve"><value>Bölge dışı hesaplar gizlenmez; uyarıyla gösterilir.</value></data>
   <data name="ContactsPanel" xml:space="preserve"><value>Doktorlar</value></data>
@@ -36,7 +35,6 @@
   <data name="TargetsSection" xml:space="preserve"><value>Hedefler</value></data>
   <data name="RouteSection" xml:space="preserve"><value>Rota</value></data>
   <data name="RepUser" xml:space="preserve"><value>Temsilci (kullanıcı)</value></data>
-  <data name="UsersUnavailable" xml:space="preserve"><value>Kullanıcı dizini kullanılamıyor; temsilciyi platformdan girin.</value></data>
   <data name="WeekLabel" xml:space="preserve"><value>Hafta</value></data>
   <data name="RouteEmpty" xml:space="preserve"><value>Bu hafta için rota yok.</value></data>
   <data name="SelectAccountFirst" xml:space="preserve"><value>Önce bir klinik / hastane seçin</value></data>
@@ -103,7 +101,6 @@
   <data name="ColType" xml:space="preserve"><value>Tür</value></data>
   <data name="ColCity" xml:space="preserve"><value>Şehir / Bölge</value></data>
   <data name="ColContact" xml:space="preserve"><value>Doktor</value></data>
-  <data name="ColLinked" xml:space="preserve"><value>Bağlantı</value></data>
   <data name="ColSelected" xml:space="preserve"><value>Seçili</value></data>
   <data name="AddAccount" xml:space="preserve"><value>Klinik / hastane ekle</value></data>
   <data name="RemoveTarget" xml:space="preserve"><value>Kaldır</value></data>
@@ -111,8 +108,6 @@
   <data name="PickAccountForContacts" xml:space="preserve"><value>Doktorları görmek için bir hesap seçin.</value></data>
   <data name="Country" xml:space="preserve"><value>Ülke</value></data>
   <data name="SelectCountryFirst" xml:space="preserve"><value>Önce ülke seç</value></data>
-  <data name="Segments" xml:space="preserve"><value>Segmentler</value></data>
-  <data name="SegmentSingleNote" xml:space="preserve"><value>Şimdilik yalnızca ilk seçilen segment uygulanır.</value></data>
   <data name="WeekNumberLabel" xml:space="preserve"><value>{0}. Hafta</value></data>
   <data name="ColSpecialty" xml:space="preserve"><value>Uzmanlık</value></data>
   <data name="ResetOptimal" xml:space="preserve"><value>Optimal rotaya dön</value></data>
@@ -126,4 +121,7 @@
   <data name="CalendarUnresolvedWarning" xml:space="preserve"><value>Çalışma takvimi okunamadı; tatiller dikkate alınmadı.</value></data>
   <data name="Status_generated" xml:space="preserve"><value>Oluşturuldu</value></data>
   <data name="Status_archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="RepSelfHint" xml:space="preserve"><value>Planlar oturumu açan temsilci için yapılır.</value></data>
+  <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>Size bölge atanmamış; tüm hesaplar gösteriliyor. Yöneticinize başvurun.</value></data>
+  <data name="AddOutOfTerritory" xml:space="preserve"><value>Bölge dışı hesap ekle</value></data>
 </root>

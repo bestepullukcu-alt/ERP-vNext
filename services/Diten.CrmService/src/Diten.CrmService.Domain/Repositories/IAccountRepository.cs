@@ -11,6 +11,21 @@ public interface IAccountRepository
 
     Task<bool> ExistsByCodeAsync(Guid tenantId, string accountCode, Guid? excludeId, CancellationToken cancellationToken);
 
+    /// <summary>WP-VP-2 (B-8) — the non-deleted accounts with these ids in ONE read (display names at read time). The
+    /// default goes through the id-scoped <see cref="ListAsync"/>; the Mongo repository answers with a single
+    /// <c>$in</c> find.</summary>
+    async Task<IReadOnlyList<Account>> ListByIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken)
+    {
+        if (ids is null || ids.Count == 0)
+        {
+            return Array.Empty<Account>();
+        }
+
+        var page = await ListAsync(tenantId, null, 1, ids.Count, null, null, null, null, ids, cancellationToken);
+        return page.Items;
+    }
+
     /// <summary>Server-side paged list. <paramref name="sortBy"/> accepts "accountName"/"accountCode" (both
     /// backed by a {TenantId, field} index so descending stays an index scan, never a 32MB in-memory sort);
     /// any other value falls back to AccountName ascending. Returns the filtered <c>Total</c> plus the

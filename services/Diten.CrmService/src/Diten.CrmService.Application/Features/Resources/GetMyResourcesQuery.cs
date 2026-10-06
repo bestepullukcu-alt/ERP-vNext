@@ -20,7 +20,12 @@ public sealed record GetMyResourcesQuery(string? UserId) : IRequest<Response<MyR
 /// </summary>
 public sealed record MyResourcesDto(IReadOnlyList<MyResourceItemDto> Items);
 
-public sealed record MyResourceItemDto(string ResourceId, string ResourceType, string Status);
+public sealed record MyResourceItemDto(
+    string ResourceId,
+    string ResourceType,
+    string Status,
+    // WP-VP-2 (B-1, additive) — the caller's display name from the user directory (null when it cannot be resolved).
+    string? DisplayName = null);
 
 public static class MyResourceStatuses
 {
@@ -54,25 +59,38 @@ public static class MyResourceIdentity
 public sealed class GetMyResourcesQueryHandler : IRequestHandler<GetMyResourcesQuery, Response<MyResourcesDto>>
 {
     private readonly ITenantContext _tenant;
+    private readonly IUserDisplayNameResolver _names;
 
-    public GetMyResourcesQueryHandler(ITenantContext tenant) => _tenant = tenant;
+    public GetMyResourcesQueryHandler(ITenantContext tenant, IUserDisplayNameResolver names)
+    {
+        _tenant = tenant;
+        _names = names;
+    }
 
-    public Task<Response<MyResourcesDto>> Handle(GetMyResourcesQuery request, CancellationToken cancellationToken)
+    public async Task<Response<MyResourcesDto>> Handle(GetMyResourcesQuery request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.UserId))
         {
             // Authenticated-but-identityless is meaningless for "me": refuse rather than return an empty list.
-            return Task.FromResult(Response<MyResourcesDto>.Fail("Caller identity could not be resolved.", 401));
+            return Response<MyResourcesDto>.Fail("Caller identity could not be resolved.", 401);
         }
 
         // Tenant is still mandatory: the resource id is only meaningful inside the caller's tenant, and a
         // header/token tenant mismatch has already been refused 400 by TenantResolutionMiddleware.
         if (_tenant.TenantId is null)
         {
-            return Task.FromResult(Response<MyResourcesDto>.Fail("Tenant context is required.", 400));
+            return Response<MyResourcesDto>.Fail("Tenant context is required.", 400);
         }
 
-        var item = new MyResourceItemDto(request.UserId.Trim(), PlannedVisitResourceTypes.User, MyResourceStatuses.Active);
-        return Task.FromResult(Response<MyResourcesDto>.Success(new MyResourcesDto([item])));
+        var userId = request.UserId.Trim();
+        string? displayName = null;
+        if (Guid.TryParse(userId, out var id))
+        {
+            var names = await _names.ResolveAsync(new[] { id }, cancellationToken);
+            displayName = names.TryGetValue(id, out var name) && !string.IsNullOrWhiteSpace(name) ? name : null;
+        }
+
+        var item = new MyResourceItemDto(userId, PlannedVisitResourceTypes.User, MyResourceStatuses.Active, displayName);
+        return Response<MyResourcesDto>.Success(new MyResourcesDto([item]));
     }
 }

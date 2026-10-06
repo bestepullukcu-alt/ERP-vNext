@@ -32,6 +32,17 @@ internal static class PlanningSessionMapper
         s.UpdatedAt,
         s.UpdatedBy);
 
+    /// <summary>WP-VP-2 (B-8) — the detail with the selection's read-time names.</summary>
+    public static PlanningSessionDto ToDto(PlanningSession s, Features.PlannedVisit.VisitTargetNames names) => ToDto(s) with
+    {
+        SelectedContacts = s.Selection.SelectedContacts
+            .Select(c => new PlanningSessionContactDto(
+                c.ContactId, c.AccountId, c.AccountContactLinkId, names.Contact(c.ContactId), names.Account(c.AccountId)))
+            .ToList(),
+        SelectedAccounts = s.Selection.SelectedAccountIds.Select(id => new PlanningSessionNamedRefDto(id, names.Account(id))).ToList(),
+        SelectedPharmacies = s.Selection.SelectedPharmacyIds.Select(id => new PlanningSessionNamedRefDto(id, names.Account(id))).ToList()
+    };
+
     public static PlanningSessionListItemDto ToListItem(PlanningSession s) => new(
         s.Id,
         s.CyclePeriodId,

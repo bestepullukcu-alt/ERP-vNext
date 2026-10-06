@@ -1,6 +1,7 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.PlannedVisit.Queries;
+using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using MediatR;
 
@@ -12,11 +13,16 @@ public sealed class GetPlannedVisitByIdHandler
 {
     private readonly ITenantContext _tenant;
     private readonly IPlannedVisitRepository _repository;
+    private readonly ICallerScope _caller;
+    private readonly VisitTargetNameReader _names;
 
-    public GetPlannedVisitByIdHandler(ITenantContext tenant, IPlannedVisitRepository repository)
+    public GetPlannedVisitByIdHandler(
+        ITenantContext tenant, IPlannedVisitRepository repository, ICallerScope caller, VisitTargetNameReader names)
     {
         _tenant = tenant;
         _repository = repository;
+        _caller = caller;
+        _names = names;
     }
 
     public async Task<Response<PlannedVisitDetailDto>> Handle(
@@ -28,8 +34,17 @@ public sealed class GetPlannedVisitByIdHandler
         }
 
         var plan = await _repository.GetByIdAsync(tenantId, request.PlannedVisitId, cancellationToken);
-        return plan is null
-            ? Response<PlannedVisitDetailDto>.Fail("Planned visit not found.", 404)
-            : Response<PlannedVisitDetailDto>.Success(PlannedVisitMapper.ToDetail(plan));
+        // WP-VP-2 (B-1) — another rep's plan is as absent as a missing one (404, nothing leaks).
+        if (plan is null || !_caller.MayAccess(PlannedVisitPermissions.ReadAll, plan.Resource.ResourceId))
+        {
+            return Response<PlannedVisitDetailDto>.Fail("Planned visit not found.", 404);
+        }
+
+        var names = await _names.ReadAsync(
+            tenantId,
+            new[] { plan.AccountId, plan.TargetType != PlannedVisitTargetType.Contact ? plan.TargetId : (Guid?)null },
+            new[] { plan.ContactId },
+            cancellationToken);
+        return Response<PlannedVisitDetailDto>.Success(PlannedVisitMapper.ToDetail(plan, names));
     }
 }

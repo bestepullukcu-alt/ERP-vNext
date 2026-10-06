@@ -786,6 +786,9 @@
             '<span class="badge bg-label-warning me-1">' + (L.OutOfTerritory || 'Out of territory') + ': ' + esc(String(w.accountId || '').slice(0, 8)) + '</span>').join('');
 
         nonWorkingDates = new Set(p.nonWorkingDates || []);
+        // WP-VP-2 (B-2) — a saved account the territory gate warns about is badged as out-of-territory.
+        const warned = new Set((p.territoryWarnings || []).map(w => w.accountId));
+        if (warned.size) { targetAccounts.forEach(a => { if (warned.has(a.id)) a.out = true; }); if (accountsDt) { accountsDt.rows().invalidate().draw(false); } }
         renderCalendarWarning(p);
         scheduled = p.scheduled || [];
         // Keep the current week on a re-preview (manual reorder); pick the default only on the first render.
@@ -843,8 +846,15 @@
 
     // Server-side searchable select2: type a name → GET /accounts?search=… (all clinics/hospitals), cache the hits so
     // addAccount() can resolve the pick. Initialised once; later calls just clear the current selection.
+    // WP-VP-2 (B-2) — "add clinic / hospital" searches the rep's territory universe (my-accounts: current assignments,
+    // exact / subtree; K-5 unassigned ⇒ every account + banner). "Add out-of-territory" keeps the whole-tenant search and
+    // badges what it adds. The existing TerritoryGate preview warning stays as it was.
     const fillAddAccountPicker = () => {
-        const sel = el('vp-add-account'); if (!sel || !window.jQuery || !window.jQuery.fn.select2) return;
+        initAccountPicker('vp-add-account', '/my-accounts', false);
+        initAccountPicker('vp-add-account-out', '/accounts', true);
+    };
+    const initAccountPicker = (selId, path, outOfTerritory) => {
+        const sel = el(selId); if (!sel || !window.jQuery || !window.jQuery.fn.select2) return;
         const $s = window.jQuery(sel);
         if (sel.dataset.ajaxInit === '1') { $s.val(null).trigger('change.select2'); return; }
         sel.dataset.ajaxInit = '1';
@@ -855,7 +865,7 @@
             ajax: {
                 delay: 250,
                 transport: function (params, success, failure) {
-                    api('/accounts?search=' + encodeURIComponent((params.data && params.data.term) || '') + '&pageSize=30')
+                    api(path + '?search=' + encodeURIComponent((params.data && params.data.term) || '') + '&pageSize=30')
                         .then(success).catch(failure);
                 },
                 processResults: function (r) {
@@ -865,8 +875,9 @@
                         const id = a.accountId || a.id; if (!id || targeted[id]) return;
                         const type = String(accType(a)).toLowerCase();
                         if (type && CLINIC_TYPES.indexOf(type) === -1) return;
-                        const item = { id: id, name: accName(a), type: accType(a), city: accCity(a), lat: accLat(a), lng: accLng(a) };
-                        if (!accountSource.find(function (x) { return x.id === id; })) accountSource.push(item);
+                        const item = { id: id, name: accName(a), type: accType(a), city: accCity(a), lat: accLat(a), lng: accLng(a), out: outOfTerritory };
+                        const known = accountSource.find(function (x) { return x.id === id; });
+                        if (!known) accountSource.push(item); else known.out = outOfTerritory;
                         results.push({ id: id, text: item.name + (item.type ? ' — ' + typeLabel(item.type) : '') });
                     });
                     return { results: results };
@@ -875,12 +886,18 @@
         });
     };
 
+    const loadTerritoryStatus = () => api('/my-accounts?pageSize=1').then(r => {
+        const status = r.ok && r.body && r.body.data && r.body.data.territoryStatus;
+        el('vp-territory-banner')?.classList.toggle('d-none', status !== 'unassigned');
+    }).catch(() => {});
+    const outBadge = row => row && row.out ? ' <span class="badge bg-label-warning ms-1">' + esc(L.OutOfTerritory || '') + '</span>' : '';
+
     const accountsConfig = () => ({
         data: targetAccounts, stateSave: false, searching: true, paging: true, pageLength: 10, lengthChange: false, info: true,
         buttons: [], // inline picker: no Action dropdown / column-visibility toolbar
         columns: [{ data: 'name' }, { data: 'type' }, { data: 'city' }, { data: null }],
         columnDefs: [
-            { targets: 0, render: (v, t) => t === 'display' ? '<span class="fw-medium text-heading">' + esc(v) + '</span>' : (v || '') },
+            { targets: 0, render: (v, t, row) => t === 'display' ? '<span class="fw-medium text-heading">' + esc(v) + '</span>' + outBadge(row) : (v || '') },
             { targets: 1, render: (v, t) => t === 'display' ? (v ? '<span class="badge bg-label-info">' + esc(typeLabel(v)) + '</span>' : '—') : (v || '') },
             { targets: 2, render: v => esc(v || '—') },
             { targets: 3, orderable: false, searchable: false, className: 'cell-fit text-end', render: (v, t, row) => canGenerate ? '<button type="button" class="btn btn-sm btn-icon btn-label-danger js-remove-account" data-id="' + esc(row.id) + '" title="' + esc(L.RemoveTarget || 'Remove') + '"><i class="bx bx-x"></i></button>' : '' }
@@ -907,12 +924,11 @@
     const contactsConfig = list => ({
         data: list, stateSave: false, searching: true, paging: true, pageLength: 10, lengthChange: false, info: true,
         buttons: [], // inline picker: no Action dropdown / column-visibility toolbar
-        columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }, { data: 'linkId' }],
+        columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }], // WP-VP-2 (D4) — no link-GUID column
         columnDefs: [
             { targets: 0, orderable: false, className: 'cell-fit', render: (v, t, row) => '<div class="form-check mb-0"><input class="form-check-input js-contact-check" type="checkbox" data-cid="' + esc(row.contactId) + '"' + (selectedContacts[selKey(activeAccountId, row.contactId)] ? ' checked' : '') + (canGenerate ? '' : ' disabled') + '></div>' },
             { targets: 1, render: (v, t) => t === 'display' ? '<span class="fw-medium">' + esc(v) + '</span>' : (v || '') },
-            { targets: 2, render: (v, t) => t === 'display' ? (v ? '<span class="badge bg-label-info">' + esc(specLabel(v)) + '</span>' : '—') : (v || '') },
-            { targets: 3, render: v => v ? '<span class="text-muted small font-monospace">' + esc(String(v).slice(0, 8)) + '</span>' : '—' }
+            { targets: 2, render: (v, t) => t === 'display' ? (v ? '<span class="badge bg-label-info">' + esc(specLabel(v)) + '</span>' : '—') : (v || '') }
         ],
         language: { emptyTable: L.PickAccountForContacts || '—' }
     });
@@ -996,7 +1012,10 @@
     };
 
     // ── Selection summary (right column): counts + removable chips + header subtitle ──
-    const cName = (aid, cid) => { const c = (contactsByAccount[aid] || []).find(x => x.contactId === cid); return c ? c.name : cid; };
+    // WP-VP-2 (B-8) — names come from the loaded doctors or, before that, from the session's read-time names; never a GUID.
+    const savedContactNames = {}, savedAccountNames = {};
+    const cName = (aid, cid) => { const c = (contactsByAccount[aid] || []).find(x => x.contactId === cid); return c ? c.name : (savedContactNames[cid] || '—'); };
+    const aName = aid => { const a = targetAccounts.find(x => x.id === aid) || accountSource.find(x => x.id === aid); return (a && a.name && a.name !== aid) ? a.name : (savedAccountNames[aid] || '—'); };
     const cSpec = (aid, cid) => { const c = (contactsByAccount[aid] || []).find(x => x.contactId === cid); return c ? c.specialty : ''; };
     const chip = (kind, attr, title, sub) =>
         '<div class="d-flex align-items-center gap-2 vp-selchip" data-kind="' + kind + '" ' + attr + '>' +
@@ -1005,9 +1024,14 @@
         (canGenerate ? '<button type="button" class="btn btn-icon btn-text-secondary vp-selchip-x flex-shrink-0" aria-label="remove"><i class="bx bx-x"></i></button>' : '') + '</div>';
     const renderSelectionChips = () => {
         const host = el('vp-selection-chips'); if (!host) return;
+        // Grouped by account: the institution heads its doctors (name · specialty); pharmacies close the list.
+        const groups = {};
+        Object.keys(selectedContacts).forEach(k => { const s = selectedContacts[k]; (groups[s.accountId] = groups[s.accountId] || []).push(chip('doctor', 'data-k="' + esc(k) + '"', cName(s.accountId, s.contactId), specLabel(cSpec(s.accountId, s.contactId)))); });
+        const head = title => '<div class="text-uppercase text-muted fw-semibold mt-2" style="font-size:.7rem;">' + esc(title) + '</div>';
         const parts = [];
-        Object.keys(selectedContacts).forEach(k => { const s = selectedContacts[k]; parts.push(chip('doctor', 'data-k="' + esc(k) + '"', cName(s.accountId, s.contactId), specLabel(cSpec(s.accountId, s.contactId)))); });
-        Object.keys(selectedPharmacies).forEach(pid => parts.push(chip('pharmacy', 'data-pid="' + esc(pid) + '"', selectedPharmacies[pid].name || pid, L.StatPharmacies || 'pharmacy')));
+        Object.keys(groups).forEach(aid => { parts.push(head(aName(aid))); parts.push.apply(parts, groups[aid]); });
+        const pharm = Object.keys(selectedPharmacies).map(pid => chip('pharmacy', 'data-pid="' + esc(pid) + '"', (selectedPharmacies[pid].name && selectedPharmacies[pid].name !== pid) ? selectedPharmacies[pid].name : (savedAccountNames[pid] || '—'), L.StatPharmacies || 'pharmacy'));
+        if (pharm.length) { parts.push(head(L.StatPharmacies || '')); parts.push.apply(parts, pharm); }
         host.innerHTML = parts.length ? parts.join('') : '<div class="text-muted small">—</div>';
     };
     const refreshTargetsUi = () => {
@@ -1068,7 +1092,7 @@
     const addAccount = id => {
         if (!id || targetAccounts.some(a => a.id === id)) return;
         const src = accountSource.find(a => a.id === id); if (!src) return;
-        targetAccounts.push({ id: src.id, name: src.name, type: src.type, city: src.city, lat: src.lat, lng: src.lng });
+        targetAccounts.push({ id: src.id, name: src.name, type: src.type, city: src.city, lat: src.lat, lng: src.lng, out: !!src.out });
         buildAccountsDt(); fillAddAccountPicker(); refreshTargetsUi();
     };
     const removeAccount = id => {
@@ -1093,6 +1117,9 @@
     };
 
     const seedTargets = () => {
+        // WP-VP-2 (B-8) — the session detail carries read-time names: keep them for the summary until the doctors load.
+        (sessionData && sessionData.selectedContacts || []).forEach(c => { if (c.contactDisplayName) savedContactNames[c.contactId] = c.contactDisplayName; if (c.accountId && c.accountDisplayName) savedAccountNames[c.accountId] = c.accountDisplayName; });
+        (sessionData && sessionData.selectedAccounts || []).concat(sessionData && sessionData.selectedPharmacies || []).forEach(a => { if (a && a.id && a.displayName) savedAccountNames[a.id] = a.displayName; });
         (sessionData && sessionData.selectedContacts || []).forEach(c => {
             const cid = c.contactId || c; const aid = c.accountId || '';
             if (cid && aid) selectedContacts[selKey(aid, cid)] = { contactId: cid, accountId: aid, accountContactLinkId: c.accountContactLinkId || null };
@@ -1253,14 +1280,16 @@
         const addFromPicker = function () { const v = this.value; if (v) { addAccount(v); if (window.jQuery) { window.jQuery(this).val('').trigger('change.select2'); } } };
         if (window.jQuery && window.jQuery.fn.select2) {
             window.jQuery('#vp-add-account').on('change', addFromPicker);
+            window.jQuery('#vp-add-account-out').on('change', addFromPicker);
         } else {
             el('vp-add-account')?.addEventListener('change', addFromPicker);
+            el('vp-add-account-out')?.addEventListener('change', addFromPicker);
         }
     }
     if (canApply) { el('vp-apply')?.addEventListener('click', apply); el('vp-replan')?.addEventListener('click', replan); }
 
     // Boot: names → session header → account source + targets (master/detail) → default tab → route preview.
-    Promise.all([loadPeriods(), loadReferenceLabels()])
+    Promise.all([loadPeriods(), loadReferenceLabels(), loadTerritoryStatus()])
         .then(loadSession)
         .then(loadAccountSource)
         .then(seedTargets)

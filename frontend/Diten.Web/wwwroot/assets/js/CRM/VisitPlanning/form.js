@@ -4,8 +4,8 @@
  * startDate→endDate as Monday-based spans, labelled by ISO-8601 week number ("36. Hafta · 31 Ağu – 6 Eyl 2026"), and
  * the chosen week's Monday (yyyy-MM-dd) is carried to Details as ?week. Segment is a multi-select (UI) but only the FIRST
  * is sent (backend SegmentId is single). Targets are chosen on Details; the saved session is target-less.
- * WP-VP-FIX-1 (A1, K-3) — there is no strategy-template ("play") picker: the rep never chooses a play. An edit sends the
- * session's own stored strategyTemplateId back unchanged (the server contract is the same until B-3).
+ * WP-VP-FIX-1 (A1, K-3) / WP-VP-2 (B-1, B-3) — no play, segment or rep picker: the rep is the signed-in user and the
+ * play / segment / campaign are derived by the server from each doctor; none of them is sent.
  */
 (function (window, document) {
     'use strict';
@@ -18,7 +18,6 @@
     const mode = root.dataset.mode;
     const sessionId = root.dataset.sessionId || null;
     let currentVersion = null;
-    let storedStrategyTemplateId = null; // edit: the session's own value, sent back unchanged (no picker)
     let allPeriods = [];
 
     const el = id => document.getElementById(id);
@@ -136,22 +135,14 @@
     };
 
     // ── other loaders ──
-    const loadUsers = () => api('/users?pageSize=500').then(r => {
-        const picker = el('vp-resource'); picker.innerHTML = '<option value=""></option>';
-        const list = items(r.body);
-        list.forEach(u => {
-            const id = u.id || u.userId || u.UserId || u.value;
-            const label = u.displayName || u.fullName || u.name || u.userName || u.email || id;
-            if (id) { const o = opt(id, label); o.setAttribute('data-name', label); picker.appendChild(o); }
-        });
-        const note = el('vp-users-note');
-        if (note) note.textContent = (r.ok && list.length) ? '' : (L.UsersUnavailable || '');
-    }).catch(() => { const note = el('vp-users-note'); if (note) note.textContent = L.UsersUnavailable || ''; });
-
-    const loadSegments = () => api('/segments').then(r => {
-        const picker = el('vp-segment'); picker.innerHTML = '';
-        items(r.body).forEach(s => { const id = s.segmentId || s.id; if (id) picker.appendChild(opt(id, s.name || s.segmentName || s.code || id)); });
-    });
+    // WP-VP-2 (B-1, K-1) — the rep is the signed-in user (resources/me): shown read-only, never picked. CRM writes the
+    // caller as the plan's resource; no user list, no segment (K-4), no play (K-3) is loaded or sent.
+    const loadMe = () => api('/me').then(r => {
+        const items = (r.body && r.body.data && r.body.data.items) || [];
+        const me = items[0];
+        const box = el('vp-resource-name');
+        if (box) box.value = me ? (me.displayName || me.resourceId || '—') : '—';
+    }).catch(() => {});
 
     // ── edit preselect ──
     const loadSession = () => {
@@ -160,7 +151,6 @@
             if (!r.ok || !r.body || !r.body.data) return;
             const s = r.body.data;
             currentVersion = s.version;
-            storedStrategyTemplateId = s.strategyTemplateId || null;
             // Derive the country from the saved period (country-scoped → its country; tenant → any country enables it).
             const per = periodById(s.cyclePeriodId);
             const countrySel = el('vp-country');
@@ -177,28 +167,18 @@
                     wk.value = s.targetWeekStart; refreshSelect2('vp-week-form');
                 }
             }
-            if (s.resourceId) { el('vp-resource').value = s.resourceId; refreshSelect2('vp-resource'); }
-            if (s.segmentId) { const seg = el('vp-segment'); Array.prototype.forEach.call(seg.options, o => { o.selected = (o.value === s.segmentId); }); refreshSelect2('vp-segment'); }
+            // The plan's own rep (a read-all manager may open someone else's plan).
+            if (s.resourceDisplayName || s.resourceId) { const box = el('vp-resource-name'); if (box) box.value = s.resourceDisplayName || s.resourceId; }
         });
     };
 
-    // ── save (target-less; segment = first of the multi-select) ──
-    const firstSegment = () => { const seg = el('vp-segment'); const v = Array.prototype.slice.call(seg.selectedOptions).map(o => o.value).filter(Boolean); return v.length ? v[0] : null; };
-    const buildPayload = () => {
-        const resSel = el('vp-resource').selectedOptions[0];
-        return {
-            cyclePeriodId: el('vp-period').value,
-            resourceId: el('vp-resource').value,
-            resourceType: 'person',
-            resourceDisplayName: resSel ? (resSel.getAttribute('data-name') || resSel.textContent) : null,
-            selectedAccountIds: [],
-            selectedPharmacyIds: [],
-            selectedContacts: [],
-            segmentId: firstSegment(),
-            campaignId: null,
-            strategyTemplateId: storedStrategyTemplateId
-        };
-    };
+    // ── save (target-less). WP-VP-2 — no resource / segment / campaign / play is sent: the server decides them. ──
+    const buildPayload = () => ({
+        cyclePeriodId: el('vp-period').value,
+        selectedAccountIds: [],
+        selectedPharmacyIds: [],
+        selectedContacts: []
+    });
 
     const showError = msg => { const b = el('vp-form-error'); if (b) { b.textContent = msg; b.classList.remove('d-none'); } };
     const clearError = () => { const b = el('vp-form-error'); if (b) b.classList.add('d-none'); };
@@ -206,7 +186,7 @@
     const save = () => {
         clearError();
         const payload = buildPayload();
-        if (!payload.cyclePeriodId || !payload.resourceId) { showError(L.FormValidationError || L.ErrorOccurred || 'Please complete the required fields.'); return; }
+        if (!payload.cyclePeriodId) { showError(L.FormValidationError || L.ErrorOccurred || 'Please complete the required fields.'); return; }
 
         const isEdit = mode === 'edit' && sessionId;
         const url = isEdit ? '/sessions/' + sessionId : '/sessions';
@@ -236,6 +216,6 @@
     onChange('vp-country', () => filterPeriods(el('vp-country').value));
     onChange('vp-period', () => populateWeeks(el('vp-period').value));
 
-    Promise.all([loadCountries(), loadPeriods(), loadUsers(), loadSegments()])
+    Promise.all([loadCountries(), loadPeriods(), loadMe()])
         .then(() => { initSelect2(); filterPeriods(el('vp-country').value); return loadSession(); });
 })(window, document);

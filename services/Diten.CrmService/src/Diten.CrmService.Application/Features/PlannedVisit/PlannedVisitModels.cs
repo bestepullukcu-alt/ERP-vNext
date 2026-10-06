@@ -36,7 +36,13 @@ public sealed record PlannedVisitListItemDto(
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt,
     // WP-SB-3b — the frozen product list (additive; empty on a plan written before SB-3b).
-    IReadOnlyList<PlannedVisitContentItemDto>? ContentItems = null);
+    IReadOnlyList<PlannedVisitContentItemDto>? ContentItems = null,
+    // WP-VP-2 (B-8, mobile D1) — display names read at READ time (never stored): the target (doctor for a contact,
+    // institution otherwise), its account and contact, and whether the target master is passive / archived.
+    string? TargetDisplayName = null,
+    string? AccountDisplayName = null,
+    string? ContactDisplayName = null,
+    bool TargetInactive = false);
 
 public sealed record PlannedVisitListDto(IReadOnlyList<PlannedVisitListItemDto> Items, int TotalCount);
 
@@ -88,7 +94,13 @@ public sealed record PlannedVisitDetailDto(
     DateTimeOffset? UpdatedAt,
     string? UpdatedBy,
     // WP-SB-3b — the frozen product list (additive; Content above stays the first promo item for mobile).
-    IReadOnlyList<PlannedVisitContentItemDto>? ContentItems = null);
+    IReadOnlyList<PlannedVisitContentItemDto>? ContentItems = null,
+    // WP-VP-2 (B-8, mobile D1) — display names read at READ time (never stored): the target (doctor for a contact,
+    // institution otherwise), its account and contact, and whether the target master is passive / archived.
+    string? TargetDisplayName = null,
+    string? AccountDisplayName = null,
+    string? ContactDisplayName = null,
+    bool TargetInactive = false);
 
 /// <summary>WP-SB-3b — one product of a planned visit, as frozen at plan time. No play / campaign id (ARCH GATE).</summary>
 public sealed record PlannedVisitContentItemDto(

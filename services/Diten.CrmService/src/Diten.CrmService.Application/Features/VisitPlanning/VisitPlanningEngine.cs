@@ -51,6 +51,7 @@ public sealed class VisitPlanningEngine
     private readonly PlannedVisitConsentProbe _consentProbe;
     private readonly PlannedVisitAvailabilityProbe _availabilityProbe;
     private readonly PlanningWorkingCalendar _calendar;
+    private readonly IVisitProvenanceDeriver _deriver;
 
     public VisitPlanningEngine(
         ITenantContext tenant,
@@ -70,8 +71,10 @@ public sealed class VisitPlanningEngine
         PlannedVisitFrequencyProbe frequencyProbe,
         PlannedVisitConsentProbe consentProbe,
         PlannedVisitAvailabilityProbe availabilityProbe,
-        PlanningWorkingCalendar calendar)
+        PlanningWorkingCalendar calendar,
+        IVisitProvenanceDeriver deriver)
     {
+        _deriver = deriver;
         _tenant = tenant;
         _actor = actor;
         _periods = periods;
@@ -252,8 +255,9 @@ public sealed class VisitPlanningEngine
         var territoryWarnings = await _territory.WarnAsync(session.Selection.SelectedAccountIds, cancellationToken);
 
         // ③ CONTACT (doctor) selection — segment filter + consent gate + availability windows.
+        // WP-VP-2 (B-3, K-4) — no segment filter any more: every picked doctor is assessed (consent + availability).
         var assessments = await _contacts.AssessAsync(
-            session.Selection.SelectedContacts, session.Selection.SegmentId, visitPurpose, at, cancellationToken);
+            session.Selection.SelectedContacts, visitPurpose, at, cancellationToken);
 
         // ④ CONTENT + DURATION per doctor (FU04) + build the candidate visit set.
         // WP-SB-3b — the stage comes from the doctor's JourneyProgress per product (read by the resolver), projected over
@@ -270,6 +274,11 @@ public sealed class VisitPlanningEngine
         {
             var pending = PendingBefore(pendingPlans, doctor.ContactId, weeksStart);
             var content = await ResolveContentAsync(session, doctor.ContactId, pending, at, cancellationToken);
+            // WP-VP-2 (B-3) — the play was derived from the doctor's own segments; a non-unique choice is said.
+            var play = await _deriver.DerivePlayAsync(doctor.ContactId, at, cancellationToken);
+            var contentReasons = string.Equals(play.ReasonCode, VisitProvenanceDeriver.MultiplePlays, StringComparison.Ordinal)
+                ? content.ReasonCodes.Append(VisitProvenanceDeriver.MultiplePlays).Distinct(StringComparer.Ordinal).ToList()
+                : content.ReasonCodes;
 
             var duration = content.VisitDurationMinutes > 0
                 ? content.VisitDurationMinutes
@@ -300,7 +309,7 @@ public sealed class VisitPlanningEngine
             contentPreviews.Add(new DoctorContentPreview(
                 doctor.ContactId, doctor.AccountId, content.Status, content.JourneyId, content.StageId,
                 content.StageIndex, content.StageDisplayName, content.PromoItemCount, content.NonPromoItemCount,
-                duration, content.ReasonCodes, doctor.ConsentStatus, doctor.ConsentBlocked, doctor.ConsentReason,
+                duration, contentReasons, doctor.ConsentStatus, doctor.ConsentBlocked, doctor.ConsentReason,
                 content.Items ?? Array.Empty<VisitContentItem>()));
         }
 
@@ -333,9 +342,9 @@ public sealed class VisitPlanningEngine
         var perCandidateWeeks = new Dictionary<Guid, IReadOnlyList<int>>();
         foreach (var candidate in candidates)
         {
+            // WP-VP-2 (B-3) — frequency: DET-P derives the doctor's segments itself; no session segment / campaign.
             var extend = await _frequencyExtend.ResolveWeeksAsync(
-                candidate.TargetType, candidate.TargetId, session.Selection.SegmentId,
-                session.Selection.CampaignId, at, weeks.Count, cancellationToken);
+                candidate.TargetType, candidate.TargetId, null, null, at, weeks.Count, cancellationToken);
             perCandidateWeeks[candidate.TargetId] = extend.WeekIndices;
         }
 
@@ -462,6 +471,12 @@ public sealed class VisitPlanningEngine
         var now = DateTimeOffset.UtcNow;
         var actor = _actor.ActorName;
 
+        // WP-VP-2 (B-3, K-3) — the atom's play / campaign / segment are DERIVED from the doctor (and the visit date for the
+        // campaign); the session's stored segment / campaign / strategy are no longer used.
+        var play = await _deriver.DerivePlayAsync(candidate.ContactId, now, cancellationToken);
+        var atomAccountId = candidate.TargetType == PlannedVisitTargetType.Contact ? candidate.AccountId : candidate.TargetId;
+        var campaignId = await _deriver.DeriveCampaignAsync(candidate.ContactId, atomAccountId, placed.Date, cancellationToken);
+
         var entity = new PlannedVisitEntity
         {
             Id = Guid.NewGuid(),
@@ -485,7 +500,7 @@ public sealed class VisitPlanningEngine
             VisitPurpose = PlannedVisitPurpose.MedicalVisit,
             VisitType = PlannedVisitType.FieldVisit,
             BusinessUnit = null,
-            CampaignId = session.Selection.CampaignId,
+            CampaignId = campaignId,
             PlanStatus = PlannedVisitStatus.Planned,
             Source = PlannedVisitSource.RoutePlan, // FU05 is the route-plan producer (FU01 reserves this value for it)
             Slot = new PlannedVisitScheduleSlot
@@ -496,9 +511,9 @@ public sealed class VisitPlanningEngine
             },
             Selection = new PlannedVisitSelectionProvenance
             {
-                SegmentId = session.Selection.SegmentId,
-                CampaignId = session.Selection.CampaignId,
-                StrategyTemplateId = session.Provenance.StrategyTemplateId,
+                SegmentId = play.SegmentId,
+                CampaignId = campaignId,
+                StrategyTemplateId = play.StrategyTemplateId,
                 SelectionMode = PlannedVisitSelectionMode.Recommended, // FU05 motor selection (FU01 reserves this)
                 DecidedAt = now,
                 DecidedBy = actor
@@ -514,7 +529,7 @@ public sealed class VisitPlanningEngine
         {
             var journey = await _journeyProbe.ResolveAsync(
                 journeyId, content.StageId, PlannedVisitContentSource.Strategy,
-                session.Provenance.StrategyTemplateId, cancellationToken);
+                play.StrategyTemplateId, cancellationToken);
             if (journey.ContentRef is { } contentRef)
             {
                 contentRef.StageIndex = content.StageIndex;
@@ -526,7 +541,7 @@ public sealed class VisitPlanningEngine
         entity.ContentItems = (content?.Items ?? Array.Empty<VisitContentItem>()).Select(ToContentItem).ToList();
 
         // Derived provenance — read-only, stored not enforced (mirrors the FU01 create handler exactly).
-        entity.Frequency = await _frequencyProbe.ResolveAsync(entity, session.Selection.SegmentId, cancellationToken);
+        entity.Frequency = await _frequencyProbe.ResolveAsync(entity, null, cancellationToken);
         entity.Consent = await _consentProbe.EvaluateAsync(entity, cancellationToken);
         entity.Availability = await _availabilityProbe.CaptureAsync(entity, cancellationToken);
 
@@ -535,15 +550,17 @@ public sealed class VisitPlanningEngine
 
     // ── helpers ──────────────────────────────────────────────────────────────────────────────────────────────────
 
-    private Task<VisitContentSequenceResult> ResolveContentAsync(
+    /// <summary>WP-VP-2 (B-3) — the content of a visit to <paramref name="contactId"/> under the play DERIVED from the
+    /// doctor's own active segments (never the session's / client's strategy or segment).</summary>
+    private async Task<VisitContentSequenceResult> ResolveContentAsync(
         PlanningSession session, Guid contactId, IReadOnlyList<VisitContentPendingExposure> pending, DateTimeOffset at,
         CancellationToken cancellationToken)
-        => _content.ResolveAsync(
+        => await _content.ResolveAsync(
             new VisitContentSequenceRequest(
                 SubjectType: PlannedVisitTargetType.Contact,
                 SubjectId: contactId,
-                SegmentId: session.Selection.SegmentId,
-                StrategyTemplateId: session.Provenance.StrategyTemplateId,
+                SegmentId: null,
+                StrategyTemplateId: (await _deriver.DerivePlayAsync(contactId, at, cancellationToken)).StrategyTemplateId,
                 CyclePeriodId: session.CyclePeriodId,
                 PriorStageIndex: null, // WP-SB-3b — the stage comes from JourneyProgress (+ pending), not the last plan
                 EffectiveAt: at,

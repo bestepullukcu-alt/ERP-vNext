@@ -13,13 +13,16 @@ public sealed class GetAccountListHandler : IRequestHandler<GetAccountListQuery,
     private readonly IAccountRepository _accounts;
     private readonly IAccountTerritoryAssignmentRepository _territoryAssignments;
     private readonly ITerritoryModelRepository _territoryModels;
+    private readonly ITerritoryNodeRepository _territoryNodes;
 
     public GetAccountListHandler(
         ITenantContext tenant,
         IAccountRepository accounts,
         IAccountTerritoryAssignmentRepository territoryAssignments,
-        ITerritoryModelRepository territoryModels)
+        ITerritoryModelRepository territoryModels,
+        ITerritoryNodeRepository territoryNodes)
     {
+        _territoryNodes = territoryNodes;
         _tenant = tenant;
         _accounts = accounts;
         _territoryAssignments = territoryAssignments;
@@ -101,8 +104,9 @@ public sealed class GetAccountListHandler : IRequestHandler<GetAccountListQuery,
 
         if (nodeIds is not null)
         {
-            byNode = await AccountCurrentCoverageResolver.ResolveCoveredAccountIdsByNodesAsync(
-                _territoryAssignments, _territoryModels, tenantId, nodeIds, now, cancellationToken);
+            // WP-VP-2 (B-2) — a node chip covers its SUBTREE (a province finds the accounts moved to its districts).
+            byNode = await AccountCurrentCoverageResolver.ResolveCoveredAccountIdsBySubtreesAsync(
+                _territoryAssignments, _territoryModels, _territoryNodes, tenantId, nodeIds, now, cancellationToken);
         }
 
         if (countryScopes is not null)

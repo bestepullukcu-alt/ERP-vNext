@@ -191,10 +191,16 @@
                             <label class="form-label fw-medium mb-0">@Localizer["AccountsPanel"]</label>
                             <span class="badge bg-label-secondary" id="vp-accounts-count">—</span>
                         </div>
+                        @* WP-VP-2 (B-2) — K-5: shown by details.js when the rep has no territory assignment. *@
+                        <div id="vp-territory-banner" class="alert alert-warning py-2 small mb-2 d-none" role="status"><i class="bx bx-error me-1"></i>@Localizer["TerritoryUnassignedBanner"]</div>
                         @if (Model.CanGenerate)
                         {
                             <div class="mb-2">
                                 <select id="vp-add-account" class="form-select form-select-sm select2" data-placeholder="@Localizer["AddAccount"]"><option value=""></option></select>
+                            </div>
+                            @* WP-VP-2 (B-2) — the whole-tenant search, kept apart; an account added here carries an out-of-territory badge. *@
+                            <div class="mb-2">
+                                <select id="vp-add-account-out" class="form-select form-select-sm select2" data-placeholder="@Localizer["AddOutOfTerritory"]"><option value=""></option></select>
                             </div>
                         }
                         <div class="card-datatable table-responsive">
@@ -243,7 +249,6 @@
                                             <th>@Localizer["ColSelected"]</th>
                                             <th>@Localizer["ColContact"]</th>
                                             <th>@Localizer["ColSpecialty"]</th>
-                                            <th>@Localizer["ColLinked"]</th>
                                         </tr></thead>
                                     </table>
                                 </div>

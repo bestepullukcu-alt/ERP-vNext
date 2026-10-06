@@ -93,7 +93,10 @@ public sealed record VisitCalendarItemDto(
     string ReportState,          // none | draft | submitted | amended
     string? ExecutionOutcome,
     int? ActualStageIndex,
-    bool? MatchedPlan);
+    bool? MatchedPlan,
+    // WP-VP-2 (B-8, additive) — the target's display name read at read time (doctor / institution) + passive flag.
+    string? TargetDisplayName = null,
+    bool TargetInactive = false);
 
 public sealed record VisitCalendarDto(
     string From, string To, IReadOnlyList<VisitCalendarItemDto> Items, int TotalCount);

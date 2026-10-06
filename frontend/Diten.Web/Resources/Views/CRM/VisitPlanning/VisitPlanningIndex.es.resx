@@ -7,7 +7,6 @@
   <data name="PageDescription" xml:space="preserve"><value>Planifique su semana: elija el período y la semana, añada las clínicas y los médicos que visitará, genere la ruta y guárdela como plan de la semana.</value></data>
   <data name="NewSession" xml:space="preserve"><value>Nuevo plan</value></data>
   <data name="CyclePeriod" xml:space="preserve"><value>Período de ciclo</value></data>
-  <data name="SegmentHint" xml:space="preserve"><value>El segmento acota los médicos que puede elegir; la elección sigue siendo suya.</value></data>
   <data name="AccountsPanel" xml:space="preserve"><value>Centros (clínicas / hospitales)</value></data>
   <data name="AccountsHint" xml:space="preserve"><value>Las cuentas fuera del territorio se señalan con una advertencia, nunca se ocultan.</value></data>
   <data name="ContactsPanel" xml:space="preserve"><value>Médicos</value></data>
@@ -36,7 +35,6 @@
   <data name="TargetsSection" xml:space="preserve"><value>Objetivos</value></data>
   <data name="RouteSection" xml:space="preserve"><value>Ruta</value></data>
   <data name="RepUser" xml:space="preserve"><value>Representante (usuario)</value></data>
-  <data name="UsersUnavailable" xml:space="preserve"><value>El directorio de usuarios no está disponible; introduzca el representante en la plataforma.</value></data>
   <data name="WeekLabel" xml:space="preserve"><value>Semana</value></data>
   <data name="RouteEmpty" xml:space="preserve"><value>Sin ruta para esta semana.</value></data>
   <data name="SelectAccountFirst" xml:space="preserve"><value>Seleccione primero una clínica / un hospital</value></data>
@@ -103,7 +101,6 @@
   <data name="ColType" xml:space="preserve"><value>Tipo</value></data>
   <data name="ColCity" xml:space="preserve"><value>Ciudad / Territorio</value></data>
   <data name="ColContact" xml:space="preserve"><value>Médico</value></data>
-  <data name="ColLinked" xml:space="preserve"><value>Enlace</value></data>
   <data name="ColSelected" xml:space="preserve"><value>Seleccionado</value></data>
   <data name="AddAccount" xml:space="preserve"><value>Añadir clínica / hospital</value></data>
   <data name="RemoveTarget" xml:space="preserve"><value>Quitar</value></data>
@@ -111,8 +108,6 @@
   <data name="PickAccountForContacts" xml:space="preserve"><value>Seleccione una cuenta para ver sus médicos.</value></data>
   <data name="Country" xml:space="preserve"><value>País</value></data>
   <data name="SelectCountryFirst" xml:space="preserve"><value>Seleccione primero un país</value></data>
-  <data name="Segments" xml:space="preserve"><value>Segmentos</value></data>
-  <data name="SegmentSingleNote" xml:space="preserve"><value>Por ahora solo se aplica el primer segmento seleccionado.</value></data>
   <data name="WeekNumberLabel" xml:space="preserve"><value>Semana {0}</value></data>
   <data name="ColSpecialty" xml:space="preserve"><value>Especialidad</value></data>
   <data name="ResetOptimal" xml:space="preserve"><value>Volver a la ruta óptima</value></data>
@@ -126,4 +121,7 @@
   <data name="CalendarUnresolvedWarning" xml:space="preserve"><value>No se pudo leer el calendario laboral; no se tuvieron en cuenta los festivos.</value></data>
   <data name="Status_generated" xml:space="preserve"><value>Generado</value></data>
   <data name="Status_archived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="RepSelfHint" xml:space="preserve"><value>Los planes se crean para el representante que ha iniciado sesión.</value></data>
+  <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>No tiene un territorio asignado; se muestran todas las cuentas. Póngase en contacto con su responsable.</value></data>
+  <data name="AddOutOfTerritory" xml:space="preserve"><value>Añadir cuenta fuera del territorio</value></data>
 </root>
