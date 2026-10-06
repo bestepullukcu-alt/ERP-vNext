@@ -926,4 +926,9 @@
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Запасы</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Складской учёт</value></data>
   <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Местоположения</value></data>
+  <data name="Nav.Module.LOTSERIALTRACKING" xml:space="preserve"><value>Учёт партий / серийных номеров</value></data>
+  <data name="Nav.Page.LOTS" xml:space="preserve"><value>Обзор партий</value></data>
+  <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Обзор серийных номеров</value></data>
+  <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>Прослеживаемость</value></data>
+  <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Перенос вручную введённых партий</value></data>
 </root>

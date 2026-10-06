@@ -926,4 +926,9 @@
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>库存管理</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>库存台账</value></data>
   <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>库位</value></data>
+  <data name="Nav.Module.LOTSERIALTRACKING" xml:space="preserve"><value>批次/序列号追踪</value></data>
+  <data name="Nav.Page.LOTS" xml:space="preserve"><value>批次浏览</value></data>
+  <data name="Nav.Page.SERIALS" xml:space="preserve"><value>序列号浏览</value></data>
+  <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>可追溯性</value></data>
+  <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>手工录入批次迁移</value></data>
 </root>

@@ -926,4 +926,9 @@
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>إدارة المخزون</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>دفتر المخزون</value></data>
   <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>المواقع</value></data>
+  <data name="Nav.Module.LOTSERIALTRACKING" xml:space="preserve"><value>تتبع التشغيلات / الأرقام التسلسلية</value></data>
+  <data name="Nav.Page.LOTS" xml:space="preserve"><value>مستكشف التشغيلات</value></data>
+  <data name="Nav.Page.SERIALS" xml:space="preserve"><value>مستكشف الأرقام التسلسلية</value></data>
+  <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>التتبع</value></data>
+  <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>ترحيل التشغيلات المُدخلة يدويًا</value></data>
 </root>

@@ -1,0 +1,409 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+      <data name="Action.APPLYALLSUGGESTIONS" xml:space="preserve">
+    <value>Aplicar todas las sugerencias</value>
+  </data>
+  <data name="Action.APPLYSUGGESTION" xml:space="preserve">
+    <value>Aplicar la sugerencia</value>
+  </data>
+  <data name="Action.CHANGEDECISION" xml:space="preserve">
+    <value>Cambiar</value>
+  </data>
+  <data name="Action.CONFIRMMIGRATION" xml:space="preserve">
+    <value>Confirmar la migración</value>
+  </data>
+  <data name="Action.LINKEXISTINGLOT" xml:space="preserve">
+    <value>Vincular a un lote existente</value>
+  </data>
+  <data name="Action.MARKTYPO" xml:space="preserve">
+    <value>Error tipográfico — vincular a otro lote</value>
+  </data>
+  <data name="Action.NEWLOTFROMTEXT" xml:space="preserve">
+    <value>Crear como lote nuevo</value>
+  </data>
+  <data name="Banner.Done" xml:space="preserve">
+    <value>Completado · {0} · {1} movimientos vinculados a {2} lotes ({3} lotes nuevos, borrador). A partir de ahora no se pueden introducir lotes manualmente en el libro de existencias.</value>
+  </data>
+  <data name="Banner.NoChange" xml:space="preserve">
+    <value>La migración no cambia los movimientos pasados; solo añade el vínculo con el lote.</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="Col.Action" xml:space="preserve">
+    <value>Acción</value>
+  </data>
+  <data name="Col.Actions" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+  <data name="Col.Decision" xml:space="preserve">
+    <value>Decisión</value>
+  </data>
+  <data name="Col.Moves" xml:space="preserve">
+    <value>Movimientos</value>
+  </data>
+  <data name="Col.OnHand" xml:space="preserve">
+    <value>En existencia</value>
+  </data>
+  <data name="Col.Product" xml:space="preserve">
+    <value>Producto</value>
+  </data>
+  <data name="Col.Suggestion" xml:space="preserve">
+    <value>Coincidencia sugerida</value>
+  </data>
+  <data name="Col.Typed" xml:space="preserve">
+    <value>Lote introducido manualmente</value>
+  </data>
+  <data name="Company.Label" xml:space="preserve">
+    <value>Empresa</value>
+  </data>
+  <data name="Company.Placeholder" xml:space="preserve">
+    <value>Seleccione una empresa</value>
+  </data>
+  <data name="Company.Required" xml:space="preserve">
+    <value>Seleccione la empresa en la que trabaja para ver sus lotes y existencias.</value>
+  </data>
+  <data name="Company.Unavailable" xml:space="preserve">
+    <value>No se pudo cargar la lista de empresas. Inténtelo de nuevo en unos momentos.</value>
+  </data>
+  <data name="Confirm.Button" xml:space="preserve">
+    <value>Confirmar la migración</value>
+  </data>
+  <data name="Confirm.Count" xml:space="preserve">
+    <value>{0} movimientos se vincularán a {1} lotes.</value>
+  </data>
+  <data name="Confirm.Danger" xml:space="preserve">
+    <value>Esta acción no se puede deshacer: después, ya no se podrán introducir lotes manualmente en el libro de existencias.</value>
+  </data>
+  <data name="Confirm.Existing" xml:space="preserve">
+    <value>{0} lotes existentes</value>
+  </data>
+  <data name="Confirm.New" xml:space="preserve">
+    <value>{0} lotes nuevos (borrador)</value>
+  </data>
+  <data name="Confirm.Reason" xml:space="preserve">
+    <value>Motivo (al menos 10 caracteres)</value>
+  </data>
+  <data name="Confirm.Title" xml:space="preserve">
+    <value>Confirmar la migración</value>
+  </data>
+  <data name="Decision.Linked" xml:space="preserve">
+    <value>Vinculado → {0}</value>
+  </data>
+  <data name="Decision.New" xml:space="preserve">
+    <value>Lote nuevo → {0}</value>
+  </data>
+  <data name="Decision.Pending" xml:space="preserve">
+    <value>Pendiente</value>
+  </data>
+  <data name="Decision.Typo" xml:space="preserve">
+    <value>Error tipográfico → {0}</value>
+  </data>
+  <data name="Error.ACKNOWLEDGEMENT_REQUIRED" xml:space="preserve">
+    <value>Confirme que entiende el impacto del bloqueo.</value>
+  </data>
+  <data name="Error.COMPANY_NOT_SELECTED" xml:space="preserve">
+    <value>Seleccione primero una empresa.</value>
+  </data>
+  <data name="Error.CROSS_LE_FORBIDDEN" xml:space="preserve">
+    <value>Esta empresa no se puede usar con su cuenta.</value>
+  </data>
+  <data name="Error.Correlation" xml:space="preserve">
+    <value>Referencia para soporte</value>
+  </data>
+  <data name="Error.GS1_UNREADABLE" xml:space="preserve">
+    <value>No se pudo leer el código.</value>
+  </data>
+  <data name="Error.Generic" xml:space="preserve">
+    <value>No se pudo completar la operación. Inténtelo de nuevo.</value>
+  </data>
+  <data name="Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve">
+    <value>Este formulario ya se envió con otros valores. Vuelva a cargar la página.</value>
+  </data>
+  <data name="Error.INVALID_REQUEST" xml:space="preserve">
+    <value>Algunos valores no son válidos. Revise los campos.</value>
+  </data>
+  <data name="Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>No se pudo verificar la empresa en este momento. Inténtelo de nuevo en unos momentos.</value>
+  </data>
+  <data name="Error.LOT_ALREADY_EXISTS" xml:space="preserve">
+    <value>Este número de lote ya existe para este producto.</value>
+  </data>
+  <data name="Error.LOT_CONFLICT" xml:space="preserve">
+    <value>Otra persona modificó este lote mientras tanto. Vuelva a cargar la página e inténtelo de nuevo.</value>
+  </data>
+  <data name="Error.LOT_DATES_INVALID" xml:space="preserve">
+    <value>Las fechas no son coherentes (fabricación ≤ hoy, caducidad posterior a la fabricación, reanálisis entre ambas).</value>
+  </data>
+  <data name="Error.LOT_KEY_IMMUTABLE" xml:space="preserve">
+    <value>El número de lote y la SKU no se pueden cambiar.</value>
+  </data>
+  <data name="Error.LOT_NO_CHANGES" xml:space="preserve">
+    <value>No se cambió nada.</value>
+  </data>
+  <data name="Error.LOT_NUMBER_INVALID" xml:space="preserve">
+    <value>El número de lote solo puede contener de 1 a 40 caracteres: letras A–Z, dígitos y . / -.</value>
+  </data>
+  <data name="Error.LOT_SKU_MISMATCH" xml:space="preserve">
+    <value>El lote pertenece a otra SKU.</value>
+  </data>
+  <data name="Error.LOT_SKU_REQUIRED" xml:space="preserve">
+    <value>Elija la SKU a la que pertenece el lote.</value>
+  </data>
+  <data name="Error.LOT_STATUS_TRANSITION_INVALID" xml:space="preserve">
+    <value>Este cambio de estado no está permitido para el lote.</value>
+  </data>
+  <data name="Error.MIGRATION_ALREADY_COMPLETED" xml:space="preserve">
+    <value>La migración ya se completó; ya no se pueden introducir lotes manualmente.</value>
+  </data>
+  <data name="Error.MIGRATION_DECISIONS_INCOMPLETE" xml:space="preserve">
+    <value>Algunas filas no tienen una decisión completa.</value>
+  </data>
+  <data name="Error.MIGRATION_STALE" xml:space="preserve">
+    <value>La lista cambió después de cargarse (se registró un nuevo lote introducido manualmente). Se ha vuelto a cargar: revise las filas y confirme de nuevo.</value>
+  </data>
+  <data name="Error.MIGRATION_TYPO_UNRESOLVED" xml:space="preserve">
+    <value>Una decisión de error tipográfico no llega a un lote de la misma SKU en 3 pasos.</value>
+  </data>
+  <data name="Error.NoPermission" xml:space="preserve">
+    <value>No tiene autorización para esta operación.</value>
+  </data>
+  <data name="Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>No se puede acceder a los datos del producto en este momento; no se guardó nada.</value>
+  </data>
+  <data name="Error.PRODUCT_NOT_LOT_CONTROLLED" xml:space="preserve">
+    <value>Este producto no se controla por lotes; no se puede crear ningún lote.</value>
+  </data>
+  <data name="Error.REASON_REQUIRED" xml:space="preserve">
+    <value>Escriba un motivo de al menos 10 caracteres.</value>
+  </data>
+  <data name="Error.ServiceUnavailable" xml:space="preserve">
+    <value>No se puede acceder al servicio de lotes en este momento. Inténtelo de nuevo en unos momentos.</value>
+  </data>
+  <data name="Error.SessionExpired" xml:space="preserve">
+    <value>Su sesión ha caducado. Vuelva a iniciar sesión.</value>
+  </data>
+  <data name="Error.UNKNOWN_ITEM" xml:space="preserve">
+    <value>No se encontró el producto o la SKU.</value>
+  </data>
+  <data name="Error.UNKNOWN_LOT" xml:space="preserve">
+    <value>No se encontró este lote.</value>
+  </data>
+  <data name="Error.UNKNOWN_SERIAL" xml:space="preserve">
+    <value>No se encontró este número de serie.</value>
+  </data>
+  <data name="Expiry.Days" xml:space="preserve">
+    <value>{0} días</value>
+  </data>
+  <data name="Expiry.Past" xml:space="preserve">
+    <value>Caducado</value>
+  </data>
+  <data name="Kpi.Matched" xml:space="preserve">
+    <value>Emparejadas</value>
+  </data>
+  <data name="Kpi.Moves" xml:space="preserve">
+    <value>{0} movimientos</value>
+  </data>
+  <data name="Kpi.Pending" xml:space="preserve">
+    <value>Pendientes</value>
+  </data>
+  <data name="Kpi.Total" xml:space="preserve">
+    <value>Total de filas</value>
+  </data>
+  <data name="NewLot.Apply" xml:space="preserve">
+    <value>Usar como decisión</value>
+  </data>
+  <data name="NewLot.DraftNote" xml:space="preserve">
+    <value>El lote se crea como borrador cuando se confirma la migración.</value>
+  </data>
+  <data name="NewLot.Prefilled" xml:space="preserve">
+    <value>El número de lote se ha tomado del texto introducido (en mayúsculas).</value>
+  </data>
+  <data name="NewLot.Title" xml:space="preserve">
+    <value>Crear como lote nuevo</value>
+  </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>Sin resultados</value>
+  </data>
+  <data name="Page.Breadcrumb" xml:space="preserve">
+    <value>Seguimiento de lotes / series</value>
+  </data>
+  <data name="Page.Description" xml:space="preserve">
+    <value>Vincule a lotes registrados los textos de lote escritos en el libro de existencias antes de que se registraran los lotes.</value>
+  </data>
+  <data name="Page.Title" xml:space="preserve">
+    <value>Migración de lotes introducidos manualmente</value>
+  </data>
+  <data name="Pick.Apply" xml:space="preserve">
+    <value>Vincular</value>
+  </data>
+  <data name="Pick.Lots" xml:space="preserve">
+    <value>Lotes registrados</value>
+  </data>
+  <data name="Pick.NoLots" xml:space="preserve">
+    <value>Esta SKU todavía no tiene ningún lote registrado.</value>
+  </data>
+  <data name="Pick.Rows" xml:space="preserve">
+    <value>Filas de la misma SKU</value>
+  </data>
+  <data name="Pick.Target" xml:space="preserve">
+    <value>Destino</value>
+  </data>
+  <data name="Pick.TitleLink" xml:space="preserve">
+    <value>Vincular a un lote existente</value>
+  </data>
+  <data name="Pick.TitleTypo" xml:space="preserve">
+    <value>Error tipográfico — vincular a otro lote</value>
+  </data>
+  <data name="Pick.Typed" xml:space="preserve">
+    <value>Texto introducido</value>
+  </data>
+  <data name="Pick.TypoNote" xml:space="preserve">
+    <value>Una fila elegida aquí sigue la decisión de esa fila (como máximo 3 pasos).</value>
+  </data>
+  <data name="Retest.Past" xml:space="preserve">
+    <value>Fecha de reanálisis vencida</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Buscando…</value>
+  </data>
+  <data name="Serial.Status.Active" xml:space="preserve">
+    <value>Activo</value>
+  </data>
+  <data name="Serial.Status.Blocked" xml:space="preserve">
+    <value>Bloqueado</value>
+  </data>
+  <data name="Serial.Status.Consumed" xml:space="preserve">
+    <value>Consumido</value>
+  </data>
+  <data name="Status.Blocked" xml:space="preserve">
+    <value>Bloqueado</value>
+  </data>
+  <data name="Status.Dialog.Acknowledge" xml:space="preserve">
+    <value>Entiendo el impacto.</value>
+  </data>
+  <data name="Status.Dialog.AcknowledgeRequired" xml:space="preserve">
+    <value>Confirme que entiende el impacto.</value>
+  </data>
+  <data name="Status.Dialog.Allowed" xml:space="preserve">
+    <value>Permitido</value>
+  </data>
+  <data name="Status.Dialog.Confirm" xml:space="preserve">
+    <value>Cambiar estado</value>
+  </data>
+  <data name="Status.Dialog.ConfirmBlock" xml:space="preserve">
+    <value>Bloquear el lote</value>
+  </data>
+  <data name="Status.Dialog.Current" xml:space="preserve">
+    <value>Estado actual</value>
+  </data>
+  <data name="Status.Dialog.Danger" xml:space="preserve">
+    <value>El bloqueo deja inutilizables todas las existencias de este lote.</value>
+  </data>
+  <data name="Status.Dialog.Done" xml:space="preserve">
+    <value>Estado del lote cambiado.</value>
+  </data>
+  <data name="Status.Dialog.Impact" xml:space="preserve">
+    <value>{0} unidades · {1} ubicaciones · {2}</value>
+  </data>
+  <data name="Status.Dialog.New" xml:space="preserve">
+    <value>Nuevo estado</value>
+  </data>
+  <data name="Status.Dialog.NotAllowed" xml:space="preserve">
+    <value>No permitido desde el estado actual.</value>
+  </data>
+  <data name="Status.Dialog.PickOne" xml:space="preserve">
+    <value>Elija un estado permitido.</value>
+  </data>
+  <data name="Status.Dialog.Reason" xml:space="preserve">
+    <value>Motivo (al menos 10 caracteres)</value>
+  </data>
+  <data name="Status.Dialog.SystemOnly" xml:space="preserve">
+    <value>Lo asigna el sistema; no se puede elegir manualmente.</value>
+  </data>
+  <data name="Status.Dialog.Title" xml:space="preserve">
+    <value>Cambiar el estado del lote</value>
+  </data>
+  <data name="Status.Draft" xml:space="preserve">
+    <value>Borrador</value>
+  </data>
+  <data name="Status.Expired" xml:space="preserve">
+    <value>Caducado</value>
+  </data>
+  <data name="Status.Released" xml:space="preserve">
+    <value>Liberado</value>
+  </data>
+  <data name="StockStatus.AVAILABLE" xml:space="preserve">
+    <value>Disponible</value>
+  </data>
+  <data name="StockStatus.BLOCKED" xml:space="preserve">
+    <value>Bloqueado</value>
+  </data>
+  <data name="StockStatus.DAMAGED" xml:space="preserve">
+    <value>Dañado</value>
+  </data>
+  <data name="StockStatus.EXPIRED" xml:space="preserve">
+    <value>Caducado</value>
+  </data>
+  <data name="StockStatus.IN_TRANSIT" xml:space="preserve">
+    <value>En tránsito</value>
+  </data>
+  <data name="StockStatus.QUALITY_INSPECTION" xml:space="preserve">
+    <value>Inspección de calidad</value>
+  </data>
+  <data name="StockStatus.QUARANTINE" xml:space="preserve">
+    <value>Cuarentena</value>
+  </data>
+  <data name="Suggest.CaseOnly" xml:space="preserve">
+    <value>Lote existente (difieren mayúsculas o espacios): {0}</value>
+  </data>
+  <data name="Suggest.Exact" xml:space="preserve">
+    <value>Lote existente: {0}</value>
+  </data>
+  <data name="Suggest.NewDraft" xml:space="preserve">
+    <value>Lote nuevo {0} (borrador)</value>
+  </data>
+  <data name="Suggest.None" xml:space="preserve">
+    <value>Lote nuevo (corrija primero el número)</value>
+  </data>
+  <data name="Suggest.Similar" xml:space="preserve">
+    <value>Posible error tipográfico del lote {0}</value>
+  </data>
+  <data name="Suggest.SimilarRow" xml:space="preserve">
+    <value>Posible error tipográfico de la fila {0}</value>
+  </data>
+  <data name="Tab.All" xml:space="preserve">
+    <value>Todas</value>
+  </data>
+  <data name="Tab.Done" xml:space="preserve">
+    <value>Emparejadas</value>
+  </data>
+  <data name="Tab.Pending" xml:space="preserve">
+    <value>Pendientes</value>
+  </data>
+  <data name="Toast.Done" xml:space="preserve">
+    <value>Migración completada.</value>
+  </data>
+  <data name="Validation.DatesOrder" xml:space="preserve">
+    <value>Fabricación ≤ hoy; caducidad posterior a la fabricación; reanálisis entre ambas.</value>
+  </data>
+  <data name="Validation.FixFields" xml:space="preserve">
+    <value>Revise los campos marcados.</value>
+  </data>
+  <data name="Validation.Length" xml:space="preserve">
+    <value>Este valor es demasiado largo.</value>
+  </data>
+  <data name="Validation.LotFormat" xml:space="preserve">
+    <value>Use de 1 a 40 caracteres: A–Z, 0–9 y . / -.</value>
+  </data>
+  <data name="Validation.ReasonMin" xml:space="preserve">
+    <value>Escriba un motivo de al menos 10 caracteres.</value>
+  </data>
+  <data name="Validation.Required" xml:space="preserve">
+    <value>Este campo es obligatorio.</value>
+  </data>
+</root>

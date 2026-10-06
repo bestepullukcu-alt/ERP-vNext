@@ -8,8 +8,9 @@ namespace Diten.Web.Tests.Traceability;
 /// <summary>
 /// MOD-0174 P3 L10n (pack §11.6) and repo guards:
 /// <list type="bullet">
-/// <item>P3 writes en + tr ONLY (fr / es / zh / ar / ru are slice P5's — no file, no English copy, no empty value); en and
-/// tr carry the same keys, every value real, a Turkish value never the key's own name;</item>
+/// <item>every family is written in the seven tenant languages (P3 en + tr, P5 fr / es / zh / ar / ru): the same keys in
+/// the same order, every value real, a Turkish value never the key's own name; a P5 value keeps en's placeholders and is
+/// never an English copy unless <see cref="SameAsEnglish"/> names it with its reason;</item>
 /// <item>every key the views, the controllers' choice tables (errors, countries, statuses) and the scripts ask for exists
 /// — a missing resx key prints its NAME at runtime and no compiler sees it;</item>
 /// <item>the browser never calls the Gateway, 5066 or /api/trace; no raw Swal.fire; no code path into docs/analysis.</item>
@@ -30,14 +31,57 @@ public sealed class TraceL10nAndGuardTests
         "Filter.Lot", "Receipt.Lot", "Lot.Picker", "Col.Lot", "Country.TR"
     };
 
+    private static readonly string[] Languages = ["ar", "en", "es", "fr", "ru", "tr", "zh"];
+    private static readonly string[] P5Languages = ["fr", "es", "zh", "ar", "ru"];
+
+    /// <summary>
+    /// WP-0174-P5: P5 values that are deliberately the same as en — a placeholder-only counter, the dash, a word or a
+    /// country name spelled the same. Exact key per language with its reason; no prefix, no "contains {" loophole.
+    /// </summary>
+    private static readonly Dictionary<string, Dictionary<string, string>> SameAsEnglish = new(StringComparer.Ordinal)
+    {
+        ["fr"] = new(StringComparer.Ordinal)
+        {
+            ["Form.ReasonCounter"] = "placeholder-only counter {0}/10", ["Serial.Counter"] = "placeholder-only counter {0} / {1}",
+            ["Info.None"] = "the dash for an empty value", ["History.Page"] = "« Page {0} / {1} » is French",
+            ["Col.Actions"] = "« Actions » is French", ["Col.Action"] = "« Action » is French",
+            ["History.Date"] = "« Date » is French", ["Receipt.DateBy"] = "« Date » is French", ["Receipt.Document"] = "« Document » is French",
+            ["Tracking.Lot"] = "glossary: Lot = Lot", ["Lot.Picker"] = "glossary: Lot = Lot", ["Filter.Lot"] = "glossary: Lot = Lot",
+            ["Receipt.Lot"] = "glossary: Lot = Lot",
+            ["Country.CA"] = "Canada", ["Country.FR"] = "France", ["Country.PT"] = "Portugal", ["Country.UA"] = "Ukraine"
+        },
+        ["es"] = new(StringComparer.Ordinal)
+        {
+            ["Form.ReasonCounter"] = "placeholder-only counter {0}/10", ["Serial.Counter"] = "placeholder-only counter {0} / {1}",
+            ["Info.None"] = "the dash for an empty value",
+            ["Country.AT"] = "Austria", ["Country.AU"] = "Australia", ["Country.CN"] = "China", ["Country.IL"] = "Israel",
+            ["Country.IN"] = "India", ["Country.PT"] = "Portugal"
+        },
+        ["zh"] = new(StringComparer.Ordinal)
+        {
+            ["Form.ReasonCounter"] = "placeholder-only counter {0}/10", ["Serial.Counter"] = "placeholder-only counter {0} / {1}",
+            ["Info.None"] = "the dash for an empty value"
+        },
+        ["ar"] = new(StringComparer.Ordinal)
+        {
+            ["Form.ReasonCounter"] = "placeholder-only counter {0}/10", ["Serial.Counter"] = "placeholder-only counter {0} / {1}",
+            ["Info.None"] = "the dash for an empty value"
+        },
+        ["ru"] = new(StringComparer.Ordinal)
+        {
+            ["Form.ReasonCounter"] = "placeholder-only counter {0}/10", ["Serial.Counter"] = "placeholder-only counter {0} / {1}",
+            ["Info.None"] = "the dash for an empty value"
+        }
+    };
+
     [Theory]
     [MemberData(nameof(Families))]
-    public void P3_writes_en_and_tr_only_with_the_same_keys_and_real_text(string family)
+    public void Every_family_is_written_in_the_seven_languages_with_the_same_keys_and_real_text(string family)
     {
         var folder = Path.GetDirectoryName(Path.Combine(Resources, family))!;
         var name = Path.GetFileName(family);
-        var files = Directory.EnumerateFiles(folder, name + ".*.resx").Select(Path.GetFileName).OrderBy(f => f).ToList();
-        Assert.Equal([$"{name}.en.resx", $"{name}.tr.resx"], files);
+        var files = Directory.EnumerateFiles(folder, name + ".*.resx").Select(Path.GetFileName).OrderBy(f => f, StringComparer.Ordinal).ToList();
+        Assert.Equal(Languages.Select(l => $"{name}.{l}.resx"), files);
 
         var en = Read(family, "en");
         var tr = Read(family, "tr");
@@ -47,6 +91,29 @@ public sealed class TraceL10nAndGuardTests
         Assert.All(tr, p => Assert.NotEqual(p.Key, p.Value));
         Assert.All(tr.Where(p => !SameInBoth.Contains(p.Key) && !p.Key.StartsWith("Country.", StringComparison.Ordinal) && !p.Value.Contains('{')),
             p => Assert.True(p.Value != en[p.Key], $"{family}.tr: {p.Key} is an English copy"));
+
+        var enOrder = KeyOrder(family, "en");
+        foreach (var lang in P5Languages)
+        {
+            var values = Read(family, lang);
+            Assert.True(enOrder.SequenceEqual(KeyOrder(family, lang)), $"{family}.{lang}: keys differ from en (set or order)");
+            Assert.All(values, p => Assert.False(string.IsNullOrWhiteSpace(p.Value), $"{family}.{lang}: {p.Key} is empty"));
+            Assert.All(values, p => Assert.False(p.Value.Contains("TODO", StringComparison.Ordinal), $"{family}.{lang}: {p.Key} is a TODO"));
+            Assert.All(values, p => Assert.True(Placeholders(p.Value) == Placeholders(en[p.Key]),
+                $"{family}.{lang}: {p.Key} placeholders {Placeholders(p.Value)} differ from en {Placeholders(en[p.Key])}"));
+            Assert.All(values.Where(p => !SameAsEnglish[lang].ContainsKey(p.Key)),
+                p => Assert.True(p.Value != en[p.Key], $"{family}.{lang}: {p.Key} is an English copy"));
+        }
+    }
+
+    [Fact]
+    public void Every_same_as_english_entry_is_still_needed()
+    {
+        var families = ((IEnumerable<object[]>)Families).Select(row => (string)row[0]).ToList();
+        foreach (var (lang, entries) in SameAsEnglish)
+            Assert.All(entries.Keys, key => Assert.True(
+                families.Any(f => Read(f, lang).TryGetValue(key, out var v) && v == Read(f, "en")[key]),
+                $"{lang}: {key} is allow-listed but no longer equals en — remove it"));
     }
 
     [Fact]
@@ -105,9 +172,9 @@ public sealed class TraceL10nAndGuardTests
     }
 
     [Fact]
-    public void The_shared_nav_keys_are_written_in_en_and_tr_P5_writes_the_rest()
+    public void The_shared_nav_keys_are_written_in_the_seven_languages()
     {
-        foreach (var lang in new[] { "en", "tr" })
+        foreach (var lang in Languages)
         {
             var shared = XDocument.Load(Path.Combine(TraceViewRenderer.WebRoot, "Resources", $"SharedResource.{lang}.resx")).Root!.Elements("data")
                 .ToDictionary(d => (string)d.Attribute("name")!, d => (string?)d.Element("value") ?? "");
@@ -137,6 +204,13 @@ public sealed class TraceL10nAndGuardTests
 
     /// <summary>Code only: the header comments NAME what the browser must not call; the guard reads what it does call.</summary>
     private static string StripComments(string js) => Regex.Replace(Regex.Replace(js, @"/\*[\s\S]*?\*/", string.Empty), @"(?m)^\s*//.*$", string.Empty);
+
+    private static List<string> KeyOrder(string family, string lang) =>
+        XDocument.Load(Path.Combine(Resources, $"{family}.{lang}.resx")).Root!.Elements("data").Select(d => (string)d.Attribute("name")!).ToList();
+
+    /// <summary>The {n} placeholders as a sorted multiset — a translation may move them, never drop or add one.</summary>
+    private static string Placeholders(string value) =>
+        string.Join(",", Regex.Matches(value, @"\{\d+\}").Select(m => m.Value).OrderBy(p => p, StringComparer.Ordinal));
 
     private static Dictionary<string, string> Read(string family, string lang) =>
         XDocument.Load(Path.Combine(Resources, $"{family}.{lang}.resx")).Root!.Elements("data")
