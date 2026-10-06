@@ -8063,6 +8063,21 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-559
+
+**Taslak bir Bitmiş Ürün (FG) bağlı olduğu GSKU'yu düzeltmeye ve emekliye ayırmaya kalıcı kapatıyor: FG'nin çıkışı yok, GSKU onu engel sayıyor**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) — ara önlem kararı sahibin · BULAN: FG salt-okunur ön incelemesi (75c286f7d) · KAYIT: 2026-10-06
+
+FG bugün yalnız taslak temeli: iptal / gönder / emekli ucu yok (`FinishedGoodsController.cs:20-44`). `GskuRepository.FindRetirementBlockerAsync` (:745-762) Taslak dahil Emekli olmayan her FG'yi engel sayıyor →
+GSKU düzeltme başlatması (`GskuCorrectionWorkflowProcessor.cs:47`, karar anı :490) ve emeklilik talebi (`GskuRetirementRequestWorkflowProcessor.cs:42`) 409. FG ekranı menüde gizli ama API açık ve kiracı Admin
+şablonu `mdm.finished-goods.create` alıyor (`DefaultRolePermissionTemplate.cs:91-92`). Tek bir FG taslağı → o GSKU'da yanlış paket / ölçü kalıcı. Düzeltme: FG FIX1 (`scratchpad/fg-fix1-prompt.md` — denetimli taslak
+iptali, engel sorgusu yalnız sonuçlanmış iptali dışlar), LSKU FIX1 kabulünden sonra. **Ara önlem (sahip kararı):** FIX1 gelene kadar `mdm.finished-goods.create`'i varsayılan Admin şablonundan çıkarmak (Auth).
+Ayrıca: FG'nin P1A işlem deposu (bağlı değil) GSKU'nun FIX3–FIX7'de kaldırdığı kalıcı kilit kalıbını yeniden kuruyor — yaşam döngüsü turundan önce yeniden işlenmeli. Karşılaştırma: SAP MDG'de
+taslak alt nesne üst nesnenin değişikliğini engellemez (taslak kendi değişiklik talebinde yaşar); Oracle PIM'de taslak öğe üst öğeyi kilitlemez. Gelecek regresyon riski: 🔴 (API açık).
+
+---
+
 ### BL-558
 
 **"Son yönetici" koruması silinen kişi yönetici değilken de reddediyor (KR1)**
