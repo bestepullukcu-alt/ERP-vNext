@@ -28,6 +28,10 @@ public static class TraceabilityServiceCollectionExtensions
         // WP-0174-P2 — the ledger link (pack §8), in-process; Trace:EnforceRegisteredLots defaults to false (ASSUMPTION-0174-10).
         services.AddScoped<LedgerTransactionBinding>();
         services.AddScoped<ILotMasterClient, InventoryLotDirectory>();
+        // WP-0174-P4 — typed-lot migration: the pre-check → posting-transaction hand-over (K4-2 / K4-4) and the store.
+        services.AddScoped<TypedLotPostingGuard>();
+        services.AddScoped<IManualLotMigrationRepository, ManualLotMigrationRepository>();
+        services.AddScoped<ManualLotGroupReader>();
         services.Configure<LotLedgerOptions>(configuration.GetSection(LotLedgerOptions.SectionName));
 
         services.Configure<LotExpirySweeperOptions>(configuration.GetSection(LotExpirySweeperOptions.SectionName));

@@ -40,6 +40,13 @@ public static class TraceRequestReader
 
     private static readonly HashSet<string> Gs1Members = new(StringComparer.Ordinal) { "code", "skuId", "skuLevel", "lotId" };
 
+    private static readonly HashSet<string> CommitMembers = new(StringComparer.Ordinal) { "idempotencyKey", "reason", "expectedGroupCount", "decisions" };
+
+    private static readonly HashSet<string> DecisionMembers = new(StringComparer.Ordinal) { "groupId", "kind", "lotId", "targetGroupId", "newLot" };
+
+    private static readonly HashSet<string> LotFieldMembers = new(StringComparer.Ordinal)
+        { "lotNumber", "manufacturerLot", "supplierLot", "manufacturingDate", "expiryDate", "retestDate", "countryOfOrigin", "coaReference" };
+
     public sealed record ReadResult<T>(T? Value, string? ErrorCode, string? Error) where T : class;
 
     public static Task<ReadResult<CreateLotCommand>> ReadCreateAsync(Stream body, string? headerKey, CancellationToken ct)
@@ -115,6 +122,28 @@ public static class TraceRequestReader
     public static Task<ReadResult<CheckGs1CodeQuery>> ReadGs1Async(Stream body, CancellationToken ct)
         => ReadAsync(body, Gs1Members, null, ct, r => new CheckGs1CodeQuery(r.String("code"), r.String("skuId"), r.String("skuLevel"), r.String("lotId")));
 
+    /// <summary>
+    /// WP-0174-P4 <c>commitManualLotMigration</c>: <c>expectedGroupCount</c> an integer, <c>decisions</c> an array of
+    /// <c>MigrationDecision</c> objects (only their members), <c>newLot</c> a <c>LotFields</c> object.
+    /// </summary>
+    public static Task<ReadResult<CommitManualLotMigrationCommand>> ReadCommitAsync(Stream body, string? headerKey, CancellationToken ct)
+        => ReadAsync(body, CommitMembers, null, ct, r =>
+        {
+            var decisions = r.Objects("decisions", DecisionMembers, d => new MigrationDecisionRaw(
+                d.String("groupId"), d.String("kind"), d.String("lotId"), d.String("targetGroupId"),
+                d.Object("newLot", LotFieldMembers, n => new MigrationNewLotRaw(
+                    n.String("lotNumber"), n.String("manufacturerLot"), n.String("supplierLot"), n.String("manufacturingDate"),
+                    n.String("expiryDate"), n.String("retestDate"), n.String("countryOfOrigin"), n.String("coaReference")))));
+            return decisions is null ? null : new CommitManualLotMigrationCommand
+            {
+                HeaderIdempotencyKey = headerKey,
+                IdempotencyKey = r.String("idempotencyKey"),
+                Reason = r.String("reason"),
+                ExpectedGroupCount = r.Int("expectedGroupCount"),
+                Decisions = decisions
+            };
+        });
+
     private static async Task<ReadResult<T>> ReadAsync<T>(
         Stream body, HashSet<string> members, HashSet<string>? immutable, CancellationToken ct, Func<Reader, T?> build)
         where T : class
@@ -162,9 +191,59 @@ public static class TraceRequestReader
     {
         private readonly JsonElement _root;
 
-        public Reader(JsonElement root) => _root = root;
+        public Reader(JsonElement root, List<string>? errors = null)
+        {
+            _root = root;
+            Errors = errors ?? [];
+        }
 
-        public List<string> Errors { get; } = [];
+        public List<string> Errors { get; }
+
+        public int? Int(string name)
+        {
+            if (!_root.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null) return null;
+            if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var number)) return number;
+            Errors.Add($"{name} must be an integer.");
+            return null;
+        }
+
+        /// <summary>An array of objects, each read with only <paramref name="members"/>; absent / null = empty list.</summary>
+        public IReadOnlyList<T>? Objects<T>(string name, HashSet<string> members, Func<Reader, T> build)
+        {
+            if (!_root.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null) return [];
+            if (value.ValueKind != JsonValueKind.Array)
+            {
+                Errors.Add($"{name} must be an array.");
+                return null;
+            }
+
+            var items = new List<T>();
+            foreach (var item in value.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object || item.EnumerateObject().Any(p => !members.Contains(p.Name)))
+                {
+                    Errors.Add($"{name} must contain objects with the members {string.Join(", ", members)} only.");
+                    return null;
+                }
+
+                items.Add(build(new Reader(item, Errors)));
+            }
+
+            return items;
+        }
+
+        /// <summary>A nested object read with only <paramref name="members"/>; absent / null = null.</summary>
+        public T? Object<T>(string name, HashSet<string> members, Func<Reader, T> build) where T : class
+        {
+            if (!_root.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null) return null;
+            if (value.ValueKind != JsonValueKind.Object || value.EnumerateObject().Any(p => !members.Contains(p.Name)))
+            {
+                Errors.Add($"{name} must be an object with the members {string.Join(", ", members)} only.");
+                return null;
+            }
+
+            return build(new Reader(value, Errors));
+        }
 
         public string? String(string name)
             => _root.TryGetProperty(name, out var value) && value.ValueKind != JsonValueKind.Null ? AsString(name, value) : null;

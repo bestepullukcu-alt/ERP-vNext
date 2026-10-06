@@ -3,6 +3,7 @@ using Diten.InventoryService.Application.Common.Models;
 using Diten.InventoryService.Application.Common.Upstream;
 using Diten.InventoryService.Application.Features.Inventory.Commands;
 using Diten.InventoryService.Application.Features.Inventory.Services;
+using Diten.InventoryService.Application.Features.Traceability.Ports;
 using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Repositories;
@@ -32,14 +33,17 @@ public sealed class PostMovementHandler : IRequestHandler<PostMovementCommand, R
     private readonly MovementMasterDataValidator _masterData;
     private readonly ITenantContext _tenantContext;
     private readonly ICorrelationContext _correlation;
+    private readonly ILotMasterClient _lots;
 
     public PostMovementHandler(
         IInventoryLedgerRepository ledger,
+        ILotMasterClient lots,
         MovementMasterDataValidator masterData,
         ITenantContext tenantContext,
         ICorrelationContext correlation)
     {
         _ledger = ledger;
+        _lots = lots;
         _masterData = masterData;
         _tenantContext = tenantContext;
         _correlation = correlation;
@@ -197,8 +201,14 @@ public sealed class PostMovementHandler : IRequestHandler<PostMovementCommand, R
         }
 
         var inverse = MovementDirectionRules.InverseOf(ReversalRules.DirectionOf(original));
+
+        // WP-0174-P4 (CT K4-3): an original whose typed lot the migration linked is reversed through its REGISTERED lot —
+        // its balance row was re-keyed to that lot (CT-D6); the original document stays as it is (append-only).
+        var lotId = original.LotId is { } typed && !LotPostingRules.IsRegisteredLotForm(typed, out _)
+            ? await _lots.LinkedLotIdAsync(original.Id, ct) ?? typed
+            : original.LotId;
         var reversal = NewTransaction(movement, fingerprint, inverse, original.BaseQuantity, original.BaseUomId,
-            original.LotId, original.SerialIds?.ToList(), reversesTransactionId: original.Id);
+            lotId, original.SerialIds?.ToList(), reversesTransactionId: original.Id);
         return (reversal, null);
     }
 

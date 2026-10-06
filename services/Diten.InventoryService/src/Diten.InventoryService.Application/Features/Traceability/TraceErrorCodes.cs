@@ -29,6 +29,12 @@ public static class TraceErrorCodes
     public const string GenealogyCycle = "GENEALOGY_CYCLE";
     public const string UnknownSerial = "UNKNOWN_SERIAL";
 
+    // typed-lot migration (WP-0174-P4, contract commitManualLotMigration x-error-codes)
+    public const string MigrationAlreadyCompleted = "MIGRATION_ALREADY_COMPLETED";
+    public const string MigrationStale = "MIGRATION_STALE";
+    public const string MigrationDecisionsIncomplete = "MIGRATION_DECISIONS_INCOMPLETE";
+    public const string MigrationTypoUnresolved = "MIGRATION_TYPO_UNRESOLVED";
+
     // shared with MOD-0173
     public const string InvalidRequest = InventoryErrorCodes.InvalidRequest;
     public const string IdempotencyKeyReused = InventoryErrorCodes.IdempotencyKeyReused;

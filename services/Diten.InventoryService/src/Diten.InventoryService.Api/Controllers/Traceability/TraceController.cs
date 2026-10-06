@@ -16,8 +16,9 @@ namespace Diten.InventoryService.Api.Controllers.Traceability;
 /// <item>frozen v1: <c>getLot</c>, <c>listLots</c>, <c>createLot</c>, <c>getSerial</c>, <c>getGenealogy</c>,
 /// <c>validateTrace</c>;</item>
 /// <item>v1.1: <c>updateLot</c> (PATCH), <c>changeLotStatus</c>, <c>getLotHistory</c>, <c>getLotDetail</c>,
-/// <c>listSerials</c>, <c>checkGs1Code</c>, <c>linkGenealogy</c>. The typed-lot migration operations of the contract are
-/// slice P4 and have no route yet.</item>
+/// <c>listSerials</c>, <c>checkGs1Code</c>, <c>linkGenealogy</c>;</item>
+/// <item>slice P4 (contract 1.2.0): <c>listManualLotGroups</c>, <c>commitManualLotMigration</c> (<c>trace.lots.migrate</c>),
+/// <c>getMovementLotLinks</c> and <c>getManualLotMigrationStatus</c> (<c>trace.lots.read</c>).</item>
 /// </list>
 /// There is no PUT and no DELETE: a lot is never removed (pack §4). Every endpoint carries <c>[HasPermission]</c>, except
 /// PATCH, whose key depends on the lot's status (Draft: <c>trace.lots.update</c>, otherwise
@@ -147,6 +148,31 @@ public sealed class TraceController : CustomBaseController
         var read = await TraceRequestReader.ReadGs1Async(Request.Body, cancellationToken);
         return read.Value is null ? Refused(read) : CreateActionResultInstance(await _mediator.Send(read.Value, cancellationToken));
     }
+
+    // ── typed-lot migration (WP-0174-P4) ──────────────────────────────────────────────────────────────────
+
+    [HttpGet("migration/manual-lots")]
+    [HasPermission(TracePermissions.LotsMigrate)]
+    public async Task<IActionResult> ListManualLotGroups([FromQuery] string? view, [FromQuery] string? page, [FromQuery] string? pageSize, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new ListManualLotGroupsQuery(view, page, pageSize), cancellationToken));
+
+    [HttpPost("migration/manual-lots/commit")]
+    [HasPermission(TracePermissions.LotsMigrate)]
+    public async Task<IActionResult> CommitManualLotMigration(CancellationToken cancellationToken)
+    {
+        var read = await TraceRequestReader.ReadCommitAsync(Request.Body, Request.Headers[InventoryContract.IdempotencyKeyHeader].ToString(), cancellationToken);
+        return read.Value is null ? Refused(read) : CreateActionResultInstance(await _mediator.Send(read.Value, cancellationToken));
+    }
+
+    [HttpGet("migration/links")]
+    [HasPermission(TracePermissions.LotsRead)]
+    public async Task<IActionResult> GetMovementLotLinks([FromQuery] string? transactionId, [FromQuery] string? lotId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetMovementLotLinksQuery(transactionId, lotId), cancellationToken));
+
+    [HttpGet("migration/status")]
+    [HasPermission(TracePermissions.LotsRead)]
+    public async Task<IActionResult> GetManualLotMigrationStatus(CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetManualLotMigrationStatusQuery(), cancellationToken));
 
     // ── helpers ───────────────────────────────────────────────────────────────────────────────────────────
 

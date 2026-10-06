@@ -27,6 +27,14 @@ namespace Diten.InventoryService.Application.Features.Inventory.Services;
 /// on the committed state. A typed (unregistered) lot keeps its pre-P2 behaviour while <c>Trace:EnforceRegisteredLots</c>
 /// is off (<see cref="LotLedgerOptions"/>).
 /// </para>
+/// <para>
+/// WP-0174-P4 (CT K4-1 / K4-4, ASSUMPTION-0174-10 as revised): once the tenant's typed-lot migration closed typing
+/// (<c>ManualLotEntryClosed</c>), an INBOUND movement of a LOT-CONTROLLED item is accepted only with a registered lot
+/// (<c>UNKNOWN_LOT</c>) — the same rule the global switch <c>Trace:EnforceRegisteredLots</c> applies, which stays as an
+/// override (default off). Outbound / transfer movements and items that are not lot-controlled keep today's behaviour,
+/// so stock that still carries a typed text (not lot-controlled, never migrated) can leave. The posting transaction
+/// re-applies the inbound rule on the committed state (<see cref="TypedLotPostingGuard"/>).
+/// </para>
 /// </summary>
 public sealed class MovementMasterDataValidator
 {
@@ -36,6 +44,7 @@ public sealed class MovementMasterDataValidator
     private readonly ITenantContext _tenantContext;
     private readonly InventoryPolicyOptions _policy;
     private readonly LotLedgerOptions _lotPolicy;
+    private readonly TypedLotPostingGuard _typedGuard;
 
     public MovementMasterDataValidator(
         IProductMasterClient productMaster,
@@ -43,7 +52,8 @@ public sealed class MovementMasterDataValidator
         ILotMasterClient lotMaster,
         ITenantContext tenantContext,
         IOptions<InventoryPolicyOptions> policy,
-        IOptions<LotLedgerOptions> lotPolicy)
+        IOptions<LotLedgerOptions> lotPolicy,
+        TypedLotPostingGuard typedGuard)
     {
         _productMaster = productMaster;
         _locationMaster = locationMaster;
@@ -51,6 +61,7 @@ public sealed class MovementMasterDataValidator
         _tenantContext = tenantContext;
         _policy = policy.Value;
         _lotPolicy = lotPolicy.Value;
+        _typedGuard = typedGuard;
     }
 
     public async Task<MasterDataCheck> CheckAsync(ParsedMovement movement, CancellationToken ct)
@@ -150,12 +161,19 @@ public sealed class MovementMasterDataValidator
                     return MasterDataCheck.Refused(code, message, details);
                 }
             }
-            else if (enforce && product.LotControlled && direction.FromLocationId is null)
+            else if (product.LotControlled && direction.FromLocationId is null)
             {
-                // ASSUMPTION-0174-10: with the switch on, an inbound movement of a lot-controlled item names a registered lot.
-                return MasterDataCheck.Refused(InventoryErrorCodes.UnknownLot,
-                    "lotId must name a registered lot for an inbound movement (Trace:EnforceRegisteredLots).",
-                    new Dictionary<string, object?> { ["lotId"] = lotId });
+                // ASSUMPTION-0174-10 (revised, CT K4-4): an inbound movement of a lot-controlled item names a registered lot
+                // once the switch is on or the tenant's migration closed typing; the posting transaction re-checks it.
+                _typedGuard.RefuseTypedWhenClosed = true;
+                if (enforce || await _lotMaster.IsManualLotEntryClosedAsync(ct))
+                {
+                    return MasterDataCheck.Refused(InventoryErrorCodes.UnknownLot,
+                        enforce
+                            ? "lotId must name a registered lot for an inbound movement (Trace:EnforceRegisteredLots)."
+                            : "lotId must name a registered lot for an inbound movement: typed lot entry is closed for this tenant (migration completed).",
+                        new Dictionary<string, object?> { ["lotId"] = lotId });
+                }
             }
         }
 

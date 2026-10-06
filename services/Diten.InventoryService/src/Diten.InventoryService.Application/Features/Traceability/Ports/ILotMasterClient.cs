@@ -18,7 +18,8 @@ public interface ILotMasterClient
 {
     /// <summary>
     /// The registered lot a ledger <c>lotId</c> names (canonical lot id of this tenant), or null — a typed lot text or an
-    /// id the tenant does not have. Inside a posting transaction it also increments the lot's <c>StockTouchSeq</c>.
+    /// id the tenant does not have. Inside a posting transaction it also increments the lot's <c>StockTouchSeq</c>; for a
+    /// typed text it writes the tenant's typed-lot gate (WP-0174-P4, see <see cref="TypedLotPostingGuard"/>).
     /// </summary>
     Task<Lot?> ResolveLotAsync(string lotId, CancellationToken cancellationToken = default);
 
@@ -39,6 +40,35 @@ public interface ILotMasterClient
 
     /// <summary>CT-D1 (a): which of these ledger lot ids are registered lots whose status holds their stock (Blocked / Expired).</summary>
     Task<IReadOnlySet<string>> HeldLotIdsAsync(IReadOnlyCollection<string> lotIds, CancellationToken cancellationToken = default);
+
+    // ── WP-0174-P4: the typed-lot migration as the ledger sees it ────────────────────────────────────────
+
+    /// <summary>The tenant's typed-lot entry is closed by the migration commit (<c>ManualLotEntryClosed</c>).</summary>
+    Task<bool> IsManualLotEntryClosedAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// CT K4-3: the registered lot id (canonical string) the migration linked this ledger transaction of the caller's
+    /// company to, or null (not migrated / not a typed-lot transaction).
+    /// </summary>
+    Task<string?> LinkedLotIdAsync(Guid transactionId, CancellationToken cancellationToken = default);
+
+    /// <summary>CT-D6 read side: transaction id → registered lot id for the linked transactions among these (caller's company).</summary>
+    Task<IReadOnlyDictionary<Guid, string>> LinkedLotIdsAsync(IReadOnlyCollection<Guid> transactionIds, CancellationToken cancellationToken = default);
+
+    /// <summary>CT-D6 read side: the caller's company's transactions the migration linked to <paramref name="lotId"/> (id + typed text).</summary>
+    Task<IReadOnlyList<(Guid TransactionId, string TypedText)>> LinksOfLotAsync(Guid lotId, CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// WP-0174-P4 (CT K4-2 / K4-4) — request-scoped: what the pre-check decided about a TYPED lot text, handed to the posting
+/// transaction. When <see cref="RefuseTypedWhenClosed"/> is set (a lot-controlled item, an inbound movement, a typed text),
+/// the in-transaction gate refuses the posting with <c>UNKNOWN_LOT</c> if the migration closed typing meanwhile — the
+/// rule the pre-check applies, re-applied on the committed state. Outbound / transfer and non-lot-controlled typed texts
+/// keep today's behaviour (K4-4); they still write the gate (the conflict that serialises them with the commit).
+/// </summary>
+public sealed class TypedLotPostingGuard
+{
+    public bool RefuseTypedWhenClosed { get; set; }
 }
 
 /// <summary>

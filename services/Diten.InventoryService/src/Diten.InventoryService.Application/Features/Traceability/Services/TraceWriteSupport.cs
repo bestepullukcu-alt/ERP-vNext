@@ -18,6 +18,7 @@ public sealed partial class TraceWriteSupport
 {
     public const string SourceApi = "api";
     public const string SourceSystemExpiry = "system-expiry";
+    public const string SourceMigration = "migration";
 
     private readonly ITenantContext _tenant;
     private readonly ICorrelationContext _correlation;

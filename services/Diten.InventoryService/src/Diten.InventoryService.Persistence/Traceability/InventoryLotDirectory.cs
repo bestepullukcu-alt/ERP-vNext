@@ -20,20 +20,34 @@ namespace Diten.InventoryService.Persistence.Traceability;
 /// re-runs on the committed state. Serial writes are conditional (status + company + location in the filter); a count that
 /// does not match means the state changed after the check → <see cref="LotPostingRefusedException"/>.
 /// </para>
+/// <para>
+/// WP-0174-P4 (CT K4-2): a TYPED lot text read inside the posting transaction writes the tenant's typed-lot gate (the
+/// <c>trace_lot_migrations</c> document, <c>GateSeq</c> + 1, upsert); the migration commit writes the same document, so a
+/// typed posting and the commit conflict and the loser re-runs on the committed state. Once typing is closed, a posting
+/// whose pre-check set <see cref="TypedLotPostingGuard.RefuseTypedWhenClosed"/> (lot-controlled inbound) is refused with
+/// <c>UNKNOWN_LOT</c> here; every other typed posting keeps today's behaviour (K4-4). The link reads serve the reversal
+/// of a migrated transaction (K4-3) and the read-side resolution of <c>getTransactions</c> (CT-D6).
+/// </para>
 /// </summary>
 public sealed class InventoryLotDirectory : ILotMasterClient
 {
     private readonly IMongoCollection<Lot> _lots;
     private readonly IMongoCollection<SerialNumber> _serials;
+    private readonly IMongoCollection<ManualLotMigration> _migrations;
+    private readonly IMongoCollection<MovementLotLink> _links;
     private readonly LedgerTransactionBinding _binding;
+    private readonly TypedLotPostingGuard _typedGuard;
     private readonly Guid _tenantId;
     private readonly Guid _legalEntityId;
 
-    public InventoryLotDirectory(IMongoDatabase database, ITenantContext tenantContext, LedgerTransactionBinding binding)
+    public InventoryLotDirectory(IMongoDatabase database, ITenantContext tenantContext, LedgerTransactionBinding binding, TypedLotPostingGuard typedGuard)
     {
         _lots = database.GetCollection<Lot>(TraceCollections.Lots);
         _serials = database.GetCollection<SerialNumber>(TraceCollections.Serials);
+        _migrations = database.GetCollection<ManualLotMigration>(TraceCollections.LotMigrations);
+        _links = database.GetCollection<MovementLotLink>(TraceCollections.MovementLotLinks);
         _binding = binding;
+        _typedGuard = typedGuard;
         _tenantId = tenantContext.TenantId;
         _legalEntityId = tenantContext.LegalEntityId;
     }
@@ -44,6 +58,11 @@ public sealed class InventoryLotDirectory : ILotMasterClient
     {
         if (!LotPostingRules.IsRegisteredLotForm(lotId, out var id))
         {
+            if (_binding.Session is { } posting)
+            {
+                await TouchTypedLotGateAsync(posting, lotId, cancellationToken);
+            }
+
             return null;
         }
 
@@ -77,6 +96,66 @@ public sealed class InventoryLotDirectory : ILotMasterClient
             .ToListAsync(cancellationToken);
         return held.Select(id => id.ToString("D")).ToHashSet(StringComparer.Ordinal);
     }
+
+    // ── typed-lot migration (WP-0174-P4) ──────────────────────────────────────────────────────────────────
+
+    public async Task<bool> IsManualLotEntryClosedAsync(CancellationToken cancellationToken = default)
+        => await _migrations.Find(Builders<ManualLotMigration>.Filter.Eq(x => x.TenantId, (Guid?)_tenantId)
+                                  & Builders<ManualLotMigration>.Filter.Eq(x => x.ManualLotEntryClosed, true))
+            .AnyAsync(cancellationToken);
+
+    public async Task<string?> LinkedLotIdAsync(Guid transactionId, CancellationToken cancellationToken = default)
+        => (await LinkedLotIdsAsync([transactionId], cancellationToken)).TryGetValue(transactionId, out var lotId) ? lotId : null;
+
+    public async Task<IReadOnlyDictionary<Guid, string>> LinkedLotIdsAsync(IReadOnlyCollection<Guid> transactionIds, CancellationToken cancellationToken = default)
+    {
+        if (transactionIds.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        var ids = transactionIds.Select(t => t.ToString("D")).Distinct(StringComparer.Ordinal).ToList();
+        var links = await _links.Find(CompanyLinks() & Builders<MovementLotLink>.Filter.In(x => x.TransactionId, ids)).ToListAsync(cancellationToken);
+        return links.ToDictionary(l => Guid.Parse(l.TransactionId), l => l.LotId.ToString("D"));
+    }
+
+    public async Task<IReadOnlyList<(Guid TransactionId, string TypedText)>> LinksOfLotAsync(Guid lotId, CancellationToken cancellationToken = default)
+    {
+        var links = await _links.Find(CompanyLinks() & Builders<MovementLotLink>.Filter.Eq(x => x.LotId, lotId)).ToListAsync(cancellationToken);
+        return links.Select(l => (Guid.Parse(l.TransactionId), l.TypedText)).ToList();
+    }
+
+    /// <summary>
+    /// The typed-lot gate (CT K4-2): one write of the tenant's migration document in the posting transaction. A closed
+    /// tenant refuses a lot-controlled inbound typed text (the pre-check's rule on the committed state).
+    /// </summary>
+    private async Task TouchTypedLotGateAsync(IClientSessionHandle session, string typedText, CancellationToken ct)
+    {
+        var u = Builders<ManualLotMigration>.Update;
+        var gate = await _migrations.FindOneAndUpdateAsync(
+            session,
+            Builders<ManualLotMigration>.Filter.Eq(x => x.TenantId, (Guid?)_tenantId),
+            u.Combine(
+                u.Inc(x => x.GateSeq, 1L),
+                u.SetOnInsert(x => x.Id, Guid.NewGuid()),
+                u.SetOnInsert(x => x.LegalEntityId, (Guid?)_legalEntityId),
+                u.SetOnInsert(x => x.CreatedAt, DateTimeOffset.UtcNow),
+                u.SetOnInsert(x => x.IsDeleted, false),
+                u.SetOnInsert(x => x.DeletedAt, null),
+                u.SetOnInsert(x => x.ManualLotEntryClosed, false)),
+            new FindOneAndUpdateOptions<ManualLotMigration> { IsUpsert = true, ReturnDocument = ReturnDocument.After },
+            ct);
+        if (gate.ManualLotEntryClosed && _typedGuard.RefuseTypedWhenClosed)
+        {
+            throw new LotPostingRefusedException(InventoryErrorCodes.UnknownLot,
+                "lotId must name a registered lot: typed lot entry is closed for this tenant (migration completed).",
+                new Dictionary<string, object?> { ["lotId"] = typedText });
+        }
+    }
+
+    /// <summary>Links of the caller's company (a link carries the company of its ledger transaction).</summary>
+    private FilterDefinition<MovementLotLink> CompanyLinks()
+        => Scope<MovementLotLink>() & Builders<MovementLotLink>.Filter.Eq(x => x.LegalEntityId, (Guid?)_legalEntityId);
 
     // ── serials ───────────────────────────────────────────────────────────────────────────────────────────
 
