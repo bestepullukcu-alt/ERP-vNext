@@ -1,6 +1,10 @@
 using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Repositories;
+using Diten.InventoryService.Domain.Traceability.Entities;
+using Diten.InventoryService.Domain.Traceability.Enums;
+using Diten.InventoryService.Domain.Traceability.Rules;
+using Diten.InventoryService.Persistence.Traceability;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -18,6 +22,9 @@ namespace Diten.InventoryService.Persistence.Repositories;
 /// </list>
 /// Runs at startup before the host serves requests (S1 ledgers that predate S2 get their positions), and is the
 /// oracle of the AC-R9 invariant test.
+/// <para>MOD-0174 CT-D1 (a), WP-0174-P2: the AVAILABLE rows of a Blocked / Expired registered lot are not counted — the same
+/// rule the posting and the lot status change maintain, so a restart never brings a blocked lot's stock back into
+/// availability. The tenant's lots are read in the same transaction (a status change writes the position too → conflict).</para>
 /// </summary>
 public sealed class SkuPositionRebuilder : ISkuPositionRebuilder
 {
@@ -25,6 +32,7 @@ public sealed class SkuPositionRebuilder : ISkuPositionRebuilder
     private readonly IMongoCollection<InventoryBalance> _balances;
     private readonly IMongoCollection<InventoryReservation> _reservations;
     private readonly IMongoCollection<InventorySkuPosition> _positions;
+    private readonly IMongoCollection<Lot> _lots;
 
     public SkuPositionRebuilder(IMongoClient client, IMongoDatabase database)
     {
@@ -32,6 +40,7 @@ public sealed class SkuPositionRebuilder : ISkuPositionRebuilder
         _balances = database.GetCollection<InventoryBalance>(InventoryCollections.Balances);
         _reservations = database.GetCollection<InventoryReservation>(InventoryCollections.Reservations);
         _positions = database.GetCollection<InventorySkuPosition>(InventoryCollections.SkuPositions);
+        _lots = database.GetCollection<Lot>(TraceCollections.Lots);
     }
 
     public async Task<int> RebuildAllAsync(CancellationToken cancellationToken = default)
@@ -86,6 +95,17 @@ public sealed class SkuPositionRebuilder : ISkuPositionRebuilder
                            & bf.Eq(x => x.ItemId, item) & bf.Eq(x => x.SkuId, skuId) & bf.Eq(x => x.SkuLevel, level)
                            & bf.Eq(x => x.StockStatus, StockStatus.Available))
             .ToListAsync(ct);
+
+        var lotIds = rows.Where(r => r.LotId is not null).Select(r => r.LotId!).Distinct(StringComparer.Ordinal)
+            .Select(l => LotPostingRules.IsRegisteredLotForm(l, out var id) ? id : (Guid?)null)
+            .Where(id => id.HasValue).Select(id => id!.Value).ToList();
+        var held = lotIds.Count == 0
+            ? new HashSet<string>(StringComparer.Ordinal)
+            : (await _lots.Find(session, Builders<Lot>.Filter.Eq(x => x.TenantId, tenant) & Builders<Lot>.Filter.In(x => x.Id, lotIds)
+                                         & Builders<Lot>.Filter.In(x => x.Status, new[] { LotStatus.Blocked, LotStatus.Expired }))
+                .Project(x => x.Id).ToListAsync(ct))
+              .Select(id => id.ToString("D")).ToHashSet(StringComparer.Ordinal);
+        rows = rows.Where(r => r.LotId is null || !held.Contains(r.LotId)).ToList();
 
         var rf = Builders<InventoryReservation>.Filter;
         var active = await _reservations

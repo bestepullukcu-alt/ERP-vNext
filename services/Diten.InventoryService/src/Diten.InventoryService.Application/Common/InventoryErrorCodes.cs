@@ -4,7 +4,8 @@ namespace Diten.InventoryService.Application.Common;
 /// Every <c>error.code</c> this service can emit. Contract-declared codes, plus exactly the six values
 /// ASSUMPTION-0173-04 adds (values of the frozen <c>error.code</c> string, emitted only with declared statuses),
 /// plus <see cref="InvalidRequest"/> which pack §12 names for structural field errors, plus
-/// <see cref="LegalEntityMasterUnavailable"/> which pack §19 W-0173-02 names (503, company selector).
+/// <see cref="LegalEntityMasterUnavailable"/> which pack §19 W-0173-02 names (503, company selector), plus the eight lot /
+/// serial codes of the MOD-0174 pack §12 "Ledger posting rules" (WP-0174-P2, all 422; INVENTORY-BUNDLE v1 unchanged).
 /// No other code may be added without a new pack version.
 /// </summary>
 public static class InventoryErrorCodes
@@ -36,11 +37,22 @@ public static class InventoryErrorCodes
     // Pack §19 W-0173-02: MDM could not confirm the header legal entity (fail-closed, nothing read or written).
     public const string LegalEntityMasterUnavailable = "LEGAL_ENTITY_MASTER_UNAVAILABLE";
 
+    // MOD-0174 pack §12 "Ledger posting rules" (WP-0174-P2). LOT_REQUIRED and SERIAL_COUNT_MISMATCH above are unchanged.
+    public const string LotNotAllowed = "LOT_NOT_ALLOWED";
+    public const string UnknownLot = "UNKNOWN_LOT";
+    public const string LotSkuMismatch = "LOT_SKU_MISMATCH";
+    public const string LotBlocked = "LOT_BLOCKED";
+    public const string LotExpired = "LOT_EXPIRED";
+    public const string SerialAlreadyExists = "SERIAL_ALREADY_EXISTS";
+    public const string SerialNotAvailable = "SERIAL_NOT_AVAILABLE";
+    public const string SerialLotMismatch = "SERIAL_LOT_MISMATCH";
+
     public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
     {
         InvalidMovementType, CrossLeForbidden, InsufficientStock, SerialCountMismatch, UnknownLocation,
         ProductMasterUnavailable, UnknownItem, InvalidRequest, IdempotencyKeyReused, SkuItemMismatch,
         UomConversionMissing, LotRequired, AlreadyReversed, LocationMasterUnavailable, InsufficientAvailable,
-        ReservationConflict, LegalEntityMasterUnavailable
+        ReservationConflict, LegalEntityMasterUnavailable, LotNotAllowed, UnknownLot, LotSkuMismatch, LotBlocked, LotExpired,
+        SerialAlreadyExists, SerialNotAvailable, SerialLotMismatch
     };
 }

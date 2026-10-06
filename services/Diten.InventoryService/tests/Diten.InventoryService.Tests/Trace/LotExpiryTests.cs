@@ -9,8 +9,10 @@ namespace Diten.InventoryService.Tests.Trace;
 /// B-3 / CT-D8 — Expired only by the system: the sweeper expires every lot whose expiry date is before today, in ANY
 /// status, with a <c>SystemExpired</c> history row from the system actor; nothing else sets or leaves Expired; a non-Draft
 /// lot — Expired included — is still edited with a reason. The periodic sweeper is off in tests; it is driven here.
-/// The only test class that creates lots with a past expiry date (the sweeper reads every tenant).
+/// The sweeper reads every tenant: every class that creates lots with a past expiry date or drives the sweeper is in
+/// <see cref="LotExpiryCollection"/> (WP-0174-P2 adds <see cref="LedgerLotExpiryTests"/>), so they run one at a time.
 /// </summary>
+[Collection(LotExpiryCollection.Name)]
 public sealed class LotExpiryTests : IClassFixture<TraceApiFactory>
 {
     private readonly TraceApiFactory _factory;

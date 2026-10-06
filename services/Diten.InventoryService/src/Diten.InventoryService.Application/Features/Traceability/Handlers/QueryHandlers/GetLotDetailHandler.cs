@@ -10,7 +10,7 @@ namespace Diten.InventoryService.Application.Features.Traceability.Handlers.Quer
 /// <summary>
 /// getLotDetail (v1.1): the lot + its source — the FIRST inbound ledger movement carrying this lot in the caller's company
 /// (read-only; absent until the ledger posts with registered lots, slice P2) — + its serial count. <c>stockSummary</c>
-/// is the ledger per-lot projection's (slice P2).
+/// is the ledger per-lot projection of the caller's company (K-A, WP-0174-P2); absent while the lot has no position there.
 /// </summary>
 public sealed class GetLotDetailHandler : IRequestHandler<GetLotDetailQuery, Response<LotDetailDto>>
 {
@@ -41,6 +41,7 @@ public sealed class GetLotDetailHandler : IRequestHandler<GetLotDetailQuery, Res
             };
 
         var serials = await _lots.SerialCountAsync(lotId, cancellationToken);
-        return Response<LotDetailDto>.Success(TraceMapping.ToDetail(lot, TraceMapping.Today(DateTimeOffset.UtcNow), source, serials));
+        var stock = (await _lots.PositionsAsync([lotId], cancellationToken)).FirstOrDefault();
+        return Response<LotDetailDto>.Success(TraceMapping.ToDetail(lot, TraceMapping.Today(DateTimeOffset.UtcNow), source, serials, stock));
     }
 }

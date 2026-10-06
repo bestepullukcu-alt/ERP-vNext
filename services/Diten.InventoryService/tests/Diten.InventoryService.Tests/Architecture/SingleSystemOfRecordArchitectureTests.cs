@@ -29,13 +29,18 @@ public sealed class SingleSystemOfRecordArchitectureTests
         Assert.Equal(
             ["trace_genealogy_links", "trace_lot_history", "trace_lot_migrations", "trace_lots", "trace_movement_lot_links", "trace_serials"],
             Diten.InventoryService.Persistence.Traceability.TraceCollections.All.OrderBy(x => x).ToList());
+
+        // WP-0174-P2 (MOD-0174 pack §8 K-A): the per-lot stock projection, written only by the ledger posting code in the
+        // posting transaction — a ledger projection like inventory_sku_positions, never a second stock truth.
+        Assert.Equal(["inventory_lot_positions"], Diten.InventoryService.Persistence.Traceability.TraceCollections.LedgerProjections);
     }
 
     [Fact]
     public void No_production_source_names_a_collection_outside_the_declared_set()
     {
         var persistence = SourceScan.Production("Diten.InventoryService.Persistence");
-        var declared = InventoryCollections.All.Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.All).ToList();
+        var declared = InventoryCollections.All.Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.All)
+            .Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.LedgerProjections).ToList();
         var named = persistence
             .SelectMany(f => CollectionName.Matches(f.Body).Select(m => m.Groups[1].Value))
             .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal) || n.Contains("stock"))
@@ -64,7 +69,11 @@ public sealed class SingleSystemOfRecordArchitectureTests
 
         // S2: the per-SKU position carries Reserved / AvailableOnHand — it is a projection of the ledger + reservations
         // (pack ASSUMPTION-0173-13, rebuild-proven by the AC-R9 invariant test), not a second stock truth.
-        Assert.Equal([nameof(InventoryBalance), nameof(InventorySkuPosition)], quantityCarriers.OrderBy(x => x, StringComparer.Ordinal));
+        // WP-0174-P2 (MOD-0174 K-A): the per-lot position carries OnHand — a projection of the same ledger transactions,
+        // written in the posting transaction and equal to Σ balance OnHand of the lot (property-tested), not a second truth.
+        Assert.Equal(
+            [nameof(InventoryBalance), nameof(InventorySkuPosition), nameof(Diten.InventoryService.Domain.Traceability.Entities.LotPosition)],
+            quantityCarriers.OrderBy(x => x, StringComparer.Ordinal));
     }
 
     [Theory]

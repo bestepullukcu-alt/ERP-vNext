@@ -39,6 +39,9 @@ public interface ILotRepository
 
     Task<long> SerialCountAsync(Guid lotId, CancellationToken cancellationToken = default);
 
+    /// <summary>K-A (WP-0174-P2): the ledger per-lot positions of these lots in the caller's company (read-only).</summary>
+    Task<IReadOnlyList<LotPosition>> PositionsAsync(IReadOnlyCollection<Guid> lotIds, CancellationToken cancellationToken = default);
+
     Task<T> InTransactionAsync<T>(Func<ILotTransaction, CancellationToken, Task<T>> work, CancellationToken cancellationToken = default);
 }
 
@@ -62,6 +65,13 @@ public interface ILotTransaction
     Task<IReadOnlyList<LotGenealogyLink>> ParentLinksAsync(IReadOnlyCollection<Guid> childLotIds, CancellationToken cancellationToken = default);
 
     Task InsertLinkAsync(LotGenealogyLink link, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// CT-D1 (a), WP-0174-P2: after <paramref name="lot"/> changed status from <paramref name="from"/> (to its current
+    /// status), moves the lot's AVAILABLE stock out of / back into every company's SKU position, in this transaction.
+    /// Balance rows are untouched.
+    /// </summary>
+    Task ApplyStatusToAvailabilityAsync(Lot lot, LotStatus from, CancellationToken cancellationToken = default);
 }
 
 public enum LotSortField

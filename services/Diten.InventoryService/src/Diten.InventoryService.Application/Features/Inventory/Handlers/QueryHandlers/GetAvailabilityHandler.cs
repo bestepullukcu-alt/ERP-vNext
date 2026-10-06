@@ -3,6 +3,7 @@ using Diten.InventoryService.Application.Common.Models;
 using Diten.InventoryService.Application.Common.Upstream;
 using Diten.InventoryService.Application.Features.Inventory.Queries;
 using Diten.InventoryService.Application.Features.Inventory.Services;
+using Diten.InventoryService.Application.Features.Traceability.Ports;
 using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Repositories;
@@ -18,6 +19,9 @@ namespace Diten.InventoryService.Application.Features.Inventory.Handlers.QueryHa
 /// <item><c>reserved</c> = Σ remaining quantity of ACTIVE, not-yet-due reservations of the matching SKUs;
 /// <c>available</c> = Σ OnHand(AVAILABLE) − reserved (pack ASSUMPTION-0173-12). Reservations are not located, so with a
 /// warehouse / location scope the subtraction is floored at 0 (ASSUMPTION-S2-05).</item>
+/// <item>MOD-0174 CT-D1 (a), WP-0174-P2: the AVAILABLE rows of a Blocked / Expired registered lot are left out of
+/// <c>available</c> (INVENTORY-BUNDLE 1.0.1 description note) — the same rule the SKU position applies for reservations.
+/// <c>onHand</c> and <c>byStatus</c> are unchanged: the rows keep their stock status ("bloke lot ≠ bloke stok").</item>
 /// <item>FU-S1-01 / ASSUMPTION-0173-18: with NO ledger row, PRODUCT-MASTER decides — known item/SKU → 200 with zeros;
 /// unknown → 404 UNKNOWN_ITEM; unreachable → 503 PRODUCT_MASTER_UNAVAILABLE (fail-closed). With rows, no upstream call.</item>
 /// </list>
@@ -27,17 +31,20 @@ public sealed class GetAvailabilityHandler : IRequestHandler<GetAvailabilityQuer
     private readonly IInventoryLedgerRepository _ledger;
     private readonly IInventoryReservationRepository _reservations;
     private readonly IProductMasterClient _productMaster;
+    private readonly ILotMasterClient _lots;
     private readonly ITenantContext _tenantContext;
 
     public GetAvailabilityHandler(
         IInventoryLedgerRepository ledger,
         IInventoryReservationRepository reservations,
         IProductMasterClient productMaster,
+        ILotMasterClient lots,
         ITenantContext tenantContext)
     {
         _ledger = ledger;
         _reservations = reservations;
         _productMaster = productMaster;
+        _lots = lots;
         _tenantContext = tenantContext;
     }
 
@@ -74,7 +81,10 @@ public sealed class GetAvailabilityHandler : IRequestHandler<GetAvailabilityQuer
 
         var reserved = await _reservations.SumActiveReservedAsync(
             filter with { WarehouseId = null, LocationId = null }, DateTimeOffset.UtcNow, cancellationToken);
-        var availableOnHand = rows.Where(r => r.StockStatus == StockStatus.Available).Sum(r => r.OnHand);
+        var availableRows = rows.Where(r => r.StockStatus == StockStatus.Available).ToList();
+        var heldLots = await _lots.HeldLotIdsAsync(
+            availableRows.Where(r => r.LotId is not null).Select(r => r.LotId!).Distinct(StringComparer.Ordinal).ToList(), cancellationToken);
+        var availableOnHand = availableRows.Where(r => r.LotId is null || !heldLots.Contains(r.LotId)).Sum(r => r.OnHand);
         var scoped = warehouseId is not null || locationId is not null;
         var available = availableOnHand - reserved;
         if (scoped && available < 0m)

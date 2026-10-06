@@ -7,6 +7,7 @@ using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Repositories;
 using Diten.InventoryService.Domain.Rules;
+using Diten.InventoryService.Domain.Traceability.Rules;
 using MediatR;
 
 namespace Diten.InventoryService.Application.Features.Inventory.Handlers.CommandHandlers;
@@ -61,6 +62,7 @@ public sealed class PostMovementHandler : IRequestHandler<PostMovementCommand, R
         }
 
         InventoryTransaction transaction;
+        LotPostingContext? lotContext;
         if (movement.MovementType == MovementType.Reversal)
         {
             var (reversal, refusal) = await BuildReversalAsync(movement, fingerprint, cancellationToken);
@@ -70,13 +72,16 @@ public sealed class PostMovementHandler : IRequestHandler<PostMovementCommand, R
             }
 
             transaction = reversal!;
+            // WP-0174-P2: the reversal re-runs the serial lifecycle of its original on the serials the registry knows; the
+            // lot rules of CT-D4 let a REVERSAL through a Blocked / Expired lot (re-checked in the posting transaction).
+            lotContext = LotPostingContext.ForReversal(transaction.SerialIds is { Count: > 0 });
         }
         else
         {
             MasterDataCheck check;
             try
             {
-                check = await _masterData.CheckAsync(movement, cancellationToken);
+                (check, lotContext) = await _masterData.CheckWithLotsAsync(movement, cancellationToken);
             }
             catch (ProductMasterUnavailableException)
             {
@@ -102,7 +107,8 @@ public sealed class PostMovementHandler : IRequestHandler<PostMovementCommand, R
             transaction,
             LedgerLegs.For(transaction),
             NewAudit(transaction, _tenantContext.LegalEntitySource),
-            NewOutbox(transaction));
+            NewOutbox(transaction),
+            lotContext);
 
         var result = await _ledger.PostAsync(posting, cancellationToken);
         switch (result.Outcome)
@@ -129,6 +135,11 @@ public sealed class PostMovementHandler : IRequestHandler<PostMovementCommand, R
                 return Response<MovementResponseDto>.Fail(InventoryErrorCodes.UnknownLocation,
                     "Location is not an Active stockable location of this company under the named warehouse.", 422,
                     new Dictionary<string, object?> { ["locationId"] = result.RefusedLocationId });
+
+            case LedgerPostingOutcome.LotOrSerialRefused:
+                // WP-0174-P2: a registered lot / a serial re-checked inside the posting transaction (e.g. the lot was
+                // blocked between the pre-check and the commit) — pack §12 code, nothing written.
+                return Response<MovementResponseDto>.Fail(result.RefusalCode!, result.RefusalMessage!, 422, result.RefusalDetails);
 
             case LedgerPostingOutcome.IdempotencyKeyTaken:
             {

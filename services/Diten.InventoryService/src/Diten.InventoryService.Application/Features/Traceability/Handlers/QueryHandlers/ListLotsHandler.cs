@@ -14,8 +14,9 @@ namespace Diten.InventoryService.Application.Features.Traceability.Handlers.Quer
 /// <summary>
 /// listLots (TRACE v1 filters itemId / status / expiryBefore + v1.1 q / skuId / skuLevel / warn / includeStock / page /
 /// pageSize / sort). Without <c>page</c> and <c>pageSize</c> the answer is the v1 unpaged list (no page members).
-/// <c>includeStock</c> is accepted; <c>stockSummary</c> comes from the ledger per-lot projection written by slice P2 —
-/// until then no item carries it (K-A: never computed per request).
+/// With <c>includeStock=true</c> every lot that has stock in the caller's company carries <c>stockSummary</c> — read from the
+/// ledger per-lot projection <c>inventory_lot_positions</c> (K-A, WP-0174-P2), one query per page, never summed per row; a
+/// lot without a position (never posted in this company) has none.
 /// </summary>
 public sealed class ListLotsHandler : IRequestHandler<ListLotsQuery, Response<LotListDto>>
 {
@@ -64,7 +65,7 @@ public sealed class ListLotsHandler : IRequestHandler<ListLotsQuery, Response<Lo
 
         if (request.Q is { Length: > TraceContract.MaxSearchLength }) return Invalid($"q must be at most {TraceContract.MaxSearchLength} characters.");
         if (!TraceQueryParsing.TryFlag(request.Warn, out var warn)) return Invalid("warn must be true or false.");
-        if (!TraceQueryParsing.TryFlag(request.IncludeStock, out _)) return Invalid("includeStock must be true or false.");
+        if (!TraceQueryParsing.TryFlag(request.IncludeStock, out var includeStock)) return Invalid("includeStock must be true or false.");
         if (!TraceQueryParsing.TryPaging(request.Page, request.PageSize, out var page, out var pageSize))
             return Invalid("page must be ≥ 1 and pageSize 1-200.");
         if (!TrySort(request.Sort, out var sort, out var descending))
@@ -76,9 +77,12 @@ public sealed class ListLotsHandler : IRequestHandler<ListLotsQuery, Response<Lo
             itemId, skuId, skuLevel, status, expiryBefore, string.IsNullOrWhiteSpace(request.Q) ? null : request.Q.Trim(), warn, today,
             paged ? page : null, paged ? pageSize : null, sort, descending), cancellationToken);
 
+        var stock = includeStock
+            ? (await _lots.PositionsAsync(result.Items.Select(l => l.Id).ToList(), cancellationToken)).ToDictionary(p => p.LotId)
+            : [];
         return Response<LotListDto>.Success(new LotListDto
         {
-            Items = result.Items.Select(l => TraceMapping.ToRef(l, today)).ToList(),
+            Items = result.Items.Select(l => TraceMapping.ToRef(l, today, stock: stock.GetValueOrDefault(l.Id))).ToList(),
             Total = result.Total,
             Page = paged ? page : null,
             PageSize = paged ? pageSize : null

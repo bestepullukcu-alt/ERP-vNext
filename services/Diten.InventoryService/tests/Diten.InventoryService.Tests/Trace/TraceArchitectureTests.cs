@@ -90,8 +90,14 @@ public sealed class TraceArchitectureTests
             Assert.DoesNotContain("api/mdm/products", f.Body, StringComparison.Ordinal);
         });
 
+        // WP-0174-P2: the ledger feature reaches the lot master ONLY through the pack §5 "P2 only" hook points — the
+        // validator (lot / serial checks), the posting handler (context + refusal) and getAvailability (CT-D1). No other
+        // ledger feature file references Traceability.
+        string[] hooks = ["/Services/MovementMasterDataValidator.cs", "/CommandHandlers/PostMovementHandler.cs", "/QueryHandlers/GetAvailabilityHandler.cs"];
         var ledger = SourceScan.Production().Where(f => f.RelativePath.Contains("/Features/Inventory/", StringComparison.Ordinal)).ToList();
         Assert.NotEmpty(ledger);
-        Assert.All(ledger, f => Assert.DoesNotContain("Traceability", f.Body, StringComparison.Ordinal));
+        Assert.All(hooks, h => Assert.Contains(ledger, f => f.RelativePath.EndsWith(h, StringComparison.Ordinal) && f.Body.Contains("Traceability", StringComparison.Ordinal)));
+        Assert.All(ledger.Where(f => !hooks.Any(h => f.RelativePath.EndsWith(h, StringComparison.Ordinal))),
+            f => Assert.DoesNotContain("Traceability", f.Body, StringComparison.Ordinal));
     }
 }

@@ -12,7 +12,8 @@ namespace Diten.InventoryService.Persistence.Traceability;
 /// is before the UTC day of <c>now</c> and expires each in its own transaction: re-read inside the transaction (a
 /// concurrent edit / status change wins and the lot is re-checked on the next tick), version + 1, and one
 /// <c>SystemExpired</c> history row with the system actor (Guid.Empty), source <c>system-expiry</c>. Postings check the
-/// expiry date themselves (slice P2), so a lagging sweeper never lets an expired lot through.
+/// expiry date themselves (slice P2), so a lagging sweeper never lets an expired lot through. CT-D1 (a), WP-0174-P2: in the
+/// same transaction a Draft / Released lot's AVAILABLE stock leaves availability (SKU positions; a Blocked lot was out already).
 /// </summary>
 public sealed class LotExpirySweeper : ILotExpirySweeper
 {
@@ -20,6 +21,7 @@ public sealed class LotExpirySweeper : ILotExpirySweeper
     public const string SystemSource = "system-expiry";
 
     private readonly IMongoClient _client;
+    private readonly IMongoDatabase _database;
     private readonly IMongoCollection<Lot> _lots;
     private readonly IMongoCollection<LotChangeEntry> _history;
     private readonly ILogger<LotExpirySweeper> _logger;
@@ -27,6 +29,7 @@ public sealed class LotExpirySweeper : ILotExpirySweeper
     public LotExpirySweeper(IMongoClient client, IMongoDatabase database, ILogger<LotExpirySweeper> logger)
     {
         _client = client;
+        _database = database;
         _lots = database.GetCollection<Lot>(TraceCollections.Lots);
         _history = database.GetCollection<LotChangeEntry>(TraceCollections.LotHistory);
         _logger = logger;
@@ -64,6 +67,7 @@ public sealed class LotExpirySweeper : ILotExpirySweeper
             }
 
             var expectedVersion = lot.Version;
+            var from = lot.Status;
             var entry = new LotChangeEntry
             {
                 Id = Guid.NewGuid(),
@@ -90,6 +94,7 @@ public sealed class LotExpirySweeper : ILotExpirySweeper
             if (result.MatchedCount != 1) return false;
 
             await _history.InsertOneAsync(s, entry, cancellationToken: ct);
+            await LotHeldStock.ApplyAsync(_database, s, lot, from, LotStatus.Expired, now, ct);
             _logger.LogInformation("MOD-0174 lot {LotId} expired by the system (expiry {Expiry}).", lot.Id, lot.ExpiryDate);
             return true;
         }, new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority), cancellationToken);

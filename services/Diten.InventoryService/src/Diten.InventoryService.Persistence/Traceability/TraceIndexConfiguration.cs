@@ -13,10 +13,14 @@ namespace Diten.InventoryService.Persistence.Traceability;
 /// <item>the create / status / genealogy idempotency keys and the genealogy triple commit once;</item>
 /// <item><c>ux_trace_movement_link</c> / <c>ux_trace_lot_migration</c> — slice P4 (one link per transaction, one
 /// migration per tenant).</item>
+/// <item><c>ux_inventory_lot_position</c> — one K-A position per Tenant + company + lot (WP-0174-P2): the posting's upsert
+/// can never create a second one.</item>
 /// </list>
 /// </summary>
 public static class TraceIndexConfiguration
 {
+    public const string LotPositionIndex = "ux_inventory_lot_position";
+
     public const string LotIdentityIndex = "ux_trace_lot_identity";
     public const string LotCreateKeyIndex = "ux_trace_lot_create_key";
     public const string StatusChangeKeyIndex = "ux_trace_lot_status_key";
@@ -123,8 +127,16 @@ public static class TraceIndexConfiguration
                 new CreateIndexOptions { Name = MigrationIndex, Unique = true })
         ];
 
+    public static IReadOnlyList<CreateIndexModel<LotPosition>> BuildLotPositions()
+        =>
+        [
+            new(Builders<LotPosition>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.LotId),
+                new CreateIndexOptions { Name = LotPositionIndex, Unique = true })
+        ];
+
     public static async Task ApplyAsync(IMongoDatabase database, CancellationToken ct = default)
     {
+        await database.GetCollection<LotPosition>(TraceCollections.LotPositions).Indexes.CreateManyAsync(BuildLotPositions(), ct);
         await database.GetCollection<Lot>(TraceCollections.Lots).Indexes.CreateManyAsync(BuildLots(), ct);
         await database.GetCollection<LotChangeEntry>(TraceCollections.LotHistory).Indexes.CreateManyAsync(BuildLotHistory(), ct);
         await database.GetCollection<SerialNumber>(TraceCollections.Serials).Indexes.CreateManyAsync(BuildSerials(), ct);

@@ -18,5 +18,12 @@ public enum LedgerPostingOutcome
     /// K-13 (MOD-0173-FU02): a leg location is not an Active stockable location of this company under the named
     /// warehouse at commit time (deactivated, archived, made non-stockable or moved meanwhile); nothing was written.
     /// </summary>
-    LocationNotPostable
+    LocationNotPostable,
+
+    /// <summary>
+    /// WP-0174-P2: re-checked inside the posting transaction, a registered lot or a serial forbids the posting
+    /// (<c>LOT_BLOCKED</c> / <c>LOT_EXPIRED</c> after a concurrent status change, a serial taken meanwhile …); the code is
+    /// in <see cref="LedgerPostingResult.RefusalCode"/>. Nothing was written.
+    /// </summary>
+    LotOrSerialRefused
 }

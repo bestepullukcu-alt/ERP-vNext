@@ -52,4 +52,11 @@ public sealed class Lot : EntityBase
     public string? CreateIdempotencyKey { get; set; }
 
     public string? CreateRequestFingerprint { get; set; }
+
+    /// <summary>
+    /// WP-0174-P2 (pack §8 "Ledger link"): incremented inside every ledger posting that names this lot. A status change
+    /// writes the same document in its own transaction, so a posting racing a block gets a WriteConflict and re-runs on
+    /// the committed status (the FU02 <c>StockTouchSeq</c> technique) — stock never moves in a lot that was blocked meanwhile.
+    /// </summary>
+    public long StockTouchSeq { get; set; }
 }

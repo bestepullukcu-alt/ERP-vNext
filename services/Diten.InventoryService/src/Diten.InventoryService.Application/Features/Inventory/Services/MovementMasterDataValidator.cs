@@ -1,6 +1,11 @@
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Common.Upstream;
+using Diten.InventoryService.Application.Features.Traceability;
+using Diten.InventoryService.Application.Features.Traceability.Ports;
+using Diten.InventoryService.Application.Features.Traceability.Services;
 using Diten.InventoryService.Domain.Rules;
+using Diten.InventoryService.Domain.Traceability.Entities;
+using Diten.InventoryService.Domain.Traceability.Rules;
 using Microsoft.Extensions.Options;
 
 namespace Diten.InventoryService.Application.Features.Inventory.Services;
@@ -13,27 +18,56 @@ namespace Diten.InventoryService.Application.Features.Inventory.Services;
 /// named warehouse (<c>UNKNOWN_LOCATION</c>).
 /// Upstream failures are not caught here: they surface as the *UnavailableException of the client and the handler
 /// turns them into 503 before anything is written (fail-closed, pack §8).
+/// <para>
+/// WP-0174-P2 (MOD-0174 pack §12 "Ledger posting rules") — the lot / serial rules are inserted in the pack's order without
+/// moving any existing one: after <c>LOT_REQUIRED</c> come <c>LOT_NOT_ALLOWED</c> → <c>UNKNOWN_LOT</c> →
+/// <c>LOT_SKU_MISMATCH</c> → <c>LOT_BLOCKED</c> → <c>LOT_EXPIRED</c>; after <c>SERIAL_COUNT_MISMATCH</c> come
+/// <c>SERIAL_ALREADY_EXISTS</c> → <c>SERIAL_NOT_AVAILABLE</c> → <c>SERIAL_LOT_MISMATCH</c>; locations last as before. The
+/// lot / serial source is the in-process <see cref="ILotMasterClient"/>; the posting transaction re-checks the same rules
+/// on the committed state. A typed (unregistered) lot keeps its pre-P2 behaviour while <c>Trace:EnforceRegisteredLots</c>
+/// is off (<see cref="LotLedgerOptions"/>).
+/// </para>
 /// </summary>
 public sealed class MovementMasterDataValidator
 {
     private readonly IProductMasterClient _productMaster;
     private readonly ILocationMasterClient _locationMaster;
+    private readonly ILotMasterClient _lotMaster;
     private readonly ITenantContext _tenantContext;
     private readonly InventoryPolicyOptions _policy;
+    private readonly LotLedgerOptions _lotPolicy;
 
     public MovementMasterDataValidator(
         IProductMasterClient productMaster,
         ILocationMasterClient locationMaster,
+        ILotMasterClient lotMaster,
         ITenantContext tenantContext,
-        IOptions<InventoryPolicyOptions> policy)
+        IOptions<InventoryPolicyOptions> policy,
+        IOptions<LotLedgerOptions> lotPolicy)
     {
         _productMaster = productMaster;
         _locationMaster = locationMaster;
+        _lotMaster = lotMaster;
         _tenantContext = tenantContext;
         _policy = policy.Value;
+        _lotPolicy = lotPolicy.Value;
     }
 
     public async Task<MasterDataCheck> CheckAsync(ParsedMovement movement, CancellationToken ct)
+        => (await CheckWithLotsAsync(movement, ct)).Check;
+
+    /// <summary>
+    /// <see cref="CheckAsync"/> plus what the posting transaction must do with the movement's serials (WP-0174-P2); the
+    /// context is null when the check refused.
+    /// </summary>
+    public async Task<(MasterDataCheck Check, LotPostingContext? Lot)> CheckWithLotsAsync(ParsedMovement movement, CancellationToken ct)
+    {
+        var decided = new LotDecision();
+        var check = await CheckCoreAsync(movement, decided, ct);
+        return (check, check.IsValid ? decided.Context : null);
+    }
+
+    private async Task<MasterDataCheck> CheckCoreAsync(ParsedMovement movement, LotDecision decided, CancellationToken ct)
     {
         var direction = movement.Direction
             ?? throw new InvalidOperationException("A REVERSAL is not validated against the masters; it copies the original.");
@@ -88,6 +122,43 @@ public sealed class MovementMasterDataValidator
             return MasterDataCheck.Refused(InventoryErrorCodes.LotRequired, "lotId is required: the item is lot-controlled.");
         }
 
+        // ── LOT (WP-0174-P2) ──────────────────────────────────────────────────────────────────────────────
+        var enforce = _lotPolicy.EnforceRegisteredLots;
+        Lot? lot = null;
+        if (movement.LotId is { } lotId)
+        {
+            var registeredForm = LotPostingRules.IsRegisteredLotForm(lotId, out _);
+            if (!product.LotControlled && (registeredForm || enforce))
+            {
+                return MasterDataCheck.Refused(InventoryErrorCodes.LotNotAllowed,
+                    "lotId is not allowed: the item is not lot-controlled.", new Dictionary<string, object?> { ["lotId"] = lotId });
+            }
+
+            if (registeredForm)
+            {
+                lot = await _lotMaster.ResolveLotAsync(lotId, ct);
+                if (lot is null)
+                {
+                    return MasterDataCheck.Refused(InventoryErrorCodes.UnknownLot,
+                        "lotId does not name a lot of this tenant.", new Dictionary<string, object?> { ["lotId"] = lotId });
+                }
+
+                var violation = LotPostingRules.Evaluate(lot, movement.SkuId, movement.SkuLevel, movement.MovementType, movement.PostingDate);
+                if (violation is { } v)
+                {
+                    var (code, message, details) = LotPostingErrors.For(v, lot);
+                    return MasterDataCheck.Refused(code, message, details);
+                }
+            }
+            else if (enforce && product.LotControlled && direction.FromLocationId is null)
+            {
+                // ASSUMPTION-0174-10: with the switch on, an inbound movement of a lot-controlled item names a registered lot.
+                return MasterDataCheck.Refused(InventoryErrorCodes.UnknownLot,
+                    "lotId must name a registered lot for an inbound movement (Trace:EnforceRegisteredLots).",
+                    new Dictionary<string, object?> { ["lotId"] = lotId });
+            }
+        }
+
         if (product.SerialControlled)
         {
             var distinct = movement.SerialIds?.Distinct(StringComparer.Ordinal).Count() ?? 0;
@@ -101,7 +172,22 @@ public sealed class MovementMasterDataValidator
                         ["baseQuantity"] = InventoryQuantity.ToWire(baseQuantity)
                     });
             }
+
+            // ── SERIALS (WP-0174-P2): one batched registry read for the whole movement ──────────────────────
+            var serials = await _lotMaster.ValidateSerialsAsync(new SerialMovement(
+                movement.ItemId, movement.SkuId, movement.SkuLevel, lot?.Id, movement.SerialIds!,
+                direction.FromWarehouseId, direction.FromLocationId, direction.ToWarehouseId, direction.ToLocationId,
+                AcceptUnregistered: !enforce && lot is null), ct);
+            if (!serials.IsValid)
+            {
+                return MasterDataCheck.Refused(serials.Code!, serials.Message!, LotPostingErrors.SerialDetails(serials.Serials));
+            }
         }
+
+        decided.Context = new LotPostingContext(
+            SerialLifecycle: product.SerialControlled && movement.SerialIds is { Count: > 0 },
+            AcceptUnregisteredSerials: !enforce && lot is null,
+            RegisterNewSerials: true);
 
         // ── LOCATION ──────────────────────────────────────────────────────────────────────────────────────
         var sides = new List<(string WarehouseId, string LocationId)>();
@@ -159,4 +245,10 @@ public sealed class MovementMasterDataValidator
 
     private static bool SameId(string? wire, Guid expected)
         => Guid.TryParse(wire, out var parsed) && parsed == expected;
+
+    /// <summary>What the lot / serial part of the check decided for the posting transaction (set only when it passed).</summary>
+    private sealed class LotDecision
+    {
+        public LotPostingContext? Context { get; set; }
+    }
 }

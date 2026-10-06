@@ -1,3 +1,4 @@
+using Diten.InventoryService.Application.Features.Traceability;
 using Diten.InventoryService.Application.Features.Traceability.Ports;
 using Diten.InventoryService.Application.Features.Traceability.Services;
 using Diten.InventoryService.Domain.Traceability.Repositories;
@@ -10,8 +11,9 @@ namespace Diten.InventoryService.Api.Traceability;
 /// <summary>
 /// MOD-0174 slice P1 wiring — one call from <c>Program.cs</c>, so the shared layer registrations (Application /
 /// Infrastructure / Persistence <c>DependencyInjection</c>) stay untouched. MediatR handlers and validators of the
-/// Traceability feature are already picked up by the Application assembly scan. The ledger is NOT wired to the lot master
-/// here (in-process <c>ILotMasterClient</c> = slice P2).
+/// Traceability feature are already picked up by the Application assembly scan. Slice P2 wires the ledger to the lot
+/// master: the in-process <see cref="ILotMasterClient"/> (<see cref="InventoryLotDirectory"/>) and the request-scoped
+/// <see cref="LedgerTransactionBinding"/> through which the ledger repository lends it its posting transaction.
 /// </summary>
 public static class TraceabilityServiceCollectionExtensions
 {
@@ -22,6 +24,11 @@ public static class TraceabilityServiceCollectionExtensions
         services.AddScoped<ISerialRepository, SerialRepository>();
         services.AddScoped<ILotExpirySweeper, LotExpirySweeper>();
         services.AddSingleton<ILotStatusChangeGate, AlwaysAllowLotStatusChangeGate>();
+
+        // WP-0174-P2 — the ledger link (pack §8), in-process; Trace:EnforceRegisteredLots defaults to false (ASSUMPTION-0174-10).
+        services.AddScoped<LedgerTransactionBinding>();
+        services.AddScoped<ILotMasterClient, InventoryLotDirectory>();
+        services.Configure<LotLedgerOptions>(configuration.GetSection(LotLedgerOptions.SectionName));
 
         services.Configure<LotExpirySweeperOptions>(configuration.GetSection(LotExpirySweeperOptions.SectionName));
         services.AddHostedService<LotExpirySweeperHostedService>();

@@ -209,8 +209,9 @@ public sealed class Gs1CheckDto
 
 public static class TraceMapping
 {
-    public static LotRefDto ToRef(Lot lot, DateOnly today, bool withETag = false) => new()
+    public static LotRefDto ToRef(Lot lot, DateOnly today, bool withETag = false, LotPosition? stock = null) => new()
     {
+        StockSummary = stock is null ? null : ToStockSummary(stock),
         LotId = Id(lot.Id),
         LotNumber = lot.LotNumber,
         ItemId = Id(lot.ItemId),
@@ -232,11 +233,12 @@ public static class TraceMapping
         ETagVersion = withETag ? lot.Version : null
     };
 
-    public static LotDetailDto ToDetail(Lot lot, DateOnly today, LotSourceDto? source, long serialCount)
+    public static LotDetailDto ToDetail(Lot lot, DateOnly today, LotSourceDto? source, long serialCount, LotPosition? stock = null)
     {
-        var r = ToRef(lot, today, withETag: true);
+        var r = ToRef(lot, today, withETag: true, stock);
         return new LotDetailDto
         {
+            StockSummary = r.StockSummary,
             LotId = r.LotId, LotNumber = r.LotNumber, ItemId = r.ItemId, ManufacturerLot = r.ManufacturerLot,
             SupplierLot = r.SupplierLot, ManufacturingDate = r.ManufacturingDate, ExpiryDate = r.ExpiryDate,
             RetestDate = r.RetestDate, CountryOfOrigin = r.CountryOfOrigin, Status = r.Status, CoaReference = r.CoaReference,
@@ -246,6 +248,15 @@ public static class TraceMapping
             SerialCount = serialCount
         };
     }
+
+    /// <summary>K-A (WP-0174-P2): the ledger per-lot position of the caller's company — read, never summed per request.</summary>
+    public static LotStockSummaryDto ToStockSummary(LotPosition position) => new()
+    {
+        OnHand = InventoryQuantity.ToWire(position.OnHand),
+        BaseUomId = position.BaseUomId,
+        LegalEntityId = position.LegalEntityId is { } le ? Id(le) : string.Empty,
+        AsOf = Wire(position.UpdatedAt ?? position.CreatedAt)!
+    };
 
     public static LotChangeDto ToChange(LotChangeEntry e) => new()
     {

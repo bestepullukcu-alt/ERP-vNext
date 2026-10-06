@@ -30,6 +30,8 @@ public sealed class LotRepository : ILotRepository
     private readonly IMongoCollection<LotGenealogyLink> _genealogy;
     private readonly IMongoCollection<SerialNumber> _serials;
     private readonly IMongoCollection<InventoryTransaction> _transactions;
+    private readonly IMongoCollection<LotPosition> _positions;
+    private readonly IMongoDatabase _database;
     private readonly TransactionRetryCounter _retries;
     private readonly ILogger<LotRepository> _logger;
     private readonly Guid _tenantId;
@@ -48,6 +50,8 @@ public sealed class LotRepository : ILotRepository
         _genealogy = database.GetCollection<LotGenealogyLink>(TraceCollections.GenealogyLinks);
         _serials = database.GetCollection<SerialNumber>(TraceCollections.Serials);
         _transactions = database.GetCollection<InventoryTransaction>(InventoryCollections.Transactions);
+        _positions = database.GetCollection<LotPosition>(TraceCollections.LotPositions);
+        _database = database;
         _retries = retries;
         _logger = logger;
         _tenantId = tenantContext.TenantId;
@@ -171,6 +175,14 @@ public sealed class LotRepository : ILotRepository
         => await _serials.CountDocumentsAsync(Scope<SerialNumber>() & Builders<SerialNumber>.Filter.Eq(x => x.LotId, lotId),
             cancellationToken: cancellationToken);
 
+    public async Task<IReadOnlyList<LotPosition>> PositionsAsync(IReadOnlyCollection<Guid> lotIds, CancellationToken cancellationToken = default)
+        => lotIds.Count == 0
+            ? []
+            : await _positions.Find(Scope<LotPosition>()
+                                    & Builders<LotPosition>.Filter.Eq(x => x.LegalEntityId, (Guid?)_legalEntityId)
+                                    & Builders<LotPosition>.Filter.In(x => x.LotId, lotIds))
+                .ToListAsync(cancellationToken);
+
     // ── the transaction ───────────────────────────────────────────────────────────────────────────────────
 
     public async Task<T> InTransactionAsync<T>(Func<ILotTransaction, CancellationToken, Task<T>> work, CancellationToken cancellationToken = default)
@@ -261,6 +273,9 @@ public sealed class LotRepository : ILotRepository
             _owner.StampScope(link);
             await _owner._genealogy.InsertOneAsync(_session, link, cancellationToken: cancellationToken);
         }
+
+        public Task ApplyStatusToAvailabilityAsync(Lot lot, LotStatus from, CancellationToken cancellationToken = default)
+            => LotHeldStock.ApplyAsync(_owner._database, _session, lot, from, lot.Status, lot.UpdatedAt ?? DateTimeOffset.UtcNow, cancellationToken);
     }
 
     // ── shared ────────────────────────────────────────────────────────────────────────────────────────────

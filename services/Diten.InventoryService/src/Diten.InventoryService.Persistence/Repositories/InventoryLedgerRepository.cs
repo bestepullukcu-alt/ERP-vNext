@@ -1,10 +1,15 @@
 using System.Globalization;
 using Diten.InventoryService.Application.Common;
+using Diten.InventoryService.Application.Features.Traceability.Ports;
+using Diten.InventoryService.Application.Features.Traceability.Services;
 using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Repositories;
 using Diten.InventoryService.Domain.Rules;
+using Diten.InventoryService.Domain.Traceability.Entities;
+using Diten.InventoryService.Domain.Traceability.Rules;
 using Diten.InventoryService.Domain.ValueObjects;
+using Diten.InventoryService.Persistence.Traceability;
 using MongoDB.Bson;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -31,6 +36,13 @@ namespace Diten.InventoryService.Persistence.Repositories;
 ///
 /// <para><b>Append-only</b>: the transaction collection is only ever read or <c>InsertOne</c>-ed. There is no
 /// update, replace or delete of a transaction anywhere in this class (AC17, architecture-tested).</para>
+///
+/// <para><b>Lots and serials (MOD-0174 WP-0174-P2, pack §8 "Ledger link")</b>, in the same transaction, through the
+/// in-process <see cref="ILotMasterClient"/> bound to this session: a registered lot is re-read (and its
+/// <c>StockTouchSeq</c> written, so a concurrent status change conflicts) and the pack §12 / CT-D4 rules are re-checked on
+/// it; the K-A per-lot position (<c>inventory_lot_positions</c>) moves by the posting's net delta; a Blocked / Expired lot
+/// leaves the SKU position untouched (CT-D1 (a): its AVAILABLE stock is already outside it); the serials are re-validated
+/// and registered / consumed / moved. A refusal here aborts the transaction: nothing is written.</para>
 /// </summary>
 public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
 {
@@ -41,6 +53,9 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
     private readonly IMongoCollection<InventoryOutboxMessage> _outbox;
     private readonly IMongoCollection<BsonDocument> _sequences;
     private readonly IMongoCollection<Location> _locations;
+    private readonly IMongoCollection<LotPosition> _lotPositions;
+    private readonly ILotMasterClient _lots;
+    private readonly LedgerTransactionBinding _lotBinding;
     private readonly TransactionRetryCounter _retries;
     private readonly ILogger<InventoryLedgerRepository> _logger;
     private readonly ReservationPositionOperations _reservations;
@@ -52,7 +67,9 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         IMongoDatabase database,
         ITenantContext tenantContext,
         TransactionRetryCounter retries,
-        ILogger<InventoryLedgerRepository> logger)
+        ILogger<InventoryLedgerRepository> logger,
+        ILotMasterClient lots,
+        LedgerTransactionBinding lotBinding)
     {
         _client = client;
         _transactions = database.GetCollection<InventoryTransaction>(InventoryCollections.Transactions);
@@ -61,6 +78,9 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         _outbox = database.GetCollection<InventoryOutboxMessage>(InventoryCollections.Outbox);
         _sequences = database.GetCollection<BsonDocument>(InventoryCollections.Sequences);
         _locations = database.GetCollection<Location>(InventoryCollections.Locations);
+        _lotPositions = database.GetCollection<LotPosition>(TraceCollections.LotPositions);
+        _lots = lots;
+        _lotBinding = lotBinding;
         _retries = retries;
         _logger = logger;
         _tenantId = tenantContext.TenantId;
@@ -153,6 +173,9 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
 
                 await TouchLegLocationsAsync(s, posting.Legs, ct);
 
+                using var lotSession = _lotBinding.Bind(s);
+                var lot = await ResolvePostingLotAsync(transaction, ct);
+
                 var number = await NextTransactionNumberAsync(s, transaction.PostingDate.UtcDateTime.Year, ct);
                 transaction.TransactionNumber = number;
                 posting.Audit.TransactionNumber = number;
@@ -172,7 +195,17 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
 
                 transaction.ResultSnapshot = (snapshotRow ?? throw new InvalidOperationException("Snapshot leg was not applied.")).ToSnapshot();
 
-                await ApplySkuPositionAsync(s, posting, ct);
+                if (lot is not null)
+                {
+                    await ApplyLotPositionAsync(s, posting, lot.Id, ct);
+                }
+
+                if (lot is null || !LotPostingRules.HoldsStock(lot.Status))
+                {
+                    await ApplySkuPositionAsync(s, posting, ct);
+                }
+
+                await ApplySerialsAsync(posting, lot, ct);
 
                 await _transactions.InsertOneAsync(s, transaction, cancellationToken: ct);
                 await _audit.InsertOneAsync(s, posting.Audit, cancellationToken: ct);
@@ -190,6 +223,10 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         catch (LocationNotPostableException notPostable)
         {
             return LedgerPostingResult.NotPostable(notPostable.LocationId);
+        }
+        catch (LotPostingRefusedException refused)
+        {
+            return LedgerPostingResult.LotOrSerialRefused(refused.Code, refused.Message, refused.Details);
         }
         catch (MongoWriteException ex) when (IsDuplicateOn(ex, InventoryIndexConfiguration.IdempotencyIndex))
         {
@@ -229,6 +266,99 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         }
 
         await _reservations.ApplyAvailableDeltaAsync(session, sku, netAvailable, transaction.BaseUomId, now, ct);
+    }
+
+    /// <summary>
+    /// WP-0174-P2: the registered lot the transaction names, re-read in this transaction (the read writes its
+    /// <c>StockTouchSeq</c>), with the pack §12 / CT-D4 rules re-evaluated on it; null for a typed lot text or no lot.
+    /// </summary>
+    private async Task<Lot?> ResolvePostingLotAsync(InventoryTransaction transaction, CancellationToken ct)
+    {
+        if (transaction.LotId is null)
+        {
+            return null;
+        }
+
+        var lot = await _lots.ResolveLotAsync(transaction.LotId, ct);
+        if (lot is not null
+            && LotPostingRules.Evaluate(lot, transaction.SkuId, transaction.SkuLevel, transaction.MovementType, transaction.PostingDate) is { } violation)
+        {
+            var (code, message, details) = LotPostingErrors.For(violation, lot);
+            throw new LotPostingRefusedException(code, message, details);
+        }
+
+        return lot;
+    }
+
+    /// <summary>
+    /// K-A (pack §8): the per-lot position of this company moves by the posting's net delta (all stock statuses, base UoM)
+    /// in the same transaction as the balance legs — so it equals Σ balance OnHand of the lot at every commit.
+    /// </summary>
+    private async Task ApplyLotPositionAsync(IClientSessionHandle session, LedgerPosting posting, Guid lotId, CancellationToken ct)
+    {
+        var net = posting.Legs.Sum(l => l.Delta);
+        if (net == 0m)
+        {
+            return;
+        }
+
+        var f = Builders<LotPosition>.Filter;
+        var u = Builders<LotPosition>.Update;
+        var now = posting.Transaction.CreatedAt;
+        await _lotPositions.UpdateOneAsync(
+            session,
+            f.Eq(x => x.TenantId, (Guid?)_tenantId) & f.Eq(x => x.LegalEntityId, (Guid?)_legalEntityId)
+            & f.Eq(x => x.IsDeleted, false) & f.Eq(x => x.LotId, lotId),
+            u.Combine(
+                u.Inc(x => x.OnHand, net),
+                u.Inc(x => x.Version, 1),
+                u.Set(x => x.UpdatedAt, now),
+                u.SetOnInsert(x => x.Id, Guid.NewGuid()),
+                u.SetOnInsert(x => x.BaseUomId, posting.Transaction.BaseUomId),
+                u.SetOnInsert(x => x.CreatedAt, now),
+                u.SetOnInsert(x => x.DeletedAt, null)),
+            new UpdateOptions { IsUpsert = true },
+            ct);
+    }
+
+    /// <summary>
+    /// The serial lifecycle (pack §16 P2, ASSUMPTION-0174-04/05): re-validated on the committed state, then inbound →
+    /// Active, outbound → Consumed, transfer → moved. The ledger keeps the serial NUMBERS on the transaction.
+    /// </summary>
+    private async Task ApplySerialsAsync(LedgerPosting posting, Lot? lot, CancellationToken ct)
+    {
+        var transaction = posting.Transaction;
+        if (posting.Lot is not { SerialLifecycle: true } context || transaction.SerialIds is not { Count: > 0 } serials)
+        {
+            return;
+        }
+
+        var movement = new SerialMovement(
+            transaction.ItemId, transaction.SkuId, transaction.SkuLevel, lot?.Id, serials,
+            transaction.FromWarehouseId, transaction.FromLocationId, transaction.ToWarehouseId, transaction.ToLocationId,
+            AcceptUnregistered: context.AcceptUnregisteredSerials && (lot is null || transaction.MovementType == MovementType.Reversal),
+            RegisterNew: context.RegisterNewSerials,
+            TransactionId: transaction.Id,
+            At: transaction.CreatedAt);
+
+        var check = await _lots.ValidateSerialsAsync(movement, ct);
+        if (!check.IsValid)
+        {
+            throw new LotPostingRefusedException(check.Code!, check.Message!, LotPostingErrors.SerialDetails(check.Serials));
+        }
+
+        if (movement.IsInbound)
+        {
+            await _lots.RegisterSerialsAsync(movement, ct);
+        }
+        else if (movement.IsOutbound)
+        {
+            await _lots.ConsumeSerialsAsync(movement, ct);
+        }
+        else
+        {
+            await _lots.MoveSerialsAsync(movement, ct);
+        }
     }
 
     /// <summary>

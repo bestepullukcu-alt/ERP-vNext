@@ -19,8 +19,9 @@ namespace Diten.InventoryService.Application.Features.Traceability.Handlers.Comm
 /// Expired never by hand, 422 <c>LOT_STATUS_TRANSITION_INVALID</c>), the 0175 gate, replace + one
 /// <c>StatusChanged</c> history row carrying the key.</item>
 /// </list>
-/// The balance rows' stock status is NOT touched ("bloke lot ≠ bloke stok"); what a Blocked lot means for availability
-/// is the ledger's (CT-D1, slice P2).
+/// The balance rows' stock status is NOT touched ("bloke lot ≠ bloke stok"). CT-D1 (a), WP-0174-P2: in the same
+/// transaction the lot's AVAILABLE stock leaves availability (→ Blocked) or comes back (Blocked → Released) through the SKU
+/// positions; a posting racing the change conflicts on the lot document and re-runs on the committed status.
 /// </summary>
 public sealed class ChangeLotStatusHandler : IRequestHandler<ChangeLotStatusCommand, Response<LotRefDto>>
 {
@@ -89,11 +90,13 @@ public sealed class ChangeLotStatusHandler : IRequestHandler<ChangeLotStatusComm
                 var entry = _support.History(lot.Id, LotChangeAction.StatusChanged, "status", lot.Status.ToString(), target.ToString(), reason, now);
                 entry.IdempotencyKey = key;
                 entry.RequestFingerprint = fingerprint;
+                var from = lot.Status;
                 lot.Status = target;
                 lot.UpdatedAt = now;
                 lot.UpdatedBy = _support.UserId;
                 if (!await tx.ReplaceAsync(lot, expectedVersion, ct)) return TraceWriteSupport.Conflict<LotRefDto>();
                 await tx.AppendHistoryAsync([entry], ct);
+                await tx.ApplyStatusToAvailabilityAsync(lot, from, ct);
                 return Response<LotRefDto>.Success(TraceMapping.ToRef(lot, today, withETag: true), 200);
             }, cancellationToken);
         }
