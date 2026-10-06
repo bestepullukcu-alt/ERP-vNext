@@ -25,7 +25,9 @@ public sealed class ContractSchemaValidatorTests
 
         Assert.Contains("x-status: FROZEN", text);
         Assert.Contains("x-owner: MOD-0173", text);
-        Assert.Contains("version: 1.0.0", text);
+        // WP-0174-P2 (MOD-0174 CT-D1 (a), owner decision 2026-10-05): the description-only single-writer step 1.0.0 → 1.0.1.
+        // Still the frozen v1 bundle — InventoryBundleDescriptionNoteTests pins 1.0.0 and proves only descriptions changed.
+        Assert.Contains("version: 1.0.1", text);
     }
 
     [Fact]

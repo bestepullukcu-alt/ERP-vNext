@@ -6,10 +6,13 @@ info:
     Stok değiştiren tek yol POST /movements (append-only, idempotent).
     Balance = projection (edit yasak). Tenant+LegalEntity scoped (server-resolved).
     Bu spec MOCK kaynağıdır: `prism mock inventory-bundle.openapi.yaml`.
-  version: 1.0.0
+  version: 1.0.1
   x-status: FROZEN
   x-owner: MOD-0173
   x-decisions: [DEC-INV-02, 05, 06, 08, 12, 13, 15, 16, 17, 18]
+  x-changelog:
+    - "1.0.0 — Wave-0 frozen contract (MOD-0173)."
+    - "1.0.1 — description-only, single-writer step (WP-0174-P2, 2026-10-06; MOD-0174 CT-D1 option (a), owner decision 2026-10-05): AvailabilityView.available (getAvailability) excludes the AVAILABLE stock of Blocked / Expired lots; the same rule bounds the reservations. No path, parameter, schema, property, type, enum, required list or status code changed; BalanceView rows keep their stock status and their own available."
 servers:
   - url: /api/inventory
 security:
@@ -309,7 +312,7 @@ components:
         scope: { type: object, additionalProperties: { type: string } }
         onHand: { $ref: '#/components/schemas/Decimal' }
         reserved: { $ref: '#/components/schemas/Decimal' }
-        available: { $ref: '#/components/schemas/Decimal' }
+        available: { $ref: '#/components/schemas/Decimal', description: 'available = onHand(AVAILABLE) − reserved, excluding Blocked / Expired lots (MOD-0174 CT-D1, 2026-10-06)' }
         byStatus: { type: object, additionalProperties: { $ref: '#/components/schemas/Decimal' } }
         baseUomId: { type: string }
         asOf: { type: string, format: date-time }
