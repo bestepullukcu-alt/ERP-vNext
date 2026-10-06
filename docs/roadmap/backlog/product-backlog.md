@@ -8063,6 +8063,21 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-563
+
+**Ürün kimliği denetim niyetleri canlıda merkeze ulaşmıyor: teslim işçisi kapalı, temporal cutover kapalı, niyetlerde sözleşme sürümü boş ve korelasyon GUID değil — FG taslak iptali bu yüzden canlıda sonuçlanamaz (BL-559 canlıda açık kalır)**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) + sahip (canlı ayar kararı, BL-536) · BULAN: WP-MDM-FG-ACCEPT-01 FIX1 madde 1 ölçümü · KAYIT: 2026-10-06
+
+MOD-0290 s21 FG taslak iptalini ancak doğrulanmış merkezi G4 makbuzuyla kesinleştiriyor ("PendingAudit is not final and does not free the parent"). Ölçüm: (a) `AuditIntentDeliveryWorker` varsayılan kapalı;
+(b) temporal-storage scalar cutover etkin değilken depo talep edilen yükü vermiyor (testte 14 keşif / 14 talep / 0 kabul); (c) FG oluşturma, LSKU ve GSKU dahil hiçbir ürün kimliği niyeti genel yoldan
+teslim edilemiyor (`ContractVersion` boş, `CorrelationId` GUID değil — MOD-0290 madde 10 bilinen borç). Sonuç: canlıda iptal edilen taslak FG PendingAudit kalır ve GSKU'yu engellemeye devam eder (güvenli,
+görünür, gösterge sayar; bugünle aynı). Düzeltme: ürün kimliği niyetlerinin sözleşme / korelasyon borcu kapanır, temporal cutover açılır, teslim işçisi canlıda açılır (sahip kararı). Ayrıca:
+FG / LSKU taslak iptali için tam `cancel-draft` izin anahtarları (v1 oluşturma anahtarıyla) ve sonuçlandırıcının "güncel kiracı Active" koşulu (yeni Platform okuması). Karşılaştırma: SAP'de
+değişiklik belgesi (CDHDR) işlemle aynı LUW'da yazılır, ayrı teslim beklemez; Oracle Fusion denetimi de işlem içi. Gelecek regresyon riski: 🟡 (FG canlıda kullanılmıyor; API açık).
+
+---
+
 ### BL-561
 
 **Depolarda ortak `IsDeleted == false` koşulu, alanı hiç yazılmamış çok eski belgeyle eşleşmez (eksik alan ≠ false)**
