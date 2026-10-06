@@ -162,3 +162,37 @@ KORU/YAPMA: tasarım değişmez (Faz 4/6), Rota + tarih biçimi aynen; YENİ YAZ
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — Web (666/0) · CRM Application (2254/0/5, PII flake) · Auth (taban ölç) · Platform odaklı (194/3 ortam) · mimari (38/1, 26 SABİT); build 0 hata; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–7. Sabotaj 1–4 (kırmızı kanıtla, geri al). Grant script'ini deneme modunda çalıştır, çıktıyı rapora koy.
 Commit: "feat(crm,web,auth): WP-VP-2 — visit planning phase 2 (display names, rep = caller + ownership, territory universe + subtree coverage, server-derived play/campaign/segment)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), sahiplik uygulanan uçların listesi, mobil sözleşmesine eklenen alanlar (ad + tip), oyun/kampanya türetme kuralı, grant script'i deneme çıktısı. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-06)
+**Commit:** `fecf231e` (ajan `fac1399d`, test dalı üzerine rebase + ff). Push: test dalı.
+
+**CT K13 (kendi koşum):**
+| Paket | Taban | Sonuç |
+|---|---|---|
+| Web (worktree) | 666/0 | **674/0** |
+| Web (birleşik, CYC-UI-FIX-2 ile) | — | **697/0** |
+| CRM Application | 2254/0/5 | **2270/0/5** |
+| Auth Application | 1097/0 | **1099/0** |
+| Platform odaklı | 194/3 | **196/3** (3 = yerel mongod, ortam) |
+| Mimari | 38/1 (26) | **38/1 (26 sabit)** |
+
+**Kod okuması (CT):**
+- Sahiplik tek kural: `ICallerScope` + `VisitOwnership.MayAccess / ResolveWriteResource`. Kimlik yalnız principal'dan (`sub`), istekten okunmaz; kimlik yoksa fail-closed.
+- `GetPlannedVisitById` başkasının kaydına 404; liste süzülüyor; ziyaret raporu listesi kendi planlanan ziyaretlerine daraltılıyor.
+- `read-all` anahtarları Auth `ExplicitGrantOnlyPermissions`'ta: modül eşitlemesi / SuperAdmin vermez.
+- Adlar sayfa başına toplu (`VisitTargetNameReader`, `$in`).
+
+**CT sabotajı (ajanınkinden ayrı):**
+1. `GetMyAccountsQuery` geçerlilik sonu kontrolünü kaldır → `My_accounts_ignores_an_assignment_outside_its_validity_window…` **kırmızı**.
+2. `ResolveWriteResource` başka kaynağa izin versin → `A_planned_visit_for_another_resource_is_403…` + `A_session_for_another_resource_is_403…` **kırmızı**.
+
+İkisi de geri alındı.
+
+**Ajan notları → CT:**
+- **Grant script'i** deneme modunda ABORT ("anahtarlar katalogda yok"), beklenen: AuthService yeni kodla yeniden başlayınca `DataSeeder` anahtarları oluşturur, sonra `--role <ad> --apply` kullanıcıda.
+- **Kaydedilmiş hesaplarda bölge dışı rozeti** yalnız önizlemenin "hiçbir bölgede değil" uyarısına dayanıyor; "benim bölgem dışında" değil → **Faz 4 VP-UI-2'de** düzeltilecek (Hedefler sekmesi, `my-accounts` ile karşılaştırma).
+- **⚠ D9 (yeni bulgu, VP-2 öncesinden):** Ziyaret Planlama **Düzenle** formu `selectedAccountIds / selectedPharmacyIds / selectedContacts` dizilerini **boş** gönderiyor (`form.js` `buildPayload`). Sunucu PUT'ta seçimi bunlarla değiştiriyor → taslak planda hafta / dönem değiştirmek **tüm hedefleri siler**. Yol haritasına eklendi, öncelikli küçük düzeltme.
+
+**E4 (CT, bekliyor):** fleet yeniden başlatılmalı (Auth seeder yeni anahtarlar · CRM · Platform manifest · Web).

@@ -5,7 +5,7 @@
 > Ayrıntılar: [durum analizi](VISIT-PLANNING-current-state-analysis.md) · [mockup brief](mockups/visit-planning/BRIEF-visit-planning-rep-week.md) · [mockup analizi](mockups/visit-planning/VISIT-PLANNING-mockup-analysis.md) · [mobil not](mobile/2026-10-06-visit-planning/MOBILE-NOTE-2026-10-06-visit-planning.md) · [mobil talepler](MOBILE-REQUESTS-2026-10-05-analysis.md)
 
 ## Neredeyiz
-**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** bitti (E2 + E4). ◐ **Faz 2** paketlendi ([WP-VP-2](WP-VP-2-rep-scope-names-territory-derivation.md)); ajan raporu bekleniyor.
+**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** bitti (E2 + E4). ☑ **Faz 2** E2 kabul (`fecf231e`); ◐ E4 bekliyor (fleet yeniden başlatma, Auth yeni izin anahtarlarını oluşturur). ⚠ **D9** düzenleme formu hedefleri siliyor — öncelikli küçük düzeltme. Sonra **Faz 2b** (mobil iş yeri listesi).
 
 ## Yapılanlar (2026-10-06)
 | Ne | Kanıt |
@@ -58,10 +58,13 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 - ☑ D6 / A5 bugünkü etiketlerin 7 dili
 
 ### Faz 2 — backend temel (mobil de bekliyor) — ◐ paketlendi 2026-10-06 tek pakette: [WP-VP-2](WP-VP-2-rep-scope-names-territory-derivation.md), worktree `C:\tmp\vp-2`. Yeni izin anahtarları `crm.planned-visit.read-all` + `crm.visit-plan.read-all` (yalnız açık grant; grant script'i kullanıcıda)
-- ☐ B-8 görünen adlar (D4; mobil D1)
-- ☐ B-1 temsilci = oturum + sahiplik (A2; mobil B01) + `resources/me` `displayName` (mobil R-M4)
-- ☐ B-2 hedef evreni = bölge ataması; ataması yoksa tümü + uyarı (K-5); bölge dışı işareti (A4)
-- ☐ B-3 strateji / kampanya / segment sunucuda türetilir; segment dışının sessizce düşmesi kalkar (A3, A6)
+- ☑ B-8 görünen adlar (D4; mobil D1)
+- ☑ B-1 temsilci = oturum + sahiplik (A2; mobil B01) + `resources/me` `displayName` (mobil R-M4)
+- ☑ B-2 hedef evreni = bölge ataması; ataması yoksa tümü + uyarı (K-5); bölge dışı işareti (A4)
+- ☑ B-3 strateji / kampanya / segment sunucuda türetilir; segment dışının sessizce düşmesi kalkar (A3, A6)
+
+- ☐ **D9** (VP-2 kabulünde bulundu): Ziyaret Planlama Düzenle formu hedef dizilerini boş gönderiyor → taslakta hafta / dönem değiştirmek tüm hedefleri siler. Düzeltme: form mevcut seçimi göndersin **ya da** sunucu `null` dizi = "dokunma" kabul etsin (tercih: ikisi birden). Küçük paket, Faz 2b'den önce.
+- ☐ Grant: `scripts/rbac/grant_visit_planning_read_all_97c5.py --role <onaylayan yönetici rolü> --apply` (Auth yeniden başlatıldıktan sonra; kullanıcı rolü seçer).
 
 ### Faz 2b — mobil iş yeri listesi talebi (2026-10-06; [talep](mobile/2026-10-06-account-list/BACKEND-CRM-ACCOUNT-LIST-ACTIVE-CONTACTS-REQUIREMENTS.md) · [CT yanıtı](mobile/2026-10-06-account-list/MOBILE-ANSWERS-2026-10-06-account-list.md)) — WP-VP-2 kabulünden hemen sonra (aynı hesap deposu / kapsam okuyucusuna dokunuyor)
 - ☐ **M-ACC-1** (R1 + R2): `activeContactCount` (sayfa başına tek toplama, `/contacts` aktif kuralıyla birebir) + `hasActiveContacts=true|false` filtresi (VE; `total` filtreli; geçersiz → 400). Hem `GET /api/crm/accounts` hem B-2'nin `visit-plan/my-accounts` ucu. Sayım `crm.account.read` altında.
