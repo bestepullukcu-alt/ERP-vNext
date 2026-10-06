@@ -6932,7 +6932,9 @@ raporu (`scripts/status_report.py` yanına).
 
 **Ağ geçidi testi ana dalda kırmızı: Tedarik rotaları tanımsız 5065 portunda**
 
-DURUM: AÇIK · SAHİP: Tedarik (Procurement) ekibi; CT bilgi verir · BULAN: CT (takvim motoru kabulü) · KAYIT: 2026-09-29
+DURUM: KISMEN KAPANDI (2026-10-06) — Tedarik payı kapandı; test yine kırmızı, kalan 108 ihlal başka kulvarların (→ BL-509) · önceki: AÇIK · SAHİP: Tedarik (Procurement) ekibi; CT bilgi verir · BULAN: CT (takvim motoru kabulü) · KAYIT: 2026-09-29
+
+**Kısmi kapanış notu (2026-10-06, Procurement CT):** `KnownDownstreamPorts` kümesine `5065` eklendi (yorumda kaynak: DCP-010, OD-5, AGENTS.md §3). Port kaydı zaten doğru: AGENTS.md §3 5065'i ve bandın 5061+ uzatıldığını taşıyor (CLAUDE.md'nin özet satırı AGENTS.md'ye bağlı; çakışmada AGENTS.md kazanır). Ölçüm (E1 statik, testin kuralı `ocelot.json` üzerinde Python ile yeniden koşturuldu — .NET SDK bu ortamda indirilemedi, ağ politikası 403): önce 122 ihlal (14'ü 5065), sonra 108 ihlal, **5065: 0**. Kalan 108 = `5064` (62, TalentEcosystem) + `5063` (46, HumanCapital) — Tedarik sınırı dışında, BL-509. `dotnet test gateway/Diten.ApiGateway.Tests` ile E2 kanıtı sahibin ortamında alınmalı; BL-509 kapanmadan yeşil olmaz.
 
 `OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet` origin/main'de kırmızı: `/api/suppliers`, `/api/sourcing`,
 `/api/requisitions` (ve `{everything}` eşleri) 5065'e gidiyor; test bilinen port kümesinde 5065'i tanımıyor. Kaynak: `de174eb97` "fix(procurement):
@@ -7544,6 +7546,16 @@ Görevler grubunda `Checklist Templates`, `Templates`; CRM'de `Content Scope`, `
 (2) eksik fiil ve satır adları 7 dilde köprüye; (3) köprünün çevirmediği kodu sayan bir test (küçülen defter), yeni modül kendi adlarını getirsin.
 Karşılaştırma: SAP'de yetki nesnesi alanları ve Oracle'da ayrıcalık adları kullanıcının dilinde listelenir; geniş kapsamlı yetki ayrı işaretlenir.
 Gelecek regresyon riski: 🟢 (yalnız etiket), ama yetki yanlış verilmesine yol açtığı için öncelik orta.
+
+---
+
+### BL-509
+
+**Ağ geçidi port testi 5063 ve 5064 rotalarında da kırmızı: HumanCapital ve TalentEcosystem port kaydında yok**
+
+DURUM: AÇIK · SAHİP: HumanCapital (5063) ve TalentEcosystem (5064) domain sahipleri + EA (port tahsisi); CT bilgi verir · BULAN: Procurement CT (BL-470 kapanışı) · KAYIT: 2026-10-06
+
+`OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet`, BL-470'in Tedarik payı kapandıktan sonra hâlâ kırmızı: `ocelot.json`'da 108 rota tanımsız porta gidiyor — `5064` (62 rota; ör. `/api/tep-shell-metadata`, `/api/talent-data-foundation`, `/api/hiring-risk-indicators`) ve `5063` (46 rota). AGENTS.md §3 bu servisleri port tablosunda değil, yalnız "Drift (EA reconciliation gerek)" notunda anıyor. İş: EA canonical portu onaylar, sahip §3'e kendi satırını ve testteki kümeye kendi portunu ekler. Tedarik kulvarı bu satırlara dokunmaz (paylaşılan dosyada yalnız kendi satırı). CI'da ağ geçidi testleri koşmadığı için görünmüyor (BL-457). Gelecek regresyon riski: 🟢 (test/kayıt), ama kırmızı test yeni bir port yazım hatasını da gizliyor.
 
 ---
 
