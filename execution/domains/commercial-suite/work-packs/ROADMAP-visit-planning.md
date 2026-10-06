@@ -5,7 +5,7 @@
 > Ayrıntılar: [durum analizi](VISIT-PLANNING-current-state-analysis.md) · [mockup brief](mockups/visit-planning/BRIEF-visit-planning-rep-week.md) · [mockup analizi](mockups/visit-planning/VISIT-PLANNING-mockup-analysis.md) · [mobil not](mobile/2026-10-06-visit-planning/MOBILE-NOTE-2026-10-06-visit-planning.md) · [mobil talepler](MOBILE-REQUESTS-2026-10-05-analysis.md)
 
 ## Neredeyiz
-**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). Sıradaki iş: **Faz 1 — VP-FIX-1** paketlenecek.
+**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). Sıradaki: mobil ekiplerin sorularını yanıtlamak → ardından **Faz 1 — VP-FIX-1**.
 
 ## Yapılanlar (2026-10-06)
 | Ne | Kanıt |
@@ -75,7 +75,7 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 - ☐ C6 çok ziyaretli durakta doktor adları (Rota tasarımı değişmeden; kullanıcı onayıyla)
 
 ### Faz 5 — mobil
-- ☐ Mobil notu iletildi mi / yanıtlar geldi mi (kullanıcı)
+- ☑ Mobil not iletildi (2026-10-06) · ◐ mobil ekiplerin soruları gelecek → CT yanıtlayacak, ardından VP-FIX-1
 - ☐ Faz 2–3 alanları kesinleşince sözleşme notu (+ SB-3-MOB)
 
 ### Faz 6 — Planlanan Ziyaretler sayfası
