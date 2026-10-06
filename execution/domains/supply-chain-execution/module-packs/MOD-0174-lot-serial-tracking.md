@@ -939,6 +939,16 @@ fleet does not run P4 (migration route 404): read-only Mongo shows 6 typed group
 W-UI-02 closure record in the FU01 pack (proposed text in the evidence §9); §12 / §11.5 / §11.6 texts (K4-4, client-mode
 list, banner without a user name, added keys). Slice assumptions ASSUMPTION-0174-P4-01…05. Evidence
 `docs/records/audits/2026-10/mod-0174-p4-evidence-2026-10-06.md`.
+**CT acceptance (K13, 2026-10-06):** re-measured in a worktree at `f7b45fe94` — Inventory 530/530, Web 604/606 (the 2
+Nav-guard reds, P5), architecture 18/18, gateway 88/89 (only FU-INT1-01; the gateway test reads the 1.2.0 yaml, gateway
+files unchanged). Files outside Traceability = the allowed FU01 closure files + `StockMovementsController` (K-F) + the
+ledger hooks `MovementMasterDataValidator`, `GetTransactionsHandler`, `PostMovementHandler` (K4-3, lines 200–207 only:
+reversal lot via the migration link) and the new `LedgerProjectionReKey`; no code writing `inventory_transactions`
+changed. CT sabotage: non-lot-tracked products admitted to the migration groups (`ManualLotGroupReader.cs:40`) → 2 red
+(K4-4), restored, empty diff. CT decisions on F-*: F-1 → §12 row superseded by K4-4; F-2 client-mode list accepted
+(decisions live in the page); F-3 / F-4 / F-5 / F-6 / F-7 / F-10 / F-12 accepted as recorded; F-13 = W-0174-01. The
+owner's live migration (6 groups / 36 transactions measured read-only) is an **owner action on the screen** after the
+fast-forward, measured by the CT; W-UI-02 is closed in the FU01 pack after that run.
 
 ## 20. Follow-up Items
 
