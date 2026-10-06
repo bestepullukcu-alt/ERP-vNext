@@ -1,0 +1,19 @@
+# M-3 live proof — real Gateway (5000) -> MDM (5059) -> Manufacturing (5067), tenant 00000000-0000-0000-0000-000000000001
+# 2026-10-06T11:27:38Z · branch feature/mvp3-bom-routings @ 6fd434b35
+# LE da060d7b-a2f0-419e-9de1-13cea5773c35 created via POST /api/legal-entities (201).
+
+## A. LE in DRAFT (not yet activated) — MDM lookup-validation answered 404 'not referenceable'; service (measured before activation):
+1 create, DRAFT LE: HTTP 422 LEGAL_ENTITY_NOT_REFERENCEABLE
+2 list,   DRAFT LE: HTTP 422 LEGAL_ENTITY_NOT_REFERENCEABLE
+
+## B. PATCH /api/legal-entities/{id}/activate -> 204; lookup-validation -> 200 lifecycleState=ACTIVE referenceable=true
+1 create, MDM-proven LE: HTTP 201 {"bomVersionId": "7854f9e0-e99e-459d-9723-a99b86f607fd", "itemId": "ab7666dd-1add-4ce0-b703-99a565086467", "version": 1, "status": "Draft", "effectiveFrom": null, "effectiveTo": null, "components": [{"componentItemId": "14ea0781-65fe-4fdd-b88f-9b345aa1087b", "quantity": "2.000", "uomId": "KG", "posi
+2 list, MDM-proven LE: HTTP 200 {"data": {"items": [{"bomVersionId": "7854f9e0-e99e-459d-9723-a99b86f607fd", "itemId": "ab7666dd-1add-4ce0-b703-99a565086467", "version": 1, "status": "Draft", "description": "Live M-3", "componentCount": 1, "stepCount": 1, "effectiveFrom": null, "effectiveTo": null, "updatedAt": "2026-10-06T11:27:3
+3 create, random LE: HTTP 422 {"error": {"code": "LEGAL_ENTITY_NOT_REFERENCEABLE", "message": "The legal entity does not belong to this tenant or is not active.", "correlationId": "ebbf56dc-2cbd-4d9e-addb-2ed2c1dab0ff"}, "contractVersion": "v1"}
+4 create, no LE: HTTP 400 {"error": {"code": "LEGAL_ENTITY_REQUIRED", "message": "Missing Legal-Entity: 'X-Legal-Entity-Id' header is required (GET may use 'legalEntityId').", "correlationId": "ac893f82-69c0-4ae7-9ce1-02bd8bd1bd72"}, "contractVersion": "v1"}
+5 list, other tenant using this LE: HTTP 422 {"error": {"code": "LEGAL_ENTITY_NOT_REFERENCEABLE", "message": "The legal entity does not belong to this tenant or is not active.", "correlationId": "52b1119e-1c63-49c6-8334-a97eefb49a2f"}, "contractVersion": "v1"}
+
+## C. MDM process stopped (curl :5059/health -> 000):
+6 create, MDM stopped: HTTP 503 DEPENDENCY_UNAVAILABLE "The legal entity could not be checked (master data unavailable); nothing was read or written."
+## MDM restarted -> /health 200; rerun of B step 1:
+1 create, MDM-proven LE: HTTP 201 {"bomVersionId": "047d1e90-892f-48be-8b4a-3a43960e5850", "itemId": "c7e93417-34d1-4480-8ddb-9ead7690f363", "version": 1, "status": "Draft", "effectiveFrom": null, "effectiveTo": null, "components": [{"componentItemId": "ae433033-7b83-450b-ad8f-c224a7207019", "quantity": "2.000", "uomId": "KG", "posi
