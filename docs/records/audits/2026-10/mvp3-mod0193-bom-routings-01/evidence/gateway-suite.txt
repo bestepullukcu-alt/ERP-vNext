@@ -1,0 +1,4 @@
+Failed!  - Failed:     1, Passed:    86, Skipped:     0, Total:    87, Duration: 441 ms - Diten.ApiGateway.Tests.dll (net8.0)
+unrecognized ports:
+     46 port 5063
+     62 port 5064

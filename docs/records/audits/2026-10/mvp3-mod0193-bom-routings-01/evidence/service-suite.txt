@@ -1,0 +1,1 @@
+Passed!  - Failed:     0, Passed:    49, Skipped:     0, Total:    49, Duration: 2 s - Diten.ManufacturingService.Tests.dll (net8.0)
