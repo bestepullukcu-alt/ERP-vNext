@@ -100,3 +100,9 @@ External-integration adapter (DEC-INV-19) · special-stock/ownership (P2) · mat
 
 ## 20. Audit and reconciliation notes
 DCP-002 preflight: MOD-0173/0174/0178 exit 0 (proven). Registry rows added 2026-09-11 (identity-only). Reconciliation `reconciled` statüsünde doldurulacak. Contract'lar `docs/analysis/contracts/` — frozen-ready, owner+consumer review pending.
+
+**MVP-3 · MOD-0193 BOM & Routings (2026-10-06, MVP-3 lane CT).** Pack: [MOD-0193-bom-routings](../../domains/supply-chain-execution/module-packs/MOD-0193-bom-routings.md) `ready-for-dev` (ürün sahibi, 2026-10-06). `runtime_code_allowed` CAP-001 §7 gereği **yalnız MOD-0193 için** açılır; diğer üyeler için frontmatter değeri (false) aynen geçerlidir. DCP-002: `verify_module_id.py --check-id MOD-0193 --name "BOM & Routings"` exit 0.
+- **Servis sapması (ürün sahibi kararı 2026-10-06):** MOD-0193 `Diten.SupplyChainService`'e değil **`Diten.ManufacturingService` (port 5067)**'e yazılır. Sebep: SupplyChainService yalnız MVP-6'nın birleşmemiş dalında (PR #134) var; oraya yazmak MVP-6'nın paylaşılan dosyalarına dokunmak demekti ve sahip "sadece MVP-3, diğer MVP'lere dokunma" dedi. Manufacturing Execution (0193–0197) ayrı bounded context olarak bu servise toplanır.
+- **OD-2 (BOM sırası) — MVP-3 için kapandı:** BOM contract-first, MVP-1 runtime'ını beklemez (BOM stoğa yazmaz/okumaz; G1 = contract freeze). Pharma composition: kimlik MOD-0290, miktar/formülasyon MOD-0193 (rapor §23.3).
+- **Bağımlılık waiver'ları:** W-0193-01 MOD-0209 Change Control (repo'da yok → `IChangeControlGate` seam), W-0193-02 MOD-0003 Data Contract Registry (planned/missing → contract repo'da pinli). Ayrıntı pack §7.
+

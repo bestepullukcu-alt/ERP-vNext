@@ -63,5 +63,9 @@ Blueprint-canonical SoR modülleri (DCP-002 gate PASS; registry'ye DCP-009 ile e
 - **Persistence:** MongoDB (repo deseni) · **Gateway:** `/api/inventory` vb. route'lar yalnız `integration-agent` tarafından eklenir (protected ocelot.json).
 - ⚠️ **Servis scaffold** yalnız ilgili module pack `ready-for-dev` + `@orchestrator /add-module` ile başlar (AGENTS.md §2). Bu domain-config scaffold'ı **yetkilendirir**, tetiklemez.
 
+- **MVP-3 istisnası (ürün sahibi kararı 2026-10-06):** Manufacturing Execution (`MOD-0193`, ileride 0194–0197) ayrı servis
+  **`Diten.ManufacturingService` · port 5067** (`services/Diten.ManufacturingService/`). Pack: `module-packs/MOD-0193-bom-routings.md`.
+  Gateway ailesi `/api/bom` → 5067.
+
 ## Cross-references
 DCP: [DCP-009-supply-chain-inventory](../../portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md) · Registry: `MOD-0173…0197` satırları · Contracts: `docs/analysis/contracts/*.openapi.yaml`
