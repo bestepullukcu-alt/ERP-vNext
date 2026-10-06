@@ -117,6 +117,51 @@ public static class LskuIdentityLifecycleAuditIntentFactory
                 actorId.ToString("D"), reason));
     }
 
+    // LSKU FIX1 B3: a draft cancelled by its maker's command (the operation id is the command's idempotency key).
+    public static LocalAuditIntent CreateDraftCancelled(
+        Lsku product, int expectedVersion, Guid operationId, Guid actorId, string reason, DateTimeOffset timestampUtc)
+    {
+        var key = $"lsku-draft-cancel:{operationId:D}";
+        return Create(product, ProductAuditOperation.LskuDraftCancelled, expectedVersion, actorId, key,
+            operationId.ToString("D"), timestampUtc,
+            EncodeFacts(product.TenantId.ToString("D"), product.Id.ToString("D"), operationId.ToString("D"),
+                actorId.ToString("D"), reason));
+    }
+
+    // LSKU FIX1 B3: the engine refused the submit before starting anything; the draft's version moves.
+    public static LocalAuditIntent CreateSubmitAbandoned(
+        Lsku product, int expectedVersion, Guid operationId, Guid makerId, string reason, DateTimeOffset timestampUtc)
+    {
+        var key = $"lsku-identity-submit:{operationId:D}:abandoned";
+        return Create(product, ProductAuditOperation.LskuIdentitySubmitAbandoned, expectedVersion, makerId, key,
+            operationId.ToString("D"), timestampUtc,
+            EncodeFacts(product.TenantId.ToString("D"), product.Id.ToString("D"), operationId.ToString("D"),
+                makerId.ToString("D"), reason));
+    }
+
+    // LSKU FIX1 B5: the engine decided and MDM could not apply it; the LSKU is a draft again.
+    public static LocalAuditIntent CreateDecisionNotApplicable(
+        Lsku product, int expectedVersion, Guid operationId, Guid actorId, string reason, DateTimeOffset timestampUtc)
+    {
+        var key = $"lsku-identity-submit:{operationId:D}:not-applicable";
+        return Create(product, ProductAuditOperation.LskuIdentityDecisionNotApplicable, expectedVersion, actorId, key,
+            operationId.ToString("D"), timestampUtc,
+            EncodeFacts(product.TenantId.ToString("D"), product.Id.ToString("D"), operationId.ToString("D"),
+                actorId.ToString("D"), reason));
+    }
+
+    // LSKU FIX1 B2: the intent of a retirement request that ended without its decision applied (the lock went back).
+    // Its own key: the request's other intents are keyed by the operation id alone.
+    public static LocalAuditIntent CreateRetirementRelease(
+        Lsku product, int expectedVersion, Guid operationId, Guid actorId, string reason, DateTimeOffset timestampUtc)
+    {
+        var key = $"lsku-retirement-request:{operationId:D}:release";
+        return Create(product, ProductAuditOperation.LskuRetirementManualReconciliationRequired, expectedVersion,
+            actorId, key, operationId.ToString("D"), timestampUtc,
+            EncodeFacts(product.TenantId.ToString("D"), product.Id.ToString("D"), operationId.ToString("D"),
+                actorId.ToString("D"), reason));
+    }
+
     private static LocalAuditIntent Create(
         Lsku product,
         ProductAuditOperation operation,

@@ -19,5 +19,7 @@ public enum LskuIdentityWorkflowCheckpoint
     WithdrawalPreflightObserved = 15,
     WithdrawalOutcomeUnknown = 16,
     WithdrawalObserved = 17,
-    WithdrawalApplied = 18
+    WithdrawalApplied = 18,
+    // LSKU FIX1 B5 (the GSKU identity rule): the engine decided and MDM could not apply it — the LSKU is a draft again.
+    DecisionNotApplicable = 19
 }

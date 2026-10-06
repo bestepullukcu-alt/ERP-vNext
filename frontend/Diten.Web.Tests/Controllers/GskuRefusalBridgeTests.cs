@@ -34,6 +34,8 @@ public sealed class GskuRefusalBridgeTests
         // The recovery workers' flow names, their start-up and command-line refusals, and the log's placeholder for an
         // unreadable code: none of them is ever an answer of an endpoint.
         "FIRST_GSKU_IDENTITY", "GSKU_PAIR_RETIREMENT", "UNEXPECTED_FAILURE",
+        // LSKU FIX1 (CT 2026-10-06): the stuck child-creation admission gauge's flow name.
+        "GSKU_CHILD_ADMISSION",
         "FIRST_GSKU_IDENTITY_WORKFLOW_RECOVERY_ARGUMENT_DUPLICATE", "FIRST_GSKU_IDENTITY_WORKFLOW_RECOVERY_ARGUMENT_INVALID",
         "FIRST_GSKU_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID", "GSKU_CORRECTION_RECOVERY_ARGUMENT_DUPLICATE",
         "GSKU_CORRECTION_RECOVERY_ARGUMENT_INVALID", "GSKU_CORRECTION_WORKER_CONFIGURATION_INVALID",

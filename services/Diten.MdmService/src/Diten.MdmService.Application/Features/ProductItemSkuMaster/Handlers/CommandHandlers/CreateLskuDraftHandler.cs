@@ -107,6 +107,14 @@ public sealed class CreateLskuDraftHandler
             return Fail("GSKU_NOT_REFERENCEABLE", 404);
         }
 
+        // LSKU FIX1 B1 (a): a market the GSKU already has is refused before an admission is taken, so a duplicate
+        // never leaves anything behind on the parent.
+        var sameMarket = await _lskus.GetByIdentityKeyAsync(gsku.Id, command.MarketCode, cancellationToken);
+        if (sameMarket is not null)
+        {
+            return Fail(sameMarket.IsDeleted ? "LSKU_IDENTITY_TOMBSTONED" : MarketAlreadyExists, 409);
+        }
+
         var resolution = await _markets.ResolveLatestAsync(command.MarketCode, cancellationToken);
         if (!resolution.IsSuccessful || resolution.Selection is null)
         {
@@ -128,71 +136,98 @@ public sealed class CreateLskuDraftHandler
                 AdmissionStatus(admission.ErrorCode));
         }
 
-        CodeReservation reservation;
+        // LSKU FIX1 B1 (b): an exit by exception (a store error, a cancelled request) gives the admission back too —
+        // the release itself refuses while a live row or a live reservation could still become the child.
         try
         {
-            reservation = await _reservations.ReserveAsync(
+            CodeReservation reservation;
+            try
+            {
+                reservation = await _reservations.ReserveAsync(
+                    CodeBearingEntityType.Lsku,
+                    commandId,
+                    _actorContext.ActorId,
+                    commandId,
+                    cancellationToken);
+            }
+            catch (InvalidOperationException exception)
+                when (exception.Message is "IDEMPOTENCY_KEY_CONFLICT" or "RESERVATION_IDEMPOTENCY_KEY_TOMBSTONED"
+                          or "CANONICAL_CODE_ALLOCATION_FAILED")
+            {
+                // LSKU FIX1 B1 (b): no code is ours here, so only the admission goes back.
+                await ReleaseAdmissionAsync(gsku.Id, commandId, admissionFingerprint, cancellationToken);
+                return Fail(exception.Message, exception.Message == "CANONICAL_CODE_ALLOCATION_FAILED" ? 503 : 409);
+            }
+
+            var requestedIdentityId = Guid.NewGuid();
+            var consume = await _reservations.ConsumeForIdentityAsync(
+                reservation.Id,
                 CodeBearingEntityType.Lsku,
+                requestedIdentityId,
+                reservation.Version,
                 commandId,
                 _actorContext.ActorId,
                 commandId,
                 cancellationToken);
-        }
-        catch (InvalidOperationException exception)
-            when (exception.Message is "IDEMPOTENCY_KEY_CONFLICT" or "RESERVATION_IDEMPOTENCY_KEY_TOMBSTONED")
-        {
-            return Fail(exception.Message, 409);
-        }
-
-        var requestedIdentityId = Guid.NewGuid();
-        var consume = await _reservations.ConsumeForIdentityAsync(
-            reservation.Id,
-            CodeBearingEntityType.Lsku,
-            requestedIdentityId,
-            reservation.Version,
-            commandId,
-            _actorContext.ActorId,
-            commandId,
-            cancellationToken);
-        if (!consume.Succeeded || consume.Reservation?.ConsumedEntityId is not { } identityId)
-        {
-            return Fail(consume.ErrorCode ?? "CODE_RESERVATION_REQUIRED", 409);
-        }
-
-        reservation = consume.Reservation;
-        if (reservation.BindingState == CodeReservationBindingState.Burned)
-        {
-            return Fail("CODE_RESERVATION_BURNED", 409);
-        }
-
-        var lsku = BuildLsku(gsku.Id, command.MarketCode, resolution.Selection, reservation, identityId, commandId);
-        var createResult = await _lskus.CreateDraftWithAdmissionAsync(
-            lsku, admissionFingerprint, cancellationToken);
-        if (createResult.WriteOutcomeAmbiguous)
-        {
-            var persisted = await _lskus.GetByReservationIdAsync(reservation.Id, cancellationToken);
-            if (persisted is not null && SameFacts(persisted, lsku))
+            if (!consume.Succeeded || consume.Reservation?.ConsumedEntityId is not { } identityId)
             {
-                createResult = new(true, persisted);
+                // The code stays reserved for this command (its repeat consumes it again). The release below refuses while
+                // that reservation is live (CT 2026-10-06): the admission stays with it, counted by the gauge if it lasts.
+                await ReleaseAdmissionAsync(gsku.Id, commandId, admissionFingerprint, cancellationToken);
+                return Fail(consume.ErrorCode ?? "CODE_RESERVATION_REQUIRED", 409);
             }
-            else
+
+            reservation = consume.Reservation;
+            if (reservation.BindingState == CodeReservationBindingState.Burned)
             {
-                return Fail("LSKU_BINDING_RECONCILIATION_REQUIRED", 202);
+                await ReleaseAdmissionAsync(gsku.Id, commandId, admissionFingerprint, cancellationToken);
+                return Fail("CODE_RESERVATION_BURNED", 409);
             }
-        }
 
-        if (createResult.ConflictKind == LskuCreateConflictKind.IdentityKey)
+            var lsku = BuildLsku(gsku.Id, command.MarketCode, resolution.Selection, reservation, identityId, commandId);
+            var createResult = await _lskus.CreateDraftWithAdmissionAsync(
+                lsku, admissionFingerprint, cancellationToken);
+            if (createResult.WriteOutcomeAmbiguous)
+            {
+                var persisted = await _lskus.GetByReservationIdAsync(reservation.Id, cancellationToken);
+                if (persisted is not null && SameFacts(persisted, lsku))
+                {
+                    createResult = new(true, persisted);
+                }
+                else
+                {
+                    return Fail("LSKU_BINDING_RECONCILIATION_REQUIRED", 202);
+                }
+            }
+
+            // LSKU FIX1 B1 (b): a write the store definitely refused leaves no row of ours: the consumed code is burned
+            // (it is never handed out again) and the admission goes back. The market that another request won between
+            // the check above and this write is the same refusal as the check — 409, no longer a reconcilable 202.
+            if (createResult.ConflictKind == LskuCreateConflictKind.IdentityKey)
+            {
+                await AbandonCreationAsync(gsku.Id, reservation, identityId, commandId, admissionFingerprint,
+                    MarketAlreadyExists, cancellationToken);
+                return Fail(MarketAlreadyExists, 409);
+            }
+
+            if (!createResult.Succeeded || createResult.Lsku is null)
+            {
+                var code = createResult.ErrorCode ?? "LSKU_WRITE_FAILED";
+                await AbandonCreationAsync(gsku.Id, reservation, identityId, commandId, admissionFingerprint,
+                    code, cancellationToken);
+                return Fail(code, 409);
+            }
+
+            return await ConfirmAndMapAsync(
+                createResult.Lsku, reservation, commandId, admissionFingerprint, cancellationToken);
+        }
+        catch (Exception)
         {
-            return Fail("LSKU_BINDING_RECONCILIATION_REQUIRED", 202);
+            using var bound = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            try { await ReleaseAdmissionAsync(gsku.Id, commandId, admissionFingerprint, bound.Token); }
+            catch (Exception) { /* the operator repair sweeps what could not be given back here */ }
+            throw;
         }
-
-        if (!createResult.Succeeded || createResult.Lsku is null)
-        {
-            return Fail(createResult.ErrorCode ?? "LSKU_WRITE_FAILED", 409);
-        }
-
-        return await ConfirmAndMapAsync(
-            createResult.Lsku, reservation, commandId, admissionFingerprint, cancellationToken);
     }
 
     private async Task<Response<ProductItemSkuMasterModels.LskuDraftDto>?> EvaluateGskuScopeAsync(
@@ -323,9 +358,48 @@ public sealed class CreateLskuDraftHandler
     private static int AdmissionStatus(string? code) => code switch
     {
         "GSKU_NOT_REFERENCEABLE" or "GSKU_NOT_FOUND" => 404,
-        "GSKU_CHILD_ADMISSION_CAPACITY_EXCEEDED" => 409,
+        "GSKU_CHILD_ADMISSION_LIMIT_REACHED" => 409,
         _ => 409
     };
+
+    public const string MarketAlreadyExists = "LSKU_MARKET_ALREADY_EXISTS";
+
+    private async Task AbandonCreationAsync(
+        Guid gskuId,
+        CodeReservation reservation,
+        Guid identityId,
+        string commandId,
+        string admissionFingerprint,
+        string reason,
+        CancellationToken cancellationToken)
+    {
+        // A row bound to this reservation (a replay the store answered as a conflict) keeps its code.
+        // A burn the store refused leaves the code live — and the release below then refuses as well (CT 2026-10-06).
+        if (await _lskus.GetByReservationIdAsync(reservation.Id, cancellationToken) is null)
+        {
+            await _reservations.BurnIdentityBindingAsync(
+                reservation.Id,
+                identityId,
+                reservation.Version,
+                commandId + ":burn",
+                _actorContext.ActorId,
+                commandId,
+                reason,
+                cancellationToken);
+        }
+
+        await ReleaseAdmissionAsync(gskuId, commandId, admissionFingerprint, cancellationToken);
+    }
+
+    // The release refuses on its own while a live row or a live reservation of this command exists, so it is safe on
+    // every exit; it actually frees the admission only where nothing can still become the child.
+    private Task ReleaseAdmissionAsync(
+        Guid gskuId,
+        string commandId,
+        string admissionFingerprint,
+        CancellationToken cancellationToken) =>
+        _gskus.ReleaseChildCreationAdmissionAsync(
+            gskuId, GskuChildIdentityKind.Lsku, commandId, admissionFingerprint, cancellationToken);
 
     private Lsku BuildLsku(
         Guid gskuId,

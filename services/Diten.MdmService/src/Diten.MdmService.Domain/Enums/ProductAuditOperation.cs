@@ -78,5 +78,16 @@ public enum ProductAuditOperation
     FinishedGoodRetirementCancelled = 76,
     // The engine approved the pair's identity and MDM could not apply it: both are drafts again.
     ProductDefinitionRevisionIdentityDecisionNotApplicable = 77,
-    GskuIdentityDecisionNotApplicable = 78
+    GskuIdentityDecisionNotApplicable = 78,
+    // LSKU FIX1 B1 (c): the operator repair gave back a creation admission whose child row never came.
+    GskuChildCreationAdmissionReleased = 79,
+    // LSKU FIX1 B3: a draft LSKU cancelled so it no longer holds its parent GSKU.
+    LskuDraftCancelled = 80,
+    // LSKU FIX1 B5: the engine approved the LSKU's identity and MDM could not apply it: the LSKU is a draft again.
+    LskuIdentityDecisionNotApplicable = 81,
+    // LSKU FIX1 B2: a retirement request ended without its decision applied; the lock went back in the same write.
+    LskuRetirementManualReconciliationRequired = 82,
+    // LSKU FIX1 B3: the engine refused the submit before starting anything; the draft's version moves so a resubmit
+    // is a new operation.
+    LskuIdentitySubmitAbandoned = 83
 }

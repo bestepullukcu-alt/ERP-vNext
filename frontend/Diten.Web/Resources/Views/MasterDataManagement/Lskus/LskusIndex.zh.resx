@@ -57,4 +57,13 @@
   <data name="RetirementRequestConfirmation" xml:space="preserve"><value>提交退役申请？</value></data>
   <data name="RetirementRequestPending" xml:space="preserve"><value>退役申请正在等待决定。</value></data>
   <data name="RetirementRequestSuccess" xml:space="preserve"><value>退役申请已提交。</value></data>
+  <data name="ErrorMarketAlreadyExists" xml:space="preserve">
+    <value>此 GSKU 在该市场已有 LSKU。请打开现有的 LSKU，而不是新建一个。</value>
+  </data>
+  <data name="ErrorSubmitAbandoned" xml:space="preserve">
+    <value>审批服务在启动审批之前拒绝了此次提交。该 LSKU 仍为草稿，您可以重新提交。</value>
+  </data>
+  <data name="ErrorDecisionNotApplicable" xml:space="preserve">
+    <value>审批结果无法应用到此 LSKU，例如其市场或上级记录已不可用。该 LSKU 已恢复为草稿；请纠正原因后重新提交。</value>
+  </data>
 </root>

@@ -57,4 +57,13 @@
   <data name="RetirementRequestConfirmation" xml:space="preserve"><value>هل تريد إرسال طلب الإحالة للتقاعد؟</value></data>
   <data name="RetirementRequestPending" xml:space="preserve"><value>طلب الإحالة للتقاعد بانتظار القرار.</value></data>
   <data name="RetirementRequestSuccess" xml:space="preserve"><value>تم إرسال طلب الإحالة للتقاعد.</value></data>
+  <data name="ErrorMarketAlreadyExists" xml:space="preserve">
+    <value>يوجد لهذا GSKU بالفعل LSKU لهذا السوق. افتح LSKU الموجود بدلاً من إنشاء واحد جديد.</value>
+  </data>
+  <data name="ErrorSubmitAbandoned" xml:space="preserve">
+    <value>رفضت خدمة الموافقة هذا الإرسال قبل بدء أي موافقة. لا يزال LSKU مسودة؛ يمكنك إرساله مرة أخرى.</value>
+  </data>
+  <data name="ErrorDecisionNotApplicable" xml:space="preserve">
+    <value>تعذّر تطبيق الموافقة على هذا LSKU، على سبيل المثال لأن سوقه أو سجله الأصلي لم يعد قابلاً للاستخدام. عاد LSKU مسودة؛ صحّح السبب ثم أرسله مرة أخرى.</value>
+  </data>
 </root>

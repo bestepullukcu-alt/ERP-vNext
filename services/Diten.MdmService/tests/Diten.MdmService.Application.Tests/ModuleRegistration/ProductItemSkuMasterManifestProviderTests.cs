@@ -130,8 +130,9 @@ public sealed class ProductItemSkuMasterManifestProviderTests
             "mdm.finished-goods.retire",
             "mdm.finished-goods.submit",
             "mdm.product-legal-entity-scope-rollout.activate",
-            "mdm.product-legal-entity-scope-rollout.rollback",
-            "mdm.product-identity.lifecycle-operations.recover"
+            "mdm.product-legal-entity-scope-rollout.rollback"
+            // mdm.product-identity.lifecycle-operations.recover is enforced by a controller since LSKU FIX1 B1 (c):
+            // POST api/lskus/operator/child-admission-repairs.
         };
         Assert.True(declared.Where(permission => !nonControllerPermissions.Contains(permission)).ToHashSet(StringComparer.Ordinal).SetEquals(enforced));
     }

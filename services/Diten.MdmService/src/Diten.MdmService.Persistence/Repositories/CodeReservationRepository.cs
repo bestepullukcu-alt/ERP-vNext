@@ -277,6 +277,29 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
             null,
             cancellationToken);
 
+    // LSKU FIX1 B1 (b): the binding path already knows Burned; this is its first caller.
+    public Task<ReservationOperationResult> BurnIdentityBindingAsync(
+        Guid reservationId,
+        Guid identityId,
+        int expectedVersion,
+        string idempotencyKey,
+        string actorId,
+        string correlationId,
+        string reason,
+        CancellationToken cancellationToken = default)
+        => ChangeBindingAsync(
+            reservationId,
+            identityId,
+            expectedVersion,
+            idempotencyKey,
+            actorId,
+            correlationId,
+            CodeReservationBindingState.Burned,
+            ProductAuditOperation.CodeBurned,
+            reason,
+            null,
+            cancellationToken);
+
     private async Task<ReservationOperationResult> ChangeBindingAsync(
         Guid reservationId,
         Guid identityId,

@@ -64,9 +64,8 @@ public sealed class LskuRetirementRequestOperationRepository : ILskuRetirementRe
         try { await _items.InsertOneAsync(x,cancellationToken:ct); return new(true,false,x,null); }
         catch(MongoWriteException e) when(e.WriteError?.Category==ServerErrorCategory.DuplicateKey)
         {
-            var old=await _items.Find(Active & Builders<LskuRetirementRequestOperation>.Filter.Or(
-                Builders<LskuRetirementRequestOperation>.Filter.Eq(y=>y.OperationId,x.OperationId),
-                Builders<LskuRetirementRequestOperation>.Filter.Eq(y=>y.LskuId,x.LskuId))).FirstOrDefaultAsync(ct);
+            // LSKU FIX1 B2: ended requests of the same LSKU stay on record — the replay is the one with this id.
+            var old=await _items.Find(Active & Builders<LskuRetirementRequestOperation>.Filter.Eq(y=>y.OperationId,x.OperationId)).FirstOrDefaultAsync(ct);
             return old is not null && ExactReplay(old,x)
                 ? new(true,true,old,null):new(false,false,null,"LSKU_RETIREMENT_OPERATION_CONFLICT");
         }
@@ -100,6 +99,10 @@ public sealed class LskuRetirementRequestOperationRepository : ILskuRetirementRe
         if (claim.TenantId != TenantId || m.UpdatedAtUtcTicks <= 0
             || claim.LeaseUntilUtcTicksV1 <= m.UpdatedAtUtcTicks
             || !Allowed(claim.Checkpoint, m.NextCheckpoint)) return false;
+        // LSKU FIX1 B2 (the GSKU store invariant): manual reconciliation is never "retryable" — the worker does not
+        // scan that checkpoint and the gauge would not count it, so it would be a lock nobody sees.
+        if (m.NextCheckpoint == LskuRetirementRequestCheckpoint.ManualReconciliationRequired
+            && m.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable) return false;
         var filter=Active & Builders<LskuRetirementRequestOperation>.Filter.Eq(x=>x.OperationId,claim.OperationId)
             & Builders<LskuRetirementRequestOperation>.Filter.Eq(x=>x.Checkpoint,claim.Checkpoint)
             & Builders<LskuRetirementRequestOperation>.Filter.Eq(x=>x.LeaseOwner,claim.LeaseOwner)
@@ -124,7 +127,18 @@ public sealed class LskuRetirementRequestOperationRepository : ILskuRetirementRe
         if(m.DecisionTransitionSequence.HasValue)u=u.Set(x=>x.DecisionTransitionSequence,m.DecisionTransitionSequence);
         if(m.DecisionTaskStatus is not null)u=u.Set(x=>x.DecisionTaskStatus,m.DecisionTaskStatus);
         if(m.DecisionInstanceStatus is not null)u=u.Set(x=>x.DecisionInstanceStatus,m.DecisionInstanceStatus);
-        if(m.NextCheckpoint==LskuRetirementRequestCheckpoint.Completed)u=u.Set(x=>x.IsActive,false);
+        // LSKU FIX1 B2: an ENDED request (manual reconciliation with nothing held — the processor gave the LSKU's lock
+        // back first) leaves the "one active request per LSKU" index in the same write, so a new request is possible.
+        if(m.NextCheckpoint==LskuRetirementRequestCheckpoint.Completed
+           || m.NextCheckpoint==LskuRetirementRequestCheckpoint.ManualReconciliationRequired
+              && m.RecoveryDisposition==ProductIdentityWorkflowRecoveryDisposition.None)u=u.Set(x=>x.IsActive,false);
+        u = m.Streak switch
+        {
+            RecoveryStreakWrite.Increment => u.Inc(x => x.FailedAttemptCount, 1),
+            RecoveryStreakWrite.Keep => u,
+            _ => u.Set(x => x.FailedAttemptCount, 0)
+        };
+        if (m.LastStartSentAtUtcTicksV1.HasValue) u = u.Set(x => x.LastStartSentAtUtcTicksV1, m.LastStartSentAtUtcTicksV1);
         if(m.ReleaseLease)u=u.Set(x=>x.LeaseOwner,null).Set(x=>x.LeaseUntilUtcTicksV1,null);
         return (await _items.UpdateOneAsync(filter,u,cancellationToken:ct)).ModifiedCount==1;
     }
@@ -134,11 +148,39 @@ public sealed class LskuRetirementRequestOperationRepository : ILskuRetirementRe
         if (limit is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(limit));
         var terminal=new[]{LskuRetirementRequestCheckpoint.Completed,LskuRetirementRequestCheckpoint.ManualReconciliationRequired};
         var f=Active & Builders<LskuRetirementRequestOperation>.Filter.Nin(x=>x.Checkpoint,terminal)
-            & Builders<LskuRetirementRequestOperation>.Filter.Or(Builders<LskuRetirementRequestOperation>.Filter.Eq(x=>x.NextAttemptAtUtcTicksV1,null),Builders<LskuRetirementRequestOperation>.Filter.Lte(x=>x.NextAttemptAtUtcTicksV1,now));
+            & Builders<LskuRetirementRequestOperation>.Filter.Or(Builders<LskuRetirementRequestOperation>.Filter.Eq(x=>x.NextAttemptAtUtcTicksV1,null),Builders<LskuRetirementRequestOperation>.Filter.Lte(x=>x.NextAttemptAtUtcTicksV1,now))
+            // LSKU FIX1 S2: a request whose lease another worker holds is not handed out again.
+            & Builders<LskuRetirementRequestOperation>.Filter.Or(Builders<LskuRetirementRequestOperation>.Filter.Eq(x=>x.LeaseOwner,null),Builders<LskuRetirementRequestOperation>.Filter.Lte(x=>x.LeaseUntilUtcTicksV1,now));
         if(after.HasValue)f&=Builders<LskuRetirementRequestOperation>.Filter.Gt(x=>x.OperationId,after.Value);
         var rows=await _items.Find(f).SortBy(x=>x.OperationId).Limit(limit).ToListAsync(ct);
         return new(rows,rows.Count==limit?rows[^1].OperationId:null);
     }
+
+    public Task ReleaseIfOwnedAsync(Guid operationId, string leaseOwner, long leaseUntilUtcTicks,
+        CancellationToken ct = default) =>
+        _items.UpdateOneAsync(
+            Active & Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.OperationId, operationId)
+            & Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.LeaseOwner, leaseOwner)
+            & Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.LeaseUntilUtcTicksV1, leaseUntilUtcTicks),
+            Builders<LskuRetirementRequestOperation>.Update.Set(x => x.LeaseOwner, null).Set(x => x.LeaseUntilUtcTicksV1, null),
+            cancellationToken: ct);
+
+    // LSKU FIX1 S4 (the GSKU gauge's definition): STUCK = manual reconciliation with the lock held, or past the retry
+    // limit and still retrying. An ENDED request (nothing held) is not counted.
+    public Task<long> CountManualReconciliationAsync(CancellationToken ct = default) =>
+        _items.CountDocumentsAsync(Active & (
+            (Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.Checkpoint, LskuRetirementRequestCheckpoint.ManualReconciliationRequired)
+             & Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired))
+            | (Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.Retryable)
+               & Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.LastFailureCode, LskuRetirementRequestWorkflowProcessor.RetryLimitReached))),
+            cancellationToken: ct);
+
+    public Task<long> CountNeedingAPersonAsync(CancellationToken ct = default) =>
+        _items.CountDocumentsAsync(Active
+            & Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.Checkpoint, LskuRetirementRequestCheckpoint.ManualReconciliationRequired)
+            & Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+            & Builders<LskuRetirementRequestOperation>.Filter.Nin(x => x.LastFailureCode, LskuLifecycleStuckKinds.SettledByTheRequestersRepeat),
+            cancellationToken: ct);
 
     private bool Valid(LskuRetirementRequestOperation x) => TenantId != Guid.Empty && x.TenantId == TenantId
         && x.OperationId != Guid.Empty && x.LskuId != Guid.Empty && x.BaseLskuVersion >= 0
@@ -174,19 +216,19 @@ public sealed class LskuRetirementRequestOperationRepository : ILskuRetirementRe
         && value == value.Trim() && !value.Any(char.IsControl);
     private static bool ExactReason(string? value) => value is not null && value == value.Trim()
         && value.EnumerateRunes().Count() is >= 1 and <= 2000 && !value.Any(char.IsControl);
-    private static bool Allowed(LskuRetirementRequestCheckpoint current, LskuRetirementRequestCheckpoint next) =>
-        current == next || (current, next) switch
-        {
-            (LskuRetirementRequestCheckpoint.Prepared, LskuRetirementRequestCheckpoint.StartOutcomeUnknown) => true,
-            (LskuRetirementRequestCheckpoint.Prepared, LskuRetirementRequestCheckpoint.WorkflowStarted) => true,
-            (LskuRetirementRequestCheckpoint.Prepared, LskuRetirementRequestCheckpoint.AwaitingMakerReplay) => true,
-            (LskuRetirementRequestCheckpoint.StartOutcomeUnknown, LskuRetirementRequestCheckpoint.WorkflowStarted) => true,
-            (LskuRetirementRequestCheckpoint.AwaitingMakerReplay, LskuRetirementRequestCheckpoint.WorkflowStarted) => true,
-            (LskuRetirementRequestCheckpoint.WorkflowStarted, LskuRetirementRequestCheckpoint.AwaitingDecision) => true,
-            (LskuRetirementRequestCheckpoint.AwaitingDecision, LskuRetirementRequestCheckpoint.DecisionObserved) => true,
-            (LskuRetirementRequestCheckpoint.DecisionObserved, LskuRetirementRequestCheckpoint.DecisionApplied) => true,
-            (LskuRetirementRequestCheckpoint.DecisionApplied, LskuRetirementRequestCheckpoint.Completed) => true,
-            (_, LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
-            _ => false
-        };
+    // LSKU FIX1 S2: the transitions the processor really makes (the GSKU retirement request's list).
+    private static bool Allowed(LskuRetirementRequestCheckpoint a, LskuRetirementRequestCheckpoint b) => a == b || (a, b) switch
+    {
+        (LskuRetirementRequestCheckpoint.Prepared, LskuRetirementRequestCheckpoint.WorkflowStarted or LskuRetirementRequestCheckpoint.StartOutcomeUnknown or LskuRetirementRequestCheckpoint.AwaitingMakerReplay or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        (LskuRetirementRequestCheckpoint.StartOutcomeUnknown, LskuRetirementRequestCheckpoint.WorkflowStarted or LskuRetirementRequestCheckpoint.AwaitingMakerReplay or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        (LskuRetirementRequestCheckpoint.AwaitingMakerReplay, LskuRetirementRequestCheckpoint.WorkflowStarted or LskuRetirementRequestCheckpoint.StartOutcomeUnknown or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        (LskuRetirementRequestCheckpoint.WorkflowStarted, LskuRetirementRequestCheckpoint.AwaitingDecision or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        (LskuRetirementRequestCheckpoint.AwaitingDecision, LskuRetirementRequestCheckpoint.DecisionObserved or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        (LskuRetirementRequestCheckpoint.DecisionObserved, LskuRetirementRequestCheckpoint.DecisionApplied or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        (LskuRetirementRequestCheckpoint.DecisionApplied, LskuRetirementRequestCheckpoint.Completed or LskuRetirementRequestCheckpoint.ManualReconciliationRequired) => true,
+        // The requester's same command reads the engine again and puts a stuck request back; a stuck request whose
+        // lock release has to wait goes back where the worker looks again.
+        (LskuRetirementRequestCheckpoint.ManualReconciliationRequired, LskuRetirementRequestCheckpoint.WorkflowStarted or LskuRetirementRequestCheckpoint.AwaitingDecision or LskuRetirementRequestCheckpoint.DecisionObserved or LskuRetirementRequestCheckpoint.StartOutcomeUnknown) => true,
+        _ => false
+    };
 }

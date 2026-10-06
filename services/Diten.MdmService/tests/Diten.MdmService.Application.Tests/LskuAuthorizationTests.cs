@@ -311,7 +311,9 @@ public sealed class LskuAuthorizationTests
                 "Permission:mdm.lskus.request-retirement",
                 "Permission:mdm.lskus.retire",
                 "Permission:mdm.lskus.submit",
-                "Permission:mdm.lskus.withdraw"
+                "Permission:mdm.lskus.withdraw",
+                // LSKU FIX1 B1 (c): the operator repair — a non-human key (Auth NonHumanPermissionKeys).
+                "Permission:mdm.product-identity.lifecycle-operations.recover"
             ],
             policies.OrderBy(policy => policy, StringComparer.Ordinal));
     }

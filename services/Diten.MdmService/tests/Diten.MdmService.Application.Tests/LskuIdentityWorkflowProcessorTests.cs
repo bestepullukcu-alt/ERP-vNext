@@ -46,8 +46,10 @@ public sealed class LskuIdentityWorkflowProcessorTests
         Assert.Equal(0, harness.Market.Calls);
     }
 
+    // LSKU FIX1 B5: twice, not three times — once the decision is on the LSKU its dependencies are not asked again (a
+    // market retired after the approval was applied would otherwise freeze an applied decision for good).
     [Fact]
-    public async Task Approve_revalidates_dependencies_three_times_and_preserves_create_time_market_selection()
+    public async Task Approve_revalidates_dependencies_twice_and_preserves_create_time_market_selection()
     {
         var harness = new Harness(ProductIdentityDecisionKind.Approved);
         var createTimeVersion = harness.Lsku.MarketSelection.CatalogVersionId;
@@ -59,9 +61,9 @@ public sealed class LskuIdentityWorkflowProcessorTests
         Assert.True(result.Succeeded);
         Assert.Equal(LskuIdentityWorkflowCheckpoint.Completed, result.Operation!.Checkpoint);
         Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Lsku.LifecycleStatus);
-        Assert.Equal(3, harness.GskuReads);
-        Assert.Equal(3, harness.RevisionReads);
-        Assert.Equal(3, harness.Market.Calls);
+        Assert.Equal(2, harness.GskuReads);
+        Assert.Equal(2, harness.RevisionReads);
+        Assert.Equal(2, harness.Market.Calls);
         Assert.Equal(createTimeVersion, harness.Lsku.MarketSelection.CatalogVersionId);
         Assert.Equal(createTimeResolvedAt, harness.Lsku.MarketSelection.ResolvedAtUtc);
         Assert.NotNull(result.Operation.ApprovalMarketSelection);
@@ -96,12 +98,20 @@ public sealed class LskuIdentityWorkflowProcessorTests
         Assert.Equal(1, harness.DecisionMutations);
     }
 
+    /*
+     * LSKU FIX1 B5 — changed from "404 / 409 → quarantine". The quarantine was outside recovery and outside every
+     * repeat, so a market retired (404) or refused (409) between the submit and the approval froze the LSKU in
+     * PendingIdentityApproval for good, the engine's decision never applied (B5). The GSKU identity rule (items 2(b) and
+     * 8) now applies: a reference the maker can put right makes the approval NOT APPLICABLE — the LSKU is a draft again
+     * with the reason on record, and the maker submits again once it is put right. A provider that cannot answer now
+     * (503 / 504) still waits, and only a contract mismatch of the provider itself stays stuck (its own test below).
+     */
     [Theory]
     [InlineData(404, false)]
     [InlineData(409, false)]
     [InlineData(503, true)]
     [InlineData(504, true)]
-    public async Task Market_failure_is_terminal_only_for_non_retryable_contract_results(
+    public async Task Market_failure_makes_the_approval_not_applicable_unless_the_provider_only_has_to_answer_later(
         int statusCode, bool retryable)
     {
         var harness = new Harness(ProductIdentityDecisionKind.Approved);
@@ -111,17 +121,47 @@ public sealed class LskuIdentityWorkflowProcessorTests
         var result = await harness.Processor.RecoverAsync(
             harness.Operation, "worker", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
 
-        Assert.False(result.Succeeded);
         Assert.Equal(retryable
                 ? LskuIdentityWorkflowCheckpoint.DecisionObserved
-                : LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+                : LskuIdentityWorkflowCheckpoint.DecisionNotApplicable,
             result.Operation!.Checkpoint);
         Assert.Equal(retryable
                 ? ProductIdentityWorkflowRecoveryDisposition.Retryable
-                : ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired,
+                : ProductIdentityWorkflowRecoveryDisposition.None,
             result.Operation.RecoveryDisposition);
-        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval,
+        Assert.Equal(retryable
+                ? ProductIdentityLifecycleStatus.PendingIdentityApproval
+                : ProductIdentityLifecycleStatus.Draft,
             harness.Lsku.LifecycleStatus);
+        if (!retryable)
+        {
+            Assert.Equal($"MARKET_{statusCode}", result.Operation.LastFailureCode);
+            Assert.Single(harness.Lsku.AuditIntents,
+                intent => intent.Operation == ProductAuditOperation.LskuIdentityDecisionNotApplicable);
+        }
+    }
+
+    // LSKU FIX1 B5 (rule "QuarantineAsync → ScheduleRetryAsync" at the withdrawal preflight, moved): the engine refused
+    // the withdrawal — nothing changed there, so the submit goes back to awaiting its decision and every withdrawal
+    // field goes (formerly: quarantined for good).
+    [Fact]
+    public async Task A_withdrawal_the_engine_refuses_at_its_preflight_goes_back_to_awaiting_the_decision()
+    {
+        var harness = new Harness(ProductIdentityDecisionKind.Approved);
+        harness.ConfigureWithdrawalRequested();
+        harness.PreflightAnswer = ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationPreflight>.Fail(
+            ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TRUSTED_CANCEL_CONFLICT");
+
+        var result = await harness.Processor.RecoverAsync(
+            harness.Operation, "worker", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.Equal(LskuIdentityWorkflowCheckpoint.AwaitingDecision, result.Operation!.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, result.Operation.RecoveryDisposition);
+        Assert.Equal("WORKFLOW_TRUSTED_CANCEL_CONFLICT", result.Operation.LastFailureCode);
+        Assert.Null(result.Operation.WithdrawalCommandId);
+        Assert.Null(result.Operation.WithdrawalFingerprint);
+        Assert.Null(result.Operation.WithdrawalReasonCode);
+        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Lsku.LifecycleStatus);
     }
 
     [Theory]
@@ -208,7 +248,7 @@ public sealed class LskuIdentityWorkflowProcessorTests
         Assert.True(result.IsReplay);
         Assert.Equal(LskuIdentityWorkflowCheckpoint.Completed, result.Operation!.Checkpoint);
         Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Lsku.LifecycleStatus);
-        Assert.Equal(3, harness.Market.Calls);
+        Assert.Equal(2, harness.Market.Calls); // LSKU FIX1 B5: not asked again once applied
         Assert.Equal(1, harness.DecisionMutations);
     }
 
@@ -222,7 +262,8 @@ public sealed class LskuIdentityWorkflowProcessorTests
             harness.Operation, "worker", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
 
         Assert.False(result.Succeeded);
-        Assert.Equal("LSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", result.ErrorCode);
+        // LSKU FIX1 B5: the stuck reason on record is the answer (the GSKU rule); only the requester's repeat resumes it.
+        Assert.Equal("REFERENCE_CONTRACT_MISMATCH", result.ErrorCode);
         Assert.Equal(LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
             result.Operation!.Checkpoint);
         Assert.Equal(0, harness.Market.Calls);
@@ -290,6 +331,7 @@ public sealed class LskuIdentityWorkflowProcessorTests
             Operation = DecisionObserved(decision);
             Lsku.IdentityWorkflowBinding = Binding(Operation);
             Operations.Current = Operation;
+            Operations.Lsku = Lsku;
 
             var lskuRepository = DispatchProxy.Create<ILskuRepository, RepositoryProxy>();
             ((RepositoryProxy)(object)lskuRepository).Handler = (method, args) => method.Name switch
@@ -310,6 +352,8 @@ public sealed class LskuIdentityWorkflowProcessorTests
             var workflow = DispatchProxy.Create<IProductIdentityWorkflowClient, RepositoryProxy>();
             ((RepositoryProxy)(object)workflow).Handler = (method, _) => method.Name switch
             {
+                "GetCancellationPreflightAsync" => Task.FromResult(PreflightAnswer
+                    ?? throw new InvalidOperationException("No preflight answer configured.")),
                 "GetStartResultAsync" => Task.FromResult(
                     ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Success(
                         StartResult())),
@@ -328,6 +372,20 @@ public sealed class LskuIdentityWorkflowProcessorTests
 
         public LskuIdentityWorkflowProcessor Processor { get; }
         public FakeOperationRepository Operations { get; } = new();
+        public ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationPreflight>? PreflightAnswer { get; set; }
+
+        public void ConfigureWithdrawalRequested()
+        {
+            Operation.Checkpoint = LskuIdentityWorkflowCheckpoint.WithdrawalRequested;
+            Operation.RecoveryDisposition = ProductIdentityWorkflowRecoveryDisposition.None;
+            Operation.DecisionKind = null;
+            Operation.DecisionActorSubjectId = null;
+            Operation.WithdrawalCommandId = Guid.NewGuid();
+            Operation.WithdrawalFingerprint = new string('b', 64);
+            Operation.WithdrawalRequesterSubjectId = MakerId;
+            Operation.WithdrawalExpectedLskuVersion = 1;
+            Operation.WithdrawalReasonCode = "CHANGED_MIND";
+        }
         public MarketResolver Market { get; } = new();
         public LskuIdentityWorkflowOperation Operation { get; }
         public Lsku Lsku { get; }
@@ -425,6 +483,23 @@ public sealed class LskuIdentityWorkflowProcessorTests
     private sealed class FakeOperationRepository : ILskuIdentityWorkflowOperationRepository
     {
         public LskuIdentityWorkflowOperation? Current { get; set; }
+        public Lsku? Lsku { get; set; }
+
+        // LSKU FIX1 B5: the store's not-applicable write (the LSKU back to Draft, the operation ended) — one step here.
+        public Task<LskuIdentityWithdrawalWriteResult> ApplyDecisionNotApplicableAsync(
+            LskuIdentityWorkflowClaim claim, LskuIdentityWorkflowOperation operation, string reasonCode,
+            LocalAuditIntent auditIntent, long updatedAtUtcTicks, CancellationToken cancellationToken = default)
+        {
+            if (Current is null || Lsku is null || Current.Checkpoint != claim.Checkpoint)
+                return Task.FromResult(new LskuIdentityWithdrawalWriteResult(false, false, Lsku, "LSKU_IDENTITY_STATE_CONFLICT"));
+            Lsku.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
+            Lsku.Version++;
+            Lsku.AuditIntents.Add(auditIntent);
+            Current.Checkpoint = LskuIdentityWorkflowCheckpoint.DecisionNotApplicable;
+            Current.RecoveryDisposition = ProductIdentityWorkflowRecoveryDisposition.None;
+            Current.LastFailureCode = reasonCode;
+            return Task.FromResult(new LskuIdentityWithdrawalWriteResult(true, false, Lsku, null));
+        }
         public LskuIdentityWorkflowCheckpoint? FailNextAdvanceTo { get; set; }
         public LskuIdentityWorkflowCheckpointMutation? LastMutation { get; private set; }
 
@@ -472,6 +547,14 @@ public sealed class LskuIdentityWorkflowProcessorTests
             }
             Current.Checkpoint = mutation.NextCheckpoint;
             Current.RecoveryDisposition = mutation.RecoveryDisposition;
+            if (mutation.ClearWithdrawal)
+            {
+                Current.WithdrawalCommandId = null; Current.WithdrawalFingerprint = null;
+                Current.WithdrawalRequesterSubjectId = null; Current.WithdrawalExpectedLskuVersion = null;
+                Current.WithdrawalReasonCode = null; Current.WithdrawalComment = null;
+                Current.WithdrawalExpectedWorkflowInstanceVersion = null; Current.WithdrawalExpectedApprovalTaskVersion = null;
+                Current.WithdrawalObjectRef = null;
+            }
             Current.NextAttemptAtUtcTicksV1 = mutation.NextAttemptAtUtcTicksV1;
             Current.LastFailureCode = mutation.LastFailureCode;
             Current.WorkflowInstanceId = mutation.WorkflowInstanceId ?? Current.WorkflowInstanceId;

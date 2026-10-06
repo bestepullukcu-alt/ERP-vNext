@@ -57,4 +57,13 @@
   <data name="RetirementRequestConfirmation" xml:space="preserve"><value>Отправить запрос на вывод из обращения?</value></data>
   <data name="RetirementRequestPending" xml:space="preserve"><value>Запрос на вывод ожидает решения.</value></data>
   <data name="RetirementRequestSuccess" xml:space="preserve"><value>Запрос на вывод отправлен.</value></data>
+  <data name="ErrorMarketAlreadyExists" xml:space="preserve">
+    <value>У этого GSKU уже есть LSKU для этого рынка. Откройте существующий LSKU вместо создания нового.</value>
+  </data>
+  <data name="ErrorSubmitAbandoned" xml:space="preserve">
+    <value>Служба согласования отклонила эту отправку до запуска согласования. LSKU по-прежнему является черновиком; вы можете отправить его повторно.</value>
+  </data>
+  <data name="ErrorDecisionNotApplicable" xml:space="preserve">
+    <value>Согласование не удалось применить к этому LSKU, например потому что его рынок или родительская запись больше недоступны. LSKU снова стал черновиком; устраните причину и отправьте его повторно.</value>
+  </data>
 </root>

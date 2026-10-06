@@ -74,6 +74,18 @@ public interface ILskuRepository
         Guid id, int expectedVersion, LskuActiveLifecycleOperationBinding binding, bool approved,
         LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("LSKU_RETIREMENT_DECISION_NOT_IMPLEMENTED");
+
+    // LSKU FIX1 B3: a draft LSKU is cancelled (deleted with the intent that says so) so it no longer holds its GSKU.
+    Task<LskuLifecycleWriteResult> CancelDraftAsync(
+        Guid id, int expectedVersion, LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_DRAFT_CANCEL_NOT_IMPLEMENTED");
+
+    // LSKU FIX1 B2: a retirement request that ends without its decision applied gives the LSKU back — the lock goes in
+    // the same write as the intent that says why, conditioned on this very operation and version.
+    Task<LskuLifecycleWriteResult> ReleaseLifecycleOperationAsync(
+        Guid id, int expectedVersion, LskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_LIFECYCLE_RELEASE_NOT_IMPLEMENTED");
 }
 
 public sealed record LskuPage(

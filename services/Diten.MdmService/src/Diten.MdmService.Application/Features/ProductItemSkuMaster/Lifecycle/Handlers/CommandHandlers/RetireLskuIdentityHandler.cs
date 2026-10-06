@@ -1,77 +1,31 @@
-using Diten.MdmService.Application.Contracts;
-using Diten.MdmService.Application.Common;
-using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Commands;
-using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
-using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
 
 namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Handlers.CommandHandlers;
 
-public sealed class RetireLskuIdentityHandler(
-    ILskuRepository lskus,
-    IGskuRepository gskus,
-    IProductDefinitionRevisionRepository revisions,
-    IGlobalProductRepository products,
-    IProductLegalEntityScopeRolloutStateRepository rolloutStates,
-    IProductLegalEntityScopePolicyRepository scopePolicies,
-    ProductLegalEntityScopeCandidateFacade scopeCandidates,
-    ITenantContext tenantContext,
-    IProductIdentityLifecycleActorContext actorContext,
-    TimeProvider clock)
+/*
+ * Direct LSKU retirement (POST /api/lskus/{id}/retire) is CLOSED, for everyone — WP-MDM-LSKU-ACCEPT-01 S1, the shape
+ * GSKU took in WP-MDM-GSKU-ACCEPT-01 FIX2 item 13 (RetireGskuIdentityPairHandler).
+ *
+ * Retiring an LSKU directly, without an approved request, is a system action (separation of duties): a person retires
+ * an LSKU through a retirement REQUEST, which is approved and carried out by the system
+ * (LskuRetirementRequestWorkflowProcessor). It used to retire for any human holding mdm.lskus.retire — a key no
+ * dedicated role holds but SuperAdmin received from the full catalogue and an administrator could assign by hand. The
+ * key is now non-human in Auth (DefaultRolePermissionTemplate.NonHumanPermissionKeys) and MDM has no inbound system
+ * identity to recognise, so every caller is refused with the same code before anything is read or written. When a
+ * system actor is defined, the endpoint is opened here, for that identity only, with its own test.
+ */
+public sealed class RetireLskuIdentityHandler
     : IRequestHandler<RetireLskuIdentityCommand, Response<LskuIdentityLifecycleResult>>
 {
-    public async Task<Response<LskuIdentityLifecycleResult>> Handle(
+    public const string DirectRetirementIsSystemOnly = "LSKU_DIRECT_RETIREMENT_SYSTEM_ONLY";
+
+    public Task<Response<LskuIdentityLifecycleResult>> Handle(
         RetireLskuIdentityCommand command,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(command);
-        var input = command.Request;
-        if (!actorContext.TryResolveCanonicalHumanSubject(out var actor)
-            || !actorContext.HasPermission(LskuIdentityLifecyclePermissions.Retire))
-            return Fail("LSKU_IDENTITY_LIFECYCLE_FORBIDDEN", 403);
-        if (input is null || input.LskuId == Guid.Empty || input.ExpectedVersion < 0
-            || input.OperationId == Guid.Empty || string.IsNullOrWhiteSpace(input.ReasonCode))
-            return Fail("LSKU_IDENTITY_RETIRE_REQUEST_INVALID", 400);
-
-        var scopeGuard = new ProductLegalEntityScopeConsumerGuard(
-            rolloutStates, scopePolicies, scopeCandidates, tenantContext);
-        var scope = await scopeGuard.ResolveContextAsync(
-            LskuIdentityLifecyclePermissions.Retire, cancellationToken);
-        if (!scope.IsSuccessful) return Fail(scope.FailureCode!, scope.StatusCode);
-
-        var lsku = await lskus.GetByIdAsync(input.LskuId, cancellationToken);
-        if (lsku is null) return Fail("LSKU_IDENTITY_NOT_FOUND", 404);
-        var gsku = await gskus.GetByIdAsync(lsku.GskuId, cancellationToken);
-        var revision = gsku is null ? null
-            : await revisions.GetByIdAsync(gsku.ProductDefinitionRevisionId, cancellationToken);
-        var product = revision is null ? null
-            : await products.GetByIdAsync(revision.GlobalProductId, cancellationToken);
-        if (gsku is null || revision is null || product is null)
-            return Fail("LSKU_IDENTITY_NOT_FOUND", 404);
-        var decision = await scopeGuard.EvaluateAsync(scope.Context!, product.Id, cancellationToken);
-        if (!decision.Allowed) return Fail("LSKU_IDENTITY_NOT_FOUND", 404);
-        var audit = LskuIdentityLifecycleAuditIntentFactory.CreateRetire(
-            lsku, input.ExpectedVersion, input.OperationId, actor,
-            input.ReasonCode, input.Comment, clock.GetUtcNow());
-        var result = await lskus.RetireIdentityAsync(
-            input.LskuId, input.ExpectedVersion, audit, cancellationToken);
-        if (!result.Succeeded || result.Lsku is null)
-            return Fail(result.ErrorCode ?? "LSKU_IDENTITY_STATE_CONFLICT", StatusFor(result.ErrorCode));
-        var updated = result.Lsku;
-        return Response<LskuIdentityLifecycleResult>.Success(new(
-            updated.Id, updated.LifecycleStatus, updated.Version,
-            updated.IdentityWorkflowBinding?.WorkflowInstanceId, result.IsReplay));
+        return Task.FromResult(Response<LskuIdentityLifecycleResult>.Fail(DirectRetirementIsSystemOnly, 403));
     }
-
-    private static int StatusFor(string? code) => code switch
-    {
-        "LSKU_IDENTITY_NOT_FOUND" => 404,
-        "AUDIT_INTENT_CAPACITY_EXCEEDED" => 503,
-        _ => 409
-    };
-
-    private static Response<LskuIdentityLifecycleResult> Fail(string code, int status) =>
-        Response<LskuIdentityLifecycleResult>.Fail(code, status);
 }

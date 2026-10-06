@@ -225,7 +225,8 @@ public sealed class LskuIdentityWorkflowOperationRepository
             LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
             LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
             LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
-            LskuIdentityWorkflowCheckpoint.Superseded
+            LskuIdentityWorkflowCheckpoint.Superseded,
+            LskuIdentityWorkflowCheckpoint.DecisionNotApplicable
         };
         var filter = ActiveTenantFilter
                      & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
@@ -282,7 +283,11 @@ public sealed class LskuIdentityWorkflowOperationRepository
         if (claim.TenantId != _tenantId
             || mutation.UpdatedAtUtcTicks <= 0
             || !IsAllowedTransition(claim.Checkpoint, mutation.NextCheckpoint)
-            || !IsCoherentMutation(claim, mutation))
+            || !IsCoherentMutation(claim, mutation)
+            // LSKU FIX1 (the GSKU store invariant): manual reconciliation is never "retryable" — the worker does
+            // not scan it, so that pair would be a wait nobody comes back to.
+            || mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+               && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable)
         {
             return false;
         }
@@ -315,11 +320,14 @@ public sealed class LskuIdentityWorkflowOperationRepository
         }
         if (mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.DecisionApplied)
         {
-            filter &= claim.Checkpoint == LskuIdentityWorkflowCheckpoint.DecisionObserved
-                ? Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
-                    item => item.DecisionKind, ProductIdentityDecisionKind.Rejected)
-                : Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
-                    item => item.DecisionKind, ProductIdentityDecisionKind.Approved);
+            // LSKU FIX1 B5: the requester's repeat that finds either decision already on the LSKU puts the operation
+            // to "applied" (verified, then completed) — a rejection as well as an approval.
+            if (claim.Checkpoint != LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+                filter &= claim.Checkpoint == LskuIdentityWorkflowCheckpoint.DecisionObserved
+                    ? Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
+                        item => item.DecisionKind, ProductIdentityDecisionKind.Rejected)
+                    : Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
+                        item => item.DecisionKind, ProductIdentityDecisionKind.Approved);
         }
         if (claim.Checkpoint != LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
             && mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.DecisionObserved)
@@ -409,8 +417,51 @@ public sealed class LskuIdentityWorkflowOperationRepository
         {
             update = update.Set(item => item.LeaseOwner, null).Set(item => item.LeaseUntilUtcTicksV1, null);
         }
+        if (mutation.ClearWithdrawal)
+        {
+            update = update.Unset(item => item.WithdrawalCommandId).Unset(item => item.WithdrawalFingerprint)
+                .Unset(item => item.WithdrawalRequesterSubjectId).Unset(item => item.WithdrawalExpectedLskuVersion)
+                .Unset(item => item.WithdrawalReasonCode).Unset(item => item.WithdrawalComment)
+                .Unset(item => item.WithdrawalExpectedWorkflowInstanceVersion)
+                .Unset(item => item.WithdrawalExpectedApprovalTaskVersion)
+                .Unset(item => item.WithdrawalTransitionLogId).Unset(item => item.WithdrawalObservedAtUtcTicksV1)
+                .Unset(item => item.WithdrawalTransitionSequence)
+                .Unset(item => item.WithdrawalResultWorkflowInstanceVersion)
+                .Unset(item => item.WithdrawalResultApprovalTaskVersion).Unset(item => item.WithdrawalTaskStatus)
+                .Unset(item => item.WithdrawalInstanceStatus).Unset(item => item.WithdrawalObjectRef);
+        }
+        if (mutation.ClearDecision)
+        {
+            update = update.Unset(item => item.DecisionTransitionLogId).Unset(item => item.DecisionKind)
+                .Unset(item => item.DecisionObservedAtUtcTicksV1).Unset(item => item.DecisionActorSubjectId)
+                .Unset(item => item.DecisionReasonCode).Unset(item => item.DecisionObjectType)
+                .Unset(item => item.DecisionObjectId).Unset(item => item.DecisionObjectRef)
+                .Unset(item => item.DecisionWorkflowTemplateId).Unset(item => item.DecisionWorkflowTemplateVersionId)
+                .Unset(item => item.DecisionTaskStatus).Unset(item => item.DecisionInstanceStatus)
+                .Unset(item => item.DecisionTransitionSequence).Unset(item => item.DecisionAtUtcTicksV1)
+                .Unset(item => item.ApprovalMarketSelection).Unset(item => item.MarketValidatedAtUtcTicksV1)
+                .Unset(item => item.ApprovalMarketProofFingerprint);
+        }
+        update = mutation.Streak switch
+        {
+            RecoveryStreakWrite.Increment => update.Inc(item => item.FailedAttemptCount, 1),
+            RecoveryStreakWrite.Keep => update,
+            _ => update.Set(item => item.FailedAttemptCount, 0)
+        };
 
         var result = await _operations.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        if (result.ModifiedCount != 1 && mutation.ReleaseLease)
+        {
+            // S2: progress the store refused gives the lease back (only this claim's own lease).
+            await _operations.UpdateOneAsync(
+                ActiveTenantFilter
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.OperationId, claim.OperationId)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.LeaseOwner, claim.LeaseOwner)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.LeaseGeneration, claim.LeaseGeneration),
+                Builders<LskuIdentityWorkflowOperation>.Update.Set(item => item.LeaseOwner, null)
+                    .Set(item => item.LeaseUntilUtcTicksV1, null),
+                cancellationToken: cancellationToken);
+        }
         return result.ModifiedCount == 1;
     }
 
@@ -508,6 +559,135 @@ public sealed class LskuIdentityWorkflowOperationRepository
             : new(false, false, current, "LSKU_IDENTITY_WITHDRAWAL_LOCAL_STATE_INCONSISTENT");
     }
 
+    public Task<bool> HasUnfinishedForLskuAsync(Guid lskuId, CancellationToken cancellationToken = default) =>
+        _operations.Find(ActiveTenantFilter
+                         & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.LskuId, lskuId)
+                         & Builders<LskuIdentityWorkflowOperation>.Filter.Nin(item => item.Checkpoint, new[]
+                         {
+                             LskuIdentityWorkflowCheckpoint.Completed,
+                             LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+                             LskuIdentityWorkflowCheckpoint.Superseded,
+                             LskuIdentityWorkflowCheckpoint.DecisionNotApplicable
+                         }))
+            .AnyAsync(cancellationToken);
+
+    public Task<LskuIdentityWithdrawalWriteResult> AbandonBeforeStartAsync(
+        LskuIdentityWorkflowClaim claim, LskuIdentityWorkflowOperation operation, string reasonCode,
+        LocalAuditIntent auditIntent, long updatedAtUtcTicks, CancellationToken cancellationToken = default) =>
+        EndWithDraftAsync(claim, operation, reasonCode, auditIntent, updatedAtUtcTicks,
+            ProductAuditOperation.LskuIdentitySubmitAbandoned, operation.ExpectedLskuVersion,
+            ProductIdentityLifecycleStatus.Draft, LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+            [LskuIdentityWorkflowCheckpoint.StartOutcomeUnknown, LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired], cancellationToken);
+
+    public Task<LskuIdentityWithdrawalWriteResult> ApplyDecisionNotApplicableAsync(
+        LskuIdentityWorkflowClaim claim, LskuIdentityWorkflowOperation operation, string reasonCode,
+        LocalAuditIntent auditIntent, long updatedAtUtcTicks, CancellationToken cancellationToken = default) =>
+        EndWithDraftAsync(claim, operation, reasonCode, auditIntent, updatedAtUtcTicks,
+            ProductAuditOperation.LskuIdentityDecisionNotApplicable, operation.ExpectedLskuVersion + 1,
+            ProductIdentityLifecycleStatus.PendingIdentityApproval, LskuIdentityWorkflowCheckpoint.DecisionNotApplicable,
+            [LskuIdentityWorkflowCheckpoint.AwaitingDecision, LskuIdentityWorkflowCheckpoint.DecisionObserved,
+                LskuIdentityWorkflowCheckpoint.ApprovalValidated, LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired],
+            cancellationToken);
+
+    /*
+     * LSKU FIX1 B3 / B5: an operation that ends with its LSKU a draft — the LSKU write (status Draft, version + 1, the
+     * intent that says why) and the operation's end are one transaction, as the withdrawal's. Abandoned: the draft was
+     * never pending (the engine refused the start), only its version moves so the resubmit is a new operation.
+     * Not applicable: the pending LSKU of THIS operation's approval goes back to Draft.
+     */
+    private async Task<LskuIdentityWithdrawalWriteResult> EndWithDraftAsync(
+        LskuIdentityWorkflowClaim claim, LskuIdentityWorkflowOperation operation, string reasonCode,
+        LocalAuditIntent auditIntent, long updatedAtUtcTicks, ProductAuditOperation auditOperation,
+        int expectedLskuVersion, ProductIdentityLifecycleStatus sourceStatus,
+        LskuIdentityWorkflowCheckpoint endCheckpoint, LskuIdentityWorkflowCheckpoint[] fromCheckpoints,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        if (claim.TenantId != _tenantId || claim.OperationId != operation.OperationId
+            || claim.OperationFingerprint != operation.OperationFingerprint
+            || !fromCheckpoints.Contains(claim.Checkpoint) || updatedAtUtcTicks <= 0
+            || !IsExactBounded(reasonCode, 128) || expectedLskuVersion < 0
+            || auditIntent.Operation != auditOperation
+            || auditIntent.TenantId != _tenantId || auditIntent.AggregateType != AuditAggregateType.Lsku
+            || auditIntent.AggregateId != operation.LskuId
+            || auditIntent.PreVersion != expectedLskuVersion || auditIntent.PostVersion != expectedLskuVersion + 1
+            || auditIntent.Sequence != expectedLskuVersion + 1
+            || !IsExactBounded(auditIntent.IdempotencyKey, 256) || !IsExactBounded(auditIntent.EvidenceHash, 128))
+            return new(false, false, null, "LSKU_IDENTITY_END_CONTRACT_INVALID");
+
+        var active = Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId)
+                     & Builders<Lsku>.Filter.Eq(x => x.IsDeleted, false)
+                     & Builders<Lsku>.Filter.Eq(x => x.Id, operation.LskuId);
+        var current = await _lskus.Find(active).FirstOrDefaultAsync(cancellationToken);
+        if (current is null) return new(false, false, null, "LSKU_IDENTITY_NOT_FOUND");
+        var lskuDone = current.AuditIntents.Any(x => x.IntentId == auditIntent.IntentId)
+                       || current.AuditIntentReceipts.Any(x => x.IntentId == auditIntent.IntentId);
+        if (!lskuDone && current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate)
+            return new(false, false, current, "AUDIT_INTENT_CAPACITY_REACHED");
+
+        using var session = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+        session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+        try
+        {
+            if (!lskuDone)
+            {
+                var lskuFilter = active
+                    & Builders<Lsku>.Filter.Eq(x => x.Version, expectedLskuVersion)
+                    & Builders<Lsku>.Filter.Eq(x => x.LifecycleStatus, sourceStatus)
+                    & Builders<Lsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+                if (sourceStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval)
+                    lskuFilter &= Builders<Lsku>.Filter.Eq(x => x.IdentityWorkflowBinding!.WorkflowInstanceId, operation.WorkflowInstanceId)
+                        & Builders<Lsku>.Filter.Eq(x => x.IdentityWorkflowBinding!.StartIdempotencyKey, operation.StartIdempotencyKey)
+                        & Builders<Lsku>.Filter.Eq(x => x.IdentityWorkflowBinding!.TerminalDecision, null);
+                var lskuResult = await _lskus.UpdateOneAsync(session, lskuFilter,
+                    Builders<Lsku>.Update
+                        .Set(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
+                        .Set(x => x.UpdatedAt, new DateTimeOffset(updatedAtUtcTicks, TimeSpan.Zero))
+                        .Inc(x => x.Version, 1)
+                        .Push(x => x.AuditIntents, auditIntent), cancellationToken: cancellationToken);
+                if (lskuResult.ModifiedCount != 1)
+                {
+                    await session.AbortTransactionAsync(cancellationToken);
+                    return new(false, false, current, current.Version != expectedLskuVersion
+                        ? "LSKU_CONCURRENCY_CONFLICT" : "LSKU_IDENTITY_STATE_CONFLICT");
+                }
+            }
+            var operationResult = await _operations.UpdateOneAsync(session,
+                ActiveTenantFilter
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.OperationId, claim.OperationId)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.OperationFingerprint, claim.OperationFingerprint)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.Checkpoint, claim.Checkpoint)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LeaseOwner, claim.LeaseOwner)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LeaseGeneration, claim.LeaseGeneration)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Gt(x => x.LeaseUntilUtcTicksV1, updatedAtUtcTicks),
+                Builders<LskuIdentityWorkflowOperation>.Update
+                    .Set(x => x.Checkpoint, endCheckpoint)
+                    .Set(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.None)
+                    .Set(x => x.NextAttemptAtUtcTicksV1, null).Set(x => x.LastFailureCode, reasonCode)
+                    .Set(x => x.FailedAttemptCount, 0)
+                    .Set(x => x.LeaseOwner, null).Set(x => x.LeaseUntilUtcTicksV1, null)
+                    .Set(x => x.UpdatedAtUtcTicksV1, updatedAtUtcTicks)
+                    .Set(x => x.UpdatedAt, new DateTimeOffset(updatedAtUtcTicks, TimeSpan.Zero))
+                    .Inc(x => x.Version, 1), cancellationToken: cancellationToken);
+            if (operationResult.ModifiedCount != 1)
+            {
+                await session.AbortTransactionAsync(cancellationToken);
+                return new(false, false, current, "LSKU_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT");
+            }
+            await session.CommitTransactionAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) { if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None); throw; }
+        catch (MongoException)
+        {
+            if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+            return new(false, false, current, ProductIdentityStore.Unavailable);
+        }
+        current = await _lskus.Find(active).FirstOrDefaultAsync(cancellationToken);
+        return new(true, lskuDone, current, null);
+    }
+
     private bool ExactWithdrawalReplay(Lsku? lsku, LskuIdentityWorkflowOperation operation,
         Guid commandId, LocalAuditIntent audit) =>
         lsku is not null && lsku.TenantId == _tenantId
@@ -566,13 +746,30 @@ public sealed class LskuIdentityWorkflowOperationRepository
         {
             (LskuIdentityWorkflowCheckpoint.Prepared,
                 LskuIdentityWorkflowCheckpoint.StartOutcomeUnknown) => true,
+            // LSKU FIX1 S2 / B3: the transitions the processor really makes — a start refused before processing ends
+            // the operation (AbandonedBeforeWorkflowStart); the maker's replay may meet an unanswered start again.
             (LskuIdentityWorkflowCheckpoint.StartOutcomeUnknown,
                 LskuIdentityWorkflowCheckpoint.WorkflowStarted
                 or LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
+                or LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
                 or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
             (LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
                 LskuIdentityWorkflowCheckpoint.WorkflowStarted
+                or LskuIdentityWorkflowCheckpoint.StartOutcomeUnknown
+                or LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
                 or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            // LSKU FIX1 B5: a decision the engine made and MDM cannot apply ends the operation; the LSKU is a draft.
+            (LskuIdentityWorkflowCheckpoint.AwaitingDecision
+                or LskuIdentityWorkflowCheckpoint.DecisionObserved
+                or LskuIdentityWorkflowCheckpoint.ApprovalValidated
+                or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+                LskuIdentityWorkflowCheckpoint.DecisionNotApplicable) => true,
+            // LSKU FIX1 B5: the requester's same command puts a stuck operation back where the engine says it is.
+            (LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+                LskuIdentityWorkflowCheckpoint.WorkflowStarted
+                or LskuIdentityWorkflowCheckpoint.AwaitingDecision
+                or LskuIdentityWorkflowCheckpoint.DecisionApplied
+                or LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart) => true,
             (LskuIdentityWorkflowCheckpoint.WorkflowStarted,
                 LskuIdentityWorkflowCheckpoint.LocalPendingApplied
                 or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
@@ -615,7 +812,8 @@ public sealed class LskuIdentityWorkflowOperationRepository
             (LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
                 LskuIdentityWorkflowCheckpoint.WithdrawalRequested
                 or LskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
-                or LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown) => true,
+                or LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+                or LskuIdentityWorkflowCheckpoint.AwaitingDecision) => true,
             (LskuIdentityWorkflowCheckpoint.WithdrawalObserved,
                 LskuIdentityWorkflowCheckpoint.WithdrawalApplied
                 or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
@@ -771,6 +969,16 @@ public sealed class LskuIdentityWorkflowOperationRepository
         }
         if (mutation.NextCheckpoint != LskuIdentityWorkflowCheckpoint.ApprovalValidated)
         {
+            if (mutation.NextCheckpoint == current
+                && current == LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+                && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+            {
+                // LSKU FIX1 B5: the requester's repeat that could not settle a stuck operation leaves it stuck.
+                return !hasAnyStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof
+                    && !hasWithdrawalRequest && !hasWithdrawalPreflight && !hasWithdrawalEvidence
+                    && !mutation.NextAttemptAtUtcTicksV1.HasValue && IsOptionalExactBounded(mutation.LastFailureCode, 128)
+                    && mutation.ReleaseLease && !mutation.ClearDecision && !mutation.ClearWithdrawal;
+            }
             if (mutation.NextCheckpoint == current)
             {
             return !hasAnyStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof
@@ -780,10 +988,25 @@ public sealed class LskuIdentityWorkflowOperationRepository
                     && IsExactBounded(mutation.LastFailureCode, 128)
                     && mutation.ReleaseLease;
             }
+            // LSKU FIX1 S2: a move to another checkpoint may schedule its next attempt (a withdrawal whose cancel
+            // went unanswered, an unanswered start met again on the maker's replay) — only as a retry.
             return !hasAnyStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof
                 && !hasWithdrawalRequest && !hasWithdrawalPreflight && !hasWithdrawalEvidence
                 && IsOptionalExactBounded(mutation.LastFailureCode, 128)
-                && !mutation.NextAttemptAtUtcTicksV1.HasValue;
+                && (mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable
+                    ? mutation.NextAttemptAtUtcTicksV1 > mutation.UpdatedAtUtcTicks
+                      && IsExactBounded(mutation.LastFailureCode, 128) && mutation.ReleaseLease
+                    : !mutation.NextAttemptAtUtcTicksV1.HasValue)
+                && (!mutation.ClearWithdrawal
+                    || mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.AwaitingDecision
+                       && current is LskuIdentityWorkflowCheckpoint.WithdrawalRequested
+                           or LskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
+                           or LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+                           or LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay)
+                && (!mutation.ClearDecision
+                    || current == LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+                       && mutation.NextCheckpoint is LskuIdentityWorkflowCheckpoint.AwaitingDecision
+                           or LskuIdentityWorkflowCheckpoint.WorkflowStarted);
         }
 
         var selection = mutation.ApprovalMarketSelection;

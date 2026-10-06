@@ -393,9 +393,79 @@ public sealed class LskuRepository : ILskuRepository
                 .Set(x => x.UpdatedAt, auditIntent.TimestampUtc).Inc(x => x.Version, 1)
                 .Push(x => x.AuditIntents, auditIntent),
             new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
-        return updated is null ? new(false, await GetByIdAsync(id, cancellationToken),
-            "LSKU_RETIREMENT_DECISION_CONFLICT") : new(true, updated);
+        if (updated is not null) return new(true, updated);
+        // LSKU FIX1 S3: the refusal says what it was — the cap waits for delivery, a moved version is retried
+        // (counted), anything else is the record's and will not change by itself.
+        var current = await GetByIdAsync(id, cancellationToken);
+        return new(false, current, current is null ? "LSKU_NOT_FOUND"
+            : current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate ? AuditCapacityReached
+            : current.Version != expectedVersion ? "LSKU_CONCURRENCY_CONFLICT"
+            : "LSKU_RETIREMENT_DECISION_CONFLICT");
     }
+
+    public async Task<LskuLifecycleWriteResult> CancelDraftAsync(
+        Guid id, int expectedVersion, LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        if (id == Guid.Empty || expectedVersion < 0
+            || !ValidAudit(id, expectedVersion, ProductAuditOperation.LskuDraftCancelled, auditIntent))
+            return new(false, null, "LSKU_DRAFT_CANCEL_CONTRACT_INVALID");
+        var replayed = await _lskus.Find(TenantIncludingDeletedFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+                & Builders<Lsku>.Filter.ElemMatch(x => x.AuditIntents, x => x.IntentId == auditIntent.IntentId))
+            .FirstOrDefaultAsync(cancellationToken);
+        if (replayed is not null) return new(true, replayed, IsReplay: true);
+        var timestamp = auditIntent.TimestampUtc;
+        var updated = await _lskus.FindOneAndUpdateAsync(
+            ActiveFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Lsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Lsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
+            & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+            & Builders<Lsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate),
+            Builders<Lsku>.Update.Set(x => x.IsDeleted, true).Set(x => x.DeletedAt, timestamp)
+                .Set(x => x.UpdatedAt, timestamp).Inc(x => x.Version, 1).Push(x => x.AuditIntents, auditIntent),
+            new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, updated);
+        var current = await GetByIdAsync(id, cancellationToken);
+        return new(false, current, current is null || current.IsDeleted ? "LSKU_NOT_FOUND"
+            : current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate ? AuditCapacityReached
+            : current.Version != expectedVersion ? "LSKU_CONCURRENCY_CONFLICT"
+            : "LSKU_NOT_A_DRAFT");
+    }
+
+    public const string LifecycleReleaseConflict = "LSKU_LIFECYCLE_RELEASE_CONFLICT";
+
+    public async Task<LskuLifecycleWriteResult> ReleaseLifecycleOperationAsync(
+        Guid id, int expectedVersion, LskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        if (id == Guid.Empty || binding.OperationId == Guid.Empty
+            || binding.Kind != LskuLifecycleOperationKind.Retirement
+            || binding.BaseLskuVersion < 0 || expectedVersion != (long)binding.BaseLskuVersion + 1
+            || !ValidAudit(id, expectedVersion, ProductAuditOperation.LskuRetirementManualReconciliationRequired, auditIntent))
+            return new(false, null, "LSKU_LIFECYCLE_RELEASE_CONTRACT_INVALID");
+        var replay = await FindLifecycleReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null) return replay;
+        var updated = await _lskus.FindOneAndUpdateAsync(
+            ActiveFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Lsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, binding)
+            & Builders<Lsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate)
+            & new BsonDocumentFilterDefinition<Lsku>(new BsonDocument("$expr", new BsonDocument("$lt",
+                new BsonArray { new BsonDocument("$bsonSize", "$$ROOT"), 1024 * 1024 - 4096 }))),
+            Builders<Lsku>.Update.Set(x => x.ActiveLifecycleOperation, null)
+                .Set(x => x.UpdatedAt, auditIntent.TimestampUtc).Inc(x => x.Version, 1)
+                .Push(x => x.AuditIntents, auditIntent),
+            new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, updated);
+        var current = await GetByIdAsync(id, cancellationToken);
+        // The cap waits for delivery (never a conflict of the record); a moved version or binding is a release
+        // conflict the processor re-reads and retries, counted.
+        return new(false, current, current is null ? "LSKU_NOT_FOUND"
+            : current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate ? AuditCapacityReached
+            : LifecycleReleaseConflict);
+    }
+
+    // LSKU FIX1 S3 (the GSKU rule): the per-aggregate cap is not a conflict of the record — it says so.
+    public const string AuditCapacityReached = "AUDIT_INTENT_CAPACITY_REACHED";
 
     private async Task<LskuLifecycleWriteResult> RetireIdentityCoreAsync(Guid id, int expectedVersion,
         LskuActiveLifecycleOperationBinding? requiredBinding, LocalAuditIntent auditIntent,
@@ -604,6 +674,10 @@ public sealed class LskuRepository : ILskuRepository
                 ProductIdentityLifecycleStatus.IdentityApproved,
             ProductAuditOperation.LskuRetirementRejected =>
                 ProductIdentityLifecycleStatus.IdentityApproved,
+            ProductAuditOperation.LskuRetirementManualReconciliationRequired =>
+                ProductIdentityLifecycleStatus.IdentityApproved,
+            ProductAuditOperation.LskuIdentitySubmitAbandoned or ProductAuditOperation.LskuIdentityDecisionNotApplicable =>
+                ProductIdentityLifecycleStatus.Draft,
             _ => (ProductIdentityLifecycleStatus)(-1)
         };
 

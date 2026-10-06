@@ -7,6 +7,10 @@ public static class LskuIdentityLifecyclePermissions
     public const string Submit = "mdm.lskus.submit";
     public const string Withdraw = "mdm.lskus.withdraw";
     public const string Retire = "mdm.lskus.retire";
+    // LSKU FIX1 B3: cancelling a draft undoes its creation, so it is held by the key that creates it.
+    public const string CancelDraft = "mdm.lskus.create";
+    // LSKU FIX1 B1 (c): non-human only (Auth NonHumanPermissionKeys); the manifest's "System" recover action.
+    public const string RecoverLifecycleOperation = "mdm.product-identity.lifecycle-operations.recover";
 }
 
 public sealed record StartLskuIdentityWorkflowRequest(

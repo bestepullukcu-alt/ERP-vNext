@@ -57,4 +57,13 @@
   <data name="RetirementRequestConfirmation" xml:space="preserve"><value>¿Enviar una solicitud de retirada?</value></data>
   <data name="RetirementRequestPending" xml:space="preserve"><value>La solicitud de retirada espera una decisión.</value></data>
   <data name="RetirementRequestSuccess" xml:space="preserve"><value>Solicitud de retirada enviada.</value></data>
+  <data name="ErrorMarketAlreadyExists" xml:space="preserve">
+    <value>Este GSKU ya tiene un LSKU para este mercado. Abra el LSKU existente en lugar de crear uno nuevo.</value>
+  </data>
+  <data name="ErrorSubmitAbandoned" xml:space="preserve">
+    <value>El servicio de aprobación rechazó este envío antes de iniciar una aprobación. El LSKU sigue siendo un borrador; puede enviarlo de nuevo.</value>
+  </data>
+  <data name="ErrorDecisionNotApplicable" xml:space="preserve">
+    <value>La aprobación no se pudo aplicar a este LSKU, por ejemplo porque su mercado o su elemento principal ya no se puede usar. El LSKU vuelve a ser un borrador; corrija la causa y envíelo de nuevo.</value>
+  </data>
 </root>

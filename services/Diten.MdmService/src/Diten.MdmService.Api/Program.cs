@@ -294,9 +294,11 @@ builder.Services.AddScoped(sp =>
 {
     var options = sp.GetRequiredService<IOptions<LskuRetirementRequestWorkflowWorkerOptions>>().Value;
     return new LskuRetirementRequestExecutionConfiguration(TimeSpan.FromSeconds(options.LeaseSeconds),
-        TimeSpan.FromSeconds(options.RetryDelaySeconds));
+        TimeSpan.FromSeconds(options.RetryDelaySeconds), options.QuarantineAfterFailedAttempts,
+        TimeSpan.FromSeconds(options.EffectiveMaxRetryDelaySeconds), TimeSpan.FromSeconds(options.StartSettleSeconds));
 });
 builder.Services.AddScoped<LskuRetirementRequestWorkflowProcessor>();
+builder.Services.AddSingleton<GskuChildAdmissionGauge>();
 builder.Services.AddSingleton<LskuRetirementRequestRecoveryRunner>();
 builder.Services.AddHostedService<LskuRetirementRequestRecoveryWorker>();
 

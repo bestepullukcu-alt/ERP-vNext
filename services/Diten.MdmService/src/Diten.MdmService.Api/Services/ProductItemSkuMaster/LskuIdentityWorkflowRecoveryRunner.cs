@@ -1,6 +1,7 @@
 using Diten.MdmService.Api.Configuration;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Microsoft.Extensions.Options;
@@ -54,12 +55,24 @@ public sealed class LskuIdentityWorkflowRecoveryRunner(
                         .DiscoverRecoverableAsync(timeProvider.GetUtcNow().UtcTicks,
                             settings.OperationPageSize, cursor, cancellationToken);
                     var processor = scope.ServiceProvider.GetRequiredService<LskuIdentityWorkflowProcessor>();
-                    var recoveryAllowed = await IsBackgroundRecoveryAllowedAsync(
-                        scope.ServiceProvider, tenantId, cancellationToken);
+                    // LSKU FIX1 B4: the LSKU's one scope rule (LskuBackgroundScope) — in an Enforced tenant the
+                    // operations whose product is in scope go on, the others are skipped (formerly the whole tenant).
+                    var backgroundScope = scope.ServiceProvider.GetRequiredService<LskuBackgroundScope>();
+                    var scopeMode = await backgroundScope.ResolveAsync(cancellationToken);
+                    // S4: a tenant closed to recovery is said, not dropped silently.
+                    if (scopeMode == ProductIdentityBackgroundScope.TenantMode.Nothing && page.Operations.Count > 0)
+                        logger.LogWarning("LSKU identity recovery: tenant {TenantId} is closed to background recovery (its scope rollout is suspended or cannot be read); {Count} operations wait.",
+                            tenantId, page.Operations.Count);
                     foreach (var operation in page.Operations)
                     {
                         operations++;
-                        if (!recoveryAllowed) { deferred++; continue; }
+                        if (!await backgroundScope.InScopeForGskuAsync(scopeMode, operation.GskuId, cancellationToken))
+                        {
+                            deferred++;
+                            logger.LogDebug("LSKU identity recovery: operation {OperationId} of tenant {TenantId} is out of the background scope.",
+                                operation.OperationId, tenantId);
+                            continue;
+                        }
                         try
                         {
                             var result = await processor.RecoverAsync(operation, settings.LeaseOwner,
@@ -89,21 +102,4 @@ public sealed class LskuIdentityWorkflowRecoveryRunner(
     private static string Safe(string? value) => !string.IsNullOrWhiteSpace(value)
         && value.Length <= 100 && value.All(c => c is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_')
             ? value : "UNEXPECTED_FAILURE";
-
-    private static async Task<bool> IsBackgroundRecoveryAllowedAsync(
-        IServiceProvider services, Guid tenantId, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var rollout = await services
-                .GetRequiredService<IProductLegalEntityScopeRolloutStateRepository>()
-                .GetAsync(cancellationToken);
-            if (rollout is null) return true;
-            rollout.EnsureValid();
-            return rollout.TenantId == tenantId && !rollout.IsDeleted
-                   && rollout.Mode == ProductLegalEntityScopeRolloutMode.Preparation;
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
-        catch { return false; }
-    }
 }

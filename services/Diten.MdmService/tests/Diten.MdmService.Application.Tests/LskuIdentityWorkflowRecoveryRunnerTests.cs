@@ -139,6 +139,14 @@ public sealed class LskuIdentityWorkflowRecoveryRunnerTests
             .AddSingleton(processor)
             .AddSingleton<IProductLegalEntityScopeRolloutStateRepository>(new ScopeRolloutRepository(null))
             .AddScoped<ITenantContext, TestTenantContext>()
+            // LSKU FIX1 B4: the LSKU scope rule's one place (no rollout here: every operation is in scope).
+            .AddSingleton(Throwing<IProductLegalEntityScopePolicyRepository>())
+            .AddSingleton(Throwing<ILskuRepository>())
+            .AddSingleton(Throwing<IGskuRepository>())
+            .AddSingleton(Throwing<IProductDefinitionRevisionRepository>())
+            .AddSingleton(TimeProvider.System)
+            .AddScoped<Diten.MdmService.Application.Features.ProductLegalEntityScopes.ProductIdentityBackgroundScope>()
+            .AddScoped<Diten.MdmService.Application.Features.ProductLegalEntityScopes.LskuBackgroundScope>()
             .BuildServiceProvider();
         await using var provider = services;
         var runner = new LskuIdentityWorkflowRecoveryRunner(

@@ -57,4 +57,13 @@
   <data name="RetirementRequestConfirmation" xml:space="preserve"><value>Soumettre une demande de retrait ?</value></data>
   <data name="RetirementRequestPending" xml:space="preserve"><value>La demande de retrait attend une décision.</value></data>
   <data name="RetirementRequestSuccess" xml:space="preserve"><value>Demande de retrait soumise.</value></data>
+  <data name="ErrorMarketAlreadyExists" xml:space="preserve">
+    <value>Ce GSKU possède déjà un LSKU pour ce marché. Ouvrez le LSKU existant au lieu d'en créer un nouveau.</value>
+  </data>
+  <data name="ErrorSubmitAbandoned" xml:space="preserve">
+    <value>Le service d'approbation a refusé cette soumission avant de démarrer une approbation. Le LSKU est toujours un brouillon ; vous pouvez le soumettre à nouveau.</value>
+  </data>
+  <data name="ErrorDecisionNotApplicable" xml:space="preserve">
+    <value>L'approbation n'a pas pu être appliquée à ce LSKU, par exemple parce que son marché ou son parent n'est plus utilisable. Le LSKU est de nouveau un brouillon ; corrigez la cause et soumettez-le à nouveau.</value>
+  </data>
 </root>

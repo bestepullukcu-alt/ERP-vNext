@@ -61,6 +61,14 @@ public sealed class StartLskuIdentityWorkflowHandler(
             tenantContext.TenantId, input.LskuId, input.ExpectedVersion, input.OperationId,
             maker, token, executionConfiguration.LeaseDuration, executionConfiguration.RetryDelay,
             cancellationToken);
+        // LSKU FIX1 B3 / B5: a submit that ended with the LSKU a draft answers a stable code the screen says in the
+        // maker's language, and the recorded reason after it.
+        if (result.Operation?.Checkpoint is LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+            or LskuIdentityWorkflowCheckpoint.DecisionNotApplicable)
+            return Response<LskuIdentityWorkflowResult>.Fail(
+                [result.Operation.Checkpoint == LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                    ? SubmitAbandoned : DecisionNotApplicable,
+                 result.Operation.LastFailureCode ?? result.ErrorCode ?? SubmitAbandoned], 409);
         if (!result.Succeeded || result.Operation is null)
             return Fail(result.ErrorCode ?? "LSKU_IDENTITY_WORKFLOW_START_FAILED", result.StatusCode);
 
@@ -70,6 +78,9 @@ public sealed class StartLskuIdentityWorkflowHandler(
             operation.WorkflowInstanceId, operation.RecoveryDisposition.ToString(), result.IsReplay),
             operation.Checkpoint == LskuIdentityWorkflowCheckpoint.Completed ? 200 : 202);
     }
+
+    public const string SubmitAbandoned = "LSKU_IDENTITY_SUBMIT_ABANDONED";
+    public const string DecisionNotApplicable = "LSKU_IDENTITY_DECISION_NOT_APPLICABLE";
 
     private static Response<LskuIdentityWorkflowResult> Fail(string code, int status) =>
         Response<LskuIdentityWorkflowResult>.Fail(code, status);

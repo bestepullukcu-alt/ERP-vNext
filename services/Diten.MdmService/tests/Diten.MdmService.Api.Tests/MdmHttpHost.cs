@@ -88,6 +88,8 @@ public sealed class MdmHttpHost : IAsyncLifetime
     public FakeReferenceData References { get; } = new();
     public RecordingAuditForwarder Audit { get; } = new();
     public FakePlatformReferenceEndpoint PlatformReference { get; } = new();
+    // LSKU FIX1: the verified market answers (create and approval time).
+    public FakeMarkets Markets { get; } = new();
     public string MongoConnectionString => _runner?.ConnectionString ?? throw NotStarted();
 
     public WebApplicationFactory<GskusController> Factory => _factory ?? throw NotStarted();
@@ -156,7 +158,26 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 // FIX3 S8: a start's "nothing arrived" is trusted after 2 s here (the fake engine answers at once).
                 ["GskuRetirementRequestWorkflowWorker__StartSettleSeconds"] = "2",
                 // FIX3 item 1: a low retry limit for the retirement request, so a test can reach it in a few cycles.
-                ["GskuRetirementRequestWorkflowWorker__QuarantineAfterFailedAttempts"] = "4"
+                ["GskuRetirementRequestWorkflowWorker__QuarantineAfterFailedAttempts"] = "4",
+                // LSKU FIX1: the two LSKU flows as the tracked development settings name them (B4), this host's approver,
+                // the same short schedules as the GSKU flows above.
+                ["LskuIdentityWorkflow__Enabled"] = "true",
+                ["LskuIdentityWorkflow__TemplateCode"] = "LSKU-IDENTITY",
+                ["LskuIdentityWorkflow__ReasonCode"] = "LSKU_IDENTITY_APPROVAL",
+                ["LskuIdentityWorkflow__CandidatePrincipalIds__0"] = Approver.ToString("D"),
+                ["LskuIdentityWorkflowWorker__Enabled"] = "true",
+                ["LskuIdentityWorkflowWorker__LeaseOwner"] = "mdm-http-test-lsku",
+                ["LskuIdentityWorkflowWorker__LeaseSeconds"] = "10",
+                ["LskuIdentityWorkflowWorker__RetryDelaySeconds"] = "1",
+                ["LskuRetirementRequestWorkflow__Enabled"] = "true",
+                ["LskuRetirementRequestWorkflow__TemplateCode"] = "LSKU-RETIREMENT-REQUEST",
+                ["LskuRetirementRequestWorkflow__CandidatePrincipalIds__0"] = Approver.ToString("D"),
+                ["LskuRetirementRequestWorkflowWorker__Enabled"] = "true",
+                ["LskuRetirementRequestWorkflowWorker__LeaseSeconds"] = "10",
+                ["LskuRetirementRequestWorkflowWorker__RetryDelaySeconds"] = "1",
+                ["LskuRetirementRequestWorkflowWorker__MaxRetryDelaySeconds"] = "2",
+                ["LskuRetirementRequestWorkflowWorker__StartSettleSeconds"] = "2",
+                ["LskuRetirementRequestWorkflowWorker__QuarantineAfterFailedAttempts"] = "4"
             };
             foreach (var (key, value) in overrides)
             {
@@ -185,6 +206,11 @@ public sealed class MdmHttpHost : IAsyncLifetime
                     services.AddSingleton<IProductIdentityWorkflowTransportReadiness, ReadyTransport>();
                     services.RemoveAll<IPlatformAuditForwarder>();
                     services.AddSingleton<IPlatformAuditForwarder>(Audit);
+                    // LSKU FIX1: Platform's market reference answers (the resolvers are clients of that service).
+                    services.RemoveAll<IVerifiedMarketReferenceResolver>();
+                    services.AddSingleton<IVerifiedMarketReferenceResolver>(Markets);
+                    services.RemoveAll<IWorkflowVerifiedMarketReferenceResolver>();
+                    services.AddSingleton<IWorkflowVerifiedMarketReferenceResolver>(Markets);
                 });
             });
             _ = _factory.Server;

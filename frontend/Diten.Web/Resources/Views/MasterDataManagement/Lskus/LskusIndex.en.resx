@@ -57,4 +57,13 @@
   <data name="RetirementRequestConfirmation" xml:space="preserve"><value>Submit a retirement request?</value></data>
   <data name="RetirementRequestPending" xml:space="preserve"><value>Retirement request is awaiting a decision.</value></data>
   <data name="RetirementRequestSuccess" xml:space="preserve"><value>Retirement request submitted.</value></data>
+  <data name="ErrorMarketAlreadyExists" xml:space="preserve">
+    <value>This GSKU already has an LSKU for this market. Open the existing LSKU instead of creating a new one.</value>
+  </data>
+  <data name="ErrorSubmitAbandoned" xml:space="preserve">
+    <value>The approval service refused this submission before starting an approval. The LSKU is still a draft; you can submit it again.</value>
+  </data>
+  <data name="ErrorDecisionNotApplicable" xml:space="preserve">
+    <value>The approval could not be applied to this LSKU, for example because its market or parent is no longer usable. The LSKU is a draft again; correct the cause and submit it again.</value>
+  </data>
 </root>
