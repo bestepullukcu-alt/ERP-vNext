@@ -16,7 +16,8 @@ public static class PlannedVisitMapper
         p.VisitPurpose, p.VisitType, p.BusinessUnit, p.TerritoryNodeId, p.CampaignId,
         p.PlanStatus, p.Source,
         p.Consent?.EligibilityStatus, p.Frequency?.FrequencyStatus,
-        p.Version, p.CreatedAt, p.UpdatedAt);
+        p.Version, p.CreatedAt, p.UpdatedAt,
+        ToContentItems(p.ContentItems));
 
     public static PlannedVisitDetailDto ToDetail(PlannedVisitEntity p) => new(
         p.Id, p.VisitCode, p.TargetType, p.TargetId, p.AccountId, p.ContactId, p.AccountContactLinkId,
@@ -35,7 +36,20 @@ public static class PlannedVisitMapper
         ToContent(p.Content),
         ToSelection(p.Selection),
         ToAvailability(p.Availability),
-        p.Version, p.CreatedAt, p.CreatedBy, p.UpdatedAt, p.UpdatedBy);
+        p.Version, p.CreatedAt, p.CreatedBy, p.UpdatedAt, p.UpdatedBy,
+        ToContentItems(p.ContentItems));
+
+    /// <summary>WP-SB-3b — the frozen product list (never null on the wire: empty for an older plan).</summary>
+    public static IReadOnlyList<PlannedVisitContentItemDto> ToContentItems(IEnumerable<PlannedVisitContentItem>? items)
+        => (items ?? Enumerable.Empty<PlannedVisitContentItem>())
+            .Select(i => new PlannedVisitContentItemDto(
+                i.ProductId, i.ProductCode, i.Role, i.JourneyId, i.JourneyCode, i.StageId, i.StageIndex, i.StageCode,
+                i.StageName, i.PathId, i.PathCode, i.PathVersion,
+                i.Steps.Select(s => new PlannedVisitContentStepDto(s.StepId, s.ContentId, s.ContentCode, s.Title, s.Type, s.Minutes))
+                    .ToList(),
+                i.Claims.Select(c => new PlannedVisitContentClaimDto(c.ClaimId, c.ClaimCode)).ToList(),
+                i.Warnings.ToList()))
+            .ToList();
 
     private static PlannedVisitScheduleSlotDto ToSlot(PlannedVisitScheduleSlot s)
         => new(s.SequenceOrder, s.SlotStartTime, s.SlotEndTime, s.IsPacked);

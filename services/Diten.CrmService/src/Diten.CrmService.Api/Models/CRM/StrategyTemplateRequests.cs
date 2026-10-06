@@ -86,11 +86,14 @@ public sealed record StrategyTemplateProductLineRequest(
     string SkuAllocationMode,
     List<StrategyTemplateSkuAllocationRequest>? SkuAllocations,
     int SortOrder,
-    string? Notes)
+    string? Notes,
+    // WP-SB-3a — promo / non-promo and the product's published engagement journey (both required on a write).
+    string? Role = null,
+    Guid? JourneyId = null)
 {
     public StrategyTemplateProductLineInput ToInput() => new(
         GlobalProductId, GlobalProductCodeDisplay, LineWeightPercentage, SkuAllocationMode,
-        SkuAllocations?.Select(a => a.ToInput()).ToList(), SortOrder, Notes);
+        SkuAllocations?.Select(a => a.ToInput()).ToList(), SortOrder, Notes, Role, JourneyId);
 }
 
 /// <summary>One SKU share. Percentages are stored exactly as sent — the runtime never normalises them.</summary>

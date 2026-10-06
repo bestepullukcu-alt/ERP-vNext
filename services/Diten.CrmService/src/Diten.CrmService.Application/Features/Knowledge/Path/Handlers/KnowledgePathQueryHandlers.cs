@@ -16,15 +16,17 @@ public sealed class ListKnowledgePathsHandler : IRequestHandler<ListKnowledgePat
     private readonly IKnowledgePathRepository _paths;
     private readonly IKnowledgeContentRepository _contents;
     private readonly IConceptNodeRepository _nodes;
+    private readonly IConceptChainTemplateRepository? _templates;
 
     public ListKnowledgePathsHandler(
         ITenantContext tenant, IKnowledgePathRepository paths, IKnowledgeContentRepository contents,
-        IConceptNodeRepository nodes)
+        IConceptNodeRepository nodes, IConceptChainTemplateRepository? templates = null)
     {
         _tenant = tenant;
         _paths = paths;
         _contents = contents;
         _nodes = nodes;
+        _templates = templates;
     }
 
     public async Task<Response<KnowledgePathListDto>> Handle(
@@ -90,7 +92,11 @@ public sealed class ListKnowledgePathsHandler : IRequestHandler<ListKnowledgePat
             await _contents.ListAsync(tenantId, cancellationToken),
             await _nodes.ListAsync(tenantId, cancellationToken));
 
-        var items = list.Select(p => KnowledgePathMapper.ToListItem(p, ctx, effectiveAt)).ToList();
+        // WP-KP-1 — the chain code of each chain-bound row (one tenant read, only when a row is chain-bound).
+        var templates = _templates is not null && list.Any(p => p.ChainTemplate is not null)
+            ? (await _templates.ListAsync(tenantId, cancellationToken)).GroupBy(t => t.Id).ToDictionary(g => g.Key, g => g.First())
+            : null;
+        var items = list.Select(p => KnowledgePathMapper.ToListItem(p, ctx, effectiveAt, templates)).ToList();
         return Response<KnowledgePathListDto>.Success(new KnowledgePathListDto(items, items.Count));
     }
 }
@@ -101,15 +107,22 @@ public sealed class GetKnowledgePathHandler : IRequestHandler<GetKnowledgePathQu
     private readonly IKnowledgePathRepository _paths;
     private readonly IKnowledgeContentRepository _contents;
     private readonly IConceptNodeRepository _nodes;
+    private readonly KnowledgePathStudioReader? _studio;
+    private readonly IKnowledgePathRevisionRepository? _revisions;
+    private readonly Review.KnowledgePathReviewReconciler? _reconciler;
 
     public GetKnowledgePathHandler(
         ITenantContext tenant, IKnowledgePathRepository paths, IKnowledgeContentRepository contents,
-        IConceptNodeRepository nodes)
+        IConceptNodeRepository nodes, KnowledgePathStudioReader? studio = null,
+        IKnowledgePathRevisionRepository? revisions = null, Review.KnowledgePathReviewReconciler? reconciler = null)
     {
         _tenant = tenant;
         _paths = paths;
         _contents = contents;
         _nodes = nodes;
+        _studio = studio;
+        _revisions = revisions;
+        _reconciler = reconciler;
     }
 
     public async Task<Response<KnowledgePathDto>> Handle(
@@ -126,12 +139,21 @@ public sealed class GetKnowledgePathHandler : IRequestHandler<GetKnowledgePathQu
             return Response<KnowledgePathDto>.Fail("Knowledge path not found.", 404);
         }
 
+        // WP-KP-2 — a path in review follows its MLR round: a stale open round is reconciled on read (120 s window).
+        if (path.PathStatus == KnowledgePathStatuses.Review && _revisions is not null && _reconciler is not null
+            && await _reconciler.ReconcileAsync(tenantId, await _revisions.ListByPathAsync(tenantId, path.Id, cancellationToken),
+                cancellationToken) > 0)
+        {
+            path = await _paths.GetByIdAsync(tenantId, path.Id, cancellationToken) ?? path;
+        }
+
         var effectiveAt = request.EffectiveAt ?? DateTimeOffset.UtcNow;
         var ctx = new KnowledgePathMapper.ResolutionContext(
             await _contents.ListAsync(tenantId, cancellationToken),
             await _nodes.ListAsync(tenantId, cancellationToken));
 
-        return Response<KnowledgePathDto>.Success(KnowledgePathMapper.ToDto(path, ctx, effectiveAt));
+        var studio = _studio is null ? null : await _studio.ReadAsync(tenantId, path, cancellationToken);
+        return Response<KnowledgePathDto>.Success(KnowledgePathMapper.ToDto(path, ctx, effectiveAt, studio));
     }
 }
 

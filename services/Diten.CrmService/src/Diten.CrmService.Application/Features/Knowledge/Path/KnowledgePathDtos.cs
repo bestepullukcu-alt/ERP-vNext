@@ -35,7 +35,49 @@ public sealed record KnowledgePathDto(
     string? UpdatedBy,
     DateTimeOffset? ArchivedAt,
     string? ArchivedBy,
-    bool IsArchived);
+    bool IsArchived,
+    // WP-KP-1 — the studio model (DESIGN-KP-STUDIO §2). A legacy path: ChainTemplate / CountryCode / DerivedContext null,
+    // IsLegacyUnapproved true, empty Claims / ChainConformance.
+    KnowledgePathChainTemplateDto? ChainTemplate = null,
+    string? CountryCode = null,
+    Diten.CrmService.Application.Features.Knowledge.Chain.ChainDerivedContextDto? DerivedContext = null,
+    bool IsLegacyUnapproved = true,
+    bool IdentityLocked = false,
+    IReadOnlyList<KnowledgePathClaimDto>? Claims = null,
+    IReadOnlyList<KnowledgePathChainConformanceDto>? ChainConformance = null);
+
+/// <summary>WP-KP-1 — the pinned chain of a path (code / name read live from the template; null when unreadable).</summary>
+public sealed record KnowledgePathChainTemplateDto(Guid Id, string? Code, string? Name, string Version);
+
+/// <summary>WP-KP-1 — a slot address (branch + chain step = concept type id) and the position inside it.</summary>
+public sealed record KnowledgePathArrangementDto(Guid ChainStepId, string BranchCode, int Position);
+
+/// <summary>WP-KP-1 — a claim on a path, read against the path's country + language. The country version is the one
+/// the coverage cell shows (approved › review-required › in-review › draft); <c>Text</c> / <c>Qualifier</c> are that
+/// version's wording in the path language. <c>Reason</c> (not_approved / no_country_version / language_mismatch) is set
+/// exactly when <c>Usable</c> is false; adding such a claim is allowed, the release decides (KP-3).</summary>
+public sealed record KnowledgePathClaimDto(
+    Guid ClaimId,
+    string ClaimCode,
+    string? Name,
+    string? Text,
+    string? Qualifier,
+    Guid? CountryVersionId,
+    string? CountryVersion,
+    string? Status,
+    bool Usable,
+    string? Reason,
+    KnowledgePathArrangementDto Arrangement);
+
+/// <summary>WP-KP-1 — how many active steps sit on one chain slot against the slot's min / max.</summary>
+public sealed record KnowledgePathChainConformanceDto(
+    string BranchCode,
+    Guid ChainStepId,
+    string? Name,
+    int Count,
+    int Min,
+    int? Max,
+    string Status);
 
 /// <summary>MOD-0162 FU04 read model for an embedded step. Content is resolved per <c>VersionPinPolicy</c> and the
 /// resolution status is always visible (pinned / resolved-latest / unresolved) — no silent version drift or silent
@@ -71,7 +113,9 @@ public sealed record KnowledgePathStepDto(
     string? CreatedBy,
     DateTimeOffset? UpdatedAt,
     string? UpdatedBy,
-    bool IsArchived);
+    bool IsArchived,
+    // WP-KP-1 — the chain slot (null on a legacy path / an unplaced step).
+    KnowledgePathArrangementDto? Arrangement = null);
 
 public sealed record KnowledgePathBranchConditionDto(
     string ConditionCode,
@@ -101,7 +145,12 @@ public sealed record KnowledgePathListItemDto(
     DateTimeOffset? UpdatedAt,
     string? UpdatedBy,
     DateTimeOffset? ArchivedAt,
-    bool IsArchived);
+    bool IsArchived,
+    // WP-KP-1 — the studio list filters (KP-UI-1).
+    string? CountryCode = null,
+    Guid? ChainTemplateId = null,
+    string? ChainTemplateCode = null,
+    bool IsLegacyUnapproved = true);
 
 public sealed record KnowledgePathListDto(IReadOnlyList<KnowledgePathListItemDto> Items, int Total);
 

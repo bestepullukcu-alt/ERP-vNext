@@ -249,6 +249,12 @@ public static class ContentEngagementJourneyPathPin
 
     public static string Normalize(string? value)
         => string.IsNullOrWhiteSpace(value) ? Pinned : value.Trim().ToLowerInvariant();
+
+    /// <summary>WP-SB-3b (DESIGN-SB-3 S3-1) — a NEW stage follows the path's latest published version unless the author
+    /// pins it. Only the add-stage write uses this; an existing stage (update, new-version clone, stored rows) keeps
+    /// what it has — nothing is migrated.</summary>
+    public static string NormalizeForNewStage(string? value)
+        => string.IsNullOrWhiteSpace(value) ? LatestPublished : value.Trim().ToLowerInvariant();
 }
 
 /// <summary>Advancement rule the stage DECLARES (never an engine — FU01B §6; MOD-0309 / F-DETAIL measure). Values come

@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="StudioTitle" xml:space="preserve"><value>Parcours de connaissances</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Un parcours de connaissances est le récit que le délégué présente sur la tablette lors d'une visite médicale : composition, mise en page, contrôle de conformité, validation MLR et publication. Seuls les parcours publiés sont utilisables sur le terrain.</value></data>
+  <data name="NewPath" xml:space="preserve"><value>Nouveau parcours</value></data>
+  <data name="OpenPath" xml:space="preserve"><value>Ouvrir</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Retour aux parcours</value></data>
+  <data name="SumTotal" xml:space="preserve"><value>Total</value></data>
+  <data name="SumTotalSub" xml:space="preserve"><value>tous les parcours</value></data>
+  <data name="SumDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="SumDraftSub" xml:space="preserve"><value>en cours de composition</value></data>
+  <data name="SumPublished" xml:space="preserve"><value>Publié</value></data>
+  <data name="SumPublishedSub" xml:space="preserve"><value>sur le terrain</value></data>
+  <data name="SumLegacy" xml:space="preserve"><value>Ancien non approuvé</value></data>
+  <data name="SumLegacySub" xml:space="preserve"><value>à rattacher à une chaîne</value></data>
+  <data name="ColPath" xml:space="preserve"><value>Parcours</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="ColCountryLanguage" xml:space="preserve"><value>Pays / langue</value></data>
+  <data name="ColChain" xml:space="preserve"><value>Modèle de chaîne</value></data>
+  <data name="ColVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>Pays</value></data>
+  <data name="FilterLanguage" xml:space="preserve"><value>Langue</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="FilterLegacyOnly" xml:space="preserve"><value>Seulement les anciens parcours non approuvés</value></data>
+  <data name="EmptyFiltered" xml:space="preserve"><value>Aucun parcours ne correspond à ces filtres.</value></data>
+  <data name="LegacyBadge" xml:space="preserve"><value>Ancien parcours non approuvé</value></data>
+  <data name="LegacyBadgeTip" xml:space="preserve"><value>Non rattaché à une chaîne — inutilisable sur le terrain.</value></data>
+  <data name="LegacyBand" xml:space="preserve"><value>Ancien parcours non approuvé — inutilisable sur le terrain tant qu'il n'est pas rattaché à une chaîne.</value></data>
+  <data name="LegacyEditor" xml:space="preserve"><value>Ouvrir l'ancien éditeur</value></data>
+  <data name="LegacyStepsTitle" xml:space="preserve"><value>Étapes de l'ancien parcours</value></data>
+  <data name="BindChain" xml:space="preserve"><value>Rattacher à une chaîne</value></data>
+  <data name="BindNoChain" xml:space="preserve"><value>Aucune chaîne publiée et ramifiée n'existe pour le sujet de ce parcours.</value></data>
+  <data name="IdentityNote" xml:space="preserve"><value>Le pays et la langue sont l'identité du parcours et ne changent plus ; pour un autre pays, adaptez-le en un nouveau parcours.</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Sélectionner…</value></data>
+  <data name="VersionShort" xml:space="preserve"><value>v{0}</value></data>
+  <data name="RequiredMissing" xml:space="preserve"><value>Renseignez les champs obligatoires.</value></data>
+  <data name="CreateTitle" xml:space="preserve"><value>Nouveau parcours de connaissances</value></data>
+  <data name="CreateIntro" xml:space="preserve"><value>Définissez d'abord l'identité du parcours. Les étapes viennent du modèle de chaîne choisi ; vous ajoutez les contenus dans l'espace de travail.</value></data>
+  <data name="CreateSubmit" xml:space="preserve"><value>Créer</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Identité</value></data>
+  <data name="SectionContext" xml:space="preserve"><value>Pays et langue</value></data>
+  <data name="SectionDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="SectionValidity" xml:space="preserve"><value>Validité</value></data>
+  <data name="SectionPreview" xml:space="preserve"><value>Issu de la chaîne</value></data>
+  <data name="FieldPathName" xml:space="preserve"><value>Nom du parcours</value></data>
+  <data name="FieldPathNamePlaceholder" xml:space="preserve"><value>ex. ALMIBA — parcours de rappel court HD</value></data>
+  <data name="FieldChain" xml:space="preserve"><value>Modèle de chaîne</value></data>
+  <data name="FieldCountry" xml:space="preserve"><value>Pays</value></data>
+  <data name="FieldLanguage" xml:space="preserve"><value>Langue</value></data>
+  <data name="FieldObjective" xml:space="preserve"><value>Objectif</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="FieldEffectiveFrom" xml:space="preserve"><value>Début</value></data>
+  <data name="FieldEffectiveTo" xml:space="preserve"><value>Fin</value></data>
+  <data name="NoChains" xml:space="preserve"><value>Aucune chaîne utilisable : il faut un modèle de chaîne publié et ramifié.</value></data>
+  <data name="CodeNote" xml:space="preserve"><value>Le code du parcours (KP-…) est attribué automatiquement.</value></data>
+  <data name="LanguageNote" xml:space="preserve"><value>Règle de langue unique : seuls les contenus dans cette langue peuvent être ajoutés.</value></data>
+  <data name="PreviewSubject" xml:space="preserve"><value>Sujet</value></data>
+  <data name="PreviewProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="PreviewAudience" xml:space="preserve"><value>Public</value></data>
+  <data name="PreviewSteps" xml:space="preserve"><value>Étapes</value></data>
+  <data name="PreviewNote" xml:space="preserve"><value>Le sujet, le produit, le public et les étapes viennent de la chaîne et ne peuvent pas être modifiés.</value></data>
+  <data name="ContextLabel" xml:space="preserve"><value>Identité et contexte du parcours</value></data>
+  <data name="CtxChain" xml:space="preserve"><value>Chaîne</value></data>
+  <data name="CtxCountry" xml:space="preserve"><value>Pays</value></data>
+  <data name="CtxLanguage" xml:space="preserve"><value>Langue</value></data>
+  <data name="CtxProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="CtxAudience" xml:space="preserve"><value>Public</value></data>
+  <data name="CtxChainTip" xml:space="preserve"><value>La chaîne est figée ; ses branches et étapes forment le squelette du parcours.</value></data>
+  <data name="CtxIdentityTip" xml:space="preserve"><value>Identité du parcours ; pour un autre pays, adaptez-le (bientôt).</value></data>
+  <data name="CtxDerivedTip" xml:space="preserve"><value>Issu de la chaîne (lecture seule).</value></data>
+  <data name="OnField" xml:space="preserve"><value>Sur le terrain v{0}</value></data>
+  <data name="TabComposition" xml:space="preserve"><value>Composition</value></data>
+  <data name="IntroComposition" xml:space="preserve"><value>Construisez le récit du parcours : ajoutez contenus et allégations approuvées à chaque étape et ordonnez-les dans l'étape.</value></data>
+  <data name="DismissIntro" xml:space="preserve"><value>Compris</value></data>
+  <data name="NextBind" xml:space="preserve"><value>Étape suivante : rattacher le parcours à une chaîne</value></data>
+  <data name="NextFillSlots" xml:space="preserve"><value>Étape suivante : compléter {0} étape(s) incomplète(s)</value></data>
+  <data name="NextComplete" xml:space="preserve"><value>Composition terminée — la mise en page arrive dans une prochaine version.</value></data>
+  <data name="HelpBranch" xml:space="preserve"><value>Branche</value></data>
+  <data name="HelpBranchText" xml:space="preserve"><value>Une ligne narrative distincte ; les branches viennent de la chaîne.</value></data>
+  <data name="HelpStep" xml:space="preserve"><value>Étape</value></data>
+  <data name="HelpStepText" xml:space="preserve"><value>Une partie de la chaîne. Réglez obligatoire, durée et prérequis avec l'engrenage.</value></data>
+  <data name="HelpItems" xml:space="preserve"><value>Contenus et allégations</value></data>
+  <data name="HelpItemsText" xml:space="preserve"><value>Ajoutez des contenus et des allégations approuvées à une étape et faites-les glisser pour les ordonner.</value></data>
+  <data name="SkeletonNote" xml:space="preserve"><value>Les branches et étapes viennent de la chaîne ; on ne les ajoute, retire ni déplace ici.</value></data>
+  <data name="FieldOrder" xml:space="preserve"><value>Ordre sur le terrain :</value></data>
+  <data name="SequenceEmpty" xml:space="preserve"><value>Pas encore de contenu.</value></data>
+  <data name="ReadOnlyNoPermission" xml:space="preserve"><value>Vous n'avez pas le droit de modifier ; la composition est en lecture seule.</value></data>
+  <data name="ReadOnlyNotDraft" xml:space="preserve"><value>Le parcours n'est pas un brouillon ; la composition est en lecture seule.</value></data>
+  <data name="BranchTotal" xml:space="preserve"><value>{0} élément(s)</value></data>
+  <data name="SlotRequired" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="SlotOptional" xml:space="preserve"><value>Facultatif</value></data>
+  <data name="SlotLimit" xml:space="preserve"><value>Au moins {0} / au plus {1} élément(s)</value></data>
+  <data name="SlotLimitOpen" xml:space="preserve"><value>Au moins {0} élément(s), sans limite</value></data>
+  <data name="FromChain" xml:space="preserve"><value>Issu de la chaîne</value></data>
+  <data name="Duration" xml:space="preserve"><value>≈ {0} min</value></data>
+  <data name="Prerequisite" xml:space="preserve"><value>Prérequis : {0}</value></data>
+  <data name="EmptySlot" xml:space="preserve"><value>Aucun élément pour l'instant.</value></data>
+  <data name="AddToStep" xml:space="preserve"><value>Ajouter un contenu ou une allégation</value></data>
+  <data name="ContentKind" xml:space="preserve"><value>Contenu</value></data>
+  <data name="ClaimKind" xml:space="preserve"><value>Allégation</value></data>
+  <data name="ContentNotPublished" xml:space="preserve"><value>Non publié — bloque la publication</value></data>
+  <data name="ClaimVersionLabel" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="ItemDrag" xml:space="preserve"><value>Glisser pour réordonner</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>Monter</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>Descendre</value></data>
+  <data name="ItemSettings" xml:space="preserve"><value>Réglages de l'étape</value></data>
+  <data name="RemoveItem" xml:space="preserve"><value>Retirer de l'étape</value></data>
+  <data name="RemoveConfirm" xml:space="preserve"><value>Retirer cet élément de l'étape ?</value></data>
+  <data name="SettingsRequired" xml:space="preserve"><value>Affichage obligatoire</value></data>
+  <data name="SettingsDuration" xml:space="preserve"><value>Durée estimée (min)</value></data>
+  <data name="SettingsPrerequisite" xml:space="preserve"><value>Prérequis</value></data>
+  <data name="SettingsNoPrerequisite" xml:space="preserve"><value>Aucun</value></data>
+  <data name="SettingsMinMaxNote" xml:space="preserve"><value>Le nombre minimum / maximum d'éléments vient de la chaîne et n'est pas modifiable.</value></data>
+  <data name="SettingsSave" xml:space="preserve"><value>Appliquer</value></data>
+  <data name="Saved" xml:space="preserve"><value>Enregistré.</value></data>
+  <data name="Added" xml:space="preserve"><value>Ajouté.</value></data>
+  <data name="Removed" xml:space="preserve"><value>Retiré.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement…</value></data>
+  <data name="AddTitle" xml:space="preserve"><value>Ajouter à l'étape</value></data>
+  <data name="AddTarget" xml:space="preserve"><value>Étape cible : {0}</value></data>
+  <data name="AddTabContent" xml:space="preserve"><value>Contenu</value></data>
+  <data name="AddTabClaim" xml:space="preserve"><value>Allégation approuvée</value></data>
+  <data name="AddSearch" xml:space="preserve"><value>Rechercher</value></data>
+  <data name="AddClaimSearch" xml:space="preserve"><value>Rechercher une allégation : texte ou code</value></data>
+  <data name="AddContentNote" xml:space="preserve"><value>Seuls les contenus publiés dans la langue du parcours ({0}) peuvent être ajoutés.</value></data>
+  <data name="AddClaimNote" xml:space="preserve"><value>Seules les allégations ayant une version approuvée pour {0} sont utilisables sur le terrain. Le texte vient de l'allégation approuvée et n'est pas modifiable.</value></data>
+  <data name="AddButton" xml:space="preserve"><value>Ajouter</value></data>
+  <data name="CannotAdd" xml:space="preserve"><value>Ne peut pas être ajouté</value></data>
+  <data name="AddNone" xml:space="preserve"><value>Aucun enregistrement correspondant.</value></data>
+  <data name="ClaimNoProduct" xml:space="preserve"><value>Le parcours n'a pas de produit ; impossible d'ajouter des allégations.</value></data>
+  <data name="ClaimPermissionMissing" xml:space="preserve"><value>Vous n'avez pas le droit de voir les allégations.</value></data>
+  <data name="ClaimOptionsUnavailable" xml:space="preserve"><value>Les allégations ne peuvent pas être lues pour le moment.</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="Status_review" xml:space="preserve"><value>En revue</value></data>
+  <data name="Status_approved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="Status_published" xml:space="preserve"><value>Publié</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Retiré</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="Status_other" xml:space="preserve"><value>Autre</value></data>
+  <data name="ClaimState_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="ClaimState_in-review" xml:space="preserve"><value>En revue</value></data>
+  <data name="ClaimState_approved" xml:space="preserve"><value>Approuvée</value></data>
+  <data name="ClaimState_review-required" xml:space="preserve"><value>Revue requise</value></data>
+  <data name="ClaimState_inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="ClaimState_archived" xml:space="preserve"><value>Archivée</value></data>
+  <data name="ClaimState_other" xml:space="preserve"><value>Autre</value></data>
+  <data name="CType_presentation" xml:space="preserve"><value>Présentation</value></data>
+  <data name="CType_brochure" xml:space="preserve"><value>Brochure</value></data>
+  <data name="CType_lesson" xml:space="preserve"><value>Leçon</value></data>
+  <data name="CType_faq" xml:space="preserve"><value>FAQ</value></data>
+  <data name="CType_clinical-summary" xml:space="preserve"><value>Résumé clinique</value></data>
+  <data name="CType_objection-handling" xml:space="preserve"><value>Gestion des objections</value></data>
+  <data name="CType_quiz" xml:space="preserve"><value>Quiz</value></data>
+  <data name="CType_video" xml:space="preserve"><value>Vidéo</value></data>
+  <data name="CType_pdf" xml:space="preserve"><value>Document PDF</value></data>
+  <data name="CType_html-detail" xml:space="preserve"><value>Détail HTML</value></data>
+  <data name="CType_sop" xml:space="preserve"><value>Procédure opératoire standard</value></data>
+  <data name="CType_training-material" xml:space="preserve"><value>Support de formation</value></data>
+  <data name="CType_message-script" xml:space="preserve"><value>Script de message</value></data>
+  <data name="CType_knowledge-article" xml:space="preserve"><value>Article de connaissance</value></data>
+  <data name="CType_assembled-presentation" xml:space="preserve"><value>Présentation assemblée</value></data>
+  <data name="CType_other" xml:space="preserve"><value>Autre contenu</value></data>
+  <data name="Reason_not_approved" xml:space="preserve"><value>Non approuvée dans le pays du parcours</value></data>
+  <data name="Reason_no_country_version" xml:space="preserve"><value>Aucune version dans le pays du parcours</value></data>
+  <data name="Reason_language_mismatch" xml:space="preserve"><value>Aucun texte dans la langue du parcours</value></data>
+  <data name="AddReason_not_published" xml:space="preserve"><value>non publié</value></data>
+  <data name="AddReason_language" xml:space="preserve"><value>autre langue</value></data>
+  <data name="AddReason_product" xml:space="preserve"><value>autre produit</value></data>
+  <data name="AddReason_slot_full" xml:space="preserve"><value>l'étape est complète</value></data>
+  <data name="AddReason_on_path" xml:space="preserve"><value>déjà dans le parcours</value></data>
+  <data name="Conf_ok" xml:space="preserve"><value>Complet</value></data>
+  <data name="Conf_under" xml:space="preserve"><value>Éléments manquants</value></data>
+  <data name="Conf_over" xml:space="preserve"><value>Trop d'éléments</value></data>
+  <data name="Err_chain_template_invalid" xml:space="preserve"><value>Cette chaîne est inutilisable : elle doit être publiée, non archivée et ramifiée.</value></data>
+  <data name="Err_chain_template_required" xml:space="preserve"><value>Cette action nécessite un parcours rattaché à une chaîne ; rattachez-le d'abord.</value></data>
+  <data name="Err_chain_subject_mismatch" xml:space="preserve"><value>La chaîne appartient à un autre sujet que ce parcours.</value></data>
+  <data name="Err_path_identity_locked" xml:space="preserve"><value>Le pays et la langue sont l'identité de ce parcours et ne peuvent pas changer ; pour un autre pays, adaptez-le en un nouveau parcours.</value></data>
+  <data name="Err_country_invalid" xml:space="preserve"><value>Choisissez un pays valide.</value></data>
+  <data name="Err_language_not_in_country" xml:space="preserve"><value>Cette langue n'est pas une langue de contenu du pays choisi.</value></data>
+  <data name="Err_reference_set_unavailable" xml:space="preserve"><value>Les listes de pays et de langues sont indisponibles ; réessayez plus tard.</value></data>
+  <data name="Err_chain_slot_invalid" xml:space="preserve"><value>Cet élément ne peut être placé que sur une étape de la chaîne du parcours.</value></data>
+  <data name="Err_chain_slot_full" xml:space="preserve"><value>Cette étape contient déjà son nombre maximal d'éléments.</value></data>
+  <data name="Err_chain_slot_move_forbidden" xml:space="preserve"><value>Un élément ne peut pas changer de branche ou d'étape ; seul son ordre dans l'étape change.</value></data>
+  <data name="Err_component_language_mismatch" xml:space="preserve"><value>Ce contenu n'est pas dans la langue du parcours.</value></data>
+  <data name="Err_claim_product_mismatch" xml:space="preserve"><value>Cette allégation concerne un autre produit que le parcours.</value></data>
+  <data name="Err_claim_ref_duplicate" xml:space="preserve"><value>Cette allégation est déjà dans le parcours.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>L'action n'a pas pu aboutir.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>Le service ne répond pas pour le moment ; réessayez plus tard.</value></data>
+  <data name="TabCompliance" xml:space="preserve"><value>Conformité</value></data>
+  <data name="TabMlr" xml:space="preserve"><value>Approbation MLR</value></data>
+  <data name="TabOutput" xml:space="preserve"><value>Sortie et publication</value></data>
+  <data name="TabRevisions" xml:space="preserve"><value>Révisions</value></data>
+  <data name="TabPreview" xml:space="preserve"><value>Aperçu terrain</value></data>
+  <data name="TabUsage" xml:space="preserve"><value>Utilisation</value></data>
+  <data name="SubmitOpen" xml:space="preserve"><value>Envoyer en approbation</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>Retirer de la revue</value></data>
+  <data name="WithdrawReviewConfirm" xml:space="preserve"><value>Retirer le tour de revue ouvert ? Le parcours repasse en brouillon.</value></data>
+  <data name="WithdrawReviewDone" xml:space="preserve"><value>Le tour de revue a été retiré.</value></data>
+  <data name="StatusInReviewStep" xml:space="preserve"><value>En revue · {0}</value></data>
+  <data name="NextFix" xml:space="preserve"><value>Étape suivante : corrigez {0} blocage(s), puis envoyez en approbation</value></data>
+  <data name="NextSubmit" xml:space="preserve"><value>Le brouillon est prêt : vous pouvez l’envoyer en approbation</value></data>
+  <data name="NextWaiting" xml:space="preserve"><value>En attente d’approbation : {0}</value></data>
+  <data name="NextRender" xml:space="preserve"><value>Étape suivante : générez la sortie de la révision approuvée</value></data>
+  <data name="NextRelease" xml:space="preserve"><value>Étape suivante : publiez la révision approuvée</value></data>
+  <data name="NextPublisher" xml:space="preserve"><value>Approuvé : un responsable de publication génère la sortie et publie</value></data>
+  <data name="NextLive" xml:space="preserve"><value>Cette version est sur le terrain</value></data>
+  <data name="ShowBlockers" xml:space="preserve"><value>Afficher les blocages</value></data>
+  <data name="WizardOpen" xml:space="preserve"><value>Lier à une chaîne</value></data>
+  <data name="BlockerCount" xml:space="preserve"><value>{0} blocage(s)</value></data>
+  <data name="ComplianceIntro" xml:space="preserve"><value>Les règles s’appliquent pendant l’édition puis comme liste bloquante à l’envoi en approbation. Les blocages doivent être corrigés avant l’envoi ; les avertissements ne l’empêchent pas. Le bouton de la ligne mène à l’élément.</value></data>
+  <data name="ComplianceClean" xml:space="preserve"><value>Le contrôle de conformité est sans anomalie.</value></data>
+  <data name="ColSeverity" xml:space="preserve"><value>Gravité</value></data>
+  <data name="ColRule" xml:space="preserve"><value>Règle</value></data>
+  <data name="ColWhere" xml:space="preserve"><value>Branche › étape › élément</value></data>
+  <data name="ColIssue" xml:space="preserve"><value>Problème et correction</value></data>
+  <data name="GoToComposition" xml:space="preserve"><value>Aller à la composition</value></data>
+  <data name="MapSteps" xml:space="preserve"><value>Associer les étapes</value></data>
+  <data name="FixPrefix" xml:space="preserve"><value>Correction : {0}</value></data>
+  <data name="Sev_blocker" xml:space="preserve"><value>Bloquant</value></data>
+  <data name="Sev_warning" xml:space="preserve"><value>Avertissement</value></data>
+  <data name="Rule_chain" xml:space="preserve"><value>Conformité à la chaîne</value></data>
+  <data name="Rule_published" xml:space="preserve"><value>Contenu publié</value></data>
+  <data name="Rule_language" xml:space="preserve"><value>Langue unique</value></data>
+  <data name="Rule_claim" xml:space="preserve"><value>Utilisabilité des allégations</value></data>
+  <data name="Rule_placement" xml:space="preserve"><value>Placement des étapes</value></data>
+  <data name="Comp_UnderMsg" xml:space="preserve"><value>{0} : au moins {1} élément(s) attendu(s), {2} présent(s).</value></data>
+  <data name="Comp_UnderFix" xml:space="preserve"><value>Ajoutez un contenu ou une allégation à cette étape dans la composition.</value></data>
+  <data name="Comp_OverMsg" xml:space="preserve"><value>{0} : au plus {1} élément(s), {2} présent(s).</value></data>
+  <data name="Comp_OverFix" xml:space="preserve"><value>Retirez l’élément en trop de l’étape.</value></data>
+  <data name="Comp_NotPublishedMsg" xml:space="preserve"><value>« {0} » est au statut {1} dans la base de connaissances.</value></data>
+  <data name="Comp_NotPublishedFix" xml:space="preserve"><value>Faites publier le contenu ou retirez-le de l’étape.</value></data>
+  <data name="Comp_LanguageMsg" xml:space="preserve"><value>« {0} » est en {1} ; la langue du parcours est {2}.</value></data>
+  <data name="Comp_LanguageFix" xml:space="preserve"><value>Utilisez la version {0} du contenu.</value></data>
+  <data name="Comp_ClaimNotApprovedMsg" xml:space="preserve"><value>{0} n’est pas approuvée dans le pays du parcours ({1}).</value></data>
+  <data name="Comp_ClaimNotApprovedFix" xml:space="preserve"><value>Attendez l’approbation de l’allégation ou retirez-la de l’étape.</value></data>
+  <data name="Comp_ClaimNoVersionMsg" xml:space="preserve"><value>{0} n’a pas de version pour {1}.</value></data>
+  <data name="Comp_ClaimNoVersionFix" xml:space="preserve"><value>Demandez la version {0} dans la gestion des allégations ou retirez-la de l’étape.</value></data>
+  <data name="Comp_ClaimLanguageMsg" xml:space="preserve"><value>{0} n’a pas de texte dans la langue du parcours ({1}).</value></data>
+  <data name="Comp_ClaimLanguageFix" xml:space="preserve"><value>Demandez le texte en {0} dans la version pays ou retirez l’allégation de l’étape.</value></data>
+  <data name="Comp_UnplacedMsg" xml:space="preserve"><value>« {0} » n’est placé sur aucune étape de la chaîne.</value></data>
+  <data name="Comp_UnplacedFix" xml:space="preserve"><value>Associez-le à une étape avec l’assistant des anciens parcours, ou retirez-le.</value></data>
+  <data name="SubmitTitle" xml:space="preserve"><value>Envoyer en approbation</value></data>
+  <data name="SubmitIntro" xml:space="preserve"><value>L’envoi fige le brouillon actuel en Rév. {0} et lance le circuit Médical → Juridique → Réglementaire. Le brouillon reste modifiable.</value></data>
+  <data name="SubmitChecklist" xml:space="preserve"><value>Liste de contrôle</value></data>
+  <data name="SubmitNoBlockers" xml:space="preserve"><value>Aucune règle bloquante.</value></data>
+  <data name="SubmitOpenRound" xml:space="preserve"><value>La Rév. {0} est en revue ({1}). Une nouvelle révision pourra être envoyée à la clôture de ce tour.</value></data>
+  <data name="SubmitChangesTitle" xml:space="preserve"><value>Résumé des modifications (Rév. {0} → Rév. {1})</value></data>
+  <data name="SubmitFirstTitle" xml:space="preserve"><value>Résumé des modifications</value></data>
+  <data name="SubmitFirstText" xml:space="preserve"><value>C’est la première révision de ce parcours ; rien à comparer pour l’instant.</value></data>
+  <data name="SubmitSend" xml:space="preserve"><value>Envoyer la Rév. {0}</value></data>
+  <data name="SubmitBlocked" xml:space="preserve"><value>{0} blocage(s) à corriger avant l’envoi.</value></data>
+  <data name="SubmitBlockedOpen" xml:space="preserve"><value>Un tour de revue est déjà ouvert.</value></data>
+  <data name="SubmitDone" xml:space="preserve"><value>Envoyé en approbation ; la tâche est dans le Centre de travail.</value></data>
+  <data name="MlrTitle" xml:space="preserve"><value>Circuit d’approbation · Rév. {0} · v{1}</value></data>
+  <data name="MlrHistoryUnavailable" xml:space="preserve"><value>L’historique d’approbation est illisible pour l’instant ; les décisions s’afficheront dès qu’il sera disponible.</value></data>
+  <data name="MlrSubmitted" xml:space="preserve"><value>Envoi</value></data>
+  <data name="MlrState_submitted" xml:space="preserve"><value>Envoyé</value></data>
+  <data name="MlrState_approved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="MlrState_rejected" xml:space="preserve"><value>Rejeté</value></data>
+  <data name="MlrState_pending" xml:space="preserve"><value>En attente</value></data>
+  <data name="MlrState_queued" xml:space="preserve"><value>À venir</value></data>
+  <data name="MlrState_cancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="MlrState_not-reached" xml:space="preserve"><value>Non atteint</value></data>
+  <data name="MlrQueuedNote" xml:space="preserve"><value>S’ouvre après l’approbation de l’étape précédente.</value></data>
+  <data name="MlrPendingNote" xml:space="preserve"><value>La tâche est dans le Centre de travail ; l’étape suivante s’ouvre après décision.</value></data>
+  <data name="MlrCandidates" xml:space="preserve"><value>Candidats : {0}</value></data>
+  <data name="MlrStepN" xml:space="preserve"><value>Étape {0}</value></data>
+  <data name="MlrUnnamedStep" xml:space="preserve"><value>Étape sans nom</value></data>
+  <data name="MlrSummary" xml:space="preserve"><value>Résumé</value></data>
+  <data name="MlrSumRevision" xml:space="preserve"><value>Révision</value></data>
+  <data name="MlrSumSubmitter" xml:space="preserve"><value>Envoyé par</value></data>
+  <data name="MlrSumSubmitted" xml:space="preserve"><value>Envoyé le</value></data>
+  <data name="MlrSumPending" xml:space="preserve"><value>En attente</value></data>
+  <data name="MlrSumNone" xml:space="preserve"><value>Aucune</value></data>
+  <data name="MlrSumDone" xml:space="preserve"><value>Terminé</value></data>
+  <data name="MlrSumDoneValue" xml:space="preserve"><value>{0} / {1} étapes</value></data>
+  <data name="MlrRulesTitle" xml:space="preserve"><value>Règles</value></data>
+  <data name="MlrRules" xml:space="preserve"><value>L’ordre est Médical → Juridique → Réglementaire. Chaque étape s’ouvre après l’approbation précédente et arrive dans le Centre de travail. L’émetteur ne peut pas approuver son parcours ; un rejet exige un motif.</value></data>
+  <data name="SingleChannelNote" xml:space="preserve"><value>Canal unique : votre décision est inscrite dans le workflow d’approbation du Centre de travail (MOD-0023) ; une décision prise dans le Centre de travail s’affiche aussi ici.</value></data>
+  <data name="ReviewerView" xml:space="preserve"><value>Vue relecteur</value></data>
+  <data name="OutputTitle" xml:space="preserve"><value>Sorties</value></data>
+  <data name="OutputNone" xml:space="preserve"><value>Rév. {0} · aucune sortie</value></data>
+  <data name="OutputNoneText" xml:space="preserve"><value>Le PDF d’archive est généré à partir de la révision approuvée ; la présentation HTML terrain viendra dans une phase ultérieure.</value></data>
+  <data name="OutputNothing" xml:space="preserve"><value>Aucune sortie pour l’instant.</value></data>
+  <data name="RenderButton" xml:space="preserve"><value>Générer la sortie</value></data>
+  <data name="RenderDone" xml:space="preserve"><value>Le PDF d’archive a été généré.</value></data>
+  <data name="ArtifactView" xml:space="preserve"><value>Afficher</value></data>
+  <data name="ArtifactDownload" xml:space="preserve"><value>Télécharger</value></data>
+  <data name="ArtifactFrom" xml:space="preserve"><value>Issue de la Rév. {0} approuvée</value></data>
+  <data name="FingerprintLabel" xml:space="preserve"><value>Empreinte</value></data>
+  <data name="SizeKb" xml:space="preserve"><value>{0} Ko</value></data>
+  <data name="SizeMb" xml:space="preserve"><value>{0} Mo</value></data>
+  <data name="ReleaseTitle" xml:space="preserve"><value>Publication</value></data>
+  <data name="ReleaseTitleRev" xml:space="preserve"><value>Publication · Rév. {0}</value></data>
+  <data name="PreconditionsTitle" xml:space="preserve"><value>Conditions de publication</value></data>
+  <data name="ReleaseButton" xml:space="preserve"><value>Publier</value></data>
+  <data name="ReleaseBlocked" xml:space="preserve"><value>Publication impossible pour l’instant : {0}</value></data>
+  <data name="ReleaseNoCandidate" xml:space="preserve"><value>Aucune révision approuvée n’attend de publication.</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>Publier la v{0} ? Elle devient la version utilisée sur le terrain.</value></data>
+  <data name="ReleaseConfirmReplace" xml:space="preserve"><value>Publier la v{0} ? Elle remplace la v{1} sur le terrain.</value></data>
+  <data name="ReleaseDone" xml:space="preserve"><value>Publié ; le parcours est sur le terrain.</value></data>
+  <data name="PreOk" xml:space="preserve"><value>Remplie</value></data>
+  <data name="PreMissing" xml:space="preserve"><value>Manquante</value></data>
+  <data name="Pre_approved" xml:space="preserve"><value>Révision approuvée MLR</value></data>
+  <data name="Pre_approvedNo" xml:space="preserve"><value>La Rév. {0} n’est pas encore approuvée.</value></data>
+  <data name="Pre_artifact" xml:space="preserve"><value>Sortie prête</value></data>
+  <data name="Pre_artifactNo" xml:space="preserve"><value>Aucune sortie : générez d’abord le PDF d’archive de la révision approuvée.</value></data>
+  <data name="Pre_published" xml:space="preserve"><value>Tous les contenus publiés</value></data>
+  <data name="Pre_publishedNo" xml:space="preserve"><value>Un contenu du parcours n’est pas publié.</value></data>
+  <data name="Pre_language" xml:space="preserve"><value>Langue unique</value></data>
+  <data name="Pre_languageNo" xml:space="preserve"><value>Un contenu n’est pas dans la langue du parcours.</value></data>
+  <data name="Pre_claims" xml:space="preserve"><value>Toutes les allégations utilisables</value></data>
+  <data name="Pre_claimsNo" xml:space="preserve"><value>Une allégation n’est pas utilisable dans le pays / la langue du parcours.</value></data>
+  <data name="Pre_conformance" xml:space="preserve"><value>Conformité à la chaîne respectée</value></data>
+  <data name="Pre_conformanceNo" xml:space="preserve"><value>Une étape de la chaîne a trop ou pas assez d’éléments, ou une étape n’est pas placée.</value></data>
+  <data name="Pre_sod" xml:space="preserve"><value>L’éditeur n’est pas l’émetteur</value></data>
+  <data name="Pre_sodNo" xml:space="preserve"><value>Vous avez envoyé cette révision ; une autre personne doit la publier.</value></data>
+  <data name="LiveTitle" xml:space="preserve"><value>Version sur le terrain · v{0} (Rév. {1})</value></data>
+  <data name="LiveSub" xml:space="preserve"><value>Publié · {0} · {1}</value></data>
+  <data name="WithdrawReasonLabel" xml:space="preserve"><value>Motif du retrait</value></data>
+  <data name="WithdrawReasonPlaceholder" xml:space="preserve"><value>Pourquoi cette version est-elle retirée ? (obligatoire)</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>Retirer</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Retirer la v{0} du terrain ?</value></data>
+  <data name="WithdrawDone" xml:space="preserve"><value>La version a été retirée.</value></data>
+  <data name="WithdrawNote" xml:space="preserve"><value>Une version retirée ne peut pas être choisie dans les étapes de parcours client.</value></data>
+  <data name="WithdrawStagesTitle" xml:space="preserve"><value>Liez d’abord ces étapes à une autre version :</value></data>
+  <data name="CardField" xml:space="preserve"><value>Utilisée sur le terrain</value></data>
+  <data name="CardApproval" xml:space="preserve"><value>En approbation</value></data>
+  <data name="CardWorking" xml:space="preserve"><value>En cours de travail</value></data>
+  <data name="CardNone" xml:space="preserve"><value>Aucune</value></data>
+  <data name="CardRev" xml:space="preserve"><value>v{0} · Rév. {1}</value></data>
+  <data name="CardRevShort" xml:space="preserve"><value>Rév. {0}</value></data>
+  <data name="CardVersion" xml:space="preserve"><value>v{0}</value></data>
+  <data name="CardDraft" xml:space="preserve"><value>v{0} · Brouillon</value></data>
+  <data name="RevExplainVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="RevExplainVersionText" xml:space="preserve"><value>(v1.0, v2.0) est la forme publiée du parcours.</value></data>
+  <data name="RevExplainRevision" xml:space="preserve"><value>Révision</value></data>
+  <data name="RevExplainRevisionText" xml:space="preserve"><value>(Rév. 1, 2, 3) est une copie figée d’une version envoyée en approbation. Une révision rejetée est corrigée et renvoyée : une version peut donc avoir plusieurs révisions.</value></data>
+  <data name="RevHistoryTitle" xml:space="preserve"><value>Historique des révisions</value></data>
+  <data name="RevHistoryNewest" xml:space="preserve"><value>la plus récente en premier</value></data>
+  <data name="RevChanges" xml:space="preserve"><value>{0} modification(s)</value></data>
+  <data name="RevOpenNotes" xml:space="preserve"><value>{0} note(s) ouverte(s)</value></data>
+  <data name="OnFieldBadge" xml:space="preserve"><value>SUR LE TERRAIN</value></data>
+  <data name="DiffFrom" xml:space="preserve"><value>De</value></data>
+  <data name="DiffTo" xml:space="preserve"><value>À</value></data>
+  <data name="DiffShow" xml:space="preserve"><value>Voir la différence</value></data>
+  <data name="DiffDraft" xml:space="preserve"><value>Brouillon actuel</value></data>
+  <data name="DiffTitle" xml:space="preserve"><value>{0} → {1}</value></data>
+  <data name="DiffNone" xml:space="preserve"><value>Aucune modification.</value></data>
+  <data name="DiffPickTwo" xml:space="preserve"><value>Choisissez deux révisions différentes.</value></data>
+  <data name="DiffWith" xml:space="preserve"><value>Différence avec la Rév. {0}</value></data>
+  <data name="Change_step-added" xml:space="preserve"><value>Étape ajoutée</value></data>
+  <data name="Change_step-removed" xml:space="preserve"><value>Étape retirée</value></data>
+  <data name="Change_step-moved" xml:space="preserve"><value>Étape déplacée</value></data>
+  <data name="Change_content-changed" xml:space="preserve"><value>Contenu modifié</value></data>
+  <data name="Change_content-version-changed" xml:space="preserve"><value>Version du contenu modifiée</value></data>
+  <data name="Change_claim-added" xml:space="preserve"><value>Allégation ajoutée</value></data>
+  <data name="Change_claim-removed" xml:space="preserve"><value>Allégation retirée</value></data>
+  <data name="Change_claim-moved" xml:space="preserve"><value>Allégation déplacée</value></data>
+  <data name="Change_claim-version-changed" xml:space="preserve"><value>Version de l’allégation modifiée</value></data>
+  <data name="RevStatus_in-review" xml:space="preserve"><value>En revue</value></data>
+  <data name="RevStatus_approved" xml:space="preserve"><value>Approuvée</value></data>
+  <data name="RevStatus_rejected" xml:space="preserve"><value>Rejetée</value></data>
+  <data name="RevStatus_withdrawn" xml:space="preserve"><value>Retirée</value></data>
+  <data name="RevStatus_timed-out" xml:space="preserve"><value>Expirée</value></data>
+  <data name="RevStatus_other" xml:space="preserve"><value>Autre</value></data>
+  <data name="Release_released" xml:space="preserve"><value>Publiée</value></data>
+  <data name="Release_withdrawn" xml:space="preserve"><value>Retirée du terrain</value></data>
+  <data name="Release_other" xml:space="preserve"><value>Autre</value></data>
+  <data name="PreviewDraft" xml:space="preserve"><value>Brouillon — la sortie est générée après approbation.</value></data>
+  <data name="PreviewNoOutput" xml:space="preserve"><value>Approuvée — l’aperçu s’affiche une fois la sortie générée.</value></data>
+  <data name="PreviewCaption" xml:space="preserve"><value>Rév. {0} · v{1} · empreinte {2}</value></data>
+  <data name="PreviewPdfNote" xml:space="preserve"><value>Le PDF d’archive de la révision approuvée ; la présentation HTML interactive viendra plus tard.</value></data>
+  <data name="UsageJourneys" xml:space="preserve"><value>Étapes de parcours client</value></data>
+  <data name="UsageTemplates" xml:space="preserve"><value>Modèles de stratégie</value></data>
+  <data name="UsageNoJourneys" xml:space="preserve"><value>Aucune étape de parcours client n’utilise ce parcours.</value></data>
+  <data name="UsageNoTemplates" xml:space="preserve"><value>Aucun modèle de stratégie n’est lié à ce parcours.</value></data>
+  <data name="UsageViewsLater" xml:space="preserve"><value>Les vues et durées par page issues du terrain arriveront dans une phase ultérieure.</value></data>
+  <data name="PinLatest" xml:space="preserve"><value>Suit la dernière version publiée</value></data>
+  <data name="PinVersion" xml:space="preserve"><value>Épinglée sur la v{0}</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Actif</value></data>
+  <data name="PersonYou" xml:space="preserve"><value>Vous</value></data>
+  <data name="PersonOther" xml:space="preserve"><value>Utilisateur enregistré</value></data>
+  <data name="CandidateOther" xml:space="preserve"><value>Utilisateur désigné</value></data>
+  <data name="ReviewerTitle" xml:space="preserve"><value>Vue relecteur</value></data>
+  <data name="BackToWorkspace" xml:space="preserve"><value>Retour à l’espace de travail</value></data>
+  <data name="ReviewerHeader" xml:space="preserve"><value>Vue relecteur · Rév. {0} · v{1}</value></data>
+  <data name="ReviewerFrozen" xml:space="preserve"><value>Révision figée · envoyée par {0} · {1}</value></data>
+  <data name="ReviewerWaiting" xml:space="preserve"><value>Étape {0} : en attente</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>Cliquez sur une allégation : son document de preuve s’ouvre dans le panneau latéral.</value></data>
+  <data name="ReviewerComposition" xml:space="preserve"><value>Composition</value></data>
+  <data name="ReviewerItems" xml:space="preserve"><value>{0} élément(s)</value></data>
+  <data name="ReviewerOpenNotes" xml:space="preserve"><value>{0} note(s) ouverte(s)</value></data>
+  <data name="ReviewerNoText" xml:space="preserve"><value>Pas de texte dans la langue du parcours.</value></data>
+  <data name="ContentVersionLabel" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>Preuves</value></data>
+  <data name="EvidenceTitleFor" xml:space="preserve"><value>Preuves · {0}</value></data>
+  <data name="EvidencePick" xml:space="preserve"><value>Sélectionnez une allégation pour voir ses preuves.</value></data>
+  <data name="EvidenceOpen" xml:space="preserve"><value>Ouvrir les preuves de {0}</value></data>
+  <data name="EvidenceNone" xml:space="preserve"><value>Aucune preuve n’est liée à cette allégation.</value></data>
+  <data name="EvidenceNoPermission" xml:space="preserve"><value>Vous n’êtes pas autorisé à lire les preuves des allégations.</value></data>
+  <data name="EvidenceUnavailable" xml:space="preserve"><value>Les preuves sont illisibles pour l’instant.</value></data>
+  <data name="NotesTitle" xml:space="preserve"><value>Notes</value></data>
+  <data name="NotesIntro" xml:space="preserve"><value>Les notes sont conservées avec la révision ; les notes non résolues passent à la révision suivante.</value></data>
+  <data name="NotesNone" xml:space="preserve"><value>Aucune note sur cette étape.</value></data>
+  <data name="NoteTarget" xml:space="preserve"><value>Note sur</value></data>
+  <data name="NoteOnStep" xml:space="preserve"><value>Étape : {0}</value></data>
+  <data name="NoteOnBlock" xml:space="preserve"><value>Bloc : {0}</value></data>
+  <data name="NotePlaceholder" xml:space="preserve"><value>Note à épingler</value></data>
+  <data name="NoteAdd" xml:space="preserve"><value>Épingler</value></data>
+  <data name="NoteAdded" xml:space="preserve"><value>Note épinglée.</value></data>
+  <data name="NoteResolve" xml:space="preserve"><value>Marquer comme résolue</value></data>
+  <data name="NoteResolved" xml:space="preserve"><value>Résolue</value></data>
+  <data name="NoteResolvedBy" xml:space="preserve"><value>Résolue par {0}</value></data>
+  <data name="NoteCarried" xml:space="preserve"><value>Reprise de la Rév. {0}</value></data>
+  <data name="DecisionTitle" xml:space="preserve"><value>Décision</value></data>
+  <data name="DecisionTitleStep" xml:space="preserve"><value>Décision · {0}</value></data>
+  <data name="DecisionCommentLabel" xml:space="preserve"><value>Note / motif</value></data>
+  <data name="DecisionCommentPlaceholder" xml:space="preserve"><value>Facultatif pour approuver ; obligatoire pour rejeter</value></data>
+  <data name="DecisionApprove" xml:space="preserve"><value>Approuver</value></data>
+  <data name="DecisionReject" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="DecisionRejectNeedsComment" xml:space="preserve"><value>Un rejet exige un motif. Indiquez l’étape ou le bloc à modifier et comment.</value></data>
+  <data name="DecisionApproved" xml:space="preserve"><value>Approbation enregistrée ({0}). L’étape suivante s’ouvre dans le Centre de travail.</value></data>
+  <data name="DecisionRejected" xml:space="preserve"><value>Rejet enregistré. L’émetteur corrige et envoie une nouvelle révision.</value></data>
+  <data name="DecisionOwnRevision" xml:space="preserve"><value>Vous avez envoyé cette révision. L’émetteur ne peut pas décider de son propre parcours.</value></data>
+  <data name="DecisionClosed" xml:space="preserve"><value>Cette révision n’a aucune étape de revue ouverte.</value></data>
+  <data name="WizardTitle" xml:space="preserve"><value>Lier à une chaîne et envoyer en approbation</value></data>
+  <data name="WizardStepChain" xml:space="preserve"><value>Choisir une chaîne</value></data>
+  <data name="WizardStepMap" xml:space="preserve"><value>Associer les étapes</value></data>
+  <data name="WizardStepClaims" xml:space="preserve"><value>Suggestions d’allégations</value></data>
+  <data name="WizardStepSummary" xml:space="preserve"><value>Résumé</value></data>
+  <data name="WizardChainIntro" xml:space="preserve"><value>La chaîne à laquelle le parcours est lié. Produit et public viennent de la chaîne ; pays et langue deviennent l’identité du parcours.</value></data>
+  <data name="WizardBindNote" xml:space="preserve"><value>Une fois lié, la chaîne, le pays et la langue sont figés pour ce parcours.</value></data>
+  <data name="WizardBindNext" xml:space="preserve"><value>Lier et continuer</value></data>
+  <data name="WizardMapIntro" xml:space="preserve"><value>Associez chaque ancienne étape à une étape de la chaîne. Une étape sans correspondance n’est pas placée et bloque l’approbation jusqu’à son association ou son retrait.</value></data>
+  <data name="WizardNoMatch" xml:space="preserve"><value>Aucune correspondance dans la chaîne</value></data>
+  <data name="WizardUnmapped" xml:space="preserve"><value>{0} étape(s) sans étape de chaîne : elles restent non placées et bloquent l’approbation.</value></data>
+  <data name="WizardMapNext" xml:space="preserve"><value>Enregistrer l’association et continuer</value></data>
+  <data name="WizardClaimsIntro" xml:space="preserve"><value>Allégations référencées par les contenus des étapes. Acceptez ou rejetez chaque suggestion.</value></data>
+  <data name="WizardClaimsNote" xml:space="preserve"><value>Rien n’est lié automatiquement : seules les allégations acceptées sont ajoutées, sur l’étape du contenu qui les référence.</value></data>
+  <data name="WizardAccept" xml:space="preserve"><value>Accepter</value></data>
+  <data name="WizardReject" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="WizardOnPath" xml:space="preserve"><value>déjà sur le parcours</value></data>
+  <data name="WizardFromStep" xml:space="preserve"><value>Référencée par : {0}</value></data>
+  <data name="WizardNeedsMapping" xml:space="preserve"><value>Son étape n’est pas associée, elle ne peut pas être placée ; associez d’abord l’étape ou rejetez.</value></data>
+  <data name="WizardNoSuggestions" xml:space="preserve"><value>Les contenus des étapes ne référencent aucune allégation.</value></data>
+  <data name="WizardUndecided" xml:space="preserve"><value>Décidez pour chaque suggestion : il en reste {0}.</value></data>
+  <data name="WizardClaimsNext" xml:space="preserve"><value>Appliquer les décisions et continuer</value></data>
+  <data name="WizardFinish" xml:space="preserve"><value>Terminé</value></data>
+  <data name="WizardSummaryContext" xml:space="preserve"><value>Pays · langue</value></data>
+  <data name="WizardSummaryMapped" xml:space="preserve"><value>Étapes associées</value></data>
+  <data name="WizardSummaryClaims" xml:space="preserve"><value>Allégations</value></data>
+  <data name="WizardMappedCount" xml:space="preserve"><value>{0} sur {1}</value></data>
+  <data name="WizardClaimsCount" xml:space="preserve"><value>{0} acceptée(s) · {1} rejetée(s)</value></data>
+  <data name="WizardChainKept" xml:space="preserve"><value>Lié précédemment</value></data>
+  <data name="WizardSummaryNote" xml:space="preserve"><value>Le parcours reste non approuvé tant que sa révision ne l’est pas : il ne peut pas être utilisé sur le terrain d’ici là. Vous pouvez l’envoyer en approbation maintenant ou plus tard depuis l’espace de travail.</value></data>
+  <data name="Err_review_round_open" xml:space="preserve"><value>Un tour de revue est déjà ouvert pour ce parcours.</value></data>
+  <data name="Err_chain_conformance_failed" xml:space="preserve"><value>Le parcours n’est pas conforme à sa chaîne (une étape a trop ou pas assez d’éléments).</value></data>
+  <data name="Err_component_not_published" xml:space="preserve"><value>Un contenu du parcours n’est pas publié.</value></data>
+  <data name="Err_claim_no_country_version" xml:space="preserve"><value>Une allégation n’a pas de version dans le pays du parcours.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>Le modèle d’approbation du pays du parcours n’est pas configuré. Contactez l’administrateur.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>Le workflow d’approbation ne répond pas pour l’instant ; réessayez plus tard.</value></data>
+  <data name="Err_comment_required" xml:space="preserve"><value>Un rejet exige un motif (2000 caractères maximum).</value></data>
+  <data name="Err_sod_submitter_cannot_decide" xml:space="preserve"><value>Vous avez envoyé cette révision ; l’émetteur ne peut pas en décider.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>Un parcours de connaissances n’est approuvé que via son circuit MLR, pas directement.</value></data>
+  <data name="Err_revision_not_approved" xml:space="preserve"><value>La révision n’est pas approuvée.</value></data>
+  <data name="Err_artifact_missing" xml:space="preserve"><value>Cette révision n’a pas encore de sortie.</value></data>
+  <data name="Err_revision_superseded" xml:space="preserve"><value>Une révision plus récente l’a remplacée ; rechargez la page.</value></data>
+  <data name="Err_revision_not_released" xml:space="preserve"><value>Seule une révision publiée peut être retirée.</value></data>
+  <data name="Err_sod_submitter_cannot_release" xml:space="preserve"><value>Vous avez envoyé cette révision ; une autre personne doit la publier.</value></data>
+  <data name="Err_reason_required" xml:space="preserve"><value>Un motif de retrait est obligatoire.</value></data>
+  <data name="Err_path_in_use" xml:space="preserve"><value>Une étape de parcours client publiée utilise ce parcours ; rien n’a été retiré.</value></data>
+  <data name="Err_previous_path_in_use" xml:space="preserve"><value>La version remplacée est encore épinglée dans ces étapes de parcours client :</value></data>
+  <data name="Err_artifact_store_unavailable" xml:space="preserve"><value>Le stockage des documents ne répond pas ; la sortie n’a pas été générée. Réessayez plus tard.</value></data>
+  <data name="Err_claim_not_approved" xml:space="preserve"><value>Une allégation n’est pas approuvée dans le pays du parcours.</value></data>
+  <data name="Err_claim_language_mismatch" xml:space="preserve"><value>Une allégation n’a pas de texte dans la langue du parcours.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>Vous n’êtes pas relecteur de cette étape ; la décision revient au poste assigné dans le Centre de travail.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>Cette révision n’a aucune étape de revue en attente (elle vient peut-être de se terminer).</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>Choisissez approuver ou rejeter.</value></data>
+  <data name="Err_note_text_required" xml:space="preserve"><value>Saisissez le texte de la note.</value></data>
+  <data name="Err_note_not_found" xml:space="preserve"><value>Note introuvable ; rechargez la page.</value></data>
+</root>

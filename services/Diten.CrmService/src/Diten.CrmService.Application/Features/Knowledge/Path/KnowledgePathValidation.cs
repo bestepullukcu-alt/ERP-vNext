@@ -163,7 +163,7 @@ public static class KnowledgePathValidation
     /// <summary>V-S03/S04: StepOrder and StepCode must be unique among ACTIVE steps, excluding the step being edited
     /// (<paramref name="editingStepId"/>). Returns the 409 message or null.</summary>
     public static string? ValidateStepUniqueness(
-        KnowledgePath path, int stepOrder, string stepCode, Guid? editingStepId)
+        KnowledgePath path, int stepOrder, string stepCode, Guid? editingStepId, bool checkOrder = true)
     {
         foreach (var existing in path.Steps.Where(s => !s.IsArchived()))
         {
@@ -172,7 +172,8 @@ public static class KnowledgePathValidation
                 continue;
             }
 
-            if (existing.StepOrder == stepOrder)
+            // WP-KP-1: a chain-bound path computes StepOrder itself (the client value is ignored).
+            if (checkOrder && existing.StepOrder == stepOrder)
             {
                 return $"StepOrder {stepOrder} is already used by an active step in this path.";
             }
@@ -189,7 +190,8 @@ public static class KnowledgePathValidation
     /// <summary>V-S09/S10: a prerequisite must be another ACTIVE step in the same path, with a strictly smaller
     /// StepOrder, no cycle, and — when the dependent step is required — the prerequisite must also be required.</summary>
     public static string? ValidatePrerequisite(
-        KnowledgePath path, Guid? prerequisiteStepId, Guid selfStepId, int selfOrder, bool selfRequired)
+        KnowledgePath path, Guid? prerequisiteStepId, Guid selfStepId, int selfOrder, bool selfRequired,
+        Func<KnowledgePathStep, int>? orderOf = null)
     {
         if (prerequisiteStepId is not { } prereqId || prereqId == Guid.Empty)
         {
@@ -207,7 +209,8 @@ public static class KnowledgePathValidation
             return "PrerequisiteStepId must reference an active step in the same path.";
         }
 
-        if (prereq.StepOrder >= selfOrder)
+        // WP-KP-1: a chain-bound path compares the server-computed (branch-first) order, not the stored one.
+        if ((orderOf?.Invoke(prereq) ?? prereq.StepOrder) >= selfOrder)
         {
             return "A prerequisite step must have a smaller StepOrder (dependencies point backward only).";
         }
@@ -257,3 +260,6 @@ public static class KnowledgePathValidation
 
 /// <summary>Branch condition write shape (D7). Carried as data, echoed back as data, never evaluated.</summary>
 public sealed record KnowledgePathBranchConditionInput(string ConditionCode, string? Description, Guid? TargetStepId);
+
+/// <summary>WP-KP-1 — a chain slot write shape (branch code + chain step = concept type id + position in the slot).</summary>
+public sealed record KnowledgePathArrangementInput(Guid ChainStepId, string? BranchCode, int Position);

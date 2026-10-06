@@ -3,8 +3,10 @@
  *
  *  - "who"          : segment bindings      (MOD-0167 FU02, read-only picker)
  *  - "how often"    : frequency intent      (policy reference | declared intent | none — NEVER writes a policy)
- *  - "what"         : product lines → SKU % (MDM global product + gsku pickers, live total display)
- *  - "which story"  : content bindings      (MOD-0162 knowledge path / engagement journey, published only)
+ *  - "what"         : product lines → SKU % (MDM global product + gsku pickers, live total display), each told in a
+ *                     ROLE (promo / non-promo) with the product's published JOURNEY (WP-SB-3-UIa, SB-3a contract)
+ *  - "which story"  : template-level content bindings — RETIRED by SB-3a: the existing ones are listed read-only
+ *                     ("eski bağ", removable on a draft); a new one can no longer be added
  *
  * Every option list comes from the CONTRACT (bootstrap payload) or from an EXISTING list endpoint through the
  * same-origin proxy. There is no hardcoded status, mode, frequency or product list anywhere in this file, and a picker
@@ -93,6 +95,50 @@
         frequency: parse(el('FrequencyIntentJson')?.value, null) || { mode: 'none' },
         products: parse(el('ProductLinesJson')?.value, []) || [],
         contents: parse(el('ContentBindingsJson')?.value, []) || []
+    };
+
+    // WP-SB-3-UIa — the runtime's refusals anchored to a place on the form (server-rendered after a refused save): a
+    // product line (by its index in the posted list), the retired binding list, or the form head. Each shows the
+    // localised Err_{code} text there — never the raw code. An edit to the line clears its message.
+    const formErrors = Array.isArray(cfg.formErrors) ? cfg.formErrors : [];
+    const lineErrors = {};
+    const sectionErrors = { line: [], bindings: [], form: [] };
+    formErrors.forEach(e => {
+        if (!e || !e.key) return;
+        if (e.scope === 'line' && Number.isInteger(e.lineIndex)) (lineErrors[e.lineIndex] = lineErrors[e.lineIndex] || []).push(e.key);
+        else (sectionErrors[e.scope] || sectionErrors.form).push(e.key);
+    });
+    const errText = key => L[key] || L.ErrorState || '';
+
+    // WP-SB-3-UIa — a line written by this form always carries a role; a pre-SB-3a line reads "promo" (CRM's read rule).
+    const lineRoles = Array.isArray(cfg.productLineRoles) && cfg.productLineRoles.length ? cfg.productLineRoles : [];
+    state.products.forEach(line => { if (!line.role) line.role = lineRoles[0] || null; });
+
+    // WP-SB-3-UIa — per-product journey options (api/line-journeys: published × this product), loaded once per product.
+    // { loading, items, filterApplied } keyed by globalProductId.
+    const lineJourneys = {};
+    const loadLineJourneys = async productId => {
+        if (!productId || lineJourneys[productId]) return;
+        lineJourneys[productId] = { loading: true, items: [], filterApplied: true };
+        try {
+            const data = await envelope(await fetch(`${endpoint}/line-journeys?productId=${encodeURIComponent(productId)}`, {
+                credentials: 'same-origin', headers: { Accept: 'application/json' }
+            }));
+            lineJourneys[productId] = {
+                loading: false,
+                items: (data?.items || []).map(j => ({
+                    id: j.journeyId, code: j.journeyCode || '', name: j.journeyName || '', language: j.languageCode || ''
+                })).filter(j => j.id),
+                filterApplied: data?.productFilterApplied !== false
+            };
+        } catch (error) {
+            // An unreadable feed offers nothing and says so; it never invents a journey (CRM decides at save).
+            console.warn('[StrategyTemplates] Line journeys could not be loaded.', productId, error);
+            lineJourneys[productId] = { loading: false, items: [], filterApplied: true, failed: true };
+        }
+    };
+    const loadAllLineJourneys = async () => {
+        await Promise.all([...new Set(state.products.map(l => l.globalProductId).filter(Boolean))].map(loadLineJourneys));
     };
 
     // ----- option sources: every one is an EXISTING endpoint, proxied same-origin -----
@@ -560,6 +606,62 @@
         bindSelect2(picker, { search: true });
     };
 
+    // WP-SB-3-UIa (SB-3a) — the line's "how it is told" sub-row: ROLE (promo / non-promo) + the product's published
+    // JOURNEY. The journey options are ONLY the published journeys whose subject's primary product is this line's
+    // product (api/line-journeys); CRM still decides at save (409 journey_product_mismatch / journey_not_published).
+    // A bound journey that is no longer offered stays selected (marked "not in the list") so a round trip never drops
+    // it silently. Frozen play → both read-only (fixed through "Yeni sürüm").
+    const lineRoleLabel = r => L['LineRole_' + r] || r;
+    const lineStoryHtml = (line, i) => {
+        const roleSelect = `<select class="form-select form-select-sm js-line-role" aria-label="${esc(L.ProductColRole || '')}"${frozen ? ' disabled' : ''}>`
+            + lineRoles.map(r => `<option value="${esc(r)}"${line.role === r ? ' selected' : ''}>${esc(lineRoleLabel(r))}</option>`).join('')
+            + '</select>';
+
+        const feed = lineJourneys[line.globalProductId];
+        const value = line.journeyId || '';
+        const notes = [];
+        let journeySelect;
+        if (!feed || feed.loading) {
+            journeySelect = `<select class="form-select form-select-sm js-line-journey" disabled><option>${esc(L.LineJourneyLoading || '')}</option></select>`;
+        } else {
+            const known = feed.items.some(j => j.id === value);
+            const label = j => [j.code, j.name].filter(Boolean).join(' — ') + (j.language ? ` · ${j.language}` : '');
+            const kept = value && !known
+                ? `<option value="${esc(value)}" data-code="${esc(line.journeyCode || '')}" selected>${esc([line.journeyCode, line.journeyName].filter(Boolean).join(' — ') || value)} ${esc(L.LineJourneyNotOffered || '')}</option>`
+                : '';
+            journeySelect = `<select class="form-select form-select-sm js-line-journey" aria-label="${esc(L.ProductColJourney || '')}"${frozen ? ' disabled' : ''}>`
+                + `<option value="">${esc(L.LineJourneySelect || L.SelectOption || '—')}</option>${kept}`
+                + feed.items.map(j => `<option value="${esc(j.id)}" data-code="${esc(j.code)}"${j.id === value ? ' selected' : ''}>${esc(label(j))}</option>`).join('')
+                + '</select>';
+            if (feed.items.length === 0 && !feed.failed) {
+                notes.push(`<div class="st-prod-msg text-muted"><i class="bx bx-info-circle me-1"></i>${esc(L.LineNoPublishedJourney || '')}
+                    <a href="/CRM/ContentEngagementJourneys" target="_blank" rel="noopener">${esc(L.LineOpenJourneys || '')}</a></div>`);
+            }
+            if (!feed.filterApplied) notes.push(`<div class="st-prod-msg text-muted">${esc(L.LineJourneyFilterUnavailable || '')}</div>`);
+            if (feed.failed) notes.push(`<div class="st-prod-msg text-muted">${esc(L.ErrorState || '')}</div>`);
+        }
+
+        if (!value) notes.push(`<div class="st-prod-msg text-warning"><i class="bx bx-error me-1"></i>${esc(L.LineJourneyMissing || '')}</div>`);
+        (line.journeyWarnings || []).forEach(w => notes.push(
+            `<div class="st-prod-msg text-warning"><span class="badge bg-label-warning rounded-pill me-1">!</span>${esc(L['JourneyWarning_' + w] || w)}</div>`));
+        (lineErrors[i] || []).forEach(key => notes.push(`<div class="st-prod-msg text-danger js-line-error">${esc(errText(key))}</div>`));
+
+        return `
+                <div class="st-prod-sub">
+                    <div class="st-prod-role">${roleSelect}</div>
+                    <div class="st-prod-journey">${journeySelect}</div>
+                    ${notes.join('')}
+                </div>`;
+    };
+
+    // WP-SB-3-UIa — the product section's head messages: refusals that name no single line.
+    const renderProductSectionErrors = () => {
+        const box = el('productSectionErrors');
+        if (!box) return;
+        box.innerHTML = sectionErrors.line.map(key => `<div>${esc(errText(key))}</div>`).join('');
+        box.classList.toggle('d-none', sectionErrors.line.length === 0);
+    };
+
     const renderProducts = () => {
         const host = el('productLineList');
         const empty = el('productLineEmpty');
@@ -579,21 +681,24 @@
             // is seeded, so the dropdown is legitimately empty until then.
             const skuId = (line.skuAllocations || [])[0]?.gskuId || '';
             return `
-            <div class="st-prod-row" data-row="product" data-index="${i}">
-                <div class="st-prod-main">
-                    <div class="st-prod-name">${esc(name)}</div>
-                    <div class="st-prod-meta">${esc(code)}</div>
+            <div class="st-prod-line" data-row="product" data-index="${i}">
+                <div class="st-prod-row">
+                    <div class="st-prod-main">
+                        <div class="st-prod-name">${esc(name)}</div>
+                        <div class="st-prod-meta">${esc(code)}</div>
+                    </div>
+                    <div class="st-prod-sku">
+                        ${pickerSelect('gsku', skuId, can('gsku'), L.GskuPickerUnavailable, null, 'js-sku')}
+                    </div>
+                    <div class="st-prod-weight">
+                        <input type="number" step="0.01" min="0.01" max="100" class="form-control form-control-sm js-weight" value="${esc(line.lineWeightPercentage ?? '')}"${frozen ? ' disabled' : ''} aria-label="${esc(L.LineWeightPercentage || '')}" />
+                        <span class="st-prod-weight-sign">%</span>
+                    </div>
+                    <button type="button" class="btn btn-icon btn-sm btn-label-danger js-remove" title="${esc(L.Remove || '')}" aria-label="${esc(L.Remove || '')}"${frozen ? ' disabled' : ''}>
+                        <i class="bx bx-trash"></i>
+                    </button>
                 </div>
-                <div class="st-prod-sku">
-                    ${pickerSelect('gsku', skuId, can('gsku'), L.GskuPickerUnavailable, null, 'js-sku')}
-                </div>
-                <div class="st-prod-weight">
-                    <input type="number" step="0.01" min="0.01" max="100" class="form-control form-control-sm js-weight" value="${esc(line.lineWeightPercentage ?? '')}"${frozen ? ' disabled' : ''} aria-label="${esc(L.LineWeightPercentage || '')}" />
-                    <span class="st-prod-weight-sign">%</span>
-                </div>
-                <button type="button" class="btn btn-icon btn-sm btn-label-danger js-remove" title="${esc(L.Remove || '')}" aria-label="${esc(L.Remove || '')}"${frozen ? ' disabled' : ''}>
-                    <i class="bx bx-trash"></i>
-                </button>
+                ${lineStoryHtml(line, i)}
             </div>`;
         }).join('');
         empty?.classList.toggle('d-none', state.products.length > 0);
@@ -604,6 +709,7 @@
         // jQuery/select2 is absent, leaving the plain <select> as a graceful degrade.
         host.querySelectorAll('.js-sku').forEach(s => bindSelect2(s, { search: true }));
         renderProductPicker();
+        renderProductSectionErrors();
         updateProductTotals();
     };
 
@@ -616,39 +722,49 @@
     const contentPool = () => [...(options.path || []), ...(options.journey || [])];
     const contentById = id => contentPool().find(o => o.id === id);
     const contentKindLabel = kind => kind === 'content-engagement-journey' ? (L.ContentKindJourney || '') : (L.ContentKindKnowledgePath || '');
-    const contentStatusLabel = status => status === 'published' ? (L.ContentStatusPublished || '')
-        : status === 'archived' ? (L.ContentStatusArchived || '')
-        : (L.ContentStatusDraft || '');
 
+    // WP-SB-3-UIa (SB-3a, DESIGN-SB-3 S3-2) — template-level content bindings are RETIRED: there is no way to add one
+    // (no picker, no card grid — CRM refuses a new one with 409 content_binding_type_retired). The bindings a play
+    // already carries are listed READ-ONLY as "eski bağ" (the visit uses the product line's journey); on a draft each
+    // one can be removed, which drops it from ContentBindingsJson. Names come from the path / journey feeds when
+    // readable, else the stored code.
     const renderContents = () => {
         const host = el('contentBindingList');
         if (!host) return;
-        const pool = contentPool();
-        if (pool.length === 0) {
-            // WP-ST-EDIT-V — a plain short message (not a dashed empty-state box) when there is no content to list at all
-            // (e.g. the master data is not seeded yet).
-            host.innerHTML = `<div class="st-content-grid-empty">${esc(L.ContentGridEmpty || '')}</div>`;
-            return;
+        if (state.contents.length === 0) {
+            host.innerHTML = `<div class="st-content-grid-empty">${esc(L.NoRetiredBindings || '')}</div>`;
+        } else {
+            host.innerHTML = state.contents.map((c, i) => {
+                const opt = contentById(c.contentRefId);
+                const name = opt ? (opt.name || opt.text) : (c.contentCodeDisplay || c.contentRefId || '');
+                const meta = [contentKindLabel(c.contentRefType), opt?.code || c.contentCodeDisplay].filter(Boolean).join(' · ');
+                return `
+                <div class="st-content-choice is-retired" data-row="content" data-index="${i}">
+                    <span class="st-content-choice-body">
+                        <span class="st-content-choice-name">${esc(name)}</span>
+                        <span class="st-content-choice-meta">${esc(meta)}</span>
+                    </span>
+                    <span class="badge bg-label-secondary rounded-pill st-content-choice-status">${esc(L.RetiredBindingBadge || '')}</span>
+                    ${frozen ? '' : `<button type="button" class="btn btn-icon btn-sm btn-label-danger js-remove" title="${esc(L.Remove || '')}" aria-label="${esc(L.Remove || '')}"><i class="bx bx-trash"></i></button>`}
+                </div>`;
+            }).join('');
         }
-        const chosen = new Set(state.contents.map(c => c.contentRefId));
-        host.innerHTML = pool.map(o => {
-            const isPublished = o.status === 'published';
-            const disabled = frozen || !isPublished;
-            const checked = chosen.has(o.id);
-            const meta = [contentKindLabel(o.kind), o.code].filter(Boolean).join(' · ');
-            return `
-            <label class="st-content-choice${disabled ? ' is-disabled' : ''}">
-                <input type="checkbox" class="js-content-check" data-id="${esc(o.id)}" data-content-kind="${esc(o.kind)}"${checked ? ' checked' : ''}${disabled ? ' disabled' : ''} />
-                <span class="st-content-choice-body">
-                    <span class="st-content-choice-name">${esc(o.name || o.text)}</span>
-                    <span class="st-content-choice-meta">${esc(meta)}</span>
-                </span>
-                <span class="badge ${isPublished ? 'bg-label-success' : 'bg-label-secondary'} rounded-pill st-content-choice-status">${esc(contentStatusLabel(o.status))}</span>
-            </label>`;
-        }).join('');
+        const box = el('contentSectionErrors');
+        if (box) {
+            box.innerHTML = sectionErrors.bindings.map(key => `<div>${esc(errText(key))}</div>`).join('');
+            box.classList.toggle('d-none', sectionErrors.bindings.length === 0);
+        }
     };
 
-    const renderAll = () => { renderSegments(); renderFrequency(); renderProducts(); renderContents(); };
+    // WP-SB-3-UIa — refusals about the whole play (e.g. bindings_frozen), at the head of the form.
+    const renderFormErrors = () => {
+        const box = el('stFormErrors');
+        if (!box) return;
+        box.innerHTML = sectionErrors.form.map(key => `<div>${esc(errText(key))}</div>`).join('');
+        box.classList.toggle('d-none', sectionErrors.form.length === 0);
+    };
+
+    const renderAll = () => { renderSegments(); renderFrequency(); renderProducts(); renderContents(); renderFormErrors(); };
 
     // ---------------- events ----------------
 
@@ -707,12 +823,18 @@
         // select2 referencing a just-destroyed instance. A 0 ms defer lets select2 finish, then we mutate + re-render.
         setTimeout(() => {
             if (limitReached(state.products.length, cfg.maxProductLines)) { renderProductPicker(); return; }
+            // WP-SB-3-UIa — a new line is told as promo by default (the author may switch it); its journey is chosen from
+            // the product's published journeys, which load now. The product code rides along so a refusal naming it can
+            // be shown under this line.
             state.products.push({
-                globalProductId: id, skuAllocationMode: 'product-only', lineWeightPercentage: null,
-                skuAllocations: [], sortOrder: state.products.length * 10, notes: null
+                globalProductId: id, globalProductCodeDisplay: productById(id)?.code || null,
+                skuAllocationMode: 'product-only', lineWeightPercentage: null,
+                skuAllocations: [], sortOrder: state.products.length * 10, notes: null,
+                role: lineRoles[0] || null, journeyId: null
             });
             renderProducts();
             updateSidePanel();
+            loadLineJourneys(id).then(() => { renderProducts(); updateSidePanel(); });
         }, 0);
     });
 
@@ -733,25 +855,8 @@
         setTimeout(updateSidePanel, 0);
     });
 
-    // WP-ST-EDIT-V — toggling a published content card's checkbox binds/unbinds it. Only published cards are enabled, so a
-    // draft/archived ref can never enter state.contents. Checking appends with the kind-derived contentRefType + automatic
-    // sortOrder; unchecking removes that contentRefId. The card already shows its own checkbox state, so no re-render is
-    // needed — the side panel refresh comes from the form-level change listener. The limit reverts an over-the-cap tick.
-    el('contentBindingList')?.addEventListener('change', event => {
-        const box = event.target.closest('.js-content-check');
-        if (!box || frozen || box.disabled) return;
-        const id = box.dataset.id;
-        const kind = box.dataset.contentKind;
-        if (!id || !kind) return;
-        if (box.checked) {
-            if (state.contents.some(c => c.contentRefId === id)) return;
-            if (limitReached(state.contents.length, cfg.maxContentBindings)) { box.checked = false; return; }
-            state.contents.push({ contentRefType: kind, contentRefId: id, sortOrder: state.contents.length * 10, notes: null });
-        } else {
-            const idx = state.contents.findIndex(c => c.contentRefId === id);
-            if (idx >= 0) state.contents.splice(idx, 1);
-        }
-    });
+    // WP-SB-3-UIa — the EDIT-V checkbox handler that ADDED a content binding is gone with the card grid: a retired
+    // binding can only be removed (the shared .js-remove handler below, data-row="content").
 
     // WP-ST-EDIT-M — the mode is now a hidden input, so its choice comes from the three choice-box buttons (a
     // programmatic value set fires no 'change'). The click sets the hidden #frequencyMode, re-reads state and re-renders —
@@ -780,7 +885,12 @@
         if (!row) return;
         const index = Number(row.dataset.index);
         if (row.dataset.row === 'segment') { state.segments.splice(index, 1); renderSegments(); }
-        else if (row.dataset.row === 'product') { state.products.splice(index, 1); renderProducts(); }
+        else if (row.dataset.row === 'product') {
+            state.products.splice(index, 1);
+            // The anchored refusals index the POSTED list; once a line is gone they would point at the wrong row.
+            Object.keys(lineErrors).forEach(k => delete lineErrors[k]);
+            renderProducts();
+        }
         else if (row.dataset.row === 'content') { state.contents.splice(index, 1); renderContents(); }
     });
 
@@ -818,6 +928,24 @@
                 if (g) { line.skuAllocations = [{ gskuId: g, percentage: 100 }]; line.skuAllocationMode = 'sku-allocated'; }
                 else { line.skuAllocations = []; line.skuAllocationMode = 'product-only'; }
             }
+            // WP-SB-3-UIa — role + journey are read back only from an EDITABLE control (a frozen / still-loading select
+            // carries no authority, so the incoming value stays). A changed journey drops the read-time hints of the old
+            // one (warnings, "missing") — they are recomputed by CRM after the save.
+            if (!frozen) {
+                const roleEl = row.querySelector('.js-line-role');
+                if (roleEl && !roleEl.disabled) line.role = roleEl.value || null;
+                const journeyEl = row.querySelector('.js-line-journey');
+                if (journeyEl && !journeyEl.disabled) {
+                    const next = journeyEl.value || null;
+                    if (next !== (line.journeyId || null)) {
+                        line.journeyWarnings = [];
+                        line.journeyMissing = !next;
+                        line.journeyName = null;
+                    }
+                    line.journeyId = next;
+                    line.journeyCode = next ? (journeyEl.selectedOptions?.[0]?.dataset.code || null) : null;
+                }
+            }
         });
 
         // WP-ST-EDIT-V — the content grid has no per-row inputs; state.contents is maintained directly by the checkbox
@@ -839,6 +967,13 @@
         // the inline picker), so neither a product nor a content branch remains here.
         if (event.target.matches('[data-kind="segment"]')) {
             renderSegments();
+        }
+        // WP-SB-3-UIa — a role / journey pick answers that line's refusal and its "journey missing" note: clear the
+        // line's anchored messages and repaint the line's notes.
+        if (event.target.matches('.js-line-role, .js-line-journey')) {
+            const index = Number(event.target.closest('[data-row="product"]')?.dataset.index);
+            if (Number.isInteger(index)) delete lineErrors[index];
+            renderProducts();
         }
     });
 
@@ -1116,8 +1251,17 @@
         setRecipe('stRecipeWhere', scopePhrase());
         setRecipe('stRecipeWho', nSeg > 0 ? `${nSeg} ${L.StatSegments || ''} · ${subjectWord()}`.trim() : '');
         setRecipe('stRecipeHowOften', frequencyPhrase());
-        setRecipe('stRecipeWhat', nProd > 0 ? `${nProd} ${L.StatProductLines || ''} · Σ${wsum}%` : '');
-        setRecipe('stRecipeStory', nContent > 0 ? `${nContent} ${L.StatContents || ''}` : '');
+        // WP-SB-3-UIa — the recipe shows the role split ("2 promo · 1 non-promo") and the story is the lines' journeys;
+        // the retired template-level bindings are only counted as "eski bağ".
+        const nPromo = state.products.filter(l => (l.role || 'promo') === 'promo').length;
+        const roleSplit = (L.RoleSplitTpl || '{promo} · {nonpromo}')
+            .replace('{promo}', String(nPromo)).replace('{nonpromo}', String(nProd - nPromo));
+        setRecipe('stRecipeWhat', nProd > 0 ? `${nProd} ${L.StatProductLines || ''} · Σ${wsum}% · ${roleSplit}` : '');
+        const nJourneys = state.products.filter(l => norm(l.journeyId)).length;
+        const storyParts = [];
+        if (nJourneys > 0) storyParts.push((L.RecipeJourneysTpl || '{n}').replace('{n}', String(nJourneys)));
+        if (nContent > 0) storyParts.push((L.RetiredBindingsCountTpl || '{n}').replace('{n}', String(nContent)));
+        setRecipe('stRecipeStory', storyParts.join(' · '));
 
         const sentenceBox = el('stSummarySentence');
         if (sentenceBox) {
@@ -1159,8 +1303,9 @@
         else if (wsum !== total100 || !skuOk) setCheck('products', 'warn', L.ChkProductsWeightOffDesc || '');
         else setCheck('products', 'ok', (L.ChkProductsOkDesc || '{n}').replace('{n}', String(nProd)));
 
-        if (nContent === 0) setCheck('content', 'neutral', L.ChkContentEmptyDesc || '');
-        else setCheck('content', 'ok', (L.ChkContentCountDesc || '{n}').replace('{n}', String(nContent)));
+        // WP-SB-3-UIa — the content row no longer asks for a binding (retired): neutral, it only reports what is left.
+        if (nContent === 0) setCheck('content', 'neutral', L.NoRetiredBindings || '');
+        else setCheck('content', 'neutral', (L.RetiredBindingsCountTpl || '{n}').replace('{n}', String(nContent)));
 
         if (nProd === 0) setCheck('mdm', 'neutral', L.ChkMdmNeutralDesc || '');
         else if (state.products.every(l => norm(l.globalProductId))) setCheck('mdm', 'ok', L.ChkMdmOkDesc || '');
@@ -1262,7 +1407,7 @@
     const init = async () => {
         renderAll();
         await loadScopeOptions();
-        await loadOptions();
+        await Promise.all([loadOptions(), loadAllLineJourneys()]);
         renderAll();
         if (window.flatpickr) {
             document.querySelectorAll('.flatpickr-date').forEach(node => window.flatpickr(node, { dateFormat: 'Y-m-d' }));

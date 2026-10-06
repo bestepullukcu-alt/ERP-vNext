@@ -61,7 +61,10 @@ public sealed record PlannedSlotPreview(
     // Resolved from the Contact aggregate at preview time (never persisted here) so the UI shows the doctor's name/
     // specialty without depending on an account↔contact link existing. Null for account-level slots or unknown ids.
     string? ContactDisplayName = null,
-    string? ContactSpecialty = null);
+    string? ContactSpecialty = null,
+    // WP-SB-3b — the products this visit tells (projected over the doctor's earlier visits). Additive; no play /
+    // campaign id inside.
+    IReadOnlyList<Diten.CrmService.Application.Features.VisitContentSequence.VisitContentItem>? ContentItems = null);
 
 /// <summary>One visit that could not be feasibly placed — the supply-vs-demand WARNING materialised (FU03 unscheduled).
 /// A warning the planner resolves, never a hard block (D-SUPPLY-DEMAND).</summary>
@@ -87,7 +90,9 @@ public sealed record DoctorContentPreview(
     IReadOnlyList<string> ReasonCodes,
     string? ConsentStatus,
     bool ConsentBlocked,
-    string? ConsentReason);
+    string? ConsentReason,
+    // WP-SB-3b — the doctor's next visit products (resolver v2 items). Additive.
+    IReadOnlyList<Diten.CrmService.Application.Features.VisitContentSequence.VisitContentItem>? Items = null);
 
 /// <summary>The TRANSIENT supply-vs-demand summary (D-SUPPLY-DEMAND-SHAPE = A). <see cref="Supply"/> is the
 /// CyclePeriod-pinned CycleCapacity.TotalVisitNumber (visits the rep CAN do; null when the calendar could not resolve

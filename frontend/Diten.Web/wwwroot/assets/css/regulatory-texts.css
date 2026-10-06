@@ -1,0 +1,31 @@
+/* WP-KP-5a-UI — Safety Texts / Country Legal Profiles (Create / Edit / Details). Logical properties only, so the same
+   rules hold in RTL (ar): no left/right, no text-align: left. */
+
+/* A safety text / legal footer is PLAIN text: the preview keeps the author's paragraphs and line breaks as typed. */
+.regulatory-details .regulatory-preview {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    text-align: start;
+    padding-block: 0.75rem;
+    padding-inline: 1rem;
+    border-inline-start: 3px solid var(--bs-border-color);
+    background: var(--bs-body-bg);
+    border-radius: 0.375rem;
+    min-height: 2.5rem;
+}
+
+.regulatory-details .regulatory-preview.is-empty::before {
+    content: "-";
+    color: var(--bs-secondary-color);
+}
+
+/* The form's long texts read in their own direction (dir="auto") and start-aligned. */
+#regulatoryTextForm .regulatory-text {
+    text-align: start;
+    font-family: var(--bs-body-font-family);
+}
+
+/* The status-line arrows point along the reading direction. */
+[dir="rtl"] .regulatory-details .regulatory-flow-arrow {
+    transform: scaleX(-1);
+}

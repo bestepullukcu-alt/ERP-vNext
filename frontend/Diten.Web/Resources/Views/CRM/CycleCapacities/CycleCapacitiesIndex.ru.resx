@@ -7,7 +7,7 @@
   <data name="Actions" xml:space="preserve"><value>Действия</value></data>
   <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
   <data name="CycleCapacitiesTitle" xml:space="preserve"><value>Ёмкость цикла</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Сколько визитов помещается в период цикла. Оценка на основе опубликованного рабочего календаря и введённого бюджета активности.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Сколько визитов представитель может сделать за период: оценка по опубликованному рабочему календарю и введённому бюджету активности. Одна ёмкость на период.</value></data>
   <data name="ContractUnavailable" xml:space="preserve"><value>Служба ёмкости цикла недоступна.</value></data>
   <data name="CreateCycleCapacity" xml:space="preserve"><value>Новая ёмкость</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>Новая ёмкость цикла</value></data>
@@ -78,4 +78,134 @@
   <data name="FieldDays" xml:space="preserve"><value>Полевые дни</value></data>
   <data name="VisitMinutes" xml:space="preserve"><value>Минуты визитов</value></data>
   <data name="NoFieldDays" xml:space="preserve"><value>Нет полевых дней</value></data>
+  <data name="MaxPromoProducts" xml:space="preserve"><value>Макс. промо-продуктов за визит</value></data>
+  <data name="MaxNonPromoProducts" xml:space="preserve"><value>Макс. непромо-продуктов за визит</value></data>
+  <data name="MaxProductsHint" xml:space="preserve"><value>1–10. Если оставить пустым, сохраняется текущее значение (3 для новой записи).</value></data>
+  <data name="Err_max_products_out_of_range" xml:space="preserve"><value>Количество продуктов за визит должно быть от 1 до 10.</value></data>
+  <data name="DetailsTitleFormat" xml:space="preserve"><value>Ёмкость · {0}</value></data>
+  <data name="HoursMinutesFormat" xml:space="preserve"><value>{h} ч {m} мин</value></data>
+  <data name="UnitMinutesShort" xml:space="preserve"><value>мин</value></data>
+  <data name="UnitDaysShort" xml:space="preserve"><value>дн.</value></data>
+  <data name="Total" xml:space="preserve"><value>Итого</value></data>
+  <data name="Retry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="ColPeriod" xml:space="preserve"><value>Период</value></data>
+  <data name="ColEstimatedVisits" xml:space="preserve"><value>Оценка визитов (на представителя)</value></data>
+  <data name="ColTypicalVisit" xml:space="preserve"><value>Типичный визит</value></data>
+  <data name="ColAverageFte" xml:space="preserve"><value>Сред. FTE</value></data>
+  <data name="ColProductLimits" xml:space="preserve"><value>Макс. продуктов (промо / непромо)</value></data>
+  <data name="FilterYear" xml:space="preserve"><value>Год</value></data>
+  <data name="LegacyBadge" xml:space="preserve"><value>старая модель</value></data>
+  <data name="StatusEditable" xml:space="preserve"><value>Можно изменять</value></data>
+  <data name="StatusNotCalculable" xml:space="preserve"><value>Не рассчитано</value></data>
+  <data name="Calculating" xml:space="preserve"><value>Расчёт…</value></data>
+  <data name="FormLiveHint" xml:space="preserve"><value>При изменении данных сервер пересчитывает сводку справа и помесячную таблицу.</value></data>
+  <data name="ReadOnlyTitle" xml:space="preserve"><value>Только чтение.</value></data>
+  <data name="ReadOnlyClosedBody" xml:space="preserve"><value>Период закрыт: ёмкость закрытого периода и использующие её планы изменить нельзя.</value></data>
+  <data name="ReadOnlyArchivedBody" xml:space="preserve"><value>Эта ёмкость в архиве и не может быть изменена. Создайте для периода новую ёмкость.</value></data>
+  <data name="LegacyBandTitle" xml:space="preserve"><value>Эта ёмкость рассчитывается по старой модели длительности визита.</value></data>
+  <data name="LegacyBandBody" xml:space="preserve"><value>Заполните типичный визит (число промо, число непромо, минуты отчёта на визит) и сохраните, чтобы перейти на новую модель. Сохранение без типичного визита оставляет старую модель.</value></data>
+  <data name="LegacyBandNumberMayChange" xml:space="preserve"><value>После перехода оценка визитов может измениться: отчёт будет учитываться на визит, а не на день.</value></data>
+  <data name="PeriodLockedHint" xml:space="preserve"><value>Период нельзя изменить после создания ёмкости.</value></data>
+  <data name="PeriodPickHint" xml:space="preserve"><value>После создания не меняется. Для закрытых периодов и периодов, у которых уже есть ёмкость, сохранить нельзя.</value></data>
+  <data name="DailyTimeSection" xml:space="preserve"><value>Дневное время</value></data>
+  <data name="DailyTimeHint" xml:space="preserve"><value>Минуты в день. Дорога и тест вычитаются из каждого полевого дня; вместе они должны быть меньше рабочего дня.</value></data>
+  <data name="LegacyReportPerDay" xml:space="preserve"><value>Старая модель: отчёт в день</value></data>
+  <data name="VisitDurationSection" xml:space="preserve"><value>Длительность визита</value></data>
+  <data name="VisitDurationHint" xml:space="preserve"><value>Минуты на продукт × продукты в типичном визите + отчёт на визит. Ёмкость рассчитывается по этой длительности типичного визита.</value></data>
+  <data name="PerProductHint" xml:space="preserve"><value>Минуты на продукт.</value></data>
+  <data name="ReportMinutesPerVisit" xml:space="preserve"><value>Отчёт на визит</value></data>
+  <data name="TypicalVisitTitle" xml:space="preserve"><value>Типичный визит</value></data>
+  <data name="TypicalVisitHint" xml:space="preserve"><value>Сколько продуктов охватывает типичный визит. Заполните оба числа и отчёт на визит — все три вместе.</value></data>
+  <data name="TypicalPromoCount" xml:space="preserve"><value>Промо-продукты</value></data>
+  <data name="TypicalNonPromoCount" xml:space="preserve"><value>Непромо-продукты</value></data>
+  <data name="TypicalCountHint" xml:space="preserve"><value>Не может превышать лимит продуктов на визит.</value></data>
+  <data name="TypicalVisitMinutesLabel" xml:space="preserve"><value>Длительность типичного визита</value></data>
+  <data name="BufferInfo" xml:space="preserve"><value>Буфер не меняет ёмкость; он добавляется к маршруту при планировании визитов.</value></data>
+  <data name="ProductLimitsSection" xml:space="preserve"><value>Продуктов на визит</value></data>
+  <data name="ProductLimitsHint" xml:space="preserve"><value>При планировании в визит можно добавить не больше этого числа продуктов. Типичный визит не может превышать эти лимиты.</value></data>
+  <data name="LiveSummaryTitle" xml:space="preserve"><value>Расчёт онлайн</value></data>
+  <data name="SummaryLoading" xml:space="preserve"><value>Расчёт…</value></data>
+  <data name="SummaryError" xml:space="preserve"><value>Не удалось загрузить расчёт. Ваши данные сохранены.</value></data>
+  <data name="SummaryIdle" xml:space="preserve"><value>Выберите период, чтобы увидеть расчёт.</value></data>
+  <data name="VisitsPerRep" xml:space="preserve"><value>визитов / представитель</value></data>
+  <data name="RemainingMinutes" xml:space="preserve"><value>Остаётся на визиты (мин)</value></data>
+  <data name="DivideByTypicalVisit" xml:space="preserve"><value>÷ Типичный визит</value></data>
+  <data name="TimesAverageFte" xml:space="preserve"><value>× Сред. FTE</value></data>
+  <data name="BlocksTitle" xml:space="preserve"><value>Мешает сохранению</value></data>
+  <data name="WarningsTitle" xml:space="preserve"><value>Предупреждения</value></data>
+  <data name="SummaryAllOk" xml:space="preserve"><value>Предупреждений нет. Расчёт готов к сохранению.</value></data>
+  <data name="TeamSupplyLater" xml:space="preserve"><value>Число — на одного представителя. Предложение команды (число представителей) появится в следующей версии.</value></data>
+  <data name="ApplyToAllMonths" xml:space="preserve"><value>Применить ко всем месяцам</value></data>
+  <data name="PartialMonth" xml:space="preserve"><value>неполный</value></data>
+  <data name="PartialMonthTitle" xml:space="preserve"><value>Месяц обрезан границей периода.</value></data>
+  <data name="MonthZeroedBadge" xml:space="preserve"><value>месяц обнулён</value></data>
+  <data name="FteSourceAuthored" xml:space="preserve"><value>введено</value></data>
+  <data name="FteSourceDefault" xml:space="preserve"><value>по умолчанию</value></data>
+  <data name="NoNumberBlocked" xml:space="preserve"><value>Число не показывается, пока данные нельзя сохранить, — устраните пункты ниже.</value></data>
+  <data name="CalendarResolvedShort" xml:space="preserve"><value>Календарь найден</value></data>
+  <data name="CalendarUnresolvedShort" xml:space="preserve"><value>Нет календаря</value></data>
+  <data name="CalendarForbiddenShort" xml:space="preserve"><value>Нет доступа</value></data>
+  <data name="CalendarUnknownShort" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="GoToPeriod" xml:space="preserve"><value>Перейти к периоду</value></data>
+  <data name="ViewInputs" xml:space="preserve"><value>Просмотреть данные</value></data>
+  <data name="CalendarStatusTitle" xml:space="preserve"><value>Статус календаря</value></data>
+  <data name="CalendarResolvedBody" xml:space="preserve"><value>Рабочий календарь найден. Выходные и праздники уже исключены из рабочих дней.</value></data>
+  <data name="CalculationUnavailableBody" xml:space="preserve"><value>Сервер не ответил. Обновите страницу; если ошибка повторится, обратитесь к администратору.</value></data>
+  <data name="NoNumberCalendar" xml:space="preserve"><value>Нет числа: календарь не ответил.</value></data>
+  <data name="KpiVisits" xml:space="preserve"><value>Оценка визитов / представитель</value></data>
+  <data name="KpiTypicalVisit" xml:space="preserve"><value>Длительность типичного визита</value></data>
+  <data name="BufferOnRoute" xml:space="preserve"><value>буфер {0} мин (в маршруте)</value></data>
+  <data name="KpiFieldOverWorking" xml:space="preserve"><value>Полевые дни / рабочие дни</value></data>
+  <data name="KpiAverageFte" xml:space="preserve"><value>Средний FTE</value></data>
+  <data name="WaterfallTitle" xml:space="preserve"><value>Каскад расчёта</value></data>
+  <data name="WaterfallHint" xml:space="preserve"><value>Итог периода на представителя: от рабочих дней до минут, оставшихся на визиты, делённых на длительность визита.</value></data>
+  <data name="WfWorkingDays" xml:space="preserve"><value>Рабочие дни</value></data>
+  <data name="WfDeductedDays" xml:space="preserve"><value>Вычтенные дни (встречи, обучение, отпуск)</value></data>
+  <data name="WfFieldDays" xml:space="preserve"><value>Полевые дни</value></data>
+  <data name="WfAvailableMinutes" xml:space="preserve"><value>Доступные минуты</value></data>
+  <data name="WfDailyFixedMinutes" xml:space="preserve"><value>Ежедневные фиксированные задачи (дорога, тест)</value></data>
+  <data name="WfMicroTargetingMinutes" xml:space="preserve"><value>Микротаргетинг</value></data>
+  <data name="WfRemainingMinutes" xml:space="preserve"><value>Остаётся на визиты</value></data>
+  <data name="WfDivide" xml:space="preserve"><value>÷ {0} мин типичный визит</value></data>
+  <data name="WfMultiply" xml:space="preserve"><value>× {0} сред. FTE</value></data>
+  <data name="MonthlyChartTitle" xml:space="preserve"><value>Ёмкость по месяцам</value></data>
+  <data name="ChartVisits" xml:space="preserve"><value>Визиты</value></data>
+  <data name="ChartFieldDays" xml:space="preserve"><value>Полевые дни</value></data>
+  <data name="SupplyDemandTitle" xml:space="preserve"><value>Предложение / спрос</value></data>
+  <data name="SupplyDemandPerRepNote" xml:space="preserve"><value>На представителя: ёмкость каждого месяца против визитов, запланированных в сессиях планирования периода. Размер команды пока не учитывается (следующая версия).</value></data>
+  <data name="Planned" xml:space="preserve"><value>Запланировано</value></data>
+  <data name="Capacity" xml:space="preserve"><value>ёмкость</value></data>
+  <data name="CapacityLegend" xml:space="preserve"><value>Ёмкость (возможно)</value></data>
+  <data name="PlannedLegend" xml:space="preserve"><value>Запланировано (спрос)</value></data>
+  <data name="Overage" xml:space="preserve"><value>Превышение</value></data>
+  <data name="OverWarning" xml:space="preserve"><value>в {0} запланированные визиты превышают ёмкость. Перенесите визиты на другие месяцы в сессиях планирования или пересмотрите данные ёмкости.</value></data>
+  <data name="FreeCapacity" xml:space="preserve"><value>Свободная ёмкость (визиты)</value></data>
+  <data name="SupplyUnavailableCalendar" xml:space="preserve"><value>Календарь не ответил, сравнивать не с чем: показаны только запланированные визиты.</value></data>
+  <data name="UsageUnavailable" xml:space="preserve"><value>Не удалось прочитать данные планирования периода; сравнить предложение и спрос сейчас нельзя.</value></data>
+  <data name="NoDemandYet" xml:space="preserve"><value>Для этого периода визиты ещё не запланированы.</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>Сессии планирования, использующие эту ёмкость</value></data>
+  <data name="NoSessions" xml:space="preserve"><value>Пока ни одна сессия планирования не использует этот период.</value></data>
+  <data name="SessionName" xml:space="preserve"><value>Сессия</value></data>
+  <data name="SessionOwner" xml:space="preserve"><value>Ответственный</value></data>
+  <data name="SessionVisits" xml:space="preserve"><value>Запланированные визиты</value></data>
+  <data name="Code_typical_visit_required" xml:space="preserve"><value>Заполните типичный визит (число промо, число непромо, отчёт на визит): новая ёмкость использует модель типичного визита.</value></data>
+  <data name="Code_typical_visit_incomplete" xml:space="preserve"><value>Типичный визит не заполнен полностью: заполните все три поля или ни одного.</value></data>
+  <data name="Code_typical_visit_empty" xml:space="preserve"><value>Типичный визит должен включать хотя бы один продукт.</value></data>
+  <data name="Code_typical_count_exceeds_max" xml:space="preserve"><value>Число продуктов типичного визита превышает лимит на визит.</value></data>
+  <data name="Code_visit_minutes_zero" xml:space="preserve"><value>Длительность визита 0 минут; введите минуты на продукт.</value></data>
+  <data name="Code_cycle_capacity_daily_spend_exceeds_day" xml:space="preserve"><value>Ежедневные фиксированные задачи занимают весь рабочий день; на визиты времени не остаётся.</value></data>
+  <data name="Code_month_zeroed" xml:space="preserve"><value>вычтенные дни превышают рабочие; месяц считается равным 0.</value></data>
+  <data name="Code_micro_targeting_clipped" xml:space="preserve"><value>дней микротаргетинга больше, чем полевых дней; лишние дни не учитываются.</value></data>
+  <data name="Code_calendar_unresolved" xml:space="preserve"><value>Для этой страны и года рабочий календарь не опубликован.</value></data>
+  <data name="Code_calendar_forbidden" xml:space="preserve"><value>У вас нет права читать рабочий календарь.</value></data>
+  <data name="Code_country_underivable" xml:space="preserve"><value>Не удалось определить страну календаря; выберите страну календаря.</value></data>
+  <data name="Code_cycle_capacity_months_required" xml:space="preserve"><value>В периоде нет месяцев для расчёта.</value></data>
+  <data name="Code_cycle_capacity_period_not_found" xml:space="preserve"><value>Период не найден.</value></data>
+  <data name="Code_unknown" xml:space="preserve"><value>Не удалось завершить расчёт.</value></data>
+  <data name="Err_typical_visit_empty" xml:space="preserve"><value>Типичный визит должен включать хотя бы один продукт.</value></data>
+  <data name="Err_typical_visit_incomplete" xml:space="preserve"><value>Заполните все три поля типичного визита или ни одного.</value></data>
+  <data name="Err_typical_count_exceeds_max" xml:space="preserve"><value>Число продуктов типичного визита не может превышать лимит на визит.</value></data>
+  <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>FTE одного из месяцев вне допустимого диапазона.</value></data>
+  <data name="Err_period_closed" xml:space="preserve"><value>Период закрыт; его ёмкость больше нельзя изменить.</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>Перейти к подробностям</value></data>
 </root>

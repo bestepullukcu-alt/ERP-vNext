@@ -15,6 +15,7 @@ using Diten.CrmService.Application.Features.VisitContentSequence;
 using Diten.CrmService.Application.Features.VisitFrequencyPolicy.Queries;
 using Diten.CrmService.Application.Features.VisitFrequencyPolicy.Resolve;
 using Diten.CrmService.Application.Features.VisitPlanning;
+using Diten.CrmService.Application.Tests.VisitContentSequence;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using Xunit;
@@ -223,6 +224,117 @@ public sealed class VisitPlanningTests
         Assert.Equal(2, preview.Scheduled.Count);                                     // still planned (not filtered)
     }
 
+    // ── WP-SB-3b — per-product content, pending projection, frozen items, mobile contract ─────────────────────────
+
+    [Fact]
+    public async Task Two_consecutive_plans_of_a_doctor_tell_stage_0_then_stage_1()
+    {
+        var kit = new VisitContentTestKit();
+        kit.AddProduct("A");
+        var env = Env.WithTwoDoctors(kit);
+        env.Frequency.RequiredVisitCount = 2; // the doctor recurs in a later week of the SAME run
+
+        var build = await env.Engine.BuildApplyAsync(env.Session, env.Options(), default);
+        var doctorA = build.Atoms.Where(a => a.ContactId == env.DoctorA).OrderBy(a => a.PlannedDate).ToList();
+
+        Assert.Equal(2, doctorA.Count);
+        Assert.Equal(new[] { 0, 1 }, doctorA.Select(a => a.ContentItems.Single().StageIndex));
+        Assert.Equal(new int?[] { 0, 1 }, doctorA.Select(a => a.Content!.StageIndex)); // the singular ref follows
+    }
+
+    [Fact]
+    public async Task A_stored_pending_plan_before_the_window_projects_the_stage_and_a_cancelled_one_does_not()
+    {
+        var kit = new VisitContentTestKit();
+        var a = kit.AddProduct("A");
+        var env = Env.WithTwoDoctors(kit);
+        env.SeedPlanWithContent(env.DoctorA, new DateOnly(2026, 8, 25), a, PlannedVisitStatus.Planned);
+        env.SeedPlanWithContent(env.DoctorA, new DateOnly(2026, 8, 26), a, PlannedVisitStatus.Cancelled);
+
+        var preview = (await env.Engine.PreviewAsync(env.Session, env.Options(), default)).Preview!;
+
+        Assert.Equal(1, preview.Content.Single(c => c.ContactId == env.DoctorA).Items!.Single().StageIndex);
+        Assert.Equal(0, preview.Content.Single(c => c.ContactId == env.DoctorB).Items!.Single().StageIndex);
+        Assert.Equal(1, preview.Scheduled.Single(s => s.ContactId == env.DoctorA).ContentItems!.Single().StageIndex);
+    }
+
+    [Fact]
+    public async Task Content_items_are_frozen_at_plan_time_and_the_singular_content_is_the_first_promo_item()
+    {
+        var kit = new VisitContentTestKit();
+        kit.AddProduct("N1", role: StrategyProductLineRoles.NonPromo, sortOrder: 5);
+        var a = kit.AddProduct("A", sortOrder: 10);
+        var env = Env.WithTwoDoctors(kit);
+
+        var atom = (await env.Engine.BuildApplyAsync(env.Session, env.Options(), default)).Atoms
+            .First(x => x.ContactId == env.DoctorA);
+        var lead = atom.ContentItems.First(i => i.Role == StrategyProductLineRoles.Promo);
+
+        Assert.Equal(2, atom.ContentItems.Count);
+        Assert.Equal(a.ProductId, lead.ProductId);
+        Assert.Equal((lead.JourneyId, lead.StageId, lead.StageIndex),
+            (atom.Content!.JourneyId!.Value, atom.Content.StageId!.Value, atom.Content.StageIndex!.Value));
+
+        // The path is re-released and its steps change afterwards — the plan does not.
+        a.Paths[0].PathStatus = KnowledgePathStatuses.Inactive;
+        kit.AddPath(a.Paths[0].PathCode, "2.0", publishedAt: VisitContentTestKit.Past.AddDays(5));
+        a.Paths[0].Steps.Clear();
+        Assert.Equal(("1.0", a.Paths[0].Id, 2), (lead.PathVersion, lead.PathId, lead.Steps.Count));
+    }
+
+    [Fact]
+    public async Task The_planned_visit_dto_keeps_its_content_ref_and_adds_content_items()
+    {
+        var kit = new VisitContentTestKit();
+        kit.AddProduct("A");
+        var env = Env.WithTwoDoctors(kit);
+        var atom = (await env.Engine.BuildApplyAsync(env.Session, env.Options(), default)).Atoms[0];
+
+        var detail = Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitMapper.ToDetail(atom);
+        var item = Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitMapper.ToListItem(atom);
+
+        Assert.NotNull(detail.Content);
+        Assert.Equal(atom.ContentItems[0].JourneyId, detail.Content!.JourneyId);
+        Assert.Equal(atom.ContentItems[0].JourneyId, detail.ContentEngagementJourneyId);
+        Assert.Equal(atom.ContentItems[0].PathId, detail.ContentItems!.Single().PathId);
+        Assert.Single(item.ContentItems!);
+    }
+
+    [Fact]
+    public void The_mobile_planned_visit_contract_only_gains_trailing_content_items()
+    {
+        static string[] Shape(Type t) => t.GetConstructors().Single().GetParameters().Select(p => p.Name!).ToArray();
+
+        Assert.Equal(new[]
+        {
+            "JourneyId", "StageId", "StageIndex", "StageCode", "ContentSource", "IsOverridden", "StrategyTemplateId",
+            "JourneyDisplayName", "StageDisplayName", "ResolvedAt"
+        }, Shape(typeof(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitContentRefDto)));
+
+        var detail = Shape(typeof(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitDetailDto));
+        Assert.Equal(46, detail.Length);
+        Assert.Equal("ContentItems", detail[^1]);
+        Assert.Equal(new[] { "Content", "Selection", "Availability", "Version", "CreatedAt", "CreatedBy", "UpdatedAt", "UpdatedBy" },
+            detail[37..45]);
+
+        var list = Shape(typeof(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitListItemDto));
+        Assert.Equal(new[] { "Version", "CreatedAt", "UpdatedAt", "ContentItems" }, list[^4..]);
+    }
+
+    [Fact]
+    public async Task Preview_carries_the_doctor_items()
+    {
+        var kit = new VisitContentTestKit();
+        var a = kit.AddProduct("A");
+        var env = Env.WithTwoDoctors(kit);
+
+        var preview = (await env.Engine.PreviewAsync(env.Session, env.Options(), default)).Preview!;
+
+        Assert.All(preview.Content, c => Assert.Equal(a.ProductId, c.Items!.Single().ProductId));
+        Assert.All(preview.Scheduled, s => Assert.Equal(a.ProductId, s.ContentItems!.Single().ProductId));
+        Assert.Empty(env.PlannedVisits.Inserted);
+    }
+
     // ── helper unit: TerritoryGate + FrequencyExtendPlanner in isolation ─────────────────────────────────────────
 
     [Fact]
@@ -281,22 +393,25 @@ public sealed class VisitPlanningTests
         public VisitPlanningEngine Engine { get; }
         public PlanningSession Session { get; }
 
-        private Env()
+        /// <summary>WP-SB-3b — the content world (play, journeys, paths, progress). Without a product line the resolver
+        /// answers no-strategy / no-journey exactly as before.</summary>
+        public VisitContentTestKit Kit { get; }
+
+        private Env(VisitContentTestKit? kit)
         {
             Periods = new FakeCyclePeriodReader(CyclePeriodId);
             var tenant = TenantOf(Tenant);
             var actor = new NullActorContext();
 
-            var resolver = new VisitContentSequenceResolver(
-                tenant, new FakeStrategyReader(), Segments, new FakeJourneyReader(),
-                new FakeContentReader(), Capacities);
+            Kit = kit ?? new VisitContentTestKit();
+            var resolver = Kit.CreateResolver(tenant, Segments, Capacities);
 
             var estimator = new CycleCapacityEstimator(new FakeCountryResolver(), new FakeWorkingDayCounter());
             var selector = new EligibleContactSelector(tenant, Segments, Consent, Availabilities);
             var extend = new FrequencyExtendPlanner(Frequency);
             var territoryGate = new TerritoryGate(tenant, Territory);
 
-            var journeyProbe = new PlannedVisitJourneyProbe(new FakeJourneyReader());
+            var journeyProbe = new PlannedVisitJourneyProbe(Kit.Journeys);
             var frequencyProbe = new PlannedVisitFrequencyProbe(Frequency);
             var consentProbe = new PlannedVisitConsentProbe(Consent);
             var availabilityProbe = new PlannedVisitAvailabilityProbe(tenant, Availabilities);
@@ -325,9 +440,30 @@ public sealed class VisitPlanningTests
 
             Accounts.Rows[AccountA] = Account(AccountA, "Clinic A", 41.0, 29.0);
             Accounts.Rows[AccountB] = Account(AccountB, "Clinic B", 41.1, 29.1);
+
+            // WP-SB-3b — a kit's play is the session's play (the default kit has no product line).
+            if (kit is not null)
+            {
+                Session.Provenance.StrategyTemplateId = kit.StrategyId;
+            }
         }
 
-        public static Env WithTwoDoctors() => new();
+        public static Env WithTwoDoctors(VisitContentTestKit? kit = null) => new(kit);
+
+        /// <summary>WP-SB-3b — a stored plan of the doctor that already tells <paramref name="product"/>.</summary>
+        public PlannedVisitEntity SeedPlanWithContent(
+            Guid contactId, DateOnly date, VisitContentTestKit.Product product, string status)
+        {
+            var atom = SeedCommittedAtom(contactId);
+            atom.PlannedDate = date;
+            atom.PlanStatus = status;
+            atom.ContentItems.Add(new PlannedVisitContentItem
+            {
+                ProductId = product.ProductId, JourneyId = product.JourneyId, Role = StrategyProductLineRoles.Promo,
+                StageId = product.Stages[0].StageId, StageIndex = 0
+            });
+            return atom;
+        }
 
         public VisitPlanGenerationOptions Options() => new(EffectiveAt: Now);
 
@@ -539,6 +675,13 @@ public sealed class VisitPlanningTests
             Guid tenantId, Guid targetId, DateOnly plannedDate, CancellationToken ct)
             => Task.FromResult<IReadOnlyList<PlannedVisitEntity>>(Array.Empty<PlannedVisitEntity>());
 
+        public Task<IReadOnlyList<PlannedVisitEntity>> ListFromDateByContentPathsAsync(
+            Guid tenantId, IReadOnlyCollection<Guid> pathIds, DateOnly fromDate, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<PlannedVisitEntity>>(Seeded
+                .Where(x => x.TenantId == tenantId && x.PlannedDate >= fromDate
+                            && x.ContentItems.Any(item => pathIds.Contains(item.PathId)))
+                .ToList());
+
         public Task InsertAsync(PlannedVisitEntity entity, CancellationToken ct)
         {
             Inserted.Add(entity);
@@ -651,40 +794,6 @@ public sealed class VisitPlanningTests
         }
 
         public Task ReplanAsync(IReadOnlyList<PlannedVisitEntity> atoms, CancellationToken ct) => Task.CompletedTask;
-    }
-
-    // Content-resolution seams — the engine passes no strategy/segment id by default, so ResolveBindings returns null
-    // (NoStrategy) and these are never actually queried; they exist only to satisfy the resolver's constructor.
-    private sealed class FakeStrategyReader : IStrategyTemplateReader
-    {
-        public Task<StrategyTemplateBindingSet?> GetActiveBindingsAsync(Guid templateId, DateTimeOffset at, CancellationToken ct)
-            => Task.FromResult<StrategyTemplateBindingSet?>(null);
-
-        public Task<IReadOnlyList<StrategyTemplateSummary>> ListBySegmentAsync(Guid segmentId, DateTimeOffset at, CancellationToken ct)
-            => Task.FromResult<IReadOnlyList<StrategyTemplateSummary>>(Array.Empty<StrategyTemplateSummary>());
-    }
-
-    private sealed class FakeJourneyReader : IContentEngagementJourneyReader
-    {
-        public Task<IReadOnlyList<ContentEngagementJourneyDto>> ResolvePublishedJourneysAsync(
-            ContentEngagementJourneyCriteria criteria, CancellationToken ct)
-            => Task.FromResult<IReadOnlyList<ContentEngagementJourneyDto>>(Array.Empty<ContentEngagementJourneyDto>());
-
-        public Task<IReadOnlyList<ContentEngagementJourneyStageDto>> GetOrderedStagesAsync(
-            Guid journeyId, DateTimeOffset at, CancellationToken ct)
-            => Task.FromResult<IReadOnlyList<ContentEngagementJourneyStageDto>>(Array.Empty<ContentEngagementJourneyStageDto>());
-    }
-
-    private sealed class FakeContentReader : IKnowledgeContentLinkageReader
-    {
-        public Task<IReadOnlyList<KnowledgeContentDto>> ResolvePublishedContentAsync(
-            KnowledgeContentLinkageCriteria criteria, CancellationToken ct)
-            => Task.FromResult<IReadOnlyList<KnowledgeContentDto>>(Array.Empty<KnowledgeContentDto>());
-
-        // SCMM-13 — variant resolution is not exercised by the visit-planning fake.
-        public Task<KnowledgeContentVariantResolution> ResolveVariantAsync(
-            Guid contentSetId, string languageCode, CancellationToken cancellationToken)
-            => Task.FromResult(KnowledgeContentVariantResolution.Unresolved("not-supported-in-fake"));
     }
 
     private sealed class FakeCountryResolver : ICycleCapacityCountryResolver

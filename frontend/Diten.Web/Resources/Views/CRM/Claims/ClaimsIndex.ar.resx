@@ -178,4 +178,13 @@
   <data name="Err_country_not_closed" xml:space="preserve"><value>لم يتم وضع علامة عدم الفتح على هذه الدولة.</value></data>
   <data name="Err_invalid_reference_value" xml:space="preserve"><value>اختر سبباً صالحاً.</value></data>
   <data name="Err_required" xml:space="preserve"><value>اختر سبباً.</value></data>
+  <data name="QvUsage" xml:space="preserve"><value>أين يُستخدم</value></data>
+  <data name="QvUsageNone" xml:space="preserve"><value>لا يستخدم أي محتوى أو مسار معرفة أو رحلة هذا الادعاء.</value></data>
+  <data name="QvUsageFailed" xml:space="preserve"><value>تعذّر تحميل بيانات الاستخدام.</value></data>
+  <data name="UsageGlobal" xml:space="preserve"><value>عالمي (ادعاء أساسي)</value></data>
+  <data name="UsageVia" xml:space="preserve"><value>عبر {0}</value></data>
+  <data name="UsageNeedsReview" xml:space="preserve"><value>نسخة الادعاء المستخدمة هنا تحتاج إلى مراجعة.</value></data>
+  <data name="UsageType_content" xml:space="preserve"><value>محتوى</value></data>
+  <data name="UsageType_knowledge-path" xml:space="preserve"><value>مسار المعرفة</value></data>
+  <data name="UsageType_journey" xml:space="preserve"><value>رحلة</value></data>
 </root>

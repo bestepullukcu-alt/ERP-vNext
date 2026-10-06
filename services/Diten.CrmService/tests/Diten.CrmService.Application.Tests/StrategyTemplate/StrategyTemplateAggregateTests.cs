@@ -24,7 +24,7 @@ public sealed class StrategyTemplateAggregateTests
     private readonly FakeStrategyReferenceValidator _references = new();
 
     private StrategyTemplateBindingValidator Bindings()
-        => new(_segments, _policies, _paths, _journeys);
+        => new(_segments, _policies, _paths, _journeys, _journeys.Subjects);
 
     private CreateStrategyTemplateHandler Create(Guid tenant = default) => new(
         StrategyTemplateTestDoubles.Tenant(tenant == default ? StrategyTemplateTestDoubles.TenantA : tenant),

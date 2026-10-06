@@ -42,6 +42,13 @@ internal sealed class FakePlannedVisitRepository : IPlannedVisitRepository
         => Task.FromResult<IReadOnlyList<PlannedVisitEntity>>(
             Scope(tenantId).Where(x => x.TargetId == targetId && x.PlannedDate == plannedDate).ToList());
 
+    public Task<IReadOnlyList<PlannedVisitEntity>> ListFromDateByContentPathsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> pathIds, DateOnly fromDate, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<PlannedVisitEntity>>(Items
+            .Where(x => x.TenantId == tenantId && x.PlannedDate >= fromDate
+                        && x.ContentItems.Any(item => pathIds.Contains(item.PathId)))
+            .ToList());
+
     public Task InsertAsync(PlannedVisitEntity entity, CancellationToken ct)
     {
         InsertCount++;

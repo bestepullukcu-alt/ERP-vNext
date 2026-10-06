@@ -3,10 +3,13 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using Diten.Web.Views.CRM.CycleCapacities;
 
 namespace Diten.Web.Controllers.CRM;
 
@@ -19,6 +22,13 @@ namespace Diten.Web.Controllers.CRM;
 /// <para><b>CyclePeriod is consumed READ-ONLY.</b> The period picker reads the CyclePeriod selector endpoint and the
 /// detail pages read the projected period; nothing here writes to CyclePeriod, and CyclePeriod does not know this
 /// module exists.</para>
+/// <para><b>Golden list — known deviations (WP-CYC-UI-FIX-1, owner decision 2026-10-05).</b> The list declares its data
+/// mode (client), uses the shared <c>_TableSkeleton</c> and the <c>#offcanvasDetailsPreview</c> quick view. What
+/// <c>verify_datatable_page.py --api-profile proxy</c> still reports is accepted on purpose: (a) the shared
+/// <c>personalization-client.js</c> tenant-header check — a shared file outside this module (separate work); (b) under the
+/// default profile, the direct-gateway <c>window.API</c> expectation — this page deliberately uses the same-origin proxy;
+/// (c) select-all column, bulk config, bulk selection, <c>/bulk</c> endpoint, bulk delete trigger, <c>reloadWithToast</c>
+/// and clear-selection — a capacity is retired by Archive has no delete at all, so there is no bulk surface.</para>
 /// </summary>
 [Authorize]
 [Route("CRM/CycleCapacities")]
@@ -37,17 +47,20 @@ public sealed class CycleCapacitiesController : Controller
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly ILogger<CycleCapacitiesController> _logger;
+    private readonly IStringLocalizer<CycleCapacitiesIndex> _localizer;
 
     private readonly JsonSerializerOptions _json =
         new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true };
 
     public CycleCapacitiesController(
-        HttpClient httpClient, IConfiguration configuration, ILogger<CycleCapacitiesController> logger)
+        HttpClient httpClient, IConfiguration configuration, ILogger<CycleCapacitiesController> logger,
+        IStringLocalizer<CycleCapacitiesIndex> localizer)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"]
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _logger = logger;
+        _localizer = localizer;
     }
 
     // ---------------- pages ----------------
@@ -107,7 +120,8 @@ public sealed class CycleCapacitiesController : Controller
             return denied;
         }
 
-        var defaults = await LoadDefaultsAsync(ct);
+        var contract = await LoadContractAsync(ct);
+        var defaults = contract?.Defaults;
         var model = new CycleCapacityEditViewModel
         {
             CyclePeriodId = cyclePeriodId is { } id && id != Guid.Empty ? id : null,
@@ -116,11 +130,18 @@ public sealed class CycleCapacitiesController : Controller
             PromoProductTime = 0,
             NonPromoProductTime = 0,
             TravelingTime = 0,
+            // WP-CAP-MODEL — a new capacity is born on the typical model: the report is charged per VISIT, so the
+            // legacy per-day report is 0 and the typical triple starts empty for the author to fill.
             ReportDuration = 0,
             QuizDuration = 0,
+            VisitModel = "typical",
+            Limits = CycleCapacityFormLimits.From(contract?.Limits),
             // FU06B — the configured buffer, shown as the SAME number the server will write (falls back to 5 only when
             // the contract could not be loaded).
-            BetweenVisitTimeMinutes = defaults?.BetweenVisitTimeMinutes ?? 5
+            BetweenVisitTimeMinutes = defaults?.BetweenVisitTimeMinutes ?? 5,
+            // WP-SB-3a — the per-visit product ceilings start at the runtime default (3 / 3).
+            MaxPromoProducts = CycleCapacityEditViewModel.DefaultMaxProductsPerVisit,
+            MaxNonPromoProducts = CycleCapacityEditViewModel.DefaultMaxProductsPerVisit
         };
 
         await PopulateOptionsAsync(model, ct);
@@ -175,6 +196,7 @@ public sealed class CycleCapacitiesController : Controller
 
         var model = ToEditModel(detail);
         model.ReturnTo = OriginRouteValue(returnTo);
+        model.Limits = CycleCapacityFormLimits.From((await LoadContractAsync(ct))?.Limits);
         await PopulateOptionsAsync(model, ct);
 
         return View($"{ViewRoot}/Edit.cshtml", model);
@@ -233,8 +255,16 @@ public sealed class CycleCapacitiesController : Controller
 
         var model = ToEditModel(detail);
         model.ReturnTo = OriginRouteValue(returnTo);
+        var calculation = await LoadCalculationAsync(cycleCapacityId, ct);
+        // WP-CYC-UI-2 — supply vs demand reads the PERIOD's usage (WP-CYC-UI-1 §Sözleşme). A failed read leaves the
+        // card saying so; it never blocks the page.
+        var usage = await LoadUsageAsync(detail.CyclePeriodId, ct);
+
         ViewData["CanManage"] = HasAnyPermission(ManagePermission, ManageFallback);
-        ViewData["Calculation"] = await LoadCalculationAsync(cycleCapacityId, ct);
+        ViewData["Calculation"] = calculation;
+        ViewData["Summary"] = CycleCapacitySummary.Build(calculation);
+        ViewData["Waterfall"] = CycleCapacityWaterfall.From(calculation);
+        ViewData["SupplyDemand"] = CycleCapacitySupplyDemand.From(calculation, usage);
 
         return View($"{ViewRoot}/Details.cshtml", model);
     }
@@ -264,18 +294,93 @@ public sealed class CycleCapacitiesController : Controller
             ReadPermission, ct, ReadFallback);
 
     /// <summary>
-    /// The LIVE estimate the create/edit form calls while the author is typing — a straight passthrough.
+    /// The LIVE estimate the create/edit form calls while the author is typing.
     /// <para>It is a POST because it carries a body, and a READ in every other respect: the CrmService builds a
     /// TRANSIENT capacity from these numbers, estimates it and throws it away. Nothing is created, and the answer has
     /// no id to save against — so this proxy guards on <c>read</c>, like the other estimate surface, rather than on
     /// <c>manage</c>.</para>
     /// <para>The 503 an unresolved calendar produces is passed through with its body intact: the page needs the
     /// resolution and reason codes to explain itself, and flattening it into a generic failure would take that away.</para>
+    /// <para>WP-CYC-UI-2 — the body the CRM receives is BUILT here from the form's state rather than forwarded: the
+    /// typical triple goes all-or-none (exactly as on a save), and the product ceilings the CRM's preview does not take
+    /// stay here to judge the blockers. The answer is the CRM's envelope plus a <c>summary</c> built from it by
+    /// <see cref="CycleCapacitySummary"/> — the ONE place that decides whether a number may be shown (K-4).</para>
     /// </summary>
     [HttpPost("api/capacities/calculation-preview")]
-    public Task<IActionResult> CalculationPreview([FromBody] JsonElement body, CancellationToken ct) =>
+    public async Task<IActionResult> CalculationPreview([FromBody] JsonElement body, CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied)
+        {
+            return denied;
+        }
+
+        if (ContainsTenantId(body))
+        {
+            return BadRequest(new { errors = new[] { "TenantId is server-resolved and must not be supplied." } });
+        }
+
+        CycleCapacityPreviewInput? input;
+        try
+        {
+            input = body.Deserialize<CycleCapacityPreviewInput>(_json);
+        }
+        catch (JsonException)
+        {
+            input = null;
+        }
+
+        if (input?.CyclePeriodId is not { } periodId || periodId == Guid.Empty)
+        {
+            return BadRequest(new { errors = new[] { "cycle_capacity_period_not_found" } });
+        }
+
+        var response = await SendGatewayAsync(
+            HttpMethod.Post, "/api/crm/cycle-capacities/calculation-preview", ToPreviewPayload(input).ToJsonString(), ct);
+        if (response is null)
+        {
+            return new ObjectResult(new { errors = new[] { "Gateway unavailable." } }) { StatusCode = 502 };
+        }
+
+        if (IsBodilessStatus(response.StatusCode))
+        {
+            return new StatusCodeResult((int)response.StatusCode);
+        }
+
+        var raw = await response.Content.ReadAsStringAsync(ct);
+        CycleCapacityGatewayResponse<CycleCapacityCalculationViewModel>? envelope = null;
+        try
+        {
+            envelope = JsonSerializer.Deserialize<CycleCapacityGatewayResponse<CycleCapacityCalculationViewModel>>(raw, _json);
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Cycle capacity preview payload could not be read.");
+        }
+
+        var result = new JsonObject
+        {
+            ["data"] = envelope?.Data is null ? null : JsonSerializer.SerializeToNode(envelope.Data, _json),
+            ["summary"] = JsonSerializer.SerializeToNode(CycleCapacitySummary.Build(envelope?.Data, input), _json),
+            ["errors"] = JsonSerializer.SerializeToNode(envelope?.Errors ?? [], _json),
+            ["isSuccessful"] = response.IsSuccessStatusCode
+        };
+
+        return new ContentResult
+        {
+            StatusCode = (int)response.StatusCode,
+            ContentType = "application/json",
+            Content = result.ToJsonString()
+        };
+    }
+
+    /// <summary>
+    /// WP-CYC-UI-2 — the PERIOD's usage (planning sessions, monthly planned-visit demand), proxied for the detail page.
+    /// The capacity page never writes it; the CRM owns the period read permission behind it.
+    /// </summary>
+    [HttpGet("api/periods/{cyclePeriodId:guid}/usage")]
+    public Task<IActionResult> PeriodUsage(Guid cyclePeriodId, CancellationToken ct) =>
         ProxyAsync(
-            HttpMethod.Post, "/api/crm/cycle-capacities/calculation-preview", body, ReadPermission, ct, ReadFallback);
+            HttpMethod.Get, $"/api/crm/cycle-periods/{cyclePeriodId}/usage", null, ReadPermission, ct, ReadFallback);
 
     [HttpPost("api/capacities/{cycleCapacityId:guid}/archive")]
     public Task<IActionResult> Archive(Guid cycleCapacityId, CancellationToken ct) =>
@@ -326,59 +431,133 @@ public sealed class CycleCapacitiesController : Controller
     // ---------------- form helpers ----------------
 
     /// <summary>
-    /// The write payload. <c>TenantId</c> is absent by construction, and so is <c>fte</c>: the interim average is
-    /// stamped server-side, so this form has nothing to send even though it renders the number.
+    /// The write payload. <c>TenantId</c> is absent by construction.
     /// <para><c>cyclePeriodId</c> is sent on CREATE only. The update endpoint does not accept one — the pin is set
     /// once, and leaving it out of the payload is stronger than rejecting a value.</para>
+    /// <para>WP-SB-3-UIa — <c>maxPromoProducts</c> / <c>maxNonPromoProducts</c> (SB-3a, 1..10) are sent only when the
+    /// author filled them: an omitted ceiling keeps the stored value (3 on a new record), never a silent 0.</para>
+    /// <para>WP-CYC-UI-2 — the typical triple (<c>typicalPromoCount</c>, <c>typicalNonPromoCount</c>,
+    /// <c>reportMinutesPerVisit</c>) is sent ALL OR NONE (<see cref="CycleCapacityTypicalVisit.IsComplete"/>): none keeps
+    /// the stored model, a mixed set is never sent. A month's <c>fte</c> is sent only when the author TOUCHED it, so an
+    /// untouched month keeps the stored value.</para>
     /// </summary>
-    private static object ToPayload(CycleCapacityEditViewModel model, bool includeExpectedVersion)
+    internal static JsonObject ToPayload(CycleCapacityEditViewModel model, bool includeExpectedVersion)
     {
-        var months = (model.Months ?? [])
-            .Where(m => m.Year is > 0 && m.MonthNumber is >= 1 and <= 12)
-            .Select(m => new
-            {
-                year = m.Year,
-                monthNumber = m.MonthNumber,
-                meetingDays = m.MeetingDays ?? 0,
-                trainingDays = m.TrainingDays ?? 0,
-                vacationDays = m.VacationDays ?? 0,
-                microTargetingDayCount = m.MicroTargetingDayCount ?? 0,
-                microTargetingDuration = m.MicroTargetingDuration ?? 0
-            })
-            .ToList();
-
-        if (includeExpectedVersion)
+        var payload = new JsonObject();
+        if (!includeExpectedVersion)
         {
-            return new
-            {
-                calendarCountryCode = Clean(model.CalendarCountryCode)?.ToUpperInvariant(),
-                dailyWorkMinutes = model.DailyWorkMinutes,
-                promoProductTime = model.PromoProductTime,
-                nonPromoProductTime = model.NonPromoProductTime,
-                travelingTime = model.TravelingTime,
-                reportDuration = model.ReportDuration,
-                quizDuration = model.QuizDuration,
-                betweenVisitTimeMinutes = model.BetweenVisitTimeMinutes,
-                description = Clean(model.Description),
-                months,
-                expectedVersion = model.ExpectedVersion
-            };
+            payload["cyclePeriodId"] = model.CyclePeriodId?.ToString();
         }
 
-        return new
+        payload["calendarCountryCode"] = Clean(model.CalendarCountryCode)?.ToUpperInvariant();
+        payload["dailyWorkMinutes"] = model.DailyWorkMinutes;
+        payload["promoProductTime"] = model.PromoProductTime;
+        payload["nonPromoProductTime"] = model.NonPromoProductTime;
+        payload["travelingTime"] = model.TravelingTime;
+        payload["reportDuration"] = model.ReportDuration;
+        payload["quizDuration"] = model.QuizDuration;
+        payload["betweenVisitTimeMinutes"] = model.BetweenVisitTimeMinutes;
+        payload["description"] = Clean(model.Description);
+        AddTypicalVisit(payload, model.TypicalPromoCount, model.TypicalNonPromoCount, model.ReportMinutesPerVisit);
+        if (model.MaxPromoProducts is { } maxPromo) payload["maxPromoProducts"] = maxPromo;
+        if (model.MaxNonPromoProducts is { } maxNonPromo) payload["maxNonPromoProducts"] = maxNonPromo;
+
+        var months = new JsonArray();
+        foreach (var m in (model.Months ?? []).Where(m => m.Year is > 0 && m.MonthNumber is >= 1 and <= 12))
         {
-            cyclePeriodId = model.CyclePeriodId,
-            calendarCountryCode = Clean(model.CalendarCountryCode)?.ToUpperInvariant(),
-            dailyWorkMinutes = model.DailyWorkMinutes,
-            promoProductTime = model.PromoProductTime,
-            nonPromoProductTime = model.NonPromoProductTime,
-            travelingTime = model.TravelingTime,
-            reportDuration = model.ReportDuration,
-            quizDuration = model.QuizDuration,
-            betweenVisitTimeMinutes = model.BetweenVisitTimeMinutes,
-            description = Clean(model.Description),
-            months
+            var row = new JsonObject
+            {
+                ["year"] = m.Year,
+                ["monthNumber"] = m.MonthNumber,
+                ["meetingDays"] = m.MeetingDays ?? 0,
+                ["trainingDays"] = m.TrainingDays ?? 0,
+                ["vacationDays"] = m.VacationDays ?? 0,
+                ["microTargetingDayCount"] = m.MicroTargetingDayCount ?? 0,
+                ["microTargetingDuration"] = m.MicroTargetingDuration ?? 0
+            };
+
+            // K-5 — only a month the author changed carries an FTE. Sending every row's displayed value would turn
+            // each interim default into an "authored" one the moment someone opened and saved the record.
+            if (m.FteTouched && TryParseFte(m.FteText) is { } fte)
+            {
+                row["fte"] = fte;
+            }
+
+            months.Add(row);
+        }
+
+        payload["months"] = months;
+        if (includeExpectedVersion)
+        {
+            payload["expectedVersion"] = model.ExpectedVersion;
+        }
+
+        return payload;
+    }
+
+    /// <summary>
+    /// WP-CYC-UI-2 — the CRM preview body, built from the form's state. Same all-or-none rule for the typical triple as
+    /// the save, so the live figure uses the model the save will store. Unlike the save, every month's FTE the form
+    /// SHOWS is sent: the preview must be built on the numbers on screen (an omitted one would preview the configured
+    /// default instead of the stored value).
+    /// </summary>
+    internal static JsonObject ToPreviewPayload(CycleCapacityPreviewInput input)
+    {
+        var payload = new JsonObject
+        {
+            ["cyclePeriodId"] = input.CyclePeriodId?.ToString(),
+            ["calendarCountryCode"] = Clean(input.CalendarCountryCode)?.ToUpperInvariant(),
+            ["dailyWorkMinutes"] = input.DailyWorkMinutes ?? 0,
+            ["promoProductTime"] = input.PromoProductTime ?? 0,
+            ["nonPromoProductTime"] = input.NonPromoProductTime ?? 0,
+            ["travelingTime"] = input.TravelingTime ?? 0,
+            ["reportDuration"] = input.ReportDuration ?? 0,
+            ["quizDuration"] = input.QuizDuration ?? 0
         };
+        AddTypicalVisit(payload, input.TypicalPromoCount, input.TypicalNonPromoCount, input.ReportMinutesPerVisit);
+
+        var months = new JsonArray();
+        foreach (var m in input.Months.Where(m => m.Year > 0 && m.MonthNumber is >= 1 and <= 12))
+        {
+            var row = new JsonObject
+            {
+                ["year"] = m.Year,
+                ["monthNumber"] = m.MonthNumber,
+                ["meetingDays"] = m.MeetingDays ?? 0,
+                ["trainingDays"] = m.TrainingDays ?? 0,
+                ["vacationDays"] = m.VacationDays ?? 0,
+                ["microTargetingDayCount"] = m.MicroTargetingDayCount ?? 0,
+                ["microTargetingDuration"] = m.MicroTargetingDuration ?? 0
+            };
+            if (m.Fte is { } fte)
+            {
+                row["fte"] = fte;
+            }
+
+            months.Add(row);
+        }
+
+        payload["months"] = months;
+        return payload;
+    }
+
+    /// <summary>The posted month FTE, read in the INVARIANT culture (the form always writes "0.75").</summary>
+    internal static decimal? TryParseFte(string? text)
+        => decimal.TryParse((text ?? string.Empty).Trim(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var value)
+            ? value
+            : null;
+
+    /// <summary>The typical triple — written only when all three are present (the ONE rule both payloads share).</summary>
+    private static void AddTypicalVisit(JsonObject payload, int? promoCount, int? nonPromoCount, int? reportMinutesPerVisit)
+    {
+        if (!CycleCapacityTypicalVisit.IsComplete(promoCount, nonPromoCount, reportMinutesPerVisit))
+        {
+            return;
+        }
+
+        payload["typicalPromoCount"] = promoCount;
+        payload["typicalNonPromoCount"] = nonPromoCount;
+        payload["reportMinutesPerVisit"] = reportMinutesPerVisit;
     }
 
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
@@ -396,6 +575,15 @@ public sealed class CycleCapacitiesController : Controller
         ReportDuration = detail.ReportDuration,
         QuizDuration = detail.QuizDuration,
         BetweenVisitTimeMinutes = detail.BetweenVisitTimeMinutes,
+        MaxPromoProducts = detail.MaxPromoProducts,
+        MaxNonPromoProducts = detail.MaxNonPromoProducts,
+        // WP-CAP-MODEL — a legacy row reads back with an empty triple: the fields start empty and the legacy band says
+        // what filling them will do.
+        TypicalPromoCount = detail.TypicalPromoCount,
+        TypicalNonPromoCount = detail.TypicalNonPromoCount,
+        ReportMinutesPerVisit = detail.ReportMinutesPerVisit,
+        VisitModel = detail.VisitModel,
+        TypicalVisitMinutes = detail.TypicalVisitMinutes,
         Description = detail.Description,
         ExpectedVersion = detail.Version,
         IsArchived = detail.IsArchived,
@@ -413,6 +601,7 @@ public sealed class CycleCapacitiesController : Controller
                 MicroTargetingDayCount = m.MicroTargetingDayCount,
                 MicroTargetingDuration = m.MicroTargetingDuration,
                 Fte = m.Fte,
+                FteText = m.Fte.ToString("0.##", CultureInfo.InvariantCulture),
                 FteSource = m.FteSource,
                 MonthLabel = MonthLabel(m.Year, m.MonthNumber)
             })
@@ -487,6 +676,7 @@ public sealed class CycleCapacitiesController : Controller
                     MicroTargetingDayCount = 0,
                     MicroTargetingDuration = 0,
                     Fte = defaultFte,
+                    FteText = defaultFte?.ToString("0.##", CultureInfo.InvariantCulture),
                     FteSource = defaultFteSource,
                     MonthLabel = MonthLabel(cursor.Year, cursor.Month)
                 });
@@ -509,6 +699,7 @@ public sealed class CycleCapacitiesController : Controller
         string view, CycleCapacityEditViewModel model, CancellationToken ct)
     {
         await PopulateOptionsAsync(model, ct);
+        model.Limits = CycleCapacityFormLimits.From((await LoadContractAsync(ct))?.Limits);
         // No default here on purpose: the rows already carry their FTE from the POST, and re-seeding would blank the
         // column on a rejected save.
         SeedMonthsFromPeriod(model);
@@ -659,9 +850,9 @@ public sealed class CycleCapacitiesController : Controller
         return api?.Items ?? [];
     }
 
-    /// <summary>The configured defaults a new capacity is born with, so the create form shows the SAME numbers the
-    /// server will write instead of hardcoding its own.</summary>
-    private async Task<CycleCapacityDefaultsApiModel?> LoadDefaultsAsync(CancellationToken ct)
+    /// <summary>The capacity contract: the configured defaults a new capacity is born with (so the create form shows the
+    /// SAME numbers the server will write) and the published limits the form enforces (E9).</summary>
+    private async Task<CycleCapacityContractApiModel?> LoadContractAsync(CancellationToken ct)
     {
         var response = await SendGatewayAsync(HttpMethod.Get, "/api/crm/cycle-capacities/contract", null, ct);
         if (response is null || !response.IsSuccessStatusCode)
@@ -669,9 +860,92 @@ public sealed class CycleCapacitiesController : Controller
             return null;
         }
 
-        var body = await response.Content.ReadAsStringAsync(ct);
-        return JsonSerializer
-            .Deserialize<CycleCapacityGatewayResponse<CycleCapacityContractApiModel>>(body, _json)?.Data?.Defaults;
+        try
+        {
+            var body = await response.Content.ReadAsStringAsync(ct);
+            return JsonSerializer
+                .Deserialize<CycleCapacityGatewayResponse<CycleCapacityContractApiModel>>(body, _json)?.Data;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Cycle capacity contract could not be read.");
+            return null;
+        }
+    }
+
+    /// <summary>WP-CYC-UI-2 — the period's usage (WP-CYC-UI-1 §Sözleşme). Any failure — the endpoint not deployed yet,
+    /// no permission, an unreadable body — yields null, and the supply/demand card says it could not be read.</summary>
+    private async Task<CyclePeriodUsageApiModel?> LoadUsageAsync(Guid cyclePeriodId, CancellationToken ct)
+    {
+        var response = await SendGatewayAsync(HttpMethod.Get, $"/api/crm/cycle-periods/{cyclePeriodId}/usage", null, ct);
+        if (response is null || !response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        try
+        {
+            var body = await response.Content.ReadAsStringAsync(ct);
+            return JsonSerializer
+                .Deserialize<CycleCapacityGatewayResponse<CyclePeriodUsageApiModel>>(body, _json)?.Data;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Cycle period usage payload could not be read.");
+            return null;
+        }
+    }
+
+    private const string MaxProductsOutOfRange = "max_products_out_of_range";
+    private const string MaxProductsOutOfRangeKey = "Err_" + MaxProductsOutOfRange;
+
+    /// <summary>WP-SB-3-UIa — the runtime's refusals as (field, text) pairs. SB-3a's <c>max_products_out_of_range</c>
+    /// (CRM: <c>[message, code]</c>, the message naming <c>MaxPromoProducts</c> / <c>MaxNonPromoProducts</c>) is shown
+    /// under the field it names, as <paramref name="outOfRangeText"/> — never as the raw code. Every other refusal stays
+    /// in the summary verbatim.</summary>
+    internal static List<(string Field, string Error)> MapGatewayErrors(IReadOnlyList<string> errors, string outOfRangeText)
+    {
+        var mapped = new List<(string, string)>();
+        if (!errors.Any(e => string.Equals(e?.Trim(), MaxProductsOutOfRange, StringComparison.Ordinal)))
+        {
+            mapped.AddRange(errors.Select(e => (string.Empty, e)));
+            return mapped;
+        }
+
+        var message = errors.FirstOrDefault(e => !string.Equals(e?.Trim(), MaxProductsOutOfRange, StringComparison.Ordinal)) ?? "";
+        // "MaxNonPromoProducts" contains "PromoProducts" too, so the non-promo field is tested first.
+        var field = message.Contains(nameof(CycleCapacityEditViewModel.MaxNonPromoProducts), StringComparison.OrdinalIgnoreCase)
+            ? nameof(CycleCapacityEditViewModel.MaxNonPromoProducts)
+            : message.Contains(nameof(CycleCapacityEditViewModel.MaxPromoProducts), StringComparison.OrdinalIgnoreCase)
+                ? nameof(CycleCapacityEditViewModel.MaxPromoProducts)
+                : string.Empty;
+        mapped.Add((field, outOfRangeText));
+        return mapped;
+    }
+
+    /// <summary>WP-CAP-MODEL refusals the form shows LOCALISED (key <c>Err_{code}</c>) under the field they concern,
+    /// instead of the CRM's English message.</summary>
+    public static readonly IReadOnlyDictionary<string, string> TypicalRefusalFields = new Dictionary<string, string>
+    {
+        ["typical_visit_empty"] = nameof(CycleCapacityEditViewModel.TypicalPromoCount),
+        ["typical_visit_incomplete"] = nameof(CycleCapacityEditViewModel.TypicalPromoCount),
+        ["typical_count_exceeds_max"] = nameof(CycleCapacityEditViewModel.TypicalPromoCount),
+        ["cycle_capacity_month_fte_invalid"] = string.Empty,
+        ["period_closed"] = string.Empty
+    };
+
+    /// <summary>The full mapping: SB-3a's out-of-range code (see above), then the coded CAP-MODEL refusals localised,
+    /// and every other refusal verbatim.</summary>
+    internal static List<(string Field, string Error)> MapGatewayErrors(
+        IReadOnlyList<string> errors, Func<string, string> localize)
+    {
+        var code = errors.Select(e => e?.Trim() ?? string.Empty).FirstOrDefault(TypicalRefusalFields.ContainsKey);
+        if (code is null)
+        {
+            return MapGatewayErrors(errors, localize(MaxProductsOutOfRangeKey));
+        }
+
+        return [(TypicalRefusalFields[code], localize("Err_" + code))];
     }
 
     /// <summary>Surfaces the runtime's own refusal verbatim. The month-window and duplicate messages name the offending
@@ -691,9 +965,9 @@ public sealed class CycleCapacitiesController : Controller
             var envelope = JsonSerializer.Deserialize<CycleCapacityGatewayResponse<object>>(body, _json);
             if (envelope?.Errors is { Count: > 0 })
             {
-                foreach (var error in envelope.Errors)
+                foreach (var (field, error) in MapGatewayErrors(envelope.Errors, key => _localizer[key].Value))
                 {
-                    ModelState.AddModelError(string.Empty, error);
+                    ModelState.AddModelError(field, error);
                 }
 
                 return;
@@ -802,8 +1076,19 @@ public sealed class CycleCapacitiesController : Controller
     private bool HasAnyPermission(params string[] permissions) =>
         permissions.Any(x => PermissionClaims.HasPermission(User, x));
 
-    private IActionResult? RequirePage(string permission, params string[] fallbacks) =>
-        HasAnyPermission([permission, .. fallbacks]) ? null : StatusCode(StatusCodes.Status403Forbidden);
+    /// <summary>UAS-001 — an actor without the page's permission gets ONE explanation inside the shell (403), never the
+    /// page's skeleton, and is not redirected. No data is read for them.</summary>
+    private IActionResult? RequirePage(string permission, params string[] fallbacks)
+    {
+        if (HasAnyPermission([permission, .. fallbacks]))
+        {
+            return null;
+        }
+
+        var denied = View($"{ViewRoot}/AccessDenied.cshtml");
+        denied.StatusCode = StatusCodes.Status403Forbidden;
+        return denied;
+    }
 
     private IActionResult? RequireJson(string permission, params string[] fallbacks) =>
         HasAnyPermission([permission, .. fallbacks])

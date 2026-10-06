@@ -90,6 +90,9 @@
         </div>
         <h6 class="mb-2">@Localizer["QvCountryVersions"]</h6>
         <div id="pvVersions" class="d-flex flex-column gap-2"></div>
+        @* WP-KP-4 — where the claim code is used (contents · knowledge paths · journeys), grouped by country. *@
+        <h6 class="mb-2 mt-4">@Localizer["QvUsage"]</h6>
+        <div id="pvUsageList" class="d-flex flex-column gap-2" aria-live="polite"></div>
     </div>
     <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["QvClose"]</button>

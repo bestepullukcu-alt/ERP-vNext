@@ -1,94 +1,422 @@
-using Diten.CrmService.Application.Common;
-using Diten.CrmService.Application.Common.Models;
-using Diten.CrmService.Application.Features.Knowledge;
-using Diten.CrmService.Application.Features.Knowledge.Content;
-using Diten.CrmService.Application.Features.Knowledge.ContentEngagementJourney;
-using Diten.CrmService.Application.Features.Segmentation;
-using Diten.CrmService.Application.Features.Segmentation.Resolution;
 using Diten.CrmService.Application.Features.StrategyTemplate.Binding;
 using Diten.CrmService.Application.Features.VisitContentSequence;
 using Diten.CrmService.Application.Features.VisitContentSequence.Handlers.QueryHandlers;
 using Diten.CrmService.Application.Features.VisitContentSequence.Queries;
 using Diten.CrmService.Domain.Entities;
-using Diten.CrmService.Domain.Repositories;
 using Xunit;
-using CapacityEntity = Diten.CrmService.Domain.Entities.CycleCapacity;
 
 namespace Diten.CrmService.Application.Tests.VisitContentSequence;
 
 /// <summary>
-/// MOD-0155 FU04 — Visit Content Sequence resolver. Pure unit tests over in-memory fakes of the READ seams (no Mongo).
-/// Pins down: deterministic next-stage advance incl. the end-of-journey FLAG (D-END-OF-JOURNEY), the promo / non-promo
-/// split from StrategyTemplate ProductLines (promo-hit, non-promo, content_split_unresolved fail-closed → ReportDuration
-/// only, D-CONTENT-SPLIT), the FU06B duration delegation, capacity_not_found, the membership gate, no-persistence, and
-/// the preview handler (200 resolved / 400 malformed / resolver parity).
+/// MOD-0155 FU04 — Visit Content Sequence resolver, v2 since WP-SB-3b (multi-product, weighted rotation, per-product
+/// stage). Pure unit tests over the in-memory <see cref="VisitContentTestKit"/> (no Mongo). Pins down: the per-role
+/// weighted rotation, the per-product JourneyProgress stage + pending projection + wrap-around (S3-7, replaces the
+/// D-END-OF-JOURNEY stop), the stage path resolution (latest-published / pinned, KP-3 release rules), the coded drops
+/// and the next candidate taking their place, the audience warning, the product-count duration, backward compatibility
+/// of the top-level fields, the retired template-level binding (S3-2), no persistence and the preview handler.
 /// </summary>
 public sealed class VisitContentSequenceTests
 {
-    private static readonly Guid Tenant = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-    private static readonly DateTimeOffset Past = new(2020, 1, 1, 0, 0, 0, TimeSpan.Zero);
-    private static readonly DateTimeOffset Now = new(2026, 8, 29, 0, 0, 0, TimeSpan.Zero);
-    private static Guid Id(int n) => Guid.Parse($"00000000-0000-0000-0000-{n:D12}");
-
-    // ── AC-SEQ-1 / AC-SEQ-2 ──────────────────────────────────────────────────────────────────────────────────────
+    // ── first visit / per-product stage ──────────────────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task First_visit_starts_at_stage_index_zero()
+    public async Task First_visit_starts_every_product_at_stage_zero()
     {
-        var env = Env.WithThreeStageJourney();
-        var result = await env.Resolver.ResolveAsync(env.Request(priorStageIndex: null), default);
+        var kit = new VisitContentTestKit();
+        var a = kit.AddProduct("A");
+        var b = kit.AddProduct("B");
+
+        var result = await kit.ResolveAsync();
 
         Assert.Equal(VisitContentSequenceStatus.Resolved, result.Status);
-        Assert.Equal(0, result.StageIndex);
-        Assert.Equal(env.StageId(0), result.StageId);
+        Assert.Equal(new[] { a.ProductId, b.ProductId }, result.Items!.Select(i => i.ProductId));
+        Assert.All(result.Items!, i => Assert.Equal(0, i.StageIndex));
+        Assert.Equal(a.Stages[0].StageId, result.Items![0].StageId);
         Assert.Equal("strategy", result.ContentSource);
     }
 
     [Fact]
-    public async Task Prior_index_advances_by_one()
+    public async Task Each_product_tells_its_own_journey_stage()
     {
-        var env = Env.WithThreeStageJourney();
-        var result = await env.Resolver.ResolveAsync(env.Request(priorStageIndex: 0), default);
+        var kit = new VisitContentTestKit();
+        var a = kit.AddProduct("A");
+        var b = kit.AddProduct("B");
+        kit.SetProgress(a, currentStageIndex: 2, exposure: 2);
+        kit.SetProgress(b, currentStageIndex: 1, exposure: 2);
 
-        Assert.Equal(VisitContentSequenceStatus.Resolved, result.Status);
-        Assert.Equal(1, result.StageIndex);
-        Assert.Equal(env.StageId(1), result.StageId);
+        var items = (await kit.ResolveAsync()).Items!;
+
+        var itemA = items.Single(i => i.ProductId == a.ProductId);
+        var itemB = items.Single(i => i.ProductId == b.ProductId);
+        Assert.Equal((2, a.Stages[2].StageId, a.Paths[2].Id), (itemA.StageIndex, itemA.StageId, itemA.PathId));
+        Assert.Equal((1, b.Stages[1].StageId, b.Paths[1].Id), (itemB.StageIndex, itemB.StageId, itemB.PathId));
     }
 
     [Fact]
-    public async Task Auto_advance_is_deterministic()
+    public async Task Resolution_is_deterministic()
     {
-        var env = Env.WithThreeStageJourney();
-        var a = await env.Resolver.ResolveAsync(env.Request(priorStageIndex: 1), default);
-        var b = await env.Resolver.ResolveAsync(env.Request(priorStageIndex: 1), default);
+        var kit = new VisitContentTestKit();
+        kit.AddProduct("A");
+        kit.AddProduct("B");
+        kit.AddProduct("C");
+        kit.AddProduct("D");
 
-        Assert.Equal(a.StageId, b.StageId);
-        Assert.Equal(a.StageIndex, b.StageIndex);
-        Assert.Equal(a.VisitDurationMinutes, b.VisitDurationMinutes);
+        var first = await kit.ResolveAsync();
+        var second = await kit.ResolveAsync();
+
+        Assert.Equal(first.Items!.Select(i => (i.ProductId, i.StageId)), second.Items!.Select(i => (i.ProductId, i.StageId)));
+        Assert.Equal(first.VisitDurationMinutes, second.VisitDurationMinutes);
     }
 
-    // ── AC-SEQ-4 / D-END-OF-JOURNEY = flag ───────────────────────────────────────────────────────────────────────
+    // ── S3-7 (updates D-END-OF-JOURNEY "stops"): past the last stage the journey WRAPS to stage 0 ────────────────
 
     [Fact]
-    public async Task Past_last_stage_flags_end_of_journey_without_wrap()
+    public async Task Past_last_stage_wraps_to_the_first_stage_instead_of_ending()
     {
-        var env = Env.WithThreeStageJourney();
-        var result = await env.Resolver.ResolveAsync(env.Request(priorStageIndex: 2), default);
+        var kit = new VisitContentTestKit();
+        var a = kit.AddProduct("A");
+        kit.SetProgress(a, currentStageIndex: 2, exposure: 2); // the last of 3 stages is next
 
-        Assert.Equal(VisitContentSequenceStatus.EndOfJourney, result.Status);
+        var onLast = await kit.ResolveAsync();
+        var afterLast = await kit.ResolveAsync(new[] { new VisitContentPendingExposure(a.ProductId, a.JourneyId, 1) });
+
+        Assert.Equal(2, onLast.StageIndex);
+        Assert.Equal(VisitContentSequenceStatus.Resolved, afterLast.Status);       // no end-of-journey flag any more
+        Assert.Equal(0, afterLast.StageIndex);
+        Assert.Equal(a.Stages[0].StageId, afterLast.StageId);
+        Assert.DoesNotContain(VisitContentSequenceReasonCodes.JourneyCompleted, afterLast.ReasonCodes);
+    }
+
+    [Fact]
+    public async Task Pending_visits_project_the_stage_forward()
+    {
+        var kit = new VisitContentTestKit();
+        var a = kit.AddProduct("A");
+
+        var result = await kit.ResolveAsync(new[] { new VisitContentPendingExposure(a.ProductId, a.JourneyId, 1) });
+
+        Assert.Equal(1, result.Items!.Single().StageIndex);
+    }
+
+    // ── S3-5 weighted rotation ───────────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Five_promo_candidates_limit_three_picks_the_largest_gaps()
+    {
+        var kit = new VisitContentTestKit();
+        var products = new[] { "A", "B", "C", "D", "E" }.Select(c => kit.AddProduct(c)).ToArray();
+        // Σ exposure = 5 → each deserves 1. Gaps: A −1, B −1, C +1, D 0, E +1.
+        kit.SetProgress(products[0], 0, exposure: 2);
+        kit.SetProgress(products[1], 0, exposure: 2);
+        kit.SetProgress(products[3], 0, exposure: 1);
+
+        var items = (await kit.ResolveAsync()).Items!;
+
+        // C and E (+1, tie → SortOrder), then D (0). A and B (most told) wait.
+        Assert.Equal(new[] { "C", "E", "D" }, items.Select(i => i.ProductCode));
+    }
+
+    [Fact]
+    public async Task Weight_changes_which_product_is_behind()
+    {
+        // Same exposures (A told twice, B once), one promo slot: equal weights favour B, a 75 / 25 split favours A.
+        async Task<string?> Pick(decimal? weightA, decimal? weightB)
+        {
+            var kit = new VisitContentTestKit();
+            kit.Capacity.MaxPromoProducts = 1;
+            var a = kit.AddProduct("A", weight: weightA);
+            var b = kit.AddProduct("B", weight: weightB);
+            kit.SetProgress(a, 0, exposure: 2);
+            kit.SetProgress(b, 0, exposure: 1);
+            return (await kit.ResolveAsync()).Items!.Single().ProductCode;
+        }
+
+        Assert.Equal("B", await Pick(null, null));   // deserved 1.5 / 1.5 → gaps −0.5 / +0.5
+        Assert.Equal("A", await Pick(75m, 25m));     // deserved 2.25 / 0.75 → gaps +0.25 / −0.25
+    }
+
+    [Fact]
+    public async Task First_visit_orders_by_weight_then_sort_order()
+    {
+        var kit = new VisitContentTestKit();
+        kit.Capacity.MaxPromoProducts = 2;
+        kit.AddProduct("LIGHT", weight: 20m, sortOrder: 10);
+        kit.AddProduct("HEAVY", weight: 50m, sortOrder: 30);
+        kit.AddProduct("MID", weight: 30m, sortOrder: 20);
+
+        Assert.Equal(new[] { "HEAVY", "MID" }, (await kit.ResolveAsync()).Items!.Select(i => i.ProductCode));
+
+        var unweighted = new VisitContentTestKit();
+        unweighted.Capacity.MaxPromoProducts = 2;
+        unweighted.AddProduct("THIRD", sortOrder: 30);
+        unweighted.AddProduct("FIRST", sortOrder: 10);
+        unweighted.AddProduct("SECOND", sortOrder: 20);
+
+        Assert.Equal(new[] { "FIRST", "SECOND" }, (await unweighted.ResolveAsync()).Items!.Select(i => i.ProductCode));
+    }
+
+    [Fact]
+    public async Task Non_promo_is_rotated_separately_within_its_own_limit_from_the_capacity()
+    {
+        var kit = new VisitContentTestKit();
+        kit.Capacity.MaxPromoProducts = 1;
+        kit.Capacity.MaxNonPromoProducts = 2;
+        var p1 = kit.AddProduct("P1");
+        kit.AddProduct("P2");
+        kit.AddProduct("N1", role: StrategyProductLineRoles.NonPromo);
+        kit.AddProduct("N2", role: StrategyProductLineRoles.NonPromo);
+        kit.AddProduct("N3", role: StrategyProductLineRoles.NonPromo);
+        kit.SetProgress(p1, 0, exposure: 5); // a promo exposure never moves the non-promo rotation
+
+        var result = await kit.ResolveAsync();
+
+        Assert.Equal(new[] { "P2" }, result.Items!.Where(i => i.Role == StrategyProductLineRoles.Promo).Select(i => i.ProductCode));
+        Assert.Equal(new[] { "N1", "N2" },
+            result.Items!.Where(i => i.Role == StrategyProductLineRoles.NonPromo).Select(i => i.ProductCode));
+        Assert.Equal((1, 2), (result.PromoItemCount, result.NonPromoItemCount));
+    }
+
+    [Fact]
+    public void Rotation_gap_is_the_deserved_share_minus_the_exposure()
+    {
+        Assert.Equal(1m, VisitContentRotation.Gap(totalExposure: 5, weight: 1, totalWeight: 5, exposure: 0));
+        Assert.Equal(-1m, VisitContentRotation.Gap(totalExposure: 5, weight: 1, totalWeight: 5, exposure: 2));
+        Assert.Equal(0.25m, VisitContentRotation.Gap(totalExposure: 3, weight: 75, totalWeight: 100, exposure: 2));
+    }
+
+    // ── stage path: latest-published / pinned (KP-3 release rules) ───────────────────────────────────────────────
+
+    [Fact]
+    public async Task Latest_published_stage_tells_the_new_release_after_a_release()
+    {
+        var kit = new VisitContentTestKit();
+        var a = kit.AddProduct("A", stageCount: 1);
+        var v1 = a.Paths[0];
+        // KP-3 release: v2 of the same code / country / language is published, v1 becomes inactive.
+        var v2 = kit.AddPath(v1.PathCode, "2.0", publishedAt: VisitContentTestKit.Past.AddDays(10));
+        v1.PathStatus = KnowledgePathStatuses.Inactive;
+        // Another language's release of the same code is a different identity — never picked.
+        kit.AddPath(v1.PathCode, "9.0", language: "en", publishedAt: VisitContentTestKit.Past.AddDays(20));
+
+        var item = (await kit.ResolveAsync()).Items!.Single();
+
+        Assert.Equal((v2.Id, "2.0"), (item.PathId, item.PathVersion));
+    }
+
+    [Fact]
+    public async Task Pinned_stage_with_an_inactive_path_drops_the_product_and_the_next_candidate_enters()
+    {
+        var kit = new VisitContentTestKit();
+        kit.Capacity.MaxPromoProducts = 1;
+        var a = kit.AddProduct("A", pin: ContentEngagementJourneyPathPin.Pinned);
+        kit.AddProduct("B", pin: ContentEngagementJourneyPathPin.Pinned);
+        a.Paths[0].PathStatus = KnowledgePathStatuses.Inactive; // a later release superseded the pinned version
+        kit.AddPath(a.Paths[0].PathCode, "2.0", publishedAt: VisitContentTestKit.Past.AddDays(1));
+
+        var result = await kit.ResolveAsync();
+
+        Assert.Equal(new[] { "B" }, result.Items!.Select(i => i.ProductCode)); // no silent drift to A's v2
+        Assert.Contains(VisitContentSequenceReasonCodes.StagePathUnpublished, result.ReasonCodes);
+    }
+
+    [Fact]
+    public async Task Steps_are_the_active_steps_in_order_and_claims_come_from_the_path()
+    {
+        var kit = new VisitContentTestKit();
+        var a = kit.AddProduct("A", stageCount: 1);
+
+        var item = (await kit.ResolveAsync()).Items!.Single();
+
+        Assert.Equal(new[] { "C-first", "C-second" }, item.Steps.Select(s => s.ContentCode)); // archived step excluded
+        Assert.Equal(new int?[] { 3, 4 }, item.Steps.Select(s => s.Minutes));
+        Assert.Equal(a.Paths[0].Claims.Select(c => (c.ClaimId, c.ClaimCode)), item.Claims.Select(c => (c.ClaimId, c.ClaimCode)));
+        Assert.Equal(("A-J", a.Paths[0].PathCode), (item.JourneyCode, item.PathCode));
+    }
+
+    // ── coded drops ──────────────────────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_line_without_a_journey_drops_with_product_has_no_journey()
+    {
+        var kit = new VisitContentTestKit();
+        kit.Capacity.MaxPromoProducts = 1;
+        kit.AddProduct("LEGACY", withJourney: false, sortOrder: 10); // a pre-SB-3a line
+        kit.AddProduct("B", sortOrder: 20);
+
+        var result = await kit.ResolveAsync();
+
+        Assert.Equal(new[] { "B" }, result.Items!.Select(i => i.ProductCode));
+        Assert.Contains(VisitContentSequenceReasonCodes.ProductHasNoJourney, result.ReasonCodes);
+
+        var onlyLegacy = new VisitContentTestKit();
+        onlyLegacy.AddProduct("LEGACY", withJourney: false);
+        var none = await onlyLegacy.ResolveAsync();
+        Assert.Equal(VisitContentSequenceStatus.NoJourney, none.Status);
+        Assert.Equal(new[] { VisitContentSequenceReasonCodes.ProductHasNoJourney }, none.ReasonCodes);
+        Assert.Empty(none.Items!);
+    }
+
+    [Fact]
+    public async Task An_unpublished_journey_drops_with_journey_unpublished()
+    {
+        var kit = new VisitContentTestKit();
+        kit.AddProduct("A", publishJourney: false);
+
+        var result = await kit.ResolveAsync();
+
+        Assert.Equal(VisitContentSequenceStatus.NoJourney, result.Status);
+        Assert.Contains(VisitContentSequenceReasonCodes.JourneyUnpublished, result.ReasonCodes);
         Assert.Null(result.StageId);
-        Assert.Contains(VisitContentSequenceReasonCodes.JourneyCompleted, result.ReasonCodes);
     }
 
-    // ── AC-SEQ-3 ─────────────────────────────────────────────────────────────────────────────────────────────────
+    [Fact]
+    public async Task A_stored_index_beyond_the_journey_reads_as_stage_zero_with_stage_index_reset()
+    {
+        var kit = new VisitContentTestKit();
+        var a = kit.AddProduct("A");
+        kit.SetProgress(a, currentStageIndex: 7, exposure: 7); // the journey lost stages since
+
+        var result = await kit.ResolveAsync();
+
+        Assert.Equal(0, result.Items!.Single().StageIndex);
+        Assert.Contains(VisitContentSequenceReasonCodes.StageIndexReset, result.ReasonCodes);
+        Assert.Contains(VisitContentSequenceReasonCodes.StageIndexReset, result.Items!.Single().Warnings);
+    }
+
+    // ── §5.3 audience mismatch = warning (CT default) ────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Audience_mismatch_is_a_warning_and_the_product_stays()
+    {
+        var kit = new VisitContentTestKit();
+        var nephrology = Guid.NewGuid();
+        kit.Sources.Audiences[nephrology] = new AudienceProfile
+        {
+            Id = nephrology, Dimensions = { new AudienceDimensionAssignment { AxisCode = "specialty", Values = { "NEPH" } } }
+        };
+        kit.AddProduct("A", audienceProfileId: nephrology);
+        kit.Sources.Specialties[kit.DoctorId] = "CARD";
+
+        var mismatch = await kit.ResolveAsync();
+        Assert.Equal(VisitContentSequenceStatus.Resolved, mismatch.Status);
+        Assert.Contains(VisitContentSequenceReasonCodes.JourneyAudienceMismatch, mismatch.Items!.Single().Warnings);
+
+        kit.Sources.Specialties[kit.DoctorId] = "neph";
+        Assert.Empty((await kit.ResolveAsync()).Items!.Single().Warnings);
+
+        kit.Sources.Specialties[kit.DoctorId] = null; // cannot be decided → nothing is said
+        Assert.Empty((await kit.ResolveAsync()).Items!.Single().Warnings);
+    }
+
+    // ── duration = product counts (FU06B) ────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Duration_is_the_product_count_times_the_product_time_plus_the_report()
+    {
+        var kit = new VisitContentTestKit(); // Promo=5, NonPromo=3, Report=3
+        kit.AddProduct("P1");
+        kit.AddProduct("P2");
+        kit.AddProduct("N1", role: StrategyProductLineRoles.NonPromo);
+
+        var result = await kit.ResolveAsync();
+
+        Assert.Equal((2, 1), (result.PromoItemCount, result.NonPromoItemCount));
+        Assert.Equal(2 * 5 + 1 * 3 + 3, result.VisitDurationMinutes);
+    }
+
+    [Fact]
+    public async Task Missing_capacity_is_coded_duration_is_zero_and_the_limits_default_to_three()
+    {
+        var kit = new VisitContentTestKit();
+        kit.Capacities.Rows.Clear();
+        for (var i = 0; i < 5; i++)
+        {
+            kit.AddProduct($"P{i}");
+        }
+
+        var result = await kit.ResolveAsync();
+
+        Assert.Contains(VisitContentSequenceReasonCodes.CapacityNotFound, result.ReasonCodes);
+        Assert.Equal(0, result.VisitDurationMinutes);
+        Assert.Equal(CycleCapacityLimits.DefaultMaxProductsPerVisit, result.Items!.Count);
+    }
+
+    [Fact]
+    public async Task No_product_lines_is_coded_not_invented()
+    {
+        var kit = new VisitContentTestKit();
+
+        var result = await kit.ResolveAsync();
+
+        Assert.Equal(VisitContentSequenceStatus.NoJourney, result.Status);
+        Assert.Contains(VisitContentSequenceReasonCodes.ContentSplitUnresolved, result.ReasonCodes);
+        Assert.Equal(0, result.VisitDurationMinutes);
+    }
+
+    // ── backward compatibility + S3-2 + ARCH GATE ────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Top_level_fields_come_from_the_first_promo_item()
+    {
+        var kit = new VisitContentTestKit();
+        kit.AddProduct("N1", role: StrategyProductLineRoles.NonPromo, sortOrder: 5);
+        var p = kit.AddProduct("P1", sortOrder: 10);
+        kit.SetProgress(p, currentStageIndex: 1, exposure: 1);
+
+        var result = await kit.ResolveAsync();
+        var lead = result.Items!.First(i => i.Role == StrategyProductLineRoles.Promo);
+
+        Assert.Equal(p.ProductId, lead.ProductId);
+        Assert.Equal((lead.JourneyId, lead.StageId, lead.StageIndex, lead.StageCode, lead.StageName),
+            (result.JourneyId!.Value, result.StageId!.Value, result.StageIndex!.Value, result.StageCode, result.StageDisplayName));
+        Assert.Equal(kit.StrategyId, result.StrategyTemplateId); // the existing top-level field is untouched
+
+        var onlyNonPromo = new VisitContentTestKit();
+        var n = onlyNonPromo.AddProduct("N1", role: StrategyProductLineRoles.NonPromo);
+        Assert.Equal(n.JourneyId, (await onlyNonPromo.ResolveAsync()).JourneyId); // no promo → the first item
+    }
+
+    [Fact]
+    public async Task A_template_level_journey_binding_is_no_longer_read()
+    {
+        var kit = new VisitContentTestKit();
+        var bound = kit.AddProduct("BOUND"); // a published journey with stages ...
+        kit.Lines.Clear();                   // ... bound ONLY at template level (the retired S3-2 way)
+        kit.TemplateBindings.Add(new StrategyTemplateContentReference(
+            StrategyContentRefTypes.ContentEngagementJourney, bound.JourneyId, 0));
+
+        var result = await kit.ResolveAsync();
+
+        Assert.NotEqual(VisitContentSequenceStatus.Resolved, result.Status);
+        Assert.Null(result.JourneyId);
+
+        var a = kit.AddProduct("A");
+        Assert.Equal(new[] { a.JourneyId }, (await kit.ResolveAsync()).Items!.Select(i => i.JourneyId));
+    }
+
+    [Fact]
+    public void Items_carry_no_play_or_campaign_identity()
+    {
+        foreach (var type in new[] { typeof(VisitContentItem), typeof(VisitContentStep), typeof(VisitContentClaim),
+                     typeof(PlannedVisitContentItem), typeof(PlannedVisitContentStep), typeof(PlannedVisitContentClaim),
+                     typeof(Features.PlannedVisit.PlannedVisitContentItemDto) })
+        {
+            Assert.DoesNotContain(type.GetProperties(), p =>
+                p.Name.Contains("Strategy", StringComparison.OrdinalIgnoreCase)
+                || p.Name.Contains("Campaign", StringComparison.OrdinalIgnoreCase)
+                || p.Name.Contains("Play", StringComparison.OrdinalIgnoreCase)
+                || p.Name.Contains("Segment", StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    // ── play resolution (unchanged) ──────────────────────────────────────────────────────────────────────────────
 
     [Fact]
     public async Task No_strategy_is_coded_not_invented()
     {
-        var env = Env.WithThreeStageJourney();
-        env.Strategies.Bindings.Clear();
-        var result = await env.Resolver.ResolveAsync(
-            env.Request(priorStageIndex: null, strategyTemplateId: Id(999)), default);
+        var kit = new VisitContentTestKit();
+        kit.AddProduct("A");
+        var result = await kit.Resolver.ResolveAsync(kit.Request(strategyTemplateId: Guid.NewGuid()), default);
 
         Assert.Equal(VisitContentSequenceStatus.NoStrategy, result.Status);
         Assert.Contains(VisitContentSequenceReasonCodes.StrategyNotFound, result.ReasonCodes);
@@ -96,92 +424,13 @@ public sealed class VisitContentSequenceTests
     }
 
     [Fact]
-    public async Task Unpublished_journey_is_coded_no_journey()
-    {
-        var env = Env.WithThreeStageJourney();
-        env.Journeys.Published.Clear(); // strategy binds a journey id that no longer resolves as published
-        var result = await env.Resolver.ResolveAsync(env.Request(priorStageIndex: null), default);
-
-        Assert.Equal(VisitContentSequenceStatus.NoJourney, result.Status);
-        Assert.Contains(VisitContentSequenceReasonCodes.JourneyNotPublished, result.ReasonCodes);
-    }
-
-    // ── AC-SPLIT-1 ───────────────────────────────────────────────────────────────────────────────────────────────
-
-    [Fact]
-    public async Task Content_tied_to_promoted_product_is_promo_rest_is_non_promo()
-    {
-        var env = Env.WithThreeStageJourney();
-        // Two content items on the journey product: one tied to the promoted product, one to another product.
-        env.Content.Items.Add(env.ContentItem(productId: Env.PromotedProduct));
-        env.Content.Items.Add(env.ContentItem(productId: Id(700)));
-        env.Content.Items.Add(env.ContentItem(productId: null)); // untied → non-promo
-
-        var result = await env.Resolver.ResolveAsync(env.Request(priorStageIndex: 0), default);
-
-        Assert.Equal(VisitContentSequenceStatus.Resolved, result.Status);
-        Assert.Equal(1, result.PromoItemCount);
-        Assert.Equal(2, result.NonPromoItemCount);
-        Assert.DoesNotContain(VisitContentSequenceReasonCodes.ContentSplitUnresolved, result.ReasonCodes);
-    }
-
-    // ── AC-SPLIT-2 / AC-DUR-3 — fail-closed ──────────────────────────────────────────────────────────────────────
-
-    [Fact]
-    public async Task No_promoted_products_fails_closed_to_report_duration_only()
-    {
-        var env = Env.WithThreeStageJourney();
-        env.Strategies.Bindings[Env.StrategyId] = env.BindingsWith(productLines: new List<StrategyTemplateProductMixLine>());
-        env.Content.Items.Add(env.ContentItem(productId: Env.PromotedProduct));
-
-        var result = await env.Resolver.ResolveAsync(env.Request(priorStageIndex: 0), default);
-
-        Assert.Equal(0, result.PromoItemCount);
-        Assert.Equal(0, result.NonPromoItemCount);
-        Assert.Contains(VisitContentSequenceReasonCodes.ContentSplitUnresolved, result.ReasonCodes);
-        // capacity Report=3, promo/nonPromo 0 → duration == ReportDuration only.
-        Assert.Equal(3, result.VisitDurationMinutes);
-    }
-
-    // ── AC-DUR-1 ─────────────────────────────────────────────────────────────────────────────────────────────────
-
-    [Fact]
-    public async Task Duration_comes_from_the_fu06b_calculator()
-    {
-        var env = Env.WithThreeStageJourney(); // capacity Promo=5, NonPromo=3, Report=3
-        env.Content.Items.Add(env.ContentItem(productId: Env.PromotedProduct));
-        env.Content.Items.Add(env.ContentItem(productId: Env.PromotedProduct));
-        env.Content.Items.Add(env.ContentItem(productId: Id(700))); // non-promo
-
-        var result = await env.Resolver.ResolveAsync(env.Request(priorStageIndex: 0), default);
-
-        Assert.Equal(2, result.PromoItemCount);
-        Assert.Equal(1, result.NonPromoItemCount);
-        Assert.Equal(2 * 5 + 1 * 3 + 3, result.VisitDurationMinutes); // 16
-    }
-
-    // ── V5 capacity_not_found ────────────────────────────────────────────────────────────────────────────────────
-
-    [Fact]
-    public async Task Missing_capacity_is_coded_and_duration_is_zero()
-    {
-        var env = Env.WithThreeStageJourney();
-        env.Capacities.Rows.Clear();
-        var result = await env.Resolver.ResolveAsync(env.Request(priorStageIndex: 0), default);
-
-        Assert.Contains(VisitContentSequenceReasonCodes.CapacityNotFound, result.ReasonCodes);
-        Assert.Equal(0, result.VisitDurationMinutes);
-    }
-
-    // ── membership gate ──────────────────────────────────────────────────────────────────────────────────────────
-
-    [Fact]
     public async Task Non_member_of_segment_has_no_play()
     {
-        var env = Env.WithThreeStageJourney();
-        env.Segments.Member = false;
-        var result = await env.Resolver.ResolveAsync(
-            env.Request(priorStageIndex: null, useSegment: true), default);
+        var kit = new VisitContentTestKit();
+        kit.AddProduct("A");
+        kit.Segments.Member = false;
+
+        var result = await kit.Resolver.ResolveAsync(kit.Request(useSegment: true), default);
 
         Assert.Equal(VisitContentSequenceStatus.NoStrategy, result.Status);
         Assert.Contains(VisitContentSequenceReasonCodes.StrategyNotFound, result.ReasonCodes);
@@ -190,271 +439,62 @@ public sealed class VisitContentSequenceTests
     [Fact]
     public async Task Member_of_segment_resolves_the_segments_play()
     {
-        var env = Env.WithThreeStageJourney();
-        env.Segments.Member = true;
-        var result = await env.Resolver.ResolveAsync(
-            env.Request(priorStageIndex: 0, useSegment: true), default);
+        var kit = new VisitContentTestKit();
+        kit.AddProduct("A");
+
+        var result = await kit.Resolver.ResolveAsync(kit.Request(useSegment: true), default);
 
         Assert.Equal(VisitContentSequenceStatus.Resolved, result.Status);
-        Assert.Equal(Env.StrategyId, result.StrategyTemplateId);
+        Assert.Equal(kit.StrategyId, result.StrategyTemplateId);
     }
 
-    // ── AC-BND-1 no persistence ──────────────────────────────────────────────────────────────────────────────────
+    // ── AC-BND-1 no persistence / AC-EP preview handler ──────────────────────────────────────────────────────────
 
     [Fact]
     public async Task Resolver_persists_nothing()
     {
-        var env = Env.WithThreeStageJourney();
-        await env.Resolver.ResolveAsync(env.Request(priorStageIndex: 0), default);
+        var kit = new VisitContentTestKit();
+        var a = kit.AddProduct("A");
+        var progress = kit.SetProgress(a, 1, 1);
 
-        Assert.Equal(0, env.Capacities.InsertCalls);
-        Assert.Equal(0, env.Capacities.ReplaceCalls);
+        await kit.ResolveAsync();
+
+        Assert.Equal(0, kit.Capacities.InsertCalls);
+        Assert.Equal(0, kit.Capacities.ReplaceCalls);
+        Assert.Equal((1, 1, 0), (progress.CurrentStageIndex, progress.ExposureCount, progress.Cycle)); // read, never advanced
     }
-
-    // ── AC-EP-1 / AC-EP-2 preview handler ────────────────────────────────────────────────────────────────────────
 
     [Fact]
     public async Task Preview_handler_returns_200_with_resolver_parity()
     {
-        var env = Env.WithThreeStageJourney();
-        var handler = new PreviewVisitContentHandler(env.Resolver);
-        var request = env.Request(priorStageIndex: 0);
+        var kit = new VisitContentTestKit();
+        kit.AddProduct("A");
+        var handler = new PreviewVisitContentHandler(kit.Resolver);
+        var request = kit.Request();
 
         var response = await handler.Handle(new PreviewVisitContentQuery(request), default);
-        var direct = await env.Resolver.ResolveAsync(request, default);
+        var direct = await kit.Resolver.ResolveAsync(request, default);
 
         Assert.True(response.IsSuccessful);
         Assert.Equal(200, response.StatusCode);
-        Assert.NotNull(response.Data);
         Assert.Equal(direct.StageId, response.Data!.StageId);
+        Assert.Equal(direct.Items!.Select(i => i.PathId), response.Data.Items!.Select(i => i.PathId));
         Assert.Equal(direct.VisitDurationMinutes, response.Data.VisitDurationMinutes);
-        Assert.Equal(0, env.Capacities.InsertCalls); // the endpoint could not write even by mistake
+        Assert.Equal(0, kit.Capacities.InsertCalls);
     }
 
     [Fact]
     public async Task Preview_handler_rejects_malformed_request_with_400()
     {
-        var env = Env.WithThreeStageJourney();
-        var handler = new PreviewVisitContentHandler(env.Resolver);
+        var kit = new VisitContentTestKit();
+        var handler = new PreviewVisitContentHandler(kit.Resolver);
         var bad = new VisitContentSequenceRequest(
             SubjectType: "", SubjectId: Guid.Empty, SegmentId: null, StrategyTemplateId: null,
-            CyclePeriodId: null, PriorStageIndex: null, EffectiveAt: Now);
+            CyclePeriodId: null, PriorStageIndex: null, EffectiveAt: VisitContentTestKit.Now);
 
         var response = await handler.Handle(new PreviewVisitContentQuery(bad), default);
 
         Assert.False(response.IsSuccessful);
         Assert.Equal(400, response.StatusCode);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-    // Test environment + in-memory fakes
-    // ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-    private sealed class Env
-    {
-        public static readonly Guid StrategyId = Id(1);
-        public static readonly Guid SegmentId = Id(2);
-        public static readonly Guid JourneyId = Id(3);
-        public static readonly Guid CyclePeriodId = Id(4);
-        public static readonly Guid DoctorId = Id(5);
-        public static readonly Guid SubjectRefId = Id(6);
-        public static readonly Guid PromotedProduct = Id(100);
-
-        public FakeStrategyReader Strategies { get; } = new();
-        public FakeSegmentReader Segments { get; } = new();
-        public FakeJourneyReader Journeys { get; } = new();
-        public FakeContentReader Content { get; } = new();
-        public FakeCapacityRepository Capacities { get; } = new();
-        public VisitContentSequenceResolver Resolver { get; }
-
-        private readonly List<ContentEngagementJourneyStageDto> _stages = new();
-
-        private Env()
-        {
-            var tenant = new TenantContext();
-            tenant.SetTenant(Tenant);
-            Resolver = new VisitContentSequenceResolver(
-                tenant, Strategies, Segments, Journeys, Content, Capacities);
-        }
-
-        public Guid StageId(int index) => _stages[index].StageId;
-
-        public static Env WithThreeStageJourney()
-        {
-            var env = new Env();
-            for (var i = 0; i < 3; i++)
-            {
-                env._stages.Add(Stage(Id(10 + i), i, $"stage-{i}"));
-            }
-
-            env.Strategies.Bindings[StrategyId] = env.BindingsWith(DefaultProductLines());
-            env.Strategies.SegmentSummaries[SegmentId] = new List<StrategyTemplateSummary>
-            {
-                new(StrategyId, "play-a", "Play A", "active", 1, Past, null)
-            };
-            env.Journeys.Published.Add(Journey(JourneyId));
-            env.Journeys.Stages[JourneyId] = env._stages;
-            env.Capacities.Rows.Add(Capacity(CyclePeriodId, promo: 5, nonPromo: 3, report: 3));
-            return env;
-        }
-
-        public VisitContentSequenceRequest Request(
-            int? priorStageIndex, Guid? strategyTemplateId = null, bool useSegment = false)
-            => new(
-                SubjectType: "contact",
-                SubjectId: DoctorId,
-                SegmentId: useSegment ? SegmentId : null,
-                StrategyTemplateId: useSegment ? null : (strategyTemplateId ?? StrategyId),
-                CyclePeriodId: CyclePeriodId,
-                PriorStageIndex: priorStageIndex,
-                EffectiveAt: Now);
-
-        public StrategyTemplateBindingSet BindingsWith(IReadOnlyList<StrategyTemplateProductMixLine> productLines)
-            => new(
-                StrategyId, "play-a", "Play A", "contact", 1, StrategyId, Past, null,
-                new List<Guid> { SegmentId },
-                new StrategyTemplateFrequencyIntentSnapshot("none", null, null, null, null, false),
-                productLines,
-                new List<StrategyTemplateContentReference>
-                {
-                    new("content-engagement-journey", JourneyId, 0)
-                });
-
-        private static IReadOnlyList<StrategyTemplateProductMixLine> DefaultProductLines()
-            => new List<StrategyTemplateProductMixLine>
-            {
-                new(Id(50), PromotedProduct, 100m, "product-only",
-                    new List<StrategyTemplateSkuShare>(), 100m, false)
-            };
-
-        public KnowledgeContentDto ContentItem(Guid? productId)
-            => new(
-                Guid.NewGuid(), "c", "Content", "detail", "published",
-                SubjectRefId, null, null, null, null, productId, null, null, "en",
-                null, null, null, null, null, "1.0", Past, null, "manual",
-                Array.Empty<string>(), Array.Empty<KnowledgeExternalReferenceDto>(),
-                Past, null, null, null, null, null, false,
-                Guid.NewGuid(), true, "current");
-
-        private static ContentEngagementJourneyDto Journey(Guid id)
-            => new(
-                id, "adoption", "Adoption", null, SubjectRefId, null, null, "Drive adoption", "en",
-                "1.0", "published", Past, null, "manual",
-                new List<ContentEngagementJourneyStageDto>(), 3, 0, 0,
-                false, false, false, false, false, null, Past, null, null,
-                1, Past, null, null, null, null, null, false);
-
-        private static ContentEngagementJourneyStageDto Stage(Guid id, int order, string code)
-            => new(
-                id, order, code, $"Stage {order}", "objective", "detail",
-                Id(200 + order), "path", "pinned", true, false, null, null, null, null, null,
-                new List<ContentEngagementJourneyBranchConditionDto>(), "active",
-                Id(200 + order), "1.0", "Path", 1, "pinned", false, false, 1,
-                null, null, Past, null, null, null, false);
-
-        private static CapacityEntity Capacity(Guid cyclePeriodId, int promo, int nonPromo, int report)
-            => new()
-            {
-                Id = Guid.NewGuid(),
-                TenantId = Tenant,
-                CyclePeriodId = cyclePeriodId,
-                PromoProductTime = promo,
-                NonPromoProductTime = nonPromo,
-                ReportDuration = report,
-                DailyWorkMinutes = 480
-            };
-    }
-
-    private sealed class FakeStrategyReader : IStrategyTemplateReader
-    {
-        public Dictionary<Guid, StrategyTemplateBindingSet> Bindings { get; } = new();
-        public Dictionary<Guid, IReadOnlyList<StrategyTemplateSummary>> SegmentSummaries { get; } = new();
-
-        public Task<StrategyTemplateBindingSet?> GetActiveBindingsAsync(
-            Guid templateId, DateTimeOffset effectiveAt, CancellationToken cancellationToken)
-            => Task.FromResult(Bindings.TryGetValue(templateId, out var set) ? set : null);
-
-        public Task<IReadOnlyList<StrategyTemplateSummary>> ListBySegmentAsync(
-            Guid segmentId, DateTimeOffset effectiveAt, CancellationToken cancellationToken)
-            => Task.FromResult(SegmentSummaries.TryGetValue(segmentId, out var rows)
-                ? rows
-                : (IReadOnlyList<StrategyTemplateSummary>)Array.Empty<StrategyTemplateSummary>());
-    }
-
-    private sealed class FakeSegmentReader : ISegmentMembershipReader
-    {
-        public bool Member { get; set; } = true;
-
-        public Task<SegmentMembershipVerdict> IsMemberAsync(
-            Guid segmentId, string subjectType, Guid subjectId, DateTimeOffset effectiveAt,
-            CancellationToken cancellationToken)
-            => Task.FromResult(new SegmentMembershipVerdict(
-                segmentId, 1, subjectType, subjectId,
-                Member ? SegmentMembershipVerdicts.Member : SegmentMembershipVerdicts.NotMember,
-                Array.Empty<string>(), effectiveAt));
-
-        public Task<SegmentResolutionResult> ResolveAsync(
-            Guid segmentId, DateTimeOffset effectiveAt, int limit, int offset, CancellationToken cancellationToken)
-            => Task.FromResult(new SegmentResolutionResult(
-                segmentId, 1, "contact", false, effectiveAt, 0, 0, Array.Empty<SegmentMemberDto>()));
-    }
-
-    private sealed class FakeJourneyReader : IContentEngagementJourneyReader
-    {
-        public List<ContentEngagementJourneyDto> Published { get; } = new();
-        public Dictionary<Guid, IReadOnlyList<ContentEngagementJourneyStageDto>> Stages { get; } = new();
-
-        public Task<IReadOnlyList<ContentEngagementJourneyDto>> ResolvePublishedJourneysAsync(
-            ContentEngagementJourneyCriteria criteria, CancellationToken cancellationToken)
-            => Task.FromResult<IReadOnlyList<ContentEngagementJourneyDto>>(Published.ToList());
-
-        public Task<IReadOnlyList<ContentEngagementJourneyStageDto>> GetOrderedStagesAsync(
-            Guid journeyId, DateTimeOffset effectiveAt, CancellationToken cancellationToken)
-            => Task.FromResult(Stages.TryGetValue(journeyId, out var rows)
-                ? rows
-                : (IReadOnlyList<ContentEngagementJourneyStageDto>)Array.Empty<ContentEngagementJourneyStageDto>());
-    }
-
-    private sealed class FakeContentReader : IKnowledgeContentLinkageReader
-    {
-        public List<KnowledgeContentDto> Items { get; } = new();
-
-        public Task<IReadOnlyList<KnowledgeContentDto>> ResolvePublishedContentAsync(
-            KnowledgeContentLinkageCriteria criteria, CancellationToken cancellationToken)
-            => Task.FromResult<IReadOnlyList<KnowledgeContentDto>>(Items.ToList());
-
-        // SCMM-13 — this fake exercises the published-content seam only; variant resolution is out of its scope.
-        public Task<KnowledgeContentVariantResolution> ResolveVariantAsync(
-            Guid contentSetId, string languageCode, CancellationToken cancellationToken)
-            => Task.FromResult(KnowledgeContentVariantResolution.Unresolved("not-supported-in-fake"));
-    }
-
-    private sealed class FakeCapacityRepository : ICycleCapacityRepository
-    {
-        public List<CapacityEntity> Rows { get; } = new();
-        public int InsertCalls { get; private set; }
-        public int ReplaceCalls { get; private set; }
-
-        public Task<CapacityEntity?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken cancellationToken)
-            => Task.FromResult(Rows.FirstOrDefault(c => c.TenantId == tenantId && c.Id == id));
-
-        public Task<CapacityEntity?> GetByCyclePeriodAsync(
-            Guid tenantId, Guid cyclePeriodId, CancellationToken cancellationToken)
-            => Task.FromResult(Rows.FirstOrDefault(c => c.TenantId == tenantId && c.CyclePeriodId == cyclePeriodId));
-
-        public Task<IReadOnlyList<CapacityEntity>> ListAsync(Guid tenantId, CancellationToken cancellationToken)
-            => Task.FromResult<IReadOnlyList<CapacityEntity>>(Rows.Where(c => c.TenantId == tenantId).ToList());
-
-        public Task InsertAsync(CapacityEntity entity, CancellationToken cancellationToken)
-        {
-            InsertCalls++;
-            return Task.CompletedTask;
-        }
-
-        public Task<bool> ReplaceAsync(CapacityEntity entity, int expectedVersion, CancellationToken cancellationToken)
-        {
-            ReplaceCalls++;
-            return Task.FromResult(true);
-        }
     }
 }

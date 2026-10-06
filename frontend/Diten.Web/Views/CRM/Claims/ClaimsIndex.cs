@@ -38,7 +38,16 @@ public static class ClaimsIndexL10nKeys
         "Err_country_not_closed", "Err_invalid_reference_value", "Err_required"
     ];
 
-    /// <summary>Everything the list / coverage bridge serializes (pre-existing shared keys + WP-CL-FE-1 + WP-CL-FE-2).</summary>
+    /// <summary>Keys added by WP-KP-4: the quick-view usage list (contents · knowledge paths · journeys by country). The
+    /// retired content set is no longer a usage type. No key echo allowed in any language.</summary>
+    public static readonly IReadOnlyList<string> UsageKeys =
+    [
+        "QvUsage", "QvUsageNone", "QvUsageFailed", "UsageGlobal", "UsageVia", "UsageNeedsReview",
+        "UsageType_content", "UsageType_knowledge-path", "UsageType_journey"
+    ];
+
+    /// <summary>Everything the list / coverage bridge serializes (pre-existing shared keys + WP-CL-FE-1 + WP-CL-FE-2 +
+    /// WP-KP-4).</summary>
     public static readonly IReadOnlyList<string> Bridge =
     [
         "Actions", "Apply", "Cancel", "Status", "EditClaim", "ArchiveClaim", "ArchiveClaimConfirm", "RecordArchived",
@@ -46,6 +55,7 @@ public static class ClaimsIndexL10nKeys
         "Reset", "ShowAll", "SaveView", "ColumnVisibility", "QuickView", "Active", "Passive", "Unknown", "BulkDelete",
         "BulkDeleteConfirm", "Qualifiers",
         .. NewKeys,
-        .. CoverageKeys
+        .. CoverageKeys,
+        .. UsageKeys
     ];
 }

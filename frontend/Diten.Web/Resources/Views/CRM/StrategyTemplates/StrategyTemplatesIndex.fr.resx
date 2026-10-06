@@ -267,4 +267,39 @@
   <data name="ProductColWeight" xml:space="preserve"><value>Pourcentage</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>Répartir équitablement</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>Le pourcentage produit n'est pas 100 %. Total calculé {total} % — écart de {diff} points. Corrigez les lignes pour enregistrer.</value></data>
+  <data name="ProductColRole" xml:space="preserve"><value>Rôle</value></data>
+  <data name="ProductColJourney" xml:space="preserve"><value>Parcours</value></data>
+  <data name="LineRole_promo" xml:space="preserve"><value>Promo</value></data>
+  <data name="LineRole_non-promo" xml:space="preserve"><value>Non-promo</value></data>
+  <data name="LineJourneySelect" xml:space="preserve"><value>Choisir un parcours…</value></data>
+  <data name="LineJourneyLoading" xml:space="preserve"><value>Chargement des parcours…</value></data>
+  <data name="LineJourneyNotOffered" xml:space="preserve"><value>(absent de la liste)</value></data>
+  <data name="LineNoPublishedJourney" xml:space="preserve"><value>Aucun parcours d’engagement publié pour ce produit.</value></data>
+  <data name="LineOpenJourneys" xml:space="preserve"><value>Parcours d’engagement ↗</value></data>
+  <data name="LineJourneyFilterUnavailable" xml:space="preserve"><value>La correspondance avec le produit n’a pas pu être vérifiée ici ; elle l’est à l’enregistrement.</value></data>
+  <data name="LineJourneyMissing" xml:space="preserve"><value>Parcours manquant — choisissez le parcours publié de ce produit.</value></data>
+  <data name="LineJourneyMissingBadge" xml:space="preserve"><value>Parcours manquant</value></data>
+  <data name="JourneyWarning_journey_language_not_in_country" xml:space="preserve"><value>La langue du parcours n’est pas une langue de contenu du pays du modèle.</value></data>
+  <data name="JourneyWarning_journey_not_published" xml:space="preserve"><value>Le parcours n’est plus publié.</value></data>
+  <data name="JourneyWarning_journey_not_found" xml:space="preserve"><value>Le parcours est introuvable.</value></data>
+  <data name="JourneyStatus_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="JourneyStatus_review" xml:space="preserve"><value>En révision</value></data>
+  <data name="JourneyStatus_approved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="JourneyStatus_published" xml:space="preserve"><value>Publié</value></data>
+  <data name="JourneyStatus_inactive" xml:space="preserve"><value>Inactif</value></data>
+  <data name="JourneyStatus_archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="Err_product_line_role_required" xml:space="preserve"><value>Choisissez un rôle pour cette ligne produit (promo / non-promo).</value></data>
+  <data name="Err_product_line_role_invalid" xml:space="preserve"><value>Le rôle ne peut être que promo ou non-promo.</value></data>
+  <data name="Err_product_line_journey_required" xml:space="preserve"><value>Choisissez pour cette ligne le parcours publié du produit.</value></data>
+  <data name="Err_journey_not_published" xml:space="preserve"><value>Le parcours choisi n’est pas publié ; choisissez-en un publié.</value></data>
+  <data name="Err_journey_product_mismatch" xml:space="preserve"><value>Le parcours choisi présente un autre produit ; choisissez celui de ce produit.</value></data>
+  <data name="Err_content_binding_type_retired" xml:space="preserve"><value>Une nouvelle liaison parcours de connaissances / parcours au niveau du modèle n’est plus possible ; choisissez le parcours sur la ligne produit.</value></data>
+  <data name="Err_bindings_frozen" xml:space="preserve"><value>Les liaisons d’un modèle actif sont figées ; créez une nouvelle version pour les modifier.</value></data>
+  <data name="RetiredBindingsHelp" xml:space="preserve"><value>Ancienne liaison — non utilisée lors de la visite ; le parcours de la ligne produit s’applique.</value></data>
+  <data name="RetiredBindingBadge" xml:space="preserve"><value>Ancienne liaison</value></data>
+  <data name="NoRetiredBindings" xml:space="preserve"><value>Aucune liaison au niveau du modèle — le contenu provient du parcours de chaque ligne produit.</value></data>
+  <data name="RoleSplitTpl" xml:space="preserve"><value>{promo} promo · {nonpromo} non-promo</value></data>
+  <data name="RecipeJourneysTpl" xml:space="preserve"><value>{n} parcours</value></data>
+  <data name="RetiredBindingsCountTpl" xml:space="preserve"><value>{n} anciennes liaisons</value></data>
+  <data name="LinesWithoutJourneyTpl" xml:space="preserve"><value>{n} lignes sans parcours</value></data>
 </root>

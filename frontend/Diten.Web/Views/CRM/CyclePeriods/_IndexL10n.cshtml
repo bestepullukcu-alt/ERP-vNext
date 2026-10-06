@@ -84,6 +84,13 @@
         BusinessUnitFromVocabulary = Localizer["BusinessUnitFromVocabulary"].Value,
         // MOD-0155-FU06 — the label of the additive row-action link. CyclePeriod's own contract is unchanged.
         CycleCapacity = Localizer["CycleCapacity"].Value,
-        SelectPlaceholder = SharedLocalizer["SelectPlaceholder"].Value
+        SelectPlaceholder = SharedLocalizer["SelectPlaceholder"].Value,
+        Close = SharedLocalizer["Close"].Value
     })
+</script>
+
+@* WP-CYC-UI-1 — the keys the new list / panel / details scripts read, from the one shared list (CyclePeriodsL10nKeys)
+   so the bridge, the resx files and the tests cannot drift. Keys are emitted as written (PascalCase). *@
+<script id="cycleperiods-l10n-ext" type="application/json">
+    @Json.Serialize(CyclePeriodsL10nKeys.Bridge.ToDictionary(key => key, key => Localizer[key].Value))
 </script>

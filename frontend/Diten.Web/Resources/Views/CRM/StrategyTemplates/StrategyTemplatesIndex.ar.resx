@@ -267,4 +267,39 @@
   <data name="ProductColWeight" xml:space="preserve"><value>النسبة</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>توزيع بالتساوي</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>نسبة المنتج ليست 100٪. الإجمالي المحسوب {total}٪ — بفارق {diff} نقطة. صحّح الصفوف للحفظ.</value></data>
+  <data name="ProductColRole" xml:space="preserve"><value>الدور</value></data>
+  <data name="ProductColJourney" xml:space="preserve"><value>المسار</value></data>
+  <data name="LineRole_promo" xml:space="preserve"><value>ترويجي</value></data>
+  <data name="LineRole_non-promo" xml:space="preserve"><value>غير ترويجي</value></data>
+  <data name="LineJourneySelect" xml:space="preserve"><value>اختر مسارًا…</value></data>
+  <data name="LineJourneyLoading" xml:space="preserve"><value>جارٍ تحميل المسارات…</value></data>
+  <data name="LineJourneyNotOffered" xml:space="preserve"><value>(غير موجود في القائمة)</value></data>
+  <data name="LineNoPublishedJourney" xml:space="preserve"><value>لا يوجد مسار تفاعل منشور لهذا المنتج.</value></data>
+  <data name="LineOpenJourneys" xml:space="preserve"><value>مسارات التفاعل ↗</value></data>
+  <data name="LineJourneyFilterUnavailable" xml:space="preserve"><value>تعذّر التحقق من مطابقة المنتج هنا؛ يتم التحقق عند الحفظ.</value></data>
+  <data name="LineJourneyMissing" xml:space="preserve"><value>المسار مفقود — اختر المسار المنشور لهذا المنتج.</value></data>
+  <data name="LineJourneyMissingBadge" xml:space="preserve"><value>المسار مفقود</value></data>
+  <data name="JourneyWarning_journey_language_not_in_country" xml:space="preserve"><value>لغة المسار ليست من لغات المحتوى لبلد القالب.</value></data>
+  <data name="JourneyWarning_journey_not_published" xml:space="preserve"><value>لم يعد المسار منشورًا.</value></data>
+  <data name="JourneyWarning_journey_not_found" xml:space="preserve"><value>تعذّر العثور على المسار.</value></data>
+  <data name="JourneyStatus_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="JourneyStatus_review" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="JourneyStatus_approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="JourneyStatus_published" xml:space="preserve"><value>منشور</value></data>
+  <data name="JourneyStatus_inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="JourneyStatus_archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Err_product_line_role_required" xml:space="preserve"><value>اختر دورًا لسطر المنتج هذا (ترويجي / غير ترويجي).</value></data>
+  <data name="Err_product_line_role_invalid" xml:space="preserve"><value>يمكن أن يكون الدور ترويجيًا أو غير ترويجي فقط.</value></data>
+  <data name="Err_product_line_journey_required" xml:space="preserve"><value>اختر لهذا السطر المسار المنشور للمنتج.</value></data>
+  <data name="Err_journey_not_published" xml:space="preserve"><value>المسار المختار غير منشور؛ اختر مسارًا منشورًا.</value></data>
+  <data name="Err_journey_product_mismatch" xml:space="preserve"><value>المسار المختار يخص منتجًا آخر؛ اختر مسار هذا المنتج.</value></data>
+  <data name="Err_content_binding_type_retired" xml:space="preserve"><value>لم يعد بالإمكان إضافة ربط مسار معرفة / مسار تفاعل على مستوى القالب؛ اختر المسار في سطر المنتج.</value></data>
+  <data name="Err_bindings_frozen" xml:space="preserve"><value>روابط القالب النشط مجمّدة؛ أنشئ إصدارًا جديدًا لتغييرها.</value></data>
+  <data name="RetiredBindingsHelp" xml:space="preserve"><value>ربط قديم — لا يُستخدم في الزيارة؛ يُطبَّق المسار المحدد في سطر المنتج.</value></data>
+  <data name="RetiredBindingBadge" xml:space="preserve"><value>ربط قديم</value></data>
+  <data name="NoRetiredBindings" xml:space="preserve"><value>لا يوجد ربط على مستوى القالب — يأتي المحتوى من المسار في كل سطر منتج.</value></data>
+  <data name="RoleSplitTpl" xml:space="preserve"><value>{promo} ترويجي · {nonpromo} غير ترويجي</value></data>
+  <data name="RecipeJourneysTpl" xml:space="preserve"><value>{n} مسارات</value></data>
+  <data name="RetiredBindingsCountTpl" xml:space="preserve"><value>{n} روابط قديمة</value></data>
+  <data name="LinesWithoutJourneyTpl" xml:space="preserve"><value>{n} أسطر بلا مسار</value></data>
 </root>

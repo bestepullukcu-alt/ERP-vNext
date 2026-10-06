@@ -22,7 +22,7 @@ public sealed class StrategyTemplateVersionsTests
     private readonly FakeContentEngagementJourneyRepository _journeys = new();
     private readonly FakeStrategyReferenceValidator _references = new();
 
-    private StrategyTemplateBindingValidator Bindings() => new(_segments, _policies, _paths, _journeys);
+    private StrategyTemplateBindingValidator Bindings() => new(_segments, _policies, _paths, _journeys, _journeys.Subjects);
 
     private CreateStrategyTemplateHandler Create() => new(
         StrategyTemplateTestDoubles.Tenant(StrategyTemplateTestDoubles.TenantA),
