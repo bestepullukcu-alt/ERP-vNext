@@ -5,7 +5,7 @@ info:
     MOD-0174 Lot/Batch/Serial Tracking — Wave-0 frozen (v1), additive v1.1.
     Lot uniqueness = surrogate LotId + business key Tenant+SKU(skuId+skuLevel)+LotNumber (DEC-INV-14 as changed by the owner 2026-10-05, K-G; v1.0.0 said Tenant+Item+LotNumber — behaviour change B-1).
     INVENTORY movement lotId/serialIds ile buna bağlanır. Tenant+LegalEntity scoped.
-  version: 1.1.0
+  version: 1.2.0
   x-status: FROZEN
   x-owner: MOD-0174
   x-owner-service: Diten.InventoryService (MOD-0174, in-process with MOD-0173)
@@ -13,6 +13,7 @@ info:
     - "1.0.0 — Wave-0 frozen: getLot, listLots, createLot, getSerial, getGenealogy, validateTrace (paths, parameters, schemas and enums unchanged in 1.1.0)."
     - "1.1.0 — additive (WP-0174-P1, accepted proposal drafts/trace-v1.1-proposal.md next to this file): LotRef / SerialRef / CreateLotRequest optional members; listLots optional filters + paging; getGenealogy optional depth; validateTrace typed results; new operations updateLot, changeLotStatus, getLotHistory, getLotDetail, listSerials, checkGs1Code, linkGenealogy, and the typed-lot migration operations (implemented by slice P4). contractVersion stays v1."
     - "1.1.0 behaviour changes — B-1: business key Tenant+SKU+LotNumber (the same lotNumber may exist twice under one itemId; LOT_ALREADY_EXISTS is per SKU). B-2: createLot without skuId+skuLevel → 422 LOT_SKU_REQUIRED (CT-D2). B-3: Expired is set automatically when expiryDate < today and can never be set or left by a caller."
+    - "1.2.0 — additive (WP-0174-P4, CT decision K4-1 2026-10-06): new operation getManualLotMigrationStatus (GET /migration/status, trace.lots.read) answering whether the tenant's typed-lot entry is closed (manualLotEntryClosed, completedAt only when closed) — the Stock Ledger form and the W-UI-02 badges decide with the reader's own trace.lots.read. Every 1.0.0 / 1.1.0 element unchanged; contractVersion stays v1."
   x-decisions: [DEC-INV-14, 18]
 servers: [{ url: /api/trace }]
 security: [{ bearerAuth: [] }]
@@ -265,6 +266,14 @@ paths:
         - { name: lotId, in: query, schema: { type: string } }
       responses:
         '200': { description: Links, content: { application/json: { schema: { $ref: '#/components/schemas/MovementLotLinks' } } } }
+  /migration/status:
+    get:
+      operationId: getManualLotMigrationStatus
+      summary: "v1.2 — is the tenant's typed-lot entry (W-UI-02) closed by the migration commit? Read with trace.lots.read (K4-1)"
+      x-permission: trace.lots.read
+      x-implemented-by: "MOD-0174 slice P4"
+      responses:
+        '200': { description: Migration status, content: { application/json: { schema: { $ref: '#/components/schemas/ManualLotMigrationStatus' } } } }
 components:
   securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
   parameters:
@@ -580,6 +589,13 @@ components:
               typedText: { type: string }
               lotId: { type: string }
               migrationId: { type: string }
+        contractVersion: { type: string }
+    ManualLotMigrationStatus:
+      type: object
+      required: [manualLotEntryClosed, contractVersion]
+      properties:
+        manualLotEntryClosed: { type: boolean }
+        completedAt: { type: string, format: date-time, description: "v1.2 — present only when manualLotEntryClosed is true" }
         contractVersion: { type: string }
     SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood], description: "v1.1 — same values as INVENTORY-BUNDLE SkuLevel" }
     Decimal: { type: string, pattern: '^\d{1,18}(\.\d{1,6})?$', description: "v1.1 — decimal as string, never a float" }
