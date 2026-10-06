@@ -1,0 +1,11 @@
+# M-4 self-registration — live fleet (Auth 5056, Platform 5057, MDM 5059, Gateway 5000, Web 5001, Manufacturing 5067), 2026-10-06
+## Manufacturing log
+BOM Mongo indexes ensured.
+Module manifest self-registered with Platform. ModuleCode=bom-routings Attempt=1
+## Platform log
+"RenderedMessage":"Module manifest registered. ModuleCode=\"bom-routings\" Success=True
+## Platform catalog + Auth permissions (read-only Mongo query)
+platform_module_catalog: {'ModuleCode': 'BOM-ROUTINGS', 'DisplayName': 'BOM & Routings', 'Domain': 'MANUFACTURING', 'Service': 'Manufacturing', 'IsTenantAssignable': True}
+pages: ['BOMS']
+actions: ['CREATE', 'DELETE', 'EDIT', 'EXPORT', 'RELEASE']
+auth permissions: ['manufacturing.bom.create', 'manufacturing.bom.delete', 'manufacturing.bom.export', 'manufacturing.bom.read', 'manufacturing.bom.release', 'manufacturing.bom.update']
