@@ -8063,6 +8063,19 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-564
+
+**`verify_module_id.py` yalnız bulunduğu dalın registry'sini okuyor: başka dalda alınmış bir modül kimliğine "OK" diyor (Marka ve kalem işinde iki kez)**
+
+DURUM: AÇIK · SAHİP: CT (belge / araç) · BULAN: WP-MDM-ITEM-MASTER-G0 (MDM sohbeti) · KAYIT: 2026-10-06
+
+MOD-0290-FU03 "Product Legal Entity Scope Assignment" paketi kapsam dalında duruyor, CT şeridinin registry'sinde satırı yoktu; araç FU03'ü kalem işi için de "OK" saydı. Aynı tuzak Marka paketlerinde
+(FU01 = ABB, FU02 = Market Supply ile çakışan adlandırma) çıkmıştı. Geçici önlem: şerit registry'sine FU03 AYRILMIŞ satır (`4f9c63309`). Düzeltme: `--check-id` aday kimliği `git log --all -S` ile
+tüm dallarda arar; başka paket izi varsa BLOCKED. Ayrıca sözleşme dosyası `docs/analysis/contracts/product-master-bundle.openapi.yaml` beş klasör kuralının dışında — §4 protokolüyle
+`docs/reference/architecture/contracts/`'a taşınmalı (ayrı küçük iş). Gelecek regresyon riski: 🔴 (kimlik çakışması sessiz).
+
+---
+
 ### BL-563
 
 **Ürün kimliği denetim niyetleri canlıda merkeze ulaşmıyor: teslim işçisi kapalı, temporal cutover kapalı, niyetlerde sözleşme sürümü boş ve korelasyon GUID değil — FG taslak iptali bu yüzden canlıda sonuçlanamaz (BL-559 canlıda açık kalır)**
