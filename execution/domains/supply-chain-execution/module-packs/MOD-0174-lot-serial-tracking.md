@@ -820,7 +820,7 @@ with the catalog attribution of `NEWLOTQUICK` and the `inventory.stock.read` act
 probe start tried the owner's port 5066 via the appsettings Kestrel endpoint, failed on the occupied port, owner's
 process unaffected (PID unchanged); the probe script now passes `--urls`.
 
-### WP-0174-INT (agent result, pending CT, 2026-10-05) — gateway routes INT-TRACE
+### WP-0174-INT (CT-ACCEPTED 2026-10-06) — gateway routes INT-TRACE
 
 `ocelot.json`: two blocks after `/api/locations/{everything}` — `/api/trace` and `/api/trace/{everything}` → `localhost:5066`,
 GET/POST/PATCH/OPTIONS, no gateway AuthenticationOptions, headers passed through (INT-1/INT-2 pattern, byte-equal to the
@@ -832,6 +832,22 @@ new routes. K3 sabotage (port 5066 → 5067) → 2 red, restored by hash. Own-po
 owner's 5066 runs the 0173 branch without `/api/trace`), the control `/api/tracex/lots` gave `UnableToFindDownstreamRouteError`;
 owner PIDs 5000/5066 unchanged. Open for the CT: live end-to-end once the 0174 branch runs in the fleet. Evidence
 `docs/records/audits/2026-10/mod-0174-int-evidence-2026-10-05.md`.
+**CT acceptance (K13):** gateway tests re-run at `4676ff8a4` → 88/89, the only red the known FU-INT1-01 guard. MVP-1
+branch fast-forwarded `876805f0e → 4676ff8a4` (2026-10-06); the owner's fleet rebuilt once (gateway PID 30904 → 43076,
+Inventory 18400 → 7660, Web restarted, up again within ~2 min). **Live, owner's fleet:** `GET :5000/api/trace/lots`
+without token → 401; real login (dev-runbook seed, tenant `…0001`, company `66068d61-…`) → 200
+`{"items":[],"total":0,"contractVersion":"v1"}`, correlation echoed; the token carries all 8 `trace.*` keys. Read-only
+Auth catalog: the 8 `trace.*` keys exist, Module `lot-serial-tracking`, Scope Tenant → P1 live catalog item PASS.
+**Finding FU-0174-CAT-01 (fix in P2):** `inventory.stock.read` is now attributed to Module `lot-serial-tracking` — the
+LOT-SERIAL-TRACKING manifest declares it on its cross-module actions (`OPENINLEDGER` …), and the catalog sync sets
+`Module` from the last manifest that synced the key. Grantability is unchanged (Scope Tenant), but the role screen now
+groups the MOD-0173 key under the lot module (PKS-001: `inventory.*` is owned by MOD-0173). In-module fix: no
+`inventory.*` key in the LOT-SERIAL-TRACKING manifest (the target page enforces its own key), plus a completeness test
+that every manifest key belongs to the module's own namespace; the next INVENTORY-LEDGER reconcile restores the
+attribution. The systemic guard (catalog sync must not move a key across namespace owners) is a Platform follow-up.
+Same mechanism in reverse for CT-D5 `NEWLOTQUICK` (a `trace.*` key on an INVENTORY-LEDGER page would move
+`trace.lots.create` to `inventory-ledger`): P3 must not add it to the INVENTORY-LEDGER manifest until the Platform guard
+exists — CT decision before P3.
 
 ## 20. Follow-up Items
 
