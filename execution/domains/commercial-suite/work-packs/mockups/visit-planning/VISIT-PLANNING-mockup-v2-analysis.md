@@ -62,7 +62,7 @@
 - ✓ Sınır aşımı, onaylı içerik yok, ürün yok — hepsi çizilmiş.
 - ✓ `asim` (kapasite aşımı) düğmesi ürün süresiyle çalışıyor.
 
-## Notlar — uygulamada netleşecekler
+## Notlar — **S-1..S-4 kullanıcı tarafından onaylandı (2026-10-07)**
 | # | Konu | Mockup | CT önerisi |
 |---|---|---|---|
 | **S-1** (kullanıcı) | Ürün değişikliği **onaylı haftaları** etkiler mi? | "Değişiklikler bu doktorun sonraki ziyaretlerine uygulanır"; geçmiş dışındaki tüm haftalar yeni listeyle görünüyor. | **Hayır.** Yalnız taslak ve öngörülen haftalar değişir. Onaylı haftadaki ziyaret Planlanan Ziyaret ekranından değişir (Faz 6; MK-3 / MK-4 kilidiyle tutarlı). Metin: "…onaylanmamış sonraki ziyaretlerine uygulanır". |

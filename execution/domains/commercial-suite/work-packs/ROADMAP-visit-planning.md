@@ -5,7 +5,20 @@
 > Ayrıntılar: [durum analizi](VISIT-PLANNING-current-state-analysis.md) · [mockup brief](mockups/visit-planning/BRIEF-visit-planning-rep-week.md) · [mockup analizi](mockups/visit-planning/VISIT-PLANNING-mockup-analysis.md) · [mobil not](mobile/2026-10-06-visit-planning/MOBILE-NOTE-2026-10-06-visit-planning.md) · [mobil talepler](MOBILE-REQUESTS-2026-10-05-analysis.md)
 
 ## Neredeyiz
-**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** bitti (E2 + E4). ☑ **Faz 2** E2 + **E4 kabul** (`fecf231e`, 2026-10-07). ☑ D9 / F-1 (VP-FIX-2). ☑ **Faz 2b** E2 kabul (`529a6761d`). ☑ **Faz E2E** (E0–E11). ◐ **E2E-FIX-1/2/3** paketlendi (2026-10-07, paralel). K-7 kabul; **mockup v2 analiz edildi** (Faz 4 girdisi hazır; S-1 kararı bekliyor).
+**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** bitti (E2 + E4). ☑ **Faz 2** E2 + **E4 kabul** (`fecf231e`, 2026-10-07). ☑ D9 / F-1 (VP-FIX-2). ☑ **Faz 2b** E2 kabul (`529a6761d`). ☑ **Faz E2E** (E0–E11). ◐ **E2E-FIX-1/2/3** paketlendi (2026-10-07, paralel). K-7 kabul; **mockup v2 analiz edildi ve S-1..S-4 onaylandı** (Faz 4 girdisi hazır).
+
+## Sıradaki işler (sıralı — 2026-10-07)
+| # | İş | Kim | Durum |
+|---|---|---|---|
+| 1 | **E2E-FIX-1 / 2 / 3** — ajanlara gönder (paralel olabilir); dönüşte CT K13 + §37 | kullanıcı → ajan → CT | ☐ gönderilecek |
+| 2 | Bekleyen canlı kontroller (E4): VP-FIX-2 (düzenle korur, Türkçe arama) + VP-2B (aktif kişi sayısı / filtre / seçenekler) + E2E-FIX'ler | fleet yeniden başlat + giriş (kullanıcı), CT kontrol | ☐ |
+| 3 | **SB-3c** — ziyaret başlat / tamamla, gerçekte sunulanlar (`ContentActuals`), yolculuk ilerlemesi yazılır (E9-B1); "son ziyaret" ürün kaynağının ön koşulu | CT paketler | ☐ |
+| 4 | **Faz 3** — planlama motoru: K-7 ürün listesi veri modeli (S-1..S-4), B-4 dönem planı / hafta durumu, B-5 gün dengeleme, B-6, B-7, B-9, D3, D5, E7-B1 / B2 kararları | CT paketler (2–3 paket) | ☐ |
+| 5 | **Faz 4** — Web arayüzü mockup v2'ye göre (VP-UI-1..3) | CT paketler | ☐ mockup hazır |
+| 6 | **Faz 5** — mobil sözleşme notu (Faz 2 + 2b + E2E-FIX-1 alanları + K-7) | CT yazar, kullanıcı iletir | ☐ |
+| 7 | **Faz 6** — Planlanan Ziyaretler sayfası (+ ek konular: numune, amaç, ortak ziyaret…) | canlı analiz → mockup? | ☐ |
+| 8 | **Faz 8** — AUD-CRM-1 merkezi denetim → mimari test yeşil → main'e PR | CT paketler, 2 karar sorulur | ☐ en son |
+| — | Yan işler: 0.5 TR referans etiketleri (veri) · read-all grant script (rol seçimi) · CYC-UI-FIX-2 E4 · backlog kararları (E2-B2, E4-B4, E9-B4b) | kullanıcı / sonra | ☐ |
 
 ## Yapılanlar (2026-10-06)
 | Ne | Kanıt |
@@ -42,7 +55,7 @@
 Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 
 ### Faz 0 — veri ve kararlar
-- ◐ **0.1** Beste'yi (`bestepullukcu@gmail.com`, sistemde "Admin User") **İstanbul ilçelerine** ata — kullanıcı yapıyor. ⚠ İl (area) düzeyine atama reddedildi: kural `medical-representative` → yalnız **zone / microzone** (`TerritoryPositionPolicy`; area-manager → area, regional-manager → region). Kural doğru, değişmez. Test için 5 ilçe: Şişli (birincil), Kağıthane, Beyoğlu, Beşiktaş, Fatih. Durum (2026-10-06): 4 atama var (Şişli, Kağıthane, Beyoğlu, Fatih) — **Beşiktaş eksik**, **dördü de birincil** (yalnız Şişli olmalı). Beste'nin ilçelerindeki hesaplar (0.4 sonrası): Şişli 734 · Fatih 434 · Kağıthane 184 · Beyoğlu 183 = **1.535**.
+- ☑ **0.1** Beste'yi (`bestepullukcu@gmail.com`, sistemde "Admin User") **İstanbul ilçelerine** ata — kullanıcı yapıyor. ⚠ İl (area) düzeyine atama reddedildi: kural `medical-representative` → yalnız **zone / microzone** (`TerritoryPositionPolicy`; area-manager → area, regional-manager → region). Kural doğru, değişmez. Test için 5 ilçe: Şişli (birincil), Kağıthane, Beyoğlu, Beşiktaş, Fatih. Durum (2026-10-06): 4 atama var (Şişli, Kağıthane, Beyoğlu, Fatih) — **Beşiktaş eksik**, **dördü de birincil** (yalnız Şişli olmalı). Beste'nin ilçelerindeki hesaplar (0.4 sonrası): Şişli 734 · Fatih 434 · Kağıthane 184 · Beyoğlu 183 = **1.535**.
 - ☑ **0.4** (İstanbul + Kocaeli uygulandı 2026-10-06, CT doğruladı: 9.667 hesap ilçeye taşındı, 9.667 il satırı "ended", hesap başına tek aktif atama, 43.374 hesabın hepsinde aktif atama; İstanbul ilde kalan 21, Kocaeli 0; CorrelationId `relink-zones-3908b82f…`. Diğer iller ilde — gerekirse `--cities` olmadan yeniden çalıştırılır.) Hesapları ilçeye bağla (veri): bugün 43.374 hesabın hepsi **il** düzeyinde bağlı → ilçeye atanan temsilcinin hesap listesi boş kalır. Hesaptaki ilçe adı (`AddressLine`) ile ilçe düğümü eşleşmesi: **Türkiye %77, İstanbul 8.548 / 8.864, Kocaeli 513 / 824**; eşleşmeyen il düzeyinde kalır. Script: `scripts/data-load/relink_tr_accounts_to_zones.py` (varsayılan deneme; `--apply` kullanıcıda; geçmiş korunur, eski il satırı "ended"). Eski ilçe / semt adları için eşleme eklendi → deneme: **İstanbul 8.843 / 8.864, Kocaeli 824 / 824**, TR geneli ~%78. ◐ Kullanıcı çalıştıracak. **B-2'den önce gerekli.** ⚠ Bugün okuma tam düğüm eşleşmesi: "İstanbul" il filtresi taşınan hesapları göstermez (alt ağaç okuması B-2'de).
 - ☑ **0.2** AUD-001 kararı: **A — CRM merkezi denetime bağlanır, ama en sonda** (Faz 8). O zamana kadar mimari test kırmızı kalır; dal `main`'e PR olmaz.
 - ☑ **0.3** D8 test kaydı arşivlendi.
@@ -70,7 +83,7 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 - ☑ **D9** (VP-2 kabulünde bulundu): Ziyaret Planlama Düzenle formu hedef dizilerini boş gönderiyor → taslakta hafta / dönem değiştirmek tüm hedefleri siler. Düzeltme: form mevcut seçimi göndersin **ya da** sunucu `null` dizi = "dokunma" kabul etsin (tercih: ikisi birden). Küçük paket, Faz 2b'den önce.
 - ☐ Grant: `scripts/rbac/grant_visit_planning_read_all_97c5.py --role <onaylayan yönetici rolü> --apply` (Auth yeniden başlatıldıktan sonra; kullanıcı rolü seçer).
 
-- ☐ Takip: aynı arama sorunu `TerritoryModelRepository` (ad / kod; kaçışsız) + `SegmentCandidateSource` (i katlaması yok) — küçük.
+- → Takip **WP-E2E-FIX-3**'e taşındı: aynı arama sorunu `TerritoryModelRepository` (ad / kod; kaçışsız) + `SegmentCandidateSource` (i katlaması yok) — küçük.
 
 ### Faz E2E — TUTUKON uçtan uca test (kullanıcı giriş yapar, CT yürütür) — VP-FIX-2 kabulünden sonra; Faz 2b ajan işiyle paralel
 Plan: [E2E-TUTUKON-content-to-visit-plan.md](E2E-TUTUKON-content-to-visit-plan.md).
@@ -115,7 +128,7 @@ Kurallar:
 - ☐ E2E'den gelen çözücü / süre kararları: **E7-B1** yolun iki dalı düzleşiyor (dal seçim kuralı) · **E7-B2** adım süresi süreye girmiyor · **E7-B3 / E8-B2** tek gün + "ayda 2" aralığı (B-4 / B-5 ile çözülür)
 
 ### Faz 4 — Web arayüzü (mockup'a göre)
-- ☑ **Mockup v2 geldi (2026-10-07), K-7 ek brief'i tam karşılıyor** → [v2 analizi](mockups/visit-planning/VISIT-PLANNING-mockup-v2-analysis.md). Rota / liste / yeni plan paneli dokunulmamış. Açık: **S-1** (ürün değişikliği onaylı haftaları etkilemez — CT önerisi, kullanıcı onayı); S-2..S-4 CT varsayılanı. "Son ziyaret" kaynağı SB-3c'ye bağlı.
+- ☑ **Mockup v2 geldi (2026-10-07), K-7 ek brief'i tam karşılıyor** → [v2 analizi](mockups/visit-planning/VISIT-PLANNING-mockup-v2-analysis.md). Rota / liste / yeni plan paneli dokunulmamış. **S-1..S-4 kullanıcı onayladı (2026-10-07):** ürün değişikliği onaylı haftalara dokunmaz (yalnız taslak / öngörülen; onaylı hafta → Planlanan Ziyaret, Faz 6) · toplu uygulamada sınır aşımı → sığmayan sonraki ziyarete + mesaj · önerilen ürünün rolü oyundan, kilitli · seçim oturumda doktor başına, mevcut güncelleme komutuyla (yeni komut YOK); apply planlanan ziyaretlere kopyalar. "Son ziyaret" kaynağı SB-3c'ye bağlı.
 - ☐ VP-UI-1 liste + yeni plan paneli + detay üst kısım + durumlar + Ekip anahtarı (etkin değil)
 - ☐ VP-UI-2 Hedefler (bölge uyarısı, bölge dışı ekleme)
 - ☐ VP-UI-3 Haftalar + doktor paneli + yeniden açma penceresi
