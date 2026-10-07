@@ -11,6 +11,7 @@ namespace Diten.AuthService.Api.Operational;
 
 public sealed class EntitlementReconciliationOperationalRunner
 {
+    public const string LockName = "Diten.Auth.ProductIdentityEntitlementReconciliation";
     private readonly IEntitlementReconciliationOperationStore _store;
     private readonly ITokenService _tokens;
     private readonly ITenantEntitlementClient _source;
@@ -30,9 +31,9 @@ public sealed class EntitlementReconciliationOperationalRunner
         var deadline = DateTimeOffset.UtcNow.AddMinutes(2);
         var actorId = ValidateOperatorToken(token, deadline);
         var provenance = await VerifyProvenanceAsync(options, ct);
-        using var mutex = new Semaphore(1, 1, "Diten.Auth.ProductIdentityEntitlementReconciliation");
-        var owns = mutex.WaitOne(0);
-        if (!owns) throw new InvalidOperationException("OPERATION_ALREADY_RUNNING");
+        // WP-AUTH-BL570-01: the same machine-wide single instance on every OS (the named Semaphore was Windows-only).
+        using var instance = OperationalSingleInstanceLock.TryAcquire(LockName);
+        if (!instance.Acquired) throw new InvalidOperationException("OPERATION_ALREADY_RUNNING");
         try
         {
             var processFingerprint = await _observeProcesses(ct);
@@ -86,7 +87,7 @@ public sealed class EntitlementReconciliationOperationalRunner
             if (commit.Receipt is null) return commit.State;
             return await FinalizeAfterCommitAsync(saved, commit.Receipt, token, deadline, processFingerprint, ct);
         }
-        finally { mutex.Release(); }
+        finally { instance.Dispose(); }
     }
 
     public Guid ValidateOperatorToken(string token, DateTimeOffset deadline)

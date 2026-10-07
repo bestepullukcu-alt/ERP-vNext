@@ -183,13 +183,13 @@ public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixtu
     {
         var api = Path.Combine(AppContext.BaseDirectory, "Diten.AuthService.Api.dll");
         Assert.True(File.Exists(api) && File.Exists(Path.ChangeExtension(api, ".runtimeconfig.json")), "Matching isolated Release API artifacts are required.");
-        var start = new ProcessStartInfo(@"C:\Program Files\dotnet\dotnet.exe")
+        var start = new ProcessStartInfo(DotnetHost())
         {
             UseShellExecute = false, CreateNoWindow = true, RedirectStandardInput = true,
             RedirectStandardOutput = true, RedirectStandardError = true, WorkingDirectory = AppContext.BaseDirectory
         };
         start.Environment.Clear();
-        foreach (var name in new[] { "SystemRoot", "WINDIR", "PATH", "TEMP", "TMP", "USERPROFILE", "COMSPEC" })
+        foreach (var name in new[] { "SystemRoot", "WINDIR", "PATH", "TEMP", "TMP", "USERPROFILE", "COMSPEC", "HOME", "TMPDIR", "DOTNET_ROOT" })
             if (Environment.GetEnvironmentVariable(name) is { } value) start.Environment[name] = value;
         start.Environment["DOTNET_ENVIRONMENT"] = "Development";
         start.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
@@ -197,6 +197,17 @@ public sealed class ServiceClientOperationalBootstrapTests(OperationalMongoFixtu
         start.ArgumentList.Add(api);
         foreach (var argument in arguments) start.ArgumentList.Add(argument);
         return start;
+    }
+
+    // WP-AUTH-BL570-01: the Release child runs under the same dotnet host on every OS — Windows keeps its install
+    // path; elsewhere the host running these tests (DOTNET_HOST_PATH when the SDK sets it).
+    private static string DotnetHost()
+    {
+        if (OperatingSystem.IsWindows()) return @"C:\Program Files\dotnet\dotnet.exe";
+        var host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+        if (string.IsNullOrEmpty(host) && Path.GetFileNameWithoutExtension(Environment.ProcessPath) == "dotnet") host = Environment.ProcessPath;
+        Assert.True(host is not null && Path.IsPathFullyQualified(host) && File.Exists(host), "The dotnet host running these tests is required for the Release child.");
+        return host!;
     }
 
     private async Task<ChildResult> RunChild(ProcessStartInfo start, string input, Action? afterStart = null)

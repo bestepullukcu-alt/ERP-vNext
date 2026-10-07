@@ -75,7 +75,10 @@ public sealed class ServiceClientSecretOutputSink : IServiceClientSecretOutputSi
         if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var number)
             || number <= 2 || value != number.ToString(CultureInfo.InvariantCulture)) throw Invalid();
         if (!OperatingSystem.IsWindows())
-            throw new PlatformNotSupportedException("This operational secret sink requires Windows pipe validation.");
+        {
+            ValidateInheritedUnixDescriptor(number);
+            return;
+        }
         if (IntPtr.Size == 4 && number > int.MaxValue) throw Invalid();
         var handle = new IntPtr(number);
         if (handle == GetStdHandle(-10) || handle == GetStdHandle(-11) || handle == GetStdHandle(-12)
@@ -84,8 +87,35 @@ public sealed class ServiceClientSecretOutputSink : IServiceClientSecretOutputSi
 
     private static InvalidOperationException Invalid() => new("The inherited one-shot secret pipe is invalid or unavailable.");
 
+    /// <summary>The named refusal when this OS cannot verify the inherited pipe as Windows does: no secret is produced.</summary>
+    public const string UnsupportedPlatform = "SECRET_OUTPUT_UNSUPPORTED_PLATFORM";
+
+    // WP-AUTH-BL570-01: the Unix twin of the checks above. The descriptor must be an inherited FIFO (a terminal, a
+    // regular file, a socket or /dev/null is refused), open for writing, and NOT the same object as stdin / stdout /
+    // stderr — a duplicate of a piped stdout passes a plain "is it a pipe" test and would carry the secret to whatever
+    // reads stdout (the twin of the GetStdHandle comparison, by identity rather than by number).
+    private static void ValidateInheritedUnixDescriptor(long number)
+    {
+        if (!UnixPipeHandleInspector.IsSupported) throw new PlatformNotSupportedException(UnsupportedPlatform);
+        if (number > int.MaxValue) throw Invalid();
+        var descriptor = (int)number;
+        if (UnixPipeHandleInspector.Stat(descriptor) is not { } target || target.Type != UnixPipeHandleInspector.TypeFifo
+            || !UnixPipeHandleInspector.IsWritable(descriptor)) throw Invalid();
+        for (var standard = 0; standard <= 2; standard++)
+        {
+            if (UnixPipeHandleInspector.Stat(standard) is { } stream
+                && stream.Device == target.Device && stream.Inode == target.Inode) throw Invalid();
+        }
+    }
+
     private static void ValidateConnectedPeer(SafePipeHandle handle)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            var descriptor = handle.DangerousGetHandle().ToInt64();
+            if (descriptor is < 3 or > int.MaxValue || !UnixPipeHandleInspector.PeerIsConnected((int)descriptor)) throw Invalid();
+            return;
+        }
         // Anonymous pipes use the Windows named-pipe implementation. FilePipeLocalInformation
         // exposes connection state without reading/writing payload or waiting for peer I/O.
         // GetFileType/GetNamedPipeHandleState can still succeed after the reader has closed.

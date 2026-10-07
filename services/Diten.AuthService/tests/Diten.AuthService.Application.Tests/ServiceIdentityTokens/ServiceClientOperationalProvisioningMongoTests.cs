@@ -395,8 +395,12 @@ public sealed class OperationalMongoFixture : IAsyncLifetime
         ConventionRegistry.Register("OwnedServiceClientOperationalIgnoreExtraElements",
             new ConventionPack { new IgnoreExtraElementsConvention(true) },
             type => type.Namespace == "Diten.AuthService.Domain.Entities");
-        var executable = @"C:\Program Files\MongoDB\Server\7.0\bin\mongod.exe";
-        if (!File.Exists(executable)) throw new InvalidOperationException("The installed Mongo test executable is unavailable; no fallback is allowed.");
+        // WP-AUTH-BL570-01: the installed mongod named by DITEN_TEST_MONGOD (the repo's owned-Mongo convention); the
+        // Windows install path stays the default on Windows only. Never a running or shared Mongo.
+        var executable = Environment.GetEnvironmentVariable("DITEN_TEST_MONGOD")
+            ?? (OperatingSystem.IsWindows() ? @"C:\Program Files\MongoDB\Server\7.0\bin\mongod.exe" : null);
+        if (executable is null || !Path.IsPathFullyQualified(executable) || !File.Exists(executable))
+            throw new InvalidOperationException("The installed Mongo test executable is unavailable; no fallback is allowed.");
         using (var listener = new TcpListener(IPAddress.Loopback, 0)) { listener.Start(); Port = ((IPEndPoint)listener.LocalEndpoint).Port; }
         if (Port == 27017) throw new InvalidOperationException("Forbidden application port.");
         _directory = Path.Combine(Path.GetTempPath(), "diten-auth-operational-owned-" + Guid.NewGuid().ToString("N"));

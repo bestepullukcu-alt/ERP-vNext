@@ -75,6 +75,10 @@ public sealed class ServiceClientOperationalProvisioningRunner
         { return await FailAsync(output, "manual-reconciliation-required", 6); }
         catch (InvalidOperationException)
         { return await FailAsync(output, "configuration-or-storage-unavailable", 5); }
+        // WP-AUTH-BL570-01: this OS cannot verify the inherited pipe — refused by name, before any credential exists.
+        catch (PlatformNotSupportedException exception)
+            when (exception.Message == ServiceClientSecretOutputSink.UnsupportedPlatform)
+        { return await FailAsync(output, "secret-output-unsupported-platform", 5); }
         catch
         { return await FailAsync(output, "unavailable", 5); }
     }

@@ -144,9 +144,17 @@ public sealed class ServiceClientOperationalProvisioningRunnerTests
         var handle = pipe.GetClientHandleAsString();
         // Close only the reader endpoint: the inherited writer handle remains valid and pipe-typed.
         pipe.SafePipeHandle.Dispose();
-        Assert.Equal(3u, GetFileType(new IntPtr(long.Parse(handle, System.Globalization.CultureInfo.InvariantCulture))));
+        AssertStillAnOpenPipe(handle);
         await using var sink = new ServiceClientSecretOutputSink();
         await Assert.ThrowsAnyAsync<Exception>(() => sink.PreflightAsync(handle, CancellationToken.None));
+    }
+
+    // WP-AUTH-BL570-01: the same precondition on both platforms — the writer is still open and pipe-typed.
+    private static void AssertStillAnOpenPipe(string handle)
+    {
+        var number = long.Parse(handle, System.Globalization.CultureInfo.InvariantCulture);
+        if (OperatingSystem.IsWindows()) Assert.Equal(3u, GetFileType(new IntPtr(number)));
+        else Assert.Equal(UnixPipeHandleInspector.TypeFifo, UnixPipeHandleInspector.Stat((int)number)?.Type);
     }
 
     [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
@@ -162,10 +170,14 @@ public sealed class ServiceClientOperationalProvisioningRunnerTests
         using var file = new FileStream(path, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
         await using var fileSink = new ServiceClientSecretOutputSink();
         await Assert.ThrowsAnyAsync<Exception>(() => fileSink.PreflightAsync(file.SafeFileHandle.DangerousGetHandle().ToInt64().ToString(), CancellationToken.None));
-        foreach (var stream in new[] { -10, -11, -12 })
+        // Windows: the standard handles by value. Unix: fd 0–2 by number (the duplicates, by identity, are
+        // ServiceClientSecretOutputSinkUnixTests).
+        foreach (var standard in OperatingSystem.IsWindows()
+                     ? new[] { -10, -11, -12 }.Select(stream => GetStdHandle(stream).ToInt64().ToString())
+                     : ["0", "1", "2"])
         {
             await using var standardSink = new ServiceClientSecretOutputSink();
-            await Assert.ThrowsAnyAsync<Exception>(() => standardSink.PreflightAsync(GetStdHandle(stream).ToInt64().ToString(), CancellationToken.None));
+            await Assert.ThrowsAnyAsync<Exception>(() => standardSink.PreflightAsync(standard, CancellationToken.None));
         }
     }
 
@@ -175,7 +187,7 @@ public sealed class ServiceClientOperationalProvisioningRunnerTests
         using var pipe = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
         var handle = pipe.GetClientHandleAsString();
         pipe.SafePipeHandle.Dispose();
-        Assert.Equal(3u, GetFileType(new IntPtr(long.Parse(handle, System.Globalization.CultureInfo.InvariantCulture))));
+        AssertStillAnOpenPipe(handle);
         await using var sink = new ServiceClientSecretOutputSink();
         var harness = new RunnerHarness("rotate-credential", sink, handle);
         Assert.Equal(5, await harness.Run());
