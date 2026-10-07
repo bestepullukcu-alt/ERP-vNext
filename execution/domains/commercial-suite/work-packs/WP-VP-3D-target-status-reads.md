@@ -119,3 +119,35 @@ KORU/YAPMA: yalnız okuma, YENİ YAZMA KOMUTU YOK; motor ve oturum yazma yolu 3A
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — CRM Application (2347/0/5, PII flake) · Web (733/0) · mimari (38/1, listesiz sayı DEĞİŞMEZ); build 0 hata; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–9. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "feat(crm,web): WP-VP-3D — per-doctor period status (required/done/remaining/last visit), plan targets and related accounts in bulk reads" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), dueThisWeek kuralı, okuma sayıları, segment rozeti maliyeti, 3A ile birleşecek sıklık kuralının yeri, D5 istek sayısı önce/sonra, mobil not eki. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-07)
+**Commitler:** `4536fad2c` (ajan `c517388cc`, 3A üzerine rebase) + **CT birleştirme düzeltmesi** `ccd93de04`. Push: test dalı.
+
+**Rebase çakışması:** `VisitPlanningModels.cs` — 3A ve 3D önizlemeye aynı iki alanı (`FrequencyStatus`, `RequiredVisitCount`) eklemişti → 3A tarafı alındı (motor dolduruyor). `details.js` kendiliğinden birleşti (`node --check` temiz).
+
+**CT birleştirme düzeltmesi (`ccd93de04`):**
+- 3D okuyucusu "gereken"i politika sayısı olarak alıyordu ("ayda 2" → 2). 3A motoru dönem birimiyle çarpıyor (Q4'te 6) → ekranda yanlış "kalan" çıkardı.
+- `ContactPeriodStatusReader.RequiredInPeriod` artık motorun kuralını kullanıyor: `FrequencyExtendPlanner.UnitsIn` + `FrequencyRequirement.Unknown` (bilinmeyen = dönemde 1).
+- Dönem hafta sayısı `PlanningWeekCalendar.PeriodWeeks`. Çerçeve yalnız hafta sonunu çalışmayan sayar; takvim çağrılmaz — tüm haftayı boşaltan tatil tek olası fark.
+- Test düzeneği "dönemde N"i `cycle` birimiyle kurar. Yeni test: `The_requirement_is_the_policy_count_times_its_period_units_and_unknown_is_one_like_the_engine`.
+
+**CT K13 (3A dahil taban):**
+| Paket | Taban | Sonuç |
+|---|---|---|
+| CRM Application | 2369/0/5 | **2387/0/5** (+18) |
+| Web | 735/0 | **737/0** (+2) |
+| Mimari | 38/1 (27) | **38/1 (27 sabit)** |
+
+**CT sabotajı:**
+- Dönem birimi çarpanı kaldırıldı → 1 kırmızı (yeni test). Geri alındı.
+- "planlı"ya raporlu ziyaretleri katma → **kırmızı yok**. Raporlu + gelecekte tarihli ziyaret testi yok. Pratikte E9-B5 (ileri tarihe rapor yok) bu durumu engelliyor → zayıf korumalı, takip.
+
+**Ajan kararları (kabul):** `planningSessionId` yoksa bugünkü dönem · `lastVisitDate` yalnız temsilcinin kendi ziyaretleri · `planned` taslak ziyaretleri de sayar · doktor listesi kişi türüne göre süzülmez · `dueThisWeek` dönemde tamamlanmış yoksa hemen vade (motorun ilk hafta kuralıyla tutarlı).
+
+**Yetki farkı:** toplu `accounts/related` `crm.account.read` ister (tekil uç `crm.account-relationship.read`). Yalnız hesap okuma yetkili kullanıcı Details'te bağlı eczaneleri artık görür. Kabul; Faz 6 / F-RBAC'ta gözden geçirilir.
+
+**D5:** Details açılışında kurum / eczane kısmı 2N + M → 2 istek (kaynaktan; canlı ölçüm E4'te).
+
+**E4 (CT, bekliyor):** Memorial Şişli doktorları — SADAKAT ÖZDİL `done 1` (rapor `939766be`), son ziyaret 5 Eki · `targets` tek istek · Details istek sayısı.

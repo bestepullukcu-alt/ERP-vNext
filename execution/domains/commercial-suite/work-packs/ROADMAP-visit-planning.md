@@ -12,7 +12,7 @@
 |---|---|---|---|
 | 1 | **E2E-FIX-1 / 2 / 3** — ajanlara gönder (paralel olabilir); dönüşte CT K13 + §37 | kullanıcı → ajan → CT | ☑ üçü de E2 kabul (`4e3150f1a`, `aaa174ba0`, `dd7cad82a`); E4 → #2 |
 | 2 | Bekleyen canlı kontroller (E4): VP-FIX-2 (düzenle korur, Türkçe arama) + VP-2B (aktif kişi sayısı / filtre / seçenekler) + E2E-FIX'ler | fleet yeniden başlat + giriş (kullanıcı), CT kontrol | ☑ **hepsi E4 kabul (2026-10-07)**; test kayıtları: plan `a238bdc5` (2 ziyaret), rapor `939766be` |
-| 3 | **Faz 3** — planlama motoru: K-7 ürün listesi veri modeli (S-1..S-4), B-4 dönem planı / hafta durumu, B-5 gün dengeleme, B-6, B-7, B-9, D3, D5, E7-B1 / B2 kararları | CT paketledi (4 paket: 3A ∥ 3D → 3B → 3C) | ◐ 3A ☑ E2 (`e6c383a5b`); 3D ajanda; 3B gönderilecek |
+| 3 | **Faz 3** — planlama motoru: K-7 ürün listesi veri modeli (S-1..S-4), B-4 dönem planı / hafta durumu, B-5 gün dengeleme, B-6, B-7, B-9, D3, D5, E7-B1 / B2 kararları | CT paketledi (4 paket: 3A ∥ 3D → 3B → 3C) | ◐ 3A ☑ E2 (`e6c383a5b`), 3D ☑ E2 (`ccd93de04`); 3B ajanda; sonra 3C |
 | 4 | **Faz 4** — Web arayüzü mockup v2'ye göre (VP-UI-1..3) | CT paketler | ☐ mockup hazır |
 | 5 | **Faz 5** — mobil sözleşme notu (Faz 2 + 2b + E2E-FIX-1 alanları + K-7) | CT yazar, kullanıcı iletir | ☐ |
 | 6 | **Faz 6** — Planlanan Ziyaretler sayfası (+ ek konular: numune, amaç, ortak ziyaret…) | canlı analiz → mockup? | ☐ |
@@ -117,7 +117,7 @@ Kurallar:
 - ☐ R4 → **0.5** (uç açık, eksik TR etiket verisi). Mobil bilgilendirildi.
 - ☐ Faz 2 + 2b bitince mobil **sözleşme notu** (adlar, sahiplik, `resources/me` adı, `my-accounts`, sayım / filtre / seçenekler).
 
-### Faz 3 — planlama motoru — ◐ **paketlendi 2026-10-07** ([tasarım](DESIGN-VP-FAZ3-planning-engine.md)): ☑ E2 `e6c383a5b` [WP-VP-3A](WP-VP-3A-period-plan-week-status-frequency.md) dönem planı + hafta onayla / yeniden aç + tek plan + sıklık (`C:	mpp-3a`) · [WP-VP-3D](WP-VP-3D-target-status-reads.md) durum okumaları + D5 (`C:	mpp-3d`, 3A ile paralel) · [WP-VP-3B](WP-VP-3B-day-balancing-capacity.md) gün dengeleme + kapasite + yarım gün + taşma (3A sonrası) · [WP-VP-3C](WP-VP-3C-visit-product-list.md) ürün listesi K-7 (3A + 3B sonrası). CT varsayılanları F3-1…F3-6 (tasarım §4): yeniden açma yeni komut (listesiz 26 → 27, Faz 8'de bağlanır), eski planlar olduğu gibi, E7-B1 yalnız ana dal, E7-B2 adım süresi süreye girmez, portföy verisi yok
+### Faz 3 — planlama motoru — ◐ **paketlendi 2026-10-07** ([tasarım](DESIGN-VP-FAZ3-planning-engine.md)): ☑ E2 `e6c383a5b` [WP-VP-3A](WP-VP-3A-period-plan-week-status-frequency.md) dönem planı + hafta onayla / yeniden aç + tek plan + sıklık (`C:	mpp-3a`) · ☑ E2 `4536fad2c` + CT `ccd93de04` [WP-VP-3D](WP-VP-3D-target-status-reads.md) durum okumaları + D5 (`C:	mpp-3d`, 3A ile paralel) · [WP-VP-3B](WP-VP-3B-day-balancing-capacity.md) gün dengeleme + kapasite + yarım gün + taşma (3A sonrası) · [WP-VP-3C](WP-VP-3C-visit-product-list.md) ürün listesi K-7 (3A + 3B sonrası). CT varsayılanları F3-1…F3-6 (tasarım §4): yeniden açma yeni komut (listesiz 26 → 27, Faz 8'de bağlanır), eski planlar olduğu gibi, E7-B1 yalnız ana dal, E7-B2 adım süresi süreye girmez, portföy verisi yok
 - ☐ B-4 dönem planı + hafta durumu / onay / yeniden aç / otomatik sonraki hafta; sıklık yok = dönemde 1; eşit dağılım; eczane sıklığı (B1–B3, MK-3/4/7)
 - ☐ B-5 gün dengeleme, hafta sonu / tatil / yarım gün, kaydırma + nedenler (C1–C3, MK-6/8/9)
 - ☐ B-6 "bu hafta görülmesi gerekenler" + doktor başına hedef / yapılan / kalan / son ziyaret (B4)
