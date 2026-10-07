@@ -105,6 +105,8 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
             }
         }
 
+        // FIX2 K5 — the gauges publish only the tenants this cycle looked at.
+        _metrics.Retain(tenants.Select(tenant => tenant.Id).ToList());
         var level = cycle.Stuck > 0 || cycle.FailedTenants > 0 ? LogLevel.Warning
             : cycle.Abandoned == 0 && cycle.IncompleteTrusted == 0 ? LogLevel.Debug
             : LogLevel.Information;
@@ -112,9 +114,9 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
             level,
             "workflow.start_recovery.cycle Mode={Mode} Tenants={Tenants} Abandoned={Abandoned} Closed={Closed} Raced={Raced} "
             + "Deferred={Deferred} Stuck={Stuck} IncompleteTrusted={IncompleteTrusted} FailedTenants={FailedTenants} "
-            + "AbandonAfterMinutes={AbandonAfterMinutes} CorrelationId={CorrelationId}",
+            + "CappedTenants={CappedTenants} AbandonAfterMinutes={AbandonAfterMinutes} CorrelationId={CorrelationId}",
             close ? "close" : "count-only", tenants.Count, cycle.Abandoned, cycle.Closed, cycle.Raced, cycle.Deferred, cycle.Stuck,
-            cycle.IncompleteTrusted, cycle.FailedTenants, (int)abandonAfter.TotalMinutes, correlationId);
+            cycle.IncompleteTrusted, cycle.FailedTenants, cycle.CappedTenants, (int)abandonAfter.TotalMinutes, correlationId);
     }
 
     private async Task RunTenantAsync(
@@ -127,8 +129,20 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
         CancellationToken ct)
     {
         var cutoff = DateTimeOffset.UtcNow - abandonAfter;
-        var (abandonedPage, abandoned) = await _store.FindAbandonedGenericStartsAsync(cutoff, maxCloses, ct);
-        var incompleteTrusted = await _store.CountIncompleteTrustedStartsAsync(cutoff, ct);
+        var scanLimit = WorkflowStartRecoveryOptions.ScanLimitOf(_options);
+        // FIX2 item 4 — bounded, and the count-only cycle reads no page: one server-side count per kind.
+        IReadOnlyList<Domain.Entities.Workflow.WorkflowInstance> abandonedPage = [];
+        RecoveryCount abandoned;
+        if (close)
+        {
+            (abandonedPage, abandoned) = await _store.FindAbandonedGenericStartsAsync(cutoff, maxCloses, scanLimit, ct);
+        }
+        else
+        {
+            abandoned = await _store.CountAbandonedGenericStartsAsync(cutoff, scanLimit, ct);
+        }
+
+        var incompleteTrusted = await _store.CountIncompleteTrustedStartsAsync(cutoff, scanLimit, ct);
         var stuck = 0L;
 
         if (close)
@@ -167,9 +181,22 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
                     if (closed.StatusCode == 503)
                     {
                         cycle.Deferred++;
-                        _logger.LogInformation(
-                            "workflow.start_recovery.deferred Instance {InstanceId} of tenant {TenantId} could not be written now; next cycle.",
-                            instance.Id, tenantId);
+                        // FIX2 K5 — a 503 that never clears (a Mongo without transactions) is not left at Info for ever:
+                        // after DeferredWarnAfterCycles cycles in a row the instance is named once at Warning.
+                        var cycles = _metrics.NoteDeferred(instance.Id);
+                        if (cycles == Math.Max(1, _options.DeferredWarnAfterCycles))
+                        {
+                            _logger.LogWarning(
+                                "workflow.start_recovery.deferred_persistent Instance {InstanceId} of tenant {TenantId} could not be written for {Cycles} cycles in a row ({ReasonCode}); check that Platform's Mongo runs transactions.",
+                                instance.Id, tenantId, cycles, closed.ReasonCode);
+                        }
+                        else
+                        {
+                            _logger.LogInformation(
+                                "workflow.start_recovery.deferred Instance {InstanceId} of tenant {TenantId} could not be written now; next cycle.",
+                                instance.Id, tenantId);
+                        }
+
                         continue;
                     }
 
@@ -196,10 +223,16 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
             }
         }
 
-        cycle.Abandoned += abandoned;
+        cycle.Abandoned += abandoned.Count;
         cycle.Stuck += stuck;
-        cycle.IncompleteTrusted += incompleteTrusted;
-        _metrics.Record(tenantId, abandoned, stuck, incompleteTrusted);
+        cycle.IncompleteTrusted += incompleteTrusted.Count;
+        var capped = abandoned.Capped || incompleteTrusted.Capped;
+        if (capped)
+        {
+            cycle.CappedTenants++;
+        }
+
+        _metrics.Record(tenantId, abandoned.Count, stuck, incompleteTrusted.Count, capped);
     }
 
     private sealed class Cycle
@@ -211,5 +244,6 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
         public long Stuck { get; set; }
         public long IncompleteTrusted { get; set; }
         public int FailedTenants { get; set; }
+        public int CappedTenants { get; set; }
     }
 }

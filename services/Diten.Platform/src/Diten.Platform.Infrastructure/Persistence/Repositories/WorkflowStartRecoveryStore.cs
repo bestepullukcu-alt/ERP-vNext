@@ -27,40 +27,78 @@ public sealed class WorkflowStartRecoveryStore : TenantRepository<WorkflowInstan
     {
     }
 
-    public async Task<(IReadOnlyList<WorkflowInstance> Page, long Total)> FindAbandonedGenericStartsAsync(
+    public async Task<(IReadOnlyList<WorkflowInstance> Page, RecoveryCount Total)> FindAbandonedGenericStartsAsync(
         DateTimeOffset movedBeforeUtc,
         int maxItems,
+        int scanLimit,
         CancellationToken ct = default)
     {
         // FIX1 K3 — one pass: the $lookup runs once, and $facet splits its result into the page and the count.
-        var pipeline = AbandonedPipeline(movedBeforeUtc);
+        // FIX2 item 4 — over at most scanLimit unmoved Active instances ("scanned" says whether the limit was reached).
+        var pipeline = AbandonedPipeline(movedBeforeUtc, scanLimit);
+        var noTask = new BsonDocument("$match", new BsonDocument("_task", new BsonDocument("$size", 0)));
         pipeline.Add(new BsonDocument("$facet", new BsonDocument
         {
+            { "scanned", new BsonArray { new BsonDocument("$count", "n") } },
             {
                 "page", new BsonArray
                 {
+                    noTask,
                     new BsonDocument("$sort", new BsonDocument("_id", 1)),
                     new BsonDocument("$limit", Math.Max(1, maxItems)),
                     new BsonDocument("$project", new BsonDocument("_task", 0))
                 }
             },
-            { "total", new BsonArray { new BsonDocument("$count", "n") } }
+            { "total", new BsonArray { noTask, new BsonDocument("$count", "n") } }
         }));
         var result = await Collection.Aggregate<BsonDocument>(pipeline, cancellationToken: ct).FirstOrDefaultAsync(ct);
         if (result is null)
         {
-            return ([], 0);
+            return ([], new RecoveryCount(0, false));
         }
 
         var page = result["page"].AsBsonArray
             .Select(document => BsonSerializer.Deserialize<WorkflowInstance>(document.AsBsonDocument))
             .ToList();
-        var total = result["total"].AsBsonArray.Count == 0 ? 0 : result["total"][0]["n"].ToInt64();
-        return (page, total);
+        return (page, new RecoveryCount(CountOf(result["total"]), CountOf(result["scanned"]) >= ScanLimitOf(scanLimit)));
     }
 
-    public async Task<long> CountIncompleteTrustedStartsAsync(DateTimeOffset movedBeforeUtc, CancellationToken ct = default) =>
-        await Collection.CountDocumentsAsync(IncompleteTrusted(movedBeforeUtc), cancellationToken: ct);
+    public async Task<RecoveryCount> CountAbandonedGenericStartsAsync(
+        DateTimeOffset movedBeforeUtc,
+        int scanLimit,
+        CancellationToken ct = default)
+    {
+        // FIX2 item 4 — the count alone: no instance document leaves the server, one $group answers both numbers.
+        var pipeline = AbandonedPipeline(movedBeforeUtc, scanLimit);
+        pipeline.Add(new BsonDocument("$group", new BsonDocument
+        {
+            { "_id", BsonNull.Value },
+            { "scanned", new BsonDocument("$sum", 1) },
+            {
+                "abandoned", new BsonDocument("$sum", new BsonDocument("$cond", new BsonArray
+                {
+                    new BsonDocument("$eq", new BsonArray { new BsonDocument("$size", "$_task"), 0 }), 1, 0
+                }))
+            }
+        }));
+        var result = await Collection.Aggregate<BsonDocument>(pipeline, cancellationToken: ct).FirstOrDefaultAsync(ct);
+        return result is null
+            ? new RecoveryCount(0, false)
+            : new RecoveryCount(result["abandoned"].ToInt64(), result["scanned"].ToInt64() >= ScanLimitOf(scanLimit));
+    }
+
+    public async Task<RecoveryCount> CountIncompleteTrustedStartsAsync(
+        DateTimeOffset movedBeforeUtc, int limit, CancellationToken ct = default)
+    {
+        var bounded = ScanLimitOf(limit);
+        var count = await Collection.CountDocumentsAsync(
+            IncompleteTrusted(movedBeforeUtc), new CountOptions { Limit = bounded }, ct);
+        return new RecoveryCount(count, count >= bounded);
+    }
+
+    private static int ScanLimitOf(int scanLimit) => Math.Max(1, scanLimit);
+
+    private static long CountOf(BsonValue facet) => facet.AsBsonArray.Count == 0 ? 0 : facet[0]["n"].ToInt64();
 
     public async Task<IReadOnlyList<WorkflowInstance>> ListIncompleteTrustedStartsAsync(
         DateTimeOffset movedBeforeUtc,
@@ -98,7 +136,7 @@ public sealed class WorkflowStartRecoveryStore : TenantRepository<WorkflowInstan
         return await Collection.Find(filter).SortBy(x => x.Id).Limit(Math.Max(1, maxItems)).ToListAsync(ct);
     }
 
-    private List<BsonDocument> AbandonedPipeline(DateTimeOffset movedBeforeUtc)
+    private List<BsonDocument> AbandonedPipeline(DateTimeOffset movedBeforeUtc, int scanLimit)
     {
         var moved = Builders<WorkflowInstance>.Filter;
         var match = moved.And(
@@ -112,6 +150,9 @@ public sealed class WorkflowStartRecoveryStore : TenantRepository<WorkflowInstan
         return
         [
             new BsonDocument("$match", rendered),
+            // FIX2 item 4 — the bound: every Active approval waiting longer than the age matches, so the scan is cut here,
+            // before the $lookup, and the caller reports "at least".
+            new BsonDocument("$limit", ScanLimitOf(scanLimit)),
             new BsonDocument("$lookup", new BsonDocument
             {
                 { "from", PlatformCollections.ApprovalTasks },
@@ -130,8 +171,7 @@ public sealed class WorkflowStartRecoveryStore : TenantRepository<WorkflowInstan
                     }
                 },
                 { "as", "_task" }
-            }),
-            new BsonDocument("$match", new BsonDocument("_task", new BsonDocument("$size", 0)))
+            })
         ];
     }
 }

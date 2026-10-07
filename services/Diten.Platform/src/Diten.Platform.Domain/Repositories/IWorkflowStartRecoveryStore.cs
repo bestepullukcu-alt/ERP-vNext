@@ -12,19 +12,30 @@ public interface IWorkflowStartRecoveryStore
     /// <summary>
     /// Generic (non-trusted) instances that are Active, have NOT moved since <paramref name="movedBeforeUtc"/> and have NO
     /// task at all (any status, deleted ones included) — the starts that crashed after writing their instance: at most
-    /// <paramref name="maxItems"/> of them (by id) and how many there are in all (the gauge), in ONE pass over the store
-    /// (FIX1 K3).
+    /// <paramref name="maxItems"/> of them (by id) and how many there are, in ONE pass over the store (FIX1 K3).
+    /// FIX2 item 4 — bounded: at most <paramref name="scanLimit"/> unmoved Active instances are looked at; past that the total
+    /// is a lower bound (<see cref="RecoveryCount.Capped"/>).
     /// </summary>
-    Task<(IReadOnlyList<WorkflowInstance> Page, long Total)> FindAbandonedGenericStartsAsync(
+    Task<(IReadOnlyList<WorkflowInstance> Page, RecoveryCount Total)> FindAbandonedGenericStartsAsync(
         DateTimeOffset movedBeforeUtc,
         int maxItems,
+        int scanLimit,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// FIX2 item 4 — THE COUNT ALONE (the count-only cycle): the same abandoned starts, counted on the server, no page read.
+    /// At most <paramref name="scanLimit"/> unmoved Active instances are looked at; past that the count is "at least".
+    /// </summary>
+    Task<RecoveryCount> CountAbandonedGenericStartsAsync(
+        DateTimeOffset movedBeforeUtc,
+        int scanLimit,
         CancellationToken ct = default);
 
     /// <summary>
     /// BL-539 — trusted reservations still Pending short of Completed that have not moved (no checkpoint advanced) since
-    /// <paramref name="movedBeforeUtc"/>: the gauge.
+    /// <paramref name="movedBeforeUtc"/>: the gauge, counted up to <paramref name="limit"/> (FIX2 item 4).
     /// </summary>
-    Task<long> CountIncompleteTrustedStartsAsync(DateTimeOffset movedBeforeUtc, CancellationToken ct = default);
+    Task<RecoveryCount> CountIncompleteTrustedStartsAsync(DateTimeOffset movedBeforeUtc, int limit, CancellationToken ct = default);
 
     /// <summary>BL-539 (CT decision) — the same reservations, oldest first, at most <paramref name="maxItems"/>: what the recovery
     /// closes.</summary>
@@ -43,3 +54,7 @@ public interface IWorkflowStartRecoveryStore
         Guid? afterId = null,
         CancellationToken ct = default);
 }
+
+/// <summary>FIX2 item 4 — a bounded count: <see cref="Capped"/> = the scan stopped at its limit, so the true number is at
+/// least <see cref="Count"/> (reported as "≥ N").</summary>
+public readonly record struct RecoveryCount(long Count, bool Capped);

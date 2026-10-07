@@ -51,6 +51,10 @@ public static class WorkflowReasonCodes
     /// start. Nothing was written.</summary>
     public const string WorkflowStartNotAbandoned = "WORKFLOW_START_NOT_ABANDONED";
 
+    /// <summary>FIX2 item 5 — a half start (Active, no task) whose replay was refused because the facts or the person changed,
+    /// closed by the engine's taskless close so the edited request opens a new round under a new key.</summary>
+    public const string WorkflowStartSuperseded = "WORKFLOW_START_SUPERSEDED";
+
     /// <summary>BL-540 (1) — an approval or review left live by a deleted task or a replaced review round, closed by the
     /// operator's orphan recovery.</summary>
     public const string WorkflowOrphanClosed = "WORKFLOW_ORPHAN_CLOSED";

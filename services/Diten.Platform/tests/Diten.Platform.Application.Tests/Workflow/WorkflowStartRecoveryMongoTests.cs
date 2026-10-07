@@ -56,6 +56,7 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
     private static readonly Guid OtherApprover = Guid.Parse("0a000000-0000-4000-8000-0000000000a2");
     private static readonly Guid Starter = Guid.Parse("0a000000-0000-4000-8000-0000000000a3");
     private static readonly TimeSpan Age = TimeSpan.FromMinutes(30);
+    private const int ScanLimit = WorkflowStartRecoveryOptions.DefaultScanLimitPerTenant;
 
     private IPlatformDbContext _context = null!;
     private TenantContext _tenant = null!;
@@ -286,7 +287,7 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
         var foreign = await InsertHalfStartAsync(Request("foreign"), withIds: true, tenantId: foreignTenant);
         await AgeAsync(foreign.Id);
 
-        var listed = (await _store.FindAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, 100)).Page;
+        var listed = (await _store.FindAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, 100, ScanLimit)).Page;
         var closed = await CloseHandler().Handle(new CloseAbandonedWorkflowStartCommand(foreign.Id, Age, "corr-foreign"), default);
 
         Assert.DoesNotContain(listed, i => i.Id == foreign.Id);
@@ -312,20 +313,25 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
     }
 
     [Fact]
-    public async Task A_start_being_completed_is_not_closed_under_it()
+    public async Task A_replay_that_crashed_before_its_task_leaves_nothing_behind_and_the_old_start_is_closed()
     {
-        // The replay claims the instance (fixing the ids, refreshing its age) and then crashes before the task: the sweep
-        // must leave it to the next replay, never close it.
+        // FIX2 item 1 — the replay's claim and its task commit together: a crash before the task rolls the claim back, so the
+        // instance is exactly what it was (same version, same ids, same age) — an abandoned start the sweep may close. A replay
+        // after the close is refused and writes nothing (the callers then start a new round).
         var request = Request("claimed");
         var instance = await InsertHalfStartAsync(request, withIds: false);
         await AgeAsync(instance.Id);
         await Assert.ThrowsAsync<InjectedCrashException>(() =>
             Handler(tasks: new CrashBeforeTaskRepository(_tasks)).Handle(Command(request), default));
+        var after = (await _instances.GetByIdAsync(instance.Id))!;
+        Assert.Equal((instance.Version, (Guid?)null), (after.Version, after.InitialApprovalTaskId)); // nothing committed
 
         await SweepAsync(new WorkflowStartRecoveryMetrics());
 
-        Assert.Equal(WorkflowInstanceStatus.Active, (await _instances.GetByIdAsync(instance.Id))!.Status);
-        Assert.True((await Handler().Handle(Command(request), default)).IsSuccessful);
+        Assert.Equal(WorkflowInstanceStatus.Cancelled, (await _instances.GetByIdAsync(instance.Id))!.Status);
+        var replay = await Handler().Handle(Command(request), default);
+        Assert.Equal(409, replay.StatusCode);
+        Assert.Empty(await _tasks.ListByInstanceIdAsync(instance.Id));
     }
 
     [Fact]
@@ -581,6 +587,7 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
         Assert.DoesNotContain(marker, await stderr, StringComparison.OrdinalIgnoreCase);
         // The run reached the connection string: it failed at the driver's parse, not at secret validation.
         Assert.Contains("failure (MongoConfigurationException)", await stderr);
+        Assert.Contains("run the dry run again", await stderr); // FIX2 K2 — the failure says what may have happened
     }
 
     // ── BL-539 (CT decision) · the incomplete trusted reservation ───────────────────────────────────────────────
@@ -928,28 +935,47 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
     [Fact]
     public async Task The_orphan_scan_finds_an_orphan_beyond_the_first_page_and_says_when_it_stopped_early()
     {
-        for (var i = 0; i < 5; i++)
+        // FIX2 K3 — fixed, ordered ids (random ids put an orphan on the first page about one run in twenty-one): five healthy
+        // approvals first, then the two orphans, so with pages of two the orphans sit on pages three and four.
+        var prefix = Guid.NewGuid().ToString("N")[..8];
+        Guid Ordered(int n) => Guid.Parse($"{prefix}-0000-4000-8000-{n:D12}");
+        for (var i = 1; i <= 5; i++)
         {
             var healthy = await SaveTaskItemAsync();
-            healthy.WorkflowInstanceId = await StartForAsync(TaskApprovalService.ApprovalObjectType, healthy.Id, $"healthy-{i}");
+            healthy.WorkflowInstanceId = await InsertOpenApprovalAsync(Ordered(i), healthy.Id);
             Assert.True(await _taskItems.UpdateAsync(healthy, healthy.Version));
         }
 
-        var first = await StartForAsync(TaskApprovalService.ApprovalObjectType, Guid.NewGuid(), "orphan-a");
-        var second = await StartForAsync(TaskApprovalService.ApprovalObjectType, Guid.NewGuid(), "orphan-b");
+        var first = await InsertOpenApprovalAsync(Ordered(6), Guid.NewGuid()); // its task is gone
+        var second = await InsertOpenApprovalAsync(Ordered(7), Guid.NewGuid());
+        SweepWorkflowOrphansHandler Paged() =>
+            new(_store, _instances, _tasks, _taskItems, new RecoveryMediator(this), scanPageSize: 2);
 
-        var all = await new SweepWorkflowOrphansHandler(_store, _instances, _tasks, _taskItems, new RecoveryMediator(this), scanPageSize: 2)
-            .Handle(new SweepWorkflowOrphansCommand(Apply: false, 100, "corr-pages"), default);
-        Assert.Equal(new[] { first, second }.OrderBy(x => x), all.Data!.Items.Select(i => i.WorkflowInstanceId).OrderBy(x => x));
+        var all = await Paged().Handle(new SweepWorkflowOrphansCommand(Apply: false, 100, "corr-pages"), default);
+        Assert.Equal([first, second], all.Data!.Items.Select(i => i.WorkflowInstanceId));
         Assert.False(all.Data.More);
 
-        var page = await new SweepWorkflowOrphansHandler(_store, _instances, _tasks, _taskItems, new RecoveryMediator(this), scanPageSize: 2)
-            .Handle(new SweepWorkflowOrphansCommand(Apply: false, 1, "corr-more"), default);
-        Assert.True(page.Data!.More);
-        var rest = await new SweepWorkflowOrphansHandler(_store, _instances, _tasks, _taskItems, new RecoveryMediator(this), scanPageSize: 2)
-            .Handle(new SweepWorkflowOrphansCommand(Apply: false, 1, "corr-rest", page.Data.NextAfter), default);
-        Assert.Equal(new[] { first, second }.OrderBy(x => x),
-            page.Data.Items.Concat(rest.Data!.Items).Select(i => i.WorkflowInstanceId).OrderBy(x => x));
+        var one = await Paged().Handle(new SweepWorkflowOrphansCommand(Apply: false, 1, "corr-more"), default);
+        Assert.Equal([first], one.Data!.Items.Select(i => i.WorkflowInstanceId));
+        Assert.True(one.Data.More);
+        var two = await Paged().Handle(new SweepWorkflowOrphansCommand(Apply: false, 1, "corr-more-2", one.Data.NextAfter), default);
+        Assert.Equal([second], two.Data!.Items.Select(i => i.WorkflowInstanceId));
+        Assert.True(two.Data.More); // it stopped at its limit on the last orphan: it cannot know nothing follows
+        var none = await Paged().Handle(new SweepWorkflowOrphansCommand(Apply: false, 1, "corr-more-3", two.Data.NextAfter), default);
+        Assert.Empty(none.Data!.Items);
+        Assert.False(none.Data.More);
+    }
+
+    private async Task<Guid> InsertOpenApprovalAsync(Guid id, Guid taskId)
+    {
+        await _context.Database.GetCollection<WorkflowInstance>(PlatformCollections.WorkflowInstances).InsertOneAsync(new WorkflowInstance
+        {
+            Id = id, TenantId = _tenant.TenantId, TemplateId = _templateId, WorkflowTemplateId = _templateId,
+            ObjectType = TaskApprovalService.ApprovalObjectType, ObjectId = taskId.ToString(),
+            ObjectRef = TaskApprovalService.BuildObjectRef(taskId), Status = WorkflowInstanceStatus.Active,
+            StartedAt = DateTimeOffset.UtcNow, LastTransitionAt = DateTimeOffset.UtcNow
+        });
+        return id;
     }
 
     // ── item 6 · the D2 close keeps its answer; the recovery's close reads as never seen ─────────────────────────
@@ -1042,10 +1068,11 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
                 .Set(i => i.StartedAt, DateTimeOffset.UtcNow.AddHours(-3))
                 .Set(i => i.LastTransitionAt, DateTimeOffset.UtcNow)); // started long ago, moved just now
 
-        var (page, total) = await _store.FindAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, 100);
+        var (page, total) = await _store.FindAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, 100, ScanLimit);
 
         Assert.DoesNotContain(page, i => i.Id == instance.Id);
-        Assert.Equal(0, total);
+        Assert.Equal(0, total.Count);
+        Assert.Equal(0, (await _store.CountAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, ScanLimit)).Count);
     }
 
     [Fact]
@@ -1062,11 +1089,12 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
                 i => i.Id == id, Builders<WorkflowInstance>.Update.Set(i => i.StartedAt, DateTimeOffset.UtcNow - startedAgo));
         }
 
-        var (page, total) = await _store.FindAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, 100);
+        var (page, total) = await _store.FindAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, 100, ScanLimit);
 
         Assert.Contains(page, i => i.Id == old.Id);
         Assert.DoesNotContain(page, i => i.Id == young.Id);
-        Assert.Equal(1, total);
+        Assert.Equal(1, total.Count);
+        Assert.Equal(1, (await _store.CountAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, ScanLimit)).Count);
     }
 
     [Fact]
@@ -1078,10 +1106,10 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
         var incomplete = await InsertIncompleteTrustedStartAsync(reservedAgo: TimeSpan.FromHours(2));
 
         var listed = await _store.ListIncompleteTrustedStartsAsync(DateTimeOffset.UtcNow - Age, 100);
-        var counted = await _store.CountIncompleteTrustedStartsAsync(DateTimeOffset.UtcNow - Age);
+        var counted = await _store.CountIncompleteTrustedStartsAsync(DateTimeOffset.UtcNow - Age, ScanLimit);
 
         Assert.Equal([incomplete], listed.Select(i => i.Id));
-        Assert.Equal(1, counted);
+        Assert.Equal(new RecoveryCount(1, false), counted);
     }
 
     // ── K1, K2 ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -1116,8 +1144,631 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
         Assert.Empty(await logs.Find(l => l.WorkflowInstanceId == started.Data.WorkflowInstanceId).ToListAsync()); // nothing written
     }
 
-    private TaskReviewService ReviewService(bool crashBeforeTask = false) =>
-        new(new RecoveryMediator(this, crashBeforeTask), _templates, _instances, _tasks, _tenant, new StarterUser(),
+    // ══ FIX2 ══════════════════════════════════════════════════════════════════════════════════════════════════════
+
+    // ── item 1 · the claim and the task commit together ─────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_first_call_paused_after_its_claim_never_leaves_a_closed_instance_with_an_open_task()
+    {
+        var request = Request("claim-then-pause");
+        var reserveHold = new Hold();
+        var taskHold = new Hold();
+        var start = Task.Run(() => Handler(
+                instances: new HoldAfterReserveRepository(_instances, reserveHold),
+                tasks: new HoldBeforeTaskInsertRepository(_tasks, taskHold))
+            .Handle(Command(request), default));
+        await reserveHold.ReachedAsync();
+        var instance = Assert.Single(await InstancesOfAsync(request));
+        await AgeAsync(instance.Id);
+        reserveHold.Release();
+        await taskHold.ReachedAsync(); // claimed; the task insert is in flight (the pod is paused here)
+        // A claim written on its own is visible now and refreshed the age: the paused pod outlives the age, so age it again.
+        // A claim inside the open transaction is not visible: the recovery sees the instance as it was before it.
+        if ((await _instances.GetByIdAsync(instance.Id))!.Version != instance.Version)
+        {
+            await AgeAsync(instance.Id);
+        }
+
+        var closed = await CloseHandler().Handle(new CloseAbandonedWorkflowStartCommand(instance.Id, Age, "corr-claim-pause"), default);
+        taskHold.Release();
+        var started = await start;
+
+        var stored = (await _instances.GetByIdAsync(instance.Id))!;
+        var tasks = await _tasks.ListByInstanceIdAsync(instance.Id);
+        Assert.False(
+            stored.Status == WorkflowInstanceStatus.Cancelled && tasks.Any(t => t.Status == ApprovalTaskStatus.WaitingApproval),
+            $"a Cancelled instance with an open task (close: {closed.StatusCode} {closed.ReasonCode}, start: {started.StatusCode})");
+        Assert.True(started.IsSuccessful, started.ReasonCode);
+        Assert.False(closed.IsSuccessful);
+        Assert.Equal(WorkflowInstanceStatus.Active, stored.Status);
+        Assert.Single(tasks, t => t.Status == ApprovalTaskStatus.WaitingApproval);
+    }
+
+    // ── item 2 · a first call that loses its claim to a replay ──────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_first_call_that_loses_its_claim_to_a_replay_answers_as_the_replay_does()
+    {
+        var request = Request("double-submit");
+        var hold = new Hold();
+        var first = Task.Run(() => Handler(instances: new HoldAfterReserveRepository(_instances, hold)).Handle(Command(request), default));
+        await hold.ReachedAsync(); // the first call wrote its instance and is paused before its claim
+        var second = await Handler().Handle(Command(request), default); // the double submit completes it
+
+        hold.Release();
+        var answer = await first;
+
+        Assert.True(second.IsSuccessful, second.ReasonCode);
+        Assert.True(answer.IsSuccessful, answer.ReasonCode);
+        Assert.Equal(second.Data!.WorkflowInstanceId, answer.Data!.WorkflowInstanceId);
+        Assert.Equal(second.Data.ApprovalTaskId, answer.Data.ApprovalTaskId);
+        Assert.Single(await _tasks.ListByInstanceIdAsync(answer.Data.WorkflowInstanceId));
+    }
+
+    // ── item 3 · the operator's wiring, as it runs ──────────────────────────────────────────────────────────────
+
+    private const string DatabaseName = "diten_platform_workflow_start_recovery";
+
+    // Production reads its secrets from the PROCESS environment only (SecretRequirementValidator) — measured by the process
+    // test above, which sets them as an operator does. In-process, a non-production environment takes them from this
+    // configuration; every registration and the run are the same.
+    private const string OperatorEnvironment = "Staging";
+
+    private Microsoft.Extensions.Configuration.IConfiguration OperatorConfiguration()
+    {
+        static string Throwaway() => Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+        // The operator's own configuration (the host's appsettings, as the run reads them), with only the database and
+        // throwaway secrets laid over it.
+        var builder = Microsoft.Extensions.Configuration.ChainedBuilderExtensions.AddConfiguration(
+            new Microsoft.Extensions.Configuration.ConfigurationBuilder(),
+            Diten.Platform.API.Configuration.WorkflowOrphanRecoveryOperationalMode.ReadConfiguration(
+                OperatorEnvironment, AppContext.BaseDirectory));
+        return Microsoft.Extensions.Configuration.MemoryConfigurationBuilderExtensions.AddInMemoryCollection(
+                builder, new Dictionary<string, string?>
+            {
+                ["MongoDbSettings:ConnectionString"] = replicaSet.ConnectionString,
+                ["MongoDbSettings:DatabaseName"] = DatabaseName,
+                ["JwtSettings:Secret"] = Throwaway(),
+                ["AuthService:InternalApiKey"] = Throwaway(),
+                ["ModuleRegistrationCredentials:Mdm:ActiveSecret"] = Throwaway()
+            }).Build();
+    }
+
+    private async Task<(int Exit, string Output, string Error)> RunRealOrphanCommandAsync(params string[] args)
+    {
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+        var exit = await WorkflowOrphanRecoveryCommandLine.RunAsync(
+            [WorkflowOrphanRecoveryCommandLine.Argument, .. args],
+            () => Diten.Platform.API.Configuration.WorkflowOrphanRecoveryOperationalMode.BuildServices(
+                OperatorConfiguration(), OperatorEnvironment, AppContext.BaseDirectory),
+            output, error, "operator-host");
+        return (exit, output.ToString(), error.ToString());
+    }
+
+    [Fact]
+    public async Task The_operator_wiring_builds_validated_runs_a_dry_run_and_records_a_system_actor()
+    {
+        using (var provider = Diten.Platform.API.Configuration.WorkflowOrphanRecoveryOperationalMode.BuildServices(
+                   OperatorConfiguration(), OperatorEnvironment, AppContext.BaseDirectory))
+        {
+            Assert.NotNull(provider); // ValidateOnBuild: every registration resolves, scopes included
+        }
+
+        var (orphan, healthy) = await OrphanAndHealthyAsync();
+
+        var (exit, output, error) = await RunRealOrphanCommandAsync("--tenant", _tenant.TenantId.ToString());
+
+        Assert.True(exit == 0, error);
+        Assert.Contains(orphan.ToString("D"), output);
+        Assert.DoesNotContain(healthy.ToString("D"), output);
+        Assert.Equal(WorkflowInstanceStatus.Active, (await _instances.GetByIdAsync(orphan))!.Status);
+        // The audit row the production pipeline queued, read by the production mapper.
+        var row = Assert.Single(await Diten.Platform.Application.Tests.Audit.DataExportAuditTestKit.Outbox(_context.Database)
+            .Find(m => m.TenantId == _tenant.TenantId && m.RequestType == nameof(SweepWorkflowOrphansCommand)).ToListAsync());
+        var written = new Diten.Platform.Infrastructure.Services.Audit.AuditOutboxPayloadMapper()
+            .Map(Diten.Platform.Application.Tests.Audit.DataExportAuditTestKit.ToProcessingItem(row), DateTimeOffset.UtcNow);
+        Assert.Equal(AuditActorType.System, written.ActorType);
+        Assert.Equal(WorkflowOrphanRecoveryCommandLine.ToolName, written.Metadata!["Tool"]?.ToString());
+        Assert.Equal("operator-host", written.Metadata["Host"]?.ToString());
+    }
+
+    [Fact]
+    public async Task The_operator_wiring_exits_4_and_names_an_orphan_it_could_not_close()
+    {
+        var (orphan, _) = await OrphanAndHealthyAsync();
+        var openTask = Assert.Single(await _tasks.ListByInstanceIdAsync(orphan), t => t.Status == ApprovalTaskStatus.WaitingApproval);
+        // The store refuses any change to that one task (a collection validator): the engine's cancel of it fails.
+        var restore = await RefuseChangesToAsync(PlatformCollections.ApprovalTasks, openTask.Id);
+        try
+        {
+            var (exit, output, error) = await RunRealOrphanCommandAsync("--tenant", _tenant.TenantId.ToString(), "--apply", "--expect", "1");
+
+            Assert.True(exit == 4, $"exit {exit}: {error}");
+            Assert.Contains(orphan.ToString("D"), error);
+            Assert.Contains("APPLIED — 0 of 1", output);
+        }
+        finally
+        {
+            await restore();
+        }
+
+        Assert.Equal(WorkflowInstanceStatus.Active, (await _instances.GetByIdAsync(orphan))!.Status);
+    }
+
+    private async Task<Func<Task>> RefuseChangesToAsync(string collection, Guid documentId)
+    {
+        var listed = await (await _context.Database.ListCollectionsAsync(new ListCollectionsOptions
+        {
+            Filter = new BsonDocument("name", collection)
+        })).SingleAsync();
+        var options = listed.GetValue("options", new BsonDocument()).AsBsonDocument;
+        var before = options.GetValue("validator", new BsonDocument()).AsBsonDocument;
+        await _context.Database.RunCommandAsync<BsonDocument>(new BsonDocument
+        {
+            { "collMod", collection },
+            { "validator", new BsonDocument("_id", new BsonDocument("$ne", new BsonBinaryData(documentId, GuidRepresentation.Standard))) },
+            { "validationLevel", "strict" },
+            { "validationAction", "error" }
+        });
+        return async () =>
+        {
+            await _context.Database.RunCommandAsync<BsonDocument>(new BsonDocument
+            {
+                { "collMod", collection },
+                { "validator", before },
+                { "validationLevel", options.GetValue("validationLevel", "strict") },
+                { "validationAction", options.GetValue("validationAction", "error") }
+            });
+        };
+    }
+
+    // ── item 4 · the counting worker and the bounded count ──────────────────────────────────────────────────────
+
+    private sealed class ServiceScopes(IServiceProvider provider) : Microsoft.Extensions.DependencyInjection.IServiceScopeFactory
+    {
+        public Microsoft.Extensions.DependencyInjection.IServiceScope CreateScope() => new Scope(provider);
+
+        private sealed class Scope(IServiceProvider provider) : Microsoft.Extensions.DependencyInjection.IServiceScope
+        {
+            public IServiceProvider ServiceProvider { get; } = provider;
+            public void Dispose() { }
+        }
+    }
+
+    private sealed class SingleService(object service) : IServiceProvider
+    {
+        public object? GetService(Type serviceType) => serviceType.IsInstanceOfType(service) ? service : null;
+    }
+
+    private sealed class ThrowingService : IServiceProvider
+    {
+        public object? GetService(Type serviceType) => throw new InvalidOperationException("the count's store is down");
+    }
+
+    private sealed class WorkerLog : Microsoft.Extensions.Logging.ILogger<WorkflowStartRecoveryCountingService>
+    {
+        public System.Collections.Concurrent.ConcurrentQueue<string> Warnings { get; } = new();
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state,
+            Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (logLevel == Microsoft.Extensions.Logging.LogLevel.Warning)
+            {
+                Warnings.Enqueue(formatter(state, exception) + (exception is null ? string.Empty : " " + exception.Message));
+            }
+        }
+    }
+
+    private static BackgroundJobSchedulerOptions SchedulerWithTheJob(bool on) => new()
+    {
+        Enabled = on, RegisterStandardJobs = on,
+        EnabledJobs = { [WorkflowStartRecoveryCountingService.SweepJobId] = on }
+    };
+
+    private WorkflowStartRecoveryCountingService Worker(
+        IServiceProvider services, bool jobOn, bool countWhileOff, WorkerLog log, Func<TimeSpan, CancellationToken, Task>? delay = null,
+        int intervalMinutes = WorkflowStartRecoveryOptions.DefaultCountIntervalMinutes) =>
+        new(new ServiceScopes(services), Options.Create(SchedulerWithTheJob(jobOn)),
+            Options.Create(new WorkflowStartRecoveryOptions { CountWhileSweepIsOff = countWhileOff, CountIntervalMinutes = intervalMinutes }),
+            log, delay);
+
+    [Fact]
+    public async Task The_counting_worker_counts_only_while_the_job_is_off_and_it_is_switched_on()
+    {
+        var abandoned = await InsertHalfStartAsync(Request("worker"), withIds: true);
+        await AgeAsync(abandoned.Id);
+        var metrics = new WorkflowStartRecoveryMetrics();
+        var job = Job(metrics, new RecoveryMediator(this), new JobLog());
+        var log = new WorkerLog();
+
+        Assert.Equal(WorkflowStartRecoveryCountingService.Turn.SkippedJobRuns,
+            await Worker(new SingleService(job), jobOn: true, countWhileOff: true, log).RunOnceAsync(default));
+        Assert.Equal(WorkflowStartRecoveryCountingService.Turn.SkippedSwitchedOff,
+            await Worker(new SingleService(job), jobOn: false, countWhileOff: false, log).RunOnceAsync(default));
+        Assert.Equal(0, metrics.For(_tenant.TenantId).Abandoned); // neither skipped turn counted
+
+        Assert.Equal(WorkflowStartRecoveryCountingService.Turn.Counted,
+            await Worker(new SingleService(job), jobOn: false, countWhileOff: true, log).RunOnceAsync(default));
+        Assert.Equal(1, metrics.For(_tenant.TenantId).Abandoned);
+        Assert.Equal(WorkflowInstanceStatus.Active, (await _instances.GetByIdAsync(abandoned.Id))!.Status);
+    }
+
+    [Fact]
+    public async Task A_failing_count_is_named_by_its_type_and_the_worker_goes_on()
+    {
+        var log = new WorkerLog();
+
+        var turn = await Worker(new ThrowingService(), jobOn: false, countWhileOff: true, log).RunOnceAsync(default);
+
+        Assert.Equal(WorkflowStartRecoveryCountingService.Turn.Failed, turn);
+        var line = Assert.Single(log.Warnings);
+        Assert.Contains("workflow.start_recovery.count_failed", line);
+        Assert.Contains(nameof(InvalidOperationException), line);
+        Assert.DoesNotContain("the count's store is down", line); // the type only
+    }
+
+    private sealed class RecordingService(object service, List<string> events) : IServiceProvider
+    {
+        public object? GetService(Type serviceType)
+        {
+            lock (events)
+            {
+                events.Add("count");
+            }
+
+            return serviceType.IsInstanceOfType(service) ? service : null;
+        }
+    }
+
+    [Fact]
+    public async Task The_worker_waits_one_bounded_interval_before_its_first_count_and_between_counts()
+    {
+        var events = new List<string>();
+        var waits = new List<TimeSpan>();
+        var third = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var job = Job(new WorkflowStartRecoveryMetrics(), new RecoveryMediator(this), new JobLog());
+
+        Task Delay(TimeSpan interval, CancellationToken stopping)
+        {
+            lock (events)
+            {
+                events.Add("wait");
+                waits.Add(interval);
+            }
+
+            if (waits.Count < 3)
+            {
+                return Task.CompletedTask;
+            }
+
+            third.TrySetResult();
+            return Task.Delay(Timeout.InfiniteTimeSpan, stopping); // until the host stops it
+        }
+
+        var worker = Worker(new RecordingService(job, events), jobOn: false, countWhileOff: true, new WorkerLog(), Delay, intervalMinutes: 1);
+        await worker.StartAsync(default);
+        await third.Task.WaitAsync(TimeSpan.FromSeconds(30));
+        await worker.StopAsync(default);
+
+        Assert.Equal(["wait", "count", "wait", "count", "wait"], events); // the first count comes after a wait, never at start
+        Assert.All(waits, w => Assert.Equal(TimeSpan.FromMinutes(WorkflowStartRecoveryOptions.MinimumCountIntervalMinutes), w));
+        Assert.True(worker.ExecuteTask!.IsCompletedSuccessfully);
+        Assert.Equal(TimeSpan.FromMinutes(15),
+            WorkflowStartRecoveryOptions.CountIntervalOf(new WorkflowStartRecoveryOptions())); // the default
+        Assert.Equal(TimeSpan.FromHours(24),
+            WorkflowStartRecoveryOptions.CountIntervalOf(new WorkflowStartRecoveryOptions { CountIntervalMinutes = 100_000 }));
+    }
+
+    [Fact]
+    public void The_counting_worker_is_a_hosted_service_of_the_application()
+    {
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        Diten.Platform.Application.DependencyInjection.AddApplication(services);
+
+        Assert.Contains(services, d => d.ServiceType == typeof(Microsoft.Extensions.Hosting.IHostedService)
+            && (d.ImplementationType == typeof(WorkflowStartRecoveryCountingService)
+                || d.ImplementationFactory?.Method.ReturnType == typeof(WorkflowStartRecoveryCountingService)));
+    }
+
+    [Fact]
+    public async Task The_count_only_cycle_reads_no_page_and_says_at_least_past_its_limit()
+    {
+        for (var i = 0; i < 3; i++)
+        {
+            await AgeAsync((await InsertHalfStartAsync(Request($"capped-{i}"), withIds: true)).Id);
+        }
+
+        var commands = new List<BsonDocument>();
+        var store = new WorkflowStartRecoveryStore(Observed(commands), _tenant);
+
+        var under = await store.CountAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, scanLimit: 10);
+        var capped = await store.CountAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, scanLimit: 2);
+
+        Assert.Equal(new RecoveryCount(3, false), under);
+        Assert.Equal(new RecoveryCount(2, true), capped);
+        var aggregates = commands.Where(c => c.Contains("aggregate")).ToList();
+        Assert.Equal(2, aggregates.Count);
+        Assert.All(aggregates, c =>
+        {
+            var stages = c["pipeline"].AsBsonArray.Select(stage => stage.AsBsonDocument.Names.Single()).ToList();
+            Assert.Contains("$limit", stages);
+            Assert.Contains("$group", stages);
+            Assert.DoesNotContain("$facet", stages); // no page
+            Assert.True(stages.IndexOf("$limit") < stages.IndexOf("$lookup"), "the bound comes before the join");
+        });
+
+        // The job reports it: past the per-tenant limit (held at 100 at least) the gauge says "at least".
+        var then = DateTimeOffset.UtcNow.AddHours(-2);
+        var template = (await _templates.GetByIdAsync(_templateId))!;
+        await _context.Database.GetCollection<WorkflowInstance>(PlatformCollections.WorkflowInstances).InsertManyAsync(
+            Enumerable.Range(0, 101).Select(i => new WorkflowInstance
+            {
+                TenantId = _tenant.TenantId, TemplateId = _templateId, WorkflowTemplateId = _templateId,
+                TemplateVersionId = template.ActivePublishedVersionId, ObjectType = "recovery-object",
+                ObjectId = Guid.NewGuid().ToString("D"), ObjectRef = "recovery-object|" + Guid.NewGuid().ToString("N"),
+                Status = WorkflowInstanceStatus.Active, StartedAt = then, LastTransitionAt = then
+            }));
+        var metrics = new WorkflowStartRecoveryMetrics();
+        var scope = new TenantContext();
+        var log = new JobLog();
+        var jobCommands = new List<BsonDocument>();
+        await new WorkflowStartRecoverySweepJob(new OneTenantRegistry(_tenant.TenantId), scope, new WorkflowStartRecoveryStore(Observed(jobCommands), scope),
+                new RecoveryMediator(this), metrics, log,
+                Options.Create(new WorkflowStartRecoveryOptions { AbandonAfterMinutes = (int)Age.TotalMinutes, ScanLimitPerTenant = 100 }))
+            .CountOnlyAsync("corr-capped");
+        Assert.True(metrics.CappedFor(_tenant.TenantId));
+        Assert.Equal(100, metrics.For(_tenant.TenantId).Abandoned); // at least 100 (104 are there)
+        Assert.DoesNotContain(jobCommands, c => c.Contains("aggregate") && c.ToJson().Contains("$facet")); // the job read no page
+        Assert.Contains(log.Lines, l => l.Contains("CappedTenants=1", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task The_abandoned_count_walks_the_last_transition_index()
+    {
+        var commands = new List<BsonDocument>();
+        var store = new WorkflowStartRecoveryStore(Observed(commands), _tenant);
+        await store.CountAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, scanLimit: 10);
+        var aggregate = commands.Single(c => c.Contains("aggregate"));
+
+        var explained = await _context.Database.RunCommandAsync<BsonDocument>(new BsonDocument
+        {
+            { "explain", new BsonDocument
+                {
+                    { "aggregate", aggregate["aggregate"] },
+                    { "pipeline", aggregate["pipeline"] },
+                    { "cursor", new BsonDocument() }
+                }
+            },
+            { "verbosity", "queryPlanner" }
+        });
+
+        var plan = explained.ToJson();
+        Assert.Contains("IXSCAN", plan);
+        Assert.Contains("ix_workflow_instances_tenant_status_last_transition", plan);
+        Assert.DoesNotContain("COLLSCAN", plan);
+    }
+
+    /// <summary>A context over the same database whose client records every command it sends (what the store asked).</summary>
+    private IPlatformDbContext Observed(List<BsonDocument> commands)
+    {
+        var settings = MongoClientSettings.FromConnectionString(replicaSet.ConnectionString);
+#pragma warning disable CS0618
+        settings.GuidRepresentation = GuidRepresentation.Standard;
+#pragma warning restore CS0618
+        settings.ClusterConfigurator = builder => builder.Subscribe<MongoDB.Driver.Core.Events.CommandStartedEvent>(e =>
+        {
+            lock (commands)
+            {
+                commands.Add(e.Command.DeepClone().AsBsonDocument);
+            }
+        });
+        var client = new MongoClient(settings);
+        return new PlatformDbContext(client, client.GetDatabase(DatabaseName));
+    }
+
+    // ── item 5 · a half start its replay cannot complete is closed and restarted ────────────────────────────────
+
+    public static TheoryData<string, bool> RefusedReplays => new()
+    {
+        { "approval", true },  // the approval manager was edited after the failed start
+        { "approval", false }, // somebody else submits it
+        { "review", true },    // the reviewer was edited
+        { "review", false }
+    };
+
+    [Theory]
+    [MemberData(nameof(RefusedReplays))]
+    public async Task A_half_start_whose_replay_is_refused_is_superseded_and_a_new_round_opens(string kind, bool editedFacts)
+    {
+        var task = new TaskItem
+        {
+            TenantId = _tenant.TenantId, Title = "Gated work", AssignmentTarget = TaskAssignmentTarget.SelfAssigned,
+            OrganizationUnitId = Guid.NewGuid(),
+            ApprovalRequired = kind == "approval", ApprovalManagerUserId = kind == "approval" ? Approver : null,
+            ReviewRequired = kind == "review", ReviewerCandidateUserId = kind == "review" ? Approver : null
+        };
+        var (objectRef, objectType) = kind == "approval"
+            ? (TaskApprovalService.BuildObjectRef(task.Id), TaskApprovalService.ApprovalObjectType)
+            : (TaskReviewService.BuildObjectRef(task.Id), TaskReviewService.ReviewObjectType);
+        if (kind == "approval")
+        {
+            await ApprovalService(crashBeforeTask: true).TryStartApprovalAsync(task, default);
+        }
+        else
+        {
+            await ReviewService(crashBeforeTask: true).StartReviewAsync(task, default);
+        }
+
+        var half = (await _instances.GetLatestByObjectRefAsync(objectRef, objectType, task.Id.ToString()))!;
+        Assert.Empty(await _tasks.ListByInstanceIdAsync(half.Id)); // non-vacuity: a half start
+        Diten.Platform.Application.Contracts.ICurrentUserContext? user = null;
+        if (editedFacts)
+        {
+            task.ApprovalManagerUserId = kind == "approval" ? OtherApprover : null;
+            task.ReviewerCandidateUserId = kind == "review" ? OtherApprover : null;
+        }
+        else
+        {
+            user = new UserOf(Guid.NewGuid());
+        }
+
+        var opened = kind == "approval"
+            ? await ApprovalService(user: user).TryStartApprovalAsync(task, default)
+            : (await ReviewService(user: user).StartReviewAsync(task, default)).InstanceId;
+
+        var closed = (await _instances.GetByIdAsync(half.Id))!;
+        Assert.Equal((WorkflowInstanceStatus.Cancelled, WorkflowReasonCodes.WorkflowStartSuperseded), (closed.Status, closed.StartClosedReasonCode));
+        var log = Assert.Single(await _logs.ListByInstanceIdAsync(half.Id), l => l.Action == WorkflowTransitionAction.Cancel);
+        Assert.Equal(WorkflowReasonCodes.WorkflowStartSuperseded, log.ReasonCode);
+        Assert.Contains(_audit.Requests, r => r.RequestType == nameof(SupersedeWorkflowHalfStartCommand) && r.EntityId == half.Id);
+        Assert.NotNull(opened);
+        Assert.NotEqual(half.Id, opened);
+        var next = (await _instances.GetByIdAsync(opened!.Value))!;
+        Assert.Equal(WorkflowInstanceStatus.Active, next.Status);
+        var newTask = Assert.Single(await _tasks.ListByInstanceIdAsync(next.Id));
+        Assert.Equal(ApprovalTaskStatus.WaitingApproval, newTask.Status);
+        Assert.Equal(D(editedFacts ? OtherApprover : Approver), newTask.AssigneeRef);
+    }
+
+    [Fact]
+    public async Task The_supersede_never_closes_a_start_that_has_a_task()
+    {
+        var started = await Handler().Handle(Command(Request("whole")), default);
+        Assert.True(started.IsSuccessful, started.ReasonCode);
+
+        var refused = await new RecoveryMediator(this).Send(
+            new SupersedeWorkflowHalfStartCommand(started.Data!.WorkflowInstanceId, "corr-whole"));
+
+        Assert.Equal((409, WorkflowReasonCodes.WorkflowStartNotAbandoned), (refused.StatusCode, refused.ReasonCode));
+        Assert.Equal(WorkflowInstanceStatus.Active, (await _instances.GetByIdAsync(started.Data.WorkflowInstanceId))!.Status);
+    }
+
+    // ── K1 · --expect binds the ids it counted ──────────────────────────────────────────────────────────────────
+
+    private sealed class OrphanAppearsBetweenScans(IMediator inner, Func<Task> appear) : IMediator
+    {
+        private bool _appeared;
+
+        public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken ct = default)
+        {
+            if (request is SweepWorkflowOrphansCommand { Apply: true } && !_appeared)
+            {
+                _appeared = true;
+                await appear();
+            }
+
+            return await inner.Send(request, ct);
+        }
+
+        public Task<object?> Send(object request, CancellationToken ct = default) => inner.Send(request, ct);
+        public Task Send<TRequest>(TRequest request, CancellationToken ct = default) where TRequest : IRequest => inner.Send(request, ct);
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken ct = default) => inner.CreateStream(request, ct);
+        public IAsyncEnumerable<object?> CreateStream(object request, CancellationToken ct = default) => inner.CreateStream(request, ct);
+        public Task Publish(object notification, CancellationToken ct = default) => inner.Publish(notification, ct);
+        public Task Publish<TNotification>(TNotification notification, CancellationToken ct = default) where TNotification : INotification => inner.Publish(notification, ct);
+    }
+
+    [Fact]
+    public async Task The_orphan_command_closes_only_the_orphans_its_dry_run_counted()
+    {
+        var (counted, _) = await OrphanAndHealthyAsync();
+        var late = Guid.Empty;
+        var scope = new TenantContext();
+        IServiceProvider Services()
+        {
+            var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+            Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<ITenantContext>(services, scope);
+            Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddSingleton<IMediator>(services,
+                new OrphanAppearsBetweenScans(new RecoveryMediator(this, scope: scope), async () =>
+                    late = await StartForAsync(TaskApprovalService.ApprovalObjectType, Guid.NewGuid(), "late-orphan")));
+            return Microsoft.Extensions.DependencyInjection.ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(services);
+        }
+
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+        var exit = await WorkflowOrphanRecoveryCommandLine.RunAsync(
+            [WorkflowOrphanRecoveryCommandLine.Argument, "--tenant", _tenant.TenantId.ToString(), "--apply", "--expect", "1"],
+            Services, output, error, "test-host");
+
+        Assert.True(exit == 0, error.ToString());
+        Assert.NotEqual(Guid.Empty, late); // non-vacuity: an orphan did appear between the two scans
+        Assert.Equal(WorkflowInstanceStatus.Cancelled, (await _instances.GetByIdAsync(counted))!.Status);
+        Assert.Equal(WorkflowInstanceStatus.Active, (await _instances.GetByIdAsync(late))!.Status); // left for the next run
+        Assert.Contains("APPLIED — 1 of 1", output.ToString());
+    }
+
+    // ── K2 · an orphan with nothing to cancel; the failure text ─────────────────────────────────────────────────
+
+    [Fact]
+    public async Task An_orphan_with_no_open_task_is_listed_apart_and_is_not_a_failure()
+    {
+        // Its task is gone and so is its approval task (cancelled by hand, the instance left live).
+        var orphan = await StartForAsync(TaskApprovalService.ApprovalObjectType, Guid.NewGuid(), "no-open-task");
+        var approvalTask = Assert.Single(await _tasks.ListByInstanceIdAsync(orphan));
+        await _context.Database.GetCollection<ApprovalTask>(PlatformCollections.ApprovalTasks).UpdateOneAsync(
+            t => t.Id == approvalTask.Id, Builders<ApprovalTask>.Update.Set(t => t.Status, ApprovalTaskStatus.Cancelled));
+
+        var (exit, output, error) = await RunOrphanCommandAsync("--tenant", _tenant.TenantId.ToString(), "--apply", "--expect", "1");
+
+        Assert.True(exit == 0, error);
+        Assert.Contains("NO OPEN TASK — 1", output);
+        Assert.Contains(orphan.ToString("D"), output);
+        Assert.Contains("APPLIED — 0 of 1", output);
+        Assert.DoesNotContain("could not be closed", error);
+    }
+
+    // ── K5 · a 503 that never clears; the gauges expire ─────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_close_that_cannot_be_written_cycle_after_cycle_is_named_once_at_warning()
+    {
+        var abandoned = await InsertHalfStartAsync(Request("no-transactions"), withIds: true);
+        await AgeAsync(abandoned.Id);
+        var metrics = new WorkflowStartRecoveryMetrics();
+        var logs = new JobLog();
+        var unavailable = new AnsweringMediator(Response<CloseAbandonedWorkflowStartResult>.Fail(
+            "no transaction", 503, WorkflowReasonCodes.WorkflowTransitionConflict, "corr"));
+
+        for (var cycle = 0; cycle < 7; cycle++)
+        {
+            await Job(metrics, unavailable, logs).HandleAsync(new WorkflowStartRecoverySweepJobArgs(0), JobContext());
+        }
+
+        Assert.Single(logs.Warnings, l => l.Contains("workflow.start_recovery.deferred_persistent", StringComparison.Ordinal)
+            && l.Contains(abandoned.Id.ToString(), StringComparison.Ordinal));
+        Assert.Empty(logs.Errors);
+        Assert.Equal(0L, metrics.For(_tenant.TenantId).Stuck);
+    }
+
+    private sealed class ManualClock(DateTimeOffset now) : TimeProvider
+    {
+        public DateTimeOffset Now { get; set; } = now;
+        public override DateTimeOffset GetUtcNow() => Now;
+    }
+
+    [Fact]
+    public void A_tenants_gauges_drop_out_when_it_is_no_longer_counted_and_expire_when_counting_stops()
+    {
+        var clock = new ManualClock(DateTimeOffset.UtcNow);
+        using var metrics = new WorkflowStartRecoveryMetrics(clock);
+        var kept = Guid.NewGuid();
+        var gone = Guid.NewGuid();
+        metrics.Record(kept, 1, 0, 0);
+        metrics.Record(gone, 2, 0, 0);
+
+        metrics.Retain([kept]);
+        Assert.Equal([kept], metrics.PublishedTenants());
+
+        clock.Now += WorkflowStartRecoveryMetrics.MaxAge + TimeSpan.FromMinutes(1);
+        Assert.Empty(metrics.PublishedTenants());
+    }
+
+    private TaskReviewService ReviewService(
+        bool crashBeforeTask = false, Diten.Platform.Application.Contracts.ICurrentUserContext? user = null) =>
+        new(new RecoveryMediator(this, crashBeforeTask, user: user), _templates, _instances, _tasks, _tenant, user ?? new StarterUser(),
             Options.Create(new TaskReviewOptions()), NullLogger<TaskReviewService>.Instance);
 
     private WorkflowStartRecoverySweepJob Job(WorkflowStartRecoveryMetrics metrics, IMediator mediator, JobLog log)
@@ -1134,6 +1785,7 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
     {
         public System.Collections.Concurrent.ConcurrentQueue<string> Lines { get; } = new();
         public System.Collections.Concurrent.ConcurrentQueue<string> Errors { get; } = new();
+        public System.Collections.Concurrent.ConcurrentQueue<string> Warnings { get; } = new();
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
         public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
         public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state,
@@ -1141,6 +1793,11 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
         {
             var line = formatter(state, exception);
             Lines.Enqueue(line);
+            if (logLevel == Microsoft.Extensions.Logging.LogLevel.Warning)
+            {
+                Warnings.Enqueue(line);
+            }
+
             if (logLevel >= Microsoft.Extensions.Logging.LogLevel.Error)
             {
                 Errors.Enqueue(line);
@@ -1181,11 +1838,40 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
         public Task<bool> ClaimStartCompletionAsync(Guid instanceId, int expectedVersion, Guid approvalTaskId, Guid assignmentSnapshotId,
             Guid startTransitionLogId, DateTimeOffset now, CancellationToken ct = default) =>
             inner.ClaimStartCompletionAsync(instanceId, expectedVersion, approvalTaskId, assignmentSnapshotId, startTransitionLogId, now, ct);
+        public Task<bool> ClaimStartCompletionAsync(IPlatformTransactionSession session, Guid instanceId, int expectedVersion,
+            Guid approvalTaskId, Guid assignmentSnapshotId, Guid startTransitionLogId, DateTimeOffset now, CancellationToken ct = default) =>
+            inner.ClaimStartCompletionAsync(session, instanceId, expectedVersion, approvalTaskId, assignmentSnapshotId, startTransitionLogId, now, ct);
+    }
+
+    /// <summary>FIX2 item 1 — the task store, holding the start task's insert (inside the claim's transaction when there is one)
+    /// until released: a pod paused after its claim.</summary>
+    private sealed class HoldBeforeTaskInsertRepository(IApprovalTaskRepository inner, Hold hold) : IApprovalTaskRepository
+    {
+        public Task<ApprovalTask> CreateAsync(ApprovalTask task, CancellationToken ct = default) => inner.CreateAsync(task, ct);
+        public async Task<ApprovalTask> CreateAsync(IPlatformTransactionSession session, ApprovalTask task, CancellationToken ct = default)
+        {
+            await hold.PassAsync();
+            return await inner.CreateAsync(session, task, ct);
+        }
+
+        public async Task<ApprovalTask> EnsureTrustedStartTaskAsync(ApprovalTask task, CancellationToken ct = default)
+        {
+            await hold.PassAsync();
+            return await inner.EnsureTrustedStartTaskAsync(task, ct);
+        }
+
+        public Task<ApprovalTask?> GetByIdAsync(Guid id, CancellationToken ct = default) => inner.GetByIdAsync(id, ct);
+        public Task<ApprovalTask?> GetFirstByInstanceIdAsync(Guid id, CancellationToken ct = default) => inner.GetFirstByInstanceIdAsync(id, ct);
+        public Task<ApprovalTask?> GetActiveByInstanceIdAsync(Guid id, CancellationToken ct = default) => inner.GetActiveByInstanceIdAsync(id, ct);
+        public Task<IReadOnlyList<ApprovalTask>> ListByInstanceIdAsync(Guid id, CancellationToken ct = default) => inner.ListByInstanceIdAsync(id, ct);
+        public Task<IReadOnlyList<ApprovalTask>> GetAllForTenantAsync(CancellationToken ct = default) => inner.GetAllForTenantAsync(ct);
+        public Task<bool> UpdateAsync(ApprovalTask task, int version, CancellationToken ct = default) => inner.UpdateAsync(task, version, ct);
     }
 
     /// <summary>The task store, holding the FIRST "list this instance's tasks" (the recovery's read) until released.</summary>
     private sealed class HoldingTaskListRepository(IApprovalTaskRepository inner, Hold hold) : IApprovalTaskRepository
     {
+        public Task<ApprovalTask> CreateAsync(IPlatformTransactionSession session, ApprovalTask task, CancellationToken ct = default) => inner.CreateAsync(session, task, ct);
         public Task<ApprovalTask> CreateAsync(ApprovalTask task, CancellationToken ct = default) => inner.CreateAsync(task, ct);
         public Task<ApprovalTask> EnsureTrustedStartTaskAsync(ApprovalTask task, CancellationToken ct = default) => inner.EnsureTrustedStartTaskAsync(task, ct);
         public Task<ApprovalTask?> GetByIdAsync(Guid id, CancellationToken ct = default) => inner.GetByIdAsync(id, ct);
@@ -1218,14 +1904,16 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
         IRuntimeAssignmentSnapshotRepository? snapshots = null,
         IWorkflowInstanceRepository? instances = null,
         Diten.Platform.Application.Contracts.ICurrentUserContext? user = null) =>
-        new(_templates, _versions, instances ?? _instances, tasks ?? _tasks, snapshots ?? _snapshots, _logs, _tenant, user ?? new StarterUser());
+        new(_templates, _versions, instances ?? _instances, tasks ?? _tasks, snapshots ?? _snapshots, _logs, _tenant, user ?? new StarterUser(),
+            transactions: new PlatformTransactionExecutor(_context));
 
 
     private SweepWorkflowOrphansHandler OrphanHandler() =>
         new(_store, _instances, _tasks, _taskItems, new RecoveryMediator(this));
 
-    private TaskApprovalService ApprovalService(bool crashBeforeTask = false) =>
-        new(new RecoveryMediator(this, crashBeforeTask), _templates, _instances, _tasks, _tenant, new StarterUser(),
+    private TaskApprovalService ApprovalService(
+        bool crashBeforeTask = false, Diten.Platform.Application.Contracts.ICurrentUserContext? user = null) =>
+        new(new RecoveryMediator(this, crashBeforeTask, user: user), _templates, _instances, _tasks, _tenant, user ?? new StarterUser(),
             Options.Create(new TaskApprovalOptions()), NullLogger<TaskApprovalService>.Instance);
 
     private async Task SweepAsync(WorkflowStartRecoveryMetrics metrics, params Guid[] moreTenants)
@@ -1422,6 +2110,7 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
 
     private sealed class HoldingTaskRepository(IApprovalTaskRepository inner, Hold hold) : IApprovalTaskRepository
     {
+        public Task<ApprovalTask> CreateAsync(IPlatformTransactionSession session, ApprovalTask task, CancellationToken ct = default) => inner.CreateAsync(session, task, ct);
         public Task<ApprovalTask> CreateAsync(ApprovalTask task, CancellationToken ct = default) => inner.CreateAsync(task, ct);
         public Task<ApprovalTask> EnsureTrustedStartTaskAsync(ApprovalTask task, CancellationToken ct = default) => inner.EnsureTrustedStartTaskAsync(task, ct);
         public async Task<ApprovalTask?> GetByIdAsync(Guid id, CancellationToken ct = default)
@@ -1477,7 +2166,8 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
     /// <see cref="AuditBehavior{TRequest,TResponse}"/> (no principal → System). With <paramref name="scope"/> the handlers
     /// read the tenant the job set; with <paramref name="crashBeforeTask"/> a start crashes right after its instance.</summary>
     private sealed class RecoveryMediator(
-        WorkflowStartRecoveryMongoTests t, bool crashBeforeTask = false, TenantContext? scope = null) : IMediator
+        WorkflowStartRecoveryMongoTests t, bool crashBeforeTask = false, TenantContext? scope = null,
+        Diten.Platform.Application.Contracts.ICurrentUserContext? user = null) : IMediator
     {
         public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken ct = default)
         {
@@ -1491,8 +2181,13 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
             {
                 StartWorkflowInstanceCommand start => await new StartWorkflowInstanceHandler(
                         templates, new WorkflowTemplateVersionRepository(t._context, tenant), instances,
-                        crashBeforeTask ? new CrashBeforeTaskRepository(tasks) : tasks, snapshots, logs, tenant, new StarterUser())
+                        crashBeforeTask ? new CrashBeforeTaskRepository(tasks) : tasks, snapshots, logs, tenant, user ?? new StarterUser(),
+                        transactions: new PlatformTransactionExecutor(t._context))
                     .Handle(start, ct),
+                SupersedeWorkflowHalfStartCommand supersede => await Audited(supersede, () => new SupersedeWorkflowHalfStartHandler(
+                        instances, tasks, logs, user ?? new StarterUser(), new PlatformTransactionExecutor(t._context),
+                        new IntentWriter(t._context), templates)
+                    .Handle(supersede, ct)),
                 CreateWorkflowDefinitionCommand create => await new CreateWorkflowDefinitionHandler(templates, tenant).Handle(create, ct),
                 PublishWorkflowDefinitionCommand publish => await new PublishWorkflowDefinitionHandler(
                         templates, new WorkflowTemplateVersionRepository(t._context, tenant), tenant, new StarterUser())
@@ -1615,6 +2310,7 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
     {
         private bool _passed;
 
+        public Task<ApprovalTask> CreateAsync(IPlatformTransactionSession session, ApprovalTask task, CancellationToken ct = default) => inner.CreateAsync(session, task, ct);
         public Task<ApprovalTask> CreateAsync(ApprovalTask task, CancellationToken ct = default) => inner.CreateAsync(task, ct);
         public Task<ApprovalTask> EnsureTrustedStartTaskAsync(ApprovalTask task, CancellationToken ct = default) => inner.EnsureTrustedStartTaskAsync(task, ct);
         public Task<ApprovalTask?> GetByIdAsync(Guid id, CancellationToken ct = default) => inner.GetByIdAsync(id, ct);

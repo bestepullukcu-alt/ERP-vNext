@@ -133,6 +133,22 @@ public interface IWorkflowInstanceRepository
         return await UpdateAsync(instance, expectedVersion, ct);
     }
 
+    /// <summary>
+    /// FIX2 item 1 — the same claim inside the Platform transaction that also inserts the start task: the claim and the task
+    /// commit together or not at all, so the abandoned-start sweep never sees a claimed instance without its task. The Mongo
+    /// repository overrides this with a session write; the default only serves in-memory doubles, which have no session.
+    /// </summary>
+    Task<bool> ClaimStartCompletionAsync(
+        IPlatformTransactionSession session,
+        Guid instanceId,
+        int expectedVersion,
+        Guid approvalTaskId,
+        Guid assignmentSnapshotId,
+        Guid startTransitionLogId,
+        DateTimeOffset now,
+        CancellationToken ct = default) =>
+        ClaimStartCompletionAsync(instanceId, expectedVersion, approvalTaskId, assignmentSnapshotId, startTransitionLogId, now, ct);
+
     // WP-CL-BE-3 — the terminal transition writes inside the Platform transaction that also carries the completion
     // outbox event. The Mongo repository overrides this with a session write; the default only serves in-memory
     // test doubles, which have no session to join.

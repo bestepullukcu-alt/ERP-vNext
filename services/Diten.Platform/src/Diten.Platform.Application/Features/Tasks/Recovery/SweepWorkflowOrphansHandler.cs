@@ -62,6 +62,11 @@ public sealed class SweepWorkflowOrphansHandler
             foreach (var instance in page)
             {
                 after = instance.Id;
+                if (request.Apply && request.OnlyIds is { } only && !only.Contains(instance.Id))
+                {
+                    continue; // FIX2 K1 — not in the counted list: left for the next run
+                }
+
                 var reason = await OrphanReasonAsync(instance, liveTasks, ct);
                 if (reason is null)
                 {
@@ -76,7 +81,7 @@ public sealed class SweepWorkflowOrphansHandler
                 string? outcome = null;
                 if (request.Apply)
                 {
-                    outcome = openTasks.Count == 0 ? "NO_OPEN_TASK" : "CLOSED";
+                    outcome = openTasks.Count == 0 ? SweepWorkflowOrphansCommand.NoOpenTask : SweepWorkflowOrphansCommand.Closed;
                     foreach (var taskId in openTasks)
                     {
                         var cancelled = await _mediator.Send(new CancelWorkflowTaskCommand(
@@ -96,7 +101,7 @@ public sealed class SweepWorkflowOrphansHandler
                         }
                     }
 
-                    if (outcome == "CLOSED")
+                    if (outcome == SweepWorkflowOrphansCommand.Closed)
                     {
                         closed++;
                     }

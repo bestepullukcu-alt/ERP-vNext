@@ -90,12 +90,33 @@ public sealed class CloseAbandonedWorkflowStartHandler
                 request.CorrelationId);
         }
 
+        return await CloseTasklessAsync(
+            _terminal, _logs, instance, WorkflowReasonCodes.WorkflowStartAbandoned, CloseAbandonedWorkflowStartResult.SystemActor,
+            key, request.CorrelationId, now, ct);
+    }
+
+    /// <summary>
+    /// The engine's taskless close of an Active generic instance that never wrote its task: Cancelled with
+    /// <paramref name="reasonCode"/>, a log row and the completion event, fenced on the version read (a claim that moved it
+    /// meanwhile wins and nothing is written). Shared by the abandoned-start recovery and the half-start supersede (FIX2 item 5).
+    /// </summary>
+    internal static async Task<Response<CloseAbandonedWorkflowStartResult>> CloseTasklessAsync(
+        WorkflowTerminalTransitionWriter terminal,
+        IWorkflowTransitionLogRepository logs,
+        WorkflowInstance instance,
+        string reasonCode,
+        string actor,
+        string idempotencyKey,
+        string correlationId,
+        DateTimeOffset now,
+        CancellationToken ct)
+    {
         var readVersion = instance.Version;
         var previousStatus = instance.Status;
         instance.Status = WorkflowInstanceStatus.Cancelled;
         instance.CompletedAt = now;
         instance.LastTransitionAt = now;
-        instance.StartClosedReasonCode = WorkflowReasonCodes.WorkflowStartAbandoned;
+        instance.StartClosedReasonCode = reasonCode;
         var log = new WorkflowTransitionLog
         {
             TenantId = instance.TenantId,
@@ -108,33 +129,26 @@ public sealed class CloseAbandonedWorkflowStartHandler
             ToState = null,
             FromStatus = previousStatus.ToString(),
             ToStatus = WorkflowInstanceStatus.Cancelled.ToString(),
-            ActorId = CloseAbandonedWorkflowStartResult.SystemActor,
-            ActorRef = CloseAbandonedWorkflowStartResult.SystemActor,
-            ReasonCode = WorkflowReasonCodes.WorkflowStartAbandoned,
-            IdempotencyKey = key,
-            CorrelationId = request.CorrelationId,
-            SequenceNo = await _logs.GetLatestSequenceNoAsync(instance.Id, ct) + 1,
+            ActorId = actor,
+            ActorRef = actor,
+            ReasonCode = reasonCode,
+            IdempotencyKey = idempotencyKey,
+            CorrelationId = correlationId,
+            SequenceNo = await logs.GetLatestSequenceNoAsync(instance.Id, ct) + 1,
             CreatedAt = now
         };
 
-        var written = await _terminal.CommitTasklessAsync(
-            instance,
-            readVersion,
-            log,
-            CloseAbandonedWorkflowStartResult.SystemActor,
-            WorkflowReasonCodes.WorkflowStartAbandoned,
-            request.CorrelationId,
-            ct);
+        var written = await terminal.CommitTasklessAsync(instance, readVersion, log, actor, reasonCode, correlationId, ct);
         return written.Outcome switch
         {
             WorkflowTerminalWriteOutcome.Committed => Response<CloseAbandonedWorkflowStartResult>.Success(
                 new CloseAbandonedWorkflowStartResult(instance.Id, written.Log!.Id, AlreadyClosed: false),
-                correlationId: request.CorrelationId),
+                correlationId: correlationId),
             WorkflowTerminalWriteOutcome.TransactionUnavailable => Response<CloseAbandonedWorkflowStartResult>.Fail(
-                "The close could not be written right now.", 503, WorkflowReasonCodes.WorkflowTransitionConflict, request.CorrelationId),
+                "The close could not be written right now.", 503, WorkflowReasonCodes.WorkflowTransitionConflict, correlationId),
             _ => Response<CloseAbandonedWorkflowStartResult>.Fail(
                 "The workflow instance changed meanwhile; nothing was closed.", 409,
-                WorkflowReasonCodes.WorkflowTransitionConflict, request.CorrelationId)
+                WorkflowReasonCodes.WorkflowTransitionConflict, correlationId)
         };
     }
 

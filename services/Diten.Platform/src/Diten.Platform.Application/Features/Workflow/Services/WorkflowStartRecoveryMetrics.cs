@@ -12,28 +12,71 @@ namespace Diten.Platform.Application.Features.Workflow.Services;
 /// them (before it closed any).</item>
 /// <item><c>platform.workflow.start_recovery.stuck</c> — of those, the ones the cycle could NOT close.</item>
 /// <item><c>platform.workflow.start_recovery.incomplete_trusted</c> — trusted starts past the age that never completed.</item>
+/// <item><c>platform.workflow.start_recovery.count_capped</c> — 1 when the tenant's count stopped at its scan limit: the two
+/// counts above are then "at least" (FIX2 item 4).</item>
 /// </list>
+/// FIX2 K5 — a tenant's values expire: a cycle drops the tenants it no longer counts (<see cref="Retain"/>), and a value
+/// older than <see cref="MaxAge"/> is not published (the counting stopped; an old number would read as current).
 /// </summary>
 public sealed class WorkflowStartRecoveryMetrics : IDisposable
 {
     public const string MeterName = "Diten.Platform.WorkflowStartRecovery";
 
-    private readonly Meter _meter = new(MeterName);
-    private readonly ConcurrentDictionary<Guid, (long Abandoned, long Stuck, long IncompleteTrusted)> _byTenant = new();
+    /// <summary>Longer than the longest count interval (24 h), so a live tenant's value never blinks out between cycles.</summary>
+    public static readonly TimeSpan MaxAge = TimeSpan.FromHours(25);
 
-    public WorkflowStartRecoveryMetrics()
+    private readonly Meter _meter = new(MeterName);
+    private readonly TimeProvider _clock;
+    private readonly ConcurrentDictionary<Guid, Values> _byTenant = new();
+
+    public WorkflowStartRecoveryMetrics() : this(TimeProvider.System)
     {
+    }
+
+    public WorkflowStartRecoveryMetrics(TimeProvider clock)
+    {
+        _clock = clock;
         _meter.CreateObservableGauge("platform.workflow.start_recovery.abandoned", () => Read(x => x.Abandoned));
         _meter.CreateObservableGauge("platform.workflow.start_recovery.stuck", () => Read(x => x.Stuck));
         _meter.CreateObservableGauge("platform.workflow.start_recovery.incomplete_trusted", () => Read(x => x.IncompleteTrusted));
+        _meter.CreateObservableGauge("platform.workflow.start_recovery.count_capped", () => Read(x => x.Capped ? 1 : 0));
     }
 
-    public void Record(Guid tenantId, long abandoned, long stuck, long incompleteTrusted) =>
-        _byTenant[tenantId] = (abandoned, stuck, incompleteTrusted);
+    public void Record(Guid tenantId, long abandoned, long stuck, long incompleteTrusted, bool capped = false) =>
+        _byTenant[tenantId] = new Values(abandoned, stuck, incompleteTrusted, capped, _clock.GetUtcNow());
+
+    /// <summary>FIX2 K5 — keep only the tenants a cycle has just counted; a tenant no longer active stops being published.</summary>
+    public void Retain(IReadOnlyCollection<Guid> tenantIds)
+    {
+        foreach (var tenantId in _byTenant.Keys.Where(id => !tenantIds.Contains(id)).ToList())
+        {
+            _byTenant.TryRemove(tenantId, out _);
+        }
+    }
+
+    /// <summary>The published tenants right now (expired values excluded).</summary>
+    public IReadOnlyCollection<Guid> PublishedTenants() => Current().Select(entry => entry.Key).ToList();
 
     /// <summary>The last recorded values of one tenant (zeros when the recovery has not looked at it).</summary>
     public (long Abandoned, long Stuck, long IncompleteTrusted) For(Guid tenantId) =>
-        _byTenant.TryGetValue(tenantId, out var values) ? values : (0, 0, 0);
+        _byTenant.TryGetValue(tenantId, out var values) ? (values.Abandoned, values.Stuck, values.IncompleteTrusted) : (0, 0, 0);
+
+    /// <summary>FIX2 item 4 — whether the tenant's last count stopped at its scan limit.</summary>
+    public bool CappedFor(Guid tenantId) => _byTenant.TryGetValue(tenantId, out var values) && values.Capped;
+
+    private readonly ConcurrentDictionary<Guid, int> _deferred = new();
+
+    /// <summary>FIX2 K5 — one more cycle in which <paramref name="instanceId"/> could not be written; returns how many in a
+    /// row. Bounded like the stuck list.</summary>
+    public int NoteDeferred(Guid instanceId)
+    {
+        if (_deferred.Count >= 10_000)
+        {
+            _deferred.Clear();
+        }
+
+        return _deferred.AddOrUpdate(instanceId, 1, (_, cycles) => cycles + 1);
+    }
 
     private readonly ConcurrentDictionary<Guid, byte> _reportedStuck = new();
 
@@ -49,10 +92,22 @@ public sealed class WorkflowStartRecoveryMetrics : IDisposable
         return _reportedStuck.TryAdd(instanceId, 0);
     }
 
-    public void Unstuck(Guid instanceId) => _reportedStuck.TryRemove(instanceId, out _);
+    public void Unstuck(Guid instanceId)
+    {
+        _reportedStuck.TryRemove(instanceId, out _);
+        _deferred.TryRemove(instanceId, out _);
+    }
 
     public void Dispose() => _meter.Dispose();
 
-    private IEnumerable<Measurement<long>> Read(Func<(long Abandoned, long Stuck, long IncompleteTrusted), long> pick) =>
-        _byTenant.Select(entry => new Measurement<long>(pick(entry.Value), new KeyValuePair<string, object?>("tenant", entry.Key.ToString("D"))));
+    private IEnumerable<KeyValuePair<Guid, Values>> Current()
+    {
+        var oldest = _clock.GetUtcNow() - MaxAge;
+        return _byTenant.Where(entry => entry.Value.RecordedAt >= oldest);
+    }
+
+    private IEnumerable<Measurement<long>> Read(Func<Values, long> pick) =>
+        Current().Select(entry => new Measurement<long>(pick(entry.Value), new KeyValuePair<string, object?>("tenant", entry.Key.ToString("D"))));
+
+    private sealed record Values(long Abandoned, long Stuck, long IncompleteTrusted, bool Capped, DateTimeOffset RecordedAt);
 }

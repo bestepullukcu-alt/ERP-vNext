@@ -18,8 +18,9 @@ namespace Diten.Platform.Application.Features.Tasks.Recovery;
 /// </list>
 /// The connection comes from the host's own configuration and environment, never the command line, and is never written to
 /// any output: a failure names only the exception's type (the BL-529 FIX9/FIX10 rules).
-/// <para>Exit codes: 0 done · 1 failure (type only) · 2 usage · 4 some orphans were not closed (listed) · 5 the count was not
-/// the expected one (nothing closed).</para>
+/// <para>Exit codes: 0 done · 1 failure (type only; an --apply run may have closed some before it) · 2 usage · 4 some orphans
+/// could not be closed (listed) · 5 the count was not the expected one (nothing closed). An orphan with no open task is listed
+/// apart and is not a failure (FIX2 K2).</para>
 /// </summary>
 public static class WorkflowOrphanRecoveryCommandLine
 {
@@ -73,37 +74,56 @@ public static class WorkflowOrphanRecoveryCommandLine
                 return 0;
             }
 
-            var applied = await ScanAsync(mediator, apply: true, correlationId, machineName, ct);
-            var left = applied.Where(i => i.Outcome != "CLOSED").ToList();
-            if (left.Count > 0)
+            // FIX2 K1 — only what the dry run above counted (and --expect checked) is closed; a newer orphan waits for the next run.
+            var counted = found.Select(i => i.WorkflowInstanceId).ToHashSet();
+            var applied = await ScanAsync(mediator, apply: true, correlationId, machineName, ct, counted);
+            var closed = applied.Count(i => i.Outcome == SweepWorkflowOrphansCommand.Closed);
+            // FIX2 K2 — an orphan with no open task has nothing to cancel: counted apart, never a failure (see the runbook).
+            var noOpenTask = applied.Where(i => i.Outcome == SweepWorkflowOrphansCommand.NoOpenTask).ToList();
+            var failed = applied
+                .Where(i => i.Outcome is not (SweepWorkflowOrphansCommand.Closed or SweepWorkflowOrphansCommand.NoOpenTask))
+                .ToList();
+            if (failed.Count > 0)
             {
-                error.WriteLine($"WARNING: {left.Count} orphan(s) were not closed:");
-                foreach (var item in left)
+                error.WriteLine($"WARNING: {failed.Count} orphan(s) could not be closed:");
+                foreach (var item in failed)
                 {
                     error.WriteLine($"  instance {item.WorkflowInstanceId:D}  ({item.Outcome})");
                 }
             }
 
-            output.WriteLine($"APPLIED — {applied.Count - left.Count} of {applied.Count} orphan(s) closed.");
-            return left.Count > 0 ? 4 : 0;
+            if (noOpenTask.Count > 0)
+            {
+                output.WriteLine($"NO OPEN TASK — {noOpenTask.Count} orphan(s) had nothing to cancel (left as they are; see the runbook):");
+                foreach (var item in noOpenTask)
+                {
+                    output.WriteLine($"  instance {item.WorkflowInstanceId:D}");
+                }
+            }
+
+            output.WriteLine($"APPLIED — {closed} of {applied.Count} orphan(s) closed.");
+            return failed.Count > 0 ? 4 : 0;
         }
         catch (Exception failure)
         {
             // Never the message: a configuration or driver exception can carry the connection string.
-            error.WriteLine($"failure ({failure.GetType().Name}); nothing was closed after it, and no message is printed.");
+            // FIX2 K2 — the truth: an --apply run may have closed some orphans before it failed.
+            error.WriteLine($"failure ({failure.GetType().Name}); no message is printed. An --apply run may have closed some "
+                + "orphans before it stopped: run the dry run again to see what is left.");
             return 1;
         }
     }
 
     private static async Task<List<WorkflowOrphanItem>> ScanAsync(
-        IMediator mediator, bool apply, string correlationId, string machineName, CancellationToken ct)
+        IMediator mediator, bool apply, string correlationId, string machineName, CancellationToken ct,
+        IReadOnlyCollection<Guid>? onlyIds = null)
     {
         var items = new List<WorkflowOrphanItem>();
         Guid? after = null;
         while (true)
         {
             var page = await mediator.Send(new SweepWorkflowOrphansCommand(
-                apply, SweepWorkflowOrphansHandler.MaxMaxItems, correlationId, after, ToolName, machineName), ct);
+                apply, SweepWorkflowOrphansHandler.MaxMaxItems, correlationId, after, ToolName, machineName, onlyIds), ct);
             if (!page.IsSuccessful || page.Data is null)
             {
                 throw new InvalidOperationException(page.ReasonCode ?? "WORKFLOW_ORPHAN_SWEEP_FAILED");

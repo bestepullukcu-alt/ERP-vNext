@@ -24,8 +24,31 @@ public sealed class WorkflowStartRecoveryOptions
     /// <summary>FIX1 item 4 — while the recovery job is off, a read-only cycle still feeds the gauges.</summary>
     public bool CountWhileSweepIsOff { get; set; } = true;
 
-    /// <summary>FIX1 item 4 — how often that read-only cycle runs.</summary>
-    public int CountIntervalMinutes { get; set; } = 10;
+    /// <summary>FIX1 item 4 · FIX2 item 4 — how often that read-only cycle runs: default 15 minutes, held between
+    /// <see cref="MinimumCountIntervalMinutes"/> and <see cref="MaximumCountIntervalMinutes"/>. Every Platform replica runs
+    /// its own (see the runbook: the cost is per replica).</summary>
+    public int CountIntervalMinutes { get; set; } = DefaultCountIntervalMinutes;
+
+    public const int DefaultCountIntervalMinutes = 15;
+    public const int MinimumCountIntervalMinutes = 5;
+    public const int MaximumCountIntervalMinutes = 24 * 60;
+
+    /// <summary>FIX2 item 4 — the most unmoved Active instances one tenant's count looks at (every approval waiting longer
+    /// than the age is one). Past it the gauges report "at least" (<c>count_capped</c> = 1). Held between 100 and 100 000.</summary>
+    public int ScanLimitPerTenant { get; set; } = DefaultScanLimitPerTenant;
+
+    public const int DefaultScanLimitPerTenant = 5_000;
+
+    /// <summary>FIX2 K5 — after this many cycles in a row in which the same instance could not be written (503: no
+    /// transaction), it is named once at Warning; before that, Info.</summary>
+    public int DeferredWarnAfterCycles { get; set; } = 5;
+
+    internal static TimeSpan CountIntervalOf(WorkflowStartRecoveryOptions? options) =>
+        TimeSpan.FromMinutes(Math.Clamp(
+            options?.CountIntervalMinutes ?? DefaultCountIntervalMinutes, MinimumCountIntervalMinutes, MaximumCountIntervalMinutes));
+
+    internal static int ScanLimitOf(WorkflowStartRecoveryOptions? options) =>
+        Math.Clamp(options?.ScanLimitPerTenant ?? DefaultScanLimitPerTenant, 100, 100_000);
 
     internal static TimeSpan AbandonAfterOf(WorkflowStartRecoveryOptions? options) =>
         TimeSpan.FromMinutes(Math.Max(MinimumAbandonAfterMinutes, options?.AbandonAfterMinutes ?? DefaultAbandonAfterMinutes));

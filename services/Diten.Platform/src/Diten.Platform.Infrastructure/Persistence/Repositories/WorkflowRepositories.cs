@@ -406,21 +406,47 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
         DateTimeOffset now,
         CancellationToken ct = default)
     {
-        var filter = Builders<WorkflowInstance>.Filter.And(
-            ExecutionFilter,
-            Builders<WorkflowInstance>.Filter.Eq(x => x.Id, instanceId),
-            Builders<WorkflowInstance>.Filter.Eq(x => x.Version, expectedVersion),
-            Builders<WorkflowInstance>.Filter.Eq(x => x.Status, WorkflowInstanceStatus.Active));
-        var update = Builders<WorkflowInstance>.Update
-            .Set(x => x.InitialApprovalTaskId, approvalTaskId)
-            .Set(x => x.InitialAssignmentSnapshotId, assignmentSnapshotId)
-            .Set(x => x.StartTransitionLogId, startTransitionLogId)
-            .Set(x => x.LastTransitionAt, now)
-            .Set(x => x.UpdatedAt, now)
-            .Inc(x => x.Version, 1);
+        var (filter, update) = StartClaim(instanceId, expectedVersion, approvalTaskId, assignmentSnapshotId, startTransitionLogId, now);
         var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
         return result.IsAcknowledged && result.ModifiedCount == 1;
     }
+
+    // FIX2 item 1 — the same claim, inside the transaction that also inserts the start task.
+    public async Task<bool> ClaimStartCompletionAsync(
+        IPlatformTransactionSession session,
+        Guid instanceId,
+        int expectedVersion,
+        Guid approvalTaskId,
+        Guid assignmentSnapshotId,
+        Guid startTransitionLogId,
+        DateTimeOffset now,
+        CancellationToken ct = default)
+    {
+        var handle = PlatformMongoTransactionSession.Require(session, _dbContext);
+        var (filter, update) = StartClaim(instanceId, expectedVersion, approvalTaskId, assignmentSnapshotId, startTransitionLogId, now);
+        var result = await Collection.UpdateOneAsync(handle, filter, update, cancellationToken: ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
+    }
+
+    private (FilterDefinition<WorkflowInstance> Filter, UpdateDefinition<WorkflowInstance> Update) StartClaim(
+        Guid instanceId,
+        int expectedVersion,
+        Guid approvalTaskId,
+        Guid assignmentSnapshotId,
+        Guid startTransitionLogId,
+        DateTimeOffset now) =>
+        (Builders<WorkflowInstance>.Filter.And(
+                ExecutionFilter,
+                Builders<WorkflowInstance>.Filter.Eq(x => x.Id, instanceId),
+                Builders<WorkflowInstance>.Filter.Eq(x => x.Version, expectedVersion),
+                Builders<WorkflowInstance>.Filter.Eq(x => x.Status, WorkflowInstanceStatus.Active)),
+            Builders<WorkflowInstance>.Update
+                .Set(x => x.InitialApprovalTaskId, approvalTaskId)
+                .Set(x => x.InitialAssignmentSnapshotId, assignmentSnapshotId)
+                .Set(x => x.StartTransitionLogId, startTransitionLogId)
+                .Set(x => x.LastTransitionAt, now)
+                .Set(x => x.UpdatedAt, now)
+                .Inc(x => x.Version, 1));
 }
 
 public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IApprovalTaskRepository

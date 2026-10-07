@@ -25,17 +25,26 @@ namespace Diten.Platform.Application.Features.Tasks.Recovery;
 /// <param name="After">FIX1 item 5 — resume after this instance id (the <see cref="WorkflowOrphanSweepResult.NextAfter"/> of the
 /// previous call): the scan walks EVERY open instance page by page; a call stops only when it has found
 /// <paramref name="MaxItems"/> orphans, and then says where to go on.</param>
+/// <param name="OnlyIds">FIX2 K1 — with <paramref name="Apply"/>, close ONLY these (the ids the operator's dry run counted
+/// and <c>--expect</c> checked); an orphan that appeared between the two scans is left for the next run.</param>
 public sealed record SweepWorkflowOrphansCommand(
     bool Apply,
     int MaxItems,
     string CorrelationId,
     Guid? After = null,
     string? Tool = null,
-    string? Host = null) : IRequest<Response<WorkflowOrphanSweepResult>>, IAuditableCommand, IAuditMetadataProvider
+    string? Host = null,
+    IReadOnlyCollection<Guid>? OnlyIds = null) : IRequest<Response<WorkflowOrphanSweepResult>>, IAuditableCommand, IAuditMetadataProvider
 {
     public const string SystemActor = "system:workflow-orphan-recovery";
     public const string TaskDeleted = "TASK_DELETED";
     public const string ReviewRoundReplaced = "REVIEW_ROUND_REPLACED";
+
+    /// <summary>FIX2 K2 — an orphan with no open approval task: there is nothing for the engine's cancel to close. It is
+    /// counted apart, not as a failure: one with no task at all is the abandoned-start recovery's (its taskless close and age
+    /// floor); one whose tasks are all decided but which is still live is listed for a person to look at (runbook).</summary>
+    public const string NoOpenTask = "NO_OPEN_TASK";
+    public const string Closed = "CLOSED";
 
     public AuditRequestMetadata GetAuditMetadata() => new(
         AuditCategory.PlatformConfiguration,
@@ -63,7 +72,8 @@ public sealed record WorkflowOrphanSweepResult(
     bool More = false,
     Guid? NextAfter = null);
 
-/// <param name="Outcome">null on a dry run; otherwise <c>CLOSED</c>, or the reason code the cancel answered.</param>
+/// <param name="Outcome">null on a dry run; otherwise <c>CLOSED</c>, <c>NO_OPEN_TASK</c> (nothing to cancel; counted apart),
+/// or the reason code the cancel answered.</param>
 public sealed record WorkflowOrphanItem(
     Guid WorkflowInstanceId,
     string ObjectType,
