@@ -121,3 +121,31 @@ KORU/YAPMA: YENİ YAZMA KOMUTU YOK (AUD-001 26 sabit); mobil sözleşmesi yalnı
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — Web (699/0) · CRM Application (2303/0/5, PII flake) · mimari (38/1, 26 SABİT); build 0 hata; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–8. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "fix(crm,web): WP-E2E-FIX-1 — visit execution shows planned content, report carries planned journey/stage, not-yet-due guard, apply/edit UX" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), E9-B4 kök yanıt şekli, E8-B1 toast kökü, "bugün"ün saat dilimi kaynağı, mobil için yeni alan/kod listesi. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-07)
+**Commit:** `4e3150f1a` (ajan `87555b958`, test dalının iki belge commit'i üzerine rebase, ff). Push: test dalı.
+
+**CT K13:**
+| Paket | Taban | Sonuç |
+|---|---|---|
+| CRM Application | 2303/0/5 | **2313 + 1 PII flake (bilinen) / 5** (+11 yeni) |
+| Web | 699/0 | **711/0** (+12 yeni) |
+| Mimari | 38/1 (26) | **38/1 (26 sabit)** |
+
+**Kod okuması:**
+- `plannedContent` planlanan ziyaretin `ContentItems`'ından, ek sorgu yok; eski alanlar aynı.
+- Tarih kuralı `VisitReportValidation.ValidateDue` tek yerde; `RecordVisitOutcome` (rescheduled hariç) ve `SubmitVisitReport` kullanıyor; 409 `visit_not_yet_due`. `TimeProvider` isteğe bağlı parametre (DI'da kayıtlı değilse sistem saati).
+- E9-B4 kökü: başarısız `Response<Guid>`'de `data` = boş GUID metni → istemci `body.data || body` ile `errors`'u kaçırıyordu. Hata artık kökteki `errors`'tan; 20 kod TR eşlemeli; vekil ProblemDetails'i zarfa çeviriyor.
+- Aşama seçimi yeni vekil `api/journeys/{id}/stages` (takvimle aynı okuma izni); `journeyId / stageId` rapora gidiyor; `JourneyProgress` yazma yok.
+- E7-B4: düzenlemede `sessionId`. E8-B1: onay + yeniden yükleme + `sessionStorage` toast.
+
+**CT sabotajı (ajanınkinden ayrı):** tarih kuralı `>` → `>=` (bugün de yasak) + takvimde `StageName` boş → **9 test kırmızı** (`Today_and_past_visits_take_an_outcome_and_a_report(0)`, `Calendar_item_carries_…` ve mevcut rapor testleri). Geri alındı.
+
+**Kabul edilen sınırlar (takip):**
+- "Bugün" **UTC takvim günü** (CRM'de kiracı saat dilimi yok). TR'de 00:00–03:00 arası o günün ziyareti "günü gelmedi" sayılır; saha pratiğinde etkisiz. Kiracı saat dilimi kaynağı geldiğinde ona bağlanır (takip).
+- Çok ürünlü ziyarette aşama seçici yalnız ilk ürünün yolculuğu için (rapor belgesinde tek `ActualContent`). Ürün başına gerçekleşen → **SB-3c** (`ContentActuals[]`).
+- E8-B1 toast'ın eski kökü kodda bulunamadı (5 sn'de kayboluyordu, kalıcı değişiklik yoktu); yeni akışta yeniden yükleme sonrası gösteriliyor → E4'te bakılır.
+
+**E4 (CT, bekliyor; fleet yeniden başlatma — CRM + Web değişti):** 19 Eki kartı `TUTUKON · Farkındalık` + rapor formunda adımlar · 9 Kas kartında düğmeler pasif · geçmiş tarihli test ziyaretinde aşama seçimi + Mongo'da `journeyId` (kayıt, onayla) · boş sonuç kodunda TR mesaj · başlık "Ziyaret Yürütme" · Düzenle → Kaydet doğru sayfa · Uygula onay + toast + kilit (yeni test taslağında, onayla).
