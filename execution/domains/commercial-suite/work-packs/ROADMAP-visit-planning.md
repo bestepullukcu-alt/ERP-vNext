@@ -12,11 +12,11 @@
 |---|---|---|---|
 | 1 | **E2E-FIX-1 / 2 / 3** — ajanlara gönder (paralel olabilir); dönüşte CT K13 + §37 | kullanıcı → ajan → CT | ☑ üçü de E2 kabul (`4e3150f1a`, `aaa174ba0`, `dd7cad82a`); E4 → #2 |
 | 2 | Bekleyen canlı kontroller (E4): VP-FIX-2 (düzenle korur, Türkçe arama) + VP-2B (aktif kişi sayısı / filtre / seçenekler) + E2E-FIX'ler | fleet yeniden başlat + giriş (kullanıcı), CT kontrol | ☐ |
-| 3 | **SB-3c** — ziyaret başlat / tamamla, gerçekte sunulanlar (`ContentActuals`), yolculuk ilerlemesi yazılır (E9-B1); "son ziyaret" ürün kaynağının ön koşulu | CT paketler | ☐ |
-| 4 | **Faz 3** — planlama motoru: K-7 ürün listesi veri modeli (S-1..S-4), B-4 dönem planı / hafta durumu, B-5 gün dengeleme, B-6, B-7, B-9, D3, D5, E7-B1 / B2 kararları | CT paketler (2–3 paket) | ☐ |
-| 5 | **Faz 4** — Web arayüzü mockup v2'ye göre (VP-UI-1..3) | CT paketler | ☐ mockup hazır |
-| 6 | **Faz 5** — mobil sözleşme notu (Faz 2 + 2b + E2E-FIX-1 alanları + K-7) | CT yazar, kullanıcı iletir | ☐ |
-| 7 | **Faz 6** — Planlanan Ziyaretler sayfası (+ ek konular: numune, amaç, ortak ziyaret…) | canlı analiz → mockup? | ☐ |
+| 3 | **Faz 3** — planlama motoru: K-7 ürün listesi veri modeli (S-1..S-4), B-4 dönem planı / hafta durumu, B-5 gün dengeleme, B-6, B-7, B-9, D3, D5, E7-B1 / B2 kararları | CT paketler (2–3 paket) | ☐ |
+| 4 | **Faz 4** — Web arayüzü mockup v2'ye göre (VP-UI-1..3) | CT paketler | ☐ mockup hazır |
+| 5 | **Faz 5** — mobil sözleşme notu (Faz 2 + 2b + E2E-FIX-1 alanları + K-7) | CT yazar, kullanıcı iletir | ☐ |
+| 6 | **Faz 6** — Planlanan Ziyaretler sayfası (+ ek konular: numune, amaç, ortak ziyaret…) | canlı analiz → mockup? | ☐ |
+| 7 | **SB-3c** — ziyaret başlat / tamamla, gerçekte sunulanlar (`ContentActuals`), yolculuk ilerlemesi yazılır (E9-B1); "son ziyaret" ürün kaynağının ön koşulu | CT paketler | ☐ **ertelendi (kullanıcı kararı 2026-10-07)** — o zamana kadar K-7'deki "son ziyaret" kaynağı boş kalır, yolculuk aşaması yalnız plandaki sıradan ilerler |
 | 8 | **Faz 8** — AUD-CRM-1 merkezi denetim → mimari test yeşil → main'e PR | CT paketler, 2 karar sorulur | ☐ en son |
 | — | Yan işler: 0.5 TR referans etiketleri (veri) · read-all grant script (rol seçimi) · CYC-UI-FIX-2 E4 · backlog kararları (E2-B2, E4-B4, E9-B4b) | kullanıcı / sonra | ☐ |
 
@@ -103,7 +103,7 @@ Plan: [E2E-TUTUKON-content-to-visit-plan.md](E2E-TUTUKON-content-to-visit-plan.m
   - ☑ **E2 kabul `4e3150f1a`** (CRM 2313+flake, Web 711/0, mimari 26 sabit; ☐ E4) [WP-E2E-FIX-1](WP-E2E-FIX-1-visit-execution-report-and-plan-apply.md) Ziyaret Yürütme: "ne sunacağım" (E9-B2), rapor plandaki yolculuk / aşamayı taşır + aşama seçimi (E9-B1 ön koşul, E9-B3), sonuç kodu hatası (E9-B4), ileri tarih kuralı (E9-B5), onay / etiket / başlık (E9-B6), düzenle 404 (E7-B4), uygula onay + kilit (E8-B1) — worktree `C:\tmp\e2e-fix-1`
   - ☑ **E2 kabul `dd7cad82a`** (CRM 2347/0/5, Web 733/0, mimari 26; ☐ E4) [WP-E2E-FIX-2](WP-E2E-FIX-2-knowledge-chain-authoring-screens.md) İçerik / Bilgi Yolu / Yolculuk: E2-B1, E2-B3, içerik sürümü, E3-B1, E3-B3, E3-B4 (yalnız gönderen geri çeker — CT kuralı), E4-B1..B3 — worktree `C:\tmp\e2e-fix-2`
   - ☑ **E2 kabul `aaa174ba0`** (CRM 2342/0/5, Web 721/0, mimari 26; ☐ E4) [WP-E2E-FIX-3](WP-E2E-FIX-3-segment-play-frequency-screens.md) Segment / Oyun / Sıklık: **⚠ E5-B2 eski oyun sürümü yenisini eziyor (çözücü v1'i seçiyor)**, E5-B1, E5-B3, E1-B1, E1-B3, E1-B2 aday indirme, Türkçe arama takibi, E6-B1 — worktree `C:\tmp\e2e-fix-3`
-  - Pakete girmeyenler: E9-B1 yazan uç → **SB-3c** · E7-B1 / B2 / B3, E8-B2 → Faz 3 · E7-B5 → Faz 4 · E2-B2, E4-B4, E9-B4b → Backlog
+  - Pakete girmeyenler: E9-B1 yazan uç → **SB-3c** (ertelendi, Faz 6'dan sonra) · E7-B1 / B2 / B3, E8-B2 → Faz 3 · E7-B5 → Faz 4 · E2-B2, E4-B4, E9-B4b → Backlog
 
 Kurallar:
 - Yazmalar test kapsamında onaylı; CT her yazmayı önceden söyler.
