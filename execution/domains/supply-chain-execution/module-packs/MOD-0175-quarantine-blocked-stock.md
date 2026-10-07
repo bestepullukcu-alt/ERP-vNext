@@ -14,8 +14,8 @@ screens:
   - module: RetestQueue
     data_mode: server
 entity_base: EntityBase
-status: draft
-status_note: "draft — WP-0175-P0 (CT-MVP1-0175-P0 v1), 2026-10-07. Owner decisions KQ-A…KQ-I (2026-10-07) recorded in §19 as DECISIONS. CT decisions CT-Q1…CT-Q14 TAKEN 2026-10-07 (§19; CT-Q2/CT-Q3 owner). Precondition WP-0023-FX (owner: we fix MOD-0023). WP-0175-P0 CT-ACCEPTED 2026-10-07. QUARANTINE-BUNDLE v1 proposal: docs/analysis/contracts/drafts/quarantine-bundle-v1-proposal.md (no quarantine contract exists — K12). Two measured prerequisites outside this module: MOD-0023 SoD defect (FU-0175-WF-SOD) and PlatformAdmin-scoped workflow runtime keys (FU-0175-WF-KEYS) — §8 / §19. DCP-002 verifier not run (no Python — waiver W-0175-01, W-0173-01 pattern)."
+status: ready-for-dev
+status_note: "draft — WP-0175-P0 (CT-MVP1-0175-P0 v1), 2026-10-07. Owner decisions KQ-A…KQ-I (2026-10-07) recorded in §19 as DECISIONS. CT decisions CT-Q1…CT-Q14 TAKEN 2026-10-07 (§19; CT-Q2/CT-Q3 owner). Precondition WP-0023-FX (owner: we fix MOD-0023). WP-0175-P0 CT-ACCEPTED 2026-10-07. ready-for-dev (owner) 2026-10-08. QUARANTINE-BUNDLE v1 proposal: docs/analysis/contracts/drafts/quarantine-bundle-v1-proposal.md (no quarantine contract exists — K12). Two measured prerequisites outside this module: MOD-0023 SoD defect (FU-0175-WF-SOD) and PlatformAdmin-scoped workflow runtime keys (FU-0175-WF-KEYS) — §8 / §19. DCP-002 verifier not run (no Python — waiver W-0175-01, W-0173-01 pattern)."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0175-quarantine
 started: 2026-10-07
@@ -969,30 +969,30 @@ are not actions of this manifest.
 ## 18. Ready-for-dev Checklist
 
 - [x] Canonical ID/name present in the registry (`module-id-registry.md:274`, "DCP-002 gate OK 2026-09-11").
-- [ ] DCP-002 verifier re-run exit 0 — **waiver proposal W-0175-01**:
+- [x] DCP-002 verifier re-run exit 0 — **waived W-0175-01** (CT 2026-10-08; run before the MVP-1 PR):
   - owner: Ali;
   - reason: no Python on the MVP-1 machine;
   - compensating control: registry row + DCP-009;
   - expiry: before the MVP-1 push/PR.
 - [x] Owner decisions KQ-A…KQ-I recorded (§19).
-- [ ] QUARANTINE-BUNDLE v1 proposal accepted by CT (then frozen in Q1).
-- [ ] **CT-Q1** workflow template content (one template, approver step meaning).
-- [ ] **CT-Q2** who can decide/approve until FU-0175-WF-KEYS (MVP-1 interim).
-- [ ] **CT-Q3** KQ-H frozen-contract semantics (`LOT_RETEST_DUE` + availability note) — owner decision like CT-D1.
-- [ ] **CT-Q4** approver step meaning.
-- [ ] **CT-Q5** hold release on a Draft lot also releases the lot.
-- [ ] **CT-Q6** reserved stock on quarantine / block / retest.
-- [ ] **CT-Q7** supplier return of expired / lot-blocked stock.
-- [ ] **CT-Q8** block-reason list local vs MOD-0048.
-- [ ] **CT-Q9** partial apply failure (continue vs all-or-nothing).
-- [ ] **CT-Q10** lot-release gate default per company.
-- [ ] **CT-Q11** no background reconciler (read-time only) accepted.
-- [ ] **CT-Q12** module code case.
-- [ ] **CT-Q13** KQ-C four-eyes switch while MOD-0023 SoD is fixed.
-- [ ] **CT-Q14** product-level wait target (mockup) vs company-only (KQ-D).
-- [ ] FU-0175-WF-SOD (MOD-0023) scheduled before the Q2 runtime proof — **hard prerequisite for KQ-C**.
+- [x] QUARANTINE-BUNDLE v1 proposal accepted by CT 2026-10-08 (frozen in Q1).
+- [x] **CT-Q1** (taken 2026-10-07, §19) workflow template content (one template, approver step meaning).
+- [x] **CT-Q2** (taken 2026-10-07, §19) who can decide/approve until FU-0175-WF-KEYS (MVP-1 interim).
+- [x] **CT-Q3** (taken 2026-10-07, §19) KQ-H frozen-contract semantics (`LOT_RETEST_DUE` + availability note) — owner decision like CT-D1.
+- [x] **CT-Q4** (taken 2026-10-07, §19) approver step meaning.
+- [x] **CT-Q5** (taken 2026-10-07, §19) hold release on a Draft lot also releases the lot.
+- [x] **CT-Q6** (taken 2026-10-07, §19) reserved stock on quarantine / block / retest.
+- [x] **CT-Q7** (taken 2026-10-07, §19) supplier return of expired / lot-blocked stock.
+- [x] **CT-Q8** (taken 2026-10-07, §19) block-reason list local vs MOD-0048.
+- [x] **CT-Q9** (taken 2026-10-07, §19) partial apply failure (continue vs all-or-nothing).
+- [x] **CT-Q10** (taken 2026-10-07, §19) lot-release gate default per company.
+- [x] **CT-Q11** (taken 2026-10-07, §19) no background reconciler (read-time only) accepted.
+- [x] **CT-Q12** (taken 2026-10-07, §19) module code case.
+- [x] **CT-Q13** (taken 2026-10-07, §19) KQ-C four-eyes switch while MOD-0023 SoD is fixed.
+- [x] **CT-Q14** (taken 2026-10-07, §19) product-level wait target (mockup) vs company-only (KQ-D).
+- [x] FU-0175-WF-SOD (MOD-0023) CLOSED by WP-0023-FX (CT-ACCEPTED cd43a4533) — was: scheduled before the Q2 runtime proof — **hard prerequisite for KQ-C**.
 - [ ] ≥ 4 failure paths (24 in §13). ✔
-- [ ] **Owner approval → `ready-for-dev`.**
+- [x] **Owner approval → `ready-for-dev`** (Ali, 2026-10-08).
 
 ## 19. Implementation Notes
 
