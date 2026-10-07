@@ -1111,6 +1111,22 @@ All 14 are closed; the table below ("Open CT decisions") keeps the options for t
    (FU-0175-WF-KEYS).
 Order: WP-0023-FX → MOD-0022 E4 (approve + `signatureId` must use the bound actor) and MOD-0175 Q2.
 
+**WP-0023-FX result (agent result 2026-10-07, pending CT — evidence
+`docs/records/audits/2026-10/mod-0023-fx-evidence-2026-10-07.md`):**
+1. SoD fixed: the starter's user id is stored (`WorkflowInstance.StartedByUserId`) and compared as an id; instances
+   started before the fix are checked against their Start log row (no backfill). FU-0175-WF-SOD → closed by FX (CT).
+2. Actor binding: on the direct task API the actor is the authenticated caller; a body actor naming anyone else →
+   403 `WORKFLOW_ACTOR_MISMATCH`. WorkCenter unchanged (already bound).
+3. Runtime keys `instances.start`, `instances.view`, `tasks.approve|reject|delegate|request-info|cancel` are **Tenant**
+   (Workflow manifest `ApiPermissions` + allowlisted, audited AuthService correction); design / publish / SLA /
+   escalation / transition-gate keys stay PlatformAdmin. A tenant administrator can grant the runtime keys to a QA role.
+   FU-0175-WF-KEYS → closed by FX (CT).
+4. For this pack: the QA decider needs `instances.start` and the approver `tasks.approve`, both grantable to a QA role.
+   CT-Q13 still holds — "submitter cannot approve" is not switchable per template (FU-0023-FX-SOD-SWITCH) — and the 0175
+   apply-time four-eyes check stays (defence in depth).
+5. Runtime probe (own ports, isolated DB) 34/34: QA role granted the 7 keys (204), design keys refused (403), A approving
+   own instance → 409 `SOD_VIOLATION`, A approving B's task with B's id → 403 `WORKFLOW_ACTOR_MISMATCH`, B → 200.
+
 ### Open CT decisions
 
 | # | Question | Options | Recommendation |

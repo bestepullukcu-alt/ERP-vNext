@@ -462,3 +462,22 @@ All controlled failures return `Response<T>` with a stable reason code + correla
 4. **BPMN / visual builder:** explicitly out of MVP; future wave only.
 5. **Registry slug reconciliation:** registry slug is `workflow-designer`; this pack's filename slug is
    `workflow-config-approval-templates`. A registry reconciliation (slug/alias) is a separate governance edit.
+
+### WP-0023-FX note (2026-10-07, agent result — pending CT)
+
+Owner decision 2026-10-07 (MOD-0175 CT-Q2): three runtime defects fixed on the MVP-1 branch. Evidence:
+`docs/records/audits/2026-10/mod-0023-fx-evidence-2026-10-07.md` (probe source in `mod-0023-fx-scripts-2026-10-07.md`).
+
+- **Four eyes (SOD-003) for tenant users.** `StartedBy` held the e-mail (`ActorName`) while approvers are compared by
+  user id, so "submitter cannot approve" never fired. The instance now stores `StartedByUserId` (JWT `sub`) and the check
+  compares ids; instances started before the fix use their Start log row (always the starter's id). Applies to the API and
+  WorkCenter paths alike (same handler).
+- **Actor binding.** `tasks/{id}/approve|reject|delegate|request-info|cancel` took the acting person from the body; the
+  body actor must now be empty or name the authenticated caller (id or own e-mail), else 403 `WORKFLOW_ACTOR_MISMATCH`.
+  In-process callers (WorkCenter dispatcher, Tasks services) already pass the server-resolved id.
+- **Runtime key scope.** `instances.start`, `instances.view`, `tasks.approve/reject/delegate/request-info/cancel` are
+  declared as Tenant API permissions (no longer actions of `/Platform/Workflow` pages) and moved PlatformAdmin → Tenant by
+  AuthService's allowlisted, audited correction; design / publish / SLA / escalation / transition-gate keys stay
+  PlatformAdmin. A tenant administrator can grant the runtime keys to any tenant role (e.g. QA).
+- Follow-ups: FU-0023-FX-WEB (remove the free-text "Actor Id" field from the `/Platform/Workflow` task forms),
+  FU-0023-FX-SOD-SWITCH (per-template SoD switch, not built).
