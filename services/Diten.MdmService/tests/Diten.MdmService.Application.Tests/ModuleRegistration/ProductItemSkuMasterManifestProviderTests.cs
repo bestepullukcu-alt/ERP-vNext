@@ -124,16 +124,12 @@ public sealed class ProductItemSkuMasterManifestProviderTests
             Assert.StartsWith("mdm.", permission, StringComparison.Ordinal);
             Assert.DoesNotContain("..", permission, StringComparison.Ordinal);
         });
-        // FG FIX1 item 9 (CT decision B): a key declared ONLY by "System" actions is a system act, not a human door —
-        // it is compared on neither side (a GSKU / LSKU retire endpoint exists, FG's does not yet). The whitelist below
-        // is for declared HUMAN keys without a door: FG submit only (no FG retire entry any more).
-        var systemOnly = Manifest.Pages.SelectMany(page => page.Actions)
-            .GroupBy(action => action.PermissionKey, StringComparer.Ordinal)
-            .Where(group => group.All(action => action.ActionType == "System")
-                            && Manifest.Pages.All(page => page.RequiredPermission != group.Key))
-            .Select(group => group.Key)
-            .ToHashSet(StringComparer.Ordinal);
-        Assert.Contains("mdm.finished-goods.retire", systemOnly);
+        // FG FIX1 item 9 (CT decision B) / part B item 10: exactly ONE key is declared without a door on purpose — the
+        // Finished Good retire, a "System" action whose endpoint comes with the FG lifecycle round. It is named here;
+        // every other declared key (GP / GSKU / LSKU retire and the recover key included) is held to its controller.
+        var systemOnly = new HashSet<string>(StringComparer.Ordinal) { "mdm.finished-goods.retire" };
+        Assert.Equal("System", Assert.Single(Manifest.Pages.SelectMany(page => page.Actions),
+            action => action.PermissionKey == "mdm.finished-goods.retire").ActionType);
         var nonControllerPermissions = new HashSet<string>(StringComparer.Ordinal)
         {
             "mdm.brands.read",

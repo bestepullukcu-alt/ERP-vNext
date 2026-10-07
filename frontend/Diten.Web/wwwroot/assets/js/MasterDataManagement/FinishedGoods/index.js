@@ -119,6 +119,7 @@ const FinishedGoodsList = (function () {
         FINISHED_GOOD_NOT_FOUND: 'ErrorNotFound',
         // The store and the legal-entity scope.
         PRODUCT_IDENTITY_WORKFLOW_STORE_UNAVAILABLE: 'RefusalStoreUnavailable',
+        CODE_RESERVATION_BURN_TRANSACTION_UNAVAILABLE: 'RefusalStoreUnavailable',
         PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID: 'RefusalScopeUnavailable',
         LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE: 'RefusalScopeUnavailable',
         LEGAL_ENTITY_SCOPE_PROVIDER_TIMEOUT: 'RefusalScopeUnavailable',
@@ -157,6 +158,13 @@ const FinishedGoodsList = (function () {
         let payload = {};
         try { payload = await response.json(); } catch (error) { }
         return failureSentence(payload, response.status);
+    };
+    // FG FIX1 part B item 5: the next form attempt comes only from the server's answer — a new one after 201 or a
+    // definite refusal (so "try again" sends a new key), the same one after 202 / 5xx / a timeout (a replay).
+    const adoptFormAttempt = (payload) => {
+        const nextToken = payload?.formAttemptToken || payload?.FormAttemptToken;
+        const tokenInput = document.getElementById('formAttemptToken');
+        if (nextToken && tokenInput) tokenInput.value = nextToken;
     };
     const handleUnauthorized = () => {
         window.DtDefaults?.handleUnauthorized?.();
@@ -386,12 +394,13 @@ const FinishedGoodsList = (function () {
                 });
                 if (response.status === 401) handleUnauthorized();
                 if (response.status !== 201 && response.status !== 202) {
-                    throw new Error(await getErrorMessage(response));
+                    let failure = {};
+                    try { failure = await response.json(); } catch (error) { }
+                    adoptFormAttempt(failure);
+                    throw new Error(failureSentence(failure, response.status));
                 }
                 const payload = await response.json();
-                const nextToken = payload?.formAttemptToken || payload?.FormAttemptToken;
-                const tokenInput = document.getElementById('formAttemptToken');
-                if (nextToken && tokenInput) tokenInput.value = nextToken;
+                adoptFormAttempt(payload);
                 const draft = unwrapData(payload);
                 const code = draft.canonicalCode || draft.CanonicalCode || '';
                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).hide();

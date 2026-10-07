@@ -100,7 +100,15 @@ public sealed class CancelFinishedGoodDraftHandler(
             var confirmed = await reservations.ConfirmIdentityBindingAsync(pending.Id, result.Id, pending.Version,
                 $"finished-good-draft-cancel:{command.OperationId:D}:confirm", actor.ToString("D"),
                 command.OperationId.ToString("D"), cancellationToken);
-            if (!confirmed.Succeeded) return Fail(CreationNotSettled, 409);
+            // FG FIX1 part B K1: a refused confirm may be the creator's own confirm winning the race — read the code
+            // again: confirmed to THIS Finished Good is the settled state the cancel wanted; anything else is named.
+            if (!confirmed.Succeeded)
+            {
+                var current = await reservations.GetByIdAsync(pending.Id, cancellationToken);
+                if (current is not { BindingState: CodeReservationBindingState.Confirmed }
+                    || current.ConsumedEntityId != result.Id)
+                    return Fail(CreationNotSettled, 409);
+            }
         }
         var completed = await gskus.CompleteChildCreationAdmissionAsync(result.GskuId, GskuChildIdentityKind.FinishedGood,
             result.CreationCommandId, GskuChildCreationAdmission.ComputeRequestFingerprint(

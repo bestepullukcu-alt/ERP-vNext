@@ -212,10 +212,13 @@ public sealed class CreateFinishedGoodDraftHandler
                 AdmissionStatus(admission.ErrorCode));
         }
 
-        // FG FIX1 item 2 (the LSKU FIX1/FIX2 release path, reused): from here every exit gives the admission back — the
-        // release itself refuses while a live row or a live reservation of this command could still become the child
-        // (then the operator repair sweeps it by age and the GSKU_CHILD_ADMISSION gauge counts it). An exit by
-        // exception (a store error, a cancelled request) releases too.
+        // FG FIX1 item 2 / part B item 7: from here every exit TRIES to give the admission back (an exit by exception
+        // too). The release refuses while something of this command can still become the child — a live row, or a
+        // live code (reserved; or consumed and not burned). Such an admission is counted by the GSKU_CHILD_ADMISSION
+        // gauge and has a named way out, by age, through the operator repair (GskuRepository.FindOrphanChild…):
+        // a code reserved and never consumed (a crash between ReserveAsync and ConsumeForIdentityAsync) is consumed
+        // and burned, then the admission released; a code consumed for an identity whose row never came is burned,
+        // then released; a code bound to an ended row (a settled cancellation) is burned, then released.
         try
         {
             CodeReservation reservation;
@@ -294,7 +297,8 @@ public sealed class CreateFinishedGoodDraftHandler
                 var code = createResult.ErrorCode ?? "FINISHED_GOOD_WRITE_FAILED";
                 var burnRefusal = await AbandonCreationAsync(gsku.Id, reservation, identityId, commandId,
                     admissionFingerprint, code, cancellationToken);
-                return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(burnRefusal ?? code, 409);
+                return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(burnRefusal ?? code,
+                    burnRefusal == CodeReservationBurnCodes.TransactionUnavailable ? 503 : 409);
             }
 
             return await ConfirmAndCompleteAsync(createResult.FinishedGood, gsku.Id, gsku.CanonicalCode, reservation,
@@ -375,7 +379,11 @@ public sealed class CreateFinishedGoodDraftHandler
         string reason,
         CancellationToken cancellationToken)
     {
-        if (await _finishedGoods.GetByReservationIdAsync(reservation.Id, cancellationToken) is null)
+        // FG FIX1 part B (the LSKU shape): a row bound to this reservation keeps its code; a code already burned (an
+        // overlapping burn won against the transactional insert) needs no second burn.
+        if (await _finishedGoods.GetByReservationIdAsync(reservation.Id, cancellationToken) is null
+            && (await _reservations.GetByIdAsync(reservation.Id, cancellationToken))?.BindingState
+                != CodeReservationBindingState.Burned)
         {
             var burned = await _reservations.BurnIdentityBindingAsync(
                 reservation.Id,
@@ -386,7 +394,9 @@ public sealed class CreateFinishedGoodDraftHandler
                 commandId,
                 reason,
                 cancellationToken);
-            if (!burned.Succeeded) return BurnRefused;
+            if (!burned.Succeeded)
+                return burned.ErrorCode == CodeReservationBurnCodes.TransactionUnavailable
+                    ? CodeReservationBurnCodes.TransactionUnavailable : BurnRefused;
         }
 
         await ReleaseAdmissionAsync(gskuId, commandId, admissionFingerprint, cancellationToken);
@@ -417,9 +427,15 @@ public sealed class CreateFinishedGoodDraftHandler
         return completion.Succeeded
             ? Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Success(
                 BuildDto(finishedGood, gskuCanonicalCode, CodeReservationBindingState.Confirmed, false), 201)
+            // FG FIX1 part B (found by the Web review): the row and its code are written — a refused completion is the
+            // same command's to finish (its repeat completes it), never a refusal of the request: 202 reconciliation,
+            // so the screen keeps the same key (a 409 told the user to reload, and a reload's NEW key could create a
+            // second Finished Good).
             : Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
-                completion.ErrorCode ?? "FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED",
-                completion.ErrorCode == "GSKU_CHILD_ADMISSION_CONFLICT" ? 409 : 202);
+                completion.ErrorCode is { } cause
+                    ? ["FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED", cause]
+                    : ["FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED"],
+                202);
     }
 
     private static int AdmissionStatus(string? code) => code switch

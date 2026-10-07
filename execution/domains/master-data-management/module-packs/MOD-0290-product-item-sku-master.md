@@ -1287,12 +1287,13 @@ The only permission candidates for this step are:
 
 No `update`, `delete`, `bulk-delete`, `submit`, `approve`, `retire`, reservation-management or broad `manage` key is
 introduced. **Correction (FG FIX1 items 1 and 9, 2026-10-07):** the audited Draft cancellation
-(`POST api/finished-goods/{id}/cancel-draft`) is authorized in v1 with the create key `mdm.finished-goods.create` — v1
-oluşturma anahtarıyla; tam anahtar sonraki Auth turu (the package's own `mdm.finished-goods.cancel-draft` key needs an
-Auth role-matrix change in a later Auth round). The FG operator repair of leaked parent admissions
+(`POST api/finished-goods/{id}/cancel-draft`) is authorized in v1 with the create key `mdm.finished-goods.create`; the
+full key comes in a later Auth round (the package's own `mdm.finished-goods.cancel-draft` key needs an Auth role-matrix
+change in that round). The FG operator repair of leaked parent admissions
 (`POST api/finished-goods/operator/child-admission-repairs`, no screen) uses the existing non-human key
-`mdm.product-identity.lifecycle-operations.recover`. FG submit izni v1'de ucu olmadan beyan edilir (Auth tam küme bağımlılığı); FG retire GSKU gibi
-sistem eylemidir; ikisi FG yaşam döngüsü turunda uçlarıyla birlikte etkinleşir. (Control Tower decision B, FG FIX1 item
+`mdm.product-identity.lifecycle-operations.recover`. The FG submit permission is declared in v1 without its endpoint (it
+depends on Auth's full key set); FG retire is a system action, as it is for GSKU; both become active together with their
+endpoints in the FG lifecycle round. (Control Tower decision B, FG FIX1 item
 9: the manifest declares `RETIRE` as a "System" action and Auth lists `mdm.finished-goods.retire` among the non-human
 keys — no role grants it and the sync removes a historical human grant; `mdm.finished-goods.submit` stays declared,
 granting nothing until its endpoint exists.) These two strings are candidates only. Catalog/seed/grant/role and tenant-entitlement onboarding remains a
@@ -5720,7 +5721,11 @@ cancellation (FG FIX1 item 1) is finished only by a validated central receipt of
 intent; its intent carries the contract version and a GUID correlation so the **generic** G4 delivery
 (`AuditIntentDeliveryWorker`, off by default) can deliver it once the temporal-storage scalar cutover is active.
 Until that worker and cutover are live, a cancelled Draft Finished Good stays `PendingAudit` and keeps blocking its GSKU
-— canlıda BL-559, BL-563 açılana kadar engel kalır. The audit-ledger row for this dependency stays a known debt; it is
+— in the live environment the blocker remains until BL-559 (a Draft Finished Good locks its GSKU out of correction and
+retirement — no FG exit, the GSKU counts it as a blocker; FG FIX1 item 1's audited Draft cancellation is its fix) and
+BL-563 (product identity audit intents do not reach the central audit live: the delivery worker is off, the temporal
+cutover is off, and the intents carry an empty `ContractVersion` and a non-GUID `CorrelationId` — so an FG Draft
+cancellation cannot settle live) are resolved. The audit-ledger row for this dependency stays a known debt; it is
 not widened here.
 
 **Superseding approval record (2026-09-29):** the user explicitly answered `onaylıyorum` to the consolidated three-step

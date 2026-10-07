@@ -90,7 +90,8 @@ public sealed class FinishedGoodsController : Controller
 
     // FG FIX1 item 4: one form attempt = one MDM creation key. The key is drawn when the form is served (bound to the
     // signed-in subject, 30 minutes, Data Protection) — a repeat after a lost answer, a timeout or a 202 sends the SAME
-    // key, so MDM answers it as a replay instead of creating a second Finished Good. A fresh token comes only with 201.
+    // key, so MDM answers it as a replay instead of creating a second Finished Good. A fresh token comes with 201 and
+    // (FG FIX1 part B item 5) with a definite refusal — see EndsTheAttempt.
     [HttpPost("api")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
@@ -134,7 +135,8 @@ public sealed class FinishedGoodsController : Controller
                 cancellationToken);
             if (!draft.Success || draft.Data is null)
             {
-                return StatusCode(draft.StatusCode, new { success = false, errors = draft.Errors, formAttemptToken });
+                var nextAttempt = EndsTheAttempt(draft.StatusCode, draft.Errors) ? CreateFormAttemptToken() : formAttemptToken;
+                return StatusCode(draft.StatusCode, new { success = false, errors = draft.Errors, formAttemptToken = nextAttempt });
             }
 
             return draft.StatusCode == StatusCodes.Status201Created
@@ -162,6 +164,35 @@ public sealed class FinishedGoodsController : Controller
             });
         }
     }
+
+    /*
+     * FG FIX1 part B item 5. MDM's definite refusal (400 · 403 · 404 · 409) ends the attempt: its key is answered the
+     * same way forever (CODE_RESERVATION_BURNED, FINISHED_GOOD_DRAFT_CANCELLED, IDEMPOTENCY_KEY_CONFLICT…), so a repeat
+     * with it could never succeed and "try again" would be a lie. A new attempt is handed out instead — no Finished
+     * Good exists for the refused key, so the new key cannot create a second one. 202, 401, 5xx and a timeout are not
+     * definite (the draft may exist or the session is being refreshed): the same attempt is kept, so the repeat is a
+     * replay. Two 409 codes are not the end of the attempt either, because MDM itself resumes them with the same key:
+     * CODE_RESERVATION_REQUIRED (the code stays reserved for this command; its repeat consumes it again) and
+     * GSKU_CHILD_ADMISSION_CONFLICT (also answered after the draft row was written, when only the admission completion
+     * failed — a new key there could create a second draft; the same key replays and completes the first).
+     */
+    private static readonly HashSet<int> DefiniteRefusalStatuses =
+    [
+        StatusCodes.Status400BadRequest,
+        StatusCodes.Status403Forbidden,
+        StatusCodes.Status404NotFound,
+        StatusCodes.Status409Conflict
+    ];
+
+    private static readonly HashSet<string> ResumableWithTheSameKey = new(StringComparer.Ordinal)
+    {
+        "CODE_RESERVATION_REQUIRED",
+        "GSKU_CHILD_ADMISSION_CONFLICT"
+    };
+
+    private static bool EndsTheAttempt(int statusCode, IReadOnlyList<string> errors) =>
+        DefiniteRefusalStatuses.Contains(statusCode)
+        && !errors.Any(error => ResumableWithTheSameKey.Contains(error.Trim()));
 
     private async Task<IActionResult> ProxyGatewayAsync(
         HttpMethod method,

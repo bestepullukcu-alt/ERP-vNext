@@ -12,8 +12,8 @@ public interface IChildCreationAdmissionCensus
 
     // FG FIX1 item 1 (principle B): audited Draft-FG cancellations requested before the cutoff and still pending their
     // audit receipt — each keeps its parent GSKU blocked until the G4 delivery finishes it; counted, never hidden.
+    // FG FIX1 part B K3: no default — every census implements it (a census that cannot count is a compile error,
+    // never a silent 0 or a runtime throw).
     Task<long> CountPendingFinishedGoodCancellationsAsync(DateTimeOffset requestedBeforeUtc,
-        CancellationToken cancellationToken = default) =>
-        // FG FIX1 review m3: a census that cannot count says so — never a silent 0.
-        throw new NotSupportedException("FINISHED_GOOD_CANCELLATION_CENSUS_NOT_IMPLEMENTED");
+        CancellationToken cancellationToken = default);
 }

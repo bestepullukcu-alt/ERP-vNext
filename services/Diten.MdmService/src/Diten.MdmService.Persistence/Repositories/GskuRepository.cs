@@ -1513,9 +1513,11 @@ public sealed class GskuRepository : IGskuRepository
             return GskuChildCreationAdmission.ComputeRequestFingerprint(
                 gskuId, childKind, creationCommandId, child.MarketCode);
         }
+        // FG FIX1 part B item 8: Ne(true), not Eq(false) — a Finished Good written before the field existed is live
+        // (the cancel's Complete step reaches here for it too).
         var finishedGood = await _finishedGoods.Find(
                 Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)
-                & Builders<FinishedGood>.Filter.Eq(x => x.IsDeleted, false)
+                & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
                 & Builders<FinishedGood>.Filter.Eq(x => x.GskuId, gskuId)
                 & Builders<FinishedGood>.Filter.Eq(x => x.CreationCommandId, creationCommandId))
             .Project(x => new { x.Id, x.CodeReservationId, x.CanonicalCode }).FirstOrDefaultAsync(cancellationToken);

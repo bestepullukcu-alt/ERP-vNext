@@ -67,6 +67,26 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.ViewerRole, [recovery]));
     }
 
+    // FG FIX1 part B item 14 (CT F6): direct retirement of a GSKU, an LSKU and — since FG FIX1 item 9 (CT decision B)
+    // — a Finished Good is a system act: catalogued, never grantable to a human role, never selected for a default
+    // human role. Each key is held here by name (removing one from the non-human set turns its row red).
+    [Theory]
+    [InlineData("gskus")]
+    [InlineData("lskus")]
+    [InlineData("finished-goods")]
+    public void Direct_retirement_is_catalogued_but_never_grantable_to_a_human_role(string resource)
+    {
+        var retire = new Permission("mdm", resource, "retire", "retire", null,
+            moduleOverride: "product-item-sku-master", scope: PermissionScope.Tenant);
+
+        Assert.Equal($"mdm.{resource}.retire", retire.Key);
+        Assert.False(DefaultRolePermissionTemplate.CanBeGrantedToHumanRole(retire));
+        Assert.False(DefaultRolePermissionTemplate.IsTenantAssignable(retire));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.SuperAdminRole, [retire]));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.AdminRole, [retire]));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.ViewerRole, [retire]));
+    }
+
     [Fact]
     public void Human_assignability_policy_does_not_change_adjacent_product_permissions()
     {

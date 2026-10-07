@@ -77,7 +77,11 @@ public sealed class RepairLskuChildAdmissionsHandler
             if (current is { ReservationNeverConsumed: true, ReservationToBurnId: { } neverConsumedId,
                              ReservationVersion: { } neverConsumedVersion })
             {
-                var consumed = await _reservations.ConsumeForIdentityAsync(neverConsumedId, CodeBearingEntityType.Lsku,
+                var consumed = await _reservations.ConsumeForIdentityAsync(neverConsumedId,
+                    // FG FIX1 part B item 7: the code's own kind (an FG code is consumed as an FG code — the LSKU
+                    // kind was fixed here, so a never-consumed FG code could not be swept).
+                    request.ChildKind == GskuChildIdentityKind.FinishedGood
+                        ? CodeBearingEntityType.FinishedGood : CodeBearingEntityType.Lsku,
                     Guid.NewGuid(), neverConsumedVersion, $"admission-repair-consume:{neverConsumedId:N}",
                     _actorContext.ActorId, current.CreationCommandId, cancellationToken);
                 if (!consumed.Succeeded || consumed.Reservation is not { ConsumedEntityId: { } noIdentity } taken)

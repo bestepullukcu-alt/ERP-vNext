@@ -25,7 +25,7 @@ namespace Diten.MdmService.Api.Tests;
 /// repository; only the central client is a fake that accepts). Pending, forged and legacy records keep blocking.
 /// </summary>
 [Collection(MdmHttpCollection.Name)]
-public sealed class FgFix1HttpTests(MdmHttpHost host)
+public sealed partial class FgFix1HttpTests(MdmHttpHost host)
 {
     private static readonly string[] MakerPermissions =
     [

@@ -172,7 +172,8 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
         var match = new BsonDocument
         {
             { nameof(FinishedGood.TenantId), ProductLegalEntityScopeAggregation.GuidBson(_tenantId) },
-            { nameof(FinishedGood.IsDeleted), false }
+            // FG FIX1 part B item 8: $ne true, not false — a document written before the field existed is live.
+            { nameof(FinishedGood.IsDeleted), new BsonDocument("$ne", true) }
         };
         if (!string.IsNullOrWhiteSpace(canonicalCodeSearch))
         {
@@ -312,8 +313,17 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
 
         try
         {
-            await _finishedGoods.InsertOneAsync(finishedGood, cancellationToken: cancellationToken);
-            return new(true, finishedGood);
+            // FG FIX1 part B item 1 (the LSKU InsertBoundToLiveCodeAsync pattern): the row goes in only with its code
+            // still live — the reservation write and the insert are ONE transaction, so a burn (which reads "no live row
+            // bound" in its own transaction) and this insert fail each other: never a live row with a burned code. A
+            // transient transaction error is retried with backoff; running out is ambiguous (202), never a refusal.
+            for (var attempt = 1; ; attempt++)
+            {
+                var inserted = await InsertBoundToLiveCodeAsync(finishedGood, reservationFilter, cancellationToken);
+                if (inserted.ErrorCode != InsertConflictRetry) return inserted;
+                if (attempt >= InsertAttempts) return AmbiguousWrite();
+                await Task.Delay(TimeSpan.FromMilliseconds(50 << attempt), cancellationToken);
+            }
         }
         catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
@@ -336,6 +346,58 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
         catch (MongoWriteConcernException)
         {
             return AmbiguousWrite();
+        }
+        // The LSKU FIX5 K6 rule: a commit whose result is unknown and a server-selection timeout are not refusals.
+        catch (MongoException exception) when (exception.HasErrorLabel("UnknownTransactionCommitResult"))
+        {
+            return AmbiguousWrite();
+        }
+        catch (TimeoutException)
+        {
+            return AmbiguousWrite();
+        }
+    }
+
+    internal const int InsertAttempts = 4;
+    private const string InsertConflictRetry = "FINISHED_GOOD_INSERT_CONFLICT_RETRY";
+
+    private async Task<FinishedGoodCreateResult> InsertBoundToLiveCodeAsync(FinishedGood finishedGood,
+        FilterDefinition<CodeReservation> reservationFilter, CancellationToken cancellationToken)
+    {
+        using var session = await _finishedGoods.Database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+        try
+        {
+            session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+            // UpdatedAt only: metadata outside the reservation's Version and its audit chain; it exists to make an
+            // overlapping burn and this insert conflict.
+            var touched = await _reservations.UpdateOneAsync(session,
+                reservationFilter & Builders<CodeReservation>.Filter.Ne(x => x.BindingState, CodeReservationBindingState.Burned),
+                Builders<CodeReservation>.Update.Set(x => x.UpdatedAt, DateTimeOffset.UtcNow),
+                cancellationToken: cancellationToken);
+            if (touched.MatchedCount != 1)
+            {
+                await session.AbortTransactionAsync(cancellationToken);
+                return new(false, null, "CODE_RESERVATION_BURNED");
+            }
+            await _finishedGoods.InsertOneAsync(session, finishedGood, cancellationToken: cancellationToken);
+            await session.CommitTransactionAsync(cancellationToken);
+            return new(true, finishedGood);
+        }
+        catch (Exception exception) when (exception is NotSupportedException || exception is MongoCommandException { Code: 20 })
+        {
+            // Without transactions (a standalone mongod) no burn can happen at all (it is refused): the plain insert.
+            await _finishedGoods.InsertOneAsync(finishedGood, cancellationToken: cancellationToken);
+            return new(true, finishedGood);
+        }
+        catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError")
+                                               && exception is not MongoWriteException)
+        {
+            // Nothing of ours committed. A burn that won leaves the code burned; anything else is tried again.
+            var code = await _reservations.Find(Builders<CodeReservation>.Filter.Eq(x => x.Id, finishedGood.CodeReservationId))
+                .FirstOrDefaultAsync(cancellationToken);
+            return code?.BindingState == CodeReservationBindingState.Burned
+                ? new(false, null, "CODE_RESERVATION_BURNED")
+                : new(false, null, InsertConflictRetry);
         }
     }
 

@@ -119,6 +119,85 @@ public sealed class FinishedGoodWebAccessTests(WebApplicationFactory<Program> fa
         Assert.Equal(token, TokenIn(unreachable));
     }
 
+    // ------------------------------------------------------------------------------- FIX1 part B item 5 · K6
+
+    [Theory]
+    [InlineData(HttpStatusCode.Conflict, "CODE_RESERVATION_BURNED")]
+    [InlineData(HttpStatusCode.Conflict, "FINISHED_GOOD_DRAFT_CANCELLED")]
+    [InlineData(HttpStatusCode.BadRequest, "IDEMPOTENCY_KEY_INVALID")]
+    [InlineData(HttpStatusCode.Forbidden, "LEGAL_ENTITY_SCOPE_FORBIDDEN")]
+    [InlineData(HttpStatusCode.NotFound, "GSKU_NOT_REFERENCEABLE")]
+    public async Task A_definite_refusal_ends_the_attempt_and_the_retry_reaches_mdm_with_a_new_key(
+        HttpStatusCode status, string code)
+    {
+        var protection = new EphemeralDataProtectionProvider();
+        var maker = Guid.NewGuid();
+        var token = IndexToken(protection, maker);
+        var wire = new Scripted((status, code), (HttpStatusCode.Created, null));
+
+        var refused = await Controller(protection, wire, maker, Read, Create).Create(Model(), token, CancellationToken.None);
+        var next = TokenIn(refused);
+        var retried = await Controller(protection, wire, maker, Read, Create).Create(Model(), next, CancellationToken.None);
+
+        Assert.Equal((int)status, Status(refused));
+        Assert.Contains(code, JsonSerializer.Serialize(((ObjectResult)refused).Value));
+        Assert.False(string.IsNullOrEmpty(next));
+        Assert.NotEqual(token, next);
+        Assert.Equal(StatusCodes.Status201Created, Status(retried));
+        Assert.NotEqual(wire.Keys[0], wire.Keys[1]);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Accepted, "FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED")]
+    [InlineData(HttpStatusCode.ServiceUnavailable, "PRODUCT_IDENTITY_WORKFLOW_STORE_UNAVAILABLE")]
+    [InlineData(HttpStatusCode.GatewayTimeout, "LEGAL_ENTITY_SCOPE_PROVIDER_TIMEOUT")]
+    [InlineData(HttpStatusCode.InternalServerError, "FINISHED_GOOD_BINDING_INVARIANT_VIOLATION")]
+    [InlineData(HttpStatusCode.Unauthorized, "TRUSTED_SUBJECT_REQUIRED")]
+    // MDM resumes these two with the same key (the code stays reserved for the command; the admission completion of
+    // a written draft) — a new key could create a second draft.
+    [InlineData(HttpStatusCode.Conflict, "CODE_RESERVATION_REQUIRED")]
+    [InlineData(HttpStatusCode.Conflict, "GSKU_CHILD_ADMISSION_CONFLICT")]
+    public async Task An_open_or_resumable_answer_keeps_the_attempt_so_the_repeat_is_a_replay(
+        HttpStatusCode status, string code)
+    {
+        var protection = new EphemeralDataProtectionProvider();
+        var maker = Guid.NewGuid();
+        var token = IndexToken(protection, maker);
+        var wire = new Scripted((status, code), (status, code));
+
+        var first = await Controller(protection, wire, maker, Read, Create).Create(Model(), token, CancellationToken.None);
+        var again = await Controller(protection, wire, maker, Read, Create).Create(Model(), TokenIn(first), CancellationToken.None);
+
+        Assert.Equal((int)status, Status(first));
+        Assert.Equal(token, TokenIn(first));
+        Assert.Equal(token, TokenIn(again));
+        Assert.Equal(wire.Keys[0], wire.Keys[1]);
+    }
+
+    [Fact]
+    public async Task The_same_attempt_with_another_gsku_sends_the_same_key_and_passes_mdms_key_conflict_through()
+    {
+        var protection = new EphemeralDataProtectionProvider();
+        var maker = Guid.NewGuid();
+        var token = IndexToken(protection, maker);
+        var other = Guid.NewGuid();
+        var wire = new Scripted((HttpStatusCode.Accepted, null), (HttpStatusCode.Conflict, "IDEMPOTENCY_KEY_CONFLICT"));
+
+        await Controller(protection, wire, maker, Read, Create).Create(Model(), token, CancellationToken.None);
+        var conflict = await Controller(protection, wire, maker, Read, Create)
+            .Create(new CreateFinishedGoodViewModel { GskuId = other }, token, CancellationToken.None);
+
+        Assert.Equal(new[] { Gsku, other }, wire.Gskus);
+        Assert.Equal(wire.Keys[0], wire.Keys[1]);
+        Assert.Equal(StatusCodes.Status409Conflict, Status(conflict));
+        using var body = JsonDocument.Parse(JsonSerializer.Serialize(((ObjectResult)conflict).Value));
+        Assert.False(body.RootElement.GetProperty("success").GetBoolean());
+        // MDM's code reaches the browser as it is; index.js turns it into RefusalIdempotencyKeyConflict (vitest).
+        Assert.Equal("IDEMPOTENCY_KEY_CONFLICT", body.RootElement.GetProperty("errors")[0].GetString());
+        // A definite refusal: the browser gets a new attempt for its next send.
+        Assert.NotEqual(token, TokenIn(conflict));
+    }
+
     // ------------------------------------------------------------------------------------------------ item 5
 
     [Fact]
@@ -245,6 +324,26 @@ public sealed class FinishedGoodWebAccessTests(WebApplicationFactory<Program> fa
             Keys.Add(body.RootElement.GetProperty("idempotencyKey").GetString()!);
             // MDM's own wire shape: enums are numbers.
             var json = $"{{\"isSuccessful\":true,\"statusCode\":{(int)status},\"data\":{{\"finishedGoodId\":\"{Guid.NewGuid():D}\",\"canonicalCode\":\"FG-000001\",\"gskuId\":\"{Gsku:D}\",\"lifecycleStatus\":1,\"version\":1,\"codeBindingState\":2,\"bindingReconciliationRequired\":false}}}}";
+            return new HttpResponseMessage(status) { Content = new StringContent(json, Encoding.UTF8, "application/json") };
+        }
+    }
+
+    // MDM's answers in order: a code means MDM's failure envelope (isSuccessful false, errors [code], no data).
+    private sealed class Scripted(params (HttpStatusCode Status, string? Code)[] answers) : HttpMessageHandler
+    {
+        private int _next;
+        public List<string> Keys { get; } = [];
+        public List<Guid> Gskus { get; } = [];
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            using var body = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(ct));
+            Keys.Add(body.RootElement.GetProperty("idempotencyKey").GetString()!);
+            Gskus.Add(body.RootElement.GetProperty("gskuId").GetGuid());
+            var (status, code) = answers[_next++];
+            var json = code is null
+                ? $"{{\"isSuccessful\":true,\"statusCode\":{(int)status},\"data\":{{\"finishedGoodId\":\"{Guid.NewGuid():D}\",\"canonicalCode\":\"FG-000001\",\"gskuId\":\"{Gsku:D}\",\"lifecycleStatus\":1,\"version\":1,\"bindingReconciliationRequired\":false}}}}"
+                : $"{{\"isSuccessful\":false,\"statusCode\":{(int)status},\"data\":null,\"errors\":[\"{code}\"]}}";
             return new HttpResponseMessage(status) { Content = new StringContent(json, Encoding.UTF8, "application/json") };
         }
     }

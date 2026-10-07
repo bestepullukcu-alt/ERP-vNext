@@ -197,7 +197,8 @@ public sealed partial class LskuFix3HttpTests
     // The transactional burn is safe only for a kind whose insert writes its reservation in its own transaction (LSKU).
     // A Finished Good / GSKU / GP code is refused outright — nothing burned.
     [Theory]
-    [InlineData(CodeBearingEntityType.FinishedGood)]
+    // FG FIX1 part B: the FG insert now writes its reservation in its own transaction, so the FG kind is open
+    // (FgFix1HttpTests.Item02_The_gate_… / Item03_A_burn_and_an_fg_insert_racing_…); GSKU / GP stay refused.
     [InlineData(CodeBearingEntityType.Gsku)]
     [InlineData(CodeBearingEntityType.GlobalProduct)]
     public async Task Fix4_Item03_A_burn_of_a_kind_whose_insert_is_not_transactional_is_refused(CodeBearingEntityType kind)

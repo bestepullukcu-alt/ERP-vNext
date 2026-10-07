@@ -301,10 +301,11 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
      * when no live (not deleted) identity row is bound to it — read in the SAME Mongo transaction as the burn's write.
      * That read closes the burn/insert race ONLY because the LSKU insert writes the reservation in its own transaction
      * (LskuRepository.InsertBoundToLiveCodeAsync): a burn and an insert that overlap fail each other with a write
-     * conflict, so never a live row with a burned code. LSKU FIX4 item 3: the FG / GSKU / GP inserts do NOT write the
-     * reservation yet (a snapshot read does not conflict with their plain insert — write skew), so a burn of those
-     * kinds is refused outright (BoundRowExistsAsync throws) until each insert gains the same touch. Today every burn
-     * caller is LSKU. A row that was cancelled (deleted) does not hold its code.
+     * conflict, so never a live row with a burned code. LSKU FIX4 item 3: an insert that does NOT write the
+     * reservation (a snapshot read does not conflict with a plain insert — write skew) cannot be protected, so a burn of
+     * such a kind is refused outright (BoundRowExistsAsync throws). FG FIX1 part B: the FG insert has the touch
+     * (FinishedGoodRepository.InsertBoundToLiveCodeAsync), so FG codes may be burned; GSKU / GP stay refused. A row that
+     * was cancelled (an LSKU deleted; a Finished Good whose retained cancellation is settled) does not hold its code.
      * Fail-closed: without transaction support the burn is refused (BurnTransactionUnavailable) — never burned outside one.
      */
     public async Task<ReservationOperationResult> BurnIdentityBindingAsync(
@@ -365,15 +366,17 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
         }
     }
 
-    private Task<bool> BoundRowExistsAsync(IClientSessionHandle session, CodeBearingEntityType entityType,
+    private async Task<bool> BoundRowExistsAsync(IClientSessionHandle session, CodeBearingEntityType entityType,
         Guid reservationId, Guid identityId, CancellationToken cancellationToken)
     {
         // LSKU FIX4 item 3: only a kind whose insert writes its reservation inside the insert's transaction may be
-        // burned here (today: LSKU). A kind is added only together with that touch in its own repository.
+        // burned here. FG FIX1 part B item 2: LSKU and — with FinishedGoodRepository.InsertBoundToLiveCodeAsync — FG.
+        // GSKU / GP stay closed until their inserts gain the same touch.
         var collection = entityType switch
         {
             CodeBearingEntityType.Lsku => "mdm_lskus",
-            CodeBearingEntityType.FinishedGood or CodeBearingEntityType.Gsku or CodeBearingEntityType.GlobalProduct =>
+            CodeBearingEntityType.FinishedGood => "mdm_finished_goods",
+            CodeBearingEntityType.Gsku or CodeBearingEntityType.GlobalProduct =>
                 throw new InvalidOperationException(
                     $"{BurnKindNotTransactional}: the {entityType} insert does not yet write its reservation in its own transaction."),
             _ => throw new InvalidOperationException("CODE_RESERVATION_ENTITY_TYPE_INVALID")
@@ -382,7 +385,19 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
             & Builders<BsonDocument>.Filter.Ne("IsDeleted", true)
             & (Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(identityId, GuidRepresentation.Standard))
                | Builders<BsonDocument>.Filter.Eq("CodeReservationId", new BsonBinaryData(reservationId, GuidRepresentation.Standard)));
-        return _database.GetCollection<BsonDocument>(collection).Find(session, bound).AnyAsync(cancellationToken);
+        if (entityType != CodeBearingEntityType.FinishedGood)
+            return await _database.GetCollection<BsonDocument>(collection).Find(session, bound).AnyAsync(cancellationToken);
+        // A Finished Good is retained when its Draft is cancelled: once that cancellation is SETTLED (its audit receipt
+        // validated — the same proof as the GSKU blocker) it holds nothing; pending its audit it still holds the code.
+        var rows = await _database.GetCollection<FinishedGood>(collection)
+            .Find(session, Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)
+                           & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
+                           & (Builders<FinishedGood>.Filter.Eq(x => x.Id, identityId)
+                              | Builders<FinishedGood>.Filter.Eq(x => x.CodeReservationId, reservationId)))
+            .ToListAsync(cancellationToken);
+        return rows.Any(row => Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle
+            .FinishedGoodDraftCancellationProof.Disposition(row)
+            != Diten.MdmService.Domain.ValueObjects.FinishedGoodCancellationDisposition.Cancelled);
     }
 
     private async Task<ReservationOperationResult> ChangeBindingAsync(

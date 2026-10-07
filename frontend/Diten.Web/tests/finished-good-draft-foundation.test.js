@@ -164,7 +164,7 @@ describe('MOD-0290 Finished Good Draft Foundation', () => {
     });
 
     describe('executed browser contracts (isolated DOM, no network)', () => {
-        function harness(responses = []) {
+        function harness(responses = [], extra = {}) {
             document.body.innerHTML =
                 '<div id="offcanvasDetailsPreview"></div><h5 id="oc-title"></h5><small id="oc-subtitle"></small>' +
                 '<div id="oc-id"></div><div id="oc-code"></div><div id="oc-gsku-code"></div>' +
@@ -180,18 +180,19 @@ describe('MOD-0290 Finished Good Draft Foundation', () => {
             const fakeWindow = {
                 L10n: new Proxy({}, { get: (_, key) => (typeof key === 'string' ? `L:${key}` : undefined) }),
                 showToast: toast,
-                DitenDataTable: { renderActions: (actions) => JSON.stringify(actions) }
+                DitenDataTable: { renderActions: (actions) => JSON.stringify(actions) },
+                ...(extra.window || {})
             };
             const source = script();
             // Test-only access to existing closure functions; shipped JS has no test hook.
             const exposed = source.replace('init: async () => {', `test: {
                 buildListOptions, refusalKeys, failureSentence, getErrorMessage, onListError, lifecycleMap,
                 lifecyclePresentation, renderLifecycle, toMdmPageUrl, adaptPage, clearUnservableOrder,
-                labelExportsCurrentPageOnly, populateDetails
+                labelExportsCurrentPageOnly, populateDetails, submitCreate, adoptFormAttempt
             }, init: async () => {`);
             expect(exposed).not.toBe(source);
             const api = vm.runInNewContext(`${exposed}\nFinishedGoodsList.test;`, {
-                window: fakeWindow, document, fetch, $: () => ({}), FormData, URLSearchParams, Intl, Date,
+                window: fakeWindow, document, fetch, $: extra.$ || (() => ({})), FormData, URLSearchParams, Intl, Date,
                 bootstrap: { Offcanvas: { getOrCreateInstance: () => ({ show: vi.fn(), hide: vi.fn() }) } },
                 setTimeout, clearTimeout, console: { ...console, warn }
             });
@@ -343,6 +344,41 @@ describe('MOD-0290 Finished Good Draft Foundation', () => {
             expect(await api.getErrorMessage({ status: 504, json: async () => { throw new Error('not json'); } })).toBe('L:ErrorTimeout');
         });
 
+        it('item 5: a definite refusal adopts the new form attempt, so the retry sends a new key; 503 keeps it', async () => {
+            document.body.innerHTML = '';
+            let confirmed;
+            const selected = { val: () => 'g-1', text: () => 'GS-1', trigger: () => selected };
+            const { api, fetch, toast } = harness([
+                json({ success: false, errors: ['CODE_RESERVATION_BURNED'], formAttemptToken: 'attempt-2' }, 409),
+                json({ success: false, errors: ['ErrorGateway'], formAttemptToken: 'attempt-2' }, 503),
+                json({ success: false, errors: ['IDEMPOTENCY_KEY_CONFLICT'], formAttemptToken: 'attempt-3' }, 409)
+            ], {
+                $: () => selected,
+                window: { showConfirm: (message, callback) => { confirmed = callback; } }
+            });
+            document.body.insertAdjacentHTML('beforeend',
+                '<form id="formFinishedGood"><input type="hidden" name="__RequestVerificationToken" value="csrf">' +
+                '<input type="hidden" id="formAttemptToken" value="attempt-1"></form>' +
+                '<button id="btnSaveFinishedGood"></button>');
+            const sent = () => fetch.mock.calls.map(([, init]) => init.body.get('FormAttemptToken'));
+            const submit = async () => { api.submitCreate(); await confirmed(); };
+
+            await submit();
+            expect(document.getElementById('formAttemptToken').value).toBe('attempt-2');
+            expect(toast).toHaveBeenLastCalledWith('L:RefusalCodeNotIssued', 'error');
+            await submit();
+            expect(document.getElementById('formAttemptToken').value).toBe('attempt-2');
+            expect(toast).toHaveBeenLastCalledWith('ErrorGateway', 'error');
+            await submit();
+            expect(toast).toHaveBeenLastCalledWith('L:RefusalIdempotencyKeyConflict', 'error');
+            // The retry after the refusal carried the new attempt; the retry after 503 carried the same one again.
+            expect(sent()).toEqual(['attempt-1', 'attempt-2', 'attempt-2']);
+            expect(document.getElementById('formAttemptToken').value).toBe('attempt-3');
+            // An answer without an attempt (the proxy's own expired-form refusal) leaves the current one in place.
+            api.adoptFormAttempt({ errors: ['ErrorInvalidFormAttempt'] });
+            expect(document.getElementById('formAttemptToken').value).toBe('attempt-3');
+        });
+
         it('the list read failure shows a sentence, not a code', () => {
             const { api, toast } = harness();
             api.onListError.call({}, { status: 409, responseJSON: { errors: ['CONCURRENCY_CONFLICT'] } });
@@ -368,7 +404,17 @@ describe('MOD-0290 Finished Good Draft Foundation', () => {
                 `${mdm}/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeCandidateFacade.cs`
             ];
             const literal = /"([A-Z][A-Z0-9]+(?:_[A-Z0-9]+)+)"/g;
-            const direct = new Set(files.flatMap((file) => [...readRepo(file).matchAll(literal)].map((m) => m[1])));
+            // A repository's own loop signal that never leaves MDM (the transactional insert retries on it and turns
+            // the last one into the ambiguous 202): not a refusal, so it needs no sentence — but it must still exist.
+            const internalOnly = {
+                [`${mdm}/Diten.MdmService.Persistence/Repositories/FinishedGoodRepository.cs`]: ['FINISHED_GOOD_INSERT_CONFLICT_RETRY']
+            };
+            const internal = new Set(Object.entries(internalOnly).flatMap(([file, codes]) => {
+                codes.forEach((code) => expect(readRepo(file)).toContain(`"${code}"`));
+                return codes;
+            }));
+            const direct = new Set(files.flatMap((file) => [...readRepo(file).matchAll(literal)].map((m) => m[1]))
+                .filter((code) => !internal.has(code)));
             // Answered through other stores on the create path: the GSKU child admission, the code reservation and
             // the legal-entity scope guard. Each must still be in MDM's source.
             const indirect = {
@@ -379,7 +425,10 @@ describe('MOD-0290 Finished Good Draft Foundation', () => {
                 [`${mdm}/Diten.MdmService.Persistence/Repositories/CodeReservationRepository.cs`]: [
                     'CODE_RESERVATION_ALREADY_TERMINAL', 'CODE_RESERVATION_MISMATCH', 'IDENTITY_RESERVATION_CONFLICT'],
                 [`${product}/Handlers/QueryHandlers/GetGlobalProductsHandler.cs`]: [
-                    'PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID', 'TENANT_CONTEXT_REQUIRED']
+                    'PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID', 'TENANT_CONTEXT_REQUIRED'],
+                // The create path's burn that could not run in a transaction (503: the attempt is kept).
+                [`${mdm}/Diten.MdmService.Domain/Repositories/ICodeReservationRepository.cs`]: [
+                    'CODE_RESERVATION_BURN_TRANSACTION_UNAVAILABLE']
             };
             const all = new Set(direct);
             Object.entries(indirect).forEach(([file, codes]) => {

@@ -8,20 +8,6 @@ public sealed class CreateFinishedGoodViewModel
     public Guid GskuId { get; set; }
 }
 
-public class FinishedGoodListItemViewModel
-{
-    public Guid Id { get; set; }
-    public string CanonicalCode { get; set; } = string.Empty;
-    public Guid GskuId { get; set; }
-    public string GskuCanonicalCode { get; set; } = string.Empty;
-    public string LifecycleStatus { get; set; } = string.Empty;
-    public int Version { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
-    public DateTimeOffset? UpdatedAt { get; set; }
-}
-
-public sealed class FinishedGoodDetailViewModel : FinishedGoodListItemViewModel;
-
 public sealed class FinishedGoodGskuSelectorItemViewModel
 {
     public Guid Id { get; set; }
