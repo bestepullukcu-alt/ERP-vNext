@@ -49,12 +49,10 @@ public sealed class ProductLegalEntityScopeActivationDebt : IProductLegalEntityS
     /// fence: they may write during a fence and in a FailClosedSuspended tenant. Their files belong to the GP and LSKU
     /// rounds (FIX2 (4): not touched here).
     /// </summary>
-    public static readonly FrozenSet<string> KnownUnfencedRecoveryRunners = new[]
-    {
-        "GlobalProductCorrectionRecoveryRunner",
-        "GlobalProductRetirementRequestRecoveryRunner",
-        "LskuRetirementRequestRecoveryRunner"
-    }.ToFrozenSet(StringComparer.Ordinal);
+    // WP-MDM-SCOPE-INT-01: the debt only shrinks — the three runners read the fence now (GP flow 1 FIX1 item 8, GP flow 2,
+    // LSKU FIX1 B4: ProductIdentityBackgroundScope / LskuBackgroundScope) and left the list.
+    public static readonly FrozenSet<string> KnownUnfencedRecoveryRunners =
+        Array.Empty<string>().ToFrozenSet(StringComparer.Ordinal);
 
     public IReadOnlyCollection<string> UnguardedWriters => KnownUnguardedWriters;
     public IReadOnlyCollection<string> UnfencedRecoveryRunners => KnownUnfencedRecoveryRunners;

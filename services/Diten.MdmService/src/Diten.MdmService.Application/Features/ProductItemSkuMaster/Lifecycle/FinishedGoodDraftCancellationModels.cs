@@ -20,7 +20,9 @@ public static class FinishedGoodDraftCancellationPermissions
 }
 
 public sealed record CancelFinishedGoodDraftCommand(Guid FinishedGoodId, int ExpectedVersion, Guid OperationId, string ReasonCode)
-    : IRequest<Response<FinishedGoodDraftCancellationResult>>, IAuditableCommand, IAuditMetadataProvider
+    : IRequest<Response<FinishedGoodDraftCancellationResult>>, IAuditableCommand, IAuditMetadataProvider,
+      // WP-MDM-SCOPE-INT-01 (CT decision): born fenced — no product write while the scope rollout measures the inventory.
+      global::Diten.MdmService.Application.Features.ProductLegalEntityScopes.IProductLegalEntityScopeInventoryMutation
 {
     public AuditMetadata GetAuditMetadata() => new(
         Category: AuditCategory.MasterData, Operation: AuditOperation.Update,
