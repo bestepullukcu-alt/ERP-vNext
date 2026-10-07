@@ -65,6 +65,7 @@ public sealed class CreateProductHandler : IRequestHandler<Commands.CreateProduc
                 ?? "One of the external references is already used by another product.",
                 409),
             BrandWriteOutcome.Unavailable => BrandProductFailures.StoreUnavailable<Guid>(),
+            BrandWriteOutcome.Ambiguous => BrandProductFailures.OutcomeUnknown<Guid>(),
             _ => Duplicate()
         };
 

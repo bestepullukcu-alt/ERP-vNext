@@ -42,7 +42,7 @@ public sealed class ProductsController : MasterDataGatewayController
         if (RequirePage(CreatePermission) is { } denied) return denied;
 
         var model = new ProductEditViewModel { EffectiveFrom = DateTimeOffset.Now };
-        await PopulateContractOptionsAsync(model, cancellationToken);
+        await PopulateContractOptionsAsync(model, currentBrand: null, cancellationToken);
         return View($"{ViewRoot}/Create.cshtml", model);
     }
 
@@ -55,7 +55,7 @@ public sealed class ProductsController : MasterDataGatewayController
         NormalizeExternalReferences(model.ExternalReferences);
         if (!ModelState.IsValid)
         {
-            await PopulateContractOptionsAsync(model, cancellationToken);
+            await PopulateContractOptionsAsync(model, currentBrand: null, cancellationToken);
             return View($"{ViewRoot}/Create.cshtml", model);
         }
 
@@ -71,7 +71,7 @@ public sealed class ProductsController : MasterDataGatewayController
         }
 
         AddGatewayErrors(await ExtractErrorsAsync(response, _sharedLocalizer["GatewayError"].Value, cancellationToken));
-        await PopulateContractOptionsAsync(model, cancellationToken);
+        await PopulateContractOptionsAsync(model, currentBrand: null, cancellationToken);
         return View($"{ViewRoot}/Create.cshtml", model);
     }
 
@@ -91,7 +91,7 @@ public sealed class ProductsController : MasterDataGatewayController
         }
 
         var model = ToEditModel(product);
-        await PopulateContractOptionsAsync(model, cancellationToken);
+        await PopulateContractOptionsAsync(model, await CurrentBrandAsync(product, cancellationToken), cancellationToken);
         return View($"{ViewRoot}/Edit.cshtml", model);
     }
 
@@ -106,7 +106,7 @@ public sealed class ProductsController : MasterDataGatewayController
         NormalizeExternalReferences(model.ExternalReferences);
         if (!ModelState.IsValid)
         {
-            await PopulateContractOptionsAsync(model, cancellationToken);
+            await PopulateEditOptionsAsync(model, cancellationToken);
             return View($"{ViewRoot}/Edit.cshtml", model);
         }
 
@@ -118,7 +118,7 @@ public sealed class ProductsController : MasterDataGatewayController
         }
 
         AddGatewayErrors(await ExtractErrorsAsync(response, _sharedLocalizer["GatewayError"].Value, cancellationToken));
-        await PopulateContractOptionsAsync(model, cancellationToken);
+        await PopulateEditOptionsAsync(model, cancellationToken);
         return View($"{ViewRoot}/Edit.cshtml", model);
     }
 
@@ -169,7 +169,8 @@ public sealed class ProductsController : MasterDataGatewayController
 
     // ---- helpers ----
 
-    private async Task PopulateContractOptionsAsync(ProductEditViewModel model, CancellationToken cancellationToken)
+    private async Task PopulateContractOptionsAsync(
+        ProductEditViewModel model, BrandOptionViewModel? currentBrand, CancellationToken cancellationToken)
     {
         var contract = await LoadContractAsync(cancellationToken);
         if (contract is null || !contract.IsReady || !contract.Features.SupportsProductManagement)
@@ -182,15 +183,51 @@ public sealed class ProductsController : MasterDataGatewayController
         model.ProductTypes = contract.Vocabulary.ProductTypes;
         model.DosageForms = contract.Vocabulary.DosageForms;
         model.UnitsOfMeasure = contract.Vocabulary.UnitsOfMeasure;
-        model.BrandOptions = await LoadActiveBrandOptionsAsync(cancellationToken);
+
+        // P-2026-10-07-BRAND-FIX3 (R-4) — an editor who may not read brands sees only the product's current brand, read-only;
+        // the brand list is not asked. A hidden input in the form carries BrandId, so the save keeps it.
+        model.BrandReadOnly = currentBrand is not null && !HasAnyPermission(BrandReadPermission);
+        if (model.BrandReadOnly)
+        {
+            model.BrandOptions = [currentBrand!];
+            return;
+        }
+
+        var options = (await LoadLinkableBrandOptionsAsync(cancellationToken)).ToList();
+        // R-4 — the current brand is never dropped: if MDM would not link it any more it is still offered (and selected by
+        // BrandId), marked "(not linkable)", so saving without touching the brand posts the same BrandId.
+        if (currentBrand is not null && options.All(x => x.BrandId != currentBrand.BrandId))
+        {
+            options.Insert(0, currentBrand);
+        }
+
+        model.BrandOptions = options;
     }
 
     /// <summary>
-    /// Active, non-archived brands only — an archived brand cannot receive new product links (409), so it is
-    /// never offered as a choice. Requires brand read permission; without it the picker is simply empty and the
-    /// operator can still create a brand-less product (BrandId is optional).
+    /// A re-rendered edit (local validation or an MDM refusal such as 409 version_conflict): the current brand is read again
+    /// from MDM so the picker still holds it. Only the brand the form posted is kept — never a different one.
     /// </summary>
-    private async Task<IReadOnlyList<BrandOptionViewModel>> LoadActiveBrandOptionsAsync(CancellationToken cancellationToken)
+    private async Task PopulateEditOptionsAsync(ProductEditViewModel model, CancellationToken cancellationToken)
+    {
+        BrandOptionViewModel? currentBrand = null;
+        if (model.BrandId is { } postedBrandId && postedBrandId != Guid.Empty && model.ProductId is { } productId)
+        {
+            var product = await LoadProductAsync(productId, cancellationToken);
+            if (product is not null && product.BrandId == postedBrandId)
+            {
+                currentBrand = await CurrentBrandAsync(product, cancellationToken);
+            }
+        }
+
+        await PopulateContractOptionsAsync(model, currentBrand, cancellationToken);
+    }
+
+    /// <summary>
+    /// The brands MDM would link today — MDM decides (isLinkable: active + inside its validity window, UTC); the web keeps
+    /// no copy of that rule (R-5). Requires brand read permission; without it the list is never asked.
+    /// </summary>
+    private async Task<IReadOnlyList<BrandOptionViewModel>> LoadLinkableBrandOptionsAsync(CancellationToken cancellationToken)
     {
         if (!HasAnyPermission(BrandReadPermission))
         {
@@ -207,20 +244,32 @@ public sealed class ProductsController : MasterDataGatewayController
         var envelope = await response.Content
             .ReadFromJsonAsync<BrandProductGatewayResponse<BrandListResultViewModel>>(JsonOptions, cancellationToken);
 
-        // WP-MDM-BRAND-ACCEPT-01 FIX2 (item 2) — only a brand MDM would link: active, not archived and inside its validity
-        // window today (MDM refuses the rest with 409 brand_not_linkable). The brand list endpoint itself is unchanged, so
-        // the CRM pickers that read it keep showing what they showed.
-        var today = DateTimeOffset.UtcNow.UtcDateTime.Date;
         return (envelope?.Data?.Items ?? [])
-            .Where(x => !x.IsArchived && IsLinkableOn(x, today))
+            .Where(x => x.IsLinkable == true)
             .Select(x => new BrandOptionViewModel(x.BrandId, x.BrandCode, x.BrandName))
             .ToList();
     }
 
-    internal static bool IsLinkableOn(BrandDetailViewModel brand, DateTime today)
-        => string.Equals(brand.BrandStatus, "active", StringComparison.Ordinal)
-           && brand.EffectiveFrom.UtcDateTime.Date <= today
-           && (brand.EffectiveTo is null || brand.EffectiveTo.Value.UtcDateTime.Date >= today);
+    /// <summary>
+    /// R-4 — the product's current brand as an option. MDM's linkedBrand first (readable with mdm.products.read alone);
+    /// an MDM build that does not send it yet falls back to the brand read (brand readers only), and otherwise to the raw
+    /// BrandId — never a fabricated name.
+    /// </summary>
+    private async Task<BrandOptionViewModel?> CurrentBrandAsync(ProductDetailViewModel product, CancellationToken cancellationToken)
+    {
+        if (product.BrandId is not { } brandId || brandId == Guid.Empty)
+        {
+            return null;
+        }
+
+        if (product.LinkedBrand is { } linked && linked.BrandId == brandId)
+        {
+            return new BrandOptionViewModel(linked.BrandId, linked.BrandCode, linked.BrandName, IsLinkable: linked.IsLinkable);
+        }
+
+        return await TryResolveBrandAsync(brandId, cancellationToken)
+               ?? new BrandOptionViewModel(brandId, brandId.ToString("D"), string.Empty);
+    }
 
     private async Task<BrandOptionViewModel?> TryResolveBrandAsync(Guid? brandId, CancellationToken cancellationToken)
     {
@@ -238,7 +287,9 @@ public sealed class ProductsController : MasterDataGatewayController
         var brand = (await response.Content
             .ReadFromJsonAsync<BrandProductGatewayResponse<BrandDetailViewModel>>(JsonOptions, cancellationToken))?.Data;
 
-        return brand is null ? null : new BrandOptionViewModel(brand.BrandId, brand.BrandCode, brand.BrandName, brand.IsArchived);
+        return brand is null
+            ? null
+            : new BrandOptionViewModel(brand.BrandId, brand.BrandCode, brand.BrandName, brand.IsArchived, brand.IsLinkable == true);
     }
 
     private async Task<ProductDetailViewModel?> LoadProductAsync(Guid productId, CancellationToken cancellationToken)
@@ -267,7 +318,9 @@ public sealed class ProductsController : MasterDataGatewayController
         m.Description,
         EffectiveFrom = m.EffectiveFrom,
         EffectiveTo = m.EffectiveTo,
-        ExternalReferences = ToExternalReferencePayload(m.ExternalReferences)
+        ExternalReferences = ToExternalReferencePayload(m.ExternalReferences),
+        // R-3 — required by MDM on update (missing → 400 expected_version_required, stale → 409 version_conflict); null on create.
+        m.ExpectedVersion
         // No TenantId — deliberately absent from the payload shape.
     };
 
@@ -290,6 +343,7 @@ public sealed class ProductsController : MasterDataGatewayController
         EffectiveFrom = p.EffectiveFrom,
         EffectiveTo = p.EffectiveTo,
         ExternalReferences = p.ExternalReferences,
-        IsArchived = p.IsArchived
+        IsArchived = p.IsArchived,
+        ExpectedVersion = p.Version
     };
 }

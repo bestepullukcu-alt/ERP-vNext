@@ -558,28 +558,26 @@ public sealed class BrandsWebTests : IClassFixture<WebApplicationFactory<Program
         }
     }
 
-    // ── item 2 — the product form offers only a brand MDM would link ────────────────────────────────────────────
+    // ── item 2 — the product form offers only a brand MDM would link: the rule moved to MDM (FIX3 R-5) and is guarded in
+    //    ProductsWebTests (Fix3_R5_*); the web copy IsLinkableOn and its theory were removed.
 
-    [Theory]
-    [InlineData("active", -30, null, true)]
-    [InlineData("active", -30, 0, true)]
-    [InlineData("active", 0, null, true)]
-    [InlineData("draft", -30, null, false)]
-    [InlineData("inactive", -30, null, false)]
-    [InlineData("active", -30, -1, false)]
-    [InlineData("active", 1, null, false)]
-    public void Fix2_item2_a_brand_is_linkable_only_when_active_and_inside_its_window_today(
-        string status, int fromDays, int? toDays, bool expected)
+    // ── FIX3 M-8 — the export file is never cached ──────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Fix3_M8_the_export_file_response_is_marked_no_store()
     {
-        var today = new DateTime(2026, 10, 6);
-        var brand = new BrandDetailViewModel
+        var wire = new RecordingHandler(HttpStatusCode.OK, string.Empty, _ =>
         {
-            BrandStatus = status,
-            EffectiveFrom = new DateTimeOffset(today.AddDays(fromDays), TimeSpan.Zero),
-            EffectiveTo = toDays is { } days ? new DateTimeOffset(today.AddDays(days), TimeSpan.Zero) : null
-        };
+            var content = new ByteArrayContent([0x41, 0x2C, 0x42]);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/csv");
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = content };
+        });
+        var controller = Controller(wire, "mdm.brands.export", "?format=csv");
 
-        Assert.Equal(expected, (bool)Internal(typeof(ProductsController), "IsLinkableOn").Invoke(null, [brand, today])!);
+        var result = await controller.Export(CancellationToken.None);
+
+        Assert.IsType<FileContentResult>(result);
+        Assert.Equal("no-store", controller.Response.Headers.CacheControl.ToString());
     }
 
     private static MethodInfo Internal(Type type, string name)

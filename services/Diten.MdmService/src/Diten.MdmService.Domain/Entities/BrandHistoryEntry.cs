@@ -29,6 +29,13 @@ public sealed class BrandHistoryEntry : EntityBase
     /// <summary>The brand's version after the write — pairs the entry with exactly one stored state.</summary>
     public int ResultVersion { get; set; }
 
+    /// <summary>
+    /// WP-MDM-BRAND-ACCEPT-01 FIX3 (M-3) — "released on archive": the external references whose reservations the archive gave
+    /// up (an archived brand no longer holds a pair; another record may take it). Empty on every other event and on entries
+    /// written before FIX3 (the field is absent there and reads as empty).
+    /// </summary>
+    public List<BrandProductExternalReference> ReleasedExternalReferences { get; set; } = [];
+
     public DateTimeOffset OccurredAtUtc { get; set; }
 }
 

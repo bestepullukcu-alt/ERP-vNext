@@ -26,11 +26,16 @@ public sealed class BrandsController : CustomBaseController
 {
     private readonly IMediator _mediator;
     private readonly IRequestCorrelation _correlation;
+    private readonly IPlatformAuditForwarder _audit;
+    private readonly ILogger<BrandsController> _logger;
 
-    public BrandsController(IMediator mediator, IRequestCorrelation correlation)
+    public BrandsController(
+        IMediator mediator, IRequestCorrelation correlation, IPlatformAuditForwarder audit, ILogger<BrandsController> logger)
     {
         _mediator = mediator;
         _correlation = correlation;
+        _audit = audit;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -80,6 +85,30 @@ public sealed class BrandsController : CustomBaseController
 
         var culture = ListExportContract.ResolveCulture(Request.Headers.AcceptLanguage.ToString());
         var content = ListExportWriter.Write(fileFormat, exportColumns, response.Data.Items, culture, BrandExportColumns.Label("Title", culture));
+
+        // WP-MDM-BRAND-ACCEPT-01 FIX3 (M-8) — the file is never kept by a browser or a proxy cache.
+        Response.Headers.CacheControl = "no-store";
+
+        // FIX3 (M-8) — AUD-001 §7 requires a (fail-closed) read audit only when PERSONAL data leaves in bulk; the brand
+        // export carries none (no person column), so the event is best effort, like every MDM write (path b): who took the
+        // register, when, how many rows. A failed hand-over never withholds the file.
+        try
+        {
+            await _audit.ForwardAsync(new AuditForwardRequest(
+                RequestType: "BrandRegisterExport",
+                Category: (int)AuditCategory.DataExport,
+                Operation: (int)AuditOperation.Export,
+                EntityType: "Brand",
+                SourceModule: "brand-product-master",
+                EntityId: null,
+                Outcome: 1,
+                CorrelationId: _correlation.CorrelationId), cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Brand export audit hand-over failed; the file was still served.");
+        }
+
         return File(content, ListExportContract.ContentType(fileFormat),
             ListExportContract.FileName(BrandExportColumns.Screen, DateTimeOffset.UtcNow, fileFormat));
     }

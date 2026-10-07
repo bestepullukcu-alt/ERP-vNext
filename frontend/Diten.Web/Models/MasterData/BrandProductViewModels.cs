@@ -140,6 +140,12 @@ public sealed class BrandDetailViewModel
 
     /// <summary>FIX1 (item 3) — products of this brand that are not archived (detail read only).</summary>
     public int? LiveProductCount { get; set; }
+
+    /// <summary>
+    /// P-2026-10-07-BRAND-FIX3 (R-5) — computed by MDM (active + inside its validity window today, UTC). The web never
+    /// recomputes it; null = an MDM build that does not send it yet, and such a brand is not offered as a new link.
+    /// </summary>
+    public bool? IsLinkable { get; set; }
 }
 
 /// <summary>FIX1 (item 8) — one legal entity of the owner-company picker: shown as code and name, never as its id.</summary>
@@ -217,8 +223,21 @@ public sealed class ProductEditViewModel : IValidatableObject
     public IReadOnlyList<string> DosageForms { get; set; } = [];
     public IReadOnlyList<string> UnitsOfMeasure { get; set; } = [];
 
-    /// <summary>Active, non-archived brands fetched through the Gateway; empty when none exist.</summary>
+    /// <summary>
+    /// The brands MDM would link (its isLinkable) plus — on edit — the product's current brand even when it is not
+    /// linkable any more, so saving never drops it (P-2026-10-07-BRAND-FIX3 R-4).
+    /// </summary>
     public IReadOnlyList<BrandOptionViewModel> BrandOptions { get; set; } = [];
+
+    /// <summary>
+    /// R-4 — the editor may not read brands: the picker shows only the current brand, disabled, and a hidden input carries
+    /// BrandId so the save keeps it. Decided by the controller, never bound from the form.
+    /// </summary>
+    [Microsoft.AspNetCore.Mvc.ModelBinding.BindNever]
+    public bool BrandReadOnly { get; set; }
+
+    /// <summary>R-3 — the version this edit was made on; sent as expectedVersion so a stale save is refused (409).</summary>
+    public int? ExpectedVersion { get; set; }
 
     public string? ContractError { get; set; }
     public bool IsArchived { get; set; }
@@ -248,7 +267,18 @@ public sealed class ProductEditViewModel : IValidatableObject
 }
 
 // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 3) — IsArchived lets the product page say the brand was archived.
-public sealed record BrandOptionViewModel(Guid BrandId, string BrandCode, string BrandName, bool IsArchived = false);
+// P-2026-10-07-BRAND-FIX3 (R-4) — IsLinkable false marks the product's current brand that MDM would not link any more.
+public sealed record BrandOptionViewModel(
+    Guid BrandId, string BrandCode, string BrandName, bool IsArchived = false, bool IsLinkable = true);
+
+/// <summary>R-4 — MDM's ProductDetailDto.linkedBrand: the product's current brand, readable with mdm.products.read alone.</summary>
+public sealed class LinkedBrandViewModel
+{
+    public Guid BrandId { get; set; }
+    public string BrandCode { get; set; } = string.Empty;
+    public string BrandName { get; set; } = string.Empty;
+    public bool IsLinkable { get; set; }
+}
 
 public sealed class ProductDetailViewModel
 {
@@ -277,6 +307,9 @@ public sealed class ProductDetailViewModel
     public int Version { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
+
+    /// <summary>R-4 — the current brand resolved by MDM; null when the product has none or MDM does not send it yet.</summary>
+    public LinkedBrandViewModel? LinkedBrand { get; set; }
 }
 
 public sealed class ProductListResultViewModel

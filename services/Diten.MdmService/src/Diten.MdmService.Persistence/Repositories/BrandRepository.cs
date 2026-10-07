@@ -43,8 +43,17 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
         brand.CreatedAt = now;
         brand.UpdatedAt = now;
         brand.IsDeleted = false;
+        var references = brand.ExternalReferences ?? [];
         return AtomicallyAsync(async session =>
         {
+            // FIX3 (M-1) — the reservation FIRST: on a server without transactions (Development) a pair another record holds
+            // must refuse the create before any brand is written, never after.
+            if (!await _reservations.TryReserveAsync(session, ExternalReferenceReservation.RecordTypeBrand,
+                    brand.Id, brand.BrandCode, references, cancellationToken))
+            {
+                return BrandWriteOutcome.ReferenceInUse;
+            }
+
             try
             {
                 if (session is null)
@@ -54,13 +63,10 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
             }
             catch (Exception exception) when (MasterDataAtomicWrite.IsDuplicateKey(exception))
             {
+                // In a transaction the abort takes the reservation back; without one it is given back here.
+                if (session is null)
+                    await _reservations.ReleaseAsync(null, ExternalReferenceReservation.RecordTypeBrand, brand.Id, references, cancellationToken);
                 return BrandWriteOutcome.DuplicateCode;
-            }
-
-            if (!await _reservations.TryReserveAsync(session, ExternalReferenceReservation.RecordTypeBrand,
-                    brand.Id, brand.BrandCode, brand.ExternalReferences ?? [], cancellationToken))
-            {
-                return BrandWriteOutcome.ReferenceInUse;
             }
 
             await AppendAsync(session, Stamp(history, brand.Id, brand.Version), cancellationToken);
@@ -107,8 +113,13 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
             .Set(x => x.UpdatedBy, archived.UpdatedBy)
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
             .Inc(x => x.Version, 1);
-        // An archived brand keeps its references reserved: archive is irreversible and the pair stays its own.
-        return ConditionalWriteAsync(archived.Id, archived.BrandCode, expectedVersion, update, history, [], [], cancellationToken);
+        // FIX3 (M-3, CT decision) — an archived brand gives up its external references: the reservations are released in the
+        // same transaction and the history entry records them as "released on archive" (archive v1 is irreversible; a pair
+        // locked forever would stop the outside system from mapping that record to a new brand). The brand document keeps
+        // the references it had, as history; a later restore (backlog) must reserve them again and refuse a taken pair.
+        var released = archived.ExternalReferences ?? [];
+        history.ReleasedExternalReferences = released.ToList();
+        return ConditionalWriteAsync(archived.Id, archived.BrandCode, expectedVersion, update, history, [], released, cancellationToken);
     }
 
     /// <summary>
@@ -126,7 +137,9 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
     public async Task<Brand?> FindByExternalReferenceAsync(
         string sourceSystem, string externalId, Guid? excludeId, CancellationToken cancellationToken = default)
     {
-        var filter = TenantFilter & Builders<Brand>.Filter.ElemMatch(x => x.ExternalReferences,
+        // FIX3 (M-3) — an archived brand released its pairs, so it no longer holds one (Ne(true): a document without the
+        // field is not archived).
+        var filter = TenantFilter & StoredFilters.NotArchived<Brand>() & Builders<Brand>.Filter.ElemMatch(x => x.ExternalReferences,
             Builders<BrandProductExternalReference>.Filter.Regex(x => x.SourceSystem, ExactIgnoringCase(sourceSystem))
             & Builders<BrandProductExternalReference>.Filter.Regex(x => x.ExternalId, ExactIgnoringCase(externalId)));
         if (excludeId is { } id)
@@ -144,25 +157,29 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
     {
         var filter = TenantFilter
                      & Builders<Brand>.Filter.Eq(x => x.Id, brandId)
-                     & Builders<Brand>.Filter.Eq(x => x.IsArchived, false)
-                     & Builders<Brand>.Filter.Eq(x => x.Version, expectedVersion);
+                     & StoredFilters.NotArchived<Brand>()
+                     & StoredFilters.AtVersion<Brand>(expectedVersion);
         return AtomicallyAsync(async session =>
         {
-            var result = session is null
-                ? await Collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken)
-                : await Collection.UpdateOneAsync(session, filter, update, cancellationToken: cancellationToken);
-            if (result.ModifiedCount != 1)
-            {
-                return BrandWriteOutcome.Stale;
-            }
-
-            await _reservations.ReleaseAsync(session, ExternalReferenceReservation.RecordTypeBrand, brandId, removed, cancellationToken);
+            // FIX3 (M-1) — reserve what the edit ADDS before the record changes; without a transaction it is given back
+            // when the conditional write loses, so no pair is left held by an edit that never landed.
             if (!await _reservations.TryReserveAsync(session, ExternalReferenceReservation.RecordTypeBrand,
                     brandId, brandCode, added, cancellationToken))
             {
                 return BrandWriteOutcome.ReferenceInUse;
             }
 
+            var result = session is null
+                ? await Collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken)
+                : await Collection.UpdateOneAsync(session, filter, update, cancellationToken: cancellationToken);
+            if (result.ModifiedCount != 1)
+            {
+                if (session is null)
+                    await _reservations.ReleaseAsync(null, ExternalReferenceReservation.RecordTypeBrand, brandId, added, cancellationToken);
+                return BrandWriteOutcome.Stale;
+            }
+
+            await _reservations.ReleaseAsync(session, ExternalReferenceReservation.RecordTypeBrand, brandId, removed, cancellationToken);
             await AppendAsync(session, Stamp(history, brandId, expectedVersion + 1), cancellationToken);
             return BrandWriteOutcome.Written;
         }, cancellationToken);

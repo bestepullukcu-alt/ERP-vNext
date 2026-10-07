@@ -250,10 +250,42 @@ internal sealed class InMemoryProductRepository : IProductRepository
         => TryCreateAsync(product, cancellationToken)
             .ContinueWith(x => x.Result ? BrandWriteOutcome.Written : BrandWriteOutcome.DuplicateCode, cancellationToken);
 
-    public async Task<BrandWriteOutcome> UpdateWithReservationsAsync(
-        Product product, IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
+    // FIX3 (R-3) — conditional on the version, as the store is (measured over HTTP in BrandFix3HttpTests).
+    public Task<BrandWriteOutcome> UpdateWithReservationsAsync(
+        Product product, int expectedVersion,
+        IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
         CancellationToken cancellationToken = default)
-        => await UpdateAsync(product, cancellationToken) ? BrandWriteOutcome.Written : BrandWriteOutcome.Stale;
+    {
+        var index = _entities.FindIndex(x => x.Id == product.Id && x.TenantId == _tenantId && !x.IsDeleted && !x.IsArchived
+                                             && x.Version == expectedVersion);
+        if (index < 0)
+        {
+            return Task.FromResult(BrandWriteOutcome.Stale);
+        }
+
+        product.UpdatedAt = DateTimeOffset.UtcNow;
+        product.Version = expectedVersion + 1;
+        _entities[index] = product;
+        return Task.FromResult(BrandWriteOutcome.Written);
+    }
+
+    public Task<BrandWriteOutcome> ArchiveWithReservationsAsync(Product archived, int expectedVersion, CancellationToken cancellationToken = default)
+    {
+        var stored = _entities.FirstOrDefault(x => x.Id == archived.Id && x.TenantId == _tenantId && !x.IsDeleted && !x.IsArchived
+                                                   && x.Version == expectedVersion);
+        if (stored is null)
+        {
+            return Task.FromResult(BrandWriteOutcome.Stale);
+        }
+
+        stored.IsArchived = true;
+        stored.ProductStatus = archived.ProductStatus;
+        stored.ArchivedAt = archived.ArchivedAt;
+        stored.ArchivedBy = archived.ArchivedBy;
+        stored.UpdatedBy = archived.UpdatedBy;
+        stored.Version++;
+        return Task.FromResult(BrandWriteOutcome.Written);
+    }
 
     public Task<Product?> FindByExternalReferenceAsync(
         string sourceSystem, string externalId, Guid? excludeId, CancellationToken cancellationToken = default)

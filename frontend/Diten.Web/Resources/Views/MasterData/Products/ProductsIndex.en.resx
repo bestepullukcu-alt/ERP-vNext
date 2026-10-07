@@ -88,6 +88,7 @@
   <data name="NoBrand" xml:space="preserve"><value>No brand</value></data>
   <data name="NoBrandLinked" xml:space="preserve"><value>This product is not linked to a brand.</value></data>
   <data name="BrandIdOptionalHelp" xml:space="preserve"><value>Optional. Generic and non-pharma products may have no brand. Archived brands are not offered.</value></data>
+  <data name="BrandNotLinkableSuffix" xml:space="preserve"><value>(not linkable)</value></data>
   <data name="BrandNotResolvedHelp" xml:space="preserve"><value>The brand could not be read, so only its identifier is shown.</value></data>
   <data name="BrandReferenceSection" xml:space="preserve"><value>Brand Reference</value></data>
   <data name="PharmaMetadataSection" xml:space="preserve"><value>Pharma Metadata</value></data>

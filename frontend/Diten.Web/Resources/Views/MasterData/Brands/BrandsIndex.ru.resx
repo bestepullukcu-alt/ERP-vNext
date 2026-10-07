@@ -117,6 +117,7 @@
   <data name="Reason_list_query_invalid" xml:space="preserve"><value>Список нельзя отсортировать или разбить на страницы таким образом. Сбросьте вид и повторите попытку.</value></data>
   <data name="Reason_brand_not_linkable" xml:space="preserve"><value>Новые продукты можно связать только с активным брендом в пределах срока его действия.</value></data>
   <data name="Reason_store_unavailable" xml:space="preserve"><value>Сейчас изменение невозможно сохранить надёжно. Ничего не сохранено; повторите попытку позже.</value></data>
+  <data name="Reason_write_outcome_unknown" xml:space="preserve"><value>Изменение отправлено, но его результат не удалось подтвердить. Перезагрузите бренд: если изменения нет, внесите его снова.</value></data>
   <data name="Reason_field_invalid" xml:space="preserve"><value>{0}: значение отсутствует, слишком длинное или имеет неверный формат.</value></data>
   <data name="RefusedStatus_400" xml:space="preserve"><value>Запрос не принят. Проверьте введённые данные и повторите попытку.</value></data>
   <data name="RefusedStatus_403" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>

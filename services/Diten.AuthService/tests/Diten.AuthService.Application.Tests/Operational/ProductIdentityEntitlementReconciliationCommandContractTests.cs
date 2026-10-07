@@ -215,6 +215,10 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
         "services/Diten.Platform/src/Diten.Platform.Application/Features/ModulePages",
         "services/Diten.Platform/src/Diten.Platform.Application/Features/PlatformAdministrators"
     ];
+    // DataSeeder rpCol.InsertOneAsync 17 -> 18 and versionService.IncrementAsync 4 -> 5: BackfillBrandsExportAsync's grant of
+    //   mdm.brands.export to every role holding mdm.brands.read, and its role-assignment version bump — AUTHORITY writes, in
+    //   this frozen list exactly where BackfillUsersExportAsync's same two writes are.
+    // BRAND-FIX3 M-4 · CT kararı 2026-10-07 · UsersExportGrantBackfill emsali · tek yönlü, kiracı başına bir kez, kalıcı işaretli
     private const string FrozenWriterCalls = """
     services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/InternalEventsController.cs|IUserRepository|_userRepository.CreateAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/InternalEventsController.cs|IUserRepository|_userRepository.UpdateForTenantAsync|1
@@ -303,9 +307,9 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Permission+Role|col.BulkWriteAsync|6
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Permission+Role|col.InsertOneAsync|2
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Permission+Role|col.UpdateOneAsync|1
-    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|RolePermission|rpCol.InsertOneAsync|17
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|RolePermission|rpCol.InsertOneAsync|18
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Role|roleCol.InsertOneAsync|2
-    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|RoleAssignmentVersionRepository|versionService.IncrementAsync|4
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|RoleAssignmentVersionRepository|versionService.IncrementAsync|5
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|UserRole|urCol.DeleteManyAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|UserRole|urCol.InsertOneAsync|3
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|User|userCol.DeleteOneAsync|1
@@ -430,8 +434,12 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     //     rpCol.InsertOneAsync rows in the frozen list above.
     // Kept as a counted row (not a NonAuthorityBindings entry) on purpose: a SECOND write to that collection, from
     // anywhere in the writer roots, changes this inventory and needs its own classification.
+    //   DataSeeder | PermissionReconciliationMark | marks.ReplaceOneAsync 1 -> 2 (BackfillBrandsExportAsync): the same
+    //     record for the key mdm.brands.export — "this tenant has been through the one-way brands export backfill";
+    //     classified BOOKKEEPING exactly as the users one. Its grants are the frozen rpCol.InsertOneAsync row above.
+    // BRAND-FIX3 M-4 · CT kararı 2026-10-07 · UsersExportGrantBackfill emsali · tek yönlü, kiracı başına bir kez, kalıcı işaretli
     private const string ApprovedBookkeepingWriterCalls = """
-    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|PermissionReconciliationMark|marks.ReplaceOneAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|PermissionReconciliationMark|marks.ReplaceOneAsync|2
     """;
     // Approved DECLARED SERVICE CLIENT writes — MOD-0033-FU02 Section F (CONTROL TOWER decision, 2026-10-01;
     // WP-GP-1A-TRUST-CHAIN-01). The first production writers of serviceClientIdentities / serviceClientTenantGrants:

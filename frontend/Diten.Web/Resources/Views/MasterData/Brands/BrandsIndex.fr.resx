@@ -117,6 +117,7 @@
   <data name="Reason_list_query_invalid" xml:space="preserve"><value>La liste n'a pas pu être triée ou paginée ainsi. Réinitialisez la vue et réessayez.</value></data>
   <data name="Reason_brand_not_linkable" xml:space="preserve"><value>Seule une marque active et dans sa période de validité peut recevoir de nouveaux liens produit.</value></data>
   <data name="Reason_store_unavailable" xml:space="preserve"><value>La modification n’a pas pu être enregistrée de manière sûre pour le moment. Rien n’a été enregistré ; réessayez plus tard.</value></data>
+  <data name="Reason_write_outcome_unknown" xml:space="preserve"><value>La modification a été envoyée, mais son résultat n’a pas pu être confirmé. Rechargez la marque : si la modification n’y est pas, refaites-la.</value></data>
   <data name="Reason_field_invalid" xml:space="preserve"><value>{0} : la valeur est manquante, trop longue ou dans un format incorrect.</value></data>
   <data name="RefusedStatus_400" xml:space="preserve"><value>La demande n'a pas été acceptée. Vérifiez les saisies et réessayez.</value></data>
   <data name="RefusedStatus_403" xml:space="preserve"><value>Vous n'avez pas l'autorisation d'effectuer cette action.</value></data>

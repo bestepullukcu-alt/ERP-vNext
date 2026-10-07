@@ -88,6 +88,7 @@
   <data name="NoBrand" xml:space="preserve"><value>Marka yok</value></data>
   <data name="NoBrandLinked" xml:space="preserve"><value>Bu ürün bir markaya bağlı değil.</value></data>
   <data name="BrandIdOptionalHelp" xml:space="preserve"><value>İsteğe bağlı. Jenerik ve pharma dışı ürünlerin markası olmayabilir. Arşivlenmiş markalar sunulmaz.</value></data>
+  <data name="BrandNotLinkableSuffix" xml:space="preserve"><value>(bağlanamaz)</value></data>
   <data name="BrandNotResolvedHelp" xml:space="preserve"><value>Marka okunamadı, bu nedenle yalnızca kimliği gösteriliyor.</value></data>
   <data name="BrandReferenceSection" xml:space="preserve"><value>Marka Referansı</value></data>
   <data name="PharmaMetadataSection" xml:space="preserve"><value>Pharma Meta Verisi</value></data>

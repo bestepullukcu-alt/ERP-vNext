@@ -88,6 +88,7 @@ goldenslim.records.read,0
 goldenslim.records.update,0
 mdm.brands.archive,0
 mdm.brands.create,0
+mdm.brands.export,0
 mdm.brands.read,0
 mdm.brands.update,0
 mdm.global-products.create,0

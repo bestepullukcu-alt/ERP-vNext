@@ -88,6 +88,7 @@
   <data name="NoBrand" xml:space="preserve"><value>Sin marca</value></data>
   <data name="NoBrandLinked" xml:space="preserve"><value>Este producto no está vinculado a ninguna marca.</value></data>
   <data name="BrandIdOptionalHelp" xml:space="preserve"><value>Opcional. Los productos genéricos y no farmacéuticos pueden no tener marca. Las marcas archivadas no se ofrecen.</value></data>
+  <data name="BrandNotLinkableSuffix" xml:space="preserve"><value>(no vinculable)</value></data>
   <data name="BrandNotResolvedHelp" xml:space="preserve"><value>No se pudo leer la marca, por lo que solo se muestra su identificador.</value></data>
   <data name="BrandReferenceSection" xml:space="preserve"><value>Referencia de marca</value></data>
   <data name="PharmaMetadataSection" xml:space="preserve"><value>Metadatos farmacéuticos</value></data>

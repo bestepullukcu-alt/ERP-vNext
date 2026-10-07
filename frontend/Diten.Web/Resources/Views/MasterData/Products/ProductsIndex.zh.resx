@@ -88,6 +88,7 @@
   <data name="NoBrand" xml:space="preserve"><value>无品牌</value></data>
   <data name="NoBrandLinked" xml:space="preserve"><value>此产品未关联品牌。</value></data>
   <data name="BrandIdOptionalHelp" xml:space="preserve"><value>可选。通用产品与非药品可以没有品牌。已归档品牌不会出现在列表中。</value></data>
+  <data name="BrandNotLinkableSuffix" xml:space="preserve"><value>（不可关联）</value></data>
   <data name="BrandNotResolvedHelp" xml:space="preserve"><value>无法读取该品牌，因此仅显示其标识。</value></data>
   <data name="BrandReferenceSection" xml:space="preserve"><value>品牌引用</value></data>
   <data name="PharmaMetadataSection" xml:space="preserve"><value>药品元数据</value></data>

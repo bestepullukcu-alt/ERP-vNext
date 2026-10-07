@@ -88,6 +88,7 @@
   <data name="NoBrand" xml:space="preserve"><value>Без бренда</value></data>
   <data name="NoBrandLinked" xml:space="preserve"><value>Этот продукт не связан с брендом.</value></data>
   <data name="BrandIdOptionalHelp" xml:space="preserve"><value>Необязательно. Генерические и непрофильные продукты могут не иметь бренда. Архивные бренды не предлагаются.</value></data>
+  <data name="BrandNotLinkableSuffix" xml:space="preserve"><value>(нельзя связать)</value></data>
   <data name="BrandNotResolvedHelp" xml:space="preserve"><value>Бренд не удалось прочитать, поэтому показан только его идентификатор.</value></data>
   <data name="BrandReferenceSection" xml:space="preserve"><value>Ссылка на бренд</value></data>
   <data name="PharmaMetadataSection" xml:space="preserve"><value>Фарм. метаданные</value></data>

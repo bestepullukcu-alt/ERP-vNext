@@ -117,6 +117,7 @@
   <data name="Reason_list_query_invalid" xml:space="preserve"><value>列表无法按此方式排序或分页。请重置视图后重试。</value></data>
   <data name="Reason_brand_not_linkable" xml:space="preserve"><value>只有处于启用状态且在有效期内的品牌才能关联新产品。</value></data>
   <data name="Reason_store_unavailable" xml:space="preserve"><value>目前无法安全保存此更改。未保存任何内容，请稍后重试。</value></data>
+  <data name="Reason_write_outcome_unknown" xml:space="preserve"><value>更改已发送，但无法确认结果。请重新加载该品牌：如果更改不在其中，请重新操作。</value></data>
   <data name="Reason_field_invalid" xml:space="preserve"><value>{0}：值缺失、过长或格式不正确。</value></data>
   <data name="RefusedStatus_400" xml:space="preserve"><value>请求未被接受。请检查输入后重试。</value></data>
   <data name="RefusedStatus_403" xml:space="preserve"><value>您无权执行此操作。</value></data>

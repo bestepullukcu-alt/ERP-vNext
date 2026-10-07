@@ -131,7 +131,7 @@ public sealed class BrandFix2HttpTests(MdmHttpHost host)
             BrandBody(Code("WASLINK"), status: "inactive", expectedVersion: 0))).StatusCode);
 
         var edit = await SendAsync(ProductSteward(), HttpMethod.Put, $"/api/mdm/products/{product}",
-            ProductBody(Code("PWASLINK"), brandId: brand, description: "Edited after the brand went inactive"));
+            ProductBody(Code("PWASLINK"), brandId: brand, description: "Edited after the brand went inactive", expectedVersion: 0));
         Assert.Equal(HttpStatusCode.NoContent, edit.StatusCode);
 
         var newLink = await SendAsync(ProductSteward(), HttpMethod.Post, "/api/mdm/products", ProductBody(Code("PNEWLINK"), brandId: brand));
@@ -178,7 +178,7 @@ public sealed class BrandFix2HttpTests(MdmHttpHost host)
 
         var edit = await SendAsync(ProductSteward(), HttpMethod.Put, $"/api/mdm/products/{first}",
             ProductBody(Code("PRAWA"), description: "Only the description changes",
-                references: [new { sourceSystem = "SAP", externalId = "PX", isPrimary = true }]));
+                references: [new { sourceSystem = "SAP", externalId = "PX", isPrimary = true }], expectedVersion: 0));
 
         Assert.Equal(HttpStatusCode.NoContent, edit.StatusCode);
     }
@@ -634,7 +634,8 @@ public sealed class BrandFix2HttpTests(MdmHttpHost host)
     private static BrandWriteRequest WriteRequest(string code) =>
         new(code, $"Brand {code}", "active", null, null, null, null, From2025, null, null);
 
-    private static object ProductBody(string code, Guid? brandId = null, object[]? references = null, string? description = null) => new
+    private static object ProductBody(
+        string code, Guid? brandId = null, object[]? references = null, string? description = null, int? expectedVersion = null) => new
     {
         productCode = code,
         productName = $"Product {code}",
@@ -642,7 +643,9 @@ public sealed class BrandFix2HttpTests(MdmHttpHost host)
         brandId,
         description,
         effectiveFrom = From2025,
-        externalReferences = references
+        externalReferences = references,
+        // FIX3 (R-3) — a product edit says which read it was made on.
+        expectedVersion
     };
 
     private async Task<Guid> CreateAsync(

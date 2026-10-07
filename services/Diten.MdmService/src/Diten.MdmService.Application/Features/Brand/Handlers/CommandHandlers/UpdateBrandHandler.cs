@@ -113,6 +113,11 @@ public sealed class UpdateBrandHandler : IRequestHandler<Commands.UpdateBrandCom
             return BrandProductFailures.StoreUnavailable<NoContent>();
         }
 
+        if (outcome == BrandWriteOutcome.Ambiguous)
+        {
+            return BrandProductFailures.OutcomeUnknown<NoContent>();
+        }
+
         if (outcome == BrandWriteOutcome.ReferenceInUse)
         {
             return BrandProductFailures.Fail<NoContent>(

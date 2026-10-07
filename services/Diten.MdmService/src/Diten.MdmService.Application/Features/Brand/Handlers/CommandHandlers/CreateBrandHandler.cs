@@ -83,6 +83,7 @@ public sealed class CreateBrandHandler : IRequestHandler<Commands.CreateBrandCom
             BrandWriteOutcome.Written => Response<Guid>.Success(entity.Id, 201),
             BrandWriteOutcome.ReferenceInUse => await ReferenceTakenAsync(entity.ExternalReferences),
             BrandWriteOutcome.Unavailable => BrandProductFailures.StoreUnavailable<Guid>(),
+            BrandWriteOutcome.Ambiguous => BrandProductFailures.OutcomeUnknown<Guid>(),
             _ => Duplicate()
         };
 

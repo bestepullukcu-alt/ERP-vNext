@@ -43,6 +43,6 @@ public sealed class Brand : EntityBase
         => !IsArchived
            && !IsDeleted
            && string.Equals(BrandStatus, BrandProductVocabulary.StatusActive, StringComparison.Ordinal)
-           && EffectiveFrom.UtcDateTime.Date <= asOf.UtcDateTime.Date
-           && (EffectiveTo is null || EffectiveTo.Value.UtcDateTime.Date >= asOf.UtcDateTime.Date);
+           // FIX3 (R-5) — calendar days, the one rule (BrandProductCalendar).
+           && BrandProductCalendar.IsWithin(EffectiveFrom, EffectiveTo, asOf);
 }

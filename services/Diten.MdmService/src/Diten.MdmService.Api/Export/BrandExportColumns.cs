@@ -27,8 +27,11 @@ internal static class BrandExportColumns
     private static string Reference(Guid? value, CultureInfo culture)
         => value is { } id && id != Guid.Empty ? Label("Unresolved", culture) : string.Empty;
 
+    // FIX3 (R-5) — validity dates are calendar days (BrandProductCalendar): written as the day entered, never shifted by UTC.
     private static string Date(DateTimeOffset? value)
-        => value?.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? string.Empty;
+        => value is { } v
+            ? Diten.MdmService.Domain.Vocabulary.BrandProductCalendar.Day(v).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : string.Empty;
 
     public static readonly ListExportColumnSet<BrandDetailDto> Set = new(
     [

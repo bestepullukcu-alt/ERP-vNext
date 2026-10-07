@@ -2,6 +2,14 @@
 @using Diten.Web.Views.MasterData.Products
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<ProductsIndex> Localizer
+@functions {
+    // R-4 — "code — name", plus the localized "(not linkable)" mark on a current brand MDM would not link any more.
+    private string BrandLabel(Diten.Web.Models.MasterData.BrandOptionViewModel brand)
+    {
+        var label = string.IsNullOrEmpty(brand.BrandName) ? brand.BrandCode : $"{brand.BrandCode} — {brand.BrandName}";
+        return brand.IsLinkable ? label : $"{label} {Localizer["BrandNotLinkableSuffix"].Value}";
+    }
+}
 
 <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 @if (!string.IsNullOrWhiteSpace(Model.ContractError))
@@ -73,14 +81,30 @@
     <div class="card-body row g-3">
         <div class="col-md-6">
             <label asp-for="BrandId" class="form-label">@Localizer["BrandId"]</label>
-            @* Only active, non-archived brands are offered, because an archived brand refuses new links (409). *@
-            <select asp-for="BrandId" class="form-select">
-                <option value="">@Localizer["NoBrand"]</option>
-                @foreach (var brand in Model.BrandOptions)
-                {
-                    <option value="@brand.BrandId">@brand.BrandCode — @brand.BrandName</option>
-                }
-            </select>
+            @* P-2026-10-07-BRAND-FIX3 (R-4) — the brands MDM would link (its isLinkable) plus the product's current brand, which is
+               never dropped: if MDM would not link it any more it is still offered, selected, and marked. *@
+            @if (Model.BrandReadOnly)
+            {
+                @* The editor may not read brands: only the current brand, read-only. A disabled select is not posted, so the
+                   hidden input carries BrandId and the save keeps it. *@
+                <select id="BrandIdReadOnly" class="form-select" disabled aria-label="@Localizer["BrandId"]">
+                    @foreach (var brand in Model.BrandOptions)
+                    {
+                        <option value="@brand.BrandId" selected>@BrandLabel(brand)</option>
+                    }
+                </select>
+                <input asp-for="BrandId" type="hidden" />
+            }
+            else
+            {
+                <select asp-for="BrandId" class="form-select">
+                    <option value="">@Localizer["NoBrand"]</option>
+                    @foreach (var brand in Model.BrandOptions)
+                    {
+                        <option value="@brand.BrandId">@BrandLabel(brand)</option>
+                    }
+                </select>
+            }
             <small class="text-muted">@Localizer["BrandIdOptionalHelp"]</small>
         </div>
     </div>

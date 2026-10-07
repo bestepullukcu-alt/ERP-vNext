@@ -74,5 +74,11 @@ public enum BrandWriteOutcome
     /// FIX2 (items 7, 18) — the store could not write atomically (no transaction support outside Development, or the
     /// transaction kept failing transiently); nothing written. Answered 503, never a silent partial write.
     /// </summary>
-    Unavailable
+    Unavailable,
+
+    /// <summary>
+    /// FIX3 (M-2) — the commit's result stayed unknown after every retry: the write may or may not have landed. Answered 503
+    /// write_outcome_unknown (never 500); the client repeats the same request and meets the definite answer.
+    /// </summary>
+    Ambiguous
 }

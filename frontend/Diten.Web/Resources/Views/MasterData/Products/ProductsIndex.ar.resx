@@ -88,6 +88,7 @@
   <data name="NoBrand" xml:space="preserve"><value>بدون علامة تجارية</value></data>
   <data name="NoBrandLinked" xml:space="preserve"><value>هذا المنتج غير مرتبط بعلامة تجارية.</value></data>
   <data name="BrandIdOptionalHelp" xml:space="preserve"><value>اختياري. قد لا يكون للمنتجات العامة وغير الدوائية علامة تجارية. لا تُعرض العلامات المؤرشفة.</value></data>
+  <data name="BrandNotLinkableSuffix" xml:space="preserve"><value>(غير قابلة للربط)</value></data>
   <data name="BrandNotResolvedHelp" xml:space="preserve"><value>تعذر قراءة العلامة التجارية، لذا يُعرض معرّفها فقط.</value></data>
   <data name="BrandReferenceSection" xml:space="preserve"><value>مرجع العلامة التجارية</value></data>
   <data name="PharmaMetadataSection" xml:space="preserve"><value>بيانات وصفية دوائية</value></data>

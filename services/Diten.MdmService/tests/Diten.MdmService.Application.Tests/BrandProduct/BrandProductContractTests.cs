@@ -78,7 +78,8 @@ public sealed class BrandProductContractTests
         Assert.Contains(BrandProductReasonCodes.BrandArchived, contract.ReasonCodes);
 
         Assert.Equal(
-            ["mdm.brands.read", "mdm.brands.create", "mdm.brands.update", "mdm.brands.archive",
+            // WP-MDM-BRAND-ACCEPT-01 FIX3 (M-5) — the module's nine keys, export included.
+            ["mdm.brands.read", "mdm.brands.create", "mdm.brands.update", "mdm.brands.archive", "mdm.brands.export",
              "mdm.products.read", "mdm.products.create", "mdm.products.update", "mdm.products.archive"],
             contract.Permissions);
 

@@ -31,7 +31,7 @@ public sealed class BrandProductStoreOptions
 internal static class MasterDataAtomicWrite
 {
     internal const int MaxTransactionAttempts = 10;
-    private const int MaxCommitAttempts = 5;
+    internal const int MaxCommitAttempts = 5;
 
     private static readonly TransactionOptions Options =
         new(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority);
@@ -41,8 +41,11 @@ internal static class MasterDataAtomicWrite
         BrandProductStoreOptions storeOptions,
         ILogger? logger,
         Func<IClientSessionHandle?, Task<BrandWriteOutcome>> write,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        // FIX3 (M-2) — the commit, replaceable only by the tests that measure an unknown commit result.
+        Func<IClientSessionHandle, CancellationToken, Task>? commit = null)
     {
+        commit ??= static (session, token) => session.CommitTransactionAsync(token);
         for (var attempt = 1; ; attempt++)
         {
             using var session = await client.StartSessionAsync(cancellationToken: cancellationToken);
@@ -72,8 +75,9 @@ internal static class MasterDataAtomicWrite
                     return outcome;
                 }
 
-                await CommitAsync(session, cancellationToken);
-                return outcome;
+                return await CommitAsync(session, commit, logger, cancellationToken)
+                    ? outcome
+                    : BrandWriteOutcome.Ambiguous;
             }
             catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError"))
             {
@@ -94,19 +98,31 @@ internal static class MasterDataAtomicWrite
         }
     }
 
-    /// <summary>A commit whose result is unknown (a network blip after the server got it) is safe to commit again.</summary>
-    private static async Task CommitAsync(IClientSessionHandle session, CancellationToken cancellationToken)
+    /// <summary>
+    /// A commit whose result is unknown (a network blip after the server got it) is safe to commit again. FIX3 (M-2) — when it
+    /// is STILL unknown after <see cref="MaxCommitAttempts"/>, the answer is false: the write may or may not have landed. The
+    /// caller says so with a named, ambiguous outcome (503 write_outcome_unknown, the LSKU FIX4 shape), never a 500 — the
+    /// client repeats the same request: a create meets its own code (409 duplicate), an edit meets its own version (409).
+    /// </summary>
+    private static async Task<bool> CommitAsync(
+        IClientSessionHandle session, Func<IClientSessionHandle, CancellationToken, Task> commit, ILogger? logger,
+        CancellationToken cancellationToken)
     {
         for (var attempt = 1; ; attempt++)
         {
             try
             {
-                await session.CommitTransactionAsync(cancellationToken);
-                return;
+                await commit(session, cancellationToken);
+                return true;
             }
-            catch (MongoException exception) when (
-                attempt < MaxCommitAttempts && exception.HasErrorLabel("UnknownTransactionCommitResult"))
+            catch (MongoException exception) when (exception.HasErrorLabel("UnknownTransactionCommitResult"))
             {
+                if (attempt >= MaxCommitAttempts)
+                {
+                    logger?.LogWarning(exception, "Master data commit result still unknown after {Attempts} attempts.", attempt);
+                    return false;
+                }
+
                 await Task.Delay(TimeSpan.FromMilliseconds(10 * attempt), cancellationToken);
             }
         }
@@ -226,12 +242,16 @@ internal sealed class ExternalReferenceReservations
 /// <summary>
 /// FIX2 (item 19) — index DDL once per process and database, not on every request: the brand / product repositories are
 /// scoped (one per request) and used to issue createIndexes from their constructors on every construction.
+/// FIX3 (R-2) — only a SUCCESS is remembered. A failed createIndexes (the server not reachable yet at the first request, a
+/// conflicting index) is not cached: the next repository tries again. A cached failure would answer every brand / product
+/// request with a 500 until the process restarts.
 /// </summary>
 internal static class IndexOnce
 {
-    private static readonly ConcurrentDictionary<string, Lazy<bool>> Done = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string, bool> Done = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string, object> Gates = new(StringComparer.Ordinal);
 
-    /// <summary>How many times index DDL actually ran in this process (measured by the FIX2 tests).</summary>
+    /// <summary>How many times index DDL actually succeeded in this process (measured by the FIX2 / FIX3 tests).</summary>
     internal static int Runs;
 
     public static void Ensure(IMongoDatabase database, string collectionName, Action create)
@@ -239,11 +259,35 @@ internal static class IndexOnce
         // Every server of the connection (a replica-set string lists several; Settings.Server would throw on it).
         var servers = string.Join(",", database.Client.Settings.Servers.Select(x => x.ToString()).OrderBy(x => x, StringComparer.Ordinal));
         var key = $"{servers}/{database.DatabaseNamespace.DatabaseName}/{collectionName}";
-        _ = Done.GetOrAdd(key, _ => new Lazy<bool>(() =>
+        if (Done.ContainsKey(key))
         {
-            create();
+            return;
+        }
+
+        lock (Gates.GetOrAdd(key, _ => new object()))
+        {
+            if (Done.ContainsKey(key))
+            {
+                return;
+            }
+
+            create(); // throws → nothing is recorded, the next call tries again
+            Done[key] = true;
             Interlocked.Increment(ref Runs);
-            return true;
-        })).Value;
+        }
     }
+}
+
+/// <summary>
+/// WP-MDM-BRAND-ACCEPT-01 FIX3 — conditions on stored brand / product documents that also hold for documents written before
+/// a field existed: "not archived" is Ne(true) (a document without IsArchived is not archived) and "at version 0" also
+/// matches a document without Version (it reads as 0). Never Eq(false) / Eq(0), which would miss those documents.
+/// </summary>
+internal static class StoredFilters
+{
+    public static FilterDefinition<T> NotArchived<T>() => Builders<T>.Filter.Ne("IsArchived", true);
+
+    public static FilterDefinition<T> AtVersion<T>(int expectedVersion) => expectedVersion == 0
+        ? Builders<T>.Filter.Or(Builders<T>.Filter.Eq("Version", 0), Builders<T>.Filter.Exists("Version", false))
+        : Builders<T>.Filter.Eq("Version", expectedVersion);
 }

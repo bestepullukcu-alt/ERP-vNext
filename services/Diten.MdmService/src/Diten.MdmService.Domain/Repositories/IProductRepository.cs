@@ -27,11 +27,21 @@ public interface IProductRepository : IRepository<Product>
 
     /// <summary>
     /// FIX2 (items 5, 6) — replaces the product (tenant-scoped) and, in the same transaction, reserves the references the
-    /// edit ADDS and releases the ones it REMOVES. <see cref="BrandWriteOutcome.Stale"/> = not found in this tenant.
+    /// edit ADDS and releases the ones it REMOVES. FIX3 (R-3) — only while the stored product is still at
+    /// <paramref name="expectedVersion"/> and not archived: <see cref="BrandWriteOutcome.Stale"/> = changed, archived or gone
+    /// meanwhile, and NOTHING was written (the loser's reservations go with its transaction).
     /// </summary>
     Task<BrandWriteOutcome> UpdateWithReservationsAsync(
-        Product product, IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
+        Product product, int expectedVersion,
+        IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// FIX3 (R-3, M-3) — archives the product only while it is still at <paramref name="expectedVersion"/> and not archived, and
+    /// releases its external-reference reservations in the same transaction (an archived record no longer holds a pair).
+    /// </summary>
+    Task<BrandWriteOutcome> ArchiveWithReservationsAsync(
+        Product archived, int expectedVersion, CancellationToken cancellationToken = default);
 
     /// <summary>FIX1 (item 10) — the product counterpart of <see cref="IBrandRepository.FindByExternalReferenceAsync"/>.</summary>
     Task<Product?> FindByExternalReferenceAsync(

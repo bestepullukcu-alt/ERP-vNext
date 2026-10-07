@@ -316,6 +316,8 @@ public sealed class BrandsController : MasterDataGatewayController
         var fileName = response.Content.Headers.ContentDisposition?.FileNameStar
                        ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"')
                        ?? "brands";
+        // P-2026-10-07-BRAND-FIX3 (M-8) — a tenant's register file is never kept by a browser or a shared cache.
+        Response.Headers.CacheControl = "no-store";
         return File(content, contentType, fileName);
     }
 

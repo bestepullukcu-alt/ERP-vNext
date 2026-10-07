@@ -48,7 +48,10 @@ public sealed record BrandDetailDto(
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt,
     // FIX1 (item 3) — the brand's products that are NOT archived; read on the detail only (null in a list row).
-    int? LiveProductCount = null);
+    int? LiveProductCount = null,
+    // FIX3 (R-4, R-5) — may a NEW product link go to this brand today (Brand.IsLinkableAt, UTC day)? Screens read it
+    // instead of re-implementing the rule.
+    bool? IsLinkable = null);
 
 /// <summary>
 /// The brand list. <c>TotalCount</c> counts every row that matches the filters. FIX1 (item 6) — a PAGED read (one that
@@ -84,8 +87,9 @@ public static class BrandMappings
         entity.OwnerCompanyId = Normalize(request.OwnerCompanyId);
         entity.BusinessUnitId = Normalize(request.BusinessUnitId);
         entity.TherapeuticAreaId = Normalize(request.TherapeuticAreaId);
-        entity.EffectiveFrom = request.EffectiveFrom;
-        entity.EffectiveTo = request.EffectiveTo;
+        // FIX3 (R-5) — stored as the calendar day entered, at offset zero.
+        entity.EffectiveFrom = Domain.Vocabulary.BrandProductCalendar.Normalize(request.EffectiveFrom);
+        entity.EffectiveTo = Domain.Vocabulary.BrandProductCalendar.Normalize(request.EffectiveTo);
         entity.ExternalReferences = BrandProductExternalReferences.ToEntities(request.ExternalReferences);
     }
 
@@ -109,7 +113,8 @@ public static class BrandMappings
             entity.UpdatedBy,
             entity.Version,
             entity.CreatedAt,
-            entity.UpdatedAt);
+            entity.UpdatedAt,
+            IsLinkable: entity.IsLinkableAt(DateTimeOffset.UtcNow));
 
     public static BrandProductRowDto ToBrandProductRow(Domain.Entities.Product product)
         => new(

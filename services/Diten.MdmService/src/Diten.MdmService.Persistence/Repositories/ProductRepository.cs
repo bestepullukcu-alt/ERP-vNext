@@ -77,8 +77,16 @@ public sealed class ProductRepository : RepositoryBase<Product>, IProductReposit
         product.CreatedAt = now;
         product.UpdatedAt = now;
         product.IsDeleted = false;
+        var references = product.ExternalReferences ?? [];
         return MasterDataAtomicWrite.RunAsync(_client, _storeOptions, _logger, async session =>
         {
+            // FIX3 (M-1) — the reservation FIRST (see BrandRepository.CreateWithHistoryAsync).
+            if (!await _reservations.TryReserveAsync(session, ExternalReferenceReservation.RecordTypeProduct,
+                    product.Id, product.ProductCode, references, cancellationToken))
+            {
+                return BrandWriteOutcome.ReferenceInUse;
+            }
+
             try
             {
                 if (session is null)
@@ -88,46 +96,89 @@ public sealed class ProductRepository : RepositoryBase<Product>, IProductReposit
             }
             catch (Exception exception) when (MasterDataAtomicWrite.IsDuplicateKey(exception))
             {
+                if (session is null)
+                    await _reservations.ReleaseAsync(null, ExternalReferenceReservation.RecordTypeProduct, product.Id, references, cancellationToken);
                 return BrandWriteOutcome.DuplicateCode;
             }
 
-            return await _reservations.TryReserveAsync(session, ExternalReferenceReservation.RecordTypeProduct,
-                product.Id, product.ProductCode, product.ExternalReferences ?? [], cancellationToken)
-                ? BrandWriteOutcome.Written
-                : BrandWriteOutcome.ReferenceInUse;
+            return BrandWriteOutcome.Written;
         }, cancellationToken);
     }
 
     public Task<BrandWriteOutcome> UpdateWithReservationsAsync(
-        Product product, IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
+        Product product, int expectedVersion,
+        IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
         CancellationToken cancellationToken = default)
     {
         product.TenantId = TenantId;
         product.UpdatedAt = DateTimeOffset.UtcNow;
-        product.Version++;
-        var filter = TenantFilter & Builders<Product>.Filter.Eq(x => x.Id, product.Id);
+        product.Version = expectedVersion + 1;
+        // FIX3 (R-3) — the replace lands only on the version the edit was made on, and never on an archived product: of two
+        // concurrent edits exactly one writes; the other's reservations go with its aborted transaction.
+        var filter = TenantFilter
+                     & Builders<Product>.Filter.Eq(x => x.Id, product.Id)
+                     & StoredFilters.NotArchived<Product>()
+                     & StoredFilters.AtVersion<Product>(expectedVersion);
         return MasterDataAtomicWrite.RunAsync(_client, _storeOptions, _logger, async session =>
         {
+            if (!await _reservations.TryReserveAsync(session, ExternalReferenceReservation.RecordTypeProduct,
+                    product.Id, product.ProductCode, added, cancellationToken))
+            {
+                return BrandWriteOutcome.ReferenceInUse;
+            }
+
             var result = session is null
                 ? await Collection.ReplaceOneAsync(filter, product, cancellationToken: cancellationToken)
                 : await Collection.ReplaceOneAsync(session, filter, product, cancellationToken: cancellationToken);
             if (result.MatchedCount != 1)
             {
+                if (session is null)
+                    await _reservations.ReleaseAsync(null, ExternalReferenceReservation.RecordTypeProduct, product.Id, added, cancellationToken);
                 return BrandWriteOutcome.Stale;
             }
 
             await _reservations.ReleaseAsync(session, ExternalReferenceReservation.RecordTypeProduct, product.Id, removed, cancellationToken);
-            return await _reservations.TryReserveAsync(session, ExternalReferenceReservation.RecordTypeProduct,
-                product.Id, product.ProductCode, added, cancellationToken)
-                ? BrandWriteOutcome.Written
-                : BrandWriteOutcome.ReferenceInUse;
+            return BrandWriteOutcome.Written;
+        }, cancellationToken);
+    }
+
+    public Task<BrandWriteOutcome> ArchiveWithReservationsAsync(
+        Product archived, int expectedVersion, CancellationToken cancellationToken = default)
+    {
+        var filter = TenantFilter
+                     & Builders<Product>.Filter.Eq(x => x.Id, archived.Id)
+                     & StoredFilters.NotArchived<Product>()
+                     & StoredFilters.AtVersion<Product>(expectedVersion);
+        var update = Builders<Product>.Update
+            .Set(x => x.IsArchived, true)
+            .Set(x => x.ProductStatus, archived.ProductStatus)
+            .Set(x => x.ArchivedAt, archived.ArchivedAt)
+            .Set(x => x.ArchivedBy, archived.ArchivedBy)
+            .Set(x => x.UpdatedBy, archived.UpdatedBy)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1);
+        return MasterDataAtomicWrite.RunAsync(_client, _storeOptions, _logger, async session =>
+        {
+            var result = session is null
+                ? await Collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken)
+                : await Collection.UpdateOneAsync(session, filter, update, cancellationToken: cancellationToken);
+            if (result.ModifiedCount != 1)
+            {
+                return BrandWriteOutcome.Stale;
+            }
+
+            // FIX3 (M-3) — an archived product gives up its external references, as an archived brand does.
+            await _reservations.ReleaseAsync(session, ExternalReferenceReservation.RecordTypeProduct, archived.Id,
+                archived.ExternalReferences ?? [], cancellationToken);
+            return BrandWriteOutcome.Written;
         }, cancellationToken);
     }
 
     public async Task<Product?> FindByExternalReferenceAsync(
         string sourceSystem, string externalId, Guid? excludeId, CancellationToken cancellationToken = default)
     {
-        var filter = TenantFilter & Builders<Product>.Filter.ElemMatch(x => x.ExternalReferences,
+        // FIX3 (M-3) — an archived product released its pairs (Ne(true): a document without the field is not archived).
+        var filter = TenantFilter & StoredFilters.NotArchived<Product>() & Builders<Product>.Filter.ElemMatch(x => x.ExternalReferences,
             Builders<BrandProductExternalReference>.Filter.Regex(x => x.SourceSystem, BrandRepository.ExactIgnoringCase(sourceSystem))
             & Builders<BrandProductExternalReference>.Filter.Regex(x => x.ExternalId, BrandRepository.ExactIgnoringCase(externalId)));
         if (excludeId is { } id)

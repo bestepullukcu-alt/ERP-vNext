@@ -34,6 +34,20 @@ public sealed class UpdateProductHandler : IRequestHandler<Commands.UpdateProduc
 
         var r = request.Request;
 
+        // WP-MDM-BRAND-ACCEPT-01 FIX3 (R-3) — an edit says which read it was made on, as for a brand; an older one writes
+        // nothing (409), so two concurrent edits can never both land and orphan a reservation.
+        if (r.ExpectedVersion is not { } expectedVersion || expectedVersion < 0)
+        {
+            return BrandProductFailures.Fail<NoContent>(
+                BrandProductReasonCodes.ExpectedVersionRequired,
+                "ExpectedVersion must be a non-negative integer.", 400);
+        }
+
+        if (entity.Version != expectedVersion)
+        {
+            return Stale();
+        }
+
         if (ProductWriteRules.Validate(r) is { } failure)
         {
             return BrandProductFailures.Fail<NoContent>(failure.ReasonCode, failure.Message, failure.StatusCode);
@@ -67,9 +81,11 @@ public sealed class UpdateProductHandler : IRequestHandler<Commands.UpdateProduc
             return BrandProductFailures.Fail<NoContent>(BrandProductReasonCodes.ExternalReferenceInUse, inUse.Message, inUse.StatusCode);
         }
 
-        return await _productRepository.UpdateWithReservationsAsync(entity, added, removed, cancellationToken) switch
+        return await _productRepository.UpdateWithReservationsAsync(entity, expectedVersion, added, removed, cancellationToken) switch
         {
             BrandWriteOutcome.Written => Response<NoContent>.SuccessWithoutData(204),
+            BrandWriteOutcome.Ambiguous => BrandProductFailures.OutcomeUnknown<NoContent>(),
+            BrandWriteOutcome.Stale => await LostAsync(request.ProductId, cancellationToken),
             BrandWriteOutcome.ReferenceInUse => BrandProductFailures.Fail<NoContent>(
                 BrandProductReasonCodes.ExternalReferenceInUse,
                 (await FirstInUseAsync(added, entity.Id, cancellationToken))?.Message
@@ -79,6 +95,26 @@ public sealed class UpdateProductHandler : IRequestHandler<Commands.UpdateProduc
             _ => BrandProductFailures.Fail<NoContent>(BrandProductReasonCodes.ProductNotFound, "Product not found.", 404)
         };
     }
+
+    // The conditional write lost: gone stays 404, archived meanwhile is record_archived, otherwise changed meanwhile (409).
+    private async Task<Response<NoContent>> LostAsync(Guid productId, CancellationToken cancellationToken)
+    {
+        var current = await _productRepository.GetByIdAsync(productId, cancellationToken);
+        if (current is null)
+        {
+            return BrandProductFailures.Fail<NoContent>(BrandProductReasonCodes.ProductNotFound, "Product not found.", 404);
+        }
+
+        return current.IsArchived
+            ? BrandProductFailures.Fail<NoContent>(
+                BrandProductReasonCodes.RecordArchived,
+                "Archived products are read-only. Historical references stay intact.", 409)
+            : Stale();
+    }
+
+    private static Response<NoContent> Stale() => BrandProductFailures.Fail<NoContent>(
+        BrandProductReasonCodes.VersionConflict,
+        "The product has changed since it was loaded. Reload it and apply the edit again.", 409);
 
     private Task<(string Message, int StatusCode)?> FirstInUseAsync(
         IReadOnlyList<Domain.Entities.BrandProductExternalReference> references, Guid productId, CancellationToken cancellationToken)

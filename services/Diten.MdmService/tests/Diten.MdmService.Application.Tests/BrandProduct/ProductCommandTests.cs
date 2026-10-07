@@ -151,7 +151,7 @@ public sealed class ProductCommandTests
         Assert.NotNull(stored.ArchivedAt);
         Assert.False(stored.IsDeleted);
 
-        var read = await new GetProductByIdHandler(products)
+        var read = await new GetProductByIdHandler(products, new InMemoryBrandRepository(tenantId, []))
             .Handle(new GetProductByIdQuery(product.Id), CancellationToken.None);
         Assert.True(read.IsSuccessful);
     }
@@ -214,7 +214,7 @@ public sealed class ProductCommandTests
             .Handle(new GetProductListQuery(), CancellationToken.None);
         Assert.Equal("PR-MINE", Assert.Single(list.Data!.Items).ProductCode);
 
-        var read = await new GetProductByIdHandler(products)
+        var read = await new GetProductByIdHandler(products, new InMemoryBrandRepository(tenantId, []))
             .Handle(new GetProductByIdQuery(theirs.Id), CancellationToken.None);
         Assert.Equal(404, read.StatusCode);
     }

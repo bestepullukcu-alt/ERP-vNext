@@ -96,6 +96,8 @@ public static class DataSeeder
         "mdm.brands.create",
         "mdm.brands.update",
         "mdm.brands.archive",
+        // WP-MDM-BRAND-ACCEPT-01 (M-4) — the Brands list's copy/print/file entries are their own right now.
+        "mdm.brands.export",
         "mdm.products.read",
         "mdm.products.create",
         "mdm.products.update",
@@ -131,6 +133,8 @@ public static class DataSeeder
         {
             // BL-452 package 3 — which tenants already hold auth.users.export, measured BEFORE this run writes anything.
             var tenantsAlreadyOnExport = await SnapshotTenantsOnUsersExportAsync(database);
+            // WP-MDM-BRAND-ACCEPT-01 (M-4) — the same snapshot for mdm.brands.export, also BEFORE this run writes anything.
+            var tenantsAlreadyOnBrandsExport = await SnapshotTenantsOnBrandsExportAsync(database);
 
             Console.WriteLine("Seeding permissions...");
             await SeedPermissionsAsync(database);
@@ -188,6 +192,9 @@ public static class DataSeeder
 
             Console.WriteLine("Backfilling auth.users.export for roles that read users (one-way, once per tenant)...");
             await BackfillUsersExportAsync(database, tenantsAlreadyOnExport);
+
+            Console.WriteLine("Backfilling mdm.brands.export for roles that read brands (one-way, once per tenant)...");
+            await BackfillBrandsExportAsync(database, tenantsAlreadyOnBrandsExport);
 
             Console.WriteLine("Seeding completed successfully.");
         }
@@ -448,6 +455,9 @@ public static class DataSeeder
             new("mdm", "brands", "create", "Create Brand", "Permission to create brand master records", moduleOverride: "brand-product-master"),
             new("mdm", "brands", "update", "Update Brand", "Permission to edit brand master records", moduleOverride: "brand-product-master"),
             new("mdm", "brands", "archive", "Archive Brand", "Permission to archive brand master records (soft lifecycle)", moduleOverride: "brand-product-master"),
+            // WP-MDM-BRAND-ACCEPT-01 (M-4) — exporting the Brands list (copy / print / file) is its own right (was
+            // mdm.brands.read). Existing reading roles get it once, by BackfillBrandsExportAsync.
+            new("mdm", "brands", "export", "Export Brands", "Permission to export the brand list (copy, print, CSV/Excel/PDF) as the screen shows it", moduleOverride: "brand-product-master"),
             new("mdm", "products", "read", "Read Product", "Permission to view product master lists and details", moduleOverride: "brand-product-master"),
             new("mdm", "products", "create", "Create Product", "Permission to create product master records", moduleOverride: "brand-product-master"),
             new("mdm", "products", "update", "Update Product", "Permission to edit product master records", moduleOverride: "brand-product-master"),
@@ -1315,6 +1325,63 @@ public static class DataSeeder
         }
 
         Console.WriteLine($"Backfilled auth.users.export on {planned.Count} role(s) that read users.");
+    }
+
+    private static async Task<IReadOnlySet<Guid>> SnapshotTenantsOnBrandsExportAsync(IMongoDatabase database)
+    {
+        var export = await database.GetCollection<Permission>("permissions")
+            .Find(p => p.Key == BrandsExportGrantBackfill.ExportKey && p.IsDeleted == false).FirstOrDefaultAsync();
+        if (export is null) return new HashSet<Guid>();
+
+        var (roles, grants) = await LoadRoleGrantsAsync(database);
+        return BrandsExportGrantBackfill.TenantsAlreadyOnExport(roles, grants, export.Id);
+    }
+
+    // WP-MDM-BRAND-ACCEPT-01 (M-4) — see BrandsExportGrantBackfill: every role holding mdm.brands.read gets
+    // mdm.brands.export, in the tenants that were not on the export key when this run started and are not marked.
+    // Additive, idempotent, System-sourced grants; its own mark key (mdm.brands.export) in permissionReconciliations.
+    private static async Task BackfillBrandsExportAsync(IMongoDatabase database, IReadOnlySet<Guid> tenantsAlreadyOnExport)
+    {
+        var permCol = database.GetCollection<Permission>("permissions");
+        var read = await permCol.Find(p => p.Key == BrandsExportGrantBackfill.ReadKey && p.IsDeleted == false).FirstOrDefaultAsync();
+        var export = await permCol.Find(p => p.Key == BrandsExportGrantBackfill.ExportKey && p.IsDeleted == false).FirstOrDefaultAsync();
+        if (read is null || export is null) return;
+
+        var (roles, grants) = await LoadRoleGrantsAsync(database);
+
+        // The persistent gate: a tenant marked once is never backfilled again (its revokes stick).
+        var marks = database.GetCollection<PermissionReconciliationMark>(PermissionReconciliationMark.CollectionName);
+        var marked = (await marks.Find(m => m.Key == BrandsExportGrantBackfill.ExportKey).ToListAsync())
+            .Select(m => m.TenantId)
+            .ToHashSet();
+        var skip = marked.Concat(tenantsAlreadyOnExport).ToHashSet();
+
+        var planned = BrandsExportGrantBackfill.PlanMissingGrants(roles, grants, read.Id, export.Id, skip);
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+        foreach (var g in planned)
+        {
+            await rpCol.InsertOneAsync(RolePermission.SystemGrant(g.RoleId, g.PermissionId, g.TenantId, SystemUser));
+        }
+
+        // Every tenant looked at in this run is marked — granted, skipped as already on the key, or with no reader at all.
+        var now = DateTime.UtcNow;
+        foreach (var tenantId in BrandsExportGrantBackfill.TenantsToMark(roles, marked))
+        {
+            await marks.ReplaceOneAsync(
+                m => m.TenantId == tenantId && m.Key == BrandsExportGrantBackfill.ExportKey,
+                new PermissionReconciliationMark { TenantId = tenantId, Key = BrandsExportGrantBackfill.ExportKey, ReconciledAtUtc = now },
+                new ReplaceOptions { IsUpsert = true });
+        }
+
+        if (planned.Count == 0) return;
+
+        var versionService = new RoleAssignmentVersionRepository(database);
+        foreach (var tenantId in planned.Select(g => g.TenantId).ToHashSet())
+        {
+            await versionService.IncrementAsync(tenantId, CancellationToken.None);
+        }
+
+        Console.WriteLine($"Backfilled mdm.brands.export on {planned.Count} role(s) that read brands.");
     }
 
     private static async Task<(List<TenantAdminSelfServiceReconciler.RoleRef> Roles, HashSet<(Guid RoleId, Guid PermissionId)> Grants)> LoadRoleGrantsAsync(IMongoDatabase database)

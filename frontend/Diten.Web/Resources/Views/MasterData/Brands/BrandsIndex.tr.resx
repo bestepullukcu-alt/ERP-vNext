@@ -117,6 +117,7 @@
   <data name="Reason_list_query_invalid" xml:space="preserve"><value>Liste bu şekilde sıralanamadı ya da sayfalanamadı. Görünümü sıfırlayıp tekrar deneyin.</value></data>
   <data name="Reason_brand_not_linkable" xml:space="preserve"><value>Yeni ürün bağlantısı yalnızca aktif ve geçerlilik süresi içindeki bir markaya yapılabilir.</value></data>
   <data name="Reason_store_unavailable" xml:space="preserve"><value>Değişiklik şu anda güvenli biçimde kaydedilemedi. Hiçbir şey kaydedilmedi; daha sonra yeniden deneyin.</value></data>
+  <data name="Reason_write_outcome_unknown" xml:space="preserve"><value>Değişiklik gönderildi ancak sonucu doğrulanamadı. Markayı yeniden yükleyin; değişiklik yoksa tekrar yapın.</value></data>
   <data name="Reason_field_invalid" xml:space="preserve"><value>{0}: değer eksik, çok uzun ya da biçimi hatalı.</value></data>
   <data name="RefusedStatus_400" xml:space="preserve"><value>İstek kabul edilmedi. Girdileri kontrol edip tekrar deneyin.</value></data>
   <data name="RefusedStatus_403" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>

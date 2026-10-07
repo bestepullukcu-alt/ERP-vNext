@@ -117,6 +117,7 @@
   <data name="Reason_list_query_invalid" xml:space="preserve"><value>The list could not be sorted or paged this way. Reset the view and try again.</value></data>
   <data name="Reason_brand_not_linkable" xml:space="preserve"><value>Only an active brand inside its validity period can receive new product links.</value></data>
   <data name="Reason_store_unavailable" xml:space="preserve"><value>The change could not be saved safely right now. Nothing was saved; try again later.</value></data>
+  <data name="Reason_write_outcome_unknown" xml:space="preserve"><value>The change was sent, but its result could not be confirmed. Reload the brand: if the change is not there, make it again.</value></data>
   <data name="Reason_field_invalid" xml:space="preserve"><value>{0}: the value is missing, too long or in the wrong format.</value></data>
   <data name="RefusedStatus_400" xml:space="preserve"><value>The request was not accepted. Check the entries and try again.</value></data>
   <data name="RefusedStatus_403" xml:space="preserve"><value>You do not have permission for this action.</value></data>

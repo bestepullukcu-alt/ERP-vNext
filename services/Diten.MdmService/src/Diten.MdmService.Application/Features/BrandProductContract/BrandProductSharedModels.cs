@@ -58,6 +58,9 @@ public static class BrandProductReasonCodes
     // FIX2 (M5) — a field-shape rule failed (400); the field follows the code (see BrandProductFieldRefusal).
     public const string FieldInvalid = "field_invalid";
 
+    // FIX3 (M-2) — the commit's result stayed unknown (503): the write may or may not have landed; repeat the same request.
+    public const string WriteOutcomeUnknown = "write_outcome_unknown";
+
     public static readonly IReadOnlyList<string> All =
     [
         BrandNotFound, ProductNotFound, BrandCodeDuplicate, ProductCodeDuplicate, BrandArchived, RecordArchived,
@@ -65,7 +68,7 @@ public static class BrandProductReasonCodes
         InvalidUnitOfMeasure, InvalidAtcCode, ArchivedStatusNotAssignable, InvalidEffectiveWindow,
         ExternalReferencePrimaryConflict, ExternalReferenceDuplicate, IndicationRefDuplicate,
         VersionConflict, ExpectedVersionRequired, ExternalReferenceInUse, ListQueryInvalid,
-        BrandNotLinkable, StoreUnavailable, FieldInvalid
+        BrandNotLinkable, StoreUnavailable, FieldInvalid, WriteOutcomeUnknown
     ];
 }
 
@@ -87,6 +90,15 @@ public static class BrandProductFailures
 {
     public static Response<T> Fail<T>(string reasonCode, string message, int statusCode)
         => Response<T>.Fail($"{reasonCode}: {message}", statusCode);
+
+    /// <summary>
+    /// FIX3 (M-2) — the one answer for a commit whose result stayed unknown: named, never a 500 (the LSKU FIX4 shape, 503 of
+    /// its "202 or 503"): a 2xx would read as "saved" to every screen that checks the status, and this write is not
+    /// confirmed. The client repeats the same request: a create then meets its own code, an edit its own version.
+    /// </summary>
+    public static Response<T> OutcomeUnknown<T>() => Fail<T>(
+        BrandProductReasonCodes.WriteOutcomeUnknown,
+        "The change was sent but its result could not be confirmed. Reload the record and repeat the same request if it is not there.", 503);
 
     /// <summary>FIX2 (items 7, 18) — the one answer for a write the store could not make atomically.</summary>
     public static Response<T> StoreUnavailable<T>() => Fail<T>(
@@ -116,7 +128,8 @@ public static class BrandProductExternalReferences
             var source = reference.SourceSystem?.Trim() ?? string.Empty;
             var externalId = reference.ExternalId?.Trim() ?? string.Empty;
 
-            if (!seenPairs.Add($"{source}{externalId}"))
+            // FIX3 (M-6) — the pair key keeps the two parts apart: ("SAP","1X") and ("SAP1","X") are different pairs.
+            if (!seenPairs.Add(PairKey(source, externalId)))
             {
                 return BrandProductReasonCodes.ExternalReferenceDuplicate;
             }
@@ -218,5 +231,5 @@ public static class BrandProductExternalReferences
 public static class BrandProductEffectiveWindow
 {
     public static bool IsValid(DateTimeOffset effectiveFrom, DateTimeOffset? effectiveTo)
-        => effectiveTo is null || effectiveTo.Value.Date >= effectiveFrom.Date;
+        => Domain.Vocabulary.BrandProductCalendar.IsValidWindow(effectiveFrom, effectiveTo);
 }

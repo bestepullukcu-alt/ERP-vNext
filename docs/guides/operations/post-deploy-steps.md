@@ -74,21 +74,49 @@ beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı b
 
 | | |
 |---|---|
-| **Modül** | MOD-0290 — Marka / Ürün ana verisi (WP-MDM-BRAND-ACCEPT-01 FIX2, madde 1) |
-| **Ne zaman** | Marka işi (FIX2) birleştikten sonra |
-| **Yapılmazsa** | Durum bugünküyle aynıdır: yeni kiracının Admin rolü marka anahtarlarını (`mdm.brands.*`, `mdm.products.*`, `mdm.brands.export`) plan senkronundan **almaz**; Marka ekranı yalnız bugün elle hak verilmiş kiracılarda açılır. |
-| **Kim** | Platform yöneticisi. Dev'de sahip, canlıda sahibin onayıyla. |
+| **Modül** | MOD-0290 — Marka / Ürün ana verisi (WP-MDM-BRAND-ACCEPT-01 FIX2 madde 1, FIX3 R-1 / M-4 / M-7) |
+| **Ne zaman** | Marka işi birleştikten sonraki İLK deploy'da, aşağıdaki dağıtım sırasıyla |
+| **Yapılmazsa** | **Kiracı Markalar menüsünü ve Ctrl+K girişini kaybeder.** BRANDS sayfası artık `brand-product-master` modülündedir ve menü plan güdümlüdür; modülü içermeyen plandaki kiracının menüsünde Markalar yoktur. Yeni kiracının Admin rolü marka anahtarlarını (`mdm.brands.*`, `mdm.products.*`, `mdm.brands.export`) plan senkronundan almaz. |
+| **Kim** | Platform yöneticisi. Dev'de sahip, canlıda sahibin onayıyla. Kod plan verisini **yazmaz**. |
 
-Marka işi birleşince Platform → Planlar'da `product-item-sku-master` içeren her plana
-`brand-product-master` eklenir. O zamana kadar durum bugünküyle aynıdır.
+**Adım (kesin):** Platform → Planlar'da `product-item-sku-master` içeren her plana
+`brand-product-master` eklenir; eklenmezse kiracı Markalar menüsünü ve Ctrl+K girişini kaybeder.
 
 Plan → modül üyeliği **veridir**: seed ya da Platform kodu değişmez (CONTROL TOWER kararı,
 2026-10-06). Kural: bugün `product-item-sku-master` içeren HER plan; CRM'in marka tüketen
 planları ayrıca değerlendirilmez — marka, ürün ana verisiyle aynı pakettir (SAP / Oracle'da
 da marka, malzeme ana verisinin parçasıdır).
 
-⚠ **Geçiş riski 🟡.** Ekleme yapılana kadar yeni kiracılar markayı görmez (sessiz, veri
-kaybı yok). `tenant-97c5`'in seed'deki sabit marka hakları (`DataSeeder`
+**Ölçüm (dev, salt okunur, 2026-10-07):** `diten_personalization_dev` içinde 5 plan var
+(FREE, STARTER, PROFESSIONAL, ENTERPRISE, DEV); **hiçbiri** `PRODUCT-ITEM-SKU-MASTER` içermiyor
+(`IncludedModuleKeys`; DEV planı yalnız GOLDENSLIM, LEGAL-ENTITY, WORKFLOW). Hiçbir kiracının bu
+modüle `tenant_module_entitlements` satırı da yok. Yani dev'de eklenecek plan **yok**; canlıda
+aynı sorgu deploy öncesi yeniden çalıştırılır (dev ölçümü canlıyı temsil etmez):
+
+```
+db.platform_subscription_plans.find({ IncludedModuleKeys: "PRODUCT-ITEM-SKU-MASTER" }, { Code: 1, Name: 1 })
+```
+
+**Dağıtım sırası (FIX3 M-7):**
+
+1. **Platform** (katalog) — önce. MDM, açılışta iki manifestini (`product-item-sku-master` ve
+   yeni `brand-product-master`) Platform'a kaydeder; Platform yoksa kayıt yeniden denenir.
+2. **Auth** — sonra. Açılışta `mdm.brands.export` kataloğa girer, `tenant-97c5`'in sabit hakkına
+   eklenir ve **tek yönlü, kiracı başına bir kez** geri doldurma çalışır: `mdm.brands.read`
+   tutan her role `mdm.brands.export` verilir (işaretli kiracıya bir daha bakılmaz; yöneticinin
+   geri alması kalıcıdır — `BrandsExportGrantBackfill`).
+3. **MDM** — en son. Kayıt Platform'da yeni modülü oluşturur, Auth eşitlemesi izinleri işler.
+
+Geçiş sırasında beklenen, **zararsız** eşitleme hataları:
+- MDM, Platform'dan önce açılırsa: modül kaydı başarısız ve yeniden deneniyor uyarısı
+  (Platform gelince düzelir).
+- Auth eşitlemesi `brand-product-master` için boş ya da eksik tanımlayıcı görürse: o kiracı
+  atlanır (boş çekme = atla); bir sonraki eşitlemede düzelir.
+- Plan adımı yapılmadan: yeni kiracılarda marka anahtarı yok; mevcut kiracıların elle ya da
+  seed'le verilmiş hakları **silinmez** (model A mevcut yetkiyi kaldırmaz).
+
+⚠ **Geçiş riski 🟡.** Ekleme yapılana kadar plan güdümlü kiracılar Markalar menüsünü görmez
+(sessiz, veri kaybı yok). `tenant-97c5`'in seed'deki sabit marka hakları (`DataSeeder`
 `BrandProductPermissionKeys`) dokunulmadan kalır; ekleme sonrası o kiracıda aynı anahtar
 hem sabit hem plan kaynaklı görünebilir — yinelenen yetki, fazladan erişim değildir.
 
