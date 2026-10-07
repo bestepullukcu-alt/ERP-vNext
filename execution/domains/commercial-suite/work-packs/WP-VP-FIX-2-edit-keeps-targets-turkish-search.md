@@ -81,3 +81,34 @@ KORU/YAPMA: tasarım değişmez; YENİ YAZMA KOMUTU YOK (AUD-001 26 sabit); mobi
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — Web (697/0) · CRM Application (2270/0/5, PII flake) · mimari (38/1, 26 SABİT); build 0 hata; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–7. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "fix(crm,web): WP-VP-FIX-2 — planning edit keeps targets (null = unchanged) + Turkish-insensitive search" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), null'da korunan alanlar listesi, aynı desenli dokunulmayan aramalar listesi. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-07)
+**Commit:** `23e0a9b98` (ajan `23e0a9b9`, ff). Push: test dalı.
+
+**CT K13:**
+| Paket | Taban | Sonuç |
+|---|---|---|
+| Web | 697/0 | **699/0** |
+| CRM | 2270/0/5 | **2283 + 1 PII flake (bilinen) / 5** |
+| Mimari | 38/1 (26) | **38/1 (26 sabit)** |
+
+**Kod okuması:** `MergeSelection` (null = koru, [] = temizle, liste = yaz; üçü bağımsız), API isteği gönderilmeyen doktor listesini artık null bırakıyor, `TurkishInsensitivePattern` (`Regex.Escape` + `[iıIİ]`) hesap + kişi deposunda.
+
+**CT sabotajı (ajanınkinden ayrı):**
+1. Doktor listesinde null'ı yok say → 2 D9 testi **kırmızı**.
+2. `Regex.Escape`'i kaldır → `A_regex_character_in_the_term_is_plain_text` **kırmızı**.
+
+İkisi de geri alındı.
+
+**Ajanın canlı Mongo okuması (salt okuma):** "Hamidiye" 0 → 15, "şişli" 0 → 37, "şirin" 0 → 106.
+
+**Dokunulmayan aynı desenli aramalar:**
+- `TerritoryModelRepository:43-44` (kaçışsız + i) → küçük takip;
+- `TerritoryModelRepository:89-91` ve `SegmentCandidateSource:331/342` (kaçışlı, i katlaması yok) → takip listesi.
+
+**E4 (CT, bekliyor; fleet yeniden başlatma — CRM + Web değişti):**
+- taslakta Düzenle → hafta değiştir → seçim duruyor (kayıt, test taslağında);
+- "Hamidiye" kurum araması;
+- "şirin" doktor araması.

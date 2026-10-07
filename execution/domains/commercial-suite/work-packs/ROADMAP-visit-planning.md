@@ -63,11 +63,13 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 - ☑ B-2 hedef evreni = bölge ataması; ataması yoksa tümü + uyarı (K-5); bölge dışı işareti (A4)
 - ☑ B-3 strateji / kampanya / segment sunucuda türetilir; segment dışının sessizce düşmesi kalkar (A3, A6)
 
-- ◐ **WP-VP-FIX-2** paketlendi 2026-10-07 ([WP](WP-VP-FIX-2-edit-keeps-targets-turkish-search.md), worktree `C:\tmp\vp-fix-2`): D9 + F-1.
-- ☐ **F-1** (VP-2 E4): hesap araması Türkçe harfe duyarlı ("Hamidiye" 0, "HAMİDİYE" 4) — `my-accounts` + genel hesap araması; D9 ile aynı küçük pakete.
+- ☑ **WP-VP-FIX-2** E2 kabul `23e0a9b98` (2026-10-07; ◐ E4 bekliyor) · paketlendi 2026-10-07 ([WP](WP-VP-FIX-2-edit-keeps-targets-turkish-search.md), worktree `C:\tmp\vp-fix-2`): D9 + F-1.
+- ☑ **F-1** (VP-2 E4): hesap araması Türkçe harfe duyarlı ("Hamidiye" 0, "HAMİDİYE" 4) — `my-accounts` + genel hesap araması; D9 ile aynı küçük pakete.
 - → **Veri:** TUTUKON oyunu arşivli `SEG-URO-DOCTORS` segmentine bağlı → **Faz E2E** adım E1 + E5'te çözülür.
-- ☐ **D9** (VP-2 kabulünde bulundu): Ziyaret Planlama Düzenle formu hedef dizilerini boş gönderiyor → taslakta hafta / dönem değiştirmek tüm hedefleri siler. Düzeltme: form mevcut seçimi göndersin **ya da** sunucu `null` dizi = "dokunma" kabul etsin (tercih: ikisi birden). Küçük paket, Faz 2b'den önce.
+- ☑ **D9** (VP-2 kabulünde bulundu): Ziyaret Planlama Düzenle formu hedef dizilerini boş gönderiyor → taslakta hafta / dönem değiştirmek tüm hedefleri siler. Düzeltme: form mevcut seçimi göndersin **ya da** sunucu `null` dizi = "dokunma" kabul etsin (tercih: ikisi birden). Küçük paket, Faz 2b'den önce.
 - ☐ Grant: `scripts/rbac/grant_visit_planning_read_all_97c5.py --role <onaylayan yönetici rolü> --apply` (Auth yeniden başlatıldıktan sonra; kullanıcı rolü seçer).
+
+- ☐ Takip: aynı arama sorunu `TerritoryModelRepository` (ad / kod; kaçışsız) + `SegmentCandidateSource` (i katlaması yok) — küçük.
 
 ### Faz E2E — TUTUKON uçtan uca test (kullanıcı giriş yapar, CT yürütür) — VP-FIX-2 kabulünden sonra; Faz 2b ajan işiyle paralel
 Plan: [E2E-TUTUKON-content-to-visit-plan.md](E2E-TUTUKON-content-to-visit-plan.md).
