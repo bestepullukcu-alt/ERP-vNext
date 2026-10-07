@@ -71,6 +71,7 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
         await _passwordPolicyService.ValidateTenantPasswordAsync(user.TenantId, user.Id, request.NewPassword, "tenant_set_password", ct);
 
         var state = _userRepository.CaptureState(user);
+        var wasActive = user.IsActive;
         user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
         user.ClearPasswordChangeRequirement(); // also clears the one-time token (single use)
         // BL-529 — a password set through the link starts clean: the lockout the old password's failures (or an attacker
@@ -81,8 +82,10 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
 
         // BL-529 FIX2 — written only while this link is still the account's (not replaced by a newer reset, not used by a
         // parallel redemption, not cleared by a deactivation). FIX4 — and while no administrator has deactivated it: a
-        // deactivation of a pending invitation keeps the link, so the link alone does not say it.
-        if (!await _userRepository.TryWriteChangesAsync(user, state, user.TenantId, new UserWriteCondition(PasswordResetTokenHash: tokenHash, DeactivatedByAdministrator: false), ct))
+        // deactivation of a pending invitation keeps the link, so the link alone does not say it. FIX9 (M4) — and while the
+        // switch is the one read: an old instance in a rolling deploy deactivating it without the mark meanwhile is not undone
+        // (a pending invitation reads false and still matches).
+        if (!await _userRepository.TryWriteChangesAsync(user, state, user.TenantId, new UserWriteCondition(PasswordResetTokenHash: tokenHash, IsActive: wasActive, DeactivatedByAdministrator: false), ct))
         {
             return Response<NoContent>.Fail(InvalidTokenMessage, 400);
         }

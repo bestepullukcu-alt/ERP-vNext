@@ -105,9 +105,40 @@ beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı b
      "Bekleyen davet" kodun kendi tanımıdır (`User.IsInvitationPending`): parola değişikliği zorunlu, e-posta
      onaylanmamış ve hiç oturum açılmamış. **Bekleyen davetler belgelenmiş istisnadır:** hiç etkinleşmedikleri için
      pasiftirler ve pasife alınmış bir davetten mekanik olarak ayrılamazlar; araç onlara dokunmaz.
-   - **Önce kuru koşu (varsayılan):** sayıyı ve kimlik listesini (kiracı kimliği, kullanıcı kimliği; kişisel veri yok)
-     yazar, hiçbir şey yazmaz. Listeyi okuyun; sonra `--apply` ile yazın. Araç idempotenttir: ikinci koşu bir şey bulmaz.
-   - **Bağlantı ortamdan okunur, komut satırından asla:** `DITEN_AUTH_MONGO_CONNECTION`, `DITEN_AUTH_MONGO_DATABASE`.
+   - **Ne zaman:** yalnız **bütün eski Auth örnekleri durduktan SONRA** (kayan dağıtımda eski bir örnek, işaret koymadan
+     pasife alabilir). Tüm kiracılar kapsanır; **platform kiracısı dahil**.
+   - **Önce kuru koşu (varsayılan):** hedef veritabanının adını, bulunan hesapların kimlik listesini (kiracı, kullanıcı;
+     kişisel veri yok) ve ikinci bir liste olarak "bekleyen davet sayıldığı için atlanan, bağlantısı şu tarihe kadar
+     geçerli" hesapları yazar; kullanıcılara hiçbir şey yazmaz. Kuru koşuyu, listeyi okuyup onaylayana dek tekrarlayın.
+   - **Uygulama:** `--apply --expect N` (N = son kuru koşunun bulduğu sayı). Sayı tutmazsa araç hiçbir şey yazmaz (çıkış 5).
+     Ardından kuru koşuyu **0 diyene kadar** tekrarlayın. Araç idempotenttir.
+   - **Tam komut** (repo kökünden; bağlantı ortamdan okunur, komut satırından asla):
+
+     Önce iki ortam değişkenini gizli kasadan yükleyin: `DITEN_AUTH_MONGO_CONNECTION` ve `DITEN_AUTH_MONGO_DATABASE`
+     (değerleri komut satırına, geçmişe ya da bu belgeye asla yazılmaz). Sonra **kuru koşu** — aynı komut, argümansız:
+
+     ```bash
+     dotnet run --project services/Diten.AuthService/tools/Diten.AuthService.LegacyDeactivationMarker
+     ```
+
+     ve listeyi okuduktan sonra **uygulama** (N = son kuru koşunun bulduğu sayı):
+
+     ```bash
+     dotnet run --project services/Diten.AuthService/tools/Diten.AuthService.LegacyDeactivationMarker -- --apply --expect N
+     ```
+   - **Çıkış kodları:**
+     - 0 tamam.
+     - 1 bağlantı ya da beklenmeyen hata: veritabanına ulaşılmadı, hiçbir şey yazılmadı. Yalnız hata türü yazılır,
+       bağlantı dizesi ya da hata metni asla.
+     - 2 kullanım hatası.
+     - 3 yarıda kaldı: yazılan ve **ulaşılmayan** kimlikler ayrı ayrı listelenir; kuru koşuyu tekrarlayın.
+     - 4 liste okunduktan sonra değişen hesaplar atlandı (listelenir; dokunulmadı). Uyarı, "APPLIED" satırından önce yazılır.
+     - 5 beklenen sayı tutmadı, hiçbir şey yazılmadı.
+     - 6 iş bitti ama denetim satırı yazılamadı: kayıt eksik. Denetim kaydı sahibine bildirin.
+   - **Denetim satırı:** veritabanına ulaşan her çalışma Auth denetim kaydına (`authAuditLogs`,
+     `auth.legacy_deactivation_marker.run`) bir satır yazar: mod (`dry-run`, `apply`, `refused`), sayılar ve kimlikler;
+     kişisel veri yok. Yarıda kalan çalışma da yazar (`stoppedPartWay`, ulaşılmayanlar). Çıkış 1 ve 2'de satır yazılmaz:
+     veritabanına hiç ulaşılmadı.
    - Gerçek ortamda çalıştırmak sahibin kararıdır.
 
 **Belirti:** (1) Auth günlüğünde başlangıçta "`ClientAddress:TrustedProxies` is empty" uyarısı. (2) Deploy'dan sonra

@@ -73,14 +73,6 @@ public sealed class User : EntityBase
     }
 
     /// <summary>
-    /// WP-AUTH-INVITED-LIFECYCLE-01 — the account was INVITED and its owner has never set a password: it holds only
-    /// the unusable placeholder hash, so it cannot sign in whatever <see cref="IsActive"/> says. Derived, never stored.
-    /// Each fact rules out one look-alike: <see cref="MustChangePassword"/> (not a normal account),
-    /// <see cref="EmailConfirmed"/> false (redeeming the set-password link confirms it; an admin reset of a redeemed
-    /// account and a provisioned admin with a temporary password are both confirmed), <see cref="LastLoginAt"/> null
-    /// (the account has never been used). A method, not a property, so the Mongo class map never persists it.
-    /// </summary>
-    /// <summary>
     /// BL-529 FIX8 item 1 (b) — an account an administrator switched off, whether or not it carries the mark: marked (every
     /// deactivation since BL-529), or inactive and NOT a pending invitation (a deactivation from before BL-529, which set
     /// no mark). A set-password link never switches such an account on; only an administrator's activation does. A pending
@@ -88,6 +80,14 @@ public sealed class User : EntityBase
     /// </summary>
     public bool IsDeactivatedByAdministrator() => DeactivatedByAdministrator || (!IsActive && !IsInvitationPending());
 
+    /// <summary>
+    /// WP-AUTH-INVITED-LIFECYCLE-01 — the account was INVITED and its owner has never set a password: it holds only
+    /// the unusable placeholder hash, so it cannot sign in whatever <see cref="IsActive"/> says. Derived, never stored.
+    /// Each fact rules out one look-alike: <see cref="MustChangePassword"/> (not a normal account),
+    /// <see cref="EmailConfirmed"/> false (redeeming the set-password link confirms it; an admin reset of a redeemed
+    /// account and a provisioned admin with a temporary password are both confirmed), <see cref="LastLoginAt"/> null
+    /// (the account has never been used). A method, not a property, so the Mongo class map never persists it.
+    /// </summary>
     public bool IsInvitationPending() => MustChangePassword && !EmailConfirmed && LastLoginAt is null;
 
     /// <summary>

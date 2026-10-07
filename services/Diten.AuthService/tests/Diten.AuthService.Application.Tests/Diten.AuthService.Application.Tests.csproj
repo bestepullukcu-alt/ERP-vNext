@@ -34,6 +34,8 @@
     <ProjectReference Include="..\..\src\Diten.AuthService.Api\Diten.AuthService.Api.csproj" />
     <ProjectReference Include="..\..\src\Diten.AuthService.Domain\Diten.AuthService.Domain.csproj" />
     <ProjectReference Include="..\..\src\Diten.AuthService.Persistence\Diten.AuthService.Persistence.csproj" />
+    <!-- BL-529 FIX9 — the legacy deactivation marker tool: its command is tested in-process and as a process. -->
+    <ProjectReference Include="..\..\tools\Diten.AuthService.LegacyDeactivationMarker\Diten.AuthService.LegacyDeactivationMarker.csproj" />
     <ProjectReference Include="..\..\src\Diten.AuthService.Infrastructure\Diten.AuthService.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Diten.Platform\src\Diten.Platform.Application\Diten.Platform.Application.csproj" Aliases="PlatformProducer" />
   </ItemGroup>

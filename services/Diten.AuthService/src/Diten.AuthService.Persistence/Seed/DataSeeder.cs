@@ -146,7 +146,7 @@ public static class DataSeeder
             await SeedRolesAsync(database);
             
             Console.WriteLine("Seeding users...");
-            await SeedUsersAsync(database, seedMockUsers);
+            await SeedUsersAsync(database, seedMockUsers, logger);
 
             Console.WriteLine("Seeding tenant-97c5 BRD consumer grant...");
             await SeedTenant97c5BusinessReferenceDataConsumerGrantAsync(database);
@@ -1047,7 +1047,7 @@ public static class DataSeeder
         return tenant;
     }
 
-    private static async Task SeedUsersAsync(IMongoDatabase database, bool seedMockUsers)
+    private static async Task SeedUsersAsync(IMongoDatabase database, bool seedMockUsers, ILogger logger)
     {
         var userCol = database.GetCollection<User>("users");
         var roleCol = database.GetCollection<Role>("roles");
@@ -1100,8 +1100,13 @@ public static class DataSeeder
             }
 
             user.ConfirmEmail();
-            await userRepository.TryWriteChangesAsync(user, state, DefaultTenantId,
-                new UserWriteCondition(DeactivatedByAdministrator: user.DeactivatedByAdministrator), CancellationToken.None);
+            if (!await userRepository.TryWriteChangesAsync(user, state, DefaultTenantId,
+                    new UserWriteCondition(DeactivatedByAdministrator: user.DeactivatedByAdministrator), CancellationToken.None))
+            {
+                // FIX9 (M5) — the admin changed between the read and the write (an administrator marked or deleted it): the seed
+                // leaves it as it is, and says so.
+                logger.LogWarning("The seeded admin changed while the seed was updating it; it was left as it is.");
+            }
         }
 
         var roles = await roleCol.Find(r => r.Name == "SuperAdmin").ToListAsync();

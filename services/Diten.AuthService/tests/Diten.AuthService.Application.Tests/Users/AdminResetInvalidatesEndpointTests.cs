@@ -1676,55 +1676,503 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.False((await PlatformUserAsync(email)).IsActive);
     }
 
-    // ── FIX8 item 1 (a): the one-time marker of accounts deactivated before BL-529 ────────────────────────────────
+    // ── FIX8 item 1 (a) / FIX9 items 1–3, 8: the one-time marker of accounts deactivated before BL-529 ─────────────
 
-    [Fact]
-    public async Task The_legacy_deactivation_marker_lists_by_default_and_marks_only_deactivated_accounts_that_are_not_pending()
+    private const string MarkerDatabase = "bl529_fix9_marker";
+
+    /// <summary>The marker's database (fixed name, emptied first) seeded with every shape the rule must tell apart.</summary>
+    private async Task<(IMongoDatabase Database, MarkerRows Rows)> MarkerDatabaseAsync()
     {
-        // A fixed-name database of its own (the marker reads every tenant's users), emptied first.
-        const string markerDatabase = "bl529_fix8_marker";
-        await _host.Database.Client.DropDatabaseAsync(markerDatabase);
-        var database = _host.Database.Client.GetDatabase(markerDatabase);
-        var users = database.GetCollection<User>("users");
-        var tenantId = Guid.NewGuid();
+        await _host.Database.Client.DropDatabaseAsync(MarkerDatabase);
+        var database = _host.Database.Client.GetDatabase(MarkerDatabase);
+        var tenant = Guid.NewGuid();
+        var secondTenant = Guid.NewGuid();
+        User Legacy(Guid tenantId, string name)
+        {
+            var user = new User($"{name}.{Guid.NewGuid():N}@reset.test", "hash", "Le", "Gacy", tenantId);
+            user.ConfirmEmail();
+            user.Deactivate();
+            user.SetPasswordResetToken("live-link-hash", DateTime.UtcNow.AddDays(3));
+            return user;
+        }
 
-        var legacy = new User($"legacy.{Guid.NewGuid():N}@reset.test", "hash", "Le", "Gacy", tenantId); // deactivated before BL-529
-        legacy.ConfirmEmail();
-        legacy.Deactivate();
-        legacy.SetPasswordResetToken("live-link-hash", DateTime.UtcNow.AddDays(3));
-        var pending = new User($"pending.{Guid.NewGuid():N}@reset.test", "hash", "Pen", "Ding", tenantId); // a pending invitation
+        var legacy = Legacy(tenant, "legacy");                          // deactivated before BL-529: field missing
+        var storedFalse = Legacy(tenant, "stored-false");               // the field stored as false
+        var secondTenantLegacy = Legacy(secondTenant, "second");        // another tenant
+        var platformLegacy = Legacy(PlatformTenantId, "platform");      // the platform tenant
+        var softDeleted = Legacy(tenant, "deleted");                    // deleted: never touched
+        softDeleted.IsDeleted = true;
+        var pending = new User($"pending.{Guid.NewGuid():N}@reset.test", "hash", "Pen", "Ding", tenant); // a pending invitation
         pending.Deactivate();
         pending.RequirePasswordChange(null);
         pending.SetPasswordResetToken("invite-hash", DateTime.UtcNow.AddDays(3));
-        var active = new User($"active.{Guid.NewGuid():N}@reset.test", "hash", "Ac", "Tive", tenantId);
+        var active = new User($"active.{Guid.NewGuid():N}@reset.test", "hash", "Ac", "Tive", tenant);
         active.ConfirmEmail();
-        active.Activate();
-        await users.InsertManyAsync([legacy, pending, active]);
+        var marked = Legacy(tenant, "marked");
+        marked.DeactivateByAdministrator();
+        await database.GetCollection<User>("users").InsertManyAsync([legacy, storedFalse, secondTenantLegacy, platformLegacy, softDeleted, pending, active, marked]);
         var raw = database.GetCollection<BsonDocument>("users");
-        await raw.UpdateManyAsync(Builders<BsonDocument>.Filter.Empty, Builders<BsonDocument>.Update.Unset(nameof(User.DeactivatedByAdministrator)));
-        Assert.Equal(3, await raw.CountDocumentsAsync(Builders<BsonDocument>.Filter.Exists(nameof(User.DeactivatedByAdministrator), false)));
+        foreach (var unset in new[] { legacy, secondTenantLegacy, platformLegacy, softDeleted, pending, active })
+        {
+            await raw.UpdateOneAsync(ById(unset.Id), Builders<BsonDocument>.Update.Unset(nameof(User.DeactivatedByAdministrator)));
+        }
 
-        var dryRun = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.RunAsync(database, apply: false);
+        Assert.False((await raw.Find(ById(legacy.Id)).SingleAsync()).Contains(nameof(User.DeactivatedByAdministrator))); // non-vacuity
+        Assert.False((await raw.Find(ById(storedFalse.Id)).SingleAsync())[nameof(User.DeactivatedByAdministrator)].AsBoolean);
+        return (database, new MarkerRows([legacy.Id, storedFalse.Id, secondTenantLegacy.Id, platformLegacy.Id], pending.Id, softDeleted.Id, active.Id, marked.Id));
+    }
 
-        Assert.True(dryRun.DryRun);
-        Assert.Equal([legacy.Id], dryRun.Found.Select(a => a.UserId));
-        Assert.Equal(0, dryRun.Marked);
-        Assert.Equal(3, await raw.CountDocumentsAsync(Builders<BsonDocument>.Filter.Exists(nameof(User.DeactivatedByAdministrator), false))); // nothing written
+    private sealed record MarkerRows(Guid[] Legacy, Guid Pending, Guid SoftDeleted, Guid Active, Guid Marked);
 
-        var applied = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.RunAsync(database, apply: true);
+    private static FilterDefinition<BsonDocument> ById(Guid id) =>
+        Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(id, GuidRepresentation.Standard));
 
-        Assert.Equal(1, applied.Marked);
-        var marked = await users.Find(u => u.Id == legacy.Id).SingleAsync();
-        Assert.True(marked.DeactivatedByAdministrator);
-        Assert.Null(marked.PasswordResetTokenHash);
-        Assert.False(marked.IsActive);
-        var invitation = await users.Find(u => u.Id == pending.Id).SingleAsync();
-        Assert.False(invitation.DeactivatedByAdministrator);
-        Assert.Equal("invite-hash", invitation.PasswordResetTokenHash); // the pending invitation is untouched
-        Assert.False((await users.Find(u => u.Id == active.Id).SingleAsync()).DeactivatedByAdministrator);
+    private static async Task<List<BsonDocument>> SnapshotAsync(IMongoDatabase database) =>
+        await database.GetCollection<BsonDocument>("users").Find(Builders<BsonDocument>.Filter.Empty).Sort(Builders<BsonDocument>.Sort.Ascending("_id")).ToListAsync();
 
-        var again = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.RunAsync(database, apply: true);
-        Assert.Empty(again.Found); // idempotent
+    private Func<string, string?> MarkerEnvironment(string? connection = null) => name => name switch
+    {
+        Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.ConnectionVariable => connection ?? _host.ConnectionString,
+        Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.DatabaseVariable => MarkerDatabase,
+        _ => null
+    };
+
+    [Fact]
+    public async Task The_marker_finds_exactly_the_deactivated_accounts_that_are_not_pending_in_every_tenant()
+    {
+        var (database, rows) = await MarkerDatabaseAsync();
+
+        // The tool's own entry: the connection string, opened in Persistence.
+        var opened = Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.OpenDatabase(_host.ConnectionString, MarkerDatabase);
+        var findings = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.FindAsync(opened);
+
+        Assert.Equal(rows.Legacy.OrderBy(id => id), findings.Found.Select(a => a.UserId).OrderBy(id => id));
+        Assert.Equal([rows.Pending], findings.SkippedPending.Select(s => s.Account.UserId));
+        Assert.NotNull(findings.SkippedPending.Single().LinkExpiresAt);
+
+        var result = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.MarkAsync(opened, findings.Found);
+
+        Assert.Equal(findings.Found.Count, result.Marked.Count);
+        Assert.Empty(result.NotMarked);
+        var users = database.GetCollection<User>("users");
+        foreach (var id in rows.Legacy)
+        {
+            var after = await users.Find(u => u.Id == id).SingleAsync();
+            Assert.True(after.DeactivatedByAdministrator);
+            Assert.Null(after.PasswordResetTokenHash);
+            Assert.False(after.IsActive);
+        }
+
+        Assert.Equal("invite-hash", (await users.Find(u => u.Id == rows.Pending).SingleAsync()).PasswordResetTokenHash);
+        Assert.Empty((await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.FindAsync(opened)).Found); // idempotent
+    }
+
+    [Fact]
+    public async Task The_marker_never_overwrites_an_account_that_changed_after_the_list_was_read()
+    {
+        var (database, rows) = await MarkerDatabaseAsync();
+        var findings = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.FindAsync(database);
+        var raw = database.GetCollection<BsonDocument>("users");
+        var (activated, markedMeanwhile, deleted, reinvited) = (rows.Legacy[0], rows.Legacy[1], rows.Legacy[2], rows.Legacy[3]);
+        await raw.UpdateOneAsync(ById(activated), Builders<BsonDocument>.Update.Set(nameof(User.IsActive), true));                  // (a)
+        await raw.UpdateOneAsync(ById(markedMeanwhile), Builders<BsonDocument>.Update.Set(nameof(User.DeactivatedByAdministrator), true)); // (b)
+        await raw.UpdateOneAsync(ById(deleted), Builders<BsonDocument>.Update.Set(nameof(User.IsDeleted), true));                   // (c)
+        await raw.UpdateOneAsync(ById(reinvited), Builders<BsonDocument>.Update                                                    // (d) pending now
+            .Set(nameof(User.MustChangePassword), true).Set(nameof(User.EmailConfirmed), false));
+        var before = await SnapshotAsync(database);
+
+        var result = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.MarkAsync(database, findings.Found);
+
+        Assert.Empty(result.Marked);
+        Assert.Equal(4, result.NotMarked.Count);
+        Assert.Equal(before, await SnapshotAsync(database)); // not one byte changed
+    }
+
+    [Fact]
+    public async Task The_marker_dry_run_writes_nothing_and_records_one_audit_row_without_personal_data()
+    {
+        var (database, rows) = await MarkerDatabaseAsync();
+        var before = await SnapshotAsync(database);
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        var exit = await Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.RunAsync([], MarkerEnvironment(), output, error);
+
+        Assert.Equal(0, exit);
+        Assert.Equal(before, await SnapshotAsync(database));
+        Assert.Contains($"Database: {MarkerDatabase}", output.ToString());
+        Assert.Contains(rows.Pending.ToString("D"), output.ToString()); // the skipped pending invitation is listed
+        var audit = Assert.Single(await database.GetCollection<AuthAuditLog>("authAuditLogs").Find(_ => true).ToListAsync());
+        Assert.Equal(Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.AuditEventName, audit.EventName);
+        Assert.DoesNotContain("@", audit.Metadata);
+        Assert.Contains(rows.Legacy[0].ToString("D"), audit.Metadata);
+    }
+
+    [Fact]
+    public async Task The_marker_reports_a_write_that_skipped_an_account_with_a_non_zero_exit()
+    {
+        var (database, rows) = await MarkerDatabaseAsync();
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        var exit = await Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.RunAsync(["--apply"], MarkerEnvironment(), output, error,
+            afterFind: () => database.GetCollection<BsonDocument>("users").UpdateOneAsync(ById(rows.Legacy[0]),
+                Builders<BsonDocument>.Update.Set(nameof(User.IsActive), true))); // an administrator activates one meanwhile
+
+        Assert.Equal(4, exit);
+        Assert.Contains(rows.Legacy[0].ToString("D"), error.ToString());
+        Assert.False((await database.GetCollection<User>("users").Find(u => u.Id == rows.Legacy[0]).SingleAsync()).DeactivatedByAdministrator);
+    }
+
+    [Fact]
+    public async Task The_marker_writes_nothing_when_the_count_is_not_the_expected_one()
+    {
+        var (database, _) = await MarkerDatabaseAsync();
+        var before = await SnapshotAsync(database);
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        var exit = await Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.RunAsync(["--apply", "--expect", "3"], MarkerEnvironment(), output, error);
+
+        Assert.Equal(5, exit);
+        Assert.Equal(before, await SnapshotAsync(database));
+        Assert.Contains("\"mode\":\"refused\"", (await AuditRowAsync(database)).Metadata); // FIX10 (K3): not "dry-run"
+    }
+
+    private static async Task<AuthAuditLog> AuditRowAsync(IMongoDatabase database) =>
+        Assert.Single(await database.GetCollection<AuthAuditLog>("authAuditLogs").Find(_ => true).ToListAsync());
+
+    // ── FIX10 item 1: the write's tenant bound and the pending rule's "never signed in" ───────────────────────────
+
+    [Fact]
+    public async Task The_marker_never_marks_an_account_named_under_another_tenant()
+    {
+        var (database, rows) = await MarkerDatabaseAsync();
+        var before = await SnapshotAsync(database);
+
+        var result = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.MarkAsync(database,
+            [new Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.Account(Guid.NewGuid(), rows.Legacy[0])]);
+
+        Assert.Empty(result.Marked);
+        Assert.Single(result.NotMarked);
+        Assert.Equal(before, await SnapshotAsync(database));
+    }
+
+    [Fact]
+    public async Task An_account_that_has_signed_in_is_marked_even_with_an_unconfirmed_email_and_a_forced_change()
+    {
+        var (database, _) = await MarkerDatabaseAsync();
+        var signedIn = new User($"signed.{Guid.NewGuid():N}@reset.test", "hash", "Si", "Gned", Guid.NewGuid());
+        signedIn.Deactivate();
+        signedIn.RequirePasswordChange(null);
+        signedIn.RecordLoginSuccess();
+        await database.GetCollection<User>("users").InsertOneAsync(signedIn);
+        Assert.False((await database.GetCollection<User>("users").Find(u => u.Id == signedIn.Id).SingleAsync()).EmailConfirmed); // non-vacuity
+
+        var findings = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.FindAsync(database);
+        Assert.Contains(findings.Found, a => a.UserId == signedIn.Id);
+        var result = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.MarkAsync(database, findings.Found);
+
+        Assert.Contains(result.Marked, a => a.UserId == signedIn.Id); // the write's $nor holds it too: it has signed in
+        Assert.True((await database.GetCollection<User>("users").Find(u => u.Id == signedIn.Id).SingleAsync()).DeactivatedByAdministrator);
+    }
+
+    // ── FIX10 item 2: the command an operator runs ────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_operator_command_marks_exactly_the_expected_accounts_and_records_them()
+    {
+        var (database, rows) = await MarkerDatabaseAsync();
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        var exit = await Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.RunAsync(["--apply", "--expect", "4"], MarkerEnvironment(), output, error);
+
+        Assert.Equal(0, exit);
+        Assert.Contains("APPLIED — 4 of 4", output.ToString());
+        var users = database.GetCollection<User>("users");
+        foreach (var id in rows.Legacy)
+        {
+            Assert.True((await users.Find(u => u.Id == id).SingleAsync()).DeactivatedByAdministrator);
+        }
+
+        var audit = await AuditRowAsync(database);
+        Assert.Contains("\"mode\":\"apply\"", audit.Metadata);
+        Assert.All(rows.Legacy, id => Assert.Contains(id.ToString("D"), audit.Metadata));
+        Assert.Contains("\"markedIds\"", audit.Metadata);
+    }
+
+    // ── FIX10 item 3: a run that stops part-way (CT K4) ─────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_run_that_stops_part_way_lists_what_it_wrote_and_what_it_did_not_reach_and_records_it()
+    {
+        var (database, _) = await MarkerDatabaseAsync();
+        var found = (await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.FindAsync(database)).Found;
+        var blocked = found[^1].TenantId;                         // the store refuses the mark for this one tenant
+        var stopAt = found.ToList().FindIndex(a => a.TenantId == blocked);
+        Assert.True(stopAt > 0); // non-vacuity: something is written before the stop
+        await database.RunCommandAsync<BsonDocument>(new BsonDocument
+        {
+            { "collMod", "users" },
+            {
+                "validator", new BsonDocument("$or", new BsonArray
+                {
+                    new BsonDocument(nameof(User.TenantId), new BsonDocument("$ne", new BsonBinaryData(blocked, GuidRepresentation.Standard))),
+                    new BsonDocument(nameof(User.DeactivatedByAdministrator), new BsonDocument("$ne", true))
+                })
+            },
+            { "validationAction", "error" }
+        });
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        var exit = await Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.RunAsync(["--apply"], MarkerEnvironment(), output, error);
+
+        Assert.Equal(3, exit);
+        var lines = output.ToString().Split('\n');
+        Assert.Equal(found.Take(stopAt).Select(a => a.UserId.ToString("D")),
+            lines.Where(l => l.TrimStart().StartsWith("marked ")).Select(l => l.Trim()[^36..]));
+        Assert.Equal(found.Skip(stopAt).Select(a => a.UserId.ToString("D")),
+            lines.Where(l => l.TrimStart().StartsWith("not reached ")).Select(l => l.Trim()[^36..]));
+        Assert.Contains($"{stopAt} marked, {found.Count - stopAt} not reached", error.ToString());
+        var audit = await AuditRowAsync(database);
+        Assert.Contains("\"stoppedPartWay\":true", audit.Metadata);
+        Assert.Contains($"\"notReached\":{found.Count - stopAt}", audit.Metadata);
+    }
+
+    // CT acceptance (K10): the apply path says "done, not on record" with the same code as the dry run — its marks landed.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task A_run_whose_audit_row_cannot_be_written_says_so_with_its_own_exit_code(bool apply)
+    {
+        var (database, _) = await MarkerDatabaseAsync();
+        await database.RunCommandAsync<BsonDocument>(new BsonDocument
+        {
+            { "create", "authAuditLogs" },
+            { "validator", new BsonDocument("EventName", "never") },
+            { "validationAction", "error" }
+        });
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        var exit = await Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.RunAsync(
+            apply ? ["--apply"] : [], MarkerEnvironment(), output, error);
+
+        Assert.Equal(6, exit); // FIX10 (K2): done, but not on record — neither a connection failure nor a success
+        Assert.Contains("audit row could not be written", error.ToString());
+        if (apply)
+        {
+            Assert.Contains("APPLIED", output.ToString());
+        }
+    }
+
+    // ── FIX10 item 5 (CT K3): the read never loads a password hash ─────────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_marker_read_never_asks_for_a_password_hash()
+    {
+        await MarkerDatabaseAsync();
+        var projections = new System.Collections.Concurrent.ConcurrentQueue<List<string>>();
+        var settings = MongoClientSettings.FromConnectionString(_host.ConnectionString);
+        settings.ClusterConfigurator = cluster => cluster.Subscribe<MongoDB.Driver.Core.Events.CommandStartedEvent>(started =>
+        {
+            if (started.CommandName == "find" && started.Command.GetValue("find", "").ToString() == "users")
+            {
+                // Copied here: the event's command document is released once the callback returns.
+                projections.Enqueue(started.Command.GetValue("projection", new BsonDocument()).AsBsonDocument.Names.ToList());
+            }
+        });
+        var observed = new MongoClient(settings).GetDatabase(MarkerDatabase);
+
+        await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.FindAsync(observed);
+
+        var projection = Assert.Single(projections);
+        Assert.True(projection.Contains(nameof(User.EmailConfirmed))); // non-vacuity: an inclusion projection was sent
+        Assert.False(projection.Contains(nameof(User.PasswordHash)));
+    }
+
+    // ── FIX10 item 4: the seed's warning, and its condition ───────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_seed_warns_and_writes_nothing_when_the_admin_it_read_cannot_be_written()
+    {
+        var (database, adminId) = await SeededAdminDatabaseAsync();
+        var raw = database.GetCollection<BsonDocument>("users");
+        // Soft-deleted: the seed still finds it by e-mail, but the targeted write (live accounts only) does not match.
+        await raw.UpdateOneAsync(ById(adminId), Builders<BsonDocument>.Update
+            .Set(nameof(User.IsDeleted), true).Set(nameof(User.IsActive), false).Set(nameof(User.EmailConfirmed), false));
+        var before = await raw.Find(ById(adminId)).SingleAsync();
+        var logger = new WarningCapture();
+
+        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, seedMockUsers: false, logger: logger, beforeSeedSteps: null);
+
+        Assert.Equal(before, await raw.Find(ById(adminId)).SingleAsync());
+        Assert.Contains(logger.Warnings, w => w.Contains("seeded admin changed", StringComparison.Ordinal));
+    }
+
+    private sealed class WarningCapture : Microsoft.Extensions.Logging.ILogger
+    {
+        public System.Collections.Concurrent.ConcurrentQueue<string> Warnings { get; } = new();
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId,
+            TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (logLevel == Microsoft.Extensions.Logging.LogLevel.Warning)
+            {
+                Warnings.Enqueue(formatter(state, exception));
+            }
+        }
+    }
+
+    [Fact]
+    public async Task The_marker_process_never_prints_a_broken_connection_string()
+    {
+        // As a process: the tool's own executable, the environment as an operator sets it.
+        // FIX10 (K4) — assembled at run time (no credential-shaped literal in the source), and measured: the driver's own
+        // message quotes it, so "never printed" means something.
+        // (The driver hides a user name and password in its messages, so the marker sits where it does NOT hide it.)
+        var marker = string.Concat("do-not", "-print-", "7f3a");
+        var secret = new[]
+            {
+                string.Concat("mongodb", "://", "user", ":", "pw", "@", marker, ":", "99999999", "/"),
+                string.Concat("mongodb", "://", "localhost", "/?", "authMechanism", "=", marker),
+                string.Concat("mongodb", "://", "localhost", "/?", "replicaSet", "=", marker, "&", "connect", "=", marker)
+            }
+            .FirstOrDefault(candidate =>
+                (Record.Exception(() => MongoClientSettings.FromConnectionString(candidate))?.Message ?? string.Empty)
+                    .Contains(marker, StringComparison.OrdinalIgnoreCase));
+        Assert.NotNull(secret); // measured: the driver's own message quotes this string
+        var dll = Path.Combine(AppContext.BaseDirectory, "Diten.AuthService.LegacyDeactivationMarker.dll");
+        Assert.True(File.Exists(dll), dll);
+        var start = new System.Diagnostics.ProcessStartInfo("dotnet", $"\"{dll}\"")
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
+        };
+        start.Environment[Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.ConnectionVariable] = secret!;
+        start.Environment[Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.DatabaseVariable] = MarkerDatabase;
+        using var process = System.Diagnostics.Process.Start(start)!;
+        var stdout = process.StandardOutput.ReadToEndAsync();
+        var stderr = process.StandardError.ReadToEndAsync();
+        Assert.True(process.WaitForExit(60_000));
+
+        Assert.Equal(1, process.ExitCode);
+        Assert.DoesNotContain(marker, await stdout, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(marker, await stderr, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("connection error", await stderr);
+    }
+
+    // ── FIX9 item 4: the seeder's targeted write ─────────────────────────────────────────────────────────────────────
+
+    private async Task<(IMongoDatabase Database, Guid AdminId)> SeededAdminDatabaseAsync()
+    {
+        const string seedDatabase = "bl529_fix9_seed";
+        await _host.Database.Client.DropDatabaseAsync(seedDatabase);
+        var database = _host.Database.Client.GetDatabase(seedDatabase);
+        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, seedMockUsers: false, logger: null, beforeSeedSteps: null);
+        var admin = await database.GetCollection<User>("users").Find(u => u.Email == "admin@diten.com").SingleAsync();
+        return (database, admin.Id);
+    }
+
+    [Fact]
+    public async Task The_seed_writes_only_its_own_fields_and_repairs_an_unmarked_admin()
+    {
+        var (database, adminId) = await SeededAdminDatabaseAsync();
+        var raw = database.GetCollection<BsonDocument>("users");
+        await raw.UpdateOneAsync(ById(adminId), Builders<BsonDocument>.Update
+            // (1) a field the seed does not change, stored as Int64: a whole-document write from the copy read re-serializes
+            //     it as the model's Int32; a targeted $set never touches it. (Not an unknown field: whether the class map
+            //     ignores extra elements depends on which test built it first.)
+            .Set(nameof(User.FailedLoginAttempts), new BsonInt64(0))
+            .Set(nameof(User.IsActive), false)                 // (2) unmarked, passive, unnamed, untyped, unconfirmed
+            .Set(nameof(User.NormalizedUserName), "")
+            .Unset(nameof(User.PlatformActorType))
+            .Set(nameof(User.EmailConfirmed), false));
+
+        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, seedMockUsers: false, logger: null, beforeSeedSteps: null);
+
+        var document = await raw.Find(ById(adminId)).SingleAsync();
+        Assert.Equal(BsonType.Int64, document[nameof(User.FailedLoginAttempts)].BsonType);
+        var admin = await database.GetCollection<User>("users").Find(u => u.Id == adminId).SingleAsync();
+        Assert.True(admin.IsActive);
+        Assert.Equal("admin", admin.NormalizedUserName);
+        Assert.Equal("platform_admin", admin.PlatformActorType);
+        Assert.True(admin.EmailConfirmed);
+    }
+
+    [Fact]
+    public async Task The_seed_repairs_a_marked_admin_but_leaves_it_off()
+    {
+        var (database, adminId) = await SeededAdminDatabaseAsync();
+        await database.GetCollection<BsonDocument>("users").UpdateOneAsync(ById(adminId), Builders<BsonDocument>.Update
+            .Set(nameof(User.IsActive), false).Set(nameof(User.DeactivatedByAdministrator), true)
+            .Unset(nameof(User.PlatformActorType)).Set(nameof(User.EmailConfirmed), false));
+
+        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, seedMockUsers: false, logger: null, beforeSeedSteps: null);
+
+        var admin = await database.GetCollection<User>("users").Find(u => u.Id == adminId).SingleAsync();
+        Assert.False(admin.IsActive);
+        Assert.True(admin.DeactivatedByAdministrator);
+        Assert.Equal("platform_admin", admin.PlatformActorType);
+        Assert.True(admin.EmailConfirmed);
+    }
+
+    // ── FIX9 item 5: an account that has signed in is never a pending invitation (CT G5) ───────────────────────────
+
+    [Fact]
+    public async Task A_passive_account_that_has_signed_in_before_is_not_a_pending_invitation()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode); // a live link
+        await _host.Database.GetCollection<BsonDocument>("users").UpdateOneAsync(ById(user.Id), Builders<BsonDocument>.Update
+            .Set(nameof(User.IsActive), false).Set(nameof(User.MustChangePassword), true).Set(nameof(User.EmailConfirmed), false)
+            .Set(nameof(User.LastLoginAt), DateTime.UtcNow.AddDays(-10)));
+        await UnsetAsync("users", user.Id, nameof(User.DeactivatedByAdministrator));
+
+        var redeem = await RedeemTenantLinkAsync(user.Email, NewPassword);
+
+        Assert.Equal(HttpStatusCode.Conflict, redeem.StatusCode);
+        Assert.False((await ReadUserAsync(user.Id)).IsActive);
+    }
+
+    // ── FIX9 item 7: the doors' writes hold on the switch as read ──────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_plain_deactivation_landing_during_a_tenant_link_redemption_is_not_undone()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        Assert.Equal(HttpStatusCode.OK, (await ResetOnUsersScreenAsync(tenantId, user.Id)).StatusCode); // active, with a live link
+
+        // Held at the password-policy read; an old instance switches it off without the mark meanwhile.
+        var redeem = await RaceAsync("settings:" + tenantId,
+            () => RedeemTenantLinkAsync(user.Email, NewPassword),
+            async () => await _host.Database.GetCollection<BsonDocument>("users").UpdateOneAsync(ById(user.Id),
+                Builders<BsonDocument>.Update.Set(nameof(User.IsActive), false)));
+
+        Assert.Equal(HttpStatusCode.BadRequest, redeem.StatusCode);
+        Assert.False((await ReadUserAsync(user.Id)).IsActive);
+    }
+
+    [Fact]
+    public async Task A_plain_deactivation_landing_during_a_platform_link_redemption_is_not_undone()
+    {
+        var email = $"pending.{Guid.NewGuid():N}@reset.test";
+        await AssertOkAsync(await ProvisionPlatformAdminAsync(email)); // active (created so), with a live link
+        var admin = await PlatformUserAsync(email);
+
+        var redeem = await RaceAsync("status:" + email,
+            () => AnonymousPostAsync("api/platform-auth/reset-password", new { email, token = _host.PlatformEmails.LastTokenFor(email), newPassword = NewPassword }),
+            async () => await _host.Database.GetCollection<BsonDocument>("users").UpdateOneAsync(ById(admin.Id),
+                Builders<BsonDocument>.Update.Set(nameof(User.IsActive), false)));
+
+        Assert.Equal(HttpStatusCode.BadRequest, redeem.StatusCode);
+        Assert.False((await PlatformUserAsync(email)).IsActive);
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────────────
