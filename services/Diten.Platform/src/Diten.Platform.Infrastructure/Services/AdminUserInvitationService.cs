@@ -47,17 +47,39 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         _environment = environment;
     }
 
-    public async Task<AdminUserInvitationResult> InviteAsync(Tenant tenant, TenantAdminUser adminUser, CancellationToken cancellationToken)
+    public async Task<AdminUserInvitationResult> InviteAsync(
+        Tenant tenant, TenantAdminUser adminUser, AdminInvitationTrigger trigger, CancellationToken cancellationToken)
     {
-        var provisioned = await ProvisionAdminUserAsync(tenant, adminUser, cancellationToken);
         var loginUrl = BuildLoginUrl(tenant);
+
+        // BL-454 stage D FIX1 (2) — the root first, AuthService second: a link that may not be sent from this server must not
+        // cost an existing administrator their password and sessions (the operator path resets) for a mail that never leaves.
+        var isDevelopment = _environment?.IsDevelopment() == true;
+        if (TenantAdminSetPasswordLink.RefusalFor(_authServiceOptions.FrontendBaseUrl, isDevelopment) is { } rootRefusal)
+        {
+            _logger.LogWarning(
+                "tenant.admin_invitation.not_sent TenantId={TenantId} AdminUserId={AdminUserId} Trigger={Trigger} ReasonCode={ReasonCode}. AuthService was not called.",
+                tenant.Id, adminUser.Id, trigger, rootRefusal);
+            return new AdminUserInvitationResult(loginUrl, null, UserProvisioned: false, InvitationEmailSent: false, EmailRefusalCode: rootRefusal);
+        }
+
+        var provisioned = await ProvisionAdminUserAsync(tenant, adminUser, trigger, cancellationToken);
+        if (provisioned.SetupToken is null)
+        {
+            // The event path over an account that already exists: AuthService changed nothing, and nothing is sent.
+            _logger.LogInformation(
+                "tenant.admin_invitation.account_exists TenantId={TenantId} AdminUserId={AdminUserId} Trigger={Trigger}",
+                tenant.Id, adminUser.Id, trigger);
+            return new AdminUserInvitationResult(loginUrl, null, UserProvisioned: false, InvitationEmailSent: false,
+                EmailRefusalCode: AdminInvitationRefusals.AccountExists);
+        }
 
         // BL-454 slice 2 stage D — the invitation carries BL-529's one-time set-password link and how long it lives;
         // never a password (AuthService no longer makes one). Delivered through the MOD-0027 notification pipeline
         // (tenant.invite.email, the tenant's messaging settings, a dispatch row whose stored variables and previews mask
         // the link). A link that would point at localhost outside Development is not sent at all, by name.
         var (setPasswordUrl, refusal) = TenantAdminSetPasswordLink.Build(
-            _authServiceOptions.FrontendBaseUrl, _environment?.IsDevelopment() == true, adminUser.Email, provisioned.SetupToken!);
+            _authServiceOptions.FrontendBaseUrl, isDevelopment, adminUser.Email, provisioned.SetupToken);
         if (refusal is not null)
         {
             _logger.LogWarning(
@@ -66,7 +88,7 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
             return new AdminUserInvitationResult(loginUrl, null, provisioned.UserProvisioned, InvitationEmailSent: false, EmailRefusalCode: refusal);
         }
 
-        var emailSent = await TryQueueInvitationEmailAsync(tenant, adminUser, setPasswordUrl!, provisioned.SetupExpiresAtUtc, cancellationToken);
+        var emailSent = await TryQueueInvitationEmailAsync(tenant, adminUser, setPasswordUrl!, provisioned.SetupExpiresAtUtc!.Value, cancellationToken);
 
         return new AdminUserInvitationResult(
             loginUrl,
@@ -135,7 +157,8 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         }
     }
 
-    private async Task<AdminProvisioningResponse> ProvisionAdminUserAsync(Tenant tenant, TenantAdminUser adminUser, CancellationToken cancellationToken)
+    private async Task<AdminProvisioningResponse> ProvisionAdminUserAsync(
+        Tenant tenant, TenantAdminUser adminUser, AdminInvitationTrigger trigger, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(_authServiceOptions.BaseUrl))
         {
@@ -157,14 +180,17 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
                 tenant.Code,
                 tenant.DisplayName ?? tenant.Name,
                 adminUser.Email,
-                adminUser.Name))
+                adminUser.Name,
+                trigger == AdminInvitationTrigger.Operator ? TriggerOperatorInvite : TriggerTenantCreatedEvent))
         };
         request.Headers.Add(InternalApiKeyHeader, _authServiceOptions.InternalApiKey);
 
         var client = _httpClientFactory.CreateClient(AuthInternalClientName);
         using var response = await client.SendAsync(request, cancellationToken);
         var payload = await response.Content.ReadFromJsonAsync<AdminProvisioningResponse>(cancellationToken: cancellationToken);
-        if (!response.IsSuccessStatusCode || payload is null || string.IsNullOrWhiteSpace(payload.SetupToken))
+        var accountExists = payload is { SetupToken: null } && string.Equals(payload.Message, StatusAccountExists, StringComparison.Ordinal);
+        if (!response.IsSuccessStatusCode || payload is null
+            || (!accountExists && (string.IsNullOrWhiteSpace(payload.SetupToken) || payload.SetupExpiresAtUtc is null)))
         {
             var responseText = payload?.Message ?? await response.Content.ReadAsStringAsync(cancellationToken);
             _logger.LogError(
@@ -215,13 +241,19 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         string TenantCode,
         string TenantName,
         string Email,
-        string Name);
+        string Name,
+        string Trigger);
+
+    // AuthService's InternalEventsController names (the internal contract).
+    private const string TriggerOperatorInvite = "operator-invite";
+    private const string TriggerTenantCreatedEvent = "tenant-created-event";
+    private const string StatusAccountExists = "account_exists";
 
     /// <summary>AuthService's answer: the one-time set-password token (in clear only here, over the internal key) and
     /// when it stops working. No password.</summary>
     private sealed record AdminProvisioningResponse(
         bool UserProvisioned,
         string? SetupToken,
-        DateTime SetupExpiresAtUtc,
+        DateTime? SetupExpiresAtUtc,
         string? Message);
 }

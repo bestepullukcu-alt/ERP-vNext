@@ -43,8 +43,10 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         INotificationTemplateRepository? templateRepository = null,
         IEmailTemplateRenderer? renderer = null,
         IEmailShellComposer? shellComposer = null,
-        Diten.Platform.Common.Tenancy.ITenantContext? tenantContext = null)
+        Diten.Platform.Common.Tenancy.ITenantContext? tenantContext = null,
+        Diten.Platform.Application.Contracts.ITenantAdminInvitationLedger? invitationLedger = null)
     {
+        _invitationLedger = invitationLedger;
         _tenantContext = tenantContext;
         _shellComposer = shellComposer;
         _dispatchRepository = dispatchRepository;
@@ -129,8 +131,8 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         // newRetryCount reaches args.MaxRetryCount, FindDueRetriesAsync's own `RetryCount < maxRetryCount` filter
         // will never surface this dispatch again — so this is the one and only transition where "no further
         // retry is coming" becomes true, never re-entered on a later sweep pass over the same terminal row.
-        var isPermanentFailure = newRetryCount >= args.MaxRetryCount
-            || string.Equals(result.ErrorCode, ReasonActionLinkNotRetryable, StringComparison.Ordinal);
+        var linkNotRetryable = string.Equals(result.ErrorCode, ReasonActionLinkNotRetryable, StringComparison.Ordinal);
+        var isPermanentFailure = newRetryCount >= args.MaxRetryCount || linkNotRetryable;
         // KS4 — the tenant boundary: the last failure's permanent path writes to tenant-scoped meeting stores.
         using (TenantScopeFor(dispatch.TenantId))
         {
@@ -147,7 +149,28 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
                     IsPermanentFailure: isPermanentFailure),
                 cancellationToken);
         }
+
+        // BL-454 stage D FIX1 K4 — a tenant administrator's invitation that can no longer be delivered leaves its mark on the
+        // tenant record ("admin-invitation" failed: invite again). Best effort: the dispatch row already says it, by name.
+        if (linkNotRetryable && _invitationLedger is not null
+            && string.Equals(dispatch.TemplateKey, TenantInviteTemplateKey, StringComparison.Ordinal)
+            && dispatch.To.FirstOrDefault()?.Email is { Length: > 0 } adminEmail)
+        {
+            try
+            {
+                await _invitationLedger.RecordUndeliveredAsync(dispatch.TenantId, adminEmail, ReasonActionLinkNotRetryable, cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    "email.dispatch.invitation_mark_failed DispatchId={DispatchId} TenantId={TenantId} ExceptionType={ExceptionType}",
+                    dispatch.Id, dispatch.TenantId, ex.GetType().Name);
+            }
+        }
     }
+
+    private const string TenantInviteTemplateKey = "tenant.invite.email";
+    private readonly Diten.Platform.Application.Contracts.ITenantAdminInvitationLedger? _invitationLedger;
 
     // The failed-command validator's own limits (MarkNotificationDispatchFailedValidator).
     private const int MaxErrorCodeLength = 128;

@@ -114,6 +114,18 @@ public sealed class InternalEventsController : ControllerBase
             return BadRequest(new { message = "tenantId and email are required" });
         }
 
+        // BL-454 stage D FIX1 (K3) — the platform's own tenant has platform administrators, never a tenant administrator.
+        if (request.TenantId == PlatformTenantId)
+        {
+            return BadRequest(new { message = "the platform tenant has no tenant administrators", code = ReasonPlatformTenantRefused });
+        }
+
+        // BL-454 stage D FIX1 — WHO is asking decides what may happen to an account that already exists. The tenant-created
+        // event (redelivered, re-published, retried after a success) may only CREATE: an existing account is left exactly as
+        // it is — no reset, no reactivation, no session ended, no link. Only the operator's explicit "Invite" resets (the
+        // BL-529 administrator reset, audited). Anything that does not name the operator is the create-only path.
+        var operatorInvite = string.Equals(request.Trigger, TriggerOperatorInvite, StringComparison.Ordinal);
+
         await _roleProvisioningService.EnsureDefaultRolesAsync(request.TenantId, ct);
         await SyncEntitledModulesBestEffortAsync(request.TenantId, ct);
 
@@ -125,13 +137,29 @@ public sealed class InternalEventsController : ControllerBase
         var setupTokenHash = _refreshTokenHasher.Hash(setupToken);
         var setupExpiresAtUtc = DateTime.UtcNow.Add(InvitationLinkLifetime);
         var existingUser = await _userRepository.GetByEmailAndTenantAsync(request.Email.Trim().ToLowerInvariant(), request.TenantId, ct);
+        if (existingUser is not null && !operatorInvite)
+        {
+            _logger.LogInformation(
+                "tenant.admin_invitation.account_exists TenantId={TenantId} UserId={UserId} Trigger={Trigger}. Nothing changed.",
+                request.TenantId, existingUser.Id, request.Trigger ?? "unspecified");
+            return Ok(new TenantAdminInvitationProvisioningResponse(false, null, null, StatusAccountExists));
+        }
 
         var userProvisioned = existingUser is null;
         var user = existingUser ?? CreateUser(request, AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService));
         if (existingUser is null)
         {
             IssueNewAccountInvitation(user, setupTokenHash, setupExpiresAtUtc);
-            await _userRepository.CreateAsync(user, ct);
+            var created = await _userRepository.CreateAsync(user, ct);
+            // BL-454 stage D FIX1 (4) / BL-456 — the account exists from here on: its row is written now, the way the Users
+            // screen's invitation writes it (ids and facts only; no address, no token). The e-mail is Platform's.
+            await _audit.RecordAsync(UserAuditEvents.Invited, request.TenantId, created.Id,
+                new Dictionary<string, object?>
+                {
+                    ["accountKind"] = created.AccountKind.ToString(),
+                    ["via"] = "tenant-administrator-invitation",
+                    ["trigger"] = operatorInvite ? TriggerOperatorInvite : TriggerTenantCreatedEvent
+                }, ct);
         }
         else
         {
@@ -252,19 +280,28 @@ public sealed class InternalEventsController : ControllerBase
         return (parts[0], string.Join(' ', parts.Skip(1)));
     }
 
+    /// <param name="Trigger"><see cref="TriggerOperatorInvite"/> (the operator's "Invite": an existing account is reset) or
+    /// <see cref="TriggerTenantCreatedEvent"/> (create only). Anything else — or nothing — is create only.</param>
     public sealed record TenantAdminInvitationProvisioningRequest(
         Guid TenantId,
         Guid AdminUserId,
         string TenantCode,
         string TenantName,
         string Email,
-        string Name);
+        string Name,
+        string? Trigger = null);
+
+    public const string TriggerOperatorInvite = "operator-invite";
+    public const string TriggerTenantCreatedEvent = "tenant-created-event";
+    public const string StatusAccountExists = "account_exists";
+    public const string ReasonPlatformTenantRefused = "PLATFORM_TENANT_REFUSED";
+    private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
     /// <summary>The set-password token in clear travels ONLY here, to Platform over the internal key, which builds the
     /// link and sends it; it is never logged or stored in clear.</summary>
     public sealed record TenantAdminInvitationProvisioningResponse(
         bool UserProvisioned,
-        string SetupToken,
-        DateTime SetupExpiresAtUtc,
+        string? SetupToken,
+        DateTime? SetupExpiresAtUtc,
         string Message);
 }

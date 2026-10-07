@@ -106,7 +106,7 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
         AdminUserInvitationResult invitation;
         try
         {
-            invitation = await _invitationService.InviteAsync(tenant, user, cancellationToken);
+            invitation = await _invitationService.InviteAsync(tenant, user, AdminInvitationTrigger.Operator, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -117,6 +117,16 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
                 tenant.Id,
                 user.Id);
             return Response<TenantAdminUserDto>.Fail("Tenant admin invitation could not be completed.", 502);
+        }
+
+        // BL-454 stage D FIX1 (2) — the link may not be sent from this server (its root): AuthService was NOT called, nothing
+        // changed for the account, and the operator is told which rule refused, by name.
+        if (invitation.EmailRefusalCode is { } refusal && refusal != AdminInvitationRefusals.AccountExists && !invitation.UserProvisioned
+            && invitation.SetPasswordUrl is null && refusal.StartsWith("INVITE_LINK_ROOT_", StringComparison.Ordinal))
+        {
+            return Response<TenantAdminUserDto>.Fail(
+                "The invitation link cannot be sent from this server: AuthService:FrontendBaseUrl is not a public https address.",
+                422, refusal);
         }
 
         user.Status = TenantAdminUserStatus.Invited;

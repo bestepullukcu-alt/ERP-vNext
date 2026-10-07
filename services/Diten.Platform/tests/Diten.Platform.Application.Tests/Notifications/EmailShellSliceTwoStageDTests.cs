@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Notifications;
 using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 using Diten.Platform.Application.Features.Notifications.Commands;
@@ -124,6 +125,8 @@ public sealed partial class EmailShellDispatchTests
 
     [Theory]
     [InlineData("Production", "http://localhost:5001", TenantAdminSetPasswordLink.ReasonRootLoopback)]
+    [InlineData("Production", "https://localhost.", TenantAdminSetPasswordLink.ReasonRootLoopback)]      // FIX1 K2: trailing dot
+    [InlineData("Production", "http://app.example.test", TenantAdminSetPasswordLink.ReasonRootNotHttps)] // FIX1 K2: https only
     [InlineData("Production", "http://127.0.0.1:5001", TenantAdminSetPasswordLink.ReasonRootLoopback)]
     [InlineData("Production", "https://tenant.localhost", TenantAdminSetPasswordLink.ReasonRootLoopback)]
     [InlineData("Production", "", TenantAdminSetPasswordLink.ReasonRootMissing)]
@@ -148,9 +151,10 @@ public sealed partial class EmailShellDispatchTests
         };
         var admin = new TenantAdminUser { Id = Guid.NewGuid(), Name = "First Admin", Email = "first@tenant.test" };
 
-        var result = await service.InviteAsync(tenant, admin, CancellationToken.None);
+        var result = await service.InviteAsync(tenant, admin, AdminInvitationTrigger.Operator, CancellationToken.None);
 
-        Assert.Equal(1, auth.Calls); // the account is provisioned either way: an operator can re-invite once configured
+        // FIX1 (2) — the root is checked FIRST: a refused root never reaches AuthService (nothing is reset).
+        Assert.Equal(refusal is null ? 1 : 0, auth.Calls);
         Assert.Equal(refusal, result.EmailRefusalCode);
         if (refusal is not null)
         {

@@ -22,17 +22,15 @@ namespace Diten.AuthService.Infrastructure.Services;
 public sealed class SmtpOtpDeliveryService : IOtpDeliveryService
 {
     private readonly SmtpOptions _options;
-    private readonly ITenantContext? _tenantContext;
     private readonly ITenantEmailIdentityClient? _identity;
 
-    public SmtpOtpDeliveryService(IOptions<SmtpOptions> options, ITenantContext? tenantContext = null, ITenantEmailIdentityClient? identity = null)
+    public SmtpOtpDeliveryService(IOptions<SmtpOptions> options, ITenantEmailIdentityClient? identity = null)
     {
         _options = options.Value;
-        _tenantContext = tenantContext;
         _identity = identity;
     }
 
-    public async Task SendEmailOtpAsync(string email, string code, DateTime expiresAtUtc, CancellationToken ct)
+    public async Task SendEmailOtpAsync(Guid tenantId, string email, string code, DateTime expiresAtUtc, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(_options.Host) ||
             string.IsNullOrWhiteSpace(_options.FromEmail))
@@ -40,7 +38,7 @@ public sealed class SmtpOtpDeliveryService : IOtpDeliveryService
             throw new InvalidOperationException("Email OTP delivery is not configured.");
         }
 
-        using var message = await BuildMessageAsync(email, code, expiresAtUtc, ct);
+        using var message = await BuildMessageAsync(tenantId, email, code, expiresAtUtc, ct);
 
         using var client = new SmtpClient(_options.Host, _options.Port)
         {
@@ -56,9 +54,10 @@ public sealed class SmtpOtpDeliveryService : IOtpDeliveryService
     }
 
     /// <summary>The whole message, short of sending it — what a test reads to see what would leave.</summary>
-    public async Task<MailMessage> BuildMessageAsync(string email, string code, DateTime expiresAtUtc, CancellationToken ct)
+    /// <param name="tenantId">The challenge's tenant (BL-454 stage D FIX1 K1): a request header that names another tenant
+    /// does not put that tenant's name on someone else's code.</param>
+    public async Task<MailMessage> BuildMessageAsync(Guid tenantId, string email, string code, DateTime expiresAtUtc, CancellationToken ct)
     {
-        var tenantId = _tenantContext is { IsResolved: true } ? _tenantContext.TenantId : Guid.Empty;
         var identity = tenantId == Guid.Empty || _identity is null ? null : await _identity.GetAsync(tenantId, ct);
         var language = identity?.Language;
         var rendered = VerificationCodeEmailTemplate.Render(language, identity?.DisplayName, code, expiresAtUtc);

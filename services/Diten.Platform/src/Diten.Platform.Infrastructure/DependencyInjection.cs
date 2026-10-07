@@ -216,6 +216,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthoritativeEntitlementDecisionSource, MongoAuthoritativeEntitlementDecisionSource>();
         services.AddScoped<IPlatformEntitlementDecisionProvider, PlatformEntitlementDecisionProvider>();
         services.AddScoped<IAdminUserInvitationService, AdminUserInvitationService>();
+        services.AddScoped<ITenantAdminInvitationLedger, TenantAdminInvitationLedger>();
         // BL-454 — every client that carries a credential to AuthService: never follows a redirect (one helper).
         services.AddAuthInternalHttpClients();
         services.AddScoped<ITenantActivationNotifier, AuthServiceTenantActivationNotifier>();
@@ -696,6 +697,8 @@ public static class DependencyInjection
         {
             services.AddSingleton<InMemoryEventBus>();
             services.AddSingleton<IEventTransportPublisher>(sp => sp.GetRequiredService<InMemoryEventBus>());
+            // BL-454 stage D FIX1 (3) — no consumers on this branch: no automatic first-administrator invitation. Said once.
+            services.AddHostedService<Diten.Platform.Infrastructure.Eventing.TenantAdminInvitationModeNotice>();
         }
 
         services.AddHostedService<OutboxPublisherWorker>();

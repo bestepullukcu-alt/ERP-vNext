@@ -203,28 +203,87 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
     /// BL-454 slice 2 stage D — the tenant's first administrator. Before this the created branch sent tenant.invite.email
     /// with the tenant's name and id only, to an administrator nobody had created in AuthService: an invitation with no
     /// way in. Now it is the invitation itself — the account in AuthService and the one-time set-password link — the same
-    /// service the tenant screen's "Invite" uses. A failure to reach AuthService throws, so the transport retries (ONCE
-    /// per event: the consumed-event store); the e-mail's own failure is the invitation service's, logged by name.
+    /// service the tenant screen's "Invite" uses, as the EVENT trigger.
+    /// <para>FIX1 (1) — the event only ever CREATES: it acts only on an administrator still Invited, of a tenant that is
+    /// neither suspended nor deactivated, and AuthService leaves an account that already exists exactly as it is (no reset,
+    /// no reactivation, no link). A redelivered, re-published or retried event therefore changes nothing.</para>
+    /// <para>FIX1 (3) — the outcome is written to the tenant record (the administrator's invitation time and the
+    /// "admin-invitation" provisioning step), so the tenant screen shows what happened. A failure to reach AuthService
+    /// throws, so the transport retries (once per event: the consumed-event store).</para>
     /// </summary>
     private async Task InviteInitialAdministratorAsync(Tenant tenant, Guid? initialAdminUserId, CancellationToken ct)
     {
         var admin = initialAdminUserId is { } id
-            ? tenant.AdminUsers.FirstOrDefault(user =>
-                user.Id == id
-                && user.Status != TenantAdminUserStatus.Disabled
-                && !string.IsNullOrWhiteSpace(user.Email))
+            ? tenant.AdminUsers.FirstOrDefault(user => user.Id == id && !string.IsNullOrWhiteSpace(user.Email))
             : null;
-        if (admin is null)
+        var skip = admin is null ? "INITIAL_ADMIN_MISSING"
+            : admin.Status != TenantAdminUserStatus.Invited ? "INITIAL_ADMIN_NOT_INVITED"
+            : tenant.Status is TenantStatus.Suspended or TenantStatus.Deactivated ? "TENANT_NOT_ACTIVE"
+            : null;
+        if (skip is not null)
         {
             _logger.LogInformation(
-                "tenant.admin_invitation.skipped TenantId={TenantId} ReasonCode=INITIAL_ADMIN_MISSING", tenant.Id);
+                "tenant.admin_invitation.skipped TenantId={TenantId} AdminUserId={AdminUserId} ReasonCode={ReasonCode}",
+                tenant.Id, admin?.Id, skip);
             return;
         }
 
-        var result = await _invitations.InviteAsync(tenant, admin, ct);
+        // Users quota (measured, FIX1 K4): the operator's "Invite" consumes a seat only for an administrator NOT yet counted
+        // (TenantAdminUserSupport.CountsTowardsUsersQuota: Invited or Active). This path acts on Invited only — already
+        // counted — so the same rule asks for nothing more here.
+        var result = await _invitations.InviteAsync(tenant, admin!, AdminInvitationTrigger.TenantCreatedEvent, ct);
         _logger.LogInformation(
             "tenant.admin_invitation.done TenantId={TenantId} AdminUserId={AdminUserId} UserProvisioned={UserProvisioned} EmailSent={EmailSent} ReasonCode={ReasonCode}",
-            tenant.Id, admin.Id, result.UserProvisioned, result.InvitationEmailSent, result.EmailRefusalCode);
+            tenant.Id, admin!.Id, result.UserProvisioned, result.InvitationEmailSent, result.EmailRefusalCode);
+        await RecordInvitationOutcomeAsync(tenant.Id, admin.Id, result, ct);
+    }
+
+    /// <summary>The "admin-invitation" provisioning step's key (RegisterTenantCommandHandler writes it Pending).</summary>
+    internal const string AdminInvitationStepKey = "admin-invitation";
+
+    // FIX1 (3) — read the tenant again right before the write (the invitation took an HTTP round trip), then record.
+    private async Task RecordInvitationOutcomeAsync(Guid tenantId, Guid adminId, AdminUserInvitationResult result, CancellationToken ct)
+    {
+        var tenant = await _tenantRepository.GetByIdAsync(tenantId, ct);
+        var admin = tenant?.AdminUsers.FirstOrDefault(user => user.Id == adminId);
+        if (tenant is null || admin is null)
+        {
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var (status, detail, eventType) = result switch
+        {
+            { InvitationEmailSent: true } =>
+                ("Completed", "Invitation sent: a one-time set-password link.", "tenant.admin_user.invited"),
+            { EmailRefusalCode: AdminInvitationRefusals.AccountExists } =>
+                ("Completed", "An account already existed; nothing was changed and no link was sent. Use \"Invite\" to send one.", "tenant.admin_user.invitation_skipped"),
+            { EmailRefusalCode: { } code } =>
+                ("Failed", $"Invitation not sent ({code}). Fix the cause, then use \"Invite\".", "tenant.admin_user.invitation_failed"),
+            _ =>
+                ("Failed", "The account was created but the invitation e-mail did not leave. Use \"Invite\" to send a new link.", "tenant.admin_user.invitation_failed")
+        };
+
+        var step = tenant.ProvisioningSteps.FirstOrDefault(s => s.Key == AdminInvitationStepKey);
+        if (step is null)
+        {
+            step = new TenantProvisioningStep { Key = AdminInvitationStepKey, Label = "Initial Admin Invitation", CreatedAt = now };
+            tenant.ProvisioningSteps.Add(step);
+        }
+
+        step.Status = status;
+        step.Detail = detail;
+        step.CompletedAt = now;
+        if (result.InvitationEmailSent)
+        {
+            admin.InvitedAt = now;
+        }
+
+        admin.UpdatedAt = now;
+        tenant.UpdatedAt = now;
+        tenant.UpdatedBy = ConsumerName;
+        tenant.ActivityTimeline.Add(new TenantActivityEvent { EventType = eventType, Message = detail, At = now, Actor = ConsumerName });
+        await _tenantRepository.UpdateAsync(tenant, ct);
     }
 
     private static IReadOnlyList<EmailRecipientDto> ResolveTenantAdminRecipients(Tenant tenant)

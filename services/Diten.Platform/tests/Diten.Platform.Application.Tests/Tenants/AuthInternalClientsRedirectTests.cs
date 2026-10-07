@@ -46,6 +46,8 @@ public sealed class AuthInternalClientsRedirectTests
         {
             options.BaseUrl = server.Url;
             options.InternalApiKey = "fix3-test-only-internal-key";
+            // BL-454 stage D FIX1 — the invitation checks its link root before calling AuthService: a public https root.
+            options.FrontendBaseUrl = "https://app.fix3.test";
         });
         services.AddSingleton<ITenantContext>(new FakeTenantContext(Guid.NewGuid()));
         services.AddSingleton<IMediator>(new NothingMediator());
@@ -89,7 +91,7 @@ public sealed class AuthInternalClientsRedirectTests
                 var tenant = new Tenant { Code = "DITEN", Slug = "diten", Name = "diten", DisplayName = "Diten", Domain = "diten.test" };
                 var admin = new TenantAdminUser { Id = Guid.NewGuid(), Name = "Admin", Email = "admin@diten.test" };
                 tenant.AdminUsers.Add(admin);
-                await Make<AdminUserInvitationService>().InviteAsync(tenant, admin, ct); break;
+                await Make<AdminUserInvitationService>().InviteAsync(tenant, admin, AdminInvitationTrigger.Operator, ct); break;
             case "IApprovalRoleDirectory": await sp.GetRequiredService<IApprovalRoleDirectory>().ResolveAsync(["Approver"], ct); break;
             case "IUserReferenceValidator": await sp.GetRequiredService<IUserReferenceValidator>().ValidateAsync(Guid.NewGuid(), ct); break;
             default: throw new ArgumentOutOfRangeException(nameof(caller), caller, null);

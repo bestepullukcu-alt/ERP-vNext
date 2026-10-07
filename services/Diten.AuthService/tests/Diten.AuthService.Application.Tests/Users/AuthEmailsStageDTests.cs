@@ -86,11 +86,10 @@ public sealed class AuthEmailsStageDTests
         var expiresAt = new DateTime(2026, 10, 7, 9, 35, 0, DateTimeKind.Utc);
         var service = new SmtpOtpDeliveryService(
             Options.Create(new SmtpOptions { Host = "smtp.test", FromEmail = "noreply@di10.test" }),
-            new ResolvedTenant(Guid.NewGuid()),
             Proxy<ITenantEmailIdentityClient>.Answering((method, _) =>
                 Task.FromResult<TenantEmailIdentity?>(new TenantEmailIdentity("Diten Pharma", language, null, null))));
 
-        using var message = await service.BuildMessageAsync("user@tenant.test", code, expiresAt, CancellationToken.None);
+        using var message = await service.BuildMessageAsync(Guid.NewGuid(), "user@tenant.test", code, expiresAt, CancellationToken.None);
 
         var texts = VerificationCodeEmailTemplate.TextsFor(language);
         Assert.Equal(texts.Subject, message.Subject);
@@ -111,6 +110,32 @@ public sealed class AuthEmailsStageDTests
     {
         Assert.Equal(["en", "tr", "fr", "es", "zh", "ar", "ru"], VerificationCodeEmailTemplate.Languages);
         Assert.Equal(7, VerificationCodeEmailTemplate.Languages.Select(l => VerificationCodeEmailTemplate.TextsFor(l).Heading).Distinct().Count());
+    }
+
+    [Fact]
+    public async Task The_code_mail_names_the_challenges_tenant_not_the_one_a_request_header_names()
+    {
+        // BL-454 stage D FIX1 K1 — the resend's request may carry ANOTHER tenant's header: the code still goes out under the
+        // tenant the challenge (and the user) belongs to.
+        var (service, delivered, _, challenge) = Mfa(expiresAtUtc: DateTime.UtcNow.AddMinutes(4), requestTenant: Guid.NewGuid());
+        var recorder = Recorder!;
+
+        await service.ResendEmailChallengeAsync("challenge-1", "127.0.0.1", null, CancellationToken.None);
+
+        Assert.Single(delivered);
+        Assert.Equal(challenge.TenantId, Assert.Single(recorder.Tenants));
+
+        var asked = new List<Guid>();
+        var mail = new SmtpOtpDeliveryService(
+            Options.Create(new SmtpOptions { Host = "smtp.test", FromEmail = "noreply@di10.test" }),
+            Proxy<ITenantEmailIdentityClient>.Answering((method, args) =>
+            {
+                asked.Add((Guid)args[0]!);
+                return Task.FromResult<TenantEmailIdentity?>(new TenantEmailIdentity("Right Tenant", "en", null, null));
+            }));
+        using var message = await mail.BuildMessageAsync(challenge.TenantId, "user@tenant.test", "123456", DateTime.UtcNow.AddMinutes(4), CancellationToken.None);
+        Assert.Equal([challenge.TenantId], asked);
+        Assert.Contains("Right Tenant", message.Body);
     }
 
     // ---------------------------------------------------------------- an expired code is never sent again
@@ -178,7 +203,7 @@ public sealed class AuthEmailsStageDTests
     private sealed record AuditLine(string EventName, string Metadata);
 
     private static (MfaChallengeService Service, List<(string Email, string Code, DateTime ExpiresAt)> Delivered, List<AuditLine> Audit, MfaChallenge Challenge)
-        Mfa(DateTime expiresAtUtc)
+        Mfa(DateTime expiresAtUtc, Guid? requestTenant = null)
     {
         var options = Options.Create(new MfaOptions { HashSecret = "stage-d-test-only-hmac-key", ExpiryMinutes = 5 });
         var tenantId = Guid.NewGuid();
@@ -193,7 +218,7 @@ public sealed class AuthEmailsStageDTests
                 nameof(IMfaChallengeRepository.GetByChallengeIdHashAsync) => Task.FromResult(challenge),
                 _ => Task.CompletedTask
             }),
-            new DeliveryRecorder(delivered),
+            Recorder = new DeliveryRecorder(delivered),
             Proxy<IUserRepository>.Answering((method, _) => method == nameof(IUserRepository.GetByIdAndTenantAsync)
                 ? Task.FromResult<User?>(user)
                 : throw new NotSupportedException(method)),
@@ -206,7 +231,7 @@ public sealed class AuthEmailsStageDTests
 
                 return Task.CompletedTask;
             }),
-            new ResolvedTenant(tenantId),
+            new ResolvedTenant(requestTenant ?? tenantId), // the request's tenant (a header) — may differ from the challenge's
             options);
 
         // The challenge as CreateEmailChallengeAsync stored it: hashes only, keyed like the service's own.
@@ -217,10 +242,15 @@ public sealed class AuthEmailsStageDTests
         return (service, delivered, audit, challenge);
     }
 
+    [ThreadStatic] private static DeliveryRecorder? Recorder;
+
     private sealed class DeliveryRecorder(List<(string, string, DateTime)> delivered) : IOtpDeliveryService
     {
-        public Task SendEmailOtpAsync(string email, string code, DateTime expiresAtUtc, CancellationToken ct)
+        public List<Guid> Tenants { get; } = [];
+
+        public Task SendEmailOtpAsync(Guid tenantId, string email, string code, DateTime expiresAtUtc, CancellationToken ct)
         {
+            Tenants.Add(tenantId);
             delivered.Add((email, code, expiresAtUtc));
             return Task.CompletedTask;
         }

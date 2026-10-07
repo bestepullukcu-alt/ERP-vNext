@@ -127,7 +127,13 @@ verir.
    `https://app.<alan-adı>`. Taban `appsettings.json` değeri `http://localhost:5001`'dir; Development dışında localhost
    ya da boş kök reddedilir, çünkü düğmesi okuyanın kendi makinesini gösteren bir davet kimseyi içeri almaz. Davet
    e-postası bu kökle BL-529'un tek kullanımlık "parola belirle" bağlantısını taşır (7 gün geçerli); parola içermez.
-2. **Mongo sürümü:** gönderim satırlarının "etkileri bekliyor" dizini (`ix_notification_dispatches_permanent_effects_pending`)
+2. **`Eventing:Transport=InMemory` ise yeni kiracı yöneticisi otomatik davet edilmez; operatör "Davet et"i kullanır.**
+   Bugünkü taban ayar InMemory'dir (BL-536). Bu durumda kiracı açılışındaki olay tüketicisi koşmaz. Kiracı kaydındaki
+   "Initial Admin Invitation" (`admin-invitation`) adımı **Bekliyor** kalır; operatör kiracı ekranında "Davet et"e basar.
+   Development dışında Platform başlangıçta bir kez uyarı yazar: `tenant.admin_invitation.automatic_off`.
+   RabbitMQ ile tüketici koşar ve adımı kendisi günceller: Tamamlandı ya da Başarısız + neden.
+   Olay yolu yalnız YENİ hesap yaratır; var olan hesaba dokunmaz.
+3. **Mongo sürümü:** gönderim satırlarının "etkileri bekliyor" dizini (`ix_notification_dispatches_permanent_effects_pending`)
    dizi değerli bir alanda `$eq` kısmi filtresi kullanır (`DateTimeOffset` `[ticks, offset]` olarak saklanır). Bu yalnız
    dev Mongo **7.0.28**'de ölçüldü. Canlı Mongo sürümü farklıysa deploy'dan sonra dizinin var olduğunu
    (`db.notification_dispatches.getIndexes()`) ve başlangıç günlüğünde dizin hatası olmadığını kontrol edin.

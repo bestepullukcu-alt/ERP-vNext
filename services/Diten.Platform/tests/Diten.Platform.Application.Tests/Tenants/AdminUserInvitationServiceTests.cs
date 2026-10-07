@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts;
 using System.Net;
 using System.Text;
 using Diten.Platform.Application.Common;
@@ -25,7 +26,7 @@ public sealed class AdminUserInvitationServiceTests
         var tenant = CreateTenant();
         var adminUser = new TenantAdminUser { Id = Guid.NewGuid(), Name = "Ada Admin", Email = "ada@example.com" };
 
-        var result = await service.InviteAsync(tenant, adminUser, default);
+        var result = await service.InviteAsync(tenant, adminUser, AdminInvitationTrigger.Operator, default);
 
         Assert.True(result.InvitationEmailSent);
         Assert.Empty(mediator.QueueCommands); // no direct QueueEmailNotificationCommand
@@ -55,7 +56,7 @@ public sealed class AdminUserInvitationServiceTests
         var adminUser = new TenantAdminUser { Id = Guid.NewGuid(), Name = "Ada", Email = "ada@example.com" };
 
         // No throw: provisioning already succeeded; only the email flag reflects the failure.
-        var result = await service.InviteAsync(tenant, adminUser, default);
+        var result = await service.InviteAsync(tenant, adminUser, AdminInvitationTrigger.Operator, default);
 
         Assert.True(result.UserProvisioned);
         Assert.False(result.InvitationEmailSent);

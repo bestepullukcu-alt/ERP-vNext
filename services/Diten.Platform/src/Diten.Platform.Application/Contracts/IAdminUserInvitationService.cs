@@ -4,7 +4,24 @@ namespace Diten.Platform.Application.Contracts;
 
 public interface IAdminUserInvitationService
 {
-    Task<AdminUserInvitationResult> InviteAsync(Tenant tenant, TenantAdminUser adminUser, CancellationToken cancellationToken);
+    /// <param name="trigger">Who is inviting. BL-454 stage D FIX1 — only the operator's explicit "Invite" may reset an account
+    /// that already exists; the tenant-created event only creates (an existing account is left exactly as it is).</param>
+    Task<AdminUserInvitationResult> InviteAsync(Tenant tenant, TenantAdminUser adminUser, AdminInvitationTrigger trigger, CancellationToken cancellationToken);
+}
+
+public enum AdminInvitationTrigger
+{
+    /// <summary>The tenant screen's "Invite": an explicit administrator action; an existing account is reset (BL-529, audited).</summary>
+    Operator,
+
+    /// <summary>The tenant-created event (redelivered, re-published, retried): create only, never touch an existing account.</summary>
+    TenantCreatedEvent
+}
+
+public static class AdminInvitationRefusals
+{
+    /// <summary>The event path found an account already there and changed nothing (no link, no e-mail).</summary>
+    public const string AccountExists = "ADMIN_ACCOUNT_EXISTS";
 }
 
 /// <param name="SetPasswordUrl">BL-454 slice 2 stage D — the administrator's one-time set-password link (no password is

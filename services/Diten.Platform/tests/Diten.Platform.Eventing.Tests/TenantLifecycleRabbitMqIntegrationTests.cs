@@ -625,7 +625,8 @@ internal sealed class PassThroughLocaleResolver
     {
         public List<(Tenant Tenant, TenantAdminUser Admin)> Invited { get; } = [];
 
-        public Task<Diten.Platform.Application.Contracts.AdminUserInvitationResult> InviteAsync(Tenant tenant, TenantAdminUser adminUser, CancellationToken cancellationToken)
+        public Task<Diten.Platform.Application.Contracts.AdminUserInvitationResult> InviteAsync(
+            Tenant tenant, TenantAdminUser adminUser, Diten.Platform.Application.Contracts.AdminInvitationTrigger trigger, CancellationToken cancellationToken)
         {
             lock (Invited)
             {
