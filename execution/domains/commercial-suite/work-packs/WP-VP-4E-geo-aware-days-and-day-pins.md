@@ -130,3 +130,35 @@ KORU/YAPMA: YENİ YAZMA KOMUTU YOK (listesiz 27); 3A/3B/3C kuralları değişmez
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — CRM Application (2419/0/5; PII + ContactWorkbook bilinen kararsız) · Web (dokunulmaz) · mimari (38/1, 27 sabit); build 0 hata. Yeni testler WP Acceptance 1–9 + 4b + 4c + 4d. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "feat(crm): WP-VP-4E — geography-aware day assignment and rep day pins on draft weeks" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), kümeleme yöntemi ve ölçülen yol süresi farkı, yakınlık eşiği ve boşluk doldurma örneği, sabit kuralları, mobil için yeni alanlar. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-08)
+**Commit:** `e0aaeec17` (ajan `842953ccd`, belge commit'leri üzerine rebase, ff). Push: test dalı.
+
+**CT K13:** CRM 2419 → **2437/0/5** (+18) · Web **761/0** (dokunulmadı) · mimari **27 sabit**.
+
+**Kod okuması:**
+- `DayBalancer`: en büyük + en uzak tohumlar → bütün sığan **yakın** gün (eşik `NearTravelMinutes = 25` dk) → yakın kurumun bölünmesi (bağlı eczaneler çoğunlukla) → merkezsiz gün → uzak güne asla (son taslak hafta hariç). 3B kuralı `AssignByLoad` olarak duruyor (konumsuz + karşılaştırma).
+- Sabitler: kurum → ziyaret sırası, ziyaret kazanır; sabitli gün mesai penceresinde; sığmayan → `autoPinned` / `pin_overflow`; mesai aşımı yok.
+- `visitModel` kapasiteden.
+- Yazma mevcut güncellemeyle (`dayPins`), yeni komut yok.
+
+**Ölçüm (ajan):** aynı hafta, Kadıköy + Bakırköy 3'er kurum, 2 gün: toplam yol **64 → 10 dk**, gün yükü 180 / 180 aynı.
+
+**CT sabotajı:**
+1. Eşik 25 → 100000 → `A_far_group_never_fills_the_idle_hour_which_stays_idle` kırmızı.
+2. Son taslak hafta uzak yerleşimi kapatıldı → 2 kırmızı (`Apply_without_a_week_still_writes_every_open_week_and_commits`, `Unschedulable_visit_is_a_warning_not_a_block…`).
+
+İkisi de geri alındı.
+
+**Sapmalar (CT kabul):**
+1. Son taslak haftada uzak grup 3B kuralıyla yerleşir (yoksa dönem sonunda ziyaret kayboluyordu).
+2. **Otomatik sabitler kalıcı yazılmaz**, her önizlemede belirlenimci türetilir (önizleme yazmaz, yeni komut yok); onay günleri ziyaretlere yazar. Kabul — daha temiz.
+3. Haftada açık günden fazla uzak küme → fazlası sonraki haftaya kayabilir (dağınık bölgede E4'te gözle).
+4. Eşit maliyette sıra kurum kimliğiyle (belirlenimci).
+5. Ek kod `invalid_day_pin` (bilinmeyen hedef tipi / kapsam).
+
+**Mobil (Faz 5 notuna):** `dayPins` (istek), `isPinned` / `autoPinned` / `groupKey`, `days[]` (`idleMinutes`, `overCapacity`), `pinOverflow[]`, `pinWarnings[]`, `visitModel`, `weeks[].dayPins`.
+
+**E4:** Faz 4 tek turunda (kümelenme, `visit` / `institution` sabiti, dolu güne sabit → `pinOverflow`).
