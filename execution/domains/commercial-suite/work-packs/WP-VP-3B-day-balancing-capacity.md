@@ -59,6 +59,11 @@
 - İzin durumu `blocked` olan doktor planlanmaz: `unscheduled: consent_blocked`. `unknown` planlanır, uyarı taşır.
 - Kampanya hedeflemedeki "blocked ⇒ excluded" kuralıyla aynı kaynak.
 
+### 4b. Takvim sorgu sayısı (3A §37 takibi)
+- 3A'dan sonra çalışma takvimi tüm dönem için **gün gün** soruluyor: önizleme başına ~90 istek (eskiden ≤ 42).
+- Yarım gün desteğini eklerken aralığı **tek istekle** (ya da hafta başına bir) okuyan yolu kullan. Platform'da aralık ucu varsa onu, yoksa istek başına önbelleği kullan.
+- Önce / sonra istek sayısını raporla. Platform'a dokunma.
+
 ### 5. Web zorunlu uyum
 - Önizleme yanıtının yeni alanları bugünkü ekranı bozmamalı.
 - Haftalar / Rota sekmeleri bugünkü gibi çalışır; gün dağılımı değişeceği için Rota günleri farklı olacak.
@@ -106,7 +111,7 @@ NE:
 (1) Günlük bütçe = DailyWorkMinutes − DailyFixedMinutes (yoksa varsayılan saatlerden), yarım gün yarı, tatil/hafta sonu 0; günlük üst sınır sayısı önizlemede; CRM takvim denetleyicisi Platform yanıtındaki yarım günü taşır (Platform'a dokunma), PlanningWorkingCalendar gün türü working|half|holiday|weekend, önizlemede halfDayDates.
 (2) Gün dengeleme: kurum grupları büyükten küçüğe en boş çalışma gününe, aynı kurum aynı gün (bölme kuralı belgeli), gün içi sıra rota iyileştirici yalnız o günle; ManualVisitOrder gün içi sırayı belirler; hafta sonu/tatile ziyaret yok.
 (3) Taşma: sığmayan sonraki taslak haftaya (sıklık aralığı korunur), önizlemede shifted[] {targetType,targetId,contactId,displayName,fromWeek,toWeek,reason capacity_full|holiday|half_day}; dönem sonu → period_exhausted; onaylı haftaya taşma yok. weekCapacity[] {weekStart,workingDays,halfDays,holidays,capacityMinutes,plannedMinutes,visitCount,dailyCap} + dönem özeti dakika birimi (SupplyDemandSummary geriye uyum).
-(4) İzin blocked → unscheduled consent_blocked; unknown planlanır + uyarı.
+(4) İzin blocked → unscheduled consent_blocked; unknown planlanır + uyarı. (4b) Takvim aralığı tek istekle / önbellekle (3A sonrası ~90 istek), önce/sonra say.
 (5) Web zorunlu uyum: yeni alanlar ekranı bozmaz.
 KORU/YAPMA: YENİ YAZMA KOMUTU YOK (listesiz sayı 3A sonrası değerde); 3A hafta/onay/sıklık kuralları değişmez; ürün listesi (3C) ve okumalar (3D) yok; Platform/Rota tasarımı/mobil sözleşme değişmez (yalnız ek alan); seed/grant/göç/indeks YOK.
 DOĞRULA (E2): tabanı 3A sonrası ölç, yalnız farkı raporla — CRM Application · Web · mimari; build 0 hata; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–7. Sabotaj 1–2 (kırmızı kanıtla, geri al).
