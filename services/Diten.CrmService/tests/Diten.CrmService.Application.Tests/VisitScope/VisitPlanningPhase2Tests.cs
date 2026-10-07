@@ -375,14 +375,16 @@ public sealed class VisitPlanningPhase2Tests
     }
 
     [Fact]
-    public async Task Two_plays_pick_by_code_then_version_and_say_multiple_plays()
+    public async Task Two_plays_pick_the_highest_version_then_code_and_say_multiple_plays()
     {
+        // WP-E2E-FIX-3 (E5-B2) — was "code then version ASCENDING", which let v2 beat v3 of the same play; the reader's
+        // single rule (StrategyTemplateReader.InPreferenceOrder) now picks the highest version.
         var d = new DerivationWorld();
         var s1 = d.Segment();
         var s2 = d.Segment();
         d.Play(s1, "PLAY-B", 1);
-        var expected = d.Play(s2, "PLAY-A", 2);
-        d.Play(s2, "PLAY-A", 3);
+        d.Play(s2, "PLAY-A", 2);
+        var expected = d.Play(s2, "PLAY-A", 3);
         d.Members.AddRange(new[] { s1, s2 });
 
         var derived = await d.Deriver().DerivePlayAsync(d.Doctor, DateTimeOffset.UtcNow, default);

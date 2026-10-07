@@ -76,11 +76,13 @@ public sealed class VisitProvenanceDeriver : IVisitProvenanceDeriver
             }
         }
 
-        var ordered = bound
+        // WP-E2E-FIX-3 (E5-B2) — across the doctor's segments, the reader's single effective-version rule decides.
+        var firstSegment = bound
             .GroupBy(b => b.Play.TemplateId)
-            .Select(g => g.First())
-            .OrderBy(b => b.Play.TemplateCode, StringComparer.Ordinal)
-            .ThenBy(b => b.Play.TemplateVersion)
+            .ToDictionary(g => g.Key, g => g.First().SegmentId);
+        var ordered = StrategyTemplateReader
+            .InPreferenceOrder(bound.Select(b => b.Play).DistinctBy(p => p.TemplateId))
+            .Select(p => (Play: p, SegmentId: firstSegment[p.TemplateId]))
             .ToList();
 
         var result = ordered.Count == 0

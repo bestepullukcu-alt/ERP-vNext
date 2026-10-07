@@ -302,4 +302,16 @@
   <data name="RecipeJourneysTpl" xml:space="preserve"><value>{n} مسارات</value></data>
   <data name="RetiredBindingsCountTpl" xml:space="preserve"><value>{n} روابط قديمة</value></data>
   <data name="LinesWithoutJourneyTpl" xml:space="preserve"><value>{n} أسطر بلا مسار</value></data>
+  <data name="SupersededByVersion" xml:space="preserve"><value>حلّ محلّه الإصدار v{0}</value></data>
+  <data name="ArchivedSegmentSuffix" xml:space="preserve"><value>(مؤرشف)</value></data>
+  <data name="ActivationBlocked" xml:space="preserve"><value>تم رفض التفعيل.</value></data>
+  <data name="ActivationBlocked_segment_not_active" xml:space="preserve"><value>إحدى الشرائح المرتبطة غير نشطة — فعّل الشريحة أولاً.</value></data>
+  <data name="ActivationBlocked_segment_archived" xml:space="preserve"><value>إحدى الشرائح المرتبطة مؤرشفة — استبدلها بشريحة نشطة.</value></data>
+  <data name="ActivationBlocked_segment_reference_not_found" xml:space="preserve"><value>إحدى الشرائح المرتبطة لم تعد موجودة.</value></data>
+  <data name="ActivationBlocked_frequency_policy_not_active" xml:space="preserve"><value>سياسة تكرار الزيارات المشار إليها غير نشطة.</value></data>
+  <data name="ActivationBlocked_journey_not_published" xml:space="preserve"><value>رحلة التفاعل لأحد بنود المنتجات غير منشورة.</value></data>
+  <data name="ActivationBlocked_journey_product_mismatch" xml:space="preserve"><value>رحلة التفاعل لأحد بنود المنتجات تخص منتجًا آخر.</value></data>
+  <data name="ActivationBlocked_product_line_journey_required" xml:space="preserve"><value>يتطلب كل بند منتج رحلة تفاعل.</value></data>
+  <data name="ActivationBlocked_content_not_published" xml:space="preserve"><value>أحد المحتويات المرتبطة غير منشور.</value></data>
+  <data name="ActivationBlocked_content_archived" xml:space="preserve"><value>أحد المحتويات المرتبطة مؤرشف.</value></data>
 </root>

@@ -181,11 +181,9 @@ public sealed class VisitContentSequenceResolver
             }
         }
 
+        // WP-E2E-FIX-3 (E5-B2) — the reader's single effective-version rule decides; no local re-sort.
         var summaries = await _strategies.ListBySegmentAsync(segmentId, at, cancellationToken);
-        var first = summaries
-            .OrderBy(s => s.TemplateCode, StringComparer.Ordinal)
-            .ThenBy(s => s.TemplateVersion)
-            .FirstOrDefault();
+        var first = StrategyTemplateReader.InPreferenceOrder(summaries).FirstOrDefault();
 
         return first is null
             ? null

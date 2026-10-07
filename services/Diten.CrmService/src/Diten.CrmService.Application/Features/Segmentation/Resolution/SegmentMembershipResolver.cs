@@ -25,15 +25,20 @@ public sealed class SegmentMembershipResolver
     private readonly ISegmentCandidateSource _candidates;
     private readonly ISegmentAttributeSourceReader _attributes;
     private readonly ITargetCustomerRepository _targets;
+    private readonly SegmentCandidatePrefilter? _prefilter;
 
+    /// <param name="prefilter">WP-E2E-FIX-3 (E1-B2) — narrows the Phase-1 candidate query for territory / link
+    /// conditions. Optional: without it the candidate set is today's (wider) superset and the answer is identical.</param>
     public SegmentMembershipResolver(
         ISegmentCandidateSource candidates,
         ISegmentAttributeSourceReader attributes,
-        ITargetCustomerRepository targets)
+        ITargetCustomerRepository targets,
+        SegmentCandidatePrefilter? prefilter = null)
     {
         _candidates = candidates;
         _attributes = attributes;
         _targets = targets;
+        _prefilter = prefilter;
     }
 
     /// <summary>A resolution outcome. <see cref="CandidateCapExceeded"/> means the rule is too wide and the caller must
@@ -84,9 +89,14 @@ public sealed class SegmentMembershipResolver
         }
         else
         {
+            // WP-E2E-FIX-3 (E1-B2) — territory / link leaves narrow the query through id pre-queries. The evaluation
+            // below is untouched: the narrowing can only remove candidates the rule would have rejected anyway.
+            var prefiltered = _prefilter is null
+                ? new Dictionary<Guid, IReadOnlyCollection<Guid>>()
+                : await _prefilter.BuildAsync(tenantId, segment, effectiveAt, cancellationToken);
             var load = await _candidates.LoadCandidatesAsync(
                 tenantId, segment.SubjectType, segment.Criteria, segment.MatchMode,
-                SegmentLimits.MaxCandidateSet, cancellationToken);
+                SegmentLimits.MaxCandidateSet, prefiltered, cancellationToken);
 
             if (load.ExceededCap)
             {
@@ -144,6 +154,26 @@ public sealed class SegmentMembershipResolver
             ReasonCodes: Array.Empty<string>(),
             ResolvedAt: DateTimeOffset.UtcNow,
             ResolverVersion: ResolverVersion));
+    }
+
+    /// <summary>
+    /// WP-E2E-FIX-3 (E1-B2) — the reach of a DYNAMIC rule that is FULLY NATIVE (<see cref="SegmentPushdownRules.IsFullyNative"/>),
+    /// counted by the store itself. Only the preview uses it, and only past the candidate ceiling: there the native filter
+    /// IS the rule, so the count is the rule's reach without loading a single candidate. Null otherwise (the caller keeps
+    /// today's 422). Membership resolution keeps its ceiling — this never produces a member list.
+    /// </summary>
+    public async Task<long?> CountFullyNativeAsync(Guid tenantId, Segment segment, CancellationToken cancellationToken)
+    {
+        var isContact = string.Equals(
+            SegmentSubjectTypes.Normalize(segment.SubjectType), SegmentSubjectTypes.Contact, StringComparison.Ordinal);
+        if (!string.Equals(segment.SegmentType, SegmentTypes.Dynamic, StringComparison.Ordinal)
+            || !SegmentPushdownRules.IsFullyNative(segment.Criteria, isContact))
+        {
+            return null;
+        }
+
+        return await _candidates.CountFullyNativeAsync(
+            tenantId, segment.SubjectType, segment.Criteria, segment.MatchMode, cancellationToken);
     }
 
     /// <summary>The single-subject question (MOD-0167-FU01 section 5). One document plus, at most, one derived read;

@@ -186,6 +186,8 @@ public static class DependencyInjection
         services.AddScoped<
             Application.Features.Segmentation.Resolution.ISegmentAttributeSourceReader,
             Application.Features.Segmentation.Resolution.SegmentAttributeSourceReader>();
+        // WP-E2E-FIX-3 (E1-B2) — territory / link id pre-queries that narrow the candidate query (superset only).
+        services.AddScoped<Application.Features.Segmentation.Resolution.SegmentCandidatePrefilter>();
         services.AddScoped<Application.Features.Segmentation.Resolution.SegmentMembershipResolver>();
         // The read-only consumption seam MOD-0167-FU01 and a future MOD-0165 snapshot read. It reports and never
         // writes: no CampaignTarget, no VisitFrequencyPolicy, nothing.

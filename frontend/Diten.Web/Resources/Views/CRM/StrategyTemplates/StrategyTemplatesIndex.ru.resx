@@ -302,4 +302,16 @@
   <data name="RecipeJourneysTpl" xml:space="preserve"><value>Путей: {n}</value></data>
   <data name="RetiredBindingsCountTpl" xml:space="preserve"><value>Старых привязок: {n}</value></data>
   <data name="LinesWithoutJourneyTpl" xml:space="preserve"><value>Строк без пути: {n}</value></data>
+  <data name="SupersededByVersion" xml:space="preserve"><value>Заменено версией v{0}</value></data>
+  <data name="ArchivedSegmentSuffix" xml:space="preserve"><value>(в архиве)</value></data>
+  <data name="ActivationBlocked" xml:space="preserve"><value>Активация отклонена.</value></data>
+  <data name="ActivationBlocked_segment_not_active" xml:space="preserve"><value>Привязанный сегмент не активен — сначала активируйте сегмент.</value></data>
+  <data name="ActivationBlocked_segment_archived" xml:space="preserve"><value>Привязанный сегмент в архиве — замените его активным сегментом.</value></data>
+  <data name="ActivationBlocked_segment_reference_not_found" xml:space="preserve"><value>Привязанный сегмент больше не существует.</value></data>
+  <data name="ActivationBlocked_frequency_policy_not_active" xml:space="preserve"><value>Указанная политика частоты визитов не активна.</value></data>
+  <data name="ActivationBlocked_journey_not_published" xml:space="preserve"><value>Сценарий взаимодействия одной из товарных строк не опубликован.</value></data>
+  <data name="ActivationBlocked_journey_product_mismatch" xml:space="preserve"><value>Сценарий взаимодействия товарной строки относится к другому товару.</value></data>
+  <data name="ActivationBlocked_product_line_journey_required" xml:space="preserve"><value>Каждой товарной строке нужен сценарий взаимодействия.</value></data>
+  <data name="ActivationBlocked_content_not_published" xml:space="preserve"><value>Привязанный контент не опубликован.</value></data>
+  <data name="ActivationBlocked_content_archived" xml:space="preserve"><value>Привязанный контент в архиве.</value></data>
 </root>
