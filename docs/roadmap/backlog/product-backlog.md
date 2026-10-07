@@ -8166,6 +8166,8 @@ Karşılaştırma: SAP'de arka plan iş yönetimi büyük kümeleri paketlere b�
 
 Gelecek regresyon riski: 🟡 (yalnız çok büyük kiracıda; sayaç "≥ N" ve Warning ile görünür).
 
+**Ek (CT 2026-10-07, WF FIX3 madde 3 DUR):** dizinden `$sort` bugün yapılamıyor. `LastTransitionAt` bir `[ticks, offset]` dizisi; K3 dizini çok anahtarlı (isMultiKey), plan bellek içi SORT yapıyor ve artan sıralama en küçük öğeyi (offset) kullanıyor. İşçi ölçtü: `(TenantId, Status, LastTransitionAt.0)` konumsal dizini çok anahtarlı değil; tick süzgeci + `LastTransitionAt.0` sıralamasıyla plan IXSCAN → FETCH → LIMIT, SORT yok, totalDocsExamined = 10 ("tick ya da null" `$or` biçimi de aynı plan). CT kararı: WF FIX3'te sırasız tarama + Warning + runbook; konumsal dizin + tick süzgeci bu BL'nin ilerleyen imleç işinin temeli olur (aynı iş).
+
 ---
 
 ### BL-572
