@@ -21,7 +21,10 @@ public sealed record AccountListItemDto(
     Guid? TerritoryNodeId = null,
     string? TerritoryNodeCode = null,
     string? TerritoryNodeName = null,
-    string? TerritoryCountryScope = null);
+    string? TerritoryCountryScope = null,
+    // WP-VP-2B (mobile R1, additive) — the account's ACTIVE contacts: link not deleted, not ended / inactive
+    // (case-insensitive), contact not soft-deleted — what /accounts/{id}/contacts lists as active. A count only.
+    int ActiveContactCount = 0);
 
 public sealed record AccountExternalReferenceDto(
     Guid Id,

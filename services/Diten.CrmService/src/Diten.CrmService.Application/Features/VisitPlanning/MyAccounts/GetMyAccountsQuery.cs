@@ -1,5 +1,6 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
+using Diten.CrmService.Application.Features.Account;
 using Diten.CrmService.Application.Features.Territory.AccountAssignments;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
@@ -17,7 +18,9 @@ public sealed record GetMyAccountsQuery(
     string? Type = null,
     int Page = 1,
     int PageSize = 25,
-    string? ResourceId = null) : IRequest<Response<MyAccountsDto>>;
+    string? ResourceId = null,
+    // WP-VP-2B (R2) — "true" / "false" (case-insensitive) or absent; anything else is 400 invalid_has_active_contacts.
+    string? HasActiveContacts = null) : IRequest<Response<MyAccountsDto>>;
 
 /// <summary>
 /// <see cref="TerritoryStatus"/> <c>assigned</c> carries the assignment nodes; <c>unassigned</c> (K-5) means the rep has no
@@ -34,7 +37,9 @@ public sealed record MyAccountsDto(
 public sealed record MyTerritoryDto(Guid TerritoryNodeId, string? Code, string? Name, string CoverageScope);
 
 public sealed record MyAccountItemDto(
-    Guid AccountId, string AccountName, string? AccountType, string? CityRef, string? DistrictRef, double? Latitude, double? Longitude);
+    Guid AccountId, string AccountName, string? AccountType, string? CityRef, string? DistrictRef, double? Latitude, double? Longitude,
+    // WP-VP-2B (R1, additive) — the account's active contacts (the /accounts/{id}/contacts active rule).
+    int ActiveContactCount = 0);
 
 public static class MyTerritoryStatuses
 {
@@ -60,6 +65,8 @@ public sealed class GetMyAccountsQueryHandler : IRequestHandler<GetMyAccountsQue
     private readonly ITerritoryModelRepository _models;
     private readonly IAccountTerritoryAssignmentRepository _accountAssignments;
     private readonly IAccountRepository _accounts;
+    private readonly IAccountContactLinkRepository _links;
+    private readonly IContactRepository _contacts;
 
     public GetMyAccountsQueryHandler(
         ITenantContext tenant,
@@ -68,8 +75,12 @@ public sealed class GetMyAccountsQueryHandler : IRequestHandler<GetMyAccountsQue
         ITerritoryNodeRepository nodes,
         ITerritoryModelRepository models,
         IAccountTerritoryAssignmentRepository accountAssignments,
-        IAccountRepository accounts)
+        IAccountRepository accounts,
+        IAccountContactLinkRepository links,
+        IContactRepository contacts)
     {
+        _links = links;
+        _contacts = contacts;
         _tenant = tenant;
         _caller = caller;
         _resourceAssignments = resourceAssignments;
@@ -93,6 +104,13 @@ public sealed class GetMyAccountsQueryHandler : IRequestHandler<GetMyAccountsQue
                 new[] { VisitOwnership.ResourceNotCaller, "Only your own accounts can be listed." }, 403);
         }
 
+        var (validFilter, hasActiveContacts) = AccountActiveContacts.ParseFilter(request.HasActiveContacts);
+        if (!validFilter)
+        {
+            return Response<MyAccountsDto>.Fail(
+                new[] { AccountActiveContacts.InvalidFilterCode, "hasActiveContacts must be 'true' or 'false'." }, 400);
+        }
+
         var page = Math.Max(1, request.Page);
         var pageSize = Math.Clamp(request.PageSize, 1, MaxPageSize);
         var types = string.IsNullOrWhiteSpace(request.Type)
@@ -101,75 +119,65 @@ public sealed class GetMyAccountsQueryHandler : IRequestHandler<GetMyAccountsQue
         var search = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim();
         var now = DateTimeOffset.UtcNow;
 
-        var current = await CurrentAssignmentsAsync(tenantId, resourceId, now, cancellationToken);
+        // WP-VP-2B (R2) — the tenant's accounts with an active contact, resolved once when the filter is asked for.
+        var withActive = hasActiveContacts is null
+            ? Array.Empty<Guid>()
+            : await AccountActiveContacts.AccountIdsWithActiveContactsAsync(_links, _contacts, tenantId, cancellationToken);
+
+        var current = await RepTerritoryCoverage.CurrentAssignmentsAsync(
+            _resourceAssignments, _models, tenantId, resourceId, now, cancellationToken);
         if (current.Count == 0)
         {
             // K-5 — no current assignment: the whole tenant (the screen says so).
+            var (allScope, allExcluded) = AccountActiveContacts.Apply(hasActiveContacts, null, withActive);
             var all = await _accounts.ListAsync(
-                tenantId, search, page, pageSize, null, null, null, types, null, cancellationToken);
-            return Ok(MyTerritoryStatuses.Unassigned, Array.Empty<MyTerritoryDto>(), all.Items, all.Total, page, pageSize);
+                tenantId, search, page, pageSize, null, null, null, types, allScope, allExcluded, cancellationToken);
+            return await OkAsync(MyTerritoryStatuses.Unassigned, Array.Empty<MyTerritoryDto>(), all.Items, all.Total, page, pageSize,
+                tenantId, cancellationToken);
         }
 
         var nodeIds = current.Select(a => a.TerritoryId!.Value).Distinct().ToList();
         var nodeInfo = (await _nodes.ListByIdsAsync(tenantId, nodeIds, cancellationToken)).ToDictionary(n => n.Id);
 
-        var exact = current.Where(a => !IsSubtree(a)).Select(a => a.TerritoryId!.Value).ToList();
-        var subtree = current.Where(IsSubtree).Select(a => a.TerritoryId!.Value).ToList();
-        var coveredNodes = new HashSet<Guid>(exact);
-        if (subtree.Count > 0)
-        {
-            coveredNodes.UnionWith(await TerritorySubtree.ExpandAsync(_nodes, tenantId, subtree, now, cancellationToken));
-        }
+        var coveredNodes = await RepTerritoryCoverage.CoveredNodesAsync(_nodes, tenantId, current, now, cancellationToken);
 
         var covered = await AccountCurrentCoverageResolver.ResolveCoveredAccountIdsByNodesAsync(
             _accountAssignments, _models, tenantId, coveredNodes, now, cancellationToken);
+        // WP-VP-2B (R2) — ANDed with the territory scope (true: covered ∩ active; false: covered \ active).
+        var (scope, excluded) = AccountActiveContacts.Apply(hasActiveContacts, covered, withActive);
         var accounts = await _accounts.ListAsync(
-            tenantId, search, page, pageSize, null, null, null, types, covered, cancellationToken);
+            tenantId, search, page, pageSize, null, null, null, types, scope, excluded, cancellationToken);
 
         var territories = current
             .Select(a => new MyTerritoryDto(
                 a.TerritoryId!.Value,
                 nodeInfo.GetValueOrDefault(a.TerritoryId!.Value)?.TerritoryCode,
                 nodeInfo.GetValueOrDefault(a.TerritoryId!.Value)?.Name,
-                IsSubtree(a) ? TerritoryCoverageScopes.TerritorySubtree : TerritoryCoverageScopes.ExactTerritory))
+                RepTerritoryCoverage.IsSubtree(a) ? TerritoryCoverageScopes.TerritorySubtree : TerritoryCoverageScopes.ExactTerritory))
             .GroupBy(t => t.TerritoryNodeId)
             .Select(g => g.First())
             .OrderBy(t => t.Name, StringComparer.CurrentCulture)
             .ToList();
 
-        return Ok(MyTerritoryStatuses.Assigned, territories, accounts.Items, accounts.Total, page, pageSize);
+        return await OkAsync(MyTerritoryStatuses.Assigned, territories, accounts.Items, accounts.Total, page, pageSize,
+            tenantId, cancellationToken);
     }
 
-    /// <summary>The rep's assignments that hold NOW: active, not deleted, a node set, the validity window covering now,
-    /// and the owning model operationally current (the shared coverage lifecycle model gate).</summary>
-    private async Task<IReadOnlyList<TerritoryResourceAssignment>> CurrentAssignmentsAsync(
-        Guid tenantId, string resourceId, DateTimeOffset now, CancellationToken cancellationToken)
+    private async Task<Response<MyAccountsDto>> OkAsync(
+        string status, IReadOnlyList<MyTerritoryDto> territories, IReadOnlyList<Domain.Entities.Account> accounts, long total,
+        int page, int pageSize, Guid tenantId, CancellationToken cancellationToken)
     {
-        var mine = (await _resourceAssignments.ListByResourceAsync(tenantId, resourceId, cancellationToken))
-            .Where(a => !a.IsDeleted
-                        && a.TerritoryId is { } t && t != Guid.Empty
-                        && string.Equals(a.Status, "active", StringComparison.OrdinalIgnoreCase)
-                        && a.ValidFrom <= now
-                        && (a.ValidTo is null || a.ValidTo >= now))
-            .ToList();
-        if (mine.Count == 0) return mine;
-
-        var models = (await _models.ListByIdsAsync(tenantId, mine.Select(a => a.ModelId).Distinct().ToList(), cancellationToken))
-            .ToDictionary(m => m.Id);
-        return mine.Where(a => TerritoryCoverageLifecyclePolicy.IsModelCurrent(models.GetValueOrDefault(a.ModelId), now)).ToList();
-    }
-
-    private static bool IsSubtree(TerritoryResourceAssignment a)
-        => string.Equals(a.CoverageScope, TerritoryCoverageScopes.TerritorySubtree, StringComparison.OrdinalIgnoreCase);
-
-    private static Response<MyAccountsDto> Ok(
-        string status, IReadOnlyList<MyTerritoryDto> territories, IReadOnlyList<Domain.Entities.Account> accounts, long total, int page, int pageSize)
-        => Response<MyAccountsDto>.Success(new MyAccountsDto(
+        // WP-VP-2B (R1) — the page's active-contact counts in two bounded reads (never one per account).
+        var counts = await AccountActiveContacts.CountForPageAsync(
+            _links, _contacts, tenantId, accounts.Select(a => a.Id).ToList(), cancellationToken);
+        return Response<MyAccountsDto>.Success(new MyAccountsDto(
             status,
             territories,
             accounts.Select(a => new MyAccountItemDto(
-                a.Id, a.AccountName, a.AccountType, a.CityRef, a.DistrictRef, a.Latitude, a.Longitude)).ToList(),
+                a.Id, a.AccountName, a.AccountType, a.CityRef, a.DistrictRef, a.Latitude, a.Longitude,
+                counts.GetValueOrDefault(a.Id))).ToList(),
             total,
             page,
             pageSize));
+    }
 }

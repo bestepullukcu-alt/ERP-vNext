@@ -39,6 +39,28 @@ public interface IAccountRepository
         IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? accountTypes,
         IReadOnlyCollection<Guid>? accountIdScope, CancellationToken cancellationToken);
 
+    /// <summary>WP-VP-2B (R2) — <see cref="ListAsync(Guid,string?,int,int,string?,string?,IReadOnlyCollection{string}?,IReadOnlyCollection{string}?,IReadOnlyCollection{Guid}?,CancellationToken)"/>
+    /// plus an EXCLUSION set (<c>Id NIN</c>) — the "accounts without active contacts" filter. Everything else (search,
+    /// chips, inclusion scope, paging, sorting, totals) is identical. The default only supports an empty exclusion;
+    /// production applies it in the same query.</summary>
+    Task<(IReadOnlyList<Account> Items, long Total, long UnfilteredTotal)> ListAsync(
+        Guid tenantId, string? search, int page, int pageSize, string? sortBy, string? sortDir,
+        IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? accountTypes,
+        IReadOnlyCollection<Guid>? accountIdScope, IReadOnlyCollection<Guid>? excludedAccountIds,
+        CancellationToken cancellationToken)
+        => excludedAccountIds is null || excludedAccountIds.Count == 0
+            ? ListAsync(tenantId, search, page, pageSize, sortBy, sortDir, statuses, accountTypes, accountIdScope, cancellationToken)
+            : throw new NotSupportedException("This repository does not support an account-id exclusion.");
+
+    /// <summary>WP-VP-2B (R3-a) — the distinct account-type codes of the tenant's accounts, optionally only of
+    /// <paramref name="accountIdScope"/>. Production: one <c>distinct</c>.</summary>
+    async Task<IReadOnlyList<string>> ListDistinctAccountTypesAsync(
+        Guid tenantId, IReadOnlyCollection<Guid>? accountIdScope, CancellationToken cancellationToken)
+    {
+        var page = await ListAsync(tenantId, null, 1, int.MaxValue, null, null, null, null, accountIdScope, cancellationToken);
+        return page.Items.Select(a => a.AccountType).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().OrderBy(t => t, StringComparer.Ordinal).ToList();
+    }
+
     Task<IReadOnlyList<Account>> GetChildrenAsync(Guid tenantId, Guid parentId, CancellationToken cancellationToken);
 
     /// <summary>Walks the parent chain from <paramref name="candidateParentId"/> to detect whether linking it under

@@ -89,9 +89,12 @@ public sealed class VisitPlanningController : CustomBaseController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 25,
         [FromQuery] string? resourceId = null,
+        // WP-VP-2B (mobile R2) — "true" | "false"; absent ⇒ today's result; anything else ⇒ 400 invalid_has_active_contacts.
+        [FromQuery] string? hasActiveContacts = null,
         CancellationToken cancellationToken = default)
         => CreateActionResultInstance(await _mediator.Send(
-            new Application.Features.VisitPlanning.MyAccounts.GetMyAccountsQuery(search, type, page, pageSize, resourceId),
+            new Application.Features.VisitPlanning.MyAccounts.GetMyAccountsQuery(
+                search, type, page, pageSize, resourceId, hasActiveContacts),
             cancellationToken));
 
     [HttpGet("api/crm/visit-plan/sessions/{planningSessionId:guid}")]

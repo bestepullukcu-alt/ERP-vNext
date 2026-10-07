@@ -306,7 +306,7 @@ public sealed class VisitPlanningPhase2Tests
         var provinceAccount = t.Account("İl Klinik", t.Istanbul);
         t.Account("Ankara Klinik", t.Ankara);
 
-        var handler = new GetAccountListHandler(TenantCtx(), t.Accounts, t.AccountAssignments, t.Models, t.Nodes);
+        var handler = new GetAccountListHandler(TenantCtx(), t.Accounts, t.AccountAssignments, t.Models, t.Nodes, new InMemoryAccountContactLinks(), new InMemoryContacts());
         var page = await handler.Handle(new GetAccountListQuery(null, 1, 25, TerritoryNodeId: t.Istanbul.ToString()), default);
 
         Assert.Equal(
@@ -585,7 +585,7 @@ public sealed class VisitPlanningPhase2Tests
             });
 
         public GetMyAccountsQueryHandler MyAccounts(ICallerScope caller)
-            => new(TenantCtx(), caller, ResourceAssignments, Nodes, Models, AccountAssignments, Accounts);
+            => new(TenantCtx(), caller, ResourceAssignments, Nodes, Models, AccountAssignments, Accounts, new InMemoryAccountContactLinks(), new InMemoryContacts());
     }
 
     /// <summary>An account store that honours the coverage scope / search / type the handlers pass.</summary>

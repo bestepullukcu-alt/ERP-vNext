@@ -32,11 +32,24 @@ public sealed class AccountController : CustomBaseController
         [FromQuery] string? accountType = null,
         [FromQuery] string? territoryNodeId = null,
         [FromQuery] string? countryScope = null,
+        // WP-VP-2B (mobile R2) — "true" | "false"; absent ⇒ today's result; anything else ⇒ 400 invalid_has_active_contacts.
+        [FromQuery] string? hasActiveContacts = null,
         CancellationToken cancellationToken = default)
         => CreateActionResultInstance(await _mediator.Send(
             new GetAccountListQuery(
-                search, page, pageSize, sortBy, sortDir, status, accountType, territoryNodeId, countryScope),
+                search, page, pageSize, sortBy, sortDir, status, accountType, territoryNodeId, countryScope,
+                hasActiveContacts),
             cancellationToken));
+
+    /// <summary>WP-VP-2B (mobile R3-a) — the territory nodes covering accounts + the account-type codes, readable with
+    /// <c>crm.account.read</c> alone. <c>scope = mine</c> (default; the caller's current rep assignments; unassigned ⇒
+    /// tenant-wide + <c>territoryStatus = unassigned</c>) or <c>all</c>; <c>search</c> narrows the option texts.</summary>
+    [HttpGet("filter-options")]
+    [HasPermission("crm.account.read")]
+    public async Task<IActionResult> FilterOptions(
+        [FromQuery] string? scope, [FromQuery] string? search, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new Application.Features.Account.FilterOptions.GetAccountFilterOptionsQuery(scope, search), cancellationToken));
 
     [HttpGet("{id:guid}")]
     [HasPermission("crm.account.read")]
