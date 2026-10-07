@@ -50,6 +50,9 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         if (BsonSerializer.LookupSerializer<Guid>() is not MongoDB.Bson.Serialization.Serializers.GuidSerializer serializer
             || serializer.GuidRepresentation != GuidRepresentation.Standard)
             throw new InvalidOperationException("SELECTED_AUDIT_INTENT_GUID_STORAGE_INVALID");
+        // WP-MDM-BL576-01 FIX1 M5: this one-shot path runs before (without) the host's AddPersistence — it registers the
+        // document class maps itself, after the Guid check, before its first typed read.
+        Configurations.MdmDocumentClassMaps.Register();
         return new(database, new SelectedTenantContext(request.TenantId), timeProvider,
             new AuditIntentTemporalMigrationRepository(database, timeProvider), request);
     }
