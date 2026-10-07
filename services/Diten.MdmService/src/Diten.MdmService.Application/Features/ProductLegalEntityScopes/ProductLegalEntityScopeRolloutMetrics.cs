@@ -36,6 +36,11 @@ public static class ProductLegalEntityScopeRolloutMetrics
     public const string LeaseContended = "mdm.product_scope.writer_lease_contended";
     public const string BaselineUnverifiable = "mdm.product_scope.writer_baseline_unverifiable";
     public const string LeaseReleaseRefused = "mdm.product_scope.writer_lease_release_refused";
+    public const string RolloutStoreUnavailable = "mdm.product_scope.rollout_store_unavailable";
+    public const string LeaseRequestInvalid = "mdm.product_scope.writer_lease_request_invalid";
+    public const string ReplaceTransientExhausted = "mdm.product_scope.replace_transient_retries_exhausted";
+    public const string ProofIndexBuildFailed = "mdm.product_scope.proof_index_build_failed";
+    public const string ProofIndexesMissing = "mdm.product_scope.proof_indexes_missing";
     public const string LeaseCapacityExceeded = "mdm.product_scope.writer_lease_capacity_exceeded";
     public const string HoldRefreshFailed = "mdm.product_scope.hold_refresh_failed";
     public const string HoldsObservedAgeSeconds = "mdm.product_scope.holds_observed_age_seconds";
@@ -74,6 +79,19 @@ public static class ProductLegalEntityScopeRolloutMetrics
         () => _holdsObservedAt == DateTimeOffset.MinValue ? -1 : Math.Floor((TimeProvider.System.GetUtcNow() - _holdsObservedAt).TotalSeconds),
         "s", "Seconds since the hold gauges were last refreshed (-1 before the first refresh). A growing value: stale gauges.");
 
+    private static readonly Counter<long> StoreUnavailable = Meter.CreateCounter<long>(RolloutStoreUnavailable, "{request}",
+        "Requests answered 503 because the rollout store could not be reached (timeout, connection).");
+    private static readonly Counter<long> RequestInvalid = Meter.CreateCounter<long>(LeaseRequestInvalid, "{request}",
+        "Lease requests this service built that the domain refused — a defect, answered 500.");
+    private static readonly Counter<long> TransientExhausted = Meter.CreateCounter<long>(ReplaceTransientExhausted, "{request}",
+        "Replace transactions still aborted as transient after every retry (answered 503).");
+    private static readonly Counter<long> IndexBuildFailed = Meter.CreateCounter<long>(ProofIndexBuildFailed, "{attempt}",
+        "Attempts to build the write-proof indexes that failed (they are retried in the background).");
+    private static int _proofIndexesMissing = 1;
+    private static readonly ObservableGauge<int> IndexesMissing = Meter.CreateObservableGauge(ProofIndexesMissing,
+        () => Volatile.Read(ref _proofIndexesMissing), "{state}",
+        "1 while the write-proof indexes are not (yet) built — the proof then reads by scan; 0 once built.");
+
     private static HoldSnapshot _holds = HoldSnapshot.Empty;
     private static DateTimeOffset _holdsObservedAt = DateTimeOffset.MinValue;
 
@@ -110,6 +128,13 @@ public static class ProductLegalEntityScopeRolloutMetrics
             ? Math.Floor((_holdsObservedAt - oldest).TotalMinutes)
             : 0;
     }
+
+    public static void CountStoreUnavailable(string surface) => StoreUnavailable.Add(1, new KeyValuePair<string, object?>("surface", surface));
+    public static void CountRequestInvalid() => RequestInvalid.Add(1);
+    public static void CountReplaceTransientExhausted() => TransientExhausted.Add(1);
+    public static void CountProofIndexBuildFailed(string error) => IndexBuildFailed.Add(1, new KeyValuePair<string, object?>("error", error));
+    public static void RecordProofIndexesBuilt(bool built) => Volatile.Write(ref _proofIndexesMissing, built ? 0 : 1);
+    public static bool ProofIndexesBuilt => Volatile.Read(ref _proofIndexesMissing) == 0;
 
     public static void CountReleaseRefused(string by) => ReleaseRefused.Add(1, new KeyValuePair<string, object?>("by", by));
     public static void CountCapacityExceeded(string bucket) => CapacityExceeded.Add(1, new KeyValuePair<string, object?>("bucket", bucket));

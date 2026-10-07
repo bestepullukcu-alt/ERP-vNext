@@ -23,4 +23,6 @@
   <data name="ErrorSuspended" xml:space="preserve"><value>产品范围控制已暂停；恢复之前不接受更改。</value></data>
   <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>无法读取此租户的产品范围设置。请联系管理员。</value></data>
   <data name="OtherLegalEntities" xml:space="preserve"><value>其他公司：{0}</value></data>
+  <data name="ErrorWriterCapacity" xml:space="preserve"><value>此公司集团当前正在进行的更改过多。请几分钟后重试。</value></data>
+  <data name="ErrorStoreUnavailable" xml:space="preserve"><value>暂时无法访问产品范围设置。请稍后重试。</value></data>
 </root>

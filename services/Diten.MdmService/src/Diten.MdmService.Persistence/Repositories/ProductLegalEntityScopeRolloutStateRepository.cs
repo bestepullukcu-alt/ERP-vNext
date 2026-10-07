@@ -189,8 +189,10 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
 
     /// <summary>
     /// WP-MDM-SCOPE-ACCEPT-01 FIX2 (7) — how many optimistic rounds one acquisition gets before it gives up. Every lease
-    /// change (another acquisition, a release) moves the revision and sends the losers round again; one round admits at
-    /// least one writer, so this many concurrent writers of one tenant all get through. Giving up answers its own code.
+    /// change (another acquisition, a binding, a release) moves the revision and sends the losers round again; one round
+    /// admits at least one writer. FIX3 K3 — STATED PRECISELY: up to this many writers racing at once all get through;
+    /// with MORE than 32 concurrent lease writes in one tenant, the 33rd may give up with CONTENDED (503, counted) —
+    /// a retry then succeeds. Backoff with jitter spreads them out, so this is the bound, not the common case.
     /// </summary>
     internal const int MaximumLeaseAttempts = 32;
 
@@ -266,11 +268,7 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
                 .Set(item => item.ActiveWriterLease, requested)
                 .Set(item => item.WriterLeaseGeneration, requested.Generation);
             if (BeforeLeaseWrite is { } slotHook) await slotHook("slot");
-            var updated = await _states.FindOneAndUpdateAsync(
-                filter,
-                update,
-                new FindOneAndUpdateOptions<ProductLegalEntityScopeRolloutState> { ReturnDocument = ReturnDocument.After },
-                cancellationToken);
+            var updated = await WriteLeaseAsync(filter, update, cancellationToken);
             if (updated is not null)
                 return new(true, updated.ActiveWriterLease, updated,
                     TakenOver: held is null || renewed ? 0 : 1, Renewed: renewed);
@@ -336,17 +334,41 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
                 .Set(item => item.ProductWriterLeases, leases)
                 .Set(item => item.ProductWriterLeaseRevision, revision);
             if (BeforeLeaseWrite is { } productHook) await productHook("product");
-            var updated = await _states.FindOneAndUpdateAsync(
-                filter,
-                update,
-                new FindOneAndUpdateOptions<ProductLegalEntityScopeRolloutState> { ReturnDocument = ReturnDocument.After },
-                cancellationToken);
+            var updated = await WriteLeaseAsync(filter, update, cancellationToken);
             if (updated is not null)
                 return new(true, requested, updated, TakenOver: meeting.Count, Swept: swept.Count, Renewed: own is not null);
         }
 
         return new(false, null, await GetAsync(cancellationToken), FailureCode: LeaseContendedCode);
     }
+
+    /// <summary>
+    /// FIX4 (2, 6) — the lease write itself. The read before it succeeded; if the store fails once the write was sent
+    /// (connection, write concern, timeout) the lease may be in the list: that is AMBIGUOUS, not a record that cannot be
+    /// read. Cancellation passes through unchanged.
+    /// </summary>
+    private async Task<ProductLegalEntityScopeRolloutState?> WriteLeaseAsync(
+        FilterDefinition<ProductLegalEntityScopeRolloutState> filter,
+        UpdateDefinition<ProductLegalEntityScopeRolloutState> update,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await LeaseWriteExecutor(() => _states.FindOneAndUpdateAsync(
+                filter,
+                update,
+                new FindOneAndUpdateOptions<ProductLegalEntityScopeRolloutState> { ReturnDocument = ReturnDocument.After },
+                cancellationToken));
+        }
+        catch (Exception exception) when (exception is MongoException or TimeoutException)
+        {
+            throw new ProductLegalEntityScopeLeaseWriteAmbiguousException(exception);
+        }
+    }
+
+    /// <summary>FIX4 (2) — test seam around the lease write (a test makes the store fail after the write landed).</summary>
+    internal Func<Func<Task<ProductLegalEntityScopeRolloutState?>>, Task<ProductLegalEntityScopeRolloutState?>> LeaseWriteExecutor { get; set; }
+        = static write => write();
 
     public async Task<bool> BindProductWriterLeaseBaselineAsync(
         Guid token,
@@ -500,6 +522,28 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
     {
         ArgumentNullException.ThrowIfNull(requested);
         requested.EnsureValid();
+        // FIX3 K3: a binding or a release between this read and the write moves the revision — harmless to a fence that
+        // still finds no running writer. Read again a few times before answering FENCE_CONFLICT.
+        for (var attempt = 0; ; attempt++)
+        {
+            var result = await TryAcquireFenceAsync(requested, expectedRolloutStateId, expectedVersion, expectedMode, cancellationToken);
+            if (result.Acquired || attempt >= FenceAttempts - 1
+                || !string.Equals(result.FailureCode, "PRODUCT_SCOPE_ACTIVATION_FENCE_CONFLICT", StringComparison.Ordinal)
+                || result.Rollout?.ActiveFence is not null)
+                return result;
+            await BackoffAsync(attempt + 1, cancellationToken);
+        }
+    }
+
+    internal const int FenceAttempts = 5;
+
+    private async Task<ProductLegalEntityScopeFenceResult> TryAcquireFenceAsync(
+        ProductLegalEntityScopeActivationFence requested,
+        Guid expectedRolloutStateId,
+        int expectedVersion,
+        ProductLegalEntityScopeRolloutMode expectedMode,
+        CancellationToken cancellationToken)
+    {
         var current = await GetAsync(cancellationToken);
         if (current is null || current.Id != expectedRolloutStateId || current.Version != expectedVersion
             || current.Mode != expectedMode)
@@ -537,6 +581,7 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
                      & SlotFilter(current.ActiveWriterLease)
                      & RevisionFilter(current.ProductWriterLeaseRevision)
                      & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ActiveFence, null);
+        if (BeforeLeaseWrite is { } fenceHook) await fenceHook("fence");
         var updated = await _states.FindOneAndUpdateAsync(
             filter,
             Builders<ProductLegalEntityScopeRolloutState>.Update

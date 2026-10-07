@@ -33,11 +33,10 @@ public sealed class GetProductLegalEntityScopeCompletenessHandler
         CancellationToken cancellationToken)
     {
         // FIX3 (12): an unreadable rollout record answers the guard's coded 503, not a generic 500.
-        var (readable, rollout) = await CommandHandlers.CreateProductLegalEntityScopePolicyHandler.TryReadRolloutAsync(
+        var (unreadable, rollout) = await CommandHandlers.CreateProductLegalEntityScopePolicyHandler.TryReadRolloutAsync(
             _rollout, "completeness", cancellationToken);
-        if (!readable)
-            return Response<ProductLegalEntityScopeModels.CompletenessDto>.Fail(
-                ProductLegalEntityScopeWriteFenceCoordinator.RolloutUnreadableCode, 503);
+        if (unreadable is not null)
+            return Response<ProductLegalEntityScopeModels.CompletenessDto>.Fail(unreadable, 503);
         var inventory = await _products.GetProductLegalEntityScopeCompletenessInventoryAsync(
             _clock.GetUtcNow(),
             ProductLegalEntityScopePolicy.MaximumLegalEntityIdsPerSnapshot,

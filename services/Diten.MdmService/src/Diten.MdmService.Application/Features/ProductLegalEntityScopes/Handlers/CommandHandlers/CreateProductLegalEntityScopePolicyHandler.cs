@@ -46,8 +46,8 @@ public sealed class CreateProductLegalEntityScopePolicyHandler
         CreateProductLegalEntityScopePolicyCommand request,
         CancellationToken cancellationToken)
     {
-        var (readable, rollout) = await TryReadRolloutAsync(_rollout, "create", cancellationToken);
-        if (!readable) return RolloutUnreadable();
+        var (unreadable, rollout) = await TryReadRolloutAsync(_rollout, "create", cancellationToken);
+        if (unreadable is not null) return RolloutUnreadable(unreadable);
         if (rollout?.Mode != ProductLegalEntityScopeRolloutMode.Preparation)
             return Fail("PRODUCT_SCOPE_ROLLOUT_NOT_PREPARATION");
 
@@ -155,26 +155,25 @@ public sealed class CreateProductLegalEntityScopePolicyHandler
         period.EffectiveToUtc);
 
     /// <summary>
-    /// WP-MDM-SCOPE-ACCEPT-01 FIX2 (11): a rollout record the repository refuses to read answers the guard's coded 503 —
-    /// never a generic 500 from a scope write.
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX2 (11) / FIX4 (6): a rollout read that fails answers its coded 503 — the record cannot
+    /// be read (ROLLOUT_INVALID) or the store cannot be reached (ROLLOUT_STORE_UNAVAILABLE) — never a generic 500.
     /// </summary>
-    internal static async Task<(bool Readable, ProductLegalEntityScopeRolloutState? Rollout)> TryReadRolloutAsync(
+    internal static async Task<(string? FailureCode, ProductLegalEntityScopeRolloutState? Rollout)> TryReadRolloutAsync(
         IProductLegalEntityScopeRolloutStateRepository rollouts, string surface, CancellationToken cancellationToken)
     {
         try
         {
-            return (true, await rollouts.GetAsync(cancellationToken));
+            return (null, await rollouts.GetAsync(cancellationToken));
         }
-        catch (Exception exception) when (ProductLegalEntityScopeWriteFenceCoordinator.IsRolloutUnreadable(exception))
+        catch (Exception exception) when (ProductLegalEntityScopeWriteFenceCoordinator.ClassifyRolloutReadFailure(exception)
+                                          != ProductLegalEntityScopeWriteFenceCoordinator.RolloutReadFailure.None)
         {
-            ProductLegalEntityScopeRolloutMetrics.CountUnreadable(surface);
-            return (false, null);
+            return (ProductLegalEntityScopeWriteFenceCoordinator.ReadFailureAnswer(exception, surface).Code, null);
         }
     }
 
-    internal static Response<ProductLegalEntityScopeModels.PolicyDto> RolloutUnreadable() =>
-        Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(
-            ProductLegalEntityScopeWriteFenceCoordinator.RolloutUnreadableCode, 503);
+    internal static Response<ProductLegalEntityScopeModels.PolicyDto> RolloutUnreadable(string code) =>
+        Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(code, 503);
 
     internal static Response<ProductLegalEntityScopeModels.PolicyDto> Fail(string code) =>
         Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(code, 409);

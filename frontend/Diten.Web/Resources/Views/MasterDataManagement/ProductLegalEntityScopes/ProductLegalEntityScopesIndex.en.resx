@@ -23,4 +23,6 @@
   <data name="ErrorSuspended" xml:space="preserve"><value>Product scope enforcement is suspended; changes are not accepted until it is resumed.</value></data>
   <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>The product scope settings of this tenant cannot be read. Contact your administrator.</value></data>
   <data name="OtherLegalEntities" xml:space="preserve"><value>other companies: {0}</value></data>
+  <data name="ErrorWriterCapacity" xml:space="preserve"><value>Too many changes are being made in this company group right now. Try again in a few minutes.</value></data>
+  <data name="ErrorStoreUnavailable" xml:space="preserve"><value>The product scope settings cannot be reached right now. Try again shortly.</value></data>
 </root>

@@ -117,6 +117,12 @@ describe('MOD-0290-FU03 Product Legal Entity Scope Golden Slim contract', () => 
     Object.assign(window.L10n, { ErrorSuspended: 'fixture: suspended' });
     expect(say({ errors: ['PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED'] }, 409)).toBe('fixture: suspended');
     expect(say({ errors: ['PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE'] }, 409)).toBe('fixture: busy');
+    // FIX4 K1: a full bucket, an unreachable store, an ambiguous lease write, an exhausted Replace — each in words.
+    Object.assign(window.L10n, { ErrorWriterCapacity: 'fixture: capacity', ErrorStoreUnavailable: 'fixture: store down' });
+    expect(say({ errors: ['PRODUCT_SCOPE_WRITER_LEASE_CAPACITY_EXCEEDED'] }, 503)).toBe('fixture: capacity');
+    expect(say({ errors: ['PRODUCT_SCOPE_ROLLOUT_STORE_UNAVAILABLE'] }, 503)).toBe('fixture: store down');
+    expect(say({ errors: ['PRODUCT_SCOPE_WRITER_LEASE_AMBIGUOUS'] }, 503)).toBe('fixture: busy');
+    expect(say({ errors: ['PRODUCT_SCOPE_REPLACE_CONTENDED'] }, 503)).toBe('fixture: busy');
     expect(say(null, 500)).toBe('fixture: gateway');
   });
 

@@ -23,4 +23,6 @@
   <data name="ErrorSuspended" xml:space="preserve"><value>Применение области продукта приостановлено; изменения не принимаются до его возобновления.</value></data>
   <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>Не удаётся прочитать настройки области продукта этого арендатора. Обратитесь к администратору.</value></data>
   <data name="OtherLegalEntities" xml:space="preserve"><value>другие компании: {0}</value></data>
+  <data name="ErrorWriterCapacity" xml:space="preserve"><value>Сейчас в этой группе компаний выполняется слишком много изменений. Повторите попытку через несколько минут.</value></data>
+  <data name="ErrorStoreUnavailable" xml:space="preserve"><value>Настройки области продукта сейчас недоступны. Повторите попытку чуть позже.</value></data>
 </root>

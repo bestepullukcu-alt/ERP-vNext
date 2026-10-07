@@ -70,12 +70,11 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
         {
             current = await _rollouts.GetAsync(cancellationToken);
         }
-        catch (Exception exception) when (IsRolloutUnreadable(exception))
+        catch (Exception exception) when (ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
         {
-            // WP-MDM-SCOPE-ACCEPT-01 FIX1 B2: a rollout record that cannot be read refuses the write with a coded 503 —
-            // never an unhandled exception for every product write of the tenant.
-            ProductLegalEntityScopeRolloutMetrics.CountUnreadable("write_admission");
-            return ProductLegalEntityScopeWriteAdmission.Denied(RolloutUnreadableCode, 503);
+            // WP-MDM-SCOPE-ACCEPT-01 FIX1 B2 / FIX4 (6): a rollout record that cannot be read, or a store that cannot be
+            // reached, refuses the write with its own coded 503 — never an unhandled exception for every product write.
+            return ReadRefused(exception, "write_admission");
         }
         if (current is null) return ProductLegalEntityScopeWriteAdmission.Legacy();
         if (current.Mode == ProductLegalEntityScopeRolloutMode.Enforced
@@ -95,15 +94,22 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
         };
         // WP-MDM-SCOPE-ACCEPT-01 FIX1 B4: a lease per write, keyed by what it touches — writers of different products
         // proceed side by side; an expired lease of another command is taken over.
+        if (InvalidRequest(requested) is { } invalid) return invalid;
         ProductLegalEntityScopeWriterLeaseResult acquired;
         try
         {
             acquired = await _rollouts.AcquireProductWriterLeaseAsync(requested, cancellationToken);
         }
-        catch (Exception exception) when (IsRolloutUnreadable(exception))
+        catch (ProductLegalEntityScopeLeaseWriteAmbiguousException)
         {
-            ProductLegalEntityScopeRolloutMetrics.CountUnreadable("write_admission");
-            return ProductLegalEntityScopeWriteAdmission.Denied(RolloutUnreadableCode, 503);
+            // FIX4 (2): the lease write was sent and the answer lost — the lease may be held. Counted as kept; the caller
+            // hears "ambiguous, retry" (its repeat gets its own lease back), never "the rollout record is broken".
+            ProductLegalEntityScopeRolloutMetrics.CountRetained("acquire_ambiguous");
+            return ProductLegalEntityScopeWriteAdmission.Denied(LeaseWriteAmbiguousCode, 503);
+        }
+        catch (Exception exception) when (ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
+        {
+            return ReadRefused(exception, "write_admission");
         }
         CountAcquisition(acquired, "writer", ProductLegalEntityScopeWriterLease.NamesNoObject(requested));
         if (acquired.LegacyBypass) return ProductLegalEntityScopeWriteAdmission.Legacy();
@@ -163,19 +169,76 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
 
     public const string RolloutUnreadableCode = "PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID";
 
+    /// <summary>FIX4 (6): the rollout store could not be reached (timeout, connection) — not a broken record.</summary>
+    public const string RolloutStoreUnavailableCode = "PRODUCT_SCOPE_ROLLOUT_STORE_UNAVAILABLE";
+
+    /// <summary>FIX4 (2): the lease write was sent and its answer lost — the lease may be held; retry.</summary>
+    public const string LeaseWriteAmbiguousCode = "PRODUCT_SCOPE_WRITER_LEASE_AMBIGUOUS";
+
+    /// <summary>FIX4 (6): this service built an invalid lease — a defect in this code, not the caller's nor the store's.</summary>
+    public const string LeaseRequestInvalidCode = "PRODUCT_SCOPE_WRITER_LEASE_REQUEST_INVALID";
+
+    public enum RolloutReadFailure { None, Unreadable, Unavailable }
+
     /// <summary>
-    /// FIX3 (12) — a rollout record that cannot be read: the repository's own refusal (InvalidOperationException), a
-    /// record the serializer cannot map (BsonException / FormatException), or the store failing the read (MongoException).
-    /// All answer the same coded 503 — never a generic 500. Cancellation is not one of them. (The Application layer does
-    /// not reference the driver: its exception families are recognised by their base type's name.)
+    /// FIX3 (12) / FIX4 (6) — what a failed rollout READ means. <see cref="RolloutReadFailure.Unreadable"/>: the record
+    /// itself cannot be read (the repository's own refusal — InvalidOperationException —, or a record the serializer
+    /// cannot map — FormatException / BsonException). <see cref="RolloutReadFailure.Unavailable"/>: the store could not
+    /// be reached (TimeoutException, MongoException). Anything else (cancellation, a defect) is not a read failure. Only
+    /// a READ is classified here: a lease write is wrapped by the repository as ambiguous, and an invalid lease request is
+    /// refused before the repository is called. (The Application layer does not reference the driver: its exception
+    /// families are recognised by their base type's name.)
     /// </summary>
-    public static bool IsRolloutUnreadable(Exception exception)
+    public static RolloutReadFailure ClassifyRolloutReadFailure(Exception exception)
     {
-        if (exception is InvalidOperationException or FormatException) return true;
+        if (exception is InvalidOperationException or FormatException) return RolloutReadFailure.Unreadable;
+        if (exception is TimeoutException) return RolloutReadFailure.Unavailable;
         for (var type = exception.GetType(); type is not null; type = type.BaseType)
-            if (type.FullName is "MongoDB.Bson.BsonException" or "MongoDB.Driver.MongoException") return true;
-        return false;
+        {
+            if (type.FullName is "MongoDB.Bson.BsonException") return RolloutReadFailure.Unreadable;
+            if (type.FullName is "MongoDB.Driver.MongoException") return RolloutReadFailure.Unavailable;
+        }
+        return RolloutReadFailure.None;
     }
+
+    /// <summary>The coded 503 of a failed rollout read, counted by its kind and the surface that read it.</summary>
+    public static (string Code, int Status) ReadFailureAnswer(Exception exception, string surface)
+    {
+        if (ClassifyRolloutReadFailure(exception) == RolloutReadFailure.Unavailable)
+        {
+            ProductLegalEntityScopeRolloutMetrics.CountStoreUnavailable(surface);
+            return (RolloutStoreUnavailableCode, 503);
+        }
+        ProductLegalEntityScopeRolloutMetrics.CountUnreadable(surface);
+        return (RolloutUnreadableCode, 503);
+    }
+
+    private static ProductLegalEntityScopeWriteAdmission ReadRefused(Exception exception, string surface)
+    {
+        var (code, status) = ReadFailureAnswer(exception, surface);
+        return ProductLegalEntityScopeWriteAdmission.Denied(code, status);
+    }
+
+    /// <summary>FIX4 (6): a lease this service built and the domain refuses is a defect here — a coded 500, counted.</summary>
+    private static ProductLegalEntityScopeWriteAdmission? InvalidRequest(ProductLegalEntityScopeWriterLease requested)
+    {
+        try
+        {
+            requested.EnsureValid();
+            return null;
+        }
+        catch (InvalidOperationException)
+        {
+            ProductLegalEntityScopeRolloutMetrics.CountRequestInvalid();
+            return ProductLegalEntityScopeWriteAdmission.Denied(LeaseRequestInvalidCode, 500);
+        }
+    }
+
+    /// <summary>
+    /// FIX3 K5: a release / the after-write proof runs on its own bounded token, never the request's — a client that
+    /// cancels after its write landed must not leave the lease held as "exception".
+    /// </summary>
+    internal static TimeSpan CompletionTimeout { get; set; } = TimeSpan.FromSeconds(10);
 
     public async Task<ProductLegalEntityScopeWriteAdmission> EnterForegroundReplaceAsync(
         ProductLegalEntityScopeVerifiedWriterAuthority authority,
@@ -218,16 +281,21 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
             ExpiresAtUtc = now.AddSeconds(ProductLegalEntityScopeWriterLease.DurationSeconds),
             ObjectKeys = [.. identity.ObjectKeys]
         };
+        if (InvalidRequest(requested) is { } invalid) return invalid;
         ProductLegalEntityScopeWriterLeaseResult acquired;
         try
         {
             acquired = await _rollouts.AcquireWriterLeaseAsync(requested, cancellationToken);
         }
-        catch (Exception exception) when (IsRolloutUnreadable(exception))
+        catch (ProductLegalEntityScopeLeaseWriteAmbiguousException)
+        {
+            ProductLegalEntityScopeRolloutMetrics.CountRetained("acquire_ambiguous");
+            return ProductLegalEntityScopeWriteAdmission.Denied(LeaseWriteAmbiguousCode, 503);
+        }
+        catch (Exception exception) when (ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
         {
             // FIX2 (11): a rollout record that cannot be read refuses the Replace with the guard's coded 503.
-            ProductLegalEntityScopeRolloutMetrics.CountUnreadable("replace_admission");
-            return ProductLegalEntityScopeWriteAdmission.Denied(RolloutUnreadableCode, 503);
+            return ReadRefused(exception, "replace_admission");
         }
         CountAcquisition(acquired, "replace", objectless: false);
         if (!acquired.Acquired || acquired.LegacyBypass || acquired.Lease is null)
@@ -252,13 +320,25 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
         // FIX1 B4: the proof is the product's own state; a repeat of the same command is admitted as it is (see EnterAsync).
         if (!lease.BaselineBound)
         {
-            var baseline = await _readiness.CaptureObjectStateHashAsync(identity.ObjectIds, cancellationToken);
-            if (!baseline.Verifiable
-                || !await _rollouts.BindWriterLeaseBaselineAsync(
+            ProductLegalEntityScopeObjectState baseline;
+            bool bound;
+            try
+            {
+                baseline = await _readiness.CaptureObjectStateHashAsync(identity.ObjectIds, cancellationToken);
+                bound = baseline.Verifiable && await _rollouts.BindWriterLeaseBaselineAsync(
                     lease.Token,
                     lease.Generation,
                     baseline.Hash,
-                    cancellationToken))
+                    cancellationToken);
+            }
+            catch
+            {
+                // FIX4 (1): the slot is taken and its proof could not be read or bound — no admission exists, so nothing
+                // completes it: the slot (tenant-wide for a Replace) is kept until it expires — counted, never silent.
+                ProductLegalEntityScopeRolloutMetrics.CountRetained("replace_admission_exception");
+                throw;
+            }
+            if (!bound)
             {
                 ProductLegalEntityScopeRolloutMetrics.CountRetained("replace_baseline_conflict");
                 return ProductLegalEntityScopeWriteAdmission.Denied(
@@ -292,10 +372,11 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
             return;
         }
 
+        using var completion = new CancellationTokenSource(CompletionTimeout);
         if (!await _rollouts.ReleaseWriterLeaseAsync(
                 admission.Context.Lease.Token,
                 admission.Context.Lease.Generation,
-                cancellationToken))
+                completion.Token))
             ProductLegalEntityScopeRolloutMetrics.CountReleaseRefused("replace");
     }
 
@@ -331,6 +412,9 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
         // Principle A: the lease is released only when the system KNOWS the write is over — it succeeded, or it failed and
         // its objects are exactly as they were. Otherwise it is kept (counted), and its exits are named: the same command
         // repeated (it gets this lease back and finishes), or the lease's expiry (another writer, or a fence, takes over).
+        // FIX3 K5: the completion runs on its own bounded token (see CompletionTimeout), not the request's.
+        using var completion = new CancellationTokenSource(CompletionTimeout);
+        cancellationToken = completion.Token;
         if (exceptionalOrCancelled || statusCode == 202)
         {
             ProductLegalEntityScopeRolloutMetrics.CountRetained(exceptionalOrCancelled ? "exception" : "ambiguous");

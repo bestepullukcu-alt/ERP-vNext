@@ -23,4 +23,6 @@
   <data name="ErrorSuspended" xml:space="preserve"><value>La aplicación del alcance de producto está suspendida; no se aceptan cambios hasta que se reanude.</value></data>
   <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>No se puede leer la configuración de alcance de producto de este inquilino. Póngase en contacto con su administrador.</value></data>
   <data name="OtherLegalEntities" xml:space="preserve"><value>otras empresas: {0}</value></data>
+  <data name="ErrorWriterCapacity" xml:space="preserve"><value>Se están realizando demasiados cambios en este grupo de empresas. Inténtelo de nuevo en unos minutos.</value></data>
+  <data name="ErrorStoreUnavailable" xml:space="preserve"><value>No se puede acceder a la configuración de alcance de producto en este momento. Inténtelo de nuevo en breve.</value></data>
 </root>

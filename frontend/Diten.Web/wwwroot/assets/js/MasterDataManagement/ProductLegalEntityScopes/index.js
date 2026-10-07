@@ -57,6 +57,11 @@ const ProductLegalEntityScopesList = (() => {
         PRODUCT_SCOPE_WRITER_LEASE_CONTENDED: 'ErrorWriterBusy',
         PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED: 'ErrorSuspended',
         PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID: 'ErrorRolloutUnavailable',
+        // FIX4 K1 / (2, 4, 6): the codes this round added.
+        PRODUCT_SCOPE_WRITER_LEASE_CAPACITY_EXCEEDED: 'ErrorWriterCapacity',
+        PRODUCT_SCOPE_ROLLOUT_STORE_UNAVAILABLE: 'ErrorStoreUnavailable',
+        PRODUCT_SCOPE_WRITER_LEASE_AMBIGUOUS: 'ErrorWriterBusy',
+        PRODUCT_SCOPE_REPLACE_CONTENDED: 'ErrorWriterBusy',
         PRODUCT_SCOPE_RECONCILIATION_REQUIRED: 'ReconciliationPending'
     });
     const failureText = (payload, status) => {

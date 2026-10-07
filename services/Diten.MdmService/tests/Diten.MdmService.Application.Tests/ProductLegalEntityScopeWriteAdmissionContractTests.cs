@@ -232,12 +232,111 @@ public sealed class ProductLegalEntityScopeWriteAdmissionContractTests
         Assert.Contains("AddHostedService<ProductLegalEntityScopeProofIndexInitializer>()", program, StringComparison.Ordinal);
     }
 
-    private static string WithoutComments(string source)
+    /// <summary>
+    /// FIX4 K4 — comments removed by a small lexer that knows string and char literals (regular, verbatim, interpolated,
+    /// raw): a "/*" or "//" INSIDE a string is kept as text, and no code after it is lost.
+    /// </summary>
+    internal static string WithoutComments(string source)
     {
-        var code = System.Text.RegularExpressions.Regex.Replace(source.ReplaceLineEndings("\n"), @"/\*.*?\*/", " ",
-            System.Text.RegularExpressions.RegexOptions.Singleline);
-        return System.Text.RegularExpressions.Regex.Replace(code, @"(?<!:)//[^\n]*", " ");
+        var text = source.ReplaceLineEndings("\n");
+        var output = new System.Text.StringBuilder(text.Length);
+        for (var i = 0; i < text.Length;)
+        {
+            if (text[i] == '/' && i + 1 < text.Length && text[i + 1] == '/')
+            {
+                while (i < text.Length && text[i] != '\n') i++;
+                continue;
+            }
+            if (text[i] == '/' && i + 1 < text.Length && text[i + 1] == '*')
+            {
+                var end = text.IndexOf("*/", i + 2, StringComparison.Ordinal);
+                i = end < 0 ? text.Length : end + 2;
+                output.Append(' ');
+                continue;
+            }
+            if (text[i] == '"' || text[i] == '\'' || (text[i] is '@' or '$') && i + 1 < text.Length && (text[i + 1] is '"' or '@' or '$'))
+            {
+                var start = i;
+                var verbatim = false;
+                while (i < text.Length && text[i] is '@' or '$') { verbatim |= text[i] == '@'; i++; }
+                if (i >= text.Length || text[i] is not ('"' or '\'')) { output.Append(text, start, i - start); continue; }
+                var quote = text[i];
+                var run = 0;
+                while (i + run < text.Length && text[i + run] == '"' && quote == '"') run++;
+                if (run >= 3)
+                {
+                    var close = text.IndexOf(new string('"', run), i + run, StringComparison.Ordinal);
+                    i = close < 0 ? text.Length : close + run;
+                }
+                else
+                {
+                    i++;
+                    while (i < text.Length)
+                    {
+                        if (!verbatim && text[i] == '\\') { i += 2; continue; }
+                        if (text[i] == quote)
+                        {
+                            if (verbatim && i + 1 < text.Length && text[i + 1] == '"') { i += 2; continue; }
+                            i++;
+                            break;
+                        }
+                        if (!verbatim && text[i] == '\n') break;
+                        i++;
+                    }
+                }
+                output.Append(text, start, Math.Min(i, text.Length) - start);
+                continue;
+            }
+            output.Append(text[i]);
+            i++;
+        }
+        return output.ToString();
     }
+
+    [Theory]
+    [InlineData("var a = \"/* not a comment */\"; Call();", "Call();")]
+    [InlineData("var b = @\"C:\\// path\"; Call();", "Call();")]
+    [InlineData("var c = '/'; /* gone */ Call(); // gone too", "Call();")]
+    public void Comments_are_removed_but_never_what_a_string_holds(string source, string survives)
+    {
+        // FIX4 K4: before, the regex cut from a "/*" inside a string to the next "*/" — code in between vanished.
+        var code = WithoutComments(source);
+        Assert.Contains(survives, code, StringComparison.Ordinal);
+        Assert.DoesNotContain("gone", code, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// FIX4 K4 — the rollout can also be written through its collection directly. Only the rollout repository and the
+    /// guarded Replace session (whose transaction stamps the record's UpdatedAt, its write-conflict point) write the
+    /// rollout collection — typed, or as BsonDocument by its name.
+    /// </summary>
+    [Fact]
+    public void Only_the_rollout_repository_and_the_guarded_replace_write_the_rollout_collection()
+    {
+        var root = FindRepoRoot();
+        var allowed = new[]
+        {
+            "services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductLegalEntityScopeGuardedWriteSession.cs",
+            "services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductLegalEntityScopeRolloutStateRepository.cs"
+        };
+        const string Writes = @"(InsertOne|InsertMany|UpdateOne|UpdateMany|FindOneAndUpdate|FindOneAndReplace|FindOneAndDelete|ReplaceOne|DeleteOne|DeleteMany|BulkWrite)(Async)?\s*\(";
+        var writers = new List<string>();
+        foreach (var path in Directory.EnumerateFiles(Path.Combine(root, "services", "Diten.MdmService", "src"), "*.cs", SearchOption.AllDirectories)
+                     .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal)))
+        {
+            var code = WithoutComments(File.ReadAllText(path));
+            var collection = @"(ProductLegalEntityScopeRolloutStateRepository\.CollectionName|RolloutStates|""mdm_product_legal_entity_scope_rollout_states"")";
+            var names = System.Text.RegularExpressions.Regex.Matches(code,
+                    @"IMongoCollection<ProductLegalEntityScopeRolloutState>\s+(\w+)|(\w+)\s*=\s*[^;]*GetCollection<\w+>\(\s*" + collection)
+                .Select(match => match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value).Distinct();
+            var bound = names.Any(name => System.Text.RegularExpressions.Regex.IsMatch(code, $@"\b{name}\s*\.\s*" + Writes));
+            var inline = System.Text.RegularExpressions.Regex.IsMatch(code, @"GetCollection<\w+>\(\s*" + collection + @"\s*\)\s*\.\s*" + Writes);
+            if (bound || inline) writers.Add(Path.GetRelativePath(root, path).Replace('\\', '/'));
+        }
+
+        Assert.Equal(allowed, writers.Order(StringComparer.Ordinal).ToArray());
+    }
+
 
     [Fact]
     public void Write_fence_behavior_is_registered_after_validation_and_before_audit_forwarding()

@@ -23,4 +23,6 @@
   <data name="ErrorSuspended" xml:space="preserve"><value>تطبيق نطاق المنتج معلّق؛ لا تُقبل التغييرات حتى يُستأنف.</value></data>
   <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>تعذّرت قراءة إعدادات نطاق المنتج لهذا المستأجر. اتصل بالمسؤول.</value></data>
   <data name="OtherLegalEntities" xml:space="preserve"><value>شركات أخرى: {0}</value></data>
+  <data name="ErrorWriterCapacity" xml:space="preserve"><value>تُجرى حاليًا تغييرات كثيرة جدًا في مجموعة الشركات هذه. أعد المحاولة بعد بضع دقائق.</value></data>
+  <data name="ErrorStoreUnavailable" xml:space="preserve"><value>يتعذّر الوصول إلى إعدادات نطاق المنتج حاليًا. أعد المحاولة بعد قليل.</value></data>
 </root>
