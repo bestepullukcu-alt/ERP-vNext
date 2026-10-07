@@ -979,6 +979,24 @@ raw values (UX defect, also FU-LOC2-04 pattern); F-2 ru column priority (SKT bef
 "Search" placeholders (shared layout owner); F-4 accepted. **MOD-0174 slices P1–P5 complete;** module status 90 %
 (W-UI-02 per-tenant closure, W-0174-01, FU-0174-* open).
 
+### WP-0174-FU5 (agent result 2026-10-07, pending CT) — FU-0174-P5: terms, readable lot history, SKT in ru
+
+T-1 / T-2: the Stock Ledger / Stock Movements (FU01) lot values follow the glossary — tr "Parti" → "Lot" (7 values),
+ar `الدفعة` / `دفعة` / `دفعات` → `التشغيلة` / `تشغيلة` / `تشغيلات` (15 values; none meant "payment"); T-4: ru `Продукт` →
+`Товар` (8 values; "Готовая продукция" = finished-goods SKU level kept); T-5: Lot Movements movement types = FU01 text in
+all 7 languages (en 5, tr 4, and fr 4 apostrophes P5 had missed). Values only, no FU01 key added / removed / renamed.
+F-1: Lot Detail history labels the 10 field names the service writes (read from the service code by the test) with the
+Lot bilgileri labels, statuses with status labels, dates in the page format, countries by name; 2 new `LotsIndex` keys
+(`History.Field.TypedText`, `History.Field.GenealogyParent`) in 7 languages; the actor stays the user id — Web has no
+shared user-name resolver (only a CRM-controller-private one) → FU-LOC2-04, central user directory. F-2: Lot Explorer
+Expiry `min-tablet-l` (P3 pattern) — ru 1440 px shows "Годен до". Commit `67077cd78`. Tests: Web 607 → **622/622**
+(`Fu5TermsAndHistoryTests` 14 + FU01 `SameAsEnglish` stale guard; tr `ColLot` = "Lot" = en is a named entry), Inventory
+530/530 (a first run had 4 Prism-start reds, re-run green, no Inventory file changed), architecture 18/18, build 0 new
+warnings; sabotages (a) tr "Parti" back, (b) raw status in the history, (c) Expiry class removed → red, restored clean.
+Own Web 5195 → owner Gateway 5000: tr / ar ledger lot column, ru Lot Explorer 1440 px and Lot Detail history; owner's
+fleet PIDs unchanged. Open: FU-LOC2-04 (actor names), F-3 shell "Search" (central), `Info.Source.Production` wording (lot
+origin, left as is). Evidence `docs/records/audits/2026-10/mod-0174-fu5-evidence-2026-10-07.md`.
+
 ## 20. Follow-up Items
 
 - **W-UI-02 closure** in the FU01 pack (CT records after P4).
