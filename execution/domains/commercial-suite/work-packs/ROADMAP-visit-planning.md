@@ -83,9 +83,9 @@ Plan: [E2E-TUTUKON-content-to-visit-plan.md](E2E-TUTUKON-content-to-visit-plan.m
 - ☑ E6 sıklık — `vfp-2026-mi82xi` aktif (ayda 2); bulgu E6-B1
 - ☑ E7 plan `a42373cb` + önizleme: **32 / 32 doktor `resolved`** (TUTUKON · CEJ-2026-8AD806 · Farkındalık → 2. ziyarette Pekiştirme · yol adımları); VP-FIX-2 düzenle-korur ✓; bulgular E7-B1 iki dal düzleşiyor, E7-B2 adım süresi yok, E7-B3 tek gün / sıklık aralığı, E7-B4 düzenle sonrası 404
 - ☑ E8 uygula — 33 planlanan ziyaret, adlar + içerik kalemleri + köken (segment / oyun v2) dolu; bulgu E8-B1 onaysız + mesajsız uygula
-- ☐ E9 ziyaret raporu + yolculuk ilerlemesi
-- ☐ E10 sonraki aşama
-- ☐ E11 mobil örnek yanıtlar
+- ◐ E9 rapor gönderildi ✓; **yolculuk ilerlemesi yazılmıyor** (E9-B1, journeyId gönderilmiyor, journey_progress 0); "ne sunacağım" ekranda yok (E9-B2); aşama serbest metin (E9-B3); sonuç kodu doğrulanmıyor (E9-B4); ileri tarihe rapor (E9-B5)
+- ◐ E10 planda öngörü ✓ (2. ziyaret Pekiştirme), gerçekleşenden ilerleme ✗
+- ☑ E11 mobil örnek yanıtlar → [E2E-SAMPLE-RESPONSES-2026-10-07.md](mobile/2026-10-06-visit-planning/E2E-SAMPLE-RESPONSES-2026-10-07.md)
 - ☐ **E2E-FIX (toplu paket, test bitince — kullanıcı kararı 2026-10-07):** E1-B1 segment referans değerleri, E1-B2 10K aday sınırı (ek blokları aday sorgusuna indirme), E1-B3 global-products 400, Türkçe arama takibi (TerritoryModel + SegmentCandidateSource) + E2–E11'de çıkacak bulgular
 
 Kurallar:

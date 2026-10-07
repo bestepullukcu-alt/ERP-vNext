@@ -38,9 +38,9 @@ doktor → aktif segment → aktif oyun (STR-TUTUKON) → ürün satırı → ya
 | E6 ☑ | **Sıklık:** TUTUKON segmenti için sıklık politikası (ör. dönemde 3) aktif mi; değilse `E2E-TUT-VFP` oluştur + etkinleştir | CT | Önizlemede `frequencyStatus = resolved` | ☐ |
 | E7 ☑ | **Plan:** Beste ile yeni taslak (aktif dönem, boş ilk hafta) → Hedefler'de bölge araması → uzmanlığı uygun 5–10 doktor + 1–2 eczane → Hedefleri kaydet → **Önizleme** | CT (Beste) | `contentStatus = resolved` (segment üyesi doktorlarda), içerik kalemleri (ürün, aşama, adımlar), süre tipik modelden; tatil / hafta sonu boş; bölge uyarısı yok | ☐ |
 | E8 ☑ | **Uygula** (haftanın planı) | CT (Beste) | Planlanan Ziyaretler'de kayıtlar, `contentItems` dolu, adlar görünür | ☐ |
-| E9 | **Ziyaret Yürütme:** bir ziyareti aç → içerik / sunum bilgisi → sonucu kaydet → rapor gönder | CT (Beste) | Rapor kaydı; yolculuk ilerlemesi bir sonraki aşamaya geçer (SB-3b) | ☐ |
-| E10 | **Sonraki ziyaret:** aynı doktor için sonraki haftanın önizlemesi | CT | İçerik bir sonraki aşamadan gelir | ☐ |
-| E11 | **Mobil görünüm:** `resources/me`, planlanan ziyaret liste / detay, `my-accounts` yanıtlarını API'den kaydet | CT (salt okuma) | Mobil sözleşme notu için gerçek örnek yanıtlar | ☐ |
+| E9 ◐ | **Ziyaret Yürütme:** bir ziyareti aç → içerik / sunum bilgisi → sonucu kaydet → rapor gönder | CT (Beste) | Rapor kaydı; yolculuk ilerlemesi bir sonraki aşamaya geçer (SB-3b) | ☐ |
+| E10 ◐ | **Sonraki ziyaret:** aynı doktor için sonraki haftanın önizlemesi | CT | İçerik bir sonraki aşamadan gelir | ☐ |
+| E11 ☑ | **Mobil görünüm:** `resources/me`, planlanan ziyaret liste / detay, `my-accounts` yanıtlarını API'den kaydet | CT (salt okuma) | Mobil sözleşme notu için gerçek örnek yanıtlar | ☐ |
 
 ## Çıktı
 - Her adımın kanıtı ve bulgular bu dosyanın sonunda **§Sonuç** bölümüne yazılır.
@@ -230,3 +230,48 @@ Yayın kontrol listesi tam: MLR onaylı, çıktı hazır, tüm içerikler yayın
 **Bulgular:**
 - **E8-B1:** "Bu haftanın planı olarak kaydet" **onay sormadan** uyguluyor ve **başarı mesajı göstermiyor**. Sayfa yenilenene kadar plan düzenlenebilir görünüyor (salt okunur bandı yok).
 - **E8-B2 (= E7-B3):** "Ayda 2" sıklıkta ikinci ziyaret 3 hafta sonra.
+### E9 — Ziyaret Yürütme + rapor (CT, 2026-10-07; Beste girişi) ◐ (rapor ✓, ilerleme ✗)
+**Yazmalar:**
+- `VP-a42373cb-0001` (HALİL ÖZARI, 19 Eki) → **Tamamlandı**.
+- Rapor:
+  - gerçek aşama `E2E-TUT-S1` / #0, planla eşleşti;
+  - geri bildirim metni;
+  - sonuç kodu `detaylama-tamamlandi`;
+  - → **gönderildi** (rapor `c229bb38…`, `submitted`).
+
+**Bulgular:**
+- **E9-B1 (önemli):** Rapor yolculuk ilerlemesini **beslemiyor**.
+  - Ekran rapora `JourneyId` göndermiyor (`ActualContent.JourneyId = null`). Takvim öğesinde `plannedJourneyId` var ama kullanılmıyor.
+  - `journey_progress` koleksiyonu **0**.
+  - Sonraki ziyaretin aşaması bugün yalnız plandaki sıradan (öngörü) geliyor, gerçekleşenden değil → döngü kapanmıyor (SB-3c'nin işi; ekranın journey kimliğini göndermesi ön koşul).
+- **E9-B2:** Rapor formunda "Planlanan içerik (FU04)" **"—"**, ziyarette içerik kalemi varken. Takvim kartında ürün / içerik yok (yalnız "#0") → temsilci "ne sunacağım"ı göremiyor.
+- **E9-B3:** "Sunulan gerçek aşama" **serbest metin kod** + sayı. Temsilci aşama kodu bilmez (K-3 ruhuna aykırı); seçim olmalı ve varsayılan plandan gelmeli.
+- **E9-B4:** Sonuç kodu zorunlu ama ekran ret nedenini göstermiyor ("İşlem başarısız").
+  - Sunucu yalnız "boş değil" kontrol ediyor; ekrandaki "Sonuç kodları referans verilerinden gelir" notuna rağmen **referans doğrulaması yok**.
+  - Alan serbest metin.
+- **E9-B5:** 12 gün **ileri tarihli** ziyarete bugünden "Tamamlandı" ve rapor girilebiliyor (tarih kısıtı yok).
+- **E9-B6:** "Tamamlandı" onay sormadan işleniyor. Kartta sonuç ham kodla görünüyor ("completed"). Sayfa başlığı "Ziyaret Raporu", menü "Ziyaret Yürütme".
+- ✓ Takvim kartında hedef adı görünüyor (B-8).
+
+### E10 — Sonraki aşama ◐
+- ✓ **Planda öngörü:** aynı doktorun ikinci ziyareti (9 Kas) aşama **#1 Pekiştirme** ile planlandı.
+- ✗ **Gerçekleşenle ilerleme yok** (E9-B1): rapor sonrası `journey_progress` yazılmadı. Yeni bir planlamada ilerleme yalnız mevcut planlı ziyaretlerden sayılır.
+
+### E11 — Mobil örnek yanıtlar ☑
+`mobile/2026-10-06-visit-planning/E2E-SAMPLE-RESPONSES-2026-10-07.md`: `resources/me`, planlanan ziyaret liste öğesi (adlar + içerik kalemleri), `my-accounts`, ziyaret takvimi öğesi. CRM rotaları koddan doğrulandı.
+
+## E2E özeti (2026-10-07)
+- **Çalışan zincir:** segment → oyun v2 → ürün satırı → yolculuk → aşama → yol (MLR onaylı, yayında) → içerik → plan önizleme (32 / 32 çözüldü) → uygula (33 ziyaret, adlar + içerik + köken) → takvim → rapor.
+- **Kopuk halka:** rapor → yolculuk ilerlemesi (E9-B1). Temsilci ekranlarında "ne sunacağım" görünmüyor (E9-B2).
+- **Bulgu toplamı:** E1-B1..B3, E2-B1..B3, E3-B1..B4, E4-B1..B4, E5-B1..B3, E6-B1, E7-B1..B5, E8-B1..B2, E9-B1..B6 → **E2E-FIX** paketi(leri) + **K-7** kararı.
+- **Test kayıtları (`E2E-TUT-`):**
+  - segment `seg-2026-d7b132`;
+  - içerik `KC-2026-E70D11`, `KC-2026-2EC045`;
+  - yol `KP-2026-269A07`;
+  - yolculuk `CEJ-2026-8AD806`;
+  - sıklık `vfp-2026-mi82xi`;
+  - oyun v2 `5e6227f1`;
+  - plan `a42373cb` + 33 planlanan ziyaret;
+  - rapor `c229bb38`.
+
+  Temizlik kullanıcı kararıyla.
