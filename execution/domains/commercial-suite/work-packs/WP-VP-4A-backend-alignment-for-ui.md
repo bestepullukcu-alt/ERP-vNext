@@ -103,3 +103,8 @@ Commit: "feat(crm,web): WP-VP-4A — plan reads expose picked products, reopen p
 **Ajan sapması (kabul):** arşivlenmiş ziyaretler de sabit dışı (3A kuralıyla tutarlı).
 
 **Davranış değişikliği:** API listesi arşivlileri artık varsayılan döndürmüyor → mobil notuna (Faz 5).
+
+### §37 ek — E4 ACCEPTED (2026-10-08, CT, fleet, Beste)
+- Eski plan `a42373cb`: önizleme yalnız yazılmış **33** ziyaret (hepsi `isFixed`); haftalar `approved/legacy` (19 Eki, 9 Kas), diğerleri `empty`; HALİL ÖZARI aşamaları **0, 1** (karışıklık giderildi) ✓.
+- Liste sayıları ("8 doktor · 0 eczane", "1 onaylı · 12 taslak"), arşivliler gizli ✓.
+- Reopen vekili 4B ekranından çalıştı (aşağıda) ✓.

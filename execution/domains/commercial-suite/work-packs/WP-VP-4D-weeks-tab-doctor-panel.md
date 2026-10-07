@@ -101,8 +101,18 @@ NE:
 (2) Hafta ayrıntısı: gün gün doluluk (N/günlük sınır, tatil, yarım gün), açılır gün satırı (doktor+kurum+ürün çipleri+≈dk, ilk 6 + "+N", boş gün metni, doktora tıkla → panel), ürün başına haftalık ziyaret, karışık sıra açıklaması, kaydırılan/sığmayan (shifted + unscheduled + overflowProducts, yerel nedenler), eylemler (4B fonksiyonları: onayla / yeniden üret / Rotayı aç / yeniden aç), haftadaki doktorlar + dönem noktaları, onaylı haftanın history[] listesi.
 (3) Doktor paneli Dönem görünümü sekmesi: başlık + segment rozeti, hedef/yapılan/kalan, sıradaki ziyaretin ürünleri + kaynak + süre + Ürünleri değiştir, ürün geçmişi (Sunuldu/Planlandı/Öngörülen), sıradaki içerik satırı gösterilmez/pasif (SB-3c ertelendi, raporla).
 (4) Yeniden aç penceresi Haftalar'dan da (4B bileşeni), MK-4 metni.
-(5) Eski committed planlar: yazılmış haftalar "onaylı (eski plan)", eylem yok.
+(5) Eski committed planlar: yazılmış haftalar "onaylı (eski plan)", eylem yok. (6) Belgedeki "4B E4 takipleri" 1–6 (Plana git aynı plan, temsilci adı, tek kilit bandı, ülke salt okunur, boş taslak düğmesi gizli, geçmişte kimlik değil ad).
 KORU/YAPMA: backend'e dokunma (eksik alan → rapor); yeni yazma ucu YOK; Rota değişmez; 4B/4C bileşenleri yeniden yazılmaz; mockup stilleri kopyalanmaz; 7 dil + RTL; tarih biçimi aynı.
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — Web · CRM (dokunulmaz) · mimari (27); build 0 hata; JS node --check; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–6. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "feat(web): WP-VP-4D — weeks tab with period strip, day breakdown, shifted/overflow lists, doctor period panel, reopen from weeks" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), eksik backend alanları (varsa), elle denenecek durumlar. §22 TÜRKÇE. K13.
 ```
+
+## Ek — 4B E4 takipleri (küçük; bu pakette düzelt)
+Kaynak: [4B §37 ek](WP-VP-4B-list-new-plan-panel-detail-header.md).
+1. **E4-4B-1:** çekmecedeki önceden "Plana git" sunucunun 409'daki planıyla aynı planı göstermeli. İstemci listeden ilkini seçiyor; sunucunun kuralını kullan ya da 409 yanıtındaki kimliği tek kaynak yap.
+2. **E4-4B-2:** detay özetinde temsilci ad soyad (`resourceDisplayName`), e-posta değil.
+3. **E4-4B-3:** onaylı haftada kilit bandı tek kez.
+4. **E4-4B-4:** yeni plan çekmecesinde ülke, temsilcinin ülkesi olarak salt okunur. Kaynak yoksa (bölge ataması / dönem ülkesi) dönemin ülkesi; birden fazlaysa seçim.
+5. **E4-4B-5:** boş taslak yokken "Boş taslakları sil" gizli.
+6. **E4-4B-6:** hafta geçmişi (`history[].by`) kimlik değil ad. Okuma tarafında ad yoksa Web'de kullanıcı adı çözümü (mevcut desen), olmazsa "siz" / "başka kullanıcı".
+- Yeni test: her madde için kaynak / JS testi.

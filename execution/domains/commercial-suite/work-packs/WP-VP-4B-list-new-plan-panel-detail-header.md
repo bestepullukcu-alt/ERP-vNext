@@ -139,3 +139,28 @@ Commit: "feat(web): WP-VP-4B — visit planning list, new-plan drawer, week-awar
 **4C'ye devir:** Hedefler sekmesindeki "Hedefleri kaydet" onaylı haftada açık (üst kısım gizliyor; sekme içi 4C'nin işi).
 
 **E4 (CT, bekliyor; 4C / 4D ile birlikte ya da ayrı):** ajan raporundaki 8 maddelik liste (liste sütunları, çekmece, 42. hafta yeniden aç, taslak hafta eylemleri, geçmiş / eski plan, kapasite kartları, Rota aynı, Arapça).
+
+### §37 ek — E4 ACCEPTED (2026-10-08, CT, fleet, Beste; yeniden açma daha önce kullanıcı onaylı)
+- **Liste:** başlık "Benim planlarım"; Hedefler / Haftalar sütunları; eski planlarda "Tüm dönem onaylı (eski plan)" rozeti; Ekip pasif ✓.
+- **Yeni plan çekmecesi:**
+  - "Bu dönem için planınız var" + "Plana git" önceden; "Planı oluştur" kapalı ✓;
+  - geçmiş hafta listede yok; temsilci salt okunur ✓.
+- **`23b1706a` 42. hafta (onaylı):**
+  - yalnız "Haftayı yeniden aç" + "Sonraki haftayı aç" ✓;
+  - pencere: gerekçe 10 karakterden kısayken düğme kapalı ✓;
+  - gerekçeyle yeniden açıldı → toast "Hafta yeniden açıldı; gerekçe kaydedildi.", hafta `draft/reopened`, geçmişte approve + reopen (gerekçeli) ✓;
+  - ziyaret `VP-23b1706a-0001` → `cancelled` ✓.
+- **Taslak hafta (41):** Haftayı onayla / Hedefleri kaydet / Rota oluştur ✓.
+- **Eski plan:** tek bilgi bandı, eylem yok ✓.
+- **Kapasite kartları** saat (38,3 sa / 0,1 sa · 498,3 sa / 1,2 sa) ✓.
+- **Rota:** gün sekmeleri + harita yükleniyor ✓.
+- Sayfa istekleri hep 200.
+- **Arapça RTL denenmedi:** dil değişimi kullanıcı ayarı yazar.
+
+**Küçük bulgular (→ WP-VP-4D "4B E4 takipleri"):**
+- E4-4B-1: çekmecedeki önceden "Plana git" eski plana (`a238bdc5`) gidiyor; sunucunun 409'u `23b1706a`'yı gösteriyor → aynı kural.
+- E4-4B-2: detay özetinde temsilci e-postayla görünüyor (brief: ad soyad).
+- E4-4B-3: onaylı haftada kilit bandı iki kez (üst + Rota).
+- E4-4B-4: çekmecede ülke, temsilcinin ülkesi yerine kiracının 6 ülkesiyle seçilebilir.
+- E4-4B-5: hiç boş taslak yokken "Boş taslakları sil" görünüyor.
+- E4-4B-6: hafta geçmişindeki "kim" alanı kimlik (GUID) → ad gösterilmeli (4D'nin hafta geçmişi listesi).
