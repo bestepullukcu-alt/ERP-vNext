@@ -198,6 +198,9 @@ assignment.
 
 ## 4. Entity Fields
 
+> **CT notu (2026-10-08, WP-PLT-ITEM-LISTS-01):** kalem listeleri `ITEM-UNIVERSAL-V1` kataloğu ve `POST /api/internal/v1/reference-data/item-universal/resolve` ucuyla yayımlandı. Uç, mevcut "Verified GSKU resolver" kimlik bilgisini ve `VERIFIED_GSKU_RESOLVE` hedef kitlesini yeniden kullanıyor; kapsam üç statik, salt okunur, kiracıdan bağımsız kataloğa genişledi (hedef kitle adı artık izni tam tarif etmiyor; katalog başına kapsam ileride ayrı iş). Sözleşme hataları bu uçta **400** `REFERENCE_RESOLUTION_CONTRACT_INVALID` (verified-gsku aynı nedeni 409 ile döner). MC / MTR / MTK / XRO teyit bekliyor; geri çekme V2 ister. Uluslararası ünite yayımlanmadı (stok + kalite sorusu açık).
+
+
 The following is the minimum provider contract view. Existing persistence names may be retained only when they
 satisfy these semantics. Any incompatible model change must be explicitly reviewed before implementation.
 

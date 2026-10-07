@@ -8063,6 +8063,24 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-579
+
+**MDM'in kalıtsal iki etkileşimli referans istemcisi (doğrulanmış GSKU ve pazar çözümleyicileri) yönlendirme izliyor ve kimlik bilgisi başlıklarını günlükte maskelemiyor**
+
+DURUM: AÇIK · SAHİP: CT (MDM / altyapı) · BULAN: WP-PLT-ITEM-LISTS-01 güvenlik incelemesi (R1, önceden var) · KAYIT: 2026-10-08
+
+Yer: MDM `Infrastructure/DependencyInjection.cs:37` ve `:48` — `AddHttpClient<…>()` işleyici ayarı olmadan. Aynı dosyadaki diğer kimlik bilgisi taşıyan istemciler `AllowAutoRedirect = false` + `RedactLoggedHeaders([...])` kullanıyor (`TrustedLegalEntityScopeProviderDependencyInjectionTests.cs:49-62` sabitliyor). Kalem listeleri istemcisi FIX1'de düzeltiliyor; bu ikisi kalıyor.
+
+Risk: Platform tabanı ya da önündeki giriş 307 / 308 dönerse özel `X-Verified-Gsku-Credential` sır başlığı ve gövde hedef sunucuya yeniden gönderilir; gelen cevap Platform'unmuş gibi işlenir. Trace günlüğünde başlık değerleri (JWT dahil) yazılır.
+
+Yapılacak: iki istemciye aynı işleyici ayarı + maskeleme; kaynak-grep kural testi bütün `AddHttpClient` kayıtlarını kapsar; 307 davranış testi.
+
+Karşılaştırma: SAP RFC / HTTP hedeflerinde yönlendirme izleme hedef bazında açıkça yapılandırılır, varsayılan kapalıdır; Oracle Integration bağlantıları da kimlik bilgisini yalnız tanımlı uç noktaya gönderir.
+
+Gelecek regresyon riski: 🟡 (ağ yapılandırması hatasında servis sırrı başka sunucuya gidebilir).
+
+---
+
 ### BL-577
 
 **CI geçidi (phase1-gates, ubuntu-latest) hiçbir servis testini koşmuyor: Platform, Auth ve MDM testleri yalnız yerelde koşuluyor; Linux'a özgü kod (BL-570) hiç ölçülmüyor**
