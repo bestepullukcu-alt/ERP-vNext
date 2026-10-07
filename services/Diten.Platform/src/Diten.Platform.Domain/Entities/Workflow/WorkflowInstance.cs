@@ -28,7 +28,16 @@ public sealed class WorkflowInstance : TenantScopedEntity
 
     public string? CorrelationId { get; set; }
     public string? IdempotencyKey { get; set; }
+    /// <summary>Display identity of the starter (e-mail first) — for people, not for comparisons.</summary>
     public string? StartedBy { get; set; }
+
+    /// <summary>
+    /// WP-0023-FX — the starter's user id (JWT <c>sub</c>), the value the four-eyes rule compares with the approver.
+    /// Null on instances started before the fix; those fall back to the Start transition log row, which has always
+    /// carried the starter's user id.
+    /// </summary>
+    public string? StartedByUserId { get; set; }
+
     public DateTimeOffset? StartedAt { get; set; }
     public DateTimeOffset? DueAt { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }

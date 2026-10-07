@@ -162,6 +162,8 @@ public sealed class StartWorkflowInstanceHandler
             CorrelationId = request.CorrelationId,
             IdempotencyKey = idempotencyKey,
             StartedBy = actor,
+            // WP-0023-FX — the id the four-eyes rule compares (StartedBy is the e-mail for a tenant user).
+            StartedByUserId = _currentUserContext.UserId == Guid.Empty ? null : _currentUserContext.UserId.ToString(),
             StartedAt = now,
             DueAt = dueAt,
             LastTransitionAt = now,

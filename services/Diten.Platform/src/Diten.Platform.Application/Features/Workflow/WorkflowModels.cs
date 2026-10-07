@@ -45,6 +45,8 @@ public static class WorkflowReasonCodes
     public const string WorkflowAssignmentSnapshotNotFound = "WORKFLOW_ASSIGNMENT_SNAPSHOT_NOT_FOUND";
     public const string WorkflowActorDenied = "WORKFLOW_ACTOR_DENIED";
     public const string SodViolation = "SOD_VIOLATION";
+    // WP-0023-FX — the body named someone other than the authenticated caller (direct task API).
+    public const string WorkflowActorMismatch = "WORKFLOW_ACTOR_MISMATCH";
     public const string WorkflowTaskInvalidState = "WORKFLOW_TASK_INVALID_STATE";
     public const string WorkflowTransitionConflict = "WORKFLOW_TRANSITION_CONFLICT";
     public const string WorkflowTransitionIdempotent = "WORKFLOW_TRANSITION_IDEMPOTENT";
@@ -323,14 +325,14 @@ public sealed record WorkflowInstanceHistoryEntryDto(
     DateTimeOffset OccurredAt);
 
 public sealed record ApproveWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
     string? EvidenceRef);
 
 public sealed record RejectWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
@@ -349,14 +351,14 @@ public sealed record WorkflowTaskTransitionResponse(
     string? CorrelationId);
 
 public sealed record DelegateWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string DelegatePrincipalId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment);
 
 public sealed record RequestInfoWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string? TargetPrincipalId,
     string ReasonCode,
     string IdempotencyKey,
@@ -364,7 +366,7 @@ public sealed record RequestInfoWorkflowTaskRequest(
     string? EvidenceRef);
 
 public sealed record CancelWorkflowTaskRequest(
-    string ActorId,
+    string? ActorId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment);

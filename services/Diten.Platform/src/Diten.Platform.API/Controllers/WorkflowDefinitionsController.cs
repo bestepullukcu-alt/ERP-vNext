@@ -1,6 +1,7 @@
 using Diten.Platform.API.Controllers.Common;
 using Diten.Platform.API.Observability;
 using Diten.Platform.API.Security;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.TenantOrganization.Queries;
 using Diten.Platform.Application.Features.Workflow;
 using Diten.Platform.Application.Features.Workflow.Commands;
@@ -21,11 +22,13 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
 {
     private readonly IMediator _mediator;
     private readonly ICorrelationContext _correlationContext;
+    private readonly ICurrentUserContext _currentUser;
 
-    public WorkflowDefinitionsController(IMediator mediator, ICorrelationContext correlationContext)
+    public WorkflowDefinitionsController(IMediator mediator, ICorrelationContext correlationContext, ICurrentUserContext currentUser)
     {
         _mediator = mediator;
         _correlationContext = correlationContext;
+        _currentUser = currentUser;
     }
 
     [HttpPost("definitions")]
@@ -197,7 +200,14 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         [FromBody] ApproveWorkflowTaskRequest request,
         CancellationToken ct)
     {
-        var response = await _mediator.Send(new ApproveWorkflowTaskCommand(taskId, request, CorrelationId), ct);
+        // WP-0023-FX — the actor is the authenticated caller, never the body (WorkflowActorBinding).
+        var (actorId, refused) = WorkflowActorBinding.Bind(request.ActorId, _currentUser, CorrelationId);
+        if (refused is not null)
+        {
+            return CreateActionResultInstance(refused);
+        }
+
+        var response = await _mediator.Send(new ApproveWorkflowTaskCommand(taskId, request with { ActorId = actorId }, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -208,7 +218,14 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         [FromBody] RejectWorkflowTaskRequest request,
         CancellationToken ct)
     {
-        var response = await _mediator.Send(new RejectWorkflowTaskCommand(taskId, request, CorrelationId), ct);
+        // WP-0023-FX — the actor is the authenticated caller, never the body (WorkflowActorBinding).
+        var (actorId, refused) = WorkflowActorBinding.Bind(request.ActorId, _currentUser, CorrelationId);
+        if (refused is not null)
+        {
+            return CreateActionResultInstance(refused);
+        }
+
+        var response = await _mediator.Send(new RejectWorkflowTaskCommand(taskId, request with { ActorId = actorId }, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -219,7 +236,14 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         [FromBody] DelegateWorkflowTaskRequest request,
         CancellationToken ct)
     {
-        var response = await _mediator.Send(new DelegateWorkflowTaskCommand(taskId, request, CorrelationId), ct);
+        // WP-0023-FX — the actor is the authenticated caller, never the body (WorkflowActorBinding).
+        var (actorId, refused) = WorkflowActorBinding.Bind(request.ActorId, _currentUser, CorrelationId);
+        if (refused is not null)
+        {
+            return CreateActionResultInstance(refused);
+        }
+
+        var response = await _mediator.Send(new DelegateWorkflowTaskCommand(taskId, request with { ActorId = actorId }, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -230,7 +254,14 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         [FromBody] RequestInfoWorkflowTaskRequest request,
         CancellationToken ct)
     {
-        var response = await _mediator.Send(new RequestInfoWorkflowTaskCommand(taskId, request, CorrelationId), ct);
+        // WP-0023-FX — the actor is the authenticated caller, never the body (WorkflowActorBinding).
+        var (actorId, refused) = WorkflowActorBinding.Bind(request.ActorId, _currentUser, CorrelationId);
+        if (refused is not null)
+        {
+            return CreateActionResultInstance(refused);
+        }
+
+        var response = await _mediator.Send(new RequestInfoWorkflowTaskCommand(taskId, request with { ActorId = actorId }, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -241,7 +272,14 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         [FromBody] CancelWorkflowTaskRequest request,
         CancellationToken ct)
     {
-        var response = await _mediator.Send(new CancelWorkflowTaskCommand(taskId, request, CorrelationId), ct);
+        // WP-0023-FX — the actor is the authenticated caller, never the body (WorkflowActorBinding).
+        var (actorId, refused) = WorkflowActorBinding.Bind(request.ActorId, _currentUser, CorrelationId);
+        if (refused is not null)
+        {
+            return CreateActionResultInstance(refused);
+        }
+
+        var response = await _mediator.Send(new CancelWorkflowTaskCommand(taskId, request with { ActorId = actorId }, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 

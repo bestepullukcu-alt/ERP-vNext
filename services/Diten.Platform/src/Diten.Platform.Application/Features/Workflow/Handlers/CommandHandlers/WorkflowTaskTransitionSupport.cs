@@ -106,7 +106,7 @@ internal sealed class WorkflowTaskTransitionSupport
                 correlationId);
         }
 
-        if (!string.Equals(snapshot.ResolvedPrincipalId, actorId, StringComparison.Ordinal))
+        if (!WorkflowPrincipal.Same(snapshot.ResolvedPrincipalId, actorId))
         {
             return Response<WorkflowTaskTransitionResponse>.Fail(
                 "Actor is not assigned to this workflow task.",
@@ -115,9 +115,7 @@ internal sealed class WorkflowTaskTransitionSupport
                 correlationId);
         }
 
-        if (action == WorkflowTransitionAction.Approve &&
-            !string.IsNullOrWhiteSpace(instance.StartedBy) &&
-            string.Equals(instance.StartedBy, actorId, StringComparison.Ordinal))
+        if (action == WorkflowTransitionAction.Approve && await IsStarterAsync(instance, actorId, ct))
         {
             return Response<WorkflowTaskTransitionResponse>.Fail(
                 "Submitter cannot approve their own workflow.",
@@ -327,6 +325,35 @@ internal sealed class WorkflowTaskTransitionSupport
     private static DateTimeOffset? ResolveDueAtFromStep(WorkflowRuntimeStep step, DateTimeOffset now) =>
         step.DueInMinutes.HasValue ? now.AddMinutes(step.DueInMinutes.Value) : null;
 
+    /// <summary>
+    /// WP-0023-FX — four eyes: is <paramref name="actorId"/> the person who started this instance?
+    ///
+    /// <para>Compared by user id. <c>StartedBy</c> is the starter's display identity (the e-mail for a tenant user),
+    /// so comparing it with the approver's id — what this check did before — never matched and the rule never fired.
+    /// <c>StartedByUserId</c> is written by every start since the fix. An instance started before it has no such field;
+    /// its Start log row (sequence 1) has always carried the starter's user id, so open tasks of old instances stay
+    /// protected without a backfill. <c>StartedBy</c> is still checked: a starter without an e-mail or name claim was
+    /// stored by id.</para>
+    /// </summary>
+    private async Task<bool> IsStarterAsync(WorkflowInstance instance, string actorId, CancellationToken ct)
+    {
+        if (WorkflowPrincipal.Same(instance.StartedByUserId, actorId) || WorkflowPrincipal.Same(instance.StartedBy, actorId))
+        {
+            return true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(instance.StartedByUserId))
+        {
+            return false;
+        }
+
+        var startLog = (await _logRepository.ListByInstanceIdAsync(instance.Id, ct))
+            .Where(log => log.Action == WorkflowTransitionAction.Start)
+            .OrderBy(log => log.SequenceNo)
+            .FirstOrDefault();
+        return startLog is not null && WorkflowPrincipal.Same(startLog.ActorId, actorId);
+    }
+
     public async Task<Response<WorkflowTaskTransitionResponse>> DelegateAsync(
         Guid taskId,
         string actorId,
@@ -342,7 +369,7 @@ internal sealed class WorkflowTaskTransitionSupport
         reasonCode = reasonCode.Trim();
         idempotencyKey = idempotencyKey.Trim();
 
-        if (string.Equals(actorId, delegatePrincipalId, StringComparison.Ordinal))
+        if (WorkflowPrincipal.Same(actorId, delegatePrincipalId))
         {
             return Response<WorkflowTaskTransitionResponse>.Fail(
                 "Delegate principal must be different from the actor.",
@@ -375,7 +402,7 @@ internal sealed class WorkflowTaskTransitionSupport
             return InvalidState(correlationId);
         }
 
-        if (!string.Equals(snapshot.ResolvedPrincipalId, actorId, StringComparison.Ordinal))
+        if (!WorkflowPrincipal.Same(snapshot.ResolvedPrincipalId, actorId))
         {
             return ActorDenied(correlationId);
         }
@@ -459,7 +486,7 @@ internal sealed class WorkflowTaskTransitionSupport
             return InvalidState(correlationId);
         }
 
-        if (!string.Equals(snapshot.ResolvedPrincipalId, actorId, StringComparison.Ordinal))
+        if (!WorkflowPrincipal.Same(snapshot.ResolvedPrincipalId, actorId))
         {
             return ActorDenied(correlationId);
         }

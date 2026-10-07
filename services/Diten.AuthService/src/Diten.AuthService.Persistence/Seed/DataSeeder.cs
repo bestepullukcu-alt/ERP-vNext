@@ -198,7 +198,9 @@ public static class DataSeeder
         await ReconcilePermissionSegmentsFromSeedAsync(col, permissions);
         await ReconcilePermissionScopesAsync(col, permissions);
         // BL-411 — allowlisted PlatformAdmin → Tenant correction for synced-only keys the seed-list reconcile cannot reach.
-        await ApplyTenantRouteScopeCorrectionsAsync(col);
+        // WP-0023-FX — also the ONLY path that lowers the allowlisted workflow runtime keys (seeded ones included; the
+        // seed reconcile above skips that move), and every applied row is audited in authAuditLogs.
+        await ApplyTenantRouteScopeCorrectionsAsync(col, database.GetCollection<AuthAuditLog>("authAuditLogs"));
         await ReconcilePermissionModuleCasingAsync(col);
         await ReconcileServiceNamespaceModuleAttributionAsync(col);
         await ReconcilePermissionSegmentSpellingAsync(col);
@@ -808,13 +810,13 @@ public static class DataSeeder
             new("platform", "workflow.definitions", "view", "View Workflow Definitions", "Permission to view workflow approval templates and versions", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.definitions", "manage", "Manage Workflow Definitions", "Permission to create and edit workflow approval templates", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.definitions", "publish", "Publish Workflow Definition", "Permission to publish an immutable workflow template version", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.instances", "start", "Start Workflow Instance", "Permission to start a workflow approval instance", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.instances", "view", "View Workflow Instances", "Permission to view workflow instances and approval tasks", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", "Permission to approve a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "reject", "Reject Workflow Task", "Permission to reject a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "delegate", "Delegate Workflow Task", "Permission to delegate a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "request-info", "Request Info on Workflow Task", "Permission to request additional information on a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "cancel", "Cancel Workflow Task", "Permission to cancel a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.instances", "start", "Start Workflow Instance", "Permission to start a workflow approval instance", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.instances", "view", "View Workflow Instances", "Permission to view workflow instances and approval tasks", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", "Permission to approve a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "reject", "Reject Workflow Task", "Permission to reject a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "delegate", "Delegate Workflow Task", "Permission to delegate a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "request-info", "Request Info on Workflow Task", "Permission to request additional information on a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "cancel", "Cancel Workflow Task", "Permission to cancel a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
             new("platform", "workflow.transitions", "evaluate", "Evaluate Workflow Transition Gate", "Permission to evaluate the workflow integration transition gate", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.escalations", "manage", "Manage Workflow SLA Rules", "Permission to create and view workflow SLA escalation rules", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.escalations", "run", "Run Workflow Escalations", "Permission to run the workflow escalation/timeout processor")
@@ -893,6 +895,13 @@ public static class DataSeeder
         var writes = new List<WriteModel<Permission>>();
         foreach (var p in permissions)
         {
+            // WP-0023-FX — a seeded key on the TenantRouteScopeCorrections allowlist is moved PlatformAdmin → Tenant only
+            // by the allowlisted, audited correction (ApplyTenantRouteScopeCorrectionsAsync), never silently here.
+            if (p.Scope == PermissionScope.Tenant && TenantRouteScopeCorrections.IsAllowlisted(p.Key))
+            {
+                continue;
+            }
+
             var filter = Builders<Permission>.Filter.And(
                 Builders<Permission>.Filter.Eq(x => x.Key, p.Key),
                 Builders<Permission>.Filter.Ne(x => x.Scope, p.Scope));
@@ -928,12 +937,21 @@ public static class DataSeeder
     /// receives read actions only). MOD-0024 templates are tenant configuration maintained by the tenant's
     /// administrators. Pinned by TenantRouteScopeCorrectionMongoTests.</para>
     ///
-    /// <para>Returns the rows actually changed; each is logged once, on the run that changes it.</para>
+    /// <para>WP-0023-FX — the same correction moves the seven workflow runtime keys (Tenant API permissions of the
+    /// Workflow manifest). Their grant effect: ModulePermissionResolver already gives a workflow-entitled tenant's Admin
+    /// every workflow key regardless of scope (PlatformHostedTenantModules) and Viewer the read actions, so the
+    /// entitlement grants do not change; what changes is that a tenant administrator may now grant the runtime keys to
+    /// any tenant role through AssignPermission.</para>
+    ///
+    /// <para>Returns the rows actually changed; each is logged once, on the run that changes it, and — when
+    /// <paramref name="audit"/> is given (the startup seed passes authAuditLogs) — audited once.</para>
     /// </summary>
-    public static async Task<IReadOnlyList<TenantRouteScopeCorrections.Correction>> ApplyTenantRouteScopeCorrectionsAsync(IMongoCollection<Permission> col)
+    public static async Task<IReadOnlyList<TenantRouteScopeCorrections.Correction>> ApplyTenantRouteScopeCorrectionsAsync(
+        IMongoCollection<Permission> col,
+        IMongoCollection<AuthAuditLog>? audit = null)
     {
         var all = await col.Find(FilterDefinition<Permission>.Empty).ToListAsync();
-        return await ApplyPlannedTenantRouteScopeCorrectionsAsync(col, TenantRouteScopeCorrections.Plan(all));
+        return await ApplyPlannedTenantRouteScopeCorrectionsAsync(col, TenantRouteScopeCorrections.Plan(all), audit);
     }
 
     /// <summary>
@@ -942,7 +960,8 @@ public static class DataSeeder
     /// </summary>
     public static async Task<IReadOnlyList<TenantRouteScopeCorrections.Correction>> ApplyPlannedTenantRouteScopeCorrectionsAsync(
         IMongoCollection<Permission> col,
-        IReadOnlyList<TenantRouteScopeCorrections.Correction> plan)
+        IReadOnlyList<TenantRouteScopeCorrections.Correction> plan,
+        IMongoCollection<AuthAuditLog>? audit = null)
     {
         var applied = new List<TenantRouteScopeCorrections.Correction>();
 
@@ -962,7 +981,23 @@ public static class DataSeeder
             {
                 applied.Add(correction);
                 Console.WriteLine(
-                    $"BL-411 scope correction: {correction.PermissionKey} PlatformAdmin -> Tenant (registered route {correction.RegisteredRoutePath}).");
+                    $"{correction.Decision} scope correction: {correction.PermissionKey} PlatformAdmin -> Tenant (registered {correction.RegisteredRoutePath}).");
+
+                // WP-0023-FX — one audit row per row actually changed (global catalog: no tenant, system actor).
+                if (audit is not null)
+                {
+                    var metadata = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        permissionKey = correction.PermissionKey,
+                        permissionId = correction.PermissionId,
+                        fromScope = nameof(PermissionScope.PlatformAdmin),
+                        toScope = nameof(PermissionScope.Tenant),
+                        registration = correction.RegisteredRoutePath,
+                        decision = correction.Decision,
+                        actor = SystemUser
+                    });
+                    await audit.InsertOneAsync(new AuthAuditLog("permission_scope_corrected", Guid.Empty, Guid.Empty, metadata));
+                }
             }
         }
 

@@ -30,7 +30,7 @@ public sealed class RejectWorkflowTaskHandler
         _support.TransitionAsync(
             request.TaskId,
             WorkflowTransitionAction.Reject,
-            request.Request.ActorId,
+            request.Request.ActorId ?? string.Empty,
             request.Request.ReasonCode,
             request.Request.IdempotencyKey,
             request.Request.Comment,
