@@ -8063,6 +8063,36 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-567
+
+**Ürün okumalarında kapsam koruması yalnız `InvalidOperationException`'ı eşliyor: okunamayan rollout kaydı (BSON eşleme / Mongo okuma hatası) ürün listesinde 500, yazımda ve tamlıkta 503**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma, SCOPE-INT-01) · BULAN: WP-MDM-SCOPE-ACCEPT-01 FIX3 raporu + bağımsız inceleme · KAYIT: 2026-10-07
+
+Kapsam işi FIX3'te yazım ve tamlık yollarına `ProductLegalEntityScopeWriteFenceCoordinator.IsRolloutUnreadable` korumasını koydu (IOE, Format, Bson*, Mongo* → kodlu 503). GP ürün okuması (`GetGlobalProductsHandler.cs:135`) hâlâ yalnız IOE eşliyor; okunamayan bir rollout kaydı ürün ekranında 500 verir. GP dosyası o sırada son kabul turundaydı, bu yüzden entegrasyon turuna (SCOPE-INT-01) kaldı. Yapılacak: aynı korumayı ürün okumalarına uygula (GP, GSKU, LSKU, FG okuma işleyicileri), bir test ile sabitle. Karşılaştırma: SAP'de yetki kontrolü (AUTHORITY-CHECK) okunamazsa kayıt gösterilmez, kodlu mesaj verilir; Oracle Fusion veri güvenliği de "kapsam okunamadı" durumunu ayrı hata olarak döner. Gelecek regresyon riski: 🟡 (Enforced kiracıda bozuk rollout kaydı ürün ekranını 500 yapar).
+
+---
+
+### BL-568
+
+**Onay motoru: tamamlanmamış güvenilir rezervasyonun başlangıç görevi Görev Merkezi'nde görünüyor ama karar reddediliyor; ayrı operatör servis kimliği yok**
+
+DURUM: AÇIK · SAHİP: CT (Platform / onay motoru) · BULAN: WP-WF-ENGINE-RECOVERY-01 raporu (kural 5 ölçümü) + FIX1 madde 1 DUR · KAYIT: 2026-10-07
+
+(1) Bir güvenilir başlatmanın rezervasyonu tamamlanmadan kalırsa (MDM başlangıç cevabını almadan düşerse) başlangıç görevi adayın Görev Merkezi listesinde görünür, ama karar reddedilir (rezervasyon Completed değil). Süpürme 30 dk sonra kapatır (iş varsayılan KAPALI). Öneri: Görev Merkezi listesi tamamlanmamış rezervasyonun görevini göstermez ya da "hazırlanıyor" durumuyla, karar düğmesi kapalı gösterir. (2) Platform'un güvenilir servis şemaları tam 10 talep istiyor ve yalnız `Diten.MDM` servis adını kabul ediyor; operatör araçları için ayrı bir servis kimliği yok. WF FIX1'de yetim kurtarma bu yüzden HTTP ucu yerine tek atımlık komut oldu (CT kararı D). Kalıcı çözüm: Auth'ta ayrı bir operatör servis kimliği + hedef kitle (ör. `TRUSTED_PLATFORM_OPERATOR`), izin taşıyabilen belirteç modeli. Karşılaştırma: SAP'de arka plan işleri kendi teknik kullanıcısıyla (RFC / sistem kullanıcısı) koşar; Oracle'da entegrasyon kullanıcısına iş rolü verilir — ikisi de kimlik başına. Gelecek regresyon riski: 🟢 (1: kullanıcı karar veremeyeceği görevi görür, kafa karışıklığı; 2: operatör uçları açılınca gerekir).
+
+---
+
+### BL-569
+
+**MDM test serileştirici sırası: Guid Standard serileştiricisinden önce bir yaşam döngüsü deposu kuran test, sınıf eşlemelerini erken dondurur (Api.Tests'te modül başlatıcı koruması yok)**
+
+DURUM: AÇIK · SAHİP: CT (MDM test altyapısı) · BULAN: WP-MDM-GP-BL552 akış 3 FIX2 incelemesi (🟢 4) · KAYIT: 2026-10-07
+
+GP FIX2 beş yaşam döngüsü deposuna statik `Register()` ekledi; kayıt kilitli ve tekrarlanabilir. Ama bir süreç Guid Standard serileştiricisini kaydetmeden önce bu depolardan birini kurarsa sürücü varsayılan Guid serileştiricisini önbelleğe alır (BL-280 şekli: boş okumalar); `Verify` statik kurucuda fırlarsa tür o süreç için kalıcı `TypeInitializationException` olur. Üretim ve bugünkü testler güvenli (Application.Tests `MdmTestSerializers` sırayı kuruyor). Öneri: Api.Tests'e de modül başlatıcı (Guid → Register) ve "önce depo kur, sonra Guid Standard mı" testi. Gelecek regresyon riski: 🟢 (yalnız yeni bir testin sırasına bağlı).
+
+---
+
 ### BL-566
 
 **Ürün denetim niyetleri: ölü mektuba düşen niyeti yeniden sürecek bir araç yok; "Platform bu işlemi henüz eşlemiyor" beklemesi yalnız GP'nin üç işlemini kapsıyor (LSKU 82–86 ve FG 87+ aynı dağıtım sırası boşluğuna düşer)**
