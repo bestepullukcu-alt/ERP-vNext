@@ -518,6 +518,9 @@ public sealed class LskuIdentityWorkflowProcessorTests
             Current.LastFailureCode = reasonCode;
             return Task.FromResult(new LskuIdentityWithdrawalWriteResult(true, false, Lsku, null));
         }
+        // LSKU FIX5 K3: this fake keeps no lease; giving it back is a no-op here (LskuDraftCancelCloseTests measures it).
+        public Task<bool> ReleaseLeaseAsync(LskuIdentityWorkflowClaim claim, CancellationToken cancellationToken = default) =>
+            Task.FromResult(true);
         public LskuIdentityWorkflowCheckpoint? FailNextAdvanceTo { get; set; }
         public LskuIdentityWorkflowCheckpointMutation? LastMutation { get; private set; }
 

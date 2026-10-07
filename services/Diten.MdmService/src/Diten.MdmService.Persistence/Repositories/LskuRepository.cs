@@ -283,6 +283,17 @@ public sealed class LskuRepository : ILskuRepository
         {
             return AmbiguousWrite();
         }
+        // LSKU FIX5 K6: a commit whose result is unknown (the driver's UnknownTransactionCommitResult label, on a
+        // command error or otherwise) and a server-selection timeout are not refusals — the row may or may not be
+        // there: ambiguous (202), never burned, the admission kept for the same key's repeat (formerly a 500).
+        catch (MongoException exception) when (exception.HasErrorLabel("UnknownTransactionCommitResult"))
+        {
+            return AmbiguousWrite();
+        }
+        catch (TimeoutException)
+        {
+            return AmbiguousWrite();
+        }
     }
 
     /*
@@ -829,22 +840,17 @@ public sealed class LskuRepository : ILskuRepository
     private static LskuCreateResult AmbiguousWrite() =>
         new(false, null, "LSKU_WRITE_OUTCOME_AMBIGUOUS", WriteOutcomeAmbiguous: true);
 
+    // LSKU FIX5 item 4: the same command is recognised by its IDENTITY facts only — the market selection is resolved
+    // again on every call (Platform stamps ResolvedAtUtc anew), so two concurrent requests of one key would otherwise
+    // see each other as a conflict (409) instead of a replay.
     private static bool SameFacts(Lsku left, Lsku right) =>
         left.Id == right.Id
         && left.GskuId == right.GskuId
         && left.CodeReservationId == right.CodeReservationId
         && string.Equals(left.CanonicalCode, right.CanonicalCode, StringComparison.Ordinal)
         && string.Equals(left.CreationCommandId, right.CreationCommandId, StringComparison.Ordinal)
-        && string.Equals(left.MarketCode, right.MarketCode, StringComparison.Ordinal)
-        && SameSelection(left.MarketSelection, right.MarketSelection);
+        && string.Equals(left.MarketCode, right.MarketCode, StringComparison.Ordinal);
 
-    private static bool SameSelection(ReferenceCatalogSelection left, ReferenceCatalogSelection right) =>
-        string.Equals(left.SetCode, right.SetCode, StringComparison.Ordinal)
-        && string.Equals(left.ValueCode, right.ValueCode, StringComparison.Ordinal)
-        && left.CatalogVersionId == right.CatalogVersionId
-        && left.CatalogVersionNumber == right.CatalogVersionNumber
-        && left.ResolutionMode == right.ResolutionMode
-        && left.ResolvedAtUtc == right.ResolvedAtUtc;
 
     public async Task<LskuCreateResult> CreateDraftWithAdmissionAsync(
         Lsku lsku, string admissionFingerprint, CancellationToken cancellationToken = default)

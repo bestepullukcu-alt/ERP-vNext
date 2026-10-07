@@ -285,7 +285,10 @@ Each count has its own switch (FIX4 item 12): `GskuChildAdmissionGauge:Enabled` 
 `GskuChildAdmissionGauge:LskuIdentityEnabled` (the `LSKU_IDENTITY` gauges), both default on; the worker runs while
 either is on, so turning the admission count off no longer silences the LSKU identity gauges. A wait at its limit is
 logged as an Error ONCE, by the recovery runner when the operation newly becomes stuck (FIX4 item 6); a repeat by the
-maker keeps the limit and records the current cause in `RetryLimitCauseCode`.
+maker keeps the limit and records the current cause in `RetryLimitCauseCode`. *Legacy submits (FIX5, information):* an identity operation written
+before the start-sent mark existed counts its 2-minute settle window from its last update read before the claim; every
+refused attempt on it writes a new update, so the window starts again after each refusal — such an operation is only
+closed (draft cancel, reconciliation) once it has been left alone for the window (measured: 0 such documents in Dev).
 
 | gauge (`flow=LSKU_IDENTITY`) | counts | what to do |
 |---|---|---|

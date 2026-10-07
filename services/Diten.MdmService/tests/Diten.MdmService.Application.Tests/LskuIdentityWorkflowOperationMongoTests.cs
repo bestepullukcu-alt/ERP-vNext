@@ -122,8 +122,10 @@ public sealed class LskuIdentityWorkflowOperationMongoTests : IAsyncLifetime
             WithdrawalTransitionSequence: 2, WithdrawalResultWorkflowInstanceVersion: 2,
             WithdrawalResultApprovalTaskVersion: 2, WithdrawalTaskStatus: "Cancelled",
             WithdrawalInstanceStatus: "Cancelled", WithdrawalObjectRef: operation.ObjectRef, ReleaseLease: true);
-        Assert.False(await repository.AdvanceAsync(claim!, mutation with { WithdrawalObjectRef = null }));
-        Assert.False(await repository.AdvanceAsync(claim!, mutation with { WithdrawalExpectedWorkflowInstanceVersion = 1 }));
+        // LSKU FIX5 K3: a refused move that asks for the lease back gives it back (early refusals too) — these two
+        // refusals keep it, so the same claim can make the exact move after them.
+        Assert.False(await repository.AdvanceAsync(claim!, mutation with { WithdrawalObjectRef = null, ReleaseLease = false }));
+        Assert.False(await repository.AdvanceAsync(claim!, mutation with { WithdrawalExpectedWorkflowInstanceVersion = 1, ReleaseLease = false }));
         Assert.True(await repository.AdvanceAsync(claim!, mutation));
         Assert.Equal(operation.ObjectRef, (await repository.GetByOperationIdAsync(operation.OperationId))!.WithdrawalObjectRef);
     }

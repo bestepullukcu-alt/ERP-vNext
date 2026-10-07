@@ -850,6 +850,16 @@ public sealed class LskuTransitionMatrixTests
             LskuIdentityWorkflowRecoveryCursor? after = null, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
+        // LSKU FIX5 K3: only this claim's own lease is given back — nothing else changes (not a transition).
+        public Task<bool> ReleaseLeaseAsync(LskuIdentityWorkflowClaim claim, CancellationToken cancellationToken = default)
+        {
+            if (Stored.LeaseOwner != claim.LeaseOwner || Stored.LeaseGeneration != claim.LeaseGeneration)
+                return Task.FromResult(false);
+            Stored.LeaseOwner = null;
+            Stored.LeaseUntilUtcTicksV1 = null;
+            return Task.FromResult(true);
+        }
+
         public Task<bool> AdvanceAsync(LskuIdentityWorkflowClaim claim, LskuIdentityWorkflowCheckpointMutation m,
             CancellationToken cancellationToken = default)
         {

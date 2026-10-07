@@ -289,6 +289,9 @@ public sealed class LskuIdentityWorkflowOperationRepository
             || mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
                && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable)
         {
+            // LSKU FIX5 K3 (measured: this early refusal kept the lease to its expiry): a refused move that was to
+            // give the lease back still gives it back — the same rule as a refusal by the store's filter (S2).
+            if (mutation.ReleaseLease && claim.TenantId == _tenantId) await ReleaseLeaseAsync(claim, cancellationToken);
             return false;
         }
 
@@ -463,16 +466,23 @@ public sealed class LskuIdentityWorkflowOperationRepository
         if (result.ModifiedCount != 1 && mutation.ReleaseLease)
         {
             // S2: progress the store refused gives the lease back (only this claim's own lease).
-            await _operations.UpdateOneAsync(
-                ActiveTenantFilter
-                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.OperationId, claim.OperationId)
-                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.LeaseOwner, claim.LeaseOwner)
-                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.LeaseGeneration, claim.LeaseGeneration),
-                Builders<LskuIdentityWorkflowOperation>.Update.Set(item => item.LeaseOwner, null)
-                    .Set(item => item.LeaseUntilUtcTicksV1, null),
-                cancellationToken: cancellationToken);
+            await ReleaseLeaseAsync(claim, cancellationToken);
         }
         return result.ModifiedCount == 1;
+    }
+
+    public async Task<bool> ReleaseLeaseAsync(LskuIdentityWorkflowClaim claim, CancellationToken cancellationToken = default)
+    {
+        if (claim.TenantId != _tenantId) return false;
+        var released = await _operations.UpdateOneAsync(
+            ActiveTenantFilter
+            & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.OperationId, claim.OperationId)
+            & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.LeaseOwner, claim.LeaseOwner)
+            & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.LeaseGeneration, claim.LeaseGeneration),
+            Builders<LskuIdentityWorkflowOperation>.Update.Set(item => item.LeaseOwner, null)
+                .Set(item => item.LeaseUntilUtcTicksV1, null),
+            cancellationToken: cancellationToken);
+        return released.ModifiedCount == 1;
     }
 
     public async Task<LskuIdentityWithdrawalWriteResult> ApplyWithdrawalAsync(
@@ -712,7 +722,7 @@ public sealed class LskuIdentityWorkflowOperationRepository
                 // FIX3 item 4: "nothing was sent" is decided on a document; the end is written only if its start-sent
                 // mark is still the one decided on (a start sent meanwhile fails it). Eq(null) also matches a document
                 // written before the field existed.
-                & (endCheckpoint == LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                & (endCheckpoint == AbandonWriterEnd
                     ? Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LastStartSentAtUtcTicksV1, operation.LastStartSentAtUtcTicksV1)
                     : Builders<LskuIdentityWorkflowOperation>.Filter.Empty),
                 Builders<LskuIdentityWorkflowOperation>.Update

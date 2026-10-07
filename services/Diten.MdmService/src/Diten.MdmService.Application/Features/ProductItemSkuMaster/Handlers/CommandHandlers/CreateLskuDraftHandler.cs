@@ -129,7 +129,10 @@ public sealed class CreateLskuDraftHandler
             return await CleanUpThenAsync(command, commandId, admissionFingerprint, Fail(
                 resolution.FailureCode ?? "REFERENCE_PROVIDER_UNAVAILABLE",
                 resolution.StatusCode is 404 or 503 or 504 ? resolution.StatusCode : 503),
-                definite: resolution.StatusCode == 404, cancellationToken);
+                // LSKU FIX5 K5: definite only on Platform's own "not offered" — the status AND its exact reason.
+                definite: resolution.StatusCode == 404
+                          && string.Equals(resolution.FailureCode, MarketNotOffered, StringComparison.Ordinal),
+                cancellationToken);
         }
 
         var admission = await _gskus.AcquireChildCreationAdmissionAsync(
@@ -372,6 +375,8 @@ public sealed class CreateLskuDraftHandler
     };
 
     public const string MarketAlreadyExists = "LSKU_MARKET_ALREADY_EXISTS";
+    // The market resolver's exact "this market is not offered" reason (the clients' MarketNotOfferedReason).
+    public const string MarketNotOffered = "REFERENCE_MARKET_NOT_FOUND";
 
     public const string BurnRefused = "LSKU_CODE_BURN_REFUSED";
 
@@ -533,22 +538,17 @@ public sealed class CreateLskuDraftHandler
         && reservation.ReservationState == CodeReservationState.Consumed
         && string.Equals(reservation.ReservedCode, lsku.CanonicalCode, StringComparison.Ordinal);
 
+    // LSKU FIX5 item 4: the same command is recognised by its IDENTITY facts only — the market selection is resolved
+    // again on every call (Platform stamps ResolvedAtUtc anew), so two concurrent requests of one key would otherwise
+    // see each other as a conflict (409) instead of a replay.
     private static bool SameFacts(Lsku left, Lsku right) =>
         left.Id == right.Id
         && left.GskuId == right.GskuId
         && left.CodeReservationId == right.CodeReservationId
         && string.Equals(left.CanonicalCode, right.CanonicalCode, StringComparison.Ordinal)
         && string.Equals(left.CreationCommandId, right.CreationCommandId, StringComparison.Ordinal)
-        && string.Equals(left.MarketCode, right.MarketCode, StringComparison.Ordinal)
-        && SameSelection(left.MarketSelection, right.MarketSelection);
+        && string.Equals(left.MarketCode, right.MarketCode, StringComparison.Ordinal);
 
-    private static bool SameSelection(ReferenceCatalogSelection left, ReferenceCatalogSelection right) =>
-        string.Equals(left.SetCode, right.SetCode, StringComparison.Ordinal)
-        && string.Equals(left.ValueCode, right.ValueCode, StringComparison.Ordinal)
-        && left.CatalogVersionId == right.CatalogVersionId
-        && left.CatalogVersionNumber == right.CatalogVersionNumber
-        && left.ResolutionMode == right.ResolutionMode
-        && left.ResolvedAtUtc == right.ResolvedAtUtc;
 
     private static Response<ProductItemSkuMasterModels.LskuDraftDto> Success(
         Lsku lsku,

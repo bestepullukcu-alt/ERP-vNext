@@ -32,6 +32,10 @@ public interface ILskuIdentityWorkflowOperationRepository
         LskuIdentityWorkflowCheckpointMutation mutation,
         CancellationToken cancellationToken = default);
 
+    // LSKU FIX5 K3: gives back ONLY this claim's own lease (owner + generation) — nothing else is written, so it never
+    // undoes or races a write that committed; a lease already given back (or taken over) is left as it is.
+    Task<bool> ReleaseLeaseAsync(LskuIdentityWorkflowClaim claim, CancellationToken cancellationToken = default);
+
     Task<LskuIdentityWithdrawalWriteResult> ApplyWithdrawalAsync(
         LskuIdentityWorkflowClaim claim,
         LskuIdentityWorkflowOperation operation,
