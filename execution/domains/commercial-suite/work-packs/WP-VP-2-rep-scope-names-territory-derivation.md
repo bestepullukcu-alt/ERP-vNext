@@ -196,3 +196,19 @@ Commit: "feat(crm,web,auth): WP-VP-2 — visit planning phase 2 (display names, 
 - **⚠ D9 (yeni bulgu, VP-2 öncesinden):** Ziyaret Planlama **Düzenle** formu `selectedAccountIds / selectedPharmacyIds / selectedContacts` dizilerini **boş** gönderiyor (`form.js` `buildPayload`). Sunucu PUT'ta seçimi bunlarla değiştiriyor → taslak planda hafta / dönem değiştirmek **tüm hedefleri siler**. Yol haritasına eklendi, öncelikli küçük düzeltme.
 
 **E4 (CT, bekliyor):** fleet yeniden başlatılmalı (Auth seeder yeni anahtarlar · CRM · Platform manifest · Web).
+### §37 ek — E4 ACCEPTED (CT canlı, 2026-10-07; fleet yeniden başlatıldı, Beste girişi, ayrı sekme, kayıt yok)
+| Kontrol | Sonuç |
+|---|---|
+| Form | ✓ Ülke / Dönem / Hafta / Temsilci (salt okunur "Admin User"); segment ve strateji yok |
+| `resources/me` | ✓ `displayName: "Admin User"` |
+| `my-accounts` | ✓ `territoryStatus = assigned`, 4 düğüm (Beyoğlu, Fatih, Kağıthane exact; Şişli subtree), **totalCount 1.535** |
+| Hedefler | ✓ Arama bölge ucundan; "Bölge dışı hesap ekle" var; atanmış kullanıcıda sarı bant gizli; "Seçilenler" hesaba göre gruplu ve adlı; BAĞLANTI sütunu yok |
+| Planlanan Ziyaretler | ✓ 176 / 176 kayıtta `targetDisplayName` (ör. "SİBEL GÜLÇİÇEK" · "İSTANBUL EĞT.VE ARAŞTIRMA HAS."); detayda da; hepsi Beste'nin (sahiplik süzgeci) |
+| Hesaplar ızgarası | ✓ Alt ağaç: İstanbul **8.864** (= 8.843 ilçe + 21 il), Şişli 734, Marmara 14.001, Konya 1.189 |
+| Önizleme türetmesi | ⚠ 156 `no-strategy` + 20 `not-applicable` (eczane). **Kod değil, veri:** tek aktif oyun `STR-TUTUKON-URO`, **arşivlenmiş** `SEG-URO-DOCTORS` segmentine bağlı → üyelik yok → oyun yok. Kural birim testlerle kanıtlı; canlı gösterim için aktif segment + oyun gerekir (veri). |
+
+**Bulgular:**
+- **F-1:** Hesap araması Türkçe büyük / küçük harfe duyarlı. "HAMİDİYE" 4 sonuç, "Hamidiye" 0 (İ / i). `my-accounts` ve muhtemelen genel hesap araması → küçük düzeltme.
+- **F-2:** Kaydedilmiş bölge dışı hesaplarda rozet yok (Şanlıurfa, Konya) → Faz 4 VP-UI-2 (biliniyordu).
+- **F-3:** Hedefler "Şehir / Bölge" sütunu ham kod ("SANLIURFA") → Faz 4.
+- **Veri:** TUTUKON oyunu arşivli segmente bağlı → yeni aktif segment + oyun bağlama (kullanıcı / veri işi) olmadan içerik türetmesi canlıda görünmez.

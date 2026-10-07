@@ -5,7 +5,7 @@
 > Ayrıntılar: [durum analizi](VISIT-PLANNING-current-state-analysis.md) · [mockup brief](mockups/visit-planning/BRIEF-visit-planning-rep-week.md) · [mockup analizi](mockups/visit-planning/VISIT-PLANNING-mockup-analysis.md) · [mobil not](mobile/2026-10-06-visit-planning/MOBILE-NOTE-2026-10-06-visit-planning.md) · [mobil talepler](MOBILE-REQUESTS-2026-10-05-analysis.md)
 
 ## Neredeyiz
-**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** bitti (E2 + E4). ☑ **Faz 2** E2 kabul (`fecf231e`); ◐ E4 bekliyor (fleet yeniden başlatma, Auth yeni izin anahtarlarını oluşturur). ⚠ **D9** düzenleme formu hedefleri siliyor — öncelikli küçük düzeltme. Sonra **Faz 2b** (mobil iş yeri listesi).
+**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** bitti (E2 + E4). ☑ **Faz 2** E2 + **E4 kabul** (`fecf231e`, 2026-10-07). ⚠ **D9** düzenleme formu hedefleri siliyor — öncelikli küçük düzeltme. Sonra **Faz 2b** (mobil iş yeri listesi).
 
 ## Yapılanlar (2026-10-06)
 | Ne | Kanıt |
@@ -63,6 +63,8 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 - ☑ B-2 hedef evreni = bölge ataması; ataması yoksa tümü + uyarı (K-5); bölge dışı işareti (A4)
 - ☑ B-3 strateji / kampanya / segment sunucuda türetilir; segment dışının sessizce düşmesi kalkar (A3, A6)
 
+- ☐ **F-1** (VP-2 E4): hesap araması Türkçe harfe duyarlı ("Hamidiye" 0, "HAMİDİYE" 4) — `my-accounts` + genel hesap araması; D9 ile aynı küçük pakete.
+- ☐ **Veri:** TUTUKON oyunu arşivli `SEG-URO-DOCTORS` segmentine bağlı → içerik türetmesi canlıda görünmüyor; aktif segment + oyun bağlanmalı (kullanıcı / veri; SB-3 E2E ile birlikte).
 - ☐ **D9** (VP-2 kabulünde bulundu): Ziyaret Planlama Düzenle formu hedef dizilerini boş gönderiyor → taslakta hafta / dönem değiştirmek tüm hedefleri siler. Düzeltme: form mevcut seçimi göndersin **ya da** sunucu `null` dizi = "dokunma" kabul etsin (tercih: ikisi birden). Küçük paket, Faz 2b'den önce.
 - ☐ Grant: `scripts/rbac/grant_visit_planning_read_all_97c5.py --role <onaylayan yönetici rolü> --apply` (Auth yeniden başlatıldıktan sonra; kullanıcı rolü seçer).
 
