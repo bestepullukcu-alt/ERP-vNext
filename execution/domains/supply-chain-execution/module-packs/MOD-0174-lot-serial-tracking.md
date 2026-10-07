@@ -996,6 +996,11 @@ warnings; sabotages (a) tr "Parti" back, (b) raw status in the history, (c) Expi
 Own Web 5195 → owner Gateway 5000: tr / ar ledger lot column, ru Lot Explorer 1440 px and Lot Detail history; owner's
 fleet PIDs unchanged. Open: FU-LOC2-04 (actor names), F-3 shell "Search" (central), `Info.Source.Production` wording (lot
 origin, left as is). Evidence `docs/records/audits/2026-10/mod-0174-fu5-evidence-2026-10-07.md`.
+**CT acceptance (K13, 2026-10-07):** re-measured at `97279c250` — Web 622/622, architecture 18/18; files = Inventory /
+Traceability resx + Traceability Lots view/JS/models + tests + evidence + pack. CT sabotage: one FU01 ar value back to
+`الدفعة` (`StockLedgerIndex.ar.resx`) → 1 red, restored. CT decisions: `Info.Source.Production` stays (lot origin, not a
+movement type); actor names stay ids until a central user directory exists (FU-LOC2-04 + FU-0174-P5 together, central);
+F-3 shell "Search" → central layout owner. FU-0174-P5 CLOSED.
 
 ## 20. Follow-up Items
 
