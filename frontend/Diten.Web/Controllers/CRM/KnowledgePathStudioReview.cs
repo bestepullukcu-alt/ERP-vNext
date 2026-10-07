@@ -179,6 +179,14 @@ public static class KnowledgePathStudioReview
 
     private static readonly string[] DecisionActions = ["approve", "reject", "cancel", "timeout"];
 
+    /// <summary>WP-E2E-FIX-2 (E3-B3) — the pending step is the LAST one of the plan (nothing queued after it), so an
+    /// approval completes the review. Only claimed when the plan is known: a history-only timeline lists just the steps
+    /// reached so far and cannot tell what comes next.</summary>
+    public static bool IsFinalPendingStep(IReadOnlyList<PlanStep>? plan, IReadOnlyList<TimelineStep> timeline)
+        => plan is { Count: > 0 }
+           && timeline.Any(s => s.State == StepStates.Pending)
+           && !timeline.Any(s => s.State == StepStates.Queued);
+
     public static IReadOnlyList<HistoryEntry> ReadHistory(JsonElement? revisionHistory)
         => revisionHistory is { ValueKind: JsonValueKind.Object } h
             ? Items(h, "entries").Where(e => e.ValueKind == JsonValueKind.Object).Select(e => new HistoryEntry(

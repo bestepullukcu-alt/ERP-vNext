@@ -345,12 +345,15 @@ public static class ContentEngagementJourneyReasonCodes
     public const string ReferenceArchived = "content_engagement_journey_reference_archived";
     public const string RuntimeStateNotSupported = "content_engagement_journey_runtime_state_not_supported";
 
+    /// <summary>WP-E2E-FIX-2 — a publish lost the optimistic race (or carried a stale ExpectedVersion): 409.</summary>
+    public const string ConcurrencyConflict = "content_engagement_journey_concurrency_conflict";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
         Created, Updated, Published, Archived, VersionCreated, DuplicateCode, OverlappingPublishedVersion,
         StageAdded, StageUpdated, StageArchived, StageOrderConflict, StageSetFrozen, NoRequiredStage, FallbackInvalid,
         BranchTargetInvalid, PathNotConsumable, PathUnresolved, VisitRangeInvalid, StageLimitExceeded,
-        ArchivedNoMutation, ReferenceArchived, RuntimeStateNotSupported
+        ArchivedNoMutation, ReferenceArchived, RuntimeStateNotSupported, ConcurrencyConflict
     };
 }
 

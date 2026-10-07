@@ -79,7 +79,7 @@
   <data name="RecordCreated" xml:space="preserve"><value>记录已创建。</value></data>
   <data name="RecordUpdated" xml:space="preserve"><value>记录已更新。</value></data>
   <data name="Repeatable" xml:space="preserve"><value>可重复</value></data>
-  <data name="Repeated" xml:space="preserve"><value>重复</value></data>
+  <data name="Repeated" xml:space="preserve"><value>路径重复</value></data>
   <data name="RequiredStageCount" xml:space="preserve"><value>必需阶段</value></data>
   <data name="Reset" xml:space="preserve"><value>重置</value></data>
   <data name="Resolved" xml:space="preserve"><value>已解析</value></data>
@@ -108,4 +108,10 @@
   <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>查看详情</value></data>
   <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="RepeatedHint" xml:space="preserve"><value>该路径也用于其他阶段</value></data>
+  <data name="PathListAllSubjectsNote" xml:space="preserve"><value>此旅程未设置主题，因此列出所有已发布的路径。</value></data>
+  <data name="Err_content_engagement_journey_no_required_stage" xml:space="preserve"><value>无法发布旅程：至少需要一个启用的必修阶段。请为某个阶段开启“必修”。</value></data>
+  <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>此旅程代码（同一语言）的另一已发布版本已覆盖这些日期。请修改生效日期或归档另一版本。</value></data>
+  <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>已归档的旅程无法发布。</value></data>
+  <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>此旅程已被他人修改。请重新加载页面后重试。</value></data>
 </root>

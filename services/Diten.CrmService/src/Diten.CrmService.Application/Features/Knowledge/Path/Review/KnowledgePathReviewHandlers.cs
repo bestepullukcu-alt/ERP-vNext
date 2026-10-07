@@ -240,6 +240,14 @@ public sealed class WithdrawKnowledgePathReviewHandler
                 "There is no open review round to withdraw.", 409);
         }
 
+        // WP-E2E-FIX-2 (E3-B4) — withdrawing is the submitter's own act: a manager who did not submit the round cannot
+        // pull it back (person-based, the same SamePerson rule as the decision SoD). Manage stays required by the route.
+        if (!KnowledgePathReviewRules.SamePerson(_actor.ActorName, revision.ReviewRound.SubmittedBy))
+        {
+            return KnowledgePathReviewRules.Fail<KnowledgePathRevisionDto>(KnowledgePathReviewErrors.WithdrawNotSubmitter,
+                "Only the person who submitted this review round can withdraw it.", 403);
+        }
+
         var instanceId = revision.ReviewRound.WorkflowInstanceId;
         var tasks = await _workflow.GetTasksAsync([instanceId], ct);
         if (tasks is null)

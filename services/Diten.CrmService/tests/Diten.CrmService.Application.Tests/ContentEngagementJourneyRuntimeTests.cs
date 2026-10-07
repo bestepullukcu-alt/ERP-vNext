@@ -506,6 +506,34 @@ public sealed class ContentEngagementJourneyRuntimeTests
         var r = await fx.PublishJourney().Handle(new PublishContentEngagementJourneyCommand(id), default);
         Assert.Equal(400, r.StatusCode);
         Assert.Equal(ContentEngagementJourneyStatuses.Draft, fx.Journeys.Items.Single().JourneyStatus);
+        // WP-E2E-FIX-2 (acceptance 8) — the rule answers its code first, so the Web can show the user's language.
+        Assert.Equal(ContentEngagementJourneyReasonCodes.NoRequiredStage, r.Errors![0]);
+    }
+
+    [Fact]
+    public async Task Every_publish_rule_answers_a_reason_code_on_the_contract()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var path = fx.SeedPath(s);
+
+        var v1 = await fx.SeedJourney(s, "J1", "1.0");
+        await fx.AddSimpleStage(v1, 10, path.Id);
+        Assert.True((await fx.PublishJourney().Handle(new PublishContentEngagementJourneyCommand(v1), default)).IsSuccessful);
+
+        var v2 = await fx.SeedJourney(s, "J1", "2.0");
+        await fx.AddSimpleStage(v2, 10, path.Id);
+        var overlap = await fx.PublishJourney().Handle(new PublishContentEngagementJourneyCommand(v2), default);
+        Assert.Equal((409, ContentEngagementJourneyReasonCodes.OverlappingPublishedVersion), (overlap.StatusCode, overlap.Errors![0]));
+
+        var stale = await fx.PublishJourney().Handle(new PublishContentEngagementJourneyCommand(v2, ExpectedVersion: -1), default);
+        Assert.Equal((409, ContentEngagementJourneyReasonCodes.ConcurrencyConflict), (stale.StatusCode, stale.Errors![0]));
+
+        Assert.True((await fx.ArchiveJourney().Handle(new ArchiveContentEngagementJourneyCommand(v2), default)).IsSuccessful);
+        var archived = await fx.PublishJourney().Handle(new PublishContentEngagementJourneyCommand(v2), default);
+        Assert.Equal((409, ContentEngagementJourneyReasonCodes.ArchivedNoMutation), (archived.StatusCode, archived.Errors![0]));
+
+        Assert.Contains(ContentEngagementJourneyReasonCodes.ConcurrencyConflict, ContentEngagementJourneyReasonCodes.All);
     }
 
     [Fact]
@@ -902,6 +930,28 @@ public sealed class ContentEngagementJourneyRuntimeTests
         var journey = await fx.GetJourney().Handle(new GetContentEngagementJourneyQuery(id), default);
         Assert.True(journey.Data!.HasRepeatedPaths);
         Assert.All(journey.Data!.Stages, x => Assert.Equal(2, x.PathUsageCountInJourney));
+    }
+
+    // WP-E2E-FIX-2 (acceptance 7, E4-B1) — stages without a path code share a path with nobody.
+    [Fact]
+    public async Task Path_repeat_count_never_counts_an_empty_path_code()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var path = fx.SeedPath(s);
+        var id = await fx.SeedJourney(s);
+        await fx.AddSimpleStage(id, 10, path.Id, code: "A");
+        await fx.AddSimpleStage(id, 20, path.Id, code: "B");
+        await fx.AddSimpleStage(id, 30, path.Id, code: "C");
+        var stages = fx.Journeys.Items.Single().Stages;
+        stages.Single(x => x.StageCode == "A").PathCode = null;   // legacy rows without a path code
+        stages.Single(x => x.StageCode == "B").PathCode = "  ";
+
+        var journey = await fx.GetJourney().Handle(new GetContentEngagementJourneyQuery(id), default);
+        var byCode = journey.Data!.Stages.ToDictionary(x => x.StageCode, x => x.PathUsageCountInJourney);
+        Assert.Equal(0, byCode["A"]);
+        Assert.Equal(0, byCode["B"]);
+        Assert.Equal(1, byCode["C"]);                               // the one real path is used once — no repeat
     }
 
     [Fact]

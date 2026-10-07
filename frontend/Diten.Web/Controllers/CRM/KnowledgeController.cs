@@ -28,6 +28,9 @@ public sealed partial class KnowledgeController : Controller
     private const string ManageFallback = "crm.territory.model.manage";
     private const string ViewRoot = "~/Views/CRM/Knowledge";
 
+    /// <summary>CRM <c>KnowledgeReasonCodes.ContentConcurrencyConflict</c> (409 on update, WP-E2E-FIX-2).</summary>
+    internal const string ContentConcurrencyConflictCode = "knowledge_content_concurrency_conflict";
+
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
@@ -440,9 +443,11 @@ public sealed partial class KnowledgeController : Controller
         // is never offered as a NEW choice (a previously saved one is still preserved below by EnsureSelectedAsync).
         var conceptTypes = await LoadOptionsAsync("/api/crm/knowledge/concept-types?includeArchived=false", ct, groupKey: "subjectId", idKey: "conceptTypeId");
         var conceptNodes = await LoadOptionsAsync("/api/crm/knowledge/concept-nodes?includeArchived=false", ct, groupKey: "conceptTypeId", idKey: "conceptNodeId");
-        // Product is the MDM Global Product master (same selector the Concept-graph ExternalRef picker uses), so the
-        // dropdown lists product NAMES, not raw ids. Brand is intentionally no longer surfaced in this UI.
-        var products = await LoadGlobalProductOptionsAsync(ct);
+        // Product is the MDM Global Product master, searched in the browser through api/global-product-options (Select2
+        // ajax, WP-E2E-FIX-2 E2-B1) — the 100-row first page is no longer preloaded (the master is larger than the MDM
+        // page cap). Only the stored product is rendered, by a single read (EnsureGlobalProductSelectedAsync below).
+        // Brand is intentionally no longer surfaced in this UI.
+        var products = new List<KnowledgeOptionViewModel>();
         var campaigns = await LoadOptionsAsync("/api/crm/campaigns", ct, idKey: "campaignId");
         // Document Reference (FileRef) is a pointer to a Document Management controlled document. Creating new ones stays
         // in Document Management's governed flow (collection instance based); here we only let the user PICK an existing one.
@@ -606,9 +611,9 @@ public sealed partial class KnowledgeController : Controller
         }
     }
 
-    // MDM Global Product option list (id -> "code — name"). Reuses the read-only selector the Concept-graph ExternalRef
-    // picker uses (fields: id / canonicalCode / globalProductName). A generous page size is requested so the form select
-    // carries the master by name; a saved-but-off-page value is still restored by EnsureGlobalProductSelectedAsync.
+    // MDM Global Product option list (id -> "code — name") for the content LIST's name lookup (api/product-options).
+    // Reuses the read-only selector the Concept-graph ExternalRef picker uses (fields: id / canonicalCode /
+    // globalProductName). The content FORM no longer uses it — it searches through api/global-product-options.
     private async Task<List<KnowledgeOptionViewModel>> LoadGlobalProductOptionsAsync(CancellationToken ct)
     {
         var options = new List<KnowledgeOptionViewModel>();
@@ -655,8 +660,9 @@ public sealed partial class KnowledgeController : Controller
         var idStr = currentId.Value.ToString();
         if (options.Any(o => string.Equals(o.Value, idStr, StringComparison.OrdinalIgnoreCase))) return;
 
+        // A resolved product shows as itself ("code — name"); only an unresolvable id keeps the inactive tag.
         var label = await ResolveGlobalProductLabelAsync(idStr, ct);
-        options.Insert(0, new KnowledgeOptionViewModel { Value = idStr, Label = label ?? idStr, IsInactive = true });
+        options.Insert(0, new KnowledgeOptionViewModel { Value = idStr, Label = label ?? idStr, IsInactive = label is null });
     }
 
     // Resolves a single Global Product id to "code — name" (or name / code). Returns null on a miss.
@@ -783,6 +789,14 @@ public sealed partial class KnowledgeController : Controller
     // user's language; the English message is not shown. Anything else stays a summary error as before.
     private void AddGatewayErrors(KnowledgeContentEditViewModel model, IReadOnlyList<string> errors)
     {
+        // WP-E2E-FIX-2 — a lost optimistic write ([code, message]) is one sentence in the user's language.
+        if (errors.Contains(ContentConcurrencyConflictCode))
+        {
+            model.WriteErrorKey = "ContentConcurrencyConflict";
+            ModelState.AddModelError(nameof(model.WriteErrorKey), ContentConcurrencyConflictCode);
+            return;
+        }
+
         var (claimErrors, rest) = SplitClaimErrors(errors, model.ClaimRefs);
         model.ClaimRefErrors = claimErrors;
         foreach (var error in rest) ModelState.AddModelError(string.Empty, error);
