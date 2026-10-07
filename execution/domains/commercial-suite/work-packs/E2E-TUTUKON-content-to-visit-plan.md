@@ -30,7 +30,7 @@ doktor → aktif segment → aktif oyun (STR-TUTUKON) → ürün satırı → ya
 | # | Adım | Kim / nasıl | Beklenen | Durum |
 |---|---|---|---|---|
 | E0 ☑ | **Envanter (yalnız okuma):** TUTUKON konu / başlık / içerik / yol / yolculuk / oyun / segment / sıklık politikası / iddia; Beste'nin 4 ilçesindeki gastro + aile + dahiliye doktor sayısı | CT (Mongo + API, salt okuma) | Eksikler listesi; hangi adımların gerekli olduğu kesinleşir | ☐ |
-| E1 | **Segment:** `E2E-TUT-SINDIRIM` (kişi; uzmanlık ∈ {gastroenteroloji, aile hekimliği, iç hastalıkları}) oluştur → değerlendir → **etkinleştir** | CT, Segmentler sayfası (Beste) | Üye sayısı > 0; Beste'nin ilçelerindeki doktorlardan üye var | ☐ |
+| E1 ☑ | **Segment:** `E2E-TUT-SINDIRIM` (kişi; uzmanlık ∈ {gastroenteroloji, aile hekimliği, iç hastalıkları}) oluştur → değerlendir → **etkinleştir** | CT, Segmentler sayfası (Beste) | Üye sayısı > 0; Beste'nin ilçelerindeki doktorlardan üye var | ☐ |
 | E2 | **İçerik:** en az 2 KnowledgeContent (TUTUKON, tr) — promo detaylama + bir non-promo bilgi. Gerekirse iddia bağı. Yayımla (onay akışı varsa sema) | CT (Beste) + kullanıcı sema girişi (onay) | İçerikler `published`, tr | ☐ |
 | E3 | **Yol (KnowledgePath):** içerikleri adım olarak içeren yol → gönder → onay → yayımla | CT + sema | Yol `released` / yayımlanmış sürüm | ☐ |
 | E4 | **Yolculuk (ContentEngagementJourney):** en az 2 aşama, her aşama yola bağlı → yayımla | CT (+ sema SoD gerekirse) | Yolculuk yayımlanmış, aşamalar sıralı | ☐ |
@@ -102,3 +102,21 @@ doktor → aktif segment → aktif oyun (STR-TUTUKON) → ürün satırı → ya
    - etkinleştir.
 6. **E6 sıklık:** `E2E-TUT-VFP` (segment `E2E-TUT-SINDIRIM`, ayda 2) → etkinleştir.
 7. **E7–E10:** Beste ile plan / önizleme / uygula / ziyaret raporu (planlanan ziyaret + rapor kayıtları).
+### E1 — Segment (CT, 2026-10-07; Beste girişi) ☑ (kapsam daraltıldı)
+**Yazmalar:**
+- segment oluşturuldu `seg-2026-d7b132` "E2E-TUT-SINDIRIM — Gastroenteroloji hekimleri (TUTUKON test)" (id `aaa53ad4-20ba-4998-8d94-e4cffbbdb093`), kural `contact.specialty in [gastroenterology]`;
+- **etkinleştirildi** (v1, donduruldu). Üye **910** (ülke geneli); Beste'nin ilçelerinde 72 gastroenterolog.
+
+**Kapsam değişikliği (CT kararı, test için):** plandaki "gastro + aile + dahiliye" kurulamadı (E1-B2) → yalnız gastroenteroloji.
+
+**Bulgular:**
+- **E1-B1 (hata):** Segment düzenleyicide referans kümesi değerleri (uzmanlık vb.) **hiç listelenmiyor**.
+  - Kök: `wwwroot/assets/js/CRM/Segments/form.js` `loadReferenceOptions` `x.value || x.valueCode` / `x.text` arıyor. Uç (`api/reference-values/{set}`) artık `code` / `label` dönüyor (MOD-0048 consumable-sets biçimi, WP-BRD sonrası).
+  - Sonuç: kullanıcı değeri elle yazmak zorunda. ALMIBA segmentindeki "Nephrology" muhtemelen böyle girildi.
+  - Tüm referans nitelikleri etkilenir → küçük düzeltme.
+- **E1-B2 (sınır / ürün):** Dinamik segment önizlemesi aday kümesi **10.000**'i aşınca 422 `segment_candidate_set_too_large`.
+  - Aday kümesi yalnız ilk koşuldan (uzmanlık) kuruluyor; bölge gibi ek bloklar aday sorgusuna inmiyor.
+  - Ülke genelinde aile hekimliği 44.568, dahiliye 10.574 → bu uzmanlıklarla segment **kurulamıyor**, bölgeyle daraltmak da işe yaramıyor.
+  - Karar / iş gerekir: ek blokları aday sorgusuna indirmek ya da sınır stratejisi.
+- **E1-B3:** Segment oluşturma sayfasında `GET /CRM/Segments/api/global-products?pageSize=200` → **400** (ürün seçicisi; incelenecek).
+- **R-1 kapandı:** değerlendirici büyük / küçük harf duyarsız. ALMIBA "Nephrology" kuralı 611 üye veriyor.
