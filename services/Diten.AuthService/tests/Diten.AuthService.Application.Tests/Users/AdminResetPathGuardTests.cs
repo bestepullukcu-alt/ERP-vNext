@@ -46,7 +46,9 @@ public sealed class AdminResetPathGuardTests
         (CreateUser, "CreateByInvitationAsync"),
         (Resend, "Handle"),
         (PlatformAuth, "ProvisionPlatformAdmin"),
-        (PlatformAuth, "ForgotPassword")
+        (PlatformAuth, "ForgotPassword"),
+        // BL-454 slice 2 stage D — a NEW tenant administrator's invitation (an existing account goes through the reset).
+        (InternalEvents, "IssueNewAccountInvitation")
     ];
 
     private static readonly Regex UpdatePasswordCall = new(@"\.UpdatePassword\s*\(", RegexOptions.Compiled);

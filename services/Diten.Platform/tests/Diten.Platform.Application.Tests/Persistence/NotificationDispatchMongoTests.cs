@@ -112,7 +112,8 @@ public sealed class NotificationDispatchMongoTests : IAsyncLifetime
         var response = await HandleAsync(TaskNotificationEvents.Assigned, "en");
 
         Assert.False(response.IsSuccessful);
-        Assert.Equal(QueueEmailNotificationHandler.ReasonMessagingSettingsUnavailable, response.ReasonCode);
+        // C-FIX1 3 — the resolver's own name reaches the producer: with no settings at all, no platform default.
+        Assert.Equal(Diten.Platform.Application.Features.Notifications.Services.MessagingSettingsSelection.ReasonPlatformDefaultUnavailable, response.ReasonCode);
         Assert.Empty(await Collection<NotificationDispatch>("notification_dispatches")
             .Find(FilterDefinition<NotificationDispatch>.Empty).ToListAsync());
     }

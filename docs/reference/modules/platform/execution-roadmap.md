@@ -153,7 +153,7 @@ Tenant User Management, Tenant Role Management, Tenant User-Role Assignment, Ten
    - DotLiquid template engine + throttling + retry
    - Mevcut ad-hoc servisleri migrate:
      - `services/Diten.Platform/.../Services/AdminUserInvitationService.cs`
-     - `services/Diten.Platform/.../Services/PlatformAdministratorInvitationEmailService.cs`
+     - ~~`services/Diten.Platform/.../Services/PlatformAdministratorInvitationEmailService.cs`~~ — silindi (2026-10-06, WP-EMAIL-SHELL-01 aşama C; çağıranı yoktu)
      - `services/Diten.Platform/.../Services/EmailTemplates/*.cs`
    - İlk template'lar: `platform.admin.invite`, `tenant.invite.email`, `tenant.welcome`, `tenant.password.reset`, `tenant.otp.code`
 

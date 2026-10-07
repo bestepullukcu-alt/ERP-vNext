@@ -15,16 +15,26 @@ public sealed class MarkNotificationDispatchSentHandler
 {
     private readonly INotificationDispatchRepository _repository;
     private readonly IEventBus _eventBus;
-    public MarkNotificationDispatchSentHandler(INotificationDispatchRepository repository, IEventBus eventBus)
+    private readonly ILogger<MarkNotificationDispatchSentHandler>? _logger;
+    public MarkNotificationDispatchSentHandler(INotificationDispatchRepository repository, IEventBus eventBus, ILogger<MarkNotificationDispatchSentHandler>? logger = null)
     {
         _repository = repository;
         _eventBus = eventBus;
+        _logger = logger;
     }
     public async Task<Response<NotificationDispatchDto>> Handle(MarkNotificationDispatchSentCommand request, CancellationToken ct)
     {
         var dispatch = await _repository.GetByIdForTenantAsync(request.TenantId, request.DispatchId, ct);
         if (dispatch is null) return Response<NotificationDispatchDto>.Fail("Notification dispatch not found.", 404);
         if (!dispatch.TryMarkSent(request.ProviderMessageId, DateTimeOffset.UtcNow)) return Response<NotificationDispatchDto>.Fail("Invalid dispatch status transition.", 409);
+        if (dispatch.PermanentlyFailedNotifiedAt is not null)
+        {
+            // C-FIX1 K5 — a late retry delivered a row that was already closed as permanently failed (and whose "not
+            // delivered" effects ran). Both are kept: the mail went out, and the effects happened. Named, for the operator.
+            _logger?.LogWarning(
+                "email.dispatch.sent_after_permanent_failure DispatchId={DispatchId} TenantId={TenantId} PermanentlyFailedNotifiedAt={PermanentlyFailedNotifiedAt}",
+                dispatch.Id, dispatch.TenantId, dispatch.PermanentlyFailedNotifiedAt);
+        }
         if (!string.IsNullOrWhiteSpace(request.DegradedReason))
         {
             // BL-454 — no new field: a SENT row's error fields say how it was sent when it was not sent in full.

@@ -39,7 +39,7 @@ public sealed partial class EmailShellDispatchTests
         var mail = Assert.Single(seeded, t => t.Locale == language);
         var english = Assert.Single(seeded, t => t.Locale == "en");
 
-        Assert.Equal("1.1.0", mail.SemanticVersion);
+        Assert.Equal(key == "tenant.invite.email" ? "1.2.0" : "1.1.0", mail.SemanticVersion); // stage D: the link
         Assert.NotNull(mail.Shell);
         Assert.False(string.IsNullOrWhiteSpace(mail.Shell!.HeadingTemplate));
         Assert.False(string.IsNullOrWhiteSpace(mail.Shell.FootnoteTemplate));
@@ -73,7 +73,10 @@ public sealed partial class EmailShellDispatchTests
             ["TenantDisplayName"] = "Diten Pharma",
             ["Reason"] = "Unpaid invoice",
             ["SuspendedAtUtc"] = "2026-10-06 09:00",
-            ["ReactivatedAtUtc"] = "2026-10-06 10:00"
+            ["ReactivatedAtUtc"] = "2026-10-06 10:00",
+            // Stage D — the invitation's link and its expiry (ignored by the other two).
+            ["SetPasswordUrl"] = "https://app.example.test/account/set-password?email=a%40b.test&token=stage-c-test-only",
+            ["LinkExpiresAtUtc"] = "2026-10-13 09:00"
         });
 
         var sent = rig.Sent;
@@ -87,7 +90,9 @@ public sealed partial class EmailShellDispatchTests
     private static List<string> Placeholders(NotificationTemplate template)
     {
         var parts = new[] { template.SubjectTemplate, template.BodyHtmlTemplate, template.BodyTextTemplate, template.Shell?.HeadingTemplate, template.Shell?.FootnoteTemplate }
-            .Concat(template.Shell?.InfoRows.Select(r => r.ValueTemplate) ?? []);
+            .Concat(template.Shell?.InfoRows.Select(r => r.ValueTemplate) ?? [])
+            // The action's address is rendered too — by NAME (stage D: the invitation's set-password link).
+            .Concat(template.Shell?.ActionUrlVariable is { } action ? ["{{" + action + "}}"] : []);
         return parts
             .Where(p => p is not null)
             .SelectMany(p => Regex.Matches(p!, @"\{\{\s*([A-Za-z][A-Za-z0-9_.]*)\s*\}\}").Select(m => m.Groups[1].Value))
@@ -102,6 +107,7 @@ public sealed partial class EmailShellDispatchTests
     [InlineData(NotificationFallbackPolicy.UsePlatformDefault, null)]
     [InlineData(NotificationFallbackPolicy.DisableSending, MessagingSettingsSelection.ReasonTenantSendingDisabled)]
     [InlineData(NotificationFallbackPolicy.FailFast, MessagingSettingsSelection.ReasonTenantSettingsDisabled)]
+    [InlineData((NotificationFallbackPolicy)99, MessagingSettingsSelection.ReasonTenantFallbackPolicyUnknown)] // C-FIX1 2
     public async Task A_disabled_tenant_row_follows_its_own_fallback_policy_in_the_resolver_and_in_the_provider(
         NotificationFallbackPolicy policy, string? refusal)
     {

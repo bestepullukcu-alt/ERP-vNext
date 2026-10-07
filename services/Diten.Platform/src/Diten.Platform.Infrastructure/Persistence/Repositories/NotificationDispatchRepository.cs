@@ -100,6 +100,43 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
         return result.MatchedCount == 1;
     }
 
+    /// <inheritdoc />
+    public async Task<bool> TryClaimPermanentEffectsAsync(
+        NotificationDispatch dispatch, int expectedVersion, DateTimeOffset claimedAt, string claimActor, CancellationToken ct = default)
+    {
+        var filter = Builders<NotificationDispatch>.Filter.And(
+            ActiveFilter,
+            Builders<NotificationDispatch>.Filter.Eq(x => x.TenantId, dispatch.TenantId),
+            Builders<NotificationDispatch>.Filter.Eq(x => x.Id, dispatch.Id),
+            Builders<NotificationDispatch>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<NotificationDispatch>.Filter.Eq(x => x.Status, NotificationDispatchStatus.Failed),
+            // K1 — structural: only a row that is still pending can be claimed.
+            Builders<NotificationDispatch>.Filter.Eq<DateTimeOffset?>(x => x.PermanentlyFailedNotifiedAt, NotificationDispatch.PermanentFailurePending));
+        var update = Builders<NotificationDispatch>.Update
+            .Set(x => x.UpdatedAt, claimedAt)
+            .Set(x => x.UpdatedBy, claimActor)
+            .Inc(x => x.Version, 1);
+        var result = await _collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.ModifiedCount == 1;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> TryMarkPermanentEffectsAppliedAsync(
+        NotificationDispatch dispatch, string claimActor, DateTimeOffset appliedAt, CancellationToken ct = default)
+    {
+        var filter = Builders<NotificationDispatch>.Filter.And(
+            ActiveFilter,
+            Builders<NotificationDispatch>.Filter.Eq(x => x.TenantId, dispatch.TenantId),
+            Builders<NotificationDispatch>.Filter.Eq(x => x.Id, dispatch.Id),
+            Builders<NotificationDispatch>.Filter.Eq<DateTimeOffset?>(x => x.PermanentlyFailedNotifiedAt, NotificationDispatch.PermanentFailurePending),
+            Builders<NotificationDispatch>.Filter.Eq(x => x.UpdatedBy, claimActor));
+        var update = Builders<NotificationDispatch>.Update
+            .Set(x => x.PermanentlyFailedNotifiedAt, appliedAt)
+            .Inc(x => x.Version, 1);
+        var result = await _collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.ModifiedCount == 1;
+    }
+
     public async Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindDueRetriesAsync(
         DateTimeOffset asOfUtc,
         int maxRetryCount,

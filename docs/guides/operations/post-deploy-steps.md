@@ -114,6 +114,27 @@ beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı b
 herkesin bir kez oturum açma sayfasına düşmesi — hata değil. (3) Araç koşulmadıysa kuru koşusu sıfırdan büyük bir sayı
 verir.
 
+### 4 · BL-454 — E-posta dilim 2: kiracı yöneticisi davet bağlantısının kökü ve Mongo sürümü
+
+| | |
+|---|---|
+| **Modül** | MOD-0027 bildirimler + Auth — kiracı yöneticisi daveti (WP-EMAIL-SHELL-01 dilim 2, aşama D) |
+| **Ne zaman** | Dilim 2'yi taşıyan deploy'da, **ilk kiracı açılışından önce** |
+| **Yapılmazsa** | Yeni kiracının ilk yöneticisine davet e-postası **gitmez**: Platform `tenant.admin_invitation.not_sent ReasonCode=INVITE_LINK_ROOT_LOOPBACK` (ya da `…_MISSING`) yazar. Hesap Auth'ta açılmış olur; kök girildikten sonra kiracı ekranındaki "Davet et" bağlantıyı yeniden gönderir. |
+| **Kim** | Altyapı / deploy operatörü |
+
+1. **`AuthService:FrontendBaseUrl`** (Platform yapılandırması): kullanıcıların açtığı web adresinin kökü, ör.
+   `https://app.<alan-adı>`. Taban `appsettings.json` değeri `http://localhost:5001`'dir; Development dışında localhost
+   ya da boş kök reddedilir, çünkü düğmesi okuyanın kendi makinesini gösteren bir davet kimseyi içeri almaz. Davet
+   e-postası bu kökle BL-529'un tek kullanımlık "parola belirle" bağlantısını taşır (7 gün geçerli); parola içermez.
+2. **Mongo sürümü:** gönderim satırlarının "etkileri bekliyor" dizini (`ix_notification_dispatches_permanent_effects_pending`)
+   dizi değerli bir alanda `$eq` kısmi filtresi kullanır (`DateTimeOffset` `[ticks, offset]` olarak saklanır). Bu yalnız
+   dev Mongo **7.0.28**'de ölçüldü. Canlı Mongo sürümü farklıysa deploy'dan sonra dizinin var olduğunu
+   (`db.notification_dispatches.getIndexes()`) ve başlangıç günlüğünde dizin hatası olmadığını kontrol edin.
+
+**Belirti:** (1) kiracı açılışından sonra ilk yöneticinin e-postası gelmez ve Platform günlüğünde `INVITE_LINK_ROOT_…`.
+(2) Başlangıçta `IndexOptionsConflict` ya da kısmi filtre hatası.
+
 ---
 
 ## Tamamlananlar

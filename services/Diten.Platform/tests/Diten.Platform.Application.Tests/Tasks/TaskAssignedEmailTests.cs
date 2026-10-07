@@ -155,19 +155,19 @@ public sealed class TaskAssignedEmailTests
         var pairs = NotificationTemplateSeed.SeedUpgrades();
 
         // platform.tasks.assigned in its 7 languages; BL-454 slice 2 stage C — the three tenant lifecycle mails in the
-        // two languages their 1.0.0 seed had (en, tr). The five new languages are inserts, not upgrades.
+        // two languages their 1.0.0 seed had (en, tr); stage D — the invitation's 1.1.0 in all seven goes on to 1.2.0.
         Assert.Equal(
             new[]
             {
-                ("platform.tasks.assigned", 7), ("tenant.invite.email", 2), ("tenant.reactivated.email", 2), ("tenant.suspended.email", 2)
+                ("platform.tasks.assigned", 7), ("tenant.invite.email", 2 + 7), ("tenant.reactivated.email", 2), ("tenant.suspended.email", 2)
             },
             pairs.GroupBy(p => p.Current.TemplateKey).Select(g => (g.Key, g.Count())).OrderBy(x => x.Key, StringComparer.Ordinal).ToArray());
         Assert.All(pairs, pair =>
         {
             Assert.Equal(pair.Previous.TemplateKey, pair.Current.TemplateKey);
             Assert.Equal(pair.Previous.Locale, pair.Current.Locale);
-            Assert.Equal("1.0.0", pair.Previous.SemanticVersion);
-            Assert.Null(pair.Previous.Shell);
+            Assert.Contains(pair.Previous.SemanticVersion, new[] { "1.0.0", "1.1.0" });
+            Assert.Equal(pair.Previous.SemanticVersion == "1.0.0", pair.Previous.Shell is null);
             Assert.NotEqual(pair.Previous.SemanticVersion, pair.Current.SemanticVersion);
         });
     }

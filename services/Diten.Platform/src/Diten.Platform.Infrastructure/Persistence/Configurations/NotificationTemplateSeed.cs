@@ -72,6 +72,8 @@ public static class NotificationTemplateSeed
         var upgraded = 0;
         var keptModified = 0;
         var filters = Builders<NotificationTemplate>.Filter;
+        // One row is one row: a key with two previous seeds must not count the same operator-edited row twice.
+        var countedKept = new HashSet<(string Key, string Locale, NotificationChannelCode Channel)>();
 
         foreach (var (previous, current) in upgrades)
         {
@@ -93,7 +95,19 @@ public static class NotificationTemplateSeed
 
             if (!IsUntouchedSeed(row, previous))
             {
-                keptModified++;
+                // BL-454 slice 2 stage D — a key may have more than one previous seed (tenant.invite.email: 1.0.0 and
+                // 1.1.0 both go to 1.2.0). A row that ANOTHER pair of the same key and language carries forward is not
+                // an operator's change: that pair handles it, and it is not counted here.
+                if (!upgrades.Any(other => !ReferenceEquals(other.Previous, previous)
+                        && other.Current.TemplateKey == current.TemplateKey
+                        && other.Current.Locale == current.Locale
+                        && other.Current.Channel == current.Channel
+                        && IsUntouchedSeed(row, other.Previous))
+                    && countedKept.Add((current.TemplateKey, current.Locale, current.Channel)))
+                {
+                    keptModified++;
+                }
+
                 continue;
             }
 
@@ -198,6 +212,8 @@ public static class NotificationTemplateSeed
                 (TenantSuspendedV1(locale), TenantSuspended(locale)),
                 (TenantReactivatedV1(locale), TenantReactivated(locale))
             }))
+            // BL-454 slice 2 stage D — the invitation's 1.1.0 (seven languages, no link) carried forward to 1.2.0.
+            .Concat(TenantLocales.Select(locale => (TenantInviteV11(locale), TenantInvite(locale))))
             .ToList();
 
     /// <summary>The two languages the 1.0.0 tenant lifecycle mails were written in.</summary>
@@ -457,12 +473,11 @@ public static class NotificationTemplateSeed
     }
 
     /// <summary>
-    /// BL-454 slice 2 — the tenant administrator's invitation, 1.1.0, in seven languages and in the shell form: a heading,
-    /// one sentence, the tenant's id, and why the reader got it. The content is what 1.0.0 said — the sign-in link and
-    /// the temporary password the producer also sends are NOT rendered here (WP-EMAIL-SHELL-01 stage D decides that).
-    /// The variables are unchanged.
+    /// The tenant administrator's invitation as slice 2 stage C wrote it (1.1.0, seven languages, shell form, and still no
+    /// way in: no link, no password). Kept ONLY so an untouched 1.1.0 row is recognised and carried forward to
+    /// <see cref="TenantInvite"/>; never inserted any more.
     /// </summary>
-    internal static NotificationTemplate TenantInvite(string locale)
+    internal static NotificationTemplate TenantInviteV11(string locale)
     {
         var (subject, heading, sentence, idLabel, why) = locale switch
         {
@@ -480,6 +495,39 @@ public static class NotificationTemplateSeed
             "tenant.invite.email", locale, subject, heading, sentence, why,
             [new NotificationTemplateShellRow { Label = idLabel, ValueTemplate = "{{TenantId}}" }],
             ["TenantId", "TenantDisplayName"]);
+    }
+
+    /// <summary>
+    /// BL-454 slice 2 stage D — the tenant administrator's invitation, 1.2.0, seven languages, shell form, and for the
+    /// first time a way in: the button is BL-529's one-time set-password link (<c>SetPasswordUrl</c>, a secret name — the
+    /// dispatch row never stores it), the table says until when it works. No password, in any language. Every variable
+    /// is required: without the link the renderer refuses the mail instead of sending an invitation nobody can use.
+    /// </summary>
+    internal static NotificationTemplate TenantInvite(string locale)
+    {
+        var (subject, heading, sentence, idLabel, untilLabel, action, why) = locale switch
+        {
+            "en" => ("Your Diten tenant invitation", "You have been invited", "You have been invited to the {{TenantDisplayName}} tenant as its administrator. Use the button below to set your password; the link can be used only once.", "Tenant ID", "Link valid until (UTC)", "Set my password", "You received this e-mail because you were added as an administrator of this tenant. If you were not expecting it, you can ignore it; the account cannot be used until a password is set."),
+            "tr" => ("Diten kiracı davetiniz", "Davet edildiniz", "{{TenantDisplayName}} kiracısına yönetici olarak davet edildiniz. Parolanızı aşağıdaki düğmeyle belirleyin; bağlantı yalnız bir kez kullanılabilir.", "Kiracı kimliği", "Bağlantının geçerlilik sonu (UTC)", "Parolamı belirle", "Bu e-postayı bu kiracının yöneticisi olarak eklendiğiniz için aldınız. Beklemiyorsanız yok sayabilirsiniz; hesap, parola belirlenmeden kullanılamaz."),
+            "fr" => ("Votre invitation au locataire Diten", "Vous avez été invité", "Vous avez été invité dans le locataire {{TenantDisplayName}} en tant qu'administrateur. Définissez votre mot de passe avec le bouton ci-dessous ; le lien ne peut être utilisé qu'une seule fois.", "ID du locataire", "Lien valable jusqu'à (UTC)", "Définir mon mot de passe", "Vous recevez cet e-mail parce que vous avez été ajouté comme administrateur de ce locataire. Si vous ne l'attendiez pas, vous pouvez l'ignorer ; le compte reste inutilisable tant qu'aucun mot de passe n'est défini."),
+            "es" => ("Su invitación al inquilino de Diten", "Ha recibido una invitación", "Ha sido invitado al inquilino {{TenantDisplayName}} como administrador. Establezca su contraseña con el botón siguiente; el enlace solo puede usarse una vez.", "ID del inquilino", "Enlace válido hasta (UTC)", "Establecer mi contraseña", "Recibe este correo porque se le ha añadido como administrador de este inquilino. Si no lo esperaba, puede ignorarlo; la cuenta no puede usarse hasta que se establezca una contraseña."),
+            "zh" => ("您的 Diten 租户邀请", "您已受到邀请", "您已被邀请成为租户 {{TenantDisplayName}} 的管理员。请点击下方按钮设置密码；该链接只能使用一次。", "租户 ID", "链接有效期至（UTC）", "设置我的密码", "您收到此邮件，是因为您已被添加为该租户的管理员。如果您并未预期收到此邮件，可以忽略；在设置密码之前，该账户无法使用。"),
+            "ar" => ("دعوتك إلى مستأجر Diten", "لقد تمت دعوتك", "تمت دعوتك إلى المستأجر {{TenantDisplayName}} بصفتك مسؤولاً. عيّن كلمة المرور باستخدام الزر أدناه؛ لا يمكن استخدام الرابط إلا مرة واحدة.", "معرّف المستأجر", "الرابط صالح حتى (UTC)", "تعيين كلمة المرور", "تلقيت هذه الرسالة لأنه تمت إضافتك مسؤولاً عن هذا المستأجر. إذا لم تكن تتوقعها فيمكنك تجاهلها؛ لا يمكن استخدام الحساب قبل تعيين كلمة المرور."),
+            "ru" => ("Ваше приглашение в арендатора Diten", "Вы приглашены", "Вас пригласили администратором арендатора {{TenantDisplayName}}. Задайте пароль с помощью кнопки ниже; ссылку можно использовать только один раз.", "ID арендатора", "Ссылка действует до (UTC)", "Задать пароль", "Вы получили это письмо, потому что вас добавили администратором этого арендатора. Если вы его не ожидали, просто проигнорируйте его: пока пароль не задан, учётной записью пользоваться нельзя."),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported tenant mail locale.")
+        };
+
+        var template = Lifecycle(
+            "tenant.invite.email", locale, subject, heading, sentence, why,
+            [
+                new NotificationTemplateShellRow { Label = idLabel, ValueTemplate = "{{TenantId}}" },
+                new NotificationTemplateShellRow { Label = untilLabel, ValueTemplate = "{{LinkExpiresAtUtc}}" }
+            ],
+            ["TenantId", "TenantDisplayName", "SetPasswordUrl", "LinkExpiresAtUtc"]);
+        template.SemanticVersion = "1.2.0";
+        template.Shell!.ActionLabel = action;
+        template.Shell.ActionUrlVariable = "SetPasswordUrl";
+        return template;
     }
 
     /// <summary>BL-454 slice 2 — the tenant's access suspended, 1.1.0, seven languages, shell form; content as 1.0.0.</summary>

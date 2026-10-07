@@ -109,8 +109,11 @@ public sealed class QueueEmailNotificationHandler
         var settingsResponse = await _settingsResolver.ResolveAsync(request.TenantId, ct);
         if (!settingsResponse.IsSuccessful || settingsResponse.Data is null)
         {
+            // C-FIX1 3 — the resolver's own name (TENANT_SENDING_DISABLED, TENANT_SETTINGS_DISABLED,
+            // TENANT_FALLBACK_POLICY_UNKNOWN, PLATFORM_DEFAULT_UNAVAILABLE): no row exists yet, so this is all the
+            // producer is told. The general code only when the resolver gave none.
             return Response<NotificationDispatchDto>.Fail(
-                settingsResponse.Errors, settingsResponse.StatusCode, ReasonMessagingSettingsUnavailable);
+                settingsResponse.Errors, settingsResponse.StatusCode, settingsResponse.ReasonCode ?? ReasonMessagingSettingsUnavailable);
         }
 
         if (!Enum.TryParse<MessagingProviderCode>(settingsResponse.Data.ProviderCode, ignoreCase: true, out var providerCode))

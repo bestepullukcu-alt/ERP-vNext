@@ -90,7 +90,8 @@ public sealed class EmailSliceTwoStageCMongoTests : IAsyncLifetime
             Assert.Equal(NotificationTemplateSeed.TenantLocales.OrderBy(x => x), platform.Select(t => t.Locale).OrderBy(x => x));
             Assert.All(platform.Where(t => t.Id != operatorEdit.Id), t =>
             {
-                Assert.Equal("1.1.0", t.SemanticVersion);
+                // BL-454 slice 2 stage D — the invitation is at 1.2.0 (the set-password link); the other two at 1.1.0.
+                Assert.Equal(key == "tenant.invite.email" ? "1.2.0" : "1.1.0", t.SemanticVersion);
                 Assert.NotNull(t.Shell);
             });
         }

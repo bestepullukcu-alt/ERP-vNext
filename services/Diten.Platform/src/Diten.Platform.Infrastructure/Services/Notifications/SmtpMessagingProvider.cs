@@ -52,10 +52,11 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
         var (settings, refusal) = await ResolveSettingsAsync(request.TenantId, ct);
         if (settings is null)
         {
-            // A refusal by the tenant's own policy is named as such; anything else is still a configuration problem.
-            return refusal is MessagingSettingsSelection.ReasonPlatformDefaultUnavailable or null
+            // Every refusal is named by the rule that refused it (C-FIX1 K8: PLATFORM_DEFAULT_UNAVAILABLE too, as the
+            // resolver says it); the configuration code only if the selection ever gave none.
+            return refusal is null
                 ? LogAndReturnFailure(request, MessagingProviderErrorCodes.ProviderConfigInvalid, "Tenant SMTP settings could not be resolved.", stopwatch)
-                : LogAndReturnFailure(request, refusal!, MessagingSettingsSelection.Describe(refusal!), stopwatch);
+                : LogAndReturnFailure(request, refusal, MessagingSettingsSelection.Describe(refusal), stopwatch);
         }
 
         var validation = ValidateRequest(request, settings, options);

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Json;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Notifications;
@@ -6,6 +7,7 @@ using Diten.Platform.Application.Features.Notifications.Services;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Infrastructure.Settings;
 using MediatR;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -28,18 +30,21 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IMediator _mediator;
     private readonly AuthServiceOptions _authServiceOptions;
+    private readonly IHostEnvironment? _environment;
     private readonly ILogger<AdminUserInvitationService> _logger;
 
     public AdminUserInvitationService(
         IHttpClientFactory httpClientFactory,
         IMediator mediator,
         IOptions<AuthServiceOptions> authServiceOptions,
-        ILogger<AdminUserInvitationService> logger)
+        ILogger<AdminUserInvitationService> logger,
+        IHostEnvironment? environment = null)
     {
         _httpClientFactory = httpClientFactory;
         _mediator = mediator;
         _authServiceOptions = authServiceOptions.Value;
         _logger = logger;
+        _environment = environment;
     }
 
     public async Task<AdminUserInvitationResult> InviteAsync(Tenant tenant, TenantAdminUser adminUser, CancellationToken cancellationToken)
@@ -47,43 +52,56 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         var provisioned = await ProvisionAdminUserAsync(tenant, adminUser, cancellationToken);
         var loginUrl = BuildLoginUrl(tenant);
 
-        // The invitation email is delivered through the MOD-0027 notification pipeline: it renders the
-        // tenant.invite.email template, resolves the tenant's messaging settings (tenant-specific -> platform
-        // default -> fallback policy) and records a dispatch for monitoring. If no provider/settings resolve
-        // (typical dev default), the send fails gracefully: the admin stays provisioned (with a temp password)
-        // and the handler surfaces the login URL + temp password to the operator in Development.
-        var emailSent = await TryQueueInvitationEmailAsync(tenant, adminUser, loginUrl, provisioned.TemporaryPassword, cancellationToken);
+        // BL-454 slice 2 stage D — the invitation carries BL-529's one-time set-password link and how long it lives;
+        // never a password (AuthService no longer makes one). Delivered through the MOD-0027 notification pipeline
+        // (tenant.invite.email, the tenant's messaging settings, a dispatch row whose stored variables and previews mask
+        // the link). A link that would point at localhost outside Development is not sent at all, by name.
+        var (setPasswordUrl, refusal) = TenantAdminSetPasswordLink.Build(
+            _authServiceOptions.FrontendBaseUrl, _environment?.IsDevelopment() == true, adminUser.Email, provisioned.SetupToken!);
+        if (refusal is not null)
+        {
+            _logger.LogWarning(
+                "tenant.admin_invitation.not_sent TenantId={TenantId} AdminUserId={AdminUserId} ReasonCode={ReasonCode}",
+                tenant.Id, adminUser.Id, refusal);
+            return new AdminUserInvitationResult(loginUrl, null, provisioned.UserProvisioned, InvitationEmailSent: false, EmailRefusalCode: refusal);
+        }
+
+        var emailSent = await TryQueueInvitationEmailAsync(tenant, adminUser, setPasswordUrl!, provisioned.SetupExpiresAtUtc, cancellationToken);
 
         return new AdminUserInvitationResult(
             loginUrl,
-            provisioned.TemporaryPassword,
+            setPasswordUrl,
             provisioned.UserProvisioned,
             InvitationEmailSent: emailSent);
     }
 
+    /// <summary>The variables of tenant.invite.email (1.2.0) — the same in every language.</summary>
+    internal static Dictionary<string, object?> InvitationVariables(
+        Tenant tenant, TenantAdminUser adminUser, string setPasswordUrl, DateTime setupExpiresAtUtc) =>
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["RecipientName"] = string.IsNullOrWhiteSpace(adminUser.Name) ? adminUser.Email : adminUser.Name,
+            ["TenantDisplayName"] = tenant.DisplayName ?? tenant.Name,
+            ["TenantId"] = tenant.Id,
+            ["Email"] = adminUser.Email,
+            // A secret NAME (NotificationSecrets): the sent body carries it, the dispatch row never does.
+            ["SetPasswordUrl"] = setPasswordUrl,
+            ["LinkExpiresAtUtc"] = DateTime.SpecifyKind(setupExpiresAtUtc, DateTimeKind.Utc)
+                .ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)
+        };
+
     private async Task<bool> TryQueueInvitationEmailAsync(
         Tenant tenant,
         TenantAdminUser adminUser,
-        string loginUrl,
-        string temporaryPassword,
+        string setPasswordUrl,
+        DateTime setupExpiresAtUtc,
         CancellationToken cancellationToken)
     {
-        // TemporaryPassword is intentionally passed as a template variable: the notification handler renders it
-        // into the sent body but persists a redacted preview (sensitive keys/values are masked), so the secret
-        // never lands in the dispatch record or the monitoring UI. Variables are already aligned with the
-        // tenant.user.invited event's required contract (TenantDisplayName is present).
         var dispatchRequest = new NotificationEventDispatchRequest(
             tenant.Id,
             InvitationEventCode,
             new[] { new EmailRecipientDto(adminUser.Email, adminUser.Name) },
-            new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["RecipientName"] = string.IsNullOrWhiteSpace(adminUser.Name) ? adminUser.Email : adminUser.Name,
-                ["TenantDisplayName"] = tenant.DisplayName ?? tenant.Name,
-                ["Email"] = adminUser.Email,
-                ["TemporaryPassword"] = temporaryPassword,
-                ["LoginUrl"] = loginUrl
-            },
+            InvitationVariables(tenant, adminUser, setPasswordUrl, setupExpiresAtUtc),
             Locale: string.IsNullOrWhiteSpace(tenant.DefaultLanguage) ? "en" : tenant.DefaultLanguage);
 
         try
@@ -146,7 +164,7 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         var client = _httpClientFactory.CreateClient(AuthInternalClientName);
         using var response = await client.SendAsync(request, cancellationToken);
         var payload = await response.Content.ReadFromJsonAsync<AdminProvisioningResponse>(cancellationToken: cancellationToken);
-        if (!response.IsSuccessStatusCode || payload is null || string.IsNullOrWhiteSpace(payload.TemporaryPassword))
+        if (!response.IsSuccessStatusCode || payload is null || string.IsNullOrWhiteSpace(payload.SetupToken))
         {
             var responseText = payload?.Message ?? await response.Content.ReadAsStringAsync(cancellationToken);
             _logger.LogError(
@@ -199,8 +217,11 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         string Email,
         string Name);
 
+    /// <summary>AuthService's answer: the one-time set-password token (in clear only here, over the internal key) and
+    /// when it stops working. No password.</summary>
     private sealed record AdminProvisioningResponse(
         bool UserProvisioned,
-        string TemporaryPassword,
+        string? SetupToken,
+        DateTime SetupExpiresAtUtc,
         string? Message);
 }

@@ -373,6 +373,171 @@ public sealed class PlatformContainerValidationTests
             Task.FromResult(Diten.Platform.Application.Features.Notifications.Services.MessagingProviderResult.Fail("SMTP_REJECTED", "rejected"));
     }
 
+    /// <summary>
+    /// Removes the platform default templates (<c>TenantId == null</c>) of THIS test's database, so the seed writes them
+    /// afresh. Refuses — throws, before anything is touched — any database that is not exactly
+    /// <see cref="ContainerDatabaseName"/>: a shared test database, a developer's database, production. Tenant templates and
+    /// every other collection are never touched.
+    /// </summary>
+    internal static void ResetPlatformDefaultTemplates(MongoDB.Driver.IMongoDatabase database)
+    {
+        var name = database.DatabaseNamespace.DatabaseName;
+        if (!string.Equals(name, ContainerDatabaseName, StringComparison.Ordinal) || !name.Contains("_itest_", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Refusing to reset platform default templates in '{name}': only the container test's own database ('{ContainerDatabaseName}') may be reset.");
+        }
+
+        // Untyped on purpose: this runs BEFORE AddInfrastructure registers the production serializers (Guid among them),
+        // and a typed filter would make the driver register its default Guid serializer first — the composition then
+        // refuses to register its own.
+        database.GetCollection<MongoDB.Bson.BsonDocument>(Diten.Platform.Infrastructure.Persistence.Schema.PlatformCollections.NotificationTemplates)
+            .DeleteMany(new MongoDB.Bson.BsonDocument { ["TenantId"] = MongoDB.Bson.BsonNull.Value, ["IsPlatformDefault"] = true });
+    }
+
+    [Theory]
+    [InlineData("DitenERP_Dev")]
+    [InlineData("diten_platform_itest")]
+    [InlineData("diten_platform_itest_container_validation_x")]
+    [InlineData("diten_platform")]
+    public void Only_the_container_tests_own_database_may_have_its_platform_templates_reset(string name)
+    {
+        // A client that is never contacted: the guard throws before any command is sent.
+        var database = new MongoDB.Driver.MongoClient("mongodb://localhost:1").GetDatabase(name);
+
+        var refused = Assert.Throws<InvalidOperationException>(() => ResetPlatformDefaultTemplates(database));
+        Assert.Contains(name, refused.Message);
+    }
+
+    public static TheoryData<string> TenantLanguages() => new() { "en", "tr", "fr", "es", "zh", "ar", "ru" };
+
+    [Theory]
+    [MemberData(nameof(TenantLanguages))]
+    public async Task A_new_tenants_first_administrator_gets_the_set_password_link_from_the_production_container(string language)
+    {
+        // BL-454 slice 2 stage D — the measured defect: a tenant opened with an initial administrator sent tenant.invite.email
+        // with the tenant's name and id only, to an account nobody had created in AuthService. Here, through the production
+        // composition: the created event → the consumer → the invitation service → AuthService (only its HTTP answer is
+        // faked: a token and an expiry) → the notification pipeline → the transport (recorded). Once per language.
+        var recorder = new RecordingProvider();
+        var auth = new FakeAuthInvitations();
+        var services = new ServiceCollection();
+        foreach (var descriptor in Composition.Value)
+        {
+            if (descriptor.ServiceType != typeof(Diten.Platform.Application.Features.Notifications.Services.IMessagingProvider)
+                && descriptor.ServiceType != typeof(Diten.BuildingBlocks.BackgroundJobs.IBackgroundJobScheduler))
+            {
+                ((ICollection<ServiceDescriptor>)services).Add(descriptor);
+            }
+        }
+
+        services.AddSingleton<Diten.Platform.Application.Features.Notifications.Services.IMessagingProvider>(recorder);
+        services.AddSingleton<Diten.BuildingBlocks.BackgroundJobs.IBackgroundJobScheduler>(new RecordingScheduler());
+        services.AddHttpClient(Diten.Platform.Infrastructure.Services.InternalHttpClients.AuthInternal)
+            .ConfigurePrimaryHttpMessageHandler(() => auth);
+        await using var provider = services.BuildServiceProvider();
+
+        await RemoveOrphansAsync(provider);
+        SeededRow? row = null;
+        try
+        {
+            var adminId = Guid.NewGuid();
+            row = await SeedInvitationTenantAsync(provider, language, adminId);
+            using (var scope = provider.CreateScope())
+            {
+                var consumer = ActivatorUtilities.CreateInstance<Diten.Platform.Infrastructure.Eventing.TenantLifecycleNotificationConsumer>(scope.ServiceProvider);
+                var message = new Diten.Platform.Application.Contracts.Eventing.EventTransportMessage(
+                    Guid.NewGuid(), Diten.Platform.Contracts.Events.TenantCreatedV1.Name, Diten.Platform.Contracts.Events.TenantCreatedV1.Version,
+                    Guid.NewGuid(), Guid.NewGuid(), row.TenantId, "Diten.Platform.Tests", DateTimeOffset.UtcNow,
+                    System.Text.Json.JsonSerializer.Serialize(new Diten.Platform.Contracts.Events.TenantCreatedV1(
+                        row.TenantId, DateTimeOffset.UtcNow, null, null, row.SenderName, language, adminId)));
+                await consumer.ConsumeAsync(message);
+            }
+
+            var token = Assert.Single(auth.IssuedTokens);
+            var sent = Assert.Single(recorder.Requests, request => request.TenantId == row.TenantId);
+            var encoded = Uri.EscapeDataString(token);
+            Assert.Contains("/account/set-password?email=", sent.BodyText);
+            Assert.Contains(encoded, sent.BodyText);                          // the link
+            Assert.Contains(encoded, sent.BodyHtml);
+            Assert.Contains(auth.ExpiresAt.ToString("yyyy-MM-dd HH:mm"), sent.BodyText); // until when
+            Assert.DoesNotContain("TemporaryPassword", sent.BodyHtml, StringComparison.OrdinalIgnoreCase);
+
+            using var check = provider.CreateScope();
+            var template = (await check.ServiceProvider.GetRequiredService<Diten.Platform.Domain.Repositories.INotificationTemplateRepository>()
+                .GetActiveByKeyAsync(null, true, "tenant.invite.email", language, Diten.Platform.Domain.Enums.NotificationChannelCode.Email))!;
+            Assert.Equal("1.2.0", template.SemanticVersion);
+            Assert.Contains(template.Shell!.HeadingTemplate!, sent.BodyText);  // in the tenant's language
+            Assert.Contains(template.Shell.ActionLabel!, sent.BodyText);
+
+            var dispatch = Assert.Single(await check.ServiceProvider.GetRequiredService<Diten.Platform.Domain.Repositories.INotificationDispatchRepository>()
+                .ListByTenantAsync(row.TenantId, take: 10));
+            Assert.Equal(Diten.Platform.Domain.Enums.NotificationDispatchStatus.Sent, dispatch.Status);
+            Assert.DoesNotContain(token, dispatch.VariablesJson);             // the row never holds the token
+            Assert.DoesNotContain(token, dispatch.BodyHtmlPreview ?? string.Empty);
+            Assert.DoesNotContain(token, dispatch.BodyTextPreview ?? string.Empty);
+        }
+        finally
+        {
+            if (row is not null) await RemoveAsync(provider, row);
+        }
+    }
+
+    private static async Task<SeededRow> SeedInvitationTenantAsync(IServiceProvider provider, string language, Guid adminId)
+    {
+        using var scope = provider.CreateScope();
+        var sp = scope.ServiceProvider;
+        var suffix = Guid.NewGuid().ToString("N")[..10];
+        var tenantId = Guid.NewGuid();
+        var displayName = "Stage D " + language + " " + suffix;
+        var tenant = new Diten.Platform.Domain.Entities.Tenant
+        {
+            Id = tenantId, Code = "S2" + suffix.ToUpperInvariant(), Slug = "s2-" + suffix, Name = "s2-" + suffix,
+            DisplayName = displayName, Domain = "s2-" + suffix + ".test", Region = "EU", Environment = "Production",
+            DefaultLanguage = language
+        };
+        tenant.AdminUsers.Add(new Diten.Platform.Domain.Entities.TenantAdminUser
+        {
+            Id = adminId, Name = "First Admin", Email = "first.admin@s2.test",
+            Status = Diten.Platform.Domain.Entities.TenantAdminUserStatus.Invited
+        });
+        await sp.GetRequiredService<Diten.Platform.Domain.Repositories.ITenantRegistryRepository>().CreateAsync(tenant);
+        await sp.GetRequiredService<Diten.Platform.Domain.Repositories.ITenantMessagingSettingsRepository>().CreateAsync(
+            new Diten.Platform.Domain.Entities.Notifications.TenantMessagingSettings
+            {
+                TenantId = tenantId,
+                IsPlatformDefault = false,
+                ProviderCode = Diten.Platform.Domain.Enums.MessagingProviderCode.Fake,
+                SenderEmail = "bildirim@s2.test",
+                SenderName = displayName,
+                IsEnabled = true
+            });
+        return new SeededRow(tenantId, Guid.Empty, Guid.Empty, displayName, string.Empty);
+    }
+
+    /// <summary>AuthService's tenant-admin-invited door, answered: a fresh token and its expiry — never a password.</summary>
+    private sealed class FakeAuthInvitations : HttpMessageHandler
+    {
+        public List<string> IssuedTokens { get; } = [];
+        public DateTime ExpiresAt { get; } = new(2026, 10, 14, 9, 30, 0, DateTimeKind.Utc);
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Assert.EndsWith("/internal/events/tenant-admin-invited", request.RequestUri!.AbsolutePath);
+            var token = "stage-d-" + Guid.NewGuid().ToString("N");
+            lock (IssuedTokens)
+            {
+                IssuedTokens.Add(token);
+            }
+
+            var body = System.Text.Json.JsonSerializer.Serialize(new { userProvisioned = true, setupToken = token, setupExpiresAtUtc = ExpiresAt, message = "processed" });
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json")
+            });
+        }
+    }
+
     private sealed record SeededRow(Guid TenantId, Guid DispatchId, Guid TemplateId, string SenderName, string BodyMark);
 
     private static async Task<SeededRow> SeedTenantRowAsync(IServiceProvider provider, string name, bool pendingMeetingEffects = false)
@@ -505,9 +670,18 @@ public sealed class PlatformContainerValidationTests
     /// Composed once per process — see the BSON note in the class summary. Building several providers from
     /// one collection is fine; calling <c>AddInfrastructure</c> more than once in a process is not.
     /// </summary>
+    /// <summary>This test's own database — fixed name, reused across runs (see <see cref="TestConfiguration"/>).</summary>
+    internal const string ContainerDatabaseName = "diten_platform_itest_container_validation";
+
     private static readonly Lazy<IServiceCollection> Composition = new(() =>
     {
         var configuration = TestConfiguration();
+        // BL-454 slice 2 stage D — the seed below (inside AddInfrastructure) writes the platform default templates, and it
+        // rightly never overwrites a row it does not recognise. A row an EARLIER run of a branch under development seeded
+        // (content that never shipped) would therefore stay for ever and make these tests measure stale templates. The
+        // test sets up its own state: before the seed runs, this database's platform default templates are removed.
+        ResetPlatformDefaultTemplates(new MongoDB.Driver.MongoClient(configuration["MongoDbSettings:ConnectionString"])
+            .GetDatabase(configuration["MongoDbSettings:DatabaseName"]));
         var services = new ServiceCollection();
 
         // What the HOST always supplies, and therefore not a copy of Program.cs: WebApplicationBuilder
@@ -555,7 +729,7 @@ public sealed class PlatformContainerValidationTests
                 // MongoIntegrationHarness.CreateIsolatedAsync's rule, for the same reason: what
                 // AddInfrastructure seeds is database-global, not tenant-scoped.
                 ["MongoDbSettings:ConnectionString"] = "mongodb://localhost:27017",
-                ["MongoDbSettings:DatabaseName"] = "diten_platform_itest_container_validation",
+                ["MongoDbSettings:DatabaseName"] = ContainerDatabaseName,
                 ["MongoDbSettings:AllowStartupWithoutDatabase"] = "true",
                 // BL-454 — a value the defaults never produce, to prove the window is read from configuration.
                 ["Notifications:EmailDispatch:RetryWindowHours"] = "48",

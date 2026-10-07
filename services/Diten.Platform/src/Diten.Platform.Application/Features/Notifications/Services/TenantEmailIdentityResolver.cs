@@ -66,8 +66,11 @@ public sealed class TenantEmailIdentityResolver : ITenantEmailIdentityResolver
          * name belongs to the platform, and reading it as the tenant's would put one name on every tenant's mail.
          */
         var own = await _settings.GetByTenantIdAsync(tenantId, ct);
-        var ownIsLive = own is { IsDeleted: false, IsEnabled: true };
-        var effective = ownIsLive ? own : await _settings.GetPlatformDefaultAsync(ct);
+        var platformRow = await _settings.GetPlatformDefaultAsync(ct);
+        // C-FIX1 K6 — the ONE selection rule (MessagingSettingsSelection), not a copy: a tenant whose policy refuses the
+        // platform's mailbox gets no reply address from it either.
+        var (effective, _) = MessagingSettingsSelection.Select(own, () => platformRow);
+        var ownIsLive = effective is not null && ReferenceEquals(effective, own);
 
         return new TenantEmailIdentity(
             Blank(tenant.DisplayName) ?? Blank(tenant.Name),

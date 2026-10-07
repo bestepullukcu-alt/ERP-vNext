@@ -330,7 +330,7 @@ public static partial class NotificationSecrets
     // recognised by its header and the start of its payload, so no length of payload escapes; a header longer than the
     // bound is itself the shape of a secret.
     [GeneratedRegex(
-        @"(?<![A-Za-z0-9_])(?:sk-[A-Za-z0-9_-]{9,512}|sk_(?:live|test)_[A-Za-z0-9]{8,512}|SG\.[A-Za-z0-9_.-]{9,512}|gh[pousr]_[A-Za-z0-9]{20,255}|xox[abprs]-[A-Za-z0-9-]{8,512}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|eyJ[A-Za-z0-9_-]{1,4095}\.[A-Za-z0-9_-]|eyJ[A-Za-z0-9_-]{4096})|-----BEGIN [A-Z ]{0,40}PRIVATE KEY(?: BLOCK)?-----",
+        @"(?:(?<![A-Za-z0-9_])|(?<=\\[nrt]))(?:sk-[A-Za-z0-9_-]{9,512}|sk_(?:live|test)_[A-Za-z0-9]{8,512}|SG\.[A-Za-z0-9_.-]{9,512}|gh[pousr]_[A-Za-z0-9]{20,255}|xox[abprs]-[A-Za-z0-9-]{8,512}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|eyJ[A-Za-z0-9_-]{1,4095}\.[A-Za-z0-9_-]|eyJ[A-Za-z0-9_-]{4096})|-----BEGIN [A-Z ]{0,40}PRIVATE KEY(?: BLOCK)?-----",
         RegexOptions.CultureInvariant,
         matchTimeoutMilliseconds: ShapeSearchTimeoutMilliseconds)]
     private static partial Regex SecretShape();

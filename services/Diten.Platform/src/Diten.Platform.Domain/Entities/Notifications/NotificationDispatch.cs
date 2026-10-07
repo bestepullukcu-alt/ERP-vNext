@@ -86,9 +86,13 @@ public sealed class NotificationDispatch : BaseEntity
 
         Status = NotificationDispatchStatus.Sent;
         ReleaseVariables();
-        // BL-454 — a mail that went out after all owes no "not delivered" effects: a pending marker would keep it in the
-        // re-drive index and send the organizer a wrong notice.
-        PermanentlyFailedNotifiedAt = null;
+        // BL-454 — a mail that went out after all owes no "not delivered" effects: a PENDING marker would keep it in the
+        // re-drive index and send the organizer a wrong notice. C-FIX1 K5 — only the pending one: a REAL time says the
+        // "not delivered" effects already happened, and that record stays (the caller logs the contradiction by name).
+        if (PermanentlyFailedNotifiedAt == PermanentFailurePending)
+        {
+            PermanentlyFailedNotifiedAt = null;
+        }
         ProviderMessageId = providerMessageId;
         SentAt = now;
         UpdatedAt = now;

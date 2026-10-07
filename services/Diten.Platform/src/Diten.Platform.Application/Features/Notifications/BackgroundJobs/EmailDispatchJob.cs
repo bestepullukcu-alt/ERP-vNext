@@ -129,7 +129,8 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         // newRetryCount reaches args.MaxRetryCount, FindDueRetriesAsync's own `RetryCount < maxRetryCount` filter
         // will never surface this dispatch again — so this is the one and only transition where "no further
         // retry is coming" becomes true, never re-entered on a later sweep pass over the same terminal row.
-        var isPermanentFailure = newRetryCount >= args.MaxRetryCount;
+        var isPermanentFailure = newRetryCount >= args.MaxRetryCount
+            || string.Equals(result.ErrorCode, ReasonActionLinkNotRetryable, StringComparison.Ordinal);
         // KS4 — the tenant boundary: the last failure's permanent path writes to tenant-scoped meeting stores.
         using (TenantScopeFor(dispatch.TenantId))
         {
@@ -192,6 +193,14 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
             : dispatch.CorrelationId;
 
         var (bodyHtml, bodyText, template, variables, degradedReason) = await ResolveRetryBodyAsync(dispatch, context, cancellationToken);
+        if (degradedReason == "VariablesRedacted" && await ActionLinkRedactedAsync(dispatch, cancellationToken))
+        {
+            // BL-454 slice 2 stage D — the mail's ACTION is a secret link (an invitation's one-time set-password link): the
+            // row never stored it, so a retry can only send the masked preview — a mail whose button is gone. That is not
+            // sent; the row closes as a permanent failure, by name. The reader is re-invited (a new link), not re-mailed.
+            return (MessagingProviderResult.Fail(ReasonActionLinkNotRetryable, ReasonActionLinkNotRetryable), null);
+        }
+
         var subject = EmailHeaderText.CleanSubject(dispatch.Subject);
         string? senderName = null;
         if (_shellComposer is not null)
@@ -289,6 +298,27 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         }
 
         return (rendered.Data.BodyHtml, rendered.Data.BodyText, template, variables, null);
+    }
+
+    /// <summary>BL-454 slice 2 stage D — a retry whose mail exists for a secret link the row never stored: closed, not sent.</summary>
+    public const string ReasonActionLinkNotRetryable = "ACTION_LINK_NOT_RETRYABLE";
+
+    // The template's action address is a variable whose stored value is the mask.
+    private async Task<bool> ActionLinkRedactedAsync(NotificationDispatch dispatch, CancellationToken ct)
+    {
+        if (_templateRepository is null || dispatch.TemplateId is not { } templateId)
+        {
+            return false;
+        }
+
+        var template = await _templateRepository.GetByIdAsync(templateId, ct);
+        if (template?.Shell?.ActionUrlVariable is not { Length: > 0 } actionVariable)
+        {
+            return false;
+        }
+
+        return NotificationVariables.FromJson(dispatch.VariablesJson).TryGetValue(actionVariable, out var value)
+               && string.Equals(value?.ToString(), QueueEmailNotificationHandler.RedactedToken, StringComparison.Ordinal);
     }
 
     // BL-454 — a Warning: a degraded retry sends the stored, masked preview (a subject or a link may read [REDACTED]).

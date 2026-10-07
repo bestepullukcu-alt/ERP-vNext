@@ -78,7 +78,8 @@ public sealed class UserLifecycleTests
         var reset = new User("r@acme.test", "hash:x", "R", "Eset", TenantA);
         reset.ConfirmEmail();
         reset.RequirePasswordChange(null);
-        // A provisioned tenant admin: a temporary password + forced change, email confirmed (InternalEventsController).
+        // An account that has a password and a forced change, email confirmed (the shape a re-invited tenant admin had
+        // before BL-454 stage D replaced the temporary password with a link).
         var provisioned = new User("p@acme.test", "hash:temp", "P", "Rov", TenantA);
         provisioned.ConfirmEmail();
         provisioned.RequirePasswordChange(DateTime.UtcNow.AddDays(1));

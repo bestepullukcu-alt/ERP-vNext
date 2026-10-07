@@ -58,6 +58,7 @@ public sealed partial class EmailShellDispatchTests
         var logger = new LinesLogger<NotificationPermanentFailureEffects>();
         var sweep = PendingSweep(rig, meetings, new TenantContext(), logger);
         var givenUp = GivenUp(key);
+        var permanentlyFailed = Counter(key, meeting: true);
 
         for (var attempt = 1; attempt <= NotificationPermanentFailureEffects.MaxAttempts; attempt++)
         {
@@ -68,6 +69,7 @@ public sealed partial class EmailShellDispatchTests
 
         Assert.Equal(NotificationPermanentFailureEffects.MaxAttempts, meetings.NoticeAttempts);
         Assert.Equal(givenUp + 1, GivenUp(key));
+        Assert.Equal(permanentlyFailed + 1, Counter(key, meeting: true)); // C-FIX1 4: the main counter too, once
         Assert.Single(logger.Entries, e => e.Level == Microsoft.Extensions.Logging.LogLevel.Error
             && e.Line.Contains("effects_given_up", StringComparison.Ordinal) && e.Line.Contains("Reason=EffectsKeptFailing", StringComparison.Ordinal));
         Assert.False(NotificationDispatch.IsPermanentFailurePending(row)); // given up: no endless re-drive
@@ -170,6 +172,14 @@ public sealed partial class EmailShellDispatchTests
         { "AI" + "za" + new string('T', 35) + "x", true },
         { "AI" + "za" + new string('T', 35) + "_", true },
         { "AI" + "za" + new string('T', 35) + "-", true },
+        // C-FIX1 K3 — right after a JSON escape (\n, \t, \r): the escape's letter is not a word that hides the key.
+        { "{\"error\":\"x\\nAK" + "IA" + new string('T', 16) + "\"}", true },
+        { "{\"error\":\"x\\tAI" + "za" + new string('T', 35) + "\"}", true },
+        { "{\"error\":\"x\\rsk" + "-" + new string('t', 20) + "\"}", true },
+        { "{\"error\":\"x\\ngh" + "p_" + new string('t', 36) + "\"}", true },
+        { "{\"error\":\"x\\ney" + "J" + "abcdef.ghijkl\"}", true },
+        { "desk-mounted-display", false },
+        { "xAK" + "IA" + new string('T', 16), false },
         // Still NOT secrets: the word alone, a short AIza, a public certificate.
         { "AI" + "za", false },
         { "AI" + "za" + new string('T', 34), false },

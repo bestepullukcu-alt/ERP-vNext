@@ -388,7 +388,9 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.Equal(HttpStatusCode.OK, invited.StatusCode);
         using var answer = JsonDocument.Parse(await invited.Content.ReadAsStringAsync());
         Assert.False(answer.RootElement.GetProperty("userProvisioned").GetBoolean());
-        var temporaryPassword = answer.RootElement.GetProperty("temporaryPassword").GetString()!;
+        // BL-454 slice 2 stage D — a one-time set-password link, never a password.
+        Assert.False(answer.RootElement.TryGetProperty("temporaryPassword", out _));
+        var setupToken = answer.RootElement.GetProperty("setupToken").GetString()!;
 
         var old = await TenantLoginAsync(tenantId, user.Email, OldPassword);
         var wrong = await TenantLoginAsync(tenantId, user.Email, WrongPassword);
@@ -399,11 +401,45 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         using var metadata = JsonDocument.Parse((await SingleResetRowAsync(tenantId, user.Id)).Metadata);
         Assert.Equal("tenant-administrator-reinvite", metadata.RootElement.GetProperty("via").GetString());
         Assert.Equal(1, metadata.RootElement.GetProperty("sessionsRevoked").GetInt64());
-        Assert.DoesNotContain(temporaryPassword, (await SingleResetRowAsync(tenantId, user.Id)).Metadata, StringComparison.Ordinal);
-
-        var temporary = await TenantLoginAsync(tenantId, user.Email, temporaryPassword);
-        Assert.Equal(HttpStatusCode.OK, temporary.StatusCode);
+        Assert.DoesNotContain(setupToken, (await SingleResetRowAsync(tenantId, user.Id)).Metadata, StringComparison.Ordinal);
         Assert.True((await ReadUserAsync(user.Id)).MustChangePassword);
+
+        // BL-529's redemption door, as every invitation link goes through it: once, and never twice.
+        using var anonymous = _host.Client();
+        var first = await anonymous.PostAsJsonAsync("api/users/set-password", new { email = user.Email, token = setupToken, newPassword = NewPassword });
+        var second = await anonymous.PostAsJsonAsync("api/users/set-password", new { email = user.Email, token = setupToken, newPassword = NewPassword });
+        Assert.Equal(HttpStatusCode.NoContent, first.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, second.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await TenantLoginAsync(tenantId, user.Email, NewPassword)).StatusCode);
+    }
+
+    [Fact]
+    public async Task A_new_tenant_administrator_is_a_pending_invitation_whose_link_works_once()
+    {
+        // BL-454 slice 2 stage D — the first administrator of a new tenant: no password anywhere, an invitation that the
+        // set-password link (and only it) completes.
+        var tenantId = Guid.NewGuid();
+        var email = $"first.admin.{Guid.NewGuid():N}@invite.test";
+        using var platform = _host.Client();
+        platform.DefaultRequestHeaders.Add("X-Internal-Api-Key", _host.InternalKey);
+
+        var invited = await platform.PostAsJsonAsync("internal/events/tenant-admin-invited",
+            new { tenantId, adminUserId = Guid.NewGuid(), tenantCode = "S2D", tenantName = "Stage D", email, name = "First Admin" });
+
+        Assert.Equal(HttpStatusCode.OK, invited.StatusCode);
+        using var answer = JsonDocument.Parse(await invited.Content.ReadAsStringAsync());
+        Assert.True(answer.RootElement.GetProperty("userProvisioned").GetBoolean());
+        Assert.False(answer.RootElement.TryGetProperty("temporaryPassword", out _));
+        var setupToken = answer.RootElement.GetProperty("setupToken").GetString()!;
+        var expiresAt = answer.RootElement.GetProperty("setupExpiresAtUtc").GetDateTime();
+        Assert.InRange(expiresAt, DateTime.UtcNow.AddDays(6.9), DateTime.UtcNow.AddDays(7.1));
+
+        using var anonymous = _host.Client();
+        var first = await anonymous.PostAsJsonAsync("api/users/set-password", new { email, token = setupToken, newPassword = NewPassword });
+        var second = await anonymous.PostAsJsonAsync("api/users/set-password", new { email, token = setupToken, newPassword = NewPassword });
+        Assert.Equal(HttpStatusCode.NoContent, first.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, second.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await TenantLoginAsync(tenantId, email, NewPassword)).StatusCode);
     }
 
     // ── Item 6: the platform doors work without a tenant outside Development — and only they ────────────────────

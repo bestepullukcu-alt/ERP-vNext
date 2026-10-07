@@ -782,13 +782,15 @@ public sealed partial class EmailShellDispatchTests
             if (shell?.ActionUrlVariable is { } action) names.Add(action);
         }
 
-        // Producers' own additions beside the template (AdminUserInvitationService, task e-mails).
-        foreach (var extra in new[] { "TemporaryPassword", "LoginUrl", "RecipientName", "Email", "TaskUrl", "Priority", "AssignerName" }) names.Add(extra);
+        // Producers' own additions beside the template (AdminUserInvitationService, task e-mails). BL-454 stage D: the
+        // invitation sends no TemporaryPassword and no LoginUrl any more.
+        foreach (var extra in new[] { "RecipientName", "Email", "TaskUrl", "Priority", "AssignerName" }) names.Add(extra);
 
         var masked = names.Where(NotificationSecrets.IsSecretName).ToList();
         _output.WriteLine("ALL: " + string.Join(", ", names));
         _output.WriteLine("MASKED: " + string.Join(", ", masked));
-        Assert.Equal(["TemporaryPassword"], masked);
+        // The invitation's one-time set-password link is the only secret a seeded template carries (stage D).
+        Assert.Equal(["SetPasswordUrl"], masked);
     }
 
     [Fact]
@@ -823,8 +825,9 @@ public sealed partial class EmailShellDispatchTests
     public static TheoryData<string, Dictionary<string, object?>> TypedTenantMails => new()
     {
         { "tenant.suspended.email", new() { ["Reason"] = "Unpaid invoice", ["SuspendedAtUtc"] = new DateTimeOffset(2026, 10, 4, 1, 33, 33, TimeSpan.Zero) } },
-        { "tenant.reactivated.email", new() { ["ReactivatedAtUtc"] = new DateTimeOffset(2026, 10, 4, 1, 33, 33, TimeSpan.Zero) } },
-        { "tenant.invite.email", new() { ["TenantId"] = Guid.Parse("11111111-2222-3333-4444-555555555555"), ["TenantDisplayName"] = "Diten Pharma" } }
+        { "tenant.reactivated.email", new() { ["ReactivatedAtUtc"] = new DateTimeOffset(2026, 10, 4, 1, 33, 33, TimeSpan.Zero) } }
+        // BL-454 stage D — the invitation is NOT retried byte for byte: its link is a secret the row never stores, so a
+        // retry closes as ACTION_LINK_NOT_RETRYABLE (A_retry_of_an_invitation_whose_link_was_masked_is_closed_by_name…).
     };
 
     [Theory]

@@ -307,7 +307,6 @@ public sealed partial class EmailShellDispatchTests
 
     [Theory]
     [InlineData("suspended")]
-    [InlineData("created")]
     public async Task A_tenant_event_whose_admin_address_can_never_be_valid_is_consumed_once_and_not_redelivered(string kind)
     {
         var rig = new Rig();
@@ -325,7 +324,7 @@ public sealed partial class EmailShellDispatchTests
             new ConsumedEventStore(consumed, NullLogger<ConsumedEventStore>.Instance),
             rig.Tenants,
             new PipelineMediator(rig),
-            new TenantCreatedV1NotificationMapper(),
+            new Diten.Platform.Application.Tests.Tenants.TenantLifecycleNotificationConsumerTests.RecordingInvitations(),
             new TenantSuspendedV1NotificationMapper(),
             new TenantReactivatedV1NotificationMapper(),
             NullLogger<TenantLifecycleNotificationConsumer>.Instance);

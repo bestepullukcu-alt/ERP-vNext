@@ -145,15 +145,15 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
 
         var dto = TenantAdminUserSupport.ToDto(user);
 
-        // SMTP-off path is still a successful provisioning. In Development only, surface the login URL +
-        // temporary password so the operator can finish setup manually (mirrors the tenant-side Users
-        // invite dev-fallback). Production never returns the temp password.
+        // SMTP-off path is still a successful provisioning. In Development only, surface the administrator's
+        // set-password link so the operator can pass it on (mirrors the tenant-side Users invite dev-fallback). BL-454
+        // slice 2 stage D: there is no temporary password any more — nowhere, in no environment.
         if (!invitation.InvitationEmailSent && _environment.IsDevelopment())
         {
             dto = dto with
             {
-                LoginUrl = invitation.LoginUrl,
-                TemporaryPassword = invitation.TemporaryPassword,
+                LoginUrl = invitation.SetPasswordUrl ?? invitation.LoginUrl,
+                TemporaryPassword = null,
                 EmailSent = false
             };
         }
