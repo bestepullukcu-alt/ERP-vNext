@@ -36,7 +36,7 @@ doktor → aktif segment → aktif oyun (STR-TUTUKON) → ürün satırı → ya
 | E4 ☑ | **Yolculuk (ContentEngagementJourney):** en az 2 aşama, her aşama yola bağlı → yayımla | CT (+ sema SoD gerekirse) | Yolculuk yayımlanmış, aşamalar sıralı | ☐ |
 | E5 ☑ | **Oyun:** STR-TUTUKON'un **yeni sürümü** — segment bağlaması `E2E-TUT-SINDIRIM`, ürün satırı TUTUKON → E4 yolculuğu, sıklık politikası → etkinleştir | CT (Beste) | Aktif oyun yeni segmente bağlı; eski sürüm "superseded" | ☐ |
 | E6 ☑ | **Sıklık:** TUTUKON segmenti için sıklık politikası (ör. dönemde 3) aktif mi; değilse `E2E-TUT-VFP` oluştur + etkinleştir | CT | Önizlemede `frequencyStatus = resolved` | ☐ |
-| E7 | **Plan:** Beste ile yeni taslak (aktif dönem, boş ilk hafta) → Hedefler'de bölge araması → uzmanlığı uygun 5–10 doktor + 1–2 eczane → Hedefleri kaydet → **Önizleme** | CT (Beste) | `contentStatus = resolved` (segment üyesi doktorlarda), içerik kalemleri (ürün, aşama, adımlar), süre tipik modelden; tatil / hafta sonu boş; bölge uyarısı yok | ☐ |
+| E7 ☑ | **Plan:** Beste ile yeni taslak (aktif dönem, boş ilk hafta) → Hedefler'de bölge araması → uzmanlığı uygun 5–10 doktor + 1–2 eczane → Hedefleri kaydet → **Önizleme** | CT (Beste) | `contentStatus = resolved` (segment üyesi doktorlarda), içerik kalemleri (ürün, aşama, adımlar), süre tipik modelden; tatil / hafta sonu boş; bölge uyarısı yok | ☐ |
 | E8 | **Uygula** (haftanın planı) | CT (Beste) | Planlanan Ziyaretler'de kayıtlar, `contentItems` dolu, adlar görünür | ☐ |
 | E9 | **Ziyaret Yürütme:** bir ziyareti aç → içerik / sunum bilgisi → sonucu kaydet → rapor gönder | CT (Beste) | Rapor kaydı; yolculuk ilerlemesi bir sonraki aşamaya geçer (SB-3b) | ☐ |
 | E10 | **Sonraki ziyaret:** aynı doktor için sonraki haftanın önizlemesi | CT | İçerik bir sonraki aşamadan gelir | ☐ |
@@ -191,3 +191,28 @@ Yayın kontrol listesi tam: MLR onaylı, çıktı hazır, tüm içerikler yayın
 - **E5-B1:** "Kaydet ve aktifleştir" kaydetti ama **aktifleştirmedi** (v2 taslak kaldı; ayrıntıdan ayrıca "Aktifleştir" gerekti).
 - **E5-B2:** v1 `TemplateStatus = active` kalıyor (yalnız `SupersededByTemplateId` doldu) → aynı soyda iki "aktif" sürüm. Çözücü segmentten bulduğu için bugün zararsız (v1'in segmenti arşivli), ama kural netleşmeli.
 - **E5-B3:** Düzenleme ekranında arşivli segment bağı ad yerine ham GUID (`63deb51c…`) gösteriyor.
+### E7 — Plan + önizleme (CT, 2026-10-07; Beste girişi) ☑
+**Yazmalar:**
+- Taslak plan `a42373cb-0439-41d8-9513-b1571d93fe40` (TR, Q4 dönemi, 42. hafta).
+- Hedefler (bölge araması ile): MEMORİAL ŞİŞLİ, AMERİKAN HASTANESİ, ŞİŞLİ HAMİDİYE ETFAL → uzmanlık filtresi Gastroenterology → **16 gastroenterolog** + 1 bağlı eczane → **Hedefleri kaydet**.
+- VP-FIX-2 E4 için Düzenle → hafta 43 → kaydet.
+
+**Önizleme (kaydetmeden):**
+- 33 ziyaret, 0 sığmayan.
+- `contentStatus`: **resolved 32** (tüm doktorlar) + not-applicable 1 (eczane).
+- Takvim `resolved`.
+- Örnek (İLKER ŞEN, Ş. Hamidiye Etfal):
+  - 12 Eki 09:00–09:06 → ürün **TUTUKON** (promo) · yolculuk `CEJ-2026-8AD806` · aşama **#0 Farkındalık** · yol `KP-2026-269A07` 1.0 · adımlar KC-2026-E70D11 / KC-2026-2EC045;
+  - **2 Kas → aşama #1 Pekiştirme** (ilerleme planda öngörülüyor).
+
+✅ **Zincir uçtan uca çalışıyor:** doktor → aktif segment → aktif oyun v2 → ürün satırı → yolculuk → aşama → yol adımları → içerik.
+
+**VP-FIX-2 E4 ✓:** Düzenle ile hafta 42 → 43 kaydedildi; seçim **korundu** (16 kişi / 3 hesap / 1 eczane).
+
+**Bulgular:**
+- **E7-B1 (çözücü):** Ziyaret içerik adımları yolun **iki dalını birden** düzleştiriyor (Ana akış 3 + Kısa akış 2 = 5 adım; detaylama 3 kez). Dal seçimi (ör. ana akış, kısa ziyarette kısa akış) kuralı yok.
+- **E7-B2:** Adımların süresi (`minutes`) null; ziyaret süresi 6 dk (1 promo ürün × tipik süre). İçerik / adım süresi süreye girmiyor.
+- **E7-B3 (bilinen, B-4 / B-5):** 17 ziyaretin hepsi tek güne (Pazartesi) düşüyor. "Ayda 2" sıklıkta ikinci ziyaret 3 hafta sonra (2 Kas) geliyor, 2 haftalık aralık değil.
+- **E7-B4 (hata):** Düzenle → Kaydet sonrası yönlendirme `/CRM/VisitPlanning/Details/true` → **404**. Kök: `form.js` güncellemede `r.body.data` (`true`) değerini kimlik sanıyor.
+- **E7-B5 (bilinen, Faz 4):** Yeni plan formunda geçmiş hafta (40) seçilebiliyor.
+- Önizleme öğesinde `frequencyStatus` alanı yok (planlanan ziyarette var).
