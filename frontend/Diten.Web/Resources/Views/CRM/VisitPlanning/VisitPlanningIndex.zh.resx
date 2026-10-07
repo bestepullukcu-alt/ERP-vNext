@@ -16,7 +16,7 @@
   <data name="Applied" xml:space="preserve"><value>已保存为本周计划。</value></data>
   <data name="Replanned" xml:space="preserve"><value>拜访已重新规划。</value></data>
   <data name="OutOfTerritory" xml:space="preserve"><value>辖区外</value></data>
-  <data name="SessionsTitle" xml:space="preserve"><value>我的草稿计划</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>我的计划</value></data>
   <data name="Plan" xml:space="preserve"><value>计划</value></data>
   <data name="Rep" xml:space="preserve"><value>代表</value></data>
   <data name="Targets" xml:space="preserve"><value>目标</value></data>
@@ -129,4 +129,53 @@
   <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} 次拜访将保存为本周计划，本周将被锁定。是否继续？</value></data>
   <data name="WeekEmptyBlocked" xml:space="preserve"><value>本周没有可批准的拜访。</value></data>
   <data name="WeekLocked" xml:space="preserve"><value>本周已批准，其拜访已锁定。</value></data>
+  <data name="MyPlans" xml:space="preserve"><value>我的计划</value></data>
+  <data name="TeamView" xml:space="preserve"><value>团队</value></data>
+  <data name="TeamViewSoon" xml:space="preserve"><value>经理视图即将推出</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve"><value>计划视图</value></data>
+  <data name="WeeksSection" xml:space="preserve"><value>周</value></data>
+  <data name="WeekCountFormat" xml:space="preserve"><value>{0} 已批准 · {1} 草稿</value></data>
+  <data name="ApprovedWeekCountFormat" xml:space="preserve"><value>{0} 已批准</value></data>
+  <data name="EmptyDraftBadge" xml:space="preserve"><value>空草稿</value></data>
+  <data name="LegacyPlanBadge" xml:space="preserve"><value>整个周期已批准（旧计划）</value></data>
+  <data name="EmptyDraftsNotice" xml:space="preserve"><value>有 {0} 个空草稿（无目标）。每个周期只保留一个计划。</value></data>
+  <data name="DeleteEmptyDrafts" xml:space="preserve"><value>删除空草稿</value></data>
+  <data name="DeleteEmptyDraftsConfirm" xml:space="preserve"><value>将删除 {0} 个空草稿。</value></data>
+  <data name="EmptyDraftsDeleted" xml:space="preserve"><value>已删除 {0} 个空草稿。</value></data>
+  <data name="ListEmptyTitle" xml:space="preserve"><value>您还没有计划。</value></data>
+  <data name="ListEmptyAction" xml:space="preserve"><value>为本周期创建计划</value></data>
+  <data name="ListLoadError" xml:space="preserve"><value>无法加载计划。</value></data>
+  <data name="NoActivePeriodBand" xml:space="preserve"><value>没有活动周期。由于没有开放的周期，无法创建新计划；请联系您的经理定义周期。</value></data>
+  <data name="NewPlanTitle" xml:space="preserve"><value>新计划</value></data>
+  <data name="NewPlanPeriodHint" xml:space="preserve"><value>已选择活动周期。仅列出活动和未来的周期。</value></data>
+  <data name="NewPlanNoPeriod" xml:space="preserve"><value>未找到活动周期</value></data>
+  <data name="NewPlanWeek" xml:space="preserve"><value>起始周</value></data>
+  <data name="NewPlanWeekHint" xml:space="preserve"><value>无法选择已过去的周。</value></data>
+  <data name="NewPlanCreate" xml:space="preserve"><value>创建计划</value></data>
+  <data name="PlanExists" xml:space="preserve"><value>您在本周期已有计划。</value></data>
+  <data name="GoToPlan" xml:space="preserve"><value>前往计划</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>批准本周</value></data>
+  <data name="ApproveWeekHint" xml:space="preserve"><value>仅将本周的拜访写入计划拜访。</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>重新开放本周</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>打开下一周</value></data>
+  <data name="WeekStatusPast" xml:space="preserve"><value>已过去</value></data>
+  <data name="WeekStatusApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="WeekStatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="WeekStatusEmpty" xml:space="preserve"><value>空</value></data>
+  <data name="PastWeekBand" xml:space="preserve"><value>过去的周：只读。</value></data>
+  <data name="LegacyPlanBand" xml:space="preserve"><value>此计划已在整个周期获批（旧计划），只读。</value></data>
+  <data name="WeekCapacity" xml:space="preserve"><value>本周产能</value></data>
+  <data name="WeekPlanned" xml:space="preserve"><value>本周已计划</value></data>
+  <data name="PeriodCapacity" xml:space="preserve"><value>周期产能</value></data>
+  <data name="PeriodPlanned" xml:space="preserve"><value>周期内已计划</value></data>
+  <data name="HoursFormat" xml:space="preserve"><value>{0} 小时</value></data>
+  <data name="CapacityDefaultHours" xml:space="preserve"><value>该周期未定义产能；已使用默认工作时间。</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>重新开放{0}？</value></data>
+  <data name="ReopenBody" xml:space="preserve"><value>本周将恢复为草稿；没有报告的拜访将被取消。</value></data>
+  <data name="ReopenReasonLabel" xml:space="preserve"><value>原因</value></data>
+  <data name="ReopenReasonHint" xml:space="preserve"><value>至少 10 个字符。原因将保存在本周历史中。</value></data>
+  <data name="ReopenConfirm" xml:space="preserve"><value>重新开放</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>本周已重新开放；原因已保存。</value></data>
+  <data name="ReopenUnavailable" xml:space="preserve"><value>暂不支持重新开放。</value></data>
+  <data name="DetailLoadError" xml:space="preserve"><value>无法加载计划。</value></data>
 </root>

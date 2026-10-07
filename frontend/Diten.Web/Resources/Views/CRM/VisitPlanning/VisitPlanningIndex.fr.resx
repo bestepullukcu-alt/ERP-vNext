@@ -16,7 +16,7 @@
   <data name="Applied" xml:space="preserve"><value>Enregistré comme planning de la semaine.</value></data>
   <data name="Replanned" xml:space="preserve"><value>Visites replanifiées.</value></data>
   <data name="OutOfTerritory" xml:space="preserve"><value>Hors territoire</value></data>
-  <data name="SessionsTitle" xml:space="preserve"><value>Mes plans provisoires</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>Mes plans</value></data>
   <data name="Plan" xml:space="preserve"><value>Plan</value></data>
   <data name="Rep" xml:space="preserve"><value>Représentant</value></data>
   <data name="Targets" xml:space="preserve"><value>Cibles</value></data>
@@ -129,4 +129,53 @@
   <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} visites seront enregistrées comme plan de cette semaine et la semaine sera verrouillée. Continuer ?</value></data>
   <data name="WeekEmptyBlocked" xml:space="preserve"><value>Cette semaine ne contient aucune visite à approuver.</value></data>
   <data name="WeekLocked" xml:space="preserve"><value>Cette semaine est approuvée ; ses visites sont verrouillées.</value></data>
+  <data name="MyPlans" xml:space="preserve"><value>Mes plans</value></data>
+  <data name="TeamView" xml:space="preserve"><value>Équipe</value></data>
+  <data name="TeamViewSoon" xml:space="preserve"><value>Vue manager bientôt disponible</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve"><value>Vue des plans</value></data>
+  <data name="WeeksSection" xml:space="preserve"><value>Semaines</value></data>
+  <data name="WeekCountFormat" xml:space="preserve"><value>{0} approuvée(s) · {1} brouillon(s)</value></data>
+  <data name="ApprovedWeekCountFormat" xml:space="preserve"><value>{0} approuvée(s)</value></data>
+  <data name="EmptyDraftBadge" xml:space="preserve"><value>brouillon vide</value></data>
+  <data name="LegacyPlanBadge" xml:space="preserve"><value>Période entière approuvée (ancien plan)</value></data>
+  <data name="EmptyDraftsNotice" xml:space="preserve"><value>{0} brouillon(s) vide(s) (aucune cible). Un seul plan est conservé par période.</value></data>
+  <data name="DeleteEmptyDrafts" xml:space="preserve"><value>Supprimer les brouillons vides</value></data>
+  <data name="DeleteEmptyDraftsConfirm" xml:space="preserve"><value>{0} brouillon(s) vide(s) seront supprimés.</value></data>
+  <data name="EmptyDraftsDeleted" xml:space="preserve"><value>{0} brouillon(s) vide(s) supprimé(s).</value></data>
+  <data name="ListEmptyTitle" xml:space="preserve"><value>Vous n'avez pas encore de plan.</value></data>
+  <data name="ListEmptyAction" xml:space="preserve"><value>Créer un plan pour cette période</value></data>
+  <data name="ListLoadError" xml:space="preserve"><value>Les plans n'ont pas pu être chargés.</value></data>
+  <data name="NoActivePeriodBand" xml:space="preserve"><value>Aucune période active. Aucun nouveau plan ne peut être créé car aucune période n'est ouverte ; demandez à votre responsable d'en définir une.</value></data>
+  <data name="NewPlanTitle" xml:space="preserve"><value>Nouveau plan</value></data>
+  <data name="NewPlanPeriodHint" xml:space="preserve"><value>La période active est sélectionnée. Seules les périodes actives et futures sont listées.</value></data>
+  <data name="NewPlanNoPeriod" xml:space="preserve"><value>Aucune période active trouvée</value></data>
+  <data name="NewPlanWeek" xml:space="preserve"><value>Semaine d'ouverture</value></data>
+  <data name="NewPlanWeekHint" xml:space="preserve"><value>Les semaines déjà écoulées ne peuvent pas être sélectionnées.</value></data>
+  <data name="NewPlanCreate" xml:space="preserve"><value>Créer le plan</value></data>
+  <data name="PlanExists" xml:space="preserve"><value>Vous avez déjà un plan pour cette période.</value></data>
+  <data name="GoToPlan" xml:space="preserve"><value>Aller au plan</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>Approuver la semaine</value></data>
+  <data name="ApproveWeekHint" xml:space="preserve"><value>Seules les visites de cette semaine sont inscrites dans les visites planifiées.</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>Rouvrir la semaine</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Ouvrir la semaine suivante</value></data>
+  <data name="WeekStatusPast" xml:space="preserve"><value>Passée</value></data>
+  <data name="WeekStatusApproved" xml:space="preserve"><value>Approuvée</value></data>
+  <data name="WeekStatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="WeekStatusEmpty" xml:space="preserve"><value>Vide</value></data>
+  <data name="PastWeekBand" xml:space="preserve"><value>Semaine passée : lecture seule.</value></data>
+  <data name="LegacyPlanBand" xml:space="preserve"><value>Ce plan a été approuvé pour toute la période (ancien plan) ; il est en lecture seule.</value></data>
+  <data name="WeekCapacity" xml:space="preserve"><value>Capacité de la semaine</value></data>
+  <data name="WeekPlanned" xml:space="preserve"><value>Planifié cette semaine</value></data>
+  <data name="PeriodCapacity" xml:space="preserve"><value>Capacité de la période</value></data>
+  <data name="PeriodPlanned" xml:space="preserve"><value>Planifié sur la période</value></data>
+  <data name="HoursFormat" xml:space="preserve"><value>{0} h</value></data>
+  <data name="CapacityDefaultHours" xml:space="preserve"><value>Aucune capacité n'est définie pour la période ; les heures de travail par défaut sont utilisées.</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>Rouvrir {0} ?</value></data>
+  <data name="ReopenBody" xml:space="preserve"><value>La semaine repasse en brouillon ; ses visites sans rapport sont annulées.</value></data>
+  <data name="ReopenReasonLabel" xml:space="preserve"><value>Motif</value></data>
+  <data name="ReopenReasonHint" xml:space="preserve"><value>Au moins 10 caractères. Le motif est enregistré dans l'historique de la semaine.</value></data>
+  <data name="ReopenConfirm" xml:space="preserve"><value>Rouvrir</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>La semaine a été rouverte ; le motif a été enregistré.</value></data>
+  <data name="ReopenUnavailable" xml:space="preserve"><value>La réouverture n'est pas encore disponible.</value></data>
+  <data name="DetailLoadError" xml:space="preserve"><value>Le plan n'a pas pu être chargé.</value></data>
 </root>

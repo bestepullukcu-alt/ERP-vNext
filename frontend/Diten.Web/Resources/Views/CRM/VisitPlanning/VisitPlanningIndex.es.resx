@@ -16,7 +16,7 @@
   <data name="Applied" xml:space="preserve"><value>Guardado como plan de la semana.</value></data>
   <data name="Replanned" xml:space="preserve"><value>Visitas replanificadas.</value></data>
   <data name="OutOfTerritory" xml:space="preserve"><value>Fuera del territorio</value></data>
-  <data name="SessionsTitle" xml:space="preserve"><value>Mis planes borrador</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>Mis planes</value></data>
   <data name="Plan" xml:space="preserve"><value>Plan</value></data>
   <data name="Rep" xml:space="preserve"><value>Representante</value></data>
   <data name="Targets" xml:space="preserve"><value>Objetivos</value></data>
@@ -129,4 +129,53 @@
   <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} visitas se guardarán como plan de esta semana y la semana quedará bloqueada. ¿Continuar?</value></data>
   <data name="WeekEmptyBlocked" xml:space="preserve"><value>Esta semana no tiene visitas para aprobar.</value></data>
   <data name="WeekLocked" xml:space="preserve"><value>Esta semana está aprobada; sus visitas están bloqueadas.</value></data>
+  <data name="MyPlans" xml:space="preserve"><value>Mis planes</value></data>
+  <data name="TeamView" xml:space="preserve"><value>Equipo</value></data>
+  <data name="TeamViewSoon" xml:space="preserve"><value>Vista de responsable próximamente</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve"><value>Vista de planes</value></data>
+  <data name="WeeksSection" xml:space="preserve"><value>Semanas</value></data>
+  <data name="WeekCountFormat" xml:space="preserve"><value>{0} aprobada(s) · {1} borrador(es)</value></data>
+  <data name="ApprovedWeekCountFormat" xml:space="preserve"><value>{0} aprobada(s)</value></data>
+  <data name="EmptyDraftBadge" xml:space="preserve"><value>borrador vacío</value></data>
+  <data name="LegacyPlanBadge" xml:space="preserve"><value>Periodo completo aprobado (plan antiguo)</value></data>
+  <data name="EmptyDraftsNotice" xml:space="preserve"><value>{0} borrador(es) vacío(s) (sin objetivos). Se mantiene un plan por periodo.</value></data>
+  <data name="DeleteEmptyDrafts" xml:space="preserve"><value>Eliminar borradores vacíos</value></data>
+  <data name="DeleteEmptyDraftsConfirm" xml:space="preserve"><value>Se eliminarán {0} borrador(es) vacío(s).</value></data>
+  <data name="EmptyDraftsDeleted" xml:space="preserve"><value>{0} borrador(es) vacío(s) eliminado(s).</value></data>
+  <data name="ListEmptyTitle" xml:space="preserve"><value>Todavía no tiene ningún plan.</value></data>
+  <data name="ListEmptyAction" xml:space="preserve"><value>Crear un plan para este periodo</value></data>
+  <data name="ListLoadError" xml:space="preserve"><value>No se pudieron cargar los planes.</value></data>
+  <data name="NoActivePeriodBand" xml:space="preserve"><value>No hay ningún periodo activo. No se puede crear un plan porque no hay ningún periodo abierto; pida a su responsable que defina uno.</value></data>
+  <data name="NewPlanTitle" xml:space="preserve"><value>Nuevo plan</value></data>
+  <data name="NewPlanPeriodHint" xml:space="preserve"><value>Se ha seleccionado el periodo activo. Solo se muestran periodos activos y futuros.</value></data>
+  <data name="NewPlanNoPeriod" xml:space="preserve"><value>No se encontró ningún periodo activo</value></data>
+  <data name="NewPlanWeek" xml:space="preserve"><value>Semana de apertura</value></data>
+  <data name="NewPlanWeekHint" xml:space="preserve"><value>No se pueden seleccionar semanas ya pasadas.</value></data>
+  <data name="NewPlanCreate" xml:space="preserve"><value>Crear plan</value></data>
+  <data name="PlanExists" xml:space="preserve"><value>Ya tiene un plan para este periodo.</value></data>
+  <data name="GoToPlan" xml:space="preserve"><value>Ir al plan</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>Aprobar la semana</value></data>
+  <data name="ApproveWeekHint" xml:space="preserve"><value>Solo las visitas de esta semana se escriben en Visitas planificadas.</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>Reabrir la semana</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Abrir la semana siguiente</value></data>
+  <data name="WeekStatusPast" xml:space="preserve"><value>Pasada</value></data>
+  <data name="WeekStatusApproved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="WeekStatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="WeekStatusEmpty" xml:space="preserve"><value>Vacía</value></data>
+  <data name="PastWeekBand" xml:space="preserve"><value>Semana pasada: solo lectura.</value></data>
+  <data name="LegacyPlanBand" xml:space="preserve"><value>Este plan se aprobó para todo el periodo (plan antiguo); es de solo lectura.</value></data>
+  <data name="WeekCapacity" xml:space="preserve"><value>Capacidad de esta semana</value></data>
+  <data name="WeekPlanned" xml:space="preserve"><value>Planificado esta semana</value></data>
+  <data name="PeriodCapacity" xml:space="preserve"><value>Capacidad del periodo</value></data>
+  <data name="PeriodPlanned" xml:space="preserve"><value>Planificado en el periodo</value></data>
+  <data name="HoursFormat" xml:space="preserve"><value>{0} h</value></data>
+  <data name="CapacityDefaultHours" xml:space="preserve"><value>El periodo no tiene capacidad definida; se usan las horas de trabajo predeterminadas.</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>¿Reabrir {0}?</value></data>
+  <data name="ReopenBody" xml:space="preserve"><value>La semana vuelve a borrador; sus visitas sin informe se cancelan.</value></data>
+  <data name="ReopenReasonLabel" xml:space="preserve"><value>Motivo</value></data>
+  <data name="ReopenReasonHint" xml:space="preserve"><value>Al menos 10 caracteres. El motivo se guarda en el historial de la semana.</value></data>
+  <data name="ReopenConfirm" xml:space="preserve"><value>Reabrir</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>La semana se reabrió; el motivo se guardó.</value></data>
+  <data name="ReopenUnavailable" xml:space="preserve"><value>La reapertura todavía no está disponible.</value></data>
+  <data name="DetailLoadError" xml:space="preserve"><value>No se pudo cargar el plan.</value></data>
 </root>

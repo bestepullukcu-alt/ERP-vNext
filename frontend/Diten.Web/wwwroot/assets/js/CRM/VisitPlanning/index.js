@@ -48,11 +48,33 @@
     const sStatus = s => norm(s.status || s.sessionStatus || 'draft');
     // WP-VP-FIX-1 (D1) — the LIST DTO carries counts (selectedContactCount / selectedPharmacyCount), not the selection
     // arrays the old reader looked for (which is why the column always read 0): "122 doctors · 13 pharmacies", or 0.
+    // WP-VP-4B — WP-VP-4A's doctorCount / pharmacyCount win when present (graceful: the FIX-1 counts otherwise).
     const sTargets = s => {
-        const doctors = Number(s.selectedContactCount) || 0;
-        const pharmacies = Number(s.selectedPharmacyCount) || 0;
+        const doctors = Number(s.doctorCount ?? s.selectedContactCount) || 0;
+        const pharmacies = Number(s.pharmacyCount ?? s.selectedPharmacyCount) || 0;
         if (!doctors && !pharmacies) return '0';
         return (L.TargetCountFormat || '{0} · {1}').replace('{0}', doctors).replace('{1}', pharmacies);
+    };
+    // WP-VP-4B — "X approved · Y draft" (3A approvedWeekCount + 4A draftWeekCount). Without draftWeekCount (before 4A)
+    // only "X approved"; without either, a dash.
+    const sWeeks = s => {
+        const approved = s.approvedWeekCount;
+        const draft = s.draftWeekCount;
+        if (draft != null) return (L.WeekCountFormat || '{0} · {1}').replace('{0}', Number(approved) || 0).replace('{1}', Number(draft) || 0);
+        if (approved != null) return (L.ApprovedWeekCountFormat || '{0}').replace('{0}', Number(approved) || 0);
+        return '—';
+    };
+    // WP-VP-4B — an empty draft has no target at all (3A isEmpty; the counts when the flag is absent).
+    const isEmptyDraft = s => sStatus(s) !== 'committed' && (s.isEmpty === true
+        || (s.isEmpty == null && !(Number(s.doctorCount ?? s.selectedContactCount) || 0) && !(Number(s.pharmacyCount ?? s.selectedPharmacyCount) || 0)));
+    // A legacy plan was approved for the whole period at once (before the week model): read-only.
+    const isLegacy = s => sStatus(s) === 'committed';
+    const statusCell = s => {
+        const main = isLegacy(s)
+            ? badge(L.LegacyPlanBadge, 'success')
+            : badge(statusLabel(sStatus(s)), statusTone(sStatus(s)));
+        return '<div class="d-flex gap-1 flex-wrap">' + main
+            + (isEmptyDraft(s) ? ' <span class="badge bg-label-warning">' + esc(L.EmptyDraftBadge || '') + '</span>' : '') + '</div>';
     };
     const sUpdated = s => s.updatedAt || s.updatedOn || s.modifiedAt || s.lastModifiedAt || s.createdAt || null;
 
@@ -146,32 +168,51 @@
         return window.DitenDataTable?.renderActions ? window.DitenDataTable.renderActions(items) : '';
     };
 
+    // WP-VP-4B (brief §1) — "My plans" is the rep's view: the rep column is hidden there (room for the manager view, MK-5).
+    const viewMode = 'mine';
+    // The empty list says what to do next (plan the period), with the drawer button when the user may create.
+    const emptyListHtml = () => '<div class="py-4 text-center"><div class="fw-medium mb-2">' + esc(L.ListEmptyTitle || L.EmptyState || '') + '</div>'
+        + (canGenerate && hasActivePeriod ? '<button type="button" class="btn btn-sm btn-primary" data-vp-new-plan><i class="bx bx-plus me-1"></i>' + esc(L.ListEmptyAction || L.NewSession || '') + '</button>' : '')
+        + '</div>';
+
     const buildConfig = () => ({
         data: allRows, stateSave: false, processing: true,
-        order: [[7, 'desc']],
+        order: [[8, 'desc']],
         columns: [
             { data: null, defaultContent: '' },
-            { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }
+            { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }
         ],
         columnDefs: [
             { targets: 0, className: 'control', orderable: false, render: () => '' },
             { targets: 1, render: (v, t, row) => t === 'display' ? `<span class="fw-medium text-heading">${esc(sName(row))}</span>` : sName(row) },
             { targets: 2, render: (v, t, row) => esc(periodMap[sPeriodId(row)] || sPeriodId(row) || '—') },
             { targets: 3, render: (v, t, row) => esc(sWeek(row)) },
-            { targets: 4, render: (v, t, row) => esc(sRep(row) || '—') },
-            { targets: 5, render: (v, t, row) => badge(statusLabel(sStatus(row)), statusTone(sStatus(row))) },
+            { targets: 4, visible: viewMode !== 'mine', render: (v, t, row) => esc(sRep(row) || '—') },
+            { targets: 5, render: (v, t, row) => t === 'display' ? statusCell(row) : sStatus(row) },
             { targets: 6, render: (v, t, row) => esc(sTargets(row)) },
-            { targets: 7, render: (v, t, row) => t === 'display' ? date(sUpdated(row)) : (sUpdated(row) || '') },
-            { targets: 8, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, t, row) => actions(row) }
+            { targets: 7, orderable: false, render: (v, t, row) => esc(sWeeks(row)) },
+            { targets: 8, render: (v, t, row) => t === 'display' ? date(sUpdated(row)) : (sUpdated(row) || '') },
+            { targets: 9, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, t, row) => actions(row) }
         ],
-        language: { emptyTable: L.EmptyState, processing: L.Loading },
+        language: { emptyTable: emptyListHtml(), processing: L.Loading },
         buttons: window.DtDefaults.exportButtons(canGenerate ? (L.NewSession || '') : '', {}, {
             filterBtn: { text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>', className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative', attr: { title: L.Filter, 'aria-controls': filterCollapseId, 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' }, action: () => toggleInlineFilter() }
-        }, { exportColumns: [1, 2, 3, 4, 5, 6], colvisColumns: [1, 2, 3, 4, 5, 6] }),
+        }, { exportColumns: [1, 2, 3, 4, 5, 6, 7], colvisColumns: [1, 2, 3, 4, 5, 6, 7] }),
         initComplete: function () {
             mountInlineFilter();
             void setupFilters(this.api());
-            if (canGenerate && !addNewBound) { document.querySelector('.add-new')?.addEventListener('click', e => { e.preventDefault(); window.location.assign(`${pageRoot}/Create`); }); addNewBound = true; }
+            // WP-VP-4B (MK-1) — "New plan" opens the right-hand drawer (new-plan.js); the Create page stays as a fallback.
+            // Without an active / future period it is switched off (the band says why).
+            const addNew = document.querySelector('.add-new');
+            if (addNew && !hasActivePeriod) { addNew.setAttribute('disabled', 'disabled'); addNew.classList.add('disabled'); }
+            if (canGenerate && !addNewBound) {
+                addNew?.addEventListener('click', e => {
+                    e.preventDefault();
+                    if (!hasActivePeriod) return;
+                    if (window.VisitPlanningNewPlan) window.VisitPlanningNewPlan.open(); else window.location.assign(`${pageRoot}/Create`);
+                });
+                addNewBound = true;
+            }
         },
         drawCallback: function () { window.DtDefaults?.updateVisualState?.(this.api(), getAppliedFilterCount()); }
     });
@@ -197,12 +238,61 @@
         });
     };
 
+    // WP-VP-4B — is there a period a new plan can be made for (active today or still ahead)? Unknown ⇒ assume yes.
+    let hasActivePeriod = true;
     const loadPeriods = async () => {
         try {
             const data = await envelope(await fetch(`${endpoint}/cycle-periods`, { credentials: 'same-origin', headers: getAuthHeaders() }));
             const items = data?.items || (Array.isArray(data) ? data : []);
             items.forEach(p => { const id = p.cyclePeriodId || p.id; if (id) periodMap[id] = p.cycleName || p.cycleCode || p.name || id; });
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            hasActivePeriod = items.some(p => { const end = new Date(p.endDate || p.end); return !isNaN(end) && end >= today; });
         } catch (e) { /* period names degrade to ids */ }
+    };
+
+    // ── WP-VP-4B — page bands (brief §7) + empty drafts ──
+    const band = (tone, icon, text) => `<div class="alert alert-${tone} py-2 small" role="status"><i class="bx ${icon} me-1" aria-hidden="true"></i>${esc(text)}</div>`;
+    let territoryUnassigned = false;
+    const loadTerritoryStatus = async () => {
+        try {
+            const data = await envelope(await fetch(`${endpoint}/my-accounts?pageSize=1`, { credentials: 'same-origin', headers: getAuthHeaders() }));
+            territoryUnassigned = !!data && data.territoryStatus === 'unassigned';
+        } catch (e) { territoryUnassigned = false; }
+    };
+    const renderBands = loadError => {
+        const host = document.getElementById('vp-list-bands'); if (!host) return;
+        host.innerHTML = (loadError ? band('danger', 'bx-error-circle', L.ListLoadError || L.ErrorOccurred || '') : '')
+            + (!hasActivePeriod ? band('warning', 'bx-calendar-exclamation', L.NoActivePeriodBand || '') : '')
+            + (territoryUnassigned ? band('warning', 'bx-map-alt', L.TerritoryUnassignedBanner || '') : '');
+        const empty = allRows.filter(isEmptyDraft);
+        const box = document.getElementById('vp-empty-drafts');
+        if (box) {
+            box.classList.toggle('d-none', empty.length === 0);
+            const t = document.getElementById('vp-empty-drafts-text');
+            if (t) t.textContent = (L.EmptyDraftsNotice || '{0}').replace('{0}', empty.length);
+        }
+    };
+    // "Delete empty drafts" = archive them (3A: only a plan without targets and without an approved week may be
+    // archived; CRM refuses anything else with 409 planning_session_not_empty). Confirmed first, then one update each.
+    const deleteEmptyDrafts = () => {
+        const empty = allRows.filter(isEmptyDraft);
+        if (!empty.length) return;
+        const go = async () => {
+            let done = 0;
+            for (const row of empty) {
+                const r = await fetch(`${endpoint}/sessions/${encodeURIComponent(sid(row))}`, {
+                    method: 'PUT', credentials: 'same-origin', headers: getAuthHeaders(),
+                    body: JSON.stringify({ requestedStatus: 'archived', expectedVersion: row.version })
+                }).catch(() => null);
+                if (r && r.ok) done++;
+            }
+            window.showToast?.((L.EmptyDraftsDeleted || '{0}').replace('{0}', done), done === empty.length ? 'success' : 'warning');
+            await reload();
+            renderBands(false);
+        };
+        const text = (L.DeleteEmptyDraftsConfirm || '{0}').replace('{0}', empty.length);
+        if (window.showConfirm) window.showConfirm(text, () => { void go(); }, { type: 'danger', confirmButtonText: L.DeleteEmptyDrafts, subtext: '' });
+        else if (window.confirm(text)) void go();
     };
 
     const fetchRows = async () => {
@@ -216,17 +306,21 @@
     const init = async () => {
         document.getElementById('skeleton-loader')?.classList.remove('d-none');
         registerTableFilter();
+        let loadError = false;
         try {
-            await loadPeriods();
+            await Promise.all([loadPeriods(), loadTerritoryStatus()]);
             allRows = await fetchRows();
             dt = new DataTable(tableEl, window.DtDefaults?.create ? window.DtDefaults.create(buildConfig()) : buildConfig());
             dt.on('column-visibility.dt search.dt order.dt', () => window.DtDefaults?.updateVisualState?.(dt, getAppliedFilterCount()));
         } catch (error) {
+            loadError = true;
             window.showToast?.(error.message || L.ErrorOccurred, 'error');
         } finally {
             document.getElementById('skeleton-loader')?.classList.add('d-none');
+            renderBands(loadError);
         }
     };
+    document.getElementById('vp-delete-empty-drafts')?.addEventListener('click', deleteEmptyDrafts);
 
     document.addEventListener('click', event => {
         const quickView = event.target.closest('.js-quick-view');

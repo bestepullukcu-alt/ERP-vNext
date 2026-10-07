@@ -16,7 +16,7 @@
   <data name="Applied" xml:space="preserve"><value>Haftanın planı olarak kaydedildi.</value></data>
   <data name="Replanned" xml:space="preserve"><value>Ziyaretler yeniden planlandı.</value></data>
   <data name="OutOfTerritory" xml:space="preserve"><value>Bölge dışı</value></data>
-  <data name="SessionsTitle" xml:space="preserve"><value>Taslak planlarım</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>Benim planlarım</value></data>
   <data name="Plan" xml:space="preserve"><value>Plan</value></data>
   <data name="Rep" xml:space="preserve"><value>Temsilci</value></data>
   <data name="Targets" xml:space="preserve"><value>Hedefler</value></data>
@@ -129,4 +129,53 @@
   <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} ziyaret bu haftanın planı olarak kaydedilecek ve hafta kilitlenecek. Devam edilsin mi?</value></data>
   <data name="WeekEmptyBlocked" xml:space="preserve"><value>Bu haftada onaylanacak ziyaret yok.</value></data>
   <data name="WeekLocked" xml:space="preserve"><value>Bu hafta onaylandı; ziyaretleri kilitli.</value></data>
+  <data name="MyPlans" xml:space="preserve"><value>Benim planlarım</value></data>
+  <data name="TeamView" xml:space="preserve"><value>Ekip</value></data>
+  <data name="TeamViewSoon" xml:space="preserve"><value>Yönetici görünümü yakında</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve"><value>Plan görünümü</value></data>
+  <data name="WeeksSection" xml:space="preserve"><value>Haftalar</value></data>
+  <data name="WeekCountFormat" xml:space="preserve"><value>{0} onaylı · {1} taslak</value></data>
+  <data name="ApprovedWeekCountFormat" xml:space="preserve"><value>{0} onaylı</value></data>
+  <data name="EmptyDraftBadge" xml:space="preserve"><value>boş taslak</value></data>
+  <data name="LegacyPlanBadge" xml:space="preserve"><value>Tüm dönem onaylı (eski plan)</value></data>
+  <data name="EmptyDraftsNotice" xml:space="preserve"><value>{0} boş taslak (0 hedef) var. Her dönem için tek plan tutulur.</value></data>
+  <data name="DeleteEmptyDrafts" xml:space="preserve"><value>Boş taslakları sil</value></data>
+  <data name="DeleteEmptyDraftsConfirm" xml:space="preserve"><value>{0} boş taslak silinecek.</value></data>
+  <data name="EmptyDraftsDeleted" xml:space="preserve"><value>{0} boş taslak silindi.</value></data>
+  <data name="ListEmptyTitle" xml:space="preserve"><value>Henüz planınız yok.</value></data>
+  <data name="ListEmptyAction" xml:space="preserve"><value>Bu dönem için plan oluştur</value></data>
+  <data name="ListLoadError" xml:space="preserve"><value>Planlar yüklenemedi.</value></data>
+  <data name="NoActivePeriodBand" xml:space="preserve"><value>Aktif dönem yok. Şu an açık bir dönem bulunmadığı için yeni plan oluşturulamaz; dönem tanımı için yöneticinize başvurun.</value></data>
+  <data name="NewPlanTitle" xml:space="preserve"><value>Yeni plan</value></data>
+  <data name="NewPlanPeriodHint" xml:space="preserve"><value>Aktif dönem seçildi. Yalnız aktif ve gelecek dönemler listelenir.</value></data>
+  <data name="NewPlanNoPeriod" xml:space="preserve"><value>Aktif dönem bulunamadı</value></data>
+  <data name="NewPlanWeek" xml:space="preserve"><value>Açılış haftası</value></data>
+  <data name="NewPlanWeekHint" xml:space="preserve"><value>Geçmiş haftalar seçilemez.</value></data>
+  <data name="NewPlanCreate" xml:space="preserve"><value>Planı oluştur</value></data>
+  <data name="PlanExists" xml:space="preserve"><value>Bu dönem için planınız var.</value></data>
+  <data name="GoToPlan" xml:space="preserve"><value>Plana git</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>Haftayı onayla</value></data>
+  <data name="ApproveWeekHint" xml:space="preserve"><value>Yalnız bu haftanın ziyaretleri Planlanan Ziyaretler'e yazılır.</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>Haftayı yeniden aç</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Sonraki haftayı aç</value></data>
+  <data name="WeekStatusPast" xml:space="preserve"><value>Geçmiş</value></data>
+  <data name="WeekStatusApproved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="WeekStatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="WeekStatusEmpty" xml:space="preserve"><value>Boş</value></data>
+  <data name="PastWeekBand" xml:space="preserve"><value>Geçmiş hafta: salt okunur.</value></data>
+  <data name="LegacyPlanBand" xml:space="preserve"><value>Bu plan tüm dönem için onaylanmış (eski plan); salt okunur.</value></data>
+  <data name="WeekCapacity" xml:space="preserve"><value>Bu haftanın kapasitesi</value></data>
+  <data name="WeekPlanned" xml:space="preserve"><value>Bu hafta planlanan</value></data>
+  <data name="PeriodCapacity" xml:space="preserve"><value>Dönem kapasitesi</value></data>
+  <data name="PeriodPlanned" xml:space="preserve"><value>Dönemde planlanan</value></data>
+  <data name="HoursFormat" xml:space="preserve"><value>{0} sa</value></data>
+  <data name="CapacityDefaultHours" xml:space="preserve"><value>Dönemin kapasitesi tanımlı değil; varsayılan çalışma saatleri kullanıldı.</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>{0} yeniden açılsın mı?</value></data>
+  <data name="ReopenBody" xml:space="preserve"><value>Hafta taslağa döner; raporu olmayan ziyaretleri iptal edilir.</value></data>
+  <data name="ReopenReasonLabel" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="ReopenReasonHint" xml:space="preserve"><value>En az 10 karakter. Gerekçe haftanın geçmişine kaydedilir.</value></data>
+  <data name="ReopenConfirm" xml:space="preserve"><value>Yeniden aç</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>Hafta yeniden açıldı; gerekçe kaydedildi.</value></data>
+  <data name="ReopenUnavailable" xml:space="preserve"><value>Yeniden açma şu an kullanılamıyor.</value></data>
+  <data name="DetailLoadError" xml:space="preserve"><value>Plan yüklenemedi.</value></data>
 </root>

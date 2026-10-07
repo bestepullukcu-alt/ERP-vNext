@@ -35,6 +35,11 @@
             {
                 <a href="/CRM/VisitPlanning/Edit/@Model.SessionId" class="btn btn-primary">@SharedLocalizer["Edit"]</a>
             }
+            @* WP-VP-4B (MK-1) — "New plan" opens the right-hand drawer (new-plan.js), from the detail too. *@
+            @if (Model.CanGenerate)
+            {
+                <button type="button" class="btn btn-label-primary" data-vp-new-plan><i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["NewSession"]</button>
+            }
         </div>
     </div>
 
@@ -47,13 +52,15 @@
     }
     @* WP-VP-FIX-1 (C3) — filled by details.js when the planner reports calendarStatus = unresolved. *@
     <div id="vp-calendar-warning"></div>
+    @* WP-VP-4B — the selected week's band (header.js): approved = locked, past = read-only, legacy plan = whole period
+       approved; a plan that cannot be read says so here. *@
+    <div id="vp-week-band"></div>
 
     @* ── Plan summary — WCN-style SUMMARY card (icon/label/value grid). Absorbs the old Route card's range + working
        hours. PlanSection landmark kept for section-map parity. Hidden #vp-plan-title/#vp-plan-code kept so details.js
        (which sets them) stays no-op-safe; the visible title lives in the breadcrumb. ── *@
-    @{ var vpHasActions = Model.CanGenerate || Model.CanApply; }
     <div class="row g-4 mb-4">
-    <div class="col-12 @(vpHasActions ? "col-lg-8" : "")">
+    <div class="col-12 col-lg-8">
     <div class="card wcn-detail-card p-4 h-100">
     <section class="wcn-detail-section wcn-sum">
         <h6 class="visually-hidden">@Localizer["PlanSection"]</h6>
@@ -73,77 +80,92 @@
     </div>
     </div>
 
-    @* ── Plan actions — WCN-style AVAILABLE ACTIONS panel (primary Save + secondary Generate / Re-plan). ── *@
-    @if (vpHasActions)
-    {
-        <div class="col-12 col-lg-4">
-        <div class="card wcn-detail-card p-4 h-100">
-        <div class="wcn-detail-section wcn-acts">
-            <div class="wcn-acts-main">
-                <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-bolt-circle dt-card-icon" aria-hidden="true"></i>@Localizer["ActionsAvailable"]</h6>
-                <ul class="wcn-actrail">
-                    @if (Model.CanApply)
-                    {
-                        <li class="wcn-act wcn-act-primary">
-                            <button type="button" class="wcn-act-btn wcn-act-fill wcn-act-fill-success" id="vp-apply"><i class="bx bx-save" aria-hidden="true"></i><span>@Localizer["SaveWeekPlan"]</span></button>
-                            <p class="wcn-act-outcome">@Localizer["SaveWeekPlanHint"]</p>
-                        </li>
-                    }
-                    <li class="wcn-acts-row">
-                        <ul class="wcn-actrail-secondary">
-                            @if (Model.CanGenerate)
-                            {
-                                <li class="wcn-act"><button type="button" class="wcn-act-btn wcn-act-bare" id="vp-preview"><i class="bx bx-play" aria-hidden="true"></i><span>@Localizer["RouteAction"]</span></button></li>
-                            }
-                            @if (Model.CanApply)
-                            {
-                                <li class="wcn-act"><button type="button" class="wcn-act-btn wcn-act-bare" id="vp-replan"><i class="bx bx-refresh" aria-hidden="true"></i><span>@Localizer["Replan"]</span></button></li>
-                            }
-                        </ul>
-                    </li>
-                </ul>
+    @* ── WP-VP-4B — the week + its actions (brief §3). The picker lists every week of the period with its status; only
+       the actions the selected week offers are shown (header.js → VisitPlanningPage.actionsFor). Every write button
+       stays behind its permission flag; the items start hidden until the week is known. ── *@
+    <div class="col-12 col-lg-4">
+    <div class="card wcn-detail-card p-4 h-100">
+    <div class="wcn-detail-section wcn-acts">
+        <div class="wcn-acts-main">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-bolt-circle dt-card-icon" aria-hidden="true"></i>@Localizer["ActionsAvailable"]</h6>
+            <label class="form-label small mb-1" for="vp-hdr-week">@Localizer["WeekLabel"]</label>
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <select id="vp-hdr-week" class="form-select form-select-sm" aria-label="@Localizer["WeekLabel"]" disabled><option value="">@SharedLocalizer["Loading"]</option></select>
+                <span class="badge bg-label-secondary" id="vp-hdr-week-status">—</span>
             </div>
+            <ul class="wcn-actrail">
+                @if (Model.CanApply)
+                {
+                    <li class="wcn-act wcn-act-primary d-none" data-vp-action-item>
+                        <button type="button" class="wcn-act-btn wcn-act-fill wcn-act-fill-success" id="vp-apply" data-vp-action="approveWeek"><i class="bx bx-check-double" aria-hidden="true"></i><span>@Localizer["ApproveWeek"]</span></button>
+                        <p class="wcn-act-outcome">@Localizer["ApproveWeekHint"]</p>
+                    </li>
+                }
+                @if (Model.CanApply)
+                {
+                    <li class="wcn-act d-none" data-vp-action-item>
+                        <button type="button" class="wcn-act-btn wcn-act-bare" id="vp-reopen" data-vp-action="reopenWeek"><i class="bx bx-lock-open-alt" aria-hidden="true"></i><span>@Localizer["ReopenWeek"]</span></button>
+                    </li>
+                }
+                <li class="wcn-act d-none" data-vp-action-item>
+                    <button type="button" class="wcn-act-btn wcn-act-bare" id="vp-next-week" data-vp-action="nextWeek"><i class="bx bx-right-arrow-alt" aria-hidden="true"></i><span>@Localizer["NextWeek"]</span></button>
+                </li>
+                <li class="wcn-acts-row">
+                    <ul class="wcn-actrail-secondary">
+                        @if (Model.CanGenerate)
+                        {
+                            <li class="wcn-act d-none" data-vp-action-item><button type="button" class="wcn-act-btn wcn-act-bare" id="vp-hdr-save-targets" data-vp-action="saveTargets"><i class="bx bx-save" aria-hidden="true"></i><span>@Localizer["SaveTargets"]</span></button></li>
+                        }
+                        @if (Model.CanGenerate)
+                        {
+                            <li class="wcn-act d-none" data-vp-action-item><button type="button" class="wcn-act-btn wcn-act-bare" id="vp-preview" data-vp-action="generateRoute"><i class="bx bx-play" aria-hidden="true"></i><span>@Localizer["RouteAction"]</span></button></li>
+                        }
+                        @* Re-plan belongs to legacy committed plans only, which open read-only — never offered by a week. *@
+                        @if (Model.CanApply)
+                        {
+                            <li class="wcn-act d-none" data-vp-action-item><button type="button" class="wcn-act-btn wcn-act-bare" id="vp-replan" data-vp-action="replan"><i class="bx bx-refresh" aria-hidden="true"></i><span>@Localizer["Replan"]</span></button></li>
+                        }
+                    </ul>
+                </li>
+            </ul>
         </div>
-        </div>
-        </div>
-    }
+    </div>
+    </div>
+    </div>
     </div>
 
-    @* ── Supply-vs-demand stat tiles — above the tabs, matching the Tenant-Details stat-card markup verbatim. ── *@
-    <div class="row g-3 mb-4">
+    @* ── WP-VP-4B (C5) — capacity in ONE unit (hours): this week's share of the period capacity vs what this week plans,
+       and the period capacity vs what the period plans (progress). The old supply / demand tiles are gone. ── *@
+    <div class="row g-3 mb-2">
         <div class="col-6 col-md-3">
-            <div class="card h-100">
-                <div class="card-body d-flex align-items-center gap-3 p-3">
-                    <div class="avatar"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-box"></i></span></div>
-                    <div><small class="text-muted d-block">@Localizer["SupplyLabel"]</small><h5 class="mb-0" id="vp-sd-supply">—</h5></div>
-                </div>
-            </div>
+            <div class="card h-100"><div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-calendar-week"></i></span></div>
+                <div><small class="text-muted d-block">@Localizer["WeekCapacity"]</small><h5 class="mb-0" id="vp-cap-week">—</h5></div>
+            </div></div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="card h-100">
-                <div class="card-body d-flex align-items-center gap-3 p-3">
-                    <div class="avatar"><span class="avatar-initial rounded bg-label-info"><i class="bx bx-target-lock"></i></span></div>
-                    <div><small class="text-muted d-block">@Localizer["DemandLabel"]</small><h5 class="mb-0" id="vp-sd-demand">—</h5></div>
-                </div>
-            </div>
+            <div class="card h-100"><div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-success"><i class="bx bx-calendar-check"></i></span></div>
+                <div><small class="text-muted d-block">@Localizer["WeekPlanned"]</small><h5 class="mb-0" id="vp-cap-week-planned">—</h5></div>
+            </div></div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="card h-100">
-                <div class="card-body d-flex align-items-center gap-3 p-3">
-                    <div class="avatar"><span class="avatar-initial rounded bg-label-success"><i class="bx bx-calendar-check"></i></span></div>
-                    <div><small class="text-muted d-block">@Localizer["ScheduledLabel"]</small><h5 class="mb-0" id="vp-sd-scheduled">—</h5></div>
-                </div>
-            </div>
+            <div class="card h-100"><div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-info"><i class="bx bx-layer"></i></span></div>
+                <div><small class="text-muted d-block">@Localizer["PeriodCapacity"]</small><h5 class="mb-0" id="vp-cap-period">—</h5></div>
+            </div></div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="card h-100">
-                <div class="card-body d-flex align-items-center gap-3 p-3">
-                    <div class="avatar"><span class="avatar-initial rounded bg-label-warning"><i class="bx bx-calendar-x"></i></span></div>
-                    <div><small class="text-muted d-block">@Localizer["UnscheduledLabel"]</small><h5 class="mb-0" id="vp-sd-unscheduled">—</h5></div>
+            <div class="card h-100"><div class="card-body p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar"><span class="avatar-initial rounded bg-label-warning"><i class="bx bx-trending-up"></i></span></div>
+                    <div class="flex-grow-1"><small class="text-muted d-block">@Localizer["PeriodPlanned"]</small><h5 class="mb-0"><span id="vp-cap-period-planned">—</span> <small class="text-muted" id="vp-cap-period-pct"></small></h5></div>
                 </div>
-            </div>
+                <div class="progress mt-2" style="height:6px;"><div class="progress-bar" id="vp-cap-period-bar" role="progressbar" style="width:0%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="@Localizer["PeriodPlanned"]"></div></div>
+            </div></div>
         </div>
     </div>
+    <div class="small text-warning mb-4 d-none" id="vp-cap-note" role="status"></div>
 
     @* ── Targets / Route pill tabs (structure mirrors Platform/Tenants/Details.cshtml). ── *@
     <div class="card mb-4">
@@ -154,6 +176,14 @@
                         <button type="button" class="nav-link active small border shadow-none wc-tab-compact" id="vp-tab-targets-btn" data-bs-toggle="tab" data-bs-target="#vp-tab-targets" role="tab" aria-controls="vp-tab-targets" aria-selected="true">
                             <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-user-pin me-1 wc-tab-icon"></i>@Localizer["TargetsSection"]</span>
                             <i class="bx bx-user-pin d-sm-none wc-tab-icon"></i>
+                        </button>
+                    </li>
+                    @* WP-VP-4B — the Weeks tab is held in place for WP-VP-4D (weeks.js + doctor-panel.js): hidden until its content
+                       exists, so no empty tab is offered. 4D removes d-none here and on the pane. *@
+                    <li class="nav-item mb-1 mb-sm-0 d-none" role="presentation" id="vp-tab-weeks-item" data-pending-package="WP-VP-4D">
+                        <button type="button" class="nav-link small border shadow-none wc-tab-compact" id="vp-tab-weeks-btn" data-bs-toggle="tab" data-bs-target="#vp-tab-weeks" role="tab" aria-controls="vp-tab-weeks" aria-selected="false" tabindex="-1">
+                            <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-calendar-week me-1 wc-tab-icon"></i>@Localizer["WeeksSection"]</span>
+                            <i class="bx bx-calendar-week d-sm-none wc-tab-icon"></i>
                         </button>
                     </li>
                     <li class="nav-item mb-1 mb-sm-0" role="presentation">
@@ -290,6 +320,9 @@
             </div>
         </div>
 
+        @* WP-VP-4B — the Weeks pane (WP-VP-4D fills it; hidden until then). *@
+        <div class="tab-pane fade d-none" id="vp-tab-weeks" role="tabpanel" aria-labelledby="vp-tab-weeks-btn" data-pending-package="WP-VP-4D"></div>
+
         @* Tab 2 — Route: the road-map view (RouteSection heading kept for section-map parity). *@
         <div class="tab-pane fade" id="vp-tab-route" role="tabpanel" aria-labelledby="vp-tab-route-btn">
             @* Card-less: the route content stands on its own; the RouteSection h6 stays (visually-hidden) as the section-map landmark. *@
@@ -362,7 +395,37 @@
             </section>
         </div>
     </div>
+
+    @* WP-VP-4B (MK-4) — reopen an approved week: a reason of at least 10 characters; it goes into the week's history. *@
+    @if (Model.CanApply)
+    {
+        <div class="modal fade" id="vp-reopen-modal" tabindex="-1" aria-labelledby="vp-reopen-title" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="vp-reopen-title">@Localizer["ReopenWeek"]</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="small mb-3">@Localizer["ReopenBody"]</p>
+                        <label class="form-label fw-medium" for="vp-reopen-reason">@Localizer["ReopenReasonLabel"] <span class="text-danger">*</span></label>
+                        <textarea id="vp-reopen-reason" class="form-control" rows="3" maxlength="500"></textarea>
+                        <div class="d-flex justify-content-between form-text"><span>@Localizer["ReopenReasonHint"]</span><span id="vp-reopen-count">0 / 10</span></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                        <button type="button" class="btn btn-primary" id="vp-reopen-confirm" disabled>@Localizer["ReopenConfirm"]</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
+
+@if (Model.CanGenerate)
+{
+    <partial name="~/Views/CRM/VisitPlanning/_NewPlanDrawer.cshtml" />
+}
 
 @section Styles {
     @* Leaflet (vendored) — the Route tab's real map (OSM tiles), same stack as the Account/Contact location pickers. *@
@@ -375,5 +438,9 @@
     @* SortableJS (not globally loaded on the tenant shell) — drives the drag-reorder of doctor visits inside a route block. *@
     <script src="~/assets/vendor/libs/sortablejs/sortable.js" asp-append-version="true"></script>
     <script src="~/assets/vendor/libs/leaflet/leaflet.js" asp-append-version="true"></script>
+    @* WP-VP-4B — page skeleton first (shared state + events), then Targets + Route (details.js), then the header. *@
+    <script src="~/assets/js/CRM/VisitPlanning/page.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitPlanning/details.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitPlanning/header.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitPlanning/new-plan.js" asp-append-version="true"></script>
 }

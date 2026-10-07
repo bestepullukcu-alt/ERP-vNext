@@ -16,7 +16,7 @@
   <data name="Applied" xml:space="preserve"><value>تم الحفظ كخطة لهذا الأسبوع.</value></data>
   <data name="Replanned" xml:space="preserve"><value>تمت إعادة تخطيط الزيارات.</value></data>
   <data name="OutOfTerritory" xml:space="preserve"><value>خارج المنطقة</value></data>
-  <data name="SessionsTitle" xml:space="preserve"><value>مسوداتي للخطط</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>خططي</value></data>
   <data name="Plan" xml:space="preserve"><value>الخطة</value></data>
   <data name="Rep" xml:space="preserve"><value>المندوب</value></data>
   <data name="Targets" xml:space="preserve"><value>الأهداف</value></data>
@@ -129,4 +129,53 @@
   <data name="ApplyWeekConfirm" xml:space="preserve"><value>سيتم حفظ {0} زيارات كخطة هذا الأسبوع وسيتم قفل الأسبوع. هل تريد المتابعة؟</value></data>
   <data name="WeekEmptyBlocked" xml:space="preserve"><value>لا توجد زيارات للموافقة عليها في هذا الأسبوع.</value></data>
   <data name="WeekLocked" xml:space="preserve"><value>تمت الموافقة على هذا الأسبوع؛ زياراته مقفلة.</value></data>
+  <data name="MyPlans" xml:space="preserve"><value>خططي</value></data>
+  <data name="TeamView" xml:space="preserve"><value>الفريق</value></data>
+  <data name="TeamViewSoon" xml:space="preserve"><value>عرض المدير قريبًا</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve"><value>عرض الخطط</value></data>
+  <data name="WeeksSection" xml:space="preserve"><value>الأسابيع</value></data>
+  <data name="WeekCountFormat" xml:space="preserve"><value>{0} معتمد · {1} مسودة</value></data>
+  <data name="ApprovedWeekCountFormat" xml:space="preserve"><value>{0} معتمد</value></data>
+  <data name="EmptyDraftBadge" xml:space="preserve"><value>مسودة فارغة</value></data>
+  <data name="LegacyPlanBadge" xml:space="preserve"><value>تمت الموافقة على الفترة كاملة (خطة قديمة)</value></data>
+  <data name="EmptyDraftsNotice" xml:space="preserve"><value>توجد {0} مسودة فارغة (بلا أهداف). يتم الاحتفاظ بخطة واحدة لكل فترة.</value></data>
+  <data name="DeleteEmptyDrafts" xml:space="preserve"><value>حذف المسودات الفارغة</value></data>
+  <data name="DeleteEmptyDraftsConfirm" xml:space="preserve"><value>سيتم حذف {0} مسودة فارغة.</value></data>
+  <data name="EmptyDraftsDeleted" xml:space="preserve"><value>تم حذف {0} مسودة فارغة.</value></data>
+  <data name="ListEmptyTitle" xml:space="preserve"><value>ليس لديك خطة بعد.</value></data>
+  <data name="ListEmptyAction" xml:space="preserve"><value>إنشاء خطة لهذه الفترة</value></data>
+  <data name="ListLoadError" xml:space="preserve"><value>تعذر تحميل الخطط.</value></data>
+  <data name="NoActivePeriodBand" xml:space="preserve"><value>لا توجد فترة نشطة. لا يمكن إنشاء خطة جديدة لعدم وجود فترة مفتوحة؛ اطلب من مديرك تعريف فترة.</value></data>
+  <data name="NewPlanTitle" xml:space="preserve"><value>خطة جديدة</value></data>
+  <data name="NewPlanPeriodHint" xml:space="preserve"><value>تم اختيار الفترة النشطة. تُعرض الفترات النشطة والمستقبلية فقط.</value></data>
+  <data name="NewPlanNoPeriod" xml:space="preserve"><value>لم يتم العثور على فترة نشطة</value></data>
+  <data name="NewPlanWeek" xml:space="preserve"><value>أسبوع البداية</value></data>
+  <data name="NewPlanWeekHint" xml:space="preserve"><value>لا يمكن اختيار الأسابيع المنقضية.</value></data>
+  <data name="NewPlanCreate" xml:space="preserve"><value>إنشاء الخطة</value></data>
+  <data name="PlanExists" xml:space="preserve"><value>لديك خطة بالفعل لهذه الفترة.</value></data>
+  <data name="GoToPlan" xml:space="preserve"><value>الانتقال إلى الخطة</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>اعتماد الأسبوع</value></data>
+  <data name="ApproveWeekHint" xml:space="preserve"><value>تُكتب زيارات هذا الأسبوع فقط في الزيارات المخططة.</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>إعادة فتح الأسبوع</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>فتح الأسبوع التالي</value></data>
+  <data name="WeekStatusPast" xml:space="preserve"><value>منقضٍ</value></data>
+  <data name="WeekStatusApproved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="WeekStatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="WeekStatusEmpty" xml:space="preserve"><value>فارغ</value></data>
+  <data name="PastWeekBand" xml:space="preserve"><value>أسبوع منقضٍ: للقراءة فقط.</value></data>
+  <data name="LegacyPlanBand" xml:space="preserve"><value>تمت الموافقة على هذه الخطة للفترة كاملة (خطة قديمة)؛ وهي للقراءة فقط.</value></data>
+  <data name="WeekCapacity" xml:space="preserve"><value>سعة هذا الأسبوع</value></data>
+  <data name="WeekPlanned" xml:space="preserve"><value>المخطط هذا الأسبوع</value></data>
+  <data name="PeriodCapacity" xml:space="preserve"><value>سعة الفترة</value></data>
+  <data name="PeriodPlanned" xml:space="preserve"><value>المخطط في الفترة</value></data>
+  <data name="HoursFormat" xml:space="preserve"><value>{0} س</value></data>
+  <data name="CapacityDefaultHours" xml:space="preserve"><value>لم تُحدد سعة للفترة؛ تم استخدام ساعات العمل الافتراضية.</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>إعادة فتح {0}؟</value></data>
+  <data name="ReopenBody" xml:space="preserve"><value>يعود الأسبوع إلى مسودة؛ وتُلغى زياراته التي ليس لها تقرير.</value></data>
+  <data name="ReopenReasonLabel" xml:space="preserve"><value>السبب</value></data>
+  <data name="ReopenReasonHint" xml:space="preserve"><value>10 أحرف على الأقل. يُحفظ السبب في سجل الأسبوع.</value></data>
+  <data name="ReopenConfirm" xml:space="preserve"><value>إعادة الفتح</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>أُعيد فتح الأسبوع؛ وحُفظ السبب.</value></data>
+  <data name="ReopenUnavailable" xml:space="preserve"><value>إعادة الفتح غير متاحة بعد.</value></data>
+  <data name="DetailLoadError" xml:space="preserve"><value>تعذر تحميل الخطة.</value></data>
 </root>

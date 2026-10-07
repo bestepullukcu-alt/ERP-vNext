@@ -16,7 +16,7 @@
   <data name="Applied" xml:space="preserve"><value>Сохранено как план недели.</value></data>
   <data name="Replanned" xml:space="preserve"><value>Визиты перепланированы.</value></data>
   <data name="OutOfTerritory" xml:space="preserve"><value>Вне территории</value></data>
-  <data name="SessionsTitle" xml:space="preserve"><value>Мои черновики планов</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>Мои планы</value></data>
   <data name="Plan" xml:space="preserve"><value>План</value></data>
   <data name="Rep" xml:space="preserve"><value>Представитель</value></data>
   <data name="Targets" xml:space="preserve"><value>Цели</value></data>
@@ -129,4 +129,53 @@
   <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} визитов будут сохранены как план этой недели, и неделя будет заблокирована. Продолжить?</value></data>
   <data name="WeekEmptyBlocked" xml:space="preserve"><value>На этой неделе нет визитов для утверждения.</value></data>
   <data name="WeekLocked" xml:space="preserve"><value>Эта неделя утверждена; её визиты заблокированы.</value></data>
+  <data name="MyPlans" xml:space="preserve"><value>Мои планы</value></data>
+  <data name="TeamView" xml:space="preserve"><value>Команда</value></data>
+  <data name="TeamViewSoon" xml:space="preserve"><value>Представление руководителя скоро появится</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve"><value>Вид планов</value></data>
+  <data name="WeeksSection" xml:space="preserve"><value>Недели</value></data>
+  <data name="WeekCountFormat" xml:space="preserve"><value>{0} утверждено · {1} черновиков</value></data>
+  <data name="ApprovedWeekCountFormat" xml:space="preserve"><value>{0} утверждено</value></data>
+  <data name="EmptyDraftBadge" xml:space="preserve"><value>пустой черновик</value></data>
+  <data name="LegacyPlanBadge" xml:space="preserve"><value>Весь период утверждён (старый план)</value></data>
+  <data name="EmptyDraftsNotice" xml:space="preserve"><value>Пустых черновиков: {0} (без целей). Для каждого периода хранится один план.</value></data>
+  <data name="DeleteEmptyDrafts" xml:space="preserve"><value>Удалить пустые черновики</value></data>
+  <data name="DeleteEmptyDraftsConfirm" xml:space="preserve"><value>Будет удалено пустых черновиков: {0}.</value></data>
+  <data name="EmptyDraftsDeleted" xml:space="preserve"><value>Удалено пустых черновиков: {0}.</value></data>
+  <data name="ListEmptyTitle" xml:space="preserve"><value>У вас ещё нет плана.</value></data>
+  <data name="ListEmptyAction" xml:space="preserve"><value>Создать план на этот период</value></data>
+  <data name="ListLoadError" xml:space="preserve"><value>Не удалось загрузить планы.</value></data>
+  <data name="NoActivePeriodBand" xml:space="preserve"><value>Нет активного периода. Новый план нельзя создать, так как нет открытого периода; обратитесь к руководителю.</value></data>
+  <data name="NewPlanTitle" xml:space="preserve"><value>Новый план</value></data>
+  <data name="NewPlanPeriodHint" xml:space="preserve"><value>Выбран активный период. Показаны только активные и будущие периоды.</value></data>
+  <data name="NewPlanNoPeriod" xml:space="preserve"><value>Активный период не найден</value></data>
+  <data name="NewPlanWeek" xml:space="preserve"><value>Начальная неделя</value></data>
+  <data name="NewPlanWeekHint" xml:space="preserve"><value>Прошедшие недели выбрать нельзя.</value></data>
+  <data name="NewPlanCreate" xml:space="preserve"><value>Создать план</value></data>
+  <data name="PlanExists" xml:space="preserve"><value>У вас уже есть план на этот период.</value></data>
+  <data name="GoToPlan" xml:space="preserve"><value>Перейти к плану</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>Утвердить неделю</value></data>
+  <data name="ApproveWeekHint" xml:space="preserve"><value>В запланированные визиты записываются только визиты этой недели.</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>Открыть неделю заново</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Открыть следующую неделю</value></data>
+  <data name="WeekStatusPast" xml:space="preserve"><value>Прошедшая</value></data>
+  <data name="WeekStatusApproved" xml:space="preserve"><value>Утверждена</value></data>
+  <data name="WeekStatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="WeekStatusEmpty" xml:space="preserve"><value>Пустая</value></data>
+  <data name="PastWeekBand" xml:space="preserve"><value>Прошедшая неделя: только чтение.</value></data>
+  <data name="LegacyPlanBand" xml:space="preserve"><value>Этот план утверждён на весь период (старый план); только чтение.</value></data>
+  <data name="WeekCapacity" xml:space="preserve"><value>Ёмкость этой недели</value></data>
+  <data name="WeekPlanned" xml:space="preserve"><value>Запланировано на неделе</value></data>
+  <data name="PeriodCapacity" xml:space="preserve"><value>Ёмкость периода</value></data>
+  <data name="PeriodPlanned" xml:space="preserve"><value>Запланировано за период</value></data>
+  <data name="HoursFormat" xml:space="preserve"><value>{0} ч</value></data>
+  <data name="CapacityDefaultHours" xml:space="preserve"><value>Для периода не задана ёмкость; используются стандартные рабочие часы.</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>Открыть {0} заново?</value></data>
+  <data name="ReopenBody" xml:space="preserve"><value>Неделя возвращается в черновик; визиты без отчёта отменяются.</value></data>
+  <data name="ReopenReasonLabel" xml:space="preserve"><value>Причина</value></data>
+  <data name="ReopenReasonHint" xml:space="preserve"><value>Не менее 10 символов. Причина сохраняется в истории недели.</value></data>
+  <data name="ReopenConfirm" xml:space="preserve"><value>Открыть заново</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>Неделя открыта заново; причина сохранена.</value></data>
+  <data name="ReopenUnavailable" xml:space="preserve"><value>Повторное открытие пока недоступно.</value></data>
+  <data name="DetailLoadError" xml:space="preserve"><value>Не удалось загрузить план.</value></data>
 </root>

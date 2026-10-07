@@ -14,6 +14,9 @@
     const L = window.L10n || {};
     const base = '/CRM/VisitPlanning/api';
     const sessionId = root.dataset.sessionId;
+    // WP-VP-4B — the page skeleton (page.js): this file publishes the session + preview to it, follows its selected
+    // week and answers the header's action requests. The Targets + Route views below are unchanged.
+    const page = window.VisitPlanningPage || null;
     const canGenerate = root.dataset.canGenerate === 'true';
     const canApply = root.dataset.canApply === 'true';
     // WP-VP-FIX-1 (D2) — committed / archived: the server already switched every write flag off; this also stops the
@@ -73,7 +76,7 @@
     }).catch(() => {});
 
     const loadSession = () => api('/sessions/' + sessionId).then(r => {
-        if (!r.ok || !r.body || !r.body.data) { setStatus(errorText(r), true); return; }
+        if (!r.ok || !r.body || !r.body.data) { setStatus(errorText(r), true); if (page) page.emit('session-error', errorText(r)); return; }
         sessionData = r.body.data;
         currentVersion = sessionData.version;
         const sidStr = String(sessionData.planningSessionId || sessionId);
@@ -92,6 +95,7 @@
         if (/^\d{4}-\d{2}-\d{2}$/.test(sessionData.targetWeekStart || '')) {
             setText('vp-d-week', weekNumberLabel(isoWeek(new Date(sessionData.targetWeekStart))));
         }
+        if (page) page.setSession(sessionData);
     });
 
     const applyDefaultTab = () => {
@@ -134,7 +138,13 @@
 
     // ── road map ──
     const weeksOf = rows => Array.from(new Set(rows.map(r => r.weekNumber))).sort((a, b) => a - b);
-    const weekMonday = week => { const dates = scheduled.filter(r => r.weekNumber === week).map(r => new Date(r.plannedDate)).filter(d => !isNaN(d)); return dates.length ? mondayOf(new Date(Math.min.apply(null, dates))) : null; };
+    const weekMonday = week => {
+        const dates = scheduled.filter(r => r.weekNumber === week).map(r => new Date(r.plannedDate)).filter(d => !isNaN(d));
+        if (dates.length) return mondayOf(new Date(Math.min.apply(null, dates)));
+        // WP-VP-4B — a week picked in the header with no visit yet: its Monday from the period's week list.
+        const w = lastPreview && lastPreview.weeks ? lastPreview.weeks[week] : null;
+        return w && w.weekStart ? new Date(w.weekStart + 'T00:00:00') : null;
+    };
 
     // The week the plan was SAVED against (session.targetWeekStart, a Monday yyyy-MM-dd) — preferred over the ?week hint.
     const savedMonday = () => { const w = sessionData && sessionData.targetWeekStart; return /^\d{4}-\d{2}-\d{2}$/.test(w || '') ? w : null; };
@@ -744,6 +754,7 @@
 
     const renderWeek = week => {
         activeWeek = week;
+        if (page && !followingPage) page.selectWeek(weekStartOf(week), 'route');
         applyWeekLock(week);
         setWeekLabel(week);
         const weekRows = scheduled.filter(s => s.weekNumber === week);
@@ -799,15 +810,28 @@
         sel.onchange = () => renderWeek(parseInt(sel.value, 10));
     };
 
+    // WP-VP-4B — the header's week picker drives the route week; the route's own week select still works and tells the
+    // header. followingPage stops the echo while the route follows the page.
+    let followingPage = false;
+    const indexOfWeek = ws => (lastPreview && lastPreview.weeks ? lastPreview.weeks.findIndex(w => w.weekStart === ws) : -1);
+    const followPageWeek = ws => {
+        const idx = indexOfWeek(ws); if (idx < 0) return;
+        followingPage = true;
+        try { renderWeek(idx); const sel = el('vp-week'); if (sel) sel.value = String(idx); } finally { followingPage = false; }
+    };
+    if (page) {
+        page.on('week-change', e => { if (e && e.source !== 'route' && lastPreview) followPageWeek(e.weekStart); });
+        page.on('request:approve-week', () => apply());
+        page.on('request:save-targets', () => saveTargets());
+        page.on('request:generate-route', () => preview().then(() => {
+            const btn = el('vp-tab-route-btn'); if (btn && window.bootstrap) try { window.bootstrap.Tab.getOrCreateInstance(btn).show(); } catch (e) { /* no-op */ }
+        }));
+    }
+
     const renderPreview = p => {
         lastPreview = p;
-        const sd = p.supplyDemand || {};
-        const badge = el('vp-supply-badge');
-        if (badge) { badge.textContent = sd.status || '—'; badge.className = 'badge ' + (sd.status === 'over-planned' ? 'bg-label-warning' : 'bg-label-success'); }
-        setText('vp-sd-supply', sd.supply == null ? '—' : sd.supply);
-        setText('vp-sd-demand', sd.demand == null ? '—' : sd.demand);
-        setText('vp-sd-scheduled', sd.scheduledCount || 0);
-        setText('vp-sd-unscheduled', sd.unscheduledCount || 0);
+        // WP-VP-4B — the old supply-vs-demand tiles are gone: the header's capacity cards read p.weekCapacity /
+        // p.periodCapacity through the page skeleton.
         if (el('vp-territory-warnings')) el('vp-territory-warnings').innerHTML = (p.territoryWarnings || []).map(w =>
             '<span class="badge bg-label-warning me-1">' + (L.OutOfTerritory || 'Out of territory') + ': ' + esc(String(w.accountId || '').slice(0, 8)) + '</span>').join('');
 
@@ -819,10 +843,18 @@
         scheduled = p.scheduled || [];
         // Keep the current week on a re-preview (manual reorder); pick the default only on the first render.
         const weeks = weeksOf(scheduled);
-        const def = (activeDayOrderVal != null && weeks.indexOf(activeWeek) > -1) ? activeWeek
+        let def = (activeDayOrderVal != null && weeks.indexOf(activeWeek) > -1) ? activeWeek
             : (scheduled.length ? defaultWeek(scheduled) : 0);
         buildWeekSelector();
-        renderWeek(def);
+        // WP-VP-4B — the header owns the selected week once the page skeleton knows the period's weeks.
+        if (page) {
+            followingPage = true;
+            try { page.setPreview(p); } finally { followingPage = false; }
+            const idx = indexOfWeek(page.state.weekStart);
+            if (idx > -1) { def = idx; const sel = el('vp-week'); if (sel) sel.value = String(idx); }
+        }
+        followingPage = !!page;
+        try { renderWeek(def); } finally { followingPage = false; }
     };
 
     const preview = () => {
@@ -1249,7 +1281,8 @@
             });
         };
         const text = (L.ApplyWeekConfirm || '{0} visits will be saved as this week\'s plan and the week will be locked.').replace('{0}', weekRows.length);
-        if (window.showConfirm) { window.showConfirm(text, go, { type: 'warning', confirmButtonText: L.ApplyConfirmButton }); return Promise.resolve(); }
+        // WP-VP-4B — no generic "are you sure?" sentence under the question (the FIX-2 subtext: '' pattern).
+        if (window.showConfirm) { window.showConfirm(text, go, { type: 'warning', confirmButtonText: L.ApplyConfirmButton, subtext: '' }); return Promise.resolve(); }
         return window.confirm(text) ? go() : Promise.resolve();
     };
     const showAppliedToast = () => {
@@ -1367,7 +1400,8 @@
     });
     // "Optimal rotaya dön": drop the manual order and re-preview WITHOUT manualVisitOrder → the engine's optimum.
     el('vp-reset-optimal')?.addEventListener('click', () => { manualOrder = null; manualIsUser = false; autoGroupDone = false; preview(); });
-    el('vp-preview')?.addEventListener('click', preview);
+    // WP-VP-4B — "Build route" and "Approve the week" are header actions now (data-vp-action → page request), so they are
+    // not bound here a second time.
     if (canGenerate) {
         el('vp-save-targets')?.addEventListener('click', saveTargets);
         // #vp-add-account is a select2 — it raises `change` via jQuery.trigger, which native addEventListener misses.
@@ -1381,7 +1415,7 @@
             el('vp-add-account-out')?.addEventListener('change', addFromPicker);
         }
     }
-    if (canApply) { el('vp-apply')?.addEventListener('click', apply); el('vp-replan')?.addEventListener('click', replan); }
+    if (canApply) { el('vp-replan')?.addEventListener('click', replan); }
     showAppliedToast(); // the success message of an apply that reloaded the page into its read-only state
 
     // Boot: names → session header → account source + targets (master/detail) → default tab → route preview.

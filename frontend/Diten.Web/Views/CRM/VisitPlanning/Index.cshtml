@@ -13,9 +13,30 @@
 
 @* Golden Compact: authoring happens on its own page; the create affordance lives once in the DataTable toolbar
    (the `.add-new` button), gated by the CanGenerate flag published to index.js below. *@
-<div class="mb-3">
-    <h5 class="mb-0">@Localizer["SessionsTitle"]</h5>
-    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+@* WP-VP-4B (brief §1, MK-5) — the rep's own plans; the "Team" view switch is visible but inactive until the manager view
+   exists. Bands (index.js): no active period (new plan blocked), no territory (K-5), empty drafts + "delete empty drafts",
+   a list that could not be read. *@
+<div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["SessionsTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    <div class="btn-group" role="group" aria-label="@Localizer["ViewSwitchLabel"]">
+        <button type="button" class="btn btn-sm btn-primary active" id="vp-view-mine" aria-pressed="true">@Localizer["MyPlans"]</button>
+        <span class="d-inline-block" tabindex="0" title="@Localizer["TeamViewSoon"]" data-bs-toggle="tooltip">
+            <button type="button" class="btn btn-sm btn-label-secondary rounded-start-0" id="vp-view-team" disabled aria-disabled="true"><i class="bx bx-lock-alt me-1" aria-hidden="true"></i>@Localizer["TeamView"]</button>
+        </span>
+    </div>
+</div>
+<div id="vp-list-bands"></div>
+<div id="vp-empty-drafts" class="alert alert-warning py-2 small d-none" role="status">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <span><i class="bx bx-info-circle me-1" aria-hidden="true"></i><span id="vp-empty-drafts-text"></span></span>
+        @if (Model.CanGenerate)
+        {
+            <button type="button" class="btn btn-sm btn-outline-warning" id="vp-delete-empty-drafts">@Localizer["DeleteEmptyDrafts"]</button>
+        }
+    </div>
 </div>
 
 @* ② No BulkActionBar: planning sessions have no bulk-delete surface (a draft is deleted one at a time from its row). *@
@@ -25,9 +46,15 @@
 
 <script id="visitplanning-page-flags" type="application/json">{"canGenerate": @(Model.CanGenerate ? "true" : "false"), "canApply": @(Model.CanApply ? "true" : "false")}</script>
 
+@if (Model.CanGenerate)
+{
+    <partial name="~/Views/CRM/VisitPlanning/_NewPlanDrawer.cshtml" />
+}
+
 @section Scripts {
     @* Contract marker: <partial name="_IndexL10n" /> *@
     <partial name="~/Views/CRM/VisitPlanning/_IndexL10n.cshtml" />
     <script src="~/assets/js/CRM/VisitPlanning/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitPlanning/new-plan.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitPlanning/index.js" asp-append-version="true"></script>
 }

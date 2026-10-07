@@ -16,7 +16,7 @@
   <data name="Applied" xml:space="preserve"><value>Saved as this week's plan.</value></data>
   <data name="Replanned" xml:space="preserve"><value>Visits re-planned.</value></data>
   <data name="OutOfTerritory" xml:space="preserve"><value>Out of territory</value></data>
-  <data name="SessionsTitle" xml:space="preserve"><value>My draft plans</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>My plans</value></data>
   <data name="Plan" xml:space="preserve"><value>Plan</value></data>
   <data name="Rep" xml:space="preserve"><value>Rep</value></data>
   <data name="Targets" xml:space="preserve"><value>Targets</value></data>
@@ -129,4 +129,53 @@
   <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} visits will be saved as this week's plan and the week will be locked. Continue?</value></data>
   <data name="WeekEmptyBlocked" xml:space="preserve"><value>This week has no visits to approve.</value></data>
   <data name="WeekLocked" xml:space="preserve"><value>This week is approved; its visits are locked.</value></data>
+  <data name="MyPlans" xml:space="preserve"><value>My plans</value></data>
+  <data name="TeamView" xml:space="preserve"><value>Team</value></data>
+  <data name="TeamViewSoon" xml:space="preserve"><value>Manager view coming soon</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve"><value>Plan view</value></data>
+  <data name="WeeksSection" xml:space="preserve"><value>Weeks</value></data>
+  <data name="WeekCountFormat" xml:space="preserve"><value>{0} approved · {1} draft</value></data>
+  <data name="ApprovedWeekCountFormat" xml:space="preserve"><value>{0} approved</value></data>
+  <data name="EmptyDraftBadge" xml:space="preserve"><value>empty draft</value></data>
+  <data name="LegacyPlanBadge" xml:space="preserve"><value>Whole period approved (legacy plan)</value></data>
+  <data name="EmptyDraftsNotice" xml:space="preserve"><value>{0} empty draft(s) (no targets). One plan is kept per period.</value></data>
+  <data name="DeleteEmptyDrafts" xml:space="preserve"><value>Delete empty drafts</value></data>
+  <data name="DeleteEmptyDraftsConfirm" xml:space="preserve"><value>{0} empty draft(s) will be deleted.</value></data>
+  <data name="EmptyDraftsDeleted" xml:space="preserve"><value>{0} empty draft(s) deleted.</value></data>
+  <data name="ListEmptyTitle" xml:space="preserve"><value>You have no plan yet.</value></data>
+  <data name="ListEmptyAction" xml:space="preserve"><value>Create a plan for this period</value></data>
+  <data name="ListLoadError" xml:space="preserve"><value>The plans could not be loaded.</value></data>
+  <data name="NoActivePeriodBand" xml:space="preserve"><value>No active period. A new plan cannot be created because no period is open; ask your manager to define one.</value></data>
+  <data name="NewPlanTitle" xml:space="preserve"><value>New plan</value></data>
+  <data name="NewPlanPeriodHint" xml:space="preserve"><value>The active period is selected. Only active and future periods are listed.</value></data>
+  <data name="NewPlanNoPeriod" xml:space="preserve"><value>No active period found</value></data>
+  <data name="NewPlanWeek" xml:space="preserve"><value>Opening week</value></data>
+  <data name="NewPlanWeekHint" xml:space="preserve"><value>Weeks that are already over cannot be selected.</value></data>
+  <data name="NewPlanCreate" xml:space="preserve"><value>Create plan</value></data>
+  <data name="PlanExists" xml:space="preserve"><value>You already have a plan for this period.</value></data>
+  <data name="GoToPlan" xml:space="preserve"><value>Go to plan</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>Approve the week</value></data>
+  <data name="ApproveWeekHint" xml:space="preserve"><value>Only this week's visits are written to Planned Visits.</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>Reopen the week</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Open the next week</value></data>
+  <data name="WeekStatusPast" xml:space="preserve"><value>Past</value></data>
+  <data name="WeekStatusApproved" xml:space="preserve"><value>Approved</value></data>
+  <data name="WeekStatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="WeekStatusEmpty" xml:space="preserve"><value>Empty</value></data>
+  <data name="PastWeekBand" xml:space="preserve"><value>Past week: read-only.</value></data>
+  <data name="LegacyPlanBand" xml:space="preserve"><value>This plan was approved for the whole period (legacy plan); it is read-only.</value></data>
+  <data name="WeekCapacity" xml:space="preserve"><value>This week's capacity</value></data>
+  <data name="WeekPlanned" xml:space="preserve"><value>Planned this week</value></data>
+  <data name="PeriodCapacity" xml:space="preserve"><value>Period capacity</value></data>
+  <data name="PeriodPlanned" xml:space="preserve"><value>Planned in the period</value></data>
+  <data name="HoursFormat" xml:space="preserve"><value>{0} h</value></data>
+  <data name="CapacityDefaultHours" xml:space="preserve"><value>No capacity is defined for the period; the default working hours are used.</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>Reopen {0}?</value></data>
+  <data name="ReopenBody" xml:space="preserve"><value>The week goes back to draft; its visits without a report are cancelled.</value></data>
+  <data name="ReopenReasonLabel" xml:space="preserve"><value>Reason</value></data>
+  <data name="ReopenReasonHint" xml:space="preserve"><value>At least 10 characters. The reason is saved in the week's history.</value></data>
+  <data name="ReopenConfirm" xml:space="preserve"><value>Reopen</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>The week was reopened; the reason was saved.</value></data>
+  <data name="ReopenUnavailable" xml:space="preserve"><value>Reopening is not available yet.</value></data>
+  <data name="DetailLoadError" xml:space="preserve"><value>The plan could not be loaded.</value></data>
 </root>
