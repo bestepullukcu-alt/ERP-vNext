@@ -114,17 +114,31 @@ beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı b
      Ardından kuru koşuyu **0 diyene kadar** tekrarlayın. Araç idempotenttir.
    - **Tam komut** (repo kökünden; bağlantı ortamdan okunur, komut satırından asla):
 
-     Önce `DITEN_AUTH_MONGO_CONNECTION` ve `DITEN_AUTH_MONGO_DATABASE` değerlerini gizli kasadan ortama yükleyin (komut
-     satırına ve geçmişe yazılmaz), sonra:
+     Önce iki ortam değişkenini gizli kasadan yükleyin: `DITEN_AUTH_MONGO_CONNECTION` ve `DITEN_AUTH_MONGO_DATABASE`
+     (değerleri komut satırına, geçmişe ya da bu belgeye asla yazılmaz). Sonra **kuru koşu** — aynı komut, argümansız:
+
+     ```bash
+     dotnet run --project services/Diten.AuthService/tools/Diten.AuthService.LegacyDeactivationMarker
+     ```
+
+     ve listeyi okuduktan sonra **uygulama** (N = son kuru koşunun bulduğu sayı):
 
      ```bash
      dotnet run --project services/Diten.AuthService/tools/Diten.AuthService.LegacyDeactivationMarker -- --apply --expect N
      ```
-   - **Çıkış kodları:** 0 tamam · 1 bağlantı hatası (yalnız hata türü yazılır, bağlantı dizesi asla) · 2 kullanım ·
-     3 yarıda kaldı (yazılan kimlikler ve kalan sayı listelenir) · 4 liste okunduktan sonra değişen hesaplar atlandı
-     (listelenir; dokunulmadı) · 5 beklenen sayı tutmadı.
-   - Her çalışma Auth denetim kaydına (`authAuditLogs`, `auth.legacy_deactivation_marker.run`) bir satır yazar: sayılar ve
-     kimlikler, kişisel veri yok.
+   - **Çıkış kodları:**
+     - 0 tamam.
+     - 1 bağlantı ya da beklenmeyen hata: veritabanına ulaşılmadı, hiçbir şey yazılmadı. Yalnız hata türü yazılır,
+       bağlantı dizesi ya da hata metni asla.
+     - 2 kullanım hatası.
+     - 3 yarıda kaldı: yazılan ve **ulaşılmayan** kimlikler ayrı ayrı listelenir; kuru koşuyu tekrarlayın.
+     - 4 liste okunduktan sonra değişen hesaplar atlandı (listelenir; dokunulmadı). Uyarı, "APPLIED" satırından önce yazılır.
+     - 5 beklenen sayı tutmadı, hiçbir şey yazılmadı.
+     - 6 iş bitti ama denetim satırı yazılamadı: kayıt eksik. Denetim kaydı sahibine bildirin.
+   - **Denetim satırı:** veritabanına ulaşan her çalışma Auth denetim kaydına (`authAuditLogs`,
+     `auth.legacy_deactivation_marker.run`) bir satır yazar: mod (`dry-run`, `apply`, `refused`), sayılar ve kimlikler;
+     kişisel veri yok. Yarıda kalan çalışma da yazar (`stoppedPartWay`, ulaşılmayanlar). Çıkış 1 ve 2'de satır yazılmaz:
+     veritabanına hiç ulaşılmadı.
    - Gerçek ortamda çalıştırmak sahibin kararıdır.
 
 **Belirti:** (1) Auth günlüğünde başlangıçta "`ClientAddress:TrustedProxies` is empty" uyarısı. (2) Deploy'dan sonra

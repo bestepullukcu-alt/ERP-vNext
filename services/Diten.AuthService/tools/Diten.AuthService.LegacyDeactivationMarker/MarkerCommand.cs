@@ -12,8 +12,12 @@ namespace Diten.AuthService.LegacyDeactivationMarker;
 /// </list>
 /// The connection comes from the environment (<see cref="ConnectionVariable"/>, <see cref="DatabaseVariable"/>), NEVER the
 /// command line, and is NEVER written to any output: a failure names only the exception's type.
-/// <para>Exit codes: 0 done · 1 connection or unexpected failure · 2 usage · 3 stopped part-way (what was written is
-/// listed) · 4 fewer marked than found (accounts changed meanwhile; listed) · 5 the count was not the expected one.</para>
+/// <para>Exit codes: 0 done · 1 connection or unexpected failure (nothing reached the database; no audit row) · 2 usage (no
+/// audit row) · 3 stopped part-way (what was written and what was not reached are listed; the audit row is still written)
+/// · 4 fewer marked than found (accounts changed meanwhile; listed) · 5 the count was not the expected one (nothing
+/// written; audit row "refused") · 6 the work is done but its audit row could not be written.</para>
+/// <para>FIX10 (K2) — 6 is its own code: "done, but not on record" is neither a connection failure nor a success, and an
+/// operator must not mistake it for either.</para>
 /// </summary>
 public static class MarkerCommand
 {
@@ -68,14 +72,14 @@ public static class MarkerCommand
         if (expect is { } expected && expected != findings.Found.Count)
         {
             error.WriteLine($"Expected {expected} account(s), found {findings.Found.Count}: nothing was written.");
-            await RecordAsync(database, apply: false, findings, null, error);
+            await RecordAsync(database, Marker.ModeRefused, findings, [], [], [], error);
             return 5;
         }
 
         if (!apply)
         {
             output.WriteLine("DRY RUN — nothing written. Repeat until it reports 0, then run with --apply.");
-            return await RecordAsync(database, apply: false, findings, null, error) ? 0 : 1;
+            return await RecordAsync(database, Marker.ModeDryRun, findings, [], [], [], error) ? 0 : 6;
         }
 
         if (afterFind is not null)
@@ -93,14 +97,20 @@ public static class MarkerCommand
             error.WriteLine($"STOPPED PART-WAY ({partial.InnerException?.GetType().Name}): {partial.Marked.Count} marked, {partial.Remaining.Count} not reached.");
             foreach (var account in partial.Marked)
             {
-                output.WriteLine($"  marked  tenant {account.TenantId:D}  user {account.UserId:D}");
+                output.WriteLine($"  marked       tenant {account.TenantId:D}  user {account.UserId:D}");
             }
 
+            foreach (var account in partial.Remaining)
+            {
+                output.WriteLine($"  not reached  tenant {account.TenantId:D}  user {account.UserId:D}");
+            }
+
+            // FIX10 item 3 — the part-way run is on record too; if even that fails, the exit stays 3 (it says the most).
+            await RecordAsync(database, Marker.ModeApply, findings, partial.Marked, [], partial.Remaining, error);
             return 3;
         }
 
-        output.WriteLine($"APPLIED — {result.Marked.Count} of {findings.Found.Count} marked, their links ended.");
-        var recorded = await RecordAsync(database, apply: true, findings, result, error);
+        // FIX10 (K3) — the warning comes BEFORE the summary line, so "APPLIED" is never the last word of a partial result.
         if (result.NotMarked.Count > 0)
         {
             error.WriteLine($"WARNING: {result.NotMarked.Count} account(s) changed after the list was read and were left as they are:");
@@ -108,20 +118,21 @@ public static class MarkerCommand
             {
                 error.WriteLine($"  tenant {account.TenantId:D}  user {account.UserId:D}");
             }
-
-            return 4;
         }
 
-        return recorded ? 0 : 1;
+        output.WriteLine($"APPLIED — {result.Marked.Count} of {findings.Found.Count} marked, their links ended.");
+        var recorded = await RecordAsync(database, Marker.ModeApply, findings, result.Marked, result.NotMarked, [], error);
+        return result.NotMarked.Count > 0 ? 4 : recorded ? 0 : 6;
     }
 
     private static async Task<bool> RecordAsync(
-        IMongoDatabase database, bool apply, Marker.Findings findings,
-        Marker.MarkResult? result, TextWriter error)
+        IMongoDatabase database, string mode, Marker.Findings findings,
+        IReadOnlyList<Marker.Account> marked, IReadOnlyList<Marker.Account> notMarked,
+        IReadOnlyList<Marker.Account> notReached, TextWriter error)
     {
         try
         {
-            await Marker.RecordRunAsync(database, apply, findings, result);
+            await Marker.RecordRunAsync(database, mode, findings, marked, notMarked, notReached);
             return true;
         }
         catch (Exception failure)

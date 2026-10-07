@@ -121,18 +121,36 @@ public static class LegacyDeactivationMarker
         return new MarkResult(marked, notMarked);
     }
 
-    /// <summary>One audit row per run: counts and ids, no personal data.</summary>
+    public const string ModeDryRun = "dry-run";
+    public const string ModeApply = "apply";
+    public const string ModeRefused = "refused";
+
+    /// <summary>
+    /// One audit row per run that reached the database: counts and ids, no personal data. <paramref name="mode"/> is
+    /// <see cref="ModeDryRun"/>, <see cref="ModeApply"/> or <see cref="ModeRefused"/> (the count was not the expected one);
+    /// a run that stopped part-way records what it wrote, what it did not reach and <c>stoppedPartWay = true</c>. A run that
+    /// never reached the database (a usage error, a connection failure) writes none — there is nowhere to write it.
+    /// </summary>
     public static Task RecordRunAsync(
-        IMongoDatabase database, bool apply, Findings findings, MarkResult? result, CancellationToken ct = default) =>
+        IMongoDatabase database,
+        string mode,
+        Findings findings,
+        IReadOnlyList<Account> marked,
+        IReadOnlyList<Account> notMarked,
+        IReadOnlyList<Account> notReached,
+        CancellationToken ct = default) =>
         new AuthAuditService(database).WriteAsync(AuditEventName, null, Guid.Empty, JsonSerializer.Serialize(new
         {
-            mode = apply ? "apply" : "dry-run",
+            mode,
             found = findings.Found.Count,
             skippedPending = findings.SkippedPending.Count,
-            marked = result?.Marked.Count ?? 0,
-            notMarked = result?.NotMarked.Count ?? 0,
+            marked = marked.Count,
+            notMarked = notMarked.Count,
+            notReached = notReached.Count,
+            stoppedPartWay = notReached.Count > 0,
             ids = findings.Found.Select(a => new { tenant = a.TenantId, user = a.UserId }),
-            markedIds = result?.Marked.Select(a => a.UserId) ?? []
+            markedIds = marked.Select(a => a.UserId),
+            notReachedIds = notReached.Select(a => a.UserId)
         }), ct);
 
     // The code's pending-invitation rule (User.IsInvitationPending), on the stored document: must change password, e-mail

@@ -1836,13 +1836,207 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
 
         Assert.Equal(5, exit);
         Assert.Equal(before, await SnapshotAsync(database));
+        Assert.Contains("\"mode\":\"refused\"", (await AuditRowAsync(database)).Metadata); // FIX10 (K3): not "dry-run"
+    }
+
+    private static async Task<AuthAuditLog> AuditRowAsync(IMongoDatabase database) =>
+        Assert.Single(await database.GetCollection<AuthAuditLog>("authAuditLogs").Find(_ => true).ToListAsync());
+
+    // ── FIX10 item 1: the write's tenant bound and the pending rule's "never signed in" ───────────────────────────
+
+    [Fact]
+    public async Task The_marker_never_marks_an_account_named_under_another_tenant()
+    {
+        var (database, rows) = await MarkerDatabaseAsync();
+        var before = await SnapshotAsync(database);
+
+        var result = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.MarkAsync(database,
+            [new Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.Account(Guid.NewGuid(), rows.Legacy[0])]);
+
+        Assert.Empty(result.Marked);
+        Assert.Single(result.NotMarked);
+        Assert.Equal(before, await SnapshotAsync(database));
+    }
+
+    [Fact]
+    public async Task An_account_that_has_signed_in_is_marked_even_with_an_unconfirmed_email_and_a_forced_change()
+    {
+        var (database, _) = await MarkerDatabaseAsync();
+        var signedIn = new User($"signed.{Guid.NewGuid():N}@reset.test", "hash", "Si", "Gned", Guid.NewGuid());
+        signedIn.Deactivate();
+        signedIn.RequirePasswordChange(null);
+        signedIn.RecordLoginSuccess();
+        await database.GetCollection<User>("users").InsertOneAsync(signedIn);
+        Assert.False((await database.GetCollection<User>("users").Find(u => u.Id == signedIn.Id).SingleAsync()).EmailConfirmed); // non-vacuity
+
+        var findings = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.FindAsync(database);
+        Assert.Contains(findings.Found, a => a.UserId == signedIn.Id);
+        var result = await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.MarkAsync(database, findings.Found);
+
+        Assert.Contains(result.Marked, a => a.UserId == signedIn.Id); // the write's $nor holds it too: it has signed in
+        Assert.True((await database.GetCollection<User>("users").Find(u => u.Id == signedIn.Id).SingleAsync()).DeactivatedByAdministrator);
+    }
+
+    // ── FIX10 item 2: the command an operator runs ────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_operator_command_marks_exactly_the_expected_accounts_and_records_them()
+    {
+        var (database, rows) = await MarkerDatabaseAsync();
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        var exit = await Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.RunAsync(["--apply", "--expect", "4"], MarkerEnvironment(), output, error);
+
+        Assert.Equal(0, exit);
+        Assert.Contains("APPLIED — 4 of 4", output.ToString());
+        var users = database.GetCollection<User>("users");
+        foreach (var id in rows.Legacy)
+        {
+            Assert.True((await users.Find(u => u.Id == id).SingleAsync()).DeactivatedByAdministrator);
+        }
+
+        var audit = await AuditRowAsync(database);
+        Assert.Contains("\"mode\":\"apply\"", audit.Metadata);
+        Assert.All(rows.Legacy, id => Assert.Contains(id.ToString("D"), audit.Metadata));
+        Assert.Contains("\"markedIds\"", audit.Metadata);
+    }
+
+    // ── FIX10 item 3: a run that stops part-way (CT K4) ─────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_run_that_stops_part_way_lists_what_it_wrote_and_what_it_did_not_reach_and_records_it()
+    {
+        var (database, _) = await MarkerDatabaseAsync();
+        var found = (await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.FindAsync(database)).Found;
+        var blocked = found[^1].TenantId;                         // the store refuses the mark for this one tenant
+        var stopAt = found.ToList().FindIndex(a => a.TenantId == blocked);
+        Assert.True(stopAt > 0); // non-vacuity: something is written before the stop
+        await database.RunCommandAsync<BsonDocument>(new BsonDocument
+        {
+            { "collMod", "users" },
+            {
+                "validator", new BsonDocument("$or", new BsonArray
+                {
+                    new BsonDocument(nameof(User.TenantId), new BsonDocument("$ne", new BsonBinaryData(blocked, GuidRepresentation.Standard))),
+                    new BsonDocument(nameof(User.DeactivatedByAdministrator), new BsonDocument("$ne", true))
+                })
+            },
+            { "validationAction", "error" }
+        });
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        var exit = await Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.RunAsync(["--apply"], MarkerEnvironment(), output, error);
+
+        Assert.Equal(3, exit);
+        var lines = output.ToString().Split('\n');
+        Assert.Equal(found.Take(stopAt).Select(a => a.UserId.ToString("D")),
+            lines.Where(l => l.TrimStart().StartsWith("marked ")).Select(l => l.Trim()[^36..]));
+        Assert.Equal(found.Skip(stopAt).Select(a => a.UserId.ToString("D")),
+            lines.Where(l => l.TrimStart().StartsWith("not reached ")).Select(l => l.Trim()[^36..]));
+        Assert.Contains($"{stopAt} marked, {found.Count - stopAt} not reached", error.ToString());
+        var audit = await AuditRowAsync(database);
+        Assert.Contains("\"stoppedPartWay\":true", audit.Metadata);
+        Assert.Contains($"\"notReached\":{found.Count - stopAt}", audit.Metadata);
+    }
+
+    [Fact]
+    public async Task A_run_whose_audit_row_cannot_be_written_says_so_with_its_own_exit_code()
+    {
+        var (database, _) = await MarkerDatabaseAsync();
+        await database.RunCommandAsync<BsonDocument>(new BsonDocument
+        {
+            { "create", "authAuditLogs" },
+            { "validator", new BsonDocument("EventName", "never") },
+            { "validationAction", "error" }
+        });
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        var exit = await Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.RunAsync([], MarkerEnvironment(), output, error);
+
+        Assert.Equal(6, exit); // FIX10 (K2): done, but not on record — neither a connection failure nor a success
+        Assert.Contains("audit row could not be written", error.ToString());
+    }
+
+    // ── FIX10 item 5 (CT K3): the read never loads a password hash ─────────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_marker_read_never_asks_for_a_password_hash()
+    {
+        await MarkerDatabaseAsync();
+        var projections = new System.Collections.Concurrent.ConcurrentQueue<List<string>>();
+        var settings = MongoClientSettings.FromConnectionString(_host.ConnectionString);
+        settings.ClusterConfigurator = cluster => cluster.Subscribe<MongoDB.Driver.Core.Events.CommandStartedEvent>(started =>
+        {
+            if (started.CommandName == "find" && started.Command.GetValue("find", "").ToString() == "users")
+            {
+                // Copied here: the event's command document is released once the callback returns.
+                projections.Enqueue(started.Command.GetValue("projection", new BsonDocument()).AsBsonDocument.Names.ToList());
+            }
+        });
+        var observed = new MongoClient(settings).GetDatabase(MarkerDatabase);
+
+        await Diten.AuthService.Persistence.Operations.LegacyDeactivationMarker.FindAsync(observed);
+
+        var projection = Assert.Single(projections);
+        Assert.True(projection.Contains(nameof(User.EmailConfirmed))); // non-vacuity: an inclusion projection was sent
+        Assert.False(projection.Contains(nameof(User.PasswordHash)));
+    }
+
+    // ── FIX10 item 4: the seed's warning, and its condition ───────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_seed_warns_and_writes_nothing_when_the_admin_it_read_cannot_be_written()
+    {
+        var (database, adminId) = await SeededAdminDatabaseAsync();
+        var raw = database.GetCollection<BsonDocument>("users");
+        // Soft-deleted: the seed still finds it by e-mail, but the targeted write (live accounts only) does not match.
+        await raw.UpdateOneAsync(ById(adminId), Builders<BsonDocument>.Update
+            .Set(nameof(User.IsDeleted), true).Set(nameof(User.IsActive), false).Set(nameof(User.EmailConfirmed), false));
+        var before = await raw.Find(ById(adminId)).SingleAsync();
+        var logger = new WarningCapture();
+
+        await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, seedMockUsers: false, logger: logger, beforeSeedSteps: null);
+
+        Assert.Equal(before, await raw.Find(ById(adminId)).SingleAsync());
+        Assert.Contains(logger.Warnings, w => w.Contains("seeded admin changed", StringComparison.Ordinal));
+    }
+
+    private sealed class WarningCapture : Microsoft.Extensions.Logging.ILogger
+    {
+        public System.Collections.Concurrent.ConcurrentQueue<string> Warnings { get; } = new();
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId,
+            TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (logLevel == Microsoft.Extensions.Logging.LogLevel.Warning)
+            {
+                Warnings.Enqueue(formatter(state, exception));
+            }
+        }
     }
 
     [Fact]
     public async Task The_marker_process_never_prints_a_broken_connection_string()
     {
         // As a process: the tool's own executable, the environment as an operator sets it.
-        const string secret = "mongodb://marker-user:Do-Not-Print-7f3a@";
+        // FIX10 (K4) — assembled at run time (no credential-shaped literal in the source), and measured: the driver's own
+        // message quotes it, so "never printed" means something.
+        // (The driver hides a user name and password in its messages, so the marker sits where it does NOT hide it.)
+        var marker = string.Concat("do-not", "-print-", "7f3a");
+        var secret = new[]
+            {
+                string.Concat("mongodb", "://", "user", ":", "pw", "@", marker, ":", "99999999", "/"),
+                string.Concat("mongodb", "://", "localhost", "/?", "authMechanism", "=", marker),
+                string.Concat("mongodb", "://", "localhost", "/?", "replicaSet", "=", marker, "&", "connect", "=", marker)
+            }
+            .FirstOrDefault(candidate =>
+                (Record.Exception(() => MongoClientSettings.FromConnectionString(candidate))?.Message ?? string.Empty)
+                    .Contains(marker, StringComparison.OrdinalIgnoreCase));
+        Assert.NotNull(secret); // measured: the driver's own message quotes this string
         var dll = Path.Combine(AppContext.BaseDirectory, "Diten.AuthService.LegacyDeactivationMarker.dll");
         Assert.True(File.Exists(dll), dll);
         var start = new System.Diagnostics.ProcessStartInfo("dotnet", $"\"{dll}\"")
@@ -1851,7 +2045,7 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
             RedirectStandardError = true,
             UseShellExecute = false
         };
-        start.Environment[Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.ConnectionVariable] = secret;
+        start.Environment[Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.ConnectionVariable] = secret!;
         start.Environment[Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.DatabaseVariable] = MarkerDatabase;
         using var process = System.Diagnostics.Process.Start(start)!;
         var stdout = process.StandardOutput.ReadToEndAsync();
@@ -1859,8 +2053,8 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.True(process.WaitForExit(60_000));
 
         Assert.Equal(1, process.ExitCode);
-        Assert.DoesNotContain("Do-Not-Print", await stdout);
-        Assert.DoesNotContain("Do-Not-Print", await stderr);
+        Assert.DoesNotContain(marker, await stdout, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(marker, await stderr, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("connection error", await stderr);
     }
 
