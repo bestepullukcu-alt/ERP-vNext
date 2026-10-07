@@ -32,8 +32,8 @@ doktor → aktif segment → aktif oyun (STR-TUTUKON) → ürün satırı → ya
 | E0 ☑ | **Envanter (yalnız okuma):** TUTUKON konu / başlık / içerik / yol / yolculuk / oyun / segment / sıklık politikası / iddia; Beste'nin 4 ilçesindeki gastro + aile + dahiliye doktor sayısı | CT (Mongo + API, salt okuma) | Eksikler listesi; hangi adımların gerekli olduğu kesinleşir | ☐ |
 | E1 ☑ | **Segment:** `E2E-TUT-SINDIRIM` (kişi; uzmanlık ∈ {gastroenteroloji, aile hekimliği, iç hastalıkları}) oluştur → değerlendir → **etkinleştir** | CT, Segmentler sayfası (Beste) | Üye sayısı > 0; Beste'nin ilçelerindeki doktorlardan üye var | ☐ |
 | E2 ☑ | **İçerik:** en az 2 KnowledgeContent (TUTUKON, tr) — promo detaylama + bir non-promo bilgi. Gerekirse iddia bağı. Yayımla (onay akışı varsa sema) | CT (Beste) + kullanıcı sema girişi (onay) | İçerikler `published`, tr | ☐ |
-| E3 ◐ | **Yol (KnowledgePath):** içerikleri adım olarak içeren yol → gönder → onay → yayımla | CT + sema | Yol `released` / yayımlanmış sürüm | ☐ |
-| E4 | **Yolculuk (ContentEngagementJourney):** en az 2 aşama, her aşama yola bağlı → yayımla | CT (+ sema SoD gerekirse) | Yolculuk yayımlanmış, aşamalar sıralı | ☐ |
+| E3 ☑ | **Yol (KnowledgePath):** içerikleri adım olarak içeren yol → gönder → onay → yayımla | CT + sema | Yol `released` / yayımlanmış sürüm | ☐ |
+| E4 ☑ | **Yolculuk (ContentEngagementJourney):** en az 2 aşama, her aşama yola bağlı → yayımla | CT (+ sema SoD gerekirse) | Yolculuk yayımlanmış, aşamalar sıralı | ☐ |
 | E5 | **Oyun:** STR-TUTUKON'un **yeni sürümü** — segment bağlaması `E2E-TUT-SINDIRIM`, ürün satırı TUTUKON → E4 yolculuğu, sıklık politikası → etkinleştir | CT (Beste) | Aktif oyun yeni segmente bağlı; eski sürüm "superseded" | ☐ |
 | E6 | **Sıklık:** TUTUKON segmenti için sıklık politikası (ör. dönemde 3) aktif mi; değilse `E2E-TUT-VFP` oluştur + etkinleştir | CT | Önizlemede `frequencyStatus = resolved` | ☐ |
 | E7 | **Plan:** Beste ile yeni taslak (aktif dönem, boş ilk hafta) → Hedefler'de bölge araması → uzmanlığı uygun 5–10 doktor + 1–2 eczane → Hedefleri kaydet → **Önizleme** | CT (Beste) | `contentStatus = resolved` (segment üyesi doktorlarda), içerik kalemleri (ürün, aşama, adımlar), süre tipik modelden; tatil / hafta sonu boş; bölge uyarısı yok | ☐ |
@@ -147,3 +147,26 @@ Konu SUBJ-002 (TUTUKON). Kitle profili boş (alan zorunlu değil). Ürün bağla
 **Bulgular:**
 - **E3-B1 (küçük):** Adım kartları boşken "İsteğe bağlı" etiketi taşıyor ama "Eksik" engeli sayılıyor (5 engel). Doldurunca "Zorunlu" oluyor → etiket tutarsız.
 - **E3-B2 (gözlem):** Kitle zincirden "General Surgery / Family Medicine" geliyor; hedef gastroenteroloji. Kitle yol ekranında değiştirilemiyor. Ziyaret çözücüsü kitleyi kullanıyorsa içerik eşleşmesi etkilenebilir → E7'de görülecek.
+### E3 (devam) — MLR onayı + yayın (CT, 2026-10-07; sema girişi) ☑
+**Yazmalar:** İnceleyici görünümünden Medikal → Hukuk → Ruhsat **onaylandı** (not: "E2E test — … onay."). Sonra **Çıktı oluştur**: arşiv PDF `KP-2026-269A07-v1.0-R1.pdf`, 87,5 KB, parmak izi `d739…51ae`. Ardından **Yayınla** → "Yayınlandı; yol sahada" (v1.0 **Yayında**).
+
+Yayın kontrol listesi tam: MLR onaylı, çıktı hazır, tüm içerikler yayında, tek dil, iddialar kullanılabilir, zincir uyumu temiz, yayınlayan ≠ gönderen.
+
+**Bulgular:**
+- **E3-B3 (küçük):** Son (Ruhsat) onayında da "Sıradaki adım Görev Merkezi'nde açılır" mesajı çıkıyor, oysa sıradaki adım yok.
+- **E3-B4 (incelenecek):** Yol sayfasında sema (gönderen değil) için "Onaydan geri al" düğmesi görünüyor. Kim geri alabilir → kural kontrolü.
+
+### E4 — Yolculuk (CT, 2026-10-07; sema girişi) ☑
+**Yazmalar:** yolculuk `CEJ-2026-8AD806` "E2E-TUT — TUTUKON sindirim konforu yolculuğu" (id `97a1b154-0c0e-4480-86f7-fed1912577b5`).
+- SUBJ-002 / TOPIC-002 / AUDP-002 / tr.
+- 2 aşama:
+  - #1 `E2E-TUT-S1` Farkındalık (awareness);
+  - #2 `E2E-TUT-S2` Pekiştirme (reinforcement);
+  - ikisi de → `KP-2026-269A07` latest-published, ilerletme `visit-completed`, zorunlu, tekrarlanamaz.
+- **Yayımlandı** (Mongo: `JourneyStatus = published`).
+
+**Bulgular:**
+- **E4-B1:** Aşama listesindeki "repeated" rozeti, aşama tekrarlanamaz olarak kaydedildikten sonra da görünüyor → rozet yanlış.
+- **E4-B2:** Aşama formu yeni aşamada "zorunlu"yu kapalı başlatıyor. Yayın "en az bir zorunlu aşama" istiyor (V-J11); hata mesajı **İngilizce** ("A journey can only be published…"). Onay penceresi "Emin misiniz? Devam etmek istediğinize emin misiniz?" diye iki kez soruyor.
+- **E4-B3:** Aşamanın "Önerilen Bilgi Yolu" listesi konudan bağımsız tüm yolları gösteriyor (TUTUKON yolculuğunda ALMIBA yolları).
+- **E4-B4 (kural / karar):** Yolculuğu oluşturan kişi (sema) kendisi yayımlayabildi. Yolda "yayınlayan ≠ gönderen" var, yolculukta yok → tutarlılık kararı.
