@@ -75,6 +75,14 @@ form_field_count: 0
 > implementation and its unit/contract/real-Mongo/regression evidence are complete; `MARKET-ARTIFACT-01` is closed
 > for artifact authoring, while operational provisioning remains open and was not performed.
 
+> **Planning-only item-list named-step guard (2026-10-07):** **`Universal Item Reference Lists for MOD-0290-FU04`**
+> is an additive, provider-owned planning step under this existing follow-up for three new universal SetCodes:
+> `item-uom`, `storage-condition` and `material-type` (Section 4). It is documentation only. It creates no
+> MOD/FU/DCP, grants no code-start, seed, catalog or activation authority, and changes no existing SetCode
+> (`pack-applicability`, `uom`, `market`), value, version identity, response shape or test. Code start requires a
+> separate explicit user authorization of an exact allow-list, planned together with MOD-0290-FU04 (Item / Material
+> Master) slice S1.
+
 ## 1. Module Summary
 
 This follow-up hardens the existing PSS-012 Business Reference Data runtime as the provider implementation path
@@ -543,6 +551,115 @@ Authentication failures retain the existing `401 REFERENCE_UNAUTHENTICATED` /
 `403 REFERENCE_FORBIDDEN` provider envelopes. Contract-shape violations remain `409 REFERENCE_CONTRACT_MISMATCH`.
 The tenant JWT authenticates and binds the calling tenant context but does not filter the universal catalog and never
 creates a provider assignment. No catalog/version/reference-tenant/credential/assignment field appears in enumeration.
+
+### Planning named-step contract — `Universal Item Reference Lists for MOD-0290-FU04`
+
+Source: MOD-0290-FU04 (Item / Material Master) S0 revision and the inventory (MOD-0173 / MOD-0174) team agreement of
+2026-10-07 (`docs/roadmap/plans/mdm-product-master-completion-plan-2026-10-02.md` §4a; pack
+`execution/domains/master-data-management/module-packs/MOD-0290-FU04-item-material-master.md` §4.3). The only consumer
+is MOD-0290 / `Diten.MdmService`. Open items named `O-n` below are MOD-0290-FU04 §25 items.
+
+#### Ownership and model
+
+- Exactly three new SetCodes: `item-uom`, `storage-condition`, `material-type`. Clients cannot send another set name.
+- Model: the same hybrid decision as `pack-applicability` / `uom` (2026-08-07). The three sets are code-owned,
+  deployment-versioned universal lookups, identical for every authenticated tenant. No reference tenant, tenant
+  assignment, catalog load/publish operation or tenant override exists for them. A value change requires a new
+  deployment version, deterministic version identity, pack review and regression tests.
+- MOD-0048 owns the codes, their attributes and their lifecycle. MOD-0290 owns the meaning: which unit, condition or
+  type is valid for which record, conversion rules and stock behaviour.
+- Existing sets are unchanged: `uom` keeps exactly `C62`, `GRM`, `KGM`, `MLT`, `LTR` in `GSKU-UNIVERSAL-V1`;
+  `pack-applicability` and `market` keep their values, identities and response shapes. `item-uom` is a separate set
+  and does not replace `uom` for the GSKU `PackUomCode`.
+
+#### `item-uom` (UN/ECE Recommendation 20 codes)
+
+Attributes: `DimensionCode` (`COUNT`, `MASS`, `VOLUME`, `LENGTH`, `AREA`, `PACKAGE`; `ACTIVITY` only if O-21 confirms an
+international-unit value), `MaximumDecimalPrecision` (non-negative integer; limits stock quantities, not conversion
+factors), `FactorToDimensionBase` (exact decimal string; null for `PACKAGE` and `ACTIVITY`).
+
+| ValueCode | Meaning | DimensionCode | MaximumDecimalPrecision | FactorToDimensionBase | Status |
+|---|---|---|---:|---|---|
+| `C62` | one (unit / piece) | `COUNT` | 0 | `1` | agreed minimum |
+| `MGM` | milligram | `MASS` | 3 | `0.000001` | agreed minimum |
+| `GRM` | gram | `MASS` | 3 | `0.001` | agreed minimum |
+| `KGM` | kilogram | `MASS` | 3 | `1` (dimension base) | agreed minimum |
+| `MLT` | millilitre | `VOLUME` | 3 | `0.001` | agreed minimum |
+| `LTR` | litre | `VOLUME` | 3 | `1` (dimension base) | agreed minimum |
+| `XBX` | box | `PACKAGE` | 0 | — | agreed as "box"; exact current Rec 20 code verified before seed (O-21) |
+| `XCS` | case | `PACKAGE` | 0 | — | agreed as "case"; exact current Rec 20 code verified before seed (O-21) |
+| `MC` | microgram | `MASS` | 3 | `0.000000001` | proposed; needs quality / inventory confirmation |
+| `MTR` | metre | `LENGTH` | 3 | `1` | proposed |
+| `MTK` | square metre | `AREA` | 3 | `1` | proposed |
+| (international unit) | — | `ACTIVITY` | — | — | proposed; Rec 20 code to be verified (O-21); never converted |
+| (roll) | — | `PACKAGE` | 0 | — | proposed; Rec 20 code to be verified (O-21) |
+
+- The five `uom` values appear in `item-uom` with identical `DimensionCode` and `MaximumDecimalPrecision`
+  (`C62` `COUNT` 0; `GRM`, `KGM` `MASS` 3; `MLT`, `LTR` `VOLUME` 3). A regression test compares the two sets so the same
+  code never carries two meanings.
+- Same-dimension conversion is the ratio of the two `FactorToDimensionBase` values (exact, no rounding). `PACKAGE`
+  units have no factor; their conversions are record-specific and owned by MOD-0290.
+
+#### `storage-condition` (multi-select at the consumer)
+
+Attributes: `ConditionKind` (`TEMPERATURE` | `PROTECTION`), `TemperatureMinC`, `TemperatureMaxC` (decimal or null),
+`ProtectFromLight`, `ProtectFromMoisture` (boolean).
+
+| ValueCode | Meaning | ConditionKind | TemperatureMinC | TemperatureMaxC | ProtectFromLight | ProtectFromMoisture |
+|---|---|---|---|---|---|---|
+| `AMBIENT_15_25` | store at 15–25 °C | `TEMPERATURE` | 15 | 25 | false | false |
+| `COOL_2_8` | store at 2–8 °C | `TEMPERATURE` | 2 | 8 | false | false |
+| `FROZEN_BELOW_MINUS_20` | store at or below −20 °C | `TEMPERATURE` | null | -20 | false | false |
+| `PROTECT_FROM_LIGHT` | protect from light | `PROTECTION` | null | null | true | false |
+| `PROTECT_FROM_MOISTURE` | protect from moisture | `PROTECTION` | null | null | false | true |
+
+Multi-select is consumer behaviour; the provider only enumerates and resolves single codes. The rule "at most one
+`TEMPERATURE` code per record" (O-2) belongs to MOD-0290; the provider exposes `ConditionKind` so MOD-0290 can enforce
+it without a hard-coded list. Earlier G0 proposals (`BELOW_25`, `BELOW_30`, `CONTROLLED_ROOM_20_25`,
+`FROZEN_BELOW_MINUS_18`) are not in the first version.
+
+#### `material-type` (closed set)
+
+| ValueCode | Meaning |
+|---|---|
+| `ACTIVE_INGREDIENT` | active ingredient (API) |
+| `EXCIPIENT` | excipient |
+| `RAW_MATERIAL` | other raw material |
+| `PACKAGING_PRIMARY` | primary packaging (product contact) |
+| `PACKAGING_SECONDARY` | secondary packaging (carton, leaflet, label) |
+| `INTERMEDIATE` | intermediate / semi-finished product |
+
+No attributes. The set is identical to the `MaterialType` enum of `product-master-bundle` v1.1
+(`docs/analysis/contracts/product-master-bundle.openapi.yaml`). Adding a value requires a contract version and a new
+deployment version together; a regression test compares the list with the contract enum.
+
+#### Lifecycle, version identity and selection evidence
+
+- Proposed deterministic version identity: `ITEM-UNIVERSAL-V1` (one identity for the three sets, deployment-versioned
+  like `GSKU-UNIVERSAL-V1`).
+- A ValueCode is never reused for another meaning. Retirement happens only in a new deployment version: the value is
+  excluded from active enumeration and rejected for new selection, while records that already store it keep their
+  selection evidence.
+- MDM persists one `ReferenceCatalogSelection` per selected code (`SetCode`, `ValueCode`, `CatalogVersionId`,
+  `CatalogVersionNumber`, `ResolutionMode`, `ResolvedAtUtc`), as for the GSKU sets; a multi-select storage condition
+  stores one selection per code.
+- `DisplayName` is the English technical label. Tenant screen labels in seven languages are a MOD-0290 UI concern (O-22).
+
+#### Planned surfaces (not authorized)
+
+The step reuses the verified-reference internal pattern: exact resolve and bounded active enumeration per SetCode,
+the existing resolver credential plus independently validated tenant JWT sequence, the two-second budget and the
+existing failure envelopes (`401 REFERENCE_UNAUTHENTICATED`, `403 REFERENCE_FORBIDDEN`,
+`404 REFERENCE_VALUE_NOT_FOUND`, `409 REFERENCE_CONTRACT_MISMATCH`, `503 REFERENCE_PROVIDER_UNAVAILABLE`,
+`504 REFERENCE_PROVIDER_TIMEOUT`). No public route, Gateway route, browser surface, cache or hard-coded fallback.
+Exact route names and the Section 5 allow-list are written when the step is authorized.
+
+#### Planning gates before code start
+
+- [ ] MOD-0290-FU04 open items O-2 and O-21 are closed, so the value lists are final.
+- [ ] Quality and inventory confirm the three value lists.
+- [ ] The exact Section 5 allow-list is written and separately authorized by the user.
+- [ ] Existing `pack-applicability`, `uom` and `market` tests stay unchanged and green.
 
 ## 5. Repo Scope
 

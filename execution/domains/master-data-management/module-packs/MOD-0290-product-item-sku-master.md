@@ -117,6 +117,10 @@ remain absent or separately gated.
 - Artwork, label and leaflet lifecycle: BL-020.
 - BOM, manufacturing version, quality specification, batch or release: BL-021.
 - GTIN lifecycle or an unmanaged GTIN text field: BL-022.
+  - *Superseded in part on 2026-10-07 (CT decision, O-16):* [MOD-0290-FU04](MOD-0290-FU04-item-material-master.md) (Item / Material Master, `product-master-bundle`
+    v1.1) introduces the Finished Good **sales-box GTIN** (GTIN-14, the İTS (01) element) and the stock-behaviour fields
+    on GSKU / LSKU / Finished Good. Rules: MOD-0290-FU04 §4.2 and §4.4. Case / pallet GTINs, packaging hierarchy and the
+    GS1 issuer lifecycle stay under BL-022 / BL-017.
 - Bulk legacy import, staging, migration or migration-success claims: BL-023.
 - Synthetic MarketTradeName `IsUsed`: BL-024.
 - ERP/PLM clients, feeds, workers, ingestion, distribution or gateway routes: BL-025 and DCP G7.
@@ -272,6 +276,7 @@ DosageForm, RouteOfAdministration, Strength, Composition and temporal/current fi
 | `PackApplicabilitySelection` | Required embedded `ReferenceCatalogSelection` | Server-controlled SetCode `pack-applicability`; ValueCode must equal `PackApplicabilityCode`; provider evidence follows the lifecycle below |
 | `PackUomSelection` | Required embedded `ReferenceCatalogSelection` | Server-controlled SetCode `uom`; ValueCode must equal `PackUomCode`; provider evidence follows the lifecycle below |
 | Packaging level/hierarchy, GTIN, Composition | Deferred/prohibited | BL-017, BL-022 and BL-015 |
+| Stock-behaviour fields: base UoM, UoM conversions (box ↔ unit derived from `PackQuantity` + `PackUomCode`), shelf life, storage conditions, lot control, stockable | Introduced 2026-10-07 by [MOD-0290-FU04](MOD-0290-FU04-item-material-master.md) (contract v1.1); additive | Rules in MOD-0290-FU04 §4.2 / §4.4. The GSKU GTIN stays deferred (not needed per FU04); GSKU serial control comes later |
 
 Each embedded `ReferenceCatalogSelection` has exactly this persisted shape:
 
@@ -301,6 +306,7 @@ until provider B runtime readiness and the separately authorized delivery step c
 | `LegalEntityId` | Conditional-open | Nullability/applicability and validation topology remain G6 owner decisions |
 | `FinishedGoodId` | Prohibited | Direct LSKU-Finished Good relationship is rejected |
 | MA / Registered Presentation | Prohibited | BL-019 |
+| Stock-behaviour fields | Introduced 2026-10-07 by [MOD-0290-FU04](MOD-0290-FU04-item-material-master.md) (contract v1.1); additive | LSKU carries only `SerialControlled` (market-dependent, İTS); its other stock fields are read from the parent GSKU at read time (MOD-0290-FU04 §4.2, CT decision O-3). LSKU `gtin` is null in v1.1 |
 
 If `LegalEntityId` is approved for an LSKU use case, only the ID is stored. Legal Entity master data is not copied.
 
@@ -312,7 +318,8 @@ If `LegalEntityId` is approved for an LSKU use case, only the ID is stored. Lega
 | `CanonicalCode` | Required, system-derived | Matching consumed reservation; immutable; shared tenant namespace; no-reuse |
 | `StewardLabel` | Conditional-open | Not implemented until owner approval; no regulatory/manufacturing meaning |
 | `LskuId` | Prohibited | Direct relationship is rejected |
-| Composition/manufacturing/quality/GTIN fields | Prohibited/deferred | BL-015, BL-021 and BL-022 |
+| Composition/manufacturing/quality/GTIN fields | Prohibited/deferred | BL-015, BL-021 and BL-022 · **GTIN part superseded 2026-10-07:** the sales-box GTIN is introduced by MOD-0290-FU04 (next row); Composition / manufacturing / quality fields stay prohibited/deferred |
+| Sales-box `Gtin` and stock-behaviour fields: base UoM (= parent GSKU's), UoM conversions (case ↔ box), shelf life (own value or read from the parent GSKU; own value ≤ GSKU), storage conditions, lot control, serial control, stockable | Introduced 2026-10-07 by [MOD-0290-FU04](MOD-0290-FU04-item-material-master.md) (contract v1.1); additive | Rules in MOD-0290-FU04 §4.2 / §4.4 / §12. GTIN-14 with a valid GS1 check digit, unique among non-retired Finished Goods in the tenant; edited through FU04's own commands and permission |
 
 ### MarketTradeName
 
@@ -631,7 +638,7 @@ without parsing English text.
 | MarketTradeName period | On approval | `[from,to)` and no overlap; no-gap validation applies only if the owner approves a no-gap policy | Timeline query, approved temporal granularity and atomic transition proof |
 | Legacy raw alias | Yes | Preserve raw value exactly; normalization separate | Exact and normalized collision checks |
 | LegalEntityId | Conditional-open | Current same-tenant referenceability at approved validation points | G6 selected contract |
-| Composition/LSKU-FG/GTIN fields | Forbidden | Reject request and do not persist | Schema/DTO/validator negative tests |
+| Composition/LSKU-FG/GTIN fields | Forbidden | Reject request and do not persist · *GTIN superseded in part 2026-10-07:* the Finished Good sales-box GTIN is accepted only through the MOD-0290-FU04 `AssignFinishedGoodGtinCommand`; GTIN stays forbidden on every other request | Schema/DTO/validator negative tests |
 
 ## 13. Failure Path to Verify
 
@@ -2603,7 +2610,7 @@ These are references to existing backlog or owner decisions; this pack creates n
 | BL-019 | MA / Registered Presentation | Approved Regulatory Information contract |
 | BL-020 | Artwork/label/leaflet lifecycle | Approved labeling/document use case |
 | BL-021 | BOM/manufacturing/quality/batch/release | Approved manufacturing/quality integration |
-| BL-022 | GTIN lifecycle | Approved issuer/GS1 lifecycle contract |
+| BL-022 | GTIN lifecycle | Approved issuer/GS1 lifecycle contract · 2026-10-07: the Finished Good sales-box GTIN moved to [MOD-0290-FU04](MOD-0290-FU04-item-material-master.md) (contract v1.1); case / pallet GTINs and the GS1 issuer lifecycle remain here |
 | BL-023 | Bulk legacy migration | Real legacy export plus approved migration pack |
 | BL-024 | Official MarketTradeName downstream usage | First approved official consumer/event owner |
 | BL-025 | ERP/PLM feeds | First approved external-feed use case and G7 exit evidence |

@@ -58,6 +58,7 @@ Notta adı geçen türler (bağlayıcı) + yeni türler için önerilen önekler
 | Müşteri Hesabı (CRM) | KALSIN | — | `ACC-YYYY-000000`, otomatik ✅ |
 | Kampanya (CRM) | KALSIN | — | `CMP-YYYY-000000`, otomatik ✅ |
 | Ürün (MDM ürün kimliği ailesi) | KALSIN | — | `GP-` `GS-` `LS-` `FG-` + 12 hane, otomatik ✅ (§4) |
+| Kalem / Malzeme (MDM ürün kimliği ailesi, MOD-0290-FU04) | KALSIN | `IT` | `IT-` + 12 hane, ürün kimliği ailesinin ortak sayacı — **yeni (2026-10-07)**, henüz kod yok (FU04 S1) |
 | Doküman (QMS) | KALSIN | — | `UID-0000001` + `GMG-QMS-SOP-0001`, otomatik ✅ (GMG-QMS-LOG-0001) |
 
 ## 4. Ürün kimliği ailesi (KALSIN'ın kapsamı)
