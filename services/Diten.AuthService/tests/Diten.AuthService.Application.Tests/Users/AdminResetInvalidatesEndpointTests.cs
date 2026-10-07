@@ -280,6 +280,8 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         using var metadata = JsonDocument.Parse((await SingleResetRowAsync(tenantId, user.Id)).Metadata);
         Assert.Equal("resend-invitation", metadata.RootElement.GetProperty("via").GetString());
         Assert.Equal(1, metadata.RootElement.GetProperty("sessionsRevoked").GetInt64());
+        // CT (lane, BL-529 × BL-454): a resend that resets a non-pending account sends the RESET mail, not the invitation.
+        Assert.Equal(1, _host.TenantEmails.ResetsTo(user.Email));
         Assert.Equal(HttpStatusCode.NoContent, (await RedeemTenantLinkAsync(user.Email, NewPassword)).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await TenantLoginAsync(tenantId, user.Email, NewPassword)).StatusCode);
     }
@@ -298,6 +300,7 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.Equal(HttpStatusCode.OK, (await client.PostAsync($"api/users/resend-invite/{invited.Id}", null)).StatusCode);
 
         Assert.Equal(hashBefore, (await ReadUserAsync(invited.Id)).PasswordHash); // the invitation flow is unchanged
+        Assert.Equal(0, _host.TenantEmails.ResetsTo(email)); // a pending invitation gets the invitation mail again
         Assert.Empty(await ResetRowsAsync(tenantId, invited.Id));
         Assert.Equal(HttpStatusCode.NoContent, (await RedeemTenantLinkAsync(email, NewPassword)).StatusCode);
     }
@@ -2576,9 +2579,17 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
             return Task.CompletedTask;
         }
 
+        private readonly ConcurrentDictionary<string, int> _resets = new(StringComparer.OrdinalIgnoreCase);
+
+        // How many of the mails to this address were the RESET mail (not the invitation).
+        public int ResetsTo(string email) => _resets.TryGetValue(email, out var n) ? n : 0;
+
         // BL-454 (lane) — the Users-screen reset now sends the reset mail; it carries the same link.
         public Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct)
-            => SendTenantUserInvitationAsync(email, setupToken, ct);
+        {
+            _resets.AddOrUpdate(email, 1, (_, n) => n + 1);
+            return SendTenantUserInvitationAsync(email, setupToken, ct);
+        }
     }
 
     public sealed class CapturingPlatformEmails : IPlatformAuthEmailService

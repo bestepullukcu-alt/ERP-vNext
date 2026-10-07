@@ -145,7 +145,9 @@ public sealed class ResendUserInvitationCommandHandler : IRequestHandler<ResendU
             {
                 try
                 {
-                    await _invitationEmailService.SendTenantUserInvitationAsync(u.Email, setupToken, c);
+                    // CT (lane, BL-529 × BL-454): this account is not a pending invitation — the resend IS a reset, so
+                    // it gets the reset mail (same link, reset wording), as the Users-screen reset does.
+                    await _invitationEmailService.SendTenantUserPasswordResetAsync(u.Email, setupToken, c);
                     return true;
                 }
                 catch when (_environment.IsDevelopment())
