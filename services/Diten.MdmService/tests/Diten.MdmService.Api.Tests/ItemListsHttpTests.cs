@@ -39,7 +39,7 @@ public sealed class ItemListsHttpTests(MdmHttpHost host) : IAsyncLifetime
             host.Factory.Services.GetRequiredService<IHttpContextAccessor>(),
             Options.Create(new VerifiedGskuResolverOptions
             {
-                PlatformBaseAddress = new Uri("http://platform.test/"), Timeout = TimeSpan.FromSeconds(2),
+                PlatformBaseAddress = new Uri("https://platform.test/"), Timeout = TimeSpan.FromSeconds(2),
                 CredentialIdentifier = "resolver-id", CredentialSecret = "resolver-secret"
             }), Microsoft.Extensions.Logging.Abstractions.NullLogger<PlatformItemReferenceResolverClient>.Instance);
         var client = host.Client(host.Token(_tenant, _user, "mdm.items.create"));
@@ -65,6 +65,13 @@ public sealed class ItemListsHttpTests(MdmHttpHost host) : IAsyncLifetime
         var item = await host.Database.GetCollection<Item>(ItemRepository.CollectionName).Find(x => x.Id == id).SingleAsync();
         Assert.Equal(Guid.Parse("c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0001"), item.BaseUomSelection!.CatalogVersionId);
         Assert.Equal("TEMPERATURE", item.StorageConditionKinds!["AMBIENT_15_25"]);
+    }
+
+    // FIX1 R3: the start-up warning is registered by the real Program (the host removes hosted services but records them).
+    [Fact]
+    public void The_start_up_warning_is_registered()
+    {
+        Assert.Contains(typeof(Diten.MdmService.Api.ReferenceData.ItemReferenceProviderStartupWarning), host.RegisteredHostedServices);
     }
 
     // CT decision A: without configuration an item create fails closed with the named cause — never "no list, pass".

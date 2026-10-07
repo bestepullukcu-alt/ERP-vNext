@@ -9,5 +9,5 @@ namespace Diten.MdmService.Infrastructure.ReferenceData;
 public static class ItemReferenceProvider
 {
     public const string NotConfiguredWarning =
-        "Item reference provider not configured — item create/update answer 503 (VerifiedGskuResolver section missing or invalid).";
+        "Item reference provider not configured — item create/update answer 503 (VerifiedGskuResolver section missing, invalid, or not https outside Development).";
 }

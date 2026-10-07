@@ -21,6 +21,7 @@ public sealed class ResolveItemUniversalReferenceDataHandler
     public const string ContractInvalid = "REFERENCE_RESOLUTION_CONTRACT_INVALID";
     public const string SetNotSupported = "REFERENCE_SET_NOT_SUPPORTED";
     public const string ValueNotFound = "REFERENCE_VALUE_NOT_FOUND";
+    public const int MaximumCodeLength = 64;
 
     private readonly ITenantContext _tenantContext;
     private readonly TimeProvider _timeProvider;
@@ -42,7 +43,9 @@ public sealed class ResolveItemUniversalReferenceDataHandler
         var seen = new HashSet<(string, string)>();
         foreach (var selection in selections)
         {
+            // FIX1 M1: a code is short (≤ 64); a longer one is a malformed request, never echoed back as "not found".
             if (selection is null || string.IsNullOrEmpty(selection.SetCode) || string.IsNullOrEmpty(selection.ValueCode)
+                || selection.SetCode.Length > MaximumCodeLength || selection.ValueCode.Length > MaximumCodeLength
                 || !string.Equals(selection.ResolutionMode, ItemUniversalCatalog.ResolutionMode, StringComparison.Ordinal)
                 || !seen.Add((selection.SetCode, selection.ValueCode)))
                 return Task.FromResult(Fail(ContractInvalid, 400));

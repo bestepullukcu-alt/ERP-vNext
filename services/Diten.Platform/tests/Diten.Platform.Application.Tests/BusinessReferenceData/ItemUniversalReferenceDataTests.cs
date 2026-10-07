@@ -237,26 +237,110 @@ public sealed class ItemUniversalReferenceDataTests
 
     // ------------------------------------------------------------------------------------------- contract (MDM ↔ Platform)
 
-    // The answer MDM's tests feed to the real MDM client is exactly what this handler produces (web JSON, as MVC writes it).
-    [Fact]
-    public async Task The_handler_produces_the_contract_answer_mdm_reads()
+    // The answers MDM's tests feed to the real MDM client are exactly what this handler produces (web JSON, as MVC writes
+    // it) — the success, the named 404 and the 400 (FIX1 R2).
+    [Theory]
+    [InlineData(null)]
+    [InlineData("not_found")]
+    [InlineData("bad_request")]
+    public async Task The_handler_produces_the_contract_answer_mdm_reads(string? contractCase)
     {
-        var fixture = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(ContractFixturePath()))!;
-        var selections = fixture["request"]!["selections"]!.AsArray()
-            .Select(x => new ItemUniversalResolveSelectionInput(
-                (string)x!["set_code"]!, (string)x["value_code"]!, (string)x["resolution_mode"]!))
-            .ToArray();
+        var fixture = Contract(contractCase);
         var tenant = new TenantContext();
         tenant.SetTenant(Guid.NewGuid());
 
         var response = await new ResolveItemUniversalReferenceDataHandler(tenant, new FixedTime())
-            .Handle(new ResolveItemUniversalReferenceDataQuery(selections), CancellationToken.None);
+            .Handle(new ResolveItemUniversalReferenceDataQuery(Inputs(fixture["request"]!)), CancellationToken.None);
         var actual = System.Text.Json.Nodes.JsonNode.Parse(System.Text.Json.JsonSerializer.Serialize(response,
             new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web)));
 
         Assert.True(System.Text.Json.Nodes.JsonNode.DeepEquals(fixture["response"], actual),
             "contract drift:\n" + actual!.ToJsonString());
     }
+
+    // FIX1 R2: the request MDM sends (the same file) binds field by field to the real API body — a renamed JSON property on
+    // either side turns this or MDM's body test red.
+    [Theory]
+    [InlineData(null)]
+    [InlineData("not_found")]
+    [InlineData("bad_request")]
+    public void The_contract_request_binds_to_the_real_body_field_by_field(string? contractCase)
+    {
+        var source = Contract(contractCase)["request"]!;
+        var body = System.Text.Json.JsonSerializer.Deserialize<ItemUniversalResolveRequest>(source.ToJsonString(),
+            new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web))!;
+
+        Assert.Null(body.AdditionalFields);
+        var expected = source["selections"]!.AsArray();
+        Assert.Equal(expected.Count, body.Selections!.Count);
+        for (var i = 0; i < expected.Count; i++)
+        {
+            Assert.Null(body.Selections[i]!.AdditionalFields);
+            Assert.Equal((string)expected[i]!["set_code"]!, body.Selections[i]!.SetCode);
+            Assert.Equal((string)expected[i]!["value_code"]!, body.Selections[i]!.ValueCode);
+            Assert.Equal((string)expected[i]!["resolution_mode"]!, body.Selections[i]!.ResolutionMode);
+        }
+    }
+
+    // FIX1 M6 / M5: the 200 limit and the six material types — the same file binds MDM's client constant and ItemRules.
+    [Fact]
+    public void The_limit_and_the_material_types_are_the_contracts()
+    {
+        var fixture = Contract(null);
+        Assert.Equal((int)fixture["maximum_selections"]!, ItemUniversalCatalog.MaximumSelections);
+        Assert.Equal(fixture["material_types"]!.AsArray().Select(x => (string)x!),
+            ItemUniversalCatalog.Values.Where(x => x.SetCode == "material-type").Select(x => x.ValueCode));
+    }
+
+    // FIX1 M1: a code longer than 64 is a malformed request (never echoed back as "not found"); the body is capped at 64 KB.
+    [Fact]
+    public async Task A_code_longer_than_64_is_400_and_the_body_is_capped()
+    {
+        var refused = await Handle(Sel("item-uom", new string('X', 65)));
+        Assert.Equal(400, refused.StatusCode);
+        Assert.Equal(ResolveItemUniversalReferenceDataHandler.ContractInvalid, refused.ReasonCode);
+        var allowed = await Handle(Sel("item-uom", new string('X', 64)));
+        Assert.Equal(404, allowed.StatusCode);
+
+        var limit = Assert.Single(typeof(InternalItemUniversalReferenceDataController).GetMethod(nameof(
+                InternalItemUniversalReferenceDataController.Resolve))!
+            .GetCustomAttributes(typeof(RequestSizeLimitAttribute), false).Cast<RequestSizeLimitAttribute>());
+        Assert.Equal(65536, InternalItemUniversalReferenceDataController.MaximumRequestBytes);
+        Assert.NotNull(limit);
+    }
+
+    // FIX1 M6: an unexpected failure inside the resolve is a named 503 (a timeout a named 504), never a bare 500.
+    [Theory]
+    [InlineData(false, 503, "REFERENCE_PROVIDER_UNAVAILABLE")]
+    [InlineData(true, 504, "REFERENCE_PROVIDER_TIMEOUT")]
+    public async Task An_unexpected_failure_in_the_resolve_is_answered_by_name(bool cancelled, int status, string code)
+    {
+        var behavior = new Diten.Platform.Application.Features.BusinessReferenceData.BusinessReferenceDataExceptionBehavior<
+            ResolveItemUniversalReferenceDataQuery, Response<ItemUniversalResolveResult>>(
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<Diten.Platform.Application.Features.BusinessReferenceData
+                .BusinessReferenceDataExceptionBehavior<ResolveItemUniversalReferenceDataQuery, Response<ItemUniversalResolveResult>>>.Instance);
+
+        var response = await behavior.Handle(new ResolveItemUniversalReferenceDataQuery([Sel("item-uom", "KGM")]),
+            () => Task.FromException<Response<ItemUniversalResolveResult>>(
+                // Not InvalidOperationException: that is the module's coded-error channel (mapped by message).
+                cancelled ? new OperationCanceledException() : new NullReferenceException()),
+            CancellationToken.None);
+
+        Assert.Equal(status, response.StatusCode);
+        Assert.Equal(code, response.Errors.Single());
+    }
+
+    private static System.Text.Json.Nodes.JsonNode Contract(string? contractCase)
+    {
+        var fixture = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(ContractFixturePath()))!;
+        return contractCase is null ? fixture : fixture[contractCase]!;
+    }
+
+    private static ItemUniversalResolveSelectionInput?[] Inputs(System.Text.Json.Nodes.JsonNode request) =>
+        request["selections"]!.AsArray()
+            .Select(x => (ItemUniversalResolveSelectionInput?)new ItemUniversalResolveSelectionInput(
+                (string)x!["set_code"]!, (string)x["value_code"]!, (string)x["resolution_mode"]!))
+            .ToArray();
 
     internal static string ContractFixturePath()
     {

@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Diten.MdmService.Application.Contracts.ReferenceData;
 using Diten.MdmService.Application.Features.ItemMaster;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -31,21 +32,27 @@ public sealed class PlatformItemReferenceResolverClient : IItemReferenceResolver
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly VerifiedGskuResolverOptions _options;
     private readonly ILogger<PlatformItemReferenceResolverClient> _logger;
+    private readonly bool _development;
 
     public PlatformItemReferenceResolverClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor,
-        IOptions<VerifiedGskuResolverOptions> options, ILogger<PlatformItemReferenceResolverClient> logger)
+        IOptions<VerifiedGskuResolverOptions> options, ILogger<PlatformItemReferenceResolverClient> logger,
+        IHostEnvironment? environment = null)
     {
         _httpClient = httpClient;
         _httpContextAccessor = httpContextAccessor;
         _options = options.Value;
         _logger = logger;
+        // No environment known: the strict rule (https only).
+        _development = environment?.IsDevelopment() == true;
     }
 
     public const string ConfigurationInvalid = "REFERENCE_PROVIDER_CONFIGURATION_INVALID";
 
-    public static bool IsConfigured(VerifiedGskuResolverOptions? options) =>
+    // FIX1 M4: outside Development the base must be https — the credential secret and the caller's token never travel
+    // as plain text.
+    public static bool IsConfigured(VerifiedGskuResolverOptions? options, bool development) =>
         options?.PlatformBaseAddress is { IsAbsoluteUri: true } address
-        && (address.Scheme == Uri.UriSchemeHttp || address.Scheme == Uri.UriSchemeHttps)
+        && (address.Scheme == Uri.UriSchemeHttps || development && address.Scheme == Uri.UriSchemeHttp)
         && options.Timeout > TimeSpan.Zero && options.Timeout <= MaximumBudget
         && !string.IsNullOrWhiteSpace(options.CredentialIdentifier)
         && !string.IsNullOrEmpty(options.CredentialSecret);
@@ -53,7 +60,7 @@ public sealed class PlatformItemReferenceResolverClient : IItemReferenceResolver
     public async Task<ItemReferenceResolveResult> ResolveLatestAsync(IReadOnlyList<ItemReferenceRequest> requests,
         CancellationToken cancellationToken = default)
     {
-        if (!IsConfigured(_options))
+        if (!IsConfigured(_options, _development))
         {
             // CT decision A: fail-closed at the call, never "no list, pass" — and said in the log every time.
             _logger.LogWarning(ItemReferenceProvider.NotConfiguredWarning);
@@ -125,6 +132,13 @@ public sealed class PlatformItemReferenceResolverClient : IItemReferenceResolver
         {
             return ItemReferenceResolveResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE");
         }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            // FIX1 M2: anything else (an HTML error page, an unreadable body) is an outage by name — the type only in the
+            // log, never a header, a token or the body.
+            _logger.LogWarning("Item reference provider answer could not be read ({ExceptionType}).", exception.GetType().Name);
+            return ItemReferenceResolveResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE");
+        }
     }
 
     // The answer covers exactly the request, once each; versions agree inside a set; the attributes the item reads exist.
@@ -132,6 +146,8 @@ public sealed class PlatformItemReferenceResolverClient : IItemReferenceResolver
     {
         if (selections.Count != wanted.Count || selections.Any(selection => selection is null)) return false;
         var answered = selections.Select(selection => new ItemReferenceRequest(selection!.SetCode, selection.ValueCode)).ToList();
+        // With Count == wanted.Count and SetEquals(wanted), a repeated pair is already impossible (CT L1: equivalent);
+        // the Distinct check stays as the explicit statement of the rule "each pair once".
         if (answered.Distinct().Count() != answered.Count || !answered.ToHashSet().SetEquals(wanted)) return false;
         if (selections.GroupBy(selection => selection!.SetCode)
             .Any(set => set.Select(selection => (selection!.CatalogVersion, selection.CatalogVersionId, selection.CatalogVersionNumber))

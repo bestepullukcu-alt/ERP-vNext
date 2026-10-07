@@ -40,7 +40,16 @@ public static class DependencyInjection
         // this client, like the GSKU / market clients. Without its "VerifiedGskuResolver" configuration it fails closed AT
         // THE CALL (the item answers 503 ITEM_REFERENCE_LIST_UNAVAILABLE + REFERENCE_PROVIDER_CONFIGURATION_INVALID, with a
         // warning); the start is not refused (ItemReferenceProviderStartupWarning says it once outside Development).
-        services.AddHttpClient<IItemReferenceResolver, PlatformItemReferenceResolverClient>();
+        // FIX1 R1 (the rule of this file): no redirect is followed — the credential and the caller's token never reach
+        // another host — and the secret headers are masked in the HTTP client logs.
+        services.AddHttpClient<IItemReferenceResolver, PlatformItemReferenceResolverClient>()
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false })
+            .RedactLoggedHeaders([
+                "Authorization",
+                PlatformItemReferenceResolverClient.CredentialIdHeader,
+                PlatformItemReferenceResolverClient.CredentialSecretHeader,
+                PlatformItemReferenceResolverClient.AudienceHeader
+            ]);
         services.AddSingleton<Diten.MdmService.Application.Contracts.Inventory.IInventoryStockAvailabilityClient,
             Diten.MdmService.Infrastructure.Inventory.UnavailableInventoryStockAvailabilityClient>();
         services.Configure<VerifiedMarketResolverOptions>(

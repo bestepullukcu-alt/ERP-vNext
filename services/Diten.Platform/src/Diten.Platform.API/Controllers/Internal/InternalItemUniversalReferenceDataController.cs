@@ -37,7 +37,11 @@ public sealed class InternalItemUniversalReferenceDataController : CustomBaseCon
             credentialAuthenticator, jwtTenantContext, serviceTenantContext, tenantContext);
     }
 
+    // FIX1 M1: 200 short codes fit well inside 64 KB; a larger body is refused by the server before the action.
+    public const long MaximumRequestBytes = 65536;
+
     [HttpPost("resolve")]
+    [RequestSizeLimit(MaximumRequestBytes)]
     public Task<IActionResult> Resolve([FromBody] ItemUniversalResolveRequest? request, CancellationToken cancellationToken) =>
         _requestExecutor.ExecuteAsync(HttpContext, cancellationToken, async (_, token) =>
         {

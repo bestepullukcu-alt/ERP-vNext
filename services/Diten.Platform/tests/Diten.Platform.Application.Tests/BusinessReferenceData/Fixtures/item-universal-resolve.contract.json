@@ -1,5 +1,14 @@
 {
-  "_comment": "WP-PLT-ITEM-LISTS-01 contract: the answer of POST api/internal/v1/reference-data/item-universal/resolve for the request below. Platform's test produces it from the real handler; MDM's tests feed it to the real client. A change on either side turns one of them red.",
+  "_comment": "WP-PLT-ITEM-LISTS-01 contract (FIX1 R2: request bodies, 404 and 400 shapes, the 200 limit and the material types too). Platform's tests produce every response from the real handler and bind every request to the real DTO; MDM's tests compare the body the real client sends and feed every response to it. A change on either side turns one of them red.",
+  "maximum_selections": 200,
+  "material_types": [
+    "ACTIVE_INGREDIENT",
+    "EXCIPIENT",
+    "RAW_MATERIAL",
+    "PACKAGING_PRIMARY",
+    "PACKAGING_SECONDARY",
+    "INTERMEDIATE"
+  ],
   "request": {
     "selections": [
       {
@@ -120,5 +129,60 @@
     "errors": [],
     "reason_code": null,
     "correlation_id": null
+  },
+  "not_found": {
+    "request": {
+      "selections": [
+        {
+          "set_code": "item-uom",
+          "value_code": "KGM",
+          "resolution_mode": "LATEST"
+        },
+        {
+          "set_code": "item-uom",
+          "value_code": "LBR",
+          "resolution_mode": "LATEST"
+        }
+      ]
+    },
+    "response": {
+      "data": {
+        "selections": [],
+        "not_found": [
+          {
+            "set_code": "item-uom",
+            "value_code": "LBR"
+          }
+        ]
+      },
+      "statusCode": 404,
+      "isSuccessful": false,
+      "errors": [
+        "REFERENCE_VALUE_NOT_FOUND"
+      ],
+      "reason_code": "REFERENCE_VALUE_NOT_FOUND",
+      "correlation_id": null
+    }
+  },
+  "bad_request": {
+    "request": {
+      "selections": [
+        {
+          "set_code": "uom",
+          "value_code": "KGM",
+          "resolution_mode": "LATEST"
+        }
+      ]
+    },
+    "response": {
+      "data": null,
+      "statusCode": 400,
+      "isSuccessful": false,
+      "errors": [
+        "REFERENCE_SET_NOT_SUPPORTED"
+      ],
+      "reason_code": "REFERENCE_SET_NOT_SUPPORTED",
+      "correlation_id": null
+    }
   }
 }

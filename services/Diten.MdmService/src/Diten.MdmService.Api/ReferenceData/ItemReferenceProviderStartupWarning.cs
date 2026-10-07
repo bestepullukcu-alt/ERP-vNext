@@ -15,7 +15,8 @@ public sealed class ItemReferenceProviderStartupWarning(
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        if (!environment.IsDevelopment() && !PlatformItemReferenceResolverClient.IsConfigured(options.Value))
+        // FIX1 M4: an http base outside Development counts as not configured (the client refuses it).
+        if (!environment.IsDevelopment() && !PlatformItemReferenceResolverClient.IsConfigured(options.Value, development: false))
             logger.LogWarning(ItemReferenceProvider.NotConfiguredWarning);
         return Task.CompletedTask;
     }
