@@ -145,9 +145,9 @@ public sealed class UpdatePlanningSessionSelectionHandler
 
         // WP-VP-2 (B-3) — the request's segment / campaign / strategy are ignored: whatever an older record stored is kept
         // as read-only history (and no longer used), nothing new is written.
-        session.Selection = CreatePlanningSessionHandler.BuildSelection(
-            request.SelectedAccountIds, request.SelectedPharmacyIds, request.SelectedContacts,
-            session.Selection.SegmentId, session.Selection.CampaignId);
+        // WP-VP-FIX-2 (D9) — each list is independent: null = leave it as it is (the Edit form sends none, so changing the
+        // week no longer wipes the targets); [] = an explicit clear; a list = the new selection.
+        session.Selection = MergeSelection(session.Selection, request);
         if (!string.IsNullOrWhiteSpace(request.TargetWeekStart))
             session.TargetWeekStart = request.TargetWeekStart.Trim();
 
@@ -179,6 +179,25 @@ public sealed class UpdatePlanningSessionSelectionHandler
         return ok
             ? Response<bool>.Success(true, 200)
             : Response<bool>.Fail("The session was modified concurrently; reload and retry.", 409);
+    }
+
+    /// <summary>WP-VP-FIX-2 (D9) — the selection after an update: a list the request leaves null keeps its current value;
+    /// an empty or filled list replaces it (normalised exactly as on create). The stored segment / campaign are kept as
+    /// read-only history (WP-VP-2 B-3).</summary>
+    internal static PlanningSessionSelection MergeSelection(
+        PlanningSessionSelection current, UpdatePlanningSessionSelectionCommand request)
+    {
+        var requested = CreatePlanningSessionHandler.BuildSelection(
+            request.SelectedAccountIds, request.SelectedPharmacyIds, request.SelectedContacts,
+            current.SegmentId, current.CampaignId);
+        return new PlanningSessionSelection
+        {
+            SelectedAccountIds = request.SelectedAccountIds is null ? current.SelectedAccountIds : requested.SelectedAccountIds,
+            SelectedPharmacyIds = request.SelectedPharmacyIds is null ? current.SelectedPharmacyIds : requested.SelectedPharmacyIds,
+            SelectedContacts = request.SelectedContacts is null ? current.SelectedContacts : requested.SelectedContacts,
+            SegmentId = current.SegmentId,
+            CampaignId = current.CampaignId
+        };
     }
 }
 

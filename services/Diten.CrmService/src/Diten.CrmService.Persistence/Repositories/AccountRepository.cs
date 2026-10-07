@@ -77,7 +77,9 @@ public sealed class AccountRepository : IAccountRepository
         var hasSearch = !string.IsNullOrWhiteSpace(search);
         if (hasSearch)
         {
-            var term = search!.Trim();
+            // WP-VP-FIX-2 (F-1) — literal, Turkish-insensitive "contains": "Hamidiye" finds "HAMİDİYE" (Mongo's i option
+            // alone does not fold İ / ı); the term is escaped, so a regex character in it is plain text.
+            var term = Application.Common.TurkishInsensitivePattern.Build(search!.Trim());
             var regex = Builders<Account>.Filter.Regex(a => a.AccountName, new MongoDB.Bson.BsonRegularExpression(term, "i"))
                         | Builders<Account>.Filter.Regex(a => a.AccountCode, new MongoDB.Bson.BsonRegularExpression(term, "i"));
             filter &= regex;

@@ -42,7 +42,8 @@ public sealed class ContactRepository : IContactRepository
         var hasSearch = !string.IsNullOrWhiteSpace(search);
         if (hasSearch)
         {
-            var term = search!.Trim();
+            // WP-VP-FIX-2 (F-1) — literal, Turkish-insensitive "contains" ("şirin" finds "ŞİRİN").
+            var term = Application.Common.TurkishInsensitivePattern.Build(search!.Trim());
             var regex = Builders<Contact>.Filter.Regex(c => c.DisplayName, new MongoDB.Bson.BsonRegularExpression(term, "i"))
                         | Builders<Contact>.Filter.Regex(c => c.FirstName, new MongoDB.Bson.BsonRegularExpression(term, "i"))
                         | Builders<Contact>.Filter.Regex(c => c.LastName, new MongoDB.Bson.BsonRegularExpression(term, "i"))

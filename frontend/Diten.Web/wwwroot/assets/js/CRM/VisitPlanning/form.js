@@ -173,19 +173,23 @@
     };
 
     // ── save (target-less). WP-VP-2 — no resource / segment / campaign / play is sent: the server decides them. ──
-    const buildPayload = () => ({
-        cyclePeriodId: el('vp-period').value,
-        selectedAccountIds: [],
-        selectedPharmacyIds: [],
-        selectedContacts: []
-    });
+    // WP-VP-FIX-2 (D9) — a NEW plan starts with no targets (empty lists); an EDIT sends no target list at all, so CRM
+    // leaves the doctors / accounts / pharmacies as they are (null = unchanged). Targets are changed only on Details.
+    const buildPayload = isEdit => isEdit
+        ? { cyclePeriodId: el('vp-period').value }
+        : {
+            cyclePeriodId: el('vp-period').value,
+            selectedAccountIds: [],
+            selectedPharmacyIds: [],
+            selectedContacts: []
+        };
 
     const showError = msg => { const b = el('vp-form-error'); if (b) { b.textContent = msg; b.classList.remove('d-none'); } };
     const clearError = () => { const b = el('vp-form-error'); if (b) b.classList.add('d-none'); };
 
     const save = () => {
         clearError();
-        const payload = buildPayload();
+        const payload = buildPayload(mode === 'edit' && !!sessionId);
         if (!payload.cyclePeriodId) { showError(L.FormValidationError || L.ErrorOccurred || 'Please complete the required fields.'); return; }
 
         const isEdit = mode === 'edit' && sessionId;

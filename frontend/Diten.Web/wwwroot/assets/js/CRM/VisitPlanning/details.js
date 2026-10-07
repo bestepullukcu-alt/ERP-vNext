@@ -917,6 +917,10 @@
         });
     };
 
+    /** WP-VP-FIX-2 (F-1) — a literal, Turkish-insensitive regex source for a search term (see the doctor search). */
+    const trSearchPattern = term => String(term || '').toLocaleLowerCase('tr')
+        .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        .replace(/[iı]/g, '[iıIİ]');
     // "general-surgery" / "general_surgery" → "General Surgery".
     const prettify = s => String(s || '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/\b\w/g, ch => ch.toUpperCase());
     // Specialty: the medical-specialty label; a value the set does not know keeps its stored text (prettified as before).
@@ -1254,7 +1258,14 @@
         refreshTargetsUi();
     });
     // ── Targets: doctor search, select-all, clear, specialty pills, selection-chip removal ──
-    el('vp-doctor-search')?.addEventListener('input', function () { if (contactsDt) contactsDt.search(this.value || '').draw(); });
+    // WP-VP-FIX-2 (F-1) — Turkish-insensitive doctor search: the term is lower-cased the Turkish way (İ→i, I→ı), escaped,
+    // and every i / ı becomes [iıIİ]; the case-insensitive regex search folds the other letters (ş/Ş, ğ/Ğ, ü/Ü, ö/Ö, ç/Ç).
+    // "şirin", "Şirin" and "ŞİRİN" all find "ŞİRİN".
+    el('vp-doctor-search')?.addEventListener('input', function () {
+        if (!contactsDt) return;
+        const term = (this.value || '').trim();
+        contactsDt.search(term ? trSearchPattern(term) : '', !!term, false, true).draw();
+    });
     el('vp-select-all-doctors')?.addEventListener('click', selectAllDoctors);
     el('vp-clear-selection')?.addEventListener('click', clearSelection);
     el('vp-specialty-pills')?.addEventListener('click', e => {
