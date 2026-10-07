@@ -131,6 +131,10 @@ public static class DependencyInjection
         services.AddScoped<IProductIdentityWorkflowClient, PlatformProductIdentityWorkflowClient>();
         services.AddScoped<IProductIdentityDelegatedTokenAccessor,
             HttpContextProductIdentityDelegatedTokenAccessor>();
+        // MOD-0290-FU04 S3 — the stock-behaviour commands read the same two MOD-0048 item lists as the Item (S1's
+        // contract, fail-closed until Platform publishes them). TryAdd: S1 registers the same pair; whichever is first wins.
+        Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddSingleton<
+            IItemReferenceResolver, UnavailableItemReferenceResolver>(services);
 
         return services;
     }

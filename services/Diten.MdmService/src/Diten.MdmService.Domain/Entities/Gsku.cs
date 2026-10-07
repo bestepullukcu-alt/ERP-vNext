@@ -26,4 +26,19 @@ public sealed class Gsku : EntityBase, IAuditIntentAggregate
     public int IdentitySubmitReservations { get; set; }
     public List<LocalAuditIntent> AuditIntents { get; set; } = [];
     public List<LocalAuditIntentReceipt> AuditIntentReceipts { get; set; } = [];
+
+    // WP-MDM-ITEM-MASTER (MOD-0290-FU04) S3 — stock behaviour (pack §4.2). Every field is null on a document written
+    // before S3 ("not set yet", never false / 0) and is written only by its own stock-behaviour command, which moves the
+    // version. A filled value is locked on a non-Draft record (O-8, 409 STOCK_BEHAVIOUR_FIELD_LOCKED).
+    // The box ↔ pack conversion is derived from PackQuantity + PackUomCode (O-14) and never stored here.
+    public string? BaseUomCode { get; set; }
+    public List<ItemUomConversion>? UomConversions { get; set; }
+    public int? ShelfLifeDays { get; set; }
+    public List<string>? StorageConditionCodes { get; set; }
+    public bool? LotControlled { get; set; }
+    public bool? Stockable { get; set; }
+    // The MOD-0048 selection proof of every unit and storage code the stock fields hold (pack §12), replaced as a whole
+    // when one of them changes; derived, so never locked itself.
+    public List<ReferenceCatalogSelection>? StockReferenceSelections { get; set; }
+    public StockBehaviourCommandMark? StockBehaviourCommand { get; set; }
 }

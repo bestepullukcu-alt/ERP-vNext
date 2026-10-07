@@ -310,6 +310,8 @@ builder.Services.AddHostedService<LskuRetirementRequestRecoveryWorker>();
 builder.Services.AddHostedService<ProductLegalEntityScopeHoldGaugeWorker>();
 // WP-MDM-SCOPE-ACCEPT-01 FIX3 (8): the write proof's indexes are built at startup, never by a leased write.
 builder.Services.AddHostedService<ProductLegalEntityScopeProofIndexInitializer>();
+// WP-MDM-ITEM-MASTER S3 (CT decision R4): the Finished Good GTIN unique index is built at startup too.
+builder.Services.AddHostedService<Diten.MdmService.Api.Services.StockBehaviour.ProductStockBehaviourIndexInitializer>();
 
 if (!runProductLegalEntityScopeOperational
     && !runLskuIdentityWorkflowRecovery

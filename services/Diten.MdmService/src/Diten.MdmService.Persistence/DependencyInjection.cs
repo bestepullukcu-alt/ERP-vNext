@@ -98,6 +98,9 @@ public static class DependencyInjection
         services.AddScoped<IBrandRepository, BrandRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
 
+        // MOD-0290-FU04 S3 — GSKU / LSKU / Finished Good stock-behaviour writes (one conditional write each).
+        services.AddScoped<IProductStockBehaviourRepository, ProductStockBehaviourRepository>();
+
         return services;
     }
 
