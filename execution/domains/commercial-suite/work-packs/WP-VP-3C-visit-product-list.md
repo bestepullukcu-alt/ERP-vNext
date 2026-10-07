@@ -171,3 +171,14 @@ Commit: "feat(crm): WP-VP-3C — visit product list with source (play/rep-pick),
 - Mobil alanları Faz 5 sözleşme notunda toplanacak.
 
 **E4 (CT, bekliyor; Faz 3 tek tur):** oyunsuz doktora seçim (kullanıcı onaylı test kaydı) → `rep-pick` kalemler, süre değişimi, 2. ziyarette kaymış sıra · TUTUKON kaleminde 3 adım.
+
+### §37 ek — E4 (2026-10-07, CT; ürün seçimi kullanıcı onaylı, sonra temizlendi)
+- TUTUKON kalemi `source = play`, **3 adım (ana dal, E7-B1)** ✓; ürün dağılımı ve `portfolioStatus = undefined` ✓.
+- Eski taslak `23b1706a`'da GÖKHAN YILMAZ'a TUTUKON (promo) + ALMIBA (non-promo):
+  - iki kalem `rep-pick`, sıra 1 / 2;
+  - TUTUKON oyunsuz doktorda ürün üzerinden yolculuğunu buldu (Farkındalık, 3 adım);
+  - ALMIBA `no_approved_content`;
+  - süre 3 → 7 dk ✓.
+- Ürünsüz güncelleme seçimi korudu, `[]` temizledi ✓ (seçim temizlendi).
+- **Bulgu E4-3C-B1:** oturum ayrıntı DTO'su `selectedContacts[].products`'ı **döndürmüyor** (seçim saklanıyor, önizleme kullanıyor). Faz 4 ürün seçicisi mevcut seçimi okuyamaz → Faz 4 paketine küçük ek alan (okuma DTO + `targets`).
+- Döngü ("karışık sıra") canlıda görülemedi (bu planda sıklık bilinmiyor → doktor başına 1 ziyaret); birim testleri yeşil.

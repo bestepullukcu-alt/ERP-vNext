@@ -146,3 +146,9 @@ Commit: "feat(crm): WP-VP-3B — day balancing with daily budget from cycle capa
 - **Mobil notu:** 3B alanları (`halfDayDates, shifted[], weekCapacity[], periodCapacity, consent_blocked, consent_unknown`) Faz 5 sözleşme notunda toplanacak.
 
 **E4 (CT, bekliyor; 3C ile birlikte):** Q4 önizlemesinde günlere yayılım · 29 Eki boş, 28 Eki yarım · `weekCapacity` / `shifted` dolu · Rota günleri değişmiş.
+
+### §37 ek — E4 (2026-10-07, CT, salt okuma)
+- Gün dağılımı kurum başına gün, Pzt–Çar'a yayılıyor; geçmiş günler yok (bu hafta 7 Eki'den) ✓.
+- 29 Eki tatil, haftanın kapasitesi 1 gün eksik ✓.
+- Günlük bütçe 460 dk (`cycle_capacity`), günde en çok 57 ✓; `weekCapacity` / `periodCapacity` dolu ✓. Önizleme ~2 sn.
+- ◐ **28 Eki yarım gün görünmüyor** (`halfDayDates` boş): TR çalışma takviminde 28 Ekim yarım gün olarak tanımlı değil gibi → veri işi (Çalışma Takvimi), kod hazır.

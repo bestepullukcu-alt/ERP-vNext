@@ -186,3 +186,10 @@ Commit: "feat(crm): WP-VP-3A — period plan with per-week approve/reopen, singl
 - `weekNumber` anlamı değişti (dönem haftası indeksi) → mobil notu (Faz 5).
 
 **E4 (CT, bekliyor; fleet yeniden başlatma — CRM + Web değişti):** yeni dönem planında hafta onayı (yalnız o hafta) · yeniden aç (gerekçeli) · ikinci plan 409. Kayıt işlemleri: test planında, kullanıcı onayıyla. Not: Beste'nin Q4'te zaten iki planı var (a42373cb, a238bdc5) → "ikinci plan 409" doğrudan gözlenebilir.
+
+### §37 ek — E4 (2026-10-07, CT, Beste; kayıtlar kullanıcı onaylı)
+- Üçüncü plan oluşturma → 409 `planning_session_exists` + mevcut kimlik; plan sayısı 13'te kaldı ✓.
+- Eski taslak `23b1706a`'da 42. hafta onayı → 1 ziyaret (`f08467a9…`), plan `draft` kaldı, hafta `approved` + geçmiş ✓. Tekrar → 409 `week_already_approved`; geçmiş hafta → 409 `week_in_past` ✓. Önizlemede ziyaret `isFixed` ✓.
+- "ayda 2" → Q4'te 6; hafta durumları (past / draft / empty) doğru ✓.
+- ◐ **Yeniden aç Web'den denenemedi:** Web vekili yok (Faz 4'e bırakılmıştı) → E4 Faz 4'te. 42. hafta onaylı, 1 ziyaretle kalıyor (test kaydı).
+- Gözlem: eski `committed` planların önizlemesi yazılmış ziyaretleri saymadan yeniden üretiyor; aşama öngörüsü karışıyor (HALİL ÖZARI 0, 1, 1, 1, 0) → Faz 4'te eski planların gösterimi kararı.

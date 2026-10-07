@@ -151,3 +151,8 @@ Commit: "feat(crm,web): WP-VP-3D — per-doctor period status (required/done/rem
 **D5:** Details açılışında kurum / eczane kısmı 2N + M → 2 istek (kaynaktan; canlı ölçüm E4'te).
 
 **E4 (CT, bekliyor):** Memorial Şişli doktorları — SADAKAT ÖZDİL `done 1` (rapor `939766be`), son ziyaret 5 Eki · `targets` tek istek · Details istek sayısı.
+
+### §37 ek — E4 ACCEPTED (2026-10-07, CT, salt okuma)
+- `my-accounts/{Memorial}/doctors?search=SADAKAT` → required 6 (ayda 2 × 3), done 1, planned 3, remaining 2, son ziyaret 5 Eki ✓ (813 ms).
+- `sessions/{id}/targets` 200 ✓.
+- Details açılışı **8 istek** (1 kurumlu ve 3 kurum + eczaneli planda aynı); kurum başına istek yok ✓.
