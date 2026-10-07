@@ -144,5 +144,5 @@ Kaynak: `mockups/visit-planning/visit-planning-v2.decoded.html` ekran "03 Plan d
 - Sabit ziyaret simgeyle (`isPinned`) gösterilir. "Sabiti kaldır" → pin listeden çıkar.
 - Yalnız **taslak** hafta. Onaylı / geçmiş haftada sürükleme kapalı + ipucu ("Değiştirmek için haftayı yeniden açın").
 - Tatil / hafta sonu günlerine bırakma kapalı.
-- Bütçe aşan gün `overCapacity` uyarısı (kırmızı çubuk + metin).
+- Sığmayan sabit ziyaretler (4E `pinOverflow`): bırakınca bilgi "N ziyaret bu güne sığmadı → {gün}'e taşındı" + o ziyaretlerde "otomatik taşındı" işareti (`autoPinned`). Temsilci yeniden sürükleyebilir.
 - Yeni testler: sürükle → doğru `dayPins` gövdesi; onaylı haftada kapalı; tatile bırakma yok. Sabotaj: onaylı haftada sürüklemeye izin → test kırmızı.

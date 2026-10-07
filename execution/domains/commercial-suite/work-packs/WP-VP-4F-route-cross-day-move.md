@@ -14,7 +14,7 @@
 2. Taşıma = 4E `dayPins` (mevcut oturum güncellemesi) → önizleme tazelenir; hedef gün sekmesi açılır, durak yeni sırada ve saatte görünür.
 3. Gün içi sürükle-bırak (elle sıra) **aynen** kalır.
 4. Sabit durak simgesi (`isPinned`) + "Sabiti kaldır" (4D bileşeni).
-5. Kurallar: yalnız taslak hafta; tatil / hafta sonu sekmesine bırakma kapalı; `overCapacity` uyarısı gün sekmesinde.
+5. Kurallar: yalnız taslak hafta; tatil / hafta sonu sekmesine bırakma kapalı; sığmayanlar 4E `pinOverflow` ile ertesi güne taşınır, Rota bilgi mesajı gösterir (4D ile aynı metin).
 
 ## KORU / YAPMA
 - Rota görünümü ve gün içi davranışı değişmez. Backend'e dokunma. Yeni yazma uç YOK. 7 dil.

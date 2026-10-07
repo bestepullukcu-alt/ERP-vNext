@@ -44,8 +44,15 @@
 - **Motor:**
   - sabitlenmiş ziyaretler önce kendi günlerine konur;
   - kalan gruplar madde 1 ile sabitlerin etrafına dağıtılır;
-  - sabitlenmiş ziyaret günün bütçesini aşarsa **yine o günde kalır**, gün `overCapacity` uyarısı alır (temsilcinin kararı üstün; taşma yapılmaz);
+  - **Sabit güne sığmazsa — kullanıcı kararı 2026-10-08: "sığanı tut, kalanı ertesi güne":**
+    - Sabitlenen ziyaretler o günün çalışma penceresine (bütçe + mesai bitişi) **rota sırasıyla** yerleşir.
+    - **Sığmayanlar** (ör. 17:00'de başlayan 10 doktor + 2 eczanenin 18:00'den sonrası) aynı haftanın **sonraki uygun çalışma gününe** otomatik sabitlenir (`DayPins`'e yazılır, `autoPinned = true`, kaynak sabit referansı).
+    - Haftada yer yoksa sonraki taslak haftaya 3B taşma kuralıyla kayar; neden `pin_overflow`.
+    - **Mesai aşımı hiç planlanmaz.**
+    - Önizlemede `pinOverflow[]`: `{ targetType, targetId, displayName, fromDate, toDate, reason }`. Ekran temsilciye gösterir ("2 eczane sığmadı → Cuma'ya taşındı").
+    - Doktor / eczane müsaitlik penceresi varsa uyulur; pencereye uymayan da aynı yolla ertesi uygun güne.
   - `scope = visit` ise aynı kurumun diğer ziyaretleri çekilmez (yalnız o taşınır); `scope = institution` ise grup birlikte taşınır;
+  - **Sistem bölmesi (sabitsiz, 3B bölme kuralı):** tek güne sığmayan kurum grubu bölünürken **bağlı eczaneler** hastanenin en çok doktorunun düştüğü günde kalır (hastaneden ayrı güne düşmez; sığmazsa o grubun ikinci gününe).
   - önizlemede gün satırı / slot için `groupKey` (kurum grubu kimliği) döner, ekran "bu kurumdaki diğer ziyaretler (N doktor, M eczane)" sorusunu buradan kurar.
 - **Elle gün içi sıra** (`ManualVisitOrder`) sabitlemeyle birlikte çalışır: önce gün (sabit / motor), sonra gün içi sıra.
 - **Önizleme:**
@@ -73,7 +80,8 @@ CRM (2419/0/5; kararsızlar bilinen), Web (dokunulmaz; 4C paralel), mimari (27).
 1. İki uzak coğrafi küme (ör. Kadıköy + Bakırköy kurumları), 2 gün → her küme ayrı güne; 3B'ye göre haftalık toplam yol süresi azalır (aynı veriyle karşılaştırma).
 2. Kısıtlar korunur: bütçe, yarım gün, tatil, aynı kurum aynı gün (3B testleri yeşil).
 3. Sabit: taslak haftada doktor Salı → Perşembe; önizlemede Perşembe + `isPinned`; kurumun diğer doktorları yerinde.
-4. Sabit bütçeyi aşarsa yine o günde + `overCapacity`.
+4. **Sabit sığmazsa:** gün 17:00'ye kadar dolu, 10 doktor + 2 eczane (2,5 sa) bu güne `institution` sabiti → mesai içinde sığanlar o gün (rota sırasıyla), kalanlar sonraki çalışma gününe `autoPinned`; hiçbir ziyaret mesai bitişinden sonra değil; `pinOverflow` listesi dolu; haftada yer yoksa sonraki taslak haftaya `pin_overflow`.
+4c. Sistem bölmesinde bağlı eczaneler hastanenin ana gününde kalır.
 4b. `scope = institution`: hastane + 2 doktor + bağlı 1 eczane birlikte Perşembe'ye; aynı haftada bir doktorun `visit` sabiti Salı → o doktor Salı, diğerleri Perşembe (`visit` kazanır); `groupKey` önizlemede.
 5. Onaylı haftaya sabit → 409; tatile sabit → 400 `pin_not_working_day`; haftada olmayan hedef → yok sayılır + uyarı.
 6. `dayPins` null → korunur; [] → temizlenir.
@@ -99,9 +107,9 @@ Repository: C:\tmp\vp-4e (worktree) · Branch: wp/vp-4e · commit bu dala, push 
 Paket belgesi + tam komut: execution/domains/commercial-suite/work-packs/WP-VP-4E-geo-aware-days-and-day-pins.md — önce tamamını oku. Ayrıca: …/WP-VP-3A, 3B, 3C, 4A belgeleri (§37) · …/DESIGN-VP-FAZ3-planning-engine.md · services/Diten.CrmService/src/**/Features/{VisitPlanning,RouteOptimization}/** · **/Domain/Entities/PlanningSession.cs.
 NE:
 (1) Coğrafyaya duyarlı gün ataması: DayBalancer kurum gruplarını coğrafi kümelere göre günlere dağıtır (deterministik; ör. en uzak tohumlar + bütçeye sığan en yakın gün merkezi + yük ağırlıklı merkez güncelleme); 3B kısıtları korunur (bütçe, yarım gün, tatil, aynı kurum aynı gün, taşma); konumsuz grup 3B davranışı; ölçüt: aynı veride haftalık toplam yol süresi 3B'den az, yük farkı 3B sınırında.
-(2) Gün sabitlemesi: PlanningSession hafta başına DayPins[] {targetType,targetId,contactId?,date,scope visit|institution} (class-map); institution = kurumun o haftadaki doktorları + bağlı eczaneleri (DayBalancer kurum grubu kuralının aynısı, motor çözer), aynı üyede visit sabiti varsa visit kazanır, önizlemede groupKey; yazma mevcut oturum güncellemesiyle dayPins {weekStart,pins[]} (null=koru, []=temizle) — YENİ KOMUT YOK; yalnız taslak hafta (409 week_already_approved / week_in_past), tarih o hafta + çalışma günü (400 pin_not_working_day), haftada olmayan hedef yok sayılır + uyarı pin_target_not_in_week; motor önce sabitleri koyar, kalanı etrafına dağıtır; bütçe aşımında sabit yerinde kalır + overCapacity; scope=visit'te kurumun diğerleri çekilmez; ManualVisitOrder gün içi sıra; önizlemede isPinned + overCapacity + uyarılar; onay sabitli günleri yazar; yeniden açınca sabitler korunur.
+(2) Gün sabitlemesi: PlanningSession hafta başına DayPins[] {targetType,targetId,contactId?,date,scope visit|institution} (class-map); institution = kurumun o haftadaki doktorları + bağlı eczaneleri (DayBalancer kurum grubu kuralının aynısı, motor çözer), aynı üyede visit sabiti varsa visit kazanır, önizlemede groupKey; yazma mevcut oturum güncellemesiyle dayPins {weekStart,pins[]} (null=koru, []=temizle) — YENİ KOMUT YOK; yalnız taslak hafta (409 week_already_approved / week_in_past), tarih o hafta + çalışma günü (400 pin_not_working_day), haftada olmayan hedef yok sayılır + uyarı pin_target_not_in_week; motor önce sabitleri koyar, kalanı etrafına dağıtır; SABİT SIĞMAZSA (kullanıcı kararı): mesai içinde sığanlar o gün (rota sırası), sığmayanlar aynı haftanın sonraki uygun çalışma gününe autoPinned (DayPins'e yazılır), haftada yer yoksa sonraki taslak haftaya pin_overflow, mesai aşımı HİÇ planlanmaz, önizlemede pinOverflow[]; sistem bölmesinde bağlı eczaneler hastanenin ana gününde kalır; scope=visit'te kurumun diğerleri çekilmez; ManualVisitOrder gün içi sıra; önizlemede isPinned + autoPinned + pinOverflow + uyarılar; onay sabitli günleri yazar; yeniden açınca sabitler korunur.
 (3) Ayrıntı DTO hafta başına dayPins.
 KORU/YAPMA: YENİ YAZMA KOMUTU YOK (listesiz 27); 3A/3B/3C kuralları değişmez (yalnız gün seçimi + sabit); rota iyileştiricinin gün içi algoritması değişmez; eski committed planlara dokunma; göç/seed/grant/indeks YOK; mobil yalnız ek alan.
-DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — CRM Application (2419/0/5; PII + ContactWorkbook bilinen kararsız) · Web (dokunulmaz) · mimari (38/1, 27 sabit); build 0 hata. Yeni testler WP Acceptance 1–8 + 4b. Sabotaj 1–2 (kırmızı kanıtla, geri al).
+DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — CRM Application (2419/0/5; PII + ContactWorkbook bilinen kararsız) · Web (dokunulmaz) · mimari (38/1, 27 sabit); build 0 hata. Yeni testler WP Acceptance 1–8 + 4b + 4c. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "feat(crm): WP-VP-4E — geography-aware day assignment and rep day pins on draft weeks" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), kümeleme yöntemi ve ölçülen yol süresi farkı, sabit kuralları, mobil için yeni alanlar. §22 TÜRKÇE. K13.
 ```
