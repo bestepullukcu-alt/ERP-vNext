@@ -78,6 +78,21 @@ public sealed class GlobalProductIdentityWorkflowTenantPartitionDiscoveryReposit
         return new(page, candidates.Count == limit ? candidates[^1] : null);
     }
 
+    // BL-552 flow 3 FIX3 item 1: what is stuck, exactly as the partial index `ix_mdm_gp_identity_workflow_stuck`
+    // (GlobalProductIdentityWorkflowOperationRepository.EnsureIndexes) holds it — so the scan reads only stuck rows,
+    // however many finished submits the collection keeps. Public: the explain test measures this very filter.
+    public static FilterDefinition<GlobalProductIdentityWorkflowOperation> StuckPartialFilter =>
+        Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.IsDeleted, false)
+        & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(
+            item => item.Checkpoint, GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+        & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(
+            item => item.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired);
+
+    public static FilterDefinition<GlobalProductIdentityWorkflowOperation> StuckFilter(Guid? afterTenantId) =>
+        afterTenantId.HasValue
+            ? StuckPartialFilter & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Gt(item => item.TenantId, afterTenantId.Value)
+            : StuckPartialFilter;
+
     // BL-552 flow 3: tenants holding a submit stuck for a person (manual reconciliation), in tenant order — the same
     // bounded stream as above; the counts themselves are made by the tenant-scoped repository.
     public async Task<GlobalProductIdentityWorkflowTenantPartitionPage> DiscoverStuckAsync(
@@ -89,16 +104,7 @@ public sealed class GlobalProductIdentityWorkflowTenantPartitionDiscoveryReposit
         {
             throw new ArgumentOutOfRangeException(nameof(limit));
         }
-        var filter = Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.IsDeleted, false)
-                     & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(
-                         item => item.Checkpoint, GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired)
-                     & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(
-                         item => item.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired);
-        if (afterTenantId.HasValue)
-        {
-            filter &= Builders<GlobalProductIdentityWorkflowOperation>.Filter.Gt(item => item.TenantId, afterTenantId.Value);
-        }
-        var candidates = await _operations.Find(filter)
+        var candidates = await _operations.Find(StuckFilter(afterTenantId))
             .SortBy(item => item.TenantId)
             .Project(item => item.TenantId)
             .Limit(limit)

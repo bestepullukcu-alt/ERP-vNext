@@ -744,18 +744,31 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         }
 
         var current = await GetByIdAsync(id, cancellationToken);
-        // BL-552 flow 3 FIX2 item 1: the audit cap is one of the filter's terms — a product at the cap is not a binding
-        // conflict. It falls through to the classification (AUDIT_INTENT_CAPACITY_EXCEEDED), which waits.
         if (current is not null
             && current.Version == expectedVersion
-            && current.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
-            && current.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate)
+            && current.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval)
         {
-            return new(false, current, "WORKFLOW_BINDING_CONFLICT");
+            return CapacityOrBindingConflict(current, current.WorkflowBinding is { } binding
+                && binding.WorkflowInstanceId == decisionEvidence.WorkflowInstanceId
+                && binding.ApprovalTaskId == decisionEvidence.ApprovalTaskId
+                && binding.WorkflowTemplateId == decisionEvidence.WorkflowTemplateId
+                && binding.WorkflowTemplateVersionId == decisionEvidence.WorkflowTemplateVersionId
+                && string.Equals(binding.ObjectType, decisionEvidence.ObjectType, StringComparison.Ordinal)
+                && binding.ObjectId == decisionEvidence.ObjectId);
         }
 
         return await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
     }
+
+    // BL-552 flow 3 FIX3 item 2: after a refused conditional write the product is read AGAIN — and between the two, the
+    // audit delivery may have compacted an intent (the count drops, the version does not move). So the count read now
+    // says nothing about why the write was refused. The binding does: if every binding term still matches, nothing but
+    // the audit cap can have refused it — capacity, which waits (and the retry passes once there is room). Only a
+    // binding that really differs is a binding conflict.
+    private static GlobalProductLifecycleWriteResult CapacityOrBindingConflict(GlobalProduct current, bool bindingMatches) =>
+        bindingMatches
+            ? new(false, current, "AUDIT_INTENT_CAPACITY_EXCEEDED")
+            : new(false, current, "WORKFLOW_BINDING_CONFLICT");
 
     public async Task<GlobalProductLifecycleWriteResult> RetireIdentityAsync(
         Guid id,
@@ -984,9 +997,9 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         if (updated is not null) return new(true, updated);
         var current = await GetByIdAsync(id, cancellationToken);
         if (current is not null && current.Version == expectedVersion
-            && current.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
-            && current.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate)
-            return new(false, current, "WORKFLOW_BINDING_CONFLICT");
+            && current.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval)
+            return CapacityOrBindingConflict(current, current.WorkflowBinding is { } binding
+                && binding.WorkflowInstanceId == workflowInstanceId && binding.ApprovalTaskId == approvalTaskId);
         return await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
     }
 
@@ -1179,14 +1192,19 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         }
 
         var current = await GetByIdAsync(id, cancellationToken);
-        // BL-552 flow 3 FIX2 item 1: the audit cap is one of the filter's terms — a product at the cap is not a binding
-        // conflict. It falls through to the classification (AUDIT_INTENT_CAPACITY_EXCEEDED), which waits.
         if (current is not null
             && current.Version == expectedVersion
-            && current.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
-            && current.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate)
+            && current.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval)
         {
-            return new(false, current, "WORKFLOW_BINDING_CONFLICT");
+            return CapacityOrBindingConflict(current, current.WorkflowBinding is { } binding
+                && binding.WorkflowInstanceId == cancellationEvidence.WorkflowInstanceId
+                && binding.ApprovalTaskId == cancellationEvidence.ApprovalTaskId
+                && binding.WorkflowTemplateId == cancellationEvidence.WorkflowTemplateId
+                && binding.WorkflowTemplateVersionId == cancellationEvidence.WorkflowTemplateVersionId
+                && string.Equals(binding.ObjectType, cancellationEvidence.ObjectType, StringComparison.Ordinal)
+                && binding.ObjectId == cancellationEvidence.ObjectId
+                && binding.SubmitterSubjectId == cancellationEvidence.RequesterSubjectId
+                && binding.CancellationEvidence is null);
         }
 
         return await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);

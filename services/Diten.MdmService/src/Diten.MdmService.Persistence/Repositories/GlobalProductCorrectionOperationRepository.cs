@@ -22,6 +22,64 @@ public sealed class GlobalProductCorrectionOperationRepository(
         database.GetCollection<GlobalProductCorrectionOperation>(CollectionName);
     private Guid TenantId => tenantContext.TenantId;
 
+    // BL-552 flow 3 FIX3 items 1 and 5: what is STUCK, exactly as the two partial indexes hold it — manual
+    // reconciliation held for a person, and still retrying past the retry limit (what the gauges count). The
+    // stuck-tenant scan reads only those rows, however many finished requests the collection keeps. Public: the explain
+    // test measures these very filters.
+    public const string StuckManualIndexName = "ix_mdm_gp_correction_stuck_manual";
+    public const string StuckAtLimitIndexName = "ix_mdm_gp_correction_stuck_at_limit";
+
+    public static FilterDefinition<GlobalProductCorrectionOperation> StuckManualPartialFilter =>
+        Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.IsDeleted, false)
+        & Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.Checkpoint, GlobalProductCorrectionCheckpoint.ManualReconciliationRequired)
+        & Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired);
+
+    public static FilterDefinition<GlobalProductCorrectionOperation> StuckAtLimitPartialFilter =>
+        Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.IsDeleted, false)
+        & Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.Retryable)
+        & Builders<GlobalProductCorrectionOperation>.Filter.Eq(x => x.LastFailureCode, Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.GlobalProductCorrectionWorkflowProcessor.RetryLimitReached);
+
+    // Each read stays inside ONE partial index (a $or with the tenant sort would not: see StuckTenantPages).
+    public static FilterDefinition<GlobalProductCorrectionOperation> StuckManualFilter(Guid? afterTenantId) =>
+        StuckManualPartialFilter & After(afterTenantId);
+
+    public static FilterDefinition<GlobalProductCorrectionOperation> StuckAtLimitFilter(Guid? afterTenantId) =>
+        StuckAtLimitPartialFilter & After(afterTenantId);
+
+    private static FilterDefinition<GlobalProductCorrectionOperation> After(Guid? afterTenantId) => afterTenantId.HasValue
+        ? Builders<GlobalProductCorrectionOperation>.Filter.Gt(x => x.TenantId, afterTenantId.Value)
+        : Builders<GlobalProductCorrectionOperation>.Filter.Empty;
+
+    private static int _stuckIndexesEnsured;
+
+    // Tenants holding a stuck request, in tenant order (the identity flow's bounded stream). The two indexes are made
+    // here once per process too: this collection's other indexes are made on a request's reserve, and a host that only
+    // counts (its worker switched off) may never reserve one.
+    public async Task<GlobalProductIdentityWorkflowTenantPartitionPage> DiscoverStuckTenantPartitionsAsync(
+        Guid? afterTenantId, int limit, CancellationToken cancellationToken = default)
+    {
+        if (afterTenantId == Guid.Empty || limit is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(limit));
+        if (Interlocked.Exchange(ref _stuckIndexesEnsured, 1) == 0)
+        {
+            try { await EnsureStuckIndexesAsync(cancellationToken); }
+            catch { Interlocked.Exchange(ref _stuckIndexesEnsured, 0); throw; }
+        }
+        return StuckTenantPages.Merge(
+            await StuckTenantsAsync(StuckManualFilter(afterTenantId), limit, cancellationToken),
+            await StuckTenantsAsync(StuckAtLimitFilter(afterTenantId), limit, cancellationToken), limit);
+    }
+
+    private Task<List<Guid>> StuckTenantsAsync(FilterDefinition<GlobalProductCorrectionOperation> filter, int limit,
+        CancellationToken cancellationToken) =>
+        _operations.Find(filter).SortBy(x => x.TenantId).Project(x => x.TenantId).Limit(limit).ToListAsync(cancellationToken);
+
+    private Task EnsureStuckIndexesAsync(CancellationToken cancellationToken) => _operations.Indexes.CreateManyAsync([
+        new(Builders<GlobalProductCorrectionOperation>.IndexKeys.Ascending(x => x.TenantId),
+            new CreateIndexOptions<GlobalProductCorrectionOperation> { Name = StuckManualIndexName, PartialFilterExpression = StuckManualPartialFilter }),
+        new(Builders<GlobalProductCorrectionOperation>.IndexKeys.Ascending(x => x.TenantId),
+            new CreateIndexOptions<GlobalProductCorrectionOperation> { Name = StuckAtLimitIndexName, PartialFilterExpression = StuckAtLimitPartialFilter })
+    ], cancellationToken);
+
     public async Task<GlobalProductIdentityWorkflowTenantPartitionPage> DiscoverTenantPartitionsAsync(
         Guid? afterTenantId,
         int limit,
@@ -313,5 +371,6 @@ public sealed class GlobalProductCorrectionOperationRepository(
                     .Ascending(x => x.OperationId).Ascending(x => x.Checkpoint).Ascending(x => x.LeaseUntilUtcTicksV1),
                 new CreateIndexOptions { Name = "ix_mdm_gp_correction_recovery" })
         ], cancellationToken);
+        await EnsureStuckIndexesAsync(cancellationToken);
     }
 }

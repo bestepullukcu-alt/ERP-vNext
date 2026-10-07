@@ -19,6 +19,9 @@ public sealed class ProductIdentityWorkflowWorkerOptions
     // submit is handed to a person (0 = never).
     public int StartSettleSeconds { get; init; } = 120;
     public int QuarantineAfterFailedAttempts { get; init; } = 30;
+    // BL-552 flow 3 FIX3 items 1 and 5: with the worker switched off it still records the stuck gauges — this often
+    // (15–3600 s), not at the worker's own poll: a count is read-only, but it is read on every replica.
+    public int StuckGaugeIntervalSeconds { get; init; } = 60;
 
     public void EnsureValidWhenEnabled()
     {
@@ -35,6 +38,7 @@ public sealed class ProductIdentityWorkflowWorkerOptions
             || !IsServiceFaultWindowValid(
                 RetryDelaySeconds, ServiceFaultMaxRetryDelaySeconds, ServiceFaultErrorAfterAttempts)
             || !IsRecordAnswerWindowValid(StartSettleSeconds, QuarantineAfterFailedAttempts)
+            || !IsStuckGaugeIntervalValid(StuckGaugeIntervalSeconds)
             || string.IsNullOrWhiteSpace(LeaseOwner)
             || LeaseOwner.Length > 128
             || !string.Equals(LeaseOwner, LeaseOwner.Trim(), StringComparison.Ordinal)
@@ -48,8 +52,16 @@ public sealed class ProductIdentityWorkflowWorkerOptions
     // a window of 0 would trust "nothing arrived" at once, a negative limit would mean "never" (the bounds of the
     // correction and retirement workers).
     public static bool IsRecordAnswerWindowValid(int startSettleSeconds, int quarantineAfterFailedAttempts) =>
-        startSettleSeconds is >= 1 and <= 3_600
+        startSettleSeconds is >= 1 and <= MaxStartSettleSeconds
         && quarantineAfterFailedAttempts is >= 0 and <= 1_000;
+
+    // BL-552 flow 3 FIX3 EK (XMC-001, the engine team's finding): Platform's sweep closes a half-started workflow with no
+    // task after WorkflowStartRecovery:AbandonAfterMinutes (at least 15, default 30). A settle window longer than that
+    // could keep MDM "waiting for the start to settle" on a start Platform has already closed. 25 min: the sweep's
+    // shortest age must stay at least 5 min longer. The identity, correction and retirement workers share it.
+    public const int MaxStartSettleSeconds = 1_500;
+
+    public static bool IsStuckGaugeIntervalValid(int seconds) => seconds is >= 15 and <= 3_600;
 
     // The ceiling may not be shorter than the ordinary retry delay: a "back-off" that is flat and quicker than the
     // normal poll is not one.

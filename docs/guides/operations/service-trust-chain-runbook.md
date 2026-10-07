@@ -435,6 +435,18 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
   A request that reaches the retry limit on an answer about the record says so (`*_STUCK_ON_RECORD_ANSWER`, or
   `*_STUCK_ON_RELEASE_CONFLICT` for a lock release that kept conflicting) and is counted there; one that reaches it on a
   service fault stays `*_RETRY_LIMIT_REACHED`, keeps retrying and is not a person's (FIX7).
+- A switched-off worker (identity, correction, retirement request) still records both gauges — counts only, nothing is
+  claimed or written — every `StuckGaugeIntervalSeconds` (15–3600, default 60), not at the poll interval (BL-552 flow 3
+  FIX3). It reads only stuck requests, through partial indexes that hold nothing else
+  (`ix_mdm_gp_identity_workflow_stuck`; `ix_mdm_gp_correction_stuck_manual` + `…_stuck_at_limit`;
+  `ix_gp_retirement_stuck_manual` + `…_stuck_at_limit`), so the scan does not grow with finished history. The
+  correction and retirement indexes are created by the service on first use (the first stuck scan or reservation);
+  the identity index with the store's other indexes.
+- The MDM Mongo user needs `createIndex` on these collections (the stores create their indexes at runtime). For a
+  least-privilege user, either grant it on the MDM database or create the indexes above once before the deploy; with
+  neither, the stuck scan fails every interval with an Error line and the gauges are not recorded. The identity store
+  creates its indexes synchronously when it is built, i.e. once per poll for each tenant with stuck work; the sparse
+  gauge interval keeps that cost to one round per interval while the worker is off.
 - No request is left in manual reconciliation while it is waiting: if the requester's repeat would end a request but
   the lock release has to wait (the cap, the store, a concurrent write), the request goes back to where the worker looks
   (its decision, or the start's outcome) and the worker releases it. The store refuses "manual reconciliation + retryable".
@@ -509,8 +521,13 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
     settle it hands it to a person (`*_STUCK_ON_RECORD_ANSWER`). Both gauges count it (`needing_a_person` alert) —
     on every cycle, also while the worker is switched off.
   - **Settings:** `ProductIdentityWorkflowWorker` takes `QuarantineAfterFailedAttempts` (30; 0–1000, 0 = never)
-    and `StartSettleSeconds` (120; 1–3600). A value outside those bounds STOPS THE HOST AT START, whether the worker
-    is switched on or not (the interactive submit reads both); before, it was quietly clamped.
+    and `StartSettleSeconds` (120; 1–1500). A value outside those bounds STOPS THE HOST AT START, whether the worker
+    is switched on or not (the interactive submit reads both); before, it was quietly clamped. The Global Product
+    correction and retirement workers take the same `StartSettleSeconds` bound (1–1500).
+  - **Platform süpürme yaşı (WorkflowStartRecovery AbandonAfterMinutes) MDM yerleşme penceresinden en az 5 dk uzun
+    olmalı.** Platform closes a half-started workflow that has no task after that age (at least 15 min, default 30);
+    a longer MDM settle window would keep MDM waiting on a start Platform has already closed — hence the 25 min cap
+    (BL-552 flow 3 FIX3 EK, XMC-001).
 - **Rolling back past BL-552:** stop the new version first (no instance may write while the fields are removed).
   The old version does not wait for Platform's map: intents of operations 79 / 80 / 81 still waiting when it takes
   over are dead-lettered by it (BL-566, no resend tool). The request and operation documents gained fields (`FailedAttemptCount`,

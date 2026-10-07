@@ -123,6 +123,91 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.Equal("AUDIT_INTENT_CAPACITY_EXCEEDED", waiting.LastFailureCode);
         Assert.Equal((0L, 0L), await GpiGaugesAsync());
         Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, (await GpOf(product)).LifecycleStatus);
+
+        // Flow 3 FIX3 item 4: the audit delivery catches up; the worker's next attempt applies it.
+        await GpClearTheFillersAsync(product);
+        using var due = host.Clock.Shift(TimeSpan.FromSeconds(30));
+        await GpiProcessor(host.Engine).RecoverAsync(await GpiOpOf(key), "gpi-worker", GpiLease, GpiRetry);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.Completed, (await GpiOpOf(key)).Checkpoint);
+        Assert.Equal(decided ? ProductIdentityLifecycleStatus.IdentityApproved : ProductIdentityLifecycleStatus.Draft,
+            (await GpOf(product)).LifecycleStatus);
+    }
+
+    // ── FIX3 item 2: the audit delivery compacts between the refused write and its re-read (TOCTOU) ─────────────────
+
+    [Fact]
+    public async Task GPIF3_A_decision_whose_refusal_meets_a_compaction_before_its_reread_waits_and_is_not_stuck()
+    {
+        var (product, key) = await GpiAwaitingDecisionAsync();
+        host.Engine.Approve(GpiInstance(product), host.Approver);
+        await GpFillToTheAuditCapAsync(product);
+        var database = DispatchProxy.Create<IMongoDatabase, CompactAfterRefusedWrite>();
+        var compacting = (CompactAfterRefusedWrite)(object)database;
+        compacting.Inner = host.Database;
+        compacting.Product = product;
+
+        await GpiProcessor(host.Engine, new GlobalProductRepository(database, Tenant()))
+            .RecoverAsync(await GpiOpOf(key), "gpi-worker", GpiLease, GpiRetry);
+
+        Assert.True(compacting.Compacted);
+        var waiting = await GpiOpOf(key);
+        Assert.NotEqual(GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired, waiting.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, waiting.RecoveryDisposition);
+        Assert.Equal((0L, 0L), await GpiGaugesAsync());
+
+        // The room the compaction made is there: the decision applies.
+        using var due = host.Clock.Shift(TimeSpan.FromSeconds(30));
+        await GpiProcessor(host.Engine).RecoverAsync(await GpiOpOf(key), "gpi-worker", GpiLease, GpiRetry);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, (await GpOf(product)).LifecycleStatus);
+    }
+
+    // The real database; its Global Product collection, after a conditional write that matched nothing, compacts one
+    // filler intent (what the audit delivery's AcknowledgeAndCompactAsync does: no version change) before answering.
+    public class CompactAfterRefusedWrite : DispatchProxy
+    {
+        public IMongoDatabase Inner { get; set; } = null!;
+        public Guid Product { get; set; }
+        public bool Compacted { get; set; }
+
+        protected override object? Invoke(MethodInfo? method, object?[]? args)
+        {
+            var result = method!.Invoke(Inner, args);
+            if (method.Name != nameof(IMongoDatabase.GetCollection) || result is not IMongoCollection<GlobalProduct> products)
+                return result;
+            var proxy = DispatchProxy.Create<IMongoCollection<GlobalProduct>, CompactingProducts>();
+            ((CompactingProducts)(object)proxy).Inner = products;
+            ((CompactingProducts)(object)proxy).Owner = this;
+            return proxy;
+        }
+    }
+
+    public class CompactingProducts : DispatchProxy
+    {
+        public IMongoCollection<GlobalProduct> Inner { get; set; } = null!;
+        public CompactAfterRefusedWrite Owner { get; set; } = null!;
+
+        protected override object? Invoke(MethodInfo? method, object?[]? args)
+        {
+            var result = method!.Invoke(Inner, args);
+            return method.Name == nameof(IMongoCollection<GlobalProduct>.FindOneAndUpdateAsync)
+                   && result is Task<GlobalProduct> write
+                ? ThenCompactAsync(write)
+                : result;
+        }
+
+        private async Task<GlobalProduct> ThenCompactAsync(Task<GlobalProduct> write)
+        {
+            var written = await write;
+            if (written is null && !Owner.Compacted)
+            {
+                var current = await Inner.Find(x => x.Id == Owner.Product).SingleAsync();
+                var filler = current.AuditIntents.First(x => x.IdempotencyKey.StartsWith("filler-"));
+                await Inner.UpdateOneAsync(x => x.Id == Owner.Product, Builders<GlobalProduct>.Update
+                    .PullFilter(x => x.AuditIntents, x => x.IntentId == filler.IntentId));
+                Owner.Compacted = true;
+            }
+            return written!;
+        }
     }
 
     // ── 1 (b): a withdrawal intent compacted between the apply and its check is not an inconsistency ──────────────
@@ -181,10 +266,10 @@ public sealed partial class GskuLifecycleHttpTests
         };
         Options().EnsureValidWhenEnabled();
         Options(settle: 1).EnsureValidWhenEnabled();
-        Options(settle: 3600).EnsureValidWhenEnabled();
+        Options(settle: 1500).EnsureValidWhenEnabled(); // flow 3 FIX3 EK: Platform's sweep age (25 min cap)
         Options(quarantine: 0).EnsureValidWhenEnabled();
         Options(quarantine: 1000).EnsureValidWhenEnabled();
-        foreach (var bad in new[] { Options(settle: 0), Options(settle: -1), Options(settle: 3601),
+        foreach (var bad in new[] { Options(settle: 0), Options(settle: -1), Options(settle: 1501),
                      Options(quarantine: -5), Options(quarantine: 1001) })
             Assert.Throws<InvalidOperationException>(bad.EnsureValidWhenEnabled);
         Assert.False(ProductIdentityWorkflowWorkerOptions.IsRecordAnswerWindowValid(0, 30));

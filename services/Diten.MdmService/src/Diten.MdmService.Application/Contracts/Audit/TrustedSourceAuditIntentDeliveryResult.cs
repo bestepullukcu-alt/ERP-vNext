@@ -7,6 +7,8 @@ public sealed record TrustedSourceAuditIntentDeliveryResult(
 {
     // BL-552 flow 3 FIX1 item 2: the central service's own reason for a refusal, when it named one (409 only).
     public string? CentralReasonCode { get; init; }
+    // BL-552 flow 3 FIX3 item 3: the 409's body did not arrive within its own read budget — its reason is unknown.
+    public bool CentralReasonTimedOut { get; init; }
 
     public static TrustedSourceAuditIntentDeliveryResult Accepted(TrustedSourceAuditIntentAcceptanceReceipt receipt) =>
         new(TrustedSourceAuditIntentDeliveryOutcome.Accepted, receipt, string.Empty);

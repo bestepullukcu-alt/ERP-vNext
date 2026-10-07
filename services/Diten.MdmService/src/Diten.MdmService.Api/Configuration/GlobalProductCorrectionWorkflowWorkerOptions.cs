@@ -13,6 +13,9 @@ public sealed class GlobalProductCorrectionWorkflowWorkerOptions
     public int QuarantineAfterFailedAttempts { get; set; } = 30;
     public int MaxRetryDelaySeconds { get; set; } = 900;
     public int StartSettleSeconds { get; set; } = 120;
+    // BL-552 flow 3 FIX3 items 1 and 5: with the worker switched off it still records the stuck gauges — this often
+    // (15–3600 s), not at the worker's own poll: a count is read-only, but it is read on every replica.
+    public int StuckGaugeIntervalSeconds { get; set; } = 60;
     // A ceiling below the retry delay is raised to the delay — never a failure of every cycle.
     public int EffectiveMaxRetryDelaySeconds => Math.Max(MaxRetryDelaySeconds, RetryDelaySeconds);
 
@@ -22,5 +25,6 @@ public sealed class GlobalProductCorrectionWorkflowWorkerOptions
         && BatchSize is >= 1 and <= 100
         && QuarantineAfterFailedAttempts is >= 0 and <= 1000
         && MaxRetryDelaySeconds is >= 1 and <= 86_400
-        && StartSettleSeconds is >= 1 and <= 3600;
+        && StartSettleSeconds is >= 1 and <= ProductIdentityWorkflowWorkerOptions.MaxStartSettleSeconds
+        && StuckGaugeIntervalSeconds is >= 15 and <= 3600;
 }

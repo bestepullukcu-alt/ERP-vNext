@@ -193,6 +193,14 @@ public sealed class AuditIntentDeliveryProcessor
                     batch.AwaitingCentralMappingOperationNames.Add(payload.Operation.ToString());
                 }
                 return;
+            case TrustedSourceAuditIntentDeliveryOutcome.Terminal
+                when delivery.CentralReasonTimedOut && AwaitingCentralMappingOperations.Contains(payload.Operation):
+                // Flow 3 FIX3 item 3: for the three operations that may wait for Platform's map, a 409 whose reason did
+                // not arrive in time may be that very "not mapped yet" — a timeout, retried as one (the ordinary bound),
+                // not a dead letter. Every other operation keeps its definite 409.
+                await TransitionFailureAsync(
+                    claim, "AUDIT_SOURCE_INTENT_TIMEOUT", true, retryDelay, maximumAttempts, batch, cancellationToken);
+                return;
             case TrustedSourceAuditIntentDeliveryOutcome.AuthenticationRejected:
             case TrustedSourceAuditIntentDeliveryOutcome.Terminal:
                 await TransitionFailureAsync(

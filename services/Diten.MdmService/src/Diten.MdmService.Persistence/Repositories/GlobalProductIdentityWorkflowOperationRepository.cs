@@ -666,6 +666,8 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         && existing.StartIdempotencyKey == candidate.StartIdempotencyKey
         && existing.OperationFingerprint == candidate.OperationFingerprint;
 
+    public const string StuckIndexName = "ix_mdm_gp_identity_workflow_stuck";
+
     private void EnsureIndexes()
     {
         var active = new BsonDocument(nameof(GlobalProductIdentityWorkflowOperation.IsDeleted), false);
@@ -693,7 +695,16 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
                     .Ascending(item => item.NextAttemptAtUtcTicksV1).Ascending(item => item.OperationId)
                     .Ascending(item => item.Checkpoint).Ascending(item => item.LeaseUntilUtcTicksV1)
                     .Ascending(item => item.CreatedAtUtcTicksV1),
-                new CreateIndexOptions { Name = "ix_mdm_gp_identity_workflow_recovery" })
+                new CreateIndexOptions { Name = "ix_mdm_gp_identity_workflow_recovery" }),
+            // BL-552 flow 3 FIX3 item 1: only the STUCK rows, by tenant — the stuck-tenant scan and the gauges' counts
+            // read this, not every finished submit. Partial: it stays as small as what is stuck.
+            new CreateIndexModel<GlobalProductIdentityWorkflowOperation>(
+                Builders<GlobalProductIdentityWorkflowOperation>.IndexKeys.Ascending(item => item.TenantId),
+                new CreateIndexOptions<GlobalProductIdentityWorkflowOperation>
+                {
+                    Name = StuckIndexName,
+                    PartialFilterExpression = GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository.StuckPartialFilter
+                })
         ]);
     }
 }

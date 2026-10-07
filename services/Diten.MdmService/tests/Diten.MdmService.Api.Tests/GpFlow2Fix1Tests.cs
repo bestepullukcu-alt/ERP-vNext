@@ -671,7 +671,8 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.True(Valid(x => x.MaxRetryDelaySeconds = 1)); Assert.False(Valid(x => x.MaxRetryDelaySeconds = 0));
         Assert.True(Valid(x => x.MaxRetryDelaySeconds = 86_400)); Assert.False(Valid(x => x.MaxRetryDelaySeconds = 86_401));
         Assert.True(Valid(x => x.StartSettleSeconds = 1)); Assert.False(Valid(x => x.StartSettleSeconds = 0));
-        Assert.True(Valid(x => x.StartSettleSeconds = 3600)); Assert.False(Valid(x => x.StartSettleSeconds = 3601));
+        // Flow 3 FIX3 EK: capped below Platform's sweep of half-started workflows (25 min).
+        Assert.True(Valid(x => x.StartSettleSeconds = 1500)); Assert.False(Valid(x => x.StartSettleSeconds = 1501));
 
         // A ceiling below the retry delay is raised to the delay; above it, it is kept.
         Assert.Equal(10, new GlobalProductRetirementRequestWorkflowWorkerOptions

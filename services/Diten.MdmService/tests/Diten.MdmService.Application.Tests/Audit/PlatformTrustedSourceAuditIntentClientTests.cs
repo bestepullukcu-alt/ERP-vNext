@@ -83,6 +83,21 @@ public sealed class PlatformTrustedSourceAuditIntentClientTests
         Assert.Equal(TrustedSourceAuditIntentDeliveryOutcome.Terminal, result.Outcome);
         Assert.Equal("AUDIT_SOURCE_INTENT_CONFLICT", result.ErrorCode);
         Assert.Null(result.CentralReasonCode);
+        // Flow 3 FIX3 item 3: said so — the processor decides what a reason that never arrived means.
+        Assert.True(result.CentralReasonTimedOut);
+    }
+
+    // Flow 3 FIX3 item 3: the CALLER's cancellation during the body read is the caller's — it propagates.
+    [Fact]
+    public async Task A_callers_cancellation_during_the_conflicts_body_read_propagates()
+    {
+        using var caller = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            Client(new RecordingHandler(_ => new HttpResponseMessage(HttpStatusCode.Conflict)
+                {
+                    Content = new StreamContent(new NeverArrivingStream())
+                }))
+                .AcceptAsync(Envelope(), new("jwt", DateTimeOffset.UtcNow.AddMinutes(5)), caller.Token));
     }
 
     private sealed class NeverArrivingStream : Stream

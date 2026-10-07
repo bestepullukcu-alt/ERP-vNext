@@ -5,6 +5,11 @@ namespace Diten.MdmService.Domain.Repositories;
 
 public interface IGlobalProductRetirementRequestOperationRepository
 {
+    // BL-552 flow 3 FIX3 item 5: tenants holding a STUCK request (what the gauges count), for a worker switched off.
+    Task<GlobalProductIdentityWorkflowTenantPartitionPage> DiscoverStuckTenantPartitionsAsync(Guid? afterTenantId,
+        int limit, CancellationToken cancellationToken = default) =>
+        Task.FromResult(new GlobalProductIdentityWorkflowTenantPartitionPage([], null));
+
     Task<GlobalProductIdentityWorkflowTenantPartitionPage> DiscoverTenantPartitionsAsync(Guid? afterTenantId,
         int limit, CancellationToken cancellationToken = default);
     Task<GlobalProductRetirementRequestReserveResult> ReserveAsync(

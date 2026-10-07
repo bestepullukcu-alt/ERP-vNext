@@ -69,10 +69,10 @@ public sealed class PlatformTrustedSourceAuditIntentClient : ITrustedSourceAudit
             // BL-552 flow 3 FIX1 item 2: a 409 stays terminal for this client; the central reason is passed on so the
             // processor can tell "Platform does not map this operation yet" (a deploy-order gap) from a real conflict.
             if (response.StatusCode == HttpStatusCode.Conflict)
-                return Classify(response.StatusCode) with
-                {
-                    CentralReasonCode = await ReadCentralReasonAsync(response.Content, budget.Token, cancellationToken)
-                };
+            {
+                var (reason, timedOut) = await ReadCentralReasonAsync(response.Content, budget.Token, cancellationToken);
+                return Classify(response.StatusCode) with { CentralReasonCode = reason, CentralReasonTimedOut = timedOut };
+            }
             return Classify(response.StatusCode);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -130,8 +130,8 @@ public sealed class PlatformTrustedSourceAuditIntentClient : ITrustedSourceAudit
     internal static readonly TimeSpan CentralReasonBudget = TimeSpan.FromMilliseconds(500);
 
     // The failure envelope's `reason_code` (bounded, upper-case code only); anything unreadable is no reason.
-    private static async Task<string?> ReadCentralReasonAsync(HttpContent content, CancellationToken budgetToken,
-        CancellationToken callerToken)
+    private static async Task<(string? Reason, bool TimedOut)> ReadCentralReasonAsync(HttpContent content,
+        CancellationToken budgetToken, CancellationToken callerToken)
     {
         using var reasonBudget = CancellationTokenSource.CreateLinkedTokenSource(budgetToken);
         reasonBudget.CancelAfter(CentralReasonBudget);
@@ -139,19 +139,23 @@ public sealed class PlatformTrustedSourceAuditIntentClient : ITrustedSourceAudit
         {
             var bytes = await ReadBoundedAsync(content, reasonBudget.Token);
             using var document = JsonDocument.Parse(bytes);
-            return document.RootElement.ValueKind == JsonValueKind.Object
-                   && document.RootElement.TryGetProperty("reason_code", out var reason)
-                   && reason.ValueKind == JsonValueKind.String
-                   && reason.GetString() is { Length: > 0 and <= 128 } code
-                   && code.All(c => c is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_')
+            return (document.RootElement.ValueKind == JsonValueKind.Object
+                    && document.RootElement.TryGetProperty("reason_code", out var reason)
+                    && reason.ValueKind == JsonValueKind.String
+                    && reason.GetString() is { Length: > 0 and <= 128 } code
+                    && code.All(c => c is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_')
                 ? code
-                : null;
+                : null, false);
+        }
+        catch (OperationCanceledException) when (!callerToken.IsCancellationRequested)
+        {
+            // The read budget ran out (not the caller): the reason is unknown — said so, for the processor to decide.
+            return (null, true);
         }
         catch (Exception exception) when (exception is JsonException or InvalidOperationException
-                                          or HttpRequestException or IOException
-                                          || exception is OperationCanceledException && !callerToken.IsCancellationRequested)
+                                          or HttpRequestException or IOException)
         {
-            return null;
+            return (null, false);
         }
     }
 

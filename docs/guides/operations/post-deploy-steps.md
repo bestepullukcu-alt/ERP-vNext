@@ -80,8 +80,11 @@ beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı b
 | **Kim** | Deploy operatörü |
 
 **Kontrol:** MDM deploy edildikten sonra son teslim hatası `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED` olan niyet kalmamalı.
-Kalıyorsa Platform bu işlemleri eşleyen sürümde değildir. Teslim işçisi her döngüde bir Warning yazar: "Audit delivery:
-N intent(s) of … wait for Platform to map the operation".
+Kalıyorsa Platform bu işlemleri eşleyen sürümde değildir. Teslim işçisi o niyetleri yeniden deneyen her döngüde bir
+Warning yazar: "Audit delivery: N intent(s) of … wait for Platform to map the operation". N toplam birikim değildir:
+döngü kiracı başına en çok `BatchSize` (varsayılan 25) niyet dener, N o döngüde denenip bekletilenlerin sayısıdır.
+Platform 409'un gövdesini zamanında vermezse (500 ms) yalnız bu üç işlem `AUDIT_SOURCE_INTENT_TIMEOUT` ile yeniden
+denenir; diğer işlemler için 409 kalıcıdır.
 
 ### 4 · GP kimlik onayı ayarları artık başlatmayı durdurur (BL-552 akış 3)
 
@@ -92,7 +95,10 @@ N intent(s) of … wait for Platform to map the operation".
 | **Yapılmazsa** | Aralık dışı değer artık sessizce düzeltilmez; MDM **açılmaz** (`PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID`). İşçi kapalı olsa da geçerlidir, çünkü etkileşimli gönderim de bu ayarları okur. |
 | **Kim** | Deploy operatörü |
 
-Sınırlar: `StartSettleSeconds` 1–3600 (varsayılan 120); `QuarantineAfterFailedAttempts` 0–1000 (varsayılan 30, 0 = hiç).
+Sınırlar: `StartSettleSeconds` 1–1500 (varsayılan 120; üç işçide de — Platform süpürme yaşı (WorkflowStartRecovery AbandonAfterMinutes) MDM yerleşme penceresinden en az 5 dk uzun olmalı; 1500'ü aşan değer artık açılışı durdurur); `QuarantineAfterFailedAttempts` 0–1000 (varsayılan 30, 0 = hiç);
+`StuckGaugeIntervalSeconds` 15–3600 (varsayılan 60). Aynı `StuckGaugeIntervalSeconds` sınırı GP düzeltme ve emeklilik
+isteği işçilerinde de vardır; o iki işçi de artık aralık dışı ayarla **kapalıyken bile** açılmayı durdurur
+(`GLOBAL_PRODUCT_CORRECTION_WORKER_CONFIGURATION_INVALID`, `GLOBAL_PRODUCT_RETIREMENT_WORKER_CONFIGURATION_INVALID`).
 
 ---
 

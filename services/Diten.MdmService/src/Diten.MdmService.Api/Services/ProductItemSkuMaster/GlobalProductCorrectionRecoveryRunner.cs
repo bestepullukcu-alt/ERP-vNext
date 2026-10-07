@@ -32,7 +32,13 @@ public sealed class GlobalProductCorrectionRecoveryRunner(
         var settings = options.Value;
         if (!settings.IsValid()) throw new InvalidOperationException(
             "GLOBAL_PRODUCT_CORRECTION_WORKER_CONFIGURATION_INVALID");
-        if (!settings.Enabled) return new(0, 0, 0, 0, 0);
+        if (!settings.Enabled)
+        {
+            // BL-552 flow 3 FIX3 item 5: switched off, the cycle only records the stuck gauges.
+            // No meter, nothing to record: the off runner then does no store work at all.
+            if (metrics is not null) await RecordStuckAsync(settings.BatchSize, cancellationToken);
+            return new(0, 0, 0, 0, 0);
+        }
         var tenants = 0; var operations = 0; var completed = 0; var deferred = 0; var failed = 0;
         var cycle = new ProductIdentityRecoveryCycle();
         var execution = new GlobalProductCorrectionExecutionConfiguration(TimeSpan.FromSeconds(settings.LeaseSeconds),
@@ -130,5 +136,30 @@ public sealed class GlobalProductCorrectionRecoveryRunner(
         cycle.Log(log, Flow);
         metrics?.Record(Flow, cycle.InManualReconciliation, cycle.NeedingAPerson);
         return new(tenants, operations, completed, deferred, failed) { Cycle = cycle };
+    }
+
+    // The tenants holding a stuck request (the partial indexes), counted the way an enabled cycle counts them.
+    private async Task RecordStuckAsync(int pageSize, CancellationToken cancellationToken)
+    {
+        long inManualReconciliation = 0;
+        long needingAPerson = 0;
+        Guid? cursor = null;
+        do
+        {
+            GlobalProductIdentityWorkflowTenantPartitionPage page;
+            await using (var scope = scopeFactory.CreateAsyncScope())
+                page = await scope.ServiceProvider.GetRequiredService<IGlobalProductCorrectionOperationRepository>()
+                    .DiscoverStuckTenantPartitionsAsync(cursor, pageSize, cancellationToken);
+            foreach (var tenantId in page.TenantIds)
+            {
+                await using var countScope = scopeFactory.CreateAsyncScope();
+                countScope.ServiceProvider.GetRequiredService<ITenantContext>().SetTenant(tenantId);
+                var repository = countScope.ServiceProvider.GetRequiredService<IGlobalProductCorrectionOperationRepository>();
+                inManualReconciliation += await repository.CountManualReconciliationAsync(cancellationToken);
+                needingAPerson += await repository.CountNeedingAPersonAsync(cancellationToken);
+            }
+            cursor = page.NextAfterTenantId;
+        } while (cursor.HasValue);
+        metrics?.Record(Flow, inManualReconciliation, needingAPerson);
     }
 }

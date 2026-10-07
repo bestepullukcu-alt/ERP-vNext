@@ -712,6 +712,10 @@ public static class GlobalProductWorkflowExecutionConfigurationRegistrations
                 options => ProductIdentityWorkflowWorkerOptions.IsRecordAnswerWindowValid(
                     options.StartSettleSeconds, options.QuarantineAfterFailedAttempts),
                 "PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
+            // Flow 3 FIX3 item 1: the switched-off worker's gauge interval is read whether the worker runs or not.
+            .Validate(
+                options => ProductIdentityWorkflowWorkerOptions.IsStuckGaugeIntervalValid(options.StuckGaugeIntervalSeconds),
+                "PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
             .ValidateOnStart();
         services.AddScoped(sp =>
         {

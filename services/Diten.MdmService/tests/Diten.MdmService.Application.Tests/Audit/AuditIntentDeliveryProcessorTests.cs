@@ -217,6 +217,10 @@ public sealed class AuditIntentDeliveryProcessorTests
     // other operation Platform does not map, and any other 409, is dead-lettered exactly as before.
     [Theory]
     [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", false)]
+    // Flow 3 FIX3 item 7 (CT G1): past the ORDINARY attempt bound (3 here) it still waits; only the long bound ends it.
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, 4, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", false)]
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, AuditIntentDeliveryProcessor.CentralMappingWaitAttempts - 1,
+        "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", false)]
     [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, AuditIntentDeliveryProcessor.CentralMappingWaitAttempts,
         "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
     [InlineData(ProductAuditOperation.GlobalProductDraftCreated, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
@@ -305,6 +309,30 @@ public sealed class AuditIntentDeliveryProcessorTests
         {
             if (logLevel == Microsoft.Extensions.Logging.LogLevel.Warning) Warnings.Add(formatter(state, exception));
         }
+    }
+
+    // Flow 3 FIX3 item 3: a 409 whose reason did not arrive in time is a timeout (retried, ordinary bound) for the
+    // three operations that may wait for Platform's map — and stays a definite 409 for every other operation.
+    [Theory]
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, false)]
+    [InlineData(ProductAuditOperation.GlobalProductRetirementEnded, false)]
+    [InlineData(ProductAuditOperation.GlobalProductIdentityDecisionNotApplicable, false)]
+    [InlineData(ProductAuditOperation.GlobalProductDraftCreated, true)]
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionRequested, true)]
+    public async Task A_conflict_whose_reason_did_not_arrive_is_retried_only_for_the_operations_that_may_wait(
+        ProductAuditOperation operation, bool deadLettered)
+    {
+        var repository = new Repository { PayloadOperation = operation };
+        var client = new Client((_, _) => TrustedSourceAuditIntentDeliveryResult.Terminal("AUDIT_SOURCE_INTENT_CONFLICT")
+            with { CentralReasonTimedOut = true });
+
+        var result = await Processor(repository, new IdentityProvider(), client).ProcessTenantAsync(
+            repository.TenantId, 10, "worker", TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(5), 3);
+
+        Assert.Equal(deadLettered ? 1 : 0, result.DeadLettered);
+        Assert.Equal(deadLettered ? 0 : 1, result.RetryScheduled);
+        Assert.Equal(0, result.AwaitingCentralMapping);
+        if (!deadLettered) Assert.Equal("AUDIT_SOURCE_INTENT_TIMEOUT", repository.LastRetryReason);
     }
 
     private static AuditIntentDeliveryProcessor Processor(

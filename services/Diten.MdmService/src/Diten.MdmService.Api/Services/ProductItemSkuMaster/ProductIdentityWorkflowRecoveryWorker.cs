@@ -33,7 +33,8 @@ public sealed class ProductIdentityWorkflowRecoveryWorker(
                         "Product identity workflow stuck-gauge cycle (worker off) failed with {ExceptionType}.",
                         exception.GetType().FullName);
                 }
-                await Task.Delay(TimeSpan.FromSeconds(Math.Clamp(settings.PollIntervalSeconds, 1, 3_600)), stoppingToken);
+                // Flow 3 FIX3 item 1: sparse — the gauge's interval, not the worker's poll (validated at start).
+                await Task.Delay(TimeSpan.FromSeconds(settings.StuckGaugeIntervalSeconds), stoppingToken);
             }
             return;
         }

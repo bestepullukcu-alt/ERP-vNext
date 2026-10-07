@@ -27,6 +27,64 @@ public sealed class GlobalProductRetirementRequestOperationRepository(
         Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.TenantId, TenantId)
         & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.IsDeleted, false);
 
+    // BL-552 flow 3 FIX3 items 1 and 5: what is STUCK, exactly as the two partial indexes hold it — manual
+    // reconciliation held for a person, and still retrying past the retry limit (what the gauges count). The
+    // stuck-tenant scan reads only those rows, however many finished requests the collection keeps. Public: the explain
+    // test measures these very filters.
+    public const string StuckManualIndexName = "ix_gp_retirement_stuck_manual";
+    public const string StuckAtLimitIndexName = "ix_gp_retirement_stuck_at_limit";
+
+    public static FilterDefinition<GlobalProductRetirementRequestOperation> StuckManualPartialFilter =>
+        Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.IsDeleted, false)
+        & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.Checkpoint, GlobalProductRetirementRequestCheckpoint.ManualReconciliationRequired)
+        & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired);
+
+    public static FilterDefinition<GlobalProductRetirementRequestOperation> StuckAtLimitPartialFilter =>
+        Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.IsDeleted, false)
+        & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.Retryable)
+        & Builders<GlobalProductRetirementRequestOperation>.Filter.Eq(x => x.LastFailureCode, GlobalProductRetirementRequestWorkflowProcessor.RetryLimitReached);
+
+    // Each read stays inside ONE partial index (a $or with the tenant sort would not: see StuckTenantPages).
+    public static FilterDefinition<GlobalProductRetirementRequestOperation> StuckManualFilter(Guid? afterTenantId) =>
+        StuckManualPartialFilter & After(afterTenantId);
+
+    public static FilterDefinition<GlobalProductRetirementRequestOperation> StuckAtLimitFilter(Guid? afterTenantId) =>
+        StuckAtLimitPartialFilter & After(afterTenantId);
+
+    private static FilterDefinition<GlobalProductRetirementRequestOperation> After(Guid? afterTenantId) => afterTenantId.HasValue
+        ? Builders<GlobalProductRetirementRequestOperation>.Filter.Gt(x => x.TenantId, afterTenantId.Value)
+        : Builders<GlobalProductRetirementRequestOperation>.Filter.Empty;
+
+    private static int _stuckIndexesEnsured;
+
+    // Tenants holding a stuck request, in tenant order (the identity flow's bounded stream). The two indexes are made
+    // here once per process too: this collection's other indexes are made on a request's reserve, and a host that only
+    // counts (its worker switched off) may never reserve one.
+    public async Task<GlobalProductIdentityWorkflowTenantPartitionPage> DiscoverStuckTenantPartitionsAsync(
+        Guid? afterTenantId, int limit, CancellationToken cancellationToken = default)
+    {
+        if (afterTenantId == Guid.Empty || limit is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(limit));
+        if (Interlocked.Exchange(ref _stuckIndexesEnsured, 1) == 0)
+        {
+            try { await EnsureStuckIndexesAsync(cancellationToken); }
+            catch { Interlocked.Exchange(ref _stuckIndexesEnsured, 0); throw; }
+        }
+        return StuckTenantPages.Merge(
+            await StuckTenantsAsync(StuckManualFilter(afterTenantId), limit, cancellationToken),
+            await StuckTenantsAsync(StuckAtLimitFilter(afterTenantId), limit, cancellationToken), limit);
+    }
+
+    private Task<List<Guid>> StuckTenantsAsync(FilterDefinition<GlobalProductRetirementRequestOperation> filter, int limit,
+        CancellationToken cancellationToken) =>
+        _operations.Find(filter).SortBy(x => x.TenantId).Project(x => x.TenantId).Limit(limit).ToListAsync(cancellationToken);
+
+    private Task EnsureStuckIndexesAsync(CancellationToken cancellationToken) => _operations.Indexes.CreateManyAsync([
+        new(Builders<GlobalProductRetirementRequestOperation>.IndexKeys.Ascending(x => x.TenantId),
+            new CreateIndexOptions<GlobalProductRetirementRequestOperation> { Name = StuckManualIndexName, PartialFilterExpression = StuckManualPartialFilter }),
+        new(Builders<GlobalProductRetirementRequestOperation>.IndexKeys.Ascending(x => x.TenantId),
+            new CreateIndexOptions<GlobalProductRetirementRequestOperation> { Name = StuckAtLimitIndexName, PartialFilterExpression = StuckAtLimitPartialFilter })
+    ], cancellationToken);
+
     public async Task<GlobalProductIdentityWorkflowTenantPartitionPage> DiscoverTenantPartitionsAsync(
         Guid? afterTenantId, int limit, CancellationToken cancellationToken = default)
     {
@@ -256,11 +314,15 @@ public sealed class GlobalProductRetirementRequestOperationRepository(
         _ => false
     };
 
-    private Task EnsureIndexesAsync(CancellationToken cancellationToken) => _operations.Indexes.CreateManyAsync([
-        new(Builders<GlobalProductRetirementRequestOperation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.OperationId),
-            new() { Unique = true, Name = "ux_gp_retirement_tenant_operation" }),
-        new(Builders<GlobalProductRetirementRequestOperation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.StartIdempotencyKey),
-            new() { Unique = true, Name = "ux_gp_retirement_tenant_idempotency" }),
-        new(Builders<GlobalProductRetirementRequestOperation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.NextAttemptAtUtcTicksV1).Ascending(x => x.OperationId),
-            new() { Name = "ix_gp_retirement_tenant_recovery" })], cancellationToken);
+    private async Task EnsureIndexesAsync(CancellationToken cancellationToken)
+    {
+        await _operations.Indexes.CreateManyAsync([
+            new(Builders<GlobalProductRetirementRequestOperation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.OperationId),
+                new() { Unique = true, Name = "ux_gp_retirement_tenant_operation" }),
+            new(Builders<GlobalProductRetirementRequestOperation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.StartIdempotencyKey),
+                new() { Unique = true, Name = "ux_gp_retirement_tenant_idempotency" }),
+            new(Builders<GlobalProductRetirementRequestOperation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.NextAttemptAtUtcTicksV1).Ascending(x => x.OperationId),
+                new() { Name = "ix_gp_retirement_tenant_recovery" })], cancellationToken);
+        await EnsureStuckIndexesAsync(cancellationToken);
+    }
 }
