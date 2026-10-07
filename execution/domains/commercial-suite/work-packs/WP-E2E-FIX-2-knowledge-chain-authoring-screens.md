@@ -96,3 +96,31 @@ KORU/YAPMA: YENİ YAZMA KOMUTU YOK (AUD-001 26 sabit); E2-B2 / E4-B4'e DOKUNMA (
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — Web (699/0) · CRM Application (2303/0/5, PII flake) · mimari (38/1, 26 SABİT); build 0 hata; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–10. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "fix(crm,web): WP-E2E-FIX-2 — knowledge chain authoring fixes (product search, labels, content version, path slot/review, journey stage/publish)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), yeni hata kodları listesi, E3-B4 kural değişikliğinin etkisi (kim artık geri çekemiyor). §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-07)
+**Commit:** `dd7cad82a` (ajan `60f69933a`, FIX-1 + FIX-3 üzerine rebase, çakışmasız, ff). Push: test dalı.
+
+**CT K13 (FIX-1 + FIX-3 dahil taban üzerinde):**
+| Paket | Taban | Sonuç |
+|---|---|---|
+| CRM Application | 2342/0/5 | **2347/0/5** (+5) |
+| Web | 721/0 | **733/0** (+12) |
+| Mimari | 38/1 (26) | **38/1 (26 sabit)** |
+
+**Kod okuması:**
+- İçerik güncelleme: handler okunan sürümü +1 yapar, depo `Version == expected` koşuluyla yazar; tutmazsa 409 `knowledge_content_concurrency_conflict`. Diğer içerik yazarları (`UpdateAsync`) sürümü değiştirmediği için koşul bozulmaz.
+- Geri çekme: `SamePerson(actor, SubmittedBy)` değilse 403 `withdraw_not_submitter` (karar SoD'siyle aynı kişi kuralı); Web bayrağı `canManage && IsSubmitter`.
+- Yolculuk yayını sözleşmedeki mevcut kodlarla (`…_no_required_stage`, `…_overlapping_published_version`, `…_archived_no_mutation`) + yeni `…_concurrency_conflict`.
+- **Ek düzeltme (ajan bulgusu):** yolculuk Create / Edit sayfaları `_IndexL10n`'u hiç yüklemiyordu → form İngilizce yedeklere düşüyordu; eklendi.
+
+**CT sabotajı (ajanınkinden ayrı):** çakışma dönüşü yok sayıldı + yol tekrarında boş yol kodu sayıldı → **2 kırmızı** (`Update_content_after_an_intervening_write_is_409…`, `Path_repeat_count_never_counts_an_empty_path_code`). Geri alındı.
+
+**Bilinen / takip:**
+- Depodaki koşullu Mongo filtresi birim testte yok (test projesinde Mongo yok; Bilgi Yolu deposuyla aynı durum) → E4'te canlı.
+- İçerik **liste** ekranının ürün adı ucu (`api/product-options`) hâlâ 100'lük tek sayfa → 100'den sonraki ürünlerde listede kimlik görünebilir (küçük takip).
+- Kararsız test: `ContactWorkbookExportTests.ReferenceData_Sheet_Flags_Deprecated_Values_As_Not_Active` bir koşuda "same key: rels" (ilgisiz; PII flake gibi izlenir).
+- E3-B4 etkisi: göndermemiş yönetici artık geri çekemez; gönderen ayrıldıysa tur yalnız iş akışıyla kapanır.
+
+**E4 (CT, bekliyor):** içerik formunda "TUTUKON" araması · açılırlar TR etiketli · `KP-2026-269A07` stüdyosunda yuva etiketleri · `CEJ-2026-8AD806`'da "Yol tekrarı" rozeti, yeni aşamada Zorunlu açık, yol listesinde yalnız TUTUKON yolları, Türkçe etiketler (Edit sayfası).

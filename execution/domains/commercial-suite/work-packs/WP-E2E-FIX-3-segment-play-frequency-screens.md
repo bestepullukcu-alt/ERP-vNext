@@ -110,3 +110,31 @@ KORU/YAPMA: YENİ YAZMA KOMUTU YOK (AUD-001 26 sabit); oyun durum kümesi/göç 
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — Web (699/0) · CRM Application (2303/0/5, PII flake) · mimari (38/1, 26 SABİT); build 0 hata; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–10. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "fix(crm,web): WP-E2E-FIX-3 — single effective play version, segment reference values/products, candidate pushdown, Turkish search, play/frequency form fixes" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), oyunu segmentten seçen okuyucular listesi, E1-B2 canlı ölçüm tablosu + hangi blokların artık indirildiği + eşik, yeni dizin gerekip gerekmediği. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-07)
+**Commit:** `aaa174ba0` (ajan `299753a80`, FIX-1 + belge commit'leri üzerine rebase, ff). Push: test dalı.
+
+**CT K13 (FIX-1 dahil taban üzerinde):**
+| Paket | Taban | Sonuç |
+|---|---|---|
+| CRM Application | 2314/0/5 (FIX-1 sonrası) | **2342/0/5** (+28) |
+| Web | 711/0 | **721/0** (+10) |
+| Mimari | 38/1 (26) | **38/1 (26 sabit)** |
+
+**Kod okuması:**
+- **E5-B2:** kural tek yerde `StrategyTemplateReader` — `IsReplacedAt` (yerini bırakmış **ve** halefi aktif + yürürlükte) dışlanır; `InPreferenceOrder` = sürüm azalan → kod → kimlik. `VisitContentSequenceResolver` ve `VisitProvenanceDeriver` kendi sıralamasını bıraktı. VP-2'nin "v2 v3'ü yener" testi yeni kurala çevrildi (bilinçli; hata sabitleniyordu).
+- **E1-B2:** `SegmentCandidatePrefilter` yalnız **üst küme** üretiyor (bölge: mevcut kapsam çözücüsü; bağlantı: toplu ön-sorgu); bellekteki değerlendirme aynen. Eşik 50.000. Tam yerel kuralda önizleme sayısı `CountDocuments` (`CountedByStore`, örnek boş → ekran "—" gösteriyor, sayı görünüyor). Üyelik çözümü 10K sınırı değişmedi.
+- **Kabuk uyarısı:** `WarningMessage` artık sarı toast; yalın resx anahtarı (yalnız harf/rakam) sessiz kalır.
+
+**CT sabotajı (ajanınkinden ayrı):** halefin `IsActive()` kontrolü kaldırıldı + bağlantı ön-sorgusu boş küme → **3 kırmızı** (`A_successor_that_is_not_live…(draft|archived)`, `Link_blocks_role_and_primary_are_pushed_and_the_members_are_identical`). Geri alındı.
+
+**Canlı ölçüm (ajan, salt okuma):** gastro 910 · aile 44.568 · dahiliye 10.574 · üçü 56.052 · Beste'nin 4 ilçesiyle kesişim **1.850**. 422'nin nedeni kümenin kendisinin büyük olması (kişide ilçe alanı yok; bölge yalnız bağlantı → hesap zincirinden).
+
+**Takipler:**
+- Üyelik çözümü (kampanya hedefleme) 10K sınırı: 56K'lık segment önizlemede sayılır ama çözülemez. Planlamadaki oyun türetme tek kişi değerlendirmesi kullandığı için etkilenmez. Karar gerekirse Faz 3'te.
+- 8 denetleyicinin `WarningMessage`'a yazdığı ham resx anahtarları (bugüne kadar hiç görünmüyordu) → yerelleştirip göster (küçük iş).
+- İsteğe bağlı dizin adayları: `contacts {TenantId, Specialty}`, `account_territory_assignments {TenantId, TerritoryNodeId, AssignmentStatus}` (eklenmedi).
+
+**E4 (CT, bekliyor):** segment düzenleyicide uzmanlık çipleri + ürün listesinde TUTUKON · oyun formunda arşivli segment adı · TUTUKON önizlemesi v2'nin satırı · gastro+aile+dahiliye önizlemesi sayı · sıklık formunda bant grubu kırmızı + odak.
