@@ -35,9 +35,11 @@ by Platform Shared Services and tenant business modules.
     scope (separate MOD-0290 follow-ups). Placement was reconfirmed against MOD-0290-FU01 §1: Brand/Product
     runtime is **MDM-owned**, never CRM-owned.
   - Item / material slice: [MOD-0290-FU04 Item / Material Master](module-packs/MOD-0290-FU04-item-material-master.md)
-    — `status: draft`, `runtime_code_allowed: false` (2026-10-06, G0 document slice). Separate `Item` aggregate for
-    raw material, packaging material, semi-finished and consumable items; Finished Good stays as it is; read
-    contract `product-master-bundle` v1.1 (`SkuLevel: Item`, additions only). Code opens slice by slice (G1–G5).
+    — `status: draft`, `runtime_code_allowed: false` (2026-10-06 G0; revised 2026-10-07 S0 to the inventory-team
+    agreement). Separate `Item` aggregate with six material types (active ingredient, excipient, raw material,
+    primary / secondary packaging, intermediate); stock-behaviour fields added to GSKU / LSKU / Finished Good (Finished
+    Good stays a separate record, parent = GSKU); single read contract `product-master-bundle` v1.1 (`ItemKind`,
+    `SkuLevel: Item`, additions only). Code opens slice by slice (S1–S7).
 
 ## Frontend / Gateway Scope Exception (MOD-0290-FU02 only)
 
