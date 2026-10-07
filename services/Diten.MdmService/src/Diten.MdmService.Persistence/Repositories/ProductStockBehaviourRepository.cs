@@ -23,6 +23,10 @@ namespace Diten.MdmService.Persistence.Repositories;
  *    reservation after this write finds the version moved and is refused by its own filter (DRAFT_CHANGED).
  *  - LSKU: a submit fences the LSKU (ActiveLifecycleOperation, conditioned on the version) before it starts; this write
  *    requires no fence, the fence requires this write's version — exactly one of the two lands.
+ *    S3 FIX1 B1: an ACTIVE retirement request blocks it too — after its decision the request gives the lock back and only
+ *    then completes by reading the LSKU at base + 2; a stock edit in that window would strand it for good. Active =
+ *    IsActive not false and not Completed, of THIS LSKU, in this tenant, not deleted (read before the write; a request
+ *    that takes the lock after that read meets the write's ActiveLifecycleOperation / version conditions).
  *  - Finished Good: its identity operation does not write the Finished Good. An unfinished one is refused here; one
  *    reserved after the operation read keeps the version it read, and its own version check later finds the record
  *    moved — the existing "no state without a way out" answer, never an approval of facts the record no longer has.

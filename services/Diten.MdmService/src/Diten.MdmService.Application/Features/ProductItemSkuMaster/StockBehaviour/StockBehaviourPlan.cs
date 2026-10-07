@@ -57,9 +57,6 @@ public sealed class StockBehaviourPlan
             Keys((IEnumerable<ItemUomConversion>)a).SequenceEqual(Keys((IEnumerable<ItemUomConversion>)b)),
             (a, b) => Keys((IEnumerable<ItemUomConversion>)b).All(Keys((IEnumerable<ItemUomConversion>)a).Contains));
 
-    /// <summary>The list fields a non-Draft record extended (S3 FIX1 M5) — for the report and the tests.</summary>
-    public HashSet<string> Appended { get; } = new(StringComparer.Ordinal);
-
     private void Apply(string name, object? requested, object? current, Func<object, object, bool> equal,
         Func<object, object, bool>? keepsEveryStored = null)
     {
@@ -81,7 +78,6 @@ public sealed class StockBehaviourPlan
             // Every stored item is still there, unchanged, and new ones are added: not a change of a filled value.
             // The version CAS covers it (no first-fill condition: the field is not empty).
             Sets[name] = requested;
-            Appended.Add(name);
             return;
         }
         LockedField ??= name;

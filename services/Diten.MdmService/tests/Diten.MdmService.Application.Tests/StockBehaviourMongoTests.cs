@@ -669,6 +669,9 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
             }, intent);
         Assert.True(cancelled.Succeeded, cancelled.ErrorCode);
         Assert.Null(cancelled.FinishedGood!.Gtin);
+        // S3 FIX2 (CT decision): the regulated identifier stays traceable to the draft that held it.
+        Assert.Equal("04006381333931", cancelled.FinishedGood.ReleasedGtin);
+        Assert.Equal("04006381333931", (await FinishedGoods.Find(x => x.Id == cancelledDraft.Id).SingleAsync()).ReleasedGtin);
 
         var retaken = await AssignGtin(replacement, replacement.Version, "04006381333931");
 
@@ -710,14 +713,86 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
         Assert.Contains(StockBehaviourStoreCodes.FieldLocked, removed.Errors!);
     }
 
-    private async Task<Guid> SeedLskuRetirementAsync(Lsku lsku, LskuRetirementRequestCheckpoint checkpoint, bool active)
+    // ---------------------------------------------------------------- S3 FIX2 — the B1 query, condition by condition
+
+    [Fact]
+    public async Task An_ended_retirement_request_that_holds_nothing_does_not_block_the_stock_edit()
+    {
+        // Manual reconciliation with nothing held: the processor gave the lock back and the request left the active index
+        // (IsActive = false) — it must never block this LSKU's stock edits for good.
+        var (_, lsku) = await SeedLskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+        await SeedLskuRetirementAsync(lsku, LskuRetirementRequestCheckpoint.ManualReconciliationRequired, active: false);
+
+        var response = await SetLsku(lsku, serial: true);
+
+        Assert.True(response.IsSuccessful, string.Join(",", response.Errors ?? []));
+    }
+
+    [Fact]
+    public async Task A_request_in_manual_reconciliation_that_still_holds_the_lsku_blocks_the_stock_edit()
+    {
+        var (_, lsku) = await SeedLskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+        await SeedLskuRetirementAsync(lsku, LskuRetirementRequestCheckpoint.ManualReconciliationRequired, active: true,
+            disposition: ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired);
+
+        var response = await SetLsku(lsku, serial: true);
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Contains(StockBehaviourStoreCodes.BlockedByOperation, response.Errors!);
+    }
+
+    [Fact]
+    public async Task Another_lskus_active_retirement_request_does_not_block_this_lsku()
+    {
+        var (_, lsku) = await SeedLskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+        var (_, other) = await SeedLskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+        await SeedLskuRetirementAsync(other, LskuRetirementRequestCheckpoint.DecisionApplied, active: true);
+
+        var response = await SetLsku(lsku, serial: true);
+
+        Assert.True(response.IsSuccessful, string.Join(",", response.Errors ?? []));
+    }
+
+    [Fact]
+    public async Task Another_tenants_active_retirement_request_on_the_same_lsku_id_does_not_block_it()
+    {
+        var (_, lsku) = await SeedLskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+        var foreignTenant = Guid.NewGuid();
+        await SeedLskuRetirementAsync(lsku, LskuRetirementRequestCheckpoint.DecisionApplied, active: true, tenantId: foreignTenant);
+        try
+        {
+            var response = await SetLsku(lsku, serial: true);
+            Assert.True(response.IsSuccessful, string.Join(",", response.Errors ?? []));
+        }
+        finally
+        {
+            await _database.GetCollection<LskuRetirementRequestOperation>(LskuRetirementRequestOperationRepository.CollectionName)
+                .DeleteManyAsync(x => x.TenantId == foreignTenant);
+        }
+    }
+
+    [Fact]
+    public async Task A_deleted_active_retirement_request_does_not_block_the_stock_edit()
+    {
+        var (_, lsku) = await SeedLskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+        await SeedLskuRetirementAsync(lsku, LskuRetirementRequestCheckpoint.DecisionApplied, active: true, deleted: true);
+
+        var response = await SetLsku(lsku, serial: true);
+
+        Assert.True(response.IsSuccessful, string.Join(",", response.Errors ?? []));
+    }
+
+    private async Task<Guid> SeedLskuRetirementAsync(Lsku lsku, LskuRetirementRequestCheckpoint checkpoint, bool active,
+        Guid? tenantId = null, Guid? lskuId = null, bool deleted = false,
+        ProductIdentityWorkflowRecoveryDisposition disposition = ProductIdentityWorkflowRecoveryDisposition.None)
     {
         var operationId = Guid.NewGuid();
         await _database.GetCollection<LskuRetirementRequestOperation>(LskuRetirementRequestOperationRepository.CollectionName)
             .InsertOneAsync(new LskuRetirementRequestOperation
             {
-                Id = Guid.NewGuid(), TenantId = _tenantId, OperationId = operationId, LskuId = lsku.Id,
+                Id = Guid.NewGuid(), TenantId = tenantId ?? _tenantId, OperationId = operationId, LskuId = lskuId ?? lsku.Id,
                 BaseLskuVersion = lsku.Version - 2, IsActive = active, Checkpoint = checkpoint,
+                IsDeleted = deleted, RecoveryDisposition = disposition,
                 StartIdempotencyKey = "start-" + operationId.ToString("N"), OperationFingerprint = new string('c', 64)
             });
         return operationId;

@@ -597,7 +597,7 @@ string, `LifecycleStatus` `$in` Draft / PendingIdentityApproval / IdentityApprov
   check alone (two simultaneous assignments of one GTIN could both land). `mdm.stock_behaviour.gtin_index_build_failed{error}`
   counts the failed builds by error type (also logged as a warning).
 - **If the build keeps failing on a duplicate** (an `E11000` in the log): two live Finished Goods already hold one GTIN.
-  Find them read-only, then correct one through MDM (never by a direct write):
+  Find them read-only (never correct by a direct write):
 
 ```js
 db.mdm_finished_goods.aggregate([
@@ -607,7 +607,11 @@ db.mdm_finished_goods.aggregate([
 ])
 ```
 
-- A cancelled Finished Good draft gives its GTIN back in the cancel itself (S3 FIX1); it no longer blocks a new FG.
+  The way out depends on the holder: **a Draft** — cancel that draft (the cancel gives the GTIN back, below); **an
+  identity-approved Finished Good** — its GTIN is locked (O-8) and there is NO correction step yet (the MOD-0023
+  critical-field correction is a later slice): the owner / Control Tower decide, MDM offers no exit today.
+- A cancelled Finished Good draft gives its GTIN back in the cancel itself (S3 FIX1) and keeps it as `ReleasedGtin`
+  (S3 FIX2, traceability); it no longer blocks a new FG.
 
 ### 6. Not covered here — open before a live bring-up
 

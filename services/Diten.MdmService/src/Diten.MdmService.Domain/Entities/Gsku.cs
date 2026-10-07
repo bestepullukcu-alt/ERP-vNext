@@ -29,7 +29,8 @@ public sealed class Gsku : EntityBase, IAuditIntentAggregate
 
     // WP-MDM-ITEM-MASTER (MOD-0290-FU04) S3 — stock behaviour (pack §4.2). Every field is null on a document written
     // before S3 ("not set yet", never false / 0) and is written only by its own stock-behaviour command, which moves the
-    // version. A filled value is locked on a non-Draft record (O-8, 409 STOCK_BEHAVIOUR_FIELD_LOCKED).
+    // version. A filled value is locked on a non-Draft record (O-8, 409 STOCK_BEHAVIOUR_FIELD_LOCKED) — except the lists
+    // (conversions, storage conditions): on a non-Draft record they only GAIN items (S3 FIX1 M5, pack §4.4 rule 8).
     // The box ↔ pack conversion is derived from PackQuantity + PackUomCode (O-14) and never stored here.
     public string? BaseUomCode { get; set; }
     public List<ItemUomConversion>? UomConversions { get; set; }

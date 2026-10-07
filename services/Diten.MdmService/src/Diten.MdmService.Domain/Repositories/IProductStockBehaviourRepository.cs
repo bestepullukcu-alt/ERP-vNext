@@ -9,7 +9,9 @@ namespace Diten.MdmService.Domain.Repositories;
 /// version: the record is Draft or IdentityApproved as read, no lifecycle operation holds it and no identity operation
 /// of it is unfinished — otherwise <see cref="StockBehaviourStoreCodes.BlockedByOperation"/>. A field filled for the
 /// first time on a non-Draft record is written only while it is still empty (missing or null — O-8, R2 / R3). The
-/// identity flow's own writes and filters are not touched; no audit intent is written (path b — CT decision 2).
+/// identity flow's own writes and filters are not touched — with ONE narrow, CT-decided exception elsewhere: the Finished
+/// Good draft cancel unsets the GTIN and keeps it as ReleasedGtin (S3 FIX1 R2 / FIX2); no audit intent is written (path b
+/// — CT decision 2).
 /// </summary>
 public interface IProductStockBehaviourRepository
 {
