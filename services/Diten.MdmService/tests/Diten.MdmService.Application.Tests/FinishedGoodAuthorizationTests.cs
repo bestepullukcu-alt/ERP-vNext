@@ -13,6 +13,10 @@ public sealed class FinishedGoodAuthorizationTests
     [InlineData(nameof(FinishedGoodsController.GetById), "mdm.finished-goods.read")]
     [InlineData(nameof(FinishedGoodsController.GetGskuSelector), "mdm.finished-goods.create")]
     [InlineData(nameof(FinishedGoodsController.CreateDraft), "mdm.finished-goods.create")]
+    // FG FIX1 (review m8): the audited Draft cancel undoes a creation — the create key (LSKU precedent).
+    [InlineData(nameof(FinishedGoodsController.CancelDraft), "mdm.finished-goods.create")]
+    // FG FIX1 item 2: the operator repair of leaked admissions — the recover key, as for LSKU.
+    [InlineData(nameof(FinishedGoodsController.RepairChildAdmissions), "mdm.product-identity.lifecycle-operations.recover")]
     public void Every_endpoint_fails_closed_on_the_exact_named_permission(string methodName, string permission)
     {
         var method = typeof(FinishedGoodsController).GetMethod(methodName)!;
@@ -23,7 +27,7 @@ public sealed class FinishedGoodAuthorizationTests
     }
 
     [Fact]
-    public void Controller_declares_exactly_two_permission_candidates_and_no_manage_key()
+    public void Controller_declares_exactly_its_permission_candidates_and_no_manage_key()
     {
         const string prefix = "Permission:";
         var permissions = typeof(FinishedGoodsController)
@@ -33,7 +37,7 @@ public sealed class FinishedGoodAuthorizationTests
             .ToHashSet(StringComparer.Ordinal);
 
         Assert.Equal(
-            ["mdm.finished-goods.create", "mdm.finished-goods.read"],
+            ["mdm.finished-goods.create", "mdm.finished-goods.read", "mdm.product-identity.lifecycle-operations.recover"],
             permissions.OrderBy(permission => permission, StringComparer.Ordinal));
         Assert.DoesNotContain(permissions, permission => permission.Contains("manage", StringComparison.OrdinalIgnoreCase));
     }

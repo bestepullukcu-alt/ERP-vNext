@@ -262,7 +262,12 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt)
+    {
+        // FG FIX1 item 1: the audited Draft cancellation as reads see it (None / PendingAudit / Cancelled) — it takes
+        // precedence over the stored Draft for actions and display; derived, never a stored flag.
+        public FinishedGoodCancellationDisposition CancellationDisposition { get; init; }
+    }
 
     public sealed record FinishedGoodDetailDto(
         Guid Id,
@@ -273,7 +278,12 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt)
+    {
+        // FG FIX1 item 1: the audited Draft cancellation as reads see it (None / PendingAudit / Cancelled) — it takes
+        // precedence over the stored Draft for actions and display; derived, never a stored flag.
+        public FinishedGoodCancellationDisposition CancellationDisposition { get; init; }
+    }
 
     public sealed record FinishedGoodGskuSelectorDto(
         Guid Id,

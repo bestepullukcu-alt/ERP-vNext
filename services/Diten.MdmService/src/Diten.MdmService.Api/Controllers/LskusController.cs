@@ -194,6 +194,40 @@ public sealed class LskusController : CustomBaseController
             cancellationToken));
     }
 
+    // LSKU FIX1 B3: cancel a draft LSKU (it then no longer blocks its GSKU's retirement).
+    [HttpPost("{id:guid}/draft/cancel")]
+    [HasPermission(LskuIdentityLifecyclePermissions.CancelDraft)]
+    public async Task<IActionResult> CancelDraft(
+        Guid id,
+        [FromBody] RetireLskuIdentityApiRequest request,
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        if (request is null || request.ExpectedVersion is null || request.Comment is not null
+            || HasUnknownFields(request.UnmappedFields))
+        {
+            return InvalidLifecycleRequest();
+        }
+        if (!TryParseOperationId(idempotencyKey, out var operationId))
+        {
+            return InvalidIdempotencyKey();
+        }
+
+        return CreateActionResultInstance(await _mediator.Send(
+            new CancelLskuDraftCommand(id, request.ExpectedVersion.Value, operationId, request.ReasonCode),
+            cancellationToken));
+    }
+
+    // LSKU FIX1 B1 (c): operator repair of admissions a failed creation left on the parent GSKU. No screen calls it.
+    [HttpPost("operator/child-admission-repairs")]
+    [HasPermission(LskuIdentityLifecyclePermissions.RecoverLifecycleOperation)]
+    public async Task<IActionResult> RepairChildAdmissions(
+        [FromQuery] int limit = 100,
+        [FromQuery] int minimumAgeMinutes = 15,
+        CancellationToken cancellationToken = default) =>
+        CreateActionResultInstance(await _mediator.Send(
+            new RepairLskuChildAdmissionsCommand(limit, minimumAgeMinutes), cancellationToken));
+
     private static bool TryParseOperationId(string? value, out Guid operationId)
     {
         operationId = Guid.Empty;

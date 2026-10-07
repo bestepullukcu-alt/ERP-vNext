@@ -41,7 +41,8 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
 
         Assert.Equal(20, roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys.Count);
         Assert.Equal(7, roles[ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole].PermissionKeys.Count);
-        Assert.Equal(10, roles[ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole].PermissionKeys.Count);
+        // FG FIX1 item 9 (CT decision B): 10 → 9 — direct FG retire is a system action, no longer the steward's.
+        Assert.Equal(9, roles[ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole].PermissionKeys.Count);
 
         var approver = roles[ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole].PermissionKeys;
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart,
@@ -62,6 +63,7 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRequestRetirement, retirement);
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart, retirement);
         Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRetire, retirement);
+        Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.FinishedGoodsRetire, retirement);
         Assert.DoesNotContain(
             ProductIdentityLifecycleEntitlementGrantProfile.ProductIdentityLifecycleOperationRecover,
             ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles.SelectMany(role => role.PermissionKeys));

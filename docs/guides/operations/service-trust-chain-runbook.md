@@ -264,6 +264,50 @@ rules as the Global Product. What differs is only their names:
 | GSKU identity | `FirstGskuIdentityWorkflow` | `FirstGskuIdentityWorkflowWorker` | `gsku` | `GSKU-IDENTITY` |
 | GSKU correction | `GskuCorrectionWorkflow` | `GskuCorrectionWorkflowWorker` | `GskuCorrection` | `GSKU-CORRECTION` |
 | GSKU retirement request | `GskuRetirementRequestWorkflow` | `GskuRetirementRequestWorkflowWorker` | `GskuRetirementRequest` | `GSKU-RETIREMENT-REQUEST` |
+| LSKU identity | `LskuIdentityWorkflow` | `LskuIdentityWorkflowWorker` | `lsku` | `LSKU-IDENTITY` |
+| LSKU retirement request | `LskuRetirementRequestWorkflow` | `LskuRetirementRequestWorkflowWorker` | `LskuRetirementRequest` | `LSKU-RETIREMENT-REQUEST` |
+
+*LSKU rows (WP-MDM-LSKU-ACCEPT-01 FIX1 B4, FIX2 item 12):* the same rules. Tracked: the two template codes, the identity
+reason code `LSKU_IDENTITY_APPROVAL` and the identity worker's `LeaseOwner` in MDM's `appsettings.Development.json`;
+Platform's two `TrustedWorkflowStartAuthorization` entries (`lsku` / `LSKU-IDENTITY`, `LskuRetirementRequest` /
+`LSKU-RETIREMENT-REQUEST`) for the default client — Platform matches the client, service, audience, object type and
+template code exactly. Written by the bootstrap: `Enabled` and `CandidatePrincipalIds` of both flows and `Enabled` of
+both workers (a non-default `--client-code` also gets both Platform entries). A local file written before FIX1 lacks the
+LSKU sections and is reported as "not a complete setup": move it aside and run the bootstrap again. One published
+approval definition per LSKU flow and tenant (step 4). The stuck child-creation admission gauge
+(`GSKU_CHILD_ADMISSION`, every child kind) runs on its own worker (`GskuChildAdmissionGauge:Enabled`, default on,
+`:IntervalSeconds` 300) — it does not need any LSKU worker to be on. It counts admissions on GSKUs only: the Global
+Product's own `ChildCreationAdmissions` (GSKU creation under a GP) are not counted by it.
+
+*LSKU gauges (FIX3 items 2, 12, 14, 15):* the same worker also records the `LSKU_IDENTITY` flow, so it is counted even
+while the identity worker is off; `mdm.product_identity.recovery.count_failed{flow}` = 1 says the last count failed.
+Each count has its own switch (FIX4 item 12): `GskuChildAdmissionGauge:Enabled` (the admission count) and
+`GskuChildAdmissionGauge:LskuIdentityEnabled` (the `LSKU_IDENTITY` gauges), both default on; the worker runs while
+either is on, so turning the admission count off no longer silences the LSKU identity gauges. A wait at its limit is
+logged as an Error ONCE, by the recovery runner when the operation newly becomes stuck (FIX4 item 6); a repeat by the
+maker keeps the limit and records the current cause in `RetryLimitCauseCode`. *Legacy submits (FIX5, information):* an identity operation written
+before the start-sent mark existed counts its 2-minute settle window from its last update read before the claim; every
+refused attempt on it writes a new update, so the window starts again after each refusal — such an operation is only
+closed (draft cancel, reconciliation) once it has been left alone for the window (measured: 0 such documents in Dev).
+
+| gauge (`flow=LSKU_IDENTITY`) | counts | what to do |
+|---|---|---|
+| `manual_reconciliation` | stuck (manual reconciliation), parked for the maker (`AwaitingMakerReplay`), and a wait at its limit (Retryable with `LSKU_IDENTITY_WORKFLOW_RETRY_LIMIT_REACHED`: a provider or store that keeps refusing — e.g. a wrong service identity, 401/403 — keeps the approval waiting, counted, logged once) | remove the cause; the next worker attempt succeeds and the count resets |
+| `needing_a_person` | stuck operations their requester's repeat cannot settle, and a withdrawal whose cancel was left unanswered for more than an hour (`WithdrawalOutcomeUnknown` / parked for its maker) | ask the requester to repeat the same withdrawal; otherwise escalate |
+
+Operator repair of leaked admissions (`POST /api/lskus/operator/child-admission-repairs`, recover key): an admission is
+never released while a live row or a live code can still become the child. Past the cutoff the repair first BURNS a
+code that can no longer become one — consumed for an identity whose row never came, bound to a cancelled row, or
+reserved and never consumed — and only then releases the admission, with an audit intent on the GSKU in the same
+write. A refused burn keeps the admission and is reported (`LSKU_ADMISSION_REPAIR_BURN_REFUSED:<code>`).
+
+**A burn needs a replica set (FIX4 item 11).** Burning a code is one Mongo transaction (it reads "no live row bound" and
+burns in the same transaction). On a standalone `mongod` every burn is refused with
+`CODE_RESERVATION_BURN_TRANSACTION_UNAVAILABLE` (503): an LSKU draft cancel deletes the draft and answers 503 (its code
+stays consumed, never burned), and a creation's repeat or this repair cannot burn either — the admission stays, counted.
+This is the GSKU S5 stance (no transaction, no irreversible step); run MDM on a replica set (a single-node one is
+enough). Only the LSKU kind can be burned today: an FG / GSKU / GP code burn is refused with
+`CODE_RESERVATION_BURN_KIND_NOT_TRANSACTIONAL` until that insert writes its reservation inside its own transaction.
 
 - **Tracked** (not secret): the three template codes and the identity reason code in MDM's
   `appsettings.Development.json`, and Platform's three `TrustedWorkflowStartAuthorization` entries for the default

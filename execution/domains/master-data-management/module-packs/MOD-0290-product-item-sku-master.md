@@ -1203,6 +1203,13 @@ navigation and Production/operational enablement remain separate gates.
   `IDENTITY_APPROVED`. `PENDING_IDENTITY_APPROVAL`, `RETIRED`, missing, cross-tenant and soft-deleted GSKUs fail closed
   with the same non-disclosing referenceability failure. This referenceability decision applies only to Finished Good
   Draft creation and does not imply approval or production usability.
+- **Correction (WP-MDM-FG-ACCEPT-01 FIX1 item 10, 2026-10-07) — measured implementation, which governs:** Draft create
+  and the GSKU selector accept only a same-tenant, non-deleted GSKU whose lifecycle is `IDENTITY_APPROVED` **and** whose
+  Product Definition Revision is `IDENTITY_APPROVED` (`GskuRepository.ReferenceableFilter` / `GetReferenceableByIdAsync`).
+  A `DRAFT` GSKU is **not** referenceable. The owner decision recorded at the Phase-1 checklist (`DRAFT |
+  IDENTITY_APPROVED`) was narrowed by the GSKU acceptance rounds and is kept as history only. In an Enforced
+  product-scope tenant the product scope is checked on every Finished Good door (list, detail, selector, create, Draft
+  cancel), and an out-of-scope GSKU or Finished Good answers as not found.
 
 Read-only list/detail/quick-view projections contain only:
 
@@ -1279,7 +1286,17 @@ The only permission candidates for this step are:
 - `mdm.finished-goods.create` — the create form's GSKU selector and Draft create operation.
 
 No `update`, `delete`, `bulk-delete`, `submit`, `approve`, `retire`, reservation-management or broad `manage` key is
-introduced. These two strings are candidates only. Catalog/seed/grant/role and tenant-entitlement onboarding remains a
+introduced. **Correction (FG FIX1 items 1 and 9, 2026-10-07):** the audited Draft cancellation
+(`POST api/finished-goods/{id}/cancel-draft`) is authorized in v1 with the create key `mdm.finished-goods.create`; the
+full key comes in a later Auth round (the package's own `mdm.finished-goods.cancel-draft` key needs an Auth role-matrix
+change in that round). The FG operator repair of leaked parent admissions
+(`POST api/finished-goods/operator/child-admission-repairs`, no screen) uses the existing non-human key
+`mdm.product-identity.lifecycle-operations.recover`. The FG submit permission is declared in v1 without its endpoint (it
+depends on Auth's full key set); FG retire is a system action, as it is for GSKU; both become active together with their
+endpoints in the FG lifecycle round. (Control Tower decision B, FG FIX1 item
+9: the manifest declares `RETIRE` as a "System" action and Auth lists `mdm.finished-goods.retire` among the non-human
+keys — no role grants it and the sync removes a historical human grant; `mdm.finished-goods.submit` stays declared,
+granting nothing until its endpoint exists.) These two strings are candidates only. Catalog/seed/grant/role and tenant-entitlement onboarding remains a
 separately approved MOD-0018 owner delivery. This named step neither grants the permissions nor authorizes Auth or
 Platform runtime changes. Endpoint/user enablement is blocked until onboarding and end-to-end enforcement evidence
 close.
@@ -5697,6 +5714,19 @@ Platform MOD-0021-FU01 amendment, `ready-for-dev`, Production and live acceptanc
 by this link.
 
 ## 22. P5-03 — Selected first-five audit delivery named step (2026-09-29, APPROVED CODE/TEST START)
+
+**FG exclusion and generic-worker dependency (WP-MDM-FG-ACCEPT-01 FIX1 item 10, 2026-10-07):** `FinishedGood` is not
+an allowed aggregate type of this selected path (22.1), and this round does not extend it. The Finished Good Draft
+cancellation (FG FIX1 item 1) is finished only by a validated central receipt of its `FinishedGoodDraftCancelled`
+intent; its intent carries the contract version and a GUID correlation so the **generic** G4 delivery
+(`AuditIntentDeliveryWorker`, off by default) can deliver it once the temporal-storage scalar cutover is active.
+Until that worker and cutover are live, a cancelled Draft Finished Good stays `PendingAudit` and keeps blocking its GSKU
+— in the live environment the blocker remains until BL-559 (a Draft Finished Good locks its GSKU out of correction and
+retirement — no FG exit, the GSKU counts it as a blocker; FG FIX1 item 1's audited Draft cancellation is its fix) and
+BL-563 (product identity audit intents do not reach the central audit live: the delivery worker is off, the temporal
+cutover is off, and the intents carry an empty `ContractVersion` and a non-GUID `CorrelationId` — so an FG Draft
+cancellation cannot settle live) are resolved. The audit-ledger row for this dependency stays a known debt; it is
+not widened here.
 
 **Superseding approval record (2026-09-29):** the user explicitly answered `onaylıyorum` to the consolidated three-step
 code/test approval. This named step's Phase 1.5 design and exact **8 runtime + 4 test** paths are approved for bounded

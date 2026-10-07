@@ -230,8 +230,18 @@ public sealed class LskuRepository : ILskuRepository
 
         try
         {
-            await _lskus.InsertOneAsync(lsku, cancellationToken: cancellationToken);
-            return new(true, lsku);
+            // A transient transaction error that is NOT the code being burned (another insert of the same market or key
+            // still in its transaction, a failover, a network cut) is retried with backoff (the FirstGsku ReserveAttempts
+            // shape): the next attempt meets a committed row as an ordinary duplicate key (a definite refusal). Running
+            // out of attempts is NOT a refusal — LSKU FIX4 item 1: "a wait never burns" — the outcome stays ambiguous
+            // (202, the code and the admission kept for the same key's repeat).
+            for (var attempt = 1; ; attempt++)
+            {
+                var inserted = await InsertBoundToLiveCodeAsync(lsku, reservationFilter, cancellationToken);
+                if (inserted.ErrorCode != InsertConflictRetry) return inserted;
+                if (attempt >= InsertAttempts) return AmbiguousWrite();
+                await Task.Delay(TimeSpan.FromMilliseconds(50 << attempt), cancellationToken);
+            }
         }
         catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
@@ -273,7 +283,72 @@ public sealed class LskuRepository : ILskuRepository
         {
             return AmbiguousWrite();
         }
+        // LSKU FIX5 K6: a commit whose result is unknown (the driver's UnknownTransactionCommitResult label, on a
+        // command error or otherwise) and a server-selection timeout are not refusals — the row may or may not be
+        // there: ambiguous (202), never burned, the admission kept for the same key's repeat (formerly a 500).
+        catch (MongoException exception) when (exception.HasErrorLabel("UnknownTransactionCommitResult"))
+        {
+            return AmbiguousWrite();
+        }
+        catch (TimeoutException)
+        {
+            return AmbiguousWrite();
+        }
     }
+
+    /*
+     * LSKU FIX3 item 5 (c), CT decision (A): the row goes in only with its code still live — in ONE transaction the
+     * reservation is written (conditioned on Consumed for this identity and not Burned) and the row inserted. The
+     * reservation write is UpdatedAt only: metadata, outside its Version and its audit-intent Pre/PostVersion chain;
+     * it exists to make an overlapping burn (CodeReservationRepository.BurnIdentityBindingAsync, which reads "no live
+     * row bound" in its own transaction) and this insert fail each other with a write conflict. A burn that committed
+     * first makes the condition fail: CODE_RESERVATION_BURNED, no row. Without transactions (a standalone mongod) no
+     * burn can happen at all (it is refused), so the plain insert is kept there.
+     */
+    // LSKU FIX3 5 (c) tests only: a barrier inside the insert's transaction, before its reservation write.
+    internal Func<Task>? BeforeReservationWriteForTests { get; set; }
+
+    private async Task<LskuCreateResult> InsertBoundToLiveCodeAsync(Lsku lsku, FilterDefinition<CodeReservation> reservationFilter,
+        CancellationToken cancellationToken)
+    {
+        using var session = await _lskus.Database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+        try
+        {
+            session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+            if (BeforeReservationWriteForTests is { } barrier) await barrier();
+            var touched = await _reservations.UpdateOneAsync(session,
+                reservationFilter & Builders<CodeReservation>.Filter.Ne(x => x.BindingState, CodeReservationBindingState.Burned),
+                Builders<CodeReservation>.Update.Set(x => x.UpdatedAt, DateTimeOffset.UtcNow),
+                cancellationToken: cancellationToken);
+            if (touched.MatchedCount != 1)
+            {
+                await session.AbortTransactionAsync(cancellationToken);
+                return new(false, null, "CODE_RESERVATION_BURNED");
+            }
+            await _lskus.InsertOneAsync(session, lsku, cancellationToken: cancellationToken);
+            await session.CommitTransactionAsync(cancellationToken);
+            return new(true, lsku);
+        }
+        catch (Exception exception) when (exception is NotSupportedException || exception is MongoCommandException { Code: 20 })
+        {
+            await _lskus.InsertOneAsync(lsku, cancellationToken: cancellationToken);
+            return new(true, lsku);
+        }
+        catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError")
+                                               && exception is not MongoWriteException)
+        {
+            // A write conflict: nothing of ours committed. A burn that won leaves the code burned; anything else
+            // (another insert in flight) is decided by trying again.
+            var code = await _reservations.Find(Builders<CodeReservation>.Filter.Eq(x => x.Id, lsku.CodeReservationId))
+                .FirstOrDefaultAsync(cancellationToken);
+            return code?.BindingState == CodeReservationBindingState.Burned
+                ? new(false, null, "CODE_RESERVATION_BURNED")
+                : new(false, null, InsertConflictRetry);
+        }
+    }
+
+    private const string InsertConflictRetry = "LSKU_INSERT_CONFLICT_RETRY";
+    internal const int InsertAttempts = 4;
 
     public Task<LskuLifecycleWriteResult> SubmitIdentityAsync(
         Guid id,
@@ -393,9 +468,121 @@ public sealed class LskuRepository : ILskuRepository
                 .Set(x => x.UpdatedAt, auditIntent.TimestampUtc).Inc(x => x.Version, 1)
                 .Push(x => x.AuditIntents, auditIntent),
             new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
-        return updated is null ? new(false, await GetByIdAsync(id, cancellationToken),
-            "LSKU_RETIREMENT_DECISION_CONFLICT") : new(true, updated);
+        if (updated is not null) return new(true, updated);
+        // LSKU FIX1 S3: the refusal says what it was — the cap waits for delivery, a moved version is retried
+        // (counted), anything else is the record's and will not change by itself.
+        var current = await GetByIdAsync(id, cancellationToken);
+        return new(false, current, current is null ? "LSKU_NOT_FOUND"
+            : current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate ? AuditCapacityReached
+            : current.Version != expectedVersion ? "LSKU_CONCURRENCY_CONFLICT"
+            : "LSKU_RETIREMENT_DECISION_CONFLICT");
     }
+
+    public async Task<LskuLifecycleWriteResult> FenceIdentitySubmitAsync(
+        Guid id, int expectedVersion, Guid operationId, CancellationToken cancellationToken = default)
+    {
+        if (id == Guid.Empty || operationId == Guid.Empty || expectedVersion < 0)
+            return new(false, null, "LSKU_IDENTITY_SUBMIT_FENCE_CONTRACT_INVALID");
+        var fence = new LskuActiveLifecycleOperationBinding(LskuLifecycleOperationKind.IdentitySubmit, operationId, expectedVersion);
+        var updated = await _lskus.FindOneAndUpdateAsync(
+            ActiveFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Lsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Lsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
+            & (Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+               | Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, fence)),
+            Builders<Lsku>.Update.Set(x => x.ActiveLifecycleOperation, fence),
+            new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, updated);
+        var current = await GetByIdAsync(id, cancellationToken);
+        return new(false, current, current is null ? "LSKU_NOT_FOUND" : "LSKU_IDENTITY_SUBMIT_TARGET_CHANGED");
+    }
+
+    public async Task<LskuLifecycleWriteResult> ReleaseIdentitySubmitFenceAsync(
+        Guid id, Guid operationId, CancellationToken cancellationToken = default)
+    {
+        var updated = await _lskus.FindOneAndUpdateAsync(
+            ActiveFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, LskuLifecycleOperationKind.IdentitySubmit)
+            & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, operationId),
+            Builders<Lsku>.Update.Set(x => x.ActiveLifecycleOperation, null),
+            new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, updated);
+        var current = await GetByIdAsync(id, cancellationToken);
+        // Nothing of this operation's left to release is the end state asked for.
+        return current is null || current.ActiveLifecycleOperation?.OperationId != operationId
+            ? new(true, current, IsReplay: true)
+            : new(false, current, "LSKU_IDENTITY_SUBMIT_FENCE_CONFLICT");
+    }
+
+    public Task<Lsku?> GetByIdOrTombstoneAsync(Guid id, CancellationToken cancellationToken = default) =>
+        _lskus.Find(TenantIncludingDeletedFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id))
+            .FirstOrDefaultAsync(cancellationToken)!;
+
+    public async Task<LskuLifecycleWriteResult> CancelDraftAsync(
+        Guid id, int expectedVersion, LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        if (id == Guid.Empty || expectedVersion < 0
+            || !ValidAudit(id, expectedVersion, ProductAuditOperation.LskuDraftCancelled, auditIntent))
+            return new(false, null, "LSKU_DRAFT_CANCEL_CONTRACT_INVALID");
+        var replayed = await _lskus.Find(TenantIncludingDeletedFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+                & Builders<Lsku>.Filter.ElemMatch(x => x.AuditIntents, x => x.IntentId == auditIntent.IntentId))
+            .FirstOrDefaultAsync(cancellationToken);
+        if (replayed is not null) return new(true, replayed, IsReplay: true);
+        var timestamp = auditIntent.TimestampUtc;
+        var updated = await _lskus.FindOneAndUpdateAsync(
+            ActiveFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Lsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Lsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
+            & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+            & Builders<Lsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate),
+            Builders<Lsku>.Update.Set(x => x.IsDeleted, true).Set(x => x.DeletedAt, timestamp)
+                .Set(x => x.UpdatedAt, timestamp).Inc(x => x.Version, 1).Push(x => x.AuditIntents, auditIntent),
+            new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, updated);
+        var current = await GetByIdAsync(id, cancellationToken);
+        return new(false, current, current is null || current.IsDeleted ? "LSKU_NOT_FOUND"
+            : current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate ? AuditCapacityReached
+            : current.Version != expectedVersion ? "LSKU_CONCURRENCY_CONFLICT"
+            // LSKU FIX2 item 8: a submit holds the draft (its start may reach the engine) — the cancel waits for it.
+            : current.ActiveLifecycleOperation is not null ? "LSKU_SUBMIT_IN_FLIGHT"
+            : "LSKU_NOT_A_DRAFT");
+    }
+
+    public const string LifecycleReleaseConflict = "LSKU_LIFECYCLE_RELEASE_CONFLICT";
+
+    public async Task<LskuLifecycleWriteResult> ReleaseLifecycleOperationAsync(
+        Guid id, int expectedVersion, LskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        if (id == Guid.Empty || binding.OperationId == Guid.Empty
+            || binding.Kind != LskuLifecycleOperationKind.Retirement
+            || binding.BaseLskuVersion < 0 || expectedVersion != (long)binding.BaseLskuVersion + 1
+            || !ValidAudit(id, expectedVersion, ProductAuditOperation.LskuRetirementManualReconciliationRequired, auditIntent))
+            return new(false, null, "LSKU_LIFECYCLE_RELEASE_CONTRACT_INVALID");
+        var replay = await FindLifecycleReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null) return replay;
+        var updated = await _lskus.FindOneAndUpdateAsync(
+            ActiveFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Lsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, binding)
+            & Builders<Lsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate)
+            & new BsonDocumentFilterDefinition<Lsku>(new BsonDocument("$expr", new BsonDocument("$lt",
+                new BsonArray { new BsonDocument("$bsonSize", "$$ROOT"), 1024 * 1024 - 4096 }))),
+            Builders<Lsku>.Update.Set(x => x.ActiveLifecycleOperation, null)
+                .Set(x => x.UpdatedAt, auditIntent.TimestampUtc).Inc(x => x.Version, 1)
+                .Push(x => x.AuditIntents, auditIntent),
+            new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, updated);
+        var current = await GetByIdAsync(id, cancellationToken);
+        // The cap waits for delivery (never a conflict of the record); a moved version or binding is a release
+        // conflict the processor re-reads and retries, counted.
+        return new(false, current, current is null ? "LSKU_NOT_FOUND"
+            : current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate ? AuditCapacityReached
+            : LifecycleReleaseConflict);
+    }
+
+    // LSKU FIX1 S3 (the GSKU rule): the per-aggregate cap is not a conflict of the record — it says so.
+    public const string AuditCapacityReached = "AUDIT_INTENT_CAPACITY_REACHED";
 
     private async Task<LskuLifecycleWriteResult> RetireIdentityCoreAsync(Guid id, int expectedVersion,
         LskuActiveLifecycleOperationBinding? requiredBinding, LocalAuditIntent auditIntent,
@@ -513,7 +700,10 @@ public sealed class LskuRepository : ILskuRepository
             .Push(x => x.AuditIntents, auditIntent);
         if (workflowBinding is not null)
         {
-            update = update.Set(x => x.IdentityWorkflowBinding, workflowBinding);
+            // LSKU FIX2 item 8: the submit's fence goes when the LSKU becomes pending (only a submit fence or none).
+            update = update.Set(x => x.IdentityWorkflowBinding, workflowBinding).Set(x => x.ActiveLifecycleOperation, null);
+            filter &= Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+                      | Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, LskuLifecycleOperationKind.IdentitySubmit);
         }
         if (decisionEvidence is not null)
         {
@@ -604,6 +794,10 @@ public sealed class LskuRepository : ILskuRepository
                 ProductIdentityLifecycleStatus.IdentityApproved,
             ProductAuditOperation.LskuRetirementRejected =>
                 ProductIdentityLifecycleStatus.IdentityApproved,
+            ProductAuditOperation.LskuRetirementManualReconciliationRequired =>
+                ProductIdentityLifecycleStatus.IdentityApproved,
+            ProductAuditOperation.LskuIdentitySubmitAbandoned or ProductAuditOperation.LskuIdentityDecisionNotApplicable =>
+                ProductIdentityLifecycleStatus.Draft,
             _ => (ProductIdentityLifecycleStatus)(-1)
         };
 
@@ -646,22 +840,17 @@ public sealed class LskuRepository : ILskuRepository
     private static LskuCreateResult AmbiguousWrite() =>
         new(false, null, "LSKU_WRITE_OUTCOME_AMBIGUOUS", WriteOutcomeAmbiguous: true);
 
+    // LSKU FIX5 item 4: the same command is recognised by its IDENTITY facts only — the market selection is resolved
+    // again on every call (Platform stamps ResolvedAtUtc anew), so two concurrent requests of one key would otherwise
+    // see each other as a conflict (409) instead of a replay.
     private static bool SameFacts(Lsku left, Lsku right) =>
         left.Id == right.Id
         && left.GskuId == right.GskuId
         && left.CodeReservationId == right.CodeReservationId
         && string.Equals(left.CanonicalCode, right.CanonicalCode, StringComparison.Ordinal)
         && string.Equals(left.CreationCommandId, right.CreationCommandId, StringComparison.Ordinal)
-        && string.Equals(left.MarketCode, right.MarketCode, StringComparison.Ordinal)
-        && SameSelection(left.MarketSelection, right.MarketSelection);
+        && string.Equals(left.MarketCode, right.MarketCode, StringComparison.Ordinal);
 
-    private static bool SameSelection(ReferenceCatalogSelection left, ReferenceCatalogSelection right) =>
-        string.Equals(left.SetCode, right.SetCode, StringComparison.Ordinal)
-        && string.Equals(left.ValueCode, right.ValueCode, StringComparison.Ordinal)
-        && left.CatalogVersionId == right.CatalogVersionId
-        && left.CatalogVersionNumber == right.CatalogVersionNumber
-        && left.ResolutionMode == right.ResolutionMode
-        && left.ResolvedAtUtc == right.ResolvedAtUtc;
 
     public async Task<LskuCreateResult> CreateDraftWithAdmissionAsync(
         Lsku lsku, string admissionFingerprint, CancellationToken cancellationToken = default)

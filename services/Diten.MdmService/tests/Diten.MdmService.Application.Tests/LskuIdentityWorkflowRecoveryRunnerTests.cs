@@ -121,6 +121,10 @@ public sealed class LskuIdentityWorkflowRecoveryRunnerTests
         var tenantDiscovery = Proxy<ILskuIdentityWorkflowTenantPartitionDiscovery>((method, _) =>
             method.Name == nameof(ILskuIdentityWorkflowTenantPartitionDiscovery.DiscoverAsync)
                 ? Task.FromResult(new LskuIdentityWorkflowTenantPartitionPage([tenantId], null))
+                // FIX2 item 3: the cycle's gauge counts (tenant-free) are read once per cycle.
+                : method.Name is nameof(ILskuIdentityWorkflowTenantPartitionDiscovery.CountManualReconciliationAsync)
+                    or nameof(ILskuIdentityWorkflowTenantPartitionDiscovery.CountNeedingAPersonAsync)
+                ? Task.FromResult(1L)
                 : throw new InvalidOperationException($"Unexpected tenant discovery call: {method.Name}"));
         var processor = new LskuIdentityWorkflowProcessor(
             operationRepository,
@@ -139,6 +143,14 @@ public sealed class LskuIdentityWorkflowRecoveryRunnerTests
             .AddSingleton(processor)
             .AddSingleton<IProductLegalEntityScopeRolloutStateRepository>(new ScopeRolloutRepository(null))
             .AddScoped<ITenantContext, TestTenantContext>()
+            // LSKU FIX1 B4: the LSKU scope rule's one place (no rollout here: every operation is in scope).
+            .AddSingleton(Throwing<IProductLegalEntityScopePolicyRepository>())
+            .AddSingleton(Throwing<ILskuRepository>())
+            .AddSingleton(Throwing<IGskuRepository>())
+            .AddSingleton(Throwing<IProductDefinitionRevisionRepository>())
+            .AddSingleton(TimeProvider.System)
+            .AddScoped<Diten.MdmService.Application.Features.ProductLegalEntityScopes.ProductIdentityBackgroundScope>()
+            .AddScoped<Diten.MdmService.Application.Features.ProductLegalEntityScopes.LskuBackgroundScope>()
             .BuildServiceProvider();
         await using var provider = services;
         var runner = new LskuIdentityWorkflowRecoveryRunner(

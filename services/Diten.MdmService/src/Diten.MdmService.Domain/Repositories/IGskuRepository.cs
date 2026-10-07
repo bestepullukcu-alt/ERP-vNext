@@ -101,6 +101,22 @@ public interface IGskuRepository
         Guid id, GskuChildIdentityKind childKind, string creationCommandId,
         string requestFingerprint, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
+    // LSKU FIX1 B1 (b): a creation that ends without its child row gives the admission back in the same flow. The
+    // admission goes only while no child row carries this command, so a write whose outcome is unknown keeps it.
+    Task<GskuChildCreationAdmissionResult> ReleaseChildCreationAdmissionAsync(
+        Guid id, GskuChildIdentityKind childKind, string creationCommandId,
+        string requestFingerprint, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
+    // LSKU FIX1 B1 (c): the operator repair's read — admissions older than the cutoff whose child row never came.
+    Task<IReadOnlyList<GskuOrphanChildAdmission>> FindOrphanChildCreationAdmissionsAsync(
+        GskuChildIdentityKind childKind, DateTimeOffset acquiredBeforeUtc, int limit,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
+    // LSKU FIX1 B1 (c): the repair's write — the admission goes and the intent that says so is kept, in one write.
+    Task<GskuChildCreationAdmissionResult> RepairOrphanChildCreationAdmissionAsync(
+        GskuOrphanChildAdmission orphan, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
     Task<FirstGskuIdentityRetirementWriteResult<Gsku>> CloseChildAdmissionFenceAsync(
         Guid id, int expectedVersion, Guid operationId, string operationFingerprint,
         CancellationToken cancellationToken = default) =>

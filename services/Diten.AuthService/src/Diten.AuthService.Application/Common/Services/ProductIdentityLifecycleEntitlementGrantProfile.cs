@@ -161,8 +161,9 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
                 GskusRequestRetirement,
                 LskusRead,
                 LskusRequestRetirement,
-                FinishedGoodsRead,
-                FinishedGoodsRetire
+                FinishedGoodsRead
+                // FG FIX1 item 9 (CT decision B): FinishedGoodsRetire no longer granted — a system action
+                // (DefaultRolePermissionTemplate.NonHumanPermissionKeys); the sync removes the historical grant.
             })
     ];
 

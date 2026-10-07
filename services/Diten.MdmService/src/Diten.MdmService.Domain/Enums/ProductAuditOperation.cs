@@ -86,5 +86,19 @@ public enum ProductAuditOperation
     // its lock given back, nothing held (the reason is in the intent's facts). Kept apart from
     // …ManualReconciliationRequired so the central audit can tell "ended" from "stuck".
     GlobalProductCorrectionEnded = 80,
-    GlobalProductRetirementEnded = 81
+    GlobalProductRetirementEnded = 81,
+    // LSKU FIX3 item 18: 79–81 belong to GP flow 3 (GlobalProductIdentityDecisionNotApplicable, GlobalProductCorrectionEnded,
+    // GlobalProductRetirementEnded, takeover 23fb2d85f); the five LSKU values moved above them, order kept. Never
+    // persisted anywhere (this branch was never merged): no migration. FG's own new values start at 87.
+    // LSKU FIX1 B1 (c): the operator repair gave back a creation admission whose child row never came.
+    GskuChildCreationAdmissionReleased = 82,
+    // LSKU FIX1 B3: a draft LSKU cancelled so it no longer holds its parent GSKU.
+    LskuDraftCancelled = 83,
+    // LSKU FIX1 B5: the engine approved the LSKU's identity and MDM could not apply it: the LSKU is a draft again.
+    LskuIdentityDecisionNotApplicable = 84,
+    // LSKU FIX1 B2: a retirement request ended without its decision applied; the lock went back in the same write.
+    LskuRetirementManualReconciliationRequired = 85,
+    // LSKU FIX1 B3: the engine refused the submit before starting anything; the draft's version moves so a resubmit
+    // is a new operation.
+    LskuIdentitySubmitAbandoned = 86
 }

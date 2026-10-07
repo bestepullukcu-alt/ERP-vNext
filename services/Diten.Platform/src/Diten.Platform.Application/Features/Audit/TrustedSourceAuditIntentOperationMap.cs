@@ -82,6 +82,14 @@ public static class TrustedSourceAuditIntentOperationMap
             [("Lsku", "LskuIdentityApprovalWithdrawn")] = ("Lsku", AuditOperation.LifecycleTransition),
             [("Lsku", "LskuRetirementRequested")] = ("Lsku", AuditOperation.LifecycleTransition),
             [("Lsku", "LskuRetirementRejected")] = ("Lsku", AuditOperation.LifecycleTransition),
+            // WP-MDM-LSKU-ACCEPT-01 FIX1: the LSKU's new ends (a draft cancelled, a submit abandoned before any start, a
+            // decision not applicable, a retirement request ended with its lock given back) and the operator repair
+            // of a leaked GSKU child-creation admission.
+            [("Lsku", "LskuDraftCancelled")] = ("Lsku", AuditOperation.Delete),
+            [("Lsku", "LskuIdentitySubmitAbandoned")] = ("Lsku", AuditOperation.LifecycleTransition),
+            [("Lsku", "LskuIdentityDecisionNotApplicable")] = ("Lsku", AuditOperation.LifecycleTransition),
+            [("Lsku", "LskuRetirementManualReconciliationRequired")] = ("Lsku", AuditOperation.LifecycleTransition),
+            [("Gsku", "GskuChildCreationAdmissionReleased")] = ("Gsku", AuditOperation.Update),
             [("ProductLegalEntityScopePolicy", "ProductLegalEntityScopePolicyCreated")] = ("ProductLegalEntityScopePolicy", AuditOperation.Create),
             [("ProductLegalEntityScopePolicy", "ProductLegalEntityScopePolicyReplaced")] = ("ProductLegalEntityScopePolicy", AuditOperation.Update),
             [("ProductLegalEntityScopePolicy", "ProductLegalEntityScopePolicyEnded")] = ("ProductLegalEntityScopePolicy", AuditOperation.Deactivate),

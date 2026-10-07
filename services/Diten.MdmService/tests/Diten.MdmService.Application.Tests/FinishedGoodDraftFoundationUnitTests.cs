@@ -239,45 +239,45 @@ public sealed class FinishedGoodDraftFoundationUnitTests
         Assert.Equal(CodeReservationBindingState.PendingIdentityWrite, fixture.Reservations.Current.BindingState);
     }
 
-    [Fact]
-    public async Task Unverified_creation_attempt_binding_fails_closed_before_admission_or_reservation()
+    // FG FIX1 item 7 (rewritten): each refusal of the creation-attempt binding has its own class, and all of them stop
+    // before the admission and the reservation — a store that did not answer is 503 (send the same key again), a key
+    // the store cannot accept is 400, and only a command an older build left half-done asks for reconciliation (202).
+    [Theory]
+    [InlineData(FinishedGoodCreationAttemptOutcome.Unavailable, 503, ProductIdentityStore.Unavailable)]
+    [InlineData(FinishedGoodCreationAttemptOutcome.Invalid, 400, "IDEMPOTENCY_KEY_INVALID")]
+    [InlineData(FinishedGoodCreationAttemptOutcome.ReconciliationRequired, 202, "FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED")]
+    public async Task Each_creation_attempt_refusal_has_its_class_and_stops_before_admission_or_reservation(
+        FinishedGoodCreationAttemptOutcome outcome, int status, string code)
     {
         var fixture = HandlerFixture.Create(
-            _ => throw new InvalidOperationException("Create must not be reached when binding is unavailable."),
-            bind: (_, _, _) => FinishedGoodCreationAttemptResult.Unavailable());
+            _ => throw new InvalidOperationException("Create must not be reached when binding refuses."),
+            bind: (_, _, _) => new FinishedGoodCreationAttemptResult(outcome, null));
 
         var response = await fixture.Handle();
 
         Assert.False(response.IsSuccessful);
-        Assert.Equal(202, response.StatusCode);
-        Assert.Contains("FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED", response.Errors);
+        Assert.Equal(status, response.StatusCode);
+        Assert.Contains(code, response.Errors);
         Assert.Equal(0, fixture.FinishedGoods.CreateCalls);
         Assert.Equal(0, fixture.Reservations.ReserveCalls);
         Assert.Equal(0, fixture.Reservations.ConfirmCalls);
         Assert.Equal(CodeReservationBindingState.None, fixture.Reservations.Current.BindingState);
     }
 
-    [Fact]
-    public async Task Overlength_creation_key_binding_is_unavailable_and_stops_before_admission_or_reservation()
+    [Theory]
+    [InlineData("a\nb")]
+    [InlineData("tab\there")]
+    [InlineData("KEY-\u0000")]
+    public void The_validator_refuses_a_creation_key_with_a_control_character(string escaped)
     {
-        var overlengthKey = new string('K', 129);
-        var fixture = HandlerFixture.Create(
-            _ => throw new InvalidOperationException("Create must not be reached when binding rejects the key."),
-            bind: (_, key, _) =>
+        var key = System.Text.RegularExpressions.Regex.Unescape(escaped);
+        var result = new Diten.MdmService.Application.Features.ProductItemSkuMaster.Validators.CreateFinishedGoodDraftValidator()
+            .Validate(new CreateFinishedGoodDraftCommand(new ProductItemSkuMasterModels.CreateFinishedGoodDraftRequest
             {
-                Assert.Equal(overlengthKey, key);
-                return FinishedGoodCreationAttemptResult.Unavailable();
-            });
+                GskuId = Guid.NewGuid(), IdempotencyKey = key
+            }));
 
-        var response = await fixture.Handle(overlengthKey);
-
-        Assert.False(response.IsSuccessful);
-        Assert.Equal(202, response.StatusCode);
-        Assert.Contains("FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED", response.Errors);
-        Assert.Equal(0, fixture.FinishedGoods.CreateCalls);
-        Assert.Equal(0, fixture.Reservations.ReserveCalls);
-        Assert.Equal(0, fixture.Reservations.ConfirmCalls);
-        Assert.Equal(CodeReservationBindingState.None, fixture.Reservations.Current.BindingState);
+        Assert.Contains(result.Errors, x => x.ErrorMessage == "IDEMPOTENCY_KEY_INVALID");
     }
 
     private sealed class HandlerFixture

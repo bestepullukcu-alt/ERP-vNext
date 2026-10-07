@@ -191,6 +191,24 @@ public sealed class TrustedSourceAuditIntentContractTests
             Assert.False(TrustedSourceAuditIntentOperationMap.TryMap("Lsku", invalid, out _, out _));
     }
 
+    // LSKU FIX2 (CT sabotage L15): the five rows WP-MDM-LSKU-ACCEPT-01 FIX1 added each map to their own entity and
+    // operation (removing one, or moving it to another aggregate, turns its row red). The cross-service, non-list half —
+    // every LSKU / GSKU-admission operation MDM can produce maps on its own aggregate — is
+    // TrustedSourceAuditOperationCoverageTests.Every_lsku_and_gsku_admission_operation_maps_on_its_own_aggregate.
+    [Theory]
+    [InlineData("Lsku", "LskuDraftCancelled", AuditOperation.Delete)]
+    [InlineData("Lsku", "LskuIdentitySubmitAbandoned", AuditOperation.LifecycleTransition)]
+    [InlineData("Lsku", "LskuIdentityDecisionNotApplicable", AuditOperation.LifecycleTransition)]
+    [InlineData("Lsku", "LskuRetirementManualReconciliationRequired", AuditOperation.LifecycleTransition)]
+    [InlineData("Gsku", "GskuChildCreationAdmissionReleased", AuditOperation.Update)]
+    public void Lsku_fix1_operations_are_each_mapped_on_their_own_aggregate(
+        string aggregate, string operation, AuditOperation expected)
+    {
+        Assert.True(TrustedSourceAuditIntentOperationMap.TryMap(aggregate, operation, out var entity, out var actual));
+        Assert.Equal(aggregate, entity);
+        Assert.Equal(expected, actual);
+    }
+
     [Theory]
     [InlineData("FinishedGoodIdentitySubmitted", "32")]
     [InlineData("FinishedGoodIdentityApproved", "33")]

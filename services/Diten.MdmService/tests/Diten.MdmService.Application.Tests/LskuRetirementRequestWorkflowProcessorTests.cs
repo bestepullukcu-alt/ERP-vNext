@@ -76,6 +76,13 @@ public sealed class LskuRetirementRequestWorkflowProcessorTests
         public Task<bool> AdvanceAsync(LskuRetirementRequestClaim claim, LskuRetirementRequestMutation mutation,
             CancellationToken ct = default)
         {
+            // FIX3 item 1 (a): the real store's rules on every write the processor makes (a refusal is a red test).
+            if (!Diten.MdmService.Persistence.Repositories.LskuRetirementRequestOperationRepository.Allowed(
+                    claim.Checkpoint, mutation.NextCheckpoint)
+                || mutation.NextCheckpoint == LskuRetirementRequestCheckpoint.ManualReconciliationRequired
+                   && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable)
+                throw new Xunit.Sdk.XunitException(
+                    $"The store refuses {claim.Checkpoint} -> {mutation.NextCheckpoint} ({mutation.RecoveryDisposition}).");
             operation.Checkpoint = mutation.NextCheckpoint; operation.RecoveryDisposition = mutation.RecoveryDisposition;
             operation.DecisionKind = mutation.DecisionKind ?? operation.DecisionKind;
             operation.DecisionActorSubjectId = mutation.DecisionActorSubjectId ?? operation.DecisionActorSubjectId;

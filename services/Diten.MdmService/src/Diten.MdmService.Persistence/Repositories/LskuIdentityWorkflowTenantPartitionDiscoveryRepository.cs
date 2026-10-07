@@ -64,4 +64,53 @@ public sealed class LskuIdentityWorkflowTenantPartitionDiscoveryRepository
         var page = candidates.Distinct().ToArray();
         return new(page, candidates.Count == limit ? candidates[^1] : null);
     }
+
+    private static FilterDefinition<LskuIdentityWorkflowOperation> Stuck =>
+        Builders<LskuIdentityWorkflowOperation>.Filter.Ne(item => item.IsDeleted, true)
+        & ((Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.Checkpoint,
+                LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+            & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.RecoveryDisposition,
+                ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired))
+           | Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.Checkpoint,
+               LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay)
+           // FIX3 item 2: a wait at its limit (Retryable, RETRY_LIMIT_REACHED) — as the retirement gauge counts it.
+           | (Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.RecoveryDisposition,
+                  ProductIdentityWorkflowRecoveryDisposition.Retryable)
+              & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.LastFailureCode,
+                  Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.LskuIdentityWorkflowProcessor.RetryLimitReached)));
+
+    // FIX3 item 2 (R3): a withdrawal whose cancel was left unanswered and that only its requester can send again —
+    // parked for the maker (AMR) or waiting on its outcome (WOU) — older than this needs a person to chase it.
+    public static readonly TimeSpan WithdrawalUnansweredThreshold = TimeSpan.FromHours(1);
+
+    private static FilterDefinition<LskuIdentityWorkflowOperation> UnansweredWithdrawal(DateTimeOffset now)
+    {
+        var cutoff = (now - WithdrawalUnansweredThreshold).UtcTicks;
+        return Builders<LskuIdentityWorkflowOperation>.Filter.Ne(item => item.IsDeleted, true)
+            & Builders<LskuIdentityWorkflowOperation>.Filter.Ne(item => item.WithdrawalCommandId, null)
+            & Builders<LskuIdentityWorkflowOperation>.Filter.In(item => item.Checkpoint, new[]
+            {
+                LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay, LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+            })
+            & (Builders<LskuIdentityWorkflowOperation>.Filter.Lt(item => item.WithdrawalUnansweredSinceUtcTicksV1, cutoff)
+               // A document without the field ages from its last update (legacy rule: never Eq on a missing field).
+               | (Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.WithdrawalUnansweredSinceUtcTicksV1, null)
+                  & Builders<LskuIdentityWorkflowOperation>.Filter.Lt(item => item.UpdatedAtUtcTicksV1, cutoff)));
+    }
+
+    public Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(Stuck, cancellationToken: cancellationToken);
+
+    public Task<long> CountNeedingAPersonAsync(CancellationToken cancellationToken = default) =>
+        _operations.CountDocumentsAsync(
+            (Builders<LskuIdentityWorkflowOperation>.Filter.Ne(item => item.IsDeleted, true)
+             & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.Checkpoint,
+                 LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+             & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.RecoveryDisposition,
+                 ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+             & Builders<LskuIdentityWorkflowOperation>.Filter.Nin(item => item.LastFailureCode,
+                 Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.LskuLifecycleStuckKinds
+                     .IdentitySettledByTheRequestersRepeat))
+            | UnansweredWithdrawal(DateTimeOffset.UtcNow),
+            cancellationToken: cancellationToken);
 }

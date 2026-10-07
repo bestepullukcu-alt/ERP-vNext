@@ -56,7 +56,14 @@ public sealed class LskusController : Controller
     [HttpGet("")]
     public IActionResult Index()
     {
-        if (!Has(ReadPermission)) return Forbid();
+        // UAS-001 (WP-MDM-LSKU-ACCEPT-01 B6) — GSKU's FIX3 B17 shape: no redirect (Forbid redirected to an action that does
+        // not exist). The status says 403 and the view draws the access-denied surface inside the shell, nothing of the list.
+        if (!Has(ReadPermission))
+        {
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+            return View("~/Views/MasterDataManagement/Lskus/Index.cshtml");
+        }
+
         var canCreate = Has(CreatePermission);
         ViewData["CanCreateLsku"] = canCreate;
         ViewData["CanSubmitLsku"] = Has(SubmitPermission);
@@ -69,17 +76,17 @@ public sealed class LskusController : Controller
     [HttpGet("api")]
     public Task<IActionResult> List(CancellationToken cancellationToken) => Has(ReadPermission)
         ? Proxy(HttpMethod.Get, $"{_gateway}/api/lskus{Request.QueryString}", cancellationToken)
-        : Task.FromResult<IActionResult>(Forbid());
+        : Task.FromResult(Failure(HttpStatusCode.Forbidden));
 
     [HttpGet("api/{id:guid}")]
     public Task<IActionResult> Detail(Guid id, CancellationToken cancellationToken) => Has(ReadPermission)
         ? Proxy(HttpMethod.Get, $"{_gateway}/api/lskus/{id:D}", cancellationToken)
-        : Task.FromResult<IActionResult>(Forbid());
+        : Task.FromResult(Failure(HttpStatusCode.Forbidden));
 
     [HttpGet("api/create-options")]
     public Task<IActionResult> CreateOptions(CancellationToken cancellationToken) => Has(CreatePermission)
         ? Proxy(HttpMethod.Get, $"{_gateway}/api/lskus/create-options", cancellationToken)
-        : Task.FromResult<IActionResult>(Forbid());
+        : Task.FromResult(Failure(HttpStatusCode.Forbidden));
 
     [HttpPost("api")]
     [ValidateAntiForgeryToken]
@@ -88,7 +95,7 @@ public sealed class LskusController : Controller
         [FromForm] string? formAttemptToken,
         CancellationToken cancellationToken)
     {
-        if (!Has(CreatePermission)) return Forbid();
+        if (!Has(CreatePermission)) return Failure(HttpStatusCode.Forbidden);
         if (!TryToken(formAttemptToken, out var key))
             return BadRequest(new { success = false, errors = new[] { _l10n["ErrorInvalidFormAttempt"].Value } });
         if (!ModelState.IsValid || model.GskuId == Guid.Empty || string.IsNullOrWhiteSpace(model.MarketCode))
@@ -118,7 +125,7 @@ public sealed class LskusController : Controller
                 if (envelope?.IsSuccessful == true && envelope.Data is not null)
                     return StatusCode(201, new { success = true, data = envelope.Data, formAttemptToken = NewToken() });
             }
-            return Failure(response.StatusCode);
+            return await RefusalAsync(response, cancellationToken);
         }
     }
 
@@ -200,6 +207,42 @@ public sealed class LskusController : Controller
             new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted }, cancellationToken);
     }
 
+    // LSKU FIX2 item 11 (B3): the draft cancel proxy — the create key (cancelling undoes a creation); the operation id
+    // is derived from the version and the reason, as every lifecycle request here.
+    [HttpPost("api/{id:guid}/draft/cancel")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CancelDraft(
+        Guid id,
+        [FromForm] int? expectedVersion,
+        [FromForm] string? reasonCode,
+        CancellationToken cancellationToken)
+    {
+        if (!Has(CreatePermission)) return Failure(HttpStatusCode.Forbidden);
+        if (id == Guid.Empty || expectedVersion is null or < 0
+            || !HasExactText(reasonCode, 128)
+            || !await HasOnlyFormFieldsAsync("ExpectedVersion", "ReasonCode"))
+        {
+            return Failure(HttpStatusCode.BadRequest);
+        }
+        if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
+            return Failure(HttpStatusCode.Unauthorized);
+
+        var operationId = CreateLifecycleOperationId(
+            tenantId, actor, "lsku", "draft-cancel", id, expectedVersion.Value, reasonCode!);
+        if (!RequestMessage(
+                HttpMethod.Post,
+                $"{_gateway}/api/lskus/{id:D}/draft/cancel",
+                JsonContent.Create(new { expectedVersion = expectedVersion.Value, reasonCode }, options: _json),
+                out var request))
+        {
+            return Failure(HttpStatusCode.Unauthorized);
+        }
+
+        request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"));
+        return await SendLifecycleRequestAsync(request, "draft-cancel",
+            new HashSet<int> { StatusCodes.Status200OK }, cancellationToken);
+    }
+
     private async Task<IActionResult> ExecuteLifecycleAsync(
         Guid id,
         int? expectedVersion,
@@ -241,7 +284,7 @@ public sealed class LskusController : Controller
             using (request)
             using (var response = await _http.SendAsync(request, cancellationToken))
             {
-                if (!response.IsSuccessStatusCode) return Failure(response.StatusCode);
+                if (!response.IsSuccessStatusCode) return await RefusalAsync(response, cancellationToken);
                 var responseStatus = (int)response.StatusCode;
                 var mediaType = response.Content.Headers.ContentType?.MediaType;
                 if (!allowedSuccessStatusCodes.Contains(responseStatus) || !IsJsonMediaType(mediaType))
@@ -330,6 +373,36 @@ public sealed class LskusController : Controller
         }
         request.Headers.Add("X-Tenant-Id", tenantId.ToString("D"));
         return true;
+    }
+
+    // LSKU FIX1 B1 / B3 / B5: the refusals the maker can act on are said in their own sentence (the rest keep the
+    // status sentence until the S5 code bridge of FIX2). The reason the engine gave is never shown raw.
+    private static readonly IReadOnlyDictionary<string, string> RefusalSentences = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["LSKU_MARKET_ALREADY_EXISTS"] = "ErrorMarketAlreadyExists",
+        ["LSKU_IDENTITY_SUBMIT_ABANDONED"] = "ErrorSubmitAbandoned",
+        ["LSKU_IDENTITY_SUBMIT_TARGET_CHANGED"] = "ErrorSubmitTargetChanged",
+        ["LSKU_IDENTITY_DECISION_NOT_APPLICABLE"] = "ErrorDecisionNotApplicable"
+    };
+
+    private async Task<IActionResult> RefusalAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        if (response.StatusCode == HttpStatusCode.Conflict && IsJsonMediaType(response.Content.Headers.ContentType?.MediaType))
+        {
+            try
+            {
+                using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+                if (document.RootElement.ValueKind == JsonValueKind.Object
+                    && (document.RootElement.TryGetProperty("errors", out var errors)
+                        || document.RootElement.TryGetProperty("Errors", out errors))
+                    && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() > 0
+                    && errors[0].ValueKind == JsonValueKind.String
+                    && RefusalSentences.TryGetValue(errors[0].GetString()!, out var key))
+                    return StatusCode(409, new { success = false, errors = new[] { _l10n[key].Value } });
+            }
+            catch (JsonException) { }
+        }
+        return Failure(response.StatusCode);
     }
 
     private IActionResult Failure(HttpStatusCode code)

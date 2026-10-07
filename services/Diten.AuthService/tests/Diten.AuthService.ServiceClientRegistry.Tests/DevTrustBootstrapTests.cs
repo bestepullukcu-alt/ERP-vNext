@@ -220,8 +220,32 @@ public sealed class DevTrustBootstrapTests
         var entries = platform.RootElement.GetProperty("TrustedWorkflowStartAuthorization").GetProperty("Entries")
             .EnumerateArray().Select(entry => (entry.GetProperty("ObjectType").GetString(), entry.GetProperty("TemplateCode").GetString()))
             .ToArray();
+        // LSKU FIX1 (B4): the two LSKU starts follow, in the tracked order.
         Assert.Equal([("GlobalProduct", "GLOBAL-PRODUCT-IDENTITY"), ("gsku", "GSKU-IDENTITY"),
-            ("GskuCorrection", "GSKU-CORRECTION"), ("GskuRetirementRequest", "GSKU-RETIREMENT-REQUEST")], entries);
+            ("GskuCorrection", "GSKU-CORRECTION"), ("GskuRetirementRequest", "GSKU-RETIREMENT-REQUEST"),
+            ("lsku", "LSKU-IDENTITY"), ("LskuRetirementRequest", "LSKU-RETIREMENT-REQUEST")], entries);
+    }
+
+    // WP-MDM-LSKU-ACCEPT-01 FIX1 (B4): the LSKU identity and retirement-request flows and their workers are switched on
+    // with the same approvers — without them every LSKU submit in Development answers 503 CONFIGURATION and a decision
+    // taken in the Task Center never reaches the LSKU.
+    [Fact]
+    public void Bootstrap_SwitchesOnTheTwoLskuFlowsAndTheirWorkers_WithTheSameApprovers()
+    {
+        using var targets = new Targets();
+
+        Assert.Equal(DevTrustBootstrapCommand.Success,
+            DevTrustBootstrapCommand.Run(targets.Arguments(Tenant, Approver), new StringWriter(), new StringWriter()));
+
+        using var mdm = JsonDocument.Parse(File.ReadAllText(targets.Files[2]));
+        foreach (var flow in new[] { "LskuIdentityWorkflow", "LskuRetirementRequestWorkflow" })
+        {
+            var section = mdm.RootElement.GetProperty(flow);
+            Assert.True(section.GetProperty("Enabled").GetBoolean(), flow);
+            Assert.Equal([Approver], section.GetProperty("CandidatePrincipalIds").EnumerateArray()
+                .Select(item => item.GetString()!).ToArray());
+            Assert.True(mdm.RootElement.GetProperty(flow + "Worker").GetProperty("Enabled").GetBoolean(), flow + "Worker");
+        }
     }
 
     [Fact]

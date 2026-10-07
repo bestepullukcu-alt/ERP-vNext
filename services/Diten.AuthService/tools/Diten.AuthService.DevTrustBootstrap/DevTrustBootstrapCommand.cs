@@ -41,6 +41,16 @@ public static class DevTrustBootstrapCommand
         ("GskuRetirementRequest", "GSKU-RETIREMENT-REQUEST")
     ];
 
+    /// <summary>
+    /// WP-MDM-LSKU-ACCEPT-01 FIX1 (B4): the LSKU starts, the same way (object type sent by each LSKU processor, tracked
+    /// Development template code). They follow the GSKU entries in Platform's tracked list (entries 4 and 5).
+    /// </summary>
+    public static readonly (string ObjectType, string TemplateCode)[] LskuStarts =
+    [
+        ("lsku", "LSKU-IDENTITY"),
+        ("LskuRetirementRequest", "LSKU-RETIREMENT-REQUEST")
+    ];
+
     public const int Success = 0;
     public const int UsageError = 2;
     public const int StateConflict = 3;
@@ -63,7 +73,10 @@ public static class DevTrustBootstrapCommand
         // GSKU FIX1 (B6): the GSKU identity, correction and retirement-request switches and their workers.
         "FirstGskuIdentityWorkflow", "FirstGskuIdentityWorkflowWorker",
         "GskuCorrectionWorkflow", "GskuCorrectionWorkflowWorker",
-        "GskuRetirementRequestWorkflow", "GskuRetirementRequestWorkflowWorker"
+        "GskuRetirementRequestWorkflow", "GskuRetirementRequestWorkflowWorker",
+        // LSKU FIX1 (B4): the LSKU identity and retirement-request switches and their workers.
+        "LskuIdentityWorkflow", "LskuIdentityWorkflowWorker",
+        "LskuRetirementRequestWorkflow", "LskuRetirementRequestWorkflowWorker"
     ];
 
     public static int Run(string[] args, TextWriter output, TextWriter error)
@@ -170,9 +183,9 @@ public static class DevTrustBootstrapCommand
                 writer.WriteString("ObjectType", GlobalProductObjectType);
                 writer.WriteString("TemplateCode", DefaultTemplateCode);
                 writer.WriteEndObject();
-                // Entries 1–3, in the tracked file's order: they replace the tracked GSKU entries, which carry the
+                // Entries 1–5, in the tracked file's order: they replace the tracked GSKU and LSKU entries, which carry the
                 // default client's id.
-                foreach (var (objectType, templateCode) in GskuStarts)
+                foreach (var (objectType, templateCode) in GskuStarts.Concat(LskuStarts))
                 {
                     writer.WriteStartObject();
                     writer.WriteString("ClientId", ServiceClientIdentityIds.FromClientCode(options.ClientCode).ToString("D"));
@@ -211,7 +224,8 @@ public static class DevTrustBootstrapCommand
                 // GSKU FIX1 (B6): the same switches for the three GSKU flows (template and reason codes are tracked in
                 // MDM's appsettings.Development.json) and their workers — without a worker a decision taken in the
                 // Task Center never reaches MDM.
-                foreach (var section in new[] { "FirstGskuIdentityWorkflow", "GskuCorrectionWorkflow", "GskuRetirementRequestWorkflow" })
+                foreach (var section in new[] { "FirstGskuIdentityWorkflow", "GskuCorrectionWorkflow", "GskuRetirementRequestWorkflow",
+                             "LskuIdentityWorkflow", "LskuRetirementRequestWorkflow" })
                 {
                     writer.WriteStartObject(section);
                     writer.WriteBoolean("Enabled", true);
@@ -220,7 +234,8 @@ public static class DevTrustBootstrapCommand
                     writer.WriteEndArray();
                     writer.WriteEndObject();
                 }
-                foreach (var section in new[] { "FirstGskuIdentityWorkflowWorker", "GskuCorrectionWorkflowWorker", "GskuRetirementRequestWorkflowWorker" })
+                foreach (var section in new[] { "FirstGskuIdentityWorkflowWorker", "GskuCorrectionWorkflowWorker", "GskuRetirementRequestWorkflowWorker",
+                             "LskuIdentityWorkflowWorker", "LskuRetirementRequestWorkflowWorker" })
                 {
                     writer.WriteStartObject(section);
                     writer.WriteBoolean("Enabled", true);

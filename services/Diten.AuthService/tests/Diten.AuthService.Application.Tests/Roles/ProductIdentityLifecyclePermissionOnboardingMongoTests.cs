@@ -166,8 +166,9 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests(Dispo
             var firstGrantCount = await grantCollection.CountDocumentsAsync(grant => grant.TenantId == tenantA);
             Assert.Equal(12, firstRoleCount);
             // 81 / 74 since GSKU FIX1 (B5): the Retirement Steward no longer holds direct GSKU retirement.
-            Assert.Equal(81, firstGrantCount);
-            Assert.Equal(74, await grantCollection.CountDocumentsAsync(grant =>
+            // 80 / 73 since FG FIX1 item 9 (CT decision B): nor direct Finished Good retirement.
+            Assert.Equal(80, firstGrantCount);
+            Assert.Equal(73, await grantCollection.CountDocumentsAsync(grant =>
                 grant.TenantId == tenantA
                 && grant.GrantSource == GrantSource.Module
                 && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));

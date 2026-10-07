@@ -159,8 +159,14 @@ public sealed class LskuDraftFoundationMongoTests
         Assert.Equal(1, await scope.Reservations.CountDocumentsAsync(FilterDefinition<CodeReservation>.Empty));
     }
 
+    /*
+     * LSKU FIX1 B1 — changed from "the loser is a reconcilable 202" (PACK:2150-2158). That 202 left the loser's admission
+     * on the GSKU for good and its consumed code pending. Now the market is checked before any admission; a loser that
+     * passed the check before the winner wrote meets the store's unique key, its consumed code is burned and its
+     * admission goes back. Either way it is a 409 LSKU_MARKET_ALREADY_EXISTS, and so is its repeat.
+     */
     [Fact]
-    public async Task Concurrent_different_commands_have_one_winner_and_replayable_pending_reconciliation_loser()
+    public async Task Concurrent_different_commands_have_one_winner_and_the_loser_is_refused_as_the_same_market()
     {
         await using var scope = await MongoScope.CreateAsync();
         var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
@@ -174,44 +180,29 @@ public sealed class LskuDraftFoundationMongoTests
         var winner = Assert.Single(results, result => result.IsSuccessful);
         Assert.Equal(201, winner.StatusCode);
         var loser = Assert.Single(results, result => !result.IsSuccessful);
-        Assert.Equal(202, loser.StatusCode);
-        Assert.Contains("LSKU_BINDING_RECONCILIATION_REQUIRED", loser.Errors);
+        Assert.Equal(409, loser.StatusCode);
+        Assert.Contains("LSKU_MARKET_ALREADY_EXISTS", loser.Errors);
         Assert.Equal(1, await scope.Lskus.CountDocumentsAsync(FilterDefinition<Lsku>.Empty));
-        var reservations = await scope.Reservations.Find(FilterDefinition<CodeReservation>.Empty).ToListAsync();
-        Assert.Equal(2, reservations.Count);
-        Assert.Equal(2, reservations.Select(x => x.ReservedCode).Distinct(StringComparer.Ordinal).Count());
-        var confirmed = Assert.Single(
-            reservations,
-            reservation => reservation.BindingState == CodeReservationBindingState.Confirmed);
-        var pending = Assert.Single(
-            reservations,
-            reservation => reservation.BindingState == CodeReservationBindingState.PendingIdentityWrite);
-        Assert.Equal(CodeReservationState.Consumed, confirmed.ReservationState);
-        Assert.Equal(CodeReservationState.Consumed, pending.ReservationState);
         var stored = await scope.Lskus.Find(FilterDefinition<Lsku>.Empty).SingleAsync();
+        var reservations = await scope.Reservations.Find(FilterDefinition<CodeReservation>.Empty).ToListAsync();
+        var confirmed = Assert.Single(reservations,
+            reservation => reservation.BindingState == CodeReservationBindingState.Confirmed);
         Assert.Equal(stored.Id, confirmed.ConsumedEntityId);
-        Assert.NotEqual(stored.Id, pending.ConsumedEntityId);
-        Assert.Equal(
-            ["RACE-A", "RACE-B"],
-            reservations.Select(x => x.ReservationCommandId).OrderBy(x => x, StringComparer.Ordinal));
+        // The loser either took no code (refused by the check) or its consumed code is burned — never left pending.
+        Assert.All(reservations.Where(x => x.Id != confirmed.Id),
+            x => Assert.Equal(CodeReservationBindingState.Burned, x.BindingState));
+        Assert.DoesNotContain(reservations, x => x.BindingState == CodeReservationBindingState.PendingIdentityWrite);
 
-        var losingCommandId = pending.ReservationCommandId;
+        var losingCommandId = Assert.Single(new[] { "RACE-A", "RACE-B" }, x => x != stored.CreationCommandId);
         var replay = await scope.Handler(scope.TenantA).Handle(
             Command(gsku.Id, "TR", losingCommandId),
             CancellationToken.None);
 
         Assert.False(replay.IsSuccessful);
-        Assert.Equal(202, replay.StatusCode);
-        Assert.Contains("LSKU_BINDING_RECONCILIATION_REQUIRED", replay.Errors);
+        Assert.Equal(409, replay.StatusCode);
+        Assert.Contains("LSKU_MARKET_ALREADY_EXISTS", replay.Errors);
         Assert.Equal(1, await scope.Lskus.CountDocumentsAsync(FilterDefinition<Lsku>.Empty));
-        var replayedReservations = await scope.Reservations.Find(FilterDefinition<CodeReservation>.Empty).ToListAsync();
-        Assert.Equal(2, replayedReservations.Count);
-        Assert.Equal(
-            reservations.Select(x => (x.Id, x.ReservedCode)).OrderBy(x => x.Id),
-            replayedReservations.Select(x => (x.Id, x.ReservedCode)).OrderBy(x => x.Id));
-        var replayedPending = Assert.Single(replayedReservations, x => x.Id == pending.Id);
-        Assert.Equal(CodeReservationState.Consumed, replayedPending.ReservationState);
-        Assert.Equal(CodeReservationBindingState.PendingIdentityWrite, replayedPending.BindingState);
+        Assert.Empty((await scope.Gskus.Find(x => x.Id == gsku.Id).SingleAsync()).ChildCreationAdmissions);
         var indexes = await (await scope.Lskus.Indexes.ListAsync()).ToListAsync();
         var identityIndex = Assert.Single(indexes, index => index["name"] == "ux_mdm_lskus_tenant_gsku_market");
         Assert.True(identityIndex["unique"].AsBoolean);

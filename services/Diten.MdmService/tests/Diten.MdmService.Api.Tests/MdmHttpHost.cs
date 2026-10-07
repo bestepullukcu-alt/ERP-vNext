@@ -91,6 +91,19 @@ public sealed class MdmHttpHost : IAsyncLifetime
     public FakeReferenceData References { get; } = new();
     public RecordingAuditForwarder Audit { get; } = new();
     public FakePlatformReferenceEndpoint PlatformReference { get; } = new();
+    // LSKU FIX1: the verified market answers (create and approval time).
+    public FakeMarkets Markets { get; } = new();
+
+    /// <summary>
+    /// The trusted legal-entity scope answer (Platform's provider). A tenant a test has not set up gets the answer the
+    /// unreachable provider gave before (503), so tenants outside Enforced rollout are unaffected.
+    /// </summary>
+    public FakeLegalEntityScopes Scopes { get; } = new();
+    /// <summary>Every log entry the host writes (level, category, rendered message).</summary>
+    public LogSink Logs { get; } = new();
+
+    // LSKU FIX3 item 7: the hosted services the real Program registered (before the host removes them).
+    public List<Type> RegisteredHostedServices { get; } = [];
     public string MongoConnectionString => _runner?.ConnectionString ?? throw NotStarted();
 
     public WebApplicationFactory<GskusController> Factory => _factory ?? throw NotStarted();
@@ -106,7 +119,9 @@ public sealed class MdmHttpHost : IAsyncLifetime
             _runner = MongoRunner.Run(new MongoRunnerOptions
             {
                 BinaryDirectory = ResolveLocalMongoBinaryDirectory(),
-                UseSingleNodeReplicaSet = true
+                UseSingleNodeReplicaSet = true,
+                // LSKU FIX4 item 1: failCommand failpoints (configureFailPoint) on this throwaway mongod only.
+                AdditionalArguments = "--setParameter enableTestCommands=1"
             });
             if (new MongoUrl(_runner.ConnectionString).Server.Port == SharedMongoPort)
                 throw new InvalidOperationException("The throwaway mongod bound the SHARED port 27017. Refusing to run.");
@@ -196,7 +211,28 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 ["ProductIdentityWorkflowWorker__RetryDelaySeconds"] = "1",
                 ["ProductIdentityWorkflowWorker__ServiceFaultMaxRetryDelaySeconds"] = "2",
                 ["ProductIdentityWorkflowWorker__StartSettleSeconds"] = "2",
-                ["ProductIdentityWorkflowWorker__QuarantineAfterFailedAttempts"] = "4"
+                ["ProductIdentityWorkflowWorker__QuarantineAfterFailedAttempts"] = "4",
+                // LSKU FIX1: the two LSKU flows as the tracked development settings name them (B4), this host's approver,
+                // the same short schedules as the GSKU flows above.
+                ["LskuIdentityWorkflow__Enabled"] = "true",
+                ["LskuIdentityWorkflow__TemplateCode"] = "LSKU-IDENTITY",
+                ["LskuIdentityWorkflow__ReasonCode"] = "LSKU_IDENTITY_APPROVAL",
+                ["LskuIdentityWorkflow__CandidatePrincipalIds__0"] = Approver.ToString("D"),
+                ["LskuIdentityWorkflowWorker__Enabled"] = "true",
+                ["LskuIdentityWorkflowWorker__LeaseOwner"] = "mdm-http-test-lsku",
+                ["LskuIdentityWorkflowWorker__LeaseSeconds"] = "10",
+                ["LskuIdentityWorkflowWorker__RetryDelaySeconds"] = "1",
+                // LSKU FIX2 item 10: "nothing arrived" is trusted after 2 s here.
+                ["LskuIdentityWorkflowWorker__StartSettleSeconds"] = "2",
+                ["LskuRetirementRequestWorkflow__Enabled"] = "true",
+                ["LskuRetirementRequestWorkflow__TemplateCode"] = "LSKU-RETIREMENT-REQUEST",
+                ["LskuRetirementRequestWorkflow__CandidatePrincipalIds__0"] = Approver.ToString("D"),
+                ["LskuRetirementRequestWorkflowWorker__Enabled"] = "true",
+                ["LskuRetirementRequestWorkflowWorker__LeaseSeconds"] = "10",
+                ["LskuRetirementRequestWorkflowWorker__RetryDelaySeconds"] = "1",
+                ["LskuRetirementRequestWorkflowWorker__MaxRetryDelaySeconds"] = "2",
+                ["LskuRetirementRequestWorkflowWorker__StartSettleSeconds"] = "2",
+                ["LskuRetirementRequestWorkflowWorker__QuarantineAfterFailedAttempts"] = "4"
             };
             foreach (var (key, value) in overrides)
             {
@@ -210,8 +246,13 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 builder.ConfigureTestServices(services =>
                 {
                     // No background schedule (a test calls the runners) and no outbound push to Platform.
+                    // LSKU FIX3 item 7: what the REAL Program registered as hosted services is kept for the tests
+                    // (a worker whose registration is lost is a gauge nobody runs).
                     foreach (var hosted in services.Where(d => d.ServiceType == typeof(IHostedService)).ToList())
+                    {
+                        if (hosted.ImplementationType is { } type) RegisteredHostedServices.Add(type);
                         services.Remove(hosted);
+                    }
                     services.RemoveAll<IProductIdentityWorkflowClient>();
                     services.AddSingleton<IProductIdentityWorkflowClient>(Engine);
                     services.RemoveAll<IVerifiedGskuReferenceResolver>();
@@ -227,6 +268,16 @@ public sealed class MdmHttpHost : IAsyncLifetime
                     services.AddSingleton<IPlatformAuditForwarder>(Audit);
                     services.RemoveAll<TimeProvider>();
                     services.AddSingleton<TimeProvider>(Clock);
+                    // LSKU FIX1: Platform's market reference answers (the resolvers are clients of that service).
+                    services.RemoveAll<IVerifiedMarketReferenceResolver>();
+                    services.AddSingleton<IVerifiedMarketReferenceResolver>(Markets);
+                    services.RemoveAll<IWorkflowVerifiedMarketReferenceResolver>();
+                    services.AddSingleton<IWorkflowVerifiedMarketReferenceResolver>(Markets);
+                    // FG FIX1 review R2 / item 8: the enforced-scope answer for the tenants a test sets up.
+                    services.RemoveAll<Diten.MdmService.Application.Contracts.Authorization.ITrustedLegalEntityScopeProvider>();
+                    services.AddSingleton<Diten.MdmService.Application.Contracts.Authorization.ITrustedLegalEntityScopeProvider>(Scopes);
+                    // LSKU FIX4 item 6: what the host logs, for "said once" assertions.
+                    services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider>(Logs);
                 });
             });
             _ = _factory.Server;
@@ -372,6 +423,45 @@ public sealed class ShiftableClock : TimeProvider
         public void Dispose()
         {
             if (Interlocked.Exchange(ref _done, 1) == 0) Interlocked.Add(ref clock._offsetTicks, -ticks);
+        }
+    }
+}
+
+/// <summary>Per tenant: the subject's legal entities for any product permission (canonical order), or unavailable.</summary>
+public sealed class FakeLegalEntityScopes : Diten.MdmService.Application.Contracts.Authorization.ITrustedLegalEntityScopeProvider
+{
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Guid[]> _tenants = new();
+
+    public void Answer(Guid tenantId, params Guid[] legalEntityIds) =>
+        _tenants[tenantId] = legalEntityIds.OrderBy(x => x.ToString("D"), StringComparer.Ordinal).ToArray();
+
+    public Task<Diten.MdmService.Application.Contracts.Authorization.TrustedLegalEntityScopeProviderResult> ResolveAsync(
+        Guid expectedTenantId, Guid expectedSubjectId, string moduleCode, string permissionKey,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(_tenants.TryGetValue(expectedTenantId, out var ids)
+            ? Diten.MdmService.Application.Contracts.Authorization.TrustedLegalEntityScopeProviderResult.Success(
+                expectedTenantId, expectedSubjectId, moduleCode, permissionKey, DateTimeOffset.UtcNow, ids)
+            : new Diten.MdmService.Application.Contracts.Authorization.TrustedLegalEntityScopeProviderResult(
+                false, 503, "LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE", expectedTenantId, expectedSubjectId,
+                moduleCode, permissionKey, null, []));
+}
+
+public sealed class LogSink : Microsoft.Extensions.Logging.ILoggerProvider
+{
+    public System.Collections.Concurrent.ConcurrentQueue<(Microsoft.Extensions.Logging.LogLevel Level, string Category, string Message)> Entries { get; } = new();
+
+    public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName) => new Sink(this, categoryName);
+
+    public void Dispose() { }
+
+    private sealed class Sink(LogSink owner, string category) : Microsoft.Extensions.Logging.ILogger
+    {
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => logLevel >= Microsoft.Extensions.Logging.LogLevel.Information;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId,
+            TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (IsEnabled(logLevel)) owner.Entries.Enqueue((logLevel, category, formatter(state, exception)));
         }
     }
 }

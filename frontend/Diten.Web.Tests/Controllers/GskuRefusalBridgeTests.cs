@@ -36,6 +36,10 @@ public sealed class GskuRefusalBridgeTests
         "FIRST_GSKU_IDENTITY", "GSKU_PAIR_RETIREMENT", "UNEXPECTED_FAILURE",
         // BL-552 flow 3: the Global Product identity runner's flow name (its gauge label).
         "GLOBAL_PRODUCT_IDENTITY",
+        // LSKU FIX1 (CT 2026-10-06): the stuck child-creation admission gauge's flow name.
+        "GSKU_CHILD_ADMISSION",
+        // FG part B (CT 2026-10-07, takeover merge): the same gauge's Finished Good cancellation flow name.
+        "FINISHED_GOOD_DRAFT_CANCELLATION",
         "FIRST_GSKU_IDENTITY_WORKFLOW_RECOVERY_ARGUMENT_DUPLICATE", "FIRST_GSKU_IDENTITY_WORKFLOW_RECOVERY_ARGUMENT_INVALID",
         "FIRST_GSKU_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID", "GSKU_CORRECTION_RECOVERY_ARGUMENT_DUPLICATE",
         "GSKU_CORRECTION_RECOVERY_ARGUMENT_INVALID", "GSKU_CORRECTION_WORKER_CONFIGURATION_INVALID",

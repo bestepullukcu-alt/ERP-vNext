@@ -24,7 +24,8 @@ public sealed class LskuApiContractTests
             .Select(method => (method.Name, Http: Assert.Single(method.GetCustomAttributes<HttpMethodAttribute>())))
             .ToArray();
 
-        Assert.Equal(8, routes.Length);
+        // LSKU FIX1: ten — the draft cancel (B3) and the operator's admission repair (B1 c) joined.
+        Assert.Equal(10, routes.Length);
         Assert.Contains(routes, x => x.Name == nameof(LskusController.GetAll) && x.Http.Template is null && x.Http.HttpMethods.Single() == "GET");
         Assert.Contains(routes, x => x.Name == nameof(LskusController.GetById) && x.Http.Template == "{id:guid}" && x.Http.HttpMethods.Single() == "GET");
         Assert.Contains(routes, x => x.Name == nameof(LskusController.GetCreateOptions) && x.Http.Template == "create-options" && x.Http.HttpMethods.Single() == "GET");
@@ -33,6 +34,8 @@ public sealed class LskuApiContractTests
         Assert.Contains(routes, x => x.Name == nameof(LskusController.WithdrawIdentityApproval) && x.Http.Template == "{id:guid}/identity-approval/withdraw" && x.Http.HttpMethods.Single() == "POST");
         Assert.Contains(routes, x => x.Name == nameof(LskusController.RequestRetirement) && x.Http.Template == "{id:guid}/retirement-requests" && x.Http.HttpMethods.Single() == "POST");
         Assert.Contains(routes, x => x.Name == nameof(LskusController.RetireIdentity) && x.Http.Template == "{id:guid}/retire" && x.Http.HttpMethods.Single() == "POST");
+        Assert.Contains(routes, x => x.Name == nameof(LskusController.CancelDraft) && x.Http.Template == "{id:guid}/draft/cancel" && x.Http.HttpMethods.Single() == "POST");
+        Assert.Contains(routes, x => x.Name == nameof(LskusController.RepairChildAdmissions) && x.Http.Template == "operator/child-admission-repairs" && x.Http.HttpMethods.Single() == "POST");
         Assert.DoesNotContain(routes, x => x.Http.HttpMethods.Any(verb => verb is "PUT" or "PATCH" or "DELETE"));
         Assert.DoesNotContain(routes, x => (x.Http.Template ?? string.Empty).Contains("reservation", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(routes, x => (x.Http.Template ?? string.Empty).Contains("approve", StringComparison.OrdinalIgnoreCase)

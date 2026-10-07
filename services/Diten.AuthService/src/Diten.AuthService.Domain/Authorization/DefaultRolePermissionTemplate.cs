@@ -27,7 +27,13 @@ public static class DefaultRolePermissionTemplate
             // B5 (WP-MDM-GSKU-ACCEPT-01 FIX1): retiring a GSKU directly, without an approved request, is for the
             // system only — separation of duties. Not in the lifecycle profile's own non-human set on purpose: that
             // set PROTECTS historical grants from the sync, and this one's historical grant must be removed.
-            "mdm.gskus.retire"
+            "mdm.gskus.retire",
+            // WP-MDM-LSKU-ACCEPT-01 S1: the same for an LSKU — the direct retirement endpoint is the system's (MDM's
+            // manifest already declares the action "System"); a person retires an LSKU through a retirement request.
+            "mdm.lskus.retire",
+            // WP-MDM-FG-ACCEPT-01 FIX1 item 9 (CT decision B): the same for a Finished Good — MDM declares the action
+            // "System"; no person is granted it (its endpoint comes with the FG lifecycle round).
+            "mdm.finished-goods.retire"
         };
 
     // FIX-PERM-ATTRIBUTION-2 — reference-data is a genuine, distinct Module (RoleAssignments grouping,

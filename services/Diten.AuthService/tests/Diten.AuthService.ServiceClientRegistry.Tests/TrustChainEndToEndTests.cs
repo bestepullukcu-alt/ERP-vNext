@@ -183,6 +183,27 @@ public sealed class TrustChainEndToEndTests(OwnedMongo mongo)
             DevTrustBootstrapCommand.ServiceName, DevTrustBootstrapCommand.Audience, objectType, null, templateCode)));
     }
 
+    // WP-MDM-LSKU-ACCEPT-01 FIX1 (B4): the same for the LSKU starts — before FIX1 Platform listed none, so every LSKU
+    // start in Development was refused.
+    [Theory]
+    [InlineData("LskuIdentityWorkflow", "lsku")]
+    [InlineData("LskuRetirementRequestWorkflow", "LskuRetirementRequest")]
+    public void Tracked_development_settings_authorize_each_lsku_start_for_the_default_client(string section, string objectType)
+    {
+        var root = DevTrustBootstrapTests.RepositoryRoot();
+        var templateCode = Settings(Path.Combine(root, "services/Diten.MdmService/src/Diten.MdmService.Api/appsettings.Development.json"))
+            [section + ":TemplateCode"];
+        var platform = new ConfigurationBuilder()
+            .AddJsonFile(Path.Combine(root, "services/Diten.Platform/src/Diten.Platform.API/appsettings.Development.json"), optional: false)
+            .Build();
+        var policy = new ConfiguredTrustedWorkflowStartAuthorizationPolicy(Options.Create(
+            platform.GetSection(TrustedWorkflowStartAuthorizationOptions.SectionName).Get<TrustedWorkflowStartAuthorizationOptions>()!));
+
+        Assert.Contains((objectType, templateCode), DevTrustBootstrapCommand.LskuStarts);
+        Assert.True(policy.IsAuthorized(new(ServiceClientIdentityIds.FromClientCode(DevTrustBootstrapCommand.DefaultClientCode),
+            DevTrustBootstrapCommand.ServiceName, DevTrustBootstrapCommand.Audience, objectType, null, templateCode)));
+    }
+
     [Fact]
     public void Bootstrap_WithAnotherClientCode_WritesPlatformsAuthorizationEntryForThatClient()
     {
@@ -205,11 +226,12 @@ public sealed class TrustChainEndToEndTests(OwnedMongo mongo)
             .Get<TrustedWorkflowStartAuthorizationOptions>()!;
         var policy = new ConfiguredTrustedWorkflowStartAuthorizationPolicy(Options.Create(authorization));
 
-        // Four since GSKU FIX1 (B6): Global Product and the three GSKU starts, all for the new client.
-        Assert.Equal(4, authorization.Entries.Count);
+        // Four since GSKU FIX1 (B6): Global Product and the three GSKU starts; six since LSKU FIX1 (B4): and the two
+        // LSKU starts — all for the new client.
+        Assert.Equal(6, authorization.Entries.Count);
         Assert.True(policy.IsAuthorized(Request(clientCode, mdmTemplateCode)));
         Assert.False(policy.IsAuthorized(Request(DevTrustBootstrapCommand.DefaultClientCode, mdmTemplateCode)));
-        foreach (var (objectType, templateCode) in DevTrustBootstrapCommand.GskuStarts)
+        foreach (var (objectType, templateCode) in DevTrustBootstrapCommand.GskuStarts.Concat(DevTrustBootstrapCommand.LskuStarts))
         {
             Assert.True(policy.IsAuthorized(new(ServiceClientIdentityIds.FromClientCode(clientCode),
                 DevTrustBootstrapCommand.ServiceName, DevTrustBootstrapCommand.Audience, objectType, null, templateCode)));

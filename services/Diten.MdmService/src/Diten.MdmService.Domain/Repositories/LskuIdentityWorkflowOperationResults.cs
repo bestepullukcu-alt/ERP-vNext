@@ -77,7 +77,19 @@ public sealed record LskuIdentityWorkflowCheckpointMutation(
     string? WithdrawalTaskStatus = null,
     string? WithdrawalInstanceStatus = null,
     string? WithdrawalObjectRef = null,
-    bool ReleaseLease = false);
+    bool ReleaseLease = false,
+    // LSKU FIX1 B5: a withdrawal the engine refused ends — every withdrawal field goes, the approval stays.
+    bool ClearWithdrawal = false,
+    // LSKU FIX1 B5: the requester's repeat puts a stuck operation back before its decision — the recorded decision
+    // and approval proof go, the engine is read again.
+    bool ClearDecision = false,
+    RecoveryStreakWrite Streak = RecoveryStreakWrite.Reset,
+    // LSKU FIX2 item 8: the start is about to be sent (kept on the same checkpoint, the lease is kept).
+    long? LastStartSentAtUtcTicksV1 = null,
+    // FIX3 item 2: when the withdrawal's cancel was first left unanswered (kept once set; cleared with the withdrawal).
+    long? WithdrawalUnansweredSinceUtcTicksV1 = null,
+    // LSKU FIX4 item 6: written with every advance (null clears it) — set only while the limit holds.
+    string? RetryLimitCauseCode = null);
 
 public sealed record LskuIdentityWithdrawalWriteResult(
     bool Succeeded,

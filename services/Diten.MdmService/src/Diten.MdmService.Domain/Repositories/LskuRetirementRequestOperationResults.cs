@@ -15,6 +15,8 @@ public sealed record LskuRetirementRequestMutation(LskuRetirementRequestCheckpoi
     long? WorkflowStartedAtUtcTicksV1 = null, ProductIdentityDecisionKind? DecisionKind = null,
     Guid? DecisionActorSubjectId = null, string? DecisionReasonCode = null, long? DecisionAtUtcTicksV1 = null,
     long? DecisionTransitionSequence = null, string? DecisionTaskStatus = null,
-    string? DecisionInstanceStatus = null, bool ReleaseLease = false);
+    string? DecisionInstanceStatus = null, bool ReleaseLease = false,
+    // LSKU FIX1 B2: the GSKU pattern's streak and the start's send time.
+    RecoveryStreakWrite Streak = RecoveryStreakWrite.Reset, long? LastStartSentAtUtcTicksV1 = null);
 public sealed record LskuRetirementRequestPage(IReadOnlyList<LskuRetirementRequestOperation> Operations,
     Guid? NextAfterOperationId);

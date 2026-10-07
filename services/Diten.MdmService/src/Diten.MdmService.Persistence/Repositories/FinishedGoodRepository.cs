@@ -54,7 +54,7 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
                     normalizedCreationCommandId),
                 StringComparison.Ordinal))
         {
-            return FinishedGoodCreationAttemptResult.Unavailable();
+            return FinishedGoodCreationAttemptResult.Invalid();
         }
 
         try
@@ -67,7 +67,7 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
 
             if (await HasLegacyPartialAsync(normalizedCreationCommandId, cancellationToken))
             {
-                return FinishedGoodCreationAttemptResult.Unavailable();
+                return FinishedGoodCreationAttemptResult.ReconciliationRequired();
             }
 
             var timestamp = DateTimeOffset.UtcNow;
@@ -172,7 +172,8 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
         var match = new BsonDocument
         {
             { nameof(FinishedGood.TenantId), ProductLegalEntityScopeAggregation.GuidBson(_tenantId) },
-            { nameof(FinishedGood.IsDeleted), false }
+            // FG FIX1 part B item 8: $ne true, not false — a document written before the field existed is live.
+            { nameof(FinishedGood.IsDeleted), new BsonDocument("$ne", true) }
         };
         if (!string.IsNullOrWhiteSpace(canonicalCodeSearch))
         {
@@ -233,6 +234,12 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
             if (existing.IsDeleted)
             {
                 return new(false, existing, "CREATION_COMMAND_TOMBSTONED");
+            }
+
+            // FG FIX1 review m7: the create key of a cancelled Draft is a terminal conflict here too, never a replay.
+            if (existing.DraftCancellation is not null)
+            {
+                return new(false, existing, "FINISHED_GOOD_DRAFT_CANCELLED");
             }
 
             return SameFacts(existing, finishedGood)
@@ -306,16 +313,27 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
 
         try
         {
-            await _finishedGoods.InsertOneAsync(finishedGood, cancellationToken: cancellationToken);
-            return new(true, finishedGood);
+            // FG FIX1 part B item 1 (the LSKU InsertBoundToLiveCodeAsync pattern): the row goes in only with its code
+            // still live — the reservation write and the insert are ONE transaction, so a burn (which reads "no live row
+            // bound" in its own transaction) and this insert fail each other: never a live row with a burned code. A
+            // transient transaction error is retried with backoff; running out is ambiguous (202), never a refusal.
+            for (var attempt = 1; ; attempt++)
+            {
+                var inserted = await InsertBoundToLiveCodeAsync(finishedGood, reservationFilter, cancellationToken);
+                if (inserted.ErrorCode != InsertConflictRetry) return inserted;
+                if (attempt >= InsertAttempts) return AmbiguousWrite();
+                await Task.Delay(TimeSpan.FromMilliseconds(50 << attempt), cancellationToken);
+            }
         }
         catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
             existing = await GetByCreationCommandIdAsync(finishedGood.CreationCommandId, cancellationToken)
                 ?? await GetByReservationIdAsync(finishedGood.CodeReservationId, cancellationToken);
-            return existing is not null && !existing.IsDeleted && SameFacts(existing, finishedGood)
-                ? new(true, existing)
-                : new(false, existing, "FINISHED_GOOD_DUPLICATE_CONFLICT");
+            return existing?.DraftCancellation is not null
+                ? new(false, existing, "FINISHED_GOOD_DRAFT_CANCELLED")
+                : existing is not null && !existing.IsDeleted && SameFacts(existing, finishedGood)
+                    ? new(true, existing)
+                    : new(false, existing, "FINISHED_GOOD_DUPLICATE_CONFLICT");
         }
         catch (MongoConnectionException)
         {
@@ -328,6 +346,64 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
         catch (MongoWriteConcernException)
         {
             return AmbiguousWrite();
+        }
+        // The LSKU FIX5 K6 rule: a commit whose result is unknown and a server-selection timeout are not refusals.
+        catch (MongoException exception) when (exception.HasErrorLabel("UnknownTransactionCommitResult"))
+        {
+            return AmbiguousWrite();
+        }
+        catch (TimeoutException)
+        {
+            return AmbiguousWrite();
+        }
+    }
+
+    internal const int InsertAttempts = 4;
+
+    // FG FIX2 item 2 (CT-approved, the LSKU BeforeReservationWriteForTests twin): tests only — a barrier inside the
+    // insert's transaction, before its reservation write. Internal, null by default, no configuration path; only
+    // Diten.MdmService.Api.Tests sees it (InternalsVisibleTo).
+    internal Func<Task>? BeforeReservationWriteForTests { get; set; }
+    private const string InsertConflictRetry = "FINISHED_GOOD_INSERT_CONFLICT_RETRY";
+
+    private async Task<FinishedGoodCreateResult> InsertBoundToLiveCodeAsync(FinishedGood finishedGood,
+        FilterDefinition<CodeReservation> reservationFilter, CancellationToken cancellationToken)
+    {
+        using var session = await _finishedGoods.Database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+        try
+        {
+            session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+            if (BeforeReservationWriteForTests is { } barrier) await barrier();
+            // UpdatedAt only: metadata outside the reservation's Version and its audit chain; it exists to make an
+            // overlapping burn and this insert conflict.
+            var touched = await _reservations.UpdateOneAsync(session,
+                reservationFilter & Builders<CodeReservation>.Filter.Ne(x => x.BindingState, CodeReservationBindingState.Burned),
+                Builders<CodeReservation>.Update.Set(x => x.UpdatedAt, DateTimeOffset.UtcNow),
+                cancellationToken: cancellationToken);
+            if (touched.MatchedCount != 1)
+            {
+                await session.AbortTransactionAsync(cancellationToken);
+                return new(false, null, "CODE_RESERVATION_BURNED");
+            }
+            await _finishedGoods.InsertOneAsync(session, finishedGood, cancellationToken: cancellationToken);
+            await session.CommitTransactionAsync(cancellationToken);
+            return new(true, finishedGood);
+        }
+        catch (Exception exception) when (exception is NotSupportedException || exception is MongoCommandException { Code: 20 })
+        {
+            // Without transactions (a standalone mongod) no burn can happen at all (it is refused): the plain insert.
+            await _finishedGoods.InsertOneAsync(finishedGood, cancellationToken: cancellationToken);
+            return new(true, finishedGood);
+        }
+        catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError")
+                                               && exception is not MongoWriteException)
+        {
+            // Nothing of ours committed. A burn that won leaves the code burned; anything else is tried again.
+            var code = await _reservations.Find(Builders<CodeReservation>.Filter.Eq(x => x.Id, finishedGood.CodeReservationId))
+                .FirstOrDefaultAsync(cancellationToken);
+            return code?.BindingState == CodeReservationBindingState.Burned
+                ? new(false, null, "CODE_RESERVATION_BURNED")
+                : new(false, null, InsertConflictRetry);
         }
     }
 
@@ -365,7 +441,15 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
                 new CreateIndexOptions { Unique = true, Name = "ux_mdm_finished_goods_tenant_command" }),
             new CreateIndexModel<FinishedGood>(
                 Builders<FinishedGood>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.GskuId),
-                new CreateIndexOptions { Name = "ix_mdm_finished_goods_tenant_gsku" })
+                new CreateIndexOptions { Name = "ix_mdm_finished_goods_tenant_gsku" }),
+            // FG FIX1 review m3: the tenant-free pending-cancellation census reads only cancelled FGs.
+            new CreateIndexModel<FinishedGood>(
+                Builders<FinishedGood>.IndexKeys.Ascending("DraftCancellation.RequestedAtUtc"),
+                new CreateIndexOptions<FinishedGood>
+                {
+                    Name = "ix_mdm_finished_goods_draft_cancellation_requested",
+                    PartialFilterExpression = Builders<FinishedGood>.Filter.Exists("DraftCancellation.RequestedAtUtc")
+                })
         ]);
 
         _creationAttempts.Indexes.CreateOne(new CreateIndexModel<FinishedGoodCreationAttempt>(
@@ -440,6 +524,62 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
             ? FinishedGoodCreationAttemptResult.Bound(attempt)
             : FinishedGoodCreationAttemptResult.Conflict(attempt);
 
+    // FG FIX1 item 1: the audited Draft cancellation. One CAS: Draft, the expected version, no cancellation yet, room
+    // for one more intent — then the decision and its intent go in together and the version moves; the FG is retained.
+    // The same operation again is a replay (the same decision) or a conflict (another one); nothing is ever deleted.
+    public async Task<FinishedGoodDraftCancelResult> CancelDraftAsync(
+        Guid id, int expectedVersion, FinishedGoodDraftCancellation cancellation, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(cancellation);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        if (id == Guid.Empty || expectedVersion < 0 || cancellation.OperationId == Guid.Empty
+            || !Fingerprint(cancellation.Fingerprint) || cancellation.RequesterSubjectId == Guid.Empty
+            || !Exact(cancellation.ReasonCode, 128) || cancellation.BaseVersion != expectedVersion
+            || cancellation.IntentId != auditIntent.IntentId || cancellation.IdempotencyKey != auditIntent.IdempotencyKey
+            || cancellation.EvidenceHash != auditIntent.EvidenceHash
+            || auditIntent.Operation != ProductAuditOperation.FinishedGoodDraftCancelled
+            || auditIntent.AggregateType != AuditAggregateType.FinishedGood || auditIntent.AggregateId != id
+            || auditIntent.TenantId != _tenantId || auditIntent.PreVersion != expectedVersion
+            || auditIntent.PostVersion != expectedVersion + 1)
+        {
+            return new(false, null, "FINISHED_GOOD_DRAFT_CANCEL_CONTRACT_INVALID");
+        }
+
+        // Not Eq(IsDeleted, false) / Eq(DraftCancellation, null) on purpose: a document written before a field existed
+        // has no such field — Ne(true) and Eq(null) both match a missing field (FG FIX1 legacy rule).
+        var target = TenantIncludingDeletedFilter
+            & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
+            & Builders<FinishedGood>.Filter.Eq(x => x.Id, id);
+        var filter = target
+            & Builders<FinishedGood>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<FinishedGood>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
+            & Builders<FinishedGood>.Filter.Eq(x => x.DraftCancellation, null)
+            & Builders<FinishedGood>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var update = Builders<FinishedGood>.Update
+            .Set(x => x.DraftCancellation, cancellation)
+            .Push(x => x.AuditIntents, auditIntent)
+            .Set(x => x.UpdatedAt, auditIntent.TimestampUtc)
+            .Inc(x => x.Version, 1);
+        var written = await _finishedGoods.FindOneAndUpdateAsync(filter, update,
+            new FindOneAndUpdateOptions<FinishedGood> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (written is not null) return new(true, written);
+
+        var current = await _finishedGoods.Find(target).FirstOrDefaultAsync(cancellationToken);
+        if (current is null) return new(false, null, "FINISHED_GOOD_NOT_FOUND");
+        if (current.DraftCancellation is { } existing)
+            return existing.OperationId == cancellation.OperationId
+                ? existing.Fingerprint == cancellation.Fingerprint
+                    ? new(true, current, IsReplay: true)
+                    : new(false, current, "IDEMPOTENCY_KEY_CONFLICT")
+                : new(false, current, "FINISHED_GOOD_DRAFT_ALREADY_CANCELLED");
+        return new(false, current,
+            current.LifecycleStatus != ProductIdentityLifecycleStatus.Draft ? "FINISHED_GOOD_NOT_A_DRAFT"
+            : current.Version != expectedVersion ? "CONCURRENCY_CONFLICT"
+            : current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate ? "AUDIT_INTENT_CAPACITY_REACHED"
+            : "FINISHED_GOOD_DRAFT_CANCEL_CONFLICT");
+    }
+
     private static bool Exact(string? value, int maximum) =>
         value is { Length: > 0 } && value.Length <= maximum
         && value == value.Trim() && !value.Any(char.IsControl);
@@ -450,6 +590,8 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
     private FilterDefinition<FinishedGood> TenantIncludingDeletedFilter =>
         Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId);
 
+    // FG FIX1 review m5: Ne(true), not Eq(false) — a document written without the field is live, as the GSKU blocker
+    // already reads it; otherwise it blocks the GSKU yet can never be read or cancelled.
     private FilterDefinition<FinishedGood> ActiveTenantFilter =>
-        TenantIncludingDeletedFilter & Builders<FinishedGood>.Filter.Eq(x => x.IsDeleted, false);
+        TenantIncludingDeletedFilter & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true);
 }

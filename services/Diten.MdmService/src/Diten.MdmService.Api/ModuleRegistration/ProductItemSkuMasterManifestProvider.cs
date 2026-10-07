@@ -99,8 +99,12 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                     [
                         new ModuleManifestAction("ADD_NEW", "Add New", FinishedGoodsCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
                         new ModuleManifestAction("VIEW_DETAILS", "View Details", FinishedGoodsRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        // FG FIX1 item 9 (CT decision B): SUBMIT stays declared without an endpoint in v1 (Auth's exact
+                        // key set depends on it; a key no door enforces opens nothing). RETIRE is a system act, as for
+                        // GSKU / LSKU — never a human's (Auth: non-human key). Both get their endpoints in the FG
+                        // lifecycle round.
                         new ModuleManifestAction("SUBMIT", "Submit", FinishedGoodsSubmit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("RETIRE", "Retire", FinishedGoodsRetire, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("RETIRE", "Retire", FinishedGoodsRetire, "System", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: false)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "GSKUS",

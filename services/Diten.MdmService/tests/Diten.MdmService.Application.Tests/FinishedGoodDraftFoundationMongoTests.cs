@@ -512,9 +512,10 @@ public sealed class FinishedGoodDraftFoundationMongoTests(
         var result = await scope.Create(scope.TenantA, parent.Id, key, finishedGoods: uncertain);
         var state = await scope.ReadStateAsync(scope.TenantA, "uncertain binding result");
 
+        // FG FIX1 item 7: a store that did not answer is 503 (send the same key again), not a 202 reconciliation.
         Assert.False(result.IsSuccessful);
-        Assert.Equal(202, result.StatusCode);
-        Assert.Contains("FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED", result.Errors);
+        Assert.Equal(503, result.StatusCode);
+        Assert.Contains(ProductIdentityStore.Unavailable, result.Errors);
         Assert.Single(await scope.Attempts.Find(item => item.TenantId == scope.TenantA).ToListAsync());
         Assert.All(state.Parents, item => Assert.Empty(item.ChildCreationAdmissions));
         Assert.Empty(state.Reservations);
@@ -672,18 +673,22 @@ public sealed class FinishedGoodDraftFoundationMongoTests(
         Assert.Equal(GskuChildCreationAdmission.ComputeRequestFingerprint(
             parent.Id, GskuChildIdentityKind.FinishedGood, key), attempt.RequestFingerprint);
         Assert.Empty(interrupted.FinishedGoods);
-        var admitted = Assert.Single(interrupted.Parents.Single(item => item.Id == parent.Id).ChildCreationAdmissions);
-        Assert.Equal(GskuChildIdentityKind.FinishedGood, admitted.ChildKind);
-        Assert.Equal(key, admitted.CreationCommandId);
-        Assert.Equal(GskuChildCreationAdmission.ComputeRequestFingerprint(
-            parent.Id, GskuChildIdentityKind.FinishedGood, key), admitted.RequestFingerprint);
         Assert.Empty(interrupted.Parents.Single(item => item.Id == otherParent.Id).ChildCreationAdmissions);
         if (crashPoint == PreInsertCrashPoint.AfterAdmissionBeforeReservation)
         {
+            // FG FIX1 item 2 (principle A): nothing of this command can still become the child — the exit by exception
+            // gave the admission back (formerly it stayed held until a repair).
             Assert.Empty(interrupted.Reservations);
+            Assert.Empty(interrupted.Parents.Single(item => item.Id == parent.Id).ChildCreationAdmissions);
         }
         else
         {
+            // A consumed code may still become the child: the admission is kept with it.
+            var admitted = Assert.Single(interrupted.Parents.Single(item => item.Id == parent.Id).ChildCreationAdmissions);
+            Assert.Equal(GskuChildIdentityKind.FinishedGood, admitted.ChildKind);
+            Assert.Equal(key, admitted.CreationCommandId);
+            Assert.Equal(GskuChildCreationAdmission.ComputeRequestFingerprint(
+                parent.Id, GskuChildIdentityKind.FinishedGood, key), admitted.RequestFingerprint);
             var consumed = Assert.Single(interrupted.Reservations);
             Assert.Equal(CodeReservationState.Consumed, consumed.ReservationState);
             Assert.Equal(CodeReservationBindingState.PendingIdentityWrite, consumed.BindingState);
