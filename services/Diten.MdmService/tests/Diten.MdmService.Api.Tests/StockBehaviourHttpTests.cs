@@ -82,11 +82,22 @@ public sealed class StockBehaviourHttpTests(MdmHttpHost host)
         var client = host.Client(host.Token(_tenant, _user, StockBehaviourPermissions.EditGsku));
         client.DefaultRequestHeaders.Add("X-Tenant-Id", _tenant.ToString("D"));
 
-        var response = await Put(client, $"api/gskus/{records.Gsku.Id:D}/stock-behaviour",
-            new { expectedVersion = records.Gsku.Version, baseUomCode = "C62" }, Guid.NewGuid());
+        // CT merge reconciliation (takeover → S3, 2026-10-08): S1's shared host now installs FakeItemReferences for every
+        // test, so "without the item lists" is the provider's outage here. The production registration's own named 503
+        // (unconfigured client) is measured by WP-PLT-ITEM-LISTS-01's tests.
+        host.ItemReferences.Outage = true;
+        try
+        {
+            var response = await Put(client, $"api/gskus/{records.Gsku.Id:D}/stock-behaviour",
+                new { expectedVersion = records.Gsku.Version, baseUomCode = "C62" }, Guid.NewGuid());
 
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal(StockBehaviourErrors.ReferenceListUnavailable, Envelope.FirstError(await Envelope.ReadAsync(response)));
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+            Assert.Equal(StockBehaviourErrors.ReferenceListUnavailable, Envelope.FirstError(await Envelope.ReadAsync(response)));
+        }
+        finally
+        {
+            host.ItemReferences.Reset();
+        }
     }
 
     private static string KeyOf(string door) => door switch
