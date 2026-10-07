@@ -8196,6 +8196,8 @@ Karşılaştırma: SAP'de malzeme ana verisinin görünümleri (temel veri, depo
 
 Gelecek regresyon riski: 🟡 (geçici dönemde stok davranışını kimlik düzenleyicisi düzenler; ayrı veri sorumlusu rolü yok).
 
+**Ek (CT 2026-10-08, BL-573 Auth turu DUR):** tam küme kuralı her tek taraflı sırayı kırıyor: Auth önce gelirse manifest 18 bildirir, Auth 21 bekler; manifest önce gelirse tersi. CT kararı A: Auth üç anahtarı "ya hepsi ya hiçbiri" isteğe bağlı küme olarak kabul eder (geçerli: 18 ya da 18 + tam bu 3; kısmi ya da yabancı anahtar ret); Steward'a verme yalnız katalog üçünü taşıyorsa. **İkinci yarı (açık):** S5 manifesti her kiracıda canlıya çıktıktan sonra üçlü zorunlu yapılır (tek küme 21). Karşılaştırma: SAP'de yetki nesnesi profil üretecinde bildirilmeden role girmez; Oracle'da da bildirilmemiş fonksiyona yetki verilemez.
+
 ---
 
 ### BL-571
