@@ -138,3 +138,9 @@ Commit: "fix(crm,web): WP-E2E-FIX-3 — single effective play version, segment r
 - İsteğe bağlı dizin adayları: `contacts {TenantId, Specialty}`, `account_territory_assignments {TenantId, TerritoryNodeId, AssignmentStatus}` (eklenmedi).
 
 **E4 (CT, bekliyor):** segment düzenleyicide uzmanlık çipleri + ürün listesinde TUTUKON · oyun formunda arşivli segment adı · TUTUKON önizlemesi v2'nin satırı · gastro+aile+dahiliye önizlemesi sayı · sıklık formunda bant grubu kırmızı + odak.
+
+### §37 ek — E4 ACCEPTED (2026-10-07, CT, salt okuma)
+- Segment düzenleyici (`E2E-TUT-SINDIRIM`): uzmanlık çipleri dolu ✓ (etiketler İngilizce → veri işi 0.5). Ürün listesi 100'lük sayfalarla (2. sayfa 77, TUTUKON var) ✓.
+- Önizleme: gastroenteroloji + aile hekimliği + dahiliye → **56.052** (`countedByStore`, ~1,5 sn; eskiden 422) ✓; yalnız gastroenteroloji 910 + 50 örnek ✓.
+- Oyun listesi: v1'de "Yerini v2 aldı" ✓; v1 düzenle: "Üroloji Hekimleri (arşivli)" (GUID yok) ✓.
+- Sıklık formu boş kaydet: bant grubu dahil 7 alan işaretli, odak ilk hatada, istek gitmiyor ✓.

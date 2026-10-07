@@ -137,3 +137,8 @@ Commit: "feat(crm): WP-VP-2B — account list active-contact count + hasActiveCo
 **Açık uçlar (ajan raporu, kabul):** belgesi olmayan kişiye giden bağlantı `true` kümesine girer ama satır sayımı 0 (canlıda 0 kayıt); aynı adlı hesaplarda sayfa sınırı Mongo doğal sırasına bağlı (bugünkü davranış).
 
 **E4 (CT, bekliyor; fleet yeniden başlatma — CRM değişti):** `accounts?hasActiveContacts=true` toplamı ≈ 16.390; `my-accounts?hasActiveContacts=true` Beste kapsamında; satırlarda `activeContactCount`; `filter-options?scope=mine` → Beste'nin 4 ilçesi; `hasActiveContacts=x` → 400.
+
+### §37 ek — E4 ACCEPTED (2026-10-07, CT, salt okuma)
+- `accounts?hasActiveContacts=true` 16.390 + `false` 26.984 = 43.374 (tümü) ✓; satırlarda `activeContactCount` ✓; `x` → 400 `invalid_has_active_contacts` ✓.
+- `my-accounts?hasActiveContacts=true` (Beste) `assigned`, 799 / 1.535 + sayımlar ✓.
+- `filter-options`: Web vekili yok (yalnız mobil) → tarayıcıdan denenemedi; birim testleri yeşil.

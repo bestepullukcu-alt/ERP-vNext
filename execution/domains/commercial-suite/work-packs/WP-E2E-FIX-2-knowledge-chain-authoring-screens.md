@@ -124,3 +124,10 @@ Commit: "fix(crm,web): WP-E2E-FIX-2 — knowledge chain authoring fixes (product
 - E3-B4 etkisi: göndermemiş yönetici artık geri çekemez; gönderen ayrıldıysa tur yalnız iş akışıyla kapanır.
 
 **E4 (CT, bekliyor):** içerik formunda "TUTUKON" araması · açılırlar TR etiketli · `KP-2026-269A07` stüdyosunda yuva etiketleri · `CEJ-2026-8AD806`'da "Yol tekrarı" rozeti, yeni aşamada Zorunlu açık, yol listesinde yalnız TUTUKON yolları, Türkçe etiketler (Edit sayfası).
+
+### §37 ek — E4 ACCEPTED (2026-10-07, CT, salt okuma)
+- İçerik formu (`KC-2026-E70D11` düzenle): açılırlar Türkçe ("Sunum", "Yayında", "Manuel", "Türkçe") ✓; ürün alanı aramalı (Select2 ajax), "TUTUKON" araması GP-000000000063'ü buluyor ✓.
+- Yolculuk ayrıntısı `CEJ-2026-8AD806`: iki aşamada "Yol tekrarı" rozeti, "Tekrarlanabilir: Hayır" ayrı ✓.
+- Bilgi Yolu `KP-2026-269A07`: yuva etiketleri tutarlı (hepsi Zorunlu), "Onaydan geri al" görünmüyor ✓.
+- Görülemeyen: yayımlanmış yolculukta aşama formu açılmadığı için "yeni aşamada Zorunlu açık" ve konuya göre yol listesi ekranda denenemedi (birim testleri yeşil).
+- Yeni küçük not: yolculuk ayrıntısında "Yolculuk Durumu: published", "Kaynak: manual" ham kod → takip.

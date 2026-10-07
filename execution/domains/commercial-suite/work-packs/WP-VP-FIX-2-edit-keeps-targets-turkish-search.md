@@ -112,3 +112,6 @@ Commit: "fix(crm,web): WP-VP-FIX-2 — planning edit keeps targets (null = uncha
 - taslakta Düzenle → hafta değiştir → seçim duruyor (kayıt, test taslağında);
 - "Hamidiye" kurum araması;
 - "şirin" doktor araması.
+### §37 ek — E4 ACCEPTED (2026-10-07, CT)
+- `my-accounts` araması "Hamidiye" / "HAMİDİYE" / "hamidiye" / "HAMIDIYE" → 4; "şişli" → 36; genel liste "Hamidiye" 15; `a.b(` güvenli (0) ✓.
+- Taslak `a238bdc5` (kullanıcı onayıyla): 3 doktor hedefle → Düzenle → hafta 42 → Kaydet → `/Details/a238bdc5…?week=2026-10-12` (404 yok, E7-B4) ve 3 hedef korundu ✓ → hafta 41'e geri, hedefler korundu ✓.

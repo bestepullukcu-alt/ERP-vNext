@@ -149,3 +149,12 @@ Commit: "fix(crm,web): WP-E2E-FIX-1 — visit execution shows planned content, r
 - E8-B1 toast'ın eski kökü kodda bulunamadı (5 sn'de kayboluyordu, kalıcı değişiklik yoktu); yeni akışta yeniden yükleme sonrası gösteriliyor → E4'te bakılır.
 
 **E4 (CT, bekliyor; fleet yeniden başlatma — CRM + Web değişti):** 19 Eki kartı `TUTUKON · Farkındalık` + rapor formunda adımlar · 9 Kas kartında düğmeler pasif · geçmiş tarihli test ziyaretinde aşama seçimi + Mongo'da `journeyId` (kayıt, onayla) · boş sonuç kodunda TR mesaj · başlık "Ziyaret Yürütme" · Düzenle → Kaydet doğru sayfa · Uygula onay + toast + kilit (yeni test taslağında, onayla).
+
+### §37 ek — E4 ACCEPTED (2026-10-07, CT, fleet, Beste girişi, ayrı sekme)
+- Başlık "Ziyaret Yürütme" ✓ · 19 Eki kartları `TUTUKON · Farkındalık` ✓ · raporlu kart "Gönderildi" + Türkçe "Tamamlandı" ✓.
+- İleri tarihli kartlarda Tamamlandı / Kaçırıldı / Rapor pasif + "Ziyaret günü gelmedi"; Ertelendi açık ✓. Sunucu 409 `visit_not_yet_due` ✓.
+- Rapor formu: içeriksiz ziyarette "Bu ziyaret için planlanmış içerik yok" ✓; boş sonuç kodu → alan kırmızı + "Sonuç kodu zorunludur.", istek gitmiyor ✓; sunucu 400 `visit_report_outcome_code_required`, rapor yazılmıyor ✓. "Tamamlandı" onay soruyor, İptal'de yazma yok ✓.
+- **Yazmalı akış (kullanıcı onayıyla):** plan `a238bdc5-f8ce-4730-bfe3-3ec4f7e8a2e9` (41. hafta, SADAKAT ÖZDİL) → Uygula: onay "2 ziyaret planlanacak ve plan kilitlenecek" ✓ → yeniden yükleme sonrası toast "Haftanın planı olarak kaydedildi. (2)" ✓ + "Bu plan onaylı ve salt okunur." bandı, Kaydet gizli, durum `committed` ✓ (E8-B1).
+- `VP-a238bdc5-0001` (5 Eki): Tamamlandı (onaylı) → rapor formunda planlanan içerik (TUTUKON · Farkındalık + 5 adım) ✓, aşama seçimi varsayılan "1. Farkındalık (plandaki)" ✓ → gönderildi: rapor `939766be-bb50-47d3-971e-ee3089821f2d`, `contentActuals.journeyId = 97a1b154…`, `stageId = 483015bd…`, `matchedPlan = true` ✓ (E9-B1 ön koşulu).
+- Küçük: onay pencerelerinde genel alt metin "Devam etmek istediğinize emin misiniz?" tekrar ediyor (FIX-2'deki `subtext: ''` deseni burada uygulanmamış) → takip.
+- Gözlem (Faz 3): aynı doktorun başka bir planda (a42373cb) ziyareti varken yeni planın 2. ziyareti (26 Eki) aşama #0 öngörüldü (2 aşamalı yolculukta başa dönüş). Planlar arası aşama öngörüsü Faz 3'te ele alınır.
