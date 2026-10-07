@@ -16,7 +16,8 @@ namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehavi
 /// <item>stored value empty (missing on an old document, or null) → written; on a non-Draft record it is a FIRST FILL —
 /// no approval, audited, and written only while the store still has it empty (R2 / R3);</item>
 /// <item>stored value different → written on a Draft; on any other record 409 <c>STOCK_BEHAVIOUR_FIELD_LOCKED</c>
-/// (a change of a filled value is the critical-field correction, MOD-0023, a later slice).</item>
+/// (a change of a filled value is the critical-field correction, MOD-0023, a later slice) — except a list that only
+/// GAINS items (S3 FIX1 M5, pack §4.4 rule 8): written, audited, every stored item kept as it was.</item>
 /// </list>
 /// </summary>
 public sealed class StockBehaviourPlan
@@ -40,17 +41,27 @@ public sealed class StockBehaviourPlan
         Apply(name, requested, current, (a, b) => (bool)a == (bool)b);
 
     // A set of codes: the order a screen sends them in is not a change.
+    // S3 FIX1 M5 (CT decision, pack §4.4 rule 8): on a non-Draft record a code ADDED to the stored ones is free (audited,
+    // like a first fill); one removed is a change of the filled value — locked.
     public void Field(string name, IReadOnlyList<string>? requested, IReadOnlyList<string>? current) =>
         Apply(name, requested?.ToList(), current, (a, b) =>
             ((IEnumerable<string>)a).Order(StringComparer.Ordinal)
-            .SequenceEqual(((IEnumerable<string>)b).Order(StringComparer.Ordinal), StringComparer.Ordinal));
+            .SequenceEqual(((IEnumerable<string>)b).Order(StringComparer.Ordinal), StringComparer.Ordinal),
+            (a, b) => ((IEnumerable<string>)b).All(code => ((IEnumerable<string>)a).Contains(code, StringComparer.Ordinal)));
 
     // Conversions compare as entered text (MDM never rounds: "2" and "2.0" are two values), order-free.
+    // S3 FIX1 M5: a conversion ADDED is free on a non-Draft record; one changed (another ratio for the same units) or
+    // removed is locked.
     public void Field(string name, IReadOnlyList<ItemUomConversion>? requested, IReadOnlyList<ItemUomConversion>? current) =>
         Apply(name, requested?.Select(Copy).ToList(), current, (a, b) =>
-            Keys((IEnumerable<ItemUomConversion>)a).SequenceEqual(Keys((IEnumerable<ItemUomConversion>)b)));
+            Keys((IEnumerable<ItemUomConversion>)a).SequenceEqual(Keys((IEnumerable<ItemUomConversion>)b)),
+            (a, b) => Keys((IEnumerable<ItemUomConversion>)b).All(Keys((IEnumerable<ItemUomConversion>)a).Contains));
 
-    private void Apply(string name, object? requested, object? current, Func<object, object, bool> equal)
+    /// <summary>The list fields a non-Draft record extended (S3 FIX1 M5) — for the report and the tests.</summary>
+    public HashSet<string> Appended { get; } = new(StringComparer.Ordinal);
+
+    private void Apply(string name, object? requested, object? current, Func<object, object, bool> equal,
+        Func<object, object, bool>? keepsEveryStored = null)
     {
         if (requested is null) return;
         if (current is null)
@@ -63,6 +74,14 @@ public sealed class StockBehaviourPlan
         if (_draft)
         {
             Sets[name] = requested;
+            return;
+        }
+        if (keepsEveryStored is not null && keepsEveryStored(requested, current))
+        {
+            // Every stored item is still there, unchanged, and new ones are added: not a change of a filled value.
+            // The version CAS covers it (no first-fill condition: the field is not empty).
+            Sets[name] = requested;
+            Appended.Add(name);
             return;
         }
         LockedField ??= name;

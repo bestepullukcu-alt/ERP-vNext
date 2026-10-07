@@ -63,8 +63,15 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
     private readonly IMongoCollection<FinishedGood> _finishedGoods;
     private readonly IMongoCollection<FirstGskuIdentityWorkflowOperation> _gskuIdentity;
     private readonly IMongoCollection<LskuIdentityWorkflowOperation> _lskuIdentity;
+    private readonly IMongoCollection<LskuRetirementRequestOperation> _lskuRetirement;
     private readonly IMongoCollection<FinishedGoodIdentityWorkflowOperation> _finishedGoodIdentity;
     private readonly Guid _tenantId;
+
+    /// <summary>
+    /// S3 FIX1 R1 — a test seam (internal): runs after the pre-read and before the conditional write, so a test can land a
+    /// competing write exactly in that window and prove the write's OWN conditions (not the pre-read) refuse it.
+    /// </summary>
+    internal Func<CancellationToken, Task>? BeforeConditionalWrite { get; init; }
 
     public ProductStockBehaviourRepository(IMongoDatabase database, ITenantContext tenantContext)
     {
@@ -75,6 +82,8 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
             FirstGskuIdentityWorkflowOperationRepository.CollectionName);
         _lskuIdentity = database.GetCollection<LskuIdentityWorkflowOperation>(
             LskuIdentityWorkflowOperationRepository.CollectionName);
+        _lskuRetirement = database.GetCollection<LskuRetirementRequestOperation>(
+            LskuRetirementRequestOperationRepository.CollectionName);
         _finishedGoodIdentity = database.GetCollection<FinishedGoodIdentityWorkflowOperation>(
             FinishedGoodIdentityWorkflowOperationRepository.CollectionName);
         _tenantId = tenantContext.TenantId;
@@ -91,7 +100,9 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         var partial = new BsonDocument
         {
             { nameof(FinishedGood.Gtin), new BsonDocument { { "$exists", true }, { "$type", "string" } } },
-            { nameof(FinishedGood.LifecycleStatus), new BsonDocument("$in", new BsonArray(LiveFinishedGoodStatuses)) }
+            // S3 FIX1 M3: the status values through the entity's own serializer — the same representation as the writes.
+            { nameof(FinishedGood.LifecycleStatus), new BsonDocument("$in", new BsonArray(LiveFinishedGoodStatuses
+                .Select(status => ToBson<FinishedGood>(nameof(FinishedGood.LifecycleStatus), (ProductIdentityLifecycleStatus)status)))) }
         };
         return finishedGoods.Indexes.CreateOneAsync(new CreateIndexModel<BsonDocument>(
             Builders<BsonDocument>.IndexKeys.Ascending(nameof(FinishedGood.TenantId)).Ascending(nameof(FinishedGood.Gtin)),
@@ -131,6 +142,7 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
             & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
             & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, null)
             & reservations;
+        if (BeforeConditionalWrite is { } hook) await hook(cancellationToken);
         var written = await _gskus.FindOneAndUpdateAsync(filter,
             Update<Gsku>(write, nameof(Gsku.StockBehaviourCommand)),
             new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
@@ -151,13 +163,25 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         if (current is null) return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.NotFound);
         if (Replay(current.StockBehaviourCommand, write) is { } replay) return replay;
         if (current.Version == write.ExpectedVersion
-            && await _lskuIdentity.Find(OperationTenant<LskuIdentityWorkflowOperation>()
-                    & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LskuId, current.Id)
-                    & Builders<LskuIdentityWorkflowOperation>.Filter.Nin(x => x.Checkpoint, LskuFinished))
-                .AnyAsync(cancellationToken))
+            && (await _lskuIdentity.Find(OperationTenant<LskuIdentityWorkflowOperation>()
+                        & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LskuId, current.Id)
+                        & Builders<LskuIdentityWorkflowOperation>.Filter.Nin(x => x.Checkpoint, LskuFinished))
+                    .AnyAsync(cancellationToken)
+                // S3 FIX1 B1: an ACTIVE retirement request — after its decision the request gives the LSKU's lock back
+                // and only THEN reads the LSKU at base + 2 to complete; a stock edit in that window moved it to base + 3
+                // and the request was stuck for good (still active, so ux_lsku_active_retirement refused every new
+                // request). Active = IsActive not false (a document without the flag counts as active — the safe side)
+                // and not Completed (an old completed request without the flag never blocks).
+                || await _lskuRetirement.Find(OperationTenant<LskuRetirementRequestOperation>()
+                        & Builders<LskuRetirementRequestOperation>.Filter.Eq(x => x.LskuId, current.Id)
+                        & Builders<LskuRetirementRequestOperation>.Filter.Ne(x => x.IsActive, false)
+                        & Builders<LskuRetirementRequestOperation>.Filter.Ne(
+                            x => x.Checkpoint, LskuRetirementRequestCheckpoint.Completed))
+                    .AnyAsync(cancellationToken)))
             return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.BlockedByOperation);
 
         var filter = Conditions(target, write) & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null);
+        if (BeforeConditionalWrite is { } hook) await hook(cancellationToken);
         var written = await _lskus.FindOneAndUpdateAsync(filter,
             Update<Lsku>(write, nameof(Lsku.StockBehaviourCommand)),
             new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
@@ -177,9 +201,11 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         if (current is null) return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.NotFound);
         if (Replay(write.MarksGtin ? current.GtinCommand : current.StockBehaviourCommand, write) is { } replay)
             return replay;
+        // S3 FIX1 M4: a cancelled draft is not editable at all.
+        if (current.DraftCancellation is not null)
+            return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.RecordNotEditable);
         if (current.Version == write.ExpectedVersion
-            && (current.DraftCancellation is not null
-                || await _finishedGoodIdentity.Find(OperationTenant<FinishedGoodIdentityWorkflowOperation>()
+            && (await _finishedGoodIdentity.Find(OperationTenant<FinishedGoodIdentityWorkflowOperation>()
                         & Builders<FinishedGoodIdentityWorkflowOperation>.Filter.Eq(x => x.FinishedGoodId, current.Id)
                         & Builders<FinishedGoodIdentityWorkflowOperation>.Filter.Nin(x => x.Checkpoint, FinishedGoodFinished))
                     .AnyAsync(cancellationToken)))
@@ -188,6 +214,7 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         var filter = Conditions(target, write) & Builders<FinishedGood>.Filter.Eq(x => x.DraftCancellation, null);
         var update = Update<FinishedGood>(write,
             write.MarksGtin ? nameof(FinishedGood.GtinCommand) : nameof(FinishedGood.StockBehaviourCommand));
+        if (BeforeConditionalWrite is { } hook) await hook(cancellationToken);
         try
         {
             var written = await _finishedGoods.FindOneAndUpdateAsync(filter, update,
@@ -204,8 +231,12 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
         }
 
         var now = await _finishedGoods.Find(target).FirstOrDefaultAsync(cancellationToken);
+        // A cancellation that landed between the pre-read and the write (the write's own condition refused it).
+        if (now?.DraftCancellation is not null
+            && Replay(write.MarksGtin ? now.GtinCommand : now.StockBehaviourCommand, write) is null)
+            return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.RecordNotEditable);
         return Classify(now, write.MarksGtin ? now?.GtinCommand : now?.StockBehaviourCommand, now?.Version,
-            now?.LifecycleStatus, write, now?.DraftCancellation is not null);
+            now?.LifecycleStatus, write, heldByOperation: false);
     }
 
     public Task<bool> GtinHeldByAnotherAsync(string gtin, Guid finishedGoodId, CancellationToken cancellationToken = default) =>
@@ -299,6 +330,10 @@ public sealed class ProductStockBehaviourRepository : IProductStockBehaviourRepo
     {
         if (now is null) return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.NotFound);
         if (Replay(mark, write) is { } replay) return replay;
+        // S3 FIX1 M4: a record that is no longer editable at all (pending approval, retired) is said apart from one an
+        // operation holds for a while.
+        if (status is not (ProductIdentityLifecycleStatus.Draft or ProductIdentityLifecycleStatus.IdentityApproved))
+            return StockBehaviourWriteResult.Fail(StockBehaviourStoreCodes.RecordNotEditable);
         if (status != write.ExpectedStatus || heldByOperation)
             return StockBehaviourWriteResult.Fail(version == write.ExpectedVersion
                 ? StockBehaviourStoreCodes.BlockedByOperation

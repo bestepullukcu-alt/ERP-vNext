@@ -53,7 +53,8 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
         foreach (var name in new[] { "mdm_global_products", "mdm_product_definition_revisions", "mdm_gskus", "mdm_lskus",
                      "mdm_finished_goods", FirstGskuIdentityWorkflowOperationRepository.CollectionName,
                      LskuIdentityWorkflowOperationRepository.CollectionName,
-                     FinishedGoodIdentityWorkflowOperationRepository.CollectionName })
+                     FinishedGoodIdentityWorkflowOperationRepository.CollectionName,
+                     LskuRetirementRequestOperationRepository.CollectionName })
             await _database.GetCollection<BsonDocument>(name).DeleteManyAsync(new BsonDocument("TenantId", new BsonBinaryData(_tenantId, GuidRepresentation.Standard)));
     }
 
@@ -115,7 +116,9 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
         var gsku = await SeedGskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
         await Gskus.UpdateOneAsync(x => x.Id == gsku.Id, Builders<Gsku>.Update.Combine(
             new[] { "BaseUomCode", "UomConversions", "ShelfLifeDays", "StorageConditionCodes", "LotControlled", "Stockable",
-                    "StockBehaviourCommand", "StockReferenceSelections", "IdentitySubmitReservations" }
+                    "StockBehaviourCommand", "StockReferenceSelections", "IdentitySubmitReservations",
+                    // S3 FIX1 R1: the lock fields too — a document written before they existed is free, not held.
+                    "ActiveLifecycleOperation", "RetirementOperationId" }
                 .Select(field => Builders<Gsku>.Update.Unset(field))));
         var raw = await _database.GetCollection<BsonDocument>("mdm_gskus")
             .Find(new BsonDocument("_id", new BsonBinaryData(gsku.Id, GuidRepresentation.Standard))).SingleAsync();
@@ -263,7 +266,8 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
         var gsku = await SeedGskuAsync(status);
         var response = await SetGsku(gsku, lot: true);
         Assert.Equal(409, response.StatusCode);
-        Assert.Contains(StockBehaviourStoreCodes.BlockedByOperation, response.Errors!);
+        // S3 FIX1 M4: its own code — not editable at all, not held by an operation for a while.
+        Assert.Contains(StockBehaviourStoreCodes.RecordNotEditable, response.Errors!);
     }
 
     [Fact]
@@ -540,6 +544,185 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
         Assert.Equal(first.Data.Version, (await Gskus.Find(x => x.Id == gsku.Id).SingleAsync()).Version);
     }
 
+    // ---------------------------------------------------------------- S3 FIX1
+
+    [Fact]
+    public async Task An_lsku_whose_retirement_request_is_decided_but_not_completed_is_refused_and_does_not_move()
+    {
+        // B1: the request applied its (rejecting) decision and gave the lock back; it completes by reading the LSKU at
+        // base + 2. A stock edit in that window moved it to base + 3 — the request was stuck for good.
+        var (_, lsku) = await SeedLskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+        var operationId = await SeedLskuRetirementAsync(lsku, LskuRetirementRequestCheckpoint.DecisionApplied, active: true);
+
+        var refused = await SetLsku(lsku, serial: true);
+
+        Assert.Equal(409, refused.StatusCode);
+        Assert.Contains(StockBehaviourStoreCodes.BlockedByOperation, refused.Errors!);
+        Assert.Equal(lsku.Version, (await Lskus.Find(x => x.Id == lsku.Id).SingleAsync()).Version);
+
+        await _database.GetCollection<LskuRetirementRequestOperation>(LskuRetirementRequestOperationRepository.CollectionName)
+            .UpdateOneAsync(x => x.OperationId == operationId, Builders<LskuRetirementRequestOperation>.Update
+                .Set(x => x.Checkpoint, LskuRetirementRequestCheckpoint.Completed).Set(x => x.IsActive, false));
+        var accepted = await SetLsku(lsku, serial: true);
+        Assert.True(accepted.IsSuccessful, string.Join(",", accepted.Errors ?? []));
+    }
+
+    [Fact]
+    public async Task A_legacy_lsku_without_its_lock_field_and_an_old_completed_request_without_the_active_flag_is_free()
+    {
+        var (_, lsku) = await SeedLskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+        await Lskus.UpdateOneAsync(x => x.Id == lsku.Id, Builders<Lsku>.Update.Combine(
+            new[] { "ActiveLifecycleOperation", "SerialControlled", "StockBehaviourCommand" }
+                .Select(field => Builders<Lsku>.Update.Unset(field))));
+        var operationId = await SeedLskuRetirementAsync(lsku, LskuRetirementRequestCheckpoint.Completed, active: true);
+        await _database.GetCollection<BsonDocument>(LskuRetirementRequestOperationRepository.CollectionName).UpdateOneAsync(
+            new BsonDocument("OperationId", new BsonBinaryData(operationId, GuidRepresentation.Standard)),
+            new BsonDocument("$unset", new BsonDocument("IsActive", "")));
+
+        var response = await SetLsku(lsku, serial: false);
+
+        Assert.True(response.IsSuccessful, string.Join(",", response.Errors ?? []));
+    }
+
+    [Fact]
+    public async Task A_gsku_with_a_retirement_operation_under_way_is_refused_by_the_writes_own_condition()
+    {
+        // R1: the pre-read does not look at RetirementOperationId — only the write's condition does.
+        var gsku = await SeedGskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+        await Gskus.UpdateOneAsync(x => x.Id == gsku.Id, Builders<Gsku>.Update.Set(x => x.RetirementOperationId, Guid.NewGuid()));
+
+        var response = await SetGsku(gsku, lot: true);
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Contains(StockBehaviourStoreCodes.BlockedByOperation, response.Errors!);
+        Assert.Null((await Gskus.Find(x => x.Id == gsku.Id).SingleAsync()).LotControlled);
+    }
+
+    [Fact]
+    public async Task A_cancellation_landing_between_the_read_and_the_write_is_refused_by_the_writes_own_condition()
+    {
+        // R1: the handler's pre-check and the store's pre-read saw no cancellation; it lands in the window (without moving
+        // the version, so only the DraftCancellation condition can refuse the write).
+        var (_, finishedGood) = await SeedFinishedGoodAsync(ProductIdentityLifecycleStatus.Draft);
+        var store = new ProductStockBehaviourRepository(_database, Tenant())
+        {
+            BeforeConditionalWrite = _ => FinishedGoods.UpdateOneAsync(x => x.Id == finishedGood.Id,
+                Builders<FinishedGood>.Update.Set(x => x.DraftCancellation, new FinishedGoodDraftCancellation
+                {
+                    OperationId = Guid.NewGuid(), Fingerprint = new string('b', 64), ReasonCode = "RACE",
+                    RequesterSubjectId = Guid.NewGuid(), BaseVersion = finishedGood.Version
+                }))
+        };
+
+        var response = await SetFinishedGood(finishedGood, lot: true, store: store);
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Contains(StockBehaviourStoreCodes.RecordNotEditable, response.Errors!);
+        Assert.Null((await FinishedGoods.Find(x => x.Id == finishedGood.Id).SingleAsync()).LotControlled);
+    }
+
+    [Fact]
+    public async Task A_submit_reservation_landing_between_the_operation_read_and_the_write_is_refused_by_the_count()
+    {
+        // R1: a submit reserves (operation + touch of the GSKU's reservation count, no version move) after this write read
+        // the operations — only the count condition can refuse it.
+        var gsku = await SeedGskuAsync(ProductIdentityLifecycleStatus.Draft);
+        var store = new ProductStockBehaviourRepository(_database, Tenant())
+        {
+            BeforeConditionalWrite = async _ => await SeedGskuIdentityOperationAsync(gsku, FirstGskuIdentityWorkflowCheckpoint.Prepared)
+        };
+
+        var response = await SetGsku(gsku, lot: true, store: store);
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Contains(StockBehaviourStoreCodes.BlockedByOperation, response.Errors!);
+        var stored = await Gskus.Find(x => x.Id == gsku.Id).SingleAsync();
+        Assert.Equal((gsku.Version, (bool?)null), (stored.Version, stored.LotControlled));
+    }
+
+    [Fact]
+    public async Task A_cancelled_draft_gives_its_gtin_back_and_a_new_finished_good_takes_it()
+    {
+        // R2 (CT decision): before, the cancelled draft stayed Draft inside the live GTIN index and held the GTIN for good.
+        var (_, cancelledDraft) = await SeedFinishedGoodAsync(ProductIdentityLifecycleStatus.Draft);
+        var (_, replacement) = await SeedFinishedGoodAsync(ProductIdentityLifecycleStatus.Draft);
+        var assigned = await AssignGtin(cancelledDraft, cancelledDraft.Version, "04006381333931");
+        Assert.True(assigned.IsSuccessful, string.Join(",", assigned.Errors ?? []));
+        Assert.Contains(StockBehaviourStoreCodes.GtinConflict,
+            (await AssignGtin(replacement, replacement.Version, "04006381333931")).Errors!);
+
+        var current = await FinishedGoods.Find(x => x.Id == cancelledDraft.Id).SingleAsync();
+        var actor = Guid.NewGuid();
+        var operationId = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
+        var intent = Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle
+            .FinishedGoodDraftCancellationAuditIntentFactory.Create(current, current.Version, operationId, actor, "CREATED_BY_MISTAKE", now);
+        var cancelled = await new FinishedGoodRepository(_database, Tenant()).CancelDraftAsync(current.Id, current.Version,
+            new FinishedGoodDraftCancellation
+            {
+                OperationId = operationId,
+                Fingerprint = Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle
+                    .FinishedGoodDraftCancellationAuditIntentFactory.Fingerprint(current.TenantId, current.Id, current.Version,
+                        "CREATED_BY_MISTAKE", actor),
+                IntentId = intent.IntentId, IdempotencyKey = intent.IdempotencyKey, EvidenceHash = intent.EvidenceHash,
+                ReasonCode = "CREATED_BY_MISTAKE", RequesterSubjectId = actor, BaseVersion = current.Version, RequestedAtUtc = now
+            }, intent);
+        Assert.True(cancelled.Succeeded, cancelled.ErrorCode);
+        Assert.Null(cancelled.FinishedGood!.Gtin);
+
+        var retaken = await AssignGtin(replacement, replacement.Version, "04006381333931");
+
+        Assert.True(retaken.IsSuccessful, string.Join(",", retaken.Errors ?? []));
+        // The cancelled draft takes no GTIN again (not editable).
+        Assert.Contains(StockBehaviourStoreCodes.RecordNotEditable,
+            (await AssignGtin(cancelledDraft, cancelled.FinishedGood.Version, "00012345678905")).Errors!);
+    }
+
+    [Fact]
+    public async Task On_an_approved_finished_good_a_new_conversion_is_added_and_a_stored_one_cannot_change()
+    {
+        // M5 (CT decision, pack §4.4 rule 8): an added item is free and audited; changing or removing a stored one is locked.
+        var (gsku, finishedGood) = await SeedFinishedGoodAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+        Assert.True((await SetGsku(gsku, baseUom: "C62")).IsSuccessful);
+        var first = await SetFinishedGood(finishedGood, conversions: [Edge("XCS", "XBX", "12")]);
+        Assert.True(first.IsSuccessful, string.Join(",", first.Errors ?? []));
+
+        var added = await SetFinishedGood(finishedGood, version: first.Data!.Version,
+            conversions: [Edge("XCS", "XBX", "12"), Edge("XCS", "C62", "12")]);
+        var changed = await SetFinishedGood(finishedGood, version: added.Data!.Version, conversions: [Edge("XCS", "XBX", "10")]);
+        var removed = await SetFinishedGood(finishedGood, version: added.Data.Version, conversions: [Edge("XCS", "C62", "12")]);
+
+        Assert.True(added.IsSuccessful, string.Join(",", added.Errors ?? []));
+        Assert.Contains(StockBehaviourStoreCodes.FieldLocked, changed.Errors!);
+        Assert.Contains(StockBehaviourStoreCodes.FieldLocked, removed.Errors!);
+        Assert.Equal(2, (await FinishedGoods.Find(x => x.Id == finishedGood.Id).SingleAsync()).UomConversions!.Count);
+    }
+
+    [Fact]
+    public async Task On_an_approved_gsku_a_storage_condition_is_added_and_a_stored_one_cannot_be_removed()
+    {
+        var gsku = await SeedGskuAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+        var first = await SetGsku(gsku, storage: ["COOL_2_8"]);
+        var added = await SetGsku(gsku, version: first.Data!.Version, storage: ["COOL_2_8", "PROTECT_FROM_LIGHT"]);
+        var removed = await SetGsku(gsku, version: added.Data!.Version, storage: ["PROTECT_FROM_LIGHT"]);
+
+        Assert.True(added.IsSuccessful, string.Join(",", added.Errors ?? []));
+        Assert.Contains(StockBehaviourStoreCodes.FieldLocked, removed.Errors!);
+    }
+
+    private async Task<Guid> SeedLskuRetirementAsync(Lsku lsku, LskuRetirementRequestCheckpoint checkpoint, bool active)
+    {
+        var operationId = Guid.NewGuid();
+        await _database.GetCollection<LskuRetirementRequestOperation>(LskuRetirementRequestOperationRepository.CollectionName)
+            .InsertOneAsync(new LskuRetirementRequestOperation
+            {
+                Id = Guid.NewGuid(), TenantId = _tenantId, OperationId = operationId, LskuId = lsku.Id,
+                BaseLskuVersion = lsku.Version - 2, IsActive = active, Checkpoint = checkpoint,
+                StartIdempotencyKey = "start-" + operationId.ToString("N"), OperationFingerprint = new string('c', 64)
+            });
+        return operationId;
+    }
+
     // ---------------------------------------------------------------- plumbing
 
     private static ItemUomConversion Edge(string from, string to, string numerator, string denominator = "1") =>
@@ -575,16 +758,17 @@ public sealed class StockBehaviourMongoTests : IClassFixture<AuditIntentTemporal
                 baseUom, conversions, shelfLife, storage, lot, stockable), default);
 
     private Task<Response<StockBehaviourResult>> SetLsku(Lsku lsku, int? version = null, bool? serial = null,
-        IProductIdentityLifecycleActorContext? actor = null) =>
+        IProductIdentityLifecycleActorContext? actor = null, IProductStockBehaviourRepository? store = null) =>
         new SetLskuStockBehaviourHandler(Context(actor, false), new LskuRepository(_database, Tenant()),
-                new ProductStockBehaviourRepository(_database, Tenant()))
+                store ?? new ProductStockBehaviourRepository(_database, Tenant()))
             .Handle(new SetLskuStockBehaviourCommand(lsku.Id, version ?? lsku.Version, Guid.NewGuid(), serial), default);
 
     private Task<Response<StockBehaviourResult>> SetFinishedGood(FinishedGood finishedGood, int? version = null,
         IReadOnlyList<ItemUomConversion>? conversions = null, int? shelfLife = null, IReadOnlyList<string>? storage = null,
-        bool? lot = null, bool? serial = null, bool? stockable = null, IProductIdentityLifecycleActorContext? actor = null) =>
+        bool? lot = null, bool? serial = null, bool? stockable = null, IProductIdentityLifecycleActorContext? actor = null,
+        IProductStockBehaviourRepository? store = null) =>
         new SetFinishedGoodStockBehaviourHandler(Context(actor, false), new FinishedGoodRepository(_database, Tenant()),
-                new ListFake(), new ProductStockBehaviourRepository(_database, Tenant()))
+                new ListFake(), store ?? new ProductStockBehaviourRepository(_database, Tenant()))
             .Handle(new SetFinishedGoodStockBehaviourCommand(finishedGood.Id, version ?? finishedGood.Version, Guid.NewGuid(),
                 conversions, shelfLife, storage, lot, serial, stockable), default);
 

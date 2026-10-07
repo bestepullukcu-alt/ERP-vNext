@@ -136,7 +136,7 @@ public sealed class SetGskuStockBehaviourHandler(
                 command.OperationId, fingerprint) is { } stale)
             return stale;
         if (!StockBehaviourContext.Editable(gsku.LifecycleStatus))
-            return StockBehaviourContext.Fail(StockBehaviourStoreCodes.BlockedByOperation, 409);
+            return StockBehaviourContext.Fail(StockBehaviourStoreCodes.RecordNotEditable, 409);
 
         var plan = new StockBehaviourPlan(gsku.LifecycleStatus);
         plan.Field(StockBehaviourFields.BaseUomCode, command.BaseUomCode, gsku.BaseUomCode);
@@ -220,7 +220,7 @@ public sealed class SetLskuStockBehaviourHandler(
                 command.OperationId, fingerprint) is { } stale)
             return stale;
         if (!StockBehaviourContext.Editable(lsku.LifecycleStatus))
-            return StockBehaviourContext.Fail(StockBehaviourStoreCodes.BlockedByOperation, 409);
+            return StockBehaviourContext.Fail(StockBehaviourStoreCodes.RecordNotEditable, 409);
 
         var plan = new StockBehaviourPlan(lsku.LifecycleStatus);
         plan.Field(StockBehaviourFields.SerialControlled, command.SerialControlled, lsku.SerialControlled);
@@ -271,7 +271,7 @@ public sealed class SetFinishedGoodStockBehaviourHandler(
                 finishedGood.StockBehaviourCommand, command.OperationId, fingerprint) is { } stale)
             return stale;
         if (!StockBehaviourContext.Editable(finishedGood.LifecycleStatus) || finishedGood.DraftCancellation is not null)
-            return StockBehaviourContext.Fail(StockBehaviourStoreCodes.BlockedByOperation, 409);
+            return StockBehaviourContext.Fail(StockBehaviourStoreCodes.RecordNotEditable, 409);
 
         var plan = new StockBehaviourPlan(finishedGood.LifecycleStatus);
         plan.Field(StockBehaviourFields.UomConversions, command.UomConversions, finishedGood.UomConversions);
@@ -370,7 +370,7 @@ public sealed class AssignFinishedGoodGtinHandler(
                 finishedGood.GtinCommand, command.OperationId, fingerprint) is { } stale)
             return stale;
         if (!StockBehaviourContext.Editable(finishedGood.LifecycleStatus) || finishedGood.DraftCancellation is not null)
-            return StockBehaviourContext.Fail(StockBehaviourStoreCodes.BlockedByOperation, 409);
+            return StockBehaviourContext.Fail(StockBehaviourStoreCodes.RecordNotEditable, 409);
 
         var plan = new StockBehaviourPlan(finishedGood.LifecycleStatus);
         plan.Field(StockBehaviourFields.Gtin, command.Gtin, finishedGood.Gtin);

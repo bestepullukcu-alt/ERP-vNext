@@ -584,6 +584,31 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
   - back to 1c7cb196b (guard for correction and retirement only, flow 2): `mdm_global_product_identity_workflow_operations`
     — its identity map has no guard and the identity fields came in flow 3 (23fb2d85f).
 
+### 5b. Finished Good sales-box GTIN index (WP-MDM-ITEM-MASTER S3)
+
+The sales-box GTIN is unique among a tenant's non-retired Finished Goods: a unique partial index
+`ux_finished_goods_tenant_gtin_live_v1` on `mdm_finished_goods` (`TenantId`, `Gtin`; partial filter `Gtin` exists and is a
+string, `LifecycleStatus` `$in` Draft / PendingIdentityApproval / IdentityApproved). MDM builds it at start-up
+(`ProductStockBehaviourIndexInitializer`): the start never fails on it, waits at most 10 s, and retries every minute.
+
+- **MongoDB version:** the `$in` partial filter is measured on MongoDB **7.0** (7.0.28) — run MDM on 7.0 or later. An older
+  server is not verified.
+- **Watch:** `mdm.stock_behaviour.gtin_index_missing` = 1 means the index is not built; uniqueness then rests on the pre-write
+  check alone (two simultaneous assignments of one GTIN could both land). `mdm.stock_behaviour.gtin_index_build_failed{error}`
+  counts the failed builds by error type (also logged as a warning).
+- **If the build keeps failing on a duplicate** (an `E11000` in the log): two live Finished Goods already hold one GTIN.
+  Find them read-only, then correct one through MDM (never by a direct write):
+
+```js
+db.mdm_finished_goods.aggregate([
+  { $match: { Gtin: { $type: "string" }, LifecycleStatus: { $in: [1, 2, 3] } } },
+  { $group: { _id: { tenant: "$TenantId", gtin: "$Gtin" }, ids: { $push: "$_id" }, n: { $sum: 1 } } },
+  { $match: { n: { $gt: 1 } } }
+])
+```
+
+- A cancelled Finished Good draft gives its GTIN back in the cancel itself (S3 FIX1); it no longer blocks a new FG.
+
 ### 6. Not covered here — open before a live bring-up
 
 - **Auth's tenant resolution on the token endpoint.** Outside Development a request to the token endpoint without a

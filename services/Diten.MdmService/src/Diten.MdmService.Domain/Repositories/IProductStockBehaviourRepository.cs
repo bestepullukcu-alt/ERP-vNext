@@ -65,6 +65,8 @@ public static class StockBehaviourStoreCodes
 {
     public const string NotFound = "STOCK_BEHAVIOUR_RECORD_NOT_FOUND";
     public const string BlockedByOperation = "STOCK_BEHAVIOUR_EDIT_BLOCKED_BY_OPERATION";
+    /// <summary>S3 FIX1 M4: pending identity approval, retired, or a cancelled Finished Good draft — not editable at all.</summary>
+    public const string RecordNotEditable = "STOCK_BEHAVIOUR_RECORD_NOT_EDITABLE";
     public const string FieldLocked = "STOCK_BEHAVIOUR_FIELD_LOCKED";
     public const string ConcurrencyConflict = "STOCK_BEHAVIOUR_CONCURRENCY_CONFLICT";
     public const string IdempotencyConflict = "IDEMPOTENCY_KEY_CONFLICT";

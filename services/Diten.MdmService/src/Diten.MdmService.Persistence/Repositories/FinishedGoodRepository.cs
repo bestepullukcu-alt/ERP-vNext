@@ -560,7 +560,12 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
             .Set(x => x.DraftCancellation, cancellation)
             .Push(x => x.AuditIntents, auditIntent)
             .Set(x => x.UpdatedAt, auditIntent.TimestampUtc)
-            .Inc(x => x.Version, 1);
+            .Inc(x => x.Version, 1)
+            // WP-MDM-ITEM-MASTER S3 FIX1 R2 (CT decision — the ONE narrow exception to "identity writes unchanged"): a
+            // cancelled draft gives its sales-box GTIN back in the same write. It stays Draft (retained), so it stayed
+            // inside the live GTIN index and held the GTIN for good — a new FG for the same box could never take it.
+            // Filter, version and the cancel's audit intent are unchanged; a cancelled FG takes no new GTIN (S3 refuses).
+            .Unset(x => x.Gtin);
         var written = await _finishedGoods.FindOneAndUpdateAsync(filter, update,
             new FindOneAndUpdateOptions<FinishedGood> { ReturnDocument = ReturnDocument.After }, cancellationToken);
         if (written is not null) return new(true, written);
