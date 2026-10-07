@@ -19,7 +19,7 @@ screens:
     data_mode: client
 entity_base: TenantScopedEntity
 status: draft
-status_note: "draft — WP-0022-P0 (CT-MVP1-0022-P0 v3), 2026-10-07. Owner decisions KS-0…KS-13 (2026-10-07) recorded in §19 as DECISIONS. Open CT decisions CT-D1…CT-D15 (§19). ESIGN-BUNDLE v1 proposal: docs/analysis/contracts/drafts/esign-bundle-v1-proposal.md. No registry row yet (CT adds it, §19 'Registry'). DCP-002 verifier not run (no Python — waiver proposal W-0022-01)."
+status_note: "draft — WP-0022-P0 (CT-MVP1-0022-P0 v3), 2026-10-07. Owner decisions KS-0…KS-13 (2026-10-07) recorded in §19 as DECISIONS. CT decisions CT-D1…CT-D15 TAKEN 2026-10-07 (§19; CT-D8 = own e-İmza nav group, CT override). WP-0022-P0 CT-ACCEPTED 2026-10-07. ESIGN-BUNDLE v1 proposal: docs/analysis/contracts/drafts/esign-bundle-v1-proposal.md. No registry row yet (CT adds it, §19 'Registry'). DCP-002 verifier not run (no Python — waiver proposal W-0022-01)."
 owner: platform-shared-services / mvp-1 control-tower
 branch: feature/sce/mod-0022-e-signature
 started: 2026-10-07
@@ -1232,6 +1232,29 @@ The gateway treats `/api/v1/*` as a tenant path: it requires `actor_type=tenant_
 | Annex 11 §14(b) permanently linked to the record | digests + insert-only | designed | E2 |
 | Annex 11 §14(c) time and date | server UTC, displayed in tenant time zone with offset | designed | E2/E5 |
 | Annex 11 §9 / §11.10(e) audit trail | MOD-0021 events for every command; export log | existing + designed | E2 |
+
+### CT decisions — TAKEN 2026-10-07 (CT acceptance of WP-0022-P0)
+
+| # | Decision |
+|---|---|
+| CT-D1 | 120 s, config `ESign:TicketLifetimeSeconds` (30–300); one ticket = one action. |
+| CT-D2 | (a) provider registry + FU23 canonical JSON + `module`; each consumer pack lists its fields; golden vectors in the contract. |
+| CT-D3 | FU23 migration (E6) after MOD-0175, MVP-1 tail; FU23 unchanged until then. |
+| CT-D4 | `IContentStorageGateway` + additive scope `ESignatureImages`, partition `tenant/{T}/esign-*`; **a configured `ContentStorage:RootPath` is a go-live precondition for a GxP tenant** (the `%TEMP%` default is not acceptable) → FU-0022-RootPath. |
+| CT-D5 | Key `esign.samples.approve` (tenant Admin by default); never the sample owner (server rule); every decision audited. |
+| CT-D6 | (i) MOD-0175 seeds the quarantine template; tenant Admin publishes it once. No designer shell/scope change. |
+| CT-D7 | **(b)** in window mode the signer re-types the user name (one signature component, §11.200(a)(1)(i)); default "every signature" unchanged. |
+| CT-D8 | **(b) — CT overrides the recommendation (a):** own nav group / module "e-İmza" holding the admin pages too (permission-gated), NOT pages in `TenantSettingsManifestProvider`. Reason: MOD-0174 measured (FU-0174-CAT-01) that the catalog sync re-attributes a key's `Module` to the last manifest that declares it — `esign.*` keys on the tenant-settings manifest would move to `tenant-settings`. KS-0's "Kiracı Ayarları altında" wording is superseded until FU-0174-CAT-02 (Platform guard) exists; then a nav alias can be revisited. Every `esign.*` key is declared by the MOD-0022 manifest only (namespace test, MOD-0174 pattern). |
+| CT-D9 | Opaque ticket + internal atomic consume (§8). |
+| CT-D10 | Baseline module (`IsBaseline: true`) + default grants `esign.signatures.sign` and `esign.my-samples.manage` to the default roles (signing alone authorises nothing; each consumer action keeps its own key). |
+| CT-D11 | Server-side PDFsharp-MigraDoc 6.1.1 in Platform (already in CrmService); configuration-safety review in E2/E5; output file hash recorded. |
+| CT-D12 | Internal register endpoint `POST api/internal/esign/actions/register` (no `ModuleManifestDocument` change). |
+| CT-D13 | Show remaining attempts (signer is already authenticated); value from the tenant login settings (KS-13: 5 / 15 min). |
+| CT-D14 | No mirror: workflow tasks needing a signature stay in WorkCenter; the requests screen = module / ad-hoc requests. |
+| CT-D15 | `SampleApprovalRequired` tenant-only (a sample belongs to a user, not a company). |
+
+Registry row written by the CT on acceptance (`module-id-registry.md`, status `reserved / planned` → `in-progress` at
+ready-for-dev); waiver **W-0022-01** (DCP-002 verifier not run — no Python; run before the MVP-1 PR, W-0173-01 pattern).
 
 ### Registry row proposal (CT writes it)
 
