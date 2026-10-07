@@ -1106,4 +1106,5 @@
   <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>Rota ve Yük Planlama</value></data>
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Yükler</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Hasar Talebi Yönetimi</value></data>
+  <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Hasar Talepleri</value></data>
 </root>

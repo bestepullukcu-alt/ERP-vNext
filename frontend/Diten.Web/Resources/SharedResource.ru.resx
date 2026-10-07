@@ -1046,4 +1046,5 @@
   <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>Маршруты и планирование рейсов</value></data>
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Рейсы</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Управление претензиями</value></data>
+  <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Претензии по перевозке</value></data>
 </root>

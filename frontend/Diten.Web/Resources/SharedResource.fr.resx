@@ -1047,4 +1047,5 @@
   <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>Itinéraires et planification des chargements</value></data>
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Chargements</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Gestion des réclamations</value></data>
+  <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Réclamations de transport</value></data>
 </root>

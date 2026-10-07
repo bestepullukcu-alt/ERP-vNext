@@ -30,7 +30,7 @@ public sealed class ClaimsManagementManifestProvider : IModuleManifestProvider
             Pages:
             [
                 new ModuleManifestPage(
-                    PageCode: "CLAIMS",
+                    PageCode: "SHIPMENT_CLAIMS",
                     DisplayName: "Claims",
                     RoutePath: "/SupplyChain/Claims",
                     RequiredPermission: ClaimPermissions.Read,

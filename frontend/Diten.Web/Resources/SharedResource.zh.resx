@@ -1046,4 +1046,5 @@
   <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>路线与装载计划</value></data>
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>装载计划</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>索赔管理</value></data>
+  <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>运输索赔</value></data>
 </root>

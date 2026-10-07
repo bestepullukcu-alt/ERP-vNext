@@ -1046,4 +1046,5 @@
   <data name="Nav.Module.ROUTINGLOADPLANNING" xml:space="preserve"><value>التوجيه وتخطيط الحمولات</value></data>
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>الحمولات</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>إدارة المطالبات</value></data>
+  <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>مطالبات الشحن</value></data>
 </root>

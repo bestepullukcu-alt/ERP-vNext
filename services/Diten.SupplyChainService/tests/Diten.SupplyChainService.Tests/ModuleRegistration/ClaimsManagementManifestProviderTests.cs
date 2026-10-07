@@ -95,7 +95,7 @@ public sealed class ClaimsManagementManifestProviderTests
     public void M05_Actions_equal_the_pack_action_table()
     {
         var page = Assert.Single(Manifest.Pages);
-        Assert.Equal("CLAIMS", page.PageCode);
+        Assert.Equal("SHIPMENT_CLAIMS", page.PageCode);
         Assert.Equal("Claims", page.DisplayName);
         Assert.Equal("supplychain.claims.read", page.RequiredPermission);
         Assert.Equal("List", page.PageType);
