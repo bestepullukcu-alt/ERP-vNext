@@ -25,6 +25,8 @@ public static class DependencyInjection
         Configurations.BrandProductClassMaps.Register();
         // BL-552 FIX1 item 10 — the Global Product lifecycle request documents read a newer binary's fields.
         Configurations.GlobalProductLifecycleClassMaps.Register();
+        // MOD-0290-FU04 S1 — the item's maps ignore extra elements (a later slice's fields still read).
+        Configurations.ItemMasterClassMaps.Register();
 
         var connectionString = configuration["Mongo:ConnectionString"]
             ?? throw new InvalidOperationException("Configuration error: 'Mongo:ConnectionString' is missing.");
@@ -58,6 +60,7 @@ public static class DependencyInjection
         services.AddScoped<IProductDefinitionRevisionRepository, ProductDefinitionRevisionRepository>();
         services.AddScoped<IGskuRepository, GskuRepository>();
         services.AddScoped<IFinishedGoodRepository, FinishedGoodRepository>();
+        services.AddScoped<IItemRepository, ItemRepository>();
         services.AddScoped<ILskuRepository, LskuRepository>();
         services.AddScoped<ILskuIdentityWorkflowOperationRepository, LskuIdentityWorkflowOperationRepository>();
         services.AddScoped<ILskuIdentityWorkflowTenantPartitionDiscovery, LskuIdentityWorkflowTenantPartitionDiscoveryRepository>();

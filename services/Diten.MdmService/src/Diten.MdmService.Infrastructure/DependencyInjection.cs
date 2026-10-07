@@ -35,6 +35,10 @@ public static class DependencyInjection
         services.Configure<VerifiedGskuResolverOptions>(
             configuration.GetSection(VerifiedGskuResolverOptions.SectionName));
         services.AddHttpClient<IVerifiedGskuReferenceResolver, PlatformVerifiedGskuResolverClient>();
+        // MOD-0290-FU04 S1: no provider for the item lists and no tenant-wide stock query yet — both fail closed.
+        services.AddSingleton<IItemReferenceResolver, UnavailableItemReferenceResolver>();
+        services.AddSingleton<Diten.MdmService.Application.Contracts.Inventory.IInventoryStockAvailabilityClient,
+            Diten.MdmService.Infrastructure.Inventory.UnavailableInventoryStockAvailabilityClient>();
         services.Configure<VerifiedMarketResolverOptions>(
             configuration.GetSection(VerifiedMarketResolverOptions.SectionName));
         services.AddHttpClient<IVerifiedMarketReferenceResolver, PlatformVerifiedMarketResolverClient>();

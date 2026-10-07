@@ -333,7 +333,8 @@ public sealed class ProductItemSkuMasterMongoTests
     }
 
     [Fact]
-    public async Task Allocator_uses_one_tenant_namespace_for_all_four_entity_types()
+    // MOD-0290-FU04 S1: five kinds now (Item, IT) — still one tenant namespace, one counter.
+    public async Task Allocator_uses_one_tenant_namespace_for_all_five_entity_types()
     {
         await using var scope = await MongoTestScope.CreateAsync();
         var repository = scope.Reservations(scope.TenantA);
@@ -345,7 +346,9 @@ public sealed class ProductItemSkuMasterMongoTests
                 entityType, $"reserve-{entityType}", "actor", "corr"));
         }
 
-        Assert.Equal(4, reservations.Select(x => x.ReservedCode).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(5, reservations.Select(x => x.ReservedCode).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(new[] { "GP", "GS", "LS", "FG", "IT" }, reservations.Select(x => x.ReservedCode[..2]).ToArray());
+        Assert.All(reservations, reservation => Assert.Equal(15, reservation.ReservedCode.Length));
         Assert.All(reservations, reservation => Assert.Equal(scope.TenantA, reservation.TenantId));
         Assert.All(reservations, reservation => Assert.Single(reservation.AuditIntents));
     }

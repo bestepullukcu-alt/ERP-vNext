@@ -21,5 +21,5 @@ public sealed class GskuRetirementRequestWorkflowWorkerOptions
         && PollIntervalSeconds is >= 1 and <= 3600 && BatchSize is >= 1 and <= 100
         && QuarantineAfterFailedAttempts is >= 0 and <= 1000
         && MaxRetryDelaySeconds is >= 1 and <= 86_400
-        && StartSettleSeconds is >= 1 and <= 3600;
+        && StartSettleWindow.IsValid(StartSettleSeconds);
 }

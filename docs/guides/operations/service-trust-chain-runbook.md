@@ -301,6 +301,20 @@ code that can no longer become one — consumed for an identity whose row never 
 reserved and never consumed — and only then releases the admission, with an audit intent on the GSKU in the same
 write. A refused burn keeps the admission and is reported (`LSKU_ADMISSION_REPAIR_BURN_REFUSED:<code>`).
 
+**Legal-entity scope (WP-MDM-SCOPE-INT-01 FIX1 / FIX2).** The repair is a non-human actor and follows the background
+workers' scope rule (the same endpoint serves `POST /api/finished-goods/operator/child-admission-repairs` for FG):
+
+| tenant | what the repair does | answer |
+|---|---|---|
+| no rollout / Preparation | every orphan, as before | `found`, `released`, `items` |
+| Enforced | only orphans whose GSKU's product is in scope (a policy in force); the others are skipped and only counted — their codes and admissions are untouched, their ids never returned | `outOfScope` = skipped orphans over every page walked |
+| FailClosedSuspended / a fence up / a rollout that cannot be read | refused | `409 PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED` / `409 PRODUCT_SCOPE_WRITE_FENCE_ACTIVE` / coded `503` — from the write fence, before the repair runs; `409 LSKU_ADMISSION_REPAIR_SCOPE_CLOSED` from the repair itself only on a direct call or a race with a suspension |
+
+The repair walks the orphans page by page (GSKU id order) until it has `limit` in-scope ones or reaches the end, so
+out-of-scope orphans in front never hide the ones behind them. The walk is bounded (50 pages of 100 GSKUs); when it
+stops at that bound `truncated` is `true` — run it again. A run that ended in an error keeps its writer lease until it
+expires (~120 s); during that time an activation / suspension fence waits, then goes on.
+
 **A burn needs a replica set (FIX4 item 11).** Burning a code is one Mongo transaction (it reads "no live row bound" and
 burns in the same transaction). On a standalone `mongod` every burn is refused with
 `CODE_RESERVATION_BURN_TRANSACTION_UNAVAILABLE` (503): an LSKU draft cancel deletes the draft and answers 503 (its code
@@ -431,7 +445,7 @@ disabled; a different hash does **not** replace the stored one.
 | `ProductIdentityWorkflowWorker:ServiceFaultMaxRetryDelaySeconds` (900), `:ServiceFaultErrorAfterAttempts` (5) | how far a waiting operation backs off, and from which attempt its waiting is logged as an error — alert on that line |
 | `FirstGskuIdentityWorkflow`, `GskuCorrectionWorkflow`, `GskuRetirementRequestWorkflow` — `:Enabled`, `:TemplateCode`, `:CandidatePrincipalIds[]` (identity also `:ReasonCode`) | the three GSKU flows (Development step 8); each needs its own published definition and its Platform entry (§4) |
 | `FirstGskuIdentityWorkflowWorker:Enabled`, `:LeaseOwner`; `GskuCorrectionWorkflowWorker:Enabled`; `GskuRetirementRequestWorkflowWorker:Enabled` | the three GSKU workers — without them a decision is never applied |
-| `GskuCorrectionWorkflowWorker:QuarantineAfterFailedAttempts` (30), `:MaxRetryDelaySeconds` (900), `:RetryDelaySeconds`, `:StartSettleSeconds` (120); the same under `GskuRetirementRequestWorkflowWorker` | each retry waits twice as long, never longer than the ceiling (a ceiling below `RetryDelaySeconds` is raised to it and logged once as a Warning). After this many worker attempts in a row (0 = never) an operation is marked `*_RETRY_LIMIT_REACHED` with one Error line: if the cause is transient (engine / Platform unreachable, timeout, 5xx) it is **never** quarantined — it keeps retrying at the ceiling and heals by itself when the engine is back; any other cause goes to manual reconciliation, whose way out is the requester's same request (the Web offers it as *Repeat request*). Only the worker's attempts count — the requester's repeats neither count nor jump the wait. `StartSettleSeconds`: how long after a start whose answer was lost the worker trusts "the engine has no such instance" and ends the request |
+| `GskuCorrectionWorkflowWorker:QuarantineAfterFailedAttempts` (30), `:MaxRetryDelaySeconds` (900), `:RetryDelaySeconds`, `:StartSettleSeconds` (120; 1–600, larger stops the host at start); the same under `GskuRetirementRequestWorkflowWorker` | each retry waits twice as long, never longer than the ceiling (a ceiling below `RetryDelaySeconds` is raised to it and logged once as a Warning). After this many worker attempts in a row (0 = never) an operation is marked `*_RETRY_LIMIT_REACHED` with one Error line: if the cause is transient (engine / Platform unreachable, timeout, 5xx) it is **never** quarantined — it keeps retrying at the ceiling and heals by itself when the engine is back; any other cause goes to manual reconciliation, whose way out is the requester's same request (the Web offers it as *Repeat request*). Only the worker's attempts count — the requester's repeats neither count nor jump the wait. `StartSettleSeconds`: how long after a start whose answer was lost the worker trusts "the engine has no such instance" and ends the request |
 
 Restart MDM last. Then create and publish the definition (Development step 4) and assign the roles (step 5).
 
@@ -508,7 +522,9 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
     tells "ended, nothing held" from "stuck". A stuck request writes no audit of its own. Platform maps the new
     operations (`GlobalProductCorrectionEnded`, `GlobalProductRetirementEnded`,
     `GlobalProductIdentityDecisionNotApplicable`) as lifecycle transitions. **Deploy Platform first.** Platform answers
-    an operation it does not map with 409 `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED`. For these three operations only,
+    an operation it does not map with 409 `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED`. For every operation the DEPLOYED
+    Platform does not map yet — in this first release all produced product operations (no product module is live; the
+    map is not on `origin/main`), the never-produced 43 / 47 excepted; base and rule in `CentralMappingRollout` —
     MDM's audit delivery then waits instead of dead-lettering: the intent stays retryable with that reason, for at most
     2880 attempts (about a day at the default 30 s retry delay), and is delivered once Platform maps it. After that
     bound — or for any other operation — the intent is dead-lettered, never reaches the central log, and there is no
@@ -565,13 +581,15 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
     settle it hands it to a person (`*_STUCK_ON_RECORD_ANSWER`). Both gauges count it (`needing_a_person` alert) —
     on every cycle, also while the worker is switched off.
   - **Settings:** `ProductIdentityWorkflowWorker` takes `QuarantineAfterFailedAttempts` (30; 0–1000, 0 = never)
-    and `StartSettleSeconds` (120; 1–1500). A value outside those bounds STOPS THE HOST AT START, whether the worker
+    and `StartSettleSeconds` (120; 1–600). A value outside those bounds STOPS THE HOST AT START, whether the worker
     is switched on or not (the interactive submit reads both); before, it was quietly clamped. The Global Product
-    correction and retirement workers take the same `StartSettleSeconds` bound (1–1500).
+    correction and retirement, GSKU correction / retirement request and LSKU identity / retirement request workers
+    take the same `StartSettleSeconds` bound (1–600; `StartSettleWindow`).
   - **Platform süpürme yaşı (WorkflowStartRecovery AbandonAfterMinutes) MDM yerleşme penceresinden en az 5 dk uzun
     olmalı.** Platform closes a half-started workflow that has no task after that age (at least 15 min, default 30);
-    a longer MDM settle window would keep MDM waiting on a start Platform has already closed — hence the 25 min cap
-    (BL-552 flow 3 FIX3 EK, XMC-001).
+    a longer MDM settle window would keep MDM waiting on a start Platform has already closed. Operator rule: Platform
+    `AbandonAfterMinutes` × 60 ≥ MDM `StartSettleSeconds` + 300 — the 600 s cap (15-min floor − 5 min) keeps it for any
+    Platform setting (BL-552 flow 3 FIX3 EK, XMC-001; SETTLE-CAP FIX1).
 - **Rolling back past BL-552:** stop the new version first (no instance may write while the fields are removed).
   The old version does not wait for Platform's map: intents of operations 79 / 80 / 81 still waiting when it takes
   over are dead-lettered by it (BL-566, no resend tool). The request and operation documents gained fields (`FailedAttemptCount`,
