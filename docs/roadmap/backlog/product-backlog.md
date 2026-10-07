@@ -8126,6 +8126,8 @@ Karşılaştırma: SAP'de malzeme ana verisi değişiklik belgeleri (CDHDR / CDP
 
 Gelecek regresyon riski: 🔴 GMP kullanımında (değişiklik izi eksik); kalem canlıya çıkmadan önce kalem için kapanıyor, diğerleri için açık.
 
+**Ek (CT 2026-10-07, S1-FIX1):** neden alanı bugün serbest metin; denetim kaydına yazılmaz (AUD-001 §3, kişisel veri riski), kayıtta yalnız `reasonProvided`. **S5:** kullanım dışı bırakma / emekliye ayırma için kodlu neden listesi (MOD-0048 ya da kalem modülü listesi); gelince `Metadata.reasonCode` liste kodu olarak döner.
+
 ---
 
 ### BL-573
