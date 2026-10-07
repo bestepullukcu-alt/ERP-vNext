@@ -42,5 +42,22 @@ internal static class MdmTestSerializers
         // first raw read auto-maps a type unguarded and every later host built in this process refuses to start (the
         // start-up check, flow 2 FIX1 item 10): 13 tests were red for that reason, order-dependent, until this round.
         Diten.MdmService.Persistence.Configurations.GlobalProductLifecycleClassMaps.Register();
+        // WP-MDM-BL576-01: then every other stored document (and what it embeds) — the same reason, for all of them.
+        // A refused registration (a map without the flag) is kept and reported by a named test — thrown here it would
+        // only break the assembly's load; production (AddPersistence) still refuses to start on it.
+        try
+        {
+            Diten.MdmService.Persistence.Configurations.MdmDocumentClassMaps.Register();
+        }
+        catch (InvalidOperationException failure)
+        {
+            RegistrationFailure = failure;
+        }
+        Ran = true;
     }
+
+    /// <summary>WP-MDM-BL576-01: set by the initializer itself, so a test can tell it ran (not a host built later).</summary>
+    internal static bool Ran { get; private set; }
+
+    internal static Exception? RegistrationFailure { get; private set; }
 }

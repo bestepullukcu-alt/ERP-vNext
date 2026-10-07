@@ -40,6 +40,10 @@ public static class DependencyInjection
         clientSettings.GuidRepresentation = GuidRepresentation.Standard;
         var client = new MongoClient(clientSettings);
 
+        // WP-MDM-BL576-01 — every stored document ignores extra elements (rollback safety). Before the start-up migration:
+        // its first typed read would otherwise freeze the LegalEntity map without the flag and stop the start.
+        Configurations.MdmDocumentClassMaps.Register();
+
         if (runStartupMaintenance)
         {
             // MOD-0220 FULL — one-shot, idempotent backfill of legacy LifecycleStatus → OperationalStatus, run before
