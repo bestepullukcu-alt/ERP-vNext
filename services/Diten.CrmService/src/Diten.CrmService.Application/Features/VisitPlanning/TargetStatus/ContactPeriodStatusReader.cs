@@ -12,8 +12,23 @@ namespace Diten.CrmService.Application.Features.VisitPlanning.TargetStatus;
 /// <summary>The period a status is counted in: dates are inclusive (the CyclePeriod's calendar days).</summary>
 public sealed record ContactStatusPeriod(Guid? CyclePeriodId, string? CycleCode, DateOnly Start, DateOnly End)
 {
-    /// <summary>The period's week count, a partial last week counting as a week (the engine's BuildWeeks shape).</summary>
-    public int WeekCount => Math.Max(1, (int)Math.Ceiling((End.DayNumber - Start.DayNumber + 1) / 7.0));
+    /// <summary>The period's week count — the Monday-weeks the period touches, exactly the planning engine's period weeks
+    /// (<see cref="PlanningWeekCalendar.PeriodWeeks"/>; CT fix on merge with WP-VP-3A).</summary>
+    public int WeekCount => Math.Max(1, PlanningWeekCalendar.PeriodWeeks(Start, End).Count);
+
+    /// <summary>The period frame the frequency units are counted on. The status read does not call the working calendar,
+    /// so only weekends are non-working here (a holiday that empties a whole week is the only possible difference).</summary>
+    public PlanningPeriodFrame Frame => new(Start, End, WeekendDays());
+
+    private List<DateOnly> WeekendDays()
+    {
+        var days = new List<DateOnly>();
+        for (var d = Start; d <= End; d = d.AddDays(1))
+        {
+            if (d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) days.Add(d);
+        }
+        return days;
+    }
 }
 
 /// <summary>The input of one bulk status read. <paramref name="KnownContacts"/> — contact masters the caller has
@@ -162,7 +177,7 @@ public sealed class ContactPeriodStatusReader
             planned = counting.Count(p => p.PlannedDate >= from && p.PlannedDate <= period.End && !reportByPlan.ContainsKey(p.Id));
         }
 
-        var required = frequency?.RequiredVisitCount is { } r && r > 0 ? r : (int?)null;
+        int? required = period is null ? null : RequiredInPeriod(frequency, period);
         int? remaining = required is { } req && period is not null ? Math.Max(0, req - done - planned) : null;
 
         return new ContactPeriodStatusDto(
@@ -179,6 +194,19 @@ public sealed class ContactPeriodStatusReader
             badges,
             consentStatus,
             inactive);
+    }
+
+    /// <summary>CT fix on merge with WP-VP-3A — the SAME rule as the planning engine (<see cref="FrequencyExtendPlanner"/>):
+    /// the policy count × its period-type units in the period; no count / unknown cadence ⇒ one visit per period.</summary>
+    public static int RequiredInPeriod(VisitFrequencyResolveResult? frequency, ContactStatusPeriod period)
+    {
+        if (frequency?.RequiredVisitCount is not { } count || count <= 0
+            || string.Equals(frequency.FrequencyStatus, FrequencyStatus.Unknown, StringComparison.Ordinal))
+        {
+            return FrequencyRequirement.Unknown.RequiredInPeriod;
+        }
+
+        return count * FrequencyExtendPlanner.UnitsIn(frequency.PeriodType, period.Frame);
     }
 
     /// <summary>

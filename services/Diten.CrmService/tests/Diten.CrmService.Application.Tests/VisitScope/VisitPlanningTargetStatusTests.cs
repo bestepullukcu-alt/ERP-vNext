@@ -1,3 +1,4 @@
+using Diten.CrmService.Application.Features.VisitFrequencyPolicy.Resolve;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.ReferenceValidation;
 using Diten.CrmService.Application.Features.AccountRelationship.Queries;
@@ -36,6 +37,20 @@ public sealed class VisitPlanningTargetStatusTests
     private static readonly ContactStatusPeriod October = new(Guid.NewGuid(), "C10", new DateOnly(2026, 10, 5), new DateOnly(2026, 11, 1));
     private static readonly DateOnly Today = new(2026, 10, 14);
     private static readonly DateTimeOffset At = new(2026, 10, 14, 9, 0, 0, TimeSpan.Zero);
+
+    // ── CT (merge with WP-VP-3A) — the status read counts the period requirement with the ENGINE rule ─────────────────
+
+    [Fact]
+    public void The_requirement_is_the_policy_count_times_its_period_units_and_unknown_is_one_like_the_engine()
+    {
+        // October period (5 Oct – 1 Nov) touches 2 months and 4 working weeks.
+        static VisitFrequencyResolveResult Freq(string status, string? periodType, int? count) => new(status, null, null, null, null, count, null, periodType, null, null, null, null, null, null, Array.Empty<FrequencyCandidatePolicy>(), Array.Empty<string>());
+        Assert.Equal(6, ContactPeriodStatusReader.RequiredInPeriod(Freq(FrequencyStatus.Resolved, FrequencyPeriodType.Month, 3), October));
+        Assert.Equal(4, ContactPeriodStatusReader.RequiredInPeriod(Freq(FrequencyStatus.Resolved, FrequencyPeriodType.Week, 1), October));
+        Assert.Equal(3, ContactPeriodStatusReader.RequiredInPeriod(Freq(FrequencyStatus.Resolved, FrequencyPeriodType.Cycle, 3), October));
+        Assert.Equal(1, ContactPeriodStatusReader.RequiredInPeriod(null, October));
+        Assert.Equal(1, ContactPeriodStatusReader.RequiredInPeriod(Freq(FrequencyStatus.Unknown, null, null), October));
+    }
 
     // ── 1. done / planned / remaining / last visit ─────────────────────────────────────────────────────────────────
 
@@ -341,7 +356,7 @@ public sealed class VisitPlanningTargetStatusTests
             {
                 Id = Guid.NewGuid(), TenantId = Tenant, PolicyCode = "P-" + name, PolicyName = name,
                 TargetType = FrequencyTargetType.Contact, TargetId = c.Id, FrequencyType = FrequencyType.Monthly,
-                RequiredVisitCount = required, PeriodType = FrequencyPeriodType.Month,
+                RequiredVisitCount = required, PeriodType = FrequencyPeriodType.Cycle, // "required" = the visits the whole period needs (cycle unit = 1; CT fix on merge with WP-VP-3A)
                 EffectiveFrom = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero), Priority = 10,
                 Source = FrequencySource.Manual, Status = FrequencyPolicyStatus.Active
             });
