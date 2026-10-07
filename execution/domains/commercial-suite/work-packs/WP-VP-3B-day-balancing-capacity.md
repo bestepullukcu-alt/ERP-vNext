@@ -117,3 +117,32 @@ KORU/YAPMA: YENİ YAZMA KOMUTU YOK (listesiz sayı 3A sonrası değerde); 3A haf
 DOĞRULA (E2): tabanı 3A sonrası ölç, yalnız farkı raporla — CRM Application · Web · mimari; build 0 hata; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–7. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "feat(crm): WP-VP-3B — day balancing with daily budget from cycle capacity, half days, overflow to next week, weekly capacity, consent-blocked excluded" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), bütçe/sınır formülü, dengeleme ve bölme kuralı, yarım gün kaynağı (Platform alanı/neden kodu), mobil için yeni alanlar. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-07)
+**Commit:** `db877db4d` (ajan `ff1b8a883`, 3D üzerine rebase, çakışmasız, ff). Push: test dalı.
+
+**CT K13 (3A + 3D dahil taban):**
+| Paket | Taban | Sonuç |
+|---|---|---|
+| CRM Application | 2387/0/5 | **2398/0/5** (+11) |
+| Web | 737/0 | **737/0** (dokunulmadı) |
+| Mimari | 38/1 (27) | **38/1 (27 sabit)** |
+
+**Kod okuması:**
+- `PlanningDayBudget`: bütçe = `DailyWorkMinutes − DailyFixedMinutes`, kapasite yoksa 09–18 − öğle = 480; yarım gün /2; sınır = bütçe ÷ (tipik + tampon).
+- `DayBalancer` (saf): kurum grupları büyükten küçüğe, sığdığı en düşük doluluk oranlı güne; sığmayan grup en boş günlere bölünür.
+- Rota iyileştirici gün başına çağrılıyor (iyileştiriciye dokunulmadı).
+- Taşma sonraki taslak haftaya, o hedefi zaten ziyaret etmeyen haftaya (sıklık aralığı korunur); onaylı hafta taslak sayılmadığı için atlanır.
+- Yarım gün Platform yanıtından (`holiday.isHalfDay` / `half_day_treated_as_working`); Platform'a dokunulmadı.
+- İzni `blocked` doktor aday dışı (`consent_blocked`); `unknown` → `consent_unknown` uyarısı.
+
+**CT sabotajı (ajanınkinden ayrı):** izin süzgeci kapatıldı + dengeleyici doluluk yerine tarih sırası → **2 kırmızı** (`Forty_visits_of_five_institutions…`, `A_consent_blocked_doctor_is_not_planned…`). Geri alındı.
+
+**Bilinen / takip:**
+- **Takvim istekleri:** Platform'da yarım günü taşıyan aralık ucu yok → ilk önizleme hâlâ ~92 istek. 10 dk kiracı anahtarlı önbellekle sonraki önizlemeler ve hafta onayı 0 istek. Platform'a aralık operasyonu ayrı iş (öneri).
+- **Gün penceresi yorumu:** bitiş = başlangıç + çalışma dakikası + öğle (öğle arası pencereden düşülmesin diye). Kabul.
+- **Mobil notu:** 3B alanları (`halfDayDates, shifted[], weekCapacity[], periodCapacity, consent_blocked, consent_unknown`) Faz 5 sözleşme notunda toplanacak.
+
+**E4 (CT, bekliyor; 3C ile birlikte):** Q4 önizlemesinde günlere yayılım · 29 Eki boş, 28 Eki yarım · `weekCapacity` / `shifted` dolu · Rota günleri değişmiş.
