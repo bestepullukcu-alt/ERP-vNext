@@ -1,3 +1,9 @@
+using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -40,7 +46,7 @@ public sealed class MdmDocumentClassMapsTests : IClassFixture<AuditIntentTempora
         // BL-569: the assembly's own initializer ran (not a host built by some earlier test), and every covered map —
         // the persisted roots and all they embed — ignores extra elements.
         Assert.True(MdmTestSerializers.Ran);
-        Assert.Null(MdmTestSerializers.RegistrationFailure);
+        Assert.True(MdmTestSerializers.RegistrationFailure is null, MdmTestSerializers.RegistrationFailure?.Message);
         Assert.All(MdmDocumentClassMaps.CoveredTypes, type =>
             Assert.True(BsonClassMap.LookupClassMap(type).IgnoreExtraElements, type.Name));
         Assert.True(MdmDocumentClassMaps.CoveredTypes.Count > MdmDocumentClassMaps.PersistedRoots.Count,
@@ -94,16 +100,25 @@ public sealed class MdmDocumentClassMapsTests : IClassFixture<AuditIntentTempora
                      .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal)))
         {
             var code = ProductLegalEntityScopeWriteAdmissionContractTests.WithoutComments(File.ReadAllText(path));
+            // FIX1 M3: every type argument of every driver entry point that maps a document type.
             foreach (Match match in Regex.Matches(code,
-                         @"(?:GetCollection|IMongoCollection|RepositoryBase|Deserialize|Project|Find)<(\w+)>"))
-                used.Add(match.Groups[1].Value);
+                         @"\b(?:GetCollection|IMongoCollection|RepositoryBase|Deserialize|Project|Find|Builders|Aggregate|Unwind|Lookup|Group|As|OfType)<([\w\s,<>?]+?)>(?=[\s.(,;>)\]])"))
+                foreach (var argument in Regex.Matches(match.Groups[1].Value, @"\w+").Select(token => token.Value))
+                    used.Add(argument);
         }
-        used.ExceptWith(["BsonDocument", "TEntity", "T", "TDocument", "TProjection", "BsonValue"]);
-        var covered = MdmDocumentClassMaps.CoveredTypes.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
+        used.ExceptWith(["BsonDocument", "TEntity", "T", "TDocument", "TProjection", "TResult", "TNewResult", "BsonValue",
+            "Guid", "string", "int", "long", "bool", "object", "List", "IReadOnlyList", "IEnumerable", "Dictionary"]);
+        var known = MdmDocumentClassMaps.CoveredTypes.Concat(MdmDocumentClassMaps.StrictByDesign)
+            .Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
+        // A Persistence-private projection class may carry its own [BsonIgnoreExtraElements] (e.g. the admission census).
+        known.UnionWith(typeof(MdmDocumentClassMaps).Assembly.GetTypes()
+            .Where(type => type.GetCustomAttributes(typeof(MongoDB.Bson.Serialization.Attributes.BsonIgnoreExtraElementsAttribute), false).Length > 0)
+            .Select(type => type.Name));
 
         Assert.True(used.Count >= 25, $"the scan found only {used.Count} stored types — it is blind");
-        var missing = used.Where(name => !covered.Contains(name)).ToArray();
-        Assert.True(missing.Length == 0, "Stored types without a forward-compatible map: " + string.Join(", ", missing));
+        var missing = used.Where(name => !known.Contains(name)).ToArray();
+        Assert.True(missing.Length == 0,
+            "Stored types neither covered, strict by design nor attributed: " + string.Join(", ", missing));
     }
 
     [Fact]
@@ -134,6 +149,8 @@ public sealed class MdmDocumentClassMapsTests : IClassFixture<AuditIntentTempora
         var lsku = new Lsku { Id = Guid.NewGuid(), TenantId = tenant.TenantId, GskuId = gsku.Id, CanonicalCode = "LS-" + Guid.NewGuid().ToString("N")[..10], CreationCommandId = Guid.NewGuid().ToString("N"), MarketCode = "M" + Guid.NewGuid().ToString("N")[..6] };
         var finishedGood = new FinishedGood { Id = Guid.NewGuid(), TenantId = tenant.TenantId, GskuId = gsku.Id, CanonicalCode = "FG-" + Guid.NewGuid().ToString("N")[..10], CreationCommandId = Guid.NewGuid().ToString("N") };
         var reservation = new CodeReservation { Id = Guid.NewGuid(), TenantId = tenant.TenantId };
+        try
+        {
         await database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions").InsertOneAsync(revision);
         await database.GetCollection<Gsku>("mdm_gskus").InsertOneAsync(gsku);
         await database.GetCollection<Lsku>("mdm_lskus").InsertOneAsync(lsku);
@@ -158,6 +175,236 @@ public sealed class MdmDocumentClassMapsTests : IClassFixture<AuditIntentTempora
         Assert.NotNull(await new LskuRepository(database, tenant).GetByIdAsync(lsku.Id));
         Assert.NotNull(await new FinishedGoodRepository(database, tenant).GetByIdAsync(finishedGood.Id));
         Assert.NotNull(await new CodeReservationRepository(database, tenant).GetByIdAsync(reservation.Id));
+        }
+        finally
+        {
+            // FIX1 M6: the shared test database keeps none of this test's documents (test-data cleanup only).
+            foreach (var (collection, id) in new[]
+                     {
+                         ("mdm_product_definition_revisions", revision.Id), ("mdm_gskus", gsku.Id), ("mdm_lskus", lsku.Id),
+                         ("mdm_finished_goods", finishedGood.Id), ("mdm_code_reservations", reservation.Id)
+                     })
+                await database.GetCollection<BsonDocument>(collection).DeleteOneAsync(
+                    new BsonDocument("_id", new BsonBinaryData(id, GuidRepresentation.Standard)));
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------- FIX1 R2 / R3
+
+    [Fact]
+    public void The_strict_by_design_documents_are_named_and_never_get_the_flag()
+    {
+        // R2 / R3 (CT decisions): the scope rollout (leases, fence, abort, snapshot), the scope policy (periods) and the
+        // whole-document-replaced LegalEntity stay strict — named, not forgotten.
+        Assert.Equal(["LegalEntity", "ProductLegalEntityScopePolicy", "ProductLegalEntityScopeRolloutState"],
+            MdmDocumentClassMaps.StrictByDesignRoots.Select(type => type.Name).Order(StringComparer.Ordinal));
+        Assert.Contains(MdmDocumentClassMaps.StrictByDesign, type => type.Name == "ProductLegalEntityScopeWriterLease");
+        Assert.Contains(MdmDocumentClassMaps.StrictByDesign, type => type.Name == "ProductLegalEntityScopeActivationFence");
+        Assert.Contains(MdmDocumentClassMaps.StrictByDesign, type => type.Name == "ProductLegalEntityScopePeriod");
+        Assert.Empty(MdmDocumentClassMaps.StrictByDesign.Intersect(MdmDocumentClassMaps.CoveredTypes));
+        Assert.All(MdmDocumentClassMaps.StrictByDesign, type =>
+            Assert.False(BsonClassMap.LookupClassMap(type).IgnoreExtraElements, type.Name));
+    }
+
+    [Fact]
+    public async Task A_rollout_written_by_a_newer_binary_is_never_read_leniently_and_refuses_the_write()
+    {
+        // R2: a lease / fence field this binary does not know must not be dropped silently — the guard fails closed.
+        // Measured on this branch (cut before SCOPE-INT-01): the store's read refuses the document, and the write fence
+        // answers its coded 503. The product READ's coded 503 (instead of the raw refusal) is BL-567, which arrives with
+        // the takeover merge (SCOPE-INT-01) — CT re-measures it there.
+        var previous = Environment.GetEnvironmentVariable("MDM_TEST_MONGO");
+        Environment.SetEnvironmentVariable("MDM_TEST_MONGO", _fixture.ReplicaConnectionString);
+        try
+        {
+            await using var scope = await ProductScopeMongoScope.CreateAsync();
+            var rollouts = scope.RolloutRepository();
+            Assert.True((await rollouts.CreateAsync(ProductLegalEntityScopeRolloutState.CreatePreparation(
+                scope.TenantId, Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow))).Succeeded);
+            await scope.Database.GetCollection<BsonDocument>("mdm_product_legal_entity_scope_rollout_states").UpdateOneAsync(
+                new BsonDocument("TenantId", new BsonBinaryData(scope.TenantId, GuidRepresentation.Standard)),
+                new BsonDocument("$set", new BsonDocument("FutureFenceField", "held")));
+            var tenant = new TenantContext();
+            tenant.SetTenant(scope.TenantId);
+
+            var refusal = await Assert.ThrowsAsync<FormatException>(() => rollouts.GetAsync());
+            var write = await new ProductLegalEntityScopeWriteFenceCoordinator(rollouts,
+                    new ProductLegalEntityScopeOperationalReadinessRepository(scope.Database, tenant), new Actor(), tenant,
+                    TimeProvider.System)
+                .EnterAsync(new ReserveCanonicalCodeCommand(new ProductItemSkuMasterModels.ReserveGlobalProductCodeRequest()), default);
+
+            Assert.Contains("FutureFenceField", refusal.Message, StringComparison.Ordinal);
+            Assert.False(write.IsAllowed);
+            Assert.Equal(503, write.StatusCode);
+            Assert.Equal("PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID", write.FailureCode);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDM_TEST_MONGO", previous);
+        }
+    }
+
+    [Fact]
+    public void A_policy_or_legal_entity_written_by_a_newer_binary_fails_to_read_on_purpose()
+    {
+        // R2 (policy) and R3 (LegalEntity, replaced whole: a read that succeeded would let the next replace erase the field).
+        foreach (var type in new[] { typeof(ProductLegalEntityScopePolicy), typeof(LegalEntity) })
+        {
+            var document = Activator.CreateInstance(type, nonPublic: true)!.ToBsonDocument(type);
+            document["FutureField"] = 1;
+            Assert.ThrowsAny<Exception>(() => BsonSerializer.Deserialize(document, type));
+        }
+    }
+
+    [Fact]
+    public void Every_type_written_whole_is_strict_or_a_named_pre_existing_risk()
+    {
+        // R3 (CT decision): a type written by whole-document replace, or whose array is $set whole, must not read
+        // "lenient" — the next whole write would erase what it skipped. Measured on the Persistence source.
+        var source = PersistenceSources();
+        var replaced = new SortedSet<string>(StringComparer.Ordinal);
+        var replacedViaBase = source.Values.Any(code => Regex.IsMatch(code, @"\bCollection\.ReplaceOneAsync\("));
+        foreach (var (file, code) in source)
+        {
+            foreach (Match call in Regex.Matches(code, @"\b(\w+)\.(?:ReplaceOneAsync|FindOneAndReplaceAsync)\("))
+            {
+                if (call.Groups[1].Value == "Collection")
+                {
+                    if (Path.GetFileName(file) == "RepositoryBase.cs")
+                        foreach (Match sub in Regex.Matches(string.Join("\n", source.Values), @"RepositoryBase<(\w+)>"))
+                            if (sub.Groups[1].Value != "TEntity") replaced.Add(sub.Groups[1].Value);
+                    foreach (Match own in Regex.Matches(code, @"RepositoryBase<(\w+)>"))
+                        if (own.Groups[1].Value != "TEntity") replaced.Add(own.Groups[1].Value);
+                    continue;
+                }
+                var declaration = Regex.Match(code, $@"IMongoCollection<(\w+)>\s+{Regex.Escape(call.Groups[1].Value)}\b");
+                replaced.Add(declaration.Success ? declaration.Groups[1].Value : "UNRESOLVED:" + call.Groups[1].Value);
+            }
+            foreach (Match model in Regex.Matches(code, @"ReplaceOneModel<(\w+)>")) replaced.Add(model.Groups[1].Value);
+        }
+        // Whole-array $set: a set property whose stored type is a list of an MDM class.
+        var setProperties = source.Values.SelectMany(code => Regex.Matches(code, @"\.Set\(\s*\w+\s*=>\s*\w+\.(\w+)\s*,")
+            .Select(match => match.Groups[1].Value)).ToHashSet(StringComparer.Ordinal);
+        var arrayElements = typeof(EntityBase).Assembly.GetTypes()
+            .SelectMany(owner => owner.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            .Where(property => setProperties.Contains(property.Name) && property.PropertyType.IsGenericType
+                               && property.PropertyType.GetGenericArguments()[0].Assembly == typeof(EntityBase).Assembly
+                               && property.PropertyType.GetGenericArguments()[0].IsClass)
+            .Select(property => property.PropertyType.GetGenericArguments()[0].Name)
+            .ToHashSet(StringComparer.Ordinal);
+        var strict = MdmDocumentClassMaps.StrictByDesign.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
+
+        Assert.True(replacedViaBase && replaced.Contains("LegalEntity"), "the scan is blind: LegalEntity's replace not found");
+        var offenders = replaced.Concat(arrayElements)
+            .Where(name => !strict.Contains(name) && !KnownPreExistingLenientWholeWrites.Contains(name))
+            .Distinct().ToArray();
+        Assert.True(offenders.Length == 0, "Written whole but read leniently: " + string.Join(", ", offenders));
+    }
+
+    // Brand / Product: their explicit maps ignored extra elements BEFORE this work, and ProductRepository replaces whole —
+    // a pre-existing risk, NOT changed here (CT backlog; 🟡 in the report).
+    private static readonly HashSet<string> KnownPreExistingLenientWholeWrites =
+        ["Brand", "Product", "BrandProductExternalReference"];
+
+    // ---------------------------------------------------------------------------------------------- FIX1 M2 / M4
+
+    [Fact]
+    public void MDM_registers_no_convention_that_could_change_how_a_document_is_mapped()
+    {
+        var root = RepoRoot();
+        var source = Path.Combine(root, "services", "Diten.MdmService", "src");
+        var callers = Directory.EnumerateFiles(source, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(path => ProductLegalEntityScopeWriteAdmissionContractTests.WithoutComments(File.ReadAllText(path))
+                .Contains("ConventionRegistry", StringComparison.Ordinal))
+            .ToArray();
+        Assert.Empty(callers);
+    }
+
+    [Fact]
+    public void The_walk_meets_no_struct_interface_abstract_or_open_generic_document_member()
+    {
+        // M4: such a member would be skipped by the walk and silently stay strict — none exists today; a new one is named.
+        var domain = typeof(EntityBase).Assembly;
+        var persistence = typeof(MdmDocumentClassMaps).Assembly;
+        var known = MdmDocumentClassMaps.CoveredTypes.Concat(MdmDocumentClassMaps.StrictByDesign).ToHashSet();
+        var unwalkable = new SortedSet<string>(StringComparer.Ordinal);
+        foreach (var type in known)
+        foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        foreach (var candidate in Unwrap(property.PropertyType))
+        {
+            if (candidate.Assembly != domain && candidate.Assembly != persistence) continue;
+            if (candidate.IsEnum) continue;
+            if (candidate.IsValueType || candidate.IsInterface || candidate.IsAbstract || candidate.IsGenericTypeDefinition
+                || !known.Contains(candidate))
+                unwalkable.Add($"{type.Name}.{property.Name}: {candidate.Name}");
+        }
+        Assert.True(unwalkable.Count == 0, "Members the walk cannot map: " + string.Join(", ", unwalkable));
+        Assert.All(known, type => Assert.True(type.Assembly == domain || type.Assembly == persistence, type.FullName));
+    }
+
+    [Fact]
+    public void A_stored_type_that_is_gone_is_a_named_error_not_a_type_initialization_failure()
+    {
+        var nested = typeof(MdmDocumentClassMaps).GetMethod("NestedDocument", BindingFlags.NonPublic | BindingFlags.Static)!;
+
+        var refused = Assert.Throws<TargetInvocationException>(() =>
+            nested.Invoke(null, [typeof(CodeReservationRepository), "NoSuchDocument"]));
+
+        Assert.IsType<InvalidOperationException>(refused.InnerException);
+        Assert.Contains("BL-576", refused.InnerException!.Message, StringComparison.Ordinal);
+    }
+
+    private static IEnumerable<Type> Unwrap(Type type)
+    {
+        if (type.IsArray) { foreach (var inner in Unwrap(type.GetElementType()!)) yield return inner; yield break; }
+        if (type.IsGenericType && type.Assembly != typeof(EntityBase).Assembly)
+        {
+            foreach (var argument in type.GetGenericArguments())
+            foreach (var inner in Unwrap(argument)) yield return inner;
+            yield break;
+        }
+        yield return type;
+    }
+
+    private static string RepoRoot()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "AGENTS.md"))) root = root.Parent;
+        return root?.FullName ?? throw new InvalidOperationException("repo root not found");
+    }
+
+    private static Dictionary<string, string> PersistenceSources()
+    {
+        var persistence = Path.Combine(RepoRoot(), "services", "Diten.MdmService", "src", "Diten.MdmService.Persistence");
+        return Directory.EnumerateFiles(persistence, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .ToDictionary(path => path, path => ProductLegalEntityScopeWriteAdmissionContractTests.WithoutComments(File.ReadAllText(path)));
+    }
+
+    private static T Unreachable<T>() where T : class
+    {
+        var proxy = DispatchProxy.Create<T, FirstGskuIdentityWorkflowProcessorTests.RepositoryProxy>();
+        ((FirstGskuIdentityWorkflowProcessorTests.RepositoryProxy)(object)proxy).Handler =
+            (method, _) => throw new NotSupportedException("not reached: " + method.Name);
+        return proxy;
+    }
+
+    private static IProductLegalEntityScopePolicyRepository NoPolicies()
+    {
+        var proxy = DispatchProxy.Create<IProductLegalEntityScopePolicyRepository, FirstGskuIdentityWorkflowProcessorTests.RepositoryProxy>();
+        ((FirstGskuIdentityWorkflowProcessorTests.RepositoryProxy)(object)proxy).Handler = (method, _) => method.Name switch
+        {
+            "GetConfiguredGlobalProductIdsAsync" => Task.FromResult<IReadOnlyList<Guid>>([]),
+            "GetByGlobalProductIdAsync" or "GetByCreationCommandIdAsync" => Task.FromResult<ProductLegalEntityScopePolicy?>(null),
+            _ => throw new NotSupportedException(method.Name)
+        };
+        return proxy;
+    }
+
+    private sealed class Actor : Contracts.IProductIdentityActorContext
+    {
+        public string ActorId { get; } = Guid.NewGuid().ToString("D");
     }
 
     // ---------------------------------------------------------------------------------------------- plumbing

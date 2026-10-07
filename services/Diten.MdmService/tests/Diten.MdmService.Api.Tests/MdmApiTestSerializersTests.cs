@@ -11,7 +11,7 @@ public sealed class MdmApiTestSerializersTests
     public void The_module_initializer_registered_every_document_map_before_the_first_test()
     {
         Assert.True(MdmApiTestSerializers.Ran);
-        Assert.Null(MdmApiTestSerializers.RegistrationFailure);
+        Assert.True(MdmApiTestSerializers.RegistrationFailure is null, MdmApiTestSerializers.RegistrationFailure?.Message);
         Assert.All(MdmDocumentClassMaps.CoveredTypes, type =>
             Assert.True(BsonClassMap.LookupClassMap(type).IgnoreExtraElements, type.Name));
     }

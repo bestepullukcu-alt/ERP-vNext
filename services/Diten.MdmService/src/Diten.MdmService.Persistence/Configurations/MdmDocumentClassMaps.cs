@@ -1,6 +1,8 @@
 using System.Reflection;
 using Diten.MdmService.Domain.Entities;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 
 namespace Diten.MdmService.Persistence.Configurations;
 
@@ -29,12 +31,11 @@ public static class MdmDocumentClassMaps
     private static readonly object Gate = new();
     private static bool _registered;
 
-    /// <summary>The document types the repositories read and write (collections, raw deserializations, projections).</summary>
-    public static readonly IReadOnlyList<Type> PersistedRoots =
+    private static readonly Lazy<IReadOnlyList<Type>> Roots = new(() =>
     [
         typeof(AuditIntentTemporalMigrationState), typeof(BrandHistoryEntry),
         // The code counter is the code reservation repository's own private document type.
-        typeof(Repositories.CodeReservationRepository).GetNestedType("CanonicalCodeCounter", BindingFlags.NonPublic)!,
+        NestedDocument(typeof(Repositories.CodeReservationRepository), "CanonicalCodeCounter"),
         typeof(CodeReservation), typeof(ExternalReferenceReservation), typeof(FinishedGood),
         typeof(FinishedGoodCreationAttempt), typeof(FinishedGoodIdentityWorkflowOperation),
         typeof(FirstGskuIdentityRetirementOperation), typeof(FirstGskuIdentityWorkflowOperation), typeof(GlobalProduct),
@@ -43,18 +44,53 @@ public static class MdmDocumentClassMaps
         typeof(GskuRetirementRequestOperation), typeof(Lsku), typeof(LskuIdentityWorkflowOperation),
         typeof(LskuRetirementRequestOperation), typeof(ProductAbbreviationAllocationLedger),
         typeof(ProductAbbreviationHistoryEntry), typeof(ProductAbbreviationRegisterEntry), typeof(ProductDefinitionRevision),
-        typeof(ProductLegalEntityScopePolicy), typeof(ProductLegalEntityScopeRolloutState), typeof(LegalEntity),
         typeof(Brand), typeof(Product), typeof(LocalAuditIntent), typeof(LocalAuditIntentReceipt)
+    ]);
+
+    /// <summary>The document types the repositories read and write (collections, raw deserializations, projections) that
+    /// ignore extra elements — every stored type except <see cref="StrictByDesignRoots"/>.</summary>
+    public static IReadOnlyList<Type> PersistedRoots => Roots.Value;
+
+    /// <summary>
+    /// WP-MDM-BL576-01 FIX1 (CT decisions R2, R3) — stored types that STAY STRICT on purpose; a document carrying a field
+    /// this binary does not know fails to read instead of being read with the field dropped:
+    /// <list type="bullet">
+    /// <item><see cref="ProductLegalEntityScopeRolloutState"/> (and its writer leases, fence, abort, snapshot) and
+    /// <see cref="ProductLegalEntityScopePolicy"/> (and its periods) — a fail-closed guard: an older binary that ignored a
+    /// lease / fence field a newer one added would accept writes the newer fence holds. Today an unknown element is a
+    /// coded 503 (PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID): the correct answer.</item>
+    /// <item><see cref="LegalEntity"/> — written by whole-document replace (RepositoryBase): a read that succeeded would
+    /// make the next replace silently erase the newer fields. Failing the read writes nothing: safer.</item>
+    /// </list>
+    /// An embedded type shared with a covered document (the audit intents and receipts) stays covered — it is named in
+    /// the report.
+    /// </summary>
+    public static readonly IReadOnlyList<Type> StrictByDesignRoots =
+    [
+        typeof(ProductLegalEntityScopeRolloutState), typeof(ProductLegalEntityScopePolicy), typeof(LegalEntity)
     ];
 
+    private static readonly Lazy<IReadOnlyList<Type>> Covered = new(() => Reachable(PersistedRoots));
+    private static readonly Lazy<IReadOnlyList<Type>> Strict = new(() =>
+        Reachable(StrictByDesignRoots).Where(type => !Covered.Value.Contains(type)).ToList());
+
     /// <summary>Every type this registry covers: the roots and the Domain classes reachable from them, leaves first.</summary>
-    public static IReadOnlyList<Type> CoveredTypes { get; } = Reachable(PersistedRoots);
+    public static IReadOnlyList<Type> CoveredTypes => Covered.Value;
+
+    /// <summary>The strict-by-design roots and the Domain classes only they embed — never registered here.</summary>
+    public static IReadOnlyList<Type> StrictByDesign => Strict.Value;
 
     public static void Register()
     {
         lock (Gate)
         {
             if (_registered) return;
+            // FIX1 M7: the maps assume production's Guid serializer is already in place (it is registered first, in
+            // AddPersistence and in every test initializer); a process that got here without it would write Guids the
+            // query side cannot match (BL-280) — said by name instead.
+            if (BsonSerializer.LookupSerializer<Guid>() is not GuidSerializer { GuidRepresentation: GuidRepresentation.Standard })
+                throw new InvalidOperationException(
+                    "BL-576: the Guid serializer is not GuidSerializer(Standard) — register it before the document class maps.");
             // The explicit maps first, ALWAYS: Brand / Product pin their Guid members, the GP lifecycle requests keep
             // theirs — this registry must never be the one that maps those types.
             BrandProductClassMaps.Register();
@@ -75,6 +111,11 @@ public static class MdmDocumentClassMaps
             _registered = true;
         }
     }
+
+    private static Type NestedDocument(Type owner, string name) =>
+        owner.GetNestedType(name, BindingFlags.NonPublic | BindingFlags.Public)
+        ?? throw new InvalidOperationException(
+            $"BL-576: the stored document type {owner.Name}.{name} is gone — update MdmDocumentClassMaps' roots.");
 
     /// <summary>
     /// The map the driver would build on its own, with only the forward-compatibility flag added. Public so a test can
