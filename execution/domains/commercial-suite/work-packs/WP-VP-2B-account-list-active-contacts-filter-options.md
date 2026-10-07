@@ -111,3 +111,29 @@ KORU/YAPMA: yalnız ekleme, yeni parametre yokken yanıt birebir aynı; Web DOKU
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — CRM Application (2283/0/5 + PII flake) · Web (699/0, koş) · mimari (38/1, 26 SABİT); build 0 hata. Yeni testler WP Acceptance 1–11 (talep §8 senaryoları). Sabotaj 1–3 (kırmızı kanıtla, geri al). Canlı salt okuma süre ölçümü rapora.
 Commit: "feat(crm): WP-VP-2B — account list active-contact count + hasActiveContacts filter + filter-options (mobile R1-R3)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), canlı süre ölçümü, mobil sözleşmesine eklenen alan/parametre/uç listesi (ad + tip + örnek). §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-07)
+**Commit:** `529a6761d` (ajan `000212eb4`, test dalının iki belge commit'i üzerine rebase, ff). Push: test dalı.
+
+**CT K13:**
+| Paket | Taban | Sonuç |
+|---|---|---|
+| CRM Application | 2289 | **2303/0/5** (PII flake bu koşuda çıkmadı) |
+| Mimari | 38/1 (26) | **38/1 (26 sabit)** |
+| CRM Api derleme | — | 0 hata |
+| Web | 699/0 | dokunulmadı |
+
+**Kod okuması:**
+- Tek kural `RelationshipLifecycle.IsActiveLink` (silinmemiş + kapalı değil + kişi var); depo tarafı regex `ClosedStatusPattern` aynı listeden üretiliyor (kayma yok). `$not` regex durumu boş bağlantıyı aktif sayar → `IsClosed(null) = false` ile tutarlı.
+- Sayfa sayımı iki okuma (`AccountId IN` + kişi id'leri); iki okumada da bellekte kiracı koruması.
+- `hasActiveContacts`: yoksa küme hiç hesaplanmıyor; `true` kapsamı daraltır, `false` kapsamdan çıkarır ya da `Id NIN`. Boş kapsam → boş sonuç (depo `Count == 0` kısa devresi).
+- `filter-options` yalnız `crm.account.read`; `mine` = `RepTerritoryCoverage` (my-accounts ile aynı kural, ortak yardımcıya taşındı), atanmamış → kiracı geneli + `unassigned`; `all`; geçersiz → 400 `invalid_filter_scope`; arama `TurkishInsensitivePattern`.
+- Yeni yazma komutu yok, dizin yok.
+
+**CT sabotajı (ajanınkinden ayrı):** kişi-var kontrolünü düşür + `false` dalında kapsamdan çıkarmayı kaldır → **4 test kırmızı** (`…soft_deleted_contact…`, `…contacts_projection`, `True_is_ANDed…`, `My_accounts_filter_is_ANDed…`). Geri alındı.
+
+**Açık uçlar (ajan raporu, kabul):** belgesi olmayan kişiye giden bağlantı `true` kümesine girer ama satır sayımı 0 (canlıda 0 kayıt); aynı adlı hesaplarda sayfa sınırı Mongo doğal sırasına bağlı (bugünkü davranış).
+
+**E4 (CT, bekliyor; fleet yeniden başlatma — CRM değişti):** `accounts?hasActiveContacts=true` toplamı ≈ 16.390; `my-accounts?hasActiveContacts=true` Beste kapsamında; satırlarda `activeContactCount`; `filter-options?scope=mine` → Beste'nin 4 ilçesi; `hasActiveContacts=x` → 400.

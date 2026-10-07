@@ -1,11 +1,11 @@
 # Ziyaret Planlama — yol haritası ve durum
 
-> **Takip dosyası.** Her adımda güncellenir. Son güncelleme: **2026-10-06** (CT).
+> **Takip dosyası.** Her adımda güncellenir. Son güncelleme: **2026-10-07** (CT).
 > Dal: `test/crm-content-visit-e2e` (main ile senkron, `fe370c9f`).
 > Ayrıntılar: [durum analizi](VISIT-PLANNING-current-state-analysis.md) · [mockup brief](mockups/visit-planning/BRIEF-visit-planning-rep-week.md) · [mockup analizi](mockups/visit-planning/VISIT-PLANNING-mockup-analysis.md) · [mobil not](mobile/2026-10-06-visit-planning/MOBILE-NOTE-2026-10-06-visit-planning.md) · [mobil talepler](MOBILE-REQUESTS-2026-10-05-analysis.md)
 
 ## Neredeyiz
-**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** bitti (E2 + E4). ☑ **Faz 2** E2 + **E4 kabul** (`fecf231e`, 2026-10-07). ⚠ **D9** düzenleme formu hedefleri siliyor — öncelikli küçük düzeltme. Sonra **Faz 2b** (mobil iş yeri listesi).
+**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** bitti (E2 + E4). ☑ **Faz 2** E2 + **E4 kabul** (`fecf231e`, 2026-10-07). ☑ D9 / F-1 (VP-FIX-2). ☑ **Faz 2b** E2 kabul (`529a6761d`). ☑ **Faz E2E** (E0–E11). ◐ **E2E-FIX-1/2/3** paketlendi (2026-10-07, paralel). K-7 kabul; yeni mockup bekleniyor (Faz 4 girdisi).
 
 ## Yapılanlar (2026-10-06)
 | Ne | Kanıt |
@@ -86,14 +86,19 @@ Plan: [E2E-TUTUKON-content-to-visit-plan.md](E2E-TUTUKON-content-to-visit-plan.m
 - ◐ E9 rapor gönderildi ✓; **yolculuk ilerlemesi yazılmıyor** (E9-B1, journeyId gönderilmiyor, journey_progress 0); "ne sunacağım" ekranda yok (E9-B2); aşama serbest metin (E9-B3); sonuç kodu doğrulanmıyor (E9-B4); ileri tarihe rapor (E9-B5)
 - ◐ E10 planda öngörü ✓ (2. ziyaret Pekiştirme), gerçekleşenden ilerleme ✗
 - ☑ E11 mobil örnek yanıtlar → [E2E-SAMPLE-RESPONSES-2026-10-07.md](mobile/2026-10-06-visit-planning/E2E-SAMPLE-RESPONSES-2026-10-07.md)
-- ☐ **E2E-FIX (toplu paket, test bitince — kullanıcı kararı 2026-10-07):** E1-B1 segment referans değerleri, E1-B2 10K aday sınırı (ek blokları aday sorgusuna indirme), E1-B3 global-products 400, Türkçe arama takibi (TerritoryModel + SegmentCandidateSource) + E2–E11'de çıkacak bulgular
+- ◐ **E2E-FIX — paketlendi 2026-10-07 (üç paket, paralel):**
+  - [WP-E2E-FIX-1](WP-E2E-FIX-1-visit-execution-report-and-plan-apply.md) Ziyaret Yürütme: "ne sunacağım" (E9-B2), rapor plandaki yolculuk / aşamayı taşır + aşama seçimi (E9-B1 ön koşul, E9-B3), sonuç kodu hatası (E9-B4), ileri tarih kuralı (E9-B5), onay / etiket / başlık (E9-B6), düzenle 404 (E7-B4), uygula onay + kilit (E8-B1) — worktree `C:\tmp\e2e-fix-1`
+  - [WP-E2E-FIX-2](WP-E2E-FIX-2-knowledge-chain-authoring-screens.md) İçerik / Bilgi Yolu / Yolculuk: E2-B1, E2-B3, içerik sürümü, E3-B1, E3-B3, E3-B4 (yalnız gönderen geri çeker — CT kuralı), E4-B1..B3 — worktree `C:\tmp\e2e-fix-2`
+  - [WP-E2E-FIX-3](WP-E2E-FIX-3-segment-play-frequency-screens.md) Segment / Oyun / Sıklık: **⚠ E5-B2 eski oyun sürümü yenisini eziyor (çözücü v1'i seçiyor)**, E5-B1, E5-B3, E1-B1, E1-B3, E1-B2 aday indirme, Türkçe arama takibi, E6-B1 — worktree `C:\tmp\e2e-fix-3`
+  - Pakete girmeyenler: E9-B1 yazan uç → **SB-3c** · E7-B1 / B2 / B3, E8-B2 → Faz 3 · E7-B5 → Faz 4 · E2-B2, E4-B4, E9-B4b → Backlog
 
 Kurallar:
 - Yazmalar test kapsamında onaylı; CT her yazmayı önceden söyler.
 - Kayıtlar `E2E-TUT-` önekiyle açılır.
 - Onaylarda sema girişi (kullanıcı) gerekir.
+- **Test kayıtları kalır** (kullanıcı kararı 2026-10-07): `E2E-TUT-` segment / içerik / yol / yolculuk / oyun v2 / sıklık / plan `a42373cb` / 33 planlanan ziyaret / rapor `c229bb38` silinmez; Faz 3–4 ve E2E-FIX kabul testlerinde yeniden kullanılır.
 
-### Faz 2b — mobil iş yeri listesi talebi (2026-10-06; [talep](mobile/2026-10-06-account-list/BACKEND-CRM-ACCOUNT-LIST-ACTIVE-CONTACTS-REQUIREMENTS.md) · [CT yanıtı](mobile/2026-10-06-account-list/MOBILE-ANSWERS-2026-10-06-account-list.md)) — ◐ **paketlendi 2026-10-07: [WP-VP-2B](WP-VP-2B-account-list-active-contacts-filter-options.md)**, worktree `C:\tmp\vp-2b` (M-ACC-1 + M-ACC-2 tek pakette; yalnız CRM)
+### Faz 2b — mobil iş yeri listesi talebi (2026-10-06; [talep](mobile/2026-10-06-account-list/BACKEND-CRM-ACCOUNT-LIST-ACTIVE-CONTACTS-REQUIREMENTS.md) · [CT yanıtı](mobile/2026-10-06-account-list/MOBILE-ANSWERS-2026-10-06-account-list.md)) — ☑ **E2 kabul `529a6761d` (2026-10-07): [WP-VP-2B](WP-VP-2B-account-list-active-contacts-filter-options.md)** §37 (CRM 2303/0/5, mimari 26 sabit, CT sabotajı 4 kırmızı); ☐ E4 (fleet yeniden başlatma)
 - ☐ **M-ACC-1** (R1 + R2): `activeContactCount` (sayfa başına tek toplama, `/contacts` aktif kuralıyla birebir) + `hasActiveContacts=true|false` filtresi (VE; `total` filtreli; geçersiz → 400). Hem `GET /api/crm/accounts` hem B-2'nin `visit-plan/my-accounts` ucu. Sayım `crm.account.read` altında.
 - ☐ **M-ACC-2** (R3-a): `GET /api/crm/accounts/filter-options` (`crm.account.read`): hesaplarda bulunan bölge düğümleri + iş yeri türleri; bölgesi atanmış temsilcide yalnız kendi bölgesi.
 - ☐ R4 → **0.5** (uç açık, eksik TR etiket verisi). Mobil bilgilendirildi.
@@ -106,6 +111,8 @@ Kurallar:
 - ☐ B-7 haftalık + dönem kapasitesi; tipik ziyaret süresi; tahmini saat (C4, C5)
 - ☐ B-9 segment rozeti alanı
 - ☐ D3 dönem başına tek plan + boş taslak silme · D5 toplu okuma ucu
+- ☐ **K-7 veri modeli:** planlanan ziyaretin ürün listesi (ürün + rol + kaynak + yolculuk / aşama), süre listeden, kaynak önceliği oyun → seçim → son ziyaret → portföy, "karışık" döngü ([karar](VISIT-PRODUCTS-without-play-decision.md))
+- ☐ E2E'den gelen çözücü / süre kararları: **E7-B1** yolun iki dalı düzleşiyor (dal seçim kuralı) · **E7-B2** adım süresi süreye girmiyor · **E7-B3 / E8-B2** tek gün + "ayda 2" aralığı (B-4 / B-5 ile çözülür)
 
 ### Faz 4 — Web arayüzü (mockup'a göre)
 - ☐ VP-UI-1 liste + yeni plan paneli + detay üst kısım + durumlar + Ekip anahtarı (etkin değil)
@@ -128,6 +135,13 @@ Kurallar:
 
 ### Faz 7 — sonra
 - ☐ Yönetici görünümü (Ekip) · sıradaki içerik (SB-3c) · saha temsilcisi rolü (F-RBAC) · pozisyon tabanlı atama · check-in / anti-fraud (MOD-0280)
+
+## Backlog — sonra konuşulacak (kullanıcı kararı 2026-10-07: "bunları sonra konuşuruz")
+| # | Konu | Neden karar gerekir |
+|---|---|---|
+| **E2-B2** | İçerik formdan doğrudan `published` seçilerek yayımlanıyor; inceleme / MLR onayı yok. Yayın kapısı yalnız bağlı iddia varsa çalışıyor. | Tanıtım içeriği için onay akışı zorunlu mu (uyum)? Bilgi yolunda MLR var; içerik tekil yayında yok. |
+| **E9-B4b** | Ziyaret sonuç kodu serbest metin; hiçbir serviste sonuç kodu referans kümesi yok (ekran "referans verilerinden gelir" diyor). | Kiracı referans kümesi mi (BRD), sabit sözlük mü? Raporlama için kodlu liste gerekir. |
+| **E4-B4** | Yolculuğu oluşturan kişi kendisi yayımlayabiliyor. Bilgi yolunda "yayınlayan ≠ gönderen" var, yolculukta yok. | Görevler ayrılığı (SoD) yolculuğa da uygulansın mı? |
 
 ## 0.1 — Bölge ataması adımları (kullanıcı)
 Sayfa: `http://localhost:5001/CRM/TerritoryManagement/Models/2e89f9e6-54e0-4fd4-905f-4e5f7f4f31de/ResourceAssignments` (Bölge Yönetimi → TR-Territory → Kaynak Atamaları). İki atama yapılır (İstanbul ve Kocaeli için birer kez):
