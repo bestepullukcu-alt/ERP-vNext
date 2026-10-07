@@ -43,9 +43,12 @@ public static class AdminInvitationRefusals
 /// the operator only in Development when the e-mail did not leave, as the tenant Users screen does.</param>
 /// <param name="EmailRefusalCode">Why the invitation e-mail was not sent at all, by name; null when it was queued or the
 /// queue itself failed (that is logged with its own reason).</param>
+/// <param name="InvitationDispatchId">BL-454 stage D FIX3 (1) — the notification dispatch that carries this invitation's
+/// e-mail, when it was queued; written on the administrator (<see cref="TenantAdminUser.LastInvitationDispatchId"/>).</param>
 public sealed record AdminUserInvitationResult(
     string LoginUrl,
     string? SetPasswordUrl,
     bool UserProvisioned,
     bool InvitationEmailSent,
-    string? EmailRefusalCode = null);
+    string? EmailRefusalCode = null,
+    Guid? InvitationDispatchId = null);

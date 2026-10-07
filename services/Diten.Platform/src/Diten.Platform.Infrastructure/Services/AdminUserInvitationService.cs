@@ -96,13 +96,14 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
             return new AdminUserInvitationResult(loginUrl, null, provisioned.UserProvisioned, InvitationEmailSent: false, EmailRefusalCode: refusal);
         }
 
-        var emailSent = await TryQueueInvitationEmailAsync(tenant, adminUser, setPasswordUrl!, provisioned.SetupExpiresAtUtc!.Value, cancellationToken);
+        var (emailSent, dispatchId) = await TryQueueInvitationEmailAsync(tenant, adminUser, setPasswordUrl!, provisioned.SetupExpiresAtUtc!.Value, cancellationToken);
 
         return new AdminUserInvitationResult(
             loginUrl,
             setPasswordUrl,
             provisioned.UserProvisioned,
-            InvitationEmailSent: emailSent);
+            InvitationEmailSent: emailSent,
+            InvitationDispatchId: dispatchId);
     }
 
     /// <summary>The variables of tenant.invite.email (1.2.0) — the same in every language.</summary>
@@ -120,7 +121,8 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
                 .ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)
         };
 
-    private async Task<bool> TryQueueInvitationEmailAsync(
+    /// <returns>Whether the e-mail was queued, and the dispatch that carries it (when the pipeline names one).</returns>
+    private async Task<(bool Sent, Guid? DispatchId)> TryQueueInvitationEmailAsync(
         Tenant tenant,
         TenantAdminUser adminUser,
         string setPasswordUrl,
@@ -148,10 +150,10 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
                     response.StatusCode,
                     response.ReasonCode,
                     string.Join("; ", response.Errors));
-                return false;
+                return (false, null);
             }
 
-            return true;
+            return (true, response.Data?.Id is { } id && id != Guid.Empty ? id : null);
         }
         catch (Exception ex)
         {
@@ -161,7 +163,7 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
                 "Admin invitation notification queue failed. TenantId={TenantId} AdminUserId={AdminUserId}",
                 tenant.Id,
                 adminUser.Id);
-            return false;
+            return (false, null);
         }
     }
 
@@ -230,11 +232,21 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
             }
         }
 
-        if (!response.IsSuccessStatusCode || payload is null)
+        // BL-454 stage D FIX3 (2) — a 2xx body may carry the new administrator's live set-password token: it is NEVER logged,
+        // only the status and a fixed reason. A non-2xx body is logged shortened, with every token-like value masked.
+        if (!response.IsSuccessStatusCode)
         {
             _logger.LogError(
                 "Tenant admin provisioning failed. TenantId={TenantId} AdminUserId={AdminUserId} StatusCode={StatusCode} Response={Response}",
-                tenant.Id, adminUser.Id, (int)response.StatusCode, payload?.Message ?? text);
+                tenant.Id, adminUser.Id, (int)response.StatusCode, LoggableErrorBody(text));
+            throw new InvalidOperationException("Admin user provisioning failed.");
+        }
+
+        if (payload is null)
+        {
+            _logger.LogError(
+                "Tenant admin provisioning failed. TenantId={TenantId} AdminUserId={AdminUserId} StatusCode={StatusCode} ReasonCode={ReasonCode}",
+                tenant.Id, adminUser.Id, (int)response.StatusCode, ReasonAuthAnswerUnreadable);
             throw new InvalidOperationException("Admin user provisioning failed.");
         }
 
@@ -244,8 +256,8 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         if (!accountExists && (string.IsNullOrWhiteSpace(payload.SetupToken) || payload.SetupExpiresAtUtc is null))
         {
             _logger.LogError(
-                "tenant.admin_invitation.auth_answer_invalid TenantId={TenantId} AdminUserId={AdminUserId} Message={Message}",
-                tenant.Id, adminUser.Id, payload.Message);
+                "tenant.admin_invitation.auth_answer_invalid TenantId={TenantId} AdminUserId={AdminUserId} HasToken={HasToken} HasExpiry={HasExpiry}",
+                tenant.Id, adminUser.Id, !string.IsNullOrWhiteSpace(payload.SetupToken), payload.SetupExpiresAtUtc is not null);
             return payload with { SetupToken = null, RefusalCode = AdminInvitationRefusals.AuthAnswerInvalid };
         }
 
@@ -253,6 +265,32 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
     }
 
     private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new(System.Text.Json.JsonSerializerDefaults.Web);
+
+    /// <summary>A 2xx answer that could not be read (its body is never logged: it may hold a live token).</summary>
+    internal const string ReasonAuthAnswerUnreadable = "AUTH_ANSWER_UNREADABLE";
+
+    /// <summary>The most of a non-2xx body that is logged.</summary>
+    internal const int MaxLoggedBodyLength = 256;
+
+    // Any key with "token" in its name, as JSON ("setupToken": "…") or as a pair (token=…): its value is masked.
+    private static readonly System.Text.RegularExpressions.Regex TokenJsonValue = new(
+        "(\"[^\"]*token[^\"]*\"\\s*:\\s*)(\"(?:[^\"\\\\]|\\\\.)*\"|[^,}\\s]+)",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex TokenPairValue = new(
+        "(\\b\\w*token\\w*\\s*=\\s*)[^\\s&,;]+",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    /// <summary>A non-2xx body as it may be logged: every token-like value masked FIRST, then shortened.</summary>
+    internal static string LoggableErrorBody(string? body)
+    {
+        if (string.IsNullOrEmpty(body))
+        {
+            return string.Empty;
+        }
+
+        var masked = TokenPairValue.Replace(TokenJsonValue.Replace(body, "$1\"***\""), "$1***");
+        return masked.Length <= MaxLoggedBodyLength ? masked : masked[..MaxLoggedBodyLength] + "…";
+    }
 
     private string BuildLoginUrl(Tenant tenant)
     {

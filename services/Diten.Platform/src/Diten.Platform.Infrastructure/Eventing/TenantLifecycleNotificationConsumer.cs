@@ -262,6 +262,7 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
 
         return _tenantRepository.RecordAdminInvitationAsync(
             tenantId, adminId, AdminInvitationStepKey, status, detail, now, stampInvitedAt: result.InvitationEmailSent,
+            result.InvitationDispatchId,
             new TenantActivityEvent { EventType = eventType, Message = detail, At = now, Actor = ConsumerName }, ct);
     }
 

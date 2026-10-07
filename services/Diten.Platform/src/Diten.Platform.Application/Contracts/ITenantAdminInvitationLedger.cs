@@ -7,7 +7,8 @@ namespace Diten.Platform.Application.Contracts;
 /// </summary>
 public interface ITenantAdminInvitationLedger
 {
-    /// <param name="invitationQueuedAt">When the undeliverable invitation was queued: a newer invitation of the same
-    /// administrator (InvitedAt later than this) is the current state and is not marked failed (FIX2 K5).</param>
-    Task RecordUndeliveredAsync(Guid tenantId, string adminEmail, string reasonCode, DateTimeOffset invitationQueuedAt, CancellationToken ct);
+    /// <param name="dispatchId">The undeliverable invitation's dispatch. BL-454 stage D FIX3 (1) — it marks the step only
+    /// while it is still the administrator's current invitation (<c>LastInvitationDispatchId</c>); a newer "Invite" is the
+    /// current state and is left alone. Identity, not clocks: the dispatch is queued BEFORE the invitation time is stamped.</param>
+    Task RecordUndeliveredAsync(Guid tenantId, string adminEmail, string reasonCode, Guid dispatchId, CancellationToken ct);
 }

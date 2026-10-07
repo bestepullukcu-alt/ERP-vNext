@@ -50,6 +50,6 @@ internal sealed class NoInvitationLedger : Diten.Platform.Application.Contracts.
 {
     public static readonly NoInvitationLedger Instance = new();
 
-    public Task RecordUndeliveredAsync(Guid tenantId, string adminEmail, string reasonCode, DateTimeOffset invitationQueuedAt, CancellationToken ct) =>
+    public Task RecordUndeliveredAsync(Guid tenantId, string adminEmail, string reasonCode, Guid dispatchId, CancellationToken ct) =>
         Task.CompletedTask;
 }

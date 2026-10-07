@@ -1,4 +1,5 @@
 using Diten.AuthService.Application.Common.Events;
+using Diten.AuthService.Application.Common.Exceptions;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Application.Common.Services;
@@ -118,9 +119,17 @@ public sealed class InternalEventsController : ControllerBase
     public Task<IActionResult> TenantAdminInvited([FromBody] TenantAdminInvitationProvisioningRequest request, CancellationToken ct)
     {
         var operatorInvite = string.Equals(request.Trigger, TriggerOperatorInvite, StringComparison.Ordinal);
-        return ProvisionTenantAdministratorAsync(
-            request, createOnly: !operatorInvite, auditTrigger: operatorInvite ? TriggerOperatorInvite : request.Trigger ?? "unspecified", ct);
+        return ProvisionTenantAdministratorAsync(request, createOnly: !operatorInvite, auditTrigger: AuditTriggerOf(request.Trigger), ct);
     }
+
+    /// <summary>BL-454 stage D FIX3 — the audit row names the trigger from an ALLOWED list only; the raw request string is never
+    /// written (anything else is <see cref="TriggerUnspecified"/>).</summary>
+    internal static string AuditTriggerOf(string? trigger) => trigger switch
+    {
+        TriggerOperatorInvite => TriggerOperatorInvite,
+        TriggerTenantCreatedEvent => TriggerTenantCreatedEvent,
+        _ => TriggerUnspecified
+    };
 
     private async Task<IActionResult> ProvisionTenantAdministratorAsync(
         TenantAdminInvitationProvisioningRequest request, bool createOnly, string auditTrigger, CancellationToken ct)
@@ -179,7 +188,24 @@ public sealed class InternalEventsController : ControllerBase
             // nobody can sign in as); once the account exists, everything it needs exists. There is no half-made
             // administrator for a retry to stumble on.
             await GrantTenantAdministratorAsync(user.Id, user.Email, request.TenantId, adminRole, ct);
-            var created = await _userRepository.CreateAsync(user, ct);
+            User created;
+            try
+            {
+                created = await _userRepository.CreateAsync(user, ct);
+            }
+            catch (DuplicateUserEmailException)
+            {
+                // FIX3 — another call created the same account between the existence check and this write (the unique index
+                // decided). The create-only door answers exactly as for an account found first; the operator's door says so.
+                // The grants written above name this call's id, which no account has (known limit: such a row is counted by
+                // the roles list until cleaned up; nobody can sign in as it).
+                _logger.LogInformation(
+                    "tenant.admin_invitation.account_exists TenantId={TenantId} Trigger={Trigger} Race=true. Nothing changed.",
+                    request.TenantId, auditTrigger);
+                return createOnly
+                    ? Ok(new TenantAdminInvitationProvisioningResponse(false, null, null, StatusAccountExists))
+                    : Conflict(new { message = "the account was created by another request meanwhile; try again" });
+            }
             // BL-456 — the account exists from here on: its row is written now (ids and facts only; no address, no token),
             // naming the REAL trigger (E2).
             await _audit.RecordAsync(UserAuditEvents.Invited, request.TenantId, created.Id,
@@ -316,6 +342,7 @@ public sealed class InternalEventsController : ControllerBase
 
     public const string TriggerOperatorInvite = "operator-invite";
     public const string TriggerTenantCreatedEvent = "tenant-created-event";
+    public const string TriggerUnspecified = "unspecified";
     public const string StatusAccountExists = "account_exists";
     public const string ReasonPlatformTenantRefused = "PLATFORM_TENANT_REFUSED";
     private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");

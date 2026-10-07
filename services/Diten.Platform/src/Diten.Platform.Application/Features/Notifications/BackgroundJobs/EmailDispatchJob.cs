@@ -160,7 +160,7 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         {
             try
             {
-                await _invitationLedger.RecordUndeliveredAsync(dispatch.TenantId, adminEmail, ReasonActionLinkNotRetryable, dispatch.QueuedAt, cancellationToken);
+                await _invitationLedger.RecordUndeliveredAsync(dispatch.TenantId, adminEmail, ReasonActionLinkNotRetryable, dispatch.Id, cancellationToken);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {

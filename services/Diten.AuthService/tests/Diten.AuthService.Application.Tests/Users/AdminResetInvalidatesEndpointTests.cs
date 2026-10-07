@@ -62,7 +62,10 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
             services.AddScoped<IPasswordHasher>(_ => new GatedHasher(Gate));
             // BL-529 FIX2 — the production repository, with two points a test can hold a request at.
             services.AddScoped<IUserRepository>(sp => new GatedUserRepository(
-                ActivatorUtilities.CreateInstance<Diten.AuthService.Persistence.Repositories.UserRepository>(sp), Gate));
+                ActivatorUtilities.CreateInstance<Diten.AuthService.Persistence.Repositories.UserRepository>(sp), Gate, FailOnce));
+            // BL-454 stage D FIX3 (3) — the production user-role repository, with a one-shot failure point (FailOnce).
+            services.AddScoped<IUserRoleRepository>(sp => new FailingOnceUserRoles(
+                ActivatorUtilities.CreateInstance<Diten.AuthService.Persistence.Repositories.UserRoleRepository>(sp), FailOnce));
             services.AddSingleton<IOtpDeliveryService>(Otp);
             services.Configure<Diten.AuthService.Infrastructure.Settings.MfaOptions>(o => o.HashSecret = MfaSecret);
             // FIX3 — the production refresh-token repository with two hold points: before a session is written
@@ -79,6 +82,9 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         }
 
         public CapturingOtp Otp { get; } = new();
+
+        /// <summary>BL-454 stage D FIX3 (3) — "create:{email}" / "assign:{tenantId}": the next such write throws, once.</summary>
+        public ConcurrentDictionary<string, bool> FailOnce { get; } = new();
 
         private readonly string MfaSecret = $"bl529-mfa-{Guid.NewGuid():N}";
     }
@@ -559,7 +565,12 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.Equal(JsonValueKind.Null, answer.RootElement.GetProperty("setupToken").ValueKind);
         Assert.Equal(before.PasswordHash, (await ReadUserAsync(user.Id)).PasswordHash);
         Assert.Equal(HttpStatusCode.OK, (await RefreshAsync(tenantId, session)).StatusCode);
+        // K10 — the existence check comes FIRST: a call that does nothing provisions nothing of the (fresh) tenant either.
+        Assert.Equal(0, await TenantRoleCountAsync(tenantId));
     }
+
+    private async Task<long> TenantRoleCountAsync(Guid tenantId)
+        => await _host.Database.GetCollection<Role>("roles").CountDocumentsAsync(r => r.TenantId == tenantId);
 
     [Fact]
     public async Task An_existing_account_that_is_not_an_administrator_is_never_raised_to_Admin_by_the_event()
@@ -636,6 +647,131 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         using var anonymous = _host.Client();
         Assert.Equal(HttpStatusCode.NoContent, (await anonymous.PostAsJsonAsync("api/users/set-password", new { email, token, newPassword = NewPassword })).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await TenantLoginAsync(tenantId, email, NewPassword)).StatusCode);
+    }
+
+    // ── BL-454 stage D FIX3 ─────────────────────────────────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("create")] // the account write itself fails
+    [InlineData("assign")] // a grant fails: the account must not exist yet (it is written last)
+    public async Task A_new_administrator_whose_first_attempt_fails_midway_is_made_whole_by_the_retry(string failurePoint)
+    {
+        // FIX3 (3) — "the account is written last", measured: whatever fails part-way, no account exists afterwards; the
+        // retry makes it whole; and the grants a failed attempt left name an id no live account has.
+        var tenantId = Guid.NewGuid();
+        var email = $"midway.{failurePoint}.{Guid.NewGuid():N}@invite.test";
+        _host.FailOnce[failurePoint == "create" ? "create:" + email : "assign:" + tenantId] = true;
+
+        var first = await TenantAdminCreatedAsync(tenantId, email);
+
+        Assert.False(first.IsSuccessStatusCode);
+        Assert.Null(await _host.Database.GetCollection<User>("users").Find(u => u.Email == email).FirstOrDefaultAsync());
+
+        var retry = await TenantAdminCreatedAsync(tenantId, email);
+
+        Assert.Equal(HttpStatusCode.OK, retry.StatusCode);
+        using var answer = JsonDocument.Parse(await retry.Content.ReadAsStringAsync());
+        Assert.False(string.IsNullOrEmpty(answer.RootElement.GetProperty("setupToken").GetString()));
+        var user = await TenantUserByEmailAsync(email, tenantId);
+        var adminRole = await _host.Database.GetCollection<Role>("roles").Find(r => r.TenantId == tenantId && r.Name == "Admin").SingleAsync();
+        Assert.Contains(await RolesOfAsync(user.Id), r => r.RoleId == adminRole.Id && r.TenantId == tenantId);
+        Assert.Single(await MembershipsOfAsync(user.Id), m => m.TenantId == tenantId);
+
+        var grantedIds = (await _host.Database.GetCollection<UserRole>("userRoles").Find(r => r.TenantId == tenantId).ToListAsync())
+            .Select(r => r.UserId)
+            .Concat((await _host.Database.GetCollection<TenantUserMembership>("tenant_user_memberships").Find(m => m.TenantId == tenantId).ToListAsync()).Select(m => m.UserId))
+            .Distinct();
+        foreach (var orphan in grantedIds.Where(id => id != user.Id))
+        {
+            Assert.Null(await _host.Database.GetCollection<User>("users").Find(u => u.Id == orphan).FirstOrDefaultAsync());
+        }
+    }
+
+    [Theory]
+    [InlineData(false, HttpStatusCode.OK)]       // the event's door: exactly as for an account found first
+    [InlineData(true, HttpStatusCode.Conflict)]  // the operator's door says so
+    public async Task An_account_created_by_another_request_meanwhile_is_answered_not_thrown(bool byOperator, HttpStatusCode expected)
+    {
+        // FIX3 — the existence check and the write are not one step: the unique index decides, and the loser is answered.
+        var tenantId = Guid.NewGuid();
+        var email = $"race.{Guid.NewGuid():N}@invite.test";
+        _host.FailOnce["race:" + email] = true;
+
+        var response = byOperator ? await OperatorInviteAsync(tenantId, email) : await TenantAdminCreatedAsync(tenantId, email);
+
+        Assert.Equal(expected, response.StatusCode);
+        if (!byOperator)
+        {
+            Assert.Contains("account_exists", await response.Content.ReadAsStringAsync());
+        }
+
+        var winner = await TenantUserByEmailAsync(email, tenantId); // exactly one account, the winner's, untouched
+        Assert.Equal("Race", winner.FirstName);
+        Assert.Empty(await RolesOfAsync(winner.Id)); // the loser's grants name the loser's id, never the winner's
+    }
+
+    [Fact]
+    public async Task The_create_only_door_ignores_a_trigger_in_its_body()
+    {
+        // FIX3 — the event's door has no trigger to get wrong: "operator-invite" in its body changes nothing.
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var before = await ReadUserAsync(user.Id);
+        using var platform = _host.Client();
+        platform.DefaultRequestHeaders.Add("X-Internal-Api-Key", _host.InternalKey);
+
+        var created = await platform.PostAsJsonAsync("internal/events/tenant-admin-created",
+            new { tenantId, adminUserId = Guid.NewGuid(), tenantCode = "S2DF3", tenantName = "Stage D fix 3", email = user.Email, name = "First Admin", trigger = "operator-invite" });
+
+        Assert.Equal(HttpStatusCode.OK, created.StatusCode);
+        Assert.Contains("account_exists", await created.Content.ReadAsStringAsync());
+        Assert.Equal(before.PasswordHash, (await ReadUserAsync(user.Id)).PasswordHash);
+        Assert.Empty(await ResetRowsAsync(tenantId, user.Id));
+    }
+
+    [Fact]
+    public async Task The_create_only_door_refuses_a_caller_without_the_internal_key()
+    {
+        var tenantId = Guid.NewGuid();
+        var email = $"nokey.{Guid.NewGuid():N}@invite.test";
+        using var anonymous = _host.Client();
+
+        var created = await anonymous.PostAsJsonAsync("internal/events/tenant-admin-created",
+            new { tenantId, adminUserId = Guid.NewGuid(), tenantCode = "S2DF3", tenantName = "Stage D fix 3", email, name = "First Admin" });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, created.StatusCode);
+        Assert.Null(await _host.Database.GetCollection<User>("users").Find(u => u.Email == email).FirstOrDefaultAsync());
+        Assert.Equal(0, await TenantRoleCountAsync(tenantId));
+    }
+
+    [Fact]
+    public async Task The_create_only_door_refuses_the_platform_tenant_by_name()
+    {
+        var email = $"platform.{Guid.NewGuid():N}@invite.test";
+
+        var created = await TenantAdminCreatedAsync(PlatformTenantId, email);
+
+        Assert.Equal(HttpStatusCode.BadRequest, created.StatusCode);
+        Assert.Contains("PLATFORM_TENANT_REFUSED", await created.Content.ReadAsStringAsync());
+        Assert.Null(await _host.Database.GetCollection<User>("users").Find(u => u.Email == email).FirstOrDefaultAsync());
+    }
+
+    [Theory]
+    [InlineData("tenant-created-event", "tenant-created-event")]
+    [InlineData(null, "unspecified")]
+    [InlineData("<script>made-up</script>", "unspecified")] // the raw request string is never written
+    public async Task The_operators_door_audits_only_an_allowed_trigger(string? trigger, string audited)
+    {
+        var tenantId = Guid.NewGuid();
+        var email = $"allowed.{Guid.NewGuid():N}@invite.test";
+
+        Assert.Equal(HttpStatusCode.OK, (await TenantAdminInvitedByEventAsync(tenantId, email, trigger)).StatusCode);
+
+        var user = await TenantUserByEmailAsync(email, tenantId);
+        var metadata = await InvitedRowMetadataAsync(tenantId, user.Id);
+        using var row = JsonDocument.Parse(metadata);
+        Assert.Equal(audited, row.RootElement.GetProperty("trigger").GetString());
+        Assert.DoesNotContain("made-up", metadata, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -2436,7 +2572,19 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
 
     /// <summary>The production user repository; a request can be held where it reads an account by id
     /// (<c>read:{id}</c>) or right before a reset's conditional write (<c>write:{id}</c>).</summary>
-    private sealed class GatedUserRepository(IUserRepository inner, Barrier gate) : IUserRepository
+    /// <summary>The production user-role repository; an assignment in a tenant named in FailOnce throws, once.</summary>
+    private sealed class FailingOnceUserRoles(IUserRoleRepository inner, ConcurrentDictionary<string, bool> failOnce) : IUserRoleRepository
+    {
+        public Task<IEnumerable<string>> GetRolesByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => inner.GetRolesByUserAsync(userId, tenantId, ct);
+        public Task AssignAsync(UserRole userRole, CancellationToken ct) => failOnce.TryRemove("assign:" + userRole.TenantId, out _)
+            ? throw new InvalidOperationException("injected: the role assignment fails once")
+            : inner.AssignAsync(userRole, ct);
+        public Task RevokeAsync(Guid userId, Guid roleId, Guid tenantId, CancellationToken ct) => inner.RevokeAsync(userId, roleId, tenantId, ct);
+        public Task<bool> ExistsAsync(Guid userId, Guid roleId, Guid tenantId, CancellationToken ct) => inner.ExistsAsync(userId, roleId, tenantId, ct);
+        public Task<IReadOnlyCollection<Guid>> GetUserIdsByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct) => inner.GetUserIdsByRoleAsync(roleId, tenantId, ct);
+    }
+
+    private sealed class GatedUserRepository(IUserRepository inner, Barrier gate, ConcurrentDictionary<string, bool> failOnce) : IUserRepository
     {
         public Task<User?> GetByEmailAndTenantAsync(string email, Guid tenantId, CancellationToken ct) => inner.GetByEmailAndTenantAsync(email, tenantId, ct);
         public Task<User?> GetByUserNameAndTenantAsync(string normalizedUserName, Guid tenantId, CancellationToken ct) => inner.GetByUserNameAndTenantAsync(normalizedUserName, tenantId, ct);
@@ -2449,7 +2597,22 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         public Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct) => inner.GetAllByTenantAsync(tenantId, page, pageSize, ct);
         public Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct) => inner.SearchActiveAsync(tenantId, term, limit, ct);
         public Task<long> GetCountByTenantAsync(Guid tenantId, CancellationToken ct) => inner.GetCountByTenantAsync(tenantId, ct);
-        public Task<User> CreateAsync(User user, CancellationToken ct) => inner.CreateAsync(user, ct);
+        public async Task<User> CreateAsync(User user, CancellationToken ct)
+        {
+            if (failOnce.TryRemove("create:" + user.Email, out _))
+            {
+                throw new InvalidOperationException("injected: the account write fails once");
+            }
+
+            if (failOnce.TryRemove("race:" + user.Email, out _))
+            {
+                // Another request wins the race: the same address in the same tenant is written first; the unique index
+                // then refuses this write exactly as in production.
+                await inner.CreateAsync(new User(user.Email, "race-winner-hash", "Race", "Winner", user.TenantId), ct);
+            }
+
+            return await inner.CreateAsync(user, ct);
+        }
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => inner.SoftDeleteAsync(id, tenantId, ct);
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => inner.RecordLoginOutcomeAsync(user, tenantId, ct);
         public object CaptureState(User user) => inner.CaptureState(user);

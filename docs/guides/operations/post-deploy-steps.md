@@ -136,7 +136,16 @@ verir.
 3. **Dağıtım sırası: önce Auth, sonra Platform.**
    - Yeni Platform, kiracı açılış olayında Auth'un yeni `internal/events/tenant-admin-created` kapısını çağırır. Bu kapı yalnız yaratır.
    - Eski bir Auth bu kapıya 404 döner: Platform kapalı başarısız olur, olay yeniden denenir. Hiçbir hesap sıfırlanmaz.
-   - Ters ara durumda (yeni Auth, eski Platform), eski Platform'un "Davet et"i var olan bir hesap için `trigger` göndermez. Yeni Auth bunu yalnız yaratır sayar ve `setupToken: null` döner. Eski Platform bu cevabı okuyamaz ve operatöre 502 gösterir. Hiçbir hesap sıfırlanmaz; Platform da güncellenince düzelir.
+   - **404 yeniden denemeleri tükenirse** (`Eventing:RetryCount`, taban 5; 10 sn'den 300 sn'ye üstel): olay tüketicinin hata
+     kuyruğunda bekler (MassTransit varsayılanı `TenantLifecycleNotification_error`; canlı adı ölçülmedi). Kiracının
+     `admin-invitation` adımı **Bekliyor** kalır ve ayrı bir uyarı **yoktur**; günlükte yalnız `Tenant admin provisioning
+     failed … StatusCode=404`. **Yeniden oynatma:** Auth güncellendikten sonra hata kuyruğundaki iletileri RabbitMQ yönetim
+     ekranından ("Move messages") ana kuyruğa taşıyın, ya da kiracı ekranında "Davet et"e basın. Olay yolu yalnız yaratır;
+     yeniden oynatmak var olan hesaba dokunmaz.
+   - Ters ara durum **yalnız `tenant-admin-created` kapısını bilmeyen Platform sürümleri için geçerlidir** (S2D-FIX2
+     `e3d3a7331`'den önceki her Platform). Yeni Auth ile böyle bir eski Platform birlikteyken, eski Platform'un "Davet et"i var
+     olan bir hesap için `trigger` göndermez. Yeni Auth bunu yalnız yaratır sayar ve `setupToken: null` döner. Eski Platform bu
+     cevabı okuyamaz ve operatöre 502 gösterir. Hiçbir hesap sıfırlanmaz; Platform da güncellenince düzelir.
 4. **Mongo sürümü:** gönderim satırlarının "etkileri bekliyor" dizini (`ix_notification_dispatches_permanent_effects_pending`)
    dizi değerli bir alanda `$eq` kısmi filtresi kullanır (`DateTimeOffset` `[ticks, offset]` olarak saklanır). Bu yalnız
    dev Mongo **7.0.28**'de ölçüldü. Canlı Mongo sürümü farklıysa deploy'dan sonra dizinin var olduğunu

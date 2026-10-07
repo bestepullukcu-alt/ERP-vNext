@@ -316,6 +316,7 @@
   <data name="SubscriptionAlreadyCurrent" xml:space="preserve"><value>Bu kiracının zaten canlı bir aboneliği var. Yenisini atamak yerine onu değiştirin ya da sonlandırın.</value></data>
   <data name="SubscriptionStale" xml:space="preserve"><value>Bu sayfa açıkken abonelik başka biri tarafından değiştirildi. Yeniden yüklendi; lütfen yeniden deneyin.</value></data>
   <data name="InvitationEmailNotSent" xml:space="preserve"><value>Yöneticinin hesabı hazır, ancak davet e-postası gönderilemedi. E-posta çalıştığında "Davet et"i yeniden kullanın.</value></data>
+  <data name="InvitationStepNotRecorded" xml:space="preserve"><value>Davet işlendi, ancak kiracı kaydındaki adımı kaydedilemedi; gösterilen adım güncel olmayabilir.</value></data>
   <data name="InviteRefusedRootMissing" xml:space="preserve"><value>Davet bağlantısı bu sunucudan gönderilemiyor: web adresi (AuthService:FrontendBaseUrl) ayarlanmamış.</value></data>
   <data name="InviteRefusedRootLoopback" xml:space="preserve"><value>Davet bağlantısı bu sunucudan gönderilemiyor: web adresi bu makineyi (localhost) gösteriyor.</value></data>
   <data name="InviteRefusedRootNotHttps" xml:space="preserve"><value>Davet bağlantısı bu sunucudan gönderilemiyor: web adresi https ile başlamalı.</value></data>

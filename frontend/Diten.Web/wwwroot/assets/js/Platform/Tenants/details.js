@@ -2303,6 +2303,10 @@ const TenantDetails = (function () {
         } else {
             window.showToast?.(L.InvitationSent || 'Invitation sent.', 'success');
         }
+        // BL-454 stage D FIX3 — the invitation was done, but its step on the tenant record could not be written.
+        if (result && result.invitationStepNotRecorded === true) {
+            window.showToast?.(L.InvitationStepNotRecorded || 'The invitation step could not be recorded on the tenant.', 'warning');
+        }
         await reloadAdminUsers();
         await loadTenantQuotaGovernance();
     };

@@ -316,6 +316,7 @@
   <data name="SubscriptionAlreadyCurrent" xml:space="preserve"><value>This tenant already has a live subscription. Change or end it instead of assigning another.</value></data>
   <data name="SubscriptionStale" xml:space="preserve"><value>The subscription was changed by someone else while this page was open. It has been reloaded; please try again.</value></data>
   <data name="InvitationEmailNotSent" xml:space="preserve"><value>The administrator's account is ready, but the invitation e-mail did not leave. Use "Invite" again once e-mail works.</value></data>
+  <data name="InvitationStepNotRecorded" xml:space="preserve"><value>The invitation was handled, but its step on the tenant record could not be saved; the step shown may be out of date.</value></data>
   <data name="InviteRefusedRootMissing" xml:space="preserve"><value>The invitation link cannot be sent from this server: its web address (AuthService:FrontendBaseUrl) is not set.</value></data>
   <data name="InviteRefusedRootLoopback" xml:space="preserve"><value>The invitation link cannot be sent from this server: its web address points at this machine (localhost).</value></data>
   <data name="InviteRefusedRootNotHttps" xml:space="preserve"><value>The invitation link cannot be sent from this server: its web address must start with https.</value></data>

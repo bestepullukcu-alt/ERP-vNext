@@ -218,8 +218,9 @@ public sealed partial class EmailShellDispatchTests
                 NullLogger<EmailDispatchJob>.Instance, ledger, rig.Templates, new EmailTemplateRenderer(), rig.Composer)
             .HandleAsync(new EmailDispatchJobArgs(rig.TenantId, row.Id), new BackgroundJobContext(), CancellationToken.None);
 
-        var (tenantId, email, reason) = Assert.Single(ledger.Calls);
+        var (tenantId, email, reason, dispatchId) = Assert.Single(ledger.Calls);
         Assert.Equal(rig.TenantId, tenantId);
+        Assert.Equal(row.Id, dispatchId); // FIX3 (1): the failing dispatch, by identity — never a clock
         Assert.Equal(row.To[0].Email, email);
         Assert.Equal(EmailDispatchJob.ReasonActionLinkNotRetryable, reason);
     }
@@ -267,11 +268,13 @@ public sealed partial class EmailShellDispatchTests
         var admin = StageDAdmin();
         admin.Status = TenantAdminUserStatus.Invited;
         admin.InvitedAt = DateTimeOffset.UtcNow.AddHours(-2);
+        var dispatchId = Guid.NewGuid();
+        admin.LastInvitationDispatchId = dispatchId; // this dispatch is the current invitation
         tenant.AdminUsers.Add(admin);
         tenant.ProvisioningSteps.Add(new TenantProvisioningStep { Key = "admin-invitation", Label = "Initial Admin Invitation", Status = "Completed" });
 
         await new TenantAdminInvitationLedger(new OneTenant(tenant))
-            .RecordUndeliveredAsync(tenant.Id, admin.Email, EmailDispatchJob.ReasonActionLinkNotRetryable, admin.InvitedAt.Value.AddMinutes(1), CancellationToken.None);
+            .RecordUndeliveredAsync(tenant.Id, admin.Email, EmailDispatchJob.ReasonActionLinkNotRetryable, dispatchId, CancellationToken.None);
 
         var step = Assert.Single(tenant.ProvisioningSteps);
         Assert.Equal("Failed", step.Status);
@@ -281,21 +284,22 @@ public sealed partial class EmailShellDispatchTests
     }
 
     [Theory]
-    [InlineData(TenantAdminUserStatus.Active, 0)]   // the administrator got in after all
-    [InlineData(TenantAdminUserStatus.Invited, 30)] // a NEWER invitation (InvitedAt after this one was queued) is the current one
-    public async Task The_ledger_leaves_the_step_alone_when_this_invitation_is_no_longer_the_current_state(TenantAdminUserStatus status, int newerByMinutes)
+    [InlineData(TenantAdminUserStatus.Active, false)]  // the administrator got in after all
+    [InlineData(TenantAdminUserStatus.Invited, true)]  // a NEWER invitation (another dispatch) is the current one
+    public async Task The_ledger_leaves_the_step_alone_when_this_invitation_is_no_longer_the_current_state(TenantAdminUserStatus status, bool newerInvitation)
     {
-        // FIX2 K5.
+        // FIX2 K5, by identity since FIX3 (1).
         var tenant = StageDTenant();
         var admin = StageDAdmin();
         admin.Status = status;
-        var queuedAt = DateTimeOffset.UtcNow.AddHours(-2);
-        admin.InvitedAt = queuedAt.AddMinutes(newerByMinutes);
+        var failingDispatch = Guid.NewGuid();
+        admin.InvitedAt = DateTimeOffset.UtcNow;
+        admin.LastInvitationDispatchId = newerInvitation ? Guid.NewGuid() : failingDispatch;
         tenant.AdminUsers.Add(admin);
         tenant.ProvisioningSteps.Add(new TenantProvisioningStep { Key = "admin-invitation", Label = "Initial Admin Invitation", Status = "Completed" });
 
         await new TenantAdminInvitationLedger(new OneTenant(tenant))
-            .RecordUndeliveredAsync(tenant.Id, admin.Email, EmailDispatchJob.ReasonActionLinkNotRetryable, queuedAt, CancellationToken.None);
+            .RecordUndeliveredAsync(tenant.Id, admin.Email, EmailDispatchJob.ReasonActionLinkNotRetryable, failingDispatch, CancellationToken.None);
 
         Assert.Equal("Completed", Assert.Single(tenant.ProvisioningSteps).Status);
         Assert.Empty(tenant.ActivityTimeline);
@@ -311,11 +315,12 @@ public sealed partial class EmailShellDispatchTests
 
     private static TenantAdminUser StageDAdmin() => new() { Id = Guid.NewGuid(), Name = "First Admin", Email = "first@tenant.test" };
 
-    private static AdminUserInvitationService Invitations(ScriptedAuth auth, string environment, string root, IMediator? mediator = null) => new(
+    private static AdminUserInvitationService Invitations(
+        ScriptedAuth auth, string environment, string root, IMediator? mediator = null, Microsoft.Extensions.Logging.ILogger<AdminUserInvitationService>? logger = null) => new(
         new SingleClientFactory(auth),
         mediator ?? new DispatchRecorder(),
         Options.Create(new AuthServiceOptions { BaseUrl = "http://auth.test", InternalApiKey = "stage-d-test-only-key", FrontendBaseUrl = root }),
-        NullLogger<AdminUserInvitationService>.Instance,
+        logger ?? NullLogger<AdminUserInvitationService>.Instance,
         new StageDEnvironment(environment));
 
     /// <summary>AuthService's tenant-admin-invited door: records the trigger; answers a token, or "the account exists".</summary>
@@ -328,6 +333,9 @@ public sealed partial class EmailShellDispatchTests
         public string? Body { get; init; }
         public string? TokenLessMessage { get; init; }
 
+        /// <summary>FIX3 (2) — a 200 whose body is exactly this (e.g. a live token with an expiry that cannot be read).</summary>
+        public string? OkBody { get; init; }
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Calls++;
@@ -337,6 +345,11 @@ public sealed partial class EmailShellDispatchTests
             if (Status != HttpStatusCode.OK)
             {
                 return new HttpResponseMessage(Status) { Content = new StringContent(Body ?? "{}", Encoding.UTF8, "application/json") };
+            }
+
+            if (OkBody is not null)
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OkBody, Encoding.UTF8, "application/json") };
             }
 
             if (TokenLessMessage is not null)
@@ -361,21 +374,23 @@ public sealed partial class EmailShellDispatchTests
         public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 
-    private InviteTenantAdminUserCommandHandler OperatorHandler(Tenant tenant, AdminUserInvitationService invitations) => new(
-        new OneTenant(tenant),
+    private InviteTenantAdminUserCommandHandler OperatorHandler(
+        Tenant tenant, AdminUserInvitationService invitations, ITenantRegistryRepository? tenants = null,
+        Microsoft.Extensions.Logging.ILogger<InviteTenantAdminUserCommandHandler>? logger = null) => new(
+        tenants ?? new OneTenant(tenant),
         Recorder<ICurrentUserContext>.Create((name, _) => name == "get_ActorName" ? "operator@platform.test" : null),
         invitations,
         Recorder<IQuotaService>.Create((name, _) => throw new InvalidOperationException("the quota is not asked here: " + name)),
         new StageDEnvironment("Production"),
-        NullLogger<InviteTenantAdminUserCommandHandler>.Instance);
+        logger ?? NullLogger<InviteTenantAdminUserCommandHandler>.Instance);
 
     private sealed class RecordingLedger : ITenantAdminInvitationLedger
     {
-        public List<(Guid TenantId, string Email, string Reason)> Calls { get; } = [];
+        public List<(Guid TenantId, string Email, string Reason, Guid DispatchId)> Calls { get; } = [];
 
-        public Task RecordUndeliveredAsync(Guid tenantId, string adminEmail, string reasonCode, DateTimeOffset invitationQueuedAt, CancellationToken ct)
+        public Task RecordUndeliveredAsync(Guid tenantId, string adminEmail, string reasonCode, Guid dispatchId, CancellationToken ct)
         {
-            Calls.Add((tenantId, adminEmail, reasonCode));
+            Calls.Add((tenantId, adminEmail, reasonCode, dispatchId));
             return Task.CompletedTask;
         }
     }

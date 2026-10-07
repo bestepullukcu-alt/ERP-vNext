@@ -220,6 +220,9 @@ public sealed partial class EmailShellDispatchTests
         public List<NotificationEventDispatchRequest> Requests { get; } = [];
         public bool Fails { get; init; }
 
+        /// <summary>FIX3 (1) — each queued dispatch gets its own id, as the pipeline gives one.</summary>
+        public List<Guid> DispatchIds { get; } = [];
+
         public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
         {
             if (request is DispatchNotificationByEventCodeCommand dispatch)
@@ -227,9 +230,17 @@ public sealed partial class EmailShellDispatchTests
                 Requests.Add(dispatch.Request);
             }
 
-            return Task.FromResult((TResponse)(object)(Fails
-                ? Response<NotificationDispatchDto>.Fail("provider down", 502, "PROVIDER_UNAVAILABLE")
-                : Response<NotificationDispatchDto>.Success(202)));
+            if (Fails)
+            {
+                return Task.FromResult((TResponse)(object)Response<NotificationDispatchDto>.Fail("provider down", 502, "PROVIDER_UNAVAILABLE"));
+            }
+
+            var id = Guid.NewGuid();
+            DispatchIds.Add(id);
+            var queued = new NotificationDispatchDto(
+                id, Guid.Empty, "tenant.invite.email", null, "en", "Email", "Smtp", null, "Queued", [], 0, 0, "", null, null, "{}",
+                DateTimeOffset.UtcNow, null, null, 0, null, null, null);
+            return Task.FromResult((TResponse)(object)Response<NotificationDispatchDto>.Success(queued, 202));
         }
 
         public Task<object?> Send(object request, CancellationToken cancellationToken = default) => throw new NotSupportedException();

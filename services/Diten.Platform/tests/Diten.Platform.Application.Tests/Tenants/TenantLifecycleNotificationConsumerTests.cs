@@ -146,7 +146,8 @@ public sealed class TenantLifecycleNotificationConsumerTests
     public async Task TenantCreated_WritesTheInvitationOutcomeOnTheTenantRecord(string? refusal, bool sent, string stepStatus)
     {
         var (tenant, admin, message) = CreatedWithAdmin();
-        var invitations = new RecordingInvitations { Result = new AdminUserInvitationResult("https://login.test", sent ? "https://app.test/x" : null, sent, sent, refusal) };
+        var dispatchId = sent ? Guid.NewGuid() : (Guid?)null;
+        var invitations = new RecordingInvitations { Result = new AdminUserInvitationResult("https://login.test", sent ? "https://app.test/x" : null, sent, sent, refusal, dispatchId) };
         var consumer = CreateConsumer(new InMemoryTenantRepository(tenant), new RecordingMediator(), invitations: invitations);
 
         await consumer.ConsumeAsync(message);
@@ -161,6 +162,7 @@ public sealed class TenantLifecycleNotificationConsumerTests
         }
 
         Assert.Equal(sent, admin.InvitedAt is not null);
+        Assert.Equal(dispatchId, admin.LastInvitationDispatchId); // FIX3 (1): the current invitation, by identity
         Assert.Contains(tenant.ActivityTimeline, e => e.EventType.StartsWith("tenant.admin_user.invit", StringComparison.Ordinal));
     }
 
