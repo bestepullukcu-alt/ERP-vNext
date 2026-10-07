@@ -60,6 +60,8 @@ public sealed partial class FgFix1HttpTests
         {
             Assert.True(inserted!.Succeeded, inserted.ErrorCode);
             Assert.False(burned!.Succeeded);
+            // FG FIX2 item 2 (F5): the burn is refused BECAUSE the insert's reservation write conflicted with its own.
+            Assert.Equal("CONCURRENCY_CONFLICT", burned.ErrorCode);
             Assert.NotNull(finalRow);
         }
         else

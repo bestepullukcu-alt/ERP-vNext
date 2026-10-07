@@ -119,7 +119,9 @@ const FinishedGoodsList = (function () {
         FINISHED_GOOD_NOT_FOUND: 'ErrorNotFound',
         // The store and the legal-entity scope.
         PRODUCT_IDENTITY_WORKFLOW_STORE_UNAVAILABLE: 'RefusalStoreUnavailable',
-        CODE_RESERVATION_BURN_TRANSACTION_UNAVAILABLE: 'RefusalStoreUnavailable',
+        // FG FIX2 K4: a standalone database cannot run the burn's transaction — a retry cannot succeed, an administrator
+        // must repair it (its own sentence; RefusalStoreUnavailable says "try again").
+        CODE_RESERVATION_BURN_TRANSACTION_UNAVAILABLE: 'RefusalBurnTransactionUnavailable',
         PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID: 'RefusalScopeUnavailable',
         LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE: 'RefusalScopeUnavailable',
         LEGAL_ENTITY_SCOPE_PROVIDER_TIMEOUT: 'RefusalScopeUnavailable',
@@ -130,6 +132,10 @@ const FinishedGoodsList = (function () {
         TRUSTED_SUBJECT_REQUIRED: 'ErrorUnauthorized',
         TENANT_CONTEXT_REQUIRED: 'ErrorUnauthorized'
     });
+    // FG FIX2 item 4 / K3: MDM adds this marker to a refusal the SAME key can still finish (the proxy then keeps the
+    // form attempt). The marker itself is never shown; whatever the first code, the sentence is RefusalRetrySameForm
+    // (send the same form again, no reload — a reload draws a new key). Without the marker nothing changes.
+    const retrySameKeyMarker = 'FINISHED_GOOD_CREATION_RETRY_SAME_KEY';
     const isCode = (value) => /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/.test(value);
     const statusMessage = (status) => ({
         400: L.ErrorValidation,
@@ -144,15 +150,20 @@ const FinishedGoodsList = (function () {
     })[status] || L.ErrorGateway;
     // A code → its sentence (or the status's, when unmapped — said on the console by status only); a sentence the
     // server already wrote (the proxy's own: ErrorInvalidFormAttempt, ErrorTimeout, GskuRequired…) is kept.
-    const failureSentence = (payload, status) => {
+    const failureSentence = (payload, status, fallback) => {
         const errors = payload?.errors || payload?.Errors || [];
-        const first = Array.isArray(errors) ? errors.find((error) => typeof error === 'string' && error.trim()) : '';
-        if (!first) return statusMessage(status);
+        if (Array.isArray(errors) && errors.some((error) => typeof error === 'string' && error.trim() === retrySameKeyMarker)) {
+            return L.RefusalRetrySameForm || fallback || statusMessage(status);
+        }
+        const first = Array.isArray(errors)
+            ? errors.find((error) => typeof error === 'string' && error.trim() && error.trim() !== retrySameKeyMarker)
+            : '';
+        if (!first) return fallback || statusMessage(status);
         const value = first.trim();
         if (!isCode(value)) return value;
         const key = refusalKeys[value];
         if (!key) console.warn('FinishedGoods: a refusal without a sentence mapping', status);
-        return (key && L[key]) || statusMessage(status);
+        return (key && L[key]) || fallback || statusMessage(status);
     };
     const getErrorMessage = async (response) => {
         let payload = {};
@@ -160,7 +171,9 @@ const FinishedGoodsList = (function () {
         return failureSentence(payload, response.status);
     };
     // FG FIX1 part B item 5: the next form attempt comes only from the server's answer — a new one after 201 or a
-    // definite refusal (so "try again" sends a new key), the same one after 202 / 5xx / a timeout (a replay).
+    // definite refusal (so "try again" sends a new key), the same one after 202 / 5xx / a timeout / a refusal MDM
+    // marks as resumable (a replay). FG FIX2 K1c: the proxy binds the attempt to its GSKU, so the same attempt sent for
+    // another GSKU comes back as a new one.
     const adoptFormAttempt = (payload) => {
         const nextToken = payload?.formAttemptToken || payload?.FormAttemptToken;
         const tokenInput = document.getElementById('formAttemptToken');
@@ -406,10 +419,13 @@ const FinishedGoodsList = (function () {
                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).hide();
                 dt?.ajax.reload(null, false);
                 if (response.status === 202) {
+                    // FG FIX2 K1: MDM's 202 reconciliation (success false, FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED
+                    // + its cause) is a warning in its own sentence — send the same form again; the attempt was kept.
+                    const unfinished = payload?.success === false || payload?.Success === false;
                     const message = code
                         ? (L.CreatePendingWithCode || '').replace('{0}', code)
-                        : L.CreatePending;
-                    window.showToast?.(message, 'warning');
+                        : (unfinished ? failureSentence(payload, response.status, L.CreatePending) : L.CreatePending);
+                    window.showToast?.(message || L.CreatePending, 'warning');
                 } else {
                     window.showToast?.((L.CreateSuccessWithCode || '').replace('{0}', code), 'success');
                 }

@@ -24,6 +24,10 @@ namespace Diten.Web.Tests.Controllers;
 /// item 5 — UAS-001: without the read key the page answers 403 with the access-denied surface and nothing of the
 /// register; without the create key there is no create form; every JSON endpoint without its key is a 403 body that
 /// never reaches MDM.
+/// FG FIX2 — K3: a refusal MDM marks FINISHED_GOOD_CREATION_RETRY_SAME_KEY keeps the attempt whatever its status;
+/// K2: GSKU_CHILD_ADMISSION_CONFLICT is a definite refusal again (its after-the-row path is 202 since part B);
+/// K1c: the attempt is bound to its GSKU at its first send — the same attempt for another GSKU reaches MDM with a new
+/// key (this replaces the K6 pin "same attempt + another GSKU = same key = MDM IDEMPOTENCY_KEY_CONFLICT").
 /// </summary>
 public sealed class FinishedGoodWebAccessTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
 {
@@ -43,15 +47,18 @@ public sealed class FinishedGoodWebAccessTests(WebApplicationFactory<Program> fa
         var wire = new Recorder(HttpStatusCode.Accepted);
 
         var first = await Controller(protection, wire, maker, Read, Create).Create(Model(), token, CancellationToken.None);
-        var again = await Controller(protection, wire, maker, Read, Create).Create(Model(), token, CancellationToken.None);
+        var again = await Controller(protection, wire, maker, Read, Create).Create(Model(), TokenIn(first), CancellationToken.None);
+        // The page's own token, sent again (an answer that never arrived): still the same key.
+        await Controller(protection, wire, maker, Read, Create).Create(Model(), token, CancellationToken.None);
 
         Assert.Equal(StatusCodes.Status202Accepted, Status(first));
         Assert.Equal(StatusCodes.Status202Accepted, Status(again));
-        Assert.Equal(2, wire.Keys.Count);
-        Assert.Equal(wire.Keys[0], wire.Keys[1]);
+        Assert.Equal(3, wire.Keys.Count);
+        Assert.Single(wire.Keys.Distinct());
         Assert.Matches("^[0-9A-F]{64}$", wire.Keys[0]);
-        // 202: the same attempt is handed back, so the browser repeats it.
-        Assert.Equal(token, TokenIn(again));
+        // 202: the same attempt (now bound to its GSKU) is handed back as it is, so the browser repeats it.
+        Assert.False(string.IsNullOrEmpty(TokenIn(first)));
+        Assert.Equal(TokenIn(first), TokenIn(again));
     }
 
     [Fact]
@@ -111,12 +118,17 @@ public sealed class FinishedGoodWebAccessTests(WebApplicationFactory<Program> fa
         var timeout = await Controller(protection, new Throwing(new TaskCanceledException("timed out")), maker, Read, Create)
             .Create(Model(), token, CancellationToken.None);
         var unreachable = await Controller(protection, new Throwing(new HttpRequestException("refused")), maker, Read, Create)
-            .Create(Model(), token, CancellationToken.None);
+            .Create(Model(), TokenIn(timeout), CancellationToken.None);
+        var wire = new Recorder(HttpStatusCode.Accepted);
+        await Controller(protection, wire, maker, Read, Create).Create(Model(), token, CancellationToken.None);
+        await Controller(protection, wire, maker, Read, Create).Create(Model(), TokenIn(unreachable), CancellationToken.None);
 
         Assert.Equal(StatusCodes.Status504GatewayTimeout, Status(timeout));
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, Status(unreachable));
-        Assert.Equal(token, TokenIn(timeout));
-        Assert.Equal(token, TokenIn(unreachable));
+        Assert.False(string.IsNullOrEmpty(TokenIn(timeout)));
+        Assert.Equal(TokenIn(timeout), TokenIn(unreachable));
+        // The attempt handed back is the same key as the page's.
+        Assert.Equal(wire.Keys[0], wire.Keys[1]);
     }
 
     // ------------------------------------------------------------------------------- FIX1 part B item 5 · K6
@@ -127,6 +139,10 @@ public sealed class FinishedGoodWebAccessTests(WebApplicationFactory<Program> fa
     [InlineData(HttpStatusCode.BadRequest, "IDEMPOTENCY_KEY_INVALID")]
     [InlineData(HttpStatusCode.Forbidden, "LEGAL_ENTITY_SCOPE_FORBIDDEN")]
     [InlineData(HttpStatusCode.NotFound, "GSKU_NOT_REFERENCEABLE")]
+    // FG FIX2 K2: answered only before this command's row exists (after it, part B answers 202) — a definite refusal.
+    [InlineData(HttpStatusCode.Conflict, "GSKU_CHILD_ADMISSION_CONFLICT")]
+    // Without MDM's marker, a transient-looking code is a definite refusal like any other.
+    [InlineData(HttpStatusCode.Conflict, "CONCURRENCY_CONFLICT")]
     public async Task A_definite_refusal_ends_the_attempt_and_the_retry_reaches_mdm_with_a_new_key(
         HttpStatusCode status, string code)
     {
@@ -153,10 +169,13 @@ public sealed class FinishedGoodWebAccessTests(WebApplicationFactory<Program> fa
     [InlineData(HttpStatusCode.GatewayTimeout, "LEGAL_ENTITY_SCOPE_PROVIDER_TIMEOUT")]
     [InlineData(HttpStatusCode.InternalServerError, "FINISHED_GOOD_BINDING_INVARIANT_VIOLATION")]
     [InlineData(HttpStatusCode.Unauthorized, "TRUSTED_SUBJECT_REQUIRED")]
-    // MDM resumes these two with the same key (the code stays reserved for the command; the admission completion of
-    // a written draft) — a new key could create a second draft.
+    // MDM resumes this one with the same key (the code stays reserved for the command) — a new key could orphan it.
     [InlineData(HttpStatusCode.Conflict, "CODE_RESERVATION_REQUIRED")]
-    [InlineData(HttpStatusCode.Conflict, "GSKU_CHILD_ADMISSION_CONFLICT")]
+    // FG FIX2 K3: MDM's marker keeps the attempt whatever the status — a transient consume refusal, and a refusal after
+    // this command's row was written (the late scope check).
+    [InlineData(HttpStatusCode.Conflict, "CONCURRENCY_CONFLICT,FINISHED_GOOD_CREATION_RETRY_SAME_KEY")]
+    [InlineData(HttpStatusCode.NotFound, "GSKU_NOT_REFERENCEABLE,FINISHED_GOOD_CREATION_RETRY_SAME_KEY")]
+    [InlineData(HttpStatusCode.Forbidden, "LEGAL_ENTITY_SCOPE_FORBIDDEN,FINISHED_GOOD_CREATION_RETRY_SAME_KEY")]
     public async Task An_open_or_resumable_answer_keeps_the_attempt_so_the_repeat_is_a_replay(
         HttpStatusCode status, string code)
     {
@@ -169,33 +188,71 @@ public sealed class FinishedGoodWebAccessTests(WebApplicationFactory<Program> fa
         var again = await Controller(protection, wire, maker, Read, Create).Create(Model(), TokenIn(first), CancellationToken.None);
 
         Assert.Equal((int)status, Status(first));
-        Assert.Equal(token, TokenIn(first));
-        Assert.Equal(token, TokenIn(again));
+        Assert.False(string.IsNullOrEmpty(TokenIn(first)));
+        Assert.Equal(TokenIn(first), TokenIn(again));
         Assert.Equal(wire.Keys[0], wire.Keys[1]);
+        // MDM's codes reach the browser as they are (index.js reads the first real one; the marker is never a sentence).
+        using var body = JsonDocument.Parse(JsonSerializer.Serialize(((ObjectResult)first).Value));
+        Assert.Equal(code.Split(','), body.RootElement.GetProperty("errors").EnumerateArray().Select(error => error.GetString()));
     }
 
+    // FG FIX2 K1c — replaces the K6 pin (the same attempt for another GSKU sent the same key and MDM answered
+    // IDEMPOTENCY_KEY_CONFLICT): the attempt is bound to its GSKU at its first send, so another GSKU is a new attempt.
     [Fact]
-    public async Task The_same_attempt_with_another_gsku_sends_the_same_key_and_passes_mdms_key_conflict_through()
+    public async Task The_same_attempt_with_another_gsku_reaches_mdm_with_a_new_key_and_the_same_gsku_with_the_same_key()
     {
         var protection = new EphemeralDataProtectionProvider();
         var maker = Guid.NewGuid();
         var token = IndexToken(protection, maker);
         var other = Guid.NewGuid();
-        var wire = new Scripted((HttpStatusCode.Accepted, null), (HttpStatusCode.Conflict, "IDEMPOTENCY_KEY_CONFLICT"));
+        var wire = new Scripted(
+            (HttpStatusCode.Accepted, "FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED"),
+            (HttpStatusCode.Created, null),
+            (HttpStatusCode.Accepted, "FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED"),
+            (HttpStatusCode.Created, null));
 
-        await Controller(protection, wire, maker, Read, Create).Create(Model(), token, CancellationToken.None);
-        var conflict = await Controller(protection, wire, maker, Read, Create)
-            .Create(new CreateFinishedGoodViewModel { GskuId = other }, token, CancellationToken.None);
+        // GSKU A, unfinished (202): the attempt comes back bound to A.
+        var unfinished = await Controller(protection, wire, maker, Read, Create).Create(Model(), token, CancellationToken.None);
+        var boundToA = TokenIn(unfinished);
+        // The same attempt for GSKU B: a new key — never A's.
+        var forB = await Controller(protection, wire, maker, Read, Create)
+            .Create(new CreateFinishedGoodViewModel { GskuId = other }, boundToA, CancellationToken.None);
+        // The same attempt for A again (the user went back to A): A's key — the replay that finishes A.
+        await Controller(protection, wire, maker, Read, Create).Create(Model(), boundToA, CancellationToken.None);
+        await Controller(protection, wire, maker, Read, Create).Create(Model(), boundToA, CancellationToken.None);
 
-        Assert.Equal(new[] { Gsku, other }, wire.Gskus);
-        Assert.Equal(wire.Keys[0], wire.Keys[1]);
-        Assert.Equal(StatusCodes.Status409Conflict, Status(conflict));
-        using var body = JsonDocument.Parse(JsonSerializer.Serialize(((ObjectResult)conflict).Value));
-        Assert.False(body.RootElement.GetProperty("success").GetBoolean());
-        // MDM's code reaches the browser as it is; index.js turns it into RefusalIdempotencyKeyConflict (vitest).
-        Assert.Equal("IDEMPOTENCY_KEY_CONFLICT", body.RootElement.GetProperty("errors")[0].GetString());
-        // A definite refusal: the browser gets a new attempt for its next send.
-        Assert.NotEqual(token, TokenIn(conflict));
+        Assert.Equal(StatusCodes.Status202Accepted, Status(unfinished));
+        Assert.Equal(StatusCodes.Status201Created, Status(forB));
+        Assert.Equal(new[] { Gsku, other, Gsku, Gsku }, wire.Gskus);
+        Assert.NotEqual(wire.Keys[0], wire.Keys[1]);
+        Assert.Equal(wire.Keys[0], wire.Keys[2]);
+        Assert.Equal(wire.Keys[0], wire.Keys[3]);
+        Assert.Matches("^[0-9A-F]{64}$", wire.Keys[1]);
+    }
+
+    [Fact]
+    public async Task An_unfinished_attempt_moved_to_another_gsku_stays_with_that_gsku()
+    {
+        var protection = new EphemeralDataProtectionProvider();
+        var maker = Guid.NewGuid();
+        var other = Guid.NewGuid();
+        var wire = new Scripted(
+            (HttpStatusCode.Accepted, "FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED"),
+            (HttpStatusCode.ServiceUnavailable, "PRODUCT_IDENTITY_WORKFLOW_STORE_UNAVAILABLE"),
+            (HttpStatusCode.Created, null));
+
+        var forA = await Controller(protection, wire, maker, Read, Create)
+            .Create(Model(), IndexToken(protection, maker), CancellationToken.None);
+        var forB = await Controller(protection, wire, maker, Read, Create)
+            .Create(new CreateFinishedGoodViewModel { GskuId = other }, TokenIn(forA), CancellationToken.None);
+        // B's attempt kept (503) is B's: its repeat for B is B's key.
+        await Controller(protection, wire, maker, Read, Create)
+            .Create(new CreateFinishedGoodViewModel { GskuId = other }, TokenIn(forB), CancellationToken.None);
+
+        Assert.Equal(StatusCodes.Status503ServiceUnavailable, Status(forB));
+        Assert.NotEqual(TokenIn(forA), TokenIn(forB));
+        Assert.NotEqual(wire.Keys[0], wire.Keys[1]);
+        Assert.Equal(wire.Keys[1], wire.Keys[2]);
     }
 
     // ------------------------------------------------------------------------------------------------ item 5
@@ -328,7 +385,8 @@ public sealed class FinishedGoodWebAccessTests(WebApplicationFactory<Program> fa
         }
     }
 
-    // MDM's answers in order: a code means MDM's failure envelope (isSuccessful false, errors [code], no data).
+    // MDM's answers in order: a code means MDM's failure envelope (isSuccessful false, errors [code], no data); a
+    // comma-separated code is several errors in that order.
     private sealed class Scripted(params (HttpStatusCode Status, string? Code)[] answers) : HttpMessageHandler
     {
         private int _next;
@@ -343,7 +401,7 @@ public sealed class FinishedGoodWebAccessTests(WebApplicationFactory<Program> fa
             var (status, code) = answers[_next++];
             var json = code is null
                 ? $"{{\"isSuccessful\":true,\"statusCode\":{(int)status},\"data\":{{\"finishedGoodId\":\"{Guid.NewGuid():D}\",\"canonicalCode\":\"FG-000001\",\"gskuId\":\"{Gsku:D}\",\"lifecycleStatus\":1,\"version\":1,\"bindingReconciliationRequired\":false}}}}"
-                : $"{{\"isSuccessful\":false,\"statusCode\":{(int)status},\"data\":null,\"errors\":[\"{code}\"]}}";
+                : $"{{\"isSuccessful\":false,\"statusCode\":{(int)status},\"data\":null,\"errors\":{JsonSerializer.Serialize(code.Split(','))}}}";
             return new HttpResponseMessage(status) { Content = new StringContent(json, Encoding.UTF8, "application/json") };
         }
     }

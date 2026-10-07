@@ -128,7 +128,7 @@ public sealed class CreateFinishedGoodDraftHandler
 
             if (replayScopeFailure is not null)
             {
-                return replayScopeFailure;
+                return KeepKey(replayScopeFailure);
             }
 
             // FG FIX1 item 1 (s21.5): the original create key of a cancelled Draft never comes back as a new Draft —
@@ -253,9 +253,13 @@ public sealed class CreateFinishedGoodDraftHandler
                 // The code stays reserved for this command (its repeat consumes it again): the release refuses while
                 // that reservation is live, so the admission stays with it.
                 await ReleaseAdmissionAsync(gsku.Id, commandId, admissionFingerprint, cancellationToken);
-                return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
-                    consume.ErrorCode ?? "CODE_RESERVATION_REQUIRED",
-                    409);
+                // FG FIX2 item 4: a refusal the same key resumes (the code stays reserved for this command, its repeat
+                // consumes it again) is said so — the screen keeps the key; a new key would leave this code and its
+                // admission ownerless until the age-based repair.
+                var consumeRefusal = consume.ErrorCode ?? "CODE_RESERVATION_REQUIRED";
+                return TransientConsumeRefusals.Contains(consumeRefusal)
+                    ? Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail([consumeRefusal, RetrySameKey], 409)
+                    : Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(consumeRefusal, 409);
             }
 
             reservation = consume.Reservation;
@@ -345,7 +349,7 @@ public sealed class CreateFinishedGoodDraftHandler
 
             if (actual.BindingState == CodeReservationBindingState.PendingIdentityWrite)
             {
-                return await EvaluateGskuScopeAsync(gskuId, cancellationToken)
+                return KeepKey(await EvaluateGskuScopeAsync(gskuId, cancellationToken))
                     ?? Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Success(
                         BuildDto(finishedGood, gskuCanonicalCode, actual.BindingState, true),
                         202);
@@ -361,10 +365,25 @@ public sealed class CreateFinishedGoodDraftHandler
 
         var completed = await CompleteAdmissionAndMapAsync(
             finishedGood, gskuCanonicalCode, commandId, admissionFingerprint, cancellationToken);
-        return await EvaluateGskuScopeAsync(gskuId, cancellationToken) ?? completed;
+        return KeepKey(await EvaluateGskuScopeAsync(gskuId, cancellationToken)) ?? completed;
     }
 
     public const string BurnRefused = "FINISHED_GOOD_CODE_BURN_REFUSED";
+
+    // FG FIX2 items 4 / K3: added to a refusal the SAME key can still finish — the row of this command is written (a
+    // late scope refusal, its creation unfinished), or its code is still reserved for it after a transient refusal.
+    // The screen keeps the key; a new key could create a second Finished Good or orphan the code. Never shown alone.
+    public const string RetrySameKey = "FINISHED_GOOD_CREATION_RETRY_SAME_KEY";
+
+    // FG FIX2 item 4: consume refusals that pass by themselves (another write moved the code's version; its repeat
+    // reads it again). Definite ones (identity / key conflicts, a terminal code, a full audit list) are not here.
+    private static readonly HashSet<string> TransientConsumeRefusals = new(StringComparer.Ordinal) { "CONCURRENCY_CONFLICT" };
+
+    private static Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>? KeepKey(
+        Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>? refusal) =>
+        refusal is null || refusal.Errors.Contains(RetrySameKey)
+            ? refusal
+            : Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail([.. refusal.Errors, RetrySameKey], refusal.StatusCode);
     // FG FIX1 item 7: the key the store cannot accept (the validator's code — one name for one cause).
     public const string CreationKeyInvalid = "IDEMPOTENCY_KEY_INVALID";
 

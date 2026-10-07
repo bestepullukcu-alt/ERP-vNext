@@ -92,6 +92,10 @@ public sealed class FinishedGoodsController : Controller
     // signed-in subject, 30 minutes, Data Protection) — a repeat after a lost answer, a timeout or a 202 sends the SAME
     // key, so MDM answers it as a replay instead of creating a second Finished Good. A fresh token comes with 201 and
     // (FG FIX1 part B item 5) with a definite refusal — see EndsTheAttempt.
+    // FG FIX2 K1c: an attempt is for one GSKU. Its first send binds the GSKU into the protected token (the same key, the
+    // same expiry); a send of that attempt for ANOTHER GSKU is a new attempt with a new key — never the old key, which
+    // MDM would refuse for the other GSKU (IDEMPOTENCY_KEY_CONFLICT). Done here, not in the browser, so it cannot be
+    // skipped: the browser only ever carries back what this proxy handed it.
     [HttpPost("api")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
@@ -102,7 +106,7 @@ public sealed class FinishedGoodsController : Controller
         if (!HasPermission(CreatePermission))
             return ForbiddenResult();
 
-        if (!TryReadFormAttempt(formAttemptToken, out var operationKey))
+        if (!TryReadFormAttempt(formAttemptToken, out var attempt, out var attemptExpiresAt))
         {
             return BadRequest(new
             {
@@ -120,6 +124,19 @@ public sealed class FinishedGoodsController : Controller
             });
         }
 
+        var currentAttempt = formAttemptToken!;
+        if (attempt.GskuId is { } boundGsku && boundGsku != model.GskuId)
+        {
+            attempt = NewFormAttempt(model.GskuId);
+            currentAttempt = ProtectFormAttempt(attempt, DateTimeOffset.UtcNow.Add(FormAttemptLifetime));
+        }
+        else if (attempt.GskuId is null)
+        {
+            attempt = attempt with { GskuId = model.GskuId };
+            currentAttempt = ProtectFormAttempt(attempt, attemptExpiresAt);
+        }
+
+        var operationKey = attempt.OperationKey;
         var payload = new
         {
             gskuId = model.GskuId,
@@ -135,13 +152,13 @@ public sealed class FinishedGoodsController : Controller
                 cancellationToken);
             if (!draft.Success || draft.Data is null)
             {
-                var nextAttempt = EndsTheAttempt(draft.StatusCode, draft.Errors) ? CreateFormAttemptToken() : formAttemptToken;
+                var nextAttempt = EndsTheAttempt(draft.StatusCode, draft.Errors) ? CreateFormAttemptToken() : currentAttempt;
                 return StatusCode(draft.StatusCode, new { success = false, errors = draft.Errors, formAttemptToken = nextAttempt });
             }
 
             return draft.StatusCode == StatusCodes.Status201Created
                 ? StatusCode(draft.StatusCode, new { success = true, data = draft.Data, formAttemptToken = CreateFormAttemptToken() })
-                : StatusCode(draft.StatusCode, new { success = true, data = draft.Data, formAttemptToken });
+                : StatusCode(draft.StatusCode, new { success = true, data = draft.Data, formAttemptToken = currentAttempt });
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
@@ -150,7 +167,7 @@ public sealed class FinishedGoodsController : Controller
             {
                 success = false,
                 errors = new[] { _localizer["ErrorTimeout"].Value },
-                formAttemptToken
+                formAttemptToken = currentAttempt
             });
         }
         catch (HttpRequestException exception)
@@ -160,7 +177,7 @@ public sealed class FinishedGoodsController : Controller
             {
                 success = false,
                 errors = new[] { _localizer["ErrorGateway"].Value },
-                formAttemptToken
+                formAttemptToken = currentAttempt
             });
         }
     }
@@ -171,10 +188,11 @@ public sealed class FinishedGoodsController : Controller
      * with it could never succeed and "try again" would be a lie. A new attempt is handed out instead — no Finished
      * Good exists for the refused key, so the new key cannot create a second one. 202, 401, 5xx and a timeout are not
      * definite (the draft may exist or the session is being refreshed): the same attempt is kept, so the repeat is a
-     * replay. Two 409 codes are not the end of the attempt either, because MDM itself resumes them with the same key:
-     * CODE_RESERVATION_REQUIRED (the code stays reserved for this command; its repeat consumes it again) and
-     * GSKU_CHILD_ADMISSION_CONFLICT (also answered after the draft row was written, when only the admission completion
-     * failed — a new key there could create a second draft; the same key replays and completes the first).
+     * replay. A definite status is not the end of the attempt either when MDM itself says the same key resumes it:
+     * CODE_RESERVATION_REQUIRED (the code stays reserved for this command; its repeat consumes it again), and — FG FIX2
+     * item 4 / K3 — any refusal carrying MDM's marker FINISHED_GOOD_CREATION_RETRY_SAME_KEY, whatever its status (a
+     * transient consume refusal, or a refusal after this command's row was written): a new key there could create a
+     * second Finished Good or leave the code ownerless. The marker is a signal, never a sentence (index.js skips it).
      */
     private static readonly HashSet<int> DefiniteRefusalStatuses =
     [
@@ -184,10 +202,13 @@ public sealed class FinishedGoodsController : Controller
         StatusCodes.Status409Conflict
     ];
 
+    // MDM's CreateFinishedGoodDraftHandler.RetrySameKey.
+    private const string RetrySameKeyMarker = "FINISHED_GOOD_CREATION_RETRY_SAME_KEY";
+
     private static readonly HashSet<string> ResumableWithTheSameKey = new(StringComparer.Ordinal)
     {
         "CODE_RESERVATION_REQUIRED",
-        "GSKU_CHILD_ADMISSION_CONFLICT"
+        RetrySameKeyMarker
     };
 
     private static bool EndsTheAttempt(int statusCode, IReadOnlyList<string> errors) =>
@@ -298,23 +319,27 @@ public sealed class FinishedGoodsController : Controller
 
     private bool HasPermission(string permission) => PermissionClaims.HasPermission(User, permission);
 
-    private string CreateFormAttemptToken()
-    {
-        var payload = new FormAttemptPayload(
-            ResolveUserSubject(),
-            Convert.ToHexString(RandomNumberGenerator.GetBytes(32)));
-        return _formAttemptProtector.Protect(JsonSerializer.Serialize(payload, _jsonOptions), FormAttemptLifetime);
-    }
+    private string CreateFormAttemptToken() =>
+        ProtectFormAttempt(NewFormAttempt(gskuId: null), DateTimeOffset.UtcNow.Add(FormAttemptLifetime));
 
-    private bool TryReadFormAttempt(string? token, out string operationKey)
+    private FormAttemptPayload NewFormAttempt(Guid? gskuId) => new(
+        ResolveUserSubject(),
+        Convert.ToHexString(RandomNumberGenerator.GetBytes(32)),
+        gskuId);
+
+    private string ProtectFormAttempt(FormAttemptPayload payload, DateTimeOffset expiresAt) =>
+        _formAttemptProtector.Protect(JsonSerializer.Serialize(payload, _jsonOptions), expiresAt);
+
+    private bool TryReadFormAttempt(string? token, out FormAttemptPayload attempt, out DateTimeOffset expiresAt)
     {
-        operationKey = string.Empty;
+        attempt = null!;
+        expiresAt = default;
         if (string.IsNullOrWhiteSpace(token))
             return false;
 
         try
         {
-            var json = _formAttemptProtector.Unprotect(token, out _);
+            var json = _formAttemptProtector.Unprotect(token, out expiresAt);
             var payload = JsonSerializer.Deserialize<FormAttemptPayload>(json, _jsonOptions);
             var subject = ResolveUserSubject();
             if (payload is null
@@ -327,7 +352,7 @@ public sealed class FinishedGoodsController : Controller
                 return false;
             }
 
-            operationKey = payload.OperationKey;
+            attempt = payload;
             return true;
         }
         catch (CryptographicException)
@@ -346,7 +371,8 @@ public sealed class FinishedGoodsController : Controller
         ?? User.Identity?.Name
         ?? string.Empty;
 
-    private sealed record FormAttemptPayload(string UserSubject, string OperationKey);
+    // GskuId: null until the attempt's first send binds it (FG FIX2 K1c).
+    private sealed record FormAttemptPayload(string UserSubject, string OperationKey, Guid? GskuId = null);
 
     private bool TryCreateRequest(HttpMethod method, string url, HttpContent? content, out HttpRequestMessage request)
     {

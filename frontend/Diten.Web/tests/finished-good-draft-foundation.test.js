@@ -65,7 +65,8 @@ describe('MOD-0290 Finished Good Draft Foundation', () => {
         expect(source).toContain('"FinishedGoodFormAttempt"');
         expect(source).toMatch(/CreateProtector\("Diten\.Web", "MOD-0290", "FinishedGoodFormAttempt", "v1"\)/);
         expect(source).toContain('.ToTimeLimitedDataProtector()');
-        expect(source).toContain('TryReadFormAttempt(formAttemptToken, out var operationKey)');
+        expect(source).toContain('TryReadFormAttempt(formAttemptToken, out var attempt, out var attemptExpiresAt)');
+        expect(source).toContain('var operationKey = attempt.OperationKey;');
         expect(source).toContain('idempotencyKey = operationKey');
         expect(source).toContain('_localizer["ErrorInvalidFormAttempt"]');
         expect(source).not.toContain('Guid.NewGuid().ToString("N")');
@@ -379,6 +380,112 @@ describe('MOD-0290 Finished Good Draft Foundation', () => {
             expect(document.getElementById('formAttemptToken').value).toBe('attempt-3');
         });
 
+        // FG FIX2 K3 + K1 — executed through submitCreate, as item 5's test.
+        function createHarness(responses, startToken = 'attempt-1') {
+            document.body.innerHTML = '';
+            let confirmed;
+            const selected = { val: () => 'g-1', text: () => 'GS-1', trigger: () => selected };
+            const run = harness(responses, {
+                $: () => selected,
+                window: { showConfirm: (message, callback) => { confirmed = callback; } }
+            });
+            document.body.insertAdjacentHTML('beforeend',
+                '<form id="formFinishedGood"><input type="hidden" name="__RequestVerificationToken" value="csrf">' +
+                `<input type="hidden" id="formAttemptToken" value="${startToken}"></form>` +
+                '<button id="btnSaveFinishedGood"></button>');
+            const sent = () => run.fetch.mock.calls.map(([, init]) => init.body.get('FormAttemptToken'));
+            const submit = async () => { run.api.submitCreate(); await confirmed(); };
+            const current = () => document.getElementById('formAttemptToken').value;
+            return { ...run, sent, submit, current };
+        }
+
+        it('K3: a refusal MDM marks resumable (409 / 404) reads RefusalRetrySameForm, keeps the attempt, and the repeat sends it again', async () => {
+            const marker = 'FINISHED_GOOD_CREATION_RETRY_SAME_KEY';
+            const { submit, sent, current, toast, warn } = createHarness([
+                json({ success: false, errors: ['CONCURRENCY_CONFLICT', marker], formAttemptToken: 'attempt-1a' }, 409),
+                json({ success: false, errors: ['GSKU_NOT_REFERENCEABLE', marker], formAttemptToken: 'attempt-1a' }, 404),
+                json({ success: true, data: { canonicalCode: 'FG-000009' }, formAttemptToken: 'attempt-2' }, 201)
+            ]);
+
+            await submit();
+            // 409 [CONCURRENCY_CONFLICT, marker]: never RefusalConcurrencyConflict's "reload".
+            expect(toast).toHaveBeenLastCalledWith('L:RefusalRetrySameForm', 'error');
+            expect(current()).toBe('attempt-1a');
+            await submit();
+            // 404 [GSKU_NOT_REFERENCEABLE, marker].
+            expect(toast).toHaveBeenLastCalledWith('L:RefusalRetrySameForm', 'error');
+            expect(current()).toBe('attempt-1a');
+            await submit();
+            expect(toast).toHaveBeenLastCalledWith('L:CreateSuccessWithCode', 'success');
+            // The repeats carried the kept attempt; only 201 moved to a new one.
+            expect(sent()).toEqual(['attempt-1', 'attempt-1a', 'attempt-1a']);
+            expect(current()).toBe('attempt-2');
+            toast.mock.calls.forEach(([message]) => expect(String(message)).not.toContain(marker));
+            expect(warn).not.toHaveBeenCalled();
+        });
+
+        it('K3: with the marker anywhere the sentence is RefusalRetrySameForm; without it the code\'s own sentence stays', () => {
+            const { api, warn } = harness();
+            const marker = 'FINISHED_GOOD_CREATION_RETRY_SAME_KEY';
+            expect(api.failureSentence({ errors: ['CONCURRENCY_CONFLICT', marker] }, 409)).toBe('L:RefusalRetrySameForm');
+            expect(api.failureSentence({ errors: ['GSKU_NOT_REFERENCEABLE', marker] }, 404)).toBe('L:RefusalRetrySameForm');
+            expect(api.failureSentence({ errors: [marker, 'CONCURRENCY_CONFLICT'] }, 409)).toBe('L:RefusalRetrySameForm');
+            expect(api.failureSentence({ errors: [marker] }, 404)).toBe('L:RefusalRetrySameForm');
+            // The cancel / list uses keep their sentence.
+            expect(api.failureSentence({ errors: ['CONCURRENCY_CONFLICT'] }, 409)).toBe('L:RefusalConcurrencyConflict');
+            expect(api.failureSentence({ errors: ['FINISHED_GOOD_DRAFT_CANCEL_CONFLICT'] }, 409)).toBe('L:RefusalConcurrencyConflict');
+            expect(warn).not.toHaveBeenCalled();
+            const english = read('Resources/Views/MasterDataManagement/FinishedGoods/FinishedGoodsIndex.en.resx');
+            const value = (key) => (english.match(new RegExp(`<data name="${key}" xml:space="preserve"><value>([^<]*)</value>`)) || [])[1];
+            expect(value('RefusalRetrySameForm')).toMatch(/same GSKU \(without reloading the page\)/);
+            expect(value('CreatePendingWithCode')).toMatch(/send it again \(without reloading the page\)/);
+            expect(read('Views/MasterDataManagement/FinishedGoods/_IndexL10n.cshtml')).toContain('RefusalRetrySameForm = Localizer["RefusalRetrySameForm"].Value');
+            expect(l10nScript()).toContain("'RefusalRetrySameForm'");
+        });
+
+        it('K1: MDM\'s 202 reconciliation (success false) is a warning that says send the same form again, and keeps the attempt', async () => {
+            const { submit, sent, current, toast } = createHarness([
+                json({ success: false, errors: ['FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED', 'GSKU_CHILD_ADMISSION_CONFLICT'],
+                    formAttemptToken: 'attempt-1g' }, 202),
+                json({ success: true, data: { canonicalCode: 'FG-000010' }, formAttemptToken: 'attempt-2' }, 201)
+            ]);
+
+            await submit();
+            expect(toast).toHaveBeenCalledTimes(1);
+            expect(toast).toHaveBeenLastCalledWith('L:RefusalReconciliationRequired', 'warning');
+            expect(toast).not.toHaveBeenCalledWith(expect.anything(), 'error');
+            expect(current()).toBe('attempt-1g');
+            await submit();
+            expect(sent()).toEqual(['attempt-1', 'attempt-1g']);
+            expect(toast).toHaveBeenLastCalledWith('L:CreateSuccessWithCode', 'success');
+        });
+
+        it('K1: a 202 without a mapped code or a draft code still reads as the pending sentence', async () => {
+            const { submit, toast } = createHarness([
+                json({ success: false, errors: [], formAttemptToken: 'attempt-1' }, 202),
+                json({ success: true, data: {}, formAttemptToken: 'attempt-1' }, 202)
+            ]);
+            await submit();
+            expect(toast).toHaveBeenLastCalledWith('L:CreatePending', 'warning');
+            await submit();
+            expect(toast).toHaveBeenLastCalledWith('L:CreatePending', 'warning');
+        });
+
+        it('K1 / K4: the reconciliation sentences say send the same form again; the standalone burn says an administrator must repair it', () => {
+            const english = read('Resources/Views/MasterDataManagement/FinishedGoods/FinishedGoodsIndex.en.resx');
+            const value = (key) => (english.match(new RegExp(`<data name="${key}" xml:space="preserve"><value>([^<]*)</value>`)) || [])[1];
+            ['CreatePending', 'RefusalReconciliationRequired'].forEach((key) => {
+                expect(value(key)).toMatch(/same GSKU/);
+                expect(value(key)).toMatch(/without reloading the page/);
+            });
+            expect(value('RefusalBurnTransactionUnavailable')).toMatch(/will not succeed/);
+            expect(value('RefusalBurnTransactionUnavailable')).toMatch(/administrator/);
+            const { api } = harness();
+            expect(api.refusalKeys.CODE_RESERVATION_BURN_TRANSACTION_UNAVAILABLE).toBe('RefusalBurnTransactionUnavailable');
+            expect(api.refusalKeys.PRODUCT_IDENTITY_WORKFLOW_STORE_UNAVAILABLE).toBe('RefusalStoreUnavailable');
+            expect(l10nScript()).toContain("'RefusalBurnTransactionUnavailable'");
+        });
+
         it('the list read failure shows a sentence, not a code', () => {
             const { api, toast } = harness();
             api.onListError.call({}, { status: 409, responseJSON: { errors: ['CONCURRENCY_CONFLICT'] } });
@@ -407,7 +514,10 @@ describe('MOD-0290 Finished Good Draft Foundation', () => {
             // A repository's own loop signal that never leaves MDM (the transactional insert retries on it and turns
             // the last one into the ambiguous 202): not a refusal, so it needs no sentence — but it must still exist.
             const internalOnly = {
-                [`${mdm}/Diten.MdmService.Persistence/Repositories/FinishedGoodRepository.cs`]: ['FINISHED_GOOD_INSERT_CONFLICT_RETRY']
+                [`${mdm}/Diten.MdmService.Persistence/Repositories/FinishedGoodRepository.cs`]: ['FINISHED_GOOD_INSERT_CONFLICT_RETRY'],
+                // FG FIX2 item 4 / K3: MDM's "the same key can still finish this" marker — read by the proxy (it keeps
+                // the attempt), skipped by failureSentence; never a sentence of its own.
+                [`${product}/Handlers/CommandHandlers/CreateFinishedGoodDraftHandler.cs`]: ['FINISHED_GOOD_CREATION_RETRY_SAME_KEY']
             };
             const internal = new Set(Object.entries(internalOnly).flatMap(([file, codes]) => {
                 codes.forEach((code) => expect(readRepo(file)).toContain(`"${code}"`));
@@ -441,6 +551,7 @@ describe('MOD-0290 Finished Good Draft Foundation', () => {
                 'PRODUCT_IDENTITY_WORKFLOW_STORE_UNAVAILABLE'].forEach((code) => expect(all.has(code)).toBe(true));
             const missing = [...all].filter((code) => !api.refusalKeys[code]);
             expect(missing).toEqual([]);
+            expect(api.refusalKeys.FINISHED_GOOD_CREATION_RETRY_SAME_KEY).toBeUndefined();
             const orphans = Object.keys(api.refusalKeys).filter((code) => !all.has(code));
             expect(orphans).toEqual([]);
             // Every sentence key is in the page's L10n payload.

@@ -19,7 +19,9 @@
         'RefusalCodeNotIssued', 'RefusalConcurrencyConflict', 'RefusalCreationNotSettled',
         'RefusalDraftAlreadyCancelled', 'RefusalDraftCancelled', 'RefusalGskuLifecycleBusy', 'RefusalGskuNotApproved',
         'RefusalIdempotencyKeyConflict', 'RefusalIdempotencyKeyInvalid', 'RefusalNotADraft',
-        'RefusalReconciliationRequired', 'RefusalScopeUnavailable', 'RefusalStoreUnavailable', 'RefusalWriteFailed'
+        'RefusalReconciliationRequired', 'RefusalScopeUnavailable', 'RefusalStoreUnavailable', 'RefusalWriteFailed',
+        // FG FIX2 K4.
+        'RefusalBurnTransactionUnavailable', 'RefusalRetrySameForm'
     ];
     const warnMissing = (dictionary) => requiredKeys.forEach((key) => {
         if (!dictionary[key]) console.warn(`[L10N WARNING] Missing localization key: ${key}`);

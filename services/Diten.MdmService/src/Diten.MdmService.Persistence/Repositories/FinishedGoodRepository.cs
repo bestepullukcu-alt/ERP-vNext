@@ -359,6 +359,11 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
     }
 
     internal const int InsertAttempts = 4;
+
+    // FG FIX2 item 2 (CT-approved, the LSKU BeforeReservationWriteForTests twin): tests only — a barrier inside the
+    // insert's transaction, before its reservation write. Internal, null by default, no configuration path; only
+    // Diten.MdmService.Api.Tests sees it (InternalsVisibleTo).
+    internal Func<Task>? BeforeReservationWriteForTests { get; set; }
     private const string InsertConflictRetry = "FINISHED_GOOD_INSERT_CONFLICT_RETRY";
 
     private async Task<FinishedGoodCreateResult> InsertBoundToLiveCodeAsync(FinishedGood finishedGood,
@@ -368,6 +373,7 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
         try
         {
             session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+            if (BeforeReservationWriteForTests is { } barrier) await barrier();
             // UpdatedAt only: metadata outside the reservation's Version and its audit chain; it exists to make an
             // overlapping burn and this insert conflict.
             var touched = await _reservations.UpdateOneAsync(session,
