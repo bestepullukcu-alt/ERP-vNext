@@ -75,7 +75,7 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 Plan: [E2E-TUTUKON-content-to-visit-plan.md](E2E-TUTUKON-content-to-visit-plan.md).
 - ☑ E0 envanter (salt okuma; 2026-10-07 — içerik / yol / yolculuk / uygun segment yok, oyun yeniden kurulmalı)
 - ☑ E1 aktif segment `E2E-TUT-SINDIRIM` — **yalnız gastroenteroloji** (910 üye); bulgular E1-B1 segment düzenleyici referans değerleri boş (hata), E1-B2 10K aday sınırı (aile / dahiliye kurulamıyor), E1-B3 global-products 400
-- ☐ E2 içerik
+- ☑ E2 içerik — `KC-2026-E70D11` (detaylama) + `KC-2026-2EC045` (kullanım / dozaj) yayımlandı; bulgular E2-B1 ürün seçici 100 sınırı (TUTUKON yok), E2-B2 içerik onaysız yayımlanıyor (karar), E2-B3 ham kodlar
 - ☐ E3 yol
 - ☐ E4 yolculuk
 - ☐ E5 oyun yeni sürüm (yeni segment + yolculuk)

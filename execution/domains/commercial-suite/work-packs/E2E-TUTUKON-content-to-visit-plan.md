@@ -31,7 +31,7 @@ doktor → aktif segment → aktif oyun (STR-TUTUKON) → ürün satırı → ya
 |---|---|---|---|---|
 | E0 ☑ | **Envanter (yalnız okuma):** TUTUKON konu / başlık / içerik / yol / yolculuk / oyun / segment / sıklık politikası / iddia; Beste'nin 4 ilçesindeki gastro + aile + dahiliye doktor sayısı | CT (Mongo + API, salt okuma) | Eksikler listesi; hangi adımların gerekli olduğu kesinleşir | ☐ |
 | E1 ☑ | **Segment:** `E2E-TUT-SINDIRIM` (kişi; uzmanlık ∈ {gastroenteroloji, aile hekimliği, iç hastalıkları}) oluştur → değerlendir → **etkinleştir** | CT, Segmentler sayfası (Beste) | Üye sayısı > 0; Beste'nin ilçelerindeki doktorlardan üye var | ☐ |
-| E2 | **İçerik:** en az 2 KnowledgeContent (TUTUKON, tr) — promo detaylama + bir non-promo bilgi. Gerekirse iddia bağı. Yayımla (onay akışı varsa sema) | CT (Beste) + kullanıcı sema girişi (onay) | İçerikler `published`, tr | ☐ |
+| E2 ☑ | **İçerik:** en az 2 KnowledgeContent (TUTUKON, tr) — promo detaylama + bir non-promo bilgi. Gerekirse iddia bağı. Yayımla (onay akışı varsa sema) | CT (Beste) + kullanıcı sema girişi (onay) | İçerikler `published`, tr | ☐ |
 | E3 | **Yol (KnowledgePath):** içerikleri adım olarak içeren yol → gönder → onay → yayımla | CT + sema | Yol `released` / yayımlanmış sürüm | ☐ |
 | E4 | **Yolculuk (ContentEngagementJourney):** en az 2 aşama, her aşama yola bağlı → yayımla | CT (+ sema SoD gerekirse) | Yolculuk yayımlanmış, aşamalar sıralı | ☐ |
 | E5 | **Oyun:** STR-TUTUKON'un **yeni sürümü** — segment bağlaması `E2E-TUT-SINDIRIM`, ürün satırı TUTUKON → E4 yolculuğu, sıklık politikası → etkinleştir | CT (Beste) | Aktif oyun yeni segmente bağlı; eski sürüm "superseded" | ☐ |
@@ -120,3 +120,17 @@ doktor → aktif segment → aktif oyun (STR-TUTUKON) → ürün satırı → ya
   - Karar / iş gerekir: ek blokları aday sorgusuna indirmek ya da sınır stratejisi.
 - **E1-B3:** Segment oluşturma sayfasında `GET /CRM/Segments/api/global-products?pageSize=200` → **400** (ürün seçicisi; incelenecek).
 - **R-1 kapandı:** değerlendirici büyük / küçük harf duyarsız. ALMIBA "Nephrology" kuralı 611 üye veriyor.
+### E2 — İçerik (CT, 2026-10-07; Beste girişi) ☑
+**Yazmalar (Bilgi Bankası → İçerik Oluştur, sonra Düzenle → durum):**
+| Kod | Başlık | Tür | Başlık (topic) | Dil | Gövde ref. | Durum |
+|---|---|---|---|---|---|---|
+| `KC-2026-E70D11` (`2b4d5763…`) | E2E-TUT — TUTUKON: Sindirim konforu (detaylama) | presentation | TOPIC-002 Sindirim Konforu Desteği | tr | `e2e-tut/sindirim-konforu-detaylama-v1` | **published** |
+| `KC-2026-2EC045` (`ad5ed530…`) | E2E-TUT — TUTUKON: Kullanım ve dozaj | brochure | TOPIC-003 Kullanım ve Dozaj | tr | `e2e-tut/kullanim-ve-dozaj-v1` | **published** |
+
+Konu SUBJ-002 (TUTUKON). Kitle profili boş (alan zorunlu değil). Ürün bağlanamadı (E2-B1). Mongo'da doğrulandı.
+
+**Bulgular:**
+- **E2-B1 (hata):** İçerik formundaki **Ürün** seçicisi yalnız ilk 100 ürünü listeliyor (kiracıda 176). `GP-000000000063 — TUTUKON` listede yok → içerik ürüne bağlanamıyor.
+- **E2-B2 (ürün / uyum kararı):** İçerik durumu formdan doğrudan `published` seçilerek yayımlanıyor; inceleme / onay (MLR) adımı yok. Yayın kapısı yalnız bağlı iddia varsa devreye giriyor. Tanıtım içeriği için onay akışı gerekip gerekmediği karar gerektirir.
+- **E2-B3 (bilinen):** İçerik türü / durum / kaynak / dil açılırları ham kod gösteriyor (presentation, draft, manual, tr).
+- Not: düzenlemeden sonra kayıttaki `Version` 0 kaldı (iyimser eşzamanlılık sayacı artmıyor olabilir) → E2E-FIX'te kontrol.
