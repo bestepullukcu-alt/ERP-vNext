@@ -31,6 +31,8 @@ public static class DependencyInjection
         services.AddScoped<LskuBackgroundScope>();
         services.AddSingleton<IProductLegalEntityScopeActivationDebt>(ProductLegalEntityScopeActivationDebt.Instance);
         services.AddScoped<ProductLegalEntityScopeProductAccess>();
+        // MOD-0290-FU04 S3 — what the four stock-behaviour handlers share (permission, scope, write shape).
+        services.AddScoped<Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourContext>();
 
         return services;
     }

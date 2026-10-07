@@ -7,6 +7,7 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Commands;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Handlers.CommandHandlers;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Tests.Audit;
 using Diten.MdmService.Domain.Entities;
@@ -45,7 +46,10 @@ public sealed class ProductLegalEntityScopeIntegrationTests
 
     public static TheoryData<string> NewlyFencedWriters => new()
     {
-        nameof(CancelLskuDraftCommand), nameof(CancelFinishedGoodDraftCommand), nameof(RepairLskuChildAdmissionsCommand)
+        nameof(CancelLskuDraftCommand), nameof(CancelFinishedGoodDraftCommand), nameof(RepairLskuChildAdmissionsCommand),
+        // WP-MDM-ITEM-MASTER S3 (CT decision R9): the four stock-behaviour writers, born fenced.
+        nameof(SetGskuStockBehaviourCommand), nameof(SetLskuStockBehaviourCommand),
+        nameof(SetFinishedGoodStockBehaviourCommand), nameof(AssignFinishedGoodGtinCommand)
     };
 
     [Theory]
@@ -205,11 +209,21 @@ public sealed class ProductLegalEntityScopeIntegrationTests
             nameof(CancelFinishedGoodDraftCommand) => await RunAsync(coordinator,
                 new CancelFinishedGoodDraftCommand(Guid.NewGuid(), 1, Guid.NewGuid(), "CREATED_BY_MISTAKE"),
                 () => new FinishedGoodDraftCancellationResult(Guid.NewGuid(), 2, default, false)),
+            nameof(SetGskuStockBehaviourCommand) => await RunAsync(coordinator,
+                new SetGskuStockBehaviourCommand(Guid.NewGuid(), 1, Guid.NewGuid(), LotControlled: true), StockResult),
+            nameof(SetLskuStockBehaviourCommand) => await RunAsync(coordinator,
+                new SetLskuStockBehaviourCommand(Guid.NewGuid(), 1, Guid.NewGuid(), true), StockResult),
+            nameof(SetFinishedGoodStockBehaviourCommand) => await RunAsync(coordinator,
+                new SetFinishedGoodStockBehaviourCommand(Guid.NewGuid(), 1, Guid.NewGuid(), LotControlled: true), StockResult),
+            nameof(AssignFinishedGoodGtinCommand) => await RunAsync(coordinator,
+                new AssignFinishedGoodGtinCommand(Guid.NewGuid(), 1, Guid.NewGuid(), "00012345678905"), StockResult),
             _ => await RunAsync(coordinator,
                 new RepairLskuChildAdmissionsCommand(),
                 () => new LskuChildAdmissionRepairResult(0, 0, []))
         };
     }
+
+    private static StockBehaviourResult StockResult() => new(Guid.NewGuid(), 2, true, false);
 
     private static async Task<(int Status, string? Code, bool ReachedHandler)> RunAsync<TCommand, TResult>(
         ProductLegalEntityScopeWriteFenceCoordinator coordinator, TCommand command, Func<TResult> result)
