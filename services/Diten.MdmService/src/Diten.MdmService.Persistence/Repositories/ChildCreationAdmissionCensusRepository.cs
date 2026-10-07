@@ -22,10 +22,16 @@ public sealed class ChildCreationAdmissionCensusRepository(IMongoDatabase databa
     public async Task<long> CountPendingFinishedGoodCancellationsAsync(DateTimeOffset requestedBeforeUtc,
         CancellationToken cancellationToken = default)
     {
+        // FG FIX1 review m3: only the fields the proof reads (the partial index on DraftCancellation.RequestedAtUtc,
+        // FinishedGoodRepository.EnsureIndexes, serves the filter) — not every cancelled FG's whole document.
         var candidates = await database.GetCollection<FinishedGood>("mdm_finished_goods")
             .Find(Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
                   & Builders<FinishedGood>.Filter.Ne(x => x.DraftCancellation, null)
                   & Builders<FinishedGood>.Filter.Lt(x => x.DraftCancellation!.RequestedAtUtc, requestedBeforeUtc))
+            .Project<FinishedGood>(Builders<FinishedGood>.Projection
+                .Include(x => x.Id).Include(x => x.TenantId).Include(x => x.CanonicalCode)
+                .Include(x => x.CreationCommandId).Include(x => x.DraftCancellation)
+                .Include("AuditIntents.IntentId").Include(x => x.AuditIntentReceipts))
             .ToListAsync(cancellationToken);
         return candidates.LongCount(fg => Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle
             .FinishedGoodDraftCancellationProof.Disposition(fg) != Diten.MdmService.Domain.ValueObjects

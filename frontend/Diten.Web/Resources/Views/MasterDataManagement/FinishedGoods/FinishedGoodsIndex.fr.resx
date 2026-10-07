@@ -11,4 +11,27 @@
   <data name="Export" xml:space="preserve"><value>Exporter</value></data>
   <data name="ColumnVisibility" xml:space="preserve"><value>Visibilité des colonnes</value></data>
   <data name="Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve"><value>Page actuelle uniquement</value></data>
+  <data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>Ce formulaire a expiré ou appartient à une autre session. Rechargez la page et réessayez.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>Le service des produits finis n'a pas répondu à temps. Réessayez — la même demande ne créera pas de second brouillon.</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="CancellationPendingAudit" xml:space="preserve"><value>Annulation en attente d'audit</value></data>
+  <data name="RefusalGskuNotApproved" xml:space="preserve"><value>Le GSKU sélectionné n'a pas d'identité approuvée. Un produit fini ne peut être créé que sous un GSKU approuvé.</value></data>
+  <data name="RefusalGskuLifecycleBusy" xml:space="preserve"><value>Une demande de correction ou de retrait est en cours pour le GSKU sélectionné. Un produit fini pourra être créé sous ce GSKU une fois cette demande tranchée.</value></data>
+  <data name="RefusalAdmissionCapacity" xml:space="preserve"><value>Trop de produits finis sont en cours de création sous ce GSKU. Réessayez dans quelques minutes.</value></data>
+  <data name="RefusalIdempotencyKeyConflict" xml:space="preserve"><value>Ce formulaire a déjà servi pour une autre demande. Rechargez la page et recommencez.</value></data>
+  <data name="RefusalIdempotencyKeyInvalid" xml:space="preserve"><value>La clé de demande de ce formulaire n'a pas été acceptée. Rechargez la page et réessayez.</value></data>
+  <data name="RefusalDraftCancelled" xml:space="preserve"><value>Le brouillon créé par ce formulaire a été annulé. Rechargez la page pour créer un nouveau produit fini.</value></data>
+  <data name="RefusalDraftAlreadyCancelled" xml:space="preserve"><value>Ce brouillon de produit fini a déjà été annulé.</value></data>
+  <data name="RefusalCreationNotSettled" xml:space="preserve"><value>Ce produit fini est encore en cours de création. Réessayez une fois sa création terminée.</value></data>
+  <data name="RefusalNotADraft" xml:space="preserve"><value>Seul un produit fini à l'état de brouillon peut être annulé.</value></data>
+  <data name="RefusalConcurrencyConflict" xml:space="preserve"><value>Quelqu'un d'autre a modifié cet enregistrement en même temps. Rechargez la page et réessayez.</value></data>
+  <data name="RefusalAuditBusy" xml:space="preserve"><value>La piste d'audit ne peut pas enregistrer cette modification pour le moment. Réessayez dans quelques minutes.</value></data>
+  <data name="RefusalCodeBurnRefused" xml:space="preserve"><value>Le produit fini n'a pas été créé et son code réservé n'a pas pu être retiré. Le code reste bloqué jusqu'à ce que la réparation de l'administrateur le libère ; réessayez plus tard.</value></data>
+  <data name="RefusalCodeNotIssued" xml:space="preserve"><value>Le code du produit fini n'a pas pu être attribué. Réessayez ; si le problème persiste, contactez votre administrateur.</value></data>
+  <data name="RefusalWriteFailed" xml:space="preserve"><value>Le produit fini n'a pas pu être enregistré. Réessayez ; si le problème persiste, contactez votre administrateur.</value></data>
+  <data name="RefusalReconciliationRequired" xml:space="preserve"><value>Le brouillon est en cours de finalisation. Consultez la liste dans un instant — renvoyer le même formulaire ne créera pas de second brouillon.</value></data>
+  <data name="RefusalBindingInvariant" xml:space="preserve"><value>Les enregistrements de ce produit fini ne concordent pas ; il a donc été retenu. Signalez-le à votre administrateur.</value></data>
+  <data name="RefusalStoreUnavailable" xml:space="preserve"><value>Le référentiel des identités produit est indisponible pour le moment. Réessayez — la même demande ne créera pas de second brouillon.</value></data>
+  <data name="RefusalScopeUnavailable" xml:space="preserve"><value>Votre accès aux entités juridiques n'a pas pu être vérifié pour le moment. Réessayez plus tard.</value></data>
 </root>

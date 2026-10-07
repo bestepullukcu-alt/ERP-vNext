@@ -13,6 +13,8 @@
         <div id="formFinishedGoodAlert" class="alert alert-danger d-none" role="alert"></div>
         <form id="formFinishedGood" class="pt-0" novalidate>
             @Html.AntiForgeryToken()
+            @* FG FIX1 item 4: the form attempt (server-drawn, user-bound, 30 min) — never a key the browser makes. *@
+            <input type="hidden" id="formAttemptToken" name="FormAttemptToken" value="@ViewData["FinishedGoodFormAttemptToken"]" />
             <div class="row g-4">
                 <div class="col-12">
                     <label for="gskuId" class="form-label fw-medium">

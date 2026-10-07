@@ -43,9 +43,19 @@ public static class FinishedGoodDraftCancellationProof
     {
         ArgumentNullException.ThrowIfNull(finishedGood);
         if (finishedGood.DraftCancellation is not { } cancellation) return FinishedGoodCancellationDisposition.None;
-        if (cancellation.IntentId == Guid.Empty || string.IsNullOrEmpty(cancellation.IdempotencyKey)
-            || string.IsNullOrEmpty(cancellation.EvidenceHash)
+        // FIX1 review m4: TOTAL — a corrupt document (no tenant, missing facts) is PendingAudit, never an exception
+        // that loses a whole count or blocker read.
+        if (finishedGood.TenantId == Guid.Empty || finishedGood.Id == Guid.Empty
+            || cancellation.IntentId == Guid.Empty || string.IsNullOrEmpty(cancellation.IdempotencyKey)
+            || string.IsNullOrEmpty(cancellation.EvidenceHash) || cancellation.OperationId == Guid.Empty
+            || cancellation.RequesterSubjectId == Guid.Empty || string.IsNullOrWhiteSpace(cancellation.ReasonCode)
+            || cancellation.BaseVersion < 0 || cancellation.BaseVersion == int.MaxValue
             || finishedGood.AuditIntents.Any(x => x.IntentId == cancellation.IntentId))
+            return FinishedGoodCancellationDisposition.PendingAudit;
+        // FIX1 review m6: the decision's facts derived again from the FG and compared, before any receipt is read.
+        var expected = FinishedGoodDraftCancellationAuditIntentFactory.Expected(finishedGood, cancellation);
+        if (expected.IntentId != cancellation.IntentId || expected.IdempotencyKey != cancellation.IdempotencyKey
+            || expected.EvidenceHash != cancellation.EvidenceHash || expected.Fingerprint != cancellation.Fingerprint)
             return FinishedGoodCancellationDisposition.PendingAudit;
         var receipts = finishedGood.AuditIntentReceipts.Where(x => x.IntentId == cancellation.IntentId).Take(2).ToArray();
         if (receipts.Length != 1) return FinishedGoodCancellationDisposition.PendingAudit;
@@ -68,9 +78,23 @@ public static class FinishedGoodDraftCancellationProof
 // completion evidence, not a second business event.
 public static class FinishedGoodDraftCancellationAuditIntentFactory
 {
-    public static string Fingerprint(Guid tenantId, Guid finishedGoodId, int expectedVersion, string reasonCode) =>
+    // FIX1 review m1: the actor is part of the request — another actor with the same key is a conflict, not a replay.
+    public static string Fingerprint(Guid tenantId, Guid finishedGoodId, int expectedVersion, string reasonCode,
+        Guid actorId) =>
         Convert.ToHexString(SHA256.HashData(Encode(tenantId.ToString("D"), finishedGoodId.ToString("D"),
-            expectedVersion, reasonCode))).ToLowerInvariant();
+            expectedVersion, reasonCode, actorId.ToString("D")))).ToLowerInvariant();
+
+    // FIX1 review m6: the facts a cancellation of this FG must carry, derived again from the FG's immutable data and
+    // the decision's own (operation, actor, reason, base version) — never trusted from the stored copies alone.
+    public static (Guid IntentId, string IdempotencyKey, string EvidenceHash, string Fingerprint) Expected(
+        FinishedGood finishedGood, FinishedGoodDraftCancellation cancellation)
+    {
+        var intent = Create(finishedGood, cancellation.BaseVersion, cancellation.OperationId,
+            cancellation.RequesterSubjectId, cancellation.ReasonCode, DateTimeOffset.UnixEpoch);
+        return (intent.IntentId, intent.IdempotencyKey, intent.EvidenceHash,
+            Fingerprint(finishedGood.TenantId, finishedGood.Id, cancellation.BaseVersion, cancellation.ReasonCode,
+                cancellation.RequesterSubjectId));
+    }
 
     public static LocalAuditIntent Create(
         FinishedGood finishedGood, int expectedVersion, Guid operationId, Guid actorId, string reasonCode,

@@ -12,4 +12,27 @@
   <data name="Export" xml:space="preserve"><value>Export</value></data>
   <data name="ColumnVisibility" xml:space="preserve"><value>Column Visibility</value></data>
   <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve"><value>Current page only</value></data>
+  <data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>This form has expired or belongs to another session. Reload the page and try again.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>The Finished Good service did not answer in time. Try again — the same request will not create a second draft.</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="CancellationPendingAudit" xml:space="preserve"><value>Cancellation awaiting audit</value></data>
+  <data name="RefusalGskuNotApproved" xml:space="preserve"><value>The selected GSKU is not identity-approved. A Finished Good can be created only under an approved GSKU.</value></data>
+  <data name="RefusalGskuLifecycleBusy" xml:space="preserve"><value>The selected GSKU has a correction or retirement request in progress. A Finished Good can be created under it once that request is decided.</value></data>
+  <data name="RefusalAdmissionCapacity" xml:space="preserve"><value>Too many Finished Goods are being created under this GSKU right now. Try again in a few minutes.</value></data>
+  <data name="RefusalIdempotencyKeyConflict" xml:space="preserve"><value>This form was already used for a different request. Reload the page and start again.</value></data>
+  <data name="RefusalIdempotencyKeyInvalid" xml:space="preserve"><value>The request key of this form was not accepted. Reload the page and try again.</value></data>
+  <data name="RefusalDraftCancelled" xml:space="preserve"><value>The draft this form created has been cancelled. Reload the page to create a new Finished Good.</value></data>
+  <data name="RefusalDraftAlreadyCancelled" xml:space="preserve"><value>This Finished Good draft has already been cancelled.</value></data>
+  <data name="RefusalCreationNotSettled" xml:space="preserve"><value>This Finished Good is still being created. Try again once its creation has completed.</value></data>
+  <data name="RefusalNotADraft" xml:space="preserve"><value>Only a Finished Good in Draft can be cancelled.</value></data>
+  <data name="RefusalConcurrencyConflict" xml:space="preserve"><value>Someone else changed this record at the same time. Reload the page and try again.</value></data>
+  <data name="RefusalAuditBusy" xml:space="preserve"><value>The audit trail cannot take this change right now. Try again in a few minutes.</value></data>
+  <data name="RefusalCodeBurnRefused" xml:space="preserve"><value>The Finished Good was not created and its reserved code could not be withdrawn. The code stays held until the administrator's repair releases it; try again later.</value></data>
+  <data name="RefusalCodeNotIssued" xml:space="preserve"><value>The Finished Good code could not be issued. Try again; if this repeats, contact your administrator.</value></data>
+  <data name="RefusalWriteFailed" xml:space="preserve"><value>The Finished Good could not be saved. Try again; if this repeats, contact your administrator.</value></data>
+  <data name="RefusalReconciliationRequired" xml:space="preserve"><value>The draft is still being finalised. Check the list in a moment — sending the same form again will not create a second draft.</value></data>
+  <data name="RefusalBindingInvariant" xml:space="preserve"><value>This Finished Good's records do not agree, so it has been held back. Report it to your administrator.</value></data>
+  <data name="RefusalStoreUnavailable" xml:space="preserve"><value>The product identity store is not available right now. Try again — the same request will not create a second draft.</value></data>
+  <data name="RefusalScopeUnavailable" xml:space="preserve"><value>Your legal-entity access could not be checked right now. Try again later.</value></data>
 </root>

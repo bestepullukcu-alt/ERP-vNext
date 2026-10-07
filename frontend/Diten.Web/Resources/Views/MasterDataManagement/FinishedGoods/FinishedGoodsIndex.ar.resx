@@ -11,4 +11,27 @@
   <data name="Export" xml:space="preserve"><value>تصدير</value></data>
   <data name="ColumnVisibility" xml:space="preserve"><value>إظهار الأعمدة</value></data>
   <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve"><value>الصفحة الحالية فقط</value></data>
+  <data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>انتهت صلاحية هذا النموذج أو أنه يخص جلسة أخرى. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>لم تستجب خدمة المنتجات النهائية في الوقت المحدد. حاول مرة أخرى — لن ينشئ الطلب نفسه مسودة ثانية.</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="CancellationPendingAudit" xml:space="preserve"><value>الإلغاء بانتظار التدقيق</value></data>
+  <data name="RefusalGskuNotApproved" xml:space="preserve"><value>وحدة GSKU المحددة غير معتمدة الهوية. لا يمكن إنشاء منتج نهائي إلا ضمن وحدة GSKU معتمدة.</value></data>
+  <data name="RefusalGskuLifecycleBusy" xml:space="preserve"><value>لدى وحدة GSKU المحددة طلب تصحيح أو إيقاف قيد التنفيذ. يمكن إنشاء منتج نهائي ضمنها بعد البت في هذا الطلب.</value></data>
+  <data name="RefusalAdmissionCapacity" xml:space="preserve"><value>يجري حاليًا إنشاء عدد كبير جدًا من المنتجات النهائية ضمن وحدة GSKU هذه. حاول مرة أخرى بعد بضع دقائق.</value></data>
+  <data name="RefusalIdempotencyKeyConflict" xml:space="preserve"><value>استُخدم هذا النموذج بالفعل لطلب مختلف. أعد تحميل الصفحة وابدأ من جديد.</value></data>
+  <data name="RefusalIdempotencyKeyInvalid" xml:space="preserve"><value>لم يُقبل مفتاح الطلب الخاص بهذا النموذج. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
+  <data name="RefusalDraftCancelled" xml:space="preserve"><value>أُلغيت المسودة التي أنشأها هذا النموذج. أعد تحميل الصفحة لإنشاء منتج نهائي جديد.</value></data>
+  <data name="RefusalDraftAlreadyCancelled" xml:space="preserve"><value>أُلغيت مسودة المنتج النهائي هذه بالفعل.</value></data>
+  <data name="RefusalCreationNotSettled" xml:space="preserve"><value>لا يزال هذا المنتج النهائي قيد الإنشاء. حاول مرة أخرى بعد اكتمال إنشائه.</value></data>
+  <data name="RefusalNotADraft" xml:space="preserve"><value>لا يمكن إلغاء منتج نهائي إلا إذا كان في حالة مسودة.</value></data>
+  <data name="RefusalConcurrencyConflict" xml:space="preserve"><value>غيّر شخص آخر هذا السجل في الوقت نفسه. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
+  <data name="RefusalAuditBusy" xml:space="preserve"><value>لا يستطيع سجل التدقيق تسجيل هذا التغيير حاليًا. حاول مرة أخرى بعد بضع دقائق.</value></data>
+  <data name="RefusalCodeBurnRefused" xml:space="preserve"><value>لم يُنشأ المنتج النهائي وتعذّر سحب الرمز المحجوز له. يبقى الرمز محجوزًا حتى يحرره إصلاح المسؤول؛ حاول مرة أخرى لاحقًا.</value></data>
+  <data name="RefusalCodeNotIssued" xml:space="preserve"><value>تعذّر إصدار رمز المنتج النهائي. حاول مرة أخرى؛ وإذا تكرر ذلك فاتصل بالمسؤول.</value></data>
+  <data name="RefusalWriteFailed" xml:space="preserve"><value>تعذّر حفظ المنتج النهائي. حاول مرة أخرى؛ وإذا تكرر ذلك فاتصل بالمسؤول.</value></data>
+  <data name="RefusalReconciliationRequired" xml:space="preserve"><value>لا يزال إنهاء المسودة جاريًا. تحقق من القائمة بعد لحظات — لن يؤدي إرسال النموذج نفسه مرة أخرى إلى إنشاء مسودة ثانية.</value></data>
+  <data name="RefusalBindingInvariant" xml:space="preserve"><value>سجلات هذا المنتج النهائي غير متطابقة، لذا تم حجزه. أبلغ المسؤول بذلك.</value></data>
+  <data name="RefusalStoreUnavailable" xml:space="preserve"><value>مخزن هويات المنتجات غير متاح حاليًا. حاول مرة أخرى — لن ينشئ الطلب نفسه مسودة ثانية.</value></data>
+  <data name="RefusalScopeUnavailable" xml:space="preserve"><value>تعذّر التحقق من صلاحية وصولك إلى الكيانات القانونية حاليًا. حاول مرة أخرى لاحقًا.</value></data>
 </root>

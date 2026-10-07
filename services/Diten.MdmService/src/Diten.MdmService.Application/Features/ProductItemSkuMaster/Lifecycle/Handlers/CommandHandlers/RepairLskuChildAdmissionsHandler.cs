@@ -55,14 +55,15 @@ public sealed class RepairLskuChildAdmissionsHandler
             return Response<LskuChildAdmissionRepairResult>.Fail("TENANT_CONTEXT_REQUIRED", 403);
         }
 
-        if (request.Limit is < 1 or > MaximumLimit || request.MinimumAgeMinutes < MinimumAgeFloorMinutes)
+        if (request.Limit is < 1 or > MaximumLimit || request.MinimumAgeMinutes < MinimumAgeFloorMinutes
+            || request.ChildKind is not (GskuChildIdentityKind.Lsku or GskuChildIdentityKind.FinishedGood))
         {
             return Response<LskuChildAdmissionRepairResult>.Fail("LSKU_ADMISSION_REPAIR_REQUEST_INVALID", 400);
         }
 
         var now = _time.GetUtcNow().ToUniversalTime();
         var orphans = await _gskus.FindOrphanChildCreationAdmissionsAsync(
-            GskuChildIdentityKind.Lsku, now.AddMinutes(-request.MinimumAgeMinutes), request.Limit, cancellationToken);
+            request.ChildKind, now.AddMinutes(-request.MinimumAgeMinutes), request.Limit, cancellationToken);
         var items = new List<LskuChildAdmissionRepairItem>(orphans.Count);
         // Each release moves the GSKU's version, so a second orphan on the same GSKU is re-read before its write.
         var versions = new Dictionary<Guid, int>();

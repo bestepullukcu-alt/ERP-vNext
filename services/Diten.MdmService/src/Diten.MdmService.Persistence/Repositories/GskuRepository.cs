@@ -841,7 +841,8 @@ public sealed class GskuRepository : IGskuRepository
     private sealed record ChildHold(bool Held, bool ByRow, CodeReservation? Reservation);
 
     // A live row holds; so does a live reservation (reserved, or consumed and not burned) — except one bound to a row
-    // that was cancelled (deleted): that identity is over and its code is never handed out again (FIX2 item 4).
+    // that was cancelled (an LSKU deleted; a Finished Good whose retained cancellation is settled — FG FIX1 review R1):
+    // that identity is over and its code is never handed out again (FIX2 item 4).
     private async Task<ChildHold> ChildHoldAsync(
         GskuChildIdentityKind childKind, string creationCommandId, CancellationToken cancellationToken)
     {
@@ -856,7 +857,7 @@ public sealed class GskuRepository : IGskuRepository
                       & Builders<CodeReservation>.Filter.Ne(x => x.BindingState, CodeReservationBindingState.Burned))))
             .FirstOrDefaultAsync(cancellationToken);
         if (reservation is null) return new(false, false, null);
-        if (reservation.ConsumedEntityId is { } identity && await DeletedIdentityRowExistsAsync(childKind, identity, cancellationToken))
+        if (reservation.ConsumedEntityId is { } identity && await EndedIdentityRowExistsAsync(childKind, identity, cancellationToken))
             return new(false, false, reservation);
         return new(true, false, reservation);
     }
@@ -866,12 +867,16 @@ public sealed class GskuRepository : IGskuRepository
             ? _lskus.Find(Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<Lsku>.Filter.Eq(x => x.Id, identityId)).AnyAsync(ct)
             : _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<FinishedGood>.Filter.Eq(x => x.Id, identityId)).AnyAsync(ct);
 
-    private Task<bool> DeletedIdentityRowExistsAsync(GskuChildIdentityKind childKind, Guid identityId, CancellationToken ct) =>
-        childKind == GskuChildIdentityKind.Lsku
-            ? _lskus.Find(Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<Lsku>.Filter.Eq(x => x.Id, identityId)
-                          & Builders<Lsku>.Filter.Eq(x => x.IsDeleted, true)).AnyAsync(ct)
-            : _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<FinishedGood>.Filter.Eq(x => x.Id, identityId)
-                                  & Builders<FinishedGood>.Filter.Eq(x => x.IsDeleted, true)).AnyAsync(ct);
+    private async Task<bool> EndedIdentityRowExistsAsync(GskuChildIdentityKind childKind, Guid identityId, CancellationToken ct)
+    {
+        if (childKind == GskuChildIdentityKind.Lsku)
+            return await _lskus.Find(Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<Lsku>.Filter.Eq(x => x.Id, identityId)
+                                     & Builders<Lsku>.Filter.Eq(x => x.IsDeleted, true)).AnyAsync(ct);
+        var row = await _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)
+                                            & Builders<FinishedGood>.Filter.Eq(x => x.Id, identityId)).FirstOrDefaultAsync(ct);
+        return row is not null && (row.IsDeleted || Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle
+            .FinishedGoodDraftCancellationProof.Disposition(row) == FinishedGoodCancellationDisposition.Cancelled);
+    }
 
     // CT 2026-10-06: admissions of every child kind held past the cutoff in this tenant — swept ones and held ones
     // alike; the gauge reads it (a creation never takes this long).
@@ -884,17 +889,23 @@ public sealed class GskuRepository : IGskuRepository
         return holders.Sum(list => (long)list.Count(x => x.AcquiredAtUtc < acquiredBeforeUtc));
     }
 
-    private Task<bool> ChildRowExistsAsync(
-        GskuChildIdentityKind childKind, string creationCommandId, CancellationToken cancellationToken) =>
-        childKind == GskuChildIdentityKind.Lsku
-            ? _lskus.Find(Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId)
+    private async Task<bool> ChildRowExistsAsync(
+        GskuChildIdentityKind childKind, string creationCommandId, CancellationToken cancellationToken)
+    {
+        if (childKind == GskuChildIdentityKind.Lsku)
+            return await _lskus.Find(Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId)
                           & Builders<Lsku>.Filter.Ne(x => x.IsDeleted, true)
                           & Builders<Lsku>.Filter.Eq(x => x.CreationCommandId, creationCommandId))
-                .AnyAsync(cancellationToken)
-            : _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)
-                                  & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
-                                  & Builders<FinishedGood>.Filter.Eq(x => x.CreationCommandId, creationCommandId))
                 .AnyAsync(cancellationToken);
+        // FG FIX1 review R1: a Finished Good is retained when cancelled; once its cancellation is SETTLED (the same
+        // proof as the retirement blocker) it holds nothing — its admission may then be released or swept.
+        var rows = await _finishedGoods.Find(Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)
+                                             & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
+                                             & Builders<FinishedGood>.Filter.Eq(x => x.CreationCommandId, creationCommandId))
+            .ToListAsync(cancellationToken);
+        return rows.Any(row => Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle
+            .FinishedGoodDraftCancellationProof.Disposition(row) != FinishedGoodCancellationDisposition.Cancelled);
+    }
 
     public async Task<FirstGskuIdentityRetirementWriteResult<Gsku>> CloseChildAdmissionFenceAsync(
         Guid id, int expectedVersion, Guid operationId, string operationFingerprint,

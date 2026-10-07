@@ -12,4 +12,27 @@
   <data name="Export" xml:space="preserve"><value>Dışa Aktar</value></data>
   <data name="ColumnVisibility" xml:space="preserve"><value>Sütun Görünürlüğü</value></data>
   <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve"><value>Yalnızca mevcut sayfa</value></data>
+  <data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>Bu formun süresi dolmuş ya da form başka bir oturuma ait. Sayfayı yeniden yükleyip tekrar deneyin.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>Bitmiş Ürün hizmeti zamanında yanıt vermedi. Tekrar deneyin — aynı istek ikinci bir taslak oluşturmaz.</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="CancellationPendingAudit" xml:space="preserve"><value>İptal denetim kaydı bekliyor</value></data>
+  <data name="RefusalGskuNotApproved" xml:space="preserve"><value>Seçilen GSKU kimlik onaylı değil. Bitmiş Ürün yalnızca onaylı bir GSKU altında oluşturulabilir.</value></data>
+  <data name="RefusalGskuLifecycleBusy" xml:space="preserve"><value>Seçilen GSKU için devam eden bir düzeltme ya da kullanımdan kaldırma talebi var. Bu talep karara bağlandığında altında Bitmiş Ürün oluşturulabilir.</value></data>
+  <data name="RefusalAdmissionCapacity" xml:space="preserve"><value>Şu anda bu GSKU altında çok fazla Bitmiş Ürün oluşturuluyor. Birkaç dakika sonra tekrar deneyin.</value></data>
+  <data name="RefusalIdempotencyKeyConflict" xml:space="preserve"><value>Bu form daha önce farklı bir istek için kullanıldı. Sayfayı yeniden yükleyip baştan başlayın.</value></data>
+  <data name="RefusalIdempotencyKeyInvalid" xml:space="preserve"><value>Bu formun istek anahtarı kabul edilmedi. Sayfayı yeniden yükleyip tekrar deneyin.</value></data>
+  <data name="RefusalDraftCancelled" xml:space="preserve"><value>Bu formun oluşturduğu taslak iptal edildi. Yeni bir Bitmiş Ürün oluşturmak için sayfayı yeniden yükleyin.</value></data>
+  <data name="RefusalDraftAlreadyCancelled" xml:space="preserve"><value>Bu Bitmiş Ürün taslağı zaten iptal edilmiş.</value></data>
+  <data name="RefusalCreationNotSettled" xml:space="preserve"><value>Bu Bitmiş Ürün hâlâ oluşturuluyor. Oluşturma tamamlandığında tekrar deneyin.</value></data>
+  <data name="RefusalNotADraft" xml:space="preserve"><value>Yalnızca Taslak durumundaki bir Bitmiş Ürün iptal edilebilir.</value></data>
+  <data name="RefusalConcurrencyConflict" xml:space="preserve"><value>Bu kayıt aynı anda başka biri tarafından değiştirildi. Sayfayı yeniden yükleyip tekrar deneyin.</value></data>
+  <data name="RefusalAuditBusy" xml:space="preserve"><value>Denetim izi bu değişikliği şu anda kaydedemiyor. Birkaç dakika sonra tekrar deneyin.</value></data>
+  <data name="RefusalCodeBurnRefused" xml:space="preserve"><value>Bitmiş Ürün oluşturulmadı ve ayrılan kodu geri çekilemedi. Kod, yönetici onarımı serbest bırakana kadar tutulur; daha sonra tekrar deneyin.</value></data>
+  <data name="RefusalCodeNotIssued" xml:space="preserve"><value>Bitmiş Ürün kodu verilemedi. Tekrar deneyin; sorun sürerse yöneticinize başvurun.</value></data>
+  <data name="RefusalWriteFailed" xml:space="preserve"><value>Bitmiş Ürün kaydedilemedi. Tekrar deneyin; sorun sürerse yöneticinize başvurun.</value></data>
+  <data name="RefusalReconciliationRequired" xml:space="preserve"><value>Taslak hâlâ sonlandırılıyor. Birazdan listeyi kontrol edin — aynı formu yeniden göndermek ikinci bir taslak oluşturmaz.</value></data>
+  <data name="RefusalBindingInvariant" xml:space="preserve"><value>Bu Bitmiş Ürünün kayıtları birbiriyle uyuşmuyor; bu nedenle beklemeye alındı. Durumu yöneticinize bildirin.</value></data>
+  <data name="RefusalStoreUnavailable" xml:space="preserve"><value>Ürün kimlik deposu şu anda kullanılamıyor. Tekrar deneyin — aynı istek ikinci bir taslak oluşturmaz.</value></data>
+  <data name="RefusalScopeUnavailable" xml:space="preserve"><value>Tüzel kişilik erişiminiz şu anda doğrulanamadı. Daha sonra tekrar deneyin.</value></data>
 </root>

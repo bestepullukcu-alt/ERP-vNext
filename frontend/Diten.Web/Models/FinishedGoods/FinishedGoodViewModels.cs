@@ -34,7 +34,9 @@ public sealed class FinishedGoodDraftViewModel
     public string CanonicalCode { get; set; } = string.Empty;
     public Guid GskuId { get; set; }
     public string GskuCanonicalCode { get; set; } = string.Empty;
-    public string LifecycleStatus { get; set; } = string.Empty;
+    // FG FIX1 item 4 (measured): MDM writes enums as numbers — a string here made every 201 unreadable, so the proxy
+    // answered "failed" to a created draft. The value is passed through as MDM sent it.
+    public System.Text.Json.JsonElement LifecycleStatus { get; set; }
     public int Version { get; set; }
     public bool BindingReconciliationRequired { get; set; }
 }

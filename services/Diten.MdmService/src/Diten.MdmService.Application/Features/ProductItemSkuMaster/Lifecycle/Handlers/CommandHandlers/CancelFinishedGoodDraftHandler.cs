@@ -2,6 +2,7 @@ using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
 using Diten.Shared.Core;
@@ -23,6 +24,7 @@ public sealed class CancelFinishedGoodDraftHandler(
     IGskuRepository gskus,
     IProductDefinitionRevisionRepository revisions,
     IGlobalProductRepository products,
+    ICodeReservationRepository reservations,
     IProductLegalEntityScopeRolloutStateRepository rolloutStates,
     IProductLegalEntityScopePolicyRepository scopePolicies,
     ProductLegalEntityScopeCandidateFacade scopeCandidates,
@@ -37,7 +39,9 @@ public sealed class CancelFinishedGoodDraftHandler(
             || !actorContext.HasPermission(FinishedGoodDraftCancellationPermissions.CancelDraft))
             return Fail("FINISHED_GOOD_DRAFT_CANCEL_FORBIDDEN", 403);
         var reason = command.ReasonCode?.Trim();
+        // FIX1 review m2: the version's successor must exist (int.MaxValue is a 400, not an overflow 500).
         if (command.FinishedGoodId == Guid.Empty || command.OperationId == Guid.Empty || command.ExpectedVersion < 0
+            || command.ExpectedVersion == int.MaxValue
             || string.IsNullOrEmpty(reason) || reason.Length > 128 || reason.Any(char.IsControl))
             return Fail("FINISHED_GOOD_DRAFT_CANCEL_INVALID", 400);
 
@@ -65,7 +69,7 @@ public sealed class CancelFinishedGoodDraftHandler(
         {
             OperationId = command.OperationId,
             Fingerprint = FinishedGoodDraftCancellationAuditIntentFactory.Fingerprint(
-                finishedGood.TenantId, finishedGood.Id, command.ExpectedVersion, reason),
+                finishedGood.TenantId, finishedGood.Id, command.ExpectedVersion, reason, actor),
             IntentId = intent.IntentId,
             IdempotencyKey = intent.IdempotencyKey,
             EvidenceHash = intent.EvidenceHash,
@@ -84,9 +88,30 @@ public sealed class CancelFinishedGoodDraftHandler(
                 "FINISHED_GOOD_DRAFT_CANCEL_CONTRACT_INVALID" => 400,
                 _ => 409
             });
+        // s21.5 / FIX1 review R1: the creation of THIS FG is settled — its original command and fingerprint, never the
+        // cancel's. A code still pending for the retained row is confirmed to it (the FG keeps its code for good),
+        // then the parent admission is completed; a creation cut off before its completion must not keep the GSKU
+        // held. Each step is replay-safe: a step refused here is named, and the same cancel again finishes it.
+        var code = await reservations.GetByIdAsync(result.CodeReservationId, cancellationToken);
+        if (code is { ReservationState: CodeReservationState.Consumed,
+                      BindingState: CodeReservationBindingState.PendingIdentityWrite } pending
+            && pending.ConsumedEntityId == result.Id)
+        {
+            var confirmed = await reservations.ConfirmIdentityBindingAsync(pending.Id, result.Id, pending.Version,
+                $"finished-good-draft-cancel:{command.OperationId:D}:confirm", actor.ToString("D"),
+                command.OperationId.ToString("D"), cancellationToken);
+            if (!confirmed.Succeeded) return Fail(CreationNotSettled, 409);
+        }
+        var completed = await gskus.CompleteChildCreationAdmissionAsync(result.GskuId, GskuChildIdentityKind.FinishedGood,
+            result.CreationCommandId, GskuChildCreationAdmission.ComputeRequestFingerprint(
+                result.GskuId, GskuChildIdentityKind.FinishedGood, result.CreationCommandId), cancellationToken);
+        if (!completed.Succeeded) return Fail(CreationNotSettled, 409);
         return Response<FinishedGoodDraftCancellationResult>.Success(new(result.Id, result.Version,
             FinishedGoodDraftCancellationProof.Disposition(result), written.IsReplay), 200);
     }
+
+    // FIX1 review R1: the cancel committed but its FG's creation (code binding / parent admission) is not settled yet.
+    public const string CreationNotSettled = "FINISHED_GOOD_CREATION_NOT_SETTLED";
 
     private static Response<FinishedGoodDraftCancellationResult> Fail(string code, int status) =>
         Response<FinishedGoodDraftCancellationResult>.Fail(code, status);

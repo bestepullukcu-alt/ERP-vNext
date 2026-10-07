@@ -11,4 +11,27 @@
   <data name="Export" xml:space="preserve"><value>Exportar</value></data>
   <data name="ColumnVisibility" xml:space="preserve"><value>Visibilidad de columnas</value></data>
   <data name="Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve"><value>Solo la página actual</value></data>
+  <data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>Este formulario ha caducado o pertenece a otra sesión. Vuelva a cargar la página e inténtelo de nuevo.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>El servicio de productos terminados no respondió a tiempo. Inténtelo de nuevo: la misma solicitud no creará un segundo borrador.</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Cancelado</value></data>
+  <data name="CancellationPendingAudit" xml:space="preserve"><value>Cancelación pendiente de auditoría</value></data>
+  <data name="RefusalGskuNotApproved" xml:space="preserve"><value>El GSKU seleccionado no tiene la identidad aprobada. Solo se puede crear un producto terminado bajo un GSKU aprobado.</value></data>
+  <data name="RefusalGskuLifecycleBusy" xml:space="preserve"><value>El GSKU seleccionado tiene una solicitud de corrección o retirada en curso. Se podrá crear un producto terminado bajo él cuando se resuelva esa solicitud.</value></data>
+  <data name="RefusalAdmissionCapacity" xml:space="preserve"><value>Se están creando demasiados productos terminados bajo este GSKU en este momento. Inténtelo de nuevo en unos minutos.</value></data>
+  <data name="RefusalIdempotencyKeyConflict" xml:space="preserve"><value>Este formulario ya se utilizó para otra solicitud. Vuelva a cargar la página y empiece de nuevo.</value></data>
+  <data name="RefusalIdempotencyKeyInvalid" xml:space="preserve"><value>No se aceptó la clave de solicitud de este formulario. Vuelva a cargar la página e inténtelo de nuevo.</value></data>
+  <data name="RefusalDraftCancelled" xml:space="preserve"><value>El borrador que creó este formulario se ha cancelado. Vuelva a cargar la página para crear un nuevo producto terminado.</value></data>
+  <data name="RefusalDraftAlreadyCancelled" xml:space="preserve"><value>Este borrador de producto terminado ya se ha cancelado.</value></data>
+  <data name="RefusalCreationNotSettled" xml:space="preserve"><value>Este producto terminado todavía se está creando. Inténtelo de nuevo cuando haya terminado su creación.</value></data>
+  <data name="RefusalNotADraft" xml:space="preserve"><value>Solo se puede cancelar un producto terminado en estado de borrador.</value></data>
+  <data name="RefusalConcurrencyConflict" xml:space="preserve"><value>Otra persona modificó este registro al mismo tiempo. Vuelva a cargar la página e inténtelo de nuevo.</value></data>
+  <data name="RefusalAuditBusy" xml:space="preserve"><value>El registro de auditoría no puede aceptar este cambio en este momento. Inténtelo de nuevo en unos minutos.</value></data>
+  <data name="RefusalCodeBurnRefused" xml:space="preserve"><value>No se creó el producto terminado y no se pudo retirar su código reservado. El código queda retenido hasta que la reparación del administrador lo libere; inténtelo más tarde.</value></data>
+  <data name="RefusalCodeNotIssued" xml:space="preserve"><value>No se pudo asignar el código del producto terminado. Inténtelo de nuevo; si se repite, póngase en contacto con su administrador.</value></data>
+  <data name="RefusalWriteFailed" xml:space="preserve"><value>No se pudo guardar el producto terminado. Inténtelo de nuevo; si se repite, póngase en contacto con su administrador.</value></data>
+  <data name="RefusalReconciliationRequired" xml:space="preserve"><value>El borrador aún se está finalizando. Consulte la lista dentro de un momento: volver a enviar el mismo formulario no creará un segundo borrador.</value></data>
+  <data name="RefusalBindingInvariant" xml:space="preserve"><value>Los registros de este producto terminado no coinciden, por lo que se ha retenido. Comuníqueselo a su administrador.</value></data>
+  <data name="RefusalStoreUnavailable" xml:space="preserve"><value>El almacén de identidades de producto no está disponible en este momento. Inténtelo de nuevo: la misma solicitud no creará un segundo borrador.</value></data>
+  <data name="RefusalScopeUnavailable" xml:space="preserve"><value>No se pudo comprobar su acceso a las entidades jurídicas en este momento. Inténtelo más tarde.</value></data>
 </root>

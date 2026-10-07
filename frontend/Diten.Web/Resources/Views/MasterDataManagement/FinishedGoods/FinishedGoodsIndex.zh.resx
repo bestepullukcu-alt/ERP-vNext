@@ -11,4 +11,27 @@
   <data name="Export" xml:space="preserve"><value>导出</value></data>
   <data name="ColumnVisibility" xml:space="preserve"><value>列可见性</value></data>
   <data name="Status" xml:space="preserve"><value>状态</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve"><value>仅当前页</value></data>
+  <data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>此表单已过期或属于其他会话。请重新加载页面后重试。</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>成品服务未及时响应。请重试——同一请求不会创建第二个草稿。</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="CancellationPendingAudit" xml:space="preserve"><value>取消待审计</value></data>
+  <data name="RefusalGskuNotApproved" xml:space="preserve"><value>所选 GSKU 的身份尚未批准。只能在已批准的 GSKU 下创建成品。</value></data>
+  <data name="RefusalGskuLifecycleBusy" xml:space="preserve"><value>所选 GSKU 有正在处理的更正或停用申请。该申请作出决定后，才能在其下创建成品。</value></data>
+  <data name="RefusalAdmissionCapacity" xml:space="preserve"><value>此 GSKU 下当前正在创建的成品过多。请几分钟后重试。</value></data>
+  <data name="RefusalIdempotencyKeyConflict" xml:space="preserve"><value>此表单已用于其他请求。请重新加载页面并重新开始。</value></data>
+  <data name="RefusalIdempotencyKeyInvalid" xml:space="preserve"><value>此表单的请求密钥未被接受。请重新加载页面后重试。</value></data>
+  <data name="RefusalDraftCancelled" xml:space="preserve"><value>此表单创建的草稿已被取消。请重新加载页面以创建新的成品。</value></data>
+  <data name="RefusalDraftAlreadyCancelled" xml:space="preserve"><value>此成品草稿已被取消。</value></data>
+  <data name="RefusalCreationNotSettled" xml:space="preserve"><value>此成品仍在创建中。请在创建完成后重试。</value></data>
+  <data name="RefusalNotADraft" xml:space="preserve"><value>只能取消处于草稿状态的成品。</value></data>
+  <data name="RefusalConcurrencyConflict" xml:space="preserve"><value>其他人同时修改了此记录。请重新加载页面后重试。</value></data>
+  <data name="RefusalAuditBusy" xml:space="preserve"><value>审计跟踪当前无法记录此更改。请几分钟后重试。</value></data>
+  <data name="RefusalCodeBurnRefused" xml:space="preserve"><value>成品未创建，且其预留编码无法撤回。在管理员修复释放该编码之前，它将保持占用；请稍后重试。</value></data>
+  <data name="RefusalCodeNotIssued" xml:space="preserve"><value>无法分配成品编码。请重试；如果问题反复出现，请联系管理员。</value></data>
+  <data name="RefusalWriteFailed" xml:space="preserve"><value>无法保存成品。请重试；如果问题反复出现，请联系管理员。</value></data>
+  <data name="RefusalReconciliationRequired" xml:space="preserve"><value>草稿仍在最终确认中。请稍后查看列表——再次提交同一表单不会创建第二个草稿。</value></data>
+  <data name="RefusalBindingInvariant" xml:space="preserve"><value>此成品的记录不一致，因此已被暂扣。请报告给管理员。</value></data>
+  <data name="RefusalStoreUnavailable" xml:space="preserve"><value>产品标识存储当前不可用。请重试——同一请求不会创建第二个草稿。</value></data>
+  <data name="RefusalScopeUnavailable" xml:space="preserve"><value>当前无法检查您的法人实体访问权限。请稍后重试。</value></data>
 </root>

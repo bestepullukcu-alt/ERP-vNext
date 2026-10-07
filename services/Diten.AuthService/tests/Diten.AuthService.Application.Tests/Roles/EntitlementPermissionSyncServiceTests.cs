@@ -1190,6 +1190,29 @@ public sealed class EntitlementPermissionSyncServiceTests
             ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.AdminRole));
     }
 
+    // WP-MDM-FG-ACCEPT-01 FIX1 item 9 (CT decision B): the same for direct Finished Good retirement — a historical
+    // human grant held by the Retirement Steward is removed by the sync, and the Admin role does not get it.
+    [Fact]
+    public async Task The_retirement_stewards_historical_direct_finished_good_retire_grant_is_removed_by_the_sync()
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var declaredKeys = ProductIdentityDeclaredKeys(catalog);
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            declaredKeys, Actor);
+        var steward = roles.IdOf(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole);
+        var retire = catalog.Single(p => p.Key == "mdm.finished-goods.retire").Id;
+        rolePerms.Seed(RolePermission.ModuleGrant(steward, retire, TenantA, "historical",
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            declaredKeys, Actor);
+
+        Assert.DoesNotContain(rolePerms.Rows, row => row.RoleId == steward && row.PermissionId == retire);
+        Assert.DoesNotContain("mdm.finished-goods.retire",
+            ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.AdminRole));
+    }
+
     [Fact]
     public async Task Product_identity_lifecycle_profile_composes_exact_twenty_seven_eleven_roles_with_ABB_and_scope()
     {
@@ -1206,7 +1229,8 @@ public sealed class EntitlementPermissionSyncServiceTests
 
         Assert.Equal(20, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole).Count);
         Assert.Equal(7, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole).Count);
-        Assert.Equal(10, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole).Count);
+        // FG FIX1 item 9 (CT decision B): 10 → 9 — no direct FG retire for the steward.
+        Assert.Equal(9, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole).Count);
 
         var admin = ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.AdminRole);
         var viewer = ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.ViewerRole);

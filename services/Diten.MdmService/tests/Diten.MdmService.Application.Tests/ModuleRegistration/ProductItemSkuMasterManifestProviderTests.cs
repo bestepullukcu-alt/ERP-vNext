@@ -124,17 +124,27 @@ public sealed class ProductItemSkuMasterManifestProviderTests
             Assert.StartsWith("mdm.", permission, StringComparison.Ordinal);
             Assert.DoesNotContain("..", permission, StringComparison.Ordinal);
         });
+        // FG FIX1 item 9 (CT decision B): a key declared ONLY by "System" actions is a system act, not a human door —
+        // it is compared on neither side (a GSKU / LSKU retire endpoint exists, FG's does not yet). The whitelist below
+        // is for declared HUMAN keys without a door: FG submit only (no FG retire entry any more).
+        var systemOnly = Manifest.Pages.SelectMany(page => page.Actions)
+            .GroupBy(action => action.PermissionKey, StringComparer.Ordinal)
+            .Where(group => group.All(action => action.ActionType == "System")
+                            && Manifest.Pages.All(page => page.RequiredPermission != group.Key))
+            .Select(group => group.Key)
+            .ToHashSet(StringComparer.Ordinal);
+        Assert.Contains("mdm.finished-goods.retire", systemOnly);
         var nonControllerPermissions = new HashSet<string>(StringComparer.Ordinal)
         {
             "mdm.brands.read",
-            "mdm.finished-goods.retire",
             "mdm.finished-goods.submit",
             "mdm.product-legal-entity-scope-rollout.activate",
             "mdm.product-legal-entity-scope-rollout.rollback"
             // mdm.product-identity.lifecycle-operations.recover is enforced by a controller since LSKU FIX1 B1 (c):
             // POST api/lskus/operator/child-admission-repairs.
         };
-        Assert.True(declared.Where(permission => !nonControllerPermissions.Contains(permission)).ToHashSet(StringComparer.Ordinal).SetEquals(enforced));
+        Assert.True(declared.Where(permission => !nonControllerPermissions.Contains(permission) && !systemOnly.Contains(permission))
+            .ToHashSet(StringComparer.Ordinal).SetEquals(enforced.Where(permission => !systemOnly.Contains(permission))));
     }
 
     [Fact]
@@ -203,6 +213,11 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     [Fact]
     public void Finished_good_keeps_the_approved_four_key_contract_without_new_aliases()
     {
+        // FG FIX1 item 9 (CT decision B): retire is a system action (never a row action a person clicks).
+        var retire = Assert.Single(Manifest.Pages.Single(page => page.PageCode == "FINISHED_GOODS").Actions,
+            action => action.ActionCode == "RETIRE");
+        Assert.Equal("System", retire.ActionType);
+        Assert.False(retire.IsRowAction);
         var productPages = Manifest.Pages.Where(page => page.PageCode is "FINISHED_GOODS").ToList();
         Assert.Single(productPages);
         foreach (var page in productPages)

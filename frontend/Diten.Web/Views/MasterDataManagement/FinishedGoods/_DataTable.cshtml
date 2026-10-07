@@ -1,28 +1,33 @@
 @using Diten.Web.Views.MasterDataManagement.FinishedGoods
+@using Diten.Web.Models.DataTable
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<FinishedGoodsIndex> Localizer
+@{
+    // The table card is the shared component (BL-440): the page describes it, _ListShell renders it, with the shared
+    // shaped skeleton. Every header is localized HERE; the shell produces no text.
+    //
+    // SERVER data: MDM pages and searches (GetFinishedGoodsQuery: pageNumber, pageSize, search) and always returns the
+    // rows by canonical code ascending — it has no orderBy, so no column is sortable (index.js declares the same mode).
+    //
+    // NO SELECTION COLUMN, deliberately: Finished Good identities are never bulk-deleted or bulk-changed (GxP — every
+    // identity change is its own request), so a checkbox would select into nothing.
+    //
+    // Slug "finishedgoods" keeps the `datatables-finishedgoods` class index.js finds the table by; TableId stays.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-finishedgoods",
+        DataMode = "server",
+        Slug = "finishedgoods",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["CanonicalCode"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["GskuCanonicalCode"].Value },
+            new DataTableColumnViewModel { Header = Localizer["LifecycleStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["CreatedAt"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
 
-<div class="card">
-    <div id="skeleton-loader" class="backbone-skeleton p-4">
-        <div class="shimmer skeleton-row skeleton-row-lg"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row skeleton-row-last"></div>
-    </div>
-
-    <div class="card-datatable table-responsive">
-        <table id="dt-finishedgoods" data-dt-standard="v2" class="datatables-finishedgoods table border-top">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th class="all">@Localizer["CanonicalCode"]</th>
-                    <th>@Localizer["GskuCanonicalCode"]</th>
-                    <th>@Localizer["LifecycleStatus"]</th>
-                    <th>@Localizer["CreatedAt"]</th>
-                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

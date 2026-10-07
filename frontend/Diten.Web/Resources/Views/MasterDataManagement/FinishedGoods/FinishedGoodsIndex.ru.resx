@@ -11,4 +11,27 @@
   <data name="Export" xml:space="preserve"><value>Экспорт</value></data>
   <data name="ColumnVisibility" xml:space="preserve"><value>Видимость столбцов</value></data>
   <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve"><value>Только текущая страница</value></data>
+  <data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>Срок действия этой формы истёк, или она относится к другому сеансу. Перезагрузите страницу и повторите попытку.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>Сервис готовой продукции не ответил вовремя. Повторите попытку — тот же запрос не создаст второй черновик.</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Отменён</value></data>
+  <data name="CancellationPendingAudit" xml:space="preserve"><value>Отмена ожидает аудита</value></data>
+  <data name="RefusalGskuNotApproved" xml:space="preserve"><value>Идентификация выбранного GSKU не утверждена. Готовую продукцию можно создать только в утверждённом GSKU.</value></data>
+  <data name="RefusalGskuLifecycleBusy" xml:space="preserve"><value>По выбранному GSKU выполняется запрос на исправление или вывод из оборота. Готовую продукцию в нём можно будет создать после решения по этому запросу.</value></data>
+  <data name="RefusalAdmissionCapacity" xml:space="preserve"><value>Сейчас в этом GSKU создаётся слишком много единиц готовой продукции. Повторите попытку через несколько минут.</value></data>
+  <data name="RefusalIdempotencyKeyConflict" xml:space="preserve"><value>Эта форма уже использована для другого запроса. Перезагрузите страницу и начните заново.</value></data>
+  <data name="RefusalIdempotencyKeyInvalid" xml:space="preserve"><value>Ключ запроса этой формы не принят. Перезагрузите страницу и повторите попытку.</value></data>
+  <data name="RefusalDraftCancelled" xml:space="preserve"><value>Черновик, созданный этой формой, отменён. Перезагрузите страницу, чтобы создать новую единицу готовой продукции.</value></data>
+  <data name="RefusalDraftAlreadyCancelled" xml:space="preserve"><value>Этот черновик готовой продукции уже отменён.</value></data>
+  <data name="RefusalCreationNotSettled" xml:space="preserve"><value>Эта единица готовой продукции ещё создаётся. Повторите попытку после завершения создания.</value></data>
+  <data name="RefusalNotADraft" xml:space="preserve"><value>Отменить можно только готовую продукцию в статусе черновика.</value></data>
+  <data name="RefusalConcurrencyConflict" xml:space="preserve"><value>Кто-то другой одновременно изменил эту запись. Перезагрузите страницу и повторите попытку.</value></data>
+  <data name="RefusalAuditBusy" xml:space="preserve"><value>Журнал аудита сейчас не может принять это изменение. Повторите попытку через несколько минут.</value></data>
+  <data name="RefusalCodeBurnRefused" xml:space="preserve"><value>Готовая продукция не создана, а зарезервированный для неё код не удалось отозвать. Код остаётся занятым, пока его не освободит восстановление администратором; повторите попытку позже.</value></data>
+  <data name="RefusalCodeNotIssued" xml:space="preserve"><value>Не удалось выдать код готовой продукции. Повторите попытку; если это повторится, обратитесь к администратору.</value></data>
+  <data name="RefusalWriteFailed" xml:space="preserve"><value>Не удалось сохранить готовую продукцию. Повторите попытку; если это повторится, обратитесь к администратору.</value></data>
+  <data name="RefusalReconciliationRequired" xml:space="preserve"><value>Черновик ещё завершается. Проверьте список через минуту — повторная отправка той же формы не создаст второй черновик.</value></data>
+  <data name="RefusalBindingInvariant" xml:space="preserve"><value>Записи этой единицы готовой продукции не согласуются, поэтому она задержана. Сообщите об этом администратору.</value></data>
+  <data name="RefusalStoreUnavailable" xml:space="preserve"><value>Хранилище идентификаторов продукции сейчас недоступно. Повторите попытку — тот же запрос не создаст второй черновик.</value></data>
+  <data name="RefusalScopeUnavailable" xml:space="preserve"><value>Сейчас не удалось проверить ваш доступ к юридическим лицам. Повторите попытку позже.</value></data>
 </root>

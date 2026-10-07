@@ -67,6 +67,19 @@ public sealed class FinishedGoodsController : CustomBaseController
             cancellationToken));
     }
 
+    // FG FIX1 item 2: operator repair of admissions a failed Finished Good creation left on its parent GSKU (the LSKU
+    // repair, for this child kind: held ones are never released; a stale unbound code is burned first). No screen.
+    [HttpPost("operator/child-admission-repairs")]
+    [HasPermission(Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.LskuIdentityLifecyclePermissions.RecoverLifecycleOperation)]
+    public async Task<IActionResult> RepairChildAdmissions(
+        [FromQuery] int limit = 100,
+        [FromQuery] int minimumAgeMinutes = 15,
+        CancellationToken cancellationToken = default) =>
+        CreateActionResultInstance(await _mediator.Send(
+            new Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Commands.RepairLskuChildAdmissionsCommand(
+                limit, minimumAgeMinutes, Diten.MdmService.Domain.ValueObjects.GskuChildIdentityKind.FinishedGood),
+            cancellationToken));
+
     public sealed class CancelFinishedGoodDraftApiRequest
     {
         public int? ExpectedVersion { get; init; }

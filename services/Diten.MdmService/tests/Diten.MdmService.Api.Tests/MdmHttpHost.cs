@@ -90,6 +90,12 @@ public sealed class MdmHttpHost : IAsyncLifetime
     public FakePlatformReferenceEndpoint PlatformReference { get; } = new();
     // LSKU FIX1: the verified market answers (create and approval time).
     public FakeMarkets Markets { get; } = new();
+
+    /// <summary>
+    /// The trusted legal-entity scope answer (Platform's provider). A tenant a test has not set up gets the answer the
+    /// unreachable provider gave before (503), so tenants outside Enforced rollout are unaffected.
+    /// </summary>
+    public FakeLegalEntityScopes Scopes { get; } = new();
     public string MongoConnectionString => _runner?.ConnectionString ?? throw NotStarted();
 
     public WebApplicationFactory<GskusController> Factory => _factory ?? throw NotStarted();
@@ -213,6 +219,9 @@ public sealed class MdmHttpHost : IAsyncLifetime
                     services.AddSingleton<IVerifiedMarketReferenceResolver>(Markets);
                     services.RemoveAll<IWorkflowVerifiedMarketReferenceResolver>();
                     services.AddSingleton<IWorkflowVerifiedMarketReferenceResolver>(Markets);
+                    // FG FIX1 review R2 / item 8: the enforced-scope answer for the tenants a test sets up.
+                    services.RemoveAll<Diten.MdmService.Application.Contracts.Authorization.ITrustedLegalEntityScopeProvider>();
+                    services.AddSingleton<Diten.MdmService.Application.Contracts.Authorization.ITrustedLegalEntityScopeProvider>(Scopes);
                 });
             });
             _ = _factory.Server;
@@ -337,4 +346,23 @@ internal static class Envelope
             : null;
 
     public static JsonContent Json(object value) => JsonContent.Create(value);
+}
+
+/// <summary>Per tenant: the subject's legal entities for any product permission (canonical order), or unavailable.</summary>
+public sealed class FakeLegalEntityScopes : Diten.MdmService.Application.Contracts.Authorization.ITrustedLegalEntityScopeProvider
+{
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Guid[]> _tenants = new();
+
+    public void Answer(Guid tenantId, params Guid[] legalEntityIds) =>
+        _tenants[tenantId] = legalEntityIds.OrderBy(x => x.ToString("D"), StringComparer.Ordinal).ToArray();
+
+    public Task<Diten.MdmService.Application.Contracts.Authorization.TrustedLegalEntityScopeProviderResult> ResolveAsync(
+        Guid expectedTenantId, Guid expectedSubjectId, string moduleCode, string permissionKey,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(_tenants.TryGetValue(expectedTenantId, out var ids)
+            ? Diten.MdmService.Application.Contracts.Authorization.TrustedLegalEntityScopeProviderResult.Success(
+                expectedTenantId, expectedSubjectId, moduleCode, permissionKey, DateTimeOffset.UtcNow, ids)
+            : new Diten.MdmService.Application.Contracts.Authorization.TrustedLegalEntityScopeProviderResult(
+                false, 503, "LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE", expectedTenantId, expectedSubjectId,
+                moduleCode, permissionKey, null, []));
 }

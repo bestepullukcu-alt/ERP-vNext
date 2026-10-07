@@ -54,7 +54,7 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
                     normalizedCreationCommandId),
                 StringComparison.Ordinal))
         {
-            return FinishedGoodCreationAttemptResult.Unavailable();
+            return FinishedGoodCreationAttemptResult.Invalid();
         }
 
         try
@@ -67,7 +67,7 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
 
             if (await HasLegacyPartialAsync(normalizedCreationCommandId, cancellationToken))
             {
-                return FinishedGoodCreationAttemptResult.Unavailable();
+                return FinishedGoodCreationAttemptResult.ReconciliationRequired();
             }
 
             var timestamp = DateTimeOffset.UtcNow;
@@ -235,6 +235,12 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
                 return new(false, existing, "CREATION_COMMAND_TOMBSTONED");
             }
 
+            // FG FIX1 review m7: the create key of a cancelled Draft is a terminal conflict here too, never a replay.
+            if (existing.DraftCancellation is not null)
+            {
+                return new(false, existing, "FINISHED_GOOD_DRAFT_CANCELLED");
+            }
+
             return SameFacts(existing, finishedGood)
                 ? new(true, existing)
                 : new(false, existing, "IDEMPOTENCY_KEY_CONFLICT");
@@ -313,9 +319,11 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
         {
             existing = await GetByCreationCommandIdAsync(finishedGood.CreationCommandId, cancellationToken)
                 ?? await GetByReservationIdAsync(finishedGood.CodeReservationId, cancellationToken);
-            return existing is not null && !existing.IsDeleted && SameFacts(existing, finishedGood)
-                ? new(true, existing)
-                : new(false, existing, "FINISHED_GOOD_DUPLICATE_CONFLICT");
+            return existing?.DraftCancellation is not null
+                ? new(false, existing, "FINISHED_GOOD_DRAFT_CANCELLED")
+                : existing is not null && !existing.IsDeleted && SameFacts(existing, finishedGood)
+                    ? new(true, existing)
+                    : new(false, existing, "FINISHED_GOOD_DUPLICATE_CONFLICT");
         }
         catch (MongoConnectionException)
         {
@@ -365,7 +373,15 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
                 new CreateIndexOptions { Unique = true, Name = "ux_mdm_finished_goods_tenant_command" }),
             new CreateIndexModel<FinishedGood>(
                 Builders<FinishedGood>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.GskuId),
-                new CreateIndexOptions { Name = "ix_mdm_finished_goods_tenant_gsku" })
+                new CreateIndexOptions { Name = "ix_mdm_finished_goods_tenant_gsku" }),
+            // FG FIX1 review m3: the tenant-free pending-cancellation census reads only cancelled FGs.
+            new CreateIndexModel<FinishedGood>(
+                Builders<FinishedGood>.IndexKeys.Ascending("DraftCancellation.RequestedAtUtc"),
+                new CreateIndexOptions<FinishedGood>
+                {
+                    Name = "ix_mdm_finished_goods_draft_cancellation_requested",
+                    PartialFilterExpression = Builders<FinishedGood>.Filter.Exists("DraftCancellation.RequestedAtUtc")
+                })
         ]);
 
         _creationAttempts.Indexes.CreateOne(new CreateIndexModel<FinishedGoodCreationAttempt>(
@@ -506,6 +522,8 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
     private FilterDefinition<FinishedGood> TenantIncludingDeletedFilter =>
         Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId);
 
+    // FG FIX1 review m5: Ne(true), not Eq(false) — a document written without the field is live, as the GSKU blocker
+    // already reads it; otherwise it blocks the GSKU yet can never be read or cancelled.
     private FilterDefinition<FinishedGood> ActiveTenantFilter =>
-        TenantIncludingDeletedFilter & Builders<FinishedGood>.Filter.Eq(x => x.IsDeleted, false);
+        TenantIncludingDeletedFilter & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true);
 }

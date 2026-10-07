@@ -30,7 +30,10 @@ public static class DefaultRolePermissionTemplate
             "mdm.gskus.retire",
             // WP-MDM-LSKU-ACCEPT-01 S1: the same for an LSKU — the direct retirement endpoint is the system's (MDM's
             // manifest already declares the action "System"); a person retires an LSKU through a retirement request.
-            "mdm.lskus.retire"
+            "mdm.lskus.retire",
+            // WP-MDM-FG-ACCEPT-01 FIX1 item 9 (CT decision B): the same for a Finished Good — MDM declares the action
+            // "System"; no person is granted it (its endpoint comes with the FG lifecycle round).
+            "mdm.finished-goods.retire"
         };
 
     // FIX-PERM-ATTRIBUTION-2 — reference-data is a genuine, distinct Module (RoleAssignments grouping,

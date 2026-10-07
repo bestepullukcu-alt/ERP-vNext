@@ -21,7 +21,8 @@ namespace Diten.Web.Tests.Controllers;
 internal static class LayoutRenderer
 {
     public static async Task<string> RenderAsync<TProgram>(WebApplicationFactory<TProgram> factory, string viewPath,
-        string controller, string permission) where TProgram : class
+        string controller, string permission, IReadOnlyDictionary<string, object?>? viewDataValues = null,
+        params string[] extraPermissions) where TProgram : class
     {
         CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en");
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
@@ -35,7 +36,8 @@ internal static class LayoutRenderer
                 new Claim("tenant_id", Guid.NewGuid().ToString("D")),
                 new Claim("actor_type", "tenant_user"),
                 new Claim("sub", Guid.NewGuid().ToString("D")),
-                new Claim("permission", permission)
+                new Claim("permission", permission),
+                .. extraPermissions.Select(extra => new Claim("permission", extra))
             ], "fixture"))
         };
         httpContext.Request.Scheme = "https";
@@ -50,6 +52,9 @@ internal static class LayoutRenderer
             new RouteData { Values = { ["controller"] = controller, ["action"] = "Index" } },
             new ActionDescriptor(), new ModelStateDictionary());
         var viewData = new ViewDataDictionary(services.GetRequiredService<IModelMetadataProvider>(), actionContext.ModelState);
+        // FG FIX1 item 5: what the controller puts in ViewData before the view (e.g. the create permission and its token).
+        foreach (var (key, value) in viewDataValues ?? new Dictionary<string, object?>())
+            viewData[key] = value;
         var tempData = new TempDataDictionary(httpContext, services.GetRequiredService<ITempDataProvider>());
         await using var writer = new StringWriter();
         var viewContext = new ViewContext(actionContext, view, viewData, tempData, writer, new HtmlHelperOptions());

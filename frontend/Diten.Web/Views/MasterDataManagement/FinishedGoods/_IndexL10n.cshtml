@@ -21,6 +21,9 @@
         ErrorNotFound = Localizer["ErrorNotFound"].Value,
         ErrorUnauthorized = Localizer["ErrorUnauthorized"].Value,
         ErrorValidation = Localizer["ErrorValidation"].Value,
+        // FG FIX1 item 4: the controller's own sentences (an expired / foreign form attempt, a create that timed out).
+        ErrorInvalidFormAttempt = Localizer["ErrorInvalidFormAttempt"].Value,
+        ErrorTimeout = Localizer["ErrorTimeout"].Value,
         Export = Localizer["Export"].Value,
         Filter = SharedLocalizer["Filter"].Value,
         GskuNotReferenceable = Localizer["GskuNotReferenceable"].Value,
@@ -29,6 +32,30 @@
         LifecycleIdentityApproved = Localizer["LifecycleIdentityApproved"].Value,
         LifecyclePendingIdentityApproval = Localizer["LifecyclePendingIdentityApproval"].Value,
         LifecycleRetired = Localizer["LifecycleRetired"].Value,
+        // m9: the audited Draft cancellation as the list and the quick view show it (it takes precedence over Draft).
+        LifecycleCancelled = Localizer["LifecycleCancelled"].Value,
+        CancellationPendingAudit = Localizer["CancellationPendingAudit"].Value,
+        // Item 6: no silent partial export — every export entry says it writes only the page on screen.
+        CurrentPageOnly = Localizer["CurrentPageOnly"].Value,
+        // Item 6: MDM refusal codes → sentences (index.js refusalKeys). The screen never shows a raw code.
+        RefusalAdmissionCapacity = Localizer["RefusalAdmissionCapacity"].Value,
+        RefusalAuditBusy = Localizer["RefusalAuditBusy"].Value,
+        RefusalBindingInvariant = Localizer["RefusalBindingInvariant"].Value,
+        RefusalCodeBurnRefused = Localizer["RefusalCodeBurnRefused"].Value,
+        RefusalCodeNotIssued = Localizer["RefusalCodeNotIssued"].Value,
+        RefusalConcurrencyConflict = Localizer["RefusalConcurrencyConflict"].Value,
+        RefusalCreationNotSettled = Localizer["RefusalCreationNotSettled"].Value,
+        RefusalDraftAlreadyCancelled = Localizer["RefusalDraftAlreadyCancelled"].Value,
+        RefusalDraftCancelled = Localizer["RefusalDraftCancelled"].Value,
+        RefusalGskuLifecycleBusy = Localizer["RefusalGskuLifecycleBusy"].Value,
+        RefusalGskuNotApproved = Localizer["RefusalGskuNotApproved"].Value,
+        RefusalIdempotencyKeyConflict = Localizer["RefusalIdempotencyKeyConflict"].Value,
+        RefusalIdempotencyKeyInvalid = Localizer["RefusalIdempotencyKeyInvalid"].Value,
+        RefusalNotADraft = Localizer["RefusalNotADraft"].Value,
+        RefusalReconciliationRequired = Localizer["RefusalReconciliationRequired"].Value,
+        RefusalScopeUnavailable = Localizer["RefusalScopeUnavailable"].Value,
+        RefusalStoreUnavailable = Localizer["RefusalStoreUnavailable"].Value,
+        RefusalWriteFailed = Localizer["RefusalWriteFailed"].Value,
         NotAvailable = SharedLocalizer["NotAvailable"].Value,
         QuickView = Localizer["QuickView"].Value,
         RecordSaved = SharedLocalizer["RecordSaved"].Value,
@@ -38,6 +65,16 @@
         Search = Localizer["Search"].Value,
         Status = Localizer["Status"].Value,
         Unknown = SharedLocalizer["Unknown"].Value,
-        ViewDetails = SharedLocalizer["ViewDetails"].Value
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        // The list component's shared vocabulary (BL-440 factory): toolbar, filter, Save View and status words.
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Edit = SharedLocalizer["Edit"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value
     })
 </script>
