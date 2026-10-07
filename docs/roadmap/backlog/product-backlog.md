@@ -8063,6 +8063,28 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-573
+
+**Ürün stok davranışı izinleri (O-12) Auth'ta yok: üç `edit-stock-behaviour` anahtarı ürün yaşam döngüsü profilinin tam küme denetimini fırlatıyor; S3 geçici olarak kimlik anahtarlarını kullanıyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: FU04 S3 DUR ölçümü · KAYIT: 2026-10-07 · S5'TEN ÖNCE KAPANMALI
+
+`ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet`, `mdm.gskus.*`, `mdm.lskus.*` ve `mdm.finished-goods.*` ile başlayan her anahtarı yaşam döngüsü adayı sayıyor. Bu küme `PermissionKeys` ile birebir eşit olmalı ("exact eight base, eighteen lifecycle and one non-human recovery key"). Manifeste üç yeni anahtar girerse ürün modülünün Auth uzlaştırması tümüyle fırlar.
+
+CT kararı (S3, b): bu dilimde geçici olarak `mdm.gskus.update`, `mdm.lskus.create` ve `mdm.finished-goods.create` kullanılıyor (FG taslak iptali emsali). Komut ve izin sabiti ayrı; yalnız değer geçici.
+
+Yapılacak:
+- Üç anahtar profilin `PermissionKeys`'ine ve ProductDataSteward rolüne eklenir; hata metnindeki sayı güncellenir.
+- S3 sabitlerinin değeri kendi anahtarına çevrilir.
+- FG taslak iptali için de kendi anahtarı değerlendirilir.
+- Plan eşitlemesi ve rol matrisi testleri.
+
+Karşılaştırma: SAP'de malzeme ana verisinin görünümleri (temel veri, depo, MRP) ayrı yetki nesneleriyle (M_MATE_STA) korunur. Oracle'da da kalem öznitelik grupları ayrı rol ayrıcalığıyla düzenlenir. İkisinde de stok görünümü kimlik düzenleyiciden ayrı yetkidir.
+
+Gelecek regresyon riski: 🟡 (geçici dönemde stok davranışını kimlik düzenleyicisi düzenler; ayrı veri sorumlusu rolü yok).
+
+---
+
 ### BL-571
 
 **Onay motoru kurtarma: kiracı başına tarama sınırı ilerlemiyor; 5000'den fazla yaşlı bekleyen onayı olan kiracıda sınırın dışında kalan yarım başlangıç hiç sayılmıyor, hiç kapatılmıyor**
