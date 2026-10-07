@@ -32,7 +32,7 @@ doktor → aktif segment → aktif oyun (STR-TUTUKON) → ürün satırı → ya
 | E0 ☑ | **Envanter (yalnız okuma):** TUTUKON konu / başlık / içerik / yol / yolculuk / oyun / segment / sıklık politikası / iddia; Beste'nin 4 ilçesindeki gastro + aile + dahiliye doktor sayısı | CT (Mongo + API, salt okuma) | Eksikler listesi; hangi adımların gerekli olduğu kesinleşir | ☐ |
 | E1 ☑ | **Segment:** `E2E-TUT-SINDIRIM` (kişi; uzmanlık ∈ {gastroenteroloji, aile hekimliği, iç hastalıkları}) oluştur → değerlendir → **etkinleştir** | CT, Segmentler sayfası (Beste) | Üye sayısı > 0; Beste'nin ilçelerindeki doktorlardan üye var | ☐ |
 | E2 ☑ | **İçerik:** en az 2 KnowledgeContent (TUTUKON, tr) — promo detaylama + bir non-promo bilgi. Gerekirse iddia bağı. Yayımla (onay akışı varsa sema) | CT (Beste) + kullanıcı sema girişi (onay) | İçerikler `published`, tr | ☐ |
-| E3 | **Yol (KnowledgePath):** içerikleri adım olarak içeren yol → gönder → onay → yayımla | CT + sema | Yol `released` / yayımlanmış sürüm | ☐ |
+| E3 ◐ | **Yol (KnowledgePath):** içerikleri adım olarak içeren yol → gönder → onay → yayımla | CT + sema | Yol `released` / yayımlanmış sürüm | ☐ |
 | E4 | **Yolculuk (ContentEngagementJourney):** en az 2 aşama, her aşama yola bağlı → yayımla | CT (+ sema SoD gerekirse) | Yolculuk yayımlanmış, aşamalar sıralı | ☐ |
 | E5 | **Oyun:** STR-TUTUKON'un **yeni sürümü** — segment bağlaması `E2E-TUT-SINDIRIM`, ürün satırı TUTUKON → E4 yolculuğu, sıklık politikası → etkinleştir | CT (Beste) | Aktif oyun yeni segmente bağlı; eski sürüm "superseded" | ☐ |
 | E6 | **Sıklık:** TUTUKON segmenti için sıklık politikası (ör. dönemde 3) aktif mi; değilse `E2E-TUT-VFP` oluştur + etkinleştir | CT | Önizlemede `frequencyStatus = resolved` | ☐ |
@@ -134,3 +134,16 @@ Konu SUBJ-002 (TUTUKON). Kitle profili boş (alan zorunlu değil). Ürün bağla
 - **E2-B2 (ürün / uyum kararı):** İçerik durumu formdan doğrudan `published` seçilerek yayımlanıyor; inceleme / onay (MLR) adımı yok. Yayın kapısı yalnız bağlı iddia varsa devreye giriyor. Tanıtım içeriği için onay akışı gerekip gerekmediği karar gerektirir.
 - **E2-B3 (bilinen):** İçerik türü / durum / kaynak / dil açılırları ham kod gösteriyor (presentation, draft, manual, tr).
 - Not: düzenlemeden sonra kayıttaki `Version` 0 kaldı (iyimser eşzamanlılık sayacı artmıyor olabilir) → E2E-FIX'te kontrol.
+### E3 — Bilgi Yolu (CT, 2026-10-07; Beste girişi) ◐ onay bekliyor
+**Yazmalar:**
+- Yol oluşturuldu `KP-2026-269A07` "E2E-TUT — TUTUKON sindirim konforu yolu" (id `29eff507-85fb-4dd8-bbe0-043c67ee4e3d`).
+  - Zincir: Tutukon Sindirim Konforu Zinciri vv1, TR / tr.
+  - Ürün TUTUKON ve kitle "General Surgery / Family Medicine" zincirden geldi.
+- 5 adım dolduruldu:
+  - Ana akış: Bileşen / Etki ← detaylama · Fayda ← detaylama · İhtiyaç ← kullanım ve dozaj.
+  - Kısa akış: Fayda ← detaylama · İhtiyaç ← kullanım ve dozaj.
+- **Onaya gönderildi** (Rev 1) → MLR akışı Medikal → Hukuk → Ruhsat; iş öğesi Görev Merkezi'nde. Onaylar için **sema girişi** gerekiyor.
+
+**Bulgular:**
+- **E3-B1 (küçük):** Adım kartları boşken "İsteğe bağlı" etiketi taşıyor ama "Eksik" engeli sayılıyor (5 engel). Doldurunca "Zorunlu" oluyor → etiket tutarsız.
+- **E3-B2 (gözlem):** Kitle zincirden "General Surgery / Family Medicine" geliyor; hedef gastroenteroloji. Kitle yol ekranında değiştirilemiyor. Ziyaret çözücüsü kitleyi kullanıyorsa içerik eşleşmesi etkilenebilir → E7'de görülecek.
