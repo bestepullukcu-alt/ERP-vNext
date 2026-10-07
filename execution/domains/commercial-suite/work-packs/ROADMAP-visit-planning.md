@@ -5,7 +5,7 @@
 > Ayrıntılar: [durum analizi](VISIT-PLANNING-current-state-analysis.md) · [mockup brief](mockups/visit-planning/BRIEF-visit-planning-rep-week.md) · [mockup analizi](mockups/visit-planning/VISIT-PLANNING-mockup-analysis.md) · [mobil not](mobile/2026-10-06-visit-planning/MOBILE-NOTE-2026-10-06-visit-planning.md) · [mobil talepler](MOBILE-REQUESTS-2026-10-05-analysis.md)
 
 ## Neredeyiz
-**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** bitti (E2 + E4). ☑ **Faz 2** E2 + **E4 kabul** (`fecf231e`, 2026-10-07). ☑ D9 / F-1 (VP-FIX-2). ☑ **Faz 2b** E2 kabul (`529a6761d`). ☑ **Faz E2E** (E0–E11). ◐ **E2E-FIX-1/2/3** paketlendi (2026-10-07, paralel). K-7 kabul; yeni mockup bekleniyor (Faz 4 girdisi).
+**Faz 0 bitmek üzere** (yalnız 0.1 bölge ataması kullanıcıda). ☑ **Faz 1 — VP-FIX-1** bitti (E2 + E4). ☑ **Faz 2** E2 + **E4 kabul** (`fecf231e`, 2026-10-07). ☑ D9 / F-1 (VP-FIX-2). ☑ **Faz 2b** E2 kabul (`529a6761d`). ☑ **Faz E2E** (E0–E11). ◐ **E2E-FIX-1/2/3** paketlendi (2026-10-07, paralel). K-7 kabul; **mockup v2 analiz edildi** (Faz 4 girdisi hazır; S-1 kararı bekliyor).
 
 ## Yapılanlar (2026-10-06)
 | Ne | Kanıt |
@@ -115,6 +115,7 @@ Kurallar:
 - ☐ E2E'den gelen çözücü / süre kararları: **E7-B1** yolun iki dalı düzleşiyor (dal seçim kuralı) · **E7-B2** adım süresi süreye girmiyor · **E7-B3 / E8-B2** tek gün + "ayda 2" aralığı (B-4 / B-5 ile çözülür)
 
 ### Faz 4 — Web arayüzü (mockup'a göre)
+- ☑ **Mockup v2 geldi (2026-10-07), K-7 ek brief'i tam karşılıyor** → [v2 analizi](mockups/visit-planning/VISIT-PLANNING-mockup-v2-analysis.md). Rota / liste / yeni plan paneli dokunulmamış. Açık: **S-1** (ürün değişikliği onaylı haftaları etkilemez — CT önerisi, kullanıcı onayı); S-2..S-4 CT varsayılanı. "Son ziyaret" kaynağı SB-3c'ye bağlı.
 - ☐ VP-UI-1 liste + yeni plan paneli + detay üst kısım + durumlar + Ekip anahtarı (etkin değil)
 - ☐ VP-UI-2 Hedefler (bölge uyarısı, bölge dışı ekleme)
 - ☐ VP-UI-3 Haftalar + doktor paneli + yeniden açma penceresi
