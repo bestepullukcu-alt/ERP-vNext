@@ -56,5 +56,20 @@ internal static class PlanningSessionMapper
         s.CreatedAt,
         s.UpdatedAt,
         s.TargetWeekStart,
-        s.Selection.SelectedPharmacyIds.Count);
+        s.Selection.SelectedPharmacyIds.Count,
+        IsEmpty: !s.HasTargets(),
+        ApprovedWeekCount: s.Weeks.Count(w => w.IsApproved()));
+
+    /// <summary>WP-VP-3A — every week of the period for the detail: approved weeks with their visit count; the others
+    /// draft (the plan has targets) or empty (it has none) — the exact split needs a generation (the preview).</summary>
+    public static IReadOnlyList<PlanningWeekDto> DetailWeeks(PlanningSession s, DateOnly periodStart, DateOnly periodEnd, DateOnly today)
+        => PlanningWeekCalendar.PeriodWeeks(periodStart, periodEnd)
+            .Select(w =>
+            {
+                var stored = s.WeekOf(w.WeekStart);
+                int? count = stored is not null && stored.IsApproved() ? stored.PlannedVisitIds.Count : null;
+                var status = PlanningWeekCalendar.Derive(w, today, stored, count ?? (s.HasTargets() ? 1 : 0));
+                return PlanningWeekCalendar.ToDto(w, status, count, stored);
+            })
+            .ToList();
 }

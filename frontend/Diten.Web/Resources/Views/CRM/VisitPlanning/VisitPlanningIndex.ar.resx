@@ -126,4 +126,7 @@
   <data name="AddOutOfTerritory" xml:space="preserve"><value>إضافة حساب خارج المنطقة</value></data>
   <data name="ApplyConfirm" xml:space="preserve"><value>سيتم تخطيط {0} زيارة وسيتم قفل الخطة. هل تريد المتابعة؟</value></data>
   <data name="ApplyConfirmButton" xml:space="preserve"><value>نعم، احفظ الخطة</value></data>
+  <data name="ApplyWeekConfirm" xml:space="preserve"><value>سيتم حفظ {0} زيارات كخطة هذا الأسبوع وسيتم قفل الأسبوع. هل تريد المتابعة؟</value></data>
+  <data name="WeekEmptyBlocked" xml:space="preserve"><value>لا توجد زيارات للموافقة عليها في هذا الأسبوع.</value></data>
+  <data name="WeekLocked" xml:space="preserve"><value>تمت الموافقة على هذا الأسبوع؛ زياراته مقفلة.</value></data>
 </root>

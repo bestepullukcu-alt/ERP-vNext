@@ -139,7 +139,8 @@
             items.push({ className: 'js-route text-primary', icon: 'bx bx-map-alt', text: L.RouteAction, attrs: { 'data-id': id } });
         }
         items.push({ className: 'js-details', icon: 'bx bx-detail', text: L.Details, attrs: { 'data-id': id } });
-        if (canApply && !isLocked(status)) {
+        // WP-VP-3A — a plan with an approved week is approved week by week (Details); the whole-period apply is not offered.
+        if (canApply && !isLocked(status) && !(row.approvedWeekCount > 0)) {
             items.push({ className: 'js-apply text-success', icon: 'bx bx-check-circle', text: L.Apply, attrs: { 'data-id': id } });
         }
         return window.DitenDataTable?.renderActions ? window.DitenDataTable.renderActions(items) : '';
@@ -206,7 +207,8 @@
 
     const fetchRows = async () => {
         const data = await envelope(await fetch(`${endpoint}/sessions`, { credentials: 'same-origin', headers: getAuthHeaders() }));
-        return data?.items || (Array.isArray(data) ? data : []);
+        // WP-VP-3A — an archived plan (e.g. an empty draft that was cleared away) leaves the list.
+        return (data?.items || (Array.isArray(data) ? data : [])).filter(r => sStatus(r) !== 'archived');
     };
 
     const reload = async () => { allRows = await fetchRows(); if (dt) { dt.clear(); dt.rows.add(allRows).draw(false); } };

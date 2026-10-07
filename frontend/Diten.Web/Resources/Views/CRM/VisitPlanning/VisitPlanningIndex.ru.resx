@@ -126,4 +126,7 @@
   <data name="AddOutOfTerritory" xml:space="preserve"><value>Добавить учреждение вне территории</value></data>
   <data name="ApplyConfirm" xml:space="preserve"><value>Будет запланировано визитов: {0}, план будет заблокирован. Продолжить?</value></data>
   <data name="ApplyConfirmButton" xml:space="preserve"><value>Да, сохранить план</value></data>
+  <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} визитов будут сохранены как план этой недели, и неделя будет заблокирована. Продолжить?</value></data>
+  <data name="WeekEmptyBlocked" xml:space="preserve"><value>На этой неделе нет визитов для утверждения.</value></data>
+  <data name="WeekLocked" xml:space="preserve"><value>Эта неделя утверждена; её визиты заблокированы.</value></data>
 </root>

@@ -77,6 +77,16 @@ public sealed class ApplyPlanRequest
 
     /// <summary>Optional manual visiting order (target ids) — persisted on the session as "this week's plan".</summary>
     public List<Guid>? ManualVisitOrder { get; set; }
+
+    /// <summary>WP-VP-3A — the Monday (yyyy-MM-dd) to approve; absent ⇒ the whole-period apply (deprecated, Faz 4).</summary>
+    public string? WeekStart { get; set; }
+}
+
+/// <summary>WP-VP-3A — reopen an approved week (reason ≥ 10 characters).</summary>
+public sealed class ReopenPlanningWeekRequest
+{
+    public string? Reason { get; set; }
+    public int? ExpectedVersion { get; set; }
 }
 
 public sealed class ReplanPlanRequest

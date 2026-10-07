@@ -34,10 +34,11 @@ namespace Diten.CrmService.Application.Tests.VisitPlanning;
 /// SelectionMode=recommended + is all-or-nothing through the unit of work), re-plan (subset in place), territory=warn,
 /// supply-demand=warning-not-block, and the selection helpers.
 /// </summary>
-public sealed class VisitPlanningTests
+public sealed partial class VisitPlanningTests
 {
     private static readonly Guid Tenant = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly DateTimeOffset Now = new(2026, 8, 29, 0, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset Saturday5Sep = new(2026, 9, 5, 8, 0, 0, TimeSpan.Zero);
     private static Guid Id(int n) => Guid.Parse($"00000000-0000-0000-0000-{n:D12}");
 
     // ── AC-SESSION-2 — the status machine has NO reverse transition ──────────────────────────────────────────────
@@ -362,14 +363,18 @@ public sealed class VisitPlanningTests
     [Fact]
     public async Task FrequencyExtend_caps_weeks_at_period_length()
     {
+        // WP-VP-3A — the cadence is now "visits in the whole period"; spreading 10 over 3 draft weeks never leaves them
+        // (a week takes a second visit only because 10 > 3) and always starts in the first one.
         var frequency = new FakeFrequencyResolver { RequiredVisitCount = 10 };
         var planner = new FrequencyExtendPlanner(frequency);
+        var frame = new PlanningPeriodFrame(new DateOnly(2026, 9, 1), new DateOnly(2026, 9, 28), Array.Empty<DateOnly>());
 
-        var result = await planner.ResolveWeeksAsync(
-            PlannedVisitTargetType.Contact, Id(1), null, null, Now, weekCount: 3, default);
+        var requirement = await planner.ResolveRequirementAsync(PlannedVisitTargetType.Contact, Id(1), Now, frame, default);
+        var weeks = FrequencyExtendPlanner.Distribute(requirement.RequiredInPeriod, weekCount: 3);
 
-        Assert.All(result.WeekIndices, w => Assert.InRange(w, 0, 2));
-        Assert.Contains(0, result.WeekIndices);
+        Assert.Equal(10, weeks.Count);
+        Assert.All(weeks, w => Assert.InRange(w, 0, 2));
+        Assert.Contains(0, weeks);
     }
 
     // ── WP-VP-FIX-1 — list count, committed lock, working days + calendar (production engine + real FU03 optimizer) ──
@@ -416,9 +421,10 @@ public sealed class VisitPlanningTests
     public async Task A_week_that_contains_a_weekend_gets_no_visit_on_saturday_or_sunday()
     {
         // The window opens on Saturday 2026-09-05, so the greedy optimizer's FIRST candidate day is a weekend day.
+        // WP-VP-3A — the window now opens on TODAY (TargetWeekStart no longer restricts generation): today = that Saturday.
         var env = Env.WithRealRoute(targetWeekStart: "2026-09-05");
 
-        var outcome = await env.Engine.PreviewAsync(env.Session, env.Options(), default);
+        var outcome = await env.Engine.PreviewAsync(env.Session, env.Options(Saturday5Sep), default);
 
         Assert.True(outcome.Success);
         var dates = outcome.Preview!.Scheduled.Select(s => DateOnly.Parse(s.PlannedDate)).ToList();
@@ -436,7 +442,7 @@ public sealed class VisitPlanningTests
         var env = Env.WithRealRoute(targetWeekStart: "2026-09-05");
         env.WorkingDays.Holidays.Add(new DateOnly(2026, 9, 7)); // Monday is a public holiday
 
-        var outcome = await env.Engine.PreviewAsync(env.Session, env.Options(), default);
+        var outcome = await env.Engine.PreviewAsync(env.Session, env.Options(Saturday5Sep), default);
 
         Assert.True(outcome.Success);
         var dates = outcome.Preview!.Scheduled.Select(s => DateOnly.Parse(s.PlannedDate)).ToList();
@@ -456,7 +462,7 @@ public sealed class VisitPlanningTests
         env.WorkingDays.Holidays.Add(new DateOnly(2026, 9, 7)); // never seen: the calendar refuses
         env.WorkingDays.Refuse = true;
 
-        var outcome = await env.Engine.PreviewAsync(env.Session, env.Options(), default);
+        var outcome = await env.Engine.PreviewAsync(env.Session, env.Options(Saturday5Sep), default);
 
         Assert.True(outcome.Success);
         var preview = outcome.Preview!;
@@ -497,6 +503,9 @@ public sealed class VisitPlanningTests
         public FakeApplyUnitOfWork UnitOfWork { get; } = new();
         public FakeWorkingDayChecker WorkingDays { get; } = new();
 
+        /// <summary>WP-VP-3A — visit reports ("done" = a completed report; a reported visit survives a week reopen).</summary>
+        public Diten.CrmService.Application.Tests.VisitReport.FakeVisitReportRepository Reports { get; } = new();
+
         /// <summary>WP-VP-2 (B-3) — the server-derived play / campaign (default: none).</summary>
         public Diten.CrmService.Application.Tests.VisitScope.FixedProvenanceDeriver Deriver { get; } = new();
 
@@ -535,7 +544,7 @@ public sealed class VisitPlanningTests
             Engine = new VisitPlanningEngine(
                 tenant, actor, Periods, Capacities, estimator, resolver, optimizer, selector, extend,
                 territoryGate, Accounts, Contacts, PlannedVisits, journeyProbe, frequencyProbe, consentProbe, availabilityProbe,
-                calendar, Deriver);
+                calendar, Deriver, Reports);
 
             Session = new PlanningSession
             {
@@ -593,6 +602,9 @@ public sealed class VisitPlanningTests
         }
 
         public VisitPlanGenerationOptions Options() => new(EffectiveAt: Now);
+
+        /// <summary>WP-VP-3A — "today" pinned (the horizon starts at today's week).</summary>
+        public VisitPlanGenerationOptions Options(DateTimeOffset today) => new(EffectiveAt: today);
 
         public PlannedVisitEntity SeedCommittedAtom(Guid contactId)
         {
@@ -723,13 +735,25 @@ public sealed class VisitPlanningTests
     {
         public int? RequiredVisitCount { get; set; }
 
+        /// <summary>WP-VP-3A — the policy's PeriodType (default: the cycle, i.e. "per period").</summary>
+        public string PeriodType { get; set; } = "cycle";
+
+        /// <summary>WP-VP-3A — targets with no policy even when <see cref="RequiredVisitCount"/> is set.</summary>
+        public HashSet<Guid> Unknown { get; } = new();
+
+        public List<ResolveVisitFrequencyPolicyQuery> Asked { get; } = new();
+
         public Task<VisitFrequencyResolveResult> ResolveAsync(
             ResolveVisitFrequencyPolicyQuery request, CancellationToken ct)
-            => Task.FromResult(new VisitFrequencyResolveResult(
-                RequiredVisitCount is null ? FrequencyStatus.Unknown : FrequencyStatus.Resolved,
-                RequiredVisitCount is null ? null : Id(60), "F1", "Freq", "reason",
-                RequiredVisitCount, "per-cycle", "cycle", null, null, null, null, 1, "manual",
+        {
+            Asked.Add(request);
+            var count = Unknown.Contains(request.TargetId) ? null : RequiredVisitCount;
+            return Task.FromResult(new VisitFrequencyResolveResult(
+                count is null ? FrequencyStatus.Unknown : FrequencyStatus.Resolved,
+                count is null ? null : Id(60), "F1", "Freq", "reason",
+                count, "per-cycle", PeriodType, null, null, null, null, 1, "manual",
                 Array.Empty<FrequencyCandidatePolicy>(), Array.Empty<string>()));
+        }
     }
 
     private sealed class FakeCycleCapacityRepository : ICycleCapacityRepository
@@ -921,6 +945,17 @@ public sealed class VisitPlanningTests
         }
 
         public Task ReplanAsync(IReadOnlyList<PlannedVisitEntity> atoms, CancellationToken ct) => Task.CompletedTask;
+
+        public int ReopenCalls { get; private set; }
+        public List<PlannedVisitEntity> CancelledAtoms { get; } = new();
+
+        public Task<bool> ReopenWeekAsync(
+            PlanningSession session, int expectedVersion, IReadOnlyList<PlannedVisitEntity> cancelledAtoms, CancellationToken ct)
+        {
+            ReopenCalls++;
+            CancelledAtoms.AddRange(cancelledAtoms);
+            return Task.FromResult(true);
+        }
     }
 
     private sealed class FakeCountryResolver : ICycleCapacityCountryResolver

@@ -126,4 +126,7 @@
   <data name="AddOutOfTerritory" xml:space="preserve"><value>添加辖区外客户</value></data>
   <data name="ApplyConfirm" xml:space="preserve"><value>将安排 {0} 次拜访，计划将被锁定。是否继续？</value></data>
   <data name="ApplyConfirmButton" xml:space="preserve"><value>是，保存计划</value></data>
+  <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} 次拜访将保存为本周计划，本周将被锁定。是否继续？</value></data>
+  <data name="WeekEmptyBlocked" xml:space="preserve"><value>本周没有可批准的拜访。</value></data>
+  <data name="WeekLocked" xml:space="preserve"><value>本周已批准，其拜访已锁定。</value></data>
 </root>

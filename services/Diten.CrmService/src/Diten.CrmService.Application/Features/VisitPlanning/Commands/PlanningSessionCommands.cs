@@ -45,7 +45,19 @@ public sealed record ApplyPlanningSessionCommand(
     double? StartLong,
     int? ExpectedVersion,
     // Optional manual visiting order (target ids) — persisted on the session and used to write the atoms in this order.
-    IReadOnlyList<Guid>? ManualVisitOrder = null) : IRequest<Response<VisitPlanApplyResult>>;
+    IReadOnlyList<Guid>? ManualVisitOrder = null,
+    // WP-VP-3A — a Monday (yyyy-MM-dd): approve ONLY this week (its atoms + the week stored as approved; the session is
+    // NOT committed). Absent ⇒ today's whole-period apply that commits the session (to be removed with Faz 4).
+    string? WeekStart = null) : IRequest<Response<VisitPlanApplyResult>>;
+
+/// <summary>WP-VP-3A (MK-4) — reopens an approved week: its visits without a report / outcome are cancelled
+/// (<c>week_reopened</c>), reported ones stay; the week becomes <c>reopened</c> and the reason goes into its history.
+/// Same permissions as apply (apply AND planned-visit.manage).</summary>
+public sealed record ReopenPlanningWeekCommand(
+    Guid PlanningSessionId,
+    string WeekStart,
+    string? Reason,
+    int? ExpectedVersion) : IRequest<Response<PlanningWeekReopenResult>>;
 
 /// <summary>Re-plans a subset (doctor missed / "I can go day X"): re-runs the route for the affected contacts and
 /// updates ONLY their atoms IN PLACE (D-REPLAN = A). The session is not reopened.</summary>

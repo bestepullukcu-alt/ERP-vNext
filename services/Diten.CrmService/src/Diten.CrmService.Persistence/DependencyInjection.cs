@@ -1111,6 +1111,29 @@ public static class DependencyInjection
         {
             BsonClassMap.RegisterClassMap<PlanningSessionGenerationState>(map => map.AutoMap());
         }
+        // WP-VP-3A — the stored (approved / reopened) weeks + their history. New embedded types are registered here or
+        // their Guid lists would be written binary while every other id is a string (the CRM new-type GUID trap). An
+        // older session document without "Weeks" reads as an empty list (the property initialiser).
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningWeek)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningWeek>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+                map.GetMemberMap(w => w.PlannedVisitIds)
+                    .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+                map.GetMemberMap(w => w.ManualVisitOrder)
+                    .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningWeekHistoryEntry)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningWeekHistoryEntry>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+            });
+        }
         if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningSessionProvenance)))
         {
             BsonClassMap.RegisterClassMap<PlanningSessionProvenance>(map =>

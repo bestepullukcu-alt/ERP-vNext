@@ -126,4 +126,7 @@
   <data name="AddOutOfTerritory" xml:space="preserve"><value>Add out-of-territory account</value></data>
   <data name="ApplyConfirm" xml:space="preserve"><value>{0} visits will be planned and the plan will be locked. Continue?</value></data>
   <data name="ApplyConfirmButton" xml:space="preserve"><value>Yes, save the plan</value></data>
+  <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} visits will be saved as this week's plan and the week will be locked. Continue?</value></data>
+  <data name="WeekEmptyBlocked" xml:space="preserve"><value>This week has no visits to approve.</value></data>
+  <data name="WeekLocked" xml:space="preserve"><value>This week is approved; its visits are locked.</value></data>
 </root>

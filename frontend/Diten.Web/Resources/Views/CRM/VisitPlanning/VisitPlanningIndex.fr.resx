@@ -126,4 +126,7 @@
   <data name="AddOutOfTerritory" xml:space="preserve"><value>Ajouter un compte hors territoire</value></data>
   <data name="ApplyConfirm" xml:space="preserve"><value>{0} visites seront planifiées et le plan sera verrouillé. Continuer ?</value></data>
   <data name="ApplyConfirmButton" xml:space="preserve"><value>Oui, enregistrer le plan</value></data>
+  <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} visites seront enregistrées comme plan de cette semaine et la semaine sera verrouillée. Continuer ?</value></data>
+  <data name="WeekEmptyBlocked" xml:space="preserve"><value>Cette semaine ne contient aucune visite à approuver.</value></data>
+  <data name="WeekLocked" xml:space="preserve"><value>Cette semaine est approuvée ; ses visites sont verrouillées.</value></data>
 </root>

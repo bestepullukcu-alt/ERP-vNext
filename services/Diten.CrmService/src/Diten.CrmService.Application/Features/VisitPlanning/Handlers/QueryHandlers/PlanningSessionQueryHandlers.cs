@@ -107,11 +107,18 @@ public sealed class GetPlanningSessionByIdHandler
 
     private readonly ICallerScope _caller;
     private readonly Features.PlannedVisit.VisitTargetNameReader _names;
+    private readonly Features.CyclePeriod.Read.ICyclePeriodReader? _periods;
+    private readonly TimeProvider _clock;
 
     public GetPlanningSessionByIdHandler(
         ITenantContext tenant, IPlanningSessionRepository repository, ICallerScope caller,
-        Features.PlannedVisit.VisitTargetNameReader names)
+        Features.PlannedVisit.VisitTargetNameReader names,
+        // WP-VP-3A — the period (for its weeks) and "today"; without the reader the detail carries no weeks.
+        Features.CyclePeriod.Read.ICyclePeriodReader? periods = null,
+        TimeProvider? clock = null)
     {
+        _periods = periods;
+        _clock = clock ?? TimeProvider.System;
         _tenant = tenant;
         _repository = repository;
         _caller = caller;
@@ -141,6 +148,19 @@ public sealed class GetPlanningSessionByIdHandler
                 .Select(id => (Guid?)id),
             selection.SelectedContacts.Select(c => (Guid?)c.ContactId),
             cancellationToken);
-        return Response<PlanningSessionDto>.Success(PlanningSessionMapper.ToDto(session, names), 200);
+        var dto = PlanningSessionMapper.ToDto(session, names);
+        if (_periods is not null && await _periods.GetByIdAsync(session.CyclePeriodId, cancellationToken) is { } period)
+        {
+            dto = dto with
+            {
+                Weeks = PlanningSessionMapper.DetailWeeks(
+                    session,
+                    DateOnly.FromDateTime(period.StartDate.UtcDateTime),
+                    DateOnly.FromDateTime(period.EndDate.UtcDateTime),
+                    PlanningWeekCalendar.Today(_clock.GetUtcNow()))
+            };
+        }
+
+        return Response<PlanningSessionDto>.Success(dto, 200);
     }
 }

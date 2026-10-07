@@ -208,8 +208,9 @@ public sealed class VisitExecutionFix1WebTests
         var js = VpScript("details.js");
         var apply = Between(js, "const apply = () => {", "\n    };");
         Assert.Contains("window.showConfirm(text, go,", apply);
-        Assert.Contains("L.ApplyConfirm", apply);
-        Assert.Contains(".replace('{0}', scheduled.length)", apply);
+        // WP-VP-3A — the confirm now speaks of THIS week (its own visits), not the whole plan.
+        Assert.Contains("L.ApplyWeekConfirm", apply);
+        Assert.Contains(".replace('{0}', weekRows.length)", apply);
         Assert.Contains("sessionStorage.setItem(APPLIED_TOAST_KEY, message)", apply);
         Assert.Contains("window.location.reload();", apply);
         // the confirm precedes the POST: the request lives inside `go`

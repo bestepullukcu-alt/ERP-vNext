@@ -39,7 +39,35 @@ public sealed record VisitPlanPreview(
     // WP-VP-FIX-1 (C3, additive) — whether the working calendar answered (resolved / unresolved + reason) and the run's
     // non-working days (yyyy-MM-dd, every generated week): weekends + holidays, or the Sat/Sun fallback when unresolved.
     PlanningCalendarStatusDto? CalendarStatus = null,
-    IReadOnlyList<string>? NonWorkingDates = null);
+    IReadOnlyList<string>? NonWorkingDates = null,
+    // WP-VP-3A (additive) — EVERY week of the period with its derived status (past / approved / draft / empty) and visit
+    // count; WeekNumber on a slot is the index into this list.
+    IReadOnlyList<PlanningWeekDto>? Weeks = null);
+
+/// <summary>WP-VP-3A — one week of the period plan. <see cref="Status"/> is derived (<see cref="PlanningWeekCalendar"/>);
+/// <see cref="StoredStatus"/> is the stored approve state (approved / reopened, null when never approved).</summary>
+public sealed record PlanningWeekDto(
+    string WeekStart,
+    int IsoWeek,
+    string From,
+    string To,
+    string Status,
+    int? VisitCount,
+    string? StoredStatus = null,
+    DateTimeOffset? ApprovedAt = null,
+    string? ApprovedBy = null,
+    IReadOnlyList<PlanningWeekHistoryDto>? History = null);
+
+/// <summary>WP-VP-3A (MK-4) — one approve / reopen of a week.</summary>
+public sealed record PlanningWeekHistoryDto(DateTimeOffset At, string? By, string Action, string? Reason);
+
+/// <summary>WP-VP-3A — the reopen answer: the week's new state and what happened to its visits.</summary>
+public sealed record PlanningWeekReopenResult(
+    Guid PlanningSessionId,
+    string WeekStart,
+    string Status,
+    IReadOnlyList<Guid> CancelledPlannedVisitIds,
+    IReadOnlyList<Guid> KeptPlannedVisitIds);
 
 /// <summary>WP-VP-FIX-1 — the working-calendar outcome of a run: <see cref="PlanningCalendarStatuses"/> + the reason code
 /// / text when the Sat/Sun fallback ran instead.</summary>
@@ -72,7 +100,14 @@ public sealed record PlannedSlotPreview(
     string? ContactSpecialty = null,
     // WP-SB-3b — the products this visit tells (projected over the doctor's earlier visits). Additive; no play /
     // campaign id inside.
-    IReadOnlyList<Diten.CrmService.Application.Features.VisitContentSequence.VisitContentItem>? ContentItems = null);
+    IReadOnlyList<Diten.CrmService.Application.Features.VisitContentSequence.VisitContentItem>? ContentItems = null,
+    // WP-VP-3A (additive) — the slot's week (Monday yyyy-MM-dd); IsFixed = an already-approved visit shown as it was
+    // written (not re-generated, S-1); the target's cadence (frequencyStatus resolved / conflict / unknown and the visits
+    // the WHOLE period needs).
+    string? WeekStart = null,
+    bool IsFixed = false,
+    string? FrequencyStatus = null,
+    int? RequiredVisitCount = null);
 
 /// <summary>One visit that could not be feasibly placed — the supply-vs-demand WARNING materialised (FU03 unscheduled).
 /// A warning the planner resolves, never a hard block (D-SUPPLY-DEMAND).</summary>
@@ -100,7 +135,10 @@ public sealed record DoctorContentPreview(
     bool ConsentBlocked,
     string? ConsentReason,
     // WP-SB-3b — the doctor's next visit products (resolver v2 items). Additive.
-    IReadOnlyList<Diten.CrmService.Application.Features.VisitContentSequence.VisitContentItem>? Items = null);
+    IReadOnlyList<Diten.CrmService.Application.Features.VisitContentSequence.VisitContentItem>? Items = null,
+    // WP-VP-3A (additive) — the doctor's cadence: status + the visits the whole period needs.
+    string? FrequencyStatus = null,
+    int? RequiredVisitCount = null);
 
 /// <summary>The TRANSIENT supply-vs-demand summary (D-SUPPLY-DEMAND-SHAPE = A). <see cref="Supply"/> is the
 /// CyclePeriod-pinned CycleCapacity.TotalVisitNumber (visits the rep CAN do; null when the calendar could not resolve
@@ -120,7 +158,11 @@ public sealed record VisitPlanApplyResult(
     string Status,
     IReadOnlyList<Guid> CommittedPlannedVisitIds,
     int ScheduledCount,
-    int UnscheduledCount);
+    int UnscheduledCount,
+    // WP-VP-3A (additive) — set when a single week was approved: its Monday and stored status ("approved"). For a week
+    // approval CommittedPlannedVisitIds lists the atoms THIS approval wrote.
+    string? WeekStart = null,
+    string? WeekStatus = null);
 
 /// <summary>A read model of the staging session for the console's "my draft plans" list + detail.</summary>
 public sealed record PlanningSessionDto(
@@ -149,7 +191,11 @@ public sealed record PlanningSessionDto(
     string? UpdatedBy,
     // WP-VP-2 (B-8, additive) — the selected accounts / pharmacies with their names (the id arrays above are unchanged).
     IReadOnlyList<PlanningSessionNamedRefDto>? SelectedAccounts = null,
-    IReadOnlyList<PlanningSessionNamedRefDto>? SelectedPharmacies = null);
+    IReadOnlyList<PlanningSessionNamedRefDto>? SelectedPharmacies = null,
+    // WP-VP-3A (additive) — every week of the period with its status. Approved weeks carry their visit count; for the
+    // other weeks the detail cannot know without generating, so it says draft when the plan has targets, empty when it
+    // has none (VisitCount null) — the exact per-week draft / empty comes from the preview.
+    IReadOnlyList<PlanningWeekDto>? Weeks = null);
 
 public sealed record PlanningSessionContactDto(
     Guid ContactId,
@@ -178,4 +224,7 @@ public sealed record PlanningSessionListItemDto(
     DateTimeOffset? UpdatedAt,
     string? TargetWeekStart = null,
     // WP-VP-FIX-1 (D1, additive) — the list's "N doctors · M pharmacies" column.
-    int SelectedPharmacyCount = 0);
+    int SelectedPharmacyCount = 0,
+    // WP-VP-3A (D3, additive) — no target at all (the "empty draft" badge; only such a plan may be archived).
+    bool IsEmpty = false,
+    int ApprovedWeekCount = 0);

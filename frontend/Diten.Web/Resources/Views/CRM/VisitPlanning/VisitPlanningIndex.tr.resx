@@ -126,4 +126,7 @@
   <data name="AddOutOfTerritory" xml:space="preserve"><value>Bölge dışı hesap ekle</value></data>
   <data name="ApplyConfirm" xml:space="preserve"><value>{0} ziyaret planlanacak ve plan kilitlenecek. Devam edilsin mi?</value></data>
   <data name="ApplyConfirmButton" xml:space="preserve"><value>Evet, planı kaydet</value></data>
+  <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} ziyaret bu haftanın planı olarak kaydedilecek ve hafta kilitlenecek. Devam edilsin mi?</value></data>
+  <data name="WeekEmptyBlocked" xml:space="preserve"><value>Bu haftada onaylanacak ziyaret yok.</value></data>
+  <data name="WeekLocked" xml:space="preserve"><value>Bu hafta onaylandı; ziyaretleri kilitli.</value></data>
 </root>

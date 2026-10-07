@@ -51,7 +51,20 @@ public sealed class VisitPlanningController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new ApplyPlanningSessionCommand(
                 request.PlanningSessionId, request.VisitPurpose, request.VisitType,
-                request.StartLat, request.StartLong, request.ExpectedVersion, request.ManualVisitOrder),
+                request.StartLat, request.StartLong, request.ExpectedVersion, request.ManualVisitOrder,
+                request.WeekStart),
+            cancellationToken));
+
+    /// <summary>WP-VP-3A — reopen an approved week: its visits without a report are cancelled (<c>week_reopened</c>),
+    /// reported ones stay; the reason goes into the week's history. Same keys as apply (apply AND planned-visit.manage).</summary>
+    [HttpPost("api/crm/visit-plan/sessions/{planningSessionId:guid}/weeks/{weekStart}/reopen")]
+    [HasPermission(Perms.Apply)]
+    [HasPermission(Perms.PlannedVisitManage)]
+    public async Task<IActionResult> ReopenWeek(
+        Guid planningSessionId, string weekStart, [FromBody] ReopenPlanningWeekRequest request,
+        CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new ReopenPlanningWeekCommand(planningSessionId, weekStart, request.Reason, request.ExpectedVersion),
             cancellationToken));
 
     /// <summary>Re-plan a subset in place. Requires apply AND FU01 planned-visit.manage.</summary>

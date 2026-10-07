@@ -717,8 +717,34 @@
         });
     };
 
+    // WP-VP-3A — the preview lists EVERY week of the period (index = weekNumber) with its derived status. Only an APPROVED
+    // week is locked (a read-only band, no save); every other week stays editable. "Re-plan" is still for legacy
+    // committed plans only (the server switches it off otherwise).
+    const weekInfo = week => ((lastPreview && lastPreview.weeks) || [])[week] || null;
+    const weekStartOf = week => { const w = weekInfo(week); if (w && w.weekStart) return w.weekStart; const m = weekMonday(week); return m ? ymd(m) : null; };
+    const isWeekApproved = week => { const w = weekInfo(week); return !!(w && w.status === 'approved'); };
+    const applyWeekLock = week => {
+        const locked = isWeekApproved(week);
+        const btn = el('vp-apply');
+        if (btn) btn.disabled = readOnly || locked;
+        let band = el('vp-week-locked');
+        if (locked && !band) {
+            const tabs = el('vp-day-tabs');
+            if (tabs && tabs.parentNode) {
+                band = document.createElement('div');
+                band.id = 'vp-week-locked';
+                band.className = 'alert alert-info py-2 small mb-2';
+                band.setAttribute('role', 'status');
+                band.innerHTML = '<i class="bx bx-lock-alt me-1" aria-hidden="true"></i>' + esc(L.WeekLocked || 'This week is approved; its visits are locked.');
+                tabs.parentNode.insertBefore(band, tabs);
+            }
+        }
+        if (band) band.classList.toggle('d-none', !locked);
+    };
+
     const renderWeek = week => {
         activeWeek = week;
+        applyWeekLock(week);
         setWeekLabel(week);
         const weekRows = scheduled.filter(s => s.weekNumber === week);
         const mon = weekMonday(week);
@@ -1167,11 +1193,14 @@
     // the reload through a one-shot sessionStorage flag (the LegalEntities / OrganizationUnits pattern).
     const APPLIED_TOAST_KEY = 'vp-applied-toast';
     const apply = () => {
-        if (readOnly) return Promise.resolve();
-        // A wholly empty plan (no visits on any day) has nothing to commit — block it. Partly-empty weeks are fine.
+        if (readOnly || isWeekApproved(activeWeek)) return Promise.resolve();
+        // WP-VP-3A — "save as this week's plan" approves ONLY the selected week (weekStart); the period plan stays open.
+        // A week without a visit of its own has nothing to approve.
+        const weekRows = scheduled.filter(s => s.weekNumber === activeWeek && !s.isFixed);
         if (!scheduled.length) { window.showToast?.(L.EmptyPlanBlocked || 'This plan has no visits, so it cannot be saved.', 'error'); return Promise.resolve(); }
+        if (!weekRows.length) { window.showToast?.(L.WeekEmptyBlocked || 'This week has no visits to approve.', 'error'); return Promise.resolve(); }
         const go = () => {
-            const body = { planningSessionId: sessionId, expectedVersion: currentVersion };
+            const body = { planningSessionId: sessionId, expectedVersion: currentVersion, weekStart: weekStartOf(activeWeek) };
             if (manualOrder && manualOrder.length) body.manualVisitOrder = manualOrder;
             return api('/apply', { method: 'POST', body: JSON.stringify(body) }).then(r => {
                 if (r.ok && r.body && r.body.data) {
@@ -1182,7 +1211,7 @@
                 else { window.showToast?.(errorText(r), 'error'); }
             });
         };
-        const text = (L.ApplyConfirm || '{0} visits will be planned and the plan will be locked.').replace('{0}', scheduled.length);
+        const text = (L.ApplyWeekConfirm || '{0} visits will be saved as this week\'s plan and the week will be locked.').replace('{0}', weekRows.length);
         if (window.showConfirm) { window.showConfirm(text, go, { type: 'warning', confirmButtonText: L.ApplyConfirmButton }); return Promise.resolve(); }
         return window.confirm(text) ? go() : Promise.resolve();
     };
