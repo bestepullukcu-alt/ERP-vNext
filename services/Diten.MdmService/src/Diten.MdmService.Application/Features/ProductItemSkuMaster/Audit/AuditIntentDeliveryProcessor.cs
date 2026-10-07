@@ -216,13 +216,9 @@ public sealed class AuditIntentDeliveryProcessor
     // About a day at the worker's default 30 s retry delay: a deploy-order gap, not a lasting refusal.
     public const int CentralMappingWaitAttempts = 2880;
 
-    // The operations BL-552 added (Platform map additions only). Only these wait for the central map.
-    private static readonly HashSet<ProductAuditOperation> AwaitingCentralMappingOperations =
-    [
-        ProductAuditOperation.GlobalProductIdentityDecisionNotApplicable,
-        ProductAuditOperation.GlobalProductCorrectionEnded,
-        ProductAuditOperation.GlobalProductRetirementEnded
-    ];
+    // Only the operations new to Platform in this release wait for the central map (WP-MDM-SETTLE-CAP-01: one place).
+    private static IReadOnlySet<ProductAuditOperation> AwaitingCentralMappingOperations =>
+        CentralMappingRollout.AwaitingCentralMapping;
 
     private static bool AwaitsCentralMapping(ProductAuditOperation operation, string? centralReason) =>
         AwaitingCentralMappingOperations.Contains(operation)

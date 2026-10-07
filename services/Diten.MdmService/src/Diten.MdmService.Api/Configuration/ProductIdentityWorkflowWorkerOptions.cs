@@ -52,14 +52,11 @@ public sealed class ProductIdentityWorkflowWorkerOptions
     // a window of 0 would trust "nothing arrived" at once, a negative limit would mean "never" (the bounds of the
     // correction and retirement workers).
     public static bool IsRecordAnswerWindowValid(int startSettleSeconds, int quarantineAfterFailedAttempts) =>
-        startSettleSeconds is >= 1 and <= MaxStartSettleSeconds
+        StartSettleWindow.IsValid(startSettleSeconds)
         && quarantineAfterFailedAttempts is >= 0 and <= 1_000;
 
-    // BL-552 flow 3 FIX3 EK (XMC-001, the engine team's finding): Platform's sweep closes a half-started workflow with no
-    // task after WorkflowStartRecovery:AbandonAfterMinutes (at least 15, default 30). A settle window longer than that
-    // could keep MDM "waiting for the start to settle" on a start Platform has already closed. 25 min: the sweep's
-    // shortest age must stay at least 5 min longer. The identity, correction and retirement workers share it.
-    public const int MaxStartSettleSeconds = 1_500;
+    // BL-552 flow 3 FIX3 EK: kept for the GP tests that name it; the rule itself (and why 25 min) is StartSettleWindow.
+    public const int MaxStartSettleSeconds = StartSettleWindow.MaxSeconds;
 
     public static bool IsStuckGaugeIntervalValid(int seconds) => seconds is >= 15 and <= 3_600;
 

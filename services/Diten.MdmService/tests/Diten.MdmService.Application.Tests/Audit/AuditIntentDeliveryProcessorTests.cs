@@ -245,6 +245,30 @@ public sealed class AuditIntentDeliveryProcessorTests
         Assert.Equal(deadLettered ? 0 : 1, result.RetryScheduled);
     }
 
+    // WP-MDM-SETTLE-CAP-01 (BL-566): the LSKU / GSKU operations Platform maps new in this release (82–86) wait like
+    // GP's three; their older LSKU neighbours, mapped by an earlier Platform, are dead-lettered as before.
+    [Theory]
+    [InlineData(ProductAuditOperation.GskuChildCreationAdmissionReleased, false)]
+    [InlineData(ProductAuditOperation.LskuDraftCancelled, false)]
+    [InlineData(ProductAuditOperation.LskuIdentityDecisionNotApplicable, false)]
+    [InlineData(ProductAuditOperation.LskuRetirementManualReconciliationRequired, false)]
+    [InlineData(ProductAuditOperation.LskuIdentitySubmitAbandoned, false)]
+    [InlineData(ProductAuditOperation.LskuIdentityApprovalWithdrawn, true)]
+    [InlineData(ProductAuditOperation.LskuRetirementRejected, true)]
+    public async Task The_lsku_and_gsku_operations_new_in_this_release_wait_for_platforms_map_too(
+        ProductAuditOperation operation, bool deadLettered)
+    {
+        var repository = new Repository { PayloadOperation = operation, ClaimAttemptCount = 1 };
+        var client = new Client((_, _) => TrustedSourceAuditIntentDeliveryResult.Terminal("AUDIT_SOURCE_INTENT_CONFLICT")
+            with { CentralReasonCode = AuditIntentDeliveryProcessor.MappingUnsupported });
+
+        var result = await Processor(repository, new IdentityProvider(), client).ProcessTenantAsync(
+            repository.TenantId, 10, "worker", TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(5), 3);
+
+        Assert.Equal(deadLettered ? 1 : 0, result.DeadLettered);
+        Assert.Equal(deadLettered ? 0 : 1, result.RetryScheduled);
+    }
+
     // Flow 3 FIX2 item 2: what waits is SAID — the worker's cycle reports it (count, operations, tenants) and writes one
     // Warning; the attempt at the bound is dead-lettered and is not counted as waiting.
     [Theory]

@@ -508,8 +508,11 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
     tells "ended, nothing held" from "stuck". A stuck request writes no audit of its own. Platform maps the new
     operations (`GlobalProductCorrectionEnded`, `GlobalProductRetirementEnded`,
     `GlobalProductIdentityDecisionNotApplicable`) as lifecycle transitions. **Deploy Platform first.** Platform answers
-    an operation it does not map with 409 `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED`. For these three operations only,
-    MDM's audit delivery then waits instead of dead-lettering: the intent stays retryable with that reason, for at most
+    an operation it does not map with 409 `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED`. For the operations new to Platform in
+    this release only — 79 onward: these three and the LSKU / GSKU five (`GskuChildCreationAdmissionReleased`,
+    `LskuDraftCancelled`, `LskuIdentityDecisionNotApplicable`, `LskuRetirementManualReconciliationRequired`,
+    `LskuIdentitySubmitAbandoned`), one rule in `CentralMappingRollout` — MDM's audit delivery then waits instead of
+    dead-lettering: the intent stays retryable with that reason, for at most
     2880 attempts (about a day at the default 30 s retry delay), and is delivered once Platform maps it. After that
     bound — or for any other operation — the intent is dead-lettered, never reaches the central log, and there is no
     tool to send a dead-lettered intent again (backlog BL-566). Watch: the delivery worker writes one Warning per
