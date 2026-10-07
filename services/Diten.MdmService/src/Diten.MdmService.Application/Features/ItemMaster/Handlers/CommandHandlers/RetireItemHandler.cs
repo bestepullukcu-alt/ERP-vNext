@@ -35,6 +35,8 @@ public sealed class RetireItemHandler : IRequestHandler<RetireItemCommand, Respo
 
     public async Task<Response<ItemModels.ItemDto>> Handle(RetireItemCommand command, CancellationToken cancellationToken)
     {
+        command.AuditDetails.Set(ItemAudit.ReasonProvided, !string.IsNullOrWhiteSpace(command.Request.Reason));
+        command.AuditDetails.Set(ItemAudit.Lifecycle, "Retired");
         var item = await _items.GetByIdAsync(command.ItemId, cancellationToken);
         if (item is null) return Response<ItemModels.ItemDto>.Fail(ItemErrors.NotFound, 404);
         if (item.LifecycleStatus == ItemLifecycleStatus.Active)
@@ -45,6 +47,7 @@ public sealed class RetireItemHandler : IRequestHandler<RetireItemCommand, Respo
         if (item.Version != expectedVersion) return Response<ItemModels.ItemDto>.Fail(ItemErrors.ConcurrencyConflict, 409);
 
         var check = await CheckStockAsync(item.Id, cancellationToken);
+        command.AuditDetails.Set(ItemAudit.StockCheck, check.Cause is null ? check.Outcome.ToString() : $"{check.Outcome}:{check.Cause}");
         if (check.Outcome != InventoryStockCheckOutcome.Zero)
         {
             var code = check.Outcome == InventoryStockCheckOutcome.NonZero
@@ -56,12 +59,15 @@ public sealed class RetireItemHandler : IRequestHandler<RetireItemCommand, Respo
                 : Response<ItemModels.ItemDto>.Fail([code, check.Cause ?? "STOCK_CHECK_UNAVAILABLE"], 503);
         }
 
+        var before = ItemAudit.Snapshot(item);
         item.LifecycleStatus = ItemLifecycle.Target(item.LifecycleStatus, ItemTransition.Retire, item.ActivationKind);
         item.NameKey = null;
         item.RetirementReason = command.Request.Reason!.Trim();
         item.RetiredAt = DateTimeOffset.UtcNow;
         item.UpdatedBy = _actor.ActorId;
-        return ItemWrites.Map(await _items.ReplaceAsync(item, expectedVersion, cancellationToken));
+        var written = await _items.ReplaceAsync(item, expectedVersion, cancellationToken);
+        if (written.Succeeded) ItemAudit.RecordChanges(command.AuditDetails, before, item, draft: true);
+        return ItemWrites.Map(written);
     }
 
     private async Task<InventoryStockCheck> CheckStockAsync(Guid itemId, CancellationToken cancellationToken)

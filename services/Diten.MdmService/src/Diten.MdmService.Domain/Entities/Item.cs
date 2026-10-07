@@ -25,6 +25,9 @@ public sealed class Item : EntityBase
     public List<ItemUomConversion> UomConversions { get; set; } = [];
     public List<string> StorageConditionCodes { get; set; } = [];
     public List<ReferenceCatalogSelection> StorageConditionSelections { get; set; } = [];
+    // FIX1 M6: each stored storage code's ConditionKind (TEMPERATURE | PROTECTION) as the list answered it, so an edit
+    // that adds no code checks O-2 without resolving again. A row without it (S1) resolves its storage codes once.
+    public Dictionary<string, string>? StorageConditionKinds { get; set; }
     public bool LotControlled { get; set; }
     public bool Stockable { get; set; }
     public int? ShelfLifeDays { get; set; }

@@ -44,9 +44,12 @@ public sealed class CreateItemHandler : IRequestHandler<CreateItemCommand, Respo
         // The same key again: the first answer (and a creation it left unfinished is finished), or a conflict.
         if (await _items.GetByCreationCommandIdAsync(commandId, cancellationToken) is { } existing)
         {
-            return existing.CreationFingerprint != fingerprint
-                ? Response<Guid>.Fail(ItemErrors.IdempotencyKeyConflict, 409)
-                : await CompleteAsync(existing, reservationCommandId, commandId, 200, cancellationToken);
+            // FIX1 M9: the key of a deleted row is spent — never a replay. FIX1 M8: a replay is recorded too (AUD-001:
+            // every request), marked as one.
+            if (existing.IsDeleted) return Response<Guid>.Fail(ItemErrors.CreationCommandTombstoned, 409);
+            if (existing.CreationFingerprint != fingerprint) return Response<Guid>.Fail(ItemErrors.IdempotencyKeyConflict, 409);
+            command.AuditDetails.Set(ItemAudit.Replay, true);
+            return await CompleteAsync(existing, reservationCommandId, commandId, 200, cancellationToken);
         }
 
         if (ItemRules.ConversionShapeFailure(values.UomConversions) is { } shape)
@@ -105,6 +108,7 @@ public sealed class CreateItemHandler : IRequestHandler<CreateItemCommand, Respo
             UomConversions = values.UomConversions.ToList(),
             StorageConditionCodes = values.StorageConditionCodes.ToList(),
             StorageConditionSelections = proof.StorageConditions.ToList(),
+            StorageConditionKinds = new(proof.StorageConditionKinds, StringComparer.Ordinal),
             LotControlled = values.LotControlled,
             Stockable = values.Stockable,
             ShelfLifeDays = values.ShelfLifeDays,
@@ -141,6 +145,8 @@ public sealed class CreateItemHandler : IRequestHandler<CreateItemCommand, Respo
             return Response<Guid>.Fail(refusal, 409);
         }
 
+        // FIX1 item 2: the new row's values (AUD-001 §21 "sonraki").
+        foreach (var (field, value) in ItemAudit.Snapshot(created.Item)) command.AuditDetails.Created(field, value);
         return await CompleteAsync(created.Item, reservationCommandId, commandId, 201, cancellationToken);
     }
 

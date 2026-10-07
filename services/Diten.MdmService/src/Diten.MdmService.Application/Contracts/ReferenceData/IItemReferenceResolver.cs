@@ -20,6 +20,7 @@ public static class ItemReferenceSets
     // storage-condition attribute (FU01 §4): TEMPERATURE | PROTECTION — the O-2 rule reads it, never a code list.
     public const string ConditionKindAttribute = "ConditionKind";
     public const string TemperatureKind = "TEMPERATURE";
+    public const string ProtectionKind = "PROTECTION";
 }
 
 public sealed record ItemReferenceRequest(string SetCode, string ValueCode);

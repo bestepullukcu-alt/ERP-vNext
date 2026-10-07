@@ -25,7 +25,6 @@ public sealed class ItemMasterUnitTests
     [
         (ItemLifecycleStatus.Draft, ItemTransition.Update),
         (ItemLifecycleStatus.Active, ItemTransition.Update),
-        (ItemLifecycleStatus.Deactivated, ItemTransition.Update),
         (ItemLifecycleStatus.Draft, ItemTransition.Submit),
         (ItemLifecycleStatus.PendingActivation, ItemTransition.Withdraw),
         (ItemLifecycleStatus.PendingActivation, ItemTransition.ApproveActivation),
@@ -79,6 +78,11 @@ public sealed class ItemMasterUnitTests
     [InlineData("KGM", "GRM", "1,5", "1", "FACTOR_NOT_A_POSITIVE_DECIMAL")]
     [InlineData("KGM", "GRM", ".5", "1", "FACTOR_NOT_A_POSITIVE_DECIMAL")]
     [InlineData("", "GRM", "1", "1", "UOM_REQUIRED")]
+    // FIX1 M5: positivity from the text — 39 digits are valid, 29+ decimals are positive, 41 characters are not.
+    [InlineData("KGM", "GRM", "123456789012345678901234567890123456789", "1", null)]
+    [InlineData("KGM", "GRM", "0.00000000000000000000000000000001", "1", null)]
+    [InlineData("KGM", "GRM", "0.000000000000000000000000000000000000", "1", "FACTOR_NOT_A_POSITIVE_DECIMAL")]
+    [InlineData("KGM", "GRM", "12345678901234567890123456789012345678901", "1", "FACTOR_NOT_A_POSITIVE_DECIMAL")]
     public void A_conversion_is_a_positive_decimal_text_between_two_different_units(
         string from, string to, string numerator, string denominator, string? expected) =>
         Assert.Equal(expected, ItemRules.ConversionShapeFailure([Conversion(from, to, numerator, denominator)]));

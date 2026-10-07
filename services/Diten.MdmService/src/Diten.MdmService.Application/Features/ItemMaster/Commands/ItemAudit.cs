@@ -1,4 +1,5 @@
 using Diten.MdmService.Application.Contracts.Audit;
+using Diten.MdmService.Domain.Entities;
 using Diten.Shared.Core;
 using MediatR;
 
@@ -14,4 +15,66 @@ public static class ItemAudit
 
     public static AuditMetadata Metadata(AuditOperation operation) => new(
         Category: AuditCategory.MasterData, Operation: operation, EntityType: EntityType, SourceModule: SourceModule);
+
+    // FIX1 item 2: the only names an item audit record carries (master data — no password, token or personal datum).
+    public static readonly IReadOnlySet<string> Fields = new HashSet<string>(StringComparer.Ordinal)
+    {
+        nameof(Item.CanonicalCode), nameof(Item.Name), nameof(Item.Description), nameof(Item.MaterialType),
+        nameof(Item.BaseUomCode), nameof(Item.UomConversions), nameof(Item.StorageConditionCodes),
+        nameof(Item.LotControlled), nameof(Item.Stockable), nameof(Item.ShelfLifeDays), nameof(Item.RetestDays),
+        nameof(Item.MinRemainingShelfLifeDays), nameof(Item.LifecycleStatus)
+    };
+
+    public const string FirstFill = "firstFill";
+    // FIX1-EK (CT decision, AUD-001 §3): the free-text reason never enters the audit record — only whether one was given.
+    // The text stays on the item. A coded reason list (S5) brings "reasonCode" back as a list code.
+    public const string ReasonProvided = "reasonProvided";
+    public const string Replay = "replay";
+    public const string Lifecycle = "lifecycle";
+    public const string StockCheck = "stockCheck";
+
+    public static readonly IReadOnlySet<string> MetadataKeys = new HashSet<string>(StringComparer.Ordinal)
+    {
+        FirstFill, ReasonProvided, Replay, Lifecycle, StockCheck, AuditDetails.RefusalCodeKey
+    };
+
+    // The audited values of a row (codes and plain values; conversions as "FROM>TO=N/D", sorted).
+    public static Dictionary<string, object?> Snapshot(Item item) => new(StringComparer.Ordinal)
+    {
+        [nameof(Item.CanonicalCode)] = item.CanonicalCode,
+        [nameof(Item.Name)] = item.Name,
+        [nameof(Item.Description)] = item.Description,
+        [nameof(Item.MaterialType)] = ItemRules.Code(item.MaterialType),
+        [nameof(Item.BaseUomCode)] = item.BaseUomCode,
+        [nameof(Item.UomConversions)] = item.UomConversions
+            .Select(c => $"{c.FromUom}>{c.ToUom}={c.Numerator}/{c.Denominator}").Order(StringComparer.Ordinal).ToArray(),
+        [nameof(Item.StorageConditionCodes)] = item.StorageConditionCodes.Order(StringComparer.Ordinal).ToArray(),
+        [nameof(Item.LotControlled)] = item.LotControlled,
+        [nameof(Item.Stockable)] = item.Stockable,
+        [nameof(Item.ShelfLifeDays)] = item.ShelfLifeDays,
+        [nameof(Item.RetestDays)] = item.RetestDays,
+        [nameof(Item.MinRemainingShelfLifeDays)] = item.MinRemainingShelfLifeDays,
+        [nameof(Item.LifecycleStatus)] = item.LifecycleStatus.ToString()
+    };
+
+    // Only the fields whose value moved; an empty locked field filled on a non-Draft item is named in firstFill.
+    public static void RecordChanges(AuditDetails details, Dictionary<string, object?> before, Item after, bool draft)
+    {
+        var next = Snapshot(after);
+        var firstFill = new List<string>();
+        foreach (var (field, value) in next)
+        {
+            var previous = before[field];
+            if (Same(previous, value)) continue;
+            details.Change(field, previous, value);
+            if (!draft && Empty(previous) && field is not nameof(Item.Name) and not nameof(Item.Description))
+                firstFill.Add(field);
+        }
+        if (firstFill.Count > 0) details.Set(FirstFill, firstFill.ToArray());
+    }
+
+    private static bool Same(object? left, object? right) =>
+        left is string[] l && right is string[] r ? l.SequenceEqual(r, StringComparer.Ordinal) : Equals(left, right);
+
+    private static bool Empty(object? value) => value is null || value is string[] { Length: 0 };
 }

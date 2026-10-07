@@ -14,6 +14,9 @@ public static class ItemErrors
     public const string ConcurrencyConflict = "ITEM_CONCURRENCY_CONFLICT";
     public const string CriticalFieldLocked = "ITEM_CRITICAL_FIELD_LOCKED";
     public const string TransitionInvalid = "ITEM_LIFECYCLE_TRANSITION_INVALID";
+    // FIX1 M10 (CT decision): a Deactivated item is not edited (§8.1 / §14: only Draft and Active).
+    public const string DeactivatedNotEditable = "ITEM_DEACTIVATED_NOT_EDITABLE";
+    public const string CreationCommandTombstoned = "CREATION_COMMAND_TOMBSTONED";
     public const string RetireRequiresDeactivation = "ITEM_RETIRE_REQUIRES_DEACTIVATION";
     public const string RetireStockNotZero = "ITEM_RETIRE_STOCK_NOT_ZERO";
     public const string RetireStockCheckUnavailable = "ITEM_RETIRE_STOCK_CHECK_UNAVAILABLE";

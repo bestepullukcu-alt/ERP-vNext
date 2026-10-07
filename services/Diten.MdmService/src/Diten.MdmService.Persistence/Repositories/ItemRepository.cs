@@ -111,11 +111,12 @@ public sealed class ItemRepository : IItemRepository
         }
         catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
-            if (IsNameKeyConflict(exception)) return new(false, null, "ITEM_NAME_CONFLICT");
+            // FIX1 M2: first "is it this command's own row?" (a replay), only then a name conflict.
             var stored = await GetByCreationCommandIdAsync(item.CreationCommandId, cancellationToken)
                          ?? await GetByReservationIdAsync(item.CodeReservationId, cancellationToken);
-            return stored is not null && !stored.IsDeleted && SameFacts(stored, item)
-                ? new(true, stored)
+            if (stored is not null && !stored.IsDeleted && SameFacts(stored, item)) return new(true, stored);
+            return IsNameKeyConflict(exception)
+                ? new(false, null, "ITEM_NAME_CONFLICT")
                 : new(false, stored, "ITEM_DUPLICATE_CONFLICT");
         }
         catch (MongoConnectionException) { return AmbiguousWrite(); }
@@ -166,7 +167,9 @@ public sealed class ItemRepository : IItemRepository
         catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError")
                                                && exception is not MongoWriteException)
         {
-            var code = await _reservations.Find(Builders<CodeReservation>.Filter.Eq(x => x.Id, item.CodeReservationId))
+            // FIX1 M1: tenant-bounded like every other read here.
+            var code = await _reservations.Find(Builders<CodeReservation>.Filter.Eq(x => x.TenantId, _tenantId)
+                    & Builders<CodeReservation>.Filter.Eq(x => x.Id, item.CodeReservationId))
                 .FirstOrDefaultAsync(cancellationToken);
             return code?.BindingState == CodeReservationBindingState.Burned
                 ? new(false, null, "CODE_RESERVATION_BURNED")

@@ -28,12 +28,17 @@ public sealed class FakeItemReferences : IItemReferenceResolver
     public ConcurrentQueue<IReadOnlyList<ItemReferenceRequest>> Calls { get; } = new();
     public bool Outage { get; set; }
     public bool Throw { get; set; }
+    // FIX1 item 1: an answer whose storage conditions lack ConditionKind / carry no attributes at all.
+    public bool OmitConditionKind { get; set; }
+    public bool NullAttributes { get; set; }
     public HashSet<string> Retired { get; } = new(StringComparer.Ordinal);
 
     public void Reset()
     {
         Outage = false;
         Throw = false;
+        OmitConditionKind = false;
+        NullAttributes = false;
         Retired.Clear();
     }
 
@@ -52,7 +57,7 @@ public sealed class FakeItemReferences : IItemReferenceResolver
             var retired = Retired.Contains(request.ValueCode);
             return new ItemReferenceSelection(request.SetCode, request.ValueCode, VersionId, 1, "LATEST", ResolvedAt,
                 retired, !retired,
-                kind is null
+                NullAttributes ? null! : kind is null || OmitConditionKind
                     ? new Dictionary<string, string?>()
                     : new Dictionary<string, string?> { [ItemReferenceSets.ConditionKindAttribute] = kind });
         }).ToList()));

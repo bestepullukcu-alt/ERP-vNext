@@ -5,7 +5,8 @@ using MediatR;
 namespace Diten.MdmService.Application.Features.ItemMaster.Commands;
 
 public sealed record UpdateItemCommand(Guid ItemId, ItemModels.UpdateItemRequest Request)
-    : IRequest<Response<ItemModels.ItemDto>>, IAuditableCommand, IAuditMetadataProvider
+    : IRequest<Response<ItemModels.ItemDto>>, IAuditableCommand, IAuditMetadataProvider, IAuditDetailsProvider
 {
     public AuditMetadata GetAuditMetadata() => ItemAudit.Metadata(AuditOperation.Update);
+    public AuditDetails AuditDetails { get; } = new();
 }

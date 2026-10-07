@@ -10,6 +10,8 @@ namespace Diten.MdmService.Application.Features.ItemMaster.Handlers.QueryHandler
 public sealed class GetItemListHandler(IItemRepository items) : IRequestHandler<GetItemListQuery, Response<ItemModels.ItemListDto>>
 {
     public const int MaximumPageSize = 100;
+    // FIX1 M3: (page - 1) * pageSize stays an int — a page past this is 400, never an overflow (500).
+    public const int MaximumPage = 1_000_000;
     public const int MaximumQueryLength = 200;
 
     public async Task<Response<ItemModels.ItemListDto>> Handle(GetItemListQuery query, CancellationToken cancellationToken)
@@ -18,7 +20,7 @@ public sealed class GetItemListHandler(IItemRepository items) : IRequestHandler<
         var pageSize = query.PageSize ?? 20;
         ItemMaterialType? type = null;
         ItemLifecycleStatus? status = null;
-        if (page < 1 || pageSize is < 1 or > MaximumPageSize || query.Q?.Length > MaximumQueryLength
+        if (page is < 1 or > MaximumPage || pageSize is < 1 or > MaximumPageSize || query.Q?.Length > MaximumQueryLength
             || query.MaterialType is not null && !TryType(query.MaterialType, out type)
             || query.Status is not null && !TryStatus(query.Status, out status))
             return Response<ItemModels.ItemListDto>.Fail("INVALID_PARAMETER", 400);

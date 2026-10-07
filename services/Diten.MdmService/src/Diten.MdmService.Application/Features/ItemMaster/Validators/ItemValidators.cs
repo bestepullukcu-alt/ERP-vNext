@@ -24,6 +24,11 @@ public sealed class ItemFieldsInputValidator : AbstractValidator<ItemModels.Item
             .WithMessage("ITEM_DESCRIPTION_INVALID");
         RuleFor(x => x.MaterialType).NotEmpty().WithMessage("ITEM_MATERIAL_TYPE_REQUIRED");
         RuleFor(x => x.BaseUomCode).NotEmpty().WithMessage("ITEM_BASE_UOM_REQUIRED");
+        // FIX1 M4: a list code is short; anything longer is refused before the lists are asked.
+        RuleFor(x => x.BaseUomCode).Must(code => code is null || code.Trim().Length <= MaximumCodeLength)
+            .WithMessage("ITEM_BASE_UOM_INVALID");
+        RuleFor(x => x.MaterialType).Must(code => code is null || code.Trim().Length <= MaximumCodeLength)
+            .WithMessage("ITEM_MATERIAL_TYPE_INVALID");
         RuleFor(x => x.LotControlled).NotNull().WithMessage("ITEM_LOT_CONTROLLED_REQUIRED");
         RuleFor(x => x.Stockable).NotNull().WithMessage("ITEM_STOCKABLE_REQUIRED");
         RuleFor(x => x.ShelfLifeDays).InclusiveBetween(1, ItemRules.DaysMaximum).When(x => x.ShelfLifeDays is not null)
@@ -35,16 +40,24 @@ public sealed class ItemFieldsInputValidator : AbstractValidator<ItemModels.Item
         RuleFor(x => x).Must(x => x.MinRemainingShelfLifeDays is null || x.ShelfLifeDays is null
                                   || x.MinRemainingShelfLifeDays <= x.ShelfLifeDays)
             .WithMessage("ITEM_MIN_REMAINING_SHELF_LIFE_INVALID");
-        RuleFor(x => x.UomConversions).Must(list => list is null || list.Count <= ItemRules.MaximumConversions && list.All(c => c is not null))
+        RuleFor(x => x.UomConversions).Must(list => list is null || list.Count <= ItemRules.MaximumConversions
+                && list.All(c => c is not null && Short(c.FromUom) && Short(c.ToUom)
+                                 && (c.Numerator?.Length ?? 0) <= ItemRules.MaximumFactorLength
+                                 && (c.Denominator?.Length ?? 0) <= ItemRules.MaximumFactorLength))
             .WithMessage(ItemErrors.UomConversionInvalid);
         RuleFor(x => x.StorageConditionCodes)
-            .Must(list => list is null || list.Count <= ItemRules.MaximumStorageConditions && list.All(c => !string.IsNullOrWhiteSpace(c)))
+            .Must(list => list is null || list.Count <= ItemRules.MaximumStorageConditions
+                && list.All(c => !string.IsNullOrWhiteSpace(c) && Short(c)))
             .WithMessage("ITEM_STORAGE_CONDITION_INVALID");
         RuleFor(x => x.UnmappedFields).Must(fields => fields is null || !fields.Keys.Any(IsForbidden))
             .WithMessage(ItemErrors.FieldForbidden);
         RuleFor(x => x.UnmappedFields).Must(fields => fields is null || fields.Count == 0)
             .WithMessage("UNKNOWN_WRITE_FIELD_FORBIDDEN");
     }
+
+    public const int MaximumCodeLength = 40;
+
+    private static bool Short(string? code) => code is null || code.Trim().Length <= MaximumCodeLength;
 
     internal static bool IsForbidden(string key) =>
         ForbiddenFields.Any(field => string.Equals(field, key, StringComparison.OrdinalIgnoreCase));

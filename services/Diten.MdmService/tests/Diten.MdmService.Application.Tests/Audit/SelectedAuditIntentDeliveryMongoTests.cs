@@ -442,21 +442,13 @@ public sealed class SelectedAuditIntentDeliveryMongoTests(AuditIntentTemporalMon
     public async Task Exact_reserved_evidence_of_a_finished_good_or_item_code_is_outside_the_selected_scope(
         CodeBearingEntityType type, string prefix)
     {
-        var intent = Intent(ProductAuditOperation.CodeReserved); intent.AggregateType = AuditAggregateType.CodeReservation;
-        intent.PreVersion = -1;
-        intent.PostVersion = 0;
-        intent.CausationId = intent.CommandId;
-        intent.SnapshotReference = $"CodeReservation/{intent.AggregateId:N}/0";
-        intent.IdempotencyKey = $"{_tenant:N}:CodeReservation:{intent.AggregateId:N}:{intent.CommandId}";
-        var code = prefix + "000000000001";
-        intent.EvidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-            $"{_tenant:N}|{intent.AggregateId:N}|{code}|{type}|RESERVED")));
-        await _database.GetCollection<CodeReservation>(Reservations).InsertOneAsync(new CodeReservation
-        {
-            Id = intent.AggregateId, TenantId = _tenant, EntityType = type, ReservedCode = code,
-            ReservedByActorId = intent.ActorId, ReservationCommandId = intent.CommandId,
-            ConsumedEntityId = Guid.NewGuid(), AuditIntents = [intent]
-        });
+        // FIX1 M12: the reservation and its intent come from the real producer, never built by hand.
+        var tenant = new Diten.MdmService.Application.Common.TenantContext();
+        tenant.SetTenant(_tenant);
+        var reservation = await new Diten.MdmService.Persistence.Repositories.CodeReservationRepository(_database, tenant)
+            .ReserveAsync(type, "selected-" + Guid.NewGuid().ToString("N"), "original-human-actor", "corr");
+        Assert.StartsWith(prefix, reservation.ReservedCode);
+        var intent = Assert.Single(reservation.AuditIntents);
         var before = await Read(Reservations, intent);
         var request = Request(intent);
 

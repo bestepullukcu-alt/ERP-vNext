@@ -24,7 +24,7 @@ namespace Diten.MdmService.Api.Tests;
 /// check (§8.3, fail-closed) and path-b audit of every write command, refused ones included.
 /// </summary>
 [Collection(MdmHttpCollection.Name)]
-public sealed class ItemS1HttpTests(MdmHttpHost host) : IAsyncLifetime
+public sealed partial class ItemS1HttpTests(MdmHttpHost host) : IAsyncLifetime
 {
     private static readonly string[] All =
     [
@@ -48,6 +48,7 @@ public sealed class ItemS1HttpTests(MdmHttpHost host) : IAsyncLifetime
         host.ItemReferences.Reset();
         host.Stock.Reset();
         host.Audit.ThrowOnForward = false;
+        host.Audit.Inner = null;
         return Task.CompletedTask;
     }
 

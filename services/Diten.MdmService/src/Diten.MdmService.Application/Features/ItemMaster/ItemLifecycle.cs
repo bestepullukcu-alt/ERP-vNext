@@ -22,7 +22,6 @@ public static class ItemLifecycle
     {
         (ItemLifecycleStatus.Draft, ItemTransition.Update) => true,
         (ItemLifecycleStatus.Active, ItemTransition.Update) => true,
-        (ItemLifecycleStatus.Deactivated, ItemTransition.Update) => true,
         (ItemLifecycleStatus.Draft, ItemTransition.Submit) => true,
         (ItemLifecycleStatus.PendingActivation, ItemTransition.Withdraw) => true,
         (ItemLifecycleStatus.PendingActivation, ItemTransition.ApproveActivation) => true,

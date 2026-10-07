@@ -9,7 +9,10 @@ namespace Diten.MdmService.Application.Features.ItemMaster.Handlers.CommandHandl
 public sealed class RequestItemReactivationHandler(IItemRepository items)
     : IRequestHandler<RequestItemReactivationCommand, Response<ItemModels.ItemDto>>
 {
-    public Task<Response<ItemModels.ItemDto>> Handle(RequestItemReactivationCommand command, CancellationToken cancellationToken) =>
-        ItemActivationSkeleton.RefuseAsync(items, command.ItemId, command.Request.ExpectedVersion!.Value,
+    public Task<Response<ItemModels.ItemDto>> Handle(RequestItemReactivationCommand command, CancellationToken cancellationToken)
+    {
+        command.AuditDetails.Set(ItemAudit.ReasonProvided, !string.IsNullOrWhiteSpace(command.Request.Reason));
+        return ItemActivationSkeleton.RefuseAsync(items, command.ItemId, command.Request.ExpectedVersion!.Value,
             ItemTransition.RequestReactivation, cancellationToken);
+    }
 }

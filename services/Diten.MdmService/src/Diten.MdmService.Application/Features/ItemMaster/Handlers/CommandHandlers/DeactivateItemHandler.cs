@@ -22,6 +22,8 @@ public sealed class DeactivateItemHandler : IRequestHandler<DeactivateItemComman
 
     public async Task<Response<ItemModels.ItemDto>> Handle(DeactivateItemCommand command, CancellationToken cancellationToken)
     {
+        // FIX1 item 2 / FIX1-EK: whether a reason was given (never its text), refused or not.
+        command.AuditDetails.Set(ItemAudit.ReasonProvided, !string.IsNullOrWhiteSpace(command.Request.Reason));
         var item = await _items.GetByIdAsync(command.ItemId, cancellationToken);
         if (item is null) return Response<ItemModels.ItemDto>.Fail(ItemErrors.NotFound, 404);
         if (!ItemLifecycle.Allows(item.LifecycleStatus, ItemTransition.Deactivate))
@@ -29,10 +31,13 @@ public sealed class DeactivateItemHandler : IRequestHandler<DeactivateItemComman
         var expectedVersion = command.Request.ExpectedVersion!.Value;
         if (item.Version != expectedVersion) return Response<ItemModels.ItemDto>.Fail(ItemErrors.ConcurrencyConflict, 409);
 
+        var before = ItemAudit.Snapshot(item);
         item.LifecycleStatus = ItemLifecycle.Target(item.LifecycleStatus, ItemTransition.Deactivate, item.ActivationKind);
         item.DeactivationReason = command.Request.Reason!.Trim();
         item.DeactivatedAt = DateTimeOffset.UtcNow;
         item.UpdatedBy = _actor.ActorId;
-        return ItemWrites.Map(await _items.ReplaceAsync(item, expectedVersion, cancellationToken));
+        var written = await _items.ReplaceAsync(item, expectedVersion, cancellationToken);
+        if (written.Succeeded) ItemAudit.RecordChanges(command.AuditDetails, before, item, draft: true);
+        return ItemWrites.Map(written);
     }
 }

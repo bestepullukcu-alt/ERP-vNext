@@ -27,7 +27,8 @@ public sealed record ItemFieldValues(
 public sealed record ItemReferenceProof(
     ReferenceCatalogSelection MaterialType,
     ReferenceCatalogSelection BaseUom,
-    IReadOnlyList<ReferenceCatalogSelection> StorageConditions);
+    IReadOnlyList<ReferenceCatalogSelection> StorageConditions,
+    IReadOnlyDictionary<string, string> StorageConditionKinds);
 
 public static class ItemRules
 {
@@ -111,12 +112,16 @@ public static class ItemRules
         return null;
     }
 
-    private static bool PositiveDecimalText(string text)
+    public const int MaximumFactorLength = 40;
+
+    // FIX1 M5: positivity is read from the text itself — digits with at most one inner '.', and at least one non-zero
+    // digit. No numeric parse: a 39-digit factor is not refused for overflowing a decimal, and a factor with 29+
+    // decimals is not rounded to zero.
+    internal static bool PositiveDecimalText(string text)
     {
-        if (text.Length is 0 or > 40 || text.Any(c => !(char.IsAsciiDigit(c) || c == '.'))) return false;
+        if (text.Length is 0 or > MaximumFactorLength || text.Any(c => !(char.IsAsciiDigit(c) || c == '.'))) return false;
         if (text.Count(c => c == '.') > 1 || text[0] == '.' || text[^1] == '.') return false;
-        return decimal.TryParse(text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var value)
-               && value > 0m;
+        return text.Any(c => c is >= '1' and <= '9');
     }
 
     // O-8 / O-9 / O-25: what Stockable = true needs on an item. Null when allowed.
@@ -188,11 +193,13 @@ public static class ItemRules
 
     private static bool Filled(int? value) => value is not null;
 
+    // FIX1 I6: the same conversions in another order are not a change (a record per unit pair, §4.4 rule 3).
     private static bool SameConversions(IReadOnlyList<ItemUomConversion> left, IReadOnlyList<ItemUomConversion> right) =>
         left.Count == right.Count
-        && left.Zip(right).All(pair =>
-            pair.First.FromUom == pair.Second.FromUom && pair.First.ToUom == pair.Second.ToUom
-            && pair.First.Numerator == pair.Second.Numerator && pair.First.Denominator == pair.Second.Denominator);
+        && left.Select(Key).Order(StringComparer.Ordinal).SequenceEqual(right.Select(Key).Order(StringComparer.Ordinal),
+            StringComparer.Ordinal);
+
+    private static string Key(ItemUomConversion c) => $"{c.FromUom}>{c.ToUom}={c.Numerator}/{c.Denominator}";
 
     public static ItemModels.ItemDto ToDto(Item item) => new(
         item.Id,

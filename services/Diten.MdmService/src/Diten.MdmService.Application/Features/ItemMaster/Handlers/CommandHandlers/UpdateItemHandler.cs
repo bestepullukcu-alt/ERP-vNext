@@ -8,8 +8,8 @@ using MediatR;
 
 namespace Diten.MdmService.Application.Features.ItemMaster.Handlers.CommandHandlers;
 
-// MOD-0290-FU04 §4.1 / §8.1: a Draft is edited freely. On an Active / Deactivated item only the name and the
-// description change without approval; an empty locked field may be filled once (O-8, audited), a filled one is the
+// MOD-0290-FU04 §4.1 / §8.1: a Draft is edited freely. On an Active item only the name and the description change
+// without approval (FIX1 M10, CT decision: a Deactivated item is not edited — ITEM_DEACTIVATED_NOT_EDITABLE); an empty locked field may be filled once (O-8, audited), a filled one is the
 // approved critical correction (a later slice) and is refused (ITEM_CRITICAL_FIELD_LOCKED). PendingActivation and
 // Retired are not edited. The code is never in the request (ITEM_FIELD_FORBIDDEN).
 public sealed class UpdateItemHandler : IRequestHandler<UpdateItemCommand, Response<ItemModels.ItemDto>>
@@ -29,6 +29,8 @@ public sealed class UpdateItemHandler : IRequestHandler<UpdateItemCommand, Respo
     {
         var item = await _items.GetByIdAsync(command.ItemId, cancellationToken);
         if (item is null) return Response<ItemModels.ItemDto>.Fail(ItemErrors.NotFound, 404);
+        if (item.LifecycleStatus == ItemLifecycleStatus.Deactivated)
+            return Response<ItemModels.ItemDto>.Fail(ItemErrors.DeactivatedNotEditable, 409);
         if (!ItemLifecycle.Allows(item.LifecycleStatus, ItemTransition.Update))
             return Response<ItemModels.ItemDto>.Fail(ItemErrors.TransitionInvalid, 409);
         var expectedVersion = command.Request.ExpectedVersion!.Value;
@@ -52,6 +54,8 @@ public sealed class UpdateItemHandler : IRequestHandler<UpdateItemCommand, Respo
         if (nameKey != item.NameKey && await _items.NameKeyTakenAsync(nameKey, item.Id, cancellationToken))
             return Response<ItemModels.ItemDto>.Fail(ItemErrors.NameConflict, 409);
 
+        var before = ItemAudit.Snapshot(item);
+        var draft = item.LifecycleStatus == ItemLifecycleStatus.Draft;
         item.Name = values.Name;
         item.NameNormalized = normalizedName;
         item.NameKey = nameKey;
@@ -63,13 +67,17 @@ public sealed class UpdateItemHandler : IRequestHandler<UpdateItemCommand, Respo
         item.UomConversions = values.UomConversions.ToList();
         item.StorageConditionCodes = values.StorageConditionCodes.ToList();
         item.StorageConditionSelections = proof.StorageConditions.ToList();
+        item.StorageConditionKinds = new(proof.StorageConditionKinds, StringComparer.Ordinal);
         item.LotControlled = values.LotControlled;
         item.Stockable = values.Stockable;
         item.ShelfLifeDays = values.ShelfLifeDays;
         item.RetestDays = values.RetestDays;
         item.MinRemainingShelfLifeDays = values.MinRemainingShelfLifeDays;
         item.UpdatedBy = _actor.ActorId;
-        return ItemWrites.Map(await _items.ReplaceAsync(item, expectedVersion, cancellationToken));
+        var written = await _items.ReplaceAsync(item, expectedVersion, cancellationToken);
+        // FIX1 item 2: only the fields that moved, before / after; an empty locked field filled now is named.
+        if (written.Succeeded) ItemAudit.RecordChanges(command.AuditDetails, before, item, draft);
+        return ItemWrites.Map(written);
     }
 }
 
