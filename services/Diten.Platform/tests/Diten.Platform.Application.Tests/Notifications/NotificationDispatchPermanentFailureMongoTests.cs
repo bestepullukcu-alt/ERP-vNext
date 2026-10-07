@@ -486,7 +486,7 @@ public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifet
                     dispatches, bus, failedHandlerLogger ?? NullLogger<MarkNotificationDispatchFailedHandler>.Instance,
                     meetings, attendees, userNotifications),
                 new CancelNotificationDispatchHandler(dispatches, bus)),
-            NullLogger<EmailDispatchJob>.Instance, templates, new EmailTemplateRenderer());
+            NullLogger<EmailDispatchJob>.Instance, NoInvitationLedger.Instance, templates, new EmailTemplateRenderer());
 
     // ── doubles ──────────────────────────────────────────────────────────────
 

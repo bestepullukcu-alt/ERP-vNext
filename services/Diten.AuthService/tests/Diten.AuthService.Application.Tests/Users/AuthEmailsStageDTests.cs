@@ -138,6 +138,22 @@ public sealed class AuthEmailsStageDTests
         Assert.Contains("Right Tenant", message.Body);
     }
 
+    [Fact]
+    public async Task A_new_challenge_belongs_to_the_users_tenant_not_to_the_one_a_request_header_names()
+    {
+        // FIX2 K9.
+        var (service, delivered, _, _) = Mfa(expiresAtUtc: DateTime.UtcNow.AddMinutes(4), requestTenant: Guid.NewGuid());
+        var recorder = Recorder!;
+        var userTenant = Guid.NewGuid();
+        var user = new User("other@tenant.test", "hash", "Other", "User", userTenant);
+
+        await service.CreateEmailChallengeAsync(user, "127.0.0.1", null, CancellationToken.None);
+
+        Assert.Single(delivered);
+        Assert.Equal(userTenant, Assert.Single(recorder.Tenants));
+        Assert.Equal(userTenant, Assert.Single(Created).TenantId);
+    }
+
     // ---------------------------------------------------------------- an expired code is never sent again
 
     [Fact]
@@ -205,6 +221,7 @@ public sealed class AuthEmailsStageDTests
     private static (MfaChallengeService Service, List<(string Email, string Code, DateTime ExpiresAt)> Delivered, List<AuditLine> Audit, MfaChallenge Challenge)
         Mfa(DateTime expiresAtUtc, Guid? requestTenant = null)
     {
+        CreatedList = [];
         var options = Options.Create(new MfaOptions { HashSecret = "stage-d-test-only-hmac-key", ExpiryMinutes = 5 });
         var tenantId = Guid.NewGuid();
         var user = new User("user@tenant.test", "hash", "User", "One", tenantId);
@@ -213,10 +230,14 @@ public sealed class AuthEmailsStageDTests
         MfaChallenge? challenge = null;
 
         var service = new MfaChallengeService(
-            Proxy<IMfaChallengeRepository>.Answering((method, args) => method switch
+            Proxy<IMfaChallengeRepository>.Answering((method, args) =>
             {
-                nameof(IMfaChallengeRepository.GetByChallengeIdHashAsync) => Task.FromResult(challenge),
-                _ => Task.CompletedTask
+                if (method == nameof(IMfaChallengeRepository.CreateAsync))
+                {
+                    Created.Add((MfaChallenge)args[0]!);
+                }
+
+                return method == nameof(IMfaChallengeRepository.GetByChallengeIdHashAsync) ? Task.FromResult(challenge) : Task.CompletedTask;
             }),
             Recorder = new DeliveryRecorder(delivered),
             Proxy<IUserRepository>.Answering((method, _) => method == nameof(IUserRepository.GetByIdAndTenantAsync)
@@ -243,6 +264,8 @@ public sealed class AuthEmailsStageDTests
     }
 
     [ThreadStatic] private static DeliveryRecorder? Recorder;
+    [ThreadStatic] private static List<MfaChallenge>? CreatedList;
+    private static List<MfaChallenge> Created => CreatedList ??= [];
 
     private sealed class DeliveryRecorder(List<(string, string, DateTime)> delivered) : IOtpDeliveryService
     {

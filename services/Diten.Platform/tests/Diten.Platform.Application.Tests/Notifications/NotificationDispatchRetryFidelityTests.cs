@@ -301,6 +301,7 @@ public sealed class NotificationDispatchRetryFidelityTests
             new SingleProviderResolver(provider),
             mediator,
             logger ?? NullLogger<EmailDispatchJob>.Instance,
+            NoInvitationLedger.Instance,
             templates,
             templates is null ? null : new EmailTemplateRenderer());
     }

@@ -239,51 +239,30 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
     }
 
     /// <summary>The "admin-invitation" provisioning step's key (RegisterTenantCommandHandler writes it Pending).</summary>
-    internal const string AdminInvitationStepKey = "admin-invitation";
+    internal const string AdminInvitationStepKey = TenantProvisioningStep.AdminInvitationKey;
 
-    // FIX1 (3) — read the tenant again right before the write (the invitation took an HTTP round trip), then record.
-    private async Task RecordInvitationOutcomeAsync(Guid tenantId, Guid adminId, AdminUserInvitationResult result, CancellationToken ct)
+    // FIX1 (3) / FIX2 — the outcome on the tenant record, as a targeted write (K7: a suspension made meanwhile stays).
+    // FIX2 (1) — on the event path "an account already exists" is NEVER a success: an invitation half-made by an earlier
+    // attempt and an account somebody else made look the same from here, so the step says the state is unknown and how to
+    // repair it (the operator's "Invite": a new link, the BL-529 reset, audited).
+    private Task RecordInvitationOutcomeAsync(Guid tenantId, Guid adminId, AdminUserInvitationResult result, CancellationToken ct)
     {
-        var tenant = await _tenantRepository.GetByIdAsync(tenantId, ct);
-        var admin = tenant?.AdminUsers.FirstOrDefault(user => user.Id == adminId);
-        if (tenant is null || admin is null)
-        {
-            return;
-        }
-
         var now = DateTimeOffset.UtcNow;
         var (status, detail, eventType) = result switch
         {
             { InvitationEmailSent: true } =>
                 ("Completed", "Invitation sent: a one-time set-password link.", "tenant.admin_user.invited"),
             { EmailRefusalCode: AdminInvitationRefusals.AccountExists } =>
-                ("Completed", "An account already existed; nothing was changed and no link was sent. Use \"Invite\" to send one.", "tenant.admin_user.invitation_skipped"),
+                ("Failed", $"Invitation not sent ({AdminInvitationRefusals.AccountExists}): an account with this address already exists and its state is unknown. Use \"Invite\" to send a new link.", "tenant.admin_user.invitation_failed"),
             { EmailRefusalCode: { } code } =>
                 ("Failed", $"Invitation not sent ({code}). Fix the cause, then use \"Invite\".", "tenant.admin_user.invitation_failed"),
             _ =>
                 ("Failed", "The account was created but the invitation e-mail did not leave. Use \"Invite\" to send a new link.", "tenant.admin_user.invitation_failed")
         };
 
-        var step = tenant.ProvisioningSteps.FirstOrDefault(s => s.Key == AdminInvitationStepKey);
-        if (step is null)
-        {
-            step = new TenantProvisioningStep { Key = AdminInvitationStepKey, Label = "Initial Admin Invitation", CreatedAt = now };
-            tenant.ProvisioningSteps.Add(step);
-        }
-
-        step.Status = status;
-        step.Detail = detail;
-        step.CompletedAt = now;
-        if (result.InvitationEmailSent)
-        {
-            admin.InvitedAt = now;
-        }
-
-        admin.UpdatedAt = now;
-        tenant.UpdatedAt = now;
-        tenant.UpdatedBy = ConsumerName;
-        tenant.ActivityTimeline.Add(new TenantActivityEvent { EventType = eventType, Message = detail, At = now, Actor = ConsumerName });
-        await _tenantRepository.UpdateAsync(tenant, ct);
+        return _tenantRepository.RecordAdminInvitationAsync(
+            tenantId, adminId, AdminInvitationStepKey, status, detail, now, stampInvitedAt: result.InvitationEmailSent,
+            new TenantActivityEvent { EventType = eventType, Message = detail, At = now, Actor = ConsumerName }, ct);
     }
 
     private static IReadOnlyList<EmailRecipientDto> ResolveTenantAdminRecipients(Tenant tenant)

@@ -376,6 +376,7 @@ public sealed partial class EmailShellDispatchTests
             new NotificationsSmtpIntegrationTests.TestProviderResolver(rig.Provider),
             new ValidatingMediator(rig.Dispatches),
             logger,
+            NoInvitationLedger.Instance,
             rig.Templates,
             new EmailTemplateRenderer(),
             rig.Composer);
@@ -400,7 +401,7 @@ public sealed partial class EmailShellDispatchTests
         await new EmailDispatchJob(
                 rig.Dispatches, new TenantMessagingSettingsResolver(rig.Settings),
                 new NotificationsSmtpIntegrationTests.TestProviderResolver(rig.Provider), new ValidatingMediator(rig.Dispatches),
-                NullLogger<EmailDispatchJob>.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer)
+                NullLogger<EmailDispatchJob>.Instance, NoInvitationLedger.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer)
             .HandleAsync(new EmailDispatchJobArgs(rig.TenantId, dispatch.Id), new BackgroundJobContext(), CancellationToken.None);
 
         Assert.Equal(NotificationDispatchStatus.Sent, dispatch.Status);

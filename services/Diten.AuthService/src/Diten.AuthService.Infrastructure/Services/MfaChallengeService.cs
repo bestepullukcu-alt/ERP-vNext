@@ -42,8 +42,10 @@ public sealed class MfaChallengeService : IMfaChallengeService
         var code = GenerateNumericCode(Math.Clamp(_options.OtpLength, 6, 10));
         var expiresAt = DateTime.UtcNow.AddMinutes(Math.Clamp(_options.ExpiryMinutes, 1, 15));
 
+        // BL-454 stage D FIX2 K9 — the challenge belongs to the USER's tenant, never to whatever a request header named: it is
+        // the tenant the code mail is sent under and the one the resend reads back.
         var challenge = new MfaChallenge(
-            _tenantContext.TenantId,
+            user.TenantId,
             user.Id,
             ComputeHash(challengeId),
             "email",

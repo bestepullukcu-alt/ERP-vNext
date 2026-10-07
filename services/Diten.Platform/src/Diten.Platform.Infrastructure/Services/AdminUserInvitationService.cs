@@ -51,10 +51,10 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         Tenant tenant, TenantAdminUser adminUser, AdminInvitationTrigger trigger, CancellationToken cancellationToken)
     {
         var loginUrl = BuildLoginUrl(tenant);
+        var isDevelopment = _environment?.IsDevelopment() == true;
 
         // BL-454 stage D FIX1 (2) — the root first, AuthService second: a link that may not be sent from this server must not
         // cost an existing administrator their password and sessions (the operator path resets) for a mail that never leaves.
-        var isDevelopment = _environment?.IsDevelopment() == true;
         if (TenantAdminSetPasswordLink.RefusalFor(_authServiceOptions.FrontendBaseUrl, isDevelopment) is { } rootRefusal)
         {
             _logger.LogWarning(
@@ -64,6 +64,14 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         }
 
         var provisioned = await ProvisionAdminUserAsync(tenant, adminUser, trigger, cancellationToken);
+        if (provisioned.RefusalCode is { } authRefusal)
+        {
+            _logger.LogWarning(
+                "tenant.admin_invitation.not_sent TenantId={TenantId} AdminUserId={AdminUserId} Trigger={Trigger} ReasonCode={ReasonCode}",
+                tenant.Id, adminUser.Id, trigger, authRefusal);
+            return new AdminUserInvitationResult(loginUrl, null, UserProvisioned: false, InvitationEmailSent: false, EmailRefusalCode: authRefusal);
+        }
+
         if (provisioned.SetupToken is null)
         {
             // The event path over an account that already exists: AuthService changed nothing, and nothing is sent.
@@ -157,6 +165,14 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         }
     }
 
+    /// <inheritdoc />
+    public string? LinkRootRefusal() =>
+        TenantAdminSetPasswordLink.RefusalFor(_authServiceOptions.FrontendBaseUrl, _environment?.IsDevelopment() == true);
+
+    /// <summary>The event's door (create only, by construction) and the operator's door (resets an existing account).</summary>
+    internal const string CreateOnlyPath = "/internal/events/tenant-admin-created";
+    internal const string OperatorPath = "/internal/events/tenant-admin-invited";
+
     private async Task<AdminProvisioningResponse> ProvisionAdminUserAsync(
         Tenant tenant, TenantAdminUser adminUser, AdminInvitationTrigger trigger, CancellationToken cancellationToken)
     {
@@ -170,9 +186,14 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
             throw new InvalidOperationException("AuthService:InternalApiKey configuration is required.");
         }
 
+        // BL-454 stage D FIX2 (3) — the operator's "Invite" goes to the operator's door (it resets an existing account,
+        // audited); everything else — the tenant-created event, and an unset trigger (K8) — to the create-only door. An
+        // AuthService that does not know that door answers 404: this call fails closed (throws, the transport retries) and
+        // never falls back to the operator's door.
+        var operatorInvite = trigger == AdminInvitationTrigger.Operator;
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
-            $"{_authServiceOptions.BaseUrl.TrimEnd('/')}/internal/events/tenant-admin-invited")
+            _authServiceOptions.BaseUrl.TrimEnd('/') + (operatorInvite ? OperatorPath : CreateOnlyPath))
         {
             Content = JsonContent.Create(new AdminProvisioningRequest(
                 tenant.Id,
@@ -181,29 +202,57 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
                 tenant.DisplayName ?? tenant.Name,
                 adminUser.Email,
                 adminUser.Name,
-                trigger == AdminInvitationTrigger.Operator ? TriggerOperatorInvite : TriggerTenantCreatedEvent))
+                operatorInvite ? TriggerOperatorInvite : null))
         };
         request.Headers.Add(InternalApiKeyHeader, _authServiceOptions.InternalApiKey);
 
         var client = _httpClientFactory.CreateClient(AuthInternalClientName);
         using var response = await client.SendAsync(request, cancellationToken);
-        var payload = await response.Content.ReadFromJsonAsync<AdminProvisioningResponse>(cancellationToken: cancellationToken);
-        var accountExists = payload is { SetupToken: null } && string.Equals(payload.Message, StatusAccountExists, StringComparison.Ordinal);
-        if (!response.IsSuccessStatusCode || payload is null
-            || (!accountExists && (string.IsNullOrWhiteSpace(payload.SetupToken) || payload.SetupExpiresAtUtc is null)))
+        var text = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        // K11 — AuthService refuses the platform's own tenant by name: told to the operator by that name, not as a 502.
+        if (response.StatusCode == System.Net.HttpStatusCode.BadRequest
+            && text.Contains(AdminInvitationRefusals.PlatformTenantRefused, StringComparison.Ordinal))
         {
-            var responseText = payload?.Message ?? await response.Content.ReadAsStringAsync(cancellationToken);
+            return new AdminProvisioningResponse(false, null, null, null) { RefusalCode = AdminInvitationRefusals.PlatformTenantRefused };
+        }
+
+        AdminProvisioningResponse? payload = null;
+        if (response.IsSuccessStatusCode)
+        {
+            try
+            {
+                payload = System.Text.Json.JsonSerializer.Deserialize<AdminProvisioningResponse>(text, JsonOptions);
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                payload = null;
+            }
+        }
+
+        if (!response.IsSuccessStatusCode || payload is null)
+        {
             _logger.LogError(
                 "Tenant admin provisioning failed. TenantId={TenantId} AdminUserId={AdminUserId} StatusCode={StatusCode} Response={Response}",
-                tenant.Id,
-                adminUser.Id,
-                (int)response.StatusCode,
-                responseText);
+                tenant.Id, adminUser.Id, (int)response.StatusCode, payload?.Message ?? text);
             throw new InvalidOperationException("Admin user provisioning failed.");
+        }
+
+        // E5 — no token is "the account exists" ONLY when AuthService says exactly that; any other token-less answer (or a
+        // token without its expiry) is not trusted: named, and nothing is sent.
+        var accountExists = payload.SetupToken is null && string.Equals(payload.Message, StatusAccountExists, StringComparison.Ordinal);
+        if (!accountExists && (string.IsNullOrWhiteSpace(payload.SetupToken) || payload.SetupExpiresAtUtc is null))
+        {
+            _logger.LogError(
+                "tenant.admin_invitation.auth_answer_invalid TenantId={TenantId} AdminUserId={AdminUserId} Message={Message}",
+                tenant.Id, adminUser.Id, payload.Message);
+            return payload with { SetupToken = null, RefusalCode = AdminInvitationRefusals.AuthAnswerInvalid };
         }
 
         return payload;
     }
+
+    private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new(System.Text.Json.JsonSerializerDefaults.Web);
 
     private string BuildLoginUrl(Tenant tenant)
     {
@@ -242,11 +291,10 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         string TenantName,
         string Email,
         string Name,
-        string Trigger);
+        string? Trigger);
 
     // AuthService's InternalEventsController names (the internal contract).
     private const string TriggerOperatorInvite = "operator-invite";
-    private const string TriggerTenantCreatedEvent = "tenant-created-event";
     private const string StatusAccountExists = "account_exists";
 
     /// <summary>AuthService's answer: the one-time set-password token (in clear only here, over the internal key) and
@@ -255,5 +303,10 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         bool UserProvisioned,
         string? SetupToken,
         DateTime? SetupExpiresAtUtc,
-        string? Message);
+        string? Message)
+    {
+        /// <summary>Set by this service (never read from the wire): a named reason nothing may be sent.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? RefusalCode { get; init; }
+    }
 }

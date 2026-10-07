@@ -624,6 +624,7 @@ internal sealed class PassThroughLocaleResolver
     private sealed class RecordingInvitations : Diten.Platform.Application.Contracts.IAdminUserInvitationService
     {
         public List<(Tenant Tenant, TenantAdminUser Admin)> Invited { get; } = [];
+        public string? LinkRootRefusal() => null;
 
         public Task<Diten.Platform.Application.Contracts.AdminUserInvitationResult> InviteAsync(
             Tenant tenant, TenantAdminUser adminUser, Diten.Platform.Application.Contracts.AdminInvitationTrigger trigger, CancellationToken cancellationToken)

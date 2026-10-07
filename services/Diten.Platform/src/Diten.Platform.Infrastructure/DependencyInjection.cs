@@ -666,6 +666,34 @@ public static class DependencyInjection
 
         var eventingOptions = configuration.GetSection(RabbitMqEventingOptions.SectionName).Get<RabbitMqEventingOptions>()
                               ?? new RabbitMqEventingOptions();
+        AddPlatformEventTransport(services, eventingOptions);
+
+        services.AddHostedService<OutboxPublisherWorker>();
+        services.AddHostedService<SubscriptionPlanStartupInitializer>();
+
+        RunMongoStartupInitialization(
+            database,
+            mongoSettings,
+            configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions(),
+            environment.IsDevelopment(),
+            seedDevOrganizationPositions);
+
+        return services;
+    }
+
+    public static IServiceCollection AddTenantAuthorizationContext(this IServiceCollection services)
+    {
+        services.AddScoped<ITenantAuthorizationContext, JwtTenantAuthorizationContext>();
+        return services;
+    }
+
+    /// <summary>
+    /// The event transport (BL-454 stage D FIX2 (4): extracted so its two branches are measured on the production
+    /// registration): RabbitMQ with the platform's consumers, or the in-memory bus — which has no consumers, so it also
+    /// registers the one-time notice that a new tenant's administrator is not invited automatically.
+    /// </summary>
+    internal static void AddPlatformEventTransport(IServiceCollection services, RabbitMqEventingOptions eventingOptions)
+    {
         if (eventingOptions.UseRabbitMq)
         {
             services.AddMassTransit(x =>
@@ -700,24 +728,6 @@ public static class DependencyInjection
             // BL-454 stage D FIX1 (3) — no consumers on this branch: no automatic first-administrator invitation. Said once.
             services.AddHostedService<Diten.Platform.Infrastructure.Eventing.TenantAdminInvitationModeNotice>();
         }
-
-        services.AddHostedService<OutboxPublisherWorker>();
-        services.AddHostedService<SubscriptionPlanStartupInitializer>();
-
-        RunMongoStartupInitialization(
-            database,
-            mongoSettings,
-            configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions(),
-            environment.IsDevelopment(),
-            seedDevOrganizationPositions);
-
-        return services;
-    }
-
-    public static IServiceCollection AddTenantAuthorizationContext(this IServiceCollection services)
-    {
-        services.AddScoped<ITenantAuthorizationContext, JwtTenantAuthorizationContext>();
-        return services;
     }
 
     internal static void AddPlatformEventConsumers(IBusRegistrationConfigurator configurator)

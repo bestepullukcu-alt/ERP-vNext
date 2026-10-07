@@ -512,6 +512,132 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.Contains("PLATFORM_TENANT_REFUSED", await refused.Content.ReadAsStringAsync());
     }
 
+    // ── BL-454 stage D FIX2: the event's own door, create only by construction ───────────────────────────────────
+
+    private async Task<HttpResponseMessage> TenantAdminCreatedAsync(Guid tenantId, string email)
+    {
+        using var platform = _host.Client();
+        platform.DefaultRequestHeaders.Add("X-Internal-Api-Key", _host.InternalKey);
+        return await platform.PostAsJsonAsync("internal/events/tenant-admin-created",
+            new { tenantId, adminUserId = Guid.NewGuid(), tenantCode = "S2DF2", tenantName = "Stage D fix 2", email, name = "First Admin" });
+    }
+
+    private async Task<HttpResponseMessage> OperatorInviteAsync(Guid tenantId, string email)
+    {
+        using var platform = _host.Client();
+        platform.DefaultRequestHeaders.Add("X-Internal-Api-Key", _host.InternalKey);
+        return await platform.PostAsJsonAsync("internal/events/tenant-admin-invited",
+            new { tenantId, adminUserId = Guid.NewGuid(), tenantCode = "S2DF2", tenantName = "Stage D fix 2", email, name = "First Admin", trigger = "operator-invite" });
+    }
+
+    private async Task<List<UserRole>> RolesOfAsync(Guid userId)
+        => await _host.Database.GetCollection<UserRole>("userRoles").Find(r => r.UserId == userId).ToListAsync();
+
+    private async Task<List<TenantUserMembership>> MembershipsOfAsync(Guid userId)
+        => await _host.Database.GetCollection<TenantUserMembership>("tenant_user_memberships").Find(m => m.UserId == userId).ToListAsync();
+
+    private async Task<string> InvitedRowMetadataAsync(Guid tenantId, Guid userId)
+    {
+        var rows = await _host.Database.GetCollection<AuthAuditLog>("authAuditLogs")
+            .Find(r => r.EventName == UserAuditEvents.Invited && r.TenantId == tenantId).ToListAsync();
+        return Assert.Single(rows, r => r.Metadata.Contains(userId.ToString(), StringComparison.OrdinalIgnoreCase)).Metadata;
+    }
+
+    [Fact]
+    public async Task The_create_only_door_leaves_an_existing_account_exactly_as_it_is()
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        var before = await ReadUserAsync(user.Id);
+
+        var created = await TenantAdminCreatedAsync(tenantId, user.Email);
+
+        Assert.Equal(HttpStatusCode.OK, created.StatusCode);
+        using var answer = JsonDocument.Parse(await created.Content.ReadAsStringAsync());
+        Assert.Equal("account_exists", answer.RootElement.GetProperty("message").GetString());
+        Assert.Equal(JsonValueKind.Null, answer.RootElement.GetProperty("setupToken").ValueKind);
+        Assert.Equal(before.PasswordHash, (await ReadUserAsync(user.Id)).PasswordHash);
+        Assert.Equal(HttpStatusCode.OK, (await RefreshAsync(tenantId, session)).StatusCode);
+    }
+
+    [Fact]
+    public async Task An_existing_account_that_is_not_an_administrator_is_never_raised_to_Admin_by_the_event()
+    {
+        // FIX2 K13 — privilege escalation guard: a tenant user (no Admin role, no membership written by this door) whose
+        // address the event names gets nothing.
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var rolesBefore = (await RolesOfAsync(user.Id)).Count;
+        var membershipsBefore = (await MembershipsOfAsync(user.Id)).Count;
+
+        Assert.Equal(HttpStatusCode.OK, (await TenantAdminCreatedAsync(tenantId, user.Email)).StatusCode);
+
+        Assert.Equal(rolesBefore, (await RolesOfAsync(user.Id)).Count);
+        Assert.Equal(membershipsBefore, (await MembershipsOfAsync(user.Id)).Count);
+    }
+
+    [Fact]
+    public async Task A_request_without_any_trigger_property_is_create_only()
+    {
+        // FIX2 K13 — raw JSON with no "trigger" key at all (an older Platform): an existing account is not reset.
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var before = await ReadUserAsync(user.Id);
+        using var platform = _host.Client();
+        platform.DefaultRequestHeaders.Add("X-Internal-Api-Key", _host.InternalKey);
+        var json = $"{{\"tenantId\":\"{tenantId}\",\"adminUserId\":\"{Guid.NewGuid()}\",\"tenantCode\":\"RAW\",\"tenantName\":\"Raw\",\"email\":\"{user.Email}\",\"name\":\"Raw Admin\"}}";
+
+        var invited = await platform.PostAsync("internal/events/tenant-admin-invited", new StringContent(json, System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.OK, invited.StatusCode);
+        Assert.Contains("account_exists", await invited.Content.ReadAsStringAsync());
+        Assert.Equal(before.PasswordHash, (await ReadUserAsync(user.Id)).PasswordHash);
+        Assert.Empty(await ResetRowsAsync(tenantId, user.Id));
+    }
+
+    [Theory]
+    [InlineData(false, "tenant-created-event")]
+    [InlineData(true, "operator-invite")]
+    public async Task A_new_account_is_audited_with_the_trigger_that_really_created_it(bool byOperator, string trigger)
+    {
+        // CT E2 — the row names the real caller.
+        var tenantId = Guid.NewGuid();
+        var email = $"trigger.{Guid.NewGuid():N}@invite.test";
+
+        var response = byOperator ? await OperatorInviteAsync(tenantId, email) : await TenantAdminCreatedAsync(tenantId, email);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var user = await TenantUserByEmailAsync(email, tenantId);
+        using var metadata = JsonDocument.Parse(await InvitedRowMetadataAsync(tenantId, user.Id));
+        Assert.Equal(trigger, metadata.RootElement.GetProperty("trigger").GetString());
+    }
+
+    [Fact]
+    public async Task A_half_made_administrator_is_left_alone_by_the_event_and_repaired_by_the_operators_invite()
+    {
+        // FIX2 (1) — an account an earlier attempt left without its Admin role (the state an older AuthService could leave
+        // behind): the event changes nothing (it cannot tell this from someone else's account); the operator's "Invite"
+        // repairs it — the BL-529 reset, a new link, the role.
+        var tenantId = Guid.NewGuid();
+        var email = $"half.{Guid.NewGuid():N}@invite.test";
+        Assert.Equal(HttpStatusCode.OK, (await TenantAdminCreatedAsync(tenantId, email)).StatusCode);
+        var user = await TenantUserByEmailAsync(email, tenantId);
+        await _host.Database.GetCollection<UserRole>("userRoles").DeleteManyAsync(r => r.UserId == user.Id);
+
+        var again = await TenantAdminCreatedAsync(tenantId, email);
+        Assert.Contains("account_exists", await again.Content.ReadAsStringAsync());
+        Assert.Empty(await RolesOfAsync(user.Id));
+
+        var repaired = await OperatorInviteAsync(tenantId, email);
+        using var answer = JsonDocument.Parse(await repaired.Content.ReadAsStringAsync());
+        var token = answer.RootElement.GetProperty("setupToken").GetString()!;
+        Assert.Single(await RolesOfAsync(user.Id));
+        using var anonymous = _host.Client();
+        Assert.Equal(HttpStatusCode.NoContent, (await anonymous.PostAsJsonAsync("api/users/set-password", new { email, token, newPassword = NewPassword })).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await TenantLoginAsync(tenantId, email, NewPassword)).StatusCode);
+    }
+
     [Fact]
     public async Task A_new_tenant_administrator_is_a_pending_invitation_whose_link_works_once()
     {

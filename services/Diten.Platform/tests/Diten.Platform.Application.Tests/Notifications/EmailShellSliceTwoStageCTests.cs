@@ -166,7 +166,7 @@ public sealed partial class EmailShellDispatchTests
         await new EmailDispatchJob(
                 rig.Dispatches, new TenantMessagingSettingsResolver(rig.Settings),
                 new NotificationsSmtpIntegrationTests.TestProviderResolver(rig.Provider), mediator,
-                Microsoft.Extensions.Logging.Abstractions.NullLogger<EmailDispatchJob>.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer)
+                Microsoft.Extensions.Logging.Abstractions.NullLogger<EmailDispatchJob>.Instance, NoInvitationLedger.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer)
             .HandleAsync(new EmailDispatchJobArgs(rig.TenantId, row.Id), new BackgroundJobContext(), CancellationToken.None);
 
         Assert.Empty(mediator.Refusals);

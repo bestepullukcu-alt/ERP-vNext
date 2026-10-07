@@ -85,6 +85,13 @@ public sealed class Tenant : GlobalEntity
 
 public sealed class TenantProvisioningStep
 {
+    /// <summary>
+    /// BL-454 stage D FIX2 (2) — the initial administrator's invitation. Its state is written ONLY by what knows it (the
+    /// tenant-created consumer, the operator's "Invite", the e-mail ledger); a subscription activation's "everything still
+    /// pending is now done" never touches it — the invitation is not done because the tenant was activated.
+    /// </summary>
+    public const string AdminInvitationKey = "admin-invitation";
+
     public required string Key { get; init; }
     public required string Label { get; init; }
     public string Status { get; set; } = "Pending";

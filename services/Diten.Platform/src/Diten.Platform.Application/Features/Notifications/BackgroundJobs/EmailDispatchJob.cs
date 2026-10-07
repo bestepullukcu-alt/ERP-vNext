@@ -40,12 +40,14 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         IMessagingProviderResolver providerResolver,
         IMediator mediator,
         ILogger<EmailDispatchJob> logger,
+        Diten.Platform.Application.Contracts.ITenantAdminInvitationLedger invitationLedger,
         INotificationTemplateRepository? templateRepository = null,
         IEmailTemplateRenderer? renderer = null,
         IEmailShellComposer? shellComposer = null,
-        Diten.Platform.Common.Tenancy.ITenantContext? tenantContext = null,
-        Diten.Platform.Application.Contracts.ITenantAdminInvitationLedger? invitationLedger = null)
+        Diten.Platform.Common.Tenancy.ITenantContext? tenantContext = null)
     {
+        // FIX2 K12 — required: a composition without the ledger fails to build instead of silently never marking the tenant.
+        ArgumentNullException.ThrowIfNull(invitationLedger);
         _invitationLedger = invitationLedger;
         _tenantContext = tenantContext;
         _shellComposer = shellComposer;
@@ -152,13 +154,13 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
 
         // BL-454 stage D FIX1 K4 — a tenant administrator's invitation that can no longer be delivered leaves its mark on the
         // tenant record ("admin-invitation" failed: invite again). Best effort: the dispatch row already says it, by name.
-        if (linkNotRetryable && _invitationLedger is not null
+        if (linkNotRetryable
             && string.Equals(dispatch.TemplateKey, TenantInviteTemplateKey, StringComparison.Ordinal)
             && dispatch.To.FirstOrDefault()?.Email is { Length: > 0 } adminEmail)
         {
             try
             {
-                await _invitationLedger.RecordUndeliveredAsync(dispatch.TenantId, adminEmail, ReasonActionLinkNotRetryable, cancellationToken);
+                await _invitationLedger.RecordUndeliveredAsync(dispatch.TenantId, adminEmail, ReasonActionLinkNotRetryable, dispatch.QueuedAt, cancellationToken);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -170,7 +172,7 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
     }
 
     private const string TenantInviteTemplateKey = "tenant.invite.email";
-    private readonly Diten.Platform.Application.Contracts.ITenantAdminInvitationLedger? _invitationLedger;
+    private readonly Diten.Platform.Application.Contracts.ITenantAdminInvitationLedger _invitationLedger;
 
     // The failed-command validator's own limits (MarkNotificationDispatchFailedValidator).
     private const int MaxErrorCodeLength = 128;

@@ -1113,6 +1113,7 @@ public sealed partial class EmailShellDispatchTests
             new Doubles.TestProviderResolver(Provider),
             new SilentMediator(),
             logger ?? NullLogger<EmailDispatchJob>.Instance,
+            NoInvitationLedger.Instance,
             Templates,
             new EmailTemplateRenderer(),
             Composer);

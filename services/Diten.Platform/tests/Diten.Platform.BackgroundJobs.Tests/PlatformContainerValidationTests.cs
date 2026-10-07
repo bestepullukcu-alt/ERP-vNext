@@ -523,7 +523,8 @@ public sealed class PlatformContainerValidationTests
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            Assert.EndsWith("/internal/events/tenant-admin-invited", request.RequestUri!.AbsolutePath);
+            // BL-454 stage D FIX2 (3) — the tenant-created event reaches AuthService through its own create-only door.
+            Assert.EndsWith("/internal/events/tenant-admin-created", request.RequestUri!.AbsolutePath);
             var token = "stage-d-" + Guid.NewGuid().ToString("N");
             lock (IssuedTokens)
             {

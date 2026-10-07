@@ -315,4 +315,10 @@
   <data name="AuditIntentInvalid" xml:space="preserve"><value>Değişiklik yapılmadı: platform bu değişikliğin denetim kaydını hazırlayamadı. Bu bizim tarafımızda bir hata — lütfen platform ekibine bildirin.</value></data>
   <data name="SubscriptionAlreadyCurrent" xml:space="preserve"><value>Bu kiracının zaten canlı bir aboneliği var. Yenisini atamak yerine onu değiştirin ya da sonlandırın.</value></data>
   <data name="SubscriptionStale" xml:space="preserve"><value>Bu sayfa açıkken abonelik başka biri tarafından değiştirildi. Yeniden yüklendi; lütfen yeniden deneyin.</value></data>
+  <data name="InvitationEmailNotSent" xml:space="preserve"><value>Yöneticinin hesabı hazır, ancak davet e-postası gönderilemedi. E-posta çalıştığında "Davet et"i yeniden kullanın.</value></data>
+  <data name="InviteRefusedRootMissing" xml:space="preserve"><value>Davet bağlantısı bu sunucudan gönderilemiyor: web adresi (AuthService:FrontendBaseUrl) ayarlanmamış.</value></data>
+  <data name="InviteRefusedRootLoopback" xml:space="preserve"><value>Davet bağlantısı bu sunucudan gönderilemiyor: web adresi bu makineyi (localhost) gösteriyor.</value></data>
+  <data name="InviteRefusedRootNotHttps" xml:space="preserve"><value>Davet bağlantısı bu sunucudan gönderilemiyor: web adresi https ile başlamalı.</value></data>
+  <data name="InviteRefusedPlatformTenant" xml:space="preserve"><value>Platform kiracısının kiracı yöneticisi olmaz.</value></data>
+  <data name="InviteRefusedAuthAnswer" xml:space="preserve"><value>Hesap hizmeti kullanılamayan bir yanıt verdi; hiçbir şey gönderilmedi.</value></data>
 </root>

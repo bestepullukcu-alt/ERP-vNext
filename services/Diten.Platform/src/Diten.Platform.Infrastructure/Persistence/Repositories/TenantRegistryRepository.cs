@@ -24,6 +24,45 @@ public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenant
         return await Collection.Find(PlatformMongoTransactionSession.Require(session, _dbContext), filter).FirstOrDefaultAsync(ct);
     }
 
+    /// <inheritdoc />
+    public async Task RecordAdminInvitationAsync(
+        Guid tenantId, Guid? adminUserId, string stepKey, string stepStatus, string detail, DateTimeOffset at,
+        bool stampInvitedAt, TenantActivityEvent activity, CancellationToken ct = default)
+    {
+        var filters = Builders<Tenant>.Filter;
+        var tenant = filters.And(ExecutionFilter, filters.Eq(t => t.Id, tenantId));
+
+        // The step, when the tenant has none of that key yet (tenants made before the step existed).
+        await Collection.UpdateOneAsync(
+            filters.And(tenant, filters.Not(filters.ElemMatch(t => t.ProvisioningSteps, s => s.Key == stepKey))),
+            Builders<Tenant>.Update.Push(t => t.ProvisioningSteps,
+                new TenantProvisioningStep { Key = stepKey, Label = "Initial Admin Invitation", CreatedAt = at }),
+            cancellationToken: ct);
+
+        var update = Builders<Tenant>.Update
+            .Set("ProvisioningSteps.$[step].Status", stepStatus)
+            .Set("ProvisioningSteps.$[step].Detail", detail)
+            .Set("ProvisioningSteps.$[step].CompletedAt", at)
+            .Push(t => t.ActivityTimeline, activity);
+        var arrayFilters = new List<ArrayFilterDefinition>
+        {
+            new BsonDocumentArrayFilterDefinition<MongoDB.Bson.BsonDocument>(new MongoDB.Bson.BsonDocument("step.Key", stepKey))
+        };
+        if (adminUserId is { } id)
+        {
+            update = update.Set("AdminUsers.$[admin].UpdatedAt", at);
+            if (stampInvitedAt)
+            {
+                update = update.Set("AdminUsers.$[admin].InvitedAt", at);
+            }
+
+            arrayFilters.Add(new BsonDocumentArrayFilterDefinition<MongoDB.Bson.BsonDocument>(
+                new MongoDB.Bson.BsonDocument("admin._id", new MongoDB.Bson.BsonBinaryData(id, MongoDB.Bson.GuidRepresentation.Standard))));
+        }
+
+        await Collection.UpdateOneAsync(tenant, update, new UpdateOptions { ArrayFilters = arrayFilters }, ct);
+    }
+
     public async Task<Tenant?> GetByCodeAsync(string code, CancellationToken ct = default)
     {
         var filter = Builders<Tenant>.Filter.And(

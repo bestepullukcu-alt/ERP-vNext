@@ -66,6 +66,8 @@ public static class TenantAdminSetPasswordLink
             return true;
         }
 
-        return IPAddress.TryParse(host.Trim('[', ']'), out var address) && IPAddress.IsLoopback(address);
+        // K11 — the unspecified addresses (0.0.0.0, ::) are no public address either.
+        return IPAddress.TryParse(host.Trim('[', ']'), out var address)
+               && (IPAddress.IsLoopback(address) || address.Equals(IPAddress.Any) || address.Equals(IPAddress.IPv6Any));
     }
 }

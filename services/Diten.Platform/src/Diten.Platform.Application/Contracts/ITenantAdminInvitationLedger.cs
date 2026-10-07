@@ -7,5 +7,7 @@ namespace Diten.Platform.Application.Contracts;
 /// </summary>
 public interface ITenantAdminInvitationLedger
 {
-    Task RecordUndeliveredAsync(Guid tenantId, string adminEmail, string reasonCode, CancellationToken ct);
+    /// <param name="invitationQueuedAt">When the undeliverable invitation was queued: a newer invitation of the same
+    /// administrator (InvitedAt later than this) is the current state and is not marked failed (FIX2 K5).</param>
+    Task RecordUndeliveredAsync(Guid tenantId, string adminEmail, string reasonCode, DateTimeOffset invitationQueuedAt, CancellationToken ct);
 }

@@ -80,6 +80,7 @@ public sealed class NotificationDispatchTenantScopeMongoTests : IAsyncLifetime
             new OneProvider(),
             new Pipeline(_harness, ambient),
             NullLogger<EmailDispatchJob>.Instance,
+            NoInvitationLedger.Instance,
             tenantContext: ambient);
 
         await job.HandleAsync(new EmailDispatchJobArgs(invite.TenantId, invite.DispatchId, MaxRetryCount), new BackgroundJobContext(), CancellationToken.None);

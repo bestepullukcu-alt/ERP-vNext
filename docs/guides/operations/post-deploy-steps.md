@@ -133,7 +133,11 @@ verir.
    Development dışında Platform başlangıçta bir kez uyarı yazar: `tenant.admin_invitation.automatic_off`.
    RabbitMQ ile tüketici koşar ve adımı kendisi günceller: Tamamlandı ya da Başarısız + neden.
    Olay yolu yalnız YENİ hesap yaratır; var olan hesaba dokunmaz.
-3. **Mongo sürümü:** gönderim satırlarının "etkileri bekliyor" dizini (`ix_notification_dispatches_permanent_effects_pending`)
+3. **Dağıtım sırası: önce Auth, sonra Platform.**
+   - Yeni Platform, kiracı açılış olayında Auth'un yeni `internal/events/tenant-admin-created` kapısını çağırır. Bu kapı yalnız yaratır.
+   - Eski bir Auth bu kapıya 404 döner: Platform kapalı başarısız olur, olay yeniden denenir. Hiçbir hesap sıfırlanmaz.
+   - Ters ara durumda (yeni Auth, eski Platform), eski Platform'un "Davet et"i var olan bir hesap için `trigger` göndermez. Yeni Auth bunu yalnız yaratır sayar ve `setupToken: null` döner. Eski Platform bu cevabı okuyamaz ve operatöre 502 gösterir. Hiçbir hesap sıfırlanmaz; Platform da güncellenince düzelir.
+4. **Mongo sürümü:** gönderim satırlarının "etkileri bekliyor" dizini (`ix_notification_dispatches_permanent_effects_pending`)
    dizi değerli bir alanda `$eq` kısmi filtresi kullanır (`DateTimeOffset` `[ticks, offset]` olarak saklanır). Bu yalnız
    dev Mongo **7.0.28**'de ölçüldü. Canlı Mongo sürümü farklıysa deploy'dan sonra dizinin var olduğunu
    (`db.notification_dispatches.getIndexes()`) ve başlangıç günlüğünde dizin hatası olmadığını kontrol edin.

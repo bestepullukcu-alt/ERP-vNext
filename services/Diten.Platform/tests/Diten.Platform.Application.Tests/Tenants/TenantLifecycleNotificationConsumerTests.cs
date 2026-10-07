@@ -141,7 +141,7 @@ public sealed class TenantLifecycleNotificationConsumerTests
 
     [Theory]
     [InlineData(null, true, "Completed")]
-    [InlineData("ADMIN_ACCOUNT_EXISTS", false, "Completed")]
+    [InlineData("ADMIN_ACCOUNT_EXISTS", false, "Failed")] // FIX2 (1): never a success on the event path
     [InlineData("INVITE_LINK_ROOT_LOOPBACK", false, "Failed")]
     public async Task TenantCreated_WritesTheInvitationOutcomeOnTheTenantRecord(string? refusal, bool sent, string stepStatus)
     {
@@ -156,7 +156,8 @@ public sealed class TenantLifecycleNotificationConsumerTests
         Assert.NotNull(step.CompletedAt);
         if (refusal is not null)
         {
-            Assert.Contains(refusal == "ADMIN_ACCOUNT_EXISTS" ? "already existed" : refusal, step.Detail);
+            Assert.Contains(refusal, step.Detail);
+            Assert.Contains("Invite", step.Detail);
         }
 
         Assert.Equal(sent, admin.InvitedAt is not null);
@@ -354,6 +355,7 @@ public sealed class TenantLifecycleNotificationConsumerTests
         public Exception? Throw { get; init; }
 
         public List<AdminInvitationTrigger> Triggers { get; } = [];
+        public string? LinkRootRefusal() => null;
         public AdminUserInvitationResult Result { get; init; } = new("https://login.test", "https://app.test/account/set-password", true, true);
 
         public Task<AdminUserInvitationResult> InviteAsync(Tenant tenant, TenantAdminUser adminUser, AdminInvitationTrigger trigger, CancellationToken cancellationToken)

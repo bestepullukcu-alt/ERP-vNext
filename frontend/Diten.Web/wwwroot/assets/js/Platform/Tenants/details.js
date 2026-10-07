@@ -2214,7 +2214,7 @@ const TenantDetails = (function () {
                         },
                         'invite-admin-user': ({ id }) => {
                             if (!id) return;
-                            inviteAdminUser(id).catch((error) => window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error'));
+                            inviteAdminUser(id).catch((error) => window.showToast?.(inviteRefusalText(error), 'error'));
                         },
                         'delete-admin-user': ({ id, row }) => {
                             if (!id) return;
@@ -2276,15 +2276,30 @@ const TenantDetails = (function () {
         await reloadAdminUsers();
     };
 
+    // BL-454 stage D FIX2 K11 — an invitation refused by a named rule is said from the CODE, in the console's language.
+    const inviteRefusalTexts = {
+        INVITE_LINK_ROOT_MISSING: () => L.InviteRefusedRootMissing,
+        INVITE_LINK_ROOT_LOOPBACK: () => L.InviteRefusedRootLoopback,
+        INVITE_LINK_ROOT_NOT_HTTPS: () => L.InviteRefusedRootNotHttps,
+        PLATFORM_TENANT_REFUSED: () => L.InviteRefusedPlatformTenant,
+        AUTH_ANSWER_INVALID: () => L.InviteRefusedAuthAnswer
+    };
+    const inviteRefusalText = (error) =>
+        (error && error.code && inviteRefusalTexts[error.code] && inviteRefusalTexts[error.code]())
+        || (error && error.message) || L.ErrorOccurred || 'ErrorOccurred';
+
     const inviteAdminUser = async (id) => {
         const result = await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/admin-users/${encodeURIComponent(id)}/invite`, {
             method: 'POST',
             headers: getAuthHeaders()
         });
-        // Dev-only: backend returns login URL + temp password when SMTP is off (emailSent === false).
-        // Always null/absent on prod and on the SMTP-on email path → plain success toast there.
-        if (result && result.emailSent === false && (result.temporaryPassword || result.loginUrl)) {
-            showAdminInviteSetup(result.loginUrl, result.temporaryPassword);
+        // Dev-only: the backend returns the set-password link when the e-mail did not leave (emailSent === false).
+        // BL-454 stage D FIX2 K14 — elsewhere emailSent === false comes WITHOUT a link and is said as a warning: after a reset
+        // the administrator's old password no longer works, and "Invitation sent." would be untrue.
+        if (result && result.emailSent === false && result.loginUrl) {
+            showAdminInviteSetup(result.loginUrl, null);
+        } else if (result && result.emailSent === false) {
+            window.showToast?.(L.InvitationEmailNotSent || 'The invitation e-mail did not leave.', 'warning');
         } else {
             window.showToast?.(L.InvitationSent || 'Invitation sent.', 'success');
         }

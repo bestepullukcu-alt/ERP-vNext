@@ -44,3 +44,12 @@ internal static class TestSweeps
         public Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification => Task.CompletedTask;
     }
 }
+
+/// <summary>BL-454 stage D FIX2 K12 — the retry job's ledger is required; a test that is not about it hands this one.</summary>
+internal sealed class NoInvitationLedger : Diten.Platform.Application.Contracts.ITenantAdminInvitationLedger
+{
+    public static readonly NoInvitationLedger Instance = new();
+
+    public Task RecordUndeliveredAsync(Guid tenantId, string adminEmail, string reasonCode, DateTimeOffset invitationQueuedAt, CancellationToken ct) =>
+        Task.CompletedTask;
+}

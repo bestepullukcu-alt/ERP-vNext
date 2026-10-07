@@ -111,7 +111,7 @@ public sealed partial class EmailShellDispatchTests
         await new EmailDispatchJob(
                 rig.Dispatches, new TenantMessagingSettingsResolver(rig.Settings),
                 new NotificationsSmtpIntegrationTests.TestProviderResolver(rig.Provider), mediator,
-                NullLogger<EmailDispatchJob>.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer)
+                NullLogger<EmailDispatchJob>.Instance, NoInvitationLedger.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer)
             .HandleAsync(new EmailDispatchJobArgs(rig.TenantId, row.Id), new BackgroundJobContext(), CancellationToken.None);
 
         Assert.Empty(mediator.Refusals);
@@ -126,6 +126,8 @@ public sealed partial class EmailShellDispatchTests
     [Theory]
     [InlineData("Production", "http://localhost:5001", TenantAdminSetPasswordLink.ReasonRootLoopback)]
     [InlineData("Production", "https://localhost.", TenantAdminSetPasswordLink.ReasonRootLoopback)]      // FIX1 K2: trailing dot
+    [InlineData("Production", "https://0.0.0.0", TenantAdminSetPasswordLink.ReasonRootLoopback)]         // FIX2 K11: unspecified
+    [InlineData("Production", "https://[::]", TenantAdminSetPasswordLink.ReasonRootLoopback)]
     [InlineData("Production", "http://app.example.test", TenantAdminSetPasswordLink.ReasonRootNotHttps)] // FIX1 K2: https only
     [InlineData("Production", "http://127.0.0.1:5001", TenantAdminSetPasswordLink.ReasonRootLoopback)]
     [InlineData("Production", "https://tenant.localhost", TenantAdminSetPasswordLink.ReasonRootLoopback)]
@@ -216,6 +218,7 @@ public sealed partial class EmailShellDispatchTests
     private sealed class DispatchRecorder : IMediator
     {
         public List<NotificationEventDispatchRequest> Requests { get; } = [];
+        public bool Fails { get; init; }
 
         public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
         {
@@ -224,7 +227,9 @@ public sealed partial class EmailShellDispatchTests
                 Requests.Add(dispatch.Request);
             }
 
-            return Task.FromResult((TResponse)(object)Response<NotificationDispatchDto>.Success(202));
+            return Task.FromResult((TResponse)(object)(Fails
+                ? Response<NotificationDispatchDto>.Fail("provider down", 502, "PROVIDER_UNAVAILABLE")
+                : Response<NotificationDispatchDto>.Success(202)));
         }
 
         public Task<object?> Send(object request, CancellationToken cancellationToken = default) => throw new NotSupportedException();

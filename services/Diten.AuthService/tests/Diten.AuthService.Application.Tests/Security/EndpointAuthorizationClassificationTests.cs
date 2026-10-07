@@ -54,6 +54,7 @@ public sealed class EndpointAuthorizationClassificationTests
     [InlineData(typeof(PlatformAuthController), nameof(PlatformAuthController.SyncPlatformAdmin))]
     [InlineData(typeof(InternalEventsController), nameof(InternalEventsController.TenantActivated))]
     [InlineData(typeof(InternalEventsController), nameof(InternalEventsController.TenantAdminInvited))]
+    [InlineData(typeof(InternalEventsController), nameof(InternalEventsController.TenantAdminCreated))]
     public void Lifecycle_and_internal_endpoints_are_not_has_permission_guarded(Type controller, string methodName)
     {
         var method = controller.GetMethod(methodName)!;

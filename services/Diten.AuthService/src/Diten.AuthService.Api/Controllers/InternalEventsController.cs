@@ -101,8 +101,29 @@ public sealed class InternalEventsController : ControllerBase
         return Ok(new { status = "processed" });
     }
 
+    /// <summary>
+    /// BL-454 stage D FIX2 (3) — the tenant-created EVENT's door: create only, by construction. It has no trigger to get
+    /// wrong, and an AuthService older than this round answers 404 here — the caller fails closed and retries instead of
+    /// reaching the operator's door, which resets an existing account.
+    /// </summary>
+    [HttpPost("tenant-admin-created")]
+    public Task<IActionResult> TenantAdminCreated([FromBody] TenantAdminInvitationProvisioningRequest request, CancellationToken ct) =>
+        ProvisionTenantAdministratorAsync(request, createOnly: true, auditTrigger: TriggerTenantCreatedEvent, ct);
+
+    /// <summary>
+    /// The operator's "Invite" door. <c>trigger=operator-invite</c> resets an existing account (BL-529, audited); anything
+    /// else — or nothing (a caller that does not say who it is) — is create only.
+    /// </summary>
     [HttpPost("tenant-admin-invited")]
-    public async Task<IActionResult> TenantAdminInvited([FromBody] TenantAdminInvitationProvisioningRequest request, CancellationToken ct)
+    public Task<IActionResult> TenantAdminInvited([FromBody] TenantAdminInvitationProvisioningRequest request, CancellationToken ct)
+    {
+        var operatorInvite = string.Equals(request.Trigger, TriggerOperatorInvite, StringComparison.Ordinal);
+        return ProvisionTenantAdministratorAsync(
+            request, createOnly: !operatorInvite, auditTrigger: operatorInvite ? TriggerOperatorInvite : request.Trigger ?? "unspecified", ct);
+    }
+
+    private async Task<IActionResult> ProvisionTenantAdministratorAsync(
+        TenantAdminInvitationProvisioningRequest request, bool createOnly, string auditTrigger, CancellationToken ct)
     {
         if (!_internalEventAuthService.IsAuthorized(Request.Headers[InternalApiKeyHeader].FirstOrDefault()))
         {
@@ -120,97 +141,99 @@ public sealed class InternalEventsController : ControllerBase
             return BadRequest(new { message = "the platform tenant has no tenant administrators", code = ReasonPlatformTenantRefused });
         }
 
-        // BL-454 stage D FIX1 — WHO is asking decides what may happen to an account that already exists. The tenant-created
-        // event (redelivered, re-published, retried after a success) may only CREATE: an existing account is left exactly as
-        // it is — no reset, no reactivation, no session ended, no link. Only the operator's explicit "Invite" resets (the
-        // BL-529 administrator reset, audited). Anything that does not name the operator is the create-only path.
-        var operatorInvite = string.Equals(request.Trigger, TriggerOperatorInvite, StringComparison.Ordinal);
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+        var existingUser = await _userRepository.GetByEmailAndTenantAsync(normalizedEmail, request.TenantId, ct);
 
-        await _roleProvisioningService.EnsureDefaultRolesAsync(request.TenantId, ct);
-        await SyncEntitledModulesBestEffortAsync(request.TenantId, ct);
-
-        // BL-454 slice 2 stage D — the tenant administrator gets the same ONE-TIME set-password link every other invited
-        // account gets (BL-529's redemption door, api/users/set-password), never a password: the temporary password this
-        // door used to generate travelled in the response and was meant for the e-mail. Platform builds the address and
-        // sends it; only the token's HASH is stored here.
-        var setupToken = _tokenService.GenerateRefreshToken();
-        var setupTokenHash = _refreshTokenHasher.Hash(setupToken);
-        var setupExpiresAtUtc = DateTime.UtcNow.Add(InvitationLinkLifetime);
-        var existingUser = await _userRepository.GetByEmailAndTenantAsync(request.Email.Trim().ToLowerInvariant(), request.TenantId, ct);
-        if (existingUser is not null && !operatorInvite)
+        // BL-454 stage D FIX1/FIX2 — the create-only path leaves an account that already exists EXACTLY as it is: no reset,
+        // no reactivation, no session ended, no link, no role, no membership (a non-administrator account is never raised
+        // to Admin by an event — K13). Asked first (K10): nothing of the tenant is provisioned for a call that does nothing.
+        if (existingUser is not null && createOnly)
         {
             _logger.LogInformation(
                 "tenant.admin_invitation.account_exists TenantId={TenantId} UserId={UserId} Trigger={Trigger}. Nothing changed.",
-                request.TenantId, existingUser.Id, request.Trigger ?? "unspecified");
+                request.TenantId, existingUser.Id, auditTrigger);
             return Ok(new TenantAdminInvitationProvisioningResponse(false, null, null, StatusAccountExists));
         }
 
-        var userProvisioned = existingUser is null;
-        var user = existingUser ?? CreateUser(request, AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService));
-        if (existingUser is null)
-        {
-            IssueNewAccountInvitation(user, setupTokenHash, setupExpiresAtUtc);
-            var created = await _userRepository.CreateAsync(user, ct);
-            // BL-454 stage D FIX1 (4) / BL-456 — the account exists from here on: its row is written now, the way the Users
-            // screen's invitation writes it (ids and facts only; no address, no token). The e-mail is Platform's.
-            await _audit.RecordAsync(UserAuditEvents.Invited, request.TenantId, created.Id,
-                new Dictionary<string, object?>
-                {
-                    ["accountKind"] = created.AccountKind.ToString(),
-                    ["via"] = "tenant-administrator-invitation",
-                    ["trigger"] = operatorInvite ? TriggerOperatorInvite : TriggerTenantCreatedEvent
-                }, ct);
-        }
-        else
-        {
-            // BL-529 — an EXISTING account re-invited as tenant administrator is reset: the old password stops working
-            // (a password nobody knows replaces it), every session of the account in this tenant ends, and the new link
-            // is the only way back in (AdminPasswordReset; audited).
-            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
-            var outcome = await AdminPasswordReset.ResetAsync(
-                user,
-                request.TenantId,
-                AdminResetVia.TenantAdministratorReinvite,
-                _ => AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService),
-                u =>
-                {
-                    u.ActivateByAdministrator(); // Platform's re-invitation is an administrator's activation
-                    u.ConfirmEmail();
-                    u.SetPasswordResetToken(setupTokenHash, setupExpiresAtUtc);
-                    u.RequirePasswordChange(null);
-                },
-                c => _userRepository.GetByEmailAndTenantAsync(normalizedEmail, request.TenantId, c),
-                afterWrite: null,
-                _userRepository,
-                _refreshTokenRepository,
-                _audit,
-                ct);
-            if (!outcome.Succeeded)
-            {
-                return Conflict(new { message = "the account changed while it was being re-invited; try again" });
-            }
-
-            user = outcome.User!;
-        }
-
-        var memberships = await _tenantUserMembershipRepository.GetByUserIdAsync(user.Id, ct);
-        if (!memberships.Any(x => x.TenantId == request.TenantId))
-        {
-            await _tenantUserMembershipRepository.CreateAsync(new TenantUserMembership(user.Id, request.TenantId, user.Email), ct);
-        }
-
+        await _roleProvisioningService.EnsureDefaultRolesAsync(request.TenantId, ct);
+        await SyncEntitledModulesBestEffortAsync(request.TenantId, ct);
         var adminRole = await _roleRepository.GetByNameAndTenantAsync("Admin", request.TenantId, ct);
         if (adminRole is null)
         {
             return UnprocessableEntity(new { message = "tenant admin role is not available" });
         }
 
-        if (!await _userRoleRepository.ExistsAsync(user.Id, adminRole.Id, request.TenantId, ct))
+        // BL-454 slice 2 stage D — the tenant administrator gets the same ONE-TIME set-password link every other invited
+        // account gets (BL-529's redemption door, api/users/set-password), never a password. Only the token's HASH is stored.
+        var setupToken = _tokenService.GenerateRefreshToken();
+        var setupTokenHash = _refreshTokenHasher.Hash(setupToken);
+        var setupExpiresAtUtc = DateTime.UtcNow.Add(InvitationLinkLifetime);
+
+        if (existingUser is null)
         {
-            await _userRoleRepository.AssignAsync(new UserRole(user.Id, adminRole.Id, request.TenantId, "system"), ct);
+            var user = CreateUser(request, AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService));
+            IssueNewAccountInvitation(user, setupTokenHash, setupExpiresAtUtc);
+
+            // BL-454 stage D FIX2 (1) — the ACCOUNT is written LAST: its membership and Admin role first, under its id. A
+            // failure before the account exists leaves no account (a retry creates it whole; the grants it left name an id
+            // nobody can sign in as); once the account exists, everything it needs exists. There is no half-made
+            // administrator for a retry to stumble on.
+            await GrantTenantAdministratorAsync(user.Id, user.Email, request.TenantId, adminRole, ct);
+            var created = await _userRepository.CreateAsync(user, ct);
+            // BL-456 — the account exists from here on: its row is written now (ids and facts only; no address, no token),
+            // naming the REAL trigger (E2).
+            await _audit.RecordAsync(UserAuditEvents.Invited, request.TenantId, created.Id,
+                new Dictionary<string, object?>
+                {
+                    ["accountKind"] = created.AccountKind.ToString(),
+                    ["via"] = "tenant-administrator-invitation",
+                    ["trigger"] = auditTrigger
+                }, ct);
+            return Ok(new TenantAdminInvitationProvisioningResponse(true, setupToken, setupExpiresAtUtc, "processed"));
         }
 
-        return Ok(new TenantAdminInvitationProvisioningResponse(userProvisioned, setupToken, setupExpiresAtUtc, "processed"));
+        // The operator's "Invite" over an existing account — BL-529: the old password stops working (a password nobody knows
+        // replaces it), every session of the account in this tenant ends, and the new link is the only way back in.
+        var outcome = await AdminPasswordReset.ResetAsync(
+            existingUser,
+            request.TenantId,
+            AdminResetVia.TenantAdministratorReinvite,
+            _ => AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService),
+            u =>
+            {
+                u.ActivateByAdministrator(); // the operator's explicit re-invitation is an administrator's activation
+                u.ConfirmEmail();
+                u.SetPasswordResetToken(setupTokenHash, setupExpiresAtUtc);
+                u.RequirePasswordChange(null);
+            },
+            c => _userRepository.GetByEmailAndTenantAsync(normalizedEmail, request.TenantId, c),
+            afterWrite: null,
+            _userRepository,
+            _refreshTokenRepository,
+            _audit,
+            ct);
+        if (!outcome.Succeeded)
+        {
+            return Conflict(new { message = "the account changed while it was being re-invited; try again" });
+        }
+
+        await GrantTenantAdministratorAsync(outcome.User!.Id, outcome.User.Email, request.TenantId, adminRole, ct);
+        return Ok(new TenantAdminInvitationProvisioningResponse(false, setupToken, setupExpiresAtUtc, "processed"));
+    }
+
+    // Membership in the tenant and the Admin role — idempotent (each written only when missing).
+    private async Task GrantTenantAdministratorAsync(Guid userId, string email, Guid tenantId, Role adminRole, CancellationToken ct)
+    {
+        var memberships = await _tenantUserMembershipRepository.GetByUserIdAsync(userId, ct);
+        if (!memberships.Any(x => x.TenantId == tenantId))
+        {
+            await _tenantUserMembershipRepository.CreateAsync(new TenantUserMembership(userId, tenantId, email), ct);
+        }
+
+        if (!await _userRoleRepository.ExistsAsync(userId, adminRole.Id, tenantId, ct))
+        {
+            await _userRoleRepository.AssignAsync(new UserRole(userId, adminRole.Id, tenantId, "system"), ct);
+        }
     }
 
     /// <summary>How long the tenant administrator's set-password link lives: the same 7 days as every tenant invitation

@@ -468,7 +468,8 @@ public sealed class NotificationsBatch2Tests
             new FixedSettingsResolver(),
             new SingleProviderResolver(provider),
             mediator,
-            NullLogger<EmailDispatchJob>.Instance);
+            NullLogger<EmailDispatchJob>.Instance,
+            NoInvitationLedger.Instance);
 
     private static IMediator BuildMediator(InMemoryDispatches dispatches, IEventBus bus) =>
         new DirectMediator(
