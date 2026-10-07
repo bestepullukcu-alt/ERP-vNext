@@ -1941,8 +1941,11 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.Contains($"\"notReached\":{found.Count - stopAt}", audit.Metadata);
     }
 
-    [Fact]
-    public async Task A_run_whose_audit_row_cannot_be_written_says_so_with_its_own_exit_code()
+    // CT acceptance (K10): the apply path says "done, not on record" with the same code as the dry run — its marks landed.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task A_run_whose_audit_row_cannot_be_written_says_so_with_its_own_exit_code(bool apply)
     {
         var (database, _) = await MarkerDatabaseAsync();
         await database.RunCommandAsync<BsonDocument>(new BsonDocument
@@ -1954,10 +1957,15 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         using var output = new StringWriter();
         using var error = new StringWriter();
 
-        var exit = await Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.RunAsync([], MarkerEnvironment(), output, error);
+        var exit = await Diten.AuthService.LegacyDeactivationMarker.MarkerCommand.RunAsync(
+            apply ? ["--apply"] : [], MarkerEnvironment(), output, error);
 
         Assert.Equal(6, exit); // FIX10 (K2): done, but not on record — neither a connection failure nor a success
         Assert.Contains("audit row could not be written", error.ToString());
+        if (apply)
+        {
+            Assert.Contains("APPLIED", output.ToString());
+        }
     }
 
     // ── FIX10 item 5 (CT K3): the read never loads a password hash ─────────────────────────────────────────────────
