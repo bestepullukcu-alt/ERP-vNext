@@ -7,7 +7,8 @@
 | Contract | Owner | Format | Durum |
 |---|---|---|---|
 | **INVENTORY-BUNDLE** | MOD-0173 | `inventory-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 · mock DOĞRULANDI (Prism 4.10.5)** |
-| **PRODUCT-MASTER-BUNDLE** | MOD-0290 | `product-master-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 CT-review PASS · freeze-ready** |
+| **PRODUCT-MASTER-BUNDLE** v1.0 | MOD-0290 | `product-master-bundle.v1.0.openapi.yaml` (OpenAPI 3.1) — v1.0'ın değişmemiş kopyası; **Prism taklidi bunu kullanır** | ✅ **v1 CT-review PASS · freeze-ready** |
+| **PRODUCT-MASTER-BUNDLE** v1.1 | MOD-0290 | `product-master-bundle.openapi.yaml` (OpenAPI 3.1) — v1.1 `1.1.0-draft.4` (MOD-0290-FU04 kalem kaydı; yalnız ekleme + O-1 davranış daralması) | 🔶 **DRAFT** · CT dondurana kadar değişebilir; stok ekibinin O-1 yazılı onayı bekleniyor |
 | **LOCATION** | Location Master | `location.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **TRACE-BUNDLE** | MOD-0174 | `trace.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **GRN-EVENT** | MOD-0142 | `grn-event.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |

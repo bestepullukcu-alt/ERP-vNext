@@ -7,23 +7,36 @@ info:
     Model B (Product) bu contract'ta YOK (DEC-INV-17). Tenant+LegalEntity scoped (server-resolved).
     Mock: `prism mock product-master-bundle.openapi.yaml`.
     v1.1 (MOD-0290-FU04 Kalem / Malzeme Ana Kaydı; stok ekibiyle uzlaşma 2026-10-07, ürün ana verisi planı §4a) —
-    YALNIZ EKLEME. Dışarıya TEK okuma sözleşmesi vardır: mevcut v1 yolları (`getProduct`, `getSku`,
-    `resolveSkuProduct`, `getSkuUom`, `validateRefs`) malzeme kalemini de (`itemKind: Item`) cevaplar. Yeni yollar
-    (`/items/{itemId}`, `/stockable-items`, `/skus/bulk-read`) eklenir ama eskilerin yerine geçmez. Kalemde kalem
-    kimliği = SKU kimliği (`skuId == itemId`, `skuLevel: Item`); SKU → kalem çözümlemesi (D-SKU-LINK) kalem için
-    kendisini döndürür. `itemId` v1.0'da Global Ürün kimliğidir; v1.1'de `itemKind` hangisi olduğunu söyler
-    (kimlikler UUID'dir, çakışmaz). Kalemler kiracı geneli ana veridir: kalem satırlarına tüzel kişi süzmesi
-    uygulanmaz; ürün satırlarının kapsamı aynen kalır.
-  version: 1.1.0
-  x-status: "FROZEN v1.0 · DRAFT v1.1 — v1.0 parçaları dondurulmuş ve değişmez. v1.1 eklemeleri stok ekibinin 2026-10-07 kabulüne göre yazıldı (plan §4a); Control Tower dondurana kadar DRAFT kalır ve değişebilir. Tüketiciler v1.1'e Prism taklidiyle karşı geliştirebilir; canlı bağ dondurmadan sonra kurulur."
+    YALNIZ EKLEME, tek bilinçli istisna O-1 davranış daralmasıdır (aşağıda). Dışarıya TEK okuma sözleşmesi vardır:
+    mevcut v1 yolları (`getProduct`, `getSku`, `resolveSkuProduct`, `getSkuUom`, `validateRefs`) malzeme kalemini de
+    (`itemKind: Item`) cevaplar. Yeni yollar (`/items/{itemId}`, `/stockable-items`, `/skus/bulk-read`) eklenir ama
+    eskilerin yerine geçmez. Kalemde kalem kimliği = SKU kimliği (`skuId == itemId`, `skuLevel: Item`); SKU → kalem
+    çözümlemesi (D-SKU-LINK) kalem için kendisini döndürür. `itemId` v1.0'da Global Ürün kimliğidir; v1.1'de
+    `itemKind` hangisi olduğunu söyler (kimlikler UUID'dir, çakışmaz). Kalemler kiracı geneli ana veridir: kalem
+    satırlarına tüzel kişi süzmesi uygulanmaz; ürün satırlarının kapsamı aynen kalır. Yanıt enum'ları AÇIKTIR:
+    tüketici bilinmeyen değeri hata saymaz (kural `x-notes` içinde). v1.0'ın dondurulmuş kopyası ve Prism taklidinin
+    kullandığı dosya `product-master-bundle.v1.0.openapi.yaml`'dır; bu dosya v1.1 taslağıdır.
+  version: 1.1.0-draft.4
+  x-status: "FROZEN v1.0 (`product-master-bundle.v1.0.openapi.yaml`; v1.0 Prism taklidi bunu kullanır) · DRAFT v1.1 (bu dosya) — v1.0 parçaları dondurulmuş ve değişmez; bu dosyadaki bilinçli istisnalar changelog'un draft.4 satırında sayılıdır. v1.1 eklemeleri stok ekibinin 2026-10-07 kabulüne göre yazıldı (plan §4a); Control Tower dondurana kadar DRAFT kalır ve değişebilir. Tüketiciler v1.1'e Prism taklidiyle karşı geliştirebilir; canlı bağ dondurmadan sonra kurulur."
   x-frozen-baseline: 1.0.0
   x-owner: MOD-0290
   x-decisions: [DEC-INV-17, 18]
   x-notes:
-    - "İstek başlığı boyutu (v1.1): MDM 64 KB'a kadar istek başlığını kabul eder. Gelen kimlik belirteçleri ~35 KB'tır; ASP.NET Core Kestrel'in varsayılan toplam başlık sınırı (32 KB) yetmez. Ölçüldü 2026-10-07 (bu dal): MDM `Program.cs` ve ağ geçidi `Program.cs` `MaxRequestHeadersTotalSize = 64 * 1024` taşıyor (commit 9dfe859f2). Sınır sözleşmenin parçasıdır: düşürülmesi bu sözleşmeyi kırar; S4 dilimi bunu ~35 KB belirteçli bir HTTP testiyle ölçer."
+    - "Açık enum kuralı: Yanıt enum'ları AÇIKTIR. Tüketici bilinmeyen değeri hata saymaz: LifecycleStatus'ta 'yeni hareket yok' (ters kayıt yine kabul), diğerlerinde değeri olduğu gibi taşır. Kesin enum üreten istemci kullanılmaz. İstek parametresinde bilinmeyen değer 400."
+    - "Yetkili okuma: stok davranışı için yetkili okuma `getSku`'dur (kalem için `getSku(level=Item)`); `getProduct`'taki kalem alanları aynı değerleri taşır. Kalemde `serialControlled: false` 'uygulanmaz' demektir (kalemde seri takibi yoktur)."
+    - "Davranış daralması (O-1): v1.1 sunucusu Global Ürün (`itemKind: GlobalProduct`) yanıtında ProductRef'in v1.0 stok alanlarını döndürmez; bu alanlar SKU düzeyinden (`getSku`) okunur. Alan yok = bilinmiyor; false / 0 varsayılmaz. Stok ekibinin yazılı onayı bekleniyor."
+    - "`itemKind` yoksa GlobalProduct'tır (v1.0 sunucusu ve v1.0 örnekleri bu alanı taşımaz)."
+    - "`canonicalCode` opaktır, ayrıştırılmaz. Gerçek biçim RCS-001 §4: `GP-` / `GS-` / `LS-` / `FG-` / `IT-` + 12 hane. v1.0 örneklerindeki `GP-000123` ve `LSKU-TR-000045` eski taklit değerleridir."
+    - "`contractVersion`: sunucu her yanıtta yayımlanan sürümü döner; tüketici bu alanla dallanmaz."
+    - "Birim kodları veridir (MOD-0048 Referans Veri Yönetimi, `item-uom` listesi, UN/ECE Rec 20); tüketici sabit kodlamaz. v1.0 örneklerindeki EA, BOX, PALLET yalnız örnektir. Kutu / koli için kesin kodlar S1'de tohumdan önce doğrulanır (O-21); örneklerdeki XBX / XCS bu doğrulamaya tabidir."
+    - "Ondalık metinler (Decimal) tam (exact) ayrıştırılır; double / float kullanılmaz. Birim çevriminde pay ve payda her zaman sıfırdan büyüktür (v1.1 kuralı, açıklama olarak; dondurulmuş v1.0 `UomConversion` şeması değiştirilmedi)."
+    - "Taslak ve eksik kayıtlar: zorunlu stok alanı henüz dolmamış kayıtta (taslak ya da ilk doldurmadan önce) SkuRef'te alan null, ProductRef'te alan yok döner ve `stockable` false'tur. Kalemde `shelfLifeDays` / `retestDays` dolu ya da null olabilir (O-9). Ambalaj dışı kalemde boş `storageConditions` listesi `stockable: true`'yu engeller (CT kararı)."
+    - "Stok hareket kuralı stok tarafından uygulanır; MDM yalnız durumu ve `stockable`'ı yayımlar. `stockable: false` kayıtta stok yeni hareket kabul etmez (ters kayıt hariç) — CT kararı (LifecycleStatus açıklaması)."
     - "Olay (event) MVP-1'de yoktur: stok her harekette bu sözleşmeyi canlı okur; MDM'ye ulaşamazsa hareketi reddeder (kapalı-başarısız)."
-    - "Stok hareket kuralı stok tarafından uygulanır; MDM yalnız yaşam döngüsü durumunu yayımlar (bkz. LifecycleStatus açıklaması)."
-    - "v1.0 örneklerindeki birim değerleri (EA, BOX, PALLET) yalnız örnektir ve değiştirilmez. MDM'nin yayımladığı değerler MOD-0048 (Referans Veri Yönetimi) `item-uom` listesinin UN/ECE Rec 20 kodlarıdır (C62, KGM, MLT …)."
+    - "İstek başlığı boyutu (v1.1): MDM 64 KB'a kadar istek başlığını kabul eder. Gelen kimlik belirteçleri ~35 KB'tır; ASP.NET Core Kestrel'in varsayılan toplam başlık sınırı (32 KB) yetmez. Ölçüldü 2026-10-07 (bu dal): MDM `Program.cs` ve ağ geçidi `Program.cs` `MaxRequestHeadersTotalSize = 64 * 1024` taşıyor (commit 9dfe859f2). Sınır sözleşmenin parçasıdır: düşürülmesi bu sözleşmeyi kırar; S4 dilimi bunu ~35 KB belirteçli bir HTTP testiyle ölçer."
+    - "Prism ile büyük başlık: Node'un varsayılan başlık sınırı küçüktür; taklidi `NODE_OPTIONS=--max-http-header-size=65536 npx @stoplight/prism-cli mock <dosya>` ile çalıştırın (DOĞRULANMADI)."
+    - "Sözdizimi: v1.0 alanları OpenAPI 3.0 tarzı `nullable: true` taşır ve değiştirilmez; v1.1'de eklenen alanlar 3.1 sözdizimini (`type: [x, 'null']`, `anyOf: [$ref, {type: 'null'}]`) kullanır. Anlam aynıdır."
+    - "Örnekler: her işlem adlı örnekler (`examples`) taşır; ilk örnek v1.0 dosyasındaki örnektir (Prism varsayılan cevabı değişmez) ve 'v1.0-mock-only' işaretlidir."
     - "v1.1'de OLMAYAN (sonra): kalem GTIN'i; GSKU seri takibi; koli / palet GTIN'i ve ambalaj hiyerarşisi (MOD-0178 Yerleştirme / Toplama / Paketleme, P9); tehlike sınıfı, CoA zorunlu mu, girişte varsayılan karantina (MOD-0175 Karantina / Bloke Stok)."
     - "Açık maddeler ve CT kararları (2026-10-07): execution/domains/master-data-management/module-packs/MOD-0290-FU04-item-material-master.md §25.1."
   x-changelog:
@@ -36,6 +49,9 @@ info:
     - date: "2026-10-07"
       version: 1.1.0-draft.3
       note: "CT kararları işlendi (MOD-0290-FU04 §25.1): O-1 Global Ürün türünde v1.0 stok alanları dönmez; O-2 en çok bir sıcaklık koşulu; O-3 LSKU stok alanları GSKU'dan miras; O-4 Archived yayımlanmaz; O-5 ürün SKU adı okuma anında türetilir; O-6 LSKU gtin null; O-7 minRemainingShelfLifeDays isteğe bağlı. Yalnız v1.1 açıklamaları değişti; şema ve v1.0 parçaları aynı."
+    - date: "2026-10-07"
+      version: 1.1.0-draft.4
+      note: "S0-FIX1 (bağımsız inceleme, 945fee37c): davranış daralması (O-1) — stok ekibinin yazılı onayı bekleniyor; ProductRef'in v1.0 stok alanlarına `deprecated: true` + açıklama; açık enum kuralı; bütün işlemlerde adlı örnekler (ilk örnek v1.0 örneği, 'v1.0-mock-only'); materialType yanıt alanları MaterialType'a bağlandı; StorageConditionCode beş kodla enum; getSkuUom'a 404, /stockable-items · /skus/bulk-read · /validate'e 400; validateRefs `refs` en çok 200; çevrim pay / paydasının sıfırdan büyük olması v1.1 açıklaması olarak (dondurulmuş UomConversion şemasına dokunulmadı — CT kararı); yalnız yeni v1.1 şemalarına `required`; v1.1 alanlarında 3.1 sözdizimi; BulkSkuReadItem'a lifecycleStatus; arama / toplu okuma / doğrulama anlamları; v1.0 kopyası ayrı dosyada. v1.0'da bilinçli değişen satırlar: `example` → `examples` (değerler aynı), ProductRef stok alanlarının açıklaması, getSkuUom 404, /validate 400, `refs` maxItems, UomInfo / ValidateRequest / ValidateResponse'a eklenen açıklama."
 servers:
   - url: /api/product-master
 security:
@@ -45,7 +61,7 @@ paths:
     get:
       operationId: getProduct
       summary: Ürün kimliği (ItemId → GlobalProduct)
-      description: "v1.1 — `itemId` bir Global Ürün ya da bir malzeme kalemi olabilir; `itemKind` hangisi olduğunu söyler. Kalem için: `canonicalCode` IT-…, `materialType` dolu, stok davranışı alanları kalemin kendisinden gelir, `serialControlled` her zaman false (kalemde seri takibi yok). Global Ürün için stok davranışı SKU düzeyindedir (GSKU / LSKU / Bitmiş Ürün → `getSku`); Global Ürün türünde ProductRef'teki v1.0 stok alanları dönmez (alan yok) (CT kararı 2026-10-07, MOD-0290-FU04 O-1). Kalem örneği: `GET /items/{itemId}`."
+      description: "v1.1 — `itemId` bir Global Ürün ya da bir malzeme kalemi olabilir; `itemKind` hangisi olduğunu söyler (yoksa GlobalProduct). Kalem için: `canonicalCode` IT-…, `materialType` dolu, stok davranışı alanları kalemin kendisinden gelir, `serialControlled` false = uygulanmaz. Global Ürün için stok davranışı SKU düzeyindedir: v1.1 sunucusu Global Ürün yanıtında ProductRef'in v1.0 stok alanlarını ve v1.1 stok alanlarını döndürmez; yetkili okuma `getSku` (davranış daralması O-1 — stok ekibinin yazılı onayı bekleniyor)."
       parameters:
         - { name: itemId, in: path, required: true, schema: { type: string, format: uuid } }
       responses:
@@ -54,25 +70,57 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ProductRef' }
-              example:
-                itemId: b1f2c3d4-0000-0000-0000-000000000001
-                canonicalCode: GP-000123
-                name: Amoksisilin 500mg Kapsül
-                lifecycleStatus: Active
-                baseUomId: EA
-                shelfLifeDays: 730
-                minRemainingShelfLifeDays: 180
-                storageCondition: "15-25C"
-                retestDays: 365
-                lotControlled: true
-                serialControlled: false
-                contractVersion: v1
+              examples:
+                v1.0-mock:
+                  summary: "v1.0 taklit örneği (v1.0-mock-only)"
+                  description: "v1.0 dosyasındaki örnek, değerleri değiştirilmeden. Yalnız v1.0 Prism taklidi içindir; v1.1 sunucusu bu cevabı vermez: Global Ürün yanıtında stok alanları yok (O-1), kod GP- + 12 hane, saklama koşulu MOD-0048 kodu, birim `item-uom` kodu."
+                  value:
+                    itemId: b1f2c3d4-0000-0000-0000-000000000001
+                    canonicalCode: GP-000123
+                    name: Amoksisilin 500mg Kapsül
+                    lifecycleStatus: Active
+                    baseUomId: EA
+                    shelfLifeDays: 730
+                    minRemainingShelfLifeDays: 180
+                    storageCondition: "15-25C"
+                    retestDays: 365
+                    lotControlled: true
+                    serialControlled: false
+                    contractVersion: v1
+                global-product:
+                  summary: "v1.1 — Global Ürün (stok alanları yok; getSku'dan okunur)"
+                  value:
+                    itemId: b1f2c3d4-0000-0000-0000-000000000001
+                    itemKind: GlobalProduct
+                    canonicalCode: GP-000000000001
+                    name: Amoksisilin 500mg Kapsül
+                    lifecycleStatus: Active
+                    contractVersion: v1.1
+                item:
+                  summary: "v1.1 — malzeme kalemi /products/{itemId} üzerinden"
+                  value:
+                    itemId: d4e5f6a7-0000-0000-0000-000000000003
+                    itemKind: Item
+                    canonicalCode: IT-000000000003
+                    name: Amoksisilin trihidrat
+                    materialType: ACTIVE_INGREDIENT
+                    lifecycleStatus: Active
+                    baseUomId: KGM
+                    shelfLifeDays: 1825
+                    retestDays: 365
+                    minRemainingShelfLifeDays: null
+                    storageCondition: AMBIENT_15_25
+                    storageConditions: [AMBIENT_15_25, PROTECT_FROM_MOISTURE]
+                    lotControlled: true
+                    serialControlled: false
+                    stockable: true
+                    contractVersion: v1.1
         '404': { $ref: '#/components/responses/UnknownItem' }
   /skus/{skuId}:
     get:
       operationId: getSku
       summary: SKU (SkuId + SkuLevel → Gsku|Lsku|FinishedGood)
-      description: "v1.1 — `level` `Item` da alır. level=Item: `skuId == itemId` (kalemin kendi kimliği), `canonicalCode` IT-…, `itemKind` Item; `packUomCode`, `marketCode`, `gtin` null, `packQuantity` dönmez (kalem ambalaj / pazar seviyesi taşımaz; kalem GTIN'i sonra). level=FinishedGood: `gtin` satış kutusu GTIN'idir (İTS karekodundaki (01), D-1). Stok davranışı alanlarının seviyeye göre dolumu SkuRef açıklamasındaki tablodadır."
+      description: "v1.1 — stok davranışı için YETKİLİ okuma. `level` `Item` da alır. level=Item: `skuId == itemId`, `canonicalCode` IT-…, `itemKind` Item; `packUomCode`, `marketCode`, `gtin` null, `packQuantity` dönmez (kalem ambalaj / pazar seviyesi taşımaz; kalem GTIN'i sonra). level=Lsku: seri takibi kendi alanı, diğer stok alanları okuma anında üst GSKU'dan (O-3), `gtin` null (O-6). level=FinishedGood: `gtin` satış kutusu GTIN'idir (İTS karekodundaki (01), D-1). Var olan ama başka seviyedeki kimlik 404 alır. Seviyeye göre dolum SkuRef açıklamasındaki tablodadır."
       parameters:
         - { name: skuId, in: path, required: true, schema: { type: string, format: uuid } }
         - { name: level, in: query, required: true, schema: { $ref: '#/components/schemas/SkuLevel' } }
@@ -82,16 +130,113 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/SkuRef' }
-              example:
-                skuId: c3d4e5f6-0000-0000-0000-000000000002
-                skuLevel: Lsku
-                canonicalCode: LSKU-TR-000045
-                itemId: b1f2c3d4-0000-0000-0000-000000000001
-                packUomCode: BOX
-                packQuantity: "10"
-                gtin: "08690000000017"
-                marketCode: TR
-                contractVersion: v1
+              examples:
+                v1.0-mock:
+                  summary: "v1.0 taklit örneği (v1.0-mock-only)"
+                  description: "v1.0 dosyasındaki örnek, değerleri değiştirilmeden. v1.1 sunucusunda: kod LS- + 12 hane, Lsku `gtin` null (O-6; örnekteki GTIN'in kontrol hanesi de geçersiz), birim `item-uom` kodu."
+                  value:
+                    skuId: c3d4e5f6-0000-0000-0000-000000000002
+                    skuLevel: Lsku
+                    canonicalCode: LSKU-TR-000045
+                    itemId: b1f2c3d4-0000-0000-0000-000000000001
+                    packUomCode: BOX
+                    packQuantity: "10"
+                    gtin: "08690000000017"
+                    marketCode: TR
+                    contractVersion: v1
+                item:
+                  summary: "v1.1 — level=Item (skuId == itemId)"
+                  value:
+                    skuId: d4e5f6a7-0000-0000-0000-000000000003
+                    skuLevel: Item
+                    itemKind: Item
+                    canonicalCode: IT-000000000003
+                    itemId: d4e5f6a7-0000-0000-0000-000000000003
+                    name: Amoksisilin trihidrat
+                    lifecycleStatus: Active
+                    packUomCode: null
+                    gtin: null
+                    marketCode: null
+                    materialType: ACTIVE_INGREDIENT
+                    baseUomId: KGM
+                    shelfLifeDays: 1825
+                    shelfLifeDaysSource: Own
+                    retestDays: 365
+                    storageConditions: [AMBIENT_15_25, PROTECT_FROM_MOISTURE]
+                    lotControlled: true
+                    serialControlled: false
+                    stockable: true
+                    contractVersion: v1.1
+                gsku:
+                  summary: "v1.1 — level=Gsku"
+                  value:
+                    skuId: e5f6a7b8-0000-0000-0000-000000000004
+                    skuLevel: Gsku
+                    itemKind: GlobalProduct
+                    canonicalCode: GS-000000000002
+                    itemId: b1f2c3d4-0000-0000-0000-000000000001
+                    name: "Amoksisilin 500mg Kapsül · 16 C62"
+                    lifecycleStatus: Active
+                    packUomCode: C62
+                    packQuantity: "16"
+                    gtin: null
+                    marketCode: null
+                    materialType: null
+                    baseUomId: C62
+                    shelfLifeDays: 730
+                    shelfLifeDaysSource: Own
+                    retestDays: null
+                    storageConditions: [AMBIENT_15_25]
+                    lotControlled: true
+                    serialControlled: null
+                    stockable: true
+                    contractVersion: v1.1
+                lsku:
+                  summary: "v1.1 — level=Lsku (stok alanları GSKU'dan, seri kendi alanı)"
+                  value:
+                    skuId: c3d4e5f6-0000-0000-0000-000000000002
+                    skuLevel: Lsku
+                    itemKind: GlobalProduct
+                    canonicalCode: LS-000000000045
+                    itemId: b1f2c3d4-0000-0000-0000-000000000001
+                    name: "Amoksisilin 500mg Kapsül · 16 C62 · TR"
+                    lifecycleStatus: Active
+                    packUomCode: C62
+                    packQuantity: "16"
+                    gtin: null
+                    marketCode: TR
+                    materialType: null
+                    baseUomId: C62
+                    shelfLifeDays: 730
+                    shelfLifeDaysSource: Gsku
+                    retestDays: null
+                    storageConditions: [AMBIENT_15_25]
+                    lotControlled: true
+                    serialControlled: true
+                    stockable: true
+                    contractVersion: v1.1
+                fg:
+                  summary: "v1.1 — level=FinishedGood (satış kutusu GTIN'i; raf ömrü GSKU'dan)"
+                  value:
+                    skuId: f6a7b8c9-0000-0000-0000-000000000005
+                    skuLevel: FinishedGood
+                    itemKind: GlobalProduct
+                    canonicalCode: FG-000000000046
+                    itemId: b1f2c3d4-0000-0000-0000-000000000001
+                    name: "Amoksisilin 500mg Kapsül · 16 C62"
+                    lifecycleStatus: Active
+                    gtin: "08690000000029"
+                    marketCode: null
+                    materialType: null
+                    baseUomId: C62
+                    shelfLifeDays: 730
+                    shelfLifeDaysSource: Gsku
+                    retestDays: null
+                    storageConditions: [AMBIENT_15_25]
+                    lotControlled: true
+                    serialControlled: true
+                    stockable: true
+                    contractVersion: v1.1
         '404': { $ref: '#/components/responses/UnknownSku' }
   /skus/{skuId}/product:
     get:
@@ -107,17 +252,36 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/SkuProductLink' }
-              example:
-                skuId: c3d4e5f6-0000-0000-0000-000000000002
-                skuLevel: Lsku
-                itemId: b1f2c3d4-0000-0000-0000-000000000001
-                contractVersion: v1
+              examples:
+                v1.0-mock:
+                  summary: "v1.0 taklit örneği (v1.0-mock-only)"
+                  value:
+                    skuId: c3d4e5f6-0000-0000-0000-000000000002
+                    skuLevel: Lsku
+                    itemId: b1f2c3d4-0000-0000-0000-000000000001
+                    contractVersion: v1
+                item-self-link:
+                  summary: "v1.1 — level=Item: kendisini döndürür"
+                  value:
+                    skuId: d4e5f6a7-0000-0000-0000-000000000003
+                    skuLevel: Item
+                    itemId: d4e5f6a7-0000-0000-0000-000000000003
+                    itemKind: Item
+                    contractVersion: v1.1
+                fg:
+                  summary: "v1.1 — level=FinishedGood → GSKU → Global Ürün"
+                  value:
+                    skuId: f6a7b8c9-0000-0000-0000-000000000005
+                    skuLevel: FinishedGood
+                    itemId: b1f2c3d4-0000-0000-0000-000000000001
+                    itemKind: GlobalProduct
+                    contractVersion: v1.1
         '404': { $ref: '#/components/responses/UnknownSku' }
   /skus/{skuId}/uom:
     get:
       operationId: getSkuUom
       summary: SKU/item UoM + conversion
-      description: "v1.1 — Kalem için `skuId == itemId`; seviye kimlikten sunucuda çözülür. Yön: 1 `fromUom` = `numerator` / `denominator` `toUom`. Pay ve payda ondalık metindir, sıfırdan büyüktür, MDM yuvarlamaz. Her birim çifti bir kez yayımlanır; ters yön tüketicide kesin kesirle (payda / pay) türetilir. Her birim temel birime en çok 4 adımda ulaşır (stok 4 adıma kadar zincirler). Aynı boyuttaki çevrimler (KGM ↔ GRM, LTR ↔ MLT) MOD-0048 `item-uom` çarpanından türetilir ve listede açıkça döner; tüketici hesaplamaz. GSKU: kutu ↔ adet. Bitmiş Ürün: koli ↔ kutu + üst GSKU'nun kutu ↔ adet çevrimi; temel birim ↔ kutu ↔ koli tek çağrıda okunur. `effectiveFrom` / `effectiveTo` v1.1'de null (geçerlilik aralığı yok; etkin kayıtta çevrim eklenir, değiştirilmez)."
+      description: "v1.1 — Kalem için `skuId == itemId`; seviye kimlikten sunucuda çözülür. Yön: 1 `fromUom` = `numerator` / `denominator` `toUom`; çevrim girildiği yönde yayımlanır, tüketici grafı iki yönde kesin kesirle (ters yön payda / pay) yürür. Pay ve payda her zaman sıfırdan büyük ondalık metindir (v1.1 kuralı; işaret ve üs gösterimi yok), MDM yuvarlamaz, tüketici tam ayrıştırır (double yok). Yalnız kaydın kullandığı birimlerin çiftleri döner. Her birim temel birime en çok 4 adımda ulaşır; 'adım' = graftaki kenar sayısı (stok 4 adıma kadar zincirler). Aynı boyuttaki çevrimlerin (KGM ↔ GRM, LTR ↔ MLT) değeri MOD-0048 `item-uom` çarpanından türetilir ve listede açıkça döner; tüketici hesaplamaz. GSKU: kutu ↔ adet. Lsku: üst GSKU'nun çevrimleri (O-3). Bitmiş Ürün: koli ↔ kutu + üst GSKU'nun kutu ↔ adet çevrimi; temel birim ↔ kutu ↔ koli tek çağrıda okunur. `effectiveFrom` / `effectiveTo` v1.1'de null (geçerlilik aralığı yok; etkin kayıtta çevrim eklenir, değiştirilmez)."
       parameters:
         - { name: skuId, in: path, required: true, schema: { type: string, format: uuid } }
       responses:
@@ -126,12 +290,32 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/UomInfo' }
-              example:
-                baseUomId: EA
-                conversions:
-                  - { fromUom: BOX, toUom: EA, numerator: "10", denominator: "1" }
-                  - { fromUom: PALLET, toUom: BOX, numerator: "100", denominator: "1" }
-                contractVersion: v1
+              examples:
+                v1.0-mock:
+                  summary: "v1.0 taklit örneği (v1.0-mock-only)"
+                  description: "v1.0 dosyasındaki örnek, değerleri değiştirilmeden. EA, BOX, PALLET taklit değerleridir; gerçek kodlar MOD-0048 `item-uom`'dan gelir."
+                  value:
+                    baseUomId: EA
+                    conversions:
+                      - { fromUom: BOX, toUom: EA, numerator: "10", denominator: "1" }
+                      - { fromUom: PALLET, toUom: BOX, numerator: "100", denominator: "1" }
+                    contractVersion: v1
+                item-uom:
+                  summary: "v1.1 — kalem, temel birim KGM; GRM aynı boyuttan türetilir"
+                  value:
+                    baseUomId: KGM
+                    conversions:
+                      - { fromUom: GRM, toUom: KGM, numerator: "1", denominator: "1000", effectiveFrom: null, effectiveTo: null }
+                    contractVersion: v1.1
+                fg-uom:
+                  summary: "v1.1 — Bitmiş Ürün: koli ↔ kutu + üst GSKU'nun kutu ↔ adet zinciri"
+                  value:
+                    baseUomId: C62
+                    conversions:
+                      - { fromUom: XCS, toUom: XBX, numerator: "48", denominator: "1", effectiveFrom: null, effectiveTo: null }
+                      - { fromUom: XBX, toUom: C62, numerator: "16", denominator: "1", effectiveFrom: null, effectiveTo: null }
+                    contractVersion: v1.1
+        '404': { $ref: '#/components/responses/UnknownSku' }
   /items/{itemId}:
     get:
       operationId: getMaterialItem
@@ -145,34 +329,37 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ProductRef' }
-              example:
-                itemId: d4e5f6a7-0000-0000-0000-000000000003
-                itemKind: Item
-                canonicalCode: IT-000000000003
-                name: Amoksisilin trihidrat
-                materialType: ACTIVE_INGREDIENT
-                lifecycleStatus: Active
-                baseUomId: KGM
-                shelfLifeDays: 1825
-                retestDays: 365
-                minRemainingShelfLifeDays: null
-                storageCondition: AMBIENT_15_25
-                storageConditions: [AMBIENT_15_25, PROTECT_FROM_MOISTURE]
-                lotControlled: true
-                serialControlled: false
-                stockable: true
-                contractVersion: v1.1
+              examples:
+                item:
+                  summary: "v1.1 — malzeme kalemi"
+                  value:
+                    itemId: d4e5f6a7-0000-0000-0000-000000000003
+                    itemKind: Item
+                    canonicalCode: IT-000000000003
+                    name: Amoksisilin trihidrat
+                    materialType: ACTIVE_INGREDIENT
+                    lifecycleStatus: Active
+                    baseUomId: KGM
+                    shelfLifeDays: 1825
+                    retestDays: 365
+                    minRemainingShelfLifeDays: null
+                    storageCondition: AMBIENT_15_25
+                    storageConditions: [AMBIENT_15_25, PROTECT_FROM_MOISTURE]
+                    lotControlled: true
+                    serialControlled: false
+                    stockable: true
+                    contractVersion: v1.1
         '404': { $ref: '#/components/responses/UnknownItem' }
   /stockable-items:
     get:
       operationId: searchStockableItems
       summary: "v1.1 — Stoklanabilir kalem / SKU araması (sayfalı)"
-      description: "Yalnız `stockable: true` kayıtlar döner; varsayılan olarak bütün seviyeler (Item, Gsku, Lsku, FinishedGood) aynı biçimde (`StockableItemRef`). `q` kod ön ekiyle ya da adın içinde geçen metinle eşleşir (büyük / küçük harf duyarsız). Sıra: `canonicalCode` (ordinal, artan) — sayfalar arasında kararlı. `status` verilmezse bütün durumlar döner; seçici ekranlar `status=Active` gönderir. Ürün satırları sunucunun çözdüğü tüzel kişi kapsamıyla, kalem satırları kiracı genelinde süzülür. Stoğun geçici 'Model A seçici' rotası (W-UI-01) bu uçla kalkar."
+      description: "Yalnız `stockable: true` kayıtlar döner; varsayılan olarak bütün seviyeler (Item, Gsku, Lsku, FinishedGood) aynı biçimde (`StockableItemRef`). `q`: kod ön eki YA DA adın içinde geçen metin; ordinal, büyük / küçük harf duyarsız, aksan katlaması yok; boş `q` serbesttir (süzme yok). `materialType` verilirse yalnız Item satırları döner. `status` verilmezse Retired dışındaki bütün durumlar döner; seçici ekranlar `status=Active` gönderir. Sıra: `canonicalCode` (ordinal, artan) — sayfalar arasında kararlı. `pageSize` > 100, `q` > 200 karakter ya da bilinmeyen enum değeri → 400. Son sayfanın ötesi → 200 ve boş `items`. Ürün satırları sunucunun çözdüğü tüzel kişi kapsamıyla, kalem satırları kiracı genelinde süzülür. Stoğun geçici 'Model A seçici' rotası (W-UI-01) bu uçla kalkar."
       parameters:
-        - { name: q, in: query, required: false, schema: { type: string, maxLength: 200 }, description: kod ön eki ya da ad }
+        - { name: q, in: query, required: false, schema: { type: string, maxLength: 200 }, description: "kod ön eki ya da ad içinde geçen metin" }
         - { name: skuLevel, in: query, required: false, schema: { $ref: '#/components/schemas/SkuLevel' } }
-        - { name: materialType, in: query, required: false, schema: { $ref: '#/components/schemas/MaterialType' }, description: "Yalnız Item seviyesini süzer" }
-        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/LifecycleStatus' } }
+        - { name: materialType, in: query, required: false, schema: { $ref: '#/components/schemas/MaterialType' }, description: "Verilirse yalnız Item satırları döner" }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/LifecycleStatus' }, description: "Verilmezse Retired dışındaki bütün durumlar" }
         - { name: page, in: query, required: false, schema: { type: integer, minimum: 1, default: 1 } }
         - { name: pageSize, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 25 } }
       responses:
@@ -181,61 +368,108 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/StockableItemPage' }
+              examples:
+                page:
+                  summary: "v1.1 — q=amoks: bir kalem ve bir Bitmiş Ürün"
+                  value:
+                    items:
+                      - { skuId: f6a7b8c9-0000-0000-0000-000000000005, skuLevel: FinishedGood, itemId: b1f2c3d4-0000-0000-0000-000000000001, itemKind: GlobalProduct, canonicalCode: FG-000000000046, name: "Amoksisilin 500mg Kapsül · 16 C62", materialType: null, lifecycleStatus: Active, baseUomId: C62, lotControlled: true, serialControlled: true }
+                      - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Item, itemId: d4e5f6a7-0000-0000-0000-000000000003, itemKind: Item, canonicalCode: IT-000000000003, name: Amoksisilin trihidrat, materialType: ACTIVE_INGREDIENT, lifecycleStatus: Active, baseUomId: KGM, lotControlled: true, serialControlled: false }
+                    page: 1
+                    pageSize: 25
+                    totalCount: 2
+                    contractVersion: v1.1
+                past-the-end:
+                  summary: "v1.1 — son sayfanın ötesi: 200 ve boş liste"
+                  value:
+                    items: []
+                    page: 9
+                    pageSize: 25
+                    totalCount: 2
+                    contractVersion: v1.1
+        '400': { $ref: '#/components/responses/BadRequest' }
   /skus/bulk-read:
     post:
       operationId: bulkReadSkus
-      summary: "v1.1 — Toplu SKU okuma (kimlik listesi → kimlik + seviye + kod + ad)"
-      description: "En çok 200 kimlik (stok `/balance` varsayılan sayfasının (50) dört katı, arama sayfası üst sınırının (100) iki katı); daha büyük küme parçalanır. Seviye istenmez: kimlikler UUID'dir ve sunucu seviyeyi kendisi bulur; kalemde `skuId == itemId`. Tekrarlanan kimlik bir kez cevaplanır. Bulunamayan, başka kiracıya ait ya da çağıranın tüzel kişi kapsamı dışındaki ürün SKU'su aynı cevabı alır: `notFound` listesine girer (ifşa yok, tüm istek reddedilmez)."
+      summary: "v1.1 — Toplu SKU okuma (kimlik listesi → kimlik + seviye + kod + ad + durum)"
+      description: "En çok 200 kimlik (stok `/balance` varsayılan sayfasının (50) dört katı, arama sayfası üst sınırının (100) iki katı); daha büyük küme parçalanır. Seviye istenmez: kimlikler UUID'dir ve sunucu seviyeyi kendisi bulur; kalemde `skuId == itemId`. `items` istek sırasındadır; tekrarlanan kimlik ilk geçtiği yerde bir kez cevaplanır. Draft, Deactivated ve Retired kayıtlar da bulunur (`lifecycleStatus` ile döner). Global Ürün kimliği bir SKU değildir ve `notFound`'a girer. Bulunamayan, başka kiracıya ait ya da çağıranın tüzel kişi kapsamı dışındaki ürün SKU'su da aynı cevabı alır: `notFound` (ifşa yok, tüm istek reddedilmez). `name` yalnız gösterim içindir: ayrıştırılmaz, anahtar olarak kullanılmaz. Geçersiz UUID, boş liste ya da 200'den uzun liste → 400."
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/BulkSkuReadRequest' }
-            example:
-              skuIds:
-                - c3d4e5f6-0000-0000-0000-000000000002
-                - d4e5f6a7-0000-0000-0000-000000000003
-                - 00000000-0000-0000-0000-000000000000
+            examples:
+              mixed:
+                summary: "v1.1 — Lsku, kalem, Global Ürün kimliği ve bilinmeyen kimlik"
+                value:
+                  skuIds:
+                    - c3d4e5f6-0000-0000-0000-000000000002
+                    - d4e5f6a7-0000-0000-0000-000000000003
+                    - b1f2c3d4-0000-0000-0000-000000000001
+                    - 00000000-0000-0000-0000-000000000000
       responses:
         '200':
-          description: Bulunanlar ve bulunamayanlar
+          description: Bulunanlar (istek sırasında) ve bulunamayanlar
           content:
             application/json:
               schema: { $ref: '#/components/schemas/BulkSkuReadResponse' }
-              example:
-                items:
-                  - { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, canonicalCode: LS-000000000045, name: "Amoksisilin 500mg Kapsül · 16 C62 · TR" }
-                  - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Item, canonicalCode: IT-000000000003, name: Amoksisilin trihidrat }
-                notFound: [00000000-0000-0000-0000-000000000000]
-                contractVersion: v1.1
-        '400': { $ref: '#/components/responses/BatchLimitExceeded' }
+              examples:
+                mixed:
+                  summary: "v1.1 — Global Ürün kimliği ve bilinmeyen kimlik notFound'da"
+                  value:
+                    items:
+                      - { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, canonicalCode: LS-000000000045, name: "Amoksisilin 500mg Kapsül · 16 C62 · TR", lifecycleStatus: Active }
+                      - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Item, canonicalCode: IT-000000000003, name: Amoksisilin trihidrat, lifecycleStatus: Active }
+                    notFound: [b1f2c3d4-0000-0000-0000-000000000001, 00000000-0000-0000-0000-000000000000]
+                    contractVersion: v1.1
+        '400': { $ref: '#/components/responses/BadRequest' }
   /validate:
     post:
       operationId: validateRefs
       summary: Toplu kimlik doğrulama (fail-closed consumer'lar için — bulk)
-      description: "v1.1 — `skuLevel: Item` kabul edilir; `itemId` hem Global Ürün hem kalem kimliğini çözer. Sonuç satırında v1.1 alanları `itemKind` ve `lifecycleStatus` döner (bulunamayan satırda yok)."
+      description: "v1.1 — Geçerli satır biçimleri: (a) yalnız `itemId` → Global Ürün ya da kalem var mı; (b) `skuId` + `skuLevel` → o seviyede SKU var mı (`skuLevel: Item` kabul edilir); (c) `itemId` + `skuId` + `skuLevel` → SKU o seviyede var mı VE D-SKU-LINK ile o `itemId`'ye mi çözülüyor. Seviye uyuşmazlığı (kimlik var ama başka seviyede) ya da (c)'de bağ uyuşmazlığı → `exists: false`. Başka biçim (ör. `skuLevel`'sız `skuId`, boş satır), bilinmeyen enum değeri ya da 200'den uzun `refs` → 400. `exists` = kaydın varlığı; kullanılabilirlik için `lifecycleStatus` okunur. Sonuç satırında v1.1 alanları `itemKind` ve `lifecycleStatus` döner (bulunamayan satırda yok)."
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/ValidateRequest' }
-            example:
-              refs:
-                - { itemId: b1f2c3d4-0000-0000-0000-000000000001 }
-                - { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku }
-                - { skuId: 00000000-0000-0000-0000-000000000000, skuLevel: Gsku }
+            examples:
+              v1.0-mock:
+                summary: "v1.0 taklit örneği (v1.0-mock-only)"
+                value:
+                  refs:
+                    - { itemId: b1f2c3d4-0000-0000-0000-000000000001 }
+                    - { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku }
+                    - { skuId: 00000000-0000-0000-0000-000000000000, skuLevel: Gsku }
+              item:
+                summary: "v1.1 — kalem (b biçimi) ve seviye uyuşmazlığı"
+                value:
+                  refs:
+                    - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Item }
+                    - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Gsku }
       responses:
         '200':
           description: Doğrulama sonuçları
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ValidateResponse' }
-              example:
-                results:
-                  - { itemId: b1f2c3d4-0000-0000-0000-000000000001, exists: true }
-                  - { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, exists: true }
-                  - { skuId: 00000000-0000-0000-0000-000000000000, skuLevel: Gsku, exists: false }
-                contractVersion: v1
+              examples:
+                v1.0-mock:
+                  summary: "v1.0 taklit örneği (v1.0-mock-only)"
+                  value:
+                    results:
+                      - { itemId: b1f2c3d4-0000-0000-0000-000000000001, exists: true }
+                      - { skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, exists: true }
+                      - { skuId: 00000000-0000-0000-0000-000000000000, skuLevel: Gsku, exists: false }
+                    contractVersion: v1
+                item:
+                  summary: "v1.1 — kalem bulundu; aynı kimlik Gsku seviyesinde yok"
+                  value:
+                    results:
+                      - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Item, exists: true, itemKind: Item, lifecycleStatus: Active }
+                      - { skuId: d4e5f6a7-0000-0000-0000-000000000003, skuLevel: Gsku, exists: false }
+                    contractVersion: v1.1
+        '400': { $ref: '#/components/responses/BadRequest' }
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
@@ -244,11 +478,11 @@ components:
     SkuLevel:
       type: string
       enum: [Gsku, Lsku, FinishedGood, Item]
-      description: "v1.1 `Item` ekledi — malzeme kalemi; kalem kimliği = SKU kimliği (`skuId == itemId`). Gsku, Lsku, FinishedGood aynen."
+      description: "v1.1 `Item` ekledi — malzeme kalemi; kalem kimliği = SKU kimliği (`skuId == itemId`). Gsku, Lsku, FinishedGood aynen. Yanıtta açık enum (bilinmeyen değer hata sayılmaz); istekte bilinmeyen değer 400."
     ItemKind:
       type: string
       enum: [GlobalProduct, Item]
-      description: "v1.1 — `itemId`'nin türü. GlobalProduct: ilaç kimlik zinciri (mamul; SKU seviyeleri Gsku / Lsku / FinishedGood). Item: malzeme kalemi (SKU seviyesi Item)."
+      description: "v1.1 — `itemId`'nin türü. GlobalProduct: ilaç kimlik zinciri (mamul; SKU seviyeleri Gsku / Lsku / FinishedGood). Item: malzeme kalemi (SKU seviyesi Item). Alan yoksa GlobalProduct'tır."
     MaterialType:
       type: string
       enum: [ACTIVE_INGREDIENT, EXCIPIENT, RAW_MATERIAL, PACKAGING_PRIMARY, PACKAGING_SECONDARY, INTERMEDIATE]
@@ -257,41 +491,47 @@ components:
       type: string
       enum: [Draft, Active, Archived, Deactivated, Retired]
       description: |
-        v1.1 Deactivated ve Retired ekledi; v1.0 değerleri (Draft, Active, Archived) aynen. Tüketici bilinmeyen değeri
-        "hareket yok" saymalı. Stok hareket kuralı STOK tarafından uygulanır; MDM yalnız durumu yayımlar:
+        v1.1 Deactivated ve Retired ekledi; v1.0 değerleri (Draft, Active, Archived) aynen. Açık enum: bilinmeyen değer =
+        yeni hareket yok; ters kayıt her durumda kabul. Stok hareket kuralı STOK tarafından uygulanır; MDM yalnız durumu
+        ve `stockable`'ı yayımlar:
           - Draft: hareket yok.
           - Active: hareket var.
           - Deactivated (kullanım dışı): yeni giriş yok; mevcut stok çıkabilir, hurda ve iade yapılabilir.
           - Retired (emekli): hareket yok.
           - Archived (v1.0 değeri): MDM bu değeri yayımlamaz; tüketici görürse Retired gibi davranır (CT kararı, MOD-0290-FU04 O-4).
+          - Durumdan bağımsız: `stockable: false` kayıtta stok yeni hareket kabul etmez (ters kayıt hariç) — CT kararı.
           - Her durumda ters kayıt (REVERSAL) kabul edilir.
         İç durumlar sözleşmeye şöyle yayımlanır (kalem): Draft → Draft; PendingActivation (ilk etkinleştirme onayı
         beklerken) → Draft; Active → Active; PendingActivation (yeniden etkinleştirme onayı beklerken) → Deactivated;
         Deactivated → Deactivated; Retired → Retired. Ürün satırlarının iç durum eşlemesi: MOD-0290-FU04 §16.3 (O-4).
     StorageConditionCode:
       type: string
-      description: "v1.1 — MOD-0048 `storage-condition` listesinin kodu (AMBIENT_15_25, COOL_2_8, FROZEN_BELOW_MINUS_20, PROTECT_FROM_LIGHT, PROTECT_FROM_MOISTURE)."
+      enum: [AMBIENT_15_25, COOL_2_8, FROZEN_BELOW_MINUS_20, PROTECT_FROM_LIGHT, PROTECT_FROM_MOISTURE]
+      description: "v1.1 — MOD-0048 `storage-condition` listesinin uzlaşılan beş kodu (15–25°C, 2–8°C, ≤ −20°C, ışıktan koru, nemden koru). Yanıtta açık enum: liste büyüyebilir, bilinmeyen kod olduğu gibi taşınır."
     ShelfLifeSource:
       type: string
       enum: [Own, Gsku]
-      description: "v1.1 — `shelfLifeDays` nereden geliyor. Own: kaydın kendi değeri. Gsku: Bitmiş Ürünün kendi değeri boş, değer üst GSKU'dan okunur (D-2; okuma anında, kopyalanmaz)."
+      description: "v1.1 — `shelfLifeDays` değerinin kaynağı. Own: kaydın kendi değeri. Gsku: kaydın kendi değeri yok, değer okuma anında üst GSKU'dan gelir (Bitmiş Ürün — D-2; Lsku — O-3), kopyalanmaz. `shelfLifeDays` null ise kaynak Own'dur."
     StockableItemRef:
       type: object
       description: "v1.1 — stoklanabilir kalem / SKU arama satırı; bütün seviyeler için tek biçim."
+      required: [skuId, skuLevel, itemId, itemKind, canonicalCode, name, lifecycleStatus]
       properties:
         skuId: { type: string, format: uuid }
         skuLevel: { $ref: '#/components/schemas/SkuLevel' }
         itemId: { type: string, format: uuid, description: "Item seviyesinde = skuId; diğerlerinde çözülmüş Global Ürün (D-SKU-LINK)" }
         itemKind: { $ref: '#/components/schemas/ItemKind' }
-        canonicalCode: { type: string }
-        name: { type: string, description: "Item: kalemin adı. Ürün SKU'su: okuma anında türetilen görünen ad: Global Ürün adı · paket miktarı + birimi, LSKU'da + pazar kodu (MOD-0290-FU04 O-5)" }
-        materialType: { type: string, nullable: true, description: "Item seviyesinde MaterialType; diğer seviyelerde null" }
+        canonicalCode: { type: string, description: "Opak; ayrıştırılmaz" }
+        name: { type: string, description: "Yalnız gösterim içindir; ayrıştırılmaz, anahtar değildir. Item: kalemin adı. Ürün SKU'su: okuma anında türetilen görünen ad (MOD-0290-FU04 O-5)" }
+        materialType: { anyOf: [{ $ref: '#/components/schemas/MaterialType' }, { type: 'null' }], description: "Item seviyesinde dolu; diğer seviyelerde null" }
         lifecycleStatus: { $ref: '#/components/schemas/LifecycleStatus' }
-        baseUomId: { type: string, nullable: true }
-        lotControlled: { type: boolean, nullable: true }
-        serialControlled: { type: boolean, nullable: true }
+        baseUomId: { type: [string, 'null'] }
+        lotControlled: { type: [boolean, 'null'] }
+        serialControlled: { type: [boolean, 'null'] }
     StockableItemPage:
       type: object
+      description: v1.1
+      required: [items, page, pageSize, totalCount, contractVersion]
       properties:
         items: { type: array, items: { $ref: '#/components/schemas/StockableItemRef' } }
         page: { type: integer }
@@ -310,22 +550,25 @@ components:
           items: { type: string, format: uuid }
     BulkSkuReadItem:
       type: object
-      description: "v1.1 — kimlik + seviye + kod + ad"
+      description: "v1.1 — kimlik + seviye + kod + ad + durum"
+      required: [skuId, skuLevel, canonicalCode, name, lifecycleStatus]
       properties:
         skuId: { type: string, format: uuid }
         skuLevel: { $ref: '#/components/schemas/SkuLevel' }
-        canonicalCode: { type: string }
-        name: { type: string, description: "Item: kalemin adı. Ürün SKU'su: okuma anında türetilen görünen ad: Global Ürün adı · paket miktarı + birimi, LSKU'da + pazar kodu (MOD-0290-FU04 O-5)" }
+        canonicalCode: { type: string, description: "Opak; ayrıştırılmaz" }
+        name: { type: string, description: "Yalnız gösterim içindir; ayrıştırılmaz, anahtar değildir. Item: kalemin adı. Ürün SKU'su: okuma anında türetilen görünen ad: Global Ürün adı · paket miktarı + birimi, LSKU'da + pazar kodu (MOD-0290-FU04 O-5)" }
+        lifecycleStatus: { $ref: '#/components/schemas/LifecycleStatus' }
     BulkSkuReadResponse:
       type: object
       description: v1.1
+      required: [items, notFound, contractVersion]
       properties:
         items: { type: array, items: { $ref: '#/components/schemas/BulkSkuReadItem' } }
         notFound: { type: array, items: { type: string, format: uuid } }
         contractVersion: { type: string }
     SkuProductLink:
       type: object
-      description: "v1.1 — `resolveSkuProduct` cevabının şeması (v1.0 örneğinin biçimi + `itemKind`)."
+      description: "v1.1 — `resolveSkuProduct` cevabının şeması (v1.0 örneğinin biçimi + `itemKind`). v1.0 cevabını yazıya döktüğü için `required` taşımaz."
       properties:
         skuId: { type: string, format: uuid }
         skuLevel: { $ref: '#/components/schemas/SkuLevel' }
@@ -336,49 +579,53 @@ components:
       type: object
       description: |
         v1.1 — `itemKind: Item` ise kayıt bir malzeme kalemidir ve stok davranışı alanları kalemin kendisinden gelir:
-          - `materialType` dolu; `serialControlled` her zaman false (kalemde seri takibi yok).
-          - `storageConditions` (v1.1, çoklu) kalemin saklama koşullarının tamamıdır.
+          - `materialType` dolu; `serialControlled` her zaman false = uygulanmaz (kalemde seri takibi yok).
+          - `storageConditions` (v1.1, çoklu) kalemin saklama koşullarının tamamıdır; ambalaj dışı kalemde boş liste
+            `stockable: true`'yu engeller (CT kararı).
           - `storageCondition` (v1.0, tek değer) listedeki sıcaklık koşulunu taşır; listede sıcaklık koşulu yoksa null
             (kural: kayıtta en çok bir sıcaklık koşulu — CT kararı, MOD-0290-FU04 O-2).
-          - `minRemainingShelfLifeDays`: uzlaşma tablosunda yok; kalemde isteğe bağlı (O-7; stok ekibine soruldu).
-        `itemKind: GlobalProduct` ise stok davranışı SKU düzeyindedir (`getSku`); bu türde v1.0 stok alanları dönmez
-        (alan yok — CT kararı, O-1).
+          - `shelfLifeDays` / `retestDays` dolu ya da null (O-9). `minRemainingShelfLifeDays` isteğe bağlı (O-7).
+          - Zorunlu stok alanı dolmamış kalemde (taslak) alan yok döner ve `stockable` false'tur.
+        `itemKind: GlobalProduct` (ya da alan yok) ise stok davranışı SKU düzeyindedir: v1.1 sunucusu bu türde v1.0 ve
+        v1.1 stok alanlarını döndürmez (O-1, `deprecated` işaretli alanlar); yetkili okuma `getSku`.
       properties:
         itemId: { type: string, format: uuid }
         canonicalCode: { type: string }
         name: { type: string }
         lifecycleStatus: { $ref: '#/components/schemas/LifecycleStatus' }
-        baseUomId: { type: string }
-        shelfLifeDays: { type: integer, nullable: true }
-        minRemainingShelfLifeDays: { type: integer, nullable: true }
-        storageCondition: { type: string, nullable: true }
-        retestDays: { type: integer, nullable: true }
-        lotControlled: { type: boolean }
-        serialControlled: { type: boolean }
+        baseUomId: { type: string, deprecated: true, description: "Global Ürün için stok alanları SKU düzeyinden okunur (getSku); v1.1 sunucusu Global Ürün yanıtında bu alanları döndürmez. Alan yok = bilinmiyor; false/0 varsayılmaz. Kalem (itemKind: Item) yanıtında dolu döner; `deprecated` yalnız Global Ürün kullanımını işaretler." }
+        shelfLifeDays: { type: integer, nullable: true, deprecated: true, description: "Global Ürün için stok alanları SKU düzeyinden okunur (getSku); v1.1 sunucusu Global Ürün yanıtında bu alanları döndürmez. Alan yok = bilinmiyor; false/0 varsayılmaz. Kalem (itemKind: Item) yanıtında dolu ya da null döner; `deprecated` yalnız Global Ürün kullanımını işaretler." }
+        minRemainingShelfLifeDays: { type: integer, nullable: true, deprecated: true, description: "Global Ürün için stok alanları SKU düzeyinden okunur (getSku); v1.1 sunucusu Global Ürün yanıtında bu alanları döndürmez. Alan yok = bilinmiyor; false/0 varsayılmaz. Kalem (itemKind: Item) yanıtında isteğe bağlıdır (O-7); `deprecated` yalnız Global Ürün kullanımını işaretler." }
+        storageCondition: { type: string, nullable: true, deprecated: true, description: "Global Ürün için stok alanları SKU düzeyinden okunur (getSku); v1.1 sunucusu Global Ürün yanıtında bu alanları döndürmez. Alan yok = bilinmiyor; false/0 varsayılmaz. Kalem (itemKind: Item) yanıtında sıcaklık koşulu kodunu taşır (O-2); `deprecated` yalnız Global Ürün kullanımını işaretler." }
+        retestDays: { type: integer, nullable: true, deprecated: true, description: "Global Ürün için stok alanları SKU düzeyinden okunur (getSku); v1.1 sunucusu Global Ürün yanıtında bu alanları döndürmez. Alan yok = bilinmiyor; false/0 varsayılmaz. Kalem (itemKind: Item) yanıtında dolu ya da null döner (O-9); `deprecated` yalnız Global Ürün kullanımını işaretler." }
+        lotControlled: { type: boolean, deprecated: true, description: "Global Ürün için stok alanları SKU düzeyinden okunur (getSku); v1.1 sunucusu Global Ürün yanıtında bu alanları döndürmez. Alan yok = bilinmiyor; false/0 varsayılmaz. Kalem (itemKind: Item) yanıtında dolu döner; `deprecated` yalnız Global Ürün kullanımını işaretler." }
+        serialControlled: { type: boolean, deprecated: true, description: "Global Ürün için stok alanları SKU düzeyinden okunur (getSku); v1.1 sunucusu Global Ürün yanıtında bu alanları döndürmez. Alan yok = bilinmiyor; false/0 varsayılmaz. Kalem (itemKind: Item) yanıtında her zaman false = uygulanmaz; `deprecated` yalnız Global Ürün kullanımını işaretler." }
         contractVersion: { type: string }
         itemKind: { $ref: '#/components/schemas/ItemKind' }
-        materialType: { type: string, nullable: true, description: "v1.1 — Item'da MaterialType değeri; GlobalProduct'ta null" }
-        storageConditions: { type: array, items: { $ref: '#/components/schemas/StorageConditionCode' }, description: "v1.1 — çoklu seçim; boş liste = koşul yok" }
-        stockable: { type: boolean, nullable: true, description: "v1.1 — Item'da dolu; GlobalProduct'ta null (stoklanabilirlik SKU düzeyinde)" }
+        materialType: { anyOf: [{ $ref: '#/components/schemas/MaterialType' }, { type: 'null' }], description: "v1.1 — Item'da dolu; GlobalProduct yanıtında yok" }
+        storageConditions: { type: array, items: { $ref: '#/components/schemas/StorageConditionCode' }, description: "v1.1 — çoklu seçim; boş liste = koşul yok. GlobalProduct yanıtında yok" }
+        stockable: { type: [boolean, 'null'], description: "v1.1 — Item'da dolu; GlobalProduct yanıtında yok (stoklanabilirlik SKU düzeyinde)" }
     SkuRef:
       type: object
       description: |
-        v1.1 — Item seviyesinde `itemId` kalemin kendi kimliğidir (= skuId). Stok davranışı alanlarının seviyeye göre
-        dolumu (ürün ana verisi planı §4a, "Alanlar (S3)" tablosu):
+        v1.1 — stok davranışı için yetkili okuma bu şemadır (`getSku`). Item seviyesinde `itemId` kalemin kendi
+        kimliğidir (= skuId). Stok davranışı alanlarının seviyeye göre dolumu (ürün ana verisi planı §4a, "Alanlar (S3)"
+        tablosu; "dolu" = zorunlu alan, eksikse null ve `stockable` false):
           | alan               | Item            | Gsku              | Lsku           | FinishedGood                            |
           |--------------------|-----------------|-------------------|----------------|-----------------------------------------|
           | materialType       | dolu            | null              | null           | null                                    |
-          | baseUomId          | dolu            | dolu              | GSKU'dan (O-3) | dolu                                    |
-          | shelfLifeDays      | dolu            | dolu (ruhsatlı)   | GSKU'dan (O-3) | kendi değeri; boşsa üst GSKU'dan        |
+          | baseUomId          | dolu            | dolu              | GSKU'dan (O-3) | dolu (= üst GSKU'nunki, O-14)           |
+          | shelfLifeDays      | dolu ya da null | dolu (ruhsatlı)   | GSKU'dan (O-3) | kendi değeri (≤ GSKU); boşsa üst GSKU'dan |
           | shelfLifeDaysSource| Own             | Own               | Gsku (O-3)     | Own ya da Gsku                          |
-          | retestDays         | dolu            | null              | null           | null                                    |
+          | retestDays         | dolu ya da null | null              | null           | null                                    |
           | storageConditions  | dolu            | dolu              | GSKU'dan (O-3) | dolu                                    |
           | lotControlled      | dolu            | dolu              | GSKU'dan (O-3) | dolu                                    |
-          | serialControlled   | false           | null (sonra)      | dolu           | dolu                                    |
+          | serialControlled   | false (uyg. değil) | null (sonra)   | dolu           | dolu                                    |
           | stockable          | dolu            | dolu              | GSKU'dan (O-3) | dolu                                    |
           | gtin (v1.0 alanı)  | null (sonra)    | null (gereksiz)   | null (O-6)     | satış kutusu GTIN-14, İTS (01) (D-1)    |
-        Birim çevrimleri `getSkuUom`'dan okunur. Bir kaydın zorunlu stok alanları eksikse `stockable` true olamaz (O-8). Lsku: seri takibi dışındaki alanlar okuma
-        anında üst GSKU'dan gelir (O-3).
+        Kalemde `shelfLifeDays` / `retestDays` dolu ya da null olabilir (O-9). Ambalaj dışı kalemde boş `storageConditions`
+        `stockable: true`'yu engeller (CT kararı). `stockable: false` kayıtta stok yeni hareket kabul etmez (ters kayıt
+        hariç). Birim çevrimleri `getSkuUom`'dan okunur.
       properties:
         skuId: { type: string, format: uuid }
         skuLevel: { $ref: '#/components/schemas/SkuLevel' }
@@ -390,17 +637,17 @@ components:
         marketCode: { type: string, nullable: true }
         contractVersion: { type: string }
         itemKind: { $ref: '#/components/schemas/ItemKind' }
-        name: { type: string, description: "v1.1 — Item: kalemin adı. Ürün SKU'su: okuma anında türetilen görünen ad (MOD-0290-FU04 O-5)" }
+        name: { type: string, description: "v1.1 — yalnız gösterim içindir; ayrıştırılmaz, anahtar değildir. Item: kalemin adı. Ürün SKU'su: okuma anında türetilen görünen ad (MOD-0290-FU04 O-5)" }
         lifecycleStatus: { $ref: '#/components/schemas/LifecycleStatus' }
-        materialType: { type: string, nullable: true, description: "v1.1 — yalnız Item seviyesinde dolu" }
-        baseUomId: { type: string, nullable: true, description: "v1.1 — MOD-0048 `item-uom` kodu (UN/ECE Rec 20); stok her zaman temel birimde tutulur" }
-        shelfLifeDays: { type: integer, nullable: true, description: "v1.1 — etkin değer (FinishedGood'da kaynak `shelfLifeDaysSource`)" }
+        materialType: { anyOf: [{ $ref: '#/components/schemas/MaterialType' }, { type: 'null' }], description: "v1.1 — yalnız Item seviyesinde dolu" }
+        baseUomId: { type: [string, 'null'], description: "v1.1 — MOD-0048 `item-uom` kodu (UN/ECE Rec 20; veridir, sabit kodlanmaz); stok her zaman temel birimde tutulur" }
+        shelfLifeDays: { type: [integer, 'null'], description: "v1.1 — etkin değer (kaynak `shelfLifeDaysSource`)" }
         shelfLifeDaysSource: { $ref: '#/components/schemas/ShelfLifeSource' }
-        retestDays: { type: integer, nullable: true, description: "v1.1 — yalnız Item seviyesinde" }
+        retestDays: { type: [integer, 'null'], description: "v1.1 — yalnız Item seviyesinde" }
         storageConditions: { type: array, items: { $ref: '#/components/schemas/StorageConditionCode' }, description: "v1.1 — çoklu seçim" }
-        lotControlled: { type: boolean, nullable: true, description: v1.1 }
-        serialControlled: { type: boolean, nullable: true, description: "v1.1 — SKU düzeyi seri takibi (pazara bağlı, İTS): Lsku ve FinishedGood'da dolu; Item'da false; Gsku'da null (sonra)" }
-        stockable: { type: boolean, nullable: true, description: v1.1 }
+        lotControlled: { type: [boolean, 'null'], description: v1.1 }
+        serialControlled: { type: [boolean, 'null'], description: "v1.1 — SKU düzeyi seri takibi (pazara bağlı, İTS): Lsku ve FinishedGood'da dolu; Item'da false = uygulanmaz; Gsku'da null (sonra)" }
+        stockable: { type: [boolean, 'null'], description: "v1.1 — false ise stok yeni hareket kabul etmez (ters kayıt hariç)" }
     UomConversion:
       type: object
       properties:
@@ -412,16 +659,19 @@ components:
         effectiveTo: { type: string, format: date-time, nullable: true }
     UomInfo:
       type: object
+      description: "v1.1 — yalnız kaydın kullandığı birimlerin çiftleri döner; her birim temel birime en çok 4 kenarda ulaşır. Birim kodları MOD-0048 `item-uom` verisidir; tüketici sabit kodlamaz."
       properties:
         baseUomId: { type: string }
         conversions: { type: array, items: { $ref: '#/components/schemas/UomConversion' } }
         contractVersion: { type: string }
     ValidateRequest:
       type: object
+      description: "v1.1 — geçerli satır biçimleri `validateRefs` açıklamasında; en çok 200 satır."
       required: [refs]
       properties:
         refs:
           type: array
+          maxItems: 200
           items:
             type: object
             properties:
@@ -430,6 +680,7 @@ components:
               skuLevel: { $ref: '#/components/schemas/SkuLevel' }
     ValidateResponse:
       type: object
+      description: "v1.1 — `exists` = kaydın varlığı; kullanılabilirlik için `lifecycleStatus` okunur. Seviye ya da bağ uyuşmazlığı `exists: false`."
       properties:
         results:
           type: array
@@ -461,6 +712,17 @@ components:
     UnknownSku:
       description: SKU bulunamadı
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_SKU, message: "sku bulunamadı", correlationId: req-2 }, contractVersion: v1 } } }
-    BatchLimitExceeded:
-      description: "v1.1 — Kimlik listesi boş ya da 200'den uzun"
-      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: BATCH_LIMIT_EXCEEDED, message: "en çok 200 kimlik", details: { maxItems: 200 }, correlationId: req-3 }, contractVersion: v1.1 } } }
+    BadRequest:
+      description: "v1.1 — geçersiz istek: sınır dışı sayfa boyutu, uzun `q`, bilinmeyen enum değeri, geçersiz UUID, boş ya da 200'den uzun liste, geçersiz doğrulama satırı"
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            batch-limit-exceeded:
+              value: { error: { code: BATCH_LIMIT_EXCEEDED, message: "en çok 200 kimlik", details: { maxItems: 200 }, correlationId: req-3 }, contractVersion: v1.1 }
+            invalid-uuid:
+              value: { error: { code: INVALID_UUID, message: "geçersiz kimlik", details: { index: 2 }, correlationId: req-4 }, contractVersion: v1.1 }
+            invalid-parameter:
+              value: { error: { code: INVALID_PARAMETER, message: "pageSize en çok 100", details: { parameter: pageSize, maximum: 100 }, correlationId: req-5 }, contractVersion: v1.1 }
+            invalid-ref:
+              value: { error: { code: INVALID_REF, message: "geçersiz doğrulama satırı", details: { index: 0, reason: "skuId skuLevel olmadan" }, correlationId: req-6 }, contractVersion: v1.1 }
