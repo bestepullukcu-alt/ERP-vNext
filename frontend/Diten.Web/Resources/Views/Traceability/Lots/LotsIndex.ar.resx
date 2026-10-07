@@ -454,6 +454,12 @@
   <data name="History.Field" xml:space="preserve">
     <value>الحقل</value>
   </data>
+  <data name="History.Field.TypedText" xml:space="preserve">
+    <value>تشغيلة مُدخلة يدويًا</value>
+  </data>
+  <data name="History.Field.GenealogyParent" xml:space="preserve">
+    <value>التشغيلة الأم</value>
+  </data>
   <data name="History.Page" xml:space="preserve">
     <value>الصفحة {0} / {1}</value>
   </data>

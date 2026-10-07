@@ -45,10 +45,10 @@
   <data name="TabMovements" xml:space="preserve"><value>سجل الحركات</value></data>
   <data name="NamesUnavailable" xml:space="preserve"><value>تعذّر تحميل أسماء المنتجات والمواقع حاليًا، لذلك تُعرض الرموز بدلًا منها. أرقام المخزون صحيحة.</value></data>
   <data name="ColProductSku" xml:space="preserve"><value>المنتج / SKU</value></data>
-  <data name="ColLot" xml:space="preserve"><value>الدفعة</value></data>
+  <data name="ColLot" xml:space="preserve"><value>التشغيلة</value></data>
   <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
   <data name="FilterProduct" xml:space="preserve"><value>المنتج</value></data>
-  <data name="FilterLot" xml:space="preserve"><value>رقم الدفعة</value></data>
+  <data name="FilterLot" xml:space="preserve"><value>رقم التشغيلة</value></data>
   <data name="FilterWarehouse" xml:space="preserve"><value>المستودع</value></data>
   <data name="FilterLocation" xml:space="preserve"><value>الموقع</value></data>
   <data name="Searching" xml:space="preserve"><value>جارٍ البحث…</value></data>
@@ -73,7 +73,7 @@
   <data name="ErrUnknownItem" xml:space="preserve"><value>لا يتعرّف سجل المنتجات الرئيسي على المنتج أو SKU. لم يتم تغيير أي شيء؛ تحقّق من المنتج.</value></data>
   <data name="ErrUnknownLocation" xml:space="preserve"><value>لم يتم التعرّف على المستودع أو الموقع. لم يتم تغيير أي شيء؛ تحقّق من الموقع.</value></data>
   <data name="ErrUomMissing" xml:space="preserve"><value>لا يمكن تحويل هذه الوحدة إلى الوحدة الأساسية لـ SKU. لم يتم تغيير أي شيء؛ اختر وحدة أخرى.</value></data>
-  <data name="ErrLotRequired" xml:space="preserve"><value>هذا المنتج يُدار بالدفعات: الدفعة مطلوبة. لم يتم تغيير أي شيء؛ أدخل الدفعة وحاول مرة أخرى.</value></data>
+  <data name="ErrLotRequired" xml:space="preserve"><value>هذا المنتج يُدار بالتشغيلات: التشغيلة مطلوبة. لم يتم تغيير أي شيء؛ أدخل التشغيلة وحاول مرة أخرى.</value></data>
   <data name="ErrSerialMismatch" xml:space="preserve"><value>عدد الأرقام التسلسلية لا يطابق الكمية. لم يتم تغيير أي شيء؛ صحّح الأرقام التسلسلية.</value></data>
   <data name="ErrConflict" xml:space="preserve"><value>تغيّرت البيانات أثناء عملك. أعد تحميل القائمة وحاول مرة أخرى.</value></data>
   <data name="ErrNoPermission" xml:space="preserve"><value>ليس لديك صلاحية لهذا الإجراء. اطلب من المسؤول صلاحيات المخزون التي تحتاجها.</value></data>
@@ -118,7 +118,7 @@
   <data name="HintSelectProductFirst" xml:space="preserve"><value>اختر المنتج أولاً؛ تُعرض وحدات التخزين الخاصة به فقط.</value></data>
   <data name="HintSkuNone" xml:space="preserve"><value>لا توجد لهذا المنتج وحدة تخزين في البيانات الرئيسية بعد، لذا لا يمكن ترحيله.</value></data>
   <data name="SectionSourceTarget" xml:space="preserve"><value>المصدر والوجهة</value></data>
-  <data name="FieldSource" xml:space="preserve"><value>المصدر (الدفعة / الموقع)</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>المصدر (التشغيلة / الموقع)</value></data>
   <data name="PlaceholderSource" xml:space="preserve"><value>اختر سطر المخزون المأخوذ منه</value></data>
   <data name="HintSourceSelectSku" xml:space="preserve"><value>اختر وحدة التخزين أولاً؛ تُعرض أسطر مخزونها هنا.</value></data>
   <data name="HintSourceNone" xml:space="preserve"><value>لا يوجد لوحدة التخزين هذه مخزون متوفر في هذه الشركة.</value></data>
@@ -131,9 +131,9 @@
   <data name="HintTargetLocation" xml:space="preserve"><value>تُعرض فقط المواقع النشطة القابلة لحفظ المخزون.</value></data>
   <data name="HintTargetLocationNone" xml:space="preserve"><value>لا يوجد في هذا المستودع موقع نشط قابل لحفظ المخزون. أضف موقعاً من شاشة المواقع.</value></data>
   <data name="FieldTargetStockStatus" xml:space="preserve"><value>حالة المخزون الهدف</value></data>
-  <data name="FieldLot" xml:space="preserve"><value>الدفعة</value></data>
-  <data name="PlaceholderLot" xml:space="preserve"><value>اختر دفعة معروفة أو اكتب دفعة جديدة</value></data>
-  <data name="HintLotUnregistered" xml:space="preserve"><value>دفعة غير مسجلة (قبل MOD-0174): تُعرض أولاً دفعات وحدة التخزين الموجودة في المخزون؛ وتُحفظ الدفعة المكتوبة بأحرف كبيرة (A–Z، 0–9، . / -، حتى 40).</value></data>
+  <data name="FieldLot" xml:space="preserve"><value>التشغيلة</value></data>
+  <data name="PlaceholderLot" xml:space="preserve"><value>اختر تشغيلة معروفة أو اكتب تشغيلة جديدة</value></data>
+  <data name="HintLotUnregistered" xml:space="preserve"><value>تشغيلة غير مسجلة (قبل MOD-0174): تُعرض أولاً تشغيلات وحدة التخزين الموجودة في المخزون؛ وتُحفظ التشغيلة المكتوبة بأحرف كبيرة (A–Z، 0–9، . / -، حتى 40).</value></data>
   <data name="SectionQuantity" xml:space="preserve"><value>الكمية</value></data>
   <data name="FieldQuantity" xml:space="preserve"><value>الكمية</value></data>
   <data name="PlaceholderQuantity" xml:space="preserve"><value>مثال: 12 أو 2.5</value></data>
@@ -159,13 +159,13 @@
   <data name="EffectNegative" xml:space="preserve"><value>أكثر من المتوفر — سترفضه خدمة المخزون ما لم يتغير المخزون.</value></data>
   <data name="EffectUnavailable" xml:space="preserve"><value>لا يمكن حساب الأثر حالياً (بيانات المنتج غير متاحة).</value></data>
   <data name="PickerIncomplete" xml:space="preserve"><value>القائمة أطول من أن تُعرض كاملة؛ اكتب جزءاً من الرمز أو الاسم لتضييقها.</value></data>
-  <data name="ProductFactsUnavailable" xml:space="preserve"><value>لا يمكن قراءة بيانات المنتج (تتبع الدفعات والأرقام التسلسلية، الوحدات) حالياً، لذا لا يمكن ترحيل الحركة. لم يتغير شيء؛ حاول لاحقاً.</value></data>
+  <data name="ProductFactsUnavailable" xml:space="preserve"><value>لا يمكن قراءة بيانات المنتج (تتبع التشغيلات والأرقام التسلسلية، الوحدات) حالياً، لذا لا يمكن ترحيل الحركة. لم يتغير شيء؛ حاول لاحقاً.</value></data>
   <data name="ValRequired" xml:space="preserve"><value>هذا الحقل مطلوب.</value></data>
   <data name="ValMovementType" xml:space="preserve"><value>اختر أحد أنواع الحركة المعروضة في هذه الصفحة.</value></data>
   <data name="ValQuantity" xml:space="preserve"><value>أدخل كمية أكبر من 0 بحد أقصى 6 منازل عشرية (استخدم النقطة: 2.5).</value></data>
   <data name="ValTooLong" xml:space="preserve"><value>هذه القيمة طويلة جداً (200 حرف كحد أقصى).</value></data>
   <data name="ValDate" xml:space="preserve"><value>أدخل التاريخ والوقت.</value></data>
-  <data name="ValLotFormat" xml:space="preserve"><value>يمكن أن تحتوي الدفعة على A–Z و0–9 والنقطة والشرطة المائلة والواصلة، حتى 40 حرفاً.</value></data>
+  <data name="ValLotFormat" xml:space="preserve"><value>يمكن أن تحتوي التشغيلة على A–Z و0–9 والنقطة والشرطة المائلة والواصلة، حتى 40 حرفاً.</value></data>
   <data name="ValSerialDuplicate" xml:space="preserve"><value>يجب ألا يتكرر أي رقم تسلسلي.</value></data>
   <data name="ValSerialCount" xml:space="preserve"><value>تم إدخال {0} من الأرقام التسلسلية؛ الكمية تتطلب {1}.</value></data>
   <data name="ValSameWarehouse" xml:space="preserve"><value>يتطلب التحويل بين المستودعات مستودعاً مختلفاً عن مستودع المصدر.</value></data>
@@ -189,7 +189,7 @@
   <data name="BalanceOnHand" xml:space="preserve"><value>المتوفر</value></data>
   <data name="BalanceAvailable" xml:space="preserve"><value>المتاح</value></data>
   <data name="LotUnregisteredBadge" xml:space="preserve"><value>غير مسجلة</value></data>
-  <data name="LotUnregisteredHint" xml:space="preserve"><value>دفعة غير مسجلة (قبل MOD-0174)</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>تشغيلة غير مسجلة (قبل MOD-0174)</value></data>
   <data name="ErrPeriodClosed" xml:space="preserve"><value>يقع تاريخ الترحيل في فترة مغلقة. لم يتغير شيء؛ اختر تاريخاً في فترة مفتوحة.</value></data>
   <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>المتاح في المصدر: {0}؛ المطلوب: {1} (الوحدة الأساسية).</value></data>
   <data name="HintChooseTypeFirst" xml:space="preserve"><value>اختر نوع الحركة أولاً: فهو يحدد حقول المصدر والوجهة المطلوبة.</value></data>

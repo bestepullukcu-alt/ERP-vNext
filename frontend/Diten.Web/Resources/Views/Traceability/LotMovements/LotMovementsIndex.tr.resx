@@ -212,16 +212,16 @@
     <value>Müşteri iadesi</value>
   </data>
   <data name="Movement.GOODS_ISSUE_PROD" xml:space="preserve">
-    <value>Üretime çıkış</value>
+    <value>Mal çıkışı (üretim)</value>
   </data>
   <data name="Movement.GOODS_ISSUE_SALES" xml:space="preserve">
-    <value>Satış çıkışı</value>
+    <value>Mal çıkışı (satış)</value>
   </data>
   <data name="Movement.GOODS_RECEIPT_PO" xml:space="preserve">
-    <value>Mal kabul (sipariş)</value>
+    <value>Mal kabul (satınalma)</value>
   </data>
   <data name="Movement.GOODS_RECEIPT_PROD" xml:space="preserve">
-    <value>Üretimden giriş</value>
+    <value>Mal kabul (üretim)</value>
   </data>
   <data name="Movement.LOCATION_TRANSFER" xml:space="preserve">
     <value>Lokasyon transferi</value>

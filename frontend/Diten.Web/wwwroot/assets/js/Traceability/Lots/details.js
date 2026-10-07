@@ -98,10 +98,39 @@ const LotDetail = (function () {
         box.classList.remove('d-none');
     };
 
+    // WP-0174-FU5 F-1: a history row speaks the screen's language — the field by the label the Lot bilgileri section uses,
+    // a status by its status label, a date in the page's date format, a country by its name. The service's field names
+    // (UpdateLotHandler, ChangeLotStatusHandler, LotExpirySweeper, CommitManualLotMigrationHandler, LinkGenealogyHandler)
+    // all have an entry here; Web.Tests reads them from the service code. The actor stays the user id until a central
+    // user directory exists (FU-LOC2-04).
+    const HISTORY_FIELDS = {
+        status: { label: 'Col.Status', value: 'status' },
+        manufacturerLot: { label: 'Form.ManufacturerLot' },
+        supplierLot: { label: 'Form.SupplierLot' },
+        countryOfOrigin: { label: 'Form.Country', value: 'country' },
+        coaReference: { label: 'Form.Coa' },
+        manufacturingDate: { label: 'Form.ManufacturingDate', value: 'date' },
+        expiryDate: { label: 'Form.ExpiryDate', value: 'date' },
+        retestDate: { label: 'Form.RetestDate', value: 'date' },
+        typedText: { label: 'History.Field.TypedText' },
+        'genealogy.parent': { label: 'History.Field.GenealogyParent' }
+    };
+    const historyField = (field) => (HISTORY_FIELDS[field] ? t(HISTORY_FIELDS[field].label) : field);
+    const historyValue = (field, value) => {
+        if (value == null || value === '') return t('Info.None');
+        switch (HISTORY_FIELDS[field]?.value) {
+            case 'status': return t('Status.' + value) || value;
+            case 'date': return ui.date(value) || value;
+            case 'country': return t('Country.' + value) || value;
+            default: return value;
+        }
+    };
+
     const historyRow = (h) => {
         const who = h.source === 'system-expiry' ? t('History.System') : (h.actorDisplay || h.actorUserId || '');
-        const change = h.field ? `${esc(h.oldValue ?? '—')} → ${esc(h.newValue ?? '—')}` : esc(t('History.Action.' + h.action));
-        return `<tr><td class="text-nowrap">${esc(ui.dateTime(h.occurredAt))}</td><td>${esc(who)}</td><td>${esc(h.field || t('History.Action.' + h.action))}</td>`
+        const action = t('History.Action.' + h.action);
+        const change = h.field ? `${esc(historyValue(h.field, h.oldValue))} → ${esc(historyValue(h.field, h.newValue))}` : esc(action);
+        return `<tr><td class="text-nowrap">${esc(ui.dateTime(h.occurredAt))}</td><td>${esc(who)}</td><td>${esc(h.field ? historyField(h.field) : action)}</td>`
             + `<td class="text-break">${change}</td><td class="text-break">${esc(h.reason || '')}</td></tr>`;
     };
 

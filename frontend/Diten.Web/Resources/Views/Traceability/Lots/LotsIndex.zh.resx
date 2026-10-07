@@ -454,6 +454,12 @@
   <data name="History.Field" xml:space="preserve">
     <value>字段</value>
   </data>
+  <data name="History.Field.TypedText" xml:space="preserve">
+    <value>手工录入批次</value>
+  </data>
+  <data name="History.Field.GenealogyParent" xml:space="preserve">
+    <value>父批次</value>
+  </data>
   <data name="History.Page" xml:space="preserve">
     <value>第 {0} / {1} 页</value>
   </data>

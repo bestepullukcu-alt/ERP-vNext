@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="StockLedgerTitle" xml:space="preserve"><value>دفتر المخزون</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>المخزون الحالي حسب المنتج والمستودع والموقع والدفعة والحالة. لا يتغير المخزون إلا عبر الحركات.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>المخزون الحالي حسب المنتج والمستودع والموقع والتشغيلة والحالة. لا يتغير المخزون إلا عبر الحركات.</value></data>
   <data name="KpiOnHand" xml:space="preserve"><value>إجمالي الموجود</value></data>
   <data name="KpiAvailable" xml:space="preserve"><value>المتاح</value></data>
   <data name="KpiQualityInspection" xml:space="preserve"><value>قيد فحص الجودة</value></data>
@@ -27,10 +27,10 @@
   <data name="TabMovements" xml:space="preserve"><value>سجل الحركات</value></data>
   <data name="NamesUnavailable" xml:space="preserve"><value>تعذّر تحميل أسماء المنتجات والمواقع حاليًا، لذلك تُعرض الرموز بدلًا منها. أرقام المخزون صحيحة.</value></data>
   <data name="ColProductSku" xml:space="preserve"><value>المنتج / SKU</value></data>
-  <data name="ColLot" xml:space="preserve"><value>الدفعة</value></data>
+  <data name="ColLot" xml:space="preserve"><value>التشغيلة</value></data>
   <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
   <data name="FilterProduct" xml:space="preserve"><value>المنتج</value></data>
-  <data name="FilterLot" xml:space="preserve"><value>رقم الدفعة</value></data>
+  <data name="FilterLot" xml:space="preserve"><value>رقم التشغيلة</value></data>
   <data name="FilterWarehouse" xml:space="preserve"><value>المستودع</value></data>
   <data name="FilterLocation" xml:space="preserve"><value>الموقع</value></data>
   <data name="Searching" xml:space="preserve"><value>جارٍ البحث…</value></data>
@@ -55,7 +55,7 @@
   <data name="ErrUnknownItem" xml:space="preserve"><value>لا يتعرّف سجل المنتجات الرئيسي على المنتج أو SKU. لم يتم تغيير أي شيء؛ تحقّق من المنتج.</value></data>
   <data name="ErrUnknownLocation" xml:space="preserve"><value>لم يتم التعرّف على المستودع أو الموقع. لم يتم تغيير أي شيء؛ تحقّق من الموقع.</value></data>
   <data name="ErrUomMissing" xml:space="preserve"><value>لا يمكن تحويل هذه الوحدة إلى الوحدة الأساسية لـ SKU. لم يتم تغيير أي شيء؛ اختر وحدة أخرى.</value></data>
-  <data name="ErrLotRequired" xml:space="preserve"><value>هذا المنتج يُدار بالدفعات: الدفعة مطلوبة. لم يتم تغيير أي شيء؛ أدخل الدفعة وحاول مرة أخرى.</value></data>
+  <data name="ErrLotRequired" xml:space="preserve"><value>هذا المنتج يُدار بالتشغيلات: التشغيلة مطلوبة. لم يتم تغيير أي شيء؛ أدخل التشغيلة وحاول مرة أخرى.</value></data>
   <data name="ErrSerialMismatch" xml:space="preserve"><value>عدد الأرقام التسلسلية لا يطابق الكمية. لم يتم تغيير أي شيء؛ صحّح الأرقام التسلسلية.</value></data>
   <data name="ErrConflict" xml:space="preserve"><value>تغيّرت البيانات أثناء عملك. أعد تحميل القائمة وحاول مرة أخرى.</value></data>
   <data name="ErrNoPermission" xml:space="preserve"><value>ليس لديك صلاحية لهذا الإجراء. اطلب من المسؤول صلاحيات المخزون التي تحتاجها.</value></data>
@@ -72,7 +72,7 @@
   <data name="NewStockEntry" xml:space="preserve"><value>إدخال مخزون جديد</value></data>
   <data name="RowMovement" xml:space="preserve"><value>حركة</value></data>
   <data name="LotUnregisteredBadge" xml:space="preserve"><value>غير مسجلة</value></data>
-  <data name="LotUnregisteredHint" xml:space="preserve"><value>دفعة غير مسجلة (قبل MOD-0174)</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>تشغيلة غير مسجلة (قبل MOD-0174)</value></data>
   <data name="ErrPeriodClosed" xml:space="preserve"><value>يقع تاريخ الترحيل في فترة مغلقة. لم يتغير شيء؛ اختر تاريخاً في فترة مفتوحة.</value></data>
   <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>المتاح في المصدر: {0}؛ المطلوب: {1} (الوحدة الأساسية).</value></data>
 </root>

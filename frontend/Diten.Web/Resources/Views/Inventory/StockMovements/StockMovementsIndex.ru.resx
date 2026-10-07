@@ -111,12 +111,12 @@
   <data name="GroupTransfer" xml:space="preserve"><value>Перемещение</value></data>
   <data name="FieldReasonCode" xml:space="preserve"><value>Код причины</value></data>
   <data name="SectionItem" xml:space="preserve"><value>Товар</value></data>
-  <data name="FieldProduct" xml:space="preserve"><value>Продукт</value></data>
-  <data name="PlaceholderProduct" xml:space="preserve"><value>Поиск продукта по коду или названию</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Товар</value></data>
+  <data name="PlaceholderProduct" xml:space="preserve"><value>Поиск товара по коду или названию</value></data>
   <data name="FieldSku" xml:space="preserve"><value>Артикул (SKU)</value></data>
-  <data name="PlaceholderSku" xml:space="preserve"><value>Выберите артикул продукта</value></data>
-  <data name="HintSelectProductFirst" xml:space="preserve"><value>Сначала выберите продукт; показываются только его артикулы.</value></data>
-  <data name="HintSkuNone" xml:space="preserve"><value>У этого продукта пока нет артикула в мастер-данных, поэтому провести движение нельзя.</value></data>
+  <data name="PlaceholderSku" xml:space="preserve"><value>Выберите артикул товара</value></data>
+  <data name="HintSelectProductFirst" xml:space="preserve"><value>Сначала выберите товар; показываются только его артикулы.</value></data>
+  <data name="HintSkuNone" xml:space="preserve"><value>У этого товара пока нет артикула в мастер-данных, поэтому провести движение нельзя.</value></data>
   <data name="SectionSourceTarget" xml:space="preserve"><value>Откуда и куда</value></data>
   <data name="FieldSource" xml:space="preserve"><value>Источник (партия / место)</value></data>
   <data name="PlaceholderSource" xml:space="preserve"><value>Выберите строку запаса для списания</value></data>
@@ -153,13 +153,13 @@
   <data name="CorrectExplain" xml:space="preserve"><value>Исправление создаёт две записи: (1) сторно этого движения, (2) исправленное движение ниже. Исходное движение остаётся в истории.</value></data>
   <data name="EffectTitle" xml:space="preserve"><value>Влияние на запас</value></data>
   <data name="EffectNote" xml:space="preserve"><value>До → после, в базовой единице. Для сведения: количество проверяет сервис запасов при проведении.</value></data>
-  <data name="EffectEmpty" xml:space="preserve"><value>Выберите тип, продукт, количество и места, чтобы увидеть влияние.</value></data>
+  <data name="EffectEmpty" xml:space="preserve"><value>Выберите тип, товар, количество и места, чтобы увидеть влияние.</value></data>
   <data name="EffectSource" xml:space="preserve"><value>Источник</value></data>
   <data name="EffectTarget" xml:space="preserve"><value>Назначение</value></data>
   <data name="EffectNegative" xml:space="preserve"><value>Больше, чем есть в наличии, — сервис запасов отклонит это, если остаток не изменится.</value></data>
-  <data name="EffectUnavailable" xml:space="preserve"><value>Сейчас влияние рассчитать нельзя (данные продукта недоступны).</value></data>
+  <data name="EffectUnavailable" xml:space="preserve"><value>Сейчас влияние рассчитать нельзя (данные товара недоступны).</value></data>
   <data name="PickerIncomplete" xml:space="preserve"><value>Список слишком длинный; введите часть кода или названия, чтобы сузить его.</value></data>
-  <data name="ProductFactsUnavailable" xml:space="preserve"><value>Данные продукта (учёт партий и серий, единицы) сейчас недоступны, поэтому движение провести нельзя. Ничего не изменено; повторите позже.</value></data>
+  <data name="ProductFactsUnavailable" xml:space="preserve"><value>Данные товара (учёт партий и серий, единицы) сейчас недоступны, поэтому движение провести нельзя. Ничего не изменено; повторите позже.</value></data>
   <data name="ValRequired" xml:space="preserve"><value>Это поле обязательно.</value></data>
   <data name="ValMovementType" xml:space="preserve"><value>Выберите один из типов движения на этой странице.</value></data>
   <data name="ValQuantity" xml:space="preserve"><value>Введите количество больше 0, не более 6 знаков после точки (например, 2.5).</value></data>

@@ -32,6 +32,9 @@ public static class TraceL10nKeys
         "Form.Duplicate", "Col.Status",
         "History.Action.Created", "History.Action.Updated", "History.Action.StatusChanged", "History.Action.Linked",
         "History.Action.Migrated", "History.Action.SystemExpired", "History.System", "History.Page",
+        // WP-0174-FU5 F-1: the history labels its fields and values like the screen (no raw field / status / country code).
+        "History.Field.TypedText", "History.Field.GenealogyParent",
+        .. LotFormRules.Countries.Select(code => "Country." + code),
         "Validation.Required", "Validation.LotFormat", "Validation.DatesOrder", "Validation.ReasonMin", "Validation.FixFields",
         "Status.Dialog.Title", "Status.Dialog.Reason", "Status.Dialog.Confirm", "Status.Dialog.ConfirmBlock", "Status.Dialog.Impact",
         "Status.Dialog.PickOne", "Status.Dialog.AcknowledgeRequired", "Status.Dialog.Done", "Cancel"

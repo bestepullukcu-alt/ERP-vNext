@@ -454,6 +454,12 @@
   <data name="History.Field" xml:space="preserve">
     <value>Campo</value>
   </data>
+  <data name="History.Field.TypedText" xml:space="preserve">
+    <value>Lote introducido manualmente</value>
+  </data>
+  <data name="History.Field.GenealogyParent" xml:space="preserve">
+    <value>Lote padre</value>
+  </data>
   <data name="History.Page" xml:space="preserve">
     <value>Página {0} / {1}</value>
   </data>

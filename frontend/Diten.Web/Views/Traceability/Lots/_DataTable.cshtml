@@ -5,6 +5,8 @@
 @{
     // Lot Gezgini columns (pack §11.3, K-A "Eldeki Stok"). SERVER data through the proxy profile (/Lots/api → listLots).
     // Durum + Eldeki Stok are the page's point: kept visible from tablet-landscape up (E4: at 1400 px responsive hid them).
+    // WP-0174-FU5 F-2: SKT (Expiry) joins them — in ru the longer headers folded it into the child row at 1440 px (P5 F-2);
+    // the secondary columns (manufacturer / supplier lot, origin, CoA, retest) now fold before it.
     // NO SELECTION COLUMN: a lot is never deleted and there is no bulk action (pack §4, §11.2).
     var listShell = new DataTableListShellViewModel
     {
@@ -19,7 +21,7 @@
             new DataTableColumnViewModel { Header = Localizer["Col.ManufacturerLot"].Value },
             new DataTableColumnViewModel { Header = Localizer["Col.SupplierLot"].Value },
             new DataTableColumnViewModel { Header = Localizer["Col.ManufacturingDate"].Value },
-            new DataTableColumnViewModel { Header = Localizer["Col.ExpiryDate"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.ExpiryDate"].Value, CssClass = "min-tablet-l" },
             new DataTableColumnViewModel { Header = Localizer["Col.RetestDate"].Value },
             new DataTableColumnViewModel { Header = Localizer["Col.Origin"].Value },
             new DataTableColumnViewModel { Header = Localizer["Col.Status"].Value, CssClass = "min-tablet-l" },

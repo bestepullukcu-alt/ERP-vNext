@@ -212,16 +212,16 @@
     <value>Customer return</value>
   </data>
   <data name="Movement.GOODS_ISSUE_PROD" xml:space="preserve">
-    <value>Issue to production</value>
+    <value>Goods issue (production)</value>
   </data>
   <data name="Movement.GOODS_ISSUE_SALES" xml:space="preserve">
-    <value>Sales issue</value>
+    <value>Goods issue (sales)</value>
   </data>
   <data name="Movement.GOODS_RECEIPT_PO" xml:space="preserve">
-    <value>Goods receipt (PO)</value>
+    <value>Goods receipt (purchase)</value>
   </data>
   <data name="Movement.GOODS_RECEIPT_PROD" xml:space="preserve">
-    <value>Production receipt</value>
+    <value>Goods receipt (production)</value>
   </data>
   <data name="Movement.LOCATION_TRANSFER" xml:space="preserve">
     <value>Location transfer</value>
@@ -239,7 +239,7 @@
     <value>Status transfer</value>
   </data>
   <data name="Movement.SUPPLIER_RETURN" xml:space="preserve">
-    <value>Return to supplier</value>
+    <value>Supplier return</value>
   </data>
   <data name="Movement.WAREHOUSE_TRANSFER" xml:space="preserve">
     <value>Warehouse transfer</value>

@@ -454,6 +454,12 @@
   <data name="History.Field" xml:space="preserve">
     <value>Поле</value>
   </data>
+  <data name="History.Field.TypedText" xml:space="preserve">
+    <value>Вручную введённая партия</value>
+  </data>
+  <data name="History.Field.GenealogyParent" xml:space="preserve">
+    <value>Родительская партия</value>
+  </data>
   <data name="History.Page" xml:space="preserve">
     <value>Страница {0} / {1}</value>
   </data>

@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="StockLedgerTitle" xml:space="preserve"><value>Stok Defteri</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Ürün, depo, lokasyon, parti ve duruma göre güncel stok. Stok yalnızca hareketlerle değişir.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Ürün, depo, lokasyon, lot ve duruma göre güncel stok. Stok yalnızca hareketlerle değişir.</value></data>
   <data name="KpiOnHand" xml:space="preserve"><value>Toplam eldeki stok</value></data>
   <data name="KpiAvailable" xml:space="preserve"><value>Kullanılabilir</value></data>
   <data name="KpiQualityInspection" xml:space="preserve"><value>Kalite kontrolde</value></data>
@@ -27,10 +27,10 @@
   <data name="TabMovements" xml:space="preserve"><value>Hareket geçmişi</value></data>
   <data name="NamesUnavailable" xml:space="preserve"><value>Ürün ve lokasyon adları şu anda yüklenemedi, bu yüzden kodlar gösteriliyor. Stok rakamları doğrudur.</value></data>
   <data name="ColProductSku" xml:space="preserve"><value>Ürün / SKU</value></data>
-  <data name="ColLot" xml:space="preserve"><value>Parti</value></data>
+  <data name="ColLot" xml:space="preserve"><value>Lot</value></data>
   <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
   <data name="FilterProduct" xml:space="preserve"><value>Ürün</value></data>
-  <data name="FilterLot" xml:space="preserve"><value>Parti numarası</value></data>
+  <data name="FilterLot" xml:space="preserve"><value>Lot numarası</value></data>
   <data name="FilterWarehouse" xml:space="preserve"><value>Depo</value></data>
   <data name="FilterLocation" xml:space="preserve"><value>Lokasyon</value></data>
   <data name="Searching" xml:space="preserve"><value>Aranıyor…</value></data>
@@ -55,7 +55,7 @@
   <data name="ErrUnknownItem" xml:space="preserve"><value>Ürün veya SKU ürün ana verisinde tanınmıyor. Hiçbir değişiklik yapılmadı; ürünü kontrol edin.</value></data>
   <data name="ErrUnknownLocation" xml:space="preserve"><value>Depo veya lokasyon tanınmıyor. Hiçbir değişiklik yapılmadı; lokasyonu kontrol edin.</value></data>
   <data name="ErrUomMissing" xml:space="preserve"><value>Bu birim SKU'nun temel birimine çevrilemiyor. Hiçbir değişiklik yapılmadı; başka bir birim seçin.</value></data>
-  <data name="ErrLotRequired" xml:space="preserve"><value>Bu ürün parti takipli: parti zorunludur. Hiçbir değişiklik yapılmadı; partiyi girip tekrar deneyin.</value></data>
+  <data name="ErrLotRequired" xml:space="preserve"><value>Bu ürün lot takipli: lot zorunludur. Hiçbir değişiklik yapılmadı; lotu girip tekrar deneyin.</value></data>
   <data name="ErrSerialMismatch" xml:space="preserve"><value>Seri numarası sayısı miktarla eşleşmiyor. Hiçbir değişiklik yapılmadı; seri numaralarını düzeltin.</value></data>
   <data name="ErrConflict" xml:space="preserve"><value>Siz çalışırken veri değişti. Listeyi yenileyip tekrar deneyin.</value></data>
   <data name="ErrNoPermission" xml:space="preserve"><value>Bu işleme erişiminiz yok. İhtiyacınız olan stok yetkilerini yöneticinizden isteyin.</value></data>

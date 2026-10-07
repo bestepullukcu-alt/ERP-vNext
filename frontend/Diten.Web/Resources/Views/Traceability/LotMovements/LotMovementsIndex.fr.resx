@@ -203,10 +203,10 @@
     <value>Date de fin</value>
   </data>
   <data name="Movement.COUNT_GAIN" xml:space="preserve">
-    <value>Excédent d’inventaire</value>
+    <value>Excédent d'inventaire</value>
   </data>
   <data name="Movement.COUNT_LOSS" xml:space="preserve">
-    <value>Manquant d’inventaire</value>
+    <value>Manquant d'inventaire</value>
   </data>
   <data name="Movement.CUSTOMER_RETURN" xml:space="preserve">
     <value>Retour client</value>
@@ -224,10 +224,10 @@
     <value>Réception (production)</value>
   </data>
   <data name="Movement.LOCATION_TRANSFER" xml:space="preserve">
-    <value>Transfert d’emplacement</value>
+    <value>Transfert d'emplacement</value>
   </data>
   <data name="Movement.OPENING_BALANCE" xml:space="preserve">
-    <value>Solde d’ouverture</value>
+    <value>Solde d'ouverture</value>
   </data>
   <data name="Movement.REVERSAL" xml:space="preserve">
     <value>Contre-passation</value>

@@ -39,7 +39,30 @@ public sealed class InventoryResxParityTests
             // A missing key renders as its own name; in a translated file a value equal to the key or to English is
             // that defect wearing a disguise. (In English "Actions" may legitimately be the key's own word.)
             Assert.All(values, pair => Assert.NotEqual(pair.Key, pair.Value));
-            Assert.All(values, pair => Assert.True(pair.Value != english[pair.Key], $"{family}.{lang}: {pair.Key} is an English copy"));
+            Assert.All(values, pair => Assert.True(pair.Value != english[pair.Key] || SameAsEnglish.Contains($"{family}.{lang}.{pair.Key}"),
+                $"{family}.{lang}: {pair.Key} is an English copy"));
+        }
+    }
+
+    /// <summary>
+    /// WP-0174-FU5 T-2: values that are deliberately the English word — exact family.lang.key, each with its reason; no
+    /// prefix. The tr lot column is "Lot", the owner's term and the MOD-0174 glossary (Traceability <c>Tracking.Lot</c>).
+    /// </summary>
+    private static readonly HashSet<string> SameAsEnglish = new(StringComparer.Ordinal)
+    {
+        "StockLedgerIndex.tr.ColLot",    // glossary: Lot = Lot (owner's term, WP-0174-FU5 T-2)
+        "StockMovementsIndex.tr.ColLot"  // glossary: Lot = Lot (owner's term, WP-0174-FU5 T-2)
+    };
+
+    [Fact]
+    public void Every_same_as_english_entry_is_still_needed()
+    {
+        foreach (var entry in SameAsEnglish)
+        {
+            var parts = entry.Split('.', 3);
+            var folder = parts[0] == "StockLedgerIndex" ? "Resources/Views/Inventory/StockLedger" : "Resources/Views/Inventory/StockMovements";
+            Assert.True(Read(folder, parts[0], parts[1])[parts[2]] == Read(folder, parts[0], "en")[parts[2]],
+                $"{entry} no longer equals en — remove it from SameAsEnglish");
         }
     }
 
