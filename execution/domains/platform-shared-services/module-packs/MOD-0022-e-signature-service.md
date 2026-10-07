@@ -74,7 +74,7 @@ rows 224 (MOD-0112), 398 (MOD-0195), 478 (MOD-0233), 489 (MOD-0238) and 1564 (MO
 
 | Slice | Scope | Contract | Closes |
 |---|---|---|---|
-| **E1 — AuthService re-authentication** | `POST api/tenant-auth/esign/reauth` (password → ticket) + `POST api/tenant-auth/esign/ticket` (KS-3 window) + internal `POST api/internal/esign-tickets/consume`. Entities `ESignReauthTicket`, `ESignReauthWindow`. Login lockout shared (KS-13). Audit in `authAuditLogs`. | ESIGN-BUNDLE §4.1–4.3 | KS-3, KS-11 (extension point), KS-13; Part 11 §11.200(a), §11.300(d) |
+| **E1 — AuthService re-authentication** | `POST api/tenant-auth/esign/reauth` (password → ticket) + `POST api/tenant-auth/esign/ticket` (KS-3 window) + internal `POST internal/esign-tickets/consume`. Entities `ESignReauthTicket`, `ESignReauthWindow`. Login lockout shared (KS-13). Audit in `authAuditLogs`. | ESIGN-BUNDLE §4.1–4.3 | KS-3, KS-11 (extension point), KS-13; Part 11 §11.200(a), §11.300(d) |
 | **E2 — Signature service + policy + meanings + contract** | `ESignatureRecord` / `ESignatureInvalidation` (insert-only), subject-provider registry + canonical hash, verify, by-subject list, signature requests (envelope), policy (tenant + LegalEntity override, history), meanings (7 languages), signable-action catalog, export log + PDF/CSV, manifest `esign`. Freeze `esign.openapi.yaml` v1.0.0. | ESIGN-BUNDLE §4.4–4.16, 4.20–4.27 | KS-1, KS-2, KS-4, KS-5, KS-6, KS-8 (server rules), KS-10, KS-12 (data) |
 | **E3 — Signature samples ("İmzam")** | `ESignatureSample` + `ESignatureSampleEvent` (insert-only), PNG/vector storage via `IContentStorageGateway` (new scope `ESignatureImages`), manager approval, no self-approval, used sample not removable. | ESIGN-BUNDLE §4.17–4.19 | KS-7, KS-9, KS-10 |
 | **E4 — Workflow (MOD-0023) hook** | Step attribute `requirements.signatureRequired` + `signatureMeaning` in `DefinitionJson`, carried through `WorkflowRuntimeStep` → `ApprovalTask`. Additive `SignatureId` on `ApproveWorkflowTaskRequest` and on `WorkItemActionPayloadDto`. Gate in `WorkflowTaskTransitionSupport.TransitionAsync`. Designer switch + meaning select. WorkCenter opens the signature dialog. | ESIGN-BUNDLE §5 (Workflow addendum) | approve without a valid signature refused — API **and** WorkCenter |
@@ -147,7 +147,7 @@ MOD-0175 can start its own pack after E2's contract is frozen. Its signing UI ne
 | `IESignatureGate` | Platform application service | used in-process by Workflow E4 (`ValidateForApprovalAsync`) |
 | `ESignatureController` (+ requests / samples / policy / meanings / exports controllers) | Platform API | `api/v1/esign/**` |
 | `ESignReauthController` actions | AuthService API | on `TenantAuthController` route `api/tenant-auth/esign/*` |
-| `InternalESignTicketsController` | AuthService API | `api/internal/esign-tickets/consume` (X-Internal-Api-Key) |
+| `InternalESignTicketsController` | AuthService API | `internal/esign-tickets/consume` (X-Internal-Api-Key) |
 | `ESignatureExpirySweeper` | Platform Hangfire job | requests past `DueAtUtc` → Expired |
 | `ESignManifestProvider` | Platform self-registration | `ModuleCode: "esign"` |
 | `ESignatureController` (Web) | MVC | `[Route("ESignature")]` + gateway proxy |
@@ -372,7 +372,7 @@ PlatformAdmin keys at `AssignPermissionCommandHandler.cs:57-61`.
 - Window revocation: password change, forced change and logout set `RevokedAtUtc`. They hook into
   `ChangePasswordCommandHandler.cs:54` (where refresh tokens are revoked) and `LogoutCommandHandler.cs:55-58`.
   A window never outlives 60 minutes.
-- `POST api/internal/esign-tickets/consume` (S2S, `X-Internal-Api-Key`, `InternalEventAuthService.cs:55-63`; not routed
+- `POST internal/esign-tickets/consume` (S2S, `X-Internal-Api-Key`, `InternalEventAuthService.cs:55-63`; not routed
   by the gateway): `{ ticket, tenantId, userId, intent }`.
   - It does an **atomic** `FindOneAndUpdate` with filter `TicketIdHash == h && TenantId && UserId && Intent && ConsumedAtUtc
     == null && ExpiresAtUtc > now`, update `ConsumedAtUtc = now`.
@@ -968,7 +968,7 @@ Nav keys: `Nav.Module.esign`, `Nav.Page.ESIGN_*`.
 | Operation | Route | Source |
 |---|---|---|
 | Re-auth / window ticket | `/api/tenant-auth/esign/reauth`, `/api/tenant-auth/esign/ticket` | existing `/api/tenant-auth/{everything}` → 5056 (`ocelot.json:1870-1888`); no change |
-| Ticket consume | `/api/internal/esign-tickets/consume` | S2S Platform → AuthService (`AuthService:BaseUrl` + `X-Internal-Api-Key`); **not** in the gateway |
+| Ticket consume | `/internal/esign-tickets/consume` | S2S Platform → AuthService (`AuthService:BaseUrl` + `X-Internal-Api-Key`); **not** in the gateway |
 | e-signature API | `/api/v1/esign/{everything}` → 5057 `/api/v1/esign/{everything}` | **new route** (no catch-all for Platform, measured: one route per area, e.g. `/api/platform/audit/events` `ocelot.json:1051`) |
 | Remote subject providers | `{BaseUrl}/esign-subjects/{type}/{id}` | operator config; called by Platform with the user's JWT |
 
@@ -1256,7 +1256,9 @@ The gateway treats `/api/v1/*` as a tenant path: it requires `actor_type=tenant_
 Registry row written by the CT on acceptance (`module-id-registry.md`, status `reserved / planned` → `in-progress` at
 ready-for-dev); waiver **W-0022-01** (DCP-002 verifier not run — no Python; run before the MVP-1 PR, W-0173-01 pattern).
 
-### E1 — implementation note (WP-0022-E1, 2026-10-07, pending CT)
+### E1 — implementation note (WP-0022-E1, 2026-10-07; CT-ACCEPTED 2026-10-08)
+
+**CT acceptance (K13):** re-measured at `66f97c69c` — `Diten.AuthService.Application.Tests` 1039/1039 (owner fleet PIDs identical before/after; `AccountKindAcceptanceHost.Tests` not run). CT sabotage: window revocation on password change removed (`ChangePasswordCommandHandler.cs:59`) → 1 red, restored. CT fixes: internal consume path corrected to `internal/esign-tickets/consume` in this pack (§1/§3/§8/§15) and ESIGN-BUNDLE §4.3; 423-on-lockout-start written into ESIGN-BUNDLE §4.1. **CT decision FU-0022-12:** outside Development `ESign:HashSecret` is REQUIRED (no fallback to `JwtSettings:Secret`; missing → 503 `ESIGN_REAUTH_UNAVAILABLE`, fail closed) — implemented in E2 together with the configuration-safety review. FU-0022-05 (MFA consume not atomic) stays a follow-up for the AuthService owner.
 
 - Branch `feature/sce/mod-0022-e1` from `cd43a4533`. Commit `1450b5408` (AuthService + 16 tests); local only, no push.
   Evidence: `docs/records/audits/2026-10/mod-0022-e1-evidence-2026-10-07.md`.

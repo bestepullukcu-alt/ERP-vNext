@@ -162,7 +162,7 @@ business decision is decided by the consumer.
   - 400 validation;
   - 401 `ESIGN_REAUTH_FAILED` (`{ remainingAttempts }`, pack CT-D13);
   - 403 `ESIGN_ACTOR_NOT_TENANT_USER`;
-  - 423 `ESIGN_ACCOUNT_LOCKED` (`{ lockoutEndUtc }`).
+  - 423 `ESIGN_ACCOUNT_LOCKED` (`{ lockoutEndUtc }`). The attempt that **starts** the lockout already answers 423 (`remainingAttempts = 0`), not 401 (measured in E1, CT 2026-10-08).
 - Lockout: the tenant login settings `MaxFailedLoginAttempts` / `LockoutDurationMinutes`, on the same user counter as
   login.
 - Idempotency: none (each call is an authentication attempt).
@@ -179,7 +179,7 @@ business decision is decided by the consumer.
   - 403 `ESIGN_ACTOR_NOT_TENANT_USER`.
 - Audit `tenant_esign_window_ticket_issued`.
 
-### 4.3 `POST /api/internal/esign-tickets/consume` — `esignConsumeTicket` (AuthService, S2S, **not routed by the gateway**)
+### 4.3 `POST /internal/esign-tickets/consume` — `esignConsumeTicket` (AuthService, S2S, **not routed by the gateway**)
 - Auth: `X-Internal-Api-Key`.
 - Request `{ "ticket": "…", "tenantId": "guid", "userId": "…", "intent": "sign | sample | invalidate" }`
 - 200 `{ "kind": "password | window", "passwordVerifiedAtUtc": "…", "issuedAtUtc": "…" }`
