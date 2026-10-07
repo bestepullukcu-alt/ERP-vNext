@@ -151,7 +151,8 @@ public sealed class WorkflowStartRecoveryStore : TenantRepository<WorkflowInstan
         [
             new BsonDocument("$match", rendered),
             // FIX2 item 4 — the bound: every Active approval waiting longer than the age matches, so the scan is cut here,
-            // before the $lookup, and the caller reports "at least".
+            // before the $lookup, and the caller reports "at least". It cuts the close as well: past it the close sees a
+            // subset (the job warns once, see the runbook).
             new BsonDocument("$limit", ScanLimitOf(scanLimit)),
             new BsonDocument("$lookup", new BsonDocument
             {

@@ -77,6 +77,11 @@ public static class WorkflowOrphanRecoveryOperationalMode
     {
         using var scope = provider.CreateScope();
         var resolve = scope.ServiceProvider;
+        // FIX3 item 2 — the engine's cancel takes these three as OPTIONAL: missing, DI hands it null and it quietly writes
+        // without a transaction and without the completion event. Here they are required, by name, before anything is read.
+        RequireNamed<Diten.Platform.Domain.Repositories.IPlatformTransactionExecutor>(resolve);
+        RequireNamed<Diten.Platform.Application.Contracts.Eventing.ITransactionalIntegrationEventWriter>(resolve);
+        RequireNamed<Diten.Platform.Domain.Repositories.IWorkflowTemplateRepository>(resolve);
         resolve.GetRequiredService<ITenantContext>();
         resolve.GetRequiredService<MediatR.IMediator>();
         resolve.GetRequiredService<Diten.Platform.Application.Contracts.Audit.IAuditService>();
@@ -88,6 +93,16 @@ public static class WorkflowOrphanRecoveryOperationalMode
             Diten.Platform.Application.Common.Response<Diten.Platform.Application.Features.Workflow.WorkflowTaskTransitionResponse>>>();
         resolve.GetServices<MediatR.IPipelineBehavior<Diten.Platform.Application.Features.Workflow.Commands.CancelWorkflowTaskCommand,
             Diten.Platform.Application.Common.Response<Diten.Platform.Application.Features.Workflow.WorkflowTaskTransitionResponse>>>().ToList();
+    }
+
+    private static void RequireNamed<TService>(IServiceProvider services) where TService : notnull
+    {
+        if (services.GetService<TService>() is null)
+        {
+            throw new InvalidOperationException(
+                $"The orphan recovery needs {typeof(TService).Name}: without it the engine's cancel writes without a transaction "
+                + "or without its completion event.");
+        }
     }
 
     private sealed class OperationalHostEnvironment(string environmentName, string contentRoot) : IHostEnvironment

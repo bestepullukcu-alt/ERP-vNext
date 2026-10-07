@@ -41,9 +41,17 @@ public sealed class StartWorkflowInstanceHandler
         IPositionAssignmentRepository? positionAssignmentRepository = null,
         ISlaEscalationRuleRepository? slaRules = null,
         IPositionRepository? positionRepository = null,
-        IPlatformTransactionExecutor? transactions = null)
+        IPlatformTransactionExecutor? transactions = null,
+        SequentialWorkflowStartWritesForTests? sequentialWritesForTests = null)
     {
+        // FIX3 item 2 — the claim and the start rows commit in one transaction (FIX2 item 1). No SILENT fallback: without the
+        // executor this handler is built only where a test asked for sequential writes by name; anywhere else it refuses.
         _transactions = transactions;
+        if (transactions is null && sequentialWritesForTests is null)
+        {
+            throw new ArgumentNullException(
+                nameof(transactions), "MOD-0023's start needs IPlatformTransactionExecutor: its claim and rows commit together.");
+        }
         _templateRepository = templateRepository;
         _versionRepository = versionRepository;
         _instanceRepository = instanceRepository;
@@ -291,22 +299,24 @@ public sealed class StartWorkflowInstanceHandler
          * close fails (or conflicts with the open transaction); one that reads after sees the task and leaves it alone. A
          * transaction that never commits (the pod stays paused past Mongo's transaction lifetime) leaves neither.
          */
-        ApprovalTask? createdTask;
+        bool claimed;
         try
         {
-            createdTask = await ClaimWithStartTaskAsync(createdInstance.Id, createdInstance.Version, task, snapshot.Id, log.Id, ct);
+            // FIX3 K8 — the snapshot and the start log go in with the claim and the task: the start is whole or not there.
+            claimed = await ClaimWithStartRowsAsync(createdInstance.Id, createdInstance.Version, task.Id, snapshot.Id, log.Id,
+                task, snapshot, log, ct);
         }
         catch (PlatformTransactionUnavailableException)
         {
-            return StartUnavailable(request.CorrelationId);
+            return await AfterUnavailableAsync(createdInstance.Id, request.CorrelationId, ct);
         }
 
-        if (createdTask is null)
+        if (!claimed)
         {
             /*
              * FIX2 item 2 — A LOST CLAIM IS NOT A CLOSE. A replay of the same key (a double submit) may have claimed the
              * instance first and is completing it with the same fixed ids: this call then answers as that replay does. Only
-             * an instance that really left Active (the recovery closed it) answers 409.
+             * an instance that really left Active (the recovery closed it) answers 409 — never "as a replay" (FIX3 V3).
              */
             var reread = await _instanceRepository.GetByIdAsync(createdInstance.Id, ct);
             if (reread is not null && reread.Status == WorkflowInstanceStatus.Active)
@@ -317,11 +327,8 @@ public sealed class StartWorkflowInstanceHandler
             return StartConflict("The workflow start was closed before its task was written.", request.CorrelationId);
         }
 
-        var createdSnapshot = await _assignmentSnapshotRepository.EnsureTrustedStartSnapshotAsync(snapshot, ct);
-        await _transitionLogRepository.EnsureTrustedStartLogAsync(log, ct);
-
         return Response<StartWorkflowInstanceResponse>.Success(
-            ToStartResponse(createdInstance, createdTask, createdSnapshot.Id, request.CorrelationId),
+            ToStartResponse(createdInstance, task, snapshot.Id, request.CorrelationId),
             correlationId: request.CorrelationId);
     }
 
@@ -470,90 +477,50 @@ public sealed class StartWorkflowInstanceHandler
 
         var instance = existing;
         var resolvedPrincipal = candidates[0];
-        ApprovalTask? completedTask = task;
+        ApprovalTask completedTask;
+        Guid completedSnapshotId;
         for (var attempt = 0; ; attempt++)
         {
             var taskId = task?.Id ?? instance.InitialApprovalTaskId ?? Guid.NewGuid();
             var snapshotId = task?.AssignmentSnapshotId ?? instance.InitialAssignmentSnapshotId ?? Guid.NewGuid();
             var logId = instance.StartTransitionLogId ?? Guid.NewGuid();
-            if (task is not null)
+            var now = DateTimeOffset.UtcNow;
+            // What the first call did not write — and ONLY that — goes in with the claim, in one transaction (FIX3 K8).
+            var missingTask = task is not null ? null : new ApprovalTask
             {
-                if (await _instanceRepository.ClaimStartCompletionAsync(
-                        instance.Id, instance.Version, taskId, snapshotId, logId, DateTimeOffset.UtcNow, ct))
-                {
-                    break;
-                }
-            }
-            else
-            {
-                // FIX2 item 1 — the missing task goes in with the claim, in one transaction (see Handle).
-                var missingTask = new ApprovalTask
-                {
-                    Id = taskId,
-                    TenantId = instance.TenantId,
-                    WorkflowInstanceId = instance.Id,
-                    StageCode = firstStep.StageCode,
-                    StepCode = firstStep.StepCode,
-                    Status = ApprovalTaskStatus.WaitingApproval,
-                    AssigneeRef = resolvedPrincipal,
-                    AssignmentSnapshotId = snapshotId,
-                    ReasonCode = request.Request.ReasonCode,
-                    IdempotencyKey = instance.IdempotencyKey,
-                    CommentRequired = firstStep.CommentRequired || request.Request.CommentRequired,
-                    EvidenceRequired = firstStep.EvidenceRequired || request.Request.EvidenceRequired,
-                    DueAt = instance.DueAt
-                };
-                try
-                {
-                    completedTask = await ClaimWithStartTaskAsync(instance.Id, instance.Version, missingTask, snapshotId, logId, ct);
-                }
-                catch (PlatformTransactionUnavailableException)
-                {
-                    return StartUnavailable(correlationId);
-                }
-
-                if (completedTask is not null)
-                {
-                    break;
-                }
-            }
-
-            // Another replay claimed it first (its ids are now on the instance), or it was closed meanwhile.
-            var reread = await _instanceRepository.GetByIdAsync(instance.Id, ct);
-            if (reread is null || reread.Status != WorkflowInstanceStatus.Active || attempt >= 2)
-            {
-                return StartConflict("Existing workflow start is incomplete.", correlationId);
-            }
-
-            instance = reread;
-            task ??= await _taskRepository.GetFirstByInstanceIdAsync(instance.Id, ct);
-        }
-
-        instance = await _instanceRepository.GetByIdAsync(instance.Id, ct) ?? instance;
-        var now = DateTimeOffset.UtcNow;
-        completedTask ??= task!;
-        var snapshotIdToWrite = completedTask.AssignmentSnapshotId ?? instance.InitialAssignmentSnapshotId!.Value;
-        var completedSnapshot = snapshot ?? await _assignmentSnapshotRepository.GetByIdAsync(snapshotIdToWrite, ct)
-            ?? await _assignmentSnapshotRepository.EnsureTrustedStartSnapshotAsync(new RuntimeAssignmentSnapshot
-            {
-                Id = snapshotIdToWrite,
+                Id = taskId,
                 TenantId = instance.TenantId,
                 WorkflowInstanceId = instance.Id,
-                ApprovalTaskId = completedTask.Id,
+                StageCode = firstStep.StageCode,
+                StepCode = firstStep.StepCode,
+                Status = ApprovalTaskStatus.WaitingApproval,
+                AssigneeRef = resolvedPrincipal,
+                AssignmentSnapshotId = snapshotId,
+                ReasonCode = request.Request.ReasonCode,
+                IdempotencyKey = instance.IdempotencyKey,
+                CommentRequired = firstStep.CommentRequired || request.Request.CommentRequired,
+                EvidenceRequired = firstStep.EvidenceRequired || request.Request.EvidenceRequired,
+                DueAt = instance.DueAt
+            };
+            var existingSnapshot = snapshot ?? await _assignmentSnapshotRepository.GetByIdAsync(snapshotId, ct);
+            var missingSnapshot = existingSnapshot is not null ? null : new RuntimeAssignmentSnapshot
+            {
+                Id = snapshotId,
+                TenantId = instance.TenantId,
+                WorkflowInstanceId = instance.Id,
+                ApprovalTaskId = taskId,
                 ResolverSource = ResolverSource,
-                ResolvedPrincipalId = completedTask.AssigneeRef ?? resolvedPrincipal,
+                ResolvedPrincipalId = task?.AssigneeRef ?? resolvedPrincipal,
                 CandidatePrincipalIds = candidates.ToList(),
                 ResolvedAt = now.UtcDateTime,
                 TieBreakExplanation = candidates.Count == 1 ? "single_candidate" : "lexicographic_first_principal"
-            }, ct);
-        if (await StartLogAsync(instance.Id, ct) is null)
-        {
-            await _transitionLogRepository.EnsureTrustedStartLogAsync(new WorkflowTransitionLog
+            };
+            var missingLog = await StartLogAsync(instance.Id, ct) is not null ? null : new WorkflowTransitionLog
             {
-                Id = instance.StartTransitionLogId!.Value,
+                Id = logId,
                 TenantId = instance.TenantId,
                 WorkflowInstanceId = instance.Id,
-                ApprovalTaskId = completedTask.Id,
+                ApprovalTaskId = taskId,
                 Action = WorkflowTransitionAction.Start,
                 FromState = null,
                 ToState = WorkflowInstanceStatus.Active.ToString(),
@@ -567,11 +534,54 @@ public sealed class StartWorkflowInstanceHandler
                 CorrelationId = instance.CorrelationId ?? correlationId,
                 SequenceNo = 1,
                 CreatedAt = instance.StartedAt ?? now
-            }, ct);
+            };
+            bool claimed;
+            try
+            {
+                claimed = await ClaimWithStartRowsAsync(instance.Id, instance.Version, taskId, snapshotId, logId,
+                    missingTask, missingSnapshot, missingLog, ct);
+            }
+            catch (PlatformTransactionUnavailableException)
+            {
+                return await AfterUnavailableAsync(instance.Id, correlationId, ct);
+            }
+
+            if (claimed)
+            {
+                completedTask = task ?? missingTask!;
+                completedSnapshotId = existingSnapshot?.Id ?? snapshotId;
+                break;
+            }
+
+            // Another replay claimed it first (its ids are now on the instance), or it was closed meanwhile.
+            var reread = await _instanceRepository.GetByIdAsync(instance.Id, ct);
+            if (reread is null || reread.Status != WorkflowInstanceStatus.Active)
+            {
+                return StartConflict("Existing workflow start is incomplete.", correlationId);
+            }
+
+            // FIX3 item 1 — the replay that won may already have committed the whole start: answered as it is. Out of tries
+            // with the start still not whole, the answer is the retryable 503, not a 409 that reads as "different facts".
+            if (await WholeStartAsync(reread, correlationId, ct) is { } whole)
+            {
+                return whole;
+            }
+
+            if (attempt >= 2)
+            {
+                return StartUnavailable(correlationId);
+            }
+
+            instance = reread;
+            task ??= await _taskRepository.GetFirstByInstanceIdAsync(instance.Id, ct);
+            snapshot ??= task?.AssignmentSnapshotId is { } readSnapshotId
+                ? await _assignmentSnapshotRepository.GetByIdAsync(readSnapshotId, ct)
+                : null;
         }
 
+        instance = await _instanceRepository.GetByIdAsync(instance.Id, ct) ?? instance;
         return Response<StartWorkflowInstanceResponse>.Success(
-            ToStartResponse(instance, completedTask, completedSnapshot.Id, correlationId),
+            ToStartResponse(instance, completedTask, completedSnapshotId, correlationId),
             correlationId: correlationId);
     }
 
@@ -602,31 +612,118 @@ public sealed class StartWorkflowInstanceHandler
             .FirstOrDefault(log => log.SequenceNo == 1 && log.Action == WorkflowTransitionAction.Start);
 
     /// <summary>
-    /// FIX2 item 1 — the claim and the start task in ONE Platform transaction: both commit or neither does. Null = the claim
-    /// was lost (another replay claimed first, or the instance left Active). Without a transaction executor (in-memory
-    /// doubles) the two writes stay sequential, the claim first.
+    /// FIX2 item 1 · FIX3 K8 — the claim and every start row still missing (task, assignment snapshot, start log) in ONE
+    /// Platform transaction: all commit or none does. False = the claim was lost (another replay claimed first, or the
+    /// instance left Active).
     /// </summary>
-    private async Task<ApprovalTask?> ClaimWithStartTaskAsync(
-        Guid instanceId, int version, ApprovalTask startTask, Guid snapshotId, Guid logId, CancellationToken ct)
+    private async Task<bool> ClaimWithStartRowsAsync(
+        Guid instanceId,
+        int version,
+        Guid taskId,
+        Guid snapshotId,
+        Guid logId,
+        ApprovalTask? taskToWrite,
+        RuntimeAssignmentSnapshot? snapshotToWrite,
+        WorkflowTransitionLog? logToWrite,
+        CancellationToken ct)
     {
         if (_transactions is null)
         {
-            return await _instanceRepository.ClaimStartCompletionAsync(
-                    instanceId, version, startTask.Id, snapshotId, logId, DateTimeOffset.UtcNow, ct)
-                ? await _taskRepository.EnsureTrustedStartTaskAsync(startTask, ct)
-                : null;
-        }
-
-        return await _transactions.ExecuteAsync<ApprovalTask?>(async (session, tct) =>
-        {
-            if (!await _instanceRepository.ClaimStartCompletionAsync(
-                    session, instanceId, version, startTask.Id, snapshotId, logId, DateTimeOffset.UtcNow, tct))
+            // Tests only (SequentialWorkflowStartWritesForTests): the claim first, then each missing row on its own.
+            if (!await _instanceRepository.ClaimStartCompletionAsync(instanceId, version, taskId, snapshotId, logId, DateTimeOffset.UtcNow, ct))
             {
-                return null;
+                return false;
             }
 
-            return await _taskRepository.CreateAsync(session, startTask, tct);
+            if (taskToWrite is not null)
+            {
+                await _taskRepository.EnsureTrustedStartTaskAsync(taskToWrite, ct);
+            }
+
+            if (snapshotToWrite is not null)
+            {
+                await _assignmentSnapshotRepository.EnsureTrustedStartSnapshotAsync(snapshotToWrite, ct);
+            }
+
+            if (logToWrite is not null)
+            {
+                await _transitionLogRepository.EnsureTrustedStartLogAsync(logToWrite, ct);
+            }
+
+            return true;
+        }
+
+        try
+        {
+            return await _transactions.ExecuteAsync(async (session, tct) =>
+        {
+            if (!await _instanceRepository.ClaimStartCompletionAsync(
+                    session, instanceId, version, taskId, snapshotId, logId, DateTimeOffset.UtcNow, tct))
+            {
+                return false;
+            }
+
+            if (taskToWrite is not null)
+            {
+                await _taskRepository.CreateAsync(session, taskToWrite, tct);
+            }
+
+            if (snapshotToWrite is not null)
+            {
+                await _assignmentSnapshotRepository.CreateAsync(session, snapshotToWrite, tct);
+            }
+
+            if (logToWrite is not null)
+            {
+                await _transitionLogRepository.CreateAsync(session, logToWrite, tct);
+            }
+
+            return true;
         }, ct);
+        }
+        catch (MongoDB.Driver.MongoException exception) when (
+            exception.HasErrorLabel("TransientTransactionError") || exception.HasErrorLabel("UnknownTransactionCommitResult"))
+        {
+            // FIX3 K7 — a transient failure AT COMMIT leaves the executor unmapped (it maps the body's and the unknown
+            // commit result's); for the start it is the same "not written now, replay the key" (503), never a 500.
+            throw new PlatformTransactionUnavailableException("The start's transaction ended in a transient error.", exception);
+        }
+    }
+
+    /// <summary>
+    /// FIX3 item 1 — "UNAVAILABLE" IS OFTEN A LOST RACE. Two submits of one key at once write the same instance in two
+    /// transactions; the loser gets a write conflict, which the executor retries without waiting — all three tries can meet
+    /// the same open winner. Before answering 503 the instance and its rows are read again: a live, WHOLE start (the winner
+    /// committed) is answered exactly as its replay. Only a live start that is not whole yet answers 503 (replay the key); one
+    /// that left Active answers 409. The terminal writer's AfterUnavailableAsync is the same idea.
+    /// </summary>
+    private async Task<Response<StartWorkflowInstanceResponse>> AfterUnavailableAsync(
+        Guid instanceId, string correlationId, CancellationToken ct)
+    {
+        var reread = await _instanceRepository.GetByIdAsync(instanceId, ct);
+        if (reread is null || reread.Status != WorkflowInstanceStatus.Active)
+        {
+            return StartConflict("The workflow start was closed before its task was written.", correlationId);
+        }
+
+        return await WholeStartAsync(reread, correlationId, ct) ?? StartUnavailable(correlationId);
+    }
+
+    /// <summary>The answer for a live start that is WHOLE (task, its snapshot, the start log); null when it is not yet.</summary>
+    private async Task<Response<StartWorkflowInstanceResponse>?> WholeStartAsync(
+        WorkflowInstance instance, string correlationId, CancellationToken ct)
+    {
+        var task = await _taskRepository.GetFirstByInstanceIdAsync(instance.Id, ct);
+        if (task?.AssignmentSnapshotId is { } snapshotId
+            && await _assignmentSnapshotRepository.GetByIdAsync(snapshotId, ct) is not null
+            && await StartLogAsync(instance.Id, ct) is not null)
+        {
+            return Response<StartWorkflowInstanceResponse>.Success(
+                ToStartResponse(instance, task, snapshotId, correlationId),
+                correlationId: correlationId);
+        }
+
+        return null;
     }
 
     private static Response<StartWorkflowInstanceResponse> StartUnavailable(string correlationId) =>

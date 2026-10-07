@@ -715,7 +715,7 @@ public sealed class WorkflowCrossServiceTests
         private AssignmentRepo? _assignments;
 
         public StartWorkflowInstanceHandler Start() => new(TemplateRepo, VersionRepo, InstanceRepo, TaskRepo, SnapshotRepo,
-            LogRepo, Tenant, new User(), AssignmentRepo, null, PositionRepo);
+            LogRepo, Tenant, new User(), AssignmentRepo, null, PositionRepo, Transactions);
 
         public ApproveWorkflowTaskHandler Approve() => new(TaskRepo, InstanceRepo, SnapshotRepo, LogRepo, VersionRepo,
             AssignmentRepo, PositionRepo, Transactions, Events, TemplateRepo);

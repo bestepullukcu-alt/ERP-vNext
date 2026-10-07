@@ -13,7 +13,8 @@ and reviews left live by deleted tasks or replaced review rounds). WP: WP-WF-ENG
 | A generic start crashed after writing its instance (no task, snapshot or start log) | The **same key with the same facts, by the same person** completes it and answers what the first call would have. Different facts or another person: 409 `WORKFLOW_INSTANCE_START_CONFLICT`. Two replays at once write one task; a first call that loses its claim to a replay (a double submit) answers as the replay does. | `StartWorkflowInstanceHandler` |
 | The task is written | Only **together with the claim**, in one Platform transaction: a start that stops between them (a paused pod, a crash) leaves the instance exactly as it was — never a Cancelled instance with an open task. Without transactions the start answers 503 (replay the key). | same |
 | A start written before BL-549 (no ids, no fingerprint on the instance) | Completed the same way; its first replay fixes the ids. Only its definition and object are compared (the facts it stored). A closed one that never wrote its start log answers 200 as before. | same |
-| A task approval or review finds a half start it cannot complete (the manager, reviewer or due date was edited, or somebody else submits) | The half start is **closed** — Cancelled, reason `WORKFLOW_START_SUPERSEDED`, a log line, the completion event, an audit row under the person — and a **new round** starts with the facts as they are now. Once: a second refusal is reported, never looped on. Never an instance with any task. | `TaskApprovalService`, `TaskReviewService` → `SupersedeWorkflowHalfStartCommand` |
+| A task approval or review finds a half start it cannot complete (the manager, reviewer or due date was edited, or somebody else submits) | The half start is **closed** — Cancelled, reason `WORKFLOW_START_SUPERSEDED`, a log line, the completion event, an audit row under the person — and a **new round** starts with the facts as they are now. Once: a second refusal is reported, never looped on. Never an instance with any task, never a trusted start. One the recovery already closed answers "already closed". **No age floor, on purpose:** an instance with no task has nobody deciding it, and a first call still writing its task cannot write under the closed instance (its claim and rows commit together) — it answers 409 and its caller starts a new round. | `TaskApprovalService`, `TaskReviewService` → `SupersedeWorkflowHalfStartCommand` |
+| Other starters of a generic workflow — upward requests (`TaskUpwardRequestService`, a fixed key per request) and timesheet approvals (`TimesheetApprovalService`) | **Not covered by the supersede yet** (backlog): a half start of theirs is completed by the same key with the same facts and person, and otherwise stays until the abandoned-start recovery closes it (when the job is on). | — |
 | …and nobody replays it | The recovery job closes it once it has not moved for the age below: Cancelled, reason `WORKFLOW_START_ABANDONED`, a transition log line, the completion event, an audit row. An instance with **any** task is never touched. | `WorkflowStartRecoverySweepJob` → `CloseAbandonedWorkflowStartCommand` |
 | A trusted start (MDM) stopped short of Completed | Its consumer's replay completes it (checkpoints). If nobody does, the job closes it after the age: Cancelled with `WORKFLOW_START_ABANDONED`, its start task withdrawn if one was written, a log line, an audit row. | same |
 | A trusted reservation **the recovery closed** (`WORKFLOW_START_ABANDONED`) is looked up | `start-result` answers it **exactly as a key the engine never saw**: 404 `NOT_FOUND_NON_LEAKAGE`, same body. A replay of the start gets the same answer and is never resumed. Only this close: a reservation the engine closed because nobody but the maker may approve it keeps its 409 `WORKFLOW_START_NOT_COMPLETED`. | `GetTrustedWorkflowStartResultHandler`, `WorkflowInstanceStartCoordinator` |
@@ -43,7 +44,7 @@ close loses and the reservation is left to its completion.
 | `Workflow:StartRecovery:MaxClosesPerTenant` | How many the job closes per tenant per cycle; the rest wait for the next. |
 | `Workflow:StartRecovery:CountWhileSweepIsOff` | Default **true**: while the job is off, a read-only count still feeds the gauges (it closes nothing). `false` stops it on that replica. |
 | `Workflow:StartRecovery:CountIntervalMinutes` | How often that count runs. Default **15**, held between 5 and 1440. The first count comes one interval after start. |
-| `Workflow:StartRecovery:ScanLimitPerTenant` | The most unmoved Active instances one tenant's count looks at (every approval waiting longer than the age is one). Default 5 000, held between 100 and 100 000. Past it the counts are "at least" (`count_capped` = 1). |
+| `Workflow:StartRecovery:ScanLimitPerTenant` | The most unmoved Active instances one tenant's cycle looks at (every approval waiting longer than the age is one). Default 5 000, held between 100 and 100 000. Past it the counts are "at least" (`count_capped` = 1) **and the close is blind too**: it closes only abandoned starts among the instances it looked at — and which ones those are is **not ordered** today (the time is stored as a [ticks, offset] array, so the existing index cannot order it; an ordered scan needs a new index, an open decision). Warned once per tenant (`workflow.start_recovery.capped`). A per-tenant resume point is not built (backlog). Keep the limit above the tenant's waiting approvals. |
 | `Workflow:StartRecovery:DeferredWarnAfterCycles` | After this many cycles in a row in which the same close could not be written (503 — no transaction), it is named once at Warning. Default 5. |
 
 **Rule: the age must be longer than every consumer's wait window.** A consumer that started a trusted workflow waits
@@ -65,13 +66,15 @@ closed, raced, deferred, stuck, incomplete trusted, failed tenants, capped tenan
 named once (`workflow.start_recovery.stuck`, Error) and quietly after (`still_stuck`). A close that lost its race to a
 replay (`raced`) or could not be written now (`deferred`) is not stuck; a deferral that repeats for
 `DeferredWarnAfterCycles` cycles is named once at Warning (`deferred_persistent`: check that Platform's Mongo runs
-transactions). The same counts are gauges on the meter `Diten.Platform.WorkflowStartRecovery`:
+transactions; a cycle in which it was not deferred starts the streak again). The same counts are gauges on the meter `Diten.Platform.WorkflowStartRecovery`:
 
 - `platform.workflow.start_recovery.abandoned`
 - `platform.workflow.start_recovery.stuck`
 - `platform.workflow.start_recovery.incomplete_trusted`
 - `platform.workflow.start_recovery.count_capped` — 1: the tenant's count stopped at `ScanLimitPerTenant`; the numbers above
   are "at least".
+- `platform.workflow.start_recovery.last_counted_unix_seconds` — when the tenant was last counted: a value much older than
+  `CountIntervalMinutes` means the counting stopped.
 
 **The gauges fill while the job is off.** The count-only cycle (above) feeds them every `CountIntervalMinutes`. A tenant the
 last cycle did not count drops out, and a value older than 25 hours is not published (the counting stopped).
@@ -125,12 +128,14 @@ dotnet Diten.Platform.API.dll --run-workflow-orphan-recovery --tenant <tenant-id
 - `--apply` cancels each orphan's open approval task through the engine's own cancel (log, completion event, audit row),
   actor `system:workflow-orphan-recovery`, reason `WORKFLOW_ORPHAN_CLOSED` — and **only the orphans the dry run inside the
   same run counted** (the ones `--expect` checked); one that appears meanwhile waits for the next run.
-- An orphan with **no open task** has nothing to cancel: it is listed apart (`NO OPEN TASK`) and is not a failure. One with
-  no task at all is the abandoned-start recovery's to close (its age floor); one whose tasks are all decided but which is
-  still live is for a person to look at.
+- An orphan with **no open task** has nothing to cancel: it is listed apart (`NO OPEN TASK`, also on stderr) and the run
+  exits **3**. Repair: one with **no task at all** is an abandoned start — let the abandoned-start recovery close it (enable
+  its job for a run, or wait for it where it is on); one whose tasks are **all decided** but which is still live is an engine
+  inconsistency — report its instance id to the engine's owners; do not edit it by hand.
 - Each pass writes an audit row (actor System; `Tool = workflow-orphans`, `Host = <machine name>`; no personal data).
-- **Exit codes:** 0 done · 1 failure (only the exception's type is printed — never a message, never the connection; an
-  `--apply` run may have closed some orphans before it stopped: run the dry run again to see what is left) · 2 usage
-  (`--tenant` is required) · 4 some orphans could not be closed (listed) · 5 the count was not the expected one (nothing
-  closed).
+- **Exit codes:** 0 done · 1 failure (only the exception's type is printed — never a message, never the connection;
+  `setup failure` = configuration or registrations, nothing was read or closed; otherwise an `--apply` run may have closed
+  some orphans before it stopped: run the dry run again to see what is left) · 2 usage (`--tenant` is required) · 3 done,
+  but some orphans have no open task (listed; repair above) · 4 some orphans could not be closed (listed) · 5 the count was
+  not the expected one (nothing closed).
 - Running it against shared or live data is the owner's decision, not a routine.

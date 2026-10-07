@@ -45,8 +45,11 @@ public sealed class SupersedeWorkflowHalfStartHandler
                 "Workflow instance not found.", 404, WorkflowReasonCodes.NotFoundNonLeakage, request.CorrelationId);
         }
 
+        // A half start already closed — by an earlier supersede, or by the abandoned-start recovery meanwhile (FIX3 K9) — is
+        // the outcome asked for: "already closed", not a refusal.
         if (instance.Status == WorkflowInstanceStatus.Cancelled
-            && string.Equals(instance.StartClosedReasonCode, WorkflowReasonCodes.WorkflowStartSuperseded, StringComparison.Ordinal))
+            && (string.Equals(instance.StartClosedReasonCode, WorkflowReasonCodes.WorkflowStartSuperseded, StringComparison.Ordinal)
+                || string.Equals(instance.StartClosedReasonCode, WorkflowReasonCodes.WorkflowStartAbandoned, StringComparison.Ordinal)))
         {
             return Response<CloseAbandonedWorkflowStartResult>.Success(
                 new CloseAbandonedWorkflowStartResult(instance.Id, Guid.Empty, AlreadyClosed: true),
@@ -55,7 +58,8 @@ public sealed class SupersedeWorkflowHalfStartHandler
 
         if (instance.TrustedConsumerClientId is not null
             || instance.Status != WorkflowInstanceStatus.Active
-            // ANY task — open, decided, deleted — and it is not a half start: its own transitions own it.
+            // Any task this tenant's task store still lists — open or decided — and it is not a half start: its own transitions
+            // own it. (FIX3 K13: a soft-deleted task is not listed here; the recovery's own scan counts it.)
             || (await _tasks.ListByInstanceIdAsync(instance.Id, ct)).Count > 0)
         {
             return Response<CloseAbandonedWorkflowStartResult>.Fail(

@@ -151,10 +151,16 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
     [Fact]
     public async Task A_replay_completes_a_start_that_crashed_after_its_task_with_the_snapshot_the_task_names()
     {
+        // FIX3 K8 — a start today writes its task, snapshot and log together, so this state is only left by a start written
+        // before that (its task stored, its snapshot not): built here as it was left.
         var request = Request("crash-after-task");
-        await Assert.ThrowsAsync<InjectedCrashException>(() =>
-            Handler(snapshots: new CrashBeforeSnapshotRepository(_snapshots)).Handle(Command(request), default));
-        var instance = Assert.Single(await InstancesOfAsync(request));
+        var instance = await InsertHalfStartAsync(request, withIds: true);
+        await _context.Database.GetCollection<ApprovalTask>(PlatformCollections.ApprovalTasks).InsertOneAsync(new ApprovalTask
+        {
+            Id = instance.InitialApprovalTaskId!.Value, TenantId = _tenant.TenantId, WorkflowInstanceId = instance.Id,
+            StageCode = "stage-1", StepCode = "step-1", Status = ApprovalTaskStatus.WaitingApproval, AssigneeRef = D(Approver),
+            AssignmentSnapshotId = instance.InitialAssignmentSnapshotId, IdempotencyKey = request.IdempotencyKey
+        });
         var task = Assert.Single(await _tasks.ListByInstanceIdAsync(instance.Id));
         Assert.Null(await _snapshots.GetByIdAsync(task.AssignmentSnapshotId!.Value)); // non-vacuity: no snapshot yet
 
@@ -586,8 +592,8 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
         Assert.DoesNotContain(marker, await stdout, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain(marker, await stderr, StringComparison.OrdinalIgnoreCase);
         // The run reached the connection string: it failed at the driver's parse, not at secret validation.
-        Assert.Contains("failure (MongoConfigurationException)", await stderr);
-        Assert.Contains("run the dry run again", await stderr); // FIX2 K2 — the failure says what may have happened
+        Assert.Contains("setup failure (MongoConfigurationException)", await stderr); // FIX3 K13 — told apart from a run failure
+        Assert.Contains("nothing was read or closed", await stderr);
     }
 
     // ── BL-539 (CT decision) · the incomplete trusted reservation ───────────────────────────────────────────────
@@ -1253,7 +1259,7 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
         using (var provider = Diten.Platform.API.Configuration.WorkflowOrphanRecoveryOperationalMode.BuildServices(
                    OperatorConfiguration(), OperatorEnvironment, AppContext.BaseDirectory))
         {
-            Assert.NotNull(provider); // ValidateOnBuild: every registration resolves, scopes included
+            Assert.NotNull(provider); // scopes validated, and the command's own graph resolved at build (not the whole container)
         }
 
         var (orphan, healthy) = await OrphanAndHealthyAsync();
@@ -1713,7 +1719,8 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
 
         var (exit, output, error) = await RunOrphanCommandAsync("--tenant", _tenant.TenantId.ToString(), "--apply", "--expect", "1");
 
-        Assert.True(exit == 0, error);
+        Assert.True(exit == 3, $"exit {exit}: {error}"); // FIX3 K12 — its own exit code
+        Assert.Contains(orphan.ToString("D"), error);   // …and the ids on stderr too
         Assert.Contains("NO OPEN TASK — 1", output);
         Assert.Contains(orphan.ToString("D"), output);
         Assert.Contains("APPLIED — 0 of 1", output);
@@ -1764,6 +1771,602 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
 
         clock.Now += WorkflowStartRecoveryMetrics.MaxAge + TimeSpan.FromMinutes(1);
         Assert.Empty(metrics.PublishedTenants());
+    }
+
+    // ══ FIX3 ══════════════════════════════════════════════════════════════════════════════════════════════════════
+
+    // ── item 1 · parallel submits of one key ────────────────────────────────────────────────────────────────────
+
+    /// <summary>Holds every call at its FIRST read (the key look-up, before anything is written) until all N are there (or
+    /// 10 s): they then reserve and claim at once — none can find the start already made and skip the race.</summary>
+    private sealed class AllReservedBarrier(IWorkflowInstanceRepository inner, int callers, TaskCompletionSource all, int[] arrived)
+        : IWorkflowInstanceRepository
+    {
+        public Task<WorkflowInstance> CreateAsync(WorkflowInstance value, CancellationToken ct = default) => inner.CreateAsync(value, ct);
+        public Task<WorkflowInstance?> GetByIdAsync(Guid id, CancellationToken ct = default) => inner.GetByIdAsync(id, ct);
+        private bool _waited;
+
+        public async Task<WorkflowInstance?> GetByIdempotencyKeyAsync(string key, CancellationToken ct = default)
+        {
+            if (!_waited)
+            {
+                _waited = true;
+                if (Interlocked.Increment(ref arrived[0]) == callers)
+                {
+                    all.TrySetResult();
+                }
+
+                await Task.WhenAny(all.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+            }
+
+            return await inner.GetByIdempotencyKeyAsync(key, ct);
+        }
+
+        public Task<WorkflowInstance?> GetLatestByObjectRefAsync(string objectRef, string objectType, string objectId, CancellationToken ct = default) =>
+            inner.GetLatestByObjectRefAsync(objectRef, objectType, objectId, ct);
+        public Task<IReadOnlyList<WorkflowInstance>> GetAllForTenantAsync(CancellationToken ct = default) => inner.GetAllForTenantAsync(ct);
+        public Task<bool> UpdateAsync(WorkflowInstance value, int version, CancellationToken ct = default) => inner.UpdateAsync(value, version, ct);
+        public Task<(WorkflowInstance Instance, bool Created)> ReserveTrustedStartAsync(WorkflowInstance value, CancellationToken ct = default) =>
+            inner.ReserveTrustedStartAsync(value, ct);
+
+        public Task<bool> ClaimStartCompletionAsync(Guid instanceId, int expectedVersion, Guid approvalTaskId, Guid assignmentSnapshotId,
+            Guid startTransitionLogId, DateTimeOffset now, CancellationToken ct = default) =>
+            inner.ClaimStartCompletionAsync(instanceId, expectedVersion, approvalTaskId, assignmentSnapshotId, startTransitionLogId, now, ct);
+        public Task<bool> ClaimStartCompletionAsync(IPlatformTransactionSession session, Guid instanceId, int expectedVersion,
+            Guid approvalTaskId, Guid assignmentSnapshotId, Guid startTransitionLogId, DateTimeOffset now, CancellationToken ct = default) =>
+            inner.ClaimStartCompletionAsync(session, instanceId, expectedVersion, approvalTaskId, assignmentSnapshotId, startTransitionLogId, now, ct);
+    }
+
+    [Fact]
+    public async Task Parallel_submits_of_one_key_write_one_task_and_answer_200_or_a_retryable_503()
+    {
+        const int callers = 6;
+        // What one start alone leaves: its instance claimed exactly once.
+        var reference = await Handler().Handle(Command(Request("parallel-reference")), default);
+        var claimedOnce = (await _instances.GetByIdAsync(reference.Data!.WorkflowInstanceId))!.Version;
+        var request = Request("parallel");
+        var all = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var arrived = new int[1];
+
+        var answers = await Task.WhenAll(Enumerable.Range(0, callers).Select(_ => Task.Run(() =>
+            Handler(instances: new AllReservedBarrier(_instances, callers, all, arrived)).Handle(Command(request), default))));
+
+        Assert.True(all.Task.IsCompletedSuccessfully, "non-vacuity: all callers were in before any wrote");
+        var instance = Assert.Single(await InstancesOfAsync(request));
+        Assert.Single(await _tasks.ListByInstanceIdAsync(instance.Id));
+        Assert.All(answers, a => Assert.True(
+            a.IsSuccessful || (a.StatusCode == 503 && a.ReasonCode == WorkflowReasonCodes.WorkflowTransitionConflict),
+            $"{a.StatusCode} {a.ReasonCode}"));
+        Assert.All(answers.Where(a => a.IsSuccessful), a => Assert.Equal(instance.Id, a.Data!.WorkflowInstanceId));
+        Assert.True(answers.Count(a => a.IsSuccessful) > callers / 2, string.Join(", ", answers.Select(a => a.StatusCode)));
+        // An answer "as the replay" writes nothing: the instance was claimed once, by the winner.
+        Assert.Equal(claimedOnce, instance.Version);
+    }
+
+    private sealed class HoldBeforeBody(IPlatformTransactionExecutor inner, Hold hold) : IPlatformTransactionExecutor
+    {
+        public async Task<T> ExecuteAsync<T>(Func<IPlatformTransactionSession, CancellationToken, Task<T>> body, CancellationToken ct = default)
+        {
+            await hold.PassAsync();
+            return await inner.ExecuteAsync(body, ct);
+        }
+    }
+
+    /// <summary>Lets <paramref name="before"/> run (a winner commits), then says "unavailable" — what three write conflicts
+    /// against an open winner end in.</summary>
+    private sealed class UnavailableAfter(Func<Task> before) : IPlatformTransactionExecutor
+    {
+        public async Task<T> ExecuteAsync<T>(Func<IPlatformTransactionSession, CancellationToken, Task<T>> body, CancellationToken ct = default)
+        {
+            await before();
+            throw new PlatformTransactionUnavailableException("injected: the winner held the instance");
+        }
+    }
+
+    private StartWorkflowInstanceHandler HandlerWith(IPlatformTransactionExecutor transactions) =>
+        new(_templates, _versions, _instances, _tasks, _snapshots, _logs, _tenant, new StarterUser(), transactions: transactions);
+
+    [Fact]
+    public async Task A_replay_that_loses_its_claim_to_a_whole_start_answers_as_it_and_writes_nothing()
+    {
+        var request = Request("lost-to-whole");
+        var half = await InsertHalfStartAsync(request, withIds: true);
+        var hold = new Hold();
+        var loser = Task.Run(() => HandlerWith(new HoldBeforeBody(new PlatformTransactionExecutor(_context), hold)).Handle(Command(request), default));
+        await hold.ReachedAsync(); // the loser read the instance (no task) and is about to claim it
+        var winner = await Handler().Handle(Command(request), default);
+        Assert.True(winner.IsSuccessful, winner.ReasonCode);
+        var claimed = (await _instances.GetByIdAsync(half.Id))!.Version;
+
+        hold.Release();
+        var answer = await loser;
+
+        Assert.True(answer.IsSuccessful, $"{answer.StatusCode} {answer.ReasonCode}");
+        Assert.Equal(winner.Data!.ApprovalTaskId, answer.Data!.ApprovalTaskId);
+        Assert.Equal(claimed, (await _instances.GetByIdAsync(half.Id))!.Version); // the loser wrote nothing
+        Assert.Single(await _tasks.ListByInstanceIdAsync(half.Id));
+    }
+
+    [Fact]
+    public async Task A_start_told_unavailable_after_a_winner_committed_answers_as_the_winner()
+    {
+        var request = Request("unavailable-after-winner");
+        Response<StartWorkflowInstanceResponse>? winner = null;
+
+        var answer = await HandlerWith(new UnavailableAfter(async () => winner = await Handler().Handle(Command(request), default)))
+            .Handle(Command(request), default);
+
+        Assert.True(winner!.IsSuccessful, winner.ReasonCode); // non-vacuity: the winner completed the start
+        Assert.True(answer.IsSuccessful, $"{answer.StatusCode} {answer.ReasonCode}");
+        Assert.Equal(winner.Data!.ApprovalTaskId, answer.Data!.ApprovalTaskId);
+        Assert.Single(await _tasks.ListByInstanceIdAsync(answer.Data.WorkflowInstanceId));
+    }
+
+    // ── item 2 · the operator's wiring, all of it ───────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_operator_wiring_applies_with_a_transaction_a_completion_event_and_audit_rows()
+    {
+        var (orphan, healthy) = await OrphanAndHealthyAsync();
+
+        var (exit, output, error) = await RunRealOrphanCommandAsync("--tenant", _tenant.TenantId.ToString(), "--apply", "--expect", "1");
+
+        Assert.True(exit == 0, $"exit {exit}: {error}");
+        Assert.Contains("APPLIED — 1 of 1", output);
+        Assert.Equal(WorkflowInstanceStatus.Cancelled, (await _instances.GetByIdAsync(orphan))!.Status);
+        Assert.Equal(WorkflowInstanceStatus.Active, (await _instances.GetByIdAsync(healthy))!.Status);
+        // The completion event the production writer queued, in the production outbox.
+        var events = await _context.Database.GetCollection<BsonDocument>(PlatformCollections.OutboxEvents).Find(new BsonDocument()).ToListAsync();
+        Assert.Contains(events, e => TextOf(e).Contains(orphan.ToString("D"), StringComparison.OrdinalIgnoreCase)
+            && TextOf(e).Contains(Diten.Platform.Application.Features.Workflow.Events.WorkflowInstanceCompletedV1.Name, StringComparison.Ordinal));
+        // The audit rows the production pipeline queued: the sweep (twice: the dry pass and the apply) and the engine's cancel.
+        var rows = await Diten.Platform.Application.Tests.Audit.DataExportAuditTestKit.Outbox(_context.Database)
+            .Find(m => m.TenantId == _tenant.TenantId).ToListAsync();
+        Assert.Equal(2, rows.Count(r => r.RequestType == nameof(SweepWorkflowOrphansCommand)));
+        Assert.Single(rows, r => r.RequestType == nameof(CancelWorkflowTaskCommand));
+    }
+
+    /// <summary>A stored outbox row as text: its fields, and its payload bytes read as the UTF-8 they are.</summary>
+    private static string TextOf(BsonDocument document)
+    {
+        var text = new System.Text.StringBuilder(document.ToJson());
+        void Walk(BsonValue value)
+        {
+            switch (value)
+            {
+                case BsonBinaryData binary when binary.SubType == BsonBinarySubType.Binary:
+                    text.Append(' ').Append(System.Text.Encoding.UTF8.GetString(binary.Bytes));
+                    break;
+                case BsonDocument inner:
+                    foreach (var element in inner)
+                    {
+                        Walk(element.Value);
+                    }
+
+                    break;
+                case BsonArray array:
+                    foreach (var item in array)
+                    {
+                        Walk(item);
+                    }
+
+                    break;
+            }
+        }
+
+        Walk(document);
+        return text.ToString();
+    }
+
+    [Fact]
+    public async Task The_start_handler_from_the_operator_container_has_its_transaction_executor()
+    {
+        using var provider = Diten.Platform.API.Configuration.WorkflowOrphanRecoveryOperationalMode.BuildServices(
+            OperatorConfiguration(), OperatorEnvironment, AppContext.BaseDirectory);
+        using var scope = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.CreateScope(provider);
+
+        var handler = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<
+            IRequestHandler<StartWorkflowInstanceCommand, Response<StartWorkflowInstanceResponse>>>(scope.ServiceProvider);
+
+        var executor = typeof(StartWorkflowInstanceHandler)
+            .GetField("_transactions", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .GetValue(handler);
+        Assert.IsType<PlatformTransactionExecutor>(executor);
+        Assert.Null(Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions
+            .GetService<SequentialWorkflowStartWritesForTests>(scope.ServiceProvider)); // never in production
+        await Task.CompletedTask;
+    }
+
+    [Fact]
+    public void The_start_handler_refuses_to_be_built_without_a_transaction_executor()
+    {
+        var refused = Assert.Throws<ArgumentNullException>(() => new StartWorkflowInstanceHandler(
+            _templates, _versions, _instances, _tasks, _snapshots, _logs, _tenant, new StarterUser()));
+        Assert.Equal("transactions", refused.ParamName);
+    }
+
+    [Fact]
+    public async Task The_operator_command_process_runs_a_production_dry_run_end_to_end()
+    {
+        var (orphan, healthy) = await OrphanAndHealthyAsync();
+        static string Throwaway() => Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+        var dll = Path.Combine(AppContext.BaseDirectory, "Diten.Platform.API.dll");
+        var start = new System.Diagnostics.ProcessStartInfo("dotnet",
+            $"\"{dll}\" {WorkflowOrphanRecoveryCommandLine.Argument} --tenant {_tenant.TenantId:D}")
+        {
+            RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false,
+            WorkingDirectory = AppContext.BaseDirectory
+        };
+        // Production, as an operator runs it: every secret from the process environment — the owned test replica set,
+        // never the shared Mongo, and throwaway values made here.
+        start.Environment["ASPNETCORE_ENVIRONMENT"] = "Production";
+        start.Environment["MongoDbSettings__ConnectionString"] = replicaSet.ConnectionString;
+        start.Environment["MongoDbSettings__DatabaseName"] = DatabaseName;
+        start.Environment["JwtSettings__Secret"] = Throwaway();
+        start.Environment["AuthService__InternalApiKey"] = Throwaway();
+        start.Environment["ModuleRegistrationCredentials__Mdm__ActiveSecret"] = Throwaway();
+        using var process = System.Diagnostics.Process.Start(start)!;
+        var stdout = process.StandardOutput.ReadToEndAsync();
+        var stderr = process.StandardError.ReadToEndAsync();
+        Assert.True(process.WaitForExit(120_000));
+
+        Assert.True(process.ExitCode == 0, $"exit {process.ExitCode}: {await stderr}");
+        Assert.Contains(orphan.ToString("D"), await stdout);
+        Assert.DoesNotContain(healthy.ToString("D"), await stdout);
+        Assert.Contains("DRY RUN", await stdout);
+        Assert.Equal(WorkflowInstanceStatus.Active, (await _instances.GetByIdAsync(orphan))!.Status);
+    }
+
+    [Fact]
+    public async Task A_setup_failure_is_told_apart_from_a_run_failure()
+    {
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+
+        var exit = await WorkflowOrphanRecoveryCommandLine.RunAsync(
+            [WorkflowOrphanRecoveryCommandLine.Argument, "--tenant", _tenant.TenantId.ToString()],
+            () => throw new InvalidOperationException("secret-looking detail"), output, error, "test-host");
+
+        Assert.Equal(1, exit);
+        Assert.Contains("setup failure (InvalidOperationException)", error.ToString());
+        Assert.DoesNotContain("secret-looking detail", error.ToString());
+        Assert.DoesNotContain("dry run again", error.ToString());
+    }
+
+    // ── item 3 · past the limit: oldest first, and said once ────────────────────────────────────────────────────
+
+    private async Task InsertHealthyOldAsync(int count, DateTimeOffset at)
+    {
+        var template = (await _templates.GetByIdAsync(_templateId))!;
+        var instances = Enumerable.Range(0, count).Select(_ => new WorkflowInstance
+        {
+            TenantId = _tenant.TenantId, TemplateId = _templateId, WorkflowTemplateId = _templateId,
+            TemplateVersionId = template.ActivePublishedVersionId, ObjectType = "recovery-object",
+            ObjectId = Guid.NewGuid().ToString("D"), ObjectRef = "recovery-object|" + Guid.NewGuid().ToString("N"),
+            Status = WorkflowInstanceStatus.Active, StartedAt = at, LastTransitionAt = at
+        }).ToList();
+        await _context.Database.GetCollection<WorkflowInstance>(PlatformCollections.WorkflowInstances).InsertManyAsync(instances);
+        await _context.Database.GetCollection<ApprovalTask>(PlatformCollections.ApprovalTasks).InsertManyAsync(instances.Select(i =>
+            new ApprovalTask
+            {
+                TenantId = _tenant.TenantId, WorkflowInstanceId = i.Id, StageCode = "stage-1", StepCode = "step-1",
+                Status = ApprovalTaskStatus.WaitingApproval, AssigneeRef = D(Approver)
+            }));
+    }
+
+    [Fact]
+    public async Task Past_its_limit_the_close_warns_once_that_it_sees_a_subset()
+    {
+        // 101 healthy approvals waiting for hours and one half start; the limit is 100. (Which 100 are looked at is not
+        // ordered: see the report — an index-backed oldest-first order is CT's decision.)
+        await InsertHealthyOldAsync(101, DateTimeOffset.UtcNow.AddHours(-3));
+        var half = await InsertHalfStartAsync(Request("oldest-half"), withIds: true);
+        var then = DateTimeOffset.UtcNow.AddHours(-5);
+        await _context.Database.GetCollection<WorkflowInstance>(PlatformCollections.WorkflowInstances).UpdateOneAsync(
+            i => i.Id == half.Id, Builders<WorkflowInstance>.Update.Set(i => i.LastTransitionAt, then).Set(i => i.StartedAt, then));
+        var metrics = new WorkflowStartRecoveryMetrics();
+        var log = new JobLog();
+        var scope = new TenantContext();
+        WorkflowStartRecoverySweepJob CappedJob() =>
+            new(new OneTenantRegistry(_tenant.TenantId), scope, new WorkflowStartRecoveryStore(_context, scope),
+                new RecoveryMediator(this, scope: scope), metrics, log,
+                Options.Create(new WorkflowStartRecoveryOptions { AbandonAfterMinutes = (int)Age.TotalMinutes, ScanLimitPerTenant = 100 }));
+
+        await CappedJob().HandleAsync(new WorkflowStartRecoverySweepJobArgs(0), JobContext());
+        await CappedJob().HandleAsync(new WorkflowStartRecoverySweepJobArgs(0), JobContext());
+
+        Assert.True(metrics.CappedFor(_tenant.TenantId)); // "at least"
+        Assert.Single(log.Warnings, l => l.Contains("workflow.start_recovery.capped", StringComparison.Ordinal)); // once
+    }
+
+    [Fact]
+    public async Task The_abandoned_count_walks_its_index_and_joins_tasks_by_theirs()
+    {
+        await InsertHealthyOldAsync(20, DateTimeOffset.UtcNow.AddHours(-3));
+        await AgeAsync((await InsertHalfStartAsync(Request("explained"), withIds: true)).Id);
+        var commands = new List<BsonDocument>();
+        var store = new WorkflowStartRecoveryStore(Observed(commands), _tenant);
+        Assert.Equal(new RecoveryCount(1, false), await store.CountAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, scanLimit: 100));
+        var aggregate = commands.Single(c => c.Contains("aggregate"));
+
+        var explained = await _context.Database.RunCommandAsync<BsonDocument>(new BsonDocument
+        {
+            { "explain", new BsonDocument
+                {
+                    { "aggregate", aggregate["aggregate"] },
+                    { "pipeline", aggregate["pipeline"] },
+                    { "cursor", new BsonDocument() }
+                }
+            },
+            { "verbosity", "executionStats" }
+        });
+
+        var plan = explained.ToJson();
+        Assert.Contains("ix_workflow_instances_tenant_status_last_transition", plan);
+        Assert.DoesNotContain("COLLSCAN", plan);
+        Assert.DoesNotContain("\"stage\" : \"SORT\"", plan); // no in-memory sort of every unmoved instance
+        var lookup = FindStage(explained, "$lookup");
+        Assert.NotNull(lookup);
+        Assert.Contains("ix_approval_tasks_tenant_instance_status", lookup!.ToJson());
+        Assert.True(lookup["totalDocsExamined"].ToInt64() <= 21, lookup.ToJson()); // at most one task per instance looked at
+    }
+
+    private static BsonDocument? FindStage(BsonValue node, string stage)
+    {
+        switch (node)
+        {
+            case BsonDocument document:
+                if (document.Contains(stage))
+                {
+                    return document;
+                }
+
+                foreach (var element in document)
+                {
+                    if (FindStage(element.Value, stage) is { } found)
+                    {
+                        return found;
+                    }
+                }
+
+                return null;
+            case BsonArray array:
+                return array.Select(item => FindStage(item, stage)).FirstOrDefault(found => found is not null);
+            default:
+                return null;
+        }
+    }
+
+    // ── K7 · a transaction that cannot commit ───────────────────────────────────────────────────────────────────
+
+    private sealed class FailingCommits(int failures, string label) : IPlatformTransactionFaultProbe
+    {
+        private int _left = failures;
+
+        public Task BeforeCommitAsync(IPlatformTransactionSession session, int commitAttempt, CancellationToken ct)
+        {
+            if (Interlocked.Decrement(ref _left) >= 0)
+            {
+                var exception = new MongoException("injected commit failure");
+                exception.AddErrorLabel(label);
+                throw exception;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task AfterCommitAsync(IPlatformTransactionSession session, int commitAttempt, CancellationToken ct) => Task.CompletedTask;
+    }
+
+    [Theory]
+    [InlineData("UnknownTransactionCommitResult", 3)]
+    [InlineData("TransientTransactionError", 1)]
+    public async Task A_start_whose_commit_fails_answers_a_retryable_503_and_its_replay_writes_one_task(string label, int failures)
+    {
+        var request = Request("commit-" + label);
+        var failing = new StartWorkflowInstanceHandler(_templates, _versions, _instances, _tasks, _snapshots, _logs, _tenant,
+            new StarterUser(), transactions: new PlatformTransactionExecutor(_context, new FailingCommits(failures, label)));
+
+        var first = await failing.Handle(Command(request), default);
+
+        Assert.Equal((503, WorkflowReasonCodes.WorkflowTransitionConflict), (first.StatusCode, first.ReasonCode));
+        var instance = Assert.Single(await InstancesOfAsync(request));
+        Assert.Empty(await _tasks.ListByInstanceIdAsync(instance.Id)); // nothing of the start committed
+        var replay = await Handler().Handle(Command(request), default);
+        Assert.True(replay.IsSuccessful, replay.ReasonCode);
+        Assert.Single(await _tasks.ListByInstanceIdAsync(instance.Id));
+        Assert.Single(await _snapshots.ListByInstanceIdAsync(instance.Id));
+    }
+
+    // ── K8 · the snapshot and the start log commit with the claim ───────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_start_that_cannot_write_its_snapshot_or_log_leaves_no_task_either()
+    {
+        var request = Request("rows-together");
+        await Assert.ThrowsAnyAsync<Exception>(() =>
+            Handler(snapshots: new CrashBeforeSnapshotRepository(_snapshots)).Handle(Command(request), default));
+        var instance = Assert.Single(await InstancesOfAsync(request));
+        Assert.Empty(await _tasks.ListByInstanceIdAsync(instance.Id)); // the task rolled back with the snapshot
+
+        var replay = await Handler().Handle(Command(request), default);
+        Assert.True(replay.IsSuccessful, replay.ReasonCode);
+        Assert.Single(await _tasks.ListByInstanceIdAsync(instance.Id));
+        Assert.Single(await _snapshots.ListByInstanceIdAsync(instance.Id));
+        Assert.Single(await _logs.ListByInstanceIdAsync(instance.Id), l => l.Action == WorkflowTransitionAction.Start);
+    }
+
+    // ── K9 · V2 · V4 · the supersede ────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_second_supersede_of_one_half_start_answers_already_closed()
+    {
+        var half = await InsertHalfStartAsync(Request("twice"), withIds: true);
+
+        var first = await new RecoveryMediator(this).Send(new SupersedeWorkflowHalfStartCommand(half.Id, "corr-1"));
+        var second = await new RecoveryMediator(this).Send(new SupersedeWorkflowHalfStartCommand(half.Id, "corr-2"));
+
+        Assert.True(first.IsSuccessful, first.ReasonCode);
+        Assert.False(first.Data!.AlreadyClosed);
+        Assert.True(second.IsSuccessful, second.ReasonCode);
+        Assert.True(second.Data!.AlreadyClosed);
+        Assert.Single(await _logs.ListByInstanceIdAsync(half.Id), l => l.Action == WorkflowTransitionAction.Cancel);
+    }
+
+    [Fact]
+    public async Task A_supersede_after_the_recovery_closed_the_half_start_answers_already_closed()
+    {
+        var half = await InsertHalfStartAsync(Request("swept-first"), withIds: true);
+        await AgeAsync(half.Id);
+        await SweepAsync(new WorkflowStartRecoveryMetrics());
+        Assert.Equal(WorkflowReasonCodes.WorkflowStartAbandoned, (await _instances.GetByIdAsync(half.Id))!.StartClosedReasonCode);
+
+        var superseded = await new RecoveryMediator(this).Send(new SupersedeWorkflowHalfStartCommand(half.Id, "corr-after-sweep"));
+
+        Assert.True(superseded.IsSuccessful, superseded.ReasonCode);
+        Assert.True(superseded.Data!.AlreadyClosed);
+    }
+
+    [Fact]
+    public async Task A_trusted_half_start_is_never_superseded()
+    {
+        var reservation = await InsertIncompleteTrustedStartAsync(reservedAgo: TimeSpan.FromMinutes(1));
+        // a trusted start that is Active and taskless — what the generic rule would otherwise close
+        await _context.Database.GetCollection<WorkflowInstance>(PlatformCollections.WorkflowInstances).UpdateOneAsync(
+            i => i.Id == reservation, Builders<WorkflowInstance>.Update.Set(i => i.Status, WorkflowInstanceStatus.Active));
+
+        var refused = await new RecoveryMediator(this).Send(new SupersedeWorkflowHalfStartCommand(reservation, "corr-trusted"));
+
+        Assert.Equal((409, WorkflowReasonCodes.WorkflowStartNotAbandoned), (refused.StatusCode, refused.ReasonCode));
+        Assert.Equal(WorkflowInstanceStatus.Active, (await _instances.GetByIdAsync(reservation))!.Status);
+    }
+
+    // ── V3 · a lost claim over an instance that is no longer Active ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_first_call_that_lost_its_claim_to_a_start_since_closed_answers_409()
+    {
+        var request = Request("lost-then-closed");
+        var hold = new Hold();
+        var first = Task.Run(() => Handler(instances: new HoldAfterReserveRepository(_instances, hold)).Handle(Command(request), default));
+        await hold.ReachedAsync();
+        var replay = await Handler().Handle(Command(request), default); // a whole start…
+        Assert.True(replay.IsSuccessful, replay.ReasonCode);
+        await _context.Database.GetCollection<WorkflowInstance>(PlatformCollections.WorkflowInstances).UpdateOneAsync(
+            i => i.Id == replay.Data!.WorkflowInstanceId,
+            Builders<WorkflowInstance>.Update.Set(i => i.Status, WorkflowInstanceStatus.Cancelled)); // …closed since
+
+        hold.Release();
+        var answer = await first;
+
+        Assert.Equal((409, WorkflowReasonCodes.WorkflowInstanceStartConflict), (answer.StatusCode, answer.ReasonCode));
+    }
+
+    // ── V1 · V5 · V6 · the bounded counts ───────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_trusted_count_is_bounded_and_says_at_least()
+    {
+        for (var i = 0; i < 3; i++)
+        {
+            await InsertIncompleteTrustedStartAsync(reservedAgo: TimeSpan.FromHours(2));
+        }
+
+        Assert.Equal(new RecoveryCount(3, false), await _store.CountIncompleteTrustedStartsAsync(DateTimeOffset.UtcNow - Age, 10));
+        Assert.Equal(new RecoveryCount(2, true), await _store.CountIncompleteTrustedStartsAsync(DateTimeOffset.UtcNow - Age, 2));
+    }
+
+    [Fact]
+    public async Task The_count_counts_only_starts_without_a_task()
+    {
+        await InsertHealthyOldAsync(3, DateTimeOffset.UtcNow.AddHours(-3));
+        await AgeAsync((await InsertHalfStartAsync(Request("only-taskless"), withIds: true)).Id);
+
+        Assert.Equal(new RecoveryCount(1, false), await _store.CountAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, 100));
+        var (page, total) = await _store.FindAbandonedGenericStartsAsync(DateTimeOffset.UtcNow - Age, 100, 100);
+        Assert.Single(page);
+        Assert.Equal(1, total.Count);
+    }
+
+    [Theory]
+    [InlineData(0, 100)]
+    [InlineData(-5, 100)]
+    [InlineData(1_000_000, 100_000)]
+    [InlineData(7_000, 7_000)]
+    public void The_scan_limit_setting_is_held_between_100_and_100000(int setting, int held) =>
+        Assert.Equal(held, WorkflowStartRecoveryOptions.ScanLimitOf(new WorkflowStartRecoveryOptions { ScanLimitPerTenant = setting }));
+
+    // ── K11 · "in a row"; when it was last counted ──────────────────────────────────────────────────────────────
+
+    private sealed class ScriptedMediator(Queue<Response<CloseAbandonedWorkflowStartResult>> answers) : IMediator
+    {
+        public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken ct = default) =>
+            request is CloseAbandonedWorkflowStartCommand ? Task.FromResult((TResponse)(object)answers.Dequeue()) : throw new NotSupportedException();
+        public Task<object?> Send(object request, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task Send<TRequest>(TRequest request, CancellationToken ct = default) where TRequest : IRequest => throw new NotSupportedException();
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken ct = default) => throw new NotSupportedException();
+        public IAsyncEnumerable<object?> CreateStream(object request, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task Publish(object notification, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task Publish<TNotification>(TNotification notification, CancellationToken ct = default) where TNotification : INotification => throw new NotSupportedException();
+    }
+
+    [Fact]
+    public async Task A_deferral_streak_starts_again_after_a_cycle_that_was_not_deferred()
+    {
+        var abandoned = await InsertHalfStartAsync(Request("streak"), withIds: true);
+        await AgeAsync(abandoned.Id);
+        var unavailable = Response<CloseAbandonedWorkflowStartResult>.Fail("no", 503, WorkflowReasonCodes.WorkflowTransitionConflict, "corr");
+        var moved = Response<CloseAbandonedWorkflowStartResult>.Fail("moved", 409, WorkflowReasonCodes.WorkflowStartNotAbandoned, "corr");
+        // 4 deferred, 1 not, 4 deferred: never 5 in a row.
+        var script = new Queue<Response<CloseAbandonedWorkflowStartResult>>(
+            [unavailable, unavailable, unavailable, unavailable, moved, unavailable, unavailable, unavailable, unavailable]);
+        var metrics = new WorkflowStartRecoveryMetrics();
+        var logs = new JobLog();
+
+        for (var cycle = 0; cycle < 9; cycle++)
+        {
+            await Job(metrics, new ScriptedMediator(script), logs).HandleAsync(new WorkflowStartRecoverySweepJobArgs(0), JobContext());
+        }
+
+        Assert.Equal(4, metrics.DeferredStreak(abandoned.Id));
+        Assert.DoesNotContain(logs.Warnings, l => l.Contains("deferred_persistent", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Each_tenant_publishes_when_it_was_last_counted()
+    {
+        var clock = new ManualClock(DateTimeOffset.FromUnixTimeSeconds(1_800_000_000));
+        using var metrics = new WorkflowStartRecoveryMetrics(clock);
+        var tenant = Guid.NewGuid();
+        metrics.Record(tenant, 0, 0, 0);
+        var seen = new List<(string Instrument, long Value, string? Tenant)>();
+        using var listener = new MeterListener();
+        listener.InstrumentPublished = (instrument, l) =>
+        {
+            if (instrument.Meter.Name == WorkflowStartRecoveryMetrics.MeterName)
+            {
+                l.EnableMeasurementEvents(instrument);
+            }
+        };
+        listener.SetMeasurementEventCallback<long>((instrument, value, tags, _) =>
+        {
+            string? tag = null;
+            foreach (var t in tags)
+            {
+                if (t.Key == "tenant")
+                {
+                    tag = t.Value?.ToString();
+                }
+            }
+
+            seen.Add((instrument.Name, value, tag));
+        });
+        listener.Start();
+
+        listener.RecordObservableInstruments();
+
+        Assert.Contains(seen, m => m.Instrument == "platform.workflow.start_recovery.last_counted_unix_seconds"
+            && m.Value == 1_800_000_000 && m.Tenant == tenant.ToString("D"));
     }
 
     private TaskReviewService ReviewService(

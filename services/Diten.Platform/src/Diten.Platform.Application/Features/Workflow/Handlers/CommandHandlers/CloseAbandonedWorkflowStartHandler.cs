@@ -79,8 +79,9 @@ public sealed class CloseAbandonedWorkflowStartHandler
         var lastMoved = instance.LastTransitionAt ?? instance.StartedAt ?? instance.CreatedAt;
         if (instance.Status != WorkflowInstanceStatus.Active
             || lastMoved > now - request.MinimumAge
-            // An instance with ANY task — open, decided, even deleted — is never closed here: somebody can decide it, or
-            // it was decided, and its own transitions own it.
+            // An instance with any task the task store still lists — open or decided — is never closed here: somebody can
+            // decide it, or it was decided, and its own transitions own it. (FIX3 K13: a soft-deleted task is not listed by
+            // this read; the recovery's scan, which picks what is closed, counts it — such an instance is never offered.)
             || (await _tasks.ListByInstanceIdAsync(instance.Id, ct)).Count > 0)
         {
             return Response<CloseAbandonedWorkflowStartResult>.Fail(

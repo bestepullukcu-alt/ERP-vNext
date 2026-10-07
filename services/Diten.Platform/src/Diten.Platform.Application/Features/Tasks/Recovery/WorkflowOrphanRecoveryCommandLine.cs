@@ -18,9 +18,9 @@ namespace Diten.Platform.Application.Features.Tasks.Recovery;
 /// </list>
 /// The connection comes from the host's own configuration and environment, never the command line, and is never written to
 /// any output: a failure names only the exception's type (the BL-529 FIX9/FIX10 rules).
-/// <para>Exit codes: 0 done · 1 failure (type only; an --apply run may have closed some before it) · 2 usage · 4 some orphans
-/// could not be closed (listed) · 5 the count was not the expected one (nothing closed). An orphan with no open task is listed
-/// apart and is not a failure (FIX2 K2).</para>
+/// <para>Exit codes: 0 done · 1 failure (type only; "setup failure" = nothing was read or closed, otherwise an --apply run may
+/// have closed some before it) · 2 usage · 3 done, but some orphans have no open task to cancel (listed, also on stderr; FIX3
+/// K12) · 4 some orphans could not be closed (listed) · 5 the count was not the expected one (nothing closed).</para>
 /// </summary>
 public static class WorkflowOrphanRecoveryCommandLine
 {
@@ -46,9 +46,22 @@ public static class WorkflowOrphanRecoveryCommandLine
             return 2;
         }
 
+        IServiceProvider provider;
         try
         {
-            var provider = services();
+            provider = services();
+        }
+        catch (Exception failure)
+        {
+            // FIX3 K13 — a setup failure (configuration, connection string, a missing registration) is told apart from a
+            // failure during the run: nothing was read, nothing was closed. Never the message: it can carry the connection.
+            error.WriteLine($"setup failure ({failure.GetType().Name}); nothing was read or closed, and no message is printed. "
+                + "Check the host's configuration and registrations.");
+            return 1;
+        }
+
+        try
+        {
             await using var scope = provider.CreateAsyncScope();
             using var tenantScope = TenantScope.Begin(scope.ServiceProvider.GetRequiredService<ITenantContext>(), tenant);
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
@@ -94,15 +107,19 @@ public static class WorkflowOrphanRecoveryCommandLine
 
             if (noOpenTask.Count > 0)
             {
+                // FIX3 K12 — its own exit code, and the ids on stderr too: a script that reads only the exit code and the
+                // error stream still sees them. See the runbook for the repair step.
                 output.WriteLine($"NO OPEN TASK — {noOpenTask.Count} orphan(s) had nothing to cancel (left as they are; see the runbook):");
+                error.WriteLine($"NOTICE: {noOpenTask.Count} orphan(s) have no open task to cancel and need the runbook's repair step:");
                 foreach (var item in noOpenTask)
                 {
                     output.WriteLine($"  instance {item.WorkflowInstanceId:D}");
+                    error.WriteLine($"  instance {item.WorkflowInstanceId:D}  ({SweepWorkflowOrphansCommand.NoOpenTask})");
                 }
             }
 
             output.WriteLine($"APPLIED — {closed} of {applied.Count} orphan(s) closed.");
-            return failed.Count > 0 ? 4 : 0;
+            return failed.Count > 0 ? 4 : noOpenTask.Count > 0 ? 3 : 0;
         }
         catch (Exception failure)
         {

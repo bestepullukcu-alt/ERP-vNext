@@ -107,6 +107,11 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
 
         // FIX2 K5 — the gauges publish only the tenants this cycle looked at.
         _metrics.Retain(tenants.Select(tenant => tenant.Id).ToList());
+        if (close)
+        {
+            _metrics.KeepDeferredOnly(cycle.DeferredIds); // FIX3 K11
+        }
+
         var level = cycle.Stuck > 0 || cycle.FailedTenants > 0 ? LogLevel.Warning
             : cycle.Abandoned == 0 && cycle.IncompleteTrusted == 0 ? LogLevel.Debug
             : LogLevel.Information;
@@ -181,6 +186,7 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
                     if (closed.StatusCode == 503)
                     {
                         cycle.Deferred++;
+                        cycle.DeferredIds.Add(instance.Id);
                         // FIX2 K5 — a 503 that never clears (a Mongo without transactions) is not left at Info for ever:
                         // after DeferredWarnAfterCycles cycles in a row the instance is named once at Warning.
                         var cycles = _metrics.NoteDeferred(instance.Id);
@@ -232,6 +238,15 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
             cycle.CappedTenants++;
         }
 
+        // FIX3 item 3 — past its scan limit the CLOSE sees only the oldest instances, not all: said once, at Warning.
+        if (close && _metrics.FirstCappedWarning(tenantId, capped))
+        {
+            _logger.LogWarning(
+                "workflow.start_recovery.capped Tenant {TenantId}: the cycle looked at only the {ScanLimit} oldest unmoved instances; "
+                + "the recovery sees a subset of them (counts are 'at least'). See the runbook.",
+                tenantId, scanLimit);
+        }
+
         _metrics.Record(tenantId, abandoned.Count, stuck, incompleteTrusted.Count, capped);
     }
 
@@ -245,5 +260,6 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
         public long IncompleteTrusted { get; set; }
         public int FailedTenants { get; set; }
         public int CappedTenants { get; set; }
+        public HashSet<Guid> DeferredIds { get; } = [];
     }
 }

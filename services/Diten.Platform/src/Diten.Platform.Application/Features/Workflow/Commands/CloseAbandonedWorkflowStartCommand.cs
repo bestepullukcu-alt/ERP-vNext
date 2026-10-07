@@ -9,7 +9,7 @@ namespace Diten.Platform.Application.Features.Workflow.Commands;
 /// BL-549 — closes ONE generic start that never wrote its task (an Active instance nobody can decide), through the engine's
 /// own terminal write: a named reason, a transition log row and the completion event, and — this being a command — an audit
 /// row (<see cref="IAuditableCommand"/>; no principal → the System actor). Sent by the abandoned-start sweep only.
-/// <para>Refused, with nothing written, for an instance that has ANY task, that is younger than
+/// <para>Refused, with nothing written, for an instance that has any task the task store lists (open or decided), that is younger than
 /// <paramref name="MinimumAge"/>, that is not Active or that is a trusted start (those complete through their coordinator).
 /// Idempotent: an instance this recovery already closed answers <see cref="CloseAbandonedWorkflowStartResult.AlreadyClosed"/>.</para>
 /// </summary>

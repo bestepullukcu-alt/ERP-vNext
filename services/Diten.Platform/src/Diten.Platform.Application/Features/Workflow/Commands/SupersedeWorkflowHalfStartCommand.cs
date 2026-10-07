@@ -13,7 +13,7 @@ namespace Diten.Platform.Application.Features.Workflow.Commands;
 /// engine's own taskless close (reason <see cref="WorkflowReasonCodes.WorkflowStartSuperseded"/>, a log row, the completion
 /// event and — this being a command — an audit row under the person whose edit superseded it), so the edited request opens a
 /// new round under a new key (SAP: a workflow restarted after its agent changed; Oracle: a withdrawn and resubmitted approval).
-/// <para>Refused, with nothing written, for an instance that has ANY task, is not Active or is a trusted start. No age: an
+/// <para>Refused, with nothing written, for an instance that has any task the task store lists (open or decided), is not Active or is a trusted start. No age: an
 /// instance with no task has nobody deciding it, and a first call still writing its task loses — its claim and task commit
 /// together (FIX2 item 1), so it writes nothing under the closed instance.</para>
 /// </summary>

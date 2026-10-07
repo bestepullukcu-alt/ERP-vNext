@@ -40,6 +40,8 @@ public sealed class WorkflowStartRecoveryMetrics : IDisposable
         _meter.CreateObservableGauge("platform.workflow.start_recovery.stuck", () => Read(x => x.Stuck));
         _meter.CreateObservableGauge("platform.workflow.start_recovery.incomplete_trusted", () => Read(x => x.IncompleteTrusted));
         _meter.CreateObservableGauge("platform.workflow.start_recovery.count_capped", () => Read(x => x.Capped ? 1 : 0));
+        // FIX3 K11 — when each tenant was last counted (Unix seconds): a stale gauge is visible as stale.
+        _meter.CreateObservableGauge("platform.workflow.start_recovery.last_counted_unix_seconds", () => Read(x => x.RecordedAt.ToUnixTimeSeconds()));
     }
 
     public void Record(Guid tenantId, long abandoned, long stuck, long incompleteTrusted, bool capped = false) =>
@@ -65,6 +67,34 @@ public sealed class WorkflowStartRecoveryMetrics : IDisposable
     public bool CappedFor(Guid tenantId) => _byTenant.TryGetValue(tenantId, out var values) && values.Capped;
 
     private readonly ConcurrentDictionary<Guid, int> _deferred = new();
+
+    private readonly ConcurrentDictionary<Guid, byte> _cappedWarned = new();
+
+    /// <summary>FIX3 item 3 — true the FIRST time a tenant's close cycle is capped (the job warns once); cleared when a cycle
+    /// is no longer capped, so a later cap is warned again.</summary>
+    public bool FirstCappedWarning(Guid tenantId, bool capped)
+    {
+        if (!capped)
+        {
+            _cappedWarned.TryRemove(tenantId, out _);
+            return false;
+        }
+
+        return _cappedWarned.TryAdd(tenantId, 0);
+    }
+
+    /// <summary>FIX3 K11 — "in a row" is in a row: after a close cycle, every instance that was NOT deferred in it starts
+    /// again from zero.</summary>
+    public void KeepDeferredOnly(IReadOnlyCollection<Guid> deferredThisCycle)
+    {
+        foreach (var instanceId in _deferred.Keys.Where(id => !deferredThisCycle.Contains(id)).ToList())
+        {
+            _deferred.TryRemove(instanceId, out _);
+        }
+    }
+
+    /// <summary>The current streak of <paramref name="instanceId"/> (0 when none).</summary>
+    public int DeferredStreak(Guid instanceId) => _deferred.TryGetValue(instanceId, out var cycles) ? cycles : 0;
 
     /// <summary>FIX2 K5 — one more cycle in which <paramref name="instanceId"/> could not be written; returns how many in a
     /// row. Bounded like the stuck list.</summary>
