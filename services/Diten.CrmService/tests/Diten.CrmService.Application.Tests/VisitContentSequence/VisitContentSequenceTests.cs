@@ -252,7 +252,10 @@ public sealed class VisitContentSequenceTests
         onlyLegacy.AddProduct("LEGACY", withJourney: false);
         var none = await onlyLegacy.ResolveAsync();
         Assert.Equal(VisitContentSequenceStatus.NoJourney, none.Status);
-        Assert.Equal(new[] { VisitContentSequenceReasonCodes.ProductHasNoJourney }, none.ReasonCodes);
+        // WP-VP-3C (K-7a) — a visit left without any product says so (no_products).
+        Assert.Equal(
+            new[] { VisitContentSequenceReasonCodes.ProductHasNoJourney, VisitContentSequenceReasonCodes.NoProducts },
+            none.ReasonCodes);
         Assert.Empty(none.Items!);
     }
 
@@ -350,7 +353,10 @@ public sealed class VisitContentSequenceTests
 
         Assert.Equal(VisitContentSequenceStatus.NoJourney, result.Status);
         Assert.Contains(VisitContentSequenceReasonCodes.ContentSplitUnresolved, result.ReasonCodes);
-        Assert.Equal(0, result.VisitDurationMinutes);
+        // WP-VP-3C (K-7a) — no product: planned with the report time only (the kit's 3 minutes), said with no_products.
+        Assert.Contains(VisitContentSequenceReasonCodes.NoProducts, result.ReasonCodes);
+        Assert.Equal(kit.Capacity.ReportDuration, result.VisitDurationMinutes);
+        Assert.Empty(result.Items!);
     }
 
     // ── backward compatibility + S3-2 + ARCH GATE ────────────────────────────────────────────────────────────────

@@ -25,7 +25,9 @@ public sealed record WeekCapacityDto(
     int CapacityMinutes,
     int PlannedMinutes,
     int VisitCount,
-    int DailyCap);
+    int DailyCap,
+    // WP-VP-3C (K-7, additive) — per product: the week's visits telling it, and of those the promo ones.
+    IReadOnlyList<ProductVisitCountDto>? ProductVisitCounts = null);
 
 /// <summary>The period in minutes (C5): capacity vs planned, plus the day budget the run used and where it came from
 /// (<c>cycle_capacity</c> / <c>default_hours</c>).</summary>

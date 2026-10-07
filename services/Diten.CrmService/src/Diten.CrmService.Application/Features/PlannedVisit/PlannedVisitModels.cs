@@ -118,7 +118,11 @@ public sealed record PlannedVisitContentItemDto(
     string? PathVersion,
     IReadOnlyList<PlannedVisitContentStepDto> Steps,
     IReadOnlyList<PlannedVisitContentClaimDto> Claims,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    // WP-VP-3C (K-7, additive) — the product's source (play · rep-pick · last-visit · portfolio; an older plan reads
+    // play) and its place in the visit's list.
+    string Source = Diten.CrmService.Domain.Entities.PlannedVisitContentItemSources.Play,
+    int Order = 0);
 
 public sealed record PlannedVisitContentStepDto(
     Guid StepId, Guid ContentId, string? ContentCode, string? Title, string? Type, int? Minutes);

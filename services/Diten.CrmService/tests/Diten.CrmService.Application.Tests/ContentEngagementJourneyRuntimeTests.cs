@@ -1335,8 +1335,51 @@ public sealed class ContentEngagementJourneyRuntimeTests
     {
         var methods = typeof(IContentEngagementJourneyReader).GetMethods().Select(m => m.Name).ToList();
         Assert.Equal(
-            new[] { "ResolvePublishedJourneysAsync", "GetOrderedStagesAsync" }.OrderBy(x => x),
+            // WP-VP-3C (K-7f) — two more READS (the journeys telling a product); still no engine method.
+            new[]
+            {
+                "ResolvePublishedJourneysAsync", "GetOrderedStagesAsync",
+                "ResolvePublishedJourneysForProductsAsync", "ResolvePublishedJourneysForProductAsync"
+            }.OrderBy(x => x),
             methods.OrderBy(x => x));
+    }
+
+    /// <summary>WP-VP-3C (K-7f) — the journeys telling a product: the subject's PRIMARY global-product link decides
+    /// (a non-primary link does not), only published journeys count, every product is a key.</summary>
+    [Fact]
+    public async Task Reader_finds_the_published_journeys_of_a_product_through_the_subjects_primary_product_link()
+    {
+        var fx = new Fixture(TenantA);
+        var product = Guid.NewGuid();
+        var other = Guid.NewGuid();
+        var primary = fx.SeedSubject();
+        var secondary = fx.SeedSubject();
+        fx.Subjects.Items.Single(x => x.Id == primary).ExternalReferences.Add(new KnowledgeExternalReference
+        {
+            SourceSystem = "global-product", ExternalId = product.ToString(), IsPrimary = true
+        });
+        fx.Subjects.Items.Single(x => x.Id == secondary).ExternalReferences.Add(new KnowledgeExternalReference
+        {
+            SourceSystem = "global-product", ExternalId = product.ToString(), IsPrimary = false
+        });
+        var path = fx.SeedPath(primary);
+        var told = await fx.SeedJourney(primary, "JP");
+        await fx.AddSimpleStage(told, 10, path.Id);
+        await fx.PublishJourney().Handle(new PublishContentEngagementJourneyCommand(told), default);
+        var notPublished = await fx.SeedJourney(primary, "JD");
+        await fx.AddSimpleStage(notPublished, 10, path.Id);
+        var onSecondary = await fx.SeedJourney(secondary, "JS");
+        await fx.AddSimpleStage(onSecondary, 10, fx.SeedPath(secondary).Id);
+        await fx.PublishJourney().Handle(new PublishContentEngagementJourneyCommand(onSecondary), default);
+
+        IContentEngagementJourneyReader reader = new ContentEngagementJourneyReader(Tenant(TenantA), fx.Journeys, fx.Paths, fx.Subjects);
+        var byProduct = await reader.ResolvePublishedJourneysForProductsAsync(
+            new[] { product, other }, new ContentEngagementJourneyCriteria(), default);
+
+        Assert.Equal(new[] { told }, byProduct[product].Select(j => j.JourneyId));
+        Assert.Empty(byProduct[other]);
+        Assert.Equal(new[] { told },
+            (await reader.ResolvePublishedJourneysForProductAsync(product, null, null, null, default)).Select(j => j.JourneyId));
     }
 
     // ---------------- fakes ----------------

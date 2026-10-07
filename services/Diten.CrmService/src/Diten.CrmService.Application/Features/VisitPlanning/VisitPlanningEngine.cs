@@ -375,7 +375,11 @@ public sealed class VisitPlanningEngine
         foreach (var doctor in assessments)
         {
             var pending = PendingBefore(pendingPlans, doctor.ContactId, horizonStart);
-            var content = await ResolveContentAsync(session, doctor.ContactId, pending, at, cancellationToken);
+            // WP-VP-3C (K-7) — the rep's pick for this doctor and which visit of the period the first planned one is.
+            var picks = PicksOf(session, doctor.ContactId, doctor.AccountId);
+            var baseOrdinal = PriorVisitsInPeriod(allPlans, session, doctor.ContactId, periodStart, horizonStart) + 1;
+            var content = await ResolveContentAsync(
+                session, doctor.ContactId, pending, at, cancellationToken, picks, baseOrdinal);
             // WP-VP-2 (B-3) — the play was derived from the doctor's own segments; a non-unique choice is said.
             var play = await _deriver.DerivePlayAsync(doctor.ContactId, at, cancellationToken);
             var contentReasons = string.Equals(play.ReasonCode, VisitProvenanceDeriver.MultiplePlays, StringComparison.Ordinal)
@@ -395,7 +399,11 @@ public sealed class VisitPlanningEngine
                 doctor.ContactId, doctor.AccountId, content.Status, content.JourneyId, content.StageId,
                 content.StageIndex, content.StageDisplayName, content.PromoItemCount, content.NonPromoItemCount,
                 duration, contentReasons, doctor.ConsentStatus, doctor.ConsentBlocked, doctor.ConsentReason,
-                content.Items ?? Array.Empty<VisitContentItem>()));
+                content.Items ?? Array.Empty<VisitContentItem>(),
+                Products: (content.Items ?? Array.Empty<VisitContentItem>())
+                    .Select(i => new VisitProductPreview(i.ProductId, i.ProductCode, i.Role, i.Source))
+                    .ToList(),
+                DurationMinutes: duration));
 
             // WP-VP-3B (4) — a BLOCKED doctor is not planned (the campaign "blocked ⇒ excluded" rule, same MOD-0164
             // verdict): it is reported unscheduled (consent_blocked) and its institution is not visited in its place.
@@ -425,7 +433,9 @@ public sealed class VisitPlanningEngine
                 ConsentBlocked: doctor.ConsentBlocked,
                 Windows: doctor.AvailabilityWindows,
                 Content: content,
-                ContentPending: pending));
+                ContentPending: pending,
+                RepPicks: picks,
+                BaseOrdinal: baseOrdinal));
         }
 
         // Pharmacy targets (first-class; report-only duration) + bare account targets (no doctor selected under them).
@@ -571,7 +581,9 @@ public sealed class VisitPlanningEngine
 
         // WP-SB-3b — a doctor recurs across weeks (frequency-extend), so each placed visit tells what comes AFTER the
         // doctor's earlier visits: the stored pending plans before its date plus this run's earlier visits.
-        placed = await ProjectContentAsync(session, placed, pendingPlans, at, cancellationToken);
+        placed = await ProjectContentAsync(
+            session, placed, pendingPlans, at, cancellationToken,
+            (contactId, before) => PriorVisitsInPeriod(allPlans, session, contactId, periodStart, before));
 
         // WP-VP-3B (B-7, C5) — every week's capacity and the period, in minutes (supply and demand in one unit).
         var (weekCapacity, periodCapacity) = BuildCapacity(
@@ -1043,7 +1055,8 @@ public sealed class VisitPlanningEngine
     /// doctor's own active segments (never the session's / client's strategy or segment).</summary>
     private async Task<VisitContentSequenceResult> ResolveContentAsync(
         PlanningSession session, Guid contactId, IReadOnlyList<VisitContentPendingExposure> pending, DateTimeOffset at,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IReadOnlyList<VisitContentProductPick>? picks = null, int visitOrdinal = 1, IReadOnlyList<Guid>? carryOver = null)
         => await _content.ResolveAsync(
             new VisitContentSequenceRequest(
                 SubjectType: PlannedVisitTargetType.Contact,
@@ -1053,8 +1066,33 @@ public sealed class VisitPlanningEngine
                 CyclePeriodId: session.CyclePeriodId,
                 PriorStageIndex: null, // WP-SB-3b — the stage comes from JourneyProgress (+ pending), not the last plan
                 EffectiveAt: at,
-                PendingExposures: pending),
+                PendingExposures: pending,
+                // WP-VP-3C (K-7) — the rep's pick, the doctor's n-th visit (order shift) and the previous overflow.
+                RepProducts: picks,
+                VisitOrdinal: visitOrdinal,
+                CarryOverProductIds: carryOver),
             cancellationToken);
+
+    /// <summary>WP-VP-3C (K-7, S-4) — the rep's product pick for this doctor on the session (contact + account, else the
+    /// contact).</summary>
+    private static IReadOnlyList<VisitContentProductPick> PicksOf(PlanningSession session, Guid contactId, Guid? accountId)
+    {
+        var selected = session.Selection.SelectedContacts.FirstOrDefault(c => c.ContactId == contactId && c.AccountId == accountId)
+                       ?? session.Selection.SelectedContacts.FirstOrDefault(c => c.ContactId == contactId);
+        return (selected?.Products ?? new List<PlanningSessionSelectedProduct>())
+            .Select(p => new VisitContentProductPick(p.ProductId, p.ProductCode, p.Role))
+            .ToList();
+    }
+
+    /// <summary>WP-VP-3C (K-7e) — the rep's visits to the doctor already in the period before <paramref name="before"/>
+    /// (stored, not cancelled / archived): the n of the next visit is this + 1.</summary>
+    private static int PriorVisitsInPeriod(
+        IReadOnlyList<PlannedVisitEntity> allPlans, PlanningSession session, Guid contactId, DateOnly periodStart,
+        DateOnly before)
+        => allPlans.Count(p => p.ContactId == contactId
+                               && string.Equals(p.Resource.ResourceId, session.ResourceId, StringComparison.OrdinalIgnoreCase)
+                               && p.PlannedDate >= periodStart && p.PlannedDate < before
+                               && !p.IsCancelled() && !p.IsArchived());
 
     /// <summary>WP-SB-3b — the doctor's stored plans before <paramref name="before"/> (not cancelled / archived) that tell
     /// a product, counted per (product, journey).</summary>
@@ -1079,9 +1117,12 @@ public sealed class VisitPlanningEngine
     /// </summary>
     private async Task<List<PlacedVisit>> ProjectContentAsync(
         PlanningSession session, List<PlacedVisit> placed, IReadOnlyList<PlannedVisitEntity> pendingPlans,
-        DateTimeOffset at, CancellationToken cancellationToken)
+        DateTimeOffset at, CancellationToken cancellationToken, Func<Guid, DateOnly, int> priorVisits)
     {
         var earlierInRun = new Dictionary<Guid, List<(Guid ProductId, Guid JourneyId)>>();
+        // WP-VP-3C (K-7e, S-2) — per doctor: this run's visits so far and the rep picks the previous one could not hold.
+        var runCount = new Dictionary<Guid, int>();
+        var carry = new Dictionary<Guid, IReadOnlyList<Guid>>();
         var ordered = placed
             .Select((p, i) => (Visit: p, Index: i))
             .OrderBy(x => x.Visit.Date).ThenBy(x => x.Visit.SequenceOrder).ThenBy(x => x.Index)
@@ -1107,11 +1148,22 @@ public sealed class VisitPlanningEngine
                 .Where(p => p.ContactId == contactId && p.PlannedDate < visit.Date)
                 .SelectMany(p => p.ContentItems.Select(i => (i.ProductId, i.JourneyId)))
                 .Concat(told));
+            var ordinal = priorVisits(contactId, visit.Date) + runCount.GetValueOrDefault(contactId) + 1;
+            var carried = carry.GetValueOrDefault(contactId) ?? Array.Empty<Guid>();
             var content = pending.SequenceEqual(visit.Candidate.ContentPending ?? Array.Empty<VisitContentPendingExposure>())
+                          && ordinal == visit.Candidate.BaseOrdinal && carried.Count == 0
                 ? baseline
-                : await ResolveContentAsync(session, contactId, pending, at, cancellationToken);
+                : await ResolveContentAsync(
+                    session, contactId, pending, at, cancellationToken, visit.Candidate.RepPicks, ordinal, carried);
 
-            told.AddRange((content.Items ?? Array.Empty<VisitContentItem>()).Select(i => (i.ProductId, i.JourneyId)));
+            runCount[contactId] = runCount.GetValueOrDefault(contactId) + 1;
+            carry[contactId] = (content.OverflowProducts ?? Array.Empty<VisitContentOverflow>())
+                .Where(o => o.Source == PlannedVisitContentItemSources.RepPick)
+                .Select(o => o.ProductId)
+                .ToList();
+            told.AddRange((content.Items ?? Array.Empty<VisitContentItem>())
+                .Where(i => i.HasContent)
+                .Select(i => (i.ProductId, i.JourneyId)));
             projected[index] = visit with { Content = content };
         }
 
@@ -1138,8 +1190,24 @@ public sealed class VisitPlanningEngine
             Minutes = s.Minutes
         }).ToList(),
         Claims = item.Claims.Select(c => new PlannedVisitContentClaim { ClaimId = c.ClaimId, ClaimCode = c.ClaimCode }).ToList(),
-        Warnings = item.Warnings.ToList()
+        Warnings = item.Warnings.ToList(),
+        // WP-VP-3C (K-7) — where the product came from and its place in the list (no play id, S3-9).
+        Source = item.Source,
+        Order = item.Order
     };
+
+    /// <summary>WP-VP-3C — a stored (frozen) item read back for the preview (an older item reads as <c>play</c>).</summary>
+    private static VisitContentItem FromStored(PlannedVisitContentItem item) => new(
+        item.ProductId, item.ProductCode, item.Role, item.JourneyId, item.JourneyCode ?? string.Empty, item.StageId,
+        item.StageIndex, item.StageCode ?? string.Empty, item.StageName ?? string.Empty, item.PathId,
+        item.PathCode ?? string.Empty, item.PathVersion ?? string.Empty,
+        item.Steps.Select(st => new VisitContentStep(
+            st.StepId, st.ContentId, st.ContentCode ?? string.Empty, st.Title ?? string.Empty, st.Type ?? string.Empty,
+            st.Minutes)).ToList(),
+        item.Claims.Select(c => new VisitContentClaim(c.ClaimId, c.ClaimCode ?? string.Empty)).ToList(),
+        item.Warnings.ToList(),
+        item.EffectiveSource(),
+        item.Order);
 
     private async Task<(double Lat, double Long)> ResolveCoordinatesAsync(
         Guid tenantId, Guid? accountId, Dictionary<Guid, AccountEntity?> cache, CancellationToken cancellationToken)
@@ -1221,7 +1289,10 @@ public sealed class VisitPlanningEngine
         bool ConsentBlocked,
         IReadOnlyList<AvailabilityWindow> Windows,
         VisitContentSequenceResult? Content,
-        IReadOnlyList<VisitContentPendingExposure>? ContentPending);
+        IReadOnlyList<VisitContentPendingExposure>? ContentPending,
+        // WP-VP-3C (K-7) — the rep's pick for the doctor and the n of its first planned visit in the period.
+        IReadOnlyList<VisitContentProductPick>? RepPicks = null,
+        int BaseOrdinal = 1);
 
     /// <summary><see cref="Content"/> — WP-SB-3b: the visit's own content (projected over the doctor's earlier visits);
     /// null for a non-doctor visit.</summary>
@@ -1303,7 +1374,11 @@ public sealed class VisitPlanningEngine
                 p.Content?.Items ?? p.Candidate.Content?.Items ?? Array.Empty<VisitContentItem>(),
                 WeekStart: g.PeriodWeeks[p.WeekNumber].WeekStart,
                 FrequencyStatus: g.Frequency.TryGetValue(p.Candidate.TargetId, out var f1) ? f1.FrequencyStatus : null,
-                RequiredVisitCount: g.Frequency.TryGetValue(p.Candidate.TargetId, out var f2) ? f2.RequiredInPeriod : null))
+                RequiredVisitCount: g.Frequency.TryGetValue(p.Candidate.TargetId, out var f2) ? f2.RequiredInPeriod : null,
+                OverflowProducts: (p.Content?.OverflowProducts ?? p.Candidate.Content?.OverflowProducts ?? Array.Empty<VisitContentOverflow>())
+                    .Select(o => new OverflowProductPreview(o.ProductId, o.ProductCode, o.Role, o.Reason))
+                    .ToList(),
+                ProductWarnings: ProductWarningsOf(p.Candidate.TargetType, p.Content ?? p.Candidate.Content)))
             .ToList();
 
         // WP-VP-3A (S-1) — the already-written visits of the stored weeks, shown as they are (IsFixed): never re-generated.
@@ -1320,7 +1395,8 @@ public sealed class VisitPlanningEngine
                 "fixed",
                 x.Visit.ContactId is { } fc && contactNames.TryGetValue(fc, out var fi) ? fi.Name : null,
                 x.Visit.ContactId is { } fc2 && contactNames.TryGetValue(fc2, out var fi2) ? fi2.Specialty : null,
-                null,
+                // WP-VP-3C (S-1) — an approved visit's FROZEN product list, exactly as it was written.
+                x.Visit.ContentItems.OrderBy(i => i.Order).Select(FromStored).ToList(),
                 WeekStart: g.PeriodWeeks[x.Week].WeekStart,
                 IsFixed: true,
                 FrequencyStatus: g.Frequency.TryGetValue(TargetKeyOf(x.Visit), out var f3) ? f3.FrequencyStatus : null,
@@ -1352,9 +1428,56 @@ public sealed class VisitPlanningEngine
             Shifted: g.Shifted
                 .Select(s => s.ContactId is { } sc && contactNames.TryGetValue(sc, out var si) ? s with { DisplayName = si.Name } : s)
                 .ToList(),
-            WeekCapacity: g.WeekCapacity,
-            PeriodCapacity: g.PeriodCapacity);
+            WeekCapacity: g.WeekCapacity
+                .Select((w, i) => w with { ProductVisitCounts = ProductVisitCounts(allSlots.Where(s => s.WeekNumber == i)) })
+                .ToList(),
+            PeriodCapacity: g.PeriodCapacity,
+            ProductDistribution: ProductDistribution(allSlots),
+            DoctorsWithoutProducts: g.Content
+                .Where(c => !c.ConsentBlocked)
+                .Count(c => (c.Products?.Count ?? 0) == 0
+                            && !allSlots.Any(s => s.ContactId == c.ContactId && (s.ContentItems?.Count ?? 0) > 0)),
+            PortfolioStatus: PortfolioStatuses.Undefined);
     }
+
+    /// <summary>WP-VP-3C — a doctor visit's product warnings: the items' own warnings, and <c>no_products</c> when the
+    /// list is empty (K-7a). A pharmacy / account visit carries none.</summary>
+    private static IReadOnlyList<string> ProductWarningsOf(string targetType, VisitContentSequenceResult? content)
+    {
+        if (targetType != PlannedVisitTargetType.Contact || content is null)
+        {
+            return Array.Empty<string>();
+        }
+
+        var items = content.Items ?? Array.Empty<VisitContentItem>();
+        return items.Count == 0
+            ? new[] { VisitContentSequenceReasonCodes.NoProducts }
+            : items.SelectMany(i => i.Warnings).Distinct(StringComparer.Ordinal).ToList();
+    }
+
+    /// <summary>WP-VP-3C — per product, the doctors whose plan in the period (any planned or fixed visit) tells it.</summary>
+    private static IReadOnlyList<ProductDistributionDto> ProductDistribution(IEnumerable<PlannedSlotPreview> slots)
+        => slots
+            .Where(s => s.ContactId is not null)
+            .SelectMany(s => (s.ContentItems ?? Array.Empty<VisitContentItem>()).Select(i => (Item: i, Contact: s.ContactId!.Value)))
+            .GroupBy(x => x.Item.ProductId)
+            .Select(g => new ProductDistributionDto(
+                g.Key, g.Select(x => x.Item.ProductCode).FirstOrDefault(c => !string.IsNullOrWhiteSpace(c)),
+                g.Select(x => x.Contact).Distinct().Count()))
+            .OrderByDescending(d => d.DoctorCount).ThenBy(d => d.ProductCode, StringComparer.Ordinal)
+            .ToList();
+
+    /// <summary>WP-VP-3C — per product, the week's visits telling it and how many of them as promo.</summary>
+    private static IReadOnlyList<ProductVisitCountDto> ProductVisitCounts(IEnumerable<PlannedSlotPreview> weekSlots)
+        => weekSlots
+            .SelectMany(s => (s.ContentItems ?? Array.Empty<VisitContentItem>())
+                .GroupBy(i => i.ProductId).Select(g => g.First()))
+            .GroupBy(i => i.ProductId)
+            .Select(g => new ProductVisitCountDto(
+                g.Key, g.Select(i => i.ProductCode).FirstOrDefault(c => !string.IsNullOrWhiteSpace(c)),
+                g.Count(), g.Count(i => i.Role == StrategyProductLineRoles.Promo)))
+            .OrderByDescending(c => c.Visits).ThenBy(c => c.ProductCode, StringComparer.Ordinal)
+            .ToList();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────

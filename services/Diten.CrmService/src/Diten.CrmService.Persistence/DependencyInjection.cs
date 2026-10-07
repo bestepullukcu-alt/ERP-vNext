@@ -1107,6 +1107,17 @@ public static class DependencyInjection
                 map.GetMemberMap(c => c.AccountContactLinkId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             });
         }
+        // WP-VP-3C (K-7, S-4) — the rep's per-doctor product pick: a new embedded type, so its Guid is mapped here (the
+        // CRM new-type GUID trap). A session written before 3C has no "Products" and reads as an empty list.
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningSessionSelectedProduct)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningSessionSelectedProduct>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+                map.GetMemberMap(p => p.ProductId).SetSerializer(stringGuid);
+            });
+        }
         if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningSessionGenerationState)))
         {
             BsonClassMap.RegisterClassMap<PlanningSessionGenerationState>(map => map.AutoMap());

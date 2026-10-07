@@ -68,7 +68,9 @@ public static class PlannedVisitMapper
                 i.Steps.Select(s => new PlannedVisitContentStepDto(s.StepId, s.ContentId, s.ContentCode, s.Title, s.Type, s.Minutes))
                     .ToList(),
                 i.Claims.Select(c => new PlannedVisitContentClaimDto(c.ClaimId, c.ClaimCode)).ToList(),
-                i.Warnings.ToList()))
+                i.Warnings.ToList(),
+                i.EffectiveSource(),
+                i.Order))
             .ToList();
 
     private static PlannedVisitScheduleSlotDto ToSlot(PlannedVisitScheduleSlot s)

@@ -1,5 +1,6 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
+using Diten.CrmService.Application.Features.StrategyTemplate.Binding;
 using Diten.CrmService.Application.Features.VisitPlanning.Commands;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
@@ -16,11 +17,15 @@ public sealed class CreatePlanningSessionHandler : IRequestHandler<CreatePlannin
     private readonly IPlanningSessionRepository _repository;
     private readonly ICallerScope _caller;
     private readonly IUserDisplayNameResolver _userNames;
+    private readonly IStrategyTemplateProductReferenceValidator? _products;
 
     public CreatePlanningSessionHandler(
         ITenantContext tenant, IActorContext actor, IPlanningSessionRepository repository,
-        ICallerScope caller, IUserDisplayNameResolver userNames)
+        ICallerScope caller, IUserDisplayNameResolver userNames,
+        // WP-VP-3C — the MDM Global Product proof of a picked product (fail-closed).
+        IStrategyTemplateProductReferenceValidator? products = null)
     {
+        _products = products;
         _caller = caller;
         _userNames = userNames;
         _tenant = tenant;
@@ -74,6 +79,14 @@ public sealed class CreatePlanningSessionHandler : IRequestHandler<CreatePlannin
             };
         }
 
+        // WP-VP-3C (K-7, S-4) — a product pick given on create is checked like on update.
+        if (await PlanningSessionProductPick.ValidateAsync<Guid>(
+                request.SelectedContacts, Array.Empty<PlanningSessionSelectedContact>(), _products, cancellationToken)
+            is { } refused)
+        {
+            return refused;
+        }
+
         var now = DateTimeOffset.UtcNow;
         var actor = _actor.ActorName;
 
@@ -120,7 +133,8 @@ public sealed class CreatePlanningSessionHandler : IRequestHandler<CreatePlannin
             {
                 ContactId = c.ContactId,
                 AccountId = c.AccountId,
-                AccountContactLinkId = c.AccountContactLinkId
+                AccountContactLinkId = c.AccountContactLinkId,
+                Products = PlanningSessionProductPick.Normalize(c.Products) ?? new List<PlanningSessionSelectedProduct>()
             })
             .ToList(),
         SegmentId = segmentId,
@@ -137,10 +151,14 @@ public sealed class UpdatePlanningSessionSelectionHandler
     private readonly IActorContext _actor;
     private readonly IPlanningSessionRepository _repository;
     private readonly ICallerScope _caller;
+    private readonly IStrategyTemplateProductReferenceValidator? _products;
 
     public UpdatePlanningSessionSelectionHandler(
-        ITenantContext tenant, IActorContext actor, IPlanningSessionRepository repository, ICallerScope caller)
+        ITenantContext tenant, IActorContext actor, IPlanningSessionRepository repository, ICallerScope caller,
+        // WP-VP-3C — the MDM Global Product proof of a picked product (fail-closed).
+        IStrategyTemplateProductReferenceValidator? products = null)
     {
+        _products = products;
         _caller = caller;
         _tenant = tenant;
         _actor = actor;
@@ -172,6 +190,13 @@ public sealed class UpdatePlanningSessionSelectionHandler
         // as read-only history (and no longer used), nothing new is written.
         // WP-VP-FIX-2 (D9) — each list is independent: null = leave it as it is (the Edit form sends none, so changing the
         // week no longer wipes the targets); [] = an explicit clear; a list = the new selection.
+        // WP-VP-3C (K-7, S-4) — the per-doctor product pick rides on this update: checked before anything changes.
+        if (await PlanningSessionProductPick.ValidateAsync<bool>(
+                request.SelectedContacts, session.Selection.SelectedContacts, _products, cancellationToken) is { } refused)
+        {
+            return refused;
+        }
+
         session.Selection = MergeSelection(session.Selection, request);
         if (!string.IsNullOrWhiteSpace(request.TargetWeekStart))
             session.TargetWeekStart = request.TargetWeekStart.Trim();
@@ -233,7 +258,17 @@ public sealed class UpdatePlanningSessionSelectionHandler
         {
             SelectedAccountIds = request.SelectedAccountIds is null ? current.SelectedAccountIds : requested.SelectedAccountIds,
             SelectedPharmacyIds = request.SelectedPharmacyIds is null ? current.SelectedPharmacyIds : requested.SelectedPharmacyIds,
-            SelectedContacts = request.SelectedContacts is null ? current.SelectedContacts : requested.SelectedContacts,
+            // WP-VP-3C — a doctor whose Products is null keeps its stored pick (D9 per doctor); [] clears it.
+            SelectedContacts = request.SelectedContacts is null
+                ? current.SelectedContacts
+                : requested.SelectedContacts
+                    .Select(c =>
+                    {
+                        var input = request.SelectedContacts.First(i => i.ContactId == c.ContactId && i.AccountId == c.AccountId);
+                        c.Products = PlanningSessionProductPick.Merge(input, current.SelectedContacts);
+                        return c;
+                    })
+                    .ToList(),
             SegmentId = current.SegmentId,
             CampaignId = current.CampaignId
         };

@@ -29,7 +29,20 @@ public sealed record VisitContentSequenceRequest(
     Guid? CyclePeriodId,
     int? PriorStageIndex,
     DateTimeOffset? EffectiveAt = null,
-    IReadOnlyList<VisitContentPendingExposure>? PendingExposures = null);
+    IReadOnlyList<VisitContentPendingExposure>? PendingExposures = null,
+    // WP-VP-3C (K-7) — the rep's pick for this doctor (rep-pick source), which visit of the doctor in the period this is
+    // (1-based; the rep-pick order shifts by n − 1, K-7e) and the products the previous visit could not hold (they come
+    // first among the rep picks, S-2).
+    IReadOnlyList<VisitContentProductPick>? RepProducts = null,
+    int VisitOrdinal = 1,
+    IReadOnlyList<Guid>? CarryOverProductIds = null);
+
+/// <summary>WP-VP-3C — one product the rep picked for the doctor (role promo / non-promo; null = promo, K-7d).</summary>
+public sealed record VisitContentProductPick(Guid ProductId, string? ProductCode, string? Role);
+
+/// <summary>WP-VP-3C — a product the visit's role limit left out (<c>max_promo</c> / <c>max_non_promo</c>); it comes first
+/// in the doctor's next visit.</summary>
+public sealed record VisitContentOverflow(Guid ProductId, string? ProductCode, string Role, string Source, string Reason);
 
 /// <summary>WP-SB-3b — <paramref name="Count"/> earlier, not yet completed visits that tell
 /// <paramref name="ProductId"/> on <paramref name="JourneyId"/>.</summary>
@@ -60,7 +73,9 @@ public sealed record VisitContentSequenceResult(
     int VisitDurationMinutes,
     IReadOnlyList<string> ReasonCodes,
     DateTimeOffset ResolvedAt,
-    IReadOnlyList<VisitContentItem>? Items = null)
+    IReadOnlyList<VisitContentItem>? Items = null,
+    // WP-VP-3C — what the role limits left out of this visit.
+    IReadOnlyList<VisitContentOverflow>? OverflowProducts = null)
 {
     public static VisitContentSequenceResult NotResolved(
         string status, IReadOnlyList<string> reasonCodes, DateTimeOffset at, Guid? journeyId = null,
@@ -89,7 +104,21 @@ public sealed record VisitContentItem(
     string PathVersion,
     IReadOnlyList<VisitContentStep> Steps,
     IReadOnlyList<VisitContentClaim> Claims,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    // WP-VP-3C (K-7) — where the product came from (play · rep-pick · last-visit · portfolio) and its 1-based place in
+    // the visit's final list.
+    string Source = PlannedVisitContentItemSources.Play,
+    int Order = 0)
+{
+    /// <summary>A product told without content (no journey resolves for it): journey / stage / path empty, the reason as
+    /// its warning (<c>no_approved_content</c> / <c>ambiguous_journey</c>).</summary>
+    public static VisitContentItem WithoutContent(Guid productId, string? productCode, string role, string source, string warning)
+        => new(productId, productCode, role, Guid.Empty, string.Empty, Guid.Empty, 0, string.Empty, string.Empty,
+            Guid.Empty, string.Empty, string.Empty, Array.Empty<VisitContentStep>(), Array.Empty<VisitContentClaim>(),
+            new[] { warning }, source);
+
+    public bool HasContent => JourneyId != Guid.Empty;
+}
 
 /// <summary>WP-SB-3b — one active step of the path, in StepOrder.</summary>
 public sealed record VisitContentStep(
@@ -153,9 +182,23 @@ public static class VisitContentSequenceReasonCodes
     /// <summary>WP-SB-3b — WARNING only: the journey's audience profile does not cover the doctor's specialty.</summary>
     public const string JourneyAudienceMismatch = "journey_audience_mismatch";
 
+    /// <summary>WP-VP-3C (K-7a) — the visit has no product at all (no play line, no rep pick): only the report time counts.</summary>
+    public const string NoProducts = "no_products";
+
+    /// <summary>WP-VP-3C (K-7f) — a picked product with no published journey telling it: planned without content.</summary>
+    public const string NoApprovedContent = "no_approved_content";
+
+    /// <summary>WP-VP-3C (K-7f) — a picked product told by more than one published journey: planned without content.</summary>
+    public const string AmbiguousJourney = "ambiguous_journey";
+
+    /// <summary>WP-VP-3C (K-7e) — overflow reasons: the role's per-visit limit was reached.</summary>
+    public const string MaxPromo = "max_promo";
+    public const string MaxNonPromo = "max_non_promo";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
         StrategyNotFound, JourneyNotPublished, JourneyCompleted, CapacityNotFound, ContentSplitUnresolved,
-        ProductHasNoJourney, JourneyUnpublished, StagePathUnpublished, StageIndexReset, JourneyAudienceMismatch
+        ProductHasNoJourney, JourneyUnpublished, StagePathUnpublished, StageIndexReset, JourneyAudienceMismatch,
+        NoProducts, NoApprovedContent, AmbiguousJourney, MaxPromo, MaxNonPromo
     };
 }

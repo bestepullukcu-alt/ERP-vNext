@@ -48,7 +48,12 @@ public sealed record VisitPlanPreview(
     IReadOnlyList<string>? HalfDayDates = null,
     IReadOnlyList<ShiftedVisitPreview>? Shifted = null,
     IReadOnlyList<WeekCapacityDto>? WeekCapacity = null,
-    PeriodCapacityDto? PeriodCapacity = null);
+    PeriodCapacityDto? PeriodCapacity = null,
+    // WP-VP-3C (K-7, additive) — per product: how many doctors' plans tell it; the doctors left without any product;
+    // the rep's portfolio state (always undefined: no portfolio data yet).
+    IReadOnlyList<ProductDistributionDto>? ProductDistribution = null,
+    int DoctorsWithoutProducts = 0,
+    string PortfolioStatus = PortfolioStatuses.Undefined);
 
 /// <summary>WP-VP-3A — one week of the period plan. <see cref="Status"/> is derived (<see cref="PlanningWeekCalendar"/>);
 /// <see cref="StoredStatus"/> is the stored approve state (approved / reopened, null when never approved).</summary>
@@ -113,7 +118,12 @@ public sealed record PlannedSlotPreview(
     string? WeekStart = null,
     bool IsFixed = false,
     string? FrequencyStatus = null,
-    int? RequiredVisitCount = null);
+    int? RequiredVisitCount = null,
+    // WP-VP-3C (K-7, additive) — the products the role limits left out of this visit (they lead the next one) and the
+    // visit's product warnings (no_products / no_approved_content / ambiguous_journey …). Each content item also
+    // carries its source and order.
+    IReadOnlyList<OverflowProductPreview>? OverflowProducts = null,
+    IReadOnlyList<string>? ProductWarnings = null);
 
 /// <summary>One visit that could not be feasibly placed — the supply-vs-demand WARNING materialised (FU03 unscheduled).
 /// A warning the planner resolves, never a hard block (D-SUPPLY-DEMAND).</summary>
@@ -144,7 +154,10 @@ public sealed record DoctorContentPreview(
     IReadOnlyList<Diten.CrmService.Application.Features.VisitContentSequence.VisitContentItem>? Items = null,
     // WP-VP-3A (additive) — the doctor's cadence: status + the visits the whole period needs.
     string? FrequencyStatus = null,
-    int? RequiredVisitCount = null);
+    int? RequiredVisitCount = null,
+    // WP-VP-3C (K-7, additive) — the doctor's next visit's products (with source) and its duration from that list.
+    IReadOnlyList<VisitProductPreview>? Products = null,
+    int? DurationMinutes = null);
 
 /// <summary>The TRANSIENT supply-vs-demand summary (D-SUPPLY-DEMAND-SHAPE = A). <see cref="Supply"/> is the
 /// CyclePeriod-pinned CycleCapacity.TotalVisitNumber (visits the rep CAN do; null when the calendar could not resolve

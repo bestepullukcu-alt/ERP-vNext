@@ -72,4 +72,13 @@ public sealed record ReplanPlanningSessionCommand(
     IReadOnlyList<Guid>? ManualVisitOrder = null) : IRequest<Response<VisitPlanApplyResult>>;
 
 /// <summary>One manually-picked doctor on the wire.</summary>
-public sealed record SelectedContactInput(Guid ContactId, Guid? AccountId, Guid? AccountContactLinkId);
+public sealed record SelectedContactInput(
+    Guid ContactId,
+    Guid? AccountId,
+    Guid? AccountContactLinkId,
+    // WP-VP-3C (K-7, S-4) — the rep's product pick for this doctor: null = keep what is stored, [] = clear, a list = set.
+    IReadOnlyList<SelectedProductInput>? Products = null);
+
+/// <summary>WP-VP-3C — one picked product: MDM Global Product id, a display code, the role (promo / non-promo; null =
+/// promo).</summary>
+public sealed record SelectedProductInput(Guid ProductId, string? ProductCode, string? Role);

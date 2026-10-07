@@ -167,6 +167,25 @@ public sealed class PlanningSessionSelectedContact
     public Guid ContactId { get; set; }
     public Guid? AccountId { get; set; }
     public Guid? AccountContactLinkId { get; set; }
+
+    /// <summary>WP-VP-3C (K-7, S-4) — the rep's product pick for this doctor (≤ <see cref="PlanningSessionProductLimits.MaxPerDoctor"/>).
+    /// Written through the existing selection update (null = keep, [] = clear); apply copies the resulting list onto the
+    /// planned visits. Empty on a session written before 3C.</summary>
+    public List<PlanningSessionSelectedProduct> Products { get; set; } = new();
+}
+
+/// <summary>WP-VP-3C — one product the rep picked for a doctor. <see cref="Role"/> is <c>promo</c> / <c>non-promo</c>;
+/// null reads as promo (K-7d: MDM carries no role). <see cref="ProductCode"/> is a display snapshot.</summary>
+public sealed class PlanningSessionSelectedProduct
+{
+    public Guid ProductId { get; set; }
+    public string? ProductCode { get; set; }
+    public string? Role { get; set; }
+}
+
+public static class PlanningSessionProductLimits
+{
+    public const int MaxPerDoctor = 20;
 }
 
 /// <summary>Last generation metadata (§4.3b). The full <c>SupplyDemandSummary</c> is TRANSIENT (recomputed on preview,
