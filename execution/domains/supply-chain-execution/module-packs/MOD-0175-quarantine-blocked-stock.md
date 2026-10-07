@@ -15,7 +15,7 @@ screens:
     data_mode: server
 entity_base: EntityBase
 status: draft
-status_note: "draft — WP-0175-P0 (CT-MVP1-0175-P0 v1), 2026-10-07. Owner decisions KQ-A…KQ-I (2026-10-07) recorded in §19 as DECISIONS. Open CT decisions CT-Q1…CT-Q14 (§19). QUARANTINE-BUNDLE v1 proposal: docs/analysis/contracts/drafts/quarantine-bundle-v1-proposal.md (no quarantine contract exists — K12). Two measured prerequisites outside this module: MOD-0023 SoD defect (FU-0175-WF-SOD) and PlatformAdmin-scoped workflow runtime keys (FU-0175-WF-KEYS) — §8 / §19. DCP-002 verifier not run (no Python — waiver W-0175-01, W-0173-01 pattern)."
+status_note: "draft — WP-0175-P0 (CT-MVP1-0175-P0 v1), 2026-10-07. Owner decisions KQ-A…KQ-I (2026-10-07) recorded in §19 as DECISIONS. CT decisions CT-Q1…CT-Q14 TAKEN 2026-10-07 (§19; CT-Q2/CT-Q3 owner). Precondition WP-0023-FX (owner: we fix MOD-0023). WP-0175-P0 CT-ACCEPTED 2026-10-07. QUARANTINE-BUNDLE v1 proposal: docs/analysis/contracts/drafts/quarantine-bundle-v1-proposal.md (no quarantine contract exists — K12). Two measured prerequisites outside this module: MOD-0023 SoD defect (FU-0175-WF-SOD) and PlatformAdmin-scoped workflow runtime keys (FU-0175-WF-KEYS) — §8 / §19. DCP-002 verifier not run (no Python — waiver W-0175-01, W-0173-01 pattern)."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0175-quarantine
 started: 2026-10-07
@@ -1077,6 +1077,39 @@ are not actions of this manifest.
 | F31 | ESIGN provider obligations for 0175 | `esign-bundle-v1-proposal.md:436-463`; MOD-0022 pack `:1283-1285` |
 | F32 | Manifest namespace lesson (CAT-01) | `MOD-0174-lot-serial-tracking.md:841-851,887-888` |
 | F33 | Mockup: 6 screens, 2-step decide/disposition, props eSign / fourEyes / companyTarget = 10 | "Karantina Bloke Stok (offline).html" template script `kar.app.js:99-100,133,209-213,257-260,318-319` |
+
+### CT decisions — TAKEN 2026-10-07 (CT acceptance of WP-0175-P0)
+
+All 14 are closed; the table below ("Open CT decisions") keeps the options for the record.
+
+| # | Decision | By |
+|---|---|---|
+| CT-Q1 | (a) one template `INV-QUARANTINE-RELEASE`, candidates sent by 0175, `signatureRequired: true`. | CT |
+| CT-Q2 | **Superseded:** the owner decided that WE fix MOD-0023 (WP-0023-FX, below) — runtime workflow keys move to Tenant scope, so a QA role can decide/approve. Until WP-0023-FX is CT-accepted, Q2 (workflow) does not start; no grant script, no "QA in the Admin role" workaround. | **Owner (Ali), 2026-10-07** |
+| CT-Q3 | **(a) server-side hard block:** additive error code `LOT_RETEST_DUE` + availability excludes retest-due lots + INVENTORY-BUNDLE description note (same pattern as MOD-0174 CT-D1). | **Owner (Ali), 2026-10-07** |
+| CT-Q4 | APPROVE for the approver step; the decider's own signature carries the kind-specific meaning. | CT |
+| CT-Q5 | (a) the same approval also releases a Draft lot. | CT |
+| CT-Q6 | (a) refuse with the reservation list `QUARANTINE_STOCK_RESERVED`. | CT |
+| CT-Q7 | Keep MOD-0174 CT-D4 (Destroy only from lot-blocked / expired lots) in MVP-1. | CT |
+| CT-Q8 | (a) local tenant list (7 languages, five seeded) + FU-0175-BRD. | CT |
+| CT-Q9 | All-or-nothing if one ledger transaction can carry all lines (Q1 measures); otherwise idempotent continue + retry. | CT |
+| CT-Q10 | Per-company switch, default on. | CT |
+| CT-Q11 | Accept read-time reconcile + "Durumu yenile" for MVP-1. | CT |
+| CT-Q12 | `QUARANTINE-BLOCKED-STOCK` (domain practice). | CT |
+| CT-Q13 | (a) 0175 apply-time four-eyes check stays even after WP-0023-FX (defence in depth). | CT |
+| CT-Q14 | Company-level target only; FU-0175-PRODUCT-TARGET. | CT |
+
+**Precondition WP-0023-FX (owner decision 2026-10-07: we fix MOD-0023 ourselves, MVP-1 branch), CT-verified defects:**
+1. SoD bypass for tenant users — `StartedBy` = `ActorName` = e-mail (`StartWorkflowInstanceHandler.cs:139,164`,
+   `CurrentUserContext.cs` `ActorName`), approver = user GUID (`WorkflowApprovalWorkItemActionDispatcher.cs:67`) → the
+   comparison in `WorkflowTaskTransitionSupport.cs:118-127` never matches (FU-0175-WF-SOD).
+2. **Actor impersonation on the direct API (found by the CT):** `tasks/{id}/approve|reject|delegate|cancel` take the actor
+   from the request body (`ApproveWorkflowTaskHandler.cs:42`); the validators only check non-empty
+   (`ApproveWorkflowTaskValidator.cs:11`); nothing binds it to the authenticated caller → a holder of the approve key can
+   act as another assignee. The WorkCenter path uses the caller's id and is safe.
+3. Runtime workflow keys are PlatformAdmin-scoped (route `/Platform/Workflow`) and cannot be granted to a custom role
+   (FU-0175-WF-KEYS).
+Order: WP-0023-FX → MOD-0022 E4 (approve + `signatureId` must use the bound actor) and MOD-0175 Q2.
 
 ### Open CT decisions
 
