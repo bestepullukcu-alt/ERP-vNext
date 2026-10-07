@@ -304,7 +304,7 @@ tanımlı. Yeni dosya açılmadı.
 
 | Liste | Seçim | v1 değerleri | Tüketen |
 |---|---|---|---|
-| `item-uom` | tek | Uzlaşılan en az küme: `C62` adet, `MGM` mg, `GRM` g, `KGM` kg, `MLT` mL, `LTR` L + kutu `XBX`, koli `XCS`. Öneri (teyit bekler): `MC` µg, `MTR` m, `MTK` m², uluslararası ünite, rulo (O-21) | Kalem, GSKU, LSKU, Bitmiş Ürün temel birimi ve çevrimleri |
+| `item-uom` | tek | Uzlaşılan en az küme: `C62` adet, `MGM` mg, `GRM` g, `KGM` kg, `MLT` mL, `LTR` L + kutu `XBX`, koli `XCS`. S1 ölçümü (UN/ECE Rec 20 Rev 11e, 2026-10-07): `MC` µg, `MTR` m, `MTK` m² geçerli; rulo = `XRO`. Uluslararası ünite için tek birim kodu **yok** (yalnız `HIU` = 100 IU) → stok + kalite birimine soru (CT iletti): `HIU` mı, liste dışı yerel kod mu (O-21) | Kalem, GSKU, LSKU, Bitmiş Ürün temel birimi ve çevrimleri |
 | `storage-condition` | **çoklu** | `AMBIENT_15_25` (15–25°C), `COOL_2_8` (2–8°C), `FROZEN_BELOW_MINUS_20` (≤ −20°C), `PROTECT_FROM_LIGHT`, `PROTECT_FROM_MOISTURE` | Kalem, GSKU, LSKU, Bitmiş Ürün |
 | `material-type` | tek | Altı değer (§1) | Kalem |
 
@@ -336,7 +336,7 @@ tanımlı. Yeni dosya açılmadı.
 | Dilim | Yollar |
 |---|---|
 | S0 | bu paket · `docs/analysis/contracts/product-master-bundle.openapi.yaml` (v1.1, yalnız ekleme) · `execution/domains/platform-shared-services/module-packs/MOD-0048-FU01-enterprise-business-reference-data-provider.md` (yalnız yeni planlama bölümü) · `execution/domains/master-data-management/domain-config.md` (bağlantı cümlesi) |
-| S1 | `services/Diten.MdmService/src/**/Features/Items/**`, `Domain/Entities/Item.cs`, `Domain/Enums/CodeBearingEntityType.cs` (+`Item`), `Persistence/Repositories/CodeReservationRepository.cs` (önek `switch`ine `IT` — ortak kod), kalem deposu + dizinler, stok uygunluk istemcisi (`Infrastructure`), testler (`MdmHttpHost` gerçek Mongo barındırıcısı; BL-527 — MDM testlerinin ortak test veritabanını paylaşması sorunu, geçici mongod ile); Platform: MOD-0048-FU01'in adlı adımındaki üç liste (FU01'de ayrı yetki) |
+| S1 | `services/Diten.MdmService/src/**/Features/ItemMaster/**` (CT kararı 5: kapsam envanteri dışı ad alanı), `Domain/Entities/Item.cs`, `Domain/Enums/CodeBearingEntityType.cs` (+`Item`), `Persistence/Repositories/CodeReservationRepository.cs` (önek `switch`ine `IT` — ortak kod), kalem deposu + dizinler, stok uygunluk istemcisi (`Infrastructure`), testler (`MdmHttpHost` gerçek Mongo barındırıcısı; BL-527 — MDM testlerinin ortak test veritabanını paylaşması sorunu, geçici mongod ile); Platform: MOD-0048-FU01'in adlı adımındaki üç liste (FU01'de ayrı yetki) |
 | S2 | onay işlemcisi + paylaşılan bağlantı noktası, Platform onay şablonu / güven kaydı (dev) |
 | S3 | `services/Diten.MdmService/src/**/Features/ProductItemSkuMaster/**` içinde GSKU / LSKU / Bitmiş Ürün stok davranışı komutları, alanlar ve testler (kesin dosyalar S3 prompt'unda ölçülür); ebeveyn paket revize edildi (O-16, 2026-10-07) |
 | S4 | `/api/product-master/*` uçları ve sözleşme sorguları, `/api/internal/v1/product-master/validate`; ağ geçidi rotası **entegrasyon işi** (korumalı dosya); Satın Alma doğrulayıcısı **Satın Alma ekibinin dosyası** |
@@ -414,7 +414,7 @@ Draft ──Submit──▶ PendingActivation ──onay (MOD-0023)──▶ Act
 | Geçiş | İzin | Onay | Not |
 |---|---|---|---|
 | oluştur / düzenle (Draft) | `create` / `update` | yok | Serbest düzenleme |
-| Draft → PendingActivation | `submit` | başlatır | Taslak kilitlenir |
+| Draft → PendingActivation | `submit` | başlatır | Taslak kilitlenir. **S1'de iskelet:** gönder ve yeniden etkinleştirme isteği 503 `ITEM_ACTIVATION_APPROVAL_UNAVAILABLE`, yazım yok; onay ve `withdraw` S2 |
 | PendingActivation → Draft | `withdraw` | geri çekme | Motorda iptal |
 | PendingActivation → Active | — (işçi) | **onaylandı** | Yapan ≠ onaylayan |
 | PendingActivation → Draft | — (işçi) | reddedildi / kapandı-kararsız / kendi onayı | Taslak açılır |
@@ -578,7 +578,7 @@ ACTIVE_INGREDIENT, EXCIPIENT, RAW_MATERIAL ve INTERMEDIATE türünde `Stockable 
 
 | Durum | Beklenen |
 |---|---|
-| Kimliksiz | 401 |
+| Kimliksiz | 401 (belirteç yok, tenant başlığı var). Tenant başlığı da yoksa servis geneli `TenantResolutionMiddleware` yetkilendirmeden önce 400 "Missing Tenant" döner (bütün MDM uçları; S1 ölçümü) |
 | İzinsiz | 403 (ekranda yetkisiz yüz, UAS-001) |
 | Başka kiracının kalemi / SKU'su | 404 (ifşa yok); toplu okumada `notFound` |
 | Geçerli oluşturma | 201 + `IT-` kodu |
@@ -696,7 +696,7 @@ tüzel kişi süzmesi uygulanmaz — ürün satırlarının kapsamı aynen kalı
 | iç `LotTracked` / `SerialTracked` | `LotControlled` / (kalemde yok) `SerialControlled` | yeniden adlandırma |
 | iç `Inactive` | `Deactivated` | yeniden adlandırma |
 | `storage-condition` önerisi (AMBIENT_15_25, BELOW_25, BELOW_30, COOL_2_8, FROZEN_BELOW_MINUS_18, CONTROLLED_ROOM_20_25) | AMBIENT_15_25, COOL_2_8, FROZEN_BELOW_MINUS_20, PROTECT_FROM_LIGHT, PROTECT_FROM_MOISTURE | uzlaşma listesi |
-| `item-uom` kutu `BX`, rulo `RO` | kutu `XBX`, koli `XCS`; rulo öneri (O-21) | UN/ECE Rec 20 ambalaj kodları |
+| `item-uom` kutu `BX`, rulo `RO` | kutu `XBX`, koli `XCS`, rulo `XRO` (S1 ölçümü, O-21) | UN/ECE Rec 20 ambalaj kodları |
 | izin `mdm.stockable-items.read` | `mdm.product-master.read` | yerine geçme (CT kararı O-13) |
 | dilimler G0–G5 | S0–S7 (§20) | yeniden numaralandırma |
 
@@ -764,7 +764,9 @@ HTTP taklidiyle (bütçe, 5xx, kısmi kapsam) ölçülür. Sözleşme testi ceva
 - [x] MOD-0048 yeni liste tanımları (MOD-0048-FU01 §4)
 - [ ] CT: sözleşme v1.1'i dondurur (FROZEN v1.1)
 - [x] CT kararları (2026-10-07, §25.1): O-1 … O-6, O-8, O-9, O-12 … O-15 kabul; O-7, O-10, O-11, O-16 … O-24 karara bağlandı
-- [ ] O-21 (birim kodları) — S1 tohumundan önce doğrulanır
+- [x] O-21 (birim kodları) — S1'de ölçüldü (XBX / XCS / XRO geçerli; IU için tek kod yok → stok + kaliteye soru)
+- [ ] **MOD-0048-FU01 adlı adımı (üç listenin Platform sağlayıcısı)** — S1'in canlıda kullanılabilmesinin ön koşulu. Bugün sağlayıcı yok; kalem oluşturma 503 `ITEM_REFERENCE_LIST_UNAVAILABLE` (kapalı başarısızlık). CT'nin ayrı Platform işi; girdi: S1 raporu §5
+- [ ] S5 ön koşulu: Auth `EntitlementOnlyViewerPermissions` + `mdm.items.read` (§23 #7)
 - [ ] Stok ekibine sorular gönderildi (§25.1 sonu); O-11 cevabı gelene kadar emekliye ayırma reddedilir
 - [ ] Registry'de FU03'ün (Ürün Tüzel Kişi Kapsamı) bu dala yansıması — CT yönetişim işi
 - [ ] Kalite pozisyonunun dev'de kurulması — S2'den önce
@@ -795,7 +797,7 @@ sürebilir; yeni dilim CT kararıdır.
 Servisin denetim altyapısı **var**: `mdm-merkezi-iletim` (yol b). Defterde yeni borç açılmaz: mevcut GP / GSKU / LSKU /
 FG komutları defterin "bilinen borç" listesindedir; S3'ün yeni komutları o kümelerde de **ilk günden yol b ile** doğar.
 Sınıf: ana veri (Karar 3a) — iletim hatası işi durdurmaz; uyarı günlüğü ve gösterge kalır. Reddedilen komut da
-kaydedilir (`Outcome = Failed` / `Denied`, AUD-001 §3). Okuma sorguları (ekran ve sözleşme) denetlenmez: kişisel veri
+kaydedilir (`Outcome = Failed` / `Denied`, AUD-001 §3). **S1 ölçümü:** yol b kaydı ret **nedenini** taşımaz (`AuditForwardRequest`'te alan yok); neden cevapta (`errors`) ve uyarı günlüğündedir, kayıtta yalnız `Outcome = Failed`. Yapısal 400'ler (doğrulayıcı, `ValidationBehavior` en dışta) yol b'ye gitmez — servis geneli davranış. Okuma sorguları (ekran ve sözleşme) denetlenmez: kişisel veri
 yok, ana veri okuması (AUD-001 §7 kapsamı dışı).
 
 | Komut | Olay adı | Nesne | Yol | Önceki / sonraki ya da değişen alanlar | İstisna |
@@ -833,7 +835,7 @@ Kayda yazılmayan alan yok (kişisel veri, sır ya da belirteç taşımıyor). P
   silinmiş kayıtların kodu da dolu sayılır ve **asla yeniden kullanılmaz**.
 - **Değişmezlik:** kod oluşturulduktan sonra değiştirilemez; API de reddeder (güncelleme isteğinde kod alanı yoktur,
   gelirse 400) — yalnız ekran değil.
-- **Biçim:** yalnız ASCII `A–Z`, `0–9`, `-`; 12 hane alt sınırdır (RCS-001 §5.7 ruhu: dolarsa uzar, sıfıra dönmez).
+- **Biçim:** yalnız ASCII `A–Z`, `0–9`, `-`; kod uzunluğu **sabit 15** (2 harf + `-` + 12 hane). 10^12 tükenmesi kapsam dışı (CT kararı 4, 2026-10-07; S1 ölçüm notu).
 - **Önek ölçümü (2026-10-07, bu dal):** MDM önek `switch`inde yalnız `GP`, `GS`, `LS`, `FG` var; depoda `"IT"` yalnız
   ülke kodu (İtalya, Platform sağlama listesi) ve bir iş birimi etiketi olarak geçiyor — kayıt kodu öneki olarak yok.
   Çakışma yok.
@@ -854,7 +856,7 @@ Kayda yazılmayan alan yok (kişisel veri, sır ya da belirteç taşımıyor). P
 | 4 | Yetkisiz yüz (UAS-001) | İzinsiz kullanıcıya iskelet çizilmez, yönlendirme yapılmaz; GSKU / FG "Stok davranışı" bölümü izinsizde yok; ölçülür | S5 |
 | 5 | Altın liste | `_ListShell` + `createList` (ilk MDM ürün ekranı); dokunma protokolü | S5 |
 | 6 | Denetim | Yol b, §21; defterde yeni borç yok | S1–S6 |
-| 7 | Manifest (kendini kaydetme) | `product-item-sku-master` modülüne `ITEMS` sayfası + eylemleri (ADD_NEW, VIEW_DETAILS, EDIT, SUBMIT, WITHDRAW_APPROVAL, DEACTIVATE, REACTIVATE, RETIRE); GSKU / FG sayfalarına `EDIT_STOCK_BEHAVIOUR` (O-12); modül sürümü 1.0.0 → 1.1.0; yeni modül yok, alan `MASTER-DATA-MANAGEMENT` | S5 |
+| 7 | Manifest (kendini kaydetme) | `product-item-sku-master` modülüne `ITEMS` sayfası + eylemleri (ADD_NEW, VIEW_DETAILS, EDIT, SUBMIT, WITHDRAW_APPROVAL, DEACTIVATE, REACTIVATE, RETIRE); GSKU / FG sayfalarına `EDIT_STOCK_BEHAVIOUR` (O-12); modül sürümü 1.0.0 → 1.1.0; yeni modül yok, alan `MASTER-DATA-MANAGEMENT`. **S5 ön koşulu (S1 ölçümü):** Auth `EntitlementOnlyViewerPermissions` listesine `mdm.items.read` eklenir; eklenmezse Viewer şablonu tenant kapsamlı `*.read` ile yetkisiz Viewer'a verir → S5'te DUR | S5 |
 | 8 | Plan / yetki | Katalog → Auth izin eşitlemesi; modül hakkı olan kiracının Admin'i izinleri plan eşitlemesiyle alır; kalite pozisyonu için rol önerisi; stok / satın alma servis kimlikleri (S4) | S1 / S4 / S5 |
 | 9 | Gösterge | Onay işçisi: `manual_reconciliation` + `needing_a_person` (akış adı `ITEM_ACTIVATION`); denetim iletim hatası sayacı; stok uygunluk sorgusu ret / ulaşılamadı sayacı | S1 / S2 |
 | 10 | Runbook | `docs/guides/operations/service-trust-chain-runbook.md`'ye kalem onay akışı (durum ⇔ çıkış tablosu, ayarlar, geri alma); dev'de onay zinciri; R-07 dev verisi adımları | S2 / S7 |
