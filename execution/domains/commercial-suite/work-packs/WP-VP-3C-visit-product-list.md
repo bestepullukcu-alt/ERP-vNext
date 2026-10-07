@@ -141,3 +141,33 @@ KORU/YAPMA: YENİ YAZMA KOMUTU YOK; planlanan ziyaret oluştur/güncelleye ürü
 DOĞRULA (E2): tabanı 3B sonrası ölç, yalnız farkı raporla — CRM Application · Web · mimari (listesiz sayı DEĞİŞMEZ); build 0 hata; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–10. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "feat(crm): WP-VP-3C — visit product list with source (play/rep-pick), rep selection on the plan, play-less content by product, rotating order, overflow" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), ana dal tanımı, ürün→yolculuk okuyucusu maliyeti, mobil için yeni alanlar, S-1 kanıtı. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-07)
+**Commit:** `e5d3a6b7a` (ff; taban `286cdba3c`, 3A + 3D + 3B dahil). Push: test dalı.
+
+**CT K13:**
+| Paket | Taban | Sonuç |
+|---|---|---|
+| CRM Application | 2398/0/5 | **2410/0/5** (+12; 6 koşudan ikisinde bilinen kararsızlar — PII, ContactWorkbook — ilgisiz) |
+| Web | 737/0 | **738/0** (+1) |
+| Mimari | 38/1 (27) | **38/1 (27 sabit)** — yeni yazma komutu yok |
+
+**Kod okuması:**
+- Liste kuralı tek yerde (`VisitContentSequenceResolver`): oyun (rol kilitli) → rep-pick (rol yoksa promo); aynı ürün oyunda kalır.
+- Karışık sıra `RotatedPicks` (n − 1 kayma, taşan öne).
+- Ürün → yolculuk okuyucusu `PrimaryGlobalProduct` üzerinden, ürün sayısından bağımsız 3 okuma.
+- Ana dal `VisitContentMainBranch`: zincir şablonu `Branches[SortOrder]` ile yolun doldurduğu ilk dal, yoksa ilk adımın dalı.
+- Seçim yazma mevcut oturum güncellemesiyle (`PlanningSessionProductPick`; null = koru, [] = temizle, ≤ 20, rol, MDM fail-closed 503); oyun şablonlarının MDM ürün doğrulayıcısı yeniden kullanıldı.
+
+**CT sabotajı (ajanınkinden ayrı):** "aynı ürün oyunda kalır" süzgeci kaldırıldı + ana dal süzgeci kapatıldı → **2 kırmızı** (`Play_items_keep_their_role…`, `Only_the_main_branch_steps_are_told…`). Geri alındı.
+
+**Bilinen / takip (Faz 4 / kullanıcı bilgisi):**
+- **Oyun önce gelir:** oyun ürünleri rol sınırını tek başına doldurursa temsilcinin eklediği ürün her ziyarette taşar (`overflowProducts`). K-7b "sınır içinde ekleyebilir" ile tutarlı. Faz 4 ekranı bu durumu uyarıyla göstermeli ("sınır dolu — eklenen ürün sığmıyor").
+- Ürünsüz ziyaret artık yalnız rapor süresi + `no_products` (K-7a); iki eski test buna göre güncellendi.
+- Ziyaret Yürütme takvimindeki `plannedContent` özetinde `source` yok (paket istemedi) → Faz 4 / Faz 6'da gerekirse ek alan.
+- **E4:** TUTUKON zincir şablonunda ana dalın `SortOrder` ile ilk sırada olduğu doğrulanmalı (değilse kısa akış gelir).
+- Mobil alanları Faz 5 sözleşme notunda toplanacak.
+
+**E4 (CT, bekliyor; Faz 3 tek tur):** oyunsuz doktora seçim (kullanıcı onaylı test kaydı) → `rep-pick` kalemler, süre değişimi, 2. ziyarette kaymış sıra · TUTUKON kaleminde 3 adım.
