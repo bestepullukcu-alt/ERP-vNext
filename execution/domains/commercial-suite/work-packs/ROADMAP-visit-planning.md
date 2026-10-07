@@ -73,7 +73,7 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 
 ### Faz E2E — TUTUKON uçtan uca test (kullanıcı giriş yapar, CT yürütür) — VP-FIX-2 kabulünden sonra; Faz 2b ajan işiyle paralel
 Plan: [E2E-TUTUKON-content-to-visit-plan.md](E2E-TUTUKON-content-to-visit-plan.md).
-- ☐ E0 envanter (salt okuma)
+- ☑ E0 envanter (salt okuma; 2026-10-07 — içerik / yol / yolculuk / uygun segment yok, oyun yeniden kurulmalı)
 - ☐ E1 aktif segment `E2E-TUT-SINDIRIM` (gastro / aile / dahiliye)
 - ☐ E2 içerik
 - ☐ E3 yol
