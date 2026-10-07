@@ -42,7 +42,7 @@ public sealed class FirstGskuIdentityRetirementRecoveryRunner(
             var rollout = await rolloutStates.GetAsync(cancellationToken);
             if (rollout is null) return true;
             rollout.EnsureValid();
-            return !rollout.IsDeleted && rollout.Mode == ProductLegalEntityScopeRolloutMode.Preparation;
+            return !rollout.IsDeleted && rollout.Mode == ProductLegalEntityScopeRolloutMode.Preparation && rollout.ActiveFence is null;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
         catch { return false; }

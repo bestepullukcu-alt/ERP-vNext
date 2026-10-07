@@ -7,8 +7,8 @@ describe('MOD-0290-FU03 Product Legal Entity Scope Golden Slim contract', () => 
   const script = () => read('wwwroot/assets/js/MasterDataManagement/ProductLegalEntityScopes/index.js');
   const loadModule = ({ canConfigure = true, canReplace = true, canEnd = true } = {}) => {
     document.body.innerHTML = `
-      <div data-can-configure="${canConfigure}" data-can-replace="${canReplace}" data-can-end="${canEnd}"></div>
-      <input id="productScopeSearch" />
+      <div id="product-legal-entity-scopes" data-can-configure="${canConfigure}" data-can-replace="${canReplace}" data-can-end="${canEnd}"></div>
+      <table id="dt-product-legal-entity-scopes"></table>
       <select id="legalEntityIds" multiple></select>`;
     window.L10n = {};
     const executable = script().replace(/document\.addEventListener\('DOMContentLoaded'[\s\S]*$/, '');
@@ -55,35 +55,86 @@ describe('MOD-0290-FU03 Product Legal Entity Scope Golden Slim contract', () => 
   });
 
   it('provides management quick detail, Save View and factory reset without bulk/delete/workflow', () => {
+    // WP-MDM-SCOPE-ACCEPT-01 FIX1 (BL-440): Save View and the factory reset belong to the list component now; the page
+    // hands it the same view keys and the quick view, and keeps fetching the product's policy itself.
     const js = script();
     const detail = read('Views/MasterDataManagement/ProductLegalEntityScopes/_DetailsQuickView.cshtml');
-    expect(js).toContain('personalizationClient.saveView(payload)');
-    expect(js).toContain('viewDefinition: state');
-    expect(js).toContain('column-reorder.dt columns-reordered.dt search.dt order.dt column-visibility.dt');
-    expect(js).toContain('applySavedTableState(dt, getResetBaselineState())');
+    const options = loadModule().buildListOptions();
+    expect(options.savedView).toMatchObject({ moduleKey: 'MasterDataManagement', pageKey: 'ProductLegalEntityScopes',
+      saveViewColumnIndexes: [1, 2, 3], baseOrder: [[1, 'asc']] });
+    expect(options.quickView).toMatchObject({ offcanvasId: 'offcanvasDetailsPreview', actionKey: 'quickView' });
+    expect(options.filters.resetBtn).toBe('btnFilterReset');
+    expect(options.bulk).toBeUndefined();
     expect(js).toContain('fetchPolicy(productId(row))');
     expect(detail.match(/id="offcanvasDetailsPreview"/g)).toHaveLength(1);
     expect([js, detail].join('\n')).not.toMatch(/checkbox|bulk|DELETE|PATCH|WorkCenter|workflow/i);
   });
 
-  it('seeds the first server-side request from the saved view without a post-init redraw', () => {
+  it('asks the server for the list in its own protocol and sorts only by what MDM whitelists', () => {
+    // WP-MDM-SCOPE-ACCEPT-01 FIX1 (BL-440 list standard): the factory in SERVER mode (it seeds the first request from
+    // the saved view); the page's column data names are MDM's own orderBy whitelist, read from MDM's query.
+    const options = loadModule().buildListOptions();
+    const query = read('../../services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Queries/GetGlobalProductsQuery.cs');
+    const whitelist = [...query.slice(query.indexOf('SortableFields'), query.indexOf('};', query.indexOf('SortableFields')))
+      .matchAll(/\["([A-Za-z]+)"\]/g)].map(match => match[1]).sort();
+    expect(options.dataMode).toBe('server');
+    expect(options.ajax.url).toBe('/MasterDataManagement/ProductLegalEntityScopes/api');
+    const orderable = options.config.columns
+      .filter((column, index) => !options.config.columnDefs.some(def => def.targets === index && def.orderable === false)
+        && !(index === options.config.columns.length - 1))
+      .map(column => column.data).filter(Boolean).sort();
+    expect(orderable).toEqual(whitelist);
+    expect(options.filters.fields).toEqual([{ id: 'filterLifecycleStatus', key: 'lifecycleStatus', kind: 'single' }]);
+  });
+
+  it('says a failed list read in the page\'s own words and shows the lifecycle by name, never its code', () => {
     const module = loadModule();
-    const saved = {
-      filters: { search: 'GS-100' },
-      search: 'GS-100',
-      colVis: { 1: true, 2: false, 3: true },
-      columnOrder: [0, 2, 1, 3, 4],
-      order: [[2, 'desc']]
-    };
+    Object.assign(window.L10n, { ErrorProviderUnavailable: 'fixture: provider down', ErrorGateway: 'fixture: gateway',
+      LifecycleIdentityApproved: 'fixture: approved', LifecycleRetired: 'fixture: retired' });
+    const toasts = [];
+    window.showToast = (message, type) => toasts.push([message, type]);
+    const options = module.buildListOptions();
 
-    const initial = module.testHooks.createInitialTableState(saved);
+    options.ajax.error.call({}, { status: 503 });
+    options.ajax.error.call({}, { status: 500 });
 
-    expect(initial.search).toEqual({ search: 'GS-100' });
-    expect(initial.order).toEqual([[2, 'desc']]);
-    expect(initial.colReorder.order).toEqual([0, 2, 1, 3, 4]);
-    expect(document.getElementById('productScopeSearch').value).toBe('GS-100');
-    expect(script()).toContain('search: initial.search');
-    expect(script()).not.toMatch(/initComplete:[^\n]*\.draw\(/);
+    expect(toasts).toEqual([['fixture: provider down', 'error'], ['fixture: gateway', 'error']]);
+    expect(module.testHooks.lifecycleText('IdentityApproved')).toBe('fixture: approved');
+    expect(module.testHooks.lifecycleText(4)).toBe('fixture: retired');
+  });
+
+  it('says a write refused by the scope rollout in the reader\'s words, never its code (FIX2 SC4)', () => {
+    const module = loadModule();
+    Object.assign(window.L10n, { ErrorFenceActive: 'fixture: fence up', ErrorWriterBusy: 'fixture: busy',
+      ErrorRolloutUnavailable: 'fixture: unreadable', ErrorConflict: 'fixture: conflict', ErrorGateway: 'fixture: gateway' });
+    const say = module.testHooks.failureText;
+
+    expect(say({ errors: ['PRODUCT_SCOPE_WRITE_FENCE_ACTIVE'] }, 409)).toBe('fixture: fence up');
+    expect(say({ Errors: ['PRODUCT_SCOPE_WRITER_LEASE_CONTENDED'] }, 409)).toBe('fixture: busy');
+    expect(say({ errors: ['PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID'] }, 503)).toBe('fixture: unreadable');
+    expect(say({ errors: ['SOME_UNKNOWN_CODE'] }, 409)).toBe('fixture: conflict');
+    // FIX3 (14): the other two mapped codes, measured.
+    Object.assign(window.L10n, { ErrorSuspended: 'fixture: suspended' });
+    expect(say({ errors: ['PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED'] }, 409)).toBe('fixture: suspended');
+    expect(say({ errors: ['PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE'] }, 409)).toBe('fixture: busy');
+    // FIX4 K1: a full bucket, an unreachable store, an ambiguous lease write, an exhausted Replace — each in words.
+    Object.assign(window.L10n, { ErrorWriterCapacity: 'fixture: capacity', ErrorStoreUnavailable: 'fixture: store down' });
+    expect(say({ errors: ['PRODUCT_SCOPE_WRITER_LEASE_CAPACITY_EXCEEDED'] }, 503)).toBe('fixture: capacity');
+    expect(say({ errors: ['PRODUCT_SCOPE_ROLLOUT_STORE_UNAVAILABLE'] }, 503)).toBe('fixture: store down');
+    expect(say({ errors: ['PRODUCT_SCOPE_WRITER_LEASE_AMBIGUOUS'] }, 503)).toBe('fixture: busy');
+    expect(say({ errors: ['PRODUCT_SCOPE_REPLACE_CONTENDED'] }, 503)).toBe('fixture: busy');
+    expect(say(null, 500)).toBe('fixture: gateway');
+  });
+
+  it('shows the companies the reader may not see as a count, never as ids (FIX2 item 10)', () => {
+    const module = loadModule();
+    Object.assign(window.L10n, { OtherLegalEntities: 'fixture: other companies {0}' });
+    const text = module.testHooks.legalEntitiesText;
+
+    expect(text({ legalEntityIds: ['A'], otherLegalEntityCount: 2 })).toBe('A · fixture: other companies 2');
+    expect(text({ LegalEntityIds: [], OtherLegalEntityCount: 1 })).toBe('fixture: other companies 1');
+    expect(text({ legalEntityIds: ['A', 'B'], otherLegalEntityCount: 0 })).toBe('A, B');
+    expect(text(null)).toBe('-');
   });
 
   it('does not offer replace or end when a persisted policy has no current period', () => {
@@ -134,7 +185,7 @@ describe('MOD-0290-FU03 Product Legal Entity Scope Golden Slim contract', () => 
     expect(js).not.toContain("className: 'js-scope-replace'");
     const end = js.indexOf('const endPolicy = async row');
     const accepted = js.indexOf('response.status === 202', end);
-    const success = js.indexOf("window.showToast?.(L.Saved, 'success')", accepted);
+    const success = js.indexOf("list?.reload('RecordSaved')", accepted);
     expect(accepted).toBeGreaterThan(end);
     expect(success).toBeGreaterThan(accepted);
     expect(js.slice(accepted, success)).toContain("L.ReconciliationPending, 'warning'");

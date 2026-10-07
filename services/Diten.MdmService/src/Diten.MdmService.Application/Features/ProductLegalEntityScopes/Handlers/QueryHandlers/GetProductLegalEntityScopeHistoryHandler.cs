@@ -10,14 +10,14 @@ public sealed class GetProductLegalEntityScopeHistoryHandler
     : IRequestHandler<GetProductLegalEntityScopeHistoryQuery,
         Response<IReadOnlyList<ProductLegalEntityScopeModels.PeriodDto>>>
 {
-    private readonly IGlobalProductRepository _products;
+    private readonly ProductLegalEntityScopeProductAccess _access;
     private readonly IProductLegalEntityScopePolicyRepository _policies;
 
     public GetProductLegalEntityScopeHistoryHandler(
-        IGlobalProductRepository products,
+        ProductLegalEntityScopeProductAccess access,
         IProductLegalEntityScopePolicyRepository policies)
     {
-        _products = products;
+        _access = access;
         _policies = policies;
     }
 
@@ -25,14 +25,19 @@ public sealed class GetProductLegalEntityScopeHistoryHandler
         GetProductLegalEntityScopeHistoryQuery request,
         CancellationToken cancellationToken)
     {
-        if (await _products.GetByIdAsync(request.GlobalProductId, cancellationToken) is null)
+        var access = await _access.ResolveAsync(
+            request.GlobalProductId, ProductLegalEntityScopeProductAccess.ReadPermission, cancellationToken);
+        if (!access.Allowed)
             return Response<IReadOnlyList<ProductLegalEntityScopeModels.PeriodDto>>.Fail(
-                "GLOBAL_PRODUCT_NOT_FOUND", 404);
+                access.FailureCode!, access.StatusCode);
         var policy = await _policies.GetByGlobalProductIdAsync(request.GlobalProductId, cancellationToken);
         if (policy is null)
             return Response<IReadOnlyList<ProductLegalEntityScopeModels.PeriodDto>>.Fail(
                 "PRODUCT_SCOPE_POLICY_NOT_FOUND", 404);
         return Response<IReadOnlyList<ProductLegalEntityScopeModels.PeriodDto>>.Success(
-            policy.ScopePeriods.Select(CreateProductLegalEntityScopePolicyHandler.Map).ToArray());
+            policy.ScopePeriods
+                .Select(period => ProductLegalEntityScopeProductAccess.Mask(
+                    CreateProductLegalEntityScopePolicyHandler.Map(period), access.Context!))
+                .ToArray());
     }
 }

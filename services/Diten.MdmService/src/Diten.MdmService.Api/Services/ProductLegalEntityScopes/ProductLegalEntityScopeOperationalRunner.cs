@@ -62,7 +62,9 @@ public sealed class ProductLegalEntityScopeOperationalRunner
         tenantContext.SetTenant(facts.TenantId);
 
         if (facts.Action is ActivateEnforcedAction or SuspendFailClosedAction)
-            return await ExecuteTransitionAsync(scope.ServiceProvider, facts, cancellationToken);
+            return facts.Abort
+                ? await AbortTransitionAsync(scope.ServiceProvider, facts, cancellationToken)
+                : await ExecuteTransitionAsync(scope.ServiceProvider, facts, cancellationToken);
 
         IProductLegalEntityScopeRolloutStateRepository? rolloutRepository = null;
         ProductLegalEntityScopeRolloutState? rollout;
@@ -233,10 +235,21 @@ public sealed class ProductLegalEntityScopeOperationalRunner
             return await BuildTransitionResultAsync(current, products, readinessRepository, facts, cancellationToken);
         }
 
+        // WP-MDM-SCOPE-ACCEPT-01 FIX2 (5) — CT decision: while a named debt is open (unguarded product writers, recovery
+        // runners blind to the fence) an Enforced tenant would have writers the scope does not see. The switch to
+        // Enforced is refused before anything is touched — in every environment, Development included. Suspension (the
+        // rollback direction) stays open.
+        if (facts.Action == ActivateEnforcedAction
+            && ProductLegalEntityScopeActivationDebt.BlocksActivation(
+                services.GetService<IProductLegalEntityScopeActivationDebt>() ?? ProductLegalEntityScopeActivationDebt.Instance))
+            throw new InvalidOperationException(ProductLegalEntityScopeActivationDebt.ActivationBlockedCode);
+
         var expectedMode = facts.Action == ActivateEnforcedAction
             ? ProductLegalEntityScopeRolloutMode.Preparation
             : ProductLegalEntityScopeRolloutMode.Enforced;
-        var token = CreateFenceToken(facts);
+        // FIX2 (12): the fence token is unique per ATTEMPT. A repeat (or a concurrent run) of the same command takes the
+        // fence over under its own token, so the attempt it replaced can no longer bind, commit or abort it.
+        var token = CreateFenceToken(facts, Guid.NewGuid());
         var fence = new ProductLegalEntityScopeActivationFence
         {
             Token = token, State = ProductLegalEntityScopeAdmissionState.Closing,
@@ -244,26 +257,78 @@ public sealed class ProductLegalEntityScopeOperationalRunner
             ActorId = facts.ActorId!.Value, ReasonCode = facts.ReasonCode,
             AcquiredAtUtc = _timeProvider.GetUtcNow()
         };
+
+        // WP-MDM-SCOPE-ACCEPT-01 FIX1 B3: readiness is checked BEFORE the fence. A tenant that is not ready (products
+        // without a scope, orphans, audit still in flight) is refused with every write still open — before, the fence
+        // was taken first, the check then threw, and the fence stayed up for good, refusing even the policy writes that
+        // would have made the tenant ready.
+        if (facts.Action == ActivateEnforcedAction && current.ActiveFence is null)
+        {
+            var probeRequest = SnapshotRequest(current, facts);
+            var probe = await readinessRepository.CaptureInventorySnapshotAsync(probeRequest, cancellationToken);
+            ValidateBoundTransitionSnapshot(
+                probe,
+                probeRequest,
+                new ProductLegalEntityScopeActivationFence
+                {
+                    Token = token, State = ProductLegalEntityScopeAdmissionState.Closing, Action = facts.Action,
+                    CommandId = facts.CommandId.Value, ActorId = facts.ActorId.Value, ReasonCode = facts.ReasonCode,
+                    AcquiredAtUtc = probe.ObservedAtUtc
+                },
+                _timeProvider.GetUtcNow(),
+                requireActivationReadiness: true);
+        }
+
         var acquired = await repository.AcquireFenceAsync(
             fence, facts.ExpectedRolloutStateId!.Value, facts.ExpectedRolloutVersion!.Value,
             expectedMode, cancellationToken);
         if (!acquired.Acquired)
             throw new InvalidOperationException(acquired.FailureCode ?? "PRODUCT_SCOPE_ACTIVATION_FENCE_CONFLICT");
+        ProductLegalEntityScopeRolloutMetrics.CountCleared(acquired.ClearedLeases);
 
-        var firstRequest = SnapshotRequest(acquired.Rollout!, facts);
-        var first = await readinessRepository.CaptureInventorySnapshotAsync(firstRequest, cancellationToken);
-        var secondRequest = SnapshotRequest(acquired.Rollout!, facts);
-        var second = await readinessRepository.CaptureInventorySnapshotAsync(secondRequest, cancellationToken);
-        if (!string.Equals(first.StableFactsHash, second.StableFactsHash, StringComparison.Ordinal)
-            || !await repository.BindFenceSnapshotsAsync(token, first, second, cancellationToken))
-            throw new InvalidOperationException("PRODUCT_SCOPE_INVENTORY_DELTA_DETECTED");
+        ProductLegalEntityScopeInventorySnapshot second;
+        ProductLegalEntityScopeInventorySnapshotRequest secondRequest;
+        try
+        {
+            if (acquired.Fence!.State == ProductLegalEntityScopeAdmissionState.Quiesced)
+            {
+                // The same command again, over a fence it already bound: idempotent when the inventory is still the bound
+                // one (the stable facts are equal) — before, re-binding needed a Closing fence and every repeat failed.
+                var bound = acquired.Fence.PendingSnapshot
+                            ?? throw new InvalidOperationException("PRODUCT_SCOPE_INVENTORY_DELTA_DETECTED");
+                var recheck = await readinessRepository.CaptureInventorySnapshotAsync(
+                    SnapshotRequest(acquired.Rollout!, facts), cancellationToken);
+                if (!string.Equals(recheck.StableFactsHash, acquired.Fence.SecondStableFactsHash, StringComparison.Ordinal))
+                    throw new InvalidOperationException("PRODUCT_SCOPE_INVENTORY_DELTA_DETECTED");
+                second = bound;
+                secondRequest = SnapshotRequest(acquired.Rollout!, facts) with { ObservedAtUtc = bound.ObservedAtUtc };
+            }
+            else
+            {
+                var firstRequest = SnapshotRequest(acquired.Rollout!, facts);
+                var first = await readinessRepository.CaptureInventorySnapshotAsync(firstRequest, cancellationToken);
+                secondRequest = SnapshotRequest(acquired.Rollout!, facts);
+                second = await readinessRepository.CaptureInventorySnapshotAsync(secondRequest, cancellationToken);
+                if (!string.Equals(first.StableFactsHash, second.StableFactsHash, StringComparison.Ordinal)
+                    || !await repository.BindFenceSnapshotsAsync(token, first, second, cancellationToken))
+                    throw new InvalidOperationException("PRODUCT_SCOPE_INVENTORY_DELTA_DETECTED");
+            }
 
-        ValidateBoundTransitionSnapshot(
-            second,
-            secondRequest,
-            acquired.Fence!,
-            _timeProvider.GetUtcNow(),
-            requireActivationReadiness: facts.Action == ActivateEnforcedAction);
+            ValidateBoundTransitionSnapshot(
+                second,
+                secondRequest,
+                acquired.Fence!,
+                _timeProvider.GetUtcNow(),
+                requireActivationReadiness: facts.Action == ActivateEnforcedAction);
+        }
+        catch (InvalidOperationException exception) when (exception.Message is
+            "PRODUCT_SCOPE_INVENTORY_DELTA_DETECTED" or "PRODUCT_SCOPE_ACTIVATION_READINESS_NOT_SATISFIED"
+            or "PRODUCT_SCOPE_INVENTORY_SNAPSHOT_INVALID")
+        {
+            // The transition cannot go on: its own fence is abandoned (recorded, counted) and writes reopen.
+            await AbortFenceAsync(repository, token, facts, exception.Message, cancellationToken);
+            throw;
+        }
 
         var persisted = await repository.GetAsync(cancellationToken)
             ?? throw new InvalidOperationException("PRODUCT_SCOPE_RECONCILIATION_REQUIRED");
@@ -290,10 +355,68 @@ public sealed class ProductLegalEntityScopeOperationalRunner
         requested.AuditIntents.Add(transitionIntent);
         var committed = await repository.CommitTransitionAsync(token, requested, persisted.Version, cancellationToken);
         if (!committed.Succeeded)
-            throw new InvalidOperationException(committed.WriteOutcomeAmbiguous
-                ? "PRODUCT_SCOPE_RECONCILIATION_REQUIRED"
-                : "PRODUCT_SCOPE_ROLLOUT_VERSION_CONFLICT");
+        {
+            // Ambiguous: the commit may have landed — the fence stays and the SAME command is the exit (it finds either
+            // its committed transition or its bound fence). A plain conflict: the fence is abandoned, writes reopen.
+            if (committed.WriteOutcomeAmbiguous)
+                throw new InvalidOperationException("PRODUCT_SCOPE_RECONCILIATION_REQUIRED");
+            await AbortFenceAsync(repository, token, facts, "PRODUCT_SCOPE_ROLLOUT_VERSION_CONFLICT", cancellationToken);
+            throw new InvalidOperationException("PRODUCT_SCOPE_ROLLOUT_VERSION_CONFLICT");
+        }
         return await BuildTransitionResultAsync(committed.State!, products, readinessRepository, facts, cancellationToken);
+    }
+
+    private async Task AbortFenceAsync(
+        IProductLegalEntityScopeRolloutStateRepository repository,
+        string token,
+        ProductLegalEntityScopeOperationalFacts facts,
+        string cause,
+        CancellationToken cancellationToken)
+    {
+        var aborted = await repository.AbortFenceAsync(new ProductLegalEntityScopeFenceAbort
+        {
+            Token = token, Action = facts.Action, CommandId = facts.CommandId!.Value, ActorId = facts.ActorId!.Value,
+            ReasonCode = facts.ReasonCode, Cause = cause, AbortedAtUtc = _timeProvider.GetUtcNow()
+        }, CancellationToken.None);
+        if (aborted) ProductLegalEntityScopeRolloutMetrics.CountAborted(cause);
+    }
+
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX1 B3 — the operator's exit for a fence left up (a process that died between taking and
+    /// committing it): the SAME command, actor, reason and expected rollout abandon it. Another command cannot.
+    /// </summary>
+    private async Task<ProductLegalEntityScopeOperationalResult> AbortTransitionAsync(
+        IServiceProvider services,
+        ProductLegalEntityScopeOperationalFacts facts,
+        CancellationToken cancellationToken)
+    {
+        var repository = services.GetRequiredService<IProductLegalEntityScopeRolloutStateRepository>();
+        var readinessRepository = services.GetRequiredService<IProductLegalEntityScopeOperationalReadinessRepository>();
+        var products = services.GetRequiredService<IGlobalProductRepository>();
+        var current = await repository.GetAsync(cancellationToken)
+            ?? throw new InvalidOperationException("PRODUCT_SCOPE_ROLLOUT_NOT_INITIALIZED");
+        // FIX2 (12): the fence is found by its command (the token belongs to whichever attempt holds it now) and abandoned
+        // under the token read — never another command's fence.
+        if (current.ActiveFence is not { } fence || current.Id != facts.ExpectedRolloutStateId
+            || current.Version != facts.ExpectedRolloutVersion
+            || !string.Equals(fence.Action, facts.Action, StringComparison.Ordinal)
+            || fence.CommandId != facts.CommandId || fence.ActorId != facts.ActorId
+            || !string.Equals(fence.ReasonCode, facts.ReasonCode, StringComparison.Ordinal))
+            throw new InvalidOperationException("PRODUCT_SCOPE_ACTIVATION_FENCE_NOT_FOUND");
+        await AbortFenceAsync(repository, fence.Token, facts, "OPERATOR_ABORT", cancellationToken);
+        var after = await repository.GetAsync(cancellationToken)
+            ?? throw new InvalidOperationException("PRODUCT_SCOPE_RECONCILIATION_REQUIRED");
+        if (after.ActiveFence is not null)
+            throw new InvalidOperationException("PRODUCT_SCOPE_ACTIVATION_FENCE_CONFLICT");
+        var completeness = await products.GetProductLegalEntityScopeCompletenessInventoryAsync(
+            _timeProvider.GetUtcNow(), MaximumDiagnosticSampleSize, cancellationToken);
+        var readiness = await readinessRepository.InspectAsync(MaximumDiagnosticSampleSize, cancellationToken);
+        return new(facts.Action, false,
+            new(after.Id, after.Mode.ToString(), after.Version, after.CreationCommandId, after.CreatedByActorId),
+            new(completeness.EligibleGlobalProductCount, completeness.ConfiguredGlobalProductCount,
+                completeness.MissingGlobalProductIds,
+                completeness.EligibleGlobalProductCount - completeness.ConfiguredGlobalProductCount
+                    > completeness.MissingGlobalProductIds.Count), readiness);
     }
 
     private ProductLegalEntityScopeInventorySnapshotRequest SnapshotRequest(
@@ -301,7 +424,7 @@ public sealed class ProductLegalEntityScopeOperationalRunner
         facts.TenantId, rollout.Id, rollout.Mode, rollout.Version, facts.Action,
         facts.CommandId!.Value, facts.ActorId!.Value, facts.ReasonCode, _timeProvider.GetUtcNow());
 
-    private static string CreateFenceToken(ProductLegalEntityScopeOperationalFacts facts)
+    private static string CreateFenceToken(ProductLegalEntityScopeOperationalFacts facts, Guid attempt)
     {
         var payload = string.Join('\n',
             $"tenantId={facts.TenantId:D}",
@@ -310,7 +433,8 @@ public sealed class ProductLegalEntityScopeOperationalRunner
             $"action={facts.Action.ToUpperInvariant()}",
             $"commandId={facts.CommandId!.Value:D}",
             $"actorId={facts.ActorId!.Value:D}",
-            $"reasonCode={facts.ReasonCode}") + "\n";
+            $"reasonCode={facts.ReasonCode}",
+            $"attempt={attempt:D}") + "\n";
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));
     }
 
@@ -436,6 +560,8 @@ public sealed class ProductLegalEntityScopeOperationalRunner
         CreatedAt = source.CreatedAt, UpdatedAt = source.UpdatedAt, Version = source.Version,
         AuditIntents = [.. source.AuditIntents], AuditIntentReceipts = [.. source.AuditIntentReceipts],
         ActiveFence = source.ActiveFence, ActiveWriterLease = source.ActiveWriterLease,
+        ProductWriterLeases = [.. source.ProductWriterLeases], ProductWriterLeaseRevision = source.ProductWriterLeaseRevision,
+        LastFenceAbort = source.LastFenceAbort,
         WriterLeaseGeneration = source.WriterLeaseGeneration, LastInventorySnapshot = source.LastInventorySnapshot,
         LastTransitionCommandId = source.LastTransitionCommandId, LastTransitionActorId = source.LastTransitionActorId,
         LastTransitionAction = source.LastTransitionAction, LastTransitionReasonCode = source.LastTransitionReasonCode,
@@ -540,6 +666,8 @@ public sealed class ProductLegalEntityScopeOperationalRunner
         }
 
         var transition = options.Action is ActivateEnforcedAction or SuspendFailClosedAction;
+        if (options.Abort && !transition)
+            throw new InvalidOperationException("PRODUCT_SCOPE_OPERATIONAL_CONFIGURATION_INVALID");
         if (transition && (!options.ActorId.HasValue || options.ActorId == Guid.Empty
             || !options.CommandId.HasValue || options.CommandId == Guid.Empty
             || !options.ExpectedRolloutStateId.HasValue || options.ExpectedRolloutStateId == Guid.Empty
@@ -554,7 +682,8 @@ public sealed class ProductLegalEntityScopeOperationalRunner
             options.CommandId,
             options.ExpectedRolloutStateId,
             options.ExpectedRolloutVersion,
-            options.ReasonCode);
+            options.ReasonCode,
+            options.Abort);
     }
 
     private static bool ExactPreparation(
@@ -619,7 +748,8 @@ public sealed class ProductLegalEntityScopeOperationalRunner
         Guid? CommandId,
         Guid? ExpectedRolloutStateId = null,
         int? ExpectedRolloutVersion = null,
-        string ReasonCode = "");
+        string ReasonCode = "",
+        bool Abort = false);
 }
 public sealed record ProductLegalEntityScopeOperationalResult(
     string Action,

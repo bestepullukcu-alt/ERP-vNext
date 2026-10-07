@@ -11,16 +11,16 @@ public sealed class GetProductLegalEntityScopeCreateOptionsHandler
 {
     private const string ModuleCode = "product-item-sku-master";
     private const string ConfigurePermission = "mdm.product-legal-entity-scopes.configure";
-    private readonly IGlobalProductRepository _products;
+    private readonly ProductLegalEntityScopeProductAccess _access;
     private readonly ILegalEntityRepository _legalEntities;
     private readonly ProductLegalEntityScopeCandidateFacade _candidates;
 
     public GetProductLegalEntityScopeCreateOptionsHandler(
-        IGlobalProductRepository products,
+        ProductLegalEntityScopeProductAccess access,
         ILegalEntityRepository legalEntities,
         ProductLegalEntityScopeCandidateFacade candidates)
     {
-        _products = products;
+        _access = access;
         _legalEntities = legalEntities;
         _candidates = candidates;
     }
@@ -29,9 +29,18 @@ public sealed class GetProductLegalEntityScopeCreateOptionsHandler
         GetProductLegalEntityScopeCreateOptionsQuery request,
         CancellationToken cancellationToken)
     {
-        var product = await _products.GetByIdAsync(request.GlobalProductId, cancellationToken);
-        if (product is null)
-            return Response<ProductLegalEntityScopeModels.CreateOptionsDto>.Fail("GLOBAL_PRODUCT_NOT_FOUND", 404);
+        var access = await _access.ResolveAsync(request.GlobalProductId, ConfigurePermission, cancellationToken);
+        if (!access.Allowed)
+            return Response<ProductLegalEntityScopeModels.CreateOptionsDto>.Fail(access.FailureCode!, access.StatusCode);
+        var product = access.Product!;
+        // FIX2 (10): the product's code and name are Global Product data — shown only when the caller may also read the
+        // product itself (mdm.global-products.read, by their legal entities in an Enforced tenant); else as if missing.
+        var productRead = await _access.ResolveAsync(
+            request.GlobalProductId,
+            Features.ProductItemSkuMaster.Handlers.QueryHandlers.ProductLegalEntityScopeConsumerGuard.GlobalProductReadPermission,
+            cancellationToken);
+        if (!productRead.Allowed)
+            return Response<ProductLegalEntityScopeModels.CreateOptionsDto>.Fail(productRead.FailureCode!, productRead.StatusCode);
         var candidate = await _candidates.ResolveAsync(ModuleCode, ConfigurePermission, cancellationToken);
         if (!candidate.IsSuccessful)
             return Response<ProductLegalEntityScopeModels.CreateOptionsDto>.Fail(

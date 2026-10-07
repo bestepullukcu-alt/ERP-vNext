@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -62,12 +63,48 @@ public sealed class ProductLegalEntityScopeGuardedWriteSession
             ProductLegalEntityScopePolicyRepository.CollectionName);
     }
 
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX3 (11) — how many times a Replace transaction the server aborted as transient
+    /// (TransientTransactionError: a write conflict on the tenant's rollout record — any product writer's lease
+    /// acquisition, binding or release touches it) is run again. Before, the first conflict answered 409
+    /// PRODUCT_SCOPE_CONFLICT although the caller's data conflicted with nothing.
+    /// </summary>
+    internal const int MaximumTransientAttempts = 5;
+
     public async Task<ProductLegalEntityScopePolicyWriteResult> ReplaceAsync(
         ProductLegalEntityScopeVerifiedWriterAuthority authority,
         ProductLegalEntityScopeWriterLease lease,
         ProductLegalEntityScopePolicy requestedPolicy,
         int expectedVersion,
         CancellationToken cancellationToken = default)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                return await ReplaceOnceAsync(authority, lease, requestedPolicy, expectedVersion,
+                    retryTransient: attempt < MaximumTransientAttempts, cancellationToken);
+            }
+            catch (TransientTransactionRetry)
+            {
+                // A transaction the server aborted changed nothing: run it again, from a fresh snapshot.
+                await Task.Delay(Random.Shared.Next(1, 10 * attempt), cancellationToken);
+            }
+        }
+    }
+
+    private sealed class TransientTransactionRetry : Exception;
+
+    /// <summary>FIX4 (4) — test seam, see its call site.</summary>
+    internal Func<Task>? AfterRolloutRead { get; set; }
+
+    private async Task<ProductLegalEntityScopePolicyWriteResult> ReplaceOnceAsync(
+        ProductLegalEntityScopeVerifiedWriterAuthority authority,
+        ProductLegalEntityScopeWriterLease lease,
+        ProductLegalEntityScopePolicy requestedPolicy,
+        int expectedVersion,
+        bool retryTransient,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(authority);
         ArgumentNullException.ThrowIfNull(lease);
@@ -101,6 +138,9 @@ public sealed class ProductLegalEntityScopeGuardedWriteSession
                     leaseRetentionRequired: true);
             }
             rollout.EnsureValid();
+            // FIX4 (4) — test seam: another writer can change the rollout record right here, inside this transaction's
+            // snapshot, to make the write conflict real and deterministic. Production leaves it null.
+            if (AfterRolloutRead is { } hook) await hook();
 
             var persistedDocument = await _policyDocuments.Find(
                     session,
@@ -211,6 +251,18 @@ public sealed class ProductLegalEntityScopeGuardedWriteSession
         {
             await AbortBestEffortAsync(session);
             throw;
+        }
+        catch (MongoException exception) when (!commitAttempted && exception.HasErrorLabel("TransientTransactionError"))
+        {
+            // FIX4 (4a): only BEFORE the commit was sent. Once it was, the transaction may have landed: that is the
+            // ambiguous path below (the exact outcome is read back — success, or 202 / repeat), never a re-run that would
+            // find its own write and answer 409.
+            await AbortBestEffortAsync(session);
+            if (retryTransient) throw new TransientTransactionRetry();
+            // FIX4 (4b): every retry used — nothing was written. Named, counted, 503 (the caller's data conflicts with
+            // nothing); before, this fell into the generic refusal and answered an uncounted 409 PRODUCT_SCOPE_CONFLICT.
+            ProductLegalEntityScopeRolloutMetrics.CountReplaceTransientExhausted();
+            return new(false, null, VerifiedZeroMutation: true, TransientRetriesExhausted: true);
         }
         catch (MongoException)
         {

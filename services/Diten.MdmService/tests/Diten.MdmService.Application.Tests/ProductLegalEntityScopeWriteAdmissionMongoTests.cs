@@ -37,6 +37,384 @@ public sealed class ProductLegalEntityScopeWriteAdmissionMongoTests
         Environment.SetEnvironmentVariable("MDM_TEST_MONGO", _previousMongoConnection);
 
     [Fact]
+    public async Task A_product_writer_elsewhere_in_the_tenant_does_not_invalidate_a_running_Replace()
+    {
+        // WP-MDM-SCOPE-ACCEPT-01 FIX2 (1): before, a product lease moved the shared WriterLeaseGeneration that the guarded
+        // Replace conditions on — the Replace was rejected (409 PRODUCT_SCOPE_CONFLICT), its slot kept for 120 s, uncounted,
+        // and every Replace of the tenant refused meanwhile. Product leases now number their generations on their own.
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var scenario = await CreateGuardedReplaceScenarioAsync(scope);
+        var otherProduct = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
+        var writer = await scope.RolloutRepository().AcquireProductWriterLeaseAsync(new ProductLegalEntityScopeWriterLease
+        {
+            Token = Guid.NewGuid(), Generation = 1, CommandId = Guid.NewGuid(), ActorId = Guid.NewGuid(),
+            MutationKind = "CreateGskuDraft", PayloadFingerprint = new string('C', 64), Owner = "Diten.MDM:CreateGskuDraft",
+            AcquiredAtUtc = now, ExpiresAtUtc = now.AddSeconds(ProductLegalEntityScopeWriterLease.DurationSeconds),
+            ObjectKeys = [$"GlobalProductId:{otherProduct:D}"]
+        });
+        Assert.True(writer.Acquired, writer.FailureCode);
+
+        var result = await scenario.Repository.ReplaceAsync(scenario.Authority, scenario.Lease, scenario.Requested, 0);
+
+        Assert.True(result.Succeeded,
+            $"guarded result conflict={result.VersionConflict}, retain={result.LeaseRetentionRequired}, ambiguous={result.WriteOutcomeAmbiguous}");
+    }
+
+    [Theory]
+    [InlineData("replace_ambiguous")]
+    [InlineData("replace_rejected")]
+    [InlineData("replace_failed")]
+    public async Task A_replace_that_keeps_its_slot_says_why(string reason)
+    {
+        // FIX3 (2): every path that keeps the foreground slot is counted under its own name.
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        using var metrics = new ProductLegalEntityScopeMetricRecorder();
+        var scenario = await CreateGuardedReplaceScenarioAsync(scope);
+        ProductLegalEntityScopePolicyWriteResult result = reason switch
+        {
+            "replace_ambiguous" => new(false, null, WriteOutcomeAmbiguous: true),
+            "replace_rejected" => new(false, null, VersionConflict: true, VerifiedZeroMutation: true, LeaseRetentionRequired: true),
+            _ => new(false, null)
+        };
+
+        await CompleteForegroundReplaceAsync(scope, scenario, result);
+
+        Assert.Equal(1, metrics.Sum(ProductLegalEntityScopeRolloutMetrics.LeaseRetained, "reason", reason));
+        Assert.Equal(scenario.Lease.Token, (await scope.RolloutRepository().GetAsync())!.ActiveWriterLease?.Token);
+    }
+
+    [Fact]
+    public async Task A_replace_whose_slot_vanished_while_it_wrote_says_the_release_was_refused()
+    {
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        using var metrics = new ProductLegalEntityScopeMetricRecorder();
+        var scenario = await CreateGuardedReplaceScenarioAsync(scope);
+        await scope.RolloutCollection.UpdateOneAsync(item => item.TenantId == scope.TenantId,
+            Builders<ProductLegalEntityScopeRolloutState>.Update.Set(item => item.ActiveWriterLease, null));
+
+        await CompleteForegroundReplaceAsync(scope, scenario, new(true, scenario.Requested));
+
+        Assert.Equal(1, metrics.Sum(ProductLegalEntityScopeRolloutMetrics.LeaseReleaseRefused, "by", "replace"));
+    }
+
+    [Theory]
+    [InlineData("replace_authority_mismatch")]
+    [InlineData("replace_baseline_conflict")]
+    public async Task A_replace_refused_after_its_slot_was_taken_says_why(string reason)
+    {
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        using var metrics = new ProductLegalEntityScopeMetricRecorder();
+        var scenario = await CreateGuardedReplaceScenarioAsync(scope);
+        var tenant = new TenantContext();
+        tenant.SetTenant(scope.TenantId);
+        var coordinator = new ProductLegalEntityScopeWriteFenceCoordinator(
+            new BentSlot(scope.RolloutRepository(), reason),
+            new ProductLegalEntityScopeOperationalReadinessRepository(scope.Database, tenant),
+            new Actor(scenario.Lease.ActorId.ToString("D")), tenant, TimeProvider.System);
+
+        var admission = await coordinator.EnterForegroundReplaceAsync(scenario.Authority, scenario.Command, CancellationToken.None);
+
+        Assert.False(admission.IsAllowed);
+        Assert.Equal(1, metrics.Sum(ProductLegalEntityScopeRolloutMetrics.LeaseRetained, "reason", reason));
+    }
+
+    /// <summary>The slot comes back bent: another command's (authority mismatch), or unbound with a refused binding.</summary>
+    private sealed class BentSlot(IProductLegalEntityScopeRolloutStateRepository inner, string reason) : DelegatingRolloutRepository(inner)
+    {
+        public override async Task<ProductLegalEntityScopeWriterLeaseResult> AcquireWriterLeaseAsync(
+            ProductLegalEntityScopeWriterLease requested, CancellationToken cancellationToken = default)
+        {
+            var result = await base.AcquireWriterLeaseAsync(requested, cancellationToken);
+            var lease = CopyLease(result.Lease!);
+            if (reason == "replace_authority_mismatch") lease.CommandId = Guid.NewGuid();
+            else lease.PreWriteStateHash = null;
+            return result with { Lease = lease };
+        }
+
+        public override Task<bool> BindWriterLeaseBaselineAsync(Guid token, long generation, string preWriteStateHash,
+            CancellationToken cancellationToken = default) => Task.FromResult(false);
+    }
+
+    [Fact]
+    public async Task A_replace_aborted_as_a_transient_write_conflict_is_run_again_not_answered_409()
+    {
+        // FIX3 (11) / FIX4 (4): a REAL write conflict, deterministic — another writer changes the rollout record inside
+        // the Replace's transaction snapshot (its first attempt only). The server aborts it as transient; it runs again.
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var scenario = await CreateGuardedReplaceScenarioAsync(scope);
+        var tenant = new TenantContext();
+        tenant.SetTenant(scope.TenantId);
+        var conflicts = 0;
+        var session = new ProductLegalEntityScopeGuardedWriteSession(scope.Database, tenant);
+        session.AfterRolloutRead = async () =>
+        {
+            if (conflicts++ == 0) Assert.True((await scope.RolloutRepository().AcquireProductWriterLeaseAsync(OtherProductLease())).Acquired);
+        };
+
+        var result = await session.ReplaceAsync(scenario.Authority, scenario.Lease, scenario.Requested, 0);
+
+        Assert.True(result.Succeeded, $"conflict={result.VersionConflict}, ambiguous={result.WriteOutcomeAmbiguous}, exhausted={result.TransientRetriesExhausted}");
+        Assert.True(conflicts >= 2);
+    }
+
+    [Fact]
+    public async Task A_replace_whose_commit_landed_but_answered_a_transient_error_is_not_run_again()
+    {
+        // FIX4 (4a): before, the transient label was retried even after the commit was sent — the re-run found its own
+        // write (version moved) and answered 409 although the policy HAD changed.
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var scenario = await CreateGuardedReplaceScenarioAsync(scope);
+        var tenant = new TenantContext();
+        tenant.SetTenant(scope.TenantId);
+        var commits = 0;
+        var session = new ProductLegalEntityScopeGuardedWriteSession(scope.Database, tenant, async (handle, cancellationToken) =>
+        {
+            commits++;
+            await handle.CommitTransactionAsync(cancellationToken);
+            var lost = new MongoException("commit landed, answer lost");
+            lost.AddErrorLabel("TransientTransactionError");
+            throw lost;
+        });
+
+        var result = await session.ReplaceAsync(scenario.Authority, scenario.Lease, scenario.Requested, 0);
+
+        Assert.True(result.Succeeded, $"conflict={result.VersionConflict}, ambiguous={result.WriteOutcomeAmbiguous}");
+        Assert.Equal(1, commits);
+        var persisted = await scope.PolicyRepository().GetByGlobalProductIdAsync(scenario.Initial.GlobalProductId);
+        Assert.Equal(1, persisted!.Version);
+    }
+
+    [Fact]
+    public async Task A_replace_whose_commit_answer_is_a_transient_error_and_did_not_land_is_ambiguous_not_409()
+    {
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var scenario = await CreateGuardedReplaceScenarioAsync(scope);
+        var tenant = new TenantContext();
+        tenant.SetTenant(scope.TenantId);
+        var session = new ProductLegalEntityScopeGuardedWriteSession(scope.Database, tenant, (_, _) =>
+        {
+            var lost = new MongoException("commit refused");
+            lost.AddErrorLabel("TransientTransactionError");
+            throw lost;
+        });
+
+        var result = await session.ReplaceAsync(scenario.Authority, scenario.Lease, scenario.Requested, 0);
+
+        Assert.False(result.Succeeded);
+        Assert.True(result.WriteOutcomeAmbiguous);
+    }
+
+    private static ProductLegalEntityScopeWriterLease OtherProductLease()
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new ProductLegalEntityScopeWriterLease
+        {
+            Token = Guid.NewGuid(), Generation = 1, CommandId = Guid.NewGuid(), ActorId = Guid.NewGuid(),
+            MutationKind = "Other", PayloadFingerprint = new string('F', 64), Owner = "Diten.MDM:Other",
+            AcquiredAtUtc = now, ExpiresAtUtc = now.AddSeconds(ProductLegalEntityScopeWriterLease.DurationSeconds),
+            ObjectKeys = [$"GlobalProductId:{Guid.NewGuid():D}"]
+        };
+    }
+
+    // ── FIX4: the Replace handler, real, end to end ─────────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("capture", "replace_admission_exception")]
+    [InlineData("bind", "replace_admission_exception")]
+    [InlineData("write", "replace_exception")]
+    public async Task A_replace_that_fails_after_taking_its_slot_keeps_it_and_says_why(string where, string reason)
+    {
+        // FIX4 (1): before, these exits left the tenant-wide slot held ~125 s without a trace.
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        using var metrics = new ProductLegalEntityScopeMetricRecorder();
+        var world = await ReplaceWorld.CreateAsync(scope);
+
+        await Assert.ThrowsAsync<TimeoutException>(() => world.RunAsync(
+            rollouts: where == "bind" ? new BindThrows(world.Rollouts) : null,
+            readiness: where == "capture" ? new ThrowingReadiness() : null,
+            policies: where == "write" ? new ReplaceThrows(world.Policies, new TimeoutException("store lost")) : null));
+
+        Assert.Equal(1, metrics.Sum(ProductLegalEntityScopeRolloutMetrics.LeaseRetained, "reason", reason));
+        Assert.NotNull((await world.Rollouts.GetAsync())!.ActiveWriterLease);
+    }
+
+    [Fact]
+    public async Task A_replace_refused_by_the_bson_budget_before_any_write_releases_its_slot()
+    {
+        // FIX4 (1): nothing was written (the budget is checked on the projection) — the slot is released, principle A.
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var world = await ReplaceWorld.CreateAsync(scope);
+
+        var response = await world.RunAsync(policies: new ReplaceThrows(world.Policies,
+            new InvalidOperationException("PRODUCT_LEGAL_ENTITY_SCOPE_BSON_LIMIT_EXCEEDED")));
+
+        Assert.Equal((409, "PRODUCT_SCOPE_BSON_LIMIT_EXCEEDED"), (response.StatusCode, response.Errors?.FirstOrDefault()));
+        Assert.Null((await world.Rollouts.GetAsync())!.ActiveWriterLease);
+    }
+
+    [Fact]
+    public async Task A_replace_whose_slot_lost_every_round_answers_the_coordinators_503()
+    {
+        // FIX4 (5): before, the handler re-wrapped every refusal as 409.
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var world = await ReplaceWorld.CreateAsync(scope);
+        var losing = new ProductLegalEntityScopeRolloutStateRepository(scope.Database, world.Tenant) { LeaseAttempts = 1 };
+        losing.BeforeLeaseWrite = async _ => Assert.True((await scope.RolloutRepository().AcquireProductWriterLeaseAsync(OtherProductLease())).Acquired);
+
+        var response = await world.RunAsync(rollouts: losing);
+
+        Assert.Equal((503, "PRODUCT_SCOPE_WRITER_LEASE_CONTENDED"), (response.StatusCode, response.Errors?.FirstOrDefault()));
+    }
+
+    [Fact]
+    public async Task A_replace_still_aborted_as_transient_after_every_retry_answers_a_named_503_and_frees_its_slot()
+    {
+        // FIX4 (4b): before, the exhausted retries fell into the generic refusal: an uncounted 409 PRODUCT_SCOPE_CONFLICT.
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        using var metrics = new ProductLegalEntityScopeMetricRecorder();
+        var world = await ReplaceWorld.CreateAsync(scope);
+        world.Session.AfterRolloutRead = async () =>
+            Assert.True((await scope.RolloutRepository().AcquireProductWriterLeaseAsync(OtherProductLease())).Acquired);
+
+        var response = await world.RunAsync();
+
+        Assert.Equal((503, "PRODUCT_SCOPE_REPLACE_CONTENDED"), (response.StatusCode, response.Errors?.FirstOrDefault()));
+        Assert.Equal(1, metrics.Sum(ProductLegalEntityScopeRolloutMetrics.ReplaceTransientExhausted));
+        Assert.Null((await world.Rollouts.GetAsync())!.ActiveWriterLease);
+        Assert.Equal(0, (await world.Policies.GetByGlobalProductIdAsync(world.ProductId))!.Version);
+    }
+
+    [Fact]
+    public async Task A_replace_through_the_handler_succeeds_and_frees_its_slot()
+    {
+        // The baseline of the handler world: the happy path releases the slot.
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var world = await ReplaceWorld.CreateAsync(scope);
+
+        var response = await world.RunAsync();
+
+        Assert.True(response.IsSuccessful, string.Join(",", response.Errors ?? []));
+        Assert.Null((await world.Rollouts.GetAsync())!.ActiveWriterLease);
+    }
+
+    private sealed class ReplaceWorld
+    {
+        private ReplaceWorld(ProductScopeMongoScope scope, Guid productId)
+        {
+            Scope = scope;
+            ProductId = productId;
+            Tenant = new TenantContext();
+            Tenant.SetTenant(scope.TenantId);
+            Rollouts = scope.RolloutRepository();
+            Session = new ProductLegalEntityScopeGuardedWriteSession(scope.Database, Tenant);
+            Policies = new ProductLegalEntityScopePolicyRepository(scope.Database, Tenant, Session);
+        }
+
+        public ProductScopeMongoScope Scope { get; }
+        public Guid ProductId { get; }
+        public TenantContext Tenant { get; }
+        public Guid Subject { get; } = Guid.NewGuid();
+        public ProductLegalEntityScopeRolloutStateRepository Rollouts { get; }
+        public ProductLegalEntityScopeGuardedWriteSession Session { get; }
+        public ProductLegalEntityScopePolicyRepository Policies { get; }
+
+        public static async Task<ReplaceWorld> CreateAsync(ProductScopeMongoScope scope)
+        {
+            var productId = Guid.NewGuid();
+            Assert.True((await scope.PolicyRepository().CreateAsync(
+                ProductLegalEntityScopeMongoTests.CreatePolicy(scope.TenantId, productId, Guid.NewGuid()))).Succeeded);
+            Assert.True((await scope.RolloutRepository().CreateAsync(ProductLegalEntityScopeRolloutState.CreatePreparation(
+                scope.TenantId, Guid.NewGuid(), Guid.NewGuid(), Now))).Succeeded);
+            return new ReplaceWorld(scope, productId);
+        }
+
+        public Task<Diten.Shared.Core.Response<ProductLegalEntityScopeModels.PolicyDto>> RunAsync(
+            IProductLegalEntityScopeRolloutStateRepository? rollouts = null,
+            IProductLegalEntityScopeOperationalReadinessRepository? readiness = null,
+            IProductLegalEntityScopePolicyRepository? policies = null)
+        {
+            var context = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(
+                [
+                    new Claim("actor_type", "tenant_user"),
+                    new Claim("tenant_id", Scope.TenantId.ToString("D")),
+                    new Claim("sub", Subject.ToString("D")),
+                    new Claim("permission", "mdm.product-legal-entity-scopes.replace")
+                ], "test"))
+            };
+            context.Request.Headers["X-Tenant-Id"] = Scope.TenantId.ToString("D");
+            var rolloutRepository = rollouts ?? Rollouts;
+            var coordinator = new ProductLegalEntityScopeWriteFenceCoordinator(rolloutRepository,
+                readiness ?? new ProductLegalEntityScopeOperationalReadinessRepository(Scope.Database, Tenant),
+                new Actor(Subject.ToString("D")), Tenant, TimeProvider.System);
+            var handler = new Features.ProductLegalEntityScopes.Handlers.CommandHandlers.ReplaceProductLegalEntityScopePolicyHandler(
+                policies ?? Policies, rolloutRepository, null!, null!,
+                new ProductLegalEntityScopeWriterAuthorityProvider(new HttpContextAccessor { HttpContext = context }, Tenant),
+                coordinator);
+            return handler.Handle(new ReplaceProductLegalEntityScopePolicyCommand(ProductId, Guid.NewGuid(),
+                new() { ExpectedVersion = 0, Mode = ProductLegalEntityScopeMode.GroupWide }), CancellationToken.None);
+        }
+    }
+
+    private sealed class BindThrows(IProductLegalEntityScopeRolloutStateRepository inner) : DelegatingRolloutRepository(inner)
+    {
+        public override Task<bool> BindWriterLeaseBaselineAsync(Guid token, long generation, string preWriteStateHash,
+            CancellationToken cancellationToken = default) => throw new TimeoutException("store lost");
+    }
+
+    private sealed class ThrowingReadiness : IProductLegalEntityScopeOperationalReadinessRepository
+    {
+        public Task<ProductLegalEntityScopeOperationalReadiness> InspectAsync(int maximumSampleSize, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<ProductLegalEntityScopeInventorySnapshot> CaptureInventorySnapshotAsync(ProductLegalEntityScopeInventorySnapshotRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<ProductLegalEntityScopeObjectState> CaptureObjectStateHashAsync(IReadOnlyCollection<Guid> objectIds, CancellationToken cancellationToken = default)
+            => throw new TimeoutException("store lost");
+    }
+
+    private sealed class ReplaceThrows(IProductLegalEntityScopePolicyRepository inner, Exception failure) : IProductLegalEntityScopePolicyRepository
+    {
+        public Task<ProductLegalEntityScopePolicy?> GetByGlobalProductIdAsync(Guid globalProductId, CancellationToken cancellationToken = default) => inner.GetByGlobalProductIdAsync(globalProductId, cancellationToken);
+        public Task<ProductLegalEntityScopePolicy?> GetByCreationCommandIdAsync(Guid creationCommandId, CancellationToken cancellationToken = default) => inner.GetByCreationCommandIdAsync(creationCommandId, cancellationToken);
+        public Task<ProductLegalEntityScopePolicyWriteResult> CreateAsync(ProductLegalEntityScopePolicy policy, CancellationToken cancellationToken = default) => inner.CreateAsync(policy, cancellationToken);
+        public Task<ProductLegalEntityScopePolicyWriteResult> UpdateAsync(ProductLegalEntityScopePolicy policy, int expectedVersion, CancellationToken cancellationToken = default) => inner.UpdateAsync(policy, expectedVersion, cancellationToken);
+        public Task<ProductLegalEntityScopePolicyWriteResult> ReplaceAsync(ProductLegalEntityScopeVerifiedWriterAuthority authority, ProductLegalEntityScopeWriterLease lease,
+            ProductLegalEntityScopePolicy requestedPolicy, int expectedVersion, CancellationToken cancellationToken = default) => throw failure;
+        public Task<IReadOnlyList<Guid>> GetConfiguredGlobalProductIdsAsync(IReadOnlyCollection<Guid> globalProductIds, CancellationToken cancellationToken = default) => inner.GetConfiguredGlobalProductIdsAsync(globalProductIds, cancellationToken);
+    }
+
+    [Fact]
+    public async Task A_replace_under_constant_lease_traffic_on_other_products_succeeds()
+    {
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var scenario = await CreateGuardedReplaceScenarioAsync(scope);
+        using var stop = new CancellationTokenSource();
+        var churn = Task.Run(async () =>
+        {
+            var rollouts = scope.RolloutRepository();
+            while (!stop.IsCancellationRequested)
+            {
+                var now = DateTimeOffset.UtcNow;
+                var acquired = await rollouts.AcquireProductWriterLeaseAsync(new ProductLegalEntityScopeWriterLease
+                {
+                    Token = Guid.NewGuid(), Generation = 1, CommandId = Guid.NewGuid(), ActorId = Guid.NewGuid(),
+                    MutationKind = "Churn", PayloadFingerprint = new string('E', 64), Owner = "Diten.MDM:Churn",
+                    AcquiredAtUtc = now, ExpiresAtUtc = now.AddSeconds(ProductLegalEntityScopeWriterLease.DurationSeconds),
+                    ObjectKeys = [$"GlobalProductId:{Guid.NewGuid():D}"]
+                });
+                if (acquired.Acquired) await rollouts.ReleaseProductWriterLeaseAsync(acquired.Lease!.Token, acquired.Lease.Generation);
+            }
+        });
+        await Task.Delay(50);
+
+        var result = await scenario.Repository.ReplaceAsync(scenario.Authority, scenario.Lease, scenario.Requested, 0);
+        stop.Cancel();
+        await churn;
+
+        Assert.True(result.Succeeded, $"conflict={result.VersionConflict}, retain={result.LeaseRetentionRequired}");
+    }
+
+    [Fact]
     public async Task GuardedWrite_ExactHumanLeaseAndPreparation_AtomicallyReplacesAndPreservesUnknownBson()
     {
         await using var scope = await ProductScopeMongoScope.CreateAsync();
@@ -651,17 +1029,17 @@ public sealed class ProductLegalEntityScopeWriteAdmissionMongoTests
             new ProductLegalEntityScopeOperationalReadinessRepository(scope.Database, tenant),
             new Actor(Guid.NewGuid().ToString("D")), tenant, new FixedClock());
 
+        // WP-MDM-SCOPE-ACCEPT-01 FIX1 B4: a product writer's lease lives in the per-object list (ProductWriterLeases).
         var first = await coordinator.EnterAsync(Command(Guid.NewGuid()), CancellationToken.None);
         await coordinator.CompleteAsync(first, false, 409, false, CancellationToken.None);
-        Assert.Null((await repository.GetAsync())!.ActiveWriterLease);
+        Assert.Empty((await repository.GetAsync())!.ProductWriterLeases);
 
         foreach (var (status, exceptional) in new[] { (202, false), (500, true), (499, true) })
         {
             var admission = await coordinator.EnterAsync(Command(Guid.NewGuid()), CancellationToken.None);
             await coordinator.CompleteAsync(admission, false, status, exceptional, CancellationToken.None);
-            Assert.NotNull((await repository.GetAsync())!.ActiveWriterLease);
-            var lease = (await repository.GetAsync())!.ActiveWriterLease!;
-            Assert.True(await repository.ReleaseWriterLeaseAsync(lease.Token, lease.Generation));
+            var lease = Assert.Single((await repository.GetAsync())!.ProductWriterLeases);
+            Assert.True(await repository.ReleaseProductWriterLeaseAsync(lease.Token, lease.Generation));
         }
     }
 
@@ -689,9 +1067,18 @@ public sealed class ProductLegalEntityScopeWriteAdmissionMongoTests
                 { "CentralAcknowledgement", "receipt-progress" }
             }));
         await coordinator.CompleteAsync(deliveryOnly, false, 409, false, CancellationToken.None);
-        Assert.Null((await repository.GetAsync())!.ActiveWriterLease);
+        Assert.Empty((await repository.GetAsync())!.ProductWriterLeases);
 
-        var partialMutation = await coordinator.EnterAsync(Command(Guid.NewGuid()), CancellationToken.None);
+        // FIX1 B4: what proves a write changed something is its OWN object (here the LSKU's GSKU), not the tenant.
+        var partialCommand = Command(Guid.NewGuid());
+        var partialMutation = await coordinator.EnterAsync(partialCommand, CancellationToken.None);
+        await scope.Database.GetCollection<BsonDocument>("mdm_lskus").InsertOneAsync(new BsonDocument
+        {
+            { "_id", new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard) },
+            { "TenantId", new BsonBinaryData(scope.TenantId, GuidRepresentation.Standard) },
+            { "GskuId", new BsonBinaryData(partialCommand.Request.GskuId, GuidRepresentation.Standard) },
+            { "IsDeleted", false }
+        });
         await collection.UpdateOneAsync(
             Builders<BsonDocument>.Filter.Eq("_id", rollout.Id),
             Builders<BsonDocument>.Update.Push("AuditIntents", new BsonDocument
@@ -704,7 +1091,9 @@ public sealed class ProductLegalEntityScopeWriteAdmissionMongoTests
                 { "CommandId", Guid.NewGuid().ToString("D") }, { "EvidenceHash", new string('A', 64) }
             }));
         await coordinator.CompleteAsync(partialMutation, false, 409, false, CancellationToken.None);
-        Assert.NotNull((await repository.GetAsync())!.ActiveWriterLease);
+        Assert.Single((await repository.GetAsync())!.ProductWriterLeases);
+        await scope.Database.GetCollection<BsonDocument>("mdm_lskus").DeleteManyAsync(
+            new BsonDocument("TenantId", new BsonBinaryData(scope.TenantId, GuidRepresentation.Standard)));
     }
 
     [Fact]
@@ -795,7 +1184,9 @@ public sealed class ProductLegalEntityScopeWriteAdmissionMongoTests
             Owner = "Diten.MDM:ForegroundProductLegalEntityScopeReplace",
             AcquiredAtUtc = leaseAcquiredAtUtc,
             ExpiresAtUtc = leaseAcquiredAtUtc.AddSeconds(
-                ProductLegalEntityScopeWriterLease.DurationSeconds)
+                ProductLegalEntityScopeWriterLease.DurationSeconds),
+            // As the coordinator stamps a foreground Replace: keyed by its product and its command (FIX1 B4).
+            ObjectKeys = [.. mutation.ObjectKeys]
         };
         var acquired = await rolloutRepository.AcquireWriterLeaseAsync(leaseRequest);
         Assert.True(acquired.Acquired);
@@ -918,7 +1309,7 @@ public sealed class ProductLegalEntityScopeWriteAdmissionMongoTests
             await provider.ResolveForegroundReplaceAsync(aggregateId, mutation));
     }
 
-    private static ProductLegalEntityScopeWriterLease CopyLease(
+    internal static ProductLegalEntityScopeWriterLease CopyLease(
         ProductLegalEntityScopeWriterLease source) => new()
         {
             Token = source.Token,

@@ -6,4 +6,23 @@
   <data name="QuickView"><value>Hızlı görünüm</value></data><data name="Unknown"><value>Bilinmiyor</value></data><data name="PolicyStatus"><value>Politika durumu</value></data><data name="EffectiveFrom"><value>Geçerlilik başlangıcı</value></data><data name="EffectiveTo"><value>Geçerlilik sonu</value></data><data name="Version"><value>Sürüm</value></data>
   <data name="Configure"><value>Yapılandır</value></data><data name="Replace"><value>Değiştir</value></data><data name="End"><value>Sonlandır</value></data><data name="EndConfirmation"><value>Mevcut ürün kapsamı dönemi sonlandırılsın mı?</value></data><data name="ViewDetails"><value>Detayları görüntüle</value></data><data name="LegacyUnclassified"><value>Yapılandırılmamış</value></data><data name="Configured"><value>Yapılandırılmış</value></data>
   <data name="ErrorGateway"><value>İstek tamamlanamadı.</value></data><data name="ErrorValidation"><value>Zorunlu alanları kontrol edin.</value></data><data name="ErrorConflict"><value>Kapsam değişti veya güncel verilerle çakışıyor.</value></data><data name="ErrorNotFound"><value>Ürün veya politika bulunamadı.</value></data><data name="ErrorForbidden"><value>Bu işlem için yetkiniz yok.</value></data><data name="ErrorProviderUnavailable"><value>Tüzel kişilik kapsam sağlayıcısı kullanılamıyor.</value></data><data name="ErrorProviderTimeout"><value>Tüzel kişilik kapsam sağlayıcısı zaman aşımına uğradı.</value></data><data name="ErrorInvalidFormAttempt"><value>Form denemesi geçersiz veya süresi dolmuş.</value></data><data name="Saved"><value>Ürün kapsamı kaydedildi.</value></data><data name="ReconciliationPending"><value>Değişiklik uzlaştırma bekliyor.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve">
+    <value>Taslak</value>
+  </data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve">
+    <value>Kimlik Onayı Bekliyor</value>
+  </data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve">
+    <value>Kimlik Onaylandı</value>
+  </data>
+  <data name="LifecycleRetired" xml:space="preserve">
+    <value>Kullanımdan Kaldırıldı</value>
+  </data>
+  <data name="ErrorFenceActive" xml:space="preserve"><value>Kapsam uygulaması açılıyor ya da kapatılıyor; değişiklikler duraklatıldı. Birkaç dakika sonra yeniden deneyin.</value></data>
+  <data name="ErrorWriterBusy" xml:space="preserve"><value>Bu üründe başka bir değişiklik sürüyor. Kısa süre sonra yeniden deneyin.</value></data>
+  <data name="ErrorSuspended" xml:space="preserve"><value>Ürün kapsamı uygulaması askıya alındı; yeniden başlatılana kadar değişiklik kabul edilmez.</value></data>
+  <data name="ErrorRolloutUnavailable" xml:space="preserve"><value>Bu kiracının ürün kapsamı ayarları okunamıyor. Yöneticinize başvurun.</value></data>
+  <data name="OtherLegalEntities" xml:space="preserve"><value>diğer şirketler: {0}</value></data>
+  <data name="ErrorWriterCapacity" xml:space="preserve"><value>Şu anda bu şirket grubunda çok fazla değişiklik yapılıyor. Birkaç dakika sonra yeniden deneyin.</value></data>
+  <data name="ErrorStoreUnavailable" xml:space="preserve"><value>Ürün kapsamı ayarlarına şu anda ulaşılamıyor. Kısa süre sonra yeniden deneyin.</value></data>
 </root>

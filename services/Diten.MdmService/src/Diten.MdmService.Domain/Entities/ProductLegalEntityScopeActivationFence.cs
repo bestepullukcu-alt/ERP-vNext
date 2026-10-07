@@ -14,6 +14,14 @@ public sealed class ProductLegalEntityScopeActivationFence
     public string? FirstStableFactsHash { get; set; }
     public string? SecondStableFactsHash { get; set; }
 
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX1 B2 — the inventory snapshot the fence bound and the transition will carry. Held HERE
+    /// until the transition commits: the rollout's <c>LastInventorySnapshot</c> is the evidence of the LAST COMMITTED
+    /// transition and is never overwritten by a pending one (before, binding a Suspend overwrote the Activate's evidence
+    /// and left the tenant's rollout record unreadable).
+    /// </summary>
+    public ProductLegalEntityScopeInventorySnapshot? PendingSnapshot { get; set; }
+
     public void EnsureValid()
     {
         if (!Hex(Token) || !Enum.IsDefined(State) || CommandId == Guid.Empty || ActorId == Guid.Empty
@@ -21,6 +29,12 @@ public sealed class ProductLegalEntityScopeActivationFence
             || !Reason(ReasonCode) || AcquiredAtUtc.Offset != TimeSpan.Zero
             || FirstStableFactsHash is not null && !Hex(FirstStableFactsHash)
             || SecondStableFactsHash is not null && !Hex(SecondStableFactsHash))
+        {
+            throw new InvalidOperationException("PRODUCT_SCOPE_ACTIVATION_FENCE_INVALID");
+        }
+        PendingSnapshot?.EnsureValid();
+        if (PendingSnapshot is not null
+            && !string.Equals(PendingSnapshot.StableFactsHash, SecondStableFactsHash, StringComparison.Ordinal))
         {
             throw new InvalidOperationException("PRODUCT_SCOPE_ACTIVATION_FENCE_INVALID");
         }

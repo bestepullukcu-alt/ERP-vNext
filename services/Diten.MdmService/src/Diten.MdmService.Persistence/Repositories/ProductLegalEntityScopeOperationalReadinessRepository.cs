@@ -92,17 +92,124 @@ public sealed class ProductLegalEntityScopeOperationalReadinessRepository
         return new ProductLegalEntityScopeOperationalReadiness(rollout, descendantIntegrity, audit);
     }
 
-    public async Task<string> CaptureMutationStateHashAsync(
+    public async Task<ProductLegalEntityScopeObjectState> CaptureObjectStateHashAsync(
+        IReadOnlyCollection<Guid> objectIds,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(objectIds);
+        var named = objectIds.Where(id => id != Guid.Empty).Distinct().ToArray();
+        if (named.Length == 0) return new(string.Empty, false);
+        // FIX2 (8): a write names its product, not the children it adds below it — a GSKU carries no GlobalProductId,
+        // only its revision. The proof follows the hierarchy down (product → revisions → GSKUs → LSKUs / finished goods;
+        // product → register entries), so a child half-added by a failed write moves the hash and the lease is kept.
+        var ids = (await ExpandObjectIdsAsync(named, cancellationToken)).OrderBy(id => id).ToArray();
+        var values = new BsonArray(ids.Select(id => new BsonBinaryData(id, GuidRepresentation.Standard)));
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        foreach (var collection in MutationCollections)
+        foreach (var (collection, fields) in ObjectFields)
         {
             Append(hash, $"collection={collection}\n");
-            await AppendCollectionAsync(hash, collection, MutationProjection, cancellationToken);
+            var filter = new BsonDocument
+            {
+                { "TenantId", new BsonBinaryData(_tenantId, GuidRepresentation.Standard) },
+                { "$or", new BsonArray(fields.Select(field => new BsonDocument(field, new BsonDocument("$in", values)))) }
+            };
+            using var cursor = await _database.GetCollection<BsonDocument>(collection)
+                .Find(filter)
+                .Sort(new BsonDocument("_id", 1))
+                .ToCursorAsync(cancellationToken);
+            while (await cursor.MoveNextAsync(cancellationToken))
+            {
+                foreach (var document in cursor.Current)
+                    Append(hash, Canonicalize(MutationProjection(document)) + "\n");
+            }
         }
-        return Convert.ToHexString(hash.GetHashAndReset());
+        return new(Convert.ToHexString(hash.GetHashAndReset()), true);
     }
+
+    private async Task<HashSet<Guid>> ExpandObjectIdsAsync(IReadOnlyCollection<Guid> named, CancellationToken cancellationToken)
+    {
+        var ids = new HashSet<Guid>(named);
+        foreach (var (collection, parentFields) in Descendants)
+        {
+            var values = new BsonArray(ids.Select(id => new BsonBinaryData(id, GuidRepresentation.Standard)));
+            var filter = new BsonDocument
+            {
+                { "TenantId", new BsonBinaryData(_tenantId, GuidRepresentation.Standard) },
+                { "$or", new BsonArray(parentFields.Select(field => new BsonDocument(field, new BsonDocument("$in", values)))) }
+            };
+            using var cursor = await _database.GetCollection<BsonDocument>(collection)
+                .Find(filter)
+                .Project(new BsonDocument("_id", 1))
+                .ToCursorAsync(cancellationToken);
+            while (await cursor.MoveNextAsync(cancellationToken))
+            {
+                foreach (var document in cursor.Current)
+                    if (document["_id"] is BsonBinaryData { SubType: BsonBinarySubType.UuidStandard } binary)
+                        ids.Add(binary.ToGuid(GuidRepresentation.Standard));
+            }
+        }
+        return ids;
+    }
+
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX2 (9) — every clause of the object-state <c>$or</c> must use an index, or the whole query
+    /// reads the collection. Measured (explain, <c>ProductLegalEntityScopeObjectQueryPlanTests</c>): the abbreviation ledger
+    /// and history had no index on GlobalProductId (nor the ledger on RegisterEntryId), and the register's only
+    /// GlobalProductId index is partial (active entries) — each a collection scan per product write. These indexes carry
+    /// NEW names (the owning repositories' own indexes are untouched) and are created at startup (FIX3 (8)); a failure
+    /// leaves the reads correct (only slower) and is logged.
+    /// </summary>
+    internal static readonly (string Collection, string Name, string[] Keys)[] ObjectIndexes =
+    [
+        (AbbreviationLedger, "ix_mdm_product_abbreviation_ledger_tenant_product_scope_proof", ["TenantId", "GlobalProductId"]),
+        (AbbreviationLedger, "ix_mdm_product_abbreviation_ledger_tenant_entry_scope_proof", ["TenantId", "RegisterEntryId"]),
+        (AbbreviationHistory, "ix_mdm_product_abbreviation_history_tenant_product_scope_proof", ["TenantId", "GlobalProductId"]),
+        (AbbreviationRegister, "ix_mdm_product_abbreviation_register_tenant_product_scope_proof", ["TenantId", "GlobalProductId", "_id"])
+    ];
+
+    /// <summary>
+    /// FIX3 (8): built at STARTUP (<c>ProductLegalEntityScopeProofIndexInitializer</c>), not by the first leased write —
+    /// on a large collection the build could outlast the writer's lease. Idempotent; called once per process start.
+    /// </summary>
+    public static async Task EnsureObjectIndexesAsync(IMongoDatabase database, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(database);
+        foreach (var (collection, index, keys) in ObjectIndexes)
+        {
+            var definition = new BsonDocument(keys.Select(key => new BsonElement(key, 1)));
+            await database.GetCollection<BsonDocument>(collection).Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(definition, new CreateIndexOptions { Name = index }),
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    /// <summary>The children a write can add below what it names, parent before child (each step sees the one before).</summary>
+    internal static readonly (string Collection, string[] ParentFields)[] Descendants =
+    [
+        (Revisions, ["GlobalProductId"]),
+        (Gskus, ["ProductDefinitionRevisionId", "CodeReservationId"]),
+        (Lskus, ["GskuId"]),
+        (FinishedGoods, ["GskuId"]),
+        (AbbreviationRegister, ["GlobalProductId"])
+    ];
+
+    /// <summary>
+    /// The product documents a write can touch, by the ids that name them: the document itself (_id) or its parent's
+    /// id. One write's proof reads only these — never a collection in full.
+    /// </summary>
+    internal static readonly (string Collection, string[] Fields)[] ObjectFields =
+    [
+        ("mdm_code_reservations", ["_id"]),
+        (GlobalProducts, ["_id"]),
+        (Revisions, ["_id", "GlobalProductId"]),
+        (Gskus, ["_id", "CodeReservationId", "ProductDefinitionRevisionId"]),
+        (Lskus, ["_id", "GskuId"]),
+        (FinishedGoods, ["_id", "GskuId"]),
+        (AbbreviationRegister, ["_id", "GlobalProductId"]),
+        (AbbreviationLedger, ["_id", "GlobalProductId", "RegisterEntryId"]),
+        (AbbreviationHistory, ["RegisterEntryId", "GlobalProductId"]),
+        (ScopePolicies, ["_id", "GlobalProductId"])
+    ];
 
     public async Task<ProductLegalEntityScopeInventorySnapshot> CaptureInventorySnapshotAsync(
         ProductLegalEntityScopeInventorySnapshotRequest request,
@@ -403,11 +510,6 @@ public sealed class ProductLegalEntityScopeOperationalReadinessRepository
         { "IsDeleted", false }
     };
 
-    private static readonly string[] MutationCollections =
-    [
-        "mdm_code_reservations", GlobalProducts, Revisions, Gskus, Lskus, FinishedGoods,
-        AbbreviationRegister, AbbreviationLedger, AbbreviationHistory, ScopePolicies, RolloutStates
-    ];
 
     private static readonly (string Category, string Collection)[] DescendantCollections =
     [

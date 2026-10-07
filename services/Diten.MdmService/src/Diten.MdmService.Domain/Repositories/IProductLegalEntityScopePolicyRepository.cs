@@ -44,4 +44,5 @@ public sealed record ProductLegalEntityScopePolicyWriteResult(
     bool VersionConflict = false,
     bool WriteOutcomeAmbiguous = false,
     bool VerifiedZeroMutation = false,
-    bool LeaseRetentionRequired = false);
+    bool LeaseRetentionRequired = false,
+    bool TransientRetriesExhausted = false);

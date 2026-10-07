@@ -79,12 +79,17 @@ public static class ProductLegalEntityScopeModels
         public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
     }
 
+    /// <param name="OtherLegalEntityCount">
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX2 (10) — in an Enforced tenant, how many of the period's legal entities the caller may not
+    /// see. Their ids are left out of <paramref name="LegalEntityIds"/> ("other companies: N"); 0 when nothing is hidden.
+    /// </param>
     public sealed record PeriodDto(
         Guid PeriodId,
         ProductLegalEntityScopeMode Mode,
         IReadOnlyList<Guid> LegalEntityIds,
         DateTimeOffset EffectiveFromUtc,
-        DateTimeOffset? EffectiveToUtc);
+        DateTimeOffset? EffectiveToUtc,
+        int OtherLegalEntityCount = 0);
 
     public sealed record PolicyDto(
         Guid Id,

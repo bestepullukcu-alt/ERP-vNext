@@ -39,7 +39,10 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
         ReplaceProductLegalEntityScopePolicyCommand request,
         CancellationToken cancellationToken)
     {
-        if ((await _rollout.GetAsync(cancellationToken))?.Mode != ProductLegalEntityScopeRolloutMode.Preparation)
+        var (unreadable, rollout) = await CreateProductLegalEntityScopePolicyHandler.TryReadRolloutAsync(
+            _rollout, "replace", cancellationToken);
+        if (unreadable is not null) return CreateProductLegalEntityScopePolicyHandler.RolloutUnreadable(unreadable);
+        if (rollout?.Mode != ProductLegalEntityScopeRolloutMode.Preparation)
             return CreateProductLegalEntityScopePolicyHandler.Fail("PRODUCT_SCOPE_ROLLOUT_NOT_PREPARATION");
         var policy = await _policies.GetByGlobalProductIdAsync(request.GlobalProductId, cancellationToken);
         if (policy is null)
@@ -81,6 +84,7 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
         }
 
         var now = DateTimeOffset.UtcNow;
+        var before = policy.GetEffectivePeriod(now);
         try
         {
             policy.ReplaceCurrent(request.Request.ExpectedVersion, request.CommandId,
@@ -92,15 +96,17 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
         }
         policy.AuditIntents.Add(ProductLegalEntityScopeAuditIntentFactory.Create(
             policy, ProductAuditOperation.ProductLegalEntityScopePolicyReplaced,
-            request.Request.ExpectedVersion, policy.Version, request.CommandId, authority.SubjectId, now));
+            request.Request.ExpectedVersion, policy.Version, request.CommandId, authority.SubjectId, now,
+            before, policy.GetEffectivePeriod(now)));
 
         var admission = await _coordinator.EnterForegroundReplaceAsync(
             authority,
             request,
             cancellationToken);
+        // FIX4 (5): the coordinator's own status travels (503 contended / store unavailable, 409 busy …).
         if (!admission.IsAllowed || admission.Context is null)
-            return CreateProductLegalEntityScopePolicyHandler.Fail(
-                admission.FailureCode ?? "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
+            return Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(
+                admission.FailureCode ?? "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE", admission.StatusCode);
 
         ProductLegalEntityScopePolicyWriteResult result;
         try
@@ -115,10 +121,24 @@ public sealed class ReplaceProductLegalEntityScopePolicyHandler
         catch (InvalidOperationException exception) when (
             CreateProductLegalEntityScopePolicyHandler.IsBsonBudgetFailure(exception))
         {
+            // FIX4 (1): the budget is checked on the projected document BEFORE any write — nothing was written, so the
+            // slot is released (principle A), not left held tenant-wide for its whole lease.
+            await _coordinator.CompleteForegroundReplaceAsync(admission,
+                new ProductLegalEntityScopePolicyWriteResult(false, null, VerifiedZeroMutation: true), CancellationToken.None);
             return CreateProductLegalEntityScopePolicyHandler.Fail("PRODUCT_SCOPE_BSON_LIMIT_EXCEEDED");
+        }
+        catch
+        {
+            // FIX4 (1): any other failure of the write — whether anything landed is not known: the slot is kept (its exit
+            // is the same command repeated, or the lease's expiry) and counted, never silent.
+            ProductLegalEntityScopeRolloutMetrics.CountRetained("replace_exception");
+            throw;
         }
 
         await _coordinator.CompleteForegroundReplaceAsync(admission, result, cancellationToken);
+        if (result.TransientRetriesExhausted)
+            // FIX4 (4b): every retry of a transaction the server aborted as transient was used — nothing was written.
+            return Response<ProductLegalEntityScopeModels.PolicyDto>.Fail("PRODUCT_SCOPE_REPLACE_CONTENDED", 503);
         if (result.WriteOutcomeAmbiguous)
             return Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(
                 "PRODUCT_SCOPE_RECONCILIATION_REQUIRED", 202);

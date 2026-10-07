@@ -51,7 +51,10 @@ public sealed class ProductLegalEntityScopeActivationMongoTests
         Assert.True(await repository.BindFenceSnapshotsAsync(first.Fence.Token, firstStable, secondStable));
         var persisted = Assert.IsType<ProductLegalEntityScopeRolloutState>(await repository.GetAsync());
         Assert.Equal(ProductLegalEntityScopeAdmissionState.Quiesced, persisted.ActiveFence!.State);
-        Assert.Equal(secondStable.SnapshotHash, persisted.LastInventorySnapshot!.SnapshotHash);
+        // WP-MDM-SCOPE-ACCEPT-01 FIX1 B2: the bound snapshot waits in the fence; the last committed transition's evidence
+        // (none yet) is not overwritten by a pending one.
+        Assert.Equal(secondStable.SnapshotHash, persisted.ActiveFence.PendingSnapshot!.SnapshotHash);
+        Assert.Null(persisted.LastInventorySnapshot);
     }
 
     [Fact]
@@ -100,6 +103,8 @@ public sealed class ProductLegalEntityScopeActivationMongoTests
         requested.LastTransitionAction = "ActivateEnforced";
         requested.LastTransitionReasonCode = fence.ReasonCode;
         requested.LastTransitionEvidenceHash = snapshot.SnapshotHash;
+        // FIX1 B2: the transition carries its own snapshot (the runner takes it from the fence's PendingSnapshot).
+        requested.LastInventorySnapshot = requested.ActiveFence!.PendingSnapshot;
         var intent = ProductLegalEntityScopeAuditIntentFactory.Create(
             requested,
             ProductAuditOperation.ProductLegalEntityScopeEnforcementActivated,

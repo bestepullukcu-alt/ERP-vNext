@@ -4,25 +4,39 @@
 @{
     ViewData["Title"] = Localizer["ProductLegalEntityScopesTitle"].Value;
     Layout = "_LayoutTenantShell";
+    var canRead = ViewData["CanReadProductScope"] as bool? == true;
     var canConfigure = ViewData["CanConfigureProductScope"] as bool? == true;
     var canReplace = ViewData["CanReplaceProductScope"] as bool? == true;
     var canEnd = ViewData["CanEndProductScope"] as bool? == true;
 }
-@* <partial name="_Filter" /> *@
-<partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_Filter.cshtml" />
-<div class="mb-3" data-can-configure="@canConfigure.ToString().ToLowerInvariant()" data-can-replace="@canReplace.ToString().ToLowerInvariant()" data-can-end="@canEnd.ToString().ToLowerInvariant()">
-    <h5 class="mb-0">@Localizer["ProductLegalEntityScopesTitle"]</h5>
-    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
-</div>
-<partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_DataTable.cshtml" />
-@* id="offcanvasDetailsPreview" is rendered by the real details partial. *@
-<partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_DetailsQuickView.cshtml" />
-@if (canConfigure || canReplace || canEnd)
+
+@* UAS-001 / WP-MDM-SCOPE-ACCEPT-01 FIX1 B5 — signed in without read permission: the 403 surface INSIDE the shell and
+   nothing else (the controller sets the 403 status). No redirect, no page skeleton. *@
+@if (!canRead)
 {
-    <partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_CreateEditOffcanvas.cshtml" />
+    <partial name="_AccessDenied" model="@Localizer["ProductLegalEntityScopesTitle"].Value" />
+    return;
 }
+
+<div id="product-legal-entity-scopes" data-can-configure="@canConfigure.ToString().ToLowerInvariant()" data-can-replace="@canReplace.ToString().ToLowerInvariant()" data-can-end="@canEnd.ToString().ToLowerInvariant()">
+    @* Golden contract marker: <partial name="_Filter" />; actual absolute include below. *@
+    <partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_Filter.cshtml" />
+    <div class="mb-3">
+        <h5 class="mb-0">@Localizer["ProductLegalEntityScopesTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    @* WP-MDM-SCOPE-ACCEPT-01 FIX1 (BL-440): no bulk bar — the list declares no selection (HasSelection = false, GxP). *@
+    <partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_DataTable.cshtml" />
+    @* id="offcanvasDetailsPreview" is rendered by the real details partial. *@
+    <partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_DetailsQuickView.cshtml" />
+    @if (canConfigure || canReplace || canEnd)
+    {
+        <partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_CreateEditOffcanvas.cshtml" />
+    }
+</div>
+
 @section Scripts {
-    @* <partial name="_IndexL10n" /> *@
+    @* Golden contract marker: <partial name="_IndexL10n" />; actual absolute include below. *@
     <partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_IndexL10n.cshtml" />
     <script src="~/assets/js/MasterDataManagement/ProductLegalEntityScopes/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/MasterDataManagement/ProductLegalEntityScopes/index.js" asp-append-version="true"></script>

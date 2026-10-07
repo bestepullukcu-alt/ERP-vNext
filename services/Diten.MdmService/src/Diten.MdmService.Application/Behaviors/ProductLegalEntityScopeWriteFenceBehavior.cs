@@ -21,7 +21,7 @@ public sealed class ProductLegalEntityScopeWriteFenceBehavior<TRequest, TRespons
             || typeof(TResponse).GetGenericTypeDefinition() != typeof(Response<>))
             throw new InvalidOperationException("PRODUCT_SCOPE_WRITE_RESPONSE_CONTRACT_UNSUPPORTED");
         var admission = await _coordinator.EnterAsync(mutation, cancellationToken);
-        if (!admission.IsAllowed) return Failure(admission.FailureCode!);
+        if (!admission.IsAllowed) return Failure(admission.FailureCode!, admission.StatusCode);
         using var ambientLease = _coordinator.Activate(admission);
         try
         {
@@ -40,12 +40,12 @@ public sealed class ProductLegalEntityScopeWriteFenceBehavior<TRequest, TRespons
         }
     }
 
-    private static TResponse Failure(string code)
+    private static TResponse Failure(string code, int statusCode)
     {
         var responseType = typeof(TResponse);
         if (!responseType.IsGenericType || responseType.GetGenericTypeDefinition() != typeof(Response<>))
             throw new InvalidOperationException(code);
         var method = responseType.GetMethod(nameof(Response<NoContent>.Fail), [typeof(string), typeof(int)])!;
-        return (TResponse)method.Invoke(null, [code, 409])!;
+        return (TResponse)method.Invoke(null, [code, statusCode])!;
     }
 }

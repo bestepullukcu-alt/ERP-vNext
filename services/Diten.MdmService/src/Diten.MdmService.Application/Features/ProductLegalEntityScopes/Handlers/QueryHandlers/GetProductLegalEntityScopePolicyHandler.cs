@@ -9,14 +9,14 @@ namespace Diten.MdmService.Application.Features.ProductLegalEntityScopes.Handler
 public sealed class GetProductLegalEntityScopePolicyHandler
     : IRequestHandler<GetProductLegalEntityScopePolicyQuery, Response<ProductLegalEntityScopeModels.PolicyDto>>
 {
-    private readonly IGlobalProductRepository _products;
+    private readonly ProductLegalEntityScopeProductAccess _access;
     private readonly IProductLegalEntityScopePolicyRepository _policies;
 
     public GetProductLegalEntityScopePolicyHandler(
-        IGlobalProductRepository products,
+        ProductLegalEntityScopeProductAccess access,
         IProductLegalEntityScopePolicyRepository policies)
     {
-        _products = products;
+        _access = access;
         _policies = policies;
     }
 
@@ -24,12 +24,15 @@ public sealed class GetProductLegalEntityScopePolicyHandler
         GetProductLegalEntityScopePolicyQuery request,
         CancellationToken cancellationToken)
     {
-        if (await _products.GetByIdAsync(request.GlobalProductId, cancellationToken) is null)
-            return Response<ProductLegalEntityScopeModels.PolicyDto>.Fail("GLOBAL_PRODUCT_NOT_FOUND", 404);
+        // FIX1 S1: only a product the caller may see (Enforced: by their legal entities); else as if it did not exist.
+        var access = await _access.ResolveAsync(
+            request.GlobalProductId, ProductLegalEntityScopeProductAccess.ReadPermission, cancellationToken);
+        if (!access.Allowed)
+            return Response<ProductLegalEntityScopeModels.PolicyDto>.Fail(access.FailureCode!, access.StatusCode);
         var policy = await _policies.GetByGlobalProductIdAsync(request.GlobalProductId, cancellationToken);
         return policy is null
             ? Response<ProductLegalEntityScopeModels.PolicyDto>.Fail("PRODUCT_SCOPE_POLICY_NOT_FOUND", 404)
-            : Response<ProductLegalEntityScopeModels.PolicyDto>.Success(
-                CreateProductLegalEntityScopePolicyHandler.Map(policy));
+            : Response<ProductLegalEntityScopeModels.PolicyDto>.Success(ProductLegalEntityScopeProductAccess.Mask(
+                CreateProductLegalEntityScopePolicyHandler.Map(policy), access.Context!));
     }
 }

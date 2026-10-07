@@ -306,6 +306,10 @@ builder.Services.AddOptions<GskuChildAdmissionGaugeOptions>()
 builder.Services.AddHostedService<GskuChildAdmissionGaugeWorker>();
 builder.Services.AddSingleton<LskuRetirementRequestRecoveryRunner>();
 builder.Services.AddHostedService<LskuRetirementRequestRecoveryWorker>();
+// WP-MDM-SCOPE-ACCEPT-01 FIX2 (3): read-only gauges of what holds product writes (fence age, leases held).
+builder.Services.AddHostedService<ProductLegalEntityScopeHoldGaugeWorker>();
+// WP-MDM-SCOPE-ACCEPT-01 FIX3 (8): the write proof's indexes are built at startup, never by a leased write.
+builder.Services.AddHostedService<ProductLegalEntityScopeProofIndexInitializer>();
 
 if (!runProductLegalEntityScopeOperational
     && !runLskuIdentityWorkflowRecovery

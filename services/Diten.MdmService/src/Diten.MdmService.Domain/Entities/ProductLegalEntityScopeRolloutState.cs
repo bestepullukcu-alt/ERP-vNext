@@ -12,6 +12,34 @@ public sealed class ProductLegalEntityScopeRolloutState : EntityBase, IAuditInte
     public ProductLegalEntityScopeWriterLease? ActiveWriterLease { get; set; }
     public long WriterLeaseGeneration { get; set; }
     public ProductLegalEntityScopeActivationFence? ActiveFence { get; set; }
+
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX1 B4 — the product writers in flight, one lease per command, keyed by what each touches.
+    /// <see cref="ActiveWriterLease"/> stays the scope policy's own (foreground replace) lease.
+    /// </summary>
+    public List<ProductLegalEntityScopeWriterLease> ProductWriterLeases { get; set; } = [];
+
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX2 (5) — the most product writers one tenant holds at once. A new writer beyond it is
+    /// refused as busy; the list (rewritten by every acquisition) never grows without bound. A stored list above it is
+    /// still readable.
+    /// </summary>
+    public const int MaximumProductWriterLeases = 256;
+
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX3 (3) — the ceiling of the OTHER bucket: leases that name no object (creates). They never
+    /// count against <see cref="MaximumProductWriterLeases"/>, so failed creates cannot refuse the writers of products.
+    /// </summary>
+    public const int MaximumObjectlessWriterLeases = 512;
+
+    /// <summary>Optimistic revision of <see cref="ProductWriterLeases"/>: every change of the list moves it by one.</summary>
+    public long ProductWriterLeaseRevision { get; set; }
+
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX1 B3 — the last fence that was abandoned (readiness or inventory refused the transition,
+    /// or an operator aborted it with the fence's own command): who, which command, why, when. Kept as evidence.
+    /// </summary>
+    public ProductLegalEntityScopeFenceAbort? LastFenceAbort { get; set; }
     public ProductLegalEntityScopeInventorySnapshot? LastInventorySnapshot { get; set; }
     public Guid? LastTransitionCommandId { get; set; }
     public Guid? LastTransitionActorId { get; set; }
@@ -59,6 +87,13 @@ public sealed class ProductLegalEntityScopeRolloutState : EntityBase, IAuditInte
         }
         ActiveWriterLease?.EnsureValid();
         ActiveFence?.EnsureValid();
+        LastFenceAbort?.EnsureValid();
+        if (ProductWriterLeases is null || ProductWriterLeaseRevision < 0
+            || ProductWriterLeases.Select(lease => lease.Token).Distinct().Count() != ProductWriterLeases.Count)
+        {
+            throw new InvalidOperationException("PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_STATE_INVALID");
+        }
+        foreach (var lease in ProductWriterLeases) lease.EnsureValid();
         LastInventorySnapshot?.EnsureValid();
         var hasTransition = LastTransitionCommandId.HasValue || LastTransitionActorId.HasValue
             || LastTransitionIntentId.HasValue || LastTransitionAction is not null

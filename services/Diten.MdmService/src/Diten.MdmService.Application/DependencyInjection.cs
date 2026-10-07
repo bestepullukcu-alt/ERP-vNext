@@ -29,6 +29,8 @@ public static class DependencyInjection
         services.AddScoped<ProductLegalEntityScopeWriteFenceCoordinator>();
         services.AddScoped<ProductIdentityBackgroundScope>();
         services.AddScoped<LskuBackgroundScope>();
+        services.AddSingleton<IProductLegalEntityScopeActivationDebt>(ProductLegalEntityScopeActivationDebt.Instance);
+        services.AddScoped<ProductLegalEntityScopeProductAccess>();
 
         return services;
     }

@@ -28,7 +28,10 @@ public sealed class EndProductLegalEntityScopePolicyHandler
         EndProductLegalEntityScopePolicyCommand request,
         CancellationToken cancellationToken)
     {
-        if ((await _rollout.GetAsync(cancellationToken))?.Mode != ProductLegalEntityScopeRolloutMode.Preparation)
+        var (unreadable, rollout) = await CreateProductLegalEntityScopePolicyHandler.TryReadRolloutAsync(
+            _rollout, "end", cancellationToken);
+        if (unreadable is not null) return CreateProductLegalEntityScopePolicyHandler.RolloutUnreadable(unreadable);
+        if (rollout?.Mode != ProductLegalEntityScopeRolloutMode.Preparation)
             return CreateProductLegalEntityScopePolicyHandler.Fail("PRODUCT_SCOPE_ROLLOUT_NOT_PREPARATION");
         var policy = await _policies.GetByGlobalProductIdAsync(request.GlobalProductId, cancellationToken);
         if (policy is null)
@@ -49,6 +52,7 @@ public sealed class EndProductLegalEntityScopePolicyHandler
 
         var actorId = CreateProductLegalEntityScopePolicyHandler.ParseActor(_actor.ActorId);
         var now = DateTimeOffset.UtcNow;
+        var before = policy.GetEffectivePeriod(now);
         try
         {
             policy.EndCurrent(request.Request.ExpectedVersion, request.CommandId, actorId, now);
@@ -59,7 +63,8 @@ public sealed class EndProductLegalEntityScopePolicyHandler
         }
         policy.AuditIntents.Add(ProductLegalEntityScopeAuditIntentFactory.Create(
             policy, ProductAuditOperation.ProductLegalEntityScopePolicyEnded,
-            request.Request.ExpectedVersion, policy.Version, request.CommandId, actorId, now));
+            request.Request.ExpectedVersion, policy.Version, request.CommandId, actorId, now,
+            before, after: null));
         ProductLegalEntityScopePolicyWriteResult result;
         try
         {
