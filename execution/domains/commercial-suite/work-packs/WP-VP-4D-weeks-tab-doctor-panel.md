@@ -137,6 +137,9 @@ Kaynak: `mockups/visit-planning/visit-planning-v2.decoded.html` ekran "03 Plan d
 ## Ek — Ziyareti başka güne taşıma (Haftalar) — kullanıcı kararı 2026-10-08
 **Ön koşul:** WP-VP-4E (gün sabitlemesi backend) birleşmiş olmalı.
 - Hafta ayrıntısındaki açılır gün satırlarında ziyaret **başka güne sürüklenir** (klavye alternatifi: ziyaret menüsünde "Güne taşı…" + gün seçimi; erişilebilirlik).
+- **İki taşıma birimi (kullanıcı sorusu 2026-10-08):**
+  - **kurum satırını sürükle** → `scope = institution` (kurumun doktorları + bağlı eczaneleri birlikte);
+  - **tek doktoru sürükle** → bırakınca soru "Bu kurumdaki diğer ziyaretleri de (N doktor, M eczane) taşıyayım mı?" → "Hepsini taşı" (`institution`) / "Yalnız bu doktor" (`visit`). N / M önizlemedeki `groupKey`'den.
 - Bırakınca mevcut oturum güncellemesi `dayPins { weekStart, pins }` (4E) gönderilir → önizleme tazelenir.
 - Sabit ziyaret simgeyle (`isPinned`) gösterilir. "Sabiti kaldır" → pin listeden çıkar.
 - Yalnız **taslak** hafta. Onaylı / geçmiş haftada sürükleme kapalı + ipucu ("Değiştirmek için haftayı yeniden açın").

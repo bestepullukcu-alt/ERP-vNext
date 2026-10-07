@@ -10,6 +10,7 @@
 
 ## NE
 1. Rota'daki durak, **gün sekmesinin üstüne sürüklenince** o güne taşınır. Klavye alternatifi: durak menüsünde "Güne taşı…".
+   - Kurum durağı (çok ziyaretli durak) → `scope = institution`; tek doktor → 4D'deki aynı soru ("Hepsini taşı" / "Yalnız bu doktor").
 2. Taşıma = 4E `dayPins` (mevcut oturum güncellemesi) → önizleme tazelenir; hedef gün sekmesi açılır, durak yeni sırada ve saatte görünür.
 3. Gün içi sürükle-bırak (elle sıra) **aynen** kalır.
 4. Sabit durak simgesi (`isPinned`) + "Sabiti kaldır" (4D bileşeni).
