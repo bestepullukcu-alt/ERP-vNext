@@ -43,8 +43,14 @@ public sealed class LskuIdentityWorkflowProcessor(
     private TimeSpan SettleWindow => execution?.SettleWindow ?? TimeSpan.FromMinutes(2);
 
     // A start sent less than the settle window ago may still be in the engine's hands (never sent: nothing to wait for).
-    private bool Settling(LskuIdentityWorkflowOperation operation, DateTimeOffset now) =>
-        operation.LastStartSentAtUtcTicksV1 is { } sent && sent > 0 && now.UtcTicks - sent < SettleWindow.Ticks;
+    // FIX3 M2: a legacy document (no mark) may have sent its start at its last update — the window runs from there,
+    // as in the retirement flow (?? UpdatedAt); only the explicit 0 has nothing to wait for.
+    // LSKU FIX4 item 5: "its last update" is the one read BEFORE the claim — the claim itself writes UpdatedAt = now,
+    // so the copy re-read under the claim would always be inside the window (a legacy submit never closed, a
+    // reconciliation never trusting "nothing under this key").
+    private bool Settling(LskuIdentityWorkflowOperation operation, long preClaimUpdatedAtUtcTicks, DateTimeOffset now) =>
+        (operation.LastStartSentAtUtcTicksV1 ?? preClaimUpdatedAtUtcTicks) is var sent && sent > 0
+        && now.UtcTicks - sent < SettleWindow.Ticks;
 
     // FIX2 item 13: only 0 proves "never sent" — written at reservation. A legacy operation (the field missing, read as
     // null) may have sent its start before the field existed.
@@ -222,10 +228,20 @@ public sealed class LskuIdentityWorkflowProcessor(
             if (operation.Checkpoint == LskuIdentityWorkflowCheckpoint.Completed)
                 return operation.WithdrawalCommandId.HasValue ? Success(operation, true)
                     : Fail(operation, "LSKU_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
+            // FIX3 M3: a withdrawal parked for its maker is the worker's end — only the requester's same withdrawal can
+            // send the cancel; the worker neither claims nor rewrites it.
+            if (string.IsNullOrWhiteSpace(token) && operation.Checkpoint == LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay)
+                return Fail(operation, "LSKU_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", 409);
             var now = timeProvider.GetUtcNow();
             var claim = await operations.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
                 [operation.Checkpoint], leaseOwner, now.UtcTicks, now.Add(leaseDuration).UtcTicks), cancellationToken);
             if (claim is null) return Fail(operation, "LSKU_IDENTITY_WORKFLOW_BUSY", 409);
+            // FIX3 item 4: every decision of this step is made on the document as it is UNDER the claim — a copy read
+            // before it may be stale within the same checkpoint (the claim compares the checkpoint, not the facts).
+            if (await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken) is not { } underClaim
+                || underClaim.Checkpoint != claim.Checkpoint)
+                return Fail(operation, "LSKU_IDENTITY_WORKFLOW_BUSY", 409);
+            operation = underClaim;
             bool advanced;
             switch (operation.Checkpoint)
             {
@@ -250,7 +266,8 @@ public sealed class LskuIdentityWorkflowProcessor(
                         // nothing changed there — the operation goes back to awaiting the decision, every withdrawal
                         // field goes, and the decision is applied by the ordinary observation.
                         advanced = Retryable(preflight.Outcome)
-                            ? await ScheduleRetryAsync(claim, operation.Checkpoint, preflight.ErrorCode, now, retryDelay, cancellationToken)
+                            ? await ScheduleRetryAsync(operation, claim, operation.Checkpoint, preflight.ErrorCode, now, retryDelay,
+                                string.IsNullOrWhiteSpace(token), cancellationToken)
                             : await ClosedBeforeWithdrawalAsync(operation, claim, preflight.ErrorCode, now, cancellationToken);
                         break;
                     }
@@ -268,10 +285,17 @@ public sealed class LskuIdentityWorkflowProcessor(
                 {
                     if (string.IsNullOrWhiteSpace(token))
                     {
-                        advanced = await AdvanceAsync(claim, LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
-                            ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay, now,
-                            "LSKU_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", true, cancellationToken);
-                        break;
+                        // FIX3 item 2 / M3: parked for its maker (only the requester's same withdrawal can send the
+                        // cancel). The worker's pass ENDS here — it does not re-claim and rewrite AMR until its step
+                        // budget — and the time the cancel was first left unanswered is kept for the gauge.
+                        if (!await operations.AdvanceAsync(claim, new(LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                                ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay, now.UtcTicks,
+                                LastFailureCode: "LSKU_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", ReleaseLease: true,
+                                WithdrawalUnansweredSinceUtcTicksV1: operation.WithdrawalUnansweredSinceUtcTicksV1 ?? now.UtcTicks),
+                                cancellationToken))
+                            return Fail(operation, "LSKU_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
+                        var parked = await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken) ?? operation;
+                        return Fail(parked, "LSKU_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", 409);
                     }
                     var cancelled = await workflowClient.CancelAsync(operation.TenantId, new(
                         operation.WorkflowInstanceId!.Value, operation.ApprovalTaskId!.Value,
@@ -285,8 +309,9 @@ public sealed class LskuIdentityWorkflowProcessor(
                         // An unanswered cancel may have happened: asked again. A refused one did not: B5 as above.
                         advanced = Retryable(cancelled.Outcome)
                                    || cancelled.Outcome == ProductIdentityWorkflowTransportOutcome.Incomplete
-                            ? await ScheduleRetryAsync(claim, LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
-                                cancelled.ErrorCode, now, retryDelay, cancellationToken)
+                            ? await ScheduleRetryAsync(operation, claim, LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
+                                cancelled.ErrorCode, now, retryDelay, string.IsNullOrWhiteSpace(token), cancellationToken,
+                                withdrawalUnansweredSince: operation.WithdrawalUnansweredSinceUtcTicksV1 ?? now.UtcTicks)
                             : await ClosedBeforeWithdrawalAsync(operation, claim, cancelled.ErrorCode, now, cancellationToken);
                         break;
                     }
@@ -386,6 +411,7 @@ public sealed class LskuIdentityWorkflowProcessor(
             var counted = string.IsNullOrWhiteSpace(delegatedUserToken);
 
             var now = timeProvider.GetUtcNow();
+            var preClaimUpdatedAtUtcTicks = operation.UpdatedAtUtcTicksV1;
             var claim = await operations.TryClaimAsync(
                 new(
                     operation.OperationId,
@@ -399,6 +425,13 @@ public sealed class LskuIdentityWorkflowProcessor(
             {
                 return Fail(operation, "LSKU_IDENTITY_WORKFLOW_BUSY", 409);
             }
+            // FIX3 item 4: decide on the document as it is UNDER the claim (see ProcessWithdrawalAsync).
+            if (await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken) is not { } underClaim
+                || underClaim.Checkpoint != claim.Checkpoint)
+            {
+                return Fail(operation, "LSKU_IDENTITY_WORKFLOW_BUSY", 409);
+            }
+            operation = underClaim;
 
             var advanced = operation.Checkpoint switch
             {
@@ -408,7 +441,7 @@ public sealed class LskuIdentityWorkflowProcessor(
                         cancellationToken: cancellationToken),
                 LskuIdentityWorkflowCheckpoint.StartOutcomeUnknown or
                     LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay =>
-                    await ResolveStartAsync(operation, claim, delegatedUserToken, now, retryDelay, cancellationToken),
+                    await ResolveStartAsync(operation, claim, delegatedUserToken, now, retryDelay, counted, cancellationToken),
                 LskuIdentityWorkflowCheckpoint.WorkflowStarted =>
                     await ApplyLocalPendingAsync(operation, claim, now, retryDelay, counted, cancellationToken),
                 LskuIdentityWorkflowCheckpoint.LocalPendingApplied =>
@@ -416,17 +449,17 @@ public sealed class LskuIdentityWorkflowProcessor(
                         ProductIdentityWorkflowRecoveryDisposition.None, now, releaseLease: true,
                         cancellationToken: cancellationToken),
                 LskuIdentityWorkflowCheckpoint.AwaitingDecision =>
-                    await ObserveDecisionAsync(operation, claim, now, retryDelay, cancellationToken),
+                    await ObserveDecisionAsync(operation, claim, now, retryDelay, counted, cancellationToken),
                 LskuIdentityWorkflowCheckpoint.DecisionObserved =>
                     await ValidateApprovalOrApplyRejectAsync(
-                        operation, claim, now, retryDelay, cancellationToken),
+                        operation, claim, now, retryDelay, counted, cancellationToken),
                 LskuIdentityWorkflowCheckpoint.ApprovalValidated =>
                     await ApplyDecisionAsync(operation, claim, now, retryDelay, counted, cancellationToken),
                 LskuIdentityWorkflowCheckpoint.DecisionApplied =>
                     await VerifyDecisionAppliedAndCompleteAsync(
                         operation, claim, now, retryDelay, cancellationToken),
                 LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired =>
-                    await ReconcileAsync(operation, claim, now, cancellationToken),
+                    await ReconcileAsync(operation, claim, preClaimUpdatedAtUtcTicks, now, counted, cancellationToken),
                 _ => false
             };
             if (!advanced)
@@ -466,6 +499,7 @@ public sealed class LskuIdentityWorkflowProcessor(
         string? delegatedUserToken,
         DateTimeOffset now,
         TimeSpan retryDelay,
+        bool counted,
         CancellationToken cancellationToken)
     {
         ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult> outcome;
@@ -493,6 +527,12 @@ public sealed class LskuIdentityWorkflowProcessor(
             {
                 return false;
             }
+            else
+            {
+                // FIX3 item 4: the copy this step decides on carries the mark it just wrote (an end written after the
+                // send compares it — AbandonBeforeStartAsync).
+                operation.LastStartSentAtUtcTicksV1 = now.UtcTicks;
+            }
         }
         if (startMayBeSent)
         {
@@ -516,7 +556,7 @@ public sealed class LskuIdentityWorkflowProcessor(
                         // Refused before anything was processed: nothing exists at the engine. The submit ends, the
                         // LSKU stays a draft (its version moves), and the maker can submit again.
                         return await AbandonAsync(operation, claim, BoundedCode(outcome.ErrorCode, StartRefused), now,
-                            cancellationToken);
+                            counted, cancellationToken);
                     case ProductIdentityWorkflowFaultKind.Quarantine:
                         return await QuarantineAsync(claim, outcome.ErrorCode, now, cancellationToken);
                     case ProductIdentityWorkflowFaultKind.MakerReplay:
@@ -562,8 +602,8 @@ public sealed class LskuIdentityWorkflowProcessor(
             == ProductIdentityWorkflowFaultKind.ServiceWait)
         {
             return await ScheduleRetryAsync(
-                claim, LskuIdentityWorkflowCheckpoint.StartOutcomeUnknown,
-                lookup.ErrorCode, now, retryDelay, cancellationToken);
+                operation, claim, LskuIdentityWorkflowCheckpoint.StartOutcomeUnknown,
+                lookup.ErrorCode, now, retryDelay, string.IsNullOrWhiteSpace(delegatedUserToken), cancellationToken);
         }
 
         // The LOOKUP's refusal says nothing about what the start did: stuck, the requester's repeat reads again.
@@ -588,36 +628,90 @@ public sealed class LskuIdentityWorkflowProcessor(
      * nothing for it — no start was ever sent, or the engine has nothing under its key after the settle window — the
      * cancel closes it (a named end; its fence goes). Otherwise the cancel is refused: a start that may have arrived
      * is never closed behind the engine's back (principle A).
+     * FIX3 items 3 / 4 / 15: the decision is made on the document UNDER the claim (the maker's replay may have sent a
+     * start since the cancel first read it), and the closure is ONE atomic write — the submit abandoned with its own
+     * audit intent, the draft's version moved, its fence released — guarded by the start-sent mark it was decided on
+     * (AbandonBeforeStartAsync compares it). The caller then cancels at the moved version.
      */
+    // LSKU FIX4 item 8: the closure's audit intent names the CANCELLER (who closed it), not the submit's maker.
     public async Task<(bool Closed, string? Code, int Status)> CloseForDraftCancelAsync(
-        LskuIdentityWorkflowOperation operation, string leaseOwner, TimeSpan leaseDuration,
+        LskuIdentityWorkflowOperation operation, Guid cancellerSubjectId, string leaseOwner, TimeSpan leaseDuration,
         CancellationToken cancellationToken)
     {
         if (operation.Checkpoint != LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay)
             return (false, "LSKU_SUBMIT_IN_FLIGHT", 409);
         var now = timeProvider.GetUtcNow();
-        if (!NeverSent(operation))
-        {
-            if (Settling(operation, now)) return (false, "LSKU_SUBMIT_IN_FLIGHT", 409);
-            var lookup = await workflowClient.GetStartResultAsync(operation.TenantId,
-                new(operation.ObjectType, operation.ObjectId, operation.MakerSubjectId, operation.StartIdempotencyKey),
-                cancellationToken);
-            if (lookup.Outcome != ProductIdentityWorkflowTransportOutcome.NotFound)
-                return (false, lookup.Outcome == ProductIdentityWorkflowTransportOutcome.Success
-                    ? "LSKU_SUBMIT_IN_FLIGHT" : ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit,
-                    lookup.Outcome == ProductIdentityWorkflowTransportOutcome.Success ? 409 : 503);
-        }
         var claim = await operations.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
             [operation.Checkpoint], leaseOwner, now.UtcTicks, now.Add(leaseDuration).UtcTicks), cancellationToken);
         if (claim is null) return (false, "LSKU_IDENTITY_WORKFLOW_BUSY", 409);
-        if (!await AdvanceAsync(claim, LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
-                ProductIdentityWorkflowRecoveryDisposition.None, now, ClosedByDraftCancel, releaseLease: true,
-                cancellationToken: cancellationToken))
-            return (false, "LSKU_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
-        var released = await lskus.ReleaseIdentitySubmitFenceAsync(operation.LskuId, operation.OperationId, cancellationToken);
-        log.LogInformation("LSKU identity operation {OperationId} of tenant {TenantId} was closed by its draft's cancel ({ResultCode}).",
-            operation.OperationId, operation.TenantId, ClosedByDraftCancel);
-        return released.Succeeded ? (true, null, 200) : (false, released.ErrorCode, 409);
+        // LSKU FIX5 K3: whatever throws after the claim (the re-read, the engine lookup, the LSKU read, the store's end
+        // write) gives the lease back before it goes on — releasing only clears this claim's own lease, so it never undoes
+        // a write that committed (the end write itself clears the lease when it commits).
+        try
+        {
+            // LSKU FIX4 item 7 / FIX5 item 2: every exit after the claim gives the lease back. Here — the document gone, moved
+            // to another checkpoint, or in its withdrawal — nothing is written (a keep-write from a moved copy could write
+            // the wrong checkpoint): only this claim's own lease is released.
+            var fresh = await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken);
+            if (fresh is null || fresh.Checkpoint != LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay || InWithdrawal(fresh))
+            {
+                await operations.ReleaseLeaseAsync(claim, cancellationToken);
+                return (false, "LSKU_SUBMIT_IN_FLIGHT", 409);
+            }
+            if (!NeverSent(fresh))
+            {
+                if (Settling(fresh, operation.UpdatedAtUtcTicksV1, now)) return await KeepForMakerAsync(fresh, claim, now, "LSKU_SUBMIT_IN_FLIGHT", 409, cancellationToken);
+                var lookup = await workflowClient.GetStartResultAsync(fresh.TenantId,
+                    new(fresh.ObjectType, fresh.ObjectId, fresh.MakerSubjectId, fresh.StartIdempotencyKey),
+                    cancellationToken);
+                if (lookup.Outcome != ProductIdentityWorkflowTransportOutcome.NotFound)
+                    return await KeepForMakerAsync(fresh, claim, now,
+                        lookup.Outcome == ProductIdentityWorkflowTransportOutcome.Success
+                            ? "LSKU_SUBMIT_IN_FLIGHT" : ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit,
+                        lookup.Outcome == ProductIdentityWorkflowTransportOutcome.Success ? 409 : 503, cancellationToken);
+            }
+            var lsku = await lskus.GetByIdAsync(fresh.LskuId, cancellationToken);
+            if (lsku is null) return await KeepForMakerAsync(fresh, claim, now, "LSKU_NOT_FOUND", 404, cancellationToken);
+            var audit = LskuIdentityLifecycleAuditIntentFactory.CreateSubmitAbandoned(lsku, fresh.ExpectedLskuVersion,
+                fresh.OperationId, cancellerSubjectId, ClosedByDraftCancel, now);
+            var written = await operations.AbandonBeforeStartAsync(claim, fresh, ClosedByDraftCancel, audit, now.UtcTicks,
+                cancellationToken);
+            if (!written.Succeeded)
+                return await KeepForMakerAsync(fresh, claim, now, written.ErrorCode ?? "LSKU_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT",
+                    written.ErrorCode == "AUDIT_INTENT_CAPACITY_REACHED" ? 503 : 409, cancellationToken);
+            log.LogInformation("LSKU identity operation {OperationId} of tenant {TenantId} was closed by its draft's cancel ({ResultCode}).",
+                fresh.OperationId, fresh.TenantId, ClosedByDraftCancel);
+            return (true, null, 200);
+        }
+        catch (Exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            await ReleaseQuietlyAsync(claim);
+            throw;
+        }
+    }
+
+    private async Task ReleaseQuietlyAsync(LskuIdentityWorkflowClaim claim)
+    {
+        using var bound = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        try { await operations.ReleaseLeaseAsync(claim, bound.Token); }
+        catch (Exception exception)
+        {
+            log.LogWarning("LSKU identity operation {OperationId}: the lease could not be given back after a failure ({ExceptionType}); it expires on its own.",
+                claim.OperationId, exception.GetType().Name);
+        }
+    }
+
+    // The cancel did not close the submit: it stays parked for its maker, unchanged, and the lease goes back now.
+    private async Task<(bool Closed, string? Code, int Status)> KeepForMakerAsync(LskuIdentityWorkflowOperation operation,
+        LskuIdentityWorkflowClaim claim, DateTimeOffset now, string code, int status, CancellationToken cancellationToken)
+    {
+        var kept = await operations.AdvanceAsync(claim, new(operation.Checkpoint, operation.RecoveryDisposition, now.UtcTicks,
+            NextAttemptAtUtcTicksV1: operation.NextAttemptAtUtcTicksV1, LastFailureCode: operation.LastFailureCode,
+            ReleaseLease: true, Streak: RecoveryStreakWrite.Keep, RetryLimitCauseCode: operation.RetryLimitCauseCode),
+            cancellationToken);
+        // LSKU FIX4 item 7: a keep-write the store refused means the operation moved under this claim (its lease was
+        // given back by the store's refusal path) — said as such, not as the reason the cancel meant to give.
+        return kept ? (false, code, status) : (false, "LSKU_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
     }
 
     private static bool RefusedBeforeProcessing(ProductIdentityWorkflowTransportOutcome outcome, string? code) =>
@@ -627,8 +721,10 @@ public sealed class LskuIdentityWorkflowProcessor(
 
     // LSKU FIX1 B3: the submit ends before anything started; the draft's version moves in the same transaction so the
     // maker's resubmit (the Web derives the operation id from the version) is a new operation.
+    // LSKU FIX5 item 1: both callers run on the maker's interactive pass too — the real "counted" goes through, so a
+    // refused abandon write on a repeat never moves the streak (the 6+ class of FIX4).
     private async Task<bool> AbandonAsync(LskuIdentityWorkflowOperation operation, LskuIdentityWorkflowClaim claim,
-        string code, DateTimeOffset now, CancellationToken cancellationToken)
+        string code, DateTimeOffset now, bool counted, CancellationToken cancellationToken)
     {
         var lsku = await lskus.GetByIdAsync(operation.LskuId, cancellationToken);
         if (lsku is null) return await QuarantineAsync(claim, "LSKU_IDENTITY_NOT_FOUND", now, cancellationToken);
@@ -643,7 +739,7 @@ public sealed class LskuIdentityWorkflowProcessor(
             return true;
         }
         return await WriteRefusedAsync(operation, claim, written.ErrorCode, now, TimeSpan.FromSeconds(30),
-            counted: true, cancellationToken);
+            counted, cancellationToken);
     }
 
     // LSKU FIX1 B5: the engine decided and MDM cannot apply it — the LSKU goes back to Draft with the reason.
@@ -679,7 +775,8 @@ public sealed class LskuIdentityWorkflowProcessor(
      *   anything else                                            → stays, 409 "a person" (BL-530).
      */
     private async Task<bool> ReconcileAsync(LskuIdentityWorkflowOperation operation, LskuIdentityWorkflowClaim claim,
-        DateTimeOffset now, CancellationToken cancellationToken)
+        long preClaimUpdatedAtUtcTicks,
+        DateTimeOffset now, bool counted, CancellationToken cancellationToken)
     {
         if (CanResumeApprovalContract(operation, "requester"))
             return await AdvanceAsync(claim, LskuIdentityWorkflowCheckpoint.DecisionObserved,
@@ -693,8 +790,9 @@ public sealed class LskuIdentityWorkflowProcessor(
             if (lookup.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
                 return await PersistStartedAsync(operation, claim, lookup.Value, now, cancellationToken);
             // LSKU FIX2 item 10: "nothing under this key" is trusted only after the settle window (the retirement rule).
-            if (lookup.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound && !Settling(operation, now))
-                return await AbandonAsync(operation, claim, ReconciledNothingStarted, now, cancellationToken);
+            if (lookup.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound
+                && !Settling(operation, preClaimUpdatedAtUtcTicks, now))
+                return await AbandonAsync(operation, claim, ReconciledNothingStarted, now, counted, cancellationToken);
             return await StayStuckAsync(operation, claim, now, cancellationToken);
         }
         var lsku = await lskus.GetByIdAsync(operation.LskuId, cancellationToken);
@@ -846,6 +944,7 @@ public sealed class LskuIdentityWorkflowProcessor(
         LskuIdentityWorkflowClaim claim,
         DateTimeOffset now,
         TimeSpan retryDelay,
+        bool counted,
         CancellationToken cancellationToken)
     {
         if (!operation.WorkflowInstanceId.HasValue)
@@ -866,11 +965,13 @@ public sealed class LskuIdentityWorkflowProcessor(
                 result.Outcome, result.ErrorCode).Kind == ProductIdentityWorkflowFaultKind.ServiceWait)
         {
             return await ScheduleRetryAsync(
+                operation,
                 claim,
                 LskuIdentityWorkflowCheckpoint.AwaitingDecision,
                 result.ErrorCode ?? "LSKU_IDENTITY_WORKFLOW_DECISION_PENDING",
                 now,
                 retryDelay,
+                counted,
                 cancellationToken);
         }
         // BL-547: CLOSED_WITHOUT_DECISION — the approval ended with no decision: the submit is not applicable and the
@@ -878,7 +979,7 @@ public sealed class LskuIdentityWorkflowProcessor(
         if (ProductIdentityWorkflowFaultPolicy.IsClosedWithoutDecision(result))
         {
             return await DecisionNotApplicableAsync(operation, claim, ClosedWithoutDecision, now, retryDelay,
-                counted: true, cancellationToken);
+                counted, cancellationToken);
         }
         if (result.Outcome != ProductIdentityWorkflowTransportOutcome.Success || result.Value is null)
         {
@@ -894,7 +995,7 @@ public sealed class LskuIdentityWorkflowProcessor(
             log.LogWarning("LSKU identity operation {OperationId} of tenant {TenantId} was decided by its own maker; the decision is not applied ({ResultCode}).",
                 operation.OperationId, operation.TenantId, SelfApprovalIgnored);
             return await DecisionNotApplicableAsync(operation, claim, SelfApprovalIgnored, now, retryDelay,
-                counted: true, cancellationToken);
+                counted, cancellationToken);
         }
         if (!TryMapDecision(evidence.TerminalAction, out var decision)
             || !ExactTerminalStatuses(decision, evidence.TaskStatus, evidence.InstanceStatus)
@@ -1026,11 +1127,14 @@ public sealed class LskuIdentityWorkflowProcessor(
             cancellationToken: cancellationToken);
     }
 
+    // LSKU FIX4 item 10 (c) (found by its test): a repeat by the maker (not counted) must not move the streak here
+    // either — the flag was dropped on this step, so every interactive repeat at DecisionObserved counted as a worker try.
     private async Task<bool> ValidateApprovalOrApplyRejectAsync(
         LskuIdentityWorkflowOperation operation,
         LskuIdentityWorkflowClaim claim,
         DateTimeOffset now,
         TimeSpan retryDelay,
+        bool counted,
         CancellationToken cancellationToken)
     {
         if (!TryRehydrateEvidence(operation, out var evidence))
@@ -1042,13 +1146,13 @@ public sealed class LskuIdentityWorkflowProcessor(
         // Rejection is deliberately provider- and parent-independent.
         if (evidence.Decision == ProductIdentityDecisionKind.Rejected)
         {
-            return await ApplyDecisionAsync(operation, claim, now, retryDelay, counted: true, cancellationToken);
+            return await ApplyDecisionAsync(operation, claim, now, retryDelay, counted, cancellationToken);
         }
 
         var validation = await ValidateApprovalDependenciesAsync(operation, cancellationToken);
         if (!validation.Succeeded || validation.Selection is null)
         {
-            return await ApprovalNotValidAsync(operation, claim, validation, now, retryDelay, counted: true,
+            return await ApprovalNotValidAsync(operation, claim, validation, now, retryDelay, counted,
                 cancellationToken);
         }
 
@@ -1106,7 +1210,8 @@ public sealed class LskuIdentityWorkflowProcessor(
                     resolved.StatusCode == 504
                         ? "REFERENCE_PROVIDER_TIMEOUT"
                         : "REFERENCE_MARKET_NOT_FOUND"),
-                MakerFixable: resolved.StatusCode == 404);
+                // FIX3 item 6: only the provider's own "not offered" (its exact reason), not any 404.
+                MakerFixable: resolved.StatusCode == 404 && resolved.FailureCode == "REFERENCE_MARKET_NOT_FOUND");
         }
         var value = resolved.Selection;
         if (value.SetCode != "market" || value.ValueCode != operation.MarketCode
@@ -1138,7 +1243,7 @@ public sealed class LskuIdentityWorkflowProcessor(
         ApprovalDependencyValidation validation, DateTimeOffset now, TimeSpan retryDelay, bool counted,
         CancellationToken cancellationToken) =>
         validation.Retryable
-            ? ScheduleRetryAsync(claim, operation.Checkpoint, validation.ErrorCode, now, retryDelay, cancellationToken)
+            ? ScheduleRetryAsync(operation, claim, operation.Checkpoint, validation.ErrorCode, now, retryDelay, counted, cancellationToken)
             : validation.MakerFixable
                 ? DecisionNotApplicableAsync(operation, claim, BoundedCode(validation.ErrorCode, DecisionNotApplicableCode),
                     now, retryDelay, counted, cancellationToken)
@@ -1160,7 +1265,7 @@ public sealed class LskuIdentityWorkflowProcessor(
         if (operation.Checkpoint == LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
             return QuarantineAsync(claim, normalized, now, cancellationToken);
         if (ProductIdentityWriteFaults.MayPassByItself(normalized))
-            return ScheduleRetryAsync(claim, operation.Checkpoint, normalized, now, retryDelay, cancellationToken);
+            return ScheduleRetryAsync(operation, claim, operation.Checkpoint, normalized, now, retryDelay, counted, cancellationToken);
         if (!ProductIdentityWriteFaults.MetAConcurrentWrite(normalized))
             return QuarantineAsync(claim, normalized, now, cancellationToken);
         var (exhausted, _, next) = ProductIdentityRecoveryStreak.Next(
@@ -1185,23 +1290,53 @@ public sealed class LskuIdentityWorkflowProcessor(
             ClearWithdrawal: true), cancellationToken);
     }
 
-    private Task<bool> ScheduleRetryAsync(
+    public const string RetryLimitReached = "LSKU_IDENTITY_WORKFLOW_RETRY_LIMIT_REACHED";
+
+    /*
+     * FIX3 item 2 (the retirement flow's RetryAsync): a wait is bounded and counted. Only the worker's attempts count
+     * (an interactive repeat keeps the streak); the delay backs off to the ceiling. At the limit the operation STAYS
+     * where it waits and Retryable — never "manual + retryable" — with RETRY_LIMIT_REACHED as its cause, so the
+     * LSKU_IDENTITY gauge counts it (manual_reconciliation) and the error line is said once. A later success resets it.
+     */
+    private async Task<bool> ScheduleRetryAsync(
+        LskuIdentityWorkflowOperation operation,
         LskuIdentityWorkflowClaim claim,
         LskuIdentityWorkflowCheckpoint checkpoint,
         string? errorCode,
         DateTimeOffset now,
         TimeSpan retryDelay,
-        CancellationToken cancellationToken) =>
-        operations.AdvanceAsync(
+        bool counted,
+        CancellationToken cancellationToken,
+        long? withdrawalUnansweredSince = null)
+    {
+        var (exhausted, _, next) = ProductIdentityRecoveryStreak.Next(
+            counted ? operation.FailedAttemptCount : Math.Max(operation.FailedAttemptCount - 1, 0), now, retryDelay,
+            ProductIdentityRecoveryStreak.DefaultQuarantineAfterFailedAttempts,
+            ProductIdentityRecoveryStreak.DefaultMaxRetryDelay);
+        var code = BoundedCode(errorCode, "LSKU_IDENTITY_WORKFLOW_PROVIDER_UNAVAILABLE");
+        // LSKU FIX4 item 6: the limit is said ONCE — by the recovery runner when the operation newly becomes stuck (with
+        // this cause). An interactive repeat (not counted) of an operation at its limit keeps the limit and only
+        // updates the cause, so neither the gauge nor the next worker pass sees a "new" stuck operation.
+        string? cause = null;
+        if (counted && exhausted || !counted && operation.LastFailureCode == RetryLimitReached)
+        {
+            cause = code;
+            code = RetryLimitReached;
+        }
+        return await operations.AdvanceAsync(
             claim,
             new(
                 checkpoint,
                 ProductIdentityWorkflowRecoveryDisposition.Retryable,
                 now.UtcTicks,
-                now.Add(retryDelay).UtcTicks,
-                BoundedCode(errorCode, "LSKU_IDENTITY_WORKFLOW_PROVIDER_UNAVAILABLE"),
-                ReleaseLease: true),
+                next,
+                code,
+                ReleaseLease: true,
+                Streak: counted ? RecoveryStreakWrite.Increment : RecoveryStreakWrite.Keep,
+                WithdrawalUnansweredSinceUtcTicksV1: withdrawalUnansweredSince,
+                RetryLimitCauseCode: cause),
             cancellationToken);
+    }
 
     private Task<bool> QuarantineAsync(
         LskuIdentityWorkflowClaim claim,

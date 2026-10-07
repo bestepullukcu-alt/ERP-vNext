@@ -130,13 +130,14 @@ public static class LskuIdentityLifecycleAuditIntentFactory
 
     // LSKU FIX1 B3: the engine refused the submit before starting anything; the draft's version moves.
     public static LocalAuditIntent CreateSubmitAbandoned(
-        Lsku product, int expectedVersion, Guid operationId, Guid makerId, string reason, DateTimeOffset timestampUtc)
+        Lsku product, int expectedVersion, Guid operationId, Guid actorId, string reason, DateTimeOffset timestampUtc)
     {
+        // LSKU FIX4 item 8: the actor is whoever ended the submit — the maker (engine refusal) or the canceller.
         var key = $"lsku-identity-submit:{operationId:D}:abandoned";
-        return Create(product, ProductAuditOperation.LskuIdentitySubmitAbandoned, expectedVersion, makerId, key,
+        return Create(product, ProductAuditOperation.LskuIdentitySubmitAbandoned, expectedVersion, actorId, key,
             operationId.ToString("D"), timestampUtc,
             EncodeFacts(product.TenantId.ToString("D"), product.Id.ToString("D"), operationId.ToString("D"),
-                makerId.ToString("D"), reason));
+                actorId.ToString("D"), reason));
     }
 
     // LSKU FIX1 B5: the engine decided and MDM could not apply it; the LSKU is a draft again.

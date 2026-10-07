@@ -230,8 +230,18 @@ public sealed class LskuRepository : ILskuRepository
 
         try
         {
-            await _lskus.InsertOneAsync(lsku, cancellationToken: cancellationToken);
-            return new(true, lsku);
+            // A transient transaction error that is NOT the code being burned (another insert of the same market or key
+            // still in its transaction, a failover, a network cut) is retried with backoff (the FirstGsku ReserveAttempts
+            // shape): the next attempt meets a committed row as an ordinary duplicate key (a definite refusal). Running
+            // out of attempts is NOT a refusal — LSKU FIX4 item 1: "a wait never burns" — the outcome stays ambiguous
+            // (202, the code and the admission kept for the same key's repeat).
+            for (var attempt = 1; ; attempt++)
+            {
+                var inserted = await InsertBoundToLiveCodeAsync(lsku, reservationFilter, cancellationToken);
+                if (inserted.ErrorCode != InsertConflictRetry) return inserted;
+                if (attempt >= InsertAttempts) return AmbiguousWrite();
+                await Task.Delay(TimeSpan.FromMilliseconds(50 << attempt), cancellationToken);
+            }
         }
         catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
@@ -273,7 +283,72 @@ public sealed class LskuRepository : ILskuRepository
         {
             return AmbiguousWrite();
         }
+        // LSKU FIX5 K6: a commit whose result is unknown (the driver's UnknownTransactionCommitResult label, on a
+        // command error or otherwise) and a server-selection timeout are not refusals — the row may or may not be
+        // there: ambiguous (202), never burned, the admission kept for the same key's repeat (formerly a 500).
+        catch (MongoException exception) when (exception.HasErrorLabel("UnknownTransactionCommitResult"))
+        {
+            return AmbiguousWrite();
+        }
+        catch (TimeoutException)
+        {
+            return AmbiguousWrite();
+        }
     }
+
+    /*
+     * LSKU FIX3 item 5 (c), CT decision (A): the row goes in only with its code still live — in ONE transaction the
+     * reservation is written (conditioned on Consumed for this identity and not Burned) and the row inserted. The
+     * reservation write is UpdatedAt only: metadata, outside its Version and its audit-intent Pre/PostVersion chain;
+     * it exists to make an overlapping burn (CodeReservationRepository.BurnIdentityBindingAsync, which reads "no live
+     * row bound" in its own transaction) and this insert fail each other with a write conflict. A burn that committed
+     * first makes the condition fail: CODE_RESERVATION_BURNED, no row. Without transactions (a standalone mongod) no
+     * burn can happen at all (it is refused), so the plain insert is kept there.
+     */
+    // LSKU FIX3 5 (c) tests only: a barrier inside the insert's transaction, before its reservation write.
+    internal Func<Task>? BeforeReservationWriteForTests { get; set; }
+
+    private async Task<LskuCreateResult> InsertBoundToLiveCodeAsync(Lsku lsku, FilterDefinition<CodeReservation> reservationFilter,
+        CancellationToken cancellationToken)
+    {
+        using var session = await _lskus.Database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+        try
+        {
+            session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+            if (BeforeReservationWriteForTests is { } barrier) await barrier();
+            var touched = await _reservations.UpdateOneAsync(session,
+                reservationFilter & Builders<CodeReservation>.Filter.Ne(x => x.BindingState, CodeReservationBindingState.Burned),
+                Builders<CodeReservation>.Update.Set(x => x.UpdatedAt, DateTimeOffset.UtcNow),
+                cancellationToken: cancellationToken);
+            if (touched.MatchedCount != 1)
+            {
+                await session.AbortTransactionAsync(cancellationToken);
+                return new(false, null, "CODE_RESERVATION_BURNED");
+            }
+            await _lskus.InsertOneAsync(session, lsku, cancellationToken: cancellationToken);
+            await session.CommitTransactionAsync(cancellationToken);
+            return new(true, lsku);
+        }
+        catch (Exception exception) when (exception is NotSupportedException || exception is MongoCommandException { Code: 20 })
+        {
+            await _lskus.InsertOneAsync(lsku, cancellationToken: cancellationToken);
+            return new(true, lsku);
+        }
+        catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError")
+                                               && exception is not MongoWriteException)
+        {
+            // A write conflict: nothing of ours committed. A burn that won leaves the code burned; anything else
+            // (another insert in flight) is decided by trying again.
+            var code = await _reservations.Find(Builders<CodeReservation>.Filter.Eq(x => x.Id, lsku.CodeReservationId))
+                .FirstOrDefaultAsync(cancellationToken);
+            return code?.BindingState == CodeReservationBindingState.Burned
+                ? new(false, null, "CODE_RESERVATION_BURNED")
+                : new(false, null, InsertConflictRetry);
+        }
+    }
+
+    private const string InsertConflictRetry = "LSKU_INSERT_CONFLICT_RETRY";
+    internal const int InsertAttempts = 4;
 
     public Task<LskuLifecycleWriteResult> SubmitIdentityAsync(
         Guid id,
@@ -765,22 +840,17 @@ public sealed class LskuRepository : ILskuRepository
     private static LskuCreateResult AmbiguousWrite() =>
         new(false, null, "LSKU_WRITE_OUTCOME_AMBIGUOUS", WriteOutcomeAmbiguous: true);
 
+    // LSKU FIX5 item 4: the same command is recognised by its IDENTITY facts only — the market selection is resolved
+    // again on every call (Platform stamps ResolvedAtUtc anew), so two concurrent requests of one key would otherwise
+    // see each other as a conflict (409) instead of a replay.
     private static bool SameFacts(Lsku left, Lsku right) =>
         left.Id == right.Id
         && left.GskuId == right.GskuId
         && left.CodeReservationId == right.CodeReservationId
         && string.Equals(left.CanonicalCode, right.CanonicalCode, StringComparison.Ordinal)
         && string.Equals(left.CreationCommandId, right.CreationCommandId, StringComparison.Ordinal)
-        && string.Equals(left.MarketCode, right.MarketCode, StringComparison.Ordinal)
-        && SameSelection(left.MarketSelection, right.MarketSelection);
+        && string.Equals(left.MarketCode, right.MarketCode, StringComparison.Ordinal);
 
-    private static bool SameSelection(ReferenceCatalogSelection left, ReferenceCatalogSelection right) =>
-        string.Equals(left.SetCode, right.SetCode, StringComparison.Ordinal)
-        && string.Equals(left.ValueCode, right.ValueCode, StringComparison.Ordinal)
-        && left.CatalogVersionId == right.CatalogVersionId
-        && left.CatalogVersionNumber == right.CatalogVersionNumber
-        && left.ResolutionMode == right.ResolutionMode
-        && left.ResolvedAtUtc == right.ResolvedAtUtc;
 
     public async Task<LskuCreateResult> CreateDraftWithAdmissionAsync(
         Lsku lsku, string admissionFingerprint, CancellationToken cancellationToken = default)

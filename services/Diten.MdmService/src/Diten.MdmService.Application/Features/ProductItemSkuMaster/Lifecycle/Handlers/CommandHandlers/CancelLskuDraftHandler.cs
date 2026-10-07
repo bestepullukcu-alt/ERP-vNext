@@ -65,24 +65,50 @@ public sealed class CancelLskuDraftHandler(
         var decision = await scopeGuard.EvaluateAsync(scope.Context!, product.Id, cancellationToken);
         if (!decision.Allowed) return Fail("LSKU_NOT_FOUND", 404);
 
+        // FIX3 item 3: closing a submit moves the draft's version (its own audited, atomic end); the cancel then goes on
+        // at that version. A repeat of a cancel whose closure already committed finds the closure at the version it
+        // was asked for and goes on from there.
+        var expectedVersion = command.ExpectedVersion;
+        if (lsku.Version == expectedVersion + 1
+            && await identityOperations.GetClosedByDraftCancelAsync(lsku.Id, expectedVersion, cancellationToken) is not null)
+            expectedVersion++;
+
         if (!lsku.IsDeleted)
         {
             if (lsku.LifecycleStatus != ProductIdentityLifecycleStatus.Draft)
                 return Fail("LSKU_NOT_A_DRAFT", 409);
+            if (lsku.Version != expectedVersion)
+                return Fail("LSKU_CONCURRENCY_CONFLICT", 409);
             // FIX2 item 10: a submit waiting for its maker's replay whose start is known never to have reached the
             // engine is closed by this cancel (a named end); any other unfinished submit refuses it — a stuck one is
             // counted by the identity gauge (LSKU_IDENTITY).
-            foreach (var operation in await identityOperations.GetUnfinishedForLskuAsync(lsku.Id, cancellationToken))
+            var unfinished = await identityOperations.GetUnfinishedForLskuAsync(lsku.Id, cancellationToken);
+            foreach (var operation in unfinished)
             {
-                var closed = await identityProcessor.CloseForDraftCancelAsync(operation,
+                var closed = await identityProcessor.CloseForDraftCancelAsync(operation, actor,
                     $"draft-cancel-{actor:N}", identityExecution.LeaseDuration, cancellationToken);
                 if (!closed.Closed) return Fail(closed.Code ?? "LSKU_SUBMIT_IN_FLIGHT", closed.Status);
+                expectedVersion++;
             }
+            // FIX3 item 3: a fence still held by a submit that has ENDED (written before the closure was atomic, or
+            // left by any other path) holds nothing at the engine — it is given back here instead of refusing for good.
+            if (lsku.ActiveLifecycleOperation is { Kind: LskuLifecycleOperationKind.IdentitySubmit } fence
+                && unfinished.All(x => x.OperationId != fence.OperationId))
+            {
+                var holder = await identityOperations.GetByOperationIdAsync(fence.OperationId, cancellationToken);
+                if (holder is null || holder.Checkpoint is LskuIdentityWorkflowCheckpoint.Completed
+                        or LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                        or LskuIdentityWorkflowCheckpoint.DecisionNotApplicable
+                        or LskuIdentityWorkflowCheckpoint.Superseded)
+                    await lskus.ReleaseIdentitySubmitFenceAsync(lsku.Id, fence.OperationId, cancellationToken);
+            }
+            if (unfinished.Count > 0 || lsku.ActiveLifecycleOperation is not null)
+                lsku = await lskus.GetByIdOrTombstoneAsync(lsku.Id, cancellationToken) ?? lsku;
         }
 
-        var audit = LskuIdentityLifecycleAuditIntentFactory.CreateDraftCancelled(lsku, command.ExpectedVersion,
+        var audit = LskuIdentityLifecycleAuditIntentFactory.CreateDraftCancelled(lsku, expectedVersion,
             command.OperationId, actor, reason, clock.GetUtcNow().ToUniversalTime());
-        var cancelled = await lskus.CancelDraftAsync(lsku.Id, command.ExpectedVersion, audit, cancellationToken);
+        var cancelled = await lskus.CancelDraftAsync(lsku.Id, expectedVersion, audit, cancellationToken);
         if (!cancelled.Succeeded || cancelled.Lsku is null)
             return Fail(cancelled.ErrorCode ?? "LSKU_DRAFT_CANCEL_FAILED",
                 cancelled.ErrorCode switch
@@ -105,7 +131,9 @@ public sealed class CancelLskuDraftHandler(
                 $"lsku-draft-cancel:{command.OperationId:D}:burn", actor.ToString("D"), command.OperationId.ToString("D"),
                 "LSKU_DRAFT_CANCELLED", cancellationToken);
             if (!burned.Succeeded)
-                return Fail(CreateLskuDraftHandler.BurnRefused, 409);
+                return burned.ErrorCode == CodeReservationBurnCodes.TransactionUnavailable
+                    ? Fail(CodeReservationBurnCodes.TransactionUnavailable, 503)
+                    : Fail(CreateLskuDraftHandler.BurnRefused, 409);
         }
         var fingerprint = GskuChildCreationAdmission.ComputeRequestFingerprint(
             lsku.GskuId, GskuChildIdentityKind.Lsku, lsku.CreationCommandId, lsku.MarketCode);
@@ -120,4 +148,3 @@ public sealed class CancelLskuDraftHandler(
     private static Response<LskuDraftCancellationResult> Fail(string code, int status) =>
         Response<LskuDraftCancellationResult>.Fail(code, status);
 }
-

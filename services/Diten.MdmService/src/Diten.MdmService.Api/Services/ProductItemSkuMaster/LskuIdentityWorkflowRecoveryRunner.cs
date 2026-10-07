@@ -104,7 +104,7 @@ public sealed class LskuIdentityWorkflowRecoveryRunner(
                             if (newlyStuck)
                                 logger.LogError("{Flow} operation {OperationId} of tenant {TenantId} is stuck ({ResultCode}); the cause before: {CauseCode}.",
                                     Flow, operation.OperationId, tenantId, Safe(after!.LastFailureCode ?? result.ErrorCode),
-                                    Safe(operation.LastFailureCode ?? "NONE"));
+                                    Safe(after.RetryLimitCauseCode ?? operation.LastFailureCode ?? "NONE"));
                         }
                         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
                         catch (Exception exception)
@@ -132,10 +132,13 @@ public sealed class LskuIdentityWorkflowRecoveryRunner(
         return new(tenants, operations, completed, deferred, failed) { Cycle = cycle };
     }
 
+    // FIX3 item 2: a wait that reached its limit (still Retryable, still waiting) is stuck too — as in the gauge.
     private static bool IsStuck(LskuIdentityWorkflowOperation operation) =>
         operation.Checkpoint == LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
         || operation.Checkpoint == LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
-           && operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired;
+           && operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired
+        || operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable
+           && operation.LastFailureCode == LskuIdentityWorkflowProcessor.RetryLimitReached;
 
     private static string Safe(string? value) => !string.IsNullOrWhiteSpace(value)
         && value.Length <= 100 && value.All(c => c is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_')

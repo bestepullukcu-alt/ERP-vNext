@@ -96,6 +96,11 @@ public sealed class MdmHttpHost : IAsyncLifetime
     /// unreachable provider gave before (503), so tenants outside Enforced rollout are unaffected.
     /// </summary>
     public FakeLegalEntityScopes Scopes { get; } = new();
+    /// <summary>Every log entry the host writes (level, category, rendered message).</summary>
+    public LogSink Logs { get; } = new();
+
+    // LSKU FIX3 item 7: the hosted services the real Program registered (before the host removes them).
+    public List<Type> RegisteredHostedServices { get; } = [];
     public string MongoConnectionString => _runner?.ConnectionString ?? throw NotStarted();
 
     public WebApplicationFactory<GskusController> Factory => _factory ?? throw NotStarted();
@@ -111,7 +116,9 @@ public sealed class MdmHttpHost : IAsyncLifetime
             _runner = MongoRunner.Run(new MongoRunnerOptions
             {
                 BinaryDirectory = ResolveLocalMongoBinaryDirectory(),
-                UseSingleNodeReplicaSet = true
+                UseSingleNodeReplicaSet = true,
+                // LSKU FIX4 item 1: failCommand failpoints (configureFailPoint) on this throwaway mongod only.
+                AdditionalArguments = "--setParameter enableTestCommands=1"
             });
             if (new MongoUrl(_runner.ConnectionString).Server.Port == SharedMongoPort)
                 throw new InvalidOperationException("The throwaway mongod bound the SHARED port 27017. Refusing to run.");
@@ -199,8 +206,13 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 builder.ConfigureTestServices(services =>
                 {
                     // No background schedule (a test calls the runners) and no outbound push to Platform.
+                    // LSKU FIX3 item 7: what the REAL Program registered as hosted services is kept for the tests
+                    // (a worker whose registration is lost is a gauge nobody runs).
                     foreach (var hosted in services.Where(d => d.ServiceType == typeof(IHostedService)).ToList())
+                    {
+                        if (hosted.ImplementationType is { } type) RegisteredHostedServices.Add(type);
                         services.Remove(hosted);
+                    }
                     services.RemoveAll<IProductIdentityWorkflowClient>();
                     services.AddSingleton<IProductIdentityWorkflowClient>(Engine);
                     services.RemoveAll<IVerifiedGskuReferenceResolver>();
@@ -222,6 +234,8 @@ public sealed class MdmHttpHost : IAsyncLifetime
                     // FG FIX1 review R2 / item 8: the enforced-scope answer for the tenants a test sets up.
                     services.RemoveAll<Diten.MdmService.Application.Contracts.Authorization.ITrustedLegalEntityScopeProvider>();
                     services.AddSingleton<Diten.MdmService.Application.Contracts.Authorization.ITrustedLegalEntityScopeProvider>(Scopes);
+                    // LSKU FIX4 item 6: what the host logs, for "said once" assertions.
+                    services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider>(Logs);
                 });
             });
             _ = _factory.Server;
@@ -365,4 +379,24 @@ public sealed class FakeLegalEntityScopes : Diten.MdmService.Application.Contrac
             : new Diten.MdmService.Application.Contracts.Authorization.TrustedLegalEntityScopeProviderResult(
                 false, 503, "LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE", expectedTenantId, expectedSubjectId,
                 moduleCode, permissionKey, null, []));
+}
+
+public sealed class LogSink : Microsoft.Extensions.Logging.ILoggerProvider
+{
+    public System.Collections.Concurrent.ConcurrentQueue<(Microsoft.Extensions.Logging.LogLevel Level, string Category, string Message)> Entries { get; } = new();
+
+    public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName) => new Sink(this, categoryName);
+
+    public void Dispose() { }
+
+    private sealed class Sink(LogSink owner, string category) : Microsoft.Extensions.Logging.ILogger
+    {
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => logLevel >= Microsoft.Extensions.Logging.LogLevel.Information;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId,
+            TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (IsEnabled(logLevel)) owner.Entries.Enqueue((logLevel, category, formatter(state, exception)));
+        }
+    }
 }

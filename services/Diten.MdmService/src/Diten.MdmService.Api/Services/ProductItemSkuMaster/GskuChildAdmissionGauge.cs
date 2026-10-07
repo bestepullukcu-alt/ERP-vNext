@@ -9,6 +9,8 @@ namespace Diten.MdmService.Api.Services.ProductItemSkuMaster;
  * one a live reservation still holds. Counted on the shared gauge under its own flow, said once per run when any.
  * LSKU FIX2 item 1: counted by a tenant-free census (FIX1 asked a tenant-scoped repository without a tenant and never
  * counted), on its OWN worker — not on the LSKU retirement worker, which may be switched off.
+ * FIX3 M9: GSKU admissions only — a Global Product's own ChildCreationAdmissions (GSKU creation under a GP) are not
+ * counted here (a backlog row is proposed in the FIX3 report).
  */
 public sealed class GskuChildAdmissionGauge(IServiceScopeFactory scopes, TimeProvider clock,
     ILogger<GskuChildAdmissionGauge> logger, ProductIdentityRecoveryMetrics? metrics = null)
@@ -47,19 +49,52 @@ public sealed class GskuChildAdmissionGauge(IServiceScopeFactory scopes, TimePro
     }
 }
 
+// FIX3 M4: the LSKU identity gauges are recorded on this always-on worker too — not only while the identity worker
+// runs (switched off, it never counted). Tenant-free counts (the discovery), as the identity runner records them.
+public sealed class LskuIdentityGauge(IServiceScopeFactory scopes, ILogger<LskuIdentityGauge> logger,
+    ProductIdentityRecoveryMetrics? metrics = null)
+{
+    public async Task RecordAsync(CancellationToken ct)
+    {
+        try
+        {
+            await using var scope = scopes.CreateAsyncScope();
+            var discovery = scope.ServiceProvider.GetRequiredService<ILskuIdentityWorkflowTenantPartitionDiscovery>();
+            var manual = await discovery.CountManualReconciliationAsync(ct);
+            var person = await discovery.CountNeedingAPersonAsync(ct);
+            metrics?.Record(LskuIdentityWorkflowRecoveryRunner.Flow, manual, person);
+            metrics?.RecordCountFailed(LskuIdentityWorkflowRecoveryRunner.Flow, false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (Exception exception)
+        {
+            metrics?.RecordCountFailed(LskuIdentityWorkflowRecoveryRunner.Flow, true);
+            logger.LogError("{Flow}: the count failed with {ExceptionType}; the gauges keep their last values.",
+                LskuIdentityWorkflowRecoveryRunner.Flow, exception.GetType().Name);
+        }
+    }
+}
+
 public sealed class GskuChildAdmissionGaugeOptions
 {
     public const string SectionName = "GskuChildAdmissionGauge";
     // A read of one count: on by default, so the gauge does not depend on any recovery worker being switched on.
     public bool Enabled { get; set; } = true;
+    // LSKU FIX4 item 12: the LSKU identity gauges (flow LSKU_IDENTITY) have their own switch — turning the admission
+    // count off no longer silences them. The worker runs while either is on.
+    public bool LskuIdentityEnabled { get; set; } = true;
     public int IntervalSeconds { get; set; } = 300;
 }
 
 public sealed class GskuChildAdmissionGaugeWorker(GskuChildAdmissionGauge gauge,
-    IOptions<GskuChildAdmissionGaugeOptions> options, ILogger<GskuChildAdmissionGaugeWorker> logger) : BackgroundService
+    IOptions<GskuChildAdmissionGaugeOptions> options, ILogger<GskuChildAdmissionGaugeWorker> logger,
+    LskuIdentityGauge? identityGauge = null) : BackgroundService
 {
     public async Task RunOnceAsync(CancellationToken ct)
     {
+        var settings = options.Value;
+        if (identityGauge is not null && settings.LskuIdentityEnabled) await identityGauge.RecordAsync(ct);
+        if (!settings.Enabled) return;
         try { await gauge.RecordAsync(ct); }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         catch (Exception exception)
@@ -79,7 +114,7 @@ public sealed class GskuChildAdmissionGaugeWorker(GskuChildAdmissionGauge gauge,
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
         var settings = options.Value;
-        if (!settings.Enabled) return;
+        if (!settings.Enabled && !settings.LskuIdentityEnabled) return;
         var interval = TimeSpan.FromSeconds(Math.Clamp(settings.IntervalSeconds, 30, 3600));
         while (!ct.IsCancellationRequested)
         {

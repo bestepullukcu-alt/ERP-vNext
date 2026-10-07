@@ -117,10 +117,6 @@ public interface IGskuRepository
         GskuOrphanChildAdmission orphan, LocalAuditIntent auditIntent,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
-    // CT 2026-10-06: the stuck-admission gauge — admissions of any kind held past the cutoff, and the tenants holding any.
-    Task<long> CountStaleChildCreationAdmissionsAsync(DateTimeOffset acquiredBeforeUtc,
-        CancellationToken cancellationToken = default) =>
-        throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
     Task<FirstGskuIdentityRetirementWriteResult<Gsku>> CloseChildAdmissionFenceAsync(
         Guid id, int expectedVersion, Guid operationId, string operationFingerprint,
         CancellationToken cancellationToken = default) =>

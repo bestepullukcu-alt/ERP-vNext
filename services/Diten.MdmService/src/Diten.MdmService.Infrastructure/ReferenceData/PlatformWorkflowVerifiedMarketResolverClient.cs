@@ -168,11 +168,18 @@ public sealed class PlatformWorkflowVerifiedMarketResolverClient
         && string.IsNullOrEmpty(uri.UserInfo) && string.IsNullOrEmpty(uri.Query) && string.IsNullOrEmpty(uri.Fragment)
         && IsExact(_options.CredentialIdentifier, 256) && IsExact(_options.CredentialSecret, 512);
 
+    // LSKU FIX3 item 6: only Platform's OWN "this market is not offered" (its resolver's exact reason) is a market the
+    // maker can put right. Any other 404 — another reason, or not Platform's JSON at all (an ingress/proxy page, a
+    // misrouted path) — must not throw an approval away: another reason is a contract error, a non-JSON one waits.
+    public const string MarketNotOfferedReason = "REFERENCE_MARKET_NOT_FOUND";
+
     private static VerifiedMarketReferenceResolveResult MapFailure(HttpStatusCode status, string? reason) =>
         status switch
         {
             HttpStatusCode.Forbidden => Fail(403, "REFERENCE_PROVIDER_FORBIDDEN"),
-            HttpStatusCode.NotFound => Fail(404, "REFERENCE_MARKET_NOT_FOUND"),
+            HttpStatusCode.NotFound => string.Equals(reason, MarketNotOfferedReason, StringComparison.Ordinal)
+                ? Fail(404, MarketNotOfferedReason)
+                : Contract(),
             HttpStatusCode.Conflict => Fail(409, "REFERENCE_CONTRACT_MISMATCH"),
             HttpStatusCode.GatewayTimeout => Fail(504, "REFERENCE_PROVIDER_TIMEOUT"),
             HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests or HttpStatusCode.ServiceUnavailable =>
@@ -185,7 +192,7 @@ public sealed class PlatformWorkflowVerifiedMarketResolverClient
         status switch
         {
             HttpStatusCode.Forbidden => Fail(403, "REFERENCE_PROVIDER_FORBIDDEN"),
-            HttpStatusCode.NotFound => Fail(404, "REFERENCE_MARKET_NOT_FOUND"),
+            HttpStatusCode.NotFound => Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"),
             HttpStatusCode.Conflict => Fail(409, "REFERENCE_CONTRACT_MISMATCH"),
             HttpStatusCode.GatewayTimeout => Fail(504, "REFERENCE_PROVIDER_TIMEOUT"),
             HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests or HttpStatusCode.ServiceUnavailable =>
