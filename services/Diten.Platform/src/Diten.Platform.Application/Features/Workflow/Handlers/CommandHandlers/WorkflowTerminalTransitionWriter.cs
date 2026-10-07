@@ -116,6 +116,75 @@ internal sealed class WorkflowTerminalTransitionWriter
     }
 
     /// <summary>
+    /// BL-549 — an instance that has NO task becomes terminal: a generic start that crashed after writing its instance, closed
+    /// by the abandoned-start recovery. The same one-transaction rule as <see cref="CommitAsync"/> — the instance update
+    /// (fenced on <paramref name="instanceVersion"/>: a replay that claimed the instance meanwhile wins), the transition log
+    /// and the <see cref="WorkflowInstanceCompletedV1"/> intent commit together — only without a task to update. The stage and
+    /// step of the event are the instance's own (there is no task to take them from).
+    /// </summary>
+    public async Task<WorkflowTerminalWriteResult> CommitTasklessAsync(
+        WorkflowInstance instance,
+        int instanceVersion,
+        WorkflowTransitionLog log,
+        string? completedBy,
+        string? reasonCode,
+        string correlationId,
+        CancellationToken ct)
+    {
+        var outcome = WorkflowOutcomes.For(instance.Status)
+            ?? throw new InvalidOperationException("Only a terminal instance status can be committed here.");
+
+        if (_transactions is null || _events is null)
+        {
+            if (!await _instances.UpdateAsync(instance, instanceVersion, ct))
+            {
+                return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Conflict, null);
+            }
+
+            return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Committed, await _logs.CreateAsync(log, ct));
+        }
+
+        var stageHolder = new ApprovalTask
+        {
+            TenantId = instance.TenantId,
+            WorkflowInstanceId = instance.Id,
+            StageCode = instance.CurrentStage,
+            StepCode = instance.CurrentStep
+        };
+        var completedEvent = await BuildEventAsync(instance, stageHolder, outcome, completedBy, reasonCode, correlationId, ct);
+        try
+        {
+            var created = await _transactions.ExecuteAsync(async (session, tct) =>
+            {
+                if (!await _instances.UpdateAsync(session, instance, instanceVersion, tct))
+                {
+                    throw new TerminalConflictException();
+                }
+
+                var createdLog = await _logs.CreateAsync(session, log, tct);
+                await _events.EnqueueAsync(session, completedEvent, new EventPublishOptions
+                {
+                    EventId = completedEvent.EventId,
+                    CorrelationId = completedEvent.CorrelationId,
+                    TenantId = completedEvent.TenantId,
+                    Producer = Producer,
+                    OccurredAtUtc = completedEvent.OccurredAtUtc
+                }, tct);
+                return createdLog;
+            }, ct);
+            return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Committed, created);
+        }
+        catch (TerminalConflictException)
+        {
+            return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Conflict, null);
+        }
+        catch (PlatformTransactionUnavailableException)
+        {
+            return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.TransactionUnavailable, null);
+        }
+    }
+
+    /// <summary>
     /// D1 — an INTERMEDIATE approval: the decided task, the instance moved to the next step, the next step's task and
     /// assignment snapshot, and both log rows commit in ONE Platform transaction — the same executor and the same
     /// optimistic-version rule as <see cref="CommitAsync"/>. No completion event: the instance is not terminal.

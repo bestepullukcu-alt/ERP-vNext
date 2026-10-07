@@ -21,6 +21,10 @@ public static class WorkflowPermissions
     public const string EscalationsManage = "platform.workflow.escalations.manage";
     public const string EscalationsRun = "platform.workflow.escalations.run";
     public const string TransitionsEvaluate = "platform.workflow.transitions.evaluate";
+
+    /// <summary>BL-540 (1) — the operator's orphan recovery (count, list, close). A NON-HUMAN key: Auth refuses it to any human
+    /// role (DefaultRolePermissionTemplate.NonHumanPermissionKeys); only a service client may hold it.</summary>
+    public const string OrphansRecover = "platform.workflow.orphans.recover";
 }
 
 public static class WorkflowReasonCodes
@@ -42,6 +46,18 @@ public static class WorkflowReasonCodes
     public const string WorkflowStartIdempotencyConflict = "WORKFLOW_START_IDEMPOTENCY_CONFLICT";
     public const string WorkflowStartRecoveryConflict = "WORKFLOW_START_RECOVERY_CONFLICT";
     public const string WorkflowStartNotCompleted = "WORKFLOW_START_NOT_COMPLETED";
+
+    /// <summary>BL-549 — a generic start that never wrote its task, closed by the abandoned-start recovery (the instance's
+    /// <c>StartClosedReasonCode</c> and the closing log's reason).</summary>
+    public const string WorkflowStartAbandoned = "WORKFLOW_START_ABANDONED";
+
+    /// <summary>BL-549 — the recovery refused to close: the instance has a task, is not old enough, is not an open generic
+    /// start. Nothing was written.</summary>
+    public const string WorkflowStartNotAbandoned = "WORKFLOW_START_NOT_ABANDONED";
+
+    /// <summary>BL-540 (1) — an approval or review left live by a deleted task or a replaced review round, closed by the
+    /// operator's orphan recovery.</summary>
+    public const string WorkflowOrphanClosed = "WORKFLOW_ORPHAN_CLOSED";
     public const string WorkflowTerminalEvidenceInconsistent = "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT";
     public const string WorkflowDecisionNotTerminal = "WORKFLOW_DECISION_NOT_TERMINAL";
 

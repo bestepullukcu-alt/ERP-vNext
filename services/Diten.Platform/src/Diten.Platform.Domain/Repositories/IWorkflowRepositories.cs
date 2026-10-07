@@ -76,6 +76,63 @@ public interface IWorkflowInstanceRepository
     Task<bool> UpdateEscalationOrTimeoutAsync(WorkflowInstance instance, int expectedVersion, CancellationToken ct = default) =>
         UpdateAsync(instance, expectedVersion, ct);
 
+    /// <summary>
+    /// BL-539 (CT decision) — the recovery's close of an INCOMPLETE trusted reservation: only while it is still Pending, still at
+    /// <paramref name="expectedCheckpoint"/> and still at <paramref name="expectedVersion"/> (a replay that advanced it meanwhile
+    /// wins; the close then writes nothing). Sets Cancelled with the reason, as the coordinator's own close does.
+    /// </summary>
+    async Task<bool> CloseIncompleteTrustedStartAsync(
+        Guid instanceId,
+        int expectedVersion,
+        Domain.Enums.Workflow.WorkflowStartCheckpoint expectedCheckpoint,
+        string reasonCode,
+        DateTimeOffset now,
+        CancellationToken ct = default)
+    {
+        var instance = await GetByIdAsync(instanceId, ct);
+        if (instance is null || instance.Version != expectedVersion || instance.StartCheckpoint != expectedCheckpoint
+            || instance.Status != Domain.Enums.Workflow.WorkflowInstanceStatus.Pending || instance.TrustedConsumerClientId is null)
+        {
+            return false;
+        }
+
+        instance.Status = Domain.Enums.Workflow.WorkflowInstanceStatus.Cancelled;
+        instance.StartClosedReasonCode = reasonCode;
+        instance.CompletedAt = now;
+        instance.LastTransitionAt = now;
+        return await UpdateAsync(instance, expectedVersion, ct);
+    }
+
+    /// <summary>
+    /// BL-549 — a generic start whose task, snapshot or start log was never written is completed by its key's replay. Before
+    /// writing anything the replay CLAIMS the instance: only while it is still Active and at <paramref name="expectedVersion"/>,
+    /// it stores the ids the missing rows will carry (so every replay writes the SAME rows — one task, never two) and
+    /// refreshes <c>LastTransitionAt</c>. The version bump fences the abandoned-start sweep: a sweep that read the instance
+    /// before the claim fails its own versioned close, and one that reads it after sees a fresh age and leaves it alone.
+    /// </summary>
+    async Task<bool> ClaimStartCompletionAsync(
+        Guid instanceId,
+        int expectedVersion,
+        Guid approvalTaskId,
+        Guid assignmentSnapshotId,
+        Guid startTransitionLogId,
+        DateTimeOffset now,
+        CancellationToken ct = default)
+    {
+        var instance = await GetByIdAsync(instanceId, ct);
+        if (instance is null || instance.Version != expectedVersion
+            || instance.Status != Domain.Enums.Workflow.WorkflowInstanceStatus.Active)
+        {
+            return false;
+        }
+
+        instance.InitialApprovalTaskId = approvalTaskId;
+        instance.InitialAssignmentSnapshotId = assignmentSnapshotId;
+        instance.StartTransitionLogId = startTransitionLogId;
+        instance.LastTransitionAt = now;
+        return await UpdateAsync(instance, expectedVersion, ct);
+    }
+
     // WP-CL-BE-3 — the terminal transition writes inside the Platform transaction that also carries the completion
     // outbox event. The Mongo repository overrides this with a session write; the default only serves in-memory
     // test doubles, which have no session to join.

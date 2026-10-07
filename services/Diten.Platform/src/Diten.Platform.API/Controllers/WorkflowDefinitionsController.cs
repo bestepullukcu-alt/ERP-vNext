@@ -4,6 +4,7 @@ using Diten.Platform.API.Controllers.Common;
 using Diten.Platform.API.Models.Workflow;
 using Diten.Platform.API.Observability;
 using Diten.Platform.API.Security;
+using Diten.Platform.Application.Features.Tasks.Recovery;
 using Diten.Platform.Application.Features.TenantOrganization.Queries;
 using Diten.Platform.Application.Features.Workflow;
 using Diten.Platform.Application.Features.Workflow.Commands;
@@ -190,6 +191,19 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         CancellationToken ct)
     {
         var response = await _mediator.Send(new RunWorkflowEscalationsCommand(request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// BL-540 (1) — the operator's orphan recovery. DRY RUN unless the body says <c>apply: true</c>: count and list only. The key
+    /// is non-human (Auth refuses it to any human role); it is meant for a service client an operator runs on purpose.
+    /// </summary>
+    [HttpPost("operator/orphans")]
+    [HasPermission(WorkflowPermissions.OrphansRecover)]
+    public async Task<IActionResult> SweepOrphans([FromBody] WorkflowOrphanSweepRequest? request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(
+            new SweepWorkflowOrphansCommand(request?.Apply ?? false, request?.MaxItems ?? 0, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 

@@ -153,6 +153,8 @@ public static class DependencyInjection
             configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions.SectionName));
         // WP-WF-ENGINE-CANDIDATES-01 D2-FIX3 item 4 — how long the SLA sweep rests a task nothing will change (Workflow:Escalation).
         services.AddWorkflowEscalationOptions(configuration);
+        services.Configure<Diten.Platform.Application.Features.Workflow.WorkflowStartRecoveryOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.Workflow.WorkflowStartRecoveryOptions.SectionName));
         // BL-023 Part B — the upward work-request template code, on the same terms as the two above.
         services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskUpwardRequestOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskUpwardRequestOptions.SectionName));
@@ -372,6 +374,8 @@ public static class DependencyInjection
         services.AddScoped<IApprovalTaskRepository, ApprovalTaskRepository>();
         services.AddScoped<IRuntimeAssignmentSnapshotRepository, RuntimeAssignmentSnapshotRepository>();
         services.AddScoped<IWorkflowTransitionLogRepository, WorkflowTransitionLogRepository>();
+        // BL-549 + BL-539 + BL-540 (1) — the engine recovery's server-side reads (abandoned starts, incomplete trusted starts, orphans).
+        services.AddScoped<IWorkflowStartRecoveryStore, WorkflowStartRecoveryStore>();
         services.AddScoped<ISlaEscalationRuleRepository, SlaEscalationRuleRepository>();
 
         // MOD-0024 Task Engine Repositories (Phase 1 uses the first five; the rest exist so Phases 2–5 are additive)

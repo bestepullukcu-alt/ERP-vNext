@@ -261,14 +261,16 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             return Conflict("Trusted workflow reservation is incomplete.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
         }
 
-        if (instance.Status == WorkflowInstanceStatus.Cancelled && instance.StartCheckpoint < WorkflowStartCheckpoint.TaskPersisted)
+        // WP-WF-ENGINE-RECOVERY-01 — a reservation closed at ANY checkpoint short of Completed (the recovery closes incomplete
+        // ones wherever they stopped) is answered the same way, never resumed.
+        if (instance.Status == WorkflowInstanceStatus.Cancelled && instance.StartCheckpoint < WorkflowStartCheckpoint.Completed)
         {
             // D2-FIX1 A3 — a reservation closed because nobody could approve it (below): every replay of the key gets
             // the same answer, and it is never brought back to life by a later checkpoint.
             // D2-FIX2 item 3 — the answer is the reason the reservation was closed WITH, stored on it.
             // D2-FIX2 item 6(b) — and a task a racing first call wrote under it is withdrawn, never left waiting.
             await WithdrawStrayStartTaskAsync(instance, correlationId, ct);
-            return NoCandidate(ClosedReason(instance), correlationId);
+            return ClosedAnswer(instance, correlationId);
         }
 
         if (!reserved.Created && storedSnapshot is null)
@@ -347,7 +349,7 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             var persisted = await _tasks.EnsureTrustedStartTaskAsync(task, ct);
             if (!MatchesTask(persisted, task))
             {
-                return Conflict("Trusted workflow task recovery facts conflict.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+                return await ConflictOrClosedAsync(instance.Id, "Trusted workflow task recovery facts conflict.", correlationId, ct);
             }
 
             var advanced = await AdvanceAsync(instance, WorkflowStartCheckpoint.Reserved, WorkflowStartCheckpoint.TaskPersisted, ct);
@@ -363,14 +365,12 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
                  * arbiter, so the loser of it cleans up. A crash between the write and this line is healed by the next
                  * replay, above.)
                  */
-                if (advanced.Instance is { Status: WorkflowInstanceStatus.Cancelled } closedMeanwhile
-                    && closedMeanwhile.StartCheckpoint < WorkflowStartCheckpoint.TaskPersisted)
+                if (await ClosedMeanwhileAsync(advanced.Instance, correlationId, ct) is { } closedAnswer)
                 {
-                    await WithdrawStrayStartTaskAsync(closedMeanwhile, correlationId, ct);
-                    return NoCandidate(ClosedReason(closedMeanwhile), correlationId);
+                    return closedAnswer;
                 }
 
-                return Conflict("Trusted workflow task checkpoint could not be fenced.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+                return await ConflictOrClosedAsync(instance.Id, "Trusted workflow task checkpoint could not be fenced.", correlationId, ct);
             }
 
             instance = advanced.Instance!;
@@ -380,7 +380,7 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             var persisted = await _tasks.GetByIdAsync(task.Id, ct);
             if (persisted is null || !MatchesTask(persisted, task))
             {
-                return Conflict("Trusted workflow task proof is missing or inconsistent.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+                return await ConflictOrClosedAsync(instance.Id, "Trusted workflow task proof is missing or inconsistent.", correlationId, ct);
             }
         }
 
@@ -389,13 +389,15 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             var persisted = await _snapshots.EnsureTrustedStartSnapshotAsync(snapshot, ct);
             if (!MatchesSnapshot(persisted, snapshot))
             {
-                return Conflict("Trusted workflow assignment proof conflicts.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+                return await ConflictOrClosedAsync(instance.Id, "Trusted workflow assignment proof conflicts.", correlationId, ct);
             }
 
             var advanced = await AdvanceAsync(instance, WorkflowStartCheckpoint.TaskPersisted, WorkflowStartCheckpoint.AssignmentSnapshotPersisted, ct);
             if (!advanced.Success)
             {
-                return Conflict("Trusted workflow assignment checkpoint could not be fenced.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+                // WP-WF-ENGINE-RECOVERY-01 — the recovery closed the reservation between this call's steps: it lost the race.
+                return await ClosedMeanwhileAsync(advanced.Instance, correlationId, ct)
+                    ?? Conflict("Trusted workflow assignment checkpoint could not be fenced.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
             }
 
             instance = advanced.Instance!;
@@ -405,7 +407,7 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             var persisted = await _snapshots.GetByIdAsync(snapshot.Id, ct);
             if (persisted is null || !MatchesSnapshot(persisted, snapshot))
             {
-                return Conflict("Trusted workflow assignment proof is missing or inconsistent.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+                return await ConflictOrClosedAsync(instance.Id, "Trusted workflow assignment proof is missing or inconsistent.", correlationId, ct);
             }
         }
 
@@ -414,13 +416,15 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             var persisted = await _logs.EnsureTrustedStartLogAsync(log, ct);
             if (!MatchesStartLog(persisted, log))
             {
-                return Conflict("Trusted workflow start-log proof conflicts.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+                return await ConflictOrClosedAsync(instance.Id, "Trusted workflow start-log proof conflicts.", correlationId, ct);
             }
 
             var advanced = await AdvanceAsync(instance, WorkflowStartCheckpoint.AssignmentSnapshotPersisted, WorkflowStartCheckpoint.StartLogPersisted, ct);
             if (!advanced.Success)
             {
-                return Conflict("Trusted workflow start-log checkpoint could not be fenced.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+                // WP-WF-ENGINE-RECOVERY-01 — the recovery closed the reservation between this call's steps: it lost the race.
+                return await ClosedMeanwhileAsync(advanced.Instance, correlationId, ct)
+                    ?? Conflict("Trusted workflow start-log checkpoint could not be fenced.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
             }
 
             instance = advanced.Instance!;
@@ -430,7 +434,7 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             var persisted = await _logs.GetByIdAsync(log.Id, ct);
             if (persisted is null || !MatchesStartLog(persisted, log))
             {
-                return Conflict("Trusted workflow start-log proof is missing or inconsistent.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+                return await ConflictOrClosedAsync(instance.Id, "Trusted workflow start-log proof is missing or inconsistent.", correlationId, ct);
             }
         }
 
@@ -439,7 +443,9 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             var advanced = await AdvanceAsync(instance, WorkflowStartCheckpoint.StartLogPersisted, WorkflowStartCheckpoint.Completed, ct);
             if (!advanced.Success)
             {
-                return Conflict("Trusted workflow completion checkpoint could not be fenced.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+                // WP-WF-ENGINE-RECOVERY-01 — the recovery closed the reservation between this call's steps: it lost the race.
+                return await ClosedMeanwhileAsync(advanced.Instance, correlationId, ct)
+                    ?? Conflict("Trusted workflow completion checkpoint could not be fenced.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
             }
 
             instance = advanced.Instance!;
@@ -454,7 +460,7 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             completedSnapshot is null || !MatchesSnapshot(completedSnapshot, snapshot) ||
             completedLog is null || !MatchesStartLog(completedLog, log))
         {
-            return Conflict("Trusted workflow completion proof is inconsistent.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+            return await ConflictOrClosedAsync(instance.Id, "Trusted workflow completion proof is inconsistent.", correlationId, ct);
         }
 
         var result = new TrustedWorkflowStartResult(
@@ -811,10 +817,52 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
     /// that also got here writes it once). Before, the result was dropped and the withdraw left no trace in the log every
     /// other MOD-0023 transition writes to. A write that lost its race writes nothing — whoever moved the task did.</para>
     /// </summary>
-    private async Task WithdrawStrayStartTaskAsync(WorkflowInstance closed, string correlationId, CancellationToken ct)
+    /// <summary>
+    /// WP-WF-ENGINE-RECOVERY-01 — a proof that no longer matches while the recovery closed the reservation meanwhile (it
+    /// withdrew the start task, so the task's status no longer matches) is the closed key, not a recovery conflict: answered as
+    /// every replay of a closed key is. Only a reservation still open gets the conflict.
+    /// </summary>
+    private async Task<Response<TrustedWorkflowStartResult>> ConflictOrClosedAsync(
+        Guid instanceId, string message, string correlationId, CancellationToken ct) =>
+        await ClosedMeanwhileAsync(await _instances.GetByIdAsync(instanceId, ct), correlationId, ct)
+            ?? Conflict(message, WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+
+    /// <summary>WP-WF-ENGINE-RECOVERY-01 — a reservation found closed after a failed fence: its stray task is withdrawn and
+    /// the call answers what every replay of the key answers. Null when the reservation was not closed.</summary>
+    private async Task<Response<TrustedWorkflowStartResult>?> ClosedMeanwhileAsync(
+        WorkflowInstance? reread, string correlationId, CancellationToken ct)
+    {
+        if (reread is not { Status: WorkflowInstanceStatus.Cancelled } closedMeanwhile
+            || closedMeanwhile.StartCheckpoint >= WorkflowStartCheckpoint.Completed)
+        {
+            return null;
+        }
+
+        await WithdrawStrayStartTaskAsync(closedMeanwhile, correlationId, ct);
+        return ClosedAnswer(closedMeanwhile, correlationId);
+    }
+
+    /// <summary>WP-WF-ENGINE-RECOVERY-01 (CT decision, principle A) — a reservation the recovery closed as abandoned answers
+    /// a replay exactly as start-result answers its key: as a key the engine never saw. One closed for "nobody may approve"
+    /// keeps its D2 answer.</summary>
+    private static Response<TrustedWorkflowStartResult> ClosedAnswer(WorkflowInstance closed, string correlationId) =>
+        string.Equals(closed.StartClosedReasonCode, WorkflowReasonCodes.WorkflowStartAbandoned, StringComparison.Ordinal)
+            ? Handlers.QueryHandlers.GetTrustedWorkflowStartResultHandler.NotFound(correlationId)
+            : NoCandidate(ClosedReason(closed), correlationId);
+
+    private Task WithdrawStrayStartTaskAsync(WorkflowInstance closed, string correlationId, CancellationToken ct) =>
+        WithdrawStrayStartTaskAsync(_tasks, _logs, closed, correlationId, ct);
+
+    /// <summary>WP-WF-ENGINE-RECOVERY-01 — shared with the abandoned-start recovery's close of an incomplete reservation.</summary>
+    internal static async Task WithdrawStrayStartTaskAsync(
+        IApprovalTaskRepository tasks,
+        IWorkflowTransitionLogRepository logs,
+        WorkflowInstance closed,
+        string correlationId,
+        CancellationToken ct)
     {
         if (closed.InitialApprovalTaskId is not { } taskId
-            || await _tasks.GetByIdAsync(taskId, ct) is not { } stray
+            || await tasks.GetByIdAsync(taskId, ct) is not { } stray
             || stray.Status is not (ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence))
         {
             return;
@@ -827,13 +875,13 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         stray.CompletedAt = now;
         stray.ActionedBy = StartRecoveryActor;
         stray.ActionReasonCode = reason;
-        if (!await _tasks.UpdateAsync(stray, stray.Version, ct))
+        if (!await tasks.UpdateAsync(stray, stray.Version, ct))
         {
             return;
         }
 
         var idempotencyKey = $"workflow-start-recovery-withdraw:{stray.Id:N}";
-        if (await _logs.FindByIdempotencyAsync(stray.Id, WorkflowTransitionAction.Cancel, idempotencyKey, ct) is not null)
+        if (await logs.FindByIdempotencyAsync(stray.Id, WorkflowTransitionAction.Cancel, idempotencyKey, ct) is not null)
         {
             return;
         }
@@ -852,7 +900,7 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         {
             try
             {
-                await _logs.AppendAsync(new WorkflowTransitionLog
+                await logs.AppendAsync(new WorkflowTransitionLog
                 {
                     TenantId = closed.TenantId,
                     WorkflowInstanceId = closed.Id,
@@ -867,13 +915,13 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
                     ReasonCode = reason,
                     IdempotencyKey = idempotencyKey,
                     CorrelationId = correlationId,
-                    SequenceNo = await _logs.GetLatestSequenceNoAsync(closed.Id, ct) + 1
+                    SequenceNo = await logs.GetLatestSequenceNoAsync(closed.Id, ct) + 1
                 }, ct);
                 return;
             }
             catch (Exception failure) when (failure is not OperationCanceledException)
             {
-                if (await _logs.FindByIdempotencyAsync(stray.Id, WorkflowTransitionAction.Cancel, idempotencyKey, ct) is not null)
+                if (await logs.FindByIdempotencyAsync(stray.Id, WorkflowTransitionAction.Cancel, idempotencyKey, ct) is not null)
                 {
                     return;
                 }

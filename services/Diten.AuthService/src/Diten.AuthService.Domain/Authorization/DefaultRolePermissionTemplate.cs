@@ -27,7 +27,10 @@ public static class DefaultRolePermissionTemplate
             // B5 (WP-MDM-GSKU-ACCEPT-01 FIX1): retiring a GSKU directly, without an approved request, is for the
             // system only — separation of duties. Not in the lifecycle profile's own non-human set on purpose: that
             // set PROTECTS historical grants from the sync, and this one's historical grant must be removed.
-            "mdm.gskus.retire"
+            "mdm.gskus.retire",
+            // BL-540 (1) (WP-WF-ENGINE-RECOVERY-01): the approval engine's orphan recovery closes live approvals in bulk —
+            // an operator runs it through a service client, on purpose; no person's role carries it.
+            "platform.workflow.orphans.recover"
         };
 
     // FIX-PERM-ATTRIBUTION-2 — reference-data is a genuine, distinct Module (RoleAssignments grouping,
