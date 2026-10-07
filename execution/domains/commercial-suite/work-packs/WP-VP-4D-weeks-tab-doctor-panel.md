@@ -28,7 +28,7 @@
 - **Otomatik taslak kuralı** kısa açıklaması: sıklık, eşit aralık, gün dengesi, hafta sonu / tatil yok, sıklığı bilinmeyen = dönemde 1 + "sıklık yok".
 
 ### 2. Hafta ayrıntısı
-- **Gün gün** (Pzt–Cum) doluluk çubuğu: "N / günlük sınır"; tatil "Tatil · …", yarım gün "yarım gün".
+- **Gün gün** (Pzt–Cum) doluluk çubuğu: "N / günlük sınır"; tatil "Tatil · …", yarım gün "yarım gün"; **boş süre** (4E `idleMinutes`, ör. "boş 1 sa").
 - **Gün satırı açılır** (mockup v2): doktor adı + kurum + ürün çipleri + "≈ N dk"; ilk 6 + "+N doktor daha"; boş günde "Bu güne ziyaret düşmüyor". Doktora tıklama → doktor paneli.
 - **Ürün başına haftalık ziyaret** çipleri (`productVisitCounts`; ipucunda tanıtım / hatırlatma).
 - **Karışık sıra** açıklaması (A, B, C → B, C, A).
