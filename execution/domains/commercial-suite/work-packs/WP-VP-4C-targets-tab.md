@@ -111,3 +111,28 @@ KORU/YAPMA: backend'e dokunma (eksik alan → rapor); yeni yazma ucu YOK (yalnı
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — Web · CRM (dokunulmaz) · mimari (27); build 0 hata; JS node --check; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–8. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "feat(web): WP-VP-4C — targets tab with doctor period status, quick filters, product chips/picker/bulk apply, selection summary" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), süre hesabının kaynağı, eksik backend alanları (varsa), elle denenecek durumlar. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-08)
+**Commit:** `57316f8be` (ajan `23c6e6c62`, test dalının belge commit'leri üzerine rebase, ff). Push: test dalı.
+
+**CT K13:** Web 750 → **761/0** (+11) · CRM 2419/0/5 (dokunulmadı) · mimari 27 (Web değişikliği) · tüm Ziyaret Planlama JS `node --check` temiz.
+
+**Kod okuması:**
+- Doktor tablosu 3D ucundan (`details.js` ~1008–1100): sıklık / yapılan-kalan / son ziyaret / ürünler, rozetler, BAĞLANTI yok.
+- İzin engelli doktor üç yerde seçilemiyor.
+- Hızlı filtreler sunucuda; uzmanlık çoklu seçim istemcide.
+- `targets.js`: çipler, panel Ürünler sekmesi (önerilen + rol kilitli), sınır / süre kapasite vekilinden, "Tamam" yalnız o doktorun `products`'ı.
+- Toplu uygula `unionPicks` (birleşim).
+- Ürün arama vekili `api/products` (okuma).
+- Onaylı / geçmiş / eski planda sekme salt okunur → 4B devri kapandı.
+
+**CT sabotajı:** "Tümünü seç"teki izin engelli atlama kaldırıldı → 1 kırmızı (`The_doctor_table_reads_the_period_status…never_selects_a_consent_blocked_doctor`). Geri alındı.
+
+**Eksik backend alanları (ajan raporu):**
+1. Önizlemede ziyaret modeli yok (`maxPromo`, `maxNonPromo`, ürün dakikaları, rapor dakikası). Ekran kapasite vekiline gidiyor; temsilcide `crm.cycle-capacity.read` yoksa sınır "—" → **WP-VP-4E madde 4'e eklendi**.
+2. MDM'de varsayılan rol yok → yeni ürün "tanıtım" başlıyor (K-7d; bilinen, veri / MDM işi).
+3. 3D uzmanlık süzgeci tek kod; "bu hafta" sayısı 200'lük ilk sayfadan (küçük takip).
+
+**E4 (CT, bekliyor; 4D / 4E ile birlikte):** ajan raporundaki liste (Memorial doktorları, hızlı filtre + çoklu uzmanlık, oyunsuz doktora ürün seçimi, toplu uygula, onaylı haftada kilit, bölge dışı ekle araması, Arapça).

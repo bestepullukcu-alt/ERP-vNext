@@ -146,3 +146,6 @@ Kaynak: `mockups/visit-planning/visit-planning-v2.decoded.html` ekran "03 Plan d
 - Tatil / hafta sonu günlerine bırakma kapalı.
 - Sığmayan sabit ziyaretler (4E `pinOverflow`): bırakınca bilgi "N ziyaret bu güne sığmadı → {gün}'e taşındı" + o ziyaretlerde "otomatik taşındı" işareti (`autoPinned`). Temsilci yeniden sürükleyebilir.
 - Yeni testler: sürükle → doğru `dayPins` gövdesi; onaylı haftada kapalı; tatile bırakma yok. Sabotaj: onaylı haftada sürüklemeye izin → test kırmızı.
+
+## Ek — Ürün seçicide ziyaret modeli (4C §37 + 4E madde 4)
+- 4C'nin ürün seçicisi sınırı ve anlık süreyi kapasite vekilinden okuyor (yetkisiz temsilcide "—"). 4E'nin `visitModel` alanı varsa **önce onu kullan**, vekil yalnız yedek. Test: `visitModel` varken kapasite vekiline istek gitmez.
