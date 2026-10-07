@@ -32,3 +32,19 @@ public sealed class AuditDetails
 
     public void Set(string key, object? value) => Metadata[key] = value;
 }
+
+/// <summary>
+/// FIX2 item 1: what may enter an audit record as a code — an error code shape, never a sentence. A refusal such as
+/// "Legal Entity is already active." is not forwarded at all; a free-form cause collapses to <see cref="Unknown"/>.
+/// </summary>
+public static class AuditCodes
+{
+    public const string Unknown = "UNKNOWN";
+
+    private static readonly System.Text.RegularExpressions.Regex Shape =
+        new("^[A-Z][A-Z0-9_]{1,63}$", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    public static bool IsCode(string? value) => value is not null && Shape.IsMatch(value);
+
+    public static string CodeOrUnknown(string? value) => IsCode(value) ? value! : Unknown;
+}

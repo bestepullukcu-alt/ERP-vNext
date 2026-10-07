@@ -1,3 +1,4 @@
+using Diten.MdmService.Application.Contracts.Audit;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Contracts.Inventory;
 using Diten.MdmService.Application.Features.ItemMaster.Commands;
@@ -47,7 +48,9 @@ public sealed class RetireItemHandler : IRequestHandler<RetireItemCommand, Respo
         if (item.Version != expectedVersion) return Response<ItemModels.ItemDto>.Fail(ItemErrors.ConcurrencyConflict, 409);
 
         var check = await CheckStockAsync(item.Id, cancellationToken);
-        command.AuditDetails.Set(ItemAudit.StockCheck, check.Cause is null ? check.Outcome.ToString() : $"{check.Outcome}:{check.Cause}");
+        // FIX2 m2: the outcome is a closed set; a cause enters only in code shape (otherwise UNKNOWN).
+        command.AuditDetails.Set(ItemAudit.StockCheck,
+            check.Cause is null ? check.Outcome.ToString() : $"{check.Outcome}:{AuditCodes.CodeOrUnknown(check.Cause)}");
         if (check.Outcome != InventoryStockCheckOutcome.Zero)
         {
             var code = check.Outcome == InventoryStockCheckOutcome.NonZero

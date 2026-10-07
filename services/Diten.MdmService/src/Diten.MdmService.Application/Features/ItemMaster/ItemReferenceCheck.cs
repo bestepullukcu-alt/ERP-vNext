@@ -74,6 +74,10 @@ public static class ItemReferenceCheck
             if (result is null) return ItemReferenceOutcome.Fail(503, ItemErrors.ReferenceListUnavailable, UntrustedAnswer);
             if (!result.IsSuccessful)
             {
+                // FIX2 m1: a "not found" list with a null entry is not a trusted answer either.
+                if (result.FailureCode == ItemReferenceResolveResult.ValueNotFound
+                    && (result.NotFound ?? []).Any(missing => missing is null))
+                    return ItemReferenceOutcome.Fail(503, ItemErrors.ReferenceListUnavailable, UntrustedAnswer);
                 return result.FailureCode == ItemReferenceResolveResult.ValueNotFound
                     ? ItemReferenceOutcome.Fail(422, ItemErrors.ReferenceValueInvalid,
                         string.Join(",", (result.NotFound ?? []).Select(missing => $"{missing.SetCode}:{missing.ValueCode}")))

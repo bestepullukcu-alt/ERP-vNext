@@ -102,22 +102,85 @@ public sealed partial class ItemS1HttpTests
     }
 
     // FIX1-EK (CT decision): a reason that names a person never reaches the record — only that a reason was given.
-    [Fact]
-    public async Task Fix1Ek_The_reason_text_never_reaches_the_audit_record()
+    // FIX2 m5: on all three doors that take a reason.
+    [Theory]
+    [InlineData("retire", ItemLifecycleStatus.Deactivated, nameof(RetireItemCommand))]
+    [InlineData("deactivate", ItemLifecycleStatus.Active, nameof(DeactivateItemCommand))]
+    [InlineData("reactivation-requests", ItemLifecycleStatus.Deactivated, nameof(RequestItemReactivationCommand))]
+    public async Task Fix1Ek_The_reason_text_never_reaches_the_audit_record(string door, ItemLifecycleStatus status,
+        string requestType)
     {
-        const string reason = "Retired at the request of Jane Doe (jane.doe@example.com)";
+        const string reason = "At the request of Jane Doe (jane.doe@example.com)";
         var wire = CaptureTheProductionForwarder();
-        var id = await CreatedAsync("Reason privacy");
-        await SetStatusAsync(id, ItemLifecycleStatus.Deactivated);
+        var id = await CreatedAsync("Reason privacy " + door);
+        await SetStatusAsync(id, status);
 
-        var retired = await PostAsync(id, "retire", Lifecycle(0, reason));
+        await PostAsync(id, door, Lifecycle(0, reason));
 
-        Assert.Equal(HttpStatusCode.OK, retired.StatusCode);
-        var text = Assert.Single(wire, body => body.Contains(nameof(RetireItemCommand), StringComparison.Ordinal));
+        var text = Assert.Single(wire, body => body.Contains(requestType, StringComparison.Ordinal));
         Assert.DoesNotContain("Jane", text, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("jane.doe@example.com", text, StringComparison.OrdinalIgnoreCase);
         Assert.True(JsonDocument.Parse(text).RootElement.GetProperty("metadata").GetProperty(ItemAudit.ReasonProvided).GetBoolean());
-        Assert.Equal(reason, (await ItemAsync(id)).RetirementReason);
+        if (door == "retire") Assert.Equal(reason, (await ItemAsync(id)).RetirementReason);
+        if (door == "deactivate") Assert.Equal(reason, (await ItemAsync(id)).DeactivationReason);
+    }
+
+    // FIX2 m1: a "not found" answer with a null entry is untrusted — 503, never a 500.
+    [Fact]
+    public async Task Fix2_A_not_found_answer_with_a_null_entry_is_untrusted()
+    {
+        host.ItemReferences.NullNotFoundEntry = true;
+        var response = await CreateAsync(Body("Null not found"));
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal(new[] { ItemErrors.ReferenceListUnavailable, ItemReferenceCheck.UntrustedAnswer }, await ErrorsAsync(response));
+    }
+
+    // FIX2 m2: the stock check enters the record as a closed code — a free-form cause collapses to UNKNOWN.
+    [Theory]
+    [InlineData("PARTIAL_LEGAL_ENTITY_COVERAGE", "Unavailable:PARTIAL_LEGAL_ENTITY_COVERAGE")]
+    [InlineData("inventory said: call Jane on +41 79 000 00 00", "Unavailable:UNKNOWN")]
+    public async Task Fix2_The_stock_check_enters_the_record_only_as_a_code(string cause, string recorded)
+    {
+        var id = await CreatedAsync("Stock code " + recorded.Length);
+        await SetStatusAsync(id, ItemLifecycleStatus.Deactivated);
+        host.Stock.Answer = InventoryStockCheck.Unavailable(cause);
+
+        await PostAsync(id, "retire", Lifecycle(0, "R"));
+
+        var record = Assert.Single(Trail(id, nameof(RetireItemCommand)));
+        Assert.Equal(recorded, record.Metadata![ItemAudit.StockCheck]);
+    }
+
+    // FIX2 m3: a request of the same key that landed first makes this one a replay — the store hands back that row;
+    // this request is marked replay, writes no "created" values and answers 200.
+    [Fact]
+    public async Task Fix2_A_concurrent_same_key_create_is_recorded_as_a_replay()
+    {
+        var key = "ITEM-" + Guid.NewGuid().ToString("N");
+        var rows = new ItemRepository(host.Database, new Tenant(_tenant));
+        HttpResponseMessage? other = null;
+        rows.BeforeReservationWriteForTests = async () =>
+        {
+            rows.BeforeReservationWriteForTests = null;
+            other = await CreateAsync(Body("Concurrent same key", key: key));
+        };
+        var command = new CreateItemCommand(new ItemModels.CreateItemRequest
+        {
+            IdempotencyKey = key, Name = "Concurrent same key", MaterialType = "RAW_MATERIAL", BaseUomCode = "KGM",
+            UomConversions = [new() { FromUom = "KGM", ToUom = "GRM", Numerator = "1000", Denominator = "1" }],
+            StorageConditionCodes = ["AMBIENT_15_25", "PROTECT_FROM_LIGHT"], LotControlled = true, Stockable = true,
+            ShelfLifeDays = 730
+        });
+
+        var response = await Handler(rows).Handle(command, CancellationToken.None);
+
+        Assert.Equal(HttpStatusCode.Created, other!.StatusCode);
+        Assert.Equal(200, response.StatusCode);
+        Assert.Equal(await IdAsync(other), response.Data);
+        Assert.Equal(true, command.AuditDetails.Metadata[ItemAudit.Replay]);
+        Assert.Null(command.AuditDetails.AfterState);
+        Assert.Equal(1, await host.Database.GetCollection<Item>(ItemRepository.CollectionName)
+            .CountDocumentsAsync(x => x.TenantId == _tenant && x.CreationCommandId == key.ToUpperInvariant()));
     }
 
     // M7 on the recorded requests too, and (item 2) only allow-listed names ever reach the record.
@@ -218,6 +281,64 @@ public sealed partial class ItemS1HttpTests
         Assert.Equal(HttpStatusCode.OK, (await PutAsync(empty, Update("Empty conversions", two))).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await PutAsync(filled, Update("Filled conversions", swapped))).StatusCode);
         var locked = await PutAsync(filled, Update("Filled conversions", changed, version: 1));
+        Assert.Equal(HttpStatusCode.Conflict, locked.StatusCode);
+        Assert.Equal(new[] { ItemErrors.CriticalFieldLocked, "UomConversions" }, await ErrorsAsync(locked));
+    }
+
+    // FIX2 m8: a creation whose completion fails (here the code cannot be read back) records no "created" values.
+    [Fact]
+    public async Task Fix2_A_creation_that_does_not_complete_records_no_created_values()
+    {
+        var rows = new ItemRepository(host.Database, new Tenant(_tenant));
+        var codes = new UnreadableCodes(new CodeReservationRepository(host.Database, new Tenant(_tenant)));
+        var command = new CreateItemCommand(CreateRequest("Incomplete creation", "ITEM-" + Guid.NewGuid().ToString("N")));
+
+        var response = await new Diten.MdmService.Application.Features.ItemMaster.Handlers.CommandHandlers.CreateItemHandler(
+            rows, codes, host.ItemReferences, new Actor(_user.ToString("D"))).Handle(command, CancellationToken.None);
+
+        Assert.Equal(500, response.StatusCode);
+        Assert.Null(command.AuditDetails.AfterState);
+    }
+
+    private sealed class UnreadableCodes(Diten.MdmService.Domain.Repositories.ICodeReservationRepository inner)
+        : Diten.MdmService.Domain.Repositories.ICodeReservationRepository
+    {
+        public Task<CodeReservation?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+            Task.FromResult<CodeReservation?>(null);
+        public Task<CodeReservation> ReserveAsync(CodeBearingEntityType entityType, string idempotencyKey, string actorId,
+            string correlationId, CancellationToken cancellationToken = default) =>
+            inner.ReserveAsync(entityType, idempotencyKey, actorId, correlationId, cancellationToken);
+        public Task<Diten.MdmService.Domain.Repositories.ReservationOperationResult> ConsumeForIdentityAsync(Guid reservationId,
+            CodeBearingEntityType expectedEntityType, Guid identityId, int expectedVersion, string idempotencyKey,
+            string actorId, string correlationId, CancellationToken cancellationToken = default) =>
+            inner.ConsumeForIdentityAsync(reservationId, expectedEntityType, identityId, expectedVersion, idempotencyKey,
+                actorId, correlationId, cancellationToken);
+        public Task<Diten.MdmService.Domain.Repositories.ReservationOperationResult> ConfirmIdentityBindingAsync(Guid reservationId,
+            Guid identityId, int expectedVersion, string idempotencyKey, string actorId, string correlationId,
+            CancellationToken cancellationToken = default) =>
+            inner.ConfirmIdentityBindingAsync(reservationId, identityId, expectedVersion, idempotencyKey, actorId,
+                correlationId, cancellationToken);
+    }
+
+    // FIX2 m6: every kind of change to a filled list is locked — the denominator, a unit, the direction.
+    [Theory]
+    [InlineData("denominator")]
+    [InlineData("unit")]
+    [InlineData("direction")]
+    public async Task Fix2_Any_change_to_a_filled_conversion_list_is_locked(string change)
+    {
+        object[] two = [Conv("KGM", "GRM", "1000", "1"), Conv("XBX", "KGM", "25", "1")];
+        object second = change switch
+        {
+            "denominator" => Conv("XBX", "KGM", "25", "2"),
+            "unit" => Conv("XCS", "KGM", "25", "1"),
+            _ => Conv("KGM", "XBX", "1", "25")
+        };
+        var id = await CreatedWithAsync("Locked " + change, two);
+        await SetStatusAsync(id, ItemLifecycleStatus.Active);
+
+        var locked = await PutAsync(id, Update("Locked " + change, [Conv("KGM", "GRM", "1000", "1"), second]));
+
         Assert.Equal(HttpStatusCode.Conflict, locked.StatusCode);
         Assert.Equal(new[] { ItemErrors.CriticalFieldLocked, "UomConversions" }, await ErrorsAsync(locked));
     }

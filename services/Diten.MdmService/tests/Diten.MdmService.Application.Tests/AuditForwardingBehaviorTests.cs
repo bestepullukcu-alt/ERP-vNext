@@ -116,6 +116,50 @@ public sealed class AuditForwardingBehaviorTests
         Assert.True(response.IsSuccessful); // best-effort: forwarding failure is swallowed
     }
 
+    // MOD-0290-FU04 S1 FIX2 item 1: a command that has NOT opted into details (BL-574) goes through the behavior and its
+    // record is the old one — a sentence refusal does not become Metadata.refusalCode; before / after / metadata are null.
+    // Both shapes: a sentence (stopped by the code rule too) and a CODE — only the opt-in guard keeps that one out.
+    [Theory]
+    [InlineData("Legal Entity is already active.")]
+    [InlineData("LEGAL_ENTITY_ALREADY_ACTIVE")]
+    public async Task A_command_without_details_keeps_its_old_record_even_when_refused_with_a_sentence(string refusal)
+    {
+        var forwarder = new CapturingForwarder();
+        var behavior = Behavior<UpdateLegalEntityCommand, Response<NoContent>>(forwarder);
+
+        await behavior.Handle(
+            new UpdateLegalEntityCommand(Guid.NewGuid(), null!),
+            () => Task.FromResult(Response<NoContent>.Fail(refusal, 409)),
+            CancellationToken.None);
+
+        var forwarded = Assert.Single(forwarder.Requests);
+        Assert.Equal(2, forwarded.Outcome);
+        Assert.Null(forwarded.BeforeState);
+        Assert.Null(forwarded.AfterState);
+        Assert.Null(forwarded.Metadata);
+    }
+
+    // FIX2 item 1 (for BL-574 adopters): an opted-in command's refusal enters only in code shape.
+    [Theory]
+    [InlineData("ITEM_RETIRE_STOCK_NOT_ZERO", true)]
+    [InlineData("The item still holds stock.", false)]
+    [InlineData("item_lowercase", false)]
+    public async Task An_opted_in_refusal_enters_the_record_only_as_a_code(string refusal, bool forwarded)
+    {
+        var forwarder = new CapturingForwarder();
+        var behavior = Behavior<Diten.MdmService.Application.Features.ItemMaster.Commands.RetireItemCommand,
+            Response<Diten.MdmService.Application.Features.ItemMaster.ItemModels.ItemDto>>(forwarder);
+
+        await behavior.Handle(
+            new Diten.MdmService.Application.Features.ItemMaster.Commands.RetireItemCommand(Guid.NewGuid(), new()),
+            () => Task.FromResult(Response<Diten.MdmService.Application.Features.ItemMaster.ItemModels.ItemDto>.Fail(refusal, 409)),
+            CancellationToken.None);
+
+        var record = Assert.Single(forwarder.Requests);
+        Assert.Equal(forwarded, record.Metadata?.ContainsKey(AuditDetails.RefusalCodeKey) == true);
+        if (forwarded) Assert.Equal(refusal, record.Metadata![AuditDetails.RefusalCodeKey]);
+    }
+
     private sealed record PlainCommand : IRequest<Response<NoContent>>;
 
     private sealed class ThrowingForwarder : IPlatformAuditForwarder

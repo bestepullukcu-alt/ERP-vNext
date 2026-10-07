@@ -41,8 +41,10 @@ public sealed class AuditForwardingBehavior<TRequest, TResponse> : IPipelineBeha
                 var metadata = provider.GetAuditMetadata();
                 var succeeded = ReadIsSuccessful(response);
                 // FIX1 item 2: an opted-in command's own before / after / metadata, plus a refusal's response code.
+                // FIX2 item 1: only an opted-in command carries details, and a refusal enters only in code shape — a
+                // command that has not opted in (BL-574) keeps its old record; a sentence is never forwarded.
                 var details = (request as IAuditDetailsProvider)?.AuditDetails;
-                if (details is not null && !succeeded && ReadFirstError(response) is { } refusal)
+                if (details is not null && !succeeded && ReadFirstError(response) is { } refusal && AuditCodes.IsCode(refusal))
                     details.Set(AuditDetails.RefusalCodeKey, refusal);
                 var forwardRequest = new AuditForwardRequest(
                     RequestType: typeof(TRequest).Name,

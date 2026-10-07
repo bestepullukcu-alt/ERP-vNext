@@ -122,6 +122,7 @@ public sealed class CreateItemHandler : IRequestHandler<CreateItemCommand, Respo
         };
 
         var created = await _items.CreateDraftAsync(item, cancellationToken);
+        var oursAfterAmbiguity = false;
         if (created.WriteOutcomeAmbiguous)
         {
             var persisted = await _items.GetByReservationIdAsync(reservation.Id, cancellationToken);
@@ -132,6 +133,7 @@ public sealed class CreateItemHandler : IRequestHandler<CreateItemCommand, Respo
                 return Response<Guid>.Fail(ItemErrors.BindingReconciliationRequired, 202);
             }
             created = new ItemWriteResult(true, persisted);
+            oursAfterAmbiguity = true;
         }
 
         if (!created.Succeeded || created.Item is null)
@@ -145,9 +147,17 @@ public sealed class CreateItemHandler : IRequestHandler<CreateItemCommand, Respo
             return Response<Guid>.Fail(refusal, 409);
         }
 
-        // FIX1 item 2: the new row's values (AUD-001 §21 "sonraki").
-        foreach (var (field, value) in ItemAudit.Snapshot(created.Item)) command.AuditDetails.Created(field, value);
-        return await CompleteAsync(created.Item, reservationCommandId, commandId, 201, cancellationToken);
+        // FIX2 m3: the store answered with the row a concurrent request of the SAME key wrote (its replay, not our
+        // insert): this request is a replay — marked, no second "created" record, 200.
+        var replayed = !ReferenceEquals(created.Item, item) && !oursAfterAmbiguity;
+        if (replayed) command.AuditDetails.Set(ItemAudit.Replay, true);
+        var completed = await CompleteAsync(created.Item, reservationCommandId, commandId, replayed ? 200 : 201,
+            cancellationToken);
+        // FIX1 item 2: the new row's values (AUD-001 §21 "sonraki"). FIX2 m8: only once the creation is complete — a
+        // failed completion is not recorded as a row created by this request.
+        if (completed.IsSuccessful && !replayed)
+            foreach (var (field, value) in ItemAudit.Snapshot(created.Item)) command.AuditDetails.Created(field, value);
+        return completed;
     }
 
     // The row exists: its code is confirmed (also on a replay that finds it still pending).

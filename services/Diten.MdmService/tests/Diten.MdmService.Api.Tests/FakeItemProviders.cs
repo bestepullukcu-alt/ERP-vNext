@@ -31,6 +31,8 @@ public sealed class FakeItemReferences : IItemReferenceResolver
     // FIX1 item 1: an answer whose storage conditions lack ConditionKind / carry no attributes at all.
     public bool OmitConditionKind { get; set; }
     public bool NullAttributes { get; set; }
+    // FIX2 m1: a "not found" answer whose list holds a null entry.
+    public bool NullNotFoundEntry { get; set; }
     public HashSet<string> Retired { get; } = new(StringComparer.Ordinal);
 
     public void Reset()
@@ -39,6 +41,7 @@ public sealed class FakeItemReferences : IItemReferenceResolver
         Throw = false;
         OmitConditionKind = false;
         NullAttributes = false;
+        NullNotFoundEntry = false;
         Retired.Clear();
     }
 
@@ -50,6 +53,7 @@ public sealed class FakeItemReferences : IItemReferenceResolver
         if (Outage) return Task.FromResult(ItemReferenceResolveResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"));
         var missing = requests.Where(request =>
             !Sets.TryGetValue(request.SetCode, out var set) || !set.ContainsKey(request.ValueCode)).ToList();
+        if (NullNotFoundEntry) return Task.FromResult(ItemReferenceResolveResult.Missing([null!]));
         if (missing.Count > 0) return Task.FromResult(ItemReferenceResolveResult.Missing(missing));
         return Task.FromResult(ItemReferenceResolveResult.Success(requests.Select(request =>
         {
