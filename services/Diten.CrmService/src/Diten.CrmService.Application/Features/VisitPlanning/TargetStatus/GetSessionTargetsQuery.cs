@@ -103,9 +103,10 @@ public sealed class GetSessionTargetsQueryHandler : IRequestHandler<GetSessionTa
             .Select(c => contactById.TryGetValue(c.ContactId, out var contact)
                 ? new SessionTargetDoctorDto(
                     c.ContactId, c.AccountId, c.AccountContactLinkId, true, contact.DisplayName, contact.Specialty,
-                    statuses[c.ContactId])
+                    statuses[c.ContactId], PlanningSessionMapper.ProductsOf(c))
                 : new SessionTargetDoctorDto(
-                    c.ContactId, c.AccountId, c.AccountContactLinkId, false, null, null, statuses[c.ContactId]))
+                    c.ContactId, c.AccountId, c.AccountContactLinkId, false, null, null, statuses[c.ContactId],
+                    PlanningSessionMapper.ProductsOf(c)))
             .ToList();
 
         return Response<SessionTargetsDto>.Success(new SessionTargetsDto(

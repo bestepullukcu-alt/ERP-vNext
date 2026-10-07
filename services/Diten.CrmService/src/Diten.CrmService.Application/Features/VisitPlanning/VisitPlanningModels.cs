@@ -214,7 +214,11 @@ public sealed record PlanningSessionDto(
     // WP-VP-3A (additive) — every week of the period with its status. Approved weeks carry their visit count; for the
     // other weeks the detail cannot know without generating, so it says draft when the plan has targets, empty when it
     // has none (VisitCount null) — the exact per-week draft / empty comes from the preview.
-    IReadOnlyList<PlanningWeekDto>? Weeks = null);
+    IReadOnlyList<PlanningWeekDto>? Weeks = null,
+    // WP-VP-4A (additive) — today's week (when today is inside the period) and the first week after today's week that
+    // is not approved and not past (null when none, and always null for an old committed plan: it has no drafts).
+    string? CurrentWeekStart = null,
+    string? NextDraftWeekStart = null);
 
 public sealed record PlanningSessionContactDto(
     Guid ContactId,
@@ -222,7 +226,14 @@ public sealed record PlanningSessionContactDto(
     Guid? AccountContactLinkId,
     // WP-VP-2 (B-8, additive) — read-time names.
     string? ContactDisplayName = null,
-    string? AccountDisplayName = null);
+    string? AccountDisplayName = null,
+    // WP-VP-4A (E4-3C-B1, additive) — the rep's stored product pick for this doctor (3C); empty when none.
+    IReadOnlyList<PlanningSessionProductDto>? Products = null);
+
+/// <summary>WP-VP-4A — one product of a doctor's stored pick. <c>ProductName</c> is not read from MDM on a plan read
+/// (the stored <c>ProductCode</c> is the display); <c>Role</c> promo / non-promo (a pick without a role reads promo,
+/// K-7d).</summary>
+public sealed record PlanningSessionProductDto(Guid ProductId, string? ProductCode, string? ProductName, string Role);
 
 /// <summary>WP-VP-2 (B-8) — a selected account / pharmacy with its read-time name (null when it cannot be found).</summary>
 public sealed record PlanningSessionNamedRefDto(Guid Id, string? DisplayName);
@@ -246,4 +257,9 @@ public sealed record PlanningSessionListItemDto(
     int SelectedPharmacyCount = 0,
     // WP-VP-3A (D3, additive) — no target at all (the "empty draft" badge; only such a plan may be archived).
     bool IsEmpty = false,
-    int ApprovedWeekCount = 0);
+    int ApprovedWeekCount = 0,
+    // WP-VP-4A (brief §1, additive) — distinct doctors / pharmacies of the selection, and the period's weeks that are
+    // neither past nor approved (counted without generating; 0 for an old committed or an archived plan).
+    int DoctorCount = 0,
+    int PharmacyCount = 0,
+    int DraftWeekCount = 0);

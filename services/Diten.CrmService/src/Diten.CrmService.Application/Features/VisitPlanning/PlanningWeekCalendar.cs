@@ -79,7 +79,8 @@ public static class PlanningWeekCalendar
             return PlanningWeekDisplayStatus.Past;
         }
 
-        if (stored is not null && stored.IsApproved())
+        // WP-VP-4A — an old committed plan's week holding written visits (synthetic "legacy") is frozen like an approved one.
+        if (stored is not null && (stored.IsApproved() || stored.IsLegacy()))
         {
             return PlanningWeekDisplayStatus.Approved;
         }

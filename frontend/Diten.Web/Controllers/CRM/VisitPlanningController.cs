@@ -142,6 +142,15 @@ public sealed class VisitPlanningController : Controller
     public async Task<IActionResult> Apply(CancellationToken ct)
         => await ProxyBodyAsync(HttpMethod.Post, "/api/crm/visit-plan/apply", ApplyPermission, ct, PlannedVisitManage);
 
+    // WP-VP-4A — reopen an approved week (3A): the same keys as apply (apply AND planned-visit.manage); the body (reason,
+    // expectedVersion) and CRM's answer (404 / 409 / 400 envelope included) pass through unchanged.
+    [HttpPost("api/sessions/{planningSessionId:guid}/weeks/{weekStart}/reopen")]
+    public async Task<IActionResult> ReopenWeek(Guid planningSessionId, string weekStart, CancellationToken ct)
+        => await ProxyBodyAsync(
+            HttpMethod.Post,
+            $"/api/crm/visit-plan/sessions/{planningSessionId}/weeks/{Uri.EscapeDataString(weekStart)}/reopen",
+            ApplyPermission, ct, PlannedVisitManage);
+
     [HttpPost("api/re-plan")]
     public async Task<IActionResult> Replan(CancellationToken ct)
         => await ProxyBodyAsync(HttpMethod.Post, "/api/crm/visit-plan/re-plan", ApplyPermission, ct, PlannedVisitManage);

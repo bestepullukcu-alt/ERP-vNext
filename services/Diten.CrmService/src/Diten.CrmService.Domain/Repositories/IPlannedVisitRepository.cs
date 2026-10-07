@@ -53,6 +53,20 @@ public interface IPlannedVisitRepository
             .ToList();
     }
 
+    /// <summary>WP-VP-4A — the non-deleted plans with these ids in ONE read (an old committed plan's written visits). The
+    /// default narrows <see cref="ListAsync"/>; the Mongo repository answers with a single <c>_id $in</c> find.</summary>
+    async Task<IReadOnlyList<PlannedVisit>> ListByIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken)
+    {
+        if (ids is null || ids.Count == 0)
+        {
+            return Array.Empty<PlannedVisit>();
+        }
+
+        var wanted = ids.ToHashSet();
+        return (await ListAsync(tenantId, cancellationToken)).Where(p => wanted.Contains(p.Id)).ToList();
+    }
+
     Task InsertAsync(PlannedVisit entity, CancellationToken cancellationToken);
 
     /// <summary>Optimistic replace: matches on (Id, TenantId, Version == expectedVersion) and bumps the token. Returns

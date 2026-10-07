@@ -89,7 +89,9 @@ public sealed record SessionTargetDoctorDto(
     bool Found,
     string? DisplayName,
     string? Specialty,
-    ContactPeriodStatusDto Status);
+    ContactPeriodStatusDto Status,
+    // WP-VP-4A (E4-3C-B1, additive) — the rep's stored product pick for this doctor; empty when none.
+    IReadOnlyList<PlanningSessionProductDto>? Products = null);
 
 public static class TargetStatusQuickFilters
 {

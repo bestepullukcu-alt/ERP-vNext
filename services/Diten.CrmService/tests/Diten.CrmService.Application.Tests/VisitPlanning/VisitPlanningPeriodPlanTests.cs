@@ -153,7 +153,7 @@ public sealed partial class VisitPlanningTests
         }
 
         var list = (await new ListPlanningSessionsHandler(TenantOf(Tenant), store, new TestCallerScope("rep-1"))
-            .Handle(new ListPlanningSessionsQuery(null, null, null), default)).Data!.Items;
+            .Handle(new ListPlanningSessionsQuery(null, null, null, IncludeArchived: true), default)).Data!.Items;
         Assert.True(list.Single(i => i.PlanningSessionId == empty.Id).IsEmpty);
         Assert.False(list.Single(i => i.PlanningSessionId == targeted.Id).IsEmpty);
         Assert.Equal(1, list.Single(i => i.PlanningSessionId == approved.Id).ApprovedWeekCount);

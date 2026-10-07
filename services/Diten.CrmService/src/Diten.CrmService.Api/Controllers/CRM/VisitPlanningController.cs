@@ -87,9 +87,11 @@ public sealed class VisitPlanningController : CustomBaseController
         [FromQuery] Guid? cyclePeriodId,
         [FromQuery] string? resourceId,
         [FromQuery] string? status,
-        CancellationToken cancellationToken)
+        // WP-VP-4A — archived plans are listed only when asked for.
+        [FromQuery] bool includeArchived = false,
+        CancellationToken cancellationToken = default)
         => CreateActionResultInstance(await _mediator.Send(
-            new ListPlanningSessionsQuery(cyclePeriodId, resourceId, status), cancellationToken));
+            new ListPlanningSessionsQuery(cyclePeriodId, resourceId, status, includeArchived), cancellationToken));
 
     /// <summary>WP-VP-2 (B-2) — the accounts the caller's current territory assignments cover (READ query; K-5: no
     /// assignment ⇒ every tenant account with <c>territoryStatus = unassigned</c>). <c>resourceId</c> is honoured only for

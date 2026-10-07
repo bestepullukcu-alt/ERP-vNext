@@ -108,6 +108,7 @@ public sealed class PlanningWeek
 
     public bool IsApproved() => string.Equals(Status, PlanningWeekStatus.Approved, StringComparison.Ordinal);
     public bool IsReopened() => string.Equals(Status, PlanningWeekStatus.Reopened, StringComparison.Ordinal);
+    public bool IsLegacy() => string.Equals(Status, PlanningWeekStatus.Legacy, StringComparison.Ordinal);
 }
 
 /// <summary>WP-VP-3A (MK-4) — one approve / reopen of a week.</summary>
@@ -128,6 +129,10 @@ public static class PlanningWeekStatus
 {
     public const string Approved = "approved";
     public const string Reopened = "reopened";
+
+    /// <summary>WP-VP-4A — READ-ONLY, never stored: a week of an old whole-period (<c>committed</c>) plan that holds its
+    /// written visits. It reads as approved (frozen) with <c>storedStatus = legacy</c> and has no history.</summary>
+    public const string Legacy = "legacy";
 }
 
 /// <summary>WP-VP-3A — the history actions of a week.</summary>

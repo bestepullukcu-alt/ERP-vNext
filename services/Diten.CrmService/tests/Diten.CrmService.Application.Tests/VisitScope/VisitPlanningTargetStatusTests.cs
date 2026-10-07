@@ -257,6 +257,27 @@ public sealed class VisitPlanningTargetStatusTests
         Assert.Equal(404, (await w.Targets(new GetSessionTargetsQuery(theirs), default)).StatusCode);
     }
 
+    // ── WP-VP-4A (1) · the targets read carries each doctor's stored product pick ─────────────────────────────────
+
+    [Fact]
+    public async Task Session_targets_carry_each_doctors_stored_product_pick_and_an_empty_list_without_one()
+    {
+        var w = new World();
+        var hospital = w.Account("Memorial Şişli", "hospital");
+        var picked = w.Doctor("Sadakat Özdil", required: 2, account: hospital);
+        var bare = w.Doctor("Burak Çelik", required: 2, account: hospital);
+        var sessionId = w.Session(Rep, new[] { hospital }, Array.Empty<Guid>(), (picked, hospital), (bare, hospital));
+        var product = Guid.NewGuid();
+        w.Sessions.Single(s => s.Id == sessionId).Selection.SelectedContacts.Single(c => c.ContactId == picked).Products.Add(
+            new PlanningSessionSelectedProduct { ProductId = product, ProductCode = "TUTUKON", Role = null });
+
+        var data = (await w.Targets(new GetSessionTargetsQuery(sessionId), default)).Data!;
+
+        var row = Assert.Single(data.Doctors.Single(d => d.ContactId == picked).Products!);
+        Assert.Equal((product, "TUTUKON", (string?)null, "promo"), (row.ProductId, row.ProductCode, row.ProductName, row.Role));
+        Assert.Empty(data.Doctors.Single(d => d.ContactId == bare).Products!);
+    }
+
     // ── 7. related accounts in bulk; > 100 ids is 400 ──────────────────────────────────────────────────────────────
 
     [Fact]

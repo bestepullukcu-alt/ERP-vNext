@@ -362,8 +362,17 @@ public sealed class VisitPlanningEngine
         // WP-VP-3A — FIXED visits: what this plan's stored weeks already wrote (approved weeks, and the visits a reopened
         // week kept), cancelled / archived excluded. DONE visits: the rep's visits in the period with a COMPLETED report.
         var storedIds = session.Weeks.SelectMany(w => w.PlannedVisitIds).ToHashSet();
+        // WP-VP-4A (F3-2) — an OLD whole-period (committed) plan: its written visits are fixed too and NOTHING is generated
+        // for it (its other weeks stay empty); the preview shows what was written (LegacyCommittedPlan).
+        var legacy = LegacyCommittedPlan.IsLegacy(session);
+        var legacyIds = LegacyCommittedPlan.FixedVisits(session, allPlans).Select(p => p.Id).ToHashSet();
+        if (legacy)
+        {
+            draftWeekIndexes.Clear();
+        }
+
         var fixedVisits = allPlans
-            .Where(p => storedIds.Contains(p.Id) && !p.IsCancelled() && !p.IsArchived())
+            .Where(p => (storedIds.Contains(p.Id) || legacyIds.Contains(p.Id)) && !p.IsCancelled() && !p.IsArchived())
             .OrderBy(p => p.PlannedDate).ThenBy(p => p.Slot.SequenceOrder ?? 0)
             .ToList();
         var doneVisits = await CompletedInPeriodAsync(tenantId, session, allPlans, periodStart, periodEnd, cancellationToken);
@@ -576,8 +585,11 @@ public sealed class VisitPlanningEngine
 
         // WP-VP-3B (4) — a consent-blocked doctor is reported, never planned.
         var firstDraftWeek = draftWeekIndexes.Count > 0 ? draftWeekIndexes[0] : 0;
-        unscheduled.AddRange(consentBlocked.Select(d => new UnscheduledPreview(
-            firstDraftWeek, PlannedVisitTargetType.Contact, d.ContactId, d.ContactId, PlanningVisitReasons.ConsentBlocked)));
+        if (!legacy) // WP-VP-4A — an old committed plan plans nothing, so nothing is "not planned" either
+        {
+            unscheduled.AddRange(consentBlocked.Select(d => new UnscheduledPreview(
+                firstDraftWeek, PlannedVisitTargetType.Contact, d.ContactId, d.ContactId, PlanningVisitReasons.ConsentBlocked)));
+        }
 
         // WP-SB-3b — a doctor recurs across weeks (frequency-extend), so each placed visit tells what comes AFTER the
         // doctor's earlier visits: the stored pending plans before its date plus this run's earlier visits.
@@ -1411,7 +1423,9 @@ public sealed class VisitPlanningEngine
         var weeks = g.PeriodWeeks
             .Select((w, i) =>
             {
-                var stored = g.Session.WeekOf(w.WeekStart);
+                // WP-VP-4A — an old committed plan's week holding written visits reads approved (storedStatus = legacy).
+                var stored = LegacyCommittedPlan.WeekOf(
+                    g.Session, w, LegacyCommittedPlan.IsLegacy(g.Session) ? g.Fixed : Array.Empty<PlannedVisitEntity>());
                 var count = allSlots.Count(s => s.WeekNumber == i);
                 return PlanningWeekCalendar.ToDto(w, PlanningWeekCalendar.Derive(w, g.Today, stored, count), count, stored);
             })

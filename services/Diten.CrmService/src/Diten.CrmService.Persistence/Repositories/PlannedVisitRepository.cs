@@ -104,6 +104,20 @@ public sealed class PlannedVisitRepository : IPlannedVisitRepository
         return Ordered(rows);
     }
 
+    public async Task<IReadOnlyList<PlannedVisit>> ListByIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken)
+    {
+        if (ids.Count == 0)
+        {
+            return Array.Empty<PlannedVisit>();
+        }
+
+        var rows = await _collection
+            .Find(Tenant(tenantId) & Builders<PlannedVisit>.Filter.In(x => x.Id, ids.Distinct()))
+            .ToListAsync(cancellationToken);
+        return Ordered(rows);
+    }
+
     public async Task InsertAsync(PlannedVisit entity, CancellationToken cancellationToken)
         => await _collection.InsertOneAsync(entity, cancellationToken: cancellationToken);
 
