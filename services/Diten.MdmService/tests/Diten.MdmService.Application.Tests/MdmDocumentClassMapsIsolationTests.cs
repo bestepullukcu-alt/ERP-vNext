@@ -77,6 +77,49 @@ public sealed class MdmDocumentClassMapsIsolationTests
     }
 
     [Fact]
+    public void C2_The_one_shot_selected_delivery_path_registers_every_covered_map_without_the_host()
+    {
+        // WP-MDM-BL576-01 FIX2 — CreateSelected runs before (without) AddPersistence; in a fresh driver its own Register() is
+        // the only thing that can flag the maps. Its constructor already takes typed collections (Gsku, Lsku, …), so without
+        // that call those types freeze as plain auto-maps here.
+        var context = new IsolatedMdm(Bin);
+        try
+        {
+            var (bson, domain, persistence) =
+                (Load(context, "MongoDB.Bson"), Load(context, "Diten.MdmService.Domain"), Load(context, "Diten.MdmService.Persistence"));
+            var tenantId = Guid.Parse("11111111-2222-3333-4444-555555555555");
+            var aggregateType = domain.GetType("Diten.MdmService.Domain.Enums.AuditAggregateType", true)!;
+            var locator = Activator.CreateInstance(domain.GetType("Diten.MdmService.Domain.Repositories.AuditIntentLocator", true)!,
+                tenantId, Enum.Parse(aggregateType, "Gsku"), Guid.Parse("22222222-2222-3333-4444-555555555555"),
+                Guid.Parse("33333333-2222-3333-4444-555555555555"))!;
+            var itemType = domain.GetType("Diten.MdmService.Domain.Repositories.SelectedAuditIntentDeliveryItem", true)!;
+            var items = Array.CreateInstance(itemType, 1);
+            items.SetValue(Activator.CreateInstance(itemType, locator, 0L, new string('a', 64)), 0);
+            var request = Activator.CreateInstance(
+                domain.GetType("Diten.MdmService.Domain.Repositories.SelectedAuditIntentDeliveryRequest", true)!,
+                Guid.Parse("44444444-2222-3333-4444-555555555555"), tenantId, items)!;
+            var createSelected = persistence.GetType("Diten.MdmService.Persistence.Repositories.AuditIntentDeliveryRepository", true)!
+                .GetMethods().Single(method => method.Name == "CreateSelected" && method.GetParameters()[0].ParameterType == typeof(string));
+
+            // The client connects lazily — nothing here opens a socket.
+            createSelected.Invoke(null, ["mongodb://127.0.0.1:1/?serverSelectionTimeoutMS=100",
+                "diten_mdm_bl576_isolated_never_opened", request, TimeProvider.System]);
+
+            var maps = persistence.GetType("Diten.MdmService.Persistence.Configurations.MdmDocumentClassMaps", true)!;
+            var covered = ((IEnumerable<Type>)maps.GetProperty("CoveredTypes")!.GetValue(null)!).ToList();
+            var classMap = bson.GetType("MongoDB.Bson.Serialization.BsonClassMap", true)!;
+            var lookup = classMap.GetMethod("LookupClassMap")!;
+            var ignores = classMap.GetProperty("IgnoreExtraElements")!;
+            Assert.Contains(covered, type => type.Name == "Gsku");
+            Assert.All(covered, type => Assert.True((bool)ignores.GetValue(lookup.Invoke(null, [type]))!, type.Name));
+        }
+        finally
+        {
+            context.Unload();
+        }
+    }
+
+    [Fact]
     public void M2_Every_map_this_registry_makes_writes_the_same_bytes_as_the_drivers_own_automap()
     {
         // "The existing mapping does not change", measured on the bytes: context A = production's Guid serializer only (the
