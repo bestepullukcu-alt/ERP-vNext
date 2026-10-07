@@ -82,12 +82,32 @@ public sealed class RepairLskuChildAdmissionsHandler
         }
 
         var now = _time.GetUtcNow().ToUniversalTime();
-        var found = await _gskus.FindOrphanChildCreationAdmissionsAsync(
-            request.ChildKind, now.AddMinutes(-request.MinimumAgeMinutes), request.Limit, cancellationToken);
-        var orphans = new List<GskuOrphanChildAdmission>(found.Count);
-        foreach (var orphan in found)
+        // WP-MDM-SCOPE-INT-01 FIX2 item 1: the walk goes ON past what it may not touch. Before, one bounded read took the
+        // first Limit orphans (GSKU id order) and the scope was filtered AFTER it: out-of-scope orphans are never repaired,
+        // so they stayed in front, and once they filled the read every run got the same page — the in-scope orphans
+        // behind them were never reached and their GSKUs kept the leaked admission (LSKU FIX1 B1's own bug, back).
+        // Now: page by page after a cursor, until Limit in-scope orphans, the end, or MaximumPages (then Truncated).
+        var cutoff = now.AddMinutes(-request.MinimumAgeMinutes);
+        var orphans = new List<GskuOrphanChildAdmission>(request.Limit);
+        var outOfScope = 0;
+        var truncated = false;
+        Guid? after = null;
+        for (var page = 0; ; page++)
         {
-            if (await _scope.InScopeForGskuAsync(mode, orphan.GskuId, cancellationToken)) orphans.Add(orphan);
+            if (page == GskuOrphanAdmissionPage.MaximumPages)
+            {
+                truncated = true;
+                break;
+            }
+            var walked = await _gskus.FindOrphanChildCreationAdmissionPageAsync(
+                request.ChildKind, cutoff, after, cancellationToken);
+            foreach (var orphan in walked.Orphans)
+            {
+                if (!await _scope.InScopeForGskuAsync(mode, orphan.GskuId, cancellationToken)) outOfScope++;
+                else if (orphans.Count < request.Limit) orphans.Add(orphan);
+            }
+            after = walked.NextAfterGskuId;
+            if (after is null || orphans.Count >= request.Limit) break;
         }
         var items = new List<LskuChildAdmissionRepairItem>(orphans.Count);
         // Each release moves the GSKU's version, so a second orphan on the same GSKU is re-read before its write.
@@ -143,7 +163,7 @@ public sealed class RepairLskuChildAdmissionsHandler
         }
 
         return Response<LskuChildAdmissionRepairResult>.Success(
-            new(orphans.Count, items.Count(x => x.Released), items, found.Count - orphans.Count), 200);
+            new(orphans.Count, items.Count(x => x.Released), items, outOfScope, truncated), 200);
     }
 
     private LocalAuditIntent CreateIntent(GskuOrphanChildAdmission orphan, DateTimeOffset now)

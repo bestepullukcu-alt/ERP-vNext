@@ -18,6 +18,10 @@ public sealed record RepairLskuChildAdmissionsCommand(int Limit = 100, int Minim
     // overlapping runs with the same parameters shared one lease and the second ran on without one once the first
     // released it. Text, not a Guid, on purpose: the path-b audit names the first Guid "…Id" of a command as its
     // entity, and a run id is not a GSKU.
+    // FIX2 m3 — the price, stated: the lease of a run that ended in an exception (or any non-2xx: the repair names no
+    // object, so "nothing changed" cannot be proven) is KEPT, and the operator's repeat is a NEW run with a new id — it
+    // does not take that lease back. The old lease holds an activation / suspension fence off until it expires
+    // (~120 s + clock skew); then the fence goes on. Not permanent.
     public string CommandId { get; init; } = Guid.NewGuid().ToString("D");
 
     public AuditMetadata GetAuditMetadata() => new(
@@ -27,12 +31,15 @@ public sealed record RepairLskuChildAdmissionsCommand(int Limit = 100, int Minim
 
 /// <param name="Found">The orphans found inside the caller's background scope (all of them outside an Enforced tenant).</param>
 /// <param name="OutOfScope">WP-MDM-SCOPE-INT-01 FIX1 item 1: orphans of out-of-scope or unclassified products in an
-/// Enforced tenant — skipped, counted, never named.</param>
+/// Enforced tenant — skipped, counted over every page walked, never named.</param>
+/// <param name="Truncated">WP-MDM-SCOPE-INT-01 FIX2 item 1: the walk stopped at its page bound before reaching Limit
+/// in-scope orphans or the end — run it again (it starts from the front; repaired orphans are gone from it).</param>
 public sealed record LskuChildAdmissionRepairResult(
     int Found,
     int Released,
     IReadOnlyList<LskuChildAdmissionRepairItem> Items,
-    int OutOfScope = 0);
+    int OutOfScope = 0,
+    bool Truncated = false);
 
 public sealed record LskuChildAdmissionRepairItem(
     Guid GskuId,

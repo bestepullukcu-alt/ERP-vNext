@@ -96,6 +96,100 @@ public sealed class ProductLegalEntityScopeIntFix1Tests : IClassFixture<AuditInt
         Assert.Equal((2, 2, 0), (response.Data!.Found, response.Data.Released, response.Data.OutOfScope));
     }
 
+    // ---------------------------------------------------------------------------------------------- FIX2 item 1 / m6
+
+    [Fact]
+    public async Task Out_of_scope_orphans_in_front_no_longer_hide_the_in_scope_orphan_behind_them()
+    {
+        // FIX2 item 1: Limit out-of-scope orphans first (lowest GSKU ids, never repaired, so they stay in front), one
+        // in-scope orphan behind them. Before, every run read the same first Limit orphans and never reached it.
+        var world = new RepairWorld(ProductLegalEntityScopeRolloutMode.Enforced) { PageSize = 1 };
+        world.Orphan(classified: false);
+        world.Orphan(classified: false);
+        var behind = world.Orphan(classified: true);
+
+        var response = await world.Handler().Handle(new RepairLskuChildAdmissionsCommand(Limit: 2), default);
+
+        Assert.True(response.IsSuccessful, string.Join(",", response.Errors ?? []));
+        Assert.Equal([behind.GskuId], world.Released);
+        Assert.Equal((1, 1, 2, false), (response.Data!.Found, response.Data.Released, response.Data.OutOfScope, response.Data.Truncated));
+        Assert.Equal([behind.GskuId], response.Data.Items.Select(item => item.GskuId));
+    }
+
+    [Fact]
+    public async Task The_walk_stops_at_its_page_bound_and_says_it_was_truncated()
+    {
+        var world = new RepairWorld(ProductLegalEntityScopeRolloutMode.Enforced) { PageSize = 1 };
+        for (var i = 0; i < GskuOrphanAdmissionPage.MaximumPages + 1; i++) world.Orphan(classified: false);
+        world.Orphan(classified: true);
+
+        var response = await world.Handler().Handle(new RepairLskuChildAdmissionsCommand(Limit: 1), default);
+
+        Assert.True(response.Data!.Truncated);
+        Assert.Equal(GskuOrphanAdmissionPage.MaximumPages, world.PagesRead);
+        Assert.Equal(GskuOrphanAdmissionPage.MaximumPages, response.Data.OutOfScope);
+        Assert.Empty(world.Released);
+    }
+
+    [Fact]
+    public async Task A_finished_good_orphan_is_repaired_by_the_same_scope_rule()
+    {
+        // FIX2 m6: the FG kind of the same repair (POST api/finished-goods/operator/child-admission-repairs).
+        var world = new RepairWorld(ProductLegalEntityScopeRolloutMode.Enforced);
+        var inScope = world.Orphan(classified: true, GskuChildIdentityKind.FinishedGood);
+        world.Orphan(classified: false, GskuChildIdentityKind.FinishedGood);
+        world.Orphan(classified: true, GskuChildIdentityKind.Lsku);
+
+        var response = await world.Handler().Handle(
+            new RepairLskuChildAdmissionsCommand(ChildKind: GskuChildIdentityKind.FinishedGood), default);
+
+        Assert.Equal([inScope.GskuId], world.Released);
+        Assert.Equal((1, 1), (response.Data!.Released, response.Data.OutOfScope));
+    }
+
+    // ---------------------------------------------------------------------------------------------- FIX2 m4
+
+    [Fact]
+    public async Task A_product_write_cancelled_by_its_own_caller_is_not_answered_as_an_unreachable_store()
+    {
+        var tenant = Tenant(Guid.NewGuid());
+        var rollouts = Proxy<IProductLegalEntityScopeRolloutStateRepository>((method, _) =>
+            throw new MongoDB.Driver.MongoException("operation cancelled"));
+        var readiness = Proxy<IProductLegalEntityScopeOperationalReadinessRepository>((method, _) =>
+            throw new NotSupportedException(method.Name));
+        var coordinator = new ProductLegalEntityScopeWriteFenceCoordinator(rollouts, readiness, new Actor(), tenant, TimeProvider.System);
+        using var cancelled = new CancellationTokenSource();
+        await cancelled.CancelAsync();
+
+        await Assert.ThrowsAsync<MongoDB.Driver.MongoException>(() => coordinator.EnterAsync(
+            new CancelLskuDraftCommand(Guid.NewGuid(), 1, Guid.NewGuid(), "CREATED_BY_MISTAKE"), cancelled.Token));
+        // Not cancelled: the same failure is still the coded 503 (unchanged).
+        var answered = await coordinator.EnterAsync(
+            new CancelLskuDraftCommand(Guid.NewGuid(), 1, Guid.NewGuid(), "CREATED_BY_MISTAKE"), default);
+        Assert.Equal((false, 503), (answered.IsAllowed, answered.StatusCode));
+    }
+
+    [Fact]
+    public async Task A_policy_read_cancelled_by_its_own_caller_is_not_answered_as_an_unreachable_store()
+    {
+        var rollouts = Proxy<IProductLegalEntityScopeRolloutStateRepository>((method, _) =>
+            throw new MongoDB.Driver.MongoException("operation cancelled"));
+        var handler = new Diten.MdmService.Application.Features.ProductLegalEntityScopes.Handlers.QueryHandlers
+            .GetProductLegalEntityScopeCompletenessHandler(
+                Proxy<IGlobalProductRepository>((method, _) => throw new NotSupportedException(method.Name)),
+                Proxy<IProductLegalEntityScopePolicyRepository>((method, _) => throw new NotSupportedException(method.Name)),
+                rollouts);
+        using var cancelled = new CancellationTokenSource();
+        await cancelled.CancelAsync();
+
+        await Assert.ThrowsAsync<MongoDB.Driver.MongoException>(() => handler.Handle(
+            new Diten.MdmService.Application.Features.ProductLegalEntityScopes.Queries.GetProductLegalEntityScopeCompletenessQuery(),
+            cancelled.Token));
+        Assert.Equal(503, (await handler.Handle(
+            new Diten.MdmService.Application.Features.ProductLegalEntityScopes.Queries.GetProductLegalEntityScopeCompletenessQuery(),
+            default)).StatusCode);
+    }
+
     // ---------------------------------------------------------------------------------------------- M1 / M2 / M8
 
     [Fact]
@@ -350,13 +444,21 @@ public sealed class ProductLegalEntityScopeIntFix1Tests : IClassFixture<AuditInt
         public List<Guid> Released { get; } = [];
         public bool OrphansRead { get; private set; }
 
-        public GskuOrphanChildAdmission Orphan(bool classified)
+        /// <summary>FIX2: GSKUs per page of the paged walk (the store's own page is 100).</summary>
+        public int PageSize { get; init; } = 100;
+
+        public int PagesRead { get; private set; }
+
+        private int _sequence;
+
+        public GskuOrphanChildAdmission Orphan(bool classified, GskuChildIdentityKind kind = GskuChildIdentityKind.Lsku)
         {
-            var gskuId = Guid.NewGuid();
+            // Ascending ids: the walk's GSKU id order is the order the orphans are created in.
+            var gskuId = new Guid(++_sequence, 0, 0, new byte[8]);
             var productId = Guid.NewGuid();
             _productOfGsku[gskuId] = productId;
             if (classified) _classified.Add(productId);
-            var orphan = new GskuOrphanChildAdmission(gskuId, 3, GskuChildIdentityKind.Lsku, "create-" + gskuId.ToString("N"),
+            var orphan = new GskuOrphanChildAdmission(gskuId, 3, kind, "create-" + gskuId.ToString("N"),
                 new string('a', 64), DateTimeOffset.UtcNow.AddHours(-1), Guid.NewGuid(), Guid.NewGuid(), 2);
             _orphans.Add(orphan);
             return orphan;
@@ -384,6 +486,19 @@ public sealed class ProductLegalEntityScopeIntFix1Tests : IClassFixture<AuditInt
                     case "FindOrphanChildCreationAdmissionsAsync":
                         OrphansRead = true;
                         return Task.FromResult<IReadOnlyList<GskuOrphanChildAdmission>>(_orphans);
+                    case "FindOrphanChildCreationAdmissionPageAsync":
+                    {
+                        OrphansRead = true;
+                        PagesRead++;
+                        var kind = (GskuChildIdentityKind)args![0]!;
+                        var after = (Guid?)args[2];
+                        var behind = _orphans.Where(item => item.ChildKind == kind && (after is null || item.GskuId.CompareTo(after.Value) > 0))
+                            .OrderBy(item => item.GskuId).ToList();
+                        var gskus = behind.Select(item => item.GskuId).Distinct().Take(PageSize).ToHashSet();
+                        var page = behind.Where(item => gskus.Contains(item.GskuId)).ToList();
+                        var more = behind.Count > page.Count;
+                        return Task.FromResult(new GskuOrphanAdmissionPage(page, more ? page[^1].GskuId : null));
+                    }
                     case "GetByIdAsync":
                         var id = (Guid)args![0]!;
                         return Task.FromResult<Gsku?>(_productOfGsku.ContainsKey(id)

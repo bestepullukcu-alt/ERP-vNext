@@ -74,7 +74,9 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
         {
             current = await _rollouts.GetAsync(cancellationToken);
         }
-        catch (Exception exception) when (ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
+        // WP-MDM-SCOPE-INT-01 FIX2 m4: a write cancelled by its own caller is not a store that cannot be reached (FIX1 M7).
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested
+                                          && ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
         {
             // WP-MDM-SCOPE-ACCEPT-01 FIX1 B2 / FIX4 (6): a rollout record that cannot be read, or a store that cannot be
             // reached, refuses the write with its own coded 503 — never an unhandled exception for every product write.
@@ -111,7 +113,9 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
             ProductLegalEntityScopeRolloutMetrics.CountRetained("acquire_ambiguous");
             return ProductLegalEntityScopeWriteAdmission.Denied(LeaseWriteAmbiguousCode, 503);
         }
-        catch (Exception exception) when (ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
+        // WP-MDM-SCOPE-INT-01 FIX2 m4: a write cancelled by its own caller is not a store that cannot be reached (FIX1 M7).
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested
+                                          && ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
         {
             return ReadRefused(exception, "write_admission");
         }
@@ -296,7 +300,9 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
             ProductLegalEntityScopeRolloutMetrics.CountRetained("acquire_ambiguous");
             return ProductLegalEntityScopeWriteAdmission.Denied(LeaseWriteAmbiguousCode, 503);
         }
-        catch (Exception exception) when (ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
+        // WP-MDM-SCOPE-INT-01 FIX2 m4: a write cancelled by its own caller is not a store that cannot be reached (FIX1 M7).
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested
+                                          && ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
         {
             // FIX2 (11): a rollout record that cannot be read refuses the Replace with the guard's coded 503.
             return ReadRefused(exception, "replace_admission");

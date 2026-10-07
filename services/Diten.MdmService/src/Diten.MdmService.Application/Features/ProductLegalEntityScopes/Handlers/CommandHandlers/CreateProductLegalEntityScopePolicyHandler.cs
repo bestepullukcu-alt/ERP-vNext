@@ -165,7 +165,9 @@ public sealed class CreateProductLegalEntityScopePolicyHandler
         {
             return (null, await rollouts.GetAsync(cancellationToken));
         }
-        catch (Exception exception) when (ProductLegalEntityScopeWriteFenceCoordinator.ClassifyRolloutReadFailure(exception)
+        // WP-MDM-SCOPE-INT-01 FIX2 m4: a read cancelled by its own caller propagates (FIX1 M7).
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested
+                                          && ProductLegalEntityScopeWriteFenceCoordinator.ClassifyRolloutReadFailure(exception)
                                           != ProductLegalEntityScopeWriteFenceCoordinator.RolloutReadFailure.None)
         {
             return (ProductLegalEntityScopeWriteFenceCoordinator.ReadFailureAnswer(exception, surface).Code, null);
