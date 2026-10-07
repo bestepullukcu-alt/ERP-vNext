@@ -109,7 +109,15 @@ public sealed class LoginOnlyEndpointGuardTests
          */
         "InternalLegalEntityScopeResolutionController",
         "InternalTrustedSourceAuditIntentController",
-        "InternalVerifiedMarketReferenceDataController"
+        "InternalVerifiedMarketReferenceDataController",
+        /*
+         * WP-PLT-ITEM-LISTS-01 (MOD-0048-FU01 item lists). Anonymous to the framework, gated by the SAME verified-reference
+         * executor as the two above (resolver credential + header audience, then one tenant token). Proof:
+         * ItemUniversalReferenceDataTests.An_unauthenticated_request_never_reaches_the_lists (no credential, forbidden
+         * credential, no token, both tokens — the strict mediator is never called) and
+         * A_body_outside_the_contract_is_400_before_dispatch. Sabotage (executor bypassed) red on the first.
+         */
+        "InternalItemUniversalReferenceDataController"
     };
 
     /// <summary>

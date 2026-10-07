@@ -1,0 +1,188 @@
+{
+  "_comment": "WP-PLT-ITEM-LISTS-01 contract (FIX1 R2: request bodies, 404 and 400 shapes, the 200 limit and the material types too). Platform's tests produce every response from the real handler and bind every request to the real DTO; MDM's tests compare the body the real client sends and feed every response to it. A change on either side turns one of them red.",
+  "maximum_selections": 200,
+  "material_types": [
+    "ACTIVE_INGREDIENT",
+    "EXCIPIENT",
+    "RAW_MATERIAL",
+    "PACKAGING_PRIMARY",
+    "PACKAGING_SECONDARY",
+    "INTERMEDIATE"
+  ],
+  "request": {
+    "selections": [
+      {
+        "set_code": "material-type",
+        "value_code": "RAW_MATERIAL",
+        "resolution_mode": "LATEST"
+      },
+      {
+        "set_code": "item-uom",
+        "value_code": "KGM",
+        "resolution_mode": "LATEST"
+      },
+      {
+        "set_code": "item-uom",
+        "value_code": "GRM",
+        "resolution_mode": "LATEST"
+      },
+      {
+        "set_code": "storage-condition",
+        "value_code": "AMBIENT_15_25",
+        "resolution_mode": "LATEST"
+      },
+      {
+        "set_code": "storage-condition",
+        "value_code": "PROTECT_FROM_LIGHT",
+        "resolution_mode": "LATEST"
+      }
+    ]
+  },
+  "response": {
+    "data": {
+      "selections": [
+        {
+          "set_code": "material-type",
+          "value_code": "RAW_MATERIAL",
+          "catalog_version": "ITEM-UNIVERSAL-V1",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0003",
+          "catalog_version_number": 1,
+          "resolution_mode": "LATEST",
+          "resolved_at_utc": "2026-10-07T00:00:00+00:00",
+          "is_retired": false,
+          "selectable_for_new": true,
+          "attributes": {}
+        },
+        {
+          "set_code": "item-uom",
+          "value_code": "KGM",
+          "catalog_version": "ITEM-UNIVERSAL-V1",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0001",
+          "catalog_version_number": 1,
+          "resolution_mode": "LATEST",
+          "resolved_at_utc": "2026-10-07T00:00:00+00:00",
+          "is_retired": false,
+          "selectable_for_new": true,
+          "attributes": {
+            "DimensionCode": "MASS",
+            "MaximumDecimalPrecision": "3",
+            "FactorToDimensionBase": "1"
+          }
+        },
+        {
+          "set_code": "item-uom",
+          "value_code": "GRM",
+          "catalog_version": "ITEM-UNIVERSAL-V1",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0001",
+          "catalog_version_number": 1,
+          "resolution_mode": "LATEST",
+          "resolved_at_utc": "2026-10-07T00:00:00+00:00",
+          "is_retired": false,
+          "selectable_for_new": true,
+          "attributes": {
+            "DimensionCode": "MASS",
+            "MaximumDecimalPrecision": "3",
+            "FactorToDimensionBase": "0.001"
+          }
+        },
+        {
+          "set_code": "storage-condition",
+          "value_code": "AMBIENT_15_25",
+          "catalog_version": "ITEM-UNIVERSAL-V1",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0002",
+          "catalog_version_number": 1,
+          "resolution_mode": "LATEST",
+          "resolved_at_utc": "2026-10-07T00:00:00+00:00",
+          "is_retired": false,
+          "selectable_for_new": true,
+          "attributes": {
+            "ConditionKind": "TEMPERATURE",
+            "TemperatureMinC": "15",
+            "TemperatureMaxC": "25",
+            "ProtectFromLight": "false",
+            "ProtectFromMoisture": "false"
+          }
+        },
+        {
+          "set_code": "storage-condition",
+          "value_code": "PROTECT_FROM_LIGHT",
+          "catalog_version": "ITEM-UNIVERSAL-V1",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0002",
+          "catalog_version_number": 1,
+          "resolution_mode": "LATEST",
+          "resolved_at_utc": "2026-10-07T00:00:00+00:00",
+          "is_retired": false,
+          "selectable_for_new": true,
+          "attributes": {
+            "ConditionKind": "PROTECTION",
+            "TemperatureMinC": null,
+            "TemperatureMaxC": null,
+            "ProtectFromLight": "true",
+            "ProtectFromMoisture": "false"
+          }
+        }
+      ],
+      "not_found": []
+    },
+    "statusCode": 200,
+    "isSuccessful": true,
+    "errors": [],
+    "reason_code": null,
+    "correlation_id": null
+  },
+  "not_found": {
+    "request": {
+      "selections": [
+        {
+          "set_code": "item-uom",
+          "value_code": "KGM",
+          "resolution_mode": "LATEST"
+        },
+        {
+          "set_code": "item-uom",
+          "value_code": "LBR",
+          "resolution_mode": "LATEST"
+        }
+      ]
+    },
+    "response": {
+      "data": {
+        "selections": [],
+        "not_found": [
+          {
+            "set_code": "item-uom",
+            "value_code": "LBR"
+          }
+        ]
+      },
+      "statusCode": 404,
+      "isSuccessful": false,
+      "errors": [
+        "REFERENCE_VALUE_NOT_FOUND"
+      ],
+      "reason_code": "REFERENCE_VALUE_NOT_FOUND",
+      "correlation_id": null
+    }
+  },
+  "bad_request": {
+    "request": {
+      "selections": [
+        {
+          "set_code": "uom",
+          "value_code": "KGM",
+          "resolution_mode": "LATEST"
+        }
+      ]
+    },
+    "response": {
+      "data": null,
+      "statusCode": 400,
+      "isSuccessful": false,
+      "errors": [
+        "REFERENCE_SET_NOT_SUPPORTED"
+      ],
+      "reason_code": "REFERENCE_SET_NOT_SUPPORTED",
+      "correlation_id": null
+    }
+  }
+}

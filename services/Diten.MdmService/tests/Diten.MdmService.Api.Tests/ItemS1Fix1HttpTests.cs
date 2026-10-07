@@ -484,9 +484,12 @@ public sealed partial class ItemS1HttpTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
+        // WP-PLT-ITEM-LISTS-01 (CT decision A): the item lists are Platform's — the client fails closed at the call
+        // when unconfigured (PlatformItemReferenceResolverClientTests); the stock check still has no provider.
         services.AddInfrastructure(new ConfigurationBuilder().Build());
         using var provider = services.BuildServiceProvider();
-        Assert.IsType<UnavailableItemReferenceResolver>(provider.GetRequiredService<IItemReferenceResolver>());
+        Assert.IsType<Diten.MdmService.Infrastructure.ReferenceData.PlatformItemReferenceResolverClient>(
+            provider.GetRequiredService<IItemReferenceResolver>());
         Assert.IsType<UnavailableInventoryStockAvailabilityClient>(provider.GetRequiredService<IInventoryStockAvailabilityClient>());
     }
 

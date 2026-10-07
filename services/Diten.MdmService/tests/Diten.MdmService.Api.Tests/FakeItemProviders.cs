@@ -34,6 +34,8 @@ public sealed class FakeItemReferences : IItemReferenceResolver
     // FIX2 m1: a "not found" answer whose list holds a null entry.
     public bool NullNotFoundEntry { get; set; }
     public HashSet<string> Retired { get; } = new(StringComparer.Ordinal);
+    // WP-PLT-ITEM-LISTS-01: the REAL Platform client a test puts in (the host's resolver is this fake).
+    public IItemReferenceResolver? Override { get; set; }
 
     public void Reset()
     {
@@ -42,12 +44,14 @@ public sealed class FakeItemReferences : IItemReferenceResolver
         OmitConditionKind = false;
         NullAttributes = false;
         NullNotFoundEntry = false;
+        Override = null;
         Retired.Clear();
     }
 
     public Task<ItemReferenceResolveResult> ResolveLatestAsync(IReadOnlyList<ItemReferenceRequest> requests,
         CancellationToken cancellationToken = default)
     {
+        if (Override is { } real) return real.ResolveLatestAsync(requests, cancellationToken);
         Calls.Enqueue(requests);
         if (Throw) throw new HttpRequestException("item list provider down (test)");
         if (Outage) return Task.FromResult(ItemReferenceResolveResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"));
