@@ -35,6 +35,7 @@
 | MK-7 | Eczane sıklığı hesap politikasından; yoksa "dönemde 1" |
 | MK-8 | Günlük üst sınır dönem kapasitesinden türetilir |
 | MK-9 | Yarım gün kapasiteyi yarıya indirir (çalışma takvimi destekliyor) |
+| K-7 | ◐ **Karar bekliyor:** strateji şablonu olmadan planlama + temsilcinin ürün seçimi / taşıma / karışık sıra / ekleme → [karar belgesi](VISIT-PRODUCTS-without-play-decision.md) (K-7a…g) |
 | — | Tarih biçimi ("5 Oct, 26" tarzı) ve Rota sekmesinin tasarımı değişmez |
 
 ## İş listesi
