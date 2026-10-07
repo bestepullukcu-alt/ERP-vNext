@@ -1162,16 +1162,34 @@
     };
 
     // ── apply / replan ── (apply = "Bu haftanın planı olarak kaydet"; it persists the manual order on the session)
+    // WP-E2E-FIX-1 (E8-B1) — apply is confirmed first ("N visits will be planned; the plan locks"), and on success the
+    // page RELOADS so the server recomputes readOnly (banner + every write affordance off). The success toast survives
+    // the reload through a one-shot sessionStorage flag (the LegalEntities / OrganizationUnits pattern).
+    const APPLIED_TOAST_KEY = 'vp-applied-toast';
     const apply = () => {
         if (readOnly) return Promise.resolve();
         // A wholly empty plan (no visits on any day) has nothing to commit — block it. Partly-empty weeks are fine.
         if (!scheduled.length) { window.showToast?.(L.EmptyPlanBlocked || 'This plan has no visits, so it cannot be saved.', 'error'); return Promise.resolve(); }
-        const body = { planningSessionId: sessionId, expectedVersion: currentVersion };
-        if (manualOrder && manualOrder.length) body.manualVisitOrder = manualOrder;
-        return api('/apply', { method: 'POST', body: JSON.stringify(body) }).then(r => {
-            if (r.ok && r.body && r.body.data) { window.showToast?.((L.Applied || 'Applied') + ' (' + (r.body.data.scheduledCount || 0) + ')', 'success'); loadSession(); }
-            else { window.showToast?.(errorText(r), 'error'); }
-        });
+        const go = () => {
+            const body = { planningSessionId: sessionId, expectedVersion: currentVersion };
+            if (manualOrder && manualOrder.length) body.manualVisitOrder = manualOrder;
+            return api('/apply', { method: 'POST', body: JSON.stringify(body) }).then(r => {
+                if (r.ok && r.body && r.body.data) {
+                    const message = (L.Applied || 'Applied') + ' (' + (r.body.data.scheduledCount || 0) + ')';
+                    try { sessionStorage.setItem(APPLIED_TOAST_KEY, message); } catch (e) { window.showToast?.(message, 'success'); }
+                    window.location.reload();
+                }
+                else { window.showToast?.(errorText(r), 'error'); }
+            });
+        };
+        const text = (L.ApplyConfirm || '{0} visits will be planned and the plan will be locked.').replace('{0}', scheduled.length);
+        if (window.showConfirm) { window.showConfirm(text, go, { type: 'warning', confirmButtonText: L.ApplyConfirmButton }); return Promise.resolve(); }
+        return window.confirm(text) ? go() : Promise.resolve();
+    };
+    const showAppliedToast = () => {
+        let message = null;
+        try { message = sessionStorage.getItem(APPLIED_TOAST_KEY); sessionStorage.removeItem(APPLIED_TOAST_KEY); } catch (e) { message = null; }
+        if (message) window.showToast?.(message, 'success');
     };
     const replan = () => {
         if (readOnly) return;
@@ -1298,6 +1316,7 @@
         }
     }
     if (canApply) { el('vp-apply')?.addEventListener('click', apply); el('vp-replan')?.addEventListener('click', replan); }
+    showAppliedToast(); // the success message of an apply that reloaded the page into its read-only state
 
     // Boot: names → session header → account source + targets (master/detail) → default tab → route preview.
     Promise.all([loadPeriods(), loadReferenceLabels(), loadTerritoryStatus()])

@@ -66,6 +66,7 @@
 | Segment rozeti | bilgi rozeti | `segments: [{code, label}]` (salt okunur) |
 | Takvim düzeltmesi | hafta sonu / tatile ziyaret düşmez, günler dengelenir | istemci değişikliği gerekmez |
 | F-RBAC | saha temsilcisi rolü + ziyaret raporu yetkileri | yetki anahtarları değişmez (`crm.planned-visit.*`, `crm.visit-report.*`) |
+| **Ziyaret yürütme (WP-E2E-FIX-1, KESİN)** | takvim öğesi "ne sunacağım"ı taşır; ileri tarihli ziyaret kapatılamaz; rapor plandaki yolculuk / aşama kimliğini taşımalı | **ek alan** `GET /api/crm/visit-report/calendar` öğesinde `plannedContent: [{ productId, productCode, role, journeyId, journeyCode, stageId, stageIndex, stageCode, stageName, steps: [{ title, type }] }]` (içerik yoksa `[]`; eski `plannedJourneyId / plannedStageId / plannedStageIndex` aynen) · **yeni hata** `409 visit_not_yet_due` — `POST /api/crm/visit-report/outcome` (`completed`, `missed`) ve `POST /api/crm/visit-report` (gönderim), `plannedDate` > bugün (UTC takvim günü) iken; `rescheduled` serbest · rapor gönderiminde `contentActuals.journeyId / stageId / stageIndex / stageCode / matchedPlan` doldurulmalı (alanlar zaten vardı; ilerleme okuması SB-3c'de bunlara dayanacak) · hata zarfı `errors: [mesaj, kod]` (kod ikinci sırada) |
 
 ## 6. Sizden yanıt beklenenler
 1. Uygulamanızda bugün **strateji şablonu, kampanya ya da segment** görünen veya seçilen bir yer var mı? Varsa hangi ekran?

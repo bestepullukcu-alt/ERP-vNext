@@ -124,4 +124,6 @@
   <data name="RepSelfHint" xml:space="preserve"><value>Планы составляются для вошедшего в систему представителя.</value></data>
   <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>Вам не назначена территория; показаны все учреждения. Обратитесь к руководителю.</value></data>
   <data name="AddOutOfTerritory" xml:space="preserve"><value>Добавить учреждение вне территории</value></data>
+  <data name="ApplyConfirm" xml:space="preserve"><value>Будет запланировано визитов: {0}, план будет заблокирован. Продолжить?</value></data>
+  <data name="ApplyConfirmButton" xml:space="preserve"><value>Да, сохранить план</value></data>
 </root>

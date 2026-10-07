@@ -4,7 +4,7 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="PageTitle" xml:space="preserve"><value>Отчёт о визите</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>Выполнение визитов</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Запишите, что произошло на самом деле — отметьте каждый запланированный визит как выполненный, пропущенный или перенесённый и оформите неизменяемый отчёт о визите.</value></data>
   <data name="ExecutionNotice" xml:space="preserve"><value>Это календарь исполнения. Он фиксирует результаты и отчёты; он не создаёт план и не продвигает этап контента — записанный здесь фактический этап читается в следующем цикле.</value></data>
   <data name="View" xml:space="preserve"><value>Вид</value></data>
@@ -16,13 +16,10 @@
   <data name="Refresh" xml:space="preserve"><value>Обновить</value></data>
   <data name="NoVisits" xml:space="preserve"><value>В этом окне нет запланированных визитов.</value></data>
   <data name="ReportTitle" xml:space="preserve"><value>Отчёт о визите</value></data>
-  <data name="PlannedContent" xml:space="preserve"><value>Запланированный контент (FU04)</value></data>
+  <data name="PlannedContent" xml:space="preserve"><value>Запланированный контент</value></data>
   <data name="ActualStage" xml:space="preserve"><value>Фактически представленный этап</value></data>
-  <data name="StageIndex" xml:space="preserve"><value>Этап №</value></data>
-  <data name="MatchedPlan" xml:space="preserve"><value>Совпал с запланированным этапом</value></data>
   <data name="OutcomeCode" xml:space="preserve"><value>Код результата</value></data>
   <data name="OutcomeCodePlaceholder" xml:space="preserve"><value>напр. positive</value></data>
-  <data name="ReferenceDataHint" xml:space="preserve"><value>Коды результата берутся из справочных данных.</value></data>
   <data name="DoctorFeedback" xml:space="preserve"><value>Отзыв врача</value></data>
   <data name="Samples" xml:space="preserve"><value>Выданные образцы / материалы</value></data>
   <data name="AddSample" xml:space="preserve"><value>Добавить образец</value></data>
@@ -49,4 +46,37 @@
   <data name="Quantity" xml:space="preserve"><value>Кол-во</value></data>
   <data name="ItemType" xml:space="preserve"><value>Тип позиции</value></data>
   <data name="Remove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="NoPlannedContent" xml:space="preserve"><value>Для этого визита контент не запланирован.</value></data>
+  <data name="StageFallback" xml:space="preserve"><value>Этап {0}</value></data>
+  <data name="PlannedStageSuffix" xml:space="preserve"><value>(по плану)</value></data>
+  <data name="StageNotPresented" xml:space="preserve"><value>Запланированный этап не представлен</value></data>
+  <data name="StageMatchesPlan" xml:space="preserve"><value>Совпадает с планом.</value></data>
+  <data name="StageDiffersFromPlan" xml:space="preserve"><value>Отличается от плана.</value></data>
+  <data name="NotYetDueHint" xml:space="preserve"><value>День визита ещё не наступил</value></data>
+  <data name="ConfirmCompleted" xml:space="preserve"><value>Отметить этот визит как выполненный?</value></data>
+  <data name="ConfirmCompletedButton" xml:space="preserve"><value>Да, выполнен</value></data>
+  <data name="OutcomeCompleted" xml:space="preserve"><value>Выполнен</value></data>
+  <data name="OutcomeMissed" xml:space="preserve"><value>Пропущен</value></data>
+  <data name="OutcomeRescheduled" xml:space="preserve"><value>Перенесён</value></data>
+  <data name="OutcomeCodeHint" xml:space="preserve"><value>Свободный текст: краткий код результата (справочника пока нет).</value></data>
+  <data name="ErrOutcomeCodeRequired" xml:space="preserve"><value>Укажите код результата.</value></data>
+  <data name="ErrNotYetDue" xml:space="preserve"><value>День визита ещё не наступил; до этого его нельзя завершить или отправить отчёт.</value></data>
+  <data name="ErrPlannedVisitRequired" xml:space="preserve"><value>Запланированный визит не выбран.</value></data>
+  <data name="ErrPlannedVisitNotFound" xml:space="preserve"><value>Запланированный визит не найден.</value></data>
+  <data name="ErrOutcomeRequired" xml:space="preserve"><value>Выберите результат.</value></data>
+  <data name="ErrReasonCodeRequired" xml:space="preserve"><value>Для пропущенного или перенесённого визита нужен код причины.</value></data>
+  <data name="ErrRescheduleDateInvalid" xml:space="preserve"><value>Введите новую дату в формате гггг-ММ-дд.</value></data>
+  <data name="ErrResourceRequired" xml:space="preserve"><value>Не указан представитель, отправляющий отчёт.</value></data>
+  <data name="ErrSampleInvalid" xml:space="preserve"><value>Проверьте образцы: у каждого должны быть тип и допустимое количество.</value></data>
+  <data name="ErrContentActualsInvalid" xml:space="preserve"><value>Представленный этап недействителен.</value></data>
+  <data name="ErrFreeTextTooLong" xml:space="preserve"><value>Одно из текстовых полей слишком длинное.</value></data>
+  <data name="ErrReportNotFound" xml:space="preserve"><value>Отчёт не найден.</value></data>
+  <data name="ErrReportAlreadyExists" xml:space="preserve"><value>Отчёт по этому визиту уже существует.</value></data>
+  <data name="ErrNotCompleted" xml:space="preserve"><value>Отчёт можно отправить только по выполненному визиту.</value></data>
+  <data name="ErrEditWindowClosed" xml:space="preserve"><value>Срок исправления истёк; оформите поправку.</value></data>
+  <data name="ErrNotFinalised" xml:space="preserve"><value>Отчёт ещё не отправлен.</value></data>
+  <data name="ErrAmendmentReasonRequired" xml:space="preserve"><value>Укажите причину поправки.</value></data>
+  <data name="ErrInvalidTransition" xml:space="preserve"><value>Это изменение недопустимо в текущем состоянии отчёта.</value></data>
+  <data name="ErrConcurrencyConflict" xml:space="preserve"><value>Отчёт был изменён. Обновите страницу и повторите попытку.</value></data>
+  <data name="ErrUnsupportedValue" xml:space="preserve"><value>Выбранное значение не поддерживается.</value></data>
 </root>

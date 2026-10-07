@@ -96,7 +96,25 @@ public sealed record VisitCalendarItemDto(
     bool? MatchedPlan,
     // WP-VP-2 (B-8, additive) — the target's display name read at read time (doctor / institution) + passive flag.
     string? TargetDisplayName = null,
-    bool TargetInactive = false);
+    bool TargetInactive = false,
+    // WP-E2E-FIX-1 (E9-B2, additive) — "what do I present": a summary of the plan atom's ContentItems (product, role,
+    // journey, stage, step titles). Read from the atom itself, no extra query. Empty when the atom carries no items.
+    IReadOnlyList<VisitCalendarPlannedContentDto>? PlannedContent = null);
+
+/// <summary>WP-E2E-FIX-1 — one planned content item of a calendar cell (one product line of the plan atom).</summary>
+public sealed record VisitCalendarPlannedContentDto(
+    Guid ProductId,
+    string? ProductCode,
+    string Role,
+    Guid JourneyId,
+    string? JourneyCode,
+    Guid StageId,
+    int StageIndex,
+    string? StageCode,
+    string? StageName,
+    IReadOnlyList<VisitCalendarPlannedStepDto> Steps);
+
+public sealed record VisitCalendarPlannedStepDto(string? Title, string? Type);
 
 public sealed record VisitCalendarDto(
     string From, string To, IReadOnlyList<VisitCalendarItemDto> Items, int TotalCount);

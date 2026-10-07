@@ -124,4 +124,6 @@
   <data name="RepSelfHint" xml:space="preserve"><value>تُعدّ الخطط للمندوب الذي سجّل الدخول.</value></data>
   <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>لم تُخصَّص لك منطقة؛ تُعرض جميع الحسابات. يُرجى التواصل مع مديرك.</value></data>
   <data name="AddOutOfTerritory" xml:space="preserve"><value>إضافة حساب خارج المنطقة</value></data>
+  <data name="ApplyConfirm" xml:space="preserve"><value>سيتم تخطيط {0} زيارة وسيتم قفل الخطة. هل تريد المتابعة؟</value></data>
+  <data name="ApplyConfirmButton" xml:space="preserve"><value>نعم، احفظ الخطة</value></data>
 </root>

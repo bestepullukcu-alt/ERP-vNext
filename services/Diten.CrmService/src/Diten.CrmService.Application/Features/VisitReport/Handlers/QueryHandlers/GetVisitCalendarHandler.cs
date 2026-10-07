@@ -124,6 +124,19 @@ public sealed class GetVisitCalendarHandler : IRequestHandler<GetVisitCalendarQu
             reportState,
             report?.ExecutionOutcome,
             report?.ContentActuals?.StageIndex,
-            report?.ContentActuals?.MatchedPlan);
+            report?.ContentActuals?.MatchedPlan,
+            PlannedContent: ToPlannedContent(v));
     }
+
+    /// <summary>WP-E2E-FIX-1 (E9-B2) — the atom's own ContentItems, summarised (no extra read). An atom without items
+    /// yields an empty list; the legacy single <c>Content</c> stays on the PlannedJourneyId/StageId/StageIndex fields.</summary>
+    private static IReadOnlyList<VisitCalendarPlannedContentDto> ToPlannedContent(Domain.Entities.PlannedVisit v)
+        => (v.ContentItems ?? new List<PlannedVisitContentItem>())
+            .Select(i => new VisitCalendarPlannedContentDto(
+                i.ProductId, i.ProductCode, i.Role, i.JourneyId, i.JourneyCode, i.StageId, i.StageIndex, i.StageCode,
+                i.StageName,
+                (i.Steps ?? new List<PlannedVisitContentStep>())
+                    .Select(s => new VisitCalendarPlannedStepDto(s.Title, s.Type))
+                    .ToList()))
+            .ToList();
 }

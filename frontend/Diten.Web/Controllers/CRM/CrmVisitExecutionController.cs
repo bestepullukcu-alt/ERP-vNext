@@ -87,6 +87,14 @@ public sealed class CrmVisitExecutionController : Controller
         => ProxyAsync(
             HttpMethod.Get, $"/api/crm/visit-report/{visitReportId}", null, ct, ReadPermission, ReadFallback);
 
+    /// <summary>WP-E2E-FIX-1 (E9-B3) — the planned journey's stages, so the rep PICKS the presented stage (default: the
+    /// planned one) instead of typing a code. Same read permission as the calendar (the PlannedVisits proxy pattern).</summary>
+    [HttpGet("api/journeys/{journeyId:guid}/stages")]
+    public Task<IActionResult> JourneyStages(Guid journeyId, CancellationToken ct)
+        => ProxyAsync(
+            HttpMethod.Get, $"/api/crm/knowledge/content-engagement-journeys/{journeyId}/stages", null, ct,
+            ReadPermission, ReadFallback);
+
     // ---------------- write proxies ----------------
 
     [HttpPost("api/outcome")]
@@ -185,12 +193,75 @@ public sealed class CrmVisitExecutionController : Controller
         }
 
         var content = await response.Content.ReadAsStringAsync(ct);
+
+        // WP-E2E-FIX-1 (E9-B4) — a refusal that never reached a handler (model binding / [ApiController] auto-400) is an
+        // RFC 7807 ProblemDetails, whose "errors" is an object, not the envelope's array. Hand the page ONE shape.
+        if (ProblemDetailsToEnvelope(response.Content.Headers.ContentType?.MediaType, content, (int)response.StatusCode)
+            is { } envelope)
+        {
+            return new ContentResult
+            {
+                StatusCode = (int)response.StatusCode,
+                ContentType = "application/json",
+                Content = envelope
+            };
+        }
+
         return new ContentResult
         {
             StatusCode = (int)response.StatusCode,
             ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json",
             Content = content
         };
+    }
+
+    /// <summary>Turns an <c>application/problem+json</c> body into the <c>Response&lt;T&gt;</c> envelope
+    /// (<c>{ data: null, errors: [title, …field messages], statusCode, isSuccessful: false }</c>). Null for any other body.
+    /// Static, so MVC never treats it as an action.</summary>
+    public static string? ProblemDetailsToEnvelope(string? mediaType, string content, int statusCode)
+    {
+        if (!string.Equals(mediaType, "application/problem+json", StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrWhiteSpace(content))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(content);
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            var errors = new List<string>();
+            if (root.TryGetProperty("title", out var title) && title.ValueKind == JsonValueKind.String
+                && !string.IsNullOrWhiteSpace(title.GetString()))
+            {
+                errors.Add(title.GetString()!);
+            }
+
+            if (root.TryGetProperty("errors", out var fieldErrors) && fieldErrors.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var field in fieldErrors.EnumerateObject())
+                {
+                    if (field.Value.ValueKind != JsonValueKind.Array) continue;
+                    errors.AddRange(field.Value.EnumerateArray()
+                        .Where(e => e.ValueKind == JsonValueKind.String)
+                        .Select(e => e.GetString()!)
+                        .Where(e => !string.IsNullOrWhiteSpace(e)));
+                }
+            }
+
+            return JsonSerializer.Serialize(
+                new { data = (object?)null, errors, statusCode, isSuccessful = false },
+                new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     private static bool IsBodilessStatus(HttpStatusCode status)

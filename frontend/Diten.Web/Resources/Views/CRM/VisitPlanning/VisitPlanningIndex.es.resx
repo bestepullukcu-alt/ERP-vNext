@@ -124,4 +124,6 @@
   <data name="RepSelfHint" xml:space="preserve"><value>Los planes se crean para el representante que ha iniciado sesión.</value></data>
   <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>No tiene un territorio asignado; se muestran todas las cuentas. Póngase en contacto con su responsable.</value></data>
   <data name="AddOutOfTerritory" xml:space="preserve"><value>Añadir cuenta fuera del territorio</value></data>
+  <data name="ApplyConfirm" xml:space="preserve"><value>Se planificarán {0} visitas y el plan quedará bloqueado. ¿Continuar?</value></data>
+  <data name="ApplyConfirmButton" xml:space="preserve"><value>Sí, guardar el plan</value></data>
 </root>

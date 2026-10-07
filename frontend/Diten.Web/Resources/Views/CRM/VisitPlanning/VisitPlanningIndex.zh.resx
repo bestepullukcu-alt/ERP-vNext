@@ -124,4 +124,6 @@
   <data name="RepSelfHint" xml:space="preserve"><value>计划为当前登录的代表制定。</value></data>
   <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>您尚未分配辖区；正在显示所有客户。请联系您的经理。</value></data>
   <data name="AddOutOfTerritory" xml:space="preserve"><value>添加辖区外客户</value></data>
+  <data name="ApplyConfirm" xml:space="preserve"><value>将安排 {0} 次拜访，计划将被锁定。是否继续？</value></data>
+  <data name="ApplyConfirmButton" xml:space="preserve"><value>是，保存计划</value></data>
 </root>

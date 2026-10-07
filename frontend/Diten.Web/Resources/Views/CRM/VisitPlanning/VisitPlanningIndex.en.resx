@@ -124,4 +124,6 @@
   <data name="RepSelfHint" xml:space="preserve"><value>Plans are made for the signed-in representative.</value></data>
   <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>No territory is assigned to you; all accounts are shown. Please contact your manager.</value></data>
   <data name="AddOutOfTerritory" xml:space="preserve"><value>Add out-of-territory account</value></data>
+  <data name="ApplyConfirm" xml:space="preserve"><value>{0} visits will be planned and the plan will be locked. Continue?</value></data>
+  <data name="ApplyConfirmButton" xml:space="preserve"><value>Yes, save the plan</value></data>
 </root>

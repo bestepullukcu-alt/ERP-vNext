@@ -201,7 +201,9 @@
 
         api(url, { method, body: JSON.stringify(payload) }).then(r => {
             if (r.ok) {
-                const newId = (r.body && r.body.data) || sessionId;
+                // WP-E2E-FIX-1 (E7-B4) — an update answers Response<bool> (data = true), not an id: edit always
+                // returns to its own session; only create takes the id the server minted.
+                const newId = isEdit ? sessionId : ((r.body && r.body.data) || sessionId);
                 window.showToast?.(isEdit ? (L.RecordUpdated || 'Saved') : (L.RecordCreated || 'Created'), 'success');
                 const q = week ? ('?week=' + encodeURIComponent(week)) : '';
                 setTimeout(() => window.location.assign('/CRM/VisitPlanning/Details/' + newId + q), 500);

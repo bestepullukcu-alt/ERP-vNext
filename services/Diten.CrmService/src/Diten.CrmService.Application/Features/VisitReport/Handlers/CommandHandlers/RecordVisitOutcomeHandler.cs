@@ -25,12 +25,15 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
     private readonly IPlannedVisitRepository _plannedVisits;
 
     private readonly ICallerScope _caller;
+    private readonly TimeProvider _clock;
 
     public RecordVisitOutcomeHandler(
         ITenantContext tenant, IActorContext actor,
-        IVisitReportRepository reports, IPlannedVisitRepository plannedVisits, ICallerScope caller)
+        IVisitReportRepository reports, IPlannedVisitRepository plannedVisits, ICallerScope caller,
+        TimeProvider? clock = null)
     {
         _caller = caller;
+        _clock = clock ?? TimeProvider.System;
         _tenant = tenant;
         _actor = actor;
         _reports = reports;
@@ -65,6 +68,13 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
         }
 
         var outcome = VisitExecutionOutcome.Normalize(request.ExecutionOutcome);
+
+        // WP-E2E-FIX-1 (E9-B5) — a future visit can be rescheduled, but not marked completed or missed before its day.
+        if (!string.Equals(outcome, VisitExecutionOutcome.Rescheduled, StringComparison.Ordinal)
+            && VisitReportValidation.ValidateDue(plan.PlannedDate, VisitReportValidation.Today(_clock)) is { } dueFailure)
+        {
+            return Fail(dueFailure);
+        }
 
         DateOnly? rescheduleTo = null;
         if (string.Equals(outcome, VisitExecutionOutcome.Rescheduled, StringComparison.Ordinal)

@@ -4,7 +4,7 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="PageTitle" xml:space="preserve"><value>拜访报告</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>拜访执行</value></data>
   <data name="PageDescription" xml:space="preserve"><value>记录实际发生的情况——将每次计划拜访标记为已完成、未完成或改期，并提交不可更改的拜访报告。</value></data>
   <data name="ExecutionNotice" xml:space="preserve"><value>这是执行日历。它记录结果与报告；不生成任何计划，也不推进内容阶段——您在此记录的实际阶段将由下一周期读取。</value></data>
   <data name="View" xml:space="preserve"><value>视图</value></data>
@@ -16,13 +16,10 @@
   <data name="Refresh" xml:space="preserve"><value>刷新</value></data>
   <data name="NoVisits" xml:space="preserve"><value>此时间段内没有计划拜访。</value></data>
   <data name="ReportTitle" xml:space="preserve"><value>拜访报告</value></data>
-  <data name="PlannedContent" xml:space="preserve"><value>计划内容 (FU04)</value></data>
+  <data name="PlannedContent" xml:space="preserve"><value>计划内容</value></data>
   <data name="ActualStage" xml:space="preserve"><value>实际呈现的阶段</value></data>
-  <data name="StageIndex" xml:space="preserve"><value>阶段 #</value></data>
-  <data name="MatchedPlan" xml:space="preserve"><value>与计划阶段匹配</value></data>
   <data name="OutcomeCode" xml:space="preserve"><value>结果代码</value></data>
   <data name="OutcomeCodePlaceholder" xml:space="preserve"><value>例如 positive</value></data>
-  <data name="ReferenceDataHint" xml:space="preserve"><value>结果代码来自参考数据。</value></data>
   <data name="DoctorFeedback" xml:space="preserve"><value>医生反馈</value></data>
   <data name="Samples" xml:space="preserve"><value>已提供的样品/资料</value></data>
   <data name="AddSample" xml:space="preserve"><value>添加样品</value></data>
@@ -49,4 +46,37 @@
   <data name="Quantity" xml:space="preserve"><value>数量</value></data>
   <data name="ItemType" xml:space="preserve"><value>项目类型</value></data>
   <data name="Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="NoPlannedContent" xml:space="preserve"><value>此拜访没有计划内容。</value></data>
+  <data name="StageFallback" xml:space="preserve"><value>阶段 {0}</value></data>
+  <data name="PlannedStageSuffix" xml:space="preserve"><value>（计划）</value></data>
+  <data name="StageNotPresented" xml:space="preserve"><value>未展示计划阶段</value></data>
+  <data name="StageMatchesPlan" xml:space="preserve"><value>与计划一致。</value></data>
+  <data name="StageDiffersFromPlan" xml:space="preserve"><value>与计划不同。</value></data>
+  <data name="NotYetDueHint" xml:space="preserve"><value>尚未到拜访日期</value></data>
+  <data name="ConfirmCompleted" xml:space="preserve"><value>将此拜访标记为已完成？</value></data>
+  <data name="ConfirmCompletedButton" xml:space="preserve"><value>是，已完成</value></data>
+  <data name="OutcomeCompleted" xml:space="preserve"><value>已完成</value></data>
+  <data name="OutcomeMissed" xml:space="preserve"><value>未完成</value></data>
+  <data name="OutcomeRescheduled" xml:space="preserve"><value>已改期</value></data>
+  <data name="OutcomeCodeHint" xml:space="preserve"><value>自由文本：填写简短的结果代码（暂无参考列表）。</value></data>
+  <data name="ErrOutcomeCodeRequired" xml:space="preserve"><value>请输入结果代码。</value></data>
+  <data name="ErrNotYetDue" xml:space="preserve"><value>尚未到拜访日期，在此之前不能完成或提交报告。</value></data>
+  <data name="ErrPlannedVisitRequired" xml:space="preserve"><value>未选择计划拜访。</value></data>
+  <data name="ErrPlannedVisitNotFound" xml:space="preserve"><value>未找到计划拜访。</value></data>
+  <data name="ErrOutcomeRequired" xml:space="preserve"><value>请选择结果。</value></data>
+  <data name="ErrReasonCodeRequired" xml:space="preserve"><value>未完成或改期的拜访需要原因代码。</value></data>
+  <data name="ErrRescheduleDateInvalid" xml:space="preserve"><value>请按 yyyy-MM-dd 格式输入新日期。</value></data>
+  <data name="ErrResourceRequired" xml:space="preserve"><value>缺少报告代表。</value></data>
+  <data name="ErrSampleInvalid" xml:space="preserve"><value>请检查样品：每项都需要类型和有效数量。</value></data>
+  <data name="ErrContentActualsInvalid" xml:space="preserve"><value>所展示的阶段无效。</value></data>
+  <data name="ErrFreeTextTooLong" xml:space="preserve"><value>某个文本字段过长。</value></data>
+  <data name="ErrReportNotFound" xml:space="preserve"><value>未找到报告。</value></data>
+  <data name="ErrReportAlreadyExists" xml:space="preserve"><value>此拜访已有报告。</value></data>
+  <data name="ErrNotCompleted" xml:space="preserve"><value>只能为已完成的拜访提交报告。</value></data>
+  <data name="ErrEditWindowClosed" xml:space="preserve"><value>更正时限已过，请改为提交修订。</value></data>
+  <data name="ErrNotFinalised" xml:space="preserve"><value>报告尚未提交。</value></data>
+  <data name="ErrAmendmentReasonRequired" xml:space="preserve"><value>请输入修订原因。</value></data>
+  <data name="ErrInvalidTransition" xml:space="preserve"><value>报告当前状态不允许此更改。</value></data>
+  <data name="ErrConcurrencyConflict" xml:space="preserve"><value>报告已被修改，请重新加载后重试。</value></data>
+  <data name="ErrUnsupportedValue" xml:space="preserve"><value>所选值不受支持。</value></data>
 </root>

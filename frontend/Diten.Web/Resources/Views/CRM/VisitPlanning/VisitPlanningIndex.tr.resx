@@ -124,4 +124,6 @@
   <data name="RepSelfHint" xml:space="preserve"><value>Planlar oturumu açan temsilci için yapılır.</value></data>
   <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>Size bölge atanmamış; tüm hesaplar gösteriliyor. Yöneticinize başvurun.</value></data>
   <data name="AddOutOfTerritory" xml:space="preserve"><value>Bölge dışı hesap ekle</value></data>
+  <data name="ApplyConfirm" xml:space="preserve"><value>{0} ziyaret planlanacak ve plan kilitlenecek. Devam edilsin mi?</value></data>
+  <data name="ApplyConfirmButton" xml:space="preserve"><value>Evet, planı kaydet</value></data>
 </root>

@@ -4,7 +4,7 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="PageTitle" xml:space="preserve"><value>Compte rendu de visite</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>Exécution des visites</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Enregistrez ce qui s’est réellement passé — marquez chaque visite planifiée comme effectuée, manquée ou reportée, et déposez le compte rendu de visite immuable.</value></data>
   <data name="ExecutionNotice" xml:space="preserve"><value>Ceci est le calendrier d’exécution. Il enregistre les résultats et les comptes rendus ; il ne génère aucun plan et ne fait pas avancer l’étape de contenu — l’étape réelle que vous enregistrez ici est celle que lit le cycle suivant.</value></data>
   <data name="View" xml:space="preserve"><value>Vue</value></data>
@@ -16,13 +16,10 @@
   <data name="Refresh" xml:space="preserve"><value>Actualiser</value></data>
   <data name="NoVisits" xml:space="preserve"><value>Aucune visite planifiée dans cette fenêtre.</value></data>
   <data name="ReportTitle" xml:space="preserve"><value>Compte rendu de visite</value></data>
-  <data name="PlannedContent" xml:space="preserve"><value>Contenu planifié (FU04)</value></data>
+  <data name="PlannedContent" xml:space="preserve"><value>Contenu prévu</value></data>
   <data name="ActualStage" xml:space="preserve"><value>Étape réellement présentée</value></data>
-  <data name="StageIndex" xml:space="preserve"><value>Étape n°</value></data>
-  <data name="MatchedPlan" xml:space="preserve"><value>Correspond à l’étape planifiée</value></data>
   <data name="OutcomeCode" xml:space="preserve"><value>Code de résultat</value></data>
   <data name="OutcomeCodePlaceholder" xml:space="preserve"><value>ex. positive</value></data>
-  <data name="ReferenceDataHint" xml:space="preserve"><value>Les codes de résultat proviennent des données de référence.</value></data>
   <data name="DoctorFeedback" xml:space="preserve"><value>Retour du médecin</value></data>
   <data name="Samples" xml:space="preserve"><value>Échantillons / documents remis</value></data>
   <data name="AddSample" xml:space="preserve"><value>Ajouter un échantillon</value></data>
@@ -49,4 +46,37 @@
   <data name="Quantity" xml:space="preserve"><value>Qté</value></data>
   <data name="ItemType" xml:space="preserve"><value>Type d’article</value></data>
   <data name="Remove" xml:space="preserve"><value>Retirer</value></data>
+  <data name="NoPlannedContent" xml:space="preserve"><value>Aucun contenu n'est prévu pour cette visite.</value></data>
+  <data name="StageFallback" xml:space="preserve"><value>Étape {0}</value></data>
+  <data name="PlannedStageSuffix" xml:space="preserve"><value>(prévue)</value></data>
+  <data name="StageNotPresented" xml:space="preserve"><value>L'étape prévue n'a pas été présentée</value></data>
+  <data name="StageMatchesPlan" xml:space="preserve"><value>Conforme au plan.</value></data>
+  <data name="StageDiffersFromPlan" xml:space="preserve"><value>Diffère du plan.</value></data>
+  <data name="NotYetDueHint" xml:space="preserve"><value>Le jour de la visite n'est pas encore arrivé</value></data>
+  <data name="ConfirmCompleted" xml:space="preserve"><value>Marquer cette visite comme effectuée ?</value></data>
+  <data name="ConfirmCompletedButton" xml:space="preserve"><value>Oui, effectuée</value></data>
+  <data name="OutcomeCompleted" xml:space="preserve"><value>Effectuée</value></data>
+  <data name="OutcomeMissed" xml:space="preserve"><value>Manquée</value></data>
+  <data name="OutcomeRescheduled" xml:space="preserve"><value>Reportée</value></data>
+  <data name="OutcomeCodeHint" xml:space="preserve"><value>Texte libre : un code de résultat court (pas encore de liste de référence).</value></data>
+  <data name="ErrOutcomeCodeRequired" xml:space="preserve"><value>Saisissez un code de résultat.</value></data>
+  <data name="ErrNotYetDue" xml:space="preserve"><value>Le jour de la visite n'est pas encore arrivé ; elle ne peut être ni effectuée ni rapportée avant.</value></data>
+  <data name="ErrPlannedVisitRequired" xml:space="preserve"><value>Aucune visite planifiée n'est sélectionnée.</value></data>
+  <data name="ErrPlannedVisitNotFound" xml:space="preserve"><value>La visite planifiée est introuvable.</value></data>
+  <data name="ErrOutcomeRequired" xml:space="preserve"><value>Choisissez un résultat.</value></data>
+  <data name="ErrReasonCodeRequired" xml:space="preserve"><value>Un code motif est requis pour une visite manquée ou reportée.</value></data>
+  <data name="ErrRescheduleDateInvalid" xml:space="preserve"><value>Saisissez la nouvelle date au format aaaa-MM-jj.</value></data>
+  <data name="ErrResourceRequired" xml:space="preserve"><value>Le représentant déclarant est manquant.</value></data>
+  <data name="ErrSampleInvalid" xml:space="preserve"><value>Vérifiez les échantillons : chacun doit avoir un type et une quantité valide.</value></data>
+  <data name="ErrContentActualsInvalid" xml:space="preserve"><value>L'étape présentée n'est pas valide.</value></data>
+  <data name="ErrFreeTextTooLong" xml:space="preserve"><value>Un champ texte est trop long.</value></data>
+  <data name="ErrReportNotFound" xml:space="preserve"><value>Le compte rendu est introuvable.</value></data>
+  <data name="ErrReportAlreadyExists" xml:space="preserve"><value>Un compte rendu existe déjà pour cette visite.</value></data>
+  <data name="ErrNotCompleted" xml:space="preserve"><value>Seule une visite effectuée peut faire l'objet d'un compte rendu.</value></data>
+  <data name="ErrEditWindowClosed" xml:space="preserve"><value>Le délai de correction est écoulé ; déposez plutôt un amendement.</value></data>
+  <data name="ErrNotFinalised" xml:space="preserve"><value>Le compte rendu n'a pas encore été envoyé.</value></data>
+  <data name="ErrAmendmentReasonRequired" xml:space="preserve"><value>Saisissez le motif de l'amendement.</value></data>
+  <data name="ErrInvalidTransition" xml:space="preserve"><value>Cette modification n'est pas autorisée dans l'état actuel du compte rendu.</value></data>
+  <data name="ErrConcurrencyConflict" xml:space="preserve"><value>Le compte rendu a été modifié entre-temps. Rechargez et réessayez.</value></data>
+  <data name="ErrUnsupportedValue" xml:space="preserve"><value>Une valeur sélectionnée n'est pas prise en charge.</value></data>
 </root>
