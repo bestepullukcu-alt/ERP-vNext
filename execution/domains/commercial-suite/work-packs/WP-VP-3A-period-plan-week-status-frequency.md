@@ -157,3 +157,32 @@ KORU/YAPMA: tek yeni komut; göç/seed/grant/indeks YOK; gün dengeleme/kapasite
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — CRM Application (2347/0/5, PII flake) · Web (733/0) · mimari (38/1, listesiz 26→27 yalnız ReopenPlanningWeek); build 0 hata; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–10. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "feat(crm): WP-VP-3A — period plan with per-week approve/reopen, single plan per rep+period, frequency by period type across the whole period" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), hafta durumu kuralı, sıklık birimi/yuvarlama kuralları, iptal alanı/deseni, tekil indeks önerisi, mobil için yeni alanlar, mimari test listesiz komut listesi farkı. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-07)
+**Commit:** `e6c383a5b` (ff; taban `eb273412e`). Push: test dalı.
+
+**CT K13:**
+| Paket | Taban | Sonuç |
+|---|---|---|
+| CRM Application | 2347/0/5 | **2369/0/5** (+22) |
+| Web | 733/0 | **735/0** (+2) |
+| Mimari | 38/1 (26) | **38/1 (27)** — tek fark `ReopenPlanningWeekCommand` ("YENİ KOMUT DENETİMSİZ GELDİ"), F3-1 kabulü; Faz 8'de bağlanır |
+
+**Kod okuması:**
+- `PlanningWeekCalendar` (saf; Pazartesi–Pazar, UTC bugün; past → approved → draft / empty).
+- `FrequencyExtendPlanner.ResolveRequirementAsync` + `UnitsIn` (week = çalışma haftası, month / quarter = dokunulan, day = çalışma günü, diğer 1) + `Distribute` (k·H / Z).
+- Eczane / hesap `account` hedefi olarak çözülüyor. Onaylı hafta `isFixed` ile dondurulup sayılıyor.
+- `ReopenWeekAsync` işlem + telafi; iptal mevcut `cancelled` + `CancellationReason = week_reopened`.
+
+**CT sabotajı (ajanınkinden ayrı):** "geçmiş" sınırı `<` → `<=` + dağıtım `k·H/Z` → ardışık haftalar → **2 kırmızı** (`A_week_is_current_through_its_sunday…`, `Two_visits_over_thirteen_weeks…`). Geri alındı.
+
+**Bilinen / takip:**
+- Çalışma takvimi artık tüm dönem için gün gün soruluyor (~90 istek / önizleme; eskiden ≤ 42) → 3B'de toplu sorgu ya da önbellek değerlendirilsin.
+- Tekil indeks önerisi `{TenantId, CyclePeriodId, ResourceId}` + `partialFilterExpression {Status: {$in: [...]}}`: canlıda 2 grupta 17 fazladan arşivsiz plan var → önce temizlik (veri kararı, kullanıcı).
+- Ayrıntı DTO'sunda onaysız haftanın `visitCount`'u boş (yalnız önizleme hesaplar) — Faz 4 önizlemeyi kullanır.
+- Geçmişe düşen onaylı hafta `past` görünür (türetme sırası); onay bilgisi `storedStatus` alanında kalır.
+- `weekNumber` anlamı değişti (dönem haftası indeksi) → mobil notu (Faz 5).
+
+**E4 (CT, bekliyor; fleet yeniden başlatma — CRM + Web değişti):** yeni dönem planında hafta onayı (yalnız o hafta) · yeniden aç (gerekçeli) · ikinci plan 409. Kayıt işlemleri: test planında, kullanıcı onayıyla. Not: Beste'nin Q4'te zaten iki planı var (a42373cb, a238bdc5) → "ikinci plan 409" doğrudan gözlenebilir.
