@@ -83,3 +83,23 @@ KORU/YAPMA: YENİ YAZMA KOMUTU YOK (listesiz 27 sabit); 3A/3B/3C motor kurallar�
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — CRM Application (2410/0/5; PII + ContactWorkbook bilinen kararsız) · Web (738/0) · mimari (38/1, listesiz 27 sabit); build 0 hata; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–5. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "feat(crm,web): WP-VP-4A — plan reads expose picked products, reopen proxy, legacy committed plans as fixed weeks, list counts" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), eski plan dalının kuralı, mobil için yeni alanlar. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-08)
+**Commit:** `6ae5a0585` (ff). Push: test dalı.
+
+**CT K13:** CRM 2410 → **2419/0/5** · Web 738 → **742/0** · mimari **27 sabit**.
+
+**Kod okuması:**
+- `LegacyCommittedPlan` yalnız okumada; `committed` plan: kayıtlı ziyaretlerden iptal / arşiv olmayanlar sabit, haftaları `legacy` olarak sentezleniyor (saklanmıyor); diğer haftalar `empty`, önizleme üretmiyor.
+- Seçili ürünler ayrıntı + `targets` okumasında (saklı kod; MDM çağrısı yok, `productName` null).
+- Reopen Web vekili apply izinleriyle.
+- Liste: `doctorCount` / `pharmacyCount` / `draftWeekCount`; arşivliler varsayılan listede yok (`includeArchived`).
+- `currentWeekStart` / `nextDraftWeekStart`.
+
+**CT sabotajı:** eski planda iptal ziyaret de sabit sayıldı → 1 kırmızı (`An_old_committed_plan_shows_only_its_written_visits…`). Geri alındı.
+
+**Ajan sapması (kabul):** arşivlenmiş ziyaretler de sabit dışı (3A kuralıyla tutarlı).
+
+**Davranış değişikliği:** API listesi arşivlileri artık varsayılan döndürmüyor → mobil notuna (Faz 5).

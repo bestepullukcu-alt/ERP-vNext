@@ -115,3 +115,27 @@ KORU/YAPMA: Rota görünüm/davranışı DEĞİŞMEZ; backend'e dokunma (4A); He
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — Web (738/0) · CRM (2410/0/5, dokunulmaz) · mimari (38/1, 27); build 0 hata; JS node --check; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–7. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "feat(web): WP-VP-4B — visit planning list, new-plan drawer, week-aware detail header with approve/reopen, capacity cards, states, page skeleton" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), iskelet modül yapısı (4C/4D nereye bağlanacak), 4A alanları yokken düşüş davranışı, ekran görüntüsü yoksa hangi durumların elle denenmesi gerektiği. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-08)
+**Commit:** `28a57eae7` (ajan `a47bbc5d5`, 4A üzerine rebase, çakışmasız, ff). Push: test dalı.
+
+**CT K13 (4A dahil):** Web 742 → **750/0** (+8) · CRM 2419/0/5 (dokunulmadı) · mimari **27** · tüm Ziyaret Planlama JS `node --check` temiz.
+
+**Kod okuması:**
+- İskelet `page.js` (`window.VisitPlanningPage`: durum + olaylar + eylem kuralı `actionsFor` tek yerde: draft / empty / approved / past / legacy).
+- `header.js`: özet, hafta seçici, eylemler, yeniden aç penceresi ≥ 10, kapasite kartları, bantlar.
+- `new-plan.js` çekmece (geçmiş hafta listelenmez, 409 → "Plana git").
+- `details.js` yalnız yayın / abone noktalarıyla bağlandı; Rota ve Hedefler kodu yerinde (mevcut testler içeriğini sabitliyor).
+
+**CT sabotajı:** eski plana eylem verdirildi (`actionsFor` legacy dalı kaldırıldı) → 1 kırmızı (`The_header_offers_only_the_selected_weeks_actions`). Geri alındı.
+
+**Ajan kararları (kabul):**
+- Haftalar sekmesi gizli yer tutucu (`#vp-tab-weeks-item` / `#vp-tab-weeks` `d-none`; 4D açar).
+- `Create` sayfası yedek olarak duruyor.
+- Listedeki eski "Uygula" eylemi detaya yönlendiriyor.
+
+**4C'ye devir:** Hedefler sekmesindeki "Hedefleri kaydet" onaylı haftada açık (üst kısım gizliyor; sekme içi 4C'nin işi).
+
+**E4 (CT, bekliyor; 4C / 4D ile birlikte ya da ayrı):** ajan raporundaki 8 maddelik liste (liste sütunları, çekmece, 42. hafta yeniden aç, taslak hafta eylemleri, geçmiş / eski plan, kapasite kartları, Rota aynı, Arapça).
