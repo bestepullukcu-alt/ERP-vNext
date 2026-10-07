@@ -63,7 +63,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.HcmService"] = new(Debt: 8, Exceptions: 0),
         ["Diten.HumanCapitalService"] = new(Debt: 70, Exceptions: 0),
         ["Diten.ManagementGovernanceService"] = new(Debt: 23, Exceptions: 0),
-        ["Diten.MdmService"] = new(Debt: 13, Exceptions: 0, Indirect: 8),
+        ["Diten.MdmService"] = new(Debt: 10, Exceptions: 0, Indirect: 8),
         // CT kararı 2026-10-05 (görev talebi → takeover birleştirmesi): Start/CancelTrustedWorkflowInstanceCommand — WP-WF-ENGINE-CANDIDATES-01 D2;
         // RunWorkflowEscalationsCommand — WP-WF-ENGINE-CANDIDATES-01 (zaman aşımı / yükseltme WorkflowTransitionLog yazar).
         ["Diten.Platform"] = new(Debt: 164, Exceptions: 5, K2Debt: 192, WritingQueries: 3, Indirect: 3),

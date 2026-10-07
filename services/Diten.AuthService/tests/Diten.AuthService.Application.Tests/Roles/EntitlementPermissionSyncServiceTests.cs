@@ -513,6 +513,133 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.DoesNotContain("platform.tenants.read", adminKeys);           // escalation boundary preserved
     }
 
+    // ── FIX2 (item 1, CT model A): Brand is its own module, granted through the GENERIC path ──
+
+    private const string BrandModuleCode = "brand-product-master";
+
+    private static readonly string[] BrandModuleKeys =
+    [
+        "mdm.brands.read",
+        "mdm.brands.create",
+        "mdm.brands.update",
+        "mdm.brands.archive",
+        "mdm.brands.export",
+        "mdm.products.read",
+        "mdm.products.create",
+        "mdm.products.update",
+        "mdm.products.archive"
+    ];
+
+    private static List<Permission> BrandModuleCatalog() =>
+    [
+        .. BrandModuleKeys.Select(key =>
+        {
+            var parts = key.Split('.');
+            return new Permission(parts[0], parts[1], parts[2], key, null,
+                moduleOverride: BrandModuleCode, scope: PermissionScope.Tenant);
+        }),
+        new("goldenslim", "records", "read", "", null),
+        new("goldenslim", "records", "create", "", null),
+        new("platform", "tenants", "read", "", null)
+    ];
+
+    [Fact]
+    public async Task Brand_module_entitlement_grants_admin_all_nine_keys_and_viewer_only_reads()
+    {
+        var catalog = BrandModuleCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var adminId = roles.IdOf(TenantA, "Admin");
+        var viewerId = roles.IdOf(TenantA, "Viewer");
+
+        await svc.SyncTenantModulesWithKeysAsync(
+            TenantA,
+            [new EntitledModulePermissionKeys(BrandModuleCode, BrandModuleKeys)],
+            Actor,
+            CancellationToken.None);
+
+        Assert.Equal(
+            BrandModuleKeys.OrderBy(key => key, StringComparer.Ordinal),
+            rolePerms.KeysFor(adminId, catalog).OrderBy(key => key, StringComparer.Ordinal));
+        Assert.Contains("mdm.brands.export", rolePerms.KeysFor(adminId, catalog));
+        Assert.Equal(
+            new[] { "mdm.brands.read", "mdm.products.read" },
+            rolePerms.KeysFor(viewerId, catalog).OrderBy(key => key, StringComparer.Ordinal));
+        Assert.DoesNotContain("platform.tenants.read", rolePerms.KeysFor(adminId, catalog));
+        Assert.All(rolePerms.Rows, grant => Assert.Equal(GrantSource.Module, grant.GrantSource));
+        Assert.All(rolePerms.Rows, grant => Assert.Equal(BrandModuleCode, grant.SourceModuleCode));
+        Assert.All(rolePerms.Rows, grant => Assert.Equal(TenantA, grant.TenantId));
+        Assert.False(roles.Exists(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole));
+
+        // Idempotent re-delivery.
+        var before = rolePerms.Rows.Count;
+        await svc.SyncTenantModulesWithKeysAsync(
+            TenantA,
+            [new EntitledModulePermissionKeys(BrandModuleCode, BrandModuleKeys)],
+            Actor,
+            CancellationToken.None);
+        Assert.Equal(before, rolePerms.Rows.Count);
+    }
+
+    [Theory]
+    [InlineData("other-module-only")]
+    [InlineData("empty")]
+    public async Task Tenant_not_entitled_to_brand_module_holds_no_brand_or_product_key(string variant)
+    {
+        var catalog = BrandModuleCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var adminId = roles.IdOf(TenantA, "Admin");
+        var viewerId = roles.IdOf(TenantA, "Viewer");
+        EntitledModulePermissionKeys[] modules = variant == "empty"
+            ? []
+            : [new EntitledModulePermissionKeys("goldenslim", ["goldenslim.records.read", "goldenslim.records.create"])];
+
+        await svc.SyncTenantModulesWithKeysAsync(TenantA, modules, Actor, CancellationToken.None);
+
+        foreach (var roleId in new[] { adminId, viewerId })
+        {
+            Assert.DoesNotContain(rolePerms.KeysFor(roleId, catalog), key =>
+                key.StartsWith("mdm.brands.", StringComparison.OrdinalIgnoreCase)
+                || key.StartsWith("mdm.products.", StringComparison.OrdinalIgnoreCase));
+        }
+
+        Assert.DoesNotContain(rolePerms.Rows, grant => grant.SourceModuleCode == BrandModuleCode);
+        if (variant == "other-module-only")
+        {
+            Assert.Contains("goldenslim.records.create", rolePerms.KeysFor(adminId, catalog));
+        }
+        else
+        {
+            Assert.Empty(rolePerms.Rows);
+        }
+    }
+
+    [Fact]
+    public async Task Losing_the_brand_module_entitlement_removes_its_module_grants_only()
+    {
+        var catalog = BrandModuleCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var adminId = roles.IdOf(TenantA, "Admin");
+        var brandRead = catalog.Single(permission => permission.Key == "mdm.brands.read").Id;
+
+        await svc.SyncTenantModulesWithKeysAsync(
+            TenantA,
+            [new EntitledModulePermissionKeys(BrandModuleCode, BrandModuleKeys)],
+            Actor,
+            CancellationToken.None);
+        rolePerms.Seed(RolePermission.ManualGrant(adminId, brandRead, TenantA, "operator"));
+
+        await svc.SyncTenantModulesWithKeysAsync(
+            TenantA,
+            [new EntitledModulePermissionKeys("goldenslim", ["goldenslim.records.read"])],
+            Actor,
+            CancellationToken.None);
+
+        Assert.DoesNotContain(rolePerms.Rows, grant =>
+            grant.GrantSource == GrantSource.Module && grant.SourceModuleCode == BrandModuleCode);
+        Assert.Single(rolePerms.Rows, grant => grant.PermissionId == brandRead && grant.GrantSource == GrantSource.Manual);
+        Assert.Contains("goldenslim.records.read", rolePerms.KeysFor(adminId, catalog));
+    }
+
     // ── harness ──
 
     [Fact]
@@ -1219,7 +1346,9 @@ public sealed class EntitlementPermissionSyncServiceTests
         var catalog = ProductIdentityLifecycleCompositeCatalog();
         var (svc, roles, rolePerms) = BuildWith(catalog);
         var declaredKeys = ProductIdentityDeclaredKeys(catalog);
-        Assert.Equal(42, declaredKeys.Length);
+        // FIX2 (item 1, CT model A) — 41: the product descriptor no longer carries mdm.brands.read.
+        Assert.Equal(41, declaredKeys.Length);
+        Assert.DoesNotContain(declaredKeys, key => key.StartsWith("mdm.brands.", StringComparison.OrdinalIgnoreCase));
 
         await svc.GrantModuleWithKeysAsync(
             TenantA,
@@ -1240,6 +1369,10 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.DoesNotContain(viewer, ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys.Contains);
         Assert.DoesNotContain("mdm.brands.read", admin);
         Assert.DoesNotContain("mdm.brands.read", viewer);
+        Assert.DoesNotContain(rolePerms.Rows, grant =>
+            grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode
+            && catalog.Single(permission => permission.Id == grant.PermissionId).Key
+                .StartsWith("mdm.brands.", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.ProductIdentityLifecycleOperationRecover, admin);
         Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.ProductIdentityLifecycleOperationRecover, viewer);
         Assert.All(
@@ -1486,7 +1619,7 @@ public sealed class EntitlementPermissionSyncServiceTests
     {
         var catalog = ProductIdentityLifecycleCompositeCatalog();
         var brandRead = catalog.Single(permission =>
-            permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.BrandsRead);
+            permission.Key == "mdm.brands.read");
         var (service, roles, grants) = BuildWith(catalog);
         var adminId = roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole);
         grants.Seed(RolePermission.ModuleGrant(
@@ -1522,6 +1655,37 @@ public sealed class EntitlementPermissionSyncServiceTests
             grant.PermissionId == brandRead.Id
             && grant.GrantSource == GrantSource.Module
             && grant.SourceModuleCode == "brand-product-master");
+    }
+
+    // FIX2 (item 1, CT model A) — a product-item-sku-master descriptor still carrying a Brand key is a stale manifest:
+    // the sync refuses it before any role or grant is written.
+    [Theory]
+    [InlineData("mdm.brands.read")]
+    [InlineData("mdm.brands.create")]
+    [InlineData("mdm.brands.export")]
+    public async Task Product_identity_descriptor_carrying_a_brand_key_is_refused_before_mutation(string brandKey)
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        var separator = brandKey.LastIndexOf('.');
+        if (catalog.All(permission => permission.Key != brandKey))
+        {
+            catalog.Add(new Permission("mdm", "brands", brandKey[(separator + 1)..], brandKey, null,
+                moduleOverride: "brand-product-master", scope: PermissionScope.Tenant));
+        }
+
+        var declaredKeys = ProductIdentityDeclaredKeys(catalog).Append(brandKey).ToArray();
+        var (service, roles, grants) = BuildWith(catalog);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            declaredKeys,
+            Actor));
+
+        Assert.Empty(grants.Rows);
+        Assert.DoesNotContain(
+            ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles,
+            template => roles.Exists(TenantA, template.RoleName));
     }
 
     [Theory]

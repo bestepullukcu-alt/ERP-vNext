@@ -127,7 +127,10 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests(Dispo
                     || ProductIdentityLifecycleEntitlementGrantProfile.IsDeclaredCrossModuleDependencyKey(permission.Key))
                 .Select(permission => permission.Key)
                 .ToArray();
-            Assert.Equal(42, declaredKeys.Length);
+            // FIX2 (item 1, CT model A) — 41: the product descriptor no longer carries mdm.brands.read (Brand is its own
+            // module, brand-product-master). The brand key stays in the global catalog, owned by that module.
+            Assert.Equal(41, declaredKeys.Length);
+            Assert.DoesNotContain(declaredKeys, key => key.StartsWith("mdm.brands.", StringComparison.OrdinalIgnoreCase));
             await service.GrantModuleWithKeysAsync(
                 tenantA,
                 ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,

@@ -20,4 +20,7 @@ public sealed record AuditForwardRequest(
     string EntityType,
     string SourceModule,
     Guid? EntityId,
-    int Outcome);
+    int Outcome,
+    // WP-MDM-BRAND-ACCEPT-01 FIX2 (M2) — the request's normalised correlation id (see IRequestCorrelation); null = the
+    // forwarder resolves it from the request as before.
+    Guid? CorrelationId = null);

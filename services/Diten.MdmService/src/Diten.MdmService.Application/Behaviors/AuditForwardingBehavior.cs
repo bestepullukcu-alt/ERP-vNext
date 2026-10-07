@@ -18,13 +18,16 @@ public sealed class AuditForwardingBehavior<TRequest, TResponse> : IPipelineBeha
 
     private readonly IPlatformAuditForwarder _forwarder;
     private readonly ILogger<AuditForwardingBehavior<TRequest, TResponse>> _logger;
+    private readonly IRequestCorrelation? _correlation;
 
     public AuditForwardingBehavior(
         IPlatformAuditForwarder forwarder,
-        ILogger<AuditForwardingBehavior<TRequest, TResponse>> logger)
+        ILogger<AuditForwardingBehavior<TRequest, TResponse>> logger,
+        IRequestCorrelation? correlation = null)
     {
         _forwarder = forwarder;
         _logger = logger;
+        _correlation = correlation;
     }
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
@@ -43,7 +46,8 @@ public sealed class AuditForwardingBehavior<TRequest, TResponse> : IPipelineBeha
                     EntityType: metadata.EntityType,
                     SourceModule: metadata.SourceModule,
                     EntityId: ResolveEntityId(request, response),
-                    Outcome: ReadIsSuccessful(response) ? OutcomeSucceeded : OutcomeFailed);
+                    Outcome: ReadIsSuccessful(response) ? OutcomeSucceeded : OutcomeFailed,
+                    CorrelationId: _correlation?.CorrelationId);
 
                 await _forwarder.ForwardAsync(forwardRequest, cancellationToken);
             }

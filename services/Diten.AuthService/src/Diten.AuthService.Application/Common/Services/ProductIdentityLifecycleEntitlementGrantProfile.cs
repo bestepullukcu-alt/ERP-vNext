@@ -40,7 +40,6 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public const string ProductIdentityLifecycleOperationRecover =
         DefaultRolePermissionTemplate.ProductIdentityLifecycleRecoveryPermission;
 
-    public const string BrandsRead = "mdm.brands.read";
     public const string WorkCenterInboxView = "platform.work-aggregation.inbox.view";
     public const string WorkflowInstancesStart = "platform.workflow.instances.start";
     public const string WorkflowTasksApprove = "platform.workflow.tasks.approve";
@@ -89,7 +88,6 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public static readonly IReadOnlySet<string> SharedDependencyKeys =
         new HashSet<string>(StringComparer.Ordinal)
         {
-            BrandsRead,
             WorkCenterInboxView,
             WorkflowInstancesStart,
             WorkflowTasksApprove,
@@ -102,11 +100,11 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             ProductIdentityLifecycleOperationRecover
         };
 
+    // WP-MDM-BRAND-ACCEPT-01 FIX2 (item 1, CT model A) — Brand is its own module (brand-product-master) and declares
+    // mdm.brands.* itself; the product module no longer carries a Brands page, so its declared set has NO cross-module
+    // key. The set stays (empty) so the exact-set rule still refuses a stray foreign key in this module's descriptor.
     public static readonly IReadOnlySet<string> DeclaredCrossModuleDependencyKeys =
-        new HashSet<string>(StringComparer.Ordinal)
-        {
-            BrandsRead
-        };
+        new HashSet<string>(StringComparer.Ordinal);
 
     public static readonly IReadOnlyList<ProductIdentityLifecycleRoleGrantTemplate> DedicatedRoles =
     [
@@ -180,6 +178,11 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public static bool IsNonHumanPermissionKey(string? permissionKey)
         => !string.IsNullOrWhiteSpace(permissionKey) && NonHumanPermissionKeys.Contains(permissionKey);
 
+    /// <summary>FIX2 (item 1) — a key brand-product-master owns (mdm.brands.*), never part of this module's set.</summary>
+    public static bool IsBrandModuleKey(string? permissionKey)
+        => !string.IsNullOrWhiteSpace(permissionKey)
+           && permissionKey.StartsWith("mdm.brands.", StringComparison.OrdinalIgnoreCase);
+
     public static bool IsDeclaredCrossModuleDependencyKey(string? permissionKey)
         => !string.IsNullOrWhiteSpace(permissionKey)
            && DeclaredCrossModuleDependencyKeys.Contains(permissionKey);
@@ -207,10 +210,12 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
                 + BasePermissionKeys.Count
                 + NonHumanPermissionKeys.Count
                 + DeclaredCrossModuleDependencyKeys.Count
-            || supplied.Any(key => key.StartsWith("mdm.product-definition-revisions.", StringComparison.OrdinalIgnoreCase)))
+            || supplied.Any(key => key.StartsWith("mdm.product-definition-revisions.", StringComparison.OrdinalIgnoreCase))
+            // FIX2 (item 1) — a Brand key in this module's descriptor is a stale manifest (Brand is brand-product-master).
+            || supplied.Any(IsBrandModuleKey))
         {
             throw new InvalidOperationException(
-                "Product Identity lifecycle reconciliation requires the exact eight base, eighteen lifecycle, one non-human recovery and one Brand dependency key, with no Revision or product approve/reject key.");
+                "Product Identity lifecycle reconciliation requires the exact eight base, eighteen lifecycle and one non-human recovery key, with no Brand, Revision or product approve/reject key.");
         }
     }
 
@@ -289,9 +294,6 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
 
         return permission.Key switch
         {
-            BrandsRead => string.Equals(permission.Module, "brand-product-master", StringComparison.Ordinal)
-                          && string.Equals(permission.Resource, "brands", StringComparison.Ordinal)
-                          && string.Equals(permission.Action, "read", StringComparison.Ordinal),
             WorkCenterInboxView => string.Equals(permission.Module, "work-aggregation", StringComparison.Ordinal)
                                    && string.Equals(permission.Resource, "work-aggregation.inbox", StringComparison.Ordinal)
                                    && string.Equals(permission.Action, "view", StringComparison.Ordinal),

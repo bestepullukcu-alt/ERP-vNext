@@ -7,6 +7,9 @@
     const L = window.ProductL10n || {};
 
     const getAuthHeaders = () => ({ Accept: 'application/json' });
+    // FIX2 (M9) — the archive proxy requires the page's anti-forgery token.
+    const antiForgeryToken = () =>
+        document.querySelector('#productDetailToken input[name="__RequestVerificationToken"]')?.value || '';
 
     const envelope = async response => {
         const body = await response.json().catch(() => ({}));
@@ -19,7 +22,11 @@
     document.getElementById('archiveProduct')?.addEventListener('click', () => {
         window.showConfirm?.(L.ArchiveProductConfirm, async () => {
             try {
-                await envelope(await fetch(`${endpoint}/${page.productId}/archive`, { method: 'POST', credentials: 'same-origin', headers: getAuthHeaders() }));
+                await envelope(await fetch(`${endpoint}/${page.productId}/archive`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: Object.assign(getAuthHeaders(), { RequestVerificationToken: antiForgeryToken() })
+                }));
                 window.showToast?.(L.RecordArchived, 'success');
                 window.location.reload();
             } catch (error) { window.showToast?.(error.message || L.ErrorState, 'error'); }

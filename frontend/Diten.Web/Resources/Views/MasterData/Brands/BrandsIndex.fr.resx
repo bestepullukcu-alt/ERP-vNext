@@ -88,9 +88,53 @@
   <data name="OwnerCompanyId" xml:space="preserve"><value>Société propriétaire</value></data>
   <data name="BusinessUnitId" xml:space="preserve"><value>Unité opérationnelle</value></data>
   <data name="ReferencesSection" xml:space="preserve"><value>Références</value></data>
-  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>Les identifiants de référence sont affichés tels quels ; aucun enregistrement maître n’est encore résolu.</value></data>
+  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>Les références qu'aucun enregistrement de référence ne résout ici sont conservées telles quelles et affichées comme « non résolu ».</value></data>
   <data name="ProductsTab" xml:space="preserve"><value>Produits</value></data>
   <data name="ProductsTabUnavailable" xml:space="preserve"><value>Les produits ne peuvent pas être listés ici sans autorisation de lecture des produits.</value></data>
   <data name="ArchiveNoCascadeHelp" xml:space="preserve"><value>L’archivage d’une marque n’archive ni ne supprime jamais ses produits.</value></data>
   <data name="SearchPlaceholder" xml:space="preserve"><value>Code ou nom…</value></data>
+  <data name="Reason_brand_not_found" xml:space="preserve"><value>Cette marque n'existe pas ou ne vous est pas accessible.</value></data>
+  <data name="Reason_product_not_found" xml:space="preserve"><value>Ce produit n'existe pas ou ne vous est pas accessible.</value></data>
+  <data name="Reason_brand_code_duplicate" xml:space="preserve"><value>Une marque avec ce code existe déjà. Les codes restent réservés même après l'archivage.</value></data>
+  <data name="Reason_product_code_duplicate" xml:space="preserve"><value>Un produit avec ce code existe déjà. Les codes restent réservés même après l'archivage.</value></data>
+  <data name="Reason_brand_archived" xml:space="preserve"><value>Cette marque est archivée ; aucun nouveau produit ne peut y être lié.</value></data>
+  <data name="Reason_record_archived" xml:space="preserve"><value>Cet enregistrement est archivé et ne peut plus être modifié.</value></data>
+  <data name="Reason_code_immutable" xml:space="preserve"><value>Le code ne peut pas être modifié après la création de l'enregistrement.</value></data>
+  <data name="Reason_invalid_brand_status" xml:space="preserve"><value>Choisissez un statut de marque valide.</value></data>
+  <data name="Reason_invalid_product_status" xml:space="preserve"><value>Choisissez un statut de produit valide.</value></data>
+  <data name="Reason_invalid_product_type" xml:space="preserve"><value>Choisissez un type de produit valide.</value></data>
+  <data name="Reason_invalid_dosage_form" xml:space="preserve"><value>Choisissez une forme galénique valide.</value></data>
+  <data name="Reason_invalid_unit_of_measure" xml:space="preserve"><value>Choisissez une unité de mesure valide.</value></data>
+  <data name="Reason_invalid_atc_code" xml:space="preserve"><value>Saisissez un code ATC valide.</value></data>
+  <data name="Reason_archived_status_not_assignable" xml:space="preserve"><value>Le statut archivé est attribué uniquement par l'archivage.</value></data>
+  <data name="Reason_invalid_effective_window" xml:space="preserve"><value>La date de fin ne peut pas être antérieure à la date de début.</value></data>
+  <data name="Reason_external_reference_primary_conflict" xml:space="preserve"><value>Une seule référence externe par système source peut être principale.</value></data>
+  <data name="Reason_external_reference_duplicate" xml:space="preserve"><value>La même référence externe est saisie deux fois.</value></data>
+  <data name="Reason_indication_ref_duplicate" xml:space="preserve"><value>La même indication est saisie deux fois.</value></data>
+  <data name="Reason_version_conflict" xml:space="preserve"><value>Quelqu'un a modifié cet enregistrement après que vous l'avez ouvert. Rechargez-le et refaites votre modification.</value></data>
+  <data name="Reason_expected_version_required" xml:space="preserve"><value>La modification n'a pas pu être rattachée à la version que vous avez ouverte. Rechargez la page et réessayez.</value></data>
+  <data name="Reason_external_reference_in_use" xml:space="preserve"><value>Cette référence externe est déjà utilisée par un autre enregistrement.</value></data>
+  <data name="Reason_list_query_invalid" xml:space="preserve"><value>La liste n'a pas pu être triée ou paginée ainsi. Réinitialisez la vue et réessayez.</value></data>
+  <data name="Reason_brand_not_linkable" xml:space="preserve"><value>Seule une marque active et dans sa période de validité peut recevoir de nouveaux liens produit.</value></data>
+  <data name="Reason_store_unavailable" xml:space="preserve"><value>La modification n’a pas pu être enregistrée de manière sûre pour le moment. Rien n’a été enregistré ; réessayez plus tard.</value></data>
+  <data name="Reason_write_outcome_unknown" xml:space="preserve"><value>La modification a été envoyée, mais son résultat n’a pas pu être confirmé. Rechargez la marque : si la modification n’y est pas, refaites-la.</value></data>
+  <data name="Reason_field_invalid" xml:space="preserve"><value>{0} : la valeur est manquante, trop longue ou dans un format incorrect.</value></data>
+  <data name="RefusedStatus_400" xml:space="preserve"><value>La demande n'a pas été acceptée. Vérifiez les saisies et réessayez.</value></data>
+  <data name="RefusedStatus_403" xml:space="preserve"><value>Vous n'avez pas l'autorisation d'effectuer cette action.</value></data>
+  <data name="RefusedStatus_404" xml:space="preserve"><value>L'enregistrement est introuvable ou ne vous est pas accessible.</value></data>
+  <data name="RefusedStatus_409" xml:space="preserve"><value>L'enregistrement a changé ou se trouve dans un état qui ne le permet pas. Rechargez et réessayez.</value></data>
+  <data name="RefusedStatus_502" xml:space="preserve"><value>Le service est injoignable. Réessayez dans un instant.</value></data>
+  <data name="RefusedStatus_503" xml:space="preserve"><value>Le service est temporairement indisponible. Réessayez dans un instant.</value></data>
+  <data name="RefusedStatus_504" xml:space="preserve"><value>Le service n'a pas répondu à temps. Réessayez dans un instant.</value></data>
+  <data name="RefusedStatus_Other" xml:space="preserve"><value>La demande n'a pas pu aboutir. Réessayez dans un instant.</value></data>
+  <data name="ArchiveBrandIrreversible" xml:space="preserve"><value>L'archivage est irréversible.</value></data>
+  <data name="ArchiveBrandLiveProducts" xml:space="preserve"><value>{0} produits de cette marque sont utilisés ; ils conservent la marque, mais aucun nouveau produit ne pourra y être lié.</value></data>
+  <data name="ArchiveBrandNoLiveProducts" xml:space="preserve"><value>Aucun produit de cette marque n'est utilisé.</value></data>
+  <data name="ArchivedWithLiveProducts" xml:space="preserve"><value>Marques archivées avec des produits utilisés</value></data>
+  <data name="ArchivedBrandLiveProducts" xml:space="preserve"><value>{0} produits de cette marque sont toujours utilisés.</value></data>
+  <data name="LiveProductCount" xml:space="preserve"><value>Produits utilisés</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>Non résolu</value></data>
+  <data name="OwnerCompaniesUnavailable" xml:space="preserve"><value>La liste des sociétés n'a pas pu être lue ; le propriétaire actuel est conservé.</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve"><value>Page courante uniquement</value></data>
+  <data name="ExcludeArchivedOption" xml:space="preserve"><value>Sans les archivés</value></data>
 </root>
