@@ -1,3 +1,4 @@
+using Diten.AuthService.Persistence.Repositories;
 using Diten.AuthService.Domain.Entities;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -116,6 +117,29 @@ public static class MongoDbIndexConfigurations
             new CreateIndexModel<MfaChallenge>(
                 Builders<MfaChallenge>.IndexKeys.Ascending(x => x.ExpiresAtUtc),
                 new CreateIndexOptions { ExpireAfter = TimeSpan.FromHours(1), Name = "ttl_mfa_challenge_expiry" })
+        });
+
+        // MOD-0022 E1 — e-signature re-authentication tickets (hash only, single use) and KS-3 windows.
+        var esignTicketCol = database.GetCollection<ESignReauthTicket>(ESignReauthTicketRepository.CollectionName);
+        await esignTicketCol.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ESignReauthTicket>(
+                Builders<ESignReauthTicket>.IndexKeys.Ascending(x => x.TicketHash),
+                new CreateIndexOptions { Unique = true, Name = "ux_esign_ticket_hash" }),
+            new CreateIndexModel<ESignReauthTicket>(
+                Builders<ESignReauthTicket>.IndexKeys.Ascending(x => x.ExpiresAtUtc),
+                new CreateIndexOptions { ExpireAfter = TimeSpan.FromHours(1), Name = "ttl_esign_ticket_expiry" })
+        });
+
+        var esignWindowCol = database.GetCollection<ESignReauthWindow>(ESignReauthWindowRepository.CollectionName);
+        await esignWindowCol.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ESignReauthWindow>(
+                Builders<ESignReauthWindow>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.UserId),
+                new CreateIndexOptions { Unique = true, Name = "ux_esign_window_tenant_user" }),
+            new CreateIndexModel<ESignReauthWindow>(
+                Builders<ESignReauthWindow>.IndexKeys.Ascending(x => x.ExpiresAtUtc),
+                new CreateIndexOptions { ExpireAfter = TimeSpan.FromHours(1), Name = "ttl_esign_window_expiry" })
         });
     }
 
