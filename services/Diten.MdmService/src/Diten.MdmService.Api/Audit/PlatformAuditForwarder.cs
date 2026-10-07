@@ -62,24 +62,29 @@ public sealed class PlatformAuditForwarder : IPlatformAuditForwarder
                 ? incomingCorrelation
                 : Guid.NewGuid());
 
-        var payload = new
+        var payload = new Dictionary<string, object?>
         {
-            CorrelationId = correlationId,
-            RequestType = request.RequestType,
-            ActorType = actorType,
-            ActorId = actorId,
-            ActorEmail = user?.FindFirst(ClaimTypes.Email)?.Value ?? user?.FindFirst("email")?.Value,
-            TargetTenantId = tenantId,
-            Category = request.Category,
-            EntityType = request.EntityType,
-            EntityId = request.EntityId,
-            Operation = request.Operation,
-            Outcome = request.Outcome,
-            SourceService = SourceServiceName,
-            SourceModule = request.SourceModule,
-            IsPlatformGlobal = false,
-            OccurredAtUtc = DateTimeOffset.UtcNow
+            ["correlationId"] = correlationId,
+            ["requestType"] = request.RequestType,
+            ["actorType"] = actorType,
+            ["actorId"] = actorId,
+            ["actorEmail"] = user?.FindFirst(ClaimTypes.Email)?.Value ?? user?.FindFirst("email")?.Value,
+            ["targetTenantId"] = tenantId,
+            ["category"] = request.Category,
+            ["entityType"] = request.EntityType,
+            ["entityId"] = request.EntityId,
+            ["operation"] = request.Operation,
+            ["outcome"] = request.Outcome,
+            ["sourceService"] = SourceServiceName,
+            ["sourceModule"] = request.SourceModule,
+            ["isPlatformGlobal"] = false,
+            ["occurredAtUtc"] = DateTimeOffset.UtcNow
         };
+        // MOD-0290-FU04 S1 FIX1 item 2: Platform's AuditAppendRequest already takes these three; they are sent only when
+        // the command supplied them, so every other command's body is unchanged (keys camel-cased as the anonymous object was).
+        if (request.BeforeState is not null) payload["beforeState"] = request.BeforeState;
+        if (request.AfterState is not null) payload["afterState"] = request.AfterState;
+        if (request.Metadata is not null) payload["metadata"] = request.Metadata;
 
         try
         {

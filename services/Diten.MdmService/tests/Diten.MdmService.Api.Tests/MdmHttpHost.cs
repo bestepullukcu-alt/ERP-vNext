@@ -93,6 +93,9 @@ public sealed class MdmHttpHost : IAsyncLifetime
     public FakePlatformReferenceEndpoint PlatformReference { get; } = new();
     // LSKU FIX1: the verified market answers (create and approval time).
     public FakeMarkets Markets { get; } = new();
+    // MOD-0290-FU04 S1: the three item lists (MOD-0048-FU01 §4) and the tenant-wide stock answer (O-11).
+    public FakeItemReferences ItemReferences { get; } = new();
+    public FakeStockAvailability Stock { get; } = new();
 
     /// <summary>
     /// The trusted legal-entity scope answer (Platform's provider). A tenant a test has not set up gets the answer the
@@ -278,6 +281,11 @@ public sealed class MdmHttpHost : IAsyncLifetime
                     services.AddSingleton<Diten.MdmService.Application.Contracts.Authorization.ITrustedLegalEntityScopeProvider>(Scopes);
                     // LSKU FIX4 item 6: what the host logs, for "said once" assertions.
                     services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider>(Logs);
+                    // MOD-0290-FU04 S1: the item lists and the stock answer (production: both fail closed).
+                    services.RemoveAll<IItemReferenceResolver>();
+                    services.AddSingleton<IItemReferenceResolver>(ItemReferences);
+                    services.RemoveAll<Diten.MdmService.Application.Contracts.Inventory.IInventoryStockAvailabilityClient>();
+                    services.AddSingleton<Diten.MdmService.Application.Contracts.Inventory.IInventoryStockAvailabilityClient>(Stock);
                 });
             });
             _ = _factory.Server;

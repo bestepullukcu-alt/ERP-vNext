@@ -101,4 +101,9 @@ public enum ProductAuditOperation
     // LSKU FIX1 B3: the engine refused the submit before starting anything; the draft's version moves so a resubmit
     // is a new operation.
     LskuIdentitySubmitAbandoned = 86
+
+    // CT decision 3 (2026-10-07, MOD-0290-FU04 S1): 87–99 stay reserved for the Finished Good lifecycle (unused);
+    // 100–119 are the Item's (MOD-0290-FU04). S1 needs none — its commands audit through path b (AuditOperation); the
+    // range is for the item's own audit intents if a later slice adds them. Guarded by
+    // ItemMasterUnitTests.Reserved_ranges_hold_no_value_outside_their_owner.
 }

@@ -23,4 +23,9 @@ public sealed record AuditForwardRequest(
     int Outcome,
     // WP-MDM-BRAND-ACCEPT-01 FIX2 (M2) — the request's normalised correlation id (see IRequestCorrelation); null = the
     // forwarder resolves it from the request as before.
-    Guid? CorrelationId = null);
+    Guid? CorrelationId = null,
+    // MOD-0290-FU04 S1 FIX1 item 2 (CT decision): what changed and why — Platform's AuditAppendRequest already carries
+    // these three. Null = not sent (every command without IAuditDetailsProvider forwards exactly what it did before).
+    IReadOnlyDictionary<string, object?>? BeforeState = null,
+    IReadOnlyDictionary<string, object?>? AfterState = null,
+    IReadOnlyDictionary<string, object?>? Metadata = null);

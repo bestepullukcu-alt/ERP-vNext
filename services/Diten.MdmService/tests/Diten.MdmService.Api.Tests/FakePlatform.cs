@@ -336,7 +336,13 @@ public sealed class RecordingAuditForwarder : IPlatformAuditForwarder
     /// </summary>
     public bool ThrowOnForward { get; set; }
 
-    public Task ForwardAsync(AuditForwardRequest request, CancellationToken ct = default)
+    /// <summary>
+    /// MOD-0290-FU04 S1 FIX1 item 2 — the PRODUCTION forwarder the request is also handed to (a test that sets it puts a
+    /// capturing HTTP handler under it and reads the body that goes to Platform). Null by default; the setter resets it.
+    /// </summary>
+    public IPlatformAuditForwarder? Inner { get; set; }
+
+    public async Task ForwardAsync(AuditForwardRequest request, CancellationToken ct = default)
     {
         if (ThrowOnForward)
         {
@@ -344,7 +350,7 @@ public sealed class RecordingAuditForwarder : IPlatformAuditForwarder
         }
 
         Forwarded.Enqueue(request);
-        return Task.CompletedTask;
+        if (Inner is { } inner) await inner.ForwardAsync(request, ct);
     }
 }
 
