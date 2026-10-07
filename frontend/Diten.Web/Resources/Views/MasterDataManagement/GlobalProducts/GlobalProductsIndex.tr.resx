@@ -14,4 +14,5 @@
   <data name="ErrorWithdrawalPending" xml:space="preserve"><value>Bu onayın, farklı bir gerekçe ya da yorumla yapılmış önceki bir geri çekmesi hâlâ işleniyor. Geri çekmeyi öncekiyle aynı gerekçe ve yorumla tekrarlayın ya da bitmesini bekleyin.</value></data>
   <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Bu ürün onaya gönderiliyor. Gönderim onay motoruna ulaşana kadar düzenlenemez.</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>Taslak, gönderilirken değişti. Yeniden açın ve güncel sürümü gönderin.</value></data>
+  <data name="ErrorSubmitStuck" xml:space="preserve"><value>Bu ürünün bir gönderimi takılı kaldı. Gönderen kişi Gönder'e yeniden basarak çözer; bu çözmezse bir yönetici çözmelidir.</value></data>
 </root>

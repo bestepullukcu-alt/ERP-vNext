@@ -34,6 +34,7 @@ public sealed class ProductIdentityWorkflowWorkerOptions
             || RetryDelaySeconds is < 1 or > 3_600
             || !IsServiceFaultWindowValid(
                 RetryDelaySeconds, ServiceFaultMaxRetryDelaySeconds, ServiceFaultErrorAfterAttempts)
+            || !IsRecordAnswerWindowValid(StartSettleSeconds, QuarantineAfterFailedAttempts)
             || string.IsNullOrWhiteSpace(LeaseOwner)
             || LeaseOwner.Length > 128
             || !string.Equals(LeaseOwner, LeaseOwner.Trim(), StringComparison.Ordinal)
@@ -42,6 +43,13 @@ public sealed class ProductIdentityWorkflowWorkerOptions
             throw new InvalidOperationException("PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID");
         }
     }
+
+    // BL-552 flow 3 FIX1 item 3: the settle window and the record-answer limit are checked, never quietly clamped —
+    // a window of 0 would trust "nothing arrived" at once, a negative limit would mean "never" (the bounds of the
+    // correction and retirement workers).
+    public static bool IsRecordAnswerWindowValid(int startSettleSeconds, int quarantineAfterFailedAttempts) =>
+        startSettleSeconds is >= 1 and <= 3_600
+        && quarantineAfterFailedAttempts is >= 0 and <= 1_000;
 
     // The ceiling may not be shorter than the ordinary retry delay: a "back-off" that is flat and quicker than the
     // normal poll is not one.

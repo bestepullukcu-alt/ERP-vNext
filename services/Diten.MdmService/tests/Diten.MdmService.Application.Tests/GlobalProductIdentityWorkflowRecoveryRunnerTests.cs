@@ -1,5 +1,9 @@
+using System.Reflection;
 using Diten.MdmService.Api.Configuration;
 using Diten.MdmService.Api.Services.ProductItemSkuMaster;
+using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Contracts.Workflow;
+using Diten.MdmService.Domain.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -8,19 +12,94 @@ namespace Diten.MdmService.Application.Tests;
 
 public sealed class GlobalProductIdentityWorkflowRecoveryRunnerTests
 {
+    // BL-552 flow 3 FIX1 item 7 (was Disabled_runner_is_noop_before_service_resolution): a runner switched off touches no
+    // operation — and still records the stuck gauges, exactly; a worker switched off is when what is stuck stays stuck.
     [Fact]
-    public async Task Disabled_runner_is_noop_before_service_resolution()
+    public async Task Disabled_runner_touches_no_operation_and_records_the_stuck_gauges_exactly()
     {
-        using var services = new ServiceCollection().BuildServiceProvider();
+        using var metrics = new ProductIdentityRecoveryMetrics();
+        using var services = StuckServices(readinessFault: null);
         var runner = new ProductIdentityWorkflowRecoveryRunner(
             services.GetRequiredService<IServiceScopeFactory>(),
             Options.Create(new ProductIdentityWorkflowWorkerOptions()),
             TimeProvider.System,
-            Microsoft.Extensions.Logging.Abstractions.NullLogger<ProductIdentityWorkflowRecoveryRunner>.Instance);
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<ProductIdentityWorkflowRecoveryRunner>.Instance,
+            metrics);
 
         var result = await runner.RunCycleAsync();
 
         Assert.Equal(new ProductIdentityWorkflowRecoveryRunResult(0, 0, 0, 0, 0), result);
+        Assert.Equal(1, metrics.Current(ProductIdentityWorkflowRecoveryRunner.Flow));
+        Assert.Equal(0, metrics.NeedingAPerson(ProductIdentityWorkflowRecoveryRunner.Flow));
+    }
+
+    // Flow 3 FIX1 item 7: a cycle that stops on an unready transport records the gauges too.
+    [Fact]
+    public async Task A_cycle_stopped_by_an_unready_transport_records_the_stuck_gauges_exactly()
+    {
+        using var metrics = new ProductIdentityRecoveryMetrics();
+        using var services = StuckServices(readinessFault: "PRODUCT_WORKFLOW_CLIENT_CONFIGURATION_INVALID");
+        var runner = new ProductIdentityWorkflowRecoveryRunner(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            Options.Create(new ProductIdentityWorkflowWorkerOptions { Enabled = true, LeaseOwner = "runner" }),
+            TimeProvider.System,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<ProductIdentityWorkflowRecoveryRunner>.Instance,
+            metrics);
+
+        var result = await runner.RunCycleAsync();
+
+        Assert.Equal(new ProductIdentityWorkflowRecoveryRunResult(0, 0, 0, 0, 0), result);
+        Assert.Equal(1, metrics.Current(ProductIdentityWorkflowRecoveryRunner.Flow));
+        Assert.Equal(0, metrics.NeedingAPerson(ProductIdentityWorkflowRecoveryRunner.Flow));
+    }
+
+    private static readonly Guid StuckTenant = Guid.Parse("90000000-0000-0000-0000-0000000000a7");
+
+    // One tenant holds one stuck submit its submitter's repeat can settle: (1 in manual reconciliation, 0 for a person).
+    // The work discovery must never be asked — no operation is touched.
+    private static ServiceProvider StuckServices(string? readinessFault)
+    {
+        var counts = DispatchProxy.Create<IGlobalProductIdentityWorkflowOperationRepository, StuckCounts>();
+        return new ServiceCollection()
+            .AddSingleton<IGlobalProductIdentityWorkflowTenantPartitionDiscovery>(new StuckOnly())
+            .AddScoped<ITenantContext, Tenant>()
+            .AddSingleton(counts)
+            .AddSingleton<IProductIdentityWorkflowTransportReadiness>(new Readiness(readinessFault))
+            .BuildServiceProvider();
+    }
+
+    private sealed class StuckOnly : IGlobalProductIdentityWorkflowTenantPartitionDiscovery
+    {
+        public Task<GlobalProductIdentityWorkflowTenantPartitionPage> DiscoverAsync(Guid? afterTenantId,
+            long nowUtcTicks, int limit, CancellationToken cancellationToken = default) =>
+            throw new InvalidOperationException("No operation may be looked at.");
+
+        public Task<GlobalProductIdentityWorkflowTenantPartitionPage> DiscoverStuckAsync(Guid? afterTenantId,
+            int limit, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new GlobalProductIdentityWorkflowTenantPartitionPage(
+                afterTenantId is null ? [StuckTenant] : [], null));
+    }
+
+    public class StuckCounts : DispatchProxy
+    {
+        protected override object? Invoke(MethodInfo? targetMethod, object?[]? args) => targetMethod?.Name switch
+        {
+            nameof(IGlobalProductIdentityWorkflowOperationRepository.CountManualReconciliationAsync) => Task.FromResult(1L),
+            nameof(IGlobalProductIdentityWorkflowOperationRepository.CountNeedingAPersonAsync) => Task.FromResult(0L),
+            _ => throw new InvalidOperationException($"No operation may be touched ({targetMethod?.Name}).")
+        };
+    }
+
+    private sealed class Tenant : ITenantContext
+    {
+        public Guid TenantId { get; private set; }
+        public bool IsResolved => TenantId != Guid.Empty;
+        public void SetTenant(Guid tenantId) => TenantId = tenantId;
+    }
+
+    private sealed class Readiness(string? fault) : IProductIdentityWorkflowTransportReadiness
+    {
+        public string? FindConfigurationFault() => fault;
     }
 
     [Fact]

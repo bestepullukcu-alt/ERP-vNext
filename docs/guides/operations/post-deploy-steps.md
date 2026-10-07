@@ -70,6 +70,18 @@ açıp eskisini pasife almaktır, yani canlıda ilk yazımda dikkat gerekir.
 hazırlanabilir, yüklenemez"* diyor: 38 doküman DRAFT, 50 birim *Proposed*, beş kapının
 beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı bekler.
 
+### 3 · Global Ürün denetim işlemleri: Platform ÖNCE (BL-552)
+
+| | |
+|---|---|
+| **Modül** | MOD-0290 — Global Ürün düzeltme, emeklilik isteği ve kimlik onayı (BL-552); Platform MOD-0021 merkezi denetim |
+| **Ne zaman** | BL-552'yi (akış 2–3, `23fb2d85f` ve sonrası) taşıyan deploy'da — **Platform, MDM'den ÖNCE** |
+| **Yapılmazsa** | MDM'nin yeni denetim işlemleri (79 `GlobalProductIdentityDecisionNotApplicable`, 80 `GlobalProductCorrectionEnded`, 81 `GlobalProductRetirementEnded`) Platform'da tanınmaz. Platform 409 `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED` döner. MDM bu üç işlem için en çok 2880 deneme (varsayılan 30 sn ile yaklaşık bir gün) bekler; süre geçerse **niyetler ölü mektuba düşer ve merkeze ulaşmaz**. Ölü mektuptan yeniden gönderme aracı yoktur. |
+| **Kim** | Deploy operatörü |
+
+**Kontrol:** MDM deploy edildikten sonra son teslim hatası `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED` olan niyet kalmamalı.
+Kalıyorsa Platform bu işlemleri eşleyen sürümde değildir.
+
 ---
 
 ## Tamamlananlar

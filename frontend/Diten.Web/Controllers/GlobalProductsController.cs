@@ -511,9 +511,10 @@ public sealed class GlobalProductsController : Controller
         {
             ["GLOBAL_PRODUCT_IDENTITY_SUBMIT_IN_FLIGHT"] = "ErrorSubmitInFlight",
             ["PRODUCT_IDENTITY_WORKFLOW_DRAFT_CHANGED"] = "ErrorDraftChanged",
-            // BL-552 flow 3 (CT decision S2): a submit stuck in manual reconciliation holds the draft — the in-flight
-            // sentence (no new sentence); and a submit whose start the engine could not yet confirm holds it too.
-            ["GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED"] = "ErrorSubmitInFlight",
+            // BL-552 flow 3 FIX1 item 13 (CT): a submit STUCK in manual reconciliation holds the draft and is not "on
+            // its way" — its own sentence names the way out (the same person submits again; else an administrator).
+            ["GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED"] = "ErrorSubmitStuck",
+            // A submit whose start the engine could not yet confirm IS on its way.
             ["PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_REFUSED"] = "ErrorSubmitInFlight"
         };
 

@@ -50,6 +50,26 @@ public sealed class PlatformTrustedSourceAuditIntentClientTests
         Assert.Null(result.Receipt);
     }
 
+    // BL-552 flow 3 FIX1 item 2: a 409 stays terminal, and Platform's own reason is handed on — the processor tells a
+    // deploy-order gap (an operation not mapped yet) from a real conflict. A 409 without a readable reason has none.
+    [Theory]
+    [InlineData("{\"data\":null,\"statusCode\":409,\"isSuccessful\":false,\"errors\":[\"AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED\"],\"reason_code\":\"AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED\",\"correlation_id\":\"c\"}",
+        "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED")]
+    [InlineData("{\"reason_code\":\"not a code\"}", null)]
+    [InlineData("not json", null)]
+    public async Task A_conflict_carries_platforms_reason(string body, string? reason)
+    {
+        var result = await Client(new RecordingHandler(_ => new HttpResponseMessage(HttpStatusCode.Conflict)
+            {
+                Content = new StringContent(body, Encoding.UTF8, "application/json")
+            }))
+            .AcceptAsync(Envelope(), new("jwt", DateTimeOffset.UtcNow.AddMinutes(5)));
+
+        Assert.Equal(TrustedSourceAuditIntentDeliveryOutcome.Terminal, result.Outcome);
+        Assert.Equal("AUDIT_SOURCE_INTENT_CONFLICT", result.ErrorCode);
+        Assert.Equal(reason, result.CentralReasonCode);
+    }
+
     [Fact]
     public async Task Create_semantics_minus_one_to_zero_and_sequence_zero_are_accepted()
     {

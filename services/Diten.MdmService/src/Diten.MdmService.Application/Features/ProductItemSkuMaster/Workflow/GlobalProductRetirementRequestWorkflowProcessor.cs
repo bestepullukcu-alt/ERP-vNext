@@ -281,7 +281,11 @@ public sealed class GlobalProductRetirementRequestWorkflowProcessor(
                 : HeldByThis(product, operation)
                     ? await EndAndReleaseAsync(operation, claim, StartNotReceived, now, execution, cancellationToken)
                     // BL-552 flow 2 FIX1 item 8: it never took the product, so nothing was started — it holds
-                    // nothing and waits for its maker's same key (looked at again only at the ceiling).
+                    // nothing and waits for its maker's same key (looked at again only at the ceiling). Flow 3 FIX1
+                    // item 15: not for ever — a maker who has not come back within the limit has abandoned it: it
+                    // ends (it holds nothing to give back) with its own reason, which the ended request answers.
+                    : now.UtcTicks - operation.CreatedAtUtcTicksV1 >= AwaitingMakerLimit.Ticks
+                        ? await Ended(claim, MakerNeverReturned, now, cancellationToken)
                     : await operations.AdvanceAsync(claim, new(operation.Checkpoint,
                         ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks,
                         now.Add(execution.MaxRetryDelay ?? ProductIdentityRecoveryStreak.DefaultMaxRetryDelay).UtcTicks,
@@ -675,6 +679,9 @@ public sealed class GlobalProductRetirementRequestWorkflowProcessor(
     public const string StartSettling = "GLOBAL_PRODUCT_RETIREMENT_START_SETTLING";
     // BL-552 flow 2 FIX1: a request that never took the product waits for its maker; one held but moved on ends.
     public const string AwaitingMaker = "GLOBAL_PRODUCT_RETIREMENT_AWAITING_MAKER";
+    // Flow 3 FIX1 item 15: how long a request that never took the product waits for its maker's same key.
+    public const string MakerNeverReturned = "GLOBAL_PRODUCT_RETIREMENT_MAKER_NEVER_RETURNED";
+    public static readonly TimeSpan AwaitingMakerLimit = TimeSpan.FromDays(7);
     public const string ProductMoved = "GLOBAL_PRODUCT_RETIREMENT_PRODUCT_MOVED";
     public const string StartNotReceived = "GLOBAL_PRODUCT_RETIREMENT_START_NOT_RECEIVED";
     public const string StartLookupFailed = "GLOBAL_PRODUCT_RETIREMENT_START_LOOKUP_FAILED";

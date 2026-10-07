@@ -619,7 +619,6 @@ public sealed partial class GskuLifecycleHttpTests
         var current = (await GpOf(product)).Version;
 
         var exact = await Write(original, at);
-        var otherCommand = await Write(Changed(original, x => x.CommandId = "another-command"), at);
         var otherFacts = await Write(Changed(original, x => x.EvidenceHash = "other-facts"), at);
         var later = await Write(Changed(original, x =>
         {
@@ -630,10 +629,16 @@ public sealed partial class GskuLifecycleHttpTests
 
         Assert.True(exact.Succeeded, exact.ErrorCode);
         Assert.True(exact.IsReplay);
-        Assert.Equal("PRODUCT_IDENTITY_IDEMPOTENCY_CONFLICT", otherCommand.ErrorCode);
         Assert.Equal("PRODUCT_IDENTITY_IDEMPOTENCY_CONFLICT", otherFacts.ErrorCode);
         Assert.Equal("PRODUCT_IDENTITY_IDEMPOTENCY_CONFLICT", later.ErrorCode);
         Assert.Equal(current, (await GpOf(product)).Version);
+
+        // Flow 3 FIX1 item 10: the aggregate found at an OLDER version than the compacted write (a restore, a rolled
+        // back write) — the exact repeat is not taken as done.
+        await host.Database.GetCollection<GlobalProduct>("mdm_global_products").UpdateOneAsync(x => x.Id == product,
+            Builders<GlobalProduct>.Update.Set(x => x.Version, at));
+        var olderAggregate = await Write(original, at);
+        Assert.Equal("PRODUCT_IDENTITY_IDEMPOTENCY_CONFLICT", olderAggregate.ErrorCode);
     }
 
     // ── 16: the retirement worker's options ──────────────────────────────────────────────────────────────────────

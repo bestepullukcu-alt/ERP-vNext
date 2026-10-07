@@ -14,4 +14,5 @@
   <data name="ErrorWithdrawalPending" xml:space="preserve"><value>Un retrait antérieur de cette approbation, avec un motif ou un commentaire différent, est toujours en cours. Répétez le retrait avec le même motif et le même commentaire qu'auparavant, ou attendez qu'il se termine.</value></data>
   <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Ce produit est en cours de soumission pour approbation. Il ne peut pas être modifié tant que la soumission n'a pas atteint le moteur d'approbation.</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>Le brouillon a changé pendant sa soumission. Rouvrez-le et soumettez la version actuelle.</value></data>
+  <data name="ErrorSubmitStuck" xml:space="preserve"><value>Une soumission de ce produit est bloquée. La personne qui l'a soumise la débloque en cliquant de nouveau sur Soumettre ; si cela ne suffit pas, un administrateur doit intervenir.</value></data>
 </root>

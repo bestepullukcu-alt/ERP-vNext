@@ -180,6 +180,61 @@ public sealed class AuditIntentDeliveryProcessorTests
         Assert.Single(client.Envelopes);
     }
 
+    // BL-552 flow 3 FIX1 item 2: MDM deployed before Platform — an operation BL-552 added (79 / 80 / 81) that Platform
+    // does not map YET waits (retryable, counted), and is delivered once Platform maps it. Not dead-lettered.
+    [Theory]
+    [InlineData(ProductAuditOperation.GlobalProductIdentityDecisionNotApplicable)]
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded)]
+    [InlineData(ProductAuditOperation.GlobalProductRetirementEnded)]
+    public async Task An_operation_platform_does_not_map_yet_waits_and_is_delivered_once_it_does(ProductAuditOperation operation)
+    {
+        var repository = new Repository { PayloadOperation = operation };
+        var mapped = false;
+        var client = new Client((envelope, _) => mapped
+            ? TrustedSourceAuditIntentDeliveryResult.Accepted(new TrustedSourceAuditIntentAcceptanceReceipt("ack",
+                AuditIntentContract.BuildCentralIdempotencyKey(envelope.TenantId, envelope.IntentId, envelope.ContractVersion),
+                envelope.ContractVersion, DateTimeOffset.UtcNow, false))
+            : TrustedSourceAuditIntentDeliveryResult.Terminal("AUDIT_SOURCE_INTENT_CONFLICT") with
+            {
+                CentralReasonCode = AuditIntentDeliveryProcessor.MappingUnsupported
+            });
+        var processor = Processor(repository, new IdentityProvider(), client);
+
+        var waiting = await processor.ProcessTenantAsync(repository.TenantId, 10, "worker", TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(5), 3);
+        Assert.Equal(1, waiting.RetryScheduled);
+        Assert.Equal(1, waiting.AwaitingCentralMapping);
+        Assert.Equal(0, waiting.DeadLettered);
+        Assert.Equal(AuditIntentDeliveryProcessor.MappingUnsupported, repository.LastRetryReason);
+        Assert.Null(repository.LastDeadLetterReason);
+
+        mapped = true;
+        var delivered = await processor.ProcessTenantAsync(repository.TenantId, 10, "worker", TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(5), 3);
+        Assert.Equal(1, delivered.Accepted);
+    }
+
+    // The wait is bounded (CentralMappingWaitAttempts), and it is only for those three operations and that reason: any
+    // other operation Platform does not map, and any other 409, is dead-lettered exactly as before.
+    [Theory]
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", false)]
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, AuditIntentDeliveryProcessor.CentralMappingWaitAttempts,
+        "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
+    [InlineData(ProductAuditOperation.GlobalProductDraftCreated, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, 1, "AUDIT_SOURCE_INTENT_IDEMPOTENCY_CONFLICT", true)]
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, 1, null, true)]
+    public async Task Only_the_new_operations_wait_for_platforms_map_and_only_for_a_while(
+        ProductAuditOperation operation, int attempts, string? reason, bool deadLettered)
+    {
+        var repository = new Repository { PayloadOperation = operation, ClaimAttemptCount = attempts };
+        var client = new Client((_, _) => TrustedSourceAuditIntentDeliveryResult.Terminal("AUDIT_SOURCE_INTENT_CONFLICT")
+            with { CentralReasonCode = reason });
+
+        var result = await Processor(repository, new IdentityProvider(), client).ProcessTenantAsync(
+            repository.TenantId, 10, "worker", TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(5), 3);
+
+        Assert.Equal(deadLettered ? 1 : 0, result.DeadLettered);
+        Assert.Equal(deadLettered ? 0 : 1, result.RetryScheduled);
+    }
+
     private static AuditIntentDeliveryProcessor Processor(
         IAuditIntentDeliveryRepository repository,
         ITrustedSourceAuditServiceIdentityProvider identity,
@@ -239,7 +294,7 @@ public sealed class AuditIntentDeliveryProcessorTests
         public Task<AuditIntentClaim?> TryClaimAsync(AuditIntentLocator locator, long expectedClaimGeneration, string leaseOwner, TimeSpan leaseDuration, CancellationToken cancellationToken = default)
         {
             ClaimAttempted = true;
-            return Task.FromResult<AuditIntentClaim?>(new(locator, "claim", leaseOwner, 1, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.Add(leaseDuration), 1));
+            return Task.FromResult<AuditIntentClaim?>(new(locator, "claim", leaseOwner, 1, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.Add(leaseDuration), ClaimAttemptCount));
         }
         public Task<AuditIntentClaimedPayload?> ReadClaimedPayloadAsync(AuditIntentClaim claim, CancellationToken cancellationToken = default)
         {
@@ -247,10 +302,17 @@ public sealed class AuditIntentDeliveryProcessorTests
             return Task.FromResult<AuditIntentClaimedPayload?>(new(AuditIntentContract.SourceService,
                 ReturnWrongContract ? "wrong-contract" : AuditIntentDeliveryProcessor.RequiredContractVersion,
                 claim.Locator.IntentId, claim.Locator.TenantId, claim.Locator.AggregateType, claim.Locator.AggregateId, 0, 1,
-                ProductAuditOperation.GlobalProductDraftCreated, "actor", Guid.NewGuid(), "cause", "command", 1,
+                PayloadOperation, "actor", Guid.NewGuid(), "cause", "command", 1,
                 DateTimeOffset.UtcNow, new string('a', 64), null, "idempotency"));
         }
-        public Task<bool> MarkRetryableFailureAsync(AuditIntentClaim claim, TimeSpan retryDelay, string reason, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public ProductAuditOperation PayloadOperation { get; init; } = ProductAuditOperation.GlobalProductDraftCreated;
+        public int ClaimAttemptCount { get; init; } = 1;
+        public string? LastRetryReason { get; private set; }
+        public Task<bool> MarkRetryableFailureAsync(AuditIntentClaim claim, TimeSpan retryDelay, string reason, CancellationToken cancellationToken = default)
+        {
+            LastRetryReason = reason;
+            return Task.FromResult(true);
+        }
         public Task<bool> MarkDeadLetterAsync(AuditIntentClaim claim, string reason, CancellationToken cancellationToken = default)
         {
             LastDeadLetterReason = reason;

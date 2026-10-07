@@ -1508,12 +1508,13 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
                 item => string.Equals(item.IdempotencyKey, auditIntent.IdempotencyKey, StringComparison.Ordinal));
             if (receipt is null) return null;
             // BL-552 flow 2 FIX1 item 14: compared as the intent branch compares, as far as a receipt can — its
-            // operation through the intent id (derived from the operation and the command key), its command id through
-            // the key (every Global Product intent's command id IS its key), its facts through the evidence, and its
-            // version only as a bound: a receipt keeps no versions (the shared delivery store writes none), so a write
-            // this repeat stands for cannot be newer than the aggregate it reads.
+            // operation and command through the intent id (derived from the operation and the command key; every Global
+            // Product factory writes its command id AS its key, flow 3 FIX1 item 10), its facts through the evidence, and
+            // its version only as a bound: a receipt keeps no versions (the shared delivery store writes none), so a
+            // write this repeat stands for cannot be newer than the aggregate it reads. Not decidable from a receipt: a
+            // repeat claiming an OLDER version than the write had, the aggregate since past both (backlog B1, two-step
+            // receipt versions).
             return receipt.IntentId == auditIntent.IntentId && receipt.TenantId == auditIntent.TenantId
-                   && string.Equals(receipt.IdempotencyKey, auditIntent.CommandId, StringComparison.Ordinal)
                    && current.Version >= auditIntent.PostVersion
                    && !string.IsNullOrWhiteSpace(receipt.CentralAcknowledgement)
                    && !string.IsNullOrWhiteSpace(receipt.CompactReceiptReference)

@@ -1,5 +1,6 @@
 using Diten.MdmService.Application.Contracts.Audit;
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 
 namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Audit;
@@ -175,6 +176,16 @@ public sealed class AuditIntentDeliveryProcessor
                 await TransitionFailureAsync(
                     claim, delivery.ErrorCode, true, retryDelay, maximumAttempts, batch, cancellationToken);
                 return;
+            case TrustedSourceAuditIntentDeliveryOutcome.Terminal
+                when AwaitsCentralMapping(payload.Operation, delivery.CentralReasonCode):
+                // BL-552 flow 3 FIX1 item 2: an operation added in this release that Platform does not map YET (MDM
+                // deployed before Platform) waits — bounded, counted, its reason on the intent — instead of being
+                // dead-lettered for good. Every other operation, and every other 409, is terminal exactly as before.
+                batch.AwaitingCentralMapping++;
+                await TransitionFailureAsync(
+                    claim, MappingUnsupported, true, retryDelay, Math.Max(maximumAttempts, CentralMappingWaitAttempts),
+                    batch, cancellationToken);
+                return;
             case TrustedSourceAuditIntentDeliveryOutcome.AuthenticationRejected:
             case TrustedSourceAuditIntentDeliveryOutcome.Terminal:
                 await TransitionFailureAsync(
@@ -184,6 +195,23 @@ public sealed class AuditIntentDeliveryProcessor
                 throw new InvalidOperationException("AUDIT_SOURCE_INTENT_DELIVERY_OUTCOME_INVALID");
         }
     }
+
+    public const string MappingUnsupported = "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED";
+
+    // About a day at the worker's default 30 s retry delay: a deploy-order gap, not a lasting refusal.
+    public const int CentralMappingWaitAttempts = 2880;
+
+    // The operations BL-552 added (Platform map additions only). Only these wait for the central map.
+    private static readonly HashSet<ProductAuditOperation> AwaitingCentralMappingOperations =
+    [
+        ProductAuditOperation.GlobalProductIdentityDecisionNotApplicable,
+        ProductAuditOperation.GlobalProductCorrectionEnded,
+        ProductAuditOperation.GlobalProductRetirementEnded
+    ];
+
+    private static bool AwaitsCentralMapping(ProductAuditOperation operation, string? centralReason) =>
+        AwaitingCentralMappingOperations.Contains(operation)
+        && string.Equals(centralReason, MappingUnsupported, StringComparison.Ordinal);
 
     private async Task CompleteAsync(
         AuditIntentClaim claim,
@@ -324,6 +352,9 @@ public sealed class AuditIntentDeliveryBatchResult
     public int RetryScheduled { get; internal set; }
     public int DeadLettered { get; internal set; }
     public int ClaimConflicts { get; internal set; }
+    // BL-552 flow 3 FIX1 item 2: intents of an operation Platform does not map yet, waiting (the gauge of a
+    // deploy-order gap).
+    public int AwaitingCentralMapping { get; internal set; }
 }
 
 public sealed record SelectedAuditIntentDeliveryResult(

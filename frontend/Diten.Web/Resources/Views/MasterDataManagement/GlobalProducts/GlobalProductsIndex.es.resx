@@ -14,4 +14,5 @@
   <data name="ErrorWithdrawalPending" xml:space="preserve"><value>Una retirada anterior de esta aprobación, con un motivo o comentario distinto, todavía se está procesando. Repita la retirada con el mismo motivo y comentario que antes, o espere a que termine.</value></data>
   <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Este producto se está enviando para aprobación. No se puede editar hasta que el envío llegue al motor de aprobación.</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>El borrador cambió mientras se enviaba. Vuelva a abrirlo y envíe la versión actual.</value></data>
+  <data name="ErrorSubmitStuck" xml:space="preserve"><value>Un envío de este producto está bloqueado. La persona que lo envió lo resuelve pulsando Enviar de nuevo; si así no se resuelve, debe hacerlo un administrador.</value></data>
 </root>

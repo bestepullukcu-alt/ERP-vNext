@@ -14,4 +14,5 @@
   <data name="ErrorWithdrawalPending" xml:space="preserve"><value>此审批之前的一次撤回（原因或备注不同）仍在处理中。请使用与之前相同的原因和备注重新撤回，或等待其完成。</value></data>
   <data name="ErrorSubmitInFlight" xml:space="preserve"><value>此产品正在提交审批。在提交到达审批引擎之前无法编辑。</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>草稿在提交过程中发生了变化。请重新打开并提交当前版本。</value></data>
+  <data name="ErrorSubmitStuck" xml:space="preserve"><value>该产品的一次提交被卡住了。提交人再次点击“提交”即可解决；如果仍未解决，则需由管理员处理。</value></data>
 </root>

@@ -598,6 +598,10 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         public int ReconcileCount { get; private set; }
         public int WithdrawCount { get; private set; }
         public string? SubmitFailure { get; set; }
+        // Flow 3 FIX1: the other product writes refused with this code (the census's store knobs).
+        public string? WriteFailure { get; set; }
+        // The withdrawal write answers "done" and writes nothing (a write rolled back behind the answer).
+        public bool WithdrawWithoutWriting { get; set; }
 
         public Task<GlobalProduct?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
             Task.FromResult(product.Id == id && !product.IsDeleted ? product : null);
@@ -658,6 +662,8 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
             Guid workflowInstanceId, Guid approvalTaskId, LocalAuditIntent auditIntent,
             CancellationToken cancellationToken = default)
         {
+            if (WriteFailure is not null)
+                return Task.FromResult(new GlobalProductLifecycleWriteResult(false, product, WriteFailure));
             ReturnToDraftCount++;
             product.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
             product.Version++;
@@ -670,6 +676,8 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
             LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
         {
             ReconcileCount++;
+            if (WriteFailure is not null)
+                return Task.FromResult(new GlobalProductLifecycleWriteResult(false, product, WriteFailure));
             if (product.WorkflowBinding?.TerminalDecision is { } persisted)
             {
                 return Task.FromResult(persisted.TransitionSequence == decisionEvidence.TransitionSequence
@@ -700,6 +708,10 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
             Guid id, int expectedVersion, PersistedCancellationEvidence cancellationEvidence,
             LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
         {
+            if (WriteFailure is not null)
+                return Task.FromResult(new GlobalProductLifecycleWriteResult(false, product, WriteFailure));
+            if (WithdrawWithoutWriting)
+                return Task.FromResult(new GlobalProductLifecycleWriteResult(true, product));
             if (product.WorkflowBinding?.CancellationEvidence is { } existing)
                 return Task.FromResult(existing.IdempotencyKey == cancellationEvidence.IdempotencyKey
                     ? new GlobalProductLifecycleWriteResult(true, product, IsReplay: true)
@@ -737,6 +749,10 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         // The store writes the lease and then never answers (a half-open connection), honouring only its token.
         public bool ClaimsNeverAnswer { get; set; }
         public int ReleaseIfOwnedCalls { get; private set; }
+        // Flow 3 FIX1 item 9 (the transition census): the REAL store's rules applied to every write, and every write
+        // (claimed checkpoint, mutation, accepted) reported.
+        public Func<GlobalProductIdentityWorkflowCheckpoint, GlobalProductIdentityWorkflowCheckpointMutation, bool>? StoreRule { get; set; }
+        public Action<GlobalProductIdentityWorkflowCheckpoint, GlobalProductIdentityWorkflowCheckpointMutation, bool>? OnWrite { get; set; }
 
         public Task<GlobalProductIdentityWorkflowReserveResult> ReserveAsync(
             GlobalProductIdentityWorkflowOperation operation, CancellationToken cancellationToken = default)
@@ -821,6 +837,12 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
                 || Current.Checkpoint != claim.Checkpoint)
             {
                 return Task.FromResult(false);
+            }
+            if (StoreRule is { } rule)
+            {
+                var accepted = rule(claim.Checkpoint, mutation);
+                OnWrite?.Invoke(claim.Checkpoint, mutation, accepted);
+                if (!accepted) return Task.FromResult(false);
             }
             if (AcknowledgeWithoutMoving > 0)
             {

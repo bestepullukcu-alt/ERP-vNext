@@ -451,7 +451,13 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
     (`GlobalProductCorrectionEnded`, flow 2 FIX1 item 12) with the reason it ended in its facts, so central audit
     tells "ended, nothing held" from "stuck". A stuck request writes no audit of its own. Platform maps the new
     operations (`GlobalProductCorrectionEnded`, `GlobalProductRetirementEnded`,
-    `GlobalProductIdentityDecisionNotApplicable`) as lifecycle transitions; deploy Platform first.
+    `GlobalProductIdentityDecisionNotApplicable`) as lifecycle transitions. **Deploy Platform first.** Platform answers
+    an operation it does not map with 409 `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED`. For these three operations only,
+    MDM's audit delivery then waits instead of dead-lettering: the intent stays retryable with that reason, for at most
+    2880 attempts (about a day at the default 30 s retry delay), and is delivered once Platform maps it. After that
+    bound — or for any other operation — the intent is dead-lettered, never reaches the central log, and there is no
+    tool to send a dead-lettered intent again. Watch: intents whose last delivery error is
+    `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED` (the delivery batch counts them as `AwaitingCentralMapping`).
   - **Refused writes:** the product's audit cap (`AUDIT_INTENT_CAPACITY_EXCEEDED`) waits.
     `GLOBAL_PRODUCT_LIFECYCLE_RELEASE_CONFLICT` is a counted retry.
   - **An approved name another product took in the meantime:** the request ENDS unapplied and the product is given
@@ -499,10 +505,13 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
     (120).
 - **Rolling back past BL-552:** the request and operation documents gained fields (`FailedAttemptCount`,
   `LastStartSentAtUtcTicksV1`). This binary reads documents with fields it does not know, and the service does not
-  start if that guard is missing (`GlobalProductLifecycleClassMaps`). A binary from BEFORE this guard (75c286f7d,
-  124e30acc) does not: **when rolling back to it, remove the new fields first**
-  (`$unset: { FailedAttemptCount: "", LastStartSentAtUtcTicksV1: "" }` on `mdm_global_product_correction_operations`,
-  `mdm_global_product_retirement_request_operations` and `mdm_global_product_identity_workflow_operations`).
+  start if that guard is missing (`GlobalProductLifecycleClassMaps`). Older binaries do not read them — **when
+  rolling back, remove the new fields first** with
+  `$unset: { FailedAttemptCount: "", LastStartSentAtUtcTicksV1: "" }` on:
+  - back to 75c286f7d or 124e30acc (no guard at all): `mdm_global_product_correction_operations`,
+    `mdm_global_product_retirement_request_operations` and `mdm_global_product_identity_workflow_operations`;
+  - back to 1c7cb196b (guard for correction and retirement only, flow 2): `mdm_global_product_identity_workflow_operations`
+    — its identity map has no guard and the identity fields came in flow 3 (23fb2d85f).
 
 ### 6. Not covered here — open before a live bring-up
 

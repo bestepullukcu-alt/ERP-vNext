@@ -707,6 +707,11 @@ public static class GlobalProductWorkflowExecutionConfigurationRegistrations
                     options.ServiceFaultMaxRetryDelaySeconds,
                     options.ServiceFaultErrorAfterAttempts),
                 "PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
+            // BL-552 flow 3 FIX1 item 3: read by the interactive submit too — checked whether the worker runs or not.
+            .Validate(
+                options => ProductIdentityWorkflowWorkerOptions.IsRecordAnswerWindowValid(
+                    options.StartSettleSeconds, options.QuarantineAfterFailedAttempts),
+                "PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
             .ValidateOnStart();
         services.AddScoped(sp =>
         {
@@ -715,8 +720,8 @@ public static class GlobalProductWorkflowExecutionConfigurationRegistrations
                 TimeSpan.FromSeconds(options.ServiceFaultMaxRetryDelaySeconds),
                 options.ServiceFaultErrorAfterAttempts)
             {
-                StartSettleWindow = TimeSpan.FromSeconds(Math.Clamp(options.StartSettleSeconds, 1, 3_600)),
-                QuarantineAfterFailedAttempts = Math.Clamp(options.QuarantineAfterFailedAttempts, 0, 1_000)
+                StartSettleWindow = TimeSpan.FromSeconds(options.StartSettleSeconds),
+                QuarantineAfterFailedAttempts = options.QuarantineAfterFailedAttempts
             };
         });
         services.AddScoped<GlobalProductIdentityWorkflowProcessor>();

@@ -34,6 +34,9 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
         settings.EnsureValidWhenEnabled();
         if (!settings.Enabled)
         {
+            // Flow 3 FIX1 item 7: every cycle records the stuck gauges — a worker switched off is exactly when what
+            // is stuck stays stuck.
+            await RecordStuckAsync(settings, cancellationToken);
             return new(0, 0, 0, 0, 0);
         }
 
@@ -47,6 +50,7 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
                 logger.LogError(
                     "Product identity workflow recovery cycle skipped: the transport is not configured ({ResultCode}). No operation was touched.",
                     configurationFault);
+                await RecordStuckAsync(settings, cancellationToken);
                 return new(0, 0, 0, 0, 0);
             }
         }
@@ -56,8 +60,6 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
         var completedCount = 0;
         var deferredCount = 0;
         var failedCount = 0;
-        long inManualReconciliation = 0;
-        long needingAPerson = 0;
         Guid? tenantCursor = null;
         var stopCycle = false;
         do
@@ -178,9 +180,19 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
             tenantCursor = tenantPage.NextAfterTenantId;
         } while (tenantCursor.HasValue && !stopCycle);
 
-        // BL-552: what is stuck (held for a person), and of it what only a person can settle — in EVERY tenant that
-        // holds a stuck submit, not only those with work due this cycle (the work discovery skips manual
-        // reconciliation). Store reads only: counted even when the cycle stopped on a refused service identity.
+        await RecordStuckAsync(settings, cancellationToken);
+        return new(tenantCount, operationCount, completedCount, deferredCount, failedCount);
+    }
+
+    // BL-552: what is stuck (held for a person), and of it what only a person can settle — in EVERY tenant that holds
+    // a stuck submit, not only those with work due this cycle (the work discovery skips manual reconciliation). Store
+    // reads only: counted on every cycle, whether it worked, stopped on a refused service identity, was switched off
+    // or found the transport unready (flow 3 FIX1 item 7).
+    private async Task RecordStuckAsync(ProductIdentityWorkflowWorkerOptions settings, CancellationToken cancellationToken)
+    {
+        long inManualReconciliation = 0;
+        long needingAPerson = 0;
+        var pageSize = Math.Clamp(settings.TenantPageSize, 1, 100);
         Guid? stuckCursor = null;
         do
         {
@@ -189,7 +201,7 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
             {
                 stuckPage = await discoveryScope.ServiceProvider
                     .GetRequiredService<IGlobalProductIdentityWorkflowTenantPartitionDiscovery>()
-                    .DiscoverStuckAsync(stuckCursor, settings.TenantPageSize, cancellationToken);
+                    .DiscoverStuckAsync(stuckCursor, pageSize, cancellationToken);
             }
             foreach (var tenantId in stuckPage.TenantIds)
             {
@@ -208,6 +220,5 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
                 "{Flow} recovery cycle: {InManualReconciliation} submit(s) in manual reconciliation, {NeedingAPerson} needing a person.",
                 Flow, inManualReconciliation, needingAPerson);
         }
-        return new(tenantCount, operationCount, completedCount, deferredCount, failedCount);
     }
 }

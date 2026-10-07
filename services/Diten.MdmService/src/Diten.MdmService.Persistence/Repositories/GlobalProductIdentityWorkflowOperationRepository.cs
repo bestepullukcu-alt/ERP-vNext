@@ -1,4 +1,5 @@
 using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -396,14 +397,7 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
     {
         if (claim.TenantId != _tenantId
             || mutation.UpdatedAtUtcTicks <= 0
-            || !IsAllowedTransition(claim.Checkpoint, mutation.NextCheckpoint))
-        {
-            return false;
-        }
-        // BL-552 (the GSKU FIX7 store invariant): manual reconciliation is never "retryable" — the worker does not scan
-        // it and the gauge counts it only when it is held for a person: the pair would be a submit nobody sees.
-        if (mutation.NextCheckpoint == GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired
-            && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable)
+            || !Accepts(claim.Checkpoint, mutation))
         {
             return false;
         }
@@ -562,7 +556,30 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         && string.Equals(value, value.Trim(), StringComparison.Ordinal)
         && !value.Any(char.IsControl);
 
-    private static bool IsAllowedTransition(
+    /// <summary>
+    /// Every rule this store applies to a write's checkpoint (flow 3 FIX1 item 9 — public so the processor's
+    /// transition census measures the very rules production runs).
+    /// </summary>
+    public static bool Accepts(
+        GlobalProductIdentityWorkflowCheckpoint current,
+        GlobalProductIdentityWorkflowCheckpointMutation mutation) =>
+        IsAllowedTransition(current, mutation.NextCheckpoint)
+        // BL-552 (the GSKU FIX7 store invariant): manual reconciliation is never "retryable" — the worker does not scan
+        // it and the gauge counts it only when it is held for a person: the pair would be a submit nobody sees.
+        // Flow 3 FIX1 item 5: nor any other disposition (None, AwaitingMakerReplay) — such a row would hold the draft
+        // (S2) while no gauge counts it, no discovery finds it and no repeat reconciles it. Global Product's identity
+        // flow ends a submit at Completed, never at Manual + None.
+        && (mutation.NextCheckpoint != GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired
+            || mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+        // Flow 3 FIX1 item 9: a submit awaiting its decision is COMPLETED from there only by ending — an approval closed
+        // without a decision or decided by its own maker (the product a draft again). Any other completion goes
+        // through its decision.
+        && (current != GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
+            || mutation.NextCheckpoint != GlobalProductIdentityWorkflowCheckpoint.Completed
+            || mutation.LastFailureCode is GlobalProductIdentityWorkflowProcessor.ClosedWithoutDecision
+                or GlobalProductIdentityWorkflowProcessor.SelfApprovalIgnored);
+
+    public static bool IsAllowedTransition(
         GlobalProductIdentityWorkflowCheckpoint current,
         GlobalProductIdentityWorkflowCheckpoint next) =>
         current == next
@@ -583,9 +600,10 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
             (GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted,
                 GlobalProductIdentityWorkflowCheckpoint.LocalPendingApplied
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            // Flow 3 FIX1 item 9 (the census): the step after the pending write only moves on — nothing at
+            // LocalPendingApplied is stuck.
             (GlobalProductIdentityWorkflowCheckpoint.LocalPendingApplied,
-                GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
-                or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+                GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision) => true,
             (GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision,
                 GlobalProductIdentityWorkflowCheckpoint.DecisionObserved
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
@@ -597,27 +615,25 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
             (GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision,
                 GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested) => true,
+            // Flow 3 FIX1 item 9 (the census): a withdrawal no longer parks in AwaitingMakerReplay; only rows an
+            // earlier version parked there are read back out of it (below).
             (GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested,
                 GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
                 or GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
-                or GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
             (GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved,
                 GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
                 or GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved
                 or GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
-                or GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
             (GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
                 GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved
                 or GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
-                or GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            // A withdrawal an earlier version parked here, repeated: it ends where a first one does — cancelled, or
+            // already decided — or its outcome is unknown again.
             (GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
-                GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested
-                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
-                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
-                // A maker's repeated withdrawal ends where a first one does: cancelled, or already decided.
+                GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
                 or GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved
                 or GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision) => true,
             (GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved,
@@ -631,7 +647,7 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
             // BL-552: the submitter's same command reads the engine again and puts a stuck submit back where it
             // stands (started, pending, decided, or — nothing arrived — the maker's to resubmit).
             (GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
-                GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted or GlobalProductIdentityWorkflowCheckpoint.LocalPendingApplied or GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
+                GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted or GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
                 or GlobalProductIdentityWorkflowCheckpoint.DecisionObserved or GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay) => true,
             _ => false
         };

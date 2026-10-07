@@ -5,6 +5,9 @@ public sealed record TrustedSourceAuditIntentDeliveryResult(
     TrustedSourceAuditIntentAcceptanceReceipt? Receipt,
     string ErrorCode)
 {
+    // BL-552 flow 3 FIX1 item 2: the central service's own reason for a refusal, when it named one (409 only).
+    public string? CentralReasonCode { get; init; }
+
     public static TrustedSourceAuditIntentDeliveryResult Accepted(TrustedSourceAuditIntentAcceptanceReceipt receipt) =>
         new(TrustedSourceAuditIntentDeliveryOutcome.Accepted, receipt, string.Empty);
 

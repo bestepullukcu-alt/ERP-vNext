@@ -272,9 +272,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 && product.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
                 && product.WorkflowBinding.CancellationEvidence is { } persisted
                 && string.Equals(persisted.IdempotencyKey, commandId.ToString("D"), StringComparison.Ordinal)
-                && product.AuditIntents.Count(x =>
-                    x.Operation == ProductAuditOperation.GlobalProductIdentityApprovalWithdrawn
-                    && x.IdempotencyKey == persisted.IdempotencyKey) == 1)
+                && WithdrawalRecords(product, persisted.IdempotencyKey) == 1)
                 return Success(operation, true);
             return Fail("PRODUCT_IDENTITY_WITHDRAWAL_REPLAY_DRIFT", 409);
         }
@@ -388,7 +386,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                                 cancellationToken);
                         break;
                     case GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved:
-                        advanced = await ApplyWithdrawalAsync(operation, claim, now, cancellationToken);
+                        advanced = await ApplyWithdrawalAsync(operation, claim, attempt, now, retryDelay, cancellationToken);
                         break;
                     case GlobalProductIdentityWorkflowCheckpoint.WithdrawalApplied:
                         advanced = await VerifyWithdrawalAndCompleteAsync(operation, claim, now, cancellationToken);
@@ -794,7 +792,9 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
     private async Task<bool> ApplyWithdrawalAsync(
         GlobalProductIdentityWorkflowOperation operation,
         GlobalProductIdentityWorkflowClaim claim,
+        Attempt attempt,
         DateTimeOffset now,
+        TimeSpan retryDelay,
         CancellationToken cancellationToken)
     {
         if (!TryRehydrateCancellationEvidence(operation, out var evidence))
@@ -807,12 +807,23 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             operation.WithdrawalExpectedProductVersion!.Value, evidence);
         var result = await products.WithdrawIdentityApprovalAsync(operation.GlobalProductId,
             operation.WithdrawalExpectedProductVersion.Value, evidence, audit, cancellationToken);
+        // BL-552 flow 3 FIX1 item 1 (a): the engine has already cancelled the approval; a refusal of the local write
+        // that passes by itself (the audit cap, the store) waits here, a concurrent write is counted — the shared
+        // classification. Before: every refusal was a quarantine no repeat could reach (the withdrawal guard).
         if (!result.Succeeded)
-            return await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+            return await WriteRefusedAsync(operation, claim, result.ErrorCode, attempt, now, retryDelay,
+                cancellationToken);
         return await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.WithdrawalApplied,
             ProductIdentityWorkflowRecoveryDisposition.None, now, releaseLease: true,
             cancellationToken: cancellationToken);
     }
+
+    // BL-552 flow 3 FIX1 item 1 (b): the withdrawal's audit intent, or its receipt once the audit delivery compacted
+    // it (the flow 1 FIX1 rule) — a compaction between the apply and its check is not an inconsistency.
+    private static int WithdrawalRecords(GlobalProduct product, string idempotencyKey) =>
+        product.AuditIntents.Count(x => x.Operation == ProductAuditOperation.GlobalProductIdentityApprovalWithdrawn
+            && string.Equals(x.IdempotencyKey, idempotencyKey, StringComparison.Ordinal))
+        + product.AuditIntentReceipts.Count(x => string.Equals(x.IdempotencyKey, idempotencyKey, StringComparison.Ordinal));
 
     private async Task<bool> VerifyWithdrawalAndCompleteAsync(
         GlobalProductIdentityWorkflowOperation operation,
@@ -828,8 +839,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             || product.LifecycleStatus != ProductIdentityLifecycleStatus.Draft
             || product.WorkflowBinding?.CancellationEvidence is not { } persisted
             || !SameCancellation(persisted, evidence)
-            || product.AuditIntents.Count(x => x.Operation == ProductAuditOperation.GlobalProductIdentityApprovalWithdrawn
-                && x.IdempotencyKey == evidence.IdempotencyKey) != 1)
+            || WithdrawalRecords(product, evidence.IdempotencyKey) != 1)
             return await QuarantineAsync(claim, "PRODUCT_IDENTITY_WITHDRAWAL_LOCAL_STATE_INCONSISTENT", now,
                 cancellationToken);
         return await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.Completed,
@@ -886,9 +896,14 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                     return Fail(operation, ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, 503);
                 }
                 // Only a REPEAT reconciles: the request that just put the submit here does not settle it itself.
+                // Flow 3 FIX1 item 12: the repeat reads the engine — not with the chain unready: the stored answer then,
+                // no claim and no call.
                 if (!attempt.Interactive || attempt.Reconciled || step > 0 || operation.WithdrawalCommandId.HasValue
-                    || operation.RecoveryDisposition != ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+                    || operation.RecoveryDisposition != ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired
+                    || ConfigurationFault(operation.TenantId, operation.OperationId) is not null)
                 {
+                    if (attempt.Reconciled)
+                        operation = await HandToAPersonAsync(operation, leaseOwner, leaseDuration, cancellationToken);
                     return Fail(operation, attempt.Reconciled ? ManualReconciliationNeeded
                         : "PRODUCT_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", 409);
                 }
@@ -1238,6 +1253,38 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         return true;
     }
 
+    // Flow 3 FIX1 item 6: the engine answered the submitter's repeat and the submit is STILL stuck on a code that repeat
+    // was meant to settle (the engine's evidence still contradicts itself, the start proof is still unusable, nothing
+    // decides where it stands): only a person can now. Its code becomes STUCK_ON_RECORD_ANSWER, so needing_a_person
+    // counts it — before, the code stayed "settled by the repeat" and S2 held the draft with no alarm. A claim that
+    // cannot be had leaves it as it is (the next repeat tries again).
+    private async Task<GlobalProductIdentityWorkflowOperation> HandToAPersonAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        string leaseOwner,
+        TimeSpan leaseDuration,
+        CancellationToken cancellationToken)
+    {
+        if (operation.RecoveryDisposition != ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired
+            || !SettledBySubmittersRepeat.Contains(operation.LastFailureCode ?? string.Empty))
+            return operation;
+        var now = timeProvider.GetUtcNow();
+        var (claim, storeSilent) = await ClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
+            [GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired], leaseOwner, now.UtcTicks,
+            now.Add(leaseDuration).UtcTicks, IgnoreRetrySchedule: true), leaseDuration);
+        if (storeSilent || claim is null) return operation;
+        logger.LogError(
+            "Product identity workflow operation {OperationId} of tenant {TenantId}: its submitter's repeat could not settle {ResultCode}; a person has to (BL-530).",
+            operation.OperationId, operation.TenantId, operation.LastFailureCode);
+        if (!await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+                ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired, now, StuckOnRecordAnswer,
+                releaseLease: true, cancellationToken: cancellationToken))
+        {
+            await ReleaseClaimAsync(claim, operation, now);
+            return operation;
+        }
+        return await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken) ?? operation;
+    }
+
     /*
      * After the engine's approval is on record: the engine is read again and the submit is put back where the product
      * stands — a decision on record → applied again; the product pending under this approval → waiting for (or reading
@@ -1547,7 +1594,10 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         }
 
         var evidence = result.Value;
-        if (Guid.TryParse(evidence.ActorUserId, out var self) && self == operation.MakerSubjectId)
+        // Flow 3 FIX1 item 8 (the GSKU E1 order): only a DECISION the engine names can be "its own maker's" — an
+        // action that is not a decision (a withdrawal, say) is evidence that does not fit, whoever the actor.
+        if (TryMapDecision(evidence.TerminalAction, out _)
+            && Guid.TryParse(evidence.ActorUserId, out var self) && self == operation.MakerSubjectId)
         {
             // BL-552: the maker decided their own submit and the engine has closed it — no other decision will come.
             // It is not applied; the product is a draft again (before: quarantined, the product pending for ever).

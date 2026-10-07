@@ -157,7 +157,9 @@ public sealed class GskuKnownFailureSentenceTests
     [InlineData("GLOBAL_PRODUCT_IDENTITY_SUBMIT_IN_FLIGHT", "ErrorSubmitInFlight")]
     [InlineData("PRODUCT_IDENTITY_WORKFLOW_DRAFT_CHANGED", "ErrorDraftChanged")]
     // BL-552 flow 3 (S2): a draft held by a submit stuck in manual reconciliation — the in-flight sentence.
-    [InlineData("GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED", "ErrorSubmitInFlight")]
+    // BL-552 flow 3 FIX1 item 13: a STUCK submit has its own sentence (the same person submits again; else an
+    // administrator); a submit whose start is not yet confirmed is on its way.
+    [InlineData("GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED", "ErrorSubmitStuck")]
     [InlineData("PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_REFUSED", "ErrorSubmitInFlight")]
     public async Task A_global_product_in_flight_refusal_is_said_in_words(string code, string key)
     {
@@ -183,9 +185,9 @@ public sealed class GskuKnownFailureSentenceTests
     // BL-552 flow 3 (S2): the SUBMIT of a draft held by a stuck submit is refused in the same words (the screen's
     // submit button goes through this proxy too).
     [Theory]
-    [InlineData("GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED")]
-    [InlineData("PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_REFUSED")]
-    public async Task A_global_product_submit_held_by_a_stuck_submit_is_said_in_words(string code)
+    [InlineData("GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED", "ErrorSubmitStuck")]
+    [InlineData("PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_REFUSED", "ErrorSubmitInFlight")]
+    public async Task A_global_product_submit_held_by_a_stuck_submit_is_said_in_words(string code, string key)
     {
         var wire = new ScriptedHandler((HttpStatusCode.Conflict, Envelope(code)));
         var gateway = new ConfigurationBuilder().AddInMemoryCollection(
@@ -202,7 +204,7 @@ public sealed class GskuKnownFailureSentenceTests
 
         var (status, errors) = Read(result);
         Assert.Equal(StatusCodes.Status409Conflict, status);
-        Assert.Equal("localized:ErrorSubmitInFlight", Assert.Single(errors));
+        Assert.Equal("localized:" + key, Assert.Single(errors));
     }
 
     private static string Envelope(string code) =>

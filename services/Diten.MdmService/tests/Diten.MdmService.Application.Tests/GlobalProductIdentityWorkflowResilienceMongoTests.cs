@@ -225,8 +225,11 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
             [Checkpoint.AwaitingMakerReplay], "maker", now, now + Lease.Ticks));
         Assert.NotNull(claim);
 
+        // Flow 3 FIX1 item 5: manual reconciliation is written only as manual (Manual + None is refused).
         var advanced = await repository.AdvanceAsync(claim!, new(next,
-            ProductIdentityWorkflowRecoveryDisposition.None, now + 1, ReleaseLease: true));
+            next == Checkpoint.ManualReconciliationRequired
+                ? ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired
+                : ProductIdentityWorkflowRecoveryDisposition.None, now + 1, ReleaseLease: true));
 
         Assert.Equal(allowed, advanced);
         Assert.Equal(allowed ? next : Checkpoint.AwaitingMakerReplay,

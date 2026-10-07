@@ -18,4 +18,5 @@
   <data name="ErrorWithdrawalPending" xml:space="preserve"><value>An earlier withdrawal of this approval, with a different reason or comment, is still being processed. Repeat the withdrawal with the same reason and comment as before, or wait for it to finish.</value></data>
   <data name="ErrorSubmitInFlight" xml:space="preserve"><value>This product is being submitted for approval. It cannot be edited until the submission has reached the approval engine.</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>The draft changed while it was being submitted. Open it again and submit the current version.</value></data>
+  <data name="ErrorSubmitStuck" xml:space="preserve"><value>A submission of this product is stuck. The person who submitted it resolves it by pressing Submit again; if that does not resolve it, an administrator has to.</value></data>
 </root>
