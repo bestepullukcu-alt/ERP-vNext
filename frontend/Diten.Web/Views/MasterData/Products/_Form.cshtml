@@ -4,8 +4,14 @@
 @inject IHtmlLocalizer<ProductsIndex> Localizer
 @functions {
     // R-4 — "code — name", plus the localized "(not linkable)" mark on a current brand MDM would not link any more.
+    // P-2026-10-07-BRAND-FIX4 (F3) — a kept brand whose name could not be read: its id plus the localized "(could not be read)".
     private string BrandLabel(Diten.Web.Models.MasterData.BrandOptionViewModel brand)
     {
+        if (brand.NameUnreadable)
+        {
+            return $"{brand.BrandCode} {Localizer["BrandNotReadableSuffix"].Value}";
+        }
+
         var label = string.IsNullOrEmpty(brand.BrandName) ? brand.BrandCode : $"{brand.BrandCode} — {brand.BrandName}";
         return brand.IsLinkable ? label : $"{label} {Localizer["BrandNotLinkableSuffix"].Value}";
     }

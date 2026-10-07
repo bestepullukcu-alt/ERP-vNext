@@ -43,19 +43,30 @@ public sealed class BrandFix3HttpTests(MdmHttpHost host)
     [Fact]
     public async Task A_failed_index_creation_is_not_cached_and_the_next_repository_retries_and_succeeds()
     {
-        // A fresh database on the throwaway server, holding an index whose NAME the repository needs with other keys:
-        // createIndexes refuses (IndexKeySpecsConflict) — the shape of a first request that meets a broken index state.
-        // A database of its own on the throwaway server (new every run; MongoTestDatabaseGuard: no per-run Guid names).
+        // A database of its own on the throwaway server (new every run; MongoTestDatabaseGuard: no per-run Guid names),
+        // holding an index whose NAME the repository needs with other keys: createIndexes refuses (IndexKeySpecsConflict).
         var database = host.Database.Client.GetDatabase("diten_mdm_itest_fix3_index_retry");
         var brands = database.GetCollection<BsonDocument>("mdm_brands");
         await brands.Indexes.CreateOneAsync(new CreateIndexModel<BsonDocument>(
             new BsonDocument("BrandName", 1), new CreateIndexOptions { Name = "ux_mdm_brands_tenant_code" }));
 
-        Assert.ThrowsAny<MongoException>(() => new BrandRepository(database, new FixedTenant(_tenant)));
+        // FIX4 (F1) — the constructor no longer throws; without its unique indexes the store refuses writes (named 503).
+        var refused = new BrandRepository(database, new FixedTenant(_tenant));
+        Assert.Equal(BrandWriteOutcome.Unavailable, await refused.CreateWithHistoryAsync(NewBrand("IDXRETRY"), Entry()));
 
         await brands.Indexes.DropOneAsync("ux_mdm_brands_tenant_code");
-        var repository = new BrandRepository(database, new FixedTenant(_tenant));
-        Assert.Equal(BrandWriteOutcome.Written, await repository.CreateWithHistoryAsync(NewBrand("IDXRETRY"), Entry()));
+        var now = DateTimeOffset.UtcNow;
+        var clock = IndexOnce.Now;
+        IndexOnce.Now = () => now + IndexOnce.RetryAfter + TimeSpan.FromSeconds(1);
+        try
+        {
+            var repository = new BrandRepository(database, new FixedTenant(_tenant));
+            Assert.Equal(BrandWriteOutcome.Written, await repository.CreateWithHistoryAsync(NewBrand("IDXRETRY"), Entry()));
+        }
+        finally
+        {
+            IndexOnce.Now = clock;
+        }
 
         var indexes = await (await brands.Indexes.ListAsync()).ToListAsync();
         Assert.Contains(indexes, x => x["name"] == "ux_mdm_brands_tenant_code" && x.GetValue("unique", false).ToBoolean());
@@ -66,12 +77,25 @@ public sealed class BrandFix3HttpTests(MdmHttpHost host)
     {
         var database = host.Database.Client.GetDatabase("diten_mdm_itest_fix3_index_once");
         var calls = 0;
+        var start = DateTimeOffset.UtcNow;
+        var clock = IndexOnce.Now;
+        IndexOnce.Now = () => start;
+        try
+        {
+            Assert.False(IndexOnce.Ensure(database, "c", () => { calls++; throw new InvalidOperationException("first createIndexes failed"); }));
+            // FIX4 (F1) — inside the retry window: no DDL at all, not ready.
+            Assert.False(IndexOnce.Ensure(database, "c", () => calls++));
+            Assert.Equal(1, calls);
 
-        Assert.Throws<InvalidOperationException>(() => IndexOnce.Ensure(database, "c", () => { calls++; throw new InvalidOperationException("first createIndexes failed"); }));
-        IndexOnce.Ensure(database, "c", () => calls++);
-        IndexOnce.Ensure(database, "c", () => calls++);
-
-        Assert.Equal(2, calls);
+            IndexOnce.Now = () => start + IndexOnce.RetryAfter + TimeSpan.FromSeconds(1);
+            Assert.True(IndexOnce.Ensure(database, "c", () => calls++));
+            Assert.True(IndexOnce.Ensure(database, "c", () => calls++));
+            Assert.Equal(2, calls);
+        }
+        finally
+        {
+            IndexOnce.Now = clock;
+        }
     }
 
     // ── R-3 — product writes are conditional on the version they were made on ─────────────────────────────────────

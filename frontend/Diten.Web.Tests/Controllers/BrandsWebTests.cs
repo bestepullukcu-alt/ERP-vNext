@@ -414,7 +414,8 @@ public sealed class BrandsWebTests : IClassFixture<WebApplicationFactory<Program
     public void Fix2_the_new_refusal_sentences_exist_in_every_language_and_are_not_English_outside_en(string culture)
     {
         var localizer = _factory.Services.GetRequiredService<IStringLocalizer<BrandsIndex>>();
-        foreach (var key in new[] { "Reason_field_invalid", "Reason_brand_not_linkable", "Reason_store_unavailable" })
+        // FIX4 (K3) — write_outcome_unknown is guarded in every language too.
+        foreach (var key in new[] { "Reason_field_invalid", "Reason_brand_not_linkable", "Reason_store_unavailable", "Reason_write_outcome_unknown" })
         {
             string english;
             using (UiCulture("en")) english = localizer[key].Value;
@@ -433,6 +434,42 @@ public sealed class BrandsWebTests : IClassFixture<WebApplicationFactory<Program
                 Assert.Contains("{0}", value.Value);
             }
         }
+    }
+
+    // ── P-2026-10-07-BRAND-FIX4 (K4) — the create form's default validity start is today's UTC calendar day ─────────────
+
+    [Fact]
+    public async Task Fix4_K4_the_brand_create_form_defaults_to_the_UTC_day_at_midnight_plus_00_00()
+    {
+        var before = DateTimeOffset.UtcNow.UtcDateTime.Date;
+
+        var result = await Controller(new RecordingHandler(HttpStatusCode.NotFound, "{}"), "mdm.brands.create", "")
+            .Create(CancellationToken.None);
+
+        var after = DateTimeOffset.UtcNow.UtcDateTime.Date;
+        var model = Assert.IsType<BrandEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+        var from = Assert.NotNull(model.EffectiveFrom);
+        Assert.Equal(TimeSpan.Zero, from.Offset);
+        Assert.Equal(TimeSpan.Zero, from.TimeOfDay);
+        Assert.Contains(from.DateTime, new[] { before, after });
+    }
+
+    [Theory]
+    [InlineData("2026-10-07T00:00:00+03:00", "2026-10-06T22:00:00-05:00", true)]
+    [InlineData("2026-10-07T20:00:00-05:00", "2026-10-07T01:00:00+03:00", false)]
+    [InlineData("2026-10-07T00:00:00+00:00", "2026-10-07T00:00:00+00:00", false)]
+    public void Fix4_K4_the_brand_form_compares_the_entered_calendar_days_never_their_UTC_days(string from, string to, bool refused)
+    {
+        var model = new BrandEditViewModel
+        {
+            BrandCode = "B", BrandName = "B",
+            EffectiveFrom = DateTimeOffset.Parse(from, CultureInfo.InvariantCulture),
+            EffectiveTo = DateTimeOffset.Parse(to, CultureInfo.InvariantCulture)
+        };
+
+        var results = model.Validate(new System.ComponentModel.DataAnnotations.ValidationContext(model)).ToList();
+
+        Assert.Equal(refused, results.Any(x => x.ErrorMessage == "EffectiveToBeforeEffectiveFrom"));
     }
 
     // ── item 1 — the server export ──────────────────────────────────────────────────────────────────────────────

@@ -97,7 +97,7 @@ aynı sorgu deploy öncesi yeniden çalıştırılır (dev ölçümü canlıyı 
 db.platform_subscription_plans.find({ IncludedModuleKeys: "PRODUCT-ITEM-SKU-MASTER" }, { Code: 1, Name: 1 })
 ```
 
-**Dağıtım sırası (FIX3 M-7):**
+**Dağıtım sırası (FIX3 M-7, FIX4 F4): Platform → Auth → MDM + Web (MDM ile Web BİRLİKTE).**
 
 1. **Platform** (katalog) — önce. MDM, açılışta iki manifestini (`product-item-sku-master` ve
    yeni `brand-product-master`) Platform'a kaydeder; Platform yoksa kayıt yeniden denenir.
@@ -105,7 +105,13 @@ db.platform_subscription_plans.find({ IncludedModuleKeys: "PRODUCT-ITEM-SKU-MAST
    eklenir ve **tek yönlü, kiracı başına bir kez** geri doldurma çalışır: `mdm.brands.read`
    tutan her role `mdm.brands.export` verilir (işaretli kiracıya bir daha bakılmaz; yöneticinin
    geri alması kalıcıdır — `BrandsExportGrantBackfill`).
-3. **MDM** — en son. Kayıt Platform'da yeni modülü oluşturur, Auth eşitlemesi izinleri işler.
+3. **MDM ve Web — aynı pencerede, birlikte.** Kayıt Platform'da yeni modülü oluşturur, Auth
+   eşitlemesi izinleri işler. İkisi ayrı çıkarsa:
+   - **yeni MDM + eski Web:** her ürün düzenlemesi 400 `expected_version_required` (eski form
+     sürüm göndermez);
+   - **yeni Web + eski MDM:** ürün Oluştur / Düzenle'de marka seçicisi boş (eski MDM
+     `isLinkable` göndermez; yeni Web yalnız MDM'in bağlanabilir dediğini sunar).
+   İkisi de veri kaybetmez ama ekranı kullanılamaz yapar: MDM ve Web aynı deploy'da çıkar.
 
 Geçiş sırasında beklenen, **zararsız** eşitleme hataları:
 - MDM, Platform'dan önce açılırsa: modül kaydı başarısız ve yeniden deneniyor uyarısı

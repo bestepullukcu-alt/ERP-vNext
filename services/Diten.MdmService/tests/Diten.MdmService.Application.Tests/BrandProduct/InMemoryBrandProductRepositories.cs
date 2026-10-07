@@ -22,6 +22,9 @@ internal sealed class InMemoryBrandRepository : IBrandRepository
 
     public List<BrandHistoryEntry> History { get; } = [];
 
+    /// <summary>FIX4 (F2) — when set, every brand write answers this outcome and changes nothing (e.g. Ambiguous).</summary>
+    public BrandWriteOutcome? ForcedOutcome { get; set; }
+
     // WP-MDM-BRAND-ACCEPT-01 FIX1 — a COPY, like a read from a real store: a handler that changes what it read must not
     // change the stored brand before its (conditional) write lands.
     public Task<Brand?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -31,6 +34,7 @@ internal sealed class InMemoryBrandRepository : IBrandRepository
 
     public Task<BrandWriteOutcome> CreateWithHistoryAsync(Brand brand, BrandHistoryEntry history, CancellationToken cancellationToken = default)
     {
+        if (ForcedOutcome is { } forced) return Task.FromResult(forced);
         if (_entities.Any(x => x.TenantId == _tenantId && string.Equals(x.BrandCode, brand.BrandCode, StringComparison.OrdinalIgnoreCase)))
         {
             return Task.FromResult(BrandWriteOutcome.DuplicateCode);
@@ -47,6 +51,7 @@ internal sealed class InMemoryBrandRepository : IBrandRepository
         IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
         CancellationToken cancellationToken = default)
     {
+        if (ForcedOutcome is { } forced) return Task.FromResult(forced);
         var stored = Writable(proposed.Id, expectedVersion);
         if (stored is null)
         {
@@ -72,6 +77,7 @@ internal sealed class InMemoryBrandRepository : IBrandRepository
     public Task<BrandWriteOutcome> ArchiveWithHistoryAsync(
         Brand archived, int expectedVersion, BrandHistoryEntry history, CancellationToken cancellationToken = default)
     {
+        if (ForcedOutcome is { } forced) return Task.FromResult(forced);
         var stored = Writable(archived.Id, expectedVersion);
         if (stored is null)
         {
@@ -188,6 +194,9 @@ internal sealed class InMemoryProductRepository : IProductRepository
 
     public IReadOnlyList<Product> Entities => _entities;
 
+    /// <summary>FIX4 (F2) — when set, every product write answers this outcome and changes nothing (e.g. Ambiguous).</summary>
+    public BrandWriteOutcome? ForcedOutcome { get; set; }
+
     public Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         => Task.FromResult(_entities.FirstOrDefault(x => x.Id == id && x.TenantId == _tenantId && !x.IsDeleted));
 
@@ -247,7 +256,7 @@ internal sealed class InMemoryProductRepository : IProductRepository
 
     // FIX2 (item 6) — the reservation itself is the store's (measured in BrandFix2HttpTests); the double keeps the write.
     public Task<BrandWriteOutcome> CreateWithReservationsAsync(Product product, CancellationToken cancellationToken = default)
-        => TryCreateAsync(product, cancellationToken)
+        => ForcedOutcome is { } forced ? Task.FromResult(forced) : TryCreateAsync(product, cancellationToken)
             .ContinueWith(x => x.Result ? BrandWriteOutcome.Written : BrandWriteOutcome.DuplicateCode, cancellationToken);
 
     // FIX3 (R-3) — conditional on the version, as the store is (measured over HTTP in BrandFix3HttpTests).
@@ -256,6 +265,7 @@ internal sealed class InMemoryProductRepository : IProductRepository
         IReadOnlyList<BrandProductExternalReference> added, IReadOnlyList<BrandProductExternalReference> removed,
         CancellationToken cancellationToken = default)
     {
+        if (ForcedOutcome is { } forced) return Task.FromResult(forced);
         var index = _entities.FindIndex(x => x.Id == product.Id && x.TenantId == _tenantId && !x.IsDeleted && !x.IsArchived
                                              && x.Version == expectedVersion);
         if (index < 0)
@@ -271,6 +281,7 @@ internal sealed class InMemoryProductRepository : IProductRepository
 
     public Task<BrandWriteOutcome> ArchiveWithReservationsAsync(Product archived, int expectedVersion, CancellationToken cancellationToken = default)
     {
+        if (ForcedOutcome is { } forced) return Task.FromResult(forced);
         var stored = _entities.FirstOrDefault(x => x.Id == archived.Id && x.TenantId == _tenantId && !x.IsDeleted && !x.IsArchived
                                                    && x.Version == expectedVersion);
         if (stored is null)

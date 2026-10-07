@@ -166,11 +166,14 @@ internal sealed class ExternalReferenceReservations
     private readonly IMongoCollection<ExternalReferenceReservation> _collection;
     private readonly Guid _tenantId;
 
+    /// <summary>FIX4 (F1) — the unique pair index exists; without it no reservation may be written.</summary>
+    public bool Ready { get; }
+
     public ExternalReferenceReservations(IMongoDatabase database, Guid tenantId)
     {
         _collection = database.GetCollection<ExternalReferenceReservation>(CollectionName);
         _tenantId = tenantId;
-        IndexOnce.Ensure(database, CollectionName, () => _collection.Indexes.CreateOne(new CreateIndexModel<ExternalReferenceReservation>(
+        Ready = IndexOnce.Ensure(database, CollectionName, () => _collection.Indexes.CreateOne(new CreateIndexModel<ExternalReferenceReservation>(
             Builders<ExternalReferenceReservation>.IndexKeys
                 .Ascending(x => x.TenantId)
                 .Ascending(x => x.RecordType)
@@ -219,6 +222,37 @@ internal sealed class ExternalReferenceReservations
         }
     }
 
+    /// <summary>
+    /// FIX4 (K1) — after a refused reservation: is every refused pair held by THIS record? Then a concurrent edit of the same
+    /// record (from the same read) already added it and committed — that is a version conflict, not "used by another
+    /// record". Read outside the (aborted) transaction, i.e. the committed state.
+    /// </summary>
+    public async Task<bool> HeldBySelfAsync(
+        string recordType, Guid recordId, IEnumerable<BrandProductExternalReference> references, CancellationToken cancellationToken)
+    {
+        var pairs = references
+            .Select(x => (Source: ExternalReferenceReservation.Key(x.SourceSystem), Id: ExternalReferenceReservation.Key(x.ExternalId)))
+            .Distinct()
+            .ToList();
+        if (pairs.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var (source, id) in pairs)
+        {
+            var holder = await _collection
+                .Find(x => x.TenantId == _tenantId && x.RecordType == recordType && x.SourceKey == source && x.ExternalIdKey == id)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (holder is not null && holder.RecordId != recordId)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /// <summary>Releases pairs THIS record held (another record's reservation is never touched).</summary>
     public async Task ReleaseAsync(
         IClientSessionHandle? session, string recordType, Guid recordId,
@@ -242,38 +276,96 @@ internal sealed class ExternalReferenceReservations
 /// <summary>
 /// FIX2 (item 19) — index DDL once per process and database, not on every request: the brand / product repositories are
 /// scoped (one per request) and used to issue createIndexes from their constructors on every construction.
-/// FIX3 (R-2) — only a SUCCESS is remembered. A failed createIndexes (the server not reachable yet at the first request, a
-/// conflicting index) is not cached: the next repository tries again. A cached failure would answer every brand / product
-/// request with a 500 until the process restarts.
+/// FIX3 (R-2) — only a SUCCESS is remembered; a failed createIndexes is tried again later.
+/// FIX4 (F1) — and a failure is not retried on every request either: after a failure the key is "not ready" for
+/// <see cref="RetryAfter"/>. Inside that window nobody runs DDL and nobody waits on the lock — <see cref="Ensure"/> answers
+/// false at once and the repository refuses its writes with the named 503 (store_unavailable). When the window is over ONE
+/// caller tries again; callers arriving while that attempt runs do not queue behind it (false at once). Only the very first
+/// attempt of a key (no failure seen yet) lets concurrent callers wait — a normal start never refuses writes while its
+/// first index creation is running. Ensure never throws: a repository constructor can no longer turn a store problem into
+/// a 500.
 /// </summary>
 internal static class IndexOnce
 {
     private static readonly ConcurrentDictionary<string, bool> Done = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string, DateTimeOffset> FailedUntil = new(StringComparer.Ordinal);
     private static readonly ConcurrentDictionary<string, object> Gates = new(StringComparer.Ordinal);
+
+    /// <summary>How long a failed index creation keeps the key "not ready" before one new attempt.</summary>
+    internal static readonly TimeSpan RetryAfter = TimeSpan.FromSeconds(30);
+
+    /// <summary>The clock — replaced only by the tests that walk past <see cref="RetryAfter"/>.</summary>
+    internal static Func<DateTimeOffset> Now = () => DateTimeOffset.UtcNow;
 
     /// <summary>How many times index DDL actually succeeded in this process (measured by the FIX2 / FIX3 tests).</summary>
     internal static int Runs;
 
-    public static void Ensure(IMongoDatabase database, string collectionName, Action create)
+    /// <summary>How many index creations failed in this process (FIX4 tests).</summary>
+    internal static int Failures;
+
+    /// <summary>True when the key's indexes exist (created now or earlier in this process); false when they could not be
+    /// created now or a recent failure is still inside its retry window.</summary>
+    public static bool Ensure(IMongoDatabase database, string collectionName, Action create)
     {
         // Every server of the connection (a replica-set string lists several; Settings.Server would throw on it).
         var servers = string.Join(",", database.Client.Settings.Servers.Select(x => x.ToString()).OrderBy(x => x, StringComparer.Ordinal));
         var key = $"{servers}/{database.DatabaseNamespace.DatabaseName}/{collectionName}";
         if (Done.ContainsKey(key))
         {
-            return;
+            return true;
         }
 
-        lock (Gates.GetOrAdd(key, _ => new object()))
+        if (FailedUntil.TryGetValue(key, out var until) && Now() < until)
+        {
+            return false;
+        }
+
+        var gate = Gates.GetOrAdd(key, _ => new object());
+        var failedBefore = FailedUntil.ContainsKey(key);
+        if (failedBefore)
+        {
+            // A retry is running elsewhere: do not queue behind it.
+            if (!Monitor.TryEnter(gate))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            Monitor.Enter(gate);
+        }
+
+        try
         {
             if (Done.ContainsKey(key))
             {
-                return;
+                return true;
             }
 
-            create(); // throws → nothing is recorded, the next call tries again
+            if (FailedUntil.TryGetValue(key, out until) && Now() < until)
+            {
+                return false;
+            }
+
+            try
+            {
+                create();
+            }
+            catch (Exception)
+            {
+                FailedUntil[key] = Now() + RetryAfter;
+                Interlocked.Increment(ref Failures);
+                return false;
+            }
+
             Done[key] = true;
+            FailedUntil.TryRemove(key, out _);
             Interlocked.Increment(ref Runs);
+            return true;
+        }
+        finally
+        {
+            Monitor.Exit(gate);
         }
     }
 }

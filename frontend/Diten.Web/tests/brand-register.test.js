@@ -184,7 +184,8 @@ describe("Brand register — references and dates (items 8, 13)", () => {
       expect(js, file).toContain("document.documentElement.lang");
     });
     const { register } = loadRegister({ lang: "tr" });
-    expect(register.formatDate("2026-03-05T00:00:00Z")).toBe(new Intl.DateTimeFormat("tr", { dateStyle: "medium" }).format(new Date("2026-03-05T00:00:00Z")));
+    // FIX4 (F5) — a validity date is a calendar day, formatted in UTC (see master-data-calendar-dates.test.js for UTC−).
+    expect(register.formatDate("2026-03-05T00:00:00Z")).toBe(new Intl.DateTimeFormat("tr", { dateStyle: "medium", timeZone: "UTC" }).format(new Date("2026-03-05T00:00:00Z")));
   });
 
   test("the row menu offers edit and archive only to whom the controller allows, and never on an archived brand", () => {

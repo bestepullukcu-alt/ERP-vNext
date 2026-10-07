@@ -108,4 +108,38 @@
   <data name="ProductType_training-material" xml:space="preserve"><value>Support de formation</value></data>
   <data name="ProductType_other" xml:space="preserve"><value>Autre</value></data>
   <data name="BrandArchivedNotice" xml:space="preserve"><value>Cette marque est archivée. Le produit la conserve, mais aucun nouveau produit ne peut y être lié.</value></data>
+  <!-- P-2026-10-07-BRAND-FIX4 (K3) — every reason code a product write can return, as a sentence; the status sentences the gateway falls back to. -->
+  <data name="Reason_product_not_found" xml:space="preserve"><value>Ce produit n'existe pas ou ne vous est pas accessible.</value></data>
+  <data name="Reason_product_code_duplicate" xml:space="preserve"><value>Un produit avec ce code existe déjà. Les codes restent réservés même après l'archivage.</value></data>
+  <data name="Reason_brand_not_found" xml:space="preserve"><value>Cette marque n'existe pas ou ne vous est pas accessible.</value></data>
+  <data name="Reason_brand_archived" xml:space="preserve"><value>Cette marque est archivée ; aucun nouveau produit ne peut y être lié.</value></data>
+  <data name="Reason_brand_not_linkable" xml:space="preserve"><value>Seule une marque active et dans sa période de validité peut recevoir de nouveaux liens produit.</value></data>
+  <data name="Reason_record_archived" xml:space="preserve"><value>Cet enregistrement est archivé et ne peut plus être modifié.</value></data>
+  <data name="Reason_code_immutable" xml:space="preserve"><value>Le code ne peut pas être modifié après la création de l'enregistrement.</value></data>
+  <data name="Reason_invalid_product_status" xml:space="preserve"><value>Choisissez un statut de produit valide.</value></data>
+  <data name="Reason_invalid_product_type" xml:space="preserve"><value>Choisissez un type de produit valide.</value></data>
+  <data name="Reason_invalid_dosage_form" xml:space="preserve"><value>Choisissez une forme galénique valide.</value></data>
+  <data name="Reason_invalid_unit_of_measure" xml:space="preserve"><value>Choisissez une unité de mesure valide.</value></data>
+  <data name="Reason_invalid_atc_code" xml:space="preserve"><value>Saisissez un code ATC valide.</value></data>
+  <data name="Reason_archived_status_not_assignable" xml:space="preserve"><value>Le statut archivé est attribué uniquement par l'archivage.</value></data>
+  <data name="Reason_invalid_effective_window" xml:space="preserve"><value>La date de fin ne peut pas être antérieure à la date de début.</value></data>
+  <data name="Reason_external_reference_primary_conflict" xml:space="preserve"><value>Une seule référence externe par système source peut être principale.</value></data>
+  <data name="Reason_external_reference_duplicate" xml:space="preserve"><value>La même référence externe est saisie deux fois.</value></data>
+  <data name="Reason_external_reference_in_use" xml:space="preserve"><value>Cette référence externe est déjà utilisée par un autre enregistrement.</value></data>
+  <data name="Reason_indication_ref_duplicate" xml:space="preserve"><value>La même indication est saisie deux fois.</value></data>
+  <data name="Reason_version_conflict" xml:space="preserve"><value>Quelqu'un a modifié cet enregistrement après que vous l'avez ouvert. Rechargez-le et refaites votre modification.</value></data>
+  <data name="Reason_expected_version_required" xml:space="preserve"><value>La modification n'a pas pu être rattachée à la version que vous avez ouverte. Rechargez la page et réessayez.</value></data>
+  <data name="Reason_store_unavailable" xml:space="preserve"><value>La modification n’a pas pu être enregistrée de manière sûre pour le moment. Rien n’a été enregistré ; réessayez plus tard.</value></data>
+  <data name="Reason_write_outcome_unknown" xml:space="preserve"><value>La modification a été envoyée, mais son résultat n’a pas pu être confirmé. Rechargez le produit : si la modification n’y est pas, refaites-la.</value></data>
+  <data name="Reason_field_invalid" xml:space="preserve"><value>{0} : la valeur est manquante, trop longue ou dans un format incorrect.</value></data>
+  <data name="RefusedStatus_400" xml:space="preserve"><value>La demande n'a pas été acceptée. Vérifiez les saisies et réessayez.</value></data>
+  <data name="RefusedStatus_403" xml:space="preserve"><value>Vous n'avez pas l'autorisation d'effectuer cette action.</value></data>
+  <data name="RefusedStatus_404" xml:space="preserve"><value>L'enregistrement est introuvable ou ne vous est pas accessible.</value></data>
+  <data name="RefusedStatus_409" xml:space="preserve"><value>L'enregistrement a changé ou se trouve dans un état qui ne le permet pas. Rechargez et réessayez.</value></data>
+  <data name="RefusedStatus_502" xml:space="preserve"><value>Le service est injoignable. Réessayez dans un instant.</value></data>
+  <data name="RefusedStatus_503" xml:space="preserve"><value>Le service est temporairement indisponible. Réessayez dans un instant.</value></data>
+  <data name="RefusedStatus_504" xml:space="preserve"><value>Le service n'a pas répondu à temps. Réessayez dans un instant.</value></data>
+  <data name="RefusedStatus_Other" xml:space="preserve"><value>La demande n'a pas pu aboutir. Réessayez dans un instant.</value></data>
+  <!-- FIX4 (F3) — a brand kept on a re-rendered form whose name could not be read: its id plus this mark. -->
+  <data name="BrandNotReadableSuffix" xml:space="preserve"><value>(lecture impossible)</value></data>
 </root>

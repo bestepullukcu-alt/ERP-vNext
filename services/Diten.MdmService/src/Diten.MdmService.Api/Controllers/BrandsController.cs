@@ -91,7 +91,9 @@ public sealed class BrandsController : CustomBaseController
 
         // FIX3 (M-8) — AUD-001 §7 requires a (fail-closed) read audit only when PERSONAL data leaves in bulk; the brand
         // export carries none (no person column), so the event is best effort, like every MDM write (path b): who took the
-        // register, when, how many rows. A failed hand-over never withholds the file.
+        // register (actor and tenant from the request), when, under which correlation id. FIX4 (K6) — the event does NOT
+        // carry the row count (the central audit contract has no field for it); the file's rows are not recorded. A failed
+        // hand-over never withholds the file.
         try
         {
             await _audit.ForwardAsync(new AuditForwardRequest(

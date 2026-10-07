@@ -12,6 +12,7 @@ public sealed class ProductRepository : RepositoryBase<Product>, IProductReposit
     private readonly ExternalReferenceReservations _reservations;
     private readonly BrandProductStoreOptions _storeOptions;
     private readonly ILogger<ProductRepository>? _logger;
+    private readonly bool _ready;
 
     public ProductRepository(
         IMongoDatabase database,
@@ -24,7 +25,8 @@ public sealed class ProductRepository : RepositoryBase<Product>, IProductReposit
         _reservations = new ExternalReferenceReservations(database, TenantId);
         _storeOptions = storeOptions ?? new BrandProductStoreOptions();
         _logger = logger;
-        IndexOnce.Ensure(database, "mdm_products", EnsureIndexes);
+        // FIX4 (F1) — see BrandRepository: no unique indexes, no writes (named 503), never a constructor 500.
+        _ready = IndexOnce.Ensure(database, "mdm_products", EnsureIndexes) && _reservations.Ready;
     }
 
     public async Task<bool> ExistsByCodeAsync(string productCode, Guid? excludeId = null, CancellationToken cancellationToken = default)
@@ -78,6 +80,11 @@ public sealed class ProductRepository : RepositoryBase<Product>, IProductReposit
         product.UpdatedAt = now;
         product.IsDeleted = false;
         var references = product.ExternalReferences ?? [];
+        if (!_ready)
+        {
+            return Task.FromResult(BrandWriteOutcome.Unavailable);
+        }
+
         return MasterDataAtomicWrite.RunAsync(_client, _storeOptions, _logger, async session =>
         {
             // FIX3 (M-1) — the reservation FIRST (see BrandRepository.CreateWithHistoryAsync).
@@ -119,12 +126,20 @@ public sealed class ProductRepository : RepositoryBase<Product>, IProductReposit
                      & Builders<Product>.Filter.Eq(x => x.Id, product.Id)
                      & StoredFilters.NotArchived<Product>()
                      & StoredFilters.AtVersion<Product>(expectedVersion);
+        if (!_ready)
+        {
+            return Task.FromResult(BrandWriteOutcome.Unavailable);
+        }
+
         return MasterDataAtomicWrite.RunAsync(_client, _storeOptions, _logger, async session =>
         {
             if (!await _reservations.TryReserveAsync(session, ExternalReferenceReservation.RecordTypeProduct,
                     product.Id, product.ProductCode, added, cancellationToken))
             {
-                return BrandWriteOutcome.ReferenceInUse;
+                // FIX4 (K1) — the pair is this product's own: a concurrent edit from the same read added it first.
+                return await _reservations.HeldBySelfAsync(ExternalReferenceReservation.RecordTypeProduct, product.Id, added, cancellationToken)
+                    ? BrandWriteOutcome.Stale
+                    : BrandWriteOutcome.ReferenceInUse;
             }
 
             var result = session is null
@@ -157,6 +172,11 @@ public sealed class ProductRepository : RepositoryBase<Product>, IProductReposit
             .Set(x => x.UpdatedBy, archived.UpdatedBy)
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
             .Inc(x => x.Version, 1);
+        if (!_ready)
+        {
+            return Task.FromResult(BrandWriteOutcome.Unavailable);
+        }
+
         return MasterDataAtomicWrite.RunAsync(_client, _storeOptions, _logger, async session =>
         {
             var result = session is null
@@ -167,7 +187,8 @@ public sealed class ProductRepository : RepositoryBase<Product>, IProductReposit
                 return BrandWriteOutcome.Stale;
             }
 
-            // FIX3 (M-3) — an archived product gives up its external references, as an archived brand does.
+            // FIX3 (M-3) — an archived product gives up its external references, as an archived brand does. FIX4 (K5) — a
+            // later restore (backlog) must reserve them again and refuse when another record took a pair meanwhile.
             await _reservations.ReleaseAsync(session, ExternalReferenceReservation.RecordTypeProduct, archived.Id,
                 archived.ExternalReferences ?? [], cancellationToken);
             return BrandWriteOutcome.Written;

@@ -210,7 +210,230 @@ public sealed class ProductsWebTests : IClassFixture<WebApplicationFactory<Progr
         }
     }
 
+    // ── P-2026-10-07-BRAND-FIX4 (F3) — a failed save never drops the brand on its re-render ──────────────────────────────
+
+    [Fact]
+    public async Task Fix4_F3_a_failed_put_whose_product_and_brand_reads_also_fail_keeps_the_posted_brand_for_a_brand_reader()
+    {
+        var outage = Outage();
+        var controller = Controller(outage, Editor, BrandReader);
+
+        var result = await controller.Edit(ProductId, PostedEdit(CurrentBrandId), CancellationToken.None);
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ProductEditViewModel>(view.Model);
+        Assert.False(model.BrandReadOnly);
+        var kept = Assert.Single(model.BrandOptions, x => x.BrandId == CurrentBrandId);
+        Assert.True(kept.NameUnreadable);
+
+        var html = await RenderAsync("/Views/MasterData/Products/Edit.cshtml", [Editor, BrandReader], model, controller.ModelState);
+        var option = OptionOf(html, CurrentBrandId);
+        Assert.Contains("selected", option.Attributes);
+        Assert.Equal($"{CurrentBrandId:D} (could not be read)", option.Text.Trim());
+        var posted = PostedForm(html);
+        Assert.Equal(CurrentBrandId.ToString(), posted.BrandId);
+
+        var put = await PostEditAsync(Mdm(ProductJson(CurrentBrandId, linkable: true)), posted, Editor, BrandReader);
+
+        Assert.Equal(CurrentBrandId, put.GetProperty("brandId").GetGuid());
+        Assert.Equal(LoadedVersion, put.GetProperty("expectedVersion").GetInt32());
+    }
+
+    [Fact]
+    public async Task Fix4_F3_a_failed_put_whose_product_read_also_fails_keeps_the_posted_brand_read_only_for_an_editor_without_brand_read()
+    {
+        var outage = Outage();
+        var controller = Controller(outage, Editor);
+
+        var result = await controller.Edit(ProductId, PostedEdit(CurrentBrandId), CancellationToken.None);
+
+        var model = Assert.IsType<ProductEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+        Assert.True(model.BrandReadOnly);
+        Assert.Equal(CurrentBrandId, Assert.Single(model.BrandOptions).BrandId);
+
+        var html = await RenderAsync("/Views/MasterData/Products/Edit.cshtml", [Editor], model, controller.ModelState);
+        var select = Regex.Match(html, "<select id=\"BrandIdReadOnly\"(?<attrs>[^>]*)>(?<inner>[\\s\\S]*?)</select>");
+        Assert.True(select.Success, "the read-only brand select is not on the page");
+        Assert.Contains("disabled", select.Groups["attrs"].Value);
+        Assert.Contains("(could not be read)", WebUtility.HtmlDecode(select.Groups["inner"].Value));
+        Assert.Equal(CurrentBrandId.ToString(), HiddenValue(html, "BrandId"));
+        var posted = PostedForm(html);
+        Assert.Equal(CurrentBrandId.ToString(), posted.BrandId);
+        Assert.DoesNotContain(outage.Urls, x => x.Contains("/api/mdm/brands", StringComparison.Ordinal));
+
+        var put = await PostEditAsync(Mdm(ProductJson(CurrentBrandId, linkable: true)), posted, Editor);
+
+        Assert.Equal(CurrentBrandId, put.GetProperty("brandId").GetGuid());
+    }
+
+    [Fact]
+    public async Task Fix4_F3_a_re_render_without_the_contract_still_keeps_the_posted_brand()
+    {
+        var controller = Controller(Outage(contractDown: true), Editor, BrandReader);
+
+        var result = await controller.Edit(ProductId, PostedEdit(CurrentBrandId), CancellationToken.None);
+
+        var model = Assert.IsType<ProductEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+        Assert.Equal("BrandProductContractUnavailable", model.ContractError);
+        Assert.Equal(CurrentBrandId, Assert.Single(model.BrandOptions).BrandId);
+    }
+
+    // ── FIX4 (K3) — a product refusal is a sentence in the reader's language ──────────────────────────────────────────
+
+    /// <summary>Every reason code a PRODUCT write can return (MDM BrandProductReasonCodes, product side).</summary>
+    private static readonly string[] ProductReasonCodes =
+    [
+        "product_not_found", "product_code_duplicate", "brand_not_found", "brand_archived", "brand_not_linkable",
+        "record_archived", "code_immutable", "invalid_product_status", "invalid_product_type", "invalid_dosage_form",
+        "invalid_unit_of_measure", "invalid_atc_code", "archived_status_not_assignable", "invalid_effective_window",
+        "external_reference_primary_conflict", "external_reference_duplicate", "external_reference_in_use",
+        "indication_ref_duplicate", "version_conflict", "expected_version_required", "store_unavailable",
+        "write_outcome_unknown", "field_invalid"
+    ];
+
+    private static readonly string[] RefusedStatuses = ["400", "403", "404", "409", "502", "503", "504", "Other"];
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("tr")]
+    [InlineData("fr")]
+    [InlineData("es")]
+    [InlineData("zh")]
+    [InlineData("ar")]
+    [InlineData("ru")]
+    public void Fix4_K3_every_product_reason_code_and_status_has_a_sentence_in_every_language_and_is_not_English_outside_en(string culture)
+    {
+        var localizer = _factory.Services.GetRequiredService<IStringLocalizer<ProductsIndex>>();
+        var keys = ProductReasonCodes.Select(x => $"Reason_{x}")
+            .Concat(RefusedStatuses.Select(x => $"RefusedStatus_{x}"))
+            .Append("BrandNotReadableSuffix");
+        foreach (var key in keys)
+        {
+            string english;
+            using (new CultureScope("en")) english = localizer[key].Value;
+            LocalizedString value;
+            using (new CultureScope(culture)) value = localizer[key];
+
+            Assert.False(value.ResourceNotFound, $"{key} missing in {culture}");
+            Assert.False(string.IsNullOrWhiteSpace(value.Value), $"{key} empty in {culture}");
+            if (key.StartsWith("Reason_", StringComparison.Ordinal))
+            {
+                Assert.DoesNotContain(key["Reason_".Length..], value.Value);
+            }
+
+            if (culture != "en")
+            {
+                Assert.NotEqual(english, value.Value);
+            }
+
+            if (key == "Reason_field_invalid")
+            {
+                Assert.Contains("{0}", value.Value);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Conflict, "version_conflict", "The product has changed since it was loaded.")]
+    [InlineData(HttpStatusCode.ServiceUnavailable, "write_outcome_unknown", "The write was sent but its outcome could not be confirmed.")]
+    public async Task Fix4_K3_a_product_refusal_reaches_the_re_rendered_form_as_its_sentence_never_the_code_or_MDMs_english(
+        HttpStatusCode status, string code, string mdmEnglish)
+    {
+        var localizer = _factory.Services.GetRequiredService<IStringLocalizer<ProductsIndex>>();
+        var wire = Mdm(ProductJson(CurrentBrandId, linkable: true),
+            put: (status, $"{{\"isSuccessful\":false,\"statusCode\":{(int)status},\"errors\":[\"{code}: {mdmEnglish}\"]}}"));
+        var controller = Controller(wire, localizer, Editor, BrandReader);
+
+        string expected, english;
+        IActionResult result;
+        using (new CultureScope("en")) english = localizer[$"Reason_{code}"].Value;
+        using (new CultureScope("tr"))
+        {
+            expected = localizer[$"Reason_{code}"].Value;
+            result = await controller.Edit(ProductId, PostedEdit(CurrentBrandId), CancellationToken.None);
+        }
+
+        Assert.NotEqual(english, expected);
+        var errors = controller.ModelState[string.Empty]!.Errors.Select(x => x.ErrorMessage).ToList();
+        Assert.Equal(expected, Assert.Single(errors));
+        var model = Assert.IsType<ProductEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+
+        var html = WebUtility.HtmlDecode(
+            await RenderAsync("/Views/MasterData/Products/Edit.cshtml", [Editor, BrandReader], model, controller.ModelState));
+        Assert.Contains(expected, html);
+        Assert.DoesNotContain($"{code}:", html);
+        Assert.DoesNotContain(mdmEnglish, html);
+    }
+
+    // ── FIX4 (K4) — one calendar-day rule on the web; the create default is the UTC day ───────────────────────────────
+
+    [Theory]
+    [InlineData("2026-10-07T00:00:00+03:00", "2026-10-06T22:00:00-05:00", true)]
+    [InlineData("2026-10-07T20:00:00-05:00", "2026-10-07T01:00:00+03:00", false)]
+    [InlineData("2026-10-07T00:00:00+00:00", "2026-10-07T00:00:00+00:00", false)]
+    public void Fix4_K4_the_web_compares_the_entered_calendar_days_never_their_UTC_days(string from, string to, bool refused)
+    {
+        var start = DateTimeOffset.Parse(from, CultureInfo.InvariantCulture);
+        var end = DateTimeOffset.Parse(to, CultureInfo.InvariantCulture);
+
+        Assert.Equal(refused, CalendarDay.EndsBeforeStart(start, end));
+        var model = new ProductEditViewModel { ProductCode = "P", ProductName = "P", EffectiveFrom = start, EffectiveTo = end };
+        var results = model.Validate(new System.ComponentModel.DataAnnotations.ValidationContext(model)).ToList();
+        Assert.Equal(refused, results.Any(x => x.ErrorMessage == "EffectiveToBeforeEffectiveFrom"));
+    }
+
+    [Fact]
+    public void Fix4_K4_the_calendar_day_of_a_value_is_the_day_it_was_entered_in_its_own_offset()
+    {
+        Assert.Equal(new DateTime(2026, 10, 7), CalendarDay.Of(DateTimeOffset.Parse("2026-10-07T00:00:00+03:00", CultureInfo.InvariantCulture)));
+        Assert.Equal(new DateTime(2026, 10, 6), CalendarDay.Of(DateTimeOffset.Parse("2026-10-06T22:00:00-05:00", CultureInfo.InvariantCulture)));
+    }
+
+    [Fact]
+    public async Task Fix4_K4_the_product_create_form_defaults_to_the_UTC_day_at_midnight_plus_00_00()
+    {
+        var before = DateTimeOffset.UtcNow.UtcDateTime.Date;
+
+        var result = await Controller(Mdm(ProductJson(null, linkable: true)), "mdm.products.create").Create(CancellationToken.None);
+
+        var after = DateTimeOffset.UtcNow.UtcDateTime.Date;
+        var model = Assert.IsType<ProductEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+        var from = Assert.NotNull(model.EffectiveFrom);
+        Assert.Equal(TimeSpan.Zero, from.Offset);
+        Assert.Equal(TimeSpan.Zero, from.TimeOfDay);
+        Assert.Contains(from.DateTime, new[] { before, after });
+    }
+
     // ── helpers ───────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    /// <summary>FIX4 — the form as posted with a brand and the loaded version.</summary>
+    private static ProductEditViewModel PostedEdit(Guid brandId) => new()
+    {
+        ProductId = ProductId, ProductCode = "P-1", ProductName = "Product", ProductStatus = "active",
+        BrandId = brandId, EffectiveFrom = CalendarDay.TodayUtc(), ExpectedVersion = LoadedVersion
+    };
+
+    /// <summary>
+    /// FIX4 (F3) — MDM in trouble: the PUT answers 502, the product read, the brand list and the brand read answer 503;
+    /// the contract answers (or not, with <paramref name="contractDown"/>).
+    /// </summary>
+    private static RecordingHandler Outage(bool contractDown = false)
+    {
+        const string contract = "{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"isReady\":true,"
+                                + "\"features\":{\"supportsProductManagement\":true,\"supportsBrandProductReference\":true},"
+                                + "\"vocabulary\":{\"productStatuses\":[\"draft\",\"active\"],\"productTypes\":[],\"dosageForms\":[],\"unitsOfMeasure\":[]}}}";
+        const string unavailable = "{\"isSuccessful\":false,\"statusCode\":503,\"errors\":[\"store_unavailable: MDM is not reachable.\"]}";
+        return new RecordingHandler(request =>
+        {
+            if (request.Method == HttpMethod.Put) return (HttpStatusCode.BadGateway, "{}");
+            if (!contractDown && request.RequestUri!.AbsolutePath.Contains("contract", StringComparison.Ordinal))
+            {
+                return (HttpStatusCode.OK, contract);
+            }
+
+            return (HttpStatusCode.ServiceUnavailable, unavailable);
+        });
+    }
 
     private sealed record Form(string BrandId, string ExpectedVersion);
 
@@ -316,13 +539,17 @@ public sealed class ProductsWebTests : IClassFixture<WebApplicationFactory<Progr
     }
 
     private static ProductsController Controller(RecordingHandler wire, params string[] permissions)
+        => Controller(wire, new EchoLocalizer<ProductsIndex>(), permissions);
+
+    private static ProductsController Controller(
+        RecordingHandler wire, IStringLocalizer<ProductsIndex> localizer, params string[] permissions)
     {
         var context = new DefaultHttpContext { User = Principal(permissions) };
         // Synthetic fixture credential: only seen by the recording handler, never sent to a network.
         context.Request.Headers.Cookie = "access_token=synthetic-product-edit";
         return new ProductsController(new HttpClient(wire), new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?> { ["GatewayUrl"] = Gateway }).Build(),
-            new EchoLocalizer<Diten.Web.SharedResource>(), NullLogger<ProductsController>.Instance)
+            new EchoLocalizer<Diten.Web.SharedResource>(), localizer, NullLogger<ProductsController>.Instance)
         {
             ControllerContext = new ControllerContext { HttpContext = context },
             TempData = new TempDataDictionary(context, new NullTempDataProvider())
@@ -337,7 +564,7 @@ public sealed class ProductsWebTests : IClassFixture<WebApplicationFactory<Progr
             new Claim("sub", Guid.NewGuid().ToString("D"))
         }.Concat(permissions.Select(x => new Claim("permission", x))), "fixture"));
 
-    private async Task<string> RenderAsync(string path, string[] permissions, object? model)
+    private async Task<string> RenderAsync(string path, string[] permissions, object? model, ModelStateDictionary? modelState = null)
     {
         CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en");
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
@@ -353,7 +580,7 @@ public sealed class ProductsWebTests : IClassFixture<WebApplicationFactory<Progr
         // Edit.cshtml's <form asp-action> asks a router for its URL; outside a request pipeline a fixed one answers.
         var routeData = new RouteData { Values = { ["controller"] = "Products", ["action"] = "Edit" } };
         routeData.Routers.Add(new FixedRouter());
-        var actionContext = new ActionContext(httpContext, routeData, new ActionDescriptor(), new ModelStateDictionary());
+        var actionContext = new ActionContext(httpContext, routeData, new ActionDescriptor(), modelState ?? new ModelStateDictionary());
         var viewData = new ViewDataDictionary(services.GetRequiredService<IModelMetadataProvider>(), actionContext.ModelState)
         {
             Model = model

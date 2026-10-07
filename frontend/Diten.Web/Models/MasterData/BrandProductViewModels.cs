@@ -109,7 +109,8 @@ public sealed class BrandEditViewModel : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (EffectiveFrom.HasValue && EffectiveTo.HasValue && EffectiveTo.Value.Date < EffectiveFrom.Value.Date)
+        // FIX4 (K4) — the calendar days entered, compared once through the web's calendar-day rule.
+        if (CalendarDay.EndsBeforeStart(EffectiveFrom, EffectiveTo))
         {
             yield return new ValidationResult("EffectiveToBeforeEffectiveFrom", [nameof(EffectiveTo)]);
         }
@@ -252,7 +253,8 @@ public sealed class ProductEditViewModel : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (EffectiveFrom.HasValue && EffectiveTo.HasValue && EffectiveTo.Value.Date < EffectiveFrom.Value.Date)
+        // FIX4 (K4) — the calendar days entered, compared once through the web's calendar-day rule.
+        if (CalendarDay.EndsBeforeStart(EffectiveFrom, EffectiveTo))
         {
             yield return new ValidationResult("EffectiveToBeforeEffectiveFrom", [nameof(EffectiveTo)]);
         }
@@ -268,8 +270,10 @@ public sealed class ProductEditViewModel : IValidatableObject
 
 // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 3) — IsArchived lets the product page say the brand was archived.
 // P-2026-10-07-BRAND-FIX3 (R-4) — IsLinkable false marks the product's current brand that MDM would not link any more.
+// P-2026-10-07-BRAND-FIX4 (F3) — NameUnreadable marks a kept brand whose name could not be read: shown as its id plus a
+// localized "(could not be read)", still selected, so a save posts the same BrandId.
 public sealed record BrandOptionViewModel(
-    Guid BrandId, string BrandCode, string BrandName, bool IsArchived = false, bool IsLinkable = true);
+    Guid BrandId, string BrandCode, string BrandName, bool IsArchived = false, bool IsLinkable = true, bool NameUnreadable = false);
 
 /// <summary>R-4 — MDM's ProductDetailDto.linkedBrand: the product's current brand, readable with mdm.products.read alone.</summary>
 public sealed class LinkedBrandViewModel

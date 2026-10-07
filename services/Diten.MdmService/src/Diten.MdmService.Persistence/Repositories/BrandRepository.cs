@@ -18,6 +18,7 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
     private readonly ExternalReferenceReservations _reservations;
     private readonly BrandProductStoreOptions _storeOptions;
     private readonly ILogger<BrandRepository>? _logger;
+    private readonly bool _ready;
 
     public BrandRepository(
         IMongoDatabase database,
@@ -32,7 +33,9 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
         // FIX2 (item 7): no options = the production answer (refuse a write that cannot be atomic).
         _storeOptions = storeOptions ?? new BrandProductStoreOptions();
         _logger = logger;
-        IndexOnce.Ensure(database, "mdm_brands", EnsureIndexes);
+        // FIX4 (F1) — writes need the unique indexes; until they exist (or while a failure is inside its retry window) every
+        // write answers Unavailable (named 503) instead of the constructor throwing a 500.
+        _ready = IndexOnce.Ensure(database, "mdm_brands", EnsureIndexes) && _reservations.Ready;
     }
 
     public Task<BrandWriteOutcome> CreateWithHistoryAsync(
@@ -44,6 +47,11 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
         brand.UpdatedAt = now;
         brand.IsDeleted = false;
         var references = brand.ExternalReferences ?? [];
+        if (!_ready)
+        {
+            return Task.FromResult(BrandWriteOutcome.Unavailable);
+        }
+
         return AtomicallyAsync(async session =>
         {
             // FIX3 (M-1) — the reservation FIRST: on a server without transactions (Development) a pair another record holds
@@ -159,6 +167,11 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
                      & Builders<Brand>.Filter.Eq(x => x.Id, brandId)
                      & StoredFilters.NotArchived<Brand>()
                      & StoredFilters.AtVersion<Brand>(expectedVersion);
+        if (!_ready)
+        {
+            return Task.FromResult(BrandWriteOutcome.Unavailable);
+        }
+
         return AtomicallyAsync(async session =>
         {
             // FIX3 (M-1) — reserve what the edit ADDS before the record changes; without a transaction it is given back
@@ -166,7 +179,10 @@ public sealed class BrandRepository : RepositoryBase<Brand>, IBrandRepository
             if (!await _reservations.TryReserveAsync(session, ExternalReferenceReservation.RecordTypeBrand,
                     brandId, brandCode, added, cancellationToken))
             {
-                return BrandWriteOutcome.ReferenceInUse;
+                // FIX4 (K1) — the pair is this brand's own: a concurrent edit from the same read added it first.
+                return await _reservations.HeldBySelfAsync(ExternalReferenceReservation.RecordTypeBrand, brandId, added, cancellationToken)
+                    ? BrandWriteOutcome.Stale
+                    : BrandWriteOutcome.ReferenceInUse;
             }
 
             var result = session is null

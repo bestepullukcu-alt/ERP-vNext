@@ -37,9 +37,17 @@ const BrandsList = (function () {
 
     // FIX1 (item 13) — dates in the language the interface is in, not the browser's.
     const uiLanguage = () => document.documentElement.lang || undefined;
-    const formatDate = (value) => value
-        ? new Intl.DateTimeFormat(uiLanguage(), { dateStyle: 'medium' }).format(new Date(value))
-        : '—';
+    // P-2026-10-07-BRAND-FIX4 (F5) — a validity date is a calendar day (stored as midnight +00:00): its YYYY-MM-DD part is
+    // read from the string and formatted in UTC, so a browser west of UTC never shows the day before.
+    const calendarDay = (value) => {
+        const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value ?? ''));
+        return parts ? new Date(Date.UTC(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]))) : null;
+    };
+    const formatDate = (value) => {
+        const day = value ? calendarDay(value) : null;
+        return day ? new Intl.DateTimeFormat(uiLanguage(), { dateStyle: 'medium', timeZone: 'UTC' }).format(day) : '—';
+    };
+    // A real timestamp (updatedAt) keeps the reader's local time.
     const formatDateTime = (value) => value
         ? new Intl.DateTimeFormat(uiLanguage(), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
         : '—';

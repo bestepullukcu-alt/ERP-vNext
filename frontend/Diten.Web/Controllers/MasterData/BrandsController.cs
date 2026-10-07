@@ -83,7 +83,7 @@ public sealed class BrandsController : MasterDataGatewayController
             return Denied("Create", new BrandEditViewModel());
         }
 
-        var model = new BrandEditViewModel { EffectiveFrom = DateTimeOffset.Now };
+        var model = new BrandEditViewModel { EffectiveFrom = CalendarDay.TodayUtc() };
         await PopulateFormOptionsAsync(model, cancellationToken);
         return View($"{ViewRoot}/Create.cshtml", model);
     }

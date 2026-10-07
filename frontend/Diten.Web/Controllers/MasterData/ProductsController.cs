@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using Diten.Web.Models.MasterData;
+using Diten.Web.Views.MasterData.Products;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -22,16 +23,23 @@ public sealed class ProductsController : MasterDataGatewayController
     private const string ViewRoot = "~/Views/MasterData/Products";
 
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
+    private readonly IStringLocalizer<ProductsIndex> _localizer;
 
     public ProductsController(
         HttpClient httpClient,
         IConfiguration configuration,
         IStringLocalizer<SharedResource> sharedLocalizer,
+        IStringLocalizer<ProductsIndex> localizer,
         ILogger<ProductsController> logger)
         : base(httpClient, configuration, logger)
     {
         _sharedLocalizer = sharedLocalizer;
+        _localizer = localizer;
     }
+
+    // P-2026-10-07-BRAND-FIX4 (K3) — a product refusal reaches the reader as the sentence for its reason code
+    // (`Reason_{code}` in ProductsIndex.*.resx), else the status sentence; never the code, never MDM's English.
+    protected override IStringLocalizer RefusalLocalizer => _localizer;
 
     [HttpGet("")]
     public IActionResult Index() => RequirePage(ReadPermission) ?? View($"{ViewRoot}/Index.cshtml");
@@ -41,7 +49,7 @@ public sealed class ProductsController : MasterDataGatewayController
     {
         if (RequirePage(CreatePermission) is { } denied) return denied;
 
-        var model = new ProductEditViewModel { EffectiveFrom = DateTimeOffset.Now };
+        var model = new ProductEditViewModel { EffectiveFrom = CalendarDay.TodayUtc() };
         await PopulateContractOptionsAsync(model, currentBrand: null, cancellationToken);
         return View($"{ViewRoot}/Create.cshtml", model);
     }
@@ -55,7 +63,7 @@ public sealed class ProductsController : MasterDataGatewayController
         NormalizeExternalReferences(model.ExternalReferences);
         if (!ModelState.IsValid)
         {
-            await PopulateContractOptionsAsync(model, currentBrand: null, cancellationToken);
+            await PopulateContractOptionsAsync(model, await PostedBrandAsync(model.BrandId, cancellationToken), cancellationToken);
             return View($"{ViewRoot}/Create.cshtml", model);
         }
 
@@ -71,7 +79,7 @@ public sealed class ProductsController : MasterDataGatewayController
         }
 
         AddGatewayErrors(await ExtractErrorsAsync(response, _sharedLocalizer["GatewayError"].Value, cancellationToken));
-        await PopulateContractOptionsAsync(model, currentBrand: null, cancellationToken);
+        await PopulateContractOptionsAsync(model, await PostedBrandAsync(model.BrandId, cancellationToken), cancellationToken);
         return View($"{ViewRoot}/Create.cshtml", model);
     }
 
@@ -175,14 +183,17 @@ public sealed class ProductsController : MasterDataGatewayController
         var contract = await LoadContractAsync(cancellationToken);
         if (contract is null || !contract.IsReady || !contract.Features.SupportsProductManagement)
         {
+            // FIX4 (F3) — no early return: the brand options are still built below, so a form re-rendered without the
+            // contract keeps the posted brand selected and a save never drops it.
             model.ContractError = "BrandProductContractUnavailable";
-            return;
         }
-
-        model.ProductStatuses = contract.Vocabulary.ProductStatuses;
-        model.ProductTypes = contract.Vocabulary.ProductTypes;
-        model.DosageForms = contract.Vocabulary.DosageForms;
-        model.UnitsOfMeasure = contract.Vocabulary.UnitsOfMeasure;
+        else
+        {
+            model.ProductStatuses = contract.Vocabulary.ProductStatuses;
+            model.ProductTypes = contract.Vocabulary.ProductTypes;
+            model.DosageForms = contract.Vocabulary.DosageForms;
+            model.UnitsOfMeasure = contract.Vocabulary.UnitsOfMeasure;
+        }
 
         // P-2026-10-07-BRAND-FIX3 (R-4) — an editor who may not read brands sees only the product's current brand, read-only;
         // the brand list is not asked. A hidden input in the form carries BrandId, so the save keeps it.
@@ -205,23 +216,47 @@ public sealed class ProductsController : MasterDataGatewayController
     }
 
     /// <summary>
-    /// A re-rendered edit (local validation or an MDM refusal such as 409 version_conflict): the current brand is read again
-    /// from MDM so the picker still holds it. Only the brand the form posted is kept — never a different one.
+    /// A re-rendered edit (local validation or an MDM refusal such as 409 version_conflict, or a failed PUT): the picker
+    /// keeps the brand the form POSTED — never a different one, never "No brand". Its name comes from the product read
+    /// (MDM's linkedBrand) when that read still answers with the same brand, otherwise from <see cref="PostedBrandAsync"/>.
     /// </summary>
     private async Task PopulateEditOptionsAsync(ProductEditViewModel model, CancellationToken cancellationToken)
     {
         BrandOptionViewModel? currentBrand = null;
-        if (model.BrandId is { } postedBrandId && postedBrandId != Guid.Empty && model.ProductId is { } productId)
+        if (model.BrandId is { } postedBrandId && postedBrandId != Guid.Empty)
         {
-            var product = await LoadProductAsync(productId, cancellationToken);
-            if (product is not null && product.BrandId == postedBrandId)
+            if (model.ProductId is { } productId
+                && await LoadProductAsync(productId, cancellationToken) is { } product
+                && product.BrandId == postedBrandId)
             {
                 currentBrand = await CurrentBrandAsync(product, cancellationToken);
             }
+
+            // P-2026-10-07-BRAND-FIX4 (F3) — the product read failed (502/503/timeout) or answered another brand: the
+            // option is built from the POSTED BrandId, so the next save posts the same BrandId instead of none.
+            currentBrand ??= await PostedBrandAsync(postedBrandId, cancellationToken);
         }
 
         await PopulateContractOptionsAsync(model, currentBrand, cancellationToken);
     }
+
+    /// <summary>
+    /// FIX4 (F3) — an option for a posted BrandId: the brand read when the operator may read brands and it answers,
+    /// otherwise the id itself marked "(could not be read)". Null only when nothing was posted.
+    /// </summary>
+    private async Task<BrandOptionViewModel?> PostedBrandAsync(Guid? postedBrandId, CancellationToken cancellationToken)
+    {
+        if (postedBrandId is not { } id || id == Guid.Empty)
+        {
+            return null;
+        }
+
+        return await TryResolveBrandAsync(id, cancellationToken) ?? UnreadableBrand(id);
+    }
+
+    /// <summary>FIX4 (F3) — a brand whose name could not be read: its id, marked; never a fabricated name.</summary>
+    private static BrandOptionViewModel UnreadableBrand(Guid brandId)
+        => new(brandId, brandId.ToString("D"), string.Empty, NameUnreadable: true);
 
     /// <summary>
     /// The brands MDM would link today — MDM decides (isLinkable: active + inside its validity window, UTC); the web keeps
@@ -267,8 +302,7 @@ public sealed class ProductsController : MasterDataGatewayController
             return new BrandOptionViewModel(linked.BrandId, linked.BrandCode, linked.BrandName, IsLinkable: linked.IsLinkable);
         }
 
-        return await TryResolveBrandAsync(brandId, cancellationToken)
-               ?? new BrandOptionViewModel(brandId, brandId.ToString("D"), string.Empty);
+        return await TryResolveBrandAsync(brandId, cancellationToken) ?? UnreadableBrand(brandId);
     }
 
     private async Task<BrandOptionViewModel?> TryResolveBrandAsync(Guid? brandId, CancellationToken cancellationToken)
