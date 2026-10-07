@@ -81,15 +81,15 @@ public sealed class GlobalProductRecoveryWorkersOffGaugeTests
                 NullLogger<GlobalProductRetirementRequestRecoveryWorker>.Instance).StartAsync(default));
     }
 
-    // Flow 3 FIX3 EK: the settle window may not outlive Platform's sweep of half-started workflows (25 min cap) —
-    // 1501 s stops both workers at start, switched off or not; 1500 s is accepted.
+    // Flow 3 FIX3 EK (SETTLE-CAP FIX1: 600 s cap): the settle window may not outlive Platform's sweep of half-started
+    // workflows — 601 s stops both workers at start, switched off or not; 600 s is accepted.
     [Fact]
-    public async Task A_settle_window_past_25_minutes_stops_both_workers_at_start_and_25_minutes_is_accepted()
+    public async Task A_settle_window_past_the_cap_stops_both_workers_at_start_and_the_cap_is_accepted()
     {
         await using var provider = new ServiceCollection().BuildServiceProvider();
         var scopes = provider.GetRequiredService<IServiceScopeFactory>();
-        var correction = Options.Create(new GlobalProductCorrectionWorkflowWorkerOptions { StartSettleSeconds = 1501 });
-        var retirement = Options.Create(new GlobalProductRetirementRequestWorkflowWorkerOptions { StartSettleSeconds = 1501 });
+        var correction = Options.Create(new GlobalProductCorrectionWorkflowWorkerOptions { StartSettleSeconds = 601 });
+        var retirement = Options.Create(new GlobalProductRetirementRequestWorkflowWorkerOptions { StartSettleSeconds = 601 });
 
         Assert.Equal("GLOBAL_PRODUCT_CORRECTION_WORKER_CONFIGURATION_INVALID",
             (await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -100,8 +100,8 @@ public sealed class GlobalProductRecoveryWorkersOffGaugeTests
                 new GlobalProductRetirementRequestRecoveryWorker(new(scopes, retirement, TimeProvider.System), retirement,
                     NullLogger<GlobalProductRetirementRequestRecoveryWorker>.Instance).StartAsync(default))).Message);
 
-        Assert.True(new GlobalProductCorrectionWorkflowWorkerOptions { StartSettleSeconds = 1500 }.IsValid());
-        Assert.True(new GlobalProductRetirementRequestWorkflowWorkerOptions { StartSettleSeconds = 1500 }.IsValid());
+        Assert.True(new GlobalProductCorrectionWorkflowWorkerOptions { StartSettleSeconds = 600 }.IsValid());
+        Assert.True(new GlobalProductRetirementRequestWorkflowWorkerOptions { StartSettleSeconds = 600 }.IsValid());
     }
 
     private static async Task RunUntilRecordedAsync(BackgroundService worker, Func<long?> recorded)

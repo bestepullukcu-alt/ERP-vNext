@@ -15,7 +15,7 @@ public sealed class LskuIdentityWorkflowWorkerOptions
 
     public void EnsureValidWhenEnabled()
     {
-        if (LeaseSeconds is < 10 or > 300 || RetryDelaySeconds is < 1 or > 3600 || StartSettleSeconds is < 1 or > 3600)
+        if (LeaseSeconds is < 10 or > 300 || RetryDelaySeconds is < 1 or > 3600 || !StartSettleWindow.IsValid(StartSettleSeconds))
             throw new InvalidOperationException("LSKU_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID");
         if (!Enabled) return;
         if (PollIntervalSeconds is < 1 or > 3600 || TenantPageSize is < 1 or > 100

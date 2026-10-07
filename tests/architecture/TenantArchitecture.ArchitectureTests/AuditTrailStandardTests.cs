@@ -63,7 +63,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.HcmService"] = new(Debt: 8, Exceptions: 0),
         ["Diten.HumanCapitalService"] = new(Debt: 70, Exceptions: 0),
         ["Diten.ManagementGovernanceService"] = new(Debt: 23, Exceptions: 0),
-        ["Diten.MdmService"] = new(Debt: 10, Exceptions: 0, Indirect: 8),
+        // CT kararı 2026-10-07 (WP-MDM-SETTLE-CAP-01): iz mdm-guvenilir-kaynak-niyeti (b) + 11 dolaylı (akışa özgü işlemci)
+        // + 2 İ5 istisna (RetireGskuIdentityPair / RetireLskuIdentity — her zaman 403 DirectRetirementIsSystemOnly).
+        ["Diten.MdmService"] = new(Debt: 10, Exceptions: 2, Indirect: 19),
         // CT kararı 2026-10-05 (görev talebi → takeover birleştirmesi): Start/CancelTrustedWorkflowInstanceCommand — WP-WF-ENGINE-CANDIDATES-01 D2;
         // RunWorkflowEscalationsCommand — WP-WF-ENGINE-CANDIDATES-01 (zaman aşımı / yükseltme WorkflowTransitionLog yazar).
         ["Diten.Platform"] = new(Debt: 164, Exceptions: 5, K2Debt: 192, WritingQueries: 3, Indirect: 3),
@@ -82,6 +84,25 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ("Diten.AuthService", "auth-kullanici-iletimi", "b", "IUserAuditRecorder.RecordAsync"),
         ("Diten.MdmService", "mdm-merkezi-iletim", "b", "IAuditableCommand+IAuditMetadataProvider"),
         ("Diten.MdmService", "mdm-kisaltma-gecmisi", "c", "IProductAbbreviationHistoryRepository.AppendIfAbsentAsync"),
+        // CT kararı 2026-10-07 (WP-MDM-SETTLE-CAP-01): niyet durum değişikliğiyle aynı yazımda / işlemde, Platform'a iletilir.
+        ("Diten.MdmService", "mdm-guvenilir-kaynak-niyeti", "b",
+            "IProductLegalEntityScopePolicyRepository.CreateAsync"
+            + "/IProductLegalEntityScopePolicyRepository.ReplaceAsync"
+            + "/IProductLegalEntityScopePolicyRepository.UpdateAsync"
+            + "/IGlobalProductRepository.UpdateDraftAsync"
+            + "/IGlobalProductRepository.RetireIdentityAsync"
+            + "/IGlobalProductRepository.SubmitIdentityAsync"
+            + "/IGlobalProductRepository.AcquireLifecycleOperationAsync"
+            + "/IGlobalProductRepository.WithdrawIdentityApprovalAsync"
+            + "/IGskuRepository.MarkIdentityPendingAsync"
+            + "/IGskuRepository.AcquireCorrectionAsync"
+            + "/IGskuRepository.AcquireRetirementRequestAsync"
+            + "/IProductDefinitionRevisionRepository.MarkIdentityPendingAsync"
+            + "/ILskuRepository.SubmitIdentityAsync"
+            + "/ILskuRepository.AcquireLifecycleOperationAsync"
+            + "/IFirstGskuIdentityWorkflowOperationRepository.ApplyWithdrawalAsync"
+            + "/ILskuIdentityWorkflowOperationRepository.ApplyWithdrawalAsync"
+            + "/IProductAbbreviationRegisterRepository.AppendAuditIntentIfAbsentAsync"),
         ("Diten.Platform", "platform-merkezi", "a",
             "IAuditableCommand+IAuditMetadataProvider+!IAuditExcludedRequest+!ITransactionOwnedAuditCommand"),
         ("Diten.Platform", "platform-meta-denetim", "a", "IAuditMetaAuditWriter.WriteAsync"),
