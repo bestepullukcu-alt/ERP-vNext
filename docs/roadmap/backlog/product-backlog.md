@@ -8063,6 +8063,35 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-570
+
+**MDM devralma dalındaki Auth işletim kodu Windows'a bağlı: adlı semafor ve `kernel32` / `ntdll` boruları macOS ve Linux'ta çalışmıyor; 59 Auth testi bu yüzden Windows dışında kırmızı**
+
+DURUM: AÇIK · SAHİP: CT (Auth / MDM devralma) · BULAN: CT, takeover ← fg-accept birleştirme doğrulaması (`314d8db2d`) · KAYIT: 2026-10-07 · TEK PR'DAN ÖNCE KAPANMALI
+
+Yalnız `feature/mdm/product-five-takeover`'da var; main ve CT hattında yok (ölçüldü).
+- `EntitlementReconciliationOperationalRunner.cs:33`: `new Semaphore(1, 1, "Diten.Auth.ProductIdentityEntitlementReconciliation")`. Adlı semafor Windows dışında `PlatformNotSupportedException` atar.
+- `ServiceClientSecretOutputSink.cs:122-129`: `DllImport("ntdll.dll")` ve `DllImport("kernel32.dll")`.
+
+Takeover'da Auth Application testi 1591/1650:
+- 51 `ServiceIdentityTokens` (kernel32);
+- 6 `ProductIdentityEntitlementReconciliationCommandContractTests` (adlı semafor);
+- 2 `ProductAbbreviationPermissionOnboardingMongoTests` ("explicit owned-test Mongo URI" ister).
+
+Birleştirmenin dokunduğu dosyalardan hiçbiri bu testlerde yok, kırmızı önceden var. Canlı sunucu Linux ise iki operatör komutu ilk çalıştırmada çöker. CI Linux koşucusunda da 57 test kızarır.
+
+Yapılacak:
+- Tek-örnek kilidi için taşınabilir yol: Mongo kira kaydı ya da dosya kilidi.
+- Sır çıkışı için `PipeStream` / anonim boru gibi .NET'in çapraz platform API'si. Windows'a özgü sertleştirme gerekiyorsa `OperatingSystem.IsWindows()` arkasında, eşdeğer Unix yoluyla.
+- Mongo testleri için sahipli test veritabanı fikstürü: mevcut `DITEN_TEST_MONGOD` deseni, ortak Mongo yok.
+- macOS + Linux'ta 1650/1650.
+
+Karşılaştırma: SAP'de arka plan iş kilidi uygulama sunucusundan bağımsız, veritabanında (ENQUEUE) tutulur. Oracle'da eşzamanlı yönetici kilidi de veritabanı tablosundadır. İkisi de işletim sistemi adlı nesnesine bağlı değildir.
+
+Gelecek regresyon riski: 🔴 (Linux canlıda operatör komutları çöker; CI kırmızı).
+
+---
+
 ### BL-567
 
 **Ürün okumalarında kapsam koruması yalnız `InvalidOperationException`'ı eşliyor: okunamayan rollout kaydı (BSON eşleme / Mongo okuma hatası) ürün listesinde 500, yazımda ve tamlıkta 503**
