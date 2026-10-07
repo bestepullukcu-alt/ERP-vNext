@@ -8063,6 +8063,52 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-577
+
+**CI geçidi (phase1-gates, ubuntu-latest) hiçbir servis testini koşmuyor: Platform, Auth ve MDM testleri yalnız yerelde koşuluyor; Linux'a özgü kod (BL-570) hiç ölçülmüyor**
+
+DURUM: AÇIK · SAHİP: CT (altyapı / CI) · BULAN: BL-570 FIX1 ölçümü + CT · KAYIT: 2026-10-08 · TEK PR'DAN ÖNCE KARAR
+
+`scripts/run_phase1_gates.sh` bugün yalnız şunları koşuyor:
+- `TenantArchitecture.TenancyTests`
+- `TenantArchitecture.ArchitectureTests`
+- `Diten.Web.Tests`
+
+Auth çözümü yalnız derleniyor (`:119`). Platform Application (~7000 test), Auth Application (~1680), MDM Application / Api (~2200 / ~750) CI'da hiç koşmuyor. Bu yüzden BL-570'in Unix sır kanalı ve kilidi Linux'ta hiç ölçülmüyor. Koşucu ubuntu 24.04, glibc 2.39.
+
+Yapılacak:
+- Servis test adımları: Mongo kullanan testler kendi geçici mongod'larını açıyor. Koşucuya mongod ikilisi kurulur (MongoDB topluluk tarball'ı, sürüm sabit) ve `DITEN_TEST_MONGOD` verilir.
+- Her adımda "atlanan = 0" iddiası. Sessiz atlama yok; `[UnixFact]` / `[OwnedMongoFact]` Linux'ta koşar.
+- Süre bütçesi: Platform tam koşu ~13 dk. Ayrı iş (job) ya da paralel matris.
+- İlk koşuda Linux'a özgü kırmızılar beklenir (BL-570). Ayrı ayrı sınıflanır.
+
+Karşılaştırma: SAP'de CI/CD (Cloud ALM / CTS+) aktarım öncesi birim ve entegrasyon testlerini zorunlu koşar. Oracle'ın sürüm boru hattı da her yamada tam regresyon paketini çalıştırır.
+
+Gelecek regresyon riski: 🔴 (servis testleri yalnız geliştiricinin makinesinde; Linux davranışı hiç ölçülmüyor).
+
+---
+
+### BL-578
+
+**Auth işletim komutlarının tek örnek kilidi makine yerel (`Global\` adlı mutex, `/tmp/.dotnet`); sunucular arası dışlama ve kilit dosyası bütünlüğü yok**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: BL-570 FIX1 R4 ölçümü · KAYIT: 2026-10-08
+
+BL-570 FIX1'de CT kararı A: `Global\` önekli adlı mutex. macOS'ta ölçüldü: oturumlar arası dışlıyor. Kullanıcılar arası ölçülmedi.
+
+Kalan maruziyetler:
+- `/tmp/.dotnet/shm/global` ve `lockfiles/global` 0777 ve sticky bit yok. Yerel bir kullanıcı kilit dosyasını silerek dışlamayı kırabilir. Bu öneksiz adda da aynıydı.
+- Yerel bir kullanıcı kilidi tutarsa komut `OPERATION_ALREADY_RUNNING` ile çalışmaz. Kapalı başarısızlık, yalnız erişilebilirlik.
+- İki ayrı sunucuda aynı anda çalıştırma dışlanmaz.
+
+Yapılacak: Mongo'da kira kaydı (sahip, süre, saat; ortak Auth veritabanı), sunucular arası. Kira süresi dolunca devralma adlı olur.
+
+Karşılaştırma: SAP'de arka plan işleri merkezi kuyruk sunucusunda (enqueue server) kilitlenir. Oracle ESS'te de çakışma denetimi veritabanındaki istek tablosundadır. İkisi de işletim sistemi yerel nesnesine bağlı değildir.
+
+Gelecek regresyon riski: 🟡 (çok sunuculu kurulumda iki operatör aynı anda uzlaştırma çalıştırabilir).
+
+---
+
 ### BL-576
 
 **MDM ürün varlıklarında (GSKU / LSKU / Bitmiş Ürün …) IgnoreExtraElements sınıf haritası yok: yeni bir alan yazıldıktan sonra eski ikiliye geri dönülürse o kayıtların okunması fırlar**
