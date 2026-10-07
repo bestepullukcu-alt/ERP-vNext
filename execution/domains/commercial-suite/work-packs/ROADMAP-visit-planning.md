@@ -63,10 +63,31 @@ Durum: ☐ bekliyor · ◐ sürüyor · ☑ bitti
 - ☑ B-2 hedef evreni = bölge ataması; ataması yoksa tümü + uyarı (K-5); bölge dışı işareti (A4)
 - ☑ B-3 strateji / kampanya / segment sunucuda türetilir; segment dışının sessizce düşmesi kalkar (A3, A6)
 
+- ◐ **WP-VP-FIX-2** paketlendi 2026-10-07 ([WP](WP-VP-FIX-2-edit-keeps-targets-turkish-search.md), worktree `C:\tmp\vp-fix-2`): D9 + F-1.
 - ☐ **F-1** (VP-2 E4): hesap araması Türkçe harfe duyarlı ("Hamidiye" 0, "HAMİDİYE" 4) — `my-accounts` + genel hesap araması; D9 ile aynı küçük pakete.
-- ☐ **Veri:** TUTUKON oyunu arşivli `SEG-URO-DOCTORS` segmentine bağlı → içerik türetmesi canlıda görünmüyor; aktif segment + oyun bağlanmalı (kullanıcı / veri; SB-3 E2E ile birlikte).
+- → **Veri:** TUTUKON oyunu arşivli `SEG-URO-DOCTORS` segmentine bağlı → **Faz E2E** adım E1 + E5'te çözülür.
 - ☐ **D9** (VP-2 kabulünde bulundu): Ziyaret Planlama Düzenle formu hedef dizilerini boş gönderiyor → taslakta hafta / dönem değiştirmek tüm hedefleri siler. Düzeltme: form mevcut seçimi göndersin **ya da** sunucu `null` dizi = "dokunma" kabul etsin (tercih: ikisi birden). Küçük paket, Faz 2b'den önce.
 - ☐ Grant: `scripts/rbac/grant_visit_planning_read_all_97c5.py --role <onaylayan yönetici rolü> --apply` (Auth yeniden başlatıldıktan sonra; kullanıcı rolü seçer).
+
+### Faz E2E — TUTUKON uçtan uca test (kullanıcı giriş yapar, CT yürütür) — VP-FIX-2 kabulünden sonra; Faz 2b ajan işiyle paralel
+Plan: [E2E-TUTUKON-content-to-visit-plan.md](E2E-TUTUKON-content-to-visit-plan.md).
+- ☐ E0 envanter (salt okuma)
+- ☐ E1 aktif segment `E2E-TUT-SINDIRIM` (gastro / aile / dahiliye)
+- ☐ E2 içerik
+- ☐ E3 yol
+- ☐ E4 yolculuk
+- ☐ E5 oyun yeni sürüm (yeni segment + yolculuk)
+- ☐ E6 sıklık
+- ☐ E7 plan + önizleme (`contentStatus = resolved`)
+- ☐ E8 uygula
+- ☐ E9 ziyaret raporu + yolculuk ilerlemesi
+- ☐ E10 sonraki aşama
+- ☐ E11 mobil örnek yanıtlar
+
+Kurallar:
+- Yazmalar test kapsamında onaylı; CT her yazmayı önceden söyler.
+- Kayıtlar `E2E-TUT-` önekiyle açılır.
+- Onaylarda sema girişi (kullanıcı) gerekir.
 
 ### Faz 2b — mobil iş yeri listesi talebi (2026-10-06; [talep](mobile/2026-10-06-account-list/BACKEND-CRM-ACCOUNT-LIST-ACTIVE-CONTACTS-REQUIREMENTS.md) · [CT yanıtı](mobile/2026-10-06-account-list/MOBILE-ANSWERS-2026-10-06-account-list.md)) — WP-VP-2 kabulünden hemen sonra (aynı hesap deposu / kapsam okuyucusuna dokunuyor)
 - ☐ **M-ACC-1** (R1 + R2): `activeContactCount` (sayfa başına tek toplama, `/contacts` aktif kuralıyla birebir) + `hasActiveContacts=true|false` filtresi (VE; `total` filtreli; geçersiz → 400). Hem `GET /api/crm/accounts` hem B-2'nin `visit-plan/my-accounts` ucu. Sayım `crm.account.read` altında.
