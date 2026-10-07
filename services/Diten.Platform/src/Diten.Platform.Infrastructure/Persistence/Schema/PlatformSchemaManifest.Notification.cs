@@ -157,6 +157,19 @@ public static partial class PlatformSchemaManifest
                             PartialFilterExpression = Builders<NotificationDispatch>.Filter.And(
                                 Builders<NotificationDispatch>.Filter.Eq(x => x.IsDeleted, false),
                                 Builders<NotificationDispatch>.Filter.Eq<DateTimeOffset?>(x => x.PermanentlyFailedNotifiedAt, null))
+                        }),
+                    // BL-454 — the retry sweep's re-drive of permanent rows whose effects did not run
+                    // (NotificationDispatchRepository.PermanentFailurePendingFilter). The partial filter IS the query's
+                    // condition, so only those few rows are ever in this index.
+                    new CreateIndexModel<NotificationDispatch>(
+                        Builders<NotificationDispatch>.IndexKeys.Ascending(x => x.Status),
+                        new CreateIndexOptions<NotificationDispatch>
+                        {
+                            Name = "ix_notification_dispatches_permanent_effects_pending",
+                            PartialFilterExpression = Builders<NotificationDispatch>.Filter.And(
+                                Builders<NotificationDispatch>.Filter.Eq(x => x.IsDeleted, false),
+                                Builders<NotificationDispatch>.Filter.Eq<DateTimeOffset?>(
+                                    x => x.PermanentlyFailedNotifiedAt, NotificationDispatch.PermanentFailurePending))
                         })
 
             }),

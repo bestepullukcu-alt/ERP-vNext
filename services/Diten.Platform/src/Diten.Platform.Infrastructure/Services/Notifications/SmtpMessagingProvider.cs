@@ -49,10 +49,14 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
         var stopwatch = Stopwatch.StartNew();
         var options = _options.CurrentValue;
 
-        var settings = await ResolveSettingsAsync(request.TenantId, ct);
+        var (settings, refusal) = await ResolveSettingsAsync(request.TenantId, ct);
         if (settings is null)
         {
-            return LogAndReturnFailure(request, MessagingProviderErrorCodes.ProviderConfigInvalid, "Tenant SMTP settings could not be resolved.", stopwatch);
+            // Every refusal is named by the rule that refused it (C-FIX1 K8: PLATFORM_DEFAULT_UNAVAILABLE too, as the
+            // resolver says it); the configuration code only if the selection ever gave none.
+            return refusal is null
+                ? LogAndReturnFailure(request, MessagingProviderErrorCodes.ProviderConfigInvalid, "Tenant SMTP settings could not be resolved.", stopwatch)
+                : LogAndReturnFailure(request, refusal, MessagingSettingsSelection.Describe(refusal), stopwatch);
         }
 
         var validation = ValidateRequest(request, settings, options);
@@ -127,16 +131,18 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
         }
     }
 
-    private async Task<TenantMessagingSettings?> ResolveSettingsAsync(Guid tenantId, CancellationToken ct)
+    private async Task<(TenantMessagingSettings? Settings, string? RefusalCode)> ResolveSettingsAsync(Guid tenantId, CancellationToken ct)
     {
+        // BL-499 (2) — the tenant's fallback policy decides, exactly as in the settings resolver (one rule): a disabled
+        // tenant row whose policy is not "use the platform default" is never sent through the platform's mailbox.
         var tenantSettings = await _settingsRepository.GetByTenantIdAsync(tenantId, ct);
-        if (tenantSettings is { IsDeleted: false, IsEnabled: true })
+        TenantMessagingSettings? platformDefault = null;
+        if (tenantSettings is not { IsDeleted: false, IsEnabled: true })
         {
-            return tenantSettings;
+            platformDefault = await _settingsRepository.GetPlatformDefaultAsync(ct);
         }
 
-        var platformDefault = await _settingsRepository.GetPlatformDefaultAsync(ct);
-        return platformDefault is { IsDeleted: false, IsEnabled: true } ? platformDefault : null;
+        return MessagingSettingsSelection.Select(tenantSettings, () => platformDefault);
     }
 
     private static (string ErrorCode, string ErrorMessage)? ValidateRequest(

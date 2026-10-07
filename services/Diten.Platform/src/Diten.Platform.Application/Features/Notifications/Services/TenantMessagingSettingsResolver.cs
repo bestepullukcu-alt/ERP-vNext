@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 
@@ -15,30 +16,18 @@ public sealed class TenantMessagingSettingsResolver : ITenantMessagingSettingsRe
 
     public async Task<Response<ResolvedMessagingSettingsDto>> ResolveAsync(Guid tenantId, CancellationToken ct = default)
     {
+        // BL-499 (2) — the same selection the SMTP provider applies (MessagingSettingsSelection); the refusal carries
+        // its own code, so a disabled tenant is told apart from a missing platform default.
         var tenantSettings = await _repository.GetByTenantIdAsync(tenantId, ct);
-        if (tenantSettings is not null)
+        TenantMessagingSettings? platformDefault = null;
+        if (tenantSettings is not { IsDeleted: false, IsEnabled: true })
         {
-            if (!tenantSettings.IsEnabled)
-            {
-                return tenantSettings.FallbackPolicy == NotificationFallbackPolicy.UsePlatformDefault
-                    ? await ResolvePlatformDefaultAsync(tenantId, ct)
-                    : Response<ResolvedMessagingSettingsDto>.Fail("Tenant messaging settings are disabled and fallback is not allowed.", 400);
-            }
-
-            return Response<ResolvedMessagingSettingsDto>.Success(tenantSettings.ToResolvedDto(tenantId));
+            platformDefault = await _repository.GetPlatformDefaultAsync(ct);
         }
 
-        return await ResolvePlatformDefaultAsync(tenantId, ct);
-    }
-
-    private async Task<Response<ResolvedMessagingSettingsDto>> ResolvePlatformDefaultAsync(Guid requestedTenantId, CancellationToken ct)
-    {
-        var platformDefault = await _repository.GetPlatformDefaultAsync(ct);
-        if (platformDefault is null || !platformDefault.IsEnabled)
-        {
-            return Response<ResolvedMessagingSettingsDto>.Fail("Platform default messaging settings were not found or are disabled.", 400);
-        }
-
-        return Response<ResolvedMessagingSettingsDto>.Success(platformDefault.ToResolvedDto(requestedTenantId));
+        var (settings, refusal) = MessagingSettingsSelection.Select(tenantSettings, () => platformDefault);
+        return settings is null
+            ? Response<ResolvedMessagingSettingsDto>.Fail(MessagingSettingsSelection.Describe(refusal!), 400, refusal)
+            : Response<ResolvedMessagingSettingsDto>.Success(settings.ToResolvedDto(tenantId));
     }
 }

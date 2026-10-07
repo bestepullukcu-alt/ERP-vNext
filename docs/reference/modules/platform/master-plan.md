@@ -656,7 +656,7 @@ ISecretsProvider
 - Domain: `PlatformAdministrator` entity, `PlatformAdministratorEnums`, `IPlatformAdministratorRepository`, `PlatformAdministratorSeed` ✅
 - Application Features/PlatformAdministrators: **8 Command** (Invite, Update, AssignRoles, Suspend, Reactivate, Delete, BulkDelete, ResendInvite) + Queries + Validators + Handlers + Models + Parsing + PasswordGenerator ✅
 - API: `AdministratorsController` (public) + `InternalPlatformAdministratorsController` ✅
-- Infrastructure: `PlatformAdministratorProvisioningService`, `PlatformAdministratorInvitationEmailService` + email template ✅
+- Infrastructure: `PlatformAdministratorProvisioningService` ✅ — `PlatformAdministratorInvitationEmailService` + şablonu çağıranı olmadığı ölçülüp silindi (2026-10-06, WP-EMAIL-SHELL-01 aşama C); platform yöneticisi bağlantısını Auth gönderir
 - Frontend: Slim DataTable shell tam — `Index.cshtml`, `_DataTable`, `_Filter`, `_CreateEditOffcanvas`, `_DetailsQuickView`, `_IndexL10n` + Controller + ViewModels + RESX(en+tr) + JS ✅
 - Gateway: `/api/platform/administrators` + `/api/platform/administrators/{everything}` ([ocelot.json:124-152](../../gateway/Diten.ApiGateway/ocelot.json#L124)) ✅
 
@@ -1001,7 +1001,7 @@ IEventHandler<T>
 
 **Mevcut ad-hoc parçalar (MOD-0027 oluşunca migrate edilecek):**
 - `services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/AdminUserInvitationService.cs`
-- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/PlatformAdministratorInvitationEmailService.cs`
+- ~~`services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/PlatformAdministratorInvitationEmailService.cs`~~ — silindi (2026-10-06, WP-EMAIL-SHELL-01 aşama C; çağıranı yoktu)
 - `services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/EmailTemplates/` (sabit HTML şablonları)
 - Bu parçalar generic `INotificationService` / `NotificationTemplate` / `NotificationDispatch` modeli yerine her command için ayrı concrete servis kullanıyor — anti-pattern, MOD-0027 ile birleştirilmeli
 

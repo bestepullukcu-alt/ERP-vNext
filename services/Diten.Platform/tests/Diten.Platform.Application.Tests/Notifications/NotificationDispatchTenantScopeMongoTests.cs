@@ -53,7 +53,7 @@ public sealed class NotificationDispatchTenantScopeMongoTests : IAsyncLifetime
         var second = await SeedMeetingInviteAsync(queuedHoursAgo: 30);
         Assert.False(ambient.IsResolved);
 
-        var sweep = new EmailDispatchSweepJob(
+        var sweep = TestSweeps.Create(
             _dispatches,
             new NothingScheduled(),
             NullLogger<EmailDispatchSweepJob>.Instance,
@@ -80,6 +80,7 @@ public sealed class NotificationDispatchTenantScopeMongoTests : IAsyncLifetime
             new OneProvider(),
             new Pipeline(_harness, ambient),
             NullLogger<EmailDispatchJob>.Instance,
+            NoInvitationLedger.Instance,
             tenantContext: ambient);
 
         await job.HandleAsync(new EmailDispatchJobArgs(invite.TenantId, invite.DispatchId, MaxRetryCount), new BackgroundJobContext(), CancellationToken.None);

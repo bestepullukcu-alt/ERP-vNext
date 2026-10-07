@@ -314,6 +314,56 @@ public sealed class TenantHandlersTests
     }
 
     [Fact]
+    public async Task RegisterTenant_WithInitialAdmin_LeavesTheInvitationStepPending_AfterTheSubscriptionActivates()
+    {
+        // BL-454 stage D FIX2 (2) — registration activates the subscription in the same request, and that activation marks
+        // every pending step done. The invitation is NOT done because the tenant was activated: whatever the LAST write of
+        // the tenant says, the "admin-invitation" step is still Pending (the consumer, the ledger or "Invite" decide it).
+        var writes = new List<Tenant>();
+        _repository.Setup(x => x.UpdateAsync(It.IsAny<Tenant>(), It.IsAny<CancellationToken>()))
+            .Callback<Tenant, CancellationToken>((t, _) => writes.Add(CloneForRead(t)))
+            .Returns(Task.CompletedTask);
+        _repository.Setup(x => x.UpdateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<Tenant>(), It.IsAny<CancellationToken>()))
+            .Callback<IPlatformTransactionSession, Tenant, CancellationToken>((_, t, _) => writes.Add(CloneForRead(t)))
+            .Returns(Task.CompletedTask);
+        var command = new RegisterTenantCommand(
+            Name: "Invite Pending Corp",
+            Domain: "diten.tech",
+            InitialAdmin: new InitialAdminInfo(FirstName: "Jane", LastName: "Doe", Email: "jane@pending.test", Phone: null, MfaRequired: false),
+            PlanId: Guid.NewGuid());
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        var last = writes.Last(t => t.ProvisioningSteps.Any(s => s.Key == "admin-invitation"));
+        Assert.Contains(writes, t => t.ProvisioningStatus == "Completed"); // the activation did run
+        Assert.Equal("Pending", Assert.Single(last.ProvisioningSteps, s => s.Key == "admin-invitation").Status);
+        Assert.All(last.ProvisioningSteps.Where(s => s.Key != "admin-invitation"), s => Assert.NotEqual("Pending", s.Status));
+    }
+
+    [Fact]
+    public void TheSubscriptionWritersActivation_LeavesTheInvitationStepPending()
+    {
+        // BL-454 stage D FIX2 (2) — the transaction writer's own "everything still pending is now done" (a subscription
+        // activated outside registration) skips the invitation step too; every other pending step is completed.
+        var tenant = new Tenant
+        {
+            Id = Guid.NewGuid(), Code = "SWEEP", Slug = "sweep", Name = "sweep", DisplayName = "Sweep", Domain = "sweep.test",
+            Region = "EU", Environment = "Production"
+        };
+        tenant.ProvisioningSteps.Add(new TenantProvisioningStep { Key = "registry-created", Label = "Registry", Status = "Pending" });
+        tenant.ProvisioningSteps.Add(new TenantProvisioningStep { Key = TenantProvisioningStep.AdminInvitationKey, Label = "Initial Admin Invitation", Status = "Pending" });
+        var subscription = new TenantSubscription { TenantId = tenant.Id, PlanId = Guid.NewGuid(), UpdatedBy = "test" };
+
+        Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions.TenantSubscriptionTransactionWriter.ApplyTenantSnapshot(
+            tenant, subscription, null, markTenantActive: true, "activated", DateTimeOffset.UtcNow);
+
+        Assert.Equal("Completed", tenant.ProvisioningStatus);
+        Assert.Equal("Completed", Assert.Single(tenant.ProvisioningSteps, s => s.Key == "registry-created").Status);
+        Assert.Equal("Pending", Assert.Single(tenant.ProvisioningSteps, s => s.Key == TenantProvisioningStep.AdminInvitationKey).Status);
+    }
+
+    [Fact]
     public async Task RegisterTenant_DuplicateSlug_ShouldThrow()
     {
         _repository.Setup(x => x.GetBySlugAsync("acme", It.IsAny<CancellationToken>()))

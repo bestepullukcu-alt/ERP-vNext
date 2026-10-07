@@ -317,11 +317,13 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
 
             tenant.ProvisioningSteps.Add(new TenantProvisioningStep
             {
-                Key = "admin-invitation",
+                Key = TenantProvisioningStep.AdminInvitationKey,
                 Label = "Initial Admin Invitation",
                 Status = "Pending",
                 CreatedAt = now,
-                Detail = $"Invitation for {request.InitialAdmin.FirstName} {request.InitialAdmin.LastName} ({request.InitialAdmin.Email}) pending AuthService integration."
+                // BL-454 stage D FIX2 — what actually happens next, said where the operator reads it.
+                Detail = $"Invitation for {request.InitialAdmin.FirstName} {request.InitialAdmin.LastName} ({request.InitialAdmin.Email}) "
+                    + "is sent by the tenant-created event when tenant events are delivered (Eventing:Transport=RabbitMQ); otherwise use \"Invite\"."
             });
 
             await _repository.UpdateAsync(tenant, cancellationToken);

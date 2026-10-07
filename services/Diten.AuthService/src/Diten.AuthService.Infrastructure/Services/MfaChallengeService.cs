@@ -42,8 +42,10 @@ public sealed class MfaChallengeService : IMfaChallengeService
         var code = GenerateNumericCode(Math.Clamp(_options.OtpLength, 6, 10));
         var expiresAt = DateTime.UtcNow.AddMinutes(Math.Clamp(_options.ExpiryMinutes, 1, 15));
 
+        // BL-454 stage D FIX2 K9 — the challenge belongs to the USER's tenant, never to whatever a request header named: it is
+        // the tenant the code mail is sent under and the one the resend reads back.
         var challenge = new MfaChallenge(
-            _tenantContext.TenantId,
+            user.TenantId,
             user.Id,
             ComputeHash(challengeId),
             "email",
@@ -56,7 +58,7 @@ public sealed class MfaChallengeService : IMfaChallengeService
 
         challenge.BindToPassword(PasswordFingerprint(user));
         await _repository.CreateAsync(challenge, ct);
-        await _deliveryService.SendEmailOtpAsync(user.Email, code, expiresAt, ct);
+        await _deliveryService.SendEmailOtpAsync(challenge.TenantId, user.Email, code, expiresAt, ct);
 
         return new MfaChallengeCreated(challengeId, MaskEmail(user.Email), "email", expiresAt);
     }
@@ -88,7 +90,7 @@ public sealed class MfaChallengeService : IMfaChallengeService
         var expiresAt = DateTime.UtcNow.AddMinutes(Math.Clamp(_options.ExpiryMinutes, 1, 15));
         challenge.RecordResend(ComputeHash(code), expiresAt);
         await _repository.UpdateAsync(challenge, ct);
-        await _deliveryService.SendEmailOtpAsync(user.Email, code, expiresAt, ct);
+        await _deliveryService.SendEmailOtpAsync(challenge.TenantId, user.Email, code, expiresAt, ct);
         await _authAuditService.WriteAsync("tenant_login_mfa_resend_requested", user.Id, challenge.TenantId, "{\"result\":\"sent\",\"channel\":\"email\"}", ct);
 
         return new MfaChallengeCreated(challengeId, MaskEmail(user.Email), challenge.Channel, expiresAt);

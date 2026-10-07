@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Features.Notifications;
 using Diten.Platform.Application.Features.Notifications.Commands;
@@ -21,7 +22,8 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
     public const string ConsumerName = nameof(TenantLifecycleNotificationConsumer);
 
     // MOD-0027-FU04C — suspended/reactivated dispatch by canonical eventCode (FU04A PlatformSeed events) via the
-    // FU04B adapter. The created branch is intentionally left on the templateKey path (no matching FU04A eventCode).
+    // FU04B adapter. BL-454 slice 2 stage D — the created branch INVITES the initial administrator (AuthService account +
+    // the one-time set-password link, IAdminUserInvitationService), the same path as the tenant screen's "Invite".
     private const string SuspendedEventCode = "tenant.lifecycle.suspended";
     private const string ReactivatedEventCode = "tenant.lifecycle.reactivated";
 
@@ -29,7 +31,7 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
     private readonly ConsumedEventStore _consumedEventStore;
     private readonly ITenantRegistryRepository _tenantRepository;
     private readonly IMediator _mediator;
-    private readonly TenantCreatedV1NotificationMapper _createdMapper;
+    private readonly IAdminUserInvitationService _invitations;
     private readonly TenantSuspendedV1NotificationMapper _suspendedMapper;
     private readonly TenantReactivatedV1NotificationMapper _reactivatedMapper;
     private readonly ILogger<TenantLifecycleNotificationConsumer> _logger;
@@ -38,7 +40,7 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
         ConsumedEventStore consumedEventStore,
         ITenantRegistryRepository tenantRepository,
         IMediator mediator,
-        TenantCreatedV1NotificationMapper createdMapper,
+        IAdminUserInvitationService invitations,
         TenantSuspendedV1NotificationMapper suspendedMapper,
         TenantReactivatedV1NotificationMapper reactivatedMapper,
         ILogger<TenantLifecycleNotificationConsumer> logger)
@@ -46,7 +48,7 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
         _consumedEventStore = consumedEventStore;
         _tenantRepository = tenantRepository;
         _mediator = mediator;
-        _createdMapper = createdMapper;
+        _invitations = invitations ?? throw new ArgumentNullException(nameof(invitations));
         _suspendedMapper = suspendedMapper;
         _reactivatedMapper = reactivatedMapper;
         _logger = logger;
@@ -66,12 +68,7 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
             TenantCreatedV1.Name => ConsumeTenantEventAsync(
                 message,
                 Deserialize<TenantCreatedV1>(message),
-                async (tenant, envelope, ct) =>
-                {
-                    var recipients = ResolveInitialAdminRecipient(tenant, envelope.Payload.InitialAdminUserId);
-                    var request = _createdMapper.Map(envelope, recipients);
-                    await QueueIfMappedAsync(envelope, request, ct);
-                },
+                (tenant, envelope, ct) => InviteInitialAdministratorAsync(tenant, envelope.Payload.InitialAdminUserId, ct),
                 cancellationToken),
             TenantSuspendedV1.Name => ConsumeTenantEventAsync(
                 message,
@@ -121,43 +118,6 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
             cancellationToken);
 
         return result;
-    }
-
-    private async Task QueueIfMappedAsync<TEvent>(
-        EventEnvelope<TEvent> envelope,
-        QueueEmailNotificationRequest? request,
-        CancellationToken cancellationToken)
-        where TEvent : IIntegrationEvent
-    {
-        if (request is null)
-        {
-            return;
-        }
-
-        var tenantId = ResolveTenantId(envelope);
-        Diten.Platform.Application.Common.Response<NotificationDispatchDto> response;
-        try
-        {
-            response = await _mediator.Send(
-                new QueueEmailNotificationCommand(tenantId, request, envelope.CorrelationId.ToString("N")),
-                cancellationToken);
-        }
-        catch (Exception ex) when (Application.Features.Notifications.Validators.QueueEmailNotificationValidator.IsRecipientRefusal(ex))
-        {
-            // BL-454 — an address that is not ONE plain address (admin@localhost, a second mailbox) never becomes
-            // valid on redelivery: logged and let go, like every other non-retryable refusal below. No address logged.
-            _logger.LogWarning(
-                "Tenant lifecycle notification skipped (non-retryable). EventName={EventName} ReasonCode={ReasonCode}",
-                envelope.EventName,
-                Application.Features.Notifications.Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid);
-            return;
-        }
-
-        if (!response.IsSuccessful)
-        {
-            throw new InvalidOperationException(
-                $"Tenant lifecycle notification queue failed. EventName={envelope.EventName} StatusCode={response.StatusCode}");
-        }
     }
 
     // MOD-0027-FU04C — dispatch a lifecycle notification by canonical eventCode (FU04B adapter). Decision A: the
@@ -239,19 +199,71 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
         return tenant.Id.ToString();
     }
 
-    private static IReadOnlyList<EmailRecipientDto> ResolveInitialAdminRecipient(Tenant tenant, Guid? initialAdminUserId)
+    /// <summary>
+    /// BL-454 slice 2 stage D — the tenant's first administrator. Before this the created branch sent tenant.invite.email
+    /// with the tenant's name and id only, to an administrator nobody had created in AuthService: an invitation with no
+    /// way in. Now it is the invitation itself — the account in AuthService and the one-time set-password link — the same
+    /// service the tenant screen's "Invite" uses, as the EVENT trigger.
+    /// <para>FIX1 (1) — the event only ever CREATES: it acts only on an administrator still Invited, of a tenant that is
+    /// neither suspended nor deactivated, and AuthService leaves an account that already exists exactly as it is (no reset,
+    /// no reactivation, no link). A redelivered, re-published or retried event therefore changes nothing.</para>
+    /// <para>FIX1 (3) — the outcome is written to the tenant record (the administrator's invitation time and the
+    /// "admin-invitation" provisioning step), so the tenant screen shows what happened. A failure to reach AuthService
+    /// throws, so the transport retries (once per event: the consumed-event store).</para>
+    /// </summary>
+    private async Task InviteInitialAdministratorAsync(Tenant tenant, Guid? initialAdminUserId, CancellationToken ct)
     {
-        if (!initialAdminUserId.HasValue)
+        var admin = initialAdminUserId is { } id
+            ? tenant.AdminUsers.FirstOrDefault(user => user.Id == id && !string.IsNullOrWhiteSpace(user.Email))
+            : null;
+        var skip = admin is null ? "INITIAL_ADMIN_MISSING"
+            : admin.Status != TenantAdminUserStatus.Invited ? "INITIAL_ADMIN_NOT_INVITED"
+            : tenant.Status is TenantStatus.Suspended or TenantStatus.Deactivated ? "TENANT_NOT_ACTIVE"
+            : null;
+        if (skip is not null)
         {
-            return [];
+            _logger.LogInformation(
+                "tenant.admin_invitation.skipped TenantId={TenantId} AdminUserId={AdminUserId} ReasonCode={ReasonCode}",
+                tenant.Id, admin?.Id, skip);
+            return;
         }
 
-        var admin = tenant.AdminUsers.FirstOrDefault(user =>
-            user.Id == initialAdminUserId.Value
-            && user.Status != TenantAdminUserStatus.Disabled
-            && !string.IsNullOrWhiteSpace(user.Email));
+        // Users quota (measured, FIX1 K4): the operator's "Invite" consumes a seat only for an administrator NOT yet counted
+        // (TenantAdminUserSupport.CountsTowardsUsersQuota: Invited or Active). This path acts on Invited only — already
+        // counted — so the same rule asks for nothing more here.
+        var result = await _invitations.InviteAsync(tenant, admin!, AdminInvitationTrigger.TenantCreatedEvent, ct);
+        _logger.LogInformation(
+            "tenant.admin_invitation.done TenantId={TenantId} AdminUserId={AdminUserId} UserProvisioned={UserProvisioned} EmailSent={EmailSent} ReasonCode={ReasonCode}",
+            tenant.Id, admin!.Id, result.UserProvisioned, result.InvitationEmailSent, result.EmailRefusalCode);
+        await RecordInvitationOutcomeAsync(tenant.Id, admin.Id, result, ct);
+    }
 
-        return admin is null ? [] : [ToRecipient(admin)];
+    /// <summary>The "admin-invitation" provisioning step's key (RegisterTenantCommandHandler writes it Pending).</summary>
+    internal const string AdminInvitationStepKey = TenantProvisioningStep.AdminInvitationKey;
+
+    // FIX1 (3) / FIX2 — the outcome on the tenant record, as a targeted write (K7: a suspension made meanwhile stays).
+    // FIX2 (1) — on the event path "an account already exists" is NEVER a success: an invitation half-made by an earlier
+    // attempt and an account somebody else made look the same from here, so the step says the state is unknown and how to
+    // repair it (the operator's "Invite": a new link, the BL-529 reset, audited).
+    private Task RecordInvitationOutcomeAsync(Guid tenantId, Guid adminId, AdminUserInvitationResult result, CancellationToken ct)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var (status, detail, eventType) = result switch
+        {
+            { InvitationEmailSent: true } =>
+                ("Completed", "Invitation sent: a one-time set-password link.", "tenant.admin_user.invited"),
+            { EmailRefusalCode: AdminInvitationRefusals.AccountExists } =>
+                ("Failed", $"Invitation not sent ({AdminInvitationRefusals.AccountExists}): an account with this address already exists and its state is unknown. Use \"Invite\" to send a new link.", "tenant.admin_user.invitation_failed"),
+            { EmailRefusalCode: { } code } =>
+                ("Failed", $"Invitation not sent ({code}). Fix the cause, then use \"Invite\".", "tenant.admin_user.invitation_failed"),
+            _ =>
+                ("Failed", "The account was created but the invitation e-mail did not leave. Use \"Invite\" to send a new link.", "tenant.admin_user.invitation_failed")
+        };
+
+        return _tenantRepository.RecordAdminInvitationAsync(
+            tenantId, adminId, AdminInvitationStepKey, status, detail, now, stampInvitedAt: result.InvitationEmailSent,
+            result.InvitationDispatchId,
+            new TenantActivityEvent { EventType = eventType, Message = detail, At = now, Actor = ConsumerName }, ct);
     }
 
     private static IReadOnlyList<EmailRecipientDto> ResolveTenantAdminRecipients(Tenant tenant)

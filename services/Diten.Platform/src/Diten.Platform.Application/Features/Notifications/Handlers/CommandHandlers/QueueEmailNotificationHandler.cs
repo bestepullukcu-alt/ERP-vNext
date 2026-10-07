@@ -109,8 +109,11 @@ public sealed class QueueEmailNotificationHandler
         var settingsResponse = await _settingsResolver.ResolveAsync(request.TenantId, ct);
         if (!settingsResponse.IsSuccessful || settingsResponse.Data is null)
         {
+            // C-FIX1 3 — the resolver's own name (TENANT_SENDING_DISABLED, TENANT_SETTINGS_DISABLED,
+            // TENANT_FALLBACK_POLICY_UNKNOWN, PLATFORM_DEFAULT_UNAVAILABLE): no row exists yet, so this is all the
+            // producer is told. The general code only when the resolver gave none.
             return Response<NotificationDispatchDto>.Fail(
-                settingsResponse.Errors, settingsResponse.StatusCode, ReasonMessagingSettingsUnavailable);
+                settingsResponse.Errors, settingsResponse.StatusCode, settingsResponse.ReasonCode ?? ReasonMessagingSettingsUnavailable);
         }
 
         if (!Enum.TryParse<MessagingProviderCode>(settingsResponse.Data.ProviderCode, ignoreCase: true, out var providerCode))
@@ -285,7 +288,9 @@ public sealed class QueueEmailNotificationHandler
         }
         else
         {
-            // BL-454 — no retry can run on this server: this failure IS the permanent one, marked once.
+            // BL-454 — no retry can run on this server: this failure IS the permanent one. NOT pending: on a server
+            // without the retry job nothing would ever re-drive a pending row, so the marker is the time and the effects
+            // run once below (a failure of theirs is logged by name). The pending / claim path is the retry job's.
             dispatch.PermanentlyFailedNotifiedAt = failedAt;
         }
 

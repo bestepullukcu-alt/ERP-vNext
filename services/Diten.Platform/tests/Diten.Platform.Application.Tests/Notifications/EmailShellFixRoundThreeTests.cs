@@ -111,7 +111,7 @@ public sealed partial class EmailShellDispatchTests
         var closed = Waiting(rig, NotificationDispatchStatus.Failed, hoursAgo: 30);
         closed.PermanentlyFailedNotifiedAt = DateTimeOffset.UtcNow.AddHours(-29);
         closed.ErrorCode = "EarlierPermanent";
-        var sweep = new EmailDispatchSweepJob(
+        var sweep = TestSweeps.Create(
             rig.Dispatches,
             new RecordingScheduler(),
             NullLogger<EmailDispatchSweepJob>.Instance,
@@ -307,7 +307,6 @@ public sealed partial class EmailShellDispatchTests
 
     [Theory]
     [InlineData("suspended")]
-    [InlineData("created")]
     public async Task A_tenant_event_whose_admin_address_can_never_be_valid_is_consumed_once_and_not_redelivered(string kind)
     {
         var rig = new Rig();
@@ -325,7 +324,7 @@ public sealed partial class EmailShellDispatchTests
             new ConsumedEventStore(consumed, NullLogger<ConsumedEventStore>.Instance),
             rig.Tenants,
             new PipelineMediator(rig),
-            new TenantCreatedV1NotificationMapper(),
+            new Diten.Platform.Application.Tests.Tenants.TenantLifecycleNotificationConsumerTests.RecordingInvitations(),
             new TenantSuspendedV1NotificationMapper(),
             new TenantReactivatedV1NotificationMapper(),
             NullLogger<TenantLifecycleNotificationConsumer>.Instance);
@@ -377,6 +376,7 @@ public sealed partial class EmailShellDispatchTests
             new NotificationsSmtpIntegrationTests.TestProviderResolver(rig.Provider),
             new ValidatingMediator(rig.Dispatches),
             logger,
+            NoInvitationLedger.Instance,
             rig.Templates,
             new EmailTemplateRenderer(),
             rig.Composer);
@@ -401,7 +401,7 @@ public sealed partial class EmailShellDispatchTests
         await new EmailDispatchJob(
                 rig.Dispatches, new TenantMessagingSettingsResolver(rig.Settings),
                 new NotificationsSmtpIntegrationTests.TestProviderResolver(rig.Provider), new ValidatingMediator(rig.Dispatches),
-                NullLogger<EmailDispatchJob>.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer)
+                NullLogger<EmailDispatchJob>.Instance, NoInvitationLedger.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer)
             .HandleAsync(new EmailDispatchJobArgs(rig.TenantId, dispatch.Id), new BackgroundJobContext(), CancellationToken.None);
 
         Assert.Equal(NotificationDispatchStatus.Sent, dispatch.Status);
@@ -502,30 +502,6 @@ public sealed partial class EmailShellDispatchTests
     }
 
     // ---------------------------------------------------------------- doubles
-
-    /// <summary>The mark-sent / mark-failed commands go to their REAL handlers over the rig's dispatch store.</summary>
-    private sealed class RoutingMediator(INotificationDispatchRepository dispatches) : IMediator
-    {
-        public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
-        {
-            object response = request switch
-            {
-                MarkNotificationDispatchFailedCommand failed =>
-                    await new MarkNotificationDispatchFailedHandler(dispatches, new NotificationsSmtpIntegrationTests.RecordingEventBus()).Handle(failed, cancellationToken),
-                MarkNotificationDispatchSentCommand sent =>
-                    await new MarkNotificationDispatchSentHandler(dispatches, new NotificationsSmtpIntegrationTests.RecordingEventBus()).Handle(sent, cancellationToken),
-                _ => throw new NotSupportedException(request.GetType().Name)
-            };
-            return (TResponse)response;
-        }
-
-        public Task<object?> Send(object request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
-        public Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest => throw new NotSupportedException();
-        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
-        public IAsyncEnumerable<object?> CreateStream(object request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
-        public Task Publish(object notification, CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification => Task.CompletedTask;
-    }
 
     /// <summary>
     /// MediatR as production composes it for these two commands: ValidationBehavior OUTSIDE ExceptionBehavior around the

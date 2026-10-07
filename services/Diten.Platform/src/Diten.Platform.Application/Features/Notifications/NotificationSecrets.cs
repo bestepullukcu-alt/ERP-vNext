@@ -158,7 +158,7 @@ public static partial class NotificationSecrets
     /// A text is a secret when any whitespace-separated piece of it is a credential-bearing link (absolute, relative,
     /// host-only, a query inside a fragment, parameters split by <c>&amp;</c> or <c>;</c>, names percent-encoded or not,
     /// a link encoded inside another link's query value) or carries the shape of a secret: a <c>sk-</c> /
-    /// <c>sk_live_</c> / <c>SG.</c> / <c>ghp_</c> / <c>xoxb-</c> / <c>AKIA</c> key, or a three-part JWT — alone or with
+    /// <c>sk_live_</c> / <c>SG.</c> / <c>ghp_</c> / <c>xoxb-</c> / <c>AKIA</c> / <c>AIza</c> key, a PEM private key, or a JWT — alone or with
     /// something stuck to it (<c>token:eyJ…</c>, <c>eyJ…;</c>, inside JSON). A sentence with a space or an '=' in it is
     /// NOT a secret.
     /// </summary>
@@ -322,11 +322,15 @@ public static partial class NotificationSecrets
 
     // A secret's own shape, found anywhere in a text but never in the middle of a word: provider keys by their published
     // prefixes, and a three-part JWT.
+    // A Google API key is AIza and 35 more key characters (whatever follows: over-matching only masks the whole variable,
+    // under-matching stores a key). A PEM or PGP private key is recognised by its BEGIN line wherever it stands — glued to
+    // a JSON "\n", to a preceding certificate, to any character — so a block with any body is the shape. "AIza" on its
+    // own, or short, is not.
     // Every quantifier is bounded and the search has a time limit (HasSecretShape fails closed on a timeout). A JWT is
     // recognised by its header and the start of its payload, so no length of payload escapes; a header longer than the
     // bound is itself the shape of a secret.
     [GeneratedRegex(
-        @"(?<![A-Za-z0-9_])(?:sk-[A-Za-z0-9_-]{9,512}|sk_(?:live|test)_[A-Za-z0-9]{8,512}|SG\.[A-Za-z0-9_.-]{9,512}|gh[pousr]_[A-Za-z0-9]{20,255}|xox[abprs]-[A-Za-z0-9-]{8,512}|AKIA[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]{1,4095}\.[A-Za-z0-9_-]|eyJ[A-Za-z0-9_-]{4096})",
+        @"(?:(?<![A-Za-z0-9_])|(?<=\\[nrt]))(?:sk-[A-Za-z0-9_-]{9,512}|sk_(?:live|test)_[A-Za-z0-9]{8,512}|SG\.[A-Za-z0-9_.-]{9,512}|gh[pousr]_[A-Za-z0-9]{20,255}|xox[abprs]-[A-Za-z0-9-]{8,512}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|eyJ[A-Za-z0-9_-]{1,4095}\.[A-Za-z0-9_-]|eyJ[A-Za-z0-9_-]{4096})|-----BEGIN [A-Z ]{0,40}PRIVATE KEY(?: BLOCK)?-----",
         RegexOptions.CultureInvariant,
         matchTimeoutMilliseconds: ShapeSearchTimeoutMilliseconds)]
     private static partial Regex SecretShape();

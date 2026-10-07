@@ -9,6 +9,7 @@ using Diten.Platform.Application.Features.Notifications.Commands;
 using Diten.Platform.Application.Features.Notifications.Handlers.CommandHandlers;
 using Diten.Platform.Application.Features.Notifications.Services;
 using Diten.Platform.Application.Features.Notifications.Validators;
+using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Entities.Meetings;
 using Diten.Platform.Domain.Entities.Notifications;
@@ -60,7 +61,7 @@ public sealed partial class EmailShellDispatchTests
         var job = new EmailDispatchJob(
             rig.Dispatches, new TenantMessagingSettingsResolver(rig.Settings),
             new NotificationsSmtpIntegrationTests.TestProviderResolver(new SilentFailure()), mediator,
-            NullLogger<EmailDispatchJob>.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer);
+            NullLogger<EmailDispatchJob>.Instance, NoInvitationLedger.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer);
 
         await job.HandleAsync(new EmailDispatchJobArgs(rig.TenantId, row.Id), new BackgroundJobContext(), CancellationToken.None);
 
@@ -312,7 +313,7 @@ public sealed partial class EmailShellDispatchTests
 
     // ---------------------------------------------------------------- helpers
 
-    private static EmailDispatchSweepJob Sweep(Rig rig, IMediator mediator) => new(
+    private static EmailDispatchSweepJob Sweep(Rig rig, IMediator mediator) => TestSweeps.Create(
         rig.Dispatches,
         new RecordingScheduler(),
         NullLogger<EmailDispatchSweepJob>.Instance,
@@ -408,6 +409,16 @@ public sealed partial class EmailShellDispatchTests
         public List<Guid> Undelivered { get; } = [];
         public List<UserNotification> OrganizerNotices { get; } = [];
 
+        /// <summary>When set, the ambient tenant each effect write ran under (FIX1 5a: every row in its own tenant).</summary>
+        public ITenantContext? Ambient { get; init; }
+        public List<Guid?> TenantsSeen { get; } = [];
+
+        /// <summary>The organizer notification write throws this many times before it succeeds (FIX1 2).</summary>
+        public int ThrowOnNoticeTimes { get; set; }
+        public int NoticeAttempts { get; private set; }
+
+        private void See() => TenantsSeen.Add(Ambient is { IsResolved: true } ? Ambient.TenantId : null);
+
         public IMeetingRepository Meetings => Recorder<IMeetingRepository>.Create((method, args) =>
             method == nameof(IMeetingRepository.GetByIdAsync)
                 ? new Meeting
@@ -422,6 +433,7 @@ public sealed partial class EmailShellDispatchTests
         {
             if (method == nameof(IMeetingAttendeeRepository.MarkMailUndeliveredAsync))
             {
+                See();
                 Undelivered.Add((Guid)args[1]!);
             }
 
@@ -432,6 +444,13 @@ public sealed partial class EmailShellDispatchTests
         {
             if (method == nameof(IUserNotificationRepository.CreateAsync) && args[0] is UserNotification notice)
             {
+                NoticeAttempts++;
+                if (NoticeAttempts <= ThrowOnNoticeTimes)
+                {
+                    throw new InvalidOperationException("notification store unavailable");
+                }
+
+                See();
                 OrganizerNotices.Add(notice);
                 return notice;
             }

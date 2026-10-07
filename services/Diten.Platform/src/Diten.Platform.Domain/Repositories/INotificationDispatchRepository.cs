@@ -44,6 +44,60 @@ public interface INotificationDispatchRepository
         CancellationToken ct = default);
 
     /// <summary>
+    /// BL-454 C-FIX1 — the CLAIM of a pending row's permanent-failure effects: a targeted write (<c>UpdatedAt</c>,
+    /// <c>UpdatedBy</c> = <paramref name="claimActor"/>, <c>Version</c> + 1) that matches only while the row is the version
+    /// read, still Failed AND still pending (<see cref="NotificationDispatch.PermanentFailurePending"/>) — the last part
+    /// structural (K1): a writer that marked the row without raising its version still wins over a stale claim.
+    /// <para>The in-memory doubles keep this default (a whole-document conditional write); the Mongo repository writes
+    /// the targeted update.</para>
+    /// </summary>
+    Task<bool> TryClaimPermanentEffectsAsync(
+        NotificationDispatch dispatch, int expectedVersion, DateTimeOffset claimedAt, string claimActor, CancellationToken ct = default)
+    {
+        if (dispatch.PermanentlyFailedNotifiedAt != NotificationDispatch.PermanentFailurePending
+            || dispatch.Status != Diten.Platform.Domain.Enums.NotificationDispatchStatus.Failed)
+        {
+            return Task.FromResult(false);
+        }
+
+        dispatch.UpdatedAt = claimedAt;
+        dispatch.UpdatedBy = claimActor;
+        dispatch.Version = expectedVersion + 1;
+        return TryUpdateAsync(dispatch, expectedVersion, dispatch.Status, ct);
+    }
+
+    /// <summary>
+    /// BL-454 C-FIX1 — the MARK after the effects ran: a targeted <c>$set</c> of the real time (and <c>Version</c> + 1)
+    /// that matches only while the row is still pending AND the claim is still <paramref name="claimActor"/>'s. Any other
+    /// writer that bumped the version in between (it does not touch the marker or the claim) no longer makes it lose.
+    /// </summary>
+    Task<bool> TryMarkPermanentEffectsAppliedAsync(
+        NotificationDispatch dispatch, string claimActor, DateTimeOffset appliedAt, CancellationToken ct = default)
+    {
+        if (dispatch.PermanentlyFailedNotifiedAt != NotificationDispatch.PermanentFailurePending
+            || !string.Equals(dispatch.UpdatedBy, claimActor, StringComparison.Ordinal))
+        {
+            return Task.FromResult(false);
+        }
+
+        var readVersion = dispatch.Version;
+        dispatch.PermanentlyFailedNotifiedAt = appliedAt;
+        dispatch.Version = readVersion + 1;
+        return TryUpdateAsync(dispatch, readVersion, dispatch.Status, ct);
+    }
+
+    /// <summary>
+    /// BL-454 — cross-tenant scan for PERMANENT rows whose permanent-failure effects have not run
+    /// (<see cref="NotificationDispatch.PermanentFailurePending"/>) and that nobody has touched since
+    /// <paramref name="idleBefore"/> (<c>UpdatedAt</c>): the transition's own run, or a claim, gets that long before the
+    /// retry sweep re-drives the row. Still Failed only; a row that was sent after all is not owed any effect.
+    /// </summary>
+    Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(
+        DateTimeOffset idleBefore,
+        int take,
+        CancellationToken ct = default);
+
+    /// <summary>
     /// BL-454 — cross-tenant scan for dispatches still WAITING (<see cref="Diten.Platform.Domain.Enums.NotificationDispatchStatus.Queued"/>
     /// or <see cref="Diten.Platform.Domain.Enums.NotificationDispatchStatus.Failed"/>, never yet a permanent failure)
     /// that were queued before <paramref name="queuedBefore"/>: their retry window has passed and the sweep closes them,

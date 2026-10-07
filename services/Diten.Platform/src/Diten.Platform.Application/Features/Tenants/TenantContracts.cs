@@ -143,7 +143,10 @@ public sealed record TenantAdminUserDto(
     // production, on the SMTP-on email path, and on every non-invite path. Mirrors UserDto.SetupUrl.
     string? LoginUrl = null,
     string? TemporaryPassword = null,
-    bool? EmailSent = null);
+    bool? EmailSent = null,
+    // BL-454 stage D FIX3 — true when the invitation was done but the tenant's "admin-invitation" step could not be written
+    // (the tenant screen may show a stale step); the operator is told, the failure is logged as an error.
+    bool? InvitationStepNotRecorded = null);
 
 public sealed record TenantAdminUserUpsertRequest(
     string Name,

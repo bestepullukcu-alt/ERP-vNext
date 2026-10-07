@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Features.Notifications;
 using Diten.Platform.Application.Features.Notifications.Commands;
@@ -18,38 +19,37 @@ namespace Diten.Platform.Application.Tests.Tenants;
 public sealed class TenantLifecycleNotificationConsumerTests
 {
     [Fact]
-    public async Task TenantCreated_QueuesInviteToInitialAdminUser()
+    public async Task TenantCreated_InvitesTheInitialAdministratorThroughTheInvitationService()
     {
+        // BL-454 slice 2 stage D — the created event is the invitation itself (account + one-time link), not a template
+        // sent by key with the tenant's name and id and no way in.
         var tenantId = Guid.NewGuid();
         var adminUserId = Guid.NewGuid();
-        var correlationId = Guid.NewGuid();
         var tenant = CreateTenant(tenantId);
         tenant.AdminUsers.Add(new TenantAdminUser
         {
             Id = adminUserId,
             Name = "Tenant Owner",
-            Email = "Owner@Example.COM",
+            Email = "owner@example.com",
             Status = TenantAdminUserStatus.Invited
         });
         var mediator = new RecordingMediator();
-        var consumer = CreateConsumer(new InMemoryTenantRepository(tenant), mediator);
+        var invitations = new RecordingInvitations();
+        var consumer = CreateConsumer(new InMemoryTenantRepository(tenant), mediator, invitations: invitations);
         var message = CreateMessage(
             TenantCreatedV1.Name,
             TenantCreatedV1.Version,
-            correlationId,
+            Guid.NewGuid(),
             tenantId,
             new TenantCreatedV1(tenantId, DateTimeOffset.UtcNow, null, Guid.NewGuid(), tenant.DisplayName, "tr-TR", adminUserId));
 
         var result = await consumer.ConsumeAsync(message);
 
         Assert.Equal(ConsumedEventExecutionResult.Consumed, result);
-        var command = Assert.Single(mediator.Commands);
-        Assert.Equal(tenantId, command.TenantId);
-        Assert.Equal(correlationId.ToString("N"), command.CorrelationId);
-        Assert.Equal("tenant.invite.email", command.Request.TemplateKey);
-        Assert.Equal("tr-TR", command.Request.Locale);
-        Assert.Single(command.Request.To);
-        Assert.Equal("owner@example.com", command.Request.To[0].Email);
+        var (invitedTenant, invitedAdmin) = Assert.Single(invitations.Invited);
+        Assert.Equal(tenantId, invitedTenant.Id);
+        Assert.Equal(adminUserId, invitedAdmin.Id);
+        Assert.Empty(mediator.Commands); // nothing queued by template key any more
     }
 
     [Fact]
@@ -58,7 +58,8 @@ public sealed class TenantLifecycleNotificationConsumerTests
         var tenantId = Guid.NewGuid();
         var tenant = CreateTenant(tenantId);
         var mediator = new RecordingMediator();
-        var consumer = CreateConsumer(new InMemoryTenantRepository(tenant), mediator);
+        var invitations = new RecordingInvitations();
+        var consumer = CreateConsumer(new InMemoryTenantRepository(tenant), mediator, invitations: invitations);
         var message = CreateMessage(
             TenantCreatedV1.Name,
             TenantCreatedV1.Version,
@@ -70,6 +71,99 @@ public sealed class TenantLifecycleNotificationConsumerTests
 
         Assert.Equal(ConsumedEventExecutionResult.Consumed, result);
         Assert.Empty(mediator.Commands);
+        Assert.Empty(invitations.Invited);
+    }
+
+    [Fact]
+    public async Task TenantCreated_WhoseAuthServiceCallFails_IsMarkedFailedSoTheTransportRetries()
+    {
+        var tenantId = Guid.NewGuid();
+        var adminUserId = Guid.NewGuid();
+        var tenant = CreateTenant(tenantId);
+        tenant.AdminUsers.Add(new TenantAdminUser { Id = adminUserId, Name = "Owner", Email = "owner@example.com", Status = TenantAdminUserStatus.Invited });
+        var repository = new InMemoryConsumedEventRepository();
+        var consumer = CreateConsumer(new InMemoryTenantRepository(tenant), new RecordingMediator(), repository,
+            new RecordingInvitations { Throw = new InvalidOperationException("Admin user provisioning failed.") });
+        var message = CreateMessage(
+            TenantCreatedV1.Name, TenantCreatedV1.Version, Guid.NewGuid(), tenantId,
+            new TenantCreatedV1(tenantId, DateTimeOffset.UtcNow, null, Guid.NewGuid(), tenant.DisplayName, "en", adminUserId));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => consumer.ConsumeAsync(message)!);
+
+        Assert.Equal(ConsumedEventStatus.Failed, (await repository.GetAsync(message.EventId, TenantLifecycleNotificationConsumer.ConsumerName))!.Status);
+    }
+
+    // ---------------------------------------------------------------- BL-454 stage D FIX1: the event only creates
+
+    private static (Tenant Tenant, TenantAdminUser Admin, EventTransportMessage Message) CreatedWithAdmin(
+        TenantAdminUserStatus status = TenantAdminUserStatus.Invited, TenantStatus tenantStatus = TenantStatus.Provisioning)
+    {
+        var tenantId = Guid.NewGuid();
+        var tenant = CreateTenant(tenantId);
+        tenant.Status = tenantStatus;
+        var admin = new TenantAdminUser { Id = Guid.NewGuid(), Name = "Owner", Email = "owner@example.com", Status = status };
+        tenant.AdminUsers.Add(admin);
+        tenant.ProvisioningSteps.Add(new TenantProvisioningStep { Key = "admin-invitation", Label = "Initial Admin Invitation" });
+        var message = CreateMessage(TenantCreatedV1.Name, TenantCreatedV1.Version, Guid.NewGuid(), tenantId,
+            new TenantCreatedV1(tenantId, DateTimeOffset.UtcNow, null, Guid.NewGuid(), tenant.DisplayName, "en", admin.Id));
+        return (tenant, admin, message);
+    }
+
+    [Fact]
+    public async Task TenantCreated_DeliveredTwice_InvitesOnce_AsTheEventTrigger()
+    {
+        var (tenant, _, message) = CreatedWithAdmin();
+        var invitations = new RecordingInvitations();
+        var consumer = CreateConsumer(new InMemoryTenantRepository(tenant), new RecordingMediator(), invitations: invitations);
+
+        await consumer.ConsumeAsync(message);
+        await consumer.ConsumeAsync(message);
+
+        Assert.Single(invitations.Invited);
+        Assert.Equal([AdminInvitationTrigger.TenantCreatedEvent], invitations.Triggers);
+    }
+
+    [Theory]
+    [InlineData(TenantAdminUserStatus.Active, TenantStatus.Active)]      // the administrator already set a password
+    [InlineData(TenantAdminUserStatus.Disabled, TenantStatus.Active)]
+    [InlineData(TenantAdminUserStatus.Invited, TenantStatus.Suspended)]  // the tenant is suspended
+    [InlineData(TenantAdminUserStatus.Invited, TenantStatus.Deactivated)]
+    public async Task TenantCreated_ForAnAdminNoLongerInvited_OrATenantNotActive_InvitesNobody(TenantAdminUserStatus status, TenantStatus tenantStatus)
+    {
+        var (tenant, _, message) = CreatedWithAdmin(status, tenantStatus);
+        var invitations = new RecordingInvitations();
+        var consumer = CreateConsumer(new InMemoryTenantRepository(tenant), new RecordingMediator(), invitations: invitations);
+
+        Assert.Equal(ConsumedEventExecutionResult.Consumed, await consumer.ConsumeAsync(message));
+
+        Assert.Empty(invitations.Invited);
+    }
+
+    [Theory]
+    [InlineData(null, true, "Completed")]
+    [InlineData("ADMIN_ACCOUNT_EXISTS", false, "Failed")] // FIX2 (1): never a success on the event path
+    [InlineData("INVITE_LINK_ROOT_LOOPBACK", false, "Failed")]
+    public async Task TenantCreated_WritesTheInvitationOutcomeOnTheTenantRecord(string? refusal, bool sent, string stepStatus)
+    {
+        var (tenant, admin, message) = CreatedWithAdmin();
+        var dispatchId = sent ? Guid.NewGuid() : (Guid?)null;
+        var invitations = new RecordingInvitations { Result = new AdminUserInvitationResult("https://login.test", sent ? "https://app.test/x" : null, sent, sent, refusal, dispatchId) };
+        var consumer = CreateConsumer(new InMemoryTenantRepository(tenant), new RecordingMediator(), invitations: invitations);
+
+        await consumer.ConsumeAsync(message);
+
+        var step = Assert.Single(tenant.ProvisioningSteps, s => s.Key == "admin-invitation");
+        Assert.Equal(stepStatus, step.Status);
+        Assert.NotNull(step.CompletedAt);
+        if (refusal is not null)
+        {
+            Assert.Contains(refusal, step.Detail);
+            Assert.Contains("Invite", step.Detail);
+        }
+
+        Assert.Equal(sent, admin.InvitedAt is not null);
+        Assert.Equal(dispatchId, admin.LastInvitationDispatchId); // FIX3 (1): the current invitation, by identity
+        Assert.Contains(tenant.ActivityTimeline, e => e.EventType.StartsWith("tenant.admin_user.invit", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -209,13 +303,14 @@ public sealed class TenantLifecycleNotificationConsumerTests
     private static TenantLifecycleNotificationConsumer CreateConsumer(
         ITenantRegistryRepository tenantRepository,
         IMediator mediator,
-        IConsumedEventRepository? consumedRepository = null)
+        IConsumedEventRepository? consumedRepository = null,
+        IAdminUserInvitationService? invitations = null)
     {
         return new TenantLifecycleNotificationConsumer(
             new ConsumedEventStore(consumedRepository ?? new InMemoryConsumedEventRepository(), NullLogger<ConsumedEventStore>.Instance),
             tenantRepository,
             mediator,
-            new TenantCreatedV1NotificationMapper(),
+            invitations ?? new RecordingInvitations(),
             new TenantSuspendedV1NotificationMapper(),
             new TenantReactivatedV1NotificationMapper(),
             NullLogger<TenantLifecycleNotificationConsumer>.Instance);
@@ -255,9 +350,32 @@ public sealed class TenantLifecycleNotificationConsumerTests
             JsonSerializer.Serialize(payload));
     }
 
+    /// <summary>The invitation service, recorded: which tenant's which administrator was invited.</summary>
+    internal sealed class RecordingInvitations : IAdminUserInvitationService
+    {
+        public List<(Tenant Tenant, TenantAdminUser Admin)> Invited { get; } = [];
+        public Exception? Throw { get; init; }
+
+        public List<AdminInvitationTrigger> Triggers { get; } = [];
+        public string? LinkRootRefusal() => null;
+        public AdminUserInvitationResult Result { get; init; } = new("https://login.test", "https://app.test/account/set-password", true, true);
+
+        public Task<AdminUserInvitationResult> InviteAsync(Tenant tenant, TenantAdminUser adminUser, AdminInvitationTrigger trigger, CancellationToken cancellationToken)
+        {
+            if (Throw is not null)
+            {
+                throw Throw;
+            }
+
+            Invited.Add((tenant, adminUser));
+            Triggers.Add(trigger);
+            return Task.FromResult(Result);
+        }
+    }
+
     private sealed class RecordingMediator : IMediator
     {
-        // Created branch still queues by templateKey; suspended/reactivated dispatch by eventCode (FU04C).
+        // Suspended/reactivated dispatch by eventCode (FU04C); the created branch invites (IAdminUserInvitationService).
         public List<QueueEmailNotificationCommand> Commands { get; } = [];
         public List<DispatchNotificationByEventCodeCommand> DispatchCommands { get; } = [];
         public Response<NotificationDispatchDto> Response { get; set; } = Response<NotificationDispatchDto>.Success(202);

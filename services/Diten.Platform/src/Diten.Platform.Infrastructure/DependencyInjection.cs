@@ -216,6 +216,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthoritativeEntitlementDecisionSource, MongoAuthoritativeEntitlementDecisionSource>();
         services.AddScoped<IPlatformEntitlementDecisionProvider, PlatformEntitlementDecisionProvider>();
         services.AddScoped<IAdminUserInvitationService, AdminUserInvitationService>();
+        services.AddScoped<ITenantAdminInvitationLedger, TenantAdminInvitationLedger>();
         // BL-454 — every client that carries a credential to AuthService: never follows a redirect (one helper).
         services.AddAuthInternalHttpClients();
         services.AddScoped<ITenantActivationNotifier, AuthServiceTenantActivationNotifier>();
@@ -231,7 +232,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantUserCountReader, AuthTenantUserCountClient>();
         services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
-        services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();
+        // BL-454 slice 2 — the platform administrator invitation e-mail service is gone: no caller on any branch.
         /*
          * ⚠ These reference-validator clients carry NO tenant DelegatingHandler, and that is DELIBERATE.
          * A handler cannot see the request: IHttpClientFactory caches a client's handler chain in its OWN scope,
@@ -665,6 +666,34 @@ public static class DependencyInjection
 
         var eventingOptions = configuration.GetSection(RabbitMqEventingOptions.SectionName).Get<RabbitMqEventingOptions>()
                               ?? new RabbitMqEventingOptions();
+        AddPlatformEventTransport(services, eventingOptions);
+
+        services.AddHostedService<OutboxPublisherWorker>();
+        services.AddHostedService<SubscriptionPlanStartupInitializer>();
+
+        RunMongoStartupInitialization(
+            database,
+            mongoSettings,
+            configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions(),
+            environment.IsDevelopment(),
+            seedDevOrganizationPositions);
+
+        return services;
+    }
+
+    public static IServiceCollection AddTenantAuthorizationContext(this IServiceCollection services)
+    {
+        services.AddScoped<ITenantAuthorizationContext, JwtTenantAuthorizationContext>();
+        return services;
+    }
+
+    /// <summary>
+    /// The event transport (BL-454 stage D FIX2 (4): extracted so its two branches are measured on the production
+    /// registration): RabbitMQ with the platform's consumers, or the in-memory bus — which has no consumers, so it also
+    /// registers the one-time notice that a new tenant's administrator is not invited automatically.
+    /// </summary>
+    internal static void AddPlatformEventTransport(IServiceCollection services, RabbitMqEventingOptions eventingOptions)
+    {
         if (eventingOptions.UseRabbitMq)
         {
             services.AddMassTransit(x =>
@@ -696,25 +725,9 @@ public static class DependencyInjection
         {
             services.AddSingleton<InMemoryEventBus>();
             services.AddSingleton<IEventTransportPublisher>(sp => sp.GetRequiredService<InMemoryEventBus>());
+            // BL-454 stage D FIX1 (3) — no consumers on this branch: no automatic first-administrator invitation. Said once.
+            services.AddHostedService<Diten.Platform.Infrastructure.Eventing.TenantAdminInvitationModeNotice>();
         }
-
-        services.AddHostedService<OutboxPublisherWorker>();
-        services.AddHostedService<SubscriptionPlanStartupInitializer>();
-
-        RunMongoStartupInitialization(
-            database,
-            mongoSettings,
-            configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions(),
-            environment.IsDevelopment(),
-            seedDevOrganizationPositions);
-
-        return services;
-    }
-
-    public static IServiceCollection AddTenantAuthorizationContext(this IServiceCollection services)
-    {
-        services.AddScoped<ITenantAuthorizationContext, JwtTenantAuthorizationContext>();
-        return services;
     }
 
     internal static void AddPlatformEventConsumers(IBusRegistrationConfigurator configurator)

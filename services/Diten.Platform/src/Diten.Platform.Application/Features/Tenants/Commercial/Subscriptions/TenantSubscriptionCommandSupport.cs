@@ -131,6 +131,11 @@ internal static class TenantSubscriptionCommandSupport
             tenant.ProvisionedAt ??= now;
             foreach (var step in tenant.ProvisioningSteps)
             {
+                if (step.Key == TenantProvisioningStep.AdminInvitationKey)
+                {
+                    continue; // BL-454 stage D FIX2 (2) — written only by the invitation's own writers
+                }
+
                 if (string.Equals(step.Status, "InProgress", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(step.Status, "Pending", StringComparison.OrdinalIgnoreCase))
                 {

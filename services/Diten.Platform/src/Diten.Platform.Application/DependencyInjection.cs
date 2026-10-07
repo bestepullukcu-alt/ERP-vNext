@@ -297,10 +297,8 @@ public static class DependencyInjection
         // MOD-0027-FU04B — eventCode → dispatch adapter (resolves Active event + validates, delegates to the existing
         // QueueEmailNotificationCommand). Producers wiring it is a separate follow-up (FU04B-Tenant / FU04D).
         services.AddScoped<Features.Notifications.Services.INotificationEventDispatchAdapter, Features.Notifications.Services.NotificationEventDispatchAdapter>();
-        services.AddScoped<TenantCreatedV1NotificationMapper>();
         services.AddScoped<TenantSuspendedV1NotificationMapper>();
         services.AddScoped<TenantReactivatedV1NotificationMapper>();
-        services.AddScoped<INotificationEventMapper<TenantCreatedV1>>(sp => sp.GetRequiredService<TenantCreatedV1NotificationMapper>());
         services.AddScoped<INotificationEventMapper<TenantSuspendedV1>>(sp => sp.GetRequiredService<TenantSuspendedV1NotificationMapper>());
         services.AddScoped<INotificationEventMapper<TenantReactivatedV1>>(sp => sp.GetRequiredService<TenantReactivatedV1NotificationMapper>());
         services.AddSingleton<AuditBehaviorOptions>();

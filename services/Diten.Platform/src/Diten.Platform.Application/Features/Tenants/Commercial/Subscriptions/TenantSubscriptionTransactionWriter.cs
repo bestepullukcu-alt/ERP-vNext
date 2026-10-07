@@ -202,7 +202,8 @@ public sealed class TenantSubscriptionTransactionWriter
         };
     }
 
-    private static void ApplyTenantSnapshot(Tenant tenant, TenantSubscription subscription, SubscriptionPlan? plan,
+    // Internal (not private) so its "everything pending is now done" sweep is measured directly (BL-454 stage D FIX2 (2)).
+    internal static void ApplyTenantSnapshot(Tenant tenant, TenantSubscription subscription, SubscriptionPlan? plan,
         bool markTenantActive, string mutation, DateTimeOffset now)
     {
         tenant.PlanId = subscription.PlanId;
@@ -223,8 +224,9 @@ public sealed class TenantSubscriptionTransactionWriter
         }
         tenant.ProvisionedAt ??= now;
         foreach (var step in tenant.ProvisioningSteps.Where(x =>
-                     string.Equals(x.Status, "Pending", StringComparison.OrdinalIgnoreCase) ||
-                     string.Equals(x.Status, "InProgress", StringComparison.OrdinalIgnoreCase)))
+                     x.Key != TenantProvisioningStep.AdminInvitationKey && // BL-454 stage D FIX2 (2)
+                     (string.Equals(x.Status, "Pending", StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(x.Status, "InProgress", StringComparison.OrdinalIgnoreCase))))
         {
             step.Status = "Completed";
             step.CompletedAt ??= now;

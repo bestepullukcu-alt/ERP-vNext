@@ -44,7 +44,11 @@ public sealed class ActivateTenantSubscriptionTenantStatusTests
         Assert.NotNull(savedTenant.ProvisionedAt);
         Assert.NotNull(savedTenant.ActivatedAt);
         Assert.Equal("Completed", savedTenant.ProvisioningStatus);
-        Assert.All(savedTenant.ProvisioningSteps, step => Assert.Equal("Completed", step.Status));
+        // BL-454 stage D FIX2 (2) — every provisioning step is completed EXCEPT the initial administrator's invitation: the
+        // invitation is not done because the subscription was activated; only its own writers decide it.
+        Assert.All(savedTenant.ProvisioningSteps.Where(step => step.Key != TenantProvisioningStep.AdminInvitationKey),
+            step => Assert.Equal("Completed", step.Status));
+        Assert.Equal("Pending", Assert.Single(savedTenant.ProvisioningSteps, step => step.Key == TenantProvisioningStep.AdminInvitationKey).Status);
     }
 
     [Fact]

@@ -45,7 +45,7 @@ public sealed partial class EmailShellDispatchTests
         row.ErrorCode = "SMTP_TIMEOUT";
         var logger = new LinesLogger<EmailDispatchSweepJob>();
         var mediator = new RefusingOnce(new ValidatingMediator(rig.Dispatches));
-        var sweep = new EmailDispatchSweepJob(rig.Dispatches, new RecordingScheduler(), logger, mediator,
+        var sweep = TestSweeps.Create(rig.Dispatches, new RecordingScheduler(), logger, mediator,
             Options.Create(new EmailDispatchRetentionOptions { RetryWindowHours = 24 }));
 
         await sweep.HandleAsync(new EmailDispatchSweepJobArgs(), new BackgroundJobContext(), CancellationToken.None);
@@ -81,7 +81,7 @@ public sealed partial class EmailShellDispatchTests
         var job = new EmailDispatchJob(
             rig.Dispatches, new TenantMessagingSettingsResolver(rig.Settings),
             new NotificationsSmtpIntegrationTests.TestProviderResolver(new BlankFailure(blank)), mediator,
-            NullLogger<EmailDispatchJob>.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer);
+            NullLogger<EmailDispatchJob>.Instance, NoInvitationLedger.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer);
 
         await job.HandleAsync(new EmailDispatchJobArgs(rig.TenantId, row.Id), new BackgroundJobContext(), CancellationToken.None);
 
@@ -201,7 +201,7 @@ public sealed partial class EmailShellDispatchTests
         var closed = Waiting(rig, NotificationDispatchStatus.Failed, hoursAgo: closedHoursAgo);
         var open = Waiting(rig, NotificationDispatchStatus.Failed, hoursAgo: 0);
         open.QueuedAt = DateTimeOffset.UtcNow.AddHours(-openHoursAgo);
-        var sweep = new EmailDispatchSweepJob(rig.Dispatches, new RecordingScheduler(), NullLogger<EmailDispatchSweepJob>.Instance,
+        var sweep = TestSweeps.Create(rig.Dispatches, new RecordingScheduler(), NullLogger<EmailDispatchSweepJob>.Instance,
             new ValidatingMediator(rig.Dispatches), Options.Create(new EmailDispatchRetentionOptions { RetryWindowHours = configuredHours }));
 
         await sweep.HandleAsync(new EmailDispatchSweepJobArgs(), new BackgroundJobContext(), CancellationToken.None);
@@ -339,6 +339,8 @@ public sealed partial class EmailShellDispatchTests
             Task.FromResult(false);
         public Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindDueRetriesAsync(DateTimeOffset asOfUtc, int maxRetryCount, int take, CancellationToken ct = default) =>
             inner.FindDueRetriesAsync(asOfUtc, maxRetryCount, take, ct);
+        public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindPermanentFailurePendingAsync(DateTimeOffset idleBefore, int take, CancellationToken ct = default) =>
+            inner.FindPermanentFailurePendingAsync(idleBefore, take, ct);
         public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindRetryWindowExpiredAsync(DateTimeOffset queuedBefore, int take, CancellationToken ct = default) =>
             inner.FindRetryWindowExpiredAsync(queuedBefore, take, ct);
     }

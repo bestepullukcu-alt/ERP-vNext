@@ -57,7 +57,23 @@ public sealed class NotificationDispatch : BaseEntity
     // a later re-entry over an already-terminal dispatch (e.g. a duplicate Hangfire execution of the same retry
     // job) must not fire the organizer notification / ops counter a second time. Null on every row that has
     // never permanently failed, and on every row written before this WP.
+    //
+    // BL-454 — two values once permanent: PermanentFailurePending while the permanent-failure effects (counter,
+    // organizer notification, attendee badge) have not run yet — written in the SAME write as the transition — then
+    // the time they ran. A row left pending (the event publish threw before the effects) is re-driven by the retry
+    // sweep. Every query that keeps permanent rows out reads "not null", so pending is already permanent there.
     public DateTimeOffset? PermanentlyFailedNotifiedAt { get; set; }
+
+    /// <summary>BL-454 — <see cref="PermanentlyFailedNotifiedAt"/> of a permanent row whose effects have not run yet.</summary>
+    public static readonly DateTimeOffset PermanentFailurePending = DateTimeOffset.MinValue;
+
+    /// <summary>
+    /// BL-454 — the row is permanent and its permanent-failure effects have not been applied. A run that takes them on
+    /// first CLAIMS the row (a write conditional on the version it read, stamping <c>UpdatedAt</c> / <c>UpdatedBy</c>
+    /// with when and who); only the winner runs them. See NotificationPermanentFailureEffects.ApplyAndMarkAsync.
+    /// </summary>
+    public static bool IsPermanentFailurePending(NotificationDispatch dispatch) =>
+        dispatch.PermanentlyFailedNotifiedAt == PermanentFailurePending;
 
     public bool TryMarkSent(string? providerMessageId, DateTimeOffset now)
     {
@@ -70,6 +86,13 @@ public sealed class NotificationDispatch : BaseEntity
 
         Status = NotificationDispatchStatus.Sent;
         ReleaseVariables();
+        // BL-454 — a mail that went out after all owes no "not delivered" effects: a PENDING marker would keep it in the
+        // re-drive index and send the organizer a wrong notice. C-FIX1 K5 — only the pending one: a REAL time says the
+        // "not delivered" effects already happened, and that record stays (the caller logs the contradiction by name).
+        if (PermanentlyFailedNotifiedAt == PermanentFailurePending)
+        {
+            PermanentlyFailedNotifiedAt = null;
+        }
         ProviderMessageId = providerMessageId;
         SentAt = now;
         UpdatedAt = now;

@@ -24,6 +24,78 @@ public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenant
         return await Collection.Find(PlatformMongoTransactionSession.Require(session, _dbContext), filter).FirstOrDefaultAsync(ct);
     }
 
+    /// <inheritdoc />
+    public Task RecordAdminInvitationAsync(
+        Guid tenantId, Guid? adminUserId, string stepKey, string stepStatus, string detail, DateTimeOffset at,
+        bool stampInvitedAt, Guid? invitationDispatchId, TenantActivityEvent activity, CancellationToken ct = default)
+    {
+        var filters = Builders<Tenant>.Filter;
+        return WriteAdminInvitationAsync(
+            filters.And(ExecutionFilter, filters.Eq(t => t.Id, tenantId)),
+            adminUserId, stepKey, stepStatus, detail, at, stampInvitedAt, invitationDispatchId, activity, ct);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> RecordUndeliveredInvitationAsync(
+        Guid tenantId, Guid adminUserId, Guid dispatchId, string stepKey, string detail, DateTimeOffset at,
+        TenantActivityEvent activity, CancellationToken ct = default)
+    {
+        // The condition is in the write itself: the administrator still Invited, and this dispatch still its current
+        // invitation — LastInvitationDispatchId equal to it, null, or absent ($in with null matches a missing field too).
+        var admin = Builders<TenantAdminUser>.Filter;
+        var filters = Builders<Tenant>.Filter;
+        var filter = filters.And(
+            ExecutionFilter,
+            filters.Eq(t => t.Id, tenantId),
+            filters.ElemMatch(t => t.AdminUsers, admin.And(
+                admin.Eq(a => a.Id, adminUserId),
+                admin.Eq(a => a.Status, TenantAdminUserStatus.Invited),
+                admin.In(a => a.LastInvitationDispatchId, new Guid?[] { dispatchId, null }))));
+
+        return await WriteAdminInvitationAsync(
+            filter, adminUserId, stepKey, "Failed", detail, at, stampInvitedAt: false, invitationDispatchId: null, activity, ct);
+    }
+
+    private async Task<bool> WriteAdminInvitationAsync(
+        FilterDefinition<Tenant> tenant, Guid? adminUserId, string stepKey, string stepStatus, string detail, DateTimeOffset at,
+        bool stampInvitedAt, Guid? invitationDispatchId, TenantActivityEvent activity, CancellationToken ct)
+    {
+        var filters = Builders<Tenant>.Filter;
+
+        // The step, when the tenant has none of that key yet (tenants made before the step existed).
+        await Collection.UpdateOneAsync(
+            filters.And(tenant, filters.Not(filters.ElemMatch(t => t.ProvisioningSteps, s => s.Key == stepKey))),
+            Builders<Tenant>.Update.Push(t => t.ProvisioningSteps,
+                new TenantProvisioningStep { Key = stepKey, Label = "Initial Admin Invitation", CreatedAt = at }),
+            cancellationToken: ct);
+
+        var update = Builders<Tenant>.Update
+            .Set("ProvisioningSteps.$[step].Status", stepStatus)
+            .Set("ProvisioningSteps.$[step].Detail", detail)
+            .Set("ProvisioningSteps.$[step].CompletedAt", at)
+            .Push(t => t.ActivityTimeline, activity);
+        var arrayFilters = new List<ArrayFilterDefinition>
+        {
+            new BsonDocumentArrayFilterDefinition<MongoDB.Bson.BsonDocument>(new MongoDB.Bson.BsonDocument("step.Key", stepKey))
+        };
+        if (adminUserId is { } id)
+        {
+            update = update.Set("AdminUsers.$[admin].UpdatedAt", at);
+            if (stampInvitedAt)
+            {
+                update = update
+                    .Set("AdminUsers.$[admin].InvitedAt", at)
+                    .Set("AdminUsers.$[admin].LastInvitationDispatchId", invitationDispatchId);
+            }
+
+            arrayFilters.Add(new BsonDocumentArrayFilterDefinition<MongoDB.Bson.BsonDocument>(
+                new MongoDB.Bson.BsonDocument("admin._id", new MongoDB.Bson.BsonBinaryData(id, MongoDB.Bson.GuidRepresentation.Standard))));
+        }
+
+        var result = await Collection.UpdateOneAsync(tenant, update, new UpdateOptions { ArrayFilters = arrayFilters }, ct);
+        return result.ModifiedCount == 1;
+    }
+
     public async Task<Tenant?> GetByCodeAsync(string code, CancellationToken ct = default)
     {
         var filter = Builders<Tenant>.Filter.And(

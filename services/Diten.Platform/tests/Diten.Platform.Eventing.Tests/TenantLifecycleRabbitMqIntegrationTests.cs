@@ -101,7 +101,8 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                     new TestHostEnvironment())]),
                 eventBus,
                 NullLogger<QueueEmailNotificationHandler>.Instance);
-            var mediator = new RecordingMediator(queueHandler, targetCount: 3);
+            var mediator = new RecordingMediator(queueHandler, targetCount: 2);
+            var invitations = new RecordingInvitations();
 
             var queueName = "tenant-lifecycle-mod-0009-" + Guid.NewGuid().ToString("N");
             var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
@@ -127,7 +128,7 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                         consumedStore,
                         tenantRepository,
                         mediator,
-                        new TenantCreatedV1NotificationMapper(),
+                        invitations,
                         new TenantSuspendedV1NotificationMapper(),
                         new TenantReactivatedV1NotificationMapper(),
                         NullLogger<TenantLifecycleNotificationConsumer>.Instance));
@@ -221,8 +222,11 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                 Assert.DoesNotContain("Sensitive suspension reason", auditMetadataJson, StringComparison.Ordinal);
                 Assert.Contains("[REDACTED]", auditMetadataJson, StringComparison.Ordinal);
 
-                Assert.Equal(3, mediator.Commands.Count);
-                Assert.Contains(mediator.Commands, command => command.Request.TemplateKey == "tenant.invite.email");
+                // BL-454 slice 2 stage D — the created event invites the initial administrator through the invitation
+                // service (AuthService account + one-time link); suspended and reactivated are mails.
+                var invited = Assert.Single(invitations.Invited);
+                Assert.Equal(initialAdminId, invited.Admin.Id);
+                Assert.Equal(2, mediator.Commands.Count);
                 Assert.Contains(mediator.Commands, command => command.Request.TemplateKey == "tenant.suspended.email");
                 Assert.Contains(mediator.Commands, command => command.Request.TemplateKey == "tenant.reactivated.email");
                 Assert.All(mediator.Commands, command =>
@@ -232,7 +236,7 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                 });
 
                 var dispatches = await dispatchRepository.ListByTenantAsync(tenantId, take: 20);
-                Assert.Equal(3, dispatches.Count);
+                Assert.Equal(2, dispatches.Count);
                 Assert.All(dispatches, dispatch =>
                 {
                     Assert.Equal(NotificationDispatchStatus.Sent, dispatch.Status);
@@ -615,4 +619,22 @@ internal sealed class PassThroughLocaleResolver
 {
     public Task<string> ResolveAsync(Guid tenantId, string? requested, CancellationToken ct = default)
         => Task.FromResult(string.IsNullOrWhiteSpace(requested) ? "en" : requested.Trim().ToLowerInvariant());
+
+    /// <summary>BL-454 slice 2 stage D — the invitation service, recorded (the created event's only effect here).</summary>
+    private sealed class RecordingInvitations : Diten.Platform.Application.Contracts.IAdminUserInvitationService
+    {
+        public List<(Tenant Tenant, TenantAdminUser Admin)> Invited { get; } = [];
+        public string? LinkRootRefusal() => null;
+
+        public Task<Diten.Platform.Application.Contracts.AdminUserInvitationResult> InviteAsync(
+            Tenant tenant, TenantAdminUser adminUser, Diten.Platform.Application.Contracts.AdminInvitationTrigger trigger, CancellationToken cancellationToken)
+        {
+            lock (Invited)
+            {
+                Invited.Add((tenant, adminUser));
+            }
+
+            return Task.FromResult(new Diten.Platform.Application.Contracts.AdminUserInvitationResult("https://login.test", "https://app.test/account/set-password", true, true));
+        }
+    }
 }

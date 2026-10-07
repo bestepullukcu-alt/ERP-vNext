@@ -85,6 +85,13 @@ public sealed class Tenant : GlobalEntity
 
 public sealed class TenantProvisioningStep
 {
+    /// <summary>
+    /// BL-454 stage D FIX2 (2) — the initial administrator's invitation. Its state is written ONLY by what knows it (the
+    /// tenant-created consumer, the operator's "Invite", the e-mail ledger); a subscription activation's "everything still
+    /// pending is now done" never touches it — the invitation is not done because the tenant was activated.
+    /// </summary>
+    public const string AdminInvitationKey = "admin-invitation";
+
     public required string Key { get; init; }
     public required string Label { get; init; }
     public string Status { get; set; } = "Pending";
@@ -110,6 +117,10 @@ public sealed class TenantAdminUser
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; }
     public DateTimeOffset? InvitedAt { get; set; }
+    /// <summary>BL-454 stage D FIX3 (1) — the notification dispatch that carries this administrator's CURRENT invitation
+    /// (written with <see cref="InvitedAt"/>). A dispatch that later fails for good marks the invitation step only while it is
+    /// still this one; null when the current invitation sent no e-mail, or on a record written before the field existed.</summary>
+    public Guid? LastInvitationDispatchId { get; set; }
     // FIX-TENANT-ADMIN-INVITE-ACTIVATION — stamped when the invited admin completes its forced first-login change.
     public DateTimeOffset? ActivatedAt { get; set; }
 }

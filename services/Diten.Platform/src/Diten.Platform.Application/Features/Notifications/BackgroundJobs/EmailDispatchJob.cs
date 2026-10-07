@@ -40,11 +40,15 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         IMessagingProviderResolver providerResolver,
         IMediator mediator,
         ILogger<EmailDispatchJob> logger,
+        Diten.Platform.Application.Contracts.ITenantAdminInvitationLedger invitationLedger,
         INotificationTemplateRepository? templateRepository = null,
         IEmailTemplateRenderer? renderer = null,
         IEmailShellComposer? shellComposer = null,
         Diten.Platform.Common.Tenancy.ITenantContext? tenantContext = null)
     {
+        // FIX2 K12 — required: a composition without the ledger fails to build instead of silently never marking the tenant.
+        ArgumentNullException.ThrowIfNull(invitationLedger);
+        _invitationLedger = invitationLedger;
         _tenantContext = tenantContext;
         _shellComposer = shellComposer;
         _dispatchRepository = dispatchRepository;
@@ -129,7 +133,8 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         // newRetryCount reaches args.MaxRetryCount, FindDueRetriesAsync's own `RetryCount < maxRetryCount` filter
         // will never surface this dispatch again — so this is the one and only transition where "no further
         // retry is coming" becomes true, never re-entered on a later sweep pass over the same terminal row.
-        var isPermanentFailure = newRetryCount >= args.MaxRetryCount;
+        var linkNotRetryable = string.Equals(result.ErrorCode, ReasonActionLinkNotRetryable, StringComparison.Ordinal);
+        var isPermanentFailure = newRetryCount >= args.MaxRetryCount || linkNotRetryable;
         // KS4 — the tenant boundary: the last failure's permanent path writes to tenant-scoped meeting stores.
         using (TenantScopeFor(dispatch.TenantId))
         {
@@ -146,7 +151,28 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
                     IsPermanentFailure: isPermanentFailure),
                 cancellationToken);
         }
+
+        // BL-454 stage D FIX1 K4 — a tenant administrator's invitation that can no longer be delivered leaves its mark on the
+        // tenant record ("admin-invitation" failed: invite again). Best effort: the dispatch row already says it, by name.
+        if (linkNotRetryable
+            && string.Equals(dispatch.TemplateKey, TenantInviteTemplateKey, StringComparison.Ordinal)
+            && dispatch.To.FirstOrDefault()?.Email is { Length: > 0 } adminEmail)
+        {
+            try
+            {
+                await _invitationLedger.RecordUndeliveredAsync(dispatch.TenantId, adminEmail, ReasonActionLinkNotRetryable, dispatch.Id, cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    "email.dispatch.invitation_mark_failed DispatchId={DispatchId} TenantId={TenantId} ExceptionType={ExceptionType}",
+                    dispatch.Id, dispatch.TenantId, ex.GetType().Name);
+            }
+        }
     }
+
+    private const string TenantInviteTemplateKey = "tenant.invite.email";
+    private readonly Diten.Platform.Application.Contracts.ITenantAdminInvitationLedger _invitationLedger;
 
     // The failed-command validator's own limits (MarkNotificationDispatchFailedValidator).
     private const int MaxErrorCodeLength = 128;
@@ -172,7 +198,8 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         var settings = await _settingsResolver.ResolveAsync(dispatch.TenantId, cancellationToken);
         if (!settings.IsSuccessful || settings.Data is null)
         {
-            return (MessagingProviderResult.Fail("SettingsUnresolved", "Tenant messaging settings could not be resolved."), null);
+            // BL-499 (2) — the row keeps the resolver's named reason (TENANT_SENDING_DISABLED …), not a generic one.
+            return (MessagingProviderResult.Fail(settings.ReasonCode ?? "SettingsUnresolved", "Tenant messaging settings could not be resolved."), null);
         }
 
         if (!Enum.TryParse<MessagingProviderCode>(settings.Data.ProviderCode, ignoreCase: true, out var providerCode))
@@ -191,6 +218,14 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
             : dispatch.CorrelationId;
 
         var (bodyHtml, bodyText, template, variables, degradedReason) = await ResolveRetryBodyAsync(dispatch, context, cancellationToken);
+        if (degradedReason == "VariablesRedacted" && await ActionLinkRedactedAsync(dispatch, cancellationToken))
+        {
+            // BL-454 slice 2 stage D — the mail's ACTION is a secret link (an invitation's one-time set-password link): the
+            // row never stored it, so a retry can only send the masked preview — a mail whose button is gone. That is not
+            // sent; the row closes as a permanent failure, by name. The reader is re-invited (a new link), not re-mailed.
+            return (MessagingProviderResult.Fail(ReasonActionLinkNotRetryable, ReasonActionLinkNotRetryable), null);
+        }
+
         var subject = EmailHeaderText.CleanSubject(dispatch.Subject);
         string? senderName = null;
         if (_shellComposer is not null)
@@ -288,6 +323,27 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         }
 
         return (rendered.Data.BodyHtml, rendered.Data.BodyText, template, variables, null);
+    }
+
+    /// <summary>BL-454 slice 2 stage D — a retry whose mail exists for a secret link the row never stored: closed, not sent.</summary>
+    public const string ReasonActionLinkNotRetryable = "ACTION_LINK_NOT_RETRYABLE";
+
+    // The template's action address is a variable whose stored value is the mask.
+    private async Task<bool> ActionLinkRedactedAsync(NotificationDispatch dispatch, CancellationToken ct)
+    {
+        if (_templateRepository is null || dispatch.TemplateId is not { } templateId)
+        {
+            return false;
+        }
+
+        var template = await _templateRepository.GetByIdAsync(templateId, ct);
+        if (template?.Shell?.ActionUrlVariable is not { Length: > 0 } actionVariable)
+        {
+            return false;
+        }
+
+        return NotificationVariables.FromJson(dispatch.VariablesJson).TryGetValue(actionVariable, out var value)
+               && string.Equals(value?.ToString(), QueueEmailNotificationHandler.RedactedToken, StringComparison.Ordinal);
     }
 
     // BL-454 — a Warning: a degraded retry sends the stored, masked preview (a subject or a link may read [REDACTED]).

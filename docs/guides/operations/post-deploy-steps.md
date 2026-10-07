@@ -145,6 +145,46 @@ beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı b
 herkesin bir kez oturum açma sayfasına düşmesi — hata değil. (3) Araç koşulmadıysa kuru koşusu sıfırdan büyük bir sayı
 verir.
 
+### 4 · BL-454 — E-posta dilim 2: kiracı yöneticisi davet bağlantısının kökü ve Mongo sürümü
+
+| | |
+|---|---|
+| **Modül** | MOD-0027 bildirimler + Auth — kiracı yöneticisi daveti (WP-EMAIL-SHELL-01 dilim 2, aşama D) |
+| **Ne zaman** | Dilim 2'yi taşıyan deploy'da, **ilk kiracı açılışından önce** |
+| **Yapılmazsa** | Yeni kiracının ilk yöneticisine davet e-postası **gitmez**: Platform `tenant.admin_invitation.not_sent ReasonCode=INVITE_LINK_ROOT_LOOPBACK` (ya da `…_MISSING`) yazar. Hesap Auth'ta açılmış olur; kök girildikten sonra kiracı ekranındaki "Davet et" bağlantıyı yeniden gönderir. |
+| **Kim** | Altyapı / deploy operatörü |
+
+1. **`AuthService:FrontendBaseUrl`** (Platform yapılandırması): kullanıcıların açtığı web adresinin kökü, ör.
+   `https://app.<alan-adı>`. Taban `appsettings.json` değeri `http://localhost:5001`'dir; Development dışında localhost
+   ya da boş kök reddedilir, çünkü düğmesi okuyanın kendi makinesini gösteren bir davet kimseyi içeri almaz. Davet
+   e-postası bu kökle BL-529'un tek kullanımlık "parola belirle" bağlantısını taşır (7 gün geçerli); parola içermez.
+2. **`Eventing:Transport=InMemory` ise yeni kiracı yöneticisi otomatik davet edilmez; operatör "Davet et"i kullanır.**
+   Bugünkü taban ayar InMemory'dir (BL-536). Bu durumda kiracı açılışındaki olay tüketicisi koşmaz. Kiracı kaydındaki
+   "Initial Admin Invitation" (`admin-invitation`) adımı **Bekliyor** kalır; operatör kiracı ekranında "Davet et"e basar.
+   Development dışında Platform başlangıçta bir kez uyarı yazar: `tenant.admin_invitation.automatic_off`.
+   RabbitMQ ile tüketici koşar ve adımı kendisi günceller: Tamamlandı ya da Başarısız + neden.
+   Olay yolu yalnız YENİ hesap yaratır; var olan hesaba dokunmaz.
+3. **Dağıtım sırası: önce Auth, sonra Platform.**
+   - Yeni Platform, kiracı açılış olayında Auth'un yeni `internal/events/tenant-admin-created` kapısını çağırır. Bu kapı yalnız yaratır.
+   - Eski bir Auth bu kapıya 404 döner: Platform kapalı başarısız olur, olay yeniden denenir. Hiçbir hesap sıfırlanmaz.
+   - **404 yeniden denemeleri tükenirse** (`Eventing:RetryCount`, taban 5; 10 sn'den 300 sn'ye üstel): olay tüketicinin hata
+     kuyruğunda bekler (MassTransit varsayılanı `TenantLifecycleNotification_error`; canlı adı ölçülmedi). Kiracının
+     `admin-invitation` adımı **Bekliyor** kalır ve ayrı bir uyarı **yoktur**; günlükte yalnız `Tenant admin provisioning
+     failed … StatusCode=404`. **Yeniden oynatma:** Auth güncellendikten sonra hata kuyruğundaki iletileri RabbitMQ yönetim
+     ekranından ("Move messages") ana kuyruğa taşıyın, ya da kiracı ekranında "Davet et"e basın. Olay yolu yalnız yaratır;
+     yeniden oynatmak var olan hesaba dokunmaz.
+   - Ters ara durum **yalnız `tenant-admin-created` kapısını bilmeyen Platform sürümleri için geçerlidir** (S2D-FIX2
+     `e3d3a7331`'den önceki her Platform). Yeni Auth ile böyle bir eski Platform birlikteyken, eski Platform'un "Davet et"i var
+     olan bir hesap için `trigger` göndermez. Yeni Auth bunu yalnız yaratır sayar ve `setupToken: null` döner. Eski Platform bu
+     cevabı okuyamaz ve operatöre 502 gösterir. Hiçbir hesap sıfırlanmaz; Platform da güncellenince düzelir.
+4. **Mongo sürümü:** gönderim satırlarının "etkileri bekliyor" dizini (`ix_notification_dispatches_permanent_effects_pending`)
+   dizi değerli bir alanda `$eq` kısmi filtresi kullanır (`DateTimeOffset` `[ticks, offset]` olarak saklanır). Bu yalnız
+   dev Mongo **7.0.28**'de ölçüldü. Canlı Mongo sürümü farklıysa deploy'dan sonra dizinin var olduğunu
+   (`db.notification_dispatches.getIndexes()`) ve başlangıç günlüğünde dizin hatası olmadığını kontrol edin.
+
+**Belirti:** (1) kiracı açılışından sonra ilk yöneticinin e-postası gelmez ve Platform günlüğünde `INVITE_LINK_ROOT_…`.
+(2) Başlangıçta `IndexOptionsConflict` ya da kısmi filtre hatası.
+
 ---
 
 ## Tamamlananlar
