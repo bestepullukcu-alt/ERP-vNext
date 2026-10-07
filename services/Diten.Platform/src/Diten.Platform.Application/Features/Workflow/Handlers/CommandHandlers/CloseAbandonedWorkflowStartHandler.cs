@@ -67,6 +67,10 @@ public sealed class CloseAbandonedWorkflowStartHandler
         }
 
         var now = DateTimeOffset.UtcNow;
+        // FIX1 item 7 — the floor holds HERE too, not only in the job: whoever sends the command cannot close a start
+        // younger than the minimum (a replay still has that long to complete it).
+        var floor = TimeSpan.FromMinutes(WorkflowStartRecoveryOptions.MinimumAbandonAfterMinutes);
+        request = request with { MinimumAge = request.MinimumAge < floor ? floor : request.MinimumAge };
         if (instance.TrustedConsumerClientId is not null)
         {
             return await CloseIncompleteTrustedStartAsync(instance, request, now, ct);

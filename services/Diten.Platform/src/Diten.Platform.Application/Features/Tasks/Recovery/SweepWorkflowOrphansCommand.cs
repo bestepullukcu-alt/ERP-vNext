@@ -7,7 +7,9 @@ using MediatR;
 namespace Diten.Platform.Application.Features.Tasks.Recovery;
 
 /// <summary>
-/// BL-540 (1) — THE ORPHAN RECOVERY, for an operator holding the non-human key <see cref="WorkflowPermissions.OrphansRecover"/>.
+/// BL-540 (1) — THE ORPHAN RECOVERY. FIX1 (CT decision D): no HTTP endpoint and no permission key — it runs only as the
+/// operator's one-shot command on the server (<see cref="WorkflowOrphanRecoveryCommandLine"/>, `--run-workflow-orphan-recovery`);
+/// the right to run it is access to the server and its environment.
 /// An orphan is an approval or review the Task Center no longer owns and nobody reads, yet it stays live and decidable (and
 /// the SLA sweep escalates it):
 /// <list type="bullet">
@@ -20,10 +22,16 @@ namespace Diten.Platform.Application.Features.Tasks.Recovery;
 /// command (<see cref="CancelWorkflowTaskCommand"/>; its log, completion event and audit row), under the recovery's
 /// system actor. Tenant-scoped (the caller's tenant). Upward requests (BL-540 (2)) are not looked at.</para>
 /// </summary>
+/// <param name="After">FIX1 item 5 — resume after this instance id (the <see cref="WorkflowOrphanSweepResult.NextAfter"/> of the
+/// previous call): the scan walks EVERY open instance page by page; a call stops only when it has found
+/// <paramref name="MaxItems"/> orphans, and then says where to go on.</param>
 public sealed record SweepWorkflowOrphansCommand(
     bool Apply,
     int MaxItems,
-    string CorrelationId) : IRequest<Response<WorkflowOrphanSweepResult>>, IAuditableCommand, IAuditMetadataProvider
+    string CorrelationId,
+    Guid? After = null,
+    string? Tool = null,
+    string? Host = null) : IRequest<Response<WorkflowOrphanSweepResult>>, IAuditableCommand, IAuditMetadataProvider
 {
     public const string SystemActor = "system:workflow-orphan-recovery";
     public const string TaskDeleted = "TASK_DELETED";
@@ -39,17 +47,21 @@ public sealed record SweepWorkflowOrphansCommand(
         {
             ["EventName"] = Apply ? "workflow.orphans.close" : "workflow.orphans.dry-run",
             ["Apply"] = Apply,
-            ["MaxItems"] = MaxItems
+            ["MaxItems"] = MaxItems,
+            // FIX1 (CT decision D) — the one-shot command that ran it, and on which machine. No personal data.
+            ["Tool"] = Tool,
+            ["Host"] = Host
         });
 }
 
-public sealed record WorkflowOrphanSweepRequest(bool Apply = false, int? MaxItems = null);
-
+/// <param name="More">The call stopped at <c>MaxItems</c> orphans: call again with <paramref name="NextAfter"/>.</param>
 public sealed record WorkflowOrphanSweepResult(
     bool DryRun,
     int Found,
     int Closed,
-    IReadOnlyList<WorkflowOrphanItem> Items);
+    IReadOnlyList<WorkflowOrphanItem> Items,
+    bool More = false,
+    Guid? NextAfter = null);
 
 /// <param name="Outcome">null on a dry run; otherwise <c>CLOSED</c>, or the reason code the cancel answered.</param>
 public sealed record WorkflowOrphanItem(

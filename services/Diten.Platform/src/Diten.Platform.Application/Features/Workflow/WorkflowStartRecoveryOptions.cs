@@ -21,6 +21,12 @@ public sealed class WorkflowStartRecoveryOptions
     /// <summary>How many abandoned starts one tenant's cycle closes at most; the rest wait for the next cycle.</summary>
     public int MaxClosesPerTenant { get; set; } = 100;
 
+    /// <summary>FIX1 item 4 — while the recovery job is off, a read-only cycle still feeds the gauges.</summary>
+    public bool CountWhileSweepIsOff { get; set; } = true;
+
+    /// <summary>FIX1 item 4 — how often that read-only cycle runs.</summary>
+    public int CountIntervalMinutes { get; set; } = 10;
+
     internal static TimeSpan AbandonAfterOf(WorkflowStartRecoveryOptions? options) =>
         TimeSpan.FromMinutes(Math.Max(MinimumAbandonAfterMinutes, options?.AbandonAfterMinutes ?? DefaultAbandonAfterMinutes));
 }

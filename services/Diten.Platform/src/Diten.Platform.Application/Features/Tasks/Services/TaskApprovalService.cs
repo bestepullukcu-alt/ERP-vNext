@@ -196,6 +196,7 @@ public sealed class TaskApprovalService : ITaskApprovalService
              */
             var latest = await _instances.GetLatestByObjectRefAsync(
                 BuildObjectRef(task.Id), ApprovalObjectType, task.Id.ToString(), ct);
+            string? halfStartKey = null;
             if (latest is not null && IsOpen(latest.Status))
             {
                 if ((await OpenTasksAsync(latest.Id, ct)).Count > 0)
@@ -203,10 +204,18 @@ public sealed class TaskApprovalService : ITaskApprovalService
                     return latest.Id;
                 }
 
-                _logger.LogWarning(
-                    "The live approval {InstanceId} of task {TaskId} has no open task in the engine: its start was never completed, "
-                    + "so it is neither adopted nor replaced.", latest.Id, task.Id);
-                return null;
+                // WP-WF-ENGINE-RECOVERY-01 FIX1 item 3 — a half start is completed: the start below is replayed under the
+                // round's own key and the same facts, the engine writes the missing task (BL-549) and the round is linked.
+                // Changed facts get the engine's 409 and the task stays gated, as before.
+                if (string.IsNullOrWhiteSpace(latest.IdempotencyKey))
+                {
+                    _logger.LogWarning(
+                        "The live approval {InstanceId} of task {TaskId} has no open task in the engine and no key to complete it "
+                        + "with: it is neither adopted nor replaced.", latest.Id, task.Id);
+                    return null;
+                }
+
+                halfStartKey = latest.IdempotencyKey;
             }
 
             var templateId = await EnsureTemplateAsync(ct);
@@ -229,7 +238,8 @@ public sealed class TaskApprovalService : ITaskApprovalService
                 ReasonCode: null,
                 // Idempotent per ROUND (D2-FIX5 item 3): a retried start must not open a second approval for the same work, and
                 // a new round after a closed one must not replay it. The first round's key is the task's own, unchanged.
-                IdempotencyKey: $"task-approval:{_tenantContext.TenantId}:{task.Id}" + (latest is null ? string.Empty : $":{latest.Id}"),
+                IdempotencyKey: halfStartKey
+                    ?? $"task-approval:{_tenantContext.TenantId}:{task.Id}" + (latest is null ? string.Empty : $":{latest.Id}"),
                 CommentRequired: false,
                 EvidenceRequired: false,
                 DueAt: task.DueAt);

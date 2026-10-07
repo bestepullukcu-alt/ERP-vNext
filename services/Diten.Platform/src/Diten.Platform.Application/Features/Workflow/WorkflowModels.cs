@@ -21,10 +21,6 @@ public static class WorkflowPermissions
     public const string EscalationsManage = "platform.workflow.escalations.manage";
     public const string EscalationsRun = "platform.workflow.escalations.run";
     public const string TransitionsEvaluate = "platform.workflow.transitions.evaluate";
-
-    /// <summary>BL-540 (1) — the operator's orphan recovery (count, list, close). A NON-HUMAN key: Auth refuses it to any human
-    /// role (DefaultRolePermissionTemplate.NonHumanPermissionKeys); only a service client may hold it.</summary>
-    public const string OrphansRecover = "platform.workflow.orphans.recover";
 }
 
 public static class WorkflowReasonCodes

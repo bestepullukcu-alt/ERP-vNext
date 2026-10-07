@@ -21,14 +21,17 @@ public sealed class SweepWorkflowOrphansHandler
     private readonly IApprovalTaskRepository _approvalTasks;
     private readonly ITaskItemRepository _taskItems;
     private readonly IMediator _mediator;
+    private readonly int _scanPageSize;
 
     public SweepWorkflowOrphansHandler(
         IWorkflowStartRecoveryStore store,
         IWorkflowInstanceRepository instances,
         IApprovalTaskRepository approvalTasks,
         ITaskItemRepository taskItems,
-        IMediator mediator)
+        IMediator mediator,
+        int scanPageSize = DefaultMaxItems)
     {
+        _scanPageSize = Math.Max(1, scanPageSize);
         _store = store;
         _instances = instances;
         _approvalTasks = approvalTasks;
@@ -39,67 +42,87 @@ public sealed class SweepWorkflowOrphansHandler
     public async Task<Response<WorkflowOrphanSweepResult>> Handle(SweepWorkflowOrphansCommand request, CancellationToken ct)
     {
         var max = request.MaxItems <= 0 ? DefaultMaxItems : Math.Min(request.MaxItems, MaxMaxItems);
-        var open = await _store.ListOpenGenericInstancesAsync(
-            [TaskApprovalService.ApprovalObjectType, TaskReviewService.ReviewObjectType], max, ct);
-
-        var taskIds = open.Select(i => Guid.TryParse(i.ObjectId, out var id) ? id : Guid.Empty)
-            .Where(id => id != Guid.Empty).Distinct().ToList();
-        var liveTasks = (await _taskItems.ListByIdsAsync(taskIds, ct)).ToDictionary(t => t.Id);
-
         var now = DateTimeOffset.UtcNow;
         var items = new List<WorkflowOrphanItem>();
         var closed = 0;
-        foreach (var instance in open)
+        var after = request.After;
+        while (true)
         {
-            var reason = await OrphanReasonAsync(instance, liveTasks, ct);
-            if (reason is null)
+            // FIX1 item 5 — page by page over EVERY open instance; an orphan beyond the first page is not out of sight.
+            var page = await _store.ListOpenGenericInstancesAsync(
+                [TaskApprovalService.ApprovalObjectType, TaskReviewService.ReviewObjectType], _scanPageSize, after, ct);
+            if (page.Count == 0)
             {
-                continue;
+                break;
             }
 
-            var openTasks = (await _approvalTasks.ListByInstanceIdAsync(instance.Id, ct))
-                .Where(t => t.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence
-                    or ApprovalTaskStatus.Escalated)
-                .Select(t => t.Id)
-                .ToList();
-            string? outcome = null;
-            if (request.Apply)
+            var taskIds = page.Select(i => Guid.TryParse(i.ObjectId, out var id) ? id : Guid.Empty)
+                .Where(id => id != Guid.Empty).Distinct().ToList();
+            var liveTasks = (await _taskItems.ListByIdsAsync(taskIds, ct)).ToDictionary(t => t.Id);
+            foreach (var instance in page)
             {
-                outcome = openTasks.Count == 0 ? "NO_OPEN_TASK" : "CLOSED";
-                foreach (var taskId in openTasks)
+                after = instance.Id;
+                var reason = await OrphanReasonAsync(instance, liveTasks, ct);
+                if (reason is null)
                 {
-                    var cancelled = await _mediator.Send(new CancelWorkflowTaskCommand(
-                        taskId,
-                        new CancelWorkflowTaskRequest(
-                            SweepWorkflowOrphansCommand.SystemActor,
-                            WorkflowReasonCodes.WorkflowOrphanClosed,
-                            $"workflow-orphan-recovery:{taskId:N}",
-                            reason),
-                        request.CorrelationId,
-                        // An orphan is often escalated (the SLA sweep kept escalating it); nobody owns it to withdraw it.
-                        AllowEscalated: true), ct);
-                    if (!cancelled.IsSuccessful)
+                    continue;
+                }
+
+                var openTasks = (await _approvalTasks.ListByInstanceIdAsync(instance.Id, ct))
+                    .Where(t => t.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence
+                        or ApprovalTaskStatus.Escalated)
+                    .Select(t => t.Id)
+                    .ToList();
+                string? outcome = null;
+                if (request.Apply)
+                {
+                    outcome = openTasks.Count == 0 ? "NO_OPEN_TASK" : "CLOSED";
+                    foreach (var taskId in openTasks)
                     {
-                        outcome = cancelled.ReasonCode ?? "FAILED";
-                        break;
+                        var cancelled = await _mediator.Send(new CancelWorkflowTaskCommand(
+                            taskId,
+                            new CancelWorkflowTaskRequest(
+                                SweepWorkflowOrphansCommand.SystemActor,
+                                WorkflowReasonCodes.WorkflowOrphanClosed,
+                                $"workflow-orphan-recovery:{taskId:N}",
+                                reason),
+                            request.CorrelationId,
+                            // An orphan is often escalated (the SLA sweep kept escalating it); nobody owns it to withdraw it.
+                            AllowEscalated: true), ct);
+                        if (!cancelled.IsSuccessful)
+                        {
+                            outcome = cancelled.ReasonCode ?? "FAILED";
+                            break;
+                        }
+                    }
+
+                    if (outcome == "CLOSED")
+                    {
+                        closed++;
                     }
                 }
 
-                if (outcome == "CLOSED")
+                items.Add(new WorkflowOrphanItem(
+                    instance.Id,
+                    instance.ObjectType,
+                    instance.ObjectId,
+                    instance.Status.ToString(),
+                    (int)Math.Max(0, (now - (instance.StartedAt ?? instance.CreatedAt)).TotalMinutes),
+                    reason,
+                    openTasks,
+                    outcome));
+                if (items.Count >= max)
                 {
-                    closed++;
+                    return Response<WorkflowOrphanSweepResult>.Success(
+                        new WorkflowOrphanSweepResult(!request.Apply, items.Count, closed, items, More: true, NextAfter: after),
+                        correlationId: request.CorrelationId);
                 }
             }
 
-            items.Add(new WorkflowOrphanItem(
-                instance.Id,
-                instance.ObjectType,
-                instance.ObjectId,
-                instance.Status.ToString(),
-                (int)Math.Max(0, (now - (instance.StartedAt ?? instance.CreatedAt)).TotalMinutes),
-                reason,
-                openTasks,
-                outcome));
+            if (page.Count < _scanPageSize)
+            {
+                break;
+            }
         }
 
         return Response<WorkflowOrphanSweepResult>.Success(

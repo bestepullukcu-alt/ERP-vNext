@@ -55,7 +55,7 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
         _options = options?.Value ?? new WorkflowStartRecoveryOptions();
     }
 
-    public async Task HandleAsync(
+    public Task HandleAsync(
         WorkflowStartRecoverySweepJobArgs args,
         BackgroundJobContext context,
         CancellationToken cancellationToken = default)
@@ -63,10 +63,21 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(args);
         ArgumentNullException.ThrowIfNull(context);
-
-        var abandonAfter = WorkflowStartRecoveryOptions.AbandonAfterOf(_options);
         var maxCloses = args.MaxClosesPerTenant > 0 ? args.MaxClosesPerTenant : Math.Max(1, _options.MaxClosesPerTenant);
-        var correlationId = context.EffectiveCorrelationId.ToString();
+        return RunCycleAsync(close: true, maxCloses, context.EffectiveCorrelationId.ToString(), cancellationToken);
+    }
+
+    /// <summary>
+    /// FIX1 item 4 — THE COUNT WITHOUT THE CLOSE. While the job is off (its default) the gauges are still fed: this cycle
+    /// reads and records exactly what the job would have found, and closes nothing
+    /// (<see cref="WorkflowStartRecoveryCountingService"/> runs it).
+    /// </summary>
+    public Task CountOnlyAsync(string correlationId, CancellationToken cancellationToken = default) =>
+        RunCycleAsync(close: false, Math.Max(1, _options.MaxClosesPerTenant), correlationId, cancellationToken);
+
+    private async Task RunCycleAsync(bool close, int maxCloses, string correlationId, CancellationToken cancellationToken)
+    {
+        var abandonAfter = WorkflowStartRecoveryOptions.AbandonAfterOf(_options);
         var tenants = await _tenantRegistry.GetActiveTenantsAsync(cancellationToken);
         var cycle = new Cycle();
 
@@ -77,7 +88,7 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
             {
                 using (TenantScope.Begin(_tenantContext, tenant.Id))
                 {
-                    await RunTenantAsync(tenant.Id, abandonAfter, maxCloses, correlationId, cycle, cancellationToken);
+                    await RunTenantAsync(tenant.Id, close, abandonAfter, maxCloses, correlationId, cycle, cancellationToken);
                 }
             }
             catch (OperationCanceledException)
@@ -99,14 +110,16 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
             : LogLevel.Information;
         _logger.Log(
             level,
-            "workflow.start_recovery.cycle Tenants={Tenants} Abandoned={Abandoned} Closed={Closed} Stuck={Stuck} "
-            + "IncompleteTrusted={IncompleteTrusted} FailedTenants={FailedTenants} AbandonAfterMinutes={AbandonAfterMinutes} CorrelationId={CorrelationId}",
-            tenants.Count, cycle.Abandoned, cycle.Closed, cycle.Stuck, cycle.IncompleteTrusted, cycle.FailedTenants,
-            (int)abandonAfter.TotalMinutes, correlationId);
+            "workflow.start_recovery.cycle Mode={Mode} Tenants={Tenants} Abandoned={Abandoned} Closed={Closed} Raced={Raced} "
+            + "Deferred={Deferred} Stuck={Stuck} IncompleteTrusted={IncompleteTrusted} FailedTenants={FailedTenants} "
+            + "AbandonAfterMinutes={AbandonAfterMinutes} CorrelationId={CorrelationId}",
+            close ? "close" : "count-only", tenants.Count, cycle.Abandoned, cycle.Closed, cycle.Raced, cycle.Deferred, cycle.Stuck,
+            cycle.IncompleteTrusted, cycle.FailedTenants, (int)abandonAfter.TotalMinutes, correlationId);
     }
 
     private async Task RunTenantAsync(
         Guid tenantId,
+        bool close,
         TimeSpan abandonAfter,
         int maxCloses,
         string correlationId,
@@ -114,39 +127,72 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
         CancellationToken ct)
     {
         var cutoff = DateTimeOffset.UtcNow - abandonAfter;
-        var abandoned = await _store.CountAbandonedGenericStartsAsync(cutoff, ct);
+        var (abandonedPage, abandoned) = await _store.FindAbandonedGenericStartsAsync(cutoff, maxCloses, ct);
         var incompleteTrusted = await _store.CountIncompleteTrustedStartsAsync(cutoff, ct);
         var stuck = 0L;
-        var candidates = (await _store.ListAbandonedGenericStartsAsync(cutoff, maxCloses, ct))
-            .Concat(await _store.ListIncompleteTrustedStartsAsync(cutoff, maxCloses, ct));
 
-        foreach (var instance in candidates)
+        if (close)
         {
-            var closed = await _mediator.Send(new CloseAbandonedWorkflowStartCommand(instance.Id, abandonAfter, correlationId), ct);
-            if (closed.IsSuccessful)
+            var candidates = abandonedPage.Concat(await _store.ListIncompleteTrustedStartsAsync(cutoff, maxCloses, ct));
+            foreach (var instance in candidates)
             {
-                cycle.Closed++;
-                _metrics.Unstuck(instance.Id);
-                continue;
-            }
+                string? failure;
+                try
+                {
+                    var closed = await _mediator.Send(new CloseAbandonedWorkflowStartCommand(instance.Id, abandonAfter, correlationId), ct);
+                    if (closed.IsSuccessful)
+                    {
+                        cycle.Closed++;
+                        _metrics.Unstuck(instance.Id);
+                        continue;
+                    }
 
-            if (closed.ReasonCode == WorkflowReasonCodes.WorkflowStartNotAbandoned)
-            {
-                continue; // a replay completed it (or it moved) between the read and the close: nothing to do
-            }
+                    // FIX1 item 4 — only a real failure is "stuck". A start that moved between the read and the close (a replay
+                    // completed it, it is not abandoned any more) and a close that lost its versioned race are the recovery
+                    // working as designed; a store that was unavailable is retried next cycle. Neither is named at Error.
+                    if (closed.ReasonCode == WorkflowReasonCodes.WorkflowStartNotAbandoned)
+                    {
+                        continue;
+                    }
 
-            stuck++;
-            if (_metrics.FirstStuckReport(instance.Id))
-            {
-                _logger.LogError(
-                    "workflow.start_recovery.stuck Instance {InstanceId} of tenant {TenantId} could not be closed ({ReasonCode}); it stays Active without a task.",
-                    instance.Id, tenantId, closed.ReasonCode);
-            }
-            else
-            {
-                _logger.LogInformation(
-                    "workflow.start_recovery.still_stuck Instance {InstanceId} of tenant {TenantId} is still stuck ({ReasonCode}).",
-                    instance.Id, tenantId, closed.ReasonCode);
+                    if (closed.StatusCode == 409 && closed.ReasonCode == WorkflowReasonCodes.WorkflowTransitionConflict)
+                    {
+                        cycle.Raced++;
+                        _logger.LogInformation(
+                            "workflow.start_recovery.raced Instance {InstanceId} of tenant {TenantId} moved while it was being closed; left to the replay.",
+                            instance.Id, tenantId);
+                        continue;
+                    }
+
+                    if (closed.StatusCode == 503)
+                    {
+                        cycle.Deferred++;
+                        _logger.LogInformation(
+                            "workflow.start_recovery.deferred Instance {InstanceId} of tenant {TenantId} could not be written now; next cycle.",
+                            instance.Id, tenantId);
+                        continue;
+                    }
+
+                    failure = closed.ReasonCode ?? closed.StatusCode.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    failure = ex.GetType().Name;
+                }
+
+                stuck++;
+                if (_metrics.FirstStuckReport(instance.Id))
+                {
+                    _logger.LogError(
+                        "workflow.start_recovery.stuck Instance {InstanceId} of tenant {TenantId} could not be closed ({ReasonCode}); it stays open with nothing to decide.",
+                        instance.Id, tenantId, failure);
+                }
+                else
+                {
+                    _logger.LogInformation(
+                        "workflow.start_recovery.still_stuck Instance {InstanceId} of tenant {TenantId} is still stuck ({ReasonCode}).",
+                        instance.Id, tenantId, failure);
+                }
             }
         }
 
@@ -160,6 +206,8 @@ public sealed class WorkflowStartRecoverySweepJob : IBackgroundJobHandler<Workfl
     {
         public long Abandoned { get; set; }
         public long Closed { get; set; }
+        public long Raced { get; set; }
+        public long Deferred { get; set; }
         public long Stuck { get; set; }
         public long IncompleteTrusted { get; set; }
         public int FailedTenants { get; set; }

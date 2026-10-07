@@ -106,6 +106,15 @@ public static partial class PlatformSchemaManifest
                             .Ascending(x => x.TenantId)
                             .Ascending(x => x.WorkflowTemplateId),
                         new CreateIndexOptions { Name = "ix_workflow_instances_tenant_template" }),
+                    // WP-WF-ENGINE-RECOVERY-01 FIX1 K3 — the start recovery's read (WorkflowStartRecoveryStore): the open
+                    // instances of a tenant that have not moved since a bound. One array field (LastTransitionAt, BL-030),
+                    // so a valid compound index.
+                    new CreateIndexModel<WorkflowInstance>(
+                        Builders<WorkflowInstance>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.Status)
+                            .Ascending(x => x.LastTransitionAt),
+                        new CreateIndexOptions { Name = "ix_workflow_instances_tenant_status_last_transition" }),
                     new CreateIndexModel<WorkflowInstance>(
                         Builders<WorkflowInstance>.IndexKeys
                             .Ascending(x => x.TenantId)

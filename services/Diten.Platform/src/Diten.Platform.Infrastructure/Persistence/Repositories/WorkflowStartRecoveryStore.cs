@@ -27,24 +27,36 @@ public sealed class WorkflowStartRecoveryStore : TenantRepository<WorkflowInstan
     {
     }
 
-    public async Task<IReadOnlyList<WorkflowInstance>> ListAbandonedGenericStartsAsync(
+    public async Task<(IReadOnlyList<WorkflowInstance> Page, long Total)> FindAbandonedGenericStartsAsync(
         DateTimeOffset movedBeforeUtc,
         int maxItems,
         CancellationToken ct = default)
     {
+        // FIX1 K3 — one pass: the $lookup runs once, and $facet splits its result into the page and the count.
         var pipeline = AbandonedPipeline(movedBeforeUtc);
-        pipeline.Add(new BsonDocument("$sort", new BsonDocument("_id", 1)));
-        pipeline.Add(new BsonDocument("$limit", Math.Max(1, maxItems)));
-        pipeline.Add(new BsonDocument("$project", new BsonDocument("_task", 0)));
-        return await Collection.Aggregate<WorkflowInstance>(pipeline, cancellationToken: ct).ToListAsync(ct);
-    }
-
-    public async Task<long> CountAbandonedGenericStartsAsync(DateTimeOffset movedBeforeUtc, CancellationToken ct = default)
-    {
-        var pipeline = AbandonedPipeline(movedBeforeUtc);
-        pipeline.Add(new BsonDocument("$count", "n"));
+        pipeline.Add(new BsonDocument("$facet", new BsonDocument
+        {
+            {
+                "page", new BsonArray
+                {
+                    new BsonDocument("$sort", new BsonDocument("_id", 1)),
+                    new BsonDocument("$limit", Math.Max(1, maxItems)),
+                    new BsonDocument("$project", new BsonDocument("_task", 0))
+                }
+            },
+            { "total", new BsonArray { new BsonDocument("$count", "n") } }
+        }));
         var result = await Collection.Aggregate<BsonDocument>(pipeline, cancellationToken: ct).FirstOrDefaultAsync(ct);
-        return result is null ? 0 : result["n"].ToInt64();
+        if (result is null)
+        {
+            return ([], 0);
+        }
+
+        var page = result["page"].AsBsonArray
+            .Select(document => BsonSerializer.Deserialize<WorkflowInstance>(document.AsBsonDocument))
+            .ToList();
+        var total = result["total"].AsBsonArray.Count == 0 ? 0 : result["total"][0]["n"].ToInt64();
+        return (page, total);
     }
 
     public async Task<long> CountIncompleteTrustedStartsAsync(DateTimeOffset movedBeforeUtc, CancellationToken ct = default) =>
@@ -73,13 +85,16 @@ public sealed class WorkflowStartRecoveryStore : TenantRepository<WorkflowInstan
     public async Task<IReadOnlyList<WorkflowInstance>> ListOpenGenericInstancesAsync(
         IReadOnlyCollection<string> objectTypes,
         int maxItems,
+        Guid? afterId = null,
         CancellationToken ct = default)
     {
+        // FIX1 item 5 — a page AFTER a cursor (by id), so the caller can walk every open instance, not only the first page.
         var filter = Builders<WorkflowInstance>.Filter.And(
             ExecutionFilter,
             Builders<WorkflowInstance>.Filter.Eq(x => x.TrustedConsumerClientId, null),
             Builders<WorkflowInstance>.Filter.In(x => x.Status, OpenStatuses),
-            Builders<WorkflowInstance>.Filter.In(x => x.ObjectType, objectTypes));
+            Builders<WorkflowInstance>.Filter.In(x => x.ObjectType, objectTypes),
+            afterId is { } after ? Builders<WorkflowInstance>.Filter.Gt(x => x.Id, after) : Builders<WorkflowInstance>.Filter.Empty);
         return await Collection.Find(filter).SortBy(x => x.Id).Limit(Math.Max(1, maxItems)).ToListAsync(ct);
     }
 

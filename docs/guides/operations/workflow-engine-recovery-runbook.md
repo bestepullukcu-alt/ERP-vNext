@@ -39,6 +39,13 @@ before it looks the key up again; the reservation may be closed only once it has
 `StartSettleSeconds` (default 120 seconds). Raising a consumer's window above the age breaks this rule — raise the age
 first.
 
+⚠ MDM's own validation accepts `StartSettleSeconds` up to **3600 seconds (60 minutes)** in every workflow worker section
+(for example `GlobalProductCorrectionWorkflowWorker`, `GskuCorrectionWorkflowWorker`). That is longer than the default
+age (30 minutes) and far longer than the floor (15 minutes): MDM does not stop an operator from breaking this rule.
+Before any MDM window is set above 25 minutes, set `Workflow:StartRecovery:AbandonAfterMinutes` to at least that window
+plus 5 minutes. Checked on each change: compare every `*WorkflowWorker:StartSettleSeconds` in MDM's environment with the
+age here.
+
 ## What to watch
 
 The job writes one line per cycle, `workflow.start_recovery.cycle` (tenants, abandoned, closed, stuck, incomplete trusted,
@@ -62,16 +69,36 @@ Today's contract has no "cancel by key". A consumer (MDM) that wants to withdraw
 candidate who decides in that window wins; the cancel then answers a conflict. A cancel by key that never opens the task
 is backlog BL-560 (a Platform endpoint and the MDM link, together).
 
-## The orphan recovery (BL-540 (1)) — run by hand, on purpose
+## The orphan recovery (BL-540 (1)) — a one-shot command, run by hand, on purpose
 
-`POST api/v1/workflow/operator/orphans`, permission `platform.workflow.orphans.recover`. **That permission cannot be
-given to a person's role** (Auth refuses it); only a service client may hold it, and granting it is the owner's step.
+There is **no HTTP endpoint and no permission key**: the recovery is a command the operator runs on the Platform server,
+against the Platform API host. The right to run it is access to that server and its environment (SAP: an administrator's
+background report; Oracle: an ESS job).
 
-- **Dry run by default:** body `{}` or `{"apply": false}` counts and lists the orphans of the caller's tenant (instance id,
-  object, age, reason — no personal data) and writes nothing.
-- **`{"apply": true}`** cancels each orphan's open approval task through the engine's own cancel (log, completion event,
-  audit row), actor `system:workflow-orphan-recovery`, reason `WORKFLOW_ORPHAN_CLOSED`.
+The host reads its own configuration — `appsettings.json`, `appsettings.<environment>.json` and the environment
+variables, among them `MongoDbSettings__ConnectionString`, `MongoDbSettings__DatabaseName` and `ASPNETCORE_ENVIRONMENT`.
+Their **values** come from the server's secret store and are never typed on the command line, written here, or printed by
+the command.
+
+From the API host's folder, first the **dry run** (one tenant per run; lists and counts, closes nothing):
+
+```bash
+dotnet Diten.Platform.API.dll --run-workflow-orphan-recovery --tenant <tenant-id>
+```
+
+then, after reading the list, **apply** (N = the dry run's count):
+
+```bash
+dotnet Diten.Platform.API.dll --run-workflow-orphan-recovery --tenant <tenant-id> --apply --expect N
+```
+
 - An orphan is an approval or review whose task is gone (`TASK_DELETED`), or a review round a later round replaced
-  (`REVIEW_ROUND_REPLACED`). The latest round of a task is never one. Upward requests are not looked at.
-
-Run the dry run first and read the list. Running it against shared or live data is the owner's decision, not a routine.
+  (`REVIEW_ROUND_REPLACED`). The latest round of a task is never one. Upward requests are not looked at. Every open
+  instance of the tenant is scanned, page by page.
+- `--apply` cancels each orphan's open approval task through the engine's own cancel (log, completion event, audit row),
+  actor `system:workflow-orphan-recovery`, reason `WORKFLOW_ORPHAN_CLOSED`.
+- Each pass writes an audit row (actor System; `Tool = workflow-orphans`, `Host = <machine name>`; no personal data).
+- **Exit codes:** 0 done · 1 failure (only the exception's type is printed — never a message, never the connection) ·
+  2 usage (`--tenant` is required) · 4 some orphans were not closed (listed) · 5 the count was not the expected one
+  (nothing closed).
+- Running it against shared or live data is the owner's decision, not a routine.

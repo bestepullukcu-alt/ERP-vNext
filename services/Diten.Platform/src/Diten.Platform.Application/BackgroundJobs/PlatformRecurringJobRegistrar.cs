@@ -152,7 +152,7 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
         const string id = "Diten.Platform.MOD-0023.WorkflowStartRecoverySweepJob";
         const string jobName = "WorkflowStartRecoverySweepJob";
         const string owner = "MOD-0023";
-        const string cron = "*/10 * * * *"; // every 10 minutes; a start is abandoned only after 30 (at least 5)
+        const string cron = "*/10 * * * *"; // every 10 minutes; a start is abandoned only after 30 (at least 15)
 
         var enabled = _options.RegisterStandardJobs
                       && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)

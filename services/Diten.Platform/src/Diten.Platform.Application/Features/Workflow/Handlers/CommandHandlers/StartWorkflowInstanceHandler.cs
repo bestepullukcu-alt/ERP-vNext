@@ -280,6 +280,19 @@ public sealed class StartWorkflowInstanceHandler
             createdInstance = reserved.Instance;
         }
 
+        /*
+         * FIX1 item 2 — THE TASK GOES IN ONLY UNDER A CLAIM. A first call that stopped between its instance and its task (a
+         * paused pod, ≥ the abandon age) could have its instance closed by the recovery, and then write a task that waits
+         * under a Cancelled instance. The claim (versioned, only while Active) comes first: if the recovery closed it, the
+         * claim fails and no task is written; if the claim lands first, it moves the version (a recovery that read before it
+         * fails its versioned close) and the age (a recovery that reads after it leaves it alone).
+         */
+        if (!await _instanceRepository.ClaimStartCompletionAsync(
+                createdInstance.Id, createdInstance.Version, task.Id, snapshot.Id, log.Id, DateTimeOffset.UtcNow, ct))
+        {
+            return StartConflict("The workflow start was closed before its task was written.", request.CorrelationId);
+        }
+
         var createdTask = await _taskRepository.EnsureTrustedStartTaskAsync(task, ct);
         var createdSnapshot = await _assignmentSnapshotRepository.EnsureTrustedStartSnapshotAsync(snapshot, ct);
         await _transitionLogRepository.EnsureTrustedStartLogAsync(log, ct);
@@ -331,7 +344,9 @@ public sealed class StartWorkflowInstanceHandler
             ? await _assignmentSnapshotRepository.GetByIdAsync(snapshotId, ct)
             : null;
         var startLog = task is null ? null : await StartLogAsync(existing.Id, ct);
-        if (task is not null && snapshot is not null && startLog is not null)
+        // FIX1 K2 — "whole" is the task and its snapshot. A missing start log is completed only on a LIVE instance; an older
+        // instance that is no longer Active and never had one answers exactly as before (200).
+        if (task is not null && snapshot is not null && (startLog is not null || existing.Status != WorkflowInstanceStatus.Active))
         {
             // The start is whole: the replay answers it, whatever has become of the instance since (unchanged).
             return Response<StartWorkflowInstanceResponse>.Success(
@@ -378,6 +393,9 @@ public sealed class StartWorkflowInstanceHandler
             || !string.Equals(existing.ObjectRef, objectRef, StringComparison.Ordinal)
             // A start written since BL-549 also carries the fingerprint of every fact it was asked with; an older one is
             // held to its identity (definition and object), the only facts it stored.
+            // FIX1 K1 — the start is the starter's: somebody else replaying the same key and facts does not complete it under
+            // the original starter's name. Held on the stored starter, so a start written before BL-549 is held too.
+            || !SameStarter(existing)
             || (existing.StartRequestFingerprint is { } stored
                 && !string.Equals(stored, Fingerprint(templateId, objectType, objectId, objectRef, request.Request), StringComparison.Ordinal)))
         {
@@ -510,6 +528,16 @@ public sealed class StartWorkflowInstanceHandler
         return Response<StartWorkflowInstanceResponse>.Success(
             ToStartResponse(instance, completedTask, completedSnapshot.Id, correlationId),
             correlationId: correlationId);
+    }
+
+    private bool SameStarter(WorkflowInstance existing)
+    {
+        if (existing.StartedByUserId is { } starter && starter != Guid.Empty)
+        {
+            return _currentUserContext.UserId == starter;
+        }
+
+        return string.Equals(existing.StartedBy, _currentUserContext.ActorName, StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<List<string>> ResolveCandidatesAsync(

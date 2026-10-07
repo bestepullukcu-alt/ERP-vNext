@@ -41,11 +41,14 @@ public sealed class GetTrustedWorkflowStartResultHandler
             return NotFound(request.CorrelationId);
         }
 
-        // WP-WF-ENGINE-RECOVERY-01 (CT decision, principle A) — a reservation the engine CLOSED before it completed (nobody
-        // could approve it, or the recovery closed it abandoned) holds nothing anyone can decide under its key: it is answered
-        // EXACTLY as a key the engine never saw — same status, same code, same body — so the consumer's accepted rule
-        // ("not found after the wait → finish and let go") gives the right result without knowing any new code.
-        if (instance.Status == WorkflowInstanceStatus.Cancelled && instance.StartCheckpoint != WorkflowStartCheckpoint.Completed)
+        // WP-WF-ENGINE-RECOVERY-01 (CT decision, principle A) — a reservation the RECOVERY closed as abandoned holds nothing
+        // anyone can decide under its key: it is answered EXACTLY as a key the engine never saw — same status, same code, same
+        // body — so the consumer's accepted rule ("not found after the wait → finish and let go") gives the right result
+        // without knowing any new code. FIX1 item 6 — ONLY that close: a reservation the coordinator closed for "nobody may
+        // approve" (D2) keeps its answer below (409 WORKFLOW_START_NOT_COMPLETED, which MDM reads as Incomplete).
+        if (instance.Status == WorkflowInstanceStatus.Cancelled
+            && instance.StartCheckpoint != WorkflowStartCheckpoint.Completed
+            && string.Equals(instance.StartClosedReasonCode, WorkflowReasonCodes.WorkflowStartAbandoned, StringComparison.Ordinal))
         {
             return NotFound(request.CorrelationId);
         }

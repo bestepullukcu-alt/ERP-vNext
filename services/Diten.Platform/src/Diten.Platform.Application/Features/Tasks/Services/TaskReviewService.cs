@@ -241,6 +241,7 @@ public sealed class TaskReviewService : ITaskReviewService
              */
             var latest = await _instances.GetLatestByObjectRefAsync(
                 BuildObjectRef(task.Id), ReviewObjectType, task.Id.ToString(), ct);
+            string? halfStartKey = null;
             if (latest is not null && IsOpen(latest.Status))
             {
                 /*
@@ -258,10 +259,21 @@ public sealed class TaskReviewService : ITaskReviewService
                     return new(latest.Id, null);
                 }
 
-                _logger.LogWarning(
-                    "The live review {InstanceId} of task {TaskId} has no open task in the engine: its start was never completed, "
-                    + "so it is neither adopted nor replaced.", latest.Id, task.Id);
-                return new(null, Workflow.WorkflowReasonCodes.WorkflowInstanceStartConflict);
+                /*
+                 * WP-WF-ENGINE-RECOVERY-01 FIX1 item 3 — A HALF START IS COMPLETED, NOT WAITED ON. The engine completes a generic
+                 * start whose task was never written when the SAME key is replayed with the same facts (BL-549). So the start
+                 * below is replayed under the round's own key: the engine writes its task and this call adopts the round. Facts
+                 * that changed meanwhile (another reviewer, another starter) get the engine's 409 — the same answer as before.
+                 */
+                if (string.IsNullOrWhiteSpace(latest.IdempotencyKey))
+                {
+                    _logger.LogWarning(
+                        "The live review {InstanceId} of task {TaskId} has no open task in the engine and no key to complete it "
+                        + "with: it is neither adopted nor replaced.", latest.Id, task.Id);
+                    return new(null, Workflow.WorkflowReasonCodes.WorkflowInstanceStartConflict);
+                }
+
+                halfStartKey = latest.IdempotencyKey;
             }
 
             var templateId = await EnsureTemplateAsync(ct);
@@ -296,7 +308,7 @@ public sealed class TaskReviewService : ITaskReviewService
                  * storing the link still resolves to one instance), and a new round after a refusal produces a
                  * different one.
                  */
-                IdempotencyKey: $"task-review:{_tenantContext.TenantId}:{task.Id}:"
+                IdempotencyKey: halfStartKey ?? $"task-review:{_tenantContext.TenantId}:{task.Id}:"
                     + ((latest?.Id ?? task.ReviewWorkflowInstanceId)?.ToString() ?? "initial"),
                 CommentRequired: false,
                 EvidenceRequired: false,
