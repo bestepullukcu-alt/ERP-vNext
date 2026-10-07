@@ -125,7 +125,7 @@ public sealed class GlobalProductIdentityWorkflowProcessorRegistrationTests
     [Theory]
     [InlineData("StartSettleSeconds", "0")]
     [InlineData("StartSettleSeconds", "-1")]
-    [InlineData("StartSettleSeconds", "1501")]           // flow 3 FIX3 EK: Platform's sweep age (25 min cap)
+    [InlineData("StartSettleSeconds", "601")]            // SETTLE-CAP FIX1: Platform's sweep floor − 5 min (600 s cap)
     [InlineData("QuarantineAfterFailedAttempts", "-5")]
     [InlineData("QuarantineAfterFailedAttempts", "-1")]  // flow 3 FIX3 item 8 (CT G5): the lower edge itself
     [InlineData("StuckGaugeIntervalSeconds", "14")]        // flow 3 FIX3 item 1: the gauge interval's bounds
@@ -154,14 +154,14 @@ public sealed class GlobalProductIdentityWorkflowProcessorRegistrationTests
         provider.GetRequiredService<Microsoft.Extensions.Options.IStartupValidator>().Validate();
     }
 
-    // Flow 3 FIX3 EK: the settle window's upper edge itself is accepted.
+    // Flow 3 FIX3 EK (SETTLE-CAP FIX1: 600 s): the settle window's upper edge itself is accepted.
     [Fact]
-    public async Task A_settle_window_of_exactly_25_minutes_passes_the_start_up_validation()
+    public async Task A_settle_window_at_the_cap_passes_the_start_up_validation()
     {
         await using var provider = HostServices(new()
         {
             ["ProductIdentityWorkflowWorker:Enabled"] = "false",
-            ["ProductIdentityWorkflowWorker:StartSettleSeconds"] = "1500"
+            ["ProductIdentityWorkflowWorker:StartSettleSeconds"] = "600"
         }).BuildServiceProvider();
 
         provider.GetRequiredService<Microsoft.Extensions.Options.IStartupValidator>().Validate();

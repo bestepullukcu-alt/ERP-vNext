@@ -55,7 +55,7 @@ public sealed class ProductIdentityWorkflowWorkerOptions
         StartSettleWindow.IsValid(startSettleSeconds)
         && quarantineAfterFailedAttempts is >= 0 and <= 1_000;
 
-    // BL-552 flow 3 FIX3 EK: kept for the GP tests that name it; the rule itself (and why 25 min) is StartSettleWindow.
+    // BL-552 flow 3 FIX3 EK: kept for the GP tests that name it; the rule itself (and why 600 s) is StartSettleWindow.
     public const int MaxStartSettleSeconds = StartSettleWindow.MaxSeconds;
 
     public static bool IsStuckGaugeIntervalValid(int seconds) => seconds is >= 15 and <= 3_600;

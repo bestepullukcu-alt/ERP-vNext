@@ -24,8 +24,8 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 
 | komut | sınıf | gerekçe |
 |---|---|---|
-| RetireGskuIdentityPairCommand | İ5 | Hiçbir kalıcı kaydı değiştirmez: her çağrı 403 DirectRetirementIsSystemOnly döner; GSKU çifti emekliliği onaylı istek akışından (StartGskuRetirementRequestWorkflow) geçer. |
-| RetireLskuIdentityCommand | İ5 | Hiçbir kalıcı kaydı değiştirmez: her çağrı 403 DirectRetirementIsSystemOnly döner; LSKU emekliliği onaylı istek akışından (StartLskuRetirementRequestWorkflow) geçer. |
+| RetireGskuIdentityPairCommand | İ5 | Hiçbir kalıcı kaydı değiştirmez: her çağrı 403 DirectRetirementIsSystemOnly döner; GSKU çifti emekliliği onaylı istek akışından (StartGskuRetirementRequestWorkflow) geçer. İşleyici 403 taslağı kaldıkça geçerli; sistem aktörüne açılırsa İ5 geçersiz olur (komut ayrıca Kapsam borcunda: ProductLegalEntityScopeActivationDebt.KnownUnguardedWriters). |
+| RetireLskuIdentityCommand | İ5 | Hiçbir kalıcı kaydı değiştirmez: her çağrı 403 DirectRetirementIsSystemOnly döner; LSKU emekliliği onaylı istek akışından (StartLskuRetirementRequestWorkflow) geçer. İşleyici 403 taslağı kaldıkça geçerli; sistem aktörüne açılırsa İ5 geçersiz olur (komut ayrıca Kapsam borcunda: ProductLegalEntityScopeActivationDebt.KnownUnguardedWriters). |
 
 ## Dolaylı
 

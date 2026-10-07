@@ -178,9 +178,9 @@ public sealed class AuditIntentDeliveryProcessor
                 return;
             case TrustedSourceAuditIntentDeliveryOutcome.Terminal
                 when AwaitsCentralMapping(payload.Operation, delivery.CentralReasonCode):
-                // BL-552 flow 3 FIX1 item 2: an operation added in this release that Platform does not map YET (MDM
-                // deployed before Platform) waits — bounded, counted, its reason on the intent — instead of being
-                // dead-lettered for good. Every other operation, and every other 409, is terminal exactly as before.
+                // BL-552 flow 3 FIX1 item 2: an operation the deployed Platform does not map YET (MDM deployed before
+                // Platform; CentralMappingRollout) waits — bounded, counted, its reason on the intent — instead of being
+                // dead-lettered for good. An operation never produced, and every other 409, is terminal.
                 // Flow 3 FIX2 item 2: counted as waiting only when the wait was scheduled — the attempt at the bound is
                 // dead-lettered, not waiting.
                 var scheduledBefore = batch.RetryScheduled;
@@ -195,9 +195,9 @@ public sealed class AuditIntentDeliveryProcessor
                 return;
             case TrustedSourceAuditIntentDeliveryOutcome.Terminal
                 when delivery.CentralReasonTimedOut && AwaitingCentralMappingOperations.Contains(payload.Operation):
-                // Flow 3 FIX3 item 3: for the three operations that may wait for Platform's map, a 409 whose reason did
-                // not arrive in time may be that very "not mapped yet" — a timeout, retried as one (the ordinary bound),
-                // not a dead letter. Every other operation keeps its definite 409.
+                // Flow 3 FIX3 item 3: for an operation that may wait for Platform's map (CentralMappingRollout), a 409
+                // whose reason did not arrive in time may be that very "not mapped yet" — a timeout, retried as one (the
+                // ordinary bound), not a dead letter. An operation never produced keeps its definite 409.
                 await TransitionFailureAsync(
                     claim, "AUDIT_SOURCE_INTENT_TIMEOUT", true, retryDelay, maximumAttempts, batch, cancellationToken);
                 return;
@@ -216,7 +216,7 @@ public sealed class AuditIntentDeliveryProcessor
     // About a day at the worker's default 30 s retry delay: a deploy-order gap, not a lasting refusal.
     public const int CentralMappingWaitAttempts = 2880;
 
-    // Only the operations new to Platform in this release wait for the central map (WP-MDM-SETTLE-CAP-01: one place).
+    // Only the operations the deployed Platform does not map yet wait for the central map (CentralMappingRollout: one place).
     private static IReadOnlySet<ProductAuditOperation> AwaitingCentralMappingOperations =>
         CentralMappingRollout.AwaitingCentralMapping;
 

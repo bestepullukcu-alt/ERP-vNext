@@ -266,10 +266,10 @@ public sealed partial class GskuLifecycleHttpTests
         };
         Options().EnsureValidWhenEnabled();
         Options(settle: 1).EnsureValidWhenEnabled();
-        Options(settle: 1500).EnsureValidWhenEnabled(); // flow 3 FIX3 EK: Platform's sweep age (25 min cap)
+        Options(settle: 600).EnsureValidWhenEnabled(); // SETTLE-CAP FIX1: Platform's sweep floor − 5 min (600 s cap)
         Options(quarantine: 0).EnsureValidWhenEnabled();
         Options(quarantine: 1000).EnsureValidWhenEnabled();
-        foreach (var bad in new[] { Options(settle: 0), Options(settle: -1), Options(settle: 1501),
+        foreach (var bad in new[] { Options(settle: 0), Options(settle: -1), Options(settle: 601),
                      Options(quarantine: -5), Options(quarantine: 1001) })
             Assert.Throws<InvalidOperationException>(bad.EnsureValidWhenEnabled);
         Assert.False(ProductIdentityWorkflowWorkerOptions.IsRecordAnswerWindowValid(0, 30));

@@ -1,61 +1,105 @@
 extern alias MdmApplication;
 
+using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.Platform.Application.Features.Audit;
 using Xunit;
 using CentralMappingRollout = MdmApplication::Diten.MdmService.Application.Features.ProductItemSkuMaster.Audit.CentralMappingRollout;
+using GlobalProductCorrectionAuditIntentFactory = MdmApplication::Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.GlobalProductCorrectionAuditIntentFactory;
+using GlobalProductRetirementRequestAuditIntentFactory = MdmApplication::Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.GlobalProductRetirementRequestAuditIntentFactory;
+using ProductIdentityLifecycleAuditIntentFactory = MdmApplication::Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.ProductIdentityLifecycleAuditIntentFactory;
 
 namespace Diten.AuthService.ServiceClientRegistry.Tests;
 
 /// <summary>
-/// WP-MDM-SETTLE-CAP-01 (BL-566, second half) — MDM's audit delivery waits for Platform's map only for the operations
-/// new to Platform in this release (<c>CentralMappingRollout</c>); for every other operation a 409
-/// <c>AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED</c> is final and the intent is a dead letter. So an operation Platform maps
-/// NEW in this release but MDM does not let wait is an audit row lost whenever MDM is deployed first. Measured against
-/// Platform's production map (this project references both services), and against MDM's production set — no copy.
+/// WP-MDM-SETTLE-CAP-01 (BL-566, second half; FIX1) — MDM's audit delivery waits for Platform's map only for the
+/// operations the DEPLOYED Platform does not map yet (<c>CentralMappingRollout</c>); for the rest a 409
+/// <c>AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED</c> is final and the intent is a dead letter — an audit row lost whenever
+/// MDM is deployed first. Measured against Platform's PRODUCTION map (this project references both services) and MDM's
+/// production set; the deployed base is DATA here, by name — not derived from the same cut it checks.
 /// </summary>
 public sealed class CentralMappingRolloutCoverageTests
 {
-    // What an earlier Platform already mapped: MDM's operations before this release's first value.
-    private static IReadOnlySet<string> MappedBeforeThisRelease { get; } = Enum.GetValues<ProductAuditOperation>()
-        .Where(operation => operation < CentralMappingRollout.FirstOperationOfThisRelease)
-        .Select(operation => operation.ToString())
-        .ToHashSet(StringComparer.Ordinal);
+    /// <summary>
+    /// The MDM operation NAMES the Platform live today maps. EMPTY (CT decision, SETTLE-CAP FIX1): no product module is
+    /// live and Platform's trusted-source map is not on origin/main at all. Control Tower refreshes it with the cut
+    /// (BL-575 item 2) — and MDM's own base (CentralMappingRollout.MappedByDeployedPlatform) must say the same.
+    /// </summary>
+    private static readonly string[] DeployedBase = [];
 
     private static IReadOnlySet<string> Waiting { get; } = CentralMappingRollout.AwaitingCentralMapping
         .Select(operation => operation.ToString())
         .ToHashSet(StringComparer.Ordinal);
 
+    private static IReadOnlySet<string> MdmOperations { get; } = Enum.GetNames<ProductAuditOperation>().ToHashSet(StringComparer.Ordinal);
+
     [Fact]
-    public void Every_operation_Platform_maps_new_in_this_release_waits_for_the_map()
+    public void MDMs_deployed_base_is_the_measured_one()
     {
-        var mdmOperations = Enum.GetNames<ProductAuditOperation>().ToHashSet(StringComparer.Ordinal);
+        Assert.Equal(DeployedBase.Order(StringComparer.Ordinal),
+            CentralMappingRollout.MappedByDeployedPlatform.Order(StringComparer.Ordinal));
+    }
+
+    // (a) Every operation Platform maps that the deployed Platform does not, MDM lets wait — and exactly those: a wait
+    // set wider than Platform's map (an operation Platform dropped) or narrower (a cut moved) is red.
+    [Fact]
+    public void The_operations_that_wait_are_exactly_those_Platform_maps_beyond_the_deployed_base()
+    {
         var newlyMapped = TrustedSourceAuditIntentOperationMap.MappedOperationNames
-            .Where(mdmOperations.Contains)
-            .Where(name => !MappedBeforeThisRelease.Contains(name))
-            .ToList();
-        var notWaiting = newlyMapped.Where(name => !Waiting.Contains(name)).OrderBy(name => name, StringComparer.Ordinal).ToList();
+            .Where(MdmOperations.Contains)
+            .Where(name => !DeployedBase.Contains(name, StringComparer.Ordinal))
+            .ToHashSet(StringComparer.Ordinal);
 
+        var notWaiting = newlyMapped.Except(Waiting).Order(StringComparer.Ordinal).ToList();
+        var waitingForNothing = Waiting.Except(newlyMapped).Order(StringComparer.Ordinal).ToList();
         Assert.True(notWaiting.Count == 0,
-            "Platform maps these operations new in this release, but MDM would dead-letter them if it is deployed first: "
-            + string.Join(", ", notWaiting) + ". They belong to CentralMappingRollout.AwaitingCentralMapping.");
+            "Platform maps these, the deployed Platform does not, yet MDM would dead-letter them if deployed first: "
+            + string.Join(", ", notWaiting));
+        Assert.True(waitingForNothing.Count == 0,
+            "MDM waits for Platform to map these, but Platform's map does not hold them: " + string.Join(", ", waitingForNothing));
     }
 
+    // (b) A name in the map is not enough (FIX1 M4): Platform maps by (aggregate, operation), and a pair it does not know
+    // is MAPPING_UNSUPPORTED too. GP 79–81, built by MDM's OWN intent factories, map on the aggregate those factories set.
     [Fact]
-    public void Every_operation_that_waits_is_one_Platform_maps()
+    public void The_GP_operations_that_wait_map_on_the_aggregate_MDMs_factories_write()
     {
-        var unmapped = Waiting.Where(name => !TrustedSourceAuditIntentOperationMap.MappedOperationNames.Contains(name)).ToList();
+        var product = new GlobalProduct
+        {
+            Id = Guid.NewGuid(), TenantId = Guid.NewGuid(), CanonicalCode = "GP-000000000001",
+            GlobalProductName = "Product", GlobalProductNameNormalized = "PRODUCT"
+        };
+        var actor = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
+        LocalAuditIntent[] intents =
+        [
+            ProductIdentityLifecycleAuditIntentFactory.CreateDecisionNotApplicable(product, 1, Guid.NewGuid(), Guid.NewGuid(),
+                Guid.NewGuid(), actor, "CLOSED", now),
+            GlobalProductCorrectionAuditIntentFactory.Create(product, 0, Guid.NewGuid(), actor,
+                ProductAuditOperation.GlobalProductCorrectionEnded, "Proposed", now, "WHY"),
+            GlobalProductRetirementRequestAuditIntentFactory.Create(product, 0, Guid.NewGuid(), actor,
+                ProductAuditOperation.GlobalProductRetirementEnded, "Reason", now, "WHY")
+        ];
 
-        Assert.True(unmapped.Count == 0,
-            "MDM waits for Platform to map these, but Platform's map never will: " + string.Join(", ", unmapped));
+        Assert.Equal(
+            [ProductAuditOperation.GlobalProductIdentityDecisionNotApplicable, ProductAuditOperation.GlobalProductCorrectionEnded,
+                ProductAuditOperation.GlobalProductRetirementEnded],
+            intents.Select(intent => intent.Operation));
+        foreach (var intent in intents)
+        {
+            Assert.Contains(intent.Operation.ToString(), Waiting);
+            Assert.True(TrustedSourceAuditIntentOperationMap.TryMap(intent.AggregateType.ToString(), intent.Operation.ToString(),
+                    out var entity, out _),
+                $"Platform does not map {intent.AggregateType}/{intent.Operation} — the pair MDM's factory writes.");
+            Assert.Equal(intent.AggregateType.ToString(), entity);
+        }
     }
 
-    // This release's rollout, by name: GP flow 3 (79–81) and LSKU FIX1 (82–86). When a Platform that maps them is live
-    // everywhere, the cut moves forward and this list changes with it — a visible decision, not a silent one.
+    // This release's own additions, by name, are among what waits (GP flow 3 and LSKU FIX1); the never-produced pair is not.
     [Fact]
-    public void This_release_waits_for_the_GP_and_the_LSKU_GSKU_additions()
+    public void This_releases_additions_wait_and_the_never_produced_pair_does_not()
     {
-        string[] expected =
+        string[] additions =
         [
             nameof(ProductAuditOperation.GlobalProductIdentityDecisionNotApplicable),
             nameof(ProductAuditOperation.GlobalProductCorrectionEnded),
@@ -67,13 +111,15 @@ public sealed class CentralMappingRolloutCoverageTests
             nameof(ProductAuditOperation.LskuIdentitySubmitAbandoned)
         ];
 
-        Assert.Equal(expected.Order(StringComparer.Ordinal), Waiting.Order(StringComparer.Ordinal));
+        Assert.All(additions, name => Assert.Contains(name, Waiting));
+        Assert.DoesNotContain(nameof(ProductAuditOperation.GlobalProductCorrectionCancelled), Waiting);
+        Assert.DoesNotContain(nameof(ProductAuditOperation.GlobalProductRetirementCancelled), Waiting);
     }
 
     [Fact]
     public void The_guard_is_not_vacuous()
     {
-        Assert.True(MappedBeforeThisRelease.Count > 50);
-        Assert.True(TrustedSourceAuditIntentOperationMap.MappedOperationNames.Count(MappedBeforeThisRelease.Contains) > 50);
+        Assert.True(Waiting.Count > 50);
+        Assert.True(TrustedSourceAuditIntentOperationMap.MappedOperationNames.Count(MdmOperations.Contains) > 50);
     }
 }

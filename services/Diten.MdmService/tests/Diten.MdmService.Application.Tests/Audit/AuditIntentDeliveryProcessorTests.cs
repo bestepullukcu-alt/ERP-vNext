@@ -213,8 +213,10 @@ public sealed class AuditIntentDeliveryProcessorTests
         Assert.Equal(1, delivered.Accepted);
     }
 
-    // The wait is bounded (CentralMappingWaitAttempts), and it is only for those three operations and that reason: any
-    // other operation Platform does not map, and any other 409, is dead-lettered exactly as before.
+    // The wait is bounded (CentralMappingWaitAttempts), and it is only for the operations the deployed Platform does not
+    // map yet (CentralMappingRollout) and that reason: an operation never produced, and any other 409, is dead-lettered.
+    // SETTLE-CAP FIX1 (CT decision): the deployed base is EMPTY — every produced operation waits in this first release,
+    // so the GP neighbours below now wait too; the never-produced pair is what still dead-letters.
     [Theory]
     [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", false)]
     // Flow 3 FIX3 item 7 (CT G1): past the ORDINARY attempt bound (3 here) it still waits; only the long bound ends it.
@@ -223,12 +225,15 @@ public sealed class AuditIntentDeliveryProcessorTests
         "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", false)]
     [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, AuditIntentDeliveryProcessor.CentralMappingWaitAttempts,
         "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
-    [InlineData(ProductAuditOperation.GlobalProductDraftCreated, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
-    // Flow 3 FIX2 K1: their neighbours — the operations an extra member of the set would most likely be — do not wait.
-    [InlineData(ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
-    [InlineData(ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
-    [InlineData(ProductAuditOperation.GlobalProductCorrectionRequested, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
-    [InlineData(ProductAuditOperation.GlobalProductIdentityApprovalWithdrawn, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
+    [InlineData(ProductAuditOperation.GlobalProductDraftCreated, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", false)]
+    // Flow 3 FIX2 K1: their neighbours — with an empty deployed base (FIX1) they wait as well.
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", false)]
+    [InlineData(ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", false)]
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionRequested, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", false)]
+    [InlineData(ProductAuditOperation.GlobalProductIdentityApprovalWithdrawn, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", false)]
+    // The never-produced pair (CentralMappingRollout.NeverProduced) has nothing to wait for.
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionCancelled, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
+    [InlineData(ProductAuditOperation.GlobalProductRetirementCancelled, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
     [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, 1, "AUDIT_SOURCE_INTENT_IDEMPOTENCY_CONFLICT", true)]
     [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, 1, null, true)]
     public async Task Only_the_new_operations_wait_for_platforms_map_and_only_for_a_while(
@@ -253,8 +258,10 @@ public sealed class AuditIntentDeliveryProcessorTests
     [InlineData(ProductAuditOperation.LskuIdentityDecisionNotApplicable, false)]
     [InlineData(ProductAuditOperation.LskuRetirementManualReconciliationRequired, false)]
     [InlineData(ProductAuditOperation.LskuIdentitySubmitAbandoned, false)]
-    [InlineData(ProductAuditOperation.LskuIdentityApprovalWithdrawn, true)]
-    [InlineData(ProductAuditOperation.LskuRetirementRejected, true)]
+    // FIX1: the older LSKU operations wait too (empty deployed base); the never-produced pair does not.
+    [InlineData(ProductAuditOperation.LskuIdentityApprovalWithdrawn, false)]
+    [InlineData(ProductAuditOperation.LskuRetirementRejected, false)]
+    [InlineData(ProductAuditOperation.GlobalProductRetirementCancelled, true)]
     public async Task The_lsku_and_gsku_operations_new_in_this_release_wait_for_platforms_map_too(
         ProductAuditOperation operation, bool deadLettered)
     {
@@ -335,14 +342,16 @@ public sealed class AuditIntentDeliveryProcessorTests
         }
     }
 
-    // Flow 3 FIX3 item 3: a 409 whose reason did not arrive in time is a timeout (retried, ordinary bound) for the
-    // three operations that may wait for Platform's map — and stays a definite 409 for every other operation.
+    // Flow 3 FIX3 item 3: a 409 whose reason did not arrive in time is a timeout (retried, ordinary bound) for an
+    // operation that may wait for Platform's map — and stays a definite 409 for one never produced (FIX1: with an empty
+    // deployed base, every produced operation may wait).
     [Theory]
     [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, false)]
     [InlineData(ProductAuditOperation.GlobalProductRetirementEnded, false)]
     [InlineData(ProductAuditOperation.GlobalProductIdentityDecisionNotApplicable, false)]
-    [InlineData(ProductAuditOperation.GlobalProductDraftCreated, true)]
-    [InlineData(ProductAuditOperation.GlobalProductCorrectionRequested, true)]
+    [InlineData(ProductAuditOperation.GlobalProductDraftCreated, false)]
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionRequested, false)]
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionCancelled, true)]
     public async Task A_conflict_whose_reason_did_not_arrive_is_retried_only_for_the_operations_that_may_wait(
         ProductAuditOperation operation, bool deadLettered)
     {
