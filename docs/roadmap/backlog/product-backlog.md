@@ -8063,6 +8063,24 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-575
+
+**Denetim defteri: İ5 istisnasındaki komuta iz dışı bir yazım eklenirse mimari kural yakalamıyor; merkezi eşleme bekleme kesimi (≥ 79) sürüm çıkınca ileri alınmazsa her yeni işlem bir gün bekler**
+
+DURUM: AÇIK · SAHİP: CT (mimari kural / MDM devralma) · BULAN: WP-MDM-SETTLE-CAP-01 raporu (SC-3e ölçüm sınırı + madde 2 notu) · KAYIT: 2026-10-07
+
+(1) **İ5 ölçüm sınırı.** `AuditTrailStandardTests`, İ5 ("hiçbir kalıcı kaydı değiştirmez") komutunun gerçekten yazmadığını, yalnız bildirilmiş iz üyeleri üzerinden ölçüyor. İz dışı bir depo yazımı eklenirse istisna geçerli görünmeye devam eder. Bugün etkilenen: `RetireGskuIdentityPairCommand`, `RetireLskuIdentityCommand` (her ikisi yalnız 403).
+Öneri: İ5 komutunun işleyicisi hiçbir depo yazma üyesini (`*Async` yazma adları, `IMongoCollection` yazımları) çağırmaz; kaynak taramasıyla ölçülür.
+
+(2) **Kesimin ileri alınması.** `CentralMappingRollout.FirstOperationOfThisRelease = 79`: 79 ve sonrası Platform haritası gelene kadar ~1 gün bekler. Sürüm canlıya çıkıp Platform haritası dağıtıldıktan sonra kesim ileri alınmazsa, sonraki her yeni işlem (Platform'un bilerek eşlemediği dahil) gerçek bir 409 yerine bir gün yeniden dener.
+Öneri: sürüm notu adımı ("Platform haritası canlıda → kesimi bir sonraki ilk işleme al") ve kesimin Platform'un dağıtılmış harita sürümünden türetilmesi.
+
+Karşılaştırma: SAP'de değişiklik belgesi nesnesi tanımı ile uygulama aynı aktarımda taşınır, sürüm boşluğu bekletilmez. Oracle'da da denetim politikası değişikliği yamayla birlikte uygulanır.
+
+Gelecek regresyon riski: (1) 🟡 (istisnalı komuta ileride yazım eklenirse denetimsiz kalır); (2) 🟢 (yalnız gecikme, kayıp yok).
+
+---
+
 ### BL-574
 
 **MDM yol b denetim kayıtları değişen alanları, önce / sonra değerlerini ve ret nedenini taşımıyor (AUD-001 §3 madde 10); Platform ucu bunları zaten alıyor, eksik MDM'in iletim isteğinde**
