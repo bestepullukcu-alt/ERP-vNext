@@ -3,6 +3,7 @@ using System.Text;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Commands;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -18,6 +19,13 @@ namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.H
  * admissions older than the cutoff whose LSKU row never came, releases each and keeps an audit intent on the GSKU.
  * A row with the admission's command — even a deleted one — means the creation reached the store: it is left alone.
  * The cutoff keeps a creation still in flight out of reach. A repeat finds nothing new; a released one replays.
+ *
+ * WP-MDM-SCOPE-INT-01 FIX1 item 1 (CT decision a): the repair is a non-human actor and follows the background workers'
+ * scope rule (LskuBackgroundScope → ProductIdentityBackgroundScope): no rollout / Preparation → every orphan; Enforced →
+ * only orphans whose GSKU's product is in scope (the others are skipped and only counted — their admissions and codes
+ * are untouched, their ids never returned); FailClosedSuspended, a fence, or a rollout that cannot be read → refused by
+ * name. Before, every orphan carries a GskuId (GSKU → revision → product) and the repair released, burned and returned
+ * them all in an Enforced tenant.
  */
 public sealed class RepairLskuChildAdmissionsHandler
     : IRequestHandler<RepairLskuChildAdmissionsCommand, Response<LskuChildAdmissionRepairResult>>
@@ -25,19 +33,24 @@ public sealed class RepairLskuChildAdmissionsHandler
     public const int MinimumAgeFloorMinutes = 5;
     public const string BurnRefused = "LSKU_ADMISSION_REPAIR_BURN_REFUSED";
     public const int MaximumLimit = 500;
+    public const string RequestInvalid = "LSKU_ADMISSION_REPAIR_REQUEST_INVALID";
+    public const string ScopeClosed = "LSKU_ADMISSION_REPAIR_SCOPE_CLOSED";
     private readonly IGskuRepository _gskus;
     private readonly ICodeReservationRepository _reservations;
     private readonly ITenantContext _tenantContext;
     private readonly IProductIdentityActorContext _actorContext;
     private readonly TimeProvider _time;
+    private readonly LskuBackgroundScope _scope;
 
     public RepairLskuChildAdmissionsHandler(
         IGskuRepository gskus,
         ICodeReservationRepository reservations,
         ITenantContext tenantContext,
         IProductIdentityActorContext actorContext,
-        TimeProvider time)
+        TimeProvider time,
+        LskuBackgroundScope scope)
     {
+        _scope = scope;
         _gskus = gskus;
         _reservations = reservations;
         _tenantContext = tenantContext;
@@ -58,12 +71,24 @@ public sealed class RepairLskuChildAdmissionsHandler
         if (request.Limit is < 1 or > MaximumLimit || request.MinimumAgeMinutes < MinimumAgeFloorMinutes
             || request.ChildKind is not (GskuChildIdentityKind.Lsku or GskuChildIdentityKind.FinishedGood))
         {
-            return Response<LskuChildAdmissionRepairResult>.Fail("LSKU_ADMISSION_REPAIR_REQUEST_INVALID", 400);
+            // Normally refused before the fence by RepairLskuChildAdmissionsValidator (FIX1 M1); kept for a direct call.
+            return Response<LskuChildAdmissionRepairResult>.Fail(RequestInvalid, 400);
+        }
+
+        var mode = await _scope.ResolveAsync(cancellationToken);
+        if (mode == ProductIdentityBackgroundScope.TenantMode.Nothing)
+        {
+            return Response<LskuChildAdmissionRepairResult>.Fail(ScopeClosed, 409);
         }
 
         var now = _time.GetUtcNow().ToUniversalTime();
-        var orphans = await _gskus.FindOrphanChildCreationAdmissionsAsync(
+        var found = await _gskus.FindOrphanChildCreationAdmissionsAsync(
             request.ChildKind, now.AddMinutes(-request.MinimumAgeMinutes), request.Limit, cancellationToken);
+        var orphans = new List<GskuOrphanChildAdmission>(found.Count);
+        foreach (var orphan in found)
+        {
+            if (await _scope.InScopeForGskuAsync(mode, orphan.GskuId, cancellationToken)) orphans.Add(orphan);
+        }
         var items = new List<LskuChildAdmissionRepairItem>(orphans.Count);
         // Each release moves the GSKU's version, so a second orphan on the same GSKU is re-read before its write.
         var versions = new Dictionary<Guid, int>();
@@ -118,7 +143,7 @@ public sealed class RepairLskuChildAdmissionsHandler
         }
 
         return Response<LskuChildAdmissionRepairResult>.Success(
-            new(orphans.Count, items.Count(x => x.Released), items), 200);
+            new(orphans.Count, items.Count(x => x.Released), items, found.Count - orphans.Count), 200);
     }
 
     private LocalAuditIntent CreateIntent(GskuOrphanChildAdmission orphan, DateTimeOffset now)

@@ -132,7 +132,10 @@ public sealed class ProductLegalEntityScopeConsumerGuard
         {
             rollout = await _rolloutStates.GetAsync(cancellationToken);
         }
-        catch (Exception exception) when (ProductLegalEntityScopeWriteFenceCoordinator.ClassifyRolloutReadFailure(exception)
+        // WP-MDM-SCOPE-INT-01 FIX1 M7: the caller going away is not a store that cannot be reached — a read cancelled by
+        // its own client (the driver may surface it as a MongoException) propagates instead of answering a coded 503.
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested
+                                          && ProductLegalEntityScopeWriteFenceCoordinator.ClassifyRolloutReadFailure(exception)
                                           != ProductLegalEntityScopeWriteFenceCoordinator.RolloutReadFailure.None)
         {
             // WP-MDM-SCOPE-ACCEPT-01 FIX1 B2 / WP-MDM-SCOPE-INT-01 BL-567: a rollout read that fails answers the same

@@ -7,8 +7,10 @@ namespace Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 /// write fence nor a writer lease (S8), and the recovery runners that read neither the rollout, its fence nor its mode
 /// (FIX2 (4)). While either list is non-empty an Enforced tenant would have writers the scope does not see, so the switch
 /// to Enforced is REFUSED (CT decision, every environment, Development included). The contract tests read these same
-/// lists: a new unguarded writer or unfenced runner turns them red, a guarded one must leave its list. The debt closes in
-/// WP-MDM-SCOPE-INT-01 (after the GP / LSKU / FG rounds merge into takeover); the lists then empty and the gate opens.
+/// lists: a new unguarded writer or unfenced runner turns them red, a guarded one must leave its list.
+/// WP-MDM-SCOPE-INT-01 (measured): the runner list is EMPTY (every recovery runner reads the fence); the writer list is
+/// NOT — sixteen lifecycle / workflow writers are still unguarded, so the gate stays SHUT. It opens only when that list
+/// empties in its own work package (not scheduled in INT-01).
 /// FIX3 (5): the lists are frozen — no code can empty them at run time to open the gate.
 /// </summary>
 public interface IProductLegalEntityScopeActivationDebt

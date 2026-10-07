@@ -14,15 +14,25 @@ public sealed record RepairLskuChildAdmissionsCommand(int Limit = 100, int Minim
       // the inventory the operator retries after it closes.
       global::Diten.MdmService.Application.Features.ProductLegalEntityScopes.IProductLegalEntityScopeInventoryMutation
 {
+    // WP-MDM-SCOPE-INT-01 FIX1 M2: one id per call, so the writer lease is per run. Before, it was the payload's hash: two
+    // overlapping runs with the same parameters shared one lease and the second ran on without one once the first
+    // released it. Text, not a Guid, on purpose: the path-b audit names the first Guid "…Id" of a command as its
+    // entity, and a run id is not a GSKU.
+    public string CommandId { get; init; } = Guid.NewGuid().ToString("D");
+
     public AuditMetadata GetAuditMetadata() => new(
         Category: AuditCategory.MasterData, Operation: AuditOperation.Update,
         EntityType: "Gsku", SourceModule: "product-item-sku-master");
 }
 
+/// <param name="Found">The orphans found inside the caller's background scope (all of them outside an Enforced tenant).</param>
+/// <param name="OutOfScope">WP-MDM-SCOPE-INT-01 FIX1 item 1: orphans of out-of-scope or unclassified products in an
+/// Enforced tenant — skipped, counted, never named.</param>
 public sealed record LskuChildAdmissionRepairResult(
     int Found,
     int Released,
-    IReadOnlyList<LskuChildAdmissionRepairItem> Items);
+    IReadOnlyList<LskuChildAdmissionRepairItem> Items,
+    int OutOfScope = 0);
 
 public sealed record LskuChildAdmissionRepairItem(
     Guid GskuId,

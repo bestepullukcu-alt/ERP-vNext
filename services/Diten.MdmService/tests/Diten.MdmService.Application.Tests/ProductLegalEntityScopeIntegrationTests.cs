@@ -104,6 +104,8 @@ public sealed class ProductLegalEntityScopeIntegrationTests
     [Theory]
     [InlineData("invalid-record", "PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID")]
     [InlineData("format", "PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID")]
+    // FIX1 M6: a record the serializer refuses by its own exception type.
+    [InlineData("bson", "PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID")]
     [InlineData("mongo", "PRODUCT_SCOPE_ROLLOUT_STORE_UNAVAILABLE")]
     [InlineData("timeout", "PRODUCT_SCOPE_ROLLOUT_STORE_UNAVAILABLE")]
     public async Task A_product_read_whose_rollout_read_fails_answers_a_coded_503_never_a_500(string failure, string code)
@@ -117,6 +119,7 @@ public sealed class ProductLegalEntityScopeIntegrationTests
         {
             "invalid-record" => new InvalidOperationException("PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_STATE_INVALID"),
             "format" => new FormatException("cannot deserialize Mode"),
+            "bson" => new MongoDB.Bson.BsonSerializationException("Element 'Mode' does not match any field"),
             "mongo" => new MongoException("connection lost"),
             _ => new TimeoutException("server selection timed out")
         };
@@ -268,6 +271,23 @@ public sealed class ProductLegalEntityScopeIntegrationTests
         private readonly Guid _subject = Guid.NewGuid();
         public bool TryResolveCanonicalHumanSubject(out Guid subjectId) { subjectId = _subject; return true; }
         public bool HasPermission(string permission) => permission == key;
+    }
+
+    [Fact]
+    public async Task A_product_read_cancelled_by_its_own_client_is_not_answered_as_an_unreachable_store()
+    {
+        // FIX1 M7: the driver may surface a cancelled read as a MongoException; the caller going away is not a 503.
+        var tenant = new TenantContext();
+        tenant.SetTenant(Guid.NewGuid());
+        var handler = new GetGlobalProductsHandler(
+            Unreachable<IGlobalProductRepository>(), new FailingRollouts(new MongoException("operation cancelled")), new NoPolicies(),
+            new ProductLegalEntityScopeCandidateFacade(Unreachable<Contracts.Authorization.ITrustedLegalEntityScopeProvider>(),
+                new InMemoryLegalEntityRepository(tenant.TenantId, []), tenant, new Actor()),
+            tenant);
+        using var cancelled = new CancellationTokenSource();
+        await cancelled.CancelAsync();
+
+        await Assert.ThrowsAsync<MongoException>(() => handler.Handle(new GetGlobalProductsQuery(), cancelled.Token));
     }
 
     private sealed class FailingRollouts(Exception failure) : IProductLegalEntityScopeRolloutStateRepository
