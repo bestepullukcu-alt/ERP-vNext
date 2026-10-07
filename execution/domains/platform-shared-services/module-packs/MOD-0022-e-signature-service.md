@@ -1256,6 +1256,29 @@ The gateway treats `/api/v1/*` as a tenant path: it requires `actor_type=tenant_
 Registry row written by the CT on acceptance (`module-id-registry.md`, status `reserved / planned` → `in-progress` at
 ready-for-dev); waiver **W-0022-01** (DCP-002 verifier not run — no Python; run before the MVP-1 PR, W-0173-01 pattern).
 
+### E1 — implementation note (WP-0022-E1, 2026-10-07, pending CT)
+
+- Branch `feature/sce/mod-0022-e1` from `cd43a4533`. Commit `1450b5408` (AuthService + 16 tests); local only, no push.
+  Evidence: `docs/records/audits/2026-10/mod-0022-e1-evidence-2026-10-07.md`.
+- Test counts:
+  - `Diten.AuthService.Application.Tests`: 1023 → **1039**
+  - architecture: 18/18
+  - build: 0 errors, the same 6 pre-existing warnings
+- §16 E1: every item **PASS**. Three sabotages red, and the diff is empty after restore. Runtime probe 27/27 against
+  the real Platform login settings (5 / 15). Owner fleet PIDs unchanged.
+- **Route deviation (E2 / contract must follow):** the consume endpoint is `POST internal/esign-tickets/consume`, not
+  `api/internal/...`.
+  - Every AuthService internal controller uses `internal/...`.
+  - `TenantResolutionMiddleware.cs:114` exempts only `/internal`.
+  - Fix §1, §3, §8, §15 and ESIGN-BUNDLE §4.3 before the bundle is frozen.
+- The attempt that **starts** the lockout answers 423 (`remainingAttempts=0`), not 401. ESIGN-BUNDLE §4.1 should say so.
+- Ticket hash key: `ESign:HashSecret`, falling back to `JwtSettings:Secret` with a purpose prefix (the
+  `RefreshTokenHasher` precedent). A separate secret is recommended for production (proposed FU-0022-12).
+- The MFA consume is still non-atomic (FU-0022-05). E1 did not copy it and did not touch MFA.
+- `SensitiveDataLogEventEnricher` does not mask a secret embedded in a string property (sabotage c). The log-capture
+  test is the guard.
+- KS-11 second factor: extension point only (`ESignReauthKind`), no flow; FU-0022-01.
+
 ### Registry row proposal (CT writes it)
 
 `| MOD-0022 | e-Signature Service | e-signature-service | Module | reserved / planned |  |  | platform-shared-services | Blueprint 8.1 Blueprint_Data row 23 (W-2; Module Pages rows 66–68 say W-4). ESIGN-BUNDLE. SoR: signature envelopes, signer attestations, verification artifacts. DCP-002 verifier pending (waiver W-0022-01, no Python). Pack: execution/domains/platform-shared-services/module-packs/MOD-0022-e-signature-service.md (draft 2026-10-07). |`
