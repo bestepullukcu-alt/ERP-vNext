@@ -31,4 +31,7 @@ public sealed record WorkingDayCheckResult(
     string Resolution,
     bool? IsWorkingDay,
     IReadOnlyList<string> ReasonCodes,
-    string Reason);
+    string Reason,
+    // WP-VP-3B (MK-9, additive) — the platform marked the date a HALF day (its holiday's isHalfDay, or the reason code
+    // half_day_treated_as_working). Only meaningful on a resolved working day; false otherwise.
+    bool IsHalfDay = false);

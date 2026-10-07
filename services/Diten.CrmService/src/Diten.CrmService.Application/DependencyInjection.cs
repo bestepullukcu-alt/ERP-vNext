@@ -108,6 +108,8 @@ public static class DependencyInjection
         services.AddScoped<Features.VisitPlanning.FrequencyExtendPlanner>();
         // WP-VP-FIX-1 — the run's non-working days (platform working calendar via IWorkingDayChecker, Sat/Sun fallback).
         services.AddScoped<Features.VisitPlanning.PlanningWorkingCalendar>();
+        // WP-VP-3B (4b) — the tenant-keyed, short-lived memory of the calendar's resolved per-day answers (singleton).
+        services.AddSingleton(_ => new Features.VisitPlanning.PlanningCalendarDayCache());
         services.AddScoped<Features.VisitPlanning.VisitPlanningEngine>();
         // WP-VP-3D — the shared per-doctor period-status reader (bulk reads only) + its batched segment seam.
         services.AddScoped<Features.Segmentation.Resolution.IContactSegmentSetReader,

@@ -42,7 +42,13 @@ public sealed record VisitPlanPreview(
     IReadOnlyList<string>? NonWorkingDates = null,
     // WP-VP-3A (additive) — EVERY week of the period with its derived status (past / approved / draft / empty) and visit
     // count; WeekNumber on a slot is the index into this list.
-    IReadOnlyList<PlanningWeekDto>? Weeks = null);
+    IReadOnlyList<PlanningWeekDto>? Weeks = null,
+    // WP-VP-3B (additive) — half days (yyyy-MM-dd), the visits moved to a later week, every week's capacity and the
+    // period in minutes (VisitPlanningCapacityModels.cs).
+    IReadOnlyList<string>? HalfDayDates = null,
+    IReadOnlyList<ShiftedVisitPreview>? Shifted = null,
+    IReadOnlyList<WeekCapacityDto>? WeekCapacity = null,
+    PeriodCapacityDto? PeriodCapacity = null);
 
 /// <summary>WP-VP-3A — one week of the period plan. <see cref="Status"/> is derived (<see cref="PlanningWeekCalendar"/>);
 /// <see cref="StoredStatus"/> is the stored approve state (approved / reopened, null when never approved).</summary>

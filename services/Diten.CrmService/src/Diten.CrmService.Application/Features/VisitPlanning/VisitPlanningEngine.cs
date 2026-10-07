@@ -1,5 +1,6 @@
 using System.Globalization;
 using Diten.CrmService.Application.Common;
+using Diten.CrmService.Application.Features.ConsentPreference.Evaluation;
 using Diten.CrmService.Application.Features.CycleCapacity.Rules;
 using Diten.CrmService.Application.Features.CycleCapacity.Services;
 using Diten.CrmService.Application.Features.CyclePeriod.Read;
@@ -54,6 +55,8 @@ public sealed class VisitPlanningEngine
     private readonly PlanningWorkingCalendar _calendar;
     private readonly IVisitProvenanceDeriver _deriver;
     private readonly IVisitReportRepository? _reports;
+    private readonly IRouteOptimizationDefaultsProvider? _routeDefaults;
+    private readonly IAccountRelationshipRepository? _relationships;
 
     public VisitPlanningEngine(
         ITenantContext tenant,
@@ -76,9 +79,16 @@ public sealed class VisitPlanningEngine
         PlanningWorkingCalendar calendar,
         IVisitProvenanceDeriver deriver,
         // WP-VP-3A — "done" = a visit with a COMPLETED report; without the reader nothing counts as done.
-        IVisitReportRepository? reports = null)
+        IVisitReportRepository? reports = null,
+        // WP-VP-3B — the configured route day (the day budget's default hours + the per-day route window) and the
+        // pharmacy → institution links (a pharmacy rides on its institution's day). Both optional: without them the
+        // documented defaults apply and a pharmacy is its own group.
+        IRouteOptimizationDefaultsProvider? routeDefaults = null,
+        IAccountRelationshipRepository? relationships = null)
     {
         _reports = reports;
+        _routeDefaults = routeDefaults;
+        _relationships = relationships;
         _deriver = deriver;
         _tenant = tenant;
         _actor = actor;
@@ -304,6 +314,10 @@ public sealed class VisitPlanningEngine
         // ② context: capacity (supply + between-visit buffer) + territory WARN (never a filter).
         var capacity = await _capacities.GetByCyclePeriodAsync(tenantId, session.CyclePeriodId, cancellationToken);
         var betweenVisit = capacity?.BetweenVisitTimeMinutes ?? 0;
+        // WP-VP-3B (MK-8) — the day budget (capacity's working minutes − its daily fixed charge; default hours without a
+        // capacity) and the configured route day it is laid on.
+        var routeDay = _routeDefaults?.Current.WorkingDay ?? RouteOptimizationDefaults.WorkingDay;
+        var dayBudget = PlanningDayBudget.From(capacity, routeDay);
 
         // WP-VP-FIX-1 (C2 + C3) — only WORKING days are candidate days: the platform working calendar (weekends,
         // holidays, closures) for the period's country, asked once per day for the whole run; when it cannot answer the
@@ -356,6 +370,7 @@ public sealed class VisitPlanningEngine
         var accountCache = new Dictionary<Guid, AccountEntity?>();
         var candidates = new List<Candidate>();
         var contentPreviews = new List<DoctorContentPreview>();
+        var consentBlocked = new List<EligibleContactAssessment>();
 
         foreach (var doctor in assessments)
         {
@@ -366,10 +381,29 @@ public sealed class VisitPlanningEngine
             var contentReasons = string.Equals(play.ReasonCode, VisitProvenanceDeriver.MultiplePlays, StringComparison.Ordinal)
                 ? content.ReasonCodes.Append(VisitProvenanceDeriver.MultiplePlays).Distinct(StringComparer.Ordinal).ToList()
                 : content.ReasonCodes;
+            // WP-VP-3B (4) — unknown consent is planned, with a warning on the doctor's preview.
+            if (string.Equals(doctor.ConsentStatus, ConsentEligibilityStatus.Unknown, StringComparison.Ordinal))
+            {
+                contentReasons = contentReasons.Append(PlanningVisitReasons.ConsentUnknown).Distinct(StringComparer.Ordinal).ToList();
+            }
 
             var duration = content.VisitDurationMinutes > 0
                 ? content.VisitDurationMinutes
                 : DefaultDuration(capacity);
+
+            contentPreviews.Add(new DoctorContentPreview(
+                doctor.ContactId, doctor.AccountId, content.Status, content.JourneyId, content.StageId,
+                content.StageIndex, content.StageDisplayName, content.PromoItemCount, content.NonPromoItemCount,
+                duration, contentReasons, doctor.ConsentStatus, doctor.ConsentBlocked, doctor.ConsentReason,
+                content.Items ?? Array.Empty<VisitContentItem>()));
+
+            // WP-VP-3B (4) — a BLOCKED doctor is not planned (the campaign "blocked ⇒ excluded" rule, same MOD-0164
+            // verdict): it is reported unscheduled (consent_blocked) and its institution is not visited in its place.
+            if (doctor.ConsentBlocked)
+            {
+                consentBlocked.Add(doctor);
+                continue;
+            }
 
             var (lat, lng) = await ResolveCoordinatesAsync(tenantId, doctor.AccountId, accountCache, cancellationToken);
 
@@ -392,18 +426,13 @@ public sealed class VisitPlanningEngine
                 Windows: doctor.AvailabilityWindows,
                 Content: content,
                 ContentPending: pending));
-
-            contentPreviews.Add(new DoctorContentPreview(
-                doctor.ContactId, doctor.AccountId, content.Status, content.JourneyId, content.StageId,
-                content.StageIndex, content.StageDisplayName, content.PromoItemCount, content.NonPromoItemCount,
-                duration, contentReasons, doctor.ConsentStatus, doctor.ConsentBlocked, doctor.ConsentReason,
-                content.Items ?? Array.Empty<VisitContentItem>()));
         }
 
         // Pharmacy targets (first-class; report-only duration) + bare account targets (no doctor selected under them).
         var accountsWithDoctor = candidates
             .Where(c => c.AccountId is not null)
             .Select(c => c.AccountId!.Value)
+            .Concat(consentBlocked.Where(d => d.AccountId is not null).Select(d => d.AccountId!.Value))
             .ToHashSet();
 
         foreach (var pharmacyId in session.Selection.SelectedPharmacyIds.Distinct())
@@ -460,78 +489,105 @@ public sealed class VisitPlanningEngine
                 .ToList();
         }
 
-        // ⑤ PACK + ROUTE — one Optimize call PER DRAFT WEEK over that week's visit subset (cross-day continuous per week).
+        // ⑤ WP-VP-3B — DAY BALANCING + ROUTE + OVERFLOW, per draft week in order. The week's visits (its frequency share
+        // plus what an earlier week could not hold) first get a DAY from DayBalancer (institution groups → the emptiest
+        // working day within the day budget); then the route optimizer orders and times ONE day at a time (the manual order
+        // decides the order inside a day, never the day). What no day of the week can hold moves to the next DRAFT week
+        // that does not already visit that target (shifted, with the reason); past the last draft week it is
+        // period_exhausted. Approved weeks are not draft weeks, so nothing ever moves into them.
         var placed = new List<PlacedVisit>();
         var unscheduled = new List<UnscheduledPreview>();
+        var shifts = new List<ShiftTrack>();
+        var carried = draftWeekIndexes.ToDictionary(i => i, _ => new List<WeekItem>());
+        var groupOf = await GroupKeysAsync(tenantId, candidates, cancellationToken);
+        var fixedLoad = fixedVisits
+            .GroupBy(v => v.PlannedDate)
+            .ToDictionary(g => g.Key, g => g.Sum(v => Math.Max(0, v.PlannedDurationMinutes ?? 0) + betweenVisit));
+        var startLocation = ResolveStartLocation(options);
 
         foreach (var weekIndex in draftWeekIndexes)
         {
             var span = periodWeeks[weekIndex];
-            var window = new WeekWindow(span.From > today ? span.From : today, span.To);
+            var from = span.From > today ? span.From : today;
             // A target appears once per visit it owes this week (twice only when it owes more visits than draft weeks).
-            var weekCandidates = candidates
-                .SelectMany(c => Enumerable.Repeat(
-                    c, perCandidateWeeks.TryGetValue(c.TargetId, out var w) ? w.Count(x => x == weekIndex) : 0))
+            var items = carried[weekIndex]
+                .Concat(candidates.SelectMany(c => Enumerable
+                    .Repeat(c, perCandidateWeeks.TryGetValue(c.TargetId, out var w) ? w.Count(x => x == weekIndex) : 0)
+                    .Select(x => new WeekItem(x, weekIndex, null))))
                 .ToList();
-            if (weekCandidates.Count == 0)
+            if (items.Count == 0)
             {
                 continue;
             }
 
-            var visitRefs = new Dictionary<Guid, Candidate>();
-            var routeVisits = new List<RouteVisitInput>(weekCandidates.Count);
-            foreach (var candidate in weekCandidates)
-            {
-                var visitRef = Guid.NewGuid();
-                visitRefs[visitRef] = candidate;
-                routeVisits.Add(new RouteVisitInput(
-                    visitRef, candidate.Lat, candidate.Long, Math.Max(1, candidate.DurationMinutes),
-                    candidate.Windows, candidate.TargetId));
-            }
-
-            var input = new RouteOptimizationInput(
-                routeVisits,
-                new RepWorkingHours(null, ResolveStartLocation(options)),
-                new OptimizationPeriod(window.From, window.To, nonWorking),
-                betweenVisit,
-                new TravelModelSpec(),
-                // Manual sequence (target ids) applies WITHIN this week's visit set; null ⇒ the greedy optimum. Frequency
-                // is preserved — the same target may recur in another week; each week is ordered independently here.
+            var week = PlanWeek(
+                items, from, span.To, calendar, dayBudget, routeDay, betweenVisit, fixedLoad, groupOf, startLocation,
                 options.ManualVisitOrder);
 
-            var output = _optimizer.Optimize(input);
+            placed.AddRange(week.Placed.Select(p => new PlacedVisit(
+                p.Item.Candidate, weekIndex, p.Date, p.Start, p.End, p.Sequence)));
 
-            foreach (var scheduled in output.Scheduled)
+            foreach (var (item, reason) in week.Unscheduled)
             {
-                if (!visitRefs.TryGetValue(scheduled.VisitId, out var candidate))
-                {
-                    continue;
-                }
-
-                placed.Add(new PlacedVisit(
-                    candidate, weekIndex, scheduled.AssignedDate, scheduled.StartTime, scheduled.EndTime,
-                    scheduled.SequenceOrder));
+                Unshift(shifts, item);
+                unscheduled.Add(new UnscheduledPreview(
+                    item.FromWeek, item.Candidate.TargetType, item.Candidate.TargetId, item.Candidate.ContactId, reason));
             }
 
-            foreach (var missed in output.Unscheduled)
+            var reasonForWeek = ShiftReason(from, span.To, calendar);
+            foreach (var item in week.Overflow)
             {
-                if (!visitRefs.TryGetValue(missed.VisitId, out var candidate))
+                var next = draftWeekIndexes
+                    .Where(i => i > weekIndex
+                                && !(perCandidateWeeks.TryGetValue(item.Candidate.TargetId, out var owned) && owned.Contains(i))
+                                && carried[i].All(c => c.Candidate.TargetId != item.Candidate.TargetId))
+                    .DefaultIfEmpty(-1)
+                    .First();
+                if (next < 0)
                 {
+                    Unshift(shifts, item);
+                    unscheduled.Add(new UnscheduledPreview(
+                        item.FromWeek, item.Candidate.TargetType, item.Candidate.TargetId, item.Candidate.ContactId,
+                        RouteUnscheduledReasonCodes.PeriodExhausted));
                     continue;
                 }
 
-                unscheduled.Add(new UnscheduledPreview(
-                    weekIndex, candidate.TargetType, candidate.TargetId, candidate.ContactId, missed.Reason));
+                var track = item.Shift;
+                if (track is null)
+                {
+                    track = new ShiftTrack(item.Candidate, item.FromWeek, reasonForWeek);
+                    shifts.Add(track);
+                }
+
+                track.ToWeek = next;
+                carried[next].Add(item with { Shift = track });
             }
         }
+
+        // WP-VP-3B (4) — a consent-blocked doctor is reported, never planned.
+        var firstDraftWeek = draftWeekIndexes.Count > 0 ? draftWeekIndexes[0] : 0;
+        unscheduled.AddRange(consentBlocked.Select(d => new UnscheduledPreview(
+            firstDraftWeek, PlannedVisitTargetType.Contact, d.ContactId, d.ContactId, PlanningVisitReasons.ConsentBlocked)));
 
         // WP-SB-3b — a doctor recurs across weeks (frequency-extend), so each placed visit tells what comes AFTER the
         // doctor's earlier visits: the stored pending plans before its date plus this run's earlier visits.
         placed = await ProjectContentAsync(session, placed, pendingPlans, at, cancellationToken);
 
+        // WP-VP-3B (B-7, C5) — every week's capacity and the period, in minutes (supply and demand in one unit).
+        var (weekCapacity, periodCapacity) = BuildCapacity(
+            periodWeeks, calendar, dayBudget, betweenVisit, placed, fixedVisits);
+        var shifted = shifts
+            .Select(s => new ShiftedVisitPreview(
+                s.Candidate.TargetType, s.Candidate.TargetId, s.Candidate.ContactId,
+                s.Candidate.ContactId is null && accountCache.TryGetValue(s.Candidate.TargetId, out var acc) ? acc?.AccountName : null,
+                s.FromWeek, s.ToWeek, s.Reason))
+            .ToList();
+
         // ⑥ SUPPLY-vs-DEMAND — TRANSIENT summary (warning, never a block). WP-VP-3A — fixed visits are demand too.
+        // WP-VP-3B — a consent-blocked doctor is not demand (it was never to be planned).
+        var notPlaced = unscheduled.Count(u => u.Reason != PlanningVisitReasons.ConsentBlocked);
         var supplyDemand = await BuildSupplyDemandAsync(
-            capacity, period, placed.Count + fixedVisits.Count, unscheduled.Count, cancellationToken);
+            capacity, period, placed.Count + fixedVisits.Count, notPlaced, cancellationToken);
 
         // WP-VP-3A — the doctor's cadence travels on the candidate preview too (3D shows it).
         var contentWithFrequency = contentPreviews
@@ -542,7 +598,271 @@ public sealed class VisitPlanningEngine
 
         return GenerationResult.Succeeded(new GenerationOutput(
             session, period, periodStart, periodEnd, periodWeeks.Count, placed, unscheduled, contentWithFrequency,
-            territoryWarnings, supplyDemand, calendar, periodWeeks, today, fixedVisits, frequencyByTarget));
+            territoryWarnings, supplyDemand, calendar, periodWeeks, today, fixedVisits, frequencyByTarget,
+            shifted, weekCapacity, periodCapacity));
+    }
+
+    // ── WP-VP-3B — one week: day balancing, per-day route, overflow ──────────────────────────────────────────────────
+
+    /// <summary>
+    /// Plans one draft week: a missing location is reported at once (it cannot be routed); every other visit gets a day
+    /// from <see cref="DayBalancer"/>; each day is then routed alone (its window = the day kind's working minutes from
+    /// 09:00). A visit the route cannot fit on its day (the day ran out, or the doctor's availability excludes that
+    /// weekday) is tried on the week's other days, emptiest first, by re-routing that day with it; a visit no day takes is
+    /// OVERFLOW when the day ran out, unscheduled (availability) otherwise. The route's other reasons stand as they are.
+    /// </summary>
+    private WeekPlan PlanWeek(
+        List<WeekItem> items,
+        DateOnly from,
+        DateOnly to,
+        PlanningCalendarResult calendar,
+        PlanningDayBudget budget,
+        WorkingDayHours routeDay,
+        int buffer,
+        IReadOnlyDictionary<DateOnly, int> fixedLoad,
+        IReadOnlyDictionary<Guid, string> groupOf,
+        GeoPoint? startLocation,
+        IReadOnlyList<Guid>? manualOrder)
+    {
+        var unscheduled = new List<(WeekItem, string)>();
+        var overflow = new List<WeekItem>();
+        var days = new List<DayBalancer.Day>();
+        for (var d = from; d <= to; d = d.AddDays(1))
+        {
+            days.Add(new DayBalancer.Day(d, budget.BudgetFor(calendar.KindOf(d)), fixedLoad.GetValueOrDefault(d)));
+        }
+
+        int Cost(WeekItem item) => Math.Max(1, item.Candidate.DurationMinutes) + buffer;
+
+        var byId = new Dictionary<int, WeekItem>();
+        for (var i = 0; i < items.Count; i++)
+        {
+            if (!RouteTime.IsValidCoordinate(items[i].Candidate.Lat, items[i].Candidate.Long))
+            {
+                unscheduled.Add((items[i], RouteUnscheduledReasonCodes.MissingLocation));
+                continue;
+            }
+
+            byId[i] = items[i];
+        }
+
+        var balance = DayBalancer.Assign(days, byId
+            .Select(kv => new DayBalancer.Visit(
+                kv.Key,
+                groupOf.TryGetValue(kv.Value.Candidate.TargetId, out var g) ? g : kv.Value.Candidate.TargetId.ToString("N"),
+                Cost(kv.Value)))
+            .ToList());
+        overflow.AddRange(balance.Overflow.Select(id => byId[id]));
+
+        var load = new Dictionary<DateOnly, int>(balance.LoadMinutes);
+        var members = balance.Assigned
+            .GroupBy(kv => kv.Value)
+            .ToDictionary(g => g.Key, g => g.OrderBy(kv => kv.Key).Select(kv => byId[kv.Key]).ToList());
+        var routed = new Dictionary<DateOnly, IReadOnlyList<DayPlaced>>();
+        var retry = new List<(WeekItem Item, string Reason, DateOnly Tried)>();
+
+        foreach (var date in members.Keys.OrderBy(d => d).ToList())
+        {
+            var (ok, missed) = RouteDay(date, calendar.KindOf(date), members[date], budget, routeDay, buffer, startLocation, manualOrder);
+            routed[date] = ok;
+            foreach (var (item, reason) in missed)
+            {
+                members[date].Remove(item);
+                load[date] -= Cost(item);
+                retry.Add((item, reason, date));
+            }
+        }
+
+        foreach (var (item, reason, tried) in retry)
+        {
+            var dayFull = reason == RouteUnscheduledReasonCodes.PeriodExhausted;
+            if (!dayFull && reason != RouteUnscheduledReasonCodes.NoFeasibleAvailabilityWindow)
+            {
+                unscheduled.Add((item, reason));
+                continue;
+            }
+
+            var placedElsewhere = false;
+            foreach (var day in days
+                         .Where(d => d.BudgetMinutes > 0 && d.Date != tried && load[d.Date] + Cost(item) <= d.BudgetMinutes)
+                         .OrderBy(d => (double)load[d.Date] / d.BudgetMinutes)
+                         .ThenBy(d => d.Date))
+            {
+                var trial = (members.TryGetValue(day.Date, out var list) ? list : new List<WeekItem>()).Append(item).ToList();
+                var (ok, missed) = RouteDay(day.Date, calendar.KindOf(day.Date), trial, budget, routeDay, buffer, startLocation, manualOrder);
+                if (missed.Count == 0)
+                {
+                    members[day.Date] = trial;
+                    routed[day.Date] = ok;
+                    load[day.Date] += Cost(item);
+                    placedElsewhere = true;
+                    break;
+                }
+            }
+
+            if (placedElsewhere)
+            {
+                continue;
+            }
+
+            if (dayFull)
+            {
+                overflow.Add(item);
+            }
+            else
+            {
+                unscheduled.Add((item, reason));
+            }
+        }
+
+        return new WeekPlan(routed.Values.SelectMany(v => v).ToList(), unscheduled, overflow);
+    }
+
+    /// <summary>Routes ONE day: the optimizer gets only that day, the day kind's working window and the manual order.</summary>
+    private (IReadOnlyList<DayPlaced> Placed, IReadOnlyList<(WeekItem Item, string Reason)> Missed) RouteDay(
+        DateOnly date,
+        string kind,
+        IReadOnlyList<WeekItem> items,
+        PlanningDayBudget budget,
+        WorkingDayHours routeDay,
+        int buffer,
+        GeoPoint? startLocation,
+        IReadOnlyList<Guid>? manualOrder)
+    {
+        var refs = new Dictionary<Guid, WeekItem>();
+        var visits = new List<RouteVisitInput>(items.Count);
+        foreach (var item in items)
+        {
+            var visitRef = Guid.NewGuid();
+            refs[visitRef] = item;
+            visits.Add(new RouteVisitInput(
+                visitRef, item.Candidate.Lat, item.Candidate.Long, Math.Max(1, item.Candidate.DurationMinutes),
+                item.Candidate.Windows, item.Candidate.TargetId));
+        }
+
+        var output = _optimizer.Optimize(new RouteOptimizationInput(
+            visits,
+            new RepWorkingHours(budget.WindowFor(kind, routeDay), startLocation),
+            new OptimizationPeriod(date, date),
+            buffer,
+            new TravelModelSpec(),
+            // Manual sequence (target ids) orders the visits WITHIN the day; null ⇒ the greedy optimum.
+            manualOrder));
+
+        var placed = output.Scheduled
+            .Where(s => refs.ContainsKey(s.VisitId))
+            .Select(s => new DayPlaced(refs[s.VisitId], s.AssignedDate, s.StartTime, s.EndTime, s.SequenceOrder))
+            .ToList();
+        var missed = output.Unscheduled
+            .Where(u => refs.ContainsKey(u.VisitId))
+            .Select(u => (refs[u.VisitId], u.Reason))
+            .ToList();
+        return (placed, missed);
+    }
+
+    /// <summary>WP-VP-3B — the institution group of every candidate: a doctor → its account; a bare account → itself; a
+    /// pharmacy → the planned institution it is linked to (account relationship, smallest id when several), else itself.
+    /// One relationship read per selected pharmacy.</summary>
+    private async Task<IReadOnlyDictionary<Guid, string>> GroupKeysAsync(
+        Guid tenantId, IReadOnlyList<Candidate> candidates, CancellationToken cancellationToken)
+    {
+        var institutions = candidates
+            .Select(c => c.TargetType == PlannedVisitTargetType.Contact ? c.AccountId
+                : c.TargetType == PlannedVisitTargetType.Account ? c.TargetId : (Guid?)null)
+            .OfType<Guid>()
+            .ToHashSet();
+        var keys = new Dictionary<Guid, string>();
+        foreach (var c in candidates)
+        {
+            Guid group;
+            if (c.TargetType == PlannedVisitTargetType.Contact)
+            {
+                group = c.AccountId ?? c.TargetId;
+            }
+            else if (c.TargetType == PlannedVisitTargetType.Pharmacy && _relationships is not null)
+            {
+                var related = (await _relationships.ListByAccountAsync(tenantId, c.TargetId, cancellationToken))
+                    .Where(r => r.TenantId == tenantId && !r.IsDeleted && !RelationshipLifecycle.IsClosed(r.Status))
+                    .Select(r => r.SourceAccountId == c.TargetId ? r.TargetAccountId : r.SourceAccountId)
+                    .Where(institutions.Contains)
+                    .OrderBy(id => id)
+                    .ToList();
+                group = related.Count > 0 ? related[0] : c.TargetId;
+            }
+            else
+            {
+                group = c.TargetId;
+            }
+
+            keys[c.TargetId] = group.ToString("N");
+        }
+
+        return keys;
+    }
+
+    /// <summary>WP-VP-3B — why a week overflowed: it lost a weekday to a holiday, else to a half day, else it was simply
+    /// full.</summary>
+    private static string ShiftReason(DateOnly from, DateOnly to, PlanningCalendarResult calendar)
+    {
+        var kinds = new List<string>();
+        for (var d = from; d <= to; d = d.AddDays(1))
+        {
+            if (d.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday))
+            {
+                kinds.Add(calendar.KindOf(d));
+            }
+        }
+
+        return kinds.Contains(PlanningDayKinds.Holiday) ? PlanningShiftReasons.Holiday
+            : kinds.Contains(PlanningDayKinds.Half) ? PlanningShiftReasons.HalfDay
+            : PlanningShiftReasons.CapacityFull;
+    }
+
+    private static void Unshift(List<ShiftTrack> shifts, WeekItem item)
+    {
+        if (item.Shift is { } track)
+        {
+            shifts.Remove(track);
+        }
+    }
+
+    /// <summary>WP-VP-3B (B-7, C5) — per week: its working / half / holiday days inside the period, the day budgets
+    /// summed (capacity), Σ(duration + buffer) of its planned + fixed visits (planned), the visit count and the full-day
+    /// cap; and the period's totals.</summary>
+    private static (IReadOnlyList<WeekCapacityDto> Weeks, PeriodCapacityDto Period) BuildCapacity(
+        IReadOnlyList<PlanningWeekSpan> periodWeeks,
+        PlanningCalendarResult calendar,
+        PlanningDayBudget budget,
+        int buffer,
+        IReadOnlyList<PlacedVisit> placed,
+        IReadOnlyList<PlannedVisitEntity> fixedVisits)
+    {
+        var weeks = new List<WeekCapacityDto>(periodWeeks.Count);
+        for (var i = 0; i < periodWeeks.Count; i++)
+        {
+            var span = periodWeeks[i];
+            int working = 0, half = 0, holidays = 0, capacityMinutes = 0;
+            for (var d = span.From; d <= span.To; d = d.AddDays(1))
+            {
+                var kind = calendar.KindOf(d);
+                working += kind == PlanningDayKinds.Working ? 1 : 0;
+                half += kind == PlanningDayKinds.Half ? 1 : 0;
+                holidays += kind == PlanningDayKinds.Holiday ? 1 : 0;
+                capacityMinutes += budget.BudgetFor(kind);
+            }
+
+            var weekPlaced = placed.Where(p => p.WeekNumber == i).ToList();
+            var weekFixed = fixedVisits.Where(v => PlanningWeekCalendar.MondayOf(v.PlannedDate) == span.Monday).ToList();
+            var plannedMinutes = weekPlaced.Sum(p => Math.Max(1, p.Candidate.DurationMinutes) + buffer)
+                                 + weekFixed.Sum(v => Math.Max(0, v.PlannedDurationMinutes ?? 0) + buffer);
+            weeks.Add(new WeekCapacityDto(
+                span.WeekStart, working, half, holidays, capacityMinutes, plannedMinutes,
+                weekPlaced.Count + weekFixed.Count, budget.CapFor(PlanningDayKinds.Working)));
+        }
+
+        return (weeks, new PeriodCapacityDto(
+            weeks.Sum(w => w.CapacityMinutes), weeks.Sum(w => w.PlannedMinutes), budget.BudgetMinutes,
+            budget.CapFor(PlanningDayKinds.Working), budget.CapFor(PlanningDayKinds.Half), budget.Source));
     }
 
     /// <summary>WP-VP-3A — the target a visit counts for: the doctor for a doctor visit, else the visited account.</summary>
@@ -863,7 +1183,25 @@ public sealed class VisitPlanningEngine
 
     // ── internal value types ─────────────────────────────────────────────────────────────────────────────────────
 
-    private sealed record WeekWindow(DateOnly From, DateOnly To);
+    /// <summary>WP-VP-3B — one visit a week has to place: its first week (<see cref="FromWeek"/>) and, once moved, its
+    /// shift record.</summary>
+    private sealed record WeekItem(Candidate Candidate, int FromWeek, ShiftTrack? Shift);
+
+    /// <summary>WP-VP-3B — a visit moved to a later week (mutable target week while it keeps moving).</summary>
+    private sealed class ShiftTrack(Candidate candidate, int fromWeek, string reason)
+    {
+        public Candidate Candidate { get; } = candidate;
+        public int FromWeek { get; } = fromWeek;
+        public string Reason { get; } = reason;
+        public int ToWeek { get; set; } = fromWeek;
+    }
+
+    private sealed record DayPlaced(WeekItem Item, DateOnly Date, string Start, string End, int Sequence);
+
+    private sealed record WeekPlan(
+        IReadOnlyList<DayPlaced> Placed,
+        IReadOnlyList<(WeekItem Item, string Reason)> Unscheduled,
+        IReadOnlyList<WeekItem> Overflow);
 
     private sealed record Candidate(
         string TargetType,
@@ -912,7 +1250,11 @@ public sealed class VisitPlanningEngine
         IReadOnlyList<PlanningWeekSpan> PeriodWeeks,
         DateOnly Today,
         IReadOnlyList<PlannedVisitEntity> Fixed,
-        IReadOnlyDictionary<Guid, FrequencyRequirement> Frequency);
+        IReadOnlyDictionary<Guid, FrequencyRequirement> Frequency,
+        // WP-VP-3B — the visits moved to a later week, every week's capacity and the period in minutes.
+        IReadOnlyList<ShiftedVisitPreview> Shifted,
+        IReadOnlyList<WeekCapacityDto> WeekCapacity,
+        PeriodCapacityDto PeriodCapacity);
 
     private sealed record GenerationResult(string? Error, GenerationOutput? Output)
     {
@@ -1005,7 +1347,13 @@ public sealed class VisitPlanningEngine
             allSlots, g.Unscheduled, g.Content, g.TerritoryWarnings, g.SupplyDemand, DateTimeOffset.UtcNow,
             new PlanningCalendarStatusDto(g.Calendar.Status, g.Calendar.ReasonCode, g.Calendar.Reason),
             g.Calendar.NonWorkingDates.OrderBy(d => d).Select(d => d.ToString("yyyy-MM-dd")).ToList(),
-            weeks);
+            weeks,
+            HalfDayDates: g.Calendar.HalfDayDates.Select(d => d.ToString("yyyy-MM-dd")).ToList(),
+            Shifted: g.Shifted
+                .Select(s => s.ContactId is { } sc && contactNames.TryGetValue(sc, out var si) ? s with { DisplayName = si.Name } : s)
+                .ToList(),
+            WeekCapacity: g.WeekCapacity,
+            PeriodCapacity: g.PeriodCapacity);
     }
 }
 

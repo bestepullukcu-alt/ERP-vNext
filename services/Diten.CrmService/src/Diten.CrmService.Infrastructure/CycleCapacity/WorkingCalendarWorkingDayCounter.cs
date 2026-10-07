@@ -277,7 +277,8 @@ public sealed class WorkingCalendarWorkingDayCounter : IWorkingDayCounter, IWork
                     Reasons(payload.ReasonCodes, CycleCapacityReasonCodes.CapacityOk),
                     string.IsNullOrWhiteSpace(payload.SelectionReason)
                         ? $"{date:yyyy-MM-dd}: working day = {isWorkingDay}."
-                        : payload.SelectionReason);
+                        : payload.SelectionReason,
+                    IsHalfDay: isWorkingDay && IsHalfDay(payload));
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -352,6 +353,16 @@ public sealed class WorkingCalendarWorkingDayCounter : IWorkingDayCounter, IWork
         }
     }
 
+    /// <summary>The platform's reason code for a half day it treats as a working day (CAND-CAP-0008 contract).</summary>
+    private const string HalfDayTreatedAsWorking = "half_day_treated_as_working";
+
+    /// <summary>WP-VP-3B (MK-9) — the platform's half-day signal, read from what its resolve payload already carries (no
+    /// platform change): the governing holiday's <c>isHalfDay</c>, or the reason code it emits for a half day it counts
+    /// as working.</summary>
+    private static bool IsHalfDay(WorkingDayResolvePayload payload)
+        => payload.Holiday?.IsHalfDay == true
+           || (payload.ReasonCodes?.Contains(HalfDayTreatedAsWorking, StringComparer.OrdinalIgnoreCase) ?? false);
+
     private static IReadOnlyList<string> Reasons(IReadOnlyList<string>? platformCodes, string fallback)
         => platformCodes is { Count: > 0 } ? platformCodes : new[] { fallback };
 
@@ -373,5 +384,9 @@ public sealed class WorkingCalendarWorkingDayCounter : IWorkingDayCounter, IWork
         int? WorkingDayCount,
         bool? IsWorkingDay,
         string? SelectionReason,
-        IReadOnlyList<string>? ReasonCodes);
+        IReadOnlyList<string>? ReasonCodes,
+        // WP-VP-3B — only the half-day flag of the governing holiday is read.
+        HolidayPayload? Holiday = null);
+
+    private sealed record HolidayPayload(bool IsHalfDay);
 }

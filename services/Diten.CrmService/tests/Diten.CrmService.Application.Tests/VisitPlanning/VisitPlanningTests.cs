@@ -703,11 +703,17 @@ public sealed partial class VisitPlanningTests
     {
         public bool Block { get; set; }
 
+        /// <summary>WP-VP-3B — per-subject verdicts (blocked / unknown) on top of the global <see cref="Block"/>.</summary>
+        public HashSet<Guid> Blocked { get; } = new();
+        public HashSet<Guid> UnknownSubjects { get; } = new();
+
         public Task<ConsentEvaluationResult> EvaluateAsync(
             ConsentEvaluationRequest request, CancellationToken ct)
             => Task.FromResult(new ConsentEvaluationResult(
-                Block ? ConsentEligibilityStatus.Blocked : ConsentEligibilityStatus.Allowed,
-                Block ? ConsentDecision.ConsentBlocked : ConsentDecision.ConsentGranted,
+                Block || Blocked.Contains(request.SubjectId) ? ConsentEligibilityStatus.Blocked
+                    : UnknownSubjects.Contains(request.SubjectId) ? ConsentEligibilityStatus.Unknown
+                    : ConsentEligibilityStatus.Allowed,
+                Block || Blocked.Contains(request.SubjectId) ? ConsentDecision.ConsentBlocked : ConsentDecision.ConsentGranted,
                 request.SubjectType, request.SubjectId, request.Channel, request.Purpose, null, null, Now,
                 null, Array.Empty<Guid>(), new[] { "reason" }, "selection reason",
                 Array.Empty<CandidateConsent>(), Array.Empty<CandidatePreference>(),
@@ -991,8 +997,12 @@ public sealed partial class VisitPlanningTests
 
             var working = date.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday) && !Holidays.Contains(date);
             return Task.FromResult(new WorkingDayCheckResult(
-                CycleCapacityResolutions.Resolved, working, new[] { CycleCapacityReasonCodes.CapacityOk }, "ok"));
+                CycleCapacityResolutions.Resolved, working, new[] { CycleCapacityReasonCodes.CapacityOk }, "ok",
+                IsHalfDay: working && HalfDays.Contains(date)));
         }
+
+        /// <summary>WP-VP-3B — working days the platform marks as half days.</summary>
+        public HashSet<DateOnly> HalfDays { get; } = new();
     }
 
     private sealed class DefaultRouteSettings : IRouteOptimizationDefaultsProvider
