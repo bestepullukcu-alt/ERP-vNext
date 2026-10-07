@@ -59,6 +59,14 @@ public sealed class PlanningSession : EntityBase
     /// </summary>
     public List<PlanningWeek> Weeks { get; set; } = new();
 
+    /// <summary>
+    /// WP-VP-4E — the rep's day pins, per draft week (<see cref="PlanningDayPin.WeekStart"/>): "this visit / this
+    /// institution goes on that day". Written through the existing selection update (no new command); the engine places
+    /// the pinned visits first and spreads the rest around them. Kept when a week is approved or reopened. An older
+    /// document has no such field and reads as an empty list.
+    /// </summary>
+    public List<PlanningDayPin> DayPins { get; set; } = new();
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
 
@@ -186,6 +194,28 @@ public sealed class PlanningSessionSelectedProduct
     public Guid ProductId { get; set; }
     public string? ProductCode { get; set; }
     public string? Role { get; set; }
+}
+
+/// <summary>WP-VP-4E — one day pin of a draft week. <c>TargetType</c> / <c>TargetId</c> name the visit target (a doctor:
+/// <c>contact</c> + the contact id; a pharmacy / an institution: its account id); <c>ContactId</c> is the doctor when the
+/// target is one. <c>Scope</c>: <c>visit</c> = only that visit; <c>institution</c> = the target's institution group that
+/// week (its doctors + linked pharmacies — the day balancer's group rule). <c>Date</c> yyyy-MM-dd inside the week.</summary>
+public sealed class PlanningDayPin
+{
+    public string WeekStart { get; set; } = string.Empty;
+    public string TargetType { get; set; } = string.Empty;
+    public Guid TargetId { get; set; }
+    public Guid? ContactId { get; set; }
+    public string Date { get; set; } = string.Empty;
+    public string Scope { get; set; } = PlanningDayPinScopes.Visit;
+}
+
+public static class PlanningDayPinScopes
+{
+    public const string Visit = "visit";
+    public const string Institution = "institution";
+
+    public static bool IsKnown(string? scope) => scope is Visit or Institution;
 }
 
 public static class PlanningSessionProductLimits

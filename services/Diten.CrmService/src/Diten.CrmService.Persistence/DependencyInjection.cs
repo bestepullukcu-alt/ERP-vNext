@@ -1145,6 +1145,18 @@ public static class DependencyInjection
                 map.SetIgnoreExtraElements(true);
             });
         }
+        // WP-VP-4E — the rep's day pins: a new embedded type, so its Guids take the string-Guid convention here (the CRM
+        // new-type GUID trap). An older session without "DayPins" reads as an empty list.
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningDayPin)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningDayPin>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+                map.GetMemberMap(p => p.TargetId).SetSerializer(stringGuid);
+                map.GetMemberMap(p => p.ContactId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
         if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningSessionProvenance)))
         {
             BsonClassMap.RegisterClassMap<PlanningSessionProvenance>(map =>

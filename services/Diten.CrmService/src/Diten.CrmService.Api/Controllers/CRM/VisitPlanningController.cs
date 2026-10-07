@@ -166,6 +166,6 @@ public sealed class VisitPlanningController : CustomBaseController
             new UpdatePlanningSessionSelectionCommand(
                 planningSessionId, request.SelectedAccountIds, request.SelectedPharmacyIds, request.ToContacts(),
                 request.SegmentId, request.CampaignId, request.StrategyTemplateId,
-                request.RequestedStatus, request.ExpectedVersion, request.TargetWeekStart),
+                request.RequestedStatus, request.ExpectedVersion, request.TargetWeekStart, request.ToDayPins()),
             cancellationToken));
 }

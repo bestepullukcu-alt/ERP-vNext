@@ -523,6 +523,14 @@ public sealed class VisitPlanningEngine
             .GroupBy(v => v.PlannedDate)
             .ToDictionary(g => g.Key, g => g.Sum(v => Math.Max(0, v.PlannedDurationMinutes ?? 0) + betweenVisit));
         var startLocation = ResolveStartLocation(options);
+        // WP-VP-4E — the route's own travel model decides what is "near" when days are clustered.
+        var travel = _routeDefaults?.Current is { } rd
+            ? new HaversineTravelModel(rd.RoadFactor, rd.AssumedSpeedKmPerMin)
+            : new HaversineTravelModel(RouteOptimizationDefaults.RoadFactor, RouteOptimizationDefaults.AssumedSpeedKmPerMin);
+        var dayPreviews = new List<PlanningDayPreview>();
+        var pinMoves = new List<PinMove>();
+        var pinWarnings = new List<PinWarningPreview>();
+        var trackDates = new Dictionary<ShiftTrack, DateOnly>(ReferenceEqualityComparer.Instance);
 
         foreach (var weekIndex in draftWeekIndexes)
         {
@@ -539,12 +547,30 @@ public sealed class VisitPlanningEngine
                 continue;
             }
 
+            // WP-VP-4E — the rep's day pins of this week (an approved week is never a draft week, so its pins rest).
+            var weekPins = session.DayPins
+                .Where(p => string.Equals(p.WeekStart, span.WeekStart, StringComparison.Ordinal))
+                .ToList();
             var week = PlanWeek(
                 items, from, span.To, calendar, dayBudget, routeDay, betweenVisit, fixedLoad, groupOf, startLocation,
-                options.ManualVisitOrder);
+                options.ManualVisitOrder, weekPins, travel, lastDraftWeek: weekIndex == draftWeekIndexes[^1]);
 
             placed.AddRange(week.Placed.Select(p => new PlacedVisit(
-                p.Item.Candidate, weekIndex, p.Date, p.Start, p.End, p.Sequence)));
+                p.Item.Candidate, weekIndex, p.Date, p.Start, p.End, p.Sequence,
+                IsPinned: week.Pinned.TryGetValue(p.Item, out var auto),
+                AutoPinned: week.Pinned.ContainsKey(p.Item) && auto,
+                GroupKey: GroupKeyOf(groupOf, p.Item.Candidate))));
+            foreach (var p in week.Placed)
+            {
+                if (p.Item.Shift is { } placedTrack)
+                {
+                    trackDates[placedTrack] = p.Date;
+                }
+            }
+
+            dayPreviews.AddRange(week.Days.Select(d => d with { WeekStart = span.WeekStart }));
+            pinWarnings.AddRange(week.PinWarnings.Select(w => w with { WeekStart = span.WeekStart }));
+            pinMoves.AddRange(week.PinMoves);
 
             foreach (var (item, reason) in week.Unscheduled)
             {
@@ -574,11 +600,18 @@ public sealed class VisitPlanningEngine
                 var track = item.Shift;
                 if (track is null)
                 {
-                    track = new ShiftTrack(item.Candidate, item.FromWeek, reasonForWeek);
+                    // WP-VP-4E — a pinned visit that found no room in its week moves on with the pin_overflow reason.
+                    track = new ShiftTrack(item.Candidate, item.FromWeek,
+                        week.PinOverflow.Contains(item) ? PlanningDayPins.PinOverflow : reasonForWeek);
                     shifts.Add(track);
                 }
 
                 track.ToWeek = next;
+                foreach (var move in pinMoves.Where(m => ReferenceEquals(m.Item, item)))
+                {
+                    move.Track = track;
+                }
+
                 carried[next].Add(item with { Shift = track });
             }
         }
@@ -620,20 +653,34 @@ public sealed class VisitPlanningEngine
                 : c)
             .ToList();
 
+        // WP-VP-4E — where each moved pinned visit landed (a later week: the day the carried visit was placed on).
+        var pinOverflow = pinMoves
+            .Select(m => new PinOverflowPreview(
+                m.Item.Candidate.TargetType, m.Item.Candidate.TargetId, m.Item.Candidate.ContactId,
+                m.Item.Candidate.ContactId is null && accountCache.TryGetValue(m.Item.Candidate.TargetId, out var pa) ? pa?.AccountName : null,
+                m.From.ToString("yyyy-MM-dd"),
+                (m.To ?? (m.Track is { } t && trackDates.TryGetValue(t, out var landed) ? landed : (DateOnly?)null))?.ToString("yyyy-MM-dd"),
+                m.Reason))
+            .ToList();
+
         return GenerationResult.Succeeded(new GenerationOutput(
             session, period, periodStart, periodEnd, periodWeeks.Count, placed, unscheduled, contentWithFrequency,
             territoryWarnings, supplyDemand, calendar, periodWeeks, today, fixedVisits, frequencyByTarget,
-            shifted, weekCapacity, periodCapacity));
+            shifted, weekCapacity, periodCapacity, dayPreviews, pinOverflow, pinWarnings, VisitModelDto.From(capacity)));
     }
 
     // ── WP-VP-3B — one week: day balancing, per-day route, overflow ──────────────────────────────────────────────────
 
     /// <summary>
-    /// Plans one draft week: a missing location is reported at once (it cannot be routed); every other visit gets a day
-    /// from <see cref="DayBalancer"/>; each day is then routed alone (its window = the day kind's working minutes from
-    /// 09:00). A visit the route cannot fit on its day (the day ran out, or the doctor's availability excludes that
-    /// weekday) is tried on the week's other days, emptiest first, by re-routing that day with it; a visit no day takes is
-    /// OVERFLOW when the day ran out, unscheduled (availability) otherwise. The route's other reasons stand as they are.
+    /// Plans one draft week: a missing location is reported at once (it cannot be routed); WP-VP-4E — the rep's PINNED
+    /// visits go first onto their days (in route order, as many as the day's budget and window hold; the rest move to the
+    /// week's next working day with room — auto-pinned — or, with none, to a later week as pin_overflow); every other visit
+    /// gets a day from the geography-aware <see cref="DayBalancer"/> around them. Each day is then routed alone (its window
+    /// = the day kind's working minutes from 09:00; a pinned day is built pinned-first, adding the others one by one so a
+    /// pinned visit is never pushed out). A visit the route cannot fit on its day (the day ran out, or the doctor's
+    /// availability excludes that weekday) is tried on the week's other days, emptiest first, by re-routing that day with
+    /// it; a visit no day takes is OVERFLOW when the day ran out, unscheduled (availability) otherwise. The route's other
+    /// reasons stand as they are. No visit is ever planned past the end of the working window.
     /// </summary>
     private WeekPlan PlanWeek(
         List<WeekItem> items,
@@ -646,17 +693,21 @@ public sealed class VisitPlanningEngine
         IReadOnlyDictionary<DateOnly, int> fixedLoad,
         IReadOnlyDictionary<Guid, string> groupOf,
         GeoPoint? startLocation,
-        IReadOnlyList<Guid>? manualOrder)
+        IReadOnlyList<Guid>? manualOrder,
+        IReadOnlyList<PlanningDayPin> pins,
+        ITravelModel travel,
+        bool lastDraftWeek)
     {
         var unscheduled = new List<(WeekItem, string)>();
         var overflow = new List<WeekItem>();
-        var days = new List<DayBalancer.Day>();
+        var weekDays = new List<(DateOnly Date, int Budget)>();
         for (var d = from; d <= to; d = d.AddDays(1))
         {
-            days.Add(new DayBalancer.Day(d, budget.BudgetFor(calendar.KindOf(d)), fixedLoad.GetValueOrDefault(d)));
+            weekDays.Add((d, budget.BudgetFor(calendar.KindOf(d))));
         }
 
         int Cost(WeekItem item) => Math.Max(1, item.Candidate.DurationMinutes) + buffer;
+        int BudgetOf(DateOnly d) => weekDays.FirstOrDefault(w => w.Date == d).Budget;
 
         var byId = new Dictionary<int, WeekItem>();
         for (var i = 0; i < items.Count; i++)
@@ -670,12 +721,115 @@ public sealed class VisitPlanningEngine
             byId[i] = items[i];
         }
 
-        var balance = DayBalancer.Assign(days, byId
+        // ── WP-VP-4E — pins: institution pins first, then visit pins (a visit pin wins for its visit) ──
+        var pinned = new Dictionary<WeekItem, bool>(ReferenceEqualityComparer.Instance); // value = auto-pinned
+        var pinDay = new Dictionary<WeekItem, DateOnly>(ReferenceEqualityComparer.Instance);
+        var pinWarnings = new List<PinWarningPreview>();
+        var pinMoves = new List<PinMove>();
+        var pinOverflow = new HashSet<WeekItem>(ReferenceEqualityComparer.Instance);
+        foreach (var pin in pins.OrderBy(p => p.Scope == PlanningDayPinScopes.Institution ? 0 : 1))
+        {
+            if (!DateOnly.TryParseExact(pin.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+                || date < from || date > to || BudgetOf(date) <= 0)
+            {
+                pinWarnings.Add(new PinWarningPreview(string.Empty, pin.TargetType, pin.TargetId, pin.Date, PlanningDayPins.PinNotWorkingDay));
+                continue;
+            }
+
+            var matched = MatchPin(pin, byId.Values, groupOf);
+            if (matched.Count == 0)
+            {
+                pinWarnings.Add(new PinWarningPreview(string.Empty, pin.TargetType, pin.TargetId, pin.Date, PlanningDayPins.PinTargetNotInWeek));
+                continue;
+            }
+
+            foreach (var m in matched)
+            {
+                pinned[m] = false;
+                pinDay[m] = date;
+            }
+        }
+
+        // Place the pinned visits day by day: route order, within the budget and the window; the rest move forward.
+        var dayPinned = new Dictionary<DateOnly, List<WeekItem>>();
+        var queue = new SortedDictionary<DateOnly, List<WeekItem>>();
+        foreach (var (item, date) in pinDay)
+        {
+            (queue.TryGetValue(date, out var q) ? q : queue[date] = new List<WeekItem>()).Add(item);
+        }
+
+        int PinnedLoad(DateOnly d) => fixedLoad.GetValueOrDefault(d)
+                                      + (dayPinned.TryGetValue(d, out var kept) ? kept.Sum(Cost) : 0)
+                                      + (queue.TryGetValue(d, out var waiting) ? waiting.Sum(Cost) : 0);
+        while (queue.Count > 0)
+        {
+            var date = queue.Keys.First();
+            var list = queue[date];
+            queue.Remove(date);
+            var (ok, missed) = RouteDay(date, calendar.KindOf(date), list, budget, routeDay, buffer, startLocation, manualOrder);
+            var room = BudgetOf(date) - fixedLoad.GetValueOrDefault(date);
+            var kept = new List<WeekItem>();
+            var moved = new List<(WeekItem Item, string Reason)>();
+            foreach (var p in ok.OrderBy(p => p.Sequence))
+            {
+                if (Cost(p.Item) <= room)
+                {
+                    kept.Add(p.Item);
+                    room -= Cost(p.Item);
+                }
+                else
+                {
+                    moved.Add((p.Item, PlanningDayPins.PinDayFull));
+                }
+            }
+
+            moved.AddRange(missed.Select(m => (m.Item, m.Reason == RouteUnscheduledReasonCodes.NoFeasibleAvailabilityWindow
+                ? PlanningDayPins.PinOutsideAvailability : PlanningDayPins.PinDayFull)));
+            dayPinned[date] = kept;
+            foreach (var (item, reason) in moved)
+            {
+                var next = weekDays
+                    .Where(w => w.Date > date && w.Budget > 0 && PinnedLoad(w.Date) + Cost(item) <= w.Budget)
+                    .Select(w => (DateOnly?)w.Date)
+                    .FirstOrDefault();
+                if (next is { } nd)
+                {
+                    (queue.TryGetValue(nd, out var q) ? q : queue[nd] = new List<WeekItem>()).Add(item);
+                    pinned[item] = true;
+                    pinMoves.Add(new PinMove(item, date, nd, reason));
+                }
+                else
+                {
+                    pinned.Remove(item);
+                    pinOverflow.Add(item);
+                    overflow.Add(item);
+                    pinMoves.Add(new PinMove(item, date, null, PlanningDayPins.PinOverflow));
+                }
+            }
+        }
+
+        // ── the others: geography-aware days around the pinned ones ──
+        var days = weekDays.Select(w =>
+        {
+            var kept = dayPinned.TryGetValue(w.Date, out var k) ? k : new List<WeekItem>();
+            var weight = kept.Sum(Cost);
+            return new DayBalancer.Day(
+                w.Date, w.Budget, fixedLoad.GetValueOrDefault(w.Date) + weight,
+                weight > 0 ? kept.Sum(i => i.Candidate.Lat * Cost(i)) / weight : null,
+                weight > 0 ? kept.Sum(i => i.Candidate.Long * Cost(i)) / weight : null,
+                weight);
+        }).ToList();
+        var free = byId.Where(kv => !pinned.ContainsKey(kv.Value) && !pinOverflow.Contains(kv.Value)).ToList();
+        var balance = DayBalancer.Assign(days, free
             .Select(kv => new DayBalancer.Visit(
                 kv.Key,
-                groupOf.TryGetValue(kv.Value.Candidate.TargetId, out var g) ? g : kv.Value.Candidate.TargetId.ToString("N"),
-                Cost(kv.Value)))
-            .ToList());
+                GroupKeyOf(groupOf, kv.Value.Candidate),
+                Cost(kv.Value),
+                kv.Value.Candidate.Lat,
+                kv.Value.Candidate.Long,
+                Follower: kv.Value.Candidate.TargetType == PlannedVisitTargetType.Pharmacy
+                          && GroupKeyOf(groupOf, kv.Value.Candidate) != kv.Value.Candidate.TargetId.ToString("N")))
+            .ToList(), travel, farFill: lastDraftWeek);
         overflow.AddRange(balance.Overflow.Select(id => byId[id]));
 
         var load = new Dictionary<DateOnly, int>(balance.LoadMinutes);
@@ -685,13 +839,42 @@ public sealed class VisitPlanningEngine
         var routed = new Dictionary<DateOnly, IReadOnlyList<DayPlaced>>();
         var retry = new List<(WeekItem Item, string Reason, DateOnly Tried)>();
 
-        foreach (var date in members.Keys.OrderBy(d => d).ToList())
+        foreach (var date in members.Keys.Concat(dayPinned.Where(kv => kv.Value.Count > 0).Select(kv => kv.Key))
+                     .Distinct().OrderBy(d => d).ToList())
         {
-            var (ok, missed) = RouteDay(date, calendar.KindOf(date), members[date], budget, routeDay, buffer, startLocation, manualOrder);
-            routed[date] = ok;
-            foreach (var (item, reason) in missed)
+            var others = members.TryGetValue(date, out var m) ? m : new List<WeekItem>();
+            if (dayPinned.TryGetValue(date, out var keptPins) && keptPins.Count > 0)
             {
-                members[date].Remove(item);
+                // Pinned first (they fit alone), then each other visit only if the day still routes without a miss.
+                var current = new List<WeekItem>(keptPins);
+                var (ok, _) = RouteDay(date, calendar.KindOf(date), current, budget, routeDay, buffer, startLocation, manualOrder);
+                foreach (var item in others)
+                {
+                    var trial = current.Append(item).ToList();
+                    var (trialOk, trialMissed) = RouteDay(date, calendar.KindOf(date), trial, budget, routeDay, buffer, startLocation, manualOrder);
+                    if (trialMissed.Count == 0)
+                    {
+                        current = trial;
+                        ok = trialOk;
+                    }
+                    else
+                    {
+                        load[date] -= Cost(item);
+                        retry.Add((item, trialMissed.FirstOrDefault(x => ReferenceEquals(x.Item, item)).Reason
+                                         ?? RouteUnscheduledReasonCodes.PeriodExhausted, date));
+                    }
+                }
+
+                members[date] = current;
+                routed[date] = ok;
+                continue;
+            }
+
+            var (dayOk, dayMissed) = RouteDay(date, calendar.KindOf(date), others, budget, routeDay, buffer, startLocation, manualOrder);
+            routed[date] = dayOk;
+            foreach (var (item, reason) in dayMissed)
+            {
+                others.Remove(item);
                 load[date] -= Cost(item);
                 retry.Add((item, reason, date));
             }
@@ -739,8 +922,50 @@ public sealed class VisitPlanningEngine
             }
         }
 
-        return new WeekPlan(routed.Values.SelectMany(v => v).ToList(), unscheduled, overflow);
+        var placed = routed.Values.SelectMany(v => v).ToList();
+        // WP-VP-4E — every working day: its budget, what it plans (fixed + placed, with buffers) and the idle rest.
+        var dayPreviews = weekDays
+            .Where(w => w.Budget > 0)
+            .Select(w =>
+            {
+                var planned = fixedLoad.GetValueOrDefault(w.Date) + placed.Where(p => p.Date == w.Date).Sum(p => Cost(p.Item));
+                return new PlanningDayPreview(
+                    w.Date.ToString("yyyy-MM-dd"), string.Empty, calendar.KindOf(w.Date), w.Budget, planned,
+                    Math.Max(0, w.Budget - planned), planned > w.Budget);
+            })
+            .ToList();
+        var stillPinned = new Dictionary<WeekItem, bool>(ReferenceEqualityComparer.Instance);
+        foreach (var p in placed.Where(p => pinned.ContainsKey(p.Item)))
+        {
+            stillPinned[p.Item] = pinned[p.Item];
+        }
+
+        return new WeekPlan(placed, unscheduled, overflow, stillPinned, pinMoves, pinOverflow, pinWarnings, dayPreviews);
     }
+
+    /// <summary>WP-VP-4E — the week's visits a pin moves. <c>visit</c>: the pinned target's own visit(s) (a doctor by its
+    /// contact id, a pharmacy / institution by its account id). <c>institution</c>: every visit of the target's
+    /// institution group — the day balancer's group rule (a doctor → its account; a linked pharmacy → its institution).</summary>
+    private static List<WeekItem> MatchPin(PlanningDayPin pin, IEnumerable<WeekItem> items, IReadOnlyDictionary<Guid, string> groupOf)
+    {
+        var all = items.ToList();
+        bool IsTarget(WeekItem i) => pin.TargetType == PlannedVisitTargetType.Contact
+            ? i.Candidate.ContactId == (pin.ContactId ?? pin.TargetId)
+            : i.Candidate.TargetId == pin.TargetId && i.Candidate.TargetType == pin.TargetType;
+        if (pin.Scope != PlanningDayPinScopes.Institution)
+        {
+            return all.Where(IsTarget).ToList();
+        }
+
+        var self = all.FirstOrDefault(IsTarget);
+        var key = self is not null ? GroupKeyOf(groupOf, self.Candidate)
+            : groupOf.TryGetValue(pin.ContactId ?? pin.TargetId, out var g) ? g : pin.TargetId.ToString("N");
+        return all.Where(i => GroupKeyOf(groupOf, i.Candidate) == key).ToList();
+    }
+
+    /// <summary>WP-VP-3B / 4E — a visit's institution group key (the same rule for balancing, pins and the preview).</summary>
+    private static string GroupKeyOf(IReadOnlyDictionary<Guid, string> groupOf, Candidate candidate)
+        => groupOf.TryGetValue(candidate.TargetId, out var g) ? g : candidate.TargetId.ToString("N");
 
     /// <summary>Routes ONE day: the optimizer gets only that day, the day kind's working window and the manual order.</summary>
     private (IReadOnlyList<DayPlaced> Placed, IReadOnlyList<(WeekItem Item, string Reason)> Missed) RouteDay(
@@ -1281,7 +1506,25 @@ public sealed class VisitPlanningEngine
     private sealed record WeekPlan(
         IReadOnlyList<DayPlaced> Placed,
         IReadOnlyList<(WeekItem Item, string Reason)> Unscheduled,
-        IReadOnlyList<WeekItem> Overflow);
+        IReadOnlyList<WeekItem> Overflow,
+        // WP-VP-4E — the placed pinned visits (value = auto-pinned), the pinned visits moved (in the week or out of it),
+        // those that left the week, the pins ignored, and every working day's budget / planned / idle minutes.
+        IReadOnlyDictionary<WeekItem, bool> Pinned,
+        IReadOnlyList<PinMove> PinMoves,
+        IReadOnlySet<WeekItem> PinOverflow,
+        IReadOnlyList<PinWarningPreview> PinWarnings,
+        IReadOnlyList<PlanningDayPreview> Days);
+
+    /// <summary>WP-VP-4E — a pinned visit that did not fit its day: moved to <see cref="To"/> in the week, or (To null) out
+    /// of it; <see cref="Track"/> follows it into a later week.</summary>
+    private sealed class PinMove(WeekItem item, DateOnly from, DateOnly? to, string reason)
+    {
+        public WeekItem Item { get; } = item;
+        public DateOnly From { get; } = from;
+        public DateOnly? To { get; } = to;
+        public string Reason { get; } = reason;
+        public ShiftTrack? Track { get; set; }
+    }
 
     private sealed record Candidate(
         string TargetType,
@@ -1315,7 +1558,11 @@ public sealed class VisitPlanningEngine
         string StartTime,
         string EndTime,
         int SequenceOrder,
-        VisitContentSequenceResult? Content = null);
+        VisitContentSequenceResult? Content = null,
+        // WP-VP-4E — on a pinned day (auto = moved there from a full pinned day) and the institution group.
+        bool IsPinned = false,
+        bool AutoPinned = false,
+        string? GroupKey = null);
 
     private sealed record GenerationOutput(
         PlanningSession Session,
@@ -1337,7 +1584,12 @@ public sealed class VisitPlanningEngine
         // WP-VP-3B — the visits moved to a later week, every week's capacity and the period in minutes.
         IReadOnlyList<ShiftedVisitPreview> Shifted,
         IReadOnlyList<WeekCapacityDto> WeekCapacity,
-        PeriodCapacityDto PeriodCapacity);
+        PeriodCapacityDto PeriodCapacity,
+        // WP-VP-4E — days, moved pinned visits, ignored pins, the per-visit model.
+        IReadOnlyList<PlanningDayPreview> Days,
+        IReadOnlyList<PinOverflowPreview> PinOverflow,
+        IReadOnlyList<PinWarningPreview> PinWarnings,
+        VisitModelDto VisitModel);
 
     private sealed record GenerationResult(string? Error, GenerationOutput? Output)
     {
@@ -1390,7 +1642,10 @@ public sealed class VisitPlanningEngine
                 OverflowProducts: (p.Content?.OverflowProducts ?? p.Candidate.Content?.OverflowProducts ?? Array.Empty<VisitContentOverflow>())
                     .Select(o => new OverflowProductPreview(o.ProductId, o.ProductCode, o.Role, o.Reason))
                     .ToList(),
-                ProductWarnings: ProductWarningsOf(p.Candidate.TargetType, p.Content ?? p.Candidate.Content)))
+                ProductWarnings: ProductWarningsOf(p.Candidate.TargetType, p.Content ?? p.Candidate.Content),
+                IsPinned: p.IsPinned,
+                AutoPinned: p.AutoPinned,
+                GroupKey: p.GroupKey))
             .ToList();
 
         // WP-VP-3A (S-1) — the already-written visits of the stored weeks, shown as they are (IsFixed): never re-generated.
@@ -1451,7 +1706,13 @@ public sealed class VisitPlanningEngine
                 .Where(c => !c.ConsentBlocked)
                 .Count(c => (c.Products?.Count ?? 0) == 0
                             && !allSlots.Any(s => s.ContactId == c.ContactId && (s.ContentItems?.Count ?? 0) > 0)),
-            PortfolioStatus: PortfolioStatuses.Undefined);
+            PortfolioStatus: PortfolioStatuses.Undefined,
+            Days: g.Days,
+            PinOverflow: g.PinOverflow
+                .Select(o => o.ContactId is { } oc && contactNames.TryGetValue(oc, out var on) ? o with { DisplayName = on.Name } : o)
+                .ToList(),
+            PinWarnings: g.PinWarnings,
+            VisitModel: g.VisitModel);
     }
 
     /// <summary>WP-VP-3C — a doctor visit's product warnings: the items' own warnings, and <c>no_products</c> when the

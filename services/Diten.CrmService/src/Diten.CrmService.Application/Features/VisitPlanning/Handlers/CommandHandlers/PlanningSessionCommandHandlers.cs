@@ -152,13 +152,27 @@ public sealed class UpdatePlanningSessionSelectionHandler
     private readonly IPlanningSessionRepository _repository;
     private readonly ICallerScope _caller;
     private readonly IStrategyTemplateProductReferenceValidator? _products;
+    private readonly Features.CyclePeriod.Read.ICyclePeriodReader? _periods;
+    private readonly PlanningWorkingCalendar? _calendar;
+    private readonly ICycleCapacityRepository? _capacities;
+    private readonly TimeProvider _clock;
 
     public UpdatePlanningSessionSelectionHandler(
         ITenantContext tenant, IActorContext actor, IPlanningSessionRepository repository, ICallerScope caller,
         // WP-VP-3C — the MDM Global Product proof of a picked product (fail-closed).
-        IStrategyTemplateProductReferenceValidator? products = null)
+        IStrategyTemplateProductReferenceValidator? products = null,
+        // WP-VP-4E — the day pins' week / working-day checks: the period, its working calendar (country from the
+        // period's capacity, as the engine asks it) and "today".
+        Features.CyclePeriod.Read.ICyclePeriodReader? periods = null,
+        PlanningWorkingCalendar? calendar = null,
+        ICycleCapacityRepository? capacities = null,
+        TimeProvider? clock = null)
     {
         _products = products;
+        _periods = periods;
+        _calendar = calendar;
+        _capacities = capacities;
+        _clock = clock ?? TimeProvider.System;
         _caller = caller;
         _tenant = tenant;
         _actor = actor;
@@ -195,6 +209,40 @@ public sealed class UpdatePlanningSessionSelectionHandler
                 request.SelectedContacts, session.Selection.SelectedContacts, _products, cancellationToken) is { } refused)
         {
             return refused;
+        }
+
+        // WP-VP-4E — one draft week's day pins ride on this update too (null = keep every week's pins).
+        if (request.DayPins is { } dayPins)
+        {
+            if (_periods is null || await _periods.GetByIdAsync(session.CyclePeriodId, cancellationToken) is not { } period)
+            {
+                return Response<bool>.Fail(new[]
+                {
+                    PlanningSessionErrorCodes.InvalidWeek, "The plan's period cannot be read; the day pins were not changed."
+                }, 400);
+            }
+
+            var periodStart = DateOnly.FromDateTime(period.StartDate.UtcDateTime);
+            var periodEnd = DateOnly.FromDateTime(period.EndDate.UtcDateTime);
+            Func<DateOnly, string> kindOf = d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
+                ? PlanningDayKinds.Weekend : PlanningDayKinds.Working;
+            if (_calendar is not null)
+            {
+                var capacity = _capacities is null ? null
+                    : await _capacities.GetByCyclePeriodAsync(tenantId, session.CyclePeriodId, cancellationToken);
+                var calendar = await _calendar.ResolveAsync(
+                    period, capacity?.CalendarCountryCode, periodStart, periodEnd, cancellationToken);
+                kindOf = calendar.KindOf;
+            }
+
+            var (pinRefused, pinWeek, pins) = PlanningDayPins.Validate<bool>(
+                session, dayPins, periodStart, periodEnd, PlanningWeekCalendar.Today(_clock.GetUtcNow()), kindOf);
+            if (pinRefused is not null)
+            {
+                return pinRefused;
+            }
+
+            session.DayPins = PlanningDayPins.Replace(session.DayPins, pinWeek, pins);
         }
 
         session.Selection = MergeSelection(session.Selection, request);

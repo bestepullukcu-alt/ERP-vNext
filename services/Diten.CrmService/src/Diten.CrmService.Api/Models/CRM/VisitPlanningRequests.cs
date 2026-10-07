@@ -39,12 +39,37 @@ public sealed class UpdatePlanningSessionRequest
     public int? ExpectedVersion { get; set; }
     public string? TargetWeekStart { get; set; }
 
+    /// <summary>WP-VP-4E — one draft week's day pins (absent = keep; an empty list clears that week's).</summary>
+    public DayPinsRequest? DayPins { get; set; }
+
+    public DayPinsInput? ToDayPins()
+        => DayPins is null
+            ? null
+            : new DayPinsInput(DayPins.WeekStart, (DayPins.Pins ?? new List<DayPinRequest>())
+                .Select(p => new DayPinInput(p.TargetType, p.TargetId, p.ContactId, p.Date, p.Scope))
+                .ToList());
+
     /// <summary>WP-VP-FIX-2 (D9) — an ABSENT doctor list stays null ("leave the doctors as they are"); an empty one is an
     /// explicit clear. (The create request keeps its own empty-list default.)</summary>
     public IReadOnlyList<SelectedContactInput>? ToContacts()
         => SelectedContacts?
             .Select(c => c.ToInput())
             .ToList();
+}
+
+public sealed class DayPinsRequest
+{
+    public string? WeekStart { get; set; }
+    public List<DayPinRequest>? Pins { get; set; }
+}
+
+public sealed class DayPinRequest
+{
+    public string? TargetType { get; set; }
+    public Guid TargetId { get; set; }
+    public Guid? ContactId { get; set; }
+    public string? Date { get; set; }
+    public string? Scope { get; set; }
 }
 
 public sealed class SelectedContactRequest

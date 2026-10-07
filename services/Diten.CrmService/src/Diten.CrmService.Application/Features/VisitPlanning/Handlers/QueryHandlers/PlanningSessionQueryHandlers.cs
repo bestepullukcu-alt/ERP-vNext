@@ -139,6 +139,7 @@ public sealed class GetPlanningSessionByIdHandler
     private readonly Features.CyclePeriod.Read.ICyclePeriodReader? _periods;
     private readonly TimeProvider _clock;
     private readonly IPlannedVisitRepository? _plannedVisits;
+    private readonly ICycleCapacityRepository? _capacities;
 
     public GetPlanningSessionByIdHandler(
         ITenantContext tenant, IPlanningSessionRepository repository, ICallerScope caller,
@@ -147,9 +148,12 @@ public sealed class GetPlanningSessionByIdHandler
         Features.CyclePeriod.Read.ICyclePeriodReader? periods = null,
         TimeProvider? clock = null,
         // WP-VP-4A — an old committed plan's written visits (one bulk read) for its legacy weeks.
-        IPlannedVisitRepository? plannedVisits = null)
+        IPlannedVisitRepository? plannedVisits = null,
+        // WP-VP-4E — the period capacity's per-visit model (visitModel).
+        ICycleCapacityRepository? capacities = null)
     {
         _plannedVisits = plannedVisits;
+        _capacities = capacities;
         _periods = periods;
         _clock = clock ?? TimeProvider.System;
         _tenant = tenant;
@@ -182,6 +186,14 @@ public sealed class GetPlanningSessionByIdHandler
             selection.SelectedContacts.Select(c => (Guid?)c.ContactId),
             cancellationToken);
         var dto = PlanningSessionMapper.ToDto(session, names);
+        if (_capacities is not null)
+        {
+            dto = dto with
+            {
+                VisitModel = VisitModelDto.From(
+                    await _capacities.GetByCyclePeriodAsync(tenantId, session.CyclePeriodId, cancellationToken))
+            };
+        }
         if (_periods is not null && await _periods.GetByIdAsync(session.CyclePeriodId, cancellationToken) is { } period)
         {
             var start = DateOnly.FromDateTime(period.StartDate.UtcDateTime);

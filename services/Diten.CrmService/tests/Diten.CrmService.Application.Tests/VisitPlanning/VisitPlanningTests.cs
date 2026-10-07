@@ -544,7 +544,7 @@ public sealed partial class VisitPlanningTests
             Engine = new VisitPlanningEngine(
                 tenant, actor, Periods, Capacities, estimator, resolver, optimizer, selector, extend,
                 territoryGate, Accounts, Contacts, PlannedVisits, journeyProbe, frequencyProbe, consentProbe, availabilityProbe,
-                calendar, Deriver, Reports);
+                calendar, Deriver, Reports, relationships: Relationships);
 
             Session = new PlanningSession
             {
@@ -869,6 +869,9 @@ public sealed partial class VisitPlanningTests
 
     private sealed class FakeAccountRelationshipRepository : IAccountRelationshipRepository
     {
+        // WP-VP-4E — links a test can add (a pharmacy ↔ its institution); empty by default (a pharmacy is its own group).
+        public List<AccountRelationship> Rows { get; } = new();
+
         public Task<AccountRelationship?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct)
             => Task.FromResult<AccountRelationship?>(null);
 
@@ -878,7 +881,8 @@ public sealed partial class VisitPlanningTests
             => Task.FromResult(false);
 
         public Task<IReadOnlyList<AccountRelationship>> ListByAccountAsync(Guid tenantId, Guid accountId, CancellationToken ct)
-            => Task.FromResult<IReadOnlyList<AccountRelationship>>(Array.Empty<AccountRelationship>());
+            => Task.FromResult<IReadOnlyList<AccountRelationship>>(
+                Rows.Where(r => r.SourceAccountId == accountId || r.TargetAccountId == accountId).ToList());
 
         public Task<IReadOnlyList<AccountRelationship>> ListAllAsync(Guid tenantId, CancellationToken ct)
             => Task.FromResult<IReadOnlyList<AccountRelationship>>(Array.Empty<AccountRelationship>());

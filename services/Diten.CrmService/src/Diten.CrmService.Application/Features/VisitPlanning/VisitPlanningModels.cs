@@ -53,7 +53,14 @@ public sealed record VisitPlanPreview(
     // the rep's portfolio state (always undefined: no portfolio data yet).
     IReadOnlyList<ProductDistributionDto>? ProductDistribution = null,
     int DoctorsWithoutProducts = 0,
-    string PortfolioStatus = PortfolioStatuses.Undefined);
+    string PortfolioStatus = PortfolioStatuses.Undefined,
+    // WP-VP-4E (additive) — every working day of the draft weeks with its budget, planned minutes, idle minutes and
+    // over-capacity flag; the pinned visits that did not fit their day (moved, with the reason); the pins the run had to
+    // ignore (pin_target_not_in_week / pin_not_working_day); and the per-visit model of the period's capacity.
+    IReadOnlyList<PlanningDayPreview>? Days = null,
+    IReadOnlyList<PinOverflowPreview>? PinOverflow = null,
+    IReadOnlyList<PinWarningPreview>? PinWarnings = null,
+    VisitModelDto? VisitModel = null);
 
 /// <summary>WP-VP-3A — one week of the period plan. <see cref="Status"/> is derived (<see cref="PlanningWeekCalendar"/>);
 /// <see cref="StoredStatus"/> is the stored approve state (approved / reopened, null when never approved).</summary>
@@ -67,7 +74,9 @@ public sealed record PlanningWeekDto(
     string? StoredStatus = null,
     DateTimeOffset? ApprovedAt = null,
     string? ApprovedBy = null,
-    IReadOnlyList<PlanningWeekHistoryDto>? History = null);
+    IReadOnlyList<PlanningWeekHistoryDto>? History = null,
+    // WP-VP-4E (additive, detail) — the rep's day pins of this week.
+    IReadOnlyList<PlanningDayPinDto>? DayPins = null);
 
 /// <summary>WP-VP-3A (MK-4) — one approve / reopen of a week.</summary>
 public sealed record PlanningWeekHistoryDto(DateTimeOffset At, string? By, string Action, string? Reason);
@@ -123,7 +132,12 @@ public sealed record PlannedSlotPreview(
     // visit's product warnings (no_products / no_approved_content / ambiguous_journey …). Each content item also
     // carries its source and order.
     IReadOnlyList<OverflowProductPreview>? OverflowProducts = null,
-    IReadOnlyList<string>? ProductWarnings = null);
+    IReadOnlyList<string>? ProductWarnings = null,
+    // WP-VP-4E (additive) — the visit sits on a day the rep pinned (IsPinned), or was moved there because the pinned day
+    // was full (AutoPinned); GroupKey = its institution group (the doctors + linked pharmacies of one institution).
+    bool IsPinned = false,
+    bool AutoPinned = false,
+    string? GroupKey = null);
 
 /// <summary>One visit that could not be feasibly placed — the supply-vs-demand WARNING materialised (FU03 unscheduled).
 /// A warning the planner resolves, never a hard block (D-SUPPLY-DEMAND).</summary>
@@ -218,7 +232,9 @@ public sealed record PlanningSessionDto(
     // WP-VP-4A (additive) — today's week (when today is inside the period) and the first week after today's week that
     // is not approved and not past (null when none, and always null for an old committed plan: it has no drafts).
     string? CurrentWeekStart = null,
-    string? NextDraftWeekStart = null);
+    string? NextDraftWeekStart = null,
+    // WP-VP-4E (additive) — the period capacity's per-visit model (limits + minutes), source none without a capacity.
+    VisitModelDto? VisitModel = null);
 
 public sealed record PlanningSessionContactDto(
     Guid ContactId,
