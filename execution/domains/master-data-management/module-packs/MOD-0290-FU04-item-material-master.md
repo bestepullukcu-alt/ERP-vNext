@@ -767,6 +767,9 @@ HTTP taklidiyle (bütçe, 5xx, kısmi kapsam) ölçülür. Sözleşme testi ceva
 - [x] O-21 (birim kodları) — S1'de ölçüldü (XBX / XCS / XRO geçerli; IU için tek kod yok → stok + kaliteye soru)
 - [ ] **MOD-0048-FU01 adlı adımı (üç listenin Platform sağlayıcısı)** — S1'in canlıda kullanılabilmesinin ön koşulu. Bugün sağlayıcı yok; kalem oluşturma 503 `ITEM_REFERENCE_LIST_UNAVAILABLE` (kapalı başarısızlık). CT'nin ayrı Platform işi; girdi: S1 raporu §5
 - [ ] S5 ön koşulu: Auth `EntitlementOnlyViewerPermissions` + `mdm.items.read` (§23 #7)
+- [ ] **FG kimlik işlemcisi dilimi önkoşulu (S3 incelemesi M1):** FG kimlik rezervasyonu FG'ye aynı işlemde dokunmalı (GSKU deseni, `FirstGskuIdentityWorkflowOperationRepository` rezervasyon dokunuşu); yoksa stok düzenlemesi açık FG kimlik işleminin sabitlediği sürümü kaydırabilir
+- [ ] **S6 / düzeltme dilimi (S3 incelemesi M7):** GSKU düzeltmesi ya da taslak düzenlemesi `PackQuantity` / `PackUomCode`'u değiştirince türetilen kutu ↔ paket kenarı ve saklanan çevrimler yeniden doğrulanır
+- [ ] **BL-574 benimseyicisi:** S3'ün dört stok komutu S1'in `IAuditDetailsProvider` mekanizmasını takeover'a girince benimser (önce / sonra, ilk doldurma)
 - [ ] Stok ekibine sorular gönderildi (§25.1 sonu); O-11 cevabı gelene kadar emekliye ayırma reddedilir
 - [ ] Registry'de FU03'ün (Ürün Tüzel Kişi Kapsamı) bu dala yansıması — CT yönetişim işi
 - [ ] Kalite pozisyonunun dev'de kurulması — S2'den önce
