@@ -1,3 +1,5 @@
+using System.Collections.Frozen;
+
 namespace Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 
 /// <summary>
@@ -7,6 +9,7 @@ namespace Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 /// to Enforced is REFUSED (CT decision, every environment, Development included). The contract tests read these same
 /// lists: a new unguarded writer or unfenced runner turns them red, a guarded one must leave its list. The debt closes in
 /// WP-MDM-SCOPE-INT-01 (after the GP / LSKU / FG rounds merge into takeover); the lists then empty and the gate opens.
+/// FIX3 (5): the lists are frozen — no code can empty them at run time to open the gate.
 /// </summary>
 public interface IProductLegalEntityScopeActivationDebt
 {
@@ -21,7 +24,7 @@ public sealed class ProductLegalEntityScopeActivationDebt : IProductLegalEntityS
     public static ProductLegalEntityScopeActivationDebt Instance { get; } = new();
 
     /// <summary>GP / GSKU / LSKU lifecycle and workflow commands with no fence and no lease (FIX1 S8).</summary>
-    public static readonly IReadOnlySet<string> KnownUnguardedWriters = new HashSet<string>(StringComparer.Ordinal)
+    public static readonly FrozenSet<string> KnownUnguardedWriters = new[]
     {
         "DispatchProductAbbreviationWorkItemActionCommand",
         "RetireGlobalProductIdentityCommand",
@@ -39,19 +42,19 @@ public sealed class ProductLegalEntityScopeActivationDebt : IProductLegalEntityS
         "WithdrawFirstGskuIdentityApprovalCommand",
         "WithdrawGlobalProductIdentityApprovalCommand",
         "WithdrawLskuIdentityApprovalCommand"
-    };
+    }.ToFrozenSet(StringComparer.Ordinal);
 
     /// <summary>
     /// Recovery runners that neither take <c>ProductIdentityBackgroundScope</c> / <c>LskuBackgroundScope</c> nor read the
     /// fence: they may write during a fence and in a FailClosedSuspended tenant. Their files belong to the GP and LSKU
     /// rounds (FIX2 (4): not touched here).
     /// </summary>
-    public static readonly IReadOnlySet<string> KnownUnfencedRecoveryRunners = new HashSet<string>(StringComparer.Ordinal)
+    public static readonly FrozenSet<string> KnownUnfencedRecoveryRunners = new[]
     {
         "GlobalProductCorrectionRecoveryRunner",
         "GlobalProductRetirementRequestRecoveryRunner",
         "LskuRetirementRequestRecoveryRunner"
-    };
+    }.ToFrozenSet(StringComparer.Ordinal);
 
     public IReadOnlyCollection<string> UnguardedWriters => KnownUnguardedWriters;
     public IReadOnlyCollection<string> UnfencedRecoveryRunners => KnownUnfencedRecoveryRunners;

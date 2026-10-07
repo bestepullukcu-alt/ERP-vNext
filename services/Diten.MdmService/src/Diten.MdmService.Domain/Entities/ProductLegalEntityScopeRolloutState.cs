@@ -26,6 +26,12 @@ public sealed class ProductLegalEntityScopeRolloutState : EntityBase, IAuditInte
     /// </summary>
     public const int MaximumProductWriterLeases = 256;
 
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX3 (3) — the ceiling of the OTHER bucket: leases that name no object (creates). They never
+    /// count against <see cref="MaximumProductWriterLeases"/>, so failed creates cannot refuse the writers of products.
+    /// </summary>
+    public const int MaximumObjectlessWriterLeases = 512;
+
     /// <summary>Optimistic revision of <see cref="ProductWriterLeases"/>: every change of the list moves it by one.</summary>
     public long ProductWriterLeaseRevision { get; set; }
 

@@ -194,6 +194,28 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
     /// </summary>
     internal const int MaximumLeaseAttempts = 32;
 
+    /// <summary>FIX3 (10): the rounds this instance gets (tests lower it to force the exhaustion).</summary>
+    internal int LeaseAttempts { get; init; } = MaximumLeaseAttempts;
+
+    /// <summary>
+    /// FIX3 (1, 4) — test seam: runs after a lease acquisition has read and decided, just before it writes ("product" or
+    /// "slot"). A test interleaves another writer exactly there; production leaves it null.
+    /// </summary>
+    internal Func<string, Task>? BeforeLeaseWrite { get; set; }
+
+    private const string LeaseCapacityExceededCode =
+        Application.Features.ProductLegalEntityScopes.ProductLegalEntityScopeWriteFenceCoordinator.LeaseCapacityExceededCode;
+
+    /// <summary>
+    /// FIX3 (10): between two lost rounds a writer waits a little, at random (jitter), longer each round — N writers of
+    /// one tenant then spread out instead of all re-reading at once (O(N²) rounds without it).
+    /// </summary>
+    private static Task BackoffAsync(int attempt, CancellationToken cancellationToken)
+        => attempt == 0
+            ? Task.CompletedTask
+            : Task.Delay(Random.Shared.Next(1, Math.Min(50, 1 << Math.Min(attempt, 6)) + 1), cancellationToken);
+
+
     private const string LeaseContendedCode =
         Application.Features.ProductLegalEntityScopes.ProductLegalEntityScopeWriteFenceCoordinator.LeaseContendedCode;
 
@@ -204,8 +226,9 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
         ArgumentNullException.ThrowIfNull(requested);
         requested.EnsureValid();
         var now = requested.AcquiredAtUtc;
-        for (var attempt = 0; attempt < MaximumLeaseAttempts; attempt++)
+        for (var attempt = 0; attempt < LeaseAttempts; attempt++)
         {
+            await BackoffAsync(attempt, cancellationToken);
             var current = await GetAsync(cancellationToken);
             if (current is null) return new(false, null, null, LegacyBypass: true);
             if (current.ActiveFence is not null)
@@ -242,6 +265,7 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
             var update = Builders<ProductLegalEntityScopeRolloutState>.Update
                 .Set(item => item.ActiveWriterLease, requested)
                 .Set(item => item.WriterLeaseGeneration, requested.Generation);
+            if (BeforeLeaseWrite is { } slotHook) await slotHook("slot");
             var updated = await _states.FindOneAndUpdateAsync(
                 filter,
                 update,
@@ -264,8 +288,9 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
         var now = requested.AcquiredAtUtc;
         // Optimistic: read, decide, write only if the list (its revision) and the foreground slot are still the ones read.
         // A writer that lost the race reads again.
-        for (var attempt = 0; attempt < MaximumLeaseAttempts; attempt++)
+        for (var attempt = 0; attempt < LeaseAttempts; attempt++)
         {
+            await BackoffAsync(attempt, cancellationToken);
             var current = await GetAsync(cancellationToken);
             if (current is null) return new(false, null, null, LegacyBypass: true);
             if (current.ActiveFence is not null)
@@ -284,8 +309,14 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
             // FIX2 (5): an expired lease nobody meets (a failed create keyed only by its command) is swept, not kept.
             var swept = others.Where(lease => !meeting.Contains(lease) && lease.IsExpiredForOthersAt(now)).ToList();
             var leases = others.Where(lease => !meeting.Contains(lease) && !swept.Contains(lease)).ToList();
-            if (leases.Count >= ProductLegalEntityScopeRolloutState.MaximumProductWriterLeases)
-                return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
+            // FIX3 (3): two buckets — leases that name a product, and leases that name none. Each has its own ceiling; a
+            // full bucket refuses only its own kind, with its own code (counted by the caller), never "this product is busy".
+            var objectless = ProductLegalEntityScopeWriterLease.NamesNoObject(requested);
+            var bucket = leases.Count(lease => ProductLegalEntityScopeWriterLease.NamesNoObject(lease) == objectless);
+            if (bucket >= (objectless
+                    ? ProductLegalEntityScopeRolloutState.MaximumObjectlessWriterLeases
+                    : ProductLegalEntityScopeRolloutState.MaximumProductWriterLeases))
+                return new(false, null, current, FailureCode: LeaseCapacityExceededCode);
 
             // FIX2 (1): the product lease's generation is the list's own revision. The foreground slot's counter
             // (WriterLeaseGeneration, which the guarded Replace conditions on) is neither read nor moved here; the slot
@@ -304,6 +335,7 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
             var update = Builders<ProductLegalEntityScopeRolloutState>.Update
                 .Set(item => item.ProductWriterLeases, leases)
                 .Set(item => item.ProductWriterLeaseRevision, revision);
+            if (BeforeLeaseWrite is { } productHook) await productHook("product");
             var updated = await _states.FindOneAndUpdateAsync(
                 filter,
                 update,
@@ -333,11 +365,18 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
                              { nameof(ProductLegalEntityScopeWriterLease.Generation), generation },
                              { nameof(ProductLegalEntityScopeWriterLease.PreWriteStateHash), BsonNull.Value }
                          });
+        // FIX3 (1): the binding moves the list's revision. An acquisition that read the list BEFORE this binding then
+        // fails its revision condition and reads again — it can no longer write back the stale list and erase the bound
+        // baseline (a lost update that let a half-written product pass as clean). Chosen over $push/$pull: the
+        // acquisition must still remove taken-over and swept leases in the same atomic write as it adds its own, which a
+        // single $push/$pull update cannot both do. The binding itself is not conditioned on the revision: it changes one
+        // element matched exactly by token, generation and an unbound baseline — another writer's unrelated acquisition
+        // must not make a binding fail.
         var result = await _states.UpdateOneAsync(
             filter,
-            Builders<ProductLegalEntityScopeRolloutState>.Update.Set(
-                "ProductWriterLeases.$.PreWriteStateHash",
-                preWriteStateHash),
+            Builders<ProductLegalEntityScopeRolloutState>.Update
+                .Set("ProductWriterLeases.$.PreWriteStateHash", preWriteStateHash)
+                .Inc(item => item.ProductWriterLeaseRevision, 1),
             cancellationToken: cancellationToken);
         return result.ModifiedCount == 1;
     }

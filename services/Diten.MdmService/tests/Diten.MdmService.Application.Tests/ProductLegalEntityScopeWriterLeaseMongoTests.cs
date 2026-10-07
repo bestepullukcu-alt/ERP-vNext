@@ -363,7 +363,7 @@ public sealed class ProductLegalEntityScopeWriterLeaseMongoTests
         var beyond = await harness.Rollouts.AcquireProductWriterLeaseAsync(harness.Lease(Guid.NewGuid()));
 
         Assert.False(beyond.Acquired);
-        Assert.Equal("PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE", beyond.FailureCode);
+        Assert.Equal("PRODUCT_SCOPE_WRITER_LEASE_CAPACITY_EXCEEDED", beyond.FailureCode);
         Assert.Equal(ProductLegalEntityScopeRolloutState.MaximumProductWriterLeases,
             (await harness.Rollouts.GetAsync())!.ProductWriterLeases.Count);
     }
@@ -533,61 +533,104 @@ public sealed class ProductLegalEntityScopeWriterLeaseMongoTests
         }
     }
 
+    /// <summary>
+    /// FIX2 (9) / FIX3 (8) — the index each clause of the proof's queries must be read by, named. The proof reads its
+    /// objects by _id OR parent id, sorted by _id (as production does), and expands the hierarchy by parent id. One clause
+    /// without its index turns the whole $or into a scan of the tenant.
+    /// </summary>
+    private static readonly Dictionary<(string Collection, string Field), string[]> ExpectedIndexes = new()
+    {
+        [("mdm_product_abbreviation_allocation_ledger", "GlobalProductId")] = ["ix_mdm_product_abbreviation_ledger_tenant_product_scope_proof"],
+        [("mdm_product_abbreviation_allocation_ledger", "RegisterEntryId")] = ["ix_mdm_product_abbreviation_ledger_tenant_entry_scope_proof"],
+        [("mdm_product_abbreviation_history", "GlobalProductId")] = ["ix_mdm_product_abbreviation_history_tenant_product_scope_proof"],
+        [("mdm_product_abbreviation_history", "RegisterEntryId")] = ["ix_mdm_product_abbreviation_history_tenant_entry"],
+        [("mdm_product_abbreviation_register", "GlobalProductId")] = ["ix_mdm_product_abbreviation_register_tenant_product_scope_proof"],
+        [("mdm_product_legal_entity_scope_policies", "GlobalProductId")] = ["ux_mdm_product_legal_entity_scope_policies_tenant_product"],
+        [("mdm_product_definition_revisions", "GlobalProductId")] = ["ix_mdm_product_definition_revisions_tenant_parent", "ux_mdm_product_definition_revisions_tenant_parent_identifier"],
+        [("mdm_gskus", "ProductDefinitionRevisionId")] = ["ix_mdm_gskus_tenant_revision"],
+        [("mdm_gskus", "CodeReservationId")] = ["ux_mdm_gskus_tenant_reservation"],
+        [("mdm_lskus", "GskuId")] = ["ux_mdm_lskus_tenant_gsku_market"],
+        [("mdm_finished_goods", "GskuId")] = ["ix_mdm_finished_goods_tenant_gsku"]
+    };
+
     [Theory]
     [InlineData("mdm_product_abbreviation_allocation_ledger")]
     [InlineData("mdm_product_abbreviation_history")]
     [InlineData("mdm_product_abbreviation_register")]
     [InlineData("mdm_product_legal_entity_scope_policies")]
+    [InlineData("mdm_product_definition_revisions")]
+    [InlineData("mdm_gskus")]
+    [InlineData("mdm_lskus")]
+    [InlineData("mdm_finished_goods")]
     public async Task Every_clause_of_the_object_proof_query_uses_an_index(string collection)
     {
-        // FIX2 (9) — measured with explain(): the proof of a write reads its objects by _id OR parent id. One clause
-        // without an index turns the whole $or into a collection scan, on every product write.
         await using var harness = await Harness.CreateAsync();
-        // The owners' own indexes, as production has them (each repository creates its indexes when built).
+        // The owners' own indexes, as production has them (each repository creates its indexes when built), and the
+        // proof's own — built as the service's startup builds them (FIX3 (8)).
         _ = harness.Scope.PolicyRepository();
         _ = new ProductAbbreviationAllocationLedgerRepository(harness.Scope.Database, harness.Tenant);
         _ = new ProductAbbreviationHistoryRepository(harness.Scope.Database, harness.Tenant);
         _ = new ProductAbbreviationRegisterRepository(harness.Scope.Database, harness.Tenant);
-        await new ProductLegalEntityScopeOperationalReadinessRepository(harness.Scope.Database, harness.Tenant)
-            .CaptureObjectStateHashAsync([Guid.NewGuid()]);
-        var fields = ProductLegalEntityScopeOperationalReadinessRepository.ObjectFields
-            .Concat(ProductLegalEntityScopeOperationalReadinessRepository.Descendants)
-            .Where(item => item.Collection == collection)
-            .SelectMany(item => item.Item2).Distinct().ToArray();
+        _ = new ProductDefinitionRevisionRepository(harness.Scope.Database, harness.Tenant);
+        _ = new GskuRepository(harness.Scope.Database, harness.Tenant);
+        _ = new LskuRepository(harness.Scope.Database, harness.Tenant);
+        _ = new FinishedGoodRepository(harness.Scope.Database, harness.Tenant);
+        await ProductLegalEntityScopeOperationalReadinessRepository.EnsureObjectIndexesAsync(harness.Scope.Database);
+
+        var proof = ProductLegalEntityScopeOperationalReadinessRepository.ObjectFields
+            .Where(item => item.Collection == collection).SelectMany(item => item.Fields).Distinct().ToArray();
+        var expansion = ProductLegalEntityScopeOperationalReadinessRepository.Descendants
+            .Where(item => item.Collection == collection).SelectMany(item => item.ParentFields).Distinct().ToArray();
         var ids = new BsonArray { new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard) };
         // The planner chooses by a trial run: on an empty collection every plan ties. The tenant gets a few hundred
-        // documents (none of them the written object), as a tenant in use has — then only a plan that reads by each
-        // clause's own index reads nothing.
+        // documents (none of them the written object), as a tenant in use has.
         var tenant = new BsonBinaryData(harness.Scope.TenantId, GuidRepresentation.Standard);
         await harness.Scope.Database.GetCollection<BsonDocument>(collection).InsertManyAsync(Enumerable.Range(0, 300).Select(_ =>
         {
             var document = new BsonDocument { { "_id", new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard) }, { "TenantId", tenant } };
             // The clause fields, and the fields the owners' unique indexes key on, each with its own value.
-            foreach (var field in fields.Where(field => field != "_id")
-                         .Concat(["CreationCommandId", "IdempotencyKey", "NormalizedAbbreviation", "AllocationIdempotencyKey"]))
+            foreach (var field in proof.Concat(expansion).Where(field => field != "_id")
+                         .Concat(["CreationCommandId", "IdempotencyKey", "NormalizedAbbreviation", "AllocationIdempotencyKey", "CodeReservationId"]).Distinct())
                 document[field] = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard);
+            document["CanonicalCode"] = "C-" + Guid.NewGuid().ToString("N");
             return document;
         }));
-
-        var explained = await harness.Scope.Database.RunCommandAsync<BsonDocument>(new BsonDocument
+        try
         {
-            { "explain", new BsonDocument
+            if (proof.Length > 0)
+                AssertIndexed(collection, proof, await ExplainAsync(harness, collection, proof, ids, tenant, sortById: true));
+            if (expansion.Length > 0)
+                AssertIndexed(collection, expansion, await ExplainAsync(harness, collection, expansion, ids, tenant, sortById: false));
+            Assert.True(proof.Length + expansion.Length > 0);
+        }
+        finally
+        {
+            await harness.Scope.Database.GetCollection<BsonDocument>(collection).DeleteManyAsync(new BsonDocument("TenantId", tenant));
+        }
+    }
+
+    private static async Task<BsonDocument> ExplainAsync(
+        Harness harness, string collection, string[] fields, BsonArray ids, BsonBinaryData tenant, bool sortById)
+    {
+        var find = new BsonDocument
+        {
+            { "find", collection },
+            { "filter", new BsonDocument
                 {
-                    { "find", collection },
-                    { "filter", new BsonDocument
-                        {
-                            { "TenantId", new BsonBinaryData(harness.Scope.TenantId, GuidRepresentation.Standard) },
-                            { "$or", new BsonArray(fields.Select(field => new BsonDocument(field, new BsonDocument("$in", ids)))) }
-                        } }
-                } },
-            { "verbosity", "queryPlanner" }
-        });
-        var winning = explained["queryPlanner"]["winningPlan"].AsBsonDocument;
+                    { "TenantId", tenant },
+                    { "$or", new BsonArray(fields.Select(field => new BsonDocument(field, new BsonDocument("$in", ids)))) }
+                } }
+        };
+        if (sortById) find["sort"] = new BsonDocument("_id", 1);
+        var explained = await harness.Scope.Database.RunCommandAsync<BsonDocument>(
+            new BsonDocument { { "explain", find }, { "verbosity", "queryPlanner" } });
+        return explained["queryPlanner"]["winningPlan"].AsBsonDocument;
+    }
+
+    private static void AssertIndexed(string collection, string[] fields, BsonDocument winning)
+    {
         var plan = winning.ToJson();
         var scans = IndexScans(winning).ToArray();
-
-        await harness.Scope.Database.GetCollection<BsonDocument>(collection).DeleteManyAsync(new BsonDocument("TenantId", tenant));
-
         Assert.DoesNotContain("COLLSCAN", plan, StringComparison.Ordinal);
         Assert.NotEmpty(scans);
         // A scan of the tenant's whole range of another (TenantId, …) index is a collection scan in disguise: every index
@@ -597,6 +640,10 @@ public sealed class ProductLegalEntityScopeWriterLeaseMongoTests
             var seek = scan["indexBounds"].AsBsonDocument.Elements.SkipWhile(item => item.Name == "TenantId").First();
             Assert.DoesNotContain("MinKey", seek.Value.ToJson(), StringComparison.Ordinal);
         }
+        var used = scans.Select(scan => scan["indexName"].AsString).ToHashSet(StringComparer.Ordinal);
+        foreach (var field in fields.Where(field => field != "_id"))
+            Assert.True(ExpectedIndexes[(collection, field)].Any(used.Contains),
+                $"{collection}.{field}: expected one of [{string.Join(", ", ExpectedIndexes[(collection, field)])}], plan used [{string.Join(", ", used)}]");
     }
 
     private static IEnumerable<BsonDocument> IndexScans(BsonDocument stage)
@@ -637,6 +684,341 @@ public sealed class ProductLegalEntityScopeWriterLeaseMongoTests
         {
             await harness.Scope.Database.Client.DropDatabaseAsync(database.DatabaseNamespace.DatabaseName);
         }
+    }
+
+    // ── FIX3 ──────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_baseline_bound_while_another_writer_had_read_the_list_survives_that_writers_write()
+    {
+        // FIX3 (1): before, the binding did not move the revision — Y, who had read the list before X bound, wrote the
+        // stale list back and X's baseline was gone (a half-written product could later pass as clean).
+        await using var harness = await Harness.CreateAsync();
+        var x = await harness.Rollouts.AcquireProductWriterLeaseAsync(harness.Lease(Guid.NewGuid()));
+        var hash = new string('D', 64);
+        var bound = false;
+        harness.Rollouts.BeforeLeaseWrite = async _ =>
+        {
+            if (bound) return;
+            bound = true;
+            Assert.True(await harness.Scope.RolloutRepository().BindProductWriterLeaseBaselineAsync(x.Lease!.Token, x.Lease.Generation, hash));
+        };
+
+        var y = await harness.Rollouts.AcquireProductWriterLeaseAsync(harness.Lease(Guid.NewGuid()));
+
+        Assert.True(y.Acquired, y.FailureCode);
+        Assert.Equal(hash, Assert.Single((await harness.Rollouts.GetAsync())!.ProductWriterLeases,
+            lease => lease.Token == x.Lease!.Token).PreWriteStateHash);
+    }
+
+    [Fact]
+    public async Task A_product_held_by_the_foreground_slot_refuses_a_product_writer()
+    {
+        // FIX3 (4a)
+        await using var harness = await Harness.CreateAsync();
+        var product = Guid.NewGuid();
+        Assert.True((await harness.Rollouts.AcquireWriterLeaseAsync(harness.Lease(product))).Acquired);
+
+        var writer = await harness.Rollouts.AcquireProductWriterLeaseAsync(harness.Lease(product));
+
+        Assert.Equal("PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE", writer.FailureCode);
+    }
+
+    [Fact]
+    public async Task A_product_held_by_a_product_writer_refuses_the_foreground_slot()
+    {
+        // FIX3 (4b)
+        await using var harness = await Harness.CreateAsync();
+        var product = Guid.NewGuid();
+        Assert.True((await harness.Rollouts.AcquireProductWriterLeaseAsync(harness.Lease(product))).Acquired);
+
+        var slot = await harness.Rollouts.AcquireWriterLeaseAsync(harness.Lease(product));
+
+        Assert.Equal("PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE", slot.FailureCode);
+    }
+
+    [Theory]
+    [InlineData("product")]
+    [InlineData("slot")]
+    public async Task A_slot_and_a_product_writer_of_one_product_that_both_read_before_writing_admit_exactly_one(string first)
+    {
+        // FIX3 (4c): both read the record before either writes; the one that writes second must see the first.
+        await using var harness = await Harness.CreateAsync();
+        var product = Guid.NewGuid();
+        var other = harness.Scope.RolloutRepository();
+        ProductLegalEntityScopeWriterLeaseResult? interleaved = null;
+        harness.Rollouts.BeforeLeaseWrite = async kind =>
+        {
+            if (interleaved is not null) return;
+            interleaved = kind == "product"
+                ? await other.AcquireWriterLeaseAsync(harness.Lease(product))
+                : await other.AcquireProductWriterLeaseAsync(harness.Lease(product));
+        };
+
+        var mine = first == "product"
+            ? await harness.Rollouts.AcquireProductWriterLeaseAsync(harness.Lease(product))
+            : await harness.Rollouts.AcquireWriterLeaseAsync(harness.Lease(product));
+
+        Assert.True(interleaved!.Acquired, interleaved.FailureCode);
+        Assert.False(mine.Acquired);
+        var rollout = (await harness.Rollouts.GetAsync())!;
+        Assert.Equal(1, (rollout.ActiveWriterLease is null ? 0 : 1) + rollout.ProductWriterLeases.Count);
+    }
+
+    [Fact]
+    public async Task Failed_creates_cannot_refuse_the_writer_of_an_unrelated_product_and_their_own_bucket_counts_its_overflow()
+    {
+        // FIX3 (3): before, 256 failed creates (leases naming no object) filled the one ceiling, and every product writer
+        // of the tenant heard "this product is busy" — uncounted.
+        await using var harness = await Harness.CreateAsync();
+        using var metrics = new ProductLegalEntityScopeMetricRecorder();
+        for (var i = 0; i < ProductLegalEntityScopeRolloutState.MaximumObjectlessWriterLeases; i++)
+        {
+            var create = await harness.Coordinator().EnterAsync(new TestCreate(Guid.NewGuid()), default);
+            Assert.True(create.IsAllowed, $"{i}: {create.FailureCode}");
+            await harness.Coordinator().CompleteAsync(create, false, 409, false, default);
+        }
+
+        var product = await harness.Coordinator().EnterAsync(new TestWrite(Guid.NewGuid(), Guid.NewGuid()), default);
+        var overflow = await harness.Coordinator().EnterAsync(new TestCreate(Guid.NewGuid()), default);
+
+        Assert.True(product.IsAllowed, product.FailureCode);
+        Assert.False(overflow.IsAllowed);
+        Assert.Equal("PRODUCT_SCOPE_WRITER_LEASE_CAPACITY_EXCEEDED", overflow.FailureCode);
+        Assert.Equal(503, overflow.StatusCode);
+        Assert.Equal(1, metrics.Sum(ProductLegalEntityScopeRolloutMetrics.LeaseCapacityExceeded, "bucket", "objectless"));
+    }
+
+    [Theory]
+    [InlineData("exception")]
+    [InlineData("ambiguous")]
+    [InlineData("failed_unverifiable")]
+    [InlineData("failed_changed")]
+    [InlineData("admission_exception")]
+    public async Task A_writer_that_keeps_its_lease_says_why(string reason)
+    {
+        // FIX3 (2): one case per retained reason, driven through the coordinator as the pipeline drives it.
+        await using var harness = await Harness.CreateAsync();
+        using var metrics = new ProductLegalEntityScopeMetricRecorder();
+        var product = Guid.NewGuid();
+        switch (reason)
+        {
+            case "exception":
+            case "ambiguous":
+            {
+                var write = await harness.Coordinator().EnterAsync(new TestWrite(product, Guid.NewGuid()), default);
+                await harness.Coordinator().CompleteAsync(write, false, reason == "ambiguous" ? 202 : 500, reason == "exception", default);
+                break;
+            }
+            case "failed_unverifiable":
+            {
+                var create = await harness.Coordinator().EnterAsync(new TestCreate(Guid.NewGuid()), default);
+                await harness.Coordinator().CompleteAsync(create, false, 409, false, default);
+                break;
+            }
+            case "failed_changed":
+            {
+                var write = await harness.Coordinator().EnterAsync(new TestWrite(product, Guid.NewGuid()), default);
+                await harness.InsertProductAsync(product);
+                await harness.Coordinator().CompleteAsync(write, false, 409, false, default);
+                break;
+            }
+            default:
+            {
+                // FIX3 (2a): the lease is taken, then the proof read fails — no admission ever exists.
+                var coordinator = harness.Coordinator(readiness: new ThrowingReadiness());
+                await Assert.ThrowsAsync<TimeoutException>(() =>
+                    coordinator.EnterAsync(new TestWrite(product, Guid.NewGuid()), default));
+                break;
+            }
+        }
+
+        Assert.Single((await harness.Rollouts.GetAsync())!.ProductWriterLeases);
+        Assert.Equal(1, metrics.Sum(ProductLegalEntityScopeRolloutMetrics.LeaseRetained, "reason", reason));
+    }
+
+    [Fact]
+    public async Task A_write_whose_lease_vanished_while_it_ran_says_the_release_was_refused()
+    {
+        // FIX3 (2b): before, the refused release after a success was dropped silently.
+        await using var harness = await Harness.CreateAsync();
+        using var metrics = new ProductLegalEntityScopeMetricRecorder();
+        var write = await harness.Coordinator().EnterAsync(new TestWrite(Guid.NewGuid(), Guid.NewGuid()), default);
+        await harness.Scope.RolloutCollection.UpdateOneAsync(item => item.TenantId == harness.Scope.TenantId,
+            Builders<ProductLegalEntityScopeRolloutState>.Update.Set(item => item.ProductWriterLeases, []));
+
+        await harness.Coordinator().CompleteAsync(write, true, 200, false, default);
+
+        Assert.Equal(1, metrics.Sum(ProductLegalEntityScopeRolloutMetrics.LeaseReleaseRefused, "by", "writer"));
+    }
+
+    [Fact]
+    public async Task A_write_admitted_without_a_proof_of_its_objects_is_counted()
+    {
+        await using var harness = await Harness.CreateAsync();
+        using var metrics = new ProductLegalEntityScopeMetricRecorder();
+
+        var create = await harness.Coordinator().EnterAsync(new TestCreate(Guid.NewGuid()), default);
+
+        Assert.True(create.IsAllowed);
+        Assert.Equal(1, metrics.Sum(ProductLegalEntityScopeRolloutMetrics.BaselineUnverifiable));
+    }
+
+    [Fact]
+    public async Task An_acquisition_that_loses_every_round_answers_contended_503_and_is_counted()
+    {
+        // FIX3 (10): the code, its counter and its status were untested; contention is the server's condition — 503.
+        await using var harness = await Harness.CreateAsync();
+        using var metrics = new ProductLegalEntityScopeMetricRecorder();
+        // Every round, just before this writer writes, another writer changes the list: each round is lost.
+        var rollouts = new ProductLegalEntityScopeRolloutStateRepository(harness.Scope.Database, harness.Tenant) { LeaseAttempts = 2 };
+        var other = harness.Scope.RolloutRepository();
+        rollouts.BeforeLeaseWrite = async _ => Assert.True((await other.AcquireProductWriterLeaseAsync(harness.Lease(Guid.NewGuid()))).Acquired);
+
+        var admission = await harness.Coordinator(rollouts).EnterAsync(new TestWrite(Guid.NewGuid(), Guid.NewGuid()), default);
+
+        Assert.False(admission.IsAllowed);
+        Assert.Equal("PRODUCT_SCOPE_WRITER_LEASE_CONTENDED", admission.FailureCode);
+        Assert.Equal(503, admission.StatusCode);
+        Assert.Equal(1, metrics.Sum(ProductLegalEntityScopeRolloutMetrics.LeaseContended, "by", "writer"));
+    }
+
+    [Fact]
+    public async Task A_rollout_record_the_serializer_cannot_map_answers_503_on_writes_and_on_the_completeness_read()
+    {
+        // FIX3 (12): before, only InvalidOperationException was mapped — a BSON mapping failure was a 500, and the
+        // completeness read was not guarded at all.
+        await using var harness = await Harness.CreateAsync();
+        await harness.Scope.Database.GetCollection<BsonDocument>("mdm_product_legal_entity_scope_rollout_states").UpdateOneAsync(
+            new BsonDocument("TenantId", new BsonBinaryData(harness.Scope.TenantId, GuidRepresentation.Standard)),
+            new BsonDocument("$set", new BsonDocument("Mode", new BsonDocument("not", "a mode"))));
+
+        var write = await harness.Coordinator().EnterAsync(new TestWrite(Guid.NewGuid(), Guid.NewGuid()), default);
+        var completeness = await new Features.ProductLegalEntityScopes.Handlers.QueryHandlers.GetProductLegalEntityScopeCompletenessHandler(
+                null!, null!, harness.Rollouts, harness.Clock)
+            .Handle(new Features.ProductLegalEntityScopes.Queries.GetProductLegalEntityScopeCompletenessQuery(), default);
+
+        Assert.Equal((503, "PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID"), (write.StatusCode, write.FailureCode));
+        Assert.Equal((503, "PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID"), (completeness.StatusCode, completeness.Errors?.FirstOrDefault()));
+    }
+
+    [Fact]
+    public async Task A_store_that_fails_the_rollout_read_answers_503_on_writes_and_on_the_completeness_read()
+    {
+        // FIX3 (12): the store itself failing the read (a MongoException — connection, timeout) answers the coded 503 too;
+        // before, only the repository's own refusal (InvalidOperationException) was mapped and this was a 500.
+        await using var harness = await Harness.CreateAsync();
+        var failing = new ReadFails(harness.Rollouts);
+
+        var write = await harness.Coordinator(failing).EnterAsync(new TestWrite(Guid.NewGuid(), Guid.NewGuid()), default);
+        var completeness = await new Features.ProductLegalEntityScopes.Handlers.QueryHandlers.GetProductLegalEntityScopeCompletenessHandler(
+                null!, null!, failing, harness.Clock)
+            .Handle(new Features.ProductLegalEntityScopes.Queries.GetProductLegalEntityScopeCompletenessQuery(), default);
+
+        Assert.Equal((503, "PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID"), (write.StatusCode, write.FailureCode));
+        Assert.Equal((503, "PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID"), (completeness.StatusCode, completeness.Errors?.FirstOrDefault()));
+    }
+
+    private sealed class ReadFails(IProductLegalEntityScopeRolloutStateRepository inner) : DelegatingRolloutRepository(inner)
+    {
+        public override Task<ProductLegalEntityScopeRolloutState?> GetAsync(CancellationToken cancellationToken = default)
+            => throw new MongoException("simulated store failure");
+    }
+
+    [Fact]
+    public async Task The_completeness_read_on_a_record_that_cannot_be_read_answers_the_coded_503()
+    {
+        await using var harness = await Harness.CreateAsync();
+        await harness.BreakRolloutAsync();
+
+        var completeness = await new Features.ProductLegalEntityScopes.Handlers.QueryHandlers.GetProductLegalEntityScopeCompletenessHandler(
+                null!, null!, harness.Rollouts, harness.Clock)
+            .Handle(new Features.ProductLegalEntityScopes.Queries.GetProductLegalEntityScopeCompletenessQuery(), default);
+
+        Assert.Equal((503, "PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID"), (completeness.StatusCode, completeness.Errors?.FirstOrDefault()));
+    }
+
+    [Fact]
+    public async Task A_fence_waits_out_the_clock_drift_margin_of_a_lease()
+    {
+        // FIX3 (14): the margin was proven only on product acquisition — here on the fence.
+        await using var harness = await Harness.CreateAsync();
+        Assert.True((await harness.Rollouts.AcquireProductWriterLeaseAsync(harness.Lease(Guid.NewGuid()))).Acquired);
+        var rollout = (await harness.Rollouts.GetAsync())!;
+
+        var early = await harness.Rollouts.AcquireFenceAsync(Fence(Start.AddSeconds(Gone - 2)), rollout.Id, rollout.Version, ProductLegalEntityScopeRolloutMode.Preparation);
+        var late = await harness.Rollouts.AcquireFenceAsync(Fence(Start.AddSeconds(Gone)), rollout.Id, rollout.Version, ProductLegalEntityScopeRolloutMode.Preparation);
+
+        Assert.Equal("PRODUCT_SCOPE_WRITER_LEASE_ACTIVE", early.FailureCode);
+        Assert.True(late.Acquired, late.FailureCode);
+    }
+
+    [Fact]
+    public async Task The_foreground_slot_waits_out_the_clock_drift_margin_then_is_taken_over_and_the_old_command_is_refused()
+    {
+        // FIX3 (14): skew, takeover and the refused repeat after a takeover — on the slot.
+        await using var harness = await Harness.CreateAsync();
+        var held = await harness.Rollouts.AcquireWriterLeaseAsync(harness.Lease(Guid.NewGuid()));
+        Assert.True(held.Acquired);
+
+        harness.Clock.Now = Start.AddSeconds(Gone - 2);
+        var early = await harness.Rollouts.AcquireWriterLeaseAsync(harness.Lease(Guid.NewGuid()));
+        harness.Clock.Now = Start.AddSeconds(Gone);
+        var takeover = await harness.Rollouts.AcquireWriterLeaseAsync(harness.Lease(Guid.NewGuid()));
+        var repeat = await harness.Rollouts.AcquireWriterLeaseAsync(harness.SameCommand(held.Lease!));
+
+        Assert.Equal("PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE", early.FailureCode);
+        Assert.True(takeover.Acquired, takeover.FailureCode);
+        Assert.Equal(1, takeover.TakenOver);
+        Assert.Equal("PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE", repeat.FailureCode);
+    }
+
+    [Fact]
+    public async Task The_gauge_worker_counts_a_failed_refresh_and_keeps_the_last_values_whose_age_then_shows()
+    {
+        // FIX3 (7): before, a read failure kept the last values with no sign that they were stale.
+        using var metrics = new ProductLegalEntityScopeMetricRecorder();
+        // The age gauge reads the real clock (it reports staleness as an operator sees it): the last good refresh was ten
+        // minutes ago.
+        var observed = DateTimeOffset.UtcNow.AddMinutes(-10);
+        ProductLegalEntityScopeRolloutMetrics.RecordHolds(new(null, 0, 3, 1), observed);
+        try
+        {
+            var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+            Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions
+                .AddScoped<IProductLegalEntityScopeHoldInventoryRepository, ThrowingHolds>(services);
+            using var provider = Microsoft.Extensions.DependencyInjection.ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(services);
+            var worker = new Diten.MdmService.Api.Services.ProductLegalEntityScopes.ProductLegalEntityScopeHoldGaugeWorker(
+                Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<Microsoft.Extensions.DependencyInjection.IServiceScopeFactory>(provider),
+                new ManualClock(observed.AddMinutes(5)),
+                Microsoft.Extensions.Logging.Abstractions.NullLogger<Diten.MdmService.Api.Services.ProductLegalEntityScopes.ProductLegalEntityScopeHoldGaugeWorker>.Instance);
+
+            await worker.RefreshAsync(default);
+
+            Assert.Equal(1, metrics.Sum(ProductLegalEntityScopeRolloutMetrics.HoldRefreshFailed));
+            Assert.Equal(observed, ProductLegalEntityScopeRolloutMetrics.HoldsObservedAtUtc);
+            Assert.Equal(3, metrics.Observe(ProductLegalEntityScopeRolloutMetrics.LeasesHeld, "state", "running"));
+            Assert.True(metrics.Observe(ProductLegalEntityScopeRolloutMetrics.HoldsObservedAgeSeconds) > 0);
+        }
+        finally
+        {
+            ProductLegalEntityScopeRolloutMetrics.RecordHolds(ProductLegalEntityScopeRolloutMetrics.HoldSnapshot.Empty, Start);
+        }
+    }
+
+    private sealed class ThrowingHolds : IProductLegalEntityScopeHoldInventoryRepository
+    {
+        public Task<ProductLegalEntityScopeHoldInventory> ReadAsync(DateTimeOffset serverNowUtc, CancellationToken cancellationToken = default)
+            => throw new TimeoutException("store unavailable");
+    }
+
+    /// <summary>The proof of the write's objects cannot be read (the store timed out).</summary>
+    private sealed class ThrowingReadiness : IProductLegalEntityScopeOperationalReadinessRepository
+    {
+        public Task<ProductLegalEntityScopeOperationalReadiness> InspectAsync(int maximumSampleSize, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<ProductLegalEntityScopeInventorySnapshot> CaptureInventorySnapshotAsync(ProductLegalEntityScopeInventorySnapshotRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<ProductLegalEntityScopeObjectState> CaptureObjectStateHashAsync(IReadOnlyCollection<Guid> objectIds, CancellationToken cancellationToken = default)
+            => throw new TimeoutException("store unavailable");
     }
 
     /// <summary>
@@ -709,9 +1091,11 @@ public sealed class ProductLegalEntityScopeWriterLeaseMongoTests
             return harness;
         }
 
-        public ProductLegalEntityScopeWriteFenceCoordinator Coordinator(IProductLegalEntityScopeRolloutStateRepository? rollouts = null) => new(
+        public ProductLegalEntityScopeWriteFenceCoordinator Coordinator(
+            IProductLegalEntityScopeRolloutStateRepository? rollouts = null,
+            IProductLegalEntityScopeOperationalReadinessRepository? readiness = null) => new(
             rollouts ?? Rollouts,
-            new ProductLegalEntityScopeOperationalReadinessRepository(Scope.Database, Tenant),
+            readiness ?? new ProductLegalEntityScopeOperationalReadinessRepository(Scope.Database, Tenant),
             new Actor(Actor.ToString("D")),
             Tenant,
             Clock);

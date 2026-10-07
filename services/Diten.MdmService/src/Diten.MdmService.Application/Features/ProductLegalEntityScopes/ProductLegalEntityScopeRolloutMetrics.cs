@@ -35,6 +35,10 @@ public static class ProductLegalEntityScopeRolloutMetrics
     public const string LeaseRenewed = "mdm.product_scope.writer_lease_renewed";
     public const string LeaseContended = "mdm.product_scope.writer_lease_contended";
     public const string BaselineUnverifiable = "mdm.product_scope.writer_baseline_unverifiable";
+    public const string LeaseReleaseRefused = "mdm.product_scope.writer_lease_release_refused";
+    public const string LeaseCapacityExceeded = "mdm.product_scope.writer_lease_capacity_exceeded";
+    public const string HoldRefreshFailed = "mdm.product_scope.hold_refresh_failed";
+    public const string HoldsObservedAgeSeconds = "mdm.product_scope.holds_observed_age_seconds";
     public const string FenceAgeMinutes = "mdm.product_scope.fence_age_minutes";
     public const string FencesUp = "mdm.product_scope.fences_up";
     public const string LeasesHeld = "mdm.product_scope.writer_leases_held";
@@ -59,6 +63,16 @@ public static class ProductLegalEntityScopeRolloutMetrics
         "Lease acquisitions that gave up after every optimistic round (answered PRODUCT_SCOPE_WRITER_LEASE_CONTENDED).");
     private static readonly Counter<long> Unverifiable = Meter.CreateCounter<long>(BaselineUnverifiable, "{request}",
         "Writes admitted whose objects cannot be hashed; their lease is kept unless the write succeeds.");
+
+    private static readonly Counter<long> ReleaseRefused = Meter.CreateCounter<long>(LeaseReleaseRefused, "{lease}",
+        "Releases the store refused because the lease was already gone (taken over or swept while the write ran).");
+    private static readonly Counter<long> CapacityExceeded = Meter.CreateCounter<long>(LeaseCapacityExceeded, "{request}",
+        "Writers refused because their lease bucket (product / objectless) was full.");
+    private static readonly Counter<long> RefreshFailed = Meter.CreateCounter<long>(HoldRefreshFailed, "{refresh}",
+        "Hold gauge refreshes that could not read the rollout records (the gauges then keep their last values).");
+    private static readonly ObservableGauge<double> ObservedAge = Meter.CreateObservableGauge(HoldsObservedAgeSeconds,
+        () => _holdsObservedAt == DateTimeOffset.MinValue ? -1 : Math.Floor((TimeProvider.System.GetUtcNow() - _holdsObservedAt).TotalSeconds),
+        "s", "Seconds since the hold gauges were last refreshed (-1 before the first refresh). A growing value: stale gauges.");
 
     private static HoldSnapshot _holds = HoldSnapshot.Empty;
     private static DateTimeOffset _holdsObservedAt = DateTimeOffset.MinValue;
@@ -96,6 +110,13 @@ public static class ProductLegalEntityScopeRolloutMetrics
             ? Math.Floor((_holdsObservedAt - oldest).TotalMinutes)
             : 0;
     }
+
+    public static void CountReleaseRefused(string by) => ReleaseRefused.Add(1, new KeyValuePair<string, object?>("by", by));
+    public static void CountCapacityExceeded(string bucket) => CapacityExceeded.Add(1, new KeyValuePair<string, object?>("bucket", bucket));
+    public static void CountRefreshFailed() => RefreshFailed.Add(1);
+
+    /// <summary>When the hold gauges were last refreshed (MinValue before the first refresh).</summary>
+    public static DateTimeOffset HoldsObservedAtUtc => _holdsObservedAt;
 
     public static void CountSwept(int leases) { if (leases > 0) Swept.Add(leases); }
     public static void CountCleared(int leases) { if (leases > 0) Cleared.Add(leases); }

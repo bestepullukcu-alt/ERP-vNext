@@ -28,7 +28,11 @@ public sealed class ProductLegalEntityScopeHoldInventoryRepository : IProductLeg
                      & (Builders<ProductLegalEntityScopeRolloutState>.Filter.Ne(item => item.ActiveFence, null)
                         | Builders<ProductLegalEntityScopeRolloutState>.Filter.Ne(item => item.ActiveWriterLease, null)
                         | Builders<ProductLegalEntityScopeRolloutState>.Filter.SizeGt(item => item.ProductWriterLeases, 0));
-        // Only the hold fields are read (the audit intents, the bulk of a record, stay on the server).
+        // FIX3 (7) — NO INDEX, MEASURED AND STATED: the collection holds ONE record per tenant (unique TenantId), so this
+        // once-a-minute read scans as many documents as there are tenants. The filter is an $or of "$ne null" / "size > 0"
+        // tests, which a partial index cannot express ($ne / $or are not allowed in partialFilterExpression), and any
+        // index on these fields would be rewritten by every lease acquisition and release of every tenant — a cost on
+        // the write path to save a per-minute scan of tenant-count documents. Only the hold fields leave the server.
         var projection = Builders<ProductLegalEntityScopeRolloutState>.Projection
             .Include(item => item.ActiveFence)
             .Include(item => item.ActiveWriterLease)

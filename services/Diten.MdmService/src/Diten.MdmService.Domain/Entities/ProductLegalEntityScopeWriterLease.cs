@@ -42,6 +42,15 @@ public sealed class ProductLegalEntityScopeWriterLease
            || ObjectKeys.Any(key => other.ObjectKeys.Contains(key, StringComparer.Ordinal));
 
     /// <summary>The holder's own view: its lease has run out (a repeat of the command then takes a fresh lease).</summary>
+    /// <summary>
+    /// FIX3 (3) — a lease that names no object (a create: "Command:{id}" only). It protects no product from another writer
+    /// (nobody's keys meet it); it is kept only so a fence waits for a create that may have half-written. Such leases fill
+    /// their OWN bucket (<c>MaximumObjectlessWriterLeases</c>), so a burst of failed creates cannot refuse product writers.
+    /// </summary>
+    public static bool NamesNoObject(ProductLegalEntityScopeWriterLease lease)
+        => lease.ObjectKeys.Count > 0
+           && lease.ObjectKeys.All(key => key.StartsWith("Command:", StringComparison.Ordinal));
+
     public bool IsExpiredAt(DateTimeOffset serverNowUtc) => ExpiresAtUtc <= serverNowUtc;
 
     /// <summary>Everyone else's view: the lease is gone, clock drift included — only then is it taken over or swept.</summary>

@@ -165,7 +165,7 @@ public sealed class CreateProductLegalEntityScopePolicyHandler
         {
             return (true, await rollouts.GetAsync(cancellationToken));
         }
-        catch (InvalidOperationException)
+        catch (Exception exception) when (ProductLegalEntityScopeWriteFenceCoordinator.IsRolloutUnreadable(exception))
         {
             ProductLegalEntityScopeRolloutMetrics.CountUnreadable(surface);
             return (false, null);

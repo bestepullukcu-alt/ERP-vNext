@@ -90,6 +90,14 @@ const ProductLegalEntityScopesList = (() => {
         if (!response.ok) throw new Error(await errorMessage(response));
         return unwrap(await response.json());
     };
+    // FIX2 (10): companies the reader may not see arrive as a count, never as ids — "other companies: N".
+    const legalEntitiesText = period => {
+        const hidden = Number(value(period, 'otherLegalEntityCount', 'OtherLegalEntityCount')) || 0;
+        return [
+            (value(period, 'legalEntityIds', 'LegalEntityIds') || []).join(', '),
+            hidden > 0 ? String(L.OtherLegalEntities || '{0}').replace('{0}', String(hidden)) : ''
+        ].filter(Boolean).join(' · ') || '-';
+    };
     const showDetail = async row => {
         try {
             const policy = await fetchPolicy(productId(row));
@@ -99,12 +107,7 @@ const ProductLegalEntityScopesList = (() => {
             setText('oc-mode', period
                 ? (Number(value(period, 'mode', 'Mode')) === 1 ? L.GroupWide : L.Scoped)
                 : (policy ? L.Unknown : L.LegacyUnclassified));
-            // FIX2 (10): companies the reader may not see arrive as a count, never as ids.
-            const hidden = Number(value(period, 'otherLegalEntityCount', 'OtherLegalEntityCount')) || 0;
-            setText('oc-legal-entities', [
-                (value(period, 'legalEntityIds', 'LegalEntityIds') || []).join(', '),
-                hidden > 0 ? String(L.OtherLegalEntities || '{0}').replace('{0}', String(hidden)) : ''
-            ].filter(Boolean).join(' · ') || '-');
+            setText('oc-legal-entities', legalEntitiesText(period));
             setText('oc-effective-from', formatDate(value(period, 'effectiveFromUtc', 'EffectiveFromUtc')));
             setText('oc-effective-to', formatDate(value(period, 'effectiveToUtc', 'EffectiveToUtc')));
             setText('oc-version', value(policy, 'version', 'Version'));
@@ -299,7 +302,7 @@ const ProductLegalEntityScopesList = (() => {
     return {
         init: async () => { initSelectors(); bind(); await initDataTable(); },
         buildListOptions,
-        testHooks: { resolveManageMode, canEndPolicy, applyLegalEntitySelection, lifecycleText, failureText }
+        testHooks: { resolveManageMode, canEndPolicy, applyLegalEntitySelection, lifecycleText, failureText, legalEntitiesText }
     };
 })();
 document.addEventListener('DOMContentLoaded', () => ProductLegalEntityScopesList.init());

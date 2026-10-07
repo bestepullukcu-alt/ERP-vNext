@@ -62,12 +62,45 @@ public sealed class ProductLegalEntityScopeGuardedWriteSession
             ProductLegalEntityScopePolicyRepository.CollectionName);
     }
 
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX3 (11) — how many times a Replace transaction the server aborted as transient
+    /// (TransientTransactionError: a write conflict on the tenant's rollout record — any product writer's lease
+    /// acquisition, binding or release touches it) is run again. Before, the first conflict answered 409
+    /// PRODUCT_SCOPE_CONFLICT although the caller's data conflicted with nothing.
+    /// </summary>
+    internal const int MaximumTransientAttempts = 5;
+
     public async Task<ProductLegalEntityScopePolicyWriteResult> ReplaceAsync(
         ProductLegalEntityScopeVerifiedWriterAuthority authority,
         ProductLegalEntityScopeWriterLease lease,
         ProductLegalEntityScopePolicy requestedPolicy,
         int expectedVersion,
         CancellationToken cancellationToken = default)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                return await ReplaceOnceAsync(authority, lease, requestedPolicy, expectedVersion,
+                    retryTransient: attempt < MaximumTransientAttempts, cancellationToken);
+            }
+            catch (TransientTransactionRetry)
+            {
+                // A transaction the server aborted changed nothing: run it again, from a fresh snapshot.
+                await Task.Delay(Random.Shared.Next(1, 10 * attempt), cancellationToken);
+            }
+        }
+    }
+
+    private sealed class TransientTransactionRetry : Exception;
+
+    private async Task<ProductLegalEntityScopePolicyWriteResult> ReplaceOnceAsync(
+        ProductLegalEntityScopeVerifiedWriterAuthority authority,
+        ProductLegalEntityScopeWriterLease lease,
+        ProductLegalEntityScopePolicy requestedPolicy,
+        int expectedVersion,
+        bool retryTransient,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(authority);
         ArgumentNullException.ThrowIfNull(lease);
@@ -211,6 +244,11 @@ public sealed class ProductLegalEntityScopeGuardedWriteSession
         {
             await AbortBestEffortAsync(session);
             throw;
+        }
+        catch (MongoException exception) when (retryTransient && exception.HasErrorLabel("TransientTransactionError"))
+        {
+            await AbortBestEffortAsync(session);
+            throw new TransientTransactionRetry();
         }
         catch (MongoException)
         {

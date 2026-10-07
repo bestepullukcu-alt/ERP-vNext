@@ -113,7 +113,22 @@ describe('MOD-0290-FU03 Product Legal Entity Scope Golden Slim contract', () => 
     expect(say({ Errors: ['PRODUCT_SCOPE_WRITER_LEASE_CONTENDED'] }, 409)).toBe('fixture: busy');
     expect(say({ errors: ['PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID'] }, 503)).toBe('fixture: unreadable');
     expect(say({ errors: ['SOME_UNKNOWN_CODE'] }, 409)).toBe('fixture: conflict');
+    // FIX3 (14): the other two mapped codes, measured.
+    Object.assign(window.L10n, { ErrorSuspended: 'fixture: suspended' });
+    expect(say({ errors: ['PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED'] }, 409)).toBe('fixture: suspended');
+    expect(say({ errors: ['PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE'] }, 409)).toBe('fixture: busy');
     expect(say(null, 500)).toBe('fixture: gateway');
+  });
+
+  it('shows the companies the reader may not see as a count, never as ids (FIX2 item 10)', () => {
+    const module = loadModule();
+    Object.assign(window.L10n, { OtherLegalEntities: 'fixture: other companies {0}' });
+    const text = module.testHooks.legalEntitiesText;
+
+    expect(text({ legalEntityIds: ['A'], otherLegalEntityCount: 2 })).toBe('A · fixture: other companies 2');
+    expect(text({ LegalEntityIds: [], OtherLegalEntityCount: 1 })).toBe('fixture: other companies 1');
+    expect(text({ legalEntityIds: ['A', 'B'], otherLegalEntityCount: 0 })).toBe('A, B');
+    expect(text(null)).toBe('-');
   });
 
   it('does not offer replace or end when a persisted policy has no current period', () => {

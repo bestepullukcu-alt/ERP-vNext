@@ -26,7 +26,7 @@ public sealed class ProductLegalEntityScopeHoldGaugeWorker(
         }
     }
 
-    internal async Task RefreshAsync(CancellationToken cancellationToken)
+    public async Task RefreshAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -43,6 +43,9 @@ public sealed class ProductLegalEntityScopeHoldGaugeWorker(
         }
         catch (Exception exception)
         {
+            // FIX3 (7): the gauges keep their last values — so the failure is counted, and the observed-age gauge
+            // (holds_observed_age_seconds) shows how stale they are.
+            ProductLegalEntityScopeRolloutMetrics.CountRefreshFailed();
             logger.LogWarning(exception, "Product legal-entity scope hold gauges could not be refreshed.");
         }
     }

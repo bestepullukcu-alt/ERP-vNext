@@ -99,7 +99,6 @@ public sealed class ProductLegalEntityScopeOperationalReadinessRepository
         ArgumentNullException.ThrowIfNull(objectIds);
         var named = objectIds.Where(id => id != Guid.Empty).Distinct().ToArray();
         if (named.Length == 0) return new(string.Empty, false);
-        await EnsureObjectIndexesAsync(cancellationToken);
         // FIX2 (8): a write names its product, not the children it adds below it — a GSKU carries no GlobalProductId,
         // only its revision. The proof follows the hierarchy down (product → revisions → GSKUs → LSKUs / finished goods;
         // product → register entries), so a child half-added by a failed write moves the hash and the lease is kept.
@@ -157,8 +156,8 @@ public sealed class ProductLegalEntityScopeOperationalReadinessRepository
     /// reads the collection. Measured (explain, <c>ProductLegalEntityScopeObjectQueryPlanTests</c>): the abbreviation ledger
     /// and history had no index on GlobalProductId (nor the ledger on RegisterEntryId), and the register's only
     /// GlobalProductId index is partial (active entries) — each a collection scan per product write. These indexes carry
-    /// NEW names (the owning repositories' own indexes are untouched) and are created once per database and process; a
-    /// failure leaves the reads correct (only slower) and is retried by the next writer.
+    /// NEW names (the owning repositories' own indexes are untouched) and are created at startup (FIX3 (8)); a failure
+    /// leaves the reads correct (only slower) and is logged.
     /// </summary>
     internal static readonly (string Collection, string Name, string[] Keys)[] ObjectIndexes =
     [
@@ -168,29 +167,19 @@ public sealed class ProductLegalEntityScopeOperationalReadinessRepository
         (AbbreviationRegister, "ix_mdm_product_abbreviation_register_tenant_product_scope_proof", ["TenantId", "GlobalProductId", "_id"])
     ];
 
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> IndexedDatabases = new();
-
-    private async Task EnsureObjectIndexesAsync(CancellationToken cancellationToken)
+    /// <summary>
+    /// FIX3 (8): built at STARTUP (<c>ProductLegalEntityScopeProofIndexInitializer</c>), not by the first leased write —
+    /// on a large collection the build could outlast the writer's lease. Idempotent; called once per process start.
+    /// </summary>
+    public static async Task EnsureObjectIndexesAsync(IMongoDatabase database, CancellationToken cancellationToken = default)
     {
-        // Keyed by the servers AND the database: a process that talks to another cluster (a new test server, a failover
-        // to another seed list) creates them there too.
-        var name = string.Join(",", _database.Client.Settings.Servers.Select(server => server.ToString()))
-                   + "/" + _database.DatabaseNamespace.DatabaseName;
-        if (!IndexedDatabases.TryAdd(name, true)) return;
-        try
+        ArgumentNullException.ThrowIfNull(database);
+        foreach (var (collection, index, keys) in ObjectIndexes)
         {
-            foreach (var (collection, index, keys) in ObjectIndexes)
-            {
-                var definition = new BsonDocument(keys.Select(key => new BsonElement(key, 1)));
-                await _database.GetCollection<BsonDocument>(collection).Indexes.CreateOneAsync(
-                    new CreateIndexModel<BsonDocument>(definition, new CreateIndexOptions { Name = index }),
-                    cancellationToken: cancellationToken);
-            }
-        }
-        catch (Exception exception) when (exception is MongoException or OperationCanceledException)
-        {
-            IndexedDatabases.TryRemove(name, out _);
-            if (exception is OperationCanceledException) throw;
+            var definition = new BsonDocument(keys.Select(key => new BsonElement(key, 1)));
+            await database.GetCollection<BsonDocument>(collection).Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(definition, new CreateIndexOptions { Name = index }),
+                cancellationToken: cancellationToken);
         }
     }
 
