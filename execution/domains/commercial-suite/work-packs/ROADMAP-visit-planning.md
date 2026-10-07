@@ -85,6 +85,7 @@ Plan: [E2E-TUTUKON-content-to-visit-plan.md](E2E-TUTUKON-content-to-visit-plan.m
 - ☐ E9 ziyaret raporu + yolculuk ilerlemesi
 - ☐ E10 sonraki aşama
 - ☐ E11 mobil örnek yanıtlar
+- ☐ **E2E-FIX (toplu paket, test bitince — kullanıcı kararı 2026-10-07):** E1-B1 segment referans değerleri, E1-B2 10K aday sınırı (ek blokları aday sorgusuna indirme), E1-B3 global-products 400, Türkçe arama takibi (TerritoryModel + SegmentCandidateSource) + E2–E11'de çıkacak bulgular
 
 Kurallar:
 - Yazmalar test kapsamında onaylı; CT her yazmayı önceden söyler.
