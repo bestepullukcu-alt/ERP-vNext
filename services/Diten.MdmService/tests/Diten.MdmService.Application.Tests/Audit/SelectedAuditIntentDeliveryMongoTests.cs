@@ -433,16 +433,57 @@ public sealed class SelectedAuditIntentDeliveryMongoTests(AuditIntentTemporalMon
         Assert.Equal(before, await Read(Products, intent));
     }
 
+    // MOD-0290-FU04 S1 (CT decision A on item 6, BL-566 addendum): with EXACT producer evidence — the shape the GP / GSKU
+    // replay above accepts — a Finished Good's or an Item's code reservation is still refused by the selected path, and the
+    // source is not touched. (The theory below refuses its "fg" / "it" rows already on the intent's shape.)
+    [Theory]
+    [InlineData(CodeBearingEntityType.FinishedGood, "FG-")]
+    [InlineData(CodeBearingEntityType.Item, "IT-")]
+    public async Task Exact_reserved_evidence_of_a_finished_good_or_item_code_is_outside_the_selected_scope(
+        CodeBearingEntityType type, string prefix)
+    {
+        var intent = Intent(ProductAuditOperation.CodeReserved); intent.AggregateType = AuditAggregateType.CodeReservation;
+        intent.PreVersion = -1;
+        intent.PostVersion = 0;
+        intent.CausationId = intent.CommandId;
+        intent.SnapshotReference = $"CodeReservation/{intent.AggregateId:N}/0";
+        intent.IdempotencyKey = $"{_tenant:N}:CodeReservation:{intent.AggregateId:N}:{intent.CommandId}";
+        var code = prefix + "000000000001";
+        intent.EvidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+            $"{_tenant:N}|{intent.AggregateId:N}|{code}|{type}|RESERVED")));
+        await _database.GetCollection<CodeReservation>(Reservations).InsertOneAsync(new CodeReservation
+        {
+            Id = intent.AggregateId, TenantId = _tenant, EntityType = type, ReservedCode = code,
+            ReservedByActorId = intent.ActorId, ReservationCommandId = intent.CommandId,
+            ConsumedEntityId = Guid.NewGuid(), AuditIntents = [intent]
+        });
+        var before = await Read(Reservations, intent);
+        var request = Request(intent);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            AuditIntentDeliveryRepository.CreateSelected(_database, request, TimeProvider.System).PrepareSelectedAsync(request));
+
+        Assert.Equal("SELECTED_AUDIT_INTENT_RESERVATION_OWNER_DENIED", exception.Message);
+        Assert.Equal(before, await Read(Reservations, intent));
+    }
+
     [Theory]
     [InlineData("fg")]
+    // MOD-0290-FU04 S1 (CT decision A on item 6, BL-566 addendum): the item's codes stay outside the selected scope too.
+    [InlineData("it")]
     [InlineData("unproven-consumed")]
     [InlineData("wrong-reserved-key")]
     public async Task Reservation_scope_never_promotes_FG_unproven_or_wrong_command_evidence(string fault)
     {
         var intent = Intent(fault == "unproven-consumed" ? ProductAuditOperation.CodeConsumed : ProductAuditOperation.CodeReserved);
         intent.AggregateType = AuditAggregateType.CodeReservation;
-        var type = fault == "fg" ? CodeBearingEntityType.FinishedGood : CodeBearingEntityType.GlobalProduct;
-        var code = fault == "fg" ? "FG-000000000001" : "GP-000000000001";
+        var type = fault switch
+        {
+            "fg" => CodeBearingEntityType.FinishedGood,
+            "it" => CodeBearingEntityType.Item,
+            _ => CodeBearingEntityType.GlobalProduct
+        };
+        var code = fault switch { "fg" => "FG-000000000001", "it" => "IT-000000000001", _ => "GP-000000000001" };
         intent.EvidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"{_tenant:N}|{intent.AggregateId:N}|{code}|{type}|RESERVED")));
         var reservation = new CodeReservation { Id = intent.AggregateId, TenantId = _tenant, EntityType = type,
             ReservedCode = code, ReservedByActorId = intent.ActorId, ReservationCommandId = intent.CommandId,

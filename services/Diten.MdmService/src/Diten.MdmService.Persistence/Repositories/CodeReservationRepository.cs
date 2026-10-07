@@ -371,11 +371,15 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
     {
         // LSKU FIX4 item 3: only a kind whose insert writes its reservation inside the insert's transaction may be
         // burned here. FG FIX1 part B item 2: LSKU and — with FinishedGoodRepository.InsertBoundToLiveCodeAsync — FG.
-        // GSKU / GP stay closed until their inserts gain the same touch.
+        // MOD-0290-FU04 S1: Item (ItemRepository.InsertBoundToLiveCodeAsync). GSKU / GP stay closed until their inserts
+        // gain the same touch.
         var collection = entityType switch
         {
             CodeBearingEntityType.Lsku => "mdm_lskus",
             CodeBearingEntityType.FinishedGood => "mdm_finished_goods",
+            // MOD-0290-FU04 S1 (CT decision 1): the item insert writes its reservation in its own transaction
+            // (ItemRepository.InsertBoundToLiveCodeAsync). Live = IsDeleted ≠ true; a Retired item keeps its code.
+            CodeBearingEntityType.Item => "mdm_items",
             CodeBearingEntityType.Gsku or CodeBearingEntityType.GlobalProduct =>
                 throw new InvalidOperationException(
                     $"{BurnKindNotTransactional}: the {entityType} insert does not yet write its reservation in its own transaction."),
@@ -607,6 +611,9 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
             CodeBearingEntityType.Gsku => "GS",
             CodeBearingEntityType.Lsku => "LS",
             CodeBearingEntityType.FinishedGood => "FG",
+            // MOD-0290-FU04 §22 (RCS-001 §4): the item joins the product identity family — same counter, same 15
+            // characters (2 letters + '-' + 12 digits).
+            CodeBearingEntityType.Item => "IT",
             _ => throw new ArgumentOutOfRangeException(nameof(entityType))
         };
 
