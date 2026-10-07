@@ -18,8 +18,8 @@ screens:
   - module: ESignatureSampleApprovals
     data_mode: client
 entity_base: TenantScopedEntity
-status: draft
-status_note: "draft — WP-0022-P0 (CT-MVP1-0022-P0 v3), 2026-10-07. Owner decisions KS-0…KS-13 (2026-10-07) recorded in §19 as DECISIONS. CT decisions CT-D1…CT-D15 TAKEN 2026-10-07 (§19; CT-D8 = own e-İmza nav group, CT override). WP-0022-P0 CT-ACCEPTED 2026-10-07. ESIGN-BUNDLE v1 proposal: docs/analysis/contracts/drafts/esign-bundle-v1-proposal.md. No registry row yet (CT adds it, §19 'Registry'). DCP-002 verifier not run (no Python — waiver proposal W-0022-01)."
+status: ready-for-dev
+status_note: "draft — WP-0022-P0 (CT-MVP1-0022-P0 v3), 2026-10-07. Owner decisions KS-0…KS-13 (2026-10-07) recorded in §19 as DECISIONS. CT decisions CT-D1…CT-D15 TAKEN 2026-10-07 (§19; CT-D8 = own e-İmza nav group, CT override). WP-0022-P0 CT-ACCEPTED 2026-10-07. ready-for-dev (owner) 2026-10-07. ESIGN-BUNDLE v1 proposal: docs/analysis/contracts/drafts/esign-bundle-v1-proposal.md. No registry row yet (CT adds it, §19 'Registry'). DCP-002 verifier not run (no Python — waiver proposal W-0022-01)."
 owner: platform-shared-services / mvp-1 control-tower
 branch: feature/sce/mod-0022-e-signature
 started: 2026-10-07
@@ -1071,29 +1071,29 @@ The gateway treats `/api/v1/*` as a tenant path: it requires `actor_type=tenant_
   - reason: no Python on the MVP-1 machine;
   - compensating control: Blueprint 8.1 `Blueprint_Data` row 23 read directly from the xlsx (§19 measured facts);
   - expiry: before the MVP-1 push/PR (re-run, exit 0).
-- [ ] Domain-config in-scope list: MOD-0022 is **not** listed (`execution/domains/platform-shared-services/domain-config.md:8-14`).
+- [x] (added by the CT 2026-10-07) Domain-config in-scope list: MOD-0022 was **not** listed (`execution/domains/platform-shared-services/domain-config.md:8-14`).
       CT adds it.
 - [ ] Owner decisions KS-0…KS-13 recorded (§19). ✔ in this draft.
-- [ ] **CT-D1** ticket lifetime.
-- [ ] **CT-D2** canonical subject representation + provider contract.
-- [ ] **CT-D3** FU23 migration timing.
-- [ ] **CT-D4** file storage location / partition / root path.
-- [ ] **CT-D5** sample approval authority.
-- [ ] **CT-D6** workflow designer measurement → MOD-0175 template publisher.
-- [ ] **CT-D7** window mode vs Part 11 §11.200(a)(1)(i).
-- [ ] **CT-D8** "Kiracı Ayarları" placement mechanism.
-- [ ] **CT-D9** ticket mechanism (opaque + internal consume).
-- [ ] **CT-D10** baseline module + default role grants.
-- [ ] **CT-D11** PDF engine.
-- [ ] **CT-D12** signable-action catalog registration.
-- [ ] **CT-D13** remaining-attempts disclosure.
-- [ ] **CT-D14** requests vs workflow tasks.
-- [ ] **CT-D15** sample approval setting tenant-only.
-- [ ] Meaning editor slim exception (ASSUMPTION-0022-03).
-- [ ] ESIGN-BUNDLE v1 proposal accepted by CT (then frozen in E2).
+- [x] **CT-D1** (taken 2026-10-07, §19) ticket lifetime.
+- [x] **CT-D2** (taken 2026-10-07, §19) canonical subject representation + provider contract.
+- [x] **CT-D3** (taken 2026-10-07, §19) FU23 migration timing.
+- [x] **CT-D4** (taken 2026-10-07, §19) file storage location / partition / root path.
+- [x] **CT-D5** (taken 2026-10-07, §19) sample approval authority.
+- [x] **CT-D6** (taken 2026-10-07, §19) workflow designer measurement → MOD-0175 template publisher.
+- [x] **CT-D7** (taken 2026-10-07, §19) window mode vs Part 11 §11.200(a)(1)(i).
+- [x] **CT-D8** (taken 2026-10-07, §19) "Kiracı Ayarları" placement mechanism.
+- [x] **CT-D9** (taken 2026-10-07, §19) ticket mechanism (opaque + internal consume).
+- [x] **CT-D10** (taken 2026-10-07, §19) baseline module + default role grants.
+- [x] **CT-D11** (taken 2026-10-07, §19) PDF engine.
+- [x] **CT-D12** (taken 2026-10-07, §19) signable-action catalog registration.
+- [x] **CT-D13** (taken 2026-10-07, §19) remaining-attempts disclosure.
+- [x] **CT-D14** (taken 2026-10-07, §19) requests vs workflow tasks.
+- [x] **CT-D15** (taken 2026-10-07, §19) sample approval setting tenant-only.
+- [x] Meaning editor slim exception (ASSUMPTION-0022-03) — accepted by the CT.
+- [x] ESIGN-BUNDLE v1 proposal accepted by CT 2026-10-07 (frozen in E2).
 - [ ] ≥ 4 failure paths (25 in §13). ✔
-- [ ] Part 11 / Annex 11 mapping reviewed by QA (§19). Every "not met" item has an owner (slice or decision).
-- [ ] **Owner approval → `ready-for-dev`.**
+- [ ] Part 11 / Annex 11 mapping reviewed by QA (§19) — OPEN, owner/QA action before GxP go-live (not a dev blocker). Every "not met" item has an owner (slice or decision).
+- [x] **Owner approval → `ready-for-dev`** (Ali, 2026-10-07; tenant shell `/account/login` confirmed).
 
 ## 19. Implementation Notes
 
