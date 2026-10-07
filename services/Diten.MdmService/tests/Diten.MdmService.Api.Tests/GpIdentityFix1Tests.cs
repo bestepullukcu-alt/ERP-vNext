@@ -8,6 +8,7 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Persistence.Repositories;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
 
@@ -56,6 +57,72 @@ public sealed partial class GskuLifecycleHttpTests
         var done = await GpiWithdrawAsync(product, command);
         Assert.True(done.Succeeded, done.ErrorCode);
         Assert.Equal(ProductIdentityLifecycleStatus.Draft, (await GpOf(product)).LifecycleStatus);
+    }
+
+    // ── FIX2 item 1: the same at the REAL store — a product at the audit cap is not a binding conflict ───────────────
+
+    // Fillers up to the cap, beside what the product already holds (what an audit delivery behind leaves).
+    private async Task GpFillToTheAuditCapAsync(Guid product)
+    {
+        var gp = await GpOf(product);
+        var template = gp.AuditIntents.First();
+        var fillers = Enumerable.Range(0, AuditIntentLimits.MaxPerAggregate - gp.AuditIntents.Count).Select(i =>
+        {
+            var copy = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<LocalAuditIntent>(template.ToBsonDocument());
+            copy.IntentId = Guid.NewGuid();
+            copy.IdempotencyKey = $"filler-{i}-{Guid.NewGuid():N}";
+            return copy;
+        }).ToList();
+        await host.Database.GetCollection<GlobalProduct>("mdm_global_products").UpdateOneAsync(x => x.Id == product,
+            Builders<GlobalProduct>.Update.PushEach(x => x.AuditIntents, fillers));
+        Assert.Equal(AuditIntentLimits.MaxPerAggregate, (await GpOf(product)).AuditIntents.Count);
+    }
+
+    private async Task GpClearTheFillersAsync(Guid product) =>
+        await host.Database.GetCollection<GlobalProduct>("mdm_global_products").UpdateOneAsync(x => x.Id == product,
+            Builders<GlobalProduct>.Update.PullFilter(x => x.AuditIntents, x => x.IdempotencyKey.StartsWith("filler-")));
+
+    [Fact]
+    public async Task GPIF2_A_withdrawal_at_the_real_stores_audit_cap_waits_and_is_not_stuck()
+    {
+        var (product, key) = await GpiAwaitingDecisionAsync();
+        await GpFillToTheAuditCapAsync(product);
+        var command = Guid.NewGuid();
+
+        var refused = await GpiWithdrawAsync(product, command);
+
+        Assert.False(refused.Succeeded);
+        var waiting = await GpiOpOf(key);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved, waiting.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, waiting.RecoveryDisposition);
+        Assert.Equal("AUDIT_INTENT_CAPACITY_EXCEEDED", waiting.LastFailureCode);
+        Assert.Equal((0L, 0L), await GpiGaugesAsync());
+
+        await GpClearTheFillersAsync(product);
+        using var due = host.Clock.Shift(TimeSpan.FromSeconds(30));
+        var done = await GpiWithdrawAsync(product, command);
+        Assert.True(done.Succeeded, done.ErrorCode);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, (await GpOf(product)).LifecycleStatus);
+    }
+
+    [Theory]
+    [InlineData(true)]   // the approval decided: the decision's write
+    [InlineData(false)]  // closed without a decision: back to draft
+    public async Task GPIF2_A_decision_at_the_real_stores_audit_cap_waits_and_is_not_stuck(bool decided)
+    {
+        var (product, key) = await GpiAwaitingDecisionAsync();
+        if (decided) host.Engine.Approve(GpiInstance(product), host.Approver);
+        else host.Engine.CloseWithoutDecision(GpiInstance(product));
+        await GpFillToTheAuditCapAsync(product);
+
+        await GpiProcessor(host.Engine).RecoverAsync(await GpiOpOf(key), "gpi-worker", GpiLease, GpiRetry);
+
+        var waiting = await GpiOpOf(key);
+        Assert.NotEqual(GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired, waiting.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, waiting.RecoveryDisposition);
+        Assert.Equal("AUDIT_INTENT_CAPACITY_EXCEEDED", waiting.LastFailureCode);
+        Assert.Equal((0L, 0L), await GpiGaugesAsync());
+        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, (await GpOf(product)).LifecycleStatus);
     }
 
     // ── 1 (b): a withdrawal intent compacted between the apply and its check is not an inconsistency ──────────────
@@ -456,6 +523,10 @@ public sealed partial class GskuLifecycleHttpTests
             Assert.Equal(GlobalProductCorrectionWorkflowProcessor.MakerNeverReturned, ended.LastFailureCode);
             Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, ended.RecoveryDisposition);
             Assert.Equal((0L, 0L), await GpCorrectionGaugesAsync());
+            // Flow 3 FIX2 K3: the maker who comes back is told why it ended.
+            var late = await GpCorrectAsync(product, key);
+            Assert.Equal(409, late.StatusCode);
+            Assert.Equal(GlobalProductCorrectionWorkflowProcessor.MakerNeverReturned, late.ErrorCode);
         }
         Assert.Null((await GpOf(product)).ActiveLifecycleOperation);
     }
@@ -468,11 +539,21 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.Equal(503, (await GpRetireAsync(product, key, RefusingProducts(
             nameof(IGlobalProductRepository.AcquireLifecycleOperationAsync), "AUDIT_INTENT_CAPACITY_EXCEEDED"))).StatusCode);
 
+        // Flow 3 FIX2 K3: before the limit it waits for its maker.
+        using (host.Clock.Shift(TimeSpan.FromDays(6)))
+        {
+            var waiting = await GprWorkerRunsAsync(key, 1);
+            Assert.Equal(GlobalProductRetirementRequestWorkflowProcessor.AwaitingMaker, waiting.LastFailureCode);
+            Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, waiting.RecoveryDisposition);
+        }
         using (host.Clock.Shift(TimeSpan.FromDays(8)))
         {
             var ended = await GprWorkerRunsAsync(key, 2);
             Assert.Equal(GlobalProductRetirementRequestWorkflowProcessor.MakerNeverReturned, ended.LastFailureCode);
             Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, ended.RecoveryDisposition);
+            var late = await GpRetireAsync(product, key);
+            Assert.Equal(409, late.StatusCode);
+            Assert.Equal(GlobalProductRetirementRequestWorkflowProcessor.MakerNeverReturned, late.ErrorCode);
         }
     }
 }
@@ -505,6 +586,38 @@ public sealed class GpLifecycleClassMapRegisterIsolationTests
 
             Assert.IsType<InvalidOperationException>(refused.InnerException);
             Assert.Contains("GlobalProductCorrectionOperation", refused.InnerException!.Message);
+        }
+        finally
+        {
+            context.Unload();
+        }
+    }
+
+    // Flow 3 FIX2: a store built outside the host's container (a tool, a test) registers the guarded map before it is
+    // first used — before, its first read auto-mapped the type unguarded and every later host start refused it.
+    [Theory]
+    [InlineData("GlobalProductIdentityWorkflowOperationRepository", "GlobalProductIdentityWorkflowOperation")]
+    [InlineData("GlobalProductCorrectionOperationRepository", "GlobalProductCorrectionOperation")]
+    [InlineData("GlobalProductRetirementRequestOperationRepository", "GlobalProductRetirementRequestOperation")]
+    [InlineData("GlobalProductRepository", "GlobalProductIdentityWorkflowOperation")]
+    [InlineData("GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository", "GlobalProductIdentityWorkflowOperation")]
+    public void GPIF2_A_lifecycle_store_registers_the_guarded_map_before_its_first_use(string store, string document)
+    {
+        var context = new IsolatedMdm(Path.GetDirectoryName(typeof(GpLifecycleClassMapRegisterIsolationTests).Assembly.Location)!);
+        try
+        {
+            var bson = context.LoadFromAssemblyName(new AssemblyName("MongoDB.Bson"));
+            var domain = context.LoadFromAssemblyName(new AssemblyName("Diten.MdmService.Domain"));
+            var persistence = context.LoadFromAssemblyName(new AssemblyName("Diten.MdmService.Persistence"));
+            var storeType = persistence.GetType($"Diten.MdmService.Persistence.Repositories.{store}", true)!;
+            var documentType = domain.GetType($"Diten.MdmService.Domain.Entities.{document}", true)!;
+
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(storeType.TypeHandle);
+
+            var classMap = bson.GetType("MongoDB.Bson.Serialization.BsonClassMap", true)!;
+            Assert.True((bool)classMap.GetMethod("IsClassMapRegistered")!.Invoke(null, [documentType])!);
+            var map = classMap.GetMethod("LookupClassMap")!.Invoke(null, [documentType])!;
+            Assert.True((bool)classMap.GetProperty("IgnoreExtraElements")!.GetValue(map)!);
         }
         finally
         {

@@ -753,6 +753,8 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         // (claimed checkpoint, mutation, accepted) reported.
         public Func<GlobalProductIdentityWorkflowCheckpoint, GlobalProductIdentityWorkflowCheckpointMutation, bool>? StoreRule { get; set; }
         public Action<GlobalProductIdentityWorkflowCheckpoint, GlobalProductIdentityWorkflowCheckpointMutation, bool>? OnWrite { get; set; }
+        // Flow 3 FIX2 K6: the store fails (throws, writes nothing) on the write this predicate picks.
+        public Func<GlobalProductIdentityWorkflowCheckpointMutation, bool>? ThrowOn { get; set; }
 
         public Task<GlobalProductIdentityWorkflowReserveResult> ReserveAsync(
             GlobalProductIdentityWorkflowOperation operation, CancellationToken cancellationToken = default)
@@ -828,6 +830,11 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
             CancellationToken cancellationToken = default)
         {
             AdvanceCalls++;
+            if (ThrowOn is { } throwOn && throwOn(mutation))
+            {
+                ThrowOn = null;
+                throw new TimeoutException("the store did not answer the write");
+            }
             if (ThrowWhenALeaseIsGivenBack && mutation.ReleaseLease && mutation.NextCheckpoint == claim.Checkpoint
                 && mutation.RecoveryDisposition == Current?.RecoveryDisposition && mutation.ServiceFaultCount is null)
             {

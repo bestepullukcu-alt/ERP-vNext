@@ -456,8 +456,10 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
     MDM's audit delivery then waits instead of dead-lettering: the intent stays retryable with that reason, for at most
     2880 attempts (about a day at the default 30 s retry delay), and is delivered once Platform maps it. After that
     bound — or for any other operation — the intent is dead-lettered, never reaches the central log, and there is no
-    tool to send a dead-lettered intent again. Watch: intents whose last delivery error is
-    `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED` (the delivery batch counts them as `AwaitingCentralMapping`).
+    tool to send a dead-lettered intent again (backlog BL-566). Watch: the delivery worker writes one Warning per
+    cycle while any wait — "Audit delivery: N intent(s) of <operations> in M tenant(s) wait for Platform to map the
+    operation" — and the intents' last delivery error is `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED`. The attempt at the
+    bound is dead-lettered and no longer counted as waiting.
   - **Refused writes:** the product's audit cap (`AUDIT_INTENT_CAPACITY_EXCEEDED`) waits.
     `GLOBAL_PRODUCT_LIFECYCLE_RELEASE_CONFLICT` is a counted retry.
   - **An approved name another product took in the meantime:** the request ENDS unapplied and the product is given
@@ -477,7 +479,9 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
     the engine treats this service (its trust, its grant — e.g. `WORKFLOW_TRUSTED_START_FORBIDDEN`) ends the request
     with `PRODUCT_IDENTITY_WORKFLOW_SERVICE_UNAVAILABLE_RESUBMIT` (503), as the identity approval says it.
   - **A request that never took the product** (cut off before its lock) holds nothing; the worker leaves it waiting
-    for its maker's same key (`*_AWAITING_MAKER`, looked at again at the retry ceiling).
+    for its maker's same key (`*_AWAITING_MAKER`, looked at again at the retry ceiling) for at most 7 days from its
+    creation. After that it ENDS with `*_MAKER_NEVER_RETURNED` (nothing to give back) and the maker's repeat is told
+    so (409); the maker sends a new request.
   - **Rows of the previous version (124e30acc and before):** a request it left stuck on a name conflict, with the
     product one version past its base + 1 and the lock still held, is ENDED by its requester's same command: the
     product is given back at its current version. Dev count at 2026-10-06: 0 such rows.
@@ -499,11 +503,17 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
     is stuck and the submitter's same submit reads the engine again.
   - **A submit stuck in manual reconciliation HOLDS THE DRAFT (CT decision S2, as GSKU):** an edit is refused
     (`GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED`) and so is a new submit of the same version. The screen says
-    the existing "a submit is on its way" sentence. Ways out: the submitter's same submit (settles it), or a person
-    (BL-530) when the record's answer will not change. Both gauges count it (`needing_a_person` alert).
-  - **Settings:** `ProductIdentityWorkflowWorker` takes `QuarantineAfterFailedAttempts` (30) and `StartSettleSeconds`
-    (120).
-- **Rolling back past BL-552:** the request and operation documents gained fields (`FailedAttemptCount`,
+    "a submission of this product is stuck — the person who submitted it resolves it by pressing Submit again; if that
+    does not resolve it, an administrator has to" (`ErrorSubmitStuck`, seven languages). Ways out: the submitter's
+    same submit (settles it), or a person (BL-530) when the record's answer will not change; a repeat that cannot
+    settle it hands it to a person (`*_STUCK_ON_RECORD_ANSWER`). Both gauges count it (`needing_a_person` alert) —
+    on every cycle, also while the worker is switched off.
+  - **Settings:** `ProductIdentityWorkflowWorker` takes `QuarantineAfterFailedAttempts` (30; 0–1000, 0 = never)
+    and `StartSettleSeconds` (120; 1–3600). A value outside those bounds STOPS THE HOST AT START, whether the worker
+    is switched on or not (the interactive submit reads both); before, it was quietly clamped.
+- **Rolling back past BL-552:** stop the new version first (no instance may write while the fields are removed).
+  The old version does not wait for Platform's map: intents of operations 79 / 80 / 81 still waiting when it takes
+  over are dead-lettered by it (BL-566, no resend tool). The request and operation documents gained fields (`FailedAttemptCount`,
   `LastStartSentAtUtcTicksV1`). This binary reads documents with fields it does not know, and the service does not
   start if that guard is missing (`GlobalProductLifecycleClassMaps`). Older binaries do not read them — **when
   rolling back, remove the new fields first** with

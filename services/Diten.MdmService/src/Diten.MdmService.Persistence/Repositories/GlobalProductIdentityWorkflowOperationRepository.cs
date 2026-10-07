@@ -11,6 +11,11 @@ namespace Diten.MdmService.Persistence.Repositories;
 public sealed class GlobalProductIdentityWorkflowOperationRepository
     : IGlobalProductIdentityWorkflowOperationRepository
 {
+    // BL-552 flow 3 FIX2: the lifecycle request documents' class maps (ignore extra elements, checked) are registered
+    // before this store is first used — whoever builds it, the host's container or a test. Without it, a store built
+    // outside the container auto-maps the type first and the start-up check then refuses that map.
+    static GlobalProductIdentityWorkflowOperationRepository() => Diten.MdmService.Persistence.Configurations.GlobalProductLifecycleClassMaps.Register();
+
     public const string CollectionName = "mdm_global_product_identity_workflow_operations";
     public const string DraftChanged = "PRODUCT_IDENTITY_WORKFLOW_DRAFT_CHANGED";
     public const string IdentityReconciliationRequired = GlobalProductRepository.IdentityReconciliationRequired;

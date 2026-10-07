@@ -31,6 +31,29 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         Assert.Equal(GlobalProductIdentityWorkflowProcessor.StartProofInvalid, harness.Repository.Current!.LastFailureCode);
     }
 
+    // FIX2 K6: the hand-over to a person writes nothing when the store throws — and the lease goes back at once.
+    [Fact]
+    public async Task A_hand_over_to_a_person_that_the_store_refuses_gives_its_lease_back()
+    {
+        var harness = Harness.Create();
+        var operation = harness.CreateOperation(GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired);
+        operation.RecoveryDisposition = ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired;
+        operation.LastFailureCode = GlobalProductIdentityWorkflowProcessor.StartProofInvalid;
+        harness.Repository.Current = operation;
+        // The repeat's lookup cannot settle it (an answer about the record), so it is handed to a person — and that
+        // write fails.
+        harness.Client.StartResult = (_, _, _) => Task.FromResult(
+            ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(
+                ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_START_RECOVERY_CONFLICT"));
+        harness.Repository.ThrowOn = mutation => mutation.LastFailureCode == GlobalProductIdentityWorkflowProcessor.StuckOnRecordAnswer;
+
+        await Assert.ThrowsAsync<TimeoutException>(() => harness.Processor.StartInteractiveAsync(TenantId, ProductId, 0,
+            OperationId, MakerId, "maker-token", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30)));
+
+        Assert.Null(harness.Repository.Current!.LeaseOwner);
+        Assert.Equal(GlobalProductIdentityWorkflowProcessor.StartProofInvalid, harness.Repository.Current.LastFailureCode);
+    }
+
     // Item 8 (the GSKU E1 order): an action that is not a decision is evidence that does not fit — whoever the actor.
     // Its maker "withdrawing" through the decision evidence is not "its own maker decided": the same quarantine GSKU
     // gives it, the product left pending.

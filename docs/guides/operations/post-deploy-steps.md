@@ -80,7 +80,19 @@ beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı b
 | **Kim** | Deploy operatörü |
 
 **Kontrol:** MDM deploy edildikten sonra son teslim hatası `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED` olan niyet kalmamalı.
-Kalıyorsa Platform bu işlemleri eşleyen sürümde değildir.
+Kalıyorsa Platform bu işlemleri eşleyen sürümde değildir. Teslim işçisi her döngüde bir Warning yazar: "Audit delivery:
+N intent(s) of … wait for Platform to map the operation".
+
+### 4 · GP kimlik onayı ayarları artık başlatmayı durdurur (BL-552 akış 3)
+
+| | |
+|---|---|
+| **Modül** | MOD-0290 — Global Ürün kimlik onayı işçisi (`ProductIdentityWorkflowWorker`) |
+| **Ne zaman** | `1204887c3` ve sonrasını taşıyan deploy'dan ÖNCE yapılandırmaya bakılır |
+| **Yapılmazsa** | Aralık dışı değer artık sessizce düzeltilmez; MDM **açılmaz** (`PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID`). İşçi kapalı olsa da geçerlidir, çünkü etkileşimli gönderim de bu ayarları okur. |
+| **Kim** | Deploy operatörü |
+
+Sınırlar: `StartSettleSeconds` 1–3600 (varsayılan 120); `QuarantineAfterFailedAttempts` 0–1000 (varsayılan 30, 0 = hiç).
 
 ---
 

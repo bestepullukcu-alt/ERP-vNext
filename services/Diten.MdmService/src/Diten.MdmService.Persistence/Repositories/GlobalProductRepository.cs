@@ -11,6 +11,9 @@ namespace Diten.MdmService.Persistence.Repositories;
 
 public sealed class GlobalProductRepository : IGlobalProductRepository
 {
+    // BL-552 flow 3 FIX2: this store reads the identity operations too (S2) — their class maps first.
+    static GlobalProductRepository() => Diten.MdmService.Persistence.Configurations.GlobalProductLifecycleClassMaps.Register();
+
     private readonly IMongoCollection<GlobalProduct> _globalProducts;
     private readonly IMongoCollection<CodeReservation> _reservations;
     private readonly IMongoCollection<BsonDocument> _globalProductDocuments;
@@ -741,9 +744,12 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         }
 
         var current = await GetByIdAsync(id, cancellationToken);
+        // BL-552 flow 3 FIX2 item 1: the audit cap is one of the filter's terms — a product at the cap is not a binding
+        // conflict. It falls through to the classification (AUDIT_INTENT_CAPACITY_EXCEEDED), which waits.
         if (current is not null
             && current.Version == expectedVersion
-            && current.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval)
+            && current.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
+            && current.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate)
         {
             return new(false, current, "WORKFLOW_BINDING_CONFLICT");
         }
@@ -1173,9 +1179,12 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         }
 
         var current = await GetByIdAsync(id, cancellationToken);
+        // BL-552 flow 3 FIX2 item 1: the audit cap is one of the filter's terms — a product at the cap is not a binding
+        // conflict. It falls through to the classification (AUDIT_INTENT_CAPACITY_EXCEEDED), which waits.
         if (current is not null
             && current.Version == expectedVersion
-            && current.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval)
+            && current.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
+            && current.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate)
         {
             return new(false, current, "WORKFLOW_BINDING_CONFLICT");
         }

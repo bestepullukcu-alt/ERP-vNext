@@ -71,7 +71,7 @@ public sealed class PlatformTrustedSourceAuditIntentClient : ITrustedSourceAudit
             if (response.StatusCode == HttpStatusCode.Conflict)
                 return Classify(response.StatusCode) with
                 {
-                    CentralReasonCode = await ReadCentralReasonAsync(response.Content, budget.Token)
+                    CentralReasonCode = await ReadCentralReasonAsync(response.Content, budget.Token, cancellationToken)
                 };
             return Classify(response.StatusCode);
         }
@@ -125,12 +125,19 @@ public sealed class PlatformTrustedSourceAuditIntentClient : ITrustedSourceAudit
         }
     }
 
+    // Flow 3 FIX2 K1: reading the reason has its own small budget — a body that is slow to arrive leaves the reason
+    // unknown and the answer what it is (a definite 409), never a timeout to retry.
+    internal static readonly TimeSpan CentralReasonBudget = TimeSpan.FromMilliseconds(500);
+
     // The failure envelope's `reason_code` (bounded, upper-case code only); anything unreadable is no reason.
-    private static async Task<string?> ReadCentralReasonAsync(HttpContent content, CancellationToken cancellationToken)
+    private static async Task<string?> ReadCentralReasonAsync(HttpContent content, CancellationToken budgetToken,
+        CancellationToken callerToken)
     {
+        using var reasonBudget = CancellationTokenSource.CreateLinkedTokenSource(budgetToken);
+        reasonBudget.CancelAfter(CentralReasonBudget);
         try
         {
-            var bytes = await ReadBoundedAsync(content, cancellationToken);
+            var bytes = await ReadBoundedAsync(content, reasonBudget.Token);
             using var document = JsonDocument.Parse(bytes);
             return document.RootElement.ValueKind == JsonValueKind.Object
                    && document.RootElement.TryGetProperty("reason_code", out var reason)
@@ -141,7 +148,8 @@ public sealed class PlatformTrustedSourceAuditIntentClient : ITrustedSourceAudit
                 : null;
         }
         catch (Exception exception) when (exception is JsonException or InvalidOperationException
-                                          or HttpRequestException or IOException)
+                                          or HttpRequestException or IOException
+                                          || exception is OperationCanceledException && !callerToken.IsCancellationRequested)
         {
             return null;
         }

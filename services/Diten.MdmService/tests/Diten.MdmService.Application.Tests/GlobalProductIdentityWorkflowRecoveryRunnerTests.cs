@@ -53,6 +53,29 @@ public sealed class GlobalProductIdentityWorkflowRecoveryRunnerTests
         Assert.Equal(0, metrics.NeedingAPerson(ProductIdentityWorkflowRecoveryRunner.Flow));
     }
 
+    // Flow 3 FIX2 item 4: the HOSTED worker switched off records the gauges too (before: it returned at once and the
+    // runner's off branch ran only in the one-shot command line and in tests).
+    [Fact]
+    public async Task The_hosted_worker_switched_off_records_the_stuck_gauges()
+    {
+        using var metrics = new ProductIdentityRecoveryMetrics();
+        using var services = StuckServices(readinessFault: null);
+        var options = Options.Create(new ProductIdentityWorkflowWorkerOptions { PollIntervalSeconds = 3_600 });
+        var runner = new ProductIdentityWorkflowRecoveryRunner(
+            services.GetRequiredService<IServiceScopeFactory>(), options, TimeProvider.System,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<ProductIdentityWorkflowRecoveryRunner>.Instance, metrics);
+        using var worker = new ProductIdentityWorkflowRecoveryWorker(runner, options,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<ProductIdentityWorkflowRecoveryWorker>.Instance);
+
+        await worker.StartAsync(CancellationToken.None);
+        for (var wait = 0; wait < 100 && metrics.Current(ProductIdentityWorkflowRecoveryRunner.Flow) is null; wait++)
+            await Task.Delay(20);
+        await worker.StopAsync(CancellationToken.None);
+
+        Assert.Equal(1, metrics.Current(ProductIdentityWorkflowRecoveryRunner.Flow));
+        Assert.Equal(0, metrics.NeedingAPerson(ProductIdentityWorkflowRecoveryRunner.Flow));
+    }
+
     private static readonly Guid StuckTenant = Guid.Parse("90000000-0000-0000-0000-0000000000a7");
 
     // One tenant holds one stuck submit its submitter's repeat can settle: (1 in manual reconciliation, 0 for a person).

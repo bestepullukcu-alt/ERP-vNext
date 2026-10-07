@@ -181,10 +181,17 @@ public sealed class AuditIntentDeliveryProcessor
                 // BL-552 flow 3 FIX1 item 2: an operation added in this release that Platform does not map YET (MDM
                 // deployed before Platform) waits — bounded, counted, its reason on the intent — instead of being
                 // dead-lettered for good. Every other operation, and every other 409, is terminal exactly as before.
-                batch.AwaitingCentralMapping++;
+                // Flow 3 FIX2 item 2: counted as waiting only when the wait was scheduled — the attempt at the bound is
+                // dead-lettered, not waiting.
+                var scheduledBefore = batch.RetryScheduled;
                 await TransitionFailureAsync(
                     claim, MappingUnsupported, true, retryDelay, Math.Max(maximumAttempts, CentralMappingWaitAttempts),
                     batch, cancellationToken);
+                if (batch.RetryScheduled > scheduledBefore)
+                {
+                    batch.AwaitingCentralMapping++;
+                    batch.AwaitingCentralMappingOperationNames.Add(payload.Operation.ToString());
+                }
                 return;
             case TrustedSourceAuditIntentDeliveryOutcome.AuthenticationRejected:
             case TrustedSourceAuditIntentDeliveryOutcome.Terminal:
@@ -355,6 +362,8 @@ public sealed class AuditIntentDeliveryBatchResult
     // BL-552 flow 3 FIX1 item 2: intents of an operation Platform does not map yet, waiting (the gauge of a
     // deploy-order gap).
     public int AwaitingCentralMapping { get; internal set; }
+    // Flow 3 FIX2 item 2: which operations those were (for the worker's line).
+    public HashSet<string> AwaitingCentralMappingOperationNames { get; } = new(StringComparer.Ordinal);
 }
 
 public sealed record SelectedAuditIntentDeliveryResult(

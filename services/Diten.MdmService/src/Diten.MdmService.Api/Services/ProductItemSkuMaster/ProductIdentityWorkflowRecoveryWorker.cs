@@ -14,6 +14,27 @@ public sealed class ProductIdentityWorkflowRecoveryWorker(
         var settings = options.Value;
         if (!settings.Enabled)
         {
+            // BL-552 flow 3 FIX2 item 4: switched off, the worker still records the stuck gauges on every poll — a
+            // worker switched off is exactly when what is stuck stays stuck. The runner's off branch reads counts
+            // only: it claims, retries or writes no operation.
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                try
+                {
+                    await runner.RunCycleAsync(stoppingToken);
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception exception)
+                {
+                    logger.LogError(
+                        "Product identity workflow stuck-gauge cycle (worker off) failed with {ExceptionType}.",
+                        exception.GetType().FullName);
+                }
+                await Task.Delay(TimeSpan.FromSeconds(Math.Clamp(settings.PollIntervalSeconds, 1, 3_600)), stoppingToken);
+            }
             return;
         }
 

@@ -13,6 +13,11 @@ public sealed class GlobalProductRetirementRequestOperationRepository(
     IMongoDatabase database, ITenantContext tenantContext)
     : IGlobalProductRetirementRequestOperationRepository
 {
+    // BL-552 flow 3 FIX2: the lifecycle request documents' class maps (ignore extra elements, checked) are registered
+    // before this store is first used — whoever builds it, the host's container or a test. Without it, a store built
+    // outside the container auto-maps the type first and the start-up check then refuses that map.
+    static GlobalProductRetirementRequestOperationRepository() => Diten.MdmService.Persistence.Configurations.GlobalProductLifecycleClassMaps.Register();
+
     public const string CollectionName = "mdm_global_product_retirement_request_operations";
     private readonly IMongoCollection<GlobalProductRetirementRequestOperation> _operations =
         database.GetCollection<GlobalProductRetirementRequestOperation>(CollectionName);

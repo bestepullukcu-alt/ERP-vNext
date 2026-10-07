@@ -14,17 +14,20 @@ public sealed class AuditIntentDeliveryWorker : BackgroundService
     private readonly AuditIntentDeliveryWorkerOptions _options;
     private readonly AuthTrustedSourceAuditServiceIdentityProviderOptions _identityOptions;
     private readonly TrustedSourceAuditIntentClientOptions _clientOptions;
+    private readonly ILogger<AuditIntentDeliveryWorker> _logger;
 
     public AuditIntentDeliveryWorker(
         IServiceScopeFactory scopeFactory,
         IOptions<AuditIntentDeliveryWorkerOptions> options,
         IOptions<AuthTrustedSourceAuditServiceIdentityProviderOptions> identityOptions,
-        IOptions<TrustedSourceAuditIntentClientOptions> clientOptions)
+        IOptions<TrustedSourceAuditIntentClientOptions> clientOptions,
+        ILogger<AuditIntentDeliveryWorker>? logger = null)
     {
         _scopeFactory = scopeFactory;
         _options = options.Value;
         _identityOptions = identityOptions.Value;
         _clientOptions = clientOptions.Value;
+        _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<AuditIntentDeliveryWorker>.Instance;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,8 +45,12 @@ public sealed class AuditIntentDeliveryWorker : BackgroundService
         }
     }
 
-    internal async Task RunCycleAsync(CancellationToken cancellationToken)
+    // Flow 3 FIX2 item 2: a cycle says what it left waiting for Platform's map (BL-552's operations, MDM deployed first).
+    public async Task<AuditIntentDeliveryCycleResult> RunCycleAsync(CancellationToken cancellationToken)
     {
+        var waiting = 0;
+        var waitingTenants = 0;
+        var waitingOperations = new SortedSet<string>(StringComparer.Ordinal);
         Guid? cursor = null;
         do
         {
@@ -62,7 +69,7 @@ public sealed class AuditIntentDeliveryWorker : BackgroundService
                 await using var tenantScope = _scopeFactory.CreateAsyncScope();
                 var tenantContext = tenantScope.ServiceProvider.GetRequiredService<TenantContext>();
                 tenantContext.SetTenant(tenantId);
-                await tenantScope.ServiceProvider.GetRequiredService<AuditIntentDeliveryProcessor>()
+                var batch = await tenantScope.ServiceProvider.GetRequiredService<AuditIntentDeliveryProcessor>()
                     .ProcessTenantAsync(
                         tenantId,
                         _options.BatchSize,
@@ -71,10 +78,24 @@ public sealed class AuditIntentDeliveryWorker : BackgroundService
                         TimeSpan.FromSeconds(_options.RetryDelaySeconds),
                         _options.MaximumAttempts,
                         cancellationToken);
+                if (batch.AwaitingCentralMapping > 0)
+                {
+                    waiting += batch.AwaitingCentralMapping;
+                    waitingTenants++;
+                    waitingOperations.UnionWith(batch.AwaitingCentralMappingOperationNames);
+                }
             }
 
             cursor = page.NextTenantId;
         } while (cursor.HasValue);
+
+        if (waiting > 0)
+        {
+            _logger.LogWarning(
+                "Audit delivery: {Count} intent(s) of {Operations} in {TenantCount} tenant(s) wait for Platform to map the operation (AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED). Deploy Platform first; past the bound they are dead-lettered.",
+                waiting, string.Join(", ", waitingOperations), waitingTenants);
+        }
+        return new(waiting, waitingTenants, waitingOperations.ToArray());
     }
 
     private void ValidateEnabledConfiguration()
@@ -104,3 +125,9 @@ public sealed class AuditIntentDeliveryWorker : BackgroundService
         !string.IsNullOrWhiteSpace(value) && value.Length <= maximum
         && string.Equals(value, value.Trim(), StringComparison.Ordinal) && !value.Any(char.IsControl);
 }
+
+/// <summary>Flow 3 FIX2 item 2: what one delivery cycle left waiting for Platform's operation map.</summary>
+public sealed record AuditIntentDeliveryCycleResult(
+    int AwaitingCentralMapping,
+    int TenantsAwaitingCentralMapping,
+    IReadOnlyList<string> AwaitingCentralMappingOperations);

@@ -120,6 +120,29 @@ public sealed class GlobalProductIdentityWorkflowProcessorRegistrationTests
         Assert.Contains("PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID", error.Failures);
     }
 
+    // BL-552 flow 3 FIX2 item 3: the settle window and the record-answer limit stop the host too — with the worker OFF
+    // (the usual case), the start-up validator is the only guard: the interactive submit reads both.
+    [Theory]
+    [InlineData("StartSettleSeconds", "0")]
+    [InlineData("StartSettleSeconds", "-1")]
+    [InlineData("StartSettleSeconds", "3601")]
+    [InlineData("QuarantineAfterFailedAttempts", "-5")]
+    [InlineData("QuarantineAfterFailedAttempts", "1001")]
+    public async Task A_settle_window_or_record_answer_limit_out_of_range_stops_the_host_at_start_with_the_worker_off(
+        string setting, string value)
+    {
+        await using var provider = HostServices(new()
+        {
+            ["ProductIdentityWorkflowWorker:Enabled"] = "false",
+            [$"ProductIdentityWorkflowWorker:{setting}"] = value
+        }).BuildServiceProvider();
+
+        var error = Assert.Throws<Microsoft.Extensions.Options.OptionsValidationException>(() =>
+            provider.GetRequiredService<Microsoft.Extensions.Options.IStartupValidator>().Validate());
+
+        Assert.Contains("PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID", error.Failures);
+    }
+
     [Fact]
     public async Task A_valid_window_passes_the_start_up_validation()
     {

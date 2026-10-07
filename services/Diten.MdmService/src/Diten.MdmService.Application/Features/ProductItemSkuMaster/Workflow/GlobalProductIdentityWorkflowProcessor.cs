@@ -1275,9 +1275,21 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         logger.LogError(
             "Product identity workflow operation {OperationId} of tenant {TenantId}: its submitter's repeat could not settle {ResultCode}; a person has to (BL-530).",
             operation.OperationId, operation.TenantId, operation.LastFailureCode);
-        if (!await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+        bool handed;
+        try
+        {
+            handed = await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
                 ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired, now, StuckOnRecordAnswer,
-                releaseLease: true, cancellationToken: cancellationToken))
+                releaseLease: true, cancellationToken: cancellationToken);
+        }
+        catch
+        {
+            // Flow 3 FIX2 K6 (the GSKU rule A): nothing was written — the lease goes back now (bounded, not under the
+            // caller's token) instead of holding the submit until it runs out.
+            await ReleaseClaimAsync(claim, operation, now);
+            throw;
+        }
+        if (!handed)
         {
             await ReleaseClaimAsync(claim, operation, now);
             return operation;

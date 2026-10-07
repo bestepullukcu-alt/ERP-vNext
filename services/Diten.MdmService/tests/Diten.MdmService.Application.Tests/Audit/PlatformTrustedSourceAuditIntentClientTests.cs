@@ -70,6 +70,42 @@ public sealed class PlatformTrustedSourceAuditIntentClientTests
         Assert.Equal(reason, result.CentralReasonCode);
     }
 
+    // Flow 3 FIX2 K1: a 409 whose body is slow to arrive is still a definite 409 — the reason unknown, not a timeout.
+    [Fact]
+    public async Task A_conflict_whose_body_is_slow_stays_a_conflict_without_a_reason()
+    {
+        var result = await Client(new RecordingHandler(_ => new HttpResponseMessage(HttpStatusCode.Conflict)
+            {
+                Content = new StreamContent(new NeverArrivingStream())
+            }))
+            .AcceptAsync(Envelope(), new("jwt", DateTimeOffset.UtcNow.AddMinutes(5)));
+
+        Assert.Equal(TrustedSourceAuditIntentDeliveryOutcome.Terminal, result.Outcome);
+        Assert.Equal("AUDIT_SOURCE_INTENT_CONFLICT", result.ErrorCode);
+        Assert.Null(result.CentralReasonCode);
+    }
+
+    private sealed class NeverArrivingStream : Stream
+    {
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position { get => 0; set => throw new NotSupportedException(); }
+        public override void Flush() { }
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+            return 0;
+        }
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+            ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    }
+
     [Fact]
     public async Task Create_semantics_minus_one_to_zero_and_sequence_zero_are_accepted()
     {

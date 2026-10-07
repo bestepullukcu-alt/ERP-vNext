@@ -132,15 +132,9 @@ public sealed class AuditIntentDeliveryWorkerTests
         }),
         Options.Create(new TrustedSourceAuditIntentClientOptions { PlatformBaseUrl = "http://localhost:5057" }));
 
-    private static Task RunCycleAsync(AuditIntentDeliveryWorker worker, CancellationToken cancellationToken)
-    {
-        var method = typeof(AuditIntentDeliveryWorker).GetMethod(
-            "RunCycleAsync",
-            BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("RunCycleAsync seam is missing.");
-        return (Task)(method.Invoke(worker, [cancellationToken])
-            ?? throw new InvalidOperationException("RunCycleAsync returned no task."));
-    }
+    // Flow 3 FIX2 item 2: the cycle is public now (it reports what waits for Platform's map) — called directly.
+    private static Task RunCycleAsync(AuditIntentDeliveryWorker worker, CancellationToken cancellationToken) =>
+        worker.RunCycleAsync(cancellationToken);
 
     private sealed class CountingScopeFactory : IServiceScopeFactory
     {

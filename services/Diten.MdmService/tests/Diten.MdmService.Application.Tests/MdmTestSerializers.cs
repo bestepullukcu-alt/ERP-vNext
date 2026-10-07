@@ -37,5 +37,10 @@ internal static class MdmTestSerializers
 #pragma warning disable CS0618
         MongoDefaults.GuidRepresentation = GuidRepresentation.Standard;
 #pragma warning restore CS0618
+        // BL-552 flow 3 FIX2: then the Global Product lifecycle request documents' class maps (ignore extra elements,
+        // checked at start) — AFTER the Guid serializer, before any test reads those collections raw. Otherwise the
+        // first raw read auto-maps a type unguarded and every later host built in this process refuses to start (the
+        // start-up check, flow 2 FIX1 item 10): 13 tests were red for that reason, order-dependent, until this round.
+        Diten.MdmService.Persistence.Configurations.GlobalProductLifecycleClassMaps.Register();
     }
 }

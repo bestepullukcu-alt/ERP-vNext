@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Diten.MdmService.Application.Contracts.Audit;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Audit;
 using Diten.MdmService.Domain.Entities;
@@ -219,6 +220,11 @@ public sealed class AuditIntentDeliveryProcessorTests
     [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, AuditIntentDeliveryProcessor.CentralMappingWaitAttempts,
         "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
     [InlineData(ProductAuditOperation.GlobalProductDraftCreated, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
+    // Flow 3 FIX2 K1: their neighbours — the operations an extra member of the set would most likely be — do not wait.
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
+    [InlineData(ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
+    [InlineData(ProductAuditOperation.GlobalProductCorrectionRequested, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
+    [InlineData(ProductAuditOperation.GlobalProductIdentityApprovalWithdrawn, 1, "AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", true)]
     [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, 1, "AUDIT_SOURCE_INTENT_IDEMPOTENCY_CONFLICT", true)]
     [InlineData(ProductAuditOperation.GlobalProductCorrectionEnded, 1, null, true)]
     public async Task Only_the_new_operations_wait_for_platforms_map_and_only_for_a_while(
@@ -233,6 +239,72 @@ public sealed class AuditIntentDeliveryProcessorTests
 
         Assert.Equal(deadLettered ? 1 : 0, result.DeadLettered);
         Assert.Equal(deadLettered ? 0 : 1, result.RetryScheduled);
+    }
+
+    // Flow 3 FIX2 item 2: what waits is SAID — the worker's cycle reports it (count, operations, tenants) and writes one
+    // Warning; the attempt at the bound is dead-lettered and is not counted as waiting.
+    [Theory]
+    [InlineData(1, true)]
+    [InlineData(AuditIntentDeliveryProcessor.CentralMappingWaitAttempts, false)]
+    public async Task The_delivery_worker_says_what_waits_for_platforms_map(int attempts, bool waits)
+    {
+        var repository = new Repository
+        {
+            PayloadOperation = ProductAuditOperation.GlobalProductCorrectionEnded, ClaimAttemptCount = attempts
+        };
+        var client = new Client((_, _) => TrustedSourceAuditIntentDeliveryResult.Terminal("AUDIT_SOURCE_INTENT_CONFLICT")
+            with { CentralReasonCode = AuditIntentDeliveryProcessor.MappingUnsupported });
+        var log = new WorkerLog();
+        using var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection()
+            .AddSingleton<IAuditIntentTenantPartitionDiscovery>(new OneTenant(repository.TenantId))
+            .AddScoped<Diten.MdmService.Application.Common.TenantContext>()
+            .AddScoped(_ => Processor(repository, new IdentityProvider(), client))
+            .BuildServiceProvider();
+        var worker = new Diten.MdmService.Api.Services.Audit.AuditIntentDeliveryWorker(
+            Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions
+                .GetRequiredService<Microsoft.Extensions.DependencyInjection.IServiceScopeFactory>(services),
+            Microsoft.Extensions.Options.Options.Create(new Diten.MdmService.Api.Configuration.AuditIntentDeliveryWorkerOptions
+                { LeaseOwner = "worker" }),
+            Microsoft.Extensions.Options.Options.Create(new Diten.MdmService.Infrastructure.Audit.AuthTrustedSourceAuditServiceIdentityProviderOptions()),
+            Microsoft.Extensions.Options.Options.Create(new Diten.MdmService.Infrastructure.Audit.TrustedSourceAuditIntentClientOptions()),
+            log);
+
+        var cycle = await worker.RunCycleAsync(CancellationToken.None);
+
+        if (waits)
+        {
+            Assert.Equal(1, cycle.AwaitingCentralMapping);
+            Assert.Equal(1, cycle.TenantsAwaitingCentralMapping);
+            Assert.Equal(["GlobalProductCorrectionEnded"], cycle.AwaitingCentralMappingOperations);
+            var line = Assert.Single(log.Warnings);
+            Assert.Contains("GlobalProductCorrectionEnded", line);
+            Assert.Contains("AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED", line);
+        }
+        else
+        {
+            Assert.Equal(0, cycle.AwaitingCentralMapping);
+            Assert.Empty(log.Warnings);
+            Assert.Equal(AuditIntentDeliveryProcessor.MappingUnsupported, repository.LastDeadLetterReason);
+        }
+    }
+
+    private sealed class OneTenant(Guid tenantId) : IAuditIntentTenantPartitionDiscovery
+    {
+        public Task<AuditIntentTenantPartitionPage> DiscoverAsync(Guid? afterTenantId, int limit,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new AuditIntentTenantPartitionPage(afterTenantId is null ? [tenantId] : [], null));
+    }
+
+    private sealed class WorkerLog : Microsoft.Extensions.Logging.ILogger<Diten.MdmService.Api.Services.Audit.AuditIntentDeliveryWorker>
+    {
+        public List<string> Warnings { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId,
+            TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (logLevel == Microsoft.Extensions.Logging.LogLevel.Warning) Warnings.Add(formatter(state, exception));
+        }
     }
 
     private static AuditIntentDeliveryProcessor Processor(

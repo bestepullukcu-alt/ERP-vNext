@@ -8,6 +8,11 @@ namespace Diten.MdmService.Persistence.Repositories;
 public sealed class GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository
     : IGlobalProductIdentityWorkflowTenantPartitionDiscovery
 {
+    // BL-552 flow 3 FIX2: the lifecycle request documents' class maps (ignore extra elements, checked) are registered
+    // before this store is first used — whoever builds it, the host's container or a test. Without it, a store built
+    // outside the container auto-maps the type first and the start-up check then refuses that map.
+    static GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository() => Diten.MdmService.Persistence.Configurations.GlobalProductLifecycleClassMaps.Register();
+
     private readonly IMongoCollection<GlobalProductIdentityWorkflowOperation> _operations;
 
     public GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository(IMongoDatabase database) =>
