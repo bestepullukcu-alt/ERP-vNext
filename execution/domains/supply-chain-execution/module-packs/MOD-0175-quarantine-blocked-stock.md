@@ -1126,6 +1126,14 @@ Order: WP-0023-FX → MOD-0022 E4 (approve + `signatureId` must use the bound ac
    apply-time four-eyes check stays (defence in depth).
 5. Runtime probe (own ports, isolated DB) 34/34: QA role granted the 7 keys (204), design keys refused (403), A approving
    own instance → 409 `SOD_VIOLATION`, A approving B's task with B's id → 403 `WORKFLOW_ACTOR_MISMATCH`, B → 200.
+**CT acceptance (K13, 2026-10-07):** re-measured at `db0ede5a2` — Platform workflow/registration/pages/aggregation filter
+454/454; AuthService `Diten.AuthService.Application.Tests` 1023/1023 (owner fleet PIDs identical before/after); source
+files = Workflow feature + controller + manifest + `TenantRouteScopeCorrections` (allowlist = exactly the 7 runtime
+keys) + `DataSeeder`. CT sabotage: `WorkflowActorBinding` accepting any body actor → 5 red, restored. **FU-0175-WF-SOD and
+FU-0175-WF-KEYS CLOSED.** Follow-ups: FU-0023-FX-WEB (free-text "Actor Id" field on `/Platform/Workflow` task forms,
+`Tasks.cshtml:46-47`), FU-0023-FX-SOD-SWITCH. **Machine finding (CT):** `Diten.AuthService.AccountKindAcceptanceHost.Tests`
+contains POSIX process-group kill code (`KillGroup`, SIGKILL, python3 listeners); a CT run of that project hung and the
+owner's whole `dotnet watch` fleet was found dead afterwards — do NOT run it on this Windows machine (FU-0023-FX-ACCEPTHOST).
 
 ### Open CT decisions
 
