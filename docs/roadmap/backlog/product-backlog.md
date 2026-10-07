@@ -8063,6 +8063,28 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-574
+
+**MDM yol b denetim kayıtları değişen alanları, önce / sonra değerlerini ve ret nedenini taşımıyor (AUD-001 §3 madde 10); Platform ucu bunları zaten alıyor, eksik MDM'in iletim isteğinde**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) · BULAN: FU04 S1 bağımsız incelemesi (R3) · KAYIT: 2026-10-07
+
+`AuditForwardRequest` (`IPlatformAuditForwarder.cs:16`) yalnız şunları taşıyor: Operation, EntityType, EntityId, Outcome, RequestType, Category, SourceModule, CorrelationId. Platform'un `api/internal/audit/append` ucu (`AuditAppendRequest`) ise `BeforeState`, `AfterState` ve `Metadata`'yı da kabul ediyor.
+
+Sonuç: MDM'in bütün yol b komutlarında (Marka, ürün komutları, kısaltmalar) kayıt "neyin değiştiğini" ve "neden reddedildiğini" söylemiyor. GMP açısından ana veri değişikliğinin önce / sonra değeri beklenir (Annex 11 / 21 CFR Part 11 denetim izi).
+
+FU04 S1-FIX1 mekanizmayı ekliyor: isteğe bağlı alanlar, geriye uyumlu. Kalem komutları bunları dolduruyor.
+
+Yapılacak:
+- Diğer yol b komutları (Marka, GP / GSKU / LSKU / FG yol b komutları, kısaltma, S3 stok davranışı) aynı alanları doldurur.
+- Bir mimari kural, "değişiklik yapan komut değişen alanları taşır" kuralını ölçer.
+
+Karşılaştırma: SAP'de malzeme ana verisi değişiklik belgeleri (CDHDR / CDPOS) alan bazında eski ve yeni değeri tutar. Oracle'da da öğe denetimi (Audit Trail) öznitelik bazında önce / sonra kaydeder.
+
+Gelecek regresyon riski: 🔴 GMP kullanımında (değişiklik izi eksik); kalem canlıya çıkmadan önce kalem için kapanıyor, diğerleri için açık.
+
+---
+
 ### BL-573
 
 **Ürün stok davranışı izinleri (O-12) Auth'ta yok: üç `edit-stock-behaviour` anahtarı ürün yaşam döngüsü profilinin tam küme denetimini fırlatıyor; S3 geçici olarak kimlik anahtarlarını kullanıyor**
