@@ -5,9 +5,10 @@ description: "RCS-001 — Kayıt kodu standardı: sistemdeki kayıtların kullan
 # Kayıt Kodu Standardı — RCS-001
 
 > **Kaynak.** Yönetimin *Kodlama Standardı — Karar Notu v1.0* (2026-09-04, "KESİNLEŞTİRİLMİŞ") kararları
-> bu kuralın **bağlayıcı** kısmıdır (§1–§4). Notun bıraktığı açıklar için Control Tower önerileri §5'tedir:
-> yönetim aksini söyleyene kadar **varsayılan** olarak uygulanır, her biri "ÖNERİ" diye işaretlidir ve
-> yönetim teyidiyle kesinleşir.
+> bu kuralın **bağlayıcı** kısmıdır (§1–§4). Notun bıraktığı açıklar için Control Tower önerileri §5'tedir.
+> **Sahip 2026-10-07'de §5 önerilerinin tamamını onayladı** ("önerilerin uygun, Türkçe karaktere gerek yok"):
+> artık bağlayıcıdır. "ÖNERİ" etiketleri hangi maddenin nottan, hangisinin CT'den geldiğini göstermek için durur.
+> Yönetim bir maddeyi değiştirirse bu kural güncellenir.
 >
 > **Neden var.** 2026-10-07'de kodda ölçüldü: ortak bir kod üretici yok, hiçbir yerde `MG-` öneki yok;
 > Organizasyon Birimi, Pozisyon, Tüzel Kişilik, Abonelik Planı ve PPM kodları elle giriliyor ve gerekçesiz
@@ -26,7 +27,7 @@ description: "RCS-001 — Kayıt kodu standardı: sistemdeki kayıtların kullan
 
 | Parça | Kural |
 |---|---|
-| `ŞİRKET` | Kaydı açan tüzel kişiliğin kısa kodu (MG, GMP …). Grup çok şirketli; kod üzerinden şirket ayrımı. |
+| `ŞİRKET` | Kaydı açan tüzel kişiliğin kısa kodu. `MG`, `GMP` yalnız **örnektir** (yönetim notunun örneği `MG-ORG-000042`); gerçek değer her tüzel kişiliğin kaydındaki kısa kod alanından gelir (§5.4). Grup geneli kayıtta grup öneki (§5.3). |
 | `TÜR` | Kayıt türünün sabit öneki (§3 tablosu). |
 | `SAYAÇ` | En az **6 hane**, sıfırla doldurulmuş (`000042`). **Hiç sıfırlanmaz** (yıl, dönem, şirket değişimiyle). |
 
@@ -68,7 +69,7 @@ MOD-0290-FU04) bu aileye katılır, RCS-001 formatına değil (ÖNERİ §5.6).
 
 ---
 
-## 5. Notun açıkları ve CT önerileri (yönetim teyidine kadar varsayılan)
+## 5. Notun açıkları ve CT önerileri (sahip onayı 2026-10-07 — bağlayıcı)
 
 ### 5.1 Sayaç neye göre sayar — ÖNERİ
 Not "hiç sıfırlanmaz" diyor ama sayacın kapsamını söylemiyor.

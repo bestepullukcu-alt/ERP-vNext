@@ -42,6 +42,8 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
      | 8 | Required alan kontratı Backend Validator + Web ViewModel + Razor + tracker için aynı mı? | Evet/Hayır + required alan listesi + opsiyonel nullable alan listesi + ilk açılış progress beklentisi |
      | 9 | Platform lookup dependency checked mi? Dropdown/filter/select/default alanları PSS `/api/lookups/{key}` kullanıyor mu, yeni lookup key pack'te açık mı, MDM/reference boundary korunuyor mu? | Evet/Hayır/Yok + endpoint listesi veya gerekçe |
      | 10 | **Denetim kaydı (AUD-001):** Paketin `Audited Events` tablosu her yazma komutunu içeriyor mu; servisin denetim altyapısı var mı? | Evet/Hayır + komut → yol (a/b/c) ya da istisna sınıfı listesi + altyapının adı (yoksa: ENGEL) |
+     | 11 | **Kayıt kodu (RCS-001):** Kullanıcıya görünen kodu olan her kayıt türünün sınıfı (OTOMATİK / İKİSİ DE / KALSIN) ve öneki pakette yazılı mı; kod ortak hizmetten mi üretiliyor; İKİSİ DE türünde değişiklik gerekçesi denetim kaydına düşüyor mu? | Evet/Hayır + tür → sınıf · önek · üretici |
+     | 12 | **Başka modül (XMC-001):** Plan kapsam dışı bir modülde değişiklik gerektiriyor mu? Gerektiriyorsa kullanıcıya soruldu mu, cevap ne? | Yok / modül + cevap (a/b/c) |
 
    - **Onay Mekaniği:** Orchestrator, doldurulmuş tabloyu kullanıcıya `AskUserQuestion` ile (ya da CLI'da düz mesaj olarak) sunar ve "Onaylıyor musunuz?" sorusuyla bekler. **Kullanıcıdan açık `evet/onay/approved` cevabı alınmadan Phase 2'ye geçilemez.**
    - **Sapma Halinde:** Tek bir madde "Hayır" ise Phase 1'e dön, module pack ya da plan üzerinde düzelt; tabloyu yeniden doldur.

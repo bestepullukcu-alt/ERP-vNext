@@ -100,6 +100,7 @@ Pack gövdesi (21 zorunlu bölüm — `module-pack-standard.md` Bölüm 6):
 19. Implementation Notes
 20. Follow-up Items
 21. Audited Events — her yazma komutu → olay adı → yol (a/b/c) ya da istisna sınıfı + gerekçe (`module-pack-standard.md` Bölüm 10.1, AUD-001)
+22. Record Codes — kullanıcıya görünen kodu olan her kayıt türü → sınıf (OTOMATİK / İKİSİ DE / KALSIN) · tür öneki · üretici (ortak kod hizmeti) · İKİSİ DE ise gerekçe kaydı (RCS-001, `.antigravity/rules/record-coding-standard.md`)
 
 Kod üretimi için kullanıcı incelemesinden sonra status `approved` veya `ready-for-dev` yapılmalıdır.
 
@@ -125,6 +126,8 @@ Pack `ready-for-dev`'e geçmeden önce **Ready-for-dev Checklist** bölümündek
 - [ ] Acceptance criteria test edilebilir maddeler
 - [ ] Test expectations build/verifier/RESX/smoke kapsıyor
 - [ ] Audited Events tablosu her yazma komutunu tam bir kez içeriyor; servisin denetim altyapısı var ya da `Dependencies`'te engel olarak yazılı (AUD-001)
+- [ ] Record Codes tablosu kodlu her türü içeriyor; yeni önekler RCS-001 §3 tablosuna eklendi; modül kendi sayacını yazmıyor (RCS-001)
+- [ ] Kapsam dışı bir modülde değişiklik gerekiyorsa kullanıcıya soruldu ve cevap `Dependencies` / `Follow-up Items`'ta yazılı (XMC-001)
 
 
 ---
