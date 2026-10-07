@@ -35,7 +35,7 @@
 | MK-7 | Eczane sıklığı hesap politikasından; yoksa "dönemde 1" |
 | MK-8 | Günlük üst sınır dönem kapasitesinden türetilir |
 | MK-9 | Yarım gün kapasiteyi yarıya indirir (çalışma takvimi destekliyor) |
-| K-7 | ◐ **Karar bekliyor:** strateji şablonu olmadan planlama + temsilcinin ürün seçimi / taşıma / karışık sıra / ekleme → [karar belgesi](VISIT-PRODUCTS-without-play-decision.md) (K-7a…g) |
+| K-7 | ☑ **Kabul (2026-10-07):** oyunsuz planlama + ziyaretin ürün listesi (kaynak sırası oyun → temsilci seçimi → son ziyaret → portföy), karışık sıra, ekleme / çıkarma kuralları → [karar belgesi](VISIT-PRODUCTS-without-play-decision.md). Ekran: Ziyaret Planlama Hedefler + Haftalar (Faz 4, mockup eki [BRIEF-ADDENDUM-K7](mockups/visit-planning/BRIEF-ADDENDUM-K7-visit-products.md)), Planlanan Ziyaret (Faz 6), rapor (SB-3c). Veri modeli Faz 3. Ek konular (numune, amaç, ortak ziyaret, potansiyel, ürün sıklığı) Faz 6'da konuşulacak |
 | — | Tarih biçimi ("5 Oct, 26" tarzı) ve Rota sekmesinin tasarımı değişmez |
 
 ## İş listesi

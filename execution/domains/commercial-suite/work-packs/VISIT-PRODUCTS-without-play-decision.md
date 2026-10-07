@@ -34,7 +34,7 @@
 - Ürünün konusunda (Subject = ürün) dil / kitleye uyan **tek bir yayımlanmış yolculuk** varsa o kullanılır; aşama ilerlemesi aynı kuralla işler.
 - Birden fazla ya da hiç yoksa ürün **içeriksiz** gider ("yalnız ürün"; uyarı rozeti).
 
-## 3. Karar gereken sorular
+## 3. Kararlar — **kullanıcı tüm CT önerilerini kabul etti (2026-10-07)**; ek konular (§4) Planlanan Ziyaret / ziyaret raporu (Faz 6 / SB-3c) konuşulurken ele alınacak. Mockup güncellemesi: [BRIEF-ADDENDUM-K7](mockups/visit-planning/BRIEF-ADDENDUM-K7-visit-products.md)
 | # | Soru | CT önerisi |
 |---|---|---|
 | K-7a | Oyun olmadan planlama serbest mi? | **Evet.** Oyun yoksa temsilci ürün seçer. Hiç ürün seçilmezse ziyaret "yalnız rapor süresi" ile plana girer, uyarıyla. |
