@@ -8063,6 +8063,16 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-566
+
+**Ürün denetim niyetleri: ölü mektuba düşen niyeti yeniden sürecek bir araç yok; "Platform bu işlemi henüz eşlemiyor" beklemesi yalnız GP'nin üç işlemini kapsıyor (LSKU 82–86 ve FG 87+ aynı dağıtım sırası boşluğuna düşer)**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) · BULAN: WP-MDM-GP-BL552 akış 3 FIX1 raporu (risk 🟡) + CT · KAYIT: 2026-10-07
+
+GP akış 3 FIX1 (`1204887c3`) `AuditIntentDeliveryProcessor`'a sınırlı bir bekleme ekledi: Platform 409 + `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED` derse, YALNIZ GP'nin üç yeni işlemi (79/80/81) 2880 deneme (~1 gün, sayılı `AwaitingCentralMapping`) bekler; geri kalan her işlem ve her 409 eskisi gibi ölü mektup olur. İki açık: (1) **tekrar aracı yok** — MDM, Platform'dan önce dağıtılır ve bekleme süresi aşılırsa ya da bir operatör hatasıyla niyet ölü mektuba düşerse onu yeniden kuyruğa koyacak denetimli bir yol (CLI / iç uç, kiracı sınırlı, kuru koşu, denetim satırı) yok; kayıt kaybolmaz ama merkezi denetim izinde eksik kalır. (2) **bekleme listesi sabit kodlu** — LSKU'nun 82–86 ve FG'nin 87+ yeni işlemleri birleşince aynı dağıtım sırası boşluğuna düşer ve beklemeden ölü mektup olur. Öneri: liste "bu sürümün eklediği işlemler" tanımına bağlanır (tek kaynak: işlem eklerken aynı yerde işaretlenir, test eşitliği), LSKU / FG kabulünde genişletilir; tekrar aracı salt ölü mektup → bekliyor geçişi yapar, içeriği değiştirmez. Karşılaştırma: SAP'de qRFC / bgRFC kuyruğundaki hatalı birim SMQ1/SBGRFCMON'dan yeniden başlatılır; Oracle Integration'da hatalı örnek "resubmit" edilir — ikisinde de operatör yeniden sürer, içerik değişmez. Gelecek regresyon riski: 🟡 (LSKU / FG birleşince boşluk büyür; Platform önce dağıtılırsa yok).
+
+---
+
 ### BL-565
 
 **Kayıt kodu standardı (RCS-001) mevcut modüllerde uygulanmıyor: Organizasyon Birimi, Pozisyon, Tüzel Kişilik, Görev Türü, Abonelik Planı ve PPM kodları elle ve gerekçesiz; ortak kod üretici yok**
@@ -8073,7 +8083,7 @@ Yönetim kararı (RCS-001 §1–§4): `{ŞİRKET}-{TÜR}-{6+ hane, hiç sıfırl
 Girişim / Yatırım Dosyası ve Abonelik Planı İKİSİ DE (öneri + gerekçeli değişiklik, denetimli). Müşteri, Kampanya, Ürün ve Doküman KALSIN. Mevcut kodlar değişmez; yalnız yeni kayıtlar.
 Ölçüm (2026-10-07, `chore/ct-round-2`): hiçbiri uygulanmıyor. Kodlar elle; OrgUnit / Position / LE / Plan / PPM serbestçe ve gerekçesiz değiştirilebiliyor; Görev Türü değişmez ama öneri yok; ortak üretici yok
 (dört ayrı sayaç: CRM hesap, CRM kampanya, MDM ürün, Doküman); hiçbir yerde `MG-` yok; normalleştirici Türkçe harf bırakıyor (`SATI-BÖLÜMÜ-1`).
-Yapılacak: (1) yönetim teyidi: RCS-001 §5'teki 12 öneri, özellikle sayaç kapsamı, transferde kodun kalıcılığı, şirketsiz kayıtlar, şirket kısa kodu; (2) ortak kod üretme servisi
+Yapılacak: (1) ~~yönetim teyidi~~ sahip 2026-10-07'de RCS-001 §5'teki 12 öneriyi ONAYLADI (Türkçe harf yok; `MG` yalnız örnek) — sahipten kalan tek girdi: şirketlerin kısa kod listesi; (2) ortak kod üretme servisi
 (önek ayarı, atomik sayaç, öneri, gerekçe + denetim); (3) Tüzel Kişiliğe kısa kod alanı; (4) türlerin bağlanması: önce Organizasyon Birimi + Pozisyon (organizasyon verisi girişi buna bağlı),
 sonra Tüzel Kişilik / Görev Türü / Abonelik Planı, en son PPM (Codex sahibiyle). Ayrıca notta sayılmayan elle kodlu türler (Marka, MDM marka ürünü vb.) için sınıf kararı. Karşılaştırma: SAP'de
 numara aralıkları (SNRO) nesne + şirket kodu başına tanımlanır, iç / dış numaralama seçilir; Oracle Fusion'da "Document Sequences" kategori + iş birimi başına. Gelecek regresyon riski: 🟡 (her yeni
