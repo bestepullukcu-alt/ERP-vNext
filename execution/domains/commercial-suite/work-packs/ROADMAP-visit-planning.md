@@ -82,7 +82,7 @@ Plan: [E2E-TUTUKON-content-to-visit-plan.md](E2E-TUTUKON-content-to-visit-plan.m
 - ☑ E5 oyun — STR-TUTUKON-URO **v2 aktif** (segment E2E-TUT-SINDIRIM, ürün satırı → CEJ-2026-8AD806, sıklık vfp-2026-mi82xi); bulgular E5-B1..B3
 - ☑ E6 sıklık — `vfp-2026-mi82xi` aktif (ayda 2); bulgu E6-B1
 - ☑ E7 plan `a42373cb` + önizleme: **32 / 32 doktor `resolved`** (TUTUKON · CEJ-2026-8AD806 · Farkındalık → 2. ziyarette Pekiştirme · yol adımları); VP-FIX-2 düzenle-korur ✓; bulgular E7-B1 iki dal düzleşiyor, E7-B2 adım süresi yok, E7-B3 tek gün / sıklık aralığı, E7-B4 düzenle sonrası 404
-- ☐ E8 uygula
+- ☑ E8 uygula — 33 planlanan ziyaret, adlar + içerik kalemleri + köken (segment / oyun v2) dolu; bulgu E8-B1 onaysız + mesajsız uygula
 - ☐ E9 ziyaret raporu + yolculuk ilerlemesi
 - ☐ E10 sonraki aşama
 - ☐ E11 mobil örnek yanıtlar

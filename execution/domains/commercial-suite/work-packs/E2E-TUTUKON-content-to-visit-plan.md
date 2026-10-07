@@ -37,7 +37,7 @@ doktor → aktif segment → aktif oyun (STR-TUTUKON) → ürün satırı → ya
 | E5 ☑ | **Oyun:** STR-TUTUKON'un **yeni sürümü** — segment bağlaması `E2E-TUT-SINDIRIM`, ürün satırı TUTUKON → E4 yolculuğu, sıklık politikası → etkinleştir | CT (Beste) | Aktif oyun yeni segmente bağlı; eski sürüm "superseded" | ☐ |
 | E6 ☑ | **Sıklık:** TUTUKON segmenti için sıklık politikası (ör. dönemde 3) aktif mi; değilse `E2E-TUT-VFP` oluştur + etkinleştir | CT | Önizlemede `frequencyStatus = resolved` | ☐ |
 | E7 ☑ | **Plan:** Beste ile yeni taslak (aktif dönem, boş ilk hafta) → Hedefler'de bölge araması → uzmanlığı uygun 5–10 doktor + 1–2 eczane → Hedefleri kaydet → **Önizleme** | CT (Beste) | `contentStatus = resolved` (segment üyesi doktorlarda), içerik kalemleri (ürün, aşama, adımlar), süre tipik modelden; tatil / hafta sonu boş; bölge uyarısı yok | ☐ |
-| E8 | **Uygula** (haftanın planı) | CT (Beste) | Planlanan Ziyaretler'de kayıtlar, `contentItems` dolu, adlar görünür | ☐ |
+| E8 ☑ | **Uygula** (haftanın planı) | CT (Beste) | Planlanan Ziyaretler'de kayıtlar, `contentItems` dolu, adlar görünür | ☐ |
 | E9 | **Ziyaret Yürütme:** bir ziyareti aç → içerik / sunum bilgisi → sonucu kaydet → rapor gönder | CT (Beste) | Rapor kaydı; yolculuk ilerlemesi bir sonraki aşamaya geçer (SB-3b) | ☐ |
 | E10 | **Sonraki ziyaret:** aynı doktor için sonraki haftanın önizlemesi | CT | İçerik bir sonraki aşamadan gelir | ☐ |
 | E11 | **Mobil görünüm:** `resources/me`, planlanan ziyaret liste / detay, `my-accounts` yanıtlarını API'den kaydet | CT (salt okuma) | Mobil sözleşme notu için gerçek örnek yanıtlar | ☐ |
@@ -216,3 +216,17 @@ Yayın kontrol listesi tam: MLR onaylı, çıktı hazır, tüm içerikler yayın
 - **E7-B4 (hata):** Düzenle → Kaydet sonrası yönlendirme `/CRM/VisitPlanning/Details/true` → **404**. Kök: `form.js` güncellemede `r.body.data` (`true`) değerini kimlik sanıyor.
 - **E7-B5 (bilinen, Faz 4):** Yeni plan formunda geçmiş hafta (40) seçilebiliyor.
 - Önizleme öğesinde `frequencyStatus` alanı yok (planlanan ziyarette var).
+### E8 — Uygula (CT, 2026-10-07; Beste girişi) ☑
+**Yazma:** plan `a42373cb` → "Bu haftanın planı olarak kaydet" → oturum **committed**, **33 planlanan ziyaret** (`VP-a42373cb-0001…0033`).
+
+**Doğrulama (API, salt okuma):**
+- Ziyaretlerin hepsi `planned`, **33 / 33 hedef adı dolu**, 32 / 32 doktor ziyaretinde içerik kalemi var (eczane yok).
+- Örnek `VP-a42373cb-0018` HALİL ÖZARI · Ş. Hamidiye Etfal · 9 Kas 09:00–09:06 (6 dk):
+  - sıklık `resolved` `vfp-2026-mi82xi` 2 / ay;
+  - içerik `strategy` · yolculuk "E2E-TUT — TUTUKON sindirim konforu yolculuğu" · aşama **Pekiştirme** · kalem TUTUKON promo, 5 adım;
+  - köken: segment `E2E-TUT-SINDIRIM` + oyun v2, **sunucuda türetilmiş** (`selectionMode = recommended`).
+- Tarihler: 19 Eki (17) + 9 Kas (16).
+
+**Bulgular:**
+- **E8-B1:** "Bu haftanın planı olarak kaydet" **onay sormadan** uyguluyor ve **başarı mesajı göstermiyor**. Sayfa yenilenene kadar plan düzenlenebilir görünüyor (salt okunur bandı yok).
+- **E8-B2 (= E7-B3):** "Ayda 2" sıklıkta ikinci ziyaret 3 hafta sonra.
