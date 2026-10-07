@@ -132,6 +132,23 @@ public sealed class ProductLegalEntityScopeIntFix1Tests : IClassFixture<AuditInt
     }
 
     [Fact]
+    public async Task A_run_repairs_at_most_its_limit_of_in_scope_orphans()
+    {
+        // CT re-check (U2 survived): the handler, not the repository, now enforces Limit — three in-scope orphans on one
+        // page and Limit 2 repair exactly two; the third waits for the next run.
+        var world = new RepairWorld(ProductLegalEntityScopeRolloutMode.Enforced);
+        var first = world.Orphan(classified: true);
+        var second = world.Orphan(classified: true);
+        world.Orphan(classified: true);
+
+        var response = await world.Handler().Handle(new RepairLskuChildAdmissionsCommand(Limit: 2), default);
+
+        Assert.True(response.IsSuccessful, string.Join(",", response.Errors ?? []));
+        Assert.Equal([first.GskuId, second.GskuId], world.Released);
+        Assert.Equal((2, 2, 0), (response.Data!.Found, response.Data.Released, response.Data.OutOfScope));
+    }
+
+    [Fact]
     public async Task A_finished_good_orphan_is_repaired_by_the_same_scope_rule()
     {
         // FIX2 m6: the FG kind of the same repair (POST api/finished-goods/operator/child-admission-repairs).
