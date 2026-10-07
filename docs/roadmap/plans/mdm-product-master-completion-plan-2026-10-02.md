@@ -1,6 +1,6 @@
 # Ürün Ana Verisi Tamamlama Planı (MOD-0290)
 
-**Durum:** TASLAK — geliştirici onayı bekliyor · **Tarih:** 2026-10-02 · **Sahibi:** Control Tower (MDM ürün modülleri)
+**Durum:** TASLAK — Stok ekibi onayladı (2026-10-07, §4a); diğer ekipler bekleniyor · **Tarih:** 2026-10-02 · **Güncelleme:** 2026-10-07 · **Sahibi:** Control Tower (MDM ürün modülleri)
 **İş listesi:** BL-518 (bu plan) · BL-519 (elektronik imza) · BL-503 / BL-510 (denetim izi) · BL-502 (onay motoru)
 **Ölçüm kaynağı:** `feature/mdm/product-five-takeover` dalı, 2026-10-02
 
@@ -74,12 +74,77 @@ Toplam P1–P11: yaklaşık 13 paket ≈ 50 prompt; iki sohbet paralel çalış�
 **Bu planın dışında, ayrı modül olanlar:** ruhsat (RIM), pazar arz ataması, etiket / prospektüs yaşam döngüsü,
 üretim reçetesi (Ürün Ağacı ve Rotalar), dış sistem beslemeleri (ERP / PLM), stok defteri (MOD-0173).
 
+## 4a. Stok paketi — Stok ekibiyle uzlaşma (2026-10-07)
+
+Stok (MOD-0173 / MOD-0174, MVP-1) ekibinin "Inventory Capability Baseline" sayfası ve sorularımıza verdiği cevap. Ekip
+önerilerimizin hepsini kabul etti. Bu paket P1 + P2 + P6'nın stoğa dönük kısmını öne alır; kalan P paketleri yerinde.
+
+**Kararlar:**
+- **Kimlik (S1):** tek okuma sözleşmesi. Mevcut v1 yolları (`GET /products/{itemId}`, `/skus/{skuId}`,
+  `/skus/{skuId}/product`, `/skus/{skuId}/uom`, `POST /validate`) Kalem türünü de cevaplar. Yeni yollar eklenebilir,
+  eskilerin yerine geçmez.
+  - v1.1 (yalnız ekleme): `ItemKind` (`GlobalProduct` | `Item`), `SkuLevel`'e `Item`, Kalem'de `materialType`.
+  - Hammaddede kalem kimliği = SKU kimliği; SKU → kalem çözümlemesi (D-SKU-LINK) Kalem için kendisini döndürür.
+  - Stok ekibi kendi sözleşmelerine `skuLevel: Item` ekleyip DEC-INV-17'yi güncelleyecek.
+- **Bileşim (S2):** madde kaydı + ruhsat / etiket bileşimi MDM'de (Ürün Tanımı Sürümüne bağlı, P5 daraltıldı); parti
+  reçetesi MOD-0193 BOM'da (MVP-3 üretim), MDM kimliğine referansla. BOM sahibi kişi / dal: MVP-3'ten sorulacak.
+- **Görünürlük (S6):** Kalem kiracı genelinde. Bakiye ve hareket zaten şirket bazında (DEC-INV-18).
+- **Yaşam döngüsü (S5):**
+  - Taslak: hareket yok.
+  - Etkin: evet.
+  - Kullanım dışı: yeni giriş yok; mevcut stok çıkabilir, hurda / iade yapılabilir.
+  - Emekli: hareket yok.
+  - Her durumda ters kayıt kabul edilir.
+  - Stoğu sıfır olmayan kalem emekli yapılamaz: stok ekibinin uygunluk sorgusu çağrılır; ulaşılamazsa emekliye ayırma reddedilir.
+  - Sözleşmeye `Deactivated` ve `Retired` durumları eklemeyle girer.
+- **Bitmiş Ürünün üst kaydı (D-2):** GSKU. Bugünkü kod `FinishedGood.GskuId`; tutarlı kalır.
+- **GTIN (D-1):** Bitmiş Ürün satış kutusu düzeyinde gerekli (İTS karekodundaki (01)), stoklanan SKU'dan okunur. Koli / palet düzeyi MOD-0178 depo dalgasında (P9).
+
+**Alanlar (S3):**
+
+| Alan | Kalem | GSKU | Bitmiş Ürün | Not |
+|---|---|---|---|---|
+| `materialType` | gerekli | — | — | ACTIVE_INGREDIENT, EXCIPIENT, RAW_MATERIAL, PACKAGING_PRIMARY, PACKAGING_SECONDARY, INTERMEDIATE; mamul = Global Ürün (`ItemKind`) |
+| Temel birim | gerekli | gerekli | gerekli | stok her zaman temel birimde; MOD-0048'de yeni birim listesi (UN/ECE Rec 20: en az MGM, GRM, KGM, MLT, LTR, C62 + kutu / koli birimleri) |
+| Birim çevrimleri | gerekli | gerekli (kutu ↔ adet) | gerekli (koli ↔ kutu) | yönlü `{from, to, pay, payda}`, ondalık metin, yuvarlamasız; stok 4 adıma kadar zincirler |
+| GTIN | sonra | — | gerekli | satış kutusu |
+| Raf ömrü (gün) | gerekli | gerekli (ruhsatlı) | gerekli (GSKU'dan gelebilir) | SKT ve FEFO (MOD-0176) |
+| Yeniden test (gün) | gerekli | — | — | MOD-0175 kuyruğu |
+| Saklama koşulu | gerekli | gerekli | gerekli | MOD-0048 çoklu seçim listesi: 15–25°C, 2–8°C, ≤ −20°C, ışıktan koru, nemden koru |
+| Lot takibi | gerekli | gerekli | gerekli | |
+| Seri takibi | — | sonra | gerekli | pazara bağlı (İTS) → SKU düzeyinde (LSKU / Bitmiş Ürün); v1.1'de SKU düzeyi alan |
+| Stoklanabilir mi | gerekli | gerekli | gerekli | |
+| Sonra | tehlike sınıfı · CoA zorunlu mu · girişte varsayılan karantina | | | MOD-0175 |
+
+**Sözleşme ekleri (S4):**
+- stoklanabilir kalem / SKU araması (sayfalı, `q`); stoğun geçici "Model A seçici" rotası (W-UI-01) bununla kalkar;
+- toplu SKU okuma (kimlik listesi → kimlik + ad + kod).
+- Olay MVP-1'de gerekmez (stok her harekette canlı okur, ulaşamazsa reddeder).
+- **MDM 64 KB istek başlığını kabul eder:** gelen belirteçler ~35 KB.
+
+**Stok ekibinin isteği (R-07):** geliştirme kiracısında birkaç Global Ürün + GSKU / LSKU + 1 lot takipli + 1 seri
+takipli + 1 hammadde Kalem. Paylaşılan dev verisini sahip girer; CT betik / adımları verir. v1.1 hazır olunca stok
+ekibine "hazır" denir: Prism köprüsünü kaldırıp gerçek MDM'ye karşı G1 kimlik maddelerini kapatırlar.
+
+**Dilimler (S paketi, yaklaşık 8–10 prompt):**
+
+| # | Dilim | İçerik |
+|---|---|---|
+| S0 | Belge | Sözleşme v1.1 (yalnız ekleme) + MOD-0048 yeni listeler (birim, saklama koşulu, malzeme türü) + kalem paketi (MOD-0290-FU04) + denetlenen olaylar; dondurma |
+| S1 | Kalem sunucu çekirdeği | taslak / düzenle / kod (RCS-001 §4: ürün kimliği ailesi) / denetim; yaşam döngüsü durumları; emekliye ayırmada stok uygunluk denetimi |
+| S2 | Etkinleştirme onayı | MOD-0023, paylaşılan bağlantı noktası |
+| S3 | Stok davranışı alanları | GSKU / LSKU / Bitmiş Ürün: temel birim, çevrimler, raf ömrü, saklama, lot, seri (SKU düzeyi), stoklanabilir, Bitmiş Ürün GTIN'i |
+| S4 | Okuma sözleşmesi | mevcut 5 yolun Kalem'i cevaplaması, D-SKU-LINK, arama, toplu okuma, 64 KB başlık |
+| S5 | Ekranlar | **Kalemler** sayfası + GSKU / Bitmiş Ürün "Stok davranışı" bölümü; 7 dil, menü, Ctrl+K, yetkisiz yüz |
+| S6 | Birim çevrimi doğrulamaları | zincir, yönlü çevrim, ondalık hassasiyet (P2'nin stoğa dönük kısmı) |
+| S7 | Dev verisi + "hazır" | R-07 adımları (sahip girer) + stok ekibine bildirim |
+
 ## 5. Sıra
 
 | Faz | Paketler | Neden bu sırada |
 |---|---|---|
 | 1 | P0 | Kabul edilmemiş kodun üstüne yeni kod yazılmaz |
-| 2 | P1 + P2 | Stok ekibi kalem kimliğine bağlanmak zorunda; beklerse kendi kalem kaydını yazar ve iki ana veri oluşur |
+| 2 | **Stok paketi (§4a: S0–S7)** = P1 + P2 + P6'nın stoğa dönük kısmı | Stok ekibi G1 kimlik maddeleri için bekliyor ve hemen başlayabiliyor; beklerse kendi kalem kaydını yazar ve iki ana veri oluşur |
 | 3 | P3 → P4 → P5 | Bileşim sürüme bağlanır; sürüm kuralı olmadan bileşim değişikliği eski kaydın üzerine yazar |
 | 4 | P6 · P7 · P8 · P9 · P11 | Birbirinden bağımsız; iki sohbetle paralel |
 | 5 | P10 | Gerçek eski veri gelince |
@@ -124,7 +189,7 @@ konuşulacak.
 | # | Karar | Öneri |
 |---|---|---|
 | 1 | Sıra (§5) | Yukarıdaki gibi |
-| 2 | Bileşim bugün şirkette nerede tutuluyor? | Cevaba göre P5 "bizde girilir" ya da "dış kaynaktan beslenir" olur |
+| 2 | Bileşim bugün şirkette nerede tutuluyor? | Stok ekibiyle uzlaşıldı (§4a S2): ruhsat / etiket bileşimi MDM'de, parti reçetesi BOM'da. Kalan: ruhsat bileşimi bizde mi girilir yoksa dış kaynaktan mı beslenir |
 | 3 | Hangi onaylar imza ister? | §8 |
 | 4 | Marka tescilleri ve Görev Merkezi'nde "Marka tescili" görev türü | P8 içinde |
 
@@ -132,7 +197,7 @@ konuşulacak.
 
 | Kim | Alan | Onay / not | Tarih |
 |---|---|---|---|
-| | Stok (MOD-0173) | | |
+| Stok geliştiricisi (MVP-1) | Stok (MOD-0173) | S1–S8 kabul (§4a) | 2026-10-07 |
 | | Madde kaydı | | |
 | | CRM | | |
 | | Farmakovijilans | | |
