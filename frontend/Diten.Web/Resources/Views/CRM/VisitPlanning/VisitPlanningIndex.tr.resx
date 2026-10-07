@@ -178,4 +178,208 @@
   <data name="ReopenDone" xml:space="preserve"><value>Hafta yeniden açıldı; gerekçe kaydedildi.</value></data>
   <data name="ReopenUnavailable" xml:space="preserve"><value>Yeniden açma şu an kullanılamıyor.</value></data>
   <data name="DetailLoadError" xml:space="preserve"><value>Plan yüklenemedi.</value></data>
+  <data name="TargetsLockedBand" xml:space="preserve">
+    <value>Seçili hafta onaylı ya da geçmiş; hedefler burada salt okunur.</value>
+  </data>
+  <data name="AddOutOfTerritoryShort" xml:space="preserve">
+    <value>Bölge dışı ekle</value>
+  </data>
+  <data name="OutOfTerritoryDialogHint" xml:space="preserve">
+    <value>Buradan eklenen hesap "bölge dışı" rozetiyle işaretlenir.</value>
+  </data>
+  <data name="BulkApplyProducts" xml:space="preserve">
+    <value>Ürün uygula ({0})</value>
+  </data>
+  <data name="QuickFiltersLabel" xml:space="preserve">
+    <value>Hızlı filtreler</value>
+  </data>
+  <data name="QuickFilterAll" xml:space="preserve">
+    <value>Tümü</value>
+  </data>
+  <data name="QuickFilterDue" xml:space="preserve">
+    <value>Bu hafta görülmesi gerekenler</value>
+  </data>
+  <data name="QuickFilterNever" xml:space="preserve">
+    <value>Hiç görülmeyenler</value>
+  </data>
+  <data name="ColFrequency" xml:space="preserve">
+    <value>Sıklık</value>
+  </data>
+  <data name="ColDoneRemaining" xml:space="preserve">
+    <value>Yapılan / kalan</value>
+  </data>
+  <data name="ColLastVisit" xml:space="preserve">
+    <value>Son ziyaret</value>
+  </data>
+  <data name="ColProducts" xml:space="preserve">
+    <value>Ürünler</value>
+  </data>
+  <data name="LegendPromo" xml:space="preserve">
+    <value>tanıtım</value>
+  </data>
+  <data name="LegendNonPromo" xml:space="preserve">
+    <value>hatırlatma</value>
+  </data>
+  <data name="LegendPlay" xml:space="preserve">
+    <value>önerilen</value>
+  </data>
+  <data name="LegendLastVisit" xml:space="preserve">
+    <value>son ziyaret</value>
+  </data>
+  <data name="LegendRepPick" xml:space="preserve">
+    <value>sizin seçiminiz</value>
+  </data>
+  <data name="LegendPortfolio" xml:space="preserve">
+    <value>portföy</value>
+  </data>
+  <data name="NoApprovedContent" xml:space="preserve">
+    <value>Bu ürün için onaylı içerik yok</value>
+  </data>
+  <data name="FrequencyPerPeriod" xml:space="preserve">
+    <value>dönemde {0}</value>
+  </data>
+  <data name="FrequencyNone" xml:space="preserve">
+    <value>sıklık yok</value>
+  </data>
+  <data name="PlannedCountHint" xml:space="preserve">
+    <value>{0} planlı</value>
+  </data>
+  <data name="LastVisitNever" xml:space="preserve">
+    <value>hiç</value>
+  </data>
+  <data name="BadgeConsentBlocked" xml:space="preserve">
+    <value>İzin yok</value>
+  </data>
+  <data name="ConsentBlockedHint" xml:space="preserve">
+    <value>Ziyaret izni engelli; bu doktor seçilemez.</value>
+  </data>
+  <data name="BadgeInactive" xml:space="preserve">
+    <value>Pasif</value>
+  </data>
+  <data name="SegmentBadgeHint" xml:space="preserve">
+    <value>Segment (yalnız bilgi)</value>
+  </data>
+  <data name="SpecialtyAll" xml:space="preserve">
+    <value>Tüm uzmanlıklar</value>
+  </data>
+  <data name="SpecialtySelected" xml:space="preserve">
+    <value>{0} uzmanlık</value>
+  </data>
+  <data name="NoDoctorsForFilter" xml:space="preserve">
+    <value>Bu filtreye uyan doktor yok.</value>
+  </data>
+  <data name="AccountSelectedOf" xml:space="preserve">
+    <value>{0} / {1} seçili</value>
+  </data>
+  <data name="AccountSelectedCount" xml:space="preserve">
+    <value>{0} seçili</value>
+  </data>
+  <data name="AccountDueThisWeek" xml:space="preserve">
+    <value>{0} bu hafta</value>
+  </data>
+  <data name="EstimatedWeek" xml:space="preserve">
+    <value>Bu hafta ≈ {0} (ürünlere göre)</value>
+  </data>
+  <data name="EstimatedWeekShare" xml:space="preserve">
+    <value>haftalık süre: %{0}</value>
+  </data>
+  <data name="EstimatedOver" xml:space="preserve">
+    <value>Haftalık süre {0} aşılıyor.</value>
+  </data>
+  <data name="ProductDistribution" xml:space="preserve">
+    <value>Ürün dağılımı</value>
+  </data>
+  <data name="DoctorsWithoutProducts" xml:space="preserve">
+    <value>{0} seçili doktorda ürün yok.</value>
+  </data>
+  <data name="NoProductBadge" xml:space="preserve">
+    <value>ürün yok</value>
+  </data>
+  <data name="PickProducts" xml:space="preserve">
+    <value>Ürün seç</value>
+  </data>
+  <data name="EditProducts" xml:space="preserve">
+    <value>Ürünleri değiştir</value>
+  </data>
+  <data name="DoctorPanelPeriod" xml:space="preserve">
+    <value>Dönem görünümü</value>
+  </data>
+  <data name="RolePromo" xml:space="preserve">
+    <value>Tanıtım</value>
+  </data>
+  <data name="RoleNonPromo" xml:space="preserve">
+    <value>Hatırlatma</value>
+  </data>
+  <data name="ProductsS1Note" xml:space="preserve">
+    <value>Değişiklikler bu doktorun onaylanmamış sonraki ziyaretlerine uygulanır.</value>
+  </data>
+  <data name="ProductsBulkNote" xml:space="preserve">
+    <value>Seçtiğiniz ürünler {0} doktorun mevcut ürünlerine eklenir. Var olan ürünler korunur.</value>
+  </data>
+  <data name="ProductsSuggestedNote" xml:space="preserve">
+    <value>Önerilen ürünler sistemden gelir. Yanına ürün ekleyebilirsiniz. Önerilen bir ürünü çıkarmak yalnız tek ziyarette, Planlanan Ziyaret ekranında yapılır.</value>
+  </data>
+  <data name="ProductsNoneNote" xml:space="preserve">
+    <value>Bu doktor için ürün yok; ziyaret süresi hesaplanamıyor. Aşağıdan ürün seçin.</value>
+  </data>
+  <data name="PortfolioUndefinedNote" xml:space="preserve">
+    <value>Ürün portföyünüz tanımlı değil. Tüm ürünler listeleniyor.</value>
+  </data>
+  <data name="AllProducts" xml:space="preserve">
+    <value>Tüm ürünler</value>
+  </data>
+  <data name="ProductSearch" xml:space="preserve">
+    <value>Ürün adı ya da kodu ara</value>
+  </data>
+  <data name="ProductLimitLine" xml:space="preserve">
+    <value>Tanıtım {0} / {1} · Hatırlatma {2} / {3}</value>
+  </data>
+  <data name="DurationLine" xml:space="preserve">
+    <value>{0} tanıtım + {1} hatırlatma + rapor ≈ {2} dk</value>
+  </data>
+  <data name="DurationUnknown" xml:space="preserve">
+    <value>Ziyaret süresi hesaplanamıyor (dönem kapasitesi okunamadı).</value>
+  </data>
+  <data name="LimitExceeded" xml:space="preserve">
+    <value>Sınır aşıldı: ziyarette en fazla {0} tanıtım + {1} hatırlatma ürünü olabilir (dönem kapasitesi). Fazla ürünler ziyarete sığmayabilir.</value>
+  </data>
+  <data name="PlayLimitFull" xml:space="preserve">
+    <value>Sınır dolu — eklediğiniz ürün sığmıyor, sonraki ziyarete kalır.</value>
+  </data>
+  <data name="SuggestedLockHint" xml:space="preserve">
+    <value>Önerilen ürün; yalnız Planlanan Ziyaret ekranında çıkarılabilir</value>
+  </data>
+  <data name="NoProductMatches" xml:space="preserve">
+    <value>Aramaya uyan ürün yok.</value>
+  </data>
+  <data name="ProductsDone" xml:space="preserve">
+    <value>Tamam</value>
+  </data>
+  <data name="ApplyToSelected" xml:space="preserve">
+    <value>Seçili {0} doktora uygula</value>
+  </data>
+  <data name="BulkLimitExceeded" xml:space="preserve">
+    <value>{0} doktorda sınır aşıldı; fazla ürünler sonraki ziyarete kalır.</value>
+  </data>
+  <data name="ProductsSaved" xml:space="preserve">
+    <value>Ürünler kaydedildi.</value>
+  </data>
+  <data name="ProductsUnavailable" xml:space="preserve">
+    <value>Ürün listesi şu anda okunamıyor.</value>
+  </data>
+  <data name="RulesTitle" xml:space="preserve">
+    <value>Ziyaretin ürün listesi nasıl oluşur?</value>
+  </data>
+  <data name="RuleSourceOrder" xml:space="preserve">
+    <value>Her ziyaretin ürün listesi sırayla dolar: önerilen ürünler → sizin seçiminiz → son ziyarette sunulanlar → ürün portföyünüz. Ziyaret süresi bu listeden hesaplanır.</value>
+  </data>
+  <data name="RuleMixedOrder" xml:space="preserve">
+    <value>Karışık sıra: sonraki ziyaretlerde aynı ürün seti, sırası bir kayarak gelir (A, B, C → B, C, A).</value>
+  </data>
+  <data name="RuleOverflow" xml:space="preserve">
+    <value>Ziyaretin sınırına sığmayan ürün doktorun sonraki ziyaretine kalır.</value>
+  </data>
+  <data name="RuleUnknownFrequency" xml:space="preserve">
+    <value>Sıklığı bilinmeyen hedef "dönemde 1" sayılır ve sıklık yok rozetiyle gösterilir.</value>
+  </data>
 </root>

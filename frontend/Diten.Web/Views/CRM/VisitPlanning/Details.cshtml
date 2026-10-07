@@ -214,9 +214,12 @@
                     }
                 </div>
 
+                @* WP-VP-4C (5) — shown by details.js while an approved / past week is selected: the targets are read-only. *@
+                <div id="vp-targets-locked" class="alert alert-info py-2 small mb-3 d-none" role="status"><i class="bx bx-lock-alt me-1"></i>@Localizer["TargetsLockedBand"]</div>
+
                 <div class="row g-4">
                     @* ── LEFT — target clinics / hospitals ── *@
-                    <div class="col-12 col-lg-4" id="vp-accounts-col">
+                    <div class="col-12 col-lg-3" id="vp-accounts-col">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <label class="form-label fw-medium mb-0">@Localizer["AccountsPanel"]</label>
                             <span class="badge bg-label-secondary" id="vp-accounts-count">—</span>
@@ -225,12 +228,13 @@
                         <div id="vp-territory-banner" class="alert alert-warning py-2 small mb-2 d-none" role="status"><i class="bx bx-error me-1"></i>@Localizer["TerritoryUnassignedBanner"]</div>
                         @if (Model.CanGenerate)
                         {
-                            <div class="mb-2">
-                                <select id="vp-add-account" class="form-select form-select-sm select2" data-placeholder="@Localizer["AddAccount"]"><option value=""></option></select>
-                            </div>
-                            @* WP-VP-2 (B-2) — the whole-tenant search, kept apart; an account added here carries an out-of-territory badge. *@
-                            <div class="mb-2">
-                                <select id="vp-add-account-out" class="form-select form-select-sm select2" data-placeholder="@Localizer["AddOutOfTerritory"]"><option value=""></option></select>
+                            <div id="vp-add-account-wrap">
+                                <div class="mb-2">
+                                    <select id="vp-add-account" class="form-select form-select-sm select2" data-placeholder="@Localizer["AddAccount"]"><option value=""></option></select>
+                                </div>
+                                @* WP-VP-4C (1) — "Add out-of-territory" opens a dialog with the whole-tenant search (WP-VP-2 B-2 flow kept):
+                                   an account added there carries the out-of-territory badge. *@
+                                <button type="button" class="btn btn-sm btn-label-warning w-100 mb-2" id="vp-out-territory-open" data-bs-toggle="modal" data-bs-target="#vp-out-territory-modal"><i class="bx bx-map-pin me-1"></i>@Localizer["AddOutOfTerritoryShort"]</button>
                             </div>
                         }
                         <div class="card-datatable table-responsive">
@@ -247,7 +251,7 @@
                     </div>
 
                     @* ── MIDDLE — selected account: doctors / linked-pharmacies sub-tabs ── *@
-                    <div class="col-12 col-lg-5 d-none" id="vp-contacts-panel">
+                    <div class="col-12 col-lg-6 d-none" id="vp-contacts-panel">
                         <div class="text-muted text-uppercase small mb-1">@Localizer["SelectedAccount"]</div>
                         <h5 class="mb-1" id="vp-contacts-for">—</h5>
                         <div class="text-muted small mb-3" id="vp-contacts-meta">—</div>
@@ -271,18 +275,44 @@
                                     {
                                         <button type="button" class="btn btn-sm btn-label-secondary" id="vp-select-all-doctors"><i class="bx bx-check-double me-1"></i>@Localizer["SelectAllDoctors"]</button>
                                     }
+                                    @* WP-VP-4C (4) — bulk product apply: the picker in bulk mode for the selected doctors (targets.js). *@
+                                    @if (Model.CanGenerate)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-label-primary" id="vp-bulk-products" disabled><i class="bx bx-package me-1"></i><span id="vp-bulk-products-label">@Localizer["BulkApplyProducts"]</span></button>
+                                    }
                                 </div>
-                                <div class="d-flex align-items-center gap-2 flex-wrap mb-3" id="vp-specialty-pills"></div>
+                                @* WP-VP-4C (2) — quick filters (the server's quick=due|never|all) + the counted specialty multi-select. *@
+                                <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+                                    <div class="btn-group btn-group-sm" role="group" id="vp-quick-filters" aria-label="@Localizer["QuickFiltersLabel"]">
+                                        <button type="button" class="btn btn-outline-primary vp-quick active" data-quick="all" aria-pressed="true">@Localizer["QuickFilterAll"]</button>
+                                        <button type="button" class="btn btn-outline-primary vp-quick" data-quick="due" aria-pressed="false">@Localizer["QuickFilterDue"]</button>
+                                        <button type="button" class="btn btn-outline-primary vp-quick" data-quick="never" aria-pressed="false">@Localizer["QuickFilterNever"]</button>
+                                    </div>
+                                    <div id="vp-specialty-pills"></div>
+                                </div>
                                 <div class="card-datatable table-responsive">
                                     <table id="dt-vp-contacts" class="table border-top">
                                         <thead><tr>
                                             <th>@Localizer["ColSelected"]</th>
                                             <th>@Localizer["ColContact"]</th>
                                             <th>@Localizer["ColSpecialty"]</th>
+                                            <th>@Localizer["ColFrequency"]</th>
+                                            <th>@Localizer["ColDoneRemaining"]</th>
+                                            <th>@Localizer["ColLastVisit"]</th>
+                                            <th>@Localizer["ColProducts"]</th>
                                         </tr></thead>
                                     </table>
                                 </div>
                                 <div class="form-text" id="vp-contacts-hint">@Localizer["PickAccountForContacts"]</div>
+                                @* WP-VP-4C (4) — what the product chips mean: colour = role, icon = where the product came from. *@
+                                <div class="d-flex align-items-center gap-3 flex-wrap small text-muted mt-2" id="vp-products-legend">
+                                    <span><span class="badge rounded-pill bg-label-primary">A</span> @Localizer["LegendPromo"]</span>
+                                    <span><span class="badge rounded-pill bg-transparent border text-body">B</span> @Localizer["LegendNonPromo"]</span>
+                                    <span><i class="bx bx-bulb"></i> @Localizer["LegendPlay"]</span>
+                                    <span><i class="bx bx-history"></i> @Localizer["LegendLastVisit"]</span>
+                                    <span><i class="bx bx-user-check"></i> @Localizer["LegendRepPick"]</span>
+                                    <span><i class="bx bx-error text-warning"></i> @Localizer["NoApprovedContent"]</span>
+                                </div>
                             </div>
                             <div class="tab-pane fade" id="vp-subtab-pharm" role="tabpanel">
                                 <div id="vp-pharmacies" class="d-flex flex-column gap-2"></div>
@@ -300,6 +330,9 @@
                                     <div class="col-4"><h4 class="mb-0" id="vp-sum-pharm">0</h4><small class="opacity-75">@Localizer["StatPharmacies"]</small></div>
                                     <div class="col-4"><h4 class="mb-0" id="vp-sum-accounts">0</h4><small class="opacity-75">@Localizer["StatAccounts"]</small></div>
                                 </div>
+                                @* WP-VP-4C (3) — this week's estimated time (by products) + its share of the week, the product distribution
+                                   and the doctors without a product — from the plan's preview (targets.js). *@
+                                <div id="vp-sum-extra" class="small mt-3"></div>
                             </div>
                         </div>
                         <div class="card">
@@ -317,6 +350,19 @@
                     </div>
                 </div>
                 <div class="form-text mt-2" id="vp-targets-status"></div>
+
+                @* WP-VP-4C (4) — the rules box: how a visit's product list fills (source order) and the mixed order. *@
+                <div class="border rounded p-3 mt-3" id="vp-product-rules">
+                    <button type="button" class="btn btn-sm btn-text-secondary p-0 fw-medium" data-bs-toggle="collapse" data-bs-target="#vp-product-rules-body" aria-expanded="false" aria-controls="vp-product-rules-body"><i class="bx bx-info-circle me-1"></i>@Localizer["RulesTitle"]</button>
+                    <div class="collapse" id="vp-product-rules-body">
+                        <ul class="small text-muted mb-0 mt-2 ps-3">
+                            <li>@Localizer["RuleSourceOrder"]</li>
+                            <li>@Localizer["RuleMixedOrder"]</li>
+                            <li>@Localizer["RuleOverflow"]</li>
+                            <li>@Localizer["RuleUnknownFrequency"]</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -420,11 +466,35 @@
             </div>
         </div>
     }
+
+    @* WP-VP-4C (1) — "Add out-of-territory": the whole-tenant account search in a dialog (WP-VP-2 B-2 flow kept); an
+       account added here is badged out-of-territory. *@
+    @if (Model.CanGenerate)
+    {
+        <div class="modal fade" id="vp-out-territory-modal" tabindex="-1" aria-labelledby="vp-out-territory-title" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="vp-out-territory-title">@Localizer["AddOutOfTerritory"]</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning py-2 small mb-3" role="note"><i class="bx bx-error me-1"></i>@Localizer["OutOfTerritoryDialogHint"]</div>
+                        <select id="vp-add-account-out" class="form-select form-select-sm select2" data-placeholder="@Localizer["AddOutOfTerritory"]"><option value=""></option></select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 @if (Model.CanGenerate)
 {
     <partial name="~/Views/CRM/VisitPlanning/_NewPlanDrawer.cshtml" />
+    <partial name="~/Views/CRM/VisitPlanning/_DoctorPanel.cshtml" />
 }
 
 @section Styles {
@@ -443,4 +513,5 @@
     <script src="~/assets/js/CRM/VisitPlanning/details.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitPlanning/header.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitPlanning/new-plan.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitPlanning/targets.js" asp-append-version="true"></script>
 }

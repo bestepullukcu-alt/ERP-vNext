@@ -22,6 +22,11 @@
     // WP-VP-FIX-1 (D2) — committed / archived: the server already switched every write flag off; this also stops the
     // route from being re-ordered (drag / arrows / map markers), which would only show an order that cannot be saved.
     const readOnly = root.dataset.readOnly === 'true';
+    // WP-VP-4C (5) — the Targets tab follows the selected week (4B state): an approved or past week (or a legacy plan)
+    // shows the targets read-only — no tick, no add / remove, no save. targets.js reads the same rule.
+    const LOCKED_WEEK_STATUSES = ['approved', 'past'];
+    const targetsLocked = () => readOnly || !!(page && (page.isLegacy() || LOCKED_WEEK_STATUSES.indexOf(page.weekStatus(page.state.weekStart)) > -1));
+    const canEditTargets = () => canGenerate && !targetsLocked();
 
     const WORK_START = 9 * 60, WORK_END = 18 * 60;
     const CLINIC_TYPES = ['clinic', 'hospital'];
@@ -823,6 +828,10 @@
         page.on('week-change', e => { if (e && e.source !== 'route' && lastPreview) followPageWeek(e.weekStart); });
         page.on('request:approve-week', () => apply());
         page.on('request:save-targets', () => saveTargets());
+        // WP-VP-4C — a doctor's product pick was written (targets.js): re-read the plan + preview; the local, unsaved
+        // target selection is not re-seeded.
+        page.on('request:reload-plan', () => loadSession().then(preview));
+        ['week-change', 'session', 'preview'].forEach(evt => page.on(evt, () => applyTargetsLock()));
         page.on('request:generate-route', () => preview().then(() => {
             const btn = el('vp-tab-route-btn'); if (btn && window.bootstrap) try { window.bootstrap.Tab.getOrCreateInstance(btn).show(); } catch (e) { /* no-op */ }
         }));
@@ -918,7 +927,7 @@
         sel.dataset.ajaxInit = '1';
         if (!sel.querySelector('option')) { sel.innerHTML = '<option value=""></option>'; }
         $s.select2({
-            width: '100%', dropdownParent: window.jQuery(document.body), placeholder: sel.dataset.placeholder || '',
+            width: '100%', dropdownParent: window.jQuery(sel.closest('.modal') || document.body), placeholder: sel.dataset.placeholder || '',
             minimumInputLength: 1,
             ajax: {
                 delay: 250,
@@ -955,10 +964,10 @@
         buttons: [], // inline picker: no Action dropdown / column-visibility toolbar
         columns: [{ data: 'name' }, { data: 'type' }, { data: 'city' }, { data: null }],
         columnDefs: [
-            { targets: 0, render: (v, t, row) => t === 'display' ? '<span class="fw-medium text-heading">' + esc(v) + '</span>' + outBadge(row) : (v || '') },
+            { targets: 0, render: (v, t, row) => t === 'display' ? '<span class="fw-medium text-heading">' + esc(v) + '</span>' + outBadge(row) + '<div class="text-muted small vp-acc-stats" data-aid="' + esc(row.id) + '">' + esc(accountStatsText(row.id)) + '</div>' : (v || '') },
             { targets: 1, render: (v, t) => t === 'display' ? (v ? '<span class="badge bg-label-info">' + esc(typeLabel(v)) + '</span>' : '—') : (v || '') },
             { targets: 2, render: v => esc(v || '—') },
-            { targets: 3, orderable: false, searchable: false, className: 'cell-fit text-end', render: (v, t, row) => canGenerate ? '<button type="button" class="btn btn-sm btn-icon btn-label-danger js-remove-account" data-id="' + esc(row.id) + '" title="' + esc(L.RemoveTarget || 'Remove') + '"><i class="bx bx-x"></i></button>' : '' }
+            { targets: 3, orderable: false, searchable: false, className: 'cell-fit text-end', render: (v, t, row) => canEditTargets() ? '<button type="button" class="btn btn-sm btn-icon btn-label-danger js-remove-account" data-id="' + esc(row.id) + '" title="' + esc(L.RemoveTarget || 'Remove') + '"><i class="bx bx-x"></i></button>' : '' }
         ],
         language: { emptyTable: L.NoTargetAccounts || '—' }
     });
@@ -983,29 +992,50 @@
     const prettify = s => String(s || '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/\b\w/g, ch => ch.toUpperCase());
     // Specialty: the medical-specialty label; a value the set does not know keeps its stored text (prettified as before).
     const specLabel = code => code ? (labelOf(specLabels, code) || prettify(code)) : '';
+    // WP-VP-4C (2) — the doctor's period status (3D): frequency ("N in the period" / no-frequency badge), done / remaining,
+    // last visit (the route's date format), and read-only badges: consent blocked (cannot be ticked), inactive, segment
+    // names (information only, K-4). No link column. Column 6 is the picks cell targets.js fills after each draw.
+    const dayShort = value => { const d = new Date(value); return isNaN(d) ? '—' : d.getDate() + ' ' + d.toLocaleDateString('en-US', { month: 'short' }) + ', ' + String(d.getFullYear()).slice(-2); };
+    const hasFrequency = st => st.requiredVisitCount != null && st.frequencyStatus !== 'unknown';
+    const frequencyCell = st => hasFrequency(st)
+        ? esc((L.FrequencyPerPeriod || '{0}').replace('{0}', st.requiredVisitCount))
+        : '<span class="badge bg-label-secondary">' + esc(L.FrequencyNone || '—') + '</span>';
+    const doneCell = st => '<span title="' + esc((L.PlannedCountHint || '{0}').replace('{0}', st.planned || 0)) + '">' + (st.done || 0) + ' / ' + (st.remaining != null ? st.remaining : '—') + '</span>';
+    const lastVisitCell = st => st.lastVisitDate ? esc(dayShort(st.lastVisitDate)) : '<span class="text-muted">' + esc(L.LastVisitNever || '—') + '</span>';
+    const doctorBadges = row => (row.blocked ? ' <span class="badge bg-label-danger" title="' + esc(L.ConsentBlockedHint || '') + '">' + esc(L.BadgeConsentBlocked || '') + '</span>' : '') +
+        (row.inactive ? ' <span class="badge bg-label-secondary">' + esc(L.BadgeInactive || '') + '</span>' : '') +
+        (row.status.segmentBadges || []).map(name => ' <span class="badge bg-label-info" title="' + esc(L.SegmentBadgeHint || '') + '">' + esc(name) + '</span>').join('');
     const contactsConfig = list => ({
         data: list, stateSave: false, searching: true, paging: true, pageLength: 10, lengthChange: false, info: true,
         buttons: [], // inline picker: no Action dropdown / column-visibility toolbar
-        columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }], // WP-VP-2 (D4) — no link-GUID column
+        columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }, { data: null }, { data: null }, { data: null }, { data: null }], // WP-VP-2 (D4) — no link-GUID column
         columnDefs: [
-            { targets: 0, orderable: false, className: 'cell-fit', render: (v, t, row) => '<div class="form-check mb-0"><input class="form-check-input js-contact-check" type="checkbox" data-cid="' + esc(row.contactId) + '"' + (selectedContacts[selKey(activeAccountId, row.contactId)] ? ' checked' : '') + (canGenerate ? '' : ' disabled') + '></div>' },
-            { targets: 1, render: (v, t) => t === 'display' ? '<span class="fw-medium">' + esc(v) + '</span>' : (v || '') },
-            { targets: 2, render: (v, t) => t === 'display' ? (v ? '<span class="badge bg-label-info">' + esc(specLabel(v)) + '</span>' : '—') : (v || '') }
+            { targets: 0, orderable: false, className: 'cell-fit', render: (v, t, row) => '<div class="form-check mb-0"><input class="form-check-input js-contact-check" type="checkbox" data-cid="' + esc(row.contactId) + '"' + (selectedContacts[selKey(activeAccountId, row.contactId)] ? ' checked' : '') + (canEditTargets() && !row.blocked ? '' : ' disabled') + (row.blocked ? ' title="' + esc(L.ConsentBlockedHint || '') + '"' : '') + '></div>' },
+            { targets: 1, render: (v, t, row) => t === 'display' ? '<span class="fw-medium">' + esc(v) + '</span>' + doctorBadges(row) : (v || '') },
+            { targets: 2, render: (v, t) => t === 'display' ? (v ? '<span class="badge bg-label-info">' + esc(specLabel(v)) + '</span>' : '—') : (v || '') },
+            { targets: 3, searchable: false, render: (v, t, row) => t === 'display' ? frequencyCell(row.status) : (hasFrequency(row.status) ? row.status.requiredVisitCount : -1) },
+            { targets: 4, searchable: false, render: (v, t, row) => t === 'display' ? doneCell(row.status) : (row.status.remaining != null ? row.status.remaining : -1) },
+            { targets: 5, searchable: false, render: (v, t, row) => t === 'display' ? lastVisitCell(row.status) : (row.status.lastVisitDate ? new Date(row.status.lastVisitDate).getTime() : 0) },
+            { targets: 6, orderable: false, searchable: false, render: (v, t, row) => '<div class="vp-doc-picks" data-cid="' + esc(row.contactId) + '" data-aid="' + esc(activeAccountId) + '" data-lid="' + esc(row.linkId || '') + '" data-name="' + esc(row.name) + '" data-spec="' + esc(specLabel(row.specialty)) + '"></div>' }
         ],
-        language: { emptyTable: L.PickAccountForContacts || '—' }
+        language: { emptyTable: activeAccountId ? (L.NoDoctorsForFilter || '—') : (L.PickAccountForContacts || '—'), zeroRecords: L.NoDoctorsForFilter || '—' }
     });
 
     const renderContactsDt = list => {
         const tableEl = el('dt-vp-contacts'); if (!tableEl) return;
         if (contactsDt) { contactsDt.destroy(); contactsDt = null; tableEl.querySelector('tbody')?.remove(); }
         contactsDt = new DataTable(tableEl, window.DtDefaults?.create ? window.DtDefaults.create(contactsConfig(list)) : contactsConfig(list));
+        // WP-VP-4C — every draw tells targets.js to fill the picks cells of the visible rows.
+        const drawn = () => { if (page) page.emit('targets:doctors-drawn', { accountId: activeAccountId }); };
+        contactsDt.on('draw', drawn); drawn();
         if (!tableEl.dataset.bound) {
             tableEl.dataset.bound = '1';
             tableEl.addEventListener('change', e => {
                 const cb = e.target.closest('.js-contact-check'); if (!cb || !activeAccountId) return;
                 const cid = cb.dataset.cid; const k = selKey(activeAccountId, cid);
                 if (cb.checked) {
-                    const c = (contactsByAccount[activeAccountId] || []).find(x => x.contactId === cid);
+                    const c = findDoctor(activeAccountId, cid);
+                    if (!canEditTargets() || (c && c.blocked)) { cb.checked = false; return; } // consent blocked: never a target
                     selectedContacts[k] = { contactId: cid, accountId: activeAccountId, accountContactLinkId: (c && c.linkId) || null };
                 } else { delete selectedContacts[k]; }
                 refreshTargetsUi();
@@ -1030,6 +1060,53 @@
             });
             contactsByAccount[accountId] = list; return list;
         }).catch(() => { contactsByAccount[accountId] = []; return []; });
+    };
+
+    // WP-VP-4C (2) — an institution's doctors WITH their period status (3D: GET my-accounts/{id}/doctors), one read per
+    // (account, quick filter) — quick = all | due (due this week) | never (never visited) is the server's filter. The
+    // "all" read also gives the account row its "x / y selected · N this week". A failed read is not cached.
+    const QUICK_FILTERS = ['all', 'due', 'never'];
+    let activeQuick = 'all';
+    const doctorRows = {};   // "accountId|quick" -> [{ contactId, name, specialty, linkId, status, blocked, inactive }]
+    const accountStats = {}; // accountId -> { active, due }
+    const doctorRow = d => {
+        const status = d.status || {};
+        return {
+            contactId: d.contactId, name: d.displayName || '—', specialty: d.specialty || '', linkId: d.accountContactLinkId || null,
+            status, blocked: String(status.consentStatus || '').toLowerCase() === 'blocked', inactive: !!status.inactive
+        };
+    };
+    const fetchAccountDoctors = (accountId, quick) => {
+        const key = accountId + '|' + quick;
+        if (doctorRows[key]) return Promise.resolve(doctorRows[key]);
+        return api('/my-accounts/' + accountId + '/doctors?planningSessionId=' + encodeURIComponent(sessionId) + '&quick=' + quick + '&pageSize=200').then(r => {
+            const d = r.ok && r.body && r.body.data;
+            if (!d) return [];
+            const rows = (Array.isArray(d.items) ? d.items : []).map(doctorRow);
+            if (quick === 'all') accountStats[accountId] = { active: d.totalCount != null ? d.totalCount : rows.length, due: rows.filter(x => x.status.dueThisWeek).length };
+            doctorRows[key] = rows; return rows;
+        }).catch(() => []);
+    };
+    const findDoctor = (aid, cid) => {
+        for (let i = 0; i < QUICK_FILTERS.length; i++) {
+            const hit = (doctorRows[aid + '|' + QUICK_FILTERS[i]] || []).find(x => x.contactId === cid);
+            if (hit) return hit;
+        }
+        return (contactsByAccount[aid] || []).find(x => x.contactId === cid) || null;
+    };
+    // "x / y selected · N this week" — y = the account's active doctors, N = those due this week (both from the "all" read).
+    const accountStatsText = id => {
+        const sel = Object.keys(selectedContacts).filter(k => k.indexOf(id + '|') === 0).length;
+        const st = accountStats[id];
+        const head = st ? (L.AccountSelectedOf || '{0} / {1}').replace('{0}', sel).replace('{1}', st.active) : (L.AccountSelectedCount || '{0}').replace('{0}', sel);
+        return st && st.due ? head + ' · ' + (L.AccountDueThisWeek || '{0}').replace('{0}', st.due) : head;
+    };
+    const paintAccountStats = () => document.querySelectorAll('#dt-vp-accounts .vp-acc-stats').forEach(n => { n.textContent = accountStatsText(n.dataset.aid); });
+    // Every target institution's counts load in the background, three reads at a time.
+    const loadAccountStats = () => {
+        const queue = targetAccounts.map(a => a.id).filter(id => !accountStats[id]);
+        const next = () => { const id = queue.shift(); return id ? fetchAccountDoctors(id, 'all').then(() => { paintAccountStats(); return next(); }) : Promise.resolve(); };
+        return Promise.all([next(), next(), next()]);
     };
 
     // Fetch (and cache) a clinic/hospital's linked PHARMACIES from the Account-360 related-accounts projection. Only
@@ -1078,7 +1155,7 @@
                 const src = accountSource.find(a => a.id === p.id) || {};
                 const addr = src.addr || '';
                 return '<div class="col-12 col-md-6"><label class="vp-pharm-card d-flex gap-2 p-3 h-100' + (on ? ' vp-pharm-card--on' : '') + '">' +
-                    '<input class="form-check-input mt-0 flex-shrink-0 js-pharmacy-check" type="checkbox" data-pid="' + esc(p.id) + '" data-pname="' + esc(p.name) + '"' + (on ? ' checked' : '') + (canGenerate ? '' : ' disabled') + '>' +
+                    '<input class="form-check-input mt-0 flex-shrink-0 js-pharmacy-check" type="checkbox" data-pid="' + esc(p.id) + '" data-pname="' + esc(p.name) + '"' + (on ? ' checked' : '') + (canEditTargets() ? '' : ' disabled') + '>' +
                     '<span style="min-width:0" class="flex-grow-1">' +
                     '<span class="d-flex align-items-center gap-2 flex-wrap mb-1"><span class="fw-medium text-truncate">' + esc(p.name) + '</span>' + (p.relType ? '<span class="badge bg-label-warning text-uppercase">' + esc(p.relType) + '</span>' : '') + '</span>' +
                     '<span class="text-muted small d-block text-truncate vp-pharm-addr" data-pid="' + esc(p.id) + '">' + esc(addr || '—') + '</span>' +
@@ -1093,15 +1170,15 @@
 
     // ── Selection summary (right column): counts + removable chips + header subtitle ──
     // WP-VP-2 (B-8) — names come from the loaded doctors or, before that, from the session's read-time names; never a GUID.
-    const savedContactNames = {}, savedAccountNames = {};
-    const cName = (aid, cid) => { const c = (contactsByAccount[aid] || []).find(x => x.contactId === cid); return c ? c.name : (savedContactNames[cid] || '—'); };
+    const savedContactNames = {}, savedAccountNames = {}, savedContactSpecs = {};
+    const cName = (aid, cid) => { const c = findDoctor(aid, cid); return c ? c.name : (savedContactNames[cid] || '—'); };
     const aName = aid => { const a = targetAccounts.find(x => x.id === aid) || accountSource.find(x => x.id === aid); return (a && a.name && a.name !== aid) ? a.name : (savedAccountNames[aid] || '—'); };
-    const cSpec = (aid, cid) => { const c = (contactsByAccount[aid] || []).find(x => x.contactId === cid); return c ? c.specialty : ''; };
+    const cSpec = (aid, cid) => { const c = findDoctor(aid, cid); return c ? c.specialty : (savedContactSpecs[cid] || ''); };
     const chip = (kind, attr, title, sub) =>
         '<div class="d-flex align-items-center gap-2 vp-selchip" data-kind="' + kind + '" ' + attr + '>' +
         '<span class="flex-grow-1" style="min-width:0"><span class="fw-medium small d-block text-truncate">' + esc(title) + '</span>' +
         (sub ? '<span class="text-muted" style="font-size:.72rem;">' + esc(sub) + '</span>' : '') + '</span>' +
-        (canGenerate ? '<button type="button" class="btn btn-icon btn-text-secondary vp-selchip-x flex-shrink-0" aria-label="remove"><i class="bx bx-x"></i></button>' : '') + '</div>';
+        (canEditTargets() ? '<button type="button" class="btn btn-icon btn-text-secondary vp-selchip-x flex-shrink-0" aria-label="remove"><i class="bx bx-x"></i></button>' : '') + '</div>';
     const renderSelectionChips = () => {
         const host = el('vp-selection-chips'); if (!host) return;
         // Grouped by account: the institution heads its doctors (name · specialty); pharmacies close the list.
@@ -1121,25 +1198,51 @@
         const acc = targetAccounts.find(a => a.id === activeAccountId);
         setText('vp-targets-subtitle', (acc ? acc.name + ' · ' : '') + docN + ' ' + (L.StatDoctors || 'doctors') + ', ' + phN + ' ' + (L.StatPharmacies || 'pharmacies') + ' ' + (L.SelectedSuffix || 'selected'));
         renderSelectionChips();
+        paintAccountStats();
+        // WP-VP-4C — targets.js (summary, bulk product apply) reads the local selection by name, never by id alone.
+        if (page) page.emit('targets:selection', {
+            doctors: Object.keys(selectedContacts).map(k => {
+                const sc = selectedContacts[k];
+                return { contactId: sc.contactId, accountId: sc.accountId, accountContactLinkId: sc.accountContactLinkId, name: cName(sc.accountId, sc.contactId), accountName: aName(sc.accountId), specialty: specLabel(cSpec(sc.accountId, sc.contactId)) };
+            }),
+            accountCount: accN, pharmacyCount: phN
+        });
     };
-    // Specialty filter pills for the active account's doctors (Tümü + one per distinct specialty).
+    // WP-VP-4C (2) — specialty: a counted multi-select ("Gastroenterology (12)") over the doctors the quick filter
+    // returned; ticking several keeps any of them.
+    let activeSpecs = [];
+    const reEscape = v => String(v).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const renderSpecialtyPills = list => {
         const host = el('vp-specialty-pills'); if (!host) return;
-        const specs = Array.from(new Set((list || []).map(c => c.specialty).filter(Boolean)));
+        activeSpecs = [];
+        const counts = {};
+        (list || []).forEach(c => { if (c.specialty) counts[c.specialty] = (counts[c.specialty] || 0) + 1; });
+        const specs = Object.keys(counts).sort((a, b) => specLabel(a).localeCompare(specLabel(b)));
         if (!specs.length) { host.innerHTML = ''; return; }
-        const pill = (val, label, on) => '<button type="button" class="btn btn-sm ' + (on ? 'btn-primary' : 'btn-label-secondary') + ' vp-spec-pill" data-spec="' + esc(val) + '">' + esc(label) + '</button>';
-        host.innerHTML = '<span class="text-muted small me-1">' + esc(L.ColSpecialty || 'Specialty') + '</span>' + pill('', L.AllLabel || 'All', true) + specs.map(s => pill(s, specLabel(s), false)).join('');
+        host.innerHTML = '<div class="dropdown">' +
+            '<button type="button" class="btn btn-sm btn-label-secondary dropdown-toggle" id="vp-spec-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">' + esc(L.SpecialtyAll || L.ColSpecialty || '') + '</button>' +
+            '<div class="dropdown-menu p-2 vp-spec-menu">' + specs.map(sp =>
+                '<label class="dropdown-item d-flex align-items-center gap-2 mb-0"><input type="checkbox" class="form-check-input mt-0 vp-spec-check" value="' + esc(sp) + '"><span>' + esc(specLabel(sp)) + ' (' + counts[sp] + ')</span></label>').join('') +
+            '</div></div>';
+    };
+    const applySpecialtyFilter = () => {
+        if (!contactsDt) return;
+        setText('vp-spec-toggle', activeSpecs.length ? (L.SpecialtySelected || '{0}').replace('{0}', activeSpecs.length) : (L.SpecialtyAll || ''));
+        contactsDt.column(2).search(activeSpecs.length ? '^(' + activeSpecs.map(reEscape).join('|') + ')$' : '', true, false).draw();
     };
     const selectAllDoctors = () => {
         if (!contactsDt || !activeAccountId) return;
+        if (!canEditTargets()) return;
         contactsDt.rows({ search: 'applied' }).data().each(row => {
+            if (row.blocked) return; // consent blocked: never a target
             const cid = row.contactId; const k = selKey(activeAccountId, cid);
-            const c = (contactsByAccount[activeAccountId] || []).find(x => x.contactId === cid);
+            const c = findDoctor(activeAccountId, cid);
             selectedContacts[k] = { contactId: cid, accountId: activeAccountId, accountContactLinkId: (c && c.linkId) || null };
         });
         contactsDt.draw(false); refreshTargetsUi();
     };
     const clearSelection = () => {
+        if (!canEditTargets()) return;
         Object.keys(selectedContacts).forEach(k => delete selectedContacts[k]);
         Object.keys(selectedPharmacies).forEach(k => delete selectedPharmacies[k]);
         if (contactsDt) contactsDt.draw(false);
@@ -1156,26 +1259,54 @@
         const meta = { city: acc ? (acc.city || '') : '', docs: null, ph: null };
         const paintMeta = () => setText('vp-contacts-meta', [meta.city, meta.docs != null ? meta.docs + ' ' + (L.StatDoctors || 'doctors') : null, meta.ph != null ? meta.ph + ' ' + (L.LinkedPharmacies || 'linked pharmacies') : null].filter(Boolean).join(' · ') || '—');
         paintMeta();
-        fetchAccountContacts(accountId).then(list => {
-            renderContactsDt(list);
-            renderSpecialtyPills(list);
-            setText('vp-doctors-count', String(list.length));
-            meta.docs = list.length; paintMeta();
-            const h = el('vp-contacts-hint'); if (h) h.textContent = list.length ? '' : (L.PickAccountForContacts || '');
-            const s = el('vp-doctor-search'); if (s) s.value = '';
+        const s = el('vp-doctor-search'); if (s) s.value = '';
+        fetchAccountDoctors(accountId, 'all').then(all => {
+            setText('vp-doctors-count', String(all.length));
+            meta.docs = all.length; paintMeta(); paintAccountStats();
         });
+        loadDoctorTable(accountId);
         fetchRelatedPharmacies(accountId).then(list => { setText('vp-pharm-count', String(list.length)); meta.ph = list.length; paintMeta(); });
         renderPharmacies(accountId);
         refreshTargetsUi();
     };
 
+    // The doctor table of one account under the active quick filter (the search term stays applied).
+    const loadDoctorTable = accountId => fetchAccountDoctors(accountId, activeQuick).then(list => {
+        if (accountId !== activeAccountId) return;
+        renderContactsDt(list);
+        renderSpecialtyPills(list);
+        const h = el('vp-contacts-hint'); if (h) h.textContent = list.length ? '' : (L.NoDoctorsForFilter || '');
+        el('vp-doctor-search')?.dispatchEvent(new Event('input'));
+    });
+    const paintQuick = () => document.querySelectorAll('#vp-quick-filters .vp-quick').forEach(b => {
+        const on = b.dataset.quick === activeQuick;
+        b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+
+    // WP-VP-4C (5) — an approved / past week (or a legacy plan) shows the targets read-only; re-rendered only on change.
+    let lastTargetsLock = null;
+    const applyTargetsLock = () => {
+        const locked = targetsLocked();
+        if (locked === lastTargetsLock) return;
+        lastTargetsLock = locked;
+        el('vp-targets-locked')?.classList.toggle('d-none', !locked || readOnly);
+        ['vp-save-targets', 'vp-select-all-doctors', 'vp-clear-selection', 'vp-out-territory-open'].forEach(id => { const b = el(id); if (b) b.disabled = !canEditTargets(); });
+        el('vp-add-account-wrap')?.classList.toggle('d-none', !canEditTargets());
+        if (accountsDt) accountsDt.rows().invalidate('data').draw(false);
+        if (contactsDt) contactsDt.rows().invalidate('data').draw(false);
+        if (activeAccountId) renderPharmacies(activeAccountId);
+        renderSelectionChips();
+    };
+
     const addAccount = id => {
-        if (!id || targetAccounts.some(a => a.id === id)) return;
+        if (!id || !canEditTargets() || targetAccounts.some(a => a.id === id)) return;
         const src = accountSource.find(a => a.id === id); if (!src) return;
         targetAccounts.push({ id: src.id, name: src.name, type: src.type, city: src.city, lat: src.lat, lng: src.lng, out: !!src.out });
-        buildAccountsDt(); fillAddAccountPicker(); refreshTargetsUi();
+        buildAccountsDt(); fillAddAccountPicker(); refreshTargetsUi(); loadAccountStats();
+        if (window.bootstrap && el('vp-out-territory-modal')) { const m = window.bootstrap.Modal.getInstance(el('vp-out-territory-modal')); if (m) m.hide(); }
     };
     const removeAccount = id => {
+        if (!canEditTargets()) return;
         targetAccounts = targetAccounts.filter(a => a.id !== id);
         Object.keys(selectedContacts).forEach(k => { if (k.indexOf(id + '|') === 0) delete selectedContacts[k]; });
         if (activeAccountId === id) { activeAccountId = null; setText('vp-contacts-for', '—'); setText('vp-contacts-meta', '—'); if (contactsDt) { contactsDt.clear().draw(); } el('vp-contacts-panel')?.classList.add('d-none'); }
@@ -1203,6 +1334,11 @@
         const d = r.ok && r.body && r.body.data;
         if (!d) return null;
         const map = {};
+        (d.doctors || []).forEach(x => {
+            if (!x || !x.contactId) return;
+            if (x.displayName && !savedContactNames[x.contactId]) savedContactNames[x.contactId] = x.displayName;
+            if (x.specialty) savedContactSpecs[x.contactId] = x.specialty;
+        });
         (d.accounts || []).concat(d.pharmacies || []).forEach(a => {
             const id = a && a.accountId; if (!id) return;
             const built = a.found ? { id, name: accName(a), type: accType(a), city: accCity(a), addr: accAddr(a), lat: accLat(a), lng: accLng(a) } : { id, name: id, type: '', city: '', addr: '' };
@@ -1233,12 +1369,14 @@
                 // behind when its clinic moves. Cache hits after the bulk read; per-account only for a failed chunk.
                 targetAccounts.forEach(a => fetchRelatedPharmacies(a.id));
                 if (targetAccounts.length) showContacts(targetAccounts[0].id);
+                loadAccountStats();
             });
         });
     };
 
     const saveTargets = () => {
         if (!sessionData || readOnly) return;
+        if (targetsLocked()) return;
         const contacts = Object.keys(selectedContacts)
             .filter(k => targetAccounts.some(a => a.id === selectedContacts[k].accountId))
             .map(k => selectedContacts[k]);
@@ -1385,11 +1523,17 @@
     });
     el('vp-select-all-doctors')?.addEventListener('click', selectAllDoctors);
     el('vp-clear-selection')?.addEventListener('click', clearSelection);
-    el('vp-specialty-pills')?.addEventListener('click', e => {
-        const btn = e.target.closest('.vp-spec-pill'); if (!btn || !contactsDt) return;
-        el('vp-specialty-pills').querySelectorAll('.vp-spec-pill').forEach(b => { b.classList.toggle('btn-primary', b === btn); b.classList.toggle('btn-label-secondary', b !== btn); });
-        const spec = btn.dataset.spec;
-        contactsDt.column(2).search(spec ? '^' + spec + '$' : '', true, false).draw();
+    el('vp-specialty-pills')?.addEventListener('change', e => {
+        if (!e.target.closest('.vp-spec-check')) return;
+        activeSpecs = Array.from(el('vp-specialty-pills').querySelectorAll('.vp-spec-check:checked')).map(x => x.value);
+        applySpecialtyFilter();
+    });
+    el('vp-quick-filters')?.addEventListener('click', e => {
+        const b = e.target.closest('.vp-quick'); if (!b) return;
+        const q = b.dataset.quick;
+        if (QUICK_FILTERS.indexOf(q) === -1 || q === activeQuick) return;
+        activeQuick = q; paintQuick();
+        if (activeAccountId) loadDoctorTable(activeAccountId);
     });
     el('vp-selection-chips')?.addEventListener('click', e => {
         const x = e.target.closest('.vp-selchip-x'); if (!x) return;

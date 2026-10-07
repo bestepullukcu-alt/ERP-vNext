@@ -304,6 +304,88 @@ public sealed class VisitPlanningController : Controller
 
     // WP-VP-FIX-1 (A1, K-3) — no strategy-template ("play") proxy: the rep never picks a play; it is derived server-side.
 
+    // WP-VP-4C (K-7) — the doctor product picker's catalogue search: the MDM Global Product selector (the Knowledge
+    // global-product-options pattern), READ only. pageSize is clamped to the MDM cap of 100; MDM owns its own read key on
+    // the gateway. Never an empty silent list: a refusal / outage answers { disabled: true, reason } and the picker says
+    // the catalogue cannot be read (the doctor's stored products stay as they are).
+    [HttpGet("api/products")]
+    public async Task<IActionResult> Products(CancellationToken ct)
+    {
+        if (!HasAnyPermission(ReadPermission))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = "Permission denied." });
+        }
+
+        using var response = await SendGatewayAsync(HttpMethod.Get, $"/api/global-products/selector{BuildProductSelectorQuery()}", null, ct);
+        if (response is null || !response.IsSuccessStatusCode)
+        {
+            var reason = response is null ? "ProductCatalogueUnavailable"
+                : (int)response.StatusCode == 403 ? "ProductPermissionMissing"
+                : (int)response.StatusCode == 404 ? "ProductEndpointMissing"
+                : "ProductCatalogueUnavailable";
+            return Ok(new { disabled = true, reason });
+        }
+
+        return Ok(new { disabled = false, options = ParseProductOptions(await response.Content.ReadAsStringAsync(ct)) });
+    }
+
+    private string BuildProductSelectorQuery()
+    {
+        var q = Request.Query;
+        var search = q["search"].ToString();
+        var pageNumber = int.TryParse(q["pageNumber"], out var pn) && pn > 0 ? pn : 1;
+        var pageSize = int.TryParse(q["pageSize"], out var ps) ? Math.Clamp(ps, 1, 100) : 100;
+        var query = $"?pageNumber={pageNumber}&pageSize={pageSize}";
+        if (!string.IsNullOrWhiteSpace(search)) query += $"&search={Uri.EscapeDataString(search.Trim())}";
+        return query;
+    }
+
+    private List<object> ParseProductOptions(string body)
+    {
+        var options = new List<object>();
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            if (!doc.RootElement.TryGetProperty("data", out var data)) return options;
+            var items = data.ValueKind == JsonValueKind.Array ? data
+                : data.ValueKind == JsonValueKind.Object && data.TryGetProperty("items", out var it) ? it
+                : default;
+            if (items.ValueKind != JsonValueKind.Array) return options;
+            foreach (var item in items.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object) continue;
+                var id = FirstString(item, "id", "globalProductId");
+                if (!Guid.TryParse(id, out var productId)) continue;
+                options.Add(new
+                {
+                    productId,
+                    productCode = FirstString(item, "canonicalCode", "code"),
+                    productName = FirstString(item, "globalProductName", "name")
+                });
+            }
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Visit planning product options could not be parsed.");
+        }
+
+        return options;
+    }
+
+    private static string? FirstString(JsonElement element, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            if (element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
+                && !string.IsNullOrWhiteSpace(value.GetString()))
+            {
+                return value.GetString();
+            }
+        }
+
+        return null;
+    }
+
     // ---------------- proxy helpers ----------------
 
     private async Task<IActionResult> ProxyBodyAsync(

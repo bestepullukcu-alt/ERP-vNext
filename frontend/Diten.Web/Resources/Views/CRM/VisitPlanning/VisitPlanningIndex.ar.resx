@@ -178,4 +178,208 @@
   <data name="ReopenDone" xml:space="preserve"><value>أُعيد فتح الأسبوع؛ وحُفظ السبب.</value></data>
   <data name="ReopenUnavailable" xml:space="preserve"><value>إعادة الفتح غير متاحة بعد.</value></data>
   <data name="DetailLoadError" xml:space="preserve"><value>تعذر تحميل الخطة.</value></data>
+  <data name="TargetsLockedBand" xml:space="preserve">
+    <value>الأسبوع المحدد معتمد أو منقضٍ؛ الأهداف هنا للقراءة فقط.</value>
+  </data>
+  <data name="AddOutOfTerritoryShort" xml:space="preserve">
+    <value>إضافة من خارج المنطقة</value>
+  </data>
+  <data name="OutOfTerritoryDialogHint" xml:space="preserve">
+    <value>يُعلَّم الحساب المضاف هنا بشارة "خارج المنطقة".</value>
+  </data>
+  <data name="BulkApplyProducts" xml:space="preserve">
+    <value>تطبيق المنتجات ({0})</value>
+  </data>
+  <data name="QuickFiltersLabel" xml:space="preserve">
+    <value>عوامل تصفية سريعة</value>
+  </data>
+  <data name="QuickFilterAll" xml:space="preserve">
+    <value>الكل</value>
+  </data>
+  <data name="QuickFilterDue" xml:space="preserve">
+    <value>مستحقة هذا الأسبوع</value>
+  </data>
+  <data name="QuickFilterNever" xml:space="preserve">
+    <value>لم تتم زيارتهم قط</value>
+  </data>
+  <data name="ColFrequency" xml:space="preserve">
+    <value>التكرار</value>
+  </data>
+  <data name="ColDoneRemaining" xml:space="preserve">
+    <value>المنجز / المتبقي</value>
+  </data>
+  <data name="ColLastVisit" xml:space="preserve">
+    <value>آخر زيارة</value>
+  </data>
+  <data name="ColProducts" xml:space="preserve">
+    <value>المنتجات</value>
+  </data>
+  <data name="LegendPromo" xml:space="preserve">
+    <value>ترويج</value>
+  </data>
+  <data name="LegendNonPromo" xml:space="preserve">
+    <value>تذكير</value>
+  </data>
+  <data name="LegendPlay" xml:space="preserve">
+    <value>مقترح</value>
+  </data>
+  <data name="LegendLastVisit" xml:space="preserve">
+    <value>آخر زيارة</value>
+  </data>
+  <data name="LegendRepPick" xml:space="preserve">
+    <value>اختيارك</value>
+  </data>
+  <data name="LegendPortfolio" xml:space="preserve">
+    <value>المحفظة</value>
+  </data>
+  <data name="NoApprovedContent" xml:space="preserve">
+    <value>لا يوجد محتوى معتمد لهذا المنتج</value>
+  </data>
+  <data name="FrequencyPerPeriod" xml:space="preserve">
+    <value>{0} في الفترة</value>
+  </data>
+  <data name="FrequencyNone" xml:space="preserve">
+    <value>لا تكرار</value>
+  </data>
+  <data name="PlannedCountHint" xml:space="preserve">
+    <value>{0} مخططة</value>
+  </data>
+  <data name="LastVisitNever" xml:space="preserve">
+    <value>أبدًا</value>
+  </data>
+  <data name="BadgeConsentBlocked" xml:space="preserve">
+    <value>لا موافقة</value>
+  </data>
+  <data name="ConsentBlockedHint" xml:space="preserve">
+    <value>موافقة الزيارة محظورة؛ لا يمكن اختيار هذا الطبيب.</value>
+  </data>
+  <data name="BadgeInactive" xml:space="preserve">
+    <value>غير نشط</value>
+  </data>
+  <data name="SegmentBadgeHint" xml:space="preserve">
+    <value>الشريحة (للعلم فقط)</value>
+  </data>
+  <data name="SpecialtyAll" xml:space="preserve">
+    <value>كل التخصصات</value>
+  </data>
+  <data name="SpecialtySelected" xml:space="preserve">
+    <value>{0} تخصصات</value>
+  </data>
+  <data name="NoDoctorsForFilter" xml:space="preserve">
+    <value>لا يوجد طبيب يطابق عامل التصفية هذا.</value>
+  </data>
+  <data name="AccountSelectedOf" xml:space="preserve">
+    <value>{0} / {1} محدد</value>
+  </data>
+  <data name="AccountSelectedCount" xml:space="preserve">
+    <value>{0} محدد</value>
+  </data>
+  <data name="AccountDueThisWeek" xml:space="preserve">
+    <value>{0} هذا الأسبوع</value>
+  </data>
+  <data name="EstimatedWeek" xml:space="preserve">
+    <value>هذا الأسبوع ≈ {0} (حسب المنتجات)</value>
+  </data>
+  <data name="EstimatedWeekShare" xml:space="preserve">
+    <value>{0}% من الوقت الأسبوعي</value>
+  </data>
+  <data name="EstimatedOver" xml:space="preserve">
+    <value>تم تجاوز الوقت الأسبوعي بمقدار {0}.</value>
+  </data>
+  <data name="ProductDistribution" xml:space="preserve">
+    <value>توزيع المنتجات</value>
+  </data>
+  <data name="DoctorsWithoutProducts" xml:space="preserve">
+    <value>{0} من الأطباء المحددين بلا منتج.</value>
+  </data>
+  <data name="NoProductBadge" xml:space="preserve">
+    <value>لا منتج</value>
+  </data>
+  <data name="PickProducts" xml:space="preserve">
+    <value>اختيار المنتجات</value>
+  </data>
+  <data name="EditProducts" xml:space="preserve">
+    <value>تغيير المنتجات</value>
+  </data>
+  <data name="DoctorPanelPeriod" xml:space="preserve">
+    <value>عرض الفترة</value>
+  </data>
+  <data name="RolePromo" xml:space="preserve">
+    <value>ترويج</value>
+  </data>
+  <data name="RoleNonPromo" xml:space="preserve">
+    <value>تذكير</value>
+  </data>
+  <data name="ProductsS1Note" xml:space="preserve">
+    <value>تُطبَّق التغييرات على زيارات هذا الطبيب التالية غير المعتمدة.</value>
+  </data>
+  <data name="ProductsBulkNote" xml:space="preserve">
+    <value>تُضاف المنتجات التي تختارها إلى المنتجات الحالية لـ {0} من الأطباء، وتُحفظ المنتجات الموجودة.</value>
+  </data>
+  <data name="ProductsSuggestedNote" xml:space="preserve">
+    <value>المنتجات المقترحة تأتي من النظام. يمكنك إضافة منتجات بجانبها. لا يُزال المنتج المقترح إلا لزيارة واحدة من شاشة الزيارة المخططة.</value>
+  </data>
+  <data name="ProductsNoneNote" xml:space="preserve">
+    <value>لا توجد منتجات لهذا الطبيب؛ لا يمكن حساب مدة الزيارة. اختر منتجات أدناه.</value>
+  </data>
+  <data name="PortfolioUndefinedNote" xml:space="preserve">
+    <value>محفظة منتجاتك غير محددة. تُعرض كل المنتجات.</value>
+  </data>
+  <data name="AllProducts" xml:space="preserve">
+    <value>كل المنتجات</value>
+  </data>
+  <data name="ProductSearch" xml:space="preserve">
+    <value>ابحث عن اسم المنتج أو رمزه</value>
+  </data>
+  <data name="ProductLimitLine" xml:space="preserve">
+    <value>ترويج {0} / {1} · تذكير {2} / {3}</value>
+  </data>
+  <data name="DurationLine" xml:space="preserve">
+    <value>{0} ترويج + {1} تذكير + تقرير ≈ {2} دقيقة</value>
+  </data>
+  <data name="DurationUnknown" xml:space="preserve">
+    <value>لا يمكن حساب مدة الزيارة (تعذرت قراءة سعة الفترة).</value>
+  </data>
+  <data name="LimitExceeded" xml:space="preserve">
+    <value>تم تجاوز الحد: تتسع الزيارة لـ {0} منتجات ترويج + {1} تذكير كحد أقصى (سعة الفترة). قد لا تتسع المنتجات الزائدة.</value>
+  </data>
+  <data name="PlayLimitFull" xml:space="preserve">
+    <value>الحد ممتلئ — المنتج الذي تضيفه لا يتسع، وينتقل إلى الزيارة التالية.</value>
+  </data>
+  <data name="SuggestedLockHint" xml:space="preserve">
+    <value>منتج مقترح؛ لا يُزال إلا من شاشة الزيارة المخططة</value>
+  </data>
+  <data name="NoProductMatches" xml:space="preserve">
+    <value>لا يوجد منتج يطابق البحث.</value>
+  </data>
+  <data name="ProductsDone" xml:space="preserve">
+    <value>تم</value>
+  </data>
+  <data name="ApplyToSelected" xml:space="preserve">
+    <value>تطبيق على {0} من الأطباء المحددين</value>
+  </data>
+  <data name="BulkLimitExceeded" xml:space="preserve">
+    <value>تم تجاوز الحد لدى {0} من الأطباء؛ تنتقل المنتجات الزائدة إلى الزيارة التالية.</value>
+  </data>
+  <data name="ProductsSaved" xml:space="preserve">
+    <value>تم حفظ المنتجات.</value>
+  </data>
+  <data name="ProductsUnavailable" xml:space="preserve">
+    <value>تتعذر قراءة قائمة المنتجات حاليًا.</value>
+  </data>
+  <data name="RulesTitle" xml:space="preserve">
+    <value>كيف تُبنى قائمة منتجات الزيارة؟</value>
+  </data>
+  <data name="RuleSourceOrder" xml:space="preserve">
+    <value>تمتلئ قائمة منتجات كل زيارة بالترتيب: المنتجات المقترحة ← اختيارك ← ما عُرض في الزيارة الأخيرة ← محفظة منتجاتك. وتُحسب مدة الزيارة من هذه القائمة.</value>
+  </data>
+  <data name="RuleMixedOrder" xml:space="preserve">
+    <value>ترتيب متناوب: تأتي الزيارات اللاحقة بالمجموعة نفسها مع إزاحة الترتيب خطوة واحدة (A، B، C ← B، C، A).</value>
+  </data>
+  <data name="RuleOverflow" xml:space="preserve">
+    <value>المنتج الذي لا يتسع ضمن حدود الزيارة ينتقل إلى زيارة الطبيب التالية.</value>
+  </data>
+  <data name="RuleUnknownFrequency" xml:space="preserve">
+    <value>الهدف غير المعروف تكراره يُحسب "1 في الفترة" ويظهر بشارة لا تكرار.</value>
+  </data>
 </root>

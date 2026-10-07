@@ -178,4 +178,208 @@
   <data name="ReopenDone" xml:space="preserve"><value>The week was reopened; the reason was saved.</value></data>
   <data name="ReopenUnavailable" xml:space="preserve"><value>Reopening is not available yet.</value></data>
   <data name="DetailLoadError" xml:space="preserve"><value>The plan could not be loaded.</value></data>
+  <data name="TargetsLockedBand" xml:space="preserve">
+    <value>The selected week is approved or past; the targets are read-only here.</value>
+  </data>
+  <data name="AddOutOfTerritoryShort" xml:space="preserve">
+    <value>Add out-of-territory</value>
+  </data>
+  <data name="OutOfTerritoryDialogHint" xml:space="preserve">
+    <value>An account added here is marked "out of territory".</value>
+  </data>
+  <data name="BulkApplyProducts" xml:space="preserve">
+    <value>Apply products ({0})</value>
+  </data>
+  <data name="QuickFiltersLabel" xml:space="preserve">
+    <value>Quick filters</value>
+  </data>
+  <data name="QuickFilterAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="QuickFilterDue" xml:space="preserve">
+    <value>Due this week</value>
+  </data>
+  <data name="QuickFilterNever" xml:space="preserve">
+    <value>Never visited</value>
+  </data>
+  <data name="ColFrequency" xml:space="preserve">
+    <value>Frequency</value>
+  </data>
+  <data name="ColDoneRemaining" xml:space="preserve">
+    <value>Done / remaining</value>
+  </data>
+  <data name="ColLastVisit" xml:space="preserve">
+    <value>Last visit</value>
+  </data>
+  <data name="ColProducts" xml:space="preserve">
+    <value>Products</value>
+  </data>
+  <data name="LegendPromo" xml:space="preserve">
+    <value>promo</value>
+  </data>
+  <data name="LegendNonPromo" xml:space="preserve">
+    <value>reminder</value>
+  </data>
+  <data name="LegendPlay" xml:space="preserve">
+    <value>suggested</value>
+  </data>
+  <data name="LegendLastVisit" xml:space="preserve">
+    <value>last visit</value>
+  </data>
+  <data name="LegendRepPick" xml:space="preserve">
+    <value>your pick</value>
+  </data>
+  <data name="LegendPortfolio" xml:space="preserve">
+    <value>portfolio</value>
+  </data>
+  <data name="NoApprovedContent" xml:space="preserve">
+    <value>No approved content for this product</value>
+  </data>
+  <data name="FrequencyPerPeriod" xml:space="preserve">
+    <value>{0} in the period</value>
+  </data>
+  <data name="FrequencyNone" xml:space="preserve">
+    <value>no frequency</value>
+  </data>
+  <data name="PlannedCountHint" xml:space="preserve">
+    <value>{0} planned</value>
+  </data>
+  <data name="LastVisitNever" xml:space="preserve">
+    <value>never</value>
+  </data>
+  <data name="BadgeConsentBlocked" xml:space="preserve">
+    <value>No consent</value>
+  </data>
+  <data name="ConsentBlockedHint" xml:space="preserve">
+    <value>Visit consent is blocked; this doctor cannot be selected.</value>
+  </data>
+  <data name="BadgeInactive" xml:space="preserve">
+    <value>Inactive</value>
+  </data>
+  <data name="SegmentBadgeHint" xml:space="preserve">
+    <value>Segment (information only)</value>
+  </data>
+  <data name="SpecialtyAll" xml:space="preserve">
+    <value>All specialties</value>
+  </data>
+  <data name="SpecialtySelected" xml:space="preserve">
+    <value>{0} specialties</value>
+  </data>
+  <data name="NoDoctorsForFilter" xml:space="preserve">
+    <value>No doctor matches this filter.</value>
+  </data>
+  <data name="AccountSelectedOf" xml:space="preserve">
+    <value>{0} / {1} selected</value>
+  </data>
+  <data name="AccountSelectedCount" xml:space="preserve">
+    <value>{0} selected</value>
+  </data>
+  <data name="AccountDueThisWeek" xml:space="preserve">
+    <value>{0} this week</value>
+  </data>
+  <data name="EstimatedWeek" xml:space="preserve">
+    <value>This week ≈ {0} (by products)</value>
+  </data>
+  <data name="EstimatedWeekShare" xml:space="preserve">
+    <value>{0}% of the weekly time</value>
+  </data>
+  <data name="EstimatedOver" xml:space="preserve">
+    <value>The weekly time is exceeded by {0}.</value>
+  </data>
+  <data name="ProductDistribution" xml:space="preserve">
+    <value>Product distribution</value>
+  </data>
+  <data name="DoctorsWithoutProducts" xml:space="preserve">
+    <value>{0} selected doctors have no product.</value>
+  </data>
+  <data name="NoProductBadge" xml:space="preserve">
+    <value>no product</value>
+  </data>
+  <data name="PickProducts" xml:space="preserve">
+    <value>Pick products</value>
+  </data>
+  <data name="EditProducts" xml:space="preserve">
+    <value>Change products</value>
+  </data>
+  <data name="DoctorPanelPeriod" xml:space="preserve">
+    <value>Period view</value>
+  </data>
+  <data name="RolePromo" xml:space="preserve">
+    <value>Promo</value>
+  </data>
+  <data name="RoleNonPromo" xml:space="preserve">
+    <value>Reminder</value>
+  </data>
+  <data name="ProductsS1Note" xml:space="preserve">
+    <value>Changes apply to this doctor's next visits that are not approved.</value>
+  </data>
+  <data name="ProductsBulkNote" xml:space="preserve">
+    <value>The products you pick are added to the current products of {0} doctors. Existing products are kept.</value>
+  </data>
+  <data name="ProductsSuggestedNote" xml:space="preserve">
+    <value>Suggested products come from the system. You can add products next to them. A suggested product is removed only for a single visit, on the Planned Visit screen.</value>
+  </data>
+  <data name="ProductsNoneNote" xml:space="preserve">
+    <value>This doctor has no product; the visit time cannot be calculated. Pick products below.</value>
+  </data>
+  <data name="PortfolioUndefinedNote" xml:space="preserve">
+    <value>Your product portfolio is not defined. All products are listed.</value>
+  </data>
+  <data name="AllProducts" xml:space="preserve">
+    <value>All products</value>
+  </data>
+  <data name="ProductSearch" xml:space="preserve">
+    <value>Search product name or code</value>
+  </data>
+  <data name="ProductLimitLine" xml:space="preserve">
+    <value>Promo {0} / {1} · Reminder {2} / {3}</value>
+  </data>
+  <data name="DurationLine" xml:space="preserve">
+    <value>{0} promo + {1} reminder + report ≈ {2} min</value>
+  </data>
+  <data name="DurationUnknown" xml:space="preserve">
+    <value>The visit time cannot be calculated (the period capacity cannot be read).</value>
+  </data>
+  <data name="LimitExceeded" xml:space="preserve">
+    <value>Limit exceeded: a visit holds at most {0} promo + {1} reminder products (period capacity). Extra products may not fit the visit.</value>
+  </data>
+  <data name="PlayLimitFull" xml:space="preserve">
+    <value>Limit full — the product you add does not fit; it moves to the next visit.</value>
+  </data>
+  <data name="SuggestedLockHint" xml:space="preserve">
+    <value>Suggested product; can only be removed on the Planned Visit screen</value>
+  </data>
+  <data name="NoProductMatches" xml:space="preserve">
+    <value>No product matches the search.</value>
+  </data>
+  <data name="ProductsDone" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="ApplyToSelected" xml:space="preserve">
+    <value>Apply to {0} selected doctors</value>
+  </data>
+  <data name="BulkLimitExceeded" xml:space="preserve">
+    <value>The limit is exceeded for {0} doctors; the extra products move to the next visit.</value>
+  </data>
+  <data name="ProductsSaved" xml:space="preserve">
+    <value>Products saved.</value>
+  </data>
+  <data name="ProductsUnavailable" xml:space="preserve">
+    <value>The product list cannot be read right now.</value>
+  </data>
+  <data name="RulesTitle" xml:space="preserve">
+    <value>How is a visit's product list built?</value>
+  </data>
+  <data name="RuleSourceOrder" xml:space="preserve">
+    <value>Each visit's product list fills in order: suggested products → your pick → those presented at the last visit → your product portfolio. The visit time is calculated from this list.</value>
+  </data>
+  <data name="RuleMixedOrder" xml:space="preserve">
+    <value>Mixed order: later visits bring the same product set with the order shifted by one (A, B, C → B, C, A).</value>
+  </data>
+  <data name="RuleOverflow" xml:space="preserve">
+    <value>A product that does not fit the visit's limits moves to the doctor's next visit.</value>
+  </data>
+  <data name="RuleUnknownFrequency" xml:space="preserve">
+    <value>A target whose frequency is unknown counts as "1 in the period" and shows the no-frequency badge.</value>
+  </data>
 </root>

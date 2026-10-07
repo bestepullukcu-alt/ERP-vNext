@@ -178,4 +178,208 @@
   <data name="ReopenDone" xml:space="preserve"><value>La semaine a été rouverte ; le motif a été enregistré.</value></data>
   <data name="ReopenUnavailable" xml:space="preserve"><value>La réouverture n'est pas encore disponible.</value></data>
   <data name="DetailLoadError" xml:space="preserve"><value>Le plan n'a pas pu être chargé.</value></data>
+  <data name="TargetsLockedBand" xml:space="preserve">
+    <value>La semaine sélectionnée est approuvée ou passée ; les cibles sont en lecture seule ici.</value>
+  </data>
+  <data name="AddOutOfTerritoryShort" xml:space="preserve">
+    <value>Ajouter hors territoire</value>
+  </data>
+  <data name="OutOfTerritoryDialogHint" xml:space="preserve">
+    <value>Un compte ajouté ici est marqué « hors territoire ».</value>
+  </data>
+  <data name="BulkApplyProducts" xml:space="preserve">
+    <value>Appliquer des produits ({0})</value>
+  </data>
+  <data name="QuickFiltersLabel" xml:space="preserve">
+    <value>Filtres rapides</value>
+  </data>
+  <data name="QuickFilterAll" xml:space="preserve">
+    <value>Tous</value>
+  </data>
+  <data name="QuickFilterDue" xml:space="preserve">
+    <value>À voir cette semaine</value>
+  </data>
+  <data name="QuickFilterNever" xml:space="preserve">
+    <value>Jamais visités</value>
+  </data>
+  <data name="ColFrequency" xml:space="preserve">
+    <value>Fréquence</value>
+  </data>
+  <data name="ColDoneRemaining" xml:space="preserve">
+    <value>Faits / restants</value>
+  </data>
+  <data name="ColLastVisit" xml:space="preserve">
+    <value>Dernière visite</value>
+  </data>
+  <data name="ColProducts" xml:space="preserve">
+    <value>Produits</value>
+  </data>
+  <data name="LegendPromo" xml:space="preserve">
+    <value>promotion</value>
+  </data>
+  <data name="LegendNonPromo" xml:space="preserve">
+    <value>rappel</value>
+  </data>
+  <data name="LegendPlay" xml:space="preserve">
+    <value>suggéré</value>
+  </data>
+  <data name="LegendLastVisit" xml:space="preserve">
+    <value>dernière visite</value>
+  </data>
+  <data name="LegendRepPick" xml:space="preserve">
+    <value>votre choix</value>
+  </data>
+  <data name="LegendPortfolio" xml:space="preserve">
+    <value>portefeuille</value>
+  </data>
+  <data name="NoApprovedContent" xml:space="preserve">
+    <value>Aucun contenu approuvé pour ce produit</value>
+  </data>
+  <data name="FrequencyPerPeriod" xml:space="preserve">
+    <value>{0} sur la période</value>
+  </data>
+  <data name="FrequencyNone" xml:space="preserve">
+    <value>pas de fréquence</value>
+  </data>
+  <data name="PlannedCountHint" xml:space="preserve">
+    <value>{0} planifiées</value>
+  </data>
+  <data name="LastVisitNever" xml:space="preserve">
+    <value>jamais</value>
+  </data>
+  <data name="BadgeConsentBlocked" xml:space="preserve">
+    <value>Pas de consentement</value>
+  </data>
+  <data name="ConsentBlockedHint" xml:space="preserve">
+    <value>Le consentement de visite est bloqué ; ce médecin ne peut pas être sélectionné.</value>
+  </data>
+  <data name="BadgeInactive" xml:space="preserve">
+    <value>Inactif</value>
+  </data>
+  <data name="SegmentBadgeHint" xml:space="preserve">
+    <value>Segment (information uniquement)</value>
+  </data>
+  <data name="SpecialtyAll" xml:space="preserve">
+    <value>Toutes les spécialités</value>
+  </data>
+  <data name="SpecialtySelected" xml:space="preserve">
+    <value>{0} spécialités</value>
+  </data>
+  <data name="NoDoctorsForFilter" xml:space="preserve">
+    <value>Aucun médecin ne correspond à ce filtre.</value>
+  </data>
+  <data name="AccountSelectedOf" xml:space="preserve">
+    <value>{0} / {1} sélectionnés</value>
+  </data>
+  <data name="AccountSelectedCount" xml:space="preserve">
+    <value>{0} sélectionnés</value>
+  </data>
+  <data name="AccountDueThisWeek" xml:space="preserve">
+    <value>{0} cette semaine</value>
+  </data>
+  <data name="EstimatedWeek" xml:space="preserve">
+    <value>Cette semaine ≈ {0} (selon les produits)</value>
+  </data>
+  <data name="EstimatedWeekShare" xml:space="preserve">
+    <value>{0} % du temps hebdomadaire</value>
+  </data>
+  <data name="EstimatedOver" xml:space="preserve">
+    <value>Le temps hebdomadaire est dépassé de {0}.</value>
+  </data>
+  <data name="ProductDistribution" xml:space="preserve">
+    <value>Répartition des produits</value>
+  </data>
+  <data name="DoctorsWithoutProducts" xml:space="preserve">
+    <value>{0} médecins sélectionnés n'ont aucun produit.</value>
+  </data>
+  <data name="NoProductBadge" xml:space="preserve">
+    <value>aucun produit</value>
+  </data>
+  <data name="PickProducts" xml:space="preserve">
+    <value>Choisir des produits</value>
+  </data>
+  <data name="EditProducts" xml:space="preserve">
+    <value>Modifier les produits</value>
+  </data>
+  <data name="DoctorPanelPeriod" xml:space="preserve">
+    <value>Vue de la période</value>
+  </data>
+  <data name="RolePromo" xml:space="preserve">
+    <value>Promotion</value>
+  </data>
+  <data name="RoleNonPromo" xml:space="preserve">
+    <value>Rappel</value>
+  </data>
+  <data name="ProductsS1Note" xml:space="preserve">
+    <value>Les modifications s'appliquent aux prochaines visites non approuvées de ce médecin.</value>
+  </data>
+  <data name="ProductsBulkNote" xml:space="preserve">
+    <value>Les produits choisis sont ajoutés aux produits actuels de {0} médecins. Les produits existants sont conservés.</value>
+  </data>
+  <data name="ProductsSuggestedNote" xml:space="preserve">
+    <value>Les produits suggérés viennent du système. Vous pouvez en ajouter d'autres. Un produit suggéré ne se retire que pour une seule visite, depuis l'écran Visite planifiée.</value>
+  </data>
+  <data name="ProductsNoneNote" xml:space="preserve">
+    <value>Ce médecin n'a aucun produit ; la durée de visite ne peut pas être calculée. Choisissez des produits ci-dessous.</value>
+  </data>
+  <data name="PortfolioUndefinedNote" xml:space="preserve">
+    <value>Votre portefeuille de produits n'est pas défini. Tous les produits sont listés.</value>
+  </data>
+  <data name="AllProducts" xml:space="preserve">
+    <value>Tous les produits</value>
+  </data>
+  <data name="ProductSearch" xml:space="preserve">
+    <value>Rechercher un nom ou code de produit</value>
+  </data>
+  <data name="ProductLimitLine" xml:space="preserve">
+    <value>Promotion {0} / {1} · Rappel {2} / {3}</value>
+  </data>
+  <data name="DurationLine" xml:space="preserve">
+    <value>{0} promotion + {1} rappel + rapport ≈ {2} min</value>
+  </data>
+  <data name="DurationUnknown" xml:space="preserve">
+    <value>La durée de visite ne peut pas être calculée (capacité de la période illisible).</value>
+  </data>
+  <data name="LimitExceeded" xml:space="preserve">
+    <value>Limite dépassée : une visite compte au plus {0} produits promotion + {1} rappel (capacité de la période). Les produits en trop peuvent ne pas tenir.</value>
+  </data>
+  <data name="PlayLimitFull" xml:space="preserve">
+    <value>Limite atteinte — le produit ajouté ne tient pas ; il passe à la visite suivante.</value>
+  </data>
+  <data name="SuggestedLockHint" xml:space="preserve">
+    <value>Produit suggéré ; ne peut être retiré que depuis l'écran Visite planifiée</value>
+  </data>
+  <data name="NoProductMatches" xml:space="preserve">
+    <value>Aucun produit ne correspond à la recherche.</value>
+  </data>
+  <data name="ProductsDone" xml:space="preserve">
+    <value>Terminé</value>
+  </data>
+  <data name="ApplyToSelected" xml:space="preserve">
+    <value>Appliquer aux {0} médecins sélectionnés</value>
+  </data>
+  <data name="BulkLimitExceeded" xml:space="preserve">
+    <value>Limite dépassée pour {0} médecins ; les produits en trop passent à la visite suivante.</value>
+  </data>
+  <data name="ProductsSaved" xml:space="preserve">
+    <value>Produits enregistrés.</value>
+  </data>
+  <data name="ProductsUnavailable" xml:space="preserve">
+    <value>La liste des produits est illisible pour le moment.</value>
+  </data>
+  <data name="RulesTitle" xml:space="preserve">
+    <value>Comment se construit la liste de produits d'une visite ?</value>
+  </data>
+  <data name="RuleSourceOrder" xml:space="preserve">
+    <value>La liste de chaque visite se remplit dans l'ordre : produits suggérés → votre choix → ceux présentés à la dernière visite → votre portefeuille. La durée de visite est calculée à partir de cette liste.</value>
+  </data>
+  <data name="RuleMixedOrder" xml:space="preserve">
+    <value>Ordre mixte : les visites suivantes reprennent le même ensemble, décalé d'un rang (A, B, C → B, C, A).</value>
+  </data>
+  <data name="RuleOverflow" xml:space="preserve">
+    <value>Un produit qui dépasse les limites de la visite passe à la visite suivante du médecin.</value>
+  </data>
+  <data name="RuleUnknownFrequency" xml:space="preserve">
+    <value>Une cible de fréquence inconnue compte « 1 sur la période » et porte le badge sans fréquence.</value>
+  </data>
 </root>
