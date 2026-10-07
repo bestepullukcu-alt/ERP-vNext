@@ -1,0 +1,39 @@
+# WORK PACKAGE — WP-VP-4F · Rota: ziyareti başka güne taşıma
+
+> **CT (SoR), 2026-10-08.**
+> - **Kullanıcı:** "ikisi de olabilir" (Haftalar + Rota'da günler arası taşıma), 2026-10-08.
+> - **Kapsam:** yalnız Web, Rota sekmesi. Backend WP-VP-4E (`dayPins`).
+> - **Ön koşul:** 4E ve 4D birleşmiş olmalı (4D'nin taşıma ve sabit simgesi bileşenleri yeniden kullanılır).
+> - **Rota tasarımı korunur:** gün sekmeleri, durak listesi, harita aynı. Yalnız günler arası taşıma eklenir (kullanıcının bu turdaki açık isteği).
+>
+> **Çalışma yeri:** worktree `C:\tmp\vp-4f` (4D kabulünden sonra), dal `wp/vp-4f`. Commit bu dala, push YOK.
+
+## NE
+1. Rota'daki durak, **gün sekmesinin üstüne sürüklenince** o güne taşınır. Klavye alternatifi: durak menüsünde "Güne taşı…".
+2. Taşıma = 4E `dayPins` (mevcut oturum güncellemesi) → önizleme tazelenir; hedef gün sekmesi açılır, durak yeni sırada ve saatte görünür.
+3. Gün içi sürükle-bırak (elle sıra) **aynen** kalır.
+4. Sabit durak simgesi (`isPinned`) + "Sabiti kaldır" (4D bileşeni).
+5. Kurallar: yalnız taslak hafta; tatil / hafta sonu sekmesine bırakma kapalı; `overCapacity` uyarısı gün sekmesinde.
+
+## KORU / YAPMA
+- Rota görünümü ve gün içi davranışı değişmez. Backend'e dokunma. Yeni yazma uç YOK. 7 dil.
+
+## Acceptance
+- Web testleri: gün sekmesine bırakma → doğru `dayPins`; gün içi sıra eski yolla (`ManualVisitOrder`); onaylı haftada kapalı; tatil sekmesine bırakma yok.
+- Sabotaj: gün içi sürüklemeyi `dayPins`'e çevir → test kırmızı.
+- E4: taslak haftada bir durağı Salı → Perşembe (kullanıcı onaylı).
+
+---
+
+## §36.1 Agent Prompt (paste-ready) — DISPATCH: owner (4D kabulünden SONRA)
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VP-4F · Rota: ziyareti başka güne taşıma
+Repository: C:\tmp\vp-4f (worktree) · Branch: wp/vp-4f · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VP-4F-route-cross-day-move.md — önce oku. 4E ve 4D §37'lerini oku (dayPins, taşıma/sabit bileşenleri). Ayrıca: frontend/Diten.Web/wwwroot/assets/js/CRM/VisitPlanning/** · Views/CRM/VisitPlanning/Details.cshtml.
+NE: (1) Rota'da durak gün sekmesine sürüklenince o güne taşınır + klavye alternatifi "Güne taşı…"; (2) taşıma = 4E dayPins (mevcut oturum güncellemesi), önizleme tazelenir, hedef gün açılır; (3) gün içi sürükle-bırak (ManualVisitOrder) aynen; (4) isPinned simgesi + Sabiti kaldır (4D bileşeni); (5) yalnız taslak hafta, tatil/hafta sonu sekmesine bırakma yok, overCapacity uyarısı.
+KORU/YAPMA: Rota görünümü ve gün içi davranış değişmez; backend'e dokunma; yeni yazma ucu yok; 7 dil.
+DOĞRULA (E2): Web tabanı · CRM dokunulmaz · mimari 27; JS node --check; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Testler belge Acceptance; sabotaj 1 (kırmızı kanıtla, geri al).
+Commit: "feat(web): WP-VP-4F — move a route stop to another day (day pin)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt, elle denenecekler. §22 TÜRKÇE. K13.
+```

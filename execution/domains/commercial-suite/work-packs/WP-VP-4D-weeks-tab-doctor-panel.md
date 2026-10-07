@@ -4,7 +4,7 @@
 > - **Kaynak:** mockup v2 ekran 05 Haftalar + doktor paneli "Dönem görünümü" · [brief](mockups/visit-planning/BRIEF-visit-planning-rep-week.md) §5 · [K-7 eki](mockups/visit-planning/BRIEF-ADDENDUM-K7-visit-products.md) (Haftalar + doktor paneli) · [v2 analizi](mockups/visit-planning/VISIT-PLANNING-mockup-v2-analysis.md) · 3A / 3B / 3C önizleme alanları.
 > - **Kullanıcı:** "Faz 4 … paketlemeye başla" (2026-10-07).
 > - **Kapsam:** yalnız Web, Haftalar sekmesi (`weeks.js`) + doktor panelinin dönem sekmesi (`doctor-panel.js`, 4C'nin panel iskeletine).
-> - **Ön koşul:** **4A, 4B ve 4C birleşmiş olmalı.**
+> - **Ön koşul:** **4A, 4B, 4C ve 4E birleşmiş olmalı.**
 >
 > **Çalışma yeri:** worktree `C:\tmp\vp-4d` (4C kabulünden sonra açılır), dal `wp/vp-4d`. Commit bu dala, push YOK.
 
@@ -101,7 +101,7 @@ NE:
 (2) Hafta ayrıntısı: gün gün doluluk (N/günlük sınır, tatil, yarım gün), açılır gün satırı (doktor+kurum+ürün çipleri+≈dk, ilk 6 + "+N", boş gün metni, doktora tıkla → panel), ürün başına haftalık ziyaret, karışık sıra açıklaması, kaydırılan/sığmayan (shifted + unscheduled + overflowProducts, yerel nedenler), eylemler (4B fonksiyonları: onayla / yeniden üret / Rotayı aç / yeniden aç), haftadaki doktorlar + dönem noktaları, onaylı haftanın history[] listesi.
 (3) Doktor paneli Dönem görünümü sekmesi: başlık + segment rozeti, hedef/yapılan/kalan, sıradaki ziyaretin ürünleri + kaynak + süre + Ürünleri değiştir, ürün geçmişi (Sunuldu/Planlandı/Öngörülen), sıradaki içerik satırı gösterilmez/pasif (SB-3c ertelendi, raporla).
 (4) Yeniden aç penceresi Haftalar'dan da (4B bileşeni), MK-4 metni.
-(5) Eski committed planlar: yazılmış haftalar "onaylı (eski plan)", eylem yok. (6) Belgedeki "4B E4 takipleri" 1–6 + "Detay üst kısmı mockup uyumu" 1–5 (iki kapasite kartı çubuk+not, özet ad + durum rozeti, eylem kartı durum metinli + birincil Haftayı onayla + boşta Bu haftayı üret, açılır hafta listesi kalkar → şerit, hafta değişiminde özet senkron) (Plana git aynı plan, temsilci adı, tek kilit bandı, ülke salt okunur, boş taslak düğmesi gizli, geçmişte kimlik değil ad).
+(5) Eski committed planlar: yazılmış haftalar "onaylı (eski plan)", eylem yok. (6) Belgedeki "4B E4 takipleri" 1–6 + "Ziyareti başka güne taşıma" (Haftalar sürükle → dayPins, 4E ön koşul, yalnız taslak hafta, klavye alternatifi, isPinned simgesi, sabiti kaldır, overCapacity) + "Detay üst kısmı mockup uyumu" 1–5 (iki kapasite kartı çubuk+not, özet ad + durum rozeti, eylem kartı durum metinli + birincil Haftayı onayla + boşta Bu haftayı üret, açılır hafta listesi kalkar → şerit, hafta değişiminde özet senkron) (Plana git aynı plan, temsilci adı, tek kilit bandı, ülke salt okunur, boş taslak düğmesi gizli, geçmişte kimlik değil ad).
 KORU/YAPMA: backend'e dokunma (eksik alan → rapor); yeni yazma ucu YOK; Rota değişmez; 4B/4C bileşenleri yeniden yazılmaz; mockup stilleri kopyalanmaz; 7 dil + RTL; tarih biçimi aynı.
 DOĞRULA (E2): tabanı ölç, yalnız farkı raporla — Web · CRM (dokunulmaz) · mimari (27); build 0 hata; JS node --check; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Yeni testler WP Acceptance 1–6. Sabotaj 1–2 (kırmızı kanıtla, geri al).
 Commit: "feat(web): WP-VP-4D — weeks tab with period strip, day breakdown, shifted/overflow lists, doctor period panel, reopen from weeks" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: madde başına ne yapıldı + kanıt (dosya:satır, test adı), eksik backend alanları (varsa), elle denenecek durumlar. §22 TÜRKÇE. K13.
@@ -133,3 +133,13 @@ Kaynak: `mockups/visit-planning/visit-planning-v2.decoded.html` ekran "03 Plan d
 4. **Hafta seçimi:** eylem kartındaki açılır liste kalkar; hafta Haftalar şeridinden (madde 1), "Sonraki haftayı aç" ve Rota'nın kendi hafta seçicisinden seçilir. Seçili hafta özetin "Hafta" alanında görünür. `?week=` ve olay akışı (`week-change`) aynen.
 5. **Hata (kullanıcı ekranı):** hafta değişince özet (Hafta, Durum, Tarih aralığı) güncellenmiyor (özet 43 / Boş, eylem kartı 44). Tek kaynak `VisitPlanningPage` seçili hafta → özet + eylemler + kapasite birlikte yenilenir. Test: hafta değişiminde üç bölüm aynı haftayı gösterir.
 - Yeni testler: 1–5 için kaynak / JS testleri; sabotaj: hafta değişiminde özeti güncellememe → test kırmızı.
+
+## Ek — Ziyareti başka güne taşıma (Haftalar) — kullanıcı kararı 2026-10-08
+**Ön koşul:** WP-VP-4E (gün sabitlemesi backend) birleşmiş olmalı.
+- Hafta ayrıntısındaki açılır gün satırlarında ziyaret **başka güne sürüklenir** (klavye alternatifi: ziyaret menüsünde "Güne taşı…" + gün seçimi; erişilebilirlik).
+- Bırakınca mevcut oturum güncellemesi `dayPins { weekStart, pins }` (4E) gönderilir → önizleme tazelenir.
+- Sabit ziyaret simgeyle (`isPinned`) gösterilir. "Sabiti kaldır" → pin listeden çıkar.
+- Yalnız **taslak** hafta. Onaylı / geçmiş haftada sürükleme kapalı + ipucu ("Değiştirmek için haftayı yeniden açın").
+- Tatil / hafta sonu günlerine bırakma kapalı.
+- Bütçe aşan gün `overCapacity` uyarısı (kırmızı çubuk + metin).
+- Yeni testler: sürükle → doğru `dayPins` gövdesi; onaylı haftada kapalı; tatile bırakma yok. Sabotaj: onaylı haftada sürüklemeye izin → test kırmızı.
