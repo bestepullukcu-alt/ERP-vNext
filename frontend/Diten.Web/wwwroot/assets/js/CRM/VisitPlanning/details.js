@@ -1002,19 +1002,37 @@
 
     // Fetch (and cache) a clinic/hospital's linked PHARMACIES from the Account-360 related-accounts projection. Only
     // pharmacy-typed related accounts are offered as visit targets. Fail-soft → [].
+    const pharmacyRows = rows => {
+        const list = [];
+        (rows || []).forEach(row => {
+            const type = String(row.relatedAccountType || row.accountType || '').toLowerCase();
+            if (type !== 'pharmacy') return;
+            const id = row.relatedAccountId || row.targetAccountId || row.accountId;
+            if (!id) return;
+            list.push({ id: id, name: row.relatedAccountName || id, relType: row.effectiveLabelCode || row.relationshipType || '', code: row.relatedAccountCode || row.accountCode || '' });
+        });
+        return list;
+    };
     const fetchRelatedPharmacies = accountId => {
         if (relatedByAccount[accountId]) return Promise.resolve(relatedByAccount[accountId]);
         return api('/accounts/' + accountId + '/related-accounts?pageSize=100').then(r => {
-            const list = [];
-            listItems(r.body).forEach(row => {
-                const type = String(row.relatedAccountType || row.accountType || '').toLowerCase();
-                if (type !== 'pharmacy') return;
-                const id = row.relatedAccountId || row.targetAccountId || row.accountId;
-                if (!id) return;
-                list.push({ id: id, name: row.relatedAccountName || id, relType: row.effectiveLabelCode || row.relationshipType || '', code: row.relatedAccountCode || row.accountCode || '' });
-            });
+            const list = pharmacyRows(listItems(r.body));
             relatedByAccount[accountId] = list; return list;
         }).catch(() => { relatedByAccount[accountId] = []; return []; });
+    };
+    // WP-VP-3D (D5) — the linked pharmacies of MANY institutions in one read per 100 (GET accounts/related), filling the
+    // same cache fetchRelatedPharmacies reads. A failed chunk leaves its ids uncached, so the per-account read above is
+    // the fail-soft fallback.
+    const RELATED_BULK_MAX = 100;
+    const loadRelatedPharmaciesBulk = ids => {
+        const chunks = [];
+        for (let i = 0; i < ids.length; i += RELATED_BULK_MAX) chunks.push(ids.slice(i, i + RELATED_BULK_MAX));
+        return Promise.all(chunks.map(chunk => api('/accounts/related?relationType=pharmacy&accountIds=' + chunk.map(encodeURIComponent).join(',')).then(r => {
+            const groups = r.ok && r.body && r.body.data && Array.isArray(r.body.data.groups) ? r.body.data.groups : null;
+            if (!groups) return;
+            groups.forEach(g => { if (g && g.accountId) relatedByAccount[g.accountId] = pharmacyRows(g.items); });
+            chunk.forEach(id => { if (!relatedByAccount[id]) relatedByAccount[id] = []; }); // not found => none (the 404 path)
+        }).catch(() => { })));
     };
 
     // Render the linked-pharmacy checkboxes for one account; ticking adds the pharmacy to the pharmacy-target set.
@@ -1146,6 +1164,22 @@
         }).catch(() => { const built = { id, name: id, type: '', city: '' }; if (!accountSource.find(a => a.id === id)) accountSource.push(built); return built; });
     };
 
+    // WP-VP-3D (D5) — ONE read of the plan's targets (GET sessions/{id}/targets: every selected institution and pharmacy
+    // with name / type / city / address / coordinates) builds the very rows resolveAccount would have built and fills the
+    // same accountSource cache. Null when the read fails => the per-target resolveAccount path is the fallback.
+    const loadPlanTargets = () => api('/sessions/' + sessionId + '/targets').then(r => {
+        const d = r.ok && r.body && r.body.data;
+        if (!d) return null;
+        const map = {};
+        (d.accounts || []).concat(d.pharmacies || []).forEach(a => {
+            const id = a && a.accountId; if (!id) return;
+            const built = a.found ? { id, name: accName(a), type: accType(a), city: accCity(a), addr: accAddr(a), lat: accLat(a), lng: accLng(a) } : { id, name: id, type: '', city: '', addr: '' };
+            map[id] = built;
+            const ex = accountSource.find(x => x.id === id); if (ex) { ex.addr = built.addr; ex.city = ex.city || built.city; } else accountSource.push(built);
+        });
+        return map;
+    }).catch(() => null);
+
     const seedTargets = () => {
         // WP-VP-2 (B-8) — the session detail carries read-time names: keep them for the summary until the doctors load.
         (sessionData && sessionData.selectedContacts || []).forEach(c => { if (c.contactDisplayName) savedContactNames[c.contactId] = c.contactDisplayName; if (c.accountId && c.accountDisplayName) savedAccountNames[c.accountId] = c.accountDisplayName; });
@@ -1154,17 +1188,20 @@
             const cid = c.contactId || c; const aid = c.accountId || '';
             if (cid && aid) selectedContacts[selKey(aid, cid)] = { contactId: cid, accountId: aid, accountContactLinkId: c.accountContactLinkId || null };
         });
-        // Hydrate saved pharmacy targets (flat id set) + resolve their coordinates so the route can place them.
-        (sessionData && sessionData.selectedPharmacyIds || []).forEach(pid => { const id = pid.id || pid; if (id) { selectedPharmacies[id] = { id: id, name: id }; resolveAccount(id).then(a => { if (a && selectedPharmacies[id]) selectedPharmacies[id].name = a.name; }); } });
-        const ids = (sessionData && sessionData.selectedAccountIds) || [];
-        // Resolve saved account ids in parallel so names/type/city render after reload (not raw GUIDs).
-        return Promise.all(ids.map(resolveAccount)).then(rows => {
-            targetAccounts = rows;
-            buildAccountsDt(); fillAddAccountPicker(); refreshTargetsUi();
-            // Eagerly load every clinic/hospital's linked pharmacies so the pharmacy→clinic map is complete BEFORE any
-            // reorder — otherwise a pharmacy stays behind when its clinic moves (the map was only lazy-loaded on expand).
-            targetAccounts.forEach(a => fetchRelatedPharmacies(a.id));
-            if (targetAccounts.length) showContacts(targetAccounts[0].id);
+        return loadPlanTargets().then(targetMap => {
+            // Hydrate saved pharmacy targets (flat id set) + their names (from the targets read; per id only as fallback).
+            const rowFor = id => (targetMap && targetMap[id] ? Promise.resolve(targetMap[id]) : resolveAccount(id));
+            (sessionData && sessionData.selectedPharmacyIds || []).forEach(pid => { const id = pid.id || pid; if (id) { selectedPharmacies[id] = { id: id, name: id }; rowFor(id).then(a => { if (a && selectedPharmacies[id]) selectedPharmacies[id].name = a.name; }); } });
+            const ids = (sessionData && sessionData.selectedAccountIds) || [];
+            // Names/type/city render after reload (not raw GUIDs); every institution's linked pharmacies load in bulk.
+            return Promise.all([Promise.all(ids.map(rowFor)), loadRelatedPharmaciesBulk(ids)]).then(([rows]) => {
+                targetAccounts = rows;
+                buildAccountsDt(); fillAddAccountPicker(); refreshTargetsUi();
+                // Every clinic/hospital's linked pharmacies are known BEFORE any reorder — otherwise a pharmacy stays
+                // behind when its clinic moves. Cache hits after the bulk read; per-account only for a failed chunk.
+                targetAccounts.forEach(a => fetchRelatedPharmacies(a.id));
+                if (targetAccounts.length) showContacts(targetAccounts[0].id);
+            });
         });
     };
 

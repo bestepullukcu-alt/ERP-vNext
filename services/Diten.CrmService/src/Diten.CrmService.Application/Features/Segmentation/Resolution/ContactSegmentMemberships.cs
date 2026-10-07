@@ -49,4 +49,54 @@ public static class ContactSegmentMemberships
 
         return derived;
     }
+
+    /// <summary>
+    /// WP-VP-3D — the same derivation for MANY doctors at once: the same active contact segments (same filter, same
+    /// <see cref="MaxSegmentsToProbe"/> cap), each asked once for the whole contact set through
+    /// <see cref="SegmentMembershipResolver.EvaluateManyAsync"/> (the single-subject decision code). Cost: one segment
+    /// list read + a fixed number of reads PER SEGMENT — never one per doctor. A <c>member</c> verdict adds the id;
+    /// unknown / not-member are skipped, exactly as in <see cref="DeriveAsync"/>. Reads only.
+    /// </summary>
+    public static async Task<ContactSegmentSet> DeriveManyAsync(
+        ISegmentRepository segments,
+        SegmentMembershipResolver resolver,
+        Guid tenantId,
+        IReadOnlyCollection<Guid> contactIds,
+        DateTimeOffset effectiveAt,
+        CancellationToken cancellationToken)
+    {
+        var ids = contactIds.Where(id => id != Guid.Empty).Distinct().ToList();
+        if (ids.Count == 0)
+        {
+            return ContactSegmentSet.Empty;
+        }
+
+        var all = await segments.ListAsync(tenantId, cancellationToken);
+        var active = all
+            .Where(s => s.IsActive()
+                && string.Equals(s.SubjectType, SegmentSubjectTypes.Contact, StringComparison.Ordinal))
+            .Take(MaxSegmentsToProbe)
+            .ToList();
+
+        var byContact = ids.ToDictionary(id => id, _ => new List<Guid>());
+        var names = new Dictionary<Guid, string>();
+        foreach (var segment in active)
+        {
+            var verdicts = await resolver.EvaluateManyAsync(
+                tenantId, segment, segment.SubjectType, ids, effectiveAt, cancellationToken);
+            foreach (var (contactId, verdict) in verdicts)
+            {
+                if (string.Equals(verdict.Verdict, SegmentMembershipVerdicts.Member, StringComparison.Ordinal)
+                    && byContact.TryGetValue(contactId, out var list))
+                {
+                    list.Add(segment.Id);
+                    names[segment.Id] = string.IsNullOrWhiteSpace(segment.SegmentName) ? segment.SegmentCode : segment.SegmentName;
+                }
+            }
+        }
+
+        return new ContactSegmentSet(
+            byContact.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<Guid>)kv.Value),
+            names);
+    }
 }

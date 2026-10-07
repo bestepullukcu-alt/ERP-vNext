@@ -157,6 +157,13 @@ public sealed class VisitPlanningController : Controller
         => ProxyAsync(
             HttpMethod.Get, $"/api/crm/visit-plan/sessions/{planningSessionId}", null, ReadPermission, ct);
 
+    // WP-VP-3D (D5) — the plan's institutions, pharmacies and doctors (names, places, doctor period statuses) in ONE
+    // request. CRM applies the session ownership rule (another rep's plan is 404).
+    [HttpGet("api/sessions/{planningSessionId:guid}/targets")]
+    public Task<IActionResult> SessionTargets(Guid planningSessionId, CancellationToken ct)
+        => ProxyAsync(
+            HttpMethod.Get, $"/api/crm/visit-plan/sessions/{planningSessionId}/targets", null, ReadPermission, ct);
+
     [HttpPost("api/sessions")]
     public async Task<IActionResult> CreateSession(CancellationToken ct)
         => await ProxyBodyAsync(HttpMethod.Post, "/api/crm/visit-plan/sessions", GeneratePermission, ct);
@@ -201,6 +208,12 @@ public sealed class VisitPlanningController : Controller
     public Task<IActionResult> RelatedAccounts(Guid accountId, CancellationToken ct)
         => ProxyAsync(
             HttpMethod.Get, $"/api/crm/accounts/{accountId}/related-accounts{Request.QueryString}", null, ReadPermission, ct);
+
+    // WP-VP-3D (D5) — related accounts of up to 100 accounts in one request (CRM crm.account.read; > 100 ⇒ 400
+    // too_many_ids). Same /api/crm/accounts/* wildcard.
+    [HttpGet("api/accounts/related")]
+    public Task<IActionResult> RelatedAccountsBulk(CancellationToken ct)
+        => ProxyAsync(HttpMethod.Get, $"/api/crm/accounts/related{Request.QueryString}", null, ReadPermission, ct);
 
     // WP-VP-FIX-1 (C3) — there is no working-calendar proxy any more: the CRM planner reads the calendar itself (tenant
     // seam) and returns calendarStatus + nonWorkingDates on the preview; the route tab renders from those.
@@ -260,6 +273,13 @@ public sealed class VisitPlanningController : Controller
     [HttpGet("api/my-accounts")]
     public Task<IActionResult> MyAccounts(CancellationToken ct)
         => ProxyAsync(HttpMethod.Get, $"/api/crm/visit-plan/my-accounts{Request.QueryString}", null, ReadPermission, ct);
+
+    // WP-VP-3D (B-6) — an institution's active doctors with their period status (required / done / remaining / last
+    // visit / due this week …); quick=due|never|all, search, specialty, planningSessionId, paging.
+    [HttpGet("api/my-accounts/{accountId:guid}/doctors")]
+    public Task<IActionResult> MyAccountDoctors(Guid accountId, CancellationToken ct)
+        => ProxyAsync(
+            HttpMethod.Get, $"/api/crm/visit-plan/my-accounts/{accountId}/doctors{Request.QueryString}", null, ReadPermission, ct);
 
     // Cycle-period scope options — its resolved COUNTRY_CODES `countries` list feeds the Country dropdown, so the codes
     // match the periods' CountryScope exactly. Degrades to an empty picker if it refuses.

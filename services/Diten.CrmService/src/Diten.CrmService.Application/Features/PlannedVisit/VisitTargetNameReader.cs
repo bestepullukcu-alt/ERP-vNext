@@ -40,7 +40,11 @@ public sealed class VisitTargetNameReader
         return new VisitTargetNames(accounts, contacts);
     }
 
-    private static bool IsInactive(string? status)
+    private static bool IsInactive(string? status) => IsInactiveStatus(status);
+
+    /// <summary>The one "inactive target" rule (WP-VP-2; shared since WP-VP-3D): a master whose status is set and is not
+    /// <c>active</c> (passive or archived).</summary>
+    public static bool IsInactiveStatus(string? status)
         => !string.IsNullOrWhiteSpace(status) && !string.Equals(status.Trim(), "active", StringComparison.OrdinalIgnoreCase);
 }
 

@@ -1,0 +1,258 @@
+using Diten.CrmService.Application.Features.ConsentPreference.Evaluation;
+using Diten.CrmService.Application.Features.PlannedVisit;
+using Diten.CrmService.Application.Features.Segmentation.Resolution;
+using Diten.CrmService.Application.Features.VisitFrequencyPolicy.Resolve;
+using Diten.CrmService.Domain.Entities;
+using Diten.CrmService.Domain.Repositories;
+using ContactEntity = Diten.CrmService.Domain.Entities.Contact;
+using PlannedVisitEntity = Diten.CrmService.Domain.Entities.PlannedVisit;
+
+namespace Diten.CrmService.Application.Features.VisitPlanning.TargetStatus;
+
+/// <summary>The period a status is counted in: dates are inclusive (the CyclePeriod's calendar days).</summary>
+public sealed record ContactStatusPeriod(Guid? CyclePeriodId, string? CycleCode, DateOnly Start, DateOnly End)
+{
+    /// <summary>The period's week count, a partial last week counting as a week (the engine's BuildWeeks shape).</summary>
+    public int WeekCount => Math.Max(1, (int)Math.Ceiling((End.DayNumber - Start.DayNumber + 1) / 7.0));
+}
+
+/// <summary>The input of one bulk status read. <paramref name="KnownContacts"/> — contact masters the caller has
+/// already read (the doctors endpoint has); when given, the reader does not read them again.</summary>
+public sealed record ContactPeriodStatusRequest(
+    Guid TenantId,
+    string ResourceId,
+    ContactStatusPeriod? Period,
+    IReadOnlyCollection<Guid> ContactIds,
+    DateOnly Today,
+    DateTimeOffset At,
+    IReadOnlyCollection<ContactEntity>? KnownContacts = null);
+
+/// <summary>
+/// WP-VP-3D (B-6, B-9) — the SHARED reader of "where does each doctor stand in the rep's period": required / done /
+/// planned / remaining, last visit, never visited, due this week, frequency status, segment badges, consent, inactive.
+/// <para><b>Bulk by construction — no read per doctor.</b> For any number of doctors one call costs: the rep's plans
+/// against the doctor set (1 read, <see cref="IPlannedVisitRepository.ListByResourceAndContactsAsync"/>), their reports
+/// (1 read, <see cref="IVisitReportRepository.ListByPlannedVisitIdsAsync"/>), the contact masters (1 read, 0 when the
+/// caller passes them), the active segment memberships (<see cref="IContactSegmentSetReader"/>: a fixed number of reads
+/// PER ACTIVE SEGMENT, independent of the doctor count), the frequency policies (1 read,
+/// <see cref="ContactVisitFrequency"/>) and consent (1 bulk load, 2 queries, evaluated in memory by the MOD-0164
+/// engine).</para>
+/// <para><b>Ownership.</b> Only the given rep's plans are read — another rep's visits never count. Tenant isolation is
+/// the repositories' (every read is tenant-scoped).</para>
+/// <para><b>Frequency rule.</b> The SAME rule the planning engine uses today (<see cref="ContactVisitFrequency"/>, a
+/// batched form of the per-doctor resolver call in <c>FrequencyExtendPlanner</c>); WP-VP-3A binds the engine to it.</para>
+/// <para>Reads only — no write, nothing cached, nothing audited.</para>
+/// </summary>
+public sealed class ContactPeriodStatusReader
+{
+    /// <summary>At most this many segment badges per doctor (the names, alphabetical).</summary>
+    public const int MaxSegmentBadges = 5;
+
+    private readonly IPlannedVisitRepository _plans;
+    private readonly IVisitReportRepository _reports;
+    private readonly IContactRepository _contacts;
+    private readonly IContactSegmentSetReader _segments;
+    private readonly IVisitFrequencyPolicyRepository _policies;
+    private readonly ISegmentConsentBulkReader? _consent;
+
+    public ContactPeriodStatusReader(
+        IPlannedVisitRepository plans,
+        IVisitReportRepository reports,
+        IContactRepository contacts,
+        IContactSegmentSetReader segments,
+        IVisitFrequencyPolicyRepository policies,
+        ISegmentConsentBulkReader? consent = null)
+    {
+        _plans = plans;
+        _reports = reports;
+        _contacts = contacts;
+        _segments = segments;
+        _policies = policies;
+        _consent = consent;
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, ContactPeriodStatusDto>> ReadAsync(
+        ContactPeriodStatusRequest request, CancellationToken cancellationToken)
+    {
+        var result = new Dictionary<Guid, ContactPeriodStatusDto>();
+        var ids = request.ContactIds.Where(id => id != Guid.Empty).Distinct().ToList();
+        if (ids.Count == 0)
+        {
+            return result;
+        }
+
+        var tenantId = request.TenantId;
+        var resourceId = (request.ResourceId ?? string.Empty).Trim();
+
+        // ① the rep's plans against these doctors + their reports — two reads for the whole set.
+        var plans = resourceId.Length == 0
+            ? new List<PlannedVisitEntity>()
+            : (await _plans.ListByResourceAndContactsAsync(tenantId, resourceId, ids, cancellationToken))
+                .Where(p => p.TenantId == tenantId
+                            && string.Equals(p.Resource?.ResourceId?.Trim(), resourceId, StringComparison.Ordinal))
+                .ToList();
+        var reportByPlan = plans.Count == 0
+            ? new Dictionary<Guid, Domain.Entities.VisitReport>()
+            : (await _reports.ListByPlannedVisitIdsAsync(tenantId, plans.Select(p => p.Id).ToList(), cancellationToken))
+                .Where(r => r.TenantId == tenantId)
+                .GroupBy(r => r.PlannedVisitId)
+                .ToDictionary(g => g.Key, g => g.First());
+
+        // ② the contact masters (inactive) — reused when the caller already read them.
+        var contacts = (request.KnownContacts ?? await _contacts.ListByIdsAsync(tenantId, ids, cancellationToken))
+            .Where(c => c.TenantId == tenantId)
+            .GroupBy(c => c.Id)
+            .ToDictionary(g => g.Key, g => g.First());
+
+        // ③ active segments (badges + the frequency context) and ④ frequency — one rule, batched.
+        var segments = await _segments.ReadAsync(tenantId, ids, request.At, cancellationToken);
+        var frequency = await ContactVisitFrequency.ResolveManyAsync(
+            _policies, tenantId, ids, segments, request.At, cancellationToken);
+
+        // ⑤ consent — one bulk load, the MOD-0164 engine in memory (visit channel, medical-visit purpose).
+        var consent = await ReadConsentAsync(tenantId, ids, request.At, cancellationToken);
+
+        var plansByContact = plans.GroupBy(p => p.ContactId!.Value).ToDictionary(g => g.Key, g => g.ToList());
+        foreach (var contactId in ids)
+        {
+            var mine = plansByContact.GetValueOrDefault(contactId) ?? new List<PlannedVisitEntity>();
+            var freq = frequency.GetValueOrDefault(contactId);
+            result[contactId] = Compose(
+                contactId, mine, reportByPlan, request.Period, request.Today, freq,
+                Badges(segments, contactId), consent.GetValueOrDefault(contactId),
+                contacts.TryGetValue(contactId, out var contact) && VisitTargetNameReader.IsInactiveStatus(contact.Status));
+        }
+
+        return result;
+    }
+
+    /// <summary>The per-doctor arithmetic — pure, so every rule is testable on its own.</summary>
+    internal static ContactPeriodStatusDto Compose(
+        Guid contactId,
+        IReadOnlyList<PlannedVisitEntity> plans,
+        IReadOnlyDictionary<Guid, Domain.Entities.VisitReport> reportByPlan,
+        ContactStatusPeriod? period,
+        DateOnly today,
+        VisitFrequencyResolveResult? frequency,
+        IReadOnlyList<string> badges,
+        string? consentStatus,
+        bool inactive)
+    {
+        // Cancelled / archived plans never count — not as done, not as planned, not as the last visit.
+        var counting = plans.Where(p => !p.IsCancelled() && !p.IsArchived()).ToList();
+
+        var completed = counting
+            .Select(p => (Plan: p, Report: reportByPlan.GetValueOrDefault(p.Id)))
+            .Where(x => x.Report is not null && x.Report.IsCompleted())
+            .ToList();
+
+        DateTimeOffset? lastVisit = completed.Count == 0 ? null : completed.Max(x => x.Report!.ExecutedAt);
+
+        var done = 0;
+        var planned = 0;
+        DateOnly? lastInPeriod = null;
+        if (period is not null)
+        {
+            var inPeriod = completed.Where(x => x.Plan.PlannedDate >= period.Start && x.Plan.PlannedDate <= period.End).ToList();
+            done = inPeriod.Count;
+            lastInPeriod = inPeriod.Count == 0
+                ? null
+                : DateOnly.FromDateTime(inPeriod.Max(x => x.Report!.ExecutedAt).UtcDateTime);
+            var from = today > period.Start ? today : period.Start;
+            planned = counting.Count(p => p.PlannedDate >= from && p.PlannedDate <= period.End && !reportByPlan.ContainsKey(p.Id));
+        }
+
+        var required = frequency?.RequiredVisitCount is { } r && r > 0 ? r : (int?)null;
+        int? remaining = required is { } req && period is not null ? Math.Max(0, req - done - planned) : null;
+
+        return new ContactPeriodStatusDto(
+            contactId,
+            required,
+            frequency?.FrequencyStatus ?? FrequencyStatus.Unknown,
+            frequency?.PeriodType,
+            done,
+            planned,
+            remaining,
+            lastVisit,
+            NeverVisited: completed.Count == 0,
+            DueThisWeek: IsDueThisWeek(remaining, required, period, lastInPeriod, today),
+            badges,
+            consentStatus,
+            inactive);
+    }
+
+    /// <summary>
+    /// <b>dueThisWeek</b> (B-6, documented rule). Even distribution: the period's weeks divided by the required count is
+    /// the STRIDE — how many weeks may pass between two visits.
+    /// <list type="number">
+    /// <item>Not due when nothing remains (remaining ≤ 0), the frequency is unknown, there is no period, or today is
+    /// outside it.</item>
+    /// <item>No completed visit in the period yet ⇒ due (the period's first slot is its first week — the engine's base
+    /// week, <c>FrequencyExtendPlanner</c> week 0 — so every week from the start counts).</item>
+    /// <item>Otherwise due when the whole weeks between the last completed visit's week (Monday) and this week (Monday)
+    /// reach the stride: <c>weeksSince ≥ periodWeeks / required</c>.</item>
+    /// </list>
+    /// Example: 4-week period, required 2 ⇒ stride 2; visited in week 1 ⇒ due again from week 3.
+    /// </summary>
+    public static bool IsDueThisWeek(
+        int? remaining, int? required, ContactStatusPeriod? period, DateOnly? lastCompletedInPeriod, DateOnly today)
+    {
+        if (remaining is not > 0 || required is not > 0 || period is null
+            || today < period.Start || today > period.End)
+        {
+            return false;
+        }
+
+        if (lastCompletedInPeriod is null)
+        {
+            return true;
+        }
+
+        var stride = (double)period.WeekCount / required.Value;
+        var weeksSince = (WeekStart(today).DayNumber - WeekStart(lastCompletedInPeriod.Value).DayNumber) / 7;
+        return weeksSince >= stride;
+    }
+
+    /// <summary>The Monday of the ISO week containing <paramref name="date"/>.</summary>
+    public static DateOnly WeekStart(DateOnly date) => date.AddDays(-(((int)date.DayOfWeek + 6) % 7));
+
+    private static IReadOnlyList<string> Badges(ContactSegmentSet segments, Guid contactId)
+        => segments.For(contactId)
+            .Select(id => segments.SegmentNames.GetValueOrDefault(id))
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => name!)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(name => name, StringComparer.CurrentCulture)
+            .Take(MaxSegmentBadges)
+            .ToList();
+
+    private async Task<IReadOnlyDictionary<Guid, string>> ReadConsentAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> ids, DateTimeOffset at, CancellationToken cancellationToken)
+    {
+        var map = new Dictionary<Guid, string>();
+        if (_consent is null)
+        {
+            return map;
+        }
+
+        var snapshot = await _consent.LoadAsync(tenantId, ConsentSubjectType.Contact, ids, cancellationToken);
+        var purpose = PlannedVisitValidation.ToConsentPurpose(PlannedVisitPurpose.MedicalVisit);
+        foreach (var id in ids)
+        {
+            var verdict = ConsentEvaluationEngine.Evaluate(
+                new ConsentEvaluationRequest(
+                    SubjectType: ConsentSubjectType.Contact,
+                    SubjectId: id,
+                    Channel: ConsentChannel.Visit,
+                    Purpose: purpose,
+                    EffectiveAt: at,
+                    IncludeDiagnostics: false),
+                snapshot.Consents,
+                snapshot.Preferences,
+                at);
+            map[id] = verdict.EligibilityStatus;
+        }
+
+        return map;
+    }
+}

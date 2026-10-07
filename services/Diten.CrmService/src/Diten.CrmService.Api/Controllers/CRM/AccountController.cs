@@ -51,6 +51,17 @@ public sealed class AccountController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new Application.Features.Account.FilterOptions.GetAccountFilterOptionsQuery(scope, search), cancellationToken));
 
+    /// <summary>WP-VP-3D (D5) — related accounts of up to 100 accounts in one read (the bulk twin of
+    /// <c>/{id}/related-accounts</c>); more ids ⇒ 400 <c>too_many_ids</c>. <c>relationType</c> filters on the relationship
+    /// type or the related account's type (e.g. <c>pharmacy</c>).</summary>
+    [HttpGet("related")]
+    [HasPermission("crm.account.read")]
+    public async Task<IActionResult> Related(
+        [FromQuery] string? accountIds, [FromQuery] string? relationType, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new Application.Features.AccountRelationship.Queries.ListRelatedAccountsBulkQuery(accountIds, relationType),
+            cancellationToken));
+
     [HttpGet("{id:guid}")]
     [HasPermission("crm.account.read")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)

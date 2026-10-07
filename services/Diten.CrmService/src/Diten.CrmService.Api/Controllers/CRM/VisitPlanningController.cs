@@ -110,6 +110,35 @@ public sealed class VisitPlanningController : CustomBaseController
                 search, type, page, pageSize, resourceId, hasActiveContacts),
             cancellationToken));
 
+    /// <summary>WP-VP-3D (B-6) — an institution's active doctors with each one's period status (required / done /
+    /// planned / remaining / last visit / due this week / segment badges / consent / inactive). READ query; the account is
+    /// answered even outside the rep's territory, flagged <c>outOfTerritory</c> (K-5).</summary>
+    [HttpGet("api/crm/visit-plan/my-accounts/{accountId:guid}/doctors")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> AccountDoctors(
+        Guid accountId,
+        [FromQuery] Guid? planningSessionId = null,
+        [FromQuery] string? quick = null,
+        [FromQuery] string? search = null,
+        [FromQuery] string? specialty = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        [FromQuery] string? resourceId = null,
+        CancellationToken cancellationToken = default)
+        => CreateActionResultInstance(await _mediator.Send(
+            new Application.Features.VisitPlanning.TargetStatus.GetAccountDoctorsQuery(
+                accountId, planningSessionId, quick, search, specialty, page, pageSize, resourceId),
+            cancellationToken));
+
+    /// <summary>WP-VP-3D (D5) — the plan's selected institutions, pharmacies and doctors (names, types, places, doctor
+    /// statuses) in ONE response. Same ownership as the session read (another rep's plan is 404).</summary>
+    [HttpGet("api/crm/visit-plan/sessions/{planningSessionId:guid}/targets")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> SessionTargets(Guid planningSessionId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new Application.Features.VisitPlanning.TargetStatus.GetSessionTargetsQuery(planningSessionId),
+            cancellationToken));
+
     [HttpGet("api/crm/visit-plan/sessions/{planningSessionId:guid}")]
     [HasPermission(Perms.Read)]
     public async Task<IActionResult> GetSession(Guid planningSessionId, CancellationToken cancellationToken)

@@ -200,6 +200,108 @@ public sealed class SegmentMembershipResolver
                 .Where(t => t.SegmentId == segment.Id && !t.IsArchived() && t.IsEffectiveAt(effectiveAt))
                 .ToArray();
 
+        var decided = DecideManual(segment, subjectType, subjectId, manual, effectiveAt);
+        if (decided is not null)
+        {
+            return decided;
+        }
+
+        var snapshots = await _candidates.LoadSubjectsByIdsAsync(
+            tenantId, segment.SubjectType, new[] { subjectId }, cancellationToken);
+        var snapshot = snapshots.FirstOrDefault();
+        var context = snapshot is null
+            ? SegmentAttributeContext.Empty
+            : await _attributes.LoadAsync(tenantId, segment, new[] { snapshot }, effectiveAt, cancellationToken);
+        return DecideCriteria(segment, subjectType, subjectId, snapshot, context, effectiveAt);
+    }
+
+    /// <summary>
+    /// WP-VP-3D — the same single-subject question for MANY subjects of ONE segment, with the read count fixed by the
+    /// segment, never by the subject count: the segment's manual rows (one read, non-dynamic only), the still-undecided
+    /// subjects (one read) and their attribute context (one bulk load). Each verdict comes from the SAME decision code as
+    /// <see cref="EvaluateAsync"/> (<see cref="DecideManual"/> + <see cref="DecideCriteria"/>), so the two paths can
+    /// never disagree. Reads only; nothing is cached or persisted.
+    /// </summary>
+    public async Task<IReadOnlyDictionary<Guid, SegmentMembershipVerdictDto>> EvaluateManyAsync(
+        Guid tenantId,
+        Segment segment,
+        string subjectType,
+        IReadOnlyCollection<Guid> subjectIds,
+        DateTimeOffset effectiveAt,
+        CancellationToken cancellationToken)
+    {
+        var result = new Dictionary<Guid, SegmentMembershipVerdictDto>();
+        var ids = subjectIds.Where(id => id != Guid.Empty).Distinct().ToList();
+        if (ids.Count == 0)
+        {
+            return result;
+        }
+
+        var notInEffect = ReasonSegmentNotInEffect(segment, effectiveAt);
+        if (notInEffect is not null)
+        {
+            foreach (var id in ids)
+            {
+                result[id] = Verdict(segment, subjectType, id, null, effectiveAt,
+                    SegmentMembershipVerdicts.Unknown, null, notInEffect);
+            }
+
+            return result;
+        }
+
+        var wanted = ids.ToHashSet();
+        var manualBySubject = string.Equals(segment.SegmentType, SegmentTypes.Dynamic, StringComparison.Ordinal)
+            ? new Dictionary<Guid, TargetCustomer[]>()
+            : (await _targets.ListBySegmentAsync(tenantId, segment.Id, cancellationToken))
+                .Where(t => wanted.Contains(t.SubjectId)
+                            && string.Equals(t.SubjectType, subjectType, StringComparison.Ordinal)
+                            && !t.IsArchived() && t.IsEffectiveAt(effectiveAt))
+                .GroupBy(t => t.SubjectId)
+                .ToDictionary(g => g.Key, g => g.ToArray());
+
+        var undecided = new List<Guid>();
+        foreach (var id in ids)
+        {
+            var decided = DecideManual(segment, subjectType, id,
+                manualBySubject.GetValueOrDefault(id) ?? Array.Empty<TargetCustomer>(), effectiveAt);
+            if (decided is null)
+            {
+                undecided.Add(id);
+            }
+            else
+            {
+                result[id] = decided;
+            }
+        }
+
+        if (undecided.Count == 0)
+        {
+            return result;
+        }
+
+        var snapshots = (await _candidates.LoadSubjectsByIdsAsync(
+                tenantId, segment.SubjectType, undecided, cancellationToken))
+            .GroupBy(s => s.SubjectId)
+            .ToDictionary(g => g.Key, g => g.First());
+        var context = snapshots.Count == 0
+            ? SegmentAttributeContext.Empty
+            : await _attributes.LoadAsync(tenantId, segment, snapshots.Values.ToList(), effectiveAt, cancellationToken);
+
+        foreach (var id in undecided)
+        {
+            result[id] = DecideCriteria(segment, subjectType, id, snapshots.GetValueOrDefault(id), context, effectiveAt);
+        }
+
+        return result;
+    }
+
+    /// <summary>The manual-row half of the single-subject decision (shared by <see cref="EvaluateAsync"/> and
+    /// <see cref="EvaluateManyAsync"/>): a manual exclusion beats everything, then a manual inclusion, then a static
+    /// segment's "not on the list". Null ⇒ the criteria decide.</summary>
+    private static SegmentMembershipVerdictDto? DecideManual(
+        Segment segment, string subjectType, Guid subjectId, IReadOnlyCollection<TargetCustomer> manual,
+        DateTimeOffset effectiveAt)
+    {
         var manualName = manual
             .Select(t => t.SubjectDisplayName)
             .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name));
@@ -226,9 +328,14 @@ public sealed class SegmentMembershipResolver
                 SegmentReasonCodes.CriteriaNotMatched);
         }
 
-        var snapshots = await _candidates.LoadSubjectsByIdsAsync(
-            tenantId, segment.SubjectType, new[] { subjectId }, cancellationToken);
-        var snapshot = snapshots.FirstOrDefault();
+        return null;
+    }
+
+    /// <summary>The criteria half of the single-subject decision (shared by both evaluate paths).</summary>
+    private static SegmentMembershipVerdictDto DecideCriteria(
+        Segment segment, string subjectType, Guid subjectId, SegmentSubjectSnapshot? snapshot,
+        SegmentAttributeContext context, DateTimeOffset effectiveAt)
+    {
         if (snapshot is null)
         {
             // The subject is not visible in this tenant. No membership can be asserted - and none is invented.
@@ -236,8 +343,6 @@ public sealed class SegmentMembershipResolver
                 SegmentMembershipVerdicts.Unknown, null, SegmentReasonCodes.AttributeNotResolvable);
         }
 
-        var context = await _attributes.LoadAsync(
-            tenantId, segment, new[] { snapshot }, effectiveAt, cancellationToken);
         var outcome = SegmentCriteriaEvaluator.Evaluate(segment, context.For(subjectId, segment.SubjectType));
 
         var verdict = outcome.Matched switch

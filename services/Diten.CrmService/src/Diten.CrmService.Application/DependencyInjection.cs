@@ -109,6 +109,10 @@ public static class DependencyInjection
         // WP-VP-FIX-1 — the run's non-working days (platform working calendar via IWorkingDayChecker, Sat/Sun fallback).
         services.AddScoped<Features.VisitPlanning.PlanningWorkingCalendar>();
         services.AddScoped<Features.VisitPlanning.VisitPlanningEngine>();
+        // WP-VP-3D — the shared per-doctor period-status reader (bulk reads only) + its batched segment seam.
+        services.AddScoped<Features.Segmentation.Resolution.IContactSegmentSetReader,
+            Features.Segmentation.Resolution.ContactSegmentSetReader>();
+        services.AddScoped<Features.VisitPlanning.TargetStatus.ContactPeriodStatusReader>();
 
         return services;
     }

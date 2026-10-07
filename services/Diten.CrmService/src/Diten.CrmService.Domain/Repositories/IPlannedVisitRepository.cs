@@ -34,6 +34,25 @@ public interface IPlannedVisitRepository
     Task<IReadOnlyList<PlannedVisit>> ListFromDateByContentPathsAsync(
         Guid tenantId, IReadOnlyCollection<Guid> pathIds, DateOnly fromDate, CancellationToken cancellationToken);
 
+    /// <summary>WP-VP-3D — one rep's plans against a set of doctors (any date, archived / cancelled included: whether a
+    /// plan counts is the caller's rule). ONE read for the whole set — the period-status reads never ask per doctor. The
+    /// default narrows <see cref="ListAsync"/> in memory; the Mongo repository answers with a single
+    /// <c>Resource.ResourceId = r AND ContactId IN (...)</c> find on the existing (tenant, resource, date) index prefix.</summary>
+    async Task<IReadOnlyList<PlannedVisit>> ListByResourceAndContactsAsync(
+        Guid tenantId, string resourceId, IReadOnlyCollection<Guid> contactIds, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(resourceId) || contactIds is null || contactIds.Count == 0)
+        {
+            return Array.Empty<PlannedVisit>();
+        }
+
+        var wanted = contactIds.ToHashSet();
+        return (await ListAsync(tenantId, cancellationToken))
+            .Where(p => p.ContactId is { } c && wanted.Contains(c)
+                        && string.Equals(p.Resource?.ResourceId, resourceId, StringComparison.Ordinal))
+            .ToList();
+    }
+
     Task InsertAsync(PlannedVisit entity, CancellationToken cancellationToken);
 
     /// <summary>Optimistic replace: matches on (Id, TenantId, Version == expectedVersion) and bumps the token. Returns

@@ -74,3 +74,56 @@
 3. Hedef adını bugün nasıl gösteriyorsunuz: GUID mi, ayrı istek mi?
 4. Hafta sonu ve tatil günlerindeki ziyaretleri takvimde nasıl ele alıyorsunuz?
 5. Haftalık planlamayı (hedef seçip haftayı onaylama) mobilde de istiyor musunuz, yoksa ilk aşamada yalnız görüntüleme + plan dışı tekil ziyaret yeterli mi?
+
+## 7. Ek (2026-10-07, WP-VP-3D) — hedef durum okumaları **kesinleşti**
+§5'teki "Sıklık uyumu", "Bu hafta görülmesi gerekenler" ve "Segment rozeti" satırlarının **kesin** hali. Üç uç da **yalnız okuma**, aynı zarf (`Response<T>`, veri `data` altında), `X-Tenant-Id` zorunlu. Taslak adlar **değişti**: `frequencyTarget` → `requiredVisitCount`, `visitsDone` → `done`, `visitsRemaining` → `remaining`; segment rozeti `segmentBadges: ["ad", …]` (düz ad listesi, en çok 5).
+
+**7.1 Doktor durumu (`status`) — üç uçta da aynı nesne**
+| Alan | Tür | Anlamı |
+|---|---|---|
+| `contactId` | guid | doktor |
+| `requiredVisitCount` | int? | dönemde gereken ziyaret; sıklık çözülemezse `null` |
+| `frequencyStatus` | string | `resolved` · `unknown` · `conflict` (`unknown` hata değildir) |
+| `periodType` | string? | sıklık politikasının dönem türü (`month` …) |
+| `done` | int | **temsilcinin** dönemdeki planlı ziyaretlerinden raporu `completed` olanlar (iptal / arşiv sayılmaz; `missed` yapılmış değildir) |
+| `planned` | int | bugün → dönem sonu, iptal / arşiv dışı, **raporu olmayan** planlı ziyaretler |
+| `remaining` | int? | `max(0, required − done − planned)`; sıklık yoksa `null` |
+| `lastVisitDate` | datetime? | temsilcinin son `completed` raporunun `executedAt` değeri (tarih sınırı yok); hiç yoksa `null` |
+| `neverVisited` | bool | hiç `completed` rapor yok |
+| `dueThisWeek` | bool | "Bu hafta görülmeli": `remaining > 0` **ve** (dönemde henüz `completed` yok **ya da** son ziyaretin haftasından bu haftaya geçen tam hafta ≥ dönem haftası / gereken). Örnek: 4 haftalık dönem, gereken 2 → 1. haftada görüldüyse 3. haftadan itibaren tekrar vadeli. |
+| `segmentBadges` | string[] | aktif segment adları — **yalnız bilgi**, süzgeç değildir (K-4) |
+| `consentStatus` | string? | ziyaret kanalı izin sonucu (`allowed` · `blocked` · `unknown` · `not_applicable`) |
+| `inactive` | bool | doktor kaydı pasif |
+
+**7.2 `GET /api/crm/visit-plan/my-accounts/{accountId}/doctors`** — bir kurumun aktif doktorları + durum. Sorgu: `planningSessionId` (verilirse o planın dönemi; yoksa bugünkü dönem), `quick=due|never|all` (varsayılan `all`; başka değer `400 invalid_quick`), `search` (Türkçe duyarsız: "şirin" → "ŞİRİN"), `specialty`, `page`, `pageSize` (≤ 200). Kurum temsilcinin bölgesinde değilse **gizlenmez**, `outOfTerritory: true` döner. Yetki `crm.visit-plan.read`.
+```json
+{ "data": {
+    "accountId": "4f0c…", "accountName": "MEMORIAL ŞİŞLİ HASTANESİ", "outOfTerritory": false,
+    "period": { "cyclePeriodId": "9a1e…", "cycleCode": "2026-10", "startDate": "2026-10-01", "endDate": "2026-10-31", "weekCount": 5 },
+    "items": [ { "contactId": "c71d…", "accountContactLinkId": "1b2e…", "displayName": "SADAKAT ÖZDİL",
+                 "specialty": "cardiology", "professionalTitle": "Uzm. Dr.", "isPrimary": true,
+                 "status": { "contactId": "c71d…", "requiredVisitCount": 2, "frequencyStatus": "resolved", "periodType": "month",
+                             "done": 1, "planned": 0, "remaining": 1, "lastVisitDate": "2026-10-05T08:12:00+00:00",
+                             "neverVisited": false, "dueThisWeek": false, "segmentBadges": ["Kardiyoloji A"],
+                             "consentStatus": "allowed", "inactive": false } } ],
+    "totalCount": 1, "page": 1, "pageSize": 50 },
+  "statusCode": 200, "isSuccessful": true }
+```
+
+**7.3 `GET /api/crm/visit-plan/sessions/{id}/targets`** — planın seçili kurum / eczane / doktorları **tek istekte**: kurum ve eczane için `accountId, found, accountName, accountCode, accountType, cityRef, districtRef, addressLine, latitude, longitude, inactive`; doktor için `contactId, accountId, accountContactLinkId, found, displayName, specialty, status` (7.1). Başka temsilcinin planı `404`. `found: false` = kayıt silinmiş; ad uydurulmaz.
+```json
+{ "data": { "planningSessionId": "a42373cb…", "resourceId": "…", "period": { "cycleCode": "2026-10", "weekCount": 5, "…": "…" },
+    "accounts":   [ { "accountId": "4f0c…", "found": true, "accountName": "MEMORIAL ŞİŞLİ HASTANESİ", "accountType": "hospital",
+                      "cityRef": "TR-34-ISTANBUL", "districtRef": "TR-34-SISLI", "addressLine": "…", "latitude": 41.06, "longitude": 28.98, "inactive": false } ],
+    "pharmacies": [ { "accountId": "77aa…", "found": true, "accountName": "ŞİFA ECZANESİ", "accountType": "pharmacy", "…": "…" } ],
+    "doctors":    [ { "contactId": "c71d…", "accountId": "4f0c…", "found": true, "displayName": "SADAKAT ÖZDİL", "status": { "done": 1, "…": "…" } } ] } }
+```
+
+**7.4 `GET /api/crm/accounts/related?accountIds=a,b,c&relationType=pharmacy`** — `/accounts/{id}/related-accounts`'ın toplu hali; satır biçimi aynı (`relatedAccountId, relatedAccountName, relatedAccountType, relationshipType, effectiveLabelCode …`), kurum başına grup. `relationType` ilişki türüyle **ya da** ilişkili hesabın türüyle eşleşir. En çok **100** kimlik; fazlası `400 too_many_ids`, boş `400 account_ids_required`, bozuk kimlik `400 invalid_account_ids`. Yetki `crm.account.read`.
+```json
+{ "data": { "groups": [ { "accountId": "4f0c…", "items": [ { "relatedAccountId": "77aa…", "relatedAccountName": "ŞİFA ECZANESİ",
+                                                         "relatedAccountType": "pharmacy", "relationshipType": "preferred-pharmacy",
+                                                         "effectiveLabelCode": "preferred-pharmacy", "displayDirection": "direct", "…": "…" } ] } ] } }
+```
+
+**7.5 Planlanan ziyaret önizlemesi** — slot ve doktor içerik özetine `frequencyStatus` + `requiredVisitCount` alanları **eklendi**, ancak motor bunları henüz **doldurmuyor** (`null`); WP-VP-3A ile dolacak.
