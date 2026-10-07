@@ -15,9 +15,10 @@
 | 3 | **Faz 3** — planlama motoru: K-7 ürün listesi veri modeli (S-1..S-4), B-4 dönem planı / hafta durumu, B-5 gün dengeleme, B-6, B-7, B-9, D3, D5, E7-B1 / B2 kararları | CT paketledi (4 paket: 3A ∥ 3D → 3B → 3C) | ◐ 3A ☑ E2 (`e6c383a5b`), 3D ☑ E2 (`ccd93de04`), 3B ☑ E2 (`db877db4d`), 3C ☑ E2 (`e5d3a6b7a`); ☑ E4 (2026-10-07) |
 | 4 | **Faz 4** — Web arayüzü mockup v2'ye göre (VP-UI-1..3) | CT paketledi (4A ∥ 4B → 4C → 4D) | ◐ 4A ☑, 4B ☑, 4C ☑ (E2); 4E gönderilecek → 4D → 4F; **Faz 4 canlı kontrolü 4D + 4F sonrası tek tur (kullanıcı kararı 2026-10-08)**, mockup v2 ile yan yana + Arapça |
 | 5 | **Faz 5** — mobil sözleşme notu (Faz 2 + 2b + E2E-FIX-1 alanları + K-7) | CT yazar, kullanıcı iletir | ☐ |
-| 6 | **Faz 6** — Planlanan Ziyaretler sayfası (+ ek konular: numune, amaç, ortak ziyaret…) | canlı analiz → mockup? | ☐ |
-| 7 | **SB-3c** — ziyaret başlat / tamamla, gerçekte sunulanlar (`ContentActuals`), yolculuk ilerlemesi yazılır (E9-B1); "son ziyaret" ürün kaynağının ön koşulu | CT paketler | ☐ **ertelendi (kullanıcı kararı 2026-10-07)** — o zamana kadar K-7'deki "son ziyaret" kaynağı boş kalır, yolculuk aşaması yalnız plandaki sıradan ilerler |
-| 8 | **Faz 8** — AUD-CRM-1 merkezi denetim → mimari test yeşil → main'e PR | CT paketler, 2 karar sorulur | ☐ en son |
+| 6 | **Main senkron + PR** — test dalına main alınır (çakışmalar CT), PR açılır (kullanıcı); **mimari test (AUD-001, 27 denetimsiz komut) kırmızıyken birleştirme — kullanıcı kararı 2026-10-08**, yönetici onayıyla; ekip bilgilendirilir. Mobil ekip düzeltmelerini main üzerinden yapar | CT senkron + PR metni, kullanıcı açar / birleştirir | ☐ Faz 5 sonrası |
+| 7 | **Faz 6** — Planlanan Ziyaretler sayfası (+ ek konular: numune, amaç, ortak ziyaret…) | canlı analiz → mockup? | ☐ mobil düzeltmelerle paralel |
+| 8 | **SB-3c** — ziyaret başlat / tamamla, gerçekte sunulanlar (`ContentActuals`), yolculuk ilerlemesi yazılır (E9-B1); "son ziyaret" ürün kaynağının ön koşulu | CT paketler | ☐ **ertelendi (kullanıcı kararı 2026-10-07)** — o zamana kadar K-7'deki "son ziyaret" kaynağı boş kalır, yolculuk aşaması yalnız plandaki sıradan ilerler |
+| 9 | **Faz 8** — AUD-CRM-1 merkezi denetim → mimari test yeşil (main'de ayrı PR) | CT paketler, 2 karar sorulur | ☐ en son |
 | — | Yan işler: 0.5 TR referans etiketleri (veri) · read-all grant script (rol seçimi) · CYC-UI-FIX-2 E4 · backlog kararları (E2-B2, E4-B4, E9-B4b) | kullanıcı / sonra | ☐ |
 
 ## Yapılanlar (2026-10-06)
@@ -145,7 +146,7 @@ Kurallar:
 - ☐ CRM denetim yayıncısını düzelt (kategori / işlem adı), merkezi kayda gönderimi aç, kabul edilmiş iz olarak sabitle
 - ☐ 26 işlem (bilgi yolu inceleme + Güvenlik Metni / Ülke Yasal Profili) + Faz 3'ün yeni işlemleri (haftayı onayla / yeniden aç…) bağlanır; yeniden açma gerekçesi (MK-4) denetim kaydına da yazılır
 - ☐ O zaman sorulacak iki karar: (1) doğrudan Platform merkezi kaydı mı, CRM kendi izi mi · (2) düzenlemeye tabi işlemde kayıt yazılamazsa işlem dursun mu
-- ☐ Mimari test (AUD-001) yeşil → ancak bundan sonra `main`'e PR
+- ☐ Mimari test (AUD-001) yeşil → ayrı PR (kullanıcı kararı 2026-10-08: main'e ilk PR Faz 5 sonrası kırmızı testle açıldı)
 
 ### Faz 7 — sonra
 - ☐ Yönetici görünümü (Ekip) · sıradaki içerik (SB-3c) · saha temsilcisi rolü (F-RBAC) · pozisyon tabanlı atama · check-in / anti-fraud (MOD-0280)
