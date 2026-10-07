@@ -112,6 +112,11 @@ public interface IGskuRepository
         GskuChildIdentityKind childKind, DateTimeOffset acquiredBeforeUtc, int limit,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
+    // WP-MDM-SCOPE-INT-01 FIX2 item 1: the same read, one page of holder GSKUs at a time after a cursor.
+    Task<GskuOrphanAdmissionPage> FindOrphanChildCreationAdmissionPageAsync(
+        GskuChildIdentityKind childKind, DateTimeOffset acquiredBeforeUtc, Guid? afterGskuId,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
     // LSKU FIX1 B1 (c): the repair's write — the admission goes and the intent that says so is kept, in one write.
     Task<GskuChildCreationAdmissionResult> RepairOrphanChildCreationAdmissionAsync(
         GskuOrphanChildAdmission orphan, LocalAuditIntent auditIntent,

@@ -132,14 +132,19 @@ public sealed class ProductLegalEntityScopeConsumerGuard
         {
             rollout = await _rolloutStates.GetAsync(cancellationToken);
         }
-        catch (InvalidOperationException)
+        // WP-MDM-SCOPE-INT-01 FIX1 M7: the caller going away is not a store that cannot be reached — a read cancelled by
+        // its own client (the driver may surface it as a MongoException) propagates instead of answering a coded 503.
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested
+                                          && ProductLegalEntityScopeWriteFenceCoordinator.ClassifyRolloutReadFailure(exception)
+                                          != ProductLegalEntityScopeWriteFenceCoordinator.RolloutReadFailure.None)
         {
-            // WP-MDM-SCOPE-ACCEPT-01 FIX1 B2: the repository refuses a record it cannot read; the guard answers with the
-            // same coded 503 as for a record it reads but finds invalid — never an unhandled exception for every read.
-            ProductLegalEntityScopeRolloutMetrics.CountUnreadable("read_guard");
-            return ProductLegalEntityScopeConsumerContextResult.Fail(
-                503,
-                "PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID");
+            // WP-MDM-SCOPE-ACCEPT-01 FIX1 B2 / WP-MDM-SCOPE-INT-01 BL-567: a rollout read that fails answers the same
+            // coded 503 as the scope writes — the record cannot be read (ROLLOUT_INVALID: the repository's refusal, a
+            // record the serializer cannot map) or the store cannot be reached (ROLLOUT_STORE_UNAVAILABLE: timeout,
+            // MongoException). Before, only the repository's own refusal was mapped and the rest was a 500 on every
+            // product read of the tenant (GP / GSKU / LSKU / FG lists and details).
+            var (code, status) = ProductLegalEntityScopeWriteFenceCoordinator.ReadFailureAnswer(exception, "read_guard");
+            return ProductLegalEntityScopeConsumerContextResult.Fail(status, code);
         }
         if (rollout is null)
         {

@@ -14,8 +14,12 @@ namespace Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 /// ⚠ WP-MDM-SCOPE-ACCEPT-01 FIX3 (9) — STATED, NOT HIDDEN (CT decision, accepted for v1): for the product writers the lease
 /// is ADVISORY. No GP / GSKU / LSKU / FG repository checks the lease's token or expiry when it writes, so a writer whose
 /// lease was renewed or taken over can still write with its old one. What catches such a write before a transition is the
-/// fence's two equal inventory snapshots. The writers learn the token check in WP-MDM-SCOPE-INT-01. (The foreground
-/// Replace is not advisory: its transaction conditions on its exact lease.)
+/// fence's two equal inventory snapshots. WP-MDM-SCOPE-INT-01 (measured): the writers did NOT learn the token check there —
+/// the lease is still advisory; the token check is open work (no package yet). (The foreground Replace is not advisory: its
+/// transaction conditions on its exact lease.) WP-MDM-SCOPE-INT-01 FIX1 M4: the lease and the zero-change proof name only
+/// the ids a command carries (the proof follows them DOWN the hierarchy). The LSKU / FG draft cancels carry their own id,
+/// not the parent GSKU's, so a cancel that failed after writing the GSKU admission or the code reservation can be
+/// proven "unchanged" and release its lease; the fence's two snapshots still catch it.
 /// </summary>
 public sealed class ProductLegalEntityScopeWriteFenceCoordinator
 {
@@ -70,7 +74,9 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
         {
             current = await _rollouts.GetAsync(cancellationToken);
         }
-        catch (Exception exception) when (ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
+        // WP-MDM-SCOPE-INT-01 FIX2 m4: a write cancelled by its own caller is not a store that cannot be reached (FIX1 M7).
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested
+                                          && ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
         {
             // WP-MDM-SCOPE-ACCEPT-01 FIX1 B2 / FIX4 (6): a rollout record that cannot be read, or a store that cannot be
             // reached, refuses the write with its own coded 503 — never an unhandled exception for every product write.
@@ -107,7 +113,9 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
             ProductLegalEntityScopeRolloutMetrics.CountRetained("acquire_ambiguous");
             return ProductLegalEntityScopeWriteAdmission.Denied(LeaseWriteAmbiguousCode, 503);
         }
-        catch (Exception exception) when (ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
+        // WP-MDM-SCOPE-INT-01 FIX2 m4: a write cancelled by its own caller is not a store that cannot be reached (FIX1 M7).
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested
+                                          && ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
         {
             return ReadRefused(exception, "write_admission");
         }
@@ -292,7 +300,9 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
             ProductLegalEntityScopeRolloutMetrics.CountRetained("acquire_ambiguous");
             return ProductLegalEntityScopeWriteAdmission.Denied(LeaseWriteAmbiguousCode, 503);
         }
-        catch (Exception exception) when (ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
+        // WP-MDM-SCOPE-INT-01 FIX2 m4: a write cancelled by its own caller is not a store that cannot be reached (FIX1 M7).
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested
+                                          && ClassifyRolloutReadFailure(exception) != RolloutReadFailure.None)
         {
             // FIX2 (11): a rollout record that cannot be read refuses the Replace with the guard's coded 503.
             return ReadRefused(exception, "replace_admission");

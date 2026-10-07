@@ -1,6 +1,7 @@
 using System.Reflection;
 using Diten.MdmService.Api.Services.ProductItemSkuMaster;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -10,10 +11,10 @@ using Xunit;
 namespace Diten.MdmService.Application.Tests;
 
 /// <summary>
-/// WP-MDM-SCOPE-ACCEPT-01 FIX2 — test gap: the two recovery runners that read the fence themselves
-/// (<c>LskuIdentityWorkflowRecoveryRunner</c>, <c>FirstGskuIdentityRetirementRecoveryRunner</c>; FIX1 B3) had no test of that
-/// line. Their files belong to the LSKU / GSKU rounds and are not touched here; these tests only drive them. A fence up
-/// means: do not recover now (the worker leaves the operation for later / for its maker).
+/// WP-MDM-SCOPE-ACCEPT-01 FIX2 / WP-MDM-SCOPE-INT-01 (1) — the recovery runners that must not recover while a fence is up:
+/// the first-GSKU retirement runner (its own fence check) and both LSKU runners (through LskuBackgroundScope →
+/// ProductIdentityBackgroundScope, since LSKU FIX1 B4). Their files belong to the GSKU / LSKU rounds and are not touched
+/// here; these tests only drive them. A fence up means: do not recover now (the worker leaves the operation for later).
 /// </summary>
 public sealed class ProductLegalEntityScopeRecoveryRunnerFenceTests
 {
@@ -32,20 +33,125 @@ public sealed class ProductLegalEntityScopeRecoveryRunnerFenceTests
         Assert.Equal("FIRST_GSKU_RETIREMENT_MAKER_REPLAY_REQUIRED", result.ErrorCode);
     }
 
+    /// <summary>
+    /// WP-MDM-SCOPE-INT-01 (1) — measured on the PRODUCTION path after LSKU FIX1 B4: the LSKU runners ask
+    /// <c>LskuBackgroundScope</c>, which asks <c>ProductIdentityBackgroundScope</c> (FIX1 B3: a fence up → TenantMode.Nothing).
+    /// The real runner is driven over one tenant and one recoverable operation: with a fence up the operation is deferred
+    /// and never reaches the processor; in Preparation without a fence it does (the processor here is an empty shell, so
+    /// reaching it is counted as a failed attempt — what is measured is that recovery was ATTEMPTED).
+    /// </summary>
     [Theory]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    public async Task The_lsku_identity_runner_recovers_only_without_a_fence(bool fenced, bool allowed)
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task The_lsku_identity_runner_recovers_only_without_a_fence(bool fenced)
     {
-        var method = typeof(LskuIdentityWorkflowRecoveryRunner).GetMethod(
-            "IsBackgroundRecoveryAllowedAsync", BindingFlags.NonPublic | BindingFlags.Static)!;
-        var services = new ServiceCollection()
-            .AddSingleton<IProductLegalEntityScopeRolloutStateRepository>(new Rollouts(Rollout(fenced)))
-            .BuildServiceProvider();
+        var lskuOperation = new LskuIdentityWorkflowOperation { OperationId = Guid.NewGuid(), TenantId = Tenant, GskuId = Guid.NewGuid() };
+        using var provider = Services(fenced, services =>
+        {
+            services.AddScoped<ILskuIdentityWorkflowTenantPartitionDiscovery>(_ => Fake<ILskuIdentityWorkflowTenantPartitionDiscovery>(
+                ("DiscoverAsync", _ => Task.FromResult(new LskuIdentityWorkflowTenantPartitionPage([Tenant], null)))));
+            services.AddScoped<ILskuIdentityWorkflowOperationRepository>(_ => Fake<ILskuIdentityWorkflowOperationRepository>(
+                ("DiscoverRecoverableAsync", _ => Task.FromResult(new LskuIdentityWorkflowRecoverablePage([lskuOperation], null)))));
+            services.AddScoped(_ => (LskuIdentityWorkflowProcessor)System.Runtime.CompilerServices.RuntimeHelpers
+                .GetUninitializedObject(typeof(LskuIdentityWorkflowProcessor)));
+        });
+        var runner = new LskuIdentityWorkflowRecoveryRunner(
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            Microsoft.Extensions.Options.Options.Create(new Diten.MdmService.Api.Configuration.LskuIdentityWorkflowWorkerOptions
+            {
+                Enabled = true, LeaseOwner = "lsku-fence-test"
+            }),
+            TimeProvider.System,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<LskuIdentityWorkflowRecoveryRunner>.Instance);
 
-        var answer = await (Task<bool>)method.Invoke(null, [services, Tenant, CancellationToken.None])!;
+        var result = await runner.RunCycleAsync();
 
-        Assert.Equal(allowed, answer);
+        Assert.Equal(1, result.OperationCount);
+        if (fenced)
+        {
+            Assert.Equal(1, result.DeferredCount);
+            Assert.Equal(0, result.CompletedCount + result.FailedCount);
+        }
+        else
+        {
+            Assert.Equal(0, result.DeferredCount);
+            Assert.Equal(1, result.CompletedCount + result.FailedCount);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task The_lsku_retirement_runner_recovers_only_without_a_fence(bool fenced)
+    {
+        var retirement = new LskuRetirementRequestOperation { OperationId = Guid.NewGuid(), TenantId = Tenant, LskuId = Guid.NewGuid() };
+        using var provider = Services(fenced, services =>
+        {
+            services.AddScoped<ILskuRetirementRequestOperationRepository>(_ => Fake<ILskuRetirementRequestOperationRepository>(
+                ("DiscoverTenantPartitionsAsync", _ => Task.FromResult(new GlobalProductIdentityWorkflowTenantPartitionPage([Tenant], null))),
+                ("DiscoverRecoverableAsync", _ => Task.FromResult(new LskuRetirementRequestPage([retirement], null)))));
+            services.AddScoped(_ => (LskuRetirementRequestWorkflowProcessor)System.Runtime.CompilerServices.RuntimeHelpers
+                .GetUninitializedObject(typeof(LskuRetirementRequestWorkflowProcessor)));
+        });
+        var runner = new LskuRetirementRequestRecoveryRunner(
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            Microsoft.Extensions.Options.Options.Create(new Diten.MdmService.Api.Configuration.LskuRetirementRequestWorkflowWorkerOptions { Enabled = true }),
+            TimeProvider.System,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<LskuRetirementRequestRecoveryRunner>.Instance);
+
+        var result = await runner.RunCycleAsync();
+
+        Assert.Equal(1, result.OperationCount);
+        if (fenced)
+        {
+            Assert.Equal(1, result.DeferredCount);
+            Assert.Equal(0, result.CompletedCount + result.FailedCount);
+        }
+        else
+        {
+            Assert.Equal(0, result.DeferredCount);
+            Assert.Equal(1, result.CompletedCount + result.FailedCount);
+        }
+    }
+
+    /// <summary>The production scope chain (ProductIdentityBackgroundScope → LskuBackgroundScope) over this rollout.</summary>
+    private static ServiceProvider Services(bool fenced, Action<ServiceCollection> add)
+    {
+        var services = new ServiceCollection();
+        services.AddScoped<Diten.MdmService.Application.Common.ITenantContext, Diten.MdmService.Application.Common.TenantContext>();
+        services.AddSingleton<IProductLegalEntityScopeRolloutStateRepository>(new Rollouts(Rollout(fenced)));
+        services.AddSingleton(Fake<IProductLegalEntityScopePolicyRepository>());
+        services.AddSingleton(Fake<ILskuRepository>());
+        services.AddSingleton(Fake<IGskuRepository>());
+        services.AddSingleton(Fake<IProductDefinitionRevisionRepository>());
+        services.AddSingleton(TimeProvider.System);
+        services.AddScoped<Diten.MdmService.Application.Features.ProductLegalEntityScopes.ProductIdentityBackgroundScope>();
+        services.AddScoped<Diten.MdmService.Application.Features.ProductLegalEntityScopes.LskuBackgroundScope>();
+        add(services);
+        return services.BuildServiceProvider();
+    }
+
+    /// <summary>
+    /// An interface answering only the calls named here; any other call fails the test loudly (it was not expected),
+    /// except the optional counts (a Task&lt;long&gt; answers 0).
+    /// </summary>
+    private static T Fake<T>(params (string Method, Func<object?[]?, object> Answer)[] answers) where T : class
+    {
+        var proxy = DispatchProxy.Create<T, FakeProxy>();
+        ((FakeProxy)(object)proxy).Answers = answers.ToDictionary(item => item.Method, item => item.Answer);
+        return proxy;
+    }
+
+    public class FakeProxy : DispatchProxy
+    {
+        public Dictionary<string, Func<object?[]?, object>> Answers { get; set; } = [];
+
+        protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
+        {
+            if (targetMethod is not null && Answers.TryGetValue(targetMethod.Name, out var answer)) return answer(args);
+            if (targetMethod?.ReturnType == typeof(Task<long>)) return Task.FromResult(0L);
+            throw new NotSupportedException($"Unexpected call: {targetMethod?.DeclaringType?.Name}.{targetMethod?.Name}");
+        }
     }
 
     private static ProductLegalEntityScopeRolloutState Rollout(bool fenced)

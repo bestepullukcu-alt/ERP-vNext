@@ -759,46 +759,80 @@ public sealed class GskuRepository : IGskuRepository
                          x.ChildKind == childKind && x.AcquiredAtUtc < acquiredBeforeUtc))
             {
                 if (orphans.Count >= limit) return orphans;
-                var hold = await ChildHoldAsync(childKind, admission.CreationCommandId, cancellationToken);
-                // FIX3 M6: not held because its code is bound to a row that was cancelled (deleted) — a cancel that
-                // committed and then failed before its burn: the repair burns that code too, then releases.
-                if (!hold.Held && hold.Reservation is
-                    {
-                        ReservationState: CodeReservationState.Consumed,
-                        BindingState: CodeReservationBindingState.PendingIdentityWrite,
-                        ConsumedEntityId: { } deletedIdentity
-                    } boundToDeleted)
-                    orphans.Add(new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
-                        admission.RequestFingerprint, admission.AcquiredAtUtc,
-                        boundToDeleted.Id, deletedIdentity, boundToDeleted.Version));
-                else if (!hold.Held)
-                    orphans.Add(new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
-                        admission.RequestFingerprint, admission.AcquiredAtUtc));
-                // FIX3 M6: held only by a code reserved before the cutoff and never consumed — nothing can become the
-                // child without consuming it; the repair consumes and burns it, then releases.
-                else if (!hold.ByRow && hold.Reservation is { ReservationState: CodeReservationState.Reserved } reserved
-                         && reserved.ReservedAt < acquiredBeforeUtc)
-                    orphans.Add(new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
-                        admission.RequestFingerprint, admission.AcquiredAtUtc,
-                        reserved.Id, null, reserved.Version, ReservationNeverConsumed: true));
-                // LSKU FIX2 item 5: held ONLY by a code consumed for an identity whose row never came, older than the
-                // cutoff — the operator path burns that code first (the repair handler), then releases.
-                else if (!hold.ByRow && hold.Reservation is
-                         {
-                             ReservationState: CodeReservationState.Consumed,
-                             BindingState: CodeReservationBindingState.PendingIdentityWrite,
-                             ConsumedEntityId: { } identity
-                         } stale
-                         && stale.ConsumedAt < acquiredBeforeUtc
-                         && !await IdentityRowExistsAsync(childKind, identity, cancellationToken))
-                    orphans.Add(new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
-                        admission.RequestFingerprint, admission.AcquiredAtUtc,
-                        stale.Id, identity, stale.Version));
+                if (await ClassifyOrphanAsync(gsku, admission, childKind, acquiredBeforeUtc, cancellationToken) is { } orphan)
+                    orphans.Add(orphan);
             }
             if (holders.Count < HolderPageSize) break;
             after = holders[^1].Id;
         }
         return orphans;
+    }
+
+    // The classification of one admission, shared by the bounded read above and the paged walk below (FIX2: extracted
+    // unchanged — held / bound to a cancelled row / never-consumed code / stale consumed code).
+    private async Task<GskuOrphanChildAdmission?> ClassifyOrphanAsync(
+        Gsku gsku, GskuChildCreationAdmission admission, GskuChildIdentityKind childKind, DateTimeOffset acquiredBeforeUtc,
+        CancellationToken cancellationToken)
+    {
+        var hold = await ChildHoldAsync(childKind, admission.CreationCommandId, cancellationToken);
+        // FIX3 M6: not held because its code is bound to a row that was cancelled (deleted) — a cancel that
+        // committed and then failed before its burn: the repair burns that code too, then releases.
+        if (!hold.Held && hold.Reservation is
+            {
+                ReservationState: CodeReservationState.Consumed,
+                BindingState: CodeReservationBindingState.PendingIdentityWrite,
+                ConsumedEntityId: { } deletedIdentity
+            } boundToDeleted)
+            return new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
+                admission.RequestFingerprint, admission.AcquiredAtUtc,
+                boundToDeleted.Id, deletedIdentity, boundToDeleted.Version);
+        else if (!hold.Held)
+            return new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
+                admission.RequestFingerprint, admission.AcquiredAtUtc);
+        // FIX3 M6: held only by a code reserved before the cutoff and never consumed — nothing can become the
+        // child without consuming it; the repair consumes and burns it, then releases.
+        else if (!hold.ByRow && hold.Reservation is { ReservationState: CodeReservationState.Reserved } reserved
+                 && reserved.ReservedAt < acquiredBeforeUtc)
+            return new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
+                admission.RequestFingerprint, admission.AcquiredAtUtc,
+                reserved.Id, null, reserved.Version, ReservationNeverConsumed: true);
+        // LSKU FIX2 item 5: held ONLY by a code consumed for an identity whose row never came, older than the
+        // cutoff — the operator path burns that code first (the repair handler), then releases.
+        else if (!hold.ByRow && hold.Reservation is
+                 {
+                     ReservationState: CodeReservationState.Consumed,
+                     BindingState: CodeReservationBindingState.PendingIdentityWrite,
+                     ConsumedEntityId: { } identity
+                 } stale
+                 && stale.ConsumedAt < acquiredBeforeUtc
+                 && !await IdentityRowExistsAsync(childKind, identity, cancellationToken))
+            return new(gsku.Id, gsku.Version, childKind, admission.CreationCommandId,
+                admission.RequestFingerprint, admission.AcquiredAtUtc,
+                stale.Id, identity, stale.Version);
+        return null;
+    }
+
+    // WP-MDM-SCOPE-INT-01 FIX2 item 1: one page of holder GSKUs after the cursor, every orphan of each (whole GSKUs, so
+    // the cursor never splits one). The caller walks the pages (bounded) and filters; NextAfterGskuId null = done.
+    public async Task<GskuOrphanAdmissionPage> FindOrphanChildCreationAdmissionPageAsync(
+        GskuChildIdentityKind childKind, DateTimeOffset acquiredBeforeUtc, Guid? afterGskuId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Enum.IsDefined(childKind) || acquiredBeforeUtc.Offset != TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(childKind), ChildCreationAdmissionCodes.RepairContractInvalid);
+        var filter = ActiveFilter & Builders<Gsku>.Filter.ElemMatch(x => x.ChildCreationAdmissions,
+            x => x.ChildKind == childKind && x.AcquiredAtUtc < acquiredBeforeUtc);
+        if (afterGskuId.HasValue) filter &= Builders<Gsku>.Filter.Gt(x => x.Id, afterGskuId.Value);
+        var holders = await _gskus.Find(filter).SortBy(x => x.Id).Limit(HolderPageSize).ToListAsync(cancellationToken);
+        var orphans = new List<GskuOrphanChildAdmission>();
+        foreach (var gsku in holders)
+        foreach (var admission in gsku.ChildCreationAdmissions.Where(x =>
+                     x.ChildKind == childKind && x.AcquiredAtUtc < acquiredBeforeUtc))
+        {
+            if (await ClassifyOrphanAsync(gsku, admission, childKind, acquiredBeforeUtc, cancellationToken) is { } orphan)
+                orphans.Add(orphan);
+        }
+        return new(orphans, holders.Count < HolderPageSize ? null : holders[^1].Id);
     }
 
     // LSKU FIX1 B1 (c): conditioned on the version read, on no lifecycle operation holding the GSKU (its binding is
@@ -843,7 +877,7 @@ public sealed class GskuRepository : IGskuRepository
     }
 
     private const int HolderPageSize = 100;
-    private const int MaximumHolderPages = 50;
+    private const int MaximumHolderPages = GskuOrphanAdmissionPage.MaximumPages;
 
     private static FilterDefinition<Gsku> AdmissionMatch(
         GskuChildIdentityKind childKind, string creationCommandId, string requestFingerprint) =>

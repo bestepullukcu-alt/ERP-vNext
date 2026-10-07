@@ -301,6 +301,20 @@ code that can no longer become one — consumed for an identity whose row never 
 reserved and never consumed — and only then releases the admission, with an audit intent on the GSKU in the same
 write. A refused burn keeps the admission and is reported (`LSKU_ADMISSION_REPAIR_BURN_REFUSED:<code>`).
 
+**Legal-entity scope (WP-MDM-SCOPE-INT-01 FIX1 / FIX2).** The repair is a non-human actor and follows the background
+workers' scope rule (the same endpoint serves `POST /api/finished-goods/operator/child-admission-repairs` for FG):
+
+| tenant | what the repair does | answer |
+|---|---|---|
+| no rollout / Preparation | every orphan, as before | `found`, `released`, `items` |
+| Enforced | only orphans whose GSKU's product is in scope (a policy in force); the others are skipped and only counted — their codes and admissions are untouched, their ids never returned | `outOfScope` = skipped orphans over every page walked |
+| FailClosedSuspended / a fence up / a rollout that cannot be read | refused | `409 PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED` / `409 PRODUCT_SCOPE_WRITE_FENCE_ACTIVE` / coded `503` — from the write fence, before the repair runs; `409 LSKU_ADMISSION_REPAIR_SCOPE_CLOSED` from the repair itself only on a direct call or a race with a suspension |
+
+The repair walks the orphans page by page (GSKU id order) until it has `limit` in-scope ones or reaches the end, so
+out-of-scope orphans in front never hide the ones behind them. The walk is bounded (50 pages of 100 GSKUs); when it
+stops at that bound `truncated` is `true` — run it again. A run that ended in an error keeps its writer lease until it
+expires (~120 s); during that time an activation / suspension fence waits, then goes on.
+
 **A burn needs a replica set (FIX4 item 11).** Burning a code is one Mongo transaction (it reads "no live row bound" and
 burns in the same transaction). On a standalone `mongod` every burn is refused with
 `CODE_RESERVATION_BURN_TRANSACTION_UNAVAILABLE` (503): an LSKU draft cancel deletes the draft and answers 503 (its code
