@@ -34,8 +34,8 @@ doktor → aktif segment → aktif oyun (STR-TUTUKON) → ürün satırı → ya
 | E2 ☑ | **İçerik:** en az 2 KnowledgeContent (TUTUKON, tr) — promo detaylama + bir non-promo bilgi. Gerekirse iddia bağı. Yayımla (onay akışı varsa sema) | CT (Beste) + kullanıcı sema girişi (onay) | İçerikler `published`, tr | ☐ |
 | E3 ☑ | **Yol (KnowledgePath):** içerikleri adım olarak içeren yol → gönder → onay → yayımla | CT + sema | Yol `released` / yayımlanmış sürüm | ☐ |
 | E4 ☑ | **Yolculuk (ContentEngagementJourney):** en az 2 aşama, her aşama yola bağlı → yayımla | CT (+ sema SoD gerekirse) | Yolculuk yayımlanmış, aşamalar sıralı | ☐ |
-| E5 | **Oyun:** STR-TUTUKON'un **yeni sürümü** — segment bağlaması `E2E-TUT-SINDIRIM`, ürün satırı TUTUKON → E4 yolculuğu, sıklık politikası → etkinleştir | CT (Beste) | Aktif oyun yeni segmente bağlı; eski sürüm "superseded" | ☐ |
-| E6 | **Sıklık:** TUTUKON segmenti için sıklık politikası (ör. dönemde 3) aktif mi; değilse `E2E-TUT-VFP` oluştur + etkinleştir | CT | Önizlemede `frequencyStatus = resolved` | ☐ |
+| E5 ☑ | **Oyun:** STR-TUTUKON'un **yeni sürümü** — segment bağlaması `E2E-TUT-SINDIRIM`, ürün satırı TUTUKON → E4 yolculuğu, sıklık politikası → etkinleştir | CT (Beste) | Aktif oyun yeni segmente bağlı; eski sürüm "superseded" | ☐ |
+| E6 ☑ | **Sıklık:** TUTUKON segmenti için sıklık politikası (ör. dönemde 3) aktif mi; değilse `E2E-TUT-VFP` oluştur + etkinleştir | CT | Önizlemede `frequencyStatus = resolved` | ☐ |
 | E7 | **Plan:** Beste ile yeni taslak (aktif dönem, boş ilk hafta) → Hedefler'de bölge araması → uzmanlığı uygun 5–10 doktor + 1–2 eczane → Hedefleri kaydet → **Önizleme** | CT (Beste) | `contentStatus = resolved` (segment üyesi doktorlarda), içerik kalemleri (ürün, aşama, adımlar), süre tipik modelden; tatil / hafta sonu boş; bölge uyarısı yok | ☐ |
 | E8 | **Uygula** (haftanın planı) | CT (Beste) | Planlanan Ziyaretler'de kayıtlar, `contentItems` dolu, adlar görünür | ☐ |
 | E9 | **Ziyaret Yürütme:** bir ziyareti aç → içerik / sunum bilgisi → sonucu kaydet → rapor gönder | CT (Beste) | Rapor kaydı; yolculuk ilerlemesi bir sonraki aşamaya geçer (SB-3b) | ☐ |
@@ -170,3 +170,24 @@ Yayın kontrol listesi tam: MLR onaylı, çıktı hazır, tüm içerikler yayın
 - **E4-B2:** Aşama formu yeni aşamada "zorunlu"yu kapalı başlatıyor. Yayın "en az bir zorunlu aşama" istiyor (V-J11); hata mesajı **İngilizce** ("A journey can only be published…"). Onay penceresi "Emin misiniz? Devam etmek istediğinize emin misiniz?" diye iki kez soruyor.
 - **E4-B3:** Aşamanın "Önerilen Bilgi Yolu" listesi konudan bağımsız tüm yolları gösteriyor (TUTUKON yolculuğunda ALMIBA yolları).
 - **E4-B4 (kural / karar):** Yolculuğu oluşturan kişi (sema) kendisi yayımlayabildi. Yolda "yayınlayan ≠ gönderen" var, yolculukta yok → tutarlılık kararı.
+### E6 — Sıklık (CT, 2026-10-07; sema girişi) ☑
+**Yazma:** politika `vfp-2026-mi82xi` "E2E-TUT-VFP — TUTUKON gastroenteroloji, ayda 2" (id `290934ac…`).
+- Hedef: segment `E2E-TUT-SINDIRIM`; monthly · 2 / ay · ağırlık 500 · kaynak manual.
+- **Kaydet ve aktive et** → aktif.
+
+**Bulgu:**
+- **E6-B1 (küçük):** Çakışma ağırlığı seçilmeden kaydedince yalnız "Lütfen işaretli alanları düzeltin." çıkıyor; hiçbir alan işaretlenmiyor (eksik yalnız sağdaki kontrol listesinde yazıyor).
+
+### E5 — Oyun yeni sürüm (CT, 2026-10-07; sema girişi) ☑
+**Yazmalar:** `STR-TUTUKON-URO` **v2** (id `5e6227f1-1ed9-4484-956f-0b52ab166486`).
+- Ad "TUTUKON Sindirim Konforu Play (E2E-TUT)".
+- Segment `E2E-TUT-SINDIRIM` (birincil); eski `SEG-URO-DOCTORS` kaldırıldı.
+- Sıklık → `vfp-2026-mi82xi`.
+- Ürün satırı TUTUKON · %100 · promo · yolculuk `CEJ-2026-8AD806`.
+- Eski yol bağı (`KP-2026-49DE5D`) kaldırıldı.
+- **Aktifleştirildi.** v1 → `SupersededByTemplateId = v2`.
+
+**Bulgular:**
+- **E5-B1:** "Kaydet ve aktifleştir" kaydetti ama **aktifleştirmedi** (v2 taslak kaldı; ayrıntıdan ayrıca "Aktifleştir" gerekti).
+- **E5-B2:** v1 `TemplateStatus = active` kalıyor (yalnız `SupersededByTemplateId` doldu) → aynı soyda iki "aktif" sürüm. Çözücü segmentten bulduğu için bugün zararsız (v1'in segmenti arşivli), ama kural netleşmeli.
+- **E5-B3:** Düzenleme ekranında arşivli segment bağı ad yerine ham GUID (`63deb51c…`) gösteriyor.

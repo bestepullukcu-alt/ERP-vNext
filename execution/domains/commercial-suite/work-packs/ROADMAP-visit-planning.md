@@ -78,8 +78,8 @@ Plan: [E2E-TUTUKON-content-to-visit-plan.md](E2E-TUTUKON-content-to-visit-plan.m
 - ☑ E2 içerik — `KC-2026-E70D11` (detaylama) + `KC-2026-2EC045` (kullanım / dozaj) yayımlandı; bulgular E2-B1 ürün seçici 100 sınırı (TUTUKON yok), E2-B2 içerik onaysız yayımlanıyor (karar), E2-B3 ham kodlar
 - ☑ E3 yol — `KP-2026-269A07` MLR onaylı (sema) + arşiv PDF + **yayında**
 - ☑ E4 yolculuk — `CEJ-2026-8AD806` 2 aşama (Farkındalık → Pekiştirme, ikisi de TUTUKON yolu) **yayında**; bulgular E4-B1..B4
-- ☐ E5 oyun yeni sürüm (yeni segment + yolculuk)
-- ☐ E6 sıklık
+- ☑ E5 oyun — STR-TUTUKON-URO **v2 aktif** (segment E2E-TUT-SINDIRIM, ürün satırı → CEJ-2026-8AD806, sıklık vfp-2026-mi82xi); bulgular E5-B1..B3
+- ☑ E6 sıklık — `vfp-2026-mi82xi` aktif (ayda 2); bulgu E6-B1
 - ☐ E7 plan + önizleme (`contentStatus = resolved`)
 - ☐ E8 uygula
 - ☐ E9 ziyaret raporu + yolculuk ilerlemesi
