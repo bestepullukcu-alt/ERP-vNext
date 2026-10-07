@@ -212,7 +212,8 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             && activeModuleCatalog.Any(permission =>
                 ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key))
             && ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys.All(keySet.Contains)
-            && !keySet.Any(ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey);
+            // BL-573: a deactivation snapshot carries neither the owned lifecycle keys nor the stock-behaviour keys.
+            && !keySet.Any(ProductIdentityLifecycleEntitlementGrantProfile.IsDedicatedOnlyPermissionKey);
 
         // No declared keys normally fall back to the convention resolver. A module whose active catalog contains a
         // special least-privilege profile must never take that path: an authoritative empty descriptor snapshot is
@@ -246,7 +247,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             if (lifecycleDeactivationSnapshot)
             {
                 authoritativeKeys.RemoveWhere(key =>
-                    ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(key));
+                    ProductIdentityLifecycleEntitlementGrantProfile.IsDedicatedOnlyPermissionKey(key));
             }
             if (!keySet.SetEquals(authoritativeKeys))
             {
@@ -597,7 +598,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             .ToDictionary(permission => permission.Key, StringComparer.OrdinalIgnoreCase);
         var productIdentityPermissions = modulePermissions
             .Where(permission => ProductIdentityLifecycleEntitlementGrantProfile.IsBasePermissionKey(permission.Key)
-                                 || ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key))
+                                 || ProductIdentityLifecycleEntitlementGrantProfile.IsDedicatedOnlyPermissionKey(permission.Key))
             .ToDictionary(permission => permission.Key, StringComparer.Ordinal);
         // Recovery is deliberately catalogued for a non-human execution path. This reconciliation must neither
         // create a human-role grant for it nor silently turn the new-grant guard into historical-grant cleanup.
@@ -609,7 +610,8 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         var genericPermissions = modulePermissions
             .Where(permission => !ProductAbbreviationEntitlementGrantProfile.IsProductAbbreviationKey(permission.Key)
                                  && !ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key)
-                                 && !ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key)
+                                 // BL-573: the stock-behaviour edit keys follow the owned lifecycle keys — dedicated roles only.
+                                 && !ProductIdentityLifecycleEntitlementGrantProfile.IsDedicatedOnlyPermissionKey(permission.Key)
                                  && !ProductIdentityLifecycleEntitlementGrantProfile.IsNonHumanPermissionKey(permission.Key)
                                  && !ProductIdentityLifecycleEntitlementGrantProfile.IsDeclaredCrossModuleDependencyKey(permission.Key))
             .ToList();
@@ -704,7 +706,14 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             plans.Add((
                 role,
                 includeProductIdentityLifecycle
-                    ? lifecycleTemplate.PermissionKeys.Select(key =>
+                    ? lifecycleTemplate.PermissionKeys
+                        // BL-573 (CT decision A): the Steward's stock-behaviour keys only when the module declares all
+                        // three — otherwise none (no KeyNotFound on a catalog that does not carry them yet).
+                        .Concat(string.Equals(role.Name, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole,
+                                StringComparison.Ordinal)
+                            ? ProductIdentityLifecycleEntitlementGrantProfile.DeclaredStockBehaviourKeys(productIdentityPermissions.Keys)
+                            : [])
+                        .Select(key =>
                             workflowDependencies.TryGetValue(key, out var dependency)
                                 ? dependency
                                 : productIdentityPermissions[key])

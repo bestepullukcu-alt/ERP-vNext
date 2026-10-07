@@ -1766,6 +1766,126 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.False(roles.Exists(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole));
     }
 
+    // ------------------------------------------------------------------------------------------------ BL-573 (O-12)
+    // WP-AUTH-BL573-01, CT decision A: the three stock-behaviour edit keys are an all-or-nothing optional set.
+    // The contract's three keys, written out here — NOT read from the production constant, so a key dropped (or renamed)
+    // there cannot shrink the test's own expectation with it.
+    private static readonly string[] StockKeys =
+        ["mdm.gskus.edit-stock-behaviour", "mdm.lskus.edit-stock-behaviour", "mdm.finished-goods.edit-stock-behaviour"];
+
+    private static List<Permission> WithStockBehaviourKeys(List<Permission> catalog, params string[] keys)
+    {
+        IEnumerable<string> chosen = keys.Length == 0 ? StockKeys : keys;
+        catalog.AddRange(chosen.Select(PermissionFor));
+        return catalog;
+    }
+
+    private static IReadOnlyList<string> StockKeysHeldBy(FakeRolePermissionRepository rolePerms, List<Permission> catalog, Guid roleId)
+        => rolePerms.Rows
+            .Where(grant => grant.RoleId == roleId)
+            .Select(grant => catalog.Single(permission => permission.Id == grant.PermissionId).Key)
+            .Where(StockKeys.Contains)
+            .ToList();
+
+    [Fact]
+    public async Task BL573_Todays_declaration_without_the_stock_keys_reconciles_and_the_steward_gets_none()
+    {
+        // The eighteen lifecycle keys of today's MDM manifest: valid, no crash on a catalog without the three keys.
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog), Actor);
+
+        var steward = roles.IdOf(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole);
+        Assert.Contains(rolePerms.Rows, grant => grant.RoleId == steward);
+        Assert.Empty(StockKeysHeldBy(rolePerms, catalog, steward));
+    }
+
+    [Fact]
+    public async Task BL573_All_three_stock_keys_declared_go_to_the_product_data_steward_only()
+    {
+        var catalog = WithStockBehaviourKeys(ProductIdentityLifecycleCompositeCatalog());
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog), Actor);
+
+        Assert.Equal(StockKeys.Order(StringComparer.Ordinal),
+            StockKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole))
+                .Order(StringComparer.Ordinal));
+        // Viewer: a write key, never (read actions only). Admin: like the owned lifecycle write keys, dedicated roles only.
+        Assert.Empty(StockKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.ViewerRole)));
+        Assert.Empty(StockKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole)));
+        Assert.Empty(StockKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole)));
+        Assert.Empty(StockKeysHeldBy(rolePerms, catalog, roles.IdOf(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole)));
+    }
+
+    [Theory]
+    [InlineData("mdm.gskus.edit-stock-behaviour")]
+    [InlineData("mdm.gskus.edit-stock-behaviour", "mdm.lskus.edit-stock-behaviour")]
+    [InlineData("mdm.lskus.edit-stock-behaviour", "mdm.finished-goods.edit-stock-behaviour")]
+    public async Task BL573_One_or_two_of_the_stock_keys_are_refused_like_any_partial_set(params string[] partial)
+    {
+        var catalog = WithStockBehaviourKeys(ProductIdentityLifecycleCompositeCatalog(), partial);
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, ProductIdentityDeclaredKeys(catalog), Actor));
+
+        Assert.Contains("stock-behaviour", refused.Message, StringComparison.Ordinal);
+        Assert.Empty(rolePerms.Rows);
+        _ = roles;
+    }
+
+    [Fact]
+    public async Task BL573_All_three_plus_an_unknown_key_of_the_product_resources_is_refused()
+    {
+        var catalog = WithStockBehaviourKeys(ProductIdentityLifecycleCompositeCatalog());
+        catalog.Add(PermissionFor("mdm.gskus.edit-everything"));
+        var (svc, _, rolePerms) = BuildWith(catalog);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, ProductIdentityDeclaredKeys(catalog), Actor));
+        Assert.Empty(rolePerms.Rows);
+    }
+
+    [Fact]
+    public async Task BL573_A_role_holding_the_provisional_key_gets_no_stock_key_backfilled()
+    {
+        // CT decision: no backfill. A custom role that edits GSKU identity (mdm.gskus.update — the provisional value of
+        // the stock constant in S3) does not receive mdm.gskus.edit-stock-behaviour by the sync.
+        var catalog = WithStockBehaviourKeys(ProductIdentityLifecycleCompositeCatalog());
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var update = catalog.Single(p => p.Key == ProductIdentityLifecycleEntitlementGrantProfile.GskusUpdate).Id;
+        var customRole = Guid.NewGuid();
+        rolePerms.Seed(RolePermission.ManualGrant(customRole, update, TenantA, "operator"));
+        // An operator also gave the tenant Admin identity edit by hand — it still does not get stock edit.
+        var admin = roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole);
+        rolePerms.Seed(RolePermission.ManualGrant(admin, update, TenantA, "operator"));
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog), Actor);
+
+        Assert.Empty(StockKeysHeldBy(rolePerms, catalog, customRole));
+        Assert.Empty(StockKeysHeldBy(rolePerms, catalog, admin));
+    }
+
+    [Fact]
+    public async Task BL573_A_tenant_without_the_product_module_entitlement_gets_no_stock_key()
+    {
+        var catalog = WithStockBehaviourKeys(ProductIdentityLifecycleCompositeCatalog());
+        catalog.Add(new("goldenslim", "records", "read", "", null));
+        var (svc, _, rolePerms) = BuildWith(catalog);
+
+        await svc.SyncTenantModulesAsync(TenantB, new[] { "goldenslim" }, Actor, CancellationToken.None);
+
+        var stockIds = catalog.Where(p => StockKeys.Contains(p.Key))
+            .Select(p => p.Id).ToHashSet();
+        Assert.DoesNotContain(rolePerms.Rows, grant => stockIds.Contains(grant.PermissionId));
+        Assert.Contains(rolePerms.Rows, grant => grant.SourceModuleCode == "goldenslim");
+    }
+
     private static IReadOnlyList<string> ProductRoleKeys(
         FakeRoleRepository roles,
         FakeRolePermissionRepository rolePerms,
