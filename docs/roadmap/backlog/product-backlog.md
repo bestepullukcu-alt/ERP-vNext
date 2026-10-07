@@ -8063,6 +8063,40 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-571
+
+**Onay motoru kurtarma: kiracı başına tarama sınırı ilerlemiyor; 5000'den fazla yaşlı bekleyen onayı olan kiracıda sınırın dışında kalan yarım başlangıç hiç sayılmıyor, hiç kapatılmıyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform / onay motoru) · BULAN: WP-WF-ENGINE-RECOVERY-01 FIX2 bağımsız incelemesi (gerekli 3) · KAYIT: 2026-10-07
+
+`WorkflowStartRecoveryStore.cs` `$limit`'i görevsiz süzgecinden önce uyguluyor. FIX3 dizinden `$sort` (en eski önce), kapatma kipinde Warning ("süpürme bir alt kümeyi görüyor") ve runbook cümlesi ekliyor.
+
+Kalıcı çözüm: kiracı başına ilerleyen imleç. Her döngü son baktığı noktadan devam eder; tur bitince başa döner. Böylece her yarım başlangıç sonlu sürede görülür.
+
+Karşılaştırma: SAP'de arka plan iş yönetimi büyük kümeleri paketlere bölüp kaldığı paketten devam eder. Oracle ESS de toplu işleri "chunk" ve devam noktasıyla koşar.
+
+Gelecek regresyon riski: 🟡 (yalnız çok büyük kiracıda; sayaç "≥ N" ve Warning ile görünür).
+
+---
+
+### BL-572
+
+**Onay motoru kurtarma: kapat-ve-yeniden-başlat (supersede) yalnız onay ve inceleme servislerinde; üst talep ve zaman çizelgesi onayı sabit anahtarla kilitli kalabilir**
+
+DURUM: AÇIK · SAHİP: CT (Platform / onay motoru) · BULAN: WP-WF-ENGINE-RECOVERY-01 FIX2 bağımsız incelemesi (küçük 8) · KAYIT: 2026-10-07
+
+`TaskUpwardRequestService.cs:119` sabit, görev başına bir anahtar kullanıyor (`task-request:{tenant}:{task}`). `TimesheetApprovalService.cs:164` için de aynı soru açık.
+
+Başarısız bir başlangıçtan sonra atanan değişirse ya da süpürme yarım başlangıcı kapatırsa, sonraki her deneme 409 alır. FIX2'nin "tekrar yaşı tazelemez" değişikliği bu etkiyi büyütüyor. FIX3 açıkta kalan tüketicileri runbook'a yazıyor.
+
+Yapılacak: bu tüketicilere de `SupersedeWorkflowHalfStartCommand` ile kapat-ve-yeniden-başlat; testli.
+
+Karşılaştırma: SAP Business Workflow'da başlamış ama ilerlemeyen iş öğesi yönetici tarafından mantıksal olarak silinip yeniden başlatılır. Oracle BPM'de de "withdraw + resubmit" aynı kaydı yeni örnekle sürdürür.
+
+Gelecek regresyon riski: 🟡 (atanan değişiminde kullanıcı talebi 409'da takılır).
+
+---
+
 ### BL-570
 
 **MDM devralma dalındaki Auth işletim kodu Windows'a bağlı: adlı semafor ve `kernel32` / `ntdll` boruları macOS ve Linux'ta çalışmıyor; 59 Auth testi bu yüzden Windows dışında kırmızı**
