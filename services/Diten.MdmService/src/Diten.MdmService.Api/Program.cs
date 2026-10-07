@@ -91,6 +91,8 @@ builder.Services.Configure<AuditIntentTemporalMigrationOptions>(
 builder.Services.Configure<AuditIntentDeliveryWorkerOptions>(
     builder.Configuration.GetSection(AuditIntentDeliveryWorkerOptions.SectionName));
 builder.Services.AddHostedService<AuditIntentDeliveryWorker>();
+// WP-PLT-ITEM-LISTS-01: one start-up warning (outside Development) when the item-list provider is not configured.
+builder.Services.AddHostedService<Diten.MdmService.Api.ReferenceData.ItemReferenceProviderStartupWarning>();
 builder.Services.Configure<ProductIdentityWorkflowOptions>(
     builder.Configuration.GetSection(ProductIdentityWorkflowOptions.SectionName));
 builder.Services.Configure<GlobalProductCorrectionWorkflowOptions>(

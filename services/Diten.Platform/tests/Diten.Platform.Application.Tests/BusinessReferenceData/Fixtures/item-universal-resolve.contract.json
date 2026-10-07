@@ -1,0 +1,124 @@
+{
+  "_comment": "WP-PLT-ITEM-LISTS-01 contract: the answer of POST api/internal/v1/reference-data/item-universal/resolve for the request below. Platform's test produces it from the real handler; MDM's tests feed it to the real client. A change on either side turns one of them red.",
+  "request": {
+    "selections": [
+      {
+        "set_code": "material-type",
+        "value_code": "RAW_MATERIAL",
+        "resolution_mode": "LATEST"
+      },
+      {
+        "set_code": "item-uom",
+        "value_code": "KGM",
+        "resolution_mode": "LATEST"
+      },
+      {
+        "set_code": "item-uom",
+        "value_code": "GRM",
+        "resolution_mode": "LATEST"
+      },
+      {
+        "set_code": "storage-condition",
+        "value_code": "AMBIENT_15_25",
+        "resolution_mode": "LATEST"
+      },
+      {
+        "set_code": "storage-condition",
+        "value_code": "PROTECT_FROM_LIGHT",
+        "resolution_mode": "LATEST"
+      }
+    ]
+  },
+  "response": {
+    "data": {
+      "selections": [
+        {
+          "set_code": "material-type",
+          "value_code": "RAW_MATERIAL",
+          "catalog_version": "ITEM-UNIVERSAL-V1",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0003",
+          "catalog_version_number": 1,
+          "resolution_mode": "LATEST",
+          "resolved_at_utc": "2026-10-07T00:00:00+00:00",
+          "is_retired": false,
+          "selectable_for_new": true,
+          "attributes": {}
+        },
+        {
+          "set_code": "item-uom",
+          "value_code": "KGM",
+          "catalog_version": "ITEM-UNIVERSAL-V1",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0001",
+          "catalog_version_number": 1,
+          "resolution_mode": "LATEST",
+          "resolved_at_utc": "2026-10-07T00:00:00+00:00",
+          "is_retired": false,
+          "selectable_for_new": true,
+          "attributes": {
+            "DimensionCode": "MASS",
+            "MaximumDecimalPrecision": "3",
+            "FactorToDimensionBase": "1"
+          }
+        },
+        {
+          "set_code": "item-uom",
+          "value_code": "GRM",
+          "catalog_version": "ITEM-UNIVERSAL-V1",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0001",
+          "catalog_version_number": 1,
+          "resolution_mode": "LATEST",
+          "resolved_at_utc": "2026-10-07T00:00:00+00:00",
+          "is_retired": false,
+          "selectable_for_new": true,
+          "attributes": {
+            "DimensionCode": "MASS",
+            "MaximumDecimalPrecision": "3",
+            "FactorToDimensionBase": "0.001"
+          }
+        },
+        {
+          "set_code": "storage-condition",
+          "value_code": "AMBIENT_15_25",
+          "catalog_version": "ITEM-UNIVERSAL-V1",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0002",
+          "catalog_version_number": 1,
+          "resolution_mode": "LATEST",
+          "resolved_at_utc": "2026-10-07T00:00:00+00:00",
+          "is_retired": false,
+          "selectable_for_new": true,
+          "attributes": {
+            "ConditionKind": "TEMPERATURE",
+            "TemperatureMinC": "15",
+            "TemperatureMaxC": "25",
+            "ProtectFromLight": "false",
+            "ProtectFromMoisture": "false"
+          }
+        },
+        {
+          "set_code": "storage-condition",
+          "value_code": "PROTECT_FROM_LIGHT",
+          "catalog_version": "ITEM-UNIVERSAL-V1",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0002",
+          "catalog_version_number": 1,
+          "resolution_mode": "LATEST",
+          "resolved_at_utc": "2026-10-07T00:00:00+00:00",
+          "is_retired": false,
+          "selectable_for_new": true,
+          "attributes": {
+            "ConditionKind": "PROTECTION",
+            "TemperatureMinC": null,
+            "TemperatureMaxC": null,
+            "ProtectFromLight": "true",
+            "ProtectFromMoisture": "false"
+          }
+        }
+      ],
+      "not_found": []
+    },
+    "statusCode": 200,
+    "isSuccessful": true,
+    "errors": [],
+    "reason_code": null,
+    "correlation_id": null
+  }
+}
