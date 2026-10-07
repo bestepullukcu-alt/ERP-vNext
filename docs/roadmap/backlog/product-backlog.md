@@ -8063,6 +8063,31 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-576
+
+**MDM ürün varlıklarında (GSKU / LSKU / Bitmiş Ürün …) IgnoreExtraElements sınıf haritası yok: yeni bir alan yazıldıktan sonra eski ikiliye geri dönülürse o kayıtların okunması fırlar**
+
+DURUM: AÇIK · SAHİP: CT (MDM devralma) · BULAN: FU04 S3 ölçümü · KAYIT: 2026-10-07 · TEK PR'DAN ÖNCE, CANLIDA İLK STOK YAZIMINDAN ÖNCE KAPANMALI
+
+Yalnız Marka / Ürün ve üç GP yaşam döngüsü işleminin `IgnoreExtraElements` haritası var (`GlobalProductLifecycleClassMaps`). S3 ilk stok alanını yazdıktan sonra S3 öncesi ikili o GSKU / LSKU / FG'yi okurken "Element 'BaseUomCode' does not match" ile fırlar. Yani geri alma o kayıtların okunmasını bozar.
+
+S3 haritayı kendisi eklemedi, çünkü:
+- aynı süreçte daha önce yapılan bir okuma haritayı kendiliğinden kaydederse açılıştaki `Verify` deseni düşer (BL-569 ile aynı kök);
+- haritanın eklenmesi kimlik varlıklarının eşlemesini değiştirir, S3'ün kapsamı değil.
+
+Yapılacak:
+- GP desenindeki harita, MDM'in bütün ürün kimliği varlıkları için (GSKU, LSKU, FG, ürün tanımı revizyonu, iş akışı işlemleri; ölçülür).
+- Test sırası koruması (modül başlatıcı).
+- Ek alanlı belgeyle eski ikili simülasyonu testi.
+
+Bağlam: ürün modülleri henüz canlıda değil, bugün "eski ikili" canlıda koşmuyor. Risk, gelecek ek alanlar ve geri almalar için yapısal.
+
+Karşılaştırma: SAP'de tablo genişletmeleri (append structure) eski programların okumasını bozmaz. Oracle'da da esnek alanlar (DFF) eski sürüm okumasında yok sayılır. İkisinde de ileri uyumluluk şemanın özelliğidir.
+
+Gelecek regresyon riski: 🔴 geri almada (kayıt okunamaz); kapanana kadar.
+
+---
+
 ### BL-575
 
 **Denetim defteri: İ5 istisnasındaki komuta iz dışı bir yazım eklenirse mimari kural yakalamıyor; merkezi eşleme bekleme kesimi (≥ 79) sürüm çıkınca ileri alınmazsa her yeni işlem bir gün bekler**
