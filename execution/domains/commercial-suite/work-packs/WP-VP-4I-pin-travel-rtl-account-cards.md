@@ -219,4 +219,4 @@ Commit: "fix(web): WP-VP-4I-WEB — strip/day-row polish, en month, account card
      - yeniden açma sayacı;
      - ürün sınırı satırı.
   3. `8eb5f41b4` — Hedefler alt başlığında kurum adı düz metin olarak ters dönüyordu → `isolate()` (FSI…PDI).
-- ☐ **Sabit + yol (4I-BE) canlı:** SERHAT → Cuma, TOKİ `no_near_day` bekleniyor. Yazma adımı, kullanıcı onayı bekliyor.
+- ☑ **Sabit + yol (4I-BE) canlı (kullanıcı onayıyla):** SERHAT "Yalnız bu doktor" ile Cuma'ya → TOKİ 42. haftaya, neden **`no_near_day`** (ekranda "yakın gün yok"); HÜSEYİN ve SEDAD Perşembe'de. Sabit kaldırıldı → TOKİ Cuma'ya döndü, sabit kalmadı. **4I E4 ACCEPTED.**
