@@ -1307,6 +1307,25 @@ ready-for-dev); waiver **W-0022-01** (DCP-002 verifier not run — no Python; ru
 - `DisposableMongoReplicaSet` (Platform test harness) no longer passes `--nounixsocket` on Windows, where mongod
   rejects it — the harness could not start on this machine before.
 
+### E3 — implementation note (WP-0022-E3, 2026-10-08, pending CT)
+
+- Branch `feature/sce/mod-0022-e3` from `48479faf9`. Commit `5452b9dfe` (samples + approval, E2 Sample port, CT-D10); local
+  only, no push. Evidence: `docs/records/audits/2026-10/mod-0022-e3-evidence-2026-10-08.md`. Contract unchanged.
+- Tests: Platform filtered 154/156 → **182/182** (+12 sample HTTP, +14 sample rules; the 2 base reds were the E2 contract
+  test reading a CRLF checkout — fixed line-ending agnostic); AuthService 1045 → **1062** (+17 CT-D10); architecture 18/18;
+  build 0 errors, the same unique warnings as the base.
+- §16 E3: every item **PASS**. Four sabotages red (owner may approve own sample, window ticket saves a sample, no sample
+  ownership check at signing, a management key in the default signer set), diff empty after restore. Runtime probe 23/23
+  (A saves → self-approval 403 → B approves → A signs with the Sample → verify valid; CT-D10 on a new tenant). Fleet unchanged.
+- **CT-D10:** `AdminModules += "esign"` (Admin holds all 15 `esign.*`, incl. `samples.approve` — CT-D5); exact
+  `DefaultSignerPermissions = { esign.signatures.sign, esign.my-samples.manage }` added to Viewer; every other grant of
+  every default role unchanged (test). **OPEN for the CT:** tenants provisioned BEFORE this change do not receive the keys
+  automatically (the startup reconciler backfills only the self-service keys); options: extend the reconciler, or the
+  tenant admin grants them (all `esign.*` are Tenant-scoped and assignable).
+- One Active sample per owner is guarded by a compare-and-set owner pointer (`esign_sample_owner_states`) inside the same
+  transaction as the insert-only sample events; a parallel second decision on one sample hits the unique
+  (sample, sequence) index and gets 409.
+
 ### Registry row proposal (CT writes it)
 
 `| MOD-0022 | e-Signature Service | e-signature-service | Module | reserved / planned |  |  | platform-shared-services | Blueprint 8.1 Blueprint_Data row 23 (W-2; Module Pages rows 66–68 say W-4). ESIGN-BUNDLE. SoR: signature envelopes, signer attestations, verification artifacts. DCP-002 verifier pending (waiver W-0022-01, no Python). Pack: execution/domains/platform-shared-services/module-packs/MOD-0022-e-signature-service.md (draft 2026-10-07). |`
