@@ -270,11 +270,11 @@ public sealed class VisitPlanningTargetsTabWebTests
     public void Institution_rows_count_selected_and_due_doctors_and_out_of_territory_is_a_dialog()
     {
         var js = Script("details.js");
-        var stats = Between(js, "const accountStatsText = id => {", "\n    };");
+        var stats = Between(js, "const accountStatParts = id => {", "\n    };"); // 4I (6): parts, drawn as separate items
         Assert.Contains("(L.AccountSelectedOf || '{0} / {1}').replace('{0}', sel).replace('{1}', st.active)", stats);
         Assert.Contains("(L.AccountDueThisWeek || '{0}').replace('{0}', st.due)", stats);
         Assert.Contains("due: rows.filter(x => x.status.dueThisWeek).length", js);
-        Assert.Contains("'<span class=\"d-block small text-muted vp-acc-stats\" data-aid=\"' + esc(a.id) + '\" data-city=\"' + esc(cityOnly(a)) + '\">' + esc([cityOnly(a), accountStatsText(a.id)]", js);
+        Assert.Contains("data-aid=\"' + esc(a.id) + '\" data-city=\"' + esc(cityOnly(a)) + '\">' + accountStatsHtml(a.id, cityOnly(a)) + '</span>'", js);
 
         var view = View("Details.cshtml");
         var modal = Between(view, "id=\"vp-out-territory-modal\"", "</select>");

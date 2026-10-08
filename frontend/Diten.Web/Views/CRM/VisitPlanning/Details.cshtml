@@ -68,8 +68,8 @@
         <div class="wcn-sum-main">
             <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-info-circle dt-card-icon" aria-hidden="true"></i>@Localizer["PlanSummaryLabel"]</h6>
             <div class="row g-4">
-                <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-calendar" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["CyclePeriod"]</div><div class="backbone-preview-value mt-1" id="vp-d-period">—</div></div></div></div>
-                <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-user" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["Rep"]</div><div class="backbone-preview-value mt-1" id="vp-d-rep">—</div></div></div></div>
+                <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-calendar" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["CyclePeriod"]</div><div class="backbone-preview-value mt-1" id="vp-d-period" dir="auto">—</div></div></div></div>
+                <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-user" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["Rep"]</div><div class="backbone-preview-value mt-1" id="vp-d-rep" dir="auto">—</div></div></div></div>
                 <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-calendar-week" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["WeekLabel"]</div><div class="backbone-preview-value mt-1" id="vp-d-week">—</div></div></div></div>
                 <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-flag" aria-hidden="true"></i><div><div class="backbone-preview-label">@SharedLocalizer["Status"]</div><div class="backbone-preview-value mt-1"><span class="badge bg-label-secondary" id="vp-d-status-strip">—</span></div></div></div></div>
                 <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-map-alt" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["DateRangeLabel"]</div><div class="backbone-preview-value mt-1" id="vp-route-range">—</div></div></div></div>
@@ -235,7 +235,8 @@
                             <div id="vp-add-account-wrap" class="mt-2">
                                 @* WP-VP-4C (1) — "Add out-of-territory" opens a dialog with the whole-tenant search (WP-VP-2 B-2 flow kept):
                                    an account added there carries the out-of-territory badge. *@
-                                <button type="button" class="btn btn-sm btn-label-warning w-100" id="vp-out-territory-open" data-bs-toggle="modal" data-bs-target="#vp-out-territory-modal"><i class="bx bx-map-pin me-1"></i>@Localizer["AddOutOfTerritoryShort"]</button>
+                                @* WP-VP-4I (6) — the mockup's white, dashed "+ Add out-of-territory" (the dialog and its flow unchanged). *@
+                                <button type="button" class="btn btn-sm w-100 bg-white text-heading d-flex align-items-center justify-content-center gap-1 vp-out-territory-btn" style="border:1px dashed #b4bdc6" id="vp-out-territory-open" data-bs-toggle="modal" data-bs-target="#vp-out-territory-modal"><i class="bx bx-plus"></i>@Localizer["AddOutOfTerritoryShort"]</button>
                             </div>
                         }
                     </div>
@@ -243,7 +244,7 @@
                     @* ── MIDDLE — selected account: doctors / linked-pharmacies sub-tabs ── *@
                     <div class="col-12 col-lg-6 d-none" id="vp-contacts-panel">
                         <div class="text-muted text-uppercase small mb-1">@Localizer["SelectedAccount"]</div>
-                        <h5 class="mb-1" id="vp-contacts-for">—</h5>
+                        <h5 class="mb-1" id="vp-contacts-for" dir="auto">—</h5>
                         <div class="text-muted small mb-3" id="vp-contacts-meta">—</div>
 
                         <div class="nav-align-top mb-3">

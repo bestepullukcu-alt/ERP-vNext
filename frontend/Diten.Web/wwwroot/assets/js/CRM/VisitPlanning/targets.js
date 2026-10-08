@@ -38,6 +38,7 @@
 
     const el = id => document.getElementById(id);
     const esc = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; };
+    const bidi = s => window.VisitPlanningFormat.bidi(s); // WP-VP-4I (7) — data names isolated (<bdi>) for RTL
     const fmt = (tpl, ...args) => args.reduce((t, a, i) => t.split('{' + i + '}').join(String(a)), String(tpl || ''));
     const request = (url, options) => {
         options = options || {};
@@ -144,7 +145,7 @@
         const warn = promo && it.noContent; // a promo product without approved content (K-7f)
         const tip = [it.productName ? it.productCode : '', promo ? L.LegendPromo : L.LegendNonPromo, sourceLabel(it.source), warn ? L.NoApprovedContent : ''].filter(Boolean).join(' · ');
         return '<span class="badge rounded-pill ' + (promo ? 'bg-label-primary' : 'bg-transparent border text-body') + ' vp-pchip" data-role="' + esc(roleOf(it)) + '" data-source="' + esc(it.source) + '" title="' + esc(tip) + '">' +
-            '<i class="bx ' + (SOURCE_ICON[it.source] || 'bx-package') + ' me-1" aria-hidden="true"></i>' + esc(window.VisitPlanningFormat.productLabel(it)) +
+            '<i class="bx ' + (SOURCE_ICON[it.source] || 'bx-package') + ' me-1" aria-hidden="true"></i>' + bidi(window.VisitPlanningFormat.productLabel(it)) +
             (warn ? '<i class="bx bx-error text-warning ms-1" aria-label="' + esc(L.NoApprovedContent || '') + '"></i>' : '') + '</span>';
     };
     const pickButton = (cell, label, icon) => '<button type="button" class="btn btn-sm btn-text-primary px-1 py-0 js-vp-pick" data-cid="' + esc(cell.dataset.cid) + '" title="' + esc(label) + '">' + (icon ? '<i class="bx ' + icon + '"></i>' : esc(label)) + '</button>';
@@ -176,7 +177,7 @@
         }
         const dist = (p.productDistribution || []).slice().sort((a, b) => b.doctorCount - a.doctorCount);
         if (dist.length) {
-            parts.push('<div class="mt-2"><span class="opacity-75">' + esc(L.ProductDistribution || '') + ':</span> ' + dist.map(x => esc(window.VisitPlanningFormat.productLabel(x)) + ' <strong>' + x.doctorCount + '</strong>').join(' · ') + '</div>');
+            parts.push('<div class="mt-2"><span class="opacity-75">' + esc(L.ProductDistribution || '') + ':</span> ' + dist.map(x => bidi(window.VisitPlanningFormat.productLabel(x)) + ' <strong>' + x.doctorCount + '</strong>').join(' · ') + '</div>');
         }
         if (p.doctorsWithoutProducts > 0) {
             parts.push('<div class="text-warning mt-1"><i class="bx bx-error me-1"></i>' + esc(fmt(L.DoctorsWithoutProducts || '{0}', p.doctorsWithoutProducts)) + '</div>');
@@ -238,7 +239,7 @@
             const noContent = roleOf(it) === ROLE_PROMO && it.noContent;
             return '<div class="border rounded p-2 d-flex align-items-center gap-2 vp-dp-item" data-idx="' + idx + '"' + (locked ? ' data-locked="1"' : '') + '>' +
                 (locked ? '<i class="bx bx-lock-alt text-muted" title="' + esc(L.SuggestedLockHint || '') + '"></i>' : '<i class="bx ' + (SOURCE_ICON[it.source] || 'bx-user-check') + ' text-muted"></i>') +
-                '<div class="flex-grow-1" style="min-width:0"><div class="fw-medium text-truncate">' + esc(it.productName || it.productCode || '—') + '</div>' +
+                '<div class="flex-grow-1" style="min-width:0"><div class="fw-medium text-truncate">' + bidi(it.productName || it.productCode || '—') + '</div>' +
                 (it.productName && it.productCode ? '<div class="text-muted small font-monospace">' + esc(it.productCode) + '</div>' : '') +
                 (noContent ? '<div class="text-warning small"><i class="bx bx-error me-1"></i>' + esc(L.NoApprovedContent || '') + '</div>' : '') + '</div>' +
                 roleButtons(it, idx) +
@@ -257,7 +258,7 @@
         if (!picker.results.length) { host.innerHTML = '<div class="text-muted small py-2">' + esc(L.NoProductMatches || '') + '</div>'; return; }
         const taken = {}; allItems().forEach(x => { taken[x.productId] = true; });
         host.innerHTML = picker.results.map(r => '<button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-2 js-vp-add" data-pid="' + esc(r.productId) + '"' + (taken[r.productId] ? ' disabled' : '') + '>' +
-            '<i class="bx ' + (taken[r.productId] ? 'bx-check text-success' : 'bx-plus') + '"></i><span class="flex-grow-1 text-truncate">' + esc(r.productName || r.productCode || '—') + '</span>' +
+            '<i class="bx ' + (taken[r.productId] ? 'bx-check text-success' : 'bx-plus') + '"></i><span class="flex-grow-1 text-truncate">' + bidi(r.productName || r.productCode || '—') + '</span>' +
             (r.productCode ? '<span class="text-muted font-monospace">' + esc(r.productCode) + '</span>' : '') + '</button>').join('');
     };
     const searchProducts = term => request(base + '/products?pageSize=100' + (term ? '&search=' + encodeURIComponent(term) : '')).then(r => {

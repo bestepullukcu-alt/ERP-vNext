@@ -10,6 +10,7 @@
  *   number(n)      → grouped / decimal by the language
  *   dateShort(d)   → "5 Eki 26"            dateTime(d) → "5 Eki 2026 14:30"   weekdayLong(d) → "Pazartesi"
  *   productLabel(p) → productName ?? productCode
+ *   bidi(text)     → "<bdi>018 KLİNİK</bdi>" (escaped) — every data name in the page goes through it (RTL)
  * English dates read day-first ("Mon 5 Oct", the mockup order), so 'en' formats dates as en-GB. Arabic keeps its own
  * digits and month names (the page itself is dir="rtl").
  * Loaded on every Visit Planning page before the page scripts.
@@ -29,7 +30,21 @@
     const nf = options => {
         try { return new Intl.NumberFormat(culture(), options); } catch (e) { return new Intl.NumberFormat('tr', options); }
     };
-    const fmtDate = (v, options) => { const d = asDate(v); return valid(d) ? dtf(options).format(d) : '—'; };
+    // WP-VP-4I (5) — English short months are the three-letter ones ("28 Sep"): en-GB's CLDR writes September "Sept", so
+    // in English the month part is cut to its first three letters (the day-first order of en-GB stays).
+    const isEnglish = () => /^en(-|$)/i.test(culture());
+    const fmtDate = (v, options) => {
+        const d = asDate(v);
+        if (!valid(d)) return '—';
+        const f = dtf(options);
+        if (!isEnglish() || options.month !== 'short' || typeof f.formatToParts !== 'function') return f.format(d);
+        return f.formatToParts(d).map(p => (p.type === 'month' ? p.value.replace(/\.$/, '').slice(0, 3) : p.value)).join('');
+    };
+    // WP-VP-4I (7) — every DATA text (institution, doctor, product, period, rep) goes into the page isolated: in Arabic a
+    // Latin name starting with digits or punctuation ("018 KLİNİK", "75.YIL …") would otherwise be reordered by the
+    // surrounding right-to-left text. Escaped, then wrapped in <bdi>.
+    const escapeHtml = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const bidi = text => '<bdi>' + escapeHtml(text) + '</bdi>';
 
     const dayShort = v => fmtDate(v, { weekday: 'short' }).replace(/\.$/, '');
     const dayMonth = v => fmtDate(v, { day: 'numeric', month: 'short' });
@@ -72,6 +87,6 @@
     };
 
     window.VisitPlanningFormat = Object.freeze({
-        culture, dateCulture, asDate, dayShort, dayMonth, dayNumber, dayLabel, range, workRange, number, hours, dateShort, dateTime, weekdayLong, productLabel, weekLoad
+        culture, dateCulture, asDate, bidi, dayShort, dayMonth, dayNumber, dayLabel, range, workRange, number, hours, dateShort, dateTime, weekdayLong, productLabel, weekLoad
     });
 })(window, document);

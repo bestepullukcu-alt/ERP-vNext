@@ -35,6 +35,7 @@
 
     const el = id => document.getElementById(id);
     const esc = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; };
+    const bidi = VPF.bidi; // WP-VP-4I (7) — data names isolated (<bdi>) for right-to-left pages
     const fmt = (tpl, ...args) => args.reduce((t, a, i) => t.split('{' + i + '}').join(String(a)), String(tpl || ''));
     const request = (url, options) => {
         options = options || {};
@@ -125,15 +126,17 @@
             };
         });
     };
+    // WP-VP-4I (3) — the card's content starts at the leading edge (the theme's .btn centres it), and "41. Hafta" + TODAY
+    // stay on one line (TODAY 11px).
     // One card: "41. Hafta" + TODAY · the working days · the status badge · "176 visits" · the bar · holidays + warnings.
     // An empty week: a dashed card, "—" for the visits.
     const STRIP_CARD = 'flex:0 0 128px;';
     const stripCard = m => {
         const empty = m.status === 'empty';
         return '<button type="button" role="option" aria-selected="' + (m.selected ? 'true' : 'false') + '" data-ws="' + esc(m.ws) + '"' +
-            ' class="btn border rounded text-start d-flex flex-column gap-1 px-3 py-2 vp-wk-item' + (m.selected ? ' border-primary bg-label-primary' : '') + (empty ? ' vp-wk-item--empty' : '') + '"' +
+            ' class="btn border rounded text-start d-flex flex-column align-items-stretch justify-content-start gap-1 px-3 py-2 vp-wk-item' + (m.selected ? ' border-primary bg-label-primary' : '') + (empty ? ' vp-wk-item--empty' : '') + '"' +
             ' style="' + STRIP_CARD + (empty ? 'border-style:dashed !important;' : '') + '">' +
-            '<span class="d-flex justify-content-between align-items-center w-100"><span class="fw-semibold">' + esc(m.title) + '</span>' + (m.isToday ? '<span class="small fw-semibold text-primary">' + esc(L.TodayLabel || '') + '</span>' : '') + '</span>' +
+            '<span class="d-flex justify-content-between align-items-center gap-1 w-100 text-nowrap"><span class="fw-semibold">' + esc(m.title) + '</span>' + (m.isToday ? '<span class="fw-semibold text-primary" style="font-size:11px">' + esc(L.TodayLabel || '') + '</span>' : '') + '</span>' +
             '<span class="small text-muted">' + esc(m.range) + '</span>' +
             '<span class="badge align-self-start bg-label-' + (m.week.storedStatus === 'legacy' ? 'success' : (STATUS_TONE[m.status] || 'secondary')) + '">' + esc(m.label) + '</span>' +
             '<span class="small">' + esc(empty ? '—' : fmt(L.VisitCountShort || '{0}', m.visits)) + '</span>' +
@@ -188,7 +191,7 @@
         const promo = c.role !== 'non-promo';
         const warn = promo && (!c.journeyId || /^0{8}-/.test(String(c.journeyId)) || (c.warnings || []).some(x => NO_CONTENT.indexOf(x) > -1));
         return '<span class="badge ' + (promo ? 'bg-label-primary' : 'bg-transparent border text-body') + ' d-inline-flex align-items-center gap-1" title="' + esc([c.productCode, promo ? (L.LegendPromo || '') : (L.LegendNonPromo || '')].filter(Boolean).join(' · ')) + '">' +
-            (SOURCE_ICON[c.source] ? '<i class="bx ' + SOURCE_ICON[c.source] + '"></i>' : '') + esc(VPF.productLabel(c)) +
+            (SOURCE_ICON[c.source] ? '<i class="bx ' + SOURCE_ICON[c.source] + '"></i>' : '') + bidi(VPF.productLabel(c)) +
             (warn ? '<i class="bx bx-error text-warning" aria-label="' + esc(L.NoApprovedContent || '') + '"></i>' : '') + '</span>';
     };
     const chipsOf = s => {
@@ -209,8 +212,8 @@
         const name = visitName(s);
         const sub = s.contactId ? accountName(s.accountId) : '';
         const nameHtml = s.contactId
-            ? '<button type="button" class="btn btn-link p-0 text-start d-flex flex-column js-wk-doctor" data-cid="' + esc(s.contactId) + '" data-aid="' + esc(s.accountId || '') + '"><span class="fw-medium text-heading">' + esc(name) + '</span>' + (sub && sub !== '—' ? '<span class="small text-muted">' + esc(sub) + '</span>' : '') + '</button>'
-            : '<span class="fw-medium text-heading">' + esc(name) + '</span>';
+            ? '<button type="button" class="btn btn-link p-0 text-start d-flex flex-column js-wk-doctor" data-cid="' + esc(s.contactId) + '" data-aid="' + esc(s.accountId || '') + '"><span class="fw-medium text-heading">' + bidi(name) + '</span>' + (sub && sub !== '—' ? '<span class="small text-muted">' + bidi(sub) + '</span>' : '') + '</button>'
+            : '<span class="fw-medium text-heading">' + bidi(name) + '</span>';
         const hasProducts = (s.contentItems || []).length > 0;
         return '<div class="d-flex align-items-center gap-2 py-2 border-bottom flex-wrap vp-wk-visit"' + (movable ? ' draggable="true" data-drag="visit" data-slot="' + idx + '"' : '') + '>' +
             (movable ? '<i class="bx bx-grid-vertical text-muted" aria-hidden="true"></i>' : '') + pinMark(s) +
@@ -221,8 +224,10 @@
             (movable && s.isPinned ? '<button type="button" class="btn btn-sm btn-text-secondary px-1 js-wk-unpin" data-slot="' + idx + '" title="' + esc(L.Unpin || '') + '" aria-label="' + esc(L.Unpin || '') + '"><i class="bx bx-pin"></i><i class="bx bx-x small"></i></button>' : '') +
             '</div>';
     };
-    // The day row: the mockup grid (chevron 18 · "Pzt 5 Eki" 96 · bar · 150 "36 / 36" + idle / over / holiday).
-    const DAY_GRID = 'display:grid;grid-template-columns:18px 96px minmax(0,1fr) 150px;gap:12px;align-items:center';
+    // The day row: the mockup grid (chevron 18 · "Pzt 5 Eki" ≥ 96 · bar · "6 / 57" + idle / over / holiday).
+    // WP-VP-4I (4) — the day name never wraps (Arabic "الخميس 8 أكتوبر" is wider than 96px); the right column is the short
+    // count ("6 / 57", the word "visits" in its title) with its badges on ONE line.
+    const DAY_GRID = 'display:grid;grid-template-columns:18px minmax(96px,auto) minmax(0,1fr) auto;gap:12px;align-items:center';
     const dayRow = (day, movable) => {
         const s = day.summary;
         const badges = [];
@@ -247,7 +252,7 @@
             const first = slotsAll().indexOf(g.slots[0]);
             return '<div class="pt-1"' + (movable ? ' draggable="true" data-drag="institution" data-slot="' + first + '"' : '') + '>' +
                 '<div class="d-flex align-items-center gap-2 small text-muted text-uppercase pt-1">' + (movable ? '<i class="bx bx-grid-vertical" aria-hidden="true"></i>' : '') +
-                '<span class="flex-grow-1">' + esc(groupName(g.slots)) + '</span>' +
+                '<span class="flex-grow-1">' + bidi(groupName(g.slots)) + '</span>' +
                 (movable ? '<button type="button" class="btn btn-sm btn-text-secondary px-1 js-wk-move" data-slot="' + first + '" data-scope="institution" title="' + esc(L.MoveInstitution || '') + '" aria-label="' + esc(L.MoveInstitution || '') + '"><i class="bx bx-calendar-edit"></i></button>' : '') +
                 '</div>' + lines.map(v => visitLine(v, movable)).join('') + '</div>';
         }).join('');
@@ -256,9 +261,10 @@
         return '<div class="mb-1 vp-wk-day" data-date="' + esc(day.date) + '" data-droppable="' + (droppable ? '1' : '0') + '">' +
             '<button type="button" class="btn w-100 text-start p-1 js-wk-day" style="' + DAY_GRID + '" aria-expanded="' + (open ? 'true' : 'false') + '" data-date="' + esc(day.date) + '">' +
             '<i class="bx ' + (open ? 'bx-chevron-down' : 'bx-chevron-right') + ' text-muted"></i>' +
-            '<span><strong class="fw-semibold">' + esc(dayName(day.d)) + '</strong> ' + esc(dm(day.d)) + '</span>' +
+            '<span class="text-nowrap"><strong class="fw-semibold">' + esc(dayName(day.d)) + '</strong> ' + esc(dm(day.d)) + '</span>' +
             '<span class="progress" style="height:10px"><span class="progress-bar ' + (s && s.overCapacity ? 'bg-danger' : (fullBar ? 'bg-warning' : 'bg-primary')) + '" style="width:' + pct + '%"></span></span>' +
-            '<span class="d-flex justify-content-end align-items-center gap-1 flex-wrap text-nowrap small">' + esc(day.cap != null ? fmt(L.DayCapacityFormat || '{0} / {1}', day.slots.length, day.cap) : String(day.slots.length)) + ' ' + badges.join(' ') + '</span>' +
+            '<span class="d-flex justify-content-end align-items-center gap-1 text-nowrap small vp-wk-daycount" title="' + esc(day.cap != null ? fmt(L.DayCapacityFormat || '{0} / {1}', day.slots.length, day.cap) : '') + '">' +
+            '<span>' + esc(day.cap != null ? day.slots.length + ' / ' + day.cap : String(day.slots.length)) + '</span>' + badges.join('') + '</span>' +
             '</button>' +
             '<div class="ms-4 ps-3 border-start' + (open ? '' : ' d-none') + '">' +
             (day.slots.length ? body + (!full && more > 0 ? '<button type="button" class="btn btn-sm btn-link px-0 js-wk-more" data-date="' + esc(day.date) + '">' + esc(fmt(L.MoreDoctors || '{0}', more)) + '</button>' : '')
@@ -291,7 +297,7 @@
     const SLIP_TONE = { capacity_full: 'warning', no_near_day: 'info', pin_overflow: 'warning', consent_blocked: 'danger', period_exhausted: 'danger' };
     // A moved / not placed row (mockup): name over institution · reason badge · result (a package for a product).
     const slipRow = x => '<div class="d-flex justify-content-between align-items-center gap-3 border rounded px-3 py-2 flex-wrap vp-wk-slip" data-kind="' + x.kind + '">' +
-        '<div class="d-flex flex-column" style="min-width:0"><span class="fw-medium text-heading">' + esc(x.name) + '</span>' + (x.acc && x.acc !== '—' ? '<span class="small">' + esc(x.acc) + '</span>' : '') + '</div>' +
+        '<div class="d-flex flex-column" style="min-width:0"><span class="fw-medium text-heading">' + bidi(x.name) + '</span>' + (x.acc && x.acc !== '—' ? '<span class="small">' + bidi(x.acc) + '</span>' : '') + '</div>' +
         '<div class="d-flex gap-2 align-items-center flex-wrap"><span class="badge bg-label-' + (SLIP_TONE[x.code] || 'secondary') + '">' + esc(x.reason) + '</span>' +
         '<span class="small d-flex gap-1 align-items-center">' + (x.kind === 'product' ? '<i class="bx bx-package text-primary"></i>' : '') + esc(x.result) + '</span></div></div>';
 
@@ -348,7 +354,7 @@
                 const doctor = names.doctors[s.contactId] || {};
                 const sub = [doctor.specialty ? specLabelOf(doctor.specialty) : (s.contactSpecialty ? specLabelOf(s.contactSpecialty) : ''), accountName(s.accountId)].filter(x => x && x !== '—').join(' · ');
                 return '<button type="button" class="btn text-start border-0 border-top rounded-0 px-1 py-2 js-wk-doctor vp-wk-doc" data-cid="' + esc(s.contactId) + '" data-aid="' + esc(s.accountId || '') + '" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center">' +
-                    '<span class="d-flex flex-column" style="min-width:0"><span class="fw-medium text-heading">' + esc(visitName(s)) + '</span><span class="small text-muted text-truncate">' + esc(sub) + '</span></span>' +
+                    '<span class="d-flex flex-column" style="min-width:0"><span class="fw-medium text-heading">' + bidi(visitName(s)) + '</span><span class="small text-muted text-truncate">' + bidi(sub) + '</span></span>' +
                     '<span class="small text-nowrap text-end">' + esc(frequencyLine(s, doctor.status)) + '</span>' +
                     '<span class="d-flex gap-1" style="grid-column:1 / -1">' + stripRects(s.contactId, firstDraft) + '</span></button>';
             }).join('') + '</div>' : '<div class="small text-muted py-2">' + esc(L.NoDoctorsThisWeek || '') + '</div>') +
@@ -437,7 +443,7 @@
         // visits per product (name + bold count; a reminder-only product white with a frame) + the mixed order
         const counts = (wc && wc.productVisitCounts) || [];
         parts.push('<div><div class="text-uppercase small text-muted mb-2">' + esc(L.ProductVisitsTitle || '') + '</div>' +
-            (counts.length ? '<div class="d-flex flex-wrap gap-2">' + counts.map(c => '<span class="badge ' + ((c.promoVisits || 0) > 0 ? 'bg-label-primary' : 'bg-transparent border text-body') + ' d-inline-flex gap-1 align-items-center" title="' + esc([c.productCode, fmt(L.ProductVisitsSplit || '{0} {1}', c.promoVisits || 0, (c.visits || 0) - (c.promoVisits || 0))].filter(Boolean).join(' · ')) + '">' + esc(VPF.productLabel(c)) + ' <strong>' + (c.visits || 0) + '</strong></span>').join('') + '</div>'
+            (counts.length ? '<div class="d-flex flex-wrap gap-2">' + counts.map(c => '<span class="badge ' + ((c.promoVisits || 0) > 0 ? 'bg-label-primary' : 'bg-transparent border text-body') + ' d-inline-flex gap-1 align-items-center" title="' + esc([c.productCode, fmt(L.ProductVisitsSplit || '{0} {1}', c.promoVisits || 0, (c.visits || 0) - (c.promoVisits || 0))].filter(Boolean).join(' · ')) + '">' + bidi(VPF.productLabel(c)) + ' <strong>' + (c.visits || 0) + '</strong></span>').join('') + '</div>'
                 : '<div class="small text-muted">' + esc(L.NoProductVisits || '') + '</div>') +
             '<div class="small bg-label-secondary rounded px-3 py-2 mt-2 d-flex gap-2"><i class="bx bx-shuffle text-primary"></i><span>' + esc(L.MixedOrderNote || '') + '</span></div></div>');
 
@@ -456,7 +462,7 @@
         if (history.length) {
             parts.push('<div><div class="text-uppercase small text-muted mb-2">' + esc(L.WeekHistoryTitle || '') + '</div><ul class="list-unstyled small mb-0">' +
                 history.map(h => '<li class="py-1 border-bottom"><span class="fw-medium">' + esc(h.action === 'reopen' ? (L.HistoryReopened || '') : (L.HistoryApproved || '')) + '</span> · ' +
-                    esc(whoName(h.by)) + ' · ' + esc(h.at ? VPF.dateTime(h.at) : '') + (h.reason ? '<div class="text-muted">' + esc(h.reason) + '</div>' : '') + '</li>').join('') + '</ul></div>');
+                    bidi(whoName(h.by)) + ' · ' + esc(h.at ? VPF.dateTime(h.at) : '') + (h.reason ? '<div class="text-muted">' + esc(h.reason) + '</div>' : '') + '</li>').join('') + '</ul></div>');
         }
 
         host.innerHTML = parts.join('');

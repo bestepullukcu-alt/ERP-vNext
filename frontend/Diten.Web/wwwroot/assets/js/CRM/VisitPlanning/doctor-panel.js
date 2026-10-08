@@ -29,6 +29,7 @@
 
     const el = id => document.getElementById(id);
     const esc = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; };
+    const bidi = VPF.bidi; // WP-VP-4I (7) — data names isolated (<bdi>) for right-to-left pages
     const fmt = (tpl, ...args) => args.reduce((t, a, i) => t.split('{' + i + '}').join(String(a)), String(tpl || ''));
     const getJson = url => fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
         .then(r => (r.ok ? r.json() : null)).catch(() => null);
@@ -52,7 +53,7 @@
     const SOURCE_LABEL = { play: 'LegendPlay', 'rep-pick': 'LegendRepPick', 'last-visit': 'LegendLastVisit', portfolio: 'LegendPortfolio' };
     const chip = c => {
         const promo = c.role !== 'non-promo';
-        return '<span class="badge ' + (promo ? 'bg-label-primary' : 'bg-transparent border text-body') + '" title="' + esc(c.productCode || '') + '">' + esc(VPF.productLabel(c)) + '</span>';
+        return '<span class="badge ' + (promo ? 'bg-label-primary' : 'bg-transparent border text-body') + '" title="' + esc(c.productCode || '') + '">' + bidi(VPF.productLabel(c)) + '</span>';
     };
 
     // WP-VP-4H (5) — the product history covers EVERY week of the period; a week's state: done (a completed report, 4G
@@ -87,7 +88,7 @@
         const hasFrequency = status.requiredVisitCount != null && status.frequencyStatus !== 'unknown';
         const parts = [];
         parts.push('<div class="d-flex flex-wrap gap-1 mb-3">' +
-            (status.segmentBadges || []).map(sname => '<span class="badge bg-label-info" title="' + esc(L.SegmentBadgeHint || '') + '">' + esc(sname) + '</span>').join('') +
+            (status.segmentBadges || []).map(sname => '<span class="badge bg-label-info" title="' + esc(L.SegmentBadgeHint || '') + '">' + bidi(sname) + '</span>').join('') +
             (hasFrequency ? '' : '<span class="badge bg-label-secondary">' + esc(L.FrequencyNone || '') + '</span>') + '</div>');
 
         // three boxes: frequency target ("dönemde 3" / "dönemde 1 (varsayılan)", F4-2) / done / remaining (3D)

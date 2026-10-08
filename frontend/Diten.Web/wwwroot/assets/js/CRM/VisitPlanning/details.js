@@ -45,6 +45,7 @@
     const el = id => document.getElementById(id);
     const headers = () => ({ Accept: 'application/json', 'Content-Type': 'application/json' });
     const esc = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; };
+    const bidi = VPF.bidi; // WP-VP-4I (7) — data names isolated (<bdi>) for right-to-left pages
     const opt = (value, label) => { const o = document.createElement('option'); o.value = value; o.textContent = label; return o; };
     const setText = (id, v) => { const n = el(id); if (n) n.textContent = v; };
 
@@ -137,10 +138,26 @@
     let typeLabels = {}, specLabels = {};
     const loadReferenceLabels = () => api('/reference-labels').then(r => {
         const d = (r.ok && r.body && r.body.data) || {};
-        typeLabels = d.accountTypes || {}; specLabels = d.specialties || {};
+        typeLabels = d.accountTypes || {}; specLabels = d.specialties || {}; cityLabels = d.cities || {};
+        if (el('vp-acc-list')) renderAccountList(); // WP-VP-4I (8) — the provinces read by their labels once they arrive
     }).catch(() => {});
     const labelOf = (map, code) => map[code] || map[String(code).toLowerCase()] || null;
     const typeLabel = code => code ? (labelOf(typeLabels, code) || code) : '';
+    // WP-VP-4I (8) — the province by its reference label ("İstanbul", "Şanlıurfa"), read by the account's code
+    // ("TR-34-ISTANBUL") or its "TR-34" / "34" parts. Without a label: the code's last part with a Turkish capital — an ASCII
+    // code is read as transliterated ("ISTANBUL" → "İstanbul"), a Turkish one by Turkish rules ("IĞDIR" → "Iğdır").
+    let cityLabels = {};
+    const titleTr = s => String(s || '').trim().split(/\s+/).filter(Boolean).map(w => {
+        const lower = /[çğıöşüÇĞİÖŞÜ]/.test(w) ? w.toLocaleLowerCase('tr') : w.toLowerCase();
+        return lower.charAt(0).toLocaleUpperCase('tr') + lower.slice(1);
+    }).join(' ');
+    const cityLabel = code => {
+        if (!code) return '';
+        const parts = String(code).split('-');
+        const hit = labelOf(cityLabels, code) || (parts.length > 2 ? labelOf(cityLabels, parts.slice(0, 2).join('-')) : null)
+            || (parts.length > 1 ? labelOf(cityLabels, parts[1]) : null);
+        return hit || titleTr(parts[parts.length - 1]);
+    };
 
     // ── road map ──
     const weeksOf = rows => Array.from(new Set(rows.map(r => r.weekNumber))).sort((a, b) => a - b);
@@ -563,7 +580,7 @@
                       '<button type="button" class="diten-checkitem-btn vp-stop-down" aria-label="down"><i class="bx bx-chevron-down"></i></button>' +
                       '</span>') +
                 '<span class="badge ' + (ph ? 'bg-label-warning' : 'bg-label-primary') + ' flex-shrink-0">' + (i + 1) + '</span>' +
-                '<span class="diten-checkitem-text">' + esc(b.name) + '</span>' +
+                '<span class="diten-checkitem-text">' + bidi(b.name) + '</span>' +
                 '<span class="badge bg-label-secondary flex-shrink-0">' + b.count + '</span>' +
                 '</li>';
         }).join('');
@@ -634,7 +651,7 @@
             const av = '<div class="avatar avatar-xs flex-shrink-0">' +
                 (photo ? '<img src="' + esc(photo) + '" alt="" class="rounded-circle">' : '<span class="avatar-initial rounded-circle bg-label-secondary"><i class="bx bx-user"></i></span>') + '</div>';
             const spec = specialty ? '<span class="badge bg-label-info">' + esc(specLabel(specialty)) + '</span>' : '';
-            holder.innerHTML = av + '<span class="fw-medium small text-truncate">' + esc(name) + '</span>' + spec;
+            holder.innerHTML = av + '<span class="fw-medium small text-truncate">' + bidi(name) + '</span>' + spec;
         };
         paint('', '', '');
         fetchAccountContacts(block.acc).then(() => {
@@ -675,7 +692,7 @@
             '<div class="inbox-row__line inbox-row__line--primary d-flex align-items-center gap-2 flex-wrap">' +
             grip +
             chevron +
-            '<h5 class="inbox-row__title mb-0 text-truncate">' + esc(b.name) + '</h5>' + typeBadge + countBadge +
+            '<h5 class="inbox-row__title mb-0 text-truncate">' + bidi(b.name) + '</h5>' + typeBadge + countBadge +
             '</div>' +
             '<div class="inbox-row__line inbox-row__line--secondary text-muted"' + timeOrder + '><span class="inbox-row__meta-item"><i class="bx bx-time-five inbox-row__calendar-icon"></i><span>' + esc(b.start) + '–' + esc(b.end) + '</span></span></div>' +
             inlineContact +
@@ -910,9 +927,10 @@
     const accCity = a => {
         const terr = a.territoryNodeName || a.TerritoryNodeName || a.territoryNodeCode || '';
         const rawCity = a.cityRef || a.CityRef || a.city || a.cityName || (a.address && a.address.city) || '';
-        const city = (typeof rawCity === 'string' && rawCity.indexOf('-') > -1) ? rawCity.split('-').pop() : rawCity; // "TR-55-SAMSUN" → "SAMSUN"
+        const city = typeof rawCity === 'string' ? cityLabel(rawCity) : rawCity; // WP-VP-4I (8) — "TR-55-SAMSUN" → "Samsun"
         return [city, terr].filter(Boolean).join(' · ');
     };
+    const accCityRef = a => { const v = a.cityRef || a.CityRef || a.city || a.cityName || (a.address && a.address.city) || ''; return typeof v === 'string' ? v : ''; };
     // Street address for a pharmacy card: AddressLine + district when present.
     const accAddr = a => {
         const line = a.addressLine || a.AddressLine || '';
@@ -958,7 +976,7 @@
                         const id = a.accountId || a.id; if (!id || targeted[id]) return;
                         const type = String(accType(a)).toLowerCase();
                         if (type && CLINIC_TYPES.indexOf(type) === -1) return;
-                        const item = { id: id, name: accName(a), type: accType(a), city: accCity(a), lat: accLat(a), lng: accLng(a), out: outOfTerritory };
+                        const item = { id: id, name: accName(a), type: accType(a), city: accCity(a), cityRef: accCityRef(a), lat: accLat(a), lng: accLng(a), out: outOfTerritory };
                         const known = accountSource.find(function (x) { return x.id === id; });
                         if (!known) accountSource.push(item); else known.out = outOfTerritory;
                         results.push({ id: id, text: item.name + (item.type ? ' — ' + typeLabel(item.type) : '') });
@@ -981,17 +999,29 @@
     const ACCOUNT_PAGE = 50;
     const accList = { term: '', page: 0, total: null, items: [], loading: false, done: false };
     const accountActive = {}; // accountId -> its active doctors (my-accounts activeContactCount), until its doctors load
-    const cityOnly = a => String(a.city || '').split(' · ')[0];
+    const cityOnly = a => (a.cityRef ? cityLabel(a.cityRef) : String(a.city || '').split(' · ')[0]);
+    // WP-VP-4I (6) — the account card as the mockup draws it: the name, the type badge at the far end (clinic indigo,
+    // hospital cyan); below, the province, "x / y selected" and the amber "N this week" as separate items (no dots). ONLY
+    // the open account is highlighted (a light background + a 3px bar on the leading edge — the right one in RTL); a plan
+    // account reads by its "x / y selected" (still listed first) and is removed from its Selected group's header.
+    const TYPE_TONE = { clinic: 'background:#e0e2f3;color:#0b1a8c', hospital: 'background:#d7f5fc;color:#028aa6' };
+    const ACTIVE_ACCOUNT_STYLE = 'background:#f3f4fb;border-inline-start:3px solid #0b1a8c !important;';
+    const typeBadge = type => type
+        ? '<span class="badge flex-shrink-0 text-nowrap" style="font-weight:500;' + (TYPE_TONE[String(type).toLowerCase()] || 'background:#ebeef0;color:#8592a3') + '">' + esc(typeLabel(type)) + '</span>'
+        : '';
+    const accountStatsHtml = (id, city) => {
+        const st = accountStatParts(id);
+        return (city ? '<span>' + bidi(city) + '</span>' : '') + '<span>' + esc(st.head) + '</span>' +
+            (st.due ? '<span class="vp-acc-due" style="color:#b27800">' + esc(st.due) + '</span>' : '');
+    };
     const accountRow = a => {
         const inPlan = targetAccounts.some(t => t.id === a.id);
         const active = a.id === activeAccountId;
         return '<div role="option" tabindex="0" aria-selected="' + (active ? 'true' : 'false') + '" data-id="' + esc(a.id) + '"' +
-            ' class="list-group-item list-group-item-action d-flex align-items-start gap-2 vp-acc-row' + (active ? ' bg-label-primary' : '') + (inPlan ? ' vp-acc-row--in-plan' : '') + '"' +
-            ' style="cursor:pointer;' + (inPlan ? 'border-inline-start:3px solid var(--bs-primary) !important;' : '') + '">' +
-            '<span class="flex-grow-1" style="min-width:0"><span class="d-flex align-items-center gap-1 flex-wrap"><span class="fw-medium text-heading">' + esc(a.name) + '</span>' +
-            (a.type ? '<span class="badge bg-label-info">' + esc(typeLabel(a.type)) + '</span>' : '') + outBadge(a) + '</span>' +
-            '<span class="d-block small text-muted vp-acc-stats" data-aid="' + esc(a.id) + '" data-city="' + esc(cityOnly(a)) + '">' + esc([cityOnly(a), accountStatsText(a.id)].filter(Boolean).join(' · ')) + '</span></span>' +
-            (inPlan && canEditTargets() ? '<button type="button" class="btn btn-sm btn-icon btn-text-danger js-remove-account" data-id="' + esc(a.id) + '" title="' + esc(L.RemoveTarget || 'Remove') + '" aria-label="' + esc(L.RemoveTarget || 'Remove') + '"><i class="bx bx-x"></i></button>' : '') +
+            ' class="list-group-item list-group-item-action d-flex flex-column gap-1 vp-acc-row' + (active ? ' vp-acc-row--active' : '') + (inPlan ? ' vp-acc-row--in-plan' : '') + '"' +
+            ' style="cursor:pointer;padding:12px 14px;' + (active ? ACTIVE_ACCOUNT_STYLE : '') + '">' +
+            '<span class="d-flex justify-content-between align-items-start gap-2"><span class="fw-medium text-heading" style="min-width:0;font-size:14px">' + bidi(a.name) + outBadge(a) + '</span>' + typeBadge(a.type) + '</span>' +
+            '<span class="d-flex flex-wrap text-muted vp-acc-stats" style="gap:10px;font-size:13px" data-aid="' + esc(a.id) + '" data-city="' + esc(cityOnly(a)) + '">' + accountStatsHtml(a.id, cityOnly(a)) + '</span>' +
             '</div>';
     };
     const accountMatches = (a, term) => !term || new RegExp(trSearchPattern(term), 'i').test(a.name || '');
@@ -1014,7 +1044,7 @@
             if (term !== accList.term) return; // a newer search took over
             const d = (r.ok && r.body && r.body.data) || {};
             const raw = Array.isArray(d.items) ? d.items : [];
-            const rows = raw.map(x => ({ id: x.accountId || x.id, name: accName(x), type: accType(x), city: accCity(x), lat: accLat(x), lng: accLng(x), out: false }))
+            const rows = raw.map(x => ({ id: x.accountId || x.id, name: accName(x), type: accType(x), city: accCity(x), cityRef: accCityRef(x), lat: accLat(x), lng: accLng(x), out: false }))
                 .filter(x => x.id && (!x.type || CLINIC_TYPES.indexOf(String(x.type).toLowerCase()) > -1));
             raw.forEach(x => { const id = x.accountId || x.id; if (id && x.activeContactCount != null) accountActive[id] = x.activeContactCount; });
             rows.forEach(x => { if (!accountSource.find(y => y.id === x.id)) accountSource.push(x); });
@@ -1050,7 +1080,7 @@
     const lastVisitCell = st => st.lastVisitDate ? esc(dayShort(st.lastVisitDate)) : '<span class="text-muted">' + esc(L.LastVisitNever || '—') + '</span>';
     const doctorBadges = row => (row.blocked ? ' <span class="badge bg-label-danger" title="' + esc(L.ConsentBlockedHint || '') + '">' + esc(L.BadgeConsentBlocked || '') + '</span>' : '') +
         (row.inactive ? ' <span class="badge bg-label-secondary">' + esc(L.BadgeInactive || '') + '</span>' : '') +
-        (row.status.segmentBadges || []).map(name => ' <span class="badge bg-label-info" title="' + esc(L.SegmentBadgeHint || '') + '">' + esc(name) + '</span>').join('');
+        (row.status.segmentBadges || []).map(name => ' <span class="badge bg-label-info" title="' + esc(L.SegmentBadgeHint || '') + '">' + bidi(name) + '</span>').join('');
     // WP-VP-4H (6, F4-3) — "this week" (due) + the read-only badges form the Status column.
     const statusCell = row => (row.status && row.status.dueThisWeek ? '<span class="badge bg-label-primary">' + esc(L.DueThisWeekBadge || '') + '</span>' : '') + doctorBadges(row);
     const contactsConfig = list => ({
@@ -1063,7 +1093,7 @@
         columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }],
         columnDefs: [
             { targets: 0, orderable: false, className: 'cell-fit', render: (v, t, row) => '<div class="form-check mb-0"><input class="form-check-input js-contact-check" type="checkbox" data-cid="' + esc(row.contactId) + '"' + (selectedContacts[selKey(activeAccountId, row.contactId)] ? ' checked' : '') + (canEditTargets() && !row.blocked ? '' : ' disabled') + (row.blocked ? ' title="' + esc(L.ConsentBlockedHint || '') + '"' : '') + '></div>' },
-            { targets: 1, render: (v, t) => t === 'display' ? '<span class="fw-medium text-heading">' + esc(v) + '</span>' : (v || '') },
+            { targets: 1, render: (v, t) => t === 'display' ? '<span class="fw-medium text-heading">' + bidi(v) + '</span>' : (v || '') },
             { targets: 2, render: (v, t) => t === 'display' ? (v ? '<span class="badge bg-label-info">' + esc(specLabel(v)) + '</span>' : '—') : (v || '') },
             { targets: 3, orderable: false, searchable: false, render: (v, t, row) => '<div class="vp-doc-picks" data-cid="' + esc(row.contactId) + '" data-aid="' + esc(activeAccountId) + '" data-lid="' + esc(row.linkId || '') + '" data-name="' + esc(row.name) + '" data-spec="' + esc(specLabel(row.specialty)) + '"></div>' },
             { targets: 4, searchable: false, render: (v, t, row) => t === 'display' ? frequencyCell(row.status) : (hasFrequency(row.status) ? row.status.requiredVisitCount : -1) },
@@ -1153,14 +1183,14 @@
         }
         return (contactsByAccount[aid] || []).find(x => x.contactId === cid) || null;
     };
-    // "x / y selected · N this week" — y = the account's active doctors, N = those due this week (both from the "all" read).
-    const accountStatsText = id => {
+    // "x / y selected" + "N this week" — y = the account's active doctors, N = those due this week (both from the "all" read).
+    const accountStatParts = id => {
         const sel = Object.keys(selectedContacts).filter(k => k.indexOf(id + '|') === 0).length;
         const st = accountStats[id] || (accountActive[id] != null ? { active: accountActive[id], due: 0 } : null);
         const head = st ? (L.AccountSelectedOf || '{0} / {1}').replace('{0}', sel).replace('{1}', st.active) : (L.AccountSelectedCount || '{0}').replace('{0}', sel);
-        return st && st.due ? head + ' · ' + (L.AccountDueThisWeek || '{0}').replace('{0}', st.due) : head;
+        return { head, due: st && st.due ? (L.AccountDueThisWeek || '{0}').replace('{0}', st.due) : '' };
     };
-    const paintAccountStats = () => document.querySelectorAll('#vp-acc-list .vp-acc-stats').forEach(n => { n.textContent = [n.dataset.city, accountStatsText(n.dataset.aid)].filter(Boolean).join(' · '); });
+    const paintAccountStats = () => document.querySelectorAll('#vp-acc-list .vp-acc-stats').forEach(n => { n.innerHTML = accountStatsHtml(n.dataset.aid, n.dataset.city); });
     // Every target institution's counts load in the background, three reads at a time.
     const loadAccountStats = () => {
         const queue = targetAccounts.map(a => a.id).filter(id => !accountStats[id]);
@@ -1216,7 +1246,7 @@
                 return '<div class="col-12 col-md-6"><label class="vp-pharm-card d-flex gap-2 p-3 h-100' + (on ? ' vp-pharm-card--on' : '') + '">' +
                     '<input class="form-check-input mt-0 flex-shrink-0 js-pharmacy-check" type="checkbox" data-pid="' + esc(p.id) + '" data-pname="' + esc(p.name) + '"' + (on ? ' checked' : '') + (canEditTargets() ? '' : ' disabled') + '>' +
                     '<span style="min-width:0" class="flex-grow-1">' +
-                    '<span class="d-flex align-items-center gap-2 flex-wrap mb-1"><span class="fw-medium text-truncate">' + esc(p.name) + '</span>' + (p.relType ? '<span class="badge bg-label-warning text-uppercase">' + esc(p.relType) + '</span>' : '') + '</span>' +
+                    '<span class="d-flex align-items-center gap-2 flex-wrap mb-1"><span class="fw-medium text-truncate">' + bidi(p.name) + '</span>' + (p.relType ? '<span class="badge bg-label-warning text-uppercase">' + esc(p.relType) + '</span>' : '') + '</span>' +
                     '<span class="text-muted small d-block text-truncate vp-pharm-addr" data-pid="' + esc(p.id) + '">' + esc(addr || '—') + '</span>' +
                     (p.code ? '<span class="text-muted small font-monospace">' + esc(p.code) + '</span>' : '') +
                     '</span></label></div>';
@@ -1235,21 +1265,29 @@
     const cSpec = (aid, cid) => { const c = findDoctor(aid, cid); return c ? c.specialty : (savedContactSpecs[cid] || ''); };
     const chip = (kind, attr, title, sub) =>
         '<div class="d-flex align-items-center gap-2 vp-selchip" data-kind="' + kind + '" ' + attr + '>' +
-        '<span class="flex-grow-1" style="min-width:0"><span class="fw-medium small d-block text-truncate">' + esc(title) + '</span>' +
-        (sub ? '<span class="text-muted" style="font-size:.72rem;">' + esc(sub) + '</span>' : '') + '</span>' +
+        '<span class="flex-grow-1" style="min-width:0"><span class="fw-medium small d-block text-truncate">' + bidi(title) + '</span>' +
+        (sub ? '<span class="text-muted" style="font-size:.72rem;">' + bidi(sub) + '</span>' : '') + '</span>' +
         (canEditTargets() ? '<button type="button" class="btn btn-icon btn-text-secondary vp-selchip-x flex-shrink-0" aria-label="remove"><i class="bx bx-x"></i></button>' : '') + '</div>';
     // WP-VP-4H (6) — the selected list in collapsible groups per institution (name + count + chevron); a row
     // "Name · Specialty" with its remove button; the pharmacies close the list as their own group.
+    // WP-VP-4I (6) — an institution's group header carries "Remove" (the account and all its doctors leave the plan — the
+    // existing removeAccount); the account row of "My accounts" has no remove button any more. Every plan institution has
+    // its group, also one without a ticked doctor yet.
     const collapsedGroups = new Set();
     const groupHead = (key, title, count) => {
         const open = !collapsedGroups.has(key);
-        return '<button type="button" class="btn btn-sm w-100 d-flex align-items-center gap-2 px-0 mt-2 text-start js-sel-group" data-group="' + esc(key) + '" aria-expanded="' + (open ? 'true' : 'false') + '">' +
-            '<i class="bx ' + (open ? 'bx-chevron-down' : 'bx-chevron-right') + ' text-muted"></i><span class="flex-grow-1 fw-semibold small text-truncate">' + esc(title) + '</span><span class="badge bg-label-secondary">' + count + '</span></button>';
+        const removable = key !== 'pharmacies' && canEditTargets();
+        return '<div class="d-flex align-items-center gap-1 mt-2 vp-sel-group-head">' +
+            '<button type="button" class="btn btn-sm flex-grow-1 d-flex align-items-center gap-2 px-0 text-start js-sel-group" style="min-width:0" data-group="' + esc(key) + '" aria-expanded="' + (open ? 'true' : 'false') + '">' +
+            '<i class="bx ' + (open ? 'bx-chevron-down' : 'bx-chevron-right') + ' text-muted"></i><span class="flex-grow-1 fw-semibold small text-truncate">' + bidi(title) + '</span><span class="badge bg-label-secondary">' + count + '</span></button>' +
+            (removable ? '<button type="button" class="btn btn-sm btn-text-danger px-1 py-0 flex-shrink-0 js-remove-account" data-id="' + esc(key) + '" title="' + esc(L.RemoveTarget || 'Remove') + '">' + esc(L.RemoveTarget || 'Remove') + '</button>' : '') +
+            '</div>';
     };
     const groupBody = (key, rows) => '<div class="d-flex flex-column gap-1 ps-3' + (collapsedGroups.has(key) ? ' d-none' : '') + '">' + rows.join('') + '</div>';
     const renderSelectionChips = () => {
         const host = el('vp-selection-chips'); if (!host) return;
         const groups = {};
+        targetAccounts.forEach(a => { groups[a.id] = []; });
         Object.keys(selectedContacts).forEach(k => { const s = selectedContacts[k]; (groups[s.accountId] = groups[s.accountId] || []).push(chip('doctor', 'data-k="' + esc(k) + '"', cName(s.accountId, s.contactId), specLabel(cSpec(s.accountId, s.contactId)))); });
         const parts = [];
         Object.keys(groups).forEach(aid => { parts.push(groupHead(aid, aName(aid), groups[aid].length)); parts.push(groupBody(aid, groups[aid])); });
@@ -1376,7 +1414,7 @@
     const addAccount = id => {
         if (!id || !canEditTargets() || targetAccounts.some(a => a.id === id)) return;
         const src = accountSource.find(a => a.id === id); if (!src) return;
-        targetAccounts.push({ id: src.id, name: src.name, type: src.type, city: src.city, lat: src.lat, lng: src.lng, out: !!src.out });
+        targetAccounts.push({ id: src.id, name: src.name, type: src.type, city: src.city, cityRef: src.cityRef, lat: src.lat, lng: src.lng, out: !!src.out });
         buildAccountsDt(); fillAddAccountPicker(); refreshTargetsUi(); loadAccountStats();
         if (window.bootstrap && el('vp-out-territory-modal')) { const m = window.bootstrap.Modal.getInstance(el('vp-out-territory-modal')); if (m) m.hide(); }
     };
@@ -1607,8 +1645,6 @@
     const accHost = el('vp-acc-list');
     if (accHost) {
         accHost.addEventListener('click', e => {
-            const rm = e.target.closest('.js-remove-account');
-            if (rm) { e.stopPropagation(); removeAccount(rm.dataset.id); return; }
             const row = e.target.closest('.vp-acc-row'); if (row) { showContacts(row.dataset.id); renderAccountList(); }
         });
         accHost.addEventListener('keydown', e => {
@@ -1624,6 +1660,8 @@
         accSearchTimer = setTimeout(() => searchAccounts(term), 300);
     });
     el('vp-selection-chips')?.addEventListener('click', e => {
+        const rm = e.target.closest('.js-remove-account'); // WP-VP-4I (6) — "Remove" on an institution's group header
+        if (rm) { removeAccount(rm.dataset.id); return; }
         const g = e.target.closest('.js-sel-group'); if (!g) return;
         const key = g.dataset.group;
         if (collapsedGroups.has(key)) collapsedGroups.delete(key); else collapsedGroups.add(key);

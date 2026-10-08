@@ -32,6 +32,7 @@
     // Same-origin proxy profile: the browser sends no bearer token (the MVC proxy attaches it server-side).
     const getAuthHeaders = () => ({ Accept: 'application/json', 'Content-Type': 'application/json' });
     const esc = v => String(v ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
+    const bidi = v => window.VisitPlanningFormat.bidi(v); // WP-VP-4I (7) — data names isolated (<bdi>) for RTL
     const badge = (v, cls = 'primary') => `<span class="badge bg-label-${cls}">${esc(v || '—')}</span>`;
     const norm = v => (typeof v === 'string' ? v.trim() : (v == null ? '' : String(v)));
     const normArr = v => Array.isArray(v) ? Array.from(new Set(v.map(x => norm(x)).filter(Boolean))) : (norm(v) ? [norm(v)] : []);
@@ -186,10 +187,10 @@
         ],
         columnDefs: [
             { targets: 0, className: 'control', orderable: false, render: () => '' },
-            { targets: 1, render: (v, t, row) => t === 'display' ? `<span class="fw-medium text-heading">${esc(sName(row))}</span>` : sName(row) },
-            { targets: 2, render: (v, t, row) => esc(periodMap[sPeriodId(row)] || sPeriodId(row) || '—') },
+            { targets: 1, render: (v, t, row) => t === 'display' ? `<span class="fw-medium text-heading">${bidi(sName(row))}</span>` : sName(row) },
+            { targets: 2, render: (v, t, row) => t === 'display' ? bidi(periodMap[sPeriodId(row)] || sPeriodId(row) || '—') : (periodMap[sPeriodId(row)] || '') },
             { targets: 3, render: (v, t, row) => esc(sWeek(row)) },
-            { targets: 4, visible: viewMode !== 'mine', render: (v, t, row) => esc(sRep(row) || '—') },
+            { targets: 4, visible: viewMode !== 'mine', render: (v, t, row) => t === 'display' ? bidi(sRep(row) || '—') : (sRep(row) || '') },
             { targets: 5, render: (v, t, row) => t === 'display' ? statusCell(row) : sStatus(row) },
             { targets: 6, render: (v, t, row) => esc(sTargets(row)) },
             { targets: 7, orderable: false, render: (v, t, row) => esc(sWeeks(row)) },

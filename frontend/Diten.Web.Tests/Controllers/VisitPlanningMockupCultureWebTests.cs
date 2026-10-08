@@ -101,7 +101,7 @@ public sealed class VisitPlanningMockupCultureWebTests
         var js = Script("weeks.js");
         Assert.Contains("const STRIP_CARD = 'flex:0 0 128px;';", js);
         var card = Between(js, "const stripCard = m => {", "\n    };");
-        Assert.Contains("d-flex flex-column gap-1", card);
+        Assert.Contains("d-flex flex-column align-items-stretch justify-content-start gap-1", card); // 4I (3): leading-edge aligned
         Assert.Contains("(empty ? 'border-style:dashed !important;' : '')", card);
         Assert.Contains("esc(empty ? '—' : fmt(L.VisitCountShort || '{0}', m.visits))", card);
         Assert.Contains("esc(m.title)", card);
@@ -215,12 +215,12 @@ public sealed class VisitPlanningMockupCultureWebTests
     {
         Assert.Contains("const productLabel = p => (p && (p.productName || p.productCode)) || '—';", Script("format.js"));
         var weeks = Script("weeks.js");
-        Assert.Contains("esc(VPF.productLabel(c))", weeks);
+        Assert.Contains("bidi(VPF.productLabel(c))", weeks); // 4I (7): isolated for RTL
         Assert.Contains("name: VPF.productLabel(o)", weeks);
-        Assert.Contains("esc(VPF.productLabel(c))", Script("doctor-panel.js"));
+        Assert.Contains("bidi(VPF.productLabel(c))", Script("doctor-panel.js"));
         var targets = Script("targets.js");
-        Assert.Contains("esc(window.VisitPlanningFormat.productLabel(x)) + ' <strong>' + x.doctorCount", targets); // distribution
-        Assert.Contains("esc(window.VisitPlanningFormat.productLabel(it))", targets); // chips
+        Assert.Contains("bidi(window.VisitPlanningFormat.productLabel(x)) + ' <strong>' + x.doctorCount", targets); // distribution
+        Assert.Contains("bidi(window.VisitPlanningFormat.productLabel(it))", targets); // chips
         Assert.Contains("productName: x.productName", targets);
         // nowhere a chip still prints the bare code
         foreach (var file in Directory.GetFiles(ScriptDir(), "*.js"))

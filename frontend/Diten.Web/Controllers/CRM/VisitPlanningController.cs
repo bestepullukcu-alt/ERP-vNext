@@ -33,6 +33,8 @@ public sealed class VisitPlanningController : Controller
     // WP-VP-FIX-1 (D6) — the MOD-0048 sets whose labels replace raw codes on the Targets + Route tabs.
     internal const string AccountTypeSetCode = "account-type";
     internal const string MedicalSpecialtySetCode = "medical-specialty";
+    // WP-VP-4I (8) — the province ("il") labels, keyed by the territory area code ("TR-34-ISTANBUL").
+    internal const string CitySetCode = "city";
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -241,7 +243,10 @@ public sealed class VisitPlanningController : Controller
         var reader = new CrmReferenceSetReader(_httpClient, _gatewayUrl, _logger);
         var accountTypes = await ReadLabelsAsync(reader, AccountTypeSetCode, ct);
         var specialties = await ReadLabelsAsync(reader, MedicalSpecialtySetCode, ct);
-        return Ok(new { data = new { accountTypes, specialties } });
+        // WP-VP-4I (8) — additive: the province labels (an unpublished set is an empty map: the page then capitalises the
+        // code's last part the Turkish way).
+        var cities = await ReadLabelsAsync(reader, CitySetCode, ct);
+        return Ok(new { data = new { accountTypes, specialties, cities } });
     }
 
     private async Task<Dictionary<string, string>> ReadLabelsAsync(
@@ -257,12 +262,17 @@ public sealed class VisitPlanningController : Controller
                 return labels;
             }
 
+            // WP-VP-4I (9) — a value has ONE label (MOD-0048 has no per-language field); the label in the UI language is
+            // its label_<lang> attribute, else the label. Root cause of "Clinic" / "Family Medicine" in Turkish: the
+            // data had only English labels — the Web read the only label there was.
+            var language = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
             var payload = await response.Content.ReadFromJsonAsync<GatewayResponse<PublishedValuesModel>>(JsonOptions, ct);
             foreach (var item in payload?.Data?.Items ?? [])
             {
-                if (!string.IsNullOrWhiteSpace(item.Value) && !string.IsNullOrWhiteSpace(item.Text))
+                var text = item.TextFor(language);
+                if (!string.IsNullOrWhiteSpace(item.Value) && !string.IsNullOrWhiteSpace(text))
                 {
-                    labels[item.Value!] = item.Text!;
+                    labels[item.Value!] = text!;
                 }
             }
         }
