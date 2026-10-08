@@ -1230,7 +1230,9 @@ applied → Applied, no ApplyFailed, 1 movement; S2 with an injected `TimeProvid
 in DI): fresh Approved → Approved, nothing posted; older than the grace → Applied. Sabotages s1 (both Applied checks), s1f
 (RecordFailureAsync only), `InFlightGrace = Zero`, `= MaxValue` → each 1 red, restored clean. Inventory **617/617**, architecture 18/18.
 
-### WP-MVP1-INT-QE — INT-QUARANTINE (agent result 2026-10-08, pending CT)
+### WP-MVP1-INT-QE — INT-QUARANTINE (CT-ACCEPTED 2026-10-08)
+
+**CT acceptance (K13, 2026-10-08):** gateway tests 101/102 re-run at `75c981df6` (only the known FU-INT1-01 red); ocelot diff = additions only; CT sabotage: quarantine `{everything}` block port 5066 → 5067 → 3 red, restored. Body limit (Kestrel default 30 MB) sufficient for the 1 MB PNG; `/internal/*` stays unrouted (404).
 
 Branch `feature/sce/mvp1-int-qe` from `720a58ede` (isolated worktree), commit `ae2055739`: four ocelot blocks after
 `/api/trace/{everything}`, cloned from the INT-TRACE blocks (only path / port / methods changed, no gateway auth, headers passed
