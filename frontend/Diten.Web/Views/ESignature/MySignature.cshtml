@@ -1,0 +1,229 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.ESignature.ESignature> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ESign.Mine.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@*
+    MOD-0022 E5W1 — İmzam (ESIGN_MYSIGNATURE, /ESignature/MySignature, esign.my-samples.manage; pack §11.1, §11.3; mockup v2
+    "İmzam", markup 468-587, v2.app.js:530-568). Patterns (§17.3, evidence §2): tenant-shell card page (Governance/
+    TenantSecuritySettings/Index.cshtml: row g-4 + cards), UAS-001 (Traceability/LotMigration/Index.cshtml:17-21), the history as a
+    client-data DataTable v2 (CRM/TerritoryManagement/AssignmentHistory.cshtml + assignment-history.js), the password confirmation
+    as a Sneat modal-form (MasterRegister/Details.cshtml:1553), deactivate / delete through window.showConfirm (MOD-0013).
+    Saving needs a password ticket of intent "sample" (V3); the image is drawn here or uploaded, always sent as PNG.
+*@
+@if (!Perms.Has("esign.my-samples.manage"))
+{
+    <partial name="_AccessDenied" model="@Localizer["ESign.Mine.Title"].Value" />
+    return;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <h5 class="mb-0">@Localizer["ESign.Mine.Title"]</h5>
+</div>
+
+<div class="alert alert-info d-flex gap-2 align-items-start" role="note">
+    <i class="bx bx-info-circle fs-5"></i><span>@Localizer["ESign.Mine.Statement"]</span>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12 col-xl-5">
+        <div class="card h-100" id="esignMineCard">
+            <div class="card-header d-flex align-items-center gap-2">
+                <h6 class="mb-0 text-uppercase text-heading fw-semibold">@Localizer["ESign.Mine.MySample"]</h6>
+                <span class="flex-grow-1"></span>
+                <span class="badge bg-label-success d-none" id="esignMineActive">@Localizer["ESign.Mine.Active"]</span>
+            </div>
+            <div class="card-body">
+                <div id="esignMineLoading" class="backbone-skeleton p-2">
+                    <div class="shimmer skeleton-row skeleton-row-lg"></div>
+                    <div class="shimmer skeleton-row"></div>
+                    <div class="shimmer skeleton-row skeleton-row-last"></div>
+                </div>
+                <div class="d-none" id="esignMineHas">
+                    <button type="button" class="border rounded bg-white w-100 d-grid p-3 mb-3" style="min-height:150px;place-items:center;cursor:zoom-in" id="esignMineZoom" title="@Localizer["ESign.Zoom.Enlarge"]">
+                        <img alt="" style="max-height:120px;max-width:100%" id="esignMineImage" />
+                    </button>
+                    <dl class="row mb-0 small">
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Mine.Id"]</dt><dd class="col-7 font-monospace" id="esignMineId"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Mine.AddedAt"]</dt><dd class="col-7" id="esignMineAt"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Mine.Storage"]</dt><dd class="col-7" id="esignMineFormat"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Mine.ApprovedBy"]</dt><dd class="col-7" id="esignMineApprover"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Mine.Usage"]</dt><dd class="col-7" id="esignMineUsed"></dd>
+                    </dl>
+                </div>
+                <div class="d-none border border-dashed rounded text-center p-4" id="esignMineEmpty" style="border-style:dashed!important">
+                    <i class="bx bx-pen fs-1 text-muted d-block mb-2"></i>
+                    <span class="fw-medium text-heading d-block">@Localizer["ESign.Mine.Empty.Title"]</span>
+                    <small class="text-muted">@Localizer["ESign.Mine.Empty.Text"]</small>
+                </div>
+                <div class="alert alert-warning d-flex gap-2 align-items-start mt-3 mb-0 d-none" role="note" id="esignMinePending">
+                    <i class="bx bx-time-five fs-5"></i><span id="esignMinePendingText"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-7">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+                <h6 class="mb-0 text-uppercase text-heading fw-semibold">@Localizer["ESign.Mine.NewSample"]</h6>
+                <span class="flex-grow-1"></span>
+                <div class="nav-align-top">
+                    <ul class="nav nav-pills" role="tablist">
+                        <li class="nav-item"><button type="button" class="nav-link btn-sm active" data-bs-toggle="tab" data-bs-target="#esignMineDrawTab" role="tab" id="esignTabDraw"><i class="bx bx-pen me-1"></i>@Localizer["ESign.Mine.Tab.Draw"]</button></li>
+                        <li class="nav-item"><button type="button" class="nav-link btn-sm" data-bs-toggle="tab" data-bs-target="#esignMineUploadTab" role="tab" id="esignTabUpload"><i class="bx bx-image me-1"></i>@Localizer["ESign.Mine.Tab.Upload"]</button></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="tab-content p-0 shadow-none">
+                    <div class="tab-pane fade show active" id="esignMineDrawTab" role="tabpanel">
+                        <partial name="~/Views/Shared/ESignature/_SignaturePad.cshtml" model="@("esignMinePad")" />
+                        <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                            <small class="text-muted">@Localizer["ESign.Mine.Thickness"]</small>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-primary" data-esign-pen-width="thin">@Localizer["ESign.Mine.Thin"]</button>
+                                <button type="button" class="btn btn-outline-primary active" data-esign-pen-width="medium">@Localizer["ESign.Mine.Medium"]</button>
+                            </div>
+                            <small class="text-muted ms-2">@Localizer["ESign.Mine.Color"]</small>
+                            <button type="button" class="btn btn-sm btn-icon rounded-circle border active" data-esign-pen-color="black" title="@Localizer["ESign.Mine.Black"]" aria-label="@Localizer["ESign.Mine.Black"]"><span class="d-block rounded-circle" style="width:16px;height:16px;background:#1b1b1f"></span></button>
+                            <button type="button" class="btn btn-sm btn-icon rounded-circle border" data-esign-pen-color="navy" title="@Localizer["ESign.Mine.Navy"]" aria-label="@Localizer["ESign.Mine.Navy"]"><span class="d-block rounded-circle" style="width:16px;height:16px;background:#1f2a5a"></span></button>
+                            <span class="flex-grow-1"></span>
+                            <button type="button" class="btn btn-sm btn-label-primary" id="esignOpenFull"><i class="bx bx-fullscreen me-1"></i>@Localizer["ESign.Mine.FullScreen"]</button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="esignMineUploadTab" role="tabpanel">
+                        <label class="d-grid border rounded text-center p-4 mb-2" style="border-style:dashed!important;cursor:pointer" id="esignUploadPick">
+                            <input type="file" accept="image/png,image/jpeg" class="d-none" id="esignUploadFile" />
+                            <i class="bx bx-cloud-upload fs-1 text-primary"></i>
+                            <span class="fw-medium text-heading">@Localizer["ESign.Mine.Upload.Pick"]</span>
+                            <small class="text-muted">@Localizer["ESign.Mine.Upload.Hint"]</small>
+                        </label>
+                        <div class="alert alert-danger py-2 d-none" role="alert" id="esignUploadError"></div>
+                        <div class="d-none" id="esignUploadHas">
+                            <div class="d-flex align-items-center gap-2 border rounded p-2 mb-3">
+                                <i class="bx bx-file fs-4 text-muted"></i>
+                                <span class="fw-medium text-truncate" id="esignUploadName"></span>
+                                <small class="text-muted" id="esignUploadMeta"></small>
+                                <span class="flex-grow-1"></span>
+                                <label class="btn btn-sm btn-label-secondary mb-0" for="esignUploadFile">@Localizer["ESign.Mine.Upload.Change"]</label>
+                                <button type="button" class="btn btn-sm btn-label-danger" id="esignUploadRemove">@Localizer["ESign.Mine.Upload.Remove"]</button>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-12 col-md-6">
+                                    <small class="text-muted d-block mb-1">@Localizer["ESign.Mine.Upload.Original"]</small>
+                                    <div class="border rounded bg-white position-relative overflow-hidden"><img alt="" class="img-fluid d-block" id="esignUploadSource" /><span class="position-absolute border border-2 border-primary" id="esignUploadCropBox" style="pointer-events:none"></span></div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <small class="text-muted d-block mb-1">@Localizer["ESign.Mine.Upload.Result"]</small>
+                                    <div class="border rounded d-grid" style="min-height:120px;place-items:center;background:repeating-conic-gradient(#f5f5f9 0% 25%,#fff 0% 50%) 50%/16px 16px"><img alt="" style="max-height:110px;max-width:100%" id="esignUploadResult" /></div>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-2">
+                                <div class="col-6 col-md-3"><label class="form-label small" for="esignCropL">@Localizer["ESign.Mine.Crop.Left"]</label><input type="range" class="form-range" min="0" max="45" value="0" id="esignCropL" data-esign-crop="l" /></div>
+                                <div class="col-6 col-md-3"><label class="form-label small" for="esignCropR">@Localizer["ESign.Mine.Crop.Right"]</label><input type="range" class="form-range" min="0" max="45" value="0" id="esignCropR" data-esign-crop="r" /></div>
+                                <div class="col-6 col-md-3"><label class="form-label small" for="esignCropT">@Localizer["ESign.Mine.Crop.Top"]</label><input type="range" class="form-range" min="0" max="45" value="0" id="esignCropT" data-esign-crop="t" /></div>
+                                <div class="col-6 col-md-3"><label class="form-label small" for="esignCropB">@Localizer["ESign.Mine.Crop.Bottom"]</label><input type="range" class="form-range" min="0" max="45" value="0" id="esignCropB" data-esign-crop="b" /></div>
+                            </div>
+                            <div class="d-flex flex-wrap align-items-center gap-3">
+                                <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="esignUploadBg" /><label class="form-check-label" for="esignUploadBg">@Localizer["ESign.Mine.Upload.Bg"]</label></div>
+                                <div class="d-flex align-items-center gap-2 d-none" id="esignUploadThrWrap"><label class="form-label small mb-0" for="esignUploadThr">@Localizer["ESign.Mine.Upload.Sensitivity"]</label><input type="range" class="form-range" style="width:160px" min="120" max="245" value="200" id="esignUploadThr" /></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-grid gap-1 mt-3 small">
+                    <span><i class="bx bx-data me-1 text-muted"></i>@Localizer["ESign.Mine.StoreLabel"] <b id="esignStoreText">@Localizer["ESign.Mine.Store.Drawn"]</b></span>
+                    <span class="text-muted"><i class="bx bx-badge-check me-1"></i>@Localizer["ESign.Mine.ApprovalNote"]</span>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-end">
+                <button type="button" class="btn btn-primary" id="esignSaveSample" disabled><i class="bx bx-lock-alt me-1"></i>@Localizer["ESign.Mine.SaveWithPassword"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex flex-column align-items-start pb-0">
+        <h6 class="text-uppercase text-heading fw-semibold mb-1"><i class="bx bx-history me-1"></i>@Localizer["ESign.Mine.History.Title"]</h6>
+        <p class="text-muted small mb-0">@Localizer["ESign.Mine.History.Sub"]</p>
+    </div>
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-esign-samples" data-dt-standard="v2" data-dt-data-mode="client" class="datatables-esign-samples table border-top">
+            <thead>
+                <tr>
+                    <th>@Localizer["ESign.Mine.Col.Sample"]</th>
+                    <th>@Localizer["ESign.Mine.Id"]</th>
+                    <th>@Localizer["ESign.Mine.AddedAt"]</th>
+                    <th>@Localizer["ESign.Mine.Col.Kind"]</th>
+                    <th>@Localizer["ESign.Mine.Storage"]</th>
+                    <th>@Localizer["ESign.Mine.Usage"]</th>
+                    <th>@Localizer["ESign.Mine.Col.Status"]</th>
+                    <th class="cell-fit text-end pe-3">@Localizer["ESign.Mine.Col.Actions"]</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@* Full-screen landscape drawing (mockup "TAM EKRAN ÇİZİM") — 375 px phones: the pad fills the screen, rotation is requested *@
+<div class="esign-pad-fullscreen d-none" id="esignFull" role="dialog" aria-modal="true" aria-labelledby="esignFullTitle">
+    <div class="d-flex flex-wrap align-items-center gap-2 p-3">
+        <h6 class="mb-0" id="esignFullTitle">@Localizer["ESign.Mine.Full.Title"]</h6>
+        <small class="text-muted"><i class="bx bx-rotate-right me-1"></i>@Localizer["ESign.Mine.Full.Rotate"]</small>
+        <span class="flex-grow-1"></span>
+        <button type="button" class="btn btn-sm btn-label-secondary" id="esignFullCancel">@Localizer["ESign.Dialog.Cancel"]</button>
+        <button type="button" class="btn btn-sm btn-primary" id="esignFullApply"><i class="bx bx-check me-1"></i>@Localizer["ESign.Mine.Full.Apply"]</button>
+    </div>
+    <partial name="~/Views/Shared/ESignature/_SignaturePad.cshtml" model="@("esignFullPad")" />
+</div>
+
+@* "Şifrenizi doğrulayın" (mockup MODAL · ŞİFRE) — intent sample, always the password (V3) *@
+<div class="modal fade" id="esignSamplePwd" tabindex="-1" aria-hidden="true" aria-labelledby="esignSamplePwdTitle" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" id="esignSamplePwdForm" novalidate autocomplete="off">
+            <div class="modal-header">
+                <div><h5 class="modal-title mb-0" id="esignSamplePwdTitle">@Localizer["ESign.Mine.Pwd.Title"]</h5><small class="text-muted">@Localizer["ESign.Mine.Pwd.Sub"]</small></div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["ESign.Dialog.Close"]"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger d-none" role="alert" id="esignSamplePwdFormError"></div>
+                <div class="mb-3">
+                    <label class="form-label" for="esignSampleUser">@Localizer["ESign.Dialog.UserName"]</label>
+                    <input class="form-control" id="esignSampleUser" readonly tabindex="-1" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="esignSamplePassword">@Localizer["ESign.Dialog.Password"] <span class="text-danger">*</span></label>
+                    <input type="password" class="form-control" id="esignSamplePassword" name="esign-sample-password" autocomplete="current-password" placeholder="••••••••" spellcheck="false" />
+                    <div class="invalid-feedback" id="esignSamplePasswordError"></div>
+                </div>
+                <div class="alert alert-info d-flex gap-2 align-items-start mb-0" role="note"><i class="bx bx-info-circle fs-5"></i><span>@Localizer["ESign.Mine.Statement"]</span></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["ESign.Dialog.Cancel"]</button>
+                <button type="submit" class="btn btn-primary" id="esignSamplePwdSubmit"><i class="bx bx-save me-1"></i>@Localizer["ESign.Mine.Pwd.Save"]</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<partial name="~/Views/Shared/ESignature/_SignatureZoom.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/ESignature/_ESignatureL10n.cshtml" />
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-pad.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-dialog.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/my-signature.js" asp-append-version="true"></script>
+}

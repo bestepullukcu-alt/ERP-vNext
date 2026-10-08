@@ -991,4 +991,6 @@
   <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Serial Explorer</value></data>
   <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>Traceability</value></data>
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Typed Lot Migration</value></data>
+  <data name="Nav.Module.ESIGN" xml:space="preserve"><value>e-Signature</value></data>
+  <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>My Signature</value></data>
 </root>

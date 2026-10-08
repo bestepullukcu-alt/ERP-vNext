@@ -7579,9 +7579,42 @@
     const buildTransitionBody = (actionCode, parts) =>
         (TRANSITION_BODIES[actionCode] || TRANSITION_BODIES.__default)(parts);
 
+    /*
+     * MOD-0022 E5W1 — the signature a flagged Workflow approve needs (pack §11.4; E4 gate). The shared dialog signs the TASK
+     * (subject workflow / workflow-task / {task id} — the work item id IS the ApprovalTask id) with the step's meaning; the binding
+     * context the E4 gate checks (workflowInstanceId, workflowTaskId, decision approve; stepCode for the record) is taken from the
+     * server's own subject fields, never guessed here. Cancel → null → nothing is dispatched. An item that needs no signature never
+     * opens the dialog (null signature, today's body unchanged).
+     */
+    const signatureForApproval = async (item, action) => {
+        if (action.code !== 'approve' || action.signatureRequired !== true) return { needed: false, signatureId: null };
+        if (!global.ESign || typeof global.ESign.open !== 'function') {
+            toast(global.TasksApi.failureMessage({ ok: false, status: 409, reasonCode: 'ESIGN_SIGNATURE_REQUIRED' }), 'error');
+            return { needed: true, signatureId: null };
+        }
+        const signed = await global.ESign.open({
+            module: 'workflow',
+            subjectType: 'workflow-task',
+            subjectId: item.id,
+            meaningCode: action.signatureMeaning || undefined,
+            context: (subject) => ({
+                workflowInstanceId: (subject.fields && subject.fields.workflowInstanceId) || null,
+                workflowTaskId: item.id,
+                stepCode: (subject.fields && subject.fields.stepCode) || null,
+                decision: 'approve'
+            })
+        });
+        return { needed: true, signatureId: signed ? signed.signatureId : null };
+    };
+
     const submitRealTransition = async (
         item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         const label = actionLabel(action);
+        const signature = await signatureForApproval(item, action);
+        if (signature.needed && !signature.signatureId) {
+            // the signer closed the dialog (or it could not open): the approve is NOT sent
+            return { outcome: 'cancelled' };
+        }
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
         render();
@@ -7597,13 +7630,11 @@
          * The body's shape still comes from the vocabulary above, never from a guess at this call site — the
          * server now reads those same field names off one payload and builds the module's DTO itself.
          */
-        const result = await global.WorkCenterNextApi.dispatchAction(
-            item.id,
+        const body = buildTransitionBody(
             action.code,
-            item.source?.providerCode,
-            buildTransitionBody(
-                action.code,
-                { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues }));
+            { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues });
+        if (signature.signatureId) body.signatureId = signature.signatureId; // WorkItemActionPayloadDto.SignatureId (E4)
+        const result = await global.WorkCenterNextApi.dispatchAction(item.id, action.code, item.source?.providerCode, body);
 
         state.submittingItemId = null;
         state.submittingActionCode = null;
@@ -7645,7 +7676,10 @@
         }
 
         render();
-        toast(global.TasksApi.failureMessage(result, overrides), 'error');
+        // an e-signature refusal (ESIGN_*) speaks the e-signature vocabulary, not the task one
+        toast(String(result.reasonCode || '').startsWith('ESIGN_') && global.ESign
+            ? global.ESign.message(result.reasonCode)
+            : global.TasksApi.failureMessage(result, overrides), 'error');
         return { outcome: 'refused', reasonCode: result.reasonCode };
     };
 

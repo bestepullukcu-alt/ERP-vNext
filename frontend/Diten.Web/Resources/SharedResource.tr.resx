@@ -991,4 +991,6 @@
   <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Seri Gezgini</value></data>
   <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>İzlenebilirlik</value></data>
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Elle Girilmiş Lotları Aktarma</value></data>
+  <data name="Nav.Module.ESIGN" xml:space="preserve"><value>e-İmza</value></data>
+  <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>İmzam</value></data>
 </root>

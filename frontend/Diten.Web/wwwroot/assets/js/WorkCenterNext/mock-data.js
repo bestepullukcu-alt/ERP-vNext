@@ -281,6 +281,14 @@
         // the board never re-derives it from the action code.
         targetStatus: action.targetStatus ?? null,
         /*
+         * MOD-0022 E4/E5W1 — a Workflow approve whose step requires an electronic signature (WorkItemActionDto.signatureRequired /
+         * signatureMeaning, set by the projection only on approve). Carried through untouched: app.js opens the shared signature
+         * dialog BEFORE dispatching and sends payload.signatureId; the server refuses an unsigned approve with 409
+         * ESIGN_SIGNATURE_REQUIRED either way.
+         */
+        signatureRequired: action.signatureRequired === true,
+        signatureMeaning: action.signatureMeaning || null,
+        /*
          * `plan` ALWAYS wants a date picker, on every provenance — derived from the CODE rather than trusted from
          * the wire, the same way `kind` and `role` above are. The engine's WorkItemActionDto carries no `input`
          * field at all, so a real `plan` action would otherwise never open the picker; only a raw fixture that

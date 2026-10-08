@@ -16,16 +16,15 @@ namespace Diten.Platform.Application.Features.ESignature.SelfRegistration;
 /// <para>CT-D10: baseline module (entitlement-free). Default role grants for <c>esign.signatures.sign</c> and
 /// <c>esign.my-samples.manage</c> live in AuthService's role template — outside this slice (E2 evidence, OPEN).</para>
 ///
-/// <para>⚠ E2 SHIPS NO SCREENS (they are E5). The pages are declared now so their keys reach the catalog, but
-/// <see cref="PagesNavigable"/> keeps them out of the tenant menu until E5 builds the routes — a nav entry to a route
-/// that does not exist yet would be a dead link in every tenant shell.</para>
+/// <para>⚠ E2 SHIPPED NO SCREENS. The pages are declared so their keys reach the catalog; a page becomes nav-visible
+/// (<c>IsNavigationVisible</c>, 6th argument) only together with its Web route — a nav entry to a route that does not exist
+/// would be a dead link in every tenant shell. <b>E5W1:</b> ESIGN_MYSIGNATURE (<c>/ESignature/MySignature</c>) is built and
+/// visible; the other six stay hidden until E5W2 builds them. The pages are written as explicit
+/// <c>ModuleManifestPage</c> constructor calls so the Web nav-label guard (<c>NavManifestL10nGuardTests</c>) reads them.</para>
 /// </summary>
 public sealed class ESignManifestProvider : IModuleManifestProvider
 {
     public const string ModuleCode = "esign";
-
-    /// <summary>E5 flips this to true together with the Web pages (pack §14 table: every page nav-visible).</summary>
-    public const bool PagesNavigable = false;
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -46,50 +45,46 @@ public sealed class ESignManifestProvider : IModuleManifestProvider
             ],
             Pages:
             [
-                Page("ESIGN_REQUESTS", "Signature Requests", "/ESignature/Requests", ESignPermissions.RequestsRead, 10,
+                new ModuleManifestPage("ESIGN_REQUESTS", "Signature Requests", "/ESignature/Requests", ESignPermissions.RequestsRead, null, false, "List", 10,
                 [
                     Row("SIGNREQUEST", "Sign", ESignPermissions.SignaturesSign, 10),
                     Row("REJECTREQUEST", "Reject", ESignPermissions.RequestsReject, 20),
                     Row("OPENRECORD", "Open record", ESignPermissions.RequestsRead, 30)
                 ]),
-                Page("ESIGN_VERIFICATION", "Signature Verification", "/ESignature/Verification", ESignPermissions.SignaturesRead, 20,
+                new ModuleManifestPage("ESIGN_VERIFICATION", "Signature Verification", "/ESignature/Verification", ESignPermissions.SignaturesRead, null, false, "List", 20,
                 [
                     Toolbar("REVERIFY", "Re-verify", ESignPermissions.SignaturesVerify, 10),
                     Row("INVALIDATE", "Invalidate signature", ESignPermissions.SignaturesInvalidate, 20, dangerous: true)
                 ]),
-                Page("ESIGN_AUDITEXPORT", "Signature Audit Export", "/ESignature/AuditExport", ESignPermissions.SignaturesExport, 30,
+                new ModuleManifestPage("ESIGN_AUDITEXPORT", "Signature Audit Export", "/ESignature/AuditExport", ESignPermissions.SignaturesExport, null, false, "List", 30,
                 [
                     Toolbar("EXPORTPDF", "Export as PDF", ESignPermissions.SignaturesExport, 10),
                     Toolbar("EXPORTCSV", "Export as CSV", ESignPermissions.SignaturesExport, 20)
                 ]),
-                Page("ESIGN_MYSIGNATURE", "My Signature", "/ESignature/MySignature", ESignPermissions.MySamplesManage, 40,
+                new ModuleManifestPage("ESIGN_MYSIGNATURE", "My Signature", "/ESignature/MySignature", ESignPermissions.MySamplesManage, null, true, "List", 40,
                 [
                     Toolbar("SAVESAMPLE", "Save with password", ESignPermissions.MySamplesManage, 10),
                     Row("DEACTIVATESAMPLE", "Deactivate", ESignPermissions.MySamplesManage, 20),
                     Row("WITHDRAWSAMPLE", "Withdraw", ESignPermissions.MySamplesManage, 30, dangerous: true)
                 ]),
-                Page("ESIGN_POLICY", "e-Signature Policy", "/ESignature/Settings/Policy", ESignPermissions.PolicyRead, 50,
+                new ModuleManifestPage("ESIGN_POLICY", "e-Signature Policy", "/ESignature/Settings/Policy", ESignPermissions.PolicyRead, null, false, "List", 50,
                 [
                     Toolbar("SAVEPOLICY", "Save with reason", ESignPermissions.PolicyManage, 10),
                     Toolbar("CREATEOVERRIDE", "Copy and edit for company", ESignPermissions.PolicyManage, 20),
                     Toolbar("REVERTOVERRIDE", "Revert to tenant default", ESignPermissions.PolicyManage, 30, dangerous: true)
                 ]),
-                Page("ESIGN_MEANINGS", "Signature Meanings", "/ESignature/Settings/Meanings", ESignPermissions.MeaningsRead, 60,
+                new ModuleManifestPage("ESIGN_MEANINGS", "Signature Meanings", "/ESignature/Settings/Meanings", ESignPermissions.MeaningsRead, null, false, "List", 60,
                 [
                     Toolbar("NEWMEANING", "New meaning", ESignPermissions.MeaningsManage, 10),
                     Row("EDITMEANING", "Edit", ESignPermissions.MeaningsManage, 20),
                     Row("TOGGLEMEANING", "Activate / deactivate", ESignPermissions.MeaningsManage, 30)
                 ]),
-                Page("ESIGN_SAMPLEAPPROVALS", "Signature Sample Approvals", "/ESignature/Settings/SampleApprovals", ESignPermissions.SamplesApprove, 70,
+                new ModuleManifestPage("ESIGN_SAMPLEAPPROVALS", "Signature Sample Approvals", "/ESignature/Settings/SampleApprovals", ESignPermissions.SamplesApprove, null, false, "List", 70,
                 [
                     Row("APPROVESAMPLE", "Approve", ESignPermissions.SamplesApprove, 10),
                     Row("REJECTSAMPLE", "Reject", ESignPermissions.SamplesReject, 20)
                 ])
             ]);
-
-    private static ModuleManifestPage Page(string code, string name, string route, string permission, int sort,
-        IReadOnlyList<ModuleManifestAction> actions) =>
-        new(code, name, route, permission, null, PagesNavigable, "List", sort, actions);
 
     private static ModuleManifestAction Toolbar(string code, string name, string permission, int sort, bool dangerous = false) =>
         new(code, name, permission, "Toolbar", sort, dangerous, IsToolbarAction: true, IsRowAction: false);

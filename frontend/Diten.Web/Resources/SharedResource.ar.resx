@@ -931,4 +931,6 @@
   <data name="Nav.Page.SERIALS" xml:space="preserve"><value>مستكشف الأرقام التسلسلية</value></data>
   <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>التتبع</value></data>
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>ترحيل التشغيلات المُدخلة يدويًا</value></data>
+  <data name="Nav.Module.ESIGN" xml:space="preserve"><value>التوقيع الإلكتروني</value></data>
+  <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>توقيعي</value></data>
 </root>

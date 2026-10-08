@@ -210,4 +210,10 @@
   <data name="BpmnImportFailed" xml:space="preserve"><value>Could not import the BPMN XML.</value></data>
   <data name="ExclusiveGatewayWarning" xml:space="preserve"><value>Exclusive gateways are accepted in the diagram but not yet mapped to runtime branches.</value></data>
   <data name="BpmnLibraryMissing" xml:space="preserve"><value>The BPMN designer library failed to load.</value></data>
+  <data name="Workflow.Designer.SignatureRequired" xml:space="preserve"><value>التوقيع مطلوب</value></data>
+  <data name="Workflow.Designer.SignatureMeaning" xml:space="preserve"><value>معنى التوقيع</value></data>
+  <data name="Workflow.Designer.SignatureMeaningSelect" xml:space="preserve"><value>اختر المعنى</value></data>
+  <data name="Workflow.Designer.SignatureMeaningRequired" xml:space="preserve"><value>اختر معنى توقيع نشطًا لكل خطوة تتطلب توقيعًا.</value></data>
+  <data name="Workflow.Designer.SignatureHint" xml:space="preserve"><value>يوقّع المعتمِد إلكترونيًا عند الموافقة في WorkCenter (كلمة المرور + المعنى).</value></data>
+  <data name="Workflow.Designer.SignatureMeaningsUnavailable" xml:space="preserve"><value>تعذّر تحميل معاني التوقيع.</value></data>
 </root>

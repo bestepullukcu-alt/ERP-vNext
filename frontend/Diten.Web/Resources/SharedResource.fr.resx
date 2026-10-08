@@ -932,4 +932,6 @@
   <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Explorateur de numéros de série</value></data>
   <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>Traçabilité</value></data>
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Migration des lots saisis manuellement</value></data>
+  <data name="Nav.Module.ESIGN" xml:space="preserve"><value>Signature électronique</value></data>
+  <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>Ma signature</value></data>
 </root>

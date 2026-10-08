@@ -1,0 +1,152 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.ESignature.ESignature> Localizer
+@*
+    MOD-0022 E5W1 — the ONE signature dialog of the tenant (pack §11.1–§11.4, mockup v2 "MODAL · İMZA PENCERESİ").
+    Pattern: Sneat Bootstrap modal-form (Views/DocumentManagement/MasterRegister/Details.cshtml:1553 — modal fade +
+    modal-dialog-centered + form.modal-content header/body/footer); premium SweetAlert2 (shared/premium-modal.js) only for a
+    failure that ends the dialog. Phases (pack §11.3): loading · form · locked · timeout · success.
+
+    API (esign-dialog.js): ESign.open({ module, subjectType, subjectId, actionCode?, meaningCode?, requestId?, context? })
+      → Promise<{ signatureId, signatureNumber } | null>. The host gives ONLY ids; the summary, the meaning list, the policy,
+      the visual mode and the time come from the server (GET policy/effective). Cancel → null.
+
+    The password input is never stored: no value attribute, autocomplete="current-password", emptied after EVERY attempt
+    and on close; it is sent once, to AuthService esign/reauth, and the single-use ticket lives only in the submit call.
+    Rendered once per page (a host may include it more than once).
+*@
+@if (Context.Items["ESignDialogRendered"] is not true)
+{
+    Context.Items["ESignDialogRendered"] = true;
+    <div class="modal fade" id="esignDialog" tabindex="-1" aria-hidden="true" aria-labelledby="esignDialogTitle" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down" style="max-width:560px">
+            <form class="modal-content" id="esignDialogForm" novalidate autocomplete="off">
+                <div class="modal-header align-items-start gap-3">
+                    <span class="avatar avatar-sm flex-shrink-0"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-pen"></i></span></span>
+                    <div class="flex-grow-1">
+                        <h5 class="modal-title mb-0" id="esignDialogTitle">@Localizer["ESign.Dialog.Title"]</h5>
+                        <small class="text-muted">@Localizer["ESign.Dialog.StandardRef"]</small>
+                    </div>
+                    <button type="button" class="btn-close" data-esign-close aria-label="@Localizer["ESign.Dialog.Close"]"></button>
+                </div>
+
+                <div class="modal-body" data-esign-phase="loading">
+                    <div class="d-flex align-items-center gap-2 text-muted py-4 justify-content-center">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span>@Localizer["ESign.Dialog.Loading"]</span>
+                    </div>
+                </div>
+
+                <div class="modal-body d-none" data-esign-phase="form">
+                    <div class="alert alert-danger d-none mb-3" role="alert" id="esignFormError"></div>
+                    <div class="rounded p-3 mb-3 bg-lighter border">
+                        <div class="d-flex gap-2 align-items-center flex-wrap mb-1">
+                            <small class="text-muted">@Localizer["ESign.Dialog.WhatYouSign"]</small>
+                            <span class="flex-grow-1"></span>
+                            <span class="badge bg-label-primary" id="esignModule"></span>
+                        </div>
+                        <div class="fw-medium text-heading mb-2" id="esignSubjectTitle"></div>
+                        <dl class="row mb-0 small" id="esignSummary"></dl>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="esignUserName">@Localizer["ESign.Dialog.UserName"]</label>
+                        <input class="form-control" id="esignUserName" readonly tabindex="-1" />
+                    </div>
+
+                    <div class="mb-3" id="esignPasswordGroup">
+                        <label class="form-label" for="esignPassword">@Localizer["ESign.Dialog.Password"] <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="esignPassword" name="esign-password" autocomplete="current-password" placeholder="••••••••" spellcheck="false" />
+                        <div class="invalid-feedback" id="esignPasswordError"></div>
+                    </div>
+
+                    <div class="mb-3 d-none" id="esignWindowGroup">
+                        <div class="alert alert-success d-flex gap-2 align-items-start py-2 mb-2" role="note">
+                            <i class="bx bx-check-shield fs-5"></i><span id="esignWindowInfo"></span>
+                        </div>
+                        <label class="form-label" for="esignRetypeUser">@Localizer["ESign.Dialog.RetypeUserName"] <span class="text-danger">*</span></label>
+                        <input class="form-control" id="esignRetypeUser" autocomplete="off" spellcheck="false" />
+                        <div class="form-text">@Localizer["ESign.Dialog.RetypeHint"]</div>
+                        <div class="invalid-feedback" id="esignRetypeError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="esignMeaning">@Localizer["ESign.Dialog.Meaning"] <span class="text-danger">*</span></label>
+                        <select class="form-select" id="esignMeaning"></select>
+                        <div class="form-text" id="esignMeaningDesc"></div>
+                        <div class="invalid-feedback" id="esignMeaningError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="form-label mb-0">@Localizer["ESign.Dialog.Appearance"]</span>
+                            <span class="flex-grow-1"></span>
+                            <small class="text-muted" id="esignVisualMode"></small>
+                        </div>
+                        <div class="list-group mb-2" id="esignAppearanceOptions" role="radiogroup" aria-label="@Localizer["ESign.Dialog.Appearance"]"></div>
+                        <div class="d-none" id="esignPadWrap">
+                            <partial name="~/Views/Shared/ESignature/_SignaturePad.cshtml" model="@("esignDialogPad")" />
+                        </div>
+                        <div class="text-danger small mt-1 d-none" id="esignAppearanceError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="esignNote">@Localizer["ESign.Dialog.Note"]</label>
+                        <textarea class="form-control" id="esignNote" rows="2" maxlength="500" placeholder="@Localizer["ESign.Dialog.NotePlaceholder"]"></textarea>
+                    </div>
+
+                    <div class="alert alert-primary d-flex gap-2 align-items-start mb-0" role="note">
+                        <i class="bx bx-certification fs-5"></i>
+                        <span><strong class="d-block">@Localizer["ESign.Dialog.Statement1"]</strong><small>@Localizer["ESign.Dialog.Statement2"]</small></span>
+                    </div>
+                </div>
+
+                <div class="modal-body d-none text-center py-5" data-esign-phase="locked">
+                    <span class="avatar avatar-lg mx-auto mb-3"><span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-lock-alt fs-3"></i></span></span>
+                    <h5 class="mb-2">@Localizer["ESign.Dialog.Locked.Title"]</h5>
+                    <p class="text-muted mb-0" id="esignLockedText"></p>
+                </div>
+
+                <div class="modal-body d-none text-center py-5" data-esign-phase="timeout">
+                    <span class="avatar avatar-lg mx-auto mb-3"><span class="avatar-initial rounded-circle bg-label-warning"><i class="bx bx-time-five fs-3"></i></span></span>
+                    <h5 class="mb-2">@Localizer["ESign.Dialog.Timeout.Title"]</h5>
+                    <p class="text-muted mb-0">@Localizer["ESign.Dialog.Timeout.Text"]</p>
+                </div>
+
+                <div class="modal-body d-none" data-esign-phase="success">
+                    <div class="text-center mb-3">
+                        <span class="avatar avatar-lg mx-auto mb-2"><span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-check fs-3"></i></span></span>
+                        <h5 class="mb-2">@Localizer["ESign.Dialog.Success.Title"]</h5>
+                        <div class="border rounded p-3 bg-white d-inline-grid gap-1" style="min-width:260px">
+                            <img alt="" class="mx-auto d-none" style="max-height:60px;max-width:220px" id="esignResultImage" />
+                            <span class="text-muted small d-none" id="esignResultNoVisual">@Localizer["ESign.Dialog.Success.NoVisual"]</span>
+                            <span class="fw-medium" id="esignResultSigner"></span>
+                            <small class="text-muted" id="esignResultLine"></small>
+                        </div>
+                    </div>
+                    <dl class="row mb-0 small">
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Dialog.Success.SignatureId"]</dt><dd class="col-7 font-monospace" id="esignResNumber"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Dialog.Success.Timestamp"]</dt><dd class="col-7" id="esignResAt"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Dialog.Success.Signer"]</dt><dd class="col-7" id="esignResSigner"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Dialog.Success.Meaning"]</dt><dd class="col-7" id="esignResMeaning"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Dialog.Success.Appearance"]</dt><dd class="col-7" id="esignResAppearance"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Dialog.Success.Record"]</dt><dd class="col-7 font-monospace text-break" id="esignResRecord"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Dialog.Success.RecordDigest"]</dt><dd class="col-7 font-monospace text-break" id="esignResHash"></dd>
+                        <dt class="col-5 text-muted fw-normal">@Localizer["ESign.Dialog.Success.ImageDigest"]</dt><dd class="col-7 font-monospace text-break" id="esignResImageHash"></dd>
+                    </dl>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-esign-for="form loading" data-esign-close>@Localizer["ESign.Dialog.Cancel"]</button>
+                    <button type="submit" class="btn btn-primary" data-esign-for="form" id="esignSubmit"><i class="bx bx-pen me-1"></i>@Localizer["ESign.Dialog.Sign"]</button>
+                    <button type="button" class="btn btn-label-secondary d-none" data-esign-for="locked timeout" data-esign-close>@Localizer["ESign.Dialog.Close"]</button>
+                    <a class="btn btn-primary d-none" data-esign-for="timeout" id="esignRelogin" href="/account/login"><i class="bx bx-log-in me-1"></i>@Localizer["ESign.Dialog.Timeout.Relogin"]</a>
+                    <button type="button" class="btn btn-primary d-none" data-esign-for="success" data-esign-close>@Localizer["ESign.Dialog.Success.Ok"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <partial name="~/Views/Shared/ESignature/_SignatureZoom.cshtml" />
+    <partial name="~/Views/ESignature/_ESignatureL10n.cshtml" />
+    <script src="~/assets/js/ESignature/esign-pad.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-dialog.js" asp-append-version="true"></script>
+}

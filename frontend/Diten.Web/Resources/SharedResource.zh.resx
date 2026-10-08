@@ -931,4 +931,6 @@
   <data name="Nav.Page.SERIALS" xml:space="preserve"><value>序列号浏览</value></data>
   <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>可追溯性</value></data>
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>手工录入批次迁移</value></data>
+  <data name="Nav.Module.ESIGN" xml:space="preserve"><value>电子签名</value></data>
+  <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>我的签名</value></data>
 </root>

@@ -932,4 +932,6 @@
   <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Explorador de números de serie</value></data>
   <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>Trazabilidad</value></data>
   <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Migración de lotes introducidos manualmente</value></data>
+  <data name="Nav.Module.ESIGN" xml:space="preserve"><value>Firma electrónica</value></data>
+  <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>Mi firma</value></data>
 </root>

@@ -1,0 +1,13 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.ESignature.ESignature> Localizer
+@*
+    MOD-0022 E5W1 — the e-signature vocabulary (pack §11.6: ESign.Dialog.*, ESign.Pad.*, ESign.Mine.*, ESign.Zoom.*,
+    ESign.Module.*, ESign.Errors.{ESIGN_*}) in the reader's language, exactly ESignature.Keys. esign.l10n.js merges it into
+    window.ESignL10n and reports a missing value; no script carries hardcoded text. Rendered once per page.
+*@
+@if (Context.Items["ESignL10nRendered"] is not true)
+{
+    Context.Items["ESignL10nRendered"] = true;
+    <script id="esign-l10n" type="application/json">@Json.Serialize(Diten.Web.Views.ESignature.ESignature.Keys.ToDictionary(k => k, k => Localizer[k].Value))</script>
+    <script src="~/assets/js/ESignature/esign.l10n.js" asp-append-version="true"></script>
+}
