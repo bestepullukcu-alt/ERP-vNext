@@ -1281,7 +1281,9 @@ ready-for-dev); waiver **W-0022-01** (DCP-002 verifier not run — no Python; ru
   test is the guard.
 - KS-11 second factor: extension point only (`ESignReauthKind`), no flow; FU-0022-01.
 
-### E2 — implementation note (WP-0022-E2, 2026-10-08, pending CT)
+### E2 — implementation note (WP-0022-E2, 2026-10-08; CT-ACCEPTED 2026-10-08)
+
+**CT acceptance (K13):** re-measured at `39a847d8a` — Platform `~ESign` filter 80/80 (needs `DITEN_TEST_MONGOD=<mongod.exe>`; without it the replica-set fixture fails 20 tests at start-up — environment, not code), BackgroundJobs 22/22, architecture 18/18; AuthService change limited to the FU-0022-12 HashSecret rule. CT sabotage: `DrawRequired` appearance rule loosened (`ESignatureRules.cs:28`) → 1 red, restored. CT decisions: **CT-D10 → E3 scope** (default-role grants of `esign.signatures.sign` + `esign.my-samples.manage` in AuthService `DefaultRolePermissionTemplate`); envelope field `reason_code` (contract states the real field) accepted; global signable-action catalog accepted (policy rows stay tenant-scoped); nav pages hidden until E5 accepted; ticket SHA-256 in Platform records accepted (high-entropy random ticket; AuthService keeps its HMAC); export dates UTC (FU-0022-TZ: tenant time zone not modelled); FU23 subjects without LegalEntity (BL-432) accepted; Windows `--nounixsocket` fix in the shared test harness accepted.
 
 - Branch `feature/sce/mod-0022-e2` from `2bdedbb26`. Commits `90024eab4` (ESIGN-BUNDLE 1.0.0 FROZEN, single writer) and
   `a7508d583` (Platform e-signature service + AuthService FU-0022-12); local only, no push.
