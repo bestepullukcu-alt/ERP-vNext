@@ -335,18 +335,24 @@ public sealed class QuarantineOutcomeApplier
     /// <summary>How long a fresh Approved is treated as "the approving call is still applying" (Q2 runtime probe).</summary>
     public static readonly TimeSpan InFlightGrace = TimeSpan.FromMinutes(2);
 
+    private readonly TimeProvider _clock;
+
+    /// <param name="clock">Only the in-flight grace reads it (CT v1.1: testable without waiting); every record keeps
+    /// <see cref="QuarantineSupport.Now"/>.</param>
     public QuarantineOutcomeApplier(
         IQuarantineRepository repository,
         IQuarantineDecisionRepository decisions,
         QuarantineApplyEngine engine,
         QuarantineFacts facts,
-        QuarantineSupport support)
+        QuarantineSupport support,
+        TimeProvider clock)
     {
         _repository = repository;
         _decisions = decisions;
         _engine = engine;
         _facts = facts;
         _support = support;
+        _clock = clock;
     }
 
     public async Task<Response<DecisionState>> ApplyOutcomeAsync(
@@ -372,7 +378,7 @@ public sealed class QuarantineOutcomeApplier
             // approved before, the apply did not finish (crash between the steps): finish it — same keys, no double post. A
             // FRESH Approved is the approving call still posting (Q2 runtime probe: parallel reads) — leave it to that call.
             var approvedEvent = events.Last(e => e.Kind == DecisionEventKind.Approved);
-            if (QuarantineSupport.Now() - approvedEvent.AtUtc < InFlightGrace)
+            if (_clock.GetUtcNow() - approvedEvent.AtUtc < InFlightGrace)
             {
                 return Response<DecisionState>.Success(DecisionState.Approved);
             }

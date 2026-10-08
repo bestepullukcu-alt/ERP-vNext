@@ -11,6 +11,7 @@ using Diten.InventoryService.Persistence;
 using Diten.InventoryService.Persistence.Quarantine;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Diten.InventoryService.Api.Quarantine;
@@ -33,6 +34,7 @@ public static class QuarantineServiceCollectionExtensions
         services.AddScoped<QuarantineMovementPoster>();
         services.AddScoped<QuarantineIntakeService>();
         services.AddScoped<QuarantineApplyEngine>();
+        services.TryAddSingleton(TimeProvider.System); // the applier's in-flight grace clock (tests pass their own)
         services.AddScoped<QuarantineOutcomeApplier>();
         services.AddScoped<QuarantineStockActions>();
         services.AddScoped<QuarantineDecisionChecks>();
