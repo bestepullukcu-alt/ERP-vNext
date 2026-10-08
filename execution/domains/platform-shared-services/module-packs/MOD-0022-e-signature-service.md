@@ -1384,11 +1384,25 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
 - **OPEN for the CT:** O-E4-1 — E2's unique index "one signature per workflow task" blocks re-signing a task after a wrong /
   invalidated signature (the task can then only be rejected / cancelled / time out); ASSUMPTION-0022-E4-01 (object subject binds
   by `subjectType == objectType`) to be confirmed with MOD-0175 Q3; designers + WorkCenter dialog = E5.
+### E4 — CT acceptance (2026-10-08)
+
+- **CT-ACCEPTED.** CT re-ran Platform filtered **580/580** and architecture **18/18** in the agent worktree; read the gate, the
+  transition support, both dispatchers (the HTTP dispatcher strips `SignatureId`, so a remote provider cannot carry one) and the
+  single-use query (tenant `ExecutionFilter`). CT sabotage (own, not in the agent set): drop the `decision == approve` check →
+  `A_signature_for_another_decision_is_refused` red (1/22), restored, porcelain clean. Fast-forwarded into the MVP-1 branch.
+- **CT-D16 (O-E4-1):** the unique index `ux_esign_records_tenant_workflow_task` stays for now (no schema change in an accepted
+  slice); re-signing after an invalidated / wrong signature is **FU-0022-E4-01**, delivered in **E5** together with the
+  signature dialog (index relaxed so only the bound signature is unique; single use already enforced by the gate on the
+  transition log + context task binding). Until then a stuck task is closed by reject / cancel.
+- **CT-D17 (ASSUMPTION-0022-E4-01):** confirmed direction — MOD-0175 Q3 signs with `subjectType` = the workflow instance
+  `objectType` of the quarantine decision (no mapping table); Q3 must prove it with a live sign → approve.
+- ASSUMPTION-0022-E4-02 (reject needs no signature) accepted for MVP-1.
 
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
   dispose / unblock`, mockup `ACTS`); remote subject provider in InventoryService; template seed (CT-D6).
+- FU-0022-E4-01: re-sign a workflow task after an invalidated / wrong-meaning signature — relax `ux_esign_records_tenant_workflow_task` (E5, CT-D16).
 - FU-0022-01: second factor (KS-11) — e-mail OTP via the existing MFA challenge (`MfaChallengeService`).
 - FU-0022-02: immediate notification to security on `tenant_esign_reauth_lockout_started` / `tenant_login_lockout_started`
   (§11.300(d)).
