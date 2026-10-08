@@ -66,6 +66,9 @@ public interface IQuarantineRepository
 
     Task<QuarantineSettings?> FindSettingsAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>Q4R (O-Q4-3): the open-LotRelease claim of a lot in this company, or null.</summary>
+    Task<LotReleaseClaim?> FindLotReleaseClaimAsync(string lotId, CancellationToken cancellationToken = default);
+
     /// <summary>The tenant's block reasons; the five CT-Q8 seeds are inserted once per tenant on first read.</summary>
     Task<IReadOnlyList<BlockReason>> BlockReasonsAsync(CancellationToken cancellationToken = default);
 
@@ -90,6 +93,12 @@ public interface IQuarantineWriteSession
     Task<bool> ReplaceBlockedAsync(BlockedStock blocked, int expectedVersion, CancellationToken cancellationToken = default);
 
     Task InsertDecisionAsync(QuarantineDecision decision, CancellationToken cancellationToken = default);
+
+    /// <summary>Q4R: claims the lot for one open LotRelease; a second claim → <see cref="QuarantineDuplicateException"/> (unique index).</summary>
+    Task InsertLotReleaseClaimAsync(LotReleaseClaim claim, CancellationToken cancellationToken = default);
+
+    /// <summary>Q4R: drops the claim of <paramref name="decisionId"/> on the lot (a closed / stale claim being replaced); false when gone.</summary>
+    Task<bool> DropLotReleaseClaimAsync(string lotId, Guid decisionId, CancellationToken cancellationToken = default);
 
     Task InsertDecisionEventAsync(QuarantineDecisionEvent decisionEvent, CancellationToken cancellationToken = default);
 

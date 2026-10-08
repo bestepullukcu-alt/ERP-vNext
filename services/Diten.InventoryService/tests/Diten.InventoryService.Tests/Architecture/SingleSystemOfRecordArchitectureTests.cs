@@ -38,7 +38,7 @@ public sealed class SingleSystemOfRecordArchitectureTests
         // blocked-stock Quantity is the quantity the record is about (Only_the_ledger_and_its_projection_carry_quantities).
         Assert.Equal(
             ["quarantine_block_reasons", "quarantine_blocked_stock", "quarantine_decision_events", "quarantine_decisions", "quarantine_event_inbox",
-             "quarantine_history", "quarantine_holds", "quarantine_sequences", "quarantine_settings"],
+             "quarantine_history", "quarantine_holds", "quarantine_lot_release_claims", "quarantine_sequences", "quarantine_settings"],
             Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All.OrderBy(x => x).ToList());
     }
 

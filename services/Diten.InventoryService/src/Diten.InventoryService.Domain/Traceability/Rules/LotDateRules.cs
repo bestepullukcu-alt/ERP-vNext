@@ -33,6 +33,13 @@ public static class LotDateRules
 
     public static bool RetestDue(DateOnly? retest, DateOnly today) => retest is { } r && r < today;
 
+    /// <summary>
+    /// MOD-0175 CT-Q17 (WP-0175-Q4R): an edit that moves a set retest date LATER or removes it — on a non-Draft lot only an approved
+    /// MOD-0175 retest release may do that (KQ-H: "kalite kararı verilene kadar"). Earlier (the safe direction) or a first date is no
+    /// such move.
+    /// </summary>
+    public static bool RetestMovesLater(DateOnly? current, DateOnly? next) => current is { } c && (next is not { } n || n > c);
+
     /// <summary>B-3: the expiry date has passed (expiryDate &lt; today) and the lot is not Expired yet.</summary>
     public static bool ShouldExpire(LotStatus status, DateOnly? expiry, DateOnly today)
         => status != LotStatus.Expired && expiry is { } e && e < today;

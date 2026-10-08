@@ -21,6 +21,11 @@ namespace Diten.InventoryService.Application.Features.Traceability.Handlers.Comm
 /// the date order of the RESULT (400 <c>LOT_DATES_INVALID</c>); replace + one <c>Updated</c> history row per changed field
 /// (old → new + reason).</item>
 /// </list>
+/// <para><b>MOD-0175 CT-Q17 (WP-0175-Q4R).</b> On a non-Draft lot <c>retestDate</c> may only move EARLIER (or be set where none was):
+/// later or null → 400 <c>LOT_KEY_IMMUTABLE</c> (the status the code already has, <c>TraceRequestReader</c>) — a later retest date
+/// comes only from an approved MOD-0175 retest release (<c>ApplyApprovedLotStatusChange</c>, which does not pass through this
+/// handler). A Draft lot stays free. An earlier date that makes the lot due blocks postings at once (the posting rule reads the date);
+/// the stored retest hold (availability, new reservations) is set by the retest sweeper on its next run (CT-Q16).</para>
 /// </summary>
 public sealed class UpdateLotHandler : IRequestHandler<UpdateLotCommand, Response<LotRefDto>>
 {
@@ -73,6 +78,10 @@ public sealed class UpdateLotHandler : IRequestHandler<UpdateLotCommand, Respons
                 return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.ReasonRequired,
                     $"A {lot.Status} lot is edited only with a reason of at least {LotStatusRules.MinReasonLength} characters.", 400);
             if (lot.Version != expectedVersion) return TraceWriteSupport.Conflict<LotRefDto>();
+            if (lot.Status != LotStatus.Draft && request.RetestDate.IsPresent && LotDateRules.RetestMovesLater(TraceMapping.Day(lot.RetestDate), retest))
+                return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.LotKeyImmutable,
+                    "The retest date of a lot that is not Draft is moved later (or removed) only by an approved MOD-0175 retest decision; here it may only move earlier.",
+                    400);
 
             var changes = new List<(string Field, string? Old, string? New)>();
             Apply(request.ManufacturerLot, "manufacturerLot", lot.ManufacturerLot, attributes.ManufacturerLot, v => lot.ManufacturerLot = v, changes);

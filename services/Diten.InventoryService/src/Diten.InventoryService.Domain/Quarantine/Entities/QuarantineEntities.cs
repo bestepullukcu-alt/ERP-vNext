@@ -308,6 +308,20 @@ public sealed class QuarantineHistoryEntry : EntityBase
     public string LeSource { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Q4R (O-Q4-3): "this lot has an open LotRelease" — at most ONE per Tenant + LegalEntity + lot, held by the unique index
+/// <c>ux_quarantine_lot_release_open</c>. Inserted in the SAME 0175 transaction as the LotRelease decision; the decision stays
+/// insert-only, so the claim is a separate record. A claim whose decision has closed (Applied / Rejected / Cancelled / TimedOut /
+/// Withdrawn / FourEyesViolation) — or that was never sent and no longer matches the lot's status — is replaced by the next request in
+/// one transaction (delete + insert; a concurrent replacement conflicts and re-reads).
+/// </summary>
+public sealed class LotReleaseClaim : EntityBase
+{
+    public string LotId { get; set; } = string.Empty;
+
+    public Guid DecisionId { get; set; }
+}
+
 /// <summary>Quarantine settings of one company (Tenant + LegalEntity).</summary>
 public sealed class QuarantineSettings : EntityBase
 {

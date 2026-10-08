@@ -32,6 +32,7 @@ public sealed class QuarantineRepository : IQuarantineRepository
     private readonly IMongoCollection<QuarantineHistoryEntry> _history;
     private readonly IMongoCollection<QuarantineSettings> _settings;
     private readonly IMongoCollection<BlockReason> _reasons;
+    private readonly IMongoCollection<LotReleaseClaim> _claims;
     private readonly IMongoCollection<BsonDocument> _sequences;
     private readonly TransactionRetryCounter _retries;
     private readonly ILogger<QuarantineRepository> _logger;
@@ -49,6 +50,7 @@ public sealed class QuarantineRepository : IQuarantineRepository
         _history = database.GetCollection<QuarantineHistoryEntry>(QuarantineCollections.History);
         _settings = database.GetCollection<QuarantineSettings>(QuarantineCollections.Settings);
         _reasons = database.GetCollection<BlockReason>(QuarantineCollections.BlockReasons);
+        _claims = database.GetCollection<LotReleaseClaim>(QuarantineCollections.LotReleaseClaims);
         _sequences = database.GetCollection<BsonDocument>(QuarantineCollections.Sequences);
         _retries = retries;
         _logger = logger;
@@ -154,6 +156,9 @@ public sealed class QuarantineRepository : IQuarantineRepository
 
     public async Task<QuarantineSettings?> FindSettingsAsync(CancellationToken cancellationToken = default)
         => await _settings.Find(Scope<QuarantineSettings>()).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<LotReleaseClaim?> FindLotReleaseClaimAsync(string lotId, CancellationToken cancellationToken = default)
+        => await _claims.Find(Scope<LotReleaseClaim>() & Builders<LotReleaseClaim>.Filter.Eq(x => x.LotId, lotId)).FirstOrDefaultAsync(cancellationToken);
 
     public async Task<IReadOnlyList<BlockReason>> BlockReasonsAsync(CancellationToken cancellationToken = default)
     {
@@ -289,6 +294,17 @@ public sealed class QuarantineRepository : IQuarantineRepository
             _owner.Stamp(decision);
             return _owner._decisions.InsertOneAsync(_session, decision, cancellationToken: cancellationToken);
         }
+
+        public Task InsertLotReleaseClaimAsync(LotReleaseClaim claim, CancellationToken cancellationToken = default)
+        {
+            _owner.Stamp(claim);
+            return _owner._claims.InsertOneAsync(_session, claim, cancellationToken: cancellationToken);
+        }
+
+        public async Task<bool> DropLotReleaseClaimAsync(string lotId, Guid decisionId, CancellationToken cancellationToken = default)
+            => (await _owner._claims.DeleteOneAsync(_session, _owner.Scope<LotReleaseClaim>() & Builders<LotReleaseClaim>.Filter.Eq(x => x.LotId, lotId)
+                                                             & Builders<LotReleaseClaim>.Filter.Eq(x => x.DecisionId, decisionId),
+                cancellationToken: cancellationToken)).DeletedCount == 1;
 
         public Task InsertDecisionEventAsync(QuarantineDecisionEvent decisionEvent, CancellationToken cancellationToken = default)
         {

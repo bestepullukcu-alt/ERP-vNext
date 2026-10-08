@@ -42,8 +42,11 @@ public sealed class QuarantineLotStatusChangeGate : ILotStatusChangeGate
 /// <list type="bullet">
 /// <item><see cref="OpenAsync"/> — the gated request becomes a <c>QuarantineDecision{Kind: LotRelease}</c> DRAFT (requester = decider,
 /// reason = the request's reason, <c>lotStatusTarget = Released</c>) in its own MOD-0175 transaction; the lot transaction wrote nothing.
-/// The same request key answers the same decision; an open LotRelease decision of the lot (Draft / Submitted / StartFailed /
-/// PendingApproval / Approved) is answered instead of a second one. The requester then signs and submits it (KQ-I step 3).</item>
+/// The same request key answers the same decision. <b>Q4R (O-Q4-3):</b> one open LotRelease per company + lot is a DATABASE rule —
+/// the decision and its <see cref="LotReleaseClaim"/> are inserted in ONE transaction under the unique index; a second request
+/// (sequential or concurrent) loses the claim and is answered with the open decision's id (202 idempotent). A claim whose decision
+/// has closed, or that was never sent and no longer matches the lot's status, is replaced (delete + insert in the same transaction).
+/// The requester then signs and submits it (KQ-I step 3).</item>
 /// <item><see cref="FindApprovedAsync"/> — what <see cref="ApplyApprovedLotStatusChangeCommand"/> may apply: only a decision of this
 /// company whose state is Approved (or ApplyFailed — approved, apply to finish); LotRelease → Released from the status it was requested
 /// from (Draft or Blocked: a lot blocked meanwhile is not released by an approval of its Draft release), a hold
@@ -78,12 +81,71 @@ public sealed class QuarantineLotReleaseApprovals : ILotStatusChangeApprovals, I
             return replay.Id.ToString("D");
         }
 
-        if (await OpenReleaseAsync(lot.Id.ToString("D"), null, cancellationToken) is { } open
-            && (open.LotStatusFrom is null || string.Equals(open.LotStatusFrom, lot.Status.ToString(), StringComparison.Ordinal)))
+        var lotId = lot.Id.ToString("D");
+        for (var attempt = 1; ; attempt++)
         {
-            return open.Id.ToString("D");
+            var (answer, stale, adopt) = await ClaimStateAsync(lotId, lot.Status, cancellationToken);
+            if (answer is not null)
+            {
+                return answer;
+            }
+
+            try
+            {
+                return await ClaimAsync(lot, target, reason, key, stale, adopt, cancellationToken);
+            }
+            catch (QuarantineDuplicateException duplicate) when (duplicate.Index == LotReleaseOpenIndex && attempt < 5)
+            {
+                // a concurrent request claimed the lot first: re-read, its decision is the answer
+            }
+            catch (QuarantineDuplicateException duplicate) when (duplicate.Index != LotReleaseOpenIndex)
+            {
+                var winner = await _decisions.FindByIdempotencyKeyAsync(_support.UserId, key, cancellationToken)
+                             ?? throw new InvalidOperationException("Lot release key reported taken but no decision carries it.");
+                return winner.Id.ToString("D");
+            }
+        }
+    }
+
+    /// <summary>The unique index of the open-LotRelease claim (Persistence <c>QuarantineIndexConfiguration.LotReleaseOpenIndex</c>).</summary>
+    public const string LotReleaseOpenIndex = "ux_quarantine_lot_release_open";
+
+    private static bool IsOpen(DecisionState state) => state is DecisionState.Draft or DecisionState.Submitted or DecisionState.StartFailed
+        or DecisionState.PendingApproval or DecisionState.Approved or DecisionState.ApplyFailed;
+
+    /// <summary>
+    /// What the lot's claim says: the open decision to answer, or the stale claim to replace, or (no claim — data from before Q4R) an
+    /// open LotRelease to adopt under a claim.
+    /// </summary>
+    private async Task<(string? Answer, Guid? Stale, QuarantineDecision? Adopt)> ClaimStateAsync(string lotId, LotStatus lotStatus, CancellationToken ct)
+    {
+        var claim = await _repository.FindLotReleaseClaimAsync(lotId, ct);
+        if (claim is null)
+        {
+            var legacy = await OpenReleaseAsync(lotId, null, ct);
+            return legacy is not null && Matches(legacy, lotStatus, await StateAsync(legacy.Id, ct)) ? (null, null, legacy) : (null, null, null);
         }
 
+        var held = await _decisions.FindAsync(claim.DecisionId, ct);
+        if (held is not null && await StateAsync(held.Id, ct) is { } state && IsOpen(state) && Matches(held, lotStatus, state))
+        {
+            return (held.Id.ToString("D"), null, null);
+        }
+
+        return (null, claim.DecisionId, null);
+    }
+
+    /// <summary>A sent decision (Submitted … ApplyFailed) stays the lot's; a Draft / StartFailed one only while the lot is in its from-status.</summary>
+    private static bool Matches(QuarantineDecision decision, LotStatus lotStatus, DecisionState state)
+        => state is not (DecisionState.Draft or DecisionState.StartFailed)
+           || decision.LotStatusFrom is null || string.Equals(decision.LotStatusFrom, lotStatus.ToString(), StringComparison.Ordinal);
+
+    private async Task<DecisionState> StateAsync(Guid decisionId, CancellationToken ct)
+        => QuarantineFacts.StateOf(await _decisions.EventsAsync([decisionId], ct));
+
+    private async Task<string> ClaimAsync(
+        Lot lot, LotStatus target, string reason, string key, Guid? stale, QuarantineDecision? adopt, CancellationToken cancellationToken)
+    {
         var now = QuarantineSupport.Now();
         var decision = new QuarantineDecision
         {
@@ -108,23 +170,27 @@ public sealed class QuarantineLotReleaseApprovals : ILotStatusChangeApprovals, I
                 ("target", target.ToString()), ("reason", reason))
         };
 
-        try
+        return await _repository.InTransactionAsync(async (session, c) =>
         {
-            await _repository.InTransactionAsync<bool>(async (session, c) =>
+            if (stale is { } closed)
+            {
+                await session.DropLotReleaseClaimAsync(lot.Id.ToString("D"), closed, c);
+            }
+
+            var owner = adopt ?? decision;
+            if (adopt is null)
             {
                 decision.DecisionNumber = await session.NextNumberAsync(QuarantineContract.DecisionPrefix, now.UtcDateTime.Year, c);
                 await session.InsertDecisionAsync(decision, c);
-                return true;
-            }, cancellationToken);
-        }
-        catch (QuarantineDuplicateException)
-        {
-            var winner = await _decisions.FindByIdempotencyKeyAsync(_support.UserId, key, cancellationToken)
-                         ?? throw new InvalidOperationException("Lot release key reported taken but no decision carries it.");
-            return winner.Id.ToString("D");
-        }
+            }
 
-        return decision.Id.ToString("D");
+            await session.InsertLotReleaseClaimAsync(new LotReleaseClaim
+            {
+                Id = Guid.NewGuid(), TenantId = _support.TenantId, LegalEntityId = _support.LegalEntityId, CreatedAt = now,
+                LotId = lot.Id.ToString("D"), DecisionId = owner.Id
+            }, c);
+            return owner.Id.ToString("D");
+        }, cancellationToken);
     }
 
     /// <summary>An open LotRelease decision of the lot other than <paramref name="except"/> (V6 for a lot), or null.</summary>

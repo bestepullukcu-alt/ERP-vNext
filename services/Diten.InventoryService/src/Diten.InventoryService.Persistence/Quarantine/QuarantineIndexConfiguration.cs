@@ -30,11 +30,12 @@ public static class QuarantineIndexConfiguration
     public const string BlockedCreateKeyIndex = "ux_quarantine_blocked_create_key";
     public const string SettingsIndex = "ux_quarantine_settings_company";
     public const string BlockReasonIndex = "ux_quarantine_block_reason_code";
+    public const string LotReleaseOpenIndex = "ux_quarantine_lot_release_open";
 
     public static readonly IReadOnlyList<string> UniqueIndexes =
     [
         HoldNumberIndex, HoldSourceMovementIndex, HoldCreateKeyIndex, DecisionNumberIndex, DecisionKeyIndex, DecisionEventOnceIndex,
-        BlockedNumberIndex, BlockedSourceMovementIndex, BlockedCreateKeyIndex, SettingsIndex, BlockReasonIndex
+        BlockedNumberIndex, BlockedSourceMovementIndex, BlockedCreateKeyIndex, SettingsIndex, BlockReasonIndex, LotReleaseOpenIndex
     ];
 
     private static BsonDocument IsString(string field) => new(field, new BsonDocument("$type", "string"));
@@ -96,6 +97,13 @@ public static class QuarantineIndexConfiguration
             new CreateIndexModel<QuarantineSettings>(
                 Builders<QuarantineSettings>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId),
                 new CreateIndexOptions { Name = SettingsIndex, Unique = true }),
+            cancellationToken: ct);
+
+        // Q4R (O-Q4-3): one open LotRelease per Tenant + LegalEntity + lot — a NEW collection, so the index never meets old duplicates.
+        await database.GetCollection<LotReleaseClaim>(QuarantineCollections.LotReleaseClaims).Indexes.CreateOneAsync(
+            new CreateIndexModel<LotReleaseClaim>(
+                Builders<LotReleaseClaim>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.LotId),
+                new CreateIndexOptions { Name = LotReleaseOpenIndex, Unique = true }),
             cancellationToken: ct);
 
         await database.GetCollection<BlockReason>(QuarantineCollections.BlockReasons).Indexes.CreateOneAsync(

@@ -27,9 +27,12 @@ public static class QuarantineCollections
     /// <summary>Atomic per Tenant + prefix + year counter behind <c>KRN-</c> / <c>QKR-</c> / <c>BLK-{yyyy}-{nnnn}</c>.</summary>
     public const string Sequences = "quarantine_sequences";
 
+    /// <summary>Q4R (O-Q4-3): one open LotRelease per company + lot (unique index).</summary>
+    public const string LotReleaseClaims = "quarantine_lot_release_claims";
+
     /// <summary>MOD-0023 completion events already processed (Q2); insert-only.</summary>
     public const string EventInbox = "quarantine_event_inbox";
 
     public static readonly IReadOnlyList<string> All =
-        [Holds, Decisions, DecisionEvents, BlockedStock, History, Settings, BlockReasons, Sequences, EventInbox];
+        [Holds, Decisions, DecisionEvents, BlockedStock, History, Settings, BlockReasons, Sequences, EventInbox, LotReleaseClaims];
 }

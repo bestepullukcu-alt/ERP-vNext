@@ -34,10 +34,10 @@ public sealed class QuarantineRetestTests : IClassFixture<QuarantineApiFactory>
     private static string Code(JsonElement e) => e.GetProperty("error").GetProperty("code").GetString()!;
 
     /// <summary>A Released lot with <paramref name="available"/> AVAILABLE at bin A (received while not due), then made retest-due.</summary>
-    private static async Task<string> DueLotAsync(LotLedgerScenario s, string available = "30", string? atB = null)
+    private static async Task<string> DueLotAsync(LotLedgerScenario s, string available = "30", string? atB = null, bool release = true)
     {
         var lot = await s.CreateLotAsync(expiryDate: "2028-01-31T00:00:00Z", retestDate: FutureWire);
-        await s.ReleaseAsync(lot);
+        if (release) await s.ReleaseAsync(lot);
         await s.PostOkAsync(s.Receipt(available, lot));
         if (atB is not null) await s.PostOkAsync(s.Receipt(atB, lot, location: s.Ledger.LocationB));
         await s.SetRetestDateAsync(lot, Due);
@@ -148,8 +148,9 @@ public sealed class QuarantineRetestTests : IClassFixture<QuarantineApiFactory>
     [Fact]
     public async Task Extending_the_retest_date_clears_the_hold_and_brings_the_stock_back()
     {
+        // Q4R (CT-Q17): only a DRAFT lot's retest date moves later by an edit; a Released one needs the approved retest release
         var s = new LotLedgerScenario(_factory);
-        var lot = await DueLotAsync(s, "30", atB: "5");
+        var lot = await DueLotAsync(s, "30", atB: "5", release: false);
         await s.SweepRetestAsync();
         Assert.Equal(0m, s.SkuPositionAvailableOnHand());
         await s.RefusedAsync(s.Issue("1", lot), "LOT_RETEST_DUE");
