@@ -34,6 +34,9 @@ public static partial class PlatformSchemaManifest
                     new CreateIndexOptions { Name = "ix_esign_records_tenant_signer" }),
                 new(Builders<ESignatureRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RequestId),
                     new CreateIndexOptions { Name = "ix_esign_records_tenant_request" }),
+                // E3 — usage of a sample (a used sample cannot be withdrawn).
+                new(Builders<ESignatureRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.AppearanceSampleId),
+                    new CreateIndexOptions { Name = "ix_esign_records_tenant_sample" }),
                 // One signature binds one workflow task (E4). Partial on the key's existence: signatures without a task
                 // context stay outside the unique space.
                 new(Builders<ESignatureRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending("Context.workflowTaskId"),
@@ -112,6 +115,38 @@ public static partial class PlatformSchemaManifest
                     new CreateIndexOptions { Unique = true, Name = "ux_esign_exports_tenant_by_idempotency" }),
                 new(Builders<ESignatureExport>.IndexKeys.Ascending(x => x.TenantId).Descending(x => x.AtUtc),
                     new CreateIndexOptions { Name = "ix_esign_exports_tenant_time" })
+            }),
+        // ── E3 — signature samples ────────────────────────────────────────────────────────────────────────────────────
+        Collection<ESignatureSample>(
+            SchemaProfile.ESignature,
+            PlatformCollections.ESignatureSamples,
+            () => new CreateIndexModel<ESignatureSample>[]
+            {
+                new(Builders<ESignatureSample>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SampleNumber),
+                    new CreateIndexOptions { Unique = true, Name = "ux_esign_samples_tenant_number" }),
+                new(Builders<ESignatureSample>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.OwnerUserId).Ascending(x => x.IdempotencyKey),
+                    new CreateIndexOptions { Unique = true, Name = "ux_esign_samples_tenant_owner_idempotency" }),
+                new(Builders<ESignatureSample>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.OwnerUserId).Descending(x => x.CreatedAtUtc),
+                    new CreateIndexOptions { Name = "ix_esign_samples_tenant_owner_time" })
+            }),
+        Collection<ESignatureSampleEvent>(
+            SchemaProfile.ESignature,
+            PlatformCollections.ESignatureSampleEvents,
+            () => new CreateIndexModel<ESignatureSampleEvent>[]
+            {
+                // One event per (sample, sequence): two parallel decisions on one sample cannot both land.
+                new(Builders<ESignatureSampleEvent>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SampleId).Ascending(x => x.Sequence),
+                    new CreateIndexOptions { Unique = true, Name = "ux_esign_sample_events_tenant_sample_sequence" }),
+                new(Builders<ESignatureSampleEvent>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.Event).Descending(x => x.AtUtc),
+                    new CreateIndexOptions { Name = "ix_esign_sample_events_tenant_event_time" })
+            }),
+        Collection<ESignatureSampleOwnerState>(
+            SchemaProfile.ESignature,
+            PlatformCollections.ESignatureSampleOwnerStates,
+            () => new CreateIndexModel<ESignatureSampleOwnerState>[]
+            {
+                new(Builders<ESignatureSampleOwnerState>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.OwnerUserId),
+                    new CreateIndexOptions { Unique = true, Name = "ux_esign_sample_owner_states_tenant_owner" })
             }),
         Collection<ESignatureCounter>(
             SchemaProfile.ESignature,

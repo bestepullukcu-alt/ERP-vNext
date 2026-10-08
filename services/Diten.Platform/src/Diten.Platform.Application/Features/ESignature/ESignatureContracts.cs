@@ -57,6 +57,9 @@ public static class ESignCodes
     public const string ActionPrefixMismatch = "ESIGN_ACTION_PREFIX_MISMATCH";
     public const string ExportTooLarge = "ESIGN_EXPORT_TOO_LARGE";
     public const string SignatureMismatch = "ESIGN_SIGNATURE_MISMATCH";
+    public const string SelfApprovalForbidden = "ESIGN_SELF_APPROVAL_FORBIDDEN";
+    public const string SampleNotPending = "ESIGN_SAMPLE_NOT_PENDING";
+    public const string SampleInUse = "ESIGN_SAMPLE_IN_USE";
 
     /// <summary>Validation failures that have no ESIGN code of their own (V11, V15, V23, V24, shapes).</summary>
     public const string ValidationFailed = "VALIDATION_FAILED";
@@ -83,6 +86,11 @@ public static class ESignAuditEvents
     public const string MeaningDeactivated = "esign.meaning.deactivated";
     public const string ActionsRegistered = "esign.actions.registered";
     public const string ExportCreated = "esign.export.created";
+    public const string SampleSubmitted = "esign.sample.submitted";
+    public const string SampleApproved = "esign.sample.approved";
+    public const string SampleRejected = "esign.sample.rejected";
+    public const string SampleDeactivated = "esign.sample.deactivated";
+    public const string SampleWithdrawn = "esign.sample.withdrawn";
 }
 
 // ── wire DTOs (ESIGN-BUNDLE §2; camelCase by the default System.Text.Json policy) ─────────────────────────────────────
@@ -227,6 +235,29 @@ public sealed record ExportLogEntryDto(
     ExportByDto By,
     DateTime AtUtc,
     string FileHash);
+
+// ── E3 — samples (ESIGN-BUNDLE §2.10, §4.17–4.19) ───────────────────────────────────────────────────────────────────────
+
+public sealed record SampleOwnerDto(string UserId, string Login, string Name);
+
+public sealed record SampleDecisionInfoDto(string By, string ByName, DateTime AtUtc, string? Reason);
+
+public sealed record SampleDto(
+    Guid Id,
+    string SampleNumber,
+    SampleOwnerDto Owner,
+    string Kind,
+    string Format,
+    string Status,
+    string ImageHash,
+    DateTime CreatedAtUtc,
+    long UsedCount,
+    SampleDecisionInfoDto? Decision);
+
+public sealed record SampleDecisionLogDto(DateTime AtUtc, string By, string Owner, string SampleNumber, string Decision, string? Reason);
+
+/// <summary>A sample's PNG for the image endpoint.</summary>
+public sealed record SampleImageFile(byte[] Content, string ImageHash);
 
 /// <summary>The rendered export: the bytes, the media type, the file name and the log entry written with it.</summary>
 public sealed record ESignatureExportFile(byte[] Content, string MediaType, string FileName, ExportLogEntryDto Entry);

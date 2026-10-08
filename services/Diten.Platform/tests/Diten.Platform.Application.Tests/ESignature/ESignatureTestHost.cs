@@ -123,6 +123,9 @@ public sealed class ESignatureTestHost : IAsyncLifetime
                 services.AddScoped<IESignMeaningRepository, ESignMeaningRepository>();
                 services.AddScoped<IESignActionRepository, ESignActionRepository>();
                 services.AddScoped<IESignNumberGenerator, ESignNumberGenerator>();
+                services.AddScoped<IESignatureSampleRepository, ESignatureSampleRepository>();
+                services.AddScoped<IESignatureSampleEventRepository, ESignatureSampleEventRepository>();
+                services.AddScoped<IESignSampleOwnerStateRepository, ESignSampleOwnerStateRepository>();
                 services.AddScoped<AuditOutboxRepository>();
                 services.AddScoped<IAuditOutboxWriter>(sp => sp.GetRequiredService<AuditOutboxRepository>());
                 services.AddScoped<ITransactionalAuditOutboxWriter>(sp => sp.GetRequiredService<AuditOutboxRepository>());

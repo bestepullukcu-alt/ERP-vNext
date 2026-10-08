@@ -31,6 +31,9 @@ public interface IESignatureRecordRepository
     Task<IReadOnlyList<ESignatureRecord>> ListBySubjectAsync(Guid tenantId, string module, string subjectType, string subjectId, CancellationToken ct = default);
 
     Task<(IReadOnlyList<ESignatureRecord> Items, long Total)> SearchAsync(Guid tenantId, ESignatureSearch search, int skip, int take, CancellationToken ct = default);
+
+    /// <summary>E3 — how many signatures show each sample (a used sample can never be withdrawn).</summary>
+    Task<IReadOnlyDictionary<Guid, long>> GetSampleUsageAsync(Guid tenantId, IReadOnlyCollection<Guid> sampleIds, CancellationToken ct = default);
 }
 
 public interface IESignatureInvalidationRepository
@@ -163,3 +166,53 @@ public sealed class ESignatureDuplicateException(Exception? inner = null)
 /// </summary>
 public sealed class ESignatureTaskBindingException(Exception? inner = null)
     : Exception("A signature is already bound to this workflow task.", inner);
+
+// ── E3 — signature samples ("İmzam"). The two sample stores are INSERT-ONLY (IESignature*Repository naming: the
+// architecture test covers them); the owner pointer is a guarded mutable document. ──────────────────────────────
+
+public interface IESignatureSampleRepository
+{
+    /// <summary>Inserts the sample. Duplicate (TenantId, OwnerUserId, IdempotencyKey) ⇒ <see cref="ESignatureDuplicateException"/>.</summary>
+    Task InsertAsync(IPlatformTransactionSession session, ESignatureSample sample, CancellationToken ct = default);
+
+    Task<ESignatureSample?> GetAsync(Guid tenantId, Guid id, CancellationToken ct = default);
+
+    Task<ESignatureSample?> GetByIdempotencyKeyAsync(Guid tenantId, string ownerUserId, string idempotencyKey, CancellationToken ct = default);
+
+    /// <summary>The owner's samples, newest first.</summary>
+    Task<IReadOnlyList<ESignatureSample>> ListByOwnerAsync(Guid tenantId, string ownerUserId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<ESignatureSample>> ListByIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken ct = default);
+}
+
+public interface IESignatureSampleEventRepository
+{
+    /// <summary>Appends one event. A second event with the same (TenantId, SampleId, Sequence) ⇒ <see cref="ESignatureDuplicateException"/>.</summary>
+    Task InsertAsync(IPlatformTransactionSession session, ESignatureSampleEvent sampleEvent, CancellationToken ct = default);
+
+    /// <summary>One sample's events in sequence order; with a session the read joins the transaction.</summary>
+    Task<IReadOnlyList<ESignatureSampleEvent>> ListBySampleAsync(Guid tenantId, Guid sampleId, IPlatformTransactionSession? session = null,
+        CancellationToken ct = default);
+
+    Task<IReadOnlyList<ESignatureSampleEvent>> ListBySamplesAsync(Guid tenantId, IReadOnlyCollection<Guid> sampleIds, CancellationToken ct = default);
+
+    /// <summary>Ids of the tenant's samples that have a Submitted event (pending candidates — the caller projects their status).</summary>
+    Task<IReadOnlyList<Guid>> ListSubmittedSampleIdsAsync(Guid tenantId, CancellationToken ct = default);
+
+    /// <summary>The tenant's approval decisions (Approved / Rejected), newest first.</summary>
+    Task<IReadOnlyList<ESignatureSampleEvent>> ListDecisionsAsync(Guid tenantId, int take, CancellationToken ct = default);
+}
+
+public interface IESignSampleOwnerStateRepository
+{
+    Task<ESignatureSampleOwnerState?> GetAsync(IPlatformTransactionSession? session, Guid tenantId, string ownerUserId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Compare-and-set of the owner's active sample inside the transaction: moves the pointer from
+    /// <paramref name="expectedActiveSampleId"/> to <paramref name="newActiveSampleId"/>; false when someone moved it first.
+    /// The first activation of an owner creates the document (a parallel first creation hits the unique index ⇒
+    /// <see cref="ESignatureDuplicateException"/>).
+    /// </summary>
+    Task<bool> MoveActiveAsync(IPlatformTransactionSession session, Guid tenantId, string ownerUserId, Guid? expectedActiveSampleId,
+        Guid? newActiveSampleId, CancellationToken ct = default);
+}

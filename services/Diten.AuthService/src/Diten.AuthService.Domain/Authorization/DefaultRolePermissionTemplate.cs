@@ -33,7 +33,22 @@ public static class DefaultRolePermissionTemplate
     /// </summary>
     // MOD-0149 — "crm-account" is the module code carried by the seeded crm.account.* permissions (tenant-scoped).
     // Adding it here grants the tenant Admin role the full crm.account.* baseline via the standard SelectFor breadth clause.
-    public static readonly IReadOnlyList<string> AdminModules = new[] { "access-governance", "legal-entity", "crm-account", "crm-contact" };
+    // MOD-0022 CT-D10 — "esign" (the e-Signature manifest's ModuleCode): the tenant Admin holds the whole esign.* namespace,
+    // incl. esign.samples.approve (CT-D5 "tenant Admin by default"), policy and meanings management.
+    public static readonly IReadOnlyList<string> AdminModules = new[] { "access-governance", "legal-entity", "crm-account", "crm-contact", "esign" };
+
+    /// <summary>
+    /// MOD-0022 CT-D10 — the two e-signature keys EVERY default tenant role holds: signing and keeping one's own signature
+    /// sample. Signing authorises nothing by itself — each consumer action keeps its own key and the consumer decides who
+    /// may sign a business decision — so these are safe defaults. Keep this list EXACT: no management key (policy,
+    /// meanings, sample approval, invalidation, export) ever enters a non-Admin default role through it.
+    /// </summary>
+    public static readonly IReadOnlySet<string> DefaultSignerPermissions =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "esign.signatures.sign",
+            "esign.my-samples.manage"
+        };
 
     /// <summary>
     /// İŞ3-FAZ0 TRANSITION BRIDGE — derives a permission's authz <see cref="PermissionScope"/> from its existing
@@ -124,11 +139,13 @@ public static class DefaultRolePermissionTemplate
             // sensitive tenant self-service capability: the Admin gets them via the whitelist clause above, but the
             // default Viewer must NOT — so exclude the curated tenant self-service keys here explicitly.
             // İŞ3-FAZ0 — `!IsPlatform` → `Scope == Tenant` (bit-identical via ClassifyScope).
+            // MOD-0022 CT-D10 — plus the exact DefaultSignerPermissions (tenant-scoped only), and nothing else new.
             ViewerRole => available
                 .Where(p => p.Scope == PermissionScope.Tenant
-                            && string.Equals(p.Action, ReadAction, StringComparison.OrdinalIgnoreCase)
-                            && !TenantSelfServicePermissions.Contains(p.Key)
-                            && !EntitlementOnlyViewerPermissions.Contains(p.Key))
+                            && ((string.Equals(p.Action, ReadAction, StringComparison.OrdinalIgnoreCase)
+                                 && !TenantSelfServicePermissions.Contains(p.Key)
+                                 && !EntitlementOnlyViewerPermissions.Contains(p.Key))
+                                || DefaultSignerPermissions.Contains(p.Key)))
                 .ToList(),
 
             _ => Array.Empty<Permission>()

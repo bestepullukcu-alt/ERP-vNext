@@ -27,11 +27,16 @@ public sealed class ESignatureArchitectureTests
             .OrderBy(t => t.Name)
             .ToList();
 
+    /// <summary>E2's four evidence stores + E3's sample and sample-event stores.</summary>
     [Fact]
-    public void The_insert_only_repository_interfaces_are_the_four_evidence_stores()
+    public void The_insert_only_repository_interfaces_are_the_six_evidence_stores()
     {
         Assert.Equal(
-            new[] { nameof(IESignatureExportRepository), nameof(IESignatureInvalidationRepository), nameof(IESignaturePolicyChangeRepository), nameof(IESignatureRecordRepository) },
+            new[]
+            {
+                nameof(IESignatureExportRepository), nameof(IESignatureInvalidationRepository), nameof(IESignaturePolicyChangeRepository),
+                nameof(IESignatureRecordRepository), nameof(IESignatureSampleEventRepository), nameof(IESignatureSampleRepository)
+            },
             InsertOnlyInterfaces().Select(t => t.Name).ToArray());
     }
 
@@ -60,7 +65,7 @@ public sealed class ESignatureArchitectureTests
         var implementations = typeof(ESignatureRecordRepository).Assembly.GetTypes()
             .Where(t => t.IsClass && !t.IsAbstract && t.GetInterfaces().Any(i => InsertOnlyInterfaces().Contains(i)))
             .ToList();
-        Assert.Equal(4, implementations.Count);
+        Assert.Equal(6, implementations.Count);
 
         foreach (var implementation in implementations)
         {
@@ -121,7 +126,7 @@ public sealed class ESignatureArchitectureTests
         var controllers = typeof(ESignatureSignaturesController).Assembly.GetTypes()
             .Where(t => t.Namespace == typeof(ESignatureSignaturesController).Namespace && typeof(ControllerBase).IsAssignableFrom(t))
             .ToList();
-        Assert.Equal(4, controllers.Count);
+        Assert.Equal(5, controllers.Count);
 
         foreach (var action in controllers.SelectMany(c => c.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)))
         {
@@ -130,8 +135,9 @@ public sealed class ESignatureArchitectureTests
             var gate = action.GetCustomAttribute<HasPermissionAttribute>();
             if (gate is null)
             {
-                // The one dual-key endpoint (§4.20) checks esign.meanings.read OR esign.signatures.sign itself.
-                Assert.Equal(nameof(ESignatureSettingsController.ListMeanings), action.Name);
+                // The two multi-key endpoints check their keys themselves: §4.20 (esign.meanings.read OR esign.signatures.sign)
+                // and the §4.17 sample image (owner key, approver key or signature-read key).
+                Assert.Contains(action.Name, new[] { nameof(ESignatureSettingsController.ListMeanings), nameof(ESignatureSamplesController.Image) });
                 continue;
             }
 

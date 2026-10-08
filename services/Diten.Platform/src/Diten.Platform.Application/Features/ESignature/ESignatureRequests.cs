@@ -25,7 +25,9 @@ public static class ESignatureTransactionAudit
         typeof(SavePolicyCommand), typeof(RevertLegalEntityPolicyCommand),
         typeof(CreateMeaningCommand), typeof(UpdateMeaningCommand), typeof(SetMeaningActiveCommand),
         typeof(RegisterSignableActionsCommand),
-        typeof(CreateExportCommand)
+        typeof(CreateExportCommand),
+        // E3 — samples
+        typeof(CreateSampleCommand), typeof(DecideSampleCommand), typeof(DeactivateSampleCommand), typeof(WithdrawSampleCommand)
     ];
 
     public static bool Owns(Type requestType) => Owners.Contains(requestType);
@@ -162,3 +164,28 @@ public sealed record CreateExportCommand(
     string? IdempotencyKey) : IRequest<Response<ESignatureExportFile>>, ITransactionOwnedAuditCommand;
 
 public sealed record ListExportsQuery(int Page, int PageSize) : IRequest<Response<PageDto<ExportLogEntryDto>>>;
+
+// ── E3 — signature samples (§4.17–4.19) ──────────────────────────────────────────────────────────────────────────────
+
+/// <summary>§4.17 — save a sample with a PASSWORD ticket (intent sample). ToString never prints the ticket or the PNG.</summary>
+public sealed record CreateSampleCommand(string? Ticket, string? Kind, string? PngBase64, string? StrokesJson, string? IdempotencyKey)
+    : IRequest<Response<SampleDto>>, ITransactionOwnedAuditCommand
+{
+    public override string ToString() => $"CreateSampleCommand {{ Kind = {Kind}, PngBase64Length = {PngBase64?.Length ?? 0} }}";
+}
+
+public sealed record ListMySamplesQuery : IRequest<Response<IReadOnlyList<SampleDto>>>;
+
+/// <summary>§4.17 image — the caller's own sample, an approver, or a reader of a signature that shows it; else 404.</summary>
+public sealed record GetSampleImageQuery(Guid Id, bool CanApprove, bool CanReadSignatures) : IRequest<Response<SampleImageFile>>;
+
+public sealed record DeactivateSampleCommand(Guid Id) : IRequest<Response<SampleDto>>, ITransactionOwnedAuditCommand;
+
+public sealed record WithdrawSampleCommand(Guid Id) : IRequest<Response<SampleDto>>, ITransactionOwnedAuditCommand;
+
+public sealed record ListPendingSamplesQuery : IRequest<Response<IReadOnlyList<SampleDto>>>;
+
+/// <summary>§4.19 — approve (<see cref="Approve"/> = true) or reject (reason ≥ 10). Never by the owner (CT-D5).</summary>
+public sealed record DecideSampleCommand(Guid Id, bool Approve, string? Reason) : IRequest<Response<SampleDto>>, ITransactionOwnedAuditCommand;
+
+public sealed record ListSampleDecisionsQuery : IRequest<Response<IReadOnlyList<SampleDecisionLogDto>>>;

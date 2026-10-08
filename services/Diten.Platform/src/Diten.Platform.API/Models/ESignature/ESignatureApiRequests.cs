@@ -63,6 +63,12 @@ public sealed record ExportFilterRequest(DateTime? FromUtc, DateTime? ToUtc, str
 
 public sealed record CreateExportRequest(string? Format, ExportFilterRequest? Filter, string? IdempotencyKey);
 
+// E3 — §4.17 createSample body. ToString never prints the ticket or the PNG.
+public sealed record CreateSampleRequest(string? Ticket, string? Kind, string? PngBase64, JsonElement? Strokes, string? IdempotencyKey)
+{
+    public override string ToString() => $"CreateSampleRequest {{ Kind = {Kind}, PngBase64Length = {PngBase64?.Length ?? 0} }}";
+}
+
 public sealed record SignableActionRequest(
     string? ActionCode,
     Dictionary<string, string>? Names,

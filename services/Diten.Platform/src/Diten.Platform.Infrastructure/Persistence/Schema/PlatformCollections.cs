@@ -119,6 +119,9 @@ public static class PlatformCollections
     public const string ESignaturePolicyChanges = "esign_policy_changes";
     public const string ESignatureRecords = "esign_signature_records";
     public const string ESignatureRequests = "esign_signature_requests";
+    public const string ESignatureSampleEvents = "esign_signature_sample_events";
+    public const string ESignatureSampleOwnerStates = "esign_sample_owner_states";
+    public const string ESignatureSamples = "esign_signature_samples";
     public const string ESignatureSignableActions = "esign_signable_actions";
     /// <summary>MOD-0031 Evidence Linking (slice 1) — object ↔ document/version evidence links.</summary>
     public const string EvidenceLinks = "evidence_links";

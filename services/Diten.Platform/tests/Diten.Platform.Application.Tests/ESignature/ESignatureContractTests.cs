@@ -65,8 +65,9 @@ public sealed class ESignatureContractTests
         Assert.Equal(proposalCodes.OrderBy(c => c), contractCodes.OrderBy(c => c));
     }
 
+    /// <summary>E3 extended this from E2 alone: the samples controller serves the contract's E3 operations (§4.17–4.19).</summary>
     [Fact]
-    public void The_E2_controllers_serve_exactly_the_contracts_E2_operations()
+    public void The_controllers_serve_exactly_the_contracts_E2_and_E3_operations()
     {
         var served = typeof(ESignatureSignaturesController).Assembly.GetTypes()
             .Where(t => t == typeof(InternalESignActionsController)
@@ -75,9 +76,12 @@ public sealed class ESignatureContractTests
             .ToHashSet();
 
         var e2 = ContractOperationsBySlice("E2");
+        var e3 = ContractOperationsBySlice("E3");
         Assert.True(e2.Count >= 25, $"contract scan found only {e2.Count} E2 operations");
-        Assert.Empty(e2.Except(served).OrderBy(x => x));
-        Assert.Empty(served.Except(e2).OrderBy(x => x));
+        Assert.Equal(9, e3.Count);
+        var expected = e2.Union(e3).ToHashSet();
+        Assert.Empty(expected.Except(served).OrderBy(x => x));
+        Assert.Empty(served.Except(expected).OrderBy(x => x));
     }
 
     [Fact]
@@ -190,7 +194,9 @@ public sealed class ESignatureContractTests
         var docs = Path.Combine(RepoRoot(), "docs");
         var matches = Directory.EnumerateFiles(docs, fileName, SearchOption.AllDirectories).ToList();
         Assert.True(matches.Count == 1, $"expected exactly one {fileName} under the docs folder, found {matches.Count}");
-        return File.ReadAllText(matches[0]);
+        // Line endings normalized: a checkout with core.autocrlf=true has CRLF, and the (?m) patterns below end with $,
+        // which matches only before LF — measured 2026-10-08 on a fresh worktree (E2 test, latent).
+        return File.ReadAllText(matches[0]).Replace("\r\n", "\n", StringComparison.Ordinal);
     }
 
     private static string RepoRoot()

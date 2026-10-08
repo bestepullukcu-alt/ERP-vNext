@@ -80,6 +80,19 @@ public sealed class ESignatureRecordRepository : IESignatureRecordRepository
             .SortBy(x => x.SignedAtUtc).ThenBy(x => x.SignatureNumber)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyDictionary<Guid, long>> GetSampleUsageAsync(Guid tenantId, IReadOnlyCollection<Guid> sampleIds, CancellationToken ct = default)
+    {
+        if (sampleIds.Count == 0)
+        {
+            return new Dictionary<Guid, long>();
+        }
+
+        var used = await _collection.Find(F.Eq(x => x.TenantId, tenantId) & F.In(x => x.AppearanceSampleId, sampleIds.Select(id => (Guid?)id)))
+            .Project(x => x.AppearanceSampleId)
+            .ToListAsync(ct);
+        return used.Where(id => id is not null).GroupBy(id => id!.Value).ToDictionary(g => g.Key, g => (long)g.Count());
+    }
+
     public async Task<(IReadOnlyList<ESignatureRecord> Items, long Total)> SearchAsync(
         Guid tenantId, ESignatureSearch search, int skip, int take, CancellationToken ct = default)
     {
@@ -481,5 +494,135 @@ public sealed class ESignNumberGenerator : IESignNumberGenerator
                 // Two first-ever upserts raced on the same _id; the loser retries and increments the winner's row.
             }
         }
+    }
+}
+
+// ── E3 — signature samples. The sample and event stores are insert-only (no TenantRepository<T> base); the owner pointer
+// is a compare-and-set document. ──────────────────────────────────────────────────────────────────────────────────────
+
+public sealed class ESignatureSampleRepository : IESignatureSampleRepository
+{
+    private readonly IPlatformDbContext _db;
+    private readonly IMongoCollection<ESignatureSample> _collection;
+
+    public ESignatureSampleRepository(IPlatformDbContext db)
+    {
+        _db = db;
+        _collection = db.GetCollection<ESignatureSample>(PlatformCollections.ESignatureSamples);
+    }
+
+    private static FilterDefinitionBuilder<ESignatureSample> F => Builders<ESignatureSample>.Filter;
+
+    public Task InsertAsync(IPlatformTransactionSession session, ESignatureSample sample, CancellationToken ct = default) =>
+        ESignatureMongo.InsertOrThrowDuplicateAsync(_collection, ESignatureMongo.Handle(session, _db), sample, ct);
+
+    public async Task<ESignatureSample?> GetAsync(Guid tenantId, Guid id, CancellationToken ct = default) =>
+        await _collection.Find(F.Eq(x => x.TenantId, tenantId) & F.Eq(x => x.Id, id)).FirstOrDefaultAsync(ct);
+
+    public async Task<ESignatureSample?> GetByIdempotencyKeyAsync(Guid tenantId, string ownerUserId, string idempotencyKey, CancellationToken ct = default) =>
+        await _collection.Find(F.Eq(x => x.TenantId, tenantId) & F.Eq(x => x.OwnerUserId, ownerUserId) & F.Eq(x => x.IdempotencyKey, idempotencyKey))
+            .FirstOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyList<ESignatureSample>> ListByOwnerAsync(Guid tenantId, string ownerUserId, CancellationToken ct = default) =>
+        await _collection.Find(F.Eq(x => x.TenantId, tenantId) & F.Eq(x => x.OwnerUserId, ownerUserId))
+            .SortByDescending(x => x.CreatedAtUtc).ThenByDescending(x => x.SampleNumber).Limit(200).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<ESignatureSample>> ListByIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken ct = default) =>
+        ids.Count == 0
+            ? []
+            : await _collection.Find(F.Eq(x => x.TenantId, tenantId) & F.In(x => x.Id, ids)).ToListAsync(ct);
+}
+
+public sealed class ESignatureSampleEventRepository : IESignatureSampleEventRepository
+{
+    private readonly IPlatformDbContext _db;
+    private readonly IMongoCollection<ESignatureSampleEvent> _collection;
+
+    public ESignatureSampleEventRepository(IPlatformDbContext db)
+    {
+        _db = db;
+        _collection = db.GetCollection<ESignatureSampleEvent>(PlatformCollections.ESignatureSampleEvents);
+    }
+
+    private static FilterDefinitionBuilder<ESignatureSampleEvent> F => Builders<ESignatureSampleEvent>.Filter;
+
+    public Task InsertAsync(IPlatformTransactionSession session, ESignatureSampleEvent sampleEvent, CancellationToken ct = default) =>
+        ESignatureMongo.InsertOrThrowDuplicateAsync(_collection, ESignatureMongo.Handle(session, _db), sampleEvent, ct);
+
+    public async Task<IReadOnlyList<ESignatureSampleEvent>> ListBySampleAsync(Guid tenantId, Guid sampleId, IPlatformTransactionSession? session = null,
+        CancellationToken ct = default)
+    {
+        var filter = F.Eq(x => x.TenantId, tenantId) & F.Eq(x => x.SampleId, sampleId);
+        var find = session is null ? _collection.Find(filter) : _collection.Find(ESignatureMongo.Handle(session, _db), filter);
+        return await find.SortBy(x => x.Sequence).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<ESignatureSampleEvent>> ListBySamplesAsync(Guid tenantId, IReadOnlyCollection<Guid> sampleIds, CancellationToken ct = default) =>
+        sampleIds.Count == 0
+            ? []
+            : await _collection.Find(F.Eq(x => x.TenantId, tenantId) & F.In(x => x.SampleId, sampleIds)).SortBy(x => x.Sequence).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<Guid>> ListSubmittedSampleIdsAsync(Guid tenantId, CancellationToken ct = default) =>
+        await _collection.Find(F.Eq(x => x.TenantId, tenantId) & F.Eq(x => x.Event, ESignatureSampleEventKind.Submitted))
+            .SortByDescending(x => x.AtUtc).Limit(1000).Project(x => x.SampleId).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<ESignatureSampleEvent>> ListDecisionsAsync(Guid tenantId, int take, CancellationToken ct = default) =>
+        await _collection.Find(F.Eq(x => x.TenantId, tenantId)
+                               & F.In(x => x.Event, new[] { ESignatureSampleEventKind.Approved, ESignatureSampleEventKind.Rejected }))
+            .SortByDescending(x => x.AtUtc).Limit(take).ToListAsync(ct);
+}
+
+public sealed class ESignSampleOwnerStateRepository : IESignSampleOwnerStateRepository
+{
+    private readonly IPlatformDbContext _db;
+    private readonly IMongoCollection<ESignatureSampleOwnerState> _collection;
+
+    public ESignSampleOwnerStateRepository(IPlatformDbContext db)
+    {
+        _db = db;
+        _collection = db.GetCollection<ESignatureSampleOwnerState>(PlatformCollections.ESignatureSampleOwnerStates);
+    }
+
+    private static FilterDefinitionBuilder<ESignatureSampleOwnerState> F => Builders<ESignatureSampleOwnerState>.Filter;
+
+    public async Task<ESignatureSampleOwnerState?> GetAsync(IPlatformTransactionSession? session, Guid tenantId, string ownerUserId, CancellationToken ct = default)
+    {
+        var filter = F.Eq(x => x.TenantId, tenantId) & F.Eq(x => x.OwnerUserId, ownerUserId);
+        var find = session is null ? _collection.Find(filter) : _collection.Find(ESignatureMongo.Handle(session, _db), filter);
+        return await find.FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<bool> MoveActiveAsync(IPlatformTransactionSession session, Guid tenantId, string ownerUserId, Guid? expectedActiveSampleId,
+        Guid? newActiveSampleId, CancellationToken ct = default)
+    {
+        var handle = ESignatureMongo.Handle(session, _db);
+        var owner = F.Eq(x => x.TenantId, tenantId) & F.Eq(x => x.OwnerUserId, ownerUserId);
+        var existing = await _collection.Find(handle, owner).FirstOrDefaultAsync(ct);
+        if (existing is null)
+        {
+            if (expectedActiveSampleId is not null)
+            {
+                return false;
+            }
+
+            await ESignatureMongo.InsertOrThrowDuplicateAsync(_collection, handle, new ESignatureSampleOwnerState
+            {
+                TenantId = tenantId,
+                OwnerUserId = ownerUserId,
+                ActiveSampleId = newActiveSampleId,
+                CreatedBy = ownerUserId
+            }, ct);
+            return true;
+        }
+
+        // The write itself is the guard: two transactions moving one owner's pointer conflict on this document, and the
+        // filter on the expected value refuses a move that started from a stale pointer.
+        var result = await _collection.UpdateOneAsync(handle, owner & F.Eq(x => x.ActiveSampleId, expectedActiveSampleId),
+            Builders<ESignatureSampleOwnerState>.Update
+                .Set(x => x.ActiveSampleId, newActiveSampleId)
+                .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+                .Inc(x => x.Version, 1),
+            cancellationToken: ct);
+        return result.ModifiedCount == 1;
     }
 }

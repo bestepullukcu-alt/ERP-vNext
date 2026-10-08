@@ -58,6 +58,7 @@ public sealed class SignSubjectCommandHandler : IRequestHandler<SignSubjectComma
     private readonly IPlatformTransactionExecutor _transactions;
     private readonly ITransactionalAuditOutboxWriter _audit;
     private readonly ILogger<SignSubjectCommandHandler> _logger;
+    private readonly IESignatureSampleBook _sampleBook;
 
     public SignSubjectCommandHandler(
         IESignActorAccessor actors,
@@ -71,7 +72,8 @@ public sealed class SignSubjectCommandHandler : IRequestHandler<SignSubjectComma
         IESignNumberGenerator numbers,
         IPlatformTransactionExecutor transactions,
         ITransactionalAuditOutboxWriter audit,
-        ILogger<SignSubjectCommandHandler> logger)
+        ILogger<SignSubjectCommandHandler> logger,
+        IESignatureSampleBook sampleBook)
     {
         _actors = actors;
         _subjects = subjects;
@@ -85,6 +87,7 @@ public sealed class SignSubjectCommandHandler : IRequestHandler<SignSubjectComma
         _transactions = transactions;
         _audit = audit;
         _logger = logger;
+        _sampleBook = sampleBook;
     }
 
     public async Task<Response<SignatureRecordDto>> Handle(SignSubjectCommand request, CancellationToken ct)
@@ -165,10 +168,18 @@ public sealed class SignSubjectCommandHandler : IRequestHandler<SignSubjectComma
             return ESignResponses.Fail<SignatureRecordDto>(ESignCodes.AppearanceNotAllowed, 409, "The visual signature does not match the policy.");
         }
 
+        // E3 port — a saved sample must be the CALLER's own Active sample (pending, rejected, inactive, withdrawn or someone
+        // else's ⇒ 409). Checked before the ticket is spent; its image and hash go into the record exactly as saved.
+        ESignatureSample? sample = null;
         if (appearance == ESignatureAppearanceType.Sample)
         {
-            // E3 builds signature samples; until then no sample can be the caller's active one (pack E2 port).
-            return ESignResponses.Fail<SignatureRecordDto>(ESignCodes.SampleNotActive, 409, "The signature sample is not your active sample.");
+            sample = request.Appearance?.SampleId is { } sampleId
+                ? await _sampleBook.ResolveActiveForSignerAsync(actor.TenantId, actor.UserIdText, sampleId, ct)
+                : null;
+            if (sample is null)
+            {
+                return ESignResponses.Fail<SignatureRecordDto>(ESignCodes.SampleNotActive, 409, "The signature sample is not your active sample.");
+            }
         }
 
         byte[]? png = null;
@@ -279,11 +290,12 @@ public sealed class SignSubjectCommandHandler : IRequestHandler<SignSubjectComma
             PasswordVerifiedAtUtc = passwordVerifiedAt,
             TicketRef = ESignTicketRef.Of(request.Ticket),
             AppearanceType = appearance,
-            AppearanceContentId = stored?.ContentId.ToString("D"),
-            AppearanceStorageProvider = stored?.StorageProvider,
-            AppearanceStoragePath = stored?.ObjectKey,
+            AppearanceSampleId = sample?.Id,
+            AppearanceContentId = sample?.ContentId ?? stored?.ContentId.ToString("D"),
+            AppearanceStorageProvider = sample?.StorageProvider ?? stored?.StorageProvider,
+            AppearanceStoragePath = sample?.StoragePath ?? stored?.ObjectKey,
             AppearanceVectorJson = strokesJson,
-            AppearanceImageHash = png is null ? null : ESignatureDigest.ImageHash(png),
+            AppearanceImageHash = sample?.ImageHash ?? (png is null ? null : ESignatureDigest.ImageHash(png)),
             RequestId = signatureRequest?.Id,
             PolicySnapshot = new ESignaturePolicySnapshot(policy.Scope, policy.LegalEntityId, policy.Version, visualMode, policy.ReauthEvery,
                 policy.ReauthWindowMinutes),

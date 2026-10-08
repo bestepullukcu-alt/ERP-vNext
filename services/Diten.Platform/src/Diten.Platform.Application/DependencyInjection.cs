@@ -231,6 +231,8 @@ public static class DependencyInjection
         services.AddScoped<Features.ESignature.Services.IESignatureCatalog, Features.ESignature.Services.ESignatureCatalog>();
         services.AddScoped<Features.ESignature.Services.IESignatureVerifier, Features.ESignature.Services.ESignatureVerifier>();
         services.AddScoped<Features.ESignature.Services.IESignatureVisibility, Features.ESignature.Services.ESignatureVisibility>();
+        // MOD-0022 E3 — signature samples (the signing handler's Sample port resolves through this).
+        services.AddScoped<Features.ESignature.Services.IESignatureSampleBook, Features.ESignature.Services.ESignatureSampleBook>();
         services.AddScoped<Features.DocumentManagementElectronicSignature.Services.DocumentSignatureBoundaryEvaluator>();
         services.AddScoped<Features.DocumentManagementElectronicSignature.Services.DocumentSignaturePolicyService>();
         services.AddScoped<Features.DocumentManagementElectronicSignature.Services.DocumentSignatureRequestService>();

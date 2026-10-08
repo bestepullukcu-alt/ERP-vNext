@@ -536,6 +536,10 @@ public static class DependencyInjection
         services.AddScoped<IESignMeaningRepository, ESignMeaningRepository>();
         services.AddScoped<IESignActionRepository, ESignActionRepository>();
         services.AddScoped<IESignNumberGenerator, ESignNumberGenerator>();
+        // MOD-0022 E3 — samples (insert-only sample + event stores; the owner pointer is compare-and-set).
+        services.AddScoped<IESignatureSampleRepository, ESignatureSampleRepository>();
+        services.AddScoped<IESignatureSampleEventRepository, ESignatureSampleEventRepository>();
+        services.AddScoped<IESignSampleOwnerStateRepository, ESignSampleOwnerStateRepository>();
         services.AddHttpClient<Diten.Platform.Application.Features.ESignature.Services.IESignTicketConsumer,
             Diten.Platform.Infrastructure.Services.ESignature.AuthServiceESignTicketConsumer>();
         services.AddHttpClient(Diten.Platform.Infrastructure.Services.ESignature.RemoteSignableSubjectClient.HttpClientName);

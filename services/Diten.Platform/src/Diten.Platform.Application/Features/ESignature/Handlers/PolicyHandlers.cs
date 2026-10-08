@@ -91,11 +91,13 @@ public sealed class PolicyQueryHandlers :
     private readonly IESignMeaningRepository _meanings;
     private readonly ISignableSubjectRegistry _subjects;
     private readonly ILegalEntityReferenceValidator _legalEntities;
+    private readonly IESignatureSampleBook _samples;
 
     public PolicyQueryHandlers(IESignActorAccessor actors, IESignatureCatalog catalog, IESignPolicyRepository policies, IESignActionRepository actions,
         IESignaturePolicyChangeRepository changes, IESignMeaningRepository meanings, ISignableSubjectRegistry subjects,
-        ILegalEntityReferenceValidator legalEntities)
+        ILegalEntityReferenceValidator legalEntities, IESignatureSampleBook samples)
     {
+        _samples = samples;
         _actors = actors;
         _catalog = catalog;
         _policies = policies;
@@ -171,6 +173,7 @@ public sealed class PolicyQueryHandlers :
         var row = await _catalog.GetRowAsync(actor.TenantId, policy, request.ActionCode, ct);
         var meanings = await _meanings.ListAsync(actor.TenantId, activeOnly: true, ct);
         var allowed = row?.MeaningCode is { } fixedMeaning ? meanings.Where(m => m.Code == fixedMeaning).ToList() : meanings.ToList();
+        var (mySample, myPendingSample) = await _samples.MineForDialogAsync(actor.TenantId, actor.UserIdText, ct);
 
         return Response<EffectivePolicyDto>.Success(new EffectivePolicyDto(
             row?.Required ?? false,
@@ -181,8 +184,8 @@ public sealed class PolicyQueryHandlers :
             allowed.Select(ESignatureMapping.ToDto).ToList(),
             new SignableSubjectDto(subject.Display, subject.Summary.Select(l => new SummaryLineDto(l.Label, l.Value)).ToList(),
                 subject.LegalEntityId, subject.Fields),
-            MySample: null, // E3 (samples) — no sample exists before it
-            MyPendingSample: null,
+            mySample, // E3 — the caller's active sample (the dialog offers "saved" only with it)
+            myPendingSample,
             new SignerIdentityDto(actor.Login, actor.Name)));
     }
 }
