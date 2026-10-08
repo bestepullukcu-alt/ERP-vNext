@@ -73,6 +73,36 @@ public sealed class AccountContactLinkRepository : IAccountContactLinkRepository
         return await _collection.Find(filter).ToListAsync(cancellationToken);
     }
 
+    /// <summary>WP-VP-2B (R1) — one <c>$in</c> read for a page (index tenant_account).</summary>
+    public async Task<IReadOnlyList<AccountContactLink>> ListByAccountIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> accountIds, CancellationToken cancellationToken)
+    {
+        if (accountIds is null || accountIds.Count == 0) return [];
+        var filter = ActiveTenant(tenantId) & Builders<AccountContactLink>.Filter.In(l => l.AccountId, accountIds);
+        return await _collection.Find(filter).ToListAsync(cancellationToken);
+    }
+
+    /// <summary>WP-VP-2B (R2) — ONE grouping aggregation: tenant + not deleted + status not closed (trimmed,
+    /// case-insensitive — <see cref="RelationshipLifecycle.ClosedStatusPattern"/>) + contact not soft-deleted, grouped by
+    /// account. Measured 2026-10-07 on the live 140,945 links: ~0.5 s.</summary>
+    public async Task<IReadOnlyCollection<Guid>> ListAccountIdsWithActiveLinksAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> excludedContactIds, CancellationToken cancellationToken)
+    {
+        var filter = ActiveTenant(tenantId)
+            & Builders<AccountContactLink>.Filter.Not(Builders<AccountContactLink>.Filter.Regex(
+                l => l.Status, new MongoDB.Bson.BsonRegularExpression(RelationshipLifecycle.ClosedStatusPattern, "i")));
+        if (excludedContactIds is { Count: > 0 })
+        {
+            filter &= Builders<AccountContactLink>.Filter.Nin(l => l.ContactId, excludedContactIds);
+        }
+
+        var groups = await _collection.Aggregate()
+            .Match(filter)
+            .Group(l => l.AccountId, g => new { AccountId = g.Key })
+            .ToListAsync(cancellationToken);
+        return groups.Select(g => g.AccountId).ToHashSet();
+    }
+
     public async Task<IReadOnlyList<AccountContactLink>> ListAllAsync(Guid tenantId, CancellationToken cancellationToken)
         => await _collection.Find(ActiveTenant(tenantId)).ToListAsync(cancellationToken);
 

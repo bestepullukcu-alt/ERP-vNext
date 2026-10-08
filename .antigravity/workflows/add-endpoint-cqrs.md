@@ -12,6 +12,7 @@ Bu akış, sistemde yeni bir API ucu oluşturulurken izlenecek standart operasyo
 - **Auth Gereksinimi:** (Public / Authorized / Policy)
 - **Validation Kuralları:** Alan zorunlulukları ve formatlar.
 - **Mongo Entity/Collection:** Verinin kaydedileceği hedef.
+- **Denetim kaydı (yazma ucuysa):** Olay adı + yol (a/b/c) ya da istisna sınıfı + gerekçe (AUD-001).
 
 ---
 
@@ -88,6 +89,7 @@ Her command, query, handler ve validator ayrı dosyada olmalıdır. Handler sın
 4. **Validators:** FluentValidation sınıflarını yaz. Validator olmadan Handler yazılamaz.
 5. **Handlers:** `Handlers/CommandHandlers` veya `Handlers/QueryHandlers` altına yaz. `Response<T>.Fail()` / `Response<T>.Success()` kullan. Guard clause'ları ilk satırlara yaz.
 6. **Controller:** `CustomBaseController`'dan miras alan controller yaz. `return CreateActionResultInstance(response)` kullan. `[HasPermission(...)]` ekle.
+7. **Denetim kaydı (AUD-001 — yazma uçları için ZORUNLU):** Yeni `POST/PUT/PATCH/DELETE` ucunun komutu denetlenir: yol `a`/`b`/`c` ya da kuraldaki bir istisna sınıfı + gerekçe. Controller'dan doğrudan servise/depoya yazan uç (MediatR'sız) yazma — mimari testi o yolu göremez. `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter AuditTrailStandard` yeşil olmadan uç teslim edilmez. Bkz: `.antigravity/rules/audit-trail-standard.md`.
 
 ---
 Diten ERP vNext Endpoint Standard - WORKFLOW-001

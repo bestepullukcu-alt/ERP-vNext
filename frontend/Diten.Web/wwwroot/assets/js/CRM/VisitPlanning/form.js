@@ -4,6 +4,8 @@
  * startDate→endDate as Monday-based spans, labelled by ISO-8601 week number ("36. Hafta · 31 Ağu – 6 Eyl 2026"), and
  * the chosen week's Monday (yyyy-MM-dd) is carried to Details as ?week. Segment is a multi-select (UI) but only the FIRST
  * is sent (backend SegmentId is single). Targets are chosen on Details; the saved session is target-less.
+ * WP-VP-FIX-1 (A1, K-3) / WP-VP-2 (B-1, B-3) — no play, segment or rep picker: the rep is the signed-in user and the
+ * play / segment / campaign are derived by the server from each doctor; none of them is sent.
  */
 (function (window, document) {
     'use strict';
@@ -62,7 +64,7 @@
         return 1 + Math.round(((d - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
     };
     const weekNumberLabel = n => (L.WeekNumberLabel || '{0}. ' + (L.WeekLabel || 'Week')).replace('{0}', n);
-    const dm = d => d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    const dm = d => window.VisitPlanningFormat.dayMonth(d); // WP-VP-4H — the app's language
 
     // ── Country → Cycle-period filter. Countries come from the cycle-period scope-options (resolved COUNTRY_CODES), so
     //    the codes match the periods' CountryScope exactly. Shape: data.countries = [{ value, label }]. ──
@@ -133,29 +135,14 @@
     };
 
     // ── other loaders ──
-    const loadUsers = () => api('/users?pageSize=500').then(r => {
-        const picker = el('vp-resource'); picker.innerHTML = '<option value=""></option>';
-        const list = items(r.body);
-        list.forEach(u => {
-            const id = u.id || u.userId || u.UserId || u.value;
-            const label = u.displayName || u.fullName || u.name || u.userName || u.email || id;
-            if (id) { const o = opt(id, label); o.setAttribute('data-name', label); picker.appendChild(o); }
-        });
-        const note = el('vp-users-note');
-        if (note) note.textContent = (r.ok && list.length) ? '' : (L.UsersUnavailable || '');
-    }).catch(() => { const note = el('vp-users-note'); if (note) note.textContent = L.UsersUnavailable || ''; });
-
-    const loadSegments = () => api('/segments').then(r => {
-        const picker = el('vp-segment'); picker.innerHTML = '';
-        items(r.body).forEach(s => { const id = s.segmentId || s.id; if (id) picker.appendChild(opt(id, s.name || s.segmentName || s.code || id)); });
-    });
-
-    const loadStrategyTemplates = () => api('/strategy-templates').then(r => {
-        const picker = el('vp-strategy'); const list = items(r.body);
-        list.forEach(s => { const id = s.strategyTemplateId || s.id; if (id) picker.appendChild(opt(id, s.name || s.templateName || s.code || id)); });
-        const note = el('vp-strategy-note');
-        if (note) note.textContent = (r.ok && list.length) ? '' : (L.StrategyTemplatesUnavailable || '');
-    }).catch(() => { const note = el('vp-strategy-note'); if (note) note.textContent = L.StrategyTemplatesUnavailable || ''; });
+    // WP-VP-2 (B-1, K-1) — the rep is the signed-in user (resources/me): shown read-only, never picked. CRM writes the
+    // caller as the plan's resource; no user list, no segment (K-4), no play (K-3) is loaded or sent.
+    const loadMe = () => api('/me').then(r => {
+        const items = (r.body && r.body.data && r.body.data.items) || [];
+        const me = items[0];
+        const box = el('vp-resource-name');
+        if (box) box.value = me ? (me.displayName || me.resourceId || '—') : '—';
+    }).catch(() => {});
 
     // ── edit preselect ──
     const loadSession = () => {
@@ -180,37 +167,30 @@
                     wk.value = s.targetWeekStart; refreshSelect2('vp-week-form');
                 }
             }
-            if (s.resourceId) { el('vp-resource').value = s.resourceId; refreshSelect2('vp-resource'); }
-            if (s.segmentId) { const seg = el('vp-segment'); Array.prototype.forEach.call(seg.options, o => { o.selected = (o.value === s.segmentId); }); refreshSelect2('vp-segment'); }
-            if (s.strategyTemplateId) { el('vp-strategy').value = s.strategyTemplateId; refreshSelect2('vp-strategy'); }
+            // The plan's own rep (a read-all manager may open someone else's plan).
+            if (s.resourceDisplayName || s.resourceId) { const box = el('vp-resource-name'); if (box) box.value = s.resourceDisplayName || s.resourceId; }
         });
     };
 
-    // ── save (target-less; segment = first of the multi-select) ──
-    const firstSegment = () => { const seg = el('vp-segment'); const v = Array.prototype.slice.call(seg.selectedOptions).map(o => o.value).filter(Boolean); return v.length ? v[0] : null; };
-    const buildPayload = () => {
-        const resSel = el('vp-resource').selectedOptions[0];
-        return {
+    // ── save (target-less). WP-VP-2 — no resource / segment / campaign / play is sent: the server decides them. ──
+    // WP-VP-FIX-2 (D9) — a NEW plan starts with no targets (empty lists); an EDIT sends no target list at all, so CRM
+    // leaves the doctors / accounts / pharmacies as they are (null = unchanged). Targets are changed only on Details.
+    const buildPayload = isEdit => isEdit
+        ? { cyclePeriodId: el('vp-period').value }
+        : {
             cyclePeriodId: el('vp-period').value,
-            resourceId: el('vp-resource').value,
-            resourceType: 'person',
-            resourceDisplayName: resSel ? (resSel.getAttribute('data-name') || resSel.textContent) : null,
             selectedAccountIds: [],
             selectedPharmacyIds: [],
-            selectedContacts: [],
-            segmentId: firstSegment(),
-            campaignId: null,
-            strategyTemplateId: el('vp-strategy').value || null
+            selectedContacts: []
         };
-    };
 
     const showError = msg => { const b = el('vp-form-error'); if (b) { b.textContent = msg; b.classList.remove('d-none'); } };
     const clearError = () => { const b = el('vp-form-error'); if (b) b.classList.add('d-none'); };
 
     const save = () => {
         clearError();
-        const payload = buildPayload();
-        if (!payload.cyclePeriodId || !payload.resourceId) { showError(L.FormValidationError || L.ErrorOccurred || 'Please complete the required fields.'); return; }
+        const payload = buildPayload(mode === 'edit' && !!sessionId);
+        if (!payload.cyclePeriodId) { showError(L.FormValidationError || L.ErrorOccurred || 'Please complete the required fields.'); return; }
 
         const isEdit = mode === 'edit' && sessionId;
         const url = isEdit ? '/sessions/' + sessionId : '/sessions';
@@ -221,7 +201,9 @@
 
         api(url, { method, body: JSON.stringify(payload) }).then(r => {
             if (r.ok) {
-                const newId = (r.body && r.body.data) || sessionId;
+                // WP-E2E-FIX-1 (E7-B4) — an update answers Response<bool> (data = true), not an id: edit always
+                // returns to its own session; only create takes the id the server minted.
+                const newId = isEdit ? sessionId : ((r.body && r.body.data) || sessionId);
                 window.showToast?.(isEdit ? (L.RecordUpdated || 'Saved') : (L.RecordCreated || 'Created'), 'success');
                 const q = week ? ('?week=' + encodeURIComponent(week)) : '';
                 setTimeout(() => window.location.assign('/CRM/VisitPlanning/Details/' + newId + q), 500);
@@ -240,6 +222,6 @@
     onChange('vp-country', () => filterPeriods(el('vp-country').value));
     onChange('vp-period', () => populateWeeks(el('vp-period').value));
 
-    Promise.all([loadCountries(), loadPeriods(), loadUsers(), loadSegments(), loadStrategyTemplates()])
+    Promise.all([loadCountries(), loadPeriods(), loadMe()])
         .then(() => { initSelect2(); filterPeriods(el('vp-country').value); return loadSession(); });
 })(window, document);

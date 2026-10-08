@@ -71,6 +71,18 @@ public sealed class KnowledgePath : EntityBase
     /// <summary>WP-SB-2 — set only on a path a Content Studio release produced (provenance). Null otherwise.</summary>
     public KnowledgeStudioOrigin? StudioOrigin { get; set; }
 
+    /// <summary>WP-KP-1 (DESIGN-KP-STUDIO §2.1) — the pinned chain template (id + business version) the path is built on.
+    /// Null = a legacy path authored before the studio (<see cref="IsLegacyUnapproved"/>); it keeps working as before.</summary>
+    public KnowledgePathChainRef? ChainTemplate { get; set; }
+
+    /// <summary>WP-KP-1 — the path's country (one <c>COUNTRY_CODES</c> value, upper case). Set together with the chain and
+    /// <see cref="LanguageCode"/>; on a chain-bound path both are the path identity and never change (D-KP-3).</summary>
+    public string? CountryCode { get; set; }
+
+    /// <summary>WP-KP-1 — claims placed on the chain's slots. Only on a chain-bound path; references only (the claim
+    /// record and its country versions stay the SoR).</summary>
+    public List<KnowledgePathClaim> Claims { get; set; } = new();
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTimeOffset? ArchivedAt { get; set; }
@@ -83,6 +95,10 @@ public sealed class KnowledgePath : EntityBase
 
     /// <summary>The step set is frozen once the path is published (StepSetFrozenAt is set at publish time).</summary>
     public bool IsStepSetFrozen() => StepSetFrozenAt is not null;
+
+    /// <summary>WP-KP-1 (DESIGN-KP-STUDIO §6) — a path without a chain is an "unapproved legacy path". Derived, never
+    /// stored: no data is written and nothing is migrated.</summary>
+    public bool IsLegacyUnapproved() => ChainTemplate is null;
 
     public bool IsEffectiveAt(DateTimeOffset at)
         => EffectiveFrom <= at && (EffectiveTo is null || at <= EffectiveTo);
@@ -147,6 +163,10 @@ public sealed class KnowledgePathStep
     /// <summary>Embedded, authorable, but NEVER evaluated (D7). Max 20 per step.</summary>
     public List<KnowledgePathBranchCondition> BranchConditions { get; set; } = new();
 
+    /// <summary>WP-KP-1 — the chain slot the step sits in. Required on every step written to a chain-bound path; null on
+    /// a legacy path (and on a step that predates a bind-chain until it is placed).</summary>
+    public KnowledgePathArrangement? Arrangement { get; set; }
+
     /// <summary><see cref="KnowledgePathStepStatuses"/> — active / archived. Not a form field; changed by the step
     /// archive action (§2.1/S4). An archived step is never removed from the array.</summary>
     public string StepStatus { get; set; } = KnowledgePathStepStatuses.Active;
@@ -175,6 +195,79 @@ public sealed class KnowledgePathBranchCondition
 
     /// <summary>When supplied it must reference a step in the SAME path (else 400; referential sanity, no evaluation).</summary>
     public Guid? TargetStepId { get; set; }
+}
+
+/// <summary>WP-KP-1 — pinned reference to a chain template version (id + business version snapshot). Embedded VO.</summary>
+public sealed class KnowledgePathChainRef
+{
+    public Guid ConceptChainTemplateId { get; set; }
+    public string ChainVersion { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// WP-KP-1 (DESIGN-KP-STUDIO §2.2) — where a step or a claim sits in the chain skeleton. A chain step carries no
+/// synthetic id, so the slot is addressed by the branch's <see cref="ConceptChainBranch.BranchCode"/> plus the step's
+/// <see cref="ConceptChainStep.ConceptTypeId"/> (<see cref="ChainStepId"/>). <see cref="Position"/> orders several items
+/// of one slot. Only branched templates are bindable (decision 2026-09-30), so <see cref="BranchCode"/> is always set.
+/// Embedded VO.
+/// </summary>
+public sealed class KnowledgePathArrangement
+{
+    public Guid ChainStepId { get; set; }
+    public string BranchCode { get; set; } = string.Empty;
+    public int Position { get; set; }
+}
+
+/// <summary>WP-KP-1 — a claim placed on a chain-bound path. The country version is NOT pinned here: it is resolved from
+/// the path country on every read (pinning is the revision's job, KP-2). Embedded VO.</summary>
+public sealed class KnowledgePathClaim
+{
+    public Guid ClaimId { get; set; }
+    public string ClaimCode { get; set; } = string.Empty;
+    public KnowledgePathArrangement Arrangement { get; set; } = new();
+}
+
+/// <summary>WP-KP-1 — coded studio failures of a knowledge path (rendered as the <c>[code, message]</c> error pair). The
+/// country / language codes are <see cref="ChainContextErrors"/>; the claim codes are
+/// <see cref="KnowledgeContentClaimErrors"/>.</summary>
+public static class KnowledgePathStudioErrors
+{
+    /// <summary>400 — the chain template is missing, not published, archived or has no branches.</summary>
+    public const string ChainTemplateInvalid = "chain_template_invalid";
+
+    /// <summary>409 — the operation needs a chain-bound path (a legacy path has no slots).</summary>
+    public const string ChainTemplateRequired = "chain_template_required";
+
+    /// <summary>409 — bind-chain: the path subject is not the chain template's subject.</summary>
+    public const string ChainSubjectMismatch = "chain_subject_mismatch";
+
+    /// <summary>409 — the chain / country / language of a chain-bound path never change (D-KP-3).</summary>
+    public const string PathIdentityLocked = "path_identity_locked";
+
+    /// <summary>400 — the branch / chain step is not in the pinned template (or the arrangement is missing / invalid).</summary>
+    public const string ChainSlotInvalid = "chain_slot_invalid";
+
+    /// <summary>409 — the chain step's MaxSelection is already reached.</summary>
+    public const string ChainSlotFull = "chain_slot_full";
+
+    /// <summary>409 — a placed step cannot move to another branch / chain step (D-KP-7); only Position changes.</summary>
+    public const string ChainSlotMoveForbidden = "chain_slot_move_forbidden";
+}
+
+/// <summary>WP-KP-1 — why a claim on a path is not usable (read only; the gate is the release, KP-3).</summary>
+public static class KnowledgePathClaimReasons
+{
+    public const string NotApproved = "not_approved";
+    public const string NoCountryVersion = "no_country_version";
+    public const string LanguageMismatch = "language_mismatch";
+}
+
+/// <summary>WP-KP-1 — per-slot chain conformance of a path (read only).</summary>
+public static class KnowledgePathConformanceStatuses
+{
+    public const string Ok = "ok";
+    public const string Under = "under";
+    public const string Over = "over";
 }
 
 /// <summary>Path lifecycle. In-domain (structural) — validated here, never through MOD-0048, so authoring never fails

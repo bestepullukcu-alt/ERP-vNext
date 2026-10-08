@@ -97,6 +97,24 @@
     // Reuse a single instance to prevent redundant notifications or conflicts
     var _notyfInstance = null;
 
+    /*
+     * BL-493 — A TOAST'S MESSAGE IS TEXT. Notyf writes what it is given with `innerHTML`, and messages here quote text
+     * other people typed (a task's title, a file's name, a server's refusal). Handed over raw, markup in that text
+     * was built into the page of whoever saw the toast. The message is turned into text HERE, at the one door every
+     * module's toast goes through, so no caller has to remember to do it — and a caller must NOT escape first, or
+     * the reader sees the entities. The Notiflix branch below is a fallback that cannot run today: the vendored
+     * bundle ships only Block and Loading, no Notify (tests/toast-message-is-text.test.js pins that). Whoever ships a
+     * Notify must first measure how IT writes a message.
+     */
+    window.DitenToastText = function (value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
+
     window.showToast = function (key, type) {
         var TOAST_TYPES = ['success', 'error', 'warning', 'info'];
 
@@ -179,16 +197,17 @@
                     });
                 }
 
+                var notyfText = window.DitenToastText(message);
                 if (type === 'success') {
-                    _notyfInstance.success(message);
+                    _notyfInstance.success(notyfText);
                 } else if (type === 'warning') {
-                    _notyfInstance.open({ type: 'warning', message: message });
+                    _notyfInstance.open({ type: 'warning', message: notyfText });
                 } else if (type === 'info') {
-                    _notyfInstance.open({ type: 'info', message: message });
+                    _notyfInstance.open({ type: 'info', message: notyfText });
                 } else if (type === 'error') {
-                    _notyfInstance.error(message);
+                    _notyfInstance.error(notyfText);
                 } else {
-                    _notyfInstance.open({ type: type, message: message });
+                    _notyfInstance.open({ type: type, message: notyfText });
                 }
 
                 console.log('[MOD-0013 showToast] Displayed via Notyf - Message:', message);

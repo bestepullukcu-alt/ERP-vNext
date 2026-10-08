@@ -51,7 +51,8 @@ describe("the snooze dialog", () => {
     // MUTATION GUARD: delete the subtext and this goes red — a dialog that asks for a commitment without saying
     // what it does is the defect this round came to fix, and it would otherwise return silently.
     expect(toggleSnooze()).toContain("title: t('SnoozeTitle')");
-    expect(toggleSnooze()).toContain("subtext: esc(t('SnoozeSubtext'))");
+    // The shared confirm writes `subtext` as text (WP-SHARED-CONFIRM-XSS-01), so the words go in as they are.
+    expect(toggleSnooze()).toContain("subtext: t('SnoozeSubtext')");
   });
 
   it("asks for a date through the picker the rest of the page uses", () => {

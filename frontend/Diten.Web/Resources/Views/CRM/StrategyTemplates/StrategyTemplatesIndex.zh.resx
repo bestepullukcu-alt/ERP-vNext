@@ -267,4 +267,51 @@
   <data name="ProductColWeight" xml:space="preserve"><value>百分比</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>平均分配</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>产品百分比不是 100%。计算总计 {total}% — 相差 {diff} 个百分点。请修正各行后再保存。</value></data>
+  <data name="ProductColRole" xml:space="preserve"><value>角色</value></data>
+  <data name="ProductColJourney" xml:space="preserve"><value>旅程</value></data>
+  <data name="LineRole_promo" xml:space="preserve"><value>推广</value></data>
+  <data name="LineRole_non-promo" xml:space="preserve"><value>非推广</value></data>
+  <data name="LineJourneySelect" xml:space="preserve"><value>选择旅程…</value></data>
+  <data name="LineJourneyLoading" xml:space="preserve"><value>正在加载旅程…</value></data>
+  <data name="LineJourneyNotOffered" xml:space="preserve"><value>（不在列表中）</value></data>
+  <data name="LineNoPublishedJourney" xml:space="preserve"><value>此产品没有已发布的互动旅程。</value></data>
+  <data name="LineOpenJourneys" xml:space="preserve"><value>互动旅程 ↗</value></data>
+  <data name="LineJourneyFilterUnavailable" xml:space="preserve"><value>此处无法核对产品匹配；保存时将进行核对。</value></data>
+  <data name="LineJourneyMissing" xml:space="preserve"><value>缺少旅程 — 请选择此产品已发布的旅程。</value></data>
+  <data name="LineJourneyMissingBadge" xml:space="preserve"><value>缺少旅程</value></data>
+  <data name="JourneyWarning_journey_language_not_in_country" xml:space="preserve"><value>旅程语言不是模板所属国家的内容语言。</value></data>
+  <data name="JourneyWarning_journey_not_published" xml:space="preserve"><value>该旅程已不再发布。</value></data>
+  <data name="JourneyWarning_journey_not_found" xml:space="preserve"><value>找不到该旅程。</value></data>
+  <data name="JourneyStatus_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="JourneyStatus_review" xml:space="preserve"><value>审核中</value></data>
+  <data name="JourneyStatus_approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="JourneyStatus_published" xml:space="preserve"><value>已发布</value></data>
+  <data name="JourneyStatus_inactive" xml:space="preserve"><value>停用</value></data>
+  <data name="JourneyStatus_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="Err_product_line_role_required" xml:space="preserve"><value>请为此产品行选择角色（推广 / 非推广）。</value></data>
+  <data name="Err_product_line_role_invalid" xml:space="preserve"><value>角色只能是推广或非推广。</value></data>
+  <data name="Err_product_line_journey_required" xml:space="preserve"><value>请为此行选择该产品已发布的旅程。</value></data>
+  <data name="Err_journey_not_published" xml:space="preserve"><value>所选旅程未发布；请选择已发布的旅程。</value></data>
+  <data name="Err_journey_product_mismatch" xml:space="preserve"><value>所选旅程讲述的是另一产品；请选择此产品的旅程。</value></data>
+  <data name="Err_content_binding_type_retired" xml:space="preserve"><value>无法再在模板级别添加知识路径/旅程绑定；请在产品行上选择旅程。</value></data>
+  <data name="Err_bindings_frozen" xml:space="preserve"><value>活动模板的绑定已冻结；如需更改，请创建新版本。</value></data>
+  <data name="RetiredBindingsHelp" xml:space="preserve"><value>旧绑定 — 拜访中不使用；以产品行上的旅程为准。</value></data>
+  <data name="RetiredBindingBadge" xml:space="preserve"><value>旧绑定</value></data>
+  <data name="NoRetiredBindings" xml:space="preserve"><value>无模板级绑定 — 内容来自每个产品行上的旅程。</value></data>
+  <data name="RoleSplitTpl" xml:space="preserve"><value>{promo} 个推广 · {nonpromo} 个非推广</value></data>
+  <data name="RecipeJourneysTpl" xml:space="preserve"><value>{n} 个旅程</value></data>
+  <data name="RetiredBindingsCountTpl" xml:space="preserve"><value>{n} 个旧绑定</value></data>
+  <data name="LinesWithoutJourneyTpl" xml:space="preserve"><value>{n} 行无旅程</value></data>
+  <data name="SupersededByVersion" xml:space="preserve"><value>已被 v{0} 取代</value></data>
+  <data name="ArchivedSegmentSuffix" xml:space="preserve"><value>（已归档）</value></data>
+  <data name="ActivationBlocked" xml:space="preserve"><value>激活被拒绝。</value></data>
+  <data name="ActivationBlocked_segment_not_active" xml:space="preserve"><value>绑定的细分未激活——请先激活该细分。</value></data>
+  <data name="ActivationBlocked_segment_archived" xml:space="preserve"><value>绑定的细分已归档——请替换为有效的细分。</value></data>
+  <data name="ActivationBlocked_segment_reference_not_found" xml:space="preserve"><value>绑定的细分已不存在。</value></data>
+  <data name="ActivationBlocked_frequency_policy_not_active" xml:space="preserve"><value>引用的拜访频率策略未激活。</value></data>
+  <data name="ActivationBlocked_journey_not_published" xml:space="preserve"><value>某产品行的互动旅程尚未发布。</value></data>
+  <data name="ActivationBlocked_journey_product_mismatch" xml:space="preserve"><value>某产品行的互动旅程对应的是其他产品。</value></data>
+  <data name="ActivationBlocked_product_line_journey_required" xml:space="preserve"><value>每个产品行都需要一个互动旅程。</value></data>
+  <data name="ActivationBlocked_content_not_published" xml:space="preserve"><value>绑定的内容尚未发布。</value></data>
+  <data name="ActivationBlocked_content_archived" xml:space="preserve"><value>绑定的内容已归档。</value></data>
 </root>

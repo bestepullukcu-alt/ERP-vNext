@@ -81,4 +81,117 @@
   <data name="ScopeType_tenant" xml:space="preserve"><value>Tenant-wide</value></data>
   <data name="Version" xml:space="preserve"><value>Version</value></data>
   <data name="CycleCapacity" xml:space="preserve"><value>Cycle capacity</value></data>
+  <data name="ViewTable" xml:space="preserve"><value>Table</value></data>
+  <data name="ViewTimeline" xml:space="preserve"><value>Timeline</value></data>
+  <data name="CycleCapacities" xml:space="preserve"><value>Cycle capacities</value></data>
+  <data name="FinderOpen" xml:space="preserve"><value>Find effective period</value></data>
+  <data name="FinderTitle" xml:space="preserve"><value>Effective period for this unit on this date</value></data>
+  <data name="FinderHint" xml:space="preserve"><value>Periods at different levels may overlap. The narrowest active one applies: business unit › legal entity › country › whole company. Draft and closed periods are not considered.</value></data>
+  <data name="FinderUnit" xml:space="preserve"><value>Unit</value></data>
+  <data name="FinderDate" xml:space="preserve"><value>Date</value></data>
+  <data name="FinderSubmit" xml:space="preserve"><value>Find</value></data>
+  <data name="FinderIdle" xml:space="preserve"><value>Choose a unit and a date.</value></data>
+  <data name="FinderResolved" xml:space="preserve"><value>Effective period found.</value></data>
+  <data name="FinderNone" xml:space="preserve"><value>No period is in force for this unit on this date. Planning is not possible.</value></data>
+  <data name="FinderAmbiguous" xml:space="preserve"><value>More than one active period of the same scope covers this date — a data problem. Close or correct one of them.</value></data>
+  <data name="FinderAnsweredBy" xml:space="preserve"><value>Answered at level</value></data>
+  <data name="NoCapacityBandTitle" xml:space="preserve"><value>Open periods without a capacity:</value></data>
+  <data name="Days" xml:space="preserve"><value>Days</value></data>
+  <data name="Capacity" xml:space="preserve"><value>Capacity</value></data>
+  <data name="Campaigns" xml:space="preserve"><value>Campaigns</value></data>
+  <data name="PlannedVisits" xml:space="preserve"><value>Planned visits</value></data>
+  <data name="PlanningSessions" xml:space="preserve"><value>Planning sessions</value></data>
+  <data name="HasCapacity" xml:space="preserve"><value>Has a capacity</value></data>
+  <data name="NoCapacity" xml:space="preserve"><value>no capacity</value></data>
+  <data name="TimelineConflict" xml:space="preserve"><value>Conflict</value></data>
+  <data name="TimelineOverlap" xml:space="preserve"><value>Overlap (drafts)</value></data>
+  <data name="TimelineGap" xml:space="preserve"><value>Gap</value></data>
+  <data name="TimelineToday" xml:space="preserve"><value>Today</value></data>
+  <data name="TimelineEmpty" xml:space="preserve"><value>No period matches the filters.</value></data>
+  <data name="TimelineFootnote" xml:space="preserve"><value>Each scope is a row. Blocks overlapping on the same row are conflicts; different levels (e.g. a country and one of its business units) sit on separate rows and may overlap freely. Click a block to open its details.</value></data>
+  <data name="TimelineGapTitle" xml:space="preserve"><value>Gap: {0} – {1} ({2} days)</value></data>
+  <data name="TimelineGapLabel" xml:space="preserve"><value>gap · {0} days</value></data>
+  <data name="TimelineOverlapTitle" xml:space="preserve"><value>Overlap: {0} ({1} days)</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Periods could not be loaded.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Try again</value></data>
+  <data name="DatesSection" xml:space="preserve"><value>Dates</value></data>
+  <data name="DateTemplates" xml:space="preserve"><value>Date templates</value></data>
+  <data name="TemplateQ1" xml:space="preserve"><value>Q1</value></data>
+  <data name="TemplateQ2" xml:space="preserve"><value>Q2</value></data>
+  <data name="TemplateQ3" xml:space="preserve"><value>Q3</value></data>
+  <data name="TemplateQ4" xml:space="preserve"><value>Q4</value></data>
+  <data name="TemplateH1" xml:space="preserve"><value>H1</value></data>
+  <data name="TemplateH2" xml:space="preserve"><value>H2</value></data>
+  <data name="TemplateMonth" xml:space="preserve"><value>Pick a month…</value></data>
+  <data name="DaysUnit" xml:space="preserve"><value>days</value></data>
+  <data name="WorkingDaysUnit" xml:space="preserve"><value>working days</value></data>
+  <data name="UseSuggestion" xml:space="preserve"><value>use suggestion</value></data>
+  <data name="Suggestion" xml:space="preserve"><value>Suggestion</value></data>
+  <data name="SequenceSuggestion" xml:space="preserve"><value>Suggestion: {0} (first free sequence in this scope)</value></data>
+  <data name="NameSuggestionPattern" xml:space="preserve"><value>{0} · period {1}</value></data>
+  <data name="CodeSuggestedHint" xml:space="preserve"><value>Suggested from the scope and year; you can change it. It cannot be changed after saving.</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>The code never changes once the period is saved.</value></data>
+  <data name="ChecksSection" xml:space="preserve"><value>Conflict check</value></data>
+  <data name="CheckClear" xml:space="preserve"><value>No conflicting period in the same scope.</value></data>
+  <data name="CheckEndNotAfterStart" xml:space="preserve"><value>The end date must be after the start date.</value></data>
+  <data name="CheckSequenceTaken" xml:space="preserve"><value>This sequence is already used in this scope and year (closed periods included):</value></data>
+  <data name="CheckActiveOverlap" xml:space="preserve"><value>Overlaps an active period in the same scope — it can be saved as a draft but not activated until the overlap is resolved:</value></data>
+  <data name="CheckOtherLevelOverlap" xml:space="preserve"><value>Overlapping periods at other levels (allowed — the narrowest scope applies on a given day):</value></data>
+  <data name="CloseAndReopen" xml:space="preserve"><value>Close and open a new period</value></data>
+  <data name="CloseAndReopenConfirm" xml:space="preserve"><value>Close this period and open a new one for the same scope? Closing cannot be undone.</value></data>
+  <data name="ClosedReadOnly" xml:space="preserve"><value>This period is closed and is read-only.</value></data>
+  <data name="SaveAsDraft" xml:space="preserve"><value>Save as draft</value></data>
+  <data name="ScopeCardHint_tenant" xml:space="preserve"><value>All countries and units</value></data>
+  <data name="ScopeCardHint_country" xml:space="preserve"><value>A single country</value></data>
+  <data name="ScopeCardHint_legal-entity" xml:space="preserve"><value>One legal entity</value></data>
+  <data name="ScopeCardHint_business-unit" xml:space="preserve"><value>Region / team</value></data>
+  <data name="ClosedBanner" xml:space="preserve"><value>This period is closed. The period, its capacity and its plans are read-only.</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>Summary</value></data>
+  <data name="Dates" xml:space="preserve"><value>Dates</value></data>
+  <data name="DaysAndWorkingDays" xml:space="preserve"><value>Days · working days</value></data>
+  <data name="YearAndSequence" xml:space="preserve"><value>Year · sequence</value></data>
+  <data name="NoDescription" xml:space="preserve"><value>No description.</value></data>
+  <data name="NotActivatedYet" xml:space="preserve"><value>Not activated yet</value></data>
+  <data name="NotClosedYet" xml:space="preserve"><value>Not closed yet</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>Draft → Activate → Active → Close → Closed. Activation checks for overlapping active periods in the same scope.</value></data>
+  <data name="CalendarSummary" xml:space="preserve"><value>Calendar summary</value></data>
+  <data name="Month" xml:space="preserve"><value>Month</value></data>
+  <data name="CalendarDays" xml:space="preserve"><value>Calendar days</value></data>
+  <data name="NonWorkingDays" xml:space="preserve"><value>Non-working days</value></data>
+  <data name="PartialMonth" xml:space="preserve"><value>partial</value></data>
+  <data name="PartialMonthHint" xml:space="preserve"><value>The month is clipped at the period's edge.</value></data>
+  <data name="CalendarResolved" xml:space="preserve"><value>Calendar resolved</value></data>
+  <data name="CalendarUnresolved" xml:space="preserve"><value>Calendar could not be resolved</value></data>
+  <data name="CalendarForbidden" xml:space="preserve"><value>No access to the calendar</value></data>
+  <data name="CalendarNoCountry" xml:space="preserve"><value>No calendar country</value></data>
+  <data name="CalendarLoadFailed" xml:space="preserve"><value>The calendar summary could not be loaded.</value></data>
+  <data name="UsageLoadFailed" xml:space="preserve"><value>Linked records could not be loaded.</value></data>
+  <data name="CapacityArchived" xml:space="preserve"><value>Capacity archived</value></data>
+  <data name="OpenCapacity" xml:space="preserve"><value>Details</value></data>
+  <data name="CreateCapacity" xml:space="preserve"><value>Create capacity</value></data>
+  <data name="NoCapacityTitle" xml:space="preserve"><value>This period has no capacity</value></data>
+  <data name="NoCapacityHint" xml:space="preserve"><value>Without a capacity, visit planning cannot compute supply.</value></data>
+  <data name="NoCapacityClosed" xml:space="preserve"><value>The period is closed, so a capacity can no longer be created.</value></data>
+  <data name="NoPlannedVisits" xml:space="preserve"><value>No planned visits are linked to this period.</value></data>
+  <data name="NoCampaigns" xml:space="preserve"><value>No campaigns are linked to this period.</value></data>
+  <data name="NoPlanningSessions" xml:space="preserve"><value>No planning sessions yet.</value></data>
+  <data name="VisitCountPattern" xml:space="preserve"><value>{0} visits</value></data>
+  <data name="VisitStatus_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="VisitStatus_planned" xml:space="preserve"><value>Planned</value></data>
+  <data name="VisitStatus_confirmed" xml:space="preserve"><value>Confirmed</value></data>
+  <data name="VisitStatus_cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="VisitStatus_archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="CampaignStatus_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="CampaignStatus_active" xml:space="preserve"><value>Active</value></data>
+  <data name="CampaignStatus_paused" xml:space="preserve"><value>Paused</value></data>
+  <data name="CampaignStatus_completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="CampaignStatus_cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="CampaignStatus_archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="SessionStatus_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="SessionStatus_generated" xml:space="preserve"><value>Generated</value></data>
+  <data name="SessionStatus_committed" xml:space="preserve"><value>Committed</value></data>
+  <data name="SessionStatus_archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>Go to details</value></data>
+  <data name="StatusLine" xml:space="preserve"><value>Status line</value></data>
+  <data name="TodayActivePeriods" xml:space="preserve"><value>Active today</value></data>
 </root>

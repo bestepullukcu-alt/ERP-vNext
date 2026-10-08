@@ -23,8 +23,8 @@ namespace Diten.CrmService.Application.Tests;
 /// WP-CL-BE-6 — KnowledgeContent ↔ claim link. Pins down: save-time validation (foreign / mismatched claim, other
 /// country's version, product mismatch, ≤20, status free), the publish gate (claim_not_approved,
 /// claim_language_mismatch, review-required passes and is flagged, empty refs = old behaviour), the detail enrichment,
-/// the usage read (content / content set / journey groups, archived excluded, countryCode filter, tenant isolation,
-/// market-ref mapping) and persistence (legacy document reads, Guids stored as strings so the by-claim filter matches).
+/// the usage read (content / knowledge path / journey groups — WP-KP-4: the retired content set is no longer a source —,
+/// archived excluded, countryCode filter, tenant isolation) and persistence (legacy document reads, Guids stored as strings so the by-claim filter matches).
 /// </summary>
 public sealed class KnowledgeContentClaimLinkTests
 {
@@ -47,8 +47,6 @@ public sealed class KnowledgeContentClaimLinkTests
         public FakeSubjects Subjects { get; } = new();
         public FakeClaims Claims { get; } = new();
         public FakeVersions Versions { get; } = new();
-        public FakeSets Sets { get; } = new();
-        public FakeScopes Scopes { get; } = new();
         public FakePaths Paths { get; } = new();
         public FakeJourneys Journeys { get; } = new();
         public CapturingAudit Audit { get; } = new();
@@ -71,7 +69,7 @@ public sealed class KnowledgeContentClaimLinkTests
         public GetKnowledgeContentHandler Get() => new(Tenant(TenantA), Contents, Claims, Versions);
 
         public GetClaimUsageHandler Usage(Guid? tenant = null)
-            => new(Tenant(tenant ?? TenantA), Claims, Versions, Contents, Sets, Scopes, Paths, Journeys);
+            => new(Tenant(tenant ?? TenantA), Claims, Versions, Contents, Paths, Journeys);
 
         public Claim SeedClaim(string code, string status, Guid? product = null, Guid? tenant = null)
         {
@@ -366,17 +364,18 @@ public sealed class KnowledgeContentClaimLinkTests
         fx.Contents.Items.Single(c => c.Id == archived).ArchivedAt = Jan1;
         await fx.Create().Handle(fx.ContentCmd("KC-NONE"), default);
 
-        var scope = new ContentScope { TenantId = TenantA, ScopeCode = "SC-1", MarketRefs = { "tr", "eu" } };
-        fx.Scopes.Items.Add(scope);
-        fx.Sets.Items.Add(new ContentSet
+        // WP-KP-4 — knowledge paths that PLACED a record of the code (KP-1 KnowledgePath.Claims); the archived one is
+        // not a use.
+        fx.Paths.Items.Add(new KnowledgePath
         {
-            TenantId = TenantA, SetCode = "SET-1", SetName = "Set 1", Scope = new ContentSetScopeRef { ContentScopeId = scope.Id },
-            SelectedClaims = { new ContentSetClaim { ClaimId = a2.Id, ClaimVersion = "2.0" } }
+            TenantId = TenantA, PathCode = "KP-TR", PathName = "Almiba TR", PathVersion = "2.0", CountryCode = "TR",
+            LanguageCode = "tr", PathStatus = KnowledgePathStatuses.Published,
+            Claims = { new KnowledgePathClaim { ClaimId = a.Id, ClaimCode = "CL-A" } }
         });
-        fx.Sets.Items.Add(new ContentSet
+        fx.Paths.Items.Add(new KnowledgePath
         {
-            TenantId = TenantA, SetCode = "SET-ARCH", SetName = "Archived", ArchivedAt = Jan1,
-            SelectedClaims = { new ContentSetClaim { ClaimId = a.Id } }
+            TenantId = TenantA, PathCode = "KP-ARCH", PathName = "Archived", CountryCode = "TR", ArchivedAt = Jan1,
+            Claims = { new KnowledgePathClaim { ClaimId = a2.Id, ClaimCode = "CL-A" } }
         });
 
         var path = new KnowledgePath
@@ -399,7 +398,7 @@ public sealed class KnowledgeContentClaimLinkTests
     }
 
     [Fact]
-    public async Task Usage_groups_content_sets_and_journeys_by_country_and_excludes_archived()
+    public async Task Usage_groups_contents_knowledge_paths_and_journeys_by_country_and_excludes_archived()
     {
         var (fx, _) = await SeedUsageAsync();
         var r = await fx.Usage().Handle(new GetClaimUsageQuery("CL-A"), default);
@@ -410,18 +409,23 @@ public sealed class KnowledgeContentClaimLinkTests
         var tr = groups["TR"].Items;
         Assert.Collection(tr,
             i => { Assert.Equal(("content", "KC-TR"), (i.Type, i.Code)); Assert.True(i.ClaimNeedsReview); },
-            i => { Assert.Equal(("content-set", "SET-1"), (i.Type, i.Code)); Assert.Equal("2.0", i.Version); },
+            i =>
+            {
+                Assert.Equal(("knowledge-path", "KP-TR", "Almiba TR"), (i.Type, i.Code, i.Name));
+                Assert.Equal(("2.0", KnowledgePathStatuses.Published, "TR"), (i.Version, i.Status, i.CountryCode));
+                Assert.True(i.ClaimNeedsReview);              // the TR version of the claim is review-required
+            },
             i => { Assert.Equal(("journey", "J-1"), (i.Type, i.Code)); Assert.Equal("KC-TR", i.Via); Assert.True(i.ClaimNeedsReview); });
 
         Assert.Equal(new[] { "KC-DE" }, groups["DE"].Items.Select(i => i.Code));
         Assert.False(groups["DE"].Items[0].ClaimNeedsReview);
-        // GLOBAL = the core-bound content + the set (its "eu" market ref is not a country code).
-        Assert.Equal(new[] { ("content", "KC-GL"), ("content-set", "SET-1") },
-            groups["GLOBAL"].Items.Select(i => (i.Type, i.Code)));
+        // GLOBAL = the core-bound content only; WP-KP-4: the path groups under its own country (TR), nowhere else.
+        Assert.Equal(new[] { ("content", "KC-GL") }, groups["GLOBAL"].Items.Select(i => (i.Type, i.Code)));
 
         var all = r.Data.Groups.SelectMany(g => g.Items).Select(i => i.Code).ToList();
         Assert.DoesNotContain("KC-ARCH", all);
-        Assert.DoesNotContain("SET-ARCH", all);
+        Assert.DoesNotContain("KP-ARCH", all);
+        Assert.DoesNotContain(r.Data.Groups.SelectMany(g => g.Items), i => i.Type == "content-set");   // never produced
         Assert.DoesNotContain("J-ARCH", all);
         Assert.DoesNotContain("KC-NONE", all);
     }
@@ -452,7 +456,7 @@ public sealed class KnowledgeContentClaimLinkTests
 
     private static ListClaimsHandler ListWithCounts(Fixture fx, FakeClaimEvidenceClient evidence) =>
         new(Tenant(TenantA), fx.Claims, fx.Versions, null, new ClaimEvidenceReviewer(evidence, fx.Claims, fx.Versions),
-            null, fx.Contents, fx.Sets, fx.Paths, fx.Journeys);
+            null, fx.Contents, fx.Paths, fx.Journeys);
 
     [Fact]
     public async Task List_counts_read_each_source_once_per_page()
@@ -466,7 +470,7 @@ public sealed class KnowledgeContentClaimLinkTests
         evidence.Seed(ClaimEvidenceRules.For(a), status: "removed");
         var de = fx.Versions.Items.Single(v => v.CountryCode == "DE");
         de.ValidTo = DateTimeOffset.UtcNow.AddDays(10);
-        var before = (fx.Contents.ListCalls, fx.Sets.ListCalls, fx.Paths.ListCalls, fx.Journeys.ListCalls);
+        var before = (fx.Contents.ListCalls, fx.Paths.ListCalls, fx.Journeys.ListCalls);
 
         var r = await ListWithCounts(fx, evidence).Handle(new ListClaimsQuery(IncludeCounts: true), default);
 
@@ -474,15 +478,15 @@ public sealed class KnowledgeContentClaimLinkTests
         var rows = r.Data!.Items.ToDictionary(i => i.ClaimId);
         Assert.Equal(2, rows[a.Id].EvidenceCount);
         Assert.Equal(0, rows[a2.Id].EvidenceCount);
-        Assert.Equal(5, rows[a.Id].UsageCount); // KC-TR, KC-DE, KC-GL + SET-1 + J-1 (archived ones excluded)
+        Assert.Equal(5, rows[a.Id].UsageCount); // KC-TR, KC-DE, KC-GL + KP-TR + J-1 (archived ones excluded)
         Assert.Equal(5, rows[a2.Id].UsageCount); // usage is per claim code
         Assert.Equal(0, rows[b.Id].UsageCount);
         Assert.Equal(2, rows[a.Id].ApprovedCountryCount); // TR review-required + DE approved
         Assert.Equal(0, rows[b.Id].ApprovedCountryCount);
         Assert.Equal(new[] { "DE" }, rows[a.Id].ExpiringCountryCodes);
         Assert.Equal(1, evidence.QueryCalls); // ONE bulk evidence read for the whole page
-        Assert.Equal((before.Item1 + 1, before.Item2 + 1, before.Item3 + 1, before.Item4 + 1),
-            (fx.Contents.ListCalls, fx.Sets.ListCalls, fx.Paths.ListCalls, fx.Journeys.ListCalls));
+        Assert.Equal((before.Item1 + 1, before.Item2 + 1, before.Item3 + 1),
+            (fx.Contents.ListCalls, fx.Paths.ListCalls, fx.Journeys.ListCalls));
     }
 
     [Fact]
@@ -521,7 +525,7 @@ public sealed class KnowledgeContentClaimLinkTests
     {
         var (fx, a) = await SeedUsageAsync();
         var handler = new ListClaimsHandler(Tenant(TenantA), fx.Claims, fx.Versions, null, null, null, fx.Contents,
-            fx.Sets, null, fx.Journeys);
+            null, fx.Journeys);
 
         var row = (await handler.Handle(new ListClaimsQuery(IncludeCounts: true), default)).Data!.Items
             .Single(i => i.ClaimId == a.Id);
@@ -531,30 +535,31 @@ public sealed class KnowledgeContentClaimLinkTests
         Assert.Equal(2, row.ApprovedCountryCount);
     }
 
+    // WP-KP-4 — a knowledge path groups under its own country (its identity since KP-1); a path without a country (a
+    // legacy path) groups under GLOBAL.
     [Theory]
-    [InlineData(new[] { "tr", "DE" }, new[] { "TR", "DE" })]
-    [InlineData(new[] { "eu" }, new[] { "GLOBAL" })]
-    [InlineData(new string[0], new[] { "GLOBAL" })]
-    [InlineData(new[] { "tr", "eu", "TR" }, new[] { "TR", "GLOBAL" })]
-    public void Market_refs_map_to_country_groups_or_global(string[] marketRefs, string[] expected)
-        => Assert.Equal(expected,
-            GetClaimUsageHandler.MarketGroups(marketRefs, new HashSet<string>(StringComparer.Ordinal) { "TR", "DE" }));
+    [InlineData("tr", "TR")]
+    [InlineData(" DE ", "DE")]
+    [InlineData(null, "GLOBAL")]
+    [InlineData("", "GLOBAL")]
+    public void A_knowledge_path_groups_under_its_own_country(string? country, string expected)
+        => Assert.Equal(expected, GetClaimUsageHandler.PathGroup(new KnowledgePath { CountryCode = country }));
 
     [Fact]
-    public async Task Usage_reads_the_country_axis_from_the_published_country_codes_set()
+    public async Task Usage_reads_the_path_country_from_the_path_and_matches_by_claim_record()
     {
         var (fx, _) = await SeedUsageAsync();
-        fx.Scopes.Items[0].MarketRefs = new List<string> { "fr" }; // no FR version of the claim exists
-        var withoutCatalog = await fx.Usage().Handle(new GetClaimUsageQuery("CL-A", "FR"), default);
-        Assert.Empty(withoutCatalog.Data!.Groups);
+        fx.Paths.Items.Single(p => p.PathCode == "KP-TR").CountryCode = "FR"; // no FR version of the claim exists
 
-        var catalog = new FakeCatalog("TR", "DE", "FR");
-        var handler = new GetClaimUsageHandler(Tenant(TenantA), fx.Claims, fx.Versions, fx.Contents, fx.Sets, fx.Scopes,
-            fx.Paths, fx.Journeys, catalog);
-        var group = Assert.Single((await handler.Handle(new GetClaimUsageQuery("CL-A", "fr"), default)).Data!.Groups);
+        var group = Assert.Single((await fx.Usage().Handle(new GetClaimUsageQuery("CL-A", "fr"), default)).Data!.Groups);
         Assert.Equal("FR", group.CountryCode);
-        Assert.Equal(new[] { "SET-1" }, group.Items.Select(i => i.Code));
-        Assert.Equal(ClaimReferenceSets.CountryCodes, catalog.RequestedSet);
+        var item = Assert.Single(group.Items);
+        Assert.Equal(("knowledge-path", "KP-TR"), (item.Type, item.Code));
+        Assert.False(item.ClaimNeedsReview);                         // no FR version of the record is in review
+
+        // Another claim's record on the path is not a use of CL-A.
+        fx.Paths.Items.Single(p => p.PathCode == "KP-TR").Claims[0].ClaimId = Guid.NewGuid();
+        Assert.Empty((await fx.Usage().Handle(new GetClaimUsageQuery("CL-A", "fr"), default)).Data!.Groups);
     }
 
     [Fact]
@@ -763,36 +768,6 @@ public sealed class KnowledgeContentClaimLinkTests
             => Task.FromResult((IReadOnlyList<ClaimCountryVersion>)Items.Where(v => v.TenantId == t).ToList());
         public Task InsertAsync(ClaimCountryVersion entity, CancellationToken ct) => Task.CompletedTask;
         public Task UpdateAsync(ClaimCountryVersion entity, CancellationToken ct) => Task.CompletedTask;
-    }
-
-    private sealed class FakeSets : IContentSetRepository
-    {
-        public List<ContentSet> Items { get; } = new();
-
-        public Task<ContentSet?> GetByIdAsync(Guid t, Guid id, CancellationToken ct)
-            => Task.FromResult(Items.FirstOrDefault(s => s.TenantId == t && s.Id == id));
-        public int ListCalls { get; private set; }
-
-        public Task<IReadOnlyList<ContentSet>> ListAsync(Guid t, CancellationToken ct)
-            { ListCalls++; return Task.FromResult((IReadOnlyList<ContentSet>)Items.Where(s => s.TenantId == t).ToList()); }
-        public Task<ContentSet?> GetActiveByCodeAsync(Guid t, string code, CancellationToken ct)
-            => Task.FromResult<ContentSet?>(null);
-        public Task InsertAsync(ContentSet entity, CancellationToken ct) => Task.CompletedTask;
-        public Task UpdateAsync(ContentSet entity, CancellationToken ct) => Task.CompletedTask;
-    }
-
-    private sealed class FakeScopes : IContentScopeRepository
-    {
-        public List<ContentScope> Items { get; } = new();
-
-        public Task<ContentScope?> GetByIdAsync(Guid t, Guid id, CancellationToken ct)
-            => Task.FromResult(Items.FirstOrDefault(s => s.TenantId == t && s.Id == id));
-        public Task<IReadOnlyList<ContentScope>> ListAsync(Guid t, CancellationToken ct)
-            => Task.FromResult((IReadOnlyList<ContentScope>)Items.Where(s => s.TenantId == t).ToList());
-        public Task<ContentScope?> GetActiveByCodeAsync(Guid t, string code, CancellationToken ct)
-            => Task.FromResult<ContentScope?>(null);
-        public Task InsertAsync(ContentScope entity, CancellationToken ct) => Task.CompletedTask;
-        public Task UpdateAsync(ContentScope entity, CancellationToken ct) => Task.CompletedTask;
     }
 
     private sealed class FakePaths : IKnowledgePathRepository

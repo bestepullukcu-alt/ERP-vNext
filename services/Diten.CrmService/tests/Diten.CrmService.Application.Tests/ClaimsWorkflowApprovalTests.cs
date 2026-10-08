@@ -153,6 +153,7 @@ public sealed class ClaimsWorkflowApprovalTests
         var start = Assert.Single(fx.Workflow.Starts);
         Assert.Equal("CLAIM-CORE-MLR", start.TemplateCode);
         Assert.Equal("crm.claim", start.ObjectType);
+        Assert.Null(start.ReasonCode);   // WP-KP-5a-FIX-1 — the claim keeps the client default (CRM_CLAIM_SUBMITTED)
         Assert.Equal(claim.Id.ToString("D"), start.ObjectId);
         Assert.Equal($"crm/claim/{claim.Id:D}", start.ObjectRef);
         Assert.Equal($"crm:crm.claim:{claim.Id:D}:r1", start.IdempotencyKey);
@@ -609,9 +610,29 @@ public sealed class ClaimsWorkflowApprovalTests
         using var body = JsonDocument.Parse(sent.Body!);
         Assert.Equal(0, body.RootElement.GetProperty("candidatePrincipalIds").GetArrayLength());
         Assert.Equal("CLAIM-CORE-MLR", body.RootElement.GetProperty("templateCode").GetString());
+        // WP-KP-5a-FIX-1 — no ReasonCode on the request = the claim's own code, unchanged.
+        Assert.Equal(ClaimReviewRules.SubmitReasonCode, body.RootElement.GetProperty("reasonCode").GetString());
         Assert.Equal("crm:crm.claim:id-1:r1", body.RootElement.GetProperty("idempotencyKey").GetString());
         Assert.Equal("/CRM/Claims/Details/id-1",
             body.RootElement.GetProperty("displayContext").GetProperty("deepLinkUrl").GetString());
+    }
+
+    [Theory]
+    [InlineData("CRM_SAFETY_TEXT_SUBMITTED")]
+    [InlineData("CRM_COUNTRY_LEGAL_PROFILE_SUBMITTED")]
+    [InlineData("CRM_KNOWLEDGE_PATH_SUBMITTED")]
+    public async Task Gateway_client_sends_the_callers_reason_code(string reasonCode)
+    {
+        // WP-KP-5a-FIX-1 — the audit label of the start is the caller's kind, not always the claim's.
+        var handler = new StubHandler(HttpStatusCode.OK,
+            "{\"data\":{\"workflowInstanceId\":\"11111111-2222-3333-4444-555555555555\"},\"isSuccessful\":true}");
+        var client = GatewayClient(handler, "Bearer t", TenantA);
+
+        await client.StartAsync(new ClaimWorkflowStartRequest("KP-REG-TR", "crm.safety-text", "1", "r", "k",
+            new ClaimWorkflowDisplayContext("t", null, "crm", "/x", []), reasonCode), default);
+
+        using var body = JsonDocument.Parse(handler.Requests.Single().Body!);
+        Assert.Equal(reasonCode, body.RootElement.GetProperty("reasonCode").GetString());
     }
 
     [Theory]

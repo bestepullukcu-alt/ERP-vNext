@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Diten.Web.Models.CRM;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.Web.Controllers.CRM;
@@ -20,6 +21,7 @@ public sealed partial class KnowledgeController
 {
     private const string ClaimReadPermission = "crm.claim.read";
     private const string ClaimCoveragePath = "/api/crm/content-composition/claims/coverage";
+    private const string CountryContentLanguagesSet = "country-content-languages";
 
     /// <summary>The CRM content ↔ claim error codes (KnowledgeContentClaimErrors) shown as Claims-section field errors.</summary>
     internal static readonly IReadOnlyList<string> ClaimErrorCodes =
@@ -46,14 +48,11 @@ public sealed partial class KnowledgeController
         if ((int)response.StatusCode == 404) return Json(new { disabled = true, reason = "ClaimEndpointMissing" });
         if (!response.IsSuccessStatusCode) return Json(new { disabled = true, reason = "ClaimOptionsUnavailable" });
 
-        JsonElement rows;
+        IReadOnlyList<ClaimCoverageOptions.Row>? rows;
         try
         {
-            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
-            if (!doc.RootElement.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object
-                || !data.TryGetProperty("rows", out var r) || r.ValueKind != JsonValueKind.Array)
-                return Json(new { disabled = true, reason = "ClaimOptionsUnavailable" });
-            rows = r.Clone();
+            rows = ClaimCoverageOptions.ReadRows(await response.Content.ReadAsStringAsync(ct));
+            if (rows is null) return Json(new { disabled = true, reason = "ClaimOptionsUnavailable" });
         }
         catch (JsonException ex)
         {
@@ -65,44 +64,29 @@ public sealed partial class KnowledgeController
         var countryLanguages = await ReadCountryLanguagesAsync(ct);
         var language = string.IsNullOrWhiteSpace(languageCode) ? null : languageCode.Trim();
         var options = new List<object>();
-        foreach (var row in rows.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.Object))
+        foreach (var row in rows)
         {
-            var claimId = GetFirstString(row, "claimId");
-            var claimCode = GetFirstString(row, "claimCode");
-            if (claimId is null || claimCode is null) continue;
-            var claimName = GetFirstString(row, "claimName") ?? claimCode;
-            var kind = GetFirstString(row, "kind") ?? "core";
-            var coreStatus = GetFirstString(row, "coreStatus");
-            var coreUsable = IsUsableClaimStatus(coreStatus);
+            var coreUsable = ClaimCoverageOptions.IsUsableStatus(row.CoreStatus);
             options.Add(new
             {
-                claimId, claimCode, claimName, kind,
+                claimId = row.ClaimId, claimCode = row.ClaimCode, claimName = row.ClaimName, kind = row.Kind,
                 countryVersionId = (string?)null, countryCode = (string?)null, countryName = (string?)null,
-                version = GetFirstString(row, "coreVersion"), status = coreStatus,
+                version = row.CoreVersion, status = row.CoreStatus,
                 languages = Array.Empty<string>(),
-                usable = coreUsable, reason = coreUsable ? null : "not_approved"
+                usable = coreUsable, reason = coreUsable ? null : ClaimCoverageOptions.NotApproved
             });
 
-            if (!row.TryGetProperty("cells", out var cells) || cells.ValueKind != JsonValueKind.Array) continue;
-            foreach (var cell in cells.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.Object))
+            // Only a country with a version can be bound (closed / not-opened / not-applicable carry none).
+            foreach (var cell in row.Cells.Where(c => c.VersionId is not null))
             {
-                // Only a country with a version can be bound (closed / not-opened / not-applicable carry none).
-                var versionId = GetFirstString(cell, "versionId");
-                var country = GetFirstString(cell, "countryCode")?.ToUpperInvariant();
-                if (versionId is null || country is null) continue;
-
-                var status = GetFirstString(cell, "state");
-                var languages = countryLanguages is not null && countryLanguages.TryGetValue(country, out var l) ? l : [];
-                string? reason = !IsUsableClaimStatus(status) ? "not_approved"
-                    : language is not null && countryLanguages is not null
-                      && !languages.Contains(language, StringComparer.OrdinalIgnoreCase) ? "language_mismatch"
-                    : null;
+                var languages = countryLanguages is not null && countryLanguages.TryGetValue(cell.CountryCode, out var l) ? l : [];
+                var reason = ClaimCoverageOptions.CountryReason(cell.State, language, countryLanguages is null ? null : languages);
                 options.Add(new
                 {
-                    claimId, claimCode, claimName, kind,
-                    countryVersionId = versionId, countryCode = country,
-                    countryName = ClaimDisplayNames.CountryName(country) ?? country,
-                    version = GetFirstString(cell, "version"), status, languages,
+                    claimId = row.ClaimId, claimCode = row.ClaimCode, claimName = row.ClaimName, kind = row.Kind,
+                    countryVersionId = cell.VersionId, countryCode = cell.CountryCode,
+                    countryName = ClaimDisplayNames.CountryName(cell.CountryCode) ?? cell.CountryCode,
+                    version = cell.Version, status = cell.State, languages,
                     usable = reason is null, reason
                 });
             }
@@ -110,10 +94,6 @@ public sealed partial class KnowledgeController
 
         return Json(new { disabled = false, options });
     }
-
-    private static bool IsUsableClaimStatus(string? status) =>
-        string.Equals(status, "approved", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(status, "review-required", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>The CRM write shape of the refs — always a list (never null), blank rows dropped.</summary>
     private static List<object> ToClaimRefPayload(IEnumerable<KnowledgeContentClaimRefViewModel>? refs) =>
@@ -247,12 +227,14 @@ public sealed partial class KnowledgeController
         }).ToList();
     }
 
-    /// <summary>Country → content languages from the GLOBAL BRD set <c>country-content-languages</c> (read without
-    /// scope_key; attribute <c>Languages</c>, comma separated). Null = the set is unavailable.</summary>
+    /// <summary>Country → content languages from the GLOBAL BRD set <c>country-content-languages</c> (attribute
+    /// <c>Languages</c>, comma separated). Null = the set is unavailable.
+    /// <para>WP-BRD-TENANT-CRM-SETS — read through the shared <see cref="CrmReferenceSetReader"/> (consumable-sets route
+    /// first, which reads a Global set globally; the old consumer path drops scope_key on the global-set refusal).</para></summary>
     private async Task<Dictionary<string, string[]>?> ReadCountryLanguagesAsync(CancellationToken ct)
     {
-        var response = await SendGatewayAsync(HttpMethod.Get,
-            "/api/v1/reference-data/sets/country-content-languages/published-values", null, ct);
+        using var response = await _referenceSets.ReadAsync(
+            CountryContentLanguagesSet, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), GetTenantId(), ct);
         if (response is null || !response.IsSuccessStatusCode) return null;
         try
         {

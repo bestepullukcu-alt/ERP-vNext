@@ -19,7 +19,9 @@ public sealed record GeneratePlanPreviewQuery(
 public sealed record ListPlanningSessionsQuery(
     Guid? CyclePeriodId = null,
     string? ResourceId = null,
-    string? Status = null) : IRequest<Response<PlanningSessionListDto>>;
+    string? Status = null,
+    // WP-VP-4A — archived plans are left out unless asked for (or the status filter itself is "archived").
+    bool IncludeArchived = false) : IRequest<Response<PlanningSessionListDto>>;
 
 /// <summary>Reads one staging session by id (tenant-scoped; cross-tenant → 404).</summary>
 public sealed record GetPlanningSessionByIdQuery(Guid PlanningSessionId) : IRequest<Response<PlanningSessionDto>>;

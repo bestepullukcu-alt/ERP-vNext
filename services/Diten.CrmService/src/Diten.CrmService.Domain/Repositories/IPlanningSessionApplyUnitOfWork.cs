@@ -24,4 +24,10 @@ public interface IPlanningSessionApplyUnitOfWork
     /// <summary>Atomically replace the affected <paramref name="atoms"/> IN PLACE (re-plan, D-REPLAN = A) — the session
     /// is not reopened. All-or-nothing over the subset; no new revision is created.</summary>
     Task ReplanAsync(IReadOnlyList<PlannedVisit> atoms, CancellationToken cancellationToken);
+
+    /// <summary>WP-VP-3A — reopen a week: the session (version-checked) and the cancelled atoms (each version-checked) in
+    /// ONE all-or-nothing operation. False ⇒ a concurrency mismatch and nothing written.</summary>
+    Task<bool> ReopenWeekAsync(
+        PlanningSession session, int expectedVersion, IReadOnlyList<PlannedVisit> cancelledAtoms,
+        CancellationToken cancellationToken);
 }

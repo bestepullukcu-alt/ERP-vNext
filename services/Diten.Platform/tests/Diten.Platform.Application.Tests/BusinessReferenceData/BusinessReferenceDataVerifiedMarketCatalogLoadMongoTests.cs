@@ -8,7 +8,7 @@ public sealed class BusinessReferenceDataVerifiedMarketCatalogLoadMongoTests : I
 {
     private BusinessReferenceDataTestHarness _harness = null!;
 
-    public async Task InitializeAsync() => _harness = await BusinessReferenceDataTestHarness.CreateAsync();
+    public async Task InitializeAsync() => _harness = await BusinessReferenceDataTestHarness.CreateAsync("market_catalog");
 
     public Task DisposeAsync() => _harness.DisposeAsync().AsTask();
 

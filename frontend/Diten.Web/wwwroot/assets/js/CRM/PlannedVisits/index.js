@@ -124,7 +124,11 @@
         includeArchived: !!document.getElementById('filterIncludeArchived')?.checked
     });
 
-    const targetCell = row => `${badge(targetTypeLabel(row.targetType), 'primary')}<span class="ms-1 text-muted small">${esc((row.targetId || '').slice(0, 8))}</span>`;
+    // WP-VP-2 (B-8) — the target by its read-time name + a type badge (no id fragment); a passive target is marked.
+    const targetName = row => row.targetDisplayName || L.TargetUnknown || '—';
+    const targetCell = row => `<span class="fw-medium text-heading">${esc(targetName(row))}</span> ${badge(targetTypeLabel(row.targetType), 'primary')}`
+        + (row.targetInactive ? ` ${badge(L.TargetInactive, 'secondary')}` : '')
+        + (row.contactDisplayName && row.accountDisplayName ? `<div class="small text-muted">${esc(row.accountDisplayName)}</div>` : '');
 
     // A terminal (archived/cancelled) plan offers no mutation. Details + Edit navigate to their own pages (Compact).
     const actions = row => {
@@ -157,7 +161,8 @@
         columnDefs: [
             { targets: 0, className: 'control', orderable: false, render: () => '' },
             { targets: 1, render: v => `<span class="fw-medium text-heading">${esc(v)}</span>` },
-            { targets: 2, render: (v, t, row) => t === 'display' ? targetCell(row) : (v || '') },
+            // WP-VP-2 (B-8) — sorted / searched by the NAME (and the institution), not the id.
+            { targets: 2, render: (v, t, row) => t === 'display' ? targetCell(row) : [targetName(row), row.accountDisplayName || ''].join(' ').trim() },
             { targets: 5, render: v => esc(v) },
             { targets: 6, render: v => badge(statusLabel(v), statusTone(v)) },
             { targets: 7, render: v => badge(consentLabel(v), consentTone(v)) },

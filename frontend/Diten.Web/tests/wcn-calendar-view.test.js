@@ -790,10 +790,15 @@ describe("v2 F4 — one 'today' on the calendar page: the tenant's", () => {
   });
 });
 
-describe("v2 F5 — a title in a toast is text, not markup", () => {
+/*
+ * BL-493 — the escaping MOVED. It used to happen at each of these call sites; it now happens once, at the shared
+ * toast's own door (tests/toast-message-is-text.test.js proves that against the real Notyf). What is pinned here is
+ * the other half: these callers hand the title over AS TYPED — one that escapes too would show entities.
+ */
+describe("v2 F5 — a title reaches the shared toast as typed (the toast makes it text)", () => {
   const evil = '<img src=x onerror="alert(1)">';
 
-  it("the saved-plan toast and a meeting warning escape their titles", async () => {
+  it("the saved-plan toast and a meeting warning carry their titles as typed", async () => {
     const item = task(1);
     item.title = { kind: "display", text: evil, locale: "und" };
     const dispatch = () => ({ ok: true, status: 200, data: { warnings: [{ code: "TASK_PLAN_OVERLAPS_MEETING", title: evil }] } });
@@ -802,19 +807,20 @@ describe("v2 F5 — a title in a toast is text, not markup", () => {
     await dropOn(host().querySelector('.fc-daygrid-day[data-date="2026-10-09"]'), id(1));
 
     const text = toasts.map((t) => t.message).join(" ");
-    expect(text).toContain("&lt;img");
-    expect(text).not.toContain("<img");
+    expect(text).toContain(evil);
+    expect(text).not.toContain("&lt;");
+    expect(toasts.filter((t) => t.message.includes(evil)).length, "both the saved-plan and the warning toast").toBe(2);
   });
 
-  it("the conflict toast escapes the other block's title", async () => {
+  it("the conflict toast carries the other block's title as typed", async () => {
     const dispatch = () => ({ ok: false, status: 409, reasonCode: "TASK_PLAN_CONFLICT", data: { conflict: { title: evil, startAt: "2026-10-08T07:00:00Z", endAt: "2026-10-08T08:00:00Z" } } });
     await boot({ items: [task(1)], dispatch });
 
     await dropOn(host().querySelector('.fc-daygrid-day[data-date="2026-10-09"]'), id(1));
 
     const said = toasts.find((t) => t.type === "error").message;
-    expect(said).toContain("&lt;img");
-    expect(said).not.toContain("<img");
+    expect(said).toContain(evil);
+    expect(said).not.toContain("&lt;");
   });
 });
 
@@ -1286,7 +1292,9 @@ describe("B — the invitations panel draws the ONE shared card", () => {
 
     expect(asked, "no warning before an overlapping accept").toHaveLength(1);
     expect(asked[0].title).toBe("InviteOverlapTitle");
-    expect(asked[0].options.subtext).toContain("Rapor &lt;b&gt;taslağı&lt;/b&gt;");
+    // Handed over as TEXT: the shared confirm escapes at its door (WP-SHARED-CONFIRM-XSS-01).
+    expect(asked[0].options.subtext).toContain("Rapor <b>taslağı</b>");
+    expect(asked[0].options.subtextHtml).toBeUndefined();
     expect(asked[0].options.subtext).toMatch(/14.00–14.30/);
     expect(calls.map((c) => c.actionCode)).toContain("acceptInvite");
   });

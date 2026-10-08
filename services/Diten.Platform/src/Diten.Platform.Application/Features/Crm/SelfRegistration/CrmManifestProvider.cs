@@ -31,6 +31,10 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string StrategyTemplatesRead = "crm.strategy-template.read";
     private const string CampaignsRead = "crm.campaign.read";
     private const string PlannedVisitsRead = "crm.planned-visit.read";
+    private const string VisitPlanRead = "crm.visit-plan.read";
+    // WP-VP-FIX-1 — the canonical key (not the crm.territory.read fallback the Web console also accepts): it is granted
+    // to the 97c5 tenant Admin (manual-grant-mod0155, measured 2026-10-06), so the entry renders where the page opens.
+    private const string VisitReportRead = "crm.visit-report.read";
     private const string CyclePeriodsRead = "crm.cycle-period.read";
     private const string CycleCapacityRead = "crm.cycle-capacity.read";
     private const string ConsentRead = "crm.consent.read";
@@ -39,9 +43,9 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string KnowledgePathRead = "crm.knowledge.path.read";
     private const string ContentEngagementJourneyRead = "crm.knowledge.content-engagement-journey.read";
     private const string ClaimRead = "crm.claim.read";
-    private const string ContentScopeRead = "crm.content-scope.read";
-    private const string ContentSetRead = "crm.content-set.read";
     private const string EligibilityRead = "crm.eligibility.read";
+    private const string SafetyTextRead = "crm.safety-text.read";
+    private const string CountryLegalProfileRead = "crm.country-legal-profile.read";
 
     // MOD-0165-FU03 (WP-FREQ-A). The canonical crm.visit-frequency-policy.* keys are not seeded yet, so — exactly like
     // the CrmService [HasPermission] guards and the Diten.Web console — the page's read gate runs on the documented
@@ -100,12 +104,31 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("MANAGE_TARGETS", "Manage Targets", "crm.campaign.target.manage", "RowAction", 20, false, false, true),
                     new ModuleManifestAction("SNAPSHOT", "Take Snapshot", "crm.campaign.snapshot.create", "RowAction", 30, false, false, true)
                 ]),
+                // WP-VP-FIX-1 (D7) — MOD-0155 FU05 Visit Planning console (the rep's week plan → apply writes FU01 atoms)
+                // and FU02 Visit Execution calendar (record / amend the immutable Visit Report). Both pages existed with
+                // no sidebar entry. Planning sits right before Planned Visits (65), Execution right after it.
+                new ModuleManifestPage("VISIT_PLANNING", "Visit Planning", "/CRM/VisitPlanning", VisitPlanRead, null, true, "List", 64,
+                [
+                    new ModuleManifestAction("GENERATE", "Generate Plan", "crm.visit-plan.generate", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("APPLY", "Apply Plan", "crm.visit-plan.apply", "RowAction", 20, false, false, true),
+                    // WP-VP-2 (B-1) — manifest home of the explicit-grant-only tenant-wide read (Tier-3), the
+                    // platform.tasks.read-all precedent: a declared AUTHORITY so an authorized person can grant it to a
+                    // tenant role; the entitlement sync and the full-catalog path never grant it (ExplicitGrantOnly).
+                    new ModuleManifestAction("READ_ALL", "Read All Visit Plans (Tenant-Wide)", "crm.visit-plan.read-all", "Toolbar", 30, false, true, false)
+                ]),
+                new ModuleManifestPage("VISIT_EXECUTION", "Visit Execution", "/CRM/VisitExecution", VisitReportRead, null, true, "List", 66,
+                [
+                    new ModuleManifestAction("RECORD", "Record Visit", "crm.visit-report.record", "RowAction", 10, false, false, true),
+                    new ModuleManifestAction("AMEND", "Amend Report", "crm.visit-report.amend", "RowAction", 20, false, false, true)
+                ]),
                 // MOD-0155-FU01 Visit Planning / Planned Visit — the field team's planning atom. confirm is a SEPARATE
                 // key from manage (author-vs-confirmer SoD); there is no delete/bulk-delete surface (cancel/archive).
                 new ModuleManifestPage("PLANNED_VISITS", "Planned Visits", "/CRM/PlannedVisits", PlannedVisitsRead, null, true, "List", 65,
                 [
                     new ModuleManifestAction("MANAGE", "New Planned Visit", "crm.planned-visit.manage", "Toolbar", 10, false, true, false),
-                    new ModuleManifestAction("CONFIRM", "Confirm", "crm.planned-visit.confirm", "RowAction", 20, false, false, true)
+                    new ModuleManifestAction("CONFIRM", "Confirm", "crm.planned-visit.confirm", "RowAction", 20, false, false, true),
+                    // WP-VP-2 (B-1) — explicit-grant-only tenant-wide read of planned visits + visit reports (see above).
+                    new ModuleManifestAction("READ_ALL", "Read All Planned Visits (Tenant-Wide)", "crm.planned-visit.read-all", "Toolbar", 30, false, true, false)
                 ]),
                 new ModuleManifestPage("CYCLE_PERIODS", "Cycle Periods", "/CRM/CyclePeriods", CyclePeriodsRead, null, true, "List", 70,
                 [
@@ -148,15 +171,23 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("MANAGE", "New Claim", "crm.claim.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("APPROVE", "Approve", "crm.claim.approve", "RowAction", 20, false, false, true)
                 ]),
-                // SCMM-14 (CAND-CAP-0011) Content Studio — reusable ContentScope + ContentSet (assembly draft) consoles.
-                new ModuleManifestPage("CONTENT_SCOPES", "Content Scopes", "/CRM/ContentScopes", ContentScopeRead, null, true, "List", 150,
+                // WP-KP-5a-UI — the Regulatory-approved master data the page designer's locked blocks will read
+                // (DESIGN-KP-STUDIO §2.4): safety texts (product × country × language) and country legal profiles
+                // (country × language). The approval itself is the MOD-0023 Regulatory task (K1); SUBMIT sends a draft
+                // to it. No delete surface (Archive).
+                new ModuleManifestPage("SAFETY_TEXTS", "Safety Texts", "/CRM/SafetyTexts", SafetyTextRead, null, true, "List", 150,
                 [
-                    new ModuleManifestAction("MANAGE", "New Scope", "crm.content-scope.manage", "Toolbar", 10, false, true, false)
+                    new ModuleManifestAction("MANAGE", "New Safety Text", "crm.safety-text.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("SUBMIT", "Submit for Approval", "crm.safety-text.submit", "RowAction", 20, false, false, true)
                 ]),
-                new ModuleManifestPage("CONTENT_SETS", "Content Sets", "/CRM/ContentSets", ContentSetRead, null, true, "List", 160,
+                new ModuleManifestPage("LEGAL_PROFILES", "Legal Profiles", "/CRM/LegalProfiles", CountryLegalProfileRead, null, true, "List", 160,
                 [
-                    new ModuleManifestAction("MANAGE", "New Content Set", "crm.content-set.manage", "Toolbar", 10, false, true, false)
+                    new ModuleManifestAction("MANAGE", "New Legal Profile", "crm.country-legal-profile.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("SUBMIT", "Submit for Approval", "crm.country-legal-profile.submit", "RowAction", 20, false, false, true)
                 ]),
+                // WP-SB-1R retired the Content Scopes page (CONTENT_SCOPES) and WP-KP-4 the Content Sets page
+                // (CONTENT_SETS): the Knowledge Path Studio (KNOWLEDGE_PATHS) took the content set's job. A re-registration
+                // of this manifest prunes both pages from the live menu.
                 // SCMM-11-UI (CAND-CAP-0011) eligibility policy authoring + evaluate. evaluate is a SEPARATE key from
                 // manage (author-vs-evaluator SoD); no delete surface (Archive).
                 new ModuleManifestPage("ELIGIBILITY_POLICIES", "Eligibility Policies", "/CRM/EligibilityPolicies", EligibilityRead, null, true, "List", 170,

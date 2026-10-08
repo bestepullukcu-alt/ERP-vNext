@@ -60,12 +60,22 @@ crm.knowledge.subject.read,0
 crm.planned-visit.confirm,0
 crm.planned-visit.manage,0
 crm.planned-visit.read,0
+# WP-VP-2 (B-1) — the two explicit-grant-only tenant-wide visit reads, stated Tenant (0): moduleOverride
+# "crm-planned-visit" / "crm-visit-plan" are not platform-admin modules; a tenant role must be able to hold them.
+crm.planned-visit.read-all,0
+crm.visit-plan.read-all,0
 # SCMM-12-API / SCMM-14 / SCMM-11-follow-API — 10 content-composition keys, stated Tenant (0): moduleOverride
 # "crm-content-composition" is not in PlatformAdminModules; live diten_auth_v3 Scope=0 (verified 2026-09-25). These
 # were seeded without a baseline row, so Baseline_covers_every_seeded_permission_and_nothing_else was already red.
 crm.claim.approve,0
 crm.claim.manage,0
 crm.claim.read,0
+crm.safety-text.manage,0
+crm.safety-text.read,0
+crm.safety-text.submit,0
+crm.country-legal-profile.manage,0
+crm.country-legal-profile.read,0
+crm.country-legal-profile.submit,0
 crm.content-scope.manage,0
 crm.content-scope.read,0
 crm.content-set.manage,0

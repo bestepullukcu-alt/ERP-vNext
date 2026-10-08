@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -27,10 +28,14 @@ public sealed partial class KnowledgeController : Controller
     private const string ManageFallback = "crm.territory.model.manage";
     private const string ViewRoot = "~/Views/CRM/Knowledge";
 
+    /// <summary>CRM <c>KnowledgeReasonCodes.ContentConcurrencyConflict</c> (409 on update, WP-E2E-FIX-2).</summary>
+    internal const string ContentConcurrencyConflictCode = "knowledge_content_concurrency_conflict";
+
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
     private readonly ILogger<KnowledgeController> _logger;
+    private readonly CrmReferenceSetReader _referenceSets;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true };
 
     public KnowledgeController(
@@ -44,6 +49,7 @@ public sealed partial class KnowledgeController : Controller
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _sharedLocalizer = sharedLocalizer;
         _logger = logger;
+        _referenceSets = new CrmReferenceSetReader(httpClient, _gatewayUrl, logger);
     }
 
     // ---------------- Content Compact pages ----------------
@@ -379,17 +385,30 @@ public sealed partial class KnowledgeController : Controller
 
     // WP-MOD0162-AUD-UI: read-only MOD-0048 published values for the AudienceProfile dimension builder (axis =
     // reference-set code → its published ValueCodes; the browser stores the stable ValueCode and resolves the display
-    // name live). scope_key is the JWT tenant (never taken from the client). Same gate as the profile list so any user
-    // who can open the profile form can populate its reference axes.
+    // name live). Same gate as the profile list so any user who can open the profile form can populate its reference axes.
+    // WP-BRD-TENANT-CRM-SETS — read through the shared CrmReferenceSetReader (consumable-sets route first, so a non-admin
+    // gets the axes too; the tenant is the JWT tenant, never taken from the client). The Platform answer is passed through.
     [HttpGet("api/reference-data/{setCode}/values")]
-    public Task<IActionResult> ReferenceValues(string setCode, CancellationToken ct)
+    public async Task<IActionResult> ReferenceValues(string setCode, CancellationToken ct)
     {
-        var tenantId = GetTenantId() ?? string.Empty;
-        var path = $"/api/v1/reference-data/sets/{Uri.EscapeDataString(setCode)}/published-values?scope_key={Uri.EscapeDataString(tenantId)}";
-        return ProxyGetAsync(path, SubjectReadPermission, ct, ReadPermission, ReadFallback);
+        if (RequireJson(SubjectReadPermission, ReadPermission, ReadFallback) is { } denied) return denied;
+        var response = await _referenceSets.ReadAsync(
+            setCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), GetTenantId(), ct);
+        return await ToProxyResultAsync(response, ct);
     }
 
     // ---------------- helpers ----------------
+
+    /// <summary>WP-KP-4 — the SB-2 "assembled presentation" content type and the "content-studio" source were produced
+    /// only by the retired content-set release; the form no longer offers them.</summary>
+    public const string RetiredContentType = "assembled-presentation";
+
+    public const string RetiredContentSource = "content-studio";
+
+    public static IReadOnlyList<string> WithoutRetired(IReadOnlyList<string> values, string retired, string? current)
+        => values.Where(v => !string.Equals(v, retired, StringComparison.OrdinalIgnoreCase)
+                             || string.Equals(v, current, StringComparison.OrdinalIgnoreCase))
+            .ToList();
 
     private async Task PopulateContractOptionsAsync(KnowledgeContentEditViewModel model, CancellationToken ct)
     {
@@ -400,9 +419,11 @@ public sealed partial class KnowledgeController : Controller
             return;
         }
 
-        model.ContentTypes = contract.Vocabularies.ContentTypes;
+        // WP-KP-4 — the content-set (SB-2) release vocabulary stays valid in CRM for old data but is never OFFERED for a
+        // new choice; a record already carrying it still shows its own value.
+        model.ContentTypes = WithoutRetired(contract.Vocabularies.ContentTypes, RetiredContentType, model.ContentType);
         model.ContentStatuses = contract.Vocabularies.ContentStatuses;
-        model.ContentSources = contract.Vocabularies.ContentSources;
+        model.ContentSources = WithoutRetired(contract.Vocabularies.ContentSources, RetiredContentSource, model.Source);
 
         await PopulateReferenceOptionsAsync(model, ct);
     }
@@ -422,9 +443,11 @@ public sealed partial class KnowledgeController : Controller
         // is never offered as a NEW choice (a previously saved one is still preserved below by EnsureSelectedAsync).
         var conceptTypes = await LoadOptionsAsync("/api/crm/knowledge/concept-types?includeArchived=false", ct, groupKey: "subjectId", idKey: "conceptTypeId");
         var conceptNodes = await LoadOptionsAsync("/api/crm/knowledge/concept-nodes?includeArchived=false", ct, groupKey: "conceptTypeId", idKey: "conceptNodeId");
-        // Product is the MDM Global Product master (same selector the Concept-graph ExternalRef picker uses), so the
-        // dropdown lists product NAMES, not raw ids. Brand is intentionally no longer surfaced in this UI.
-        var products = await LoadGlobalProductOptionsAsync(ct);
+        // Product is the MDM Global Product master, searched in the browser through api/global-product-options (Select2
+        // ajax, WP-E2E-FIX-2 E2-B1) — the 100-row first page is no longer preloaded (the master is larger than the MDM
+        // page cap). Only the stored product is rendered, by a single read (EnsureGlobalProductSelectedAsync below).
+        // Brand is intentionally no longer surfaced in this UI.
+        var products = new List<KnowledgeOptionViewModel>();
         var campaigns = await LoadOptionsAsync("/api/crm/campaigns", ct, idKey: "campaignId");
         // Document Reference (FileRef) is a pointer to a Document Management controlled document. Creating new ones stays
         // in Document Management's governed flow (collection instance based); here we only let the user PICK an existing one.
@@ -588,9 +611,9 @@ public sealed partial class KnowledgeController : Controller
         }
     }
 
-    // MDM Global Product option list (id -> "code — name"). Reuses the read-only selector the Concept-graph ExternalRef
-    // picker uses (fields: id / canonicalCode / globalProductName). A generous page size is requested so the form select
-    // carries the master by name; a saved-but-off-page value is still restored by EnsureGlobalProductSelectedAsync.
+    // MDM Global Product option list (id -> "code — name") for the content LIST's name lookup (api/product-options).
+    // Reuses the read-only selector the Concept-graph ExternalRef picker uses (fields: id / canonicalCode /
+    // globalProductName). The content FORM no longer uses it — it searches through api/global-product-options.
     private async Task<List<KnowledgeOptionViewModel>> LoadGlobalProductOptionsAsync(CancellationToken ct)
     {
         var options = new List<KnowledgeOptionViewModel>();
@@ -637,8 +660,9 @@ public sealed partial class KnowledgeController : Controller
         var idStr = currentId.Value.ToString();
         if (options.Any(o => string.Equals(o.Value, idStr, StringComparison.OrdinalIgnoreCase))) return;
 
+        // A resolved product shows as itself ("code — name"); only an unresolvable id keeps the inactive tag.
         var label = await ResolveGlobalProductLabelAsync(idStr, ct);
-        options.Insert(0, new KnowledgeOptionViewModel { Value = idStr, Label = label ?? idStr, IsInactive = true });
+        options.Insert(0, new KnowledgeOptionViewModel { Value = idStr, Label = label ?? idStr, IsInactive = label is null });
     }
 
     // Resolves a single Global Product id to "code — name" (or name / code). Returns null on a miss.
@@ -765,6 +789,14 @@ public sealed partial class KnowledgeController : Controller
     // user's language; the English message is not shown. Anything else stays a summary error as before.
     private void AddGatewayErrors(KnowledgeContentEditViewModel model, IReadOnlyList<string> errors)
     {
+        // WP-E2E-FIX-2 — a lost optimistic write ([code, message]) is one sentence in the user's language.
+        if (errors.Contains(ContentConcurrencyConflictCode))
+        {
+            model.WriteErrorKey = "ContentConcurrencyConflict";
+            ModelState.AddModelError(nameof(model.WriteErrorKey), ContentConcurrencyConflictCode);
+            return;
+        }
+
         var (claimErrors, rest) = SplitClaimErrors(errors, model.ClaimRefs);
         model.ClaimRefErrors = claimErrors;
         foreach (var error in rest) ModelState.AddModelError(string.Empty, error);

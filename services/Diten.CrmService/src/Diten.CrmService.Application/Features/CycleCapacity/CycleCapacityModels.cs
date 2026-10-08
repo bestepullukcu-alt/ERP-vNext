@@ -18,7 +18,10 @@ public sealed record CycleCapacityMonthInput(
     int TrainingDays,
     int VacationDays,
     int MicroTargetingDayCount,
-    int MicroTargetingDuration);
+    int MicroTargetingDuration,
+    // WP-CAP-MODEL (K-5) — the author's FTE for this month (0 allowed: a vacant position). Present → stored as
+    // `authored`; omitted → the stored authored value is kept, otherwise the configured interim default is stamped.
+    decimal? Fte = null);
 
 /// <summary>One month row as it is read back. Same shape, plus nothing — the deductions are the whole truth of a
 /// month; its working days and visit number are computed elsewhere.</summary>
@@ -33,8 +36,8 @@ public sealed record CycleCapacityMonthDto(
     int DeductedDays,
     int MicroTargetingMinutes,
 
-    /// <summary>FU07 — the month's own FTE. Server-stamped and rendered disabled; shown because the estimate is built
-    /// on it and a reader is entitled to see it.</summary>
+    /// <summary>FU07 — the month's own FTE. WP-CAP-MODEL (K-5): authorable; <see cref="FteSource"/> says whether the
+    /// author supplied it (<c>authored</c>) or the configured interim average was stamped.</summary>
     decimal Fte,
 
     string FteSource);
@@ -64,7 +67,13 @@ public sealed record CycleCapacityListItemDto(
     bool IsEditable,
     int Version,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    // WP-SB-3a — products per visit by role (3 / 3 on a pre-SB-3a row).
+    int MaxPromoProducts = CycleCapacityDefaultsView.MaxProducts,
+    int MaxNonPromoProducts = CycleCapacityDefaultsView.MaxProducts,
+    // WP-CAP-MODEL — which visit-duration arithmetic the row uses (typical / legacy) and its per-visit divisor.
+    string VisitModel = Diten.CrmService.Domain.Entities.CycleCapacityVisitModels.Legacy,
+    int TypicalVisitMinutes = 0);
 
 public sealed record CycleCapacityListDto(IReadOnlyList<CycleCapacityListItemDto> Items, int TotalCount);
 
@@ -101,7 +110,24 @@ public sealed record CycleCapacityDetailDto(
     DateTimeOffset CreatedAt,
     string? CreatedBy,
     DateTimeOffset? UpdatedAt,
-    string? UpdatedBy);
+    string? UpdatedBy,
+    // WP-SB-3a — products per visit by role (3 / 3 on a pre-SB-3a row).
+    int MaxPromoProducts = CycleCapacityDefaultsView.MaxProducts,
+    int MaxNonPromoProducts = CycleCapacityDefaultsView.MaxProducts,
+    // WP-CAP-MODEL (K-1) — the typical visit (null on a legacy row), the model name, and the two derived figures the
+    // single visit-duration model computes. On a typical row ReportDuration is 0 and the report is per visit.
+    int? TypicalPromoCount = null,
+    int? TypicalNonPromoCount = null,
+    int? ReportMinutesPerVisit = null,
+    string VisitModel = Diten.CrmService.Domain.Entities.CycleCapacityVisitModels.Legacy,
+    int TypicalVisitMinutes = 0,
+    int DailyFixedMinutes = 0);
+
+/// <summary>WP-SB-3a — the default products-per-visit ceiling, usable as a DTO default value.</summary>
+public static class CycleCapacityDefaultsView
+{
+    public const int MaxProducts = Diten.CrmService.Domain.Entities.CycleCapacityLimits.DefaultMaxProductsPerVisit;
+}
 
 /// <summary>
 /// The pinned period, projected for display. A consumer may SHOW this and must never STORE it: copying a period's code
@@ -156,7 +182,29 @@ public sealed record CycleCapacityMonthCalculationDto(
     int SpendMinutes,
     int VisitMinutes,
     decimal Fte,
-    int TotalVisitNumber);
+    int TotalVisitNumber,
+
+    /// <summary>WP-CAP-MODEL — the month's fixed per-day charges (<c>DailyFixedMinutes × FieldDays</c>).</summary>
+    int DailyFixedMinutes,
+
+    /// <summary>WP-CAP-MODEL — minutes left for visits after the fixed charges and micro-targeting.</summary>
+    int RemainingMinutes,
+
+    /// <summary>WP-CAP-MODEL — the per-visit divisor.</summary>
+    int TypicalVisitMinutes);
+
+/// <summary>WP-CAP-MODEL — the waterfall's cycle totals; each is the sum of the month rows (visits rounded per month).
+/// </summary>
+public sealed record CycleCapacityCalculationTotalsDto(
+    int WorkingDays,
+    int DeductedDays,
+    int FieldDays,
+    int AvailableMinutes,
+    int DailyFixedMinutes,
+    int MicroTargetingMinutes,
+    int RemainingMinutes,
+    int Visits,
+    decimal AverageFte);
 
 /// <summary>
 /// The estimate. <see cref="TotalVisitNumber"/> is <c>null</c> — never <c>0</c> — whenever
@@ -176,4 +224,16 @@ public sealed record CycleCapacityCalculationDto(
     int MinutesPerVisit,
     IReadOnlyList<CycleCapacityMonthCalculationDto> Months,
     IReadOnlyList<string> ReasonCodes,
-    string Reason);
+    string Reason,
+
+    /// <summary>WP-CAP-MODEL — <c>typical</c> or <c>legacy</c>.</summary>
+    string VisitModel,
+
+    /// <summary>WP-CAP-MODEL — the per-visit divisor (equals <see cref="MinutesPerVisit"/>).</summary>
+    int TypicalVisitMinutes,
+
+    /// <summary>WP-CAP-MODEL — the fixed minutes charged per field DAY.</summary>
+    int DailyFixedMinutes,
+
+    /// <summary>WP-CAP-MODEL — null whenever <see cref="TotalVisitNumber"/> is (calendar unresolved).</summary>
+    CycleCapacityCalculationTotalsDto? Totals);

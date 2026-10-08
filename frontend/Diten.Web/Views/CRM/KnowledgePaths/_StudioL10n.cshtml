@@ -1,0 +1,12 @@
+@using System.Text.Json
+@using Diten.Web.Views.CRM.KnowledgePaths
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgePathStudio> Localizer
+@{
+    // WP-KP-UI-1 — the studio bridge: every string of the KnowledgePathStudio family (current culture, English fallback).
+    // studio-common.js merges it into window.L10n (camelCase + PascalCase) and reads it through t('Key').
+    var values = Localizer.GetAllStrings(includeParentCultures: true)
+        .GroupBy(s => s.Name)
+        .ToDictionary(g => g.Key, g => g.First().Value);
+}
+<script id="kp-studio-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

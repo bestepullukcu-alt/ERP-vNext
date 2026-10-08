@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
+using Diten.Web.Services;
 using Diten.Web.Views.CRM.TerritoryManagement;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -72,6 +73,7 @@ public sealed class TerritoryManagementController : Controller
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
     private readonly IStringLocalizer<TerritoryManagementResources> _localizer;
     private readonly ILogger<TerritoryManagementController> _logger;
+    private readonly CrmReferenceSetReader _referenceSets;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNameCaseInsensitive = true
@@ -90,6 +92,7 @@ public sealed class TerritoryManagementController : Controller
         _sharedLocalizer = sharedLocalizer;
         _localizer = localizer;
         _logger = logger;
+        _referenceSets = new CrmReferenceSetReader(httpClient, _gatewayUrl, logger);
     }
 
     // ---- Landing (contract + model list) ----
@@ -1594,6 +1597,10 @@ public sealed class TerritoryManagementController : Controller
 
     /// <summary>Reads MOD-0048 published values through the Gateway. Returns an EMPTY list when unavailable — never a
     /// hardcoded fallback; the caller surfaces a controlled dependency message instead.</summary>
+    /// <remarks>WP-BRD-TENANT-CRM-SETS — the shared <see cref="CrmReferenceSetReader"/> reads the consumable-sets route
+    /// first (every tenant role, by the set's own scope: `city` / `district` / `business-unit` … tenant, COUNTRY_CODES
+    /// Global). Its old-path fallback keeps the two-step this method used to do itself: scope_key first, keyless only on
+    /// the service's own "scope_key_not_allowed_for_global" refusal, so a read never widens past its scope.</remarks>
     private async Task<IReadOnlyList<ReferenceOptionViewModel>> LoadReferenceOptionsAsync(string setCode)
     {
         if (!AddAuthHeaders())
@@ -1603,39 +1610,29 @@ public sealed class TerritoryManagementController : Controller
         if (string.IsNullOrWhiteSpace(tenantId))
             return [];
 
-        // A TENANT-scoped set REQUIRES scope_key; a GLOBAL one REFUSES it (400 "scope_key_not_allowed_for_global").
-        // Nothing tells the consumer which shape a set has before asking, and the sets bound here are mixed:
-        // `city` / `district` / `business-unit` … are tenant-scoped, while COUNTRY_CODES is Global. So ask the tenant
-        // way first and retry once WITHOUT the key on the service's own refusal — the same two-step the MOD-0165-FU07
-        // equivalence gate uses. A tenant-scoped set fails the keyless retry too ("scope_key_required"), so this can
-        // never widen a read past its scope.
-        var baseUrl = $"{_gatewayUrl}/api/v1/reference-data/sets/{Uri.EscapeDataString(setCode)}/published-values";
-        var urls = new[] { $"{baseUrl}?scope_key={Uri.EscapeDataString(tenantId)}", baseUrl };
-
         try
         {
-            foreach (var url in urls)
+            using var response = await _referenceSets.ReadAsync(
+                setCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), tenantId);
+            if (response is null)
+                return [];
+
+            if (!response.IsSuccessStatusCode)
             {
-                var response = await _httpClient.GetAsync(url);
-                if (!response.IsSuccessStatusCode)
-                {
-                    _logger.LogWarning("Reference set '{SetCode}' returned {Status}; rendering without options.", setCode, response.StatusCode);
-                    continue;
-                }
-
-                var payload = await response.Content.ReadFromJsonAsync<GatewayResponse<PublishedValuesModel>>(_jsonOptions);
-                var items = payload?.Data?.Items;
-                if (items is null)
-                    return [];
-
-                return items
-                    .Where(x => x.IsActive && !string.IsNullOrWhiteSpace(x.Value))
-                    .OrderBy(x => x.SortOrder)
-                    .Select(x => new ReferenceOptionViewModel(x.Value!, string.IsNullOrWhiteSpace(x.Text) ? x.Value! : x.Text!))
-                    .ToList();
+                _logger.LogWarning("Reference set '{SetCode}' returned {Status}; rendering without options.", setCode, response.StatusCode);
+                return [];
             }
 
-            return [];
+            var payload = await response.Content.ReadFromJsonAsync<GatewayResponse<PublishedValuesModel>>(_jsonOptions);
+            var items = payload?.Data?.Items;
+            if (items is null)
+                return [];
+
+            return items
+                .Where(x => x.IsActive && !string.IsNullOrWhiteSpace(x.Value))
+                .OrderBy(x => x.SortOrder)
+                .Select(x => new ReferenceOptionViewModel(x.Value!, string.IsNullOrWhiteSpace(x.Text) ? x.Value! : x.Text!))
+                .ToList();
         }
         catch (Exception ex)
         {

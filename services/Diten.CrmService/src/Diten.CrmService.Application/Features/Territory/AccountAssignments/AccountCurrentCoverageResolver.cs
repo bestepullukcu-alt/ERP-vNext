@@ -76,6 +76,24 @@ public static class AccountCurrentCoverageResolver
             .ToHashSet();
     }
 
+    /// <summary>WP-VP-2 (B-2) — like <see cref="ResolveCoveredAccountIdsByNodesAsync"/> but over each node's SUBTREE
+    /// (<see cref="TerritorySubtree"/>: the node + its active descendants in the same model). "İstanbul" thus also finds
+    /// the accounts that were moved down to its districts. The coverage gate is the same shared policy.</summary>
+    public static async Task<HashSet<Guid>> ResolveCoveredAccountIdsBySubtreesAsync(
+        IAccountTerritoryAssignmentRepository assignments,
+        ITerritoryModelRepository models,
+        ITerritoryNodeRepository nodes,
+        Guid tenantId,
+        IReadOnlyCollection<Guid> nodeIds,
+        DateTimeOffset at,
+        CancellationToken cancellationToken)
+    {
+        if (nodeIds is null || nodeIds.Count == 0) return [];
+
+        var expanded = await TerritorySubtree.ExpandAsync(nodes, tenantId, nodeIds, at, cancellationToken);
+        return await ResolveCoveredAccountIdsByNodesAsync(assignments, models, tenantId, expanded, at, cancellationToken);
+    }
+
     /// <summary>Accounts whose CURRENT coverage (both gates pass at <paramref name="at"/>) is on a model with one of
     /// <paramref name="countryScopes"/> — the Accounts-grid Country Scope filter. The owning models are pre-resolved
     /// from the scope, their active assignments narrowed in Mongo by model id, then the shared

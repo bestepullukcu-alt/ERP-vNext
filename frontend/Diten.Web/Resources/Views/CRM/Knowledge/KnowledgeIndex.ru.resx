@@ -190,4 +190,35 @@
   <data name="LinkedClaims" xml:space="preserve"><value>Связанные утверждения</value></data>
   <data name="NoLinkedClaims" xml:space="preserve"><value>К этому материалу не привязаны утверждения.</value></data>
   <data name="ClaimNeedsReview" xml:space="preserve"><value>Требует пересмотра — утверждение изменилось после утверждения этой связи.</value></data>
+  <data name="ContentType_presentation" xml:space="preserve"><value>Презентация</value></data>
+  <data name="ContentType_brochure" xml:space="preserve"><value>Брошюра</value></data>
+  <data name="ContentType_lesson" xml:space="preserve"><value>Урок</value></data>
+  <data name="ContentType_faq" xml:space="preserve"><value>Частые вопросы</value></data>
+  <data name="ContentType_clinical-summary" xml:space="preserve"><value>Клиническое резюме</value></data>
+  <data name="ContentType_objection-handling" xml:space="preserve"><value>Работа с возражениями</value></data>
+  <data name="ContentType_quiz" xml:space="preserve"><value>Тест</value></data>
+  <data name="ContentType_video" xml:space="preserve"><value>Видео</value></data>
+  <data name="ContentType_pdf" xml:space="preserve"><value>Документ PDF</value></data>
+  <data name="ContentType_html-detail" xml:space="preserve"><value>HTML-материал</value></data>
+  <data name="ContentType_sop" xml:space="preserve"><value>Стандартная операционная процедура</value></data>
+  <data name="ContentType_training-material" xml:space="preserve"><value>Учебный материал</value></data>
+  <data name="ContentType_message-script" xml:space="preserve"><value>Сценарий сообщения</value></data>
+  <data name="ContentType_knowledge-article" xml:space="preserve"><value>Статья базы знаний</value></data>
+  <data name="ContentType_assembled-presentation" xml:space="preserve"><value>Собранная презентация</value></data>
+  <data name="ContentStatus_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="ContentStatus_review" xml:space="preserve"><value>На проверке</value></data>
+  <data name="ContentStatus_approved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="ContentStatus_published" xml:space="preserve"><value>Опубликовано</value></data>
+  <data name="ContentStatus_inactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="ContentStatus_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="ContentSource_manual" xml:space="preserve"><value>Вручную</value></data>
+  <data name="ContentSource_campaign" xml:space="preserve"><value>Кампания</value></data>
+  <data name="ContentSource_legacy-import" xml:space="preserve"><value>Импорт из старой системы</value></data>
+  <data name="ContentSource_training" xml:space="preserve"><value>Обучение</value></data>
+  <data name="ContentSource_external" xml:space="preserve"><value>Внешний</value></data>
+  <data name="ContentSource_other" xml:space="preserve"><value>Другое</value></data>
+  <data name="ContentSource_content-studio" xml:space="preserve"><value>Контент-студия</value></data>
+  <data name="ContentConcurrencyConflict" xml:space="preserve"><value>Пока вы редактировали, это содержимое изменил другой пользователь. Перезагрузите страницу и внесите изменения снова.</value></data>
+  <data name="ProductPickerUnavailable" xml:space="preserve"><value>Список продуктов сейчас недоступен.</value></data>
+  <data name="ProductSearchPlaceholder" xml:space="preserve"><value>Введите название или код продукта…</value></data>
 </root>

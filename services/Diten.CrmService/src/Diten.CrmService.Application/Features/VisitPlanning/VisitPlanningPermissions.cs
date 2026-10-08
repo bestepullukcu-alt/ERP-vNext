@@ -23,5 +23,9 @@ public static class VisitPlanningPermissions
     /// <summary>The FU01 key apply/re-plan additionally require, because they write through FU01's aggregate (§14).</summary>
     public const string PlannedVisitManage = "crm.planned-visit.manage";
 
+    /// <summary>WP-VP-2 (B-1) — Tier-3, EXPLICIT GRANT ONLY: read / preview / apply / re-plan every planning session in
+    /// the tenant and plan for another rep. Without it a caller's sessions are their own; a foreign session answers 404.</summary>
+    public const string ReadAll = "crm.visit-plan.read-all";
+
     public static readonly IReadOnlyList<string> All = new[] { Read, Generate, Apply };
 }

@@ -267,4 +267,51 @@
   <data name="ProductColWeight" xml:space="preserve"><value>Porcentaje</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>Distribuir equitativamente</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>El porcentaje de producto no es 100%. Total calculado {total}% — diferencia de {diff} puntos. Corrija las filas para guardar.</value></data>
+  <data name="ProductColRole" xml:space="preserve"><value>Rol</value></data>
+  <data name="ProductColJourney" xml:space="preserve"><value>Recorrido</value></data>
+  <data name="LineRole_promo" xml:space="preserve"><value>Promo</value></data>
+  <data name="LineRole_non-promo" xml:space="preserve"><value>No promo</value></data>
+  <data name="LineJourneySelect" xml:space="preserve"><value>Seleccione un recorrido…</value></data>
+  <data name="LineJourneyLoading" xml:space="preserve"><value>Cargando recorridos…</value></data>
+  <data name="LineJourneyNotOffered" xml:space="preserve"><value>(no está en la lista)</value></data>
+  <data name="LineNoPublishedJourney" xml:space="preserve"><value>No hay ningún recorrido de interacción publicado para este producto.</value></data>
+  <data name="LineOpenJourneys" xml:space="preserve"><value>Recorridos de interacción ↗</value></data>
+  <data name="LineJourneyFilterUnavailable" xml:space="preserve"><value>No se pudo comprobar aquí la coincidencia con el producto; se comprueba al guardar.</value></data>
+  <data name="LineJourneyMissing" xml:space="preserve"><value>Falta el recorrido: elija el recorrido publicado de este producto.</value></data>
+  <data name="LineJourneyMissingBadge" xml:space="preserve"><value>Falta el recorrido</value></data>
+  <data name="JourneyWarning_journey_language_not_in_country" xml:space="preserve"><value>El idioma del recorrido no es un idioma de contenido del país de la plantilla.</value></data>
+  <data name="JourneyWarning_journey_not_published" xml:space="preserve"><value>El recorrido ya no está publicado.</value></data>
+  <data name="JourneyWarning_journey_not_found" xml:space="preserve"><value>El recorrido ya no se encuentra.</value></data>
+  <data name="JourneyStatus_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="JourneyStatus_review" xml:space="preserve"><value>En revisión</value></data>
+  <data name="JourneyStatus_approved" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="JourneyStatus_published" xml:space="preserve"><value>Publicado</value></data>
+  <data name="JourneyStatus_inactive" xml:space="preserve"><value>Inactivo</value></data>
+  <data name="JourneyStatus_archived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="Err_product_line_role_required" xml:space="preserve"><value>Elija un rol para esta línea de producto (promo / no promo).</value></data>
+  <data name="Err_product_line_role_invalid" xml:space="preserve"><value>El rol solo puede ser promo o no promo.</value></data>
+  <data name="Err_product_line_journey_required" xml:space="preserve"><value>Elija para esta línea el recorrido publicado del producto.</value></data>
+  <data name="Err_journey_not_published" xml:space="preserve"><value>El recorrido elegido no está publicado; elija uno publicado.</value></data>
+  <data name="Err_journey_product_mismatch" xml:space="preserve"><value>El recorrido elegido presenta otro producto; elija el de este producto.</value></data>
+  <data name="Err_content_binding_type_retired" xml:space="preserve"><value>Ya no se puede añadir un vínculo de ruta de conocimiento / recorrido a nivel de plantilla; elija el recorrido en la línea de producto.</value></data>
+  <data name="Err_bindings_frozen" xml:space="preserve"><value>Los vínculos de una plantilla activa están congelados; cree una nueva versión para cambiarlos.</value></data>
+  <data name="RetiredBindingsHelp" xml:space="preserve"><value>Vínculo antiguo: no se usa en la visita; se aplica el recorrido de la línea de producto.</value></data>
+  <data name="RetiredBindingBadge" xml:space="preserve"><value>Vínculo antiguo</value></data>
+  <data name="NoRetiredBindings" xml:space="preserve"><value>No hay vínculos a nivel de plantilla: el contenido procede del recorrido de cada línea de producto.</value></data>
+  <data name="RoleSplitTpl" xml:space="preserve"><value>{promo} promo · {nonpromo} no promo</value></data>
+  <data name="RecipeJourneysTpl" xml:space="preserve"><value>{n} recorridos</value></data>
+  <data name="RetiredBindingsCountTpl" xml:space="preserve"><value>{n} vínculos antiguos</value></data>
+  <data name="LinesWithoutJourneyTpl" xml:space="preserve"><value>{n} líneas sin recorrido</value></data>
+  <data name="SupersededByVersion" xml:space="preserve"><value>Sustituido por v{0}</value></data>
+  <data name="ArchivedSegmentSuffix" xml:space="preserve"><value>(archivado)</value></data>
+  <data name="ActivationBlocked" xml:space="preserve"><value>La activación fue rechazada.</value></data>
+  <data name="ActivationBlocked_segment_not_active" xml:space="preserve"><value>Un segmento vinculado no está activo: active primero el segmento.</value></data>
+  <data name="ActivationBlocked_segment_archived" xml:space="preserve"><value>Un segmento vinculado está archivado: sustitúyalo por un segmento activo.</value></data>
+  <data name="ActivationBlocked_segment_reference_not_found" xml:space="preserve"><value>Un segmento vinculado ya no existe.</value></data>
+  <data name="ActivationBlocked_frequency_policy_not_active" xml:space="preserve"><value>La política de frecuencia de visitas referenciada no está activa.</value></data>
+  <data name="ActivationBlocked_journey_not_published" xml:space="preserve"><value>El recorrido de interacción de una línea de producto no está publicado.</value></data>
+  <data name="ActivationBlocked_journey_product_mismatch" xml:space="preserve"><value>El recorrido de interacción de una línea de producto trata otro producto.</value></data>
+  <data name="ActivationBlocked_product_line_journey_required" xml:space="preserve"><value>Cada línea de producto necesita un recorrido de interacción.</value></data>
+  <data name="ActivationBlocked_content_not_published" xml:space="preserve"><value>Un contenido vinculado no está publicado.</value></data>
+  <data name="ActivationBlocked_content_archived" xml:space="preserve"><value>Un contenido vinculado está archivado.</value></data>
 </root>

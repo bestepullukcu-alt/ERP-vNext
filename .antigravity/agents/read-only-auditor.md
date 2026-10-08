@@ -43,6 +43,10 @@ Tam tanım için [read-only-audit.md](../workflows/read-only-audit.md).
 | 🟡 Medium | Düşük riskli tutarsızlık veya eksik index |
 | ⚪ Low | Kozmetik / ileriye dönük (deferred) temizlik |
 
+## 🧾 Denetim kaydı sorusu (AUD-001)
+
+Bir modülü ya da servisi denetliyorsan rapora tek satır ekle: **"Bu kapsamdaki yazma komutlarının kaçı denetleniyor, kaçı istisna, kaçı borç?"** Sayıyı elle sayma; `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter Inventory --logger "console;verbosity=detailed"` tablosundan al ve MediatR'a uğramayan yazma yollarını ayrıca ara (o tablo onları görmez). Kural: `.antigravity/rules/audit-trail-standard.md`.
+
 ## ✅ Zorunlu Final Doğrulama (No-Change Block — Baseline Karşılaştırması)
 
 Salt-okunur denetim **kasıtlı kirli (dirty)** bir branch üzerinde de çalışabilir. Bu blok, çalışma ağacının boş olmasını değil, durumun **denetim başındaki baseline'dan sapmadığını** kanıtlar.

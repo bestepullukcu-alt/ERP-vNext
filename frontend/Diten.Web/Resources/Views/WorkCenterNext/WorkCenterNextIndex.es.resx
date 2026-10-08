@@ -539,9 +539,6 @@
   <data name="ActResume" xml:space="preserve">
     <value>Reanudar</value>
   </data>
-  <data name="ActLogTime" xml:space="preserve">
-    <value>Registrar tiempo</value>
-  </data>
   <data name="StepBarLabel" xml:space="preserve">
     <value>Ciclo de vida</value>
   </data>
@@ -587,20 +584,8 @@
   <data name="PlanConfirm" xml:space="preserve">
     <value>Establecer fecha</value>
   </data>
-  <data name="LogTimeLabel" xml:space="preserve">
-    <value>Minutos</value>
-  </data>
-  <data name="LogTimePlaceholder" xml:space="preserve">
-    <value>p. ej. 30</value>
-  </data>
-  <data name="LogTimeConfirm" xml:space="preserve">
-    <value>Registrar</value>
-  </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · planificado para {1} (mock)</value>
-  </data>
-  <data name="ToastTimeLogged" xml:space="preserve">
-    <value>{0} registrado (mock)</value>
   </data>
   <data name="ToastSentToReview" xml:space="preserve">
     <value>{0} · enviado a revisión (mock)</value>
@@ -903,9 +888,6 @@
   </data>
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>¿Qué módulo?</value>
-  </data>
-  <data name="LogTimeSubtext" xml:space="preserve">
-    <value>Se suma al tiempo ya registrado en esta tarea; no inicia ni detiene el cronómetro.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>La conexión con el calendario aún no existe: este registro solo aparece en esta pantalla y se pierde al cerrar la página. La fecha límite no cambia.</value>
@@ -2510,5 +2492,26 @@
   </data>
   <data name="TimerStatePaused" xml:space="preserve">
     <value>En pausa</value>
+  </data>
+  <data name="ApprovalAwaitingPositions" xml:space="preserve">
+    <value>Pendiente de aprobación de: {0}</value>
+  </data>
+  <data name="ApprovalNoteLabel" xml:space="preserve">
+    <value>Nota (opcional)</value>
+  </data>
+  <data name="ApprovalNotePlaceholder" xml:space="preserve">
+    <value>Añada una nota para el registro…</value>
+  </data>
+  <data name="ApprovalStepBadgeTitle" xml:space="preserve">
+    <value>Paso de aprobación</value>
+  </data>
+  <data name="DelegateTargetLabel" xml:space="preserve">
+    <value>Delegar en</value>
+  </data>
+  <data name="DelegateTargetRequired" xml:space="preserve">
+    <value>Elija a quién se delega esta aprobación.</value>
+  </data>
+  <data name="DelegateNoEligiblePeople" xml:space="preserve">
+    <value>No hay nadie en quien se pueda delegar esta aprobación.</value>
   </data>
 </root>

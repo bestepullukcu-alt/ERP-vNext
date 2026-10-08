@@ -290,6 +290,12 @@
 .vfp-create-scope .vfp-error.is-shown {
     display: block;
 }
+/* WP-E2E-FIX-3 (E6-B1) — a radio-card group with an error (priority bands / target type): red frame. */
+.vfp-create-scope .vfp-group-invalid {
+    outline: 1px solid var(--bs-danger);
+    outline-offset: 4px;
+    border-radius: 8px;
+}
 .vfp-create-scope .vfp-form-error {
     display: none;
     padding: 10px 12px;

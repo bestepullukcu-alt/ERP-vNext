@@ -28,6 +28,8 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         // MOD-0150 FU07 — provenance actor (CreatedBy/UpdatedBy) resolved from the caller principal, never a payload.
         services.AddScoped<IActorContext, HttpActorContext>();
+        // WP-VP-2 (B-1) — caller resource + permission seam for visit ownership (planned visits, sessions, reports).
+        services.AddScoped<ICallerScope, HttpCallerScope>();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
         services.AddScoped<Application.Features.Territory.ITerritoryLifecycleAuditPublisher,
@@ -71,15 +73,13 @@ public static class DependencyInjection
         services.AddScoped<Application.Features.ConsentPreference.IContactConsentPreferenceReader,
             ConsentPreference.NullContactConsentPreferenceReader>();
 
-        // SCMM-16B (CAND-CAP-0011) — ContentSetRevision render pipeline. The PDF renderer is stateless (singleton). The
-        // artifact store is a typed Gateway client that forwards the caller's token to the MOD-0262-FU01 document
-        // repository (fail-closed: a store failure fails the render). Platform/FU01 is consumed as-is, never modified.
+        // WP-KP-3 — the knowledge path revision archive PDF (PDFsharp/MigraDoc; stateless). WP-KP-4 retired the content
+        // set renderer. The artifact store is a typed Gateway client that forwards the caller's token to the
+        // MOD-0262-FU01 document repository (fail-closed: a store failure fails the render). FU01 is consumed as-is.
         services.AddSingleton<
-            Application.Features.ContentComposition.ContentSetRevisions.Rendering.IContentSetRevisionRenderer,
-            ContentComposition.Rendering.PdfSharpContentSetRevisionRenderer>();
-        services.AddHttpClient<
-            Application.Features.ContentComposition.ContentSetRevisions.Rendering.IContentArtifactStore,
-            ContentComposition.Rendering.HttpContentArtifactStore>();
+            Application.Features.Knowledge.Path.Release.IKnowledgePathRevisionRenderer,
+            ContentComposition.Rendering.PdfSharpKnowledgePathRevisionRenderer>();
+        services.AddHttpClient<Application.Common.Artifacts.IContentArtifactStore, Artifacts.HttpContentArtifactStore>();
 
         // MOD-0167 FU02 - class-X criterion VALUE proof (MDM global product / product / brand) over the Gateway.
         // Deliberately cacheless, 3s budget, one transient retry; 404 makes the rule un-authorable (400) and an
@@ -95,6 +95,10 @@ public static class DependencyInjection
         services.AddHttpClient<
             Application.Features.StrategyTemplate.Binding.IStrategyTemplateProductReferenceValidator,
             StrategyTemplate.MdmStrategyTemplateReferenceValidator>();
+
+        // WP-VP-4G (F4-4) - product NAMES for read models over the same MDM selector the play editor reads; one bulk read
+        // per call, fail-open (no name ⇒ the code is shown; a plan read never fails on it).
+        services.AddHttpClient<Application.Common.IProductNameReader, StrategyTemplate.MdmProductNameReader>();
 
         // MOD-0165 FU07 - the CyclePeriod legal-entity scope. Same fail-closed profile as the working calendar's own
         // validator and MOD-0167 FU02's: cacheless, 3s budget, one transient retry, always through the Gateway. It runs
@@ -128,6 +132,11 @@ public static class DependencyInjection
             Application.Features.CycleCapacity.Read.IWorkingDayCounter,
             CycleCapacity.WorkingCalendarWorkingDayCounter>();
 
+        // WP-VP-FIX-1 - the same door + transport, per-day op is-working-day: the visit planner's non-working days.
+        services.AddHttpClient<
+            Application.Features.CycleCapacity.Read.IWorkingDayChecker,
+            CycleCapacity.WorkingCalendarWorkingDayCounter>();
+
         // MOD-0155 FU06 - the configured capacity defaults (8h day, interim FTE average). Singleton: configuration is
         // read once at startup, and the values are then COPIED onto each new capacity so an old estimate stays
         // reproducible after a setting changes.
@@ -157,6 +166,18 @@ public static class DependencyInjection
             Application.Features.ContentComposition.Claims.IClaimWorkflowClient,
             Workflow.GatewayClaimWorkflowClient>(client => client.Timeout = TimeSpan.FromSeconds(15));
         services.AddScoped<Application.Features.ContentComposition.Claims.ClaimReviewOutcomeApplier>();
+        // WP-KP-2 — knowledge path MLR review: its template / reconcile configuration (Crm:KnowledgePaths:Workflow) and the
+        // decision calls (tasks/mine, approve / reject with comment, history) on the SAME Gateway client (caller's token).
+        services.AddSingleton<
+            Application.Features.Knowledge.Path.Review.IKnowledgePathReviewSettings,
+            Workflow.ConfigurationKnowledgePathReviewSettings>();
+        // WP-KP-5a — the Regulatory round of the safety text / country legal profile (Crm:RegulatoryTexts:Workflow).
+        services.AddSingleton<
+            Application.Features.Knowledge.Regulatory.IRegulatoryTextReviewSettings,
+            Workflow.ConfigurationRegulatoryTextReviewSettings>();
+        services.AddScoped<Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient>(sp =>
+            (Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient)
+            sp.GetRequiredService<Application.Features.ContentComposition.Claims.IClaimWorkflowClient>());
         services.AddScoped<Application.Features.ContentComposition.Claims.ClaimReviewReconciler>();
         AddClaimWorkflowEventing(services, configuration);
 
@@ -176,6 +197,8 @@ public static class DependencyInjection
             Application.Common.IUserDisplayNameResolver,
             Auth.AuthUserDisplayNameClient>();
 
+        // WP-BRD-TENANT-CRM-SETS — set codes the Platform does not list as consumable, remembered per process.
+        services.AddSingleton<ConsumableReferenceSetRouting>();
         services.AddHttpClient<IReferenceDataValidator, GatewayReferenceDataValidator>();
         // MOD-0150 FU04 — the same Gateway validator also reads per-value attributes (relationship-type metadata).
         services.AddScoped<Application.Common.ReferenceValidation.IReferenceMetadataReader>(

@@ -53,8 +53,9 @@ public sealed class AccountKindTests
     // platform.tasks.work-report.read-tenant-wide as the fourth — same treatment.
     // MOD-0280-FU01 D11 (T1a CT prerequisite, 79547b4e3, owner's delegation 2026-09-29) added the two time-entry report keys
     // as the fifth and sixth; this test was left at four until the T3 stop report's full Auth run (2026-09-30).
+    // WP-VP-2 (B-1, 2026-10-06) added crm.planned-visit.read-all and crm.visit-plan.read-all as the seventh and eighth.
     [Fact]
-    public void The_explicit_grant_only_set_is_exactly_the_six_owner_decided_keys()
+    public void The_explicit_grant_only_set_is_exactly_the_eight_owner_decided_keys()
     {
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.account-kind.manage"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("AUTH.USERS.ACCOUNT-KIND.MANAGE")); // case-insensitive, like the catalog
@@ -63,7 +64,9 @@ public sealed class AccountKindTests
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("platform.tasks.work-report.read-tenant-wide"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("time-entry.team-totals.read"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("time-entry.person-reports.read"));
-        Assert.Equal(6, ExplicitGrantOnlyPermissions.Keys.Count);
+        Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("crm.planned-visit.read-all"));
+        Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("crm.visit-plan.read-all"));
+        Assert.Equal(8, ExplicitGrantOnlyPermissions.Keys.Count);
         Assert.False(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.lookup")); // lookup is an ORDINARY tenant key
     }
 

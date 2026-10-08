@@ -178,7 +178,8 @@ public sealed class LskuRegisterMongoTests
             var client = new MongoClient(settings);
             var databaseName = "diten_lsku_register_" + Guid.NewGuid().ToString("N");
             var database = client.GetDatabase(databaseName);
-            await database.RunCommandAsync<object>("{ ping: 1 }");
+            // A replica set's reply carries BSON Timestamps ($clusterTime); read as `object` it throws (BL-482).
+            await database.RunCommandAsync<MongoDB.Bson.BsonDocument>("{ ping: 1 }");
             return new(client, database, databaseName);
         }
 

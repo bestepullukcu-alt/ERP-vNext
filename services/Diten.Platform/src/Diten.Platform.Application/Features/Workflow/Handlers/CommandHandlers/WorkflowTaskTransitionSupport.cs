@@ -336,7 +336,10 @@ internal sealed class WorkflowTaskTransitionSupport
         CancellationToken ct)
     {
         actorId = actorId.Trim();
-        delegatePrincipalId = delegatePrincipalId.Trim();
+        // BL-491 — every later gate compares principals letter for letter, so a user id written in another spelling
+        // (upper case, braces, no dashes) would pass the "not yourself" check below and then leave the task with a
+        // principal nobody's token ever matches. A user id is kept in ONE spelling; any other principal is untouched.
+        delegatePrincipalId = CanonicalPrincipal(delegatePrincipalId.Trim());
         reasonCode = reasonCode.Trim();
         idempotencyKey = idempotencyKey.Trim();
 
@@ -376,6 +379,18 @@ internal sealed class WorkflowTaskTransitionSupport
         if (!string.Equals(snapshot.ResolvedPrincipalId, actorId, StringComparison.Ordinal))
         {
             return ActorDenied(correlationId);
+        }
+
+        // BL-491 — the approve gate refuses the starter (SOD_VIOLATION), so a task delegated TO the starter would sit
+        // with the one person who can never approve it. The same rule, at the gate that would create that lock —
+        // asked after the assignment check, so somebody the task is not with learns nothing about who started it.
+        if (IsStarter(instance, delegatePrincipalId))
+        {
+            return Response<WorkflowTaskTransitionResponse>.Fail(
+                "A workflow task cannot be delegated to the person who started the workflow.",
+                409,
+                WorkflowReasonCodes.SodViolation,
+                correlationId);
         }
 
         var previousTaskStatus = task.Status;
@@ -757,6 +772,11 @@ internal sealed class WorkflowTaskTransitionSupport
 
     private static bool IsOpen(ApprovalTask task) =>
         task.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence;
+
+    /// <summary>A principal that is a user id, in the one spelling tokens and snapshots carry it; anything else as given.</summary>
+    internal static string CanonicalPrincipal(string principalId) =>
+        Guid.TryParse(principalId, out var userId) ? userId.ToString() : principalId;
+
 
     /// <summary>
     /// B2 — did <paramref name="actorId"/> start this instance? Decided by the starter's USER ID when the instance has

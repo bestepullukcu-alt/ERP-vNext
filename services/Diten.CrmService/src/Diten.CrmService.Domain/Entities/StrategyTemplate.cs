@@ -281,8 +281,26 @@ public sealed class StrategyTemplateProductLine
 
     public string? Notes { get; set; }
 
+    /// <summary>WP-SB-3a (DESIGN-SB-3 §3.1) — how the product is told in the visit: <see cref="StrategyProductLineRoles"/>
+    /// <c>promo</c> or <c>non-promo</c>. Required on a new write; a line written before SB-3a has none and reads as
+    /// <c>promo</c> (every line was promoted until then) — see <see cref="EffectiveRole"/>. Never backfilled.</summary>
+    public string? Role { get; set; }
+
+    /// <summary>WP-SB-3a — the product's PUBLISHED <c>ContentEngagementJourney</c> (its subject's primary global product
+    /// is this line's <see cref="GlobalProductId"/>). Required on a new write; null on a pre-SB-3a line (read as
+    /// "journey missing"). It replaces the retired template-level journey binding.</summary>
+    public Guid? JourneyId { get; set; }
+
+    /// <summary>Display only: the journey's <c>JourneyCode</c>, stamped by the binding validator from the journey.</summary>
+    public string? JourneyCodeDisplay { get; set; }
+
     public bool IsSkuAllocated()
         => string.Equals(SkuAllocationMode, StrategySkuAllocationModes.SkuAllocated, StringComparison.Ordinal);
+
+    /// <summary>The role a reader applies: the stored role, or <c>promo</c> for a pre-SB-3a line.</summary>
+    public string EffectiveRole() => StrategyProductLineRoles.IsValid(Role)
+        ? StrategyProductLineRoles.Normalize(Role)!
+        : StrategyProductLineRoles.Promo;
 }
 
 /// <summary>

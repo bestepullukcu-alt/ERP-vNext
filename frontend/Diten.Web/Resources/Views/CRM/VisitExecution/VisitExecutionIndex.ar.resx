@@ -4,7 +4,7 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="PageTitle" xml:space="preserve"><value>تقرير الزيارة</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>تنفيذ الزيارات</value></data>
   <data name="PageDescription" xml:space="preserve"><value>سجّل ما حدث فعلاً — ضع علامة على كل زيارة مخطّطة بأنها مكتملة أو فائتة أو معاد جدولتها، وقدّم تقرير الزيارة غير القابل للتعديل.</value></data>
   <data name="ExecutionNotice" xml:space="preserve"><value>هذا تقويم التنفيذ. يسجّل النتائج والتقارير؛ لا ينشئ أي خطة ولا يقدّم مرحلة المحتوى — المرحلة الفعلية التي تسجّلها هنا هي ما تقرأه الدورة التالية.</value></data>
   <data name="View" xml:space="preserve"><value>العرض</value></data>
@@ -16,13 +16,10 @@
   <data name="Refresh" xml:space="preserve"><value>تحديث</value></data>
   <data name="NoVisits" xml:space="preserve"><value>لا توجد زيارات مخطّطة في هذه الفترة.</value></data>
   <data name="ReportTitle" xml:space="preserve"><value>تقرير الزيارة</value></data>
-  <data name="PlannedContent" xml:space="preserve"><value>المحتوى المخطّط (FU04)</value></data>
+  <data name="PlannedContent" xml:space="preserve"><value>المحتوى المخطط</value></data>
   <data name="ActualStage" xml:space="preserve"><value>المرحلة الفعلية المقدَّمة</value></data>
-  <data name="StageIndex" xml:space="preserve"><value>المرحلة #</value></data>
-  <data name="MatchedPlan" xml:space="preserve"><value>مطابقة للمرحلة المخطّطة</value></data>
   <data name="OutcomeCode" xml:space="preserve"><value>رمز النتيجة</value></data>
   <data name="OutcomeCodePlaceholder" xml:space="preserve"><value>مثال positive</value></data>
-  <data name="ReferenceDataHint" xml:space="preserve"><value>رموز النتائج تأتي من البيانات المرجعية.</value></data>
   <data name="DoctorFeedback" xml:space="preserve"><value>ملاحظات الطبيب</value></data>
   <data name="Samples" xml:space="preserve"><value>العيّنات / المواد المُسلَّمة</value></data>
   <data name="AddSample" xml:space="preserve"><value>إضافة عيّنة</value></data>
@@ -49,4 +46,37 @@
   <data name="Quantity" xml:space="preserve"><value>الكمية</value></data>
   <data name="ItemType" xml:space="preserve"><value>نوع العنصر</value></data>
   <data name="Remove" xml:space="preserve"><value>إزالة</value></data>
+  <data name="NoPlannedContent" xml:space="preserve"><value>لا يوجد محتوى مخطط لهذه الزيارة.</value></data>
+  <data name="StageFallback" xml:space="preserve"><value>المرحلة {0}</value></data>
+  <data name="PlannedStageSuffix" xml:space="preserve"><value>(المخطط)</value></data>
+  <data name="StageNotPresented" xml:space="preserve"><value>لم يتم تقديم المرحلة المخططة</value></data>
+  <data name="StageMatchesPlan" xml:space="preserve"><value>مطابق للخطة.</value></data>
+  <data name="StageDiffersFromPlan" xml:space="preserve"><value>يختلف عن الخطة.</value></data>
+  <data name="NotYetDueHint" xml:space="preserve"><value>لم يحن يوم الزيارة بعد</value></data>
+  <data name="ConfirmCompleted" xml:space="preserve"><value>هل تريد وضع علامة على هذه الزيارة كمكتملة؟</value></data>
+  <data name="ConfirmCompletedButton" xml:space="preserve"><value>نعم، مكتملة</value></data>
+  <data name="OutcomeCompleted" xml:space="preserve"><value>مكتملة</value></data>
+  <data name="OutcomeMissed" xml:space="preserve"><value>فائتة</value></data>
+  <data name="OutcomeRescheduled" xml:space="preserve"><value>أعيدت جدولتها</value></data>
+  <data name="OutcomeCodeHint" xml:space="preserve"><value>نص حر: رمز نتيجة قصير (لا توجد قائمة مرجعية بعد).</value></data>
+  <data name="ErrOutcomeCodeRequired" xml:space="preserve"><value>أدخل رمز النتيجة.</value></data>
+  <data name="ErrNotYetDue" xml:space="preserve"><value>لم يحن يوم الزيارة بعد؛ لا يمكن إكمالها أو الإبلاغ عنها قبل ذلك.</value></data>
+  <data name="ErrPlannedVisitRequired" xml:space="preserve"><value>لم يتم اختيار زيارة مخططة.</value></data>
+  <data name="ErrPlannedVisitNotFound" xml:space="preserve"><value>لم يتم العثور على الزيارة المخططة.</value></data>
+  <data name="ErrOutcomeRequired" xml:space="preserve"><value>اختر نتيجة.</value></data>
+  <data name="ErrReasonCodeRequired" xml:space="preserve"><value>رمز السبب مطلوب للزيارة الفائتة أو المعاد جدولتها.</value></data>
+  <data name="ErrRescheduleDateInvalid" xml:space="preserve"><value>أدخل التاريخ الجديد بالصيغة yyyy-MM-dd.</value></data>
+  <data name="ErrResourceRequired" xml:space="preserve"><value>المندوب المُبلِّغ مفقود.</value></data>
+  <data name="ErrSampleInvalid" xml:space="preserve"><value>تحقق من العينات: يجب أن يكون لكل منها نوع وكمية صالحة.</value></data>
+  <data name="ErrContentActualsInvalid" xml:space="preserve"><value>المرحلة المقدمة غير صالحة.</value></data>
+  <data name="ErrFreeTextTooLong" xml:space="preserve"><value>أحد حقول النص طويل جدًا.</value></data>
+  <data name="ErrReportNotFound" xml:space="preserve"><value>لم يتم العثور على التقرير.</value></data>
+  <data name="ErrReportAlreadyExists" xml:space="preserve"><value>يوجد تقرير لهذه الزيارة بالفعل.</value></data>
+  <data name="ErrNotCompleted" xml:space="preserve"><value>لا يمكن الإبلاغ إلا عن زيارة مكتملة.</value></data>
+  <data name="ErrEditWindowClosed" xml:space="preserve"><value>انتهت مهلة التصحيح؛ قدّم تعديلًا بدلًا من ذلك.</value></data>
+  <data name="ErrNotFinalised" xml:space="preserve"><value>لم يتم إرسال التقرير بعد.</value></data>
+  <data name="ErrAmendmentReasonRequired" xml:space="preserve"><value>أدخل سبب التعديل.</value></data>
+  <data name="ErrInvalidTransition" xml:space="preserve"><value>هذا التغيير غير مسموح به في الحالة الحالية للتقرير.</value></data>
+  <data name="ErrConcurrencyConflict" xml:space="preserve"><value>تغيّر التقرير في هذه الأثناء. أعد التحميل وحاول مرة أخرى.</value></data>
+  <data name="ErrUnsupportedValue" xml:space="preserve"><value>إحدى القيم المحددة غير مدعومة.</value></data>
 </root>

@@ -78,6 +78,15 @@ public sealed class KnowledgeContentRepository : IKnowledgeContentRepository
         var filter = Builders<KnowledgeContent>.Filter.Where(c => c.Id == content.Id && c.TenantId == content.TenantId);
         await _collection.ReplaceOneAsync(filter, content, cancellationToken: cancellationToken);
     }
+
+    public async Task<bool> ReplaceAsync(KnowledgeContent content, int expectedVersion, CancellationToken cancellationToken)
+    {
+        var result = await _collection.ReplaceOneAsync(
+            Builders<KnowledgeContent>.Filter.Where(
+                c => c.Id == content.Id && c.TenantId == content.TenantId && c.Version == expectedVersion),
+            content, cancellationToken: cancellationToken);
+        return result.IsAcknowledged && result.MatchedCount == 1;
+    }
 }
 
 /// <summary>MOD-0162 FU02 subject taxonomy persistence. Same rules as <see cref="KnowledgeContentRepository"/>.</summary>

@@ -79,7 +79,7 @@
   <data name="RecordCreated" xml:space="preserve"><value>Record created.</value></data>
   <data name="RecordUpdated" xml:space="preserve"><value>Record updated.</value></data>
   <data name="Repeatable" xml:space="preserve"><value>Repeatable</value></data>
-  <data name="Repeated" xml:space="preserve"><value>Repeated</value></data>
+  <data name="Repeated" xml:space="preserve"><value>Path repeat</value></data>
   <data name="RequiredStageCount" xml:space="preserve"><value>Required Stages</value></data>
   <data name="Reset" xml:space="preserve"><value>Reset</value></data>
   <data name="Resolved" xml:space="preserve"><value>Resolved</value></data>
@@ -108,4 +108,10 @@
   <data name="UpdatedAt" xml:space="preserve"><value>Updated</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>View Details</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="RepeatedHint" xml:space="preserve"><value>This path is also used in another stage</value></data>
+  <data name="PathListAllSubjectsNote" xml:space="preserve"><value>This journey has no subject, so every published path is listed.</value></data>
+  <data name="Err_content_engagement_journey_no_required_stage" xml:space="preserve"><value>The journey cannot be published: it needs at least one active required stage. Turn on “Required” for a stage.</value></data>
+  <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>Another published version of this journey code (same language) already covers these dates. Change the effective dates or archive the other version.</value></data>
+  <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>An archived journey cannot be published.</value></data>
+  <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>The journey was changed by someone else in the meantime. Reload the page and try again.</value></data>
 </root>

@@ -508,6 +508,15 @@ public static class DataSeeder
             new("crm", "knowledge.path", "read", "CRM Knowledge Path Read", "Permission to view SCMM knowledge paths and the path contract", moduleOverride: "crm-knowledge"),
             new("crm", "knowledge.path", "manage", "CRM Knowledge Path Manage", "Permission to author SCMM knowledge paths and their steps", moduleOverride: "crm-knowledge"),
             new("crm", "knowledge.path", "publish", "CRM Knowledge Path Publish", "Permission to publish SCMM knowledge paths (freezes the step set)", moduleOverride: "crm-knowledge"),
+            // WP-KP-5a — Regulatory-approved master texts of the page designer (safety text per product x country x
+            // language, country legal profile per country x language). Tenant-scoped (module "crm-knowledge"). Approval
+            // itself is a MOD-0023 task (Regulatory positions), not a CRM key. Catalog only: role grants are KP-5a-CFG.
+            new("crm", "safety-text", "read", "CRM Safety Text Read", "Permission to view product safety texts (per country and language) and their approval history", moduleOverride: "crm-knowledge"),
+            new("crm", "safety-text", "manage", "CRM Safety Text Manage", "Permission to author draft product safety texts, start a new version and archive", moduleOverride: "crm-knowledge"),
+            new("crm", "safety-text", "submit", "CRM Safety Text Submit", "Permission to send a safety text draft for Regulatory approval and withdraw it", moduleOverride: "crm-knowledge"),
+            new("crm", "country-legal-profile", "read", "CRM Country Legal Profile Read", "Permission to view country legal profiles (legal footer, MAH, adverse event text) and their approval history", moduleOverride: "crm-knowledge"),
+            new("crm", "country-legal-profile", "manage", "CRM Country Legal Profile Manage", "Permission to author draft country legal profiles, start a new version and archive", moduleOverride: "crm-knowledge"),
+            new("crm", "country-legal-profile", "submit", "CRM Country Legal Profile Submit", "Permission to send a country legal profile draft for Regulatory approval and withdraw it", moduleOverride: "crm-knowledge"),
 
             // SCMM-12-API (CAND-CAP-0011) — Claim HTTP surface. Tenant-scoped keys (module code "crm-content-composition"
             // ∉ PlatformAdminModules → Scope=Tenant). Canonical crm.claim.* keys for the ContentComposition claim console.
@@ -517,10 +526,10 @@ public static class DataSeeder
 
             // SCMM-14 (CAND-CAP-0011) — ContentScope + ContentSet (assembly) HTTP surface. Tenant-scoped keys (same
             // module code "crm-content-composition" ∉ PlatformAdminModules → Scope=Tenant).
-            new("crm", "content-scope", "read", "CRM Content Scope Read", "Permission to view SCMM content scopes", moduleOverride: "crm-content-composition"),
-            new("crm", "content-scope", "manage", "CRM Content Scope Manage", "Permission to create/update/archive SCMM content scopes", moduleOverride: "crm-content-composition"),
-            new("crm", "content-set", "read", "CRM Content Set Read", "Permission to view SCMM content-set assembly drafts", moduleOverride: "crm-content-composition"),
-            new("crm", "content-set", "manage", "CRM Content Set Manage", "Permission to author SCMM content-set drafts (create/clone/arrange/apply-eligibility/archive)", moduleOverride: "crm-content-composition"),
+            new("crm", "content-scope", "read", "CRM Content Scope Read (deprecated)", "Deprecated (WP-SB-1R): the ContentScope is retired; kept so existing role grants stay intact. Read-only scope API only.", moduleOverride: "crm-content-composition"),
+            new("crm", "content-scope", "manage", "CRM Content Scope Manage (deprecated)", "Deprecated (WP-SB-1R): the ContentScope is retired and has no write endpoint any more; kept so existing role grants stay intact.", moduleOverride: "crm-content-composition"),
+            new("crm", "content-set", "read", "CRM Content Set Read (deprecated)", "Deprecated (WP-KP-4): the content set is retired (the Knowledge Path Studio took its job); kept so existing role grants stay intact. Read-only access to old content sets and revisions only.", moduleOverride: "crm-content-composition"),
+            new("crm", "content-set", "manage", "CRM Content Set Manage (deprecated)", "Deprecated (WP-KP-4): the content set is retired and has no write endpoint any more; kept so existing role grants stay intact.", moduleOverride: "crm-content-composition"),
 
             // SCMM-11-follow-API (CAND-CAP-0011) — eligibility policy authoring + evaluate HTTP surface. evaluate is a
             // SEPARATE key from manage (author-vs-evaluator SoD).
@@ -534,6 +543,11 @@ public static class DataSeeder
             new("crm", "planned-visit", "read", "CRM Planned Visit Read", "Permission to view CRM planned visits and the planned-visit contract", moduleOverride: "crm-planned-visit"),
             new("crm", "planned-visit", "manage", "CRM Planned Visit Manage", "Permission to create/update/cancel/archive CRM planned visits", moduleOverride: "crm-planned-visit"),
             new("crm", "planned-visit", "confirm", "CRM Planned Visit Confirm", "Permission to confirm CRM planned visits (separate from manage for SoD)", moduleOverride: "crm-planned-visit"),
+            // WP-VP-2 (B-1) — Tier-3 tenant-wide reads of the visit features. EXPLICIT-GRANT-ONLY
+            // (ExplicitGrantOnlyPermissions): seeded into the catalog so an authorized person can assign them, granted to
+            // NO role here or by any automatic path. Without them a rep sees only their own visits, plans and reports.
+            new("crm", "planned-visit", "read-all", "CRM Planned Visit Read All", "Permission to read every planned visit and visit report in the tenant and act on them with the existing write permissions (explicit grant only; never granted automatically)", moduleOverride: "crm-planned-visit"),
+            new("crm", "visit-plan", "read-all", "CRM Visit Plan Read All", "Permission to read, preview, apply and re-plan every visit planning session in the tenant and plan for another representative (explicit grant only; never granted automatically)", moduleOverride: "crm-visit-plan"),
 
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),

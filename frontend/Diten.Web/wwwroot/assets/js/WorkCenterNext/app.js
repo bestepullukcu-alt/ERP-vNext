@@ -170,6 +170,8 @@
         // The row just added, so the reader can see WHERE it landed. Cleared after one paint — a permanent
         // highlight would become another status colour nobody declared.
         flashSubtaskId: null,
+        // REQ-WCN-01 (W-4) — the item whose successful decision is being re-read (see renderUnsafe's detail branch).
+        settlingDecisionId: null,
         /*
          * WHICH CAPPED LISTS THE READER HAS OPENED, by list key ('subtasks' | 'activity').
          *
@@ -1613,6 +1615,26 @@
     const sourceTitle = (item) => [item.sourceModuleId, item.sourceModuleName, item.sourceObjectType]
         .filter(Boolean).join(' · ');
 
+    /*
+     * REQ-WCN-01 (W-1) — WHICH STEP of the approval this is, as a BADGE beside the title on the row and on the detail
+     * page. Never part of the title itself: the title is what is being decided, the step is where the decision
+     * stands. An item whose provider names no step draws nothing.
+     */
+    const stepBadge = (item) => (item && item.stepNameText
+        ? `<span class="wcn-badge wcn-badge-secondary" data-wcn-step-badge title="${esc(t('ApprovalStepBadgeTitle'))}">${esc(item.stepNameText)}</span>`
+        : '');
+
+    /*
+     * REQ-WCN-01 (W-3) — WHO an approval is waiting on when nobody is named directly: the step's candidate positions,
+     * by NAME. One whole sentence from the resource table ("Onay bekleyen: {0}"); the names are a plain list — no
+     * "and"/"or" is composed here, because which of the two it is belongs to MOD-0023, not to this sentence. Empty
+     * when the projection carries none — the caller then keeps today's "unassigned" word.
+     */
+    const awaitingPositionsText = (item) => {
+        const names = (item && item.candidatePositionNames) || [];
+        return names.length ? tf('ApprovalAwaitingPositions', names.join(', ')) : '';
+    };
+
     const rowChips = (item) => [
         chip('module', 'bx-cube', item.sourceModule, sourceTitle(item)),
         chip('type', item.typeIcon, typeLabel(item)),
@@ -1771,6 +1793,7 @@
                 <div class="wcn-row-top">
                     ${item.isUnread ? '<span class="wcn-row-unread-dot" aria-hidden="true"></span>' : ''}
                     <span class="wcn-row-title">${esc(item.title)}</span>
+                    ${stepBadge(item)}
                     ${onBehalfBadge}
                     ${inbox ? '' : `<span class="wcn-badge wcn-badge-${STATUS_KIND[displayStatus(item)]}">${esc(statusLabel(item))}</span>`}
                 </div>
@@ -1788,8 +1811,8 @@
      * action two pictures — measured: the rail drew `bx-user-pin` for "Yeniden ata" while the dialog it opened
      * drew a speech bubble. If an action has no entry here, ADD IT HERE; do not work around it at a call site.
      *
-     * `logTime` and `requestInfo` were added for exactly that reason: both open a dialog, neither was listed,
-     * and both would otherwise have fallen through to the generic arrow.
+     * `requestInfo` was added for exactly that reason: it opens a dialog, was not listed, and would otherwise
+     * have fallen through to the generic arrow.
      */
     /*
      * ⚠ THE MAP DECIDES, NEVER THE CALL SITE. A glyph chosen where the button is drawn is how one action ends
@@ -1811,7 +1834,7 @@
         inquire: 'bx-question-mark', requestInfo: 'bx-question-mark',
         // BL-439 — the other half of `inquire`: the addressee replies.
         answer: 'bx-reply',
-        reassign: 'bx-user-pin', plan: 'bx-calendar-plus', logTime: 'bx-time-five',
+        reassign: 'bx-user-pin', plan: 'bx-calendar-plus',
         scheduleReviewMeeting: 'bx-calendar-event',
         /*
          * ── THE LIFECYCLE VERBS (2026-08-25, BL-245) ────────────────────────────────────────────────────
@@ -2510,15 +2533,18 @@
         const all = itemActions(item);
         const actions = all.filter((a) => {
             /*
-             * ⚠ "Süre gir" IS DRAWN BY THE TIMESHEET CARD, NOT HERE (2026-08-24, Tur B). It is a personal
-             * measurement, not a lifecycle move — it changes no state — so standing it beside Complete and
-             * Pause misfiled it. The card owns it now; leaving it in both places would be one action with two
-             * homes, which is how the two drift.
+             * BL-486 — THE TIMER IS DRAWN BY THE TIME CARD, NOT HERE. Start / Stop is a measurement, not a
+             * lifecycle move, and the card paints it beside the figures it changes; the rail and the narrow bar's
+             * ··· menu repeated the same button. Only where the card is actually drawn: a surface without the card
+             * keeps the action, or it would have no home at all.
              *
-             * ⚠ THE ACTION ITSELF IS UNTOUCHED: same projection entry, same key, same handler, same dialog.
-             * Only where the button is painted moved.
+             * KNOWN AND ACCEPTED: the card lives on the "Genel" tab, so on "Etkinlik" the timer is one tab away.
+             * Manual time entry has been on the card alone since Tur B for the same reason — time is a measurement,
+             * not a gate. (A tab switch does not re-render, so the rail cannot take the button back per tab.)
+             *
+             * The action itself is untouched: same projection entry, same key, same dispatch.
              */
-            if (a.key === 'logTime') { return false; }
+            if (TIMER_ACTION_KEYS.includes(a.key) && timeCardDrawn(item)) { return false; }
             if (!a.disabled || a.disabledReason) { return true; }
             if (!reportedUnexplainedActions.has(a.code)) {
                 reportedUnexplainedActions.add(a.code);
@@ -3121,7 +3147,10 @@
          * until somebody notices. It says so in a word rather than with a dash, because "—" reads as "not
          * recorded" and this is recorded: it is recorded as nobody.
          */
-        const assignee = field('bx-user', 'DetailAssignee', item.assignee || t('SummaryUnassigned'),
+        // REQ-WCN-01 (W-3) — an approval nobody is named on says WHICH POSITIONS it waits for, when the projection
+        // knows. Without them the word stays "unassigned", exactly as before.
+        const assignee = field('bx-user', 'DetailAssignee',
+            item.assignee || awaitingPositionsText(item) || t('SummaryUnassigned'),
             item.assignee ? '' : 'backbone-preview-field-muted');
 
         /*
@@ -4588,11 +4617,15 @@
 
     // The time card (task only). Drawn only where the provider declares timeTracking — a confident zero on a task
     // whose time is not tracked would read as "nobody worked on this".
+    // ONE answer to "is the time card on this page", read by the card AND by actionTiers (which leaves the timer
+    // to the card only where there is one).
+    const timeCardDrawn = (item) => hasCap(item, 'timeTracking')
+        && item.itemType === 'task' && item.lifecycle !== 'PendingAcceptance'
+        && !!timeEntriesOf(item);
+
     const renderTimesheet = (item) => {
-        if (!hasCap(item, 'timeTracking')) { return ''; }
-        if (item.itemType !== 'task' || item.lifecycle === 'PendingAcceptance') { return ''; }
+        if (!timeCardDrawn(item)) { return ''; }
         const te = timeEntriesOf(item);
-        if (!te) { return ''; }
         const figure = (value, labelKey, cls) => `<span class="wcn-ts-figure ${cls}">
                 <span class="wcn-ts-total">${esc(formatMinutes(value))}</span>
                 <span class="wcn-ts-sub">${esc(t(labelKey))}</span>
@@ -4605,17 +4638,20 @@
         const timerButtons = itemActions(item)
             .filter((a) => TIMER_ACTION_KEYS.includes(a.key))
             .map((a) => `<button type="button" class="btn btn-sm ${a.key === 'stopTimer' ? 'btn-label-danger' : 'btn-label-primary'} wcn-ts-timer"
-                       data-wcn-action="${esc(a.key)}" data-wcn-id="${esc(item.id)}"${a.disabled ? ' disabled' : ''}>
+                       data-wcn-action="${esc(a.key)}" data-wcn-id="${esc(item.id)}"${a.disabled ? ' disabled' : ''}${
+                           actionReasonId(item, a) ? ` aria-describedby="${esc(actionReasonId(item, a))}"` : ''}>
                     <i class="bx ${inboxActionIcon(a)} me-1"></i>${esc(actionLabel(a))}
                </button>`)
             .join('');
-        const logAction = itemActions(item).find((a) => a.key === 'logTime' && !a.disabled);
-        const logButton = logAction
-            ? `<button type="button" class="btn btn-sm btn-label-secondary wcn-ts-log"
-                       data-wcn-action="${esc(logAction.key)}" data-wcn-id="${esc(item.id)}">
-                    <i class="bx ${inboxActionIcon(logAction)} me-1"></i>${esc(actionLabel(logAction))}
-               </button>`
-            : '';
+        /*
+         * BL-486 — the rail leaves the timer to this card, so the card owes what the rail said: WHY a dimmed
+         * button is dimmed. The shared sentence (`actionReasonNote`), not a second one — a button that sits
+         * disabled and says nothing is the defect BL-208 closed on the narrow bar.
+         */
+        const timerReasons = itemActions(item)
+            .filter((a) => TIMER_ACTION_KEYS.includes(a.key))
+            .map((a) => actionReasonNote(item, a))
+            .join('');
         // The running line is the SERVER's timer state for this reader (D2, §19.2); a paused TASK (Waiting, PendingReview
         // — ResolveExecutionState) still says so, because that state is real even though nothing pauses a timer.
         const stateKey = item.timerState === 'running' ? 'TimerRunningNow'
@@ -4635,9 +4671,9 @@
             ${runningLine}
             <div class="wcn-ts-actions">
                 ${timerButtons}
-                ${logButton}
                 <a class="btn btn-sm btn-text-secondary wcn-ts-sheet" href="/TimeEntry">${esc(t('OpenMyTimesheet'))}</a>
             </div>
+            ${timerReasons}
         </div>`;
     };
 
@@ -5558,9 +5594,15 @@
          *    and the breadcrumb's Task Center link additionally restores the list AS THE USER LEFT IT (tab,
          *    segment, filters). Two controls, one destination, one of them worse — so only the breadcrumb stays.
          */
+        // REQ-WCN-01 (W-1) — the step badge sits BESIDE the heading, never inside it: the heading stays the task's
+        // name and nothing else. Without a step the heading is drawn exactly as before.
+        const heading = `<h5 class="mb-0">${esc(item.title)}</h5>`;
+        const headingWithStep = stepBadge(item)
+            ? `<div class="d-flex align-items-center flex-wrap gap-2">${heading}${stepBadge(item)}</div>`
+            : heading;
         const pageHeader = `<div class="d-flex align-items-center justify-content-between mb-3">
             <div>
-                <h5 class="mb-0">${esc(item.title)}</h5>
+                ${headingWithStep}
                 <nav aria-label="${esc(t('BreadcrumbLabel'))}">
                     <ol class="breadcrumb mb-0">
                         <li class="breadcrumb-item"><a href="${esc(listReturnUrl())}">${esc(t('Title'))}</a></li>
@@ -6646,10 +6688,11 @@
             // The block's mark comes back with the feed re-read below (BL-471); only the toasts are this answer's.
             await refreshCalendar();
             /*
-             * …but a TOAST is markup: showToast (Notyf) writes its message as innerHTML. A task or meeting title is
-             * text somebody typed, so every title that reaches a toast is escaped first (v2 F5).
+             * A task or meeting title is text somebody typed. The shared toast turns its whole message into text at
+             * its own door (BL-493, _GlobalNotification.cshtml), so the titles go in AS TYPED — escaping here too
+             * would put `&lt;` and `&amp;` on the reader's screen. (v2 F5 used to escape at each call site.)
              */
-            toast(tf('CalPlanSaved', esc(item.title)));
+            toast(tf('CalPlanSaved', item.title));
             /*
              * WP-UI-MEETINGS-CALENDAR-01 (D2) — a cut block with NO estimate has nothing "left": the engine answers
              * `remainingMinutes: null`, and "0 min left" (measured live) said something false. Only an estimate
@@ -6659,14 +6702,14 @@
                 toast(data.remainingMinutes == null ? t('CalTruncatedNoEstimate') : tf('CalTruncated', data.remainingMinutes), 'warning');
             }
             warnings
-                .map((w) => global.TasksApi?.planWarningMessage?.(Object.assign({}, w, { title: esc(w.title || '') })) || esc(w.code))
+                .map((w) => global.TasksApi?.planWarningMessage?.(w) || w.code)
                 .forEach((message) => toast(message, 'info'));
             return { outcome: 'done' };
         }
 
         safeRevert(revert);
         if (result.reasonCode === 'TASK_PLAN_CONFLICT' && result.data && result.data.conflict) {
-            toast(tf('CalConflictWith', esc(result.data.conflict.title), conflictRange(result.data.conflict)), 'error');
+            toast(tf('CalConflictWith', result.data.conflict.title, conflictRange(result.data.conflict)), 'error');
             return { outcome: 'refused', reasonCode: result.reasonCode };
         }
         if (global.TasksApi.isConcurrencyConflict(result)) {
@@ -7534,6 +7577,13 @@
             const wasRejectedByContract = !item && Array.isArray(state.contractRejectedErrors)
                 && state.contractRejectedErrors.some((error) => error.fixtureId === requestedId);
             const notFoundKey = wasRejectedByContract ? 'DetailItemRejectedByContract' : 'DetailItemNotFound';
+            /*
+             * REQ-WCN-01 (W-4) — a decision on THIS item is being settled and its re-read came back without it.
+             * The page is about to be left for the list; answering a successful decision with "not found" in the
+             * meantime is the defect. The page stays as it is — submitRealTransition decides what happens next and
+             * clears the mark if the reader is staying after all.
+             */
+            if (!item && !wasRejectedByContract && state.settlingDecisionId === requestedId) { return; }
             root.innerHTML = item
                 ? detailHtml(item)
                 : `<section class="card backbone-preview-section"><div class="wcn-detail-empty"><i class="bx bx-error-circle"></i><p>${esc(t(notFoundKey))}</p><a class="btn btn-label-secondary" href="${esc(listReturnUrl())}">${esc(t('DetailBackToList'))}</a></div></section>`;
@@ -8122,19 +8172,37 @@
          * The body's shape still comes from the vocabulary above, never from a guess at this call site — the
          * server now reads those same field names off one payload and builds the module's DTO itself.
          */
-        const result = await global.WorkCenterNextApi.dispatchAction(
-            item.id,
+        const body = buildTransitionBody(
             action.code,
-            item.source?.providerCode,
-            buildTransitionBody(
-                action.code,
-                { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues }));
+            { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues });
+        // BL-491 — the person an action flagged by the server hands the work to, in the field the dispatcher reads.
+        // Added only for such an action, so every other request is byte for byte what it was.
+        if (action.targetPerson && assigneeUserId) { body.targetPrincipalId = assigneeUserId; }
+        const result = await global.WorkCenterNextApi.dispatchAction(
+            item.id, action.code, item.source?.providerCode, body);
 
         state.submittingItemId = null;
         state.submittingActionCode = null;
 
         if (result.ok) {
+            // W-4 — while the re-read is in flight, a detail page whose item disappears must not draw "not found".
+            state.settlingDecisionId = item.id;
             await loadWorkItems();
+            /*
+             * REQ-WCN-01 (W-4) — THE DECISION TOOK THE ITEM OFF THE BOARD. On the detail page a decided approval is
+             * no longer projected, and re-rendering would answer a successful decision with "not found". The reader
+             * goes back to the list they came from, and the success is said THERE.
+             *
+             * Only when the re-read genuinely answered without the item: a failed read, or an item the contract
+             * refused, stays on this page with its own message. An item that is still projected (a MOD-0024 task)
+             * stays exactly as before.
+             */
+            if (leftTheBoardOnDetail(item)) {
+                rememberFlashToast(tf('ToastActionApplied', label, item.title));
+                global.location.assign(listUrlAfterDecision());
+                return { outcome: 'done' };
+            }
+            state.settlingDecisionId = null;
             render();
             // The task's TITLE, never its id — a GUID means nothing to the person reading the toast.
             toast(tf('ToastActionApplied', label, item.title));
@@ -8319,7 +8387,7 @@
          */
         sharedConfirm({
             title: t('CommentWithdraw'),
-            subtext: `<div class="wcn-confirm-body">${esc(t('CommentWithdrawConfirm'))}</div>`,
+            subtextHtml: `<div class="wcn-confirm-body">${esc(t('CommentWithdrawConfirm'))}</div>`,
             type: 'danger',
             confirmText: t('CommentWithdraw'),
             onConfirm: async () => {
@@ -9299,8 +9367,10 @@
              */
             onCancel: options.onCancel,
             /*
-             * HTML, deliberately: the outcome sentence in front of a confirm is markup the caller already built,
-             * and the wrapper renders `subtext` as HTML for exactly this.
+             * TEXT. The shared confirm writes `subtext` as text (WP-SHARED-CONFIRM-XSS-01): a caller here hands
+             * over its words as they are and never escapes them first — the dialog would then show the entities.
+             * A body this module BUILT as markup (the outcome sentence in front of a confirm) goes through
+             * `subtextHtml` below, and every piece of data inside it is escaped where it is built.
              *
              * ⚠ AN INPUT PROMPT GETS NO GENERIC CONFIRMATION SENTENCE (2026-08-24, owner).
              *
@@ -9313,6 +9383,8 @@
              * bulk confirm and the subtask cancel in this very module still ask whether the reader is sure.
              */
             subtext: options.subtext !== undefined ? options.subtext : (options.input ? '' : undefined),
+            // Markup this module built itself; absent for every dialog that only has words to say.
+            subtextHtml: options.subtextHtml,
             type: options.type || 'info',
             confirmButtonText: options.confirmText,
             /*
@@ -9507,7 +9579,7 @@
         sharedConfirm({
             title: label,
             // What booking it does and does NOT do — the due date is the question a reader actually has here.
-            subtext: esc(subtextText),
+            subtext: subtextText,
             icon: inboxActionIcon(action),
             confirmText: t('PlanConfirm'),
             input: {
@@ -9567,7 +9639,7 @@
         const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
         sharedConfirm({
             title: label,
-            subtext: esc(t('MeetingTypeSubtext')),
+            subtext: t('MeetingTypeSubtext'),
             icon: inboxActionIcon(action),
             confirmText: t('PlanConfirm'),
             input: {
@@ -9580,53 +9652,6 @@
                 if (!meetingTypeId) { resolveOutcome({ outcome: 'cancelled' }); return; }
                 openMeetingDateTimePicker(item, action, label, t('MeetingScheduleSubtext'),
                     (whenStr) => submitReviewMeeting(item, meetingTypeId, whenStr)).then(resolveOutcome);
-            },
-            onCancel: () => resolveOutcome({ outcome: 'cancelled' })
-        });
-        return outcome;
-    };
-
-    // Log time — manual minutes entry into the timesheet (task only).
-    const openLogTime = (item, action) => {
-        const label = actionLabel(action);
-        if (!global.Swal) { return Promise.resolve({ outcome: 'cancelled' }); }
-        let resolveOutcome;
-        const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
-        sharedConfirm({
-            title: label,
-            /*
-             * ITS OWN SENTENCE, saying what the box cannot: that this ADDS to what is already logged and does
-             * not touch the running timer. The generic "are you sure?" it used to wear said nothing at all
-             * above a field asking "how many minutes?".
-             */
-            subtext: esc(t('LogTimeSubtext')),
-            icon: inboxActionIcon(action),
-            confirmText: t('LogTimeConfirm'),
-            input: {
-                type: 'number',
-                label: t('LogTimeLabel'),
-                // Already a real example ("örn. 30"), so it was kept rather than replaced.
-                placeholder: t('LogTimePlaceholder'),
-                // The glyph is painted ON the box, exactly as the date field does it — no wrapper, nothing for
-                // the library's slot walk to trip over.
-                onOpen: (input) => { if (input) { input.classList.add('wcn-time-input'); } },
-                validate: (value) => {
-                    const m = parseInt(value, 10);
-                    return (!m || m <= 0) ? t('LogTimeLabel') : null;
-                }
-            },
-            onConfirm: (value) => {
-                const mins = parseInt(value, 10);
-                if (mins > 0) {
-                    // Showcase only (fixture `logTime`): no local timesheet is kept any more — real time is recorded on
-                    // My Timesheet (MOD-0280-FU01). The dialog stays a showcase of the dialog, nothing more.
-                    item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, atMs: data.referenceDate(item.provenance) });
-                    render();
-                    toast(tf('ToastTimeLogged', formatMinutes(mins)));
-                    resolveOutcome({ outcome: 'done' });
-                } else {
-                    resolveOutcome({ outcome: 'cancelled' });
-                }
             },
             onCancel: () => resolveOutcome({ outcome: 'cancelled' })
         });
@@ -9788,7 +9813,7 @@
          */
         sharedConfirm({
             title: t('SnoozeTitle'),
-            subtext: esc(t('SnoozeSubtext')),
+            subtext: t('SnoozeSubtext'),
             /*
              * A MOON. The dialog's gravity is right as it stands — a plain primary confirmation — but the glyph
              * its type hands out is a question mark, which asks "are you sure?" while this dialog asks "until
@@ -10050,7 +10075,7 @@
         sharedConfirm({
             title: t('NewInSource'),
             // Where the record will LIVE, which is the thing a module picker leaves unsaid.
-            subtext: esc(t('NewInSourceSubtext')),
+            subtext: t('NewInSourceSubtext'),
             icon: 'bx-cube',
             // The button names CREATING, not opening: nothing is opened here any more (see below), and the old
             // 'NewOpenSource' label promised an act this dialog no longer performs.
@@ -10146,12 +10171,21 @@
         }
         if (action.input === 'date') { return openDatePicker(item, action); }
         if (action.input === 'meeting') { return openMeetingScheduler(item, action); }
-        if (action.input === 'minutes') { return openLogTime(item, action); }
 
         // Reason-capturing action (reject/return/inquire/dispute/delegate/reassign):
         // a mandatory-rationale textarea, which also serves as the confirm step.
-        if (action.reason) {
+        /*
+         * BL-491 — an action the SERVER flags as naming a person (`requiresTargetPerson` → `action.targetPerson`)
+         * opens this same window for its picker, even when it demands no reason: a delegation sent without its
+         * delegate is refused every time. Never derived from the action code.
+         */
+        if (action.reason || action.targetPerson) {
             if (!global.Swal) { return { outcome: 'cancelled' }; }
+            const asksTarget = !!action.targetPerson;
+            // The text box is mandatory only for an action that REQUIRES a reason. A person-naming action without
+            // one gets the optional note the server flagged (`acceptsNote`), or no text box at all.
+            const reasonRequired = !!action.reason;
+            const offersText = reasonRequired || !!action.note;
 
             /*
              * BL-043 — `reassign` also has to name the PERSON. The dialog used to ask only for a rationale, so
@@ -10161,7 +10195,7 @@
              * the list the server validates against — offering anyone else would build a dialog whose confirm is
              * refused, which is the shape of defect this ticket exists to close.
              */
-            const needsAssignee = ASSIGNEE_REQUIRED_ACTIONS.includes(action.code);
+            const needsAssignee = ASSIGNEE_REQUIRED_ACTIONS.includes(action.code) || asksTarget;
             /*
              * `inquire` may ALSO name a person, and must not require one — see WAITING_ON_ACTIONS. One fetch
              * serves both: the picker's list is the same list either way, because the server validates both
@@ -10171,13 +10205,36 @@
             const offersWaitingOn = WAITING_ON_ACTIONS.includes(action.code);
             let people = [];
             if (needsAssignee || offersWaitingOn) {
-                const res = await global.TasksApi.assignablePeople();
-                // `data` IS the array — unwrapped once in TasksApi (BL-113). This line was wrong for three
-                // rounds while each caller unwrapped the envelope in its own hand-written expression.
+                /*
+                 * BL-491 — WHICH LIST. Handing a task to somebody is an ASSIGNMENT and is limited to the reader's
+                 * company scope. Handing over an APPROVAL is not: approval authority belongs to the process, not
+                 * to the requester (BL-057 — a record produced in one legal entity is properly approved in
+                 * another). So a person-naming approval action reads the decision-makers list; the assignment
+                 * list would silently leave out every approver outside the reader's own company.
+                 */
+                const res = asksTarget
+                    ? await global.TasksApi.decisionMakers()
+                    : await global.TasksApi.assignablePeople();
+                /*
+                 * A read that FAILED is not an empty list. "Nobody this can be delegated to" printed over a 403 or
+                 * a dropped connection is a false sentence; the failure says what it was, and no window opens.
+                 */
+                if (!res.ok && asksTarget) {
+                    toast(global.TasksApi.failureMessage(res), 'error');
+                    return { outcome: 'refused' };
+                }
+                // `data` IS the array for both lists — unwrapped once in TasksApi (BL-113). This line was wrong for
+                // three rounds while each caller unwrapped the envelope in its own hand-written expression.
                 people = res.ok ? res.data : [];
+                // BL-491 — the people the server says this action cannot be handed to (the reader, and whoever
+                // started the workflow) are never offered.
+                if (asksTarget && action.excludedTargetIds.length) {
+                    people = people.filter((person) =>
+                        !action.excludedTargetIds.includes(String(personUserId(person) || '').toLowerCase()));
+                }
                 if (!people.length && needsAssignee) {
                     // Refusing beats opening a dialog that cannot be confirmed.
-                    toast(t('ReassignNoAssignableUsers'), 'error');
+                    toast(t(asksTarget ? 'DelegateNoEligiblePeople' : 'ReassignNoAssignableUsers'), 'error');
                     return { outcome: 'refused' };
                 }
             }
@@ -10191,7 +10248,7 @@
                 .map((person) => `<option value="${esc(personUserId(person))}">${esc(person.displayName || personUserId(person))}</option>`)
                 .join('');
             const assigneeField = needsAssignee
-                ? `<label class="form-label d-block text-start" for="wcnReassignAssignee">${esc(t('ReassignAssigneeLabel'))}</label>`
+                ? `<label class="form-label d-block text-start" for="wcnReassignAssignee">${esc(t(asksTarget ? 'DelegateTargetLabel' : 'ReassignAssigneeLabel'))}</label>`
                   + `<select id="wcnReassignAssignee" class="form-select">`
                   + `<option value="">${esc(t('ReassignAssigneePlaceholder'))}</option>${options}</select>`
                 : '';
@@ -10212,7 +10269,17 @@
                 ? `<p class="form-label d-block text-start mb-1">${esc(t('InquiryQuestionLabel'))}</p>`
                   + `<blockquote class="wcn-dialog-lead text-start">${esc(item.summary)}</blockquote>`
                 : '';
-            const textLabel = isAnswer ? t('InquiryAnswerLabel') : t('ReasonLabel');
+            const textLabel = isAnswer ? t('InquiryAnswerLabel')
+                : reasonRequired ? t('ReasonLabel') : t('ApprovalNoteLabel');
+            const textPlaceholder = isAnswer ? t('InquiryAnswerPlaceholder')
+                : reasonRequired ? t('ReasonPlaceholder') : t('ApprovalNotePlaceholder');
+            const textField = offersText
+                ? `<label class="form-label d-block text-start" for="wcnReasonText">${esc(textLabel)}</label>`
+                  // The server's ceiling for an answer is a task description's (4000); saying so here means the
+                  // textarea stops the reader rather than a 400 after they have written it.
+                  + `<textarea id="wcnReasonText" class="form-control" rows="3"${isAnswer ? ' maxlength="4000"' : ''} `
+                  + `placeholder="${esc(textPlaceholder)}"></textarea>`
+                : '';
 
             const waitingOnField = offersWaitingOn && offered.length
                 ? `<label class="form-label d-block text-start" for="wcnWaitingOn">${esc(t('WaitingOnLabel'))}</label>`
@@ -10251,13 +10318,7 @@
                     + questionQuote
                     + assigneeField
                     + waitingOnField
-                    + `<label class="form-label d-block text-start" for="wcnReasonText">${esc(textLabel)}</label>`
-                    // The server's ceiling for an answer is a task description's (4000); saying so here means the
-                    // textarea stops the reader rather than a 400 after they have written it.
-                    + `<textarea id="wcnReasonText" class="form-control" rows="3"${isAnswer ? ' maxlength="4000"' : ''} `
-                    + (isAnswer
-                        ? `placeholder="${esc(t('InquiryAnswerPlaceholder'))}"></textarea>`
-                        : `placeholder="${esc(t('ReasonPlaceholder'))}"></textarea>`),
+                    + textField,
                 showCancelButton: true,
                 confirmButtonText: t('ReasonConfirm'),
                 cancelButtonText: t('DialogDismiss'),
@@ -10268,7 +10329,8 @@
                 },
                 preConfirm: () => {
                     const reason = String(document.getElementById('wcnReasonText')?.value || '').trim();
-                    if (!reason) {
+                    // An optional note (BL-491) is never validated: empty is a real answer.
+                    if (!reason && reasonRequired) {
                         global.Swal.showValidationMessage(t(isAnswer ? 'InquiryAnswerRequired' : 'ReasonRequired'));
                         return false;
                     }
@@ -10281,7 +10343,8 @@
 
                     const assigneeUserId = String(document.getElementById('wcnReassignAssignee')?.value || '').trim();
                     // Cannot be confirmed without a person: the server requires it and a silent 400 helps nobody.
-                    if (!assigneeUserId) { global.Swal.showValidationMessage(t('ReassignAssigneeRequired')); return false; }
+                    const personRequiredKey = asksTarget ? 'DelegateTargetRequired' : 'ReassignAssigneeRequired';
+                    if (!assigneeUserId) { global.Swal.showValidationMessage(t(personRequiredKey)); return false; }
                     return { reason, assigneeUserId };
                 }
             }, dialogLook())).then((res) => {
@@ -10557,9 +10620,19 @@
             const requiredWarning = stillOpen.length
                 ? `<div class="wcn-confirm-warning">${esc(tf('ConfirmRequiredOpen', stillOpen.length))}</div>`
                 : '';
+            /*
+             * REQ-WCN-01 (W-2) — an OPTIONAL note, in this same confirm. Offered only when the SERVER flagged the
+             * action (`acceptsNote` → `action.note`); an action that REQUIRES a reason never reaches this branch —
+             * its mandatory window above is untouched. The shared confirm's own textarea, no validator: empty is a
+             * real answer, and an empty note sends exactly the body this confirm always sent.
+             */
+            const offersNote = !!action.note && !action.reason;
             let resolveOutcome;
             const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
             sharedConfirm({
+                input: offersNote
+                    ? { label: t('ApprovalNoteLabel'), placeholder: t('ApprovalNotePlaceholder') }
+                    : undefined,
                 title: actionLabel(action),
                 /*
                  * The action's OUTCOME sentence leads the confirm — this is where `OutcomeCancel` ("cancels the
@@ -10567,9 +10640,9 @@
                  * the kebab and lost their card-side prose. A confirm that says only "are you sure?" asks the
                  * reader to remember what they are sure ABOUT.
                  */
-                subtext: `${outcomeLead(action)}<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
+                subtextHtml: `${outcomeLead(action)}<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
                 // The object of the action, in the wrapper's own badge — the one mechanism the product keeps.
-                entityName: esc(item.title),
+                entityName: item.title,
                 // The wrapper picks the icon from the TYPE rather than taking one by name, so a destructive act
                 // gets the danger circle and its red button from a single word instead of three settings.
                 type: action.destructive ? 'danger' : 'info',
@@ -10581,7 +10654,10 @@
                  * title, the rail button and this button all read the same string.
                  */
                 confirmText: tf('ConfirmProceedNamed', actionLabel(action).toLocaleLowerCase('tr')),
-                onConfirm: () => { resolveOutcome(applyAction(item, action)); },
+                onConfirm: (value) => {
+                    const note = offersNote ? String(value || '').trim() : '';
+                    resolveOutcome(note ? applyAction(item, action, note) : applyAction(item, action));
+                },
                 onCancel: () => resolveOutcome({ outcome: 'cancelled' })
             });
             return outcome;
@@ -10675,6 +10751,69 @@
             if (stored && stored.startsWith('/WorkCenterNext')) { return stored; }
         } catch (error) { /* fall through */ }
         return '/WorkCenterNext';
+    };
+
+    /*
+     * REQ-WCN-01 (W-4) — a success said on the NEXT page. The detail page stores the sentence, the list shows it once
+     * on boot and forgets it. Session-scoped and same-tab; when storage is unavailable the redirect still happens
+     * and only the sentence is lost.
+     */
+    const FLASH_TOAST_KEY = 'wcn:flash-toast';
+    // A success belongs to the navigation that follows it. One that was never shown (the tab went elsewhere, the
+    // navigation was aborted) must not surface minutes later on an unrelated visit to the list.
+    const FLASH_TOAST_TTL_MS = 20000;
+
+    const rememberFlashToast = (message) => {
+        try {
+            global.sessionStorage?.setItem(FLASH_TOAST_KEY, JSON.stringify({ message: String(message || ''), at: Date.now() }));
+        } catch (error) { /* see above */ }
+    };
+
+    const showFlashToast = () => {
+        let message = '';
+        try {
+            const stored = global.sessionStorage?.getItem(FLASH_TOAST_KEY) || '';
+            global.sessionStorage?.removeItem(FLASH_TOAST_KEY);
+            const parsed = stored ? JSON.parse(stored) : null;
+            const age = parsed ? Date.now() - Number(parsed.at) : NaN;
+            if (parsed && typeof parsed.message === 'string' && age >= 0 && age <= FLASH_TOAST_TTL_MS) {
+                message = parsed.message;
+            }
+        } catch (error) { /* storage disabled, or not ours — nothing to show */ }
+        if (message) { toast(message); }
+    };
+
+    /*
+     * Where a decided item's reader goes. The remembered URL is the last LIST the reader looked at — except when a
+     * detail page was opened from another detail page (a subtask's "open full detail"), where it is a detail URL:
+     * landing there would show the success on nobody's page and leave it for a later visit. Then the plain list.
+     */
+    const listUrlAfterDecision = () => {
+        const url = listReturnUrl();
+        return url.startsWith('/WorkCenterNext/Details') ? '/WorkCenterNext' : url;
+    };
+
+    /**
+     * The detail page's own item is gone from a re-read in which ITS OWN PROVIDER ANSWERED. Not when the read failed,
+     * not when the contract refused the item, not when the board came back partial and the provider that did not
+     * answer is the item's own, and not when the single-item read failed for any reason other than a 404 — in every
+     * one of those the item may still exist, and a "success, back to the list" would be a claim nobody checked.
+     *
+     * ANOTHER provider being down says nothing about this item (measured live, 2026-10-01: with one unrelated
+     * provider unavailable the first version of this rule never returned anybody to the list).
+     */
+    const leftTheBoardOnDetail = (item) => {
+        const root = document.getElementById('wcnApp');
+        if (!root || root.dataset.wcnPage !== 'detail' || !item || root.dataset.wcnItemId !== item.id) { return false; }
+        if (state.loadState !== 'ready' || itemById(item.id)) { return false; }
+        const ownProvider = item.source && item.source.providerCode;
+        if (Array.isArray(state.unavailableSources)
+            && state.unavailableSources.some((source) => !ownProvider || source.providerCode === ownProvider)) {
+            return false;
+        }
+        if (lastDetailReadHttpStatus !== null && lastDetailReadHttpStatus !== 404) { return false; }
+        return !(Array.isArray(state.contractRejectedErrors)
+            && state.contractRejectedErrors.some((error) => error.fixtureId === item.id));
     };
 
     const openDetailPage = (id) => {
@@ -11591,11 +11730,17 @@
      * item for this reader. The server answers a missing and an unreadable task with the same 404, so both leave
      * the page's not-found answer exactly as it was.
      */
+    // The HTTP answer of the last single-item read, or null when none was needed (the list held the item).
+    let lastDetailReadHttpStatus = null;
+
     const readDetailItemMissingFrom = async (api, result) => {
+        lastDetailReadHttpStatus = null;
         const id = requestedDetailId();
         if (!id || result.items.some((item) => item.id === id)) { return null; }
         if (Array.isArray(result.errors) && result.errors.some((error) => error.fixtureId === id)) { return null; }
         const single = await api.fetchWorkItem(id);
+        // W-4 reads this: only a 404 says the item is GONE. A network failure or a 5xx says nothing about the item.
+        lastDetailReadHttpStatus = single.status === api.STATUS.OK ? 200 : single.httpStatus;
         return single.status === api.STATUS.OK ? single : null;
     };
 
@@ -11739,6 +11884,8 @@
         if (root.dataset.wcnPage !== 'detail') {
             hydrateStateFromUrl();
             state.viewsByTab[state.tab] = state.view;
+            // REQ-WCN-01 (W-4) — a decision taken on the detail page reports its success here.
+            showFlashToast();
         }
         // The detail page used to declare itself 'ready' here, before loadWorkItems had fetched anything — so the
         // first paint had no items and announced the task did not exist. It stays 'loading' until the projection

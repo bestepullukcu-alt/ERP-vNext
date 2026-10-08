@@ -35,5 +35,8 @@
 @section Scripts {
     <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
     <partial name="_ValidationScriptsPartial" />
+    @* WP-E2E-FIX-2 — the stage editor's labels / confirmations (form.js read only the global bridge before). *@
+    <partial name="~/Views/CRM/ContentEngagementJourneys/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/ContentEngagementJourneys/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/ContentEngagementJourneys/form.js" asp-append-version="true"></script>
 }

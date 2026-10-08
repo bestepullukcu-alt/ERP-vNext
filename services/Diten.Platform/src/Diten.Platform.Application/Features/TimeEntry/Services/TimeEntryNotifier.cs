@@ -51,6 +51,18 @@ public interface ITimeEntryNotifier
     /// <summary>N2 — "last week is still open", once per person-week. True when it was handed to the dispatch.</summary>
     Task<bool> WeekReminderAsync(Guid userId, DateOnly monday, CancellationToken ct = default);
 
+    /// <summary>
+    /// BL-488 — N2 for a GROUP of people: their addresses are resolved in ONE question to AuthService (the caller keeps a
+    /// group to <see cref="ReminderGroupSize"/>), then each person is claimed and sent to exactly as
+    /// <see cref="WeekReminderAsync"/> does it — the same mark key, the same payload, once per person-week. Somebody
+    /// AuthService does not hand out (deactivated, no address) gets nothing and is not claimed. Returns how many
+    /// reminders were handed to the dispatch.
+    /// </summary>
+    Task<int> WeekRemindersAsync(IReadOnlyCollection<Guid> userIds, DateOnly monday, CancellationToken ct = default);
+
+    /// <summary>How many people one recipient resolution covers — AuthService's own cap per request.</summary>
+    const int ReminderGroupSize = 100;
+
     /// <summary>N5 — to the person only, once per (meeting, person, attendance).</summary>
     Task MinutesConflictAsync(
         Guid userId, Guid meetingId, string meetingTitle, DateOnly meetingDate, AttendanceStatus attendance,
@@ -139,16 +151,19 @@ public sealed class TimeEntryNotifier : ITimeEntryNotifier
             week.Id, ct);
 
     public async Task<bool> WeekReminderAsync(Guid userId, DateOnly monday, CancellationToken ct = default)
+        => await WeekRemindersAsync([userId], monday, ct) > 0;
+
+    public Task<int> WeekRemindersAsync(IReadOnlyCollection<Guid> userIds, DateOnly monday, CancellationToken ct = default)
     {
         var weekKey = WeekCalendar.KeyOf(monday);
-        return await SendAsync(
-            TimeEntryNotificationEvents.WeekReminder, ReminderKey(userId, weekKey), [userId],
+        return SendAsync(
+            TimeEntryNotificationEvents.WeekReminder, recipient => ReminderKey(recipient, weekKey), weekKey, userIds,
             new Dictionary<string, object?>
             {
                 [Vars.WeekLabel] = WeekLabel(weekKey, monday),
                 [Vars.TimesheetUrl] = _links.MyWeek(weekKey)
             },
-            null, ct) > 0;
+            null, ct, eachRecipientOnItsOwn: true);
     }
 
     public Task MinutesConflictAsync(
@@ -209,12 +224,25 @@ public sealed class TimeEntryNotifier : ITimeEntryNotifier
         return "—";
     }
 
-    /// <summary>The four steps. Returns how many e-mails were handed to the dispatch.</summary>
-    private async Task<int> SendAsync(
+    /// <summary>The four steps, for one key shared by every recipient.</summary>
+    private Task<int> SendAsync(
         string eventCode, string key, IReadOnlyCollection<Guid> userIds,
         IReadOnlyDictionary<string, object?> variables, Guid? causationId, CancellationToken ct)
+        => SendAsync(eventCode, _ => key, key, userIds, variables, causationId, ct);
+
+    /// <summary>The four steps. <paramref name="keyOf"/> gives each recipient the key their mark is claimed under;
+    /// <paramref name="subject"/> is what the send is ABOUT (the shared key, or the week of a group of reminders) — it
+    /// names the log line of a failure that happens before any recipient is reached.
+    /// <paramref name="eachRecipientOnItsOwn"/>: the recipients are unrelated people (a group of reminders), so one
+    /// person's failed send must not cost the others theirs — exactly as when each was sent on their own.
+    /// Returns how many e-mails were handed to the dispatch.</summary>
+    private async Task<int> SendAsync(
+        string eventCode, Func<Guid, string> keyOf, string subject, IReadOnlyCollection<Guid> userIds,
+        IReadOnlyDictionary<string, object?> variables, Guid? causationId, CancellationToken ct,
+        bool eachRecipientOnItsOwn = false)
     {
         var sent = 0;
+        var key = subject;
         try
         {
             var wanted = userIds.Where(id => id != Guid.Empty).Distinct().ToList();
@@ -224,25 +252,34 @@ public sealed class TimeEntryNotifier : ITimeEntryNotifier
                 return 0;
             }
 
+            // ONLY the people AuthService hands out are ever claimed or sent to: a deactivated user is not in its answer.
             var recipients = await _recipients.ResolveAsync(wanted, ct);
             foreach (var recipient in recipients)
             {
-                if (!await _marks.TryClaimAsync(eventCode, MarkKey(key, recipient.UserId), _clock.GetUtcNow(), ct))
+                key = keyOf(recipient.UserId);
+                try
                 {
-                    continue;
-                }
+                    if (!await _marks.TryClaimAsync(eventCode, MarkKey(key, recipient.UserId), _clock.GetUtcNow(), ct))
+                    {
+                        continue;
+                    }
 
-                var result = await _dispatch.DispatchByEventCodeAsync(new NotificationEventDispatchRequest(
-                    _tenantContext.TenantId,
-                    eventCode,
-                    [new EmailRecipientDto(recipient.Email, recipient.DisplayName)],
-                    variables,
-                    CausationId: causationId), ct);
-                sent++;
-                if (!result.IsSuccessful)
+                    var result = await _dispatch.DispatchByEventCodeAsync(new NotificationEventDispatchRequest(
+                        _tenantContext.TenantId,
+                        eventCode,
+                        [new EmailRecipientDto(recipient.Email, recipient.DisplayName)],
+                        variables,
+                        CausationId: causationId), ct);
+                    sent++;
+                    if (!result.IsSuccessful)
+                    {
+                        _logger.LogInformation("{EventCode} {Key} not sent to {UserId}: {Reason}.",
+                            eventCode, key, recipient.UserId, result.ReasonCode);
+                    }
+                }
+                catch (Exception ex) when (eachRecipientOnItsOwn && ex is not OperationCanceledException)
                 {
-                    _logger.LogInformation("{EventCode} {Key} not sent to {UserId}: {Reason}.",
-                        eventCode, key, recipient.UserId, result.ReasonCode);
+                    _logger.LogWarning(ex, "{EventCode} {Key} failed; the command it follows stands.", eventCode, key);
                 }
             }
         }

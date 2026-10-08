@@ -1,0 +1,107 @@
+@using Diten.Web.Views.CRM.KnowledgePaths
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgePathStudio> Localizer
+
+@* WP-KP-UI-2 — the review tabs of the studio workspace (Compliance · MLR approval · Output & release · Revisions ·
+   Field preview · Usage). Hidden panels; workspace-review.js fills them from api/studio/paths/{id}/review (+ /usage,
+   /diff) and the workspace model's compliance rows. Every text is a resx label; no raw code is printed. *@
+
+<div class="card-body pt-0 d-none" id="wsPanel-compliance" role="tabpanel" aria-labelledby="wsTab-compliance" data-ws-panel="compliance">
+    <div class="d-flex flex-wrap gap-3 mb-3" id="wsComplianceCounts"></div>
+    <p class="small text-muted">@Localizer["ComplianceIntro"]</p>
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0" aria-describedby="wsComplianceCaption">
+            <caption class="visually-hidden" id="wsComplianceCaption">@Localizer["TabCompliance"]</caption>
+            <thead>
+                <tr>
+                    <th scope="col">@Localizer["ColSeverity"]</th>
+                    <th scope="col">@Localizer["ColRule"]</th>
+                    <th scope="col">@Localizer["ColWhere"]</th>
+                    <th scope="col">@Localizer["ColIssue"]</th>
+                    <th scope="col" class="cell-fit"><span class="visually-hidden">@Localizer["GoToComposition"]</span></th>
+                </tr>
+            </thead>
+            <tbody id="wsComplianceRows"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card-body pt-0 d-none" id="wsPanel-mlr" role="tabpanel" aria-labelledby="wsTab-mlr" data-ws-panel="mlr">
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                <h6 class="mb-0 flex-grow-1" id="wsMlrTitle"></h6>
+                <a class="btn btn-sm btn-primary d-none" id="wsReviewerLink"><i class="bx bx-show me-1" aria-hidden="true"></i>@Localizer["ReviewerView"]</a>
+            </div>
+            <div id="wsMlrUnavailable" class="alert alert-warning d-none" role="status">@Localizer["MlrHistoryUnavailable"]</div>
+            <ol class="kp-timeline" id="wsMlrTimeline" aria-label="@Localizer["TabMlr"]"></ol>
+        </div>
+        <div class="col-12 col-lg-4">
+            <div class="border rounded p-3 mb-3">
+                <h6 class="mb-2">@Localizer["MlrSummary"]</h6>
+                <dl class="row small mb-0" id="wsMlrSummary"></dl>
+            </div>
+            <div class="border rounded p-3 small">
+                <h6 class="mb-2">@Localizer["MlrRulesTitle"]</h6>
+                <p class="mb-2">@Localizer["MlrRules"]</p>
+                <p class="mb-0 text-muted"><i class="bx bx-transfer-alt me-1" aria-hidden="true"></i>@Localizer["SingleChannelNote"]</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-body pt-0 d-none" id="wsPanel-output" role="tabpanel" aria-labelledby="wsTab-output" data-ws-panel="output">
+    <div id="wsOutputAlert" class="alert alert-danger d-none" role="alert"></div>
+    <div class="row g-4">
+        <div class="col-12 col-lg-6">
+            <h6>@Localizer["OutputTitle"]</h6>
+            <div id="wsOutputArtifact"></div>
+        </div>
+        <div class="col-12 col-lg-6">
+            <h6 id="wsReleaseTitle">@Localizer["ReleaseTitle"]</h6>
+            <ul class="list-unstyled mb-3" id="wsPreconditions" aria-label="@Localizer["PreconditionsTitle"]"></ul>
+            <div id="wsReleaseWarning" class="alert alert-warning d-none" role="status"></div>
+            <button type="button" class="btn btn-success d-none" id="wsReleaseButton"><i class="bx bx-rocket me-1" aria-hidden="true"></i>@Localizer["ReleaseButton"]</button>
+            <small class="text-muted d-block mt-2" id="wsReleaseDisabledReason"></small>
+        </div>
+    </div>
+    <div class="border-top mt-4 pt-3 d-none" id="wsLive">
+        <h6 id="wsLiveTitle"></h6>
+        <p class="small text-muted mb-2" id="wsLiveSub"></p>
+        <div class="d-none" id="wsWithdrawForm">
+            <label class="form-label" for="wsWithdrawReason">@Localizer["WithdrawReasonLabel"] <span class="text-danger" aria-hidden="true">*</span></label>
+            <textarea class="form-control mb-2" id="wsWithdrawReason" rows="2" maxlength="1000" required aria-required="true" placeholder="@Localizer["WithdrawReasonPlaceholder"]"></textarea>
+            <div class="invalid-feedback d-block d-none" id="wsWithdrawError" role="alert"></div>
+            <ul class="small mb-2 d-none" id="wsWithdrawStages"></ul>
+            <button type="button" class="btn btn-label-danger" id="wsWithdrawButton"><i class="bx bx-block me-1" aria-hidden="true"></i>@Localizer["WithdrawButton"]</button>
+            <small class="text-muted d-block mt-2">@Localizer["WithdrawNote"]</small>
+        </div>
+    </div>
+</div>
+
+<div class="card-body pt-0 d-none" id="wsPanel-revisions" role="tabpanel" aria-labelledby="wsTab-revisions" data-ws-panel="revisions">
+    <div class="row g-3 mb-3" id="wsRevCards"></div>
+    <p class="small text-muted mb-3"><strong>@Localizer["RevExplainVersion"]</strong> @Localizer["RevExplainVersionText"] <strong>@Localizer["RevExplainRevision"]</strong> @Localizer["RevExplainRevisionText"]</p>
+    <div class="d-flex flex-wrap align-items-end gap-2 mb-3">
+        <div>
+            <label class="form-label small mb-1" for="wsDiffFrom">@Localizer["DiffFrom"]</label>
+            <select class="form-select form-select-sm" id="wsDiffFrom"></select>
+        </div>
+        <div>
+            <label class="form-label small mb-1" for="wsDiffTo">@Localizer["DiffTo"]</label>
+            <select class="form-select form-select-sm" id="wsDiffTo"></select>
+        </div>
+        <button type="button" class="btn btn-sm btn-label-primary" id="wsDiffButton"><i class="bx bx-git-compare me-1" aria-hidden="true"></i>@Localizer["DiffShow"]</button>
+    </div>
+    <div id="wsDiffResult" class="mb-4" aria-live="polite"></div>
+    <h6 class="mb-2">@Localizer["RevHistoryTitle"] <small class="text-muted fw-normal">· @Localizer["RevHistoryNewest"]</small></h6>
+    <ol class="kp-timeline" id="wsRevList"></ol>
+</div>
+
+<div class="card-body pt-0 d-none" id="wsPanel-preview" role="tabpanel" aria-labelledby="wsTab-preview" data-ws-panel="preview">
+    <div id="wsPreview"></div>
+</div>
+
+<div class="card-body pt-0 d-none" id="wsPanel-usage" role="tabpanel" aria-labelledby="wsTab-usage" data-ws-panel="usage">
+    <div id="wsUsage" aria-live="polite"></div>
+</div>

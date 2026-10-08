@@ -72,7 +72,7 @@ public sealed class GetApprovalListHandler : IRequestHandler<GetApprovalListQuer
 
         var approverId = _currentUser.UserId;
         var weeks = await ReadQueueAsync(approverId, weekIds, ct);
-        if (await _puller.PullAsync(weeks, request.CorrelationId, ct))
+        if ((await _puller.PullAsync(weeks, request.CorrelationId, ct)).ShouldReread)
         {
             weeks = await ReadQueueAsync(approverId, weekIds, ct);
         }

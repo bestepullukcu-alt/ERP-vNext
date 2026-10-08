@@ -218,6 +218,45 @@ public sealed class KnowledgeContentRuntimeTests
         Assert.Equal(409, update.StatusCode);
     }
 
+    // WP-E2E-FIX-2 (acceptance 3) — every update is a new technical version, written against the version read.
+    [Fact]
+    public async Task Update_content_increments_the_technical_version_by_one()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = await fx.SeedSubjectAsync();
+        var id = (await fx.CreateContent().Handle(ContentCmd(subjectId, "KC-VER"), default)).Data;
+        var before = fx.Contents.Items.Single(c => c.Id == id).Version;
+
+        for (var i = 1; i <= 2; i++)
+        {
+            var update = await fx.UpdateContent().Handle(
+                new UpdateKnowledgeContentCommand(id, "Title " + i, KnowledgeContentTypes.Presentation, subjectId, "en",
+                    "1." + i, Jan1, KnowledgeContentStatuses.Published, Url: "https://example.test/x"), default);
+            Assert.True(update.IsSuccessful, string.Join("; ", update.Errors ?? []));
+            Assert.Equal(before + i, fx.Contents.Items.Single(c => c.Id == id).Version);
+            Assert.Equal(before + i, fx.Contents.StoredVersions[id]);
+        }
+    }
+
+    [Fact]
+    public async Task Update_content_after_an_intervening_write_is_409_concurrency_conflict_and_overwrites_nothing()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = await fx.SeedSubjectAsync();
+        var id = (await fx.CreateContent().Handle(ContentCmd(subjectId, "KC-RACE"), default)).Data;
+        var read = fx.Contents.Items.Single(c => c.Id == id).Version;
+        fx.Contents.StoredVersions[id] = read + 1;            // another writer landed after this handler's read
+
+        var update = await fx.UpdateContent().Handle(
+            new UpdateKnowledgeContentCommand(id, "Mine", KnowledgeContentTypes.Presentation, subjectId, "en",
+                "9.9", Jan1, KnowledgeContentStatuses.Published, Url: "https://example.test/x"), default);
+
+        Assert.Equal(409, update.StatusCode);
+        Assert.Equal(KnowledgeReasonCodes.ContentConcurrencyConflict, update.Errors![0]);
+        Assert.Equal(read + 1, fx.Contents.StoredVersions[id]);  // the other writer's version stays
+        Assert.Equal(1, fx.Contents.WriteCount);                  // only the create; the update never landed
+    }
+
     // 9
     [Fact]
     public async Task Archive_content_is_idempotent()
@@ -822,6 +861,21 @@ public sealed class KnowledgeContentRuntimeTests
         public List<ContentEntity> Items { get; } = new();
         public int WriteCount { get; private set; }
 
+        /// <summary>WP-E2E-FIX-2 — the stored row's technical version (what the Mongo filter compares against).</summary>
+        public Dictionary<Guid, int> StoredVersions { get; } = new();
+
+        public Task<bool> ReplaceAsync(ContentEntity content, int expectedVersion, CancellationToken ct)
+        {
+            if (StoredVersions.TryGetValue(content.Id, out var stored) && stored != expectedVersion)
+            {
+                return Task.FromResult(false);
+            }
+
+            WriteCount++;
+            StoredVersions[content.Id] = content.Version;
+            return Task.FromResult(true);
+        }
+
         public Task<ContentEntity?> GetByIdAsync(Guid t, Guid id, CancellationToken ct)
             => Task.FromResult(Items.FirstOrDefault(c => c.TenantId == t && c.Id == id && !c.IsDeleted));
 
@@ -837,6 +891,7 @@ public sealed class KnowledgeContentRuntimeTests
         {
             WriteCount++;
             Items.Add(content);
+            StoredVersions[content.Id] = content.Version;
             return Task.CompletedTask;
         }
 
