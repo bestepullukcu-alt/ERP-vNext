@@ -24,6 +24,10 @@ import argparse, datetime, os, sys
 
 import pymongo
 from bson import json_util
+from bson.binary import UuidRepresentation
+
+# Some fields hold real UUIDs (BSON binary subtype 4): the backup must say how to write them, or json_util refuses.
+JSON_OPTIONS = json_util.JSONOptions(json_mode=json_util.JSONMode.CANONICAL, uuid_representation=UuidRepresentation.STANDARD)
 
 # CRM stores these ids as STRINGS (GuidRepresentation string class-map), not BSON binary.
 TENANT = "97c59330-dbc4-4665-b29c-0c26dbb5cc93"
@@ -80,9 +84,14 @@ def apply(db, sessions, visits, reports):
     path = os.path.join(BACKUP_DIR, f"vp-reset-97c5-backup-{stamp}.json")
     backup = {"tenant": str(TENANT), "db": CRM_DB, "at": stamp,
               "planning_sessions": sessions, "planned_visits": visits, "visit_reports": reports}
+    # Serialise FIRST (a failure leaves no half-written file and deletes nothing), then write, then read it back.
+    text = json_util.dumps(backup, json_options=JSON_OPTIONS, ensure_ascii=False)
     with open(path, "w", encoding="utf-8") as f:
-        f.write(json_util.dumps(backup, json_options=json_util.CANONICAL_JSON_OPTIONS, ensure_ascii=False))
-    print(f"Backup written: {path}")
+        f.write(text)
+    check = json_util.loads(open(path, encoding="utf-8").read(), json_options=JSON_OPTIONS)
+    if [len(check[k]) for k in ("planning_sessions", "planned_visits", "visit_reports")] != [len(sessions), len(visits), len(reports)]:
+        sys.exit(f"Backup check failed ({path}) — nothing was deleted.")
+    print(f"Backup written and verified: {path} ({len(text) // 1024} KB)")
 
     r = db.visit_reports.delete_many({"TenantId": TENANT, "_id": {"$in": [d["_id"] for d in reports]}})
     v = db.planned_visits.delete_many({"TenantId": TENANT, "_id": {"$in": [d["_id"] for d in visits]}})
@@ -96,7 +105,7 @@ def apply(db, sessions, visits, reports):
 
 def restore(db, path):
     with open(path, encoding="utf-8") as f:
-        backup = json_util.loads(f.read())
+        backup = json_util.loads(f.read(), json_options=JSON_OPTIONS)
     if backup.get("tenant") != str(TENANT):
         sys.exit("Backup belongs to another tenant — refusing.")
     for name in ("planning_sessions", "planned_visits", "visit_reports"):
