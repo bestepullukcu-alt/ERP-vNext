@@ -150,3 +150,28 @@ Kaynak: `mockups/visit-planning/visit-planning-v2.decoded.html` ekran "03 Plan d
 
 ## Ek — Ürün seçicide ziyaret modeli (4C §37 + 4E madde 4)
 - 4C'nin ürün seçicisi sınırı ve anlık süreyi kapasite vekilinden okuyor (yetkisiz temsilcide "—"). 4E'nin `visitModel` alanı varsa **önce onu kullan**, vekil yalnız yedek. Test: `visitModel` varken kapasite vekiline istek gitmez.
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-08)
+**Commit:** `660512329` (ff; taban 4E sonrası). Push: test dalı.
+
+**CT K13:** Web 761 → **774/0** (+13) · CRM 2437/0/5 (dokunulmadı) · mimari 27 · tüm Ziyaret Planlama JS `node --check` temiz.
+
+**Kod okuması:**
+- `weeks.js`: şerit, gün dökümü (ilk 6 + "+N"), kaydırılan / sığmayan (`shifted` + `unscheduled` + `overflowProducts` + `pinOverflow`), eylemler, geçmiş (ad).
+- Taşıma: kurum = `institution`, tek doktor = soru; klavye "Güne taşı…"; `DROPPABLE_DAY_KINDS` working / half; yalnız taslak hafta.
+- `doctor-panel.js`: dönem görünümü + ürün geçmişi; seçici önce `visitModel`.
+- `header.js`: iki kapasite kartı, durum rozeti, durum metinli eylem kartı, açılır hafta listesi kalktı; hafta tek kaynaktan, Rota artık özeti yazmıyor (43 / 44 hatası).
+- 4B takipleri: Plana git sunucu kuralı, tek kilit bandı, ülke salt okunur (açık dönem ülkesi), boş taslak hesabı.
+
+**CT sabotajı:** tatil / hafta sonuna bırakma açıldı → 1 kırmızı (`Moving_is_closed_on_an_approved_or_past_week_and_never_onto_a_holiday_or_weekend`). Geri alındı.
+
+**İki mevcut test bilinçli güncellendi:** 4D yer tutucuları ("bekliyor") artık açık hali sabitliyor.
+
+**Eksik backend alanları (ajan) → küçük backend takip paketi (Faz 4 E4 sonrası):**
+1. `resources/me` temsilci ülkesi döndürmüyor (şimdilik açık dönem ülkesi).
+2. Önizlemede ziyaret başına rapor durumu yok → geçmiş ziyaret "Sunuldu", gerçek "yapıldı" rozeti yok.
+3. `resourceDisplayName` e-posta saklanmış olabilir (Beste "bestepullukcu@…") → başka temsilcinin planında ad çözülemiyor.
+
+**E4:** Faz 4 tek turunda (ajan raporundaki liste).
