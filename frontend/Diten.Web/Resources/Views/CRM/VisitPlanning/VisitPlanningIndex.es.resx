@@ -380,7 +380,7 @@
     <value>Un producto que no cabe en los límites de la visita pasa a la siguiente visita del médico.</value>
   </data>
   <data name="RuleUnknownFrequency" xml:space="preserve">
-    <value>Un objetivo de frecuencia desconocida cuenta como «1 en el período» y lleva la insignia sin frecuencia.</value>
+    <value>Un objetivo sin frecuencia conocida cuenta como «1 por semana» y muestra la etiqueta de frecuencia predeterminada.</value>
   </data>
   <data name="StatusTextDraft" xml:space="preserve">
     <value>Semana en borrador: puede cambiarla hasta aprobarla.</value>
@@ -685,9 +685,6 @@
   <data name="EmptyWeekHint" xml:space="preserve">
     <value>Aún no hay visitas en esta semana. Puede generarla ahora según las reglas de frecuencia de los objetivos seleccionados.</value>
   </data>
-  <data name="FrequencyDefaultOne" xml:space="preserve">
-    <value>1 en el período (predeterminado)</value>
-  </data>
   <data name="NextContentSoon" xml:space="preserve">
     <value>Siguiente contenido: pronto</value>
   </data>
@@ -804,5 +801,53 @@
   </data>
   <data name="NewPlanAfterSaveHint" xml:space="preserve">
     <value>Tras guardar, la pestaña Objetivos sugiere los médicos a visitar esta semana.</value>
+  </data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve">
+    <value>1 por semana (predeterminado)</value>
+  </data>
+  <data name="TargetsWeekSubtitle" xml:space="preserve">
+    <value>{0} · {1} visitas esta semana · {2} médicos en los objetivos del período</value>
+  </data>
+  <data name="WeekStatePlanned" xml:space="preserve">
+    <value>Planificado esta semana</value>
+  </data>
+  <data name="WeekStateExtra" xml:space="preserve">
+    <value>Visita adicional</value>
+  </data>
+  <data name="WeekStateNone" xml:space="preserve">
+    <value>No esta semana</value>
+  </data>
+  <data name="ExtraVisitAdd" xml:space="preserve">
+    <value>Visitar también esta semana</value>
+  </data>
+  <data name="ExtraVisitRemove" xml:space="preserve">
+    <value>Quitar la visita adicional</value>
+  </data>
+  <data name="ExtraVisitBulk" xml:space="preserve">
+    <value>Añadir a esta semana ({0})</value>
+  </data>
+  <data name="ExtraVisitsSaved" xml:space="preserve">
+    <value>Se guardaron las visitas adicionales de la semana.</value>
+  </data>
+  <data name="ExtraNotInPlan" xml:space="preserve">
+    <value>Primero añada el médico al plan (Guardar objetivos).</value>
+  </data>
+  <data name="ExtraWeekLocked" xml:space="preserve">
+    <value>La semana está aprobada o ya pasó: reábrala para añadir una visita adicional.</value>
+  </data>
+  <data name="ExtraNoRoom" xml:space="preserve">
+    <value>No hay espacio en esta semana.</value>
+  </data>
+  <data name="ExtraBadgeShort" xml:space="preserve">
+    <value>adicional</value>
+  </data>
+  <data name="ReasonExtraNoRoom" xml:space="preserve">
+    <value>sin espacio para la visita adicional</value>
+  </data>
+  <data name="ReasonWeekFullSkipped" xml:space="preserve">
+    <value>semana llena, se omitió la visita de esta semana</value>
+  </data>
+  <data name="EmptyWeekAddFromTargets" xml:space="preserve">
+    <value>También puede añadir médicos a esta semana desde la pestaña Objetivos.</value>
   </data>
 </root>

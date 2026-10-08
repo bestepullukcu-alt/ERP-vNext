@@ -50,7 +50,7 @@ public sealed class VisitPlanningTargetsTabWebTests
         // the cells speak the 3D fields: "N in the period" / no-frequency badge, done / remaining, last visit, badges
         Assert.Contains("st.requiredVisitCount != null && st.frequencyStatus !== 'unknown'", js);
         Assert.Contains("(L.FrequencyPerPeriod || '{0}').replace('{0}', st.requiredVisitCount)", js);
-        Assert.Contains("esc(L.FrequencyNone || '—')", js);
+        Assert.Contains("(L.FrequencyNone || '—')", js); // 4L: or the weekly default from frequencyDefault
         Assert.Contains("VPF.ratio(st.done || 0, st.remaining != null ? st.remaining : '—')", js); // CT 4I E4: RTL-safe pair
         Assert.Contains("st.lastVisitDate ? esc(dayShort(st.lastVisitDate))", js);
         Assert.Contains("(row.status.segmentBadges || []).map(name =>", js);

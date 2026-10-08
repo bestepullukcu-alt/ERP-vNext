@@ -119,7 +119,7 @@ public sealed class VisitPlanningMockupCultureWebTests
     {
         var js = Script("weeks.js");
         var freq = Between(js, "const frequencyLine = (s, status) => {", "\n    };");
-        Assert.Contains("(L.FrequencyDefaultOne || '')", freq);
+        Assert.Contains("(weeklyDefault ? (L.FrequencyDefaultWeekly || '') : (L.FrequencyNone || ''))", freq); // 4L: the weekly default
         Assert.Contains("VPF.ratio(status.done, status.remaining != null ? status.remaining : '—')", freq); // CT 4I E4: RTL-safe pair
         Assert.Contains("const stripRects = (cid, firstDraft) => page.weeks().map(pw => {", js);
         Assert.Contains("style=\"width:14px;height:6px\"", js);
@@ -138,7 +138,7 @@ public sealed class VisitPlanningMockupCultureWebTests
         var detail = view.IndexOf("id=\"vp-wk-detail\"", StringComparison.Ordinal);
         var docs = view.IndexOf("id=\"vp-wk-doctors\"", StringComparison.Ordinal);
         Assert.True(detail > 0 && docs > detail);
-        Assert.Equal("dönemde 1 (varsayılan)", Resx("tr")["FrequencyDefaultOne"]);
+        Assert.Equal("haftada 1 (varsayılan)", Resx("tr")["FrequencyDefaultWeekly"]); // 4L: "dönemde 1" is gone
         Assert.Equal("yapıldı", Resx("tr")["StateDone"]);
     }
 
@@ -153,7 +153,7 @@ public sealed class VisitPlanningMockupCultureWebTests
         Assert.Contains("const slot = slots.find(s => (s.weekStart || mondayYmd(s.plannedDate)) === w.weekStart) || null;", js);
         Assert.Contains("(state === 'none' ? '<span class=\"text-muted\">—</span>'", js);
         Assert.Contains("(w.status === 'past' ? ' opacity-50' : '')", js);
-        Assert.Contains("(L.FrequencyDefaultOne || '')", js);
+        Assert.Contains("(weeklyDefault ? (L.FrequencyDefaultWeekly || '') : (L.FrequencyNone || ''))", js);
         Assert.Contains("fmt(L.DurationLine", js);
         Assert.Contains("L.NextContentSoon", js);
         Assert.Equal("Sıradaki içerik: yakında", Resx("tr")["NextContentSoon"]);
@@ -264,7 +264,7 @@ public sealed class VisitPlanningMockupCultureWebTests
     {
         var bridged = new[]
         {
-            "NoAccountsFound", "DueThisWeekBadge", "EditWeekTargets", "EmptyWeekHint", "FrequencyDefaultOne", "NextContentSoon",
+            "NoAccountsFound", "DueThisWeekBadge", "EditWeekTargets", "EmptyWeekHint", "FrequencyDefaultWeekly", "NextContentSoon",
             "NoTimeShort", "ShowAllCount", "ShowLess", "WeekDoctorsHeading", "HistoryStateDone", "HistoryStateApproved",
             "HistoryStateDraft", "HistoryStateProjected", "ReasonNoNearDay", "StateDone", "WeekSubApproved", "WeekSubEmpty"
         };

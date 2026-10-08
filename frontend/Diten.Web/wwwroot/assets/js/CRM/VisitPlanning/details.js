@@ -188,6 +188,8 @@
         return 0;
     };
 
+    // WP-VP-4L (5) — a per-week extra visit carries a small "extra" badge (Weeks day rows, Route stops, the doctor panel).
+    const extraBadge = () => '<span class="badge bg-label-warning vp-extra-badge" title="' + esc(L.WeekStateExtra || '') + '">' + esc(L.ExtraBadgeShort || '') + '</span>';
     const visitTypeBadge = row => {
         const t = String(row.targetType || '').toLowerCase();
         const at = String(row.accountType || row.targetAccountType || '').toLowerCase();
@@ -291,7 +293,7 @@
             if (cur && (acc !== cur.acc || lunch)) { blocks.push(cur); if (lunch) { const lf = Math.max(prevEnd, LUNCH_START), lt = Math.min(s, LUNCH_END); blocks.push({ type: 'break', from: hm(lf), to: hm(lt) }); } cur = null; }
             if (!cur) cur = { type: 'account', acc: acc, name: targetName(r), badge: visitTypeBadge(r), start: r.startTime, end: r.endTime, count: 0, firstOrder: r.sequenceOrder, lastOrder: r.sequenceOrder, visits: [] };
             cur.end = r.endTime; cur.count++; cur.lastOrder = r.sequenceOrder;
-            cur.visits.push({ contactId: r.contactId || r.targetContactId || r.targetId || '', start: r.startTime, end: r.endTime, order: r.sequenceOrder, badge: visitTypeBadge(r), name: r.contactDisplayName || '', specialty: r.contactSpecialty || '' });
+            cur.visits.push({ contactId: r.contactId || r.targetContactId || r.targetId || '', start: r.startTime, end: r.endTime, order: r.sequenceOrder, badge: visitTypeBadge(r), name: r.contactDisplayName || '', specialty: r.contactSpecialty || '', isExtra: r.isExtra === true });
             if (e != null) prevEnd = e;
         });
         if (cur) blocks.push(cur);
@@ -693,7 +695,7 @@
             '<div class="inbox-row__line inbox-row__line--primary d-flex align-items-center gap-2 flex-wrap">' +
             grip +
             chevron +
-            '<h5 class="inbox-row__title mb-0 text-truncate">' + bidi(b.name) + '</h5>' + typeBadge + countBadge +
+            '<h5 class="inbox-row__title mb-0 text-truncate">' + bidi(b.name) + '</h5>' + typeBadge + countBadge + ((b.visits || []).some(v => v.isExtra) ? extraBadge() : '') +
             '</div>' +
             '<div class="inbox-row__line inbox-row__line--secondary text-muted"' + timeOrder + '><span class="inbox-row__meta-item"><i class="bx bx-time-five inbox-row__calendar-icon"></i><span>' + esc(b.start) + '–' + esc(b.end) + '</span></span></div>' +
             inlineContact +
@@ -719,7 +721,7 @@
             '<div class="inbox-row__main">' +
             '<div class="inbox-row__line inbox-row__line--primary d-flex align-items-center gap-2 flex-wrap">' +
             '<span class="badge bg-label-secondary vp-visit-order vp-visit-num flex-shrink-0">#' + esc(v.order) + '</span>' +
-            '<h6 class="inbox-row__title mb-0 text-truncate">' + esc(dn) + '</h6>' +
+            '<h6 class="inbox-row__title mb-0 text-truncate">' + esc(dn) + '</h6>' + (v.isExtra ? extraBadge() : '') +
             '</div>' +
             '<div class="inbox-row__line inbox-row__line--secondary text-muted"><span class="inbox-row__meta-item"><i class="bx bx-time-five inbox-row__calendar-icon"></i><span>' + esc(v.start) + '–' + esc(v.end) + '</span></span></div>' +
             '</div>' +
@@ -919,6 +921,7 @@
     let activeAccountId = null;
     let docList = []; // WP-VP-4J — the open institution's doctors under the quick filter (the plain table's rows)
     let docTerm = ''; // the doctor search term (Turkish-insensitive)
+    let paintExtraBulk = () => { }; // WP-VP-4L — set once the extra-visit writer is wired (below)
     const selKey = (a, c) => a + '|' + c;
     const accName = a => a.accountName || a.name || a.id;
     const accType = a => a.accountType || a.type || '';
@@ -1077,14 +1080,55 @@
     const hasFrequency = st => st.requiredVisitCount != null && st.frequencyStatus !== 'unknown';
     const frequencyCell = st => hasFrequency(st)
         ? esc((L.FrequencyPerPeriod || '{0}').replace('{0}', st.requiredVisitCount))
-        : '<span class="badge bg-label-secondary">' + esc(L.FrequencyNone || '—') + '</span>';
+        : '<span class="badge bg-label-secondary">' + esc(st.frequencyDefault === 'weekly' ? (L.FrequencyDefaultWeekly || '') : (L.FrequencyNone || '—')) + '</span>'; // WP-VP-4L (3)
     const doneCell = st => '<span title="' + esc((L.PlannedCountHint || '{0}').replace('{0}', st.planned || 0)) + '">' + esc(VPF.ratio(st.done || 0, st.remaining != null ? st.remaining : '—')) + '</span>';
     const lastVisitCell = st => st.lastVisitDate ? esc(dayShort(st.lastVisitDate)) : '<span class="text-muted">' + esc(L.LastVisitNever || '—') + '</span>';
     const doctorBadges = row => (row.blocked ? ' <span class="badge bg-label-danger" title="' + esc(L.ConsentBlockedHint || '') + '">' + esc(L.BadgeConsentBlocked || '') + '</span>' : '') +
         (row.inactive ? ' <span class="badge bg-label-secondary">' + esc(L.BadgeInactive || '') + '</span>' : '') +
         (row.status.segmentBadges || []).map(name => ' <span class="badge bg-label-info" title="' + esc(L.SegmentBadgeHint || '') + '">' + bidi(name) + '</span>').join('');
     // WP-VP-4H (6, F4-3) — "this week" (due) + the read-only badges form the Status column.
-    const statusCell = row => (row.status && row.status.dueThisWeek ? '<span class="badge bg-label-primary">' + esc(L.DueThisWeekBadge || '') + '</span>' : '') + doctorBadges(row);
+    // ── WP-VP-4L (4) — the Targets tab knows the SELECTED week: a plan doctor is "planned this week" (frequency), an
+    // "extra visit" (the rep's per-week addition, 4L-BE isExtra) or "not this week"; on a draft / empty week the rep can
+    // add an extra visit ("Visit this week too") or take it back, one by one or for the ticked doctors — the existing
+    // session update (weekExtras { weekStart, targets }, the dayPins pattern). Without the server fields (before 4L-BE)
+    // nothing of it shows.
+    const EXTRA_WEEK_STATUSES = ['draft', 'empty'];
+    const mondayKey = v => { const d = new Date(String(v) + 'T00:00:00'); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+    const selectedWeek = () => (page ? page.state.weekStart : null);
+    const weekSlots = ws => ((lastPreview && lastPreview.scheduled) || []).filter(s => (s.weekStart || mondayKey(s.plannedDate)) === ws);
+    const supportsExtras = () => !!lastPreview && (((lastPreview.weeks || []).some(w => Array.isArray(w.extraTargets)))
+        || ((lastPreview.scheduled || []).some(s => typeof s.isExtra === 'boolean')));
+    const canEditExtras = () => canGenerate && !readOnly && !!page && !page.isLegacy() && supportsExtras()
+        && EXTRA_WEEK_STATUSES.indexOf(page.weekStatus(selectedWeek())) > -1;
+    const savedDoctorIds = () => new Set(((sessionData && sessionData.selectedContacts) || []).map(c => c.contactId || c));
+    const weekExtraTargets = ws => {
+        const fromSession = ((sessionData && sessionData.weeks) || []).find(w => w.weekStart === ws);
+        const fromPreview = ((lastPreview && lastPreview.weeks) || []).find(w => w.weekStart === ws);
+        return ((fromSession && fromSession.extraTargets) || (fromPreview && fromPreview.extraTargets) || []).slice();
+    };
+    // planned | extra | none — for a doctor saved in the plan, once the plan's preview is known; else null (nothing shown)
+    const weekStateOf = cid => {
+        if (!lastPreview || !savedDoctorIds().has(cid)) return null;
+        const ws = selectedWeek();
+        const mine = weekSlots(ws).filter(s => s.contactId === cid);
+        if (mine.some(s => s.isExtra)) return 'extra';
+        if (mine.length) return 'planned';
+        return weekExtraTargets(ws).some(t => (t.contactId || t.targetId) === cid) ? 'extra' : 'none';
+    };
+    const WEEK_STATE = { planned: ['bg-label-success', 'WeekStatePlanned'], extra: ['bg-label-warning', 'WeekStateExtra'], none: ['bg-label-secondary', 'WeekStateNone'] };
+    const weekCell = row => {
+        const state = weekStateOf(row.contactId);
+        if (!state) return '';
+        const badge = '<span class="badge ' + WEEK_STATE[state][0] + ' vp-week-state" data-state="' + state + '">' + esc(L[WEEK_STATE[state][1]] || '') + '</span>';
+        let action = '';
+        if (canEditExtras() && !row.blocked) {
+            if (state === 'none') action = '<button type="button" class="btn btn-sm btn-text-primary px-1 py-0 js-extra-add" data-cid="' + esc(row.contactId) + '">' + esc(L.ExtraVisitAdd || '') + '</button>';
+            else if (state === 'extra') action = '<button type="button" class="btn btn-sm btn-text-secondary px-1 py-0 js-extra-remove" data-cid="' + esc(row.contactId) + '">' + esc(L.ExtraVisitRemove || '') + '</button>';
+        }
+        return badge + action;
+    };
+    // the week state replaces the 3D "due this week" hint once it is known (a plan doctor with the plan's preview)
+    const statusCell = row => (weekCell(row) || (row.status && row.status.dueThisWeek ? '<span class="badge bg-label-primary">' + esc(L.DueThisWeekBadge || '') + '</span>' : '')) + doctorBadges(row);
     // WP-VP-4J — the institution's doctors in a PLAIN table (mockup v3; no DataTable, no paging): every active doctor of
     // the quick filter, narrowed client-side by the search term (Turkish-insensitive) and the picked specialties; the
     // table scrolls inside its card. The cells are the 4C / 4H ones; column 3 is the picks cell targets.js fills after
@@ -1115,6 +1159,7 @@
         }
         // WP-VP-4H (6) — "Select all (N)": the selectable doctors the filters show.
         setText('vp-select-all-count', '(' + rows.filter(r => !r.blocked).length + ')');
+        paintExtraBulk();
         // WP-VP-4C — every draw tells targets.js to fill the picks cells of the drawn rows.
         if (page) page.emit('targets:doctors-drawn', { accountId: activeAccountId });
     };
@@ -1301,14 +1346,16 @@
     // WP-VP-4J — the head card's line: "41. Hafta · 12 doktor, 2 eczane seçili" (the picked institution has its own card).
     const refreshSubtitle = () => {
         const wk = page ? page.week(page.state.weekStart) : null;
-        setText('vp-targets-subtitle', fmt(L.TargetsSubtitle || '{0} · {1} · {2}', wk ? fmt(L.WeekNumberLabel || '{0}', wk.isoWeek) : '—',
-            Object.keys(selectedContacts).length, Object.keys(selectedPharmacies).length));
+        // WP-VP-4L (4) — the selections belong to the PERIOD, the visits to the week: say both, apart.
+        setText('vp-targets-subtitle', fmt(L.TargetsWeekSubtitle || '{0} · {1} · {2}', wk ? fmt(L.WeekNumberLabel || '{0}', wk.isoWeek) : '—',
+            lastPreview ? weekSlots(page.state.weekStart).length : '—', Object.keys(selectedContacts).length));
     };
     const refreshTargetsUi = () => {
         const docN = Object.keys(selectedContacts).length, phN = Object.keys(selectedPharmacies).length, accN = targetAccounts.length;
         setText('vp-accounts-count', String(accN));
         setText('vp-sum-doctors', docN); setText('vp-sum-pharm', phN); setText('vp-sum-accounts', accN);
         refreshSubtitle();
+        paintExtraBulk();
         renderSelectionChips();
         paintAccountStats();
         // WP-VP-4C — targets.js (summary, bulk product apply) reads the local selection by name, never by id alone.
@@ -1662,6 +1709,60 @@
         drawDoctors();
     });
     el('vp-select-all-doctors')?.addEventListener('click', selectAllDoctors);
+
+    // ── WP-VP-4L (4) — write the selected week's extra visits: the existing session update with
+    // weekExtras { weekStart, targets } (absent = kept, [] = cleared — the dayPins pattern). No new write endpoint. ──
+    const EXTRA_ERROR = { extra_target_not_in_plan: 'ExtraNotInPlan', extra_no_room: 'ExtraNoRoom' };
+    const extraErrorText = r => {
+        const code = (r.body && r.body.errors && r.body.errors[0]) || '';
+        if (EXTRA_ERROR[code]) return L[EXTRA_ERROR[code]] || code;
+        if (r.status === 409 || /not_editable|approved|locked|past/.test(code)) return L.ExtraWeekLocked || code; // reopen first
+        return errorText(r);
+    };
+    const extraTargetOf = cid => {
+        const saved = ((sessionData && sessionData.selectedContacts) || []).find(c => (c.contactId || c) === cid) || {};
+        return { targetType: 'contact', targetId: cid, contactId: cid, accountId: saved.accountId || null };
+    };
+    const saveWeekExtras = targets => {
+        if (!canEditExtras()) return Promise.resolve(false);
+        return api('/sessions/' + encodeURIComponent(sessionId), {
+            method: 'PUT',
+            body: JSON.stringify({ weekExtras: { weekStart: selectedWeek(), targets: targets }, expectedVersion: sessionData && sessionData.version })
+        }).then(r => {
+            if (!r.ok) { window.showToast?.(extraErrorText(r), 'error'); drawDoctors(); return false; } // the buttons come back
+            window.showToast?.(L.ExtraVisitsSaved || '', 'success');
+            page.request('reload-plan');
+            return true;
+        });
+    };
+    const addWeekExtras = cids => {
+        const current = weekExtraTargets(selectedWeek());
+        const have = new Set(current.map(t => t.contactId || t.targetId));
+        const fresh = cids.filter(cid => !have.has(cid) && weekStateOf(cid) === 'none').map(extraTargetOf);
+        return fresh.length ? saveWeekExtras(current.concat(fresh)) : Promise.resolve(false);
+    };
+    const removeWeekExtra = cid => saveWeekExtras(weekExtraTargets(selectedWeek()).filter(t => (t.contactId || t.targetId) !== cid));
+    // "Add to this week (N)": the ticked doctors of the plan that have no visit this week (consent blocked never).
+    const extraCandidates = () => Object.keys(selectedContacts).map(k => selectedContacts[k])
+        .filter(sc => { const c = findDoctor(sc.accountId, sc.contactId); return !(c && c.blocked) && weekStateOf(sc.contactId) === 'none'; })
+        .map(sc => sc.contactId);
+    paintExtraBulk = () => {
+        const btn = el('vp-week-extra-bulk'); if (!btn) return;
+        const on = canEditExtras();
+        btn.classList.toggle('d-none', !on);
+        const n = on ? extraCandidates().length : 0;
+        setText('vp-week-extra-bulk-label', fmt(L.ExtraVisitBulk || '{0}', n));
+        btn.disabled = n === 0;
+    };
+    el('dt-vp-contacts')?.addEventListener('click', e => {
+        const add = e.target.closest('.js-extra-add');
+        if (add) { add.disabled = true; addWeekExtras([add.dataset.cid]); return; }
+        const rm = e.target.closest('.js-extra-remove');
+        if (rm) { rm.disabled = true; removeWeekExtra(rm.dataset.cid); }
+    });
+    el('vp-week-extra-bulk')?.addEventListener('click', function () { this.disabled = true; addWeekExtras(extraCandidates()); });
+    // the week state follows the plan's preview and the selected week
+    if (page) ['preview', 'week-change', 'session'].forEach(evt => page.on(evt, () => { drawDoctors(); refreshSubtitle(); }));
     // WP-VP-4H (6) — the "My accounts" list: open an account, remove a plan account, search, load 50 more on scroll.
     const accHost = el('vp-acc-list');
     if (accHost) {

@@ -380,7 +380,7 @@
     <value>A product that does not fit the visit's limits moves to the doctor's next visit.</value>
   </data>
   <data name="RuleUnknownFrequency" xml:space="preserve">
-    <value>A target whose frequency is unknown counts as "1 in the period" and shows the no-frequency badge.</value>
+    <value>A target without a known frequency counts as "1 a week" and shows the default frequency label.</value>
   </data>
   <data name="StatusTextDraft" xml:space="preserve">
     <value>Draft week — you can change it until you approve it.</value>
@@ -685,9 +685,6 @@
   <data name="EmptyWeekHint" xml:space="preserve">
     <value>No visit is placed in this week yet. You can build it now by the frequency rules of the selected targets.</value>
   </data>
-  <data name="FrequencyDefaultOne" xml:space="preserve">
-    <value>1 in the period (default)</value>
-  </data>
   <data name="NextContentSoon" xml:space="preserve">
     <value>Next content: soon</value>
   </data>
@@ -804,5 +801,53 @@
   </data>
   <data name="NewPlanAfterSaveHint" xml:space="preserve">
     <value>After saving, the Targets tab suggests the doctors to see this week.</value>
+  </data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve">
+    <value>1 a week (default)</value>
+  </data>
+  <data name="TargetsWeekSubtitle" xml:space="preserve">
+    <value>{0} · {1} visits this week · {2} doctors in the period's targets</value>
+  </data>
+  <data name="WeekStatePlanned" xml:space="preserve">
+    <value>Planned this week</value>
+  </data>
+  <data name="WeekStateExtra" xml:space="preserve">
+    <value>Extra visit</value>
+  </data>
+  <data name="WeekStateNone" xml:space="preserve">
+    <value>Not this week</value>
+  </data>
+  <data name="ExtraVisitAdd" xml:space="preserve">
+    <value>Visit this week too</value>
+  </data>
+  <data name="ExtraVisitRemove" xml:space="preserve">
+    <value>Remove the extra visit</value>
+  </data>
+  <data name="ExtraVisitBulk" xml:space="preserve">
+    <value>Add to this week ({0})</value>
+  </data>
+  <data name="ExtraVisitsSaved" xml:space="preserve">
+    <value>The week's extra visits are saved.</value>
+  </data>
+  <data name="ExtraNotInPlan" xml:space="preserve">
+    <value>Add the doctor to the plan first (Save targets).</value>
+  </data>
+  <data name="ExtraWeekLocked" xml:space="preserve">
+    <value>The week is approved or over: reopen the week to add an extra visit.</value>
+  </data>
+  <data name="ExtraNoRoom" xml:space="preserve">
+    <value>There is no room in this week.</value>
+  </data>
+  <data name="ExtraBadgeShort" xml:space="preserve">
+    <value>extra</value>
+  </data>
+  <data name="ReasonExtraNoRoom" xml:space="preserve">
+    <value>no room for the extra visit</value>
+  </data>
+  <data name="ReasonWeekFullSkipped" xml:space="preserve">
+    <value>week full, this week's visit skipped</value>
+  </data>
+  <data name="EmptyWeekAddFromTargets" xml:space="preserve">
+    <value>You can also add doctors to this week from the Targets tab.</value>
   </data>
 </root>

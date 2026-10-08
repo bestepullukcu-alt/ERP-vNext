@@ -97,14 +97,16 @@
         el('vp-dp-sub').textContent = [specialty, accountName].filter(Boolean).join(' · ') || '—';
 
         const hasFrequency = status.requiredVisitCount != null && status.frequencyStatus !== 'unknown';
+        // WP-VP-4L (3) — an unknown frequency is the server's weekly default: "haftada 1 (varsayılan)" (frequencyDefault)
+        const weeklyDefault = status.frequencyDefault === 'weekly' || slots.some(s => s.frequencyDefault === 'weekly');
         const parts = [];
         parts.push('<div class="d-flex flex-wrap gap-1 mb-3">' +
             (status.segmentBadges || []).map(sname => '<span class="badge bg-label-info" title="' + esc(L.SegmentBadgeHint || '') + '">' + bidi(sname) + '</span>').join('') +
-            (hasFrequency ? '' : '<span class="badge bg-label-secondary">' + esc(L.FrequencyNone || '') + '</span>') + '</div>');
+            (hasFrequency ? '' : '<span class="badge bg-label-secondary">' + esc(weeklyDefault ? (L.FrequencyDefaultWeekly || '') : (L.FrequencyNone || '')) + '</span>') + '</div>');
 
-        // three boxes: frequency target ("dönemde 3" / "dönemde 1 (varsayılan)", F4-2) / done / remaining (3D)
+        // three boxes: frequency target ("dönemde 3" / 4L "haftada 1 (varsayılan)") / done / remaining (3D)
         parts.push('<div class="row g-2 text-center mb-4">' + [
-            [L.FrequencyTarget, hasFrequency ? fmt(L.FrequencyPerPeriod || '{0}', status.requiredVisitCount) : (L.FrequencyDefaultOne || '')],
+            [L.FrequencyTarget, hasFrequency ? fmt(L.FrequencyPerPeriod || '{0}', status.requiredVisitCount) : (weeklyDefault ? (L.FrequencyDefaultWeekly || '') : (L.FrequencyNone || ''))],
             [L.DoneLabel, status.done != null ? status.done : '—'],
             [L.RemainingLabel, status.remaining != null ? status.remaining : '—']
         ].map(x => '<div class="col-4"><div class="border rounded p-2 h-100"><div class="small text-muted">' + esc(x[0] || '') + '</div><div class="fw-semibold">' + esc(x[1]) + '</div></div></div>').join('') + '</div>');
@@ -138,7 +140,7 @@
                 const state = historyState(slot, firstDraft);
                 const items = slot ? (slot.contentItems || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0)) : [];
                 return '<li class="border-bottom py-2 vp-dp-week' + (w.status === 'past' ? ' opacity-50' : '') + '" data-ws="' + esc(w.weekStart) + '"><div class="d-flex justify-content-between small gap-2"><span class="fw-medium">' + esc(weekTitle(w) + ' · ' + weekRange(w)) + '</span>' +
-                    (state === 'none' ? '<span class="text-muted">—</span>' : '<span class="badge bg-' + HISTORY_TONE[state] + '">' + esc(L[HISTORY_STATE_LABEL[state]] || state) + '</span>') + '</div>' +
+                    (state === 'none' ? '<span class="text-muted">—</span>' : '<span class="d-flex gap-1">' + (slot.isExtra ? '<span class="badge bg-label-warning vp-extra-badge">' + esc(L.WeekStateExtra || '') + '</span>' : '') + '<span class="badge bg-' + HISTORY_TONE[state] + '">' + esc(L[HISTORY_STATE_LABEL[state]] || state) + '</span></span>') + '</div>' + // 4L: "Extra visit" 
                     (items.length ? '<div class="d-flex flex-wrap gap-1 mt-1 align-items-center"><span class="small text-muted">' + esc((L[HISTORY_LABEL[state]] || '') + ':') + '</span>' + items.map(chip).join(' ') + '</div>' : '') + '</li>';
             }).join('') + '</ul>' : '<div class="small text-muted">' + esc(L.NoVisitsInPeriod || '') + '</div>'));
 

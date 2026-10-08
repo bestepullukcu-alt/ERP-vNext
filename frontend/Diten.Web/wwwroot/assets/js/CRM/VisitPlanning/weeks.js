@@ -72,7 +72,8 @@
         no_feasible_availability_window: 'ReasonNoAvailability', duration_exceeds_working_day: 'ReasonTooLong',
         pin_day_full: 'ReasonPinDayFull', pin_outside_availability: 'ReasonPinAvailability',
         max_promo: 'ReasonMaxPromo', max_non_promo: 'ReasonMaxNonPromo',
-        no_near_day: 'ReasonNoNearDay' // 4G — a far group on a light week waits for a near day
+        no_near_day: 'ReasonNoNearDay', // 4G — a far group on a light week waits for a near day
+        extra_no_room: 'ReasonExtraNoRoom', week_full_skipped: 'ReasonWeekFullSkipped' // 4L — an extra / a weekly default visit that did not fit its week
     };
     const reasonText = code => L[REASON_KEYS[code]] || L.ReasonOther || code || '—';
 
@@ -207,6 +208,8 @@
     const openDays = new Set(), fullDays = new Set();
     // A visit: the name over its institution; on the right the product chips (names) and "≈ 22 min" ("no time" without
     // products); the 4D/4E move + pin controls stay.
+    // WP-VP-4L (5) — the rep's per-week extra visit (4L-BE isExtra): a small "extra" badge.
+    const extraMark = s => (s && s.isExtra ? '<span class="badge bg-label-warning vp-extra-badge" title="' + esc(L.WeekStateExtra || '') + '">' + esc(L.ExtraBadgeShort || '') + '</span>' : '');
     const visitLine = (s, movable) => {
         const idx = slotsAll().indexOf(s);
         const name = visitName(s);
@@ -217,7 +220,7 @@
         const hasProducts = (s.contentItems || []).length > 0;
         return '<div class="d-flex align-items-center gap-2 py-2 border-bottom flex-wrap vp-wk-visit"' + (movable ? ' draggable="true" data-drag="visit" data-slot="' + idx + '"' : '') + '>' +
             (movable ? '<i class="bx bx-grid-vertical text-muted" aria-hidden="true"></i>' : '') + pinMark(s) +
-            '<span class="flex-grow-1" style="min-width:0">' + nameHtml + '</span>' +
+            '<span class="flex-grow-1" style="min-width:0">' + nameHtml + '</span>' + extraMark(s) +
             '<span class="d-flex flex-wrap gap-1 align-items-center">' + chipsOf(s) +
             '<span class="small text-muted text-nowrap ms-1">' + esc(hasProducts || !s.contactId ? fmt(L.ApproxMinutes || '{0}', s.durationMinutes || 0) : (L.NoTimeShort || '')) + '</span></span>' +
             (movable ? '<button type="button" class="btn btn-sm btn-text-secondary px-1 js-wk-move" data-slot="' + idx + '" data-scope="visit" title="' + esc(L.MoveToDay || '') + '" aria-label="' + esc(L.MoveToDay || '') + '"><i class="bx bx-calendar-edit"></i></button>' : '') +
@@ -329,11 +332,13 @@
     const firstDraftWeekStart = () => { const w = page.weeks().find(x => x.status === 'draft'); return w ? w.weekStart : null; };
     const DOCTORS_LIMIT = 8;
     let allDoctorsShown = false;
-    // "dönemde 3 · 1 / 2" (frequency · done / remaining); an unknown frequency reads "dönemde 1 (varsayılan)" (F4-2).
+    // "dönemde 3 · 1 / 2" (frequency · done / remaining); WP-VP-4L (3) — an unknown frequency is the server's weekly
+    // default (frequencyDefault "weekly"): "haftada 1 (varsayılan)"; without the field, "no frequency".
     const frequencyLine = (s, status) => {
         const src = status && status.requiredVisitCount != null ? status : s; // the period status (targets read) first
         const known = src.requiredVisitCount != null && src.frequencyStatus !== 'unknown';
-        const freq = known ? fmt(L.FrequencyPerPeriod || '{0}', src.requiredVisitCount) : (L.FrequencyDefaultOne || '');
+        const weeklyDefault = (status && status.frequencyDefault) === 'weekly' || s.frequencyDefault === 'weekly';
+        const freq = known ? fmt(L.FrequencyPerPeriod || '{0}', src.requiredVisitCount) : (weeklyDefault ? (L.FrequencyDefaultWeekly || '') : (L.FrequencyNone || ''));
         const dr = status && status.done != null ? VPF.ratio(status.done, status.remaining != null ? status.remaining : '—') : '';
         return dr ? freq + ' · ' + dr : freq;
     };
@@ -432,7 +437,8 @@
                 ? '<button type="button" class="btn btn-primary mt-1 js-wk-action" data-action="generate"' + (busy ? ' disabled aria-busy="true"' : '') + '>' +
                   (busy ? '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>' + esc(L.GeneratingWeek || '') : esc(L.GenerateWeek || '')) + '</button>'
                 : '') +
-            (explained ? '<button type="button" class="btn btn-link btn-sm js-wk-edit-targets"><i class="bx bx-edit-alt me-1"></i>' + esc(L.EditTargetsLink || '') + '</button>' : '') +
+            (canGenerate && !page.isLegacy() ? '<div class="small text-muted" style="max-width:420px">' + esc(L.EmptyWeekAddFromTargets || '') + '</div>' : '') + // WP-VP-4L (4) — the second way
+            (explained || canGenerate ? '<button type="button" class="btn btn-link btn-sm js-wk-edit-targets"><i class="bx bx-edit-alt me-1"></i>' + esc(L.EditTargetsLink || '') + '</button>' : '') +
             '</div>';
     };
 

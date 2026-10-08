@@ -286,6 +286,9 @@
                                         @if (Model.CanGenerate)
                                         {
                                             <button type="button" class="btn btn-outline-primary" id="vp-bulk-products" disabled><i class="bx bx-package me-1"></i><span id="vp-bulk-products-label">@Localizer["BulkApplyProducts", 0]</span></button>
+                                            @* WP-VP-4L (4) — the ticked plan doctors without a visit this week get an extra visit (a draft / empty
+                                               week only; details.js shows it once the server knows extra visits). *@
+                                            <button type="button" class="btn btn-outline-warning d-none" id="vp-week-extra-bulk" disabled><i class="bx bx-calendar-plus me-1"></i><span id="vp-week-extra-bulk-label"></span></button>
                                         }
                                     </div>
                                     @* WP-VP-4J — the institution's active doctors in a PLAIN table (no DataTable, no paging): it scrolls inside

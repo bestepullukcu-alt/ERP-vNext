@@ -61,7 +61,7 @@ public sealed class VisitPlanningPolishRtlWebTests
         Assert.Contains("const head = VPF.isolateRatios(", details);
         // WP-VP-4J — the Targets subtitle carries no data name any more ("41. Hafta · 12 doktor, 2 eczane seçili"); the
         // institution's name sits in its own card, direction from its own text
-        Assert.Contains("setText('vp-targets-subtitle', fmt(L.TargetsSubtitle", details);
+        Assert.Contains("setText('vp-targets-subtitle', fmt(L.TargetsWeekSubtitle", details); // 4L: visits this week · doctors in the period
         Assert.Contains("id=\"vp-contacts-for\" dir=\"auto\"", View("Details.cshtml"));
         Assert.Contains("VPF.ratio(v.trim().length, REOPEN_MIN)", Script("header.js"));
         Assert.Contains("window.VisitPlanningFormat.isolateRatios(fmt(L.ProductLimitLine", Script("targets.js"));

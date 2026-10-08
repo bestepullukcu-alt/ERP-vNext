@@ -380,7 +380,7 @@
     <value>Продукт, не вошедший в лимит визита, переносится на следующий визит врача.</value>
   </data>
   <data name="RuleUnknownFrequency" xml:space="preserve">
-    <value>Цель с неизвестной частотой считается «1 за период» и показывается со значком «нет частоты».</value>
+    <value>Цель без известной частоты считается «1 в неделю» и показывается с меткой частоты по умолчанию.</value>
   </data>
   <data name="StatusTextDraft" xml:space="preserve">
     <value>Черновая неделя — её можно менять до утверждения.</value>
@@ -685,9 +685,6 @@
   <data name="EmptyWeekHint" xml:space="preserve">
     <value>На эту неделю ещё не размещено ни одного визита. Можно сформировать её сейчас по правилам частоты выбранных целей.</value>
   </data>
-  <data name="FrequencyDefaultOne" xml:space="preserve">
-    <value>1 за период (по умолчанию)</value>
-  </data>
   <data name="NextContentSoon" xml:space="preserve">
     <value>Следующий контент: скоро</value>
   </data>
@@ -804,5 +801,53 @@
   </data>
   <data name="NewPlanAfterSaveHint" xml:space="preserve">
     <value>После сохранения на вкладке «Цели» будут предложены врачи, которых нужно посетить на этой неделе.</value>
+  </data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve">
+    <value>1 в неделю (по умолчанию)</value>
+  </data>
+  <data name="TargetsWeekSubtitle" xml:space="preserve">
+    <value>{0} · визитов на этой неделе: {1} · врачей в целях периода: {2}</value>
+  </data>
+  <data name="WeekStatePlanned" xml:space="preserve">
+    <value>Запланирован на неделе</value>
+  </data>
+  <data name="WeekStateExtra" xml:space="preserve">
+    <value>Дополнительный визит</value>
+  </data>
+  <data name="WeekStateNone" xml:space="preserve">
+    <value>Не на этой неделе</value>
+  </data>
+  <data name="ExtraVisitAdd" xml:space="preserve">
+    <value>Посетить и на этой неделе</value>
+  </data>
+  <data name="ExtraVisitRemove" xml:space="preserve">
+    <value>Убрать дополнительный визит</value>
+  </data>
+  <data name="ExtraVisitBulk" xml:space="preserve">
+    <value>Добавить на эту неделю ({0})</value>
+  </data>
+  <data name="ExtraVisitsSaved" xml:space="preserve">
+    <value>Дополнительные визиты недели сохранены.</value>
+  </data>
+  <data name="ExtraNotInPlan" xml:space="preserve">
+    <value>Сначала добавьте врача в план (Сохранить цели).</value>
+  </data>
+  <data name="ExtraWeekLocked" xml:space="preserve">
+    <value>Неделя утверждена или прошла: откройте её заново, чтобы добавить визит.</value>
+  </data>
+  <data name="ExtraNoRoom" xml:space="preserve">
+    <value>На этой неделе нет места.</value>
+  </data>
+  <data name="ExtraBadgeShort" xml:space="preserve">
+    <value>доп.</value>
+  </data>
+  <data name="ReasonExtraNoRoom" xml:space="preserve">
+    <value>нет места для доп. визита</value>
+  </data>
+  <data name="ReasonWeekFullSkipped" xml:space="preserve">
+    <value>неделя заполнена, визит недели пропущен</value>
+  </data>
+  <data name="EmptyWeekAddFromTargets" xml:space="preserve">
+    <value>Врачей на эту неделю можно добавить и на вкладке «Цели».</value>
   </data>
 </root>

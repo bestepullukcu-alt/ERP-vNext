@@ -380,7 +380,7 @@
     <value>超出拜访上限的产品顺延到该医生的下次拜访。</value>
   </data>
   <data name="RuleUnknownFrequency" xml:space="preserve">
-    <value>频率未知的目标按“本期 1 次”计算，并显示“无频率”标记。</value>
+    <value>频率未知的目标按“每周 1 次”计，并显示默认频率标签。</value>
   </data>
   <data name="StatusTextDraft" xml:space="preserve">
     <value>草稿周——批准前可以修改。</value>
@@ -685,9 +685,6 @@
   <data name="EmptyWeekHint" xml:space="preserve">
     <value>本周尚未安排拜访。您可以现在按所选目标的频率规则生成。</value>
   </data>
-  <data name="FrequencyDefaultOne" xml:space="preserve">
-    <value>本期 1 次（默认）</value>
-  </data>
   <data name="NextContentSoon" xml:space="preserve">
     <value>下一个内容：即将推出</value>
   </data>
@@ -804,5 +801,53 @@
   </data>
   <data name="NewPlanAfterSaveHint" xml:space="preserve">
     <value>保存后，“目标”选项卡会推荐本周需拜访的医生。</value>
+  </data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve">
+    <value>每周 1 次（默认）</value>
+  </data>
+  <data name="TargetsWeekSubtitle" xml:space="preserve">
+    <value>{0} · 本周 {1} 次拜访 · {2} 名医生在周期目标中</value>
+  </data>
+  <data name="WeekStatePlanned" xml:space="preserve">
+    <value>本周已计划</value>
+  </data>
+  <data name="WeekStateExtra" xml:space="preserve">
+    <value>额外拜访</value>
+  </data>
+  <data name="WeekStateNone" xml:space="preserve">
+    <value>本周无</value>
+  </data>
+  <data name="ExtraVisitAdd" xml:space="preserve">
+    <value>本周也拜访</value>
+  </data>
+  <data name="ExtraVisitRemove" xml:space="preserve">
+    <value>移除额外拜访</value>
+  </data>
+  <data name="ExtraVisitBulk" xml:space="preserve">
+    <value>添加到本周（{0}）</value>
+  </data>
+  <data name="ExtraVisitsSaved" xml:space="preserve">
+    <value>本周的额外拜访已保存。</value>
+  </data>
+  <data name="ExtraNotInPlan" xml:space="preserve">
+    <value>请先将医生加入计划（保存目标）。</value>
+  </data>
+  <data name="ExtraWeekLocked" xml:space="preserve">
+    <value>该周已批准或已过去：请重新打开该周以添加额外拜访。</value>
+  </data>
+  <data name="ExtraNoRoom" xml:space="preserve">
+    <value>本周没有空余时间。</value>
+  </data>
+  <data name="ExtraBadgeShort" xml:space="preserve">
+    <value>额外</value>
+  </data>
+  <data name="ReasonExtraNoRoom" xml:space="preserve">
+    <value>额外拜访无空余时间</value>
+  </data>
+  <data name="ReasonWeekFullSkipped" xml:space="preserve">
+    <value>本周已满，本周拜访已跳过</value>
+  </data>
+  <data name="EmptyWeekAddFromTargets" xml:space="preserve">
+    <value>您也可以在“目标”选项卡中将医生添加到本周。</value>
   </data>
 </root>

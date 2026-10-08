@@ -380,7 +380,7 @@
     <value>المنتج الذي لا يتسع ضمن حدود الزيارة ينتقل إلى زيارة الطبيب التالية.</value>
   </data>
   <data name="RuleUnknownFrequency" xml:space="preserve">
-    <value>الهدف غير المعروف تكراره يُحسب "1 في الفترة" ويظهر بشارة لا تكرار.</value>
+    <value>الهدف غير معروف التكرار يُحتسب "1 أسبوعيًا" ويُعرض بتسمية التكرار الافتراضي.</value>
   </data>
   <data name="StatusTextDraft" xml:space="preserve">
     <value>أسبوع مسودة — يمكنك تعديله حتى تعتمده.</value>
@@ -685,9 +685,6 @@
   <data name="EmptyWeekHint" xml:space="preserve">
     <value>لم تُوضع أي زيارة في هذا الأسبوع بعد. يمكنك إنشاؤه الآن وفق قواعد تكرار الأهداف المحددة.</value>
   </data>
-  <data name="FrequencyDefaultOne" xml:space="preserve">
-    <value>1 في الفترة (افتراضي)</value>
-  </data>
   <data name="NextContentSoon" xml:space="preserve">
     <value>المحتوى التالي: قريبًا</value>
   </data>
@@ -804,5 +801,53 @@
   </data>
   <data name="NewPlanAfterSaveHint" xml:space="preserve">
     <value>بعد الحفظ، يقترح تبويب الأهداف الأطباء الواجب زيارتهم هذا الأسبوع.</value>
+  </data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve">
+    <value>1 أسبوعيًا (افتراضي)</value>
+  </data>
+  <data name="TargetsWeekSubtitle" xml:space="preserve">
+    <value>{0} · {1} زيارات هذا الأسبوع · {2} أطباء ضمن أهداف الفترة</value>
+  </data>
+  <data name="WeekStatePlanned" xml:space="preserve">
+    <value>مخطط هذا الأسبوع</value>
+  </data>
+  <data name="WeekStateExtra" xml:space="preserve">
+    <value>زيارة إضافية</value>
+  </data>
+  <data name="WeekStateNone" xml:space="preserve">
+    <value>ليس هذا الأسبوع</value>
+  </data>
+  <data name="ExtraVisitAdd" xml:space="preserve">
+    <value>زيارة هذا الأسبوع أيضًا</value>
+  </data>
+  <data name="ExtraVisitRemove" xml:space="preserve">
+    <value>إزالة الزيارة الإضافية</value>
+  </data>
+  <data name="ExtraVisitBulk" xml:space="preserve">
+    <value>إضافة إلى هذا الأسبوع ({0})</value>
+  </data>
+  <data name="ExtraVisitsSaved" xml:space="preserve">
+    <value>تم حفظ الزيارات الإضافية للأسبوع.</value>
+  </data>
+  <data name="ExtraNotInPlan" xml:space="preserve">
+    <value>أضف الطبيب إلى الخطة أولًا (حفظ الأهداف).</value>
+  </data>
+  <data name="ExtraWeekLocked" xml:space="preserve">
+    <value>الأسبوع معتمد أو منتهٍ: أعد فتح الأسبوع لإضافة زيارة إضافية.</value>
+  </data>
+  <data name="ExtraNoRoom" xml:space="preserve">
+    <value>لا يوجد مكان في هذا الأسبوع.</value>
+  </data>
+  <data name="ExtraBadgeShort" xml:space="preserve">
+    <value>إضافية</value>
+  </data>
+  <data name="ReasonExtraNoRoom" xml:space="preserve">
+    <value>لا مكان للزيارة الإضافية</value>
+  </data>
+  <data name="ReasonWeekFullSkipped" xml:space="preserve">
+    <value>الأسبوع ممتلئ، تم تخطي زيارة هذا الأسبوع</value>
+  </data>
+  <data name="EmptyWeekAddFromTargets" xml:space="preserve">
+    <value>يمكنك أيضًا إضافة أطباء إلى هذا الأسبوع من تبويب الأهداف.</value>
   </data>
 </root>

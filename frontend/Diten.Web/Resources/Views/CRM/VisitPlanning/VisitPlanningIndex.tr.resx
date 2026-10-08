@@ -380,7 +380,7 @@
     <value>Ziyaretin sınırına sığmayan ürün doktorun sonraki ziyaretine kalır.</value>
   </data>
   <data name="RuleUnknownFrequency" xml:space="preserve">
-    <value>Sıklığı bilinmeyen hedef "dönemde 1" sayılır ve sıklık yok rozetiyle gösterilir.</value>
+    <value>Sıklığı bilinmeyen hedef "haftada 1" sayılır ve varsayılan sıklık etiketiyle gösterilir.</value>
   </data>
   <data name="StatusTextDraft" xml:space="preserve">
     <value>Taslak hafta — onaylayana kadar düzenleyebilirsiniz.</value>
@@ -685,9 +685,6 @@
   <data name="EmptyWeekHint" xml:space="preserve">
     <value>Bu haftaya henüz ziyaret yerleşmedi. Seçili hedeflerin sıklık kurallarına göre şimdi üretebilirsiniz.</value>
   </data>
-  <data name="FrequencyDefaultOne" xml:space="preserve">
-    <value>dönemde 1 (varsayılan)</value>
-  </data>
   <data name="NextContentSoon" xml:space="preserve">
     <value>Sıradaki içerik: yakında</value>
   </data>
@@ -804,5 +801,53 @@
   </data>
   <data name="NewPlanAfterSaveHint" xml:space="preserve">
     <value>Kaydettikten sonra Hedefler sekmesinde bu hafta görülmesi gereken doktorlar önerilir.</value>
+  </data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve">
+    <value>haftada 1 (varsayılan)</value>
+  </data>
+  <data name="TargetsWeekSubtitle" xml:space="preserve">
+    <value>{0} · {1} ziyaret bu hafta · {2} doktor dönem hedefinde</value>
+  </data>
+  <data name="WeekStatePlanned" xml:space="preserve">
+    <value>Bu hafta planlı</value>
+  </data>
+  <data name="WeekStateExtra" xml:space="preserve">
+    <value>Ek ziyaret</value>
+  </data>
+  <data name="WeekStateNone" xml:space="preserve">
+    <value>Bu hafta yok</value>
+  </data>
+  <data name="ExtraVisitAdd" xml:space="preserve">
+    <value>Bu hafta da ziyaret et</value>
+  </data>
+  <data name="ExtraVisitRemove" xml:space="preserve">
+    <value>Ek ziyareti kaldır</value>
+  </data>
+  <data name="ExtraVisitBulk" xml:space="preserve">
+    <value>Bu haftaya ekle ({0})</value>
+  </data>
+  <data name="ExtraVisitsSaved" xml:space="preserve">
+    <value>Haftanın ek ziyaretleri kaydedildi.</value>
+  </data>
+  <data name="ExtraNotInPlan" xml:space="preserve">
+    <value>Önce doktoru plana ekleyin (Hedefleri kaydet).</value>
+  </data>
+  <data name="ExtraWeekLocked" xml:space="preserve">
+    <value>Hafta onaylı ya da geçmiş: ek ziyaret için haftayı yeniden açın.</value>
+  </data>
+  <data name="ExtraNoRoom" xml:space="preserve">
+    <value>Bu haftada yer yok.</value>
+  </data>
+  <data name="ExtraBadgeShort" xml:space="preserve">
+    <value>ek</value>
+  </data>
+  <data name="ReasonExtraNoRoom" xml:space="preserve">
+    <value>ek ziyarete yer yok</value>
+  </data>
+  <data name="ReasonWeekFullSkipped" xml:space="preserve">
+    <value>hafta dolu, bu haftanın ziyareti atlandı</value>
+  </data>
+  <data name="EmptyWeekAddFromTargets" xml:space="preserve">
+    <value>Hedefler'den doktorları bu haftaya ekleyebilirsiniz.</value>
   </data>
 </root>

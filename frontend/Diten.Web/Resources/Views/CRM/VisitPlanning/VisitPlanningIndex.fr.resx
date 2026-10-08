@@ -380,7 +380,7 @@
     <value>Un produit qui dépasse les limites de la visite passe à la visite suivante du médecin.</value>
   </data>
   <data name="RuleUnknownFrequency" xml:space="preserve">
-    <value>Une cible de fréquence inconnue compte « 1 sur la période » et porte le badge sans fréquence.</value>
+    <value>Une cible sans fréquence connue compte « 1 par semaine » et affiche l'étiquette de fréquence par défaut.</value>
   </data>
   <data name="StatusTextDraft" xml:space="preserve">
     <value>Semaine brouillon — modifiable jusqu'à son approbation.</value>
@@ -685,9 +685,6 @@
   <data name="EmptyWeekHint" xml:space="preserve">
     <value>Aucune visite n'est encore placée cette semaine. Vous pouvez la générer maintenant selon les règles de fréquence des cibles sélectionnées.</value>
   </data>
-  <data name="FrequencyDefaultOne" xml:space="preserve">
-    <value>1 sur la période (par défaut)</value>
-  </data>
   <data name="NextContentSoon" xml:space="preserve">
     <value>Contenu suivant : bientôt</value>
   </data>
@@ -804,5 +801,53 @@
   </data>
   <data name="NewPlanAfterSaveHint" xml:space="preserve">
     <value>Après l'enregistrement, l'onglet Cibles propose les médecins à voir cette semaine.</value>
+  </data>
+  <data name="FrequencyDefaultWeekly" xml:space="preserve">
+    <value>1 par semaine (par défaut)</value>
+  </data>
+  <data name="TargetsWeekSubtitle" xml:space="preserve">
+    <value>{0} · {1} visites cette semaine · {2} médecins dans les cibles de la période</value>
+  </data>
+  <data name="WeekStatePlanned" xml:space="preserve">
+    <value>Prévu cette semaine</value>
+  </data>
+  <data name="WeekStateExtra" xml:space="preserve">
+    <value>Visite supplémentaire</value>
+  </data>
+  <data name="WeekStateNone" xml:space="preserve">
+    <value>Pas cette semaine</value>
+  </data>
+  <data name="ExtraVisitAdd" xml:space="preserve">
+    <value>Visiter aussi cette semaine</value>
+  </data>
+  <data name="ExtraVisitRemove" xml:space="preserve">
+    <value>Retirer la visite supplémentaire</value>
+  </data>
+  <data name="ExtraVisitBulk" xml:space="preserve">
+    <value>Ajouter à cette semaine ({0})</value>
+  </data>
+  <data name="ExtraVisitsSaved" xml:space="preserve">
+    <value>Les visites supplémentaires de la semaine sont enregistrées.</value>
+  </data>
+  <data name="ExtraNotInPlan" xml:space="preserve">
+    <value>Ajoutez d'abord le médecin au plan (Enregistrer les cibles).</value>
+  </data>
+  <data name="ExtraWeekLocked" xml:space="preserve">
+    <value>La semaine est approuvée ou passée : rouvrez-la pour ajouter une visite supplémentaire.</value>
+  </data>
+  <data name="ExtraNoRoom" xml:space="preserve">
+    <value>Il n'y a pas de place cette semaine.</value>
+  </data>
+  <data name="ExtraBadgeShort" xml:space="preserve">
+    <value>suppl.</value>
+  </data>
+  <data name="ReasonExtraNoRoom" xml:space="preserve">
+    <value>pas de place pour la visite supplémentaire</value>
+  </data>
+  <data name="ReasonWeekFullSkipped" xml:space="preserve">
+    <value>semaine pleine, visite de la semaine sautée</value>
+  </data>
+  <data name="EmptyWeekAddFromTargets" xml:space="preserve">
+    <value>Vous pouvez aussi ajouter des médecins à cette semaine depuis l'onglet Cibles.</value>
   </data>
 </root>
