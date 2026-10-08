@@ -147,6 +147,8 @@ Kurallar:
 - ☑ Mobil not iletildi (2026-10-06) · ☑ 3 soru yanıtlandı ([yanıtlar](mobile/2026-10-06-visit-planning/MOBILE-ANSWERS-2026-10-06.md)): düzenlemede değerleri geri gönder; `resources/me` tek kaynak + `displayName` gelecek (B-1); ad için ara istek kabul, adlar B-8 ile yanıta girecek
 - ◐ Faz 2–4 alanları kesinleşti → [sözleşme notu 2026-10-08](mobile/2026-10-08-visit-planning-contract/MOBILE-CONTRACT-2026-10-08-visit-planning.md) yazıldı (kullanıcı iletir); SB-3-MOB SB-3c ile ayrı
 
+- ☐ **Manuel test bulgusu (2026-10-08):** sıklığı tanımsız 54 doktorun hepsi 41. haftada bitti, 42–53 boş. **Kararlar:** tanımsız sıklık = **haftada 1**; **haftaya ek ziyaret** evet → [WP-VP-4L](WP-VP-4L-weekly-default-week-extras.md) (4L-BE ∥ 4L-WEB; `C:	mpp-4l-be`, `C:	mpp-4l-web`). Mobil M10 metni "haftada 1 (varsayılan)" olacak.
+
 ### ★ Yön değişikliği (kullanıcı, 2026-10-08) — Ziyaret Çalışma Alanı (tek takvim)
 - Ziyaret Planlama + Ziyaret Yürütme **tek takvim ekranında**: Planla / Yürüt modu, ziyarete başla (fotoğraf + kanıt), iptal / yapılamadı / ertele (neden kategorisi), sunum ekranı (tablette doktor, telefonda temsilci), zengin hekim / eczane raporu (süre, etkinlik, bağlılık, hasta sayıları, rakip, itiraz, talep, numune, önceki değer önerisi), doktor satış payı ekranı.
 - ☐ **Mockup brief:** [BRIEF-visit-workspace-calendar](mockups/visit-workspace/BRIEF-visit-workspace-calendar.md) → kullanıcı tasarım yaptıracak. Mockup gelince Faz 6 (Planlanan Ziyaretler) ve SB-3c (başlat / tamamla) bu yöne göre yeniden kurgulanır.

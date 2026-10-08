@@ -51,6 +51,8 @@ Planlanan Ziyaretler listesi kayıt / arama ekranı olarak kalabilir; bu mockup 
 | Gönderilen rapor **60 dakika** içinde değiştirilebilir, sonra yalnız **gerekçeli düzeltme** | Rapor ekranında "Değiştir (54 dk)" → sonra "Düzelt". |
 | **İptal edilmiş ziyaret düzenlenemez, raporlanamaz** | İptal kartı salt okunur; neden kategorisi ve notu görünür. |
 | Yetkisiz kullanıcıya sayfa iskeleti çizilmez | "Yetkiniz yok" durumu ayrı ekran. |
+| **Sıklığı tanımsız doktor = haftada 1** (karar 2026-10-08) | Doktor satırında "haftada 1 (varsayılan)". |
+| **Haftaya ek ziyaret** (karar 2026-10-08) | Planla modunda doktor satırında "Bu hafta da ziyaret et"; takvim kartında "ek" rozeti; Hedefler başlığında "N ziyaret bu hafta · M doktor dönem hedefinde". |
 
 ---
 
