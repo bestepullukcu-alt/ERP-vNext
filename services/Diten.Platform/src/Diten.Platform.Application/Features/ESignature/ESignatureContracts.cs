@@ -57,6 +57,7 @@ public static class ESignCodes
     public const string ActionPrefixMismatch = "ESIGN_ACTION_PREFIX_MISMATCH";
     public const string ExportTooLarge = "ESIGN_EXPORT_TOO_LARGE";
     public const string SignatureMismatch = "ESIGN_SIGNATURE_MISMATCH";
+    public const string SignatureRequired = "ESIGN_SIGNATURE_REQUIRED";
     public const string SelfApprovalForbidden = "ESIGN_SELF_APPROVAL_FORBIDDEN";
     public const string SampleNotPending = "ESIGN_SAMPLE_NOT_PENDING";
     public const string SampleInUse = "ESIGN_SAMPLE_IN_USE";

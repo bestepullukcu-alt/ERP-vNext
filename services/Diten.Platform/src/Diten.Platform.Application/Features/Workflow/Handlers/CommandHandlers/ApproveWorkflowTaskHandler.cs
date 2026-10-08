@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.ESignature.Services;
 using Diten.Platform.Application.Features.Workflow.Commands;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
@@ -22,7 +23,8 @@ public sealed class ApproveWorkflowTaskHandler
         IPositionRepository? positionRepository = null,
         IPlatformTransactionExecutor? transactions = null,
         ITransactionalIntegrationEventWriter? events = null,
-        IWorkflowTemplateRepository? templates = null)
+        IWorkflowTemplateRepository? templates = null,
+        IESignatureGate? signatureGate = null)
     {
         _support = new WorkflowTaskTransitionSupport(
             taskRepository,
@@ -32,7 +34,7 @@ public sealed class ApproveWorkflowTaskHandler
             versionRepository,
             positionAssignmentRepository,
             // WP-CL-BE-3 — position status for next-step candidates; transaction + outbox for the final approval.
-            new WorkflowTransitionSeams(positionRepository, transactions, events, templates));
+            new WorkflowTransitionSeams(positionRepository, transactions, events, templates, signatureGate));
     }
 
     public Task<Response<WorkflowTaskTransitionResponse>> Handle(ApproveWorkflowTaskCommand request, CancellationToken ct) =>
@@ -45,5 +47,6 @@ public sealed class ApproveWorkflowTaskHandler
             request.Request.Comment,
             request.Request.EvidenceRef,
             request.CorrelationId,
-            ct);
+            ct,
+            request.Request.SignatureId);
 }

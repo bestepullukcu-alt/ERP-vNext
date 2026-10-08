@@ -262,7 +262,14 @@ public sealed record WorkItemActionDto(
     bool RequiresEvidence,
     bool SupportsBulk,
     string RiskLevel,
-    string? TargetStatus = null);
+    string? TargetStatus = null,
+    // MOD-0022 E4 — on the approve action of a signature-required workflow step only; omitted otherwise.
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    bool? SignatureRequired = null,
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? SignatureMeaning = null);
 
 /// <summary>
 /// waitingContext { type, waitingOn?, reason?, since?, expectedUntil? } — present iff normalizedStatus == Waiting.

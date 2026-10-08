@@ -226,6 +226,9 @@ public static class DependencyInjection
         // MOD-0022 E2 — e-Signature Service. Subject providers: in-process ones register ISignableSubjectProvider; remote
         // owners are reached through IRemoteSignableSubjectClient (Infrastructure, operator-configured base URLs).
         services.AddScoped<Features.ESignature.Services.ISignableSubjectProvider, Features.ESignature.Providers.DocumentManagementSignableSubjectProvider>();
+        // MOD-0022 E4 — the workflow-task subject (ASSUMPTION-0022-05) and the approval gate MOD-0023 calls in-process.
+        services.AddScoped<Features.ESignature.Services.ISignableSubjectProvider, Features.ESignature.Providers.WorkflowTaskSignableSubjectProvider>();
+        services.AddScoped<Features.ESignature.Services.IESignatureGate, Features.ESignature.Services.ESignatureGate>();
         services.AddScoped<Features.ESignature.Services.ISignableSubjectRegistry, Features.ESignature.Services.SignableSubjectRegistry>();
         services.AddScoped<Features.ESignature.Services.IESignActorAccessor, Features.ESignature.Services.ESignActorAccessor>();
         services.AddScoped<Features.ESignature.Services.IESignatureCatalog, Features.ESignature.Services.ESignatureCatalog>();

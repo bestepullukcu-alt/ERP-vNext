@@ -1,4 +1,6 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.ESignature;
+using Diten.Platform.Application.Features.ESignature.Services;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
@@ -15,6 +17,7 @@ internal sealed class WorkflowTaskTransitionSupport
     private readonly IPositionAssignmentRepository? _positionAssignmentRepository;
     private readonly IPositionRepository? _positionRepository;
     private readonly WorkflowTerminalTransitionWriter _terminal;
+    private readonly IESignatureGate? _signatureGate;
 
     public WorkflowTaskTransitionSupport(
         IApprovalTaskRepository taskRepository,
@@ -32,6 +35,7 @@ internal sealed class WorkflowTaskTransitionSupport
         _versionRepository = versionRepository;
         _positionAssignmentRepository = positionAssignmentRepository;
         _positionRepository = seams?.Positions;
+        _signatureGate = seams?.SignatureGate;
         _terminal = new WorkflowTerminalTransitionWriter(
             taskRepository, instanceRepository, logRepository,
             seams?.Transactions, seams?.Events, seams?.Templates);
@@ -46,9 +50,11 @@ internal sealed class WorkflowTaskTransitionSupport
         string? comment,
         string? evidenceRef,
         string correlationId,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? signatureId = null)
     {
         actorId = actorId.Trim();
+        signatureId = string.IsNullOrWhiteSpace(signatureId) ? null : signatureId.Trim();
         reasonCode = reasonCode.Trim();
         idempotencyKey = idempotencyKey.Trim();
 
@@ -124,6 +130,33 @@ internal sealed class WorkflowTaskTransitionSupport
                 correlationId);
         }
 
+        // MOD-0022 E4 — after replay → state → assignment → actor → SoD, before the transition (ESIGN-BUNDLE
+        // x-workflow-addendum). One handler serves the API and the WorkCenter dispatcher, so neither can approve a
+        // signature-required step without a signature that binds this approver, this task and this meaning.
+        if (action == WorkflowTransitionAction.Approve && task.SignatureRequired)
+        {
+            if (signatureId is null)
+            {
+                return Response<WorkflowTaskTransitionResponse>.Fail(
+                    "This approval step requires an electronic signature.",
+                    409,
+                    ESignCodes.SignatureRequired,
+                    correlationId);
+            }
+
+            var binding = _signatureGate is null
+                ? new ESignatureGateResult(ESignatureGateFailure.NotFound) // no gate wired → fail closed
+                : await _signatureGate.ValidateForApprovalAsync(signatureId, task, instance, actorId, ct);
+            if (!binding.Binds)
+            {
+                return Response<WorkflowTaskTransitionResponse>.Fail(
+                    "The electronic signature does not bind this approval.",
+                    409,
+                    ESignCodes.SignatureMismatch,
+                    correlationId);
+            }
+        }
+
         var previousTaskStatus = task.Status;
         var previousInstanceStatus = instance.Status;
         var now = DateTimeOffset.UtcNow;
@@ -184,6 +217,8 @@ internal sealed class WorkflowTaskTransitionSupport
                 IdempotencyKey = idempotencyKey,
                 CommentRequired = nextStep.CommentRequired,
                 EvidenceRequired = nextStep.EvidenceRequired,
+                SignatureRequired = nextStep.SignatureRequired,
+                SignatureMeaning = nextStep.SignatureMeaning,
                 DueAt = instance.DueAt
             };
             nextSnapshot = new RuntimeAssignmentSnapshot
@@ -209,6 +244,7 @@ internal sealed class WorkflowTaskTransitionSupport
             var terminalLog = NewLog(task, instance, action, previousTaskStatus, previousInstanceStatus, actorId,
                 reasonCode, idempotencyKey, comment, evidenceRef, correlationId,
                 await _logRepository.GetLatestSequenceNoAsync(instance.Id, ct) + 1);
+            terminalLog.SignatureId = action == WorkflowTransitionAction.Approve ? signatureId : null;
             var terminal = await _terminal.CommitAsync(task, task.Version, instance, instance.Version, terminalLog,
                 escalationWrite: false, actorId, reasonCode, correlationId, ct);
             return TerminalResponse(terminal, task, instance, previousTaskStatus, previousInstanceStatus, action,
@@ -250,6 +286,7 @@ internal sealed class WorkflowTaskTransitionSupport
             IdempotencyKey = idempotencyKey,
             Comment = comment,
             EvidenceRef = evidenceRef,
+            SignatureId = action == WorkflowTransitionAction.Approve ? signatureId : null,
             CorrelationId = correlationId,
             SequenceNo = sequenceNo
         };

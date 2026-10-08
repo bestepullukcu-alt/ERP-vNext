@@ -416,6 +416,15 @@ public sealed class WorkflowTransitionLogRepository : TenantRepository<WorkflowT
         return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
     }
 
+    // MOD-0022 E4 — single use of an approval signature (tenant-scoped like every read of this repository).
+    public async Task<bool> IsSignatureBoundAsync(string signatureId, CancellationToken ct = default)
+    {
+        var filter = Builders<WorkflowTransitionLog>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowTransitionLog>.Filter.Eq(x => x.SignatureId, signatureId));
+        return await Collection.Find(filter).Limit(1).CountDocumentsAsync(ct) > 0;
+    }
+
     public Task<WorkflowTransitionLog?> FindByIdempotencyAsync(
         Guid approvalTaskId,
         Domain.Enums.Workflow.WorkflowTransitionAction action,
