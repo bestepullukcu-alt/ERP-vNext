@@ -113,6 +113,44 @@ public sealed class KnowledgePathReviewWebTests
         Assert.Equal("Ayşe Kaya", model.GetProperty("submittedBy").GetString());  // MOD-0023 display name, not the id
     }
 
+    // WP-E2E-FIX-2 (acceptance 5, E3-B3) — approving the LAST step completes the review; a middle step keeps today's text.
+    [Fact]
+    public async Task The_model_says_whether_the_pending_step_is_the_last_one_and_the_approval_text_follows()
+    {
+        using var _ = new UiCulture("tr");
+        var middle = Data(await Controller(new StubGateway(), Reviewer, Read).ReviewerView(PathId, Rev2, default));
+        Assert.Equal(("Hukuk inceleme", false), (middle.GetProperty("currentStepName").GetString(), middle.GetProperty("isFinalStep").GetBoolean()));
+
+        var last = Data(await Controller(new StubGateway { LegalApproved = true }, "user-reg", Read).ReviewerView(PathId, Rev2, default));
+        Assert.Equal(("Ruhsat inceleme", true), (last.GetProperty("currentStepName").GetString(), last.GetProperty("isFinalStep").GetBoolean()));
+
+        var review = Script("review.js");
+        Assert.Contains("model.isFinalStep ? t('DecisionApprovedFinal')", review);
+        Assert.Contains("t('DecisionApproved', model.currentStepName || '')", review);
+        foreach (var language in Languages)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(Values(language).GetValueOrDefault("DecisionApprovedFinal")), language);
+        }
+
+        Assert.Equal("Onay kaydedildi. İnceleme tamamlandı.", Values("tr")["DecisionApprovedFinal"]);
+    }
+
+    // WP-E2E-FIX-2 (acceptance 6, E3-B4) — the withdraw button is the submitter's AND needs Manage.
+    [Fact]
+    public async Task Only_the_submitter_with_manage_gets_the_withdraw_button_and_the_403_code_is_user_text()
+    {
+        static bool CanWithdraw(JsonElement model) => model.GetProperty("submit").GetProperty("canWithdrawReview").GetBoolean();
+        Assert.True(CanWithdraw(Data(await Controller(new StubGateway(), Author, Read, Manage).StudioReview(PathId, default))));
+        Assert.False(CanWithdraw(Data(await Controller(new StubGateway(), Reviewer, Read, Manage).StudioReview(PathId, default))));
+        Assert.False(CanWithdraw(Data(await Controller(new StubGateway(), Author, Read).StudioReview(PathId, default))));
+
+        Assert.Contains("withdraw_not_submitter: () => t('Err_withdraw_not_submitter')", Script("studio-common.js"));
+        foreach (var language in Languages)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(Values(language).GetValueOrDefault("Err_withdraw_not_submitter")), language);
+        }
+    }
+
     [Fact]
     public async Task The_round_submitter_is_the_submitter_even_when_another_user_created_the_revision()
     {
@@ -613,6 +651,9 @@ public sealed class KnowledgePathReviewWebTests
         /// <summary>false: Rev 2 in review (Legal waiting). true: Rev 2 approved + rendered, path approved, v1.0 live.</summary>
         public bool Approved { get; init; }
         public bool WithIssues { get; init; }
+
+        /// <summary>WP-E2E-FIX-2 — Rev 2 in review with Medical AND Legal approved: the last step (Regulatory) waits.</summary>
+        public bool LegalApproved { get; init; }
         public string CreatedBy { get; init; } = Author;
         public (int Status, byte[] Body, string? FileName)? Artifact { get; init; }
         public List<string> Requests { get; } = [];
@@ -828,6 +869,14 @@ public sealed class KnowledgePathReviewWebTests
                         new { action = "approve", stepCode = "medical", stepName = "Medikal inceleme", comment = "Mekanizma cümlesi uygun.", actorId = "user-medical", actorDisplay = "Dr. Mert Demir", occurredAt = "2026-09-28T09:00:00+00:00" },
                         new { action = "approve", stepCode = "legal", stepName = "Hukuk inceleme", actorId = Reviewer, actorDisplay = "Av. Selin Aksoy", occurredAt = "2026-09-28T11:00:00+00:00" },
                         new { action = "approve", stepCode = "regulatory", stepName = "Ruhsat inceleme", actorId = "user-reg", actorDisplay = "Oğuz B.", occurredAt = "2026-09-28T15:00:00+00:00" }
+                    }
+                    : LegalApproved
+                    ? new object[]
+                    {
+                        new { action = "start", stepCode = "medical", stepName = "Medikal inceleme", actorId = Author, actorDisplay = "Ayşe Kaya", occurredAt = "2026-09-27T13:10:00+00:00" },
+                        new { action = "approve", stepCode = "medical", stepName = "Medikal inceleme", comment = "Mekanizma cümlesi uygun.", actorId = "user-medical", actorDisplay = "Dr. Mert Demir", occurredAt = "2026-09-28T09:00:00+00:00" },
+                        new { action = "approve", stepCode = "legal", stepName = "Hukuk inceleme", comment = (string?)null, actorId = Reviewer, actorDisplay = "Av. Selin Aksoy", occurredAt = "2026-09-28T11:00:00+00:00" },
+                        new { action = "start", stepCode = "regulatory", stepName = "Ruhsat inceleme", comment = (string?)null, actorId = (string?)null, actorDisplay = (string?)null, occurredAt = "2026-09-28T11:00:01+00:00" }
                     }
                     : new object[]
                     {

@@ -339,6 +339,20 @@ public sealed class PublishedValueItemModel
     public bool IsActive { get; set; } = true;
     public int SortOrder { get; set; }
 
+    /// <summary>The value's free attributes (MOD-0048 <c>attributes</c>); WP-VP-4I — per-language labels as
+    /// <c>label_&lt;lang&gt;</c> (a value carries one label; reference-data owners may add them).</summary>
+    public Dictionary<string, string>? Attributes { get; set; }
+
     public string? Value => !string.IsNullOrWhiteSpace(Code) ? Code : ValueCode;
     public string? Text => !string.IsNullOrWhiteSpace(Label) ? Label : DisplayName;
+
+    /// <summary>WP-VP-4I (9) — the label in <paramref name="language"/> (two letters: "tr", "ar", …): its
+    /// <c>label_&lt;lang&gt;</c> attribute when present, else <see cref="Text"/>.</summary>
+    public string? TextFor(string? language)
+        => !string.IsNullOrWhiteSpace(language)
+           && Attributes is not null
+           && Attributes.TryGetValue("label_" + language.ToLowerInvariant(), out var localized)
+           && !string.IsNullOrWhiteSpace(localized)
+            ? localized
+            : Text;
 }

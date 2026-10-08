@@ -21,11 +21,6 @@ public interface IVisitFrequencyPolicyResolver
 
 public sealed class VisitFrequencyPolicyResolver : IVisitFrequencyPolicyResolver
 {
-    /// <summary>WP-FREQ-DET-P — upper bound on how many active contact segments a single resolve probes for membership.
-    /// Beyond it derivation is capped (not aborted): the explicit request.SegmentId context still resolves. Membership
-    /// is one bounded read per segment, so this keeps a contact resolve O(cap) even in a tenant with many segments.</summary>
-    private const int MaxSegmentsToProbe = 200;
-
     private readonly ITenantContext _tenant;
     private readonly IVisitFrequencyPolicyRepository _repository;
     private readonly ISegmentRepository? _segments;
@@ -90,33 +85,11 @@ public sealed class VisitFrequencyPolicyResolver : IVisitFrequencyPolicyResolver
         return VisitFrequencyResolveEngine.Resolve(request, candidates, now, segmentContext);
     }
 
-    /// <summary>Active contact-subject segments this contact is a member of at <paramref name="effectiveAt"/>. Only
-    /// <see cref="Segment.IsActive"/> contact segments are probed, capped at <see cref="MaxSegmentsToProbe"/>; each is a
-    /// single bounded, PII-safe membership read whose <c>member</c> verdict adds the id (unknown/not-member is skipped,
-    /// so a draft or ineffective segment naturally drops out).</summary>
-    private async Task<IReadOnlyList<Guid>> DeriveContactSegmentsAsync(
+    /// <summary>WP-VP-2 — the shared <see cref="ContactSegmentMemberships"/> derivation (one implementation for frequency
+    /// and play derivation).</summary>
+    private Task<IReadOnlyList<Guid>> DeriveContactSegmentsAsync(
         Guid tenantId, Guid contactId, DateTimeOffset effectiveAt, CancellationToken cancellationToken)
-    {
-        var all = await _segments!.ListAsync(tenantId, cancellationToken);
-        var active = all
-            .Where(s => s.IsActive()
-                && string.Equals(s.SubjectType, SegmentSubjectTypes.Contact, StringComparison.Ordinal))
-            .Take(MaxSegmentsToProbe)
-            .ToList();
-
-        var derived = new List<Guid>();
-        foreach (var segment in active)
-        {
-            var verdict = await _membership!.IsMemberAsync(
-                segment.Id, SegmentSubjectTypes.Contact, contactId, effectiveAt, cancellationToken);
-            if (verdict.IsMember)
-            {
-                derived.Add(segment.Id);
-            }
-        }
-
-        return derived;
-    }
+        => ContactSegmentMemberships.DeriveAsync(_segments!, _membership!, tenantId, contactId, effectiveAt, cancellationToken);
 
     private static void AddId(ICollection<Guid> ids, Guid? id)
     {

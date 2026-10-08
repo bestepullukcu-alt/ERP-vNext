@@ -80,33 +80,24 @@
         <input type="hidden" id="ve-report-version" />
         <input type="hidden" id="ve-report-state" />
 
-        @* planned vs actual content (FU04-planned is read-only) *@
+        @* WP-E2E-FIX-1 (E9-B2) — "what do I present": product → stage → step titles, from the plan atom (read-only) *@
         <div class="mb-3">
             <label class="form-label">@Localizer["PlannedContent"]</label>
-            <div class="form-control form-control-sm bg-light" id="ve-planned-content" readonly>—</div>
+            <div class="border rounded bg-light p-2 small" id="ve-planned-content">@Localizer["NoPlannedContent"]</div>
         </div>
 
-        <div class="row g-2 mb-2">
-            <div class="col-8">
-                <label class="form-label" for="ve-actual-stage-code">@Localizer["ActualStage"]</label>
-                <input type="text" class="form-control form-control-sm" id="ve-actual-stage-code" />
-            </div>
-            <div class="col-4">
-                <label class="form-label" for="ve-actual-stage-index">@Localizer["StageIndex"]</label>
-                <input type="number" min="0" class="form-control form-control-sm" id="ve-actual-stage-index" />
-            </div>
-        </div>
-        <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="ve-matched-plan" />
-            <label class="form-check-label" for="ve-matched-plan">@Localizer["MatchedPlan"]</label>
+        @* WP-E2E-FIX-1 (E9-B3) — the presented stage is PICKED from the planned journey (default: the planned stage) *@
+        <div class="mb-3" id="ve-actual-stage-block">
+            <label class="form-label" for="ve-actual-stage">@Localizer["ActualStage"]</label>
+            <select class="form-select form-select-sm" id="ve-actual-stage"></select>
+            <div class="form-text" id="ve-actual-stage-hint"></div>
         </div>
 
         <div class="mb-2">
-            <label class="form-label" for="ve-outcome-code">@Localizer["OutcomeCode"]</label>
-            <input type="text" class="form-control form-control-sm" id="ve-outcome-code"
-                   list="ve-outcome-codes" placeholder="@Localizer["OutcomeCodePlaceholder"]" />
-            <datalist id="ve-outcome-codes"></datalist>
-            <div class="form-text">@Localizer["ReferenceDataHint"]</div>
+            <label class="form-label" for="ve-outcome-code">@Localizer["OutcomeCode"] <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="ve-outcome-code" required
+                   placeholder="@Localizer["OutcomeCodePlaceholder"]" />
+            <div class="form-text">@Localizer["OutcomeCodeHint"]</div>
         </div>
 
         <div class="mb-3">
@@ -154,24 +145,62 @@
 @section Scripts {
     <script>
         window.VisitExecutionL10n = {
-            markCompleted: '@Localizer["MarkCompleted"]',
-            markMissed: '@Localizer["MarkMissed"]',
-            markRescheduled: '@Localizer["MarkRescheduled"]',
-            report: '@Localizer["Report"]',
-            none: '@Localizer["StateNone"]',
-            draft: '@Localizer["StateDraft"]',
-            submitted: '@Localizer["StateSubmitted"]',
-            amended: '@Localizer["StateAmended"]',
-            outcomeRecorded: '@Localizer["OutcomeRecorded"]',
-            reportSubmitted: '@Localizer["ReportSubmitted"]',
-            reportAmended: '@Localizer["ReportAmended"]',
-            actionFailed: '@Localizer["ActionFailed"]',
-            reasonPrompt: '@Localizer["ReasonPrompt"]',
-            reschedulePrompt: '@Localizer["ReschedulePrompt"]',
-            noVisits: '@Localizer["NoVisits"]',
-            qty: '@Localizer["Quantity"]',
-            itemType: '@Localizer["ItemType"]',
-            remove: '@Localizer["Remove"]'
+            markCompleted: @Json.Serialize(Localizer["MarkCompleted"].Value),
+            markMissed: @Json.Serialize(Localizer["MarkMissed"].Value),
+            markRescheduled: @Json.Serialize(Localizer["MarkRescheduled"].Value),
+            report: @Json.Serialize(Localizer["Report"].Value),
+            none: @Json.Serialize(Localizer["StateNone"].Value),
+            draft: @Json.Serialize(Localizer["StateDraft"].Value),
+            submitted: @Json.Serialize(Localizer["StateSubmitted"].Value),
+            amended: @Json.Serialize(Localizer["StateAmended"].Value),
+            outcomeRecorded: @Json.Serialize(Localizer["OutcomeRecorded"].Value),
+            reportSubmitted: @Json.Serialize(Localizer["ReportSubmitted"].Value),
+            reportAmended: @Json.Serialize(Localizer["ReportAmended"].Value),
+            actionFailed: @Json.Serialize(Localizer["ActionFailed"].Value),
+            reasonPrompt: @Json.Serialize(Localizer["ReasonPrompt"].Value),
+            reschedulePrompt: @Json.Serialize(Localizer["ReschedulePrompt"].Value),
+            noVisits: @Json.Serialize(Localizer["NoVisits"].Value),
+            qty: @Json.Serialize(Localizer["Quantity"].Value),
+            itemType: @Json.Serialize(Localizer["ItemType"].Value),
+            remove: @Json.Serialize(Localizer["Remove"].Value),
+            // WP-E2E-FIX-1
+            noPlannedContent: @Json.Serialize(Localizer["NoPlannedContent"].Value),
+            stageFallback: @Json.Serialize(Localizer["StageFallback"].Value),
+            plannedStageSuffix: @Json.Serialize(Localizer["PlannedStageSuffix"].Value),
+            stageNotPresented: @Json.Serialize(Localizer["StageNotPresented"].Value),
+            stageMatchesPlan: @Json.Serialize(Localizer["StageMatchesPlan"].Value),
+            stageDiffersFromPlan: @Json.Serialize(Localizer["StageDiffersFromPlan"].Value),
+            notYetDue: @Json.Serialize(Localizer["NotYetDueHint"].Value),
+            confirmCompleted: @Json.Serialize(Localizer["ConfirmCompleted"].Value),
+            confirmCompletedButton: @Json.Serialize(Localizer["ConfirmCompletedButton"].Value),
+            outcomes: {
+                completed: @Json.Serialize(Localizer["OutcomeCompleted"].Value),
+                missed: @Json.Serialize(Localizer["OutcomeMissed"].Value),
+                rescheduled: @Json.Serialize(Localizer["OutcomeRescheduled"].Value)
+            },
+            // machine refusal code → message (unknown codes fall back to the server's text)
+            errors: {
+                visit_report_outcome_code_required: @Json.Serialize(Localizer["ErrOutcomeCodeRequired"].Value),
+                visit_not_yet_due: @Json.Serialize(Localizer["ErrNotYetDue"].Value),
+                visit_report_planned_visit_required: @Json.Serialize(Localizer["ErrPlannedVisitRequired"].Value),
+                visit_report_planned_visit_not_found: @Json.Serialize(Localizer["ErrPlannedVisitNotFound"].Value),
+                visit_report_outcome_required: @Json.Serialize(Localizer["ErrOutcomeRequired"].Value),
+                visit_report_reason_code_required: @Json.Serialize(Localizer["ErrReasonCodeRequired"].Value),
+                visit_report_reschedule_date_invalid: @Json.Serialize(Localizer["ErrRescheduleDateInvalid"].Value),
+                visit_report_resource_required: @Json.Serialize(Localizer["ErrResourceRequired"].Value),
+                visit_report_sample_invalid: @Json.Serialize(Localizer["ErrSampleInvalid"].Value),
+                visit_report_content_actuals_invalid: @Json.Serialize(Localizer["ErrContentActualsInvalid"].Value),
+                visit_report_free_text_too_long: @Json.Serialize(Localizer["ErrFreeTextTooLong"].Value),
+                visit_report_not_found: @Json.Serialize(Localizer["ErrReportNotFound"].Value),
+                visit_report_already_exists: @Json.Serialize(Localizer["ErrReportAlreadyExists"].Value),
+                visit_report_not_completed: @Json.Serialize(Localizer["ErrNotCompleted"].Value),
+                visit_report_edit_window_closed: @Json.Serialize(Localizer["ErrEditWindowClosed"].Value),
+                visit_report_not_finalised: @Json.Serialize(Localizer["ErrNotFinalised"].Value),
+                visit_report_amendment_reason_required: @Json.Serialize(Localizer["ErrAmendmentReasonRequired"].Value),
+                visit_report_invalid_transition: @Json.Serialize(Localizer["ErrInvalidTransition"].Value),
+                visit_report_concurrency_conflict: @Json.Serialize(Localizer["ErrConcurrencyConflict"].Value),
+                unsupported_vocabulary_value: @Json.Serialize(Localizer["ErrUnsupportedValue"].Value)
+            }
         };
     </script>
     <script src="~/assets/js/CRM/VisitExecution/visit-execution.js" asp-append-version="true"></script>

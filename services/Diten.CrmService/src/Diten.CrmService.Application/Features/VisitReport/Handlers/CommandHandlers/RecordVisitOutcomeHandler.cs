@@ -24,10 +24,16 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
     private readonly IVisitReportRepository _reports;
     private readonly IPlannedVisitRepository _plannedVisits;
 
+    private readonly ICallerScope _caller;
+    private readonly TimeProvider _clock;
+
     public RecordVisitOutcomeHandler(
         ITenantContext tenant, IActorContext actor,
-        IVisitReportRepository reports, IPlannedVisitRepository plannedVisits)
+        IVisitReportRepository reports, IPlannedVisitRepository plannedVisits, ICallerScope caller,
+        TimeProvider? clock = null)
     {
+        _caller = caller;
+        _clock = clock ?? TimeProvider.System;
         _tenant = tenant;
         _actor = actor;
         _reports = reports;
@@ -49,7 +55,8 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
 
         // Read-only orphan guard: a report must link to an existing plan atom (§13). FU01's aggregate is not mutated.
         var plan = await _plannedVisits.GetByIdAsync(tenantId, request.PlannedVisitId, cancellationToken);
-        if (plan is null)
+        // WP-VP-2 (B-1) — a rep reports only on their OWN planned visits; another rep's plan is as absent as a missing one.
+        if (plan is null || !_caller.MayAccess(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitPermissions.ReadAll, plan.Resource.ResourceId))
         {
             return Fail(new VisitReportValidation.Failure(
                 "The planned visit does not exist.", VisitReportErrorCodes.PlannedVisitNotFound, 404));
@@ -61,6 +68,13 @@ public sealed class RecordVisitOutcomeHandler : IRequestHandler<RecordVisitOutco
         }
 
         var outcome = VisitExecutionOutcome.Normalize(request.ExecutionOutcome);
+
+        // WP-E2E-FIX-1 (E9-B5) — a future visit can be rescheduled, but not marked completed or missed before its day.
+        if (!string.Equals(outcome, VisitExecutionOutcome.Rescheduled, StringComparison.Ordinal)
+            && VisitReportValidation.ValidateDue(plan.PlannedDate, VisitReportValidation.Today(_clock)) is { } dueFailure)
+        {
+            return Fail(dueFailure);
+        }
 
         DateOnly? rescheduleTo = null;
         if (string.Equals(outcome, VisitExecutionOutcome.Rescheduled, StringComparison.Ordinal)

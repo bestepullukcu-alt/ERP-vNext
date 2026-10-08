@@ -699,6 +699,12 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>Правовые профили</value>
   </data>
+  <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
+    <value>Планирование визитов</value>
+  </data>
+  <data name="Nav.Page.VISITEXECUTION" xml:space="preserve">
+    <value>Выполнение визитов</value>
+  </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>Наборы контента</value>
   </data>
@@ -1038,5 +1044,8 @@
   </data>
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Всё Равно Принять</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Загрузка...</value>
   </data>
 </root>

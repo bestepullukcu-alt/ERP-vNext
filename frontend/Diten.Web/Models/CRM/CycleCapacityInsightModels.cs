@@ -151,6 +151,10 @@ public sealed class CycleCapacitySummary
     public int? DailyFixedMinutes { get; set; }
     public string? VisitModel { get; set; }
 
+    /// <summary>WP-CYC-UI-FIX-2 — the resx key that names <see cref="DailyFixedMinutes"/> for this visit model
+    /// (<see cref="CycleCapacityWaterfall.DailyFixedLabelKey"/>).</summary>
+    public string DailyFixedLabelKey => CycleCapacityWaterfall.DailyFixedLabelKey(VisitModel);
+
     /// <summary>The CRM's reason codes, for the "why is there no number?" line.</summary>
     public List<string> ReasonCodes { get; set; } = [];
 
@@ -324,6 +328,17 @@ public sealed class CycleCapacityWaterfall
         "WfMicroTargetingMinutes", "WfRemainingMinutes"
     ];
 
+    /// <summary>The fixed-daily-charge label of the LEGACY model, where the report is charged per day as well.</summary>
+    public const string DailyFixedLegacyLabelKey = "WfDailyFixedMinutesLegacy";
+
+    /// <summary>
+    /// WP-CYC-UI-FIX-2 — what the fixed daily charge is made of depends on the visit model: on the typical model it is
+    /// travel + quiz (the report is charged per VISIT); on the legacy model the report is charged per DAY too, so the
+    /// label must say "travel, report, quiz". One rule for the waterfall and the edit form's live summary.
+    /// </summary>
+    public static string DailyFixedLabelKey(string? visitModel)
+        => string.Equals(visitModel, "legacy", StringComparison.OrdinalIgnoreCase) ? DailyFixedLegacyLabelKey : StepLabelKeys[4];
+
     public static CycleCapacityWaterfall? From(CycleCapacityCalculationViewModel? calc)
     {
         if (calc is null || !calc.IsResolved || calc.Totals is not { } t)
@@ -344,7 +359,7 @@ public sealed class CycleCapacityWaterfall
                 new() { LabelKey = StepLabelKeys[1], Value = t.DeductedDays, Unit = "days", IsDeduction = true, Percent = Pct(t.DeductedDays, t.WorkingDays) },
                 new() { LabelKey = StepLabelKeys[2], Value = t.FieldDays, Unit = "days", IsSubtotal = true, Percent = Pct(t.FieldDays, t.WorkingDays) },
                 new() { LabelKey = StepLabelKeys[3], Value = t.AvailableMinutes, Unit = "minutes", Percent = Pct(t.AvailableMinutes, t.AvailableMinutes) },
-                new() { LabelKey = StepLabelKeys[4], Value = t.DailyFixedMinutes, Unit = "minutes", IsDeduction = true, Percent = Pct(t.DailyFixedMinutes, t.AvailableMinutes) },
+                new() { LabelKey = DailyFixedLabelKey(calc.VisitModel), Value = t.DailyFixedMinutes, Unit = "minutes", IsDeduction = true, Percent = Pct(t.DailyFixedMinutes, t.AvailableMinutes) },
                 new() { LabelKey = StepLabelKeys[5], Value = t.MicroTargetingMinutes, Unit = "minutes", IsDeduction = true, Percent = Pct(t.MicroTargetingMinutes, t.AvailableMinutes) },
                 new() { LabelKey = StepLabelKeys[6], Value = t.RemainingMinutes, Unit = "minutes", IsSubtotal = true, Percent = Pct(t.RemainingMinutes, t.AvailableMinutes) }
             ]
@@ -487,5 +502,23 @@ public sealed class CycleCapacitySupplyDemand
         }
 
         return result;
+    }
+}
+
+/// <summary>
+/// WP-CYC-UI-FIX-2 — a planning session's status as the capacity detail page names it: the CRM's vocabulary
+/// (PlanningSessionStatus: draft / generated / committed / archived) mapped to resx keys; anything else is
+/// "unknown" — a raw code is never shown to the reader.
+/// </summary>
+public static class CycleCapacitySessionStatus
+{
+    public static readonly IReadOnlyList<string> Known = ["draft", "generated", "committed", "archived"];
+
+    public const string UnknownKey = "SessionStatus_unknown";
+
+    public static string LabelKey(string? status)
+    {
+        var normalized = (status ?? string.Empty).Trim().ToLowerInvariant();
+        return Known.Contains(normalized) ? "SessionStatus_" + normalized : UnknownKey;
     }
 }

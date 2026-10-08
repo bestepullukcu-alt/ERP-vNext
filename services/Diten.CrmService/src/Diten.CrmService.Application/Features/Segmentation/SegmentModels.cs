@@ -313,7 +313,10 @@ public sealed record SegmentReachPreviewDto(
     IReadOnlyList<SegmentReachConditionDto> ConditionCounts,
     IReadOnlyList<SegmentReachSampleMemberDto> SampleMembers,
     DateTimeOffset ResolvedAt,
-    string ResolverVersion);
+    string ResolverVersion,
+    // WP-E2E-FIX-3 (E1-B2) — true when the rule exceeded the candidate ceiling but is fully native, so the store counted
+    // it (TotalCount) and no sample was loaded. Additive; false everywhere else.
+    bool CountedByStore = false);
 
 /// <summary>One predicate of the draft rule, counted as if it were the ONLY condition. <see cref="NodeId"/> echoes the
 /// id the caller sent for that node (or the runtime-assigned one when the caller omitted it), so the reach rail can line

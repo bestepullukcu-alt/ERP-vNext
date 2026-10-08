@@ -18,6 +18,11 @@ public interface IVisitContentSourceReader
     Task<string?> GetContactSpecialtyAsync(Guid contactId, CancellationToken cancellationToken);
 
     Task<AudienceProfile?> GetAudienceProfileAsync(Guid audienceProfileId, CancellationToken cancellationToken);
+
+    /// <summary>WP-VP-3C (E7-B1) — the chain template a path is bound to (its branch order names the MAIN branch). The
+    /// default answers null: the main branch then falls back to the branch of the path's first step.</summary>
+    Task<ConceptChainTemplate?> GetChainTemplateAsync(Guid chainTemplateId, CancellationToken cancellationToken)
+        => Task.FromResult<ConceptChainTemplate?>(null);
 }
 
 /// <summary>Default <see cref="IVisitContentSourceReader"/> over the repositories (reads only).</summary>
@@ -28,14 +33,18 @@ public sealed class VisitContentSourceReader : IVisitContentSourceReader
     private readonly IKnowledgePathRepository _paths;
     private readonly IContactRepository _contacts;
     private readonly IAudienceProfileRepository _audiences;
+    private readonly IConceptChainTemplateRepository? _chains;
 
     public VisitContentSourceReader(
         ITenantContext tenant,
         IJourneyProgressRepository progress,
         IKnowledgePathRepository paths,
         IContactRepository contacts,
-        IAudienceProfileRepository audiences)
+        IAudienceProfileRepository audiences,
+        // WP-VP-3C (E7-B1) — the chain template (branch order) of a chain-bound path. Optional.
+        IConceptChainTemplateRepository? chains = null)
     {
+        _chains = chains;
         _tenant = tenant;
         _progress = progress;
         _paths = paths;
@@ -61,6 +70,11 @@ public sealed class VisitContentSourceReader : IVisitContentSourceReader
     public async Task<AudienceProfile?> GetAudienceProfileAsync(Guid audienceProfileId, CancellationToken cancellationToken)
         => _tenant.TenantId is { } tenantId && audienceProfileId != Guid.Empty
             ? await _audiences.GetByIdAsync(tenantId, audienceProfileId, cancellationToken)
+            : null;
+
+    public async Task<ConceptChainTemplate?> GetChainTemplateAsync(Guid chainTemplateId, CancellationToken cancellationToken)
+        => _chains is not null && _tenant.TenantId is { } tenantId && chainTemplateId != Guid.Empty
+            ? await _chains.GetByIdAsync(tenantId, chainTemplateId, cancellationToken)
             : null;
 }
 
@@ -95,4 +109,5 @@ public static class VisitContentAudiencePolicy
         var specialty = contactSpecialty.Trim();
         return axis.Values.Any(v => string.Equals(v?.Trim(), specialty, StringComparison.OrdinalIgnoreCase));
     }
+
 }

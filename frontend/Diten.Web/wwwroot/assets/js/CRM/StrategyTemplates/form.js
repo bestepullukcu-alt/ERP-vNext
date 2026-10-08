@@ -198,7 +198,9 @@
     const loadOptions = async () => {
         const jobs = [];
         if (can('segment')) {
-            jobs.push(load(`${endpoint}/segments?includeArchived=false`, r => ({
+            // WP-E2E-FIX-3 (E5-B3) — archived segments are loaded too, ONLY so an already-bound one still shows its
+            // name ("(arşivli)"); the picker for a NEW binding keeps offering non-archived segments only.
+            jobs.push(load(`${endpoint}/segments?includeArchived=true`, r => ({
                 id: r.segmentId || r.id,
                 text: `${r.segmentCode || ''} — ${r.segmentName || ''}`.trim(),
                 // WP-ST-EDIT-G — code + name split out so the display row can show the name with the SEG code beneath it.
@@ -206,7 +208,7 @@
                 name: r.segmentName || '',
                 subjectType: r.subjectType,
                 archived: r.isArchived === true
-            })).then(x => { options.segment = x.filter(o => !o.archived); }));
+            })).then(x => { options.segmentAll = x; options.segment = x.filter(o => !o.archived); }));
         }
         if (can('frequency-policy')) {
             jobs.push(load(`${endpoint}/visit-frequency-policies`, r => ({
@@ -273,7 +275,7 @@
         if (isEdit) return cfg.subjectType || '';
         for (const b of state.segments) {
             if (!b.segmentId) continue;
-            const hit = (options.segment || []).find(o => o.id === b.segmentId);
+            const hit = segmentById(b.segmentId);
             if (hit && hit.subjectType) return hit.subjectType;
         }
         return '';
@@ -327,7 +329,8 @@
     // (segmentId / bindingRole / sortOrder — sortOrder is now an automatic index, no longer an editable input).
     let segPickerOpen = false;
 
-    const segmentById = id => (options.segment || []).find(o => o.id === id);
+    // WP-E2E-FIX-3 (E5-B3) — display lookups see archived segments too (options.segmentAll); pickers do not.
+    const segmentById = id => (options.segmentAll || options.segment || []).find(o => o.id === id);
     const segTypeLabel = t => t === 'account' ? (L.SegTypeAccount || '') : t === 'contact' ? (L.SegTypeContact || '') : '';
     // WP-ST-EDIT-I — the type badge is rounded-pill (mockup's yuvarlakımsı kişi/hekim, kurum/hesap rozeti); the
     // bg-label-warning / bg-label-primary tone is unchanged. Both render sites (display row + picker choice) reuse this.
@@ -385,7 +388,8 @@
         const roles = cfg.bindingRoles || [];
         host.innerHTML = state.segments.map((b, i) => {
             const opt = segmentById(b.segmentId);
-            const name = opt ? (opt.name || opt.text) : (b.segmentId || '');
+            const baseName = opt ? (opt.name || opt.text) : (b.segmentId || '');
+            const name = opt && opt.archived ? `${baseName} ${L.ArchivedSegmentSuffix || '(archived)'}` : baseName;
             const code = opt ? (opt.code || '') : '';
             const type = (opt && opt.subjectType) || activeSubjectType();
             // WP-ST-EDIT-L — the role is a single select2 dropdown (no empty option; the default primary/secondary was

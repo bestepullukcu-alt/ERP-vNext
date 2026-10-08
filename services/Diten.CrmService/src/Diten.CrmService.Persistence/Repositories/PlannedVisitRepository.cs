@@ -87,6 +87,37 @@ public sealed class PlannedVisitRepository : IPlannedVisitRepository
         return Ordered(rows);
     }
 
+    public async Task<IReadOnlyList<PlannedVisit>> ListByResourceAndContactsAsync(
+        Guid tenantId, string resourceId, IReadOnlyCollection<Guid> contactIds, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(resourceId) || contactIds.Count == 0)
+        {
+            return Array.Empty<PlannedVisit>();
+        }
+
+        var ids = contactIds.Distinct().Select(id => (Guid?)id).ToList();
+        var rows = await _collection
+            .Find(Tenant(tenantId)
+                  & Builders<PlannedVisit>.Filter.Eq(x => x.Resource.ResourceId, resourceId)
+                  & Builders<PlannedVisit>.Filter.In(x => x.ContactId, ids))
+            .ToListAsync(cancellationToken);
+        return Ordered(rows);
+    }
+
+    public async Task<IReadOnlyList<PlannedVisit>> ListByIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken)
+    {
+        if (ids.Count == 0)
+        {
+            return Array.Empty<PlannedVisit>();
+        }
+
+        var rows = await _collection
+            .Find(Tenant(tenantId) & Builders<PlannedVisit>.Filter.In(x => x.Id, ids.Distinct()))
+            .ToListAsync(cancellationToken);
+        return Ordered(rows);
+    }
+
     public async Task InsertAsync(PlannedVisit entity, CancellationToken cancellationToken)
         => await _collection.InsertOneAsync(entity, cancellationToken: cancellationToken);
 

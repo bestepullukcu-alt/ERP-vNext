@@ -485,4 +485,6 @@
   <data name="Err_decision_invalid" xml:space="preserve"><value>请选择批准或拒绝。</value></data>
   <data name="Err_note_text_required" xml:space="preserve"><value>请填写备注内容。</value></data>
   <data name="Err_note_not_found" xml:space="preserve"><value>未找到该备注，请刷新页面。</value></data>
+  <data name="DecisionApprovedFinal" xml:space="preserve"><value>已记录批准。审核已完成。</value></data>
+  <data name="Err_withdraw_not_submitter" xml:space="preserve"><value>只有提交此审核的人才能撤回。</value></data>
 </root>

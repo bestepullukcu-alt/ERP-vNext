@@ -302,4 +302,16 @@
   <data name="RecipeJourneysTpl" xml:space="preserve"><value>{n} parcours</value></data>
   <data name="RetiredBindingsCountTpl" xml:space="preserve"><value>{n} anciennes liaisons</value></data>
   <data name="LinesWithoutJourneyTpl" xml:space="preserve"><value>{n} lignes sans parcours</value></data>
+  <data name="SupersededByVersion" xml:space="preserve"><value>Remplacé par v{0}</value></data>
+  <data name="ArchivedSegmentSuffix" xml:space="preserve"><value>(archivé)</value></data>
+  <data name="ActivationBlocked" xml:space="preserve"><value>L’activation a été refusée.</value></data>
+  <data name="ActivationBlocked_segment_not_active" xml:space="preserve"><value>Un segment lié n’est pas actif — activez d’abord le segment.</value></data>
+  <data name="ActivationBlocked_segment_archived" xml:space="preserve"><value>Un segment lié est archivé — remplacez-le par un segment actif.</value></data>
+  <data name="ActivationBlocked_segment_reference_not_found" xml:space="preserve"><value>Un segment lié n’existe plus.</value></data>
+  <data name="ActivationBlocked_frequency_policy_not_active" xml:space="preserve"><value>La politique de fréquence de visite référencée n’est pas active.</value></data>
+  <data name="ActivationBlocked_journey_not_published" xml:space="preserve"><value>Le parcours d’engagement d’une ligne produit n’est pas publié.</value></data>
+  <data name="ActivationBlocked_journey_product_mismatch" xml:space="preserve"><value>Le parcours d’engagement d’une ligne produit concerne un autre produit.</value></data>
+  <data name="ActivationBlocked_product_line_journey_required" xml:space="preserve"><value>Chaque ligne produit nécessite un parcours d’engagement.</value></data>
+  <data name="ActivationBlocked_content_not_published" xml:space="preserve"><value>Un contenu lié n’est pas publié.</value></data>
+  <data name="ActivationBlocked_content_archived" xml:space="preserve"><value>Un contenu lié est archivé.</value></data>
 </root>

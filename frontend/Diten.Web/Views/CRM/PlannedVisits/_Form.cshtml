@@ -141,19 +141,30 @@
                 <div class="card-body p-4">
                     <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ResourceSection"]</h6>
                     <div class="row g-3">
-                        <div class="col-12">
-                            <label asp-for="ResourceId" class="form-label fw-medium">@Localizer["ResourceId"] <span class="text-danger">*</span></label>
-                            <input asp-for="ResourceId" class="form-control" maxlength="128" required />
-                            <div class="form-text">@Localizer["ResourceHint"]</div>
-                            <span asp-validation-for="ResourceId" class="text-danger small mt-1"></span>
-                        </div>
-                        <div class="col-12">
-                            <label asp-for="ResourceType" class="form-label fw-medium">@Localizer["ResourceType"] <span class="text-danger">*</span></label>
-                            <select asp-for="ResourceType" id="resourceType" class="form-select" required data-selected="@Model.ResourceType"></select>
-                        </div>
+                        @* WP-VP-2 (B-1) — the rep is the signed-in user: read-only (and not posted as authority) unless the
+                           caller holds crm.planned-visit.read-all. *@
+                        @if (Model.CanReadAll)
+                        {
+                            <div class="col-12">
+                                <label asp-for="ResourceId" class="form-label fw-medium">@Localizer["ResourceId"]</label>
+                                <input asp-for="ResourceId" class="form-control" maxlength="128" />
+                                <div class="form-text">@Localizer["ResourceHint"]</div>
+                                <span asp-validation-for="ResourceId" class="text-danger small mt-1"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="ResourceType" class="form-label fw-medium">@Localizer["ResourceType"]</label>
+                                <select asp-for="ResourceType" id="resourceType" class="form-select" data-selected="@Model.ResourceType"></select>
+                            </div>
+                        }
+                        else
+                        {
+                            <input type="hidden" asp-for="ResourceId" />
+                            <input type="hidden" asp-for="ResourceType" />
+                        }
                         <div class="col-12">
                             <label asp-for="ResourceDisplayName" class="form-label fw-medium">@Localizer["ResourceDisplayName"]</label>
-                            <input asp-for="ResourceDisplayName" class="form-control" maxlength="200" />
+                            <input asp-for="ResourceDisplayName" class="form-control" maxlength="200" readonly />
+                            <div class="form-text">@Localizer["ResourceSelfHint"]</div>
                         </div>
                     </div>
                 </div>
@@ -171,10 +182,7 @@
                             <label asp-for="TerritoryNodeId" class="form-label fw-medium">@Localizer["TerritoryNodeId"]</label>
                             <input asp-for="TerritoryNodeId" class="form-control" placeholder="00000000-0000-0000-0000-000000000000" />
                         </div>
-                        <div class="col-12">
-                            <label asp-for="CampaignId" class="form-label fw-medium">@Localizer["CampaignId"]</label>
-                            <input asp-for="CampaignId" class="form-control" placeholder="00000000-0000-0000-0000-000000000000" />
-                        </div>
+                        @* WP-VP-2 (B-3, K-3) — no campaign input: CRM derives it from the doctor / account. *@
                     </div>
                 </div>
             </section>

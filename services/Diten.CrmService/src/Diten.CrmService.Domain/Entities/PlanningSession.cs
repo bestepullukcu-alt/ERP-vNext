@@ -48,8 +48,24 @@ public sealed class PlanningSession : EntityBase
     /// apply so the committed plan reproduces the manual, constraint-honored order; empty ⇒ the engine optimum.</summary>
     public List<Guid> ManualVisitOrder { get; set; } = new();
 
-    /// <summary>Chosen plan week's Monday (yyyy-MM-dd). Persisted from Create/Edit so Details/Edit resolve the saved week.</summary>
+    /// <summary>Chosen plan week's Monday (yyyy-MM-dd). Persisted from Create/Edit so Details/Edit resolve the saved week.
+    /// WP-VP-3A — only "the week the screen opens on"; it no longer restricts generation (the horizon is the period).</summary>
     public string? TargetWeekStart { get; set; }
+
+    /// <summary>
+    /// WP-VP-3A (MK-3) — the period plan's STORED weeks: only weeks that were approved (and possibly reopened since). Every
+    /// other week of the period is derived (past / draft / empty) and never stored. An older document has no such field and
+    /// reads as an empty list.
+    /// </summary>
+    public List<PlanningWeek> Weeks { get; set; } = new();
+
+    /// <summary>
+    /// WP-VP-4E — the rep's day pins, per draft week (<see cref="PlanningDayPin.WeekStart"/>): "this visit / this
+    /// institution goes on that day". Written through the existing selection update (no new command); the engine places
+    /// the pinned visits first and spreads the rest around them. Kept when a week is approved or reopened. An older
+    /// document has no such field and reads as an empty list.
+    /// </summary>
+    public List<PlanningDayPin> DayPins { get; set; } = new();
 
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
@@ -60,6 +76,87 @@ public sealed class PlanningSession : EntityBase
     public bool IsGenerated() => string.Equals(Status, PlanningSessionStatus.Generated, StringComparison.Ordinal);
     public bool IsCommitted() => string.Equals(Status, PlanningSessionStatus.Committed, StringComparison.Ordinal);
     public bool IsArchived() => string.Equals(Status, PlanningSessionStatus.Archived, StringComparison.Ordinal);
+
+    /// <summary>WP-VP-3A — the stored week starting on <paramref name="weekStart"/> (yyyy-MM-dd), or null.</summary>
+    public PlanningWeek? WeekOf(string weekStart)
+        => Weeks.FirstOrDefault(w => string.Equals(w.WeekStart, weekStart, StringComparison.Ordinal));
+
+    /// <summary>WP-VP-3A — at least one week is currently approved.</summary>
+    public bool HasApprovedWeek() => Weeks.Any(w => w.IsApproved());
+
+    /// <summary>WP-VP-3A (D3) — the plan has targets (doctors, accounts or pharmacies).</summary>
+    public bool HasTargets()
+        => Selection.SelectedContacts.Count > 0
+           || Selection.SelectedAccountIds.Count > 0
+           || Selection.SelectedPharmacyIds.Count > 0;
+}
+
+/// <summary>
+/// WP-VP-3A (MK-3, MK-4) — one STORED week of a period plan: approved (its visits were written as PlannedVisit atoms and
+/// are frozen) or reopened (approved once, then reopened with a reason). <see cref="WeekStart"/> is the Monday
+/// (yyyy-MM-dd). The history keeps every approve / reopen with who, when and why.
+/// </summary>
+public sealed class PlanningWeek
+{
+    public string WeekStart { get; set; } = string.Empty;
+
+    /// <summary><see cref="PlanningWeekStatus"/> — approved / reopened.</summary>
+    public string Status { get; set; } = PlanningWeekStatus.Approved;
+
+    public DateTimeOffset? ApprovedAt { get; set; }
+    public string? ApprovedBy { get; set; }
+
+    /// <summary>The atoms this week's approvals wrote (a reopened week keeps the ids; their cancelled state is on the atom).</summary>
+    public List<Guid> PlannedVisitIds { get; set; } = new();
+
+    /// <summary>The manual visiting order the week was approved with (target ids); empty ⇒ the engine optimum.</summary>
+    public List<Guid> ManualVisitOrder { get; set; } = new();
+
+    public List<PlanningWeekHistoryEntry> History { get; set; } = new();
+
+    public bool IsApproved() => string.Equals(Status, PlanningWeekStatus.Approved, StringComparison.Ordinal);
+    public bool IsReopened() => string.Equals(Status, PlanningWeekStatus.Reopened, StringComparison.Ordinal);
+    public bool IsLegacy() => string.Equals(Status, PlanningWeekStatus.Legacy, StringComparison.Ordinal);
+}
+
+/// <summary>WP-VP-3A (MK-4) — one approve / reopen of a week.</summary>
+public sealed class PlanningWeekHistoryEntry
+{
+    public DateTimeOffset At { get; set; }
+    public string? By { get; set; }
+
+    /// <summary><see cref="PlanningWeekActions"/> — approve / reopen.</summary>
+    public string Action { get; set; } = PlanningWeekActions.Approve;
+
+    /// <summary>The reopen reason (required, ≥ 10 characters); null for an approve.</summary>
+    public string? Reason { get; set; }
+}
+
+/// <summary>WP-VP-3A — the STORED week statuses (a week that was never approved is not stored).</summary>
+public static class PlanningWeekStatus
+{
+    public const string Approved = "approved";
+    public const string Reopened = "reopened";
+
+    /// <summary>WP-VP-4A — READ-ONLY, never stored: a week of an old whole-period (<c>committed</c>) plan that holds its
+    /// written visits. It reads as approved (frozen) with <c>storedStatus = legacy</c> and has no history.</summary>
+    public const string Legacy = "legacy";
+}
+
+/// <summary>WP-VP-3A — the history actions of a week.</summary>
+public static class PlanningWeekActions
+{
+    public const string Approve = "approve";
+    public const string Reopen = "reopen";
+}
+
+/// <summary>WP-VP-3A — the DERIVED week status the screens show (past / approved / draft / empty).</summary>
+public static class PlanningWeekDisplayStatus
+{
+    public const string Past = "past";
+    public const string Approved = "approved";
+    public const string Draft = "draft";
+    public const string Empty = "empty";
 }
 
 /// <summary>The manual selection (§4.3a). Segment only FILTERED the universe; the pick is a human's.</summary>
@@ -83,6 +180,47 @@ public sealed class PlanningSessionSelectedContact
     public Guid ContactId { get; set; }
     public Guid? AccountId { get; set; }
     public Guid? AccountContactLinkId { get; set; }
+
+    /// <summary>WP-VP-3C (K-7, S-4) — the rep's product pick for this doctor (≤ <see cref="PlanningSessionProductLimits.MaxPerDoctor"/>).
+    /// Written through the existing selection update (null = keep, [] = clear); apply copies the resulting list onto the
+    /// planned visits. Empty on a session written before 3C.</summary>
+    public List<PlanningSessionSelectedProduct> Products { get; set; } = new();
+}
+
+/// <summary>WP-VP-3C — one product the rep picked for a doctor. <see cref="Role"/> is <c>promo</c> / <c>non-promo</c>;
+/// null reads as promo (K-7d: MDM carries no role). <see cref="ProductCode"/> is a display snapshot.</summary>
+public sealed class PlanningSessionSelectedProduct
+{
+    public Guid ProductId { get; set; }
+    public string? ProductCode { get; set; }
+    public string? Role { get; set; }
+}
+
+/// <summary>WP-VP-4E — one day pin of a draft week. <c>TargetType</c> / <c>TargetId</c> name the visit target (a doctor:
+/// <c>contact</c> + the contact id; a pharmacy / an institution: its account id); <c>ContactId</c> is the doctor when the
+/// target is one. <c>Scope</c>: <c>visit</c> = only that visit; <c>institution</c> = the target's institution group that
+/// week (its doctors + linked pharmacies — the day balancer's group rule). <c>Date</c> yyyy-MM-dd inside the week.</summary>
+public sealed class PlanningDayPin
+{
+    public string WeekStart { get; set; } = string.Empty;
+    public string TargetType { get; set; } = string.Empty;
+    public Guid TargetId { get; set; }
+    public Guid? ContactId { get; set; }
+    public string Date { get; set; } = string.Empty;
+    public string Scope { get; set; } = PlanningDayPinScopes.Visit;
+}
+
+public static class PlanningDayPinScopes
+{
+    public const string Visit = "visit";
+    public const string Institution = "institution";
+
+    public static bool IsKnown(string? scope) => scope is Visit or Institution;
+}
+
+public static class PlanningSessionProductLimits
+{
+    public const int MaxPerDoctor = 20;
 }
 
 /// <summary>Last generation metadata (§4.3b). The full <c>SupplyDemandSummary</c> is TRANSIENT (recomputed on preview,

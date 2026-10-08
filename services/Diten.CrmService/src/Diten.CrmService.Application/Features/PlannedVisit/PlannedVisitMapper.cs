@@ -39,6 +39,37 @@ public static class PlannedVisitMapper
         p.Version, p.CreatedAt, p.CreatedBy, p.UpdatedAt, p.UpdatedBy,
         ToContentItems(p.ContentItems));
 
+    /// <summary>WP-VP-2 (B-8) — a list row with its read-time names.</summary>
+    public static PlannedVisitListItemDto ToListItem(PlannedVisitEntity p, VisitTargetNames names)
+    {
+        var (target, account, contact, inactive) = names.For(p.TargetType, p.TargetId, p.AccountId, p.ContactId);
+        return ToListItem(p) with
+        {
+            TargetDisplayName = target, AccountDisplayName = account, ContactDisplayName = contact, TargetInactive = inactive
+        };
+    }
+
+    /// <summary>WP-VP-2 (B-8) — the detail with its read-time names.</summary>
+    public static PlannedVisitDetailDto ToDetail(PlannedVisitEntity p, VisitTargetNames names)
+    {
+        var (target, account, contact, inactive) = names.For(p.TargetType, p.TargetId, p.AccountId, p.ContactId);
+        return ToDetail(p) with
+        {
+            TargetDisplayName = target, AccountDisplayName = account, ContactDisplayName = contact, TargetInactive = inactive
+        };
+    }
+
+    /// <summary>WP-VP-4G (F4-4) — the product ids whose items carry no name yet (an older plan: no approval snapshot).</summary>
+    public static IEnumerable<Guid> UnnamedProductIds(IEnumerable<PlannedVisitEntity> plans)
+        => plans.SelectMany(p => p.ContentItems).Where(i => string.IsNullOrWhiteSpace(i.ProductName)).Select(i => i.ProductId);
+
+    /// <summary>WP-VP-4G (F4-4) — the items with a name from <paramref name="names"/> where they carry none.</summary>
+    public static IReadOnlyList<PlannedVisitContentItemDto>? WithProductNames(
+        IReadOnlyList<PlannedVisitContentItemDto>? items, IReadOnlyDictionary<Guid, string> names)
+        => names.Count == 0 || items is null
+            ? items
+            : items.Select(i => i with { ProductName = i.ProductName ?? names.GetValueOrDefault(i.ProductId) }).ToList();
+
     /// <summary>WP-SB-3b — the frozen product list (never null on the wire: empty for an older plan).</summary>
     public static IReadOnlyList<PlannedVisitContentItemDto> ToContentItems(IEnumerable<PlannedVisitContentItem>? items)
         => (items ?? Enumerable.Empty<PlannedVisitContentItem>())
@@ -48,7 +79,10 @@ public static class PlannedVisitMapper
                 i.Steps.Select(s => new PlannedVisitContentStepDto(s.StepId, s.ContentId, s.ContentCode, s.Title, s.Type, s.Minutes))
                     .ToList(),
                 i.Claims.Select(c => new PlannedVisitContentClaimDto(c.ClaimId, c.ClaimCode)).ToList(),
-                i.Warnings.ToList()))
+                i.Warnings.ToList(),
+                i.EffectiveSource(),
+                i.Order,
+                i.ProductName))
             .ToList();
 
     private static PlannedVisitScheduleSlotDto ToSlot(PlannedVisitScheduleSlot s)

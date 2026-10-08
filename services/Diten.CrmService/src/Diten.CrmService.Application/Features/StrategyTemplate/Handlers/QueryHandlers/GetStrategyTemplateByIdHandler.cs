@@ -40,6 +40,15 @@ public sealed class GetStrategyTemplateByIdHandler
         }
 
         var journeys = _journeys is null ? null : await _journeys.ReadAsync(tenantId, template, cancellationToken);
-        return Response<StrategyTemplateDetailDto>.Success(StrategyTemplateMapper.ToDetail(template, journeys));
+        var detail = StrategyTemplateMapper.ToDetail(template, journeys);
+
+        // WP-E2E-FIX-3 (E5-B2) — "Yerini v{n} aldı": one read of the successor, only when there is one.
+        if (template.SupersededByTemplateId is { } next
+            && await _templates.GetByIdAsync(tenantId, next, cancellationToken) is { } successor)
+        {
+            detail = detail with { SupersededByTemplateVersion = successor.TemplateVersion };
+        }
+
+        return Response<StrategyTemplateDetailDto>.Success(detail);
     }
 }

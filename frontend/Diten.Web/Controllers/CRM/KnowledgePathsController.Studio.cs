@@ -377,7 +377,9 @@ public sealed partial class KnowledgePathsController
                         status = confStatus,
                         statusLabel = confStatus is null ? null : Label("Conf_" + confStatus),
                         isFull = st.Max is { } max && slotSteps.Count >= max,
-                        required = slotSteps.Any(x => Bool(x, "isRequired")),
+                        // WP-E2E-FIX-2 (E3-B1) — the slot's own rule (chain step MinSelection), never its current
+                        // contents: an empty slot of a min>0 step is just as required as a filled one.
+                        required = st.Min > 0,
                         durationMinutes = slotSteps.Sum(x => Int(x, "estimatedDurationMinutes") ?? 0),
                         items
                     };

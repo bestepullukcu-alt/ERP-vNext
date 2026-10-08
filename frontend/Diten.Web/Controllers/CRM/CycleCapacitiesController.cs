@@ -767,7 +767,8 @@ public sealed class CycleCapacitiesController : Controller
             .Select(c => c!.Trim().ToUpperInvariant())
             .Distinct(StringComparer.Ordinal)
             .OrderBy(c => c, StringComparer.Ordinal)
-            .Select(c => new CycleCapacityCountryOptionViewModel { Value = c, Label = c })
+            // WP-CYC-UI-FIX-2 — the country named in the reader's language, the code kept beside it.
+            .Select(c => new CycleCapacityCountryOptionViewModel { Value = c, Label = CycleCountryLabel.For(c) })
             .ToList();
 
         model.CountryReady = model.CountryOptions.Count > 0;

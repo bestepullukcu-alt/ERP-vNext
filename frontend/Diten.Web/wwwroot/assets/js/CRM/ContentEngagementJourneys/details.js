@@ -12,9 +12,17 @@
     const getAuthHeaders = () => ({ Accept: 'application/json', 'Content-Type': 'application/json' });
     const toast = (m, t) => window.showToast?.(m, t || 'info');
 
+    // WP-E2E-FIX-2 (E4-B2) — a coded CRM answer ({ errors: [code, message] }) shows the user's language; the English
+    // message is never shown for a known code. Uncoded answers keep the server text as before.
+    const errorText = body => {
+        const errors = Array.isArray(body?.errors) ? body.errors : [];
+        const known = errors.find(e => typeof e === 'string' && L['Err_' + e]);
+        return known ? L['Err_' + known] : (errors.length ? errors.join(' · ') : L.ErrorState);
+    };
+
     const envelope = async response => {
         const body = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error((body.errors || [L.ErrorState]).join(' · '));
+        if (!response.ok) throw new Error(errorText(body));
         return body.data;
     };
 
@@ -25,7 +33,7 @@
                 toast(L.RecordUpdated || 'Published', 'success');
                 window.location.reload();
             } catch (e) { toast(e.message || L.ErrorState, 'error'); }
-        }, { type: 'success' });
+        }, { type: 'success', subtext: '' });
     });
 
     document.getElementById('newVersionJourney')?.addEventListener('click', () => {
@@ -35,7 +43,7 @@
                 toast(L.RecordCreated || 'Created', 'success');
                 window.location.href = `/CRM/ContentEngagementJourneys/Edit/${id}`;
             } catch (e) { toast(e.message || L.ErrorState, 'error'); }
-        }, { type: 'info' });
+        }, { type: 'info', subtext: '' });
     });
 
     document.getElementById('archiveJourney')?.addEventListener('click', e => {
@@ -46,6 +54,6 @@
                 toast(L.RecordArchived || 'Archived', 'success');
                 window.location.href = '/CRM/ContentEngagementJourneys';
             } catch (err) { toast(err.message || L.ErrorState, 'error'); }
-        }, { entityName: name, type: 'warning', confirmButtonText: L.ArchiveJourney });
+        }, { entityName: name, type: 'warning', confirmButtonText: L.ArchiveJourney, subtext: '' });
     });
 })(window, document);

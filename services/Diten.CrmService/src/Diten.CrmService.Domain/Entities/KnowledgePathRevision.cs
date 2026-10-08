@@ -251,4 +251,8 @@ public static class KnowledgePathReviewErrors
     public const string DecisionInvalid = "decision_invalid";
     public const string NoteNotFound = "note_not_found";
     public const string NoteTextRequired = "note_text_required";
+
+    /// <summary>WP-E2E-FIX-2 (E3-B4) — only the person who submitted the open round may withdraw it (Manage is still
+    /// required on top). 403.</summary>
+    public const string WithdrawNotSubmitter = "withdraw_not_submitter";
 }

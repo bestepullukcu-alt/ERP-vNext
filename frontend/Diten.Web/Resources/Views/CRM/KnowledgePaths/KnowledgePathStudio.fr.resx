@@ -485,4 +485,6 @@
   <data name="Err_decision_invalid" xml:space="preserve"><value>Choisissez approuver ou rejeter.</value></data>
   <data name="Err_note_text_required" xml:space="preserve"><value>Saisissez le texte de la note.</value></data>
   <data name="Err_note_not_found" xml:space="preserve"><value>Note introuvable ; rechargez la page.</value></data>
+  <data name="DecisionApprovedFinal" xml:space="preserve"><value>Approbation enregistrée. La revue est terminée.</value></data>
+  <data name="Err_withdraw_not_submitter" xml:space="preserve"><value>Seule la personne qui a soumis cette revue peut la retirer.</value></data>
 </root>

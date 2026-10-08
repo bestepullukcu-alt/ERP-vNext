@@ -481,7 +481,7 @@
     <value>Platform Yoneticileri</value>
   </data>
   <data name="Loading" xml:space="preserve">
-    <value>Yukleniyor...</value>
+    <value>Yükleniyor...</value>
   </data>
   <data name="Close" xml:space="preserve">
     <value>Kapat</value>
@@ -759,6 +759,12 @@
   </data>
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>Ülke Yasal Profilleri</value>
+  </data>
+  <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
+    <value>Ziyaret Planlama</value>
+  </data>
+  <data name="Nav.Page.VISITEXECUTION" xml:space="preserve">
+    <value>Ziyaret Yürütme</value>
   </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>İçerik Setleri</value>

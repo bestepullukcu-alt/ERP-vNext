@@ -79,7 +79,7 @@
   <data name="RecordCreated" xml:space="preserve"><value>Запись создана.</value></data>
   <data name="RecordUpdated" xml:space="preserve"><value>Запись обновлена.</value></data>
   <data name="Repeatable" xml:space="preserve"><value>Повторяемый</value></data>
-  <data name="Repeated" xml:space="preserve"><value>Повтор</value></data>
+  <data name="Repeated" xml:space="preserve"><value>Повтор пути</value></data>
   <data name="RequiredStageCount" xml:space="preserve"><value>Обязательные этапы</value></data>
   <data name="Reset" xml:space="preserve"><value>Сбросить</value></data>
   <data name="Resolved" xml:space="preserve"><value>Разрешено</value></data>
@@ -108,4 +108,10 @@
   <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
   <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="RepeatedHint" xml:space="preserve"><value>Этот путь используется и на другом этапе</value></data>
+  <data name="PathListAllSubjectsNote" xml:space="preserve"><value>У маршрута нет темы, поэтому показаны все опубликованные пути.</value></data>
+  <data name="Err_content_engagement_journey_no_required_stage" xml:space="preserve"><value>Маршрут нельзя опубликовать: нужен хотя бы один активный обязательный этап. Включите «Обязательный» для этапа.</value></data>
+  <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>Другая опубликованная версия этого кода маршрута (тот же язык) уже покрывает эти даты. Измените даты действия или архивируйте другую версию.</value></data>
+  <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>Архивный маршрут нельзя опубликовать.</value></data>
+  <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>Тем временем маршрут изменил другой пользователь. Перезагрузите страницу и повторите попытку.</value></data>
 </root>

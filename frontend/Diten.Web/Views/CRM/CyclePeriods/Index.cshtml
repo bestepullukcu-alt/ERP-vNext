@@ -49,10 +49,15 @@
 @* ③ The read-only "which period is in force today?" badge (tenant-wide ask). *@
 <div class="card mb-3">
     <div class="card-body py-3 d-flex flex-wrap align-items-center gap-3">
-        <span class="text-muted">@Localizer["CurrentPeriod"]</span>
-        <span id="currentPeriodBadge" class="badge bg-label-secondary">@SharedLocalizer["Loading"]</span>
-        <span id="currentPeriodScope" class="badge bg-label-primary d-none"></span>
-        <small id="currentPeriodWindow" class="text-muted"></small>
+        @* WP-CYC-UI-FIX-2 — EVERY active period covering today, at every scope level, read from the overview's rows
+           (no extra request). Which one applies to a given unit is the finder's question, linked here. *@
+        <span class="text-muted">@Localizer["TodayActivePeriods"]</span>
+        <span id="todayActivePeriods" class="d-flex flex-wrap align-items-center gap-2" aria-live="polite">
+            <span class="badge bg-label-secondary">@SharedLocalizer["Loading"]</span>
+        </span>
+        <button type="button" id="todayFinderLink" class="btn btn-link btn-sm p-0 ms-auto" aria-controls="finderCard">
+            <i class="icon-base bx bx-target-lock me-1" aria-hidden="true"></i>@Localizer["FinderOpen"]
+        </button>
     </div>
 </div>
 
@@ -119,6 +124,7 @@
 @section Scripts {
     @* Contract marker: <partial name="_IndexL10n" /> *@
     <partial name="~/Views/CRM/CyclePeriods/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/cycle-dates.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/CyclePeriods/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/CyclePeriods/shared.js" asp-append-version="true"></script>
     @if (Model.CanManage)

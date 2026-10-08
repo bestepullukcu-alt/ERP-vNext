@@ -23,11 +23,11 @@ public sealed class PlannedVisitEditViewModel
     /// <summary>Display snapshot of the chosen target (rendered read-only; never posted as authority).</summary>
     public string? TargetDisplay { get; set; }
 
-    [Required]
+    /// <summary>WP-VP-2 (B-1) — the signed-in rep unless the caller holds crm.planned-visit.read-all (then editable).
+    /// Without read-all it is shown read-only and NOT sent: CRM writes the caller.</summary>
     public string ResourceId { get; set; } = string.Empty;
 
-    [Required]
-    public string ResourceType { get; set; } = "person";
+    public string ResourceType { get; set; } = "user";
 
     public string? ResourceDisplayName { get; set; }
 
@@ -50,7 +50,8 @@ public sealed class PlannedVisitEditViewModel
     public string? BusinessUnit { get; set; }
     public Guid? TerritoryNodeId { get; set; }
     public Guid? TerritoryModelId { get; set; }
-    public Guid? CampaignId { get; set; }
+
+    // WP-VP-2 (B-3, K-3) — no CampaignId: the campaign is derived by CRM from the doctor / account, never entered.
 
     /// <summary>Content-position editable surface (field 26). Writes ContentRef.JourneyId (D10).</summary>
     public Guid? ContentEngagementJourneyId { get; set; }
@@ -76,6 +77,9 @@ public sealed class PlannedVisitEditViewModel
     public bool IsDraft => string.Equals(PlanStatus, "draft", StringComparison.OrdinalIgnoreCase);
 
     public bool CanManage { get; set; }
+
+    /// <summary>WP-VP-2 (B-1) — the caller holds crm.planned-visit.read-all: the resource fields stay editable.</summary>
+    public bool CanReadAll { get; set; }
 }
 
 /// <summary>What the Index page needs before it renders.</summary>
@@ -130,6 +134,12 @@ public sealed class PlannedVisitDetailApiModel
     public PlannedVisitSelectionApiModel? Selection { get; set; }
     public PlannedVisitAvailabilityApiModel? Availability { get; set; }
     public int Version { get; set; }
+
+    // WP-VP-2 (B-8) — read-time names (CRM reads them in bulk; never stored on the plan).
+    public string? TargetDisplayName { get; set; }
+    public string? AccountDisplayName { get; set; }
+    public string? ContactDisplayName { get; set; }
+    public bool TargetInactive { get; set; }
 }
 
 public sealed class PlannedVisitResourceRefApiModel

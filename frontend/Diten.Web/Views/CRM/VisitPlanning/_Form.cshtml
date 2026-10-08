@@ -54,24 +54,13 @@
                             <select id="vp-week-form" class="form-select"></select>
                             <div class="form-text">@Localizer["WeekScopeHint"]</div>
                         </div>
+                        @* WP-VP-2 (B-1, K-1) — the rep is the signed-in user (read-only); K-4 — no segment picker. *@
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-medium" for="vp-resource">@Localizer["RepUser"] <span class="text-danger">*</span></label>
-                            <select id="vp-resource" class="form-select select2" data-placeholder="@SharedLocalizer["SelectPlaceholder"]"></select>
-                            <div class="form-text" id="vp-users-note"></div>
+                            <label class="form-label fw-medium" for="vp-resource-name">@Localizer["RepUser"]</label>
+                            <input type="text" id="vp-resource-name" class="form-control" readonly value="—" />
+                            <div class="form-text">@Localizer["RepSelfHint"]</div>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label fw-medium" for="vp-segment">@Localizer["Segments"]</label>
-                            <select id="vp-segment" class="form-select select2" multiple data-placeholder="@Localizer["Segments"]"></select>
-                            <div class="form-text">@Localizer["SegmentHint"]</div>
-                            <div class="form-text text-muted">@Localizer["SegmentSingleNote"]</div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label fw-medium" for="vp-strategy">@Localizer["StrategyTemplate"]</label>
-                            <select id="vp-strategy" class="form-select select2" data-placeholder="@Localizer["StrategyTemplateNone"]">
-                                <option value="">@Localizer["StrategyTemplateNone"]</option>
-                            </select>
-                            <div class="form-text" id="vp-strategy-note"></div>
-                        </div>
+                        @* WP-VP-FIX-1 (A1, K-3) — no strategy-template ("play") picker: the rep never chooses a play. *@
                     </div>
                     <div class="form-text mt-2" id="vp-form-status"></div>
                 </div>

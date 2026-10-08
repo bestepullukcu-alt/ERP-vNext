@@ -79,6 +79,14 @@ public sealed class ListStrategyTemplatesHandler
             .Select(StrategyTemplateMapper.ToListItem)
             .ToList();
 
+        // WP-E2E-FIX-3 (E5-B2) — "Yerini v{n} aldı": the successor's version from the rows already loaded (archived too).
+        var versions = rows.GroupBy(t => t.Id).ToDictionary(g => g.Key, g => g.First().TemplateVersion);
+        items = items
+            .Select(i => i.SupersededByTemplateId is { } next && versions.TryGetValue(next, out var v)
+                ? i with { SupersededByTemplateVersion = v }
+                : i)
+            .ToList();
+
         return Response<StrategyTemplateListDto>.Success(new StrategyTemplateListDto(items, items.Count));
     }
 }

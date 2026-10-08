@@ -79,7 +79,7 @@
   <data name="RecordCreated" xml:space="preserve"><value>Kayıt oluşturuldu.</value></data>
   <data name="RecordUpdated" xml:space="preserve"><value>Kayıt güncellendi.</value></data>
   <data name="Repeatable" xml:space="preserve"><value>Tekrarlanabilir</value></data>
-  <data name="Repeated" xml:space="preserve"><value>Tekrar</value></data>
+  <data name="Repeated" xml:space="preserve"><value>Yol tekrarı</value></data>
   <data name="RequiredStageCount" xml:space="preserve"><value>Zorunlu Aşama</value></data>
   <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
   <data name="Resolved" xml:space="preserve"><value>Çözüldü</value></data>
@@ -108,4 +108,10 @@
   <data name="UpdatedAt" xml:space="preserve"><value>Güncellendi</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Ayrıntılar</value></data>
   <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="RepeatedHint" xml:space="preserve"><value>Yol başka aşamada da kullanılıyor</value></data>
+  <data name="PathListAllSubjectsNote" xml:space="preserve"><value>Bu yolculuğun konusu yok; tüm yayımlanmış yollar listeleniyor.</value></data>
+  <data name="Err_content_engagement_journey_no_required_stage" xml:space="preserve"><value>Yolculuk yayımlanamaz: en az bir etkin ve zorunlu aşama gerekir. Bir aşamada “Zorunlu”yu açın.</value></data>
+  <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>Bu yolculuk kodunun aynı dilde yayımlanmış başka bir sürümü bu tarihleri zaten kapsıyor. Geçerlilik tarihlerini değiştirin ya da diğer sürümü arşivleyin.</value></data>
+  <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>Arşivlenmiş yolculuk yayımlanamaz.</value></data>
+  <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>Yolculuk bu arada başka biri tarafından değiştirildi. Sayfayı yenileyip tekrar deneyin.</value></data>
 </root>

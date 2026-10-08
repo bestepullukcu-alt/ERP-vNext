@@ -262,6 +262,33 @@ public sealed class PlannedVisitContentItem
 
     /// <summary>Non-blocking notes (e.g. <c>journey_audience_mismatch</c>, <c>stage_index_reset</c>).</summary>
     public List<string> Warnings { get; set; } = new();
+
+    /// <summary>WP-VP-3C (K-7) — where the product came from: <see cref="PlannedVisitContentItemSources"/>
+    /// (<c>play</c> · <c>rep-pick</c> · <c>last-visit</c> · <c>portfolio</c>). Null on a plan written before 3C — read as
+    /// <c>play</c> (<see cref="EffectiveSource"/>). <c>play</c> only means "suggested"; no play id is ever carried.</summary>
+    public string? Source { get; set; }
+
+    /// <summary>WP-VP-3C (K-7e) — the item's 1-based position in the visit's final (rotated) list; 0 on an older plan.</summary>
+    public int Order { get; set; }
+
+    /// <summary>WP-VP-4G (F4-4) — the MDM product name AT APPROVAL (a snapshot, like the code); null on an older plan, which
+    /// a read fills from the master. Never taken from a client.</summary>
+    public string? ProductName { get; set; }
+
+    /// <summary>The source, an older (null) item reading as <c>play</c>.</summary>
+    public string EffectiveSource() => string.IsNullOrWhiteSpace(Source) ? PlannedVisitContentItemSources.Play : Source;
+}
+
+/// <summary>WP-VP-3C (K-7) — the sources of a visit's product list, in priority order (an earlier source wins a product
+/// two sources name).</summary>
+public static class PlannedVisitContentItemSources
+{
+    public const string Play = "play";
+    public const string RepPick = "rep-pick";
+    public const string LastVisit = "last-visit";
+    public const string Portfolio = "portfolio";
+
+    public static readonly IReadOnlyList<string> All = new[] { Play, RepPick, LastVisit, Portfolio };
 }
 
 /// <summary>WP-SB-3b — one step of the path version the visit tells.</summary>

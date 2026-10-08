@@ -700,6 +700,12 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>Perfiles legales</value>
   </data>
+  <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
+    <value>Planificación de visitas</value>
+  </data>
+  <data name="Nav.Page.VISITEXECUTION" xml:space="preserve">
+    <value>Ejecución de visitas</value>
+  </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>Conjuntos de contenido</value>
   </data>
@@ -1039,5 +1045,8 @@
   </data>
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Aceptar De Todos Modos</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Cargando...</value>
   </data>
 </root>

@@ -193,4 +193,5 @@
   <data name="SessionStatus_archived" xml:space="preserve"><value>В архиве</value></data>
   <data name="GoToDetails" xml:space="preserve"><value>Перейти к подробностям</value></data>
   <data name="StatusLine" xml:space="preserve"><value>Ход статуса</value></data>
+  <data name="TodayActivePeriods" xml:space="preserve"><value>Активные сегодня</value></data>
 </root>

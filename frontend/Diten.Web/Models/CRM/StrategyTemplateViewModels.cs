@@ -24,6 +24,9 @@ public sealed class StrategyTemplateDetailViewModel
     public bool Superseded { get; set; }
     public Guid? SupersededByTemplateId { get; set; }
 
+    /// <summary>WP-E2E-FIX-3 (E5-B2) — the successor's version ("Yerini v{n} aldı"); null when unknown.</summary>
+    public int? SupersededByTemplateVersion { get; set; }
+
     /// <summary>WP-ST-SCOPE — the play's address level as STORED (empty for a pre-scope play).</summary>
     public string ScopeType { get; set; } = string.Empty;
 

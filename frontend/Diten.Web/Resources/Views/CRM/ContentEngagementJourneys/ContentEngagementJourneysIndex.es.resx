@@ -79,7 +79,7 @@
   <data name="RecordCreated" xml:space="preserve"><value>Registro creado.</value></data>
   <data name="RecordUpdated" xml:space="preserve"><value>Registro actualizado.</value></data>
   <data name="Repeatable" xml:space="preserve"><value>Repetible</value></data>
-  <data name="Repeated" xml:space="preserve"><value>Repetido</value></data>
+  <data name="Repeated" xml:space="preserve"><value>Ruta repetida</value></data>
   <data name="RequiredStageCount" xml:space="preserve"><value>Etapas obligatorias</value></data>
   <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
   <data name="Resolved" xml:space="preserve"><value>Resuelto</value></data>
@@ -108,4 +108,10 @@
   <data name="UpdatedAt" xml:space="preserve"><value>Actualizado</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
   <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="RepeatedHint" xml:space="preserve"><value>Esta ruta también se usa en otra etapa</value></data>
+  <data name="PathListAllSubjectsNote" xml:space="preserve"><value>Este recorrido no tiene tema, por lo que se muestran todas las rutas publicadas.</value></data>
+  <data name="Err_content_engagement_journey_no_required_stage" xml:space="preserve"><value>El recorrido no se puede publicar: necesita al menos una etapa activa obligatoria. Active «Obligatorio» en una etapa.</value></data>
+  <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>Otra versión publicada de este código de recorrido (mismo idioma) ya cubre estas fechas. Cambie las fechas de vigencia o archive la otra versión.</value></data>
+  <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>Un recorrido archivado no se puede publicar.</value></data>
+  <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>Otra persona modificó el recorrido mientras tanto. Recargue la página e inténtelo de nuevo.</value></data>
 </root>

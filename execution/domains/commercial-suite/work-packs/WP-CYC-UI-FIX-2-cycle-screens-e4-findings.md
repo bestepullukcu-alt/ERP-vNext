@@ -41,3 +41,24 @@ NE: (1) "Bugün geçerli dönem" kutusu → "Bugün aktif dönemler": liste veri
 KORU/YAPMA: CRM DOKUNMA, yeni CRM çağrısı yok; ekran yapısı/hesap/önizleme/hızlı bakış/bulucu davranışı değişmez; esc()/textContent.
 DOĞRULA (E2): dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 551); CRM dokunulmadı; build 0 hata; verify_datatable_page.py iki listede (--area CRM --api-profile proxy --format gaps) → yalnız 8 bilinen sapma. Yeni testler WP Acceptance. Sabotaj: (1) bugün-aktif süzgecini yalnız tüm şirket kapsamına indir → kırmızı; (2) legacy etiketini typical'a eşitle → kırmızı; geri al. Commit ("fix(web): WP-CYC-UI-FIX-2 — cycle screens E4 findings (today's active periods, timeline scroll, l10n, session statuses, legacy label, date format)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-06)
+**Commit:** `993eaa124` (ajan `ca6d8e81`, `test/crm-content-visit-e2e` üzerine rebase + ff). Push: test dalı.
+
+**Rebase çakışması (CT çözdü):** `SharedResource.{ar,es,fr,ru,zh}.resx` dosya sonu — main'den gelen BL-452 anahtarları + bu paketin `Loading` anahtarı; ikisi de korundu, XML geçerli (510 `data`), BOM korundu. Fark yalnız `Loading`.
+
+**CT K13 (birleşik ağaçta):** Web **689/0** (VP-FIX-1 sonrası 666 + bu paketin 23 testi). CRM'e dokunulmadı. Kod okuması: `CyclePeriodScreenRules.ActiveOn` (aktif + bugünü kapsayan, her kapsam), `CycleCapacityWaterfall.DailyFixedLabelKey` (legacy / typical), `CycleCapacitySessionStatus` (bilinmeyen → `SessionStatus_unknown`), ortak `cycle-dates.js`, ülke adı `ClaimDisplayNames` (ICU).
+
+**CT sabotajı (ajanınkinden ayrı):**
+1. `ActiveOn`'dan durum koşulunu kaldır → 2 test **kırmızı**.
+2. Bilinmeyen durumu ham koda eşle → 3 test **kırmızı**.
+
+İkisi de geri alındı.
+
+**E4:** kullanıcı kararıyla ertelendi ("kontrol et ve bırak, planımızla devam"). Açık maddeler:
+- zaman çizelgesi ortalaması tarayıcıda gözle (özellikle Arapça);
+- "Bugün aktif dönemler" kutusu canlıda.
+
+**Kapsam dışı not (ajan):** Hesap ve Denetim Kaydı resx'lerinde de "Yukleniyor" var — ayrı küçük iş.
