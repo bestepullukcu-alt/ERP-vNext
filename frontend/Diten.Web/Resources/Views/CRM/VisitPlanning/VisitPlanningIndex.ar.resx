@@ -664,4 +664,67 @@
   <data name="NoVisitsInPeriod" xml:space="preserve">
     <value>لا زيارات مخططة لهذا الطبيب في الفترة.</value>
   </data>
+  <data name="MyAccountsTitle" xml:space="preserve">
+    <value>حساباتي (منطقتي)</value>
+  </data>
+  <data name="AccountSearch" xml:space="preserve">
+    <value>ابحث عن حساب…</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="NoAccountsFound" xml:space="preserve">
+    <value>لا يوجد حساب مطابق.</value>
+  </data>
+  <data name="DueThisWeekBadge" xml:space="preserve">
+    <value>هذا الأسبوع</value>
+  </data>
+  <data name="EditWeekTargets" xml:space="preserve">
+    <value>تعديل أهداف هذا الأسبوع</value>
+  </data>
+  <data name="EmptyWeekHint" xml:space="preserve">
+    <value>يُنشأ تلقائيًا عند اعتماد الأسبوع السابق. يمكنك إنشاؤه الآن وفق قواعد التكرار.</value>
+  </data>
+  <data name="FrequencyDefaultOne" xml:space="preserve">
+    <value>1 في الفترة (افتراضي)</value>
+  </data>
+  <data name="NextContentSoon" xml:space="preserve">
+    <value>المحتوى التالي: قريبًا</value>
+  </data>
+  <data name="NoTimeShort" xml:space="preserve">
+    <value>لا مدة</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>عرض الكل ({0})</value>
+  </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>عرض أقل</value>
+  </data>
+  <data name="WeekDoctorsHeading" xml:space="preserve">
+    <value>أطباء هذا الأسبوع</value>
+  </data>
+  <data name="HistoryStateDone" xml:space="preserve">
+    <value>تمت</value>
+  </data>
+  <data name="HistoryStateApproved" xml:space="preserve">
+    <value>مخططة · معتمدة</value>
+  </data>
+  <data name="HistoryStateDraft" xml:space="preserve">
+    <value>مسودة</value>
+  </data>
+  <data name="HistoryStateProjected" xml:space="preserve">
+    <value>متوقعة</value>
+  </data>
+  <data name="ReasonNoNearDay" xml:space="preserve">
+    <value>لا يوم قريب</value>
+  </data>
+  <data name="StateDone" xml:space="preserve">
+    <value>تمت</value>
+  </data>
+  <data name="WeekSubApproved" xml:space="preserve">
+    <value>معتمد · كُتب في الزيارات المخططة · للقراءة فقط</value>
+  </data>
+  <data name="WeekSubEmpty" xml:space="preserve">
+    <value>لم يُنشأ بعد</value>
+  </data>
 </root>

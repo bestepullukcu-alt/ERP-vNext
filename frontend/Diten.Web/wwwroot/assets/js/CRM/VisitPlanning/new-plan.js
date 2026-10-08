@@ -36,7 +36,7 @@
     const mondayOf = date => { const d = new Date(date); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; };
     const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     const isoWeek = date => { const d = new Date(date); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7)); const w1 = new Date(d.getFullYear(), 0, 4); return 1 + Math.round(((d - w1) / 86400000 - 3 + ((w1.getDay() + 6) % 7)) / 7); };
-    const dm = d => d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
+    const dm = d => window.VisitPlanningFormat.dayMonth(d); // WP-VP-4H — the app's language
 
     /** The period's weeks a plan may OPEN on: Monday-weeks touching the period whose Sunday is today or later — a week
      *  that is already over is never listed. */

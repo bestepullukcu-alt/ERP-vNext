@@ -12,6 +12,7 @@
     if (!root) return;
 
     const L = window.L10n || {};
+    const VPF = window.VisitPlanningFormat; // WP-VP-4H — dates / numbers in the application's language
     const base = '/CRM/VisitPlanning/api';
     const sessionId = root.dataset.sessionId;
     // WP-VP-4B — the page skeleton (page.js): this file publishes the session + preview to it, follows its selected
@@ -112,7 +113,7 @@
     const nextMonday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + ((1 - d.getDay() + 7) % 7)); return d; };
     const mondayOf = date => { const d = new Date(date); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; };
     const dayOrder = dateStr => { const d = new Date(dateStr); return isNaN(d) ? 99 : (d.getDay() + 6) % 7; }; // Mon=0 … Sun=6
-    const dayLong = dateStr => { const d = new Date(dateStr); return isNaN(d) ? '—' : d.toLocaleDateString(undefined, { weekday: 'long' }); };
+    const dayLong = dateStr => VPF.weekdayLong(dateStr);
     const parseHM = t => { const m = /^(\d{1,2}):(\d{2})/.exec(String(t || '')); return m ? (parseInt(m[1], 10) * 60 + parseInt(m[2], 10)) : null; };
     const ymd = d => { const dt = (d instanceof Date) ? d : new Date(d); return isNaN(dt) ? '' : dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0'); };
     const DAY_ABBR = { 0: 'DayShortSun', 1: 'DayShortMon', 2: 'DayShortTue', 3: 'DayShortWed', 4: 'DayShortThu', 5: 'DayShortFri', 6: 'DayShortSat' };
@@ -779,8 +780,7 @@
         if (range) {
             if (mon) {
                 const fri = new Date(mon.getTime() + 4 * 86400000);
-                const dd = d => d.toLocaleDateString(undefined, { day: '2-digit' });
-                range.textContent = dd(mon) + '–' + dd(fri) + ' ' + fri.toLocaleDateString(undefined, { month: 'short' }) + ' · ' + (L.YearLabel || 'Year') + ' ' + mon.getFullYear() + ' · ' + weekNumberLabel(isoWeek(mon));
+                range.textContent = VPF.range(mon, fri) + ' · ' + (L.YearLabel || 'Year') + ' ' + mon.getFullYear() + ' · ' + weekNumberLabel(isoWeek(mon));
             } else { range.textContent = isoLabelOf(week); }
         }
 
@@ -796,7 +796,7 @@
                 if (off && (wd === 0 || wd === 6)) continue; // a non-working weekend day is hidden
                 const isHoliday = off;                         // a non-working weekday is shown disabled
                 rendered.push({ order: i, disabled: isHoliday });
-                const chipLabel = dayAbbr(wd) + ' ' + date.getDate() + ' ' + date.toLocaleDateString('en-US', { month: 'short' }) + ', ' + String(date.getFullYear()).slice(-2);
+                const chipLabel = VPF.dayLabel(date); // WP-VP-4H (F4-7) — "Pzt 19 Eki", the app's language
                 html += '<li class="nav-item mb-1 mb-sm-0"><button type="button" class="nav-link small border shadow-none wc-tab-compact' + (isHoliday ? ' disabled' : '') + '" data-day="' + i + '"' + (isHoliday ? ' aria-disabled="true"' : '') + '>' +
                     esc(chipLabel) + (isHoliday ? ' <span class="badge bg-label-secondary ms-1">' + esc(L.HolidayMarker || 'holiday') + '</span>' : '') + '</button></li>';
             }
@@ -819,7 +819,10 @@
 
     const buildWeekSelector = () => {
         const sel = el('vp-week'); if (!sel) return;
-        const weeks = weeksOf(scheduled);
+        // WP-VP-4H (8) — EVERY week of the period (the preview's weeks[]), not only the weeks that already hold a visit:
+        // a week with no visit yet (e.g. 43) is listed and selectable, the selected one marked.
+        const periodWeeks = (lastPreview && Array.isArray(lastPreview.weeks)) ? lastPreview.weeks.map((w, i) => i) : [];
+        const weeks = periodWeeks.length ? periodWeeks : weeksOf(scheduled);
         if (weeks.length <= 1) { sel.classList.add('d-none'); return; }
         sel.classList.remove('d-none');
         sel.innerHTML = weeks.map(w => '<option value="' + w + '">' + esc(isoLabelOf(w)) + '</option>').join('');
@@ -859,7 +862,7 @@
         nonWorkingDates = new Set(p.nonWorkingDates || []);
         // WP-VP-2 (B-2) — a saved account the territory gate warns about is badged as out-of-territory.
         const warned = new Set((p.territoryWarnings || []).map(w => w.accountId));
-        if (warned.size) { targetAccounts.forEach(a => { if (warned.has(a.id)) a.out = true; }); if (accountsDt) { accountsDt.rows().invalidate().draw(false); } }
+        if (warned.size) { targetAccounts.forEach(a => { if (warned.has(a.id)) a.out = true; }); renderAccountList(); }
         renderCalendarWarning(p);
         scheduled = p.scheduled || [];
         // Keep the current week on a re-preview (manual reorder); pick the default only on the first render.
@@ -896,7 +899,7 @@
     const selectedPharmacies = {}; // pharmacyId -> {id, name} — flat set; written to selectedPharmacyIds on save
     const relatedByAccount = {};   // accountId -> [{id, name, relType}] linked pharmacies (cached)
     let activeAccountId = null;
-    let accountsDt = null, contactsDt = null;
+    let contactsDt = null;
     const selKey = (a, c) => a + '|' + c;
     const accName = a => a.accountName || a.name || a.id;
     const accType = a => a.accountType || a.type || '';
@@ -928,8 +931,9 @@
     // WP-VP-2 (B-2) — "add clinic / hospital" searches the rep's territory universe (my-accounts: current assignments,
     // exact / subtree; K-5 unassigned ⇒ every account + banner). "Add out-of-territory" keeps the whole-tenant search and
     // badges what it adds. The existing TerritoryGate preview warning stays as it was.
+    // WP-VP-4H (6) — the territory accounts are the "My accounts" list itself (below); only the whole-tenant
+    // out-of-territory search is still a picker.
     const fillAddAccountPicker = () => {
-        initAccountPicker('vp-add-account', '/my-accounts', false);
         initAccountPicker('vp-add-account-out', '/accounts', true);
     };
     const initAccountPicker = (selId, path, outOfTerritory) => {
@@ -971,30 +975,60 @@
     }).catch(() => {});
     const outBadge = row => row && row.out ? ' <span class="badge bg-label-warning ms-1">' + esc(L.OutOfTerritory || '') + '</span>' : '';
 
-    const accountsConfig = () => ({
-        data: targetAccounts, stateSave: false, searching: true, paging: true, pageLength: 10, lengthChange: false, info: true,
-        buttons: [], // inline picker: no Action dropdown / column-visibility toolbar
-        columns: [{ data: 'name' }, { data: 'type' }, { data: 'city' }, { data: null }],
-        columnDefs: [
-            { targets: 0, render: (v, t, row) => t === 'display' ? '<span class="fw-medium text-heading">' + esc(v) + '</span>' + outBadge(row) + '<div class="text-muted small vp-acc-stats" data-aid="' + esc(row.id) + '">' + esc(accountStatsText(row.id)) + '</div>' : (v || '') },
-            { targets: 1, render: (v, t) => t === 'display' ? (v ? '<span class="badge bg-label-info">' + esc(typeLabel(v)) + '</span>' : '—') : (v || '') },
-            { targets: 2, render: v => esc(v || '—') },
-            { targets: 3, orderable: false, searchable: false, className: 'cell-fit text-end', render: (v, t, row) => canEditTargets() ? '<button type="button" class="btn btn-sm btn-icon btn-label-danger js-remove-account" data-id="' + esc(row.id) + '" title="' + esc(L.RemoveTarget || 'Remove') + '"><i class="bx bx-x"></i></button>' : '' }
-        ],
-        language: { emptyTable: L.NoTargetAccounts || '—' }
-    });
-
-    const buildAccountsDt = () => {
-        const tableEl = el('dt-vp-accounts'); if (!tableEl) return;
-        if (accountsDt) { accountsDt.clear(); accountsDt.rows.add(targetAccounts).draw(false); return; }
-        accountsDt = new DataTable(tableEl, window.DtDefaults?.create ? window.DtDefaults.create(accountsConfig()) : accountsConfig());
-        tableEl.addEventListener('click', e => {
-            const rm = e.target.closest('.js-remove-account');
-            if (rm) { e.stopPropagation(); removeAccount(rm.dataset.id); return; }
-            const tr = e.target.closest('tbody tr'); if (!tr) return;
-            const data = accountsDt.row(tr).data(); if (data && data.id) showContacts(data.id);
-        });
+    // ── WP-VP-4H (6) — "My accounts (territory)": the rep's territory accounts (my-accounts; server search, 50 at a time
+    // while scrolling). The plan's institutions come first (a bar on the leading edge), an out-of-territory one with its
+    // badge. A click opens the account's doctors; ticking a doctor of an account outside the plan adds the account. ──
+    const ACCOUNT_PAGE = 50;
+    const accList = { term: '', page: 0, total: null, items: [], loading: false, done: false };
+    const accountActive = {}; // accountId -> its active doctors (my-accounts activeContactCount), until its doctors load
+    const cityOnly = a => String(a.city || '').split(' · ')[0];
+    const accountRow = a => {
+        const inPlan = targetAccounts.some(t => t.id === a.id);
+        const active = a.id === activeAccountId;
+        return '<div role="option" tabindex="0" aria-selected="' + (active ? 'true' : 'false') + '" data-id="' + esc(a.id) + '"' +
+            ' class="list-group-item list-group-item-action d-flex align-items-start gap-2 vp-acc-row' + (active ? ' bg-label-primary' : '') + (inPlan ? ' vp-acc-row--in-plan' : '') + '"' +
+            ' style="cursor:pointer;' + (inPlan ? 'border-inline-start:3px solid var(--bs-primary) !important;' : '') + '">' +
+            '<span class="flex-grow-1" style="min-width:0"><span class="d-flex align-items-center gap-1 flex-wrap"><span class="fw-medium text-heading">' + esc(a.name) + '</span>' +
+            (a.type ? '<span class="badge bg-label-info">' + esc(typeLabel(a.type)) + '</span>' : '') + outBadge(a) + '</span>' +
+            '<span class="d-block small text-muted vp-acc-stats" data-aid="' + esc(a.id) + '" data-city="' + esc(cityOnly(a)) + '">' + esc([cityOnly(a), accountStatsText(a.id)].filter(Boolean).join(' · ')) + '</span></span>' +
+            (inPlan && canEditTargets() ? '<button type="button" class="btn btn-sm btn-icon btn-text-danger js-remove-account" data-id="' + esc(a.id) + '" title="' + esc(L.RemoveTarget || 'Remove') + '" aria-label="' + esc(L.RemoveTarget || 'Remove') + '"><i class="bx bx-x"></i></button>' : '') +
+            '</div>';
     };
+    const accountMatches = (a, term) => !term || new RegExp(trSearchPattern(term), 'i').test(a.name || '');
+    const renderAccountList = () => {
+        const host = el('vp-acc-list'); if (!host) return;
+        const inPlan = targetAccounts.filter(a => accountMatches(a, accList.term));
+        const rest = accList.items.filter(a => !targetAccounts.some(t => t.id === a.id));
+        const rows = inPlan.concat(rest);
+        host.innerHTML = rows.map(accountRow).join('') +
+            (accList.loading ? '<div class="small text-muted p-2">' + esc(L.Loading || '…') + '</div>' : '') +
+            (!rows.length && !accList.loading ? '<div class="small text-muted p-2">' + esc(L.NoAccountsFound || '') + '</div>' : '');
+        setText('vp-accounts-count', String(accList.total != null ? Math.max(accList.total, inPlan.length) : targetAccounts.length));
+    };
+    const loadAccountPage = () => {
+        if (accList.loading || accList.done) return Promise.resolve();
+        accList.loading = true;
+        const term = accList.term, next = accList.page + 1;
+        renderAccountList();
+        return api('/my-accounts?search=' + encodeURIComponent(term) + '&page=' + next + '&pageSize=' + ACCOUNT_PAGE).then(r => {
+            if (term !== accList.term) return; // a newer search took over
+            const d = (r.ok && r.body && r.body.data) || {};
+            const raw = Array.isArray(d.items) ? d.items : [];
+            const rows = raw.map(x => ({ id: x.accountId || x.id, name: accName(x), type: accType(x), city: accCity(x), lat: accLat(x), lng: accLng(x), out: false }))
+                .filter(x => x.id && (!x.type || CLINIC_TYPES.indexOf(String(x.type).toLowerCase()) > -1));
+            raw.forEach(x => { const id = x.accountId || x.id; if (id && x.activeContactCount != null) accountActive[id] = x.activeContactCount; });
+            rows.forEach(x => { if (!accountSource.find(y => y.id === x.id)) accountSource.push(x); });
+            accList.items = accList.items.concat(rows.filter(x => !accList.items.some(y => y.id === x.id)));
+            accList.page = next;
+            accList.total = d.totalCount != null ? Number(d.totalCount) : accList.items.length;
+            accList.done = raw.length < ACCOUNT_PAGE;
+        }).catch(() => { accList.done = true; }).then(() => { accList.loading = false; renderAccountList(); });
+    };
+    const searchAccounts = term => {
+        accList.term = term; accList.page = 0; accList.items = []; accList.done = false; accList.total = null;
+        return loadAccountPage();
+    };
+    const buildAccountsDt = () => renderAccountList(); // WP-VP-4H — the list replaced the accounts DataTable
 
     /** WP-VP-FIX-2 (F-1) — a literal, Turkish-insensitive regex source for a search term (see the doctor search). */
     const trSearchPattern = term => String(term || '').toLocaleLowerCase('tr')
@@ -1007,7 +1041,7 @@
     // WP-VP-4C (2) — the doctor's period status (3D): frequency ("N in the period" / no-frequency badge), done / remaining,
     // last visit (the route's date format), and read-only badges: consent blocked (cannot be ticked), inactive, segment
     // names (information only, K-4). No link column. Column 6 is the picks cell targets.js fills after each draw.
-    const dayShort = value => { const d = new Date(value); return isNaN(d) ? '—' : d.getDate() + ' ' + d.toLocaleDateString('en-US', { month: 'short' }) + ', ' + String(d.getFullYear()).slice(-2); };
+    const dayShort = value => VPF.dateShort(value);
     const hasFrequency = st => st.requiredVisitCount != null && st.frequencyStatus !== 'unknown';
     const frequencyCell = st => hasFrequency(st)
         ? esc((L.FrequencyPerPeriod || '{0}').replace('{0}', st.requiredVisitCount))
@@ -1017,18 +1051,25 @@
     const doctorBadges = row => (row.blocked ? ' <span class="badge bg-label-danger" title="' + esc(L.ConsentBlockedHint || '') + '">' + esc(L.BadgeConsentBlocked || '') + '</span>' : '') +
         (row.inactive ? ' <span class="badge bg-label-secondary">' + esc(L.BadgeInactive || '') + '</span>' : '') +
         (row.status.segmentBadges || []).map(name => ' <span class="badge bg-label-info" title="' + esc(L.SegmentBadgeHint || '') + '">' + esc(name) + '</span>').join('');
+    // WP-VP-4H (6, F4-3) — "this week" (due) + the read-only badges form the Status column.
+    const statusCell = row => (row.status && row.status.dueThisWeek ? '<span class="badge bg-label-primary">' + esc(L.DueThisWeekBadge || '') + '</span>' : '') + doctorBadges(row);
     const contactsConfig = list => ({
         data: list, stateSave: false, searching: true, paging: true, pageLength: 10, lengthChange: false, info: true,
         buttons: [], // inline picker: no Action dropdown / column-visibility toolbar
-        columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }, { data: null }, { data: null }, { data: null }, { data: null }], // WP-VP-2 (D4) — no link-GUID column
+        // WP-VP-4H (F4-3) — a plain table: no responsive collapse (Products + Status always visible; a narrow screen
+        // scrolls sideways inside .table-responsive). Mockup order: select · doctor · specialty · product chips · frequency ·
+        // done / remaining · last visit · status. No link-GUID column (WP-VP-2 D4).
+        responsive: false, autoWidth: false,
+        columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }],
         columnDefs: [
             { targets: 0, orderable: false, className: 'cell-fit', render: (v, t, row) => '<div class="form-check mb-0"><input class="form-check-input js-contact-check" type="checkbox" data-cid="' + esc(row.contactId) + '"' + (selectedContacts[selKey(activeAccountId, row.contactId)] ? ' checked' : '') + (canEditTargets() && !row.blocked ? '' : ' disabled') + (row.blocked ? ' title="' + esc(L.ConsentBlockedHint || '') + '"' : '') + '></div>' },
-            { targets: 1, render: (v, t, row) => t === 'display' ? '<span class="fw-medium">' + esc(v) + '</span>' + doctorBadges(row) : (v || '') },
+            { targets: 1, render: (v, t) => t === 'display' ? '<span class="fw-medium text-heading">' + esc(v) + '</span>' : (v || '') },
             { targets: 2, render: (v, t) => t === 'display' ? (v ? '<span class="badge bg-label-info">' + esc(specLabel(v)) + '</span>' : '—') : (v || '') },
-            { targets: 3, searchable: false, render: (v, t, row) => t === 'display' ? frequencyCell(row.status) : (hasFrequency(row.status) ? row.status.requiredVisitCount : -1) },
-            { targets: 4, searchable: false, render: (v, t, row) => t === 'display' ? doneCell(row.status) : (row.status.remaining != null ? row.status.remaining : -1) },
-            { targets: 5, searchable: false, render: (v, t, row) => t === 'display' ? lastVisitCell(row.status) : (row.status.lastVisitDate ? new Date(row.status.lastVisitDate).getTime() : 0) },
-            { targets: 6, orderable: false, searchable: false, render: (v, t, row) => '<div class="vp-doc-picks" data-cid="' + esc(row.contactId) + '" data-aid="' + esc(activeAccountId) + '" data-lid="' + esc(row.linkId || '') + '" data-name="' + esc(row.name) + '" data-spec="' + esc(specLabel(row.specialty)) + '"></div>' }
+            { targets: 3, orderable: false, searchable: false, render: (v, t, row) => '<div class="vp-doc-picks" data-cid="' + esc(row.contactId) + '" data-aid="' + esc(activeAccountId) + '" data-lid="' + esc(row.linkId || '') + '" data-name="' + esc(row.name) + '" data-spec="' + esc(specLabel(row.specialty)) + '"></div>' },
+            { targets: 4, searchable: false, render: (v, t, row) => t === 'display' ? frequencyCell(row.status) : (hasFrequency(row.status) ? row.status.requiredVisitCount : -1) },
+            { targets: 5, searchable: false, render: (v, t, row) => t === 'display' ? doneCell(row.status) : (row.status.remaining != null ? row.status.remaining : -1) },
+            { targets: 6, searchable: false, render: (v, t, row) => t === 'display' ? lastVisitCell(row.status) : (row.status.lastVisitDate ? new Date(row.status.lastVisitDate).getTime() : 0) },
+            { targets: 7, orderable: false, searchable: false, render: (v, t, row) => t === 'display' ? statusCell(row) : '' }
         ],
         language: { emptyTable: activeAccountId ? (L.NoDoctorsForFilter || '—') : (L.PickAccountForContacts || '—'), zeroRecords: L.NoDoctorsForFilter || '—' }
     });
@@ -1038,7 +1079,12 @@
         if (contactsDt) { contactsDt.destroy(); contactsDt = null; tableEl.querySelector('tbody')?.remove(); }
         contactsDt = new DataTable(tableEl, window.DtDefaults?.create ? window.DtDefaults.create(contactsConfig(list)) : contactsConfig(list));
         // WP-VP-4C — every draw tells targets.js to fill the picks cells of the visible rows.
-        const drawn = () => { if (page) page.emit('targets:doctors-drawn', { accountId: activeAccountId }); };
+        const drawn = () => {
+            // WP-VP-4H (6) — "Select all (N)": the selectable doctors the filters show.
+            const n = contactsDt ? contactsDt.rows({ search: 'applied' }).data().toArray().filter(r => !r.blocked).length : 0;
+            setText('vp-select-all-count', '(' + n + ')');
+            if (page) page.emit('targets:doctors-drawn', { accountId: activeAccountId });
+        };
         contactsDt.on('draw', drawn); drawn();
         if (!tableEl.dataset.bound) {
             tableEl.dataset.bound = '1';
@@ -1049,6 +1095,7 @@
                     const c = findDoctor(activeAccountId, cid);
                     if (!canEditTargets() || (c && c.blocked)) { cb.checked = false; return; } // consent blocked: never a target
                     selectedContacts[k] = { contactId: cid, accountId: activeAccountId, accountContactLinkId: (c && c.linkId) || null };
+                    ensureInPlan(activeAccountId);
                 } else { delete selectedContacts[k]; }
                 refreshTargetsUi();
             });
@@ -1109,11 +1156,11 @@
     // "x / y selected · N this week" — y = the account's active doctors, N = those due this week (both from the "all" read).
     const accountStatsText = id => {
         const sel = Object.keys(selectedContacts).filter(k => k.indexOf(id + '|') === 0).length;
-        const st = accountStats[id];
+        const st = accountStats[id] || (accountActive[id] != null ? { active: accountActive[id], due: 0 } : null);
         const head = st ? (L.AccountSelectedOf || '{0} / {1}').replace('{0}', sel).replace('{1}', st.active) : (L.AccountSelectedCount || '{0}').replace('{0}', sel);
         return st && st.due ? head + ' · ' + (L.AccountDueThisWeek || '{0}').replace('{0}', st.due) : head;
     };
-    const paintAccountStats = () => document.querySelectorAll('#dt-vp-accounts .vp-acc-stats').forEach(n => { n.textContent = accountStatsText(n.dataset.aid); });
+    const paintAccountStats = () => document.querySelectorAll('#vp-acc-list .vp-acc-stats').forEach(n => { n.textContent = [n.dataset.city, accountStatsText(n.dataset.aid)].filter(Boolean).join(' · '); });
     // Every target institution's counts load in the background, three reads at a time.
     const loadAccountStats = () => {
         const queue = targetAccounts.map(a => a.id).filter(id => !accountStats[id]);
@@ -1191,16 +1238,23 @@
         '<span class="flex-grow-1" style="min-width:0"><span class="fw-medium small d-block text-truncate">' + esc(title) + '</span>' +
         (sub ? '<span class="text-muted" style="font-size:.72rem;">' + esc(sub) + '</span>' : '') + '</span>' +
         (canEditTargets() ? '<button type="button" class="btn btn-icon btn-text-secondary vp-selchip-x flex-shrink-0" aria-label="remove"><i class="bx bx-x"></i></button>' : '') + '</div>';
+    // WP-VP-4H (6) — the selected list in collapsible groups per institution (name + count + chevron); a row
+    // "Name · Specialty" with its remove button; the pharmacies close the list as their own group.
+    const collapsedGroups = new Set();
+    const groupHead = (key, title, count) => {
+        const open = !collapsedGroups.has(key);
+        return '<button type="button" class="btn btn-sm w-100 d-flex align-items-center gap-2 px-0 mt-2 text-start js-sel-group" data-group="' + esc(key) + '" aria-expanded="' + (open ? 'true' : 'false') + '">' +
+            '<i class="bx ' + (open ? 'bx-chevron-down' : 'bx-chevron-right') + ' text-muted"></i><span class="flex-grow-1 fw-semibold small text-truncate">' + esc(title) + '</span><span class="badge bg-label-secondary">' + count + '</span></button>';
+    };
+    const groupBody = (key, rows) => '<div class="d-flex flex-column gap-1 ps-3' + (collapsedGroups.has(key) ? ' d-none' : '') + '">' + rows.join('') + '</div>';
     const renderSelectionChips = () => {
         const host = el('vp-selection-chips'); if (!host) return;
-        // Grouped by account: the institution heads its doctors (name · specialty); pharmacies close the list.
         const groups = {};
         Object.keys(selectedContacts).forEach(k => { const s = selectedContacts[k]; (groups[s.accountId] = groups[s.accountId] || []).push(chip('doctor', 'data-k="' + esc(k) + '"', cName(s.accountId, s.contactId), specLabel(cSpec(s.accountId, s.contactId)))); });
-        const head = title => '<div class="text-uppercase text-muted fw-semibold mt-2" style="font-size:.7rem;">' + esc(title) + '</div>';
         const parts = [];
-        Object.keys(groups).forEach(aid => { parts.push(head(aName(aid))); parts.push.apply(parts, groups[aid]); });
+        Object.keys(groups).forEach(aid => { parts.push(groupHead(aid, aName(aid), groups[aid].length)); parts.push(groupBody(aid, groups[aid])); });
         const pharm = Object.keys(selectedPharmacies).map(pid => chip('pharmacy', 'data-pid="' + esc(pid) + '"', (selectedPharmacies[pid].name && selectedPharmacies[pid].name !== pid) ? selectedPharmacies[pid].name : (savedAccountNames[pid] || '—'), L.StatPharmacies || 'pharmacy'));
-        if (pharm.length) { parts.push(head(L.StatPharmacies || '')); parts.push.apply(parts, pharm); }
+        if (pharm.length) { parts.push(groupHead('pharmacies', L.StatPharmacies || '', pharm.length)); parts.push(groupBody('pharmacies', pharm)); }
         host.innerHTML = parts.length ? parts.join('') : '<div class="text-muted small">—</div>';
     };
     const refreshTargetsUi = () => {
@@ -1251,6 +1305,7 @@
             const c = findDoctor(activeAccountId, cid);
             selectedContacts[k] = { contactId: cid, accountId: activeAccountId, accountContactLinkId: (c && c.linkId) || null };
         });
+        ensureInPlan(activeAccountId);
         contactsDt.draw(false); refreshTargetsUi();
     };
     const clearSelection = () => {
@@ -1265,7 +1320,7 @@
     const showContacts = accountId => {
         activeAccountId = accountId;
         el('vp-contacts-panel')?.classList.remove('d-none');
-        const acc = targetAccounts.find(a => a.id === accountId);
+        const acc = targetAccounts.find(a => a.id === accountId) || accountSource.find(a => a.id === accountId);
         setText('vp-contacts-for', acc ? acc.name : '—');
         // meta line: city · N doctors · M linked pharmacies (filled progressively as the fetches resolve).
         const meta = { city: acc ? (acc.city || '') : '', docs: null, ph: null };
@@ -1275,6 +1330,8 @@
         fetchAccountDoctors(accountId, 'all').then(all => {
             setText('vp-doctors-count', String(all.length));
             meta.docs = all.length; paintMeta(); paintAccountStats();
+            // WP-VP-4H (6) — counted quick filters: "Due this week (8)", "Never visited (3)", "All (16)".
+            if (accountId === activeAccountId) paintQuickCounts(all);
         });
         loadDoctorTable(accountId);
         fetchRelatedPharmacies(accountId).then(list => { setText('vp-pharm-count', String(list.length)); meta.ph = list.length; paintMeta(); });
@@ -1290,6 +1347,12 @@
         const h = el('vp-contacts-hint'); if (h) h.textContent = list.length ? '' : (L.NoDoctorsForFilter || '');
         el('vp-doctor-search')?.dispatchEvent(new Event('input'));
     });
+    const paintQuickCounts = all => {
+        const count = { all: all.length, due: all.filter(r => r.status && r.status.dueThisWeek).length, never: all.filter(r => r.status && r.status.neverVisited).length };
+        document.querySelectorAll('#vp-quick-filters .vp-quick-count').forEach(n => { n.textContent = '(' + (count[n.dataset.quick] || 0) + ')'; });
+    };
+    // A doctor ticked in an account outside the plan brings the account into the plan.
+    const ensureInPlan = accountId => { if (accountId && !targetAccounts.some(a => a.id === accountId)) addAccount(accountId); };
     const paintQuick = () => document.querySelectorAll('#vp-quick-filters .vp-quick').forEach(b => {
         const on = b.dataset.quick === activeQuick;
         b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -1304,7 +1367,7 @@
         el('vp-targets-locked')?.classList.toggle('d-none', !locked || readOnly);
         ['vp-save-targets', 'vp-select-all-doctors', 'vp-clear-selection', 'vp-out-territory-open'].forEach(id => { const b = el(id); if (b) b.disabled = !canEditTargets(); });
         el('vp-add-account-wrap')?.classList.toggle('d-none', !canEditTargets());
-        if (accountsDt) accountsDt.rows().invalidate('data').draw(false);
+        renderAccountList();
         if (contactsDt) contactsDt.rows().invalidate('data').draw(false);
         if (activeAccountId) renderPharmacies(activeAccountId);
         renderSelectionChips();
@@ -1540,6 +1603,32 @@
         contactsDt.search(term ? trSearchPattern(term) : '', !!term, false, true).draw();
     });
     el('vp-select-all-doctors')?.addEventListener('click', selectAllDoctors);
+    // WP-VP-4H (6) — the "My accounts" list: open an account, remove a plan account, search, load 50 more on scroll.
+    const accHost = el('vp-acc-list');
+    if (accHost) {
+        accHost.addEventListener('click', e => {
+            const rm = e.target.closest('.js-remove-account');
+            if (rm) { e.stopPropagation(); removeAccount(rm.dataset.id); return; }
+            const row = e.target.closest('.vp-acc-row'); if (row) { showContacts(row.dataset.id); renderAccountList(); }
+        });
+        accHost.addEventListener('keydown', e => {
+            const row = e.target.closest('.vp-acc-row');
+            if (row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); showContacts(row.dataset.id); renderAccountList(); }
+        });
+        accHost.addEventListener('scroll', () => { if (accHost.scrollTop + accHost.clientHeight >= accHost.scrollHeight - 40) loadAccountPage(); });
+    }
+    let accSearchTimer = null;
+    el('vp-acc-search')?.addEventListener('input', function () {
+        const term = (this.value || '').trim();
+        clearTimeout(accSearchTimer);
+        accSearchTimer = setTimeout(() => searchAccounts(term), 300);
+    });
+    el('vp-selection-chips')?.addEventListener('click', e => {
+        const g = e.target.closest('.js-sel-group'); if (!g) return;
+        const key = g.dataset.group;
+        if (collapsedGroups.has(key)) collapsedGroups.delete(key); else collapsedGroups.add(key);
+        renderSelectionChips();
+    });
     el('vp-clear-selection')?.addEventListener('click', clearSelection);
     el('vp-specialty-pills')?.addEventListener('change', e => {
         if (!e.target.closest('.vp-spec-check')) return;
@@ -1585,6 +1674,7 @@
         .then(loadSession)
         .then(loadAccountSource)
         .then(seedTargets)
+        .then(() => searchAccounts(''))
         .then(applyDefaultTab)
         .then(preview);
 })(window, document);

@@ -218,34 +218,26 @@
                 <div class="row g-4">
                     @* ── LEFT — target clinics / hospitals ── *@
                     <div class="col-12 col-lg-3" id="vp-accounts-col">
+                        @* WP-VP-4H (6) — "My accounts (territory)": the rep's territory accounts as the picker itself (details.js:
+                           my-accounts, server search, 50 at a time while scrolling); the plan's accounts first. A click opens the
+                           account's doctors. No separate "add clinic / hospital" dropdown any more. *@
                         <div class="d-flex align-items-center justify-content-between mb-2">
-                            <label class="form-label fw-medium mb-0">@Localizer["AccountsPanel"]</label>
+                            <label class="form-label fw-medium mb-0" for="vp-acc-search">@Localizer["MyAccountsTitle"]</label>
                             <span class="badge bg-label-secondary" id="vp-accounts-count">—</span>
                         </div>
                         @* WP-VP-2 (B-2) — K-5: shown by details.js when the rep has no territory assignment. *@
                         <div id="vp-territory-banner" class="alert alert-warning py-2 small mb-2 d-none" role="status"><i class="bx bx-error me-1"></i>@Localizer["TerritoryUnassignedBanner"]</div>
+                        <input type="search" class="form-control form-control-sm mb-2" id="vp-acc-search" placeholder="@Localizer["AccountSearch"]" aria-label="@Localizer["AccountSearch"]">
+                        <div class="list-group list-group-flush border rounded overflow-auto" id="vp-acc-list" role="listbox" aria-label="@Localizer["MyAccountsTitle"]" style="max-height:560px"></div>
+                        <div class="form-text">@Localizer["AccountsHint"]</div>
                         @if (Model.CanGenerate)
                         {
-                            <div id="vp-add-account-wrap">
-                                <div class="mb-2">
-                                    <select id="vp-add-account" class="form-select form-select-sm select2" data-placeholder="@Localizer["AddAccount"]"><option value=""></option></select>
-                                </div>
+                            <div id="vp-add-account-wrap" class="mt-2">
                                 @* WP-VP-4C (1) — "Add out-of-territory" opens a dialog with the whole-tenant search (WP-VP-2 B-2 flow kept):
                                    an account added there carries the out-of-territory badge. *@
-                                <button type="button" class="btn btn-sm btn-label-warning w-100 mb-2" id="vp-out-territory-open" data-bs-toggle="modal" data-bs-target="#vp-out-territory-modal"><i class="bx bx-map-pin me-1"></i>@Localizer["AddOutOfTerritoryShort"]</button>
+                                <button type="button" class="btn btn-sm btn-label-warning w-100" id="vp-out-territory-open" data-bs-toggle="modal" data-bs-target="#vp-out-territory-modal"><i class="bx bx-map-pin me-1"></i>@Localizer["AddOutOfTerritoryShort"]</button>
                             </div>
                         }
-                        <div class="card-datatable table-responsive">
-                            <table id="dt-vp-accounts" class="table border-top">
-                                <thead><tr>
-                                    <th>@Localizer["ColAccount"]</th>
-                                    <th>@Localizer["ColType"]</th>
-                                    <th>@Localizer["ColCity"]</th>
-                                    <th class="text-end">@Localizer["Actions"]</th>
-                                </tr></thead>
-                            </table>
-                        </div>
-                        <div class="form-text">@Localizer["AccountsHint"]</div>
                     </div>
 
                     @* ── MIDDLE — selected account: doctors / linked-pharmacies sub-tabs ── *@
@@ -271,7 +263,7 @@
                                     <input type="text" class="form-control form-control-sm flex-grow-1" id="vp-doctor-search" placeholder="@Localizer["SearchDoctor"]" style="max-width:260px;">
                                     @if (Model.CanGenerate)
                                     {
-                                        <button type="button" class="btn btn-sm btn-label-secondary" id="vp-select-all-doctors"><i class="bx bx-check-double me-1"></i>@Localizer["SelectAllDoctors"]</button>
+                                        <button type="button" class="btn btn-sm btn-label-secondary" id="vp-select-all-doctors"><i class="bx bx-check-double me-1"></i>@Localizer["SelectAllDoctors"] <span id="vp-select-all-count"></span></button>
                                     }
                                     @* WP-VP-4C (4) — bulk product apply: the picker in bulk mode for the selected doctors (targets.js). *@
                                     @if (Model.CanGenerate)
@@ -282,9 +274,9 @@
                                 @* WP-VP-4C (2) — quick filters (the server's quick=due|never|all) + the counted specialty multi-select. *@
                                 <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
                                     <div class="btn-group btn-group-sm" role="group" id="vp-quick-filters" aria-label="@Localizer["QuickFiltersLabel"]">
-                                        <button type="button" class="btn btn-outline-primary vp-quick active" data-quick="all" aria-pressed="true">@Localizer["QuickFilterAll"]</button>
-                                        <button type="button" class="btn btn-outline-primary vp-quick" data-quick="due" aria-pressed="false">@Localizer["QuickFilterDue"]</button>
-                                        <button type="button" class="btn btn-outline-primary vp-quick" data-quick="never" aria-pressed="false">@Localizer["QuickFilterNever"]</button>
+                                        <button type="button" class="btn btn-outline-primary vp-quick active" data-quick="all" aria-pressed="true">@Localizer["QuickFilterAll"] <span class="vp-quick-count" data-quick="all"></span></button>
+                                        <button type="button" class="btn btn-outline-primary vp-quick" data-quick="due" aria-pressed="false">@Localizer["QuickFilterDue"] <span class="vp-quick-count" data-quick="due"></span></button>
+                                        <button type="button" class="btn btn-outline-primary vp-quick" data-quick="never" aria-pressed="false">@Localizer["QuickFilterNever"] <span class="vp-quick-count" data-quick="never"></span></button>
                                     </div>
                                     <div id="vp-specialty-pills"></div>
                                 </div>
@@ -294,10 +286,11 @@
                                             <th>@Localizer["ColSelected"]</th>
                                             <th>@Localizer["ColContact"]</th>
                                             <th>@Localizer["ColSpecialty"]</th>
+                                            <th>@Localizer["ColProducts"]</th>
                                             <th>@Localizer["ColFrequency"]</th>
                                             <th>@Localizer["ColDoneRemaining"]</th>
                                             <th>@Localizer["ColLastVisit"]</th>
-                                            <th>@Localizer["ColProducts"]</th>
+                                            <th>@Localizer["ColStatus"]</th>
                                         </tr></thead>
                                     </table>
                                 </div>
@@ -386,7 +379,12 @@
                 </div>
                 <div class="d-flex gap-2 overflow-auto pb-2" id="vp-wk-strip" role="listbox" aria-label="@Localizer["PeriodWeeksTitle"]"></div>
             </div>
-            <div class="card p-4 mb-4" id="vp-wk-detail" aria-live="polite"><div class="text-muted small">@SharedLocalizer["Loading"]</div></div>
+            @* WP-VP-4H (2) — the week (left, mockup flex 1 1 520px) and its doctors (right, 1 1 420px) side by side; stacked on
+               a narrow screen; mirrored in RTL by the flex direction. *@
+            <div class="d-flex flex-wrap gap-3 align-items-start mb-4">
+                <div class="card p-4 d-flex flex-column gap-4" id="vp-wk-detail" aria-live="polite" style="flex:1 1 520px;min-width:0"><div class="text-muted small">@SharedLocalizer["Loading"]</div></div>
+                <div class="card p-4 d-flex flex-column gap-2" id="vp-wk-doctors" style="flex:1 1 420px;min-width:0"></div>
+            </div>
         </div>
 
         @* Tab 2 — Route: the road-map view (RouteSection heading kept for section-map parity). *@
@@ -558,6 +556,8 @@
 @section Scripts {
     <partial name="~/Views/CRM/VisitPlanning/_IndexL10n.cshtml" />
     <script src="~/assets/js/CRM/VisitPlanning/index.l10n.js" asp-append-version="true"></script>
+    @* WP-VP-4H — the one date / number formatter, in the application's language (<html lang>). *@
+    <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
     @* SortableJS (not globally loaded on the tenant shell) — drives the drag-reorder of doctor visits inside a route block. *@
     <script src="~/assets/vendor/libs/sortablejs/sortable.js" asp-append-version="true"></script>
     <script src="~/assets/vendor/libs/leaflet/leaflet.js" asp-append-version="true"></script>

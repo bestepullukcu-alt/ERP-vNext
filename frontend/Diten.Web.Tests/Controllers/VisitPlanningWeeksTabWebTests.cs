@@ -116,13 +116,11 @@ public sealed class VisitPlanningWeeksTabWebTests
         Assert.Contains("page.on('request:pick-products'", Script("targets.js"));
         // history label by the week's state
         var state = Between(js, "const historyState = (slot, firstDraft) => {", "\n    };");
-        Assert.Contains("return 'presented';", state);
-        Assert.Contains("if (slot.isFixed) return 'planned';", state);
-        Assert.Contains("'planned' : 'projected'", state);
-        Assert.Contains("const HISTORY_LABEL = { presented: 'HistoryPresented', planned: 'HistoryPlanned', projected: 'HistoryProjected' };", js);
-        // "Next content" waits for SB-3c: not shown
-        Assert.DoesNotContain("NextContent", js);
-        Assert.DoesNotContain("NextContent", View("_DoctorPanel.cshtml"));
+        // WP-VP-4H (5) — done (report) / approved / draft / projected; "Next content: soon" is a placeholder line
+        Assert.Contains("return 'done';", state);
+        Assert.Contains("return 'approved';", state);
+        Assert.Contains("=== firstDraft ? 'draft' : 'projected'", state);
+        Assert.Contains("L.NextContentSoon", js);
 
         // every reader gets the panel; the Products tab is a writer's only
         var details = View("Details.cshtml");
@@ -146,8 +144,8 @@ public sealed class VisitPlanningWeeksTabWebTests
         Assert.Contains("if (offered.indexOf('reopenWeek') > -1 && canApply)", actions);
         Assert.Contains("!legacy && canGenerate && MOVABLE_WEEK_STATUSES.indexOf(w.status) > -1", actions);
         // the same functions as the header
-        Assert.Contains("if (k === 'approve') page.request('approve-week');", js);
-        Assert.Contains("else if (k === 'reopen') page.request('reopen-week');", js);
+        Assert.Contains("if (k === 'approve') { rememberWeeksReturn(); page.request('approve-week'); }", js);
+        Assert.Contains("else if (k === 'reopen') { rememberWeeksReturn(); page.request('reopen-week'); }", js);
         Assert.Contains("page.on('request:reopen-week', () => openReopen());", Script("header.js"));
         // the rule itself (4B): approved → reopen / next; past + legacy → nothing
         var page = Script("page.js");

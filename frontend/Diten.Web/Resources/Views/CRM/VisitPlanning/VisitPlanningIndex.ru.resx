@@ -664,4 +664,67 @@
   <data name="NoVisitsInPeriod" xml:space="preserve">
     <value>Для этого врача визиты в периоде не запланированы.</value>
   </data>
+  <data name="MyAccountsTitle" xml:space="preserve">
+    <value>Мои клиенты (территория)</value>
+  </data>
+  <data name="AccountSearch" xml:space="preserve">
+    <value>Поиск клиента…</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="NoAccountsFound" xml:space="preserve">
+    <value>Подходящих клиентов нет.</value>
+  </data>
+  <data name="DueThisWeekBadge" xml:space="preserve">
+    <value>На этой неделе</value>
+  </data>
+  <data name="EditWeekTargets" xml:space="preserve">
+    <value>Изменить цели недели</value>
+  </data>
+  <data name="EmptyWeekHint" xml:space="preserve">
+    <value>Создаётся автоматически после утверждения предыдущей недели. Можно сформировать сейчас по правилам частоты.</value>
+  </data>
+  <data name="FrequencyDefaultOne" xml:space="preserve">
+    <value>1 за период (по умолчанию)</value>
+  </data>
+  <data name="NextContentSoon" xml:space="preserve">
+    <value>Следующий контент: скоро</value>
+  </data>
+  <data name="NoTimeShort" xml:space="preserve">
+    <value>нет времени</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>Показать все ({0})</value>
+  </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>Свернуть</value>
+  </data>
+  <data name="WeekDoctorsHeading" xml:space="preserve">
+    <value>Врачи недели</value>
+  </data>
+  <data name="HistoryStateDone" xml:space="preserve">
+    <value>Выполнен</value>
+  </data>
+  <data name="HistoryStateApproved" xml:space="preserve">
+    <value>Запланирован · утверждён</value>
+  </data>
+  <data name="HistoryStateDraft" xml:space="preserve">
+    <value>Черновик</value>
+  </data>
+  <data name="HistoryStateProjected" xml:space="preserve">
+    <value>Прогноз</value>
+  </data>
+  <data name="ReasonNoNearDay" xml:space="preserve">
+    <value>нет близкого дня</value>
+  </data>
+  <data name="StateDone" xml:space="preserve">
+    <value>выполнен</value>
+  </data>
+  <data name="WeekSubApproved" xml:space="preserve">
+    <value>Утверждена · записана в плановые визиты · только чтение</value>
+  </data>
+  <data name="WeekSubEmpty" xml:space="preserve">
+    <value>Ещё не сформирована</value>
+  </data>
 </root>

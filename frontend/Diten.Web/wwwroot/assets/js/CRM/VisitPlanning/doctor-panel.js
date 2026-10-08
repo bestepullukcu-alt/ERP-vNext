@@ -21,6 +21,7 @@
     if (!root || !page || !panel) return;
 
     const L = window.L10n || {};
+    const VPF = window.VisitPlanningFormat; // WP-VP-4H — dates / numbers in the application's language
     const base = '/CRM/VisitPlanning/api';
     const sessionId = root.dataset.sessionId;
     const canGenerate = root.dataset.canGenerate === 'true';
@@ -34,9 +35,8 @@
     const localDate = v => new Date(v + 'T00:00:00');
     const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     const mondayYmd = v => { const d = localDate(v); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return ymd(d); };
-    const dm = d => d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
     const weekTitle = w => fmt(L.WeekNumberLabel || '{0}', w.isoWeek);
-    const weekRange = w => { const f = localDate(w.from || w.weekStart), t = localDate(w.to || w.weekStart); return isNaN(f) || isNaN(t) ? '' : dm(f) + ' – ' + dm(t); };
+    const weekRange = w => VPF.workRange(w.from || w.weekStart, w.to || w.weekStart);
 
     // the plan's targets (names + 3D status) and the specialty labels — read once, refreshed with the plan
     let doctors = {}, accounts = {}, specLabels = {};
@@ -52,16 +52,22 @@
     const SOURCE_LABEL = { play: 'LegendPlay', 'rep-pick': 'LegendRepPick', 'last-visit': 'LegendLastVisit', portfolio: 'LegendPortfolio' };
     const chip = c => {
         const promo = c.role !== 'non-promo';
-        return '<span class="badge rounded-pill ' + (promo ? 'bg-label-primary' : 'bg-transparent border text-body') + '">' + esc(c.productCode || '—') + '</span>';
+        return '<span class="badge ' + (promo ? 'bg-label-primary' : 'bg-transparent border text-body') + '" title="' + esc(c.productCode || '') + '">' + esc(VPF.productLabel(c)) + '</span>';
     };
 
-    // Product history label per week of the doctor's visits.
-    const HISTORY_LABEL = { presented: 'HistoryPresented', planned: 'HistoryPlanned', projected: 'HistoryProjected' };
+    // WP-VP-4H (5) — the product history covers EVERY week of the period; a week's state: done (a completed report, 4G
+    // reportStatus) · approved (written; a visit behind us without the field) · draft (the first draft week) · projected
+    // (a later draft week) · none ("—"). The chips carry the matching prefix: Presented / Planned / Projected.
+    const DONE_REPORT = ['completed', 'done', 'reported'];
     const historyState = (slot, firstDraft) => {
-        if (slot.plannedDate < ymd(new Date())) return 'presented';
-        if (slot.isFixed) return 'planned';
-        return (slot.weekStart || mondayYmd(slot.plannedDate)) === firstDraft ? 'planned' : 'projected';
+        if (!slot) return 'none';
+        if (slot.reportStatus && DONE_REPORT.indexOf(String(slot.reportStatus).toLowerCase()) > -1) return 'done';
+        if (slot.isFixed || slot.plannedDate < ymd(new Date())) return 'approved';
+        return (slot.weekStart || mondayYmd(slot.plannedDate)) === firstDraft ? 'draft' : 'projected';
     };
+    const HISTORY_STATE_LABEL = { done: 'HistoryStateDone', approved: 'HistoryStateApproved', draft: 'HistoryStateDraft', projected: 'HistoryStateProjected' };
+    const HISTORY_LABEL = { done: 'HistoryPresented', approved: 'HistoryPlanned', draft: 'HistoryPlanned', projected: 'HistoryProjected' };
+    const HISTORY_TONE = { done: 'success', approved: 'primary', draft: 'label-primary', projected: 'label-secondary' };
 
     let current = null; // { contactId, accountId }
     const render = () => {
@@ -84,40 +90,44 @@
             (status.segmentBadges || []).map(sname => '<span class="badge bg-label-info" title="' + esc(L.SegmentBadgeHint || '') + '">' + esc(sname) + '</span>').join('') +
             (hasFrequency ? '' : '<span class="badge bg-label-secondary">' + esc(L.FrequencyNone || '') + '</span>') + '</div>');
 
-        // target / done / remaining (3D)
+        // three boxes: frequency target ("dönemde 3" / "dönemde 1 (varsayılan)", F4-2) / done / remaining (3D)
         parts.push('<div class="row g-2 text-center mb-4">' + [
-            [L.FrequencyTarget, hasFrequency ? fmt(L.FrequencyPerPeriod || '{0}', status.requiredVisitCount) : '—'],
+            [L.FrequencyTarget, hasFrequency ? fmt(L.FrequencyPerPeriod || '{0}', status.requiredVisitCount) : (L.FrequencyDefaultOne || '')],
             [L.DoneLabel, status.done != null ? status.done : '—'],
             [L.RemainingLabel, status.remaining != null ? status.remaining : '—']
-        ].map(x => '<div class="col-4"><div class="border rounded p-2"><div class="small text-muted">' + esc(x[0] || '') + '</div><div class="fw-semibold">' + esc(x[1]) + '</div></div></div>').join('') + '</div>');
+        ].map(x => '<div class="col-4"><div class="border rounded p-2 h-100"><div class="small text-muted">' + esc(x[0] || '') + '</div><div class="fw-semibold">' + esc(x[1]) + '</div></div></div>').join('') + '</div>');
 
-        // the next visit's products (+ sources + time)
+        // the next visit's products: week + range, chips (names), the source, "1 promo + 1 reminder + report ≈ 22 min"
         const today = ymd(new Date());
         const next = slots.find(s => s.plannedDate >= today) || null;
         const content = (p.content || []).find(c => c.contactId === current.contactId) || null;
         const products = (content && content.products) || [];
         const nextWeek = next ? page.week(next.weekStart || mondayYmd(next.plannedDate)) : null;
         const editable = canGenerate && !readOnly && !page.isLegacy() && !!nextWeek && (nextWeek.status === 'draft' || nextWeek.status === 'empty');
-        parts.push('<div class="border rounded p-3 mb-4"><div class="d-flex justify-content-between align-items-center mb-2"><span class="text-uppercase small fw-semibold text-muted">' + esc(L.NextVisitProducts || '') + '</span>' +
-            '<span class="small text-muted">' + esc(nextWeek ? weekTitle(nextWeek) + ' · ' + weekRange(nextWeek) : '—') + '</span></div>' +
+        const promoCount = products.filter(x => x.role !== 'non-promo').length;
+        parts.push('<div class="border rounded p-3 mb-2"><div class="d-flex justify-content-between align-items-start gap-2 mb-2"><div><div class="text-uppercase small text-muted">' + esc(L.NextVisitProducts || '') + '</div>' +
+            '<div class="small fw-medium">' + esc(nextWeek ? weekTitle(nextWeek) + ' · ' + weekRange(nextWeek) : '—') + '</div></div>' +
+            (editable ? '<button type="button" class="btn btn-sm btn-label-primary" id="vp-dp-change-products">' + esc(products.length ? (L.EditProducts || '') : (L.PickProducts || '')) + '</button>' : '') + '</div>' +
             (products.length
                 ? '<div class="d-flex flex-wrap gap-1 mb-2">' + products.map(chip).join(' ') + '</div>' +
-                  '<div class="small text-muted">' + esc(fmt(L.SourceLine || '{0}', Array.from(new Set(products.map(x => L[SOURCE_LABEL[x.source]] || x.source))).join(', '))) +
-                  (content && content.durationMinutes ? ' · ' + esc(fmt(L.ApproxMinutes || '{0}', content.durationMinutes)) : '') + '</div>'
+                  '<div class="small text-muted">' + esc(fmt(L.SourceLine || '{0}', Array.from(new Set(products.map(x => L[SOURCE_LABEL[x.source]] || x.source))).join(', '))) + '</div>' +
+                  (content && content.durationMinutes ? '<div class="small">' + esc(fmt(L.DurationLine || '{0} {1} {2}', promoCount, products.length - promoCount, content.durationMinutes)) + '</div>' : '')
                 : '<div class="small text-warning"><span class="badge bg-label-warning me-1">' + esc(L.NoProductBadge || '') + '</span>' + esc(L.NoProductsNoTime || '') + '</div>') +
-            (editable ? '<button type="button" class="btn btn-sm btn-label-primary mt-2" id="vp-dp-change-products">' + esc(products.length ? (L.EditProducts || '') : (L.PickProducts || '')) + '</button>' : '') +
             '</div>');
+        // "Next content: soon" — content progression waits for SB-3c
+        parts.push('<div class="small text-muted mb-4"><i class="bx bx-time-five me-1"></i>' + esc(L.NextContentSoon || '') + '</div>');
 
-        // over the period · product history
+        // over the period · product history — every week of the period, a past week faded
         const firstDraft = (page.weeks().find(w => w.status === 'draft') || {}).weekStart;
-        parts.push('<div class="text-uppercase small fw-semibold text-muted mb-2">' + esc(L.ProductHistoryTitle || '') + '</div>' +
-            (slots.length ? '<ul class="list-unstyled mb-0">' + slots.map(s => {
-                const w = page.week(s.weekStart || mondayYmd(s.plannedDate));
-                const state = historyState(s, firstDraft);
-                const items = (s.contentItems || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
-                return '<li class="border-bottom py-2"><div class="d-flex justify-content-between small"><span class="fw-medium">' + esc(w ? weekTitle(w) + ' · ' + weekRange(w) : s.plannedDate) + '</span>' +
-                    '<span class="badge bg-label-' + (state === 'presented' ? 'secondary' : state === 'planned' ? 'success' : 'info') + '">' + esc(L[HISTORY_LABEL[state]] || state) + '</span></div>' +
-                    '<div class="d-flex flex-wrap gap-1 mt-1">' + (items.length ? items.map(chip).join(' ') : '<span class="small text-muted">' + esc(L.NoProductBadge || '') + '</span>') + '</div></li>';
+        const weeks = page.weeks();
+        parts.push('<div class="text-uppercase small text-muted mb-2">' + esc(L.ProductHistoryTitle || '') + '</div>' +
+            (weeks.length ? '<ul class="list-unstyled mb-0">' + weeks.map(w => {
+                const slot = slots.find(s => (s.weekStart || mondayYmd(s.plannedDate)) === w.weekStart) || null;
+                const state = historyState(slot, firstDraft);
+                const items = slot ? (slot.contentItems || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0)) : [];
+                return '<li class="border-bottom py-2 vp-dp-week' + (w.status === 'past' ? ' opacity-50' : '') + '" data-ws="' + esc(w.weekStart) + '"><div class="d-flex justify-content-between small gap-2"><span class="fw-medium">' + esc(weekTitle(w) + ' · ' + weekRange(w)) + '</span>' +
+                    (state === 'none' ? '<span class="text-muted">—</span>' : '<span class="badge bg-' + HISTORY_TONE[state] + '">' + esc(L[HISTORY_STATE_LABEL[state]] || state) + '</span>') + '</div>' +
+                    (items.length ? '<div class="d-flex flex-wrap gap-1 mt-1 align-items-center"><span class="small text-muted">' + esc((L[HISTORY_LABEL[state]] || '') + ':') + '</span>' + items.map(chip).join(' ') + '</div>' : '') + '</li>';
             }).join('') + '</ul>' : '<div class="small text-muted">' + esc(L.NoVisitsInPeriod || '') + '</div>'));
 
         host.innerHTML = parts.join('');

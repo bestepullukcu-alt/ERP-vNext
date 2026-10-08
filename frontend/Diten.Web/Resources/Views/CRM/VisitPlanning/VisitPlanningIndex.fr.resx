@@ -664,4 +664,67 @@
   <data name="NoVisitsInPeriod" xml:space="preserve">
     <value>Aucune visite planifiée pour ce médecin sur la période.</value>
   </data>
+  <data name="MyAccountsTitle" xml:space="preserve">
+    <value>Mes comptes (territoire)</value>
+  </data>
+  <data name="AccountSearch" xml:space="preserve">
+    <value>Rechercher un compte…</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>Statut</value>
+  </data>
+  <data name="NoAccountsFound" xml:space="preserve">
+    <value>Aucun compte ne correspond.</value>
+  </data>
+  <data name="DueThisWeekBadge" xml:space="preserve">
+    <value>Cette semaine</value>
+  </data>
+  <data name="EditWeekTargets" xml:space="preserve">
+    <value>Modifier les cibles de la semaine</value>
+  </data>
+  <data name="EmptyWeekHint" xml:space="preserve">
+    <value>Elle se crée automatiquement à l'approbation de la semaine précédente. Vous pouvez la générer maintenant selon les règles de fréquence.</value>
+  </data>
+  <data name="FrequencyDefaultOne" xml:space="preserve">
+    <value>1 sur la période (par défaut)</value>
+  </data>
+  <data name="NextContentSoon" xml:space="preserve">
+    <value>Contenu suivant : bientôt</value>
+  </data>
+  <data name="NoTimeShort" xml:space="preserve">
+    <value>pas de durée</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>Tout afficher ({0})</value>
+  </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>Afficher moins</value>
+  </data>
+  <data name="WeekDoctorsHeading" xml:space="preserve">
+    <value>Médecins de la semaine</value>
+  </data>
+  <data name="HistoryStateDone" xml:space="preserve">
+    <value>Faite</value>
+  </data>
+  <data name="HistoryStateApproved" xml:space="preserve">
+    <value>Planifiée · approuvée</value>
+  </data>
+  <data name="HistoryStateDraft" xml:space="preserve">
+    <value>Brouillon</value>
+  </data>
+  <data name="HistoryStateProjected" xml:space="preserve">
+    <value>Prévue</value>
+  </data>
+  <data name="ReasonNoNearDay" xml:space="preserve">
+    <value>aucun jour proche</value>
+  </data>
+  <data name="StateDone" xml:space="preserve">
+    <value>faite</value>
+  </data>
+  <data name="WeekSubApproved" xml:space="preserve">
+    <value>Approuvée · écrite dans les visites planifiées · lecture seule</value>
+  </data>
+  <data name="WeekSubEmpty" xml:space="preserve">
+    <value>Pas encore générée</value>
+  </data>
 </root>

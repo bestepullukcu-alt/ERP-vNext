@@ -79,13 +79,16 @@ public sealed class VisitPlanningPhase2WebTests
     public void Targets_search_the_territory_universe_with_a_separate_out_of_territory_picker_and_no_link_column()
     {
         var details = View("VisitPlanning", "Details.cshtml");
-        Assert.Contains("id=\"vp-add-account\"", details);
+        // WP-VP-4H (6) — the territory universe is the "My accounts" list itself (no separate dropdown any more)
+        Assert.Contains("id=\"vp-acc-list\"", details);
+        Assert.DoesNotContain("id=\"vp-add-account\"", details);
         Assert.Contains("id=\"vp-add-account-out\"", details);
         Assert.Contains("id=\"vp-territory-banner\"", details);
         Assert.DoesNotContain("ColLinked", details);
 
         var js = Asset("VisitPlanning", "details.js");
-        Assert.Contains("initAccountPicker('vp-add-account', '/my-accounts', false)", js);
+        Assert.Contains("api('/my-accounts?search=' + encodeURIComponent(term) + '&page=' + next + '&pageSize=' + ACCOUNT_PAGE)", js);
+        Assert.DoesNotContain("initAccountPicker('vp-add-account', '/my-accounts', false)", js);
         Assert.Contains("initAccountPicker('vp-add-account-out', '/accounts', true)", js);
         Assert.Contains("status !== 'unassigned'", js);
         Assert.DoesNotContain("{ data: 'linkId' }", js);

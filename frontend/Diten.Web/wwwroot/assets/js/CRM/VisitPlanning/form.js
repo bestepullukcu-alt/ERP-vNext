@@ -64,7 +64,7 @@
         return 1 + Math.round(((d - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
     };
     const weekNumberLabel = n => (L.WeekNumberLabel || '{0}. ' + (L.WeekLabel || 'Week')).replace('{0}', n);
-    const dm = d => d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    const dm = d => window.VisitPlanningFormat.dayMonth(d); // WP-VP-4H — the app's language
 
     // ── Country → Cycle-period filter. Countries come from the cycle-period scope-options (resolved COUNTRY_CODES), so
     //    the codes match the periods' CountryScope exactly. Shape: data.countries = [{ value, label }]. ──

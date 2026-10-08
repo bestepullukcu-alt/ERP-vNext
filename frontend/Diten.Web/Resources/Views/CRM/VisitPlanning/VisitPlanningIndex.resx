@@ -664,4 +664,67 @@
   <data name="NoVisitsInPeriod" xml:space="preserve">
     <value>No visit planned for this doctor in the period.</value>
   </data>
+  <data name="MyAccountsTitle" xml:space="preserve">
+    <value>My accounts (territory)</value>
+  </data>
+  <data name="AccountSearch" xml:space="preserve">
+    <value>Search account…</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="NoAccountsFound" xml:space="preserve">
+    <value>No account matches.</value>
+  </data>
+  <data name="DueThisWeekBadge" xml:space="preserve">
+    <value>This week</value>
+  </data>
+  <data name="EditWeekTargets" xml:space="preserve">
+    <value>Edit this week's targets</value>
+  </data>
+  <data name="EmptyWeekHint" xml:space="preserve">
+    <value>It is created automatically when the previous week is approved. You can build it now by the frequency rules.</value>
+  </data>
+  <data name="FrequencyDefaultOne" xml:space="preserve">
+    <value>1 in the period (default)</value>
+  </data>
+  <data name="NextContentSoon" xml:space="preserve">
+    <value>Next content: soon</value>
+  </data>
+  <data name="NoTimeShort" xml:space="preserve">
+    <value>no time</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>Show all ({0})</value>
+  </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>Show less</value>
+  </data>
+  <data name="WeekDoctorsHeading" xml:space="preserve">
+    <value>Doctors this week</value>
+  </data>
+  <data name="HistoryStateDone" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="HistoryStateApproved" xml:space="preserve">
+    <value>Planned · approved</value>
+  </data>
+  <data name="HistoryStateDraft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="HistoryStateProjected" xml:space="preserve">
+    <value>Projected</value>
+  </data>
+  <data name="ReasonNoNearDay" xml:space="preserve">
+    <value>no near day</value>
+  </data>
+  <data name="StateDone" xml:space="preserve">
+    <value>done</value>
+  </data>
+  <data name="WeekSubApproved" xml:space="preserve">
+    <value>Approved · written to Planned Visits · read-only</value>
+  </data>
+  <data name="WeekSubEmpty" xml:space="preserve">
+    <value>Not built yet</value>
+  </data>
 </root>

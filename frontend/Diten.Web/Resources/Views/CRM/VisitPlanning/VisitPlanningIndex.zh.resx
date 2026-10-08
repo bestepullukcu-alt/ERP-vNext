@@ -664,4 +664,67 @@
   <data name="NoVisitsInPeriod" xml:space="preserve">
     <value>该医生在本周期内没有计划拜访。</value>
   </data>
+  <data name="MyAccountsTitle" xml:space="preserve">
+    <value>我的客户（辖区）</value>
+  </data>
+  <data name="AccountSearch" xml:space="preserve">
+    <value>搜索客户…</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="NoAccountsFound" xml:space="preserve">
+    <value>没有匹配的客户。</value>
+  </data>
+  <data name="DueThisWeekBadge" xml:space="preserve">
+    <value>本周</value>
+  </data>
+  <data name="EditWeekTargets" xml:space="preserve">
+    <value>编辑本周目标</value>
+  </data>
+  <data name="EmptyWeekHint" xml:space="preserve">
+    <value>上一周批准后会自动生成。现在可以按频率规则生成。</value>
+  </data>
+  <data name="FrequencyDefaultOne" xml:space="preserve">
+    <value>本期 1 次（默认）</value>
+  </data>
+  <data name="NextContentSoon" xml:space="preserve">
+    <value>下一个内容：即将推出</value>
+  </data>
+  <data name="NoTimeShort" xml:space="preserve">
+    <value>无时长</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>全部显示（{0}）</value>
+  </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>收起</value>
+  </data>
+  <data name="WeekDoctorsHeading" xml:space="preserve">
+    <value>本周医生</value>
+  </data>
+  <data name="HistoryStateDone" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="HistoryStateApproved" xml:space="preserve">
+    <value>已计划 · 已批准</value>
+  </data>
+  <data name="HistoryStateDraft" xml:space="preserve">
+    <value>草稿</value>
+  </data>
+  <data name="HistoryStateProjected" xml:space="preserve">
+    <value>预计</value>
+  </data>
+  <data name="ReasonNoNearDay" xml:space="preserve">
+    <value>无就近日</value>
+  </data>
+  <data name="StateDone" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="WeekSubApproved" xml:space="preserve">
+    <value>已批准 · 已写入计划拜访 · 只读</value>
+  </data>
+  <data name="WeekSubEmpty" xml:space="preserve">
+    <value>尚未生成</value>
+  </data>
 </root>

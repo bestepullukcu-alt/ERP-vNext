@@ -23,6 +23,7 @@
     if (!root || !page || !document.getElementById('vp-tab-weeks')) return;
 
     const L = window.L10n || {};
+    const VPF = window.VisitPlanningFormat; // WP-VP-4H — dates / numbers in the application's language
     const base = '/CRM/VisitPlanning/api';
     const sessionId = root.dataset.sessionId;
     const canGenerate = root.dataset.canGenerate === 'true';
@@ -51,12 +52,12 @@
     const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
     const todayYmd = () => ymd(new Date());
-    const dm = d => d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
-    const dayName = d => d.toLocaleDateString(undefined, { weekday: 'long' });
-    const dayLabel = v => { const d = localDate(v); return isNaN(d) ? v : dayName(d) + ' ' + dm(d); };
+    const dm = d => VPF.dayMonth(d);
+    const dayName = d => VPF.dayShort(d);
+    const dayLabel = v => VPF.dayLabel(v);
     const weekTitle = w => fmt(L.WeekNumberLabel || '{0}', w.isoWeek);
-    const weekRange = w => { const f = localDate(w.from || w.weekStart), t = localDate(w.to || w.weekStart); return isNaN(f) || isNaN(t) ? '' : dm(f) + ' – ' + dm(t); };
-    const hours = minutes => fmt(L.HoursFormat || '{0} h', (Math.round(Number(minutes || 0) / 6) / 10).toLocaleString(undefined, { maximumFractionDigits: 1 }));
+    const weekRange = w => VPF.workRange(w.from || w.weekStart, w.to || w.weekStart);
+    const hours = minutes => VPF.hours(Number(minutes || 0), L.HoursFormat || '{0} h');
     const mondayYmd = v => { const d = localDate(v); return ymd(addDays(d, -((d.getDay() + 6) % 7))); };
 
     // ── labels ──
@@ -69,7 +70,8 @@
         consent_blocked: 'ReasonConsentBlocked', period_exhausted: 'ReasonPeriodExhausted', missing_location: 'ReasonMissingLocation',
         no_feasible_availability_window: 'ReasonNoAvailability', duration_exceeds_working_day: 'ReasonTooLong',
         pin_day_full: 'ReasonPinDayFull', pin_outside_availability: 'ReasonPinAvailability',
-        max_promo: 'ReasonMaxPromo', max_non_promo: 'ReasonMaxNonPromo'
+        max_promo: 'ReasonMaxPromo', max_non_promo: 'ReasonMaxNonPromo',
+        no_near_day: 'ReasonNoNearDay' // 4G — a far group on a light week waits for a near day
     };
     const reasonText = code => L[REASON_KEYS[code]] || L.ReasonOther || code || '—';
 
@@ -97,7 +99,7 @@
     const groupOf = s => s.groupKey || String(s.accountId || s.targetId || '').replace(/-/g, '');
     const groupName = slots => { const a = slots.find(s => s.accountId); return a ? accountName(a.accountId) : accountName(slots[0].targetId); };
 
-    // ── 1 · the period strip ──
+    // ── 1 · the period strip (mockup "Dönem haftaları": a vertical 128px card per week) ──
     const holidaysOf = (w, p) => {
         const off = new Set(p.nonWorkingDates || []);
         const out = [];
@@ -123,27 +125,39 @@
             };
         });
     };
+    // One card: "41. Hafta" + TODAY · the working days · the status badge · "176 visits" · the bar · holidays + warnings.
+    // An empty week: a dashed card, "—" for the visits.
+    const STRIP_CARD = 'flex:0 0 128px;';
+    const stripCard = m => {
+        const empty = m.status === 'empty';
+        return '<button type="button" role="option" aria-selected="' + (m.selected ? 'true' : 'false') + '" data-ws="' + esc(m.ws) + '"' +
+            ' class="btn border rounded text-start d-flex flex-column gap-1 px-3 py-2 vp-wk-item' + (m.selected ? ' border-primary bg-label-primary' : '') + (empty ? ' vp-wk-item--empty' : '') + '"' +
+            ' style="' + STRIP_CARD + (empty ? 'border-style:dashed !important;' : '') + '">' +
+            '<span class="d-flex justify-content-between align-items-center w-100"><span class="fw-semibold">' + esc(m.title) + '</span>' + (m.isToday ? '<span class="small fw-semibold text-primary">' + esc(L.TodayLabel || '') + '</span>' : '') + '</span>' +
+            '<span class="small text-muted">' + esc(m.range) + '</span>' +
+            '<span class="badge align-self-start bg-label-' + (m.week.storedStatus === 'legacy' ? 'success' : (STATUS_TONE[m.status] || 'secondary')) + '">' + esc(m.label) + '</span>' +
+            '<span class="small">' + esc(empty ? '—' : fmt(L.VisitCountShort || '{0}', m.visits)) + '</span>' +
+            '<span class="progress w-100" style="height:4px"><span class="progress-bar' + (m.pct >= 100 ? ' bg-warning' : '') + '" style="width:' + m.pct + '%"></span></span>' +
+            '<span class="d-flex flex-wrap gap-1 small" style="min-height:18px">' +
+            m.holidays.map(h => '<span class="text-danger" title="' + esc(L.HolidayMarker || '') + '"><i class="bx bx-calendar-x"></i>' + esc(dm(localDate(h))) + '</span>').join('') +
+            m.halfDays.map(h => '<span class="text-warning" title="' + esc(L.HalfDayLabel || '') + '">½ ' + esc(dm(localDate(h))) + '</span>').join('') +
+            (m.warnings ? '<span class="text-warning" title="' + esc(L.SlipTitle || '') + '"><i class="bx bx-error"></i>' + m.warnings + '</span>' : '') +
+            '</span></button>';
+    };
     const renderStrip = () => {
         const host = el('vp-wk-strip'); if (!host) return;
         const model = stripModel();
         setSummary(model);
         if (!model.length) { host.innerHTML = '<div class="text-muted small">' + esc(L.Loading || '…') + '</div>'; return; }
-        host.innerHTML = model.map(m => '<button type="button" role="option" aria-selected="' + (m.selected ? 'true' : 'false') + '" class="btn text-start border p-2 flex-shrink-0 vp-wk-item' + (m.selected ? ' border-primary bg-label-primary' : '') + '" data-ws="' + esc(m.ws) + '" style="min-width:150px">' +
-            '<span class="d-flex justify-content-between align-items-center gap-2"><span class="fw-medium">' + esc(m.title) + '</span>' + (m.isToday ? '<span class="badge bg-primary">' + esc(L.TodayLabel || '') + '</span>' : '') + '</span>' +
-            '<span class="d-block small text-muted">' + esc(m.range) + '</span>' +
-            '<span class="d-flex justify-content-between align-items-center mt-1 gap-1"><span class="badge bg-label-' + (m.week.storedStatus === 'legacy' ? 'success' : (STATUS_TONE[m.status] || 'secondary')) + '">' + esc(m.label) + '</span>' +
-            '<span class="small">' + esc(fmt(L.VisitCountShort || '{0}', m.visits)) + '</span></span>' +
-            '<span class="progress mt-2 d-flex" style="height:4px"><span class="progress-bar' + (m.pct >= 100 ? ' bg-warning' : '') + '" style="width:' + m.pct + '%"></span></span>' +
-            '<span class="d-flex flex-wrap gap-1 mt-1">' +
-            m.holidays.map(h => '<span class="badge bg-label-danger" title="' + esc(L.HolidayMarker || '') + '">' + esc(dm(localDate(h))) + '</span>').join('') +
-            m.halfDays.map(h => '<span class="badge bg-label-warning" title="' + esc(L.HalfDayLabel || '') + '">½ ' + esc(dm(localDate(h))) + '</span>').join('') +
-            (m.warnings ? '<span class="badge bg-label-warning" title="' + esc(L.SlipTitle || '') + '"><i class="bx bx-error"></i> ' + m.warnings + '</span>' : '') +
-            '</span></button>').join('');
+        host.innerHTML = model.map(stripCard).join('');
     };
+    // "Türkiye 2026 Q4 Döngüsü · 13 hafta · 1 onaylı · 3 taslak · 8 boş · 1 geçmiş" — the period's name from the summary.
     const setSummary = model => {
         const n = el('vp-wk-summary'); if (!n) return;
         const count = st => model.filter(m => m.status === st).length;
-        n.textContent = fmt(L.PeriodWeeksSummary || '{0}', model.length, count('approved'), count('draft'), count('empty'), count('past'));
+        const period = el('vp-d-period') ? el('vp-d-period').textContent.trim() : '';
+        const line = fmt(L.PeriodWeeksSummary || '{0}', model.length, count('approved'), count('draft'), count('empty'), count('past'));
+        n.textContent = period && period !== '—' ? period + ' · ' + line : line;
     };
 
     // ── 2 · the selected week ──
@@ -167,9 +181,15 @@
         return out;
     };
 
+    // A product chip: its NAME (the code in the tooltip), role colour, source icon, a warning without approved content.
+    const SOURCE_ICON = { play: 'bx-bulb', 'rep-pick': 'bx-user-check', 'last-visit': 'bx-history', portfolio: 'bx-briefcase' };
+    const NO_CONTENT = ['no_approved_content', 'ambiguous_journey'];
     const chipHtml = c => {
         const promo = c.role !== 'non-promo';
-        return '<span class="badge rounded-pill ' + (promo ? 'bg-label-primary' : 'bg-transparent border text-body') + '" title="' + esc(promo ? (L.LegendPromo || '') : (L.LegendNonPromo || '')) + '">' + esc(c.productCode || '—') + '</span>';
+        const warn = promo && (!c.journeyId || /^0{8}-/.test(String(c.journeyId)) || (c.warnings || []).some(x => NO_CONTENT.indexOf(x) > -1));
+        return '<span class="badge ' + (promo ? 'bg-label-primary' : 'bg-transparent border text-body') + ' d-inline-flex align-items-center gap-1" title="' + esc([c.productCode, promo ? (L.LegendPromo || '') : (L.LegendNonPromo || '')].filter(Boolean).join(' · ')) + '">' +
+            (SOURCE_ICON[c.source] ? '<i class="bx ' + SOURCE_ICON[c.source] + '"></i>' : '') + esc(VPF.productLabel(c)) +
+            (warn ? '<i class="bx bx-error text-warning" aria-label="' + esc(L.NoApprovedContent || '') + '"></i>' : '') + '</span>';
     };
     const chipsOf = s => {
         const items = (s.contentItems || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -182,20 +202,27 @@
 
     // A day row is closed by default; open = its first DAY_PREVIEW_LIMIT visits + "+N more"; full = every visit.
     const openDays = new Set(), fullDays = new Set();
+    // A visit: the name over its institution; on the right the product chips (names) and "≈ 22 min" ("no time" without
+    // products); the 4D/4E move + pin controls stay.
     const visitLine = (s, movable) => {
         const idx = slotsAll().indexOf(s);
         const name = visitName(s);
+        const sub = s.contactId ? accountName(s.accountId) : '';
         const nameHtml = s.contactId
-            ? '<button type="button" class="btn btn-link p-0 text-start fw-medium js-wk-doctor" data-cid="' + esc(s.contactId) + '" data-aid="' + esc(s.accountId || '') + '">' + esc(name) + '</button>'
-            : '<span class="fw-medium">' + esc(name) + '</span>';
-        return '<div class="d-flex align-items-center gap-2 py-1 ps-3 vp-wk-visit"' + (movable ? ' draggable="true" data-drag="visit" data-slot="' + idx + '"' : '') + '>' +
+            ? '<button type="button" class="btn btn-link p-0 text-start d-flex flex-column js-wk-doctor" data-cid="' + esc(s.contactId) + '" data-aid="' + esc(s.accountId || '') + '"><span class="fw-medium text-heading">' + esc(name) + '</span>' + (sub && sub !== '—' ? '<span class="small text-muted">' + esc(sub) + '</span>' : '') + '</button>'
+            : '<span class="fw-medium text-heading">' + esc(name) + '</span>';
+        const hasProducts = (s.contentItems || []).length > 0;
+        return '<div class="d-flex align-items-center gap-2 py-2 border-bottom flex-wrap vp-wk-visit"' + (movable ? ' draggable="true" data-drag="visit" data-slot="' + idx + '"' : '') + '>' +
             (movable ? '<i class="bx bx-grid-vertical text-muted" aria-hidden="true"></i>' : '') + pinMark(s) +
-            '<span class="flex-grow-1" style="min-width:0">' + nameHtml + ' <span class="d-inline-flex flex-wrap gap-1 align-middle">' + chipsOf(s) + '</span></span>' +
-            '<span class="small text-muted text-nowrap">' + esc(fmt(L.ApproxMinutes || '{0}', s.durationMinutes || 0)) + '</span>' +
+            '<span class="flex-grow-1" style="min-width:0">' + nameHtml + '</span>' +
+            '<span class="d-flex flex-wrap gap-1 align-items-center">' + chipsOf(s) +
+            '<span class="small text-muted text-nowrap ms-1">' + esc(hasProducts || !s.contactId ? fmt(L.ApproxMinutes || '{0}', s.durationMinutes || 0) : (L.NoTimeShort || '')) + '</span></span>' +
             (movable ? '<button type="button" class="btn btn-sm btn-text-secondary px-1 js-wk-move" data-slot="' + idx + '" data-scope="visit" title="' + esc(L.MoveToDay || '') + '" aria-label="' + esc(L.MoveToDay || '') + '"><i class="bx bx-calendar-edit"></i></button>' : '') +
             (movable && s.isPinned ? '<button type="button" class="btn btn-sm btn-text-secondary px-1 js-wk-unpin" data-slot="' + idx + '" title="' + esc(L.Unpin || '') + '" aria-label="' + esc(L.Unpin || '') + '"><i class="bx bx-pin"></i><i class="bx bx-x small"></i></button>' : '') +
             '</div>';
     };
+    // The day row: the mockup grid (chevron 18 · "Pzt 5 Eki" 96 · bar · 150 "36 / 36" + idle / over / holiday).
+    const DAY_GRID = 'display:grid;grid-template-columns:18px 96px minmax(0,1fr) 150px;gap:12px;align-items:center';
     const dayRow = (day, movable) => {
         const s = day.summary;
         const badges = [];
@@ -218,22 +245,24 @@
             const lines = g.slots.filter(() => shown++ < limit);
             if (!lines.length) return '';
             const first = slotsAll().indexOf(g.slots[0]);
-            return '<div class="border-top pt-1"' + (movable ? ' draggable="true" data-drag="institution" data-slot="' + first + '"' : '') + '>' +
-                '<div class="d-flex align-items-center gap-2 small text-muted text-uppercase fw-semibold py-1">' + (movable ? '<i class="bx bx-grid-vertical" aria-hidden="true"></i>' : '') +
+            return '<div class="pt-1"' + (movable ? ' draggable="true" data-drag="institution" data-slot="' + first + '"' : '') + '>' +
+                '<div class="d-flex align-items-center gap-2 small text-muted text-uppercase pt-1">' + (movable ? '<i class="bx bx-grid-vertical" aria-hidden="true"></i>' : '') +
                 '<span class="flex-grow-1">' + esc(groupName(g.slots)) + '</span>' +
                 (movable ? '<button type="button" class="btn btn-sm btn-text-secondary px-1 js-wk-move" data-slot="' + first + '" data-scope="institution" title="' + esc(L.MoveInstitution || '') + '" aria-label="' + esc(L.MoveInstitution || '') + '"><i class="bx bx-calendar-edit"></i></button>' : '') +
                 '</div>' + lines.map(v => visitLine(v, movable)).join('') + '</div>';
         }).join('');
         const more = day.slots.length - DAY_PREVIEW_LIMIT;
-        return '<div class="border rounded mb-2 vp-wk-day" data-date="' + esc(day.date) + '" data-droppable="' + (droppable ? '1' : '0') + '">' +
-            '<button type="button" class="btn w-100 text-start d-flex align-items-center gap-3 p-2 js-wk-day" aria-expanded="' + (open ? 'true' : 'false') + '" data-date="' + esc(day.date) + '">' +
-            '<span class="fw-medium" style="min-width:150px">' + esc(dayName(day.d)) + ' <span class="text-muted small">' + esc(dm(day.d)) + '</span></span>' +
-            '<span class="flex-grow-1"><span class="progress d-flex" style="height:6px"><span class="progress-bar' + (s && s.overCapacity ? ' bg-danger' : '') + '" style="width:' + pct + '%"></span></span></span>' +
-            '<span class="small text-nowrap">' + esc(day.cap != null ? fmt(L.DayCapacityFormat || '{0} / {1}', day.slots.length, day.cap) : String(day.slots.length)) + '</span>' +
-            badges.join(' ') + '</button>' +
-            '<div class="px-2 pb-2' + (open ? '' : ' d-none') + '">' +
-            (day.slots.length ? body + (!full && more > 0 ? '<button type="button" class="btn btn-sm btn-link px-3 js-wk-more" data-date="' + esc(day.date) + '">' + esc(fmt(L.MoreDoctors || '{0}', more)) + '</button>' : '')
-                : '<div class="small text-muted px-3 py-1">' + esc(day.kind === 'holiday' ? (L.HolidayNoVisit || L.NoVisitThisDay || '') : (L.NoVisitThisDay || '')) + '</div>') +
+        const fullBar = pct >= 100;
+        return '<div class="mb-1 vp-wk-day" data-date="' + esc(day.date) + '" data-droppable="' + (droppable ? '1' : '0') + '">' +
+            '<button type="button" class="btn w-100 text-start p-1 js-wk-day" style="' + DAY_GRID + '" aria-expanded="' + (open ? 'true' : 'false') + '" data-date="' + esc(day.date) + '">' +
+            '<i class="bx ' + (open ? 'bx-chevron-down' : 'bx-chevron-right') + ' text-muted"></i>' +
+            '<span><strong class="fw-semibold">' + esc(dayName(day.d)) + '</strong> ' + esc(dm(day.d)) + '</span>' +
+            '<span class="progress" style="height:10px"><span class="progress-bar ' + (s && s.overCapacity ? 'bg-danger' : (fullBar ? 'bg-warning' : 'bg-primary')) + '" style="width:' + pct + '%"></span></span>' +
+            '<span class="d-flex justify-content-end align-items-center gap-1 flex-wrap text-nowrap small">' + esc(day.cap != null ? fmt(L.DayCapacityFormat || '{0} / {1}', day.slots.length, day.cap) : String(day.slots.length)) + ' ' + badges.join(' ') + '</span>' +
+            '</button>' +
+            '<div class="ms-4 ps-3 border-start' + (open ? '' : ' d-none') + '">' +
+            (day.slots.length ? body + (!full && more > 0 ? '<button type="button" class="btn btn-sm btn-link px-0 js-wk-more" data-date="' + esc(day.date) + '">' + esc(fmt(L.MoreDoctors || '{0}', more)) + '</button>' : '')
+                : '<div class="small text-muted py-2">' + esc(day.kind === 'holiday' ? (L.HolidayNoVisit || L.NoVisitThisDay || '') : (L.NoVisitThisDay || '')) + '</div>') +
             '</div></div>';
     };
 
@@ -241,46 +270,94 @@
     const slipItems = (p, i, ws, weekSlots) => {
         const out = [];
         const isoOf = k => { const w = page.weeks()[k]; return w ? weekTitle(w) : '—'; };
+        const accOf = cid => (cid && names.doctors[cid] ? accountName(names.doctors[cid].accountId) : '');
         (p.shifted || []).filter(s => s.fromWeek === i).forEach(s => out.push({
             kind: 'shift', name: s.displayName || (s.contactId && names.doctors[s.contactId] ? names.doctors[s.contactId].name : accountName(s.targetId)),
-            reason: reasonText(s.reason), result: fmt(L.MovedToWeek || '{0}', isoOf(s.toWeek))
+            acc: accOf(s.contactId), code: s.reason, reason: reasonText(s.reason), result: fmt(L.MovedToWeek || '{0}', isoOf(s.toWeek))
         }));
         (p.unscheduled || []).filter(u => u.weekNumber === i).forEach(u => out.push({
             kind: 'unscheduled', name: u.contactId && names.doctors[u.contactId] ? names.doctors[u.contactId].name : accountName(u.targetId),
-            reason: reasonText(u.reason), result: L.NotPlanned || ''
+            acc: accOf(u.contactId), code: u.reason, reason: reasonText(u.reason), result: L.NotPlanned || ''
         }));
         weekSlots.forEach(s => (s.overflowProducts || []).forEach(o => out.push({
-            kind: 'product', name: (o.productCode || '—') + ' · ' + visitName(s), reason: reasonText(o.reason), result: L.ToNextVisit || ''
+            kind: 'product', name: VPF.productLabel(o), acc: visitName(s), code: o.reason, reason: reasonText(o.reason), result: L.ToNextVisit || ''
         })));
         (p.pinOverflow || []).filter(o => mondayYmd(o.fromDate) === ws).forEach(o => out.push({
             kind: 'pin', name: o.displayName || (o.contactId && names.doctors[o.contactId] ? names.doctors[o.contactId].name : accountName(o.targetId)),
-            reason: reasonText(o.reason), result: o.toDate ? fmt(L.MovedToDay || '{0}', dayLabel(o.toDate)) : (L.NotPlanned || '')
+            acc: accOf(o.contactId), code: o.reason, reason: reasonText(o.reason), result: o.toDate ? fmt(L.MovedToDay || '{0}', dayLabel(o.toDate)) : (L.NotPlanned || '')
         }));
         return out;
     };
-    const SLIP_ICON = { shift: 'bx-right-arrow-alt', unscheduled: 'bx-block', product: 'bx-package', pin: 'bx-transfer-alt' };
+    const SLIP_TONE = { capacity_full: 'warning', no_near_day: 'info', pin_overflow: 'warning', consent_blocked: 'danger', period_exhausted: 'danger' };
+    // A moved / not placed row (mockup): name over institution · reason badge · result (a package for a product).
+    const slipRow = x => '<div class="d-flex justify-content-between align-items-center gap-3 border rounded px-3 py-2 flex-wrap vp-wk-slip" data-kind="' + x.kind + '">' +
+        '<div class="d-flex flex-column" style="min-width:0"><span class="fw-medium text-heading">' + esc(x.name) + '</span>' + (x.acc && x.acc !== '—' ? '<span class="small">' + esc(x.acc) + '</span>' : '') + '</div>' +
+        '<div class="d-flex gap-2 align-items-center flex-wrap"><span class="badge bg-label-' + (SLIP_TONE[x.code] || 'secondary') + '">' + esc(x.reason) + '</span>' +
+        '<span class="small d-flex gap-1 align-items-center">' + (x.kind === 'product' ? '<i class="bx bx-package text-primary"></i>' : '') + esc(x.result) + '</span></div></div>';
 
     // The week's own actions — the same rule as the header (VisitPlanningPage.actionsFor) and the same functions.
+    // Draft: rebuild + approve · approved: reopen · a week with visits: open the route. An empty week has none in its
+    // head: its empty state offers "Build this week".
     const weekActions = w => {
         const legacy = page.isLegacy();
         const offered = page.actionsFor(w.status, legacy);
         const out = [];
+        if (!legacy && canGenerate && MOVABLE_WEEK_STATUSES.indexOf(w.status) > -1 && w.status !== 'empty') out.push({ key: 'rebuild', label: L.RebuildWeek, icon: 'bx-refresh', tone: 'outline-secondary' });
         if (offered.indexOf('approveWeek') > -1 && canApply) out.push({ key: 'approve', label: L.ApproveWeek, icon: 'bx-check-double', tone: 'success' });
-        if (!legacy && canGenerate && MOVABLE_WEEK_STATUSES.indexOf(w.status) > -1) out.push({ key: 'rebuild', label: L.RebuildWeek, icon: 'bx-refresh', tone: 'label-primary' });
-        if (!legacy && (w.visitCount || 0) > 0) out.push({ key: 'route', label: L.OpenRoute, icon: 'bx-map-alt', tone: 'label-secondary' });
-        if (offered.indexOf('reopenWeek') > -1 && canApply) out.push({ key: 'reopen', label: L.ReopenWeek, icon: 'bx-lock-open-alt', tone: 'label-warning' });
+        if (offered.indexOf('reopenWeek') > -1 && canApply) out.push({ key: 'reopen', label: L.ReopenWeek, icon: 'bx-lock-open-alt', tone: 'outline-secondary' });
+        if (!legacy && (w.visitCount || 0) > 0) out.push({ key: 'route', label: L.OpenRoute, icon: 'bx-map-alt', tone: 'primary' });
         return out;
     };
+    const WEEK_SUB = { approved: 'WeekSubApproved', empty: 'WeekSubEmpty', past: 'StatusTextPast' };
 
-    // The doctors of the week with their period dots (presented / approved / draft / projected).
+    // The doctors of the week with their period strip (done / approved / draft / projected). "Done" = a visit with a
+    // completed report (4G reportStatus); without the field a visit behind us counts as approved.
+    const DONE_REPORT = ['completed', 'done', 'reported'];
     const visitState = (s, firstDraftWeek) => {
-        if (s.plannedDate < todayYmd()) return 'presented';
-        if (s.isFixed) return 'approved';
+        if (s.reportStatus && DONE_REPORT.indexOf(String(s.reportStatus).toLowerCase()) > -1) return 'done';
+        if (s.isFixed || s.plannedDate < todayYmd()) return 'approved';
         return (s.weekStart || mondayYmd(s.plannedDate)) === firstDraftWeek ? 'draft' : 'projected';
     };
-    const STATE_LABEL = { presented: 'StatePresented', approved: 'StateApproved', draft: 'StateDraft', projected: 'StateProjected' };
-    const STATE_TONE = { presented: 'secondary', approved: 'success', draft: 'primary', projected: 'info' };
+    const STATE_LABEL = { done: 'StateDone', approved: 'StateApproved', draft: 'StateDraft', projected: 'StateProjected' };
+    const STATE_BG = { done: 'bg-success', approved: 'bg-primary', draft: 'bg-label-primary', projected: 'bg-label-secondary' };
     const firstDraftWeekStart = () => { const w = page.weeks().find(x => x.status === 'draft'); return w ? w.weekStart : null; };
+    const DOCTORS_LIMIT = 8;
+    let allDoctorsShown = false;
+    // "dönemde 3 · 1 / 2" (frequency · done / remaining); an unknown frequency reads "dönemde 1 (varsayılan)" (F4-2).
+    const frequencyLine = (s, status) => {
+        const src = status && status.requiredVisitCount != null ? status : s; // the period status (targets read) first
+        const known = src.requiredVisitCount != null && src.frequencyStatus !== 'unknown';
+        const freq = known ? fmt(L.FrequencyPerPeriod || '{0}', src.requiredVisitCount) : (L.FrequencyDefaultOne || '');
+        const dr = status && status.done != null ? status.done + ' / ' + (status.remaining != null ? status.remaining : '—') : '';
+        return dr ? freq + ' · ' + dr : freq;
+    };
+    const stripRects = (cid, firstDraft) => page.weeks().map(pw => {
+        const v = slotsAll().find(x => x.contactId === cid && (x.weekStart || mondayYmd(x.plannedDate)) === pw.weekStart);
+        const st = v ? visitState(v, firstDraft) : null;
+        return '<span class="d-inline-block rounded-1 ' + (st ? STATE_BG[st] : 'bg-label-secondary opacity-50') + '" style="width:14px;height:6px" title="' + esc(weekTitle(pw) + (st ? ' · ' + (L[STATE_LABEL[st]] || st) : '')) + '"></span>';
+    }).join('');
+    const renderDoctors = (ws, weekSlots) => {
+        const host = el('vp-wk-doctors'); if (!host) return;
+        const firstDraft = firstDraftWeekStart();
+        const doctors = [];
+        weekSlots.filter(s => s.contactId).forEach(s => { if (!doctors.some(d => d.contactId === s.contactId)) doctors.push(s); });
+        const shown = allDoctorsShown ? doctors : doctors.slice(0, DOCTORS_LIMIT);
+        host.innerHTML = '<div class="d-flex justify-content-between align-items-center gap-2"><span class="fw-semibold text-uppercase text-heading">' + esc(L.WeekDoctorsHeading || '') + '</span><span class="badge bg-label-secondary">' + doctors.length + '</span></div>' +
+            '<div class="small text-muted">' + esc(L.WeekDoctorsHint || '') + '</div>' +
+            (doctors.length ? '<div class="d-flex flex-column">' + shown.map(s => {
+                const doctor = names.doctors[s.contactId] || {};
+                const sub = [doctor.specialty ? specLabelOf(doctor.specialty) : (s.contactSpecialty ? specLabelOf(s.contactSpecialty) : ''), accountName(s.accountId)].filter(x => x && x !== '—').join(' · ');
+                return '<button type="button" class="btn text-start border-0 border-top rounded-0 px-1 py-2 js-wk-doctor vp-wk-doc" data-cid="' + esc(s.contactId) + '" data-aid="' + esc(s.accountId || '') + '" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center">' +
+                    '<span class="d-flex flex-column" style="min-width:0"><span class="fw-medium text-heading">' + esc(visitName(s)) + '</span><span class="small text-muted text-truncate">' + esc(sub) + '</span></span>' +
+                    '<span class="small text-nowrap text-end">' + esc(frequencyLine(s, doctor.status)) + '</span>' +
+                    '<span class="d-flex gap-1" style="grid-column:1 / -1">' + stripRects(s.contactId, firstDraft) + '</span></button>';
+            }).join('') + '</div>' : '<div class="small text-muted py-2">' + esc(L.NoDoctorsThisWeek || '') + '</div>') +
+            (doctors.length > DOCTORS_LIMIT ? '<button type="button" class="btn btn-link px-0 align-self-start js-wk-all-docs">' + esc(allDoctorsShown ? (L.ShowLess || '') : fmt(L.ShowAllCount || '{0}', doctors.length)) + '</button>' : '') +
+            '<div class="d-flex flex-wrap gap-3 small text-muted border-top pt-2">' + Object.keys(STATE_LABEL).map(k => '<span class="d-flex align-items-center gap-1"><span class="d-inline-block rounded-1 ' + STATE_BG[k] + '" style="width:10px;height:6px"></span>' + esc(L[STATE_LABEL[k]] || k) + '</span>').join('') + '</div>';
+    };
+    let specLabels = {};
+    const specLabelOf = code => specLabels[code] || specLabels[String(code).toLowerCase()] || code;
+    request(base + '/reference-labels').then(r => { specLabels = (r.ok && r.body && r.body.data && r.body.data.specialties) || {}; }).catch(() => { });
 
     // An approved week's history: who = a name, never an id (E4-4B-6).
     const GUID = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
@@ -309,6 +386,14 @@
             esc(k ? fmt(L.PinOverflowMessage || '{0} {1}', byTarget[k], dayLabel(k)) : fmt(L.PinOverflowNextWeek || '{0}', byTarget[k]))).join(' · ') + '</div>';
     };
 
+    // An empty week (WP-VP-4H, 3): ONLY the empty state — no day rows, no product or moved sections.
+    const emptyWeekHtml = () => '<div class="border rounded text-center d-flex flex-column align-items-center gap-2 px-3 py-5" style="border-style:dashed !important">' +
+        '<i class="bx bx-calendar-plus text-muted" style="font-size:2rem"></i>' +
+        '<div class="fw-medium text-heading">' + esc(L.NoVisitThisWeek || '') + '</div>' +
+        '<div class="small" style="max-width:380px">' + esc(L.EmptyWeekHint || '') + '</div>' +
+        (canGenerate && !page.isLegacy() ? '<button type="button" class="btn btn-primary mt-1 js-wk-action" data-action="rebuild">' + esc(L.GenerateWeek || '') + '</button>' : '') +
+        '</div>';
+
     const renderDetail = () => {
         const host = el('vp-wk-detail'); if (!host) return;
         const ws = page.state.weekStart;
@@ -320,70 +405,86 @@
         const movable = canMove(w);
         const wc = (p.weekCapacity || []).find(c => c.weekStart === ws);
         const parts = [];
+        renderDoctors(ws, weekSlots);
 
-        // head: title + status + actions
-        parts.push('<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3"><div>' +
+        // head: "41. Hafta · 5–9 Eki" + status, the status line, the actions
+        const subKey = w.storedStatus === 'legacy' ? 'LegacyPlanBand' : WEEK_SUB[w.status];
+        // 4D's locked hint kept: a writer on an approved week reads how to change it (reopen); a past week stays closed.
+        const lockedHint = !movable && canGenerate && !readOnly && w.status === 'approved' && w.storedStatus !== 'legacy' ? (L.MoveLockedHint || '') : '';
+        const sub = [subKey ? (L[subKey] || '') : (movable ? (L.MoveHint || '') : ''), lockedHint].filter(Boolean).join(' · ');
+        parts.push('<div class="d-flex justify-content-between align-items-start flex-wrap gap-2"><div>' +
             '<div class="d-flex align-items-center gap-2"><span class="h5 mb-0">' + esc(weekTitle(w) + ' · ' + weekRange(w)) + '</span>' +
             '<span class="badge bg-label-' + (w.storedStatus === 'legacy' ? 'success' : (STATUS_TONE[w.status] || 'secondary')) + '">' + esc(statusLabel(w)) + '</span></div>' +
-            '<div class="small text-muted mt-1">' + esc(movable ? (L.MoveHint || '') : (MOVABLE_WEEK_STATUSES.indexOf(w.status) > -1 ? '' : (L.MoveLockedHint || ''))) + '</div></div>' +
+            '<div class="small text-muted mt-1">' + esc(sub) + '</div></div>' +
             '<div class="d-flex flex-wrap gap-2">' + weekActions(w).map(a => '<button type="button" class="btn btn-sm btn-' + a.tone + ' js-wk-action" data-action="' + a.key + '"><i class="bx ' + a.icon + ' me-1"></i>' + esc(a.label || '') + '</button>').join('') + '</div></div>');
+
+        if (w.status === 'empty') { // (3) the empty state only
+            parts.push(emptyWeekHtml());
+            host.innerHTML = parts.join('');
+            return;
+        }
 
         // pinned visits that did not fit their day
         parts.push(pinOverflowHtml(p, ws));
         (p.pinWarnings || []).filter(x => x.weekStart === ws).forEach(x => parts.push('<div class="alert alert-warning py-2 small" role="status">' + esc(reasonText(x.code) + ' · ' + x.date) + '</div>'));
 
         // day by day
-        parts.push('<div class="text-uppercase small fw-semibold text-muted mb-2">' + esc(L.DayByDay || '') + '</div>');
+        parts.push('<div><div class="text-uppercase small text-muted mb-2">' + esc(L.DayByDay || '') + '</div>');
         const days = daysOf(w, p, weekSlots);
         parts.push(days.length ? days.map(d => dayRow(d, movable)).join('') : '<div class="small text-muted">' + esc(L.NoVisitThisWeek || '') + '</div>');
+        parts.push('</div>');
 
-        // visits per product + the mixed order
+        // visits per product (name + bold count; a reminder-only product white with a frame) + the mixed order
         const counts = (wc && wc.productVisitCounts) || [];
-        parts.push('<div class="row g-4 mt-1"><div class="col-12 col-lg-6">' +
-            '<div class="text-uppercase small fw-semibold text-muted mb-2">' + esc(L.ProductVisitsTitle || '') + '</div>' +
-            (counts.length ? '<div class="d-flex flex-wrap gap-2">' + counts.map(c => '<span class="badge bg-label-primary" title="' + esc(fmt(L.ProductVisitsSplit || '{0} {1}', c.promoVisits || 0, (c.visits || 0) - (c.promoVisits || 0))) + '">' + esc(c.productCode || '—') + ' <strong>' + (c.visits || 0) + '</strong></span>').join('') + '</div>'
+        parts.push('<div><div class="text-uppercase small text-muted mb-2">' + esc(L.ProductVisitsTitle || '') + '</div>' +
+            (counts.length ? '<div class="d-flex flex-wrap gap-2">' + counts.map(c => '<span class="badge ' + ((c.promoVisits || 0) > 0 ? 'bg-label-primary' : 'bg-transparent border text-body') + ' d-inline-flex gap-1 align-items-center" title="' + esc([c.productCode, fmt(L.ProductVisitsSplit || '{0} {1}', c.promoVisits || 0, (c.visits || 0) - (c.promoVisits || 0))].filter(Boolean).join(' · ')) + '">' + esc(VPF.productLabel(c)) + ' <strong>' + (c.visits || 0) + '</strong></span>').join('') + '</div>'
                 : '<div class="small text-muted">' + esc(L.NoProductVisits || '') + '</div>') +
-            '<div class="small text-muted mt-2"><i class="bx bx-shuffle me-1"></i>' + esc(L.MixedOrderNote || '') + '</div></div>');
+            '<div class="small bg-label-secondary rounded px-3 py-2 mt-2 d-flex gap-2"><i class="bx bx-shuffle text-primary"></i><span>' + esc(L.MixedOrderNote || '') + '</span></div></div>');
 
         // moved / not placed
         const slips = slipItems(p, i, ws, weekSlots);
-        parts.push('<div class="col-12 col-lg-6"><div class="text-uppercase small fw-semibold text-muted mb-2">' + esc(fmt(L.SlipTitleCount || '{0}', slips.length)) + '</div>' +
-            (slips.length ? '<ul class="list-unstyled small mb-0">' + slips.map(x => '<li class="d-flex gap-2 py-1 border-bottom vp-wk-slip" data-kind="' + x.kind + '"><i class="bx ' + SLIP_ICON[x.kind] + ' text-warning"></i><span class="flex-grow-1"><span class="fw-medium">' + esc(x.name) + '</span> <span class="text-muted">· ' + esc(x.reason) + '</span></span><span class="text-nowrap">' + esc(x.result) + '</span></li>').join('') + '</ul>'
-                : '<div class="small text-muted">' + esc(L.NoSlips || '') + '</div>') + '</div></div>');
+        parts.push('<div><div class="text-uppercase small text-muted mb-2">' + esc(fmt(L.SlipTitleCount || '{0}', slips.length)) + '</div>' +
+            (slips.length ? '<div class="d-flex flex-column gap-2">' + slips.map(slipRow).join('') + '</div>'
+                : '<div class="small text-muted">' + esc(L.NoSlips || '') + '</div>') + '</div>');
 
-        // the doctors of the week + their period dots
-        const firstDraft = firstDraftWeekStart();
-        const doctors = [];
-        weekSlots.filter(s => s.contactId).forEach(s => { if (!doctors.some(d => d.contactId === s.contactId)) doctors.push(s); });
-        parts.push('<div class="mt-4"><div class="text-uppercase small fw-semibold text-muted mb-1">' + esc(fmt(L.WeekDoctorsTitle || '{0}', doctors.length)) + '</div>' +
-            '<div class="small text-muted mb-2">' + esc(L.WeekDoctorsHint || '') + '</div>' +
-            (doctors.length ? '<div class="list-group list-group-flush">' + doctors.map(s => {
-                const freq = s.requiredVisitCount != null && s.frequencyStatus !== 'unknown'
-                    ? fmt(L.FrequencyPerPeriod || '{0}', s.requiredVisitCount) : (L.FrequencyNone || '');
-                const dots = page.weeks().map(pw => {
-                    const v = slotsAll().find(x => x.contactId === s.contactId && (x.weekStart || mondayYmd(x.plannedDate)) === pw.weekStart);
-                    if (!v) return '<span class="badge rounded-pill bg-label-secondary opacity-25" title="' + esc(weekTitle(pw)) + '">&nbsp;</span>';
-                    const st = visitState(v, firstDraft);
-                    return '<span class="badge rounded-pill bg-label-' + STATE_TONE[st] + '" title="' + esc(weekTitle(pw) + ' · ' + (L[STATE_LABEL[st]] || st)) + '">&nbsp;</span>';
-                }).join('');
-                return '<button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 js-wk-doctor" data-cid="' + esc(s.contactId) + '" data-aid="' + esc(s.accountId || '') + '">' +
-                    '<span class="flex-grow-1" style="min-width:0"><span class="fw-medium d-block text-truncate">' + esc(visitName(s)) + '</span><span class="small text-muted">' + esc(accountName(s.accountId)) + ' · ' + esc(freq) + '</span></span>' +
-                    '<span class="d-flex gap-1 flex-wrap">' + dots + '</span></button>';
-            }).join('') + '</div>' : '<div class="small text-muted">' + esc(L.NoDoctorsThisWeek || '') + '</div>') +
-            '<div class="d-flex flex-wrap gap-3 small text-muted mt-2">' + Object.keys(STATE_LABEL).map(k => '<span><span class="badge rounded-pill bg-label-' + STATE_TONE[k] + '">&nbsp;</span> ' + esc(L[STATE_LABEL[k]] || k) + '</span>').join('') + '</div></div>');
+        if (movable && w.status === 'draft') {
+            parts.push('<button type="button" class="btn btn-link px-0 align-self-start js-wk-edit-targets"><i class="bx bx-edit-alt me-1"></i>' + esc(L.EditWeekTargets || '') + '</button>');
+        }
 
         // an approved / reopened week's history
         const history = historyOf(ws);
         if (history.length) {
-            parts.push('<div class="mt-4"><div class="text-uppercase small fw-semibold text-muted mb-2">' + esc(L.WeekHistoryTitle || '') + '</div><ul class="list-unstyled small mb-0">' +
+            parts.push('<div><div class="text-uppercase small text-muted mb-2">' + esc(L.WeekHistoryTitle || '') + '</div><ul class="list-unstyled small mb-0">' +
                 history.map(h => '<li class="py-1 border-bottom"><span class="fw-medium">' + esc(h.action === 'reopen' ? (L.HistoryReopened || '') : (L.HistoryApproved || '')) + '</span> · ' +
-                    esc(whoName(h.by)) + ' · ' + esc(h.at ? new Date(h.at).toLocaleString() : '') + (h.reason ? '<div class="text-muted">' + esc(h.reason) + '</div>' : '') + '</li>').join('') + '</ul></div>');
+                    esc(whoName(h.by)) + ' · ' + esc(h.at ? VPF.dateTime(h.at) : '') + (h.reason ? '<div class="text-muted">' + esc(h.reason) + '</div>' : '') + '</li>').join('') + '</ul></div>');
         }
 
         host.innerHTML = parts.join('');
     };
 
     const render = () => { renderStrip(); renderDetail(); };
+
+    // ── 9 · after approving / reopening from here (both reload the page) the user stays on the Weeks tab, on the same
+    // week (F4-6). A one-shot, short-lived note in sessionStorage; the header's own actions keep their behaviour. ──
+    const RETURN_KEY = 'vp-return-weeks';
+    const RETURN_TTL_MS = 5 * 60 * 1000;
+    const rememberWeeksReturn = () => {
+        try { sessionStorage.setItem(RETURN_KEY, JSON.stringify({ session: sessionId, week: page.state.weekStart, at: Date.now() })); } catch (e) { /* no storage: no return */ }
+    };
+    let returnNote = (() => {
+        try {
+            const raw = sessionStorage.getItem(RETURN_KEY);
+            sessionStorage.removeItem(RETURN_KEY);
+            const note = raw ? JSON.parse(raw) : null;
+            return note && note.session === sessionId && Date.now() - (note.at || 0) < RETURN_TTL_MS ? note : null;
+        } catch (e) { return null; }
+    })();
+    const returnToWeeks = () => {
+        if (!returnNote) return;
+        const note = returnNote; returnNote = null;
+        if (note.week && page.week(note.week)) page.selectWeek(note.week, 'force');
+        const tab = el('vp-tab-weeks-btn'); if (tab && window.bootstrap) window.bootstrap.Tab.getOrCreateInstance(tab).show();
+    };
 
     // ── 4 · move between days (4E day pins through the existing session update) ──
     // Only a draft (or empty) week of a writable, non-legacy plan.
@@ -475,6 +576,11 @@
             }
             return;
         }
+        if (e.target.closest('.js-wk-all-docs')) { allDoctorsShown = !allDoctorsShown; renderDetail(); return; }
+        if (e.target.closest('.js-wk-edit-targets')) {
+            const t = el('vp-tab-targets-btn'); if (t && window.bootstrap) window.bootstrap.Tab.getOrCreateInstance(t).show();
+            return;
+        }
         const more = e.target.closest('.js-wk-more');
         if (more) { fullDays.add(more.dataset.date); renderDetail(); return; }
         const dayBtn = e.target.closest('.js-wk-day');
@@ -482,9 +588,9 @@
         const act = e.target.closest('.js-wk-action');
         if (act) {
             const k = act.dataset.action;
-            if (k === 'approve') page.request('approve-week');
+            if (k === 'approve') { rememberWeeksReturn(); page.request('approve-week'); }
             else if (k === 'rebuild') page.request('reload-plan');
-            else if (k === 'reopen') page.request('reopen-week');
+            else if (k === 'reopen') { rememberWeeksReturn(); page.request('reopen-week'); }
             else if (k === 'route') {
                 page.selectWeek(page.state.weekStart, 'force');
                 const btn = el('vp-tab-route-btn'); if (btn && window.bootstrap) window.bootstrap.Tab.getOrCreateInstance(btn).show();
@@ -565,7 +671,7 @@
     });
 
     page.on('session', () => { render(); loadTargets(); });
-    page.on('preview', () => render());
-    page.on('week-change', () => { openDays.clear(); fullDays.clear(); render(); });
+    page.on('preview', () => { render(); returnToWeeks(); });
+    page.on('week-change', () => { openDays.clear(); fullDays.clear(); allDoctorsShown = false; render(); });
     loadMe();
 })(window, document);

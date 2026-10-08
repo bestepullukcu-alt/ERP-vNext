@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -36,13 +36,14 @@ public sealed class VisitPlanningTargetsTabWebTests
         // the institution's doctors come from the 3D read, with the plan, the quick filter and a page of 200
         Assert.Contains("api('/my-accounts/' + accountId + '/doctors?planningSessionId=' + encodeURIComponent(sessionId) + '&quick=' + quick + '&pageSize=200')", js);
         var config = Between(js, "const contactsConfig = list => ({", "\n    });");
-        // seven columns: select · doctor (+ badges) · specialty · frequency · done / remaining · last visit · products
-        Assert.Contains("columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }, { data: null }, { data: null }, { data: null }, { data: null }]", config);
+        // WP-VP-4H — eight columns: select · doctor · specialty · products · frequency · done / remaining · last visit · status
+        Assert.Contains("columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }]", config);
         Assert.Contains("frequencyCell(row.status)", config);
         Assert.Contains("doneCell(row.status)", config);
         Assert.Contains("lastVisitCell(row.status)", config);
         Assert.Contains("'<div class=\"vp-doc-picks\" data-cid=\"' + esc(row.contactId)", config);
-        Assert.Contains("doctorBadges(row)", config);
+        Assert.Contains("statusCell(row)", config); // 4H: the badges moved into the Status column
+        Assert.Contains("+ doctorBadges(row);", Between(js, "const statusCell = row =>", "\n"));
         Assert.DoesNotContain("linkId' }", config);
 
         // the cells speak the 3D fields: "N in the period" / no-frequency badge, done / remaining, last visit, badges
@@ -62,11 +63,11 @@ public sealed class VisitPlanningTargetsTabWebTests
         Assert.Contains("contactsDt.rows({ search: 'applied' })", selectAll); // "select all" follows the filters
         Assert.Contains("if (row.blocked) return;", selectAll);
 
-        // the view's header has exactly the seven columns, and no link column
+        // the view's header has exactly the eight columns (4H: + Status), and no link column
         var view = View("Details.cshtml");
         var head = Between(view, "<table id=\"dt-vp-contacts\"", "</thead>");
-        Assert.Equal(7, Regex.Matches(head, "<th>").Count);
-        foreach (var key in new[] { "ColFrequency", "ColDoneRemaining", "ColLastVisit", "ColProducts" })
+        Assert.Equal(8, Regex.Matches(head, "<th>").Count);
+        foreach (var key in new[] { "ColFrequency", "ColDoneRemaining", "ColLastVisit", "ColProducts", "ColStatus" })
         {
             Assert.Contains($"Localizer[\"{key}\"]", head);
         }
@@ -122,7 +123,7 @@ public sealed class VisitPlanningTargetsTabWebTests
         // the next visit's list from the preview; the stored pick (as "your pick") when the preview has none
         var items = Between(js, "const chipItems = cid => {", "\n    };");
         Assert.Contains("nextVisit[cid]", items);
-        Assert.Contains("savedPicks(cid).map(p => ({ productId: p.productId, productCode: p.productCode || p.productName, role: roleOf(p), source: SOURCE_REP_PICK", items);
+        Assert.Contains("savedPicks(cid).map(p => ({ productId: p.productId, productCode: p.productCode, productName: p.productName, role: roleOf(p), source: SOURCE_REP_PICK", items);
         Assert.Contains("(warned || !it.journeyId || it.journeyId === EMPTY_GUID)", js);
 
         // no product: the yellow badge + "Pick products"
@@ -251,7 +252,7 @@ public sealed class VisitPlanningTargetsTabWebTests
         var js = Script("details.js");
         var chips = Between(js, "const renderSelectionChips = () => {", "\n    };");
         Assert.Contains("cName(s.accountId, s.contactId), specLabel(cSpec(s.accountId, s.contactId))", chips);
-        Assert.Contains("parts.push(head(aName(aid)))", chips); // grouped under the institution
+        Assert.Contains("parts.push(groupHead(aid, aName(aid), groups[aid].length))", chips); // grouped under the institution (4H: collapsible)
         Assert.Contains("return c ? c.name : (savedContactNames[cid] || '—');", js);
         Assert.Contains("return c ? c.specialty : (savedContactSpecs[cid] || '');", js);
         Assert.Contains("(savedAccountNames[aid] || '—')", js);
@@ -273,7 +274,7 @@ public sealed class VisitPlanningTargetsTabWebTests
         Assert.Contains("(L.AccountSelectedOf || '{0} / {1}').replace('{0}', sel).replace('{1}', st.active)", stats);
         Assert.Contains("(L.AccountDueThisWeek || '{0}').replace('{0}', st.due)", stats);
         Assert.Contains("due: rows.filter(x => x.status.dueThisWeek).length", js);
-        Assert.Contains("'<div class=\"text-muted small vp-acc-stats\" data-aid=\"' + esc(row.id) + '\">' + esc(accountStatsText(row.id))", js);
+        Assert.Contains("'<span class=\"d-block small text-muted vp-acc-stats\" data-aid=\"' + esc(a.id) + '\" data-city=\"' + esc(cityOnly(a)) + '\">' + esc([cityOnly(a), accountStatsText(a.id)]", js);
 
         var view = View("Details.cshtml");
         var modal = Between(view, "id=\"vp-out-territory-modal\"", "</select>");

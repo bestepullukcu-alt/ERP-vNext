@@ -23,6 +23,7 @@
     if (!root || !page) return;
 
     const L = window.L10n || {};
+    const VPF = window.VisitPlanningFormat; // WP-VP-4H — dates / numbers in the application's language
     const base = '/CRM/VisitPlanning/api';
     const sessionId = root.dataset.sessionId;
     const REOPEN_MIN = 10;
@@ -45,15 +46,10 @@
     const STATUS_TEXT = { draft: 'StatusTextDraft', approved: 'StatusTextApproved', past: 'StatusTextPast', empty: 'StatusTextEmpty' };
     const statusLabel = s => L[STATUS_LABEL[s]] || s || '—';
     const localDate = ws => new Date(ws + 'T00:00:00'); // yyyy-MM-dd as a LOCAL day (never shifted a day by UTC parsing)
-    const dm = d => d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
     const weekTitle = w => (L.WeekNumberLabel || '{0}. Hafta').replace('{0}', w.isoWeek);
-    const weekRange = w => { const f = localDate(w.from || w.weekStart), t = localDate(w.to || w.weekStart); return isNaN(f) || isNaN(t) ? '' : dm(f) + ' – ' + dm(t); };
+    const weekRange = w => VPF.workRange(w.from || w.weekStart, w.to || w.weekStart);
     const weekYear = w => { const t = localDate(w.to || w.weekStart); return isNaN(t) ? '' : String(t.getFullYear()); };
-    const hours = minutes => {
-        if (minutes == null || isNaN(minutes)) return '—';
-        const h = Math.round((Number(minutes) / 60) * 10) / 10;
-        return (L.HoursFormat || '{0} h').replace('{0}', h.toLocaleString(undefined, { maximumFractionDigits: 1 }));
-    };
+    const hours = minutes => VPF.hours(minutes, L.HoursFormat || '{0} h');
 
     // ── default + next week ──
     const defaultWeek = () => {
@@ -149,12 +145,14 @@
         const pc = p ? p.periodCapacity : null;
         // Without a capacity the period runs on the default hours: both cards say there is no capacity (mockup).
         const noCapacity = !!(pc && pc.budgetSource === 'default_hours');
+        // 4H — "planned this week" through the one shared reading (the Targets summary uses the same).
+        const load = VPF.weekLoad(p, ws);
         setText('vp-cap-week', wc ? hours(wc.capacityMinutes) : '—');
-        setText('vp-cap-week-planned', wc ? hours(wc.plannedMinutes) : '—');
+        setText('vp-cap-week-planned', load.planned != null ? hours(load.planned) : '—');
         setText('vp-cap-period', pc ? hours(pc.capacityMinutes) : '—');
         setText('vp-cap-period-planned', pc ? hours(pc.plannedMinutes) : '—');
 
-        const weekPct = wc && wc.capacityMinutes > 0 ? Math.min(100, Math.round(wc.plannedMinutes / wc.capacityMinutes * 100)) : 0;
+        const weekPct = wc && wc.capacityMinutes > 0 ? Math.min(100, Math.round((load.planned || 0) / wc.capacityMinutes * 100)) : 0;
         bar('vp-cap-week-bar', weekPct);
         let weekNote = '';
         if (noCapacity) weekNote = L.CapacityMissingWeek || '';

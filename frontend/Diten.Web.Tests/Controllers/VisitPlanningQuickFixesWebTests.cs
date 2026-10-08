@@ -104,7 +104,7 @@ public sealed class VisitPlanningQuickFixesWebTests
 
         Assert.Contains("data-read-only=\"@Model.IsReadOnly", details);
         Assert.Matches(@"@if \(Model\.IsReadOnly\)\s*\{\s*<div[^>]*id=""vp-readonly-notice""[^>]*>.*Localizer\[""ReadOnlyNotice""\]", details);
-        foreach (var id in new[] { "vp-apply", "vp-replan", "vp-preview", "vp-save-targets", "vp-add-account", "vp-select-all-doctors", "vp-clear-selection" })
+        foreach (var id in new[] { "vp-apply", "vp-replan", "vp-preview", "vp-save-targets", "vp-out-territory-open", "vp-select-all-doctors", "vp-clear-selection" })
         {
             var at = details.IndexOf($"id=\"{id}\"", StringComparison.Ordinal);
             Assert.True(at > 0, id);

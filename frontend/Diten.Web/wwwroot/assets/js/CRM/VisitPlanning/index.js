@@ -35,7 +35,7 @@
     const badge = (v, cls = 'primary') => `<span class="badge bg-label-${cls}">${esc(v || '—')}</span>`;
     const norm = v => (typeof v === 'string' ? v.trim() : (v == null ? '' : String(v)));
     const normArr = v => Array.isArray(v) ? Array.from(new Set(v.map(x => norm(x)).filter(Boolean))) : (norm(v) ? [norm(v)] : []);
-    const date = v => { if (!v) return '—'; const d = new Date(v); return isNaN(d) ? '—' : d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: '2-digit' }); };
+    const date = v => (v ? window.VisitPlanningFormat.dateShort(v) : '—'); // WP-VP-4H — the app's language
     // ISO-8601 week number (Thursday-based, Monday start) — labels the plan's saved target week.
     const isoWeek = dt => { const d = new Date(dt); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7)); const w1 = new Date(d.getFullYear(), 0, 4); return 1 + Math.round(((d - w1) / 86400000 - 3 + ((w1.getDay() + 6) % 7)) / 7); };
     const sWeek = s => { const w = s.targetWeekStart || s.TargetWeekStart; return /^\d{4}-\d{2}-\d{2}$/.test(w || '') ? (L.WeekNumberLabel || '{0}. ' + (L.WeekLabel || 'Week')).replace('{0}', isoWeek(new Date(w))) : '—'; };

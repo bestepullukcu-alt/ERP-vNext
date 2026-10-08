@@ -90,7 +90,7 @@
                 const warned = (it.warnings || []).some(w => NO_CONTENT_WARNINGS.indexOf(w) > -1);
                 if (warned || !it.journeyId || it.journeyId === EMPTY_GUID) noContent[it.productId] = true;
             });
-            map[c.contactId] = (c.products || []).map(x => ({ productId: x.productId, productCode: x.productCode, role: roleOf(x), source: x.source || SOURCE_PLAY, noContent: !!noContent[x.productId] }));
+            map[c.contactId] = (c.products || []).map(x => ({ productId: x.productId, productCode: x.productCode, productName: x.productName, role: roleOf(x), source: x.source || SOURCE_PLAY, noContent: !!noContent[x.productId] }));
         });
         return map;
     };
@@ -98,7 +98,7 @@
     const chipItems = cid => {
         const nv = nextVisit[cid];
         if (nv && nv.length) return nv;
-        return savedPicks(cid).map(p => ({ productId: p.productId, productCode: p.productCode || p.productName, role: roleOf(p), source: SOURCE_REP_PICK, noContent: false }));
+        return savedPicks(cid).map(p => ({ productId: p.productId, productCode: p.productCode, productName: p.productName, role: roleOf(p), source: SOURCE_REP_PICK, noContent: false }));
     };
     const playItems = cid => (nextVisit[cid] || []).filter(x => x.source === SOURCE_PLAY);
 
@@ -142,9 +142,9 @@
     const chipHtml = it => {
         const promo = roleOf(it) === ROLE_PROMO;
         const warn = promo && it.noContent; // a promo product without approved content (K-7f)
-        const tip = [promo ? L.LegendPromo : L.LegendNonPromo, sourceLabel(it.source), warn ? L.NoApprovedContent : ''].filter(Boolean).join(' · ');
+        const tip = [it.productName ? it.productCode : '', promo ? L.LegendPromo : L.LegendNonPromo, sourceLabel(it.source), warn ? L.NoApprovedContent : ''].filter(Boolean).join(' · ');
         return '<span class="badge rounded-pill ' + (promo ? 'bg-label-primary' : 'bg-transparent border text-body') + ' vp-pchip" data-role="' + esc(roleOf(it)) + '" data-source="' + esc(it.source) + '" title="' + esc(tip) + '">' +
-            '<i class="bx ' + (SOURCE_ICON[it.source] || 'bx-package') + ' me-1" aria-hidden="true"></i>' + esc(it.productCode || '—') +
+            '<i class="bx ' + (SOURCE_ICON[it.source] || 'bx-package') + ' me-1" aria-hidden="true"></i>' + esc(window.VisitPlanningFormat.productLabel(it)) +
             (warn ? '<i class="bx bx-error text-warning ms-1" aria-label="' + esc(L.NoApprovedContent || '') + '"></i>' : '') + '</span>';
     };
     const pickButton = (cell, label, icon) => '<button type="button" class="btn btn-sm btn-text-primary px-1 py-0 js-vp-pick" data-cid="' + esc(cell.dataset.cid) + '" title="' + esc(label) + '">' + (icon ? '<i class="bx ' + icon + '"></i>' : esc(label)) + '</button>';
@@ -159,23 +159,24 @@
     const paintCells = () => document.querySelectorAll('#dt-vp-contacts .vp-doc-picks').forEach(paintCell);
 
     // ── selection summary: time by products, distribution, doctors without products (from the preview) ──
-    const hours = minutes => fmt(L.HoursFormat || '{0} h', (Math.round(minutes / 6) / 10).toLocaleString(undefined, { maximumFractionDigits: 1 }));
+    const hours = minutes => window.VisitPlanningFormat.hours(minutes, L.HoursFormat || '{0} h'); // WP-VP-4H — the app's language
     const renderSummary = () => {
         const host = el('vp-sum-extra'); if (!host) return;
         const p = page.state.preview;
         if (!p) { host.innerHTML = ''; return; }
         const parts = [];
-        const wc = Array.isArray(p.weekCapacity) ? p.weekCapacity.find(c => c.weekStart === page.state.weekStart) : null;
-        if (wc) {
-            const pct = wc.capacityMinutes > 0 ? Math.round(wc.plannedMinutes / wc.capacityMinutes * 100) : null;
-            parts.push('<div><i class="bx bx-time-five me-1"></i>' + esc(fmt(L.EstimatedWeek || '{0}', hours(wc.plannedMinutes))) + (pct != null ? ' · ' + esc(fmt(L.EstimatedWeekShare || '{0}', pct)) : '') + '</div>');
-            if (wc.capacityMinutes > 0 && wc.plannedMinutes > wc.capacityMinutes) {
-                parts.push('<div class="text-warning"><i class="bx bx-error me-1"></i>' + esc(fmt(L.EstimatedOver || '{0}', hours(wc.plannedMinutes - wc.capacityMinutes))) + '</div>');
+        // WP-VP-4H (6) — the same reading as the header's "planned this week" card (VPF.weekLoad), the same format.
+        const load = window.VisitPlanningFormat.weekLoad(p, page.state.weekStart);
+        if (load.planned != null) {
+            const pct = load.capacity > 0 ? Math.round(load.planned / load.capacity * 100) : null;
+            parts.push('<div><i class="bx bx-time-five me-1"></i>' + esc(fmt(L.EstimatedWeek || '{0}', hours(load.planned))) + (pct != null ? ' · ' + esc(fmt(L.EstimatedWeekShare || '{0}', pct)) : '') + '</div>');
+            if (load.capacity > 0 && load.planned > load.capacity) {
+                parts.push('<div class="text-warning"><i class="bx bx-error me-1"></i>' + esc(fmt(L.EstimatedOver || '{0}', hours(load.planned - load.capacity))) + '</div>');
             }
         }
         const dist = (p.productDistribution || []).slice().sort((a, b) => b.doctorCount - a.doctorCount);
         if (dist.length) {
-            parts.push('<div class="mt-2"><span class="opacity-75">' + esc(L.ProductDistribution || '') + ':</span> ' + dist.map(x => esc(x.productCode || '—') + ' <strong>' + x.doctorCount + '</strong>').join(' · ') + '</div>');
+            parts.push('<div class="mt-2"><span class="opacity-75">' + esc(L.ProductDistribution || '') + ':</span> ' + dist.map(x => esc(window.VisitPlanningFormat.productLabel(x)) + ' <strong>' + x.doctorCount + '</strong>').join(' · ') + '</div>');
         }
         if (p.doctorsWithoutProducts > 0) {
             parts.push('<div class="text-warning mt-1"><i class="bx bx-error me-1"></i>' + esc(fmt(L.DoctorsWithoutProducts || '{0}', p.doctorsWithoutProducts)) + '</div>');
@@ -289,7 +290,7 @@
     };
     const openSingle = cell => {
         const cid = cell.dataset.cid;
-        const locked = playItems(cid).map(x => ({ productId: x.productId, productCode: x.productCode, role: x.role, source: SOURCE_PLAY, noContent: x.noContent, locked: true }));
+        const locked = playItems(cid).map(x => ({ productId: x.productId, productCode: x.productCode, productName: x.productName, role: x.role, source: SOURCE_PLAY, noContent: x.noContent, locked: true }));
         const lockedIds = locked.map(x => x.productId);
         const noContentOf = {}; (nextVisit[cid] || []).forEach(x => { noContentOf[x.productId] = x.noContent; });
         const picks = savedPicks(cid).filter(p => lockedIds.indexOf(p.productId) === -1)
