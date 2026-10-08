@@ -1189,6 +1189,15 @@ InventoryService 5176, `diten_inventory_q1_itest`) 22/22 + Mongo read; owner fle
 (O-1), virtual LotBlocked rows (O-2), serial-tracked items in the engine (O-3), Q2–Q4 parts by plan (O-4), master-data names
 (O-5), KPI performance (O-6), §8 ApplyFailed wording vs contract §5 (O-7), W-0175-01. Evidence
 `docs/records/audits/2026-10/mod-0175-q1-evidence-2026-10-08.md`.
+**CT acceptance (K13, 2026-10-08):** re-measured at `26b25c947` — Inventory 592/592 (the 530 MOD-0173/0174 tests unchanged),
+architecture 18/18; ledger side = only the two pack §5 seams (`IPostedMovementObserver`, `InternalMovementPostingService`;
+`PostAsync` unchanged). CT sabotage: apply-time four-eyes check disabled (`QuarantineApplyEngine.cs:386`) → 1 red, restored.
+CT decisions on the opens: **O-7** — the contract wins: an `ApplyFailed` decision keeps the hold locked and "Yeniden uygula"
+continues with the same keys (§8 wording superseded); **O-3 → Q2 scope (FU-0175-Q1-SER):** the apply engine must carry the
+hold's serial numbers for serial-tracked items (finished goods are ITS-serialised — a release that always ends ApplyFailed is
+not acceptable); **O-2 → Q4** (with the lot gate); **O-5 → Q5** (labels via the existing label resolvers); **O-6** measured in
+Q5 with the queue page; **O-1** contracts README row = CT records step at MVP-1 closure; CT-Q9 = idempotent continue + retry
+(measured: `PostAsync` opens its own transaction) — accepted.
 
 ## 20. Follow-up Items
 
