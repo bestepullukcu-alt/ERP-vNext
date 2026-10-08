@@ -1167,6 +1167,29 @@ owner's whole `dotnet watch` fleet was found dead afterwards — do NOT run it o
   public transactions API has no such filter (`inventory-bundle.openapi.yaml:155-175`).
 - **ASSUMPTION-0175-06:** "Elle" mockup source = Manual; "İade" = CustomerReturn.
 
+### WP-0175-Q1 (agent result 2026-10-08, pending CT) — records, decisions, apply engine, contract
+
+Branch `feature/sce/mod-0175-q1` from `2bdedbb26` (isolated worktree): `0d1c66012` freezes `quarantine.openapi.yaml` **1.0.0**
+(single writer; = proposal, measured by `QuarantineContractTests`; reconciliations R-1 envelope = measured INVENTORY/TRACE
+wire, R-2 optional `bucket.lotId`, R-3 settings of the scope company, R-4 `Decision.disposition.sampleLocationId`), `06a86918d`
+the slice: the seven records in-process (`quarantine_*`, decisions / events / history insert-only), the MOD-0173 seam exactly
+as §5 Q1 (`IPostedMovementObserver` post-commit + `InternalMovementPostingService` = the `PostMovementHandler` body moved
+unchanged), intake observer + sweep (one record per ledger transaction), V1–V14, the apply engine for every stock-effect row
+except KQ-I (Q4), the no-workflow Karantinaya Al / Stoğu bloke et with CT-Q6 `QUARANTINE_STOCK_RESERVED`, manifest
+`QUARANTINE-BLOCKED-STOCK` (`quarantine.*`, tenant routes), 17 contract operations. **CT-Q9 measured:** `PostAsync` opens its
+own Mongo transaction per posting and Mongo has no nested transactions → idempotent continue + retry (ledger keys
+`quarantine:{decisionId}:{lineNo}`, committed keys answered before posting, ApplyFailed keeps the lock — contract §5).
+Approval in Q1: production default fails closed (submit → 503 `QUARANTINE_WORKFLOW_UNAVAILABLE`, nothing moves); the test
+approval port + its endpoint exist only on a DB-010 test database (startup gate). Tests: Inventory 530 → **592/592** (the
+530 baseline tests all present and green), architecture 18/18, build 0 warnings; four existing guards narrowed by name (PUT
+allow-list of the two master-data replacements, `quarantine_*` collections, the moved posting hook, the ledger manifest
+scan). K3 sabotages (a) update method on the decision repository, (b) `"SAMPLE"` in a 0175 mapping, (c) `/Platform/Quarantine`,
+(d) `inventory.stock.read` in the manifest, (e) engine key removed → red, restored clean. Runtime probe (own Prism 4036 +
+InventoryService 5176, `diten_inventory_q1_itest`) 22/22 + Mongo read; owner fleet PIDs unchanged. Open: contracts README row
+(O-1), virtual LotBlocked rows (O-2), serial-tracked items in the engine (O-3), Q2–Q4 parts by plan (O-4), master-data names
+(O-5), KPI performance (O-6), §8 ApplyFailed wording vs contract §5 (O-7), W-0175-01. Evidence
+`docs/records/audits/2026-10/mod-0175-q1-evidence-2026-10-08.md`.
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
