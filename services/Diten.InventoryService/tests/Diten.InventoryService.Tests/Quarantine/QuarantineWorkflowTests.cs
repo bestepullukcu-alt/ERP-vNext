@@ -185,10 +185,14 @@ public sealed class QuarantineWorkflowTests : IClassFixture<WorkflowQuarantineAp
         Assert.Single(s.Events(), e => e["DecisionId"].AsString == decisionId && e["Kind"].AsString == "Approved");
         Assert.Equal("Decided", Id(await s.GetHoldAsync(holdId), "status"));
 
-        // a later read changes nothing
+        // a later read changes nothing — and an applied decision is not even asked about again (the reconciler only picks
+        // decisions still waiting for their outcome)
         var count = await s.AllMovementCountAsync();
+        var asked = Workflow.Requests.Count(r => r.Path.Contains(decisionId, StringComparison.OrdinalIgnoreCase));
         await s.ExpectAsync(HttpMethod.Post, $"/api/quarantine/decisions/{decisionId}/refresh", null, 200);
+        await s.ExpectAsync(HttpMethod.Get, $"/api/quarantine/holds/{holdId}", null, 200);
         Assert.Equal(count, await s.AllMovementCountAsync());
+        Assert.Equal(asked, Workflow.Requests.Count(r => r.Path.Contains(decisionId, StringComparison.OrdinalIgnoreCase)));
     }
 
     /// <summary>K3 (c): an engine that posts on a reject → movement present → this test is red.</summary>

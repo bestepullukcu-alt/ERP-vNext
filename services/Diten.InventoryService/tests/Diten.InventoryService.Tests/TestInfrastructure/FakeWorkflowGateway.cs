@@ -51,7 +51,7 @@ public sealed class FakeWorkflowGateway
     private readonly Dictionary<(Guid Tenant, string Key), Instance> _byKey = new();
     private readonly Dictionary<Guid, Instance> _instances = new();
 
-    /// <summary>Every request: method, path, Authorization header, X-Tenant-Id header.</summary>
+    /// <summary>Every request: method, path (+ query), Authorization header, X-Tenant-Id header.</summary>
     public List<(string Method, string Path, string? Authorization, string? Tenant)> Requests { get; } = [];
 
     /// <summary>Raw bodies of POST /instances (one per call, replays included).</summary>
@@ -151,7 +151,7 @@ public sealed class FakeWorkflowGateway
         var body = request.Content is null ? null : JsonNode.Parse(await request.Content.ReadAsStringAsync(ct)) as JsonObject;
         lock (_gate)
         {
-            Requests.Add((request.Method.Method, path, authorization, tenantHeader));
+            Requests.Add((request.Method.Method, request.RequestUri.PathAndQuery, authorization, tenantHeader));
             if (Down) return Reply(503, null, "SERVICE_UNAVAILABLE");
             if (Caller(authorization) is not { } caller) return Reply(401, null, "UNAUTHORIZED");
             if (!Guid.TryParse(tenantHeader, out var tenant) || tenant != caller.Tenant) return Reply(403, null, "TENANT_MISMATCH");
