@@ -140,6 +140,8 @@ Kurallar:
 - ☐ VP-UI-3 Haftalar + doktor paneli + yeniden açma penceresi
 - ☐ C6 çok ziyaretli durakta doktor adları (Rota tasarımı değişmeden; kullanıcı onayıyla)
 
+- ◐ **Main sonrası kullanıcı manuel testi (2026-10-08):** PR main'e birleşti; planlar temizlendi (`reset_visit_planning_97c5.py`, yedekli); [test rehberi](MANUAL-TEST-visit-planning-2026-10-08.md). İlk bulgular + **mockup v3 (Hedefler)** → ☐ [WP-VP-4J](WP-VP-4J-targets-v3-list-fixes.md) (Hedefler v3 düz liste, ürün paneli dönem görünümü, boş hafta geri bildirimi, liste süzgeci + **seçili boş taslakları arşivle** (kullanıcı kararı), yeni plan temsilci alanı; `C:	mpp-4j`)
+
 ### Faz 5 — mobil
 - ☑ Mobil not iletildi (2026-10-06) · ☑ 3 soru yanıtlandı ([yanıtlar](mobile/2026-10-06-visit-planning/MOBILE-ANSWERS-2026-10-06.md)): düzenlemede değerleri geri gönder; `resources/me` tek kaynak + `displayName` gelecek (B-1); ad için ara istek kabul, adlar B-8 ile yanıta girecek
 - ◐ Faz 2–4 alanları kesinleşti → [sözleşme notu 2026-10-08](mobile/2026-10-08-visit-planning-contract/MOBILE-CONTRACT-2026-10-08-visit-planning.md) yazıldı (kullanıcı iletir); SB-3-MOB SB-3c ile ayrı
