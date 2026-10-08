@@ -151,3 +151,26 @@ Commit: "feat(web): WP-VP-4L-WEB — weekly default label, week-aware targets, p
 - ek rozeti (Haftalar / Rota / panel);
 - onaylı haftada eylem yok;
 - plan dışı doktorda 400 mesajı.
+
+## §37 CT kabul — 4L-BE E2 ACCEPTED (2026-10-09)
+**Commit:** `ac73da19a` (ajan `4e28b4a79`, test dalına rebase, çakışmasız). Push: test dalı.
+
+**CT K13:**
+- CRM 2457 → **2466/0/5** (+9). Worktree'de ve birleşik koşuda aynı.
+- Web **816/0** (4L-WEB artık sunucu alanlarını görüyor).
+- Mimari: listesiz **27**.
+
+**Kod okuması:**
+- `FrequencyDefaults` tek yer: `UnknownRequiredInPeriod = UnitsIn("week")`; motor ve 3D okuyucu aynı yardımcıyı kullanıyor.
+- `weekExtras` mevcut güncellemede: dönem okunamazsa 400; onaylı hafta 409, geçmiş hafta 409; plan dışı hedef 400 (aynı istekteki seçim sonrası kontrol).
+- `PlanningWeekExtra` class-map'e kayıtlı (string GUID); eski oturum boş liste okuyor.
+
+**Ajanın bilinçli sapmaları (CT kabul):**
+- Ek ziyaretler `PlanningSession.WeekExtras` içinde (DayPins deseni); `Weeks[]` yalnız onaylı haftaların kaydı.
+- "zaten planlı" durumu yazmada `ignored` değil, önizlemede `extra_already_planned` uyarısı.
+- 3D okumalarına `?weekStart=` (şimdilik yalnız `extraThisWeek` için).
+- Test ortamının sahte sıklık çözücüsü açıkça "dönemde 1" (3B / 4E / 4G testlerinin anlamı korunsun).
+
+**CT sabotajı:** plan dışı hedef kontrolü kapatıldı → 1 kırmızı (`Extra_visits_are_written_for_a_plan_target_on_a_draft_week_only`). Geri alındı.
+
+**Sıradaki:** Hedefler sayı paketi (kullanıcı onayı): 3D `weekStart` parametresi `dueThisWeek` ve hızlı süzgeç sayılarına da uygulanacak.

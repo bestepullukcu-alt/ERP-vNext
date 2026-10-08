@@ -147,7 +147,7 @@ Kurallar:
 - ☑ Mobil not iletildi (2026-10-06) · ☑ 3 soru yanıtlandı ([yanıtlar](mobile/2026-10-06-visit-planning/MOBILE-ANSWERS-2026-10-06.md)): düzenlemede değerleri geri gönder; `resources/me` tek kaynak + `displayName` gelecek (B-1); ad için ara istek kabul, adlar B-8 ile yanıta girecek
 - ◐ Faz 2–4 alanları kesinleşti → [sözleşme notu 2026-10-08](mobile/2026-10-08-visit-planning-contract/MOBILE-CONTRACT-2026-10-08-visit-planning.md) yazıldı (kullanıcı iletir); SB-3-MOB SB-3c ile ayrı
 
-- ☐ **Manuel test bulgusu (2026-10-08):** sıklığı tanımsız 54 doktorun hepsi 41. haftada bitti, 42–53 boş. **Kararlar:** tanımsız sıklık = **haftada 1**; **haftaya ek ziyaret** evet → [WP-VP-4L](WP-VP-4L-weekly-default-week-extras.md) (4L-BE ∥ 4L-WEB; `C:	mpp-4l-be`, `C:	mpp-4l-web`). Mobil M10 metni "haftada 1 (varsayılan)" olacak.
+- ◐ **Manuel test bulgusu (2026-10-08):** sıklığı tanımsız 54 doktorun hepsi 41. haftada bitti, 42–53 boş. **Kararlar:** tanımsız sıklık = **haftada 1**; **haftaya ek ziyaret** evet → ☑ E2 4L-WEB `b403aa18f` + 4L-BE `ac73da19a` (CRM 2466/0/5, Web 816/0, mimari 27; ☐ E4) [WP-VP-4L](WP-VP-4L-weekly-default-week-extras.md) (4L-BE ∥ 4L-WEB; `C:	mpp-4l-be`, `C:	mpp-4l-web`). Mobil M10 metni "haftada 1 (varsayılan)" olacak.
 
 - ☐ **4L-BE sonrası paket (kullanıcı onayı 2026-10-09; "4L-BE dönünce paketle"):** Hedefler sayıları (canlı, plan `f2c6014d`, 42. hafta, Acıbadem Taksim):
   1. "Yapılan / kalan" planlı ziyareti göstermiyor → seçili doktorda "0 / 0"; doğrusu "0 yapıldı · 1 planlı".
