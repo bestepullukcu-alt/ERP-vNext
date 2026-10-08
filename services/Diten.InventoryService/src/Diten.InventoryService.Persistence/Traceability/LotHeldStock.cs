@@ -28,8 +28,21 @@ internal static class LotHeldStock
     public static async Task ApplyAsync(
         IMongoDatabase database, IClientSessionHandle session, Lot lot, LotStatus from, LotStatus to, DateTimeOffset now, CancellationToken ct)
     {
-        var wasHeld = LotPostingRules.HoldsStock(from);
-        var isHeld = LotPostingRules.HoldsStock(to);
+        // CT-Q16: the status change keeps the lot's stored retest hold — the one hold question asked for both ends
+        await MoveAsync(database, session, lot, LotPostingRules.HoldsStock(from, lot.RetestHeldAtUtc), LotPostingRules.HoldsStock(to, lot.RetestHeldAtUtc), now, ct);
+    }
+
+    /// <summary>
+    /// MOD-0175 Q4 (KQ-H, CT-Q16): the retest hold set (<paramref name="heldBefore"/> = null → <paramref name="heldAfter"/> = now) or
+    /// cleared, on the lot's stored status — called in the SAME transaction that writes <see cref="Lot.RetestHeldAtUtc"/>.
+    /// </summary>
+    public static Task ApplyRetestAsync(
+        IMongoDatabase database, IClientSessionHandle session, Lot lot, DateTimeOffset? heldBefore, DateTimeOffset? heldAfter, DateTimeOffset now, CancellationToken ct)
+        => MoveAsync(database, session, lot, LotPostingRules.HoldsStock(lot.Status, heldBefore), LotPostingRules.HoldsStock(lot.Status, heldAfter), now, ct);
+
+    private static async Task MoveAsync(
+        IMongoDatabase database, IClientSessionHandle session, Lot lot, bool wasHeld, bool isHeld, DateTimeOffset now, CancellationToken ct)
+    {
         if (wasHeld == isHeld)
         {
             return;

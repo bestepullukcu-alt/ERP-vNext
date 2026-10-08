@@ -30,6 +30,7 @@ public sealed class TraceScenario
         factory.Products.AddSku(Sku, SkuLevel.Lsku, Item);
         factory.Skus.Add(Sku, SkuLevel.Lsku, Item, gtin);
         Token = TestTokens.Mint(Tenant, LegalEntity, User, TestTokens.TracePermissions);
+        LotGate.Off(factory.Database, Tenant, LegalEntity); // MOD-0175 Q4: not a gate world (gate tests switch it on)
     }
 
     public Guid Tenant { get; } = Guid.NewGuid();
@@ -51,7 +52,11 @@ public sealed class TraceScenario
 
     public string TokenWith(params string[] permissions) => TestTokens.Mint(Tenant, LegalEntity, User, permissions);
 
-    public string TokenForCompany(Guid legalEntity) => TestTokens.Mint(Tenant, legalEntity, User, TestTokens.TracePermissions);
+    public string TokenForCompany(Guid legalEntity)
+    {
+        LotGate.Off(_factory.Database, Tenant, legalEntity);
+        return TestTokens.Mint(Tenant, legalEntity, User, TestTokens.TracePermissions);
+    }
 
     // ── bodies ───────────────────────────────────────────────────────────────────────────────────────────
 

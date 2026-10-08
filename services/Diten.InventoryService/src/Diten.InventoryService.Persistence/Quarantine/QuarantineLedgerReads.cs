@@ -4,6 +4,9 @@ using Diten.InventoryService.Application.Features.Quarantine.Ports;
 using Diten.InventoryService.Application.Features.Quarantine.Services;
 using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
+using Diten.InventoryService.Domain.Traceability.Entities;
+using Diten.InventoryService.Domain.Traceability.Enums;
+using Diten.InventoryService.Persistence.Traceability;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -23,6 +26,9 @@ public sealed class QuarantineLedgerReader : IQuarantineLedgerReader
     private readonly IMongoCollection<InventoryTransaction> _transactions;
     private readonly IMongoCollection<InventorySkuPosition> _positions;
     private readonly IMongoCollection<InventoryReservation> _reservations;
+    private readonly IMongoCollection<InventoryBalance> _balances;
+    private readonly IMongoCollection<Lot> _lots;
+    private readonly IMongoCollection<SerialNumber> _serials;
     private readonly Guid _tenantId;
     private readonly Guid _legalEntityId;
 
@@ -31,6 +37,9 @@ public sealed class QuarantineLedgerReader : IQuarantineLedgerReader
         _transactions = database.GetCollection<InventoryTransaction>(InventoryCollections.Transactions);
         _positions = database.GetCollection<InventorySkuPosition>(InventoryCollections.SkuPositions);
         _reservations = database.GetCollection<InventoryReservation>(InventoryCollections.Reservations);
+        _balances = database.GetCollection<InventoryBalance>(InventoryCollections.Balances);
+        _lots = database.GetCollection<Lot>(TraceCollections.Lots);
+        _serials = database.GetCollection<SerialNumber>(TraceCollections.Serials);
         _tenantId = tenant.TenantId;
         _legalEntityId = tenant.LegalEntityId;
     }
@@ -72,6 +81,41 @@ public sealed class QuarantineLedgerReader : IQuarantineLedgerReader
             .Limit(100).ToListAsync(cancellationToken);
         return rows.Where(r => r.RemainingQuantity > 0m)
             .Select(r => new ReservationLine(r.Id, r.SourceModule, r.SourceDocumentId, r.RemainingQuantity)).ToList();
+    }
+
+    public async Task<IReadOnlyList<InventoryBalance>> LotBalancesAsync(IReadOnlyCollection<string> lotIds, StockStatus status, CancellationToken cancellationToken = default)
+    {
+        if (lotIds.Count == 0)
+        {
+            return [];
+        }
+
+        var f = Builders<InventoryBalance>.Filter;
+        return await _balances.Find(Scope<InventoryBalance>() & f.In(x => x.LotId, lotIds) & f.Eq(x => x.StockStatus, status) & f.Gt(x => x.OnHand, 0m))
+            .Sort(Builders<InventoryBalance>.Sort.Ascending(x => x.LotId).Ascending(x => x.WarehouseId).Ascending(x => x.LocationId))
+            .Limit(2000).ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Lot>> RetestLotsAsync(DateTimeOffset before, CancellationToken cancellationToken = default)
+    {
+        var f = Builders<Lot>.Filter;
+        return await _lots.Find(f.Eq(x => x.TenantId, _tenantId) & f.Eq(x => x.IsDeleted, false) & f.Lt(x => x.RetestDate, before)
+                                & f.Ne(x => x.Status, LotStatus.Expired))
+            .Sort(Builders<Lot>.Sort.Ascending(x => x.RetestDate).Ascending(x => x.LotNumber))
+            .Limit(1000).ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<string>> SerialsAtAsync(
+        Guid itemId, Guid skuId, SkuLevel skuLevel, string? lotId, string warehouseId, string locationId, CancellationToken cancellationToken = default)
+    {
+        var f = Builders<SerialNumber>.Filter;
+        Guid? lot = Guid.TryParse(lotId, out var parsed) ? parsed : null;
+        var rows = await _serials.Find(f.Eq(x => x.TenantId, _tenantId) & f.Eq(x => x.IsDeleted, false) & f.Eq(x => x.ItemId, itemId)
+                                       & f.Eq(x => x.SkuId, skuId) & f.Eq(x => x.SkuLevel, skuLevel) & f.Eq(x => x.LotId, lot)
+                                       & f.Eq(x => x.Status, SerialStatus.Active) & f.Eq(x => x.WarehouseId, warehouseId) & f.Eq(x => x.LocationId, locationId))
+            .Sort(Builders<SerialNumber>.Sort.Ascending(x => x.CreatedAt).Ascending(x => x.Number))
+            .Limit(5000).ToListAsync(cancellationToken);
+        return rows.Select(r => r.Number).ToList();
     }
 }
 
@@ -115,6 +159,11 @@ public sealed class QuarantineSweeperOptions
 
     /// <summary>Transactions younger than this are left to the post-commit observer.</summary>
     public int IntakeSettleSeconds { get; set; } = 60;
+
+    /// <summary>Q4 (KQ-H): the retest hold sweeper (<see cref="RetestHoldSweeperHostedService"/>).</summary>
+    public bool RetestSweeperEnabled { get; set; } = true;
+
+    public int RetestSweepIntervalSeconds { get; set; } = 900;
 }
 
 /// <summary>

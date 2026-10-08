@@ -2,9 +2,12 @@ using Diten.InventoryService.Application.Common.Models;
 using Diten.InventoryService.Application.Features.Traceability.Commands;
 using Diten.InventoryService.Application.Features.Traceability.Ports;
 using Diten.InventoryService.Application.Features.Traceability.Services;
+using Diten.InventoryService.Domain.Traceability.Entities;
 using Diten.InventoryService.Domain.Traceability.Enums;
 using Diten.InventoryService.Domain.Traceability.Repositories;
 using Diten.InventoryService.Domain.Traceability.Rules;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using MediatR;
 
 namespace Diten.InventoryService.Application.Features.Traceability.Handlers.CommandHandlers;
@@ -22,18 +25,24 @@ namespace Diten.InventoryService.Application.Features.Traceability.Handlers.Comm
 /// The balance rows' stock status is NOT touched ("bloke lot ≠ bloke stok"). CT-D1 (a), WP-0174-P2: in the same
 /// transaction the lot's AVAILABLE stock leaves availability (→ Blocked) or comes back (Blocked → Released) through the SKU
 /// positions; a posting racing the change conflicts on the lot document and re-runs on the committed status.
+/// <para><b>MOD-0175 Q4 (KQ-I).</b> When the gate answers <see cref="LotStatusGateDecision.PendingApproval"/> the lot transaction commits
+/// NOTHING (it only read the lot); the approval request is then opened through <see cref="ILotStatusChangeApprovals"/> (its own
+/// MOD-0175 transaction, idempotent on the request key) and the answer is <b>202 <c>PendingApproval {lotId, pendingRequestId,
+/// contractVersion}</c></b> (TRACE 1.2.0). The status changes later only through <see cref="ApplyApprovedLotStatusChangeCommand"/>.</para>
 /// </summary>
 public sealed class ChangeLotStatusHandler : IRequestHandler<ChangeLotStatusCommand, Response<LotRefDto>>
 {
     private readonly ILotRepository _lots;
     private readonly ILotStatusChangeGate _gate;
     private readonly TraceWriteSupport _support;
+    private readonly ILotStatusChangeApprovals? _approvals;
 
-    public ChangeLotStatusHandler(ILotRepository lots, ILotStatusChangeGate gate, TraceWriteSupport support)
+    public ChangeLotStatusHandler(ILotRepository lots, ILotStatusChangeGate gate, TraceWriteSupport support, ILotStatusChangeApprovals? approvals = null)
     {
         _lots = lots;
         _gate = gate;
         _support = support;
+        _approvals = approvals;
     }
 
     public async Task<Response<LotRefDto>> Handle(ChangeLotStatusCommand request, CancellationToken cancellationToken)
@@ -65,9 +74,10 @@ public sealed class ChangeLotStatusHandler : IRequestHandler<ChangeLotStatusComm
         if (await _lots.FindStatusChangeByKeyAsync(lotId, key, cancellationToken) is { } committed)
             return await ReplayAsync(lotId, committed.RequestFingerprint, fingerprint, today, cancellationToken);
 
+        Lot? gated = null;
         try
         {
-            return await _lots.InTransactionAsync(async (tx, ct) =>
+            var result = await _lots.InTransactionAsync(async (tx, ct) =>
             {
                 var lot = await tx.FindAsync(lotId, ct);
                 if (lot is null) return TraceWriteSupport.UnknownLot<LotRefDto>();
@@ -81,10 +91,12 @@ public sealed class ChangeLotStatusHandler : IRequestHandler<ChangeLotStatusComm
                         422);
                 }
 
+                gated = null;
                 if (await _gate.EvaluateAsync(lot, target, reason!, ct) != LotStatusGateDecision.Allow)
                 {
-                    // MOD-0175 owns approval / e-signature (DEC-INV-08); until it exists no gate answers anything else.
-                    throw new NotSupportedException("A pending-approval lot status change belongs to MOD-0175.");
+                    // MOD-0175 owns approval / e-signature (DEC-INV-08): nothing is written in this transaction.
+                    gated = lot;
+                    return Response<LotRefDto>.Success(TraceMapping.ToRef(lot, today, withETag: false), 202);
                 }
 
                 var entry = _support.History(lot.Id, LotChangeAction.StatusChanged, "status", lot.Status.ToString(), target.ToString(), reason, now);
@@ -99,6 +111,14 @@ public sealed class ChangeLotStatusHandler : IRequestHandler<ChangeLotStatusComm
                 await tx.ApplyStatusToAvailabilityAsync(lot, from, ct);
                 return Response<LotRefDto>.Success(TraceMapping.ToRef(lot, today, withETag: true), 200);
             }, cancellationToken);
+            if (gated is null)
+            {
+                return result;
+            }
+
+            var approvals = _approvals ?? throw new NotSupportedException("A pending-approval lot status change belongs to MOD-0175.");
+            var pending = await approvals.OpenAsync(gated, target, reason!, key, cancellationToken);
+            return Response<LotRefDto>.Success(new LotPendingApprovalDto { LotId = gated.Id.ToString("D"), PendingRequestId = pending }, 202);
         }
         catch (LotUniqueViolationException violation) when (violation.Index == LotUniqueIndex.StatusChangeKey)
         {
@@ -118,5 +138,30 @@ public sealed class ChangeLotStatusHandler : IRequestHandler<ChangeLotStatusComm
         return lot is null
             ? TraceWriteSupport.UnknownLot<LotRefDto>()
             : Response<LotRefDto>.Success(TraceMapping.ToRef(lot, today, withETag: true), 200);
+    }
+}
+
+/// <summary>
+/// TRACE 1.2.0 <c>PendingApproval</c> (changeLotStatus 202): <c>{lotId, pendingRequestId, contractVersion}</c> only. It rides the
+/// handler's <see cref="LotRefDto"/> response (the controller's ETag path); its converter writes exactly the three contract members.
+/// </summary>
+[JsonConverter(typeof(LotPendingApprovalJsonConverter))]
+public sealed class LotPendingApprovalDto : LotRefDto
+{
+    public string PendingRequestId { get; init; } = string.Empty;
+}
+
+public sealed class LotPendingApprovalJsonConverter : JsonConverter<LotPendingApprovalDto>
+{
+    public override LotPendingApprovalDto Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        => throw new NotSupportedException("PendingApproval is a response only.");
+
+    public override void Write(Utf8JsonWriter writer, LotPendingApprovalDto value, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
+        writer.WriteString("lotId", value.LotId);
+        writer.WriteString("pendingRequestId", value.PendingRequestId);
+        writer.WriteString("contractVersion", value.ContractVersion);
+        writer.WriteEndObject();
     }
 }

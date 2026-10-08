@@ -96,14 +96,18 @@ public sealed class WorkflowApprovalPort : IQuarantineApprovalPort
             _ => "Lot serbest bırakma"
         };
         var quantity = decision.Kind == DecisionKind.Disposition ? decision.Disposition!.Quantity : decision.AvailableQuantityAtDecision;
-        var subtitle = $"SKU {decision.SkuId.ToString("D")[..8]} · Lot {decision.LotId ?? "—"} · {quantity.ToString(CultureInfo.InvariantCulture)} {decision.BaseUomId} · {WireNames.ToWire(decision.FromStockStatus)}";
-        var link = decision.HoldId is { } holdId ? $"/Quarantine/Details/{holdId:D}" : $"/Quarantine/Blocked/Details/{decision.BlockedStockId:D}";
+        var subtitle = decision.Kind == DecisionKind.LotRelease
+            ? $"SKU {decision.SkuId.ToString("D")[..8]} · Lot {decision.LotId ?? "—"} → {decision.LotStatusTarget}"
+            : $"SKU {decision.SkuId.ToString("D")[..8]} · Lot {decision.LotId ?? "—"} · {quantity.ToString(CultureInfo.InvariantCulture)} {decision.BaseUomId} · {WireNames.ToWire(decision.FromStockStatus)}";
+        var link = decision.HoldId is { } holdId ? $"/Quarantine/Details/{holdId:D}"
+            : decision.BlockedStockId is { } blockedId ? $"/Quarantine/Blocked/Details/{blockedId:D}"
+            : $"/Lots/Details?lotId={decision.LotId}"; // Q4 KQ-I: a LotRelease has no 0175 record — the MOD-0174 lot page
         return new WorkflowDisplay(
             Cut($"Karantina kararı {subject} · {kind}", 200),
             Cut(subtitle, 300),
             QuarantineContract.ModuleId,
             link,
-            new[] { kind, decision.LotId is null ? null : "Lot " + decision.LotId, "Depo " + decision.WarehouseId[..8] }
+            new[] { kind, decision.LotId is null ? null : "Lot " + decision.LotId, decision.WarehouseId.Length >= 8 ? "Depo " + decision.WarehouseId[..8] : null }
                 .OfType<string>().Select(c => Cut(c, 32)).Take(5).ToList());
     }
 

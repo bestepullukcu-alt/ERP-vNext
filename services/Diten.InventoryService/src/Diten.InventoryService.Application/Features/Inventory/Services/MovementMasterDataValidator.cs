@@ -154,10 +154,11 @@ public sealed class MovementMasterDataValidator
                         "lotId does not name a lot of this tenant.", new Dictionary<string, object?> { ["lotId"] = lotId });
                 }
 
-                var violation = LotPostingRules.Evaluate(lot, movement.SkuId, movement.SkuLevel, movement.MovementType, movement.PostingDate);
+                var violation = LotPostingRules.Evaluate(lot, movement.SkuId, movement.SkuLevel, movement.MovementType, movement.PostingDate,
+                    direction.FromStockStatus, direction.ToStockStatus);
                 if (violation is { } v)
                 {
-                    var (code, message, details) = LotPostingErrors.For(v, lot);
+                    var (code, message, details) = v == LotPostingViolation.RetestDue ? InventoryErrorCodes.RetestDue(lot) : LotPostingErrors.For(v, lot);
                     return MasterDataCheck.Refused(code, message, details);
                 }
             }

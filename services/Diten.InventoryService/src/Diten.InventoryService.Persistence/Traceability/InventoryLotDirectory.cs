@@ -89,12 +89,9 @@ public sealed class InventoryLotDirectory : ILotMasterClient
             return new HashSet<string>();
         }
 
-        var held = await _lots
-            .Find(Scope<Lot>() & Builders<Lot>.Filter.In(x => x.Id, ids)
-                  & Builders<Lot>.Filter.In(x => x.Status, new[] { LotStatus.Blocked, LotStatus.Expired }))
-            .Project(x => x.Id)
-            .ToListAsync(cancellationToken);
-        return held.Select(id => id.ToString("D")).ToHashSet(StringComparer.Ordinal);
+        // CT-Q16: Blocked / Expired / stored retest hold — the same question the SKU position was adjusted for
+        var lots = await _lots.Find(Scope<Lot>() & Builders<Lot>.Filter.In(x => x.Id, ids)).ToListAsync(cancellationToken);
+        return lots.Where(LotPostingRules.HoldsStock).Select(l => l.Id.ToString("D")).ToHashSet(StringComparer.Ordinal);
     }
 
     // ── typed-lot migration (WP-0174-P4) ──────────────────────────────────────────────────────────────────

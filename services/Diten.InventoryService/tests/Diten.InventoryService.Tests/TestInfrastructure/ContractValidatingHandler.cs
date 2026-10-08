@@ -68,7 +68,9 @@ public sealed class ContractValidatingHandler : DelegatingHandler
         Trc("GET", "/api/trace/serials/{id}", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.SerialRef),
         Trc("GET", "/api/trace/lots/{id}", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.LotRef, etag: true),
         Trc("PATCH", "/api/trace/lots/{id}", [200, 400, 401, 403, 404, 409, 422, 503], _ => ContractSchemas.LotRef, etag: true),
-        Trc("POST", "/api/trace/lots/{id}/status", [200, 400, 401, 403, 404, 409, 422, 503], _ => ContractSchemas.LotRef, etag: true),
+        // MOD-0175 Q4 (KQ-I): 202 PendingApproval when the company's lot gate is on (TRACE 1.2.0 reserved it); no ETag on 202.
+        Trc("POST", "/api/trace/lots/{id}/status", [200, 202, 400, 401, 403, 404, 409, 422, 503],
+            status => status == 202 ? ContractSchemas.PendingApproval : ContractSchemas.LotRef, etag: true),
         Trc("GET", "/api/trace/lots/{id}/history", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.LotHistoryPage),
         Trc("GET", "/api/trace/lots/{id}/detail", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.LotDetail, etag: true),
         Trc("GET", "/api/trace/lots/{id}/genealogy", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.Genealogy),
@@ -94,6 +96,8 @@ public sealed class ContractValidatingHandler : DelegatingHandler
         Qrn("POST", "/api/quarantine/blocked", [200, 201, 400, 401, 403, 409, 422, 503], _ => ContractSchemas.BlockedRefArray),
         Qrn("GET", "/api/quarantine/blocked/{id}", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.BlockedStockDetail, etag: true),
         Qrn("POST", "/api/quarantine/blocked/{id}/review-complete", [200, 400, 401, 403, 404, 409, 503], _ => ContractSchemas.BlockedStockRef, etag: true),
+        // Q4: the retest queue (listRetest, KQ-H).
+        Qrn("GET", "/api/quarantine/retest", [200, 400, 401, 403, 503], _ => ContractSchemas.RetestItemArray),
         Qrn("GET", "/api/quarantine/settings", [200, 400, 401, 403, 503], _ => ContractSchemas.Settings, etag: true),
         Qrn("PUT", "/api/quarantine/settings", [200, 400, 401, 403, 409, 503], _ => ContractSchemas.Settings, etag: true),
         Qrn("GET", "/api/quarantine/block-reasons", [200, 400, 401, 403, 503], _ => ContractSchemas.BlockReasonArray),
@@ -144,7 +148,7 @@ public sealed class ContractValidatingHandler : DelegatingHandler
             throw new ContractViolationException($"{key} {status} carries no UUID X-Correlation-Id header.");
         }
 
-        if (operation.ETagOnSuccess && status is 200 or 201 or 202
+        if (operation.ETagOnSuccess && status is 200 or 201
             && (response.Headers.ETag is null || !WeakETag.IsMatch(response.Headers.ETag.ToString())))
         {
             throw new ContractViolationException($"{key} {status} carries no ETag W/\"<version>\" header.");

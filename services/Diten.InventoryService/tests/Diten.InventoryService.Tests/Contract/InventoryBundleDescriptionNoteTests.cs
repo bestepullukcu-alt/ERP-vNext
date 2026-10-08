@@ -14,11 +14,15 @@ namespace Diten.InventoryService.Tests.Contract;
 /// the only differences allowed are <c>info.version</c> (1.0.0 → 1.0.1), the new <c>info.x-changelog</c> and the new
 /// <c>AvailabilityView.available</c> description. Any path, schema, property, type, enum, required list or response change
 /// fails here.
+/// <para>WP-0175-Q4 — the step 1.0.1 → 1.0.2 is description-only too (MOD-0175 CT-Q3 (a), owner decision 2026-10-07, same form as
+/// CT-D1): the version, one changelog line, the retest-due words appended to the same <c>available</c> description, and one more
+/// example (<c>lotRetestDue</c>) under the existing <c>UnprocessableMovement</c> examples.</para>
 /// </summary>
 public sealed class InventoryBundleDescriptionNoteTests
 {
     private const string FrozenV100Sha256 = "456f63589ee1141dbe1ad999eda090b22c22af3ae1de07e1fcd0616ce44db4d8";
     private const string AvailableDescription = "components.schemas.AvailabilityView.properties.available.description";
+    private const string RetestDueExample = "components.responses.UnprocessableMovement.content.application/json.examples.lotRetestDue.";
 
     private static string FixturePath => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "inventory-bundle-v1.0.0.openapi.yaml");
 
@@ -40,8 +44,10 @@ public sealed class InventoryBundleDescriptionNoteTests
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
 
         Assert.Equal(["info.version"], changed);
-        Assert.Equal("1.0.1", current["info.version"]);
-        Assert.All(added, k => Assert.True(k == AvailableDescription || k.StartsWith("info.x-changelog[", StringComparison.Ordinal), "unexpected addition: " + k));
+        Assert.Equal("1.0.2", current["info.version"]);
+        Assert.All(added, k => Assert.True(k == AvailableDescription || k.StartsWith("info.x-changelog[", StringComparison.Ordinal)
+                                           || k.StartsWith(RetestDueExample, StringComparison.Ordinal), "unexpected addition: " + k));
+        Assert.Equal("LOT_RETEST_DUE", current[RetestDueExample + "value.error.code"]);
         Assert.Contains(AvailableDescription, added);
         Assert.Equal("FROZEN", current["info.x-status"]);
     }
@@ -56,6 +62,10 @@ public sealed class InventoryBundleDescriptionNoteTests
         Assert.Contains("1.0.0", changelog);
         Assert.Contains("1.0.1", changelog);
         Assert.Contains("description-only", changelog);
+        // WP-0175-Q4 (CT-Q3): the same available description also names the retest-due lots; the changelog names the code.
+        Assert.EndsWith("and retest-due lots (MOD-0175 CT-Q3, 2026-10-08)", current[AvailableDescription]);
+        Assert.Contains("1.0.2", changelog);
+        Assert.Contains("LOT_RETEST_DUE", changelog);
         // The row-level BalanceView.available keeps its 1.0.0 text: a Blocked lot's row shows its own available unchanged.
         Assert.Equal("available = onHand(AVAILABLE) − reserved", current["components.schemas.BalanceView.properties.available.description"]);
     }

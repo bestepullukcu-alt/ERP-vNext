@@ -121,5 +121,8 @@ public interface IQuarantineDecisionRepository
 
     Task<IReadOnlyList<QuarantineDecision>> ListByTargetAsync(Guid targetId, CancellationToken cancellationToken = default);
 
+    /// <summary>Q4 (KQ-I): the LotRelease decisions of a lot in this company.</summary>
+    Task<IReadOnlyList<QuarantineDecision>> ListLotReleasesAsync(string lotId, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<QuarantineDecisionEvent>> EventsAsync(IReadOnlyCollection<Guid> decisionIds, CancellationToken cancellationToken = default);
 }

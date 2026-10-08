@@ -139,6 +139,9 @@ public sealed class QuarantineDecision : EntityBase
 
     public string? LotStatusTarget { get; set; }
 
+    /// <summary>Q4 (KQ-I): the lot status a LotRelease was requested from (Draft / Blocked) — the only status its approval releases.</summary>
+    public string? LotStatusFrom { get; set; }
+
     /// <summary>FU-0175-Q1-SER: the serials an Unblock decision moves (fixed at draft time).</summary>
     public List<string>? SerialIds { get; set; }
 

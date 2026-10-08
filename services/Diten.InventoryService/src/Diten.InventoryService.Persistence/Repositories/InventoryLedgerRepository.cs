@@ -200,7 +200,9 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
                     await ApplyLotPositionAsync(s, posting, lot.Id, ct);
                 }
 
-                if (lot is null || !LotPostingRules.HoldsStock(lot.Status))
+                // CT-Q16: the lot was read in THIS transaction (its StockTouchSeq is written, so a sweeper setting / clearing the
+                // retest hold on the same document conflicts and one side re-runs) — the stored hold decides, like Blocked / Expired.
+                if (lot is null || !LotPostingRules.HoldsStock(lot))
                 {
                     await ApplySkuPositionAsync(s, posting, ct);
                 }
@@ -281,9 +283,10 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
 
         var lot = await _lots.ResolveLotAsync(transaction.LotId, ct);
         if (lot is not null
-            && LotPostingRules.Evaluate(lot, transaction.SkuId, transaction.SkuLevel, transaction.MovementType, transaction.PostingDate) is { } violation)
+            && LotPostingRules.Evaluate(lot, transaction.SkuId, transaction.SkuLevel, transaction.MovementType, transaction.PostingDate,
+                transaction.FromStockStatus, transaction.ToStockStatus) is { } violation)
         {
-            var (code, message, details) = LotPostingErrors.For(violation, lot);
+            var (code, message, details) = violation == LotPostingViolation.RetestDue ? InventoryErrorCodes.RetestDue(lot) : LotPostingErrors.For(violation, lot);
             throw new LotPostingRefusedException(code, message, details);
         }
 

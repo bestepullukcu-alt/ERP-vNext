@@ -1,9 +1,13 @@
 using Diten.InventoryService.Application.Common.Models;
+using Diten.InventoryService.Application.Features.Quarantine.Ports;
+using Diten.InventoryService.Application.Features.Traceability.Handlers.CommandHandlers;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Quarantine.Entities;
 using Diten.InventoryService.Domain.Quarantine.Enums;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
 using Diten.InventoryService.Domain.Quarantine.Rules;
+using Diten.InventoryService.Domain.Traceability.Enums;
+using MediatR;
 
 namespace Diten.InventoryService.Application.Features.Quarantine.Services;
 
@@ -21,6 +25,10 @@ public sealed class QuarantineRetryException() : Exception("A quarantine record 
 /// stay posted, the record stays locked); "Yeniden uygula" re-runs with the same keys — a committed line is answered
 /// from the ledger and never posted twice. The 0175 records of a successful run are written in ONE 0175 transaction,
 /// guarded by the once-only <c>Applied</c> event.</para>
+/// <para><b>Q4 — the lot first.</b> A decision that changes the lot (KQ-I <c>LotRelease</c>; CT-Q5 a release on a Draft lot; KQ-H the
+/// new retest date of a retest release) sends the internal <see cref="ApplyApprovedLotStatusChangeCommand"/> BEFORE its movements
+/// (idempotent on the decision); a refusal ends ApplyFailed like a refused line. A new retest date then clears the lot's retest
+/// hold (<see cref="ILotRetestHold"/>, one transaction with the SKU positions), so the released stock is available at once.</para>
 /// </summary>
 public sealed class QuarantineApplyEngine
 {
@@ -30,18 +38,34 @@ public sealed class QuarantineApplyEngine
     private readonly IQuarantineDecisionRepository _decisions;
     private readonly QuarantineMovementPoster _poster;
     private readonly QuarantineSupport _support;
+    private readonly ISender _sender;
+    private readonly ILotRetestHold _retestHold;
 
     public QuarantineApplyEngine(
         IQuarantineRepository repository,
         IQuarantineDecisionRepository decisions,
         QuarantineMovementPoster poster,
-        QuarantineSupport support)
+        QuarantineSupport support,
+        ISender sender,
+        ILotRetestHold retestHold)
     {
         _repository = repository;
         _decisions = decisions;
         _poster = poster;
         _support = support;
+        _sender = sender;
+        _retestHold = retestHold;
     }
+
+    /// <summary>True when the decision changes its lot (status and / or retest date) — KQ-I, CT-Q5, KQ-H.</summary>
+    public static bool ChangesLot(QuarantineDecision decision)
+        => decision.LotId is not null
+           && (decision.Kind == DecisionKind.LotRelease
+               || string.Equals(decision.LotStatusTarget, nameof(LotStatus.Released), StringComparison.Ordinal)
+               || (decision.NewRetestDate is not null && decision.Lines.Any(l => l.Decision == LineDecision.Release)));
+
+    /// <summary>A decision with a hold / blocked record writes "Karar geçmişi"; a LotRelease has none (its trail is the lot history).</summary>
+    public static bool HasRecord(QuarantineDecision decision) => decision.HoldId is not null || decision.BlockedStockId is not null;
 
     public sealed record ApplyResult(DecisionState State, string? ErrorCode, string? Message);
 
@@ -63,6 +87,23 @@ public sealed class QuarantineApplyEngine
             decision.ItemId, decision.SkuId, decision.SkuLevel, decision.LotId, decision.BaseUomId,
             QuarantineContract.SourceTypeDecision, decision.DecisionNumber, decision.Id.ToString("D"),
             decision.BlockReasonCode ?? decision.Disposition?.Kind.ToString());
+
+        if (ChangesLot(decision) && Guid.TryParse(decision.LotId, out var lotId))
+        {
+            var lot = await _sender.Send(new ApplyApprovedLotStatusChangeCommand(decision.Id, lotId), ct);
+            if (!lot.IsSuccessful)
+            {
+                var refused = new PostedMovement(false, null, false, lot.ErrorCode, lot.StatusCode, string.Join(" ", lot.Errors), null);
+                return await RecordFailureAsync(decision, actorUserId, refused, [], ct)
+                    ? new ApplyResult(DecisionState.ApplyFailed, refused.ErrorCode, refused.Message)
+                    : new ApplyResult(DecisionState.Applied, null, null);
+            }
+
+            if (decision.NewRetestDate is not null)
+            {
+                await _retestHold.RefreshAsync(lotId, QuarantineSupport.Now(), ct);
+            }
+        }
 
         var posted = new List<(PlannedMovement Movement, string TransactionId)>();
         foreach (var movement in QuarantineStockEffects.Plan(decision))
@@ -107,9 +148,10 @@ public sealed class QuarantineApplyEngine
         var failed = QuarantineSupport.Event(decision.Id, DecisionEventKind.ApplyFailed, now, actorUserId, result.ErrorCode, result.Message);
         failed.MovementIds = [.. postedIds];
         Stamp(failed, decision);
-        var history = _support.History(SubjectOf(decision), TargetId(decision), HistoryAction.ApplyFailed, now,
-            $"{result.ErrorCode}: {result.Message}", decision.Id, actorUserId);
-        Stamp(history, decision);
+        var history = HasRecord(decision)
+            ? _support.History(SubjectOf(decision), TargetId(decision), HistoryAction.ApplyFailed, now, $"{result.ErrorCode}: {result.Message}", decision.Id, actorUserId)
+            : null;
+        if (history is not null) Stamp(history, decision);
         return await _repository.InTransactionAsync(async (session, c) =>
         {
             if (QuarantineFacts.StateOf(await session.DecisionEventsAsync(decision.Id, c)) == DecisionState.Applied)
@@ -118,7 +160,7 @@ public sealed class QuarantineApplyEngine
             }
 
             await session.InsertDecisionEventAsync(failed, c);
-            await session.InsertHistoryAsync([history], c);
+            if (history is not null) await session.InsertHistoryAsync([history], c);
             return true;
         }, ct);
     }
@@ -154,12 +196,14 @@ public sealed class QuarantineApplyEngine
                 case DecisionKind.Unblock:
                     await ApplyUnblockAsync(session, decision, blocked!, actorUserId, now, history, c);
                     break;
+                case DecisionKind.LotRelease:
+                    break; // KQ-I: the lot changed through ApplyApprovedLotStatusChange; no 0175 record, no movement
                 default:
                     throw new NotSupportedException($"Decision kind {decision.Kind} is applied from slice Q4 (KQ-I).");
             }
 
             foreach (var entry in history) Stamp(entry, decision);
-            await session.InsertHistoryAsync(history, c);
+            if (history.Count > 0) await session.InsertHistoryAsync(history, c);
             return true;
         }, ct);
     }
@@ -432,11 +476,15 @@ public sealed class QuarantineOutcomeApplier
             await _repository.InTransactionAsync<bool>(async (session, c) =>
             {
                 await session.InsertDecisionEventAsync(approved, c);
-                var history = _support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision),
-                    HistoryAction.Approved, now, null, decision.Id, approverUserId);
-                history.ApproverSignatureId = approverSignatureId;
-                Stamp(history, decision);
-                await session.InsertHistoryAsync([history], c);
+                if (QuarantineApplyEngine.HasRecord(decision))
+                {
+                    var history = _support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision),
+                        HistoryAction.Approved, now, null, decision.Id, approverUserId);
+                    history.ApproverSignatureId = approverSignatureId;
+                    Stamp(history, decision);
+                    await session.InsertHistoryAsync([history], c);
+                }
+
                 return true;
             }, ct);
         }
@@ -463,9 +511,13 @@ public sealed class QuarantineOutcomeApplier
                 {
                     foreach (var e in closing) await session.InsertDecisionEventAsync(e, c);
                     await QuarantineReopen.ReopenAsync(session, hold, blocked, decision.Id, now, c);
-                    var history = _support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision), action, now, null, decision.Id, by);
-                    Stamp(history, decision);
-                    await session.InsertHistoryAsync([history], c);
+                    if (QuarantineApplyEngine.HasRecord(decision))
+                    {
+                        var history = _support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision), action, now, null, decision.Id, by);
+                        Stamp(history, decision);
+                        await session.InsertHistoryAsync([history], c);
+                    }
+
                     return true;
                 }, ct);
                 return;

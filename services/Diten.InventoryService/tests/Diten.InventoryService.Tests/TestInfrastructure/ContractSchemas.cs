@@ -80,6 +80,7 @@ public static class ContractSchemas
     public const string GenealogyLink = "GenealogyLink";
     public const string ValidateResponse = "ValidateResponse";
     public const string Gs1CheckResult = "Gs1CheckResult";
+    public const string PendingApproval = "PendingApproval";
 
     private static readonly Contract Trace = new("trace.openapi.yaml", "trace", doc => new Dictionary<string, JsonNode>
     {
@@ -106,12 +107,14 @@ public static class ContractSchemas
     public const string BlockReasonArray = "BlockReasonArray";
     public const string WorkflowTemplateResult = "WorkflowTemplateResult";
     public const string SignableSubject = "SignableSubject";
+    public const string RetestItemArray = "RetestItemArray";
 
     private static readonly Contract Quarantine = new("quarantine.openapi.yaml", "quarantine", doc => new Dictionary<string, JsonNode>
     {
         [HoldRefArray] = doc["paths"]!["/holds"]!["post"]!["responses"]!["201"]!["content"]!["application/json"]!["schema"]!.DeepClone(),
         [BlockedRefArray] = doc["paths"]!["/blocked"]!["post"]!["responses"]!["201"]!["content"]!["application/json"]!["schema"]!.DeepClone(),
-        [BlockReasonArray] = doc["paths"]!["/block-reasons"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["schema"]!.DeepClone()
+        [BlockReasonArray] = doc["paths"]!["/block-reasons"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["schema"]!.DeepClone(),
+        [RetestItemArray] = doc["paths"]!["/retest"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["schema"]!.DeepClone()
     });
 
     public static string QuarantineContractPath => RepoPaths.Contract("quarantine.openapi.yaml");

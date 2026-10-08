@@ -7,6 +7,7 @@ using Diten.InventoryService.Domain.Quarantine.Entities;
 using Diten.InventoryService.Domain.Quarantine.Enums;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
 using Diten.InventoryService.Domain.Quarantine.Rules;
+using Diten.InventoryService.Domain.Traceability.Enums;
 using MediatR;
 
 namespace Diten.InventoryService.Application.Features.Quarantine.Handlers;
@@ -36,12 +37,38 @@ public sealed class QuarantineDecisionChecks
             return v5;
         var lot = await _facts.LotAsync(hold.LotId, ct);
         if (QuarantineDecisionRules.LotHold(QuarantineFacts.IsHeld(lot), DecisionKind.HoldDecision, null) is { } v8) return v8;
-        var retestRelease = hold.Source == HoldSource.Retest && lines.Any(l => l.Decision == LineDecision.Release);
+        // KQ-H: a release of a Retest hold — or of any hold of a lot whose retest date has passed (Q4: the release would be refused
+        // LOT_RETEST_DUE at apply otherwise) — needs the new retest date the approval puts on the lot.
+        var retestRelease = lines.Any(l => l.Decision == LineDecision.Release)
+                            && (hold.Source == HoldSource.Retest || Diten.InventoryService.Domain.Traceability.Rules.LotDateRules.RetestDue(
+                                lot?.RetestDate is { } rd ? DateOnly.FromDateTime(rd.UtcDateTime) : null, QuarantineSupport.Today()));
         if (QuarantineDecisionRules.RetestDate(retestRelease, newRetestDate, QuarantineSupport.Today(),
                 lot?.ExpiryDate is { } e ? DateOnly.FromDateTime(e.UtcDateTime) : null) is { } v9)
             return v9;
         var (onHand, _) = await _facts.BucketAsync(hold.ItemId, hold.SkuId, hold.SkuLevel, hold.WarehouseId, hold.LocationId, hold.LotId, hold.StockStatus, ct);
         return QuarantineDecisionRules.Bucket(onHand, hold.Quantity);
+    }
+
+    /// <summary>
+    /// Q4 (KQ-I) — a LotRelease on submit: the lot still exists and is still in the status it was requested from (Draft / Blocked; an
+    /// Expired, already Released or meanwhile blocked lot has
+    /// nothing to approve → 409 <c>QUARANTINE_DECISION_NOT_APPLICABLE</c>), and no other LotRelease of the lot is waiting (V6 for a lot
+    /// → 409 <c>QUARANTINE_DECISION_ALREADY_PENDING</c>).
+    /// </summary>
+    public async Task<QuarantineViolation?> LotReleaseAsync(QuarantineDecision decision, QuarantineLotReleaseApprovals approvals, CancellationToken ct)
+    {
+        var lot = await _facts.LotAsync(decision.LotId, ct);
+        if (lot is null || lot.Status is not (LotStatus.Draft or LotStatus.Blocked)
+            || (decision.LotStatusFrom is { } from && !string.Equals(lot.Status.ToString(), from, StringComparison.Ordinal)))
+        {
+            return new QuarantineViolation(QuarantineErrorCodes.DecisionNotApplicable, 409,
+                $"The lot is {(lot is null ? "unknown" : lot.Status.ToString())}; only a Draft or Blocked lot is released.");
+        }
+
+        var other = await approvals.WaitingReleaseAsync(decision.LotId!, decision.Id, ct);
+        return other is not null
+            ? new QuarantineViolation(QuarantineDecisionRules.DecisionAlreadyPending, 409, $"Lot release {other.DecisionNumber} of this lot is already waiting for approval.")
+            : null;
     }
 
     public async Task<(QuarantineViolation? Violation, string? SampleLocationId)> BlockedAsync(
@@ -158,6 +185,10 @@ public sealed class CreateDecisionHandler : IRequestHandler<CreateDecisionComman
 
             var lot = await _facts.LotAsync(hold.LotId, ct);
             decision.HoldId = hold.Id;
+            // CT-Q5: a release of a hold whose lot is Draft releases the lot in the same approval (no second approval for one batch)
+            decision.LotStatusTarget = lot?.Status == LotStatus.Draft && request.Lines.Any(l => l.Decision == LineDecision.Release)
+                ? nameof(LotStatus.Released)
+                : null;
             Snapshot(decision, hold.ItemId, hold.SkuId, hold.SkuLevel, hold.LotId, hold.WarehouseId, hold.LocationId, hold.StockStatus, hold.BaseUomId, hold.Quantity);
             var ordered = request.Lines.OrderBy(l => l.LineNo).ToList();
             var serialParts = QuarantineStockEffects.SplitSerials(hold.SerialIds, ordered.Select(l => l.Quantity).ToList());
@@ -297,10 +328,11 @@ public sealed class SubmitDecisionHandler : IRequestHandler<SubmitDecisionComman
     private readonly IQuarantineApprovalPort _approval;
     private readonly QuarantineSupport _support;
     private readonly QuarantineDeciderSignature _signature;
+    private readonly QuarantineLotReleaseApprovals _lotReleases;
 
     public SubmitDecisionHandler(
         IQuarantineRepository repository, IQuarantineDecisionRepository decisions, QuarantineDecisionChecks checks, IQuarantineApprovalPort approval,
-        QuarantineSupport support, QuarantineDeciderSignature signature)
+        QuarantineSupport support, QuarantineDeciderSignature signature, QuarantineLotReleaseApprovals lotReleases)
     {
         _repository = repository;
         _decisions = decisions;
@@ -308,6 +340,7 @@ public sealed class SubmitDecisionHandler : IRequestHandler<SubmitDecisionComman
         _approval = approval;
         _support = support;
         _signature = signature;
+        _lotReleases = lotReleases;
     }
 
     public async Task<Response<DecisionDto>> Handle(SubmitDecisionCommand request, CancellationToken ct)
@@ -337,7 +370,9 @@ public sealed class SubmitDecisionHandler : IRequestHandler<SubmitDecisionComman
 
         var hold = decision.HoldId is { } holdId ? await _repository.FindHoldAsync(holdId, ct) : null;
         var blocked = decision.BlockedStockId is { } blockedId ? await _repository.FindBlockedAsync(blockedId, ct) : null;
-        var violation = hold is not null
+        var violation = decision.Kind == DecisionKind.LotRelease
+            ? await _checks.LotReleaseAsync(decision, _lotReleases, ct)
+            : hold is not null
             ? await _checks.HoldAsync(hold, decision.Lines.Select(l => new RequestedLine(l.LineNo, l.Decision, l.Quantity)).ToList(), decision.BlockReasonCode,
                 decision.CoaChecked, decision.NewRetestDate is { } r ? DateOnly.FromDateTime(r.UtcDateTime) : null, decision.Id, ct)
             : (await _checks.BlockedAsync(blocked!, decision.Kind, decision.Disposition is { } d
@@ -365,8 +400,12 @@ public sealed class SubmitDecisionHandler : IRequestHandler<SubmitDecisionComman
             submitted.DeciderSignatureId = signature.SignatureId;
             submitted.SignatureRequired = signature.Required;
             await session.InsertDecisionEventAsync(submitted, c);
-            await session.InsertHistoryAsync([Stamp(_support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision),
-                HistoryAction.DecisionSubmitted, now, decision.Reason, decision.Id), decision)], c);
+            if (QuarantineApplyEngine.HasRecord(decision))
+            {
+                await session.InsertHistoryAsync([Stamp(_support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision),
+                    HistoryAction.DecisionSubmitted, now, decision.Reason, decision.Id), decision)], c);
+            }
+
             return true;
         }, ct);
         if (!locked)
@@ -414,6 +453,11 @@ public sealed class SubmitDecisionHandler : IRequestHandler<SubmitDecisionComman
     private static async Task<bool> LockAsync(
         IQuarantineWriteSession session, QuarantineHold? hold, BlockedStock? blocked, Guid decisionId, DateTimeOffset now, CancellationToken ct)
     {
+        if (hold is null && blocked is null)
+        {
+            return true; // KQ-I LotRelease: no 0175 record to lock (the lot's waiting release was checked)
+        }
+
         if (hold is not null)
         {
             if (hold.ActiveDecisionId is not null && hold.ActiveDecisionId != decisionId) return false;

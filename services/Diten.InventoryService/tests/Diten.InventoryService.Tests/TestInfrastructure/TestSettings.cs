@@ -53,6 +53,8 @@ public static class TestSettings
             // MOD-0175: the periodic intake sweep is off in API tests (it scans every tenant of the shared database); it is
             // driven directly through QuarantineIntakeSweeper, limited to the test's own tenant.
             Environment.SetEnvironmentVariable("Inventory__Quarantine__IntakeSweeperEnabled", "false");
+            // MOD-0175 Q4: the retest hold sweeper (start + periodic) scans every tenant too; tests drive RetestHoldSweeper directly.
+            Environment.SetEnvironmentVariable("Inventory__Quarantine__RetestSweeperEnabled", "false");
             _applied = true;
         }
     }

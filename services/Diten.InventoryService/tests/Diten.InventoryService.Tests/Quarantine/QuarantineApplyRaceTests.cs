@@ -75,7 +75,8 @@ public sealed class QuarantineApplyRaceTests : IClassFixture<QuarantineApiFactor
             sp.GetRequiredService<ILogger<InternalMovementPostingService>>());
         var support = sp.GetRequiredService<QuarantineSupport>();
         var loser = new QuarantineApplyEngine(sp.GetRequiredService<IQuarantineRepository>(), staleDecisions,
-            new QuarantineMovementPoster(posting, staleLedger, support), support);
+            new QuarantineMovementPoster(posting, staleLedger, support), support,
+            sp.GetRequiredService<MediatR.ISender>(), sp.GetRequiredService<Diten.InventoryService.Application.Features.Quarantine.Ports.ILotRetestHold>());
 
         var decision = (await sp.GetRequiredService<IQuarantineDecisionRepository>().FindAsync(decisionId))!;
         var result = await loser.ApplyAsync(decision, s.Approver, CancellationToken.None);

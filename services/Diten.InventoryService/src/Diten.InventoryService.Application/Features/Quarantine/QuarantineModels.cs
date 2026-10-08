@@ -203,3 +203,18 @@ public sealed record BlockReasonDto(string Code, IReadOnlyDictionary<string, str
 
 /// <summary>Contract §4.4 / §4.15 reservation entry of <c>QUARANTINE_STOCK_RESERVED</c> details.</summary>
 public sealed record ReservationLineDto(string ReservationId, string SourceModule, string? SourceDocumentId, decimal RemainingQuantity);
+
+/// <summary>Contract <c>RetestItem</c> (listRetest, KQ-H).</summary>
+public sealed record RetestItemDto(
+    string LotId,
+    string? LotNumber,
+    ItemRefDto Item,
+    string RetestDate,
+    int DaysRelative,
+    string State,
+    decimal AvailableQuantity,
+    UomRefDto BaseUom,
+    IReadOnlyList<RetestBucketDto> Buckets,
+    IReadOnlyList<string> HoldIds);
+
+public sealed record RetestBucketDto(string WarehouseId, string LocationId, decimal Quantity);

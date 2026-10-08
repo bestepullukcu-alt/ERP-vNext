@@ -3,6 +3,8 @@ using Diten.InventoryService.Application.Features.Inventory.Ports;
 using Diten.InventoryService.Application.Features.Quarantine.Handlers;
 using Diten.InventoryService.Application.Features.Quarantine.Ports;
 using Diten.InventoryService.Application.Features.Quarantine.Services;
+using Diten.InventoryService.Application.Features.Traceability.Handlers.CommandHandlers;
+using Diten.InventoryService.Application.Features.Traceability.Ports;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
 using Diten.InventoryService.Infrastructure.ESign;
 using Diten.InventoryService.Infrastructure.Eventing;
@@ -58,6 +60,19 @@ public static class QuarantineServiceCollectionExtensions
         services.Configure<QuarantineSweeperOptions>(configuration.GetSection(QuarantineSweeperOptions.SectionName));
         services.AddSingleton<QuarantineIntakeSweeper>();
         services.AddHostedService<QuarantineIntakeSweeperHostedService>();
+
+        // Q4 (KQ-H, CT-Q16): the retest hold — sweeper (start + periodic, TimeProvider) and the one-lot refresh of a retest release.
+        services.AddScoped<RetestHoldSweeper>();
+        services.AddScoped<ILotRetestHold>(sp => sp.GetRequiredService<RetestHoldSweeper>());
+        services.AddHostedService<RetestHoldSweeperHostedService>();
+
+        // Q4 (KQ-I): the 0175 lot gate replaces MOD-0174's AlwaysAllow (scoped: it reads the company's settings), the 202 approval
+        // request and the approved-change source of ApplyApprovedLotStatusChange.
+        services.RemoveAll<ILotStatusChangeGate>();
+        services.AddScoped<ILotStatusChangeGate, QuarantineLotStatusChangeGate>();
+        services.AddScoped<QuarantineLotReleaseApprovals>();
+        services.AddScoped<ILotStatusChangeApprovals>(sp => sp.GetRequiredService<QuarantineLotReleaseApprovals>());
+        services.AddScoped<IApprovedLotChanges>(sp => sp.GetRequiredService<QuarantineLotReleaseApprovals>());
 
         // Q2: MOD-0023 over the Gateway, the caller's bearer forwarded; no service token exists on this path (pack §8).
         var gateway = configuration.GetSection(GatewayOptions.SectionName).Get<GatewayOptions>() ?? new GatewayOptions();

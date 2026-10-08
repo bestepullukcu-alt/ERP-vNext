@@ -71,6 +71,29 @@ public interface IQuarantineLedgerReader
     Task<decimal?> SkuUnreservedAsync(Guid itemId, Guid skuId, SkuLevel skuLevel, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<ReservationLine>> ActiveReservationsAsync(Guid itemId, Guid skuId, SkuLevel skuLevel, CancellationToken cancellationToken = default);
+
+    /// <summary>Q4 (KQ-H): this company's balance rows (OnHand &gt; 0) of the given lots in one stock status — the lot's buckets.</summary>
+    Task<IReadOnlyList<InventoryBalance>> LotBalancesAsync(IReadOnlyCollection<string> lotIds, StockStatus status, CancellationToken cancellationToken = default);
+
+    /// <summary>Q4 (KQ-H): the tenant's lots whose retest date is before <paramref name="before"/> (retest queue candidates).</summary>
+    Task<IReadOnlyList<Diten.InventoryService.Domain.Traceability.Entities.Lot>> RetestLotsAsync(DateTimeOffset before, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Q4 (O-Q2-6, ASSUMPTION-0175-Q4-02): the Active registered serials of a SKU / lot at a location, in intake order (received first);
+    /// the caller removes the serials already named on an open 0175 record of that bucket.
+    /// </summary>
+    Task<IReadOnlyList<string>> SerialsAtAsync(Guid itemId, Guid skuId, SkuLevel skuLevel, string? lotId, string warehouseId, string locationId,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Q4 (KQ-H, CT-Q16): the stored retest hold of a lot. <see cref="RefreshAsync"/> sets it (retest date before the UTC day of
+/// <c>now</c>) or clears it (date extended) together with the SKU positions in ONE transaction — the retest release
+/// calls it right after the approved new retest date is on the lot, so the released stock is available at once.
+/// </summary>
+public interface ILotRetestHold
+{
+    Task<bool> RefreshAsync(Guid lotId, DateTimeOffset now, CancellationToken cancellationToken = default);
 }
 
 /// <summary>A ledger transaction the intake sweep found (cross-tenant scan, read-only).</summary>

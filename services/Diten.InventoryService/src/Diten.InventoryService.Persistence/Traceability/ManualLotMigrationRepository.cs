@@ -175,7 +175,7 @@ public sealed class ManualLotMigrationRepository : IManualLotMigrationRepository
             throw new MigrationStaleException("A target lot of the decisions no longer exists.");
         }
 
-        var holds = existing.ToDictionary(l => l.Id, l => LotPostingRules.HoldsStock(l.Status));
+        var holds = existing.ToDictionary(l => l.Id, l => LotPostingRules.HoldsStock(l)); // CT-Q16: status or stored retest hold
 
         // 4. New Draft lots + history rows (the history is built by the handler, stamped here).
         foreach (var lot in commit.NewLots)

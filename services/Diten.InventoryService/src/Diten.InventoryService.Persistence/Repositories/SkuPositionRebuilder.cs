@@ -99,12 +99,12 @@ public sealed class SkuPositionRebuilder : ISkuPositionRebuilder
         var lotIds = rows.Where(r => r.LotId is not null).Select(r => r.LotId!).Distinct(StringComparer.Ordinal)
             .Select(l => LotPostingRules.IsRegisteredLotForm(l, out var id) ? id : (Guid?)null)
             .Where(id => id.HasValue).Select(id => id!.Value).ToList();
+        // CT-Q16: the one hold question (status or stored retest hold), asked of the stored lots
         var held = lotIds.Count == 0
             ? new HashSet<string>(StringComparer.Ordinal)
-            : (await _lots.Find(session, Builders<Lot>.Filter.Eq(x => x.TenantId, tenant) & Builders<Lot>.Filter.In(x => x.Id, lotIds)
-                                         & Builders<Lot>.Filter.In(x => x.Status, new[] { LotStatus.Blocked, LotStatus.Expired }))
-                .Project(x => x.Id).ToListAsync(ct))
-              .Select(id => id.ToString("D")).ToHashSet(StringComparer.Ordinal);
+            : (await _lots.Find(session, Builders<Lot>.Filter.Eq(x => x.TenantId, tenant) & Builders<Lot>.Filter.In(x => x.Id, lotIds)).ToListAsync(ct))
+              .Where(LotPostingRules.HoldsStock)
+              .Select(l => l.Id.ToString("D")).ToHashSet(StringComparer.Ordinal);
         rows = rows.Where(r => r.LotId is null || !held.Contains(r.LotId)).ToList();
 
         var rf = Builders<InventoryReservation>.Filter;

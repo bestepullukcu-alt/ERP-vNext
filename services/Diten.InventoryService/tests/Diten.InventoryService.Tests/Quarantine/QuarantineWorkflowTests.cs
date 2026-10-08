@@ -439,4 +439,28 @@ public sealed class QuarantineWorkflowTests : IClassFixture<WorkflowQuarantineAp
         Assert.Null(_factory.Services.GetService(typeof(MassTransit.IBus)));
         Assert.Equal("InMemory", _factory.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<QuarantineEventingOptions>>().Value.Transport);
     }
+
+    // ── Q4 (KQ-I): a gated lot release on the production Workflow port ─────────────────────────────────
+
+    [Fact]
+    public async Task A_gated_lot_release_starts_its_approval_with_the_lot_page_link_and_is_applied_at_read_time()
+    {
+        var s = await WorldAsync();
+        LotGate.On(_factory.Database, s.Tenant, s.Ledger.LegalEntity);
+        var lot = await s.Lots.CreateLotAsync();
+        var decisionId = Id(await s.Lots.SetStatusAsync(lot, "Released", expected: 202), "pendingRequestId");
+
+        var submitted = await s.SubmitAsync(decisionId);
+        var body = Assert.Single(Workflow.StartBodies, b => b["objectId"]!.GetValue<string>() == decisionId);
+        Assert.Equal("QUARANTINE_LOT_RELEASE", body["reasonCode"]!.GetValue<string>());
+        var display = body["displayContext"]!.AsObject();
+        Assert.Equal($"/Lots/Details?lotId={lot}", display["deepLinkUrl"]!.GetValue<string>());
+        Assert.Contains("Lot serbest bırakma", display["title"]!.GetValue<string>());
+        Assert.Equal("Draft", s.Lots.LotDocument(lot)["Status"].AsString);
+
+        Workflow.Approve(Id(submitted.GetProperty("workflow"), "instanceId"), s.Approver);
+        var decision = await s.ExpectAsync(HttpMethod.Get, $"/api/quarantine/decisions/{decisionId}", null, 200);
+        Assert.Equal("Applied", Id(decision, "state"));
+        Assert.Equal("Released", s.Lots.LotDocument(lot)["Status"].AsString);
+    }
 }

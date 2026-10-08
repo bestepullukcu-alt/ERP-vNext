@@ -59,4 +59,12 @@ public sealed class Lot : EntityBase
     /// the committed status (the FU02 <c>StockTouchSeq</c> technique) — stock never moves in a lot that was blocked meanwhile.
     /// </summary>
     public long StockTouchSeq { get; set; }
+
+    /// <summary>
+    /// MOD-0175 Q4 (KQ-H, CT-Q16): set by the retest sweeper in the SAME transaction that took the lot's AVAILABLE quantity out
+    /// of the SKU position; cleared (and the quantity given back) in one transaction when the retest date moves on. The ONE
+    /// stored fact every "is this lot's stock held?" question reads (<see cref="Rules.LotPostingRules.HoldsStock(Lot)"/>) —
+    /// never recomputed from the date.
+    /// </summary>
+    public DateTimeOffset? RetestHeldAtUtc { get; set; }
 }

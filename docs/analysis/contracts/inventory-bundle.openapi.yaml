@@ -6,13 +6,14 @@ info:
     Stok değiştiren tek yol POST /movements (append-only, idempotent).
     Balance = projection (edit yasak). Tenant+LegalEntity scoped (server-resolved).
     Bu spec MOCK kaynağıdır: `prism mock inventory-bundle.openapi.yaml`.
-  version: 1.0.1
+  version: 1.0.2
   x-status: FROZEN
   x-owner: MOD-0173
   x-decisions: [DEC-INV-02, 05, 06, 08, 12, 13, 15, 16, 17, 18]
   x-changelog:
     - "1.0.0 — Wave-0 frozen contract (MOD-0173)."
     - "1.0.1 — description-only, single-writer step (WP-0174-P2, 2026-10-06; MOD-0174 CT-D1 option (a), owner decision 2026-10-05): AvailabilityView.available (getAvailability) excludes the AVAILABLE stock of Blocked / Expired lots; the same rule bounds the reservations. No path, parameter, schema, property, type, enum, required list or status code changed; BalanceView rows keep their stock status and their own available."
+    - "1.0.2 — description-only, single-writer step (WP-0175-Q4, 2026-10-08; MOD-0175 CT-Q3 option (a), owner decision 2026-10-07, same form as CT-D1): (1) additive error code LOT_RETEST_DUE (422 on postMovement, example lotRetestDue) — a lot whose retest date is before the posting date (UTC day) refuses sales issue, production issue, transfer and supplier return; STATUS_TRANSFER from AVAILABLE into QUARANTINE / QUALITY_INSPECTION / BLOCKED, SCRAP, WRITE_OFF, REVERSAL and MOD-0175 decision movements still post; (2) AvailabilityView.available (getAvailability) also excludes retest-due lots (held by the MOD-0175 retest sweeper); the same rule bounds new reservations, existing reservations stay. No path, parameter, schema, property, type, enum, required list or status code changed."
 servers:
   - url: /api/inventory
 security:
@@ -312,7 +313,7 @@ components:
         scope: { type: object, additionalProperties: { type: string } }
         onHand: { $ref: '#/components/schemas/Decimal' }
         reserved: { $ref: '#/components/schemas/Decimal' }
-        available: { $ref: '#/components/schemas/Decimal', description: 'available = onHand(AVAILABLE) − reserved, excluding Blocked / Expired lots (MOD-0174 CT-D1, 2026-10-06)' }
+        available: { $ref: '#/components/schemas/Decimal', description: 'available = onHand(AVAILABLE) − reserved, excluding Blocked / Expired lots (MOD-0174 CT-D1, 2026-10-06) and retest-due lots (MOD-0175 CT-Q3, 2026-10-08)' }
         byStatus: { type: object, additionalProperties: { $ref: '#/components/schemas/Decimal' } }
         baseUomId: { type: string }
         asOf: { type: string, format: date-time }
@@ -402,6 +403,7 @@ components:
             insufficientStock: { value: { error: { code: INSUFFICIENT_STOCK, message: "Yetersiz stok", details: { available: "80.000", requested: "100.000" }, correlationId: req-3 }, contractVersion: v1 } }
             serialMismatch: { value: { error: { code: SERIAL_COUNT_MISMATCH, message: "serial sayısı miktara eşit değil", correlationId: req-4 }, contractVersion: v1 } }
             periodClosed: { value: { error: { code: POSTING_PERIOD_CLOSED, message: "Kapalı döneme posting", correlationId: req-5 }, contractVersion: v1 } }
+            lotRetestDue: { value: { error: { code: LOT_RETEST_DUE, message: "Yeniden test tarihi geçmiş lot", details: { lotId: lot-777, lotNumber: L-777, lotStatus: Released, retestDate: "2026-10-01" }, correlationId: req-6 }, contractVersion: v1 } }
             unknownLocation: { value: { error: { code: UNKNOWN_LOCATION, message: "location bulunamadı", correlationId: req-6 }, contractVersion: v1 } }
     ProductMasterUnavailable:
       description: itemId/skuId doğrulaması yapılamadı (fail-closed, silent-pass YOK)

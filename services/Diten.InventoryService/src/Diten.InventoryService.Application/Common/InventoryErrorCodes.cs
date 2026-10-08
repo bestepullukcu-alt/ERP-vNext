@@ -43,6 +43,9 @@ public static class InventoryErrorCodes
     public const string LotSkuMismatch = "LOT_SKU_MISMATCH";
     public const string LotBlocked = "LOT_BLOCKED";
     public const string LotExpired = "LOT_EXPIRED";
+
+    /// <summary>MOD-0175 Q4 (KQ-H, CT-Q3; INVENTORY-BUNDLE 1.0.2): a retest-due lot leaves only by the KQ-H exceptions.</summary>
+    public const string LotRetestDue = "LOT_RETEST_DUE";
     public const string SerialAlreadyExists = "SERIAL_ALREADY_EXISTS";
     public const string SerialNotAvailable = "SERIAL_NOT_AVAILABLE";
     public const string SerialLotMismatch = "SERIAL_LOT_MISMATCH";
@@ -53,6 +56,17 @@ public static class InventoryErrorCodes
         ProductMasterUnavailable, UnknownItem, InvalidRequest, IdempotencyKeyReused, SkuItemMismatch,
         UomConversionMissing, LotRequired, AlreadyReversed, LocationMasterUnavailable, InsufficientAvailable,
         ReservationConflict, LegalEntityMasterUnavailable, LotNotAllowed, UnknownLot, LotSkuMismatch, LotBlocked, LotExpired,
-        SerialAlreadyExists, SerialNotAvailable, SerialLotMismatch
+        SerialAlreadyExists, SerialNotAvailable, SerialLotMismatch, LotRetestDue
     };
+
+    /// <summary>MOD-0175 Q4: the <c>LOT_RETEST_DUE</c> refusal (pre-check and in-transaction re-check give the same answer).</summary>
+    public static (string Code, string Message, IReadOnlyDictionary<string, object?> Details) RetestDue(
+        Diten.InventoryService.Domain.Traceability.Entities.Lot lot)
+        => (LotRetestDue,
+            "The lot's retest date has passed: its stock may not be used or come into use — only taking it out of use (status transfer to QUARANTINE / QUALITY_INSPECTION / BLOCKED, moving stock that is out of use), SCRAP, WRITE_OFF and REVERSAL post; a quality decision with a new retest date releases it (KQ-H).",
+            new Dictionary<string, object?>
+            {
+                ["lotId"] = lot.Id.ToString("D"), ["lotNumber"] = lot.LotNumber, ["lotStatus"] = lot.Status.ToString(),
+                ["retestDate"] = lot.RetestDate?.UtcDateTime.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)
+            });
 }

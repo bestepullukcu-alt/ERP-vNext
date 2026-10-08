@@ -9,6 +9,7 @@ using Diten.InventoryService.Domain.Quarantine.Enums;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
 using Diten.InventoryService.Domain.Quarantine.Rules;
 using Diten.InventoryService.Domain.Rules;
+using Diten.InventoryService.Domain.Traceability.Rules;
 using MediatR;
 
 namespace Diten.InventoryService.Application.Features.Quarantine.Handlers;
@@ -24,6 +25,13 @@ namespace Diten.InventoryService.Application.Features.Quarantine.Handlers;
 /// <item>Idempotency: bucket i posts under a ledger key derived from (user, request key, i); its record carries
 /// <c>{key}#{i}</c>. A repeated request answers from the records (same body → 200; another body → 400
 /// <c>IDEMPOTENCY_KEY_REUSED</c>); a request that stopped half-way continues where it stopped, never posting a bucket twice.</item>
+/// <item>Q4 (O-Q2-6, ASSUMPTION-0175-Q4-02): a serial-tracked bucket moves serials the SYSTEM chooses — the Active registered serials
+/// of the SKU / lot at the location, minus those named on an open 0175 record there, in intake order: the whole bucket takes them
+/// all, a part takes the first ones. They ride the movement (the ledger validates them) and are stored on the hold / blocked record,
+/// so a later decision splits them (FU-0175-Q1-SER).</item>
+/// <item>Q4 (KQ-H): the reservation pre-check counts only buckets whose lot does not already hold its stock
+/// (<see cref="LotPostingRules.HoldsStock(Domain.Traceability.Entities.Lot)"/>): a retest-held lot's AVAILABLE stock is out of the SKU
+/// position already, moving it to QUARANTINE uncovers nothing (existing reservations stay, CT-Q6).</item>
 /// </list>
 /// </summary>
 public sealed class QuarantineStockActions
@@ -50,7 +58,7 @@ public sealed class QuarantineStockActions
         _support = support;
     }
 
-    public sealed record PostedBucket(int Index, BucketInput Bucket, string TransactionId, string Number, string BaseUomId);
+    public sealed record PostedBucket(int Index, BucketInput Bucket, string TransactionId, string Number, string BaseUomId, List<string>? SerialIds);
 
     /// <summary>Shape + reason checks shared by both actions (V3; bucket count / quantity / ids).</summary>
     public static Response<T>? ShapeRefusal<T>(IReadOnlyList<BucketInput>? buckets, string? reason, string? signatureId)
@@ -115,8 +123,15 @@ public sealed class QuarantineStockActions
             uoms[i] = uom;
         }
 
-        // CT-Q6: refuse before the first posting when the SKU's reservations would be uncovered.
-        foreach (var sku in pending.GroupBy(i => (buckets[i].ItemId, buckets[i].SkuId, buckets[i].SkuLevel)))
+        // CT-Q6: refuse before the first posting when the SKU's reservations would be uncovered (a lot holding its stock uncovers nothing).
+        var holding = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var lotId in pending.Select(i => buckets[i].LotId).OfType<string>().Distinct())
+        {
+            if (await _facts.LotAsync(lotId, ct) is { } lot && LotPostingRules.HoldsStock(lot)) holding.Add(lotId);
+        }
+
+        foreach (var sku in pending.Where(i => buckets[i].LotId is null || !holding.Contains(buckets[i].LotId!))
+                     .GroupBy(i => (buckets[i].ItemId, buckets[i].SkuId, buckets[i].SkuLevel)))
         {
             var required = sku.Sum(i => buckets[i].Quantity);
             var unreserved = await _ledgerReader.SkuUnreservedAsync(sku.Key.ItemId, sku.Key.SkuId, sku.Key.SkuLevel, ct);
@@ -131,8 +146,9 @@ public sealed class QuarantineStockActions
             var b = buckets[i];
             var ledgerKey = QuarantineMovementPoster.RequestKey(kind, _support.UserId, idempotencyKey, i);
             var number = await NumberForAsync(ledgerKey, numberPrefix, ct);
+            var serials = await SerialsForAsync(b, ct);
             var movement = new PlannedMovement(1, MovementType.StatusTransfer, StockStatus.Available, target, b.WarehouseId, b.LocationId,
-                b.WarehouseId, b.LocationId, b.Quantity);
+                b.WarehouseId, b.LocationId, b.Quantity) { SerialIds = serials };
             var envelope = new MovementEnvelope(b.ItemId, b.SkuId, b.SkuLevel, b.LotId, uoms[i], sourceType, number, null, movementReason);
             var posted = await _poster.PostAsync(movement, envelope, ledgerKey, _support.UserId, ct);
             if (!posted.Posted)
@@ -150,11 +166,44 @@ public sealed class QuarantineStockActions
                 return QuarantineSupport.Fail<bool>(posted.ErrorCode!, posted.Message ?? "The ledger refused the movement.", posted.Status, posted.Details);
             }
 
-            await record(new PostedBucket(i, b, posted.TransactionId!, number, uoms[i]));
+            await record(new PostedBucket(i, b, posted.TransactionId!, number, uoms[i], serials));
         }
 
         return Response<bool>.Success(true);
     }
+
+    /// <summary>
+    /// ASSUMPTION-0175-Q4-02: the serials a bucket moves — null for a bucket with no registered serial there (not serial-tracked).
+    /// The registry knows the location, not the stock status, so serials an open 0175 hold / blocked record of the same bucket names
+    /// (QUARANTINE / BLOCKED there) are left out; the rest go in intake order, the first <c>quantity</c> of them.
+    /// </summary>
+    private async Task<List<string>?> SerialsForAsync(BucketInput b, CancellationToken ct)
+    {
+        var registered = await _ledgerReader.SerialsAtAsync(b.ItemId, b.SkuId, b.SkuLevel, b.LotId, b.WarehouseId, b.LocationId, ct);
+        if (registered.Count == 0 || b.Quantity != decimal.Truncate(b.Quantity))
+        {
+            return null;
+        }
+
+        var taken = new HashSet<string>(StringComparer.Ordinal);
+        var holds = await _repository.ListHoldsAsync(new HoldQuery(null, b.WarehouseId, null, null, null, null, b.LotId, null, 1, 500), ct);
+        foreach (var hold in holds.Items.Where(h => h.Status != HoldStatus.Decided && SameBucket(h.ItemId, h.SkuId, h.SkuLevel, h.LotId, h.LocationId, b)))
+        {
+            taken.UnionWith(hold.SerialIds ?? []);
+        }
+
+        var blocked = await _repository.ListBlockedAsync(new BlockedQuery(null, null, false, null, BlockedStatus.Open, b.WarehouseId, 1, 500), ct);
+        foreach (var record in blocked.Items.Where(r => SameBucket(r.ItemId, r.SkuId, r.SkuLevel, r.LotId, r.LocationId, b)))
+        {
+            taken.UnionWith(record.SerialIds ?? []);
+        }
+
+        return registered.Where(s => !taken.Contains(s)).Take((int)b.Quantity).ToList();
+    }
+
+    private static bool SameBucket(Guid itemId, Guid skuId, SkuLevel level, string? lotId, string locationId, BucketInput b)
+        => itemId == b.ItemId && skuId == b.SkuId && level == b.SkuLevel && string.Equals(lotId, b.LotId, StringComparison.Ordinal)
+           && string.Equals(locationId, b.LocationId, StringComparison.Ordinal);
 
     /// <summary>The record number a bucket's movement carries: re-used from the committed ledger transaction on a retry.</summary>
     private async Task<string> NumberForAsync(string ledgerKey, string prefix, CancellationToken ct)
@@ -184,35 +233,84 @@ public sealed class QuarantineStockHandler : IRequestHandler<QuarantineStockComm
     private readonly QuarantineFacts _facts;
     private readonly QuarantineSupport _support;
 
-    public QuarantineStockHandler(IQuarantineRepository repository, QuarantineStockActions actions, QuarantineFacts facts, QuarantineSupport support)
+    private readonly IQuarantineLedgerReader _ledgerReader;
+
+    public QuarantineStockHandler(
+        IQuarantineRepository repository, QuarantineStockActions actions, QuarantineFacts facts, QuarantineSupport support, IQuarantineLedgerReader ledgerReader)
     {
         _repository = repository;
         _actions = actions;
         _facts = facts;
         _support = support;
+        _ledgerReader = ledgerReader;
     }
 
     public async Task<Response<IReadOnlyList<HoldRefDto>>> Handle(QuarantineStockCommand request, CancellationToken ct)
     {
-        if (request.Mode == "Retest")
-        {
-            return QuarantineSupport.Invalid<IReadOnlyList<HoldRefDto>>(
-                "mode Retest (KQ-H, every AVAILABLE bucket of a retest-due lot) is delivered by MOD-0175 slice Q4; use mode Manual with buckets.");
-        }
-
-        if (request.Mode != "Manual")
+        if (request.Mode is not ("Manual" or "Retest"))
         {
             return QuarantineSupport.Invalid<IReadOnlyList<HoldRefDto>>("mode must be Manual or Retest.");
         }
 
-        var buckets = request.Buckets?.Select(b => b with { LotId = b.LotId ?? request.LotId }).ToList();
-        if (QuarantineStockActions.ShapeRefusal<IReadOnlyList<HoldRefDto>>(buckets, request.Reason, request.SignatureId) is { } refusal)
+        var retest = request.Mode == "Retest";
+        List<BucketInput>? buckets;
+        Domain.Traceability.Entities.Lot? retestLot = null;
+        string fingerprint;
+        List<string> keys;
+        if (retest)
         {
-            return refusal;
+            // KQ-H: every AVAILABLE bucket of the lot, one hold per bucket (Source Retest); the buckets are the system's, not the body's.
+            if (request.Buckets is { Count: > 0 })
+            {
+                return QuarantineSupport.Invalid<IReadOnlyList<HoldRefDto>>("mode Retest takes lotId only; the AVAILABLE buckets of the lot are found by the service.");
+            }
+
+            retestLot = await _facts.LotAsync(request.LotId, ct);
+            if (retestLot?.RetestDate is null)
+            {
+                return QuarantineSupport.Invalid<IReadOnlyList<HoldRefDto>>("mode Retest needs the lotId of a registered lot with a retest date.");
+            }
+
+            if (request.SignatureId is not null || QuarantineDecisionRules.Reason(request.Reason) is not null)
+            {
+                return QuarantineStockActions.ShapeRefusal<IReadOnlyList<HoldRefDto>>(null, request.Reason, request.SignatureId)!; // signature / reason refusal
+            }
+
+            fingerprint = QuarantineStockActions.Fingerprint("hold-retest", [], request.Reason, request.LotId);
+            keys = Enumerable.Range(0, QuarantineStockActions.MaxBuckets).Select(i => $"{request.IdempotencyKey}#{i}").ToList();
+            var created = await _repository.FindHoldsByCreateKeysAsync(_support.UserId, keys, ct);
+            if (created.Any(h => h.CreateRequestFingerprint != fingerprint))
+            {
+                return QuarantineSupport.KeyReused<IReadOnlyList<HoldRefDto>>();
+            }
+
+            if (created.Count > 0)
+            {
+                return await AnswerAsync(created, keys, 200, ct); // ASSUMPTION-0175-Q4-03: a Retest key answers the holds it created
+            }
+
+            buckets = (await _ledgerReader.LotBalancesAsync([request.LotId!], StockStatus.Available, ct))
+                .GroupBy(r => (r.ItemId, r.SkuId, r.SkuLevel, r.WarehouseId, r.LocationId))
+                .Select(g => new BucketInput(g.Key.ItemId, g.Key.SkuId, g.Key.SkuLevel, g.Key.WarehouseId!, g.Key.LocationId!, g.Sum(r => r.OnHand), request.LotId))
+                .Take(QuarantineStockActions.MaxBuckets)
+                .ToList();
+            if (buckets.Count == 0)
+            {
+                return QuarantineSupport.Fail<IReadOnlyList<HoldRefDto>>(QuarantineErrorCodes.NothingAvailable, "The lot holds no AVAILABLE stock in this company.", 409);
+            }
+        }
+        else
+        {
+            buckets = request.Buckets?.Select(b => b with { LotId = b.LotId ?? request.LotId }).ToList();
+            if (QuarantineStockActions.ShapeRefusal<IReadOnlyList<HoldRefDto>>(buckets, request.Reason, request.SignatureId) is { } refusal)
+            {
+                return refusal;
+            }
+
+            fingerprint = QuarantineStockActions.Fingerprint("hold", buckets!, request.Reason, request.LotId);
+            keys = Enumerable.Range(0, buckets!.Count).Select(i => $"{request.IdempotencyKey}#{i}").ToList();
         }
 
-        var fingerprint = QuarantineStockActions.Fingerprint("hold", buckets!, request.Reason, request.LotId);
-        var keys = Enumerable.Range(0, buckets!.Count).Select(i => $"{request.IdempotencyKey}#{i}").ToList();
         var existing = await _repository.FindHoldsByCreateKeysAsync(_support.UserId, keys, ct);
         if (existing.Any(h => h.CreateRequestFingerprint != fingerprint))
         {
@@ -239,7 +337,9 @@ public sealed class QuarantineStockHandler : IRequestHandler<QuarantineStockComm
                     StockStatus = StockStatus.Quarantine,
                     Quantity = posted.Bucket.Quantity,
                     BaseUomId = posted.BaseUomId,
-                    Source = HoldSource.Manual,
+                    SerialIds = posted.SerialIds,
+                    Source = retest ? HoldSource.Retest : HoldSource.Manual,
+                    RetestDateAtIntake = retestLot?.RetestDate,
                     SourceMovementId = posted.TransactionId,
                     SourceDocument = new HoldSourceDocument { Module = QuarantineContract.ModuleId, Type = QuarantineContract.SourceTypeHold, Number = posted.Number, Text = reason },
                     EnteredAtUtc = now,
@@ -267,12 +367,17 @@ public sealed class QuarantineStockHandler : IRequestHandler<QuarantineStockComm
         }
 
         var holds = await _repository.FindHoldsByCreateKeysAsync(_support.UserId, keys, ct);
+        return await AnswerAsync(holds, keys, done.Count == buckets.Count ? 200 : 201, ct);
+    }
+
+    private async Task<Response<IReadOnlyList<HoldRefDto>>> AnswerAsync(IReadOnlyList<QuarantineHold> holds, List<string> keys, int status, CancellationToken ct)
+    {
         var lots = await _facts.LotsAsync(holds.Select(h => h.LotId), ct);
         var target = (await _facts.SettingsAsync(ct)).WaitTargetDays;
-        var now2 = QuarantineSupport.Now();
+        var now = QuarantineSupport.Now();
         IReadOnlyList<HoldRefDto> body = holds.OrderBy(h => keys.IndexOf(h.CreateIdempotencyKey!))
-            .Select(h => QuarantineMapping.HoldRef(h, lots, target, null, now2)).ToList();
-        return Response<IReadOnlyList<HoldRefDto>>.Success(body, done.Count == buckets.Count ? 200 : 201);
+            .Select(h => QuarantineMapping.HoldRef(h, lots, target, null, now)).ToList();
+        return Response<IReadOnlyList<HoldRefDto>>.Success(body, status);
     }
 }
 
@@ -336,6 +441,7 @@ public sealed class BlockStockHandler : IRequestHandler<BlockStockCommand, Respo
                     LocationId = posted.Bucket.LocationId,
                     Quantity = posted.Bucket.Quantity,
                     BaseUomId = posted.BaseUomId,
+                    SerialIds = posted.SerialIds,
                     BlockReasonCode = request.BlockReasonCode,
                     Note = request.Note,
                     BlockedAtUtc = now,

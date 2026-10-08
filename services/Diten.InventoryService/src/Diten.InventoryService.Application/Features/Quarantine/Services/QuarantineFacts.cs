@@ -4,6 +4,7 @@ using Diten.InventoryService.Domain.Quarantine.Enums;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
 using Diten.InventoryService.Domain.Repositories;
 using Diten.InventoryService.Domain.Traceability.Entities;
+using Diten.InventoryService.Domain.Traceability.Enums;
 using Diten.InventoryService.Domain.Traceability.Repositories;
 using Diten.InventoryService.Domain.Traceability.Rules;
 
@@ -54,7 +55,11 @@ public sealed class QuarantineFacts
         return lots.ToDictionary(l => l.Id.ToString("D"), StringComparer.Ordinal);
     }
 
-    public static bool IsHeld(Lot? lot) => lot is not null && LotPostingRules.HoldsStock(lot.Status);
+    /// <summary>
+    /// V8 (CT-D4): the lot is Blocked or Expired — a LOT STATUS rule (only destruction), not the availability hold: a retest-held
+    /// lot (KQ-H) is not V8-held, its quarantine holds are decided normally (a release sets the new retest date).
+    /// </summary>
+    public static bool IsHeld(Lot? lot) => lot is not null && lot.Status is LotStatus.Blocked or LotStatus.Expired;
 
     /// <summary>On-hand of exactly one ledger bucket (the lot is matched exactly; no lot = the lot-less row).</summary>
     public async Task<(decimal OnHand, string? BaseUomId)> BucketAsync(

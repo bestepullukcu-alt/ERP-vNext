@@ -143,8 +143,11 @@ public sealed class WithdrawDecisionHandler : IRequestHandler<WithdrawDecisionCo
                     withdrawn.WorkflowOutcome = "cancelled";
                     await session.InsertDecisionEventAsync(withdrawn, c);
                     await QuarantineReopen.ReopenAsync(session, hold, blocked, decision.Id, now, c);
-                    await session.InsertHistoryAsync([_support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision),
-                        HistoryAction.Withdrawn, now, request.Reason!.Trim(), decision.Id)], c);
+                    if (QuarantineApplyEngine.HasRecord(decision))
+                    {
+                        await session.InsertHistoryAsync([_support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision),
+                            HistoryAction.Withdrawn, now, request.Reason!.Trim(), decision.Id)], c);
+                    }
                     return true;
                 }, ct);
                 break;

@@ -21,3 +21,6 @@ public sealed record GetBlockedQuery(string BlockedId, string Language) : IReque
 public sealed record GetSettingsQuery : IRequest<Response<SettingsDto>>;
 
 public sealed record ListBlockReasonsQuery(string? ActiveOnly) : IRequest<Response<IReadOnlyList<BlockReasonDto>>>;
+
+/// <summary>listRetest — the retest queue (KQ-H, Q4); raw query strings, parsed by the handler.</summary>
+public sealed record ListRetestQuery(string? HorizonDays, string? State, string? WarehouseId) : IRequest<Response<IReadOnlyList<RetestItemDto>>>;

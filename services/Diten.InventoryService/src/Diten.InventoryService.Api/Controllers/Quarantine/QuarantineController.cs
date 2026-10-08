@@ -204,6 +204,13 @@ public sealed class QuarantineController : CustomBaseController
             new BlockStockCommand(body.Buckets, body.BlockReasonCode, body.Note, body.Reason, body.SignatureId, key), ct));
     }
 
+    // ── retest queue (Q4, KQ-H) ─────────────────────────────────────────────────────────────────────────
+
+    [HttpGet("retest")]
+    [HasPermission(QuarantinePermissions.HoldsRead)]
+    public async Task<IActionResult> ListRetest([FromQuery] string? horizonDays, [FromQuery] string? state, [FromQuery] string? warehouseId, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new ListRetestQuery(horizonDays, state, warehouseId), ct));
+
     // ── settings + block reasons ──────────────────────────────────────────────────────────────────────
 
     [HttpGet("settings")]

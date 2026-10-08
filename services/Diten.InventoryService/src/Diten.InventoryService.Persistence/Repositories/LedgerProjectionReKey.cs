@@ -7,7 +7,8 @@ using MongoDB.Driver;
 namespace Diten.InventoryService.Persistence.Repositories;
 
 /// <summary>One typed group of the commit: its rows move from the typed text to the registered lot.</summary>
-/// <param name="LotHoldsStock">The registered lot is Blocked / Expired (CT-D1 (a)) — its AVAILABLE stock leaves availability.</param>
+/// <param name="LotHoldsStock">The registered lot holds its stock (<c>LotPostingRules.HoldsStock(Lot)</c>: Blocked / Expired / stored
+/// retest hold, CT-D1 (a), CT-Q16) — its AVAILABLE stock leaves availability.</param>
 public sealed record LedgerReKeyGroup(Guid ItemId, Guid SkuId, SkuLevel SkuLevel, string TypedText, Guid LotId, bool LotHoldsStock);
 
 /// <summary>What one re-key moved: rows closed, rows written, Σ OnHand per company (base unit).</summary>

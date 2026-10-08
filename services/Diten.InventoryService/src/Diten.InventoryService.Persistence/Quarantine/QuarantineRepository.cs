@@ -381,6 +381,11 @@ public sealed class QuarantineDecisionRepository : IQuarantineDecisionRepository
                 Builders<QuarantineDecision>.Filter.Eq(x => x.HoldId, targetId), Builders<QuarantineDecision>.Filter.Eq(x => x.BlockedStockId, targetId)))
             .ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<QuarantineDecision>> ListLotReleasesAsync(string lotId, CancellationToken cancellationToken = default)
+        => await _decisions.Find(Scope<QuarantineDecision>() & Builders<QuarantineDecision>.Filter.Eq(x => x.Kind, DecisionKind.LotRelease)
+                                 & Builders<QuarantineDecision>.Filter.Eq(x => x.LotId, lotId))
+            .ToListAsync(cancellationToken);
+
     public async Task<IReadOnlyList<QuarantineDecisionEvent>> EventsAsync(IReadOnlyCollection<Guid> decisionIds, CancellationToken cancellationToken = default)
         => decisionIds.Count == 0
             ? []
