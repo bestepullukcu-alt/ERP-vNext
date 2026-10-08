@@ -96,6 +96,10 @@ public static class DependencyInjection
             Application.Features.StrategyTemplate.Binding.IStrategyTemplateProductReferenceValidator,
             StrategyTemplate.MdmStrategyTemplateReferenceValidator>();
 
+        // WP-VP-4G (F4-4) - product NAMES for read models over the same MDM selector the play editor reads; one bulk read
+        // per call, fail-open (no name ⇒ the code is shown; a plan read never fails on it).
+        services.AddHttpClient<Application.Common.IProductNameReader, StrategyTemplate.MdmProductNameReader>();
+
         // MOD-0165 FU07 - the CyclePeriod legal-entity scope. Same fail-closed profile as the working calendar's own
         // validator and MOD-0167 FU02's: cacheless, 3s budget, one transient retry, always through the Gateway. It runs
         // BEFORE any insert, so 404 / not-referenceable is a 400 and an unreachable MDM is a 503 with nothing written.

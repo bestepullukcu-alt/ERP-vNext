@@ -45,6 +45,9 @@ public static class PlanningShiftReasons
     public const string CapacityFull = "capacity_full";
     public const string Holiday = "holiday";
     public const string HalfDay = "half_day";
+
+    /// <summary>WP-VP-4G (F4-1) - the week had room, but no day near the visit's cluster (nor a light day) to take it.</summary>
+    public const string NoNearDay = "no_near_day";
 }
 
 /// <summary>WP-VP-3B — the engine's own unscheduled reason (beside the route optimizer's) and the consent warning.</summary>

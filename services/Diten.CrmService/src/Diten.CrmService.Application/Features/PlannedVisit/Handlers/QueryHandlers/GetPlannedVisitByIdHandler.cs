@@ -15,10 +15,14 @@ public sealed class GetPlannedVisitByIdHandler
     private readonly IPlannedVisitRepository _repository;
     private readonly ICallerScope _caller;
     private readonly VisitTargetNameReader _names;
+    private readonly IProductNameReader? _productNames;
 
     public GetPlannedVisitByIdHandler(
-        ITenantContext tenant, IPlannedVisitRepository repository, ICallerScope caller, VisitTargetNameReader names)
+        ITenantContext tenant, IPlannedVisitRepository repository, ICallerScope caller, VisitTargetNameReader names,
+        // WP-VP-4G (F4-4) — names for items an older plan stored without (one bulk MDM read, fail-open).
+        IProductNameReader? productNames = null)
     {
+        _productNames = productNames;
         _tenant = tenant;
         _repository = repository;
         _caller = caller;
@@ -45,6 +49,17 @@ public sealed class GetPlannedVisitByIdHandler
             new[] { plan.AccountId, plan.TargetType != PlannedVisitTargetType.Contact ? plan.TargetId : (Guid?)null },
             new[] { plan.ContactId },
             cancellationToken);
-        return Response<PlannedVisitDetailDto>.Success(PlannedVisitMapper.ToDetail(plan, names));
+        var dto = PlannedVisitMapper.ToDetail(plan, names);
+        var unnamed = PlannedVisitMapper.UnnamedProductIds(new[] { plan }).Distinct().ToList();
+        if (_productNames is not null && unnamed.Count > 0)
+        {
+            dto = dto with
+            {
+                ContentItems = PlannedVisitMapper.WithProductNames(
+                    dto.ContentItems, await _productNames.ReadNamesAsync(unnamed, cancellationToken))
+            };
+        }
+
+        return Response<PlannedVisitDetailDto>.Success(dto);
     }
 }

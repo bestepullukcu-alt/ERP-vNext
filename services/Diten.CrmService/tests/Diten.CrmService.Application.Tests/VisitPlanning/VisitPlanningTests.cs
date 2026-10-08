@@ -503,6 +503,9 @@ public sealed partial class VisitPlanningTests
         public FakeApplyUnitOfWork UnitOfWork { get; } = new();
         public FakeWorkingDayChecker WorkingDays { get; } = new();
 
+        /// <summary>WP-VP-4G (F4-4) - the MDM product names (counted; empty = the master knows none).</summary>
+        public FakeProductNames ProductNames { get; } = new();
+
         /// <summary>WP-VP-3A — visit reports ("done" = a completed report; a reported visit survives a week reopen).</summary>
         public Diten.CrmService.Application.Tests.VisitReport.FakeVisitReportRepository Reports { get; } = new();
 
@@ -544,7 +547,7 @@ public sealed partial class VisitPlanningTests
             Engine = new VisitPlanningEngine(
                 tenant, actor, Periods, Capacities, estimator, resolver, optimizer, selector, extend,
                 territoryGate, Accounts, Contacts, PlannedVisits, journeyProbe, frequencyProbe, consentProbe, availabilityProbe,
-                calendar, Deriver, Reports, relationships: Relationships);
+                calendar, Deriver, Reports, relationships: Relationships, productNames: ProductNames);
 
             Session = new PlanningSession
             {

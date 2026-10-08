@@ -122,7 +122,9 @@ public sealed record PlannedVisitContentItemDto(
     // WP-VP-3C (K-7, additive) — the product's source (play · rep-pick · last-visit · portfolio; an older plan reads
     // play) and its place in the visit's list.
     string Source = Diten.CrmService.Domain.Entities.PlannedVisitContentItemSources.Play,
-    int Order = 0);
+    int Order = 0,
+    // WP-VP-4G (F4-4) — the product's name: the approval snapshot, else read from MDM at read time; null = show the code.
+    string? ProductName = null);
 
 public sealed record PlannedVisitContentStepDto(
     Guid StepId, Guid ContentId, string? ContentCode, string? Title, string? Type, int? Minutes);

@@ -108,7 +108,9 @@ public sealed record VisitContentItem(
     // WP-VP-3C (K-7) — where the product came from (play · rep-pick · last-visit · portfolio) and its 1-based place in
     // the visit's final list.
     string Source = PlannedVisitContentItemSources.Play,
-    int Order = 0)
+    int Order = 0,
+    // WP-VP-4G (F4-4) — the MDM product name (read-time; the frozen snapshot on an approved visit). Null = show the code.
+    string? ProductName = null)
 {
     /// <summary>A product told without content (no journey resolves for it): journey / stage / path empty, the reason as
     /// its warning (<c>no_approved_content</c> / <c>ambiguous_journey</c>).</summary>

@@ -34,6 +34,11 @@ public static class DayBalancer
     /// ≈ 28 min) are far.</summary>
     public const double NearTravelMinutes = 25;
 
+    /// <summary>WP-VP-4G (F4-1) — a LIGHT day: what it already plans is under this share of its budget. A far group that
+    /// opens no day of its own may go WHOLE to a light day (the travel between the two clusters counted in the budget);
+    /// a fuller day never takes a far group into its leftover minutes (they stay idle).</summary>
+    public const double LightDayLoadRatio = 0.5;
+
     /// <summary>One visit to place. <see cref="CostMinutes"/> = duration + between-visit buffer. <see cref="Lat"/> /
     /// <see cref="Lng"/> its place (null = unknown); <see cref="Follower"/> = a pharmacy linked to the group's institution
     /// (it stays with the institution's doctors when the group is split).</summary>
@@ -45,8 +50,11 @@ public static class DayBalancer
         double? CenterLat = null, double? CenterLng = null, int CenterWeight = 0);
 
     /// <summary>The day of every placed visit, and the visits no day of the week can hold.</summary>
+    /// <para>WP-VP-4G (F4-1) — <see cref="NoNearDay"/>: the overflow visits some day of the week still had room for, but
+    /// no day was near (nor light) — the caller says <c>no_near_day</c>; the others found no room at all
+    /// (<c>capacity_full</c>).</para>
     public sealed record Result(IReadOnlyDictionary<int, DateOnly> Assigned, IReadOnlyList<int> Overflow,
-        IReadOnlyDictionary<DateOnly, int> LoadMinutes);
+        IReadOnlyDictionary<DateOnly, int> LoadMinutes, IReadOnlySet<int>? NoNearDay = null);
 
     private sealed class Center
     {
@@ -157,11 +165,35 @@ public static class DayBalancer
 
             // (b') a new cluster: whole on a day without a centre (lowest fill).
             whole = open.Where(d => Fits(d, group.Cost) && centers[d.Date] is null)
-                        .OrderBy(Fill).ThenBy(d => d.Date)
-                        .FirstOrDefault()
-                    ?? (farFill
-                        ? open.Where(d => Fits(d, group.Cost)).OrderBy(Fill).ThenBy(d => d.Date).FirstOrDefault()
-                        : null);
+                .OrderBy(Fill).ThenBy(d => d.Date)
+                .FirstOrDefault();
+            if (whole is not null)
+            {
+                group.Visits.ForEach(v => Put(v, whole));
+                continue;
+            }
+
+            // (b'') WP-VP-4G (F4-1) — no day of its own left: a LIGHT day (planned < LightDayLoadRatio of its budget) takes
+            // the far group whole when it fits with the travel between the two clusters; the least filled first, then
+            // the nearest. The travel minutes are booked on the day.
+            var light = open
+                .Where(d => centers[d.Date] is not null && load[d.Date] < d.BudgetMinutes * LightDayLoadRatio)
+                .Select(d => (Day: d, Travel: (int)Math.Ceiling(DistTo(d, point) ?? 0)))
+                .Where(x => load[x.Day.Date] + group.Cost + x.Travel <= x.Day.BudgetMinutes)
+                .OrderBy(x => Fill(x.Day)).ThenBy(x => x.Travel).ThenBy(x => x.Day.Date)
+                .Select(x => ((Day Day, int Travel)?)x)
+                .FirstOrDefault();
+            if (light is { } l)
+            {
+                load[l.Day.Date] += l.Travel;
+                group.Visits.ForEach(v => Put(v, l.Day));
+                continue;
+            }
+
+            // The LAST draft week (farFill): nothing comes after it - the 3B rule (lowest fill) rather than drop out.
+            whole = farFill
+                ? open.Where(d => Fits(d, group.Cost)).OrderBy(Fill).ThenBy(d => d.Date).FirstOrDefault()
+                : null;
             if (whole is not null)
             {
                 group.Visits.ForEach(v => Put(v, whole));
@@ -254,7 +286,126 @@ public static class DayBalancer
             }
         }
 
-        return new Result(assigned, overflow, load);
+        // WP-VP-4G (F4-1) — why each overflow visit left: a day still had room for it (no near / light day) or none had.
+        var costOf = visits.ToDictionary(v => v.Id, v => v.CostMinutes);
+        var noNear = overflow
+            .Where(id => open.Any(d => load[d.Date] + costOf[id] <= d.BudgetMinutes))
+            .ToHashSet();
+        return new Result(assigned, overflow, load, noNear);
+    }
+
+    /// <summary>
+    /// WP-VP-4G (F4-5) — STABLE placement around the rep's pins (nothing is stored; the same input gives the same days):
+    /// <list type="number">
+    /// <item>the BASE layout is <see cref="Assign"/> over every visit as if there were no pin (what the rep saw before
+    /// pinning);</item>
+    /// <item>the pinned visits sit on their pinned days (<paramref name="pinned"/>; the caller already placed them within
+    /// the day's window); every free visit STAYS on its base day;</item>
+    /// <item>only where a day now exceeds its budget, its free visits FARTHEST from the day's centre leave (ties: the
+    /// later id) until it fits - a pinned visit never moves;</item>
+    /// <item>what left, and what had no base day, is placed by <see cref="Assign"/> around everything kept (near first,
+    /// then a new / light day - the F4-1 rules).</item>
+    /// </list>
+    /// <paramref name="baseDays"/> carry the budgets and the already-fixed minutes only; <paramref name="excluded"/> are
+    /// visits out of this week's free set (a pin that overflowed the week). Only free visits are in the result.
+    /// </summary>
+    public static Result AssignAroundPins(
+        IReadOnlyList<Day> baseDays,
+        IReadOnlyList<Visit> visits,
+        IReadOnlyDictionary<int, DateOnly> pinned,
+        IReadOnlySet<int> excluded,
+        ITravelModel? travel = null,
+        bool farFill = false)
+    {
+        travel ??= new HaversineTravelModel(RouteOptimizationDefaults.RoadFactor, RouteOptimizationDefaults.AssumedSpeedKmPerMin);
+        var baseline = Assign(baseDays, visits, travel, farFill);
+        var byId = visits.ToDictionary(v => v.Id);
+        var load = baseDays.ToDictionary(d => d.Date, d => d.FixedLoadMinutes);
+        foreach (var (id, date) in pinned)
+        {
+            load[date] = load.GetValueOrDefault(date) + byId[id].CostMinutes;
+        }
+
+        var onDay = baseDays.ToDictionary(d => d.Date, _ => new List<Visit>());
+        var leftover = new List<Visit>();
+        foreach (var v in visits.Where(v => !pinned.ContainsKey(v.Id) && !excluded.Contains(v.Id)))
+        {
+            if (baseline.Assigned.TryGetValue(v.Id, out var day) && onDay.ContainsKey(day))
+            {
+                onDay[day].Add(v);
+            }
+            else
+            {
+                leftover.Add(v);
+            }
+        }
+
+        double Travel((double Lat, double Lng) a, (double Lat, double Lng) b)
+            => travel.TravelMinutes(new GeoPoint(a.Lat, a.Lng), new GeoPoint(b.Lat, b.Lng));
+        (double Lat, double Lng)? CentreOf(IEnumerable<Visit> those)
+        {
+            var located = those.Where(v => v.Lat is not null && v.Lng is not null).ToList();
+            if (located.Count == 0)
+            {
+                return null;
+            }
+
+            var w = located.Sum(v => (double)Math.Max(1, v.CostMinutes));
+            return (located.Sum(v => v.Lat!.Value * Math.Max(1, v.CostMinutes)) / w,
+                located.Sum(v => v.Lng!.Value * Math.Max(1, v.CostMinutes)) / w);
+        }
+
+        var assigned = new Dictionary<int, DateOnly>();
+        var days = new List<Day>();
+        foreach (var d in baseDays.OrderBy(d => d.Date))
+        {
+            var free = onDay[d.Date];
+            var pinnedHere = pinned.Where(p => p.Value == d.Date).Select(p => byId[p.Key]).ToList();
+            var total = load[d.Date] + free.Sum(v => v.CostMinutes);
+            if (total > d.BudgetMinutes && free.Count > 0)
+            {
+                var centre = CentreOf(pinnedHere.Concat(free));
+                foreach (var v in free
+                             .OrderByDescending(v => centre is { } c && v.Lat is { } la && v.Lng is { } ln ? Math.Round(Travel(c, (la, ln)), 6) : 0)
+                             .ThenByDescending(v => v.Id)
+                             .ToList())
+                {
+                    if (total <= d.BudgetMinutes)
+                    {
+                        break;
+                    }
+
+                    free.Remove(v);
+                    leftover.Add(v);
+                    total -= v.CostMinutes;
+                }
+            }
+
+            free.ForEach(v => assigned[v.Id] = d.Date);
+            load[d.Date] = total;
+            var kept = pinnedHere.Concat(free).ToList();
+            var c2 = CentreOf(kept);
+            days.Add(d with
+            {
+                FixedLoadMinutes = total,
+                CenterLat = c2?.Lat,
+                CenterLng = c2?.Lng,
+                CenterWeight = kept.Sum(v => Math.Max(1, v.CostMinutes))
+            });
+        }
+
+        if (leftover.Count == 0)
+        {
+            return new Result(assigned, Array.Empty<int>(), load, new HashSet<int>());
+        }
+
+        var rest = Assign(days, leftover.OrderBy(v => v.Id).ToList(), travel, farFill);
+        foreach (var (id, date) in rest.Assigned)
+        {
+            assigned[id] = date;
+        }
+
+        return new Result(assigned, rest.Overflow, rest.LoadMinutes, rest.NoNearDay);
     }
 
     /// <summary>WP-VP-3B — the load-only rule (no geography): groups largest first, each WHOLE to the working day with the

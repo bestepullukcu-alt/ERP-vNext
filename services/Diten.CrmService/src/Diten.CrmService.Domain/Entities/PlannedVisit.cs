@@ -271,6 +271,10 @@ public sealed class PlannedVisitContentItem
     /// <summary>WP-VP-3C (K-7e) — the item's 1-based position in the visit's final (rotated) list; 0 on an older plan.</summary>
     public int Order { get; set; }
 
+    /// <summary>WP-VP-4G (F4-4) — the MDM product name AT APPROVAL (a snapshot, like the code); null on an older plan, which
+    /// a read fills from the master. Never taken from a client.</summary>
+    public string? ProductName { get; set; }
+
     /// <summary>The source, an older (null) item reading as <c>play</c>.</summary>
     public string EffectiveSource() => string.IsNullOrWhiteSpace(Source) ? PlannedVisitContentItemSources.Play : Source;
 }

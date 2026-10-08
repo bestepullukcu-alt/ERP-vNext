@@ -65,14 +65,45 @@ internal static class PlanningSessionMapper
 
     /// <summary>WP-VP-4A (E4-3C-B1) — a doctor's stored product pick for the reads (no MDM call: the stored code is the
     /// display, the name stays null). A pick without a role reads promo (K-7d).</summary>
-    public static IReadOnlyList<PlanningSessionProductDto> ProductsOf(PlanningSessionSelectedContact contact)
+    /// <para>WP-VP-4G (F4-4) — <paramref name="productNames"/>: the MDM names read for the whole response in one call
+    /// (absent ⇒ null, the code is shown).</para>
+    public static IReadOnlyList<PlanningSessionProductDto> ProductsOf(
+        PlanningSessionSelectedContact contact, IReadOnlyDictionary<Guid, string>? productNames = null)
         => contact.Products
             .Select(p => new PlanningSessionProductDto(
-                p.ProductId, p.ProductCode, null,
+                p.ProductId, p.ProductCode, productNames?.GetValueOrDefault(p.ProductId),
                 string.Equals(p.Role, StrategyProductLineRoles.NonPromo, StringComparison.OrdinalIgnoreCase)
                     ? StrategyProductLineRoles.NonPromo
                     : StrategyProductLineRoles.Promo))
             .ToList();
+
+    /// <summary>WP-VP-4G (F4-4) — the detail's doctor rows with their picked products named.</summary>
+    public static PlanningSessionDto WithProductNames(
+        PlanningSessionDto dto, PlanningSession s, IReadOnlyDictionary<Guid, string> productNames)
+        => productNames.Count == 0
+            ? dto
+            : dto with
+            {
+                SelectedContacts = dto.SelectedContacts
+                    .Select((c, i) => c with { Products = ProductsOf(s.Selection.SelectedContacts[i], productNames) })
+                    .ToList()
+            };
+
+    /// <summary>WP-VP-4G (F4-10) — the rep's shown name: a person's name (the user directory's full name) wins; an
+    /// e-mail address is the last resort; the stored value is kept when nothing better resolves.</summary>
+    public static string? PreferPersonName(string? resolved, string? stored)
+    {
+        static bool IsEmail(string? v) => !string.IsNullOrWhiteSpace(v) && v.Contains('@');
+        foreach (var candidate in new[] { resolved, stored })
+        {
+            if (!string.IsNullOrWhiteSpace(candidate) && !IsEmail(candidate))
+            {
+                return candidate.Trim();
+            }
+        }
+
+        return string.IsNullOrWhiteSpace(resolved) ? stored : resolved;
+    }
 
     /// <summary>
     /// WP-VP-4A (brief §1) — the list's draft weeks WITHOUT generating: the period's weeks that are neither past nor

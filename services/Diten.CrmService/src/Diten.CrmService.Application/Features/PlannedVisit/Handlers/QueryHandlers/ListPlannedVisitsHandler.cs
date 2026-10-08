@@ -15,10 +15,14 @@ public sealed class ListPlannedVisitsHandler : IRequestHandler<ListPlannedVisits
     private readonly IPlannedVisitRepository _repository;
     private readonly ICallerScope _caller;
     private readonly VisitTargetNameReader _names;
+    private readonly IProductNameReader? _productNames;
 
     public ListPlannedVisitsHandler(
-        ITenantContext tenant, IPlannedVisitRepository repository, ICallerScope caller, VisitTargetNameReader names)
+        ITenantContext tenant, IPlannedVisitRepository repository, ICallerScope caller, VisitTargetNameReader names,
+        // WP-VP-4G (F4-4) — names for items older plans stored without (one bulk MDM read for the page, fail-open).
+        IProductNameReader? productNames = null)
     {
+        _productNames = productNames;
         _tenant = tenant;
         _repository = repository;
         _caller = caller;
@@ -99,6 +103,12 @@ public sealed class ListPlannedVisitsHandler : IRequestHandler<ListPlannedVisits
             page.Select(v => v.ContactId),
             cancellationToken);
         var items = page.Select(v => PlannedVisitMapper.ToListItem(v, names)).ToList();
+        var unnamed = PlannedVisitMapper.UnnamedProductIds(page).Distinct().ToList();
+        if (_productNames is not null && unnamed.Count > 0)
+        {
+            var productNames = await _productNames.ReadNamesAsync(unnamed, cancellationToken);
+            items = items.Select(i => i with { ContentItems = PlannedVisitMapper.WithProductNames(i.ContentItems, productNames) }).ToList();
+        }
         return Response<PlannedVisitListDto>.Success(new PlannedVisitListDto(items, items.Count));
     }
 }

@@ -57,6 +57,12 @@ public sealed class VisitPlanningEngine
     private readonly IVisitReportRepository? _reports;
     private readonly IRouteOptimizationDefaultsProvider? _routeDefaults;
     private readonly IAccountRelationshipRepository? _relationships;
+    private readonly IProductNameReader? _productNames;
+
+    // WP-VP-4G (F4-4) — the names read in THIS request (the engine is scoped): one bulk read, reused by the approval
+    // snapshot and the preview of the same request.
+    private readonly Dictionary<Guid, string> _productNameMemo = new();
+    private readonly HashSet<Guid> _productNamesAsked = new();
 
     public VisitPlanningEngine(
         ITenantContext tenant,
@@ -84,8 +90,11 @@ public sealed class VisitPlanningEngine
         // pharmacy → institution links (a pharmacy rides on its institution's day). Both optional: without them the
         // documented defaults apply and a pharmacy is its own group.
         IRouteOptimizationDefaultsProvider? routeDefaults = null,
-        IAccountRelationshipRepository? relationships = null)
+        IAccountRelationshipRepository? relationships = null,
+        // WP-VP-4G (F4-4) — product names for the preview and the approval snapshot (fail-open; none ⇒ codes).
+        IProductNameReader? productNames = null)
     {
+        _productNames = productNames;
         _reports = reports;
         _routeDefaults = routeDefaults;
         _relationships = relationships;
@@ -174,9 +183,18 @@ public sealed class VisitPlanningEngine
 
         var atoms = new List<PlannedVisitEntity>(placedToWrite.Count);
         var index = session.Weeks.Sum(w => w.PlannedVisitIds.Count); // codes stay unique across week approvals
+        // WP-VP-4G (F4-4) — every product name of the run in ONE read (the preview below reuses it); the approved items
+        // keep the name as a snapshot.
+        var productNames = await ProductNamesAsync(ProductIdsOf(output), cancellationToken);
         foreach (var placed in placedToWrite)
         {
-            atoms.Add(await BuildAtomAsync(session, placed, ++index, cancellationToken));
+            var atom = await BuildAtomAsync(session, placed, ++index, cancellationToken);
+            foreach (var item in atom.ContentItems)
+            {
+                item.ProductName ??= productNames.GetValueOrDefault(item.ProductId);
+            }
+
+            atoms.Add(atom);
         }
 
         return ApplyBuildOutcome.Ok(await BuildPreviewAsync(output, cancellationToken), atoms) with
@@ -601,8 +619,11 @@ public sealed class VisitPlanningEngine
                 if (track is null)
                 {
                     // WP-VP-4E — a pinned visit that found no room in its week moves on with the pin_overflow reason.
+                    // WP-VP-4G (F4-1) — room was left but no day near (nor light): no_near_day, not "the week is full".
                     track = new ShiftTrack(item.Candidate, item.FromWeek,
-                        week.PinOverflow.Contains(item) ? PlanningDayPins.PinOverflow : reasonForWeek);
+                        week.PinOverflow.Contains(item) ? PlanningDayPins.PinOverflow
+                        : week.NoNearDay.Contains(item) ? PlanningShiftReasons.NoNearDay
+                        : reasonForWeek);
                     shifts.Add(track);
                 }
 
@@ -820,17 +841,40 @@ public sealed class VisitPlanningEngine
                 weight);
         }).ToList();
         var free = byId.Where(kv => !pinned.ContainsKey(kv.Value) && !pinOverflow.Contains(kv.Value)).ToList();
-        var balance = DayBalancer.Assign(days, free
-            .Select(kv => new DayBalancer.Visit(
-                kv.Key,
-                GroupKeyOf(groupOf, kv.Value.Candidate),
-                Cost(kv.Value),
-                kv.Value.Candidate.Lat,
-                kv.Value.Candidate.Long,
-                Follower: kv.Value.Candidate.TargetType == PlannedVisitTargetType.Pharmacy
-                          && GroupKeyOf(groupOf, kv.Value.Candidate) != kv.Value.Candidate.TargetId.ToString("N")))
-            .ToList(), travel, farFill: lastDraftWeek);
+        DayBalancer.Visit ToVisit(KeyValuePair<int, WeekItem> kv) => new(
+            kv.Key,
+            GroupKeyOf(groupOf, kv.Value.Candidate),
+            Cost(kv.Value),
+            kv.Value.Candidate.Lat,
+            kv.Value.Candidate.Long,
+            Follower: kv.Value.Candidate.TargetType == PlannedVisitTargetType.Pharmacy
+                      && GroupKeyOf(groupOf, kv.Value.Candidate) != kv.Value.Candidate.TargetId.ToString("N"));
+
+        // WP-VP-4G (F4-5) — with pins, the STABLE placement: the base layout (no pins) keeps every free visit on its day;
+        // only a day over its budget gives up its free visits farthest from its centre. Without pins: the 4E rule as is.
+        DayBalancer.Result balance;
+        if (pinned.Count == 0)
+        {
+            balance = DayBalancer.Assign(days, free.Select(ToVisit).ToList(), travel, farFill: lastDraftWeek);
+        }
+        else
+        {
+            var idOf = byId.ToDictionary(kv => kv.Value, kv => kv.Key, (IEqualityComparer<WeekItem>)ReferenceEqualityComparer.Instance);
+            var keptPins = dayPinned
+                .SelectMany(kv => kv.Value.Select(i => (Id: idOf[i], Date: kv.Key)))
+                .ToDictionary(x => x.Id, x => x.Date);
+            balance = DayBalancer.AssignAroundPins(
+                weekDays.Select(w => new DayBalancer.Day(w.Date, w.Budget, fixedLoad.GetValueOrDefault(w.Date))).ToList(),
+                byId.Select(ToVisit).ToList(),
+                keptPins,
+                byId.Where(kv => pinOverflow.Contains(kv.Value)).Select(kv => kv.Key).ToHashSet(),
+                travel,
+                farFill: lastDraftWeek);
+        }
+
         overflow.AddRange(balance.Overflow.Select(id => byId[id]));
+        var noNearDay = new HashSet<WeekItem>(
+            (balance.NoNearDay ?? new HashSet<int>()).Select(id => byId[id]), ReferenceEqualityComparer.Instance);
 
         var load = new Dictionary<DateOnly, int>(balance.LoadMinutes);
         var members = balance.Assigned
@@ -940,7 +984,10 @@ public sealed class VisitPlanningEngine
             stillPinned[p.Item] = pinned[p.Item];
         }
 
-        return new WeekPlan(placed, unscheduled, overflow, stillPinned, pinMoves, pinOverflow, pinWarnings, dayPreviews);
+        return new WeekPlan(placed, unscheduled, overflow, stillPinned, pinMoves, pinOverflow, pinWarnings, dayPreviews)
+        {
+            NoNearDay = noNearDay
+        };
     }
 
     /// <summary>WP-VP-4E — the week's visits a pin moves. <c>visit</c>: the pinned target's own visit(s) (a doctor by its
@@ -1430,7 +1477,8 @@ public sealed class VisitPlanningEngine
         Warnings = item.Warnings.ToList(),
         // WP-VP-3C (K-7) — where the product came from and its place in the list (no play id, S3-9).
         Source = item.Source,
-        Order = item.Order
+        Order = item.Order,
+        ProductName = item.ProductName
     };
 
     /// <summary>WP-VP-3C — a stored (frozen) item read back for the preview (an older item reads as <c>play</c>).</summary>
@@ -1444,7 +1492,8 @@ public sealed class VisitPlanningEngine
         item.Claims.Select(c => new VisitContentClaim(c.ClaimId, c.ClaimCode ?? string.Empty)).ToList(),
         item.Warnings.ToList(),
         item.EffectiveSource(),
-        item.Order);
+        item.Order,
+        item.ProductName);
 
     private async Task<(double Lat, double Long)> ResolveCoordinatesAsync(
         Guid tenantId, Guid? accountId, Dictionary<Guid, AccountEntity?> cache, CancellationToken cancellationToken)
@@ -1513,7 +1562,11 @@ public sealed class VisitPlanningEngine
         IReadOnlyList<PinMove> PinMoves,
         IReadOnlySet<WeekItem> PinOverflow,
         IReadOnlyList<PinWarningPreview> PinWarnings,
-        IReadOnlyList<PlanningDayPreview> Days);
+        IReadOnlyList<PlanningDayPreview> Days)
+    {
+        /// <summary>WP-VP-4G (F4-1) - overflow visits a day still had room for (no near / light day): no_near_day.</summary>
+        public IReadOnlySet<WeekItem> NoNearDay { get; init; } = new HashSet<WeekItem>();
+    }
 
     /// <summary>WP-VP-4E — a pinned visit that did not fit its day: moved to <see cref="To"/> in the week, or (To null) out
     /// of it; <see cref="Track"/> follows it into a later week.</summary>
@@ -1613,7 +1666,103 @@ public sealed class VisitPlanningEngine
             }
         }
 
-        return ToPreview(g, names);
+        var preview = ToPreview(g, names);
+
+        // WP-VP-4G (F4-4) — product names in ONE bulk read (fail-open: no name ⇒ the code is shown).
+        preview = WithProductNames(preview, await ProductNamesAsync(ProductIdsOf(g), cancellationToken));
+
+        // WP-VP-4G (F4-9) — the report state of the approved (written) visits in ONE bulk report read.
+        return await WithReportStatusAsync(preview, g, cancellationToken);
+    }
+
+    /// <summary>WP-VP-4G (F4-4) — the names of <paramref name="ids"/>, asking the master only for ids this request has not
+    /// asked yet (one bulk call for the rest). Never throws (the reader is fail-open).</summary>
+    private async Task<IReadOnlyDictionary<Guid, string>> ProductNamesAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken)
+    {
+        var missing = ids.Where(id => id != Guid.Empty && !_productNamesAsked.Contains(id)).Distinct().ToList();
+        if (missing.Count > 0 && _productNames is not null)
+        {
+            foreach (var (id, name) in await _productNames.ReadNamesAsync(missing, cancellationToken))
+            {
+                _productNameMemo[id] = name;
+            }
+        }
+
+        missing.ForEach(id => _productNamesAsked.Add(id));
+        return _productNameMemo;
+    }
+
+    /// <summary>WP-VP-4G — every product id a run shows: its placed visits' items, the doctors' candidate lists and
+    /// overflows, the written visits' items.</summary>
+    private static IEnumerable<Guid> ProductIdsOf(GenerationOutput g)
+        => g.Placed.SelectMany(p => (p.Content?.Items ?? Array.Empty<VisitContentItem>()).Select(i => i.ProductId)
+                .Concat((p.Content?.OverflowProducts ?? Array.Empty<VisitContentOverflow>()).Select(o => o.ProductId))
+                .Concat((p.Candidate.Content?.Items ?? Array.Empty<VisitContentItem>()).Select(i => i.ProductId))
+                .Concat((p.Candidate.Content?.OverflowProducts ?? Array.Empty<VisitContentOverflow>()).Select(o => o.ProductId)))
+            .Concat(g.Fixed.SelectMany(v => v.ContentItems.Select(i => i.ProductId)))
+            .Concat(g.Content.SelectMany(c => (c.Items ?? Array.Empty<VisitContentItem>()).Select(i => i.ProductId)))
+            .Distinct();
+
+    /// <summary>WP-VP-4G (F4-4) — the preview with every product item / overflow / distribution / weekly count named
+    /// (a frozen snapshot name is kept as it is).</summary>
+    private static VisitPlanPreview WithProductNames(VisitPlanPreview p, IReadOnlyDictionary<Guid, string> names)
+    {
+        if (names.Count == 0)
+        {
+            return p;
+        }
+
+        string? Name(Guid id, string? current) => current ?? names.GetValueOrDefault(id);
+        IReadOnlyList<VisitContentItem>? Items(IReadOnlyList<VisitContentItem>? items)
+            => items?.Select(i => i with { ProductName = Name(i.ProductId, i.ProductName) }).ToList();
+
+        return p with
+        {
+            Scheduled = p.Scheduled.Select(s => s with
+            {
+                ContentItems = Items(s.ContentItems),
+                OverflowProducts = s.OverflowProducts?.Select(o => o with { ProductName = Name(o.ProductId, o.ProductName) }).ToList()
+            }).ToList(),
+            Content = p.Content.Select(c => c with
+            {
+                Items = Items(c.Items),
+                Products = c.Products?.Select(x => x with { ProductName = Name(x.ProductId, x.ProductName) }).ToList()
+            }).ToList(),
+            ProductDistribution = p.ProductDistribution?.Select(d => d with { ProductName = Name(d.ProductId, d.ProductName) }).ToList(),
+            WeekCapacity = p.WeekCapacity?.Select(w => w with
+            {
+                ProductVisitCounts = w.ProductVisitCounts?.Select(c => c with { ProductName = Name(c.ProductId, c.ProductName) }).ToList()
+            }).ToList()
+        };
+    }
+
+    /// <summary>WP-VP-4G (F4-9) — a written (fixed) visit's slot says whether it was reported or cancelled; every week
+    /// counts its reported visits. One bulk report read; without a report reader nothing is reported.</summary>
+    private async Task<VisitPlanPreview> WithReportStatusAsync(VisitPlanPreview p, GenerationOutput g, CancellationToken cancellationToken)
+    {
+        if (_reports is null || g.Fixed.Count == 0 || _tenant.TenantId is not { } tenantId)
+        {
+            return p;
+        }
+
+        var reported = (await _reports.ListByPlannedVisitIdsAsync(tenantId, g.Fixed.Select(v => v.Id).ToList(), cancellationToken))
+            .Where(r => r.TenantId == tenantId)
+            .Select(r => r.PlannedVisitId)
+            .ToHashSet();
+        var cancelled = g.Fixed.Where(v => v.IsCancelled()).Select(v => v.Id).ToHashSet();
+        var slots = p.Scheduled.Select(s => !s.IsFixed ? s
+                : cancelled.Contains(s.VisitRef) ? s with { ReportStatus = PlannedSlotReportStatuses.Cancelled }
+                : reported.Contains(s.VisitRef) ? s with { ReportStatus = PlannedSlotReportStatuses.Reported }
+                : s)
+            .ToList();
+        return p with
+        {
+            Scheduled = slots,
+            Weeks = p.Weeks?.Select(w => w with
+            {
+                ReportedVisitCount = slots.Count(s => s.WeekStart == w.WeekStart && s.ReportStatus == PlannedSlotReportStatuses.Reported)
+            }).ToList()
+        };
     }
 
     private static VisitPlanPreview ToPreview(GenerationOutput g, IReadOnlyDictionary<Guid, (string? Name, string? Specialty)> contactNames)

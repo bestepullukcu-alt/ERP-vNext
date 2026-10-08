@@ -76,7 +76,9 @@ public sealed record PlanningWeekDto(
     string? ApprovedBy = null,
     IReadOnlyList<PlanningWeekHistoryDto>? History = null,
     // WP-VP-4E (additive, detail) — the rep's day pins of this week.
-    IReadOnlyList<PlanningDayPinDto>? DayPins = null);
+    IReadOnlyList<PlanningDayPinDto>? DayPins = null,
+    // WP-VP-4G (F4-9, additive, preview) — how many of the week's visits carry a report (the "done" badge).
+    int ReportedVisitCount = 0);
 
 /// <summary>WP-VP-3A (MK-4) — one approve / reopen of a week.</summary>
 public sealed record PlanningWeekHistoryDto(DateTimeOffset At, string? By, string Action, string? Reason);
@@ -137,7 +139,18 @@ public sealed record PlannedSlotPreview(
     // was full (AutoPinned); GroupKey = its institution group (the doctors + linked pharmacies of one institution).
     bool IsPinned = false,
     bool AutoPinned = false,
-    string? GroupKey = null);
+    string? GroupKey = null,
+    // WP-VP-4G (F4-9, additive) — the visit's report state: none (no report, and every not-yet-written visit) · reported
+    // (an approved visit with a report) · cancelled (an approved visit since cancelled).
+    string ReportStatus = PlannedSlotReportStatuses.None);
+
+/// <summary>WP-VP-4G (F4-9) — the report state of a preview slot.</summary>
+public static class PlannedSlotReportStatuses
+{
+    public const string None = "none";
+    public const string Reported = "reported";
+    public const string Cancelled = "cancelled";
+}
 
 /// <summary>One visit that could not be feasibly placed — the supply-vs-demand WARNING materialised (FU03 unscheduled).
 /// A warning the planner resolves, never a hard block (D-SUPPLY-DEMAND).</summary>

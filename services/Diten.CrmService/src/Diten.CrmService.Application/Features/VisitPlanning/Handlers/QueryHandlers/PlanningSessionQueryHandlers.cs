@@ -64,14 +64,19 @@ public sealed class ListPlanningSessionsHandler
         ITenantContext tenant, IPlanningSessionRepository repository, ICallerScope caller,
         // WP-VP-4A — the periods (one bulk read) and "today" for draftWeekCount; without the reader it stays 0.
         Features.CyclePeriod.Read.ICyclePeriodReader? periods = null,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        // WP-VP-4G (F4-10) — the reps' names from the user directory (one bulk call for the page).
+        IUserDisplayNameResolver? userNames = null)
     {
+        _userNames = userNames;
         _periods = periods;
         _clock = clock ?? TimeProvider.System;
         _caller = caller;
         _tenant = tenant;
         _repository = repository;
     }
+
+    private readonly IUserDisplayNameResolver? _userNames;
 
     public async Task<Response<PlanningSessionListDto>> Handle(
         ListPlanningSessionsQuery request, CancellationToken cancellationToken)
@@ -124,6 +129,22 @@ public sealed class ListPlanningSessionsHandler
                 }
                 : PlanningSessionMapper.ToListItem(s))
             .ToList();
+
+        // WP-VP-4G (F4-10) — the rep's name read now (a stored e-mail / old value is only the fallback).
+        if (_userNames is not null && items.Count > 0)
+        {
+            var resolved = await _userNames.ResolveAsync(
+                items.Select(i => Guid.TryParse(i.ResourceId, out var id) ? id : Guid.Empty).Where(id => id != Guid.Empty).Distinct().ToList(),
+                cancellationToken);
+            items = items
+                .Select(i => i with
+                {
+                    ResourceDisplayName = PlanningSessionMapper.PreferPersonName(
+                        Guid.TryParse(i.ResourceId, out var id) ? resolved.GetValueOrDefault(id) : null, i.ResourceDisplayName)
+                })
+                .ToList();
+        }
+
         return Response<PlanningSessionListDto>.Success(new PlanningSessionListDto(items, items.Count), 200);
     }
 }
@@ -140,6 +161,8 @@ public sealed class GetPlanningSessionByIdHandler
     private readonly TimeProvider _clock;
     private readonly IPlannedVisitRepository? _plannedVisits;
     private readonly ICycleCapacityRepository? _capacities;
+    private readonly IProductNameReader? _productNames;
+    private readonly IUserDisplayNameResolver? _userNames;
 
     public GetPlanningSessionByIdHandler(
         ITenantContext tenant, IPlanningSessionRepository repository, ICallerScope caller,
@@ -150,8 +173,13 @@ public sealed class GetPlanningSessionByIdHandler
         // WP-VP-4A — an old committed plan's written visits (one bulk read) for its legacy weeks.
         IPlannedVisitRepository? plannedVisits = null,
         // WP-VP-4E — the period capacity's per-visit model (visitModel).
-        ICycleCapacityRepository? capacities = null)
+        ICycleCapacityRepository? capacities = null,
+        // WP-VP-4G (F4-4 / F4-10) — the picked products' names (one bulk MDM read, fail-open) and the rep's name.
+        IProductNameReader? productNames = null,
+        IUserDisplayNameResolver? userNames = null)
     {
+        _productNames = productNames;
+        _userNames = userNames;
         _plannedVisits = plannedVisits;
         _capacities = capacities;
         _periods = periods;
@@ -186,6 +214,21 @@ public sealed class GetPlanningSessionByIdHandler
             selection.SelectedContacts.Select(c => (Guid?)c.ContactId),
             cancellationToken);
         var dto = PlanningSessionMapper.ToDto(session, names);
+        var pickedIds = selection.SelectedContacts.SelectMany(c => c.Products).Select(p => p.ProductId).Distinct().ToList();
+        if (_productNames is not null && pickedIds.Count > 0)
+        {
+            dto = PlanningSessionMapper.WithProductNames(
+                dto, session, await _productNames.ReadNamesAsync(pickedIds, cancellationToken));
+        }
+
+        if (_userNames is not null && Guid.TryParse(session.ResourceId, out var repId))
+        {
+            var resolved = await _userNames.ResolveAsync(new[] { repId }, cancellationToken);
+            dto = dto with
+            {
+                ResourceDisplayName = PlanningSessionMapper.PreferPersonName(resolved.GetValueOrDefault(repId), dto.ResourceDisplayName)
+            };
+        }
         if (_capacities is not null)
         {
             dto = dto with

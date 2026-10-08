@@ -27,6 +27,7 @@ public sealed class GetSessionTargetsQueryHandler : IRequestHandler<GetSessionTa
     private readonly IAccountRepository _accounts;
     private readonly IContactRepository _contacts;
     private readonly ContactPeriodStatusReader _status;
+    private readonly IProductNameReader? _productNames;
 
     public GetSessionTargetsQueryHandler(
         ITenantContext tenant,
@@ -35,8 +36,11 @@ public sealed class GetSessionTargetsQueryHandler : IRequestHandler<GetSessionTa
         ICyclePeriodReader periods,
         IAccountRepository accounts,
         IContactRepository contacts,
-        ContactPeriodStatusReader status)
+        ContactPeriodStatusReader status,
+        // WP-VP-4G (F4-4) — the picked products' names (one bulk MDM read, fail-open).
+        IProductNameReader? productNames = null)
     {
+        _productNames = productNames;
         _tenant = tenant;
         _caller = caller;
         _sessions = sessions;
@@ -84,6 +88,11 @@ public sealed class GetSessionTargetsQueryHandler : IRequestHandler<GetSessionTa
                 .ToList();
         var contactById = contacts.GroupBy(c => c.Id).ToDictionary(g => g.Key, g => g.First());
 
+        var pickedIds = selection.SelectedContacts.SelectMany(c => c.Products).Select(p => p.ProductId).Distinct().ToList();
+        var productNames = _productNames is null || pickedIds.Count == 0
+            ? new Dictionary<Guid, string>()
+            : await _productNames.ReadNamesAsync(pickedIds, cancellationToken);
+
         var statuses = await _status.ReadAsync(
             new ContactPeriodStatusRequest(
                 tenantId, session.ResourceId, period, contactIds,
@@ -103,10 +112,10 @@ public sealed class GetSessionTargetsQueryHandler : IRequestHandler<GetSessionTa
             .Select(c => contactById.TryGetValue(c.ContactId, out var contact)
                 ? new SessionTargetDoctorDto(
                     c.ContactId, c.AccountId, c.AccountContactLinkId, true, contact.DisplayName, contact.Specialty,
-                    statuses[c.ContactId], PlanningSessionMapper.ProductsOf(c))
+                    statuses[c.ContactId], PlanningSessionMapper.ProductsOf(c, productNames))
                 : new SessionTargetDoctorDto(
                     c.ContactId, c.AccountId, c.AccountContactLinkId, false, null, null, statuses[c.ContactId],
-                    PlanningSessionMapper.ProductsOf(c)))
+                    PlanningSessionMapper.ProductsOf(c, productNames)))
             .ToList();
 
         return Response<SessionTargetsDto>.Success(new SessionTargetsDto(
