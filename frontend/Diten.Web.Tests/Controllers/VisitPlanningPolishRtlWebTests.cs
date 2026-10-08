@@ -247,52 +247,6 @@ public sealed class VisitPlanningPolishRtlWebTests
         Assert.Equal("Clinic", en.GetProperty("accountTypes").GetProperty("clinic").GetString());
     }
 
-    // ── 7 · the label script: a dry run by default; --apply only writes ────────────────────────────────────────
-
-    [Fact]
-    public void The_label_script_is_a_dry_run_unless_apply_and_writes_only_through_the_brd_flow()
-    {
-        var path = Path.Combine(RepoRoot(), "scripts", "data-load", "add_tr_reference_labels.py");
-        var py = File.ReadAllText(path).Replace("\r\n", "\n");
-        Assert.Contains("ap.add_argument(\"--apply\", action=\"store_true\", help=\"write (default: dry run)\")", py);
-        Assert.Contains("DRY RUN — nothing is written. Re-run with --apply to write.", py);
-        // every write call sits in apply_set, and apply_set is only called inside `if args.apply:`
-        var main = Between(py, "def main():", "\n\nif __name__");
-        var applyAt = main.IndexOf("if args.apply:", StringComparison.Ordinal);
-        Assert.True(applyAt > 0);
-        Assert.True(main.IndexOf("apply_set(", StringComparison.Ordinal) > applyAt);
-        var dry = main[main.IndexOf("print(\"DRY RUN", StringComparison.Ordinal)..];
-        Assert.DoesNotContain("apply_set(", dry);
-        foreach (var write in new[] { "\"POST\"", "\"PUT\"" })
-        {
-            Assert.DoesNotContain(write, main);
-            Assert.DoesNotContain(write, Between(py, "def published_values(", "\n\n\n"));
-        }
-        // never Mongo writes (the province codes are a read); the BRD flow: draft → values → validate → submit → approve → publish
-        Assert.DoesNotMatch(@"\.(insert_one|insert_many|update_one|update_many|replace_one|delete_one|delete_many|bulk_write)\(", py);
-        var flow = Between(py, "def apply_set(", "\n\n\n");
-        var steps = new[] { "/sets/{s['setId']}/versions", "/versions/{vid}/values\", maker, {", "/validate", "/submit", "/approve", "/publish" };
-        var last = -1;
-        foreach (var step in steps)
-        {
-            var i = flow.IndexOf(step, StringComparison.Ordinal);
-            Assert.True(i > last, step);
-            last = i;
-        }
-        Assert.Contains("if not checker:", flow); // maker-checker: without a second steward the run stops after submit
-        Assert.Contains("idempotency=True", flow);
-        Assert.Contains("if s.get(\"activeDraftVersionId\"):", flow); // never someone else's draft
-        Assert.Contains("if not attrs.get(k):", flow); // only MISSING attributes; the label itself is never changed
-        Assert.Contains("\"label\": v[\"label\"]", flow);
-        // Turkish with its diacritics, and seven languages
-        Assert.Contains("LANGS = [\"en\", \"tr\", \"fr\", \"es\", \"zh\", \"ar\", \"ru\"]", py);
-        foreach (var tr in new[] { "\"Aile Hekimliği\"", "\"Çocuk Sağlığı ve Hastalıkları\"", "\"Klinik\"", "\"Hastane\"", "\"İstanbul\"", "\"Şanlıurfa\"" })
-        {
-            Assert.Contains(tr, py);
-        }
-        Assert.Contains("if code == \"city\" and not args.include_city:", py);
-    }
-
     // ── 8 · texts: every key the new code reads is in the 7 languages; an argless value has no {0} ─────────────
 
     [Fact]

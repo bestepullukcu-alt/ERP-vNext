@@ -187,3 +187,12 @@ Commit: "fix(web): WP-VP-4I-WEB — strip/day-row polish, en month, account card
 - Hesap kartları.
 - Arapça bidi.
 - Etiketler betik uygulanınca.
+
+### Kullanıcı kararı (2026-10-08) — etiket betiği kaldırıldı
+- Kullanıcı: "Onlar reference data'dan geliyor olması gerekiyor; veri sonuçta, biz manuel değiştirmemeliyiz."
+- `scripts/data-load/add_tr_reference_labels.py` ve onu ölçen Web testi kaldırıldı. Web 801 → **800/0**.
+- **Web tarafı kalıyor:**
+  - `reference-labels`, değerde `label_<dil>` niteliği varsa onu, yoksa etiketi okuyor;
+  - il etiketi yoksa Türkçe baş harf yedeği kullanılıyor.
+- **Veride kalan iş:** Türkçe ve diğer dillerdeki adlar, referans verisinin sahiplerince Referans Veri'de girilecek.
+- **Platform notu:** MOD-0048 değerinde dil başına alan yok (tek etiket). Kalıcı çözüm Platform'da çok dilli etiket alanı olabilir; bu ayrı bir tasarım kararı.

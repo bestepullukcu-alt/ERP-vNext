@@ -340,7 +340,7 @@ public sealed class PublishedValueItemModel
     public int SortOrder { get; set; }
 
     /// <summary>The value's free attributes (MOD-0048 <c>attributes</c>); WP-VP-4I — per-language labels as
-    /// <c>label_&lt;lang&gt;</c> (a value carries one label; scripts/data-load/add_tr_reference_labels.py adds them).</summary>
+    /// <c>label_&lt;lang&gt;</c> (a value carries one label; reference-data owners may add them).</summary>
     public Dictionary<string, string>? Attributes { get; set; }
 
     public string? Value => !string.IsNullOrWhiteSpace(Code) ? Code : ValueCode;
