@@ -50,6 +50,9 @@
     // works in textContent and in a localized template); isolateRatios() does the same for every "a / b" in a
     // template's output ("{0} / {1} seçili").
     const LRI = String.fromCharCode(0x2066), PDI = String.fromCharCode(0x2069);
+    // A data name inside PLAIN text (textContent, no <bdi>): an FSI…PDI isolate ("018 KLİNİK" stays whole in RTL).
+    const FSI = String.fromCharCode(0x2068);
+    const isolate = text => FSI + String(text == null ? '' : text) + PDI;
     const ratio = (a, b) => LRI + String(a) + ' / ' + String(b) + PDI;
     const isolateRatios = s => String(s == null ? '' : s).replace(/(\d+|—)\s*\/\s*(\d+|—)/g, m => LRI + m + PDI);
 
@@ -94,6 +97,6 @@
     };
 
     window.VisitPlanningFormat = Object.freeze({
-        culture, dateCulture, asDate, bidi, ratio, isolateRatios, dayShort, dayMonth, dayNumber, dayLabel, range, workRange, number, hours, dateShort, dateTime, weekdayLong, productLabel, weekLoad
+        culture, dateCulture, asDate, bidi, isolate, ratio, isolateRatios, dayShort, dayMonth, dayNumber, dayLabel, range, workRange, number, hours, dateShort, dateTime, weekdayLong, productLabel, weekLoad
     });
 })(window, document);

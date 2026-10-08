@@ -59,6 +59,8 @@ public sealed class VisitPlanningPolishRtlWebTests
         var details = Script("details.js");
         Assert.Contains("esc(VPF.ratio(st.done || 0, st.remaining != null ? st.remaining : '—'))", details);
         Assert.Contains("const head = VPF.isolateRatios(", details);
+        // a data name in plain text (the Targets subtitle) is isolated too (FSI…PDI)
+        Assert.Contains("setText('vp-targets-subtitle', (acc ? VPF.isolate(acc.name) + ' · ' : '')", details);
         Assert.Contains("VPF.ratio(v.trim().length, REOPEN_MIN)", Script("header.js"));
         Assert.Contains("window.VisitPlanningFormat.isolateRatios(fmt(L.ProductLimitLine", Script("targets.js"));
 

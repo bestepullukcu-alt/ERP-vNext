@@ -1300,7 +1300,7 @@
         setText('vp-accounts-count', String(accN));
         setText('vp-sum-doctors', docN); setText('vp-sum-pharm', phN); setText('vp-sum-accounts', accN);
         const acc = targetAccounts.find(a => a.id === activeAccountId);
-        setText('vp-targets-subtitle', (acc ? acc.name + ' · ' : '') + docN + ' ' + (L.StatDoctors || 'doctors') + ', ' + phN + ' ' + (L.StatPharmacies || 'pharmacies') + ' ' + (L.SelectedSuffix || 'selected'));
+        setText('vp-targets-subtitle', (acc ? VPF.isolate(acc.name) + ' · ' : '') + docN + ' ' + (L.StatDoctors || 'doctors') + ', ' + phN + ' ' + (L.StatPharmacies || 'pharmacies') + ' ' + (L.SelectedSuffix || 'selected'));
         renderSelectionChips();
         paintAccountStats();
         // WP-VP-4C — targets.js (summary, bulk product apply) reads the local selection by name, never by id alone.
