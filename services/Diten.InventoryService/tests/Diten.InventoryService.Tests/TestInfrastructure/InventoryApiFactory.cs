@@ -44,6 +44,9 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
 
     public StubOrgUnitDirectory OrgUnits { get; } = new();
 
+    /// <summary>MOD-0022 at the HTTP edge of the real e-signature client (Q3) — no test ever reaches a real Gateway.</summary>
+    public FakeESignGateway ESign { get; } = new();
+
     /// <summary>Host environment; "Testing" unless a test needs another one.</summary>
     public string HostEnvironment { get; init; } = "Testing";
 
@@ -67,6 +70,8 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton<IProductMasterClient>(Products);
+            services.AddHttpClient(nameof(Diten.InventoryService.Application.Features.Quarantine.Ports.IQuarantineESignClient))
+                .ConfigurePrimaryHttpMessageHandler(() => new FakeESignHandler(ESign));
             if (UseLocationStub)
             {
                 services.AddSingleton<ILocationMasterClient>(Locations);

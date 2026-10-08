@@ -4,6 +4,7 @@ using Diten.InventoryService.Application.Features.Quarantine.Handlers;
 using Diten.InventoryService.Application.Features.Quarantine.Ports;
 using Diten.InventoryService.Application.Features.Quarantine.Services;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
+using Diten.InventoryService.Infrastructure.ESign;
 using Diten.InventoryService.Infrastructure.Eventing;
 using Diten.InventoryService.Infrastructure.Upstream;
 using Diten.InventoryService.Infrastructure.Workflow;
@@ -40,6 +41,10 @@ public static class QuarantineServiceCollectionExtensions
         services.AddScoped<QuarantineDecisionChecks>();
         services.AddScoped<QuarantineReads>();
         services.AddScoped<QuarantineWorkflowReconciler>();
+        // Q3 — MOD-0022: the qd-v1 subject, the decider-signature check on submit, the signable actions registered at start.
+        services.AddScoped<QuarantineSignableSubjectBuilder>();
+        services.AddScoped<QuarantineDeciderSignature>();
+        services.AddHostedService<ESignActionRegistrationHostedService>();
         services.AddScoped<IQuarantineEventInbox, QuarantineEventInboxRepository>();
         services.AddQuarantineEventing(configuration); // completion-event consumer; MassTransit only when Eventing:Transport = RabbitMQ
 
@@ -60,6 +65,12 @@ public static class QuarantineServiceCollectionExtensions
             ? parsed
             : throw new InvalidOperationException($"Configuration error: '{GatewayOptions.SectionName}:BaseUrl' must be an absolute URL.");
         services.AddHttpClient<IQuarantineWorkflowClient, GatewayWorkflowClient>(http =>
+            {
+                http.BaseAddress = gatewayUri;
+                http.Timeout = TimeSpan.FromSeconds(gateway.TimeoutSeconds > 0 ? gateway.TimeoutSeconds : 10);
+            })
+            .AddHttpMessageHandler<ForwardCallerHeadersHandler>();
+        services.AddHttpClient<IQuarantineESignClient, GatewayESignClient>(http =>
             {
                 http.BaseAddress = gatewayUri;
                 http.Timeout = TimeSpan.FromSeconds(gateway.TimeoutSeconds > 0 ? gateway.TimeoutSeconds : 10);

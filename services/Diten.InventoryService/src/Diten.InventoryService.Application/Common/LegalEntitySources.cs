@@ -13,4 +13,10 @@ public static class LegalEntitySources
     /// tenant — but NOT that this user belongs to it (no user↔LE data exists: the accepted risk of W-0173-02).
     /// </summary>
     public const string HeaderUnverifiedMembership = "header-unverified-membership";
+
+    /// <summary>
+    /// MOD-0175 Q3 — the e-signature subject provider called by MOD-0022 with a claim-less token and no company header: the
+    /// company is the one of the record being signed (read-only path; ASSUMPTION-0175-Q3-02, the W-0173-02 risk).
+    /// </summary>
+    public const string SubjectRecord = "subject-record";
 }

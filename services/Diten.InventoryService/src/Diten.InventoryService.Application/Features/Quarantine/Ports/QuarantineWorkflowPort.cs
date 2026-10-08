@@ -30,7 +30,7 @@ public sealed record WorkflowStartResult(WorkflowCallOutcome Outcome, string? In
 public sealed record WorkflowInstanceState(string InstanceId, string Status, string? Outcome, DateTimeOffset? CompletedAt);
 
 /// <summary>One row of <c>GET instances/{id}/history</c> (action: start / approve / reject / cancel / timeout …).</summary>
-public sealed record WorkflowHistoryRow(long SequenceNo, string Action, string? ActorId, DateTimeOffset OccurredAt);
+public sealed record WorkflowHistoryRow(long SequenceNo, string Action, string? ActorId, DateTimeOffset OccurredAt, string? SignatureId = null);
 
 public sealed record WorkflowTaskState(string TaskId, string InstanceId, string Status);
 

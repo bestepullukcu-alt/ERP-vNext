@@ -135,7 +135,7 @@ public sealed class GatewayWorkflowClient : IQuarantineWorkflowClient
         return rows.EnumerateArray()
             .Select(r => new WorkflowHistoryRow(
                 r.TryGetProperty("sequenceNo", out var s) && s.TryGetInt64(out var n) ? n : 0,
-                Text(r, "action") ?? string.Empty, Text(r, "actorId"), Date(r, "occurredAt") ?? DateTimeOffset.MinValue))
+                Text(r, "action") ?? string.Empty, Text(r, "actorId"), Date(r, "occurredAt") ?? DateTimeOffset.MinValue, Text(r, "signatureId")))
             .ToList();
     }
 

@@ -28,7 +28,7 @@ public sealed class TenantContext : ITenantContext
             throw new ArgumentException("Tenant, legal entity and user must be non-empty.");
         }
 
-        if (legalEntitySource is not (LegalEntitySources.Token or LegalEntitySources.HeaderUnverifiedMembership))
+        if (legalEntitySource is not (LegalEntitySources.Token or LegalEntitySources.HeaderUnverifiedMembership or LegalEntitySources.SubjectRecord))
         {
             throw new ArgumentException($"Unknown legal-entity source '{legalEntitySource}'.", nameof(legalEntitySource));
         }

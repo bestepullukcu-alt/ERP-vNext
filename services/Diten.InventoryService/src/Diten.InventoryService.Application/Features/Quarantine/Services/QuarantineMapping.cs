@@ -146,6 +146,8 @@ public static class QuarantineMapping
             Decider = new UserRefDto(Id(decision.DeciderUserId)),
             DecidedAtUtc = QuarantineSupport.Wire(decision.DecidedAtUtc),
             EsignActionCode = EsignActionCode(decision),
+            DeciderSignatureId = ordered.LastOrDefault(e => e.Kind == DecisionEventKind.Submitted)?.DeciderSignatureId,
+            SignatureRequired = ordered.LastOrDefault(e => e.Kind == DecisionEventKind.Submitted)?.SignatureRequired,
             State = state.ToString(),
             Workflow = started is null && outcome is null
                 ? null

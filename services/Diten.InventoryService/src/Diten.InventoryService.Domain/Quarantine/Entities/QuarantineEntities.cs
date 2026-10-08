@@ -211,6 +211,11 @@ public sealed class QuarantineDecisionEvent : EntityBase
 
     public string? ApproverSignatureId { get; set; }
 
+    /// <summary>Q3 — on <c>Submitted</c>: the decider's MOD-0022 signature id (an id only, KQ-G) and whether the policy required it.</summary>
+    public string? DeciderSignatureId { get; set; }
+
+    public bool? SignatureRequired { get; set; }
+
     public List<string> MovementIds { get; set; } = [];
 
     public string? ErrorCode { get; set; }

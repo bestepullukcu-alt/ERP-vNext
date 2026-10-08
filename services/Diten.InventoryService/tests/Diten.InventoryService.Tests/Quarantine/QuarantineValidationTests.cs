@@ -138,7 +138,7 @@ public sealed class QuarantineValidationTests : IClassFixture<QuarantineApiFacto
         var lot = await lots.CreateLotAsync();
         await lots.ReleaseAsync(lot);
         var tx = await lots.PostOkAsync(lots.Receipt("100", lot, toStatus: "QUARANTINE"));
-        var token = TestTokens.Mint(lots.Ledger.Tenant, lots.Ledger.LegalEntity, lots.Ledger.User, QuarantineScenario.QuarantinePermissions);
+        var token = TestTokens.Mint(lots.Ledger.Tenant, lots.Ledger.LegalEntity, lots.Ledger.User, QuarantineScenario.QuarantinePermissions.Concat(QuarantineScenario.ESignPermissions));
         var client = factory.CreateContractClient();
         var holdId = lots.Persisted("quarantine_holds").Single(h => h["SourceMovementId"].AsString == tx)["_id"].AsString;
 

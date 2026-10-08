@@ -356,7 +356,7 @@ public sealed class QuarantineOutcomeApplier
     }
 
     public async Task<Response<DecisionState>> ApplyOutcomeAsync(
-        Guid decisionId, ApprovalOutcome outcome, Guid approverUserId, string? instanceId, CancellationToken ct)
+        Guid decisionId, ApprovalOutcome outcome, Guid approverUserId, string? instanceId, CancellationToken ct, string? approverSignatureId = null)
     {
         var decision = await _decisions.FindAsync(decisionId, ct);
         if (decision is null)
@@ -415,6 +415,7 @@ public sealed class QuarantineOutcomeApplier
         }
 
         var approved = Approval(decision, DecisionEventKind.Approved, now, approverUserId, started, outcome);
+        approved.ApproverSignatureId = approverSignatureId; // Q3: the id MOD-0023 history names (E4 checked it)
         var settings = await _facts.SettingsAsync(ct);
         if (settings.FourEyes && approverUserId == decision.DeciderUserId)
         {
@@ -433,6 +434,7 @@ public sealed class QuarantineOutcomeApplier
                 await session.InsertDecisionEventAsync(approved, c);
                 var history = _support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision),
                     HistoryAction.Approved, now, null, decision.Id, approverUserId);
+                history.ApproverSignatureId = approverSignatureId;
                 Stamp(history, decision);
                 await session.InsertHistoryAsync([history], c);
                 return true;

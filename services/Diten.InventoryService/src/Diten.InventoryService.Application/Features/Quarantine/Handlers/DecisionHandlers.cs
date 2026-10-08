@@ -296,16 +296,18 @@ public sealed class SubmitDecisionHandler : IRequestHandler<SubmitDecisionComman
     private readonly QuarantineDecisionChecks _checks;
     private readonly IQuarantineApprovalPort _approval;
     private readonly QuarantineSupport _support;
+    private readonly QuarantineDeciderSignature _signature;
 
     public SubmitDecisionHandler(
         IQuarantineRepository repository, IQuarantineDecisionRepository decisions, QuarantineDecisionChecks checks, IQuarantineApprovalPort approval,
-        QuarantineSupport support)
+        QuarantineSupport support, QuarantineDeciderSignature signature)
     {
         _repository = repository;
         _decisions = decisions;
         _checks = checks;
         _approval = approval;
         _support = support;
+        _signature = signature;
     }
 
     public async Task<Response<DecisionDto>> Handle(SubmitDecisionCommand request, CancellationToken ct)
@@ -319,11 +321,6 @@ public sealed class SubmitDecisionHandler : IRequestHandler<SubmitDecisionComman
         if (decision.DeciderUserId != _support.UserId)
         {
             return QuarantineSupport.Fail<DecisionDto>(QuarantineErrorCodes.NotDecider, "Only the decider submits a decision.", 403);
-        }
-
-        if (request.SignatureId is not null)
-        {
-            return QuarantineSupport.Invalid<DecisionDto>("signatureId is verified from MOD-0175 slice Q3; submit without a signature (policy row not required).");
         }
 
         var events = await _decisions.EventsAsync([decision.Id], ct);
@@ -352,11 +349,22 @@ public sealed class SubmitDecisionHandler : IRequestHandler<SubmitDecisionComman
             return QuarantineSupport.Fail<DecisionDto>(violation);
         }
 
+        // Q3 (pack §8 decider steps 3–5, V15): the MOD-0022 policy of the decision's action; a signature, when sent or
+        // required, must bind the caller, this decision, the policy meaning, and the current qd-v1 subject.
+        var signature = await _signature.CheckAsync(decision, request.SignatureId, ct);
+        if (signature.Refusal is { } refusal)
+        {
+            return refusal;
+        }
+
         var now = QuarantineSupport.Now();
         var locked = await _repository.InTransactionAsync(async (session, c) =>
         {
             if (!await LockAsync(session, hold, blocked, decision.Id, now, c)) return false;
-            await session.InsertDecisionEventAsync(Stamp(QuarantineSupport.Event(decision.Id, DecisionEventKind.Submitted, now, _support.UserId), decision), c);
+            var submitted = Stamp(QuarantineSupport.Event(decision.Id, DecisionEventKind.Submitted, now, _support.UserId), decision);
+            submitted.DeciderSignatureId = signature.SignatureId;
+            submitted.SignatureRequired = signature.Required;
+            await session.InsertDecisionEventAsync(submitted, c);
             await session.InsertHistoryAsync([Stamp(_support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision),
                 HistoryAction.DecisionSubmitted, now, decision.Reason, decision.Id), decision)], c);
             return true;

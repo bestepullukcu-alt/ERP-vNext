@@ -87,6 +87,8 @@ public sealed class ContractValidatingHandler : DelegatingHandler
         Qrn("POST", "/api/quarantine/decisions/{id}/refresh", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.Decision),
         Qrn("POST", "/api/quarantine/decisions/{id}/withdraw", [200, 400, 401, 403, 404, 409, 503], _ => ContractSchemas.Decision),
         Qrn("POST", "/api/quarantine/settings/workflow-template", [200, 400, 401, 403, 503], _ => ContractSchemas.WorkflowTemplateResult),
+        // Q3: the MOD-0022 subject provider (getSignableSubject).
+        Qrn("GET", "/api/quarantine/esign-subjects/{id}/{id}", [200, 400, 401, 403, 404, 503], _ => ContractSchemas.SignableSubject),
         Qrn("POST", "/api/quarantine/decisions/{id}/apply", [200, 400, 401, 403, 404, 409, 422, 503], _ => ContractSchemas.Decision),
         Qrn("GET", "/api/quarantine/blocked", [200, 400, 401, 403, 503], _ => ContractSchemas.BlockedList),
         Qrn("POST", "/api/quarantine/blocked", [200, 201, 400, 401, 403, 409, 422, 503], _ => ContractSchemas.BlockedRefArray),

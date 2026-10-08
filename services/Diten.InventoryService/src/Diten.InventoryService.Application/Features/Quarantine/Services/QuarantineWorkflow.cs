@@ -32,10 +32,17 @@ public sealed class WorkflowApprovalPort : IQuarantineApprovalPort
     public async Task<ApprovalStart> StartAsync(QuarantineDecision decision, CancellationToken cancellationToken = default)
     {
         var settings = await _facts.SettingsAsync(cancellationToken);
-        if (settings.ApproverCandidates.Count == 0)
+        // Q3 (O-Q2-3): MOD-0023 assigns ONE candidate (lexicographic first after resolution) and refuses the starter (SoD),
+        // so the decider is never sent as a candidate; nobody left → 409, no un-approvable task is created. Position
+        // candidates are kept (not resolvable here — ASSUMPTION-0175-Q3-04).
+        var decider = "user:" + decision.DeciderUserId.ToString("D");
+        var candidates = settings.ApproverCandidates
+            .Where(c => !string.Equals(c.Trim(), decider, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        if (candidates.Count == 0)
         {
             return ApprovalStart.Failed(QuarantineErrorCodes.ApproversNotConfigured, 409,
-                "No approver candidates are configured for this company (Quarantine settings); nothing was sent.");
+                "No approver candidate other than the decider is configured for this company (Quarantine settings); nothing was sent.");
         }
 
         var hold = decision.HoldId is { } holdId ? await _repository.FindHoldAsync(holdId, cancellationToken) : null;
@@ -45,7 +52,7 @@ public sealed class WorkflowApprovalPort : IQuarantineApprovalPort
             QuarantineWorkflowTemplate.ObjectType,
             decision.Id.ToString("D"),
             decision.DecisionNumber,
-            settings.ApproverCandidates,
+            candidates,
             ReasonCode(decision.Kind),
             QuarantineWorkflowTemplate.IdempotencyKey(decision.Id),
             entered.AddDays(settings.WaitTargetDays),
@@ -193,7 +200,8 @@ public sealed class QuarantineWorkflowReconciler
                 actor = Guid.Empty;
             }
 
-            var applied = await _applier.ApplyOutcomeAsync(id, mapped, actor, instanceId, ct);
+            var applied = await _applier.ApplyOutcomeAsync(id, mapped, actor, instanceId, ct,
+                mapped == ApprovalOutcome.Approved ? actorRow?.SignatureId : null);
             reconciled |= applied.IsSuccessful;
         }
 

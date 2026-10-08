@@ -49,12 +49,15 @@ public sealed class QuarantineScenario
         "quarantine.decisions.apply", "quarantine.blocked.dispose", "quarantine.blocked.unblock", "quarantine.blocked.block", "quarantine.settings.manage"
     ];
 
+    /// <summary>MOD-0022 keys a quarantine user needs since Q3 (pack §14 outside keys): policy (sign) + reading the signature (read).</summary>
+    public static readonly string[] ESignPermissions = ["esign.signatures.sign", "esign.signatures.read"];
+
     public QuarantineScenario(QuarantineApiFactory factory, bool lotControlled = true, bool serialControlled = false)
     {
         Factory = factory;
         Lots = new LotLedgerScenario(factory, lotControlled, serialControlled);
-        Token = TestTokens.Mint(Tenant, Ledger.LegalEntity, Ledger.User, TestTokens.AllPermissions.Concat(TestTokens.TracePermissions).Concat(QuarantinePermissions));
-        ApproverToken = TestTokens.Mint(Tenant, Ledger.LegalEntity, Approver, TestTokens.AllPermissions.Concat(QuarantinePermissions));
+        Token = TestTokens.Mint(Tenant, Ledger.LegalEntity, Ledger.User, TestTokens.AllPermissions.Concat(TestTokens.TracePermissions).Concat(QuarantinePermissions).Concat(ESignPermissions));
+        ApproverToken = TestTokens.Mint(Tenant, Ledger.LegalEntity, Approver, TestTokens.AllPermissions.Concat(QuarantinePermissions).Concat(ESignPermissions));
         Client = factory.CreateContractClient();
     }
 

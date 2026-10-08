@@ -90,6 +90,9 @@ public sealed class FakeWorkflowGateway
         public string? Outcome { get; set; }
         public DateTimeOffset? CompletedAt { get; set; }
         public List<(string Action, string Actor)> History { get; } = [];
+        // Q3 — the template step requires a signature (E4); the id the approve carried (history signatureId).
+        public bool SignatureRequired { get; init; }
+        public string? ApproverSignatureId { get; set; }
     }
 
     public Definition? DefinitionOf(Guid tenant, string code)
@@ -105,7 +108,21 @@ public sealed class FakeWorkflowGateway
     // ── the approver side (WorkCenter) ───────────────────────────────────────────────────────────────────
 
     /// <summary>Approve as <paramref name="actor"/>: 409 SOD_VIOLATION for the starter, 403 for a non-candidate, else 200.</summary>
-    public (int Status, string? Reason) Approve(string instanceId, Guid actor) => Decide(instanceId, actor, "approve", "approved");
+    public (int Status, string? Reason) Approve(string instanceId, Guid actor, string? signatureId = null)
+    {
+        lock (_gate)
+        {
+            var instance = _instances[Guid.Parse(instanceId)];
+            // MOD-0022 E4, simulated when the suite asks for it (Q3): a signature-required step needs a signature id.
+            if (EnforceSignatures && instance.SignatureRequired && instance.Status == "Running" && signatureId is null) return (409, "ESIGN_SIGNATURE_REQUIRED");
+            var result = Decide(instanceId, actor, "approve", "approved");
+            if (result.Item1 == 200) instance.ApproverSignatureId = signatureId;
+            return result;
+        }
+    }
+
+    /// <summary>Q3: simulate MOD-0022 E4 (approve of a signature-required step without a signature → 409).</summary>
+    public bool EnforceSignatures { get; set; }
 
     public (int Status, string? Reason) Reject(string instanceId, Guid actor) => Decide(instanceId, actor, "reject", "rejected");
 
@@ -170,7 +187,8 @@ public sealed class FakeWorkflowGateway
                 ("GET", ["instances", "by-objects"]) => ByObjects(tenant, query["objectType"], query["objectIds"]),
                 ("GET", ["instances", var id, "history"]) => _instances.GetValueOrDefault(Guid.Parse(id)) is { } i && i.Tenant == tenant
                     ? Reply(200, new JsonArray(i.History.Select((h, n) => (JsonNode)new JsonObject
-                        { ["sequenceNo"] = n + 1, ["action"] = h.Action, ["actorId"] = h.Actor, ["occurredAt"] = DateTimeOffset.UtcNow.ToString("O") }).ToArray()))
+                        { ["sequenceNo"] = n + 1, ["action"] = h.Action, ["actorId"] = h.Actor, ["occurredAt"] = DateTimeOffset.UtcNow.ToString("O"),
+                          ["signatureId"] = h.Action == "approve" ? i.ApproverSignatureId : null }).ToArray()))
                     : Reply(404, null, "NOT_FOUND_NON_LEAKAGE"),
                 ("GET", ["tasks"]) => Reply(200, new JsonArray(_instances.Values.Where(i => i.Tenant == tenant).Select(i => (JsonNode)new JsonObject
                     { ["id"] = i.TaskId.ToString("D"), ["workflowInstanceId"] = i.Id.ToString("D"), ["status"] = i.TaskStatus }).ToArray())),
@@ -227,7 +245,8 @@ public sealed class FakeWorkflowGateway
         var instance = new Instance
         {
             Id = Guid.NewGuid(), TaskId = Guid.NewGuid(), Tenant = tenant, StartedBy = user, Candidates = candidates,
-            ObjectType = body["objectType"]!.GetValue<string>(), ObjectId = body["objectId"]!.GetValue<string>()
+            ObjectType = body["objectType"]!.GetValue<string>(), ObjectId = body["objectId"]!.GetValue<string>(),
+            SignatureRequired = _definitions[(tenant, code)].PublishedJson?.Contains("\"signatureRequired\": true", StringComparison.Ordinal) == true
         };
         instance.History.Add(("start", user.ToString("D")));
         _instances[instance.Id] = instance;

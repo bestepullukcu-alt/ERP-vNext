@@ -122,6 +122,15 @@ public sealed class InventoryScopeResolutionMiddleware
 
         // ── 2. Claim-less token (W-0173-02): the company comes from the header and is verified with MDM. ──
         var headerLegalEntity = SingleHeaderUuid(context, InventoryContract.LegalEntityOverrideHeader);
+        if (headerLegalEntity is null && IsSubjectProvider(context))
+        {
+            // MOD-0175 Q3: MOD-0022 calls the subject provider with the signer's token + X-Tenant-Id only. No company is
+            // selected: the scope stays unresolved here and the provider sets it from the record's own company
+            // (tenant + user from this same signed token; a company that IS named must match the record).
+            await _next(context);
+            return;
+        }
+
         if (headerLegalEntity is null)
         {
             await ContractErrorWriter.WriteAsync(context, StatusCodes.Status403Forbidden, null,
@@ -168,6 +177,11 @@ public sealed class InventoryScopeResolutionMiddleware
         tenantContext.SetScope(tenant.Value, headerLegalEntity.Value, subject.Value, LegalEntitySources.HeaderUnverifiedMembership);
         await _next(context);
     }
+
+    /// <summary>MOD-0175 Q3: <c>GET /api/quarantine/esign-subjects/…</c> (the MOD-0022 subject provider, read-only).</summary>
+    private static bool IsSubjectProvider(HttpContext context)
+        => HttpMethods.IsGet(context.Request.Method)
+           && context.Request.Path.StartsWithSegments(Application.Features.Quarantine.QuarantineContract.BasePath + "/esign-subjects", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>The frozen LOCATION v1 <c>listLocations</c> filter <c>legalEntityId</c> on <c>GET /api/locations</c> only.</summary>
     private static bool IsFrozenListFilter(HttpContext context, string key)
