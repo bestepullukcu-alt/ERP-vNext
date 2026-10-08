@@ -1265,6 +1265,21 @@ Open: O-Q3-1 the decider needs `esign.signatures.read` (not in the default signe
 signatures, O-Q3-3 pre-E4 tasks, O-Q3-4 event path keeps no approver signature id. Evidence
 `docs/records/audits/2026-10/mod-0175-q3-evidence-2026-10-08.md`.
 
+**Q3 — CT acceptance (2026-10-08).** CT re-ran Inventory **637/637** and architecture **18/18** in the agent worktree; read the
+scope-middleware exception, the provider controller, `DecisionCompanyAsync` (tenant-filtered) and the decider check. CT sabotages:
+S1 drop the controller check "named company = record company" → **stays green** (107/107): the effective guard is the
+company-scoped repository (an other-company token resolves its own scope, the decision is not found → 404); the controller check
+is a redundant second layer, kept. S2 drop it AND always take the scope from the record (a real cross-company read) →
+`The_provider_is_404_without_holds_read_for_another_company_and_for_another_type` red, restored, porcelain clean. Provider
+bypass risk = W-0173-02 (company comes from a tenant-filtered record; no user↔LE data exists) — accepted. Fast-forwarded into
+the MVP-1 branch. Decisions on the opens:
+- **CT-Q15 (O-Q3-1):** `esign.signatures.read` joins the MOD-0022 CT-D10 default signer set (delivered in E5, with the other
+  default-grant work) and §14 external keys; existing tenants = manual grant like the other `esign.*` keys.
+- **O-Q3-2** signatures on Karantinaya Al / manual block → **Q4** (with the serial split, same commands).
+- **O-Q3-3** tasks created before E4 stay unsigned-approvable — dev data only, accepted, no migration.
+- **O-Q3-4** RabbitMQ event path without approver signature id → with O-Q2-1 (environment follow-up); reconcile is the live path.
+- ASSUMPTION-0175-Q3-01…04 accepted for MVP-1 (`skuCode` null until MDM MOD-0290 serves it).
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
