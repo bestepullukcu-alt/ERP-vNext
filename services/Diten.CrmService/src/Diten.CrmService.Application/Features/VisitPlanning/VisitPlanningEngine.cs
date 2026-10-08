@@ -959,6 +959,12 @@ public sealed class VisitPlanningEngine
             if (dayFull)
             {
                 overflow.Add(item);
+                // WP-VP-4I (2) — the route could not hold it (the travel), yet a day of the week still has minutes for its
+                // visit: no_near_day. capacity_full stays for a week with no room left for the visit itself.
+                if (days.Any(d => d.BudgetMinutes > 0 && load[d.Date] + Cost(item) <= d.BudgetMinutes))
+                {
+                    noNearDay.Add(item);
+                }
             }
             else
             {

@@ -302,7 +302,9 @@ public static class DayBalancer
     /// <item>the pinned visits sit on their pinned days (<paramref name="pinned"/>; the caller already placed them within
     /// the day's window); every free visit STAYS on its base day;</item>
     /// <item>only where a day now exceeds its budget, its free visits FARTHEST from the day's centre leave (ties: the
-    /// later id) until it fits - a pinned visit never moves;</item>
+    /// later id) until it fits - a pinned visit never moves; WP-VP-4I — where the minutes hold, a free group far from
+    /// the day's pinned cluster adds the trip between the two, and the farthest such group leaves whole while the day
+    /// is over its budget with the trips;</item>
     /// <item>what left, and what had no base day, is placed by <see cref="Assign"/> around everything kept (near first,
     /// then a new / light day - the F4-1 rules).</item>
     /// </list>
@@ -379,6 +381,35 @@ public static class DayBalancer
                     leftover.Add(v);
                     total -= v.CostMinutes;
                 }
+            }
+            else if (free.Count > 0 && CentreOf(pinnedHere) is { } pinCentre)
+            {
+                // WP-VP-4I (1) — the minutes hold, but a free group FAR from the pinned cluster (beyond NearTravelMinutes)
+                // costs the trip between the two clusters too (the light-day rule's travel). While the day is over its
+                // budget with those trips, the farthest far group leaves WHOLE (ties: the smaller first id) and is placed
+                // again below (near → new → light day with the trip, else no_near_day). A kept far group's trip is booked.
+                var far = free
+                    .GroupBy(v => v.GroupKey, StringComparer.Ordinal)
+                    .Select(g => (Visits: g.ToList(), Point: CentreOf(g)))
+                    .Where(g => g.Point is { } p && Travel(pinCentre, p) > NearTravelMinutes)
+                    .Select(g => (g.Visits, Trip: (int)Math.Ceiling(Travel(pinCentre, g.Point!.Value))))
+                    .OrderByDescending(g => g.Trip).ThenBy(g => g.Visits.Min(v => v.Id))
+                    .ToList();
+                var withTrips = total + far.Sum(g => g.Trip);
+                foreach (var g in far)
+                {
+                    if (withTrips <= d.BudgetMinutes)
+                    {
+                        break;
+                    }
+
+                    g.Visits.ForEach(v => free.Remove(v));
+                    leftover.AddRange(g.Visits);
+                    total -= g.Visits.Sum(v => v.CostMinutes);
+                    withTrips -= g.Visits.Sum(v => v.CostMinutes) + g.Trip;
+                }
+
+                total = withTrips;
             }
 
             free.ForEach(v => assigned[v.Id] = d.Date);
