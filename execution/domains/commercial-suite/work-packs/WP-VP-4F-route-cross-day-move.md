@@ -38,3 +38,22 @@ KORU/YAPMA: Rota görünümü ve gün içi davranış değişmez; backend'e doku
 DOĞRULA (E2): Web (774/0) · CRM (2437/0/5, dokunulmaz) · mimari 27; JS node --check; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Testler belge Acceptance; sabotaj 1 (kırmızı kanıtla, geri al).
 Commit: "feat(web): WP-VP-4F — move a route stop to another day (day pin)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt, elle denenecekler. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-08)
+**Commit:** `2966bbf72` (ff). Push: test dalı.
+
+**CT K13:** Web 774 → **779/0** (+5) · CRM 2437/0/5 (dokunulmadı; bir koşuda bilinen PII kararsızı) · mimari 27 · JS `node --check` temiz.
+
+**Kod okuması:**
+- Rota sekmeye bırakma = 4D `weeks.js` bileşeni (soru, kurallar, `savePins`): kurum bloğu → `institution`, açık duraktaki doktor kartı → `visit`; `day-pin:moved` olayıyla hedef gün açılıyor.
+- Eski `moveBlockToDay` (elle sırayla yaklaşık taşıma) kaldırıldı.
+- Gün içi sürükle elle sıra olarak aynen.
+- `ROUTE_MOVABLE_WEEK_STATUSES` draft / empty.
+- Eczane durağı kliniğiyle birlikte taşınıyor.
+- Yeni metin anahtarı yok (4D anahtarları).
+
+**CT sabotajı:** onaylı / geçmiş haftada Rota'da bırakma açıldı → 1 kırmızı (`An_approved_or_past_week_and_a_holiday_weekend_or_gone_day_take_no_drop`). Geri alındı.
+
+**E4:** Faz 4 tek turunda (ajan listesi: sekmeye bırakma, tek doktor sorusu, gün içi sıra, klavye, dolu güne kurum → sığmadı satırı, onaylı / tatil kapalı).
