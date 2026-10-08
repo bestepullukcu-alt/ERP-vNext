@@ -1311,6 +1311,20 @@ Retest. Open: **O-Q4-1** a retest date PATCH (`trace.lots.update-released`) free
 the seam list); **O-Q4-2** `getLotQualityStatus` + Lots page 202 handling → Q5; **O-Q4-3** two simultaneous LotRelease submits of one
 lot. Evidence `docs/records/audits/2026-10/mod-0175-q4-evidence-2026-10-08.md`.
 
+**Q4 — CT acceptance (2026-10-08).** CT re-ran Inventory **683/683** (the 4 Prism smoke tests green) and architecture **18/18** in the
+agent worktree; checked every non-test file against the CT-Q16 seam list (inside it; no Web / Platform / Gateway, quarantine and
+trace contracts untouched); read `HoldsStock(Lot)`, the ledger branch (lot read in the posting transaction) and
+`ApplyApprovedLotStatusChange`. CT sabotage (own): drop the "approved decision is about THIS lot" check →
+`The_command_past_the_gate_refuses_without_an_approved_decision_of_this_lot` red, restored, porcelain clean. CT corrected the
+INVENTORY-BUNDLE 1.0.2 changelog wording to match ASSUMPTION-0175-Q4-01b (exception by movement direction, never by
+`sourceModule`). Fast-forwarded into the MVP-1 branch. Decisions:
+- ASSUMPTION-0175-Q4-01b, -04, -05 accepted.
+- **CT-Q17 (O-Q4-1):** on a non-Draft lot, `updateLot` may move `retestDate` EARLIER (safe direction) but not later or to null →
+  409 `LOT_KEY_IMMUTABLE` (already in TRACE 1.2.0 `updateLot`); a later retest date comes only from an approved MOD-0175 retest
+  release. Delivered in **WP-0175-Q4R** (before Q5).
+- **O-Q4-3** two concurrent LotRelease decisions for one lot → **WP-0175-Q4R** (one open LotRelease per lot, unique index + test).
+- O-Q4-2 (`getLotQualityStatus`, Lots page 202) → Q5.
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
