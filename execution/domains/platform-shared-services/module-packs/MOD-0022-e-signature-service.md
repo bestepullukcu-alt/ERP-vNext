@@ -1281,6 +1281,32 @@ ready-for-dev); waiver **W-0022-01** (DCP-002 verifier not run — no Python; ru
   test is the guard.
 - KS-11 second factor: extension point only (`ESignReauthKind`), no flow; FU-0022-01.
 
+### E2 — implementation note (WP-0022-E2, 2026-10-08; CT-ACCEPTED 2026-10-08)
+
+**CT acceptance (K13):** re-measured at `39a847d8a` — Platform `~ESign` filter 80/80 (needs `DITEN_TEST_MONGOD=<mongod.exe>`; without it the replica-set fixture fails 20 tests at start-up — environment, not code), BackgroundJobs 22/22, architecture 18/18; AuthService change limited to the FU-0022-12 HashSecret rule. CT sabotage: `DrawRequired` appearance rule loosened (`ESignatureRules.cs:28`) → 1 red, restored. CT decisions: **CT-D10 → E3 scope** (default-role grants of `esign.signatures.sign` + `esign.my-samples.manage` in AuthService `DefaultRolePermissionTemplate`); envelope field `reason_code` (contract states the real field) accepted; global signable-action catalog accepted (policy rows stay tenant-scoped); nav pages hidden until E5 accepted; ticket SHA-256 in Platform records accepted (high-entropy random ticket; AuthService keeps its HMAC); export dates UTC (FU-0022-TZ: tenant time zone not modelled); FU23 subjects without LegalEntity (BL-432) accepted; Windows `--nounixsocket` fix in the shared test harness accepted.
+
+- Branch `feature/sce/mod-0022-e2` from `2bdedbb26`. Commits `90024eab4` (ESIGN-BUNDLE 1.0.0 FROZEN, single writer) and
+  `a7508d583` (Platform e-signature service + AuthService FU-0022-12); local only, no push.
+  Evidence: `docs/records/audits/2026-10/mod-0022-e2-evidence-2026-10-08.md`.
+- Tests: Platform filtered 489 → **564** (+75 ESign); AuthService 1039 → **1045** (+6 FU-0022-12); BackgroundJobs 22/22;
+  architecture 18/18; build 0 errors, the same unique warnings as the base.
+- §16 E2: every item **PASS**. Five sabotages red (skip ticket consume, no key ordering, `UpdateAsync` on the record
+  store, `/Platform/ESignature` route, HashSecret fallback in Production), diff empty after restore. Runtime probe
+  23/23 (real AuthService + Platform, own remote subject provider, PDF export hash = log row). Owner fleet unchanged.
+- **OPEN for the CT — CT-D10 default grants:** the grant of `esign.signatures.sign` / `esign.my-samples.manage` to the
+  default tenant roles lives in AuthService's role template (`DefaultRolePermissionTemplate`), outside this slice's
+  allowed diff. Proposed one-line change: `AdminModules += "esign"`, `TenantSelfServicePermissions +=` the two keys.
+- Deviations recorded in the contract (`x-implementation-notes`) and the evidence:
+  - the Platform envelope carries the code in `reason_code` (the proposal wrote `errorCode`);
+  - the signable-action catalog (§4.23) is global — the request has no tenant; policy rows stay tenant-scoped;
+  - manifest pages are declared but hidden from the menu until E5 builds them (`PagesNavigable = false`);
+  - signature times are truncated to the stored millisecond before hashing (else every record verified as tampered);
+  - a duplicate key inside a Mongo transaction aborts it, so it surfaces as `ESignatureDuplicateException`;
+  - `TicketRef` = SHA-256 of the ticket (Platform does not hold AuthService's HMAC key);
+  - export dates in UTC (no tenant time zone modelled); FU23 provider `legalEntityId` null (BL-432).
+- `DisposableMongoReplicaSet` (Platform test harness) no longer passes `--nounixsocket` on Windows, where mongod
+  rejects it — the harness could not start on this machine before.
+
 ### Registry row proposal (CT writes it)
 
 `| MOD-0022 | e-Signature Service | e-signature-service | Module | reserved / planned |  |  | platform-shared-services | Blueprint 8.1 Blueprint_Data row 23 (W-2; Module Pages rows 66–68 say W-4). ESIGN-BUNDLE. SoR: signature envelopes, signer attestations, verification artifacts. DCP-002 verifier pending (waiver W-0022-01, no Python). Pack: execution/domains/platform-shared-services/module-packs/MOD-0022-e-signature-service.md (draft 2026-10-07). |`

@@ -102,7 +102,9 @@ public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
         || requestType == typeof(DeactivateModuleCatalogItemCommand)
         || requestType == typeof(DeleteModuleCatalogItemCommand)
         || requestType == typeof(BulkDeleteModuleCatalogItemsCommand)
-        || requestType == typeof(RegisterModuleManifestCommand);
+        || requestType == typeof(RegisterModuleManifestCommand)
+        // MOD-0022 — e-signature commands write their audit intent inside their own business transaction.
+        || Features.ESignature.ESignatureTransactionAudit.Owns(requestType);
 
     private AuditPlan BuildAuditPlan(TRequest request)
     {

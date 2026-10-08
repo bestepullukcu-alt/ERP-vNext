@@ -107,6 +107,10 @@ builder.Services.AddDitenObservability(
         healthChecks.AddCheck<Diten.Platform.API.Observability.BusinessReferenceDataProviderReadinessHealthCheck>(
             "business_reference_data_provider",
             tags: new[] { "ready" });
+        // MOD-0022 CT-D4 — Degraded (never Unhealthy) when the evidence storage root is unset outside Development.
+        healthChecks.AddCheck<Diten.Platform.API.Observability.ESignatureContentStorageHealthCheck>(
+            "esign_content_storage",
+            tags: new[] { "ready" });
         if (string.Equals(
                 builder.Configuration["Eventing:Transport"],
                 "RabbitMQ",
@@ -170,6 +174,8 @@ builder.Services.AddHostedService<VerifiedGskuOperationalProvisioningRunner>();
 builder.Services.AddSingleton<Diten.Platform.API.Services.ModuleRegistration.ModuleSelfRegistrationGate>();
 // MC-3b — self-register Platform-internal module manifests (workflow, …) into the catalog in-process at startup.
 builder.Services.AddHostedService<Diten.Platform.API.Services.ModuleRegistration.PlatformModuleSelfRegistrationWorker>();
+// MOD-0022 CT-D4 — one startup warning when the e-signature evidence storage root is unset outside Development.
+builder.Services.AddHostedService<Diten.Platform.API.Observability.ESignatureContentStorageStartupWarning>();
 // A1 — auto-register every controller [HasPermission] key into AuthService at startup (best-effort, idempotent).
 // Gated on the signal above; falls back after a bounded timeout so a manifest failure cannot block it forever.
 builder.Services.AddHostedService<Diten.Platform.API.Services.Security.PlatformPermissionAutoRegistrationWorker>();

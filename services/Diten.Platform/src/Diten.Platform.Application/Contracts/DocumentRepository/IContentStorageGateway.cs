@@ -76,7 +76,12 @@ public enum ContentStorageScope
     /// projected into the object key by name (its own <c>content-messaging-artifacts</c> partition), never by
     /// ordinal, so existing persisted keys are unaffected. The render service (SCMM-16B, CrmService) stores and
     /// reads these through the existing MOD-0262-FU01 <c>/api/v1/document-repository</c> surface.</summary>
-    ContentMessagingArtifacts = 3
+    ContentMessagingArtifacts = 3,
+
+    /// <summary>MOD-0022 e-Signature Service (E2/E3, CT-D4) — visual signature images (drawn PNGs, later samples). Additive
+    /// only, per this enum's own doc comment; projected into the object key by name (its own <c>esign-images</c>
+    /// segment), never by ordinal.</summary>
+    ESignatureImages = 4
 }
 
 /// <summary>
