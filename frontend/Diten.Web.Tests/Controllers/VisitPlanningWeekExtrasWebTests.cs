@@ -106,6 +106,20 @@ public sealed class VisitPlanningWeekExtrasWebTests
         Assert.Contains("esc(L.EmptyWeekAddFromTargets || '')", Script("weeks.js"));
     }
 
+    // CT (4L-WEB K13) — before 4L-BE answers (no extraTargets / isExtra in the preview) the extra-visit actions stay
+    // hidden: an older server must never get a weekExtras body it does not know.
+    [Fact]
+    public void Without_the_servers_extra_fields_no_extra_visit_action_is_offered()
+    {
+        var js = Script("details.js");
+        var supports = Between(js, "const supportsExtras = () =>", ";\n");
+        Assert.StartsWith("const supportsExtras = () => !!lastPreview && (", supports);
+        Assert.Contains("Array.isArray(w.extraTargets)", supports);
+        Assert.Contains("typeof s.isExtra === 'boolean'", supports);
+        Assert.DoesNotContain("true ||", supports);
+        Assert.Contains("!page.isLegacy() && supportsExtras()", Between(js, "const canEditExtras = () =>", ";\n"));
+    }
+
     // ── 4 · the "extra" badge: Weeks day rows, Route stops, the doctor panel's history ───────────────────────
 
     [Fact]
