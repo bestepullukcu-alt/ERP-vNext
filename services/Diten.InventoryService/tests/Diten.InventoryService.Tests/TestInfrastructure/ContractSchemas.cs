@@ -104,6 +104,7 @@ public static class ContractSchemas
     public const string Settings = "Settings";
     public const string BlockReason = "BlockReason";
     public const string BlockReasonArray = "BlockReasonArray";
+    public const string WorkflowTemplateResult = "WorkflowTemplateResult";
 
     private static readonly Contract Quarantine = new("quarantine.openapi.yaml", "quarantine", doc => new Dictionary<string, JsonNode>
     {

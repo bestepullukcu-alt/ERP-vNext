@@ -155,6 +155,8 @@ public static class QuarantineRequestReader
 
     public static readonly HashSet<string> SubmitMembers = new(StringComparer.Ordinal) { "signatureId", "idempotencyKey" };
 
+    public static readonly HashSet<string> KeyMembers = new(StringComparer.Ordinal) { "idempotencyKey" };
+
     public static readonly HashSet<string> SettingsMembers = new(StringComparer.Ordinal)
         { "waitTargetDays", "fourEyes", "approverCandidates", "sampleLocations", "lotReleaseRequiresApproval", "reconcileAfterSeconds" };
 

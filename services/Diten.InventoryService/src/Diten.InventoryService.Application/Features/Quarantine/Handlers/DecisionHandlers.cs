@@ -29,6 +29,7 @@ public sealed class QuarantineDecisionChecks
                 hold.ActiveDecisionId == ownDecisionId ? null : hold.ActiveDecisionId) is { } v6)
             return v6;
         if (QuarantineDecisionRules.Lines(lines, hold.Quantity) is { } v12) return v12;
+        if (QuarantineDecisionRules.Serials(hold.SerialIds, hold.Quantity, lines.Select(l => l.Quantity)) is { } ser) return ser;
         if (QuarantineDecisionRules.Coa(lines, coaChecked) is { } v4) return v4;
         var needsReason = lines.Any(l => l.Decision is LineDecision.Reject or LineDecision.Block);
         if (QuarantineDecisionRules.BlockReason(needsReason, blockReasonCode, needsReason ? await _facts.ActiveBlockReasonsAsync(ct) : new HashSet<string>()) is { } v5)
@@ -54,11 +55,13 @@ public sealed class QuarantineDecisionChecks
         {
             if (QuarantineDecisionRules.Disposition(disposition!, blocked.Quantity, QuarantineSupport.Today()) is { } v10) return (v10, null);
             quantity = disposition!.Quantity;
+            if (QuarantineDecisionRules.Serials(blocked.SerialIds, blocked.Quantity, [quantity]) is { } ser) return (ser, null);
         }
         else
         {
             if (QuarantineDecisionRules.Unblock(blocked.Reviewed) is { } v14) return (v14, null);
             quantity = blocked.Quantity;
+            if (QuarantineDecisionRules.Serials(blocked.SerialIds, blocked.Quantity, [quantity]) is { } ser) return (ser, null);
         }
 
         var lot = await _facts.LotAsync(blocked.LotId, ct);
@@ -156,8 +159,14 @@ public sealed class CreateDecisionHandler : IRequestHandler<CreateDecisionComman
             var lot = await _facts.LotAsync(hold.LotId, ct);
             decision.HoldId = hold.Id;
             Snapshot(decision, hold.ItemId, hold.SkuId, hold.SkuLevel, hold.LotId, hold.WarehouseId, hold.LocationId, hold.StockStatus, hold.BaseUomId, hold.Quantity);
-            decision.Lines = request.Lines.OrderBy(l => l.LineNo)
-                .Select(l => new DecisionLine { LineNo = l.LineNo, Decision = l.Decision, Quantity = l.Quantity, ToStockStatus = QuarantineStockEffects.LineTarget[l.Decision] })
+            var ordered = request.Lines.OrderBy(l => l.LineNo).ToList();
+            var serialParts = QuarantineStockEffects.SplitSerials(hold.SerialIds, ordered.Select(l => l.Quantity).ToList());
+            decision.Lines = ordered
+                .Select((l, i) => new DecisionLine
+                {
+                    LineNo = l.LineNo, Decision = l.Decision, Quantity = l.Quantity, ToStockStatus = QuarantineStockEffects.LineTarget[l.Decision],
+                    SerialIds = serialParts[i]
+                })
                 .ToList();
             decision.BlockReasonCode = request.Lines.Any(l => l.Decision is LineDecision.Reject or LineDecision.Block) ? request.BlockReasonCode : null;
             decision.CoaChecked = request.CoaChecked;
@@ -206,8 +215,13 @@ public sealed class CreateDecisionHandler : IRequestHandler<CreateDecisionComman
                     ReturnDocumentNo = disposition.ReturnDocumentNo?.Trim(),
                     DestructionMethod = disposition.DestructionMethod?.Trim(),
                     DestructionDate = disposition.DestructionDate is { } dd ? QuarantineSupport.Midnight(dd) : null,
-                    SampleLocationId = sampleLocation
+                    SampleLocationId = sampleLocation,
+                    SerialIds = QuarantineStockEffects.SplitSerials(blocked.SerialIds, [disposition.Quantity])[0]
                 };
+            }
+            else
+            {
+                decision.SerialIds = blocked.SerialIds is { Count: > 0 } serials ? [.. serials] : null; // Unblock moves every remaining serial
             }
         }
 

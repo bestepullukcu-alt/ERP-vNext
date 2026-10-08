@@ -91,11 +91,14 @@ public sealed class ListHoldsHandler : IRequestHandler<ListHoldsQuery, Response<
     private readonly QuarantineFacts _facts;
     private readonly QuarantineReads _reads;
 
-    public ListHoldsHandler(IQuarantineRepository repository, QuarantineFacts facts, QuarantineReads reads)
+    private readonly QuarantineWorkflowReconciler _reconciler;
+
+    public ListHoldsHandler(IQuarantineRepository repository, QuarantineFacts facts, QuarantineReads reads, QuarantineWorkflowReconciler reconciler)
     {
         _repository = repository;
         _facts = facts;
         _reads = reads;
+        _reconciler = reconciler;
     }
 
     public async Task<Response<HoldListDto>> Handle(ListHoldsQuery request, CancellationToken ct)
@@ -120,8 +123,13 @@ public sealed class ListHoldsHandler : IRequestHandler<ListHoldsQuery, Response<
         var settings = await _facts.SettingsAsync(ct);
         var now = QuarantineSupport.Now();
         DateTimeOffset? enteredBefore = lateOnly ? now.AddDays(-settings.WaitTargetDays) : null;
-        var result = await _repository.ListHoldsAsync(
-            new HoldQuery(request.Q?.Trim(), request.WarehouseId, status, source, lateOnly ? null : holdStatus, review, request.LotId, enteredBefore, page, size), ct);
+        var query = new HoldQuery(request.Q?.Trim(), request.WarehouseId, status, source, lateOnly ? null : holdStatus, review, request.LotId, enteredBefore, page, size);
+        var result = await _repository.ListHoldsAsync(query, ct);
+        // Q2: read-time reconciliation of the decisions this page shows (pack §8, the guaranteed path); re-read when applied
+        if (await _reconciler.ReconcileAsync(result.Items.Select(h => h.ActiveDecisionId), force: false, ct) == QuarantineWorkflowReconciler.Result.Reconciled)
+        {
+            result = await _repository.ListHoldsAsync(query, ct);
+        }
         var items = result.Items;
         if (lateOnly)
         {
@@ -155,11 +163,14 @@ public sealed class GetHoldHandler : IRequestHandler<GetHoldQuery, Response<Hold
     private readonly QuarantineFacts _facts;
     private readonly QuarantineReads _reads;
 
-    public GetHoldHandler(IQuarantineRepository repository, QuarantineFacts facts, QuarantineReads reads)
+    private readonly QuarantineWorkflowReconciler _reconciler;
+
+    public GetHoldHandler(IQuarantineRepository repository, QuarantineFacts facts, QuarantineReads reads, QuarantineWorkflowReconciler reconciler)
     {
         _repository = repository;
         _facts = facts;
         _reads = reads;
+        _reconciler = reconciler;
     }
 
     public async Task<Response<HoldDetailDto>> Handle(GetHoldQuery request, CancellationToken ct)
@@ -167,6 +178,11 @@ public sealed class GetHoldHandler : IRequestHandler<GetHoldQuery, Response<Hold
         if (!QuarantineSupport.TryParseId(request.HoldId, out var id) || await _repository.FindHoldAsync(id, ct) is not { } hold)
         {
             return QuarantineSupport.Fail<HoldDetailDto>(QuarantineErrorCodes.HoldNotFound, "Hold not found.", 404);
+        }
+
+        if (await _reconciler.ReconcileAsync([hold.ActiveDecisionId], force: false, ct) == QuarantineWorkflowReconciler.Result.Reconciled)
+        {
+            hold = (await _repository.FindHoldAsync(id, ct))!;
         }
 
         var settings = await _facts.SettingsAsync(ct);
@@ -185,7 +201,13 @@ public sealed class GetDecisionHandler : IRequestHandler<GetDecisionQuery, Respo
 {
     private readonly IQuarantineDecisionRepository _decisions;
 
-    public GetDecisionHandler(IQuarantineDecisionRepository decisions) => _decisions = decisions;
+    private readonly QuarantineWorkflowReconciler _reconciler;
+
+    public GetDecisionHandler(IQuarantineDecisionRepository decisions, QuarantineWorkflowReconciler reconciler)
+    {
+        _decisions = decisions;
+        _reconciler = reconciler;
+    }
 
     public async Task<Response<DecisionDto>> Handle(GetDecisionQuery request, CancellationToken ct)
     {
@@ -194,6 +216,7 @@ public sealed class GetDecisionHandler : IRequestHandler<GetDecisionQuery, Respo
             return QuarantineSupport.Fail<DecisionDto>(QuarantineErrorCodes.DecisionNotFound, "Decision not found.", 404);
         }
 
+        await _reconciler.ReconcileAsync([id], force: false, ct);
         return Response<DecisionDto>.Success(QuarantineMapping.Decision(decision, await _decisions.EventsAsync([id], ct)));
     }
 }
@@ -208,11 +231,14 @@ public sealed class ListBlockedHandler : IRequestHandler<ListBlockedQuery, Respo
     private readonly QuarantineFacts _facts;
     private readonly QuarantineReads _reads;
 
-    public ListBlockedHandler(IQuarantineRepository repository, QuarantineFacts facts, QuarantineReads reads)
+    private readonly QuarantineWorkflowReconciler _reconciler;
+
+    public ListBlockedHandler(IQuarantineRepository repository, QuarantineFacts facts, QuarantineReads reads, QuarantineWorkflowReconciler reconciler)
     {
         _repository = repository;
         _facts = facts;
         _reads = reads;
+        _reconciler = reconciler;
     }
 
     public async Task<Response<BlockedListDto>> Handle(ListBlockedQuery request, CancellationToken ct)
@@ -225,8 +251,12 @@ public sealed class ListBlockedHandler : IRequestHandler<ListBlockedQuery, Respo
             return QuarantineSupport.Invalid<BlockedListDto>("A filter is malformed (origin, status, pendingOnly, page, pageSize, warehouseId, q).");
         }
 
-        var result = await _repository.ListBlockedAsync(
-            new BlockedQuery(request.Q?.Trim(), request.BlockReasonCode, pendingOnly, origin, status, request.WarehouseId, page, size), ct);
+        var query = new BlockedQuery(request.Q?.Trim(), request.BlockReasonCode, pendingOnly, origin, status, request.WarehouseId, page, size);
+        var result = await _repository.ListBlockedAsync(query, ct);
+        if (await _reconciler.ReconcileAsync(result.Items.Select(b => b.ActiveDecisionId), force: false, ct) == QuarantineWorkflowReconciler.Result.Reconciled)
+        {
+            result = await _repository.ListBlockedAsync(query, ct);
+        }
         var lots = await _facts.LotsAsync(result.Items.Select(b => b.LotId), ct);
         var reasons = (await _repository.BlockReasonsAsync(ct)).ToDictionary(r => r.Code, StringComparer.Ordinal);
         var active = await _reads.ActiveAsync(result.Items.Select(b => b.ActiveDecisionId), ct);
@@ -245,12 +275,15 @@ public sealed class GetBlockedHandler : IRequestHandler<GetBlockedQuery, Respons
     private readonly QuarantineFacts _facts;
     private readonly QuarantineReads _reads;
 
-    public GetBlockedHandler(IQuarantineRepository repository, IQuarantineDecisionRepository decisions, QuarantineFacts facts, QuarantineReads reads)
+    private readonly QuarantineWorkflowReconciler _reconciler;
+
+    public GetBlockedHandler(IQuarantineRepository repository, IQuarantineDecisionRepository decisions, QuarantineFacts facts, QuarantineReads reads, QuarantineWorkflowReconciler reconciler)
     {
         _repository = repository;
         _decisions = decisions;
         _facts = facts;
         _reads = reads;
+        _reconciler = reconciler;
     }
 
     public async Task<Response<BlockedStockDetailDto>> Handle(GetBlockedQuery request, CancellationToken ct)
@@ -258,6 +291,11 @@ public sealed class GetBlockedHandler : IRequestHandler<GetBlockedQuery, Respons
         if (!QuarantineSupport.TryParseId(request.BlockedId, out var id) || await _repository.FindBlockedAsync(id, ct) is not { } blocked)
         {
             return QuarantineSupport.Fail<BlockedStockDetailDto>(QuarantineErrorCodes.BlockedNotFound, "Blocked-stock record not found.", 404);
+        }
+
+        if (await _reconciler.ReconcileAsync([blocked.ActiveDecisionId], force: false, ct) == QuarantineWorkflowReconciler.Result.Reconciled)
+        {
+            blocked = (await _repository.FindBlockedAsync(id, ct))!;
         }
 
         var lots = await _facts.LotsAsync([blocked.LotId], ct);

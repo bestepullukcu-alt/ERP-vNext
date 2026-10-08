@@ -131,7 +131,8 @@ public sealed class QuarantineValidationTests : IClassFixture<QuarantineApiFacto
     [Fact]
     public async Task Submit_without_an_approval_path_fails_closed_and_moves_nothing()
     {
-        // The production host (InventoryApiFactory: test port off) — Q1 has no workflow, so a submit cannot start an approval.
+        // The production host (test port off) — since Q2 the Workflow port; a company without approver candidates cannot start
+        // an approval (V16), so the submit fails closed before any call to MOD-0023 (QuarantineWorkflowTests covers the rest).
         using var factory = new TraceApiFactory();
         var lots = new LotLedgerScenario(factory);
         var lot = await lots.CreateLotAsync();
@@ -157,8 +158,8 @@ public sealed class QuarantineValidationTests : IClassFixture<QuarantineApiFacto
         Assert.Equal(201, s1);
         var k2 = QuarantineScenario.Key("s");
         var (s2, refused) = await Post($"/api/quarantine/decisions/{Id(draft, "decisionId")}/submit", new { idempotencyKey = k2 }, k2);
-        Assert.Equal(503, s2);
-        Assert.Equal("QUARANTINE_WORKFLOW_UNAVAILABLE", QuarantineScenario.Code(refused));
+        Assert.Equal(409, s2);
+        Assert.Equal("QUARANTINE_APPROVERS_NOT_CONFIGURED", QuarantineScenario.Code(refused));
         Assert.Equal(["Submitted", "StartFailed"], lots.Persisted("quarantine_decision_events").OrderBy(e => e["Sequence"].ToInt64()).Select(e => e["Kind"].AsString));
         Assert.Equal("Open", lots.Persisted("quarantine_holds").Single()["Status"].AsString);
         Assert.True(lots.Persisted("quarantine_holds").Single()["ActiveDecisionId"].IsBsonNull);

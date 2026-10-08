@@ -1199,6 +1199,37 @@ not acceptable); **O-2 → Q4** (with the lot gate); **O-5 → Q5** (labels via 
 Q5 with the queue page; **O-1** contracts README row = CT records step at MVP-1 closure; CT-Q9 = idempotent continue + retry
 (measured: `PostAsync` opens its own transaction) — accepted.
 
+### WP-0175-Q2 (CT-ACCEPTED 2026-10-08) — Workflow integration + FU-0175-Q1-SER
+
+**CT acceptance (K13):** v1 re-measured at `7bf32be2e` (613/613) but REWORK requested: the two concurrent-apply guards of `417dc7b24` had no failing test (CT sabotages S1 `if (false)` and S2 `InFlightGrace = Zero` both left 83/83 green). v1.1 (`de6b92ca1`, `162c604da`) adds deterministic tests (`QuarantineApplyRaceTests.cs`, injectable `TimeProvider`); CT re-ran both sabotages → each 1 red, restored; Inventory 617/617. **FU-0175-Q1-SER CLOSED.** CT decisions on the opens: **O-Q2-3 → Q3 scope** — submit is refused when no approver candidate other than the decider exists (otherwise an un-approvable task is created); O-Q2-2 (withdraw 400/404/503 not in the contract) → next additive contract version; O-Q2-4 lot number labels → Q5; **O-Q2-5** Q1 test approval port is removed in Q5; O-Q2-1 RabbitMQ event path runtime proof → environment follow-up (machine has no broker); O-Q2-6 serial split for manual quarantine/block → Q4 (with the lot gate). MassTransit.RabbitMQ 8.3.6 added to InventoryService Infrastructure, bus registered only with `Eventing:Transport=RabbitMQ` (default InMemory) — accepted.
+
+Branch `feature/sce/mod-0175-q2` from `9d93a7dbc` (isolated worktree): `e2d2eb7d4` code + tests, `467dc08da` K3 (a) measure,
+`417dc7b24` concurrent-apply fix. `GatewayWorkflowClient` (Gateway → MOD-0023 with the **caller's** bearer via
+`ForwardCallerHeadersHandler`, `X-Tenant-Id` from the scope; no service token) and `WorkflowApprovalPort` as the production
+port (template `INV-QUARANTINE-RELEASE`, key `quarantine:quarantine.decision:{id}:r1`, candidates from settings — none →
+409 `QUARANTINE_APPROVERS_NOT_CONFIGURED`, DisplayContext with `/Quarantine/Details/{holdId}`; start error → StartFailed, no
+movement). Read-time reconciliation on holds / blocked / decision reads + refresh (only PendingApproval / Approved decisions,
+own instance, approver = Workflow history actor) → Q1 applier once; withdraw cancels the task with the decider's token;
+"Onay şablonunu hazırla" create + publish, idempotent. Consumer + `quarantine_event_inbox` behind `Eventing:Transport`
+(default InMemory = no MassTransit; `MassTransit.RabbitMQ 8.3.6` added). **Template measurement:** Platform stores the
+definition verbatim incl. `signatureRequired` / `signatureMeaning` (accepted, not enforced until MOD-0022 E4).
+**FU-0175-Q1-SER:** holds / blocked records carry the intake serials; lines split them in intake order
+(ASSUMPTION-0175-Q2-01); movements post with serials. Tests 592 → **613/613**, architecture 18/18, 0 warnings. K3 (a) reconcile
+filter, (a2) + all apply guards, (b) no user token, (c) reject → approve, (d) serials dropped → red, restored clean; (a) shows
+re-ask, not double movement (ledger keys + once-only events hold). Runtime probe (own Auth / Platform / Gateway with temp
+ocelot / Inventory / Prism / LE stub, own mongod, login tokens only) **25/25**; it found a concurrency bug (parallel reads →
+Applied then ApplyFailed ×5, stock moved once) — fixed in the 0175 applier, re-probed clean. MOD-0023 assigns ONE resolved
+candidate: the starter is refused 403 `WORKFLOW_ACTOR_DENIED` when another candidate is assigned, 409 `SOD_VIOLATION` when the
+starter is the assignee. Open: RabbitMQ runtime (O-Q2-1), withdraw response codes vs contract (O-Q2-2), single candidate =
+decider (O-Q2-3), DisplayContext labels (O-Q2-4 → Q5), test port removal (O-Q2-5), serials on the wire / manual serial
+quarantine (O-Q2-6). Evidence `docs/records/audits/2026-10/mod-0175-q2-evidence-2026-10-08.md`.
+**CT v1.1 düzeltmesi (`de6b92ca1`): S1/S2 testleri + sabotajlar.** The two concurrent-apply guards had no sabotage proof
+(CT: both stayed green when disabled). Deterministic tests (`QuarantineApplyRaceTests`, no concurrency, no waiting): S1 a staged
+loser (stale 0175 view + stale ledger key lookup, real ledger refuses `INSUFFICIENT_STOCK` — control test) after the winner
+applied → Applied, no ApplyFailed, 1 movement; S2 with an injected `TimeProvider` (only the grace clock; `TimeProvider.System`
+in DI): fresh Approved → Approved, nothing posted; older than the grace → Applied. Sabotages s1 (both Applied checks), s1f
+(RecordFailureAsync only), `InFlightGrace = Zero`, `= MaxValue` → each 1 red, restored clean. Inventory **617/617**, architecture 18/18.
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts

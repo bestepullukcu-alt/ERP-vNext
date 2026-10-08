@@ -118,15 +118,27 @@ public sealed class QuarantineContractTests
         Assert.True(JsonNode.DeepEquals(JsonNode.Parse(proposedTemplate), JsonNode.Parse(contractTemplate)), "workflow template differs from proposal §7");
     }
 
+    /// <summary>Q2: the template the code publishes ("Onay şablonunu hazırla") is the contract's <c>x-workflow-template</c>.</summary>
     [Fact]
-    public void Every_route_slice_Q1_serves_is_an_operation_of_the_contract()
+    public void The_shipped_workflow_template_is_the_contracts_x_workflow_template()
+    {
+        var contract = Yaml.Value["x-workflow-template"]!;
+        Assert.Equal(Diten.InventoryService.Application.Features.Quarantine.Ports.QuarantineWorkflowTemplate.Code, contract["code"]!.GetValue<string>());
+        Assert.Equal(Diten.InventoryService.Application.Features.Quarantine.Ports.QuarantineWorkflowTemplate.SchemaVersion, contract["schemaVersion"]!.GetValue<string>());
+        Assert.Equal(Diten.InventoryService.Application.Features.Quarantine.Ports.QuarantineWorkflowTemplate.ExpressionVersion, contract["expressionVersion"]!.GetValue<string>());
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(contract["definition"]!.GetValue<string>()),
+            JsonNode.Parse(Diten.InventoryService.Application.Features.Quarantine.Ports.QuarantineWorkflowTemplate.DefinitionJson)));
+    }
+
+    [Fact]
+    public void Every_route_slices_Q1_and_Q2_serve_is_an_operation_of_the_contract()
     {
         var contract = Yaml.Value["paths"]!.AsObject()
             .SelectMany(p => p.Value!.AsObject().Select(m => $"{m.Key.ToUpperInvariant()} {Regex.Replace(p.Key, @"\{[^}]+\}", "{}")}")).ToHashSet(StringComparer.Ordinal);
         var served = typeof(QuarantineController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .SelectMany(m => m.GetCustomAttributes<HttpMethodAttribute>())
             .SelectMany(a => a.HttpMethods.Select(v => $"{v} /{Regex.Replace(a.Template ?? "", @"\{[^}]+\}", "{}")}")).ToList();
-        Assert.Equal(17, served.Count);
+        Assert.Equal(20, served.Count); // Q1 17 + Q2 refresh, withdraw, workflow-template
         Assert.All(served, s => Assert.Contains(s, contract));
     }
 }

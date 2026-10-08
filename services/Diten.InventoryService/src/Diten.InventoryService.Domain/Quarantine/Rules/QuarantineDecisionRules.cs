@@ -198,6 +198,27 @@ public static class QuarantineDecisionRules
             : new(SampleLocationInvalid, 400, "The configured sample location is not an Active stockable location of this warehouse (or it is the stock's own location).");
     }
 
+    /// <summary>
+    /// FU-0175-Q1-SER: a serial-tracked record is decided in whole serials — every part an integer quantity, and the record's
+    /// serial count equals its quantity (else the record no longer matches the stock: 409 STOCK_CHANGED).
+    /// </summary>
+    public static QuarantineViolation? Serials(IReadOnlyList<string>? serials, decimal recordQuantity, IEnumerable<decimal> parts)
+    {
+        if (serials is null || serials.Count == 0)
+        {
+            return null;
+        }
+
+        if (serials.Count != recordQuantity)
+        {
+            return new(StockChanged, 409, $"The record holds {serials.Count} serials for a quantity of {recordQuantity}.");
+        }
+
+        return parts.All(q => q == decimal.Truncate(q))
+            ? null
+            : new(DecisionInvalid, 400, "A serial-tracked record is decided in whole units (one serial each).");
+    }
+
     /// <summary>V14: a blocked record is unblocked only after its review is complete.</summary>
     public static QuarantineViolation? Unblock(bool reviewed)
         => reviewed ? null : new(ReviewNotCompleted, 409, "The review of this blocked record is not completed.");

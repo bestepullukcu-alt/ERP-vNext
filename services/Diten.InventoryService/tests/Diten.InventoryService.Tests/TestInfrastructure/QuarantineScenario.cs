@@ -15,15 +15,18 @@ namespace Diten.InventoryService.Tests.TestInfrastructure;
 /// <summary>
 /// The REAL host of <see cref="TraceApiFactory"/> with the slice Q1 TEST approval port switched on
 /// (<c>Quarantine:TestApprovalPort:Enabled</c>, allowed because the suite database is a DB-010 test database). Production
-/// keeps the fail-closed port; <see cref="InventoryApiFactory"/> (port off) proves that.
+/// keeps the Workflow port; <see cref="WorkflowQuarantineApiFactory"/> (port off, MOD-0023 faked at the HTTP edge) proves that.
 /// </summary>
-public sealed class QuarantineApiFactory : TraceApiFactory
+public class QuarantineApiFactory : TraceApiFactory
 {
+    /// <summary>The Q1 test approval port; off in <see cref="WorkflowQuarantineApiFactory"/> (the production Workflow port).</summary>
+    protected virtual bool TestApprovalPort => true;
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         base.ConfigureWebHost(builder);
         builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(
-            new Dictionary<string, string?> { ["Quarantine:TestApprovalPort:Enabled"] = "true" }));
+            new Dictionary<string, string?> { ["Quarantine:TestApprovalPort:Enabled"] = TestApprovalPort ? "true" : "false" }));
     }
 
     /// <summary>Runs the intake sweep once for one tenant (the hosted sweep is off in tests).</summary>
@@ -46,10 +49,10 @@ public sealed class QuarantineScenario
         "quarantine.decisions.apply", "quarantine.blocked.dispose", "quarantine.blocked.unblock", "quarantine.blocked.block", "quarantine.settings.manage"
     ];
 
-    public QuarantineScenario(QuarantineApiFactory factory, bool lotControlled = true)
+    public QuarantineScenario(QuarantineApiFactory factory, bool lotControlled = true, bool serialControlled = false)
     {
         Factory = factory;
-        Lots = new LotLedgerScenario(factory, lotControlled);
+        Lots = new LotLedgerScenario(factory, lotControlled, serialControlled);
         Token = TestTokens.Mint(Tenant, Ledger.LegalEntity, Ledger.User, TestTokens.AllPermissions.Concat(TestTokens.TracePermissions).Concat(QuarantinePermissions));
         ApproverToken = TestTokens.Mint(Tenant, Ledger.LegalEntity, Approver, TestTokens.AllPermissions.Concat(QuarantinePermissions));
         Client = factory.CreateContractClient();
@@ -78,8 +81,9 @@ public sealed class QuarantineScenario
     }
 
     /// <summary>A goods receipt INTO the status (QUARANTINE / QUALITY_INSPECTION / BLOCKED / AVAILABLE) at bin A; returns the transaction id.</summary>
-    public Task<string> ReceiveAsync(string quantity, string? lotId, string toStatus, string movementType = "GOODS_RECEIPT_PO", string? location = null)
-        => Lots.PostOkAsync(Lots.Receipt(quantity, lotId, location, movementType, toStatus));
+    public Task<string> ReceiveAsync(
+        string quantity, string? lotId, string toStatus, string movementType = "GOODS_RECEIPT_PO", string? location = null, string[]? serials = null)
+        => Lots.PostOkAsync(Lots.Receipt(quantity, lotId, location, movementType, toStatus, serials));
 
     public Task<decimal> OnHandAsync(string status, string? location = null) => Ledger.OnHandAsync(location ?? Ledger.LocationA, status);
 
@@ -135,9 +139,9 @@ public sealed class QuarantineScenario
     public Task<JsonElement> GetHoldAsync(string holdId) => ExpectAsync(HttpMethod.Get, $"/api/quarantine/holds/{holdId}", null, 200);
 
     /// <summary>An intake receipt into QUARANTINE and its hold (the observer's).</summary>
-    public async Task<(string TransactionId, JsonElement Hold)> HoldAsync(string quantity, string? lotId, string status = "QUARANTINE")
+    public async Task<(string TransactionId, JsonElement Hold)> HoldAsync(string quantity, string? lotId, string status = "QUARANTINE", string[]? serials = null)
     {
-        var tx = await ReceiveAsync(quantity, lotId, status);
+        var tx = await ReceiveAsync(quantity, lotId, status, serials: serials);
         return (tx, await HoldBySourceAsync(tx));
     }
 

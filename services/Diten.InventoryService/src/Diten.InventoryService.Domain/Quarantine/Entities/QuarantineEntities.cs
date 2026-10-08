@@ -32,6 +32,9 @@ public sealed class QuarantineHold : EntityBase
 
     public string BaseUomId { get; set; } = string.Empty;
 
+    /// <summary>FU-0175-Q1-SER: the serial numbers of a serial-tracked hold (from the intake movement), in intake order.</summary>
+    public List<string>? SerialIds { get; set; }
+
     public HoldSource Source { get; set; }
 
     /// <summary>Ledger transaction that put the quantity into the bucket; unique per tenant when set (intake idempotency).</summary>
@@ -136,6 +139,9 @@ public sealed class QuarantineDecision : EntityBase
 
     public string? LotStatusTarget { get; set; }
 
+    /// <summary>FU-0175-Q1-SER: the serials an Unblock decision moves (fixed at draft time).</summary>
+    public List<string>? SerialIds { get; set; }
+
     public Guid DeciderUserId { get; set; }
 
     public DateTimeOffset DecidedAtUtc { get; set; }
@@ -154,6 +160,9 @@ public sealed class DecisionLine
     public decimal Quantity { get; set; }
 
     public StockStatus ToStockStatus { get; set; }
+
+    /// <summary>FU-0175-Q1-SER: the serials this line moves (fixed at draft time, ASSUMPTION-0175-Q2-01).</summary>
+    public List<string>? SerialIds { get; set; }
 }
 
 public sealed class DecisionDisposition
@@ -172,6 +181,9 @@ public sealed class DecisionDisposition
 
     /// <summary>KQ-E: the company's sample location of the warehouse, resolved and checked at draft time (V13).</summary>
     public string? SampleLocationId { get; set; }
+
+    /// <summary>FU-0175-Q1-SER: the serials the disposition moves (fixed at draft time).</summary>
+    public List<string>? SerialIds { get; set; }
 }
 
 /// <summary>Insert-only event of a decision. <see cref="OnceKey"/> makes the once-only kinds unique per decision.</summary>
@@ -225,6 +237,9 @@ public sealed class BlockedStock : EntityBase
 
     /// <summary>Remaining quantity of this record (the stock itself stays BLOCKED in the ledger).</summary>
     public decimal Quantity { get; set; }
+
+    /// <summary>FU-0175-Q1-SER: the remaining serial numbers of a serial-tracked record.</summary>
+    public List<string>? SerialIds { get; set; }
 
     public string BaseUomId { get; set; } = string.Empty;
 
