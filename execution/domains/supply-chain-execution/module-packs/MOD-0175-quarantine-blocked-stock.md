@@ -1320,7 +1320,7 @@ INVENTORY-BUNDLE 1.0.2 changelog wording to match ASSUMPTION-0175-Q4-01b (except
 `sourceModule`). Fast-forwarded into the MVP-1 branch. Decisions:
 - ASSUMPTION-0175-Q4-01b, -04, -05 accepted.
 - **CT-Q17 (O-Q4-1):** on a non-Draft lot, `updateLot` may move `retestDate` EARLIER (safe direction) but not later or to null →
-  409 `LOT_KEY_IMMUTABLE` (already in TRACE 1.2.0 `updateLot`); a later retest date comes only from an approved MOD-0175 retest
+  400 `LOT_KEY_IMMUTABLE` (CT first wrote 409; the existing TRACE mapping is 400 — Q4R CT acceptance) (already in TRACE 1.2.0 `updateLot`); a later retest date comes only from an approved MOD-0175 retest
   release. Delivered in **WP-0175-Q4R** (before Q5).
 - **O-Q4-3** two concurrent LotRelease decisions for one lot → **WP-0175-Q4R** (one open LotRelease per lot, unique index + test).
 - O-Q4-2 (`getLotQualityStatus`, Lots page 202) → Q5.
@@ -1337,6 +1337,14 @@ replaced in one transaction; pre-Q4R open decisions are adopted. Index on a new 
 decisions; a duplicate claim would stop the startup gate (fail-closed). Tests 683 → **691/691**, architecture 18/18, 0 warnings; sabotage
 (a) direction check off → 2 red, (b) claim off → parallel (4 decisions) + staged race red; restored, diff empty. **FU-0175-Q4-RETEST-EDIT
 CLOSED.** Evidence `docs/records/audits/2026-10/mod-0175-q4r-evidence-2026-10-08.md`.
+
+**Q4R — CT acceptance (2026-10-08).** CT re-ran Inventory **691/691** and architecture **18/18** in the agent worktree; read the
+`UpdateLotHandler` guard and `LotDateRules.RetestMovesLater`. CT sabotage (own): drop the "removed (null)" branch so only "later"
+is refused → `A_non_Draft_lots_retest_date_cannot_move_later_or_be_removed_by_an_edit` red (Released + Blocked), restored, porcelain
+clean. **400** `LOT_KEY_IMMUTABLE` accepted (existing TRACE mapping; CT-Q17 text corrected). Claim collection
+`quarantine_lot_release_claims` + `ux_quarantine_lot_release_open` accepted as "quarantine repo" scope. Accepted residual: after an
+edit moves the retest date earlier, new reservations may still count the lot until the next sweep (≤ 900 s); postings are refused
+at once. Fast-forwarded into the MVP-1 branch.
 
 ## 20. Follow-up Items
 
