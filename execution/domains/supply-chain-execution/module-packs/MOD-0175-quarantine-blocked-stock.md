@@ -1325,6 +1325,19 @@ INVENTORY-BUNDLE 1.0.2 changelog wording to match ASSUMPTION-0175-Q4-01b (except
 - **O-Q4-3** two concurrent LotRelease decisions for one lot → **WP-0175-Q4R** (one open LotRelease per lot, unique index + test).
 - O-Q4-2 (`getLotQualityStatus`, Lots page 202) → Q5.
 
+### WP-0175-Q4R (agent result 2026-10-08, pending CT) — CT-Q17 retest PATCH guard + one open LotRelease per lot
+
+Branch `feature/sce/mod-0175-q4r` from `58177127e`, commit `f4f8642b6`; contracts unchanged. **CT-Q17:** `updateLot` on a non-Draft lot
+moves `retestDate` only earlier; later or null → **400 `LOT_KEY_IMMUTABLE`** (the code's existing status, `TraceRequestReader`; the CT-Q17
+line above says 409 — CT to confirm); Draft unchanged; the only later move is the approved retest release (`ApplyApprovedLotStatusChange`,
+not through updateLot). An earlier date blocks postings at once; the stored hold follows on the sweeper's run (CT-Q16). **O-Q4-3:**
+`LotReleaseClaim` (`quarantine_lot_release_claims`, unique `ux_quarantine_lot_release_open` Tenant + LE + lot) inserted in the same 0175
+transaction as the LotRelease decision; the loser answers the open decision (202, same `pendingRequestId`); closed / stale claims are
+replaced in one transaction; pre-Q4R open decisions are adopted. Index on a new collection — measured: builds over two open legacy
+decisions; a duplicate claim would stop the startup gate (fail-closed). Tests 683 → **691/691**, architecture 18/18, 0 warnings; sabotage
+(a) direction check off → 2 red, (b) claim off → parallel (4 decisions) + staged race red; restored, diff empty. **FU-0175-Q4-RETEST-EDIT
+CLOSED.** Evidence `docs/records/audits/2026-10/mod-0175-q4r-evidence-2026-10-08.md`.
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
@@ -1344,7 +1357,7 @@ INVENTORY-BUNDLE 1.0.2 changelog wording to match ASSUMPTION-0175-Q4-01b (except
 - **FU-0175-Q4-SIGN** (CT decision ASSUMPTION-0175-Q4-01, WP-0175-Q4): KQ-B signatures on "Karantinaya Al" / "Stoğu bloke et"
   (O-Q3-2). quarantineStock / blockStock still refuse `signatureId` (`StockActionHandlers.cs:66-70`); verify it like the decider
   signature (policy of `quarantine.hold.create` / `quarantine.hold.block`, subject per request) in a later slice.
-- FU-0175-Q4-RETEST-EDIT (O-Q4-1): a retest date moved forward through TRACE PATCH frees a retest-held lot without a quality
+- ~~FU-0175-Q4-RETEST-EDIT (O-Q4-1)~~ **CLOSED by WP-0175-Q4R (CT-Q17)**: a retest date moved forward through TRACE PATCH frees a retest-held lot without a quality
   decision — route the extension of a due lot through 0175 (MOD-0174 `UpdateLotHandler`), owner decision.
 
 ## 21. UI input — approved mockup
