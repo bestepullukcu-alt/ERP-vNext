@@ -17,6 +17,12 @@
 
 **→ 8/8 Faz-0 contract OpenAPI TAMAM (hepsi valid, x-status FROZEN).**
 
+### MVP-1 Platform Paylaşılan Hizmetler (2026-10-08)
+
+| Contract | Owner | Format | Durum |
+|---|---|---|---|
+| **ESIGN-BUNDLE** | MOD-0022 (Diten.Platform + Diten.AuthService §4.1–4.3) | `esign.openapi.yaml` (OpenAPI 3.1, v1.0.0) | ✅ **v1 FROZEN** (WP-0022-E2, CT-kabullü öneri `drafts/esign-bundle-v1-proposal.md` ile birebir — diff testi `ESignatureContractTests`). E1 (§4.1–4.3) + E2 (§4.4–4.16, §4.20–4.26) uygulandı; §4.17–4.19 (örnekler) E3, Workflow eki E4. Sonrası yalnız additive (minor). |
+
 ### MVP-6 öne çekilmiş consumed seam'ler (front-loaded 2026-09-15)
 
 MVP-6'yı "ilk giden lane" yapmak için, tükettiği ama sahibi olmadığı iki seam merkezi CT tarafından öne çekilip donduruldu (§22). Producer (MVP-5/MVP-2) sırası gelince bu frozen sözleşmeye **uyarak** implemente eder; değişiklik yalnız additive (K16).
