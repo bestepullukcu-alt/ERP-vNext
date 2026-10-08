@@ -1157,6 +1157,19 @@ public static class DependencyInjection
                 map.GetMemberMap(p => p.ContactId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             });
         }
+        // WP-VP-4L (2) — the rep's per-week extra visits: a new embedded type, so its Guids take the string-Guid convention
+        // here (the CRM new-type GUID trap). An older session without "WeekExtras" reads as an empty list.
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningWeekExtra)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningWeekExtra>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+                map.GetMemberMap(e => e.TargetId).SetSerializer(stringGuid);
+                map.GetMemberMap(e => e.ContactId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+                map.GetMemberMap(e => e.AccountId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
         if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningSessionProvenance)))
         {
             BsonClassMap.RegisterClassMap<PlanningSessionProvenance>(map =>

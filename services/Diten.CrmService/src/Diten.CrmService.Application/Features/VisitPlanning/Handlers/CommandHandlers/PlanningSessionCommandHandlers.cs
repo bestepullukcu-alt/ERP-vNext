@@ -246,6 +246,31 @@ public sealed class UpdatePlanningSessionSelectionHandler
         }
 
         session.Selection = MergeSelection(session.Selection, request);
+
+        // WP-VP-4L (2) — one draft week's extra visits ride on this update too (null = keep every week's), checked against
+        // the selection AFTER this request's own change (a doctor added in the same request may take an extra).
+        if (request.WeekExtras is { } weekExtras)
+        {
+            if (_periods is null || await _periods.GetByIdAsync(session.CyclePeriodId, cancellationToken) is not { } extraPeriod)
+            {
+                return Response<bool>.Fail(new[]
+                {
+                    PlanningSessionErrorCodes.InvalidWeek, "The plan's period cannot be read; the extra visits were not changed."
+                }, 400);
+            }
+
+            var (extraRefused, extraWeek, extras) = PlanningWeekExtras.Validate<bool>(
+                session, weekExtras,
+                DateOnly.FromDateTime(extraPeriod.StartDate.UtcDateTime), DateOnly.FromDateTime(extraPeriod.EndDate.UtcDateTime),
+                PlanningWeekCalendar.Today(_clock.GetUtcNow()));
+            if (extraRefused is not null)
+            {
+                return extraRefused;
+            }
+
+            session.WeekExtras = PlanningWeekExtras.Replace(session.WeekExtras, extraWeek, extras);
+        }
+
         if (!string.IsNullOrWhiteSpace(request.TargetWeekStart))
             session.TargetWeekStart = request.TargetWeekStart.Trim();
 

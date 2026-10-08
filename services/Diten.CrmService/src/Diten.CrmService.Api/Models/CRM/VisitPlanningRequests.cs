@@ -42,6 +42,16 @@ public sealed class UpdatePlanningSessionRequest
     /// <summary>WP-VP-4E — one draft week's day pins (absent = keep; an empty list clears that week's).</summary>
     public DayPinsRequest? DayPins { get; set; }
 
+    /// <summary>WP-VP-4L (2) — one draft week's extra visits (absent = keep; an empty list clears that week's).</summary>
+    public WeekExtrasRequest? WeekExtras { get; set; }
+
+    public WeekExtrasInput? ToWeekExtras()
+        => WeekExtras is null
+            ? null
+            : new WeekExtrasInput(WeekExtras.WeekStart, (WeekExtras.Targets ?? new List<WeekExtraRequest>())
+                .Select(t => new WeekExtraInput(t.TargetType, t.TargetId, t.ContactId, t.AccountId))
+                .ToList());
+
     public DayPinsInput? ToDayPins()
         => DayPins is null
             ? null
@@ -55,6 +65,20 @@ public sealed class UpdatePlanningSessionRequest
         => SelectedContacts?
             .Select(c => c.ToInput())
             .ToList();
+}
+
+public sealed class WeekExtrasRequest
+{
+    public string? WeekStart { get; set; }
+    public List<WeekExtraRequest>? Targets { get; set; }
+}
+
+public sealed class WeekExtraRequest
+{
+    public string? TargetType { get; set; }
+    public Guid TargetId { get; set; }
+    public Guid? ContactId { get; set; }
+    public Guid? AccountId { get; set; }
 }
 
 public sealed class DayPinsRequest

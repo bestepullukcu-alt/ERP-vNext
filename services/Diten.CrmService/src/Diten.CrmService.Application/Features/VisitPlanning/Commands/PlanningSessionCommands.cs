@@ -35,7 +35,16 @@ public sealed record UpdatePlanningSessionSelectionCommand(
     // Chosen plan week's Monday (yyyy-MM-dd) — persisted so Details/Edit resolve the saved week.
     string? TargetWeekStart = null,
     // WP-VP-4E — one draft week's day pins: null = keep every week's pins; { weekStart, pins: [] } = clear that week's.
-    DayPinsInput? DayPins = null) : IRequest<Response<bool>>;
+    DayPinsInput? DayPins = null,
+    // WP-VP-4L (2) — one draft week's extra visits: null = keep every week's; { weekStart, targets: [] } = clear that week's.
+    WeekExtrasInput? WeekExtras = null) : IRequest<Response<bool>>;
+
+/// <summary>WP-VP-4L (2) — the extra visits of ONE draft week (they replace that week's; an empty list clears them).</summary>
+public sealed record WeekExtrasInput(string? WeekStart, IReadOnlyList<WeekExtraInput>? Targets);
+
+/// <summary>WP-VP-4L (2) — one extra visit on the wire: the target (contact + contact id for a doctor, pharmacy / account +
+/// account id otherwise); the account is the doctor's institution (taken from the plan's selection when known).</summary>
+public sealed record WeekExtraInput(string? TargetType, Guid TargetId, Guid? ContactId, Guid? AccountId);
 
 /// <summary>WP-VP-4E — the day pins of ONE draft week (they replace that week's pins; a null / empty list clears them).</summary>
 public sealed record DayPinsInput(string? WeekStart, IReadOnlyList<DayPinInput>? Pins);

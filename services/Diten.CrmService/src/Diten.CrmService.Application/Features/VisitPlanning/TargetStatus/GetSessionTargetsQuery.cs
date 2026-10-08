@@ -16,7 +16,7 @@ namespace Diten.CrmService.Application.Features.VisitPlanning.TargetStatus;
 /// <para>Cost, whatever the plan size: session (1) + period (1) + accounts by id (1, institutions ∪ pharmacies ∪ the
 /// doctors' institutions) + contacts by id (1) + <see cref="ContactPeriodStatusReader"/> (bulk).</para>
 /// </summary>
-public sealed record GetSessionTargetsQuery(Guid PlanningSessionId) : IRequest<Response<SessionTargetsDto>>;
+public sealed record GetSessionTargetsQuery(Guid PlanningSessionId, string? WeekStart = null) : IRequest<Response<SessionTargetsDto>>;
 
 public sealed class GetSessionTargetsQueryHandler : IRequestHandler<GetSessionTargetsQuery, Response<SessionTargetsDto>>
 {
@@ -112,9 +112,10 @@ public sealed class GetSessionTargetsQueryHandler : IRequestHandler<GetSessionTa
             .Select(c => contactById.TryGetValue(c.ContactId, out var contact)
                 ? new SessionTargetDoctorDto(
                     c.ContactId, c.AccountId, c.AccountContactLinkId, true, contact.DisplayName, contact.Specialty,
-                    statuses[c.ContactId], PlanningSessionMapper.ProductsOf(c, productNames))
+                    TargetStatusPeriods.WithExtraWeek(statuses[c.ContactId], session, request.WeekStart), PlanningSessionMapper.ProductsOf(c, productNames))
                 : new SessionTargetDoctorDto(
-                    c.ContactId, c.AccountId, c.AccountContactLinkId, false, null, null, statuses[c.ContactId],
+                    c.ContactId, c.AccountId, c.AccountContactLinkId, false, null, null,
+                    TargetStatusPeriods.WithExtraWeek(statuses[c.ContactId], session, request.WeekStart),
                     PlanningSessionMapper.ProductsOf(c, productNames)))
             .ToList();
 

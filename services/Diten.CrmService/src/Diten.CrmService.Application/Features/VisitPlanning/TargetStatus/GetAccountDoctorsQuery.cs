@@ -34,7 +34,9 @@ public sealed record GetAccountDoctorsQuery(
     string? Specialty = null,
     int Page = 1,
     int PageSize = 50,
-    string? ResourceId = null) : IRequest<Response<AccountDoctorsDto>>;
+    string? ResourceId = null,
+    // WP-VP-4L (2) — with a plan: the week (Monday yyyy-MM-dd) whose extra visits extraThisWeek reads.
+    string? WeekStart = null) : IRequest<Response<AccountDoctorsDto>>;
 
 public sealed class GetAccountDoctorsQueryHandler : IRequestHandler<GetAccountDoctorsQuery, Response<AccountDoctorsDto>>
 {
@@ -101,6 +103,7 @@ public sealed class GetAccountDoctorsQueryHandler : IRequestHandler<GetAccountDo
         var now = DateTimeOffset.UtcNow;
         string resourceId;
         ContactStatusPeriod? period;
+        PlanningSession? planSession = null;
         if (request.PlanningSessionId is { } sessionId && sessionId != Guid.Empty)
         {
             var session = await _sessions.GetByIdAsync(tenantId, sessionId, cancellationToken);
@@ -111,6 +114,7 @@ public sealed class GetAccountDoctorsQueryHandler : IRequestHandler<GetAccountDo
 
             resourceId = session.ResourceId.Trim();
             period = TargetStatusPeriods.From(await _periods.GetByIdAsync(session.CyclePeriodId, cancellationToken));
+            planSession = session;
         }
         else
         {
@@ -169,7 +173,7 @@ public sealed class GetAccountDoctorsQueryHandler : IRequestHandler<GetAccountDo
             cancellationToken);
 
         var filtered = doctors
-            .Select(d => (d.Link, d.Contact, Status: statuses[d.Contact.Id]))
+            .Select(d => (d.Link, d.Contact, Status: TargetStatusPeriods.WithExtraWeek(statuses[d.Contact.Id], planSession, request.WeekStart)))
             .Where(d => quick switch
             {
                 TargetStatusQuickFilters.Due => d.Status.DueThisWeek,

@@ -180,6 +180,7 @@ public sealed class ContactPeriodStatusReader
         int? required = period is null ? null : RequiredInPeriod(frequency, period);
         int? remaining = required is { } req && period is not null ? Math.Max(0, req - done - planned) : null;
 
+        var unknown = IsUnknown(frequency);
         return new ContactPeriodStatusDto(
             contactId,
             required,
@@ -193,20 +194,30 @@ public sealed class ContactPeriodStatusReader
             DueThisWeek: IsDueThisWeek(remaining, required, period, lastInPeriod, today),
             badges,
             consentStatus,
-            inactive);
+            inactive)
+        {
+            FrequencyDefault = unknown ? FrequencyDefaults.Weekly : null,
+            // WP-VP-4L (2) — an extra visit counts as done / planned; what goes beyond the requirement is said, remaining
+            // never drops under 0.
+            OverFrequency = required is { } over && period is not null ? Math.Max(0, done + planned - over) : 0
+        };
     }
 
+    private static bool IsUnknown(VisitFrequencyResolveResult? frequency)
+        => frequency?.RequiredVisitCount is not > 0
+           || string.Equals(frequency.FrequencyStatus, FrequencyStatus.Unknown, StringComparison.Ordinal);
+
     /// <summary>CT fix on merge with WP-VP-3A — the SAME rule as the planning engine (<see cref="FrequencyExtendPlanner"/>):
-    /// the policy count × its period-type units in the period; no count / unknown cadence ⇒ one visit per period.</summary>
+    /// the policy count × its period-type units in the period; WP-VP-4L (1) — no count / unknown cadence ⇒ the weekly
+    /// default, through the ONE helper the engine uses (<see cref="FrequencyDefaults.UnknownRequiredInPeriod"/>).</summary>
     public static int RequiredInPeriod(VisitFrequencyResolveResult? frequency, ContactStatusPeriod period)
     {
-        if (frequency?.RequiredVisitCount is not { } count || count <= 0
-            || string.Equals(frequency.FrequencyStatus, FrequencyStatus.Unknown, StringComparison.Ordinal))
+        if (IsUnknown(frequency))
         {
-            return FrequencyRequirement.Unknown.RequiredInPeriod;
+            return FrequencyDefaults.UnknownRequiredInPeriod(period.Frame);
         }
 
-        return count * FrequencyExtendPlanner.UnitsIn(frequency.PeriodType, period.Frame);
+        return frequency!.RequiredVisitCount!.Value * FrequencyExtendPlanner.UnitsIn(frequency.PeriodType, period.Frame);
     }
 
     /// <summary>

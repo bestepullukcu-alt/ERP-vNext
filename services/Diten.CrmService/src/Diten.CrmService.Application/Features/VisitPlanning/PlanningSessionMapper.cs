@@ -137,6 +137,13 @@ internal static class PlanningSessionMapper
     /// <para>WP-VP-4A — an old committed plan: a week holding its written visits (<paramref name="legacyFixed"/>) is
     /// approved with storedStatus legacy; every other week is empty (nothing is generated for it).</para>
     /// <summary>WP-VP-4E — one week's stored day pins, in day order.</summary>
+    /// <summary>WP-VP-4L (2) — the rep's extra visits of one week (an empty list when none).</summary>
+    public static IReadOnlyList<PlanningWeekExtraDto> ExtraTargetsOf(PlanningSession s, string weekStart)
+        => s.WeekExtras
+            .Where(e => string.Equals(e.WeekStart, weekStart, StringComparison.Ordinal))
+            .Select(e => new PlanningWeekExtraDto(e.TargetType, e.TargetId, e.ContactId, e.AccountId))
+            .ToList();
+
     public static IReadOnlyList<PlanningDayPinDto> DayPinsOf(PlanningSession s, string weekStart)
         => s.DayPins
             .Where(p => string.Equals(p.WeekStart, weekStart, StringComparison.Ordinal))
@@ -155,7 +162,7 @@ internal static class PlanningSessionMapper
                 int? count = stored is not null && (stored.IsApproved() || stored.IsLegacy()) ? stored.PlannedVisitIds.Count : null;
                 var status = PlanningWeekCalendar.Derive(w, today, stored, count ?? (s.HasTargets() && !legacy ? 1 : 0));
                 // WP-VP-4E — the rep's day pins of the week (4D / 4F screens).
-                return PlanningWeekCalendar.ToDto(w, status, count, stored) with { DayPins = DayPinsOf(s, w.WeekStart) };
+                return PlanningWeekCalendar.ToDto(w, status, count, stored) with { DayPins = DayPinsOf(s, w.WeekStart), ExtraTargets = ExtraTargetsOf(s, w.WeekStart) };
             })
             .ToList();
 }

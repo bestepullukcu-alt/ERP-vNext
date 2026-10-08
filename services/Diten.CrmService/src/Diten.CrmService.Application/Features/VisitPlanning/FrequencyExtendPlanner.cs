@@ -10,9 +10,10 @@ namespace Diten.CrmService.Application.Features.VisitPlanning;
 /// does the WHOLE PERIOD need" (<see cref="ResolveRequirementAsync"/>); the engine then spreads what is still missing over
 /// the period's draft weeks (<see cref="Distribute"/>).
 /// <para><b>Visits needed in the period</b> = the policy's <c>RequiredVisitCount</c> × the period's units of its
-/// <c>PeriodType</c> (<see cref="UnitsIn"/>). An unknown cadence (no policy) is <b>1 visit in the period</b> with
-/// <c>frequencyStatus = unknown</c> — visible, never silently dropped and never invented beyond one. A pharmacy / bare
-/// account is resolved as an <c>account</c> target (a policy aimed at the account), else the same "1 + unknown".</para>
+/// <c>PeriodType</c> (<see cref="UnitsIn"/>). WP-VP-4L (1) — an unknown cadence (no policy) is <b>one visit per working
+/// week</b> (<see cref="FrequencyDefaults"/>, the SAME helper as the 3D status) with <c>frequencyStatus = unknown</c> and
+/// <c>frequencyDefault = weekly</c> — visible, never silently dropped. A pharmacy / bare account is resolved as an
+/// <c>account</c> target (a policy aimed at the account), else the same weekly default.</para>
 /// </summary>
 public sealed class FrequencyExtendPlanner
 {
@@ -27,7 +28,7 @@ public sealed class FrequencyExtendPlanner
     {
         if (targetId == Guid.Empty)
         {
-            return FrequencyRequirement.Unknown;
+            return FrequencyRequirement.UnknownFor(period);
         }
 
         // A pharmacy / bare account carries no policy of its own type: the account policy (if any) is its cadence.
@@ -41,7 +42,7 @@ public sealed class FrequencyExtendPlanner
         if (result.RequiredVisitCount is not { } count || count <= 0
             || string.Equals(result.FrequencyStatus, FrequencyStatus.Unknown, StringComparison.Ordinal))
         {
-            return FrequencyRequirement.Unknown;
+            return FrequencyRequirement.UnknownFor(period);
         }
 
         return new FrequencyRequirement(
@@ -93,15 +94,22 @@ public sealed class FrequencyExtendPlanner
 }
 
 /// <summary>WP-VP-3A — the visits a target needs in the period. <see cref="RequiredInPeriod"/> is what the engine plans
-/// toward; <see cref="PolicyVisitCount"/> / <see cref="PeriodType"/> are the policy as authored (null when unknown).</summary>
+/// toward; <see cref="PolicyVisitCount"/> / <see cref="PeriodType"/> are the policy as authored (null when unknown).
+/// WP-VP-4L (1) — <see cref="FrequencyDefault"/> = <c>weekly</c> when the cadence is unknown (one visit per working week).</summary>
 public sealed record FrequencyRequirement(
     string FrequencyStatus,
     int? PolicyVisitCount,
     string? PeriodType,
-    int RequiredInPeriod)
+    int RequiredInPeriod,
+    string? FrequencyDefault = null)
 {
-    public static readonly FrequencyRequirement Unknown =
-        new(Features.VisitFrequencyPolicy.Resolve.FrequencyStatus.Unknown, null, null, 1);
+    /// <summary>An unknown cadence over <paramref name="period"/>: the weekly default (<see cref="FrequencyDefaults"/>).</summary>
+    public static FrequencyRequirement UnknownFor(PlanningPeriodFrame period)
+        => new(Features.VisitFrequencyPolicy.Resolve.FrequencyStatus.Unknown, null, null,
+            FrequencyDefaults.UnknownRequiredInPeriod(period), FrequencyDefaults.Weekly);
+
+    /// <summary>The weekly default of an unknown cadence: one visit in EACH week, never a chain of shifted visits.</summary>
+    public bool IsWeeklyDefault => string.Equals(FrequencyDefault, FrequencyDefaults.Weekly, StringComparison.Ordinal);
 }
 
 /// <summary>WP-VP-3A — the period as the frequency rule counts it: its days, the non-working days (weekends + holidays

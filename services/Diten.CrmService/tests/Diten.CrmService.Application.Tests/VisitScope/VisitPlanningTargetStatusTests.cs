@@ -41,15 +41,38 @@ public sealed class VisitPlanningTargetStatusTests
     // ── CT (merge with WP-VP-3A) — the status read counts the period requirement with the ENGINE rule ─────────────────
 
     [Fact]
-    public void The_requirement_is_the_policy_count_times_its_period_units_and_unknown_is_one_like_the_engine()
+    public void The_requirement_is_the_policy_count_times_its_period_units_and_unknown_is_weekly_like_the_engine()
     {
         // October period (5 Oct – 1 Nov) touches 2 months and 4 working weeks.
         static VisitFrequencyResolveResult Freq(string status, string? periodType, int? count) => new(status, null, null, null, null, count, null, periodType, null, null, null, null, null, null, Array.Empty<FrequencyCandidatePolicy>(), Array.Empty<string>());
         Assert.Equal(6, ContactPeriodStatusReader.RequiredInPeriod(Freq(FrequencyStatus.Resolved, FrequencyPeriodType.Month, 3), October));
         Assert.Equal(4, ContactPeriodStatusReader.RequiredInPeriod(Freq(FrequencyStatus.Resolved, FrequencyPeriodType.Week, 1), October));
         Assert.Equal(3, ContactPeriodStatusReader.RequiredInPeriod(Freq(FrequencyStatus.Resolved, FrequencyPeriodType.Cycle, 3), October));
-        Assert.Equal(1, ContactPeriodStatusReader.RequiredInPeriod(null, October));
-        Assert.Equal(1, ContactPeriodStatusReader.RequiredInPeriod(Freq(FrequencyStatus.Unknown, null, null), October));
+        // WP-VP-4L (1) — unknown = one visit per working week, through the engine's own helper
+        Assert.Equal(4, ContactPeriodStatusReader.RequiredInPeriod(null, October));
+        Assert.Equal(4, ContactPeriodStatusReader.RequiredInPeriod(Freq(FrequencyStatus.Unknown, null, null), October));
+        Assert.Equal(Diten.CrmService.Application.Features.VisitPlanning.FrequencyDefaults.UnknownRequiredInPeriod(October.Frame), ContactPeriodStatusReader.RequiredInPeriod(null, October));
+    }
+
+    // ── WP-VP-4L — an unknown frequency reads the weekly default; an extra visit counts, remaining never drops under 0 ──
+
+    [Fact]
+    public async Task An_unknown_frequency_is_flagged_weekly_and_visits_beyond_the_requirement_are_over_frequency()
+    {
+        var w = new World();
+        var unknown = w.Doctor("Bilinmeyen", required: 1);
+        w.Policies.Items.RemoveAll(p => p.TargetId == unknown); // no policy
+        var once = w.Doctor("Bir kez", required: 1);
+        w.Report(w.Plan(once, new DateOnly(2026, 10, 6)), VisitExecutionOutcome.Completed, new DateTimeOffset(2026, 10, 6, 10, 0, 0, TimeSpan.Zero));
+        w.Plan(once, new DateOnly(2026, 10, 20)); // the rep's extra visit: beyond the one the period needs
+
+        var statuses = await w.Reader().ReadAsync(w.Request(unknown, once), default);
+
+        Assert.Equal((4, "unknown", "weekly"), (statuses[unknown].RequiredVisitCount, statuses[unknown].FrequencyStatus, statuses[unknown].FrequencyDefault));
+        Assert.Equal(0, statuses[unknown].OverFrequency);
+        var s = statuses[once];
+        Assert.Equal((1, 1, 0, 1, (string?)null), (s.Done, s.Planned, s.Remaining, s.OverFrequency, s.FrequencyDefault));
+        Assert.Null(s.ExtraThisWeek); // no week asked
     }
 
     // ── 1. done / planned / remaining / last visit ─────────────────────────────────────────────────────────────────

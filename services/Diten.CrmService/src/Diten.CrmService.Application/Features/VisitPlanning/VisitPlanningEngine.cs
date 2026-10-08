@@ -520,6 +520,13 @@ public sealed class VisitPlanningEngine
                 targetWeeks = draftWeekIndexes;
             }
 
+            // WP-VP-4L (1) — the weekly default (unknown cadence) is ONE visit a week: never more than one per draft week
+            // (the period's past weeks are not caught up twice in a later week).
+            if (requirement.IsWeeklyDefault)
+            {
+                remaining = Math.Min(remaining, targetWeeks.Count);
+            }
+
             perCandidateWeeks[candidate.TargetId] = FrequencyExtendPlanner
                 .Distribute(remaining, targetWeeks.Count)
                 .Select(k => targetWeeks[k])
@@ -560,6 +567,32 @@ public sealed class VisitPlanningEngine
                     .Repeat(c, perCandidateWeeks.TryGetValue(c.TargetId, out var w) ? w.Count(x => x == weekIndex) : 0)
                     .Select(x => new WeekItem(x, weekIndex, null))))
                 .ToList();
+            // WP-VP-4L (2) — the rep's EXTRA visits of this week join it (same day rules, the day pins apply). A target that
+            // already has a visit this week (frequency, a carried one, or a kept fixed one) takes no extra — said on the
+            // preview, never a silent second visit; a target no longer planned (left the selection, consent blocked) is
+            // not a candidate and is skipped.
+            foreach (var extra in session.WeekExtras.Where(e => string.Equals(e.WeekStart, span.WeekStart, StringComparison.Ordinal)))
+            {
+                var candidate = candidates.FirstOrDefault(c =>
+                    string.Equals(c.TargetType, extra.TargetType, StringComparison.Ordinal) && c.TargetId == extra.TargetId);
+                if (candidate is null)
+                {
+                    continue;
+                }
+
+                var already = items.Any(i => i.Candidate.TargetId == candidate.TargetId)
+                              || fixedVisits.Any(v => TargetKeyOf(v) == candidate.TargetId
+                                                      && PlanningWeekCalendar.MondayOf(v.PlannedDate) == span.Monday);
+                if (already)
+                {
+                    pinWarnings.Add(new PinWarningPreview(
+                        span.WeekStart, candidate.TargetType, candidate.TargetId, string.Empty, PlanningWeekExtras.ExtraAlreadyPlanned));
+                    continue;
+                }
+
+                items.Add(new WeekItem(candidate, weekIndex, null, IsExtra: true));
+            }
+
             if (items.Count == 0)
             {
                 continue;
@@ -577,7 +610,8 @@ public sealed class VisitPlanningEngine
                 p.Item.Candidate, weekIndex, p.Date, p.Start, p.End, p.Sequence,
                 IsPinned: week.Pinned.TryGetValue(p.Item, out var auto),
                 AutoPinned: week.Pinned.ContainsKey(p.Item) && auto,
-                GroupKey: GroupKeyOf(groupOf, p.Item.Candidate))));
+                GroupKey: GroupKeyOf(groupOf, p.Item.Candidate),
+                IsExtra: p.Item.IsExtra)));
             foreach (var p in week.Placed)
             {
                 if (p.Item.Shift is { } placedTrack)
@@ -600,6 +634,27 @@ public sealed class VisitPlanningEngine
             var reasonForWeek = ShiftReason(from, span.To, calendar);
             foreach (var item in week.Overflow)
             {
+                // WP-VP-4L (2) — an extra visit belongs to ITS week: it never moves to another one.
+                if (item.IsExtra)
+                {
+                    unscheduled.Add(new UnscheduledPreview(
+                        item.FromWeek, item.Candidate.TargetType, item.Candidate.TargetId, item.Candidate.ContactId,
+                        PlanningWeekExtras.ExtraNoRoom));
+                    continue;
+                }
+
+                // WP-VP-4L (1) — a weekly default visit that did not fit its week is SKIPPED, not shifted: every later week
+                // already has its own visit, so a shift would only start a chain (CT advice). A pinned visit that left its
+                // week keeps the 4E rule.
+                if (item.Shift is null && !week.PinOverflow.Contains(item)
+                    && frequencyByTarget.TryGetValue(item.Candidate.TargetId, out var itemFrequency) && itemFrequency.IsWeeklyDefault)
+                {
+                    unscheduled.Add(new UnscheduledPreview(
+                        item.FromWeek, item.Candidate.TargetType, item.Candidate.TargetId, item.Candidate.ContactId,
+                        FrequencyDefaults.WeekFullSkipped));
+                    continue;
+                }
+
                 var next = draftWeekIndexes
                     .Where(i => i > weekIndex
                                 && !(perCandidateWeeks.TryGetValue(item.Candidate.TargetId, out var owned) && owned.Contains(i))
@@ -670,7 +725,7 @@ public sealed class VisitPlanningEngine
         // WP-VP-3A — the doctor's cadence travels on the candidate preview too (3D shows it).
         var contentWithFrequency = contentPreviews
             .Select(c => frequencyByTarget.TryGetValue(c.ContactId, out var f)
-                ? c with { FrequencyStatus = f.FrequencyStatus, RequiredVisitCount = f.RequiredInPeriod }
+                ? c with { FrequencyStatus = f.FrequencyStatus, RequiredVisitCount = f.RequiredInPeriod, FrequencyDefault = f.FrequencyDefault }
                 : c)
             .ToList();
 
@@ -1307,7 +1362,8 @@ public sealed class VisitPlanningEngine
                 StrategyTemplateId = play.StrategyTemplateId,
                 SelectionMode = PlannedVisitSelectionMode.Recommended, // FU05 motor selection (FU01 reserves this)
                 DecidedAt = now,
-                DecidedBy = actor
+                DecidedBy = actor,
+                Extra = placed.IsExtra // WP-VP-4L (2) — the rep's per-week extra visit
             },
             CreatedAt = now,
             CreatedBy = actor
@@ -1545,7 +1601,7 @@ public sealed class VisitPlanningEngine
 
     /// <summary>WP-VP-3B — one visit a week has to place: its first week (<see cref="FromWeek"/>) and, once moved, its
     /// shift record.</summary>
-    private sealed record WeekItem(Candidate Candidate, int FromWeek, ShiftTrack? Shift);
+    private sealed record WeekItem(Candidate Candidate, int FromWeek, ShiftTrack? Shift, bool IsExtra = false);
 
     /// <summary>WP-VP-3B — a visit moved to a later week (mutable target week while it keeps moving).</summary>
     private sealed class ShiftTrack(Candidate candidate, int fromWeek, string reason)
@@ -1621,7 +1677,9 @@ public sealed class VisitPlanningEngine
         // WP-VP-4E — on a pinned day (auto = moved there from a full pinned day) and the institution group.
         bool IsPinned = false,
         bool AutoPinned = false,
-        string? GroupKey = null);
+        string? GroupKey = null,
+        // WP-VP-4L (2) — the rep's per-week extra visit.
+        bool IsExtra = false);
 
     private sealed record GenerationOutput(
         PlanningSession Session,
@@ -1800,7 +1858,9 @@ public sealed class VisitPlanningEngine
                 ProductWarnings: ProductWarningsOf(p.Candidate.TargetType, p.Content ?? p.Candidate.Content),
                 IsPinned: p.IsPinned,
                 AutoPinned: p.AutoPinned,
-                GroupKey: p.GroupKey))
+                GroupKey: p.GroupKey,
+                IsExtra: p.IsExtra,
+                FrequencyDefault: g.Frequency.TryGetValue(p.Candidate.TargetId, out var f5) ? f5.FrequencyDefault : null))
             .ToList();
 
         // WP-VP-3A (S-1) — the already-written visits of the stored weeks, shown as they are (IsFixed): never re-generated.
@@ -1822,7 +1882,9 @@ public sealed class VisitPlanningEngine
                 WeekStart: g.PeriodWeeks[x.Week].WeekStart,
                 IsFixed: true,
                 FrequencyStatus: g.Frequency.TryGetValue(TargetKeyOf(x.Visit), out var f3) ? f3.FrequencyStatus : null,
-                RequiredVisitCount: g.Frequency.TryGetValue(TargetKeyOf(x.Visit), out var f4) ? f4.RequiredInPeriod : null))
+                RequiredVisitCount: g.Frequency.TryGetValue(TargetKeyOf(x.Visit), out var f4) ? f4.RequiredInPeriod : null,
+                IsExtra: x.Visit.Selection?.Extra == true,
+                FrequencyDefault: g.Frequency.TryGetValue(TargetKeyOf(x.Visit), out var f6) ? f6.FrequencyDefault : null))
             .ToList();
 
         var allSlots = scheduled.Concat(fixedSlots)
@@ -1837,7 +1899,8 @@ public sealed class VisitPlanningEngine
                 var stored = LegacyCommittedPlan.WeekOf(
                     g.Session, w, LegacyCommittedPlan.IsLegacy(g.Session) ? g.Fixed : Array.Empty<PlannedVisitEntity>());
                 var count = allSlots.Count(s => s.WeekNumber == i);
-                return PlanningWeekCalendar.ToDto(w, PlanningWeekCalendar.Derive(w, g.Today, stored, count), count, stored);
+                return PlanningWeekCalendar.ToDto(w, PlanningWeekCalendar.Derive(w, g.Today, stored, count), count, stored)
+                    with { ExtraTargets = PlanningSessionMapper.ExtraTargetsOf(g.Session, w.WeekStart) }; // WP-VP-4L (2)
             })
             .ToList();
 

@@ -28,6 +28,23 @@ public static class TargetStatusPeriods
             : null;
     }
 
+    /// <summary>WP-VP-4L (2) — a doctor's status with <c>extraThisWeek</c>: when a plan and a week are given, whether the
+    /// rep added an extra visit for the doctor in that week; otherwise the status as read (null = no week asked).</summary>
+    public static ContactPeriodStatusDto WithExtraWeek(ContactPeriodStatusDto status, Domain.Entities.PlanningSession? session, string? weekStart)
+    {
+        if (session is null || string.IsNullOrWhiteSpace(weekStart))
+        {
+            return status;
+        }
+
+        var ws = weekStart.Trim();
+        return status with
+        {
+            ExtraThisWeek = session.WeekExtras.Any(e =>
+                string.Equals(e.WeekStart, ws, StringComparison.Ordinal) && (e.ContactId ?? e.TargetId) == status.ContactId)
+        };
+    }
+
     public static TargetStatusPeriodDto ToDto(ContactStatusPeriod? period)
         => period is null
             ? new TargetStatusPeriodDto(null, null, null, null, null)

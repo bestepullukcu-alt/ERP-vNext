@@ -30,7 +30,19 @@ public sealed record ContactPeriodStatusDto(
     bool DueThisWeek,
     IReadOnlyList<string> SegmentBadges,
     string? ConsentStatus,
-    bool Inactive);
+    bool Inactive)
+{
+    /// <summary>WP-VP-4L (1) — <c>weekly</c> when the frequency is unknown: the period counts one visit per working week
+    /// (<see cref="FrequencyDefaults"/>); null otherwise.</summary>
+    public string? FrequencyDefault { get; init; }
+
+    /// <summary>WP-VP-4L (2) — the doctor has an extra visit (the rep's addition) in the asked week (null = no week asked).</summary>
+    public bool? ExtraThisWeek { get; init; }
+
+    /// <summary>WP-VP-4L (2) — visits beyond the period's requirement (done + planned − required, never below 0): an extra
+    /// visit counts, <see cref="Remaining"/> never goes under 0.</summary>
+    public int OverFrequency { get; init; }
+}
 
 /// <summary>The period the statuses were counted in (null fields ⇒ no period could be resolved: counts are 0, remaining
 /// and dueThisWeek are not computed, lastVisitDate still is).</summary>

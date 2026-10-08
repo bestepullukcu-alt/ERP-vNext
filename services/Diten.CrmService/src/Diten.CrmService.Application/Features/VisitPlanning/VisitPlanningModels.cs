@@ -78,7 +78,13 @@ public sealed record PlanningWeekDto(
     // WP-VP-4E (additive, detail) — the rep's day pins of this week.
     IReadOnlyList<PlanningDayPinDto>? DayPins = null,
     // WP-VP-4G (F4-9, additive, preview) — how many of the week's visits carry a report (the "done" badge).
-    int ReportedVisitCount = 0);
+    int ReportedVisitCount = 0,
+    // WP-VP-4L (2, additive) — the rep's extra visits of this week (detail and preview; an empty list when none).
+    IReadOnlyList<PlanningWeekExtraDto>? ExtraTargets = null);
+
+/// <summary>WP-VP-4L (2) — one extra visit of a week: the target (contact + contact id / pharmacy / account + id), the
+/// doctor and its institution.</summary>
+public sealed record PlanningWeekExtraDto(string TargetType, Guid TargetId, Guid? ContactId, Guid? AccountId);
 
 /// <summary>WP-VP-3A (MK-4) — one approve / reopen of a week.</summary>
 public sealed record PlanningWeekHistoryDto(DateTimeOffset At, string? By, string Action, string? Reason);
@@ -142,7 +148,11 @@ public sealed record PlannedSlotPreview(
     string? GroupKey = null,
     // WP-VP-4G (F4-9, additive) — the visit's report state: none (no report, and every not-yet-written visit) · reported
     // (an approved visit with a report) · cancelled (an approved visit since cancelled).
-    string ReportStatus = PlannedSlotReportStatuses.None);
+    string ReportStatus = PlannedSlotReportStatuses.None,
+    // WP-VP-4L (additive) — the rep's per-week extra visit (always said: false otherwise); and "weekly" when the target's
+    // frequency is unknown (the weekly default, one visit per working week).
+    bool IsExtra = false,
+    string? FrequencyDefault = null);
 
 /// <summary>WP-VP-4G (F4-9) — the report state of a preview slot.</summary>
 public static class PlannedSlotReportStatuses
@@ -184,7 +194,9 @@ public sealed record DoctorContentPreview(
     int? RequiredVisitCount = null,
     // WP-VP-3C (K-7, additive) — the doctor's next visit's products (with source) and its duration from that list.
     IReadOnlyList<VisitProductPreview>? Products = null,
-    int? DurationMinutes = null);
+    int? DurationMinutes = null,
+    // WP-VP-4L (1, additive) — "weekly" when the cadence is unknown (one visit per working week).
+    string? FrequencyDefault = null);
 
 /// <summary>The TRANSIENT supply-vs-demand summary (D-SUPPLY-DEMAND-SHAPE = A). <see cref="Supply"/> is the
 /// CyclePeriod-pinned CycleCapacity.TotalVisitNumber (visits the rep CAN do; null when the calendar could not resolve

@@ -322,6 +322,10 @@ public sealed class PlannedVisitSelectionProvenance
 
     public DateTimeOffset DecidedAt { get; set; }
     public string? DecidedBy { get; set; }
+
+    /// <summary>WP-VP-4L (2) — the visit is the rep's per-week EXTRA visit (over and above the frequency), written when its
+    /// week was approved. An older visit has no such field and reads false.</summary>
+    public bool Extra { get; set; }
 }
 
 /// <summary>Per-contact availability snapshot at plan time (D13). A WARNING in FU01, never a hard block (§12.5). Read

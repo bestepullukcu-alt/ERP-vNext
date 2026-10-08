@@ -67,6 +67,14 @@ public sealed class PlanningSession : EntityBase
     /// </summary>
     public List<PlanningDayPin> DayPins { get; set; } = new();
 
+    /// <summary>
+    /// WP-VP-4L (2) — the rep's per-week EXTRA visits (<see cref="PlanningWeekExtra.WeekStart"/>): "visit this target in
+    /// this week too", over and above its frequency. Kept per week like the day pins (a draft week has no stored
+    /// <see cref="PlanningWeek"/> record), written through the existing selection update (no new command). An older
+    /// document has no such field and reads as an empty list.
+    /// </summary>
+    public List<PlanningWeekExtra> WeekExtras { get; set; } = new();
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
 
@@ -208,6 +216,17 @@ public sealed class PlanningDayPin
     public Guid? ContactId { get; set; }
     public string Date { get; set; } = string.Empty;
     public string Scope { get; set; } = PlanningDayPinScopes.Visit;
+}
+
+/// <summary>WP-VP-4L (2) — one extra visit of a draft week: the target (a doctor: <c>contact</c> + the contact id; a
+/// pharmacy / an institution: its account id), the doctor and the institution it belongs to.</summary>
+public sealed class PlanningWeekExtra
+{
+    public string WeekStart { get; set; } = string.Empty;
+    public string TargetType { get; set; } = string.Empty;
+    public Guid TargetId { get; set; }
+    public Guid? ContactId { get; set; }
+    public Guid? AccountId { get; set; }
 }
 
 public static class PlanningDayPinScopes
