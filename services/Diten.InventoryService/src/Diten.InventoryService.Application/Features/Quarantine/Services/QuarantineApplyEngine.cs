@@ -70,8 +70,11 @@ public sealed class QuarantineApplyEngine
             var result = await _poster.PostAsync(movement, envelope, QuarantineMovementPoster.DecisionKey(decision.Id, movement.LineNo), actorUserId, ct);
             if (!result.Posted)
             {
-                await RecordFailureAsync(decision, actorUserId, result, posted.Select(p => p.TransactionId).ToList(), ct);
-                return new ApplyResult(DecisionState.ApplyFailed, result.ErrorCode, result.Message);
+                // Q2 (runtime probe): a concurrent applier of the same decision may have committed this line's key a moment ago;
+                // the ledger then refuses the duplicate on stock, not on the key. Applied by then → that is the answer, no failure.
+                return await RecordFailureAsync(decision, actorUserId, result, posted.Select(p => p.TransactionId).ToList(), ct)
+                    ? new ApplyResult(DecisionState.ApplyFailed, result.ErrorCode, result.Message)
+                    : new ApplyResult(DecisionState.Applied, null, null);
             }
 
             posted.Add((movement, result.TransactionId!));
@@ -96,7 +99,8 @@ public sealed class QuarantineApplyEngine
         }
     }
 
-    private async Task RecordFailureAsync(
+    /// <summary>Records ApplyFailed — unless the decision is Applied already (a concurrent applier won); false then.</summary>
+    private async Task<bool> RecordFailureAsync(
         QuarantineDecision decision, Guid actorUserId, PostedMovement result, IReadOnlyList<string> postedIds, CancellationToken ct)
     {
         var now = QuarantineSupport.Now();
@@ -106,8 +110,13 @@ public sealed class QuarantineApplyEngine
         var history = _support.History(SubjectOf(decision), TargetId(decision), HistoryAction.ApplyFailed, now,
             $"{result.ErrorCode}: {result.Message}", decision.Id, actorUserId);
         Stamp(history, decision);
-        await _repository.InTransactionAsync<bool>(async (session, c) =>
+        return await _repository.InTransactionAsync(async (session, c) =>
         {
+            if (QuarantineFacts.StateOf(await session.DecisionEventsAsync(decision.Id, c)) == DecisionState.Applied)
+            {
+                return false;
+            }
+
             await session.InsertDecisionEventAsync(failed, c);
             await session.InsertHistoryAsync([history], c);
             return true;
@@ -323,6 +332,9 @@ public sealed class QuarantineOutcomeApplier
     private readonly QuarantineFacts _facts;
     private readonly QuarantineSupport _support;
 
+    /// <summary>How long a fresh Approved is treated as "the approving call is still applying" (Q2 runtime probe).</summary>
+    public static readonly TimeSpan InFlightGrace = TimeSpan.FromMinutes(2);
+
     public QuarantineOutcomeApplier(
         IQuarantineRepository repository,
         IQuarantineDecisionRepository decisions,
@@ -357,9 +369,15 @@ public sealed class QuarantineOutcomeApplier
 
         if (state == DecisionState.Approved && outcome == ApprovalOutcome.Approved)
         {
-            // approved before, the apply did not finish (crash between the steps): finish it — same keys, no double post
-            var approver = events.Last(e => e.Kind == DecisionEventKind.Approved).ApproverUserId ?? approverUserId;
-            return Response<DecisionState>.Success((await _engine.ApplyAsync(decision, approver, ct)).State);
+            // approved before, the apply did not finish (crash between the steps): finish it — same keys, no double post. A
+            // FRESH Approved is the approving call still posting (Q2 runtime probe: parallel reads) — leave it to that call.
+            var approvedEvent = events.Last(e => e.Kind == DecisionEventKind.Approved);
+            if (QuarantineSupport.Now() - approvedEvent.AtUtc < InFlightGrace)
+            {
+                return Response<DecisionState>.Success(DecisionState.Approved);
+            }
+
+            return Response<DecisionState>.Success((await _engine.ApplyAsync(decision, approvedEvent.ApproverUserId ?? approverUserId, ct)).State);
         }
 
         if (state != DecisionState.PendingApproval)
@@ -416,7 +434,8 @@ public sealed class QuarantineOutcomeApplier
         }
         catch (QuarantineDuplicateException)
         {
-            // a concurrent outcome recorded Approved first; the engine below is idempotent
+            // a concurrent outcome recorded Approved first (once-only event): that call applies — this one reports the state
+            return Response<DecisionState>.Success(QuarantineFacts.StateOf(await _decisions.EventsAsync([decisionId], ct)));
         }
 
         return Response<DecisionState>.Success((await _engine.ApplyAsync(decision, approverUserId, ct)).State);

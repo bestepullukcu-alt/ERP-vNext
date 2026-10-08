@@ -153,7 +153,7 @@ public sealed class QuarantineWorkflowTests : IClassFixture<WorkflowQuarantineAp
     // ── outcome at read time ────────────────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// §16 Q2: approved in WorkCenter (by B) → A opens the queue → the stock moves ONCE, even when eight reads race. K3 (a): a
+    /// §16 Q2: approved in WorkCenter (by B) → A opens the queue → the stock moves ONCE, even when sixteen reads race. K3 (a): a
     /// reconciler without the "already applied" guards posts / records twice → this test is red.
     /// </summary>
     [Fact]
@@ -164,7 +164,7 @@ public sealed class QuarantineWorkflowTests : IClassFixture<WorkflowQuarantineAp
         var number = Id(await s.ExpectAsync(HttpMethod.Get, $"/api/quarantine/decisions/{decisionId}", null, 200), "decisionNumber");
 
         var holdId = Id(hold, "holdId");
-        var reads = Enumerable.Range(0, 8).Select(i => (i % 4) switch
+        var reads = Enumerable.Range(0, 16).Select(i => (i % 4) switch
         {
             0 => s.ExpectAsync(HttpMethod.Get, $"/api/quarantine/holds/{holdId}", null, 200),
             1 => s.ExpectAsync(HttpMethod.Get, "/api/quarantine/holds?pageSize=50", null, 200),
@@ -183,6 +183,8 @@ public sealed class QuarantineWorkflowTests : IClassFixture<WorkflowQuarantineAp
         Assert.Equal(0m, await s.OnHandAsync("QUARANTINE"));
         Assert.Single(s.Events(), e => e["DecisionId"].AsString == decisionId && e["Kind"].AsString == "Applied");
         Assert.Single(s.Events(), e => e["DecisionId"].AsString == decisionId && e["Kind"].AsString == "Approved");
+        // runtime probe finding: the losers of the race must not record ApplyFailed over the winner (state would read ApplyFailed)
+        Assert.DoesNotContain(s.Events(), e => e["DecisionId"].AsString == decisionId && e["Kind"].AsString == "ApplyFailed");
         Assert.Equal("Decided", Id(await s.GetHoldAsync(holdId), "status"));
 
         // a later read changes nothing — and an applied decision is not even asked about again (the reconciler only picks
