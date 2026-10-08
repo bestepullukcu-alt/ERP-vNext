@@ -1307,7 +1307,9 @@ ready-for-dev); waiver **W-0022-01** (DCP-002 verifier not run — no Python; ru
 - `DisposableMongoReplicaSet` (Platform test harness) no longer passes `--nounixsocket` on Windows, where mongod
   rejects it — the harness could not start on this machine before.
 
-### E3 — implementation note (WP-0022-E3, 2026-10-08, pending CT)
+### E3 — implementation note (WP-0022-E3, 2026-10-08; CT-ACCEPTED 2026-10-08)
+
+**CT acceptance (K13):** re-measured at `0c5ac78de` — Platform `~ESign` 106/106 (`DITEN_TEST_MONGOD` set), AuthService role tests 309/309; AuthService change = `DefaultRolePermissionTemplate` + its test only. CT sabotage: used/active-sample withdraw guard disabled (`SampleHandlers.cs:435`) → 1 red, restored. CT decisions: **CT-D10 existing tenants = (b)** — no automatic grant to roles that already exist (an automatic grant to existing roles is a silent privilege change); the tenant administrator grants `esign.signatures.sign` / `esign.my-samples.manage` on the role screen (the keys are Tenant-scoped and assignable); new tenants get them from the template. `esign_sample_owner_states` (single-Active guard) accepted; the CRLF-robust contract-test reader (E2 latent defect) accepted; the commit-message count (16 vs 12) is corrected by the evidence.
 
 - Branch `feature/sce/mod-0022-e3` from `48479faf9`. Commit `5452b9dfe` (samples + approval, E2 Sample port, CT-D10); local
   only, no push. Evidence: `docs/records/audits/2026-10/mod-0022-e3-evidence-2026-10-08.md`. Contract unchanged.
