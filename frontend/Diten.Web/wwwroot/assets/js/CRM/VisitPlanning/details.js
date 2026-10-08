@@ -1081,7 +1081,14 @@
     const frequencyCell = st => hasFrequency(st)
         ? esc((L.FrequencyPerPeriod || '{0}').replace('{0}', st.requiredVisitCount))
         : '<span class="badge bg-label-secondary">' + esc(st.frequencyDefault === 'weekly' ? (L.FrequencyDefaultWeekly || '') : (L.FrequencyNone || '—')) + '</span>'; // WP-VP-4L (3)
-    const doneCell = st => '<span title="' + esc((L.PlannedCountHint || '{0}').replace('{0}', st.planned || 0)) + '">' + esc(VPF.ratio(st.done || 0, st.remaining != null ? st.remaining : '—')) + '</span>';
+    // WP-VP-4M (3) — "done / required" over a small "N planned · M remaining" (the server's 3D counts: remaining =
+    // required − done − planned); no frequency at all (required null) → "—". The ratio stays isolated for RTL (4I).
+    const doneCell = st => {
+        if (st.requiredVisitCount == null) return '<span class="text-muted vp-done-cell" title="' + esc(L.DoneCellHint || '') + '">—</span>';
+        return '<span class="d-inline-flex flex-column vp-done-cell" title="' + esc(L.DoneCellHint || '') + '">' +
+            '<span>' + esc(VPF.ratio(st.done || 0, st.requiredVisitCount)) + '</span>' +
+            '<span class="small text-muted">' + esc(fmt(L.DoneCellPlannedRemaining || '{0} · {1}', st.planned || 0, st.remaining != null ? st.remaining : '—')) + '</span></span>';
+    };
     const lastVisitCell = st => st.lastVisitDate ? esc(dayShort(st.lastVisitDate)) : '<span class="text-muted">' + esc(L.LastVisitNever || '—') + '</span>';
     const doctorBadges = row => (row.blocked ? ' <span class="badge bg-label-danger" title="' + esc(L.ConsentBlockedHint || '') + '">' + esc(L.BadgeConsentBlocked || '') + '</span>' : '') +
         (row.inactive ? ' <span class="badge bg-label-secondary">' + esc(L.BadgeInactive || '') + '</span>' : '') +
@@ -1148,17 +1155,35 @@
         const re = docTerm ? new RegExp(trSearchPattern(docTerm), 'i') : null;
         return docList.filter(row => docMatches(row, re) && (!activeSpecs.length || activeSpecs.indexOf(row.specialty) > -1));
     };
+    // WP-VP-4M (4) — the open institution's PLAN doctors (ticked in this plan — what its "x / y selected" counts) head the
+    // table whatever the quick filter or the specialty pills say ("In the plan (4)"); the others follow under those
+    // filters ("Other doctors"). The search term narrows both. The quick-filter counts and "Select all (N)" are the
+    // others only. The groups are formed when the table is drawn (a tick does not move its row under the cursor).
+    const inPlanHere = cid => !!(activeAccountId && selectedContacts[selKey(activeAccountId, cid)]);
+    const planDoctors = () => {
+        if (!activeAccountId) return [];
+        const re = docTerm ? new RegExp(trSearchPattern(docTerm), 'i') : null;
+        const all = doctorRows[doctorKey(activeAccountId, 'all')] || docList;
+        return all.filter(row => inPlanHere(row.contactId) && docMatches(row, re));
+    };
+    const otherDoctors = () => visibleDoctors().filter(row => !inPlanHere(row.contactId));
+    const groupRow = (key, text) => '<tr class="vp-doc-group" data-group="' + key + '"><td colspan="8" class="small text-muted text-uppercase fw-semibold py-1">' + esc(text) + '</td></tr>';
     const drawDoctors = () => {
         const body = el('vp-doc-tbody'); if (!body) return;
-        const rows = activeAccountId ? visibleDoctors() : [];
-        body.innerHTML = rows.map(doctorRowHtml).join('');
+        const plan = activeAccountId ? planDoctors() : [];
+        const rows = activeAccountId ? otherDoctors() : [];
+        body.innerHTML = (plan.length
+            ? groupRow('plan', fmt(L.PlanDoctorsHeading || '{0}', plan.length)) + plan.map(doctorRowHtml).join('') + (rows.length ? groupRow('other', L.OtherDoctorsHeading || '') : '')
+            : '') + rows.map(doctorRowHtml).join('');
         const hint = el('vp-contacts-hint');
+        const shown = plan.length + rows.length;
         if (hint) {
-            hint.textContent = rows.length ? '' : (activeAccountId ? (L.NoDoctorsForFilter || '—') : (L.PickAccountForContacts || '—'));
-            hint.classList.toggle('d-none', rows.length > 0);
+            hint.textContent = shown ? '' : (activeAccountId ? (L.NoDoctorsForFilter || '—') : (L.PickAccountForContacts || '—'));
+            hint.classList.toggle('d-none', shown > 0);
         }
-        // WP-VP-4H (6) — "Select all (N)": the selectable doctors the filters show.
+        // WP-VP-4H (6) — "Select all (N)": the selectable doctors the filters show (4M: the others; the plan ones are in).
         setText('vp-select-all-count', '(' + rows.filter(r => !r.blocked).length + ')');
+        repaintQuickCounts();
         paintExtraBulk();
         // WP-VP-4C — every draw tells targets.js to fill the picks cells of the drawn rows.
         if (page) page.emit('targets:doctors-drawn', { accountId: activeAccountId });
@@ -1176,6 +1201,7 @@
                 ensureInPlan(activeAccountId);
             } else { delete selectedContacts[k]; }
             refreshTargetsUi();
+            repaintQuickCounts(); // 4M — the counts are the doctors outside the plan
         });
     }
 
@@ -1203,8 +1229,15 @@
     // "all" read also gives the account row its "x / y selected · N this week". A failed read is not cached.
     const QUICK_FILTERS = ['all', 'due', 'never'];
     let activeQuick = 'due'; // WP-VP-4J (mockup v3) — "due this week" first
-    const doctorRows = {};   // "accountId|quick" -> [{ contactId, name, specialty, linkId, status, blocked, inactive }]
-    const accountStats = {}; // accountId -> { active, due }
+    const doctorRows = {};   // "accountId|quick|weekStart" -> [{ contactId, name, specialty, linkId, status, blocked, inactive }]
+    const quickCountsBy = {}; // same key -> the server's quickCounts { due, never, all } (4M-BE), when it sends them
+    const accountStats = {}; // accountId -> { active, due } (of the selected week)
+    // WP-VP-4M (5) — the status reads are for the SELECTED week (4M-BE ?weekStart: "due this week", the quick filter and
+    // its counts, plannedThisWeek); the cache key carries the week and a week change reloads them. No week yet → today's
+    // (the server's default), exactly as before.
+    const statusWeek = () => { const ws = page ? page.state.weekStart : null; return /^\d{4}-\d{2}-\d{2}$/.test(ws || '') ? ws : ''; };
+    const weekQuery = sep => (statusWeek() ? sep + 'weekStart=' + encodeURIComponent(statusWeek()) : '');
+    const doctorKey = (accountId, quick) => accountId + '|' + quick + '|' + statusWeek();
     const doctorRow = d => {
         const status = d.status || {};
         return {
@@ -1213,19 +1246,24 @@
         };
     };
     const fetchAccountDoctors = (accountId, quick) => {
-        const key = accountId + '|' + quick;
+        const key = doctorKey(accountId, quick);
         if (doctorRows[key]) return Promise.resolve(doctorRows[key]);
-        return api('/my-accounts/' + accountId + '/doctors?planningSessionId=' + encodeURIComponent(sessionId) + '&quick=' + quick + '&pageSize=200').then(r => {
+        const path = '/my-accounts/' + accountId + '/doctors?planningSessionId=' + encodeURIComponent(sessionId) + '&quick=' + quick + '&pageSize=200';
+        // a week the server refuses (400 invalid_week) reads as before — today's week — instead of an empty table
+        return api(path + weekQuery('&')).then(r => (!r.ok && r.status === 400 && weekQuery('&') ? api(path) : r)).then(r => {
             const d = r.ok && r.body && r.body.data;
             if (!d) return [];
             const rows = (Array.isArray(d.items) ? d.items : []).map(doctorRow);
             if (quick === 'all') accountStats[accountId] = { active: d.totalCount != null ? d.totalCount : rows.length, due: rows.filter(x => x.status.dueThisWeek).length };
+            quickCountsBy[key] = d.quickCounts && typeof d.quickCounts === 'object' ? d.quickCounts : null;
             doctorRows[key] = rows; return rows;
         }).catch(() => []);
     };
+    // any week's read knows the doctor's name / link (the status is not read from here)
     const findDoctor = (aid, cid) => {
-        for (let i = 0; i < QUICK_FILTERS.length; i++) {
-            const hit = (doctorRows[aid + '|' + QUICK_FILTERS[i]] || []).find(x => x.contactId === cid);
+        const keys = Object.keys(doctorRows).filter(k => k.indexOf(aid + '|') === 0);
+        for (let i = 0; i < keys.length; i++) {
+            const hit = doctorRows[keys[i]].find(x => x.contactId === cid);
             if (hit) return hit;
         }
         return (contactsByAccount[aid] || []).find(x => x.contactId === cid) || null;
@@ -1427,7 +1465,8 @@
             setText('vp-doctors-count', String(all.length));
             meta.docs = all.length; paintMeta(); paintAccountStats();
             // WP-VP-4H (6) — counted quick filters: "Due this week (8)", "Never visited (3)", "All (16)".
-            if (accountId === activeAccountId) paintQuickCounts(all);
+            // WP-VP-4M (4) — the plan doctors come from this "all" read: redraw so they head the table.
+            if (accountId === activeAccountId) drawDoctors();
         });
         loadDoctorTable(accountId);
         fetchRelatedPharmacies(accountId).then(list => { setText('vp-pharm-count', String(list.length)); meta.ph = list.length; paintMeta(); });
@@ -1441,9 +1480,34 @@
         renderSpecialtyPills(list);
         renderDoctorTable(list);
     });
-    const paintQuickCounts = all => {
-        const count = { all: all.length, due: all.filter(r => r.status && r.status.dueThisWeek).length, never: all.filter(r => r.status && r.status.neverVisited).length };
-        document.querySelectorAll('#vp-quick-filters .vp-quick-count').forEach(n => { n.textContent = '(' + (count[n.dataset.quick] || 0) + ')'; });
+    // WP-VP-4M (4, 5) — the counts: the server's quickCounts of the selected week when it sends them (4M-BE), else counted
+    // from the "all" read as before; either way WITHOUT the plan doctors (they are always shown, above the filter).
+    const isDue = r => !!(r.status && r.status.dueThisWeek);
+    const isNever = r => !!(r.status && r.status.neverVisited);
+    const paintQuickCounts = (all, server) => {
+        const plan = all.filter(r => inPlanHere(r.contactId));
+        const base = server && server.all != null
+            ? { all: Number(server.all) || 0, due: Number(server.due) || 0, never: Number(server.never) || 0 }
+            : { all: all.length, due: all.filter(isDue).length, never: all.filter(isNever).length };
+        const count = { all: base.all - plan.length, due: base.due - plan.filter(isDue).length, never: base.never - plan.filter(isNever).length };
+        document.querySelectorAll('#vp-quick-filters .vp-quick-count').forEach(n => { n.textContent = '(' + Math.max(0, count[n.dataset.quick] || 0) + ')'; });
+    };
+    const repaintQuickCounts = () => {
+        if (!activeAccountId) return;
+        const key = doctorKey(activeAccountId, 'all');
+        if (doctorRows[key]) paintQuickCounts(doctorRows[key], quickCountsBy[key]);
+    };
+    // A week change: the selected week's statuses — the institution cards' "N this week" and the open institution's table.
+    let statusWeekShown = null;
+    const reloadStatusForWeek = () => {
+        const ws = statusWeek();
+        if (ws === statusWeekShown) return;
+        statusWeekShown = ws;
+        Object.keys(accountStats).forEach(k => delete accountStats[k]);
+        loadAccountStats();
+        const aid = activeAccountId; if (!aid) return;
+        fetchAccountDoctors(aid, 'all').then(() => { if (aid === activeAccountId) drawDoctors(); paintAccountStats(); });
+        loadDoctorTable(aid);
     };
     // A doctor ticked in an account outside the plan brings the account into the plan.
     const ensureInPlan = accountId => { if (accountId && !targetAccounts.some(a => a.id === accountId)) addAccount(accountId); };
@@ -1512,7 +1576,7 @@
     // WP-VP-3D (D5) — ONE read of the plan's targets (GET sessions/{id}/targets: every selected institution and pharmacy
     // with name / type / city / address / coordinates) builds the very rows resolveAccount would have built and fills the
     // same accountSource cache. Null when the read fails => the per-target resolveAccount path is the fallback.
-    const loadPlanTargets = () => api('/sessions/' + sessionId + '/targets').then(r => {
+    const loadPlanTargets = () => api('/sessions/' + sessionId + '/targets' + weekQuery('?')).then(r => { // 4M (5) — the selected week
         const d = r.ok && r.body && r.body.data;
         if (!d) return null;
         const map = {};
@@ -1763,6 +1827,7 @@
     el('vp-week-extra-bulk')?.addEventListener('click', function () { this.disabled = true; addWeekExtras(extraCandidates()); });
     // the week state follows the plan's preview and the selected week
     if (page) ['preview', 'week-change', 'session'].forEach(evt => page.on(evt, () => { drawDoctors(); refreshSubtitle(); }));
+    if (page) page.on('week-change', reloadStatusForWeek); // WP-VP-4M (5)
     // WP-VP-4H (6) — the "My accounts" list: open an account, remove a plan account, search, load 50 more on scroll.
     const accHost = el('vp-acc-list');
     if (accHost) {

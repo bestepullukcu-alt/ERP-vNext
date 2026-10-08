@@ -57,7 +57,7 @@ public sealed class VisitPlanningPolishRtlWebTests
         Assert.Contains("VPF.ratio(day.slots.length, day.cap)", weeks);
         Assert.Contains("VPF.ratio(status.done, status.remaining != null ? status.remaining : '—')", weeks);
         var details = Script("details.js");
-        Assert.Contains("esc(VPF.ratio(st.done || 0, st.remaining != null ? st.remaining : '—'))", details);
+        Assert.Contains("esc(VPF.ratio(st.done || 0, st.requiredVisitCount))", details); // 4M (3): done / required
         Assert.Contains("const head = VPF.isolateRatios(", details);
         // WP-VP-4J — the Targets subtitle carries no data name any more ("41. Hafta · 12 doktor, 2 eczane seçili"); the
         // institution's name sits in its own card, direction from its own text

@@ -677,7 +677,7 @@
     <value>Подходящих клиентов нет.</value>
   </data>
   <data name="DueThisWeekBadge" xml:space="preserve">
-    <value>На этой неделе</value>
+    <value>Визит на этой неделе</value>
   </data>
   <data name="EditWeekTargets" xml:space="preserve">
     <value>Изменить цели недели</value>
@@ -849,5 +849,17 @@
   </data>
   <data name="EmptyWeekAddFromTargets" xml:space="preserve">
     <value>Врачей на эту неделю можно добавить и на вкладке «Цели».</value>
+  </data>
+  <data name="DoneCellPlannedRemaining" xml:space="preserve">
+    <value>запланировано {0} · осталось {1}</value>
+  </data>
+  <data name="DoneCellHint" xml:space="preserve">
+    <value>Выполнено: визиты с отчётом · Запланировано: визиты ещё без отчёта · Осталось: требуется − выполнено − запланировано</value>
+  </data>
+  <data name="PlanDoctorsHeading" xml:space="preserve">
+    <value>В плане ({0})</value>
+  </data>
+  <data name="OtherDoctorsHeading" xml:space="preserve">
+    <value>Другие врачи</value>
   </data>
 </root>

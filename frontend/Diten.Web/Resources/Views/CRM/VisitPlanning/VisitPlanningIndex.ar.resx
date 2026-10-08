@@ -677,7 +677,7 @@
     <value>لا يوجد حساب مطابق.</value>
   </data>
   <data name="DueThisWeekBadge" xml:space="preserve">
-    <value>هذا الأسبوع</value>
+    <value>يجب زيارته هذا الأسبوع</value>
   </data>
   <data name="EditWeekTargets" xml:space="preserve">
     <value>تعديل أهداف هذا الأسبوع</value>
@@ -849,5 +849,17 @@
   </data>
   <data name="EmptyWeekAddFromTargets" xml:space="preserve">
     <value>يمكنك أيضًا إضافة أطباء إلى هذا الأسبوع من تبويب الأهداف.</value>
+  </data>
+  <data name="DoneCellPlannedRemaining" xml:space="preserve">
+    <value>{0} مخطط · {1} متبقٍ</value>
+  </data>
+  <data name="DoneCellHint" xml:space="preserve">
+    <value>المنجزة: زيارات بتقرير · المخططة: زيارات مخططة بلا تقرير بعد · المتبقية: المطلوبة − المنجزة − المخططة</value>
+  </data>
+  <data name="PlanDoctorsHeading" xml:space="preserve">
+    <value>في الخطة ({0})</value>
+  </data>
+  <data name="OtherDoctorsHeading" xml:space="preserve">
+    <value>أطباء آخرون</value>
   </data>
 </root>

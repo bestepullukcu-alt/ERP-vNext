@@ -84,7 +84,9 @@
     const weekIndexOf = ws => page.weeks().findIndex(w => w.weekStart === ws);
     let names = { accounts: {}, doctors: {} };
     let me = null;
-    const loadTargets = () => request(base + '/sessions/' + encodeURIComponent(sessionId) + '/targets').then(r => {
+    // WP-VP-4M (5) — the doctors' period status for the SELECTED week (?weekStart, 4M-BE); a week change reloads it.
+    const targetsWeekQuery = () => (/^\d{4}-\d{2}-\d{2}$/.test(page.state.weekStart || '') ? '?weekStart=' + encodeURIComponent(page.state.weekStart) : '');
+    const loadTargets = () => request(base + '/sessions/' + encodeURIComponent(sessionId) + '/targets' + targetsWeekQuery()).then(r => {
         const d = r.ok && r.body && r.body.data;
         if (!d) return;
         const accounts = {}, doctors = {};
@@ -722,6 +724,6 @@
     page.on('session', () => { render(); loadTargets(); });
     page.on('preview', () => { finishGenerate(); render(); returnToWeeks(); });
     page.on('request:generate-week', () => startGenerate(page.state.weekStart)); // the header's "Generate this week" too
-    page.on('week-change', () => { openDays.clear(); fullDays.clear(); allDoctorsShown = false; render(); });
+    page.on('week-change', () => { openDays.clear(); fullDays.clear(); allDoctorsShown = false; render(); loadTargets(); });
     loadMe();
 })(window, document);

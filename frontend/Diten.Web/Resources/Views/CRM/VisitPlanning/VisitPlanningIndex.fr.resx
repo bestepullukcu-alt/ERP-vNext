@@ -677,7 +677,7 @@
     <value>Aucun compte ne correspond.</value>
   </data>
   <data name="DueThisWeekBadge" xml:space="preserve">
-    <value>Cette semaine</value>
+    <value>À voir cette semaine</value>
   </data>
   <data name="EditWeekTargets" xml:space="preserve">
     <value>Modifier les cibles de la semaine</value>
@@ -849,5 +849,17 @@
   </data>
   <data name="EmptyWeekAddFromTargets" xml:space="preserve">
     <value>Vous pouvez aussi ajouter des médecins à cette semaine depuis l'onglet Cibles.</value>
+  </data>
+  <data name="DoneCellPlannedRemaining" xml:space="preserve">
+    <value>{0} planifiée(s) · {1} restante(s)</value>
+  </data>
+  <data name="DoneCellHint" xml:space="preserve">
+    <value>Effectuées : visites avec rapport · Planifiées : visites planifiées sans rapport · Restantes : requises − effectuées − planifiées</value>
+  </data>
+  <data name="PlanDoctorsHeading" xml:space="preserve">
+    <value>Dans le plan ({0})</value>
+  </data>
+  <data name="OtherDoctorsHeading" xml:space="preserve">
+    <value>Autres médecins</value>
   </data>
 </root>

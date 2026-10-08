@@ -34,7 +34,8 @@ public sealed class VisitPlanningTargetsTabWebTests
         var js = Script("details.js");
 
         // the institution's doctors come from the 3D read, with the plan, the quick filter and a page of 200
-        Assert.Contains("api('/my-accounts/' + accountId + '/doctors?planningSessionId=' + encodeURIComponent(sessionId) + '&quick=' + quick + '&pageSize=200')", js);
+        Assert.Contains("const path = '/my-accounts/' + accountId + '/doctors?planningSessionId=' + encodeURIComponent(sessionId) + '&quick=' + quick + '&pageSize=200';", js);
+        Assert.Contains("return api(path + weekQuery('&'))", js); // 4M (5): the selected week
         // WP-VP-4J — a PLAIN table row (no DataTable): select · doctor · specialty · products · frequency · done / remaining ·
         // last visit · status — the 4C / 4H cells
         var config = Between(js, "const doctorCheck = row =>", "const docMatches");
@@ -51,7 +52,7 @@ public sealed class VisitPlanningTargetsTabWebTests
         Assert.Contains("st.requiredVisitCount != null && st.frequencyStatus !== 'unknown'", js);
         Assert.Contains("(L.FrequencyPerPeriod || '{0}').replace('{0}', st.requiredVisitCount)", js);
         Assert.Contains("(L.FrequencyNone || '—')", js); // 4L: or the weekly default from frequencyDefault
-        Assert.Contains("VPF.ratio(st.done || 0, st.remaining != null ? st.remaining : '—')", js); // CT 4I E4: RTL-safe pair
+        Assert.Contains("VPF.ratio(st.done || 0, st.requiredVisitCount)", js); // CT 4I E4: RTL-safe pair (4M: done / required)
         Assert.Contains("st.lastVisitDate ? esc(dayShort(st.lastVisitDate))", js);
         Assert.Contains("(row.status.segmentBadges || []).map(name =>", js);
         Assert.Contains("row.inactive ? ' <span class=\"badge bg-label-secondary\">' + esc(L.BadgeInactive", js);

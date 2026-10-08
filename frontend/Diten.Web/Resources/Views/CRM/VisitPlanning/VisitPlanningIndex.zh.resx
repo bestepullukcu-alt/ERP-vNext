@@ -677,7 +677,7 @@
     <value>没有匹配的客户。</value>
   </data>
   <data name="DueThisWeekBadge" xml:space="preserve">
-    <value>本周</value>
+    <value>本周应拜访</value>
   </data>
   <data name="EditWeekTargets" xml:space="preserve">
     <value>编辑本周目标</value>
@@ -849,5 +849,17 @@
   </data>
   <data name="EmptyWeekAddFromTargets" xml:space="preserve">
     <value>您也可以在“目标”选项卡中将医生添加到本周。</value>
+  </data>
+  <data name="DoneCellPlannedRemaining" xml:space="preserve">
+    <value>已计划 {0} · 剩余 {1}</value>
+  </data>
+  <data name="DoneCellHint" xml:space="preserve">
+    <value>已完成：已报告的拜访 · 已计划：尚未报告的计划拜访 · 剩余：要求 − 已完成 − 已计划</value>
+  </data>
+  <data name="PlanDoctorsHeading" xml:space="preserve">
+    <value>计划中（{0}）</value>
+  </data>
+  <data name="OtherDoctorsHeading" xml:space="preserve">
+    <value>其他医生</value>
   </data>
 </root>

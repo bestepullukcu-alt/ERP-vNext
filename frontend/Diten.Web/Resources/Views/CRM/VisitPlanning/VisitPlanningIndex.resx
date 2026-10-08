@@ -677,7 +677,7 @@
     <value>No account matches.</value>
   </data>
   <data name="DueThisWeekBadge" xml:space="preserve">
-    <value>This week</value>
+    <value>Due this week</value>
   </data>
   <data name="EditWeekTargets" xml:space="preserve">
     <value>Edit this week's targets</value>
@@ -849,5 +849,17 @@
   </data>
   <data name="EmptyWeekAddFromTargets" xml:space="preserve">
     <value>You can also add doctors to this week from the Targets tab.</value>
+  </data>
+  <data name="DoneCellPlannedRemaining" xml:space="preserve">
+    <value>{0} planned · {1} remaining</value>
+  </data>
+  <data name="DoneCellHint" xml:space="preserve">
+    <value>Done: reported visits · Planned: planned visits not reported yet · Remaining: required − done − planned</value>
+  </data>
+  <data name="PlanDoctorsHeading" xml:space="preserve">
+    <value>In the plan ({0})</value>
+  </data>
+  <data name="OtherDoctorsHeading" xml:space="preserve">
+    <value>Other doctors</value>
   </data>
 </root>

@@ -61,7 +61,7 @@ public sealed class VisitPlanningTargetsV3WebTests
         Assert.Contains("id=\"vp-products-legend\"", pane);
         var row = Between(js, "const doctorRowHtml = row =>", "</tr>';");
         Assert.Equal(8, Regex.Matches(row, "'<td").Count);
-        Assert.Contains("body.innerHTML = rows.map(doctorRowHtml).join('');", js);
+        Assert.Contains("rows.map(doctorRowHtml).join('');", js); // 4M (4): after the plan doctors' group
         // the lavender summary + the selected list; thin scrollbars from the page CSS only
         Assert.Contains("class=\"card vp-summary-card p-4\"", pane);
         Assert.Contains("id=\"vp-selection-chips\"", pane);

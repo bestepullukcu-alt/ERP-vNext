@@ -61,7 +61,7 @@ public sealed class VisitPlanningTargetStatusWebTests
         Assert.NotEmpty(seed);
 
         // One targets read + bulk related (≤ 100 ids per request) feed the opening.
-        Assert.Contains("api('/sessions/' + sessionId + '/targets')", js);
+        Assert.Contains("api('/sessions/' + sessionId + '/targets' + weekQuery('?'))", js); // 4M (5): the selected week
         Assert.Contains("'/accounts/related?relationType=pharmacy&accountIds='", js);
         Assert.Contains("RELATED_BULK_MAX = 100", js);
         Assert.Contains("loadPlanTargets()", seed);

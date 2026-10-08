@@ -176,7 +176,7 @@ public sealed class VisitPlanningController : Controller
     [HttpGet("api/sessions/{planningSessionId:guid}/targets")]
     public Task<IActionResult> SessionTargets(Guid planningSessionId, CancellationToken ct)
         => ProxyAsync(
-            HttpMethod.Get, $"/api/crm/visit-plan/sessions/{planningSessionId}/targets", null, ReadPermission, ct);
+            HttpMethod.Get, $"/api/crm/visit-plan/sessions/{planningSessionId}/targets{Request.QueryString}", null, ReadPermission, ct); // WP-VP-4M (5) — ?weekStart
 
     [HttpPost("api/sessions")]
     public async Task<IActionResult> CreateSession(CancellationToken ct)

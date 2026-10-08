@@ -677,7 +677,7 @@
     <value>Eşleşen hesap yok.</value>
   </data>
   <data name="DueThisWeekBadge" xml:space="preserve">
-    <value>Bu hafta</value>
+    <value>Bu hafta görülmeli</value>
   </data>
   <data name="EditWeekTargets" xml:space="preserve">
     <value>Bu haftanın hedeflerini düzenle</value>
@@ -849,5 +849,17 @@
   </data>
   <data name="EmptyWeekAddFromTargets" xml:space="preserve">
     <value>Hedefler'den doktorları bu haftaya ekleyebilirsiniz.</value>
+  </data>
+  <data name="DoneCellPlannedRemaining" xml:space="preserve">
+    <value>{0} planlı · {1} kalan</value>
+  </data>
+  <data name="DoneCellHint" xml:space="preserve">
+    <value>Yapılan: raporlu ziyaret · Planlı: raporu henüz olmayan planlı ziyaret · Kalan: gereken − yapılan − planlı</value>
+  </data>
+  <data name="PlanDoctorsHeading" xml:space="preserve">
+    <value>Planda ({0})</value>
+  </data>
+  <data name="OtherDoctorsHeading" xml:space="preserve">
+    <value>Diğer doktorlar</value>
   </data>
 </root>
