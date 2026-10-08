@@ -149,7 +149,7 @@ Kurallar:
 
 - ◐ **Manuel test bulgusu (2026-10-08):** sıklığı tanımsız 54 doktorun hepsi 41. haftada bitti, 42–53 boş. **Kararlar:** tanımsız sıklık = **haftada 1**; **haftaya ek ziyaret** evet → ☑ E2 4L-WEB `b403aa18f` + 4L-BE `ac73da19a` (CRM 2466/0/5, Web 816/0, mimari 27; ☐ E4) [WP-VP-4L](WP-VP-4L-weekly-default-week-extras.md) (4L-BE ∥ 4L-WEB; `C:	mpp-4l-be`, `C:	mpp-4l-web`). Mobil M10 metni "haftada 1 (varsayılan)" olacak.
 
-- ☐ **4L-BE sonrası paket (kullanıcı onayı 2026-10-09; "4L-BE dönünce paketle"):** Hedefler sayıları (canlı, plan `f2c6014d`, 42. hafta, Acıbadem Taksim):
+- ☐ **[WP-VP-4M](WP-VP-4M-targets-numbers-selected-week.md) paketlendi (2026-10-09; 4M-BE ∥ 4M-WEB, `C:	mpp-4m-be` / `vp-4m-web`)** — kullanıcı onayı ("4L-BE dönünce paketle"): Hedefler sayıları (canlı, plan `f2c6014d`, 42. hafta, Acıbadem Taksim):
   1. "Yapılan / kalan" planlı ziyareti göstermiyor → seçili doktorda "0 / 0"; doğrusu "0 yapıldı · 1 planlı".
   2. Varsayılan "Bu hafta görülmesi gerekenler" süzgeci planda olan doktorları gizliyor ("4 / 29 seçili" ama tabloda seçili yok) → planda olanlar süzgeçten bağımsız, durumlarıyla listenin başında.
   3. `dueThisWeek` / hızlı süzgeç sayıları **bugünkü haftaya** göre, başlık **seçili haftaya** göre → doktor durumu okumasına (my-accounts/{id}/doctors, sessions/{id}/targets) seçili hafta parametresi (`weekStart`, ek) ve Web bunu gönderir.
