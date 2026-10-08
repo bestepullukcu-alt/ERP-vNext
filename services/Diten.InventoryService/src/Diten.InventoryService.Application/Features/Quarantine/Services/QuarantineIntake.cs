@@ -103,6 +103,7 @@ public sealed class QuarantineIntakeService
                         StockStatus = transaction.ToStockStatus!.Value,
                         Quantity = transaction.BaseQuantity,
                         BaseUomId = transaction.BaseUomId,
+                        SerialIds = transaction.SerialIds is { Count: > 0 } s ? [.. s] : null,
                         Source = SourceOf(transaction.MovementType),
                         SourceMovementId = movementId,
                         SourceDocument = new HoldSourceDocument
@@ -133,6 +134,7 @@ public sealed class QuarantineIntakeService
                         LocationId = transaction.ToLocationId!,
                         Quantity = transaction.BaseQuantity,
                         BaseUomId = transaction.BaseUomId,
+                        SerialIds = transaction.SerialIds is { Count: > 0 } bs ? [.. bs] : null,
                         BlockedAtUtc = transaction.PostingDate,
                         Origin = BlockedOrigin.OtherInbound,
                         SourceMovementId = movementId,

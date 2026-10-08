@@ -89,6 +89,7 @@ public sealed class QuarantineMovementPoster
             Quantity = InventoryQuantity.ToWire(movement.Quantity),
             UomId = envelope.BaseUomId,
             LotId = envelope.LotId,
+            SerialIds = movement.SerialIds is { Count: > 0 } serials ? serials : null, // FU-0175-Q1-SER
             FromStockStatus = movement.FromStockStatus is { } from ? WireNames.ToWire(from) : null,
             ToStockStatus = movement.ToStockStatus is { } to ? WireNames.ToWire(to) : null,
             SourceModule = QuarantineContract.ModuleId,

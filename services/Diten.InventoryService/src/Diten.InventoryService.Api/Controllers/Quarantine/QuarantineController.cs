@@ -2,6 +2,7 @@ using Diten.InventoryService.Api.Quarantine;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Common.Models;
 using Diten.InventoryService.Application.Features.Quarantine.Commands;
+using Diten.InventoryService.Application.Features.Quarantine.Handlers;
 using Diten.InventoryService.Application.Features.Quarantine.Queries;
 using Diten.InventoryService.Application.Features.Quarantine.Services;
 using Diten.InventoryService.Domain.Quarantine.Enums;
@@ -15,9 +16,9 @@ namespace Diten.InventoryService.Api.Controllers.Quarantine;
 /// <summary>
 /// QUARANTINE-BUNDLE — MOD-0175 (base <c>/api/quarantine</c>, contract <c>quarantine.openapi.yaml</c> 1.0.0). Slice Q1
 /// implements: holds (list, get, "Karantinaya Al", "İncelemeye al"), decisions (draft, submit, get, re-apply), blocked stock
-/// (list, get, "İncelemeyi tamamla", "Stoğu bloke et"), settings (get / put) and block reasons (list / create / put). The
-/// workflow operations (refresh, withdraw, template), the retest queue, the lot quality status, the by-source list, the
-/// hold PATCH and the e-signature subject provider are frozen in the contract and arrive with Q2–Q4. No DELETE anywhere;
+/// (list, get, "İncelemeyi tamamla", "Stoğu bloke et"), settings (get / put) and block reasons (list / create / put). Slice
+/// Q2 adds the workflow operations (refresh, withdraw, template). The retest queue, the lot quality status, the by-source
+/// list, the hold PATCH and the e-signature subject provider are frozen in the contract and arrive with Q3–Q4. No DELETE anywhere;
 /// the only PUTs are the two master-data replacements the contract names (settings, block reasons). No business rule here.
 /// </summary>
 [Route("api/quarantine")]
@@ -129,6 +130,25 @@ public sealed class QuarantineController : CustomBaseController
     public async Task<IActionResult> GetDecision(string decisionId, CancellationToken ct)
         => await CompanyChecked(decisionId, CreateActionResultInstance(await _mediator.Send(new GetDecisionQuery(decisionId), ct)), ct);
 
+    [HttpPost("decisions/{decisionId}/refresh")]
+    [HasPermission(QuarantinePermissions.HoldsRead)]
+    public async Task<IActionResult> RefreshDecision(string decisionId, CancellationToken ct)
+        => QuarantineSupport.TryParseId(decisionId, out var id)
+            ? await CompanyChecked(decisionId, CreateActionResultInstance(await _mediator.Send(new RefreshDecisionCommand(id), ct)), ct)
+            : NotFoundContract("QUARANTINE_DECISION_NOT_FOUND", "Decision not found.");
+
+    [HttpPost("decisions/{decisionId}/withdraw")]
+    [HasPermission(QuarantinePermissions.DecisionsWithdraw)]
+    public async Task<IActionResult> WithdrawDecision(string decisionId, CancellationToken ct)
+    {
+        if (!QuarantineSupport.TryParseId(decisionId, out var id)) return NotFoundContract("QUARANTINE_DECISION_NOT_FOUND", "Decision not found.");
+        var read = await QuarantineRequestReader.ReadAsync(Request.Body, QuarantineRequestReader.ReviewCompleteMembers,
+            b => new { Reason = b.String("reason"), Key = b.String("idempotencyKey") }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        return await CompanyChecked(decisionId, CreateActionResultInstance(await _mediator.Send(new WithdrawDecisionCommand(id, body.Reason, key), ct)), ct);
+    }
+
     [HttpPost("decisions/{decisionId}/apply")]
     [HasPermission(QuarantinePermissions.DecisionsApply)]
     public async Task<IActionResult> ReapplyDecision(string decisionId, CancellationToken ct)
@@ -201,6 +221,16 @@ public sealed class QuarantineController : CustomBaseController
         if (read.Value is not { } command) return Invalid(read.Error);
         if (IfMatch() is not { } version) return Invalid("If-Match is required (W/\"0\" before the first save).");
         return WithETag(await _mediator.Send(command with { ExpectedVersion = version }, ct), s => s.Version);
+    }
+
+    [HttpPost("settings/workflow-template")]
+    [HasPermission(QuarantinePermissions.SettingsManage)]
+    public async Task<IActionResult> PrepareWorkflowTemplate(CancellationToken ct)
+    {
+        var read = await QuarantineRequestReader.ReadAsync(Request.Body, QuarantineRequestReader.KeyMembers, b => new { Key = b.String("idempotencyKey") }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        return CreateActionResultInstance(await _mediator.Send(new PrepareWorkflowTemplateCommand(key), ct));
     }
 
     [HttpGet("block-reasons")]

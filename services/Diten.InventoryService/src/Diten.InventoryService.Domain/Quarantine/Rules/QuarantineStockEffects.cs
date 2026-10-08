@@ -14,7 +14,8 @@ public sealed record PlannedMovement(
     string FromLocationId,
     string? ToWarehouseId,
     string? ToLocationId,
-    decimal Quantity);
+    decimal Quantity,
+    IReadOnlyList<string>? SerialIds = null);
 
 /// <summary>
 /// MOD-0175 pack §8 stock-effect table — the ONLY place where a quarantine decision becomes ledger movements. Every value
@@ -31,6 +32,30 @@ public sealed record PlannedMovement(
 /// </summary>
 public static class QuarantineStockEffects
 {
+    /// <summary>
+    /// FU-0175-Q1-SER / ASSUMPTION-0175-Q2-01: the serials of a serial-tracked record are split over the parts of a decision in
+    /// their stored (intake) order — the first <c>quantity</c> serials go to the first part, the next to the second. The split is
+    /// written on the draft, so the decision (the signed subject) never changes afterwards. Null when the record has no serials.
+    /// </summary>
+    public static IReadOnlyList<List<string>?> SplitSerials(IReadOnlyList<string>? serials, IReadOnlyList<decimal> quantities)
+    {
+        if (serials is null || serials.Count == 0)
+        {
+            return quantities.Select(_ => (List<string>?)null).ToList();
+        }
+
+        var parts = new List<List<string>?>();
+        var taken = 0;
+        foreach (var quantity in quantities)
+        {
+            var count = (int)quantity;
+            parts.Add(serials.Skip(taken).Take(count).ToList());
+            taken += count;
+        }
+
+        return parts;
+    }
+
     /// <summary>The stock statuses a hold sits in (intake observer + V7).</summary>
     public static readonly IReadOnlyList<StockStatus> HoldStatuses = [StockStatus.Quarantine, StockStatus.QualityInspection];
 
@@ -62,11 +87,11 @@ public static class QuarantineStockEffects
     {
         DecisionKind.HoldDecision => decision.Lines
             .OrderBy(l => l.LineNo)
-            .Select(l => StatusTransfer(l.LineNo, decision.FromStockStatus, LineTarget[l.Decision], decision.WarehouseId, decision.LocationId, l.Quantity))
+            .Select(l => StatusTransfer(l.LineNo, decision.FromStockStatus, LineTarget[l.Decision], decision.WarehouseId, decision.LocationId, l.Quantity) with { SerialIds = l.SerialIds })
             .ToList(),
         DecisionKind.Disposition => [Disposition(decision)],
         DecisionKind.Unblock =>
-            [StatusTransfer(1, StockStatus.Blocked, StockStatus.Available, decision.WarehouseId, decision.LocationId, decision.AvailableQuantityAtDecision)],
+            [StatusTransfer(1, StockStatus.Blocked, StockStatus.Available, decision.WarehouseId, decision.LocationId, decision.AvailableQuantityAtDecision) with { SerialIds = decision.SerialIds }],
         // KQ-I lot release moves no stock (slice Q4).
         DecisionKind.LotRelease => [],
         _ => throw new ArgumentOutOfRangeException(nameof(decision), decision.Kind, "Unknown decision kind.")
@@ -76,6 +101,11 @@ public static class QuarantineStockEffects
     {
         var d = decision.Disposition ?? throw new InvalidOperationException("A disposition decision carries its disposition.");
         var type = DispositionMovement[d.Kind];
+        return DispositionMovementOf(decision, d, type) with { SerialIds = d.SerialIds };
+    }
+
+    private static PlannedMovement DispositionMovementOf(QuarantineDecision decision, DecisionDisposition d, MovementType type)
+    {
         return d.Kind switch
         {
             DispositionKind.Destroy or DispositionKind.ReturnToSupplier =>

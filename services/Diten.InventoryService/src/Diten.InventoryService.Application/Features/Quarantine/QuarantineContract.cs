@@ -26,6 +26,9 @@ public static class QuarantineContract
     public const string DecisionPrefix = "QKR";
     public const string BlockedPrefix = "BLK";
 
+    /// <summary>MOD-0023 reason code of a withdraw (task cancel) by the decider.</summary>
+    public const string WithdrawReasonCode = "QUARANTINE_WITHDRAWN";
+
     public const int MaxPageSize = 100;
     public const int DefaultPageSize = 50;
     public const int MaxNoteLength = 2000;
@@ -60,4 +63,8 @@ public static class QuarantineErrorCodes
     public const string BlockReasonExists = "QUARANTINE_BLOCK_REASON_EXISTS";
     public const string BlockReasonInUse = "QUARANTINE_BLOCK_REASON_IN_USE";
     public const string SignatureRequired = "QUARANTINE_SIGNATURE_REQUIRED";
+    public const string ApproversNotConfigured = "QUARANTINE_APPROVERS_NOT_CONFIGURED";
+    public const string WorkflowTemplateMissing = "QUARANTINE_WORKFLOW_TEMPLATE_MISSING";
+    public const string WorkflowForbidden = "QUARANTINE_WORKFLOW_FORBIDDEN";
+    public const string WorkflowRejected = "QUARANTINE_WORKFLOW_REJECTED";
 }

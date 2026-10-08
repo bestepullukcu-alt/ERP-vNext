@@ -175,6 +175,7 @@ public sealed class QuarantineApplyEngine
             record.BlockedNumber = await session.NextNumberAsync(QuarantineContract.BlockedPrefix, now.UtcDateTime.Year, ct);
             record.OriginHoldId = hold.Id;
             record.OriginLineNo = line.LineNo;
+            record.SerialIds = line.SerialIds;
             record.PendingDisposition = rejected; // Reject → waits for a disposition, review done (pack §8)
             record.Reviewed = rejected;           // Block → review still to do
             await session.InsertBlockedAsync(record, ct);
@@ -189,6 +190,11 @@ public sealed class QuarantineApplyEngine
         var disposition = decision.Disposition!;
         var expected = blocked.Version;
         blocked.Quantity -= disposition.Quantity;
+        if (blocked.SerialIds is not null && disposition.SerialIds is not null)
+        {
+            blocked.SerialIds = blocked.SerialIds.Except(disposition.SerialIds, StringComparer.Ordinal).ToList();
+        }
+
         blocked.ActiveDecisionId = null;
         if (blocked.Quantity <= 0m)
         {
@@ -224,6 +230,7 @@ public sealed class QuarantineApplyEngine
                     StockStatus = StockStatus.Quarantine,
                     Quantity = disposition.Quantity,
                     BaseUomId = decision.BaseUomId,
+                    SerialIds = disposition.SerialIds,
                     Source = HoldSource.Rework,
                     SourceMovementId = posted.Single().TransactionId,
                     SourceDocument = new HoldSourceDocument
@@ -242,6 +249,7 @@ public sealed class QuarantineApplyEngine
                 var sample = NewBlocked(decision, blocked.Origin, disposition.Quantity, disposition.SampleLocationId!, now, actor);
                 sample.BlockedNumber = await session.NextNumberAsync(QuarantineContract.BlockedPrefix, now.UtcDateTime.Year, ct);
                 sample.BlockReasonCode = blocked.BlockReasonCode;
+                sample.SerialIds = disposition.SerialIds;
                 sample.OriginHoldId = blocked.OriginHoldId;
                 sample.Status = BlockedStatus.SampleRetained;
                 sample.Reviewed = true;
@@ -259,6 +267,7 @@ public sealed class QuarantineApplyEngine
     {
         var expected = blocked.Version;
         blocked.Quantity = 0m;
+        blocked.SerialIds = blocked.SerialIds is null ? null : [];
         blocked.Status = BlockedStatus.Closed;
         blocked.PendingDisposition = false;
         blocked.ActiveDecisionId = null;
