@@ -50,14 +50,33 @@
 - Gelene kadar: takvimde iptal "İptal edildi" (sizin bugünkü davranışınız doğru). Ürün için `productName ?? productCode`; takvimde kod görünür.
 
 ## 4. Açık konular (§8)
-- **İptal edilmiş ziyaretin formu düzenlenebiliyor.**
-  - Bugün backend yalnız **arşivlenmiş** ziyaretin güncellemesini reddediyor (`409 planned_visit_archived`); iptal edilmiş ziyaret güncellemesi **reddedilmiyor**. Bu bir boşluk.
-  - Önerimiz: **iptal edilmiş ziyaret salt okunur** olsun, güncelleme `409`. Kural ürün sahibinin onayıyla backend paketine giriyor, kesinleşince bildirilecek.
-  - O zamana kadar mobilde iptal edilmiş ziyaretin formunu **salt okunur** göstermeniz uygun olur.
+- **İptal edilmiş ziyaret — ürün sahibi kararı (2026-10-08):** iptal edilmiş planlanan ziyaret **düzenlenemez ve raporlanamaz.** Backend paketi (WP-VP-4K):
+  - güncelleme → `409 planned_visit_invalid_transition`;
+  - sonuç / rapor gönderimi → yeni `409 visit_report_plan_cancelled`;
+  - daha önce gönderilmiş raporun gerekçeli düzeltmesi serbest kalır.
+  - Mobilde iptal edilmiş ziyaretin formunu ve rapor eylemlerini **salt okunur** yapın.
 - **`productName` null** (MDM izni yok ya da MDM kapalı) başarıdır; kodu göstermeniz doğru. Saha temsilcisi rolüne ürün okuma izni ürün sahibince verilecek.
 - **`IGDIR` → "İgdir":** il kodu ASCII olduğu için baş harf yedeği kesin değil (Web'de de aynı sınır). Kesin çözüm il etiket seti; referans verisi sahiplerinde.
 - **Referans etiketleri** (`attributes.label_<dil>`): okuma yolunuz doğru. Etiketler referans verisinin sahiplerince girilecek; şu an setlerde yalnız İngilizce `label` var.
 - **SB-3c** (ziyaret yap / tamamla) ve **Faz 6 T1–T3:** uç yok; ayrı notla gelecek.
+
+## 4b. Durum raporunuza (ZIYARET-VE-ZIYARET-RAPORU-DURUM) yanıt — ürün sahibi kararları (2026-10-08)
+- **"Bugün" UTC kalıyor** (kiracı saat dilimi eklenmeyecek).
+- **Rapor son tarihi: ziyaretten sonra 48 saat.** Son tarih = ziyaret günü sonu (UTC) + 48 sa; örneğin Perşembe ziyareti Cumartesi 23:59:59 UTC'ye kadar.
+  - Sonrasında ilk sonuç kaydı ve gönderim → yeni `409 visit_report_deadline_passed`.
+  - Düzeltme (amend) sınırsız; 60 dk yeniden gönderme penceresi aynen.
+  - Yönetici (`crm.planned-visit.read-all`) son tarihten sonra da kaydedebilir.
+  - Takvim öğesine `reportDeadline` (UTC), contract'a `reportDeadlineHours = 48` (ek alan) gelecek.
+- **Raporu yazan = oturumdaki kişi.** İstekteki `reportedByResourceId` başka bir kaynaksa → `403 resource_not_caller` (read-all hariç). Bugün bu alanı kendiniz dolduruyorsanız göndermeyi bırakabilirsiniz.
+- **F-RBAC:**
+  - Rapor uçları `crm.visit-report.read` / `.record` / `.amend` isteyecek; geçici `crm.territory.*` yedeği kalkıyor.
+  - Saha temsilcisi rolünü ürün sahibi açıp yetkileri verecek. Bu tamamlanınca rapor yazma (A2–A4) önündeki engel kalkar.
+- **T-1:** "işyerindeki doktor" hedefinde `targetDisplayName` doktor adıyla dolacak (backend hatası doğrulandı).
+- **Takvim:** `cancellationReason` ve `plannedContent[].productName` gelecek. Eksik tarih hatası `visit_report_calendar_range_invalid` olacak (eski `…reschedule_date_invalid` yerine).
+- **B4 (taslak → planlı ucu) ve B11 (tip / amaç / durum etiketleri):** Faz 6'da (Planlanan Ziyaretler).
+- **B5 (sonuç kodu seti):** referans verisi + SB-3c.
+- **B10 (check-in):** kapsam dışı, ayrı modül.
+- Hepsi WP-VP-4K ile gelecek; teslimde ayrıca bildirilecek.
 
 ## 5. Teşekkür / gözlem
 - **BiDi yaklaşımınız** (bağlam = etiketin ilk güçlü harfi) Web'deki yalıtımla uyumlu. Web'de ayrıca **sayı oranları** ("0 / 5") RTL'de ters dönüyordu; LRI…PDI ile yalıttık. Mobilde "yapılan / kalan" gibi oranlar gösteriyorsanız aynı sorun olabilir.
