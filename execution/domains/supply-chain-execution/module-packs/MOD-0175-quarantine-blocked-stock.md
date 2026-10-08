@@ -1221,6 +1221,12 @@ candidate: the starter is refused 403 `WORKFLOW_ACTOR_DENIED` when another candi
 starter is the assignee. Open: RabbitMQ runtime (O-Q2-1), withdraw response codes vs contract (O-Q2-2), single candidate =
 decider (O-Q2-3), DisplayContext labels (O-Q2-4 → Q5), test port removal (O-Q2-5), serials on the wire / manual serial
 quarantine (O-Q2-6). Evidence `docs/records/audits/2026-10/mod-0175-q2-evidence-2026-10-08.md`.
+**CT v1.1 düzeltmesi (`de6b92ca1`): S1/S2 testleri + sabotajlar.** The two concurrent-apply guards had no sabotage proof
+(CT: both stayed green when disabled). Deterministic tests (`QuarantineApplyRaceTests`, no concurrency, no waiting): S1 a staged
+loser (stale 0175 view + stale ledger key lookup, real ledger refuses `INSUFFICIENT_STOCK` — control test) after the winner
+applied → Applied, no ApplyFailed, 1 movement; S2 with an injected `TimeProvider` (only the grace clock; `TimeProvider.System`
+in DI): fresh Approved → Approved, nothing posted; older than the grace → Applied. Sabotages s1 (both Applied checks), s1f
+(RecordFailureAsync only), `InFlightGrace = Zero`, `= MaxValue` → each 1 red, restored clean. Inventory **617/617**, architecture 18/18.
 
 ## 20. Follow-up Items
 
