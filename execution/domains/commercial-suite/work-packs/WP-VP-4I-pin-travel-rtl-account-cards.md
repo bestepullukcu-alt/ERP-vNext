@@ -142,3 +142,48 @@ KORU/YAPMA: 4D/4E/4F/4H davranışları aynı; Rota tasarımı aynı; backend CR
 DOĞRULA (E2): Web (792/0 tabanı) · CRM 2451/0/5 (dokunulmaz) · mimari 27; JS node --check; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad> (REPO İÇİNDE). Testler 4I-WEB Acceptance 1–8; sabotaj 2 (kırmızı kanıtla, geri al). Betiğin kuru çalışma çıktısını rapora koy.
 Commit: "fix(web): WP-VP-4I-WEB — strip/day-row polish, en month, account cards per mockup, RTL bidi, city labels, TR label script" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt, kök neden (madde 9), mockup'tan bilinçli sapmalar, elle denenecekler. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-08)
+**Commit'ler:** `0c62c74b4` 4I-BE (ajan `20e7e805d`) · `b1a59be9a` 4I-WEB (ajan `f2ba9e89e`). İkisi de test dalına cherry-pick edildi. Push: test dalı.
+
+**CT K13:**
+- Birleşik: CRM **2457/0/5** (+6) · Web **801/0** (+9) · mimari listesiz **27** (değişmedi).
+- 4I-BE worktree'de 6 CRM koşusundan 1'inde tek bir kararsız kırmızı çıktı, tekrarında yeşil. Bilinen kararsız sınıf; yeni testlerle ilgisi yok.
+- JS `node --check` temiz (ajan).
+
+**Kod okuması — 4I-BE:**
+- `AssignAroundPins`: dakika bütçeye sığıyorsa, sabitli kümeye uzak olan (25 dk eşiği) serbest grupların yolu toplama ekleniyor. Bütçe aşıldıkça en uzak grup bütün olarak çıkıyor; kalanların yolu yüke yazılıyor.
+- Rota katmanı: yol yüzünden taşan ziyaret, haftada süresine yer varsa `no_near_day` alıyor.
+- **Ajanın bilinçli daraltması (CT kabul):** dakika olarak zaten aşan günde 4G kırpması aynen uygulanıyor. Böylece 4G testi (Kadıköy–Bakırköy 28 dk) korunuyor. Artakalan yol taşmasını rota katmanı `no_near_day` ile yakalıyor.
+
+**Kod okuması — 4I-WEB:**
+- `format.js`:
+  - İngilizcede ay `formatToParts` ile üç harf ("Sep");
+  - `bidi` = escape + `<bdi>`.
+- `reference-labels`:
+  - `TextFor(CurrentUICulture)` → `label_<dil>` niteliği, yoksa etiket; önbellek yok;
+  - `cities` ek alanı.
+- **Kök neden (madde 9):** MOD-0048 değerinin tek etiketi var ve setler İngilizce yazılmış. Web doğru okuyor.
+- **Betik `add_tr_reference_labels.py`:**
+  - Varsayılan kuru çalışma; `--apply` için token gerekiyor; veritabanına doğrudan yazmıyor (BRD maker-checker akışı).
+  - Mevcut taslak varsa seti atlıyor; set oluşturmuyor.
+  - İl seti yalnız `--include-city` ile ve set varsa yazılıyor.
+
+**CT sabotajları:**
+- 4I-BE: uzak grup eşiği ×1000 → 1 kırmızı (`A_konya_pin_on_tokis_friday_sends_toki_out_with_no_near_day_and_thursday_keeps_its_doctors`). Geri alındı.
+- 4I-WEB: `TextFor` yanlış anahtar → 1 kırmızı (`Institution_type_reads_label_of_the_ui_language_and_falls_back_to_the_label`). Geri alındı.
+
+**Kullanıcıda:**
+- Betiği önce `--live` (kuru) sonra `--apply` ile çalıştırma; ikinci yetkili onaylayıp yayınlıyor.
+- `city` seti kararı: yayınlanırsa Contact CityRef doğrulaması açılır.
+- Saha temsilcisi rolüne `mdm.global-products.read`.
+
+**E4 (CT, fleet sonrası):**
+- SERHAT → Cuma: TOKİ `no_near_day`.
+- Şerit / gün satırı.
+- "Sep".
+- Hesap kartları.
+- Arapça bidi.
+- Etiketler betik uygulanınca.
