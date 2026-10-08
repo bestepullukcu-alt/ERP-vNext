@@ -11,8 +11,7 @@ app.UseAuthentication();
 app.UseMiddleware<DemandTenantMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
-app.MapGet("/health", () => Results.Ok(new { status = "live", module = "MOD-0188" }))
-    .AllowAnonymous();
+app.MapDemandPlanningHealth();
 app.Run();
 
 public partial class Program;

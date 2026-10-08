@@ -31,6 +31,12 @@ public sealed class DemandPlanningMongoContext
         _database = _client.GetDatabase(databaseName);
     }
 
+    public async Task PingAsync(CancellationToken cancellationToken)
+    {
+        await _database.RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1),
+            cancellationToken: cancellationToken);
+    }
+
     public IMongoCollection<DemandHistoryImportBatch> HistoryImportBatches =>
         _database.GetCollection<DemandHistoryImportBatch>("mod0188_history_import_batches");
 
