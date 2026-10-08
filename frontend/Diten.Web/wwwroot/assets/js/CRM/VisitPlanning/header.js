@@ -194,7 +194,7 @@
         const v = el('vp-reopen-reason') ? el('vp-reopen-reason').value : '';
         const ok = reasonOk(v);
         const btn = el('vp-reopen-confirm'); if (btn) btn.disabled = !ok;
-        setText('vp-reopen-count', String(v.trim().length) + ' / ' + REOPEN_MIN);
+        setText('vp-reopen-count', VPF.ratio(v.trim().length, REOPEN_MIN));
     };
     const confirmReopen = () => {
         const reason = (el('vp-reopen-reason') ? el('vp-reopen-reason').value : '').trim();

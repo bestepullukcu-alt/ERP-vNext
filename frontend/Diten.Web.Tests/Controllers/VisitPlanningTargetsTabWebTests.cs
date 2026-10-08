@@ -50,7 +50,7 @@ public sealed class VisitPlanningTargetsTabWebTests
         Assert.Contains("st.requiredVisitCount != null && st.frequencyStatus !== 'unknown'", js);
         Assert.Contains("(L.FrequencyPerPeriod || '{0}').replace('{0}', st.requiredVisitCount)", js);
         Assert.Contains("esc(L.FrequencyNone || '—')", js);
-        Assert.Contains("(st.done || 0) + ' / ' + (st.remaining != null ? st.remaining : '—')", js);
+        Assert.Contains("VPF.ratio(st.done || 0, st.remaining != null ? st.remaining : '—')", js); // CT 4I E4: RTL-safe pair
         Assert.Contains("st.lastVisitDate ? esc(dayShort(st.lastVisitDate))", js);
         Assert.Contains("(row.status.segmentBadges || []).map(name =>", js);
         Assert.Contains("row.inactive ? ' <span class=\"badge bg-label-secondary\">' + esc(L.BadgeInactive", js);

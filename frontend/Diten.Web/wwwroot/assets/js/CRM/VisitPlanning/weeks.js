@@ -212,7 +212,7 @@
         const name = visitName(s);
         const sub = s.contactId ? accountName(s.accountId) : '';
         const nameHtml = s.contactId
-            ? '<button type="button" class="btn btn-link p-0 text-start d-flex flex-column js-wk-doctor" data-cid="' + esc(s.contactId) + '" data-aid="' + esc(s.accountId || '') + '"><span class="fw-medium text-heading">' + bidi(name) + '</span>' + (sub && sub !== '—' ? '<span class="small text-muted">' + bidi(sub) + '</span>' : '') + '</button>'
+            ? '<button type="button" class="btn btn-link p-0 text-start d-flex flex-column align-items-start js-wk-doctor" data-cid="' + esc(s.contactId) + '" data-aid="' + esc(s.accountId || '') + '"><span class="fw-medium text-heading">' + bidi(name) + '</span>' + (sub && sub !== '—' ? '<span class="small text-muted">' + bidi(sub) + '</span>' : '') + '</button>'
             : '<span class="fw-medium text-heading">' + bidi(name) + '</span>';
         const hasProducts = (s.contentItems || []).length > 0;
         return '<div class="d-flex align-items-center gap-2 py-2 border-bottom flex-wrap vp-wk-visit"' + (movable ? ' draggable="true" data-drag="visit" data-slot="' + idx + '"' : '') + '>' +
@@ -264,7 +264,7 @@
             '<span class="text-nowrap"><strong class="fw-semibold">' + esc(dayName(day.d)) + '</strong> ' + esc(dm(day.d)) + '</span>' +
             '<span class="progress" style="height:10px"><span class="progress-bar ' + (s && s.overCapacity ? 'bg-danger' : (fullBar ? 'bg-warning' : 'bg-primary')) + '" style="width:' + pct + '%"></span></span>' +
             '<span class="d-flex justify-content-end align-items-center gap-1 text-nowrap small vp-wk-daycount" title="' + esc(day.cap != null ? fmt(L.DayCapacityFormat || '{0} / {1}', day.slots.length, day.cap) : '') + '">' +
-            '<span>' + esc(day.cap != null ? day.slots.length + ' / ' + day.cap : String(day.slots.length)) + '</span>' + badges.join('') + '</span>' +
+            '<span>' + esc(day.cap != null ? VPF.ratio(day.slots.length, day.cap) : String(day.slots.length)) + '</span>' + badges.join('') + '</span>' +
             '</button>' +
             '<div class="ms-4 ps-3 border-start' + (open ? '' : ' d-none') + '">' +
             (day.slots.length ? body + (!full && more > 0 ? '<button type="button" class="btn btn-sm btn-link px-0 js-wk-more" data-date="' + esc(day.date) + '">' + esc(fmt(L.MoreDoctors || '{0}', more)) + '</button>' : '')
@@ -334,7 +334,7 @@
         const src = status && status.requiredVisitCount != null ? status : s; // the period status (targets read) first
         const known = src.requiredVisitCount != null && src.frequencyStatus !== 'unknown';
         const freq = known ? fmt(L.FrequencyPerPeriod || '{0}', src.requiredVisitCount) : (L.FrequencyDefaultOne || '');
-        const dr = status && status.done != null ? status.done + ' / ' + (status.remaining != null ? status.remaining : '—') : '';
+        const dr = status && status.done != null ? VPF.ratio(status.done, status.remaining != null ? status.remaining : '—') : '';
         return dr ? freq + ' · ' + dr : freq;
     };
     const stripRects = (cid, firstDraft) => page.weeks().map(pw => {

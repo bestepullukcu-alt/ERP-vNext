@@ -45,6 +45,13 @@
     // surrounding right-to-left text. Escaped, then wrapped in <bdi>.
     const escapeHtml = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     const bidi = text => '<bdi>' + escapeHtml(text) + '</bdi>';
+    // CT (4I E4) — a count pair "0 / 5" in a right-to-left page reads "5 / 0": the spaced slash is neutral, so the two
+    // numbers are ordered right to left. ratio() keeps the pair left-to-right with an LRI…PDI isolate (plain text, so it
+    // works in textContent and in a localized template); isolateRatios() does the same for every "a / b" in a
+    // template's output ("{0} / {1} seçili").
+    const LRI = String.fromCharCode(0x2066), PDI = String.fromCharCode(0x2069);
+    const ratio = (a, b) => LRI + String(a) + ' / ' + String(b) + PDI;
+    const isolateRatios = s => String(s == null ? '' : s).replace(/(\d+|—)\s*\/\s*(\d+|—)/g, m => LRI + m + PDI);
 
     const dayShort = v => fmtDate(v, { weekday: 'short' }).replace(/\.$/, '');
     const dayMonth = v => fmtDate(v, { day: 'numeric', month: 'short' });
@@ -87,6 +94,6 @@
     };
 
     window.VisitPlanningFormat = Object.freeze({
-        culture, dateCulture, asDate, bidi, dayShort, dayMonth, dayNumber, dayLabel, range, workRange, number, hours, dateShort, dateTime, weekdayLong, productLabel, weekLoad
+        culture, dateCulture, asDate, bidi, ratio, isolateRatios, dayShort, dayMonth, dayNumber, dayLabel, range, workRange, number, hours, dateShort, dateTime, weekdayLong, productLabel, weekLoad
     });
 })(window, document);

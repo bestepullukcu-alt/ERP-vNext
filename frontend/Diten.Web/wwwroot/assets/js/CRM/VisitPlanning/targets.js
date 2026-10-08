@@ -219,7 +219,7 @@
 
         // the limit indicator comes from the capacity (never a constant); unknown ⇒ "—"
         const max = v => (capacity && capacity[v] != null ? capacity[v] : '—');
-        el('vp-dp-limit').innerHTML = esc(fmt(L.ProductLimitLine || '{0} {1} {2} {3}', counts.promo, max('maxPromo'), counts.nonPromo, max('maxNonPromo')));
+        el('vp-dp-limit').innerHTML = esc(window.VisitPlanningFormat.isolateRatios(fmt(L.ProductLimitLine || '{0} {1} {2} {3}', counts.promo, max('maxPromo'), counts.nonPromo, max('maxNonPromo'))));
         const minutes = picker.mode === 'single' ? visitMinutes(capacity, counts.promo, counts.nonPromo) : null;
         el('vp-dp-duration').textContent = picker.mode !== 'single' ? ''
             : (minutes != null ? fmt(L.DurationLine || '{0} {1} {2}', counts.promo, counts.nonPromo, minutes) : (L.DurationUnknown || ''));

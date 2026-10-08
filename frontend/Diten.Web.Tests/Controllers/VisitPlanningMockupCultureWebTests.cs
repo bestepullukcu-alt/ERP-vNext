@@ -119,7 +119,7 @@ public sealed class VisitPlanningMockupCultureWebTests
         var js = Script("weeks.js");
         var freq = Between(js, "const frequencyLine = (s, status) => {", "\n    };");
         Assert.Contains("(L.FrequencyDefaultOne || '')", freq);
-        Assert.Contains("status.done + ' / ' + (status.remaining != null ? status.remaining : '—')", freq);
+        Assert.Contains("VPF.ratio(status.done, status.remaining != null ? status.remaining : '—')", freq); // CT 4I E4: RTL-safe pair
         Assert.Contains("const stripRects = (cid, firstDraft) => page.weeks().map(pw => {", js);
         Assert.Contains("style=\"width:14px;height:6px\"", js);
         // "done" = a completed report (4G reportStatus); without it a past / fixed visit is approved

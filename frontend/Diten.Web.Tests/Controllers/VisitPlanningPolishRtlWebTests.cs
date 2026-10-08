@@ -39,6 +39,36 @@ public sealed class VisitPlanningPolishRtlWebTests
         Assert.Contains("const STRIP_CARD = 'flex:0 0 128px;';", Script("weeks.js"));
     }
 
+    // CT (4I E4, 2026-10-08) — a visit row's doctor name sits at the leading edge: the theme's .btn centres a flex
+    // column's items, so the name (shorter than its institution line) drifted to the middle.
+    [Fact]
+    public void A_visit_rows_doctor_name_and_institution_sit_at_the_leading_edge()
+    {
+        var js = Script("weeks.js");
+        Assert.Contains("btn btn-link p-0 text-start d-flex flex-column align-items-start js-wk-doctor", js);
+    }
+
+    // CT (4I E4, 2026-10-08) — in a right-to-left page a spaced count pair "0 / 5" reads "5 / 0" (the slash is
+    // neutral). Every count pair goes through ratio() / isolateRatios(): an LRI…PDI isolate keeps it left to right.
+    [Fact]
+    public void Count_pairs_stay_left_to_right_in_an_rtl_page()
+    {
+        var weeks = Script("weeks.js");
+        Assert.Contains("VPF.ratio(day.slots.length, day.cap)", weeks);
+        Assert.Contains("VPF.ratio(status.done, status.remaining != null ? status.remaining : '—')", weeks);
+        var details = Script("details.js");
+        Assert.Contains("esc(VPF.ratio(st.done || 0, st.remaining != null ? st.remaining : '—'))", details);
+        Assert.Contains("const head = VPF.isolateRatios(", details);
+        Assert.Contains("VPF.ratio(v.trim().length, REOPEN_MIN)", Script("header.js"));
+        Assert.Contains("window.VisitPlanningFormat.isolateRatios(fmt(L.ProductLimitLine", Script("targets.js"));
+
+        var run = RunFormatter("ar", "JSON.stringify([F.ratio(0, 5), F.isolateRatios('0 / 5 x · 1 / 2')])");
+        if (run is not null)
+        {
+            Assert.Equal("[\"⁦0 / 5⁩\",\"⁦0 / 5⁩ x · ⁦1 / 2⁩\"]", run);
+        }
+    }
+
     // ── 2 · the day row: "6 / 57" + its badge on one line; the day name never wraps ───────────────────────────────
 
     [Fact]
@@ -49,7 +79,7 @@ public sealed class VisitPlanningPolishRtlWebTests
         var row = Between(js, "const dayRow = (day, movable) => {", "\n    };");
         Assert.Contains("'<span class=\"text-nowrap\"><strong class=\"fw-semibold\">' + esc(dayName(day.d)) + '</strong> ' + esc(dm(day.d)) + '</span>'", row);
         // the short count, the word "visits" in the title
-        Assert.Contains("esc(day.cap != null ? day.slots.length + ' / ' + day.cap : String(day.slots.length))", row);
+        Assert.Contains("esc(day.cap != null ? VPF.ratio(day.slots.length, day.cap) : String(day.slots.length))", row);
         Assert.Contains("title=\"' + esc(day.cap != null ? fmt(L.DayCapacityFormat || '{0} / {1}', day.slots.length, day.cap) : '') + '\"", row);
         var count = Between(row, "vp-wk-daycount", "badges.join('') + '</span>'");
         Assert.Contains("text-nowrap", Between(row, "'<span class=\"d-flex justify-content-end", "vp-wk-daycount"));

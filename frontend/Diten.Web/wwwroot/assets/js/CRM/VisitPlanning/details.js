@@ -1076,7 +1076,7 @@
     const frequencyCell = st => hasFrequency(st)
         ? esc((L.FrequencyPerPeriod || '{0}').replace('{0}', st.requiredVisitCount))
         : '<span class="badge bg-label-secondary">' + esc(L.FrequencyNone || '—') + '</span>';
-    const doneCell = st => '<span title="' + esc((L.PlannedCountHint || '{0}').replace('{0}', st.planned || 0)) + '">' + (st.done || 0) + ' / ' + (st.remaining != null ? st.remaining : '—') + '</span>';
+    const doneCell = st => '<span title="' + esc((L.PlannedCountHint || '{0}').replace('{0}', st.planned || 0)) + '">' + esc(VPF.ratio(st.done || 0, st.remaining != null ? st.remaining : '—')) + '</span>';
     const lastVisitCell = st => st.lastVisitDate ? esc(dayShort(st.lastVisitDate)) : '<span class="text-muted">' + esc(L.LastVisitNever || '—') + '</span>';
     const doctorBadges = row => (row.blocked ? ' <span class="badge bg-label-danger" title="' + esc(L.ConsentBlockedHint || '') + '">' + esc(L.BadgeConsentBlocked || '') + '</span>' : '') +
         (row.inactive ? ' <span class="badge bg-label-secondary">' + esc(L.BadgeInactive || '') + '</span>' : '') +
@@ -1187,7 +1187,7 @@
     const accountStatParts = id => {
         const sel = Object.keys(selectedContacts).filter(k => k.indexOf(id + '|') === 0).length;
         const st = accountStats[id] || (accountActive[id] != null ? { active: accountActive[id], due: 0 } : null);
-        const head = st ? (L.AccountSelectedOf || '{0} / {1}').replace('{0}', sel).replace('{1}', st.active) : (L.AccountSelectedCount || '{0}').replace('{0}', sel);
+        const head = VPF.isolateRatios(st ? (L.AccountSelectedOf || '{0} / {1}').replace('{0}', sel).replace('{1}', st.active) : (L.AccountSelectedCount || '{0}').replace('{0}', sel));
         return { head, due: st && st.due ? (L.AccountDueThisWeek || '{0}').replace('{0}', st.due) : '' };
     };
     const paintAccountStats = () => document.querySelectorAll('#vp-acc-list .vp-acc-stats').forEach(n => { n.innerHTML = accountStatsHtml(n.dataset.aid, n.dataset.city); });
