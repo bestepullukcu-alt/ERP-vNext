@@ -203,3 +203,35 @@ KORU/YAPMA: backend'e dokunma (4G paralel; productName/reportStatus/countryCode 
 DOĞRULA (E2): Web (780/0 tabanı) · CRM 2437/0/5 (dokunulmaz) · mimari 27; JS node --check; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad>. Testler belge Acceptance 1–12; sabotaj 3 (kırmızı kanıtla, geri al). Kullanıcının oturum açık sekmesine harness/mock enjekte etme.
 Commit: "feat(web): WP-VP-4H — mockup v2 alignment, app-culture dates, product names, empty week" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt, mockup'tan bilinçli sapmalar (gerekçeli), elle denenecekler. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-08)
+**Commit:** `64af911a0` (ajan `5db3977ab`, test dalına cherry-pick, 4G'nin üstüne). Push: test dalı.
+
+**CT K13:**
+- Web 780 → **792/0** (+12). Worktree'de ve birleşik koşuda aynı.
+- CRM 2451/0/5 (birleşik).
+- Mimari: listesiz 27.
+- Visit Planning JS'inde kalan tek yerel çağrı `toLocaleLowerCase('tr')` (arama kalıbı, bilinçli). `undefined` ve `'en-US'` yok.
+
+**Kod okuması:**
+- **`format.js`:** `documentElement.lang`, 'en' → en-GB (gün önce). İçinde `workRange`, `productLabel`, `weekLoad` var. Dört görünüm `index.l10n.js`'ten sonra yüklüyor.
+- **Details:**
+  - hafta ayrıntısı ve doktorlar kartı flex ile yan yana (520 / 420);
+  - sol hesap listesi `my-accounts`, arama ve kaydırdıkça yükleme;
+  - `vp-add-account` kalktı;
+  - tablo 8 sütun;
+  - hızlı filtre sayıları var.
+- **4D / 4E / 4F:** taşıma ve sabit bileşenleri testlerle korunuyor; 4D'nin `MoveLockedHint`'i ajan tarafından geri getirildi.
+
+**CT sabotajı:** `productLabel` önce kodu okuyacak şekilde değiştirildi → 1 kırmızı (`Every_chip_and_distribution_reads_the_product_name_before_the_code`). Geri alındı.
+
+**Bilinçli sapmalar (ajan raporu, CT kabul):**
+- Boş haftada başlıktaki eylemler duruyor.
+- Renkler hex yerine tema sınıflarıyla.
+- Hesap listesi yalnız klinik / hastane türleri.
+- Haftalar'a dönüş notu sessionStorage'da tek kullanımlık, 5 dk.
+- `weekLoad` 4E `days[]` toplamını öncelikli okuyor.
+
+**E4:** mockup ile yan yana; tarayıcı İngilizceyken TR; **Arapça RTL**; boş hafta; onay ve yeniden açma sonrası yer; Hedefler listesi ve özet süresi; 4D / 4F taşıma yolları.

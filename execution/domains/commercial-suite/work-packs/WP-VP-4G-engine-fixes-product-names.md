@@ -106,3 +106,42 @@ KORU/YAPMA: YENİ YAZMA KOMUTU YOK (listesiz 27); 3A/3B/3C/4E kuralları değiş
 DOĞRULA (E2): CRM (2437/0/5 tabanı; bilinen PII kararsızı olabilir) · Web 780/0 (dokunulmaz) · mimari 27. Testler belge Acceptance 1–11; sabotaj 3 (kırmızı kanıtla, geri al). Fleet açıkken bin kilitliyse -o ile ayrı çıktı klasörü.
 Commit: "feat(crm): WP-VP-4G — light-day far clusters, stable day pins, product names, me.countryCode, reportStatus" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt (test adları, sabotaj çıktıları), mobil için yeni alanlar, elle denenecekler. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-08)
+**Commit:** `92244a0d7` (ajan `860af9a30`, test dalına cherry-pick). Push: test dalı.
+
+**CT K13:**
+- CRM 2437 → **2451/0/5** (+14). Worktree'de ve 4H ile birleşik koşuda aynı.
+- Web 792/0 (birleşik, dokunulmadı).
+- Mimari: listesiz **27** (bilinen AUD-001, değişmedi; yeni yazma ucu yok).
+
+**Kod okuması:**
+- **`DayBalancer`:**
+  - (b'') az dolu gün: merkezi olan ve planlısı bütçenin %50'sinden az olan gün; kümeler arası yol güne yazılıyor; sıra en az dolu, sonra en yakın.
+  - Boşluk doldurma kuralı aynı.
+  - farFill yalnız son taslak hafta.
+  - `NoNearDay`: taşan ziyaret için haftada yer kalan bir gün varsa `no_near_day`, yoksa `capacity_full`.
+- **`AssignAroundPins`:**
+  - Taban = sabitsiz `Assign` (sabitli ve taşan dahil bütün ziyaretler).
+  - Sabitler sabit gününde, sabitsizler taban gününde kalıyor.
+  - Bütçe aşılırsa yalnız sabitsizler, merkeze en uzaktan başlayarak taşınıyor. Kalanlar F4-1 kurallarıyla yerleşiyor.
+  - Sabit yoksa eski 4E yolu aynen çalışıyor.
+- **Ürün adı:**
+  - `IProductNameReader` + `MdmProductNameReader`: MDM `global-products/selector` (alanlar `Id` / `CanonicalCode` / `GlobalProductName` — MDM DTO ile doğrulandı), sayfa 100, en çok 20 sayfa, 3 sn.
+  - Hata olursa o ana kadar bulunan adlarla dönüyor, hata fırlatmıyor.
+  - Motor istek başına not defteri tutuyor; onay ve önizleme aynı okumayı paylaşıyor.
+  - Onayda `PlannedVisitContentItem.ProductName` anlık görüntü olarak yazılıyor (iç içe AutoMap, açık class-map yok, eski kayıt null okunuyor).
+  - Oturum DTO'sunda kişi sırası 1:1 hizalı (aynı `SelectedContacts` listesi).
+- **Diğer alanlar:**
+  - `me.countryCode`: güncel atamanın düğüm ülkesi, yoksa modelin ülke kapsamı, yoksa null.
+  - `PreferPersonName`: e-posta yalnız son çare.
+  - `reportStatus`: tek toplu rapor okuması.
+
+**CT sabotajı:** `no_near_day` sınıflandırması kapatıldı (hep `reasonForWeek`) → 1 kırmızı (`The_shift_says_no_near_day_when_there_was_room_and_capacity_full_only_when_there_was_none`). Geri alındı.
+
+**E4'te bakılacak:**
+- **Ad okuma izni:** selector `mdm.global-products.read` izni istiyor. Bu izin olmayan saha temsilcisinde adlar boş gelir ve kod görünür (fail-open). Canlıda temsilci rolüyle kontrol edilecek; gerekirse grant ya da ayrı bir okuma yolu.
+- **MDM toplu id süzgeci:** ayrı iş (selector'ı sayfa sayfa okumanın yerine).
+- **`countryCode`:** tüzel kişi basamağı yok (token'da tüzel kişi claim'i yok).
