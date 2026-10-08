@@ -132,3 +132,38 @@ KORU/YAPMA: backend'e dokunma; yeni yazma ucu yok; 4C–4I davranışları aynen
 DOĞRULA (E2): Web (802/0 tabanı) · CRM 2457/0/5 (dokunulmaz) · mimari 27; JS node --check; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad> (REPO İÇİNDE). Testler belge Acceptance 1–8; sabotaj 3 (kırmızı kanıtla, geri al — dosyada commit'lenmemiş başka iş varsa `git checkout --` ile geri alma).
 Commit: "feat(web): WP-VP-4J — targets tab per mockup v3, product panel period view, empty-week feedback, list filters + archive empty drafts, new-plan rep field" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt, mockup'tan bilinçli sapmalar, elle denenecekler. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — E2 ACCEPTED (2026-10-08)
+**Commit:** `8f4c48147` (ajan `bc9875d8e`, test dalına cherry-pick). Push: test dalı.
+
+**CT K13:**
+- Web 802 → **810/0** (+8). Worktree'de ve birleşik koşuda aynı (fleet derleme kilidi sonrası yeniden denendi).
+- CRM 2457/0/5 (dokunulmadı).
+- Mimari: listesiz 27.
+
+**Kod okuması:**
+- **Toplu arşiv:** `archiveDrafts` her seçili için sırayla mevcut `PUT sessions/{id}` `{ requestedStatus: 'archived', expectedVersion }`; 409 `planning_session_not_empty` mesaja yansıyor; yeni yazma ucu yok.
+- **Satır seçimi:** yalnız boş taslakta (`isEmptyDraft`).
+- **`CanReadAll`:** Web denetleyicisinde `crm.visit-plan.read-all` → Temsilci süzgeci yalnız o zaman.
+- **Hedefler:** düz tablo (DataTable yok); `visit-planning.css` yalnız VP sayfalarında.
+
+**CT sabotajı:** Temsilci süzgeci koşulu `@if (true)` → 1 kırmızı (`The_list_filter_has_fixed_statuses_visible_labels_and_a_rep_filter_for_read_all_only`). Dosya yedekten geri yüklendi.
+
+**Bilinçli sapmalar (ajan raporu, CT kabul):**
+- boş hafta metni (motorla doğru);
+- eczane tablosunda uydurma sıklık yok;
+- kurum adı kendi kartında;
+- "Hedefleri kaydet" başlık kartında;
+- renkler CSS değişkeniyle;
+- ülke adı tarayıcının `Intl` bölge adlarından;
+- arşivliler yalnız durum süzgeciyle.
+
+**E4:** kullanıcı + CT:
+- mockup v3 yan yana;
+- ürün paneli tek / toplu;
+- boş hafta;
+- süzgeç;
+- toplu arşiv (kullanıcı onayıyla);
+- yeni plan.
