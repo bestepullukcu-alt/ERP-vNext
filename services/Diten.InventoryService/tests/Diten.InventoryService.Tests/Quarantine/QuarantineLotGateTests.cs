@@ -194,4 +194,15 @@ public sealed class QuarantineLotGateTests : IClassFixture<QuarantineApiFactory>
         Assert.Single(q.Decisions()); // one approval for the batch, no LotRelease decision
         await q.Lots.AssertConsistentAsync("CT-Q5");
     }
+
+    /// <summary>The only way past the gate is the in-process command: no controller (no HTTP route) sends it, only the 0175 apply engine.</summary>
+    [Fact]
+    public void ApplyApprovedLotStatusChange_has_no_route_and_one_sender()
+    {
+        var senders = Diten.InventoryService.Tests.Architecture.SourceScan.Production()
+            .Where(f => f.Body.Contains("new ApplyApprovedLotStatusChangeCommand(", StringComparison.Ordinal)).Select(f => f.RelativePath).ToList();
+        Assert.Equal(["Diten.InventoryService.Application/Features/Quarantine/Services/QuarantineApplyEngine.cs"], senders);
+        Assert.DoesNotContain(Diten.InventoryService.Tests.Architecture.SourceScan.Production(),
+            f => f.RelativePath.Contains("/Controllers/", StringComparison.Ordinal) && f.Body.Contains("ApplyApprovedLotStatusChange", StringComparison.Ordinal));
+    }
 }

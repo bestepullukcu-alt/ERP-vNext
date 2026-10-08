@@ -327,4 +327,21 @@ public sealed class QuarantineRetestTests : IClassFixture<QuarantineApiFactory>
         Assert.Equal(q.Approver.ToString("D"), row.GetProperty("actorUserId").GetString());
         await q.Lots.PostOkAsync(q.Lots.Issue("1", lot)); // usable again
     }
+
+    /// <summary>
+    /// ASSUMPTION-0175-Q4-01b: the exception is the movement's DIRECTION, not its claimed source — postMovement accepts any
+    /// <c>sourceModule</c>, so a caller writing MOD-0175 / QUARANTINE_DECISION on a sales issue is refused like anyone else.
+    /// </summary>
+    [Fact]
+    public async Task Claiming_MOD_0175_as_source_does_not_pass_a_retest_due_lot()
+    {
+        var s = new LotLedgerScenario(_factory);
+        var lot = await DueLotAsync(s);
+        var spoof = s.Issue("1", lot);
+        spoof["sourceModule"] = "MOD-0175";
+        spoof["sourceType"] = "QUARANTINE_DECISION";
+        spoof["sourceDocumentId"] = Guid.NewGuid().ToString("D");
+        await s.RefusedAsync(spoof, "LOT_RETEST_DUE");
+        Assert.Equal(30m, s.BalanceOnHandOfLot(lot));
+    }
 }

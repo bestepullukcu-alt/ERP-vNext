@@ -1280,6 +1280,37 @@ the MVP-1 branch. Decisions on the opens:
 - **O-Q3-4** RabbitMQ event path without approver signature id → with O-Q2-1 (environment follow-up); reconcile is the live path.
 - ASSUMPTION-0175-Q3-01…04 accepted for MVP-1 (`skuCode` null until MDM MOD-0290 serves it).
 
+### WP-0175-Q4 (agent result 2026-10-08, pending CT) — retest hard block + lot release gate
+
+Branch `feature/sce/mod-0175-q4` from `967a50fde` (isolated worktree), commit `03b4d1e95`; QUARANTINE 1.0.0 and TRACE 1.2.0
+unchanged; INVENTORY-BUNDLE 1.0.1 → **1.0.2 description-only (CT-Q3)**: `LOT_RETEST_DUE` example + availability note "retest-due lots
+excluded", README row.
+
+**CT kararı — CT-Q16 (v1.1, 2026-10-08):** option A, one stored hold. `LotPostingRules.HoldsStock(Lot) = Blocked || Expired ||
+RetestHeldAtUtc != null`; the status-only overload is removed and every reader (ledger branch, `SkuPositionRebuilder`,
+`InventoryLotDirectory.HeldLotIdsAsync`, `ManualLotMigrationRepository` → `LedgerProjectionReKey`, `LotHeldStock`) asks it. A date
+is compared only in the posting rule and in the sweeper's selection. `RetestHoldSweeper` (TimeProvider, at start + periodic) sets /
+clears the mark and moves the SKU position in ONE transaction; the ledger writes the lot (`StockTouchSeq`) inside its own
+transaction, so the two conflict and one re-runs (measured; race test: live == rebuilder in every round). Seams used: exactly the
+CT-Q16 list + pack §5 Q4 (`TraceabilityServiceCollectionExtensions` and `GetAvailabilityHandler` needed no change).
+**CT kararı — ASSUMPTION-0175-Q4-01:** quarantineStock / blockStock keep refusing `signatureId` → FU-0175-Q4-SIGN (§20).
+
+Built: `LOT_RETEST_DUE` 422 (direction-based exceptions, never the claimed `sourceModule` — ASSUMPTION-0175-Q4-01b); `listRetest`;
+Karantinaya Al mode Retest (one hold per AVAILABLE bucket, Source Retest; ASSUMPTION-0175-Q4-03); V9 also for any hold of a
+retest-due lot; retest release = the approved new retest date on the lot, the hold cleared, then the release. KQ-I:
+`QuarantineLotStatusChangeGate` (Draft / Blocked → Released only, `LotReleaseRequiresApproval`) → **202 `{lotId, pendingRequestId,
+contractVersion}`**, Draft `LotRelease` decision (`LotStatusFrom`) opened after the read-only lot transaction (ASSUMPTION-0175-Q4-05);
+internal `ApplyApprovedLotStatusChange` (no route, one sender; approved decision of this lot from its `LotStatusFrom` only), lot
+history "MOD-0175 approval {QKR}: …" in `reason` (TRACE `source` is a closed enum — ASSUMPTION-0175-Q4-04), actor = approver;
+Released → Blocked immediate; CT-Q5. Serials of the manual actions (O-Q2-6): system-chosen, intake order, stored on the record
+(ASSUMPTION-0175-Q4-02). Tests 637 → **683/683** (the 4 Prism smoke tests green in this run), architecture 18/18, 0 warnings.
+Sabotages (a)–(g) red → restored, diff empty. Runtime probe **27/27** (own Auth / Platform E4 / Gateway / Inventory / Prism / LE stub,
+own mongod): 202 → signed submit → B signed WorkCenter approve → "Durumu yenile" Applied, lot Released + history; retest-due sales
+issue 422; hosted sweeper hold; availability −100; new reservation 422, existing Active; listRetest DueClosed; Karantinaya Al
+Retest. Open: **O-Q4-1** a retest date PATCH (`trace.lots.update-released`) frees the lot without a quality decision (MOD-0174, not in
+the seam list); **O-Q4-2** `getLotQualityStatus` + Lots page 202 handling → Q5; **O-Q4-3** two simultaneous LotRelease submits of one
+lot. Evidence `docs/records/audits/2026-10/mod-0175-q4-evidence-2026-10-08.md`.
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
@@ -1296,6 +1327,11 @@ the MVP-1 branch. Decisions on the opens:
 - FU-0175-EVIDENCE: Blueprint pages "Release Approval Trace" / "Evidence Pack" (`Blueprint_Data` row 176) — PDF evidence
   export of a hold with its decisions and signature verification (after MOD-0022 E2 export).
 - FU-0175-0142: MOD-0142 GRN posts into QUARANTINE/QI → holds appear (no 0175 change; integration test when 0142 lands).
+- **FU-0175-Q4-SIGN** (CT decision ASSUMPTION-0175-Q4-01, WP-0175-Q4): KQ-B signatures on "Karantinaya Al" / "Stoğu bloke et"
+  (O-Q3-2). quarantineStock / blockStock still refuse `signatureId` (`StockActionHandlers.cs:66-70`); verify it like the decider
+  signature (policy of `quarantine.hold.create` / `quarantine.hold.block`, subject per request) in a later slice.
+- FU-0175-Q4-RETEST-EDIT (O-Q4-1): a retest date moved forward through TRACE PATCH frees a retest-held lot without a quality
+  decision — route the extension of a due lot through 0175 (MOD-0174 `UpdateLotHandler`), owner decision.
 
 ## 21. UI input — approved mockup
 
