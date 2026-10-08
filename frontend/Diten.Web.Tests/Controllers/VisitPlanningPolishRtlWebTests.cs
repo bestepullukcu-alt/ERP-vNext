@@ -157,9 +157,14 @@ public sealed class VisitPlanningPolishRtlWebTests
         Assert.Contains("style=\"border:1px dashed #b4bdc6\"", button);
         Assert.Contains("id=\"vp-out-territory-open\" data-bs-toggle=\"modal\" data-bs-target=\"#vp-out-territory-modal\"><i class=\"bx bx-plus\"></i>", button);
         Assert.DoesNotContain("btn-label-warning w-100\" id=\"vp-out-territory-open\"", view);
-        // the list box: bordered, ≤ 560px, rows divided (list-group-flush)
+        // the list box: bordered, rows divided (list-group-flush). CT (user, 2026-10-08): no fixed 560px any more — the three
+        // Targets columns stretch to one height and the list fills the rest of its card, scrolling inside it.
         Assert.Contains("class=\"list-group list-group-flush border rounded overflow-auto\" id=\"vp-acc-list\" role=\"listbox\"", view);
-        Assert.Contains("style=\"max-height:560px\"", view);
+        Assert.DoesNotContain("style=\"max-height:560px\"", view);
+        Assert.Contains("class=\"d-flex flex-wrap gap-3 align-items-stretch vp-targets-row\"", view);
+        var css = File.ReadAllText(Path.Combine(RepoRoot(), "frontend", "Diten.Web", "wwwroot", "assets", "css", "visit-planning.css"));
+        Assert.Contains("#vp-accounts-col #vp-acc-list { flex: 1 1 0; min-height: 320px; overflow: auto; }", css);
+        Assert.Contains(".vp-fill-card .vp-doc-scroll { flex: 1 1 0; min-height: 320px; }", css);
     }
 
     // ── 5 · bidi: every data name of Visit Planning goes into the page inside <bdi> ─────────────────────────────

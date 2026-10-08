@@ -222,7 +222,7 @@
                 </div>
             </div>
 
-            <div class="d-flex flex-wrap gap-3 align-items-start">
+            <div class="d-flex flex-wrap gap-3 align-items-stretch vp-targets-row">
                 @* ── LEFT — my accounts (WP-VP-4H / 4I account cards) ── *@
                 <div class="card p-4 d-flex flex-column gap-2" id="vp-accounts-col" style="flex:1 1 280px;min-width:0">
                     @* WP-VP-4H (6) — "My accounts (territory)": the rep's territory accounts as the picker itself (details.js:
@@ -235,7 +235,7 @@
                     @* WP-VP-2 (B-2) — K-5: shown by details.js when the rep has no territory assignment. *@
                     <div id="vp-territory-banner" class="alert alert-warning py-2 small mb-0 d-none" role="status"><i class="bx bx-error me-1"></i>@Localizer["TerritoryUnassignedBanner"]</div>
                     <input type="search" class="form-control" id="vp-acc-search" placeholder="@Localizer["AccountSearch"]" aria-label="@Localizer["AccountSearch"]">
-                    <div class="list-group list-group-flush border rounded overflow-auto" id="vp-acc-list" role="listbox" aria-label="@Localizer["MyAccountsTitle"]" style="max-height:560px"></div>
+                    <div class="list-group list-group-flush border rounded overflow-auto" id="vp-acc-list" role="listbox" aria-label="@Localizer["MyAccountsTitle"]"></div>
                     <div class="form-text mt-0">@Localizer["AccountsHint"]</div>
                     @if (Model.CanGenerate)
                     {
@@ -255,7 +255,7 @@
                             <button type="button" class="btn vp-midtab" id="vp-subtab-pharm-btn" data-bs-toggle="tab" data-bs-target="#vp-subtab-pharm" role="tab" aria-selected="false" tabindex="-1"><i class="bx bx-plus-medical"></i>@Localizer["LinkedPharmacies"]<span class="vp-midtab-count" id="vp-pharm-count">0</span></button>
                         </div>
                     </div>
-                    <div class="card p-4 d-flex flex-column gap-3">
+                    <div class="card p-4 d-flex flex-column gap-3 vp-fill-card">
                         @* The institution: the building tile, its name, the city · doctors · linked pharmacies pills. *@
                         <div class="d-flex gap-3 align-items-center pb-3 border-bottom flex-wrap">
                             <div class="vp-icon-tile vp-icon-tile-lg" aria-hidden="true"><i class="bx bx-buildings"></i></div>

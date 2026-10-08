@@ -60,7 +60,7 @@ html ::-webkit-scrollbar-track { background: transparent; }
 .vp-pill.active { background: var(--vp-indigo); border-color: var(--vp-indigo); color: #fff; }
 
 /* the plain doctor table: scrolls inside the card (both ways), header kept in view */
-.vp-doc-scroll { max-height: 560px; overflow: auto; }
+.vp-doc-scroll { overflow: auto; }
 .vp-doc-table { min-width: 940px; font-size: 14px; }
 .vp-doc-table thead th {
     position: sticky; top: 0; z-index: 1; background: var(--bs-tertiary-bg, #fafafb);
@@ -80,3 +80,14 @@ html ::-webkit-scrollbar-track { background: transparent; }
 /* the new-plan drawer: a locked field (country with one choice, the rep) — grey, with a lock */
 .vp-locked-field .form-control:disabled,
 .vp-locked-field .input-group-text { background: var(--bs-secondary-bg); color: var(--bs-heading-color); }
+
+/* User (manual test, 2026-10-08): the accounts card and the doctors card reach down to the bottom of the "Selected"
+   column. The three columns stretch to one height; the account list and the doctor table take the rest of their card
+   and scroll inside it (flex-basis 0, so their own content never makes the row taller — the right column sets it). */
+.vp-targets-row > * { display: flex; flex-direction: column; }
+#vp-accounts-col #vp-acc-list { flex: 1 1 0; min-height: 320px; overflow: auto; }
+#vp-contacts-panel.d-flex .vp-fill-card { flex: 1 1 auto; min-height: 0; }
+.vp-fill-card > .tab-content { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+.vp-fill-card > .tab-content > .tab-pane.active { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.vp-fill-card #vp-subtab-doctors > .d-flex.flex-column { flex: 1 1 auto; min-height: 0; }
+.vp-fill-card .vp-doc-scroll { flex: 1 1 0; min-height: 320px; }
