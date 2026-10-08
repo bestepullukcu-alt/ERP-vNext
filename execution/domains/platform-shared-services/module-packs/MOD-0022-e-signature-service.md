@@ -1366,6 +1366,25 @@ gateways on 15290 / 15291): requests reach `localhost:5066/api/quarantine/…` a
 Re-auth / ticket (`/api/tenant-auth/esign/*`) go through the existing `/api/tenant-auth/{everything}` route (5056) — no new route,
 measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/register` stay off the gateway (no route, 404).
 
+### E4 — implementation note (WP-0022-E4, 2026-10-08; agent result, pending CT)
+
+- Branch `feature/sce/mod-0022-e4` from `c31967db8` (isolated worktree). Commit `60ad5fe62` (Platform only; contract unchanged —
+  implements `x-workflow-addendum`); local only, no push. Evidence: `docs/records/audits/2026-10/mod-0022-e4-evidence-2026-10-08.md`.
+- Step `requirements.signatureRequired / signatureMeaning` → `WorkflowRuntimeStep` → `ApprovalTask` (first + next step); publish
+  refuses a flagged step without an active meaning (400 `ESIGN_MEANING_NOT_ALLOWED`). Gate in `TransitionAsync` after replay →
+  state → assignment → actor → SoD: no id → 409 `ESIGN_SIGNATURE_REQUIRED`; `IESignatureGate` (signer = actor, meaning, context
+  task / instance / decision, subject = `workflow/workflow-task/{taskId}` or the instance object, signed after the task, verify
+  `valid`, single use on the transition log) → else 409 `ESIGN_SIGNATURE_MISMATCH`; no gate → fail closed. API and WorkCenter
+  dispatcher share the handler. `SignatureId` on the transition log + history; WorkCenter approve action carries
+  `signatureRequired / signatureMeaning`; `workflow-task` provider (ASSUMPTION-0022-05). Reject unchanged (ASSUMPTION-0022-E4-02).
+- Tests: Platform filtered 558 → **580/580** (+22 `WorkflowESignatureGateTests`, real HTTP host + Mongo); CRM 2109/5/2114
+  unchanged; architecture 18/18; no new build warning. K3: (a) WorkCenter-only bypass, (b) signer ≠ actor, (c) single use, (d)
+  subject match, (e) gate call removed → red, restored clean. Runtime probe (own AuthService + Platform, own mongod, login + real
+  re-auth) **21/21**. Owner fleet untouched.
+- **OPEN for the CT:** O-E4-1 — E2's unique index "one signature per workflow task" blocks re-signing a task after a wrong /
+  invalidated signature (the task can then only be rejected / cancelled / time out); ASSUMPTION-0022-E4-01 (object subject binds
+  by `subjectType == objectType`) to be confirmed with MOD-0175 Q3; designers + WorkCenter dialog = E5.
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
