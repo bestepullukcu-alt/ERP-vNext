@@ -126,3 +126,28 @@ KORU/YAPMA: backend'e dokunma; yeni yazma ucu yok; 4C–4J davranışları ve mo
 DOĞRULA (E2): Web (810/0 tabanı) · CRM 2457/0/5 (dokunulmaz) · mimari 27; JS node --check; fleet açıkken Web bin kilitliyse -o frontend/Diten.Web.Tests/bin/Debug/<ad> (REPO İÇİNDE). Testler 4L-WEB Acceptance 1–5; sabotaj 1 (kırmızı kanıtla, geri al — `git checkout --` kullanma).
 Commit: "feat(web): WP-VP-4L-WEB — weekly default label, week-aware targets, per-week extra visits" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: ne yapıldı + kanıt, elle denenecekler. §22 TÜRKÇE. K13.
 ```
+
+---
+
+## §37 CT kabul — 4L-WEB E2 ACCEPTED (2026-10-08)
+**Commit'ler:** `b403aa18f` (ajan `019c13c10`, eşit yükseklik düzeltmesi `7e562ce28` üstüne rebase, çakışmasız) + CT testi `09904ec07`. Push: test dalı.
+
+**CT K13:**
+- Web 810 → **816/0** (ajan +5, CT +1). CRM dokunulmadı.
+- Mimari: Web değişikliği; yazma komutu yok (27).
+
+**Kod okuması:**
+- `weekExtras` gövdesi mevcut `PUT sessions/{id}` ile `{ weekExtras: { weekStart, targets }, expectedVersion }`; hata sonrası tablo yeniden çiziliyor.
+- Eylemler yalnız taslak / boş hafta (`EXTRA_WEEK_STATUSES`) **ve** sunucu alanları (`extraTargets` / `isExtra`) varken (`supportsExtras`).
+- `frequencyDefault` → "haftada 1 (varsayılan)"; eski anahtar kalktı.
+
+**CT sabotajı:**
+- Önce `supportsExtras` → `true ||` (sunucu alanları yokken eylemler açık): **yeşil kaldı** — koruma yoktu.
+- CT testi eklendi (`Without_the_servers_extra_fields_no_extra_visit_action_is_offered`); aynı sabotajda **kırmızı**; geri alındı.
+
+**4L-BE gelince E4 birlikte:**
+- 42. hafta başlık sayıları ve Durum sütunu;
+- "Bu hafta da ziyaret et" / kaldır / toplu ekleme;
+- ek rozeti (Haftalar / Rota / panel);
+- onaylı haftada eylem yok;
+- plan dışı doktorda 400 mesajı.
