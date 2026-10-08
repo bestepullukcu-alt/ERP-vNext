@@ -1398,6 +1398,63 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   `objectType` of the quarantine decision (no mapping table); Q3 must prove it with a live sign → approve.
 - ASSUMPTION-0022-E4-02 (reject needs no signature) accepted for MVP-1.
 
+### E5W1 — implementation note (WP-0022-E5W1, 2026-10-09; agent result, pending CT)
+
+- Branch: `feature/sce/mod-0022-e5w1` from `a9e669f26` (isolated worktree).
+- Commit: `cfcf9e6c0`. Web only, plus the ESign manifest page flag. The contract is unchanged.
+- Local only, no push.
+- Evidence: `docs/records/audits/2026-10/mod-0022-e5w1-evidence-2026-10-09.md`, plus scripts and 11 screenshots.
+- **Shared dialog** (`Views/Shared/ESignature/_ESignatureDialog|_SignaturePad|_SignatureZoom` +
+  `wwwroot/assets/js/ESignature/esign-dialog|esign-pad|esign.l10n.js`):
+  - API: `ESign.open({module, subjectType, subjectId, actionCode?, meaningCode?, requestId?, context?})` →
+    `{signatureId, signatureNumber} | null`.
+  - The host passes ids only. Summary, meanings, policy, visual mode and time come from `policy/effective`.
+  - Flow: E1 reauth (or the window ticket with the re-typed user name, CT-D7) → E2 sign.
+  - The password is emptied in a `finally` after every attempt and is never stored.
+  - The pad uses Pointer Events and goes full screen landscape at 375 px.
+- **İmzam:** `/ESignature/MySignature` (`ESIGN_MYSIGNATURE`, UAS-001), plus a user-menu link gated by `esign.my-samples.manage`.
+- **Controller:** `ESignatureController`, `[Authorize]`. It proxies `api/**` to `/api/v1/esign/**` and `auth/reauth|ticket` to AuthService.
+  The proxy never logs a body.
+- **WorkCenter:**
+  - A `signatureRequired` approve opens the dialog first and dispatches `payload.signatureId`.
+  - Cancel sends nothing.
+  - Unflagged items are unchanged.
+- **Designers (form + visual):**
+  - "İmza gerekli" plus an active meaning → `requirements.signatureRequired / signatureMeaning`.
+  - The keys are written only when the switch is on.
+  - The visual designer reads the values back.
+  - The designer route is unchanged.
+- **Manifest:** only `ESIGN_MYSIGNATURE` is nav-visible (the explicit `new ModuleManifestPage(` calls are parsed by the Web nav guard).
+- **Tests:**
+
+  | suite | before | after |
+  |---|---|---|
+  | Web | 619/622 | **630/632** |
+  | Platform filtered | 580 | **581/581** |
+  | architecture | 18 | **18/18** |
+
+  - The 2 remaining Web failures are the pre-existing quarantine nav keys (MOD-0175 Q5 scope).
+  - No new build warning.
+- **K3 sabotages** — each went red and was restored clean:
+  - (a) manifest route under `/Platform/` → red in Platform + Web;
+  - (b) WorkCenter `signatureRequired` check removed → test red, and at runtime 409 `ESIGN_SIGNATURE_REQUIRED`;
+  - (c) password clear removed → red.
+- **Runtime probe** (own stack, browser):
+  - The designer published the signature step and a reopen read it back.
+  - A started the instance.
+  - B approved: wrong password → 401 and the field was emptied; cancel → nothing was sent; drawing + password → sign 201 →
+    approve 200, and the history shows `signatureId`.
+  - The unsigned item approved without the dialog.
+  - DrawRequired: the client refuses an empty pad; the API returns 409 `ESIGN_APPEARANCE_NOT_ALLOWED`.
+  - İmzam: a sample was saved with the password (201).
+  - The owner fleet was untouched.
+- **OPEN for the CT:**
+  - O-E5W1-1: the `workflow-task` provider's summary labels are English.
+  - O-E5W1-2: the İmzam history table is DataTable v2 client mode without filter / SaveView.
+  - O-E5W1-3: WorkCenter sends no `actionCode`, so the approve visual mode is Optional.
+  - FU-0022-E4-01 is not in this part: it needs a schema change (E5B).
+  - The Python DataTable verifier was not run (W-0022-01).
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
